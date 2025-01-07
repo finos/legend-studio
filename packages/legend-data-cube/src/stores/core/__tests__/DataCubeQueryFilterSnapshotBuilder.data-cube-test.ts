@@ -33,7 +33,7 @@ import {
   _var,
 } from '../DataCubeQueryBuilderUtils.js';
 import { DataCubeFunction } from '../DataCubeQueryEngine.js';
-import { Test__DataCubeEngine } from './Test__DataCubeEngine.js';
+import { TEST__DataCubeEngine } from './TEST__DataCubeEngine.js';
 import { DataCubeQuery } from '../model/DataCubeQuery.js';
 import { INTERNAL__DataCubeSource } from '../model/DataCubeSource.js';
 
@@ -80,6 +80,7 @@ describe(unitTest('Analyze and build filter snapshot'), () => {
       testName: FilterSnapshotAnalysisTestCase[0],
       lambda: FilterSnapshotAnalysisTestCase[1],
     ) => {
+      const engine = new TEST__DataCubeEngine();
       const partialQuery = V1_deserializeValueSpecification(
         await ENGINE_TEST_SUPPORT__grammarToJSON_valueSpecification(lambda),
         [],
@@ -92,17 +93,12 @@ describe(unitTest('Analyze and build filter snapshot'), () => {
           partialQuery,
           source,
           baseQuery,
-          new Test__DataCubeEngine().filterOperations,
+          engine.filterOperations,
         );
         const query = _function(DataCubeFunction.FILTER, [
           _lambda(
             [_var()],
-            [
-              _filter(
-                snapshot.data.filter!,
-                new Test__DataCubeEngine().filterOperations,
-              ),
-            ],
+            [_filter(snapshot.data.filter!, engine.filterOperations)],
           ),
         ]);
         const queryString = await ENGINE_TEST_SUPPORT__JSONToGrammar_model(

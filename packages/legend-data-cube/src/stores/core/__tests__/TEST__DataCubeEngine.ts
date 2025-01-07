@@ -29,7 +29,7 @@ import {
 } from '../DataCubeEngine.js';
 import type { DataCubeSource } from '../model/DataCubeSource.js';
 
-export class Test__DataCubeEngine extends DataCubeEngine {
+export class TEST__DataCubeEngine extends DataCubeEngine {
   // TODO: implement the engine endpoints for testing
 
   override processQuerySource(value: PlainObject): Promise<DataCubeSource> {
