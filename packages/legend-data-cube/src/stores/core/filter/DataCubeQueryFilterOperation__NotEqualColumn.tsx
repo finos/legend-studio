@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import { type V1_AppliedFunction } from '@finos/legend-graph';
 import { DataCubeQueryFilterOperation } from './DataCubeQueryFilterOperation.js';
 import type { DataCubeQuerySnapshotFilterCondition } from '../DataCubeQuerySnapshot.js';
 import type { DataCubeColumn } from '../model/DataCubeColumn.js';
@@ -35,6 +33,11 @@ import {
   _var,
 } from '../DataCubeQueryBuilderUtils.js';
 import { guaranteeNonNullable, isString } from '@finos/legend-shared';
+import {
+  V1_AppliedProperty,
+  type V1_AppliedFunction,
+} from '@finos/legend-graph';
+import { _buildConditionSnapshotProperty } from '../DataCubeQuerySnapshotBuilderUtils.js';
 
 export class DataCubeQueryFilterOperation__NotEqualColumn extends DataCubeQueryFilterOperation {
   override get label() {
@@ -78,8 +81,19 @@ export class DataCubeQueryFilterOperation__NotEqualColumn extends DataCubeQueryF
   }
 
   buildConditionSnapshot(expression: V1_AppliedFunction) {
-    /** TODO: @datacube roundtrip */
-    return undefined;
+    const value = expression.parameters[1];
+    const filterConditionSnapshot = _buildConditionSnapshotProperty(
+      expression.parameters[0] as V1_AppliedProperty,
+      this.operator,
+    );
+
+    if (value instanceof V1_AppliedProperty) {
+      filterConditionSnapshot.value = {
+        value: value.property,
+        type: DataCubeOperationAdvancedValueType.COLUMN,
+      } satisfies DataCubeOperationValue;
+    }
+    return filterConditionSnapshot satisfies DataCubeQuerySnapshotFilterCondition;
   }
 
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {

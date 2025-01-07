@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import { type V1_AppliedFunction } from '@finos/legend-graph';
 import { DataCubeQueryFilterOperation } from './DataCubeQueryFilterOperation.js';
 import type { DataCubeQuerySnapshotFilterCondition } from '../DataCubeQuerySnapshot.js';
 import type { DataCubeColumn } from '../model/DataCubeColumn.js';
@@ -31,6 +29,11 @@ import {
   _not,
   _property,
 } from '../DataCubeQueryBuilderUtils.js';
+import type {
+  V1_AppliedFunction,
+  V1_AppliedProperty,
+} from '@finos/legend-graph';
+import { _buildConditionSnapshotProperty } from '../DataCubeQuerySnapshotBuilderUtils.js';
 
 export class DataCubeQueryFilterOperation__IsNotNull extends DataCubeQueryFilterOperation {
   override get label() {
@@ -76,8 +79,12 @@ export class DataCubeQueryFilterOperation__IsNotNull extends DataCubeQueryFilter
   }
 
   buildConditionSnapshot(expression: V1_AppliedFunction) {
-    /** TODO: @datacube roundtrip */
-    return undefined;
+    const filterConditionSnapshot = _buildConditionSnapshotProperty(
+      expression.parameters[0] as V1_AppliedProperty,
+      this.operator,
+    );
+    filterConditionSnapshot.value = undefined;
+    return filterConditionSnapshot;
   }
 
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {

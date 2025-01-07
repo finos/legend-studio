@@ -46,12 +46,15 @@ import {
 } from './DataCubeQueryEngine.js';
 import { buildDefaultConfiguration } from './DataCubeConfigurationBuilder.js';
 import {
+  _buildFilterSnapshot,
   _colSpecArrayParam,
   _colSpecParam,
   _funcMatch,
+  _lambdaParam,
   _param,
 } from './DataCubeQuerySnapshotBuilderUtils.js';
 import type { DataCubeSource } from './model/DataCubeSource.js';
+import type { DataCubeQueryFilterOperation } from './filter/DataCubeQueryFilterOperation.js';
 
 // --------------------------------- BUILDING BLOCKS ---------------------------------
 
@@ -97,6 +100,14 @@ enum _FUNCTION_SEQUENCE_COMPOSITION_PART {
   GROUP_EXTEND = 'group_extend',
   SORT = 'sort',
   LIMIT = 'limit',
+}
+
+function isFunctionInValidSequence(
+  value: string,
+): value is _FUNCTION_SEQUENCE_COMPOSITION_PART {
+  return Object.values(_FUNCTION_SEQUENCE_COMPOSITION_PART).includes(
+    value as _FUNCTION_SEQUENCE_COMPOSITION_PART,
+  );
 }
 
 // This corresponds to the function sequence that we currently support:
@@ -223,14 +234,30 @@ function extractFunctionMap(
     }
     if (currentFunc.parameters.length > supportedFunc.parameters) {
       const valueSpecification = currentFunc.parameters[0];
-      if (!(valueSpecification instanceof V1_AppliedFunction)) {
+      if (
+        !(
+          valueSpecification instanceof V1_AppliedFunction ||
+          isFunctionInValidSequence(currentFunc.function)
+        )
+      ) {
         throw new Error(
           `Query must be a sequence of function calls (e.g. x()->y()->z())`,
         );
+      } else if (
+        currentFunc.function === _FUNCTION_SEQUENCE_COMPOSITION_PART.FILTER
+      ) {
+        currentFunc.parameters = currentFunc.parameters.slice(1);
+        sequence.unshift(currentFunc);
+        if (valueSpecification instanceof V1_AppliedFunction) {
+          currentFunc = valueSpecification;
+        } else {
+          break;
+        }
+      } else {
+        currentFunc.parameters = currentFunc.parameters.slice(1);
+        sequence.unshift(currentFunc);
+        currentFunc = valueSpecification as V1_AppliedFunction;
       }
-      currentFunc.parameters = currentFunc.parameters.slice(1);
-      sequence.unshift(currentFunc);
-      currentFunc = valueSpecification;
     } else {
       sequence.unshift(currentFunc);
       break;
@@ -290,6 +317,7 @@ export function validateAndBuildQuerySnapshot(
   partialQuery: V1_ValueSpecification,
   source: DataCubeSource,
   baseQuery: DataCubeQuery,
+  filterOperations?: DataCubeQueryFilterOperation[],
 ) {
   // --------------------------------- BASE ---------------------------------
   // Build the function call sequence and the function map to make the
@@ -316,7 +344,12 @@ export function validateAndBuildQuerySnapshot(
   /** TODO: @datacube roundtrip */
 
   // --------------------------------- FILTER ---------------------------------
-  /** TODO: @datacube roundtrip */
+  if (funcMap.filter) {
+    data.filter = _buildFilterSnapshot(
+      _lambdaParam(funcMap.filter, 0).body[0]!,
+      filterOperations!,
+    );
+  }
 
   // --------------------------------- SELECT ---------------------------------
 

@@ -27,6 +27,7 @@ import {
   type DataCubeQuerySnapshotBuilderTestCase,
 } from './DatacubeQuerySnapshotBuilderTestUtils.js';
 import { DataCubeConfiguration } from '../model/DataCubeConfiguration.js';
+import { Test__DataCubeEngine } from './Test__DataCubeEngine.js';
 
 const cases: DataCubeQuerySnapshotBuilderTestCase[] = [
   _testCase({
@@ -164,7 +165,12 @@ describe(unitTest('Analyze and build base snapshot'), () => {
       const source = new INTERNAL__DataCubeSource();
       source.columns = columns;
       try {
-        validateAndBuildQuerySnapshot(partialQuery, source, baseQuery);
+        validateAndBuildQuerySnapshot(
+          partialQuery,
+          source,
+          baseQuery,
+          new Test__DataCubeEngine().filterOperations,
+        );
         expect(error).toBeUndefined();
       } catch (err) {
         assertErrorThrown(err);
