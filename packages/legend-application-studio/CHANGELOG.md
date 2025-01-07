@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.18.78
+
+### Patch Changes
+
+- [#3794](https://github.com/finos/legend-studio/pull/3794) [`0aafaa7`](https://github.com/finos/legend-studio/commit/0aafaa7e249e2cf06ab8412d4be6aed9965a5dfc) ([@kelly-thai](https://github.com/kelly-thai)) - Fixing bug where 'View Project' and 'View SDLC Project' were not working when right clicking on explorer tree
+
 ## 28.18.77
 
 ### Patch Changes
