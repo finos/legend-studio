@@ -23,7 +23,7 @@ Mapping model::ModelToModelMappingFromPrimitiveType
     ~src model::Source
     w[dateMapping]: $src.d
   }
-  model::Wrapper: Pure
+  model::Wrapper[dateMapping]: Pure
   {
     ~src StrictDate
     d: $src
