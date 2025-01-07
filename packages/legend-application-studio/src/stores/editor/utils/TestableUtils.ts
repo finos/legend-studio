@@ -27,7 +27,6 @@ import {
   type Runtime,
   type TestAssertion,
   type AtomicTest,
-  type Class,
   type EmbeddedDataVisitor,
   type INTERNAL__UnknownConnection,
   type DataElementReference,
@@ -36,6 +35,7 @@ import {
   type ValueSpecification,
   type Binding,
   type RawLambda,
+  type Type,
   ExternalFormatData,
   RelationalCSVData,
   ConnectionTestData,
@@ -122,7 +122,7 @@ export const createDefaultEqualToJSONTestAssertion = (
 };
 
 export const createEmbeddedDataFromClass = (
-  _class: Class,
+  _class: Type,
   editorStore: EditorStore,
 ): ExternalFormatData => {
   const _json = createMockDataForMappingElementSource(_class, editorStore);
@@ -132,7 +132,7 @@ export const createEmbeddedDataFromClass = (
 };
 
 export const createBareModelStoreData = (
-  _class: Class,
+  _class: Type,
   editorStore: EditorStore,
 ): ModelStoreData => {
   const embeddedData = createEmbeddedDataFromClass(_class, editorStore);

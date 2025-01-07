@@ -17,6 +17,7 @@
 import {
   LambdaFunction,
   type Class,
+  type Type,
   type GraphManagerState,
   type RawLambda,
   type SetImplementation,
@@ -93,7 +94,7 @@ export const createGraphFetchRawLambda = (
 };
 
 export const createStoreBareModelStoreData = (
-  _class: Class,
+  _class: Type,
   editorStore: EditorStore,
 ): StoreTestData => {
   const modelStoreData = createBareModelStoreData(_class, editorStore);

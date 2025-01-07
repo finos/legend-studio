@@ -183,7 +183,7 @@ export class V1_ClassMappingFirstPassBuilder
     );
     const targetClass = this.context.resolveClass(classMapping.class);
     const srcClassReference = classMapping.srcClass
-      ? this.context.resolveClass(classMapping.srcClass)
+      ? this.context.resolveType(classMapping.srcClass)
       : undefined;
     const pureInstanceSetImplementation = new PureInstanceSetImplementation(
       V1_getInferredClassMappingId(targetClass.value, classMapping),

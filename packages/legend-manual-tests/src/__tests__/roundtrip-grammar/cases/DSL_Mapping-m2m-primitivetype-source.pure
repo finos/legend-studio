@@ -1,0 +1,31 @@
+###Pure
+Class model::Source
+{
+  d: StrictDate[1];
+}
+
+Class model::Wrapper
+{
+  d: StrictDate[1];
+}
+
+Class model::Dest
+{
+  w: model::Wrapper[1];
+}
+
+
+###Mapping
+Mapping model::ModelToModelMappingFromPrimitiveType
+(
+  *model::Dest: Pure
+  {
+    ~src model::Source
+    w[dateMapping]: $src.d
+  }
+  model::Wrapper[dateMapping]: Pure
+  {
+    ~src StrictDate
+    d: $src
+  }
+)
