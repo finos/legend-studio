@@ -20,7 +20,7 @@
     "build:tailwindcss": "tailwindcss -i ./style/tailwind.css -o ./lib/tailwind.css --minify",
     "build:webpack": "cross-env NODE_ENV=production webpack --mode production",
     "build-dry:docker": "../../scripts/docker/dry-build-docker-image.sh legend-data-cube ./dist/datacube",
-    "bundle": "yarn clean && yarn build:webpack && node ./scripts/setup.js ./dist/data-cube",
+    "bundle": "yarn clean && yarn build:tailwindcss && yarn build:webpack && node ./scripts/setup.js ./dist/data-cube",
     "bundle:analyze": "cross-env NODE_ENV=production webpack --mode production --analyze",
     "bundle:fast": "cross-env NODE_ENV=production PRODUCTION_MODE=fast webpack --mode production && node ./scripts/setup.js ./dist/data-cube",
     "clean": "yarn clean:cache && rimraf \"dist\"",
