@@ -113,6 +113,7 @@ import {
   DEPENDENCY_ROOT_PACKAGE_PREFIX,
   Service,
   isRelationalDatabaseConnection,
+  LegendSDLC,
 } from '@finos/legend-graph';
 import {
   ActionAlertActionType,
@@ -730,42 +731,47 @@ const ExplorerContextMenu = observer(
       editorStore.graphManagerState.graph.dependencyManager.roots.includes(
         node.packageableElement,
       );
+
     const viewProject = (): void => {
-      const projectDependency =
-        editorStore.projectConfigurationEditorState.projectConfiguration?.projectDependencies.find(
-          (dep) =>
-            DEPENDENCY_ROOT_PACKAGE_PREFIX + dep.projectId ===
-            node?.packageableElement.name,
-        );
-      if (projectDependency) {
-        applicationStore.navigationService.navigator.visitAddress(
-          applicationStore.navigationService.navigator.generateAddress(
-            generateViewProjectByGAVRoute(
-              guaranteeNonNullable(projectDependency.groupId),
-              guaranteeNonNullable(projectDependency.artifactId),
-              projectDependency.versionId === MASTER_SNAPSHOT_ALIAS
-                ? SNAPSHOT_VERSION_ALIAS
-                : projectDependency.versionId,
+      if (node?.packageableElement.name) {
+        const projectOrigin =
+          editorStore.graphManagerState.graph.dependencyManager.projectDependencyModelsIndex.get(
+            node.packageableElement.name.substring(
+              DEPENDENCY_ROOT_PACKAGE_PREFIX.length,
             ),
-          ),
-        );
+          )?.origin;
+        if (projectOrigin instanceof LegendSDLC) {
+          applicationStore.navigationService.navigator.visitAddress(
+            applicationStore.navigationService.navigator.generateAddress(
+              generateViewProjectByGAVRoute(
+                guaranteeNonNullable(projectOrigin.groupId),
+                guaranteeNonNullable(projectOrigin.artifactId),
+                projectOrigin.versionId === MASTER_SNAPSHOT_ALIAS
+                  ? SNAPSHOT_VERSION_ALIAS
+                  : projectOrigin.versionId,
+              ),
+            ),
+          );
+        }
       }
     };
     const viewSDLCProject = (): void => {
-      const dependency =
-        editorStore.projectConfigurationEditorState.projectConfiguration?.projectDependencies.find(
-          (dep) =>
-            DEPENDENCY_ROOT_PACKAGE_PREFIX + dep.projectId ===
-            node?.packageableElement.name,
-        );
-      if (dependency) {
-        createViewSDLCProjectHandler(
-          applicationStore,
-          editorStore.depotServerClient,
-        )(
-          guaranteeNonEmptyString(dependency.groupId),
-          guaranteeNonEmptyString(dependency.artifactId),
-        ).catch(applicationStore.alertUnhandledError);
+      if (node?.packageableElement.name) {
+        const sdlcProjectOrigin =
+          editorStore.graphManagerState.graph.dependencyManager.projectDependencyModelsIndex.get(
+            node.packageableElement.name.substring(
+              DEPENDENCY_ROOT_PACKAGE_PREFIX.length,
+            ),
+          )?.origin;
+        if (sdlcProjectOrigin instanceof LegendSDLC) {
+          createViewSDLCProjectHandler(
+            applicationStore,
+            editorStore.depotServerClient,
+          )(
+            guaranteeNonEmptyString(sdlcProjectOrigin.groupId),
+            guaranteeNonEmptyString(sdlcProjectOrigin.artifactId),
+          ).catch(applicationStore.alertUnhandledError);
+        }
       }
     };
 
