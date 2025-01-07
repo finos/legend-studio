@@ -21,9 +21,8 @@ Mapping model::ModelToModelMappingFromPrimitiveType
   *model::Dest: Pure
   {
     ~src model::Source
-    w[dateMapping] : $src.d
+    w[dateMapping]: $src.d
   }
-
   model::Wrapper: Pure
   {
     ~src StrictDate
