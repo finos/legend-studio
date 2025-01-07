@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.0.1
+
+### Patch Changes
+
+- [#3788](https://github.com/finos/legend-studio/pull/3788) [`0cb9701`](https://github.com/finos/legend-studio/commit/0cb97012611d686014fd926c7b182f2adf9283d9) ([@aziemchawdhary-gs](https://github.com/aziemchawdhary-gs)) - Support primtive types as source of Pure mappings
+
 ## 32.0.0
 
 ### Major Changes
