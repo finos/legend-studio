@@ -180,6 +180,7 @@ import {
   BsQuestionSquare,
   BsQuestionSquareFill,
   BsTextLeft,
+  BsBoxArrowUpRight,
 } from 'react-icons/bs';
 
 export const FilledTriangleIcon = BsFillTriangleFill;
@@ -203,6 +204,7 @@ export const ThinChevronLeftIcon = BsChevronLeft;
 export const QuestionSquareIcon = BsQuestionSquare;
 export const QuestionSquareFillIcon = BsQuestionSquareFill;
 export const GenericTextFileIcon = BsTextLeft;
+export const BoxArrowUpRightIcon = BsBoxArrowUpRight;
 
 //======================================================= HI =======================================================
 import { HiCode, HiHome, HiOutlineDocumentReport } from 'react-icons/hi';
