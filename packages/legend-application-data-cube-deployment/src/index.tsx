@@ -15,7 +15,7 @@
  */
 
 import { LegendDataCubeWebApplication } from '@finos/legend-application-data-cube-bootstrap';
-import config from '../data-cube.config.js';
+import config from '../datacube.config.js';
 import '../lib/tailwind.css'; // eslint-disable-line @finos/legend/no-cross-workspace-non-export-usage
 import './index.css';
 

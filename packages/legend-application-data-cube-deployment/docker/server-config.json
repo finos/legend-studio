@@ -34,7 +34,7 @@
   "localAssetPaths": {
     "/datacube/config.json": "/config/config.json"
   },
-  "uiPath": "/data-cube",
+  "uiPath": "/datacube",
   "sessionCookie": "LEGEND_DATA_CUBE_JSESSIONID",
   "server": {
     "type": "simple",

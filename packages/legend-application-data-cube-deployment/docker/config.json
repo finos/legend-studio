@@ -1,5 +1,5 @@
 {
-  "appName": "data-cube",
+  "appName": "datacube",
   "env": "local",
   "engine": {
     "url": "${PROTOCOL}://${ENGINE_HOST}:${ENGINE_PORT}/api"

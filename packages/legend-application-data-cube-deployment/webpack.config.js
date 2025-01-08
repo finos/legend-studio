@@ -17,7 +17,7 @@
 import { resolve, dirname } from 'path';
 import webpack from 'webpack';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
-import appConfig from './data-cube.config.js';
+import appConfig from './datacube.config.js';
 import {
   getEnvInfo,
   getWebAppBaseWebpackConfig,
