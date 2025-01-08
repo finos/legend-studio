@@ -38,6 +38,7 @@ export {
   AlignMiddleIcon,
   AlignStartIcon,
   AlignTopIcon,
+  BoxArrowUpRightIcon,
   Button,
   CaretDownIcon,
   clsx,
