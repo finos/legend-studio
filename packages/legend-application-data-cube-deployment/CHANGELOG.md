@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube-deployment
 
+## 13.5.0
+
+### Patch Changes
+
+- [#3799](https://github.com/finos/legend-studio/pull/3799) [`f681dff`](https://github.com/finos/legend-studio/commit/f681dffce5c6c02f80ff06cd933362018e3e5e4b) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - minor datacube url cleanup
+
 ## 13.4.0
 
 ## 13.3.0
