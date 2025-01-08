@@ -73,6 +73,9 @@ export default (env, arg) => {
           ],
         }),
     ].filter(Boolean),
+    experiments: {
+      asyncWebAssembly: true,
+    },
   };
   return config;
 };

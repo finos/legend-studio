@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+import * as duckdb from '@duckdb/duckdb-wasm';
+import duckdb_wasm from '@duckdb/duckdb-wasm/dist/duckdb-mvp.wasm';
+import duckdb_wasm_next from '@duckdb/duckdb-wasm/dist/duckdb-eh.wasm';
+
 import {
   APPLICATION_EVENT,
   DEFAULT_TAB_SIZE,
@@ -55,6 +59,77 @@ export type LegendDataCubeApplicationStore = ApplicationStore<
   LegendDataCubeApplicationConfig,
   LegendDataCubePluginManager
 >;
+// See https://duckdb.org/docs/sql/data_types/overview
+const getType = (type: string) => {
+  const typeLower = type.toLowerCase();
+  switch (typeLower) {
+    case 'bigint':
+    case 'int8':
+    case 'long':
+      return 'bigint';
+
+    case 'double':
+    case 'float8':
+    case 'numeric':
+    case 'decimal':
+    case 'decimal(s, p)':
+    case 'real':
+    case 'float4':
+    case 'float':
+    case 'float32':
+    case 'float64':
+      return 'number';
+
+    case 'hugeint':
+    case 'integer':
+    case 'smallint':
+    case 'tinyint':
+    case 'ubigint':
+    case 'uinteger':
+    case 'usmallint':
+    case 'utinyint':
+    case 'smallint':
+    case 'tinyint':
+    case 'ubigint':
+    case 'uinteger':
+    case 'usmallint':
+    case 'utinyint':
+    case 'int4':
+    case 'int':
+    case 'signed':
+    case 'int2':
+    case 'short':
+    case 'int1':
+    case 'int64':
+    case 'int32':
+      return 'integer';
+
+    case 'boolean':
+    case 'bool':
+    case 'logical':
+      return 'boolean';
+
+    case 'date':
+    case 'interval': // date or time delta
+    case 'time':
+    case 'timestamp':
+    case 'timestamp with time zone':
+    case 'datetime':
+    case 'timestamptz':
+      return 'date';
+
+    case 'uuid':
+    case 'varchar':
+    case 'char':
+    case 'bpchar':
+    case 'text':
+    case 'string':
+    case 'utf8': // this type is unlisted in the `types`, but is returned by the db as `column_type`...
+      return 'string';
+    default:
+      return 'other';
+  }
+};
 
 export class LegendDataCubeBaseStore {
   readonly application: LegendDataCubeApplicationStore;
@@ -172,6 +247,64 @@ export class LegendDataCubeBaseStore {
 
   async initialize() {
     this.initializeState.inProgress();
+
+    const MANUAL_BUNDLES: duckdb.DuckDBBundles = {
+      mvp: {
+        mainModule: duckdb_wasm,
+        mainWorker: new URL(
+          '@duckdb/duckdb-wasm/dist/duckdb-browser-mvp.worker.js',
+          import.meta.url,
+        ).toString(),
+      },
+      eh: {
+        mainModule: duckdb_wasm_next,
+        mainWorker: new URL(
+          '@duckdb/duckdb-wasm/dist/duckdb-browser-eh.worker.js',
+          import.meta.url,
+        ).toString(),
+      },
+    };
+    // Select a bundle based on browser checks
+    const bundle = await duckdb.selectBundle(MANUAL_BUNDLES);
+    // Instantiate the asynchronus version of DuckDB-wasm
+    const worker = new Worker(bundle.mainWorker!);
+    const logger = new duckdb.ConsoleLogger();
+    const db = new duckdb.AsyncDuckDB(logger, worker);
+    await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
+
+    const conn = await db.connect();
+    // const a = await conn.query(`SELECT * FROM generate_series(0, 100) t(v)`);
+    // console.log(a.toArray().map((row) => row.toJSON()));
+
+    // Execute a query and get a RecordBatchStreamReader
+    const result = await conn.query(
+      `SELECT * FROM generate_series(1, 10) t(v)`,
+    );
+
+    // console.log(result.tableToJSON());
+    console.table(result.toString());
+
+    // // Iterate over the result chunks
+    // for await (const batch of reader) {
+    //   const values = batch.toArray().map((row) => row.v);
+    //   console.log(values);
+    // }
+
+    const schema = result.schema.fields.map(({ name, type }) => ({
+      name,
+      type: getType(type),
+      databaseType: type,
+    }));
+
+    console.log('schema', {
+      schema,
+      // rows: result.toArray().map((row) => row.toJSON()),
+      // rows: result.toArray().map((r) => Object.fromEntries(r)),
+    });
+
+    await conn.close();
+    await db.terminate();
+    worker.terminate();
 
     try {
       this.application.identityService.setCurrentUser(
