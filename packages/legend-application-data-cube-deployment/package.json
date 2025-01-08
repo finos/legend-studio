@@ -20,9 +20,9 @@
     "build:tailwindcss": "tailwindcss -i ./style/tailwind.css -o ./lib/tailwind.css --minify",
     "build:webpack": "cross-env NODE_ENV=production webpack --mode production",
     "build-dry:docker": "../../scripts/docker/dry-build-docker-image.sh legend-data-cube ./dist/datacube",
-    "bundle": "yarn clean && yarn build:tailwindcss && yarn build:webpack && node ./scripts/setup.js ./dist/data-cube",
+    "bundle": "yarn clean && yarn build:tailwindcss && yarn build:webpack && node ./scripts/setup.js ./dist/datacube",
     "bundle:analyze": "cross-env NODE_ENV=production webpack --mode production --analyze",
-    "bundle:fast": "cross-env NODE_ENV=production PRODUCTION_MODE=fast webpack --mode production && node ./scripts/setup.js ./dist/data-cube",
+    "bundle:fast": "cross-env NODE_ENV=production PRODUCTION_MODE=fast webpack --mode production && node ./scripts/setup.js ./dist/datacube",
     "clean": "yarn clean:cache && rimraf \"dist\"",
     "clean:cache": "rimraf \"build\"",
     "dev": "npm-run-all --parallel dev:ts dev:tailwindcss dev:webpack",
@@ -32,7 +32,7 @@
     "dev:webpack:debug": "cross-env NODE_ENV=development DEVELOPMENT_MODE=debug webpack serve --mode development",
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\",requireConfigFile:false \"./scripts/**/*.{mjs,cjs,js}\" \"./src/**/*.{js,ts,tsx}\"",
     "publish:docker": "echo 'Building webapp content...' && yarn bundle && ../../scripts/docker/publish-docker.sh finos/legend-data-cube",
-    "serve": "npx http-server ./dist -p 3000 -a localhost -g --cors -o /data-cube",
+    "serve": "npx http-server ./dist -p 3000 -a localhost -g --cors -o /datacube",
     "setup": "rimraf \"dev\" && yarn node ./scripts/setup.js ./dev"
   },
   "dependencies": {
