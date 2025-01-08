@@ -1,5 +1,11 @@
 # @finos/legend-vscode-extension-dependencies
 
+## 4.0.54
+
+### Patch Changes
+
+- [#3797](https://github.com/finos/legend-studio/pull/3797) [`35d973a`](https://github.com/finos/legend-studio/commit/35d973a46645959bcdd3cdef975b60075c77b0d0) ([@travisstebbins](https://github.com/travisstebbins)) - Additional exports to support VS Code extension fullscreen DataCube
+
 ## 4.0.53
 
 ## 4.0.52

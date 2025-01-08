@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.75
+
+### Patch Changes
+
+- [#3797](https://github.com/finos/legend-studio/pull/3797) [`35d973a`](https://github.com/finos/legend-studio/commit/35d973a46645959bcdd3cdef975b60075c77b0d0) ([@travisstebbins](https://github.com/travisstebbins)) - Export new BoxArrowUpRightIcon
+
 ## 7.1.74
 
 ## 7.1.73
