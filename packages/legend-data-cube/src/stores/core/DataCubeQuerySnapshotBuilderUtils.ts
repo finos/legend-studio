@@ -54,8 +54,13 @@ import type {
   DataCubeQuerySnapshotFilter,
   DataCubeQuerySnapshotFilterCondition,
 } from './DataCubeQuerySnapshot.js';
-import { _functionName } from './DataCubeQueryBuilderUtils.js';
+import {
+  _functionName,
+  _serializeValueSpecification,
+} from './DataCubeQueryBuilderUtils.js';
 import type { DataCubeQueryFilterOperation } from './filter/DataCubeQueryFilterOperation.js';
+import type { DataCubeConfiguration } from './model/DataCubeConfiguration.js';
+import type { DataCubeQueryAggregateOperation } from './aggregation/DataCubeQueryAggregateOperation.js';
 
 // --------------------------------- UTILITIES ---------------------------------
 
@@ -97,6 +102,31 @@ export function _colSpecArrayParam(func: V1_AppliedFunction, paramIdx: number) {
     V1_ColSpecArray,
     `Can't process ${_name(func.function)}() expression: Expected parameter at index ${paramIdx} to be a column specification list`,
   );
+}
+
+export function _isColSpecOrArray(func: V1_AppliedFunction, paramIdx: number) {
+  const parameter = _param(func, paramIdx, V1_ClassInstance).value;
+  if (parameter instanceof V1_ColSpecArray) {
+    return true;
+  } else if (parameter instanceof V1_ColSpec) {
+    return false;
+  }
+  throw new Error(
+    `Can't process ${_name(func.function)}() expression: Found unexpected type for parameter at index ${paramIdx}`,
+  );
+}
+
+export function _extend(colSpec: V1_ColSpec) {
+  const mapFunc = _serializeValueSpecification(colSpec.function1!);
+  const reduceFunc = colSpec.function2
+    ? _serializeValueSpecification(colSpec.function2)
+    : undefined;
+  return {
+    name: colSpec.name,
+    type: colSpec.type!,
+    mapFn: mapFunc,
+    reduceFn: reduceFunc,
+  };
 }
 
 export function _funcMatch(
@@ -198,7 +228,9 @@ function _buildSubFilter(
       Object.values(DataCubeFunction)
         .map((op) => _functionName(op))
         .includes(vs.function) &&
-      vs.function !== _functionName(DataCubeFunction.NOT)
+      vs.function !== _functionName(DataCubeFunction.NOT) &&
+      vs.function !== _functionName(DataCubeFunction.OR) &&
+      vs.function !== _functionName(DataCubeFunction.AND)
     ) {
       const condition = _buildFilterConditionSnapshot(vs)!;
       return _buildDataCubeQueryFilter(
@@ -433,4 +465,59 @@ export function _buildConditionSnapshotProperty(
     operator: operator,
     type: property.class!, // TODO: fix this in engine (missing class in V1_AppliedProperty)
   } as DataCubeQuerySnapshotFilterCondition;
+}
+
+// TODO: configuration should be present while building the snapshot when loading
+export function _validateAggregateColumns(
+  colSpec: V1_ColSpec,
+  configuration: DataCubeConfiguration,
+) {
+  const property = guaranteeType(
+    colSpec.function1?.body[0],
+    V1_AppliedProperty,
+    "Can't find property for aggregation",
+  );
+  const propertyConfiguration = configuration.columns.findLast(
+    (col) => col.name === property.property,
+  );
+  guaranteeNonNullable(
+    propertyConfiguration,
+    `Aggregation column ${property} not present in configuration`,
+  );
+  const reduceFunction = guaranteeType(
+    colSpec.function2?.body[0],
+    V1_AppliedFunction,
+    "Can't find agregration function",
+  );
+  const entry = Object.entries(DataCubeFunction).find(
+    ([_, val]) => val === reduceFunction.function,
+  )?.[0] as keyof DataCubeQueryAggregateOperation;
+  if (propertyConfiguration?.aggregateOperator !== entry) {
+    throw new Error(
+      `Error loading aggregations for query; convergency issue in configuration and query provided`,
+    );
+  }
+}
+
+export function _validateSortColumns(
+  sortColumn: V1_AppliedFunction,
+  configuration: DataCubeConfiguration,
+) {
+  const property = guaranteeType(
+    _colSpecParam(sortColumn, 0).name,
+    V1_AppliedProperty,
+    "Can't find property for aggregation",
+  );
+  const propertyConfiguration = configuration.columns.findLast(
+    (col) => col.name === property.property,
+  );
+  guaranteeNonNullable(
+    propertyConfiguration,
+    `Aggregation column ${property} not present in configuration`,
+  );
+  if (sortColumn.function !== configuration.treeColumnSortDirection) {
+    throw new Error(
+      `Error loading query: convergency issue in configuration and query provided related to the sort information`,
+    );
+  }
 }
