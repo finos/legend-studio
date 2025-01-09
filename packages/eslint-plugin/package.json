@@ -44,7 +44,7 @@
     "globals": "15.14.0",
     "micromatch": "4.0.8",
     "prettier": "3.4.2",
-    "typescript": "5.7.2"
+    "typescript": "5.7.3"
   },
   "devDependencies": {
     "cross-env": "7.0.3",
