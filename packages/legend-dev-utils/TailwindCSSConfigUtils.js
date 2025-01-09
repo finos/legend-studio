@@ -14,11 +14,43 @@
  * limitations under the License.
  */
 
+import defaultTheme from 'tailwindcss/defaultTheme';
+
+// A simple and naive utility to convert rem to px in Tailwind CSS theme
+// Adapted from https://github.com/odestry/tailwindcss-rem-to-px
+function _themeRemToPx(themeObj, baseFontSize = 16) {
+  if (themeObj == null) {
+    return themeObj;
+  }
+  switch (typeof themeObj) {
+    case 'object':
+      if (Array.isArray(themeObj)) {
+        return themeObj.map((val) => _themeRemToPx(val, baseFontSize));
+      } else {
+        const ret = {};
+        for (const key in themeObj) {
+          ret[key] = _themeRemToPx(themeObj[key]);
+        }
+        return ret;
+      }
+    case 'string':
+      return themeObj.replace(
+        /(\d*\.?\d+)rem$/,
+        (_, val) => parseFloat(val) * baseFontSize + 'px',
+      );
+    default:
+      return themeObj;
+  }
+}
+
 export function getBaseConfig(patterns) {
   /** @type {import('tailwindcss').Config} */
   return {
     content: [...patterns],
     theme: {
+      // make sure all theme values are in px so if the surrounding environment changes the base font size
+      // the layout of DataCube is not affected.
+      ..._themeRemToPx(defaultTheme, 16),
       fontSize: {
         '3xs': ['6px', '6px'],
         '2xs': ['7px', '7px'],

@@ -23,6 +23,8 @@
 // See https://stackoverflow.com/questions/38557671/how-to-prevent-scrollbars-from-hiding-on-os-x-without-impacting-windows-users
 
 .data-cube {
+  font-size: 12px;
+
   ::-webkit-scrollbar-track {
     background: transparent;
   }

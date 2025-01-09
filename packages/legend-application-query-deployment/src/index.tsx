@@ -16,7 +16,9 @@
 
 import { LegendQueryWebApplication } from '@finos/legend-application-query-bootstrap';
 import config from '../query.config.js';
-import '../lib/tailwind.css'; // eslint-disable-line @finos/legend/no-cross-workspace-non-export-usage
 import './index.css';
+// NOTE: tailwind style takes precedence over other styles since it's generated and we should not allow
+// other styles to override it
+import '../lib/tailwind.css'; // eslint-disable-line @finos/legend/no-cross-workspace-non-export-usage
 
 LegendQueryWebApplication.run(config.baseUrl);
