@@ -15,3 +15,9 @@
  */
 
 @import url('@finos/legend-application-data-cube-bootstrap/lib/index.css');
+
+html {
+  box-sizing: border-box;
+  font-family: Roboto, sans-serif;
+  overflow-y: hidden;
+}

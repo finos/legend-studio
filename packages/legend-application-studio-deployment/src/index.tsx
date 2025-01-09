@@ -15,8 +15,10 @@
  */
 
 import { LegendStudioWebApplication } from '@finos/legend-application-studio-bootstrap';
-import '../lib/tailwind.css'; // eslint-disable-line @finos/legend/no-cross-workspace-non-export-usage
 import config from '../studio.config.js';
 import './index.css';
+// NOTE: tailwind style takes precedence over other styles since it's generated and we should not allow
+// other styles to override it
+import '../lib/tailwind.css'; // eslint-disable-line @finos/legend/no-cross-workspace-non-export-usage
 
 LegendStudioWebApplication.run(config.baseUrl);
