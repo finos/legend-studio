@@ -1,5 +1,7 @@
 # @finos/legend-application-studio-deployment
 
+## 13.6.0
+
 ## 13.5.0
 
 ## 13.4.0
