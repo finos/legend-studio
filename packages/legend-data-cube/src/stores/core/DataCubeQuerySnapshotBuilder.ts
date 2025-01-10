@@ -46,7 +46,6 @@ import {
 } from './DataCubeQueryEngine.js';
 import { buildDefaultConfiguration } from './DataCubeConfigurationBuilder.js';
 import {
-  _buildFilterSnapshot,
   _colSpecArrayParam,
   _colSpecParam,
   _funcMatch,
@@ -56,6 +55,7 @@ import {
   _extend,
   _validateAggregateColumns,
   _validateSortColumns,
+  _filter,
 } from './DataCubeQuerySnapshotBuilderUtils.js';
 import type { DataCubeSource } from './model/DataCubeSource.js';
 import type { DataCubeQueryFilterOperation } from './filter/DataCubeQueryFilterOperation.js';
@@ -359,7 +359,7 @@ export function validateAndBuildQuerySnapshot(
 
   // --------------------------------- FILTER ---------------------------------
   if (funcMap.filter) {
-    data.filter = _buildFilterSnapshot(
+    data.filter = _filter(
       _lambdaParam(funcMap.filter, 0).body[0]!,
       filterOperations,
     );

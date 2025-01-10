@@ -28,9 +28,10 @@ import {
   _functionName,
   _property,
 } from '../DataCubeQueryBuilderUtils.js';
-import type {
-  V1_AppliedFunction,
-  V1_AppliedProperty,
+import {
+  matchFunctionName,
+  type V1_AppliedFunction,
+  type V1_AppliedProperty,
 } from '@finos/legend-graph';
 import { _buildConditionSnapshotProperty } from '../DataCubeQuerySnapshotBuilderUtils.js';
 
@@ -78,12 +79,15 @@ export class DataCubeQueryFilterOperation__IsNull extends DataCubeQueryFilterOpe
   }
 
   buildConditionSnapshot(expression: V1_AppliedFunction) {
-    const filterConditionSnapshot = _buildConditionSnapshotProperty(
-      expression.parameters[0] as V1_AppliedProperty,
-      this.operator,
-    );
-    filterConditionSnapshot.value = undefined;
-    return filterConditionSnapshot;
+    if (matchFunctionName(expression.function, DataCubeFunction.IS_EMPTY)) {
+      const filterConditionSnapshot = _buildConditionSnapshotProperty(
+        expression.parameters[0] as V1_AppliedProperty,
+        this.operator,
+      );
+      filterConditionSnapshot.value = undefined;
+      return filterConditionSnapshot;
+    }
+    return undefined;
   }
 
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {
