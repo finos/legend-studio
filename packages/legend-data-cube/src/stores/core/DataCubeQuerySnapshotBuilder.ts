@@ -51,10 +51,7 @@ import {
   _funcMatch,
   _lambdaParam,
   _param,
-  _isColSpecOrArray,
   _extend,
-  _validateAggregateColumns,
-  _validateSortColumns,
   _filter,
 } from './DataCubeQuerySnapshotBuilderUtils.js';
 import type { DataCubeSource } from './model/DataCubeSource.js';
@@ -66,7 +63,7 @@ const _SUPPORTED_TOP_LEVEL_FUNCTIONS: {
   func: string;
   parameters: number;
 }[] = [
-  { func: DataCubeFunction.EXTEND, parameters: 1 }, // TODO: support both signatures of extend()
+  { func: DataCubeFunction.EXTEND, parameters: 2 }, // TODO: support both signatures of extend()
   { func: DataCubeFunction.FILTER, parameters: 1 },
   { func: DataCubeFunction.SELECT, parameters: 1 },
   { func: DataCubeFunction.GROUP_BY, parameters: 2 },
@@ -106,13 +103,13 @@ enum _FUNCTION_SEQUENCE_COMPOSITION_PART {
   LIMIT = 'limit',
 }
 
-function isFunctionInValidSequence(
-  value: string,
-): value is _FUNCTION_SEQUENCE_COMPOSITION_PART {
-  return Object.values(_FUNCTION_SEQUENCE_COMPOSITION_PART).includes(
-    value as _FUNCTION_SEQUENCE_COMPOSITION_PART,
-  );
-}
+// function isFunctionInValidSequence(
+//   value: string,
+// ): value is _FUNCTION_SEQUENCE_COMPOSITION_PART {
+//   return Object.values(_FUNCTION_SEQUENCE_COMPOSITION_PART).includes(
+//     value as _FUNCTION_SEQUENCE_COMPOSITION_PART,
+//   );
+// }
 
 // This corresponds to the function sequence that we currently support:
 //
@@ -238,12 +235,7 @@ function extractFunctionMap(
     }
     if (currentFunc.parameters.length > supportedFunc.parameters) {
       const valueSpecification = currentFunc.parameters[0];
-      if (
-        !(
-          valueSpecification instanceof V1_AppliedFunction ||
-          isFunctionInValidSequence(currentFunc.function)
-        )
-      ) {
+      if (!(valueSpecification instanceof V1_AppliedFunction)) {
         throw new Error(
           `Query must be a sequence of function calls (e.g. x()->y()->z())`,
         );
@@ -260,7 +252,7 @@ function extractFunctionMap(
       } else {
         currentFunc.parameters = currentFunc.parameters.slice(1);
         sequence.unshift(currentFunc);
-        currentFunc = valueSpecification as V1_AppliedFunction;
+        currentFunc = valueSpecification;
       }
     } else {
       sequence.unshift(currentFunc);
@@ -346,15 +338,7 @@ export function validateAndBuildQuerySnapshot(
 
   // --------------------------- LEAF-LEVEL EXTEND ---------------------------
   if (funcMap.leafExtend) {
-    if (_isColSpecOrArray(funcMap.leafExtend, 0)) {
-      data.leafExtendedColumns = _colSpecArrayParam(
-        funcMap.leafExtend,
-        0,
-      ).colSpecs.map((colSpec) => _extend(colSpec));
-    } else {
-      const colSpec = _colSpecParam(funcMap.leafExtend, 0);
-      data.leafExtendedColumns = [_extend(colSpec)];
-    }
+    _extend(funcMap.leafExtend, data.leafExtendedColumns);
   }
 
   // --------------------------------- FILTER ---------------------------------
@@ -368,11 +352,9 @@ export function validateAndBuildQuerySnapshot(
   // --------------------------------- SELECT ---------------------------------
 
   if (funcMap.select) {
-    data.selectColumns = _isColSpecOrArray(funcMap.select, 0)
-      ? _colSpecArrayParam(funcMap.select, 0).colSpecs.map((colSpec) =>
-          _col(colSpec),
-        )
-      : [_col(_colSpecParam(funcMap.select, 0))];
+    data.selectColumns = _colSpecArrayParam(funcMap.select, 0).colSpecs.map(
+      (colSpec) => _col(colSpec),
+    );
   }
 
   // --------------------------------- PIVOT ---------------------------------
@@ -383,11 +365,9 @@ export function validateAndBuildQuerySnapshot(
 
   if (funcMap.groupBy) {
     data.groupBy = {
-      columns: _isColSpecOrArray(funcMap.groupBy, 0)
-        ? _colSpecArrayParam(funcMap.groupBy, 0).colSpecs.map((colSpec) =>
-            _col(colSpec),
-          )
-        : [_col(_colSpecParam(funcMap.groupBy, 0))],
+      columns: _colSpecArrayParam(funcMap.groupBy, 0).colSpecs.map((colSpec) =>
+        _col(colSpec),
+      ),
     };
     // TODO: use configuration information present in the baseQuery configuration?
     // _isColSpecOrArray(funcMap.groupBy, 1) ? _colSpecArrayParam(funcMap.groupBy, 1).colSpecs.forEach((colSpec) => _validateAggregateColumns(colSpec, baseQuery.configuration!)) : _validateAggregateColumns(_colSpecParam(funcMap.groupBy, 1), baseQuery.configuration!);
@@ -406,15 +386,7 @@ export function validateAndBuildQuerySnapshot(
 
   // --------------------------- GROUP-LEVEL EXTEND ---------------------------
   if (funcMap.groupExtend) {
-    if (_isColSpecOrArray(funcMap.groupExtend, 0)) {
-      data.groupExtendedColumns = _colSpecArrayParam(
-        funcMap.groupExtend,
-        0,
-      ).colSpecs.map((colSpec) => _extend(colSpec));
-    } else {
-      const colSpec = _colSpecParam(funcMap.groupExtend, 0);
-      data.groupExtendedColumns = [_extend(colSpec)];
-    }
+    _extend(funcMap.groupExtend, data.groupExtendedColumns);
   }
 
   // --------------------------------- SORT ---------------------------------

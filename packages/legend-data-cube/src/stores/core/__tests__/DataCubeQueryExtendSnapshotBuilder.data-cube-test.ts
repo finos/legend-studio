@@ -26,7 +26,8 @@ import { unitTest } from '@finos/legend-shared/test';
 import { describe, expect, test } from '@jest/globals';
 import { validateAndBuildQuerySnapshot } from '../DataCubeQuerySnapshotBuilder.js';
 import {
-  _col,
+  _cols,
+  _colSpec,
   _deserializeLambda,
   _function,
 } from '../DataCubeQueryBuilderUtils.js';
@@ -34,19 +35,13 @@ import { DataCubeFunction } from '../DataCubeQueryEngine.js';
 import { Test__DataCubeEngine } from './Test__DataCubeEngine.js';
 import { DataCubeQuery } from '../model/DataCubeQuery.js';
 import { INTERNAL__DataCubeSource } from '../model/DataCubeSource.js';
-import type { OperationSnapshotAnalysisTestCaseWithGrammarIssues } from './DatacubeQuerySnapshotBuilderTestUtils.js';
+import type { DataCubeOperationSnapshotBuilderTestCase } from './DatacubeQuerySnapshotBuilderTestUtils.js';
 
-const cases: OperationSnapshotAnalysisTestCaseWithGrammarIssues[] = [
-  [
-    'simple extend',
-    'extend(~name:c|$c.val->toOne() + 1)',
-    '~name:c|$c.val->toOne() + 1->extend()',
-  ],
-  //TODO: engine grammar needs to be fixed for this
+const cases: DataCubeOperationSnapshotBuilderTestCase[] = [
+  ['simple extend', '~[name:c|$c.val->toOne() + 1]->extend()'],
   [
     'extend with colSpecArray',
-    "extend(~[name:c|$c.val->toOne() + 1, other:x|$x.str->toOne()+'_ext'])",
-    "~other:x|$x.str->toOne() + '_ext'->extend(~name:c|$c.val->toOne() + 1)",
+    "~[name:c|$c.val->toOne() + 1]->extend(~[other:x|$x.str->toOne() + '_ext']->extend(~[other2:x|$x.str->toOne() + '_1']->extend()))",
   ],
   // TODO: add support for window functions and increase validation
   // [
@@ -59,9 +54,8 @@ describe(unitTest('Analyze and build filter snapshot'), () => {
   test.each(cases)(
     '%s',
     async (
-      testName: OperationSnapshotAnalysisTestCaseWithGrammarIssues[0],
-      lambda: OperationSnapshotAnalysisTestCaseWithGrammarIssues[1],
-      expectedLambda: OperationSnapshotAnalysisTestCaseWithGrammarIssues[2],
+      testName: DataCubeOperationSnapshotBuilderTestCase[0],
+      lambda: DataCubeOperationSnapshotBuilderTestCase[1],
     ) => {
       const engine = new Test__DataCubeEngine();
       const partialQuery = V1_deserializeValueSpecification(
@@ -82,7 +76,7 @@ describe(unitTest('Analyze and build filter snapshot'), () => {
           const leafExtendedFuncs = snapshot.data.leafExtendedColumns.map(
             (col) =>
               _function(DataCubeFunction.EXTEND, [
-                _col(col.name, _deserializeLambda(col.mapFn)),
+                _cols([_colSpec(col.name, _deserializeLambda(col.mapFn))]),
               ]),
           );
           while (leafExtendedFuncs.length > 1) {
@@ -90,7 +84,7 @@ describe(unitTest('Analyze and build filter snapshot'), () => {
             if (last) {
               // Add its parameters to the second last element
               const secondLast = leafExtendedFuncs.pop();
-              secondLast!.parameters.unshift(...last.parameters);
+              secondLast!.parameters.push(last);
               leafExtendedFuncs.push(secondLast!);
             }
           }
@@ -98,7 +92,7 @@ describe(unitTest('Analyze and build filter snapshot'), () => {
             await ENGINE_TEST_SUPPORT__JsonToGrammar_valueSpecification(
               V1_serializeValueSpecification(leafExtendedFuncs[0]!, []),
             );
-          expect(expectedLambda).toEqual(queryString);
+          expect(lambda).toEqual(queryString);
         }
       } catch (error: unknown) {
         // console.log(error);

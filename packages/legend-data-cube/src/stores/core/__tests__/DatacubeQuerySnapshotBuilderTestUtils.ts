@@ -24,15 +24,9 @@ export type DataCubeQuerySnapshotBuilderTestCase = [
   string | undefined, // error
 ];
 
-export type OperationSnapshotAnalysisTestCase = [
+export type DataCubeOperationSnapshotBuilderTestCase = [
   string, // name
   string, // query roundtrip
-];
-
-export type OperationSnapshotAnalysisTestCaseWithGrammarIssues = [
-  string, // name
-  string, // query
-  string, // engine produced query
 ];
 
 export function _testCase(data: {

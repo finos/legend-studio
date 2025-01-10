@@ -51,6 +51,7 @@ import {
   type DataCubeQueryFilterOperator,
 } from './DataCubeQueryEngine.js';
 import type {
+  DataCubeQuerySnapshotExtendedColumn,
   DataCubeQuerySnapshotFilter,
   DataCubeQuerySnapshotFilterCondition,
 } from './DataCubeQuerySnapshot.js';
@@ -101,19 +102,31 @@ export function _colSpecArrayParam(func: V1_AppliedFunction, paramIdx: number) {
   );
 }
 
-export function _isColSpecOrArray(func: V1_AppliedFunction, paramIdx: number) {
-  const parameter = _param(func, paramIdx, V1_ClassInstance).value;
-  if (parameter instanceof V1_ColSpecArray) {
-    return true;
-  } else if (parameter instanceof V1_ColSpec) {
-    return false;
-  }
-  throw new Error(
-    `Can't process ${_name(func.function)}() expression: Found unexpected type for parameter at index ${paramIdx}`,
-  );
+export function _extend(
+  value: V1_AppliedFunction,
+  extendSnapshot: DataCubeQuerySnapshotExtendedColumn[],
+) {
+  value.parameters.forEach((param) => {
+    if (param instanceof V1_ClassInstance) {
+      guaranteeType(param.value, V1_ColSpecArray).colSpecs.forEach((colSpec) =>
+        extendSnapshot.push(_extendColumn(colSpec)),
+      );
+    } else if (
+      param instanceof V1_AppliedFunction &&
+      matchFunctionName(param.function, DataCubeFunction.EXTEND)
+    ) {
+      if (matchFunctionName(param.function, DataCubeFunction.EXTEND)) {
+        _extend(param, extendSnapshot);
+      } else {
+        throw new Error(
+          `Can't process extend() operation: Unexpected function ${param.function}`,
+        );
+      }
+    }
+  });
 }
 
-export function _extend(colSpec: V1_ColSpec) {
+function _extendColumn(colSpec: V1_ColSpec) {
   const mapFunc = _serializeValueSpecification(colSpec.function1!);
   const reduceFunc = colSpec.function2
     ? _serializeValueSpecification(colSpec.function2)

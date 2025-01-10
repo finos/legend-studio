@@ -35,9 +35,9 @@ import { DataCubeFunction } from '../DataCubeQueryEngine.js';
 import { Test__DataCubeEngine } from './Test__DataCubeEngine.js';
 import { DataCubeQuery } from '../model/DataCubeQuery.js';
 import { INTERNAL__DataCubeSource } from '../model/DataCubeSource.js';
-import type { OperationSnapshotAnalysisTestCase } from './DatacubeQuerySnapshotBuilderTestUtils.js';
+import type { DataCubeOperationSnapshotBuilderTestCase } from './DatacubeQuerySnapshotBuilderTestUtils.js';
 
-const cases: OperationSnapshotAnalysisTestCase[] = [
+const cases: DataCubeOperationSnapshotBuilderTestCase[] = [
   ['simple filter 1', 'filter(x|$x.Age != 27)'],
   ['simple filter 2', 'filter(x|!($x.Age >= 27))'],
   ['simple filter 3', 'filter(x|$x.Athlete->isEmpty())'],
@@ -72,8 +72,8 @@ describe(unitTest('Analyze and build filter snapshot'), () => {
   test.each(cases)(
     '%s',
     async (
-      testName: OperationSnapshotAnalysisTestCase[0],
-      lambda: OperationSnapshotAnalysisTestCase[1],
+      testName: DataCubeOperationSnapshotBuilderTestCase[0],
+      lambda: DataCubeOperationSnapshotBuilderTestCase[1],
     ) => {
       const engine = new Test__DataCubeEngine();
       const partialQuery = V1_deserializeValueSpecification(
