@@ -30,6 +30,7 @@ import {
   extractElementNameFromPath as _name,
   matchFunctionName,
   type V1_ValueSpecification,
+  V1_GenericTypeInstance,
 } from '@finos/legend-graph';
 import type { DataCubeQuery } from './model/DataCubeQuery.js';
 import { DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
@@ -53,6 +54,7 @@ import {
   _param,
   _extend,
   _filter,
+  _cast,
 } from './DataCubeQuerySnapshotBuilderUtils.js';
 import type { DataCubeSource } from './model/DataCubeSource.js';
 import type { DataCubeQueryFilterOperation } from './filter/DataCubeQueryFilterOperation.js';
@@ -291,7 +293,7 @@ function extractFunctionMap(
     select: _process(_FUNCTION_SEQUENCE_COMPOSITION_PART.SELECT),
     filter: _process(_FUNCTION_SEQUENCE_COMPOSITION_PART.FILTER),
     pivotSort: _process(_FUNCTION_SEQUENCE_COMPOSITION_PART.PIVOT_SORT),
-    pivot: _process(_FUNCTION_SEQUENCE_COMPOSITION_PART.PIVOT_CAST),
+    pivot: _process(_FUNCTION_SEQUENCE_COMPOSITION_PART.PIVOT),
     pivotCast: _process(_FUNCTION_SEQUENCE_COMPOSITION_PART.PIVOT_CAST),
     groupBy: _process(_FUNCTION_SEQUENCE_COMPOSITION_PART.GROUP_BY),
     groupBySort: _process(_FUNCTION_SEQUENCE_COMPOSITION_PART.GROUP_BY_SORT),
@@ -339,6 +341,8 @@ export function validateAndBuildQuerySnapshot(
   // --------------------------- LEAF-LEVEL EXTEND ---------------------------
   if (funcMap.leafExtend) {
     _extend(funcMap.leafExtend, data.leafExtendedColumns);
+    // adding new extended columns in the column map for groupby and pivot operation
+    data.leafExtendedColumns.forEach((col) => colsMap.set(col.name, col));
   }
 
   // --------------------------------- FILTER ---------------------------------
@@ -358,8 +362,15 @@ export function validateAndBuildQuerySnapshot(
   }
 
   // --------------------------------- PIVOT ---------------------------------
-  /** TODO: @datacube roundtrip */
   // TODO: verify groupBy agg columns, pivot agg columns and configuration agree
+  if (funcMap.pivot && funcMap.pivotCast) {
+    data.pivot = {
+      columns: _colSpecArrayParam(funcMap.pivot, 0).colSpecs.map((colSpec) =>
+        _col(colSpec),
+      ),
+      castColumns: _cast(_param(funcMap.pivotCast, 0, V1_GenericTypeInstance)),
+    };
+  }
 
   // --------------------------------- GROUP BY ---------------------------------
 
@@ -369,6 +380,8 @@ export function validateAndBuildQuerySnapshot(
         _col(colSpec),
       ),
     };
+    // TODO: verify groupBy agg columns, pivot agg columns and configuration agree
+    // TODO: verify sort column
     // TODO: use configuration information present in the baseQuery configuration?
     // _isColSpecOrArray(funcMap.groupBy, 1) ? _colSpecArrayParam(funcMap.groupBy, 1).colSpecs.forEach((colSpec) => _validateAggregateColumns(colSpec, baseQuery.configuration!)) : _validateAggregateColumns(_colSpecParam(funcMap.groupBy, 1), baseQuery.configuration!);
 

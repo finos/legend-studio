@@ -33,6 +33,9 @@ import {
   type V1_PrimitiveValueSpecification,
   extractElementNameFromPath as _name,
   matchFunctionName,
+  V1_RelationType,
+  V1_PackageableType,
+  type V1_GenericTypeInstance,
 } from '@finos/legend-graph';
 import { type DataCubeColumn } from './model/DataCubeColumn.js';
 import {
@@ -271,6 +274,20 @@ function _filterCondition(
     }
     return condition[0];
   }
+}
+
+export function _cast(genericTypeInstance: V1_GenericTypeInstance) {
+  const relationTypes = guaranteeType(
+    genericTypeInstance.genericType.typeArguments[0]?.rawType,
+    V1_RelationType,
+  );
+  return relationTypes.columns.map((column) => {
+    const type = guaranteeType(column.genericType.rawType, V1_PackageableType);
+    return {
+      name: column.name,
+      type: type.fullPath,
+    };
+  });
 }
 
 export function _dataCubeOperationValue(
