@@ -134,10 +134,10 @@ export const LegendDataCubeQueryBuilder = withLegendDataCubeQueryBuilderStore(
               LegendDataCubeSettingStorageKey.DATA_CUBE,
             ) as DataCubeSettingValues | undefined,
           },
-          onSettingsChanged(values) {
+          onSettingsChanged(event) {
             application.settingService.persistValue(
               LegendDataCubeSettingStorageKey.DATA_CUBE,
-              values,
+              event.values,
             );
           },
           documentationUrl: application.documentationService.url,

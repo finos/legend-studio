@@ -90,10 +90,10 @@ const LegendREPLDataCube = observer((props: { query: DataCubeQuery }) => {
             LegendREPLSettingStorageKey.DATA_CUBE,
           ) as DataCubeSettingValues | undefined,
         },
-        onSettingsChanged(values) {
+        onSettingsChanged(event) {
           application.settingService.persistValue(
             LegendREPLSettingStorageKey.DATA_CUBE,
-            values,
+            event.values,
           );
         },
         documentationUrl: application.documentationService.url,
