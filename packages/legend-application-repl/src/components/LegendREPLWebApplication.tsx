@@ -120,7 +120,13 @@ export const LegendREPLRouter = observer(() => {
       <DataCubePlaceholder
         title={DEFAULT_REPORT_NAME}
         layoutManager={store.layoutService.manager}
+        taskManager={store.taskService.manager}
       >
+        {store.initializeState.isInProgress && (
+          <div className="h-full w-full p-2">
+            <div>Initializing...</div>
+          </div>
+        )}
         {store.initializeState.hasFailed && (
           <DataCubePlaceholderErrorDisplay
             message="Initialization Failure"

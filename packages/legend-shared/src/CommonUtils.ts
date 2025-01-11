@@ -301,6 +301,10 @@ export const promisify = <T>(func: () => T): Promise<T> =>
     }, 0),
   );
 
+export function sleep(duration: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, duration));
+}
+
 export const addUniqueEntry = <T>(
   array: T[],
   newEntry: T,
