@@ -90,7 +90,6 @@ const packageableTypeModelSchema = createModelSchema(V1_PackageableType, {
 const V1_relationTypeColumnModelSchema = createModelSchema(
   V1_RelationTypeColumn,
   {
-    name: primitive(),
     genericType: custom(
       (val) => serialize(V1_genericTypeModelSchema, val),
       (val) => V1_deserializeGenericType(val),
@@ -108,6 +107,8 @@ const V1_relationTypeColumnModelSchema = createModelSchema(
         },
       },
     ),
+    multiplicity: usingModelSchema(V1_multiplicityModelSchema),
+    name: primitive(),
   },
 );
 
