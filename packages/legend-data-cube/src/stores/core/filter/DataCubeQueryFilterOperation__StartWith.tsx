@@ -34,6 +34,7 @@ import {
 } from '../DataCubeQueryBuilderUtils.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
+  matchFunctionName,
   V1_PrimitiveValueSpecification,
   type V1_AppliedFunction,
   type V1_AppliedProperty,
@@ -80,15 +81,19 @@ export class DataCubeQueryFilterOperation__StartWith extends DataCubeQueryFilter
   }
 
   buildConditionSnapshot(expression: V1_AppliedFunction) {
-    const value = expression.parameters[1];
-    const filterConditionSnapshot = _buildConditionSnapshotProperty(
-      expression.parameters[0] as V1_AppliedProperty,
-      this.operator,
-    );
-    if (value instanceof V1_PrimitiveValueSpecification) {
-      filterConditionSnapshot.value = _dataCubeOperationValue(value);
+    if (matchFunctionName(expression.function, DataCubeFunction.STARTS_WITH)) {
+      const value = expression.parameters[1];
+      const filterConditionSnapshot = _buildConditionSnapshotProperty(
+        expression.parameters[0] as V1_AppliedProperty,
+        this.operator,
+      );
+      if (value instanceof V1_PrimitiveValueSpecification) {
+        filterConditionSnapshot.value = _dataCubeOperationValue(value);
+        return filterConditionSnapshot satisfies DataCubeQuerySnapshotFilterCondition;
+      }
+      return undefined;
     }
-    return filterConditionSnapshot satisfies DataCubeQuerySnapshotFilterCondition;
+    return undefined;
   }
 
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {

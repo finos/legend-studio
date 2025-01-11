@@ -33,6 +33,7 @@ import {
 } from '../DataCubeQueryBuilderUtils.js';
 import { guaranteeNonNullable, isString } from '@finos/legend-shared';
 import {
+  matchFunctionName,
   V1_AppliedProperty,
   type V1_AppliedFunction,
 } from '@finos/legend-graph';
@@ -79,19 +80,27 @@ export class DataCubeQueryFilterOperation__GreaterThanOrEqualColumn extends Data
   }
 
   buildConditionSnapshot(expression: V1_AppliedFunction) {
-    const value = expression.parameters[1];
-    const filterConditionSnapshot = _buildConditionSnapshotProperty(
-      expression.parameters[0] as V1_AppliedProperty,
-      this.operator,
-    );
-
-    if (value instanceof V1_AppliedProperty) {
-      filterConditionSnapshot.value = {
-        value: value.property,
-        type: DataCubeOperationAdvancedValueType.COLUMN,
-      } satisfies DataCubeOperationValue;
+    if (
+      matchFunctionName(
+        expression.function,
+        DataCubeFunction.GREATER_THAN_OR_EQUAL,
+      )
+    ) {
+      const value = expression.parameters[1];
+      const filterConditionSnapshot = _buildConditionSnapshotProperty(
+        expression.parameters[0] as V1_AppliedProperty,
+        this.operator,
+      );
+      if (value instanceof V1_AppliedProperty) {
+        filterConditionSnapshot.value = {
+          value: value.property,
+          type: DataCubeOperationAdvancedValueType.COLUMN,
+        } satisfies DataCubeOperationValue;
+        return filterConditionSnapshot satisfies DataCubeQuerySnapshotFilterCondition;
+      }
+      return undefined;
     }
-    return filterConditionSnapshot satisfies DataCubeQuerySnapshotFilterCondition;
+    return undefined;
   }
 
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {

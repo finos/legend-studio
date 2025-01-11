@@ -35,8 +35,9 @@ import {
 } from '../DataCubeQueryBuilderUtils.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
+  matchFunctionName,
+  V1_AppliedFunction,
   V1_PrimitiveValueSpecification,
-  type V1_AppliedFunction,
   type V1_AppliedProperty,
 } from '@finos/legend-graph';
 import {
@@ -81,15 +82,26 @@ export class DataCubeQueryFilterOperation__NotContain extends DataCubeQueryFilte
   }
 
   buildConditionSnapshot(expression: V1_AppliedFunction) {
-    const value = expression.parameters[1];
-    const filterConditionSnapshot = _buildConditionSnapshotProperty(
-      expression.parameters[0] as V1_AppliedProperty,
-      this.operator,
-    );
-    if (value instanceof V1_PrimitiveValueSpecification) {
-      filterConditionSnapshot.value = _dataCubeOperationValue(value);
+    if (
+      matchFunctionName(expression.function, DataCubeFunction.NOT) &&
+      expression.parameters[0] instanceof V1_AppliedFunction &&
+      matchFunctionName(
+        expression.parameters[0].function,
+        DataCubeFunction.CONTAINS,
+      )
+    ) {
+      const value = expression.parameters[0].parameters[1];
+      const filterConditionSnapshot = _buildConditionSnapshotProperty(
+        expression.parameters[0].parameters[0] as V1_AppliedProperty,
+        this.operator,
+      );
+      if (value instanceof V1_PrimitiveValueSpecification) {
+        filterConditionSnapshot.value = _dataCubeOperationValue(value);
+        return filterConditionSnapshot satisfies DataCubeQuerySnapshotFilterCondition;
+      }
+      return undefined;
     }
-    return filterConditionSnapshot satisfies DataCubeQuerySnapshotFilterCondition;
+    return undefined;
   }
 
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {

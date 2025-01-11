@@ -108,13 +108,13 @@ const cases: DataCubeQuerySnapshotBuilderTestCase[] = [
   _testCase({
     name: 'Valid: Usage - Extended Columns: extend()->groupBy()->extend()->sort()->limit()',
     query:
-      'extend(~[a:x|1])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->extend(~b:x|2)->sort([ascending(~a)])->limit(10)',
+      'extend(~[a:x|1])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([ascending(~a)])->extend(~[b:x|2])->limit(10)',
     columns: ['a:String', 'b:Integer'],
   }),
   _testCase({
     name: 'Valid: Usage - Filter: extend()->filter()->groupBy()->extend()->sort()->limit()',
     query:
-      'extend(~[a:x|1])->filter(x|$x.a==1)->groupBy(~a, ~b:x|$x.a:x|$x->sum())->extend(~b:x|2)->sort([ascending(~a)])->limit(10)',
+      'extend(~[a:x|1])->filter(x|$x.a==1)->groupBy(~[a], ~b:x|$x.a:x|$x->sum())->sort([ascending(~a)])->extend(~[c:x|2])->limit(10)',
     columns: ['a:String', 'b:Integer'],
   }),
   _testCase({

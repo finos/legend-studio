@@ -30,6 +30,7 @@ import {
   extractElementNameFromPath as _name,
   matchFunctionName,
   type V1_ValueSpecification,
+  V1_GenericTypeInstance,
 } from '@finos/legend-graph';
 import type { DataCubeQuery } from './model/DataCubeQuery.js';
 import { DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
@@ -46,12 +47,14 @@ import {
 } from './DataCubeQueryEngine.js';
 import { buildDefaultConfiguration } from './DataCubeConfigurationBuilder.js';
 import {
-  _buildFilterSnapshot,
   _colSpecArrayParam,
   _colSpecParam,
   _funcMatch,
   _lambdaParam,
   _param,
+  _extend,
+  _filter,
+  _cast,
 } from './DataCubeQuerySnapshotBuilderUtils.js';
 import type { DataCubeSource } from './model/DataCubeSource.js';
 import type { DataCubeQueryFilterOperation } from './filter/DataCubeQueryFilterOperation.js';
@@ -102,13 +105,13 @@ enum _FUNCTION_SEQUENCE_COMPOSITION_PART {
   LIMIT = 'limit',
 }
 
-function isFunctionInValidSequence(
-  value: string,
-): value is _FUNCTION_SEQUENCE_COMPOSITION_PART {
-  return Object.values(_FUNCTION_SEQUENCE_COMPOSITION_PART).includes(
-    value as _FUNCTION_SEQUENCE_COMPOSITION_PART,
-  );
-}
+// function isFunctionInValidSequence(
+//   value: string,
+// ): value is _FUNCTION_SEQUENCE_COMPOSITION_PART {
+//   return Object.values(_FUNCTION_SEQUENCE_COMPOSITION_PART).includes(
+//     value as _FUNCTION_SEQUENCE_COMPOSITION_PART,
+//   );
+// }
 
 // This corresponds to the function sequence that we currently support:
 //
@@ -234,17 +237,12 @@ function extractFunctionMap(
     }
     if (currentFunc.parameters.length > supportedFunc.parameters) {
       const valueSpecification = currentFunc.parameters[0];
-      if (
-        !(
-          valueSpecification instanceof V1_AppliedFunction ||
-          isFunctionInValidSequence(currentFunc.function)
-        )
-      ) {
+      if (!(valueSpecification instanceof V1_AppliedFunction)) {
         throw new Error(
           `Query must be a sequence of function calls (e.g. x()->y()->z())`,
         );
       } else if (
-        currentFunc.function === _FUNCTION_SEQUENCE_COMPOSITION_PART.FILTER
+        matchFunctionName(currentFunc.function, [DataCubeFunction.FILTER])
       ) {
         currentFunc.parameters = currentFunc.parameters.slice(1);
         sequence.unshift(currentFunc);
@@ -256,7 +254,7 @@ function extractFunctionMap(
       } else {
         currentFunc.parameters = currentFunc.parameters.slice(1);
         sequence.unshift(currentFunc);
-        currentFunc = valueSpecification as V1_AppliedFunction;
+        currentFunc = valueSpecification;
       }
     } else {
       sequence.unshift(currentFunc);
@@ -295,7 +293,7 @@ function extractFunctionMap(
     select: _process(_FUNCTION_SEQUENCE_COMPOSITION_PART.SELECT),
     filter: _process(_FUNCTION_SEQUENCE_COMPOSITION_PART.FILTER),
     pivotSort: _process(_FUNCTION_SEQUENCE_COMPOSITION_PART.PIVOT_SORT),
-    pivot: _process(_FUNCTION_SEQUENCE_COMPOSITION_PART.PIVOT_CAST),
+    pivot: _process(_FUNCTION_SEQUENCE_COMPOSITION_PART.PIVOT),
     pivotCast: _process(_FUNCTION_SEQUENCE_COMPOSITION_PART.PIVOT_CAST),
     groupBy: _process(_FUNCTION_SEQUENCE_COMPOSITION_PART.GROUP_BY),
     groupBySort: _process(_FUNCTION_SEQUENCE_COMPOSITION_PART.GROUP_BY_SORT),
@@ -317,7 +315,7 @@ export function validateAndBuildQuerySnapshot(
   partialQuery: V1_ValueSpecification,
   source: DataCubeSource,
   baseQuery: DataCubeQuery,
-  filterOperations?: DataCubeQueryFilterOperation[],
+  filterOperations: DataCubeQueryFilterOperation[],
 ) {
   // --------------------------------- BASE ---------------------------------
   // Build the function call sequence and the function map to make the
@@ -341,13 +339,17 @@ export function validateAndBuildQuerySnapshot(
   data.sourceColumns.forEach((col) => colsMap.set(col.name, col));
 
   // --------------------------- LEAF-LEVEL EXTEND ---------------------------
-  /** TODO: @datacube roundtrip */
+  if (funcMap.leafExtend) {
+    _extend(funcMap.leafExtend, data.leafExtendedColumns);
+    // adding new extended columns in the column map for groupby and pivot operation
+    data.leafExtendedColumns.forEach((col) => colsMap.set(col.name, col));
+  }
 
   // --------------------------------- FILTER ---------------------------------
   if (funcMap.filter) {
-    data.filter = _buildFilterSnapshot(
+    data.filter = _filter(
       _lambdaParam(funcMap.filter, 0).body[0]!,
-      filterOperations!,
+      filterOperations,
     );
   }
 
@@ -360,8 +362,15 @@ export function validateAndBuildQuerySnapshot(
   }
 
   // --------------------------------- PIVOT ---------------------------------
-  /** TODO: @datacube roundtrip */
   // TODO: verify groupBy agg columns, pivot agg columns and configuration agree
+  if (funcMap.pivot && funcMap.pivotCast) {
+    data.pivot = {
+      columns: _colSpecArrayParam(funcMap.pivot, 0).colSpecs.map((colSpec) =>
+        _col(colSpec),
+      ),
+      castColumns: _cast(_param(funcMap.pivotCast, 0, V1_GenericTypeInstance)),
+    };
+  }
 
   // --------------------------------- GROUP BY ---------------------------------
 
@@ -370,13 +379,28 @@ export function validateAndBuildQuerySnapshot(
       columns: _colSpecArrayParam(funcMap.groupBy, 0).colSpecs.map((colSpec) =>
         _col(colSpec),
       ),
-      // TODO: verify groupBy agg columns, pivot agg columns and configuration agree
-      // TODO: verify groupBy sort columns and configuration agree
     };
+    // TODO: verify groupBy agg columns, pivot agg columns and configuration agree
+    // TODO: verify sort column
+    // TODO: use configuration information present in the baseQuery configuration?
+    // _isColSpecOrArray(funcMap.groupBy, 1) ? _colSpecArrayParam(funcMap.groupBy, 1).colSpecs.forEach((colSpec) => _validateAggregateColumns(colSpec, baseQuery.configuration!)) : _validateAggregateColumns(_colSpecParam(funcMap.groupBy, 1), baseQuery.configuration!);
+
+    // _param(funcMap.groupBySort!, 0, V1_Collection).values.forEach(
+    //   (value) =>
+    //   {
+    //     const sortColFunc = _funcMatch(value, [
+    //       DataCubeFunction.ASCENDING,
+    //       DataCubeFunction.DESCENDING,
+    //     ]);
+    //     _validateSortColumns(sortColFunc, baseQuery.configuration!);
+    //   }
+    // )
   }
 
   // --------------------------- GROUP-LEVEL EXTEND ---------------------------
-  /** TODO: @datacube roundtrip */
+  if (funcMap.groupExtend) {
+    _extend(funcMap.groupExtend, data.groupExtendedColumns);
+  }
 
   // --------------------------------- SORT ---------------------------------
 

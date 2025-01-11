@@ -26,10 +26,10 @@ import { unitTest } from '@finos/legend-shared/test';
 import { describe, expect, test } from '@jest/globals';
 import { validateAndBuildQuerySnapshot } from '../DataCubeQuerySnapshotBuilder.js';
 import {
-  _filter,
+  _cols,
+  _colSpec,
+  _deserializeLambda,
   _function,
-  _lambda,
-  _var,
 } from '../DataCubeQueryBuilderUtils.js';
 import { DataCubeFunction } from '../DataCubeQueryEngine.js';
 import { Test__DataCubeEngine } from './Test__DataCubeEngine.js';
@@ -38,34 +38,16 @@ import { INTERNAL__DataCubeSource } from '../model/DataCubeSource.js';
 import type { DataCubeOperationSnapshotBuilderTestCase } from './DatacubeQuerySnapshotBuilderTestUtils.js';
 
 const cases: DataCubeOperationSnapshotBuilderTestCase[] = [
-  ['simple filter 1', 'filter(x|$x.Age != 27)'],
-  ['simple filter 2', 'filter(x|!($x.Age >= 27))'],
-  ['simple filter 3', 'filter(x|$x.Athlete->isEmpty())'],
-  ['simple filter 4', 'filter(x|$x.Age != $x.Age2)'],
+  ['simple extend', '~[name:c|$c.val->toOne() + 1]->extend()'],
   [
-    'simple case insensitive filter',
-    "filter(x|$x.Athlete->toLower()->endsWith(toLower('Phelps')))",
+    'extend with colSpecArray',
+    "~[name:c|$c.val->toOne() + 1]->extend(~[other:x|$x.str->toOne() + '_ext']->extend(~[other2:x|$x.str->toOne() + '_1']->extend()))",
   ],
-  [
-    'composite or filter',
-    "filter(x|!(($x.Age != 27) || ($x.Athlete->toLower() != toLower('Michael Phelps'))))",
-  ],
-  [
-    'composite and filter',
-    "filter(x|!(($x.Age != 27) && ($x.Athlete == 'Michael Phelps')))",
-  ],
-  [
-    'composite and/or filter',
-    "filter(x|$x.Athlete->toLower()->endsWith(toLower('Phelps')) || !(($x.Age != 27) && ($x.Athlete == 'Michael Phelps')))",
-  ],
-  [
-    'composite not and/or filter',
-    "filter(x|!$x.Athlete->toLower()->endsWith(toLower('Phelps')) || !(($x.Age != 27) && ($x.Athlete == 'Michael Phelps')))",
-  ],
-  [
-    'composite and/or/or/not filter',
-    "filter(x|!(($x.Age != 27) && ($x.Athlete == 'Michael Phelps')) && ($x.Country->startsWith('united') || ($x.Country == 'test')))",
-  ],
+  // TODO: add support for window functions and increase validation
+  // [
+  //   'extend with window',
+  //   'extend(over(~grp), ~newCol:{p,w,r|$r.id}:y|$y->plus())',
+  // ],
 ];
 
 describe(unitTest('Analyze and build filter snapshot'), () => {
@@ -90,17 +72,28 @@ describe(unitTest('Analyze and build filter snapshot'), () => {
           baseQuery,
           engine.filterOperations,
         );
-        const query = _function(DataCubeFunction.FILTER, [
-          _lambda(
-            [_var()],
-            [_filter(snapshot.data.filter!, engine.filterOperations)],
-          ),
-        ]);
-        const queryString =
-          await ENGINE_TEST_SUPPORT__JsonToGrammar_valueSpecification(
-            V1_serializeValueSpecification(query, []),
+        if (snapshot.data.leafExtendedColumns.length) {
+          const leafExtendedFuncs = snapshot.data.leafExtendedColumns.map(
+            (col) =>
+              _function(DataCubeFunction.EXTEND, [
+                _cols([_colSpec(col.name, _deserializeLambda(col.mapFn))]),
+              ]),
           );
-        expect(lambda).toEqual(queryString);
+          while (leafExtendedFuncs.length > 1) {
+            const last = leafExtendedFuncs.pop(); // Remove the last element
+            if (last) {
+              // Add its parameters to the second last element
+              const secondLast = leafExtendedFuncs.pop();
+              secondLast!.parameters.push(last);
+              leafExtendedFuncs.push(secondLast!);
+            }
+          }
+          const queryString =
+            await ENGINE_TEST_SUPPORT__JsonToGrammar_valueSpecification(
+              V1_serializeValueSpecification(leafExtendedFuncs[0]!, []),
+            );
+          expect(lambda).toEqual(queryString);
+        }
       } catch (error: unknown) {
         // console.log(error);
         throw error;

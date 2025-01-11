@@ -34,6 +34,7 @@ import {
 } from '../DataCubeQueryBuilderUtils.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
+  matchFunctionName,
   V1_PrimitiveValueSpecification,
   type V1_AppliedFunction,
   type V1_AppliedProperty,
@@ -89,93 +90,20 @@ export class DataCubeQueryFilterOperation__Equal extends DataCubeQueryFilterOper
     };
   }
 
-  // buildConditionSnapshot(expression: V1_AppliedFunction) {
-  /** TODO: @datacube roundtrip */
-  // export const buildPostFilterConditionState = (
-  //   postFilterState: QueryBuilderPostFilterState,
-  //   expression: FunctionExpression,
-  //   operatorFunctionFullPath | undefined,
-  //   operator: QueryBuilderPostFilterOperator,
-  // ): PostFilterConditionState | undefined => {
-  //   let postConditionState: PostFilterConditionState | undefined;
-  //   const tdsColumnGetter = operator.getTDSColumnGetter();
-  //   if (
-  //     tdsColumnGetter &&
-  //     expression instanceof AbstractPropertyExpression &&
-  //     expression.func.value.name === tdsColumnGetter
-  //   ) {
-  //     const columnState = findProjectionColumnState(expression, postFilterState);
-  //     postConditionState = new PostFilterConditionState(
-  //       postFilterState,
-  //       columnState,
-  //       operator,
-  //     );
-  //     return postConditionState;
-  //   } else if (
-  //     operatorFunctionFullPath &&
-  //     matchFunctionName(expression.functionName, operatorFunctionFullPath)
-  //   ) {
-  //     assertTrue(
-  //       expression.parametersValues.length === 2,
-  //       `Can't process ${extractElementNameFromPath(
-  //         operatorFunctionFullPath,
-  //       )}() expression: ${extractElementNameFromPath(
-  //         operatorFunctionFullPath,
-  //       )}() expects '1 argument'`,
-  //     );
-
-  //     // get projection column
-  //     const tdsColumnPropertyExpression = guaranteeType(
-  //       expression.parametersValues[0],
-  //       AbstractPropertyExpression,
-  //       `Can't process ${extractElementNameFromPath(
-  //         operatorFunctionFullPath,
-  //       )}() expression: expects property expression in lambda body`,
-  //     );
-  //     const columnState = findProjectionColumnState(
-  //       tdsColumnPropertyExpression,
-  //       postFilterState,
-  //     );
-
-  //     // get operation value specification
-  //     const rightSide = expression.parametersValues[1];
-
-  //     // create state
-  //     postConditionState = new PostFilterConditionState(
-  //       postFilterState,
-  //       columnState,
-  //       operator,
-  //     );
-
-  //     buildPostFilterConditionValueState(rightSide, postConditionState);
-
-  //     //post checks
-  //     assertTrue(
-  //       operator.isCompatibleWithPostFilterColumn(postConditionState),
-  //       `Can't process ${extractElementNameFromPath(
-  //         operatorFunctionFullPath,
-  //       )}() expression: property is not compatible with post-filter operator`,
-  //     );
-  //     assertTrue(
-  //       operator.isCompatibleWithConditionValue(postConditionState),
-  //       `Operator '${operator.getLabel()}' not compatible with value specification ${rightSide?.toString()}`,
-  //     );
-  //   }
-  //   return postConditionState;
-  // };
-  //   return undefined;
-  // }
-
   buildConditionSnapshot(expression: V1_AppliedFunction) {
-    const value = expression.parameters[1];
-    const filterConditionSnapshot = _buildConditionSnapshotProperty(
-      expression.parameters[0] as V1_AppliedProperty,
-      this.operator,
-    );
-    if (value instanceof V1_PrimitiveValueSpecification) {
-      filterConditionSnapshot.value = _dataCubeOperationValue(value);
+    if (matchFunctionName(expression.function, DataCubeFunction.EQUAL)) {
+      const value = expression.parameters[1];
+      const filterConditionSnapshot = _buildConditionSnapshotProperty(
+        expression.parameters[0] as V1_AppliedProperty,
+        this.operator,
+      );
+      if (value instanceof V1_PrimitiveValueSpecification) {
+        filterConditionSnapshot.value = _dataCubeOperationValue(value);
+        return filterConditionSnapshot satisfies DataCubeQuerySnapshotFilterCondition;
+      }
+      return undefined;
     }
-    return filterConditionSnapshot satisfies DataCubeQuerySnapshotFilterCondition;
+    return undefined;
   }
 
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {

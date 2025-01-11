@@ -24,6 +24,11 @@ export type DataCubeQuerySnapshotBuilderTestCase = [
   string | undefined, // error
 ];
 
+export type DataCubeOperationSnapshotBuilderTestCase = [
+  string, // name
+  string, // query roundtrip
+];
+
 export function _testCase(data: {
   name: string;
   query: string;
