@@ -370,7 +370,7 @@ export class DataCubeGridClientServerSideDataSource
 
       // NOTE: if h-pivot is enabled, update the cast columns
       // and panels which might be affected by this (e.g. sorts)
-      // Because is an expensive operation in certain case, we only
+      // Because this can be an expensive operation, we will only
       // recompute when it's not a drilldown or paging request,
       // but we could still optimize further if needed.
       if (!this._grid.isPaginationEnabled || request.startRow === 0) {

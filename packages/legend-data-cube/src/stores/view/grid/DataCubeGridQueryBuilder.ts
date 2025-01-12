@@ -291,11 +291,13 @@ function generateGridDataFetchExecutableQueryPostProcessor(
         );
       }
 
+      // if pivot is present, populate the count aggregation columns
+      // by modifying pivot and pivot cast function expressions
+      const countAggColumns: V1_ColSpec[] = [];
+      _addCountAggColumnToPivot(funcMap, countAggColumns);
+
       // modify groupBy() based off the current drilldown level
       if (request.groupKeys.length < groupBy.columns.length) {
-        const countAggColumns: V1_ColSpec[] = [];
-        _addCountAggColumnToPivot(funcMap, countAggColumns);
-
         const groupByIdx = sequence.indexOf(funcMap.groupBy);
         const groupByColumns = groupBy.columns.slice(
           0,
