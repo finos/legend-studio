@@ -23,34 +23,50 @@ import type { PlainObject } from '@finos/legend-shared';
 import {
   DataCubeEngine,
   type CompletionItem,
+  type DataCubeRelationType,
   type DataCubeExecutionOptions,
   type DataCubeExecutionResult,
-  type DataCubeRelationType,
 } from '../DataCubeEngine.js';
 import type { DataCubeSource } from '../model/DataCubeSource.js';
+import {
+  ENGINE_TEST_SUPPORT__grammarToJSON_valueSpecification,
+  ENGINE_TEST_SUPPORT__JSONToGrammar_valueSpecification,
+} from '@finos/legend-graph/test';
+import {
+  _deserializeValueSpecification,
+  _serializeValueSpecification,
+} from '../DataCubeQueryBuilderUtils.js';
 
-export class Test__DataCubeEngine extends DataCubeEngine {
-  // TODO: implement the engine endpoints for testing
-
-  override processQuerySource(value: PlainObject): Promise<DataCubeSource> {
+export class TEST__DataCubeEngine extends DataCubeEngine {
+  override async processQuerySource(
+    value: PlainObject,
+  ): Promise<DataCubeSource> {
     throw new Error('Method not implemented.');
   }
 
-  override parseValueSpecification(
+  override async parseValueSpecification(
     code: string,
     returnSourceInformation?: boolean | undefined,
   ): Promise<V1_ValueSpecification> {
-    throw new Error('Method not implemented.');
+    return _deserializeValueSpecification(
+      await ENGINE_TEST_SUPPORT__grammarToJSON_valueSpecification(
+        code,
+        returnSourceInformation,
+      ),
+    );
   }
 
-  override getValueSpecificationCode(
+  override async getValueSpecificationCode(
     value: V1_ValueSpecification,
     pretty?: boolean | undefined,
   ): Promise<string> {
-    throw new Error('Method not implemented.');
+    return ENGINE_TEST_SUPPORT__JSONToGrammar_valueSpecification(
+      _serializeValueSpecification(value),
+      pretty,
+    );
   }
 
-  override getQueryTypeahead(
+  override async getQueryTypeahead(
     code: string,
     baseQuery: V1_Lambda,
     source: DataCubeSource,
@@ -58,20 +74,22 @@ export class Test__DataCubeEngine extends DataCubeEngine {
     throw new Error('Method not implemented.');
   }
 
-  override getQueryCodeRelationReturnType(
+  override async getQueryCodeRelationReturnType(
     code: string,
     baseQuery: V1_ValueSpecification,
     source: DataCubeSource,
   ): Promise<DataCubeRelationType> {
     throw new Error('Method not implemented.');
   }
-  override executeQuery(
+
+  override async executeQuery(
     query: V1_Lambda,
     source: DataCubeSource,
     options?: DataCubeExecutionOptions | undefined,
   ): Promise<DataCubeExecutionResult> {
     throw new Error('Method not implemented.');
   }
+
   override buildExecutionContext(
     source: DataCubeSource,
   ): V1_AppliedFunction | undefined {

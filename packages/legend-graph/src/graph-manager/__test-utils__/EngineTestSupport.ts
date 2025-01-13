@@ -72,6 +72,7 @@ export async function ENGINE_TEST_SUPPORT__execute(
 
 export async function ENGINE_TEST_SUPPORT__grammarToJSON_model(
   code: string,
+  returnSourceInformation?: boolean | undefined,
 ): Promise<{ elements: object[] }> {
   return (
     await axios.post<unknown, AxiosResponse<{ elements: object[] }>>(
@@ -82,27 +83,28 @@ export async function ENGINE_TEST_SUPPORT__grammarToJSON_model(
           [HttpHeader.CONTENT_TYPE]: ContentType.TEXT_PLAIN,
         },
         params: {
-          returnSourceInformation: false,
+          returnSourceInformation,
         },
       },
     )
   ).data;
 }
 
-export async function ENGINE_TEST_SUPPORT__JsonToGrammar_valueSpecification(
-  code: PlainObject<V1_ValueSpecification>,
+export async function ENGINE_TEST_SUPPORT__JSONToGrammar_valueSpecification(
+  value: PlainObject<V1_ValueSpecification>,
+  pretty?: boolean | undefined,
 ): Promise<string> {
   return (
     await axios.post<unknown, AxiosResponse<string>>(
       `${ENGINE_TEST_SUPPORT_API_URL}/pure/v1/grammar/jsonToGrammar/valueSpecification`,
-      code,
+      value,
       {
         headers: {
           [HttpHeader.CONTENT_TYPE]: ContentType.APPLICATION_JSON,
           [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN,
         },
         params: {
-          renderStyle: 'STANDARD',
+          renderStyle: pretty ? 'PRETTY' : 'STANDARD',
         },
       },
     )
@@ -111,6 +113,7 @@ export async function ENGINE_TEST_SUPPORT__JsonToGrammar_valueSpecification(
 
 export async function ENGINE_TEST_SUPPORT__grammarToJSON_valueSpecification(
   code: string,
+  returnSourceInformation?: boolean | undefined,
 ): Promise<PlainObject<V1_ValueSpecification>> {
   return (
     await axios.post<unknown, AxiosResponse<{ elements: object[] }>>(
@@ -121,7 +124,7 @@ export async function ENGINE_TEST_SUPPORT__grammarToJSON_valueSpecification(
           [HttpHeader.CONTENT_TYPE]: ContentType.TEXT_PLAIN,
         },
         params: {
-          returnSourceInformation: false,
+          returnSourceInformation,
         },
       },
     )
@@ -129,18 +132,19 @@ export async function ENGINE_TEST_SUPPORT__grammarToJSON_valueSpecification(
 }
 
 export async function ENGINE_TEST_SUPPORT__JSONToGrammar_model(
-  modelDataContext: PlainObject<V1_PureModelContext>,
+  model: PlainObject<V1_PureModelContext>,
+  pretty?: boolean | undefined,
 ): Promise<string> {
   return (
     await axios.post<unknown, AxiosResponse<string>>(
       `${ENGINE_TEST_SUPPORT_API_URL}/pure/v1/grammar/jsonToGrammar/model`,
-      modelDataContext,
+      model,
       {
         headers: {
           [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN,
         },
         params: {
-          renderStyle: 'STANDARD',
+          renderStyle: pretty ? 'PRETTY' : 'STANDARD',
         },
       },
     )
@@ -148,11 +152,11 @@ export async function ENGINE_TEST_SUPPORT__JSONToGrammar_model(
 }
 
 export async function ENGINE_TEST_SUPPORT__compile(
-  modelDataContext: PlainObject<V1_PureModelContext>,
+  model: PlainObject<V1_PureModelContext>,
 ): Promise<AxiosResponse<{ message: string }>> {
   return axios.post<unknown, AxiosResponse<{ message: string }>>(
     `${ENGINE_TEST_SUPPORT_API_URL}/pure/v1/compilation/compile`,
-    modelDataContext,
+    model,
   );
 }
 

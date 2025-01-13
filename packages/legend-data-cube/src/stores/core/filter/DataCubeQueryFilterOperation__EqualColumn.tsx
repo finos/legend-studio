@@ -80,7 +80,10 @@ export class DataCubeQueryFilterOperation__EqualColumn extends DataCubeQueryFilt
     };
   }
 
-  buildConditionSnapshot(expression: V1_AppliedFunction) {
+  buildConditionSnapshot(
+    expression: V1_AppliedFunction,
+    columnGetter: (name: string) => DataCubeColumn | undefined,
+  ) {
     if (matchFunctionName(expression.function, DataCubeFunction.EQUAL)) {
       const value = expression.parameters[1];
       const filterConditionSnapshot = _buildConditionSnapshotProperty(

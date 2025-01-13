@@ -76,7 +76,10 @@ export class DataCubeQueryFilterOperation__NotEqualCaseInsensitiveColumn extends
     };
   }
 
-  buildConditionSnapshot(expression: V1_AppliedFunction) {
+  buildConditionSnapshot(
+    expression: V1_AppliedFunction,
+    columnGetter: (name: string) => DataCubeColumn | undefined,
+  ) {
     if (
       matchFunctionName(expression.function, DataCubeFunction.NOT) &&
       expression.parameters[0] instanceof V1_AppliedFunction &&

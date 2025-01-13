@@ -79,7 +79,10 @@ export class DataCubeQueryFilterOperation__GreaterThanColumn extends DataCubeQue
     };
   }
 
-  buildConditionSnapshot(expression: V1_AppliedFunction) {
+  buildConditionSnapshot(
+    expression: V1_AppliedFunction,
+    columnGetter: (name: string) => DataCubeColumn | undefined,
+  ) {
     if (matchFunctionName(expression.function, DataCubeFunction.GREATER_THAN)) {
       const value = expression.parameters[1];
       const filterConditionSnapshot = _buildConditionSnapshotProperty(

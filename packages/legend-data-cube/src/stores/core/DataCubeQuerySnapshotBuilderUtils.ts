@@ -16,7 +16,7 @@
 import {
   PRIMITIVE_TYPE,
   V1_AppliedFunction,
-  V1_AppliedProperty,
+  type V1_AppliedProperty,
   V1_CBoolean,
   V1_CDateTime,
   V1_CDecimal,
@@ -28,21 +28,24 @@ import {
   V1_ClassInstance,
   V1_ColSpec,
   V1_ColSpecArray,
-  V1_Lambda,
+  V1_GenericTypeInstance,
   type V1_ValueSpecification,
   type V1_PrimitiveValueSpecification,
   extractElementNameFromPath as _name,
   matchFunctionName,
   V1_RelationType,
   V1_PackageableType,
-  type V1_GenericTypeInstance,
+  type V1_GenericType,
 } from '@finos/legend-graph';
 import { type DataCubeColumn } from './model/DataCubeColumn.js';
 import {
   assertTrue,
   assertType,
+  getNonNullableEntry,
   guaranteeNonNullable,
   guaranteeType,
+  IllegalStateError,
+  uniq,
   UnsupportedOperationError,
   type Clazz,
 } from '@finos/legend-shared';
@@ -54,14 +57,11 @@ import {
   type DataCubeQueryFilterOperator,
 } from './DataCubeQueryEngine.js';
 import type {
-  DataCubeQuerySnapshotExtendedColumn,
   DataCubeQuerySnapshotFilter,
   DataCubeQuerySnapshotFilterCondition,
 } from './DataCubeQuerySnapshot.js';
 import { _serializeValueSpecification } from './DataCubeQueryBuilderUtils.js';
 import type { DataCubeQueryFilterOperation } from './filter/DataCubeQueryFilterOperation.js';
-import type { DataCubeConfiguration } from './model/DataCubeConfiguration.js';
-import type { DataCubeQueryAggregateOperation } from './aggregation/DataCubeQueryAggregateOperation.js';
 
 // --------------------------------- UTILITIES ---------------------------------
 
@@ -69,6 +69,7 @@ export function _param<T extends V1_ValueSpecification>(
   func: V1_AppliedFunction,
   paramIdx: number,
   clazz: Clazz<T>,
+  message?: string | undefined,
 ): T {
   assertTrue(
     func.parameters.length >= paramIdx + 1,
@@ -77,7 +78,8 @@ export function _param<T extends V1_ValueSpecification>(
   return guaranteeType(
     func.parameters[paramIdx],
     clazz,
-    `Can't process ${_name(func.function)}() expression: Found unexpected type for parameter at index ${paramIdx}`,
+    message ??
+      `Can't process ${_name(func.function)}() expression: Found unexpected type for parameter at index ${paramIdx}`,
   );
 }
 
@@ -89,14 +91,6 @@ export function _colSpecParam(func: V1_AppliedFunction, paramIdx: number) {
   );
 }
 
-export function _lambdaParam(func: V1_AppliedFunction, paramIdx: number) {
-  return guaranteeType(
-    _param(func, paramIdx, V1_Lambda),
-    V1_Lambda,
-    `Can't process ${_name(func.function)}: Expected parameter at index ${paramIdx} to be a lambda expression`,
-  );
-}
-
 export function _colSpecArrayParam(func: V1_AppliedFunction, paramIdx: number) {
   return guaranteeType(
     _param(func, paramIdx, V1_ClassInstance).value,
@@ -105,41 +99,13 @@ export function _colSpecArrayParam(func: V1_AppliedFunction, paramIdx: number) {
   );
 }
 
-export function _extend(
-  value: V1_AppliedFunction,
-  extendSnapshot: DataCubeQuerySnapshotExtendedColumn[],
-) {
-  value.parameters.forEach((param) => {
-    if (param instanceof V1_ClassInstance) {
-      guaranteeType(param.value, V1_ColSpecArray).colSpecs.forEach((colSpec) =>
-        extendSnapshot.push(_extendColumn(colSpec)),
-      );
-    } else if (
-      param instanceof V1_AppliedFunction &&
-      matchFunctionName(param.function, DataCubeFunction.EXTEND)
-    ) {
-      if (matchFunctionName(param.function, DataCubeFunction.EXTEND)) {
-        _extend(param, extendSnapshot);
-      } else {
-        throw new Error(
-          `Can't process extend() operation: Unexpected function ${param.function}`,
-        );
-      }
-    }
-  });
-}
-
-function _extendColumn(colSpec: V1_ColSpec) {
-  const mapFunc = _serializeValueSpecification(colSpec.function1!);
-  const reduceFunc = colSpec.function2
-    ? _serializeValueSpecification(colSpec.function2)
-    : undefined;
-  return {
-    name: colSpec.name,
-    type: colSpec.type!,
-    mapFn: mapFunc,
-    reduceFn: reduceFunc,
-  };
+export function _genericTypeParam(func: V1_AppliedFunction, paramIdx: number) {
+  return _param(
+    func,
+    paramIdx,
+    V1_GenericTypeInstance,
+    `Can't process ${_name(func.function)}: Expected parameter at index ${paramIdx} to be a generic type instance`,
+  );
 }
 
 export function _funcMatch(
@@ -156,9 +122,50 @@ export function _funcMatch(
       value.function,
       Array.isArray(functionNames) ? functionNames : [functionNames],
     ),
-    `Can't process function: Expected function name to be one of [${Array.isArray(functionNames) ? functionNames.join(', ') : functionNames}]`,
+    `Can't process function: Expected function to be one of [${uniq((Array.isArray(functionNames) ? functionNames : [functionNames]).map(_name)).join(', ')}]`,
   );
   return value;
+}
+
+export function _relationType(genericType: V1_GenericType) {
+  return guaranteeType(
+    genericType.typeArguments?.[0]?.rawType,
+    V1_RelationType,
+    `Can't process generic type: failed to extract relation type`,
+  );
+}
+
+export function _packageableType(genericType: V1_GenericType) {
+  return guaranteeType(
+    genericType.rawType,
+    V1_PackageableType,
+    `Can't process generic type: failed to extract packageable type`,
+  );
+}
+
+export function _operationPrimitiveValue(
+  value: V1_PrimitiveValueSpecification,
+): DataCubeOperationValue | undefined {
+  switch (true) {
+    case value instanceof V1_CString:
+      return { value: value.value, type: PRIMITIVE_TYPE.STRING };
+    case value instanceof V1_CBoolean:
+      return { value: value.value, type: PRIMITIVE_TYPE.BOOLEAN };
+    case value instanceof V1_CDecimal:
+      return { value: value.value, type: PRIMITIVE_TYPE.DECIMAL };
+    case value instanceof V1_CInteger:
+      return { value: value.value, type: PRIMITIVE_TYPE.INTEGER };
+    case value instanceof V1_CFloat:
+      return { value: value.value, type: PRIMITIVE_TYPE.FLOAT };
+    case value instanceof V1_CStrictDate:
+      return { value: value.value, type: PRIMITIVE_TYPE.STRICTDATE };
+    case value instanceof V1_CDateTime:
+      return { value: value.value, type: PRIMITIVE_TYPE.DATETIME };
+    case value instanceof V1_CStrictTime:
+      return { value: value.value, type: PRIMITIVE_TYPE.STRICTTIME };
+    default:
+      return undefined;
+  }
 }
 
 // --------------------------------- BUILDING BLOCKS ---------------------------------
@@ -197,134 +204,172 @@ export function _pruneExpandedPaths(
     .sort();
 }
 
+export function _extractExtendedColumns(func: V1_AppliedFunction) {
+  const extendFuncs: V1_AppliedFunction[] = [];
+  let currentFunc = func;
+
+  while (currentFunc instanceof V1_AppliedFunction) {
+    // since we are processing a chain of extend(), we can finish processing when
+    // encountering a different function.
+    if (!matchFunctionName(currentFunc.function, DataCubeFunction.EXTEND)) {
+      break;
+    }
+
+    if (currentFunc.parameters.length === 2) {
+      const valueSpecification = currentFunc.parameters[0];
+      if (!(valueSpecification instanceof V1_AppliedFunction)) {
+        throw new IllegalStateError(
+          `Can't process extend() expression: Expected a chain of function calls (e.g. x()->y()->z())`,
+        );
+      } else {
+        currentFunc.parameters = currentFunc.parameters.slice(1);
+        extendFuncs.unshift(currentFunc);
+        currentFunc = valueSpecification;
+      }
+    } else {
+      assertTrue(
+        currentFunc.parameters.length === 1,
+        `Can't process extend() expression: Expected 1 parameter, got ${currentFunc.parameters.length}`,
+      );
+      extendFuncs.unshift(currentFunc);
+      break;
+    }
+  }
+  return extendFuncs.map((extendFunc) => {
+    const colSpecs = _colSpecArrayParam(extendFunc, 0).colSpecs;
+    assertTrue(
+      colSpecs.length === 1,
+      `Can't process extend() expression: Expected 1 column specification, got ${colSpecs.length}`,
+    );
+    const colSpec = getNonNullableEntry(colSpecs, 0);
+    return {
+      name: colSpec.name,
+      type: '', // NOTE: we don't have type information for extended columns at this point
+      mapFn: _serializeValueSpecification(
+        guaranteeNonNullable(
+          colSpec.function1,
+          `Can't process extend() expression: Expected a transformation function expression`,
+        ),
+      ),
+      reduceFn: colSpec.function2
+        ? _serializeValueSpecification(colSpec.function2)
+        : undefined,
+    };
+  });
+}
+
 export function _filter(
   value: V1_ValueSpecification,
+  columnGetter: (name: string) => DataCubeColumn,
   filterOperations: DataCubeQueryFilterOperation[],
 ): DataCubeQuerySnapshotFilter {
+  if (!(value instanceof V1_AppliedFunction)) {
+    throw new Error(
+      `Can't process filter() expression: Expected a function expression`,
+    );
+  }
+
   const group: DataCubeQuerySnapshotFilter = {
     // default to AND group for case where there is only one condition
     groupOperator: DataCubeQueryFilterGroupOperator.AND,
     conditions: [],
   };
 
-  if (!(value instanceof V1_AppliedFunction)) {
-    throw new Error(
-      `Can't process filter() expression: Found unexpected Value Specification`,
-    );
-  }
-
   if (matchFunctionName(value.function, DataCubeFunction.AND)) {
     value.parameters.forEach((param) => {
-      group.conditions.push(_filterCondition(param, filterOperations)!);
+      group.conditions.push(
+        _filterCondition(param, columnGetter, filterOperations)!,
+      );
     });
   } else if (matchFunctionName(value.function, DataCubeFunction.OR)) {
     group.groupOperator = DataCubeQueryFilterGroupOperator.OR;
     value.parameters.forEach((param) => {
-      group.conditions.push(_filterCondition(param, filterOperations)!);
+      group.conditions.push(
+        _filterCondition(param, columnGetter, filterOperations)!,
+      );
     });
   } else {
-    group.conditions.push(_filterCondition(value, filterOperations)!);
+    // handles the case where the root is a simple condition or a NOT condition
+    group.conditions.push(
+      _filterCondition(value, columnGetter, filterOperations)!,
+    );
   }
   return group;
 }
 
+export function _unwrapNotFilterCondition(func: V1_AppliedFunction) {
+  assertTrue(
+    matchFunctionName(func.function, DataCubeFunction.NOT),
+    `Can't process filter condition expression: failed to unwrap not() function`,
+  );
+  return _param(func, 0, V1_AppliedFunction);
+}
+
 function _filterCondition(
   value: V1_ValueSpecification,
+  columnGetter: (name: string) => DataCubeColumn,
   filterOperations: DataCubeQueryFilterOperation[],
-):
-  | DataCubeQuerySnapshotFilterCondition
-  | DataCubeQuerySnapshotFilter
-  | undefined {
+): DataCubeQuerySnapshotFilterCondition | DataCubeQuerySnapshotFilter {
   if (!(value instanceof V1_AppliedFunction)) {
-    throw new Error(
-      `Can't process filter() expression: Found unexpected Value Specification`,
+    throw new UnsupportedOperationError(
+      `Can't process filter condition expression: Expected a function expression`,
     );
   }
 
+  // handle group condition
   if (
     matchFunctionName(value.function, [
       DataCubeFunction.AND,
       DataCubeFunction.OR,
     ])
   ) {
-    return _filter(value, filterOperations);
-  } else if (matchFunctionName(value.function, DataCubeFunction.NOT)) {
-    const notCondition = filterOperations
-      .map((filterOperation) => filterOperation.buildConditionSnapshot(value))
-      .filter((snapshot) => snapshot !== undefined);
-    if (notCondition.length !== 0) {
-      return notCondition[0];
-    } else {
-      const filterSnapshot = _filter(
-        value.parameters[0] as V1_ValueSpecification,
-        filterOperations,
-      );
-      filterSnapshot.not = true;
-      return filterSnapshot;
-    }
-  } else {
-    const condition = filterOperations
-      .map((filterOperation) => filterOperation.buildConditionSnapshot(value))
-      .filter((snapshot) => snapshot !== undefined);
-    if (condition.length === 0) {
-      // TODO: throw a better error
-      throw new Error(
-        `Can\'t process filter condition: Found unexpected operation \'${value.function}\' `,
-      );
-    }
-    return condition[0];
+    return _filter(value, columnGetter, filterOperations);
   }
-}
 
-export function _cast(genericTypeInstance: V1_GenericTypeInstance) {
-  const relationTypes = guaranteeType(
-    genericTypeInstance.genericType.typeArguments[0]?.rawType,
-    V1_RelationType,
-  );
-  return relationTypes.columns.map((column) => {
-    const type = guaranteeType(column.genericType.rawType, V1_PackageableType);
-    return {
-      name: column.name,
-      type: type.fullPath,
-    };
-  });
-}
-
-export function _dataCubeOperationValue(
-  vs: V1_PrimitiveValueSpecification,
-): DataCubeOperationValue {
-  switch (true) {
-    case vs instanceof V1_CString:
-      return _buildDataCubeOperationValue(PRIMITIVE_TYPE.STRING, vs.value);
-    case vs instanceof V1_CBoolean:
-      return _buildDataCubeOperationValue(PRIMITIVE_TYPE.BOOLEAN, vs.value);
-    case vs instanceof V1_CDecimal:
-      return _buildDataCubeOperationValue(PRIMITIVE_TYPE.DECIMAL, vs.value);
-    case vs instanceof V1_CInteger:
-      return _buildDataCubeOperationValue(PRIMITIVE_TYPE.INTEGER, vs.value);
-    case vs instanceof V1_CFloat:
-      return _buildDataCubeOperationValue(PRIMITIVE_TYPE.FLOAT, vs.value);
-    case vs instanceof V1_CStrictDate:
-      return _buildDataCubeOperationValue(PRIMITIVE_TYPE.STRICTDATE, vs.value);
-    case vs instanceof V1_CDateTime:
-      return _buildDataCubeOperationValue(PRIMITIVE_TYPE.DATETIME, vs.value);
-    case vs instanceof V1_CStrictTime:
-      return _buildDataCubeOperationValue(PRIMITIVE_TYPE.STRICTTIME, vs.value);
-    default:
-      throw new UnsupportedOperationError(
-        `Unsupported primitive value '${vs}'`,
-      );
+  // run through the list of supported filter operations to find the one that can process the condition
+  for (const filterOperation of filterOperations) {
+    const condition = filterOperation.buildConditionSnapshot(
+      value,
+      columnGetter,
+    );
+    if (condition) {
+      return condition;
+    }
   }
-}
 
-function _buildDataCubeOperationValue(
-  type: string,
-  value: unknown,
-): DataCubeOperationValue {
-  return {
-    value: value,
-    type: type,
-  } satisfies DataCubeOperationValue;
+  // if no match found, proceed to unwrap if it's a NOT condition
+  if (matchFunctionName(value.function, DataCubeFunction.NOT)) {
+    // run through the list of supported filter operations to find the one that can process the condition
+    // again. Processing in this order ensures cases like x != y can be recognized as NOT_EQUAL operator
+    // instead of NOT(x == y)
+    const unwrapped = _unwrapNotFilterCondition(value);
+    for (const filterOperation of filterOperations) {
+      const condition = filterOperation.buildConditionSnapshot(
+        unwrapped,
+        columnGetter,
+      );
+      if (condition) {
+        condition.not = true;
+        return condition;
+      }
+    }
+
+    // if no match found, try to see if the condition is a group condition and process
+    if (
+      unwrapped instanceof V1_AppliedFunction &&
+      matchFunctionName(unwrapped.function, [
+        DataCubeFunction.AND,
+        DataCubeFunction.OR,
+      ])
+    ) {
+      const condition = _filter(unwrapped, columnGetter, filterOperations);
+      condition.not = true;
+      return condition;
+    }
+  }
+
+  // if no match found, throw error, we encountered a filter condition form that we don't support
+  throw new Error(`Can't process filter condition: no matching operator found`);
 }
 
 export function _buildConditionSnapshotProperty(
@@ -336,59 +381,4 @@ export function _buildConditionSnapshotProperty(
     operator: operator,
     type: property.class!, // TODO: fix this in engine (missing class in V1_AppliedProperty)
   } as DataCubeQuerySnapshotFilterCondition;
-}
-
-// TODO: configuration should be present while building the snapshot when loading
-export function _validateAggregateColumns(
-  colSpec: V1_ColSpec,
-  configuration: DataCubeConfiguration,
-) {
-  const property = guaranteeType(
-    colSpec.function1?.body[0],
-    V1_AppliedProperty,
-    "Can't find property for aggregation",
-  );
-  const propertyConfiguration = configuration.columns.findLast(
-    (col) => col.name === property.property,
-  );
-  guaranteeNonNullable(
-    propertyConfiguration,
-    `Aggregation column ${property} not present in configuration`,
-  );
-  const reduceFunction = guaranteeType(
-    colSpec.function2?.body[0],
-    V1_AppliedFunction,
-    "Can't find agregration function",
-  );
-  const entry = Object.entries(DataCubeFunction).find(
-    ([_, val]) => val === reduceFunction.function,
-  )?.[0] as keyof DataCubeQueryAggregateOperation;
-  if (propertyConfiguration?.aggregateOperator !== entry) {
-    throw new Error(
-      `Error loading aggregations for query; convergency issue in configuration and query provided`,
-    );
-  }
-}
-
-export function _validateSortColumns(
-  sortColumn: V1_AppliedFunction,
-  configuration: DataCubeConfiguration,
-) {
-  const property = guaranteeType(
-    _colSpecParam(sortColumn, 0).name,
-    V1_AppliedProperty,
-    "Can't find property for aggregation",
-  );
-  const propertyConfiguration = configuration.columns.findLast(
-    (col) => col.name === property.property,
-  );
-  guaranteeNonNullable(
-    propertyConfiguration,
-    `Aggregation column ${property} not present in configuration`,
-  );
-  if (sortColumn.function !== configuration.treeColumnSortDirection) {
-    throw new Error(
-      `Error loading query: convergency issue in configuration and query provided related to the sort information`,
-    );
-  }
 }

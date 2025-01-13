@@ -15,7 +15,7 @@
  */
 import {
   DataCubeQueryFilterOperation,
-  generateDefaultFilterConditionPrimitiveTypeValue,
+  _defaultPrimitiveTypeValue,
 } from './DataCubeQueryFilterOperation.js';
 import type { DataCubeQuerySnapshotFilterCondition } from '../DataCubeQuerySnapshot.js';
 import type { DataCubeColumn } from '../model/DataCubeColumn.js';
@@ -32,16 +32,16 @@ import {
   _property,
   _value,
 } from '../DataCubeQueryBuilderUtils.js';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { guaranteeNonNullable, returnUndefOnError } from '@finos/legend-shared';
 import {
   matchFunctionName,
+  V1_AppliedProperty,
   V1_PrimitiveValueSpecification,
   type V1_AppliedFunction,
-  type V1_AppliedProperty,
 } from '@finos/legend-graph';
 import {
-  _buildConditionSnapshotProperty,
-  _dataCubeOperationValue,
+  _operationPrimitiveValue,
+  _param,
 } from '../DataCubeQuerySnapshotBuilderUtils.js';
 
 export class DataCubeQueryFilterOperation__GreaterThan extends DataCubeQueryFilterOperation {
@@ -84,22 +84,33 @@ export class DataCubeQueryFilterOperation__GreaterThan extends DataCubeQueryFilt
   generateDefaultValue(column: DataCubeColumn) {
     return {
       type: column.type,
-      value: generateDefaultFilterConditionPrimitiveTypeValue(column.type),
+      value: _defaultPrimitiveTypeValue(column.type),
     };
   }
 
-  buildConditionSnapshot(expression: V1_AppliedFunction) {
+  buildConditionSnapshot(
+    expression: V1_AppliedFunction,
+    columnGetter: (name: string) => DataCubeColumn | undefined,
+  ) {
     if (matchFunctionName(expression.function, DataCubeFunction.GREATER_THAN)) {
-      const value = expression.parameters[1];
-      const filterConditionSnapshot = _buildConditionSnapshotProperty(
-        expression.parameters[0] as V1_AppliedProperty,
-        this.operator,
-      );
-      if (value instanceof V1_PrimitiveValueSpecification) {
-        filterConditionSnapshot.value = _dataCubeOperationValue(value);
-        return filterConditionSnapshot satisfies DataCubeQuerySnapshotFilterCondition;
+      if (expression.parameters.length !== 2) {
+        return undefined;
       }
-      return undefined;
+      const value =
+        expression.parameters[1] instanceof V1_PrimitiveValueSpecification
+          ? _operationPrimitiveValue(expression.parameters[1])
+          : undefined;
+      const property = returnUndefOnError(() =>
+        _param(expression, 0, V1_AppliedProperty),
+      );
+      const column = property ? columnGetter(property.property) : undefined;
+      if (column && value) {
+        return {
+          ...column,
+          operator: this.operator,
+          value,
+        };
+      }
     }
     return undefined;
   }

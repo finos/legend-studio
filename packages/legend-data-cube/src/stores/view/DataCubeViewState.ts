@@ -139,6 +139,7 @@ export class DataCubeViewState {
         source,
         query,
         this.engine.filterOperations,
+        this.engine.aggregateOperations,
       );
       this.snapshotService.broadcastSnapshot(initialSnapshot);
       this.dataCube.options?.onViewInitialized?.({

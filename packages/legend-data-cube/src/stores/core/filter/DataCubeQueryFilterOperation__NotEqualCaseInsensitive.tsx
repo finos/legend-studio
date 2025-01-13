@@ -15,7 +15,7 @@
  */
 import {
   DataCubeQueryFilterOperation,
-  generateDefaultFilterConditionPrimitiveTypeValue,
+  _defaultPrimitiveTypeValue,
 } from './DataCubeQueryFilterOperation.js';
 import type { DataCubeQuerySnapshotFilterCondition } from '../DataCubeQuerySnapshot.js';
 import type { DataCubeColumn } from '../model/DataCubeColumn.js';
@@ -43,7 +43,7 @@ import {
 } from '@finos/legend-graph';
 import {
   _buildConditionSnapshotProperty,
-  _dataCubeOperationValue,
+  _operationPrimitiveValue,
 } from '../DataCubeQuerySnapshotBuilderUtils.js';
 
 export class DataCubeQueryFilterOperation__NotEqualCaseInsensitive extends DataCubeQueryFilterOperation {
@@ -78,11 +78,14 @@ export class DataCubeQueryFilterOperation__NotEqualCaseInsensitive extends DataC
   generateDefaultValue(column: DataCubeColumn) {
     return {
       type: column.type,
-      value: generateDefaultFilterConditionPrimitiveTypeValue(column.type),
+      value: _defaultPrimitiveTypeValue(column.type),
     };
   }
 
-  buildConditionSnapshot(expression: V1_AppliedFunction) {
+  buildConditionSnapshot(
+    expression: V1_AppliedFunction,
+    columnGetter: (name: string) => DataCubeColumn | undefined,
+  ) {
     if (
       matchFunctionName(expression.function, DataCubeFunction.NOT) &&
       expression.parameters[0] instanceof V1_AppliedFunction &&
@@ -108,7 +111,7 @@ export class DataCubeQueryFilterOperation__NotEqualCaseInsensitive extends DataC
         this.operator,
       );
       if (value instanceof V1_PrimitiveValueSpecification) {
-        filterConditionSnapshot.value = _dataCubeOperationValue(value);
+        filterConditionSnapshot.value = _operationPrimitiveValue(value);
         return filterConditionSnapshot satisfies DataCubeQuerySnapshotFilterCondition;
       }
       return undefined;

@@ -95,11 +95,18 @@ export function buildExecutableQuery(
   if (data.leafExtendedColumns.length) {
     const leafExtendedFuncs = data.leafExtendedColumns.map((col) =>
       _function(DataCubeFunction.EXTEND, [
-        _col(col.name, _deserializeLambda(col.mapFn)),
+        _cols([
+          _colSpec(
+            col.name,
+            _deserializeLambda(col.mapFn),
+            col.reduceFn ? _deserializeLambda(col.reduceFn) : undefined,
+          ),
+        ]),
       ]),
     );
-    // instead of batching all the extend() functions, we sequence them, and reference the first one
-    // in the function map
+    // instead of batching all the extend() functions, we sequence them to allow for
+    // different flavors of extend (e.g. with and without window), and reference the first
+    // one in the function map
     _process('leafExtend', guaranteeNonNullable(leafExtendedFuncs[0]));
     leafExtendedFuncs.slice(1).forEach((func) => {
       sequence.push(func);
@@ -212,11 +219,18 @@ export function buildExecutableQuery(
   if (data.groupExtendedColumns.length) {
     const groupExtendedFuncs = data.groupExtendedColumns.map((col) =>
       _function(DataCubeFunction.EXTEND, [
-        _col(col.name, _deserializeLambda(col.mapFn)),
+        _cols([
+          _colSpec(
+            col.name,
+            _deserializeLambda(col.mapFn),
+            col.reduceFn ? _deserializeLambda(col.reduceFn) : undefined,
+          ),
+        ]),
       ]),
     );
-    // instead of batching all the extend() functions, we sequence them, and reference the first one
-    // in the function map
+    // instead of batching all the extend() functions, we sequence them to allow for
+    // different flavors of extend (e.g. with and without window), and reference the first
+    // one in the function map
     _process('groupExtend', guaranteeNonNullable(groupExtendedFuncs[0]));
     groupExtendedFuncs.slice(1).forEach((func) => {
       sequence.push(func);

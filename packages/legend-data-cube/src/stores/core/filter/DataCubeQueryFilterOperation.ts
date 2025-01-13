@@ -31,9 +31,7 @@ import {
 
 // --------------------------------- UTILITIES ---------------------------------
 
-export function generateDefaultFilterConditionPrimitiveTypeValue(
-  type: string,
-): unknown {
+export function _defaultPrimitiveTypeValue(type: string): unknown {
   switch (type) {
     case PRIMITIVE_TYPE.STRING:
       return '';
@@ -86,6 +84,7 @@ export abstract class DataCubeQueryFilterOperation {
 
   abstract buildConditionSnapshot(
     expression: V1_AppliedFunction,
+    columnGetter: (name: string) => DataCubeColumn | undefined,
   ): DataCubeQuerySnapshotFilterCondition | undefined;
 
   abstract buildConditionExpression(

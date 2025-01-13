@@ -42,7 +42,11 @@ import {
   DEFAULT_TREE_COLUMN_SORT_DIRECTION,
   DEFAULT_REPORT_NAME,
 } from '../DataCubeQueryEngine.js';
-import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
+import {
+  SerializationFactory,
+  usingModelSchema,
+  uuid,
+} from '@finos/legend-shared';
 import { createModelSchema, list, optional, primitive, raw } from 'serializr';
 
 export type DataCubeConfigurationColorKey =
@@ -52,6 +56,8 @@ export type DataCubeConfigurationColorKey =
   | 'error';
 
 export class DataCubeColumnConfiguration {
+  readonly uuid = uuid();
+
   name: string;
   type: string;
 
@@ -181,6 +187,8 @@ export class DataCubePivotLayoutConfiguration {
 }
 
 export class DataCubeConfiguration {
+  readonly uuid = uuid();
+
   name = DEFAULT_REPORT_NAME;
   description?: string | undefined;
   columns: DataCubeColumnConfiguration[] = [];

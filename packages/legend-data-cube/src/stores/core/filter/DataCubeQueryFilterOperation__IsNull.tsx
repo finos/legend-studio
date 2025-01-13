@@ -78,7 +78,10 @@ export class DataCubeQueryFilterOperation__IsNull extends DataCubeQueryFilterOpe
     return undefined;
   }
 
-  buildConditionSnapshot(expression: V1_AppliedFunction) {
+  buildConditionSnapshot(
+    expression: V1_AppliedFunction,
+    columnGetter: (name: string) => DataCubeColumn | undefined,
+  ) {
     if (matchFunctionName(expression.function, DataCubeFunction.IS_EMPTY)) {
       const filterConditionSnapshot = _buildConditionSnapshotProperty(
         expression.parameters[0] as V1_AppliedProperty,

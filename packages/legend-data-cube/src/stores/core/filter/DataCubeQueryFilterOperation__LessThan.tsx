@@ -16,7 +16,7 @@
 
 import {
   DataCubeQueryFilterOperation,
-  generateDefaultFilterConditionPrimitiveTypeValue,
+  _defaultPrimitiveTypeValue,
 } from './DataCubeQueryFilterOperation.js';
 import type { DataCubeQuerySnapshotFilterCondition } from '../DataCubeQuerySnapshot.js';
 import type { DataCubeColumn } from '../model/DataCubeColumn.js';
@@ -42,7 +42,7 @@ import {
 } from '@finos/legend-graph';
 import {
   _buildConditionSnapshotProperty,
-  _dataCubeOperationValue,
+  _operationPrimitiveValue,
 } from '../DataCubeQuerySnapshotBuilderUtils.js';
 
 export class DataCubeQueryFilterOperation__LessThan extends DataCubeQueryFilterOperation {
@@ -85,11 +85,14 @@ export class DataCubeQueryFilterOperation__LessThan extends DataCubeQueryFilterO
   generateDefaultValue(column: DataCubeColumn) {
     return {
       type: column.type,
-      value: generateDefaultFilterConditionPrimitiveTypeValue(column.type),
+      value: _defaultPrimitiveTypeValue(column.type),
     };
   }
 
-  buildConditionSnapshot(expression: V1_AppliedFunction) {
+  buildConditionSnapshot(
+    expression: V1_AppliedFunction,
+    columnGetter: (name: string) => DataCubeColumn | undefined,
+  ) {
     if (matchFunctionName(expression.function, DataCubeFunction.LESS_THAN)) {
       const value = expression.parameters[1];
       const filterConditionSnapshot = _buildConditionSnapshotProperty(
@@ -97,7 +100,7 @@ export class DataCubeQueryFilterOperation__LessThan extends DataCubeQueryFilterO
         this.operator,
       );
       if (value instanceof V1_PrimitiveValueSpecification) {
-        filterConditionSnapshot.value = _dataCubeOperationValue(value);
+        filterConditionSnapshot.value = _operationPrimitiveValue(value);
         return filterConditionSnapshot satisfies DataCubeQuerySnapshotFilterCondition;
       }
       return undefined;

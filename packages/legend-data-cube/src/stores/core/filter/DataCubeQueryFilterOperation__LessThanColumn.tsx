@@ -79,7 +79,10 @@ export class DataCubeQueryFilterOperation__LessThanColumn extends DataCubeQueryF
     };
   }
 
-  buildConditionSnapshot(expression: V1_AppliedFunction) {
+  buildConditionSnapshot(
+    expression: V1_AppliedFunction,
+    columnGetter: (name: string) => DataCubeColumn | undefined,
+  ) {
     if (matchFunctionName(expression.function, DataCubeFunction.LESS_THAN)) {
       const value = expression.parameters[1];
       const filterConditionSnapshot = _buildConditionSnapshotProperty(
