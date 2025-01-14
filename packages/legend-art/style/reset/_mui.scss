@@ -179,6 +179,10 @@
 
 // override global style
 
+.MuiSnackbarContent-root {
+  font-size: 1.2rem;
+}
+
 .MuiSvgIcon-root {
   color: var(--color-dark-grey-500);
   font-size: 2.5rem;
