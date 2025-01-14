@@ -118,7 +118,7 @@ const checkGrammarRoundtripMismatch = async (
   logPhase(phase, excludes, options?.debug);
 
   const transformGrammarToJsonResult =
-    await ENGINE_TEST_SUPPORT__grammarToJSON_model(grammarBefore);
+    await ENGINE_TEST_SUPPORT__grammarToJSON_model(grammarBefore, false);
   const entities = graphManagerState.graphManager.pureProtocolTextToEntities(
     JSON.stringify(transformGrammarToJsonResult),
   );

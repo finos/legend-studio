@@ -162,7 +162,7 @@ beforeAll(async () => {
         });
         const grammarText = fs.readFileSync(modelPath, { encoding: 'utf-8' });
         const transformGrammarToJsonResult =
-          await ENGINE_TEST_SUPPORT__grammarToJSON_model(grammarText);
+          await ENGINE_TEST_SUPPORT__grammarToJSON_model(grammarText, false);
         const entities =
           graphManagerState.graphManager.pureProtocolTextToEntities(
             JSON.stringify(transformGrammarToJsonResult),

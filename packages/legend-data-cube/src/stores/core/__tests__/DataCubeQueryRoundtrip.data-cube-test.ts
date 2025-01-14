@@ -24,7 +24,11 @@ import { INTERNAL__DataCubeSource } from '../model/DataCubeSource.js';
 import { _deserializeValueSpecification } from '../DataCubeQueryBuilderUtils.js';
 import { DataCubeConfiguration } from '../model/DataCubeConfiguration.js';
 import { TEST__DataCubeEngine } from './DataCubeTestUtils.js';
-import type { DataCubeQuerySnapshot } from '../DataCubeQuerySnapshot.js';
+import type {
+  DataCubeQuerySnapshot,
+  DataCubeQuerySnapshotFilterCondition,
+} from '../DataCubeQuerySnapshot.js';
+import { DataCubeQueryFilterOperator } from '../DataCubeQueryEngine.js';
 
 type TestCase = [
   string, // name
@@ -65,8 +69,20 @@ const FOCUSED_TESTS: string[] = [
   // tests added here will be the only tests run
 ];
 
+function _checkFilterOperator(operator: DataCubeQueryFilterOperator) {
+  return (snapshot: DataCubeQuerySnapshot) => {
+    expect(
+      (
+        snapshot.data.filter
+          ?.conditions[0] as DataCubeQuerySnapshotFilterCondition
+      ).operator,
+    ).toBe(operator);
+  };
+}
+
 const cases: TestCase[] = [
-  // Leaf-level Extend
+  // --------------------------------- LEAF-LEVEL EXTEND ---------------------------------
+
   _case(`Leaf-level Extend: with simple expression`, {
     query: `extend(~[a:x|1])`,
   }),
@@ -102,65 +118,347 @@ const cases: TestCase[] = [
     error: `Can't process extend() expression: Expected a transformation function expression`,
   }),
 
-  // Filter
+  // --------------------------------- FILTER ---------------------------------
+
+  _case(`Filter: ==`, {
+    query: `filter(x|$x.Age == 27)`,
+    columns: ['Age:Integer'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.EQUAL),
+  }),
+  _case(`Filter: == | with NOT`, {
+    query: `filter(x|$x.Age != 27)`,
+    columns: ['Age:Integer'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.NOT_EQUAL), // higher precendence than its non-negation counterpart
+  }),
+  _case(`Filter: == (case-insensitive)`, {
+    query: `filter(x|$x.Name->toLower() == toLower('Asd'))`,
+    columns: ['Name:String'],
+    validator: _checkFilterOperator(
+      DataCubeQueryFilterOperator.EQUAL_CASE_INSENSITIVE,
+    ),
+  }),
+  _case(`Filter: == (case-insensitive) | with NOT`, {
+    query: `filter(x|$x.Name->toLower() != toLower('Asd'))`,
+    columns: ['Name:String'],
+    validator: _checkFilterOperator(
+      DataCubeQueryFilterOperator.NOT_EQUAL_CASE_INSENSITIVE, // higher precendence than its non-negation counterpart
+    ),
+  }),
+  _case(`Filter: == column`, {
+    query: `filter(x|$x.Name == $x.Name2)`,
+    columns: ['Name:String', 'Name2:String'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.EQUAL_COLUMN),
+  }),
+  _case(`Filter: == column | with NOT`, {
+    query: `filter(x|$x.Name != $x.Name2)`,
+    columns: ['Name:String', 'Name2:String'],
+    validator: _checkFilterOperator(
+      DataCubeQueryFilterOperator.NOT_EQUAL_COLUMN,
+    ), // higher precendence than its non-negation counterpart
+  }),
+  _case(`Filter: == column (case-insensitive)`, {
+    query: `filter(x|$x.Name->toLower() == $x.Name2->toLower())`,
+    columns: ['Name:String', 'Name2:String'],
+    validator: _checkFilterOperator(
+      DataCubeQueryFilterOperator.EQUAL_CASE_INSENSITIVE_COLUMN,
+    ),
+  }),
+  _case(`Filter: == column (case-insensitive) | with NOT`, {
+    query: `filter(x|$x.Name->toLower() != $x.Name2->toLower())`,
+    columns: ['Name:String', 'Name2:String'],
+    validator: _checkFilterOperator(
+      DataCubeQueryFilterOperator.EQUAL_CASE_INSENSITIVE_COLUMN,
+    ), // higher precendence than its non-negation counterpart
+  }),
   _case(`Filter: contains()`, {
     query: `filter(x|$x.Name->contains('asd'))`,
+    columns: ['Name:String'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.CONTAIN),
   }),
-  _case(`Filter: contains() with NOT`, {
+  _case(`Filter: contains() | with NOT`, {
     query: `filter(x|!$x.Name->contains('asd'))`,
+    columns: ['Name:String'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.NOT_CONTAIN), // higher precendence than its non-negation counterpart
   }),
   _case(`Filter: contains() (case-insensitive)`, {
     query: `filter(x|$x.Name->toLower()->contains(toLower('Asd')))`,
+    columns: ['Name:String'],
+    validator: _checkFilterOperator(
+      DataCubeQueryFilterOperator.CONTAIN_CASE_INSENSITIVE,
+    ),
   }),
-  _case(`Filter: contains() (case-insensitive) with NOT`, {
+  _case(`Filter: contains() (case-insensitive) | with NOT`, {
     query: `filter(x|!$x.Name->toLower()->contains(toLower('Asd')))`,
+    columns: ['Name:String'],
+    validator: _checkFilterOperator(
+      DataCubeQueryFilterOperator.CONTAIN_CASE_INSENSITIVE,
+    ),
   }),
   _case(`Filter: endsWith()`, {
     query: `filter(x|$x.Name->endsWith('asd'))`,
+    columns: ['Name:String'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.END_WITH),
   }),
-  _case(`Filter: endsWith() with NOT`, {
+  _case(`Filter: endsWith() | with NOT`, {
     query: `filter(x|!$x.Name->endsWith('asd'))`,
+    columns: ['Name:String'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.NOT_END_WITH), // higher precendence than its non-negation counterpart
   }),
   _case(`Filter: endsWith() (case-insensitive)`, {
     query: `filter(x|$x.Name->toLower()->endsWith(toLower('Asd')))`,
+    columns: ['Name:String'],
+    validator: _checkFilterOperator(
+      DataCubeQueryFilterOperator.END_WITH_CASE_INSENSITIVE,
+    ),
   }),
-  _case(`Filter: endsWith() (case-insensitive) with NOT`, {
+  _case(`Filter: endsWith() (case-insensitive) | with NOT`, {
     query: `filter(x|!$x.Name->toLower()->endsWith(toLower('Asd')))`,
+    columns: ['Name:String'],
+    validator: _checkFilterOperator(
+      DataCubeQueryFilterOperator.END_WITH_CASE_INSENSITIVE,
+    ),
   }),
-  _case(`Filter: ==`, {
-    query: `filter(x|$x.Age == 27)`,
+  _case(`Filter: startsWith()`, {
+    query: `filter(x|$x.Name->startsWith('asd'))`,
+    columns: ['Name:String'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.START_WITH),
   }),
-  _case(`Filter: == case insensitive`, {
-    query: `filter(x|$x.Age == 27)`,
+  _case(`Filter: startsWith() | with NOT`, {
+    query: `filter(x|!$x.Name->startsWith('asd'))`,
+    columns: ['Name:String'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.NOT_START_WITH), // higher precendence than its non-negation counterpart
+  }),
+  _case(`Filter: startsWith() (case-insensitive)`, {
+    query: `filter(x|$x.Name->toLower()->startsWith(toLower('Asd')))`,
+    columns: ['Name:String'],
+    validator: _checkFilterOperator(
+      DataCubeQueryFilterOperator.START_WITH_CASE_INSENSITIVE,
+    ),
+  }),
+  _case(`Filter: startsWith() (case-insensitive) | with NOT`, {
+    query: `filter(x|!$x.Name->toLower()->startsWith(toLower('Asd')))`,
+    columns: ['Name:String'],
+    validator: _checkFilterOperator(
+      DataCubeQueryFilterOperator.START_WITH_CASE_INSENSITIVE,
+    ),
+  }),
+  _case(`Filter: isEmpty()`, {
+    query: `filter(x|$x.Name->isEmpty())`,
+    columns: ['Name:String'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.IS_NULL),
+  }),
+  _case(`Filter: isEmpty() | with NOT`, {
+    query: `filter(x|!$x.Name->isEmpty())`,
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.IS_NOT_NULL), // higher precendence than its non-negation counterpart
+  }),
+  _case(`Filter: >`, {
+    query: `filter(x|$x.Age > 27)`,
+    columns: ['Age:Integer'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.GREATER_THAN),
+  }),
+  _case(`Filter: > | with NOT`, {
+    query: `filter(x|!($x.Age > 27))`,
+    columns: ['Age:Integer'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.GREATER_THAN),
+  }),
+  _case(`Filter: > column`, {
+    query: `filter(x|$x.Age > $x.Age2)`,
+    columns: ['Age:Integer'],
+    validator: _checkFilterOperator(
+      DataCubeQueryFilterOperator.GREATER_THAN_COLUMN,
+    ),
+  }),
+  _case(`Filter: > column | with NOT`, {
+    query: `filter(x|!($x.Age > $x.Age2))`,
+    columns: ['Age:Integer'],
+    validator: _checkFilterOperator(
+      DataCubeQueryFilterOperator.GREATER_THAN_COLUMN,
+    ),
+  }),
+  _case(`Filter: >=`, {
+    query: `filter(x|$x.Age >= 27)`,
+    columns: ['Age:Integer'],
+    validator: _checkFilterOperator(
+      DataCubeQueryFilterOperator.GREATER_THAN_OR_EQUAL,
+    ),
+  }),
+  _case(`Filter: >= | with NOT`, {
+    query: `filter(x|!($x.Age >= 27))`,
+    columns: ['Age:Integer'],
+    validator: _checkFilterOperator(
+      DataCubeQueryFilterOperator.GREATER_THAN_OR_EQUAL,
+    ),
+  }),
+  _case(`Filter: >= column`, {
+    query: `filter(x|$x.Age >= $x.Age2)`,
+    columns: ['Age:Integer', 'Age2:Integer'],
+    validator: _checkFilterOperator(
+      DataCubeQueryFilterOperator.GREATER_THAN_OR_EQUAL_COLUMN,
+    ),
+  }),
+  _case(`Filter: >= column | with NOT`, {
+    query: `filter(x|!($x.Age >= $x.Age2))`,
+    columns: ['Age:Integer', 'Age2:Integer'],
+    validator: _checkFilterOperator(
+      DataCubeQueryFilterOperator.GREATER_THAN_OR_EQUAL_COLUMN,
+    ),
+  }),
+  _case(`Filter: <`, {
+    query: `filter(x|$x.Age < 27)`,
+    columns: ['Age:Integer'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.LESS_THAN),
+  }),
+  _case(`Filter: < | with NOT`, {
+    query: `filter(x|!($x.Age < 27))`,
+    columns: ['Age:Integer'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.LESS_THAN),
+  }),
+  _case(`Filter: < column`, {
+    query: `filter(x|$x.Age < $x.Age2)`,
+    columns: ['Age:Integer', 'Age2:Integer'],
+    validator: _checkFilterOperator(
+      DataCubeQueryFilterOperator.LESS_THAN_COLUMN,
+    ),
+  }),
+  _case(`Filter: < column | with NOT`, {
+    query: `filter(x|!($x.Age < $x.Age2))`,
+    columns: ['Age:Integer', 'Age2:Integer'],
+    validator: _checkFilterOperator(
+      DataCubeQueryFilterOperator.LESS_THAN_COLUMN,
+    ),
+  }),
+  _case(`Filter: <=`, {
+    query: `filter(x|$x.Age <= 27)`,
+    columns: ['Age:Integer'],
+    validator: _checkFilterOperator(
+      DataCubeQueryFilterOperator.LESS_THAN_OR_EQUAL,
+    ),
+  }),
+  _case(`Filter: <= | with NOT`, {
+    query: `filter(x|!($x.Age <= 27))`,
+    columns: ['Age:Integer'],
+    validator: _checkFilterOperator(
+      DataCubeQueryFilterOperator.LESS_THAN_OR_EQUAL,
+    ),
+  }),
+  _case(`Filter: <= column`, {
+    query: `filter(x|$x.Age <= $x.Age2)`,
+    columns: ['Age:Integer', 'Age2:Integer'],
+    validator: _checkFilterOperator(
+      DataCubeQueryFilterOperator.LESS_THAN_OR_EQUAL_COLUMN,
+    ),
+  }),
+  _case(`Filter: <= column | with NOT`, {
+    query: `filter(x|!($x.Age <= $x.Age2))`,
+    columns: ['Age:Integer', 'Age2:Integer'],
+    validator: _checkFilterOperator(
+      DataCubeQueryFilterOperator.LESS_THAN_OR_EQUAL_COLUMN,
+    ),
   }),
   _case(`Filter: !=`, {
     query: `filter(x|$x.Age != 27)`,
+    columns: ['Age:Integer'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.NOT_EQUAL),
   }),
-  _case(`Filter: is null`, {
-    query: `filter(x|$x.Athlete->isEmpty())`,
+  _case(`Filter: != | with NOT`, {
+    query: `filter(x|!($x.Age != 27))`,
+    columns: ['Age:Integer'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.NOT_EQUAL),
+  }),
+  _case(`Filter: != (case-insensitive)`, {
+    query: `filter(x|$x.Name->toLower() != toLower('Asd'))`,
+    columns: ['Name:String'],
+    validator: _checkFilterOperator(
+      DataCubeQueryFilterOperator.NOT_EQUAL_CASE_INSENSITIVE,
+    ),
+  }),
+  _case(`Filter: != (case-insensitive) | with NOT`, {
+    query: `filter(x|!($x.Name->toLower() != toLower('Asd')))`,
+    columns: ['Name:String'],
+    validator: _checkFilterOperator(
+      DataCubeQueryFilterOperator.NOT_EQUAL_CASE_INSENSITIVE,
+    ),
   }),
   _case(`Filter: != column`, {
-    query: `filter(x|$x.Age != $x.Age2)`,
+    query: `filter(x|$x.Name != $x.Name2)`,
+    columns: ['Name:String', 'Name2:String'],
+    validator: _checkFilterOperator(
+      DataCubeQueryFilterOperator.NOT_EQUAL_COLUMN,
+    ),
   }),
-  _case(`Filter: endsWith() case insensitive`, {
-    query: `filter(x|$x.Athlete->toLower()->endsWith(toLower('Phelps')))`,
+  _case(`Filter: != column | with NOT`, {
+    query: `filter(x|!($x.Name != $x.Name2))`,
+    columns: ['Name:String', 'Name2:String'],
+    validator: _checkFilterOperator(
+      DataCubeQueryFilterOperator.NOT_EQUAL_COLUMN,
+    ),
   }),
-  _case(`Filter: NOT`, {
-    query: `filter(x|!($x.Age >= 27))`,
+  _case(`Filter: != column (case-insensitive)`, {
+    query: `filter(x|$x.Name->toLower() != $x.Name2->toLower())`,
+    columns: ['Name:String', 'Name2:String'],
+    validator: _checkFilterOperator(
+      DataCubeQueryFilterOperator.NOT_EQUAL_CASE_INSENSITIVE_COLUMN,
+    ),
   }),
-  _case(`Filter: NOT with !=`, {
-    query: `filter(x|!($x.Age != 27))`,
+  _case(`Filter: != column (case-insensitive) | with NOT`, {
+    query: `filter(x|!($x.Name->toLower() != $x.Name2->toLower()))`,
+    columns: ['Name:String', 'Name2:String'],
+    validator: _checkFilterOperator(
+      DataCubeQueryFilterOperator.NOT_EQUAL_CASE_INSENSITIVE_COLUMN,
+    ),
   }),
+  _case(`Filter: !contains()`, {
+    query: `filter(x|!$x.Name->contains('asd'))`,
+    columns: ['Name:String'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.NOT_CONTAIN),
+  }),
+  _case(`Filter: !contains() | with NOT`, {
+    query: `filter(x|!!$x.Name->contains('asd'))`,
+    columns: ['Name:String'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.NOT_CONTAIN),
+  }),
+  _case(`Filter: !endsWith()`, {
+    query: `filter(x|!$x.Name->endsWith('asd'))`,
+    columns: ['Name:String'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.NOT_END_WITH),
+  }),
+  _case(`Filter: !endsWith() | with NOT`, {
+    query: `filter(x|!!$x.Name->endsWith('asd'))`,
+    columns: ['Name:String'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.NOT_END_WITH),
+  }),
+  _case(`Filter: !startsWith()`, {
+    query: `filter(x|!$x.Name->startsWith('asd'))`,
+    columns: ['Name:String'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.NOT_START_WITH),
+  }),
+  _case(`Filter: !startsWith() | with NOT`, {
+    query: `filter(x|!!$x.Name->startsWith('asd'))`,
+    columns: ['Name:String'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.NOT_START_WITH),
+  }),
+  _case(`Filter: !isEmpty()`, {
+    query: `filter(x|!$x.Name->isEmpty())`,
+    columns: ['Name:String'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.IS_NOT_NULL),
+  }),
+  _case(`Filter: !isEmpty() | with NOT`, {
+    query: `filter(x|!!$x.Name->isEmpty())`,
+    columns: ['Name:String'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.IS_NOT_NULL),
+  }),
+
+  // filter tree grouping
   _case(`Filter: OR group`, {
     query: `filter(x|($x.Age != 27) || ($x.Athlete->toLower() != toLower('Michael Phelps')))`,
   }),
-  _case(`Filter: OR group with NOT`, {
+  _case(`Filter: OR group | with NOT`, {
     query: `filter(x|!(($x.Age != 27) || ($x.Athlete->toLower() != toLower('Michael Phelps'))))`,
   }),
   _case(`Filter: AND group`, {
     query: `filter(x|($x.Age != 27) && ($x.Athlete == 'Michael Phelps'))`,
   }),
-  _case(`Filter: AND group with NOT`, {
+  _case(`Filter: AND group | with NOT`, {
     query: `filter(x|!(($x.Age != 27) && ($x.Athlete == 'Michael Phelps')))`,
   }),
   _case(`Filter: simple grouping`, {
@@ -173,6 +471,7 @@ const cases: TestCase[] = [
   _case(`Filter: with leaf-level extended column`, {
     query: `extend(~[name:c|$c.val->toOne() + 1])->filter(x|$x.name != 27)`,
   }),
+
   _case(`Filter: ERROR - bad argument: non-lambda provided`, {
     query: `filter('2')`,
     error: `Can't process filter() expression: Expected parameter at index 0 to be a lambda expression`,
@@ -189,7 +488,8 @@ const cases: TestCase[] = [
   //   query: `filter(x|$x.Age.contains(27))`,
   // }),
 
-  // Select
+  // --------------------------------- SELECT ---------------------------------
+
   _case(`Select: BASIC`, {
     query: `select(~[a])`,
     columns: ['a:Integer'],
@@ -199,25 +499,35 @@ const cases: TestCase[] = [
     columns: ['a:Integer'],
   }),
 
-  // Pivot
+  // --------------------------------- PIVOT ---------------------------------
+
   // _case(`Validation: Bad composition pivot()`, {
   //   query: `pivot(~a, ~b:x|$x.a:x|$x->sum())`,
   //   error: `Unsupported function composition pivot() (supported composition: extend()->filter()->select()->[sort()->pivot()->cast()]->[groupBy()->sort()]->extend()->sort()->limit())`,
+  // }),
+  // _case(`Valid: Usage - Pivot: pivot()->cast()->sort()->limit()`, {
+  //   query: `pivot(~a, ~b:x|$x.a:x|$x->sum())->cast(@meta::pure::metamodel::relation::Relation<(a:Integer)>)->sort([ascending(~a)])->limit(10)`,
+  //   columns: ['a:Integer'],
+  // }),
+  // _case(`Valid: pivot()`, {
+  //   query: `pivot(~a, ~b:x|$x.a:x|$x->sum())->cast(@meta::pure::metamodel::relation::Relation<(a:Integer)>)`,
   // }),
   _case(`Pivot: ERROR - casting used without dynamic function pivot()`, {
     query: `cast(@meta::pure::metamodel::relation::Relation<(a:Integer)>)`,
     error: `Can't process expression: Unsupported function composition cast() (supported composition: extend()->filter()->select()->[sort()->pivot()->cast()]->[groupBy()->sort()]->extend()->sort()->limit())`,
   }),
 
-  // Group By
+  // --------------------------------- GROUP BY ---------------------------------
+
   _case(`GroupBy: BASIC`, {
     query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])`,
     columns: ['a:String', 'b:Integer'],
   }),
 
-  // Group-Level Extend
+  // --------------------------------- GROUP-LEVEL EXTEND ---------------------------------
 
-  // Sort
+  // --------------------------------- SORT ---------------------------------
+
   _case(`Sort: BASIC`, {
     query: `sort([~a->ascending()])`,
     columns: ['a:Integer'],
@@ -237,7 +547,8 @@ const cases: TestCase[] = [
     error: `Can't process function: Expected function to be one of [ascending, descending]`,
   }),
 
-  // Limit
+  // --------------------------------- LIMIT ---------------------------------
+
   _case(`Limit: BASIC`, {
     query: `limit(10)`,
   }),
@@ -246,28 +557,30 @@ const cases: TestCase[] = [
     error: `Can't process limit() expression: Expected parameter at index 0 to be an integer instance value`,
   }),
 
-  // Sequence
-  // _case(`Sequence: extend()->filter()->sort()->limit()`, {
+  // --------------------------------- COMPOSITION ---------------------------------
+
+  // _case(`Composition: extend()->filter()->sort()->limit()`, {
   //   query: `extend(~[a:x|1])->filter(x|$x.a==1)->sort([ascending(~a)])->limit(10)`,
   //   columns: ['b:Integer'],
   // }),
-  // _case(`Sequence: extend()->filter()->select()->sort()->limit()`, {
+  // _case(`Composition: extend()->filter()->select()->sort()->limit()`, {
   //   query: `extend(~[a:x|1])->filter(x|$x.a==1)->select(~[a])->sort([ascending(~a)])->limit(10)`,
   //   columns: ['b:Integer'],
   // }),
-  // _case(`Sequence: extend()->groupBy()->extend()->sort()->limit()`, {
+  // _case(`Composition: extend()->groupBy()->extend()->sort()->limit()`, {
   //   query: `extend(~[a:x|1])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([ascending(~a)])->extend(~[b:x|2])->limit(10)`,
   // }),
-  // _case(`Sequence: extend()->filter()->groupBy()->extend()->sort()->limit()`, {
+  // _case(`Composition: extend()->filter()->groupBy()->extend()->sort()->limit()`, {
   //   query: `extend(~[a:x|1])->filter(x|$x.a==1)->groupBy(~[a], ~b:x|$x.b:x|$x->sum())->sort([ascending(~a)])->extend(~[c:x|2])->limit(10)`,
   //   columns: ['b:Integer'],
   // }),
-  // _case(`Sequence: extend()->filter()->groupBy()->sort()->limit()`, {
+  // _case(`Composition: extend()->filter()->groupBy()->sort()->limit()`, {
   //   query: `extend(~[a:x|1])->filter(x|$x.a==1)->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([ascending(~a)])->limit(10)`,
   //   columns: ['b:Integer'],
   // }),
 
-  // Validation
+  // --------------------------------- VALIDATION ---------------------------------
+
   _case(`Validation: ERROR - not a function expression`, {
     query: `2`,
     error: `Can't process expression: Expected a function expression`,
@@ -296,14 +609,7 @@ const cases: TestCase[] = [
     columns: ['a:Integer', 'a:Integer', 'b:Integer'],
     error: `Can't process source column 'a': another column with the same name is already registered`,
   }),
-  /** TODO: @datacube roundtrip - enable when we support relation casting syntax */
-  // _case(`Valid: Usage - Pivot: pivot()->cast()->sort()->limit()`, {
-  //   query: `pivot(~a, ~b:x|$x.a:x|$x->sum())->cast(@meta::pure::metamodel::relation::Relation<(a:Integer)>)->sort([ascending(~a)])->limit(10)`,
-  //   columns: ['a:Integer'],
-  // }),
-  // _case(`Valid: pivot()`, {
-  //   query: `pivot(~a, ~b:x|$x.a:x|$x->sum())->cast(@meta::pure::metamodel::relation::Relation<(a:Integer)>)`,
-  // }),
+  // TODO: vaidation against configuration
 ];
 
 describe(unitTest('Analyze and build base snapshot'), () => {
@@ -342,14 +648,13 @@ describe(unitTest('Analyze and build base snapshot'), () => {
           engine.filterOperations,
           engine.aggregateOperations,
         );
-
-        validator?.(snapshot);
       } catch (err) {
         assertErrorThrown(err);
         expect(err.message).toEqual(error);
       }
 
       if (snapshot) {
+        validator?.(snapshot);
         expect(error).toBeUndefined();
         expect(await engine.getPartialQueryCode(snapshot)).toEqual(code);
       }
