@@ -32,13 +32,16 @@ import {
   _value,
   _var,
 } from '../DataCubeQueryBuilderUtils.js';
-import { guaranteeNonNullable, isString } from '@finos/legend-shared';
 import {
-  matchFunctionName,
-  V1_AppliedFunction,
-  V1_AppliedProperty,
-} from '@finos/legend-graph';
-import { _buildConditionSnapshotProperty } from '../DataCubeQuerySnapshotBuilderUtils.js';
+  guaranteeNonNullable,
+  isString,
+  returnUndefOnError,
+} from '@finos/legend-shared';
+import { type V1_AppliedFunction } from '@finos/legend-graph';
+import {
+  _caseSensitiveBaseFilterCondition,
+  _unwrapNotFilterCondition,
+} from '../DataCubeQuerySnapshotBuilderUtils.js';
 
 export class DataCubeQueryFilterOperation__NotEqualCaseInsensitiveColumn extends DataCubeQueryFilterOperation {
   override get label() {
@@ -63,8 +66,8 @@ export class DataCubeQueryFilterOperation__NotEqualCaseInsensitiveColumn extends
 
   isCompatibleWithValue(value: DataCubeOperationValue) {
     return (
-      value.type === DataCubeOperationAdvancedValueType.COLUMN &&
       value.value !== undefined &&
+      value.type === DataCubeOperationAdvancedValueType.COLUMN &&
       isString(value.value)
     );
   }
@@ -78,42 +81,21 @@ export class DataCubeQueryFilterOperation__NotEqualCaseInsensitiveColumn extends
 
   buildConditionSnapshot(
     expression: V1_AppliedFunction,
-    columnGetter: (name: string) => DataCubeColumn | undefined,
+    columnGetter: (name: string) => DataCubeColumn,
   ) {
-    if (
-      matchFunctionName(expression.function, DataCubeFunction.NOT) &&
-      expression.parameters[0] instanceof V1_AppliedFunction &&
-      expression.parameters[0].parameters[0] instanceof V1_AppliedFunction &&
-      expression.parameters[0].parameters[1] instanceof V1_AppliedFunction &&
-      matchFunctionName(
-        expression.parameters[0].function,
-        DataCubeFunction.EQUAL,
-      ) &&
-      matchFunctionName(
-        expression.parameters[0].parameters[0].function,
-        DataCubeFunction.TO_LOWERCASE,
-      )
-    ) {
-      const func = expression.parameters[0];
-      func.parameters = [
-        expression.parameters[0].parameters[0].parameters[0]!,
-        expression.parameters[0].parameters[1].parameters[0]!,
-      ];
-      const value = func.parameters[1];
-      const filterConditionSnapshot = _buildConditionSnapshotProperty(
-        func.parameters[0] as V1_AppliedProperty,
-        this.operator,
-      );
-      if (value instanceof V1_AppliedProperty) {
-        filterConditionSnapshot.value = {
-          value: value.property,
-          type: DataCubeOperationAdvancedValueType.COLUMN,
-        } satisfies DataCubeOperationValue;
-        return filterConditionSnapshot satisfies DataCubeQuerySnapshotFilterCondition;
-      }
+    const unwrapped = returnUndefOnError(() =>
+      _unwrapNotFilterCondition(expression),
+    );
+    if (!unwrapped) {
       return undefined;
     }
-    return undefined;
+    return this._finalizeConditionSnapshot(
+      _caseSensitiveBaseFilterCondition(
+        unwrapped,
+        columnGetter,
+        DataCubeFunction.EQUAL,
+      ),
+    );
   }
 
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {

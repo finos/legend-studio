@@ -16,7 +16,7 @@
 import {
   PRIMITIVE_TYPE,
   V1_AppliedFunction,
-  type V1_AppliedProperty,
+  V1_AppliedProperty,
   V1_CBoolean,
   V1_CDateTime,
   V1_CDecimal,
@@ -30,7 +30,7 @@ import {
   V1_ColSpecArray,
   V1_GenericTypeInstance,
   type V1_ValueSpecification,
-  type V1_PrimitiveValueSpecification,
+  V1_PrimitiveValueSpecification,
   extractElementNameFromPath as _name,
   matchFunctionName,
   V1_RelationType,
@@ -51,10 +51,11 @@ import {
 } from '@finos/legend-shared';
 import {
   DataCubeFunction,
+  DataCubeOperationAdvancedValueType,
   DataCubeQueryFilterGroupOperator,
+  getDataType,
   TREE_COLUMN_VALUE_SEPARATOR,
   type DataCubeOperationValue,
-  type DataCubeQueryFilterOperator,
 } from './DataCubeQueryEngine.js';
 import type {
   DataCubeQuerySnapshotFilter,
@@ -129,7 +130,7 @@ export function _funcMatch(
 
 export function _relationType(genericType: V1_GenericType) {
   return guaranteeType(
-    genericType.typeArguments?.[0]?.rawType,
+    genericType.typeArguments[0]?.rawType,
     V1_RelationType,
     `Can't process generic type: failed to extract relation type`,
   );
@@ -145,27 +146,25 @@ export function _packageableType(genericType: V1_GenericType) {
 
 export function _operationPrimitiveValue(
   value: V1_PrimitiveValueSpecification,
-): DataCubeOperationValue | undefined {
-  switch (true) {
-    case value instanceof V1_CString:
-      return { value: value.value, type: PRIMITIVE_TYPE.STRING };
-    case value instanceof V1_CBoolean:
-      return { value: value.value, type: PRIMITIVE_TYPE.BOOLEAN };
-    case value instanceof V1_CDecimal:
-      return { value: value.value, type: PRIMITIVE_TYPE.DECIMAL };
-    case value instanceof V1_CInteger:
-      return { value: value.value, type: PRIMITIVE_TYPE.INTEGER };
-    case value instanceof V1_CFloat:
-      return { value: value.value, type: PRIMITIVE_TYPE.FLOAT };
-    case value instanceof V1_CStrictDate:
-      return { value: value.value, type: PRIMITIVE_TYPE.STRICTDATE };
-    case value instanceof V1_CDateTime:
-      return { value: value.value, type: PRIMITIVE_TYPE.DATETIME };
-    case value instanceof V1_CStrictTime:
-      return { value: value.value, type: PRIMITIVE_TYPE.STRICTTIME };
-    default:
-      return undefined;
+): DataCubeOperationValue {
+  if (value instanceof V1_CString) {
+    return { value: value.value, type: PRIMITIVE_TYPE.STRING };
+  } else if (value instanceof V1_CBoolean) {
+    return { value: value.value, type: PRIMITIVE_TYPE.BOOLEAN };
+  } else if (value instanceof V1_CDecimal) {
+    return { value: value.value, type: PRIMITIVE_TYPE.DECIMAL };
+  } else if (value instanceof V1_CInteger) {
+    return { value: value.value, type: PRIMITIVE_TYPE.INTEGER };
+  } else if (value instanceof V1_CFloat) {
+    return { value: value.value, type: PRIMITIVE_TYPE.FLOAT };
+  } else if (value instanceof V1_CStrictDate) {
+    return { value: value.value, type: PRIMITIVE_TYPE.STRICTDATE };
+  } else if (value instanceof V1_CDateTime) {
+    return { value: value.value, type: PRIMITIVE_TYPE.DATETIME };
+  } else if (value instanceof V1_CStrictTime) {
+    return { value: value.value, type: PRIMITIVE_TYPE.STRICTTIME };
   }
+  throw new UnsupportedOperationError(`Can't process primitive value`);
 }
 
 // --------------------------------- BUILDING BLOCKS ---------------------------------
@@ -278,20 +277,20 @@ export function _filter(
   if (matchFunctionName(value.function, DataCubeFunction.AND)) {
     value.parameters.forEach((param) => {
       group.conditions.push(
-        _filterCondition(param, columnGetter, filterOperations)!,
+        _filterCondition(param, columnGetter, filterOperations),
       );
     });
   } else if (matchFunctionName(value.function, DataCubeFunction.OR)) {
     group.groupOperator = DataCubeQueryFilterGroupOperator.OR;
     value.parameters.forEach((param) => {
       group.conditions.push(
-        _filterCondition(param, columnGetter, filterOperations)!,
+        _filterCondition(param, columnGetter, filterOperations),
       );
     });
   } else {
     // handles the case where the root is a simple condition or a NOT condition
     group.conditions.push(
-      _filterCondition(value, columnGetter, filterOperations)!,
+      _filterCondition(value, columnGetter, filterOperations),
     );
   }
   return group;
@@ -301,6 +300,10 @@ export function _unwrapNotFilterCondition(func: V1_AppliedFunction) {
   assertTrue(
     matchFunctionName(func.function, DataCubeFunction.NOT),
     `Can't process filter condition expression: failed to unwrap not() function`,
+  );
+  assertTrue(
+    func.parameters.length === 1,
+    `Can't process not() function: Expected 1 parameter`,
   );
   return _param(func, 0, V1_AppliedFunction);
 }
@@ -372,13 +375,134 @@ function _filterCondition(
   throw new Error(`Can't process filter condition: no matching operator found`);
 }
 
-export function _buildConditionSnapshotProperty(
-  property: V1_AppliedProperty,
-  operator: DataCubeQueryFilterOperator,
-): DataCubeQuerySnapshotFilterCondition {
-  return {
-    name: property.property,
-    operator: operator,
-    type: property.class!, // TODO: fix this in engine (missing class in V1_AppliedProperty)
-  } as DataCubeQuerySnapshotFilterCondition;
+function _filterConditionValue(
+  value: V1_ValueSpecification | undefined,
+  column: DataCubeColumn,
+  columnGetter: (name: string) => DataCubeColumn,
+) {
+  if (value instanceof V1_PrimitiveValueSpecification) {
+    return _operationPrimitiveValue(value);
+  } else if (value instanceof V1_AppliedProperty) {
+    const column2 = columnGetter(value.property);
+    if (getDataType(column.type) !== getDataType(column2.type)) {
+      return undefined;
+    }
+    return {
+      value: column2.name,
+      type: DataCubeOperationAdvancedValueType.COLUMN,
+    };
+  } else if (value === undefined) {
+    return {
+      type: DataCubeOperationAdvancedValueType.VOID,
+    };
+  }
+
+  return undefined;
+}
+
+/**
+ * Processes filter conditions of form: column | operator | value, e.g.
+ * $x.Age > 5
+ * $x.Name == 'abc'
+ * $x.Name->startsWith('abc')
+ * $x.Age > $x.Age2
+ * $x.Name == $x.Name2
+ */
+export function _baseFilterCondition(
+  expression: V1_AppliedFunction,
+  columnGetter: (name: string) => DataCubeColumn,
+  func: string,
+) {
+  if (matchFunctionName(expression.function, func)) {
+    if (
+      expression.parameters.length !== 2 &&
+      expression.parameters.length !== 1
+    ) {
+      return undefined;
+    }
+
+    const column =
+      expression.parameters[0] instanceof V1_AppliedProperty
+        ? columnGetter(expression.parameters[0].property)
+        : undefined;
+    if (!column) {
+      return undefined;
+    }
+
+    const value = _filterConditionValue(
+      expression.parameters[1],
+      column,
+      columnGetter,
+    );
+    if (!value) {
+      return undefined;
+    }
+
+    return {
+      column,
+      value,
+    };
+  }
+  return undefined;
+}
+
+/**
+ * Processes filter conditions of form: column (case-insensitive) | operator | value (case-insensitive), e.g.
+ * $x.Name->toLower() == 'abc'->toLower()
+ * $x.Name->toLower() == $x.Name2->toLower()
+ */
+export function _caseSensitiveBaseFilterCondition(
+  expression: V1_AppliedFunction,
+  columnGetter: (name: string) => DataCubeColumn,
+  func: string,
+) {
+  if (matchFunctionName(expression.function, func)) {
+    if (expression.parameters.length !== 2) {
+      return undefined;
+    }
+
+    const param1 = expression.parameters[0];
+    if (
+      !(param1 instanceof V1_AppliedFunction) ||
+      !matchFunctionName(param1.function, DataCubeFunction.TO_LOWERCASE)
+    ) {
+      return undefined;
+    }
+    if (param1.parameters.length !== 1) {
+      return undefined;
+    }
+    const column =
+      param1.parameters[0] instanceof V1_AppliedProperty
+        ? columnGetter(param1.parameters[0].property)
+        : undefined;
+    if (!column) {
+      return undefined;
+    }
+
+    const param2 = expression.parameters[1];
+    if (
+      !(param2 instanceof V1_AppliedFunction) ||
+      !matchFunctionName(param2.function, DataCubeFunction.TO_LOWERCASE)
+    ) {
+      return undefined;
+    }
+    if (param2.parameters.length !== 1) {
+      return undefined;
+    }
+    const value = _filterConditionValue(
+      param2.parameters[0],
+      column,
+      columnGetter,
+    );
+
+    if (!value) {
+      return undefined;
+    }
+
+    return {
+      column,
+      value,
+    };
+  }
+  return undefined;
 }

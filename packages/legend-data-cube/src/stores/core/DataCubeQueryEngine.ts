@@ -142,11 +142,27 @@ export enum DataCubeColumnKind {
 
 export enum DataCubeOperationAdvancedValueType {
   COLUMN = 'COLUMN',
+  VOID = 'VOID',
   // PARAMETER
 }
 
+export function isPrimitiveType(type: string) {
+  return (
+    [
+      PRIMITIVE_TYPE.NUMBER,
+      PRIMITIVE_TYPE.INTEGER,
+      PRIMITIVE_TYPE.DECIMAL,
+      PRIMITIVE_TYPE.FLOAT,
+      PRIMITIVE_TYPE.DATE,
+      PRIMITIVE_TYPE.STRICTDATE,
+      PRIMITIVE_TYPE.DATETIME,
+      PRIMITIVE_TYPE.STRING,
+    ] as string[]
+  ).includes(type);
+}
+
 export type DataCubeOperationValue = {
-  value: unknown;
+  value?: unknown;
   type: string;
 };
 

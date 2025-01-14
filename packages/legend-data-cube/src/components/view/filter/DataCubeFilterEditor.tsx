@@ -623,14 +623,12 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
             ))}
         </FormDropdownMenu>
         <div className="relative w-32 flex-shrink-0">
-          {node.value && (
-            <DataCubeEditorFilterConditionNodeValueEditor
-              ref={valueEditorRef}
-              value={node.value}
-              updateValue={(val) => node.updateValue(val)}
-              view={view}
-            />
-          )}
+          <DataCubeEditorFilterConditionNodeValueEditor
+            ref={valueEditorRef}
+            value={node.value}
+            updateValue={(val) => node.updateValue(val)}
+            view={view}
+          />
         </div>
       </div>
     );

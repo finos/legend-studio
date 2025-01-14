@@ -23,6 +23,7 @@ import {
   DataCubeColumnDataType,
   DataCubeFunction,
   DataCubeQueryFilterOperator,
+  isPrimitiveType,
   ofDataType,
   type DataCubeOperationValue,
 } from '../DataCubeQueryEngine.js';
@@ -33,16 +34,8 @@ import {
   _value,
 } from '../DataCubeQueryBuilderUtils.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import {
-  matchFunctionName,
-  V1_PrimitiveValueSpecification,
-  type V1_AppliedFunction,
-  type V1_AppliedProperty,
-} from '@finos/legend-graph';
-import {
-  _buildConditionSnapshotProperty,
-  _operationPrimitiveValue,
-} from '../DataCubeQuerySnapshotBuilderUtils.js';
+import { type V1_AppliedFunction } from '@finos/legend-graph';
+import { _baseFilterCondition } from '../DataCubeQuerySnapshotBuilderUtils.js';
 
 export class DataCubeQueryFilterOperation__Contain extends DataCubeQueryFilterOperation {
   override get label() {
@@ -67,8 +60,9 @@ export class DataCubeQueryFilterOperation__Contain extends DataCubeQueryFilterOp
 
   isCompatibleWithValue(value: DataCubeOperationValue) {
     return (
-      ofDataType(value.type, [DataCubeColumnDataType.TEXT]) &&
       value.value !== undefined &&
+      isPrimitiveType(value.type) &&
+      ofDataType(value.type, [DataCubeColumnDataType.TEXT]) &&
       !Array.isArray(value.value)
     );
   }
@@ -82,21 +76,11 @@ export class DataCubeQueryFilterOperation__Contain extends DataCubeQueryFilterOp
 
   buildConditionSnapshot(
     expression: V1_AppliedFunction,
-    columnGetter: (name: string) => DataCubeColumn | undefined,
+    columnGetter: (name: string) => DataCubeColumn,
   ) {
-    if (matchFunctionName(expression.function, DataCubeFunction.CONTAINS)) {
-      const value = expression.parameters[1];
-      const filterConditionSnapshot = _buildConditionSnapshotProperty(
-        expression.parameters[0] as V1_AppliedProperty,
-        this.operator,
-      );
-      if (value instanceof V1_PrimitiveValueSpecification) {
-        filterConditionSnapshot.value = _operationPrimitiveValue(value);
-        return filterConditionSnapshot satisfies DataCubeQuerySnapshotFilterCondition;
-      }
-      return undefined;
-    }
-    return undefined;
+    return this._finalizeConditionSnapshot(
+      _baseFilterCondition(expression, columnGetter, DataCubeFunction.CONTAINS),
+    );
   }
 
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {

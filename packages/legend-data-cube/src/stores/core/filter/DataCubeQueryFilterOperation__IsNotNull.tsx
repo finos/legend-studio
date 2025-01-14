@@ -19,6 +19,7 @@ import type { DataCubeColumn } from '../model/DataCubeColumn.js';
 import {
   DataCubeColumnDataType,
   DataCubeFunction,
+  DataCubeOperationAdvancedValueType,
   DataCubeQueryFilterOperator,
   ofDataType,
   type DataCubeOperationValue,
@@ -29,12 +30,12 @@ import {
   _not,
   _property,
 } from '../DataCubeQueryBuilderUtils.js';
+import { type V1_AppliedFunction } from '@finos/legend-graph';
 import {
-  matchFunctionName,
-  V1_AppliedFunction,
-  type V1_AppliedProperty,
-} from '@finos/legend-graph';
-import { _buildConditionSnapshotProperty } from '../DataCubeQuerySnapshotBuilderUtils.js';
+  _unwrapNotFilterCondition,
+  _baseFilterCondition,
+} from '../DataCubeQuerySnapshotBuilderUtils.js';
+import { returnUndefOnError } from '@finos/legend-shared';
 
 export class DataCubeQueryFilterOperation__IsNotNull extends DataCubeQueryFilterOperation {
   override get label() {
@@ -64,41 +65,30 @@ export class DataCubeQueryFilterOperation__IsNotNull extends DataCubeQueryFilter
 
   isCompatibleWithValue(value: DataCubeOperationValue) {
     return (
-      ofDataType(value.type, [
-        DataCubeColumnDataType.TEXT,
-        DataCubeColumnDataType.NUMBER,
-        DataCubeColumnDataType.DATE,
-        DataCubeColumnDataType.TIME,
-      ]) &&
-      value.value !== undefined &&
-      !Array.isArray(value.value)
+      value.value === undefined &&
+      value.type === DataCubeOperationAdvancedValueType.VOID
     );
   }
 
   generateDefaultValue(column: DataCubeColumn) {
-    return undefined;
+    return {
+      type: DataCubeOperationAdvancedValueType.VOID,
+    };
   }
 
   buildConditionSnapshot(
     expression: V1_AppliedFunction,
-    columnGetter: (name: string) => DataCubeColumn | undefined,
+    columnGetter: (name: string) => DataCubeColumn,
   ) {
-    if (
-      matchFunctionName(expression.function, DataCubeFunction.NOT) &&
-      expression.parameters[0] instanceof V1_AppliedFunction &&
-      matchFunctionName(
-        expression.parameters[0].function,
-        DataCubeFunction.IS_EMPTY,
-      )
-    ) {
-      const filterConditionSnapshot = _buildConditionSnapshotProperty(
-        expression.parameters[0].parameters[0] as V1_AppliedProperty,
-        this.operator,
-      );
-      filterConditionSnapshot.value = undefined;
-      return filterConditionSnapshot;
+    const unwrapped = returnUndefOnError(() =>
+      _unwrapNotFilterCondition(expression),
+    );
+    if (!unwrapped) {
+      return undefined;
     }
-    return undefined;
+    return this._finalizeConditionSnapshot(
+      _baseFilterCondition(unwrapped, columnGetter, DataCubeFunction.IS_EMPTY),
+    );
   }
 
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {

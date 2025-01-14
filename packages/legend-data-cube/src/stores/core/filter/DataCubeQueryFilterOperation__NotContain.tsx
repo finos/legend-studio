@@ -23,6 +23,7 @@ import {
   DataCubeColumnDataType,
   DataCubeFunction,
   DataCubeQueryFilterOperator,
+  isPrimitiveType,
   ofDataType,
   type DataCubeOperationValue,
 } from '../DataCubeQueryEngine.js';
@@ -33,16 +34,11 @@ import {
   _property,
   _value,
 } from '../DataCubeQueryBuilderUtils.js';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { guaranteeNonNullable, returnUndefOnError } from '@finos/legend-shared';
+import { type V1_AppliedFunction } from '@finos/legend-graph';
 import {
-  matchFunctionName,
-  V1_AppliedFunction,
-  V1_PrimitiveValueSpecification,
-  type V1_AppliedProperty,
-} from '@finos/legend-graph';
-import {
-  _buildConditionSnapshotProperty,
-  _operationPrimitiveValue,
+  _unwrapNotFilterCondition,
+  _baseFilterCondition,
 } from '../DataCubeQuerySnapshotBuilderUtils.js';
 
 export class DataCubeQueryFilterOperation__NotContain extends DataCubeQueryFilterOperation {
@@ -68,8 +64,9 @@ export class DataCubeQueryFilterOperation__NotContain extends DataCubeQueryFilte
 
   isCompatibleWithValue(value: DataCubeOperationValue) {
     return (
-      ofDataType(value.type, [DataCubeColumnDataType.TEXT]) &&
       value.value !== undefined &&
+      isPrimitiveType(value.type) &&
+      ofDataType(value.type, [DataCubeColumnDataType.TEXT]) &&
       !Array.isArray(value.value)
     );
   }
@@ -83,28 +80,17 @@ export class DataCubeQueryFilterOperation__NotContain extends DataCubeQueryFilte
 
   buildConditionSnapshot(
     expression: V1_AppliedFunction,
-    columnGetter: (name: string) => DataCubeColumn | undefined,
+    columnGetter: (name: string) => DataCubeColumn,
   ) {
-    if (
-      matchFunctionName(expression.function, DataCubeFunction.NOT) &&
-      expression.parameters[0] instanceof V1_AppliedFunction &&
-      matchFunctionName(
-        expression.parameters[0].function,
-        DataCubeFunction.CONTAINS,
-      )
-    ) {
-      const value = expression.parameters[0].parameters[1];
-      const filterConditionSnapshot = _buildConditionSnapshotProperty(
-        expression.parameters[0].parameters[0] as V1_AppliedProperty,
-        this.operator,
-      );
-      if (value instanceof V1_PrimitiveValueSpecification) {
-        filterConditionSnapshot.value = _operationPrimitiveValue(value);
-        return filterConditionSnapshot satisfies DataCubeQuerySnapshotFilterCondition;
-      }
+    const unwrapped = returnUndefOnError(() =>
+      _unwrapNotFilterCondition(expression),
+    );
+    if (!unwrapped) {
       return undefined;
     }
-    return undefined;
+    return this._finalizeConditionSnapshot(
+      _baseFilterCondition(unwrapped, columnGetter, DataCubeFunction.CONTAINS),
+    );
   }
 
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {

@@ -32,12 +32,8 @@ import {
   _var,
 } from '../DataCubeQueryBuilderUtils.js';
 import { guaranteeNonNullable, isString } from '@finos/legend-shared';
-import {
-  matchFunctionName,
-  V1_AppliedProperty,
-  type V1_AppliedFunction,
-} from '@finos/legend-graph';
-import { _buildConditionSnapshotProperty } from '../DataCubeQuerySnapshotBuilderUtils.js';
+import { type V1_AppliedFunction } from '@finos/legend-graph';
+import { _baseFilterCondition } from '../DataCubeQuerySnapshotBuilderUtils.js';
 
 export class DataCubeQueryFilterOperation__EqualColumn extends DataCubeQueryFilterOperation {
   override get label() {
@@ -67,8 +63,8 @@ export class DataCubeQueryFilterOperation__EqualColumn extends DataCubeQueryFilt
 
   isCompatibleWithValue(value: DataCubeOperationValue) {
     return (
-      value.type === DataCubeOperationAdvancedValueType.COLUMN &&
       value.value !== undefined &&
+      value.type === DataCubeOperationAdvancedValueType.COLUMN &&
       isString(value.value)
     );
   }
@@ -82,24 +78,11 @@ export class DataCubeQueryFilterOperation__EqualColumn extends DataCubeQueryFilt
 
   buildConditionSnapshot(
     expression: V1_AppliedFunction,
-    columnGetter: (name: string) => DataCubeColumn | undefined,
+    columnGetter: (name: string) => DataCubeColumn,
   ) {
-    if (matchFunctionName(expression.function, DataCubeFunction.EQUAL)) {
-      const value = expression.parameters[1];
-      const filterConditionSnapshot = _buildConditionSnapshotProperty(
-        expression.parameters[0] as V1_AppliedProperty,
-        this.operator,
-      );
-      if (value instanceof V1_AppliedProperty) {
-        filterConditionSnapshot.value = {
-          value: value.property,
-          type: DataCubeOperationAdvancedValueType.COLUMN,
-        } satisfies DataCubeOperationValue;
-        return filterConditionSnapshot satisfies DataCubeQuerySnapshotFilterCondition;
-      }
-      return undefined;
-    }
-    return undefined;
+    return this._finalizeConditionSnapshot(
+      _baseFilterCondition(expression, columnGetter, DataCubeFunction.EQUAL),
+    );
   }
 
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {

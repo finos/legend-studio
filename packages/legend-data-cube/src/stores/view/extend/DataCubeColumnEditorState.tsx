@@ -32,6 +32,7 @@ import {
   DataCubeColumnKind,
   DEFAULT_LAMBDA_VARIABLE_NAME,
   getDataType,
+  isPrimitiveType,
 } from '../../core/DataCubeQueryEngine.js';
 import {
   clearMarkers,
@@ -41,7 +42,6 @@ import {
 import type { DataCubeExtendManagerState } from './DataCubeExtendManagerState.js';
 import {
   EngineError,
-  PRIMITIVE_TYPE,
   V1_Lambda,
   type V1_ValueSpecification,
 } from '@finos/legend-graph';
@@ -248,10 +248,7 @@ export abstract class DataCubeColumnBaseEditorState {
         (col) => col.name === this._name,
       )?.type;
       returnType =
-        returnType &&
-        (Object.values(PRIMITIVE_TYPE) as string[]).includes(returnType)
-          ? returnType
-          : undefined;
+        returnType && isPrimitiveType(returnType) ? returnType : undefined;
       this.setReturnType(returnType);
       return returnType;
     } catch (error) {

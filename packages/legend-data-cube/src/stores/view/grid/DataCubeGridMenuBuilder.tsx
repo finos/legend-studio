@@ -30,6 +30,7 @@ import {
   DataCubeQueryFilterOperator,
   isPivotResultColumnName,
   getPivotResultColumnBaseColumnName,
+  DataCubeOperationAdvancedValueType,
 } from '../../core/DataCubeQueryEngine.js';
 import {
   guaranteeIsNumber,
@@ -134,12 +135,12 @@ function getColumnFilterOperations(
 function buildNewFilterConditionMenuItem(
   columnConfiguration: DataCubeColumnConfiguration,
   operator: string,
-  value: { label: string; value: DataCubeOperationValue } | undefined,
+  value: { label?: string | undefined; value: DataCubeOperationValue },
   controller: DataCubeGridControllerState,
 ): MenuItemDef {
   const operation = controller.view.engine.getFilterOperation(operator);
   return {
-    name: `Add Filter: ${columnConfiguration.name} ${operation.textLabel}${value ? ` ${value.label}` : ''}`,
+    name: `Add Filter: ${columnConfiguration.name} ${operation.textLabel}${value.label ? ` ${value.label}` : ''}`,
     action: () => {
       controller.addNewFilterCondition(
         new DataCubeFilterEditorConditionTreeNode(
@@ -149,7 +150,7 @@ function buildNewFilterConditionMenuItem(
             type: columnConfiguration.type,
           },
           operation,
-          value?.value,
+          value.value,
           undefined,
         ),
       );
@@ -324,13 +325,21 @@ export function generateMenuBuilder(
             buildNewFilterConditionMenuItem(
               _columnConfiguration,
               DataCubeQueryFilterOperator.IS_NULL,
-              undefined,
+              {
+                value: {
+                  type: DataCubeOperationAdvancedValueType.VOID,
+                },
+              },
               controller,
             ),
             buildNewFilterConditionMenuItem(
               _columnConfiguration,
               DataCubeQueryFilterOperator.IS_NOT_NULL,
-              undefined,
+              {
+                value: {
+                  type: DataCubeOperationAdvancedValueType.VOID,
+                },
+              },
               controller,
             ),
           ];

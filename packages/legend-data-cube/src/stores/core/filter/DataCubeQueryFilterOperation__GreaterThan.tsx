@@ -23,6 +23,7 @@ import {
   DataCubeColumnDataType,
   DataCubeFunction,
   DataCubeQueryFilterOperator,
+  isPrimitiveType,
   ofDataType,
   type DataCubeOperationValue,
 } from '../DataCubeQueryEngine.js';
@@ -32,17 +33,9 @@ import {
   _property,
   _value,
 } from '../DataCubeQueryBuilderUtils.js';
-import { guaranteeNonNullable, returnUndefOnError } from '@finos/legend-shared';
-import {
-  matchFunctionName,
-  V1_AppliedProperty,
-  V1_PrimitiveValueSpecification,
-  type V1_AppliedFunction,
-} from '@finos/legend-graph';
-import {
-  _operationPrimitiveValue,
-  _param,
-} from '../DataCubeQuerySnapshotBuilderUtils.js';
+import { guaranteeNonNullable } from '@finos/legend-shared';
+import { type V1_AppliedFunction } from '@finos/legend-graph';
+import { _baseFilterCondition } from '../DataCubeQuerySnapshotBuilderUtils.js';
 
 export class DataCubeQueryFilterOperation__GreaterThan extends DataCubeQueryFilterOperation {
   override get label() {
@@ -71,12 +64,13 @@ export class DataCubeQueryFilterOperation__GreaterThan extends DataCubeQueryFilt
 
   isCompatibleWithValue(value: DataCubeOperationValue) {
     return (
+      value.value !== undefined &&
+      isPrimitiveType(value.type) &&
       ofDataType(value.type, [
         DataCubeColumnDataType.NUMBER,
         DataCubeColumnDataType.DATE,
         DataCubeColumnDataType.TIME,
       ]) &&
-      value.value !== undefined &&
       !Array.isArray(value.value)
     );
   }
@@ -90,29 +84,15 @@ export class DataCubeQueryFilterOperation__GreaterThan extends DataCubeQueryFilt
 
   buildConditionSnapshot(
     expression: V1_AppliedFunction,
-    columnGetter: (name: string) => DataCubeColumn | undefined,
+    columnGetter: (name: string) => DataCubeColumn,
   ) {
-    if (matchFunctionName(expression.function, DataCubeFunction.GREATER_THAN)) {
-      if (expression.parameters.length !== 2) {
-        return undefined;
-      }
-      const value =
-        expression.parameters[1] instanceof V1_PrimitiveValueSpecification
-          ? _operationPrimitiveValue(expression.parameters[1])
-          : undefined;
-      const property = returnUndefOnError(() =>
-        _param(expression, 0, V1_AppliedProperty),
-      );
-      const column = property ? columnGetter(property.property) : undefined;
-      if (column && value) {
-        return {
-          ...column,
-          operator: this.operator,
-          value,
-        };
-      }
-    }
-    return undefined;
+    return this._finalizeConditionSnapshot(
+      _baseFilterCondition(
+        expression,
+        columnGetter,
+        DataCubeFunction.GREATER_THAN,
+      ),
+    );
   }
 
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {

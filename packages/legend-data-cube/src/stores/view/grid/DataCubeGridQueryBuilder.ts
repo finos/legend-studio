@@ -32,6 +32,7 @@ import {
   isPivotResultColumnName,
   PIVOT_COLUMN_NAME_VALUE_SEPARATOR,
   DataCubeQuerySortDirection,
+  DataCubeOperationAdvancedValueType,
 } from '../../core/DataCubeQueryEngine.js';
 import {
   guaranteeNonNullable,
@@ -234,13 +235,14 @@ function generateGridDataFetchExecutableQueryPostProcessor(
                         return {
                           ...groupByColumn,
                           operator: DataCubeQueryFilterOperator.IS_NULL,
-                          value: undefined,
+                          value: {
+                            type: DataCubeOperationAdvancedValueType.VOID,
+                          },
                         };
                       }
                       const condition = {
                         ...groupByColumn,
                         operator: DataCubeQueryFilterOperator.EQUAL,
-                        value: undefined,
                       };
                       switch (groupByColumn.type) {
                         case PRIMITIVE_TYPE.BOOLEAN:
