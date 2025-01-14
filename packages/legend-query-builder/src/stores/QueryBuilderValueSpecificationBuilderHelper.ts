@@ -26,11 +26,7 @@ import {
   VariableExpression,
   type ValueSpecification,
 } from '@finos/legend-graph';
-import {
-  getNullableFirstEntry,
-  guaranteeNonNullable,
-  guaranteeType,
-} from '@finos/legend-shared';
+import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graph/QueryBuilderMetaModelConst.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
@@ -76,7 +72,7 @@ export const buildPropertyExpressionChain = (
   let nextExpression: ValueSpecification | undefined;
   let currentExpression: ValueSpecification | undefined = newPropertyExpression;
   while (currentExpression instanceof AbstractPropertyExpression) {
-    nextExpression = getNullableFirstEntry(currentExpression.parametersValues);
+    nextExpression = currentExpression.parametersValues[0];
     if (nextExpression instanceof AbstractPropertyExpression) {
       const parameterValue = new AbstractPropertyExpression('');
       parameterValue.func = nextExpression.func;
@@ -173,9 +169,7 @@ export const buildPropertyExpressionChain = (
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE,
       )
     ) {
-      currentExpression = getNullableFirstEntry(
-        currentExpression.parametersValues,
-      );
+      currentExpression = currentExpression.parametersValues[0];
     }
   }
 

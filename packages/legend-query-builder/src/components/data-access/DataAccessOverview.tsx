@@ -42,7 +42,6 @@ import {
   DatasetEntitlementUnsupportedReport,
 } from '@finos/legend-graph';
 import { Chart as ChartJS, DoughnutController, ArcElement } from 'chart.js';
-import { getNullableFirstEntry } from '@finos/legend-shared';
 import type { QueryBuilder_LegendApplicationPlugin_Extension } from '../../stores/QueryBuilder_LegendApplicationPlugin_Extension.js';
 
 ChartJS.register(DoughnutController, ArcElement);
@@ -54,10 +53,9 @@ const DataAccessOverviewChart = observer(
     const chartRef = useRef<ChartJS>(null);
     const entitlementCheckInfo = dataAccessState.entitlementCheckInfo;
     const total = entitlementCheckInfo.total;
-    const accessGrantedCount =
-      getNullableFirstEntry(entitlementCheckInfo.data)?.count ?? 0;
+    const accessGrantedCount = entitlementCheckInfo.data[0]?.count ?? 0;
     const accessGrantedPercentage =
-      getNullableFirstEntry(entitlementCheckInfo.data)?.percentage ?? 0;
+      entitlementCheckInfo.data[0]?.percentage ?? 0;
 
     useEffect(() => {
       if (canvasRef.current && !chartRef.current) {

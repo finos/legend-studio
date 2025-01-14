@@ -18,7 +18,6 @@ import { observer } from 'mobx-react-lite';
 import type { DataCubeMenuItem } from '../stores/DataCubeOptions.js';
 import { DataCubeTitleBar } from './DataCubeTitleBar.js';
 import { DataCubeStatusBar } from './DataCubeStatusBar.js';
-import type React from 'react';
 import type { LayoutManager } from '../stores/services/DataCubeLayoutService.js';
 import { DataCubeLayout } from './core/DataCubeLayout.js';
 import { DataCubeIcon } from '@finos/legend-art';

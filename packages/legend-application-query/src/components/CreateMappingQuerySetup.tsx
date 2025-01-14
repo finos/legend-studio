@@ -25,7 +25,6 @@ import {
 import {
   ActionState,
   assertErrorThrown,
-  getNullableFirstEntry,
   guaranteeNonNullable,
   guaranteeType,
   compareSemVerVersions,
@@ -209,9 +208,7 @@ const CreateMappingQuerySetupContent = observer(() => {
     setupStore.setCurrentMapping(option?.value);
     // cascade
     if (setupStore.currentMapping) {
-      setupStore.setCurrentRuntime(
-        getNullableFirstEntry(setupStore.compatibleRuntimes),
-      );
+      setupStore.setCurrentRuntime(setupStore.compatibleRuntimes[0]);
     } else {
       setupStore.setCurrentRuntime(undefined);
     }

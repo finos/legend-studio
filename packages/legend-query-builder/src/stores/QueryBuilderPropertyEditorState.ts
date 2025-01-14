@@ -16,7 +16,6 @@
 
 import { action, computed, makeObservable, observable } from 'mobx';
 import {
-  getNullableFirstEntry,
   guaranteeNonNullable,
   guaranteeType,
   type Hashable,
@@ -68,9 +67,7 @@ export const getPropertyChainName = (
   const chunks = [propertyNameDecorator(propertyExpression.func.value.name)];
   let currentExpression: ValueSpecification | undefined = propertyExpression;
   while (currentExpression instanceof AbstractPropertyExpression) {
-    currentExpression = getNullableFirstEntry(
-      currentExpression.parametersValues,
-    );
+    currentExpression = currentExpression.parametersValues[0];
     // Take care of chain of subtypes (a pattern that is not useful, but we want to support and potentially rectify)
     // $x.employees->subType(@Person)->subType(@Staff).department
     while (
@@ -86,9 +83,7 @@ export const getPropertyChainName = (
         )[0]?.genericType?.value.rawType.name ?? '',
       )})`;
       chunks.unshift(subtypeChunk);
-      currentExpression = getNullableFirstEntry(
-        currentExpression.parametersValues,
-      );
+      currentExpression = currentExpression.parametersValues[0];
     }
     if (currentExpression instanceof AbstractPropertyExpression) {
       chunks.unshift(propertyNameDecorator(currentExpression.func.value.name));
@@ -119,9 +114,7 @@ export const getPropertyPath = (
   const propertyNameChain = [propertyExpression.func.value.name];
   let currentExpression: ValueSpecification | undefined = propertyExpression;
   while (currentExpression instanceof AbstractPropertyExpression) {
-    currentExpression = getNullableFirstEntry(
-      currentExpression.parametersValues,
-    );
+    currentExpression = currentExpression.parametersValues[0];
     if (currentExpression instanceof AbstractPropertyExpression) {
       propertyNameChain.unshift(currentExpression.func.value.name);
     }
@@ -364,9 +357,7 @@ export class QueryBuilderPropertyExpressionState implements Hashable {
           );
         result.push(derivedPropertyExpressionState);
       }
-      currentExpression = getNullableFirstEntry(
-        currentExpression.parametersValues,
-      );
+      currentExpression = currentExpression.parametersValues[0];
       // Take care of chains of subtype (a pattern that is not useful, but we want to support and rectify)
       // $x.employees->subType(@Person)->subType(@Staff)
       while (
@@ -376,9 +367,7 @@ export class QueryBuilderPropertyExpressionState implements Hashable {
           QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE,
         )
       ) {
-        currentExpression = getNullableFirstEntry(
-          currentExpression.parametersValues,
-        );
+        currentExpression = currentExpression.parametersValues[0];
       }
     }
     this.requiresExistsHandling = requiresExistsHandling;

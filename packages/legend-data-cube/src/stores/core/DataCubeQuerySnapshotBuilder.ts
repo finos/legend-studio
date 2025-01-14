@@ -34,11 +34,7 @@ import {
 import type { DataCubeQuery } from './model/DataCubeQuery.js';
 import { DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
 import { _toCol, type DataCubeColumn } from './model/DataCubeColumn.js';
-import {
-  assertTrue,
-  getNonNullableEntry,
-  guaranteeNonNullable,
-} from '@finos/legend-shared';
+import { assertTrue, at, guaranteeNonNullable } from '@finos/legend-shared';
 import {
   DataCubeQuerySortDirection,
   DataCubeFunction,
@@ -284,7 +280,7 @@ function extractFunctionMap(
     if (isNaN(idx) || idx >= sequence.length) {
       return undefined;
     }
-    const func = getNonNullableEntry(sequence, idx);
+    const func = at(sequence, idx);
     return func;
   };
 

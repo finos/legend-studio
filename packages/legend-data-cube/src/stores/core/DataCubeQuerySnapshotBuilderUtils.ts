@@ -41,7 +41,7 @@ import { type DataCubeColumn } from './model/DataCubeColumn.js';
 import {
   assertTrue,
   assertType,
-  getNonNullableEntry,
+  at,
   guaranteeNonNullable,
   guaranteeType,
   IllegalStateError,
@@ -240,7 +240,7 @@ export function _extractExtendedColumns(func: V1_AppliedFunction) {
       colSpecs.length === 1,
       `Can't process extend() expression: Expected 1 column specification, got ${colSpecs.length}`,
     );
-    const colSpec = getNonNullableEntry(colSpecs, 0);
+    const colSpec = at(colSpecs, 0);
     return {
       name: colSpec.name,
       type: '', // NOTE: we don't have type information for extended columns at this point

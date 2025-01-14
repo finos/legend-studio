@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  getNullableFirstEntry,
-  guaranteeNonNullable,
-} from '@finos/legend-shared';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import { action, computed, makeObservable, observable } from 'mobx';
 import { type DataSpaceViewerState } from './DataSpaceViewerState.js';
 import type { ClassView } from '@finos/legend-extension-dsl-diagram/graph';
@@ -58,9 +55,8 @@ export class DataSpaceViewerDiagramViewerState implements CommandRegistrar {
     });
 
     this.dataSpaceViewerState = dataSpaceViewerState;
-    this.currentDiagram = getNullableFirstEntry(
-      this.dataSpaceViewerState.dataSpaceAnalysisResult.diagrams,
-    );
+    this.currentDiagram =
+      this.dataSpaceViewerState.dataSpaceAnalysisResult.diagrams[0];
   }
 
   get diagramRenderer(): DiagramRenderer {

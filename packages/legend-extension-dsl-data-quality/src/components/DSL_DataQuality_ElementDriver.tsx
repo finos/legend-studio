@@ -30,7 +30,6 @@ import {
 import { action, computed, makeObservable, observable } from 'mobx';
 import {
   filterByType,
-  getNullableFirstEntry,
   guaranteeNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
@@ -94,9 +93,9 @@ export class DataQuality_ElementDriver extends NewElementDriver<DataQualityValid
     this.dqValidationElementType = DQ_VALIDATION_ELEMENT_TYPE.CLASS_VALIDATION;
     this.dqClassElementCreationBasis =
       CLASS_ELEMENT_CREATION_BASIS.DATASPACE_BASED;
-    this.dataSpaceSelected = getNullableFirstEntry(this.dataSpaceOptions);
-    this.mappingSelected = getNullableFirstEntry(this.mappingOptions);
-    this.runtimeSelected = getNullableFirstEntry(this.runtimeOptions);
+    this.dataSpaceSelected = this.dataSpaceOptions[0];
+    this.mappingSelected = this.mappingOptions[0];
+    this.runtimeSelected = this.runtimeOptions[0];
   }
 
   get dataSpaceOptions(): PackageableElementOption<DataSpace>[] {

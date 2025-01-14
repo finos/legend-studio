@@ -21,7 +21,7 @@ import {
   useEditorStore,
 } from '@finos/legend-application-studio';
 import { flowResult } from 'mobx';
-import { getNullableFirstEntry, guaranteeType } from '@finos/legend-shared';
+import { guaranteeType } from '@finos/legend-shared';
 import {
   DataSpace,
   resolveUsableDataSpaceClasses,
@@ -106,7 +106,7 @@ export const queryDataSpace = async (
           !queryBuilderState.class ||
           !compatibleClasses.includes(queryBuilderState.class)
         ) {
-          const possibleNewClass = getNullableFirstEntry(compatibleClasses);
+          const possibleNewClass = compatibleClasses[0];
           if (possibleNewClass) {
             queryBuilderState.changeClass(possibleNewClass);
           }

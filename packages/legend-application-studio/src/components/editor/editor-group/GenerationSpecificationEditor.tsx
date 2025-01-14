@@ -53,7 +53,6 @@ import {
   type ElementDragSource,
   type FileGenerationSourceDropTarget,
 } from '../../../stores/editor/utils/DnDUtils.js';
-import { getNullableFirstEntry } from '@finos/legend-shared';
 import type { DSL_Generation_LegendStudioApplicationPlugin_Extension } from '../../../stores/extensions/DSL_Generation_LegendStudioApplicationPlugin_Extension.js';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider.js';
@@ -261,7 +260,7 @@ const ModelGenerationSpecifications = observer(
     const modelGenerationElementOptions =
       modelGenerationElementsInGraph.map(buildElementOption);
     const addModelGeneration = (): void => {
-      const option = getNullableFirstEntry(modelGenerationElementOptions);
+      const option = modelGenerationElementOptions[0];
       if (option) {
         specState.addGenerationTreeNode(
           new GenerationTreeNode(
@@ -427,7 +426,7 @@ const FileGenerationSpecifications = observer(
       .filter((f) => !fileGenerations.includes(f))
       .map(buildElementOption);
     const addFileGeneration = (): void => {
-      const option = getNullableFirstEntry(fileGenerationsOptions);
+      const option = fileGenerationsOptions[0];
       if (option) {
         generationSpecification_addFileGeneration(generationSpec, option.value);
       }

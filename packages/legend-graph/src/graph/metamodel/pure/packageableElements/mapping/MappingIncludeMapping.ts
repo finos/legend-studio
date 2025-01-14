@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { CORE_HASH_STRUCTURE } from '../../../../../graph/Core_HashUtils.js';
-import { hashArray, getNullableFirstEntry } from '@finos/legend-shared';
+import { hashArray } from '@finos/legend-shared';
 import type { SubstituteStore } from './SubstituteStore.js';
 import { MappingInclude } from './MappingInclude.js';
 
@@ -25,10 +26,8 @@ export class MappingIncludeMapping extends MappingInclude {
     return hashArray([
       CORE_HASH_STRUCTURE.MAPPING_INCLUDE_MAPPING,
       this.included.valueForSerialization ?? '',
-      getNullableFirstEntry(this.storeSubstitutions)?.original
-        .valueForSerialization ?? '',
-      getNullableFirstEntry(this.storeSubstitutions)?.substitute
-        .valueForSerialization ?? '',
+      this.storeSubstitutions[0]?.original.valueForSerialization ?? '',
+      this.storeSubstitutions[0]?.substitute.valueForSerialization ?? '',
     ]);
   }
 }

@@ -26,7 +26,6 @@ import {
 } from '@finos/legend-graph';
 import {
   assertTrue,
-  getNullableFirstEntry,
   guaranteeNonNullable,
   IllegalStateError,
 } from '@finos/legend-shared';
@@ -171,7 +170,7 @@ export class ServiceQueryBuilderState extends QueryBuilderState {
       // if there is no chosen class or the chosen one is not compatible
       // with the mapping then pick a compatible class if possible
       if (!this.class || !compatibleClasses.includes(this.class)) {
-        const possibleNewClass = getNullableFirstEntry(compatibleClasses);
+        const possibleNewClass = compatibleClasses[0];
         if (possibleNewClass) {
           this.changeClass(possibleNewClass);
         }

@@ -45,12 +45,7 @@ import {
 import type { DataCubeViewState } from '../../../stores/view/DataCubeViewState.js';
 import { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
 import { DATE_FORMAT, PRIMITIVE_TYPE } from '@finos/legend-graph';
-import {
-  formatDate,
-  getNullableFirstEntry,
-  guaranteeIsNumber,
-  parseISO,
-} from '@finos/legend-shared';
+import { formatDate, guaranteeIsNumber, parseISO } from '@finos/legend-shared';
 import { evaluate } from 'mathjs';
 import { useDataCube } from '../../DataCubeProvider.js';
 
@@ -571,11 +566,9 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
                 if (column !== node.column) {
                   const newOp = node.operation.isCompatibleWithColumn(column)
                     ? node.operation
-                    : getNullableFirstEntry(
-                        dataCube.engine.filterOperations.filter((op) =>
-                          op.isCompatibleWithColumn(column),
-                        ),
-                      );
+                    : dataCube.engine.filterOperations.filter((op) =>
+                        op.isCompatibleWithColumn(column),
+                      )[0];
                   if (newOp) {
                     node.setColumn(column);
                     node.setOperation(newOp);

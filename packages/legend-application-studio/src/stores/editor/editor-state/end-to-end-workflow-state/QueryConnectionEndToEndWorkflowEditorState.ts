@@ -21,7 +21,7 @@ import {
   LogEvent,
   assertErrorThrown,
   ActionState,
-  getNonNullableEntry,
+  at,
 } from '@finos/legend-shared';
 import {
   END_TO_END_WORKFLOWS,
@@ -182,7 +182,7 @@ export class QueryConnectionConfirmationAndGrammarEditorStepperState extends Con
         .queryToConnectionWorkflowEditorState,
     );
     const theClass = getMappingCompatibleClasses(
-      getNonNullableEntry(this.workflowEditorState.workflowGraph.mappings, 0),
+      at(this.workflowEditorState.workflowGraph.mappings, 0),
       this.workflowEditorState.workflowGraph.classes,
     )[0];
     if (theClass) {
@@ -194,16 +194,13 @@ export class QueryConnectionConfirmationAndGrammarEditorStepperState extends Con
         config,
       );
       queryBuilderState.class = theClass;
-      queryBuilderState.executionContextState.mapping = getNonNullableEntry(
+      queryBuilderState.executionContextState.mapping = at(
         this.workflowEditorState.workflowGraph.mappings,
         0,
       );
       queryBuilderState.executionContextState.runtimeValue = new RuntimePointer(
         PackageableElementExplicitReference.create(
-          getNonNullableEntry(
-            this.workflowEditorState.workflowGraph.runtimes,
-            0,
-          ),
+          at(this.workflowEditorState.workflowGraph.runtimes, 0),
         ),
       );
       yield flowResult(
@@ -280,7 +277,7 @@ export class DatabaseModelBuilderStepperState extends ConnectionToQueryStepperSt
           this.workflowEditorState.packageableRuntime.runtimeValue,
           [
             PackageableElementExplicitReference.create(
-              getNonNullableEntry(newGraph.mappings, 0),
+              at(newGraph.mappings, 0),
             ),
           ],
         );
@@ -293,9 +290,7 @@ export class DatabaseModelBuilderStepperState extends ConnectionToQueryStepperSt
         runtime.runtimeValue = new EngineRuntime();
         runtime_addMapping(
           runtime.runtimeValue,
-          PackageableElementExplicitReference.create(
-            getNonNullableEntry(newGraph.mappings, 0),
-          ),
+          PackageableElementExplicitReference.create(at(newGraph.mappings, 0)),
         );
         runtime_addIdentifiedConnection(
           runtime.runtimeValue,
@@ -427,7 +422,7 @@ export class DatabaseGrammarEditorStepperState extends ConnectionToQueryStepperS
       }
       // databaseBuilderWizardState.schemaExplorerState.database needs to be updated
       databaseBuilderStepperState.databaseBuilderWizardState.schemaExplorerState.database =
-        getNonNullableEntry(newGraph.databases, 0);
+        at(newGraph.databases, 0);
       this.workflowEditorState.workflowGraph = newGraph;
       // start building packageableConnection based on database and adding it to current graph
       const packageableConnection = new PackageableConnection(

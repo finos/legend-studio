@@ -26,7 +26,7 @@ import {
   FuzzySearchEngine,
   promisify,
   type PlainObject,
-  getNonNullableEntry,
+  at,
   ActionState,
 } from '@finos/legend-shared';
 
@@ -212,19 +212,16 @@ export class ShowcaseRegistry {
               const previewTextStartLineIdx = Math.max(lineIdx - 1, 0);
               previewLines.set(
                 previewTextStartLineIdx + 1,
-                getNonNullableEntry(lines, previewTextStartLineIdx),
+                at(lines, previewTextStartLineIdx),
               );
-              previewLines.set(
-                lineIdx + 1,
-                getNonNullableEntry(lines, lineIdx),
-              );
+              previewLines.set(lineIdx + 1, at(lines, lineIdx));
               const previewTextEndLineIdx = Math.min(
                 lineIdx + 1,
                 lines.length - 1,
               );
               previewLines.set(
                 previewTextEndLineIdx + 1,
-                getNonNullableEntry(lines, previewTextEndLineIdx),
+                at(lines, previewTextEndLineIdx),
               );
               result.matches.push({
                 line: lineIdx + 1,

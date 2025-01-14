@@ -21,7 +21,7 @@ import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.j
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
 import { DataCubeEditorMutableColumnConfiguration } from './DataCubeEditorMutableConfiguration.js';
 import {
-  getNonNullableEntry,
+  at,
   guaranteeNonNullable,
   type PlainObject,
 } from '@finos/legend-shared';
@@ -93,7 +93,7 @@ export class DataCubeEditorColumnPropertiesPanelState
     );
 
     if (!this.selectedColumn && this.columns.length) {
-      this.setSelectedColumnName(getNonNullableEntry(this.columns, 0).name);
+      this.setSelectedColumnName(at(this.columns, 0).name);
     }
   }
 

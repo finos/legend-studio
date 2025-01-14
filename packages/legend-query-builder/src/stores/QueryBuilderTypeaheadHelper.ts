@@ -49,7 +49,6 @@ import {
   V1_serializeRawValueSpecification,
 } from '@finos/legend-graph';
 import {
-  getNullableFirstEntry,
   guaranteeNonNullable,
   guaranteeType,
   isNonNullable,
@@ -102,7 +101,7 @@ const buildPropertyExpressionChainWithDefaultMilestoningDates = (
   let nextExpression: ValueSpecification | undefined;
   let currentExpression: ValueSpecification | undefined = newPropertyExpression;
   while (currentExpression instanceof AbstractPropertyExpression) {
-    nextExpression = getNullableFirstEntry(currentExpression.parametersValues);
+    nextExpression = currentExpression.parametersValues[0];
     if (nextExpression instanceof AbstractPropertyExpression) {
       const parameterValue = new AbstractPropertyExpression('');
       parameterValue.func = nextExpression.func;
@@ -147,9 +146,7 @@ const buildPropertyExpressionChainWithDefaultMilestoningDates = (
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE,
       )
     ) {
-      currentExpression = getNullableFirstEntry(
-        currentExpression.parametersValues,
-      );
+      currentExpression = currentExpression.parametersValues[0];
     }
   }
 

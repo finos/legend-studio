@@ -45,7 +45,6 @@ import {
   type GeneratorFn,
   assertType,
   filterByType,
-  getNullableFirstEntry,
   guaranteeNonNullable,
   guaranteeType,
 } from '@finos/legend-shared';
@@ -159,9 +158,7 @@ export class DataQualityClassValidationState extends DataQualityState {
           .value,
       );
     } else {
-      this.dataQualityQueryBuilderState.setClass(
-        getNullableFirstEntry(classOptions),
-      );
+      this.dataQualityQueryBuilderState.setClass(classOptions[0]);
       this.dataQualityGraphFetchTreeState = new DataQualityGraphFetchTreeState(
         this,
       );
@@ -258,7 +255,7 @@ export class DataQualityClassValidationState extends DataQualityState {
       !this.dataQualityQueryBuilderState.class ||
       !compatibleClasses.includes(this.dataQualityQueryBuilderState.class)
     ) {
-      const possibleNewClass = getNullableFirstEntry(compatibleClasses);
+      const possibleNewClass = compatibleClasses[0];
       if (possibleNewClass) {
         this.changeClass(possibleNewClass);
       }

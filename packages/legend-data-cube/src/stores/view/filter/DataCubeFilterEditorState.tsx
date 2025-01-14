@@ -20,11 +20,7 @@ import {
   DataCubeQueryFilterOperator,
 } from '../../core/DataCubeQueryEngine.js';
 import type { DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
-import {
-  deepClone,
-  getNonNullableEntry,
-  guaranteeNonNullable,
-} from '@finos/legend-shared';
+import { deepClone, at, guaranteeNonNullable } from '@finos/legend-shared';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
 import {
   type DataCubeFilterEditorTree,
@@ -141,7 +137,7 @@ export class DataCubeFilterEditorState extends DataCubeQuerySnapshotController {
       );
     } else if (baseNode instanceof DataCubeFilterEditorConditionGroupTreeNode) {
       if (this.columns.length !== 0) {
-        const columnConfig = getNonNullableEntry(this.columns, 0);
+        const columnConfig = at(this.columns, 0);
         const column = {
           name: columnConfig.name,
           type: columnConfig.type,
@@ -222,7 +218,7 @@ export class DataCubeFilterEditorState extends DataCubeQuerySnapshotController {
         // flattening means completely remove the filter tree
         if (parentNode.children.length === 1) {
           if (parentNode !== this.tree.root) {
-            const childNode = getNonNullableEntry(parentNode.children, 0);
+            const childNode = at(parentNode.children, 0);
             const grandParentNode = guaranteeNonNullable(parentNode.parent);
 
             parentNode.removeChild(childNode);

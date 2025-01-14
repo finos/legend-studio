@@ -22,8 +22,7 @@ import { useApplicationStore, useCommands } from '@finos/legend-application';
 import { clsx, Dialog, WordWrapIcon } from '@finos/legend-art';
 import { usePureIDEStore } from '../PureIDEStoreProvider.js';
 import {
-  getNullableFirstEntry,
-  getNullableLastEntry,
+  last,
   guaranteeNonNullable,
   returnUndefOnError,
 } from '@finos/legend-shared';
@@ -43,12 +42,8 @@ const getPositionFromGoToLinePromptInputValue = (
     return [1, undefined];
   }
   return [
-    returnUndefOnError(() =>
-      parseInt(guaranteeNonNullable(getNullableFirstEntry(parts))),
-    ) ?? 1,
-    returnUndefOnError(() =>
-      parseInt(guaranteeNonNullable(getNullableLastEntry(parts))),
-    ),
+    returnUndefOnError(() => parseInt(guaranteeNonNullable(parts[0]))) ?? 1,
+    returnUndefOnError(() => parseInt(guaranteeNonNullable(last(parts)))),
   ];
 };
 

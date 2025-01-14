@@ -76,11 +76,7 @@ import TEST_DATA__QueryBuilder_Model_SimpleRelational from '../../stores/__tests
 import TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDerivedPropFromParentUsedInFilter from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDerivedPropFromParentUsedInFilter.json' with { type: 'json' };
 import TEST_DATA__ComplexRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json' with { type: 'json' };
 import TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates.json' with { type: 'json' };
-import {
-  guaranteeNonNullable,
-  getNullableFirstEntry,
-  guaranteeType,
-} from '@finos/legend-shared';
+import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import TEST_MilestoningModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_Milestoning.json' with { type: 'json' };
 import {
   TEST_DATA__simpleFilterWithBiTemporalSourceAndBiTemporalTarget,
@@ -2399,9 +2395,7 @@ test(
     const filterConditionValue = guaranteeType(
       guaranteeType(
         guaranteeType(
-          getNullableFirstEntry(
-            Array.from(queryBuilderState.filterState.nodes.values()),
-          ),
+          Array.from(queryBuilderState.filterState.nodes.values())[0],
           QueryBuilderFilterTreeConditionNodeData,
         ).condition.rightConditionValue,
         FilterValueSpecConditionValueState,
@@ -2470,9 +2464,7 @@ test(
     const filterConditionValue = guaranteeType(
       guaranteeType(
         guaranteeType(
-          getNullableFirstEntry(
-            Array.from(queryBuilderState.filterState.nodes.values()),
-          ),
+          Array.from(queryBuilderState.filterState.nodes.values())[0],
           QueryBuilderFilterTreeConditionNodeData,
         ).condition.rightConditionValue,
         FilterValueSpecConditionValueState,

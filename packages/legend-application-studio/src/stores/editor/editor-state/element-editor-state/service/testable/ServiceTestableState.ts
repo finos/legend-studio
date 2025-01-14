@@ -39,7 +39,6 @@ import {
   deleteEntry,
   isNonNullable,
   generateEnumerableNameFromToken,
-  getNullableFirstEntry,
   guaranteeNonNullable,
   returnUndefOnError,
 } from '@finos/legend-shared';
@@ -343,9 +342,7 @@ export class ServiceTestableState {
   }
 
   initSuites(): void {
-    const serviceSuite = getNullableFirstEntry(
-      this.serviceEditorState.service.tests,
-    );
+    const serviceSuite = this.serviceEditorState.service.tests[0];
     if (serviceSuite instanceof ServiceTestSuite) {
       this.selectedSuiteState = new ServiceTestSuiteState(serviceSuite, this);
     } else {

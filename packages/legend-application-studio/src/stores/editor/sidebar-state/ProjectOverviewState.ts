@@ -22,7 +22,6 @@ import {
   type PlainObject,
   assertErrorThrown,
   LogEvent,
-  getNullableFirstEntry,
   ActionState,
 } from '@finos/legend-shared';
 import {
@@ -268,7 +267,7 @@ export class ProjectOverviewState {
         // 1. the revision is somehow directly added to the branch by the user (in the case of `git`, user directly pushed to unprotected default branch)
         // 2. the revision is the merged/comitted review revision (this usually happens for projects where fast forwarding merging is not default)
         // in those case, we will get the time from the revision
-        const latestProjectVersionRevisionReviewObj = getNullableFirstEntry(
+        const latestProjectVersionRevisionReviewObj = (
           (yield this.editorStore.sdlcServerClient.getReviews(
             this.sdlcState.activeProject.projectId,
             undefined,
@@ -277,8 +276,8 @@ export class ProjectOverviewState {
               revisionIds: [latestProjectVersionRevision.id],
               limit: 1,
             },
-          )) as PlainObject<Review>[],
-        );
+          )) as PlainObject<Review>[]
+        )[0];
         const latestProjectVersionRevisionReview =
           latestProjectVersionRevisionReviewObj
             ? Review.serialization.fromJson(

@@ -33,7 +33,6 @@ import {
   PACKAGEABLE_ELEMENT_GROUP_BY_CATEGORY,
 } from '@finos/legend-application-studio';
 import type { PackageableElement } from '@finos/legend-graph';
-import { type ReactNode } from 'react';
 import {
   DataQualityClassValidationsConfiguration,
   DataQualityServiceValidationConfiguration,
@@ -181,7 +180,7 @@ export class DSL_DataQuality_LegendStudioApplicationPlugin
 
   getExtraNewElementDriverEditorRenderers(): NewElementDriverEditorRenderer[] {
     return [
-      (type: string): ReactNode | undefined => {
+      (type: string): React.ReactNode | undefined => {
         if (type === DATA_QUALITY_ELEMENT_TYPE) {
           return <NewDataQualityValidationElementEditor />;
         }

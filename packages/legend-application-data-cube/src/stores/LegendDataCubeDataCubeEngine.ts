@@ -65,7 +65,7 @@ import {
   assertErrorThrown,
   NetworkClientError,
   HttpStatus,
-  getNonNullableEntry,
+  at,
   assertType,
 } from '@finos/legend-shared';
 import type { LegendDataCubeApplicationStore } from './LegendDataCubeBaseStore.js';
@@ -171,7 +171,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
             ),
           ),
         );
-        source.query = getNonNullableEntry(source.lambda.body, 0);
+        source.query = at(source.lambda.body, 0);
         // TODO: handle parameter values
         try {
           source.columns = (
