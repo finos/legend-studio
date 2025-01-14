@@ -60,6 +60,7 @@ import {
   _serializeValueSpecification,
   _deserializeValueSpecification,
   _defaultPrimitiveTypeValue,
+  type DataCubeExecutionOptions,
 } from '@finos/legend-data-cube';
 import {
   isNonNullable,
@@ -335,17 +336,22 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     }
   }
 
-  override async executeQuery(query: V1_Lambda, source: DataCubeSource) {
+  override async executeQuery(
+    query: V1_Lambda,
+    source: DataCubeSource,
+    options?: DataCubeExecutionOptions | undefined,
+  ) {
     const queryCodePromise = this.getValueSpecificationCode(query);
     let result: ExecutionResult;
     if (source instanceof AdhocQueryDataCubeSource) {
-      result = await this._runQuery(query, source.model);
+      result = await this._runQuery(query, source.model, undefined, options);
     } else if (source instanceof LegendQueryDataCubeSource) {
       query.parameters = source.lambda.parameters;
       result = await this._runQuery(
         query,
         source.model,
         source.parameterValues,
+        options,
       );
     } else {
       throw new UnsupportedOperationError(
@@ -429,15 +435,17 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     query: V1_Lambda,
     model: PlainObject<V1_PureModelContext>,
     parameterValues?: V1_ParameterValue[] | undefined,
+    options?: DataCubeExecutionOptions | undefined,
   ): Promise<ExecutionResult> {
     return V1_buildExecutionResult(
       V1_deserializeExecutionResult(
         (await this._engineServerClient.runQuery({
           clientVersion:
+            options?.clientVersion ??
             // eslint-disable-next-line no-process-env
-            process.env.NODE_ENV === 'development'
+            (process.env.NODE_ENV === 'development'
               ? PureClientVersion.VX_X_X
-              : undefined,
+              : undefined),
           function: _serializeValueSpecification(query),
           model,
           context: serialize(

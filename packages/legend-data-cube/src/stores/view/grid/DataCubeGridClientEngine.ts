@@ -31,7 +31,11 @@ import {
   pruneObject,
 } from '@finos/legend-shared';
 import { buildExecutableQuery } from '../../core/DataCubeQueryBuilder.js';
-import { type TabularDataSet, V1_Lambda } from '@finos/legend-graph';
+import {
+  PureClientVersion,
+  type TabularDataSet,
+  V1_Lambda,
+} from '@finos/legend-graph';
 import { makeObservable, observable, runInAction } from 'mobx';
 import type {
   DataCubeConfiguration,
@@ -304,6 +308,11 @@ async function getCastColumns(
     debug: view.settingService.getBooleanValue(
       DataCubeSettingKey.DEBUGGER__ENABLE_DEBUG_MODE,
     ),
+    clientVersion: view.settingService.getBooleanValue(
+      DataCubeSettingKey.DEBUGGER__USE_DEV_CLIENT_PROTOCOL_VERSION,
+    )
+      ? PureClientVersion.VX_X_X
+      : undefined,
   });
 
   return result.result.builder.columns.map((column) => ({
@@ -430,6 +439,11 @@ export class DataCubeGridClientServerSideDataSource
           debug: this._view.settingService.getBooleanValue(
             DataCubeSettingKey.DEBUGGER__ENABLE_DEBUG_MODE,
           ),
+          clientVersion: this._view.settingService.getBooleanValue(
+            DataCubeSettingKey.DEBUGGER__USE_DEV_CLIENT_PROTOCOL_VERSION,
+          )
+            ? PureClientVersion.VX_X_X
+            : undefined,
         },
       );
       const rowData = buildRowData(result.result.result, newSnapshot);

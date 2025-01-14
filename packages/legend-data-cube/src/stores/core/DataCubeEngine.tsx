@@ -88,6 +88,7 @@ export type DataCubeRelationType = {
 
 export type DataCubeExecutionOptions = {
   debug?: boolean | undefined;
+  clientVersion?: string | undefined;
 };
 
 export type DataCubeExecutionResult = {

@@ -145,6 +145,14 @@ export class DataCubeSettingService {
         defaultValue: false,
       } satisfies DataCubeSetting<boolean>,
       {
+        key: DataCubeSettingKey.DEBUGGER__ENABLE_DEBUG_MODE,
+        title: `Use development client protocol version: Enabled`,
+        description: `Specifies if development client protocol version (vX_X_X) should be used for execution`,
+        group: DataCubeSettingGroup.DEBUG,
+        type: DataCubeSettingType.BOOLEAN,
+        defaultValue: false,
+      } satisfies DataCubeSetting<boolean>,
+      {
         key: DataCubeSettingKey.DEBUGGER__ACTION__RELOAD,
         title: `Reload`,
         description: `Manually reload DataCube (keeping all states). This is needed when making changes to settings that require reloading to take effect.`,
