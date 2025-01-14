@@ -511,7 +511,9 @@ const QueryEditorExistingQueryInfoModal = observer(
               {executionContext instanceof QueryDataSpaceExecutionContext && (
                 <>
                   <div className="query-preview__field">
-                    <div className="query-preview__field__label">DataSpace</div>
+                    <div className="query-preview__field__label">
+                      Data Product
+                    </div>
                     <div className="query-preview__field__value">
                       {executionContext.dataSpacePath}
                     </div>

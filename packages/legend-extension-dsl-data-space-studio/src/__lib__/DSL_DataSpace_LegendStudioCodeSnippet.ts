@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export const SIMPLE_DATA_SPACE_SNIPPET = `DataSpace \${1:model::NewDataSpace}
+export const SIMPLE_DATA_SPACE_SNIPPET = `Data Product \${1:model::NewDataSpace}
 {
   executionContexts:
   [

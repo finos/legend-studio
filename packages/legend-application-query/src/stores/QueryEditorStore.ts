@@ -708,7 +708,7 @@ export abstract class QueryEditorStore {
       supportBuildMinimalGraph
     ) {
       try {
-        this.initState.setMessage('Fetching dataspace analysis result...');
+        this.initState.setMessage('Fetching data product analysis result...');
         const project = StoreProjectData.serialization.fromJson(
           await this.depotServerClient.getProject(groupId, artifactId),
         );

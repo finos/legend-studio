@@ -96,7 +96,7 @@ export class V1_QueryBuilder_PureGraphManagerExtension extends QueryBuilder_Pure
         if (mapping) {
           mapping.includes = element.includedMappings
             .map((mappingInclude) => {
-              // TODO : handle for mapping include dataspace
+              // TODO : handle for mapping include data product
               if (mappingInclude instanceof V1_MappingIncludeMapping) {
                 return new MappingIncludeMapping(
                   mapping,
@@ -202,7 +202,7 @@ export class V1_QueryBuilder_PureGraphManagerExtension extends QueryBuilder_Pure
         if (mapping) {
           mapping.includes = element.includedMappings
             .map((mappingInclude) => {
-              // TODO : handle for mapping include dataspace
+              // TODO : handle for mapping include data product
               if (mappingInclude instanceof V1_MappingIncludeMapping) {
                 return new MappingIncludeMapping(
                   mapping,

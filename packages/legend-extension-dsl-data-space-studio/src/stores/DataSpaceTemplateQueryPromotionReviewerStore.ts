@@ -272,7 +272,7 @@ export class DataSpaceTemplateQueryPromotionReviewerStore {
               entity.path === dataSpacePath &&
               entity.classifierPath === DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
           )[0],
-          `Can't find dataSpace entity with path ${this.dataSpaceEntity}`,
+          `Can't find data product entity with path ${this.dataSpaceEntity}`,
         );
         this.initState.pass();
       }
@@ -445,7 +445,7 @@ export class DataSpaceTemplateQueryPromotionReviewerStore {
             ),
           );
 
-          // ii. update dataspace
+          // ii. update data product
           this.applicationStore.alertService.setBlockingAlert({
             message: `Generating code commit...`,
             prompt: 'Please do not close the application',
@@ -456,7 +456,7 @@ export class DataSpaceTemplateQueryPromotionReviewerStore {
             workspace,
             {
               message:
-                'promote-as-template-query: promote query as a template query to dataspace',
+                'promote-as-template-query: promote query as a template query to data product',
               entityChanges: [
                 {
                   classifierPath: updatedDataSpaceEntity.classifierPath,
@@ -492,7 +492,7 @@ export class DataSpaceTemplateQueryPromotionReviewerStore {
             !workspaceReviewState.canCreateReview ||
             workspaceReviewState.sdlcState.isActiveProjectSandbox;
           workspaceReviewState.reviewTitle =
-            'code review - promote query as a template query to dataspace';
+            'code review - promote query as a template query to data product';
           if (!isCreateReviewDisabled) {
             await flowResult(
               workspaceReviewState.createWorkspaceReview(
@@ -509,9 +509,9 @@ export class DataSpaceTemplateQueryPromotionReviewerStore {
           this.applicationStore.alertService.setBlockingAlert(undefined);
           this.promoteState.pass();
           this.applicationStore.alertService.setActionAlertInfo({
-            message: `Successfully promoted query into dataspace '${this.dataSpacePath}'. Now your template query can be found in workspace '${this.workspaceName}' of project '${project.name}' (${project.projectId})`,
+            message: `Successfully promoted query into data product '${this.dataSpacePath}'. Now your template query can be found in workspace '${this.workspaceName}' of project '${project.name}' (${project.projectId})`,
             prompt: compilationFailed
-              ? `The workspace might not compile at the moment, please make sure to fix the issue and submit a review to make the dataspace part of the project to complete template query promotion`
+              ? `The workspace might not compile at the moment, please make sure to fix the issue and submit a review to make the data product part of the project to complete template query promotion`
               : `Please make sure to get the generated code-review reviewed and approved`,
             type: ActionAlertType.STANDARD,
             actions: compilationFailed

@@ -180,7 +180,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
             ec.mapping.path === currentQuery.mapping &&
             ec.defaultRuntime.path === currentQuery.runtime,
         )[0]?.name,
-        'can`t find a corresponding executatin key based on query`s mapping and runtime in dataspace',
+        'can`t find a corresponding executatin key based on query`s mapping and runtime in data product',
       );
     }
 
@@ -335,7 +335,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
       analysisResult = result;
     } else {
       throw new GraphBuilderError(
-        'Fail to get a valid dataspace analytics json from metadata, start building full graph',
+        'Fail to get a valid data product analytics json from metadata, start building full graph',
       );
     }
     const plugins =

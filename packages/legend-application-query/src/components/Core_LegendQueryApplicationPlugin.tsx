@@ -844,7 +844,7 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
                     runtime.runtimeValue = new V1_EngineRuntime();
                     return graphManager.elementProtocolToEntity(runtime);
                   });
-                  // The DataSpace entity is excluded from AnalyticsResult.Json to reduce the JSON size
+                  // The Data Product entity is excluded from AnalyticsResult.Json to reduce the JSON size
                   // because all its information can be found in V1_DataSpaceAnalysisResult.
                   // Therefore, we are building a simple v1_DataSpace entity based on V1_DataSpaceAnalysisResult.
                   const dataspaceProtocol = new V1_DataSpace();
