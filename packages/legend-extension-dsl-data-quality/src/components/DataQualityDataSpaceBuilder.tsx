@@ -17,7 +17,7 @@
 import { observer } from 'mobx-react-lite';
 import { useApplicationStore } from '@finos/legend-application';
 import { useEffect } from 'react';
-import { guaranteeType } from '@finos/legend-shared';
+import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import {
   type Runtime,
@@ -81,7 +81,9 @@ export const DataQualityDataSpaceBuilderSetupPanelContent = observer(
       buildExecutionContextOption,
     );
     const runtimeOptions = getMappingCompatibleRuntimes(
-      dataQualityQueryBuilderState.executionContextState.mapping!,
+      guaranteeNonNullable(
+        dataQualityQueryBuilderState.executionContextState.mapping,
+      ),
       dataQualityState.graphManagerState.usableRuntimes,
     )
       .map(
@@ -98,7 +100,9 @@ export const DataQualityDataSpaceBuilderSetupPanelContent = observer(
       : null;
     const classes = resolveUsableDataSpaceClasses(
       dataSpace,
-      dataQualityQueryBuilderState.executionContextState.mapping!,
+      guaranteeNonNullable(
+        dataQualityQueryBuilderState.executionContextState.mapping,
+      ),
       dataQualityState.graphManagerState,
     );
 

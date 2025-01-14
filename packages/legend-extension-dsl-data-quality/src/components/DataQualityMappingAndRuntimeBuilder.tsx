@@ -41,6 +41,7 @@ import {
   buildRuntimeValueOption,
   getRuntimeOptionFormatter,
 } from '@finos/legend-query-builder';
+import { at, guaranteeNonNullable } from '@finos/legend-shared';
 
 export const DataQualityMappingAndRuntimeBuilder = observer(
   (props: { dataQualityState: DataQualityClassValidationState }) => {
@@ -82,15 +83,17 @@ export const DataQualityMappingAndRuntimeBuilder = observer(
       dataQualityState.changeMapping(val.value);
       const runtimeOptions = getRuntimesBasedOnMapping();
       if (runtimeOptions.length) {
-        dataQualityQueryBuilderState.changeRuntime(runtimeOptions[0]!);
+        dataQualityQueryBuilderState.changeRuntime(at(runtimeOptions, 0));
       }
       dataQualityState.updateElementOnMappingChange();
       const classes = getMappingCompatibleClasses(
-        dataQualityQueryBuilderState.executionContextState.mapping!,
+        guaranteeNonNullable(
+          dataQualityQueryBuilderState.executionContextState.mapping,
+        ),
         dataQualityState.graphManagerState.usableClasses,
       );
       if (runtimeOptions.length && classes.length) {
-        dataQualityState.changeClass(classes[0]!);
+        dataQualityState.changeClass(at(classes, 0));
         dataQualityState.updateElementOnClassChange();
       }
     };
@@ -116,7 +119,9 @@ export const DataQualityMappingAndRuntimeBuilder = observer(
 
     const classes = selectedRuntimeOption
       ? getMappingCompatibleClasses(
-          dataQualityQueryBuilderState.executionContextState.mapping!,
+          guaranteeNonNullable(
+            dataQualityQueryBuilderState.executionContextState.mapping,
+          ),
           dataQualityState.graphManagerState.usableClasses,
         )
       : [];

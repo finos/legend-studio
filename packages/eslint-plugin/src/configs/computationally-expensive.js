@@ -51,6 +51,7 @@ const TYPESCRIPT_RULES = {
 
   '@typescript-eslint/unbound-method': WARN,
   '@typescript-eslint/no-redundant-type-constituents': WARN,
+  '@typescript-eslint/no-non-null-assertion': WARN,
 
   // NOTE: since we turn on TS option --exactOptionalPropertyTypes, this rule mistakenly flags ?: ... | undefined as violation
   // so we temporarily turn it off

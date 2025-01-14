@@ -16,6 +16,7 @@
 
 import { V1_DataQualityPropertyGraphFetchTree } from '../model/graphFetch/V1_DataQualityPropertyGraphFetchTree.js';
 import {
+  at,
   guaranteeNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
@@ -219,7 +220,7 @@ function transformRootGraphFetchTreeToDataQualityRootGraphFetchTree(
     (_propertyTree, index) =>
       transformGraphFetchTreeToDataQualityGraphFetchTree(
         _propertyTree,
-        V1_rootGraphFetchTree.subTrees[index]!,
+        at(V1_rootGraphFetchTree.subTrees, index),
       ),
   );
   return dataQualityRootGraphFetchTree;
@@ -241,7 +242,7 @@ function transformPropertyGraphFetchTreeToDataQualityPropertyGraphFetchTree(
     propertyGraphFetchTree.subTrees.map((_propertyTree, index) =>
       transformGraphFetchTreeToDataQualityGraphFetchTree(
         _propertyTree,
-        V1_propertyGraphFetchTree.subTrees[index]!,
+        at(V1_propertyGraphFetchTree.subTrees, index),
       ),
     );
   dataQualityPropertyGraphFetchTree.constraints =

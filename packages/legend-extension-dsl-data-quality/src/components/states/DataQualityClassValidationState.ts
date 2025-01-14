@@ -121,7 +121,9 @@ export class DataQualityClassValidationState extends DataQualityState {
         ),
       );
       classOptions = getMappingCompatibleClasses(
-        this.dataQualityQueryBuilderState.executionContextState.mapping!,
+        guaranteeNonNullable(
+          this.dataQualityQueryBuilderState.executionContextState.mapping,
+        ),
         this.graphManagerState.usableClasses,
       );
     } else if (
@@ -143,7 +145,9 @@ export class DataQualityClassValidationState extends DataQualityState {
       );
       classOptions = resolveUsableDataSpaceClasses(
         this.dataSpace,
-        this.dataQualityQueryBuilderState.executionContextState.mapping!,
+        guaranteeNonNullable(
+          this.dataQualityQueryBuilderState.executionContextState.mapping,
+        ),
         this.graphManagerState,
       );
     }
@@ -197,7 +201,9 @@ export class DataQualityClassValidationState extends DataQualityState {
       new MappingAndRuntimeDataQualityExecutionContext();
     mappingAndRuntimeExecutionContext.mapping =
       PackageableElementExplicitReference.create(
-        this.dataQualityQueryBuilderState.executionContextState.mapping!,
+        guaranteeNonNullable(
+          this.dataQualityQueryBuilderState.executionContextState.mapping,
+        ),
       );
     guaranteeNonNullable(
       this.dataQualityQueryBuilderState.executionContextState.runtimeValue,
@@ -245,7 +251,7 @@ export class DataQualityClassValidationState extends DataQualityState {
       new RuntimePointer(executionContext.defaultRuntime),
     );
     const compatibleClasses = resolveUsableDataSpaceClasses(
-      this.dataSpace!,
+      guaranteeNonNullable(this.dataSpace),
       mapping,
       this.graphManagerState,
     );
@@ -278,7 +284,9 @@ export class DataQualityClassValidationState extends DataQualityState {
       new DataSpaceDataQualityExecutionContext();
     dataSpaceExecutionContext.context = this.executionContext.name;
     dataSpaceExecutionContext.dataSpace =
-      PackageableElementExplicitReference.create(this.dataSpace!);
+      PackageableElementExplicitReference.create(
+        guaranteeNonNullable(this.dataSpace),
+      );
     dataQualityClassValidation_setDataQualityContext(
       this.constraintsConfigurationElement,
       dataSpaceExecutionContext,

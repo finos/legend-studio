@@ -48,6 +48,7 @@ import {
 } from '@finos/legend-graph';
 import {
   ADVANCED_FUZZY_SEARCH_MODE,
+  at,
   guaranteeNonNullable,
   prettyCONSTName,
 } from '@finos/legend-shared';
@@ -167,12 +168,11 @@ export const formatTextWithHighlightedMatches = (
 
   // Create formatted node
   const formattedNode: React.ReactNode[] = [];
-  if (combinedHighlightRanges[0]![0] > 0) {
+  const highlightRange = at(combinedHighlightRanges, 0)[0];
+  if (highlightRange > 0) {
     formattedNode.push(
-      <span
-        key={`${id}-0-${displayText.substring(0, combinedHighlightRanges[0]![0])}`}
-      >
-        {displayText.substring(0, combinedHighlightRanges[0]![0])}
+      <span key={`${id}-0-${displayText.substring(0, highlightRange)}`}>
+        {displayText.substring(0, highlightRange)}
       </span>,
     );
   }
@@ -190,34 +190,32 @@ export const formatTextWithHighlightedMatches = (
       index < combinedHighlightRanges.length - 1 &&
       range[1] < displayText.length
     ) {
+      const highlightRange2 = at(combinedHighlightRanges, index + 1)[0];
       formattedNode.push(
         <span
           key={`${id}-${index * 2 + 1}--${displayText.substring(
             range[1],
-            combinedHighlightRanges[index + 1]![0],
+            highlightRange2,
           )}`}
         >
-          {displayText.substring(
-            range[1],
-            combinedHighlightRanges[index + 1]![0],
-          )}
+          {displayText.substring(range[1], highlightRange2)}
         </span>,
       );
     }
   });
-  if (
-    combinedHighlightRanges[combinedHighlightRanges.length - 1]![1] <
-    displayText.length
-  ) {
+
+  const highlightRange3 = at(
+    combinedHighlightRanges,
+    combinedHighlightRanges.length - 1,
+  )[1];
+  if (highlightRange3 < displayText.length) {
     formattedNode.push(
       <span
         key={`${id}-${combinedHighlightRanges.length * 2 + 2}-${displayText.substring(
-          combinedHighlightRanges[combinedHighlightRanges.length - 1]![1],
+          highlightRange3,
         )}`}
       >
-        {displayText.substring(
-          combinedHighlightRanges[combinedHighlightRanges.length - 1]![1],
-        )}
+        {displayText.substring(highlightRange3)}
       </span>,
     );
   }

@@ -341,7 +341,9 @@ describe(integrationTest('Query builder export button'), () => {
       renderResult.getByText('Others...').closest('button'),
     );
     expect(viewQueryUsageButton).not.toBeNull();
-    expect(viewQueryUsageButton!.getAttribute('disabled')).toBeDefined();
+    expect(
+      guaranteeNonNullable(viewQueryUsageButton).getAttribute('disabled'),
+    ).toBeDefined();
   });
 
   test('Check that downloadStream function is called if x-legend-delegated-export header is absent', async () => {

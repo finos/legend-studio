@@ -29,6 +29,7 @@ import {
 } from '../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
 import { action, computed, makeObservable, observable } from 'mobx';
 import {
+  at,
   filterByType,
   guaranteeNonNullable,
   UnsupportedOperationError,
@@ -201,7 +202,7 @@ export class DataQuality_ElementDriver extends NewElementDriver<DataQualityValid
       CLASS_ELEMENT_CREATION_BASIS.DATASPACE_BASED
     ) {
       const dataSpaceToSet = PackageableElementExplicitReference.create(
-        this.dataSpaceSelected!.value,
+        guaranteeNonNullable(this.dataSpaceSelected).value,
       );
       const dataSpaceExecutionContext =
         new DataSpaceDataQualityExecutionContext();
@@ -243,7 +244,7 @@ export class DataQuality_ElementDriver extends NewElementDriver<DataQualityValid
       );
     }
     dataQualityClassConstraintsConfiguration.dataQualityRootGraphFetchTree =
-      buildDefaultDataQualityRootGraphFetchTree(usableClasses[0]!);
+      buildDefaultDataQualityRootGraphFetchTree(at(usableClasses, 0));
     return dataQualityClassConstraintsConfiguration;
   }
 
