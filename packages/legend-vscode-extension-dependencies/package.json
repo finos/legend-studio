@@ -28,7 +28,7 @@
     "build:tailwindcss": "tailwindcss -i ./style/tailwind.css -o ./lib/tailwind.css --minify",
     "build:sass": "cross-env INIT_CWD=$INIT_CWD node ../../scripts/workflow/buildSass.js",
     "build:ts": "tsc --project ./tsconfig.build.json",
-    "bundle": "yarn clean && yarn build:tailwindcss && yarn build:sass && yarn build:ts && yarn rollup -c && echo '{\"type\": \"commonjs\"}' > lib/bundles/package.json",
+    "bundle": "yarn clean && yarn build:sass && yarn build:tailwindcss && yarn build:ts && yarn rollup -c && echo '{\"type\": \"commonjs\"}' > lib/bundles/package.json",
     "clean": "npm-run-all clean:cache clean:lib",
     "clean:cache": "rimraf \"build\"",
     "clean:lib": "rimraf \"lib\"",
