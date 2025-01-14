@@ -25,7 +25,7 @@
   &__content {
     width: calc(100% - 2.8rem);
     display: flex;
-    overflow-x: overlay;
+    overflow-x: auto;
   }
 
   &__tab {
@@ -154,7 +154,6 @@
 
       padding: 0.4rem;
       margin-left: 0.6rem;
-      flex-direction: end;
 
       & svg {
         width: 1.2rem;

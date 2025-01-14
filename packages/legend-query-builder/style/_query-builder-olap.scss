@@ -75,7 +75,7 @@
   &__column__name {
     @include flexVCenter;
 
-    margin-left: 0 0.5rem 0 0.5rem;
+    margin: 0 0.5rem;
     height: 3.4rem;
     width: calc(100% - 20rem);
     min-width: 10rem;

@@ -57,7 +57,7 @@
       height: 100%;
       width: 100%;
       padding: 1rem;
-      overflow: overlay;
+      overflow: auto;
     }
   }
 
@@ -73,7 +73,7 @@
     height: 2.8rem;
     z-index: 1;
     display: flex;
-    overflow-x: overlay;
+    overflow-x: auto;
     overflow-y: hidden;
   }
 
@@ -681,7 +681,7 @@
       height: 100%;
       width: 100%;
       padding: 1rem;
-      overflow: overlay;
+      overflow: auto;
     }
   }
 
@@ -834,7 +834,8 @@
 
   &__header__prompt {
     padding: 2rem 2rem 0;
-    word-break: break-word;
+    word-break: normal;
+    overflow-wrap: anywhere;
     font-size: 1.4rem;
     color: var(--color-light-grey-400);
     line-height: 2rem;
@@ -1143,7 +1144,7 @@
       height: 100%;
       width: 100%;
       padding: 1rem;
-      overflow: overlay;
+      overflow: auto;
     }
   }
 

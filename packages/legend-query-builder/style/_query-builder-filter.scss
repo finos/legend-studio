@@ -16,8 +16,6 @@
 
 @use 'mixins' as *;
 
-$group-node-width: 3.5rem;
-
 .query-builder-filter-tree {
   &__root {
     padding: 1rem;
@@ -167,7 +165,7 @@ $group-node-width: 3.5rem;
   &__node__children {
     @include flexVCenter;
 
-    width: calc(100% - $group-node-width);
+    width: calc(100% - 3.5rem);
     height: 100%;
     flex: 1;
     flex-direction: column;
@@ -197,7 +195,7 @@ $group-node-width: 3.5rem;
     @include flexVCenter;
 
     height: 2.2rem;
-    width: $group-node-width;
+    width: 3.5rem;
     border-radius: 0.2rem;
 
     &__label {
@@ -209,7 +207,7 @@ $group-node-width: 3.5rem;
     }
 
     &__drop-zone {
-      width: $group-node-width;
+      width: 3.5rem;
       height: 100%;
 
       .dnd__entry-dropzone__placeholder__content {

@@ -160,7 +160,6 @@
 
   .markdown-content pre code {
     display: inline;
-    max-width: auto;
     padding: 0;
     margin: 0;
     overflow: visible;
@@ -456,7 +455,7 @@
   }
 
   .ag-column-drop-list.ag-column-drop-horizontal-list {
-    overflow-x: overlay;
+    overflow-x: auto;
   }
 
   .ag-column-drop-list.ag-column-drop-horizontal-list[aria-label='Row Groups']

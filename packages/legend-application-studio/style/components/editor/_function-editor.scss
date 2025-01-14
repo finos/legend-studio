@@ -57,7 +57,7 @@
       height: 100%;
       width: 100%;
       padding: 1rem;
-      overflow: overlay;
+      overflow: auto;
     }
   }
 
@@ -73,7 +73,7 @@
     height: 2.8rem;
     z-index: 1;
     display: flex;
-    overflow-x: overlay;
+    overflow-x: auto;
     overflow-y: hidden;
   }
 
@@ -130,7 +130,7 @@
     &__description {
       display: -webkit-box;
       -webkit-box-orient: vertical;
-      -webkit-line-clamp: 2;
+      line-clamp: 2;
       overflow: hidden;
       text-align: left;
       height: calc(100% - 2.8rem);
@@ -144,7 +144,7 @@
     height: 100%;
     width: 100%;
     padding: 1rem;
-    overflow: overlay;
+    overflow: auto;
 
     &__item {
       padding-top: 1rem;
@@ -366,7 +366,7 @@
       height: 100%;
       width: 100%;
       padding: 1rem;
-      overflow: overlay;
+      overflow: auto;
     }
   }
 }

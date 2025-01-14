@@ -36,7 +36,8 @@
     &__prompt {
       @include flexCenter;
 
-      word-break: break-word;
+      word-break: normal;
+      overflow-wrap: anywhere;
       margin-left: 0.8rem;
       color: var(--color-light-grey-400);
       line-height: 2rem;

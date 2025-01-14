@@ -59,7 +59,7 @@
       height: 100%;
       width: 100%;
       padding: 1rem;
-      overflow: overlay;
+      overflow: auto;
     }
   }
 
@@ -90,7 +90,8 @@
           white-space: nowrap;
           text-overflow: ellipsis;
           overflow: hidden;
-          word-break: break-word;
+          word-break: normal;
+          overflow-wrap: anywhere;
           text-align: left;
           padding-left: 0.5rem;
         }

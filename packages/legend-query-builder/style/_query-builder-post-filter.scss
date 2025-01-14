@@ -158,7 +158,7 @@
   &__node__children {
     @include flexVCenter;
 
-    width: calc(100% - query-builder-filter.$group-node-width);
+    width: calc(100% - 3.5rem);
     height: 100%;
     flex: 1;
     flex-direction: column;
@@ -188,7 +188,7 @@
     @include flexVCenter;
 
     height: 2.2rem;
-    width: query-builder-filter.$group-node-width;
+    width: 3.5rem;
     border-radius: 0.2rem;
 
     &__label {
@@ -200,7 +200,7 @@
     }
 
     &__drop-zone {
-      width: query-builder-filter.$group-node-width;
+      width: 3.5rem;
       height: 100%;
 
       .dnd__entry-dropzone__placeholder__content {

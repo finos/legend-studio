@@ -17,8 +17,6 @@
 @use 'sass:math';
 
 $loading-icon-frame-rate: math.div(100, 8);
-$loading-icon-full-duration: 1.6s;
-$loading-icon-frame-duration: math.div($loading-icon-full-duration, 8);
 
 $loading-icon-square-state-off: rotateX(90deg);
 $loading-icon-square-state-on: rotateX(0deg);
@@ -76,32 +74,32 @@ $loading-icon-size-lg: 64px;
     height: calc(50% - 1px);
     position: absolute;
     background: var(--color-light-blue-50);
-    animation: flip-animation $loading-icon-full-duration infinite;
+    animation: flip-animation 1.6s infinite;
     transform: $loading-icon-square-state-off;
 
     // Top-left
     &:nth-child(1) {
       top: 0;
       left: 0;
-      animation-delay: $loading-icon-frame-duration * 0;
+      animation-delay: 0s;
     }
     // Top-Right
     &:nth-child(2) {
       top: 0;
       left: 50%;
-      animation-delay: $loading-icon-frame-duration * 1;
+      animation-delay: 0.2s;
     }
     // Bottom-Right
     &:nth-child(3) {
       top: 50%;
       left: 50%;
-      animation-delay: $loading-icon-frame-duration * 2;
+      animation-delay: 0.4s;
     }
     // Bottom-Left
     &:nth-child(4) {
       top: 50%;
       left: 0;
-      animation-delay: $loading-icon-frame-duration * 3;
+      animation-delay: 0.6s;
     }
   }
 }
