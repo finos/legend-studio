@@ -107,9 +107,7 @@ export class DataCubeFilterEditorConditionTreeNode extends DataCubeFilterEditorT
   }
 
   updateValue(value: unknown) {
-    if (this.value) {
-      this.value.value = value;
-    }
+    this.value.value = value;
   }
 }
 
