@@ -125,7 +125,8 @@
 
   &__header__prompt {
     padding: 2rem 2rem 0;
-    word-break: break-word;
+    word-break: normal;
+    overflow-wrap: anywhere;
     font-size: 1.4rem;
     color: var(--color-light-grey-400);
     line-height: 2rem;
@@ -261,7 +262,7 @@
       height: 100%;
       width: 100%;
       padding: 1rem;
-      overflow: overlay;
+      overflow: auto;
     }
   }
 
@@ -317,7 +318,8 @@
 
   &__header__prompt {
     padding: 2rem 2rem 0;
-    word-break: break-word;
+    word-break: normal;
+    overflow-wrap: anywhere;
     font-size: 1.4rem;
     color: var(--color-light-grey-400);
     line-height: 2rem;
@@ -466,7 +468,8 @@
   }
 
   &__section__header__prompt {
-    word-break: break-word;
+    word-break: normal;
+    overflow-wrap: anywhere;
     font-size: 1.4rem;
     color: var(--color-light-grey-400);
     line-height: 2rem;

@@ -23,7 +23,6 @@ import {
   LogEvent,
   assertErrorThrown,
   guaranteeNonNullable,
-  getNullableFirstEntry,
   NetworkClientError,
   HttpStatus,
 } from '@finos/legend-shared';
@@ -328,7 +327,7 @@ export class WorkspaceUpdaterState {
           RevisionAlias.BASE,
         )) as PlainObject<Revision>,
       );
-      const baseReviewObj = getNullableFirstEntry(
+      const baseReviewObj = (
         (yield this.editorStore.sdlcServerClient.getReviews(
           this.sdlcState.activeProject.projectId,
           this.sdlcState.activePatch?.patchReleaseVersionId.id,
@@ -337,8 +336,8 @@ export class WorkspaceUpdaterState {
             revisionIds: [workspaceBaseRevision.id],
             limit: 1,
           },
-        )) as PlainObject<Review>[],
-      );
+        )) as PlainObject<Review>[]
+      )[0];
       const baseReview = baseReviewObj
         ? Review.serialization.fromJson(baseReviewObj)
         : undefined;

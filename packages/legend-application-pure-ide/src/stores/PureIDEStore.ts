@@ -889,9 +889,11 @@ export class PureIDEStore implements CommandRegistrar {
           const execResult = deserializeExecutionResult(
             guaranteeNonNullable(r),
           );
-          this.applicationStore.terminalService.terminal.output(
-            execResult.text!,
-          );
+          if (execResult.text) {
+            this.applicationStore.terminalService.terminal.output(
+              execResult.text,
+            );
+          }
         })
         .catch((er) => {
           this.applicationStore.terminalService.terminal.fail(er.message);

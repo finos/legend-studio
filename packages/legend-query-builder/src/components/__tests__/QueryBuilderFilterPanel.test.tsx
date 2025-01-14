@@ -76,11 +76,7 @@ import TEST_DATA__QueryBuilder_Model_SimpleRelational from '../../stores/__tests
 import TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDerivedPropFromParentUsedInFilter from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDerivedPropFromParentUsedInFilter.json' with { type: 'json' };
 import TEST_DATA__ComplexRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json' with { type: 'json' };
 import TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates.json' with { type: 'json' };
-import {
-  guaranteeNonNullable,
-  getNullableFirstEntry,
-  guaranteeType,
-} from '@finos/legend-shared';
+import { at, guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import TEST_MilestoningModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_Milestoning.json' with { type: 'json' };
 import {
   TEST_DATA__simpleFilterWithBiTemporalSourceAndBiTemporalTarget,
@@ -2399,9 +2395,7 @@ test(
     const filterConditionValue = guaranteeType(
       guaranteeType(
         guaranteeType(
-          getNullableFirstEntry(
-            Array.from(queryBuilderState.filterState.nodes.values()),
-          ),
+          Array.from(queryBuilderState.filterState.nodes.values())[0],
           QueryBuilderFilterTreeConditionNodeData,
         ).condition.rightConditionValue,
         FilterValueSpecConditionValueState,
@@ -2470,9 +2464,7 @@ test(
     const filterConditionValue = guaranteeType(
       guaranteeType(
         guaranteeType(
-          getNullableFirstEntry(
-            Array.from(queryBuilderState.filterState.nodes.values()),
-          ),
+          Array.from(queryBuilderState.filterState.nodes.values())[0],
           QueryBuilderFilterTreeConditionNodeData,
         ).condition.rightConditionValue,
         FilterValueSpecConditionValueState,
@@ -3333,7 +3325,7 @@ test(
 
     // Set left side derived property value
     await setDerivedPropertyValue(
-      getAllByTitle(filterPanel, 'Set Derived Property Argument(s)...')[0]!,
+      at(getAllByTitle(filterPanel, 'Set Derived Property Argument(s)...'), 0),
       'test1',
       renderResult,
     );
@@ -3343,7 +3335,7 @@ test(
 
     // Set right side derived property value
     await setDerivedPropertyValue(
-      getAllByTitle(filterPanel, 'Set Derived Property Argument(s)...')[1]!,
+      at(getAllByTitle(filterPanel, 'Set Derived Property Argument(s)...'), 1),
       'test2',
       renderResult,
     );
@@ -3353,7 +3345,7 @@ test(
 
     // Verify left side derived property value is unchanged
     fireEvent.click(
-      getAllByTitle(filterPanel, 'Set Derived Property Argument(s)...')[0]!,
+      at(getAllByTitle(filterPanel, 'Set Derived Property Argument(s)...'), 0),
     );
     const dpModal = await renderResult.findByRole('dialog');
     await findByText(dpModal, 'Derived Property');
@@ -3453,7 +3445,7 @@ test(
 
     // Set left side derived property value
     await setDerivedPropertyValue(
-      getAllByTitle(filterPanel, 'Set Derived Property Argument(s)...')[0]!,
+      at(getAllByTitle(filterPanel, 'Set Derived Property Argument(s)...'), 0),
       'test2',
       renderResult,
     );
@@ -3463,7 +3455,7 @@ test(
 
     // Set right side derived property value
     await setDerivedPropertyValue(
-      getAllByTitle(filterPanel, 'Set Derived Property Argument(s)...')[1]!,
+      at(getAllByTitle(filterPanel, 'Set Derived Property Argument(s)...'), 1),
       'test3',
       renderResult,
     );
@@ -3483,7 +3475,7 @@ test(
 
     // Verify left side derived property value is unchanged
     fireEvent.click(
-      getAllByTitle(filterPanel, 'Set Derived Property Argument(s)...')[0]!,
+      at(getAllByTitle(filterPanel, 'Set Derived Property Argument(s)...'), 0),
     );
     dpModal = await renderResult.findByRole('dialog');
     await findByText(dpModal, 'Derived Property');

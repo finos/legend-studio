@@ -27,6 +27,7 @@ import { editor as monacoEditorAPI } from 'monaco-editor';
 import { useEffect, useRef, useState } from 'react';
 import { MONACO_EDITOR_OVERFLOW_WIDGETS_ROOT_ID } from './DataCubePureCodeEditorUtils.js';
 import type { EngineError } from '@finos/legend-graph';
+import { isNonNullable } from '@finos/legend-shared';
 
 export function DataCubeCodeCheckErrorAlert(props: {
   editorModel: monacoEditorAPI.ITextModel;
@@ -43,6 +44,9 @@ export function DataCubeCodeCheckErrorAlert(props: {
   useEffect(() => {
     if (!editor && editorRef.current) {
       const element = editorRef.current;
+      const widgetRoot = document.getElementById(
+        MONACO_EDITOR_OVERFLOW_WIDGETS_ROOT_ID,
+      );
       const newEditor = monacoEditorAPI.create(element, {
         ...getBaseCodeEditorOptions(),
         fontSize: 12,
@@ -55,9 +59,9 @@ export function DataCubeCodeCheckErrorAlert(props: {
         // See https://dev.to/salilnaik/the-uncanny-relationship-between-position-fixed-and-transform-property-32f6
         // See https://github.com/microsoft/monaco-editor/issues/2793#issuecomment-999337740
         fixedOverflowWidgets: true,
-        overflowWidgetsDomNode: document.getElementById(
-          MONACO_EDITOR_OVERFLOW_WIDGETS_ROOT_ID,
-        )!,
+        ...(isNonNullable(widgetRoot)
+          ? { overflowWidgetsDomNode: widgetRoot }
+          : {}),
         readOnly: true,
         // By design, error markers would not show in read-only mode, use this to force it
         // See https://github.com/microsoft/monaco-editor/issues/311

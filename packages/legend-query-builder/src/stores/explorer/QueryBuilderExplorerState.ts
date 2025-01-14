@@ -24,6 +24,7 @@ import {
   assertType,
   UnsupportedOperationError,
   StopWatch,
+  at,
 } from '@finos/legend-shared';
 import {
   type AbstractProperty,
@@ -871,7 +872,7 @@ export class QueryBuilderExplorerState {
         parentNodeIdElements.length > 0 &&
         parentNodeIdElements[parentNodeIdElements.length - 1] !== undefined
       ) {
-        parentNodeIdElements[parentNodeIdElements.length - 1]!.pop();
+        at(parentNodeIdElements, parentNodeIdElements.length - 1).pop();
       }
 
       let currentNodeId = '';

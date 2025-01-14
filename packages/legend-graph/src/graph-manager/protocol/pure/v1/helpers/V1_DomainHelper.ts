@@ -20,7 +20,7 @@ import {
   ELEMENT_PATH_DELIMITER,
   FUNCTION_SIGNATURE_MULTIPLICITY_INFINITE_TOKEN,
 } from '../../../../../graph/MetaModelConst.js';
-import type { V1_Multiplicity } from '../model/packageableElements/domain/V1_Multiplicity.js';
+import { V1_Multiplicity } from '../model/packageableElements/domain/V1_Multiplicity.js';
 import type { V1_ConcreteFunctionDefinition } from '../model/packageableElements/function/V1_ConcreteFunctionDefinition.js';
 import { V1_GenericType } from '../model/packageableElements/type/V1_GenericType.js';
 import type { V1_RawVariable } from '../model/rawValueSpecification/V1_RawVariable.js';
@@ -153,5 +153,6 @@ export function V1_createRelationTypeColumn(
   const column = new V1_RelationTypeColumn();
   column.name = name;
   column.genericType = V1_createGenericTypeWithElementPath(type);
+  column.multiplicity = V1_Multiplicity.ZERO_ONE;
   return column;
 }

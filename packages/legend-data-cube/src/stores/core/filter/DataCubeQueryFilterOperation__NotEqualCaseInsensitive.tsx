@@ -15,7 +15,7 @@
  */
 import {
   DataCubeQueryFilterOperation,
-  generateDefaultFilterConditionPrimitiveTypeValue,
+  _defaultPrimitiveTypeValue,
 } from './DataCubeQueryFilterOperation.js';
 import type { DataCubeQuerySnapshotFilterCondition } from '../DataCubeQuerySnapshot.js';
 import type { DataCubeColumn } from '../model/DataCubeColumn.js';
@@ -23,6 +23,7 @@ import {
   DataCubeColumnDataType,
   DataCubeFunction,
   DataCubeQueryFilterOperator,
+  isPrimitiveType,
   ofDataType,
   type DataCubeOperationValue,
 } from '../DataCubeQueryEngine.js';
@@ -34,16 +35,11 @@ import {
   _value,
   _var,
 } from '../DataCubeQueryBuilderUtils.js';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { guaranteeNonNullable, returnUndefOnError } from '@finos/legend-shared';
+import { type V1_AppliedFunction } from '@finos/legend-graph';
 import {
-  matchFunctionName,
-  V1_AppliedFunction,
-  V1_PrimitiveValueSpecification,
-  type V1_AppliedProperty,
-} from '@finos/legend-graph';
-import {
-  _buildConditionSnapshotProperty,
-  _dataCubeOperationValue,
+  _caseSensitiveBaseFilterCondition,
+  _unwrapNotFilterCondition,
 } from '../DataCubeQuerySnapshotBuilderUtils.js';
 
 export class DataCubeQueryFilterOperation__NotEqualCaseInsensitive extends DataCubeQueryFilterOperation {
@@ -69,8 +65,9 @@ export class DataCubeQueryFilterOperation__NotEqualCaseInsensitive extends DataC
 
   isCompatibleWithValue(value: DataCubeOperationValue) {
     return (
-      ofDataType(value.type, [DataCubeColumnDataType.TEXT]) &&
       value.value !== undefined &&
+      isPrimitiveType(value.type) &&
+      ofDataType(value.type, [DataCubeColumnDataType.TEXT]) &&
       !Array.isArray(value.value)
     );
   }
@@ -78,42 +75,27 @@ export class DataCubeQueryFilterOperation__NotEqualCaseInsensitive extends DataC
   generateDefaultValue(column: DataCubeColumn) {
     return {
       type: column.type,
-      value: generateDefaultFilterConditionPrimitiveTypeValue(column.type),
+      value: _defaultPrimitiveTypeValue(column.type),
     };
   }
 
-  buildConditionSnapshot(expression: V1_AppliedFunction) {
-    if (
-      matchFunctionName(expression.function, DataCubeFunction.NOT) &&
-      expression.parameters[0] instanceof V1_AppliedFunction &&
-      expression.parameters[0].parameters[0] instanceof V1_AppliedFunction &&
-      expression.parameters[0].parameters[1] instanceof V1_AppliedFunction &&
-      matchFunctionName(
-        expression.parameters[0].function,
-        DataCubeFunction.EQUAL,
-      ) &&
-      matchFunctionName(
-        expression.parameters[0].parameters[0].function,
-        DataCubeFunction.TO_LOWERCASE,
-      )
-    ) {
-      const func = expression.parameters[0];
-      func.parameters = [
-        expression.parameters[0].parameters[0].parameters[0]!,
-        expression.parameters[0].parameters[1].parameters[0]!,
-      ];
-      const value = func.parameters[1];
-      const filterConditionSnapshot = _buildConditionSnapshotProperty(
-        func.parameters[0] as V1_AppliedProperty,
-        this.operator,
-      );
-      if (value instanceof V1_PrimitiveValueSpecification) {
-        filterConditionSnapshot.value = _dataCubeOperationValue(value);
-        return filterConditionSnapshot satisfies DataCubeQuerySnapshotFilterCondition;
-      }
+  buildConditionSnapshot(
+    expression: V1_AppliedFunction,
+    columnGetter: (name: string) => DataCubeColumn,
+  ) {
+    const unwrapped = returnUndefOnError(() =>
+      _unwrapNotFilterCondition(expression),
+    );
+    if (!unwrapped) {
       return undefined;
     }
-    return undefined;
+    return this._finalizeConditionSnapshot(
+      _caseSensitiveBaseFilterCondition(
+        unwrapped,
+        columnGetter,
+        DataCubeFunction.EQUAL,
+      ),
+    );
   }
 
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {

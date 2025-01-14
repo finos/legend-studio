@@ -26,7 +26,7 @@ import {
   isNonNullable,
   filterByType,
   ActionState,
-  getNonNullableEntry,
+  at,
   guaranteeType,
   assertNonEmptyString,
   assertTrue,
@@ -638,7 +638,7 @@ export class DatabaseSchemaExplorerState {
       entities,
       ActionState.create(),
     );
-    return getNonNullableEntry(
+    return at(
       graph.ownDatabases,
       0,
       'Expected one database to be generated from input',
@@ -801,11 +801,7 @@ export class DatabaseSchemaExplorerState {
         (yield this.editorStore.graphManagerState.graphManager.buildDatabase(
           databaseBuilderInput,
         )) as Entity[];
-      return getNonNullableEntry(
-        entities,
-        0,
-        'Expected a database to be generated',
-      );
+      return at(entities, 0, 'Expected a database to be generated');
     } finally {
       this.isGeneratingDatabase = false;
     }
@@ -820,7 +816,7 @@ export class DatabaseSchemaExplorerState {
       [(yield flowResult(this.generateDatabase())) as Entity],
       ActionState.create(),
     )) as Entity[];
-    const database = getNonNullableEntry(
+    const database = at(
       graph.ownDatabases,
       0,
       'Expected one database to be generated from input',

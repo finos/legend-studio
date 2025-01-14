@@ -221,7 +221,10 @@ export function _collection(values: V1_ValueSpecification[]) {
   return collection;
 }
 
-export function _primitiveValue(type: string, value: unknown) {
+export function _primitiveValue(
+  type: string,
+  value: unknown,
+): V1_PrimitiveValueSpecification {
   const _val = <T extends V1_PrimitiveValueSpecification & { value: unknown }>(
     primitiveValue: T,
     val: unknown,
@@ -249,7 +252,9 @@ export function _primitiveValue(type: string, value: unknown) {
     case PRIMITIVE_TYPE.STRICTTIME:
       return _val(new V1_CStrictTime(), guaranteeIsString(value));
     default:
-      throw new UnsupportedOperationError(`Unsupported value type '${type}'`);
+      throw new UnsupportedOperationError(
+        `Can't build primitive value instance for unsupported type '${type}'`,
+      );
   }
 }
 
@@ -306,7 +311,7 @@ export function _value(
       return _property(guaranteeIsString(value.value), variable);
     default:
       throw new UnsupportedOperationError(
-        `Unsupported value type '${value.type}'`,
+        `Can't build value instance for unsupported type '${value.type}'`,
       );
   }
 }
@@ -314,14 +319,6 @@ export function _value(
 export function _not(fn: V1_AppliedFunction) {
   return _function(_functionName(DataCubeFunction.NOT), [fn]);
 }
-
-export function _selectFunction(columns: DataCubeColumn[]) {
-  return _function(DataCubeFunction.SELECT, [
-    _cols(columns.map((col) => _colSpec(col.name))),
-  ]);
-}
-
-// --------------------------------- BUILDING BLOCKS ---------------------------------
 
 export function _col(
   name: string,
@@ -338,6 +335,31 @@ export function _cols(colSpecs: V1_ColSpec[]) {
   const colSpecArray = new V1_ColSpecArray();
   colSpecArray.colSpecs = colSpecs;
   return _classInstance(V1_ClassInstanceType.COL_SPEC_ARRAY, colSpecArray);
+}
+
+// --------------------------------- BUILDING BLOCKS ---------------------------------
+
+export function _selectFunction(columns: DataCubeColumn[]) {
+  return _function(DataCubeFunction.SELECT, [
+    _cols(columns.map((col) => _colSpec(col.name))),
+  ]);
+}
+
+export function _extendRootAggregation(columnName: string) {
+  return _function(DataCubeFunction.EXTEND, [
+    _col(
+      columnName,
+      _lambda(
+        [_var()],
+        [
+          _primitiveValue(
+            PRIMITIVE_TYPE.STRING,
+            DEFAULT_ROOT_AGGREGATION_COLUMN_VALUE,
+          ),
+        ],
+      ),
+    ),
+  ]);
 }
 
 // NOTE: this is the column name used for the dummy count() aggregate
@@ -393,7 +415,7 @@ export function _pivotAggCols(
       const aggCol = operation?.buildAggregateColumn(agg);
       if (!aggCol) {
         throw new UnsupportedOperationError(
-          `Unsupported aggregate operation '${agg.aggregateOperator}'`,
+          `Can't build aggregate column for unsupported operator '${agg.aggregateOperator}'`,
         );
       }
       return aggCol;
@@ -443,7 +465,7 @@ export function _groupByAggCols(
         const aggCol = operation?.buildAggregateColumn(agg);
         if (!aggCol) {
           throw new UnsupportedOperationError(
-            `Unsupported aggregate operation '${agg.aggregateOperator}'`,
+            `Can't build aggregate column for unsupported operator '${agg.aggregateOperator}'`,
           );
         }
         return aggCol;
@@ -484,7 +506,7 @@ export function _groupByAggCols(
         const aggCol = operation?.buildAggregateColumn(columnConfiguration);
         if (!aggCol) {
           throw new UnsupportedOperationError(
-            `Unsupported aggregate operation '${columnConfiguration.aggregateOperator}'`,
+            `Can't build aggregate column for unsupported operator '${columnConfiguration.aggregateOperator}'`,
           );
         }
         return aggCol;
@@ -505,28 +527,11 @@ export function _groupByAggCols(
         const aggCol = operation?.buildAggregateColumn(columnConfiguration);
         if (!aggCol) {
           throw new UnsupportedOperationError(
-            `Unsupported aggregate operation '${columnConfiguration.aggregateOperator}'`,
+            `Can't build aggregate column for unsupported operator '${columnConfiguration.aggregateOperator}'`,
           );
         }
         return aggCol;
       }),
-  ]);
-}
-
-export function _extendRootAggregation(columnName: string) {
-  return _function(DataCubeFunction.EXTEND, [
-    _col(
-      columnName,
-      _lambda(
-        [_var()],
-        [
-          _primitiveValue(
-            PRIMITIVE_TYPE.STRING,
-            DEFAULT_ROOT_AGGREGATION_COLUMN_VALUE,
-          ),
-        ],
-      ),
-    ),
   ]);
 }
 
@@ -559,7 +564,7 @@ export function _filter(
     const condition = operation?.buildConditionExpression(filterCondition);
     if (!condition) {
       throw new UnsupportedOperationError(
-        `Unsupported filter operation '${filterCondition.operator}'`,
+        `Can't build filter condition expression for unsupported operator '${filterCondition.operator}'`,
       );
     }
     return filterCondition.not ? _not(condition) : condition;

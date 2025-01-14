@@ -90,10 +90,10 @@ const LegendREPLDataCube = observer((props: { query: DataCubeQuery }) => {
             LegendREPLSettingStorageKey.DATA_CUBE,
           ) as DataCubeSettingValues | undefined,
         },
-        onSettingsChanged(values) {
+        onSettingsChanged(event) {
           application.settingService.persistValue(
             LegendREPLSettingStorageKey.DATA_CUBE,
-            values,
+            event.values,
           );
         },
         documentationUrl: application.documentationService.url,
@@ -120,7 +120,13 @@ export const LegendREPLRouter = observer(() => {
       <DataCubePlaceholder
         title={DEFAULT_REPORT_NAME}
         layoutManager={store.layoutService.manager}
+        taskManager={store.taskService.manager}
       >
+        {store.initializeState.isInProgress && (
+          <div className="h-full w-full p-2">
+            <div>Initializing...</div>
+          </div>
+        )}
         {store.initializeState.hasFailed && (
           <DataCubePlaceholderErrorDisplay
             message="Initialization Failure"

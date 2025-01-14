@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@babel/core": "7.26.0",
-    "@babel/helper-plugin-utils": "7.25.9",
+    "@babel/helper-plugin-utils": "7.26.5",
     "@babel/plugin-syntax-import-attributes": "7.26.0",
     "@babel/preset-env": "7.26.0",
     "@babel/preset-react": "7.26.3",
@@ -41,7 +41,7 @@
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "eslint": "9.17.0",
+    "eslint": "9.18.0",
     "rimraf": "6.0.1",
     "typescript": "5.7.3"
   },

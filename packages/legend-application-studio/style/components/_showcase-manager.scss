@@ -95,7 +95,7 @@
 
       padding: 0 0.5rem;
       width: calc(100% - 2.8rem);
-      overflow-x: overlay;
+      overflow-x: auto;
       overflow-y: hidden;
     }
 
@@ -258,7 +258,7 @@
 
       &__list {
         width: calc(100% - 15rem);
-        overflow: overlay;
+        overflow: auto;
       }
     }
 
@@ -329,7 +329,7 @@
         border: 0.1rem solid var(--color-dark-grey-250);
         background: var(--color-dark-grey-85);
         border-radius: 0 0 0.5rem 0.5rem;
-        overflow-x: overlay;
+        overflow-x: auto;
 
         &__line {
           display: flex;

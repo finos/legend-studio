@@ -31,7 +31,7 @@ import type {
 import type { DataCubeColumn } from './model/DataCubeColumn.js';
 
 export type DataCubeQuerySnapshotFilterCondition = DataCubeColumn & {
-  value: DataCubeOperationValue | undefined;
+  value: DataCubeOperationValue;
   operator: string;
   not?: boolean | undefined;
 };

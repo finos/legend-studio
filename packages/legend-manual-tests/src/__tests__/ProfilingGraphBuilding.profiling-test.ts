@@ -156,7 +156,7 @@ const runProfiling = async (config: ProfilingConfiguration): Promise<void> => {
   // TODO: refactor to use `StopWatch` instead
   let startTime = Date.now();
   const transformGrammarToJsonResult =
-    await ENGINE_TEST_SUPPORT__grammarToJSON_model(grammarText);
+    await ENGINE_TEST_SUPPORT__grammarToJSON_model(grammarText, false);
   if (config.debug) {
     log.info(
       LogEvent.create('engine.grammar.grammar-to-json'),

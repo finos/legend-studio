@@ -99,7 +99,6 @@ import {
   ActionState,
   assertErrorThrown,
   buildUrl,
-  getNullableFirstEntry,
   guaranteeNonNullable,
   guaranteeType,
   LogEvent,
@@ -981,7 +980,7 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
             !dataSpaceQueryBuilderState.class ||
             !compatibleClasses.includes(dataSpaceQueryBuilderState.class)
           ) {
-            const possibleNewClass = getNullableFirstEntry(compatibleClasses);
+            const possibleNewClass = compatibleClasses[0];
             if (possibleNewClass) {
               dataSpaceQueryBuilderState.changeClass(possibleNewClass);
             }

@@ -70,7 +70,7 @@
   }
 
   &__content__results {
-    overflow-y: overlay;
+    overflow-y: auto;
     height: calc(100% - 2.8rem);
     padding: 0.5rem 0;
   }

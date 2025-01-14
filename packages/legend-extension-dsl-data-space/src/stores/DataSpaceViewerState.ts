@@ -25,7 +25,6 @@ import type {
   GraphData,
   PackageableRuntime,
 } from '@finos/legend-graph';
-import { getNullableEntry } from '@finos/legend-shared';
 import { action, computed, makeObservable, observable } from 'mobx';
 import type {
   DataSpaceAnalysisResult,
@@ -189,7 +188,7 @@ export class DataSpaceViewerState {
     }
     if (zone !== this.layoutState.currentNavigationZone) {
       const zoneChunks = zone.split(NAVIGATION_ZONE_SEPARATOR);
-      const activityChunk = getNullableEntry(zoneChunks, 0);
+      const activityChunk = zoneChunks[0];
       const matchingActivity = Object.values(
         DATA_SPACE_VIEWER_ACTIVITY_MODE,
       ).find(

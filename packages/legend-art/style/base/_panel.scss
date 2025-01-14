@@ -110,7 +110,7 @@
     height: 2.8rem;
     z-index: 1;
     display: flex;
-    overflow-x: overlay;
+    overflow-x: auto;
     overflow-y: hidden;
   }
 
@@ -341,7 +341,8 @@
   }
 
   &__section__header__prompt {
-    word-break: break-word;
+    word-break: normal;
+    overflow-wrap: anywhere;
     font-size: 1.4rem;
     color: var(--color-light-grey-400);
     line-height: 2rem;
@@ -480,7 +481,8 @@
   &__section__toggler__prompt {
     @include flexCenter;
 
-    word-break: break-word;
+    word-break: normal;
+    overflow-wrap: anywhere;
     margin-left: 0.8rem;
     color: var(--color-light-grey-400);
     line-height: 2rem;

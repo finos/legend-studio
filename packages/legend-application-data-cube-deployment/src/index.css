@@ -21,3 +21,12 @@ html {
   font-family: Roboto, sans-serif;
   overflow-y: hidden;
 }
+
+/*
+ * Disable overscroll that causes accidental back navigation
+ * See https://stackoverflow.com/questions/17474930/disable-chrome-two-fingers-back-forward-swipe
+ */
+html,
+body {
+  overscroll-behavior-x: none;
+}

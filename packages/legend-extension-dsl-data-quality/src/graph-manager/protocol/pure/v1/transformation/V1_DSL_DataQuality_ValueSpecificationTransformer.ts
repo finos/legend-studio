@@ -29,7 +29,12 @@ import {
   V1_RawValueSpecificationTransformer,
 } from '@finos/legend-graph';
 import { V1_DataQualityRootGraphFetchTree } from '../model/graphFetch/V1_DataQualityRootGraphFetchTree.js';
-import { assertType, UnsupportedOperationError } from '@finos/legend-shared';
+import {
+  assertType,
+  at,
+  guaranteeNonNullable,
+  UnsupportedOperationError,
+} from '@finos/legend-shared';
 import { V1_DataQualityPropertyGraphFetchTree } from '../model/graphFetch/V1_DataQualityPropertyGraphFetchTree.js';
 import {
   DataQualityPropertyGraphFetchTree,
@@ -88,7 +93,7 @@ export function V1_transformGraphFetchTreeToDataQualityGraphFetchTree(
       (subTree, index) =>
         V1_transformGraphFetchTreeToDataQualityGraphFetchTree(
           subTree,
-          graphFetchTree.subTrees[index]!,
+          at(graphFetchTree.subTrees, index),
         ),
     );
     return v1_DataQualityRootGraphFetchTree;
@@ -108,7 +113,7 @@ export function V1_transformGraphFetchTreeToDataQualityGraphFetchTree(
       v1_graphFetchTree.subTrees.map((subTree, index) =>
         V1_transformGraphFetchTreeToDataQualityGraphFetchTree(
           subTree,
-          graphFetchTree.subTrees[index]!,
+          at(graphFetchTree.subTrees, index),
         ),
       );
     return v1_DataQualityPropertyGraphFetchTree;
@@ -124,7 +129,7 @@ export function V1_transformDataQualityExecutionContext(
   if (value instanceof DataSpaceDataQualityExecutionContext) {
     const dataSpaceExecutionContext =
       new V1_DataSpaceDataQualityExecutionContext();
-    dataSpaceExecutionContext.context = value.context!;
+    dataSpaceExecutionContext.context = guaranteeNonNullable(value.context);
     dataSpaceExecutionContext.dataSpace = new V1_PackageableElementPointer(
       DATA_SPACE_ELEMENT_POINTER,
       value.dataSpace.valueForSerialization ?? '',

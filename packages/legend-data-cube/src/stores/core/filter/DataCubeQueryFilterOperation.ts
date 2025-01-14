@@ -31,9 +31,7 @@ import {
 
 // --------------------------------- UTILITIES ---------------------------------
 
-export function generateDefaultFilterConditionPrimitiveTypeValue(
-  type: string,
-): unknown {
+export function _defaultPrimitiveTypeValue(type: string): unknown {
   switch (type) {
     case PRIMITIVE_TYPE.STRING:
       return '';
@@ -80,13 +78,37 @@ export abstract class DataCubeQueryFilterOperation {
   abstract isCompatibleWithColumn(column: DataCubeColumn): boolean;
   abstract isCompatibleWithValue(value: DataCubeOperationValue): boolean;
 
-  abstract generateDefaultValue(
-    column: DataCubeColumn,
-  ): DataCubeOperationValue | undefined;
+  abstract generateDefaultValue(column: DataCubeColumn): DataCubeOperationValue;
 
   abstract buildConditionSnapshot(
     expression: V1_AppliedFunction,
+    columnGetter: (name: string) => DataCubeColumn,
   ): DataCubeQuerySnapshotFilterCondition | undefined;
+
+  protected _finalizeConditionSnapshot(
+    data:
+      | {
+          column: DataCubeColumn;
+          value: DataCubeOperationValue;
+        }
+      | undefined,
+  ): DataCubeQuerySnapshotFilterCondition | undefined {
+    if (!data) {
+      return undefined;
+    }
+    const { column, value } = data;
+    if (
+      !this.isCompatibleWithColumn(column) ||
+      !this.isCompatibleWithValue(value)
+    ) {
+      return undefined;
+    }
+    return {
+      ...column,
+      operator: this.operator,
+      value,
+    };
+  }
 
   abstract buildConditionExpression(
     condition: DataCubeQuerySnapshotFilterCondition,

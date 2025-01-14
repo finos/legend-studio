@@ -19,7 +19,6 @@ import type {
   QueryBuilder_LegendApplicationPlugin_Extension,
   QueryBuilderState,
 } from '@finos/legend-query-builder';
-import type React from 'react';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import type {
   ExistingQueryEditorStore,

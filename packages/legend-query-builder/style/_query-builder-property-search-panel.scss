@@ -226,7 +226,8 @@
     }
 
     &__section__toggler__prompt {
-      word-break: break-word;
+      word-break: normal;
+      overflow-wrap: anywhere;
       margin-left: 0.8rem;
       color: var(--color-light-grey-400);
       height: 2.2rem;

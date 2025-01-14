@@ -19,6 +19,7 @@ import type { DataCubeColumn } from '../model/DataCubeColumn.js';
 import {
   DataCubeColumnDataType,
   DataCubeFunction,
+  DataCubeOperationAdvancedValueType,
   DataCubeQueryFilterOperator,
   ofDataType,
   type DataCubeOperationValue,
@@ -28,12 +29,8 @@ import {
   _functionName,
   _property,
 } from '../DataCubeQueryBuilderUtils.js';
-import {
-  matchFunctionName,
-  type V1_AppliedFunction,
-  type V1_AppliedProperty,
-} from '@finos/legend-graph';
-import { _buildConditionSnapshotProperty } from '../DataCubeQuerySnapshotBuilderUtils.js';
+import { type V1_AppliedFunction } from '@finos/legend-graph';
+import { _baseFilterCondition } from '../DataCubeQuerySnapshotBuilderUtils.js';
 
 export class DataCubeQueryFilterOperation__IsNull extends DataCubeQueryFilterOperation {
   override get label() {
@@ -63,31 +60,24 @@ export class DataCubeQueryFilterOperation__IsNull extends DataCubeQueryFilterOpe
 
   isCompatibleWithValue(value: DataCubeOperationValue) {
     return (
-      ofDataType(value.type, [
-        DataCubeColumnDataType.TEXT,
-        DataCubeColumnDataType.NUMBER,
-        DataCubeColumnDataType.DATE,
-        DataCubeColumnDataType.TIME,
-      ]) &&
-      value.value !== undefined &&
-      !Array.isArray(value.value)
+      value.value === undefined &&
+      value.type === DataCubeOperationAdvancedValueType.VOID
     );
   }
 
   generateDefaultValue(column: DataCubeColumn) {
-    return undefined;
+    return {
+      type: DataCubeOperationAdvancedValueType.VOID,
+    };
   }
 
-  buildConditionSnapshot(expression: V1_AppliedFunction) {
-    if (matchFunctionName(expression.function, DataCubeFunction.IS_EMPTY)) {
-      const filterConditionSnapshot = _buildConditionSnapshotProperty(
-        expression.parameters[0] as V1_AppliedProperty,
-        this.operator,
-      );
-      filterConditionSnapshot.value = undefined;
-      return filterConditionSnapshot;
-    }
-    return undefined;
+  buildConditionSnapshot(
+    expression: V1_AppliedFunction,
+    columnGetter: (name: string) => DataCubeColumn,
+  ) {
+    return this._finalizeConditionSnapshot(
+      _baseFilterCondition(expression, columnGetter, DataCubeFunction.IS_EMPTY),
+    );
   }
 
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {

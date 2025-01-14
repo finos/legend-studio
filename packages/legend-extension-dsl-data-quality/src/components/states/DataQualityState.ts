@@ -65,6 +65,7 @@ import {
   hashArray,
   isNonNullable,
   assertType,
+  at,
 } from '@finos/legend-shared';
 import { type GenericLegendApplicationStore } from '@finos/legend-application';
 import { DataQualityResultState } from './DataQualityResultState.js';
@@ -296,7 +297,7 @@ export abstract class DataQualityState extends ElementEditorState {
       `Can't build filter state: data quality filter only support lambda`,
     );
     processFilterLambda(
-      compiledValueSpecification.values[0]!,
+      at(compiledValueSpecification.values, 0),
       this.dataQualityQueryBuilderState,
     );
   }
@@ -359,7 +360,7 @@ export abstract class DataQualityState extends ElementEditorState {
       return;
     }
     const genericType = new GenericType(
-      this.dataQualityQueryBuilderState.class!,
+      guaranteeNonNullable(this.dataQualityQueryBuilderState.class),
     );
     const genericTypeReference =
       GenericTypeExplicitReference.create(genericType);
@@ -415,7 +416,7 @@ export abstract class DataQualityState extends ElementEditorState {
     this.resultState = new DataQualityResultState(this);
     this.initializeGraphFetchTreeState(
       buildDefaultDataQualityRootGraphFetchTree(
-        this.dataQualityQueryBuilderState.class!,
+        guaranteeNonNullable(this.dataQualityQueryBuilderState.class),
       ),
     );
     this.updateElementOnClassChange();
@@ -425,7 +426,7 @@ export abstract class DataQualityState extends ElementEditorState {
     dataQualityClassValidation_setDataQualityGraphFetchTree(
       this
         .constraintsConfigurationElement as DataQualityClassValidationsConfiguration,
-      this.dataQualityGraphFetchTreeState.treeData!.tree,
+      guaranteeNonNullable(this.dataQualityGraphFetchTreeState.treeData).tree,
     );
     dataQualityClassValidation_setFilter(
       this

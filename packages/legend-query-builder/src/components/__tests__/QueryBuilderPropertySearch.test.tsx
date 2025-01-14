@@ -927,7 +927,9 @@ describe(
         expect(actualHightlights).toHaveLength(expectedHighlights.length);
         expectedHighlights.forEach((expectedHighlight, index) => {
           expect(actualHightlights[index]).toBeDefined();
-          expect(actualHightlights[index]!.textContent).toBe(expectedHighlight);
+          expect(
+            guaranteeNonNullable(actualHightlights[index]).textContent,
+          ).toBe(expectedHighlight);
         });
 
         // Check that the regular text is rendered correctly

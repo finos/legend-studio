@@ -25,21 +25,16 @@
 import {
   V1_AppliedFunction,
   V1_CInteger,
-  type V1_ColSpec,
   V1_Collection,
   extractElementNameFromPath as _name,
   matchFunctionName,
   type V1_ValueSpecification,
-  V1_GenericTypeInstance,
+  V1_Lambda,
 } from '@finos/legend-graph';
 import type { DataCubeQuery } from './model/DataCubeQuery.js';
 import { DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
 import { _toCol, type DataCubeColumn } from './model/DataCubeColumn.js';
-import {
-  assertType,
-  getNonNullableEntry,
-  guaranteeNonNullable,
-} from '@finos/legend-shared';
+import { assertTrue, at, guaranteeNonNullable } from '@finos/legend-shared';
 import {
   DataCubeQuerySortDirection,
   DataCubeFunction,
@@ -50,14 +45,16 @@ import {
   _colSpecArrayParam,
   _colSpecParam,
   _funcMatch,
-  _lambdaParam,
   _param,
-  _extend,
+  _extractExtendedColumns,
   _filter,
-  _cast,
+  _relationType,
+  _genericTypeParam,
+  _packageableType,
 } from './DataCubeQuerySnapshotBuilderUtils.js';
 import type { DataCubeSource } from './model/DataCubeSource.js';
 import type { DataCubeQueryFilterOperation } from './filter/DataCubeQueryFilterOperation.js';
+import type { DataCubeQueryAggregateOperation } from './aggregation/DataCubeQueryAggregateOperation.js';
 
 // --------------------------------- BUILDING BLOCKS ---------------------------------
 
@@ -219,9 +216,7 @@ function extractFunctionMap(
 ): DataCubeQueryFunctionMap {
   // Make sure this is a sequence of function calls
   if (!(query instanceof V1_AppliedFunction)) {
-    throw new Error(
-      `Query must be a sequence of function calls (e.g. x()->y()->z())`,
-    );
+    throw new Error(`Can't process expression: Expected a function expression`);
   }
   const sequence: V1_AppliedFunction[] = [];
   let currentFunc = query;
@@ -233,29 +228,30 @@ function extractFunctionMap(
 
     // Check that all functions in sequence are supported (matching name and number of parameters)
     if (!supportedFunc) {
-      throw new Error(`Found unsupported function ${currentFunc.function}()`);
+      throw new Error(
+        `Can't process expression: Found unsupported function ${currentFunc.function}()`,
+      );
     }
+
+    // recursively unwrap the nested function expression to build the function sequence,
+    // i.e. if we have the expression x(y(z(t(...)))), we need to unwrap them and build the sequence
+    // t(...)->z()->y()->x() and simultaneously, remove the first parameter from each function for
+    // simplicity, except for the innermost function
     if (currentFunc.parameters.length > supportedFunc.parameters) {
-      const valueSpecification = currentFunc.parameters[0];
-      if (!(valueSpecification instanceof V1_AppliedFunction)) {
-        throw new Error(
-          `Query must be a sequence of function calls (e.g. x()->y()->z())`,
-        );
-      } else if (
-        matchFunctionName(currentFunc.function, [DataCubeFunction.FILTER])
-      ) {
-        currentFunc.parameters = currentFunc.parameters.slice(1);
-        sequence.unshift(currentFunc);
-        if (valueSpecification instanceof V1_AppliedFunction) {
-          currentFunc = valueSpecification;
-        } else {
-          break;
-        }
-      } else {
-        currentFunc.parameters = currentFunc.parameters.slice(1);
-        sequence.unshift(currentFunc);
-        currentFunc = valueSpecification;
-      }
+      // assert that the supported function has the expected number of parameters
+      assertTrue(
+        currentFunc.parameters.length === supportedFunc.parameters + 1,
+        `Can't process ${_name(currentFunc.function)}() expression: Expected at most ${supportedFunc.parameters + 1} parameters provided, got ${currentFunc.parameters.length}`,
+      );
+      const func = _param(
+        currentFunc,
+        0,
+        V1_AppliedFunction,
+        `Can't process expression: Expected a sequence of function calls (e.g. x()->y()->z())`,
+      );
+      currentFunc.parameters = currentFunc.parameters.slice(1);
+      sequence.unshift(currentFunc);
+      currentFunc = func;
     } else {
       sequence.unshift(currentFunc);
       break;
@@ -271,7 +267,7 @@ function extractFunctionMap(
   );
   if (!matchResult) {
     throw new Error(
-      `Unsupported function composition ${sequence.map((fn) => `${_name(fn.function)}()`).join('->')} (supported composition: ${_FUNCTION_SEQUENCE_COMPOSITION_PATTERN.map((node) => `${'funcs' in node ? `[${node.funcs.map((childNode) => `${_name(childNode.func)}()`).join('->')}]` : `${_name(node.func)}()`}`).join('->')})`,
+      `Can't process expression: Unsupported function composition ${sequence.map((fn) => `${_name(fn.function)}()`).join('->')} (supported composition: ${_FUNCTION_SEQUENCE_COMPOSITION_PATTERN.map((node) => `${'funcs' in node ? `[${node.funcs.map((childNode) => `${_name(childNode.func)}()`).join('->')}]` : `${_name(node.func)}()`}`).join('->')})`,
     );
   }
 
@@ -284,7 +280,7 @@ function extractFunctionMap(
     if (isNaN(idx) || idx >= sequence.length) {
       return undefined;
     }
-    const func = getNonNullableEntry(sequence, idx);
+    const func = at(sequence, idx);
     return func;
   };
 
@@ -316,6 +312,7 @@ export function validateAndBuildQuerySnapshot(
   source: DataCubeSource,
   baseQuery: DataCubeQuery,
   filterOperations: DataCubeQueryFilterOperation[],
+  aggregateOperations: DataCubeQueryAggregateOperation[],
 ) {
   // --------------------------------- BASE ---------------------------------
   // Build the function call sequence and the function map to make the
@@ -324,31 +321,73 @@ export function validateAndBuildQuerySnapshot(
   const funcMap = extractFunctionMap(partialQuery);
   const snapshot = DataCubeQuerySnapshot.create({});
   const data = snapshot.data;
+  const columnNames = new Set<string>();
+  /**
+   * We want to make sure all columns, either from source or created, e.g. extended columns,
+   * have unique names. This is to simplify the logic within DataCube so different components
+   * can easily refer to columns by name without having to worry about conflicts.
+   */
+  const _checkColName = (col: DataCubeColumn, message: string) => {
+    if (columnNames.has(col.name)) {
+      throw new Error(message);
+    }
+    columnNames.add(col.name);
+  };
   const colsMap = new Map<string, DataCubeColumn>();
-  const _col = (colSpec: V1_ColSpec) => {
+  const _getCol = (colName: string) => {
     const column = guaranteeNonNullable(
-      colsMap.get(colSpec.name),
-      `Can't find column '${colSpec.name}'`,
+      colsMap.get(colName),
+      `Can't find column '${colName}'`,
     );
     return _toCol(column);
   };
+  const _setCol = (col: DataCubeColumn) => colsMap.set(col.name, col);
+  // const _unsetCol = (col: DataCubeColumn) => colsMap.delete(col.name);
 
   // -------------------------------- SOURCE --------------------------------
 
   data.sourceColumns = source.columns;
-  data.sourceColumns.forEach((col) => colsMap.set(col.name, col));
+  data.sourceColumns.forEach((col) => _setCol(col));
+  data.sourceColumns.forEach((col) =>
+    _checkColName(
+      col,
+      `Can't process source column '${col.name}': another column with the same name is already registered`,
+    ),
+  );
 
   // --------------------------- LEAF-LEVEL EXTEND ---------------------------
+
   if (funcMap.leafExtend) {
-    _extend(funcMap.leafExtend, data.leafExtendedColumns);
-    // adding new extended columns in the column map for groupby and pivot operation
-    data.leafExtendedColumns.forEach((col) => colsMap.set(col.name, col));
+    // TODO: get column types (call engine to get the type)
+    data.leafExtendedColumns = _extractExtendedColumns(funcMap.leafExtend);
+    // TODO: populate the column types
+    data.leafExtendedColumns.forEach((col) => _setCol(col));
+    data.leafExtendedColumns.forEach((col) =>
+      _checkColName(
+        col,
+        `Can't process leaf-level extended column '${col.name}': another column with the same name is already registered`,
+      ),
+    );
   }
 
   // --------------------------------- FILTER ---------------------------------
+
   if (funcMap.filter) {
+    // TODO: verify column presence
+    // TODO: verify column types
+    const lambda = _param(
+      funcMap.filter,
+      0,
+      V1_Lambda,
+      `Can't process filter() expression: Expected parameter at index 0 to be a lambda expression`,
+    );
+    assertTrue(
+      lambda.body.length === 1,
+      `Can't process filter() expression: Expected lambda body to have exactly 1 expression`,
+    );
     data.filter = _filter(
-      _lambdaParam(funcMap.filter, 0).body[0]!,
+      guaranteeNonNullable(lambda.body[0]),
+      _getCol,
       filterOperations,
     );
   }
@@ -357,49 +396,58 @@ export function validateAndBuildQuerySnapshot(
 
   if (funcMap.select) {
     data.selectColumns = _colSpecArrayParam(funcMap.select, 0).colSpecs.map(
-      (colSpec) => _col(colSpec),
+      (colSpec) => _getCol(colSpec.name),
     );
+    // TODO: remove columns that are not selected from colsMap
   }
 
   // --------------------------------- PIVOT ---------------------------------
-  // TODO: verify groupBy agg columns, pivot agg columns and configuration agree
+
   if (funcMap.pivot && funcMap.pivotCast) {
+    // TODO: verify column presence
+    // TODO: verify column types
     data.pivot = {
       columns: _colSpecArrayParam(funcMap.pivot, 0).colSpecs.map((colSpec) =>
-        _col(colSpec),
+        _getCol(colSpec.name),
       ),
-      castColumns: _cast(_param(funcMap.pivotCast, 0, V1_GenericTypeInstance)),
+      castColumns: _relationType(
+        _genericTypeParam(funcMap.pivotCast, 0).genericType,
+      ).columns.map((column) => ({
+        name: column.name,
+        type: _packageableType(column.genericType).fullPath,
+      })),
     };
   }
+  // TODO: verify groupBy agg columns, pivot agg columns and configuration agree
 
   // --------------------------------- GROUP BY ---------------------------------
 
   if (funcMap.groupBy) {
+    // TODO: verify column presence
+    // TODO: verify column types
     data.groupBy = {
       columns: _colSpecArrayParam(funcMap.groupBy, 0).colSpecs.map((colSpec) =>
-        _col(colSpec),
+        _getCol(colSpec.name),
       ),
     };
     // TODO: verify groupBy agg columns, pivot agg columns and configuration agree
-    // TODO: verify sort column
+    // TODO: verify sort columns
     // TODO: use configuration information present in the baseQuery configuration?
-    // _isColSpecOrArray(funcMap.groupBy, 1) ? _colSpecArrayParam(funcMap.groupBy, 1).colSpecs.forEach((colSpec) => _validateAggregateColumns(colSpec, baseQuery.configuration!)) : _validateAggregateColumns(_colSpecParam(funcMap.groupBy, 1), baseQuery.configuration!);
-
-    // _param(funcMap.groupBySort!, 0, V1_Collection).values.forEach(
-    //   (value) =>
-    //   {
-    //     const sortColFunc = _funcMatch(value, [
-    //       DataCubeFunction.ASCENDING,
-    //       DataCubeFunction.DESCENDING,
-    //     ]);
-    //     _validateSortColumns(sortColFunc, baseQuery.configuration!);
-    //   }
-    // )
   }
 
   // --------------------------- GROUP-LEVEL EXTEND ---------------------------
+
   if (funcMap.groupExtend) {
-    _extend(funcMap.groupExtend, data.groupExtendedColumns);
+    // TODO: get column types (call engine to get the type)
+    data.groupExtendedColumns = _extractExtendedColumns(funcMap.groupExtend);
+    // TODO: populate the column types
+    data.groupExtendedColumns.forEach((col) => _setCol(col));
+    data.groupExtendedColumns.forEach((col) =>
+      _checkColName(
+        col,
+        `Can't process group-level extended column '${col.name}': another column with the same name is already registered`,
+      ),
+    );
   }
 
   // --------------------------------- SORT ---------------------------------
@@ -412,11 +460,13 @@ export function validateAndBuildQuerySnapshot(
           DataCubeFunction.DESCENDING,
         ]);
         return {
-          ..._col(_colSpecParam(sortColFunc, 0)),
-          direction:
-            _name(sortColFunc.function) === DataCubeFunction.ASCENDING
-              ? DataCubeQuerySortDirection.ASCENDING
-              : DataCubeQuerySortDirection.DESCENDING,
+          ..._getCol(_colSpecParam(sortColFunc, 0).name),
+          direction: matchFunctionName(
+            sortColFunc.function,
+            DataCubeFunction.ASCENDING,
+          )
+            ? DataCubeQuerySortDirection.ASCENDING
+            : DataCubeQuerySortDirection.DESCENDING,
         };
       },
     );
@@ -425,8 +475,12 @@ export function validateAndBuildQuerySnapshot(
   // --------------------------------- LIMIT ---------------------------------
 
   if (funcMap.limit) {
-    const value = funcMap.limit.parameters[0];
-    assertType(value, V1_CInteger);
+    const value = _param(
+      funcMap.limit,
+      0,
+      V1_CInteger,
+      `Can't process limit() expression: Expected parameter at index 0 to be an integer instance value`,
+    );
     data.limit = value.value;
   }
 
@@ -465,13 +519,8 @@ export function validateAndBuildQuerySnapshot(
 
 /**
  * TODO: @datacube roundtrip - implement the logic to reconcile the configuration with the query
- * - [ ] disallow naming an extended column the same as a source column/leaf-level extended column
- *       even if the column is not selected
  * - [ ] columns (missing/extra columns - remove or generate default column configuration)
- * - [ ] column kind
- * - [ ] column type
- * - [ ] base off the type, check the settings
- * - [ ] aggregation
+ * - [ ] base off the type and kind, check the settings to see if it's compatible
  * - [ ] verify groupBy agg columns, pivot agg columns and configuration agree
  * - [ ] verify groupBy sort columns and tree column sort direction configuration agree
  */

@@ -75,9 +75,8 @@ import {
   type DataGridMenuItemDef,
 } from '@finos/legend-lego/data-grid';
 import {
-  getNonNullableEntry,
-  getNullableEntry,
-  getNullableLastEntry,
+  at,
+  last,
   isNonNullable,
   isNumber,
   isString,
@@ -304,7 +303,7 @@ const PlaygroundSQLCodeEditor = observer(() => {
           const lines = currentValue.split('\n');
           const position = playgroundState.sqlEditor.getPosition() ?? {
             lineNumber: lines.length,
-            column: getNullableLastEntry(lines)?.length ?? 0,
+            column: last(lines)?.length ?? 0,
           };
           playgroundState.sqlEditor.executeEdits('', [
             {
@@ -361,7 +360,7 @@ const parseExecutionResultData = (
 ): { rowData: Record<string, string>[]; columns: string[] } | undefined => {
   const lines = data.split('\n').filter((line) => line.trim().length);
   if (lines.length) {
-    const columns = parseCSVString(getNonNullableEntry(lines, 0)) ?? [];
+    const columns = parseCSVString(at(lines, 0)) ?? [];
     const rowData = lines
       .slice(1)
       .map((item) => {
@@ -371,7 +370,7 @@ const parseExecutionResultData = (
         }
         const row: Record<string, string> = {};
         columns.forEach((column, idx) => {
-          row[column] = getNullableEntry(rowItems, idx) ?? '';
+          row[column] = rowItems[idx] ?? '';
         });
         return row;
       })

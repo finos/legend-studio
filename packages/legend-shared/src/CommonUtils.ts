@@ -248,20 +248,9 @@ export const generateEnumerableNameFromToken = (
   return `${token}_${maxCounter + 1}`;
 };
 
-/**
- * NOTE: These are small helpers to workaround Typescript strictness check with the flag --noUncheckedIndexedAccess enabled
- */
-export const getNullableFirstEntry = <T>(array: T[]): T | undefined =>
-  array.length ? array[0] : undefined;
-export const getNullableLastEntry = <T>(array: T[]): T | undefined =>
+export const last = <T>(array: T[]): T | undefined =>
   array.length ? array[array.length - 1] : undefined;
-export const getNullableEntry = <T>(array: T[], idx: number): T | undefined => {
-  if (idx < 0 || idx >= array.length) {
-    return undefined;
-  }
-  return array.length > idx ? array[idx] : undefined;
-};
-export const getNonNullableEntry = <T>(
+export const at = <T>(
   array: T[],
   idx: number,
   message?: string | undefined,
@@ -300,6 +289,10 @@ export const promisify = <T>(func: () => T): Promise<T> =>
       }
     }, 0),
   );
+
+export function sleep(duration: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, duration));
+}
 
 export const addUniqueEntry = <T>(
   array: T[],

@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  hashArray,
-  getNullableFirstEntry,
-  type Hashable,
-} from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
 import {
   type V1_EnumValueMapping,
@@ -47,15 +43,13 @@ export class V1_EnumerationMapping implements Hashable {
       // otherwise, we don't need to account for the source type in hash computation
       // If there is no enum value mapping, ignore the source type since it's synthetic and used by the editor
       this.enumValueMappings.length
-        ? (getNullableFirstEntry(
-            Array.from(
-              new Set(
-                this.enumValueMappings.flatMap((evm) =>
-                  evm.sourceValues.map(V1_getEnumValueMappingSourceValueType),
-                ),
-              ).values(),
-            ),
-          ) ?? '')
+        ? (Array.from(
+            new Set(
+              this.enumValueMappings.flatMap((evm) =>
+                evm.sourceValues.map(V1_getEnumValueMappingSourceValueType),
+              ),
+            ).values(),
+          )[0] ?? '')
         : '', // source type
       hashArray(this.enumValueMappings),
     ]);

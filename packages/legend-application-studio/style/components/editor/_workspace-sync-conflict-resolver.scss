@@ -59,7 +59,7 @@
       height: 100%;
       width: 100%;
       padding: 1rem;
-      overflow: overlay;
+      overflow: auto;
     }
   }
 
@@ -74,7 +74,7 @@
   &__header__tabs {
     display: flex;
     height: 100%;
-    overflow-x: overlay;
+    overflow-x: auto;
   }
 
   &__header__tab {

@@ -1106,7 +1106,7 @@
       width: 100%;
       display: block;
       text-align: left;
-      padding: 1rem auto;
+      padding: 1rem;
       text-indent: 1rem;
       color: var(--color-white);
 
@@ -1265,7 +1265,7 @@
       height: 100%;
       width: 100%;
       padding: 1rem;
-      overflow: overlay;
+      overflow: auto;
     }
   }
 
@@ -1308,7 +1308,7 @@
     height: 2.8rem;
     z-index: 1;
     display: flex;
-    overflow-x: overlay;
+    overflow-x: auto;
     overflow-y: hidden;
   }
 
@@ -1983,7 +1983,7 @@
       height: 100%;
       width: 100%;
       padding: 1rem;
-      overflow: overlay;
+      overflow: auto;
     }
   }
 
@@ -1999,7 +1999,7 @@
     height: 2.8rem;
     z-index: 1;
     display: flex;
-    overflow-x: overlay;
+    overflow-x: auto;
     overflow-y: hidden;
   }
 
@@ -2389,7 +2389,7 @@
 }
 
 .query-builder__data-access-overview {
-  overflow: overlay;
+  overflow: auto;
 
   &__container {
     height: 100%;

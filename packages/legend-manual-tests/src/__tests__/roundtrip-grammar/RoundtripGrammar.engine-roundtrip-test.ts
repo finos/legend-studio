@@ -168,7 +168,7 @@ const checkGrammarRoundtrip = async (
   const grammarText = fs.readFileSync(filePath, { encoding: 'utf-8' });
   let startTime = Date.now();
   const transformGrammarToJsonResult =
-    await ENGINE_TEST_SUPPORT__grammarToJSON_model(grammarText);
+    await ENGINE_TEST_SUPPORT__grammarToJSON_model(grammarText, false);
   if (options?.debug) {
     log.info(
       LogEvent.create('engine.grammar.grammar-to-json'),

@@ -146,12 +146,13 @@ export const generateFunctionCallStringFromFunctionAnalysisInfo = (
   const parameterLength = functionInfo.parameterInfoList.length;
   if (parameterLength > 0) {
     for (let i = 0; i < parameterLength; i++) {
+      const info = functionInfo.parameterInfoList[i];
       let paramType;
-      if (functionInfo.parameterInfoList[i] !== undefined) {
+      if (info !== undefined) {
         try {
-          paramType = graph.getType(functionInfo.parameterInfoList[i]!.type);
+          paramType = graph.getType(info.type);
         } catch {
-          // graph might not contain classes used as type, set it to undefine
+          // graph might not contain classes used as type, do nothing here
         }
       }
       const separator = i !== parameterLength - 1 ? ', ' : '';

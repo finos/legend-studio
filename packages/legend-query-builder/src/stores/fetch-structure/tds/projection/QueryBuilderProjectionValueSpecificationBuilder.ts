@@ -32,6 +32,7 @@ import {
   LambdaFunctionInstanceValue,
 } from '@finos/legend-graph';
 import {
+  at,
   guaranteeNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
@@ -402,10 +403,10 @@ export const appendProjection = (
             aggregateCalendarLambda &&
             aggregateCalendarLambda instanceof LambdaFunctionInstanceValue
           ) {
-            aggregateCalendarLambda.values[0]!.expressionSequence[0] =
+            at(aggregateCalendarLambda.values, 0).expressionSequence[0] =
               wavgRowMapper;
           } else if (columnLambda instanceof LambdaFunctionInstanceValue) {
-            columnLambda.values[0]!.expressionSequence[0] = wavgRowMapper;
+            at(columnLambda.values, 0).expressionSequence[0] = wavgRowMapper;
           }
         }
         aggregateFunctionExpression.parametersValues = [

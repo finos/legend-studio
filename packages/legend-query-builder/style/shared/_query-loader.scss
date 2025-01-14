@@ -134,7 +134,7 @@
   &__results {
     padding: 0.5rem;
     height: 100%;
-    overflow-y: overlay;
+    overflow-y: auto;
 
     &__summary {
       @include flexVCenter;

@@ -169,7 +169,7 @@
     flex-direction: column;
     height: 100%;
     width: 100%;
-    overflow: overlay;
+    overflow: auto;
   }
 
   &__frame {
@@ -287,7 +287,8 @@
   }
 
   .ag-cell-value {
-    word-break: break-word;
+    word-break: normal;
+    overflow-wrap: anywhere;
   }
 
   .ag-center-cols-viewport {

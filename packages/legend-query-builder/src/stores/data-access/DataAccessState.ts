@@ -32,7 +32,7 @@ import {
   assertErrorThrown,
   uuid,
   type GeneratorFn,
-  getNonNullableEntry,
+  at,
 } from '@finos/legend-shared';
 import {
   action,
@@ -239,7 +239,7 @@ export class DataAccessState {
 
     let currentPercentageSum = 0;
     for (let i = 0; i < info.data.length; ++i) {
-      const data = getNonNullableEntry(info.data, i);
+      const data = at(info.data, i);
       if (currentPercentageSum + data.percentage >= 100) {
         data.percentage = 100 - currentPercentageSum;
         info.data = info.data.slice(0, i + 1);

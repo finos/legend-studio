@@ -73,7 +73,7 @@ export const generateModelEntitesFromModelGrammar = async (
   const modelFilePath = resolve(fileDir, fileName);
   const grammarText = fs.readFileSync(modelFilePath, { encoding: 'utf-8' });
   const transformGrammarToJsonResult =
-    await ENGINE_TEST_SUPPORT__grammarToJSON_model(grammarText);
+    await ENGINE_TEST_SUPPORT__grammarToJSON_model(grammarText, false);
   const entities = graphManagerState.graphManager.pureProtocolTextToEntities(
     JSON.stringify(transformGrammarToJsonResult),
   );
@@ -100,7 +100,7 @@ export const createGraphManagerStateFromGrammar = async (
   const modelFilePath = resolve(fileDir, fileName);
   const grammarText = fs.readFileSync(modelFilePath, { encoding: 'utf-8' });
   const transformGrammarToJsonResult =
-    await ENGINE_TEST_SUPPORT__grammarToJSON_model(grammarText);
+    await ENGINE_TEST_SUPPORT__grammarToJSON_model(grammarText, false);
   const entities = graphManagerState.graphManager.pureProtocolTextToEntities(
     JSON.stringify(transformGrammarToJsonResult),
   );

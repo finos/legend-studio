@@ -62,7 +62,6 @@ import {
   filterByType,
   guaranteeNonNullable,
   returnUndefOnError,
-  getNullableFirstEntry,
   assertType,
   assertTrue,
   uuid,
@@ -907,7 +906,7 @@ export class ServiceTestDataState {
     this.testData = testData;
     this.testSuiteState = testSuiteState;
     this.editorStore = testSuiteState.editorStore;
-    const connectionData = getNullableFirstEntry(testData.connectionsTestData);
+    const connectionData = testData.connectionsTestData[0];
     if (connectionData) {
       this.selectedDataState = new ConnectionTestDataState(
         this,
@@ -941,7 +940,7 @@ export class ServiceTestDataState {
   deleteConnectionTestData(val: ConnectionTestData): void {
     deleteEntry(this.testData.connectionsTestData, val);
     if (this.selectedDataState?.connectionData === val) {
-      const data = getNullableFirstEntry(this.testData.connectionsTestData);
+      const data = this.testData.connectionsTestData[0];
       this.selectedDataState = data
         ? new ConnectionTestDataState(this, data)
         : undefined;

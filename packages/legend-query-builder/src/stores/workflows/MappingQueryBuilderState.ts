@@ -24,7 +24,6 @@ import {
   PackageableElementExplicitReference,
   getMappingCompatibleClasses,
 } from '@finos/legend-graph';
-import { getNullableFirstEntry } from '@finos/legend-shared';
 import { renderMappingQueryBuilderSetupPanelContent } from '../../components/workflows/MappingQueryBuilder.js';
 import { QueryBuilderState } from '../QueryBuilderState.js';
 import type { QueryBuilderConfig } from '../../graph-manager/QueryBuilderConfig.js';
@@ -78,7 +77,7 @@ export class MappingQueryBuilderState extends QueryBuilderState {
       mapping,
       this.graphManagerState.usableRuntimes,
     );
-    const possibleNewRuntime = getNullableFirstEntry(compatibleRuntimes);
+    const possibleNewRuntime = compatibleRuntimes[0];
     if (possibleNewRuntime) {
       this.changeRuntime(
         new RuntimePointer(
@@ -94,7 +93,7 @@ export class MappingQueryBuilderState extends QueryBuilderState {
     // if there is no chosen class or the chosen one is not compatible
     // with the mapping then pick a compatible class if possible
     if (!this.class || !compatibleClasses.includes(this.class)) {
-      const possibleNewClass = getNullableFirstEntry(compatibleClasses);
+      const possibleNewClass = compatibleClasses[0];
       if (possibleNewClass) {
         this.changeClass(possibleNewClass);
       }

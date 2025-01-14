@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  getNonNullableEntry,
-  isNonNullable,
-  isString,
-} from '@finos/legend-shared';
+import { at, isNonNullable, isString } from '@finos/legend-shared';
 import type { editor as monacoEditorAPI } from 'monaco-editor';
 
 type VSCodeThemeData = {
@@ -97,7 +93,7 @@ const parseVSCodeTheme = (
   Object.entries(rawData.colors).forEach(([key, value]) => {
     if (Array.isArray(value)) {
       if (value.length) {
-        colors[key] = getNonNullableEntry(value, 0);
+        colors[key] = at(value, 0);
       }
     } else {
       colors[key] = value;

@@ -41,7 +41,8 @@
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
-  word-break: break-word;
+  word-break: normal;
+  overflow-wrap: anywhere;
   text-align: left; // this will keep the text from juggling left right when we resize the container when text overflow occurs
 }
 

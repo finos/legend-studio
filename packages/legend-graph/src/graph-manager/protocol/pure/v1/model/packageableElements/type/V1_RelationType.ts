@@ -18,10 +18,12 @@ import { hashArray, type Hashable } from '@finos/legend-shared';
 import type { V1_Type } from './V1_Type.js';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
 import type { V1_GenericType } from './V1_GenericType.js';
+import type { V1_Multiplicity } from '../domain/V1_Multiplicity.js';
 
 export class V1_RelationTypeColumn implements Hashable {
   name!: string;
   genericType!: V1_GenericType;
+  multiplicity!: V1_Multiplicity;
 
   get hashCode(): string {
     return hashArray([

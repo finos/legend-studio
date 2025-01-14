@@ -64,13 +64,13 @@ export abstract class DataCubeFilterEditorTreeNode {
 export class DataCubeFilterEditorConditionTreeNode extends DataCubeFilterEditorTreeNode {
   column: DataCubeColumn;
   operation: DataCubeQueryFilterOperation;
-  value: DataCubeOperationValue | undefined;
+  value!: DataCubeOperationValue;
 
   constructor(
     parent: DataCubeFilterEditorConditionGroupTreeNode | undefined,
     column: DataCubeColumn,
     operation: DataCubeQueryFilterOperation,
-    value: DataCubeOperationValue | undefined,
+    value: DataCubeOperationValue,
     not: boolean | undefined,
   ) {
     super(parent, not);
@@ -100,18 +100,14 @@ export class DataCubeFilterEditorConditionTreeNode extends DataCubeFilterEditorT
     this.operation = operation;
   }
 
-  setValue(value: DataCubeOperationValue | undefined) {
-    this.value = value
-      ? isObservable(value)
-        ? value
-        : makeObservable(value, { value: observable })
-      : undefined;
+  setValue(value: DataCubeOperationValue) {
+    this.value = isObservable(value)
+      ? value
+      : makeObservable(value, { value: observable });
   }
 
   updateValue(value: unknown) {
-    if (this.value) {
-      this.value.value = value;
-    }
+    this.value.value = value;
   }
 }
 

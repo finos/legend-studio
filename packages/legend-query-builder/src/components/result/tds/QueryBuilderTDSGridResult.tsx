@@ -478,7 +478,7 @@ export const QueryBuilderTDSGridResult = observer(
     useEffect(() => {
       if (aggFuncParams) {
         aggFuncParams.api.setColumnAggFunc(
-          aggFuncParams.colDef.field!,
+          guaranteeNonNullable(aggFuncParams.colDef.field),
           QueryBuilderDataGridCustomAggregationFunction.WAVG,
         );
       }

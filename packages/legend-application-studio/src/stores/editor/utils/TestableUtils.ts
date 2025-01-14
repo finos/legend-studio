@@ -64,7 +64,6 @@ import {
   assertTrue,
   ContentType,
   generateEnumerableNameFromToken,
-  getNullableFirstEntry,
   guaranteeNonEmptyString,
   guaranteeType,
   isNonNullable,
@@ -455,9 +454,7 @@ export const getContentTypeWithParamRecursively = (
       }
       currentExpression = collection;
     } else {
-      currentExpression = getNullableFirstEntry(
-        currentExpression.parametersValues,
-      );
+      currentExpression = currentExpression.parametersValues[0];
     }
   }
   return res;

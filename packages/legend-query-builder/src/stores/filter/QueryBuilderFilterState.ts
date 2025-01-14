@@ -19,7 +19,6 @@ import type { TreeNodeData, TreeData } from '@finos/legend-art';
 import {
   type GeneratorFn,
   assertTrue,
-  getNullableFirstEntry,
   guaranteeNonNullable,
   guaranteeType,
   IllegalStateError,
@@ -103,9 +102,7 @@ export const isCollectionProperty = (
     ) {
       return true;
     }
-    currentExpression = getNullableFirstEntry(
-      currentExpression.parametersValues,
-    );
+    currentExpression = currentExpression.parametersValues[0];
     // Take care of chains of subtype
     while (
       currentExpression instanceof SimpleFunctionExpression &&
@@ -114,9 +111,7 @@ export const isCollectionProperty = (
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE,
       )
     ) {
-      currentExpression = getNullableFirstEntry(
-        currentExpression.parametersValues,
-      );
+      currentExpression = currentExpression.parametersValues[0];
     }
   }
   return false;
@@ -750,7 +745,7 @@ export class QueryBuilderFilterState
       this.rootIds.length < 2,
       'Query builder filter tree cannot have more than 1 root',
     );
-    const rootId = getNullableFirstEntry(this.rootIds);
+    const rootId = this.rootIds[0];
     return rootId ? this.getNode(rootId) : undefined;
   }
 

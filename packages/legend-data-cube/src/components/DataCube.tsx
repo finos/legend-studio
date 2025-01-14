@@ -99,6 +99,7 @@ export const DataCube = observer(
             null
           }
           layoutManager={dataCube.layoutService.manager}
+          taskManager={dataCube.taskService.manager}
         >
           {dataCube.initializeState.hasFailed && (
             <DataCubePlaceholderErrorDisplay

@@ -72,7 +72,6 @@ import {
 import { buildElementOption } from '@finos/legend-lego/graph-editor';
 import {
   filterByType,
-  getNullableFirstEntry,
   guaranteeNonNullable,
   prettyCONSTName,
 } from '@finos/legend-shared';
@@ -488,9 +487,7 @@ export const ConnectionTestDataEditor = observer(
     const generateTestDataWithSeedData = (): void => {
       connectionTestDataState.setUseSeedDataInputModal(true);
       connectionTestDataState.setNewTableIdentifierState([]);
-      const table = getNullableFirstEntry(
-        connectionTestDataState.getAvailableTables(),
-      );
+      const table = connectionTestDataState.getAvailableTables()[0];
       if (table) {
         connectionTestDataState.addNewTableIdentifierState(table);
       }

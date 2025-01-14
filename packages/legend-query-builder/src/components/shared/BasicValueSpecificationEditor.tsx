@@ -72,6 +72,7 @@ import {
   isNonEmptyString,
   parseCSVString,
   uniq,
+  at,
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
@@ -1036,8 +1037,8 @@ const EnumCollectionInstanceValueEditor = observer(
       (valueSpecification.values as EnumValueInstanceValue[])
         .filter((valueSpec) => valueSpec.values[0]?.value !== undefined)
         .map((valueSpec) => ({
-          label: valueSpec.values[0]!.value.name,
-          value: valueSpec.values[0]!.value,
+          label: at(valueSpec.values, 0).value.name,
+          value: at(valueSpec.values, 0).value,
         })),
     );
 

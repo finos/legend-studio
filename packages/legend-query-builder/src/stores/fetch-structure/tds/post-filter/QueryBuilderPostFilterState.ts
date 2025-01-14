@@ -34,7 +34,6 @@ import {
   assertErrorThrown,
   assertTrue,
   deleteEntry,
-  getNullableFirstEntry,
   guaranteeNonNullable,
   guaranteeType,
   IllegalStateError,
@@ -695,7 +694,7 @@ export class QueryBuilderPostFilterState
       this.rootIds.length < 2,
       'Query builder post-filter tree cannot have more than 1 root',
     );
-    const rootId = getNullableFirstEntry(this.rootIds);
+    const rootId = this.rootIds[0];
     return rootId ? this.getNode(rootId) : undefined;
   }
 

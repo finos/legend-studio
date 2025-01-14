@@ -102,6 +102,8 @@ export class LegendREPLBaseStore {
   }
 
   async initialize() {
+    const task = this.taskService.newTask('Initialize REPL');
+
     this.initializeState.inProgress();
     try {
       const info = await this._client.getInfrastructureInfo();
@@ -130,6 +132,8 @@ export class LegendREPLBaseStore {
         text: `Resolve the issue and reload the engine.`,
       });
       this.initializeState.fail();
+    } finally {
+      this.taskService.endTask(task);
     }
   }
 

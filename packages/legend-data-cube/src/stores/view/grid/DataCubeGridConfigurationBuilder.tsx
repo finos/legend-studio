@@ -57,8 +57,8 @@ import {
   INTERNAL__GRID_CLIENT_ROOT_AGGREGATION_COLUMN_ID,
 } from './DataCubeGridClientEngine.js';
 import {
-  getNonNullableEntry,
-  getNullableLastEntry,
+  at,
+  last,
   getQueryParameters,
   getQueryParameterValue,
   guaranteeNonNullable,
@@ -681,10 +681,10 @@ function generateDefinitionForPivotResultColumns(
     let leaf: ColDef | undefined = undefined;
     let id = '';
     for (let i = 0; i < col.values.length; i++) {
-      const value = getNonNullableEntry(col.values, i);
+      const value = at(col.values, i);
       id =
         id === ''
-          ? getNonNullableEntry(col.values, i)
+          ? at(col.values, i)
           : `${id}${PIVOT_COLUMN_NAME_VALUE_SEPARATOR}${value}`;
 
       if (i !== col.values.length - 1) {
@@ -756,13 +756,13 @@ function generateDefinitionForPivotResultColumns(
 
       // sort the leaf level columns based on the order of selected/configuration columns
       (currentCollection as ColDef[]).sort((a, b) => {
-        const colAName = getNullableLastEntry(
+        const colAName = last(
           a.colId?.split(PIVOT_COLUMN_NAME_VALUE_SEPARATOR) ?? [],
         );
         const colAConf = colAName
           ? _findCol(configuration.columns, colAName)
           : undefined;
-        const colBName = getNullableLastEntry(
+        const colBName = last(
           b.colId?.split(PIVOT_COLUMN_NAME_VALUE_SEPARATOR) ?? [],
         );
         const colBConf = colBName

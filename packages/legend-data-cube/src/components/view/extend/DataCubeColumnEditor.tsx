@@ -43,7 +43,7 @@ import {
   FormDropdownMenuTrigger,
   FormTextInput,
 } from '../../core/DataCubeFormUtils.js';
-import { debounce } from '@finos/legend-shared';
+import { debounce, isNonNullable } from '@finos/legend-shared';
 import { cn, DataCubeIcon, useDropdownMenu } from '@finos/legend-art';
 import {
   DataCubeColumnDataType,
@@ -102,6 +102,9 @@ export const DataCubeColumnCreator = observer(
     useEffect(() => {
       if (!editor && editorRef.current) {
         const element = editorRef.current;
+        const widgetRoot = document.getElementById(
+          MONACO_EDITOR_OVERFLOW_WIDGETS_ROOT_ID,
+        );
         const newEditor = monacoEditorAPI.create(element, {
           ...getBaseCodeEditorOptions(),
           fontSize: 12,
@@ -114,9 +117,9 @@ export const DataCubeColumnCreator = observer(
           // See https://dev.to/salilnaik/the-uncanny-relationship-between-position-fixed-and-transform-property-32f6
           // See https://github.com/microsoft/monaco-editor/issues/2793#issuecomment-999337740
           fixedOverflowWidgets: true,
-          overflowWidgetsDomNode: document.getElementById(
-            MONACO_EDITOR_OVERFLOW_WIDGETS_ROOT_ID,
-          )!,
+          ...(isNonNullable(widgetRoot)
+            ? { overflowWidgetsDomNode: widgetRoot }
+            : {}),
         });
 
         // NOTE: since engine suggestions are computed based on the current text content

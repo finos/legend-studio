@@ -103,7 +103,7 @@
   &__config__schema-explorer {
     height: calc(100% - 9rem);
     padding: 1rem 0;
-    overflow: overlay;
+    overflow: auto;
   }
 
   &__code-editor {
@@ -183,7 +183,8 @@
   }
 
   .ag-cell-value {
-    word-break: break-word;
+    word-break: normal;
+    overflow-wrap: anywhere;
   }
 
   .ag-center-cols-viewport {

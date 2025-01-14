@@ -98,10 +98,13 @@ export class DataQualityRelationValidationLambdaEditorState extends LambdaEditor
     pretty?: boolean | undefined;
     preserveCompilationError?: boolean | undefined;
   }): GeneratorFn<void> {
-    if (!isStubbed_RawLambda(this.relationValidation.rowMapFunction!)) {
+    if (
+      this.relationValidation.rowMapFunction &&
+      !isStubbed_RawLambda(this.relationValidation.rowMapFunction)
+    ) {
       try {
         const lambdas = new Map<string, RawLambda>();
-        lambdas.set(this.lambdaId, this.relationValidation.rowMapFunction!);
+        lambdas.set(this.lambdaId, this.relationValidation.rowMapFunction);
         const isolatedLambdas =
           (yield this.editorStore.graphManagerState.graphManager.lambdasToPureCode(
             lambdas,

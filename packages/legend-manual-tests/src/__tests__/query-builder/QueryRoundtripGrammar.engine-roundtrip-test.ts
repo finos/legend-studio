@@ -28,7 +28,7 @@ import {
   ENGINE_TEST_SUPPORT__getSubtypeInfo,
   ENGINE_TEST_SUPPORT__grammarToJSON_model,
   ENGINE_TEST_SUPPORT__grammarToJSON_valueSpecification,
-  ENGINE_TEST_SUPPORT__JsonToGrammar_valueSpecification,
+  ENGINE_TEST_SUPPORT__JSONToGrammar_valueSpecification,
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
 } from '@finos/legend-graph/test';
@@ -162,7 +162,7 @@ beforeAll(async () => {
         });
         const grammarText = fs.readFileSync(modelPath, { encoding: 'utf-8' });
         const transformGrammarToJsonResult =
-          await ENGINE_TEST_SUPPORT__grammarToJSON_model(grammarText);
+          await ENGINE_TEST_SUPPORT__grammarToJSON_model(grammarText, false);
         const entities =
           graphManagerState.graphManager.pureProtocolTextToEntities(
             JSON.stringify(transformGrammarToJsonResult),
@@ -208,7 +208,7 @@ const queryGrammarRoundtrip = async (
       queryBuilderState.buildQuery(),
     );
   const returnedQuery =
-    await ENGINE_TEST_SUPPORT__JsonToGrammar_valueSpecification(
+    await ENGINE_TEST_SUPPORT__JSONToGrammar_valueSpecification(
       processedLambda,
     );
   expect(processedLambda).toBe(processedLambda);

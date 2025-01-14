@@ -17,12 +17,7 @@
 import { NAVIGATION_ZONE_SEPARATOR } from '@finos/legend-application';
 import { action, computed, makeObservable, observable } from 'mobx';
 import { type DataSpaceViewerState } from './DataSpaceViewerState.js';
-import {
-  getNonNullableEntry,
-  getNullableFirstEntry,
-  guaranteeNonNullable,
-  isNonNullable,
-} from '@finos/legend-shared';
+import { at, guaranteeNonNullable, isNonNullable } from '@finos/legend-shared';
 import {
   DATA_SPACE_VIEWER_ACTIVITY_MODE,
   extractActivityFromAnchor,
@@ -150,10 +145,10 @@ export class DataSpaceLayoutState {
           ) {
             return;
           }
-          const anchor = getNonNullableEntry(this.wikiPageVisibleAnchors, 0);
+          const anchor = at(this.wikiPageVisibleAnchors, 0);
           this.dataSpaceViewerState.syncZoneWithNavigation(anchor);
           const anchorChunks = anchor.split(NAVIGATION_ZONE_SEPARATOR);
-          const activity = getNullableFirstEntry(anchorChunks);
+          const activity = anchorChunks[0];
           if (activity) {
             this.dataSpaceViewerState.setCurrentActivity(
               extractActivityFromAnchor(
@@ -242,10 +237,9 @@ export class DataSpaceLayoutState {
           matchingWikiPageSection.offsetTop -
           (this.header?.getBoundingClientRect().height ?? 0);
       } else if (
-        getNullableFirstEntry(anchorChunks) ===
         generateAnchorForActivity(
           DATA_SPACE_VIEWER_ACTIVITY_MODE.DIAGRAM_VIEWER,
-        )
+        ) === anchorChunks[0]
       ) {
         this.frame.scrollTop =
           guaranteeNonNullable(
