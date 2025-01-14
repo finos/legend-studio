@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-quality
 
+## 2.0.26
+
+### Patch Changes
+
+- [#3808](https://github.com/finos/legend-studio/pull/3808) [`eec360c`](https://github.com/finos/legend-studio/commit/eec360cd6b019d272945bfae9782ec613c17f72c) ([@kelly-thai](https://github.com/kelly-thai)) - Updating dataspaces to dataproducts where necessary
+
 ## 2.0.25
 
 ## 2.0.24
