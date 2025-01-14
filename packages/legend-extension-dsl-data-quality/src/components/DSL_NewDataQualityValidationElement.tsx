@@ -152,7 +152,7 @@ export const NewDataQualityValidationElementEditor = observer(() => {
           CLASS_ELEMENT_CREATION_BASIS.DATASPACE_BASED ? (
             <div>
               <div className="panel__content__form__section__header__label">
-                DataSpace
+                Data Product
               </div>
               <div className="data-quality-explorer__new-element-modal__driver">
                 <CustomSelectorInput

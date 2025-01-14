@@ -160,7 +160,7 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
     }
     if (!query) {
       throw new IllegalStateError(
-        `Can't fetch query from dataspace executable`,
+        `Can't fetch query from data product executable`,
       );
     }
     if (!executionContext) {

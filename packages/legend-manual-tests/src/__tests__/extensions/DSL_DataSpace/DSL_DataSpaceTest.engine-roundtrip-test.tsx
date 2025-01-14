@@ -218,7 +218,7 @@ type ModelCoverageTestCase = [
 
 const MODEL_COVERAGE_CASES: ModelCoverageTestCase[] = [
   [
-    'simple relational model with dataspace',
+    'simple relational model with data product',
     {
       dataspacePath:
         'showcase::northwind::dataspace::NorthwindDataSpaceWithExecutables',
@@ -243,7 +243,7 @@ const MODEL_COVERAGE_CASES: ModelCoverageTestCase[] = [
 ];
 
 describe(
-  integrationTest('Build minimal graph from dataspace artifacts'),
+  integrationTest('Build minimal graph from data product artifacts'),
   () => {
     test.each(MODEL_COVERAGE_CASES)(
       '%s',

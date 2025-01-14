@@ -30,7 +30,7 @@ export interface DataSpaceInfo {
   path: string;
   /**
    * NOTE: technically, this should be always available, but we must not
-   * assume that no dataspace is marlformed, so we leave it as optional
+   * assume that no data product is marlformed, so we leave it as optional
    */
   defaultExecutionContext: string | undefined;
 }

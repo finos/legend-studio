@@ -33,7 +33,7 @@ export const createVisitedDataSpaceId = (
   artifactId: string,
   dataSpace: string,
 ): string =>
-  // we will consider unique dataSpace if it belongs to the same project. i.e we will not save 2 dataspaces visited for 2 different versionss
+  // we will consider unique data product if it belongs to the same project. i.e we will not save 2 dataspaces visited for 2 different versionss
   generateGAVCoordinates(groupId, artifactId, undefined) +
   GAV_DELIMITER +
   dataSpace;

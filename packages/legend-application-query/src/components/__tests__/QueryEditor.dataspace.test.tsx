@@ -32,7 +32,7 @@ import { fireEvent, getByText, waitFor } from '@testing-library/dom';
 import { DSL_DataSpace_LegendApplicationPlugin } from '@finos/legend-extension-dsl-data-space/application';
 
 test(
-  integrationTest('Load Existing DataSpace Query in Query Editor'),
+  integrationTest('Load Existing Data Product Query in Query Editor'),
   async () => {
     const mockedQueryEditorStore = TEST__provideMockedQueryEditorStore({
       extraPlugins: [new DSL_DataSpace_LegendApplicationPlugin()],
@@ -91,7 +91,7 @@ test(
     await waitFor(() => getByText(aboutDataSpaceModal, 'CovidDataMapping'));
     await waitFor(() => getByText(aboutDataSpaceModal, 'H2Runtime'));
 
-    // TODO: below is for testing dataspace quick start module
+    // TODO: below is for testing data product quick start module
     // const openDataSpaceButton = await waitFor(() =>
     //   renderResult.getByTitle('Open advanced search for data product...'),
     // );
@@ -109,7 +109,7 @@ test(
 
 test(
   integrationTest(
-    'Load Existing DataSpace Query with minimal graph in Query Editor',
+    'Load Existing Data Product Query with minimal graph in Query Editor',
   ),
   async () => {
     const mockedQueryEditorStore = TEST__provideMockedQueryEditorStore({

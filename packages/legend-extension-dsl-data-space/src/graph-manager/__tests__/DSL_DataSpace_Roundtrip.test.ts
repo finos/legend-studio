@@ -58,7 +58,7 @@ test(
         graphManagerState.graph.allElements.findLast(
           (e) => e instanceof DataSpace && e.path === 'domain::COVIDDatapace',
         ),
-        'fail to find a dataspace',
+        'fail to find a data product',
       ),
       DataSpace,
     );

@@ -135,9 +135,9 @@ const TemplateQueryPromotionReviewerContent = observer(() => {
                 />
               </div>
               <div className="template-query-promotor__title__prompt">
-                We will promote this query as a curated template query in
-                dataspace. This automated process will generate a code review
-                and workspace. Please get the generated code review reviewed and
+                We will promote this query as a curated template query in data
+                product. This automated process will generate a code review and
+                workspace. Please get the generated code review reviewed and
                 approved.
               </div>
               <div className="template-query-promotor__group template-query-promotor__group--workspace">
