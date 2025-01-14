@@ -1,5 +1,12 @@
 # @finos/legend-data-cube
 
+## 0.0.42
+
+### Patch Changes
+
+- [#3800](https://github.com/finos/legend-studio/pull/3800) [`2d15978`](https://github.com/finos/legend-studio/commit/2d15978b620e15e8b2f835c68f405a6f443ee300) ([@gs-gunjan](https://github.com/gs-gunjan)) - snapshot building for extend and pivot operation
+  Cleanup for filter operation
+
 ## 0.0.41
 
 ## 0.0.40

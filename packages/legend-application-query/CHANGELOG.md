@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.7.34
+
+### Patch Changes
+
+- [#3808](https://github.com/finos/legend-studio/pull/3808) [`eec360c`](https://github.com/finos/legend-studio/commit/eec360cd6b019d272945bfae9782ec613c17f72c) ([@kelly-thai](https://github.com/kelly-thai)) - Updating dataspaces to dataproducts where necessary
+
 ## 13.7.33
 
 ## 13.7.32

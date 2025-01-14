@@ -1,5 +1,11 @@
 # @finos/legend-shared
 
+## 11.0.0
+
+### Major Changes
+
+- [#3806](https://github.com/finos/legend-studio/pull/3806) [`e6d29c3`](https://github.com/finos/legend-studio/commit/e6d29c3116d86f1d5f32254df90fe0b1929a9a0e) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Reduced verbosity in array/list access method: renamed `getNullableLastEntry()` to `last()` and `getNonNullableEntry()` to `at()`; removed `getNullableEntry()` and `getNullableFirstEntry()` in favor of `x[0]`.
+
 ## 10.0.67
 
 ## 10.0.66
