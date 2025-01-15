@@ -55,7 +55,6 @@ import { ElementEditorState } from './editor-state/element-editor-state/ElementE
 import { LegendStudioTelemetryHelper } from '../../__lib__/LegendStudioTelemetryHelper.js';
 import { GraphEditorMode } from './GraphEditorMode.js';
 import { GlobalBulkServiceRegistrationState } from './sidebar-state/BulkServiceRegistrationState.js';
-import type { TabState } from '@finos/legend-lego/application';
 
 export class GraphEditFormModeState extends GraphEditorMode {
   *initialize(): GeneratorFn<void> {
@@ -274,31 +273,6 @@ export class GraphEditFormModeState extends GraphEditorMode {
       );
 
       /**
-       * Backup and editor states info before resetting. Here we store the element paths of the
-       * elements editors as element paths don't refer to the actual graph. We can find the element
-       * from the new graph that is built by using element path and can reprocess the element editor states.
-       * The other kind of editors we reprocess are file generation editors, we store them as is as they don't
-       * hold any reference to the actual graph.
-       */
-      const openedTabPaths: string[] = [];
-      this.editorStore.tabManagerState.tabs.forEach((state: TabState) => {
-        if (state instanceof ElementEditorState) {
-          openedTabPaths.push(state.elementPath);
-        }
-      });
-      // Only stores editor state for file generation editors as they don't hold any references to the
-      // actual graph.
-      const currentTabState =
-        this.editorStore.tabManagerState.currentTab instanceof
-        ElementEditorState
-          ? undefined
-          : this.editorStore.tabManagerState.currentTab;
-      const currentTabElementPath =
-        this.editorStore.tabManagerState.currentTab instanceof
-        ElementEditorState
-          ? this.editorStore.tabManagerState.currentTab.elementPath
-          : undefined;
-      /**
        * We remove the current editor state so that we no longer let React displays the element that belongs to the old graph
        * NOTE: this causes an UI flash, but this is in many way, acceptable since the user probably should know that we are
        * refreshing the memory graph anyway.
@@ -307,7 +281,9 @@ export class GraphEditFormModeState extends GraphEditorMode {
        * e.g. if the current editor is a class, we stub the class, create a new class editor state around it and copy over
        * navigation information, etc.
        */
-      this.editorStore.tabManagerState.closeAllTabs();
+      if (this.editorStore.tabManagerState.tabs.length) {
+        this.editorStore.tabManagerState.cacheAndClose();
+      }
 
       this.editorStore.changeDetectionState.stop(); // stop change detection before disposing hash
 
@@ -360,11 +336,7 @@ export class GraphEditFormModeState extends GraphEditorMode {
        * Re-build the editor states which were opened before from the information we have stored before
        * creating the new graph
        */
-      this.editorStore.tabManagerState.recoverTabs(
-        openedTabPaths,
-        currentTabState,
-        currentTabElementPath,
-      );
+      this.editorStore.tabManagerState.recoverTabs();
 
       this.editorStore.applicationStore.logService.info(
         LogEvent.create(GRAPH_MANAGER_EVENT.UPDATE_AND_REBUILD_GRAPH__SUCCESS),
@@ -578,6 +550,7 @@ export class GraphEditFormModeState extends GraphEditorMode {
 
   *onLeave(): GeneratorFn<void> {
     this.editorStore.sqlPlaygroundState.setConnection(undefined);
+    this.editorStore.tabManagerState.cacheAndClose();
   }
 
   *cleanupBeforeEntering(fallbackOptions?: {

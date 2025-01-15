@@ -42,7 +42,7 @@ import {
   isNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { makeObservable, action } from 'mobx';
+import { makeObservable, action, observable } from 'mobx';
 import type { EditorState } from './editor-state/EditorState.js';
 import { ClassEditorState } from './editor-state/element-editor-state/ClassEditorState.js';
 import { PackageableConnectionEditorState } from './editor-state/element-editor-state/connection/ConnectionEditorState.js';
@@ -59,23 +59,34 @@ import { GenerationSpecificationEditorState } from './editor-state/GenerationSpe
 import { UnsupportedElementEditorState } from './editor-state/UnsupportedElementEditorState.js';
 import type { EditorStore } from './EditorStore.js';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../LegendStudioApplicationPlugin.js';
-import { TabManagerState } from '@finos/legend-lego/application';
+import { TabManagerState, type TabState } from '@finos/legend-lego/application';
 import { INTERNAL__UnknownFunctionActivatorEdtiorState } from './editor-state/element-editor-state/function-activator/INTERNAL__UnknownFunctionActivatorEditorState.js';
 import { SnowflakeAppFunctionActivatorEdtiorState } from './editor-state/element-editor-state/function-activator/SnowflakeAppFunctionActivatorEditorState.js';
 import { HostedServiceFunctionActivatorEditorState } from './editor-state/element-editor-state/function-activator/HostedServiceFunctionActivatorEditorState.js';
+import { ArtifactGenerationViewerState } from './editor-state/ArtifactGenerationViewerState.js';
 
 export class EditorTabManagerState extends TabManagerState {
   readonly editorStore: EditorStore;
 
   declare currentTab?: EditorState | undefined;
   declare tabs: EditorState[];
+  cachedTabs:
+    | {
+        openedTabEditorPaths: string[];
+        currentTabState: EditorState | undefined;
+        currentTabElementPath: string | undefined;
+      }
+    | undefined;
 
   constructor(editorStore: EditorStore) {
     super();
 
     makeObservable(this, {
       refreshCurrentEntityDiffViewer: action,
+      cachedTabs: observable,
       recoverTabs: action,
+      clearTabCache: action,
+      cacheAndClose: action,
     });
 
     this.editorStore = editorStore;
@@ -83,6 +94,44 @@ export class EditorTabManagerState extends TabManagerState {
 
   get dndType(): string {
     return 'editor.tab-manager.tab';
+  }
+
+  /**
+   * Here we store the element paths of the
+   * elements editors as element paths don't refer to the actual graph. We can find the element
+   * from the new graph that is built by using element path and can reprocess the element editor states.
+   * The other kind of editors we reprocess are file generation editors, we store them as is as they don't
+   * hold any reference to the actual graph.
+   */
+  cacheAndClose(options?: { cacheGeneration?: boolean }): void {
+    const openedTabPaths: string[] = [];
+    this.tabs.forEach((state: TabState) => {
+      if (state instanceof ElementEditorState) {
+        openedTabPaths.push(state.elementPath);
+      }
+    });
+    // Only stores editor state for file generation editors as they don't hold any references to the
+    // actual graph.
+    const currentTabState =
+      this.currentTab instanceof ElementEditorState ||
+      (options?.cacheGeneration &&
+        this.currentTab instanceof ArtifactGenerationViewerState)
+        ? undefined
+        : this.currentTab;
+    const currentTabElementPath =
+      this.currentTab instanceof ElementEditorState
+        ? this.currentTab.elementPath
+        : undefined;
+    this.cachedTabs = {
+      openedTabEditorPaths: openedTabPaths,
+      currentTabState,
+      currentTabElementPath,
+    };
+    this.closeAllTabs();
+  }
+
+  clearTabCache(): void {
+    this.cachedTabs = undefined;
   }
 
   getCurrentEditorState<T extends EditorState>(clazz: Clazz<T>): T {
@@ -182,26 +231,28 @@ export class EditorTabManagerState extends TabManagerState {
    *
    * See https://github.com/finos/legend-studio/issues/1713
    */
-  recoverTabs = (
-    openedTabEditorPaths: string[],
-    currentTabState: EditorState | undefined,
-    currentTabElementPath: string | undefined,
-  ): void => {
-    this.tabs = openedTabEditorPaths
-      .map((editorPath) => {
-        const correspondingElement =
-          this.editorStore.graphManagerState.graph.getNullableElement(
-            editorPath,
-          );
-        if (correspondingElement) {
-          return this.createElementEditorState(correspondingElement);
-        }
-        return undefined;
-      })
-      .filter(isNonNullable);
-    this.setCurrentTab(
-      this.findCurrentTab(currentTabState, currentTabElementPath),
-    );
+  recoverTabs = (): void => {
+    if (this.cachedTabs) {
+      this.tabs = this.cachedTabs.openedTabEditorPaths
+        .map((editorPath) => {
+          const correspondingElement =
+            this.editorStore.graphManagerState.graph.getNullableElement(
+              editorPath,
+            );
+          if (correspondingElement) {
+            return this.createElementEditorState(correspondingElement);
+          }
+          return undefined;
+        })
+        .filter(isNonNullable);
+      this.setCurrentTab(
+        this.findCurrentTab(
+          this.cachedTabs.currentTabState,
+          this.cachedTabs.currentTabElementPath,
+        ),
+      );
+      this.clearTabCache();
+    }
   };
 
   findCurrentTab = (
