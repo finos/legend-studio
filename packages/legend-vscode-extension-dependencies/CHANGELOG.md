@@ -1,5 +1,11 @@
 # @finos/legend-vscode-extension-dependencies
 
+## 4.0.57
+
+### Patch Changes
+
+- [#3807](https://github.com/finos/legend-studio/pull/3807) [`4b9e480`](https://github.com/finos/legend-studio/commit/4b9e480329eb2f7174325839ddaeec840359eb9b) ([@travisstebbins](https://github.com/travisstebbins)) - Move vscode-extension-dependencies style file to src folder
+
 ## 4.0.56
 
 ## 4.0.55
