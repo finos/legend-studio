@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import '../style/index.scss';
+import '../src/index.css'; // eslint-disable-line @finos/legend/no-cross-workspace-source-usage
 // NOTE: tailwind style takes precedence over other styles since it's generated and we should not allow
 // other styles to override it
 import '../lib/tailwind.css'; // eslint-disable-line @finos/legend/no-cross-workspace-non-export-usage
