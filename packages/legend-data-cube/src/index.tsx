@@ -23,6 +23,7 @@ export * from './stores/core/model/AdhocQueryDataCubeSource.js';
 export * from './stores/core/DataCubeEngine.js';
 export * from './stores/core/DataCubeQueryEngine.js';
 export * from './stores/core/DataCubeQueryBuilderUtils.js';
+export * from './stores/core/filter/DataCubeQueryFilterOperation.js';
 
 export {
   type DataCubeSetting,
