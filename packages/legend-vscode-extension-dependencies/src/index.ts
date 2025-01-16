@@ -265,11 +265,15 @@ export {
 export {
   type LegendApplicationConfigurationData,
   type LegendApplicationConfigurationInput,
+  type SettingConfigurationEntry,
   ApplicationFrameworkProvider,
   ApplicationStore,
   ApplicationStoreProvider,
   BrowserEnvironmentProvider,
+  collectSettingConfigurationEntriesFromConfig,
   Core_LegendApplicationPlugin,
+  LEGEND_APPLICATION_COLOR_THEME,
+  LEGEND_APPLICATION_SETTING_KEY,
   LegendApplicationConfig,
   LegendApplicationPlugin,
   LegendApplicationPluginManager,
@@ -278,6 +282,7 @@ export {
 
 export {
   type FetchStructureLayoutConfig,
+  type QueryBuilder_LegendApplicationPlugin_Extension,
   type QueryBuilderHeaderActionConfiguration,
   FunctionQueryBuilderState,
   QueryBuilder_GraphManagerPreset,
