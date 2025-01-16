@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.18.82
+
+### Patch Changes
+
+- [#3813](https://github.com/finos/legend-studio/pull/3813) [`2f5a670`](https://github.com/finos/legend-studio/commit/2f5a6705e5767cbb4e7ea41812729d40b392ffa5) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Cache tab manager opened tabs
+
 ## 28.18.81
 
 ## 28.18.80
