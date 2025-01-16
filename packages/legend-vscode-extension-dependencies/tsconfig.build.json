@@ -7,12 +7,14 @@
   "exclude": ["src/**/__tests__/**/*.*", "src/**/__mocks__/**/*.*"],
   "references": [
     { "path": "./tsconfig.package.json" },
+    { "path": "../legend-application-query-bootstrap/tsconfig.build.json" },
     { "path": "../legend-application-studio/tsconfig.build.json" },
     { "path": "../legend-application/tsconfig.build.json" },
     { "path": "../legend-art/tsconfig.build.json" },
     { "path": "../legend-data-cube/tsconfig.build.json" },
     { "path": "../legend-extension-dsl-diagram/tsconfig.build.json" },
     { "path": "../legend-graph/tsconfig.build.json" },
+    { "path": "../legend-lego/tsconfig.build.json" },
     { "path": "../legend-query-builder/tsconfig.build.json" },
     { "path": "../legend-shared/tsconfig.build.json" },
     { "path": "../legend-storage/tsconfig.build.json" }
