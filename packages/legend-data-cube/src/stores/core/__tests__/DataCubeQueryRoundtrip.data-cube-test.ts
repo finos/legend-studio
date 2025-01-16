@@ -88,22 +88,24 @@ const cases: TestCase[] = [
   }),
   _case(`Leaf-level Extend: with complex expression`, {
     query: `extend(~[name:c|$c.val->toOne() + 1])`,
+    columns: ['val:Integer'],
   }),
   _case(`Leaf-level Extend: multiple columns`, {
     query:
       "extend(~[name:c|$c.val->toOne() + 1])->extend(~[other:x|$x.str->toOne() + '_ext'])->extend(~[other2:x|$x.str->toOne() + '_1'])",
+    columns: ['val:Integer', 'str:String'],
   }),
   _case(`Leaf-level Extend: ERROR - name clash with source columns`, {
     query: `extend(~[name:c|$c.val->toOne() + 1])`,
-    columns: ['name:Integer'],
-    error: `Can't process leaf-level extended column 'name': another column with the same name is already registered`,
+    columns: ['name:Integer', 'val:Integer'],
+    error: `Can't process extend() expression: failed to retrieve type information for columns. Error: The relation contains duplicates: [name]`,
   }),
   _case(
     `Leaf-level Extend: ERROR - name clash among leaf-level extended columns`,
     {
       query: `extend(~[name:c|$c.val->toOne() + 1])->extend(~[name:c|$c.val->toOne() + 1])`,
-      columns: ['name:Integer'],
-      error: `Can't process leaf-level extended column 'name': another column with the same name is already registered`,
+      columns: ['val:Integer'],
+      error: `Can't process extend() expression: failed to retrieve type information for columns. Error: The relation contains duplicates: [name]`,
     },
   ),
   _case(
@@ -115,7 +117,7 @@ const cases: TestCase[] = [
   ),
   _case(`Leaf-level Extend: ERROR - missing column's function expression`, {
     query: `extend(~[a])`,
-    error: `Can't process extend() expression: Expected a transformation function expression`,
+    error: `Can't process extend() expression: Expected a transformation function expression for column 'a'`,
   }),
 
   // --------------------------------- FILTER ---------------------------------
@@ -672,6 +674,7 @@ const cases: TestCase[] = [
   }),
   _case(`Filter: with leaf-level extended column`, {
     query: `extend(~[name:c|$c.val->toOne() + 1])->filter(x|$x.name != 27)`,
+    columns: ['val:Integer'],
   }),
 
   _case(`Filter: ERROR - bad argument: non-lambda provided`, {
@@ -843,12 +846,11 @@ describe(unitTest('Analyze and build base snapshot'), () => {
       let snapshot: DataCubeQuerySnapshot | undefined;
 
       try {
-        snapshot = validateAndBuildQuerySnapshot(
+        snapshot = await validateAndBuildQuerySnapshot(
           partialQuery,
           source,
           baseQuery,
-          engine.filterOperations,
-          engine.aggregateOperations,
+          engine,
         );
       } catch (err) {
         assertErrorThrown(err);

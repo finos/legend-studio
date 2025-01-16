@@ -70,12 +70,17 @@ import {
   type DataCubeSource,
   INTERNAL__DataCubeSource,
 } from './model/DataCubeSource.js';
-import { _primitiveValue } from './DataCubeQueryBuilderUtils.js';
+import {
+  _castCols,
+  _function,
+  _primitiveValue,
+} from './DataCubeQueryBuilderUtils.js';
 import {
   type DocumentationEntry,
   type LogEvent,
   type PlainObject,
 } from '@finos/legend-shared';
+import { DataCubeFunction } from './DataCubeQueryEngine.js';
 
 export type CompletionItem = {
   completion: string;
@@ -192,6 +197,13 @@ export abstract class DataCubeEngine {
     ).substring(`''->`.length);
   }
 
+  synthesizeMinimalSourceQuery(columns: DataCubeColumn[]) {
+    return _function(DataCubeFunction.CAST, [
+      _primitiveValue(PRIMITIVE_TYPE.STRING, ''),
+      _castCols(columns),
+    ]);
+  }
+
   // ---------------------------------- PROCESSOR ----------------------------------
 
   abstract processQuerySource(value: PlainObject): Promise<DataCubeSource>;
@@ -211,6 +223,11 @@ export abstract class DataCubeEngine {
     baseQuery: V1_Lambda,
     source: DataCubeSource,
   ): Promise<CompletionItem[]>;
+
+  abstract getQueryRelationReturnType(
+    query: V1_Lambda,
+    source: DataCubeSource,
+  ): Promise<DataCubeRelationType>;
 
   abstract getQueryCodeRelationReturnType(
     code: string,

@@ -53,8 +53,7 @@ import {
   _packageableType,
 } from './DataCubeQuerySnapshotBuilderUtils.js';
 import type { DataCubeSource } from './model/DataCubeSource.js';
-import type { DataCubeQueryFilterOperation } from './filter/DataCubeQueryFilterOperation.js';
-import type { DataCubeQueryAggregateOperation } from './aggregation/DataCubeQueryAggregateOperation.js';
+import type { DataCubeEngine } from './DataCubeEngine.js';
 
 // --------------------------------- BUILDING BLOCKS ---------------------------------
 
@@ -101,14 +100,6 @@ enum _FUNCTION_SEQUENCE_COMPOSITION_PART {
   SORT = 'sort',
   LIMIT = 'limit',
 }
-
-// function isFunctionInValidSequence(
-//   value: string,
-// ): value is _FUNCTION_SEQUENCE_COMPOSITION_PART {
-//   return Object.values(_FUNCTION_SEQUENCE_COMPOSITION_PART).includes(
-//     value as _FUNCTION_SEQUENCE_COMPOSITION_PART,
-//   );
-// }
 
 // This corresponds to the function sequence that we currently support:
 //
@@ -307,12 +298,11 @@ function extractFunctionMap(
  * Implementation-wise, this extracts the function call sequence, then walk the
  * sequence in order to fill in the information for the snapshot.
  */
-export function validateAndBuildQuerySnapshot(
+export async function validateAndBuildQuerySnapshot(
   partialQuery: V1_ValueSpecification,
   source: DataCubeSource,
   baseQuery: DataCubeQuery,
-  filterOperations: DataCubeQueryFilterOperation[],
-  aggregateOperations: DataCubeQueryAggregateOperation[],
+  engine: DataCubeEngine,
 ) {
   // --------------------------------- BASE ---------------------------------
   // Build the function call sequence and the function map to make the
@@ -321,17 +311,17 @@ export function validateAndBuildQuerySnapshot(
   const funcMap = extractFunctionMap(partialQuery);
   const snapshot = DataCubeQuerySnapshot.create({});
   const data = snapshot.data;
-  const columnNames = new Set<string>();
+  const registeredColumns = new Map<string, DataCubeColumn>();
   /**
    * We want to make sure all columns, either from source or created, e.g. extended columns,
    * have unique names. This is to simplify the logic within DataCube so different components
    * can easily refer to columns by name without having to worry about conflicts.
    */
   const _checkColName = (col: DataCubeColumn, message: string) => {
-    if (columnNames.has(col.name)) {
+    if (registeredColumns.has(col.name)) {
       throw new Error(message);
     }
-    columnNames.add(col.name);
+    registeredColumns.set(col.name, col);
   };
   const colsMap = new Map<string, DataCubeColumn>();
   const _getCol = (colName: string) => {
@@ -342,7 +332,6 @@ export function validateAndBuildQuerySnapshot(
     return _toCol(column);
   };
   const _setCol = (col: DataCubeColumn) => colsMap.set(col.name, col);
-  // const _unsetCol = (col: DataCubeColumn) => colsMap.delete(col.name);
 
   // -------------------------------- SOURCE --------------------------------
 
@@ -358,9 +347,11 @@ export function validateAndBuildQuerySnapshot(
   // --------------------------- LEAF-LEVEL EXTEND ---------------------------
 
   if (funcMap.leafExtend) {
-    // TODO: get column types (call engine to get the type)
-    data.leafExtendedColumns = _extractExtendedColumns(funcMap.leafExtend);
-    // TODO: populate the column types
+    data.leafExtendedColumns = await _extractExtendedColumns(
+      funcMap.leafExtend,
+      Array.from(colsMap.values()),
+      engine,
+    );
     data.leafExtendedColumns.forEach((col) => _setCol(col));
     data.leafExtendedColumns.forEach((col) =>
       _checkColName(
@@ -373,8 +364,6 @@ export function validateAndBuildQuerySnapshot(
   // --------------------------------- FILTER ---------------------------------
 
   if (funcMap.filter) {
-    // TODO: verify column presence
-    // TODO: verify column types
     const lambda = _param(
       funcMap.filter,
       0,
@@ -388,7 +377,7 @@ export function validateAndBuildQuerySnapshot(
     data.filter = _filter(
       guaranteeNonNullable(lambda.body[0]),
       _getCol,
-      filterOperations,
+      engine.filterOperations,
     );
   }
 
@@ -438,9 +427,11 @@ export function validateAndBuildQuerySnapshot(
   // --------------------------- GROUP-LEVEL EXTEND ---------------------------
 
   if (funcMap.groupExtend) {
-    // TODO: get column types (call engine to get the type)
-    data.groupExtendedColumns = _extractExtendedColumns(funcMap.groupExtend);
-    // TODO: populate the column types
+    data.groupExtendedColumns = await _extractExtendedColumns(
+      funcMap.groupExtend,
+      Array.from(colsMap.values()),
+      engine,
+    );
     data.groupExtendedColumns.forEach((col) => _setCol(col));
     data.groupExtendedColumns.forEach((col) =>
       _checkColName(

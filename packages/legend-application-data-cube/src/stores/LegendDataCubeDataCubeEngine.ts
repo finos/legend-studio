@@ -225,38 +225,6 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     }
   }
 
-  // TODO: we could optimize this by synthesizing the base query from the source columns
-  // instead of having to send the entire graph model
-  override async getQueryTypeahead(
-    code: string,
-    baseQuery: V1_Lambda,
-    source: DataCubeSource,
-  ) {
-    const baseQueryCode = await this.getValueSpecificationCode(baseQuery);
-    let codeBlock = baseQueryCode + code;
-    codeBlock = codeBlock.startsWith(LAMBDA_PIPE)
-      ? codeBlock.substring(LAMBDA_PIPE.length)
-      : codeBlock;
-    if (source instanceof AdhocQueryDataCubeSource) {
-      return (
-        await this._engineServerClient.completeCode({
-          codeBlock,
-          model: source.model,
-        })
-      ).completions as CompletionItem[];
-    } else if (source instanceof LegendQueryDataCubeSource) {
-      return (
-        await this._engineServerClient.completeCode({
-          codeBlock,
-          model: source.model,
-        })
-      ).completions as CompletionItem[];
-    }
-    throw new UnsupportedOperationError(
-      `Can't get code completion for lambda with unsupported source`,
-    );
-  }
-
   override async parseValueSpecification(
     code: string,
     returnSourceInformation?: boolean | undefined,
@@ -295,6 +263,64 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       _serializeValueSpecification(value),
       pretty,
     );
+  }
+
+  // TODO: we could optimize this by synthesizing the base query from the source columns
+  // instead of having to send the entire graph model
+  override async getQueryTypeahead(
+    code: string,
+    baseQuery: V1_Lambda,
+    source: DataCubeSource,
+  ) {
+    const baseQueryCode = await this.getValueSpecificationCode(baseQuery);
+    let codeBlock = baseQueryCode + code;
+    codeBlock = codeBlock.startsWith(LAMBDA_PIPE)
+      ? codeBlock.substring(LAMBDA_PIPE.length)
+      : codeBlock;
+    if (source instanceof AdhocQueryDataCubeSource) {
+      return (
+        await this._engineServerClient.completeCode({
+          codeBlock,
+          model: source.model,
+        })
+      ).completions as CompletionItem[];
+    } else if (source instanceof LegendQueryDataCubeSource) {
+      return (
+        await this._engineServerClient.completeCode({
+          codeBlock,
+          model: source.model,
+        })
+      ).completions as CompletionItem[];
+    }
+    throw new UnsupportedOperationError(
+      `Can't get code completion for lambda with unsupported source`,
+    );
+  }
+
+  override async getQueryRelationReturnType(
+    query: V1_Lambda,
+    source: DataCubeSource,
+  ) {
+    try {
+      return await this._getQueryRelationType(
+        _serializeValueSpecification(query),
+        source,
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      if (
+        error instanceof NetworkClientError &&
+        error.response.status === HttpStatus.BAD_REQUEST
+      ) {
+        const engineError = V1_buildEngineError(
+          V1_EngineError.serialization.fromJson(
+            error.payload as PlainObject<V1_EngineError>,
+          ),
+        );
+        throw engineError;
+      }
+      throw error;
+    }
   }
 
   // TODO: we could optimize this by synthesizing the base query from the source columns

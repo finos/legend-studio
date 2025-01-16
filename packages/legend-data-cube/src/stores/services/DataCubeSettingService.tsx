@@ -145,7 +145,7 @@ export class DataCubeSettingService {
         defaultValue: false,
       } satisfies DataCubeSetting<boolean>,
       {
-        key: DataCubeSettingKey.DEBUGGER__ENABLE_DEBUG_MODE,
+        key: DataCubeSettingKey.DEBUGGER__USE_DEV_CLIENT_PROTOCOL_VERSION,
         title: `Use development client protocol version: Enabled`,
         description: `Specifies if development client protocol version (vX_X_X) should be used for execution`,
         group: DataCubeSettingGroup.DEBUG,

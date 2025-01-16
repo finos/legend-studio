@@ -23,7 +23,7 @@
 
 import { PRIMITIVE_TYPE, type V1_AppliedFunction } from '@finos/legend-graph';
 import { type DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { at, guaranteeNonNullable } from '@finos/legend-shared';
 import {
   DataCubeFunction,
   DataCubeQuerySortDirection,
@@ -299,9 +299,9 @@ export function buildExecutableQuery(
     return source.query;
   }
   for (let i = 0; i < sequence.length; i++) {
-    guaranteeNonNullable(sequence[i]).parameters.unshift(
-      i === 0 ? source.query : guaranteeNonNullable(sequence[i - 1]),
+    at(sequence, i).parameters.unshift(
+      i === 0 ? source.query : at(sequence, i - 1),
     );
   }
-  return guaranteeNonNullable(sequence[sequence.length - 1]);
+  return at(sequence, sequence.length - 1);
 }

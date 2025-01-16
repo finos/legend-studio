@@ -25,7 +25,6 @@ export enum DataCubeFunction {
   GROUP_BY = 'meta::pure::functions::relation::groupBy',
   LIMIT = 'meta::pure::functions::relation::limit',
   PIVOT = 'meta::pure::functions::relation::pivot',
-  // RENAME = 'meta::pure::functions::relation::rename',
   SELECT = 'meta::pure::functions::relation::select',
   SLICE = 'meta::pure::functions::relation::slice',
   SORT = 'meta::pure::functions::relation::sort',

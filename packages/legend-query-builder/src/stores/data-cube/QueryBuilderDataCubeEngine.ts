@@ -25,7 +25,6 @@ import {
   V1_RawLambda,
   V1_serializeValueSpecification,
   type GraphManagerState,
-  type PureModel,
   type V1_ValueSpecification,
   type ParameterValue,
   LAMBDA_PIPE,
@@ -79,12 +78,148 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     this.parameters = selectQuery.parameters;
   }
 
-  get sourceLabel(): string {
-    return `Query Builder Report`;
+  override async processQuerySource(value: PlainObject) {
+    // TODO: this is an abnormal usage of this method, this is the place
+    // where we can enforce which source this engine supports, instead
+    // of hardcoding the logic like this.
+    const srcFuncExp = this.getSourceFunctionExpression();
+    const source = new QueryBuilderDataCubeSource();
+    source.columns = (
+      await this.getRelationType(this.selectInitialQuery)
+    ).columns;
+    source.mapping = this.mappingPath;
+    source.runtime = this.runtimePath;
+    source.query = srcFuncExp;
+    return source;
   }
 
-  get graph(): PureModel {
-    return this.graphState.graph;
+  override async parseValueSpecification(
+    code: string,
+    returnSourceInformation?: boolean,
+  ) {
+    return V1_deserializeValueSpecification(
+      await this.graphState.graphManager.pureCodeToValueSpecification(
+        code,
+        returnSourceInformation,
+      ),
+      [],
+    );
+  }
+
+  override async getValueSpecificationCode(
+    value: V1_ValueSpecification,
+    pretty?: boolean | undefined,
+  ) {
+    return this.graphState.graphManager.valueSpecificationToPureCode(
+      V1_serializeValueSpecification(value, []),
+      pretty,
+    );
+  }
+
+  override async getQueryTypeahead(
+    code: string,
+    baseQuery: V1_Lambda,
+    source: DataCubeSource,
+  ) {
+    const lambda = this.buildRawLambdaFromValueSpec(baseQuery);
+    const queryString =
+      await this.graphState.graphManager.lambdaToPureCode(lambda);
+    const offset = queryString.length;
+    const codeBlock = queryString + code;
+    const finalCode = codeBlock.substring(
+      codeBlock.indexOf(LAMBDA_PIPE) + LAMBDA_PIPE.length,
+      codeBlock.length,
+    );
+    const result = await this.graphState.graphManager.getCodeComplete(
+      finalCode,
+      this.graphState.graph,
+      offset,
+    );
+    return result.completions as CompletionItem[];
+  }
+
+  override async getQueryRelationReturnType(
+    query: V1_Lambda,
+    source: DataCubeSource,
+  ) {
+    return this.getRelationType(this.buildRawLambdaFromValueSpec(query));
+  }
+
+  override async getQueryCodeRelationReturnType(
+    code: string,
+    baseQuery: V1_ValueSpecification,
+    source: DataCubeSource,
+  ) {
+    const queryString =
+      await this.graphState.graphManager.valueSpecificationToPureCode(
+        V1_serializeValueSpecification(baseQuery, []),
+      );
+    const fullQuery = queryString + code;
+    return this.getRelationType(
+      await this.graphState.graphManager.pureCodeToLambda(fullQuery),
+    );
+  }
+
+  override async executeQuery(query: V1_Lambda, source: DataCubeSource) {
+    const lambda = this.buildRawLambdaFromValueSpec(query);
+    lambda.parameters = this.parameters;
+    const [executionWithMetadata, queryString] = await Promise.all([
+      this.graphState.graphManager.runQuery(
+        lambda,
+        undefined,
+        undefined,
+        this.graphState.graph,
+        {
+          parameterValues: this.parameterValues ?? [],
+        },
+      ),
+      this.graphState.graphManager.lambdaToPureCode(lambda),
+    ]);
+    const expectedTDS = guaranteeType(
+      executionWithMetadata.executionResult,
+      TDSExecutionResult,
+      'Query returned expected to be of tabular data set',
+    );
+    const sql = expectedTDS.activities?.[0];
+    let sqlString = '### NO SQL FOUND';
+    if (sql instanceof RelationalExecutionActivities) {
+      sqlString = sql.sql;
+    }
+    return {
+      result: expectedTDS,
+      executedQuery: queryString,
+      executedSQL: sqlString,
+    };
+  }
+
+  override buildExecutionContext(
+    source: DataCubeSource,
+  ): V1_AppliedFunction | undefined {
+    if (source instanceof QueryBuilderDataCubeSource) {
+      const appendFromFunc = Boolean(source.mapping ?? source.runtime);
+      return appendFromFunc
+        ? _function(
+            DataCubeFunction.FROM,
+            [
+              source.mapping ? _elementPtr(source.mapping) : undefined,
+              source.runtime ? _elementPtr(source.runtime) : undefined,
+            ].filter(isNonNullable),
+          )
+        : undefined;
+    }
+    return undefined;
+  }
+
+  // ---------------------------------- UTILITIES ----------------------------------
+
+  private buildRawLambdaFromValueSpec(query: V1_Lambda): RawLambda {
+    const json = guaranteeType(
+      V1_deserializeRawValueSpecification(
+        V1_serializeValueSpecification(query, []),
+      ),
+      V1_RawLambda,
+    );
+    return new RawLambda(json.parameters, json.body);
   }
 
   private getSourceFunctionExpression() {
@@ -125,147 +260,12 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     return query;
   }
 
-  async processQuerySource(value: PlainObject) {
-    // TODO: this is an abnormal usage of this method, this is the place
-    // where we can enforce which source this engine supports, instead
-    // of hardcoding the logic like this.
-    const srcFuncExp = this.getSourceFunctionExpression();
-    const source = new QueryBuilderDataCubeSource();
-    source.columns = (
-      await this.getRelationType(this.selectInitialQuery)
-    ).columns;
-    source.mapping = this.mappingPath;
-    source.runtime = this.runtimePath;
-    source.query = srcFuncExp;
-    return source;
-  }
-
-  private buildRawLambdaFromValueSpec(query: V1_Lambda): RawLambda {
-    const json = guaranteeType(
-      V1_deserializeRawValueSpecification(
-        V1_serializeValueSpecification(query, []),
-      ),
-      V1_RawLambda,
-    );
-    return new RawLambda(json.parameters, json.body);
-  }
-
-  async getQueryTypeahead(
-    code: string,
-    baseQuery: V1_Lambda,
-    source: DataCubeSource,
-  ) {
-    const lambda = this.buildRawLambdaFromValueSpec(baseQuery);
-    const queryString =
-      await this.graphState.graphManager.lambdaToPureCode(lambda);
-    const offset = queryString.length;
-    const codeBlock = queryString + code;
-    const finalCode = codeBlock.substring(
-      codeBlock.indexOf(LAMBDA_PIPE) + LAMBDA_PIPE.length,
-      codeBlock.length,
-    );
-    const result = await this.graphState.graphManager.getCodeComplete(
-      finalCode,
-      this.graph,
-      offset,
-    );
-    return result.completions as CompletionItem[];
-  }
-
-  override async parseValueSpecification(
-    code: string,
-    returnSourceInformation?: boolean,
-  ) {
-    return V1_deserializeValueSpecification(
-      await this.graphState.graphManager.pureCodeToValueSpecification(
-        code,
-        returnSourceInformation,
-      ),
-      [],
-    );
-  }
-
-  override async getValueSpecificationCode(
-    value: V1_ValueSpecification,
-    pretty?: boolean | undefined,
-  ) {
-    return this.graphState.graphManager.valueSpecificationToPureCode(
-      V1_serializeValueSpecification(value, []),
-      pretty,
-    );
-  }
-
   async getRelationType(query: RawLambda) {
     const relationType =
       await this.graphState.graphManager.getLambdaRelationType(
         query,
-        this.graph,
+        this.graphState.graph,
       );
     return relationType;
-  }
-
-  override async getQueryCodeRelationReturnType(
-    code: string,
-    baseQuery: V1_ValueSpecification,
-    source: DataCubeSource,
-  ) {
-    const queryString =
-      await this.graphState.graphManager.valueSpecificationToPureCode(
-        V1_serializeValueSpecification(baseQuery, []),
-      );
-    const fullQuery = queryString + code;
-    return this.getRelationType(
-      await this.graphState.graphManager.pureCodeToLambda(fullQuery),
-    );
-  }
-
-  override async executeQuery(query: V1_Lambda, source: DataCubeSource) {
-    const lambda = this.buildRawLambdaFromValueSpec(query);
-    lambda.parameters = this.parameters;
-    const [executionWithMetadata, queryString] = await Promise.all([
-      this.graphState.graphManager.runQuery(
-        lambda,
-        undefined,
-        undefined,
-        this.graph,
-        {
-          parameterValues: this.parameterValues ?? [],
-        },
-      ),
-      this.graphState.graphManager.lambdaToPureCode(lambda),
-    ]);
-    const expectedTDS = guaranteeType(
-      executionWithMetadata.executionResult,
-      TDSExecutionResult,
-      'Query returned expected to be of tabular data set',
-    );
-    const sql = expectedTDS.activities?.[0];
-    let sqlString = '### NO SQL FOUND';
-    if (sql instanceof RelationalExecutionActivities) {
-      sqlString = sql.sql;
-    }
-    return {
-      result: expectedTDS,
-      executedQuery: queryString,
-      executedSQL: sqlString,
-    };
-  }
-
-  override buildExecutionContext(
-    source: DataCubeSource,
-  ): V1_AppliedFunction | undefined {
-    if (source instanceof QueryBuilderDataCubeSource) {
-      const appendFromFunc = Boolean(source.mapping ?? source.runtime);
-      return appendFromFunc
-        ? _function(
-            DataCubeFunction.FROM,
-            [
-              source.mapping ? _elementPtr(source.mapping) : undefined,
-              source.runtime ? _elementPtr(source.runtime) : undefined,
-            ].filter(isNonNullable),
-          )
-        : undefined;
-    }
-    return undefined;
   }
 }

@@ -39,6 +39,7 @@ import {
 } from '@finos/legend-graph';
 import { type DataCubeColumn } from './model/DataCubeColumn.js';
 import {
+  assertErrorThrown,
   assertTrue,
   assertType,
   at,
@@ -61,8 +62,16 @@ import type {
   DataCubeQuerySnapshotFilter,
   DataCubeQuerySnapshotFilterCondition,
 } from './DataCubeQuerySnapshot.js';
-import { _serializeValueSpecification } from './DataCubeQueryBuilderUtils.js';
 import type { DataCubeQueryFilterOperation } from './filter/DataCubeQueryFilterOperation.js';
+import type { DataCubeEngine } from './DataCubeEngine.js';
+import {
+  _cols,
+  _colSpec,
+  _function,
+  _lambda,
+  _serializeValueSpecification,
+} from './DataCubeQueryBuilderUtils.js';
+import { INTERNAL__DataCubeSource } from './model/DataCubeSource.js';
 
 // --------------------------------- UTILITIES ---------------------------------
 
@@ -203,8 +212,13 @@ export function _pruneExpandedPaths(
     .sort();
 }
 
-export function _extractExtendedColumns(func: V1_AppliedFunction) {
-  const extendFuncs: V1_AppliedFunction[] = [];
+export async function _extractExtendedColumns(
+  func: V1_AppliedFunction,
+  currentColumns: DataCubeColumn[],
+  engine: DataCubeEngine,
+) {
+  // extract extended columns from the expression
+  const funcs: V1_AppliedFunction[] = [];
   let currentFunc = func;
 
   while (currentFunc instanceof V1_AppliedFunction) {
@@ -222,7 +236,7 @@ export function _extractExtendedColumns(func: V1_AppliedFunction) {
         );
       } else {
         currentFunc.parameters = currentFunc.parameters.slice(1);
-        extendFuncs.unshift(currentFunc);
+        funcs.unshift(currentFunc);
         currentFunc = valueSpecification;
       }
     } else {
@@ -230,31 +244,73 @@ export function _extractExtendedColumns(func: V1_AppliedFunction) {
         currentFunc.parameters.length === 1,
         `Can't process extend() expression: Expected 1 parameter, got ${currentFunc.parameters.length}`,
       );
-      extendFuncs.unshift(currentFunc);
+      funcs.unshift(currentFunc);
       break;
     }
   }
-  return extendFuncs.map((extendFunc) => {
-    const colSpecs = _colSpecArrayParam(extendFunc, 0).colSpecs;
+
+  const colSpecs = funcs.map((extendFunc) => {
+    const _colSpecs = _colSpecArrayParam(extendFunc, 0).colSpecs;
     assertTrue(
-      colSpecs.length === 1,
-      `Can't process extend() expression: Expected 1 column specification, got ${colSpecs.length}`,
+      _colSpecs.length === 1,
+      `Can't process extend() expression: Expected 1 column specification, got ${_colSpecs.length}`,
     );
-    const colSpec = at(colSpecs, 0);
-    return {
-      name: colSpec.name,
-      type: '', // NOTE: we don't have type information for extended columns at this point
-      mapFn: _serializeValueSpecification(
-        guaranteeNonNullable(
-          colSpec.function1,
-          `Can't process extend() expression: Expected a transformation function expression`,
-        ),
-      ),
-      reduceFn: colSpec.function2
-        ? _serializeValueSpecification(colSpec.function2)
-        : undefined,
-    };
+    return at(_colSpecs, 0);
   });
+
+  // get the types
+  const sourceQuery = engine.synthesizeMinimalSourceQuery(currentColumns);
+  const sequence = colSpecs.map((colSpec) =>
+    _function(DataCubeFunction.EXTEND, [
+      _cols([
+        _colSpec(
+          colSpec.name,
+          guaranteeNonNullable(
+            colSpec.function1,
+            `Can't process extend() expression: Expected a transformation function expression for column '${colSpec.name}'`,
+          ),
+          colSpec.function2,
+        ),
+      ]),
+    ]),
+  );
+  for (let i = 0; i < sequence.length; i++) {
+    at(sequence, i).parameters.unshift(
+      i === 0 ? sourceQuery : at(sequence, i - 1),
+    );
+  }
+  const query = at(sequence, sequence.length - 1);
+  let columns: DataCubeColumn[] = [];
+  try {
+    columns = (
+      await engine.getQueryRelationReturnType(
+        _lambda([], [query]),
+        new INTERNAL__DataCubeSource(),
+      )
+    ).columns;
+  } catch (error) {
+    assertErrorThrown(error);
+    throw new Error(
+      `Can't process extend() expression: failed to retrieve type information for columns. Error: ${error.message}`,
+    );
+  }
+
+  return colSpecs.map((colSpec) => ({
+    name: colSpec.name,
+    type: guaranteeNonNullable(
+      columns.find((column) => column.name === colSpec.name),
+      `Can't process extend() expression: failed to retrieve type information for column '${colSpec.name}'`,
+    ).type,
+    mapFn: _serializeValueSpecification(
+      guaranteeNonNullable(
+        colSpec.function1,
+        `Can't process extend() expression: Expected a transformation function expression for column '${colSpec.name}'`,
+      ),
+    ),
+    reduceFn: colSpec.function2
+      ? _serializeValueSpecification(colSpec.function2)
+      : undefined,
+  }));
 }
 
 export function _filter(
