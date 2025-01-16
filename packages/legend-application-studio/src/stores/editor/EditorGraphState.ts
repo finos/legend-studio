@@ -95,9 +95,7 @@ import { CONFIGURATION_EDITOR_TAB } from './editor-state/project-configuration-e
 import { PACKAGEABLE_ELEMENT_TYPE } from './utils/ModelClassifierUtils.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../__lib__/LegendStudioEvent.js';
 import { LEGEND_STUDIO_SETTING_KEY } from '../../__lib__/LegendStudioSetting.js';
-import type { TabState } from '@finos/legend-lego/application';
 import { LegendStudioTelemetryHelper } from '../../__lib__/LegendStudioTelemetryHelper.js';
-import { ArtifactGenerationViewerState } from './editor-state/ArtifactGenerationViewerState.js';
 
 export enum GraphBuilderStatus {
   SUCCEEDED = 'SUCCEEDED',
@@ -643,26 +641,7 @@ export class EditorGraphState {
     );
     this.isUpdatingApplication = true;
     try {
-      /**
-       * Backup and editor states info before resetting
-       */
-      const openedTabEditorPaths: string[] = [];
-      this.editorStore.tabManagerState.tabs.forEach((state: TabState) => {
-        if (state instanceof ElementEditorState) {
-          openedTabEditorPaths.push(state.elementPath);
-        }
-      });
-      const currentTab = this.editorStore.tabManagerState.currentTab;
-      const currentTabState =
-        currentTab instanceof ElementEditorState ||
-        currentTab instanceof ArtifactGenerationViewerState
-          ? undefined
-          : currentTab;
-      const currentTabElementPath =
-        currentTab instanceof ElementEditorState
-          ? currentTab.elementPath
-          : undefined;
-      this.editorStore.tabManagerState.closeAllTabs();
+      this.editorStore.tabManagerState.cacheAndClose({ cacheGeneration: true });
 
       yield flowResult(
         this.editorStore.graphManagerState.graph.generationModel.dispose(),
@@ -676,11 +655,7 @@ export class EditorGraphState {
         this.editorStore.graphManagerState.generationsBuildState,
       );
       this.editorStore.explorerTreeState.reprocess();
-      this.editorStore.tabManagerState.recoverTabs(
-        openedTabEditorPaths,
-        currentTabState,
-        currentTabElementPath,
-      );
+      this.editorStore.tabManagerState.recoverTabs();
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(
