@@ -34,7 +34,12 @@ import {
 import type { DataCubeQuery } from './model/DataCubeQuery.js';
 import { DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
 import { _toCol, type DataCubeColumn } from './model/DataCubeColumn.js';
-import { assertTrue, at, guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  assertTrue,
+  at,
+  guaranteeNonNullable,
+  isNonNullable,
+} from '@finos/legend-shared';
 import {
   DataCubeQuerySortDirection,
   DataCubeFunction,
@@ -59,9 +64,25 @@ import type { DataCubeEngine } from './DataCubeEngine.js';
 
 const _SUPPORTED_TOP_LEVEL_FUNCTIONS: {
   func: string;
+  /**
+   * If there are multiple signature to a function, such as extend(), this indicates
+   * the minimum number of parameters. And a stopping condition needs to be provided.
+   *
+   * Note that this is a naive mechanism to process simple functions, by no means, it's
+   * meant to mimic generic function matcher.
+   */
   parameters: number;
+  stopCondition?: ((_func: V1_AppliedFunction) => boolean) | undefined;
 }[] = [
-  { func: DataCubeFunction.EXTEND, parameters: 2 }, // TODO: support both signatures of extend()
+  {
+    func: DataCubeFunction.EXTEND,
+    parameters: 1,
+    // handle OLAP form where first parameter is over() expression used to construct the window
+    stopCondition: (_func) =>
+      matchFunctionName(_func.function, DataCubeFunction.EXTEND) &&
+      _func.parameters[0] instanceof V1_AppliedFunction &&
+      matchFunctionName(_func.parameters[0].function, DataCubeFunction.OVER),
+  },
   { func: DataCubeFunction.FILTER, parameters: 1 },
   { func: DataCubeFunction.SELECT, parameters: 1 },
   { func: DataCubeFunction.GROUP_BY, parameters: 2 },
@@ -190,10 +211,10 @@ const _FUNCTION_SEQUENCE_COMPOSITION_PATTERN_REGEXP = new RegExp(
         ? `(${node.funcs
             .map(
               (childNode) =>
-                `(?<${childNode.name}><${_name(childNode.func)}>____\\d+)${childNode.repeat ? '*' : !childNode.required ? '?' : ''}`,
+                `(?<${childNode.name}>${childNode.repeat ? `(?:<${_name(childNode.func)}>____\\d+)*` : `<${_name(childNode.func)}>____\\d+`})${childNode.repeat ? '' : !childNode.required ? '?' : ''}`,
             )
             .join('')})${node.repeat ? '*' : !node.required ? '?' : ''}`
-        : `(?<${node.name}><${_name(node.func)}>____\\d+)${node.repeat ? '*' : !node.required ? '?' : ''}`,
+        : `(?<${node.name}>${node.repeat ? `(?:<${_name(node.func)}>____\\d+)*` : `<${_name(node.func)}>____\\d+`})${node.repeat ? '' : !node.required ? '?' : ''}`,
     )
     .join('')}$`,
 );
@@ -229,6 +250,12 @@ function extractFunctionMap(
     // t(...)->z()->y()->x() and simultaneously, remove the first parameter from each function for
     // simplicity, except for the innermost function
     if (currentFunc.parameters.length > supportedFunc.parameters) {
+      // if stop condition is fulfilled, no more function sequence drilling is needed
+      if (supportedFunc.stopCondition?.(currentFunc)) {
+        sequence.unshift(currentFunc);
+        break;
+      }
+
       // assert that the supported function has the expected number of parameters
       assertTrue(
         currentFunc.parameters.length === supportedFunc.parameters + 1,
@@ -262,31 +289,42 @@ function extractFunctionMap(
     );
   }
 
-  const _process = (key: string): V1_AppliedFunction | undefined => {
+  const _process = (key: string): V1_AppliedFunction[] | undefined => {
     const match = matchResult.groups?.[key];
-    if (!match || match.indexOf('____') === -1) {
+    if (!match) {
       return undefined;
     }
-    const idx = Number(match.split('____')[1]);
-    if (isNaN(idx) || idx >= sequence.length) {
+    const funcMatches = match.match(/\<.*?\>____\d+/g);
+    if (!funcMatches?.length) {
       return undefined;
     }
-    const func = at(sequence, idx);
-    return func;
+
+    return funcMatches
+      .map((funcMatch) => {
+        const idx = Number(funcMatch.split('____')[1]);
+        if (isNaN(idx) || idx >= sequence.length) {
+          return undefined;
+        }
+        const func = at(sequence, idx);
+        return func;
+      })
+      .filter(isNonNullable);
   };
 
   return {
     leafExtend: _process(_FUNCTION_SEQUENCE_COMPOSITION_PART.LEAF_EXTEND),
-    select: _process(_FUNCTION_SEQUENCE_COMPOSITION_PART.SELECT),
-    filter: _process(_FUNCTION_SEQUENCE_COMPOSITION_PART.FILTER),
-    pivotSort: _process(_FUNCTION_SEQUENCE_COMPOSITION_PART.PIVOT_SORT),
-    pivot: _process(_FUNCTION_SEQUENCE_COMPOSITION_PART.PIVOT),
-    pivotCast: _process(_FUNCTION_SEQUENCE_COMPOSITION_PART.PIVOT_CAST),
-    groupBy: _process(_FUNCTION_SEQUENCE_COMPOSITION_PART.GROUP_BY),
-    groupBySort: _process(_FUNCTION_SEQUENCE_COMPOSITION_PART.GROUP_BY_SORT),
+    select: _process(_FUNCTION_SEQUENCE_COMPOSITION_PART.SELECT)?.[0],
+    filter: _process(_FUNCTION_SEQUENCE_COMPOSITION_PART.FILTER)?.[0],
+    pivotSort: _process(_FUNCTION_SEQUENCE_COMPOSITION_PART.PIVOT_SORT)?.[0],
+    pivot: _process(_FUNCTION_SEQUENCE_COMPOSITION_PART.PIVOT)?.[0],
+    pivotCast: _process(_FUNCTION_SEQUENCE_COMPOSITION_PART.PIVOT_CAST)?.[0],
+    groupBy: _process(_FUNCTION_SEQUENCE_COMPOSITION_PART.GROUP_BY)?.[0],
+    groupBySort: _process(
+      _FUNCTION_SEQUENCE_COMPOSITION_PART.GROUP_BY_SORT,
+    )?.[0],
     groupExtend: _process(_FUNCTION_SEQUENCE_COMPOSITION_PART.GROUP_EXTEND),
-    sort: _process(_FUNCTION_SEQUENCE_COMPOSITION_PART.SORT),
-    limit: _process(_FUNCTION_SEQUENCE_COMPOSITION_PART.LIMIT),
+    sort: _process(_FUNCTION_SEQUENCE_COMPOSITION_PART.SORT)?.[0],
+    limit: _process(_FUNCTION_SEQUENCE_COMPOSITION_PART.LIMIT)?.[0],
   };
 }
 
@@ -346,7 +384,7 @@ export async function validateAndBuildQuerySnapshot(
 
   // --------------------------- LEAF-LEVEL EXTEND ---------------------------
 
-  if (funcMap.leafExtend) {
+  if (funcMap.leafExtend?.length) {
     data.leafExtendedColumns = await _extractExtendedColumns(
       funcMap.leafExtend,
       Array.from(colsMap.values()),
@@ -374,11 +412,7 @@ export async function validateAndBuildQuerySnapshot(
       lambda.body.length === 1,
       `Can't process filter() expression: Expected lambda body to have exactly 1 expression`,
     );
-    data.filter = _filter(
-      guaranteeNonNullable(lambda.body[0]),
-      _getCol,
-      engine.filterOperations,
-    );
+    data.filter = _filter(at(lambda.body, 0), _getCol, engine.filterOperations);
   }
 
   // --------------------------------- SELECT ---------------------------------
@@ -387,46 +421,59 @@ export async function validateAndBuildQuerySnapshot(
     data.selectColumns = _colSpecArrayParam(funcMap.select, 0).colSpecs.map(
       (colSpec) => _getCol(colSpec.name),
     );
-    // TODO: remove columns that are not selected from colsMap
+    // restrict the set of available columns to only selected columns
+    colsMap.clear();
+    data.selectColumns.forEach((col) => _setCol(col));
+  } else {
+    // mandate that if select() expression is not present,
+    colsMap.clear();
   }
 
   // --------------------------------- PIVOT ---------------------------------
 
   if (funcMap.pivot && funcMap.pivotCast) {
+    const pivotColumns = _colSpecArrayParam(funcMap.pivot, 0).colSpecs.map(
+      (colSpec) => _getCol(colSpec.name),
+    );
+    const castColumns = _relationType(
+      _genericTypeParam(funcMap.pivotCast, 0).genericType,
+    ).columns.map((column) => ({
+      name: column.name,
+      type: _packageableType(column.genericType).fullPath,
+    }));
+    data.pivot = {
+      columns: pivotColumns,
+      castColumns: castColumns,
+    };
+    // restrict the set of available columns to only casted columns
+    colsMap.clear();
+    castColumns.forEach((col) => _setCol(col));
+
+    // TODO: verify sort columns when we support sorting pivot columns
+
     // TODO: verify column presence
     // TODO: verify column types
-    data.pivot = {
-      columns: _colSpecArrayParam(funcMap.pivot, 0).colSpecs.map((colSpec) =>
-        _getCol(colSpec.name),
-      ),
-      castColumns: _relationType(
-        _genericTypeParam(funcMap.pivotCast, 0).genericType,
-      ).columns.map((column) => ({
-        name: column.name,
-        type: _packageableType(column.genericType).fullPath,
-      })),
-    };
+    // TODO: verify groupBy agg columns, pivot agg columns and configuration agree
   }
-  // TODO: verify groupBy agg columns, pivot agg columns and configuration agree
 
   // --------------------------------- GROUP BY ---------------------------------
 
   if (funcMap.groupBy) {
-    // TODO: verify column presence
-    // TODO: verify column types
     data.groupBy = {
       columns: _colSpecArrayParam(funcMap.groupBy, 0).colSpecs.map((colSpec) =>
         _getCol(colSpec.name),
       ),
     };
+
+    // TODO: verify column presence
+    // TODO: verify column types
     // TODO: verify groupBy agg columns, pivot agg columns and configuration agree
     // TODO: verify sort columns
-    // TODO: use configuration information present in the baseQuery configuration?
   }
 
   // --------------------------- GROUP-LEVEL EXTEND ---------------------------
 
-  if (funcMap.groupExtend) {
+  if (funcMap.groupExtend?.length) {
     data.groupExtendedColumns = await _extractExtendedColumns(
       funcMap.groupExtend,
       Array.from(colsMap.values()),
@@ -444,33 +491,38 @@ export async function validateAndBuildQuerySnapshot(
   // --------------------------------- SORT ---------------------------------
 
   if (funcMap.sort) {
-    data.sortColumns = _param(funcMap.sort, 0, V1_Collection).values.map(
-      (value) => {
-        const sortColFunc = _funcMatch(value, [
+    data.sortColumns = _param(
+      funcMap.sort,
+      0,
+      V1_Collection,
+      `Can't process sort() expression: Expected parameter at index 0 to be a collection`,
+    ).values.map((value) => {
+      const sortColFunc = _funcMatch(value, [
+        DataCubeFunction.ASCENDING,
+        DataCubeFunction.DESCENDING,
+      ]);
+      return {
+        ..._getCol(_colSpecParam(sortColFunc, 0).name),
+        direction: matchFunctionName(
+          sortColFunc.function,
           DataCubeFunction.ASCENDING,
-          DataCubeFunction.DESCENDING,
-        ]);
-        return {
-          ..._getCol(_colSpecParam(sortColFunc, 0).name),
-          direction: matchFunctionName(
-            sortColFunc.function,
-            DataCubeFunction.ASCENDING,
-          )
-            ? DataCubeQuerySortDirection.ASCENDING
-            : DataCubeQuerySortDirection.DESCENDING,
-        };
-      },
-    );
+        )
+          ? DataCubeQuerySortDirection.ASCENDING
+          : DataCubeQuerySortDirection.DESCENDING,
+      };
+    });
   }
 
   // --------------------------------- LIMIT ---------------------------------
 
   if (funcMap.limit) {
+    // NOTE: negative number -10 is parsed as minus(10) so this check will also reject
+    // negative number
     const value = _param(
       funcMap.limit,
       0,
       V1_CInteger,
-      `Can't process limit() expression: Expected parameter at index 0 to be an integer instance value`,
+      `Can't process limit() expression: Expected limit to be a non-negative integer value`,
     );
     data.limit = value.value;
   }

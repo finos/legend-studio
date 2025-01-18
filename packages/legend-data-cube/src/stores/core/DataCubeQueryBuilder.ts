@@ -23,7 +23,7 @@
 
 import { PRIMITIVE_TYPE, type V1_AppliedFunction } from '@finos/legend-graph';
 import { type DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
-import { at, guaranteeNonNullable } from '@finos/legend-shared';
+import { at } from '@finos/legend-shared';
 import {
   DataCubeFunction,
   DataCubeQuerySortDirection,
@@ -93,24 +93,20 @@ export function buildExecutableQuery(
   // --------------------------------- LEAF-LEVEL EXTEND ---------------------------------
 
   if (data.leafExtendedColumns.length) {
-    const leafExtendedFuncs = data.leafExtendedColumns.map((col) =>
-      _function(DataCubeFunction.EXTEND, [
-        _cols([
-          _colSpec(
-            col.name,
-            _deserializeLambda(col.mapFn),
-            col.reduceFn ? _deserializeLambda(col.reduceFn) : undefined,
-          ),
+    _process(
+      'leafExtend',
+      data.leafExtendedColumns.map((col) =>
+        _function(DataCubeFunction.EXTEND, [
+          _cols([
+            _colSpec(
+              col.name,
+              _deserializeLambda(col.mapFn),
+              col.reduceFn ? _deserializeLambda(col.reduceFn) : undefined,
+            ),
+          ]),
         ]),
-      ]),
+      ),
     );
-    // instead of batching all the extend() functions, we sequence them to allow for
-    // different flavors of extend (e.g. with and without window), and reference the first
-    // one in the function map
-    _process('leafExtend', guaranteeNonNullable(leafExtendedFuncs[0]));
-    leafExtendedFuncs.slice(1).forEach((func) => {
-      sequence.push(func);
-    });
   }
 
   // --------------------------------- FILTER ---------------------------------
@@ -217,24 +213,20 @@ export function buildExecutableQuery(
   // --------------------------------- GROUP-LEVEL EXTEND ---------------------------------
 
   if (data.groupExtendedColumns.length) {
-    const groupExtendedFuncs = data.groupExtendedColumns.map((col) =>
-      _function(DataCubeFunction.EXTEND, [
-        _cols([
-          _colSpec(
-            col.name,
-            _deserializeLambda(col.mapFn),
-            col.reduceFn ? _deserializeLambda(col.reduceFn) : undefined,
-          ),
+    _process(
+      'groupExtend',
+      data.groupExtendedColumns.map((col) =>
+        _function(DataCubeFunction.EXTEND, [
+          _cols([
+            _colSpec(
+              col.name,
+              _deserializeLambda(col.mapFn),
+              col.reduceFn ? _deserializeLambda(col.reduceFn) : undefined,
+            ),
+          ]),
         ]),
-      ]),
+      ),
     );
-    // instead of batching all the extend() functions, we sequence them to allow for
-    // different flavors of extend (e.g. with and without window), and reference the first
-    // one in the function map
-    _process('groupExtend', guaranteeNonNullable(groupExtendedFuncs[0]));
-    groupExtendedFuncs.slice(1).forEach((func) => {
-      sequence.push(func);
-    });
   }
 
   // --------------------------------- SORT ---------------------------------

@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-import { ENGINE_TEST_SUPPORT__grammarToJSON_valueSpecification } from '@finos/legend-graph/test';
 import { unitTest } from '@finos/legend-shared/test';
 import { describe, expect, test } from '@jest/globals';
 import { validateAndBuildQuerySnapshot } from '../DataCubeQuerySnapshotBuilder.js';
 import { assertErrorThrown, type PlainObject } from '@finos/legend-shared';
 import { DataCubeQuery } from '../model/DataCubeQuery.js';
 import { INTERNAL__DataCubeSource } from '../model/DataCubeSource.js';
-import { _deserializeValueSpecification } from '../DataCubeQueryBuilderUtils.js';
 import { DataCubeConfiguration } from '../model/DataCubeConfiguration.js';
 import { TEST__DataCubeEngine } from './DataCubeTestUtils.js';
 import type {
@@ -65,10 +63,6 @@ function _case(
   ];
 }
 
-const FOCUSED_TESTS: string[] = [
-  // tests added here will be the only tests run
-];
-
 function _checkFilterOperator(operator: DataCubeQueryFilterOperator) {
   return (snapshot: DataCubeQuerySnapshot) => {
     expect(
@@ -79,6 +73,10 @@ function _checkFilterOperator(operator: DataCubeQueryFilterOperator) {
     ).toBe(operator);
   };
 }
+
+const FOCUSED_TESTS: string[] = [
+  // tests added here will be the only tests run
+];
 
 const cases: TestCase[] = [
   // --------------------------------- LEAF-LEVEL EXTEND ---------------------------------
@@ -118,6 +116,11 @@ const cases: TestCase[] = [
   _case(`Leaf-level Extend: ERROR - missing column's function expression`, {
     query: `extend(~[a])`,
     error: `Can't process extend() expression: Expected a transformation function expression for column 'a'`,
+  }),
+  _case(`Leaf-level Extend: ERROR - expression with compilation issue`, {
+    query: `extend(~[a:x|$x.val + '_123'])`,
+    columns: ['val:Integer'],
+    error: `Can't process extend() expression: failed to retrieve type information for columns. Error: Can't find a match for function 'plus(Any[2])'`,
   }),
 
   // --------------------------------- FILTER ---------------------------------
@@ -168,6 +171,11 @@ const cases: TestCase[] = [
       DataCubeQueryFilterOperator.NOT_EQUAL_COLUMN,
     ), // higher precendence than its non-negation counterpart
   }),
+  _case(`Filter: == column : ERROR - RHS column not found`, {
+    query: `filter(x|!($x.Age == $x.Name))`,
+    columns: ['Age:Integer'],
+    error: `Can't find column 'Name'`,
+  }),
   _case(`Filter: == column : ERROR - incompatible columns`, {
     query: `filter(x|$x.Name != $x.Age)`,
     columns: ['Name:String', 'Age:Integer'],
@@ -186,6 +194,11 @@ const cases: TestCase[] = [
     validator: _checkFilterOperator(
       DataCubeQueryFilterOperator.NOT_EQUAL_CASE_INSENSITIVE_COLUMN,
     ), // higher precendence than its non-negation counterpart
+  }),
+  _case(`Filter: > column : ERROR - RHS column not found`, {
+    query: `filter(x|!($x.Name->toLower() == $x.Name2->toLower()))`,
+    columns: ['Name:String'],
+    error: `Can't find column 'Name2'`,
   }),
   _case(`Filter: == column (case-insensitive) : ERROR - incompatible columns`, {
     query: `filter(x|$x.Name->toLower() != $x.Name2->toLower())`,
@@ -374,6 +387,11 @@ const cases: TestCase[] = [
       DataCubeQueryFilterOperator.GREATER_THAN_COLUMN,
     ),
   }),
+  _case(`Filter: > column : ERROR - RHS column not found`, {
+    query: `filter(x|!($x.Age > $x.Name))`,
+    columns: ['Age:Integer'],
+    error: `Can't find column 'Name'`,
+  }),
   _case(`Filter: > column : ERROR - incompatible columns`, {
     query: `filter(x|!($x.Age > $x.Name))`,
     columns: ['Age:Integer', 'Name:String'],
@@ -417,6 +435,11 @@ const cases: TestCase[] = [
       DataCubeQueryFilterOperator.GREATER_THAN_OR_EQUAL_COLUMN,
     ),
   }),
+  _case(`Filter: >= column : ERROR - RHS column not found`, {
+    query: `filter(x|!($x.Age >= $x.Name))`,
+    columns: ['Age:Integer'],
+    error: `Can't find column 'Name'`,
+  }),
   _case(`Filter: >= column : ERROR - incompatible columns`, {
     query: `filter(x|!($x.Age >= $x.Name))`,
     columns: ['Age:Integer', 'Name:String'],
@@ -455,6 +478,11 @@ const cases: TestCase[] = [
     validator: _checkFilterOperator(
       DataCubeQueryFilterOperator.LESS_THAN_COLUMN,
     ),
+  }),
+  _case(`Filter: < column : ERROR - RHS column not found`, {
+    query: `filter(x|!($x.Age < $x.Name))`,
+    columns: ['Age:Integer'],
+    error: `Can't find column 'Name'`,
   }),
   _case(`Filter: < column : ERROR - incompatible columns`, {
     query: `filter(x|!($x.Age < $x.Name))`,
@@ -498,6 +526,11 @@ const cases: TestCase[] = [
     validator: _checkFilterOperator(
       DataCubeQueryFilterOperator.LESS_THAN_OR_EQUAL_COLUMN,
     ),
+  }),
+  _case(`Filter: <= column : ERROR - RHS column not found`, {
+    query: `filter(x|!($x.Age <= $x.Name))`,
+    columns: ['Age:Integer'],
+    error: `Can't find column 'Name'`,
   }),
   _case(`Filter: <= column : ERROR - incompatible columns`, {
     query: `filter(x|!($x.Age <= $x.Name))`,
@@ -552,6 +585,11 @@ const cases: TestCase[] = [
       DataCubeQueryFilterOperator.NOT_EQUAL_COLUMN,
     ),
   }),
+  _case(`Filter: != column : ERROR - RHS column not found`, {
+    query: `filter(x|!($x.Name != $x.Age))`,
+    columns: ['Name:String'],
+    error: `Can't find column 'Age'`,
+  }),
   _case(`Filter: != column : ERROR - incompatible columns`, {
     query: `filter(x|!($x.Name != $x.Age))`,
     columns: ['Name:String', 'Age:Integer'],
@@ -570,6 +608,11 @@ const cases: TestCase[] = [
     validator: _checkFilterOperator(
       DataCubeQueryFilterOperator.NOT_EQUAL_CASE_INSENSITIVE_COLUMN,
     ),
+  }),
+  _case(`Filter: != column : ERROR - RHS column not found`, {
+    query: `filter(x|!($x.Name->toLower() != $x.Name2->toLower()))`,
+    columns: ['Name:String'],
+    error: `Can't find column 'Name2'`,
   }),
   _case(`Filter: != column (case-insensitive) : ERROR - incompatible columns`, {
     query: `filter(x|!($x.Name->toLower() != $x.Age->toLower()))`,
@@ -677,6 +720,10 @@ const cases: TestCase[] = [
     columns: ['val:Integer'],
   }),
 
+  _case(`Filter: ERROR - LHS column not found`, {
+    query: `filter(x|$x.Age > 1)`,
+    error: `Can't find column 'Age'`,
+  }),
   _case(`Filter: ERROR - bad argument: non-lambda provided`, {
     query: `filter('2')`,
     error: `Can't process filter() expression: Expected parameter at index 0 to be a lambda expression`,
@@ -689,24 +736,26 @@ const cases: TestCase[] = [
     query: `filter(x|$x.Age + 27 > 1)`,
     error: `Can't process filter condition: no matching operator found`,
   }),
-  // _case(`Filter: ERROR - simple`, {
-  //   query: `filter(x|$x.Age.contains(27))`,
-  // }),
 
   // --------------------------------- SELECT ---------------------------------
 
-  _case(`Select: BASIC`, {
+  _case(`Select: single column`, {
     query: `select(~[a])`,
-    columns: ['a:Integer'],
+    columns: ['a:Integer', 'c:String'],
   }),
-  _case(`Select: BASIC`, {
-    query: `select(~[a])`,
-    columns: ['a:Integer'],
+  _case(`Select: multiple columns`, {
+    query: `select(~[a, b])`,
+    columns: ['a:Integer', 'b:String'],
+  }),
+  _case(`Select: ERROR - selected column not found`, {
+    query: `select(~[a, c])`,
+    columns: ['a:Integer', 'b:String'],
+    error: `Can't find column 'c'`,
   }),
 
   // --------------------------------- PIVOT ---------------------------------
 
-  // _case(`Validation: Bad composition pivot()`, {
+  // _case(`GENERIC: Bad composition pivot()`, {
   //   query: `pivot(~a, ~b:x|$x.a:x|$x->sum())`,
   //   error: `Unsupported function composition pivot() (supported composition: extend()->filter()->select()->[sort()->pivot()->cast()]->[groupBy()->sort()]->extend()->sort()->limit())`,
   // }),
@@ -728,88 +777,189 @@ const cases: TestCase[] = [
     query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])`,
     columns: ['a:String', 'b:Integer'],
   }),
+  _case(`GroupBy: ERROR - group by column not found`, {
+    query: `select(~[b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't find column 'a'`,
+  }),
 
   // --------------------------------- GROUP-LEVEL EXTEND ---------------------------------
 
+  _case(`Group-level Extend: with simple expression`, {
+    query: `select(~[b])->extend(~[a:x|1])`,
+    columns: ['b:Integer'],
+  }),
+  _case(`Group-level Extend: with complex expression`, {
+    query: `select(~[val])->extend(~[name:c|$c.val->toOne() + 1])`,
+    columns: ['val:Integer'],
+  }),
+  _case(`Group-level Extend: multiple columns`, {
+    query:
+      "select(~[val, str])->extend(~[name:c|$c.val->toOne() + 1])->extend(~[other:x|$x.str->toOne() + '_ext'])->extend(~[other2:x|$x.str->toOne() + '_1'])",
+    columns: ['val:Integer', 'str:String'],
+  }),
+  _case(`Group-level Extend: ERROR - name clash with source columns`, {
+    query: `select(~[name, val])->extend(~[name:c|$c.val->toOne() + 1])`,
+    columns: ['name:Integer', 'val:Integer'],
+    error: `Can't process extend() expression: failed to retrieve type information for columns. Error: The relation contains duplicates: [name]`,
+  }),
+  _case(
+    `Group-level Extend: ERROR - name clash with leaf-level extended columns`,
+    {
+      query: `extend(~[name:c|$c.val->toOne() + 1])->select(~[name, val])->extend(~[name:c|$c.val->toOne() + 1])`,
+      columns: ['val:Integer'],
+      error: `Can't process extend() expression: failed to retrieve type information for columns. Error: The relation contains duplicates: [name]`,
+    },
+  ),
+  _case(
+    `Group-level Extend: ERROR - name clash among group-level extended columns`,
+    {
+      query: `select(~[val])->extend(~[name:c|$c.val->toOne() + 1])->extend(~[name:c|$c.val->toOne() + 1])`,
+      columns: ['val:Integer'],
+      error: `Can't process extend() expression: failed to retrieve type information for columns. Error: The relation contains duplicates: [name]`,
+    },
+  ),
+  _case(
+    `Group-level Extend: ERROR - multiple columns within the same extend() expression`,
+    {
+      query: `select(~[val])->extend(~[a:x|1, b:x|1])`,
+      columns: ['val:Integer'],
+      error: `Can't process extend() expression: Expected 1 column specification, got 2`,
+    },
+  ),
+  _case(`Group-level Extend: ERROR - missing column's function expression`, {
+    query: `select(~[val])->extend(~[a])`,
+    columns: ['val:Integer'],
+    error: `Can't process extend() expression: Expected a transformation function expression for column 'a'`,
+  }),
+  _case(`Group-level Extend: ERROR - expression with compilation issue`, {
+    query: `select(~[val])->extend(~[a:x|$x.val + '_123'])`,
+    columns: ['val:Integer'],
+    error: `Can't process extend() expression: failed to retrieve type information for columns. Error: Can't find a match for function 'plus(Any[2])'`,
+  }),
+
   // --------------------------------- SORT ---------------------------------
 
-  _case(`Sort: BASIC`, {
-    query: `sort([~a->ascending()])`,
+  _case(`Sort: single column ascending`, {
+    query: `select(~[a])->sort([~a->ascending()])`,
     columns: ['a:Integer'],
   }),
-  _case(`Sort: multiple columns`, {
-    query: `sort([~a->ascending(), ~b->descending()])`,
+  _case(`Sort: single column descending`, {
+    query: `select(~[a])->sort([~a->descending()])`,
+    columns: ['a:String'],
+  }),
+  _case(`Sort: multiple columns ascending`, {
+    query: `select(~[a, b])->sort([~a->ascending(), ~b->ascending()])`,
+    columns: ['a:Integer', 'b:Integer'],
+  }),
+  _case(`Sort: multiple columns descending`, {
+    query: `select(~[a, b])->sort([~a->descending(), ~b->descending()])`,
+    columns: ['a:Integer', 'b:Integer'],
+  }),
+  _case(`Sort: multiple columns mixed directions`, {
+    query: `select(~[a, b])->sort([~a->ascending(), ~b->descending()])`,
     columns: ['a:Integer', 'b:Integer'],
   }),
   _case(`Sort: ERROR - bad argument: non-collection provided`, {
-    query: `sort(~a->something())`,
+    query: `select(~[a])->sort(~a->something())`,
     columns: ['a:Integer'],
-    error: `Can't process sort() expression: Found unexpected type for parameter at index 0`,
+    error: `Can't process sort() expression: Expected parameter at index 0 to be a collection`,
   }),
   _case(`Sort: ERROR - unsupported function`, {
-    query: `sort([~a->something()])`,
+    query: `select(~[a])->sort([~a->something()])`,
     columns: ['a:Integer'],
     error: `Can't process function: Expected function to be one of [ascending, descending]`,
+  }),
+  _case(`Sort: ERROR - column not found`, {
+    query: `select(~[a])->sort([~b->ascending()])`,
+    columns: ['a:Integer'],
+    error: `Can't find column 'b'`,
   }),
 
   // --------------------------------- LIMIT ---------------------------------
 
-  _case(`Limit: BASIC`, {
+  _case(`Limit: with integer number`, {
     query: `limit(10)`,
+  }),
+  _case(`Limit: ERROR - bad argument: decimal number provided`, {
+    query: `limit(15.5)`,
+    error: `Can't process limit() expression: Expected limit to be a non-negative integer value`,
+  }),
+  _case(`Limit: ERROR - bad argument: non-negative number provided`, {
+    query: `limit(-10)`,
+    error: `Can't process limit() expression: Expected limit to be a non-negative integer value`,
   }),
   _case(`Limit: ERROR - bad argument: non-integer provided`, {
     query: `limit('asd')`,
-    error: `Can't process limit() expression: Expected parameter at index 0 to be an integer instance value`,
+    error: `Can't process limit() expression: Expected limit to be a non-negative integer value`,
   }),
 
   // --------------------------------- COMPOSITION ---------------------------------
 
-  // _case(`Composition: extend()->filter()->sort()->limit()`, {
-  //   query: `extend(~[a:x|1])->filter(x|$x.a==1)->sort([ascending(~a)])->limit(10)`,
-  //   columns: ['b:Integer'],
-  // }),
-  // _case(`Composition: extend()->filter()->select()->sort()->limit()`, {
-  //   query: `extend(~[a:x|1])->filter(x|$x.a==1)->select(~[a])->sort([ascending(~a)])->limit(10)`,
-  //   columns: ['b:Integer'],
-  // }),
-  // _case(`Composition: extend()->groupBy()->extend()->sort()->limit()`, {
-  //   query: `extend(~[a:x|1])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([ascending(~a)])->extend(~[b:x|2])->limit(10)`,
-  // }),
-  // _case(`Composition: extend()->filter()->groupBy()->extend()->sort()->limit()`, {
-  //   query: `extend(~[a:x|1])->filter(x|$x.a==1)->groupBy(~[a], ~b:x|$x.b:x|$x->sum())->sort([ascending(~a)])->extend(~[c:x|2])->limit(10)`,
-  //   columns: ['b:Integer'],
-  // }),
-  // _case(`Composition: extend()->filter()->groupBy()->sort()->limit()`, {
-  //   query: `extend(~[a:x|1])->filter(x|$x.a==1)->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([ascending(~a)])->limit(10)`,
-  //   columns: ['b:Integer'],
-  // }),
+  _case(`GENERIC: Composition - extend()->filter()->sort()->limit()`, {
+    query: `extend(~[a:x|1])->filter(x|$x.a == 1)->select(~[a])->sort([~a->ascending()])->limit(10)`,
+  }),
+  _case(
+    `GENERIC: Composition - extend()->filter()->select()->sort()->limit()`,
+    {
+      query: `extend(~[a:x|1])->filter(x|$x.a == 1)->select(~[a])->sort([~a->ascending()])->limit(10)`,
+    },
+  ),
+  _case(
+    `GENERIC: Composition - extend()->groupBy()->extend()->sort()->limit()`,
+    {
+      query: `extend(~[a:x|1])->select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])->extend(~[c:x|2])->limit(10)`,
+      columns: ['b:Integer'],
+    },
+  ),
+  _case(
+    `GENERIC: Composition - extend()->groupBy()->extend()->extend()->sort()->limit()`,
+    {
+      query: `extend(~[a:x|1])->select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])->extend(~[c:x|2])->extend(~[d:x|2])->limit(10)`,
+      columns: ['b:Integer'],
+    },
+  ),
+  _case(
+    `GENERIC: Composition - extend()->filter()->groupBy()->extend()->sort()->limit()`,
+    {
+      query: `extend(~[a:x|1])->filter(x|$x.a == 1)->select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])->extend(~[c:x|2])->limit(10)`,
+      columns: ['b:Integer'],
+    },
+  ),
+  _case(
+    `GENERIC: Composition - extend()->filter()->groupBy()->sort()->limit()`,
+    {
+      query: `extend(~[a:x|1])->filter(x|$x.a == 1)->select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])->limit(10)`,
+      columns: ['b:Integer'],
+    },
+  ),
 
   // --------------------------------- VALIDATION ---------------------------------
 
-  _case(`Validation: ERROR - not a function expression`, {
+  _case(`GENERIC: ERROR - not a function expression`, {
     query: `2`,
     error: `Can't process expression: Expected a function expression`,
   }),
-  _case(`Validation: ERROR - not a chain of function calls`, {
+  _case(`GENERIC: ERROR - not a chain of function calls`, {
     query: `select(~[a, b], 'something')`,
     columns: ['a:Integer', 'b:Integer'],
     error: `Can't process expression: Expected a sequence of function calls (e.g. x()->y()->z())`,
   }),
-  _case(`Validation: ERROR - unsupported function`, {
+  _case(`GENERIC: ERROR - unsupported function`, {
     query: `sort([~asd->ascending()])->something()`,
     error: `Can't process expression: Found unsupported function something()`,
   }),
-  _case(`Validation: ERROR - wrong number of paramters provided`, {
+  _case(`GENERIC: ERROR - wrong number of paramters provided`, {
     query: `select(~[a, b], 2, 'asd')`,
     columns: ['a:Integer', 'b:Integer'],
     error: `Can't process select() expression: Expected at most 2 parameters provided, got 3`,
   }),
-  _case(`Validation: ERROR - bad composition: select()->filter()`, {
+  _case(`GENERIC: ERROR - bad GENERIC: Composition - select()->filter()`, {
     query: `select(~a)->filter(x|$x.a==1)`,
     columns: ['a:Integer'],
     error: `Can't process expression: Unsupported function composition select()->filter() (supported composition: extend()->filter()->select()->[sort()->pivot()->cast()]->[groupBy()->sort()]->extend()->sort()->limit())`,
   }),
-  _case(`Validation: ERROR - name clash among source columns`, {
+  _case(`GENERIC: ERROR - name clash among source columns`, {
     query: `select(~[a, b])`,
     columns: ['a:Integer', 'a:Integer', 'b:Integer'],
     error: `Can't process source column 'a': another column with the same name is already registered`,
@@ -833,16 +983,13 @@ describe(unitTest('Analyze and build base snapshot'), () => {
       }
 
       const engine = new TEST__DataCubeEngine();
-      const partialQuery = _deserializeValueSpecification(
-        await ENGINE_TEST_SUPPORT__grammarToJSON_valueSpecification(code),
-      );
+      const partialQuery = await engine.parseValueSpecification(code);
       const baseQuery = new DataCubeQuery();
       baseQuery.configuration = configuration
         ? DataCubeConfiguration.serialization.fromJson(configuration)
         : undefined;
       const source = new INTERNAL__DataCubeSource();
       source.columns = columns;
-
       let snapshot: DataCubeQuerySnapshot | undefined;
 
       try {

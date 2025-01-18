@@ -95,9 +95,24 @@ export function _functionCompositionProcessor(
   sequence: V1_AppliedFunction[],
   funcMap: DataCubeQueryFunctionMap,
 ) {
-  return (key: keyof DataCubeQueryFunctionMap, func: V1_AppliedFunction) => {
-    sequence.push(func);
-    funcMap[key] = func;
+  return (
+    key: keyof DataCubeQueryFunctionMap,
+    data: V1_AppliedFunction | V1_AppliedFunction[],
+  ) => {
+    switch (key) {
+      case 'leafExtend':
+      case 'groupExtend': {
+        if (Array.isArray(data)) {
+          data.forEach((func) => sequence.push(func));
+          funcMap[key] = data as V1_AppliedFunction[];
+        }
+        break;
+      }
+      default: {
+        funcMap[key] = data as V1_AppliedFunction;
+        sequence.push(data as V1_AppliedFunction);
+      }
+    }
   };
 }
 
@@ -106,9 +121,13 @@ export function _functionCompositionUnProcessor(
   funcMap: DataCubeQueryFunctionMap,
 ) {
   return (key: keyof DataCubeQueryFunctionMap) => {
-    const func = funcMap[key];
-    if (func) {
-      sequence.splice(sequence.indexOf(func), 1);
+    const data = funcMap[key];
+    if (data) {
+      if (Array.isArray(data)) {
+        data.forEach((func) => sequence.splice(sequence.indexOf(func), 1));
+      } else {
+        sequence.splice(sequence.indexOf(data), 1);
+      }
       funcMap[key] = undefined;
     }
   };

@@ -45,7 +45,6 @@ import {
   at,
   guaranteeNonNullable,
   guaranteeType,
-  IllegalStateError,
   uniq,
   UnsupportedOperationError,
   type Clazz,
@@ -195,10 +194,8 @@ export function _pruneExpandedPaths(
   let lastCommonIndex = -1;
   for (let i = 0; i < length; i++) {
     if (
-      guaranteeNonNullable(prevGroupByCols[i]).name !==
-        guaranteeNonNullable(currentGroupByCols[i]).name ||
-      guaranteeNonNullable(prevGroupByCols[i]).type !==
-        guaranteeNonNullable(currentGroupByCols[i]).type
+      at(prevGroupByCols, i).name !== at(currentGroupByCols, i).name ||
+      at(prevGroupByCols, i).type !== at(currentGroupByCols, i).type
     ) {
       break;
     }
@@ -213,43 +210,12 @@ export function _pruneExpandedPaths(
 }
 
 export async function _extractExtendedColumns(
-  func: V1_AppliedFunction,
+  funcs: V1_AppliedFunction[],
   currentColumns: DataCubeColumn[],
   engine: DataCubeEngine,
 ) {
-  // extract extended columns from the expression
-  const funcs: V1_AppliedFunction[] = [];
-  let currentFunc = func;
-
-  while (currentFunc instanceof V1_AppliedFunction) {
-    // since we are processing a chain of extend(), we can finish processing when
-    // encountering a different function.
-    if (!matchFunctionName(currentFunc.function, DataCubeFunction.EXTEND)) {
-      break;
-    }
-
-    if (currentFunc.parameters.length === 2) {
-      const valueSpecification = currentFunc.parameters[0];
-      if (!(valueSpecification instanceof V1_AppliedFunction)) {
-        throw new IllegalStateError(
-          `Can't process extend() expression: Expected a chain of function calls (e.g. x()->y()->z())`,
-        );
-      } else {
-        currentFunc.parameters = currentFunc.parameters.slice(1);
-        funcs.unshift(currentFunc);
-        currentFunc = valueSpecification;
-      }
-    } else {
-      assertTrue(
-        currentFunc.parameters.length === 1,
-        `Can't process extend() expression: Expected 1 parameter, got ${currentFunc.parameters.length}`,
-      );
-      funcs.unshift(currentFunc);
-      break;
-    }
-  }
-
   const colSpecs = funcs.map((extendFunc) => {
+    // TODO: support extend() with window (OLAP), this assertion will no longer work
     const _colSpecs = _colSpecArrayParam(extendFunc, 0).colSpecs;
     assertTrue(
       _colSpecs.length === 1,

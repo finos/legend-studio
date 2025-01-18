@@ -43,10 +43,7 @@ import type {
 } from '../../core/model/DataCubeConfiguration.js';
 import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
 import { _sortByColName } from '../../core/model/DataCubeColumn.js';
-import {
-  isPivotResultColumnName,
-  type DataCubeQueryFunctionMap,
-} from '../../core/DataCubeQueryEngine.js';
+import { isPivotResultColumnName } from '../../core/DataCubeQueryEngine.js';
 import { buildQuerySnapshot } from './DataCubeGridQuerySnapshotBuilder.js';
 import { AlertType } from '../../services/DataCubeAlertService.js';
 import { sum } from 'mathjs';
@@ -264,6 +261,7 @@ async function getCastColumns(
   const snapshot = currentSnapshot.clone();
   guaranteeNonNullable(snapshot.data.pivot).castColumns = [];
   snapshot.data.groupBy = undefined;
+  snapshot.data.groupExtendedColumns = [];
   snapshot.data.sortColumns = [];
   snapshot.data.limit = 0;
   const query = buildExecutableQuery(
@@ -281,18 +279,6 @@ async function getCastColumns(
         filterOperations,
         aggregateOperations,
       ) => {
-        const _unprocess = (funcMapKey: keyof DataCubeQueryFunctionMap) => {
-          const func = funcMap[funcMapKey];
-          if (func) {
-            sequence.splice(sequence.indexOf(func), 1);
-            funcMap[funcMapKey] = undefined;
-          }
-        };
-
-        if (funcMap.groupExtend) {
-          _unprocess('groupExtend');
-        }
-
         // when both pivot and groupBy present, we need to account for the count column
         // in the cast expression
         if (funcMap.pivot && currentSnapshot.data.groupBy) {

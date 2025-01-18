@@ -22,6 +22,7 @@ import {
   V1_getGenericTypeFullPath,
   V1_buildEngineError,
   V1_EngineError,
+  V1_buildParserError,
 } from '@finos/legend-graph';
 import {
   assertErrorThrown,
@@ -59,12 +60,28 @@ export class TEST__DataCubeEngine extends DataCubeEngine {
     code: string,
     returnSourceInformation?: boolean | undefined,
   ): Promise<V1_ValueSpecification> {
-    return _deserializeValueSpecification(
-      await ENGINE_TEST_SUPPORT__grammarToJSON_valueSpecification(
-        code,
-        returnSourceInformation,
-      ),
-    );
+    try {
+      return _deserializeValueSpecification(
+        await ENGINE_TEST_SUPPORT__grammarToJSON_valueSpecification(
+          code,
+          returnSourceInformation,
+        ),
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      if (
+        error instanceof ENGINE_TEST_SUPPORT__NetworkClientError &&
+        error.status === HttpStatus.BAD_REQUEST
+      ) {
+        const engineError = V1_buildParserError(
+          V1_EngineError.serialization.fromJson(
+            error.response?.data as PlainObject<V1_EngineError>,
+          ),
+        );
+        throw engineError;
+      }
+      throw error;
+    }
   }
 
   override async getValueSpecificationCode(

@@ -28,6 +28,7 @@ export enum DataCubeFunction {
   SELECT = 'meta::pure::functions::relation::select',
   SLICE = 'meta::pure::functions::relation::slice',
   SORT = 'meta::pure::functions::relation::sort',
+  OVER = 'meta::pure::functions::relation::over',
 
   // generic
   CAST = 'meta::pure::functions::lang::cast',
@@ -74,14 +75,14 @@ export enum DataCubeFunction {
 }
 
 export type DataCubeQueryFunctionMap = {
-  leafExtend?: V1_AppliedFunction | undefined;
+  leafExtend?: V1_AppliedFunction[] | undefined;
   filter?: V1_AppliedFunction | undefined;
   pivotSort?: V1_AppliedFunction | undefined;
   pivot?: V1_AppliedFunction | undefined;
   pivotCast?: V1_AppliedFunction | undefined;
   groupBy?: V1_AppliedFunction | undefined;
   groupBySort?: V1_AppliedFunction | undefined;
-  groupExtend?: V1_AppliedFunction | undefined;
+  groupExtend?: V1_AppliedFunction[] | undefined;
   select?: V1_AppliedFunction | undefined;
   sort?: V1_AppliedFunction | undefined;
   limit?: V1_AppliedFunction | undefined;

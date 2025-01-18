@@ -61,7 +61,6 @@ import {
   last,
   getQueryParameters,
   getQueryParameterValue,
-  guaranteeNonNullable,
   isNonNullable,
   isNullable,
   isNumber,
@@ -643,7 +642,7 @@ function generatePivotResultColumnHeaderTooltip(
     return values.join(' / ');
   }
   if (values.length === snapshot.data.pivot.columns.length + 1) {
-    const baseColumnName = guaranteeNonNullable(values[values.length - 1]);
+    const baseColumnName = at(values, values.length - 1);
     const columnConfiguration = _findCol(configuration.columns, baseColumnName);
     return `Column = ${
       columnConfiguration
