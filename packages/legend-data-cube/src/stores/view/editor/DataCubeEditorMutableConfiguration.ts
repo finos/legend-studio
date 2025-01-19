@@ -15,8 +15,9 @@
  */
 
 import {
-  type DataCubeColumnKind,
   getDataType,
+  getAggregateOperation,
+  type DataCubeColumnKind,
   type DataCubeFont,
   type DataCubeOperationValue,
   type DataCubeNumberScale,
@@ -48,10 +49,7 @@ import {
 } from '../../core/model/DataCubeConfiguration.js';
 import { buildDefaultColumnConfiguration } from '../../core/DataCubeConfigurationBuilder.js';
 import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
-import {
-  getAggregateOperation,
-  type DataCubeQueryAggregateOperation,
-} from '../../core/aggregation/DataCubeQueryAggregateOperation.js';
+import { type DataCubeQueryAggregateOperation } from '../../core/aggregation/DataCubeQueryAggregateOperation.js';
 
 export class DataCubeEditorMutableColumnConfiguration extends DataCubeColumnConfiguration {
   readonly dataType!: DataCubeColumnDataType;

@@ -29,6 +29,7 @@ import {
   V1_ColSpec,
   V1_ColSpecArray,
   V1_GenericTypeInstance,
+  V1_Variable,
   type V1_ValueSpecification,
   V1_PrimitiveValueSpecification,
   extractElementNameFromPath as _name,
@@ -36,6 +37,8 @@ import {
   V1_RelationType,
   V1_PackageableType,
   type V1_GenericType,
+  V1_Collection,
+  type V1_Lambda,
 } from '@finos/legend-graph';
 import { type DataCubeColumn } from './model/DataCubeColumn.js';
 import {
@@ -53,6 +56,8 @@ import {
   DataCubeFunction,
   DataCubeOperationAdvancedValueType,
   DataCubeQueryFilterGroupOperator,
+  DataCubeQuerySortDirection,
+  DEFAULT_LAMBDA_VARIABLE_NAME,
   getDataType,
   TREE_COLUMN_VALUE_SEPARATOR,
   type DataCubeOperationValue,
@@ -71,8 +76,29 @@ import {
   _serializeValueSpecification,
 } from './DataCubeQueryBuilderUtils.js';
 import { INTERNAL__DataCubeSource } from './model/DataCubeSource.js';
+import type { DataCubeQueryAggregateOperation } from './aggregation/DataCubeQueryAggregateOperation.js';
 
 // --------------------------------- UTILITIES ---------------------------------
+
+export function _var(variable: V1_Variable) {
+  assertTrue(
+    variable.name === DEFAULT_LAMBDA_VARIABLE_NAME,
+    `Can't process variable '${variable.name}': expected variable name to be '${DEFAULT_LAMBDA_VARIABLE_NAME}'`,
+  );
+}
+
+function _propertyVar(property: V1_AppliedProperty) {
+  assertTrue(
+    property.parameters.length === 1,
+    `Can't process property '${property.property}': expected exactly 1 parameter`,
+  );
+  const variable = guaranteeType(
+    at(property.parameters, 0),
+    V1_Variable,
+    `Can't process property '${property.property}': failed to extract variable`,
+  );
+  _var(variable);
+}
 
 export function _param<T extends V1_ValueSpecification>(
   func: V1_AppliedFunction,
@@ -82,13 +108,13 @@ export function _param<T extends V1_ValueSpecification>(
 ): T {
   assertTrue(
     func.parameters.length >= paramIdx + 1,
-    `Can't process ${_name(func.function)}() expression: Expected at least ${paramIdx + 1} parameter(s)`,
+    `Can't process ${_name(func.function)}() expression: expected at least ${paramIdx + 1} parameter(s)`,
   );
   return guaranteeType(
     func.parameters[paramIdx],
     clazz,
     message ??
-      `Can't process ${_name(func.function)}() expression: Found unexpected type for parameter at index ${paramIdx}`,
+      `Can't process ${_name(func.function)}() expression: found unexpected type for parameter at index ${paramIdx}`,
   );
 }
 
@@ -96,7 +122,7 @@ export function _colSpecParam(func: V1_AppliedFunction, paramIdx: number) {
   return guaranteeType(
     _param(func, paramIdx, V1_ClassInstance).value,
     V1_ColSpec,
-    `Can't process ${_name(func.function)}() expression: Expected parameter at index ${paramIdx} to be a column specification`,
+    `Can't process ${_name(func.function)}() expression: expected parameter at index ${paramIdx} to be a column specification`,
   );
 }
 
@@ -104,7 +130,7 @@ export function _colSpecArrayParam(func: V1_AppliedFunction, paramIdx: number) {
   return guaranteeType(
     _param(func, paramIdx, V1_ClassInstance).value,
     V1_ColSpecArray,
-    `Can't process ${_name(func.function)}() expression: Expected parameter at index ${paramIdx} to be a column specification list`,
+    `Can't process ${_name(func.function)}() expression: expected parameter at index ${paramIdx} to be a column specification list`,
   );
 }
 
@@ -113,8 +139,21 @@ export function _genericTypeParam(func: V1_AppliedFunction, paramIdx: number) {
     func,
     paramIdx,
     V1_GenericTypeInstance,
-    `Can't process ${_name(func.function)}: Expected parameter at index ${paramIdx} to be a generic type instance`,
+    `Can't process ${_name(func.function)}: expected parameter at index ${paramIdx} to be a generic type instance`,
   );
+}
+
+export function _unwrapLambda(lambda: V1_Lambda, message?: string | undefined) {
+  assertTrue(
+    lambda.body.length === 1,
+    `${message ?? `Can't process lambda`}: expected lambda body to have exactly 1 expression`,
+  );
+  assertTrue(
+    lambda.parameters.length === 1,
+    `${message ?? `Can't process lambda`}: expected lambda to have exactly 1 parameter`,
+  );
+  _var(at(lambda.parameters, 0));
+  return at(lambda.body, 0);
 }
 
 export function _funcMatch(
@@ -124,14 +163,14 @@ export function _funcMatch(
   assertType(
     value,
     V1_AppliedFunction,
-    `Can't process function: Found unexpected value specification type`,
+    `Can't process function: found unexpected value specification type`,
   );
   assertTrue(
     matchFunctionName(
       value.function,
       Array.isArray(functionNames) ? functionNames : [functionNames],
     ),
-    `Can't process function: Expected function to be one of [${uniq((Array.isArray(functionNames) ? functionNames : [functionNames]).map(_name)).join(', ')}]`,
+    `Can't process function: expected function to be one of [${uniq((Array.isArray(functionNames) ? functionNames : [functionNames]).map(_name)).join(', ')}]`,
   );
   return value;
 }
@@ -219,7 +258,7 @@ export async function _extractExtendedColumns(
     const _colSpecs = _colSpecArrayParam(extendFunc, 0).colSpecs;
     assertTrue(
       _colSpecs.length === 1,
-      `Can't process extend() expression: Expected 1 column specification, got ${_colSpecs.length}`,
+      `Can't process extend() expression: expected 1 column specification, got ${_colSpecs.length}`,
     );
     return at(_colSpecs, 0);
   });
@@ -233,7 +272,7 @@ export async function _extractExtendedColumns(
           colSpec.name,
           guaranteeNonNullable(
             colSpec.function1,
-            `Can't process extend() expression: Expected a transformation function expression for column '${colSpec.name}'`,
+            `Can't process extend() expression: expected a transformation function expression for column '${colSpec.name}'`,
           ),
           colSpec.function2,
         ),
@@ -270,7 +309,7 @@ export async function _extractExtendedColumns(
     mapFn: _serializeValueSpecification(
       guaranteeNonNullable(
         colSpec.function1,
-        `Can't process extend() expression: Expected a transformation function expression for column '${colSpec.name}'`,
+        `Can't process extend() expression: expected a transformation function expression for column '${colSpec.name}'`,
       ),
     ),
     reduceFn: colSpec.function2
@@ -286,7 +325,7 @@ export function _filter(
 ): DataCubeQuerySnapshotFilter {
   if (!(value instanceof V1_AppliedFunction)) {
     throw new Error(
-      `Can't process filter() expression: Expected a function expression`,
+      `Can't process filter() expression: expected a function expression`,
     );
   }
 
@@ -325,7 +364,7 @@ export function _unwrapNotFilterCondition(func: V1_AppliedFunction) {
   );
   assertTrue(
     func.parameters.length === 1,
-    `Can't process not() function: Expected 1 parameter`,
+    `Can't process not() function: expected 1 parameter`,
   );
   return _param(func, 0, V1_AppliedFunction);
 }
@@ -337,7 +376,7 @@ function _filterCondition(
 ): DataCubeQuerySnapshotFilterCondition | DataCubeQuerySnapshotFilter {
   if (!(value instanceof V1_AppliedFunction)) {
     throw new UnsupportedOperationError(
-      `Can't process filter condition expression: Expected a function expression`,
+      `Can't process filter condition expression: expected a function expression`,
     );
   }
 
@@ -405,6 +444,7 @@ function _filterConditionValue(
   if (value instanceof V1_PrimitiveValueSpecification) {
     return _operationPrimitiveValue(value);
   } else if (value instanceof V1_AppliedProperty) {
+    _propertyVar(value);
     const column2 = columnGetter(value.property);
     if (getDataType(column.type) !== getDataType(column2.type)) {
       return undefined;
@@ -430,7 +470,7 @@ function _filterConditionValue(
  * $x.Age > $x.Age2
  * $x.Name == $x.Name2
  */
-export function _baseFilterCondition(
+export function _filterCondition_base(
   expression: V1_AppliedFunction,
   columnGetter: (name: string) => DataCubeColumn,
   func: string,
@@ -443,10 +483,12 @@ export function _baseFilterCondition(
       return undefined;
     }
 
-    const column =
-      expression.parameters[0] instanceof V1_AppliedProperty
-        ? columnGetter(expression.parameters[0].property)
-        : undefined;
+    let column: DataCubeColumn | undefined;
+    if (expression.parameters[0] instanceof V1_AppliedProperty) {
+      const property = expression.parameters[0];
+      _propertyVar(property);
+      column = columnGetter(property.property);
+    }
     if (!column) {
       return undefined;
     }
@@ -473,7 +515,7 @@ export function _baseFilterCondition(
  * $x.Name->toLower() == 'abc'->toLower()
  * $x.Name->toLower() == $x.Name2->toLower()
  */
-export function _caseSensitiveBaseFilterCondition(
+export function _filterCondition_caseSensitive(
   expression: V1_AppliedFunction,
   columnGetter: (name: string) => DataCubeColumn,
   func: string,
@@ -493,10 +535,12 @@ export function _caseSensitiveBaseFilterCondition(
     if (param1.parameters.length !== 1) {
       return undefined;
     }
-    const column =
-      param1.parameters[0] instanceof V1_AppliedProperty
-        ? columnGetter(param1.parameters[0].property)
-        : undefined;
+    let column: DataCubeColumn | undefined;
+    if (param1.parameters[0] instanceof V1_AppliedProperty) {
+      const property = param1.parameters[0];
+      _propertyVar(property);
+      column = columnGetter(property.property);
+    }
     if (!column) {
       return undefined;
     }
@@ -527,4 +571,44 @@ export function _caseSensitiveBaseFilterCondition(
     };
   }
   return undefined;
+}
+
+export function _aggCol(
+  colSpec: V1_ColSpec,
+  columnGetter: (name: string) => DataCubeColumn,
+  aggregateOperations: DataCubeQueryAggregateOperation[],
+) {
+  for (const operation of aggregateOperations) {
+    const col = operation.buildAggregateColumnSnapshot(colSpec, columnGetter);
+    if (col) {
+      return col;
+    }
+  }
+  throw new Error(`Can't process aggregate column: no matching operator found`);
+}
+
+export function _sort(
+  func: V1_AppliedFunction,
+  columnGetter: (name: string) => DataCubeColumn,
+) {
+  return _param(
+    func,
+    0,
+    V1_Collection,
+    `Can't process sort() expression: expected parameter at index 0 to be a collection`,
+  ).values.map((value) => {
+    const sortColFunc = _funcMatch(value, [
+      DataCubeFunction.ASCENDING,
+      DataCubeFunction.DESCENDING,
+    ]);
+    return {
+      ...columnGetter(_colSpecParam(sortColFunc, 0).name),
+      direction: matchFunctionName(
+        sortColFunc.function,
+        DataCubeFunction.ASCENDING,
+      )
+        ? DataCubeQuerySortDirection.ASCENDING
+        : DataCubeQuerySortDirection.DESCENDING,
+    };
+  });
 }

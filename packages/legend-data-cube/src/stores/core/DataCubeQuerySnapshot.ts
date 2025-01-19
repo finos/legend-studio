@@ -51,6 +51,11 @@ export type DataCubeQuerySnapshotExtendedColumn = DataCubeColumn & {
   reduceFn?: PlainObject<V1_Lambda> | undefined;
 };
 
+export type DataCubeQuerySnapshotAggregateColumn = DataCubeColumn & {
+  parameterValues: DataCubeOperationValue[];
+  operator: string;
+};
+
 export type DataCubeQuerySnapshotSortColumn = DataCubeColumn & {
   direction: DataCubeQuerySortDirection;
 };

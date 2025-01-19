@@ -13,10 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-  DataCubeQueryFilterOperation,
-  _defaultPrimitiveTypeValue,
-} from './DataCubeQueryFilterOperation.js';
+import { DataCubeQueryFilterOperation } from './DataCubeQueryFilterOperation.js';
 import type { DataCubeQuerySnapshotFilterCondition } from '../DataCubeQuerySnapshot.js';
 import type { DataCubeColumn } from '../model/DataCubeColumn.js';
 import {
@@ -25,6 +22,7 @@ import {
   DataCubeQueryFilterOperator,
   isPrimitiveType,
   ofDataType,
+  _defaultPrimitiveTypeValue,
   type DataCubeOperationValue,
 } from '../DataCubeQueryEngine.js';
 import {
@@ -33,12 +31,11 @@ import {
   _not,
   _property,
   _value,
-  _var,
 } from '../DataCubeQueryBuilderUtils.js';
-import { guaranteeNonNullable, returnUndefOnError } from '@finos/legend-shared';
+import { returnUndefOnError } from '@finos/legend-shared';
 import { type V1_AppliedFunction } from '@finos/legend-graph';
 import {
-  _caseSensitiveBaseFilterCondition,
+  _filterCondition_caseSensitive,
   _unwrapNotFilterCondition,
 } from '../DataCubeQuerySnapshotBuilderUtils.js';
 
@@ -90,7 +87,7 @@ export class DataCubeQueryFilterOperation__NotEqualCaseInsensitive extends DataC
       return undefined;
     }
     return this._finalizeConditionSnapshot(
-      _caseSensitiveBaseFilterCondition(
+      _filterCondition_caseSensitive(
         unwrapped,
         columnGetter,
         DataCubeFunction.EQUAL,
@@ -99,14 +96,13 @@ export class DataCubeQueryFilterOperation__NotEqualCaseInsensitive extends DataC
   }
 
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {
-    const variable = _var();
     return _not(
       _function(_functionName(DataCubeFunction.EQUAL), [
         _function(_functionName(DataCubeFunction.TO_LOWERCASE), [
-          _property(condition.name, variable),
+          _property(condition.name),
         ]),
         _function(_functionName(DataCubeFunction.TO_LOWERCASE), [
-          _value(guaranteeNonNullable(condition.value), variable),
+          _value(condition.value),
         ]),
       ]),
     );

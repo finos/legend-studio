@@ -90,7 +90,7 @@ function _aggCountCastCol(colName: string) {
   const variable = _var();
   return _colSpec(
     colName,
-    _lambda([variable], [_property(colName, variable)]),
+    _lambda([variable], [_property(colName)]),
     _lambda([variable], [_function(DataCubeFunction.SUM, [variable])]),
   );
 }

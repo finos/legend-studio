@@ -110,12 +110,12 @@ const cases: TestCase[] = [
     `Leaf-level Extend: ERROR - multiple columns within the same extend() expression`,
     {
       query: `extend(~[a:x|1, b:x|1])`,
-      error: `Can't process extend() expression: Expected 1 column specification, got 2`,
+      error: `Can't process extend() expression: expected 1 column specification, got 2`,
     },
   ),
   _case(`Leaf-level Extend: ERROR - missing column's function expression`, {
     query: `extend(~[a])`,
-    error: `Can't process extend() expression: Expected a transformation function expression for column 'a'`,
+    error: `Can't process extend() expression: expected a transformation function expression for column 'a'`,
   }),
   _case(`Leaf-level Extend: ERROR - expression with compilation issue`, {
     query: `extend(~[a:x|$x.val + '_123'])`,
@@ -715,22 +715,37 @@ const cases: TestCase[] = [
     query: `filter(x|!(($x.Age != 27) && ($x.Name == 'Michael Phelps')) && ($x.Country->startsWith('united') || ($x.Country == 'test')))`,
     columns: ['Age:Integer', 'Name:String', 'Country:String'],
   }),
-  _case(`Filter: with leaf-level extended column`, {
-    query: `extend(~[name:c|$c.val->toOne() + 1])->filter(x|$x.name != 27)`,
-    columns: ['val:Integer'],
-  }),
 
   _case(`Filter: ERROR - LHS column not found`, {
     query: `filter(x|$x.Age > 1)`,
     error: `Can't find column 'Age'`,
   }),
+  _case(`Filter: ERROR - non-standard variable name in root`, {
+    query: `filter(y|$x.Age > 1)`,
+    error: `Can't process variable 'y': expected variable name to be 'x'`,
+  }),
+  _case(`Filter: ERROR - non-standard variable name in condition LHS`, {
+    query: `filter(x|$y.Age == 27)`,
+    columns: ['Age:Integer'],
+    error: `Can't process variable 'y': expected variable name to be 'x'`,
+  }),
+  _case(`Filter: ERROR - non-standard variable name in condition RHS`, {
+    query: `filter(x|$x.Age == $y.Age2)`,
+    columns: ['Age:Integer', 'Age2:Integer'],
+    error: `Can't process variable 'y': expected variable name to be 'x'`,
+  }),
+  _case(`Filter: ERROR - non-standard variable name within tree`, {
+    query: `filter(x|$x.Name->toLower()->endsWith(toLower('Phelps')) || !(($y.Age != 27) && ($x.Name == 'Michael Phelps')))`,
+    columns: ['Age:Integer', 'Name:String'],
+    error: `Can't process variable 'y': expected variable name to be 'x'`,
+  }),
   _case(`Filter: ERROR - bad argument: non-lambda provided`, {
     query: `filter('2')`,
-    error: `Can't process filter() expression: Expected parameter at index 0 to be a lambda expression`,
+    error: `Can't process filter() expression: expected parameter at index 0 to be a lambda expression`,
   }),
   _case(`Filter: ERROR - bad argument: complex lambda provided`, {
     query: `filter({x|let a = 1; $x.Age == 24;})`,
-    error: `Can't process filter() expression: Expected lambda body to have exactly 1 expression`,
+    error: `Can't process filter() expression: expected lambda body to have exactly 1 expression`,
   }),
   _case(`Filter: ERROR - Unsupported operator`, {
     query: `filter(x|$x.Age + 27 > 1)`,
@@ -768,7 +783,7 @@ const cases: TestCase[] = [
   // }),
   _case(`Pivot: ERROR - casting used without dynamic function pivot()`, {
     query: `cast(@meta::pure::metamodel::relation::Relation<(a:Integer)>)`,
-    error: `Can't process expression: Unsupported function composition cast() (supported composition: extend()->filter()->select()->[sort()->pivot()->cast()]->[groupBy()->sort()]->extend()->sort()->limit())`,
+    error: `Can't process expression: unsupported function composition cast() (supported composition: extend()->filter()->select()->[sort()->pivot()->cast()]->[groupBy()->sort()]->extend()->sort()->limit())`,
   }),
 
   // --------------------------------- GROUP BY ---------------------------------
@@ -824,13 +839,13 @@ const cases: TestCase[] = [
     {
       query: `select(~[val])->extend(~[a:x|1, b:x|1])`,
       columns: ['val:Integer'],
-      error: `Can't process extend() expression: Expected 1 column specification, got 2`,
+      error: `Can't process extend() expression: expected 1 column specification, got 2`,
     },
   ),
   _case(`Group-level Extend: ERROR - missing column's function expression`, {
     query: `select(~[val])->extend(~[a])`,
     columns: ['val:Integer'],
-    error: `Can't process extend() expression: Expected a transformation function expression for column 'a'`,
+    error: `Can't process extend() expression: expected a transformation function expression for column 'a'`,
   }),
   _case(`Group-level Extend: ERROR - expression with compilation issue`, {
     query: `select(~[val])->extend(~[a:x|$x.val + '_123'])`,
@@ -863,12 +878,12 @@ const cases: TestCase[] = [
   _case(`Sort: ERROR - bad argument: non-collection provided`, {
     query: `select(~[a])->sort(~a->something())`,
     columns: ['a:Integer'],
-    error: `Can't process sort() expression: Expected parameter at index 0 to be a collection`,
+    error: `Can't process sort() expression: expected parameter at index 0 to be a collection`,
   }),
   _case(`Sort: ERROR - unsupported function`, {
     query: `select(~[a])->sort([~a->something()])`,
     columns: ['a:Integer'],
-    error: `Can't process function: Expected function to be one of [ascending, descending]`,
+    error: `Can't process function: expected function to be one of [ascending, descending]`,
   }),
   _case(`Sort: ERROR - column not found`, {
     query: `select(~[a])->sort([~b->ascending()])`,
@@ -883,15 +898,15 @@ const cases: TestCase[] = [
   }),
   _case(`Limit: ERROR - bad argument: decimal number provided`, {
     query: `limit(15.5)`,
-    error: `Can't process limit() expression: Expected limit to be a non-negative integer value`,
+    error: `Can't process limit() expression: expected limit to be a non-negative integer value`,
   }),
   _case(`Limit: ERROR - bad argument: non-negative number provided`, {
     query: `limit(-10)`,
-    error: `Can't process limit() expression: Expected limit to be a non-negative integer value`,
+    error: `Can't process limit() expression: expected limit to be a non-negative integer value`,
   }),
   _case(`Limit: ERROR - bad argument: non-integer provided`, {
     query: `limit('asd')`,
-    error: `Can't process limit() expression: Expected limit to be a non-negative integer value`,
+    error: `Can't process limit() expression: expected limit to be a non-negative integer value`,
   }),
 
   // --------------------------------- COMPOSITION ---------------------------------
@@ -938,26 +953,26 @@ const cases: TestCase[] = [
 
   _case(`GENERIC: ERROR - not a function expression`, {
     query: `2`,
-    error: `Can't process expression: Expected a function expression`,
+    error: `Can't process expression: expected a function expression`,
   }),
   _case(`GENERIC: ERROR - not a chain of function calls`, {
     query: `select(~[a, b], 'something')`,
     columns: ['a:Integer', 'b:Integer'],
-    error: `Can't process expression: Expected a sequence of function calls (e.g. x()->y()->z())`,
+    error: `Can't process expression: expected a sequence of function calls (e.g. x()->y()->z())`,
   }),
   _case(`GENERIC: ERROR - unsupported function`, {
     query: `sort([~asd->ascending()])->something()`,
-    error: `Can't process expression: Found unsupported function something()`,
+    error: `Can't process expression: found unsupported function something()`,
   }),
   _case(`GENERIC: ERROR - wrong number of paramters provided`, {
     query: `select(~[a, b], 2, 'asd')`,
     columns: ['a:Integer', 'b:Integer'],
-    error: `Can't process select() expression: Expected at most 2 parameters provided, got 3`,
+    error: `Can't process select() expression: expected at most 2 parameters provided, got 3`,
   }),
   _case(`GENERIC: ERROR - bad GENERIC: Composition - select()->filter()`, {
     query: `select(~a)->filter(x|$x.a==1)`,
     columns: ['a:Integer'],
-    error: `Can't process expression: Unsupported function composition select()->filter() (supported composition: extend()->filter()->select()->[sort()->pivot()->cast()]->[groupBy()->sort()]->extend()->sort()->limit())`,
+    error: `Can't process expression: unsupported function composition select()->filter() (supported composition: extend()->filter()->select()->[sort()->pivot()->cast()]->[groupBy()->sort()]->extend()->sort()->limit())`,
   }),
   _case(`GENERIC: ERROR - name clash among source columns`, {
     query: `select(~[a, b])`,

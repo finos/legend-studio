@@ -15,13 +15,14 @@
  */
 
 import type { DataCubeColumn } from '../model/DataCubeColumn.js';
-import { PRIMITIVE_TYPE } from '@finos/legend-graph';
+import { PRIMITIVE_TYPE, type V1_ColSpec } from '@finos/legend-graph';
 import { DataCubeQueryAggregateOperation } from './DataCubeQueryAggregateOperation.js';
 import {
   DataCubeQueryAggregateOperator,
   DataCubeColumnDataType,
   DataCubeFunction,
   ofDataType,
+  type DataCubeOperationValue,
 } from '../DataCubeQueryEngine.js';
 import {
   _colSpec,
@@ -51,7 +52,7 @@ export class DataCubeQueryAggregateOperation__JoinStrings extends DataCubeQueryA
     return DataCubeQueryAggregateOperator.JOIN_STRINGS;
   }
 
-  isCompatibleWithColumn(column: DataCubeColumn) {
+  override isCompatibleWithColumn(column: DataCubeColumn) {
     return ofDataType(column.type, [
       // NOTE: technically all data types should be suported,
       // i.e. we can use meta::pure::functions::string::makeString
@@ -61,11 +62,33 @@ export class DataCubeQueryAggregateOperation__JoinStrings extends DataCubeQueryA
     ]);
   }
 
-  buildAggregateColumn(column: DataCubeColumnConfiguration) {
+  override isCompatibleWithParameterValues(values: DataCubeOperationValue[]) {
+    return !values.length;
+  }
+
+  override generateDefaultParameterValues(
+    column: DataCubeColumn,
+  ): DataCubeOperationValue[] {
+    return [
+      {
+        type: PRIMITIVE_TYPE.STRING,
+        value: '',
+      },
+    ];
+  }
+
+  override buildAggregateColumnSnapshot(
+    colSpec: V1_ColSpec,
+    columnGetter: (name: string) => DataCubeColumn,
+  ) {
+    return undefined;
+  }
+
+  override buildAggregateColumnExpression(column: DataCubeColumnConfiguration) {
     const variable = _var();
     return _colSpec(
       column.name,
-      _lambda([variable], [_property(column.name, variable)]),
+      _lambda([variable], [_property(column.name)]),
       _lambda(
         [variable],
         [

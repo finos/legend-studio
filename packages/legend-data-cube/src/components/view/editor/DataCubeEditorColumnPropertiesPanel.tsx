@@ -234,6 +234,18 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                             (col) => col.name === selectedColumn.name,
                           ),
                       )}
+                      title={
+                        Boolean(
+                          editor.verticalPivots.selector.selectedColumns.find(
+                            (col) => col.name === selectedColumn.name,
+                          ) ??
+                            editor.horizontalPivots.selector.selectedColumns.find(
+                              (col) => col.name === selectedColumn.name,
+                            ),
+                        )
+                          ? 'Column kind cannot be changed while the column is used in pivot'
+                          : undefined
+                      }
                     >
                       {selectedColumn.kind}
                     </FormDropdownMenuTrigger>
@@ -314,7 +326,14 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                         <FormDropdownMenuItem
                           key={op.operator}
                           onClick={() => {
-                            selectedColumn.setAggregateOperation(op);
+                            if (op !== selectedColumn.aggregateOperation) {
+                              selectedColumn.setAggregateOperation(op);
+                              selectedColumn.setAggregationParameters(
+                                op.generateDefaultParameterValues(
+                                  selectedColumn,
+                                ),
+                              );
+                            }
                             closeAggregationOperationDropdown();
                           }}
                           autoFocus={op === selectedColumn.aggregateOperation}
@@ -323,6 +342,8 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                         </FormDropdownMenuItem>
                       ))}
                   </FormDropdownMenu>
+
+                  {/* TODO: Support editing aggregation parameter values */}
 
                   <FormCheckbox
                     className="ml-3"

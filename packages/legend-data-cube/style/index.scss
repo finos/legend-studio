@@ -83,6 +83,18 @@
     width: 100%;
   }
 
+  .markdown-content p,
+  .markdown-content blockquote,
+  .markdown-content ul,
+  .markdown-content ol,
+  .markdown-content dl,
+  .markdown-content table,
+  .markdown-content pre,
+  .markdown-content details {
+    margin-top: 0;
+    margin-bottom: 10px;
+  }
+
   .markdown-content [hidden] {
     display: none !important;
   }
@@ -168,6 +180,12 @@
     background: transparent;
     border: 0;
     font-size: 12px;
+  }
+
+  .markdown-content blockquote {
+    padding: 0 10px;
+    color: var(--tw-color-neutral-500);
+    border-left: 3px solid var(--tw-color-neutral-200);
   }
 }
 

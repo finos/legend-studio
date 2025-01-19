@@ -29,11 +29,10 @@ import {
   _functionName,
   _property,
   _value,
-  _var,
 } from '../DataCubeQueryBuilderUtils.js';
-import { guaranteeNonNullable, isString } from '@finos/legend-shared';
+import { isString } from '@finos/legend-shared';
 import { type V1_AppliedFunction } from '@finos/legend-graph';
-import { _baseFilterCondition } from '../DataCubeQuerySnapshotBuilderUtils.js';
+import { _filterCondition_base } from '../DataCubeQuerySnapshotBuilderUtils.js';
 
 export class DataCubeQueryFilterOperation__GreaterThanColumn extends DataCubeQueryFilterOperation {
   override get label() {
@@ -80,7 +79,7 @@ export class DataCubeQueryFilterOperation__GreaterThanColumn extends DataCubeQue
     columnGetter: (name: string) => DataCubeColumn,
   ) {
     return this._finalizeConditionSnapshot(
-      _baseFilterCondition(
+      _filterCondition_base(
         expression,
         columnGetter,
         DataCubeFunction.GREATER_THAN,
@@ -89,10 +88,9 @@ export class DataCubeQueryFilterOperation__GreaterThanColumn extends DataCubeQue
   }
 
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {
-    const variable = _var();
     return _function(_functionName(DataCubeFunction.GREATER_THAN), [
-      _property(condition.name, variable),
-      _value(guaranteeNonNullable(condition.value), variable),
+      _property(condition.name),
+      _value(condition.value),
     ]);
   }
 }

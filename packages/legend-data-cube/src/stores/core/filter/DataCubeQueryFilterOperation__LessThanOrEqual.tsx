@@ -13,10 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-  DataCubeQueryFilterOperation,
-  _defaultPrimitiveTypeValue,
-} from './DataCubeQueryFilterOperation.js';
+import { DataCubeQueryFilterOperation } from './DataCubeQueryFilterOperation.js';
 import type { DataCubeQuerySnapshotFilterCondition } from '../DataCubeQuerySnapshot.js';
 import type { DataCubeColumn } from '../model/DataCubeColumn.js';
 import {
@@ -25,6 +22,7 @@ import {
   DataCubeQueryFilterOperator,
   isPrimitiveType,
   ofDataType,
+  _defaultPrimitiveTypeValue,
   type DataCubeOperationValue,
 } from '../DataCubeQueryEngine.js';
 import {
@@ -33,9 +31,8 @@ import {
   _property,
   _value,
 } from '../DataCubeQueryBuilderUtils.js';
-import { guaranteeNonNullable } from '@finos/legend-shared';
 import { type V1_AppliedFunction } from '@finos/legend-graph';
-import { _baseFilterCondition } from '../DataCubeQuerySnapshotBuilderUtils.js';
+import { _filterCondition_base } from '../DataCubeQuerySnapshotBuilderUtils.js';
 
 export class DataCubeQueryFilterOperation__LessThanOrEqual extends DataCubeQueryFilterOperation {
   override get label() {
@@ -87,7 +84,7 @@ export class DataCubeQueryFilterOperation__LessThanOrEqual extends DataCubeQuery
     columnGetter: (name: string) => DataCubeColumn,
   ) {
     return this._finalizeConditionSnapshot(
-      _baseFilterCondition(
+      _filterCondition_base(
         expression,
         columnGetter,
         DataCubeFunction.LESS_THAN_OR_EQUAL,
@@ -98,7 +95,7 @@ export class DataCubeQueryFilterOperation__LessThanOrEqual extends DataCubeQuery
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {
     return _function(_functionName(DataCubeFunction.LESS_THAN_OR_EQUAL), [
       _property(condition.name),
-      _value(guaranteeNonNullable(condition.value)),
+      _value(condition.value),
     ]);
   }
 }

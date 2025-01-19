@@ -25,15 +25,21 @@
 import {
   V1_AppliedFunction,
   V1_CInteger,
-  V1_Collection,
   extractElementNameFromPath as _name,
   matchFunctionName,
   type V1_ValueSpecification,
   V1_Lambda,
 } from '@finos/legend-graph';
 import type { DataCubeQuery } from './model/DataCubeQuery.js';
-import { DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
-import { _toCol, type DataCubeColumn } from './model/DataCubeColumn.js';
+import {
+  DataCubeQuerySnapshot,
+  type DataCubeQuerySnapshotAggregateColumn,
+} from './DataCubeQuerySnapshot.js';
+import {
+  _findCol,
+  _toCol,
+  type DataCubeColumn,
+} from './model/DataCubeColumn.js';
 import {
   assertTrue,
   at,
@@ -41,21 +47,21 @@ import {
   isNonNullable,
 } from '@finos/legend-shared';
 import {
-  DataCubeQuerySortDirection,
   DataCubeFunction,
   type DataCubeQueryFunctionMap,
 } from './DataCubeQueryEngine.js';
 import { buildDefaultConfiguration } from './DataCubeConfigurationBuilder.js';
 import {
   _colSpecArrayParam,
-  _colSpecParam,
-  _funcMatch,
   _param,
   _extractExtendedColumns,
   _filter,
   _relationType,
   _genericTypeParam,
   _packageableType,
+  _aggCol,
+  _sort,
+  _unwrapLambda,
 } from './DataCubeQuerySnapshotBuilderUtils.js';
 import type { DataCubeSource } from './model/DataCubeSource.js';
 import type { DataCubeEngine } from './DataCubeEngine.js';
@@ -228,7 +234,7 @@ function extractFunctionMap(
 ): DataCubeQueryFunctionMap {
   // Make sure this is a sequence of function calls
   if (!(query instanceof V1_AppliedFunction)) {
-    throw new Error(`Can't process expression: Expected a function expression`);
+    throw new Error(`Can't process expression: expected a function expression`);
   }
   const sequence: V1_AppliedFunction[] = [];
   let currentFunc = query;
@@ -241,7 +247,7 @@ function extractFunctionMap(
     // Check that all functions in sequence are supported (matching name and number of parameters)
     if (!supportedFunc) {
       throw new Error(
-        `Can't process expression: Found unsupported function ${currentFunc.function}()`,
+        `Can't process expression: found unsupported function ${currentFunc.function}()`,
       );
     }
 
@@ -259,13 +265,13 @@ function extractFunctionMap(
       // assert that the supported function has the expected number of parameters
       assertTrue(
         currentFunc.parameters.length === supportedFunc.parameters + 1,
-        `Can't process ${_name(currentFunc.function)}() expression: Expected at most ${supportedFunc.parameters + 1} parameters provided, got ${currentFunc.parameters.length}`,
+        `Can't process ${_name(currentFunc.function)}() expression: expected at most ${supportedFunc.parameters + 1} parameters provided, got ${currentFunc.parameters.length}`,
       );
       const func = _param(
         currentFunc,
         0,
         V1_AppliedFunction,
-        `Can't process expression: Expected a sequence of function calls (e.g. x()->y()->z())`,
+        `Can't process expression: expected a sequence of function calls (e.g. x()->y()->z())`,
       );
       currentFunc.parameters = currentFunc.parameters.slice(1);
       sequence.unshift(currentFunc);
@@ -285,7 +291,7 @@ function extractFunctionMap(
   );
   if (!matchResult) {
     throw new Error(
-      `Can't process expression: Unsupported function composition ${sequence.map((fn) => `${_name(fn.function)}()`).join('->')} (supported composition: ${_FUNCTION_SEQUENCE_COMPOSITION_PATTERN.map((node) => `${'funcs' in node ? `[${node.funcs.map((childNode) => `${_name(childNode.func)}()`).join('->')}]` : `${_name(node.func)}()`}`).join('->')})`,
+      `Can't process expression: unsupported function composition ${sequence.map((fn) => `${_name(fn.function)}()`).join('->')} (supported composition: ${_FUNCTION_SEQUENCE_COMPOSITION_PATTERN.map((node) => `${'funcs' in node ? `[${node.funcs.map((childNode) => `${_name(childNode.func)}()`).join('->')}]` : `${_name(node.func)}()`}`).join('->')})`,
     );
   }
 
@@ -406,13 +412,13 @@ export async function validateAndBuildQuerySnapshot(
       funcMap.filter,
       0,
       V1_Lambda,
-      `Can't process filter() expression: Expected parameter at index 0 to be a lambda expression`,
+      `Can't process filter() expression: expected parameter at index 0 to be a lambda expression`,
     );
-    assertTrue(
-      lambda.body.length === 1,
-      `Can't process filter() expression: Expected lambda body to have exactly 1 expression`,
+    data.filter = _filter(
+      _unwrapLambda(lambda, `Can't process filter() expression`),
+      _getCol,
+      engine.filterOperations,
     );
-    data.filter = _filter(at(lambda.body, 0), _getCol, engine.filterOperations);
   }
 
   // --------------------------------- SELECT ---------------------------------
@@ -431,10 +437,10 @@ export async function validateAndBuildQuerySnapshot(
 
   // --------------------------------- PIVOT ---------------------------------
 
-  if (funcMap.pivot && funcMap.pivotCast) {
-    const pivotColumns = _colSpecArrayParam(funcMap.pivot, 0).colSpecs.map(
-      (colSpec) => _getCol(colSpec.name),
-    );
+  const pivotAggCols: DataCubeQuerySnapshotAggregateColumn[] = [];
+  if (funcMap.pivot && funcMap.pivotCast && funcMap.pivotSort) {
+    const colSpecs = _colSpecArrayParam(funcMap.pivot, 0).colSpecs;
+    const pivotColumns = colSpecs.map((colSpec) => _getCol(colSpec.name));
     const castColumns = _relationType(
       _genericTypeParam(funcMap.pivotCast, 0).genericType,
     ).columns.map((column) => ({
@@ -445,30 +451,65 @@ export async function validateAndBuildQuerySnapshot(
       columns: pivotColumns,
       castColumns: castColumns,
     };
+
     // restrict the set of available columns to only casted columns
     colsMap.clear();
     castColumns.forEach((col) => _setCol(col));
 
-    // TODO: verify sort columns when we support sorting pivot columns
+    // process aggregate columns
+    colSpecs.forEach((colSpec) => {
+      pivotAggCols.push(
+        _aggCol(
+          colSpec,
+          (colName: string) => {
+            const col = _getCol(colName);
+            if (_findCol(pivotColumns, colName)) {
+              throw new Error(
+                `Can't process aggregate column '${colSpec.name}': group column cannot be used in aggregate expression`,
+              );
+            }
+            return col;
+          },
+          engine.aggregateOperations,
+        ),
+      );
+    });
 
-    // TODO: verify column presence
-    // TODO: verify column types
+    // TODO: verify sort columns when we support sorting pivot columns
     // TODO: verify groupBy agg columns, pivot agg columns and configuration agree
   }
 
   // --------------------------------- GROUP BY ---------------------------------
 
+  const groupByAggCols: DataCubeQuerySnapshotAggregateColumn[] = [];
   if (funcMap.groupBy) {
+    const colSpecs = _colSpecArrayParam(funcMap.groupBy, 0).colSpecs;
+    const groupByColumns = colSpecs.map((colSpec) => _getCol(colSpec.name));
     data.groupBy = {
-      columns: _colSpecArrayParam(funcMap.groupBy, 0).colSpecs.map((colSpec) =>
-        _getCol(colSpec.name),
-      ),
+      columns: groupByColumns,
     };
 
-    // TODO: verify column presence
-    // TODO: verify column types
-    // TODO: verify groupBy agg columns, pivot agg columns and configuration agree
+    // process aggregate columns
+    colSpecs.forEach((colSpec) => {
+      groupByAggCols.push(
+        _aggCol(
+          colSpec,
+          (colName: string) => {
+            const col = _getCol(colName);
+            if (_findCol(groupByColumns, colName)) {
+              throw new Error(
+                `Can't process aggregate column '${colSpec.name}': group column cannot be used in aggregate expression`,
+              );
+            }
+            return col;
+          },
+          engine.aggregateOperations,
+        ),
+      );
+    });
+
     // TODO: verify sort columns
+    // TODO: verify groupBy agg columns, pivot agg columns and configuration agree
   }
 
   // --------------------------- GROUP-LEVEL EXTEND ---------------------------
@@ -491,26 +532,7 @@ export async function validateAndBuildQuerySnapshot(
   // --------------------------------- SORT ---------------------------------
 
   if (funcMap.sort) {
-    data.sortColumns = _param(
-      funcMap.sort,
-      0,
-      V1_Collection,
-      `Can't process sort() expression: Expected parameter at index 0 to be a collection`,
-    ).values.map((value) => {
-      const sortColFunc = _funcMatch(value, [
-        DataCubeFunction.ASCENDING,
-        DataCubeFunction.DESCENDING,
-      ]);
-      return {
-        ..._getCol(_colSpecParam(sortColFunc, 0).name),
-        direction: matchFunctionName(
-          sortColFunc.function,
-          DataCubeFunction.ASCENDING,
-        )
-          ? DataCubeQuerySortDirection.ASCENDING
-          : DataCubeQuerySortDirection.DESCENDING,
-      };
-    });
+    data.sortColumns = _sort(funcMap.sort, _getCol);
   }
 
   // --------------------------------- LIMIT ---------------------------------
@@ -522,7 +544,7 @@ export async function validateAndBuildQuerySnapshot(
       funcMap.limit,
       0,
       V1_CInteger,
-      `Can't process limit() expression: Expected limit to be a non-negative integer value`,
+      `Can't process limit() expression: expected limit to be a non-negative integer value`,
     );
     data.limit = value.value;
   }

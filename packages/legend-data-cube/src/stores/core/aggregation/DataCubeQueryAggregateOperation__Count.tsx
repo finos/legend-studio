@@ -21,9 +21,11 @@ import {
   DataCubeColumnDataType,
   DataCubeFunction,
   ofDataType,
+  type DataCubeOperationValue,
 } from '../DataCubeQueryEngine.js';
-import { _aggCol_basic } from '../DataCubeQueryBuilderUtils.js';
+import { _aggCol_base } from '../DataCubeQueryBuilderUtils.js';
 import type { DataCubeColumnConfiguration } from '../model/DataCubeConfiguration.js';
+import type { V1_ColSpec } from '@finos/legend-graph';
 
 export class DataCubeQueryAggregateOperation__Count extends DataCubeQueryAggregateOperation {
   override get label() {
@@ -42,7 +44,7 @@ export class DataCubeQueryAggregateOperation__Count extends DataCubeQueryAggrega
     return DataCubeQueryAggregateOperator.COUNT;
   }
 
-  isCompatibleWithColumn(column: DataCubeColumn) {
+  override isCompatibleWithColumn(column: DataCubeColumn) {
     return ofDataType(column.type, [
       // NOTE: technically all data types are suported,
       // but we can't because we must preserve the type
@@ -55,7 +57,24 @@ export class DataCubeQueryAggregateOperation__Count extends DataCubeQueryAggrega
     ]);
   }
 
-  buildAggregateColumn(column: DataCubeColumnConfiguration) {
-    return _aggCol_basic(column, DataCubeFunction.COUNT);
+  override isCompatibleWithParameterValues(values: DataCubeOperationValue[]) {
+    return !values.length;
+  }
+
+  override generateDefaultParameterValues(
+    column: DataCubeColumn,
+  ): DataCubeOperationValue[] {
+    return [];
+  }
+
+  override buildAggregateColumnSnapshot(
+    colSpec: V1_ColSpec,
+    columnGetter: (name: string) => DataCubeColumn,
+  ) {
+    return undefined;
+  }
+
+  override buildAggregateColumnExpression(column: DataCubeColumnConfiguration) {
+    return _aggCol_base(column, DataCubeFunction.COUNT);
   }
 }

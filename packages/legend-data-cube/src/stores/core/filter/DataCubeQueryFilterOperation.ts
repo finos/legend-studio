@@ -14,60 +14,10 @@
  * limitations under the License.
  */
 
-import {
-  formatDate,
-  guaranteeNonNullable,
-  UnsupportedOperationError,
-} from '@finos/legend-shared';
 import type { DataCubeOperationValue } from '../DataCubeQueryEngine.js';
 import type { DataCubeQuerySnapshotFilterCondition } from '../DataCubeQuerySnapshot.js';
 import type { DataCubeColumn } from '../model/DataCubeColumn.js';
-import {
-  DATE_FORMAT,
-  DATE_TIME_FORMAT,
-  PRIMITIVE_TYPE,
-  type V1_AppliedFunction,
-} from '@finos/legend-graph';
-
-// --------------------------------- UTILITIES ---------------------------------
-
-export function _defaultPrimitiveTypeValue(type: string): unknown {
-  switch (type) {
-    case PRIMITIVE_TYPE.STRING:
-      return '';
-    case PRIMITIVE_TYPE.BOOLEAN:
-      return false;
-    case PRIMITIVE_TYPE.BYTE:
-      return btoa('');
-    case PRIMITIVE_TYPE.NUMBER:
-    case PRIMITIVE_TYPE.DECIMAL:
-    case PRIMITIVE_TYPE.FLOAT:
-    case PRIMITIVE_TYPE.INTEGER:
-    case PRIMITIVE_TYPE.BINARY:
-      return 0;
-    case PRIMITIVE_TYPE.DATE:
-    case PRIMITIVE_TYPE.STRICTDATE:
-      return formatDate(new Date(Date.now()), DATE_FORMAT);
-    case PRIMITIVE_TYPE.DATETIME:
-      return formatDate(new Date(Date.now()), DATE_TIME_FORMAT);
-    default:
-      throw new UnsupportedOperationError(
-        `Can't generate value for type '${type}'`,
-      );
-  }
-}
-
-export function getFilterOperation(
-  operator: string,
-  operators: DataCubeQueryFilterOperation[],
-) {
-  return guaranteeNonNullable(
-    operators.find((op) => op.operator === operator),
-    `Can't find filter operation '${operator}'`,
-  );
-}
-
-// --------------------------------- CONTRACT ---------------------------------
+import { type V1_AppliedFunction } from '@finos/legend-graph';
 
 export abstract class DataCubeQueryFilterOperation {
   abstract get label(): React.ReactNode;
@@ -77,7 +27,6 @@ export abstract class DataCubeQueryFilterOperation {
 
   abstract isCompatibleWithColumn(column: DataCubeColumn): boolean;
   abstract isCompatibleWithValue(value: DataCubeOperationValue): boolean;
-
   abstract generateDefaultValue(column: DataCubeColumn): DataCubeOperationValue;
 
   abstract buildConditionSnapshot(

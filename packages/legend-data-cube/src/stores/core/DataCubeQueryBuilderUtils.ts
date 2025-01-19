@@ -104,7 +104,7 @@ export function _functionCompositionProcessor(
       case 'groupExtend': {
         if (Array.isArray(data)) {
           data.forEach((func) => sequence.push(func));
-          funcMap[key] = data as V1_AppliedFunction[];
+          funcMap[key] = data;
         }
         break;
       }
@@ -154,16 +154,17 @@ export function _deserializeFunction(json: PlainObject<V1_Lambda>) {
   );
 }
 
-export function _var(name?: string | undefined) {
+export function _var() {
   const variable = new V1_Variable();
-  variable.name = name ?? DEFAULT_LAMBDA_VARIABLE_NAME;
+  // NOTE: we simplify processing logic by forcing all variable names to default value, i.e. x
+  variable.name = DEFAULT_LAMBDA_VARIABLE_NAME;
   return variable;
 }
 
-export function _property(name: string, variable?: V1_Variable | undefined) {
+export function _property(name: string) {
   const property = new V1_AppliedProperty();
   property.property = name;
-  property.parameters.push(variable ?? _var());
+  property.parameters.push(_var());
   return property;
 }
 
@@ -304,10 +305,7 @@ export function _colSpec(
   return colSpec;
 }
 
-export function _value(
-  value: DataCubeOperationValue,
-  variable?: V1_Variable | undefined,
-) {
+export function _value(value: DataCubeOperationValue) {
   switch (value.type) {
     case PRIMITIVE_TYPE.STRING:
     case PRIMITIVE_TYPE.BOOLEAN:
@@ -327,7 +325,7 @@ export function _value(
       return _primitiveValue(value.type, value.value);
     }
     case DataCubeOperationAdvancedValueType.COLUMN:
-      return _property(guaranteeIsString(value.value), variable);
+      return _property(guaranteeIsString(value.value));
     default:
       throw new UnsupportedOperationError(
         `Can't build value instance for unsupported type '${value.type}'`,
@@ -386,7 +384,7 @@ export function _extendRootAggregation(columnName: string) {
 const INTERNAL__FILLER_COUNT_AGG_COLUMN_NAME =
   'INTERNAL__filler_count_agg_column';
 // if no aggregates are specified, add a dummy count() aggregate to satisfy compiler
-function fixEmptyAggCols(aggCols: V1_ColSpec[]) {
+function _fixEmptyAggCols(aggCols: V1_ColSpec[]) {
   const variable = _var();
   return aggCols.length
     ? aggCols
@@ -399,11 +397,11 @@ function fixEmptyAggCols(aggCols: V1_ColSpec[]) {
       ];
 }
 
-export function _aggCol_basic(column: DataCubeColumn, func: string) {
+export function _aggCol_base(column: DataCubeColumn, func: string) {
   const variable = _var();
   return _colSpec(
     column.name,
-    _lambda([variable], [_property(column.name, variable)]),
+    _lambda([variable], [_property(column.name)]),
     _lambda([variable], [_function(_functionName(func), [variable])]),
   );
 }
@@ -426,12 +424,12 @@ export function _pivotAggCols(
         (col) => col.name === column.name,
       ),
   );
-  return fixEmptyAggCols(
+  return _fixEmptyAggCols(
     aggColumns.map((agg) => {
       const operation = aggregateOperations.find(
         (op) => op.operator === agg.aggregateOperator,
       );
-      const aggCol = operation?.buildAggregateColumn(agg);
+      const aggCol = operation?.buildAggregateColumnExpression(agg);
       if (!aggCol) {
         throw new UnsupportedOperationError(
           `Can't build aggregate column for unsupported operator '${agg.aggregateOperator}'`,
@@ -476,12 +474,12 @@ export function _groupByAggCols(
           (col) => col.name === column.name,
         ),
     );
-    return fixEmptyAggCols(
+    return _fixEmptyAggCols(
       aggColumns.map((agg) => {
         const operation = aggregateOperations.find(
           (op) => op.operator === agg.aggregateOperator,
         );
-        const aggCol = operation?.buildAggregateColumn(agg);
+        const aggCol = operation?.buildAggregateColumnExpression(agg);
         if (!aggCol) {
           throw new UnsupportedOperationError(
             `Can't build aggregate column for unsupported operator '${agg.aggregateOperator}'`,
@@ -498,7 +496,7 @@ export function _groupByAggCols(
   const pivotGroupByColumns = pivot.castColumns.filter(
     (col) => !isPivotResultColumnName(col.name),
   );
-  return fixEmptyAggCols([
+  return _fixEmptyAggCols([
     // for pivot result columns, resolve the base aggregate column to get aggregate configuration
     ...pivotResultColumns
       .map((column) => {
@@ -522,7 +520,8 @@ export function _groupByAggCols(
         const operation = aggregateOperations.find(
           (op) => op.operator === columnConfiguration.aggregateOperator,
         );
-        const aggCol = operation?.buildAggregateColumn(columnConfiguration);
+        const aggCol =
+          operation?.buildAggregateColumnExpression(columnConfiguration);
         if (!aggCol) {
           throw new UnsupportedOperationError(
             `Can't build aggregate column for unsupported operator '${columnConfiguration.aggregateOperator}'`,
@@ -543,7 +542,8 @@ export function _groupByAggCols(
         const operation = aggregateOperations.find(
           (op) => op.operator === columnConfiguration.aggregateOperator,
         );
-        const aggCol = operation?.buildAggregateColumn(columnConfiguration);
+        const aggCol =
+          operation?.buildAggregateColumnExpression(columnConfiguration);
         if (!aggCol) {
           throw new UnsupportedOperationError(
             `Can't build aggregate column for unsupported operator '${columnConfiguration.aggregateOperator}'`,

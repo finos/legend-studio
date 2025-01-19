@@ -29,11 +29,10 @@ import {
   _functionName,
   _property,
   _value,
-  _var,
 } from '../DataCubeQueryBuilderUtils.js';
-import { guaranteeNonNullable, isString } from '@finos/legend-shared';
+import { isString } from '@finos/legend-shared';
 import { type V1_AppliedFunction } from '@finos/legend-graph';
-import { _caseSensitiveBaseFilterCondition } from '../DataCubeQuerySnapshotBuilderUtils.js';
+import { _filterCondition_caseSensitive } from '../DataCubeQuerySnapshotBuilderUtils.js';
 
 export class DataCubeQueryFilterOperation__EqualCaseInsensitiveColumn extends DataCubeQueryFilterOperation {
   override get label() {
@@ -76,7 +75,7 @@ export class DataCubeQueryFilterOperation__EqualCaseInsensitiveColumn extends Da
     columnGetter: (name: string) => DataCubeColumn,
   ) {
     return this._finalizeConditionSnapshot(
-      _caseSensitiveBaseFilterCondition(
+      _filterCondition_caseSensitive(
         expression,
         columnGetter,
         DataCubeFunction.EQUAL,
@@ -85,13 +84,12 @@ export class DataCubeQueryFilterOperation__EqualCaseInsensitiveColumn extends Da
   }
 
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {
-    const variable = _var();
     return _function(_functionName(DataCubeFunction.EQUAL), [
       _function(_functionName(DataCubeFunction.TO_LOWERCASE), [
-        _property(condition.name, variable),
+        _property(condition.name),
       ]),
       _function(_functionName(DataCubeFunction.TO_LOWERCASE), [
-        _value(guaranteeNonNullable(condition.value), variable),
+        _value(condition.value),
       ]),
     ]);
   }

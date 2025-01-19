@@ -21,8 +21,11 @@ import {
   type V1_AppliedFunction,
   PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
-import { getFilterOperation } from './filter/DataCubeQueryFilterOperation.js';
-import { getAggregateOperation } from './aggregation/DataCubeQueryAggregateOperation.js';
+import {
+  DataCubeFunction,
+  getFilterOperation,
+  getAggregateOperation,
+} from './DataCubeQueryEngine.js';
 import { DataCubeQueryAggregateOperation__Sum } from './aggregation/DataCubeQueryAggregateOperation__Sum.js';
 import { DataCubeQueryAggregateOperation__Average } from './aggregation/DataCubeQueryAggregateOperation__Average.js';
 import { DataCubeQueryAggregateOperation__Count } from './aggregation/DataCubeQueryAggregateOperation__Count.js';
@@ -80,7 +83,6 @@ import {
   type LogEvent,
   type PlainObject,
 } from '@finos/legend-shared';
-import { DataCubeFunction } from './DataCubeQueryEngine.js';
 
 export type CompletionItem = {
   completion: string;

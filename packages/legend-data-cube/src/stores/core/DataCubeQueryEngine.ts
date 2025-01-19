@@ -15,8 +15,19 @@
  */
 
 import { TailwindCSSPalette } from '@finos/legend-art';
-import { PRIMITIVE_TYPE, type V1_AppliedFunction } from '@finos/legend-graph';
-import { IllegalStateError } from '@finos/legend-shared';
+import {
+  DATE_FORMAT,
+  PRIMITIVE_TYPE,
+  type V1_AppliedFunction,
+} from '@finos/legend-graph';
+import {
+  guaranteeNonNullable,
+  IllegalStateError,
+  UnsupportedOperationError,
+  formatDate,
+} from '@finos/legend-shared';
+import type { DataCubeQueryFilterOperation } from './filter/DataCubeQueryFilterOperation.js';
+import type { DataCubeQueryAggregateOperation } from './aggregation/DataCubeQueryAggregateOperation.js';
 
 export enum DataCubeFunction {
   // relation
@@ -146,21 +157,6 @@ export enum DataCubeOperationAdvancedValueType {
   // PARAMETER
 }
 
-export function isPrimitiveType(type: string) {
-  return (
-    [
-      PRIMITIVE_TYPE.NUMBER,
-      PRIMITIVE_TYPE.INTEGER,
-      PRIMITIVE_TYPE.DECIMAL,
-      PRIMITIVE_TYPE.FLOAT,
-      PRIMITIVE_TYPE.DATE,
-      PRIMITIVE_TYPE.STRICTDATE,
-      PRIMITIVE_TYPE.DATETIME,
-      PRIMITIVE_TYPE.STRING,
-    ] as string[]
-  ).includes(type);
-}
-
 export type DataCubeOperationValue = {
   value?: unknown;
   type: string;
@@ -272,47 +268,7 @@ export enum DataCubeColumnDataType {
   TIME = 'Time',
 }
 
-export function getDataType(type: string): DataCubeColumnDataType {
-  switch (type) {
-    case PRIMITIVE_TYPE.NUMBER:
-    case PRIMITIVE_TYPE.INTEGER:
-    case PRIMITIVE_TYPE.DECIMAL:
-    case PRIMITIVE_TYPE.FLOAT:
-      return DataCubeColumnDataType.NUMBER;
-    case PRIMITIVE_TYPE.DATE:
-    case PRIMITIVE_TYPE.STRICTDATE:
-      return DataCubeColumnDataType.DATE;
-    case PRIMITIVE_TYPE.DATETIME:
-      return DataCubeColumnDataType.TIME;
-    case PRIMITIVE_TYPE.STRING:
-    default:
-      return DataCubeColumnDataType.TEXT;
-  }
-}
-
-export function ofDataType(
-  type: string,
-  dataTypes: DataCubeColumnDataType[],
-): boolean {
-  return dataTypes.includes(getDataType(type));
-}
-
 export const PIVOT_COLUMN_NAME_VALUE_SEPARATOR = '__|__';
-
-export function isPivotResultColumnName(columnName: string) {
-  return columnName.includes(PIVOT_COLUMN_NAME_VALUE_SEPARATOR);
-}
-export function getPivotResultColumnBaseColumnName(columnName: string) {
-  if (!isPivotResultColumnName(columnName)) {
-    throw new IllegalStateError(
-      `Column '${columnName}' is not a pivot result column`,
-    );
-  }
-  return columnName.substring(
-    columnName.lastIndexOf(PIVOT_COLUMN_NAME_VALUE_SEPARATOR) +
-      PIVOT_COLUMN_NAME_VALUE_SEPARATOR.length,
-  );
-}
 
 export const TREE_COLUMN_VALUE_SEPARATOR = '__/__';
 export const DEFAULT_LAMBDA_VARIABLE_NAME = 'x';
@@ -321,6 +277,8 @@ export const DEFAULT_REPORT_NAME = 'New Report';
 export const DEFAULT_TREE_COLUMN_SORT_DIRECTION =
   DataCubeQuerySortDirection.ASCENDING;
 export const DEFAULT_PIVOT_STATISTIC_COLUMN_NAME = 'Total';
+export const DEFAULT_PIVOT_COLUMN_SORT_DIRECTION =
+  DataCubeQuerySortDirection.ASCENDING;
 export const DEFAULT_ROOT_AGGREGATION_COLUMN_VALUE = '[ROOT]';
 
 export const DEFAULT_URL_LABEL_QUERY_PARAM = 'dataCube.linkLabel';
@@ -354,3 +312,105 @@ export const DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
 export const TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH = 3;
 export const TYPEAHEAD_SEARCH_LIMIT = 10;
 export const EMPTY_VALUE_PLACEHOLDER = '(None)';
+
+// --------------------------------- UTILITIES ---------------------------------
+
+export function _defaultPrimitiveTypeValue(type: string): unknown {
+  switch (type) {
+    case PRIMITIVE_TYPE.STRING:
+      return '';
+    case PRIMITIVE_TYPE.BOOLEAN:
+      return false;
+    case PRIMITIVE_TYPE.BYTE:
+      return btoa('');
+    case PRIMITIVE_TYPE.NUMBER:
+    case PRIMITIVE_TYPE.DECIMAL:
+    case PRIMITIVE_TYPE.FLOAT:
+    case PRIMITIVE_TYPE.INTEGER:
+    case PRIMITIVE_TYPE.BINARY:
+      return 0;
+    case PRIMITIVE_TYPE.DATE:
+    case PRIMITIVE_TYPE.STRICTDATE:
+      return formatDate(new Date(Date.now()), DATE_FORMAT);
+    case PRIMITIVE_TYPE.DATETIME:
+      return formatDate(new Date(Date.now()), DATE_TIME_FORMAT);
+    default:
+      throw new UnsupportedOperationError(
+        `Can't generate value for type '${type}'`,
+      );
+  }
+}
+
+export function getFilterOperation(
+  operator: string,
+  operators: DataCubeQueryFilterOperation[],
+) {
+  return guaranteeNonNullable(
+    operators.find((op) => op.operator === operator),
+    `Can't find filter operation '${operator}'`,
+  );
+}
+
+export function getAggregateOperation(
+  operator: string,
+  aggregateOperations: DataCubeQueryAggregateOperation[],
+) {
+  return guaranteeNonNullable(
+    aggregateOperations.find((op) => op.operator === operator),
+    `Can't find aggregate operation '${operator}'`,
+  );
+}
+
+export function getDataType(type: string): DataCubeColumnDataType {
+  switch (type) {
+    case PRIMITIVE_TYPE.NUMBER:
+    case PRIMITIVE_TYPE.INTEGER:
+    case PRIMITIVE_TYPE.DECIMAL:
+    case PRIMITIVE_TYPE.FLOAT:
+      return DataCubeColumnDataType.NUMBER;
+    case PRIMITIVE_TYPE.DATE:
+    case PRIMITIVE_TYPE.STRICTDATE:
+      return DataCubeColumnDataType.DATE;
+    case PRIMITIVE_TYPE.DATETIME:
+      return DataCubeColumnDataType.TIME;
+    case PRIMITIVE_TYPE.STRING:
+    default:
+      return DataCubeColumnDataType.TEXT;
+  }
+}
+
+export function ofDataType(
+  type: string,
+  dataTypes: DataCubeColumnDataType[],
+): boolean {
+  return dataTypes.includes(getDataType(type));
+}
+
+export function isPrimitiveType(type: string) {
+  return (
+    [
+      PRIMITIVE_TYPE.NUMBER,
+      PRIMITIVE_TYPE.INTEGER,
+      PRIMITIVE_TYPE.DECIMAL,
+      PRIMITIVE_TYPE.FLOAT,
+      PRIMITIVE_TYPE.DATE,
+      PRIMITIVE_TYPE.STRICTDATE,
+      PRIMITIVE_TYPE.DATETIME,
+      PRIMITIVE_TYPE.STRING,
+    ] as string[]
+  ).includes(type);
+}
+export function isPivotResultColumnName(columnName: string) {
+  return columnName.includes(PIVOT_COLUMN_NAME_VALUE_SEPARATOR);
+}
+export function getPivotResultColumnBaseColumnName(columnName: string) {
+  if (!isPivotResultColumnName(columnName)) {
+    throw new IllegalStateError(
+      `Column '${columnName}' is not a pivot result column`,
+    );
+  }
+  return columnName.substring(
+    columnName.lastIndexOf(PIVOT_COLUMN_NAME_VALUE_SEPARATOR) +
+      PIVOT_COLUMN_NAME_VALUE_SEPARATOR.length,
+  );
+}
