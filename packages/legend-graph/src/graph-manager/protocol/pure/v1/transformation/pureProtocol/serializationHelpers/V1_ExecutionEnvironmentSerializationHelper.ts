@@ -62,7 +62,7 @@ const V1_runtimeComponentsModelSchema = createModelSchema(
       (val) => serialize(V1_packageableElementPointerModelSchema, val),
       (val) => deserialize(V1_packageableElementPointerModelSchema, val),
     ),
-    runtime: optionalCustom(
+    runtime: custom(
       (val) => V1_serializeRuntime(val),
       (val) => V1_deserializeRuntime(val),
     ),

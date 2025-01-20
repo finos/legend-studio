@@ -77,8 +77,8 @@ export class V1_SingleExecutionParameters
       CORE_HASH_STRUCTURE.SINGLE_EXECUTION_PARAMETER,
       this.key,
       this.mapping,
-      this.runtime,
-      this.runtimeComponents,
+      this.runtime ?? '',
+      this.runtimeComponents ?? '',
     ]);
   }
 }
