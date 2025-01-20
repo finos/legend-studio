@@ -1,0 +1,68 @@
+###Service
+ExecutionEnvironment test::executionEnvironment
+{
+  executions:
+  [
+    UAT:
+    {
+      mapping: test::mapping;
+      runtimeComponents:
+      {
+        class: test::class;
+        binding: test::bind;
+        runtime: test::runtime;
+      }
+    },
+    PROD:
+    {
+      mapping: test::mapping;
+      runtimeComponents:
+      {
+        class: test::class;
+        binding: test::bind;
+        runtime: test::runtime;
+      }
+    }
+  ];
+}
+
+
+###ExternalFormat
+Binding test::bind
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    test::class
+  ];
+}
+
+
+###Pure
+Class test::class
+{
+  prop1: Integer[0..1];
+}
+
+
+###Mapping
+Mapping test::mapping
+(
+)
+
+
+###Connection
+JsonModelConnection test::connection
+{
+  class: test::class;
+  url: 'asd';
+}
+
+
+###Runtime
+Runtime test::runtime
+{
+  mappings:
+  [
+    test::mapping
+  ];
+}

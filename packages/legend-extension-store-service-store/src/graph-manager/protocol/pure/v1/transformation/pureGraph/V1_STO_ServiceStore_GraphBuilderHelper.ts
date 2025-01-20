@@ -312,6 +312,7 @@ export const V1_buildServiceStoreElement = (
         `Service response 'type' field is missing or empty`,
       ),
     );
+    //ere
     service.response.binding = V1_resolveBinding(
       guaranteeNonEmptyString(
         protocol.response.binding,

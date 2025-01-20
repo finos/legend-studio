@@ -19,6 +19,8 @@ import {
   usingConstantValueSchema,
   usingModelSchema,
   UnsupportedOperationError,
+  optionalCustom,
+  optionalCustomUsingModelSchema,
 } from '@finos/legend-shared';
 import {
   createModelSchema,
@@ -31,6 +33,7 @@ import {
 import {
   V1_ExecutionEnvironmentInstance,
   V1_MultiExecutionParameters,
+  V1_RuntimeComponents,
   V1_SingleExecutionParameters,
   type V1_ExecutionParameters,
 } from '../../../model/packageableElements/service/V1_ExecutionEnvironmentInstance.js';
@@ -38,6 +41,7 @@ import {
   V1_deserializeRuntime,
   V1_serializeRuntime,
 } from './V1_RuntimeSerializationHelper.js';
+import { V1_packageableElementPointerModelSchema } from './V1_CoreSerializationHelper.js';
 
 export const V1_EXECUTION_ENVIRONMENT_ELEMENT_PROTOCOL_TYPE =
   'executionEnvironmentInstance';
@@ -47,6 +51,24 @@ enum V1_ExecEnvirParameterType {
   PURE_MULTI_EXECUTION = 'multiExecutionParameters',
 }
 
+const V1_runtimeComponentsModelSchema = createModelSchema(
+  V1_RuntimeComponents,
+  {
+    clazz: custom(
+      (val) => serialize(V1_packageableElementPointerModelSchema, val),
+      (val) => deserialize(V1_packageableElementPointerModelSchema, val),
+    ),
+    binding: custom(
+      (val) => serialize(V1_packageableElementPointerModelSchema, val),
+      (val) => deserialize(V1_packageableElementPointerModelSchema, val),
+    ),
+    runtime: optionalCustom(
+      (val) => V1_serializeRuntime(val),
+      (val) => V1_deserializeRuntime(val),
+    ),
+  },
+);
+
 const V1_singleExecutionParametersModelSchema = createModelSchema(
   V1_SingleExecutionParameters,
   {
@@ -55,9 +77,12 @@ const V1_singleExecutionParametersModelSchema = createModelSchema(
     ),
     key: primitive(),
     mapping: primitive(),
-    runtime: custom(
+    runtime: optionalCustom(
       (val) => V1_serializeRuntime(val),
       (val) => V1_deserializeRuntime(val),
+    ),
+    runtimeComponents: optionalCustomUsingModelSchema(
+      V1_runtimeComponentsModelSchema,
     ),
   },
 );

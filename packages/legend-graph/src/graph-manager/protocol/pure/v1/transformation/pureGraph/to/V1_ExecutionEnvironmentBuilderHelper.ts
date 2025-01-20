@@ -16,6 +16,7 @@
 
 import {
   assertNonNullable,
+  guaranteeNonEmptyString,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import {
@@ -25,6 +26,7 @@ import {
 import {
   type ExecutionParameters,
   MultiExecutionParameters,
+  RuntimeComponents,
   SingleExecutionParameters,
 } from '../../../../../../../graph/metamodel/pure/packageableElements/service/ExecutionEnvironmentInstance.js';
 import {
@@ -39,6 +41,7 @@ import {
 } from '../../../model/packageableElements/service/V1_ExecutionEnvironmentInstance.js';
 import { V1_buildEngineRuntime } from './helpers/V1_RuntimeBuilderHelper.js';
 import type { V1_GraphBuilderContext } from './V1_GraphBuilderContext.js';
+import { V1_resolveBinding } from './V1_DSL_ExternalFormat_GraphBuilderHelper.js';
 
 const buildExecutionRuntime = (
   runtime: V1_Runtime,
@@ -63,7 +66,27 @@ export const V1_buildSingleExecutionParameters = (
   const element = new SingleExecutionParameters();
   element.key = protocol.key;
   element.mapping = context.resolveMapping(protocol.mapping);
-  element.runtime = buildExecutionRuntime(protocol.runtime, context);
+  if (protocol.runtime) {
+    element.runtime = buildExecutionRuntime(protocol.runtime, context);
+  }
+  if (protocol.runtimeComponents) {
+    const runtimeComponents = new RuntimeComponents();
+    runtimeComponents.binding = V1_resolveBinding(
+      guaranteeNonEmptyString(
+        protocol.runtimeComponents.binding.path,
+        `Service runtime components 'binding' field is missing or empty`,
+      ),
+      context,
+    );
+    runtimeComponents.clazz = context.resolveClass(
+      protocol.runtimeComponents.clazz.path,
+    );
+    runtimeComponents.runtime = buildExecutionRuntime(
+      protocol.runtimeComponents.runtime,
+      context,
+    );
+    element.runtimeComponents = runtimeComponents;
+  }
 
   return element;
 };

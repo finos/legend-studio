@@ -23,6 +23,8 @@ import {
   PackageableElement,
 } from '../PackageableElement.js';
 import type { PackageableElementReference } from '../PackageableElementReference.js';
+import type { Class } from '../domain/Class.js';
+import type { Binding } from '../externalFormat/store/DSL_ExternalFormat_Binding.js';
 
 export class ExecutionEnvironmentInstance
   extends PackageableElement
@@ -49,17 +51,34 @@ export abstract class ExecutionParameters implements Hashable {
   abstract get hashCode(): string;
 }
 
+export class RuntimeComponents implements Hashable {
+  runtime!: Runtime;
+  binding!: PackageableElementReference<Binding>;
+  clazz!: PackageableElementReference<Class>;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.RUNTIME_COMPONENTS,
+      this.binding.valueForSerialization ?? '',
+      this.clazz.valueForSerialization ?? '',
+      this.runtime,
+    ]);
+  }
+}
+
 export class SingleExecutionParameters implements Hashable {
   key!: string;
   mapping!: PackageableElementReference<Mapping>;
-  runtime!: Runtime;
+  runtime?: Runtime;
+  runtimeComponents?: RuntimeComponents;
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.SINGLE_EXECUTION_PARAMETER,
       this.key,
       this.mapping.valueForSerialization ?? '',
-      this.runtime,
+      this.runtime ?? '',
+      this.runtimeComponents ?? '',
     ]);
   }
 }

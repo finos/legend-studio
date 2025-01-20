@@ -26,10 +26,13 @@ import {
   type V1_ExecutionParameters,
   V1_ExecutionEnvironmentInstance,
   V1_MultiExecutionParameters,
+  V1_RuntimeComponents,
   V1_SingleExecutionParameters,
 } from '../../../model/packageableElements/service/V1_ExecutionEnvironmentInstance.js';
 import { V1_transformRuntime } from './V1_RuntimeTransformer.js';
 import { UnsupportedOperationError } from '@finos/legend-shared';
+import { PackageableElementPointerType } from '../../../../../../../graph/MetaModelConst.js';
+import { V1_PackageableElementPointer } from '../../../model/packageableElements/V1_PackageableElement.js';
 
 const V1_transformSingleExecutionParameters = (
   element: SingleExecutionParameters,
@@ -38,7 +41,25 @@ const V1_transformSingleExecutionParameters = (
   const _val = new V1_SingleExecutionParameters();
   _val.key = element.key;
   _val.mapping = element.mapping.valueForSerialization ?? '';
-  _val.runtime = V1_transformRuntime(element.runtime, context);
+  if (element.runtime) {
+    _val.runtime = V1_transformRuntime(element.runtime, context);
+  }
+  if (element.runtimeComponents) {
+    _val.runtimeComponents = new V1_RuntimeComponents();
+    _val.runtimeComponents.binding = new V1_PackageableElementPointer(
+      PackageableElementPointerType.BINDING,
+      element.runtimeComponents.binding.valueForSerialization ?? '',
+    );
+    _val.runtimeComponents.clazz = new V1_PackageableElementPointer(
+      PackageableElementPointerType.CLASS,
+      element.runtimeComponents.clazz.valueForSerialization ?? '',
+    );
+    _val.runtimeComponents.runtime = V1_transformRuntime(
+      element.runtimeComponents.runtime,
+      context,
+    );
+  }
+
   return _val;
 };
 

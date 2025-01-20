@@ -94,6 +94,7 @@ export const observe_ComplexTypeReference = skipObserved(
     });
 
     observe_PackageableElementReference(metamodel.type);
+    //hre
     observe_PackageableElementReference(metamodel.binding);
 
     return metamodel;
