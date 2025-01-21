@@ -107,7 +107,6 @@ export const V1_transformComplexTypeReference = (
   const complexTypeReference = new V1_ComplexTypeReference();
   complexTypeReference.list = metamodel.list;
   complexTypeReference.type = metamodel.type.valueForSerialization ?? '';
-  //hree
   complexTypeReference.binding = metamodel.binding.valueForSerialization ?? '';
   return complexTypeReference;
 };
