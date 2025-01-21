@@ -63,8 +63,11 @@ import {
   type DataCubeOperationValue,
 } from './DataCubeQueryEngine.js';
 import type {
+  DataCubeQuerySnapshotAggregateColumn,
   DataCubeQuerySnapshotFilter,
   DataCubeQuerySnapshotFilterCondition,
+  DataCubeQuerySnapshotGroupBy,
+  DataCubeQuerySnapshotPivot,
 } from './DataCubeQuerySnapshot.js';
 import type { DataCubeQueryFilterOperation } from './filter/DataCubeQueryFilterOperation.js';
 import type { DataCubeEngine } from './DataCubeEngine.js';
@@ -242,6 +245,23 @@ export function _operationValue(
   throw new UnsupportedOperationError(
     `Can't process unsupported operation value`,
   );
+}
+
+export function _checkDuplicateColumns(
+  columns: DataCubeColumn[],
+  message?: ((colName: string) => string) | undefined,
+) {
+  const cols = new Set<string>();
+  columns.forEach((col) => {
+    if (cols.has(col.name)) {
+      throw new Error(
+        message?.(col.name) ??
+          `Can't process expression: found duplicate columns '${col.name}'`,
+      );
+    } else {
+      cols.add(col.name);
+    }
+  });
 }
 
 // --------------------------------- BUILDING BLOCKS ---------------------------------
@@ -644,6 +664,99 @@ export function _agg_base(
     return undefined;
   }
   return undefined;
+}
+
+export function _pivotSort(
+  func: V1_AppliedFunction,
+  pivotColumns: DataCubeColumn[],
+  columnGetter: (name: string) => DataCubeColumn,
+) {
+  const sortColumns = _sort(func, columnGetter);
+  const groupColumns = new Set(pivotColumns.map((col) => col.name));
+  const columnsToSort = new Set(pivotColumns.map((col) => col.name));
+  sortColumns.forEach((col) => {
+    if (groupColumns.has(col.name)) {
+      columnsToSort.delete(col.name);
+    } else {
+      throw new Error(
+        `Can't process pivot() expression: sort column '${col.name}' must be a pivot column`,
+      );
+    }
+  });
+  if (columnsToSort.size !== 0) {
+    throw new Error(
+      `Can't process pivot() expression: found unsorted pivot column(s) (${Array.from(
+        columnsToSort.values(),
+      )
+        .sort()
+        .map((col) => `'${col}'`)
+        .join(', ')})`,
+    );
+  }
+  return sortColumns;
+}
+
+export function _validatePivot(
+  pivot: DataCubeQuerySnapshotPivot,
+  pivotAggColumns: DataCubeQuerySnapshotAggregateColumn[],
+) {
+  const colNames = new Set<string>();
+  // pivot.columns.forEach((col) => cols.add(col.name));
+  // pivotAggColumns.forEach((col) => {
+  //   // if (cols.has(col.name)) {
+  //   // }
+  // });
+}
+
+export function _groupBySort(
+  func: V1_AppliedFunction,
+  groupByColumns: DataCubeColumn[],
+  columnGetter: (name: string) => DataCubeColumn,
+) {
+  const sortColumns = _sort(func, columnGetter);
+  const groupColumns = new Set(groupByColumns.map((col) => col.name));
+  const columnsToSort = new Set(groupByColumns.map((col) => col.name));
+  let sortDirection: DataCubeQuerySortDirection | undefined = undefined;
+  sortColumns.forEach((col) => {
+    if (groupColumns.has(col.name)) {
+      columnsToSort.delete(col.name);
+    } else {
+      throw new Error(
+        `Can't process groupBy() expression: sort column '${col.name}' must be a group column`,
+      );
+    }
+
+    if (!sortDirection) {
+      sortDirection = col.direction;
+    } else if (col.direction !== sortDirection) {
+      throw new Error(
+        `Can't process groupBy() expression: all group columns must be sorted in the same direction`,
+      );
+    }
+  });
+  if (columnsToSort.size !== 0) {
+    throw new Error(
+      `Can't process groupBy() expression: found unsorted group column(s) (${Array.from(
+        columnsToSort.values(),
+      )
+        .sort()
+        .map((col) => `'${col}'`)
+        .join(', ')})`,
+    );
+  }
+  return sortColumns;
+}
+
+export function _validateGroupBy(
+  groupBy: DataCubeQuerySnapshotGroupBy,
+  groupByAggColumns: DataCubeQuerySnapshotAggregateColumn[],
+) {
+  // const colNames = new Set<string>();
+  // pivot.columns.forEach((col) => cols.add(col.name));
+  // pivotAggColumns.forEach((col) => {
+  //   // if (cols.has(col.name)) {
+  //   // }
+  // });
 }
 
 export function _sort(

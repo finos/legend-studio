@@ -64,6 +64,10 @@ import {
   _aggCol,
   _sort,
   _unwrapLambda,
+  _pivotSort,
+  _groupBySort,
+  _validatePivot,
+  _checkDuplicateColumns,
 } from './DataCubeQuerySnapshotBuilderUtils.js';
 import type { DataCubeSource } from './model/DataCubeSource.js';
 import type { DataCubeEngine } from './DataCubeEngine.js';
@@ -382,13 +386,21 @@ export async function validateAndBuildQuerySnapshot(
   // -------------------------------- SOURCE --------------------------------
 
   data.sourceColumns = source.columns;
-  data.sourceColumns.forEach((col) => _setCol(col));
+
+  // validate
+  _checkDuplicateColumns(
+    data.sourceColumns,
+    (colName) =>
+      `Can't process source: found duplicate source columns '${colName}'`,
+  );
   data.sourceColumns.forEach((col) =>
     _checkColName(
       col,
-      `Can't process source column '${col.name}': another column with the same name is already registered`,
+      `Can't process source: another column with name '${col.name}' is already registered`,
     ),
   );
+
+  data.sourceColumns.forEach((col) => _setCol(col));
 
   // --------------------------- LEAF-LEVEL EXTEND ---------------------------
 
@@ -398,13 +410,23 @@ export async function validateAndBuildQuerySnapshot(
       Array.from(colsMap.values()),
       engine,
     );
-    data.leafExtendedColumns.forEach((col) => _setCol(col));
+
+    // validate
+    // NOTE: these duplication checks might not be necessary since compiler would catch these
+    // issues anyway, but we leave them here to be defensive
+    _checkDuplicateColumns(
+      data.leafExtendedColumns,
+      (colName) =>
+        `Can't process extend() expression: found duplicate extended columns '${colName}'`,
+    );
     data.leafExtendedColumns.forEach((col) =>
       _checkColName(
         col,
-        `Can't process leaf-level extended column '${col.name}': another column with the same name is already registered`,
+        `Can't process extend() expression: another column with name '${col.name}' is already registered`,
       ),
     );
+
+    data.leafExtendedColumns.forEach((col) => _setCol(col));
   }
 
   // --------------------------------- FILTER ---------------------------------
@@ -429,11 +451,20 @@ export async function validateAndBuildQuerySnapshot(
     data.selectColumns = _colSpecArrayParam(funcMap.select, 0).colSpecs.map(
       (colSpec) => _getCol(colSpec.name),
     );
+
+    // validate
+    _checkDuplicateColumns(
+      data.selectColumns,
+      (colName) =>
+        `Can't process select() expression: found duplicate select columns '${colName}'`,
+    );
+
     // restrict the set of available columns to only selected columns
     colsMap.clear();
     data.selectColumns.forEach((col) => _setCol(col));
   } else {
-    // mandate that if select() expression is not present,
+    // mandate that if select() expression is not present, we consider this
+    // as no-column is selected
     colsMap.clear();
   }
 
@@ -475,8 +506,30 @@ export async function validateAndBuildQuerySnapshot(
     );
 
     // process sort columns
-    // TODO: verify sort columns when we support sorting pivot columns
-    pivotSortColumns = _sort(funcMap.pivotSort, _getCol);
+    pivotSortColumns = _pivotSort(funcMap.pivotSort, pivotColumns, _getCol);
+
+    // validate
+    _checkDuplicateColumns(
+      pivotColumns,
+      (colName) =>
+        `Can't process pivot() expression: found duplicate pivot columns '${colName}'`,
+    );
+    _checkDuplicateColumns(
+      pivotAggColumns,
+      (colName) =>
+        `Can't process pivot() expression: found duplicate aggregate columns '${colName}'`,
+    );
+    _checkDuplicateColumns(
+      castColumns,
+      (colName) =>
+        `Can't process pivot() expression: found duplicate cast columns '${colName}'`,
+    );
+    _checkDuplicateColumns(
+      pivotSortColumns,
+      (colName) =>
+        `Can't process pivot() expression: found duplicate sort columns '${colName}'`,
+    );
+    _validatePivot(data.pivot, pivotAggColumns);
 
     // restrict the set of available columns to only casted columns
     colsMap.clear();
@@ -513,16 +566,38 @@ export async function validateAndBuildQuerySnapshot(
         ),
     );
 
-    groupBySortColumns = _sort(funcMap.groupBySort, _getCol);
+    // process sort columns
+    groupBySortColumns = _groupBySort(
+      funcMap.groupBySort,
+      groupByColumns,
+      _getCol,
+    );
 
-    // TODO: verify sort columns
-    // TODO: verify groupBy agg columns, pivot agg columns and configuration agree
+    // validate
+    _checkDuplicateColumns(
+      groupByColumns,
+      (colName) =>
+        `Can't process groupBy() expression: found duplicate group columns '${colName}'`,
+    );
+    _checkDuplicateColumns(
+      groupByAggColumns,
+      (colName) =>
+        `Can't process groupBy() expression: found duplicate aggregate columns '${colName}'`,
+    );
+    _checkDuplicateColumns(
+      groupBySortColumns,
+      (colName) =>
+        `Can't process groupBy() expression: found duplicate sort columns '${colName}'`,
+    );
   }
 
+  // make sure the totality of groupByColumns and aggCols cover ALL columns available in current colsMap
+  // TODO: verify sort columns
+  // TODO: verify groupBy agg columns, pivot agg columns and configuration agree
   // TODO: verify against pivot agg colunms,
-  // make sure this is the super set (account for exclude h-pivot)
-  // consider scenarios where we have cast columns
-  // consider scenarios where we have different parameter values
+  // - make sure this is the super set (account for exclude h-pivot)
+  // - consider scenarios where we have cast columns
+  // - consider scenarios where we have different parameter values across aggCol
 
   // --------------------------- GROUP-LEVEL EXTEND ---------------------------
 
@@ -532,19 +607,36 @@ export async function validateAndBuildQuerySnapshot(
       Array.from(colsMap.values()),
       engine,
     );
-    data.groupExtendedColumns.forEach((col) => _setCol(col));
+
+    // validate
+    // NOTE: these duplication checks might not be necessary since compiler would catch these
+    // issues anyway, but we leave them here to be defensive
+    _checkDuplicateColumns(
+      data.groupExtendedColumns,
+      (colName) =>
+        `Can't process extend() expression: found duplicate extended columns '${colName}'`,
+    );
     data.groupExtendedColumns.forEach((col) =>
       _checkColName(
         col,
-        `Can't process group-level extended column '${col.name}': another column with the same name is already registered`,
+        `Can't process extend() expression: another column with name '${col.name}' is already registered`,
       ),
     );
+
+    data.groupExtendedColumns.forEach((col) => _setCol(col));
   }
 
   // --------------------------------- SORT ---------------------------------
 
   if (funcMap.sort) {
     data.sortColumns = _sort(funcMap.sort, _getCol);
+
+    // validate
+    _checkDuplicateColumns(
+      data.sortColumns,
+      (colName) =>
+        `Can't process sort() expression: found duplicate sort columns '${colName}'`,
+    );
   }
 
   // --------------------------------- LIMIT ---------------------------------

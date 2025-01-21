@@ -57,8 +57,8 @@ function _case(
     data.columns?.map((entry) => {
       const parts = entry.split(':');
       return {
-        name: parts[0] as string,
-        type: parts[1] as string,
+        name: (parts[0] as string).trim(),
+        type: (parts[1] as string).trim(),
       };
     }) ?? [],
     data.configuration,
@@ -80,7 +80,7 @@ function _checkFilterOperator(operator: DataCubeQueryFilterOperator) {
 
 const FOCUSED_TESTS: unknown[] = [
   // tests added here will be the only tests run
-  /GroupBy:/,
+  /Pivot:/,
 ];
 
 const cases: TestCase[] = [
@@ -103,14 +103,11 @@ const cases: TestCase[] = [
     columns: ['name:Integer', 'val:Integer'],
     error: `Can't process extend() expression: failed to retrieve type information for columns. Error: The relation contains duplicates: [name]`,
   }),
-  _case(
-    `Leaf-level Extend: ERROR - name clash among leaf-level extended columns`,
-    {
-      query: `extend(~[name:c|$c.val->toOne() + 1])->extend(~[name:c|$c.val->toOne() + 1])`,
-      columns: ['val:Integer'],
-      error: `Can't process extend() expression: failed to retrieve type information for columns. Error: The relation contains duplicates: [name]`,
-    },
-  ),
+  _case(`Leaf-level Extend: ERROR - duplicate leaf-level extended columns`, {
+    query: `extend(~[name:c|$c.val->toOne() + 1])->extend(~[name:c|$c.val->toOne() + 1])`,
+    columns: ['val:Integer'],
+    error: `Can't process extend() expression: failed to retrieve type information for columns. Error: The relation contains duplicates: [name]`,
+  }),
   _case(
     `Leaf-level Extend: ERROR - multiple columns within the same extend() expression`,
     {
@@ -772,6 +769,12 @@ const cases: TestCase[] = [
     columns: ['a:Integer', 'b:String'],
     error: `Can't find column 'c'`,
   }),
+  _case(`Select: ERROR - duplicate select columns`, {
+    query: `select(~[a, a])`,
+    columns: ['a:Integer', 'b:String'],
+    error: `Can't process select() expression: found duplicate select columns 'a'`,
+  }),
+
   // --------------------------------- AGGREGATION ---------------------------------
 
   _case(`Aggregation: sum()`, {
@@ -1004,23 +1007,71 @@ const cases: TestCase[] = [
 
   // --------------------------------- PIVOT ---------------------------------
 
-  // _case(`GENERIC: Bad composition pivot()`, {
-  //   query: `pivot(~a, ~b:x|$x.a:x|$x->sum())`,
-  //   error: `Unsupported function composition pivot() (supported composition: extend()->filter()->select()->[sort()->pivot()->cast()]->[groupBy()->sort()]->extend()->sort()->limit())`,
-  // }),
-  // _case(`Valid: Usage - Pivot: pivot()->cast()->sort()->limit()`, {
-  //   query: `pivot(~a, ~b:x|$x.a:x|$x->sum())->cast(@meta::pure::metamodel::relation::Relation<(a:Integer)>)->sort([ascending(~a)])->limit(10)`,
-  //   columns: ['a:Integer'],
-  // }),
-  // _case(`Valid: pivot()`, {
-  //   query: `pivot(~a, ~b:x|$x.a:x|$x->sum())->cast(@meta::pure::metamodel::relation::Relation<(a:Integer)>)`,
-  // }),
+  _case(`Pivot: single pivot column and single aggregate column`, {
+    query: `select(~[a, b])->sort([~a->ascending()])->pivot(~[a], ~[b:x|$x.b:x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(dummy:String)>)`,
+    columns: ['a:String', 'b:Integer'],
+  }),
+  _case(`Pivot: multiple pivot columns and single aggregate column`, {
+    query: `select(~[a, b, c])->sort([~a->ascending(), ~c->ascending()])->pivot(~[a, c], ~[b:x|$x.b:x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(dummy:String)>)`,
+    columns: ['a:String', 'b:Integer', 'c:String'],
+  }),
+  _case(`Pivot: single pivot column and multiple aggregate columns`, {
+    query: `select(~[a, b, c])->sort([~a->ascending()])->pivot(~[a], ~[b:x|$x.b:x|$x->sum(), c:x|$x.c:x|$x->max()])->cast(@meta::pure::metamodel::relation::Relation<(dummy:String)>)`,
+    columns: ['a:String', 'b:Integer', 'c:Integer'],
+  }),
+  _case(`Pivot: multiple pivot columns and multiple aggregate columns`, {
+    query: `select(~[a, b, c, d])->sort([~a->ascending(), ~d->ascending()])->pivot(~[a, d], ~[b:x|$x.b:x|$x->sum(), c:x|$x.c:x|$x->max()])->cast(@meta::pure::metamodel::relation::Relation<(dummy:String)>)`,
+    columns: ['a:String', 'b:Integer', 'c:Integer', 'd:String'],
+  }),
   _case(`Pivot: ERROR - casting used without dynamic function pivot()`, {
     query: `cast(@meta::pure::metamodel::relation::Relation<(a:Integer)>)`,
     error: `Can't process expression: unsupported function composition cast() (supported composition: extend()->filter()->select()->[sort()->pivot()->cast()]->[groupBy()->sort()]->extend()->sort()->limit())`,
   }),
-
-  // TODO: things post cast, even if cast is invalid, must respect it
+  _case(`Pivot: ERROR - pivot column not found`, {
+    query: `select(~[b])->sort([~a->ascending()])->pivot(~[a], ~[b:x|$x.b:x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(dummy:String)>)`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't find column 'a'`,
+  }),
+  _case(`Pivot: ERROR - unmatched mapped column name`, {
+    query: `select(~[a, b, c])->sort([~a->ascending()])->pivot(~[a], ~[b:x|$x.c:x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(dummy:String)>)`,
+    columns: ['a:String', 'b:Integer', 'c:Integer'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Pivot: ERROR - non-standard variable name in mapper`, {
+    query: `select(~[a])->sort([~a->ascending()])->pivot(~[a], ~[b:y|$y.b:x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(dummy:String)>)`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Pivot: ERROR - non-standard variable name in reducer`, {
+    query: `select(~[a])->sort([~a->ascending()])->pivot(~[a], ~[b:x|$x.b:y|$y->sum()])->cast(@meta::pure::metamodel::relation::Relation<(dummy:String)>)`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Pivot: ERROR - duplicate group columns`, {
+    query: `select(~[a, b])->sort([~a->ascending()])->pivot(~[a, a], ~[b:x|$x.b:x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(dummy:String)>)`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process pivot() expression: found duplicate pivot columns 'a'`,
+  }),
+  _case(`Pivot: ERROR - duplicate aggregate columns`, {
+    query: `select(~[a, b])->sort([~a->ascending()])->pivot(~[a], ~[b:x|$x.b:x|$x->sum(), b:x|$x.b:x|$x->max()])->cast(@meta::pure::metamodel::relation::Relation<(dummy:String)>)`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process pivot() expression: found duplicate aggregate columns 'b'`,
+  }),
+  _case(`Pivot: ERROR - duplicate sort columns`, {
+    query: `select(~[a, b])->sort([~a->ascending(), ~a->ascending()])->pivot(~[a], ~[b:x|$x.b:x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(dummy:String)>)`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process pivot() expression: found duplicate sort columns 'a'`,
+  }),
+  _case(`Pivot: ERROR - sorted non-group columns`, {
+    query: `select(~[a, b])->sort([~b->ascending()])->pivot(~[a], ~[b:x|$x.b:x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(dummy:String)>)`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process pivot() expression: sort column 'b' must be a pivot column`,
+  }),
+  _case(`Pivot: ERROR - unsorted group columns`, {
+    query: `select(~[a, b])->sort([])->pivot(~[a], ~[b:x|$x.b:x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(dummy:String)>)`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process pivot() expression: found unsorted pivot column(s) ('a')`,
+  }),
 
   // --------------------------------- GROUP BY ---------------------------------
 
@@ -1040,14 +1091,7 @@ const cases: TestCase[] = [
     query: `select(~[a, b, c, d])->groupBy(~[a, d], ~[b:x|$x.b:x|$x->sum(), c:x|$x.c:x|$x->max()])->sort([~a->ascending(), ~d->ascending()])`,
     columns: ['a:String', 'b:Integer', 'c:Integer', 'd:String'],
   }),
-  // TODO: custom sort order
-  // _case(`GroupBy: multiple aggregate columns`, {
-  //   query: `select(~[b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])`,
-  //   columns: ['a:String', 'b:Integer'],
-  //   error: `Can't find column 'a'`,
-  // }),
-
-  _case(`GroupBy: ERROR - group by column not found`, {
+  _case(`GroupBy: ERROR - group column not found`, {
     query: `select(~[b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])`,
     columns: ['a:String', 'b:Integer'],
     error: `Can't find column 'a'`,
@@ -1063,9 +1107,39 @@ const cases: TestCase[] = [
     error: `Can't process aggregate column 'b': no matching operator found`,
   }),
   _case(`GroupBy: ERROR - non-standard variable name in reducer`, {
-    query: `select(~[a])->groupBy(~[a], ~[b:x|$x.b:y|$y->sum()])->sort([~a->ascending()])`,
+    query: `select(~[a])->groupBy(~[a, a], ~[b:x|$x.b:y|$y->sum()])->sort([~a->ascending()])`,
     columns: ['a:String', 'b:Integer'],
     error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`GroupBy: ERROR - duplicate group columns`, {
+    query: `select(~[a, b])->groupBy(~[a, a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process groupBy() expression: found duplicate group columns 'a'`,
+  }),
+  _case(`GroupBy: ERROR - duplicate aggregate columns`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum(), b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process groupBy() expression: found duplicate aggregate columns 'b'`,
+  }),
+  _case(`GroupBy: ERROR - duplicate sort columns`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending(), ~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process groupBy() expression: found duplicate sort columns 'a'`,
+  }),
+  _case(`GroupBy: ERROR - sorted non-group columns`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~b->descending()])`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process groupBy() expression: sort column 'b' must be a group column`,
+  }),
+  _case(`GroupBy: ERROR - mixed sort directions`, {
+    query: `select(~[a, b, c])->groupBy(~[a, c], ~[b:x|$x.b:x|$x->sum()])->sort([~a->descending(), ~c->ascending()])`,
+    columns: ['a:String', 'b:Integer', 'c:String'],
+    error: `Can't process groupBy() expression: all group columns must be sorted in the same direction`,
+  }),
+  _case(`GroupBy: ERROR - unsorted group columns`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([])`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process groupBy() expression: found unsorted group column(s) ('a')`,
   }),
 
   // --------------------------------- GROUP-LEVEL EXTEND ---------------------------------
@@ -1096,14 +1170,11 @@ const cases: TestCase[] = [
       error: `Can't process extend() expression: failed to retrieve type information for columns. Error: The relation contains duplicates: [name]`,
     },
   ),
-  _case(
-    `Group-level Extend: ERROR - name clash among group-level extended columns`,
-    {
-      query: `select(~[val])->extend(~[name:c|$c.val->toOne() + 1])->extend(~[name:c|$c.val->toOne() + 1])`,
-      columns: ['val:Integer'],
-      error: `Can't process extend() expression: failed to retrieve type information for columns. Error: The relation contains duplicates: [name]`,
-    },
-  ),
+  _case(`Group-level Extend: ERROR - duplicate group-level extended columns`, {
+    query: `select(~[val])->extend(~[name:c|$c.val->toOne() + 1])->extend(~[name:c|$c.val->toOne() + 1])`,
+    columns: ['val:Integer'],
+    error: `Can't process extend() expression: failed to retrieve type information for columns. Error: The relation contains duplicates: [name]`,
+  }),
   _case(
     `Group-level Extend: ERROR - multiple columns within the same extend() expression`,
     {
@@ -1159,6 +1230,11 @@ const cases: TestCase[] = [
     query: `select(~[a])->sort([~b->ascending()])`,
     columns: ['a:Integer'],
     error: `Can't find column 'b'`,
+  }),
+  _case(`Sort: ERROR - duplicate columns`, {
+    query: `select(~[a])->sort([~a->ascending(), ~a->ascending()])`,
+    columns: ['a:Integer'],
+    error: `Can't process sort() expression: found duplicate sort columns 'a'`,
   }),
 
   // --------------------------------- LIMIT ---------------------------------
@@ -1218,13 +1294,13 @@ const cases: TestCase[] = [
       columns: ['b:Integer'],
     },
   ),
-  // _case(
-  //   `GENERIC: Composition - extend()->filter()->sort()->pivot()->cast()->groupBy()->sort()->sort()->limit()`,
-  //   {
-  //     query: `extend(~[a:x|1])->filter(x|$x.a == 1)->select(~[a, b, c])->sort([~c->ascending()])->pivot(~[c], ~[->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])->limit(10)`,
-  //     columns: ['c: String', 'b:Integer'],
-  //   },
-  // ),
+  _case(
+    `GENERIC: Composition - extend()->filter()->sort()->pivot()->cast()->groupBy()->sort()->sort()->limit()`,
+    {
+      query: `extend(~[a:x|1])->filter(x|$x.a == 1)->select(~[a, b, c, d])->sort([~c->ascending()])->pivot(~[c], ~[b:x|$x.b:x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(d:String, a:Integer, 'val1__|__b':Integer)>)->groupBy(~[d], ~['val1__|__b':x|$x.'val1__|__b':x|$x->sum(), a:x|$x.a:x|$x->sum()])->sort([~d->ascending()])->limit(10)`,
+      columns: ['c:String', 'b:Integer', 'd:String'],
+    },
+  ),
 
   // --------------------------------- VALIDATION ---------------------------------
 
@@ -1251,10 +1327,10 @@ const cases: TestCase[] = [
     columns: ['a:Integer'],
     error: `Can't process expression: unsupported function composition select()->filter() (supported composition: extend()->filter()->select()->[sort()->pivot()->cast()]->[groupBy()->sort()]->extend()->sort()->limit())`,
   }),
-  _case(`GENERIC: ERROR - name clash among source columns`, {
+  _case(`GENERIC: ERROR - duplicate source columns`, {
     query: `select(~[a, b])`,
     columns: ['a:Integer', 'a:Integer', 'b:Integer'],
-    error: `Can't process source column 'a': another column with the same name is already registered`,
+    error: `Can't process source: found duplicate source columns 'a'`,
   }),
   // TODO: vaidation against configuration
 ];
