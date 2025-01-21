@@ -18,8 +18,9 @@ import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
 import type { V1_Runtime } from '../runtime/V1_Runtime.js';
 import {
-  V1_PackageableElement,
+  type V1_PackageableElementPointer,
   type V1_PackageableElementVisitor,
+  V1_PackageableElement,
 } from '../V1_PackageableElement.js';
 
 export class V1_ExecutionEnvironmentInstance
@@ -47,20 +48,37 @@ export abstract class V1_ExecutionParameters implements Hashable {
   abstract get hashCode(): string;
 }
 
+export class V1_RuntimeComponents implements Hashable {
+  runtime!: V1_Runtime;
+  binding!: V1_PackageableElementPointer;
+  clazz!: V1_PackageableElementPointer;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.RUNTIME_COMPONENTS,
+      this.binding.path,
+      this.clazz.path,
+      this.runtime,
+    ]);
+  }
+}
+
 export class V1_SingleExecutionParameters
   extends V1_ExecutionParameters
   implements Hashable
 {
   key!: string;
   mapping!: string;
-  runtime!: V1_Runtime;
+  runtime?: V1_Runtime;
+  runtimeComponents?: V1_RuntimeComponents;
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.SINGLE_EXECUTION_PARAMETER,
       this.key,
       this.mapping,
-      this.runtime,
+      this.runtime ?? '',
+      this.runtimeComponents ?? '',
     ]);
   }
 }
