@@ -1,5 +1,7 @@
 # @finos/legend-application-data-cube-bootstrap
 
+## 13.10.0
+
 ## 13.9.0
 
 ## 13.8.0
