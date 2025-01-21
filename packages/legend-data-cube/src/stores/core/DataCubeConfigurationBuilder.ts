@@ -24,13 +24,25 @@ import {
   DataCubeColumnKind,
   DataCubeFontTextAlignment,
 } from './DataCubeQueryEngine.js';
-import type { DataCubeColumn } from './model/DataCubeColumn.js';
+import { _findCol, type DataCubeColumn } from './model/DataCubeColumn.js';
+import type {
+  DataCubeQuerySnapshot,
+  DataCubeQuerySnapshotAggregateColumn,
+} from './DataCubeQuerySnapshot.js';
 
-export function buildDefaultColumnConfiguration(
+export function newColumnConfiguration(
   column: DataCubeColumn,
+  context?:
+    | {
+        snapshot: DataCubeQuerySnapshot;
+        pivotAggCols: DataCubeQuerySnapshotAggregateColumn[];
+        groupByAggCols: DataCubeQuerySnapshotAggregateColumn[];
+      }
+    | undefined,
 ): DataCubeColumnConfiguration {
   const { name, type } = column;
   const config = new DataCubeColumnConfiguration(name, type);
+
   switch (type) {
     case PRIMITIVE_TYPE.NUMBER:
     case PRIMITIVE_TYPE.INTEGER:
@@ -53,15 +65,46 @@ export function buildDefaultColumnConfiguration(
       break;
     }
   }
+
+  if (context) {
+    const { snapshot, groupByAggCols, pivotAggCols } = context;
+    const data = snapshot.data;
+
+    config.isSelected = Boolean(
+      _findCol(data.groupExtendedColumns, name) ??
+        _findCol(data.selectColumns, name),
+    );
+
+    const groupByAggCol = _findCol(groupByAggCols, name);
+    const pivotAggCol = _findCol(pivotAggCols, name);
+    const aggCol = groupByAggCol ?? pivotAggCol;
+    if (aggCol) {
+      config.aggregateOperator = aggCol.operator;
+      config.aggregationParameters = aggCol.parameterValues;
+      config.excludedFromPivot =
+        groupByAggCol !== undefined && pivotAggCol === undefined;
+
+      // TODO: column kind
+    }
+  }
+
   return config;
 }
 
-export function buildDefaultConfiguration(
-  columns: DataCubeColumn[],
+export function newConfiguration(
+  snapshot: DataCubeQuerySnapshot,
+  pivotAggCols: DataCubeQuerySnapshotAggregateColumn[],
+  groupByAggCols: DataCubeQuerySnapshotAggregateColumn[],
 ): DataCubeConfiguration {
+  const data = snapshot.data;
   const configuration = new DataCubeConfiguration();
+  const columns = [
+    ...data.sourceColumns,
+    ...data.leafExtendedColumns,
+    ...data.groupExtendedColumns,
+  ];
   configuration.columns = columns.map((column) =>
-    buildDefaultColumnConfiguration(column),
+    newColumnConfiguration(column, { snapshot, pivotAggCols, groupByAggCols }),
   );
   return configuration;
 }

@@ -26,6 +26,7 @@ import {
 import { _aggCol_base } from '../DataCubeQueryBuilderUtils.js';
 import type { DataCubeColumnConfiguration } from '../model/DataCubeConfiguration.js';
 import type { V1_ColSpec } from '@finos/legend-graph';
+import { _agg_base } from '../DataCubeQuerySnapshotBuilderUtils.js';
 
 export class DataCubeQueryAggregateOperation__StdDevPopulation extends DataCubeQueryAggregateOperation {
   override get label() {
@@ -62,7 +63,13 @@ export class DataCubeQueryAggregateOperation__StdDevPopulation extends DataCubeQ
     colSpec: V1_ColSpec,
     columnGetter: (name: string) => DataCubeColumn,
   ) {
-    return undefined;
+    return this._finalizeAggregateColumnSnapshot(
+      _agg_base(
+        colSpec,
+        DataCubeFunction.STANDARD_DEVIATION_POPULATION,
+        columnGetter,
+      ),
+    );
   }
 
   override buildAggregateColumnExpression(column: DataCubeColumnConfiguration) {

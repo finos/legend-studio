@@ -83,14 +83,12 @@ export class DataCubeQueryFilterOperation__NotEqualColumn extends DataCubeQueryF
     expression: V1_AppliedFunction,
     columnGetter: (name: string) => DataCubeColumn,
   ) {
-    const unwrapped = returnUndefOnError(() =>
-      _unwrapNotFilterCondition(expression),
-    );
-    if (!unwrapped) {
-      return undefined;
-    }
     return this._finalizeConditionSnapshot(
-      _filterCondition_base(unwrapped, columnGetter, DataCubeFunction.EQUAL),
+      _filterCondition_base(
+        returnUndefOnError(() => _unwrapNotFilterCondition(expression)),
+        DataCubeFunction.EQUAL,
+        columnGetter,
+      ),
     );
   }
 

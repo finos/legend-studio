@@ -78,8 +78,8 @@ export class DataCubeQueryFilterOperation__IsNull extends DataCubeQueryFilterOpe
     return this._finalizeConditionSnapshot(
       _filterCondition_base(
         expression,
-        columnGetter,
         DataCubeFunction.IS_EMPTY,
+        columnGetter,
       ),
     );
   }

@@ -50,7 +50,7 @@ import {
   DataCubeFunction,
   type DataCubeQueryFunctionMap,
 } from './DataCubeQueryEngine.js';
-import { buildDefaultConfiguration } from './DataCubeConfigurationBuilder.js';
+import { newConfiguration } from './DataCubeConfigurationBuilder.js';
 import {
   _colSpecArrayParam,
   _param,
@@ -354,6 +354,7 @@ export async function validateAndBuildQuerySnapshot(
 
   const funcMap = extractFunctionMap(partialQuery);
   const snapshot = DataCubeQuerySnapshot.create({});
+  const aggCols: DataCubeQuerySnapshotAggregateColumn[] = [];
   const data = snapshot.data;
   const registeredColumns = new Map<string, DataCubeColumn>();
   /**
@@ -439,8 +440,9 @@ export async function validateAndBuildQuerySnapshot(
 
   const pivotAggCols: DataCubeQuerySnapshotAggregateColumn[] = [];
   if (funcMap.pivot && funcMap.pivotCast && funcMap.pivotSort) {
-    const colSpecs = _colSpecArrayParam(funcMap.pivot, 0).colSpecs;
-    const pivotColumns = colSpecs.map((colSpec) => _getCol(colSpec.name));
+    const pivotColumns = _colSpecArrayParam(funcMap.pivot, 0).colSpecs.map(
+      (colSpec) => _getCol(colSpec.name),
+    );
     const castColumns = _relationType(
       _genericTypeParam(funcMap.pivotCast, 0).genericType,
     ).columns.map((column) => ({
@@ -457,7 +459,7 @@ export async function validateAndBuildQuerySnapshot(
     castColumns.forEach((col) => _setCol(col));
 
     // process aggregate columns
-    colSpecs.forEach((colSpec) => {
+    _colSpecArrayParam(funcMap.pivot, 1).colSpecs.forEach((colSpec) => {
       pivotAggCols.push(
         _aggCol(
           colSpec,
@@ -483,14 +485,15 @@ export async function validateAndBuildQuerySnapshot(
 
   const groupByAggCols: DataCubeQuerySnapshotAggregateColumn[] = [];
   if (funcMap.groupBy) {
-    const colSpecs = _colSpecArrayParam(funcMap.groupBy, 0).colSpecs;
-    const groupByColumns = colSpecs.map((colSpec) => _getCol(colSpec.name));
+    const groupByColumns = _colSpecArrayParam(funcMap.groupBy, 0).colSpecs.map(
+      (colSpec) => _getCol(colSpec.name),
+    );
     data.groupBy = {
       columns: groupByColumns,
     };
 
     // process aggregate columns
-    colSpecs.forEach((colSpec) => {
+    _colSpecArrayParam(funcMap.groupBy, 1).colSpecs.forEach((colSpec) => {
       groupByAggCols.push(
         _aggCol(
           colSpec,
@@ -511,6 +514,12 @@ export async function validateAndBuildQuerySnapshot(
     // TODO: verify sort columns
     // TODO: verify groupBy agg columns, pivot agg columns and configuration agree
   }
+
+  // TODO: verify against pivot agg colunms,
+  // make sure this is the super set (account for exclude h-pivot)
+  // consider scenarios where we have cast columns
+  // consider scenarios where we have different parameter values
+  groupByAggCols.forEach((col) => aggCols.push(col));
 
   // --------------------------- GROUP-LEVEL EXTEND ---------------------------
 
@@ -574,6 +583,8 @@ export async function validateAndBuildQuerySnapshot(
 
   const configuration = validateAndBuildConfiguration(
     snapshot,
+    pivotAggCols,
+    groupByAggCols,
     funcMap,
     baseQuery,
   );
@@ -591,24 +602,23 @@ export async function validateAndBuildQuerySnapshot(
  */
 function validateAndBuildConfiguration(
   snapshot: DataCubeQuerySnapshot,
+  pivotAggCols: DataCubeQuerySnapshotAggregateColumn[],
+  groupByAggCols: DataCubeQuerySnapshotAggregateColumn[],
   funcMap: DataCubeQueryFunctionMap,
   baseQuery: DataCubeQuery,
 ) {
-  const data = snapshot.data;
-  const configuration =
-    baseQuery.configuration?.clone() ??
-    buildDefaultConfiguration([
-      ...data.sourceColumns,
-      ...data.leafExtendedColumns,
-      ...data.groupExtendedColumns,
-    ]);
+  const defaultConfiguration = newConfiguration(
+    snapshot,
+    pivotAggCols,
+    groupByAggCols,
+  );
 
-  // column selection
-  configuration.columns.forEach((column) => {
-    column.isSelected = Boolean(
-      data.groupExtendedColumns.find((col) => col.name === column.name) ??
-        data.selectColumns.find((col) => col.name === column.name),
-    );
-  });
+  // TODO: refactor this to compare between the configs
+  // selected columns
+  // column kind/types
+  // ...
+  const configuration =
+    baseQuery.configuration?.clone() ?? defaultConfiguration;
+
   return configuration;
 }

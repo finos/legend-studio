@@ -86,7 +86,7 @@ export class DataCubeQueryFilterOperation__Equal extends DataCubeQueryFilterOper
     columnGetter: (name: string) => DataCubeColumn,
   ) {
     return this._finalizeConditionSnapshot(
-      _filterCondition_base(expression, columnGetter, DataCubeFunction.EQUAL),
+      _filterCondition_base(expression, DataCubeFunction.EQUAL, columnGetter),
     );
   }
 

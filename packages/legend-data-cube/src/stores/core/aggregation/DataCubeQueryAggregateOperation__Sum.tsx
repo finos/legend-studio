@@ -25,7 +25,8 @@ import {
 } from '../DataCubeQueryEngine.js';
 import { _aggCol_base } from '../DataCubeQueryBuilderUtils.js';
 import type { DataCubeColumnConfiguration } from '../model/DataCubeConfiguration.js';
-import type { V1_ColSpec } from '@finos/legend-graph';
+import { type V1_ColSpec } from '@finos/legend-graph';
+import { _agg_base } from '../DataCubeQuerySnapshotBuilderUtils.js';
 
 export class DataCubeQueryAggregateOperation__Sum extends DataCubeQueryAggregateOperation {
   override get label() {
@@ -62,11 +63,9 @@ export class DataCubeQueryAggregateOperation__Sum extends DataCubeQueryAggregate
     colSpec: V1_ColSpec,
     columnGetter: (name: string) => DataCubeColumn,
   ) {
-    if (colSpec.function1 && colSpec.function2) {
-      const mapFn = colSpec.function1;
-      const reduceFn = colSpec.function2;
-    }
-    return undefined;
+    return this._finalizeAggregateColumnSnapshot(
+      _agg_base(colSpec, DataCubeFunction.SUM, columnGetter),
+    );
   }
 
   override buildAggregateColumnExpression(column: DataCubeColumnConfiguration) {

@@ -32,7 +32,7 @@ import {
   _property,
   _value,
 } from '../DataCubeQueryBuilderUtils.js';
-import { returnUndefOnError } from '@finos/legend-shared';
+import { isString, returnUndefOnError } from '@finos/legend-shared';
 import { type V1_AppliedFunction } from '@finos/legend-graph';
 import {
   _unwrapNotFilterCondition,
@@ -65,7 +65,8 @@ export class DataCubeQueryFilterOperation__NotContain extends DataCubeQueryFilte
       value.value !== undefined &&
       isPrimitiveType(value.type) &&
       ofDataType(value.type, [DataCubeColumnDataType.TEXT]) &&
-      !Array.isArray(value.value)
+      !Array.isArray(value.value) &&
+      isString(value.value)
     );
   }
 
@@ -80,14 +81,12 @@ export class DataCubeQueryFilterOperation__NotContain extends DataCubeQueryFilte
     expression: V1_AppliedFunction,
     columnGetter: (name: string) => DataCubeColumn,
   ) {
-    const unwrapped = returnUndefOnError(() =>
-      _unwrapNotFilterCondition(expression),
-    );
-    if (!unwrapped) {
-      return undefined;
-    }
     return this._finalizeConditionSnapshot(
-      _filterCondition_base(unwrapped, columnGetter, DataCubeFunction.CONTAINS),
+      _filterCondition_base(
+        returnUndefOnError(() => _unwrapNotFilterCondition(expression)),
+        DataCubeFunction.CONTAINS,
+        columnGetter,
+      ),
     );
   }
 

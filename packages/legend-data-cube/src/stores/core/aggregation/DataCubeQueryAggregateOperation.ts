@@ -43,24 +43,24 @@ export abstract class DataCubeQueryAggregateOperation {
     data:
       | {
           column: DataCubeColumn;
-          values: DataCubeOperationValue[];
+          paramterValues: DataCubeOperationValue[];
         }
       | undefined,
   ): DataCubeQuerySnapshotAggregateColumn | undefined {
     if (!data) {
       return undefined;
     }
-    const { column, values } = data;
+    const { column, paramterValues } = data;
     if (
       !this.isCompatibleWithColumn(column) ||
-      !this.isCompatibleWithParameterValues(values)
+      !this.isCompatibleWithParameterValues(paramterValues)
     ) {
       return undefined;
     }
     return {
       ...column,
       operator: this.operator,
-      parameterValues: values,
+      parameterValues: paramterValues,
     };
   }
 

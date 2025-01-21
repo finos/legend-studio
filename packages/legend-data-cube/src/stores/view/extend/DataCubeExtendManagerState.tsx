@@ -45,7 +45,7 @@ import {
   DataCubeColumnKind,
   getDataType,
 } from '../../core/DataCubeQueryEngine.js';
-import { buildDefaultColumnConfiguration } from '../../core/DataCubeConfigurationBuilder.js';
+import { newColumnConfiguration } from '../../core/DataCubeConfigurationBuilder.js';
 import { _lambda } from '../../core/DataCubeQueryBuilderUtils.js';
 import { EngineError } from '@finos/legend-graph';
 
@@ -169,7 +169,7 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
     columnKind: DataCubeColumnKind | undefined,
     editor: DataCubeNewColumnState,
   ) {
-    const columnConfiguration = buildDefaultColumnConfiguration(column);
+    const columnConfiguration = newColumnConfiguration(column);
     if (columnKind) {
       columnConfiguration.kind = columnKind;
       columnConfiguration.excludedFromPivot =

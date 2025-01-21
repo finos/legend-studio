@@ -33,6 +33,7 @@ import {
 } from '../DataCubeQueryBuilderUtils.js';
 import { type V1_AppliedFunction } from '@finos/legend-graph';
 import { _filterCondition_base } from '../DataCubeQuerySnapshotBuilderUtils.js';
+import { isString } from '@finos/legend-shared';
 
 export class DataCubeQueryFilterOperation__Contain extends DataCubeQueryFilterOperation {
   override get label() {
@@ -60,7 +61,8 @@ export class DataCubeQueryFilterOperation__Contain extends DataCubeQueryFilterOp
       value.value !== undefined &&
       isPrimitiveType(value.type) &&
       ofDataType(value.type, [DataCubeColumnDataType.TEXT]) &&
-      !Array.isArray(value.value)
+      !Array.isArray(value.value) &&
+      isString(value.value)
     );
   }
 
@@ -78,8 +80,8 @@ export class DataCubeQueryFilterOperation__Contain extends DataCubeQueryFilterOp
     return this._finalizeConditionSnapshot(
       _filterCondition_base(
         expression,
-        columnGetter,
         DataCubeFunction.CONTAINS,
+        columnGetter,
       ),
     );
   }

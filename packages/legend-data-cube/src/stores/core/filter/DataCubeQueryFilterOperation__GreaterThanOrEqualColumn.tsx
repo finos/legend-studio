@@ -81,8 +81,8 @@ export class DataCubeQueryFilterOperation__GreaterThanOrEqualColumn extends Data
     return this._finalizeConditionSnapshot(
       _filterCondition_base(
         expression,
-        columnGetter,
         DataCubeFunction.GREATER_THAN_OR_EQUAL,
+        columnGetter,
       ),
     );
   }

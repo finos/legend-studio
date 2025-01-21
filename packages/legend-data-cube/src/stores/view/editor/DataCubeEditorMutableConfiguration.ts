@@ -47,7 +47,6 @@ import {
   DataCubeConfiguration,
   DataCubePivotLayoutConfiguration,
 } from '../../core/model/DataCubeConfiguration.js';
-import { buildDefaultColumnConfiguration } from '../../core/DataCubeConfigurationBuilder.js';
 import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
 import { type DataCubeQueryAggregateOperation } from '../../core/aggregation/DataCubeQueryAggregateOperation.js';
 
@@ -193,19 +192,6 @@ export class DataCubeEditorMutableColumnConfiguration extends DataCubeColumnConf
     });
 
     return configuration;
-  }
-
-  static createDefault(
-    column: { name: string; type: string },
-    aggregateOperations: DataCubeQueryAggregateOperation[],
-  ) {
-    return DataCubeEditorMutableColumnConfiguration.create(
-      DataCubeColumnConfiguration.serialization.toJson(
-        buildDefaultColumnConfiguration(column),
-      ),
-      undefined,
-      aggregateOperations,
-    );
   }
 
   get isUsingDefaultStyling() {

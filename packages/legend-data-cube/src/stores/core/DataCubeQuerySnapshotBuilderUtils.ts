@@ -87,7 +87,10 @@ export function _var(variable: V1_Variable) {
   );
 }
 
-function _propertyVar(property: V1_AppliedProperty) {
+export function _propertyCol(
+  property: V1_AppliedProperty,
+  columnGetter: (name: string) => DataCubeColumn,
+) {
   assertTrue(
     property.parameters.length === 1,
     `Can't process property '${property.property}': expected exactly 1 parameter`,
@@ -98,6 +101,7 @@ function _propertyVar(property: V1_AppliedProperty) {
     `Can't process property '${property.property}': failed to extract variable`,
   );
   _var(variable);
+  return columnGetter(property.property);
 }
 
 export function _param<T extends V1_ValueSpecification>(
@@ -211,7 +215,33 @@ export function _operationPrimitiveValue(
   } else if (value instanceof V1_CStrictTime) {
     return { value: value.value, type: PRIMITIVE_TYPE.STRICTTIME };
   }
-  throw new UnsupportedOperationError(`Can't process primitive value`);
+  throw new UnsupportedOperationError(
+    `Can't process unsupported operation primitive value`,
+  );
+}
+
+export function _operationValue(
+  value: V1_ValueSpecification | undefined,
+  columnGetter: (name: string) => DataCubeColumn,
+  columnChecker?: ((column: DataCubeColumn) => void) | undefined,
+) {
+  if (value instanceof V1_PrimitiveValueSpecification) {
+    return _operationPrimitiveValue(value);
+  } else if (value instanceof V1_AppliedProperty) {
+    const column = _propertyCol(value, columnGetter);
+    columnChecker?.(column);
+    return {
+      value: column.name,
+      type: DataCubeOperationAdvancedValueType.COLUMN,
+    };
+  } else if (value === undefined) {
+    return {
+      type: DataCubeOperationAdvancedValueType.VOID,
+    };
+  }
+  throw new UnsupportedOperationError(
+    `Can't process unsupported operation value`,
+  );
 }
 
 // --------------------------------- BUILDING BLOCKS ---------------------------------
@@ -436,32 +466,6 @@ function _filterCondition(
   throw new Error(`Can't process filter condition: no matching operator found`);
 }
 
-function _filterConditionValue(
-  value: V1_ValueSpecification | undefined,
-  column: DataCubeColumn,
-  columnGetter: (name: string) => DataCubeColumn,
-) {
-  if (value instanceof V1_PrimitiveValueSpecification) {
-    return _operationPrimitiveValue(value);
-  } else if (value instanceof V1_AppliedProperty) {
-    _propertyVar(value);
-    const column2 = columnGetter(value.property);
-    if (getDataType(column.type) !== getDataType(column2.type)) {
-      return undefined;
-    }
-    return {
-      value: column2.name,
-      type: DataCubeOperationAdvancedValueType.COLUMN,
-    };
-  } else if (value === undefined) {
-    return {
-      type: DataCubeOperationAdvancedValueType.VOID,
-    };
-  }
-
-  return undefined;
-}
-
 /**
  * Processes filter conditions of form: column | operator | value, e.g.
  * $x.Age > 5
@@ -471,41 +475,52 @@ function _filterConditionValue(
  * $x.Name == $x.Name2
  */
 export function _filterCondition_base(
-  expression: V1_AppliedFunction,
-  columnGetter: (name: string) => DataCubeColumn,
+  expression: V1_AppliedFunction | undefined,
   func: string,
+  columnGetter: (name: string) => DataCubeColumn,
 ) {
-  if (matchFunctionName(expression.function, func)) {
-    if (
-      expression.parameters.length !== 2 &&
-      expression.parameters.length !== 1
-    ) {
-      return undefined;
-    }
+  if (!expression) {
+    return undefined;
+  }
+  try {
+    if (matchFunctionName(expression.function, func)) {
+      if (
+        expression.parameters.length !== 2 &&
+        expression.parameters.length !== 1
+      ) {
+        return undefined;
+      }
 
-    let column: DataCubeColumn | undefined;
-    if (expression.parameters[0] instanceof V1_AppliedProperty) {
-      const property = expression.parameters[0];
-      _propertyVar(property);
-      column = columnGetter(property.property);
-    }
-    if (!column) {
-      return undefined;
-    }
+      let column: DataCubeColumn | undefined;
+      if (expression.parameters[0] instanceof V1_AppliedProperty) {
+        column = _propertyCol(expression.parameters[0], columnGetter);
+      }
+      if (!column) {
+        return undefined;
+      }
 
-    const value = _filterConditionValue(
-      expression.parameters[1],
-      column,
-      columnGetter,
-    );
-    if (!value) {
-      return undefined;
-    }
+      const value = _operationValue(
+        expression.parameters[1],
+        columnGetter,
+        (_column) => {
+          if (getDataType(column.type) !== getDataType(_column.type)) {
+            throw new Error(
+              `Can't process filter condition: found incompatible columns`,
+            );
+          }
+        },
+      );
+      if (!value) {
+        return undefined;
+      }
 
-    return {
-      column,
-      value,
-    };
+      return {
+        column,
+        value,
+      };
+    }
+  } catch {
+    return undefined;
   }
   return undefined;
 }
@@ -516,59 +531,70 @@ export function _filterCondition_base(
  * $x.Name->toLower() == $x.Name2->toLower()
  */
 export function _filterCondition_caseSensitive(
-  expression: V1_AppliedFunction,
-  columnGetter: (name: string) => DataCubeColumn,
+  expression: V1_AppliedFunction | undefined,
   func: string,
+  columnGetter: (name: string) => DataCubeColumn,
 ) {
-  if (matchFunctionName(expression.function, func)) {
-    if (expression.parameters.length !== 2) {
-      return undefined;
-    }
+  if (!expression) {
+    return undefined;
+  }
+  try {
+    if (matchFunctionName(expression.function, func)) {
+      if (expression.parameters.length !== 2) {
+        return undefined;
+      }
 
-    const param1 = expression.parameters[0];
-    if (
-      !(param1 instanceof V1_AppliedFunction) ||
-      !matchFunctionName(param1.function, DataCubeFunction.TO_LOWERCASE)
-    ) {
-      return undefined;
-    }
-    if (param1.parameters.length !== 1) {
-      return undefined;
-    }
-    let column: DataCubeColumn | undefined;
-    if (param1.parameters[0] instanceof V1_AppliedProperty) {
-      const property = param1.parameters[0];
-      _propertyVar(property);
-      column = columnGetter(property.property);
-    }
-    if (!column) {
-      return undefined;
-    }
+      const param1 = expression.parameters[0];
+      if (
+        !(param1 instanceof V1_AppliedFunction) ||
+        !matchFunctionName(param1.function, DataCubeFunction.TO_LOWERCASE)
+      ) {
+        return undefined;
+      }
+      if (param1.parameters.length !== 1) {
+        return undefined;
+      }
+      let column: DataCubeColumn | undefined;
+      if (param1.parameters[0] instanceof V1_AppliedProperty) {
+        column = _propertyCol(param1.parameters[0], columnGetter);
+      }
+      if (!column) {
+        return undefined;
+      }
 
-    const param2 = expression.parameters[1];
-    if (
-      !(param2 instanceof V1_AppliedFunction) ||
-      !matchFunctionName(param2.function, DataCubeFunction.TO_LOWERCASE)
-    ) {
-      return undefined;
-    }
-    if (param2.parameters.length !== 1) {
-      return undefined;
-    }
-    const value = _filterConditionValue(
-      param2.parameters[0],
-      column,
-      columnGetter,
-    );
+      const param2 = expression.parameters[1];
+      if (
+        !(param2 instanceof V1_AppliedFunction) ||
+        !matchFunctionName(param2.function, DataCubeFunction.TO_LOWERCASE)
+      ) {
+        return undefined;
+      }
+      if (param2.parameters.length !== 1) {
+        return undefined;
+      }
+      const value = _operationValue(
+        param2.parameters[0],
+        columnGetter,
+        (_column) => {
+          if (getDataType(column.type) !== getDataType(_column.type)) {
+            throw new Error(
+              `Can't process filter condition: found incompatible columns`,
+            );
+          }
+        },
+      );
 
-    if (!value) {
-      return undefined;
-    }
+      if (!value) {
+        return undefined;
+      }
 
-    return {
-      column,
-      value,
-    };
+      return {
+        column,
+        value,
+      };
+    }
+  } catch {
+    return undefined;
   }
   return undefined;
 }
@@ -584,7 +610,43 @@ export function _aggCol(
       return col;
     }
   }
-  throw new Error(`Can't process aggregate column: no matching operator found`);
+  throw new Error(
+    `Can't process aggregate column '${colSpec.name}': no matching operator found`,
+  );
+}
+
+export function _agg_base(
+  colSpec: V1_ColSpec,
+  func: string,
+  columnGetter: (name: string) => DataCubeColumn,
+) {
+  try {
+    if (colSpec.function1 && colSpec.function2) {
+      const mapper = _unwrapLambda(colSpec.function1);
+      const reducer = _unwrapLambda(colSpec.function2);
+
+      if (
+        mapper instanceof V1_AppliedProperty &&
+        reducer instanceof V1_AppliedFunction &&
+        reducer.parameters.length >= 1 &&
+        matchFunctionName(reducer.function, func)
+      ) {
+        const column = _propertyCol(mapper, columnGetter);
+        const variable = _param(reducer, 0, V1_Variable);
+        _var(variable);
+
+        return {
+          column,
+          paramterValues: reducer.parameters
+            .slice(1)
+            .map((value) => _operationValue(value, columnGetter)),
+        };
+      }
+    }
+  } catch {
+    return undefined;
+  }
+  return undefined;
 }
 
 export function _sort(

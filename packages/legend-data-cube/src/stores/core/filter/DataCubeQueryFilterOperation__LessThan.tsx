@@ -87,8 +87,8 @@ export class DataCubeQueryFilterOperation__LessThan extends DataCubeQueryFilterO
     return this._finalizeConditionSnapshot(
       _filterCondition_base(
         expression,
-        columnGetter,
         DataCubeFunction.LESS_THAN,
+        columnGetter,
       ),
     );
   }

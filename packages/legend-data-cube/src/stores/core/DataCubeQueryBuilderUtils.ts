@@ -397,12 +397,24 @@ function _fixEmptyAggCols(aggCols: V1_ColSpec[]) {
       ];
 }
 
-export function _aggCol_base(column: DataCubeColumn, func: string) {
+export function _aggCol_base(
+  column: DataCubeColumn,
+  func: string,
+  paramterValues?: DataCubeOperationValue[] | undefined,
+) {
   const variable = _var();
   return _colSpec(
     column.name,
     _lambda([variable], [_property(column.name)]),
-    _lambda([variable], [_function(_functionName(func), [variable])]),
+    _lambda(
+      [variable],
+      [
+        _function(_functionName(func), [
+          variable,
+          ...(paramterValues ?? []).map((value) => _value(value)),
+        ]),
+      ],
+    ),
   );
 }
 

@@ -17,7 +17,11 @@
 import { unitTest } from '@finos/legend-shared/test';
 import { describe, expect, test } from '@jest/globals';
 import { validateAndBuildQuerySnapshot } from '../DataCubeQuerySnapshotBuilder.js';
-import { assertErrorThrown, type PlainObject } from '@finos/legend-shared';
+import {
+  assertErrorThrown,
+  isString,
+  type PlainObject,
+} from '@finos/legend-shared';
 import { DataCubeQuery } from '../model/DataCubeQuery.js';
 import { INTERNAL__DataCubeSource } from '../model/DataCubeSource.js';
 import { DataCubeConfiguration } from '../model/DataCubeConfiguration.js';
@@ -74,7 +78,7 @@ function _checkFilterOperator(operator: DataCubeQueryFilterOperator) {
   };
 }
 
-const FOCUSED_TESTS: string[] = [
+const FOCUSED_TESTS: unknown[] = [
   // tests added here will be the only tests run
 ];
 
@@ -174,7 +178,7 @@ const cases: TestCase[] = [
   _case(`Filter: == column : ERROR - RHS column not found`, {
     query: `filter(x|!($x.Age == $x.Name))`,
     columns: ['Age:Integer'],
-    error: `Can't find column 'Name'`,
+    error: `Can't process filter condition: no matching operator found`,
   }),
   _case(`Filter: == column : ERROR - incompatible columns`, {
     query: `filter(x|$x.Name != $x.Age)`,
@@ -198,7 +202,7 @@ const cases: TestCase[] = [
   _case(`Filter: > column : ERROR - RHS column not found`, {
     query: `filter(x|!($x.Name->toLower() == $x.Name2->toLower()))`,
     columns: ['Name:String'],
-    error: `Can't find column 'Name2'`,
+    error: `Can't process filter condition: no matching operator found`,
   }),
   _case(`Filter: == column (case-insensitive) : ERROR - incompatible columns`, {
     query: `filter(x|$x.Name->toLower() != $x.Name2->toLower())`,
@@ -390,7 +394,7 @@ const cases: TestCase[] = [
   _case(`Filter: > column : ERROR - RHS column not found`, {
     query: `filter(x|!($x.Age > $x.Name))`,
     columns: ['Age:Integer'],
-    error: `Can't find column 'Name'`,
+    error: `Can't process filter condition: no matching operator found`,
   }),
   _case(`Filter: > column : ERROR - incompatible columns`, {
     query: `filter(x|!($x.Age > $x.Name))`,
@@ -438,7 +442,7 @@ const cases: TestCase[] = [
   _case(`Filter: >= column : ERROR - RHS column not found`, {
     query: `filter(x|!($x.Age >= $x.Name))`,
     columns: ['Age:Integer'],
-    error: `Can't find column 'Name'`,
+    error: `Can't process filter condition: no matching operator found`,
   }),
   _case(`Filter: >= column : ERROR - incompatible columns`, {
     query: `filter(x|!($x.Age >= $x.Name))`,
@@ -482,7 +486,7 @@ const cases: TestCase[] = [
   _case(`Filter: < column : ERROR - RHS column not found`, {
     query: `filter(x|!($x.Age < $x.Name))`,
     columns: ['Age:Integer'],
-    error: `Can't find column 'Name'`,
+    error: `Can't process filter condition: no matching operator found`,
   }),
   _case(`Filter: < column : ERROR - incompatible columns`, {
     query: `filter(x|!($x.Age < $x.Name))`,
@@ -530,7 +534,7 @@ const cases: TestCase[] = [
   _case(`Filter: <= column : ERROR - RHS column not found`, {
     query: `filter(x|!($x.Age <= $x.Name))`,
     columns: ['Age:Integer'],
-    error: `Can't find column 'Name'`,
+    error: `Can't process filter condition: no matching operator found`,
   }),
   _case(`Filter: <= column : ERROR - incompatible columns`, {
     query: `filter(x|!($x.Age <= $x.Name))`,
@@ -588,7 +592,7 @@ const cases: TestCase[] = [
   _case(`Filter: != column : ERROR - RHS column not found`, {
     query: `filter(x|!($x.Name != $x.Age))`,
     columns: ['Name:String'],
-    error: `Can't find column 'Age'`,
+    error: `Can't process filter condition: no matching operator found`,
   }),
   _case(`Filter: != column : ERROR - incompatible columns`, {
     query: `filter(x|!($x.Name != $x.Age))`,
@@ -612,7 +616,7 @@ const cases: TestCase[] = [
   _case(`Filter: != column : ERROR - RHS column not found`, {
     query: `filter(x|!($x.Name->toLower() != $x.Name2->toLower()))`,
     columns: ['Name:String'],
-    error: `Can't find column 'Name2'`,
+    error: `Can't process filter condition: no matching operator found`,
   }),
   _case(`Filter: != column (case-insensitive) : ERROR - incompatible columns`, {
     query: `filter(x|!($x.Name->toLower() != $x.Age->toLower()))`,
@@ -718,7 +722,7 @@ const cases: TestCase[] = [
 
   _case(`Filter: ERROR - LHS column not found`, {
     query: `filter(x|$x.Age > 1)`,
-    error: `Can't find column 'Age'`,
+    error: `Can't process filter condition: no matching operator found`,
   }),
   _case(`Filter: ERROR - non-standard variable name in root`, {
     query: `filter(y|$x.Age > 1)`,
@@ -727,17 +731,17 @@ const cases: TestCase[] = [
   _case(`Filter: ERROR - non-standard variable name in condition LHS`, {
     query: `filter(x|$y.Age == 27)`,
     columns: ['Age:Integer'],
-    error: `Can't process variable 'y': expected variable name to be 'x'`,
+    error: `Can't process filter condition: no matching operator found`,
   }),
   _case(`Filter: ERROR - non-standard variable name in condition RHS`, {
     query: `filter(x|$x.Age == $y.Age2)`,
     columns: ['Age:Integer', 'Age2:Integer'],
-    error: `Can't process variable 'y': expected variable name to be 'x'`,
+    error: `Can't process filter condition: no matching operator found`,
   }),
   _case(`Filter: ERROR - non-standard variable name within tree`, {
     query: `filter(x|$x.Name->toLower()->endsWith(toLower('Phelps')) || !(($y.Age != 27) && ($x.Name == 'Michael Phelps')))`,
     columns: ['Age:Integer', 'Name:String'],
-    error: `Can't process variable 'y': expected variable name to be 'x'`,
+    error: `Can't process filter condition: no matching operator found`,
   }),
   _case(`Filter: ERROR - bad argument: non-lambda provided`, {
     query: `filter('2')`,
@@ -767,6 +771,235 @@ const cases: TestCase[] = [
     columns: ['a:Integer', 'b:String'],
     error: `Can't find column 'c'`,
   }),
+  // --------------------------------- AGGREGATION ---------------------------------
+
+  _case(`Aggregation: sum()`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+  }),
+  _case(`Aggregation: sum() : ERROR - column not found`, {
+    query: `select(~[a])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: sum() : ERROR - incompatible column`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:String'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: sum() : ERROR - incompatible parameters`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum('asd')])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: average()`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->average()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+  }),
+  _case(`Aggregation: average() : ERROR - column not found`, {
+    query: `select(~[a])->groupBy(~[a], ~[b:x|$x.b:x|$x->average()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: average() : ERROR - incompatible column`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->average()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:String'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: average() : ERROR - incompatible parameters`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->average('asd')])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: count()`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->count()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+  }),
+  _case(`Aggregation: count() : ERROR - column not found`, {
+    query: `select(~[a])->groupBy(~[a], ~[b:x|$x.b:x|$x->count()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: count() : ERROR - incompatible column`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->count()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:String'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: count() : ERROR - incompatible parameters`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->count('asd')])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: min()`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->min()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+  }),
+  _case(`Aggregation: min() : ERROR - column not found`, {
+    query: `select(~[a])->groupBy(~[a], ~[b:x|$x.b:x|$x->min()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: min() : ERROR - incompatible column`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->min()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:String'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: min() : ERROR - incompatible parameters`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->min('asd')])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: max()`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->max()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+  }),
+  _case(`Aggregation: max() : ERROR - column not found`, {
+    query: `select(~[a])->groupBy(~[a], ~[b:x|$x.b:x|$x->max()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: max() : ERROR - incompatible column`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->max()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:String'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: max() : ERROR - incompatible parameters`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->max('asd')])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: uniqueValueOnly()`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->uniqueValueOnly()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:String'],
+  }),
+  _case(`Aggregation: uniqueValueOnly() : ERROR - column not found`, {
+    query: `select(~[a])->groupBy(~[a], ~[b:x|$x.b:x|$x->uniqueValueOnly()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:String'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: uniqueValueOnly() : ERROR - incompatible parameters`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->uniqueValueOnly('asd')])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: first()`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->first()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:String'],
+  }),
+  _case(`Aggregation: first() : ERROR - column not found`, {
+    query: `select(~[a])->groupBy(~[a], ~[b:x|$x.b:x|$x->first()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:String'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: first() : ERROR - incompatible parameters`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->first('asd')])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: last()`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->last()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:String'],
+  }),
+  _case(`Aggregation: last() : ERROR - column not found`, {
+    query: `select(~[a])->groupBy(~[a], ~[b:x|$x.b:x|$x->last()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:String'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: last() : ERROR - incompatible parameters`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->last('asd')])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: variancePopulation()`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->variancePopulation()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+  }),
+  _case(`Aggregation: variancePopulation() : ERROR - column not found`, {
+    query: `select(~[a])->groupBy(~[a], ~[b:x|$x.b:x|$x->variancePopulation()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: variancePopulation() : ERROR - incompatible column`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->variancePopulation()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:String'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: variancePopulation() : ERROR - incompatible parameters`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->variancePopulation('asd')])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: varianceSample()`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->varianceSample()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+  }),
+  _case(`Aggregation: varianceSample() : ERROR - column not found`, {
+    query: `select(~[a])->groupBy(~[a], ~[b:x|$x.b:x|$x->varianceSample()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: varianceSample() : ERROR - incompatible column`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->varianceSample()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:String'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: varianceSample() : ERROR - incompatible parameters`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->varianceSample('asd')])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: stdDevPopulation()`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->stdDevPopulation()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+  }),
+  _case(`Aggregation: stdDevPopulation() : ERROR - column not found`, {
+    query: `select(~[a])->groupBy(~[a], ~[b:x|$x.b:x|$x->stdDevPopulation()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: stdDevPopulation() : ERROR - incompatible column`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->stdDevPopulation()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:String'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: stdDevPopulation() : ERROR - incompatible parameters`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->stdDevPopulation('asd')])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: stdDevSample()`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->stdDevSample()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+  }),
+  _case(`Aggregation: stdDevSample() : ERROR - column not found`, {
+    query: `select(~[a])->groupBy(~[a], ~[b:x|$x.b:x|$x->stdDevSample()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: stdDevSample() : ERROR - incompatible column`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->stdDevSample()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:String'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: stdDevSample() : ERROR - incompatible parameters`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->stdDevSample('asd')])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: joinStrings()`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->joinStrings(',')])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:String'],
+  }),
+  _case(`Aggregation: joinStrings() : ERROR - column not found`, {
+    query: `select(~[a])->groupBy(~[a], ~[b:x|$x.b:x|$x->joinStrings(',')])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:String'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`Aggregation: joinStrings() : ERROR - incompatible parameters`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->joinStrings(2)])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
 
   // --------------------------------- PIVOT ---------------------------------
 
@@ -786,11 +1019,42 @@ const cases: TestCase[] = [
     error: `Can't process expression: unsupported function composition cast() (supported composition: extend()->filter()->select()->[sort()->pivot()->cast()]->[groupBy()->sort()]->extend()->sort()->limit())`,
   }),
 
+  // TODO: things post cast, even if cast is bad!
+
   // --------------------------------- GROUP BY ---------------------------------
 
-  _case(`GroupBy: BASIC`, {
-    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])`,
+  // _case(`GroupBy: multiple group columns`, {
+  //   query: `select(~[b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])`,
+  //   columns: ['a:String', 'b:Integer'],
+  //   error: `Can't find column 'a'`,
+  // }),
+  // _case(`GroupBy: multiple aggregate columns`, {
+  //   query: `select(~[b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])`,
+  //   columns: ['a:String', 'b:Integer'],
+  //   error: `Can't find column 'a'`,
+  // }),
+  // TODO: custom sort order
+  // _case(`GroupBy: multiple aggregate columns`, {
+  //   query: `select(~[b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])`,
+  //   columns: ['a:String', 'b:Integer'],
+  //   error: `Can't find column 'a'`,
+  // }),
+
+  // _case(`Filter: ERROR - non-standard variable name in mapper`, {
+  //   query: `filter(x|$x.Age == $y.Age2)`,
+  //   columns: ['Age:Integer', 'Age2:Integer'],
+  //   error: `Can't process filter condition: no matching operator found`,
+  // }),
+  // _case(`Filter: ERROR - non-standard variable name in reducer`, {
+  //   query: `filter(x|$x.Age == $y.Age2)`,
+  //   columns: ['Age:Integer', 'Age2:Integer'],
+  //   error: `Can't process filter condition: no matching operator found`,
+  // }),
+
+  _case(`GroupBy: ERROR - group by column not found`, {
+    query: `select(~[b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])`,
     columns: ['a:String', 'b:Integer'],
+    error: `Can't find column 'a'`,
   }),
   _case(`GroupBy: ERROR - group by column not found`, {
     query: `select(~[b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])`,
@@ -948,6 +1212,13 @@ const cases: TestCase[] = [
       columns: ['b:Integer'],
     },
   ),
+  // _case(
+  //   `GENERIC: Composition - extend()->filter()->sort()->pivot()->cast()->groupBy()->sort()->sort()->limit()`,
+  //   {
+  //     query: `extend(~[a:x|1])->filter(x|$x.a == 1)->select(~[a, b, c])->sort([~c->ascending()])->pivot(~[c], ~[->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])->limit(10)`,
+  //     columns: ['c: String', 'b:Integer'],
+  //   },
+  // ),
 
   // --------------------------------- VALIDATION ---------------------------------
 
@@ -993,7 +1264,17 @@ describe(unitTest('Analyze and build base snapshot'), () => {
       error: TestCase[4],
       validator: TestCase[5],
     ) => {
-      if (FOCUSED_TESTS.length && !FOCUSED_TESTS.includes(testName)) {
+      if (
+        FOCUSED_TESTS.length &&
+        FOCUSED_TESTS.every((pattern) => {
+          if (isString(pattern)) {
+            return pattern.trim() !== testName.trim();
+          } else if (pattern instanceof RegExp) {
+            return !testName.match(pattern);
+          }
+          return false;
+        })
+      ) {
         return;
       }
 

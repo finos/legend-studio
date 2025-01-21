@@ -26,6 +26,7 @@ import {
 import { _aggCol_base } from '../DataCubeQueryBuilderUtils.js';
 import type { DataCubeColumnConfiguration } from '../model/DataCubeConfiguration.js';
 import type { V1_ColSpec } from '@finos/legend-graph';
+import { _agg_base } from '../DataCubeQuerySnapshotBuilderUtils.js';
 
 export class DataCubeQueryAggregateOperation__UniqueValue extends DataCubeQueryAggregateOperation {
   override get label() {
@@ -67,7 +68,9 @@ export class DataCubeQueryAggregateOperation__UniqueValue extends DataCubeQueryA
     colSpec: V1_ColSpec,
     columnGetter: (name: string) => DataCubeColumn,
   ) {
-    return undefined;
+    return this._finalizeAggregateColumnSnapshot(
+      _agg_base(colSpec, DataCubeFunction.UNIQUE_VALUE_ONLY, columnGetter),
+    );
   }
 
   override buildAggregateColumnExpression(column: DataCubeColumnConfiguration) {

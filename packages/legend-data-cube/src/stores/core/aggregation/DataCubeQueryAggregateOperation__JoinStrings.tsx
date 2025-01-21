@@ -24,16 +24,10 @@ import {
   ofDataType,
   type DataCubeOperationValue,
 } from '../DataCubeQueryEngine.js';
-import {
-  _colSpec,
-  _function,
-  _functionName,
-  _lambda,
-  _primitiveValue,
-  _property,
-  _var,
-} from '../DataCubeQueryBuilderUtils.js';
 import type { DataCubeColumnConfiguration } from '../model/DataCubeConfiguration.js';
+import { _aggCol_base } from '../DataCubeQueryBuilderUtils.js';
+import { _agg_base } from '../DataCubeQuerySnapshotBuilderUtils.js';
+import { isString } from '@finos/legend-shared';
 
 export class DataCubeQueryAggregateOperation__JoinStrings extends DataCubeQueryAggregateOperation {
   override get label() {
@@ -63,7 +57,13 @@ export class DataCubeQueryAggregateOperation__JoinStrings extends DataCubeQueryA
   }
 
   override isCompatibleWithParameterValues(values: DataCubeOperationValue[]) {
-    return !values.length;
+    return (
+      values.length === 1 &&
+      values[0] !== undefined &&
+      ofDataType(values[0].type, [DataCubeColumnDataType.TEXT]) &&
+      !Array.isArray(values[0].value) &&
+      isString(values[0].value)
+    );
   }
 
   override generateDefaultParameterValues(
@@ -81,24 +81,16 @@ export class DataCubeQueryAggregateOperation__JoinStrings extends DataCubeQueryA
     colSpec: V1_ColSpec,
     columnGetter: (name: string) => DataCubeColumn,
   ) {
-    return undefined;
+    return this._finalizeAggregateColumnSnapshot(
+      _agg_base(colSpec, DataCubeFunction.JOIN_STRINGS, columnGetter),
+    );
   }
 
   override buildAggregateColumnExpression(column: DataCubeColumnConfiguration) {
-    const variable = _var();
-    return _colSpec(
-      column.name,
-      _lambda([variable], [_property(column.name)]),
-      _lambda(
-        [variable],
-        [
-          _function(_functionName(DataCubeFunction.JOIN_STRINGS), [
-            variable,
-            // TODO: we might want to support customizing the delimiter in this case
-            _primitiveValue(PRIMITIVE_TYPE.STRING, ','),
-          ]),
-        ],
-      ),
+    return _aggCol_base(
+      column,
+      DataCubeFunction.JOIN_STRINGS,
+      column.aggregationParameters,
     );
   }
 }

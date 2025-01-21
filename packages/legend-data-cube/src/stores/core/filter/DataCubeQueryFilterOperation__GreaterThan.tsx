@@ -86,8 +86,8 @@ export class DataCubeQueryFilterOperation__GreaterThan extends DataCubeQueryFilt
     return this._finalizeConditionSnapshot(
       _filterCondition_base(
         expression,
-        columnGetter,
         DataCubeFunction.GREATER_THAN,
+        columnGetter,
       ),
     );
   }

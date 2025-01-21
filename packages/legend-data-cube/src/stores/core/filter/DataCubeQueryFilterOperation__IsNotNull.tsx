@@ -80,14 +80,12 @@ export class DataCubeQueryFilterOperation__IsNotNull extends DataCubeQueryFilter
     expression: V1_AppliedFunction,
     columnGetter: (name: string) => DataCubeColumn,
   ) {
-    const unwrapped = returnUndefOnError(() =>
-      _unwrapNotFilterCondition(expression),
-    );
-    if (!unwrapped) {
-      return undefined;
-    }
     return this._finalizeConditionSnapshot(
-      _filterCondition_base(unwrapped, columnGetter, DataCubeFunction.IS_EMPTY),
+      _filterCondition_base(
+        returnUndefOnError(() => _unwrapNotFilterCondition(expression)),
+        DataCubeFunction.IS_EMPTY,
+        columnGetter,
+      ),
     );
   }
 

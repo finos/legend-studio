@@ -78,17 +78,11 @@ export class DataCubeQueryFilterOperation__NotEqualCaseInsensitiveColumn extends
     expression: V1_AppliedFunction,
     columnGetter: (name: string) => DataCubeColumn,
   ) {
-    const unwrapped = returnUndefOnError(() =>
-      _unwrapNotFilterCondition(expression),
-    );
-    if (!unwrapped) {
-      return undefined;
-    }
     return this._finalizeConditionSnapshot(
       _filterCondition_caseSensitive(
-        unwrapped,
-        columnGetter,
+        returnUndefOnError(() => _unwrapNotFilterCondition(expression)),
         DataCubeFunction.EQUAL,
+        columnGetter,
       ),
     );
   }

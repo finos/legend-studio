@@ -77,8 +77,8 @@ export class DataCubeQueryFilterOperation__EqualCaseInsensitiveColumn extends Da
     return this._finalizeConditionSnapshot(
       _filterCondition_caseSensitive(
         expression,
-        columnGetter,
         DataCubeFunction.EQUAL,
+        columnGetter,
       ),
     );
   }
