@@ -18,7 +18,7 @@ import {
   type V1_Lambda,
   type V1_ValueSpecification,
   type V1_EngineServerClient,
-  type V1_PureGraphManager,
+  V1_PureGraphManager,
   type V1_PureModelContext,
   type ExecutionResult,
   type V1_ExecutionResult,
@@ -43,6 +43,7 @@ import {
   V1_EngineError,
   V1_PackageableType,
   V1_deserializeRawValueSpecificationType,
+  V1_Protocol,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
@@ -166,7 +167,11 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         source.runtime = executionContext.runtime;
         source.model = V1_serializePureModelContext(
           new V1_PureModelContextPointer(
-            undefined,
+            // TODO: remove as backend should handle undefined protocol input
+            new V1_Protocol(
+              V1_PureGraphManager.PURE_PROTOCOL_NAME,
+              PureClientVersion.VX_X_X,
+            ),
             new V1_LegendSDLC(
               queryInfo.groupId,
               queryInfo.artifactId,
