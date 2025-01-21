@@ -47,6 +47,7 @@ import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 import type { DataCubeColumnConfiguration } from '../../core/model/DataCubeConfiguration.js';
 import { DataCubeFilterEditorConditionTreeNode } from '../../core/filter/DataCubeQueryFilterEditorState.js';
 import { DataCubeEditorTab } from '../editor/DataCubeEditorState.js';
+import { _findCol } from '../../core/model/DataCubeColumn.js';
 
 function toFilterValue(
   value: unknown,
@@ -189,10 +190,10 @@ export function generateMenuBuilder(
         : undefined;
     const isExtendedColumn =
       columnName &&
-      [
-        ...controller.leafExtendedColumns,
-        ...controller.groupExtendedColumns,
-      ].find((col) => col.name === columnName);
+      _findCol(
+        [...controller.leafExtendedColumns, ...controller.groupExtendedColumns],
+        columnName,
+      );
     // NOTE: here we assume the value must be coming from the same column
     const value: unknown = 'value' in params ? params.value : undefined;
 
@@ -220,9 +221,7 @@ export function generateMenuBuilder(
                 },
                 {
                   name: 'Clear Sort',
-                  disabled: !controller.sortColumns.find(
-                    (col) => col.name === columnName,
-                  ),
+                  disabled: !_findCol(controller.sortColumns, columnName),
                   action: () => controller.clearSortByColumn(columnName),
                 },
                 'separator',
@@ -513,16 +512,15 @@ export function generateMenuBuilder(
                 {
                   name: `Add Vertical Pivot on ${columnName}`,
                   disabled: Boolean(
-                    controller.verticalPivotColumns.find(
-                      (col) => col.name === columnName,
-                    ),
+                    _findCol(controller.verticalPivotColumns, columnName),
                   ),
                   action: () => controller.addVerticalPivotOnColumn(columnName),
                 },
                 {
                   name: `Remove Vertical Pivot on ${columnName}`,
-                  disabled: !controller.verticalPivotColumns.find(
-                    (col) => col.name === columnName,
+                  disabled: !_findCol(
+                    controller.verticalPivotColumns,
+                    columnName,
                   ),
                   action: () =>
                     controller.removeVerticalPivotOnColumn(columnName),
@@ -543,9 +541,7 @@ export function generateMenuBuilder(
                 {
                   name: `Add Horizontal Pivot on ${columnName}`,
                   disabled: Boolean(
-                    controller.horizontalPivotColumns.find(
-                      (col) => col.name === columnName,
-                    ),
+                    _findCol(controller.horizontalPivotColumns, columnName),
                   ),
                   action: () =>
                     controller.addHorizontalPivotOnColumn(columnName),
@@ -696,10 +692,9 @@ export function generateMenuBuilder(
                 ...controller.horizontalPivotCastColumns
                   .map((col) => {
                     if (isPivotResultColumnName(col.name)) {
-                      const colConf = controller.configuration.columns.find(
-                        (c) =>
-                          c.name ===
-                          getPivotResultColumnBaseColumnName(col.name),
+                      const colConf = _findCol(
+                        controller.configuration.columns,
+                        getPivotResultColumnBaseColumnName(col.name),
                       );
                       if (
                         colConf &&
@@ -729,10 +724,9 @@ export function generateMenuBuilder(
                 ...controller.horizontalPivotCastColumns
                   .map((col) => {
                     if (isPivotResultColumnName(col.name)) {
-                      const colConf = controller.configuration.columns.find(
-                        (c) =>
-                          c.name ===
-                          getPivotResultColumnBaseColumnName(col.name),
+                      const colConf = _findCol(
+                        controller.configuration.columns,
+                        getPivotResultColumnBaseColumnName(col.name),
                       );
                       if (
                         colConf &&

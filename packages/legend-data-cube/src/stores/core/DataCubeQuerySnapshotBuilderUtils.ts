@@ -40,7 +40,7 @@ import {
   V1_Collection,
   type V1_Lambda,
 } from '@finos/legend-graph';
-import { type DataCubeColumn } from './model/DataCubeColumn.js';
+import { _findCol, type DataCubeColumn } from './model/DataCubeColumn.js';
 import {
   assertErrorThrown,
   assertTrue,
@@ -333,7 +333,7 @@ export async function _extractExtendedColumns(
   return colSpecs.map((colSpec) => ({
     name: colSpec.name,
     type: guaranteeNonNullable(
-      columns.find((column) => column.name === colSpec.name),
+      _findCol(columns, colSpec.name),
       `Can't process extend() expression: failed to retrieve type information for column '${colSpec.name}'`,
     ).type,
     mapFn: _serializeValueSpecification(
@@ -510,9 +510,6 @@ export function _filterCondition_base(
           }
         },
       );
-      if (!value) {
-        return undefined;
-      }
 
       return {
         column,
@@ -584,10 +581,6 @@ export function _filterCondition_caseSensitive(
         },
       );
 
-      if (!value) {
-        return undefined;
-      }
-
       return {
         column,
         value,
@@ -632,6 +625,10 @@ export function _agg_base(
         matchFunctionName(reducer.function, func)
       ) {
         const column = _propertyCol(mapper, columnGetter);
+        assertTrue(
+          column.name === colSpec.name,
+          `Can't process aggregate column: column name must match mapper column name`,
+        );
         const variable = _param(reducer, 0, V1_Variable);
         _var(variable);
 

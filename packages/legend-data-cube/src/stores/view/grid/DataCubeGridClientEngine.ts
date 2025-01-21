@@ -42,7 +42,7 @@ import type {
   DataCubeConfigurationColorKey,
 } from '../../core/model/DataCubeConfiguration.js';
 import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
-import { _sortByColName } from '../../core/model/DataCubeColumn.js';
+import { _findCol, _sortByColName } from '../../core/model/DataCubeColumn.js';
 import { isPivotResultColumnName } from '../../core/DataCubeQueryEngine.js';
 import { buildQuerySnapshot } from './DataCubeGridQuerySnapshotBuilder.js';
 import { AlertType } from '../../services/DataCubeAlertService.js';
@@ -375,8 +375,9 @@ export class DataCubeGridClientServerSideDataSource
             newSnapshot.data.pivot.castColumns = castColumns;
             newSnapshot.data.sortColumns = newSnapshot.data.sortColumns.filter(
               (column) =>
-                [...castColumns, ...newSnapshot.data.groupExtendedColumns].find(
-                  (col) => column.name === col.name,
+                _findCol(
+                  [...castColumns, ...newSnapshot.data.groupExtendedColumns],
+                  column.name,
                 ),
             );
           } catch (error) {

@@ -41,6 +41,7 @@ import {
   DEFAULT_PIVOT_STATISTIC_COLUMN_NAME,
   DEFAULT_TREE_COLUMN_SORT_DIRECTION,
   DEFAULT_REPORT_NAME,
+  type DataCubeQuerySortDirection,
 } from '../DataCubeQueryEngine.js';
 import {
   SerializationFactory,
@@ -48,6 +49,7 @@ import {
   uuid,
 } from '@finos/legend-shared';
 import { createModelSchema, list, optional, primitive, raw } from 'serializr';
+import { _findCol } from './DataCubeColumn.js';
 
 export type DataCubeConfigurationColorKey =
   | 'normal'
@@ -114,7 +116,7 @@ export class DataCubeColumnConfiguration {
   aggregateOperator!: string;
   aggregationParameters: DataCubeOperationValue[] = [];
   excludedFromPivot = true; // this agrees with default column kind set as Dimension
-  pivotSortDirection?: string | undefined;
+  pivotSortDirection?: DataCubeQuerySortDirection | undefined;
   pivotStatisticColumnFunction?: string | undefined;
 
   constructor(name: string, type: string) {
@@ -276,6 +278,10 @@ export class DataCubeConfiguration {
       zeroForegroundColor: primitive(),
     }),
   );
+
+  getColumn(name: string) {
+    return _findCol(this.columns, name);
+  }
 
   serialize() {
     return DataCubeConfiguration.serialization.toJson(this);

@@ -69,6 +69,14 @@ export type DataCubeQuerySnapshotPivot = {
   castColumns: DataCubeColumn[];
 };
 
+export type DataCubeQuerySnapshotProcessingContext = {
+  snapshot: DataCubeQuerySnapshot;
+  pivotAggColumns: DataCubeQuerySnapshotAggregateColumn[];
+  pivotSortColumns: DataCubeQuerySnapshotSortColumn[];
+  groupByAggColumns: DataCubeQuerySnapshotAggregateColumn[];
+  groupBySortColumns: DataCubeQuerySnapshotSortColumn[];
+};
+
 export type DataCubeQuerySnapshotData = {
   configuration: PlainObject<DataCubeConfiguration>;
   sourceColumns: DataCubeColumn[];

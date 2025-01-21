@@ -15,7 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { DataCubeIcon } from '@finos/legend-art';
+import { DataCubeIcon, useDropdownMenu } from '@finos/legend-art';
 import {
   type ColDef,
   type ColDefField,
@@ -33,6 +33,7 @@ import {
   type CustomNoRowsOverlayProps,
 } from 'ag-grid-react';
 import {
+  type DataCubeEditorSortColumnState,
   type DataCubeEditorColumnSelectorColumnState,
   type DataCubeEditorColumnSelectorState,
 } from '../../../stores/view/editor/DataCubeEditorColumnSelectorState.js';
@@ -41,6 +42,11 @@ import {
   getDataForAllFilteredNodes,
   getDataForAllNodes,
 } from '../../../stores/view/grid/DataCubeGridClientEngine.js';
+import {
+  FormDropdownMenu,
+  FormDropdownMenuItem,
+} from '../../core/DataCubeFormUtils.js';
+import { DataCubeQuerySortDirection } from '../../../stores/core/DataCubeQueryEngine.js';
 
 function getBaseGridProps<
   T extends DataCubeEditorColumnSelectorColumnState,
@@ -600,6 +606,74 @@ export const DataCubeEditorColumnSelector = observer(
             </div>
           </div>
         </div>
+      </div>
+    );
+  },
+);
+
+export const DataCubeColumnSelectorSortDirectionDropdown = observer(
+  (props: {
+    selector: DataCubeEditorColumnSelectorState<DataCubeEditorSortColumnState>;
+    column: DataCubeEditorSortColumnState;
+  }) => {
+    const { column } = props;
+    const [
+      openDirectionDropdown,
+      closeDirectionDropdown,
+      directionDropdownProps,
+      directionDropdownPropsOpen,
+    ] = useDropdownMenu();
+
+    return (
+      <div className="group relative flex h-full items-center">
+        {!directionDropdownPropsOpen && (
+          <div className="flex h-[18px] w-32 items-center border border-transparent px-2 text-sm text-neutral-400 group-hover:invisible">
+            {column.direction}
+          </div>
+        )}
+        {directionDropdownPropsOpen && (
+          <div className="flex h-[18px] w-32 items-center justify-between border border-sky-600 bg-sky-50 pl-2 pr-0.5 text-sm">
+            <div>{column.direction}</div>
+            <div>
+              <DataCubeIcon.CaretDown />
+            </div>
+          </div>
+        )}
+        <button
+          className="invisible absolute right-0 z-10 flex h-[18px] w-32 items-center justify-between border border-neutral-400 pl-2 pr-0.5 text-sm text-neutral-700 group-hover:visible"
+          /**
+           * ag-grid row select event listener is at a deeper layer than this dropdown trigger
+           * so in order to prevent selecting the row while opening the dropdown, we need to stop
+           * the propagation as event capturing is happening, not when it's bubbling.
+           */
+          onClickCapture={(event) => {
+            event.stopPropagation();
+            openDirectionDropdown(event);
+          }}
+          onClick={(event) => event.stopPropagation()}
+        >
+          <div>{column.direction}</div>
+          <div>
+            <DataCubeIcon.CaretDown />
+          </div>
+        </button>
+        <FormDropdownMenu className="w-32" {...directionDropdownProps}>
+          {[
+            DataCubeQuerySortDirection.ASCENDING,
+            DataCubeQuerySortDirection.DESCENDING,
+          ].map((direction) => (
+            <FormDropdownMenuItem
+              key={direction}
+              onClick={() => {
+                column.setDirection(direction);
+                closeDirectionDropdown();
+              }}
+              autoFocus={column.direction === direction}
+            >
+              {direction}
+            </FormDropdownMenuItem>
+          ))}
+        </FormDropdownMenu>
       </div>
     );
   },

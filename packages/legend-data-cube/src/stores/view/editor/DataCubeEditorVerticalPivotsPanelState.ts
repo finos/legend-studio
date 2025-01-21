@@ -18,7 +18,7 @@ import { uniqBy } from '@finos/legend-shared';
 import type { DataCubeConfiguration } from '../../core/model/DataCubeConfiguration.js';
 import { DataCubeColumnKind } from '../../core/DataCubeQueryEngine.js';
 import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
-import { _toCol } from '../../core/model/DataCubeColumn.js';
+import { _findCol, _toCol } from '../../core/model/DataCubeColumn.js';
 import {
   DataCubeEditorColumnSelectorColumnState,
   DataCubeEditorColumnSelectorState,
@@ -42,12 +42,11 @@ export class DataCubeEditorVerticalPivotColumnSelectorState extends DataCubeEdit
         (column) =>
           column.kind === DataCubeColumnKind.DIMENSION &&
           // exclude group-level extended columns
-          !this._editor.groupExtendColumns.find(
-            (col) => col.name === column.name,
-          ) &&
+          !_findCol(this._editor.groupExtendColumns, column.name) &&
           // exclude pivot columns
-          !this._editor.horizontalPivots.selector.selectedColumns.find(
-            (col) => col.name === column.name,
+          !_findCol(
+            this._editor.horizontalPivots.selector.selectedColumns,
+            column.name,
           ),
       )
       .map(
@@ -69,7 +68,7 @@ export class DataCubeEditorVerticalPivotsPanelState
   adaptPropagatedChanges(): void {
     this.selector.setSelectedColumns(
       this.selector.selectedColumns.filter((column) =>
-        this.selector.availableColumns.find((col) => col.name === column.name),
+        _findCol(this.selector.availableColumns, column.name),
       ),
     );
   }

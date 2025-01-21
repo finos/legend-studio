@@ -60,7 +60,7 @@ import {
   type DataCubeQuerySnapshotFilter,
   type DataCubeQuerySnapshot,
 } from './DataCubeQuerySnapshot.js';
-import { type DataCubeColumn } from './model/DataCubeColumn.js';
+import { _findCol, type DataCubeColumn } from './model/DataCubeColumn.js';
 import {
   guaranteeNonNullable,
   guaranteeIsString,
@@ -430,11 +430,9 @@ export function _pivotAggCols(
       // unlike groupBy, pivot aggreation on dimension columns (e.g. unique values aggregator)
       // are not helpful and therefore excluded
       column.kind === DataCubeColumnKind.MEASURE &&
-      !pivotColumns.find((col) => col.name === column.name) &&
+      !_findCol(pivotColumns, column.name) &&
       !column.excludedFromPivot &&
-      !snapshot.data.groupExtendedColumns.find(
-        (col) => col.name === column.name,
-      ),
+      !_findCol(snapshot.data.groupExtendedColumns, column.name),
   );
   return _fixEmptyAggCols(
     aggColumns.map((agg) => {
@@ -481,10 +479,8 @@ export function _groupByAggCols(
     const aggColumns = configuration.columns.filter(
       (column) =>
         column.isSelected &&
-        !groupByColumns.find((col) => col.name === column.name) &&
-        !snapshot.data.groupExtendedColumns.find(
-          (col) => col.name === column.name,
-        ),
+        !_findCol(groupByColumns, column.name) &&
+        !_findCol(snapshot.data.groupExtendedColumns, column.name),
     );
     return _fixEmptyAggCols(
       aggColumns.map((agg) => {
@@ -515,8 +511,9 @@ export function _groupByAggCols(
         const baseAggColName = getPivotResultColumnBaseColumnName(column.name);
         return {
           ...column,
-          matchingColumnConfiguration: configuration.columns.find(
-            (col) => col.name === baseAggColName,
+          matchingColumnConfiguration: _findCol(
+            configuration.columns,
+            baseAggColName,
           ),
         };
       })
@@ -544,12 +541,10 @@ export function _groupByAggCols(
     // these are the columns which are available for groupBy but not selected for groupBy
     // operation, they would be aggregated as well
     ...pivotGroupByColumns
-      .filter(
-        (column) => !groupByColumns.find((col) => col.name === column.name),
-      )
+      .filter((column) => !_findCol(groupByColumns, column.name))
       .map((column) => {
         const columnConfiguration = guaranteeNonNullable(
-          configuration.columns.find((col) => col.name === column.name),
+          _findCol(configuration.columns, column.name),
         );
         const operation = aggregateOperations.find(
           (op) => op.operator === columnConfiguration.aggregateOperator,

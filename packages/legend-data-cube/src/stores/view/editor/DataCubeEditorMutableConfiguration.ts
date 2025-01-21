@@ -377,7 +377,7 @@ export class DataCubeEditorMutableColumnConfiguration extends DataCubeColumnConf
     this.excludedFromPivot = value;
   }
 
-  setPivotSortDirection(value: string | undefined) {
+  setPivotSortDirection(value: DataCubeQuerySortDirection | undefined) {
     this.pivotSortDirection = value;
   }
 

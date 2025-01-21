@@ -37,6 +37,7 @@ import {
 } from '../../core/model/DataCubeConfiguration.js';
 import type { DisplayState } from '../../services/DataCubeLayoutService.js';
 import { DataCubeFilterEditor } from '../../../components/view/filter/DataCubeFilterEditor.js';
+import { _findCol } from '../../core/model/DataCubeColumn.js';
 
 /**
  * This query editor state backs the form editor for filter. It batches changes made
@@ -295,10 +296,7 @@ export class DataCubeFilterEditorState extends DataCubeQuerySnapshotController {
     );
     // NOTE: filtering group-level extended columns is not supported
     this.columns = configuration.columns.filter(
-      (column) =>
-        !snapshot.data.groupExtendedColumns.find(
-          (col) => col.name === column.name,
-        ),
+      (column) => !_findCol(snapshot.data.groupExtendedColumns, column.name),
     );
 
     this.tree.nodes = new Map<string, DataCubeFilterEditorTreeNode>();

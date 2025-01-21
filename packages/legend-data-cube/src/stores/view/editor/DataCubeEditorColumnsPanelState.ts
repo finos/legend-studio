@@ -16,7 +16,7 @@
 
 import { action, makeObservable, observable, override } from 'mobx';
 import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
-import { _toCol } from '../../core/model/DataCubeColumn.js';
+import { _findCol, _toCol } from '../../core/model/DataCubeColumn.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import {
   DataCubeEditorColumnSelectorColumnState,
@@ -183,12 +183,7 @@ export class DataCubeEditorColumnsPanelState
     // by each extended column.
     newSnapshot.data.selectColumns = this.selector.selectedColumns
       // filter out group-level extended columns since these columns are technically not selectable
-      .filter(
-        (col) =>
-          !this._editor.groupExtendColumns.find(
-            (column) => column.name === col.name,
-          ),
-      )
+      .filter((col) => !_findCol(this._editor.groupExtendColumns, col.name))
       .map(_toCol);
   }
 }

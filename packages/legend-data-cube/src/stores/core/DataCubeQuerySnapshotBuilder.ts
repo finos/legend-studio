@@ -34,6 +34,8 @@ import type { DataCubeQuery } from './model/DataCubeQuery.js';
 import {
   DataCubeQuerySnapshot,
   type DataCubeQuerySnapshotAggregateColumn,
+  type DataCubeQuerySnapshotProcessingContext,
+  type DataCubeQuerySnapshotSortColumn,
 } from './DataCubeQuerySnapshot.js';
 import {
   _findCol,
@@ -354,7 +356,6 @@ export async function validateAndBuildQuerySnapshot(
 
   const funcMap = extractFunctionMap(partialQuery);
   const snapshot = DataCubeQuerySnapshot.create({});
-  const aggCols: DataCubeQuerySnapshotAggregateColumn[] = [];
   const data = snapshot.data;
   const registeredColumns = new Map<string, DataCubeColumn>();
   /**
@@ -438,7 +439,8 @@ export async function validateAndBuildQuerySnapshot(
 
   // --------------------------------- PIVOT ---------------------------------
 
-  const pivotAggCols: DataCubeQuerySnapshotAggregateColumn[] = [];
+  let pivotAggColumns: DataCubeQuerySnapshotAggregateColumn[] = [];
+  let pivotSortColumns: DataCubeQuerySnapshotSortColumn[] = [];
   if (funcMap.pivot && funcMap.pivotCast && funcMap.pivotSort) {
     const pivotColumns = _colSpecArrayParam(funcMap.pivot, 0).colSpecs.map(
       (colSpec) => _getCol(colSpec.name),
@@ -454,13 +456,9 @@ export async function validateAndBuildQuerySnapshot(
       castColumns: castColumns,
     };
 
-    // restrict the set of available columns to only casted columns
-    colsMap.clear();
-    castColumns.forEach((col) => _setCol(col));
-
     // process aggregate columns
-    _colSpecArrayParam(funcMap.pivot, 1).colSpecs.forEach((colSpec) => {
-      pivotAggCols.push(
+    pivotAggColumns = _colSpecArrayParam(funcMap.pivot, 1).colSpecs.map(
+      (colSpec) =>
         _aggCol(
           colSpec,
           (colName: string) => {
@@ -474,17 +472,22 @@ export async function validateAndBuildQuerySnapshot(
           },
           engine.aggregateOperations,
         ),
-      );
-    });
+    );
 
+    // process sort columns
     // TODO: verify sort columns when we support sorting pivot columns
-    // TODO: verify groupBy agg columns, pivot agg columns and configuration agree
+    pivotSortColumns = _sort(funcMap.pivotSort, _getCol);
+
+    // restrict the set of available columns to only casted columns
+    colsMap.clear();
+    castColumns.forEach((col) => _setCol(col));
   }
 
   // --------------------------------- GROUP BY ---------------------------------
 
-  const groupByAggCols: DataCubeQuerySnapshotAggregateColumn[] = [];
-  if (funcMap.groupBy) {
+  let groupByAggColumns: DataCubeQuerySnapshotAggregateColumn[] = [];
+  let groupBySortColumns: DataCubeQuerySnapshotSortColumn[] = [];
+  if (funcMap.groupBy && funcMap.groupBySort) {
     const groupByColumns = _colSpecArrayParam(funcMap.groupBy, 0).colSpecs.map(
       (colSpec) => _getCol(colSpec.name),
     );
@@ -493,8 +496,8 @@ export async function validateAndBuildQuerySnapshot(
     };
 
     // process aggregate columns
-    _colSpecArrayParam(funcMap.groupBy, 1).colSpecs.forEach((colSpec) => {
-      groupByAggCols.push(
+    groupByAggColumns = _colSpecArrayParam(funcMap.groupBy, 1).colSpecs.map(
+      (colSpec) =>
         _aggCol(
           colSpec,
           (colName: string) => {
@@ -508,8 +511,9 @@ export async function validateAndBuildQuerySnapshot(
           },
           engine.aggregateOperations,
         ),
-      );
-    });
+    );
+
+    groupBySortColumns = _sort(funcMap.groupBySort, _getCol);
 
     // TODO: verify sort columns
     // TODO: verify groupBy agg columns, pivot agg columns and configuration agree
@@ -519,7 +523,6 @@ export async function validateAndBuildQuerySnapshot(
   // make sure this is the super set (account for exclude h-pivot)
   // consider scenarios where we have cast columns
   // consider scenarios where we have different parameter values
-  groupByAggCols.forEach((col) => aggCols.push(col));
 
   // --------------------------- GROUP-LEVEL EXTEND ---------------------------
 
@@ -582,10 +585,13 @@ export async function validateAndBuildQuerySnapshot(
   // ----------------------------------------------------------------------------------
 
   const configuration = validateAndBuildConfiguration(
-    snapshot,
-    pivotAggCols,
-    groupByAggCols,
-    funcMap,
+    {
+      snapshot,
+      pivotAggColumns,
+      groupByAggColumns,
+      groupBySortColumns,
+      pivotSortColumns,
+    },
     baseQuery,
   );
   data.configuration = configuration.serialize();
@@ -601,17 +607,10 @@ export async function validateAndBuildQuerySnapshot(
  * - [ ] verify groupBy sort columns and tree column sort direction configuration agree
  */
 function validateAndBuildConfiguration(
-  snapshot: DataCubeQuerySnapshot,
-  pivotAggCols: DataCubeQuerySnapshotAggregateColumn[],
-  groupByAggCols: DataCubeQuerySnapshotAggregateColumn[],
-  funcMap: DataCubeQueryFunctionMap,
+  context: DataCubeQuerySnapshotProcessingContext,
   baseQuery: DataCubeQuery,
 ) {
-  const defaultConfiguration = newConfiguration(
-    snapshot,
-    pivotAggCols,
-    groupByAggCols,
-  );
+  const defaultConfiguration = newConfiguration(context);
 
   // TODO: refactor this to compare between the configs
   // selected columns

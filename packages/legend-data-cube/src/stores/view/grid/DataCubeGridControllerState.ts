@@ -26,15 +26,16 @@ import {
   type DataCubeQuerySnapshotSortColumn,
 } from '../../core/DataCubeQuerySnapshot.js';
 import {
+  _findCol,
   _toCol,
   type DataCubeColumn,
 } from '../../core/model/DataCubeColumn.js';
 import { DataCubeQuerySnapshotController } from '../../services/DataCubeQuerySnapshotService.js';
 import {
-  type DataCubeQuerySortDirection,
   type DataCubeColumnPinPlacement,
   DataCubeColumnKind,
   DataCubeQueryFilterGroupOperator,
+  DataCubeQuerySortDirection,
   isPivotResultColumnName,
   getPivotResultColumnBaseColumnName,
 } from '../../core/DataCubeQueryEngine.js';
@@ -92,7 +93,7 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
     | undefined;
 
   getColumnConfiguration(colName: string | undefined) {
-    return this.configuration.columns.find((col) => col.name === colName);
+    return _findCol(this.configuration.columns, colName);
   }
 
   // --------------------------------- FILTER ---------------------------------
@@ -184,7 +185,7 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
     ];
 
     const rearrangedSelectColumns = columns
-      .map((colName) => this.selectColumns.find((col) => col.name === colName))
+      .map((colName) => _findCol(this.selectColumns, colName))
       .filter(isNonNullable);
     this.selectColumns = [
       ...rearrangedSelectColumns,
@@ -221,14 +222,15 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
   }
 
   getHorizontalPivotableColumn(colName: string) {
-    return this.configuration.columns
-      .filter(
+    return _findCol(
+      this.configuration.columns.filter(
         (col) =>
           col.kind === DataCubeColumnKind.DIMENSION &&
           // exclude group-level extended columns
-          !this.groupExtendedColumns.find((column) => column.name === col.name),
-      )
-      .find((col) => col.name === colName);
+          !_findCol(this.groupExtendedColumns, col.name),
+      ),
+      colName,
+    );
   }
 
   setHorizontalPivotOnColumn(colName: string) {
@@ -277,20 +279,17 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
   verticalPivotColumns: DataCubeColumn[] = [];
 
   getVerticalPivotableColumn(colName: string) {
-    return this.configuration.columns
-      .filter(
+    return _findCol(
+      this.configuration.columns.filter(
         (col) =>
           col.kind === DataCubeColumnKind.DIMENSION &&
           // exclude group-level extended columns
-          !this.groupExtendedColumns.find(
-            (column) => column.name === col.name,
-          ) &&
+          !_findCol(this.groupExtendedColumns, col.name) &&
           // exclude pivot columns
-          !this.horizontalPivotColumns.find(
-            (column) => column.name === col.name,
-          ),
-      )
-      .find((col) => col.name === colName);
+          !_findCol(this.horizontalPivotColumns, col.name),
+      ),
+      colName,
+    );
   }
 
   setVerticalPivotOnColumn(colName: string) {
@@ -349,12 +348,15 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
     if (!colName) {
       return undefined;
     }
-    return [
-      ...(this.horizontalPivotCastColumns.length
-        ? this.horizontalPivotCastColumns
-        : this.selectColumns),
-      ...this.groupExtendedColumns,
-    ].find((col) => col.name === colName);
+    return _findCol(
+      [
+        ...(this.horizontalPivotCastColumns.length
+          ? this.horizontalPivotCastColumns
+          : this.selectColumns),
+        ...this.groupExtendedColumns,
+      ],
+      colName,
+    );
   }
 
   setSortByColumn(colName: string, direction: DataCubeQuerySortDirection) {
@@ -430,23 +432,24 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
 
   private propagateChanges(baseSnapshot: DataCubeQuerySnapshot) {
     this.verticalPivotColumns = this.verticalPivotColumns.filter(
-      (col) =>
-        !this.horizontalPivotColumns.find((column) => column.name === col.name),
+      (col) => !_findCol(this.horizontalPivotColumns, col.name),
     );
     this.configuration.pivotLayout.expandedPaths = _pruneExpandedPaths(
       baseSnapshot.data.groupBy?.columns ?? [],
       this.verticalPivotColumns,
       this.configuration.pivotLayout.expandedPaths,
     );
+    this.configuration.columns.forEach((col) => {
+      col.pivotSortDirection = _findCol(this.horizontalPivotColumns, col.name)
+        ? (col.pivotSortDirection ?? DataCubeQuerySortDirection.ASCENDING)
+        : undefined;
+    });
 
     this.selectColumns = uniqBy(
       [
         ...this.configuration.columns.filter(
           (col) =>
-            col.isSelected &&
-            !this.groupExtendedColumns.find(
-              (column) => column.name === col.name,
-            ),
+            col.isSelected && !_findCol(this.groupExtendedColumns, col.name),
         ),
         ...this.horizontalPivotColumns,
         ...this.verticalPivotColumns,
@@ -468,9 +471,7 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
                 (column) =>
                   this.getColumnConfiguration(column.name)?.kind ===
                     DataCubeColumnKind.DIMENSION &&
-                  !this.horizontalPivotColumns.find(
-                    (col) => col.name === column.name,
-                  ),
+                  !_findCol(this.horizontalPivotColumns, column.name),
               ),
             ]
           : [
@@ -482,7 +483,7 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
       (col) => col.name,
     );
     this.sortColumns = this.sortColumns.filter((col) =>
-      sortableColumns.find((column) => column.name === col.name),
+      _findCol(sortableColumns, col.name),
     );
   }
 

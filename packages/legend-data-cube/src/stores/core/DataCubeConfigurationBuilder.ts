@@ -25,20 +25,12 @@ import {
   DataCubeFontTextAlignment,
 } from './DataCubeQueryEngine.js';
 import { _findCol, type DataCubeColumn } from './model/DataCubeColumn.js';
-import type {
-  DataCubeQuerySnapshot,
-  DataCubeQuerySnapshotAggregateColumn,
-} from './DataCubeQuerySnapshot.js';
+import type { DataCubeQuerySnapshotProcessingContext } from './DataCubeQuerySnapshot.js';
+import { at } from '@finos/legend-shared';
 
 export function newColumnConfiguration(
   column: DataCubeColumn,
-  context?:
-    | {
-        snapshot: DataCubeQuerySnapshot;
-        pivotAggCols: DataCubeQuerySnapshotAggregateColumn[];
-        groupByAggCols: DataCubeQuerySnapshotAggregateColumn[];
-      }
-    | undefined,
+  context?: DataCubeQuerySnapshotProcessingContext | undefined,
 ): DataCubeColumnConfiguration {
   const { name, type } = column;
   const config = new DataCubeColumnConfiguration(name, type);
@@ -67,24 +59,43 @@ export function newColumnConfiguration(
   }
 
   if (context) {
-    const { snapshot, groupByAggCols, pivotAggCols } = context;
+    const { snapshot, groupByAggColumns, pivotAggColumns, pivotSortColumns } =
+      context;
     const data = snapshot.data;
 
+    // process column selection
     config.isSelected = Boolean(
       _findCol(data.groupExtendedColumns, name) ??
         _findCol(data.selectColumns, name),
     );
 
-    const groupByAggCol = _findCol(groupByAggCols, name);
-    const pivotAggCol = _findCol(pivotAggCols, name);
+    const groupByAggCol = _findCol(groupByAggColumns, name);
+    const pivotAggCol = _findCol(pivotAggColumns, name);
     const aggCol = groupByAggCol ?? pivotAggCol;
     if (aggCol) {
+      // aggregator
       config.aggregateOperator = aggCol.operator;
       config.aggregationParameters = aggCol.parameterValues;
+
+      // exclude from pivot
       config.excludedFromPivot =
         groupByAggCol !== undefined && pivotAggCol === undefined;
+    }
 
-      // TODO: column kind
+    // process pivot sort direction
+    const pivotSortCol = _findCol(pivotSortColumns, name);
+    if (pivotSortCol) {
+      config.pivotSortDirection = pivotSortCol.direction;
+    }
+
+    // process column kind
+    //
+    // if aggregation is present and if the column is aggregated on
+    // it must be a measure
+    if (data.groupBy ?? data.pivot) {
+      config.kind = aggCol
+        ? DataCubeColumnKind.MEASURE
+        : DataCubeColumnKind.DIMENSION;
     }
   }
 
@@ -92,10 +103,9 @@ export function newColumnConfiguration(
 }
 
 export function newConfiguration(
-  snapshot: DataCubeQuerySnapshot,
-  pivotAggCols: DataCubeQuerySnapshotAggregateColumn[],
-  groupByAggCols: DataCubeQuerySnapshotAggregateColumn[],
+  context: DataCubeQuerySnapshotProcessingContext,
 ): DataCubeConfiguration {
+  const { snapshot, groupBySortColumns } = context;
   const data = snapshot.data;
   const configuration = new DataCubeConfiguration();
   const columns = [
@@ -104,7 +114,16 @@ export function newConfiguration(
     ...data.groupExtendedColumns,
   ];
   configuration.columns = columns.map((column) =>
-    newColumnConfiguration(column, { snapshot, pivotAggCols, groupByAggCols }),
+    newColumnConfiguration(column, context),
   );
+
+  // process tree column sort direction
+  //
+  // since we have made sure all groupBy sort columns must be of the same direction
+  // we simply retrieve the direction from the one of the column provided
+  if (groupBySortColumns.length) {
+    configuration.treeColumnSortDirection = at(groupBySortColumns, 0).direction;
+  }
+
   return configuration;
 }

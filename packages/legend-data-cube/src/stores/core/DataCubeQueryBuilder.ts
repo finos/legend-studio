@@ -50,6 +50,7 @@ import {
 } from './DataCubeQueryBuilderUtils.js';
 import type { DataCubeQueryAggregateOperation } from './aggregation/DataCubeQueryAggregateOperation.js';
 import type { DataCubeSource } from './model/DataCubeSource.js';
+import { _findCol } from './model/DataCubeColumn.js';
 
 export function buildExecutableQuery(
   snapshot: DataCubeQuerySnapshot,
@@ -142,7 +143,13 @@ export function buildExecutableQuery(
       _function(DataCubeFunction.SORT, [
         _collection(
           data.pivot.columns.map((col) =>
-            _function(DataCubeFunction.ASCENDING, [_col(col.name)]),
+            _function(
+              _findCol(configuration.columns, col.name)?.pivotSortDirection ===
+                DataCubeQuerySortDirection.DESCENDING
+                ? DataCubeFunction.DESCENDING
+                : DataCubeFunction.ASCENDING,
+              [_col(col.name)],
+            ),
           ),
         ),
       ]),

@@ -80,6 +80,7 @@ function _checkFilterOperator(operator: DataCubeQueryFilterOperator) {
 
 const FOCUSED_TESTS: unknown[] = [
   // tests added here will be the only tests run
+  /GroupBy:/,
 ];
 
 const cases: TestCase[] = [
@@ -1019,20 +1020,26 @@ const cases: TestCase[] = [
     error: `Can't process expression: unsupported function composition cast() (supported composition: extend()->filter()->select()->[sort()->pivot()->cast()]->[groupBy()->sort()]->extend()->sort()->limit())`,
   }),
 
-  // TODO: things post cast, even if cast is bad!
+  // TODO: things post cast, even if cast is invalid, must respect it
 
   // --------------------------------- GROUP BY ---------------------------------
 
-  // _case(`GroupBy: multiple group columns`, {
-  //   query: `select(~[b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])`,
-  //   columns: ['a:String', 'b:Integer'],
-  //   error: `Can't find column 'a'`,
-  // }),
-  // _case(`GroupBy: multiple aggregate columns`, {
-  //   query: `select(~[b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])`,
-  //   columns: ['a:String', 'b:Integer'],
-  //   error: `Can't find column 'a'`,
-  // }),
+  _case(`GroupBy: single group column and single aggregate column`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+  }),
+  _case(`GroupBy: multiple group columns and single aggregate column`, {
+    query: `select(~[a, b, c])->groupBy(~[a, c], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending(), ~c->ascending()])`,
+    columns: ['a:String', 'b:Integer', 'c:String'],
+  }),
+  _case(`GroupBy: single group column and multiple aggregate columns`, {
+    query: `select(~[a, b, c])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum(), c:x|$x.c:x|$x->max()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer', 'c:Integer'],
+  }),
+  _case(`GroupBy: multiple group columns and multiple aggregate columns`, {
+    query: `select(~[a, b, c, d])->groupBy(~[a, d], ~[b:x|$x.b:x|$x->sum(), c:x|$x.c:x|$x->max()])->sort([~a->ascending(), ~d->ascending()])`,
+    columns: ['a:String', 'b:Integer', 'c:Integer', 'd:String'],
+  }),
   // TODO: custom sort order
   // _case(`GroupBy: multiple aggregate columns`, {
   //   query: `select(~[b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])`,
@@ -1040,26 +1047,25 @@ const cases: TestCase[] = [
   //   error: `Can't find column 'a'`,
   // }),
 
-  // _case(`Filter: ERROR - non-standard variable name in mapper`, {
-  //   query: `filter(x|$x.Age == $y.Age2)`,
-  //   columns: ['Age:Integer', 'Age2:Integer'],
-  //   error: `Can't process filter condition: no matching operator found`,
-  // }),
-  // _case(`Filter: ERROR - non-standard variable name in reducer`, {
-  //   query: `filter(x|$x.Age == $y.Age2)`,
-  //   columns: ['Age:Integer', 'Age2:Integer'],
-  //   error: `Can't process filter condition: no matching operator found`,
-  // }),
-
   _case(`GroupBy: ERROR - group by column not found`, {
     query: `select(~[b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])`,
     columns: ['a:String', 'b:Integer'],
     error: `Can't find column 'a'`,
   }),
-  _case(`GroupBy: ERROR - group by column not found`, {
-    query: `select(~[b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])`,
+  _case(`GroupBy: ERROR - unmatched mapped column name`, {
+    query: `select(~[a, b, c])->groupBy(~[a], ~[b:x|$x.c:x|$x->sum()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer', 'c:Integer'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`GroupBy: ERROR - non-standard variable name in mapper`, {
+    query: `select(~[a])->groupBy(~[a], ~[b:y|$y.b:x|$x->sum()])->sort([~a->ascending()])`,
     columns: ['a:String', 'b:Integer'],
-    error: `Can't find column 'a'`,
+    error: `Can't process aggregate column 'b': no matching operator found`,
+  }),
+  _case(`GroupBy: ERROR - non-standard variable name in reducer`, {
+    query: `select(~[a])->groupBy(~[a], ~[b:x|$x.b:y|$y->sum()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process aggregate column 'b': no matching operator found`,
   }),
 
   // --------------------------------- GROUP-LEVEL EXTEND ---------------------------------
@@ -1240,7 +1246,7 @@ const cases: TestCase[] = [
     columns: ['a:Integer', 'b:Integer'],
     error: `Can't process select() expression: expected at most 2 parameters provided, got 3`,
   }),
-  _case(`GENERIC: ERROR - bad GENERIC: Composition - select()->filter()`, {
+  _case(`GENERIC: ERROR - bad composition: select()->filter()`, {
     query: `select(~a)->filter(x|$x.a==1)`,
     columns: ['a:Integer'],
     error: `Can't process expression: unsupported function composition select()->filter() (supported composition: extend()->filter()->select()->[sort()->pivot()->cast()]->[groupBy()->sort()]->extend()->sort()->limit())`,
