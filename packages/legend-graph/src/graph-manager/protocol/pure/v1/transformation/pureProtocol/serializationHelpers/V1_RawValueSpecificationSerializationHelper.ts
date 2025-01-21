@@ -74,6 +74,7 @@ export enum V1_RawValueSpecificationType {
   CSTRICTDATE = 'strictDate',
   CSTRICTTIME = 'strictTime',
   CLATESTDATE = 'latestDate',
+  CDATE = 'date',
 }
 
 const rawRawTypeSchemaModel = createModelSchema(V1_RawRawType, {
@@ -205,7 +206,7 @@ export const V1_rawVariableModelSchema = createModelSchema(V1_RawVariable, {
   name: primitive(),
 });
 
-const V1_rawPrimitiveInstanceValueSchema = createModelSchema(
+export const V1_rawPrimitiveInstanceValueSchema = createModelSchema(
   V1_RawPrimitiveInstanceValue,
   {
     type: alias(
@@ -334,6 +335,34 @@ export function V1_deserializeRawValueSpecification(
     default:
       throw new UnsupportedOperationError(
         `Can't deserialize raw value specification of type '${json._type}'`,
+      );
+  }
+}
+
+export function V1_deserializeRawValueSpecificationType(type: string): string {
+  switch (type) {
+    case PRIMITIVE_TYPE.INTEGER:
+      return V1_RawValueSpecificationType.CINTEGER;
+    case PRIMITIVE_TYPE.DECIMAL:
+      return V1_RawValueSpecificationType.CDECIMAL;
+    case PRIMITIVE_TYPE.STRING:
+      return V1_RawValueSpecificationType.CSTRING;
+    case PRIMITIVE_TYPE.BOOLEAN:
+      return V1_RawValueSpecificationType.CBOOLEAN;
+    case PRIMITIVE_TYPE.FLOAT:
+      return V1_RawValueSpecificationType.CFLOAT;
+    case PRIMITIVE_TYPE.DATE:
+    case PRIMITIVE_TYPE.DATETIME:
+      return V1_RawValueSpecificationType.CDATETIME;
+    case PRIMITIVE_TYPE.STRICTDATE:
+      return V1_RawValueSpecificationType.CSTRICTDATE;
+    case PRIMITIVE_TYPE.STRICTTIME:
+      return V1_RawValueSpecificationType.CSTRICTTIME;
+    case PRIMITIVE_TYPE.LATESTDATE:
+      return V1_RawValueSpecificationType.CLATESTDATE;
+    default:
+      throw new UnsupportedOperationError(
+        `Can't serialize raw instance value type '${type}'`,
       );
   }
 }

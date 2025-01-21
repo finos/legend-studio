@@ -165,4 +165,5 @@ export interface QueryInfo {
   content: string;
   isCurrentUserQuery: boolean;
   taggedValues?: QueryTaggedValue[] | undefined;
+  defaultParameterValues?: QueryParameterValue[] | undefined;
 }

@@ -15,13 +15,16 @@
  */
 
 import {
-  RelationalExecutionActivities,
-  TDSExecutionResult,
   type V1_Lambda,
   type V1_ValueSpecification,
   type V1_EngineServerClient,
   type V1_PureGraphManager,
   type V1_PureModelContext,
+  type ExecutionResult,
+  type V1_ExecutionResult,
+  RelationalExecutionActivities,
+  TDSExecutionResult,
+  V1_ParameterValue,
   V1_PureModelContextPointer,
   V1_LegendSDLC,
   V1_serializePureModelContext,
@@ -33,14 +36,13 @@ import {
   V1_rawBaseExecutionContextModelSchema,
   V1_deserializeExecutionResult,
   V1_parameterValueModelSchema,
-  type ExecutionResult,
-  type V1_ExecutionResult,
-  type V1_ParameterValue,
   V1_buildExecutionResult,
   V1_RawBaseExecutionContext,
   PureClientVersion,
   V1_buildEngineError,
   V1_EngineError,
+  V1_PackageableType,
+  V1_deserializeRawValueSpecificationType,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
@@ -56,6 +58,7 @@ import {
   _lambda,
   _serializeValueSpecification,
   _deserializeValueSpecification,
+  _defaultPrimitiveTypeValue,
 } from '@finos/legend-data-cube';
 import {
   isNonNullable,
@@ -172,7 +175,28 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           ),
         );
         source.query = at(source.lambda.body, 0);
-        // TODO: handle parameter values
+        const parameterValues = await Promise.all(
+          source.lambda.parameters.map(async (parameter) => {
+            if (parameter.genericType?.rawType instanceof V1_PackageableType) {
+              const paramValue = new V1_ParameterValue();
+              paramValue.name = parameter.name;
+              const type = parameter.genericType.rawType.fullPath;
+              const defauleValue = queryInfo.defaultParameterValues?.find(
+                (val) => val.name === parameter.name,
+              )?.content;
+              paramValue.value =
+                defauleValue !== undefined
+                  ? await this.parseValueSpecification(defauleValue)
+                  : {
+                      _type: V1_deserializeRawValueSpecificationType(type),
+                      value: _defaultPrimitiveTypeValue(type),
+                    };
+              return paramValue;
+            }
+            return undefined;
+          }),
+        );
+        source.parameterValues = parameterValues.filter(isNonNullable);
         try {
           source.columns = (
             await this._getLambdaRelationType(
@@ -312,6 +336,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     if (source instanceof AdhocQueryDataCubeSource) {
       result = await this._runQuery(query, source.model);
     } else if (source instanceof LegendQueryDataCubeSource) {
+      query.parameters = source.lambda.parameters;
       result = await this._runQuery(
         query,
         source.model,

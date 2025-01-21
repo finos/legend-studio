@@ -346,6 +346,7 @@ import type {
   LightPersistentDataCubeQuery,
   PersistentDataCubeQuery,
 } from '../../../action/query/PersistentDataCubeQuery.js';
+import { V1_QueryParameterValue } from './engine/query/V1_Query.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -3115,6 +3116,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           `Tagged value 'value' field is missing or empty`,
         );
         return taggedValue;
+      }),
+      defaultParameterValues: query.defaultParameterValues?.map((param) => {
+        const vDefault = new V1_QueryParameterValue();
+        vDefault.name = param.name;
+        vDefault.content = param.content;
+        return vDefault;
       }),
     };
   }
