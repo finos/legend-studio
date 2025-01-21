@@ -1,5 +1,11 @@
 # @finos/legend-extension-store-service-store
 
+## 2.0.273
+
+### Patch Changes
+
+- [#3821](https://github.com/finos/legend-studio/pull/3821) [`da839ba`](https://github.com/finos/legend-studio/commit/da839ba2d6a7d2c1bc71cabc3fccfb3565bcd9fd) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Add Runtime Components to Execution Environment
+
 ## 2.0.272
 
 ## 2.0.271
