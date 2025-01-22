@@ -15,7 +15,7 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../graph/Core_HashUtils.js';
+import { CORE_HASH_STRUCTURE } from '../../../../Core_HashUtils.js';
 import type { PackageableElementReference } from '../PackageableElementReference.js';
 import type { PropertyOwnerImplementation } from './PropertyOwnerImplementation.js';
 import type { Mapping } from './Mapping.js';
@@ -33,6 +33,9 @@ import type { MergeOperationSetImplementation } from './MergeOperationSetImpleme
 import type { INTERNAL__UnresolvedSetImplementation } from './INTERNAL__UnresolvedSetImplementation.js';
 import type { Class } from '../domain/Class.js';
 import type { INTERNAL__UnknownSetImplementation } from './INTERNAL__UnknownSetImplementation.js';
+import type {
+  RelationFunctionInstanceSetImplementation
+} from './relationFunction/RelationFunctionInstanceSetImplementation.js';
 
 export interface SetImplementationVisitor<T> {
   visit_SetImplementation(setImplementation: InstanceSetImplementation): T;
@@ -67,6 +70,9 @@ export interface SetImplementationVisitor<T> {
   ): T;
   visit_AggregationAwareSetImplementation(
     setImplementation: AggregationAwareSetImplementation,
+  ): T;
+  visit_RelationFunctionInstanceSetImplementation(
+      setImplementation: RelationFunctionInstanceSetImplementation,
   ): T;
 }
 

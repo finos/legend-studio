@@ -105,6 +105,13 @@ import { FlatDataAssociationPropertyMapping } from '../../../../../../../graph/m
 import type { V1_INTERNAL__UnknownPropertyMapping } from '../../../model/packageableElements/mapping/V1_INTERNAL__UnknownPropertyMapping.js';
 import { INTERNAL__UnknownPropertyMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/INTERNAL__UnknownPropertyMapping.js';
 import { INTERNAL__PseudoMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/INTERNAL__PseudoMapping.js';
+import type {
+  V1_RelationFunctionPropertyMapping
+} from '../../../model/packageableElements/mapping/V1_RelationFunctionPropertyMapping.js';
+import {
+  RelationFunctionPropertyMapping
+} from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/relationFunction/RelationFunctionPropertyMapping.js';
+import { RelationColumn } from '../../../../../../../graph/metamodel/pure/packageableElements/relation/RelationType.js';
 
 const TEMPORARY__resolveSetImplementationByID = (
   mapping: Mapping,
@@ -1180,5 +1187,91 @@ export class V1_PropertyMappingBuilder
         guaranteeNonNullable(propertyMapping.localMappingProperty);
     }
     return aggregationAwarePropertyMapping;
+  }
+
+  visit_RelationFunctionPropertyMapping(protocol: V1_RelationFunctionPropertyMapping): PropertyMapping {
+    assertNonNullable(
+        protocol.property,
+        `Relation Function property mapping 'property' field is missing`,
+    );
+    assertNonEmptyString(
+        protocol.property.property,
+        `Relation Function property mapping 'property.property' field is missing or empty`,
+    );
+    let propertyOwner: Class | Association;
+    let property: AbstractProperty;
+    let localMapping: LocalMappingPropertyInfo | undefined;
+    if (protocol.localMappingProperty) {
+      const localMappingProperty = protocol.localMappingProperty;
+      const mappingClass = new MappingClass(
+          `${this.topParent?._PARENT.path}_${this.topParent?.id}${protocol.property.property}`,
+      );
+      const _multiplicity = this.context.graph.getMultiplicity(
+          localMappingProperty.multiplicity.lowerBound,
+          localMappingProperty.multiplicity.upperBound,
+      );
+      const _property = new Property(
+          protocol.property.property,
+          _multiplicity,
+          this.context.resolveGenericType(localMappingProperty.type),
+          mappingClass,
+      );
+      property = PropertyImplicitReference.create(
+          PackageableElementImplicitReference.create(
+              mappingClass,
+              protocol.property.class,
+          ),
+          _property,
+      ).value;
+      localMapping = new LocalMappingPropertyInfo();
+      localMapping.localMappingProperty = true;
+      localMapping.localMappingPropertyMultiplicity = _multiplicity;
+      localMapping.localMappingPropertyType = this.context.resolveType(
+          localMappingProperty.type,
+      );
+      propertyOwner = property._OWNER;
+    } else {
+       if (protocol.property.class) {
+        propertyOwner = this.context.resolveClass(
+            protocol.property.class,
+        ).value;
+      } else {
+        throw new GraphBuilderError(
+            `Can't find property owner class for property '${protocol.property.property}'`,
+        );
+      }
+      property =
+          propertyOwner instanceof Class
+              ? getClassProperty(propertyOwner, protocol.property.property)
+              : getOwnProperty(propertyOwner, protocol.property.property);
+    }
+
+    const sourceSetImplementation = guaranteeNonNullable(
+        resolvePropertyMappingSourceImplementation(
+            this.immediateParent,
+            protocol,
+            this.topParent,
+            this.context,
+        ),
+    );
+    const propertyType = property.genericType.value.rawType;
+    const propertyMapping = new RelationFunctionPropertyMapping(
+        this.topParent ?? this.immediateParent,
+        PropertyImplicitReference.create(
+            PackageableElementImplicitReference.create(
+                propertyOwner,
+                protocol.property.class ?? '',
+            ),
+            property,
+        ),
+        SetImplementationImplicitReference.create(
+            sourceSetImplementation,
+            protocol.source,
+        ),
+        undefined,
+        new RelationColumn(protocol.column, propertyType)
+    );
+    propertyMapping.localMappingProperty = localMapping;
+    return propertyMapping;
   }
 }

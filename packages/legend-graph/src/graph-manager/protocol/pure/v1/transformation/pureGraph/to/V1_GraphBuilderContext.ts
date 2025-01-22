@@ -35,7 +35,10 @@ import {
   ImportAwareCodeSection,
 } from '../../../../../../../graph/metamodel/pure/packageableElements/section/Section.js';
 import { StereotypeImplicitReference } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/StereotypeReference.js';
-import { GenericTypeImplicitReference } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/GenericTypeReference.js';
+import {
+  GenericTypeImplicitReference,
+  type GenericTypeReference
+} from '../../../../../../../graph/metamodel/pure/packageableElements/domain/GenericTypeReference.js';
 import type { Type } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Type.js';
 import type { Class } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Class.js';
 import type { Enumeration } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Enumeration.js';
@@ -85,6 +88,7 @@ import {
   getOwnProperty,
   getStereotype,
   getTag,
+  newGenericType,
 } from '../../../../../../../graph/helpers/DomainHelper.js';
 import {
   getFilter,
@@ -96,6 +100,8 @@ import {
 } from '../../../../../../../graph/helpers/STO_FlatData_Helper.js';
 import type { PropertyOwner } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/AbstractProperty.js';
 import type { DataElement } from '../../../../../../../graph/metamodel/pure/packageableElements/data/DataElement.js';
+import type { V1_GenericType } from '../../../model/packageableElements/type/V1_GenericType.js';
+import { V1_getGenericTypeFullPath } from '../../../helpers/V1_DomainHelper.js';
 
 export const V1_buildFullPath = (
   packagePath: string | undefined,
@@ -312,6 +318,13 @@ export class V1_GraphBuilderContext {
   resolveGenericType = (path: string): GenericTypeImplicitReference => {
     const ownerReference = this.resolveType(path);
     const value = new GenericType(ownerReference.value);
+    return GenericTypeImplicitReference.create(ownerReference, value);
+  };
+
+  resolveGenericTypeFromProtocol = (genericType: V1_GenericType): GenericTypeReference => {
+    const ownerReference = this.resolveType(V1_getGenericTypeFullPath(genericType));
+    const typeArguments = genericType.typeArguments.map((g) => this.resolveGenericTypeFromProtocol(g));
+    const value = newGenericType(ownerReference.value, typeArguments);
     return GenericTypeImplicitReference.create(ownerReference, value);
   };
 

@@ -25,6 +25,7 @@ import type { V1_PureInstanceClassMapping } from '../../../model/packageableElem
 import type { V1_RootFlatDataClassMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_RootFlatDataClassMapping.js';
 import type { V1_MergeOperationClassMapping } from './V1_MergeOperationClassMapping.js';
 import type { V1_INTERNAL__UnknownClassMapping } from './V1_INTERNAL__UnknownClassMapping.js';
+import type { V1_RelationFunctionClassMapping } from './V1_RelationFunctionClassMapping.js';
 
 export interface V1_ClassMappingVisitor<T> {
   visit_ClassMapping(classMapping: V1_ClassMapping): T;
@@ -44,6 +45,9 @@ export interface V1_ClassMappingVisitor<T> {
   ): T;
   visit_AggregationAwareClassMapping(
     classMapping: V1_AggregationAwareClassMapping,
+  ): T;
+  visit_RelationFunctionClassMapping(
+      classMapping: V1_RelationFunctionClassMapping,
   ): T;
 }
 

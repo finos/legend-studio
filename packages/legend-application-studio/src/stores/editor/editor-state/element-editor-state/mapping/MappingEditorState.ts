@@ -102,6 +102,7 @@ import {
   type Store,
   ModelStore,
   INTERNAL__UnknownSetImplementation,
+  RelationFunctionInstanceSetImplementation,
 } from '@finos/legend-graph';
 import type {
   DSL_Mapping_LegendStudioApplicationPlugin_Extension,
@@ -308,9 +309,13 @@ export const getMappingElementSource = (
     return mappingElement.rootInstanceSetImplementation.mainTableAlias;
   } else if (mappingElement instanceof AggregationAwareSetImplementation) {
     return getMappingElementSource(
-      mappingElement.mainSetImplementation,
-      plugins,
+        mappingElement.mainSetImplementation,
+        plugins,
     );
+  }
+  // TODO: We could probably return the relation function used for the mapping here once we implement the form mode support for it
+  else if (mappingElement instanceof RelationFunctionInstanceSetImplementation) {
+      return undefined;
   }
   const extraMappingElementSourceExtractors = plugins.flatMap(
     (plugin) =>
@@ -897,6 +902,12 @@ export class MappingEditorState extends ElementEditorState {
     if (mappingElement instanceof AssociationImplementation) {
       this.editorStore.applicationStore.notificationService.notifyUnsupportedFeature(
         'Association mapping editor',
+      );
+      return;
+    }
+    if (mappingElement instanceof RelationFunctionInstanceSetImplementation) {
+      this.editorStore.applicationStore.notificationService.notifyUnsupportedFeature(
+          'Relation Function mapping editor',
       );
       return;
     }

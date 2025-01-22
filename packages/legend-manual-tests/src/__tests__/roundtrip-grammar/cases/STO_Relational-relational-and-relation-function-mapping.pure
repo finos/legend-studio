@@ -1,0 +1,103 @@
+###Relational
+Database my::testDB
+(
+  Table personTable
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRSTNAME VARCHAR(100),
+    AGE INTEGER,
+    FIRMID INTEGER
+  )
+  Table firmTable
+  (
+    ID INTEGER PRIMARY KEY,
+    LEGALNAME VARCHAR(100)
+  )
+)
+
+
+###Pure
+Class my::Firm
+{
+  legalName: String[1];
+}
+
+Class my::Person
+{
+  firstName: String[1];
+  age: Integer[1];
+}
+
+Association my::Person_Firm
+{
+  employees: my::Person[*];
+  firm: my::Firm[1];
+}
+
+function my::firmFunction(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{my::testDB.firmTable}#->limit(10)->select(~[ID, LEGALNAME])
+}
+
+function my::personFunction(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{my::testDB.personTable}#->filter(x|$x.AGE > 25)->limit(5)
+}
+
+
+###Mapping
+Mapping my::relationFunctionMapping
+(
+  *my::Person[person]: Relation
+  {
+    ~func my::personFunction():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    age: AGE,
+    +firmId: Integer[1]: FIRMID
+  }
+  *my::Firm[firm]: Relational
+  {
+    ~primaryKey
+    (
+      [my::testDB]firmTable.ID
+    )
+    ~mainTable [my::testDB]firmTable
+    +id: Integer[1]: [my::testDB]firmTable.ID,
+    legalName: [my::testDB]firmTable.LEGALNAME
+  }
+
+  my::Person_Firm: XStore
+  {
+    employees[firm, person]: $this.id == $that.firmId,
+    firm[person, firm]: $this.firmId == $that.id
+  }
+)
+
+
+###Connection
+RelationalDatabaseConnection my::conn
+{
+  store: my::testDB;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+}
+
+
+###Runtime
+Runtime my::runtime
+{
+  mappings:
+  [
+    my::relationFunctionMapping
+  ];
+  connections:
+  [
+    my::testDB:
+    [
+      connection_1: my::conn
+    ]
+  ];
+}

@@ -612,9 +612,7 @@ export const V1_buildBaseSimpleFunctionExpression = (
   expression.func = func;
   if (func) {
     const val = func.value;
-    expression.genericType = GenericTypeExplicitReference.create(
-      new GenericType(val.returnType.value),
-    );
+    expression.genericType = val.returnType;
     expression.multiplicity = val.returnMultiplicity;
   }
   expression.parametersValues = processedParameters;

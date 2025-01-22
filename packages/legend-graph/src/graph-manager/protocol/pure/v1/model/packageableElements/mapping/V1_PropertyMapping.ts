@@ -29,6 +29,9 @@ import type { V1_EmbeddedFlatDataPropertyMapping } from '../../../model/packagea
 import type { V1_XStorePropertyMapping } from './xStore/V1_XStorePropertyMapping.js';
 import type { V1_FlatDataAssociationPropertyMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_FlatDataAssociationPropertyMapping.js';
 import type { V1_INTERNAL__UnknownPropertyMapping } from './V1_INTERNAL__UnknownPropertyMapping.js';
+import type {
+  V1_RelationFunctionPropertyMapping
+} from './V1_RelationFunctionPropertyMapping.js';
 
 export interface V1_PropertyMappingVisitor<T> {
   visit_PropertyMapping(propertyMapping: V1_PropertyMapping): T;
@@ -59,6 +62,9 @@ export interface V1_PropertyMappingVisitor<T> {
   visit_XStorePropertyMapping(propertyMapping: V1_XStorePropertyMapping): T;
   visit_FlatDataAssociationPropertyMapping(
     propertyMapping: V1_FlatDataAssociationPropertyMapping,
+  ): T;
+  visit_RelationFunctionPropertyMapping(
+      propertyMapping: V1_RelationFunctionPropertyMapping,
   ): T;
 }
 

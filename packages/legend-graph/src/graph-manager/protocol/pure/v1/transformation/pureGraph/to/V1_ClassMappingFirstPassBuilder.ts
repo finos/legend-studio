@@ -52,6 +52,12 @@ import type { V1_MergeOperationClassMapping } from '../../../model/packageableEl
 import { MergeOperationSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/MergeOperationSetImplementation.js';
 import type { V1_INTERNAL__UnknownClassMapping } from '../../../model/packageableElements/mapping/V1_INTERNAL__UnknownClassMapping.js';
 import { INTERNAL__UnknownSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/INTERNAL__UnknownSetImplementation.js';
+import type {
+  V1_RelationFunctionClassMapping
+} from '../../../model/packageableElements/mapping/V1_RelationFunctionClassMapping.js';
+import {
+  RelationFunctionInstanceSetImplementation
+} from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/relationFunction/RelationFunctionInstanceSetImplementation.js';
 
 const getClassMappingOperationType = (value: string): OperationType =>
   guaranteeNonNullable(
@@ -293,5 +299,19 @@ export class V1_ClassMappingFirstPassBuilder
         V1_buildAggregateContainer(setImplementation, this.context, mapping),
       );
     return aggragetionAwareInstanceSetImplementation;
+  }
+
+  visit_RelationFunctionClassMapping(classMapping: V1_RelationFunctionClassMapping): SetImplementation {
+    assertNonEmptyString(
+        classMapping.class,
+        `Relation function class mapping 'class' field is missing or empty`,
+    );
+    const targetClass = this.context.resolveClass(classMapping.class);
+    return new RelationFunctionInstanceSetImplementation(
+        V1_getInferredClassMappingId(targetClass.value, classMapping),
+        this.parent,
+        targetClass,
+        InferableMappingElementRootExplicitValue.create(classMapping.root)
+    );
   }
 }

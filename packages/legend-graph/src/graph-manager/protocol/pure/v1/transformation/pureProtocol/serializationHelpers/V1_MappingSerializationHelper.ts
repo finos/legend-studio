@@ -134,6 +134,12 @@ import { V1_MappingTest } from '../../../model/packageableElements/mapping/V1_Ma
 import type { V1_TestSuite } from '../../../model/test/V1_TestSuite.js';
 import { V1_INTERNAL__UnknownClassMapping } from '../../../model/packageableElements/mapping/V1_INTERNAL__UnknownClassMapping.js';
 import { V1_INTERNAL__UnknownMappingInclude } from '../../../model/packageableElements/mapping/V1_INTERNAL__UnknownMappingInclude.js';
+import {
+    V1_RelationFunctionClassMapping
+} from '../../../model/packageableElements/mapping/V1_RelationFunctionClassMapping.js';
+import {
+    V1_RelationFunctionPropertyMapping
+} from '../../../model/packageableElements/mapping/V1_RelationFunctionPropertyMapping.js';
 
 enum V1_ClassMappingType {
   OPERATION = 'operation',
@@ -143,6 +149,7 @@ enum V1_ClassMappingType {
   ROOT_RELATIONAL = 'relational',
   RELATIONAL = 'embedded',
   AGGREGATION_AWARE = 'aggregationAware',
+  RELATION_FUNCTION = 'relation',
 }
 
 enum V1_PropertyMappingType {
@@ -156,6 +163,7 @@ enum V1_PropertyMappingType {
   OTHERWISE_EMBEDDED_RELATIONAL = 'otherwiseEmbeddedPropertyMapping',
   AGGREGATION_AWARE = 'AggregationAwarePropertyMapping',
   XSTORE = 'xStorePropertyMapping',
+  RELATION_FUNCTION = 'relationFunctionPropertyMapping'
 }
 
 // ------------------------------------- Shared -------------------------------------
@@ -658,6 +666,54 @@ const aggregationAwareClassMappingModelSchema = (
     root: primitive(),
   });
 
+// ------------------------------------- Relation Function Mapping -------------------------------------
+
+const relationFunctionPropertyMappingModelSchema = createModelSchema(
+    V1_RelationFunctionPropertyMapping,
+    {
+        _type: usingConstantValueSchema(V1_PropertyMappingType.RELATION_FUNCTION),
+        localMappingProperty: usingModelSchema(
+            V1_localMappingPropertyInfoModelSchema,
+        ),
+        property: usingModelSchema(V1_propertyPointerModelSchema),
+        source: optional(primitive()),
+        target: optional(primitive()),
+        column: primitive(),
+    },
+);
+
+function V1_serializeRelationFunctionPropertyMapping(
+    protocol: V1_RelationFunctionPropertyMapping,
+): PlainObject<V1_RelationFunctionPropertyMapping> {
+    return serialize(relationFunctionPropertyMappingModelSchema, protocol);
+}
+
+function V1_deserializeRelationFunctionPropertyMapping(
+    json: PlainObject<V1_RelationFunctionPropertyMapping>,
+): V1_RelationFunctionPropertyMapping | typeof SKIP {
+    switch (json._type) {
+        case V1_PropertyMappingType.RELATION_FUNCTION:
+            return deserialize(relationFunctionPropertyMappingModelSchema, json);
+        default:
+            return SKIP;
+    }
+}
+
+const relationFunctionClassMappingModelSchema = createModelSchema(V1_RelationFunctionClassMapping, {
+        _type: usingConstantValueSchema(V1_ClassMappingType.RELATION_FUNCTION),
+        class: primitive(),
+        extendsClassMappingId: optional(primitive()),
+        id: optional(primitive()),
+        propertyMappings: list(
+            custom(
+                V1_serializeRelationFunctionPropertyMapping,
+                V1_deserializeRelationFunctionPropertyMapping,
+            ),
+        ),
+        root: primitive(),
+        relationFunction: usingModelSchema(V1_packageableElementPointerModelSchema),
+    });
+
 // ------------------------------------- Class Mapping -------------------------------------
 
 function V1_serializeClassMapping(
@@ -680,6 +736,8 @@ function V1_serializeClassMapping(
     return serialize(relationalClassMappingModelSchema, value);
   } else if (value instanceof V1_AggregationAwareClassMapping) {
     return serialize(aggregationAwareClassMappingModelSchema(plugins), value);
+  } else if (value instanceof V1_RelationFunctionClassMapping) {
+      return serialize(relationFunctionClassMappingModelSchema, value);
   }
   const extraClassMappingSerializers = plugins.flatMap(
     (plugin) =>
@@ -730,6 +788,8 @@ function V1_deserializeClassMapping(
         aggregationAwareClassMappingModelSchema(plugins),
         json,
       );
+      case V1_ClassMappingType.RELATION_FUNCTION:
+        return deserialize(relationFunctionClassMappingModelSchema, json);
     default: {
       const extraClassMappingDeserializers = plugins.flatMap(
         (plugin) =>

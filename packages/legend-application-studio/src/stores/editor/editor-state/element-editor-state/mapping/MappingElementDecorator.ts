@@ -65,6 +65,7 @@ import {
   EnumerationMappingExplicitReference,
   SetImplementationExplicitReference,
   type INTERNAL__UnknownSetImplementation,
+  type RelationFunctionInstanceSetImplementation,
 } from '@finos/legend-graph';
 import type { EditorStore } from '../../../EditorStore.js';
 import {
@@ -657,6 +658,10 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
   ): void {
     return;
   }
+
+  visit_RelationFunctionInstanceSetImplementation(setImplementation: RelationFunctionInstanceSetImplementation): void {
+    return
+  }
 }
 
 /**
@@ -802,5 +807,9 @@ export class MappingElementDecorationCleaner
     setImplementation: INTERNAL__UnresolvedSetImplementation,
   ): void {
     return;
+  }
+
+  visit_RelationFunctionInstanceSetImplementation(setImplementation: RelationFunctionInstanceSetImplementation): void {
+    return
   }
 }

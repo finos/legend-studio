@@ -16,6 +16,7 @@
 
 import {
   guaranteeNonEmptyString,
+  guaranteeNonNullable,
   IllegalStateError,
   isNonNullable,
   UnsupportedOperationError,
@@ -175,6 +176,19 @@ import { V1_INTERNAL__UnknownPropertyMapping } from '../../../model/packageableE
 import type { INTERNAL__UnknownSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/INTERNAL__UnknownSetImplementation.js';
 import { V1_INTERNAL__UnknownClassMapping } from '../../../model/packageableElements/mapping/V1_INTERNAL__UnknownClassMapping.js';
 import { V1_PackageableElementPointer } from '../../../model/packageableElements/V1_PackageableElement.js';
+import type {
+  RelationFunctionInstanceSetImplementation
+} from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/relationFunction/RelationFunctionInstanceSetImplementation.js';
+import type {
+  RelationFunctionPropertyMapping
+} from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/relationFunction/RelationFunctionPropertyMapping.js';
+import {
+  V1_RelationFunctionPropertyMapping
+} from '../../../model/packageableElements/mapping/V1_RelationFunctionPropertyMapping.js';
+import {
+  V1_RelationFunctionClassMapping
+} from '../../../model/packageableElements/mapping/V1_RelationFunctionClassMapping.js';
+import { generateFunctionPrettyName } from '../../../../../../../graph/helpers/PureLanguageHelper.js';
 
 export const V1_transformPropertyReference = (
   element: PropertyReference,
@@ -766,6 +780,23 @@ const transformAggregationAwarePropertyMapping = (
   return propertyMapping;
 };
 
+const transformRelationFunctionPropertyMapping = (
+    element: RelationFunctionPropertyMapping,
+): V1_RelationFunctionPropertyMapping => {
+  const propertyMapping = new V1_RelationFunctionPropertyMapping();
+  propertyMapping.column = element.column.name;
+  propertyMapping.property = V1_transformPropertyReference(element.property);
+  propertyMapping.source = element.sourceSetImplementation.valueForSerialization;
+  propertyMapping.target = element.targetSetImplementation?.valueForSerialization;
+  if (element.localMappingProperty) {
+    propertyMapping.localMappingProperty = transformLocalPropertyInfo(
+        element.localMappingProperty,
+    );
+  }
+  propertyMapping.column = element.column.name;
+  return propertyMapping;
+};
+
 class PropertyMappingTransformer
   implements PropertyMappingVisitor<V1_PropertyMapping>
 {
@@ -884,6 +915,10 @@ class PropertyMappingTransformer
     propertyMapping: AggregationAwarePropertyMapping,
   ): V1_PropertyMapping {
     return transformAggregationAwarePropertyMapping(propertyMapping);
+  }
+
+  visit_RelationFunctionPropertyMapping(propertyMapping: RelationFunctionPropertyMapping): V1_PropertyMapping {
+    return transformRelationFunctionPropertyMapping(propertyMapping);
   }
 }
 
@@ -1162,6 +1197,31 @@ const transformAggregationAwareSetImplementation = (
   return classMapping;
 };
 
+const transformRelationFunctionInstanceSetImplementation = (
+    element: RelationFunctionInstanceSetImplementation,
+    context: V1_GraphTransformerContext,
+): V1_RelationFunctionClassMapping => {
+  const functionName = generateFunctionPrettyName(guaranteeNonNullable(element.relationFunction), {
+    fullPath: true,
+    spacing: false,
+    notIncludeParamName: true,
+  });
+
+  const classMapping = new V1_RelationFunctionClassMapping();
+  classMapping.relationFunction = new V1_PackageableElementPointer(PackageableElementPointerType.FUNCTION, functionName);
+  classMapping.id = mappingElementIdSerializer(element.id);
+  classMapping.class = element.class.valueForSerialization ?? '';
+  classMapping.root = element.root.valueForSerialization;
+
+  classMapping.propertyMappings = transformClassMappingPropertyMappings(
+      element.propertyMappings,
+      false,
+      context,
+  );
+  classMapping.extendsClassMappingId = element.superSetImplementationId;
+  return classMapping;
+};
+
 // NOTE: this needs to be a function to avoid error with using before declaration for embedded property mappings due to the hoisting behavior in ES
 function transformProperyMapping(
   propertyMapping: PropertyMapping,
@@ -1276,6 +1336,13 @@ export class V1_SetImplementationTransformer
     return transformAggregationAwareSetImplementation(
       setImplementation,
       this.context,
+    );
+  }
+
+  visit_RelationFunctionInstanceSetImplementation(setImplementation: RelationFunctionInstanceSetImplementation): V1_ClassMapping | undefined {
+    return transformRelationFunctionInstanceSetImplementation(
+        setImplementation,
+        this.context,
     );
   }
 

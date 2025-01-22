@@ -888,7 +888,7 @@ export const TEST_DATA__FunctionRoundtrip = [
           genericType: {
             rawType: {
               _type: 'packageableType',
-              fullPath: 'tClass',
+              fullPath: 'test::tClass',
             },
           },
           multiplicity: {
@@ -902,7 +902,7 @@ export const TEST_DATA__FunctionRoundtrip = [
           genericType: {
             rawType: {
               _type: 'packageableType',
-              fullPath: 'tClass',
+              fullPath: 'test::tClass',
             },
           },
           multiplicity: {
@@ -921,7 +921,7 @@ export const TEST_DATA__FunctionRoundtrip = [
       returnGenericType: {
         rawType: {
           _type: 'packageableType',
-          fullPath: 'tClass',
+          fullPath: 'test::tClass',
         },
       },
       stereotypes: [

@@ -67,6 +67,13 @@ import {
 import type { DSL_Mapping_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/DSL_Mapping_PureProtocolProcessorPlugin_Extension.js';
 import type { V1_MergeOperationClassMapping } from '../../../model/packageableElements/mapping/V1_MergeOperationClassMapping.js';
 import type { V1_INTERNAL__UnknownClassMapping } from '../../../model/packageableElements/mapping/V1_INTERNAL__UnknownClassMapping.js';
+import type {
+  V1_RelationFunctionClassMapping
+} from '../../../model/packageableElements/mapping/V1_RelationFunctionClassMapping.js';
+import {
+  RelationFunctionInstanceSetImplementation
+} from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/relationFunction/RelationFunctionInstanceSetImplementation.js';
+import { generateFunctionPrettyName } from '../../../../../../../graph/helpers/PureLanguageHelper.js';
 
 export class V1_ClassMappingSecondPassBuilder
   implements V1_ClassMappingVisitor<void>
@@ -364,5 +371,45 @@ export class V1_ClassMappingSecondPassBuilder
     );
 
     return aggragetionAwareInstanceSetImplementation;
+  }
+
+  visit_RelationFunctionClassMapping(classMapping: V1_RelationFunctionClassMapping): SetImplementation {
+    assertNonEmptyString(
+        classMapping.class,
+        `Relation function class mapping 'class' field is missing or empty`,
+    );
+    const relationFunctionInstanceSetImplementation = guaranteeType(
+        getOwnClassMappingById(
+            this.parent,
+            V1_getInferredClassMappingId(
+                this.context.resolveClass(classMapping.class).value,
+                classMapping,
+            ).value,
+        ),
+        RelationFunctionInstanceSetImplementation,
+    );
+    relationFunctionInstanceSetImplementation.relationFunction = guaranteeNonNullable(
+        this.context.graph.functions.find(
+            (fn) =>
+                generateFunctionPrettyName(fn, {
+                  fullPath: true,
+                  spacing: false,
+                  notIncludeParamName: true,
+                }).replaceAll(/\s/gu, '')
+                === classMapping.relationFunction.path.replaceAll(/\s/gu, ''),
+        ),
+    );
+    relationFunctionInstanceSetImplementation.propertyMappings =
+        classMapping.propertyMappings.map((propertyMapping) =>
+            propertyMapping.accept_PropertyMappingVisitor(
+                new V1_PropertyMappingBuilder(
+                    this.context,
+                    relationFunctionInstanceSetImplementation,
+                    relationFunctionInstanceSetImplementation,
+                    getAllEnumerationMappings(this.parent),
+                ),
+            ),
+        );
+    return relationFunctionInstanceSetImplementation;
   }
 }
