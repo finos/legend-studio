@@ -81,6 +81,7 @@ function _checkFilterOperator(operator: DataCubeQueryFilterOperator) {
 const FOCUSED_TESTS: unknown[] = [
   // tests added here will be the only tests run
   /Pivot:/,
+  /GroupBy:/,
 ];
 
 const cases: TestCase[] = [
@@ -1011,21 +1012,21 @@ const cases: TestCase[] = [
     query: `select(~[a, b])->sort([~a->ascending()])->pivot(~[a], ~[b:x|$x.b:x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(dummy:String)>)`,
     columns: ['a:String', 'b:Integer'],
   }),
-  _case(`Pivot: multiple pivot columns and single aggregate column`, {
-    query: `select(~[a, b, c])->sort([~a->ascending(), ~c->ascending()])->pivot(~[a, c], ~[b:x|$x.b:x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(dummy:String)>)`,
-    columns: ['a:String', 'b:Integer', 'c:String'],
-  }),
   _case(`Pivot: single pivot column and multiple aggregate columns`, {
     query: `select(~[a, b, c])->sort([~a->ascending()])->pivot(~[a], ~[b:x|$x.b:x|$x->sum(), c:x|$x.c:x|$x->max()])->cast(@meta::pure::metamodel::relation::Relation<(dummy:String)>)`,
     columns: ['a:String', 'b:Integer', 'c:Integer'],
+  }),
+  _case(`Pivot: multiple pivot columns and single aggregate column`, {
+    query: `select(~[a, b, c])->sort([~a->ascending(), ~c->ascending()])->pivot(~[a, c], ~[b:x|$x.b:x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(dummy:String)>)`,
+    columns: ['a:String', 'b:Integer', 'c:String'],
   }),
   _case(`Pivot: multiple pivot columns and multiple aggregate columns`, {
     query: `select(~[a, b, c, d])->sort([~a->ascending(), ~d->ascending()])->pivot(~[a, d], ~[b:x|$x.b:x|$x->sum(), c:x|$x.c:x|$x->max()])->cast(@meta::pure::metamodel::relation::Relation<(dummy:String)>)`,
     columns: ['a:String', 'b:Integer', 'c:Integer', 'd:String'],
   }),
-  _case(`Pivot: ERROR - casting used without dynamic function pivot()`, {
-    query: `cast(@meta::pure::metamodel::relation::Relation<(a:Integer)>)`,
-    error: `Can't process expression: unsupported function composition cast() (supported composition: extend()->filter()->select()->[sort()->pivot()->cast()]->[groupBy()->sort()]->extend()->sort()->limit())`,
+  _case(`Pivot: cast covering group columns`, {
+    query: `select(~[a, b, c, d])->sort([~a->ascending()])->pivot(~[a], ~[b:x|$x.b:x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(c:Integer, d:String)>)`,
+    columns: ['a:String', 'b:Integer', 'c:Integer', 'd:String'],
   }),
   _case(`Pivot: ERROR - pivot column not found`, {
     query: `select(~[b])->sort([~a->ascending()])->pivot(~[a], ~[b:x|$x.b:x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(dummy:String)>)`,
@@ -1072,6 +1073,25 @@ const cases: TestCase[] = [
     columns: ['a:String', 'b:Integer'],
     error: `Can't process pivot() expression: found unsorted pivot column(s) ('a')`,
   }),
+  _case(`Pivot: ERROR - aggregated on pivot column`, {
+    query: `select(~[a, b])->sort([~a->ascending()])->pivot(~[a], ~[b:x|$x.b:x|$x->sum(), a:x|$x.a:x|$x->uniqueValueOnly()])->cast(@meta::pure::metamodel::relation::Relation<(dummy:String)>)`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process pivot() expression: pivot column 'a' must not be aggregated on`,
+  }),
+  _case(`Pivot: ERROR - casting used without dynamic function pivot()`, {
+    query: `cast(@meta::pure::metamodel::relation::Relation<(a:Integer)>)`,
+    error: `Can't process expression: unsupported function composition cast() (supported composition: extend()->filter()->select()->[sort()->pivot()->cast()]->[groupBy()->sort()]->extend()->sort()->limit())`,
+  }),
+  _case(`Pivot: ERROR - pivot group columns not found in cast columns`, {
+    query: `select(~[a, b, c, d])->sort([~a->ascending()])->pivot(~[a], ~[b:x|$x.b:x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(dummy:String)>)`,
+    columns: ['a:String', 'b:Integer', 'c:Integer', 'd:String'],
+    error: `Can't process pivot() expression: expected pivot group column 'c' in cast columns`,
+  }),
+  _case(`Pivot: ERROR - mismatch aggregate columns implied by cast columns`, {
+    query: `select(~[a, b])->sort([~a->ascending()])->pivot(~[a], ~[b:x|$x.b:x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<('val1__|__c':String)>)`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process pivot() expression: fail to match cast column 'val1__|__c' to a specified aggregate column`,
+  }),
 
   // --------------------------------- GROUP BY ---------------------------------
 
@@ -1079,17 +1099,21 @@ const cases: TestCase[] = [
     query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])`,
     columns: ['a:String', 'b:Integer'],
   }),
-  _case(`GroupBy: multiple group columns and single aggregate column`, {
-    query: `select(~[a, b, c])->groupBy(~[a, c], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending(), ~c->ascending()])`,
-    columns: ['a:String', 'b:Integer', 'c:String'],
-  }),
   _case(`GroupBy: single group column and multiple aggregate columns`, {
     query: `select(~[a, b, c])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum(), c:x|$x.c:x|$x->max()])->sort([~a->ascending()])`,
     columns: ['a:String', 'b:Integer', 'c:Integer'],
   }),
+  _case(`GroupBy: multiple group columns and single aggregate column`, {
+    query: `select(~[a, b, c])->groupBy(~[a, c], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending(), ~c->ascending()])`,
+    columns: ['a:String', 'b:Integer', 'c:String'],
+  }),
   _case(`GroupBy: multiple group columns and multiple aggregate columns`, {
     query: `select(~[a, b, c, d])->groupBy(~[a, d], ~[b:x|$x.b:x|$x->sum(), c:x|$x.c:x|$x->max()])->sort([~a->ascending(), ~d->ascending()])`,
     columns: ['a:String', 'b:Integer', 'c:Integer', 'd:String'],
+  }),
+  _case(`GroupBy: following pivot() expression`, {
+    query: `select(~[a, b, c, d])->sort([~c->ascending()])->pivot(~[c], ~[b:x|$x.b:x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(d:String, a:Integer, 'val1__|__b':Integer)>)->groupBy(~[d], ~['val1__|__b':x|$x.'val1__|__b':x|$x->sum(), a:x|$x.a:x|$x->sum()])->sort([~d->ascending()])`,
+    columns: ['a:Integer', 'c:String', 'b:Integer', 'd:String'],
   }),
   _case(`GroupBy: ERROR - group column not found`, {
     query: `select(~[b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])`,
@@ -1141,6 +1165,40 @@ const cases: TestCase[] = [
     columns: ['a:String', 'b:Integer'],
     error: `Can't process groupBy() expression: found unsorted group column(s) ('a')`,
   }),
+  _case(`GroupBy: ERROR - aggregated on group column`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum(), a:x|$x.a:x|$x->uniqueValueOnly()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+    error: `Can't process groupBy() expression: group column 'a' must not be aggregated on`,
+  }),
+  _case(`GroupBy: ERROR - column not grouped nor aggregated`, {
+    query: `select(~[a, b, c])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer', 'c:Integer'],
+    error: `Can't process groupBy() expression: column 'c' is neither grouped nor aggregated on`,
+  }),
+  _case(
+    `GroupBy: ERROR - conflicting aggregation specifications within groupBy() expression`,
+    {
+      query: `select(~[a, b, c, d])->sort([~c->ascending()])->pivot(~[c], ~[b:x|$x.b:x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(d:String, a:Integer, 'val1__|__b':Integer, 'val2__|__b':Integer)>)->groupBy(~[d], ~['val1__|__b':x|$x.'val1__|__b':x|$x->sum(), 'val2__|__b':x|$x.'val2__|__b':x|$x->max(), a:x|$x.a:x|$x->sum()])->sort([~d->ascending()])`,
+      columns: ['a:Integer', 'c:String', 'b:Integer', 'd:String'],
+      error: `Can't process groupBy() expression: found conflicting aggregation specification for column 'b'`,
+    },
+  ),
+  _case(
+    `GroupBy: ERROR - conflicting aggregation specifications between groupBy() and pivot() expression`,
+    {
+      query: `select(~[a, b, c, d])->sort([~c->ascending()])->pivot(~[c], ~[b:x|$x.b:x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(d:String, a:Integer, 'val1__|__b':Integer)>)->groupBy(~[d], ~['val1__|__b':x|$x.'val1__|__b':x|$x->max(), a:x|$x.a:x|$x->sum()])->sort([~d->ascending()])`,
+      columns: ['a:Integer', 'c:String', 'b:Integer', 'd:String'],
+      error: `Can't process groupBy() expression: found conflicting aggregation specification for column 'b'`,
+    },
+  ),
+  _case(
+    `GroupBy: ERROR - column aggregated in pivot() but not in groupBy() expression`,
+    {
+      query: `select(~[a, b, c, d])->sort([~c->ascending()])->pivot(~[c], ~[b:x|$x.b:x|$x->sum(), a:x|$x.a:x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(d:String, 'val1__|__b':Integer)>)->groupBy(~[d], ~['val1__|__b':x|$x.'val1__|__b':x|$x->sum()])->sort([~d->ascending()])`,
+      columns: ['a:Integer', 'c:String', 'b:Integer', 'd:String'],
+      error: `Can't process groupBy() expression: column 'a' is aggregated in pivot() expression but not in groupBy() expression`,
+    },
+  ),
 
   // --------------------------------- GROUP-LEVEL EXTEND ---------------------------------
 

@@ -46,6 +46,7 @@ import {
   assertTrue,
   assertType,
   at,
+  deepEqual,
   guaranteeNonNullable,
   guaranteeType,
   uniq,
@@ -59,6 +60,8 @@ import {
   DataCubeQuerySortDirection,
   DEFAULT_LAMBDA_VARIABLE_NAME,
   getDataType,
+  getPivotResultColumnBaseColumnName,
+  isPivotResultColumnName,
   TREE_COLUMN_VALUE_SEPARATOR,
   type DataCubeOperationValue,
 } from './DataCubeQueryEngine.js';
@@ -693,19 +696,79 @@ export function _pivotSort(
         .join(', ')})`,
     );
   }
+
+  _checkDuplicateColumns(
+    sortColumns,
+    (colName) =>
+      `Can't process pivot() expression: found duplicate sort columns '${colName}'`,
+  );
+
   return sortColumns;
 }
 
 export function _validatePivot(
   pivot: DataCubeQuerySnapshotPivot,
   pivotAggColumns: DataCubeQuerySnapshotAggregateColumn[],
+  availableColumns: DataCubeColumn[],
 ) {
-  const colNames = new Set<string>();
-  // pivot.columns.forEach((col) => cols.add(col.name));
-  // pivotAggColumns.forEach((col) => {
-  //   // if (cols.has(col.name)) {
-  //   // }
-  // });
+  // check for duplicate columns
+  const pivotColumns = pivot.columns;
+  const castColumns = pivot.castColumns;
+  _checkDuplicateColumns(
+    pivotColumns,
+    (colName) =>
+      `Can't process pivot() expression: found duplicate pivot columns '${colName}'`,
+  );
+  _checkDuplicateColumns(
+    pivotAggColumns,
+    (colName) =>
+      `Can't process pivot() expression: found duplicate aggregate columns '${colName}'`,
+  );
+  _checkDuplicateColumns(
+    castColumns,
+    (colName) =>
+      `Can't process pivot() expression: found duplicate cast columns '${colName}'`,
+  );
+
+  // check pivot columns are not aggregated on
+  pivotAggColumns.forEach((col) => {
+    if (_findCol(pivotColumns, col.name)) {
+      throw new Error(
+        `Can't process pivot() expression: pivot column '${col.name}' must not be aggregated on`,
+      );
+    }
+  });
+
+  // check cast columns
+  // NOTE: we cannot and should not do strict checks here as cast columns are dependent on the data
+
+  // check that the columns used by pivot() as group columns are present in cast columns
+  const pivotGroupColumns = availableColumns.filter(
+    (col) =>
+      !(
+        _findCol(pivotColumns, col.name) ?? _findCol(pivotAggColumns, col.name)
+      ),
+  );
+  pivotGroupColumns.forEach((col) => {
+    if (!_findCol(castColumns, col.name)) {
+      throw new Error(
+        `Can't process pivot() expression: expected pivot group column '${col.name}' in cast columns`,
+      );
+    }
+  });
+
+  // check that cast column resulted from an aggregation (usually has name of form VAL1__|__COL1)
+  // has a matching aggregate column (i.e. COL1)
+  castColumns
+    .filter((col) => isPivotResultColumnName(col.name))
+    .forEach((col) => {
+      const aggColName = getPivotResultColumnBaseColumnName(col.name);
+      if (!_findCol(pivotAggColumns, aggColName)) {
+        throw new Error(
+          `Can't process pivot() expression: fail to match cast column '${col.name}' to a specified aggregate column`,
+        );
+      }
+    });
 }
 
 export function _groupBySort(
@@ -744,19 +807,101 @@ export function _groupBySort(
         .join(', ')})`,
     );
   }
+
+  _checkDuplicateColumns(
+    sortColumns,
+    (colName) =>
+      `Can't process groupBy() expression: found duplicate sort columns '${colName}'`,
+  );
+
   return sortColumns;
 }
 
 export function _validateGroupBy(
   groupBy: DataCubeQuerySnapshotGroupBy,
   groupByAggColumns: DataCubeQuerySnapshotAggregateColumn[],
+  pivot: DataCubeQuerySnapshotPivot | undefined,
+  pivotAggColumns: DataCubeQuerySnapshotAggregateColumn[],
+  availableColumns: DataCubeColumn[],
 ) {
-  // const colNames = new Set<string>();
-  // pivot.columns.forEach((col) => cols.add(col.name));
-  // pivotAggColumns.forEach((col) => {
-  //   // if (cols.has(col.name)) {
-  //   // }
-  // });
+  // check for duplicate columns
+  const groupByColumns = groupBy.columns;
+  _checkDuplicateColumns(
+    groupByColumns,
+    (colName) =>
+      `Can't process groupBy() expression: found duplicate group columns '${colName}'`,
+  );
+  _checkDuplicateColumns(
+    groupByAggColumns,
+    (colName) =>
+      `Can't process groupBy() expression: found duplicate aggregate columns '${colName}'`,
+  );
+
+  // check group columns are not aggregated on
+  groupByAggColumns.forEach((col) => {
+    if (_findCol(groupByColumns, col.name)) {
+      throw new Error(
+        `Can't process groupBy() expression: group column '${col.name}' must not be aggregated on`,
+      );
+    }
+  });
+
+  // check all available columns are either grouped on or aggregatd on
+  availableColumns.forEach((col) => {
+    if (
+      !(
+        _findCol(groupByColumns, col.name) ??
+        _findCol(groupByAggColumns, col.name)
+      )
+    ) {
+      throw new Error(
+        `Can't process groupBy() expression: column '${col.name}' is neither grouped nor aggregated on`,
+      );
+    }
+  });
+
+  // check against pivot if present
+  if (pivot) {
+    const aggCols = new Map<string, DataCubeQuerySnapshotAggregateColumn>();
+
+    // check if aggregation specification is consistent (i.e. same type, operator, parameterValues)
+    // between groupBy aggregate columns
+    groupByAggColumns
+      .filter((col) => isPivotResultColumnName(col.name))
+      .forEach((col) => {
+        const aggColName = getPivotResultColumnBaseColumnName(col.name);
+        const aggCol = {
+          ...col,
+          name: aggColName,
+        };
+
+        const existingAggCol = aggCols.get(aggColName);
+
+        if (!existingAggCol) {
+          aggCols.set(aggColName, aggCol);
+        } else if (!deepEqual(existingAggCol, aggCol)) {
+          throw new Error(
+            `Can't process groupBy() expression: found conflicting aggregation specification for column '${aggColName}'`,
+          );
+        }
+      });
+
+    // check if pivot() aggregate columns are consistent with groupBy() aggregate columns
+    pivotAggColumns.forEach((col) => {
+      const existingAggCol = aggCols.get(col.name);
+      if (!existingAggCol) {
+        throw new Error(
+          `Can't process groupBy() expression: column '${col.name}' is aggregated in pivot() expression but not in groupBy() expression`,
+        );
+      }
+
+      if (!deepEqual(existingAggCol, col)) {
+        throw new Error(
+          `Can't process groupBy() expression: found conflicting aggregation specification for column '${col.name}'`,
+        );
+      }
+    });
+  }
 }
 
 export function _sort(

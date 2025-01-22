@@ -37,11 +37,7 @@ import {
   type DataCubeQuerySnapshotProcessingContext,
   type DataCubeQuerySnapshotSortColumn,
 } from './DataCubeQuerySnapshot.js';
-import {
-  _findCol,
-  _toCol,
-  type DataCubeColumn,
-} from './model/DataCubeColumn.js';
+import { _toCol, type DataCubeColumn } from './model/DataCubeColumn.js';
 import {
   assertTrue,
   at,
@@ -68,6 +64,7 @@ import {
   _groupBySort,
   _validatePivot,
   _checkDuplicateColumns,
+  _validateGroupBy,
 } from './DataCubeQuerySnapshotBuilderUtils.js';
 import type { DataCubeSource } from './model/DataCubeSource.js';
 import type { DataCubeEngine } from './DataCubeEngine.js';
@@ -489,47 +486,13 @@ export async function validateAndBuildQuerySnapshot(
 
     // process aggregate columns
     pivotAggColumns = _colSpecArrayParam(funcMap.pivot, 1).colSpecs.map(
-      (colSpec) =>
-        _aggCol(
-          colSpec,
-          (colName: string) => {
-            const col = _getCol(colName);
-            if (_findCol(pivotColumns, colName)) {
-              throw new Error(
-                `Can't process aggregate column '${colSpec.name}': group column cannot be used in aggregate expression`,
-              );
-            }
-            return col;
-          },
-          engine.aggregateOperations,
-        ),
+      (colSpec) => _aggCol(colSpec, _getCol, engine.aggregateOperations),
     );
-
     // process sort columns
     pivotSortColumns = _pivotSort(funcMap.pivotSort, pivotColumns, _getCol);
 
     // validate
-    _checkDuplicateColumns(
-      pivotColumns,
-      (colName) =>
-        `Can't process pivot() expression: found duplicate pivot columns '${colName}'`,
-    );
-    _checkDuplicateColumns(
-      pivotAggColumns,
-      (colName) =>
-        `Can't process pivot() expression: found duplicate aggregate columns '${colName}'`,
-    );
-    _checkDuplicateColumns(
-      castColumns,
-      (colName) =>
-        `Can't process pivot() expression: found duplicate cast columns '${colName}'`,
-    );
-    _checkDuplicateColumns(
-      pivotSortColumns,
-      (colName) =>
-        `Can't process pivot() expression: found duplicate sort columns '${colName}'`,
-    );
-    _validatePivot(data.pivot, pivotAggColumns);
+    _validatePivot(data.pivot, pivotAggColumns, Array.from(colsMap.values()));
 
     // restrict the set of available columns to only casted columns
     colsMap.clear();
@@ -550,22 +513,8 @@ export async function validateAndBuildQuerySnapshot(
 
     // process aggregate columns
     groupByAggColumns = _colSpecArrayParam(funcMap.groupBy, 1).colSpecs.map(
-      (colSpec) =>
-        _aggCol(
-          colSpec,
-          (colName: string) => {
-            const col = _getCol(colName);
-            if (_findCol(groupByColumns, colName)) {
-              throw new Error(
-                `Can't process aggregate column '${colSpec.name}': group column cannot be used in aggregate expression`,
-              );
-            }
-            return col;
-          },
-          engine.aggregateOperations,
-        ),
+      (colSpec) => _aggCol(colSpec, _getCol, engine.aggregateOperations),
     );
-
     // process sort columns
     groupBySortColumns = _groupBySort(
       funcMap.groupBySort,
@@ -574,30 +523,14 @@ export async function validateAndBuildQuerySnapshot(
     );
 
     // validate
-    _checkDuplicateColumns(
-      groupByColumns,
-      (colName) =>
-        `Can't process groupBy() expression: found duplicate group columns '${colName}'`,
-    );
-    _checkDuplicateColumns(
+    _validateGroupBy(
+      data.groupBy,
       groupByAggColumns,
-      (colName) =>
-        `Can't process groupBy() expression: found duplicate aggregate columns '${colName}'`,
-    );
-    _checkDuplicateColumns(
-      groupBySortColumns,
-      (colName) =>
-        `Can't process groupBy() expression: found duplicate sort columns '${colName}'`,
+      data.pivot,
+      pivotAggColumns,
+      Array.from(colsMap.values()),
     );
   }
-
-  // make sure the totality of groupByColumns and aggCols cover ALL columns available in current colsMap
-  // TODO: verify sort columns
-  // TODO: verify groupBy agg columns, pivot agg columns and configuration agree
-  // TODO: verify against pivot agg colunms,
-  // - make sure this is the super set (account for exclude h-pivot)
-  // - consider scenarios where we have cast columns
-  // - consider scenarios where we have different parameter values across aggCol
 
   // --------------------------- GROUP-LEVEL EXTEND ---------------------------
 
