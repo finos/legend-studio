@@ -1,5 +1,11 @@
 # @finos/legend-application-query-bootstrap
 
+## 13.12.0
+
+### Patch Changes
+
+- [#3818](https://github.com/finos/legend-studio/pull/3818) [`62dd4ec`](https://github.com/finos/legend-studio/commit/62dd4ec844e152dfb34fee1dfc56dadabf8928b3) ([@travisstebbins](https://github.com/travisstebbins)) - Adjust css and vscode extension dependencies to support light mode in VSCode QueryBuilder
+
 ## 13.11.0
 
 ## 13.10.0

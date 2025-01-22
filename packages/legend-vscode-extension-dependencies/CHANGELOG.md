@@ -1,5 +1,11 @@
 # @finos/legend-vscode-extension-dependencies
 
+## 4.0.60
+
+### Patch Changes
+
+- [#3818](https://github.com/finos/legend-studio/pull/3818) [`62dd4ec`](https://github.com/finos/legend-studio/commit/62dd4ec844e152dfb34fee1dfc56dadabf8928b3) ([@travisstebbins](https://github.com/travisstebbins)) - Adjust css and vscode extension dependencies to support light mode in VSCode QueryBuilder
+
 ## 4.0.59
 
 ## 4.0.58
