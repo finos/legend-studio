@@ -73,6 +73,37 @@ const TEST_CASES: QueryTestCase[] = [
     model: 'Relational_Business',
     queryGrammar:
       "var_1: String[0..1]|model::pure::tests::model::simple::Person.all()->project([x|$x.firstName, x|$x.lastName], ['Edited First Name', 'Last Name'])",
+    convertedRelation: `var_1: String[0..1]|model::pure::tests::model::simple::Person.all()->project(~['Edited First Name':x|$x.firstName, 'Last Name':x|$x.lastName])`,
+  },
+  {
+    testName: '[LEGACY] Result Modifier: Sort',
+    model: 'Northwind',
+    queryGrammar: `|showcase::northwind::model::crm::Customer.all()->project([x|$x.companyName, x|$x.companyTitle], ['Company Name', 'Company Title'])->sort([asc('Company Name'), desc('Company Title')])`,
+    convertedRelation: `|showcase::northwind::model::crm::Customer.all()->project(~['Company Name':x|$x.companyName, 'Company Title':x|$x.companyTitle])->sort([~'Company Name'->ascending(), ~'Company Title'->descending()])`,
+  },
+  {
+    testName: '[LEGACY] Result Modifier: Distinct',
+    model: 'Northwind',
+    queryGrammar: `|showcase::northwind::model::crm::Customer.all()->project([x|$x.companyName], ['name'])->distinct()`,
+    convertedRelation: `|showcase::northwind::model::crm::Customer.all()->project(~[name:x|$x.companyName])->distinct()`,
+  },
+  {
+    testName: '[LEGACY] Result Modifier: Take',
+    model: 'Northwind',
+    queryGrammar: `|showcase::northwind::model::crm::Customer.all()->project([x|$x.companyName], ['Company Name'])->take(27)`,
+    convertedRelation: `|showcase::northwind::model::crm::Customer.all()->project(~['Company Name':x|$x.companyName])->limit(27)`,
+  },
+  {
+    testName: '[LEGACY] Result Modifier: Slice',
+    model: 'Northwind',
+    queryGrammar: `|showcase::northwind::model::crm::Customer.all()->project([x|$x.companyName], ['Company Name'])->slice(1, 7)`,
+    convertedRelation: `|showcase::northwind::model::crm::Customer.all()->project(~['Company Name':x|$x.companyName])->slice(1, 7)`,
+  },
+  {
+    testName: '[LEGACY] Result Modifier: For Watermark',
+    model: 'Northwind',
+    queryGrammar: `|showcase::northwind::model::crm::Customer.all()->forWatermark('testing')->project([x|$x.companyName], ['Company Name'])`,
+    convertedRelation: `|showcase::northwind::model::crm::Customer.all()->forWatermark('testing')->project(~['Company Name':x|$x.companyName])`,
   },
   // Relation
   {
@@ -92,6 +123,26 @@ const TEST_CASES: QueryTestCase[] = [
     model: 'Northwind',
     queryGrammar:
       "|showcase::northwind::model::crm::Customer.all()->filter(x|$x.companyTitle == 'company title')->project(~['Company Name':x|$x.companyName, 'Company Title':x|$x.companyTitle])->filter(row|$row.'Company Name' == 'company name')",
+  },
+  {
+    testName: '[LEGACY] Result Modifier: Sort',
+    model: 'Northwind',
+    queryGrammar: `|showcase::northwind::model::crm::Customer.all()->project([x|$x.companyName, x|$x.companyTitle], ['Company Name', 'Company Title'])->sort([asc('Company Name'), desc('Company Title')])`,
+  },
+  {
+    testName: '[LEGACY] Result Modifier: Distinct',
+    model: 'Northwind',
+    queryGrammar: `|showcase::northwind::model::crm::Customer.all()->project(~[name:x|$x.companyName])->distinct()`,
+  },
+  {
+    testName: '[LEGACY] Result Modifier: Take',
+    model: 'Northwind',
+    queryGrammar: `|showcase::northwind::model::crm::Customer.all()->project(~['Company Name':x|$x.companyName])->limit(27)`,
+  },
+  {
+    testName: '[LEGACY] Result Modifier: Slice',
+    model: 'Northwind',
+    queryGrammar: `|showcase::northwind::model::crm::Customer.all()->project(~['Company Name':x|$x.companyName])->slice(1, 7)`,
   },
   // conversion
   {

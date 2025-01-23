@@ -64,6 +64,7 @@ import type {
   ColSpec,
   ColSpecArray,
   ColSpecArrayInstance,
+  ColSpecInstanceValue,
 } from '../../../graph/metamodel/pure/valueSpecification/RelationValueSpecification.js';
 
 const observe_Abstract_ValueSpecification = (
@@ -192,6 +193,10 @@ export const observe_ColSpecArray = skipObservedWithContext(
 
 export const observe_ColSpecArrayInstance = skipObservedWithContext(
   _observe_ColSpecArrayInstance,
+);
+
+export const observe_ColSpecInstance = skipObservedWithContext(
+  _observe_ColSpecInstance,
 );
 
 const observe_LambdaFunction = skipObservedWithContext(_observe_LambdaFunction);
@@ -343,6 +348,10 @@ class ValueSpecificationObserver implements ValueSpecificationVisitor<void> {
   }
   visit_ColSpecArrayInstance(valueSpeciciation: ColSpecArrayInstance): void {
     observe_ColSpecArrayInstance(valueSpeciciation, this.observerContext);
+  }
+
+  visit_ColSpecInstance(valueSpeciciation: ColSpecInstanceValue): void {
+    observe_ColSpecInstance(valueSpeciciation, this.observerContext);
   }
 }
 
@@ -510,6 +519,18 @@ function _observe_ColSpecArrayInstance(
     hashCode: override,
   });
   metamodel.values.forEach((value) => observe_ColSpecArray(value, context));
+  return metamodel;
+}
+
+function _observe_ColSpecInstance(
+  metamodel: ColSpecInstanceValue,
+  context: ObserverContext,
+): ColSpecInstanceValue {
+  observe_Abstract_InstanceValue(metamodel, context);
+  makeObservable(metamodel, {
+    hashCode: override,
+  });
+  metamodel.values.forEach((value) => observe_ColSpec(value, context));
   return metamodel;
 }
 

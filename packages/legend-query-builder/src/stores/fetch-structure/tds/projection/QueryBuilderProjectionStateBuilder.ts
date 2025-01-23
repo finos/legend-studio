@@ -29,6 +29,7 @@ import {
   VariableExpression,
   PrimitiveInstanceValue,
   LambdaFunctionInstanceValue,
+  ColSpecInstanceValue,
 } from '@finos/legend-graph';
 import {
   assertNonNullable,
@@ -603,7 +604,7 @@ export const processTDSSortDirectionExpression = (
   // check parameters
   assertTrue(
     expression.parametersValues.length === 1,
-    `Can't process ${functionName}() expression: ${functionName}() expects no argument`,
+    `Can't process ${functionName}() expression: ${functionName}() expects one argument`,
   );
 
   // build state
@@ -626,6 +627,68 @@ export const processTDSSortDirectionExpression = (
       sortColumnState.sortType = matchFunctionName(
         functionName,
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_ASC,
+      )
+        ? COLUMN_SORT_TYPE.ASC
+        : COLUMN_SORT_TYPE.DESC;
+      projectionState.resultSetModifierState.addSortColumn(sortColumnState);
+    }
+  }
+};
+
+export const processRelationSortDirectionExpression = (
+  expression: SimpleFunctionExpression,
+  parentExpression: SimpleFunctionExpression | undefined,
+  queryBuilderState: QueryBuilderState,
+): void => {
+  const functionName = expression.functionName;
+
+  // check parent expression
+  assertTrue(
+    Boolean(
+      parentExpression &&
+        matchFunctionName(
+          parentExpression.functionName,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_SORT,
+        ),
+    ),
+    `Can't process ${functionName}() expression: only support ${functionName}() used within a sort() expression`,
+  );
+
+  // check parameters
+  assertTrue(
+    expression.parametersValues.length === 1,
+    `Can't process ${functionName}() expression: ${functionName}() expects one argument`,
+  );
+
+  // build state
+  if (
+    queryBuilderState.fetchStructureState.implementation instanceof
+    QueryBuilderTDSState
+  ) {
+    const projectionState =
+      queryBuilderState.fetchStructureState.implementation;
+    const value = guaranteeType(
+      expression.parametersValues[0],
+      ColSpecInstanceValue,
+    );
+    assertTrue(
+      value.values.length === 1,
+      `Can't process ${functionName}() expression: Col Spec Instance Value expects one value`,
+    );
+    const sortColumnName = guaranteeNonNullable(
+      value.values[0],
+      `Col Spec value expected in Col Spec Instance Value`,
+    ).name;
+    const queryBuilderProjectionColumnState = projectionState.tdsColumns.find(
+      (e) => e.columnName === sortColumnName,
+    );
+    if (queryBuilderProjectionColumnState) {
+      const sortColumnState = new SortColumnState(
+        queryBuilderProjectionColumnState,
+      );
+      sortColumnState.sortType = matchFunctionName(
+        functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_ASC,
       )
         ? COLUMN_SORT_TYPE.ASC
         : COLUMN_SORT_TYPE.DESC;

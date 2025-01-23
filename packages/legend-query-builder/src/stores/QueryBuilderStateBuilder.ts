@@ -54,6 +54,7 @@ import {
   RuntimePointer,
   PackageableElementExplicitReference,
   MILESTONING_STEREOTYPE,
+  type ColSpecInstanceValue,
 } from '@finos/legend-graph';
 import { processTDSPostFilterExpression } from './fetch-structure/tds/post-filter/QueryBuilderPostFilterStateBuilder.js';
 import { processFilterExpression } from './filter/QueryBuilderFilterStateBuilder.js';
@@ -69,6 +70,7 @@ import {
   processInternalizeExpression,
 } from './fetch-structure/graph-fetch/QueryBuilderGraphFetchTreeStateBuilder.js';
 import {
+  processRelationSortDirectionExpression,
   processTDSColExpression,
   processTDSDistinctExpression,
   processTDSProjectExpression,
@@ -669,10 +671,10 @@ export class QueryBuilderValueSpecificationProcessor
       processTDSColExpression(valueSpecification, this.queryBuilderState);
       return;
     } else if (
-      matchFunctionName(
-        functionName,
+      matchFunctionName(functionName, [
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_TAKE,
-      )
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_LIMIT,
+      ])
     ) {
       processTDSTakeExpression(
         valueSpecification,
@@ -720,6 +722,18 @@ export class QueryBuilderValueSpecificationProcessor
       ])
     ) {
       processTDSSortDirectionExpression(
+        valueSpecification,
+        this.parentExpression,
+        this.queryBuilderState,
+      );
+      return;
+    } else if (
+      matchFunctionName(functionName, [
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_ASC,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_DESC,
+      ])
+    ) {
+      processRelationSortDirectionExpression(
         valueSpecification,
         this.parentExpression,
         this.queryBuilderState,
@@ -993,6 +1007,10 @@ export class QueryBuilderValueSpecificationProcessor
     throw new UnsupportedOperationError(
       `Can't process col spec array expression with parent expression of function ${this.parentExpression.functionName}()`,
     );
+  }
+
+  visit_ColSpecInstance(valueSpeciciation: ColSpecInstanceValue): void {
+    throw new Error('Method not implemented.');
   }
 }
 

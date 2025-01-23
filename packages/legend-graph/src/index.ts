@@ -106,6 +106,7 @@ export {
 } from './graph/metamodel/pure/valueSpecification/KeyExpressionInstanceValue.js';
 export {
   ColSpec,
+  ColSpecInstanceValue,
   ColSpecArray,
   ColSpecArrayInstance,
 } from './graph/metamodel/pure/valueSpecification/RelationValueSpecification.js';
