@@ -33,7 +33,7 @@
     "postcss-scss": "4.0.9",
     "stylelint": "16.13.2",
     "stylelint-config-standard": "37.0.0",
-    "stylelint-scss": "6.10.0"
+    "stylelint-scss": "6.10.1"
   },
   "devDependencies": {
     "cross-env": "7.0.3",
