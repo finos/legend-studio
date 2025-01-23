@@ -23,6 +23,7 @@ import {
   generateFunctionPrettyName,
 } from '../PureLanguageHelper.js';
 import { TEST__getTestGraph } from '../../__test-utils__/GraphTestUtils.js';
+import { getFunctionSignature } from '../DomainHelper.js';
 
 afterEach(() => {
   // running all pending timers and switching to real timers using Jest
@@ -50,4 +51,18 @@ test(unitTest('Generate default parameter value for type'), async () => {
   ).toBe(
     'model::functions::set(name: String[1], type: IncType[1], date: Date[1], dateTime: DateTime[1]): String[1]',
   );
+  expect(getFunctionSignature(setFunction)).toBe(
+    '_String_1__IncType_1__Date_1__DateTime_1__String_1_',
+  );
+
+  const relationFunction = graph.getFunction(
+    'model::functions::relationFunction__Relation_$0_1$_',
+  );
+  expect(
+    generateFunctionPrettyName(relationFunction, {
+      fullPath: true,
+      spacing: true,
+    }),
+  ).toBe('model::functions::relationFunction(): Relation<Any>[0..1]');
+  expect(getFunctionSignature(relationFunction)).toBe('__Relation_$0_1$_');
 });

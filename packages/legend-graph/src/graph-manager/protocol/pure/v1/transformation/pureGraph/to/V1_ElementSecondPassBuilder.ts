@@ -86,10 +86,7 @@ import { V1_buildEmbeddedData } from './helpers/V1_DataElementBuilderHelper.js';
 import { V1_buildTestSuite } from './helpers/V1_TestBuilderHelper.js';
 import { ServiceTestSuite } from '../../../../../../../graph/metamodel/pure/packageableElements/service/ServiceTestSuite.js';
 import { V1_DataElementReference } from '../../../model/data/V1_EmbeddedData.js';
-import {
-  V1_buildFunctionSignature,
-  V1_getGenericTypeFullPath,
-} from '../../../helpers/V1_DomainHelper.js';
+import { V1_buildFunctionSignature } from '../../../helpers/V1_DomainHelper.js';
 import { getFunctionName } from '../../../../../../../graph/helpers/DomainHelper.js';
 import { GraphBuilderError } from '../../../../../../GraphManagerUtils.js';
 import { PostValidation } from '../../../../../../../graph/metamodel/pure/packageableElements/service/PostValidation.js';
@@ -371,8 +368,8 @@ export class V1_ElementSecondPassBuilder
     const func = this.context.currentSubGraph.getOwnFunction(
       V1_buildFullPath(protocol.package, V1_buildFunctionSignature(protocol)),
     );
-    func.returnType = this.context.resolveType(
-      V1_getGenericTypeFullPath(protocol.returnGenericType),
+    func.returnType = this.context.resolveGenericTypeFromProtocol(
+      protocol.returnGenericType,
     );
     func.returnMultiplicity = this.context.graph.getMultiplicity(
       protocol.returnMultiplicity.lowerBound,

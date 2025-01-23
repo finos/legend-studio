@@ -81,6 +81,8 @@ import { INTERNAL__UnknownElement } from '../../../../../../../graph/metamodel/p
 import type { V1_HostedService } from '../../../model/packageableElements/function/V1_HostedService.js';
 import { HostedService } from '../../../../../../../graph/metamodel/pure/packageableElements/function/HostedService.js';
 import { V1_buildFunctionActivatorActions } from './helpers/V1_LegendLambdaHelper.js';
+import { GenericTypeImplicitReference } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/GenericTypeReference.js';
+import { GenericType } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/GenericType.js';
 
 export class V1_ElementFirstPassBuilder
   implements V1_PackageableElementVisitor<PackageableElement>
@@ -438,7 +440,10 @@ export class V1_ElementFirstPassBuilder
     const func = new ConcreteFunctionDefinition(
       name,
       // This is just a stub to fill in when we first create the function
-      PackageableElementImplicitReference.create(PrimitiveType.STRING, ''),
+      GenericTypeImplicitReference.create(
+        PackageableElementImplicitReference.create(PrimitiveType.STRING, ''),
+        new GenericType(PrimitiveType.STRING),
+      ),
       Multiplicity.ZERO_MANY,
     );
     const path = V1_buildFullPath(element.package, name);

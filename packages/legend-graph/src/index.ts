@@ -644,6 +644,7 @@ export * from './graph/metamodel/pure/packageableElements/mapping/EnumValueMappi
 export { AssociationImplementation } from './graph/metamodel/pure/packageableElements/mapping/AssociationImplementation.js';
 export { SetImplementationContainer } from './graph/metamodel/pure/packageableElements/mapping/SetImplementationContainer.js';
 export { AggregationAwareSetImplementation } from './graph/metamodel/pure/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation.js';
+export { RelationFunctionInstanceSetImplementation } from './graph/metamodel/pure/packageableElements/mapping/relationFunction/RelationFunctionInstanceSetImplementation.js';
 export * from './graph/metamodel/pure/packageableElements/mapping/InferableMappingElementId.js';
 export * from './graph/metamodel/pure/packageableElements/mapping/InferableMappingElementRoot.js';
 export { SetImplementationExplicitReference } from './graph/metamodel/pure/packageableElements/mapping/SetImplementationReference.js';

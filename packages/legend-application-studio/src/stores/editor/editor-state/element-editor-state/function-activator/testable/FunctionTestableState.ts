@@ -591,7 +591,7 @@ export const createFunctionTest = (
   } else {
     const equalTo = new EqualTo();
     equalTo.id = DEFAULT_TEST_ASSERTION_ID;
-    const type = functionDefinition.returnType.value;
+    const type = functionDefinition.returnType.value.rawType;
     const valSpec = buildDefaultInstanceValue(
       editorStore.graphManagerState.graph,
       type,

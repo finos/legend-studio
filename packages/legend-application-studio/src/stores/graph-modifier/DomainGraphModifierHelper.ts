@@ -27,7 +27,6 @@ import {
   type GenericTypeReference,
   type TaggedValue,
   type StereotypeReference,
-  type Type,
   type Multiplicity,
   type Stereotype,
   type Tag,
@@ -68,7 +67,6 @@ import {
   observe_TaggedValue,
   observe_Constraint,
   observe_GenericType,
-  observe_Type,
   observe_Unit,
   observe_RawLambda,
   isStubbed_PackageableElement,
@@ -365,9 +363,9 @@ export const function_addParameter = action(
     addUniqueEntry(_func.parameters, observe_RawVariableExpression(val));
   },
 );
-export const function_setReturnType = action(
-  (_func: ConcreteFunctionDefinition, val: Type): void => {
-    packageableElementReference_setValue(_func.returnType, observe_Type(val));
+export const function_setReturnGenericType = action(
+  (_func: ConcreteFunctionDefinition, val: GenericType): void => {
+    setGenericTypeReferenceValue(_func.returnType, observe_GenericType(val));
   },
 );
 export const function_setReturnMultiplicity = action(
