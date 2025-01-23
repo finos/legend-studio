@@ -15,24 +15,19 @@
  */
 
 import type { DataCubeColumn } from '../model/DataCubeColumn.js';
-import { PRIMITIVE_TYPE } from '@finos/legend-graph';
+import { PRIMITIVE_TYPE, type V1_ColSpec } from '@finos/legend-graph';
 import { DataCubeQueryAggregateOperation } from './DataCubeQueryAggregateOperation.js';
 import {
   DataCubeQueryAggregateOperator,
   DataCubeColumnDataType,
   DataCubeFunction,
   ofDataType,
+  type DataCubeOperationValue,
 } from '../DataCubeQueryEngine.js';
-import {
-  _colSpec,
-  _function,
-  _functionName,
-  _lambda,
-  _primitiveValue,
-  _property,
-  _var,
-} from '../DataCubeQueryBuilderUtils.js';
 import type { DataCubeColumnConfiguration } from '../model/DataCubeConfiguration.js';
+import { _aggCol_base } from '../DataCubeQueryBuilderUtils.js';
+import { _agg_base } from '../DataCubeQuerySnapshotBuilderUtils.js';
+import { isString } from '@finos/legend-shared';
 
 export class DataCubeQueryAggregateOperation__JoinStrings extends DataCubeQueryAggregateOperation {
   override get label() {
@@ -51,7 +46,7 @@ export class DataCubeQueryAggregateOperation__JoinStrings extends DataCubeQueryA
     return DataCubeQueryAggregateOperator.JOIN_STRINGS;
   }
 
-  isCompatibleWithColumn(column: DataCubeColumn) {
+  override isCompatibleWithColumn(column: DataCubeColumn) {
     return ofDataType(column.type, [
       // NOTE: technically all data types should be suported,
       // i.e. we can use meta::pure::functions::string::makeString
@@ -61,21 +56,41 @@ export class DataCubeQueryAggregateOperation__JoinStrings extends DataCubeQueryA
     ]);
   }
 
-  buildAggregateColumn(column: DataCubeColumnConfiguration) {
-    const variable = _var();
-    return _colSpec(
-      column.name,
-      _lambda([variable], [_property(column.name, variable)]),
-      _lambda(
-        [variable],
-        [
-          _function(_functionName(DataCubeFunction.JOIN_STRINGS), [
-            variable,
-            // TODO: we might want to support customizing the delimiter in this case
-            _primitiveValue(PRIMITIVE_TYPE.STRING, ','),
-          ]),
-        ],
-      ),
+  override isCompatibleWithParameterValues(values: DataCubeOperationValue[]) {
+    return (
+      values.length === 1 &&
+      values[0] !== undefined &&
+      ofDataType(values[0].type, [DataCubeColumnDataType.TEXT]) &&
+      !Array.isArray(values[0].value) &&
+      isString(values[0].value)
+    );
+  }
+
+  override generateDefaultParameterValues(
+    column: DataCubeColumn,
+  ): DataCubeOperationValue[] {
+    return [
+      {
+        type: PRIMITIVE_TYPE.STRING,
+        value: '',
+      },
+    ];
+  }
+
+  override buildAggregateColumnSnapshot(
+    colSpec: V1_ColSpec,
+    columnGetter: (name: string) => DataCubeColumn,
+  ) {
+    return this._finalizeAggregateColumnSnapshot(
+      _agg_base(colSpec, DataCubeFunction.JOIN_STRINGS, columnGetter),
+    );
+  }
+
+  override buildAggregateColumnExpression(column: DataCubeColumnConfiguration) {
+    return _aggCol_base(
+      column,
+      DataCubeFunction.JOIN_STRINGS,
+      column.aggregationParameters,
     );
   }
 }

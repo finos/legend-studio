@@ -15,87 +15,17 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { DataCubeIcon, useDropdownMenu } from '@finos/legend-art';
-import { DataCubeEditorColumnSelector } from './DataCubeEditorColumnSelector.js';
-import type { DataCubeEditorColumnSelectorState } from '../../../stores/view/editor/DataCubeEditorColumnSelectorState.js';
-import type { DataCubeEditorSortColumnState } from '../../../stores/view/editor/DataCubeEditorSortsPanelState.js';
+import { DataCubeIcon } from '@finos/legend-art';
 import {
-  DataCubeQuerySortDirection,
-  PIVOT_COLUMN_NAME_VALUE_SEPARATOR,
-} from '../../../stores/core/DataCubeQueryEngine.js';
-import {
-  FormDropdownMenu,
-  FormDropdownMenuItem,
-} from '../../core/DataCubeFormUtils.js';
+  DataCubeColumnSelectorSortDirectionDropdown,
+  DataCubeEditorColumnSelector,
+} from './DataCubeEditorColumnSelector.js';
+import type {
+  DataCubeEditorColumnSelectorState,
+  DataCubeEditorSortColumnState,
+} from '../../../stores/view/editor/DataCubeEditorColumnSelectorState.js';
+import { PIVOT_COLUMN_NAME_VALUE_SEPARATOR } from '../../../stores/core/DataCubeQueryEngine.js';
 import type { DataCubeViewState } from '../../../stores/view/DataCubeViewState.js';
-
-const SortDirectionDropdown = observer(
-  (props: {
-    selector: DataCubeEditorColumnSelectorState<DataCubeEditorSortColumnState>;
-    column: DataCubeEditorSortColumnState;
-  }) => {
-    const { column } = props;
-    const [
-      openDirectionDropdown,
-      closeDirectionDropdown,
-      directionDropdownProps,
-      directionDropdownPropsOpen,
-    ] = useDropdownMenu();
-
-    return (
-      <div className="group relative flex h-full items-center">
-        {!directionDropdownPropsOpen && (
-          <div className="flex h-[18px] w-32 items-center border border-transparent px-2 text-sm text-neutral-400 group-hover:invisible">
-            {column.direction}
-          </div>
-        )}
-        {directionDropdownPropsOpen && (
-          <div className="flex h-[18px] w-32 items-center justify-between border border-sky-600 bg-sky-50 pl-2 pr-0.5 text-sm">
-            <div>{column.direction}</div>
-            <div>
-              <DataCubeIcon.CaretDown />
-            </div>
-          </div>
-        )}
-        <button
-          className="invisible absolute right-0 z-10 flex h-[18px] w-32 items-center justify-between border border-neutral-400 pl-2 pr-0.5 text-sm text-neutral-700 group-hover:visible"
-          /**
-           * ag-grid row select event listener is at a deeper layer than this dropdown trigger
-           * so in order to prevent selecting the row while opening the dropdown, we need to stop
-           * the propagation as event capturing is happening, not when it's bubbling.
-           */
-          onClickCapture={(event) => {
-            event.stopPropagation();
-            openDirectionDropdown(event);
-          }}
-          onClick={(event) => event.stopPropagation()}
-        >
-          <div>{column.direction}</div>
-          <div>
-            <DataCubeIcon.CaretDown />
-          </div>
-        </button>
-        <FormDropdownMenu className="w-32" {...directionDropdownProps}>
-          {[
-            DataCubeQuerySortDirection.ASCENDING,
-            DataCubeQuerySortDirection.DESCENDING,
-          ].map((direction) => (
-            <FormDropdownMenuItem
-              key={direction}
-              onClick={() => {
-                column.setDirection(direction);
-                closeDirectionDropdown();
-              }}
-              autoFocus={column.direction === direction}
-            >
-              {direction}
-            </FormDropdownMenuItem>
-          ))}
-        </FormDropdownMenu>
-      </div>
-    );
-  },
-);
 
 const SortColumnLabel = observer(
   (props: {
@@ -131,7 +61,9 @@ export const DataCubeEditorSortsPanel = observer(
           <DataCubeEditorColumnSelector
             selector={panel.selector}
             columnLabelRenderer={(p) => <SortColumnLabel {...p} />}
-            columnActionRenderer={(p) => <SortDirectionDropdown {...p} />}
+            columnActionRenderer={(p) => (
+              <DataCubeColumnSelectorSortDirectionDropdown {...p} />
+            )}
           />
         </div>
       </div>

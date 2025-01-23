@@ -23,7 +23,7 @@
 
 import { PRIMITIVE_TYPE, type V1_AppliedFunction } from '@finos/legend-graph';
 import { type DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { at } from '@finos/legend-shared';
 import {
   DataCubeFunction,
   DataCubeQuerySortDirection,
@@ -50,6 +50,7 @@ import {
 } from './DataCubeQueryBuilderUtils.js';
 import type { DataCubeQueryAggregateOperation } from './aggregation/DataCubeQueryAggregateOperation.js';
 import type { DataCubeSource } from './model/DataCubeSource.js';
+import { _findCol } from './model/DataCubeColumn.js';
 
 export function buildExecutableQuery(
   snapshot: DataCubeQuerySnapshot,
@@ -93,24 +94,20 @@ export function buildExecutableQuery(
   // --------------------------------- LEAF-LEVEL EXTEND ---------------------------------
 
   if (data.leafExtendedColumns.length) {
-    const leafExtendedFuncs = data.leafExtendedColumns.map((col) =>
-      _function(DataCubeFunction.EXTEND, [
-        _cols([
-          _colSpec(
-            col.name,
-            _deserializeLambda(col.mapFn),
-            col.reduceFn ? _deserializeLambda(col.reduceFn) : undefined,
-          ),
+    _process(
+      'leafExtend',
+      data.leafExtendedColumns.map((col) =>
+        _function(DataCubeFunction.EXTEND, [
+          _cols([
+            _colSpec(
+              col.name,
+              _deserializeLambda(col.mapFn),
+              col.reduceFn ? _deserializeLambda(col.reduceFn) : undefined,
+            ),
+          ]),
         ]),
-      ]),
+      ),
     );
-    // instead of batching all the extend() functions, we sequence them to allow for
-    // different flavors of extend (e.g. with and without window), and reference the first
-    // one in the function map
-    _process('leafExtend', guaranteeNonNullable(leafExtendedFuncs[0]));
-    leafExtendedFuncs.slice(1).forEach((func) => {
-      sequence.push(func);
-    });
   }
 
   // --------------------------------- FILTER ---------------------------------
@@ -146,7 +143,13 @@ export function buildExecutableQuery(
       _function(DataCubeFunction.SORT, [
         _collection(
           data.pivot.columns.map((col) =>
-            _function(DataCubeFunction.ASCENDING, [_col(col.name)]),
+            _function(
+              _findCol(configuration.columns, col.name)?.pivotSortDirection ===
+                DataCubeQuerySortDirection.DESCENDING
+                ? DataCubeFunction.DESCENDING
+                : DataCubeFunction.ASCENDING,
+              [_col(col.name)],
+            ),
           ),
         ),
       ]),
@@ -217,24 +220,20 @@ export function buildExecutableQuery(
   // --------------------------------- GROUP-LEVEL EXTEND ---------------------------------
 
   if (data.groupExtendedColumns.length) {
-    const groupExtendedFuncs = data.groupExtendedColumns.map((col) =>
-      _function(DataCubeFunction.EXTEND, [
-        _cols([
-          _colSpec(
-            col.name,
-            _deserializeLambda(col.mapFn),
-            col.reduceFn ? _deserializeLambda(col.reduceFn) : undefined,
-          ),
+    _process(
+      'groupExtend',
+      data.groupExtendedColumns.map((col) =>
+        _function(DataCubeFunction.EXTEND, [
+          _cols([
+            _colSpec(
+              col.name,
+              _deserializeLambda(col.mapFn),
+              col.reduceFn ? _deserializeLambda(col.reduceFn) : undefined,
+            ),
+          ]),
         ]),
-      ]),
+      ),
     );
-    // instead of batching all the extend() functions, we sequence them to allow for
-    // different flavors of extend (e.g. with and without window), and reference the first
-    // one in the function map
-    _process('groupExtend', guaranteeNonNullable(groupExtendedFuncs[0]));
-    groupExtendedFuncs.slice(1).forEach((func) => {
-      sequence.push(func);
-    });
   }
 
   // --------------------------------- SORT ---------------------------------
@@ -299,9 +298,9 @@ export function buildExecutableQuery(
     return source.query;
   }
   for (let i = 0; i < sequence.length; i++) {
-    guaranteeNonNullable(sequence[i]).parameters.unshift(
-      i === 0 ? source.query : guaranteeNonNullable(sequence[i - 1]),
+    at(sequence, i).parameters.unshift(
+      i === 0 ? source.query : at(sequence, i - 1),
     );
   }
-  return guaranteeNonNullable(sequence[sequence.length - 1]);
+  return at(sequence, sequence.length - 1);
 }

@@ -26,6 +26,7 @@ import {
   type PlainObject,
 } from '@finos/legend-shared';
 import type { DataCubeConfiguration } from '../../core/model/DataCubeConfiguration.js';
+import { _findCol } from '../../core/model/DataCubeColumn.js';
 
 export class DataCubeEditorColumnPropertiesPanelState
   implements DataCubeQueryEditorPanelState
@@ -56,7 +57,7 @@ export class DataCubeEditorColumnPropertiesPanelState
 
   getColumnConfiguration(colName: string | undefined) {
     return guaranteeNonNullable(
-      this.columns.find((col) => col.name === colName),
+      _findCol(this.columns, colName),
       `Can't find configuration for column '${colName}'`,
     );
   }
@@ -70,7 +71,7 @@ export class DataCubeEditorColumnPropertiesPanelState
   }
 
   get selectedColumn() {
-    return this.columns.find((col) => col.name === this.selectedColumnName);
+    return _findCol(this.columns, this.selectedColumnName);
   }
 
   setShowAdvancedSettings(val: boolean) {

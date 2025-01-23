@@ -18,6 +18,7 @@ import type { DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import {
   IllegalStateError,
   assertErrorThrown,
+  at,
   deepDiff,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
@@ -112,7 +113,7 @@ export class DataCubeQuerySnapshotService {
   }
 
   get currentSnapshot() {
-    return guaranteeNonNullable(this._snapshots[this._snapshots.length - 1]);
+    return at(this._snapshots, this._snapshots.length - 1);
   }
 
   registerSubscriber(subscriber: DataCubeQuerySnapshotSubscriber) {

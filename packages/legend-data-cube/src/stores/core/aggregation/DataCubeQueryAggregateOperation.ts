@@ -14,24 +14,11 @@
  * limitations under the License.
  */
 
-import { guaranteeNonNullable } from '@finos/legend-shared';
 import type { DataCubeColumn } from '../model/DataCubeColumn.js';
 import { type V1_ColSpec } from '@finos/legend-graph';
 import type { DataCubeColumnConfiguration } from '../model/DataCubeConfiguration.js';
-
-// --------------------------------- UTILITIES ---------------------------------
-
-export function getAggregateOperation(
-  operator: string,
-  aggregateOperations: DataCubeQueryAggregateOperation[],
-) {
-  return guaranteeNonNullable(
-    aggregateOperations.find((op) => op.operator === operator),
-    `Can't find aggregate operation '${operator}'`,
-  );
-}
-
-// --------------------------------- CONTRACT ---------------------------------
+import type { DataCubeOperationValue } from '../DataCubeQueryEngine.js';
+import type { DataCubeQuerySnapshotAggregateColumn } from '../DataCubeQuerySnapshot.js';
 
 export abstract class DataCubeQueryAggregateOperation {
   abstract get label(): React.ReactNode;
@@ -40,8 +27,44 @@ export abstract class DataCubeQueryAggregateOperation {
   abstract get operator(): string;
 
   abstract isCompatibleWithColumn(column: DataCubeColumn): boolean;
+  abstract isCompatibleWithParameterValues(
+    values: DataCubeOperationValue[],
+  ): boolean;
+  abstract generateDefaultParameterValues(
+    column: DataCubeColumn,
+  ): DataCubeOperationValue[];
 
-  abstract buildAggregateColumn(
+  abstract buildAggregateColumnSnapshot(
+    colSpec: V1_ColSpec,
+    columnGetter: (name: string) => DataCubeColumn,
+  ): DataCubeQuerySnapshotAggregateColumn | undefined;
+
+  protected _finalizeAggregateColumnSnapshot(
+    data:
+      | {
+          column: DataCubeColumn;
+          paramterValues: DataCubeOperationValue[];
+        }
+      | undefined,
+  ): DataCubeQuerySnapshotAggregateColumn | undefined {
+    if (!data) {
+      return undefined;
+    }
+    const { column, paramterValues } = data;
+    if (
+      !this.isCompatibleWithColumn(column) ||
+      !this.isCompatibleWithParameterValues(paramterValues)
+    ) {
+      return undefined;
+    }
+    return {
+      ...column,
+      operator: this.operator,
+      parameterValues: paramterValues,
+    };
+  }
+
+  abstract buildAggregateColumnExpression(
     column: DataCubeColumnConfiguration,
   ): V1_ColSpec | undefined;
 }

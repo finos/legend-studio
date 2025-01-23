@@ -29,11 +29,10 @@ import {
   _functionName,
   _property,
   _value,
-  _var,
 } from '../DataCubeQueryBuilderUtils.js';
-import { guaranteeNonNullable, isString } from '@finos/legend-shared';
+import { isString } from '@finos/legend-shared';
 import { type V1_AppliedFunction } from '@finos/legend-graph';
-import { _baseFilterCondition } from '../DataCubeQuerySnapshotBuilderUtils.js';
+import { _filterCondition_base } from '../DataCubeQuerySnapshotBuilderUtils.js';
 
 export class DataCubeQueryFilterOperation__EqualColumn extends DataCubeQueryFilterOperation {
   override get label() {
@@ -81,15 +80,14 @@ export class DataCubeQueryFilterOperation__EqualColumn extends DataCubeQueryFilt
     columnGetter: (name: string) => DataCubeColumn,
   ) {
     return this._finalizeConditionSnapshot(
-      _baseFilterCondition(expression, columnGetter, DataCubeFunction.EQUAL),
+      _filterCondition_base(expression, DataCubeFunction.EQUAL, columnGetter),
     );
   }
 
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {
-    const variable = _var();
     return _function(_functionName(DataCubeFunction.EQUAL), [
-      _property(condition.name, variable),
-      _value(guaranteeNonNullable(condition.value), variable),
+      _property(condition.name),
+      _value(condition.value),
     ]);
   }
 }

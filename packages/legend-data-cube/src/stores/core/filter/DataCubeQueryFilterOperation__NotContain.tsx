@@ -13,10 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-  DataCubeQueryFilterOperation,
-  _defaultPrimitiveTypeValue,
-} from './DataCubeQueryFilterOperation.js';
+import { DataCubeQueryFilterOperation } from './DataCubeQueryFilterOperation.js';
 import type { DataCubeQuerySnapshotFilterCondition } from '../DataCubeQuerySnapshot.js';
 import type { DataCubeColumn } from '../model/DataCubeColumn.js';
 import {
@@ -25,6 +22,7 @@ import {
   DataCubeQueryFilterOperator,
   isPrimitiveType,
   ofDataType,
+  _defaultPrimitiveTypeValue,
   type DataCubeOperationValue,
 } from '../DataCubeQueryEngine.js';
 import {
@@ -34,11 +32,11 @@ import {
   _property,
   _value,
 } from '../DataCubeQueryBuilderUtils.js';
-import { guaranteeNonNullable, returnUndefOnError } from '@finos/legend-shared';
+import { isString, returnUndefOnError } from '@finos/legend-shared';
 import { type V1_AppliedFunction } from '@finos/legend-graph';
 import {
   _unwrapNotFilterCondition,
-  _baseFilterCondition,
+  _filterCondition_base,
 } from '../DataCubeQuerySnapshotBuilderUtils.js';
 
 export class DataCubeQueryFilterOperation__NotContain extends DataCubeQueryFilterOperation {
@@ -67,7 +65,8 @@ export class DataCubeQueryFilterOperation__NotContain extends DataCubeQueryFilte
       value.value !== undefined &&
       isPrimitiveType(value.type) &&
       ofDataType(value.type, [DataCubeColumnDataType.TEXT]) &&
-      !Array.isArray(value.value)
+      !Array.isArray(value.value) &&
+      isString(value.value)
     );
   }
 
@@ -82,14 +81,12 @@ export class DataCubeQueryFilterOperation__NotContain extends DataCubeQueryFilte
     expression: V1_AppliedFunction,
     columnGetter: (name: string) => DataCubeColumn,
   ) {
-    const unwrapped = returnUndefOnError(() =>
-      _unwrapNotFilterCondition(expression),
-    );
-    if (!unwrapped) {
-      return undefined;
-    }
     return this._finalizeConditionSnapshot(
-      _baseFilterCondition(unwrapped, columnGetter, DataCubeFunction.CONTAINS),
+      _filterCondition_base(
+        returnUndefOnError(() => _unwrapNotFilterCondition(expression)),
+        DataCubeFunction.CONTAINS,
+        columnGetter,
+      ),
     );
   }
 
@@ -97,7 +94,7 @@ export class DataCubeQueryFilterOperation__NotContain extends DataCubeQueryFilte
     return _not(
       _function(_functionName(DataCubeFunction.CONTAINS), [
         _property(condition.name),
-        _value(guaranteeNonNullable(condition.value)),
+        _value(condition.value),
       ]),
     );
   }

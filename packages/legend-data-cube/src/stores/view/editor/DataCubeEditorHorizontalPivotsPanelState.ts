@@ -18,28 +18,32 @@ import { action, computed, makeObservable, observable } from 'mobx';
 import type { DataCubeConfiguration } from '../../core/model/DataCubeConfiguration.js';
 import {
   DataCubeColumnKind,
+  DataCubeQuerySortDirection,
   isPivotResultColumnName,
 } from '../../core/DataCubeQueryEngine.js';
 import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
 import {
+  _findCol,
   _toCol,
   type DataCubeColumn,
 } from '../../core/model/DataCubeColumn.js';
 import {
-  DataCubeEditorColumnSelectorColumnState,
   DataCubeEditorColumnSelectorState,
+  DataCubeEditorSortColumnState,
 } from './DataCubeEditorColumnSelectorState.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
 import { uniqBy } from '@finos/legend-shared';
 
-export class DataCubeEditorHorizontalPivotColumnSelectorState extends DataCubeEditorColumnSelectorState<DataCubeEditorColumnSelectorColumnState> {
+export class DataCubeEditorHorizontalPivotColumnSelectorState extends DataCubeEditorColumnSelectorState<DataCubeEditorSortColumnState> {
   override cloneColumn(
-    column: DataCubeEditorColumnSelectorColumnState,
-  ): DataCubeEditorColumnSelectorColumnState {
-    return new DataCubeEditorColumnSelectorColumnState(
+    column: DataCubeEditorSortColumnState,
+  ): DataCubeEditorSortColumnState {
+    return new DataCubeEditorSortColumnState(
       column.name,
       column.type,
+      column.direction,
+      column.onChange,
     );
   }
 
@@ -49,13 +53,16 @@ export class DataCubeEditorHorizontalPivotColumnSelectorState extends DataCubeEd
         (col) =>
           col.kind === DataCubeColumnKind.DIMENSION &&
           // exclude group-level extended columns
-          !this._editor.groupExtendColumns.find(
-            (column) => column.name === col.name,
-          ),
+          !_findCol(this._editor.groupExtendColumns, col.name),
       )
       .map(
         (col) =>
-          new DataCubeEditorColumnSelectorColumnState(col.name, col.type),
+          new DataCubeEditorSortColumnState(
+            col.name,
+            col.type,
+            DataCubeQuerySortDirection.ASCENDING,
+            () => this.onChange?.(this),
+          ),
       );
   }
 }
@@ -81,6 +88,16 @@ export class DataCubeEditorHorizontalPivotsPanelState
     this._editor = editor;
     this.selector = new DataCubeEditorHorizontalPivotColumnSelectorState(
       editor,
+      {
+        onChange: (selector) => {
+          // update selection config in column configurations
+          this._editor.columnProperties.columns.forEach((col) =>
+            col.setPivotSortDirection(
+              _findCol(selector.selectedColumns, col.name)?.direction,
+            ),
+          );
+        },
+      },
     );
   }
 
@@ -106,7 +123,13 @@ export class DataCubeEditorHorizontalPivotsPanelState
     this.selector.setSelectedColumns(
       (snapshot.data.pivot?.columns ?? []).map(
         (col) =>
-          new DataCubeEditorColumnSelectorColumnState(col.name, col.type),
+          new DataCubeEditorSortColumnState(
+            col.name,
+            col.type,
+            _findCol(configuration.columns, col.name)?.pivotSortDirection ??
+              DataCubeQuerySortDirection.ASCENDING,
+            () => this.selector.onChange?.(this.selector),
+          ),
       ),
     );
     this.setCastColumns(snapshot.data.pivot?.castColumns ?? []);

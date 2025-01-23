@@ -30,7 +30,7 @@ import {
   _property,
 } from '../DataCubeQueryBuilderUtils.js';
 import { type V1_AppliedFunction } from '@finos/legend-graph';
-import { _baseFilterCondition } from '../DataCubeQuerySnapshotBuilderUtils.js';
+import { _filterCondition_base } from '../DataCubeQuerySnapshotBuilderUtils.js';
 
 export class DataCubeQueryFilterOperation__IsNull extends DataCubeQueryFilterOperation {
   override get label() {
@@ -76,7 +76,11 @@ export class DataCubeQueryFilterOperation__IsNull extends DataCubeQueryFilterOpe
     columnGetter: (name: string) => DataCubeColumn,
   ) {
     return this._finalizeConditionSnapshot(
-      _baseFilterCondition(expression, columnGetter, DataCubeFunction.IS_EMPTY),
+      _filterCondition_base(
+        expression,
+        DataCubeFunction.IS_EMPTY,
+        columnGetter,
+      ),
     );
   }
 

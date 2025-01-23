@@ -60,6 +60,7 @@ import {
   _serializeValueSpecification,
   _deserializeValueSpecification,
   _defaultPrimitiveTypeValue,
+  type DataCubeExecutionOptions,
 } from '@finos/legend-data-cube';
 import {
   isNonNullable,
@@ -224,38 +225,6 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     }
   }
 
-  // TODO: we could optimize this by synthesizing the base query from the source columns
-  // instead of having to send the entire graph model
-  override async getQueryTypeahead(
-    code: string,
-    baseQuery: V1_Lambda,
-    source: DataCubeSource,
-  ) {
-    const baseQueryCode = await this.getValueSpecificationCode(baseQuery);
-    let codeBlock = baseQueryCode + code;
-    codeBlock = codeBlock.startsWith(LAMBDA_PIPE)
-      ? codeBlock.substring(LAMBDA_PIPE.length)
-      : codeBlock;
-    if (source instanceof AdhocQueryDataCubeSource) {
-      return (
-        await this._engineServerClient.completeCode({
-          codeBlock,
-          model: source.model,
-        })
-      ).completions as CompletionItem[];
-    } else if (source instanceof LegendQueryDataCubeSource) {
-      return (
-        await this._engineServerClient.completeCode({
-          codeBlock,
-          model: source.model,
-        })
-      ).completions as CompletionItem[];
-    }
-    throw new UnsupportedOperationError(
-      `Can't get code completion for lambda with unsupported source`,
-    );
-  }
-
   override async parseValueSpecification(
     code: string,
     returnSourceInformation?: boolean | undefined,
@@ -298,6 +267,64 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
 
   // TODO: we could optimize this by synthesizing the base query from the source columns
   // instead of having to send the entire graph model
+  override async getQueryTypeahead(
+    code: string,
+    baseQuery: V1_Lambda,
+    source: DataCubeSource,
+  ) {
+    const baseQueryCode = await this.getValueSpecificationCode(baseQuery);
+    let codeBlock = baseQueryCode + code;
+    codeBlock = codeBlock.startsWith(LAMBDA_PIPE)
+      ? codeBlock.substring(LAMBDA_PIPE.length)
+      : codeBlock;
+    if (source instanceof AdhocQueryDataCubeSource) {
+      return (
+        await this._engineServerClient.completeCode({
+          codeBlock,
+          model: source.model,
+        })
+      ).completions as CompletionItem[];
+    } else if (source instanceof LegendQueryDataCubeSource) {
+      return (
+        await this._engineServerClient.completeCode({
+          codeBlock,
+          model: source.model,
+        })
+      ).completions as CompletionItem[];
+    }
+    throw new UnsupportedOperationError(
+      `Can't get code completion for lambda with unsupported source`,
+    );
+  }
+
+  override async getQueryRelationReturnType(
+    query: V1_Lambda,
+    source: DataCubeSource,
+  ) {
+    try {
+      return await this._getQueryRelationType(
+        _serializeValueSpecification(query),
+        source,
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      if (
+        error instanceof NetworkClientError &&
+        error.response.status === HttpStatus.BAD_REQUEST
+      ) {
+        const engineError = V1_buildEngineError(
+          V1_EngineError.serialization.fromJson(
+            error.payload as PlainObject<V1_EngineError>,
+          ),
+        );
+        throw engineError;
+      }
+      throw error;
+    }
+  }
+
+  // TODO: we could optimize this by synthesizing the base query from the source columns
+  // instead of having to send the entire graph model
   override async getQueryCodeRelationReturnType(
     code: string,
     baseQuery: V1_ValueSpecification,
@@ -335,17 +362,22 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     }
   }
 
-  override async executeQuery(query: V1_Lambda, source: DataCubeSource) {
+  override async executeQuery(
+    query: V1_Lambda,
+    source: DataCubeSource,
+    options?: DataCubeExecutionOptions | undefined,
+  ) {
     const queryCodePromise = this.getValueSpecificationCode(query);
     let result: ExecutionResult;
     if (source instanceof AdhocQueryDataCubeSource) {
-      result = await this._runQuery(query, source.model);
+      result = await this._runQuery(query, source.model, undefined, options);
     } else if (source instanceof LegendQueryDataCubeSource) {
       query.parameters = source.lambda.parameters;
       result = await this._runQuery(
         query,
         source.model,
         source.parameterValues,
+        options,
       );
     } else {
       throw new UnsupportedOperationError(
@@ -429,15 +461,17 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     query: V1_Lambda,
     model: PlainObject<V1_PureModelContext>,
     parameterValues?: V1_ParameterValue[] | undefined,
+    options?: DataCubeExecutionOptions | undefined,
   ): Promise<ExecutionResult> {
     return V1_buildExecutionResult(
       V1_deserializeExecutionResult(
         (await this._engineServerClient.runQuery({
           clientVersion:
+            options?.clientVersion ??
             // eslint-disable-next-line no-process-env
-            process.env.NODE_ENV === 'development'
+            (process.env.NODE_ENV === 'development'
               ? PureClientVersion.VX_X_X
-              : undefined,
+              : undefined),
           function: _serializeValueSpecification(query),
           model,
           context: serialize(

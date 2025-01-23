@@ -15,8 +15,9 @@
  */
 
 import {
-  type DataCubeColumnKind,
   getDataType,
+  getAggregateOperation,
+  type DataCubeColumnKind,
   type DataCubeFont,
   type DataCubeOperationValue,
   type DataCubeNumberScale,
@@ -46,12 +47,8 @@ import {
   DataCubeConfiguration,
   DataCubePivotLayoutConfiguration,
 } from '../../core/model/DataCubeConfiguration.js';
-import { buildDefaultColumnConfiguration } from '../../core/DataCubeConfigurationBuilder.js';
 import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
-import {
-  getAggregateOperation,
-  type DataCubeQueryAggregateOperation,
-} from '../../core/aggregation/DataCubeQueryAggregateOperation.js';
+import { type DataCubeQueryAggregateOperation } from '../../core/aggregation/DataCubeQueryAggregateOperation.js';
 
 export class DataCubeEditorMutableColumnConfiguration extends DataCubeColumnConfiguration {
   readonly dataType!: DataCubeColumnDataType;
@@ -195,19 +192,6 @@ export class DataCubeEditorMutableColumnConfiguration extends DataCubeColumnConf
     });
 
     return configuration;
-  }
-
-  static createDefault(
-    column: { name: string; type: string },
-    aggregateOperations: DataCubeQueryAggregateOperation[],
-  ) {
-    return DataCubeEditorMutableColumnConfiguration.create(
-      DataCubeColumnConfiguration.serialization.toJson(
-        buildDefaultColumnConfiguration(column),
-      ),
-      undefined,
-      aggregateOperations,
-    );
   }
 
   get isUsingDefaultStyling() {
@@ -393,7 +377,7 @@ export class DataCubeEditorMutableColumnConfiguration extends DataCubeColumnConf
     this.excludedFromPivot = value;
   }
 
-  setPivotSortDirection(value: string | undefined) {
+  setPivotSortDirection(value: DataCubeQuerySortDirection | undefined) {
     this.pivotSortDirection = value;
   }
 

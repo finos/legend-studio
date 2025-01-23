@@ -20,6 +20,7 @@ import {
   type DataCubeQuerySnapshotExtendedColumn,
 } from '../../core/DataCubeQuerySnapshot.js';
 import {
+  _findCol,
   _toCol,
   type DataCubeColumn,
 } from '../../core/model/DataCubeColumn.js';
@@ -45,7 +46,7 @@ import {
   DataCubeColumnKind,
   getDataType,
 } from '../../core/DataCubeQueryEngine.js';
-import { buildDefaultColumnConfiguration } from '../../core/DataCubeConfigurationBuilder.js';
+import { newColumnConfiguration } from '../../core/DataCubeConfigurationBuilder.js';
 import { _lambda } from '../../core/DataCubeQueryBuilderUtils.js';
 import { EngineError } from '@finos/legend-graph';
 
@@ -142,21 +143,21 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
     }
 
     if (
-      !this.leafExtendedColumns.find((col) => col.name === columnName) &&
-      !this.groupExtendedColumns.find((col) => col.name === columnName)
+      !_findCol(this.leafExtendedColumns, columnName) &&
+      !_findCol(this.groupExtendedColumns, columnName)
     ) {
       return;
     }
     const editor = new DataCubeExistingColumnEditorState(
       this,
       guaranteeNonNullable(
-        this.leafExtendedColumns.find((col) => col.name === columnName) ??
-          this.groupExtendedColumns.find((col) => col.name === columnName),
+        _findCol(this.leafExtendedColumns, columnName) ??
+          _findCol(this.groupExtendedColumns, columnName),
       ).data,
       guaranteeNonNullable(
-        this.columnConfigurations.find((col) => col.name === columnName),
+        _findCol(this.columnConfigurations, columnName),
       ).kind,
-      Boolean(this.groupExtendedColumns.find((col) => col.name === columnName)),
+      Boolean(_findCol(this.groupExtendedColumns, columnName)),
     );
     await editor.initialize();
     this.existingColumnEditors.push(editor);
@@ -169,7 +170,7 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
     columnKind: DataCubeColumnKind | undefined,
     editor: DataCubeNewColumnState,
   ) {
-    const columnConfiguration = buildDefaultColumnConfiguration(column);
+    const columnConfiguration = newColumnConfiguration(column);
     if (columnKind) {
       columnConfiguration.kind = columnKind;
       columnConfiguration.excludedFromPivot =
@@ -197,14 +198,14 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
     columnKind: DataCubeColumnKind | undefined,
   ) {
     if (
-      !this.leafExtendedColumns.find((col) => col.name === columnName) &&
-      !this.groupExtendedColumns.find((col) => col.name === columnName)
+      !_findCol(this.leafExtendedColumns, columnName) &&
+      !_findCol(this.groupExtendedColumns, columnName)
     ) {
       return;
     }
 
     const columnConfiguration = guaranteeNonNullable(
-      this.columnConfigurations.find((col) => col.name === columnName),
+      _findCol(this.columnConfigurations, columnName),
     );
 
     const task = this.view.taskService.newTask('Column update check');
@@ -326,8 +327,8 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
 
   async deleteColumn(columnName: string) {
     if (
-      !this.leafExtendedColumns.find((col) => col.name === columnName) &&
-      !this.groupExtendedColumns.find((col) => col.name === columnName)
+      !_findCol(this.leafExtendedColumns, columnName) &&
+      !_findCol(this.groupExtendedColumns, columnName)
     ) {
       return;
     }

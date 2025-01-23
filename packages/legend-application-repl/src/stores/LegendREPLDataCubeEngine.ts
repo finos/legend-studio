@@ -144,6 +144,13 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
     });
   }
 
+  override async getQueryRelationReturnType(
+    query: V1_Lambda,
+    source: DataCubeSource,
+  ) {
+    return this._getQueryRelationType(query);
+  }
+
   override async getQueryCodeRelationReturnType(
     code: string,
     baseQuery: V1_ValueSpecification,

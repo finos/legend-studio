@@ -23,6 +23,7 @@ import {
   type DataCubeQuerySnapshotExtendedColumn,
 } from '../../core/DataCubeQuerySnapshot.js';
 import {
+  _findCol,
   _toCol,
   type DataCubeColumn,
 } from '../../core/model/DataCubeColumn.js';
@@ -177,9 +178,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
           this.sorts.selector.availableColumns
             .filter(
               (col) =>
-                !tempSnapshot.data.groupExtendedColumns.find(
-                  (column) => column.name === col.name,
-                ),
+                !_findCol(tempSnapshot.data.groupExtendedColumns, col.name),
             )
             .map(_toCol);
       }

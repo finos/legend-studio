@@ -17,7 +17,8 @@
 import { makeObservable, observable, action, computed } from 'mobx';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { _sortByColName } from '../../core/model/DataCubeColumn.js';
+import { _findCol, _sortByColName } from '../../core/model/DataCubeColumn.js';
+import type { DataCubeQuerySortDirection } from '../../core/DataCubeQueryEngine.js';
 
 export class DataCubeEditorColumnSelectorColumnState {
   readonly name: string;
@@ -74,10 +75,7 @@ export abstract class DataCubeEditorColumnSelectorState<
 
   get availableColumnsForDisplay(): T[] {
     return this.availableColumns
-      .filter(
-        (column) =>
-          !this.selectedColumns.find((col) => column.name === col.name),
-      )
+      .filter((column) => !_findCol(this.selectedColumns, column.name))
       .sort(_sortByColName);
   }
 
@@ -103,10 +101,37 @@ export abstract class DataCubeEditorColumnSelectorState<
 
   getColumn(colName: string): T {
     return guaranteeNonNullable(
-      this.availableColumns.find((col) => col.name === colName),
+      _findCol(this.availableColumns, colName),
       `Can't find column '${colName}'`,
     );
   }
 
   protected abstract cloneColumn(column: T): T;
+}
+
+export class DataCubeEditorSortColumnState extends DataCubeEditorColumnSelectorColumnState {
+  readonly onChange?: (() => void) | undefined;
+  direction: DataCubeQuerySortDirection;
+
+  constructor(
+    name: string,
+    type: string,
+    direction: DataCubeQuerySortDirection,
+    onChange?: (() => void) | undefined,
+  ) {
+    super(name, type);
+
+    makeObservable(this, {
+      direction: observable,
+      setDirection: action,
+    });
+
+    this.direction = direction;
+    this.onChange = onChange;
+  }
+
+  setDirection(val: DataCubeQuerySortDirection) {
+    this.direction = val;
+    this.onChange?.();
+  }
 }

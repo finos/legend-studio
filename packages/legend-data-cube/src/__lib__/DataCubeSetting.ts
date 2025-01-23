@@ -16,6 +16,7 @@
 
 export enum DataCubeSettingKey {
   DEBUGGER__ENABLE_DEBUG_MODE = 'dataCube.debugger.enableDebugMode',
+  DEBUGGER__USE_DEV_CLIENT_PROTOCOL_VERSION = 'dataCube.debugger.useDevClientProtocolVersion',
   DEBUGGER__ACTION__RELOAD = 'dataCube.debugger.action.reload',
   GRID_CLIENT__ROW_BUFFER = 'dataCube.grid.rowBuffer',
   GRID_CLIENT__PURGE_CLOSED_ROW_NODES = 'dataCube.grid.purgeClosedRowNodes',

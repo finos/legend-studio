@@ -134,12 +134,11 @@ export class DataCubeViewState {
       const partialQuery = await this.engine.parseValueSpecification(
         query.query,
       );
-      const initialSnapshot = validateAndBuildQuerySnapshot(
+      const initialSnapshot = await validateAndBuildQuerySnapshot(
         partialQuery,
         source,
         query,
-        this.engine.filterOperations,
-        this.engine.aggregateOperations,
+        this.engine,
       );
       this.snapshotService.broadcastSnapshot(initialSnapshot);
       this.dataCube.options?.onViewInitialized?.({

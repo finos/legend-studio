@@ -21,9 +21,13 @@
  * AG Grid, from the query snapshot.
  ***************************************************************************************/
 
-import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
+import {
+  type DataCubeQuerySnapshot,
+  type DataCubeQuerySnapshotPivot,
+} from '../../core/DataCubeQuerySnapshot.js';
 import {
   _findCol,
+  _toCol,
   type DataCubeColumn,
 } from '../../core/model/DataCubeColumn.js';
 import type {
@@ -61,11 +65,11 @@ import {
   last,
   getQueryParameters,
   getQueryParameterValue,
-  guaranteeNonNullable,
   isNonNullable,
   isNullable,
   isNumber,
   isValidUrl,
+  assertTrue,
 } from '@finos/legend-shared';
 import type {
   DataCubeColumnConfiguration,
@@ -216,17 +220,15 @@ function _displaySpec(columnData: ColumnData) {
       column.hideFromView ||
       !column.isSelected ||
       (Boolean(
-        snapshot.data.pivot &&
-          !snapshot.data.pivot.castColumns.find((col) => col.name === name),
+        snapshot.data.pivot && !_findCol(snapshot.data.pivot.castColumns, name),
       ) &&
-        !snapshot.data.groupExtendedColumns.find((col) => col.name === name)),
+        !_findCol(snapshot.data.groupExtendedColumns, name)),
     lockVisible:
       !column.isSelected ||
       (Boolean(
-        snapshot.data.pivot &&
-          !snapshot.data.pivot.castColumns.find((col) => col.name === name),
+        snapshot.data.pivot && !_findCol(snapshot.data.pivot.castColumns, name),
       ) &&
-        !snapshot.data.groupExtendedColumns.find((col) => col.name === name)),
+        !_findCol(snapshot.data.groupExtendedColumns, name)),
     pinned:
       column.pinned !== undefined
         ? column.pinned === DataCubeColumnPinPlacement.RIGHT
@@ -643,7 +645,7 @@ function generatePivotResultColumnHeaderTooltip(
     return values.join(' / ');
   }
   if (values.length === snapshot.data.pivot.columns.length + 1) {
-    const baseColumnName = guaranteeNonNullable(values[values.length - 1]);
+    const baseColumnName = at(values, values.length - 1);
     const columnConfiguration = _findCol(configuration.columns, baseColumnName);
     return `Column = ${
       columnConfiguration
@@ -783,6 +785,53 @@ function generateDefinitionForPivotResultColumns(
   return columnDefs;
 }
 
+/**
+ * We tried to push-down to the DB level to ensure a particular order
+ * for the pivot result columns, we do so by preceding pivot() with a sort().
+ *
+ * Implementations of pivot() is highly non-standard across different DBs, so
+ * this rearranging needs to be done client-side.
+ */
+function rearrangePivotResultColumns(
+  pivotResultColumns: DataCubeColumn[],
+  pivotData: DataCubeQuerySnapshotPivot,
+  configuration: DataCubeConfiguration,
+) {
+  try {
+    const columns: (DataCubeColumn & { values: string[] })[] = [];
+    for (const pivotResultColumn of pivotResultColumns) {
+      const column = {
+        ...pivotResultColumn,
+        values: pivotResultColumn.name
+          .split(PIVOT_COLUMN_NAME_VALUE_SEPARATOR)
+          .slice(0, -1), // remove the last entry
+      };
+      assertTrue(column.values.length === pivotData.columns.length);
+      columns.push(column);
+    }
+    const columnConfigs = pivotData.columns
+      .map((col) => configuration.getColumn(col.name))
+      .filter(isNonNullable);
+    assertTrue(columnConfigs.length === pivotData.columns.length);
+
+    // apply multi dimensional sorts by starting from the last pivot column to the first
+    for (let i = pivotData.columns.length - 1; i >= 0; i--) {
+      const direction =
+        columnConfigs[i]?.pivotSortDirection ??
+        DataCubeQuerySortDirection.ASCENDING;
+      columns.sort((a, b) =>
+        direction === DataCubeQuerySortDirection.ASCENDING
+          ? at(a.values, i).localeCompare(at(b.values, i))
+          : at(b.values, i).localeCompare(at(a.values, i)),
+      );
+    }
+
+    return columns.map((col) => _toCol(col));
+  } catch {
+    return pivotResultColumns;
+  }
+}
+
 export function generateColumnDefs(
   snapshot: DataCubeQuerySnapshot,
   configuration: DataCubeConfiguration,
@@ -795,17 +844,17 @@ export function generateColumnDefs(
   // must still be included in the column definitions, and made hidden instead.
   const columns = configuration.columns.filter(
     (col) =>
-      snapshot.data.selectColumns.find((column) => column.name === col.name) ??
-      snapshot.data.groupExtendedColumns.find(
-        (column) => column.name === col.name,
-      ),
+      _findCol(snapshot.data.selectColumns, col.name) ??
+      _findCol(snapshot.data.groupExtendedColumns, col.name),
   );
   let pivotResultColumns: DataCubeColumn[] = [];
 
   if (snapshot.data.pivot) {
     const castColumns = snapshot.data.pivot.castColumns;
-    pivotResultColumns = castColumns.filter((col) =>
-      isPivotResultColumnName(col.name),
+    pivotResultColumns = rearrangePivotResultColumns(
+      castColumns.filter((col) => isPivotResultColumnName(col.name)),
+      snapshot.data.pivot,
+      configuration,
     );
   }
 

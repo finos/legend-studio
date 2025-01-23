@@ -48,6 +48,7 @@ import { DATE_FORMAT, PRIMITIVE_TYPE } from '@finos/legend-graph';
 import { formatDate, guaranteeIsNumber, parseISO } from '@finos/legend-shared';
 import { evaluate } from 'mathjs';
 import { useDataCube } from '../../DataCubeProvider.js';
+import { _findCol } from '../../../stores/core/model/DataCubeColumn.js';
 
 const FILTER_TREE_OFFSET = 10;
 const FILTER_TREE_INDENTATION_SPACE = 36;
@@ -286,9 +287,7 @@ const DataCubeEditorFilterConditionNodeColumnSelector = observer(
   >(function DataCubeEditorFilterConditionNodeColumnSelector(props, ref) {
     const { value, updateValue, view } = props;
     const editor = view.filter;
-    const matchingColumn = editor.columns.find(
-      (column) => column.name === value,
-    );
+    const matchingColumn = _findCol(editor.columns, value);
     const [
       openColumnDropdown,
       closeColumnDropdown,

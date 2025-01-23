@@ -13,10 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-  DataCubeQueryFilterOperation,
-  _defaultPrimitiveTypeValue,
-} from './DataCubeQueryFilterOperation.js';
+import { DataCubeQueryFilterOperation } from './DataCubeQueryFilterOperation.js';
 import type { DataCubeQuerySnapshotFilterCondition } from '../DataCubeQuerySnapshot.js';
 import type { DataCubeColumn } from '../model/DataCubeColumn.js';
 import {
@@ -25,6 +22,7 @@ import {
   DataCubeQueryFilterOperator,
   isPrimitiveType,
   ofDataType,
+  _defaultPrimitiveTypeValue,
   type DataCubeOperationValue,
 } from '../DataCubeQueryEngine.js';
 import {
@@ -32,11 +30,10 @@ import {
   _functionName,
   _property,
   _value,
-  _var,
 } from '../DataCubeQueryBuilderUtils.js';
-import { guaranteeNonNullable } from '@finos/legend-shared';
 import { type V1_AppliedFunction } from '@finos/legend-graph';
-import { _caseSensitiveBaseFilterCondition } from '../DataCubeQuerySnapshotBuilderUtils.js';
+import { _filterCondition_caseSensitive } from '../DataCubeQuerySnapshotBuilderUtils.js';
+import { isString } from '@finos/legend-shared';
 
 export class DataCubeQueryFilterOperation__EndWithCaseInsensitive extends DataCubeQueryFilterOperation {
   override get label() {
@@ -64,7 +61,8 @@ export class DataCubeQueryFilterOperation__EndWithCaseInsensitive extends DataCu
       value.value !== undefined &&
       isPrimitiveType(value.type) &&
       ofDataType(value.type, [DataCubeColumnDataType.TEXT]) &&
-      !Array.isArray(value.value)
+      !Array.isArray(value.value) &&
+      isString(value.value)
     );
   }
 
@@ -80,22 +78,21 @@ export class DataCubeQueryFilterOperation__EndWithCaseInsensitive extends DataCu
     columnGetter: (name: string) => DataCubeColumn,
   ) {
     return this._finalizeConditionSnapshot(
-      _caseSensitiveBaseFilterCondition(
+      _filterCondition_caseSensitive(
         expression,
-        columnGetter,
         DataCubeFunction.ENDS_WITH,
+        columnGetter,
       ),
     );
   }
 
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {
-    const variable = _var();
     return _function(_functionName(DataCubeFunction.ENDS_WITH), [
       _function(_functionName(DataCubeFunction.TO_LOWERCASE), [
-        _property(condition.name, variable),
+        _property(condition.name),
       ]),
       _function(_functionName(DataCubeFunction.TO_LOWERCASE), [
-        _value(guaranteeNonNullable(condition.value), variable),
+        _value(condition.value),
       ]),
     ]);
   }

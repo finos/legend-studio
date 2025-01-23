@@ -30,16 +30,11 @@ import {
   _not,
   _property,
   _value,
-  _var,
 } from '../DataCubeQueryBuilderUtils.js';
-import {
-  guaranteeNonNullable,
-  isString,
-  returnUndefOnError,
-} from '@finos/legend-shared';
+import { isString, returnUndefOnError } from '@finos/legend-shared';
 import { type V1_AppliedFunction } from '@finos/legend-graph';
 import {
-  _baseFilterCondition,
+  _filterCondition_base,
   _unwrapNotFilterCondition,
 } from '../DataCubeQuerySnapshotBuilderUtils.js';
 
@@ -88,23 +83,20 @@ export class DataCubeQueryFilterOperation__NotEqualColumn extends DataCubeQueryF
     expression: V1_AppliedFunction,
     columnGetter: (name: string) => DataCubeColumn,
   ) {
-    const unwrapped = returnUndefOnError(() =>
-      _unwrapNotFilterCondition(expression),
-    );
-    if (!unwrapped) {
-      return undefined;
-    }
     return this._finalizeConditionSnapshot(
-      _baseFilterCondition(unwrapped, columnGetter, DataCubeFunction.EQUAL),
+      _filterCondition_base(
+        returnUndefOnError(() => _unwrapNotFilterCondition(expression)),
+        DataCubeFunction.EQUAL,
+        columnGetter,
+      ),
     );
   }
 
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {
-    const variable = _var();
     return _not(
       _function(_functionName(DataCubeFunction.EQUAL), [
-        _property(condition.name, variable),
-        _value(guaranteeNonNullable(condition.value), variable),
+        _property(condition.name),
+        _value(condition.value),
       ]),
     );
   }

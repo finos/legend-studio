@@ -17,18 +17,11 @@
 import { DataCubeIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import type { DataCubeViewState } from '../../../stores/view/DataCubeViewState.js';
-import { DataCubeEditorColumnSelector } from './DataCubeEditorColumnSelector.js';
+import {
+  DataCubeColumnSelectorSortDirectionDropdown,
+  DataCubeEditorColumnSelector,
+} from './DataCubeEditorColumnSelector.js';
 import { useEffect } from 'react';
-import { FormBadge_WIP } from '../../core/DataCubeFormUtils.js';
-
-const PivotColumnSortDirectionDropdown = observer((props) => (
-  <div className="relative flex h-full items-center">
-    <div className="flex h-[18px] w-32 items-center border border-transparent px-2 text-sm text-neutral-400">
-      Ascending
-      <FormBadge_WIP />
-    </div>
-  </div>
-));
 
 export const DataCubeEditorHorizontalPivotsPanel = observer(
   (props: { view: DataCubeViewState }) => {
@@ -51,7 +44,7 @@ export const DataCubeEditorHorizontalPivotsPanel = observer(
           <DataCubeEditorColumnSelector
             selector={panel.selector}
             columnActionRenderer={(p) => (
-              <PivotColumnSortDirectionDropdown {...p} />
+              <DataCubeColumnSelectorSortDirectionDropdown {...p} />
             )}
           />
         </div>

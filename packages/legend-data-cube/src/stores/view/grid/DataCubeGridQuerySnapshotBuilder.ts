@@ -43,7 +43,7 @@ export function getColumnConfiguration(
   configuration: DataCubeConfiguration,
 ) {
   return guaranteeNonNullable(
-    configuration.columns.find((col) => col.name === colName),
+    configuration.getColumn(colName),
     `Can't find configuration for column '${colName}'`,
   );
 }

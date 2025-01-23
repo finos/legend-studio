@@ -31,18 +31,19 @@ import {
   pruneObject,
 } from '@finos/legend-shared';
 import { buildExecutableQuery } from '../../core/DataCubeQueryBuilder.js';
-import { type TabularDataSet, V1_Lambda } from '@finos/legend-graph';
+import {
+  PureClientVersion,
+  type TabularDataSet,
+  V1_Lambda,
+} from '@finos/legend-graph';
 import { makeObservable, observable, runInAction } from 'mobx';
 import type {
   DataCubeConfiguration,
   DataCubeConfigurationColorKey,
 } from '../../core/model/DataCubeConfiguration.js';
 import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
-import { _sortByColName } from '../../core/model/DataCubeColumn.js';
-import {
-  isPivotResultColumnName,
-  type DataCubeQueryFunctionMap,
-} from '../../core/DataCubeQueryEngine.js';
+import { _findCol, _sortByColName } from '../../core/model/DataCubeColumn.js';
+import { isPivotResultColumnName } from '../../core/DataCubeQueryEngine.js';
 import { buildQuerySnapshot } from './DataCubeGridQuerySnapshotBuilder.js';
 import { AlertType } from '../../services/DataCubeAlertService.js';
 import { sum } from 'mathjs';
@@ -260,6 +261,7 @@ async function getCastColumns(
   const snapshot = currentSnapshot.clone();
   guaranteeNonNullable(snapshot.data.pivot).castColumns = [];
   snapshot.data.groupBy = undefined;
+  snapshot.data.groupExtendedColumns = [];
   snapshot.data.sortColumns = [];
   snapshot.data.limit = 0;
   const query = buildExecutableQuery(
@@ -277,18 +279,6 @@ async function getCastColumns(
         filterOperations,
         aggregateOperations,
       ) => {
-        const _unprocess = (funcMapKey: keyof DataCubeQueryFunctionMap) => {
-          const func = funcMap[funcMapKey];
-          if (func) {
-            sequence.splice(sequence.indexOf(func), 1);
-            funcMap[funcMapKey] = undefined;
-          }
-        };
-
-        if (funcMap.groupExtend) {
-          _unprocess('groupExtend');
-        }
-
         // when both pivot and groupBy present, we need to account for the count column
         // in the cast expression
         if (funcMap.pivot && currentSnapshot.data.groupBy) {
@@ -304,6 +294,11 @@ async function getCastColumns(
     debug: view.settingService.getBooleanValue(
       DataCubeSettingKey.DEBUGGER__ENABLE_DEBUG_MODE,
     ),
+    clientVersion: view.settingService.getBooleanValue(
+      DataCubeSettingKey.DEBUGGER__USE_DEV_CLIENT_PROTOCOL_VERSION,
+    )
+      ? PureClientVersion.VX_X_X
+      : undefined,
   });
 
   return result.result.builder.columns.map((column) => ({
@@ -380,8 +375,9 @@ export class DataCubeGridClientServerSideDataSource
             newSnapshot.data.pivot.castColumns = castColumns;
             newSnapshot.data.sortColumns = newSnapshot.data.sortColumns.filter(
               (column) =>
-                [...castColumns, ...newSnapshot.data.groupExtendedColumns].find(
-                  (col) => column.name === col.name,
+                _findCol(
+                  [...castColumns, ...newSnapshot.data.groupExtendedColumns],
+                  column.name,
                 ),
             );
           } catch (error) {
@@ -430,6 +426,11 @@ export class DataCubeGridClientServerSideDataSource
           debug: this._view.settingService.getBooleanValue(
             DataCubeSettingKey.DEBUGGER__ENABLE_DEBUG_MODE,
           ),
+          clientVersion: this._view.settingService.getBooleanValue(
+            DataCubeSettingKey.DEBUGGER__USE_DEV_CLIENT_PROTOCOL_VERSION,
+          )
+            ? PureClientVersion.VX_X_X
+            : undefined,
         },
       );
       const rowData = buildRowData(result.result.result, newSnapshot);

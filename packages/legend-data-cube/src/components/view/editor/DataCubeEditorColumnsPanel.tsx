@@ -22,6 +22,7 @@ import type { DataCubeViewState } from '../../../stores/view/DataCubeViewState.j
 import { FormCheckbox } from '../../core/DataCubeFormUtils.js';
 import type { DataCubeEditorColumnSelectorColumnState } from '../../../stores/view/editor/DataCubeEditorColumnSelectorState.js';
 import type { DataCubeEditorState } from '../../../stores/view/editor/DataCubeEditorState.js';
+import { _findCol } from '../../../stores/core/model/DataCubeColumn.js';
 
 const ColumnSelectorLabel = observer(
   (props: {
@@ -45,16 +46,12 @@ const ColumnSelectorLabel = observer(
         >
           {column.name}
         </div>
-        {Boolean(
-          editor.leafExtendColumns.find((col) => col.name === column.name),
-        ) && (
+        {Boolean(_findCol(editor.leafExtendColumns, column.name)) && (
           <div className="ml-1.5 mr-0.5 flex h-3.5 flex-shrink-0 items-center rounded-sm border border-neutral-300 bg-neutral-100 px-1 text-xs font-medium uppercase text-neutral-600">
             {`Extended (Leaf Level)`}
           </div>
         )}
-        {Boolean(
-          editor.groupExtendColumns.find((col) => col.name === column.name),
-        ) && (
+        {Boolean(_findCol(editor.groupExtendColumns, column.name)) && (
           <div className="ml-1.5 mr-0.5 flex h-3.5 flex-shrink-0 items-center rounded-sm border border-neutral-300 bg-neutral-100 px-1 text-xs font-medium uppercase text-neutral-600">
             {`Extended (Group Level)`}
           </div>

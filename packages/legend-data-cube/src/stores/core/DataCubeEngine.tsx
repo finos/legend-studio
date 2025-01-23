@@ -21,8 +21,10 @@ import {
   type V1_AppliedFunction,
   PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
-import { getFilterOperation } from './filter/DataCubeQueryFilterOperation.js';
-import { getAggregateOperation } from './aggregation/DataCubeQueryAggregateOperation.js';
+import {
+  getFilterOperation,
+  getAggregateOperation,
+} from './DataCubeQueryEngine.js';
 import { DataCubeQueryAggregateOperation__Sum } from './aggregation/DataCubeQueryAggregateOperation__Sum.js';
 import { DataCubeQueryAggregateOperation__Average } from './aggregation/DataCubeQueryAggregateOperation__Average.js';
 import { DataCubeQueryAggregateOperation__Count } from './aggregation/DataCubeQueryAggregateOperation__Count.js';
@@ -88,6 +90,7 @@ export type DataCubeRelationType = {
 
 export type DataCubeExecutionOptions = {
   debug?: boolean | undefined;
+  clientVersion?: string | undefined;
 };
 
 export type DataCubeExecutionResult = {
@@ -210,6 +213,11 @@ export abstract class DataCubeEngine {
     baseQuery: V1_Lambda,
     source: DataCubeSource,
   ): Promise<CompletionItem[]>;
+
+  abstract getQueryRelationReturnType(
+    query: V1_Lambda,
+    source: DataCubeSource,
+  ): Promise<DataCubeRelationType>;
 
   abstract getQueryCodeRelationReturnType(
     code: string,

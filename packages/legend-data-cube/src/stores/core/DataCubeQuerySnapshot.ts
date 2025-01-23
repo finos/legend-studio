@@ -51,6 +51,11 @@ export type DataCubeQuerySnapshotExtendedColumn = DataCubeColumn & {
   reduceFn?: PlainObject<V1_Lambda> | undefined;
 };
 
+export type DataCubeQuerySnapshotAggregateColumn = DataCubeColumn & {
+  parameterValues: DataCubeOperationValue[];
+  operator: string;
+};
+
 export type DataCubeQuerySnapshotSortColumn = DataCubeColumn & {
   direction: DataCubeQuerySortDirection;
 };
@@ -62,6 +67,14 @@ export type DataCubeQuerySnapshotGroupBy = {
 export type DataCubeQuerySnapshotPivot = {
   columns: DataCubeColumn[];
   castColumns: DataCubeColumn[];
+};
+
+export type DataCubeQuerySnapshotProcessingContext = {
+  snapshot: DataCubeQuerySnapshot;
+  pivotAggColumns: DataCubeQuerySnapshotAggregateColumn[];
+  pivotSortColumns: DataCubeQuerySnapshotSortColumn[];
+  groupByAggColumns: DataCubeQuerySnapshotAggregateColumn[];
+  groupBySortColumns: DataCubeQuerySnapshotSortColumn[];
 };
 
 export type DataCubeQuerySnapshotData = {

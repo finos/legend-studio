@@ -21,7 +21,7 @@ export type DataCubeColumn = {
 
 export function _findCol<T extends DataCubeColumn>(
   cols: T[] | undefined,
-  name: string,
+  name: string | undefined,
 ): T | undefined {
   return cols?.find((c) => c.name === name);
 }

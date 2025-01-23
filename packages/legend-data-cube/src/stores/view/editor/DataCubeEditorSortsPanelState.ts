@@ -14,44 +14,20 @@
  * limitations under the License.
  */
 
-import { action, makeObservable, observable } from 'mobx';
 import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
-import { _toCol } from '../../core/model/DataCubeColumn.js';
+import { _findCol, _toCol } from '../../core/model/DataCubeColumn.js';
 import {
   DataCubeColumnKind,
   DataCubeQuerySortDirection,
 } from '../../core/DataCubeQueryEngine.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import {
-  DataCubeEditorColumnSelectorColumnState,
   DataCubeEditorColumnSelectorState,
+  DataCubeEditorSortColumnState,
 } from './DataCubeEditorColumnSelectorState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
 import type { DataCubeConfiguration } from '../../core/model/DataCubeConfiguration.js';
 import { uniqBy } from '@finos/legend-shared';
-
-export class DataCubeEditorSortColumnState extends DataCubeEditorColumnSelectorColumnState {
-  direction: DataCubeQuerySortDirection;
-
-  constructor(
-    name: string,
-    type: string,
-    direction: DataCubeQuerySortDirection,
-  ) {
-    super(name, type);
-
-    makeObservable(this, {
-      direction: observable,
-      setDirection: action,
-    });
-
-    this.direction = direction;
-  }
-
-  setDirection(val: DataCubeQuerySortDirection) {
-    this.direction = val;
-  }
-}
 
 export class DataCubeEditorSortColumnSelectorState extends DataCubeEditorColumnSelectorState<DataCubeEditorSortColumnState> {
   override cloneColumn(column: DataCubeEditorSortColumnState) {
@@ -78,8 +54,9 @@ export class DataCubeEditorSortColumnSelectorState extends DataCubeEditorColumnS
                   this._editor.columnProperties.getColumnConfiguration(
                     column.name,
                   ).kind === DataCubeColumnKind.DIMENSION &&
-                  !this._editor.horizontalPivots.selector.selectedColumns.find(
-                    (col) => col.name === column.name,
+                  !_findCol(
+                    this._editor.horizontalPivots.selector.selectedColumns,
+                    column.name,
                   ),
               ),
             ]
@@ -113,7 +90,7 @@ export class DataCubeEditorSortsPanelState
   adaptPropagatedChanges(): void {
     this.selector.setSelectedColumns(
       this.selector.selectedColumns.filter((column) =>
-        this.selector.availableColumns.find((col) => col.name === column.name),
+        _findCol(this.selector.availableColumns, column.name),
       ),
     );
   }

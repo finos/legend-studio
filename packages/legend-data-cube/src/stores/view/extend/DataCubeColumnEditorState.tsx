@@ -52,6 +52,7 @@ import {
   _serializeValueSpecification,
   _deserializeValueSpecification,
 } from '../../core/DataCubeQueryBuilderUtils.js';
+import { _findCol } from '../../core/model/DataCubeColumn.js';
 
 export abstract class DataCubeColumnBaseEditorState {
   protected readonly uuid = uuid();
@@ -244,9 +245,7 @@ export abstract class DataCubeColumnBaseEditorState {
           this.buildExtendBaseQuery(),
           this.view.source,
         );
-      let returnType = returnRelationType.columns.find(
-        (col) => col.name === this._name,
-      )?.type;
+      let returnType = _findCol(returnRelationType.columns, this._name)?.type;
       returnType =
         returnType && isPrimitiveType(returnType) ? returnType : undefined;
       this.setReturnType(returnType);

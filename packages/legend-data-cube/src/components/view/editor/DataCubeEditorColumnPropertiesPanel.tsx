@@ -47,7 +47,10 @@ import {
 } from '../../../stores/core/DataCubeQueryEngine.js';
 import { DataCubeDocumentationKey } from '../../../__lib__/DataCubeDocumentation.js';
 import type { DataCubeViewState } from '../../../stores/view/DataCubeViewState.js';
-import { _sortByColName } from '../../../stores/core/model/DataCubeColumn.js';
+import {
+  _findCol,
+  _sortByColName,
+} from '../../../stores/core/model/DataCubeColumn.js';
 
 export const DataCubeEditorColumnPropertiesPanel = observer(
   (props: { view: DataCubeViewState }) => {
@@ -150,17 +153,16 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                         {selectedColumn.dataType}
                       </div>
                       {Boolean(
-                        editor.leafExtendColumns.find(
-                          (col) => col.name === selectedColumn.name,
-                        ),
+                        _findCol(editor.leafExtendColumns, selectedColumn.name),
                       ) && (
                         <div className="mr-0.5 flex h-3.5 flex-shrink-0 items-center rounded-sm border border-neutral-300 bg-neutral-100 px-1 text-xs font-medium uppercase text-neutral-600">
                           {`Extended (Leaf Level)`}
                         </div>
                       )}
                       {Boolean(
-                        editor.groupExtendColumns.find(
-                          (col) => col.name === selectedColumn.name,
+                        _findCol(
+                          editor.groupExtendColumns,
+                          selectedColumn.name,
                         ),
                       ) && (
                         <div className="mr-0.5 flex h-3.5 flex-shrink-0 items-center rounded-sm border border-neutral-300 bg-neutral-100 px-1 text-xs font-medium uppercase text-neutral-600">
@@ -188,18 +190,14 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                       {column.dataType}
                     </div>
                     {Boolean(
-                      editor.leafExtendColumns.find(
-                        (col) => col.name === column.name,
-                      ),
+                      _findCol(editor.leafExtendColumns, column.name),
                     ) && (
                       <div className="mr-0.5 flex h-3.5 flex-shrink-0 items-center rounded-sm border border-neutral-300 bg-neutral-100 px-1 text-xs font-medium uppercase text-neutral-600">
                         {`Extended (Leaf Level)`}
                       </div>
                     )}
                     {Boolean(
-                      editor.groupExtendColumns.find(
-                        (col) => col.name === column.name,
-                      ),
+                      _findCol(editor.groupExtendColumns, column.name),
                     ) && (
                       <div className="mr-0.5 flex h-3.5 flex-shrink-0 items-center rounded-sm border border-neutral-300 bg-neutral-100 px-1 text-xs font-medium uppercase text-neutral-600">
                         {`Extended (Group Level)`}
@@ -227,13 +225,29 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                       open={kindDropdownPropsOpen}
                       // disallow changing the column kind if the column is being used as pivot column
                       disabled={Boolean(
-                        editor.verticalPivots.selector.selectedColumns.find(
-                          (col) => col.name === selectedColumn.name,
+                        _findCol(
+                          editor.verticalPivots.selector.selectedColumns,
+                          selectedColumn.name,
                         ) ??
-                          editor.horizontalPivots.selector.selectedColumns.find(
-                            (col) => col.name === selectedColumn.name,
+                          _findCol(
+                            editor.horizontalPivots.selector.selectedColumns,
+                            selectedColumn.name,
                           ),
                       )}
+                      title={
+                        Boolean(
+                          _findCol(
+                            editor.verticalPivots.selector.selectedColumns,
+                            selectedColumn.name,
+                          ) ??
+                            _findCol(
+                              editor.horizontalPivots.selector.selectedColumns,
+                              selectedColumn.name,
+                            ),
+                        )
+                          ? 'Column kind cannot be changed while the column is used in pivot'
+                          : undefined
+                      }
                     >
                       {selectedColumn.kind}
                     </FormDropdownMenuTrigger>
@@ -314,7 +328,14 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                         <FormDropdownMenuItem
                           key={op.operator}
                           onClick={() => {
-                            selectedColumn.setAggregateOperation(op);
+                            if (op !== selectedColumn.aggregateOperation) {
+                              selectedColumn.setAggregateOperation(op);
+                              selectedColumn.setAggregationParameters(
+                                op.generateDefaultParameterValues(
+                                  selectedColumn,
+                                ),
+                              );
+                            }
                             closeAggregationOperationDropdown();
                           }}
                           autoFocus={op === selectedColumn.aggregateOperation}
@@ -323,6 +344,8 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                         </FormDropdownMenuItem>
                       ))}
                   </FormDropdownMenu>
+
+                  {/* TODO: Support editing aggregation parameter values */}
 
                   <FormCheckbox
                     className="ml-3"

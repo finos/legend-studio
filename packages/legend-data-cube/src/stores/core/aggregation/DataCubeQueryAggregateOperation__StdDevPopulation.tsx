@@ -21,9 +21,12 @@ import {
   DataCubeColumnDataType,
   DataCubeFunction,
   ofDataType,
+  type DataCubeOperationValue,
 } from '../DataCubeQueryEngine.js';
-import { _aggCol_basic } from '../DataCubeQueryBuilderUtils.js';
+import { _aggCol_base } from '../DataCubeQueryBuilderUtils.js';
 import type { DataCubeColumnConfiguration } from '../model/DataCubeConfiguration.js';
+import type { V1_ColSpec } from '@finos/legend-graph';
+import { _agg_base } from '../DataCubeQuerySnapshotBuilderUtils.js';
 
 export class DataCubeQueryAggregateOperation__StdDevPopulation extends DataCubeQueryAggregateOperation {
   override get label() {
@@ -42,14 +45,34 @@ export class DataCubeQueryAggregateOperation__StdDevPopulation extends DataCubeQ
     return DataCubeQueryAggregateOperator.STANDARD_DEVIATION_POPULATION;
   }
 
-  isCompatibleWithColumn(column: DataCubeColumn) {
+  override isCompatibleWithColumn(column: DataCubeColumn) {
     return ofDataType(column.type, [DataCubeColumnDataType.NUMBER]);
   }
 
-  buildAggregateColumn(column: DataCubeColumnConfiguration) {
-    return _aggCol_basic(
-      column,
-      DataCubeFunction.STANDARD_DEVIATION_POPULATION,
+  override isCompatibleWithParameterValues(values: DataCubeOperationValue[]) {
+    return !values.length;
+  }
+
+  override generateDefaultParameterValues(
+    column: DataCubeColumn,
+  ): DataCubeOperationValue[] {
+    return [];
+  }
+
+  override buildAggregateColumnSnapshot(
+    colSpec: V1_ColSpec,
+    columnGetter: (name: string) => DataCubeColumn,
+  ) {
+    return this._finalizeAggregateColumnSnapshot(
+      _agg_base(
+        colSpec,
+        DataCubeFunction.STANDARD_DEVIATION_POPULATION,
+        columnGetter,
+      ),
     );
+  }
+
+  override buildAggregateColumnExpression(column: DataCubeColumnConfiguration) {
+    return _aggCol_base(column, DataCubeFunction.STANDARD_DEVIATION_POPULATION);
   }
 }

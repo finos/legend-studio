@@ -33,7 +33,7 @@ import {
 import { type V1_AppliedFunction } from '@finos/legend-graph';
 import {
   _unwrapNotFilterCondition,
-  _baseFilterCondition,
+  _filterCondition_base,
 } from '../DataCubeQuerySnapshotBuilderUtils.js';
 import { returnUndefOnError } from '@finos/legend-shared';
 
@@ -80,14 +80,12 @@ export class DataCubeQueryFilterOperation__IsNotNull extends DataCubeQueryFilter
     expression: V1_AppliedFunction,
     columnGetter: (name: string) => DataCubeColumn,
   ) {
-    const unwrapped = returnUndefOnError(() =>
-      _unwrapNotFilterCondition(expression),
-    );
-    if (!unwrapped) {
-      return undefined;
-    }
     return this._finalizeConditionSnapshot(
-      _baseFilterCondition(unwrapped, columnGetter, DataCubeFunction.IS_EMPTY),
+      _filterCondition_base(
+        returnUndefOnError(() => _unwrapNotFilterCondition(expression)),
+        DataCubeFunction.IS_EMPTY,
+        columnGetter,
+      ),
     );
   }
 
