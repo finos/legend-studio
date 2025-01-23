@@ -48,7 +48,7 @@
     "@finos/legend-code-editor": "workspace:*",
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-shared": "workspace:*",
-    "@types/react": "19.0.7",
+    "@types/react": "19.0.8",
     "mobx": "6.13.5",
     "mobx-react-lite": "4.1.0",
     "react": "19.0.0",

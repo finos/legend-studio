@@ -96,7 +96,7 @@ jobs:
       - name: Upload publish content
         # If publish never happened, there's no point in uploading this content
         if: steps.changesets.outputs.published == 'true'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4.6.0
         with:
           name: publish-content
           path: packages/*/build/publishContent/package.json
