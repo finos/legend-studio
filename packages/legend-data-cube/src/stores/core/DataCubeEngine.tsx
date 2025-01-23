@@ -22,7 +22,6 @@ import {
   PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
 import {
-  DataCubeFunction,
   getFilterOperation,
   getAggregateOperation,
 } from './DataCubeQueryEngine.js';
@@ -73,11 +72,7 @@ import {
   type DataCubeSource,
   INTERNAL__DataCubeSource,
 } from './model/DataCubeSource.js';
-import {
-  _castCols,
-  _function,
-  _primitiveValue,
-} from './DataCubeQueryBuilderUtils.js';
+import { _primitiveValue } from './DataCubeQueryBuilderUtils.js';
 import {
   type DocumentationEntry,
   type LogEvent,
@@ -197,13 +192,6 @@ export abstract class DataCubeEngine {
         pretty,
       )
     ).substring(`''->`.length);
-  }
-
-  synthesizeMinimalSourceQuery(columns: DataCubeColumn[]) {
-    return _function(DataCubeFunction.CAST, [
-      _primitiveValue(PRIMITIVE_TYPE.STRING, ''),
-      _castCols(columns),
-    ]);
   }
 
   // ---------------------------------- PROCESSOR ----------------------------------

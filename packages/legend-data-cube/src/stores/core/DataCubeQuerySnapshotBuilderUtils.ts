@@ -80,6 +80,7 @@ import {
   _function,
   _lambda,
   _serializeValueSpecification,
+  _synthesizeMinimalSourceQuery,
 } from './DataCubeQueryBuilderUtils.js';
 import { INTERNAL__DataCubeSource } from './model/DataCubeSource.js';
 import type { DataCubeQueryAggregateOperation } from './aggregation/DataCubeQueryAggregateOperation.js';
@@ -317,7 +318,7 @@ export async function _extractExtendedColumns(
   });
 
   // get the types
-  const sourceQuery = engine.synthesizeMinimalSourceQuery(currentColumns);
+  const sourceQuery = _synthesizeMinimalSourceQuery(currentColumns);
   const sequence = colSpecs.map((colSpec) =>
     _function(DataCubeFunction.EXTEND, [
       _cols([
@@ -753,6 +754,22 @@ export function _validatePivot(
     if (!_findCol(castColumns, col.name)) {
       throw new Error(
         `Can't process pivot() expression: expected pivot group column '${col.name}' in cast columns`,
+      );
+    }
+  });
+
+  // check that columns used in pivot() should not show up in cast columns
+  pivotColumns.forEach((col) => {
+    if (_findCol(castColumns, col.name)) {
+      throw new Error(
+        `Can't process pivot() expression: expected pivot column '${col.name}' to not present in cast columns`,
+      );
+    }
+  });
+  pivotAggColumns.forEach((col) => {
+    if (_findCol(castColumns, col.name)) {
+      throw new Error(
+        `Can't process pivot() expression: expected pivot aggregate column '${col.name}' to not present in cast columns`,
       );
     }
   });

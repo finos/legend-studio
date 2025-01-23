@@ -14,74 +14,41 @@
  * limitations under the License.
  */
 
-import { unitTest } from '@finos/legend-shared/test';
+import { integrationTest } from '@finos/legend-shared/test';
 import { describe, expect, test } from '@jest/globals';
 import { validateAndBuildQuerySnapshot } from '../DataCubeQuerySnapshotBuilder.js';
 import {
   assertErrorThrown,
+  at,
+  guaranteeNonNullable,
   isString,
-  type PlainObject,
 } from '@finos/legend-shared';
 import { DataCubeQuery } from '../model/DataCubeQuery.js';
 import { INTERNAL__DataCubeSource } from '../model/DataCubeSource.js';
-import { DataCubeConfiguration } from '../model/DataCubeConfiguration.js';
+import {
+  DataCubeColumnConfiguration,
+  DataCubeConfiguration,
+} from '../model/DataCubeConfiguration.js';
 import { TEST__DataCubeEngine } from './DataCubeTestUtils.js';
 import type {
   DataCubeQuerySnapshot,
   DataCubeQuerySnapshotFilterCondition,
 } from '../DataCubeQuerySnapshot.js';
-import { DataCubeQueryFilterOperator } from '../DataCubeQueryEngine.js';
-
-type TestCase = [
-  string, // name
-  string, // partial query
-  { name: string; type: string }[], // source columns
-  PlainObject | undefined, // configuration
-  string | undefined, // error
-  ((snapshot: DataCubeQuerySnapshot) => void) | undefined, // extra checks on snapshot
-];
-
-function _case(
-  name: string,
-  data: {
-    query: string;
-    columns?: string[] | undefined;
-    configuration?: PlainObject | undefined;
-    error?: string | undefined;
-    validator?: ((snapshot: DataCubeQuerySnapshot) => void) | undefined;
-  },
-): TestCase {
-  return [
-    name,
-    data.query,
-    data.columns?.map((entry) => {
-      const parts = entry.split(':');
-      return {
-        name: (parts[0] as string).trim(),
-        type: (parts[1] as string).trim(),
-      };
-    }) ?? [],
-    data.configuration,
-    data.error,
-    data.validator,
-  ];
-}
-
-function _checkFilterOperator(operator: DataCubeQueryFilterOperator) {
-  return (snapshot: DataCubeQuerySnapshot) => {
-    expect(
-      (
-        snapshot.data.filter
-          ?.conditions[0] as DataCubeQuerySnapshotFilterCondition
-      ).operator,
-    ).toBe(operator);
-  };
-}
+import {
+  DataCubeColumnKind,
+  DataCubeOperationAdvancedValueType,
+  DataCubeQueryAggregateOperator,
+  DataCubeQueryFilterOperator,
+  DataCubeQuerySortDirection,
+} from '../DataCubeQueryEngine.js';
+import type { DataCubeColumn } from '../model/DataCubeColumn.js';
+import {
+  PRIMITIVE_TYPE,
+  type V1_ValueSpecification,
+} from '@finos/legend-graph';
 
 const FOCUSED_TESTS: unknown[] = [
   // tests added here will be the only tests run
-  /Pivot:/,
-  /GroupBy:/,
 ];
 
 const cases: TestCase[] = [
@@ -1082,12 +1049,22 @@ const cases: TestCase[] = [
     query: `cast(@meta::pure::metamodel::relation::Relation<(a:Integer)>)`,
     error: `Can't process expression: unsupported function composition cast() (supported composition: extend()->filter()->select()->[sort()->pivot()->cast()]->[groupBy()->sort()]->extend()->sort()->limit())`,
   }),
-  _case(`Pivot: ERROR - pivot group columns not found in cast columns`, {
+  _case(`Pivot: ERROR - pivot group column not found in cast columns`, {
     query: `select(~[a, b, c, d])->sort([~a->ascending()])->pivot(~[a], ~[b:x|$x.b:x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(dummy:String)>)`,
     columns: ['a:String', 'b:Integer', 'c:Integer', 'd:String'],
     error: `Can't process pivot() expression: expected pivot group column 'c' in cast columns`,
   }),
-  _case(`Pivot: ERROR - mismatch aggregate columns implied by cast columns`, {
+  _case(`Pivot: ERROR - pivot column found in cast columns`, {
+    query: `select(~[a, b, c, d])->sort([~a->ascending()])->pivot(~[a], ~[b:x|$x.b:x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(a:String, c:Integer, d:String)>)`,
+    columns: ['a:String', 'b:Integer', 'c:Integer', 'd:String'],
+    error: `Can't process pivot() expression: expected pivot column 'a' to not present in cast columns`,
+  }),
+  _case(`Pivot: ERROR - pivot aggregate column found in cast columns`, {
+    query: `select(~[a, b, c, d])->sort([~a->ascending()])->pivot(~[a], ~[b:x|$x.b:x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(b:String, c:Integer, d:String)>)`,
+    columns: ['a:String', 'b:Integer', 'c:Integer', 'd:String'],
+    error: `Can't process pivot() expression: expected pivot aggregate column 'b' to not present in cast columns`,
+  }),
+  _case(`Pivot: ERROR - aggregate columns mismatch implied by cast columns`, {
     query: `select(~[a, b])->sort([~a->ascending()])->pivot(~[a], ~[b:x|$x.b:x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<('val1__|__c':String)>)`,
     columns: ['a:String', 'b:Integer'],
     error: `Can't process pivot() expression: fail to match cast column 'val1__|__c' to a specified aggregate column`,
@@ -1193,6 +1170,14 @@ const cases: TestCase[] = [
   ),
   _case(
     `GroupBy: ERROR - column aggregated in pivot() but not in groupBy() expression`,
+    {
+      query: `select(~[a, b, c, d])->sort([~c->ascending()])->pivot(~[c], ~[b:x|$x.b:x|$x->sum(), a:x|$x.a:x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(d:String, 'val1__|__b':Integer)>)->groupBy(~[d], ~['val1__|__b':x|$x.'val1__|__b':x|$x->sum()])->sort([~d->ascending()])`,
+      columns: ['a:Integer', 'c:String', 'b:Integer', 'd:String'],
+      error: `Can't process groupBy() expression: column 'a' is aggregated in pivot() expression but not in groupBy() expression`,
+    },
+  ),
+  _case(
+    `GroupBy: ERROR - column pivoted but aggregated in groupBy() expression`,
     {
       query: `select(~[a, b, c, d])->sort([~c->ascending()])->pivot(~[c], ~[b:x|$x.b:x|$x->sum(), a:x|$x.a:x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(d:String, 'val1__|__b':Integer)>)->groupBy(~[d], ~['val1__|__b':x|$x.'val1__|__b':x|$x->sum()])->sort([~d->ascending()])`,
       columns: ['a:Integer', 'c:String', 'b:Integer', 'd:String'],
@@ -1313,124 +1298,647 @@ const cases: TestCase[] = [
     error: `Can't process limit() expression: expected limit to be a non-negative integer value`,
   }),
 
-  // --------------------------------- COMPOSITION ---------------------------------
+  // --------------------------------- CONFIGURATION ---------------------------------
 
-  _case(`GENERIC: Composition - extend()->filter()->sort()->limit()`, {
+  _case(`Configuration: generated configuration`, {
+    query: `select(~[a, b])`,
+    columns: ['a:String', 'b:Integer', 'c:Date'],
+    // the assertions make sure the generated configurations have correct default values
+    // computed based on query processing metadata
+    validator: (snapshot) => {
+      const config = DataCubeConfiguration.serialization.fromJson(
+        snapshot.data.configuration,
+      );
+
+      expect(config.treeColumnSortDirection).toEqual(
+        DataCubeQuerySortDirection.ASCENDING,
+      );
+
+      const colA = config.columns[0];
+      expect(colA?.name).toEqual('a');
+      expect(colA?.kind).toEqual(DataCubeColumnKind.DIMENSION);
+      expect(colA?.aggregateOperator).toEqual(
+        DataCubeQueryAggregateOperator.UNIQUE,
+      );
+      expect(colA?.isSelected).toEqual(true);
+      expect(colA?.excludedFromPivot).toEqual(true);
+      expect(colA?.pivotSortDirection).toBeUndefined();
+
+      const colB = config.columns[1];
+      expect(colB?.name).toEqual('b');
+      expect(colB?.kind).toEqual(DataCubeColumnKind.MEASURE);
+      expect(colB?.aggregateOperator).toEqual(
+        DataCubeQueryAggregateOperator.SUM,
+      );
+      expect(colB?.isSelected).toEqual(true);
+      expect(colB?.excludedFromPivot).toEqual(false);
+      expect(colB?.pivotSortDirection).toBeUndefined();
+
+      const colC = config.columns[2];
+      expect(colC?.name).toEqual('c');
+      expect(colC?.kind).toEqual(DataCubeColumnKind.DIMENSION);
+      expect(colC?.aggregateOperator).toEqual(
+        DataCubeQueryAggregateOperator.UNIQUE,
+      );
+      expect(colC?.isSelected).toEqual(false);
+      expect(colC?.excludedFromPivot).toEqual(true);
+      expect(colC?.pivotSortDirection).toBeUndefined();
+    },
+  }),
+  _case(`Configuration: generated configuration with extended columns`, {
+    query: `extend(~[d:x|1])->extend(~[f:x|1])->select(~[c, d, a])->extend(~[e:x|'asd'])`,
+    columns: ['a:String', 'b:Integer', 'c:Date'],
+    // the assertions make sure the generated configurations have columns arranged
+    // in the right order (i.e. accounted for extended columns and respected selection order)
+    validator: (snapshot) => {
+      const config = DataCubeConfiguration.serialization.fromJson(
+        snapshot.data.configuration,
+      );
+      expect(config.columns[0]?.name).toEqual('c');
+      expect(config.columns[1]?.name).toEqual('d');
+      expect(config.columns[2]?.name).toEqual('a');
+      expect(config.columns[3]?.name).toEqual('e');
+      expect(config.columns[4]?.name).toEqual('b');
+      expect(config.columns[5]?.name).toEqual('f');
+
+      // do some basic checks on the extended columns
+      const colD = guaranteeNonNullable(config.columns[1]);
+      expect(colD.type).toEqual(PRIMITIVE_TYPE.INTEGER);
+      expect(colD.kind).toEqual(DataCubeColumnKind.MEASURE);
+
+      const colE = guaranteeNonNullable(config.columns[3]);
+      expect(colE.type).toEqual(PRIMITIVE_TYPE.STRING);
+      expect(colE.kind).toEqual(DataCubeColumnKind.DIMENSION);
+
+      const colF = guaranteeNonNullable(config.columns[5]);
+      expect(colF.type).toEqual(PRIMITIVE_TYPE.INTEGER);
+      expect(colF.kind).toEqual(DataCubeColumnKind.MEASURE);
+    },
+  }),
+  _case(`Configuration: without aggregation`, {
+    query: `select(~[a, b, c, d, e])`,
+    columns: ['a:String', 'b:String', 'c:Integer', 'd:Float', 'e:Date'],
+    configurationBuilder: async (query, columns) => {
+      const config = await _generateDefaultConfiguration(query, columns);
+
+      config.treeColumnSortDirection = DataCubeQuerySortDirection.DESCENDING;
+
+      const colA = guaranteeNonNullable(config.columns[0]);
+      colA.blur = true;
+
+      const colB = guaranteeNonNullable(config.columns[1]);
+      colB.kind = DataCubeColumnKind.MEASURE;
+      colB.aggregateOperator = DataCubeQueryAggregateOperator.LAST;
+
+      const colC = guaranteeNonNullable(config.columns[2]);
+      colC.displayName = 'Column C';
+
+      const colD = guaranteeNonNullable(config.columns[3]);
+      colD.kind = DataCubeColumnKind.DIMENSION;
+      colD.aggregateOperator = DataCubeQueryAggregateOperator.UNIQUE;
+
+      const colE = guaranteeNonNullable(config.columns[4]);
+      colE.fontSize = 100;
+
+      return config;
+    },
+    // when no aggregation is present, a few column properties are freely set
+    // i.e. they are not checked, since there is no query processing metadata
+    // to verify against
+    validator: (snapshot) => {
+      const config = DataCubeConfiguration.serialization.fromJson(
+        snapshot.data.configuration,
+      );
+
+      expect(config.treeColumnSortDirection).toEqual(
+        DataCubeQuerySortDirection.DESCENDING,
+      );
+
+      const colA = config.columns[0];
+      expect(colA?.name).toEqual('a');
+      expect(colA?.kind).toEqual(DataCubeColumnKind.DIMENSION);
+      expect(colA?.aggregateOperator).toEqual(
+        DataCubeQueryAggregateOperator.UNIQUE,
+      );
+      expect(colA?.excludedFromPivot).toEqual(true);
+      expect(colA?.pivotSortDirection).toBeUndefined();
+      expect(colA?.blur).toEqual(true);
+
+      const colB = config.columns[1];
+      expect(colB?.name).toEqual('b');
+      expect(colB?.kind).toEqual(DataCubeColumnKind.MEASURE);
+      expect(colB?.aggregateOperator).toEqual(
+        DataCubeQueryAggregateOperator.LAST,
+      );
+      expect(colB?.excludedFromPivot).toEqual(true);
+      expect(colB?.pivotSortDirection).toBeUndefined();
+
+      const colC = config.columns[2];
+      expect(colC?.name).toEqual('c');
+      expect(colC?.kind).toEqual(DataCubeColumnKind.MEASURE);
+      expect(colC?.aggregateOperator).toEqual(
+        DataCubeQueryAggregateOperator.SUM,
+      );
+      expect(colC?.excludedFromPivot).toEqual(false);
+      expect(colC?.pivotSortDirection).toBeUndefined();
+      expect(colC?.displayName).toEqual('Column C');
+
+      const colD = config.columns[3];
+      expect(colD?.name).toEqual('d');
+      expect(colD?.kind).toEqual(DataCubeColumnKind.DIMENSION);
+      expect(colD?.aggregateOperator).toEqual(
+        DataCubeQueryAggregateOperator.UNIQUE,
+      );
+      expect(colD?.excludedFromPivot).toEqual(false);
+      expect(colD?.pivotSortDirection).toBeUndefined();
+
+      const colE = config.columns[4];
+      expect(colE?.name).toEqual('e');
+      expect(colE?.kind).toEqual(DataCubeColumnKind.DIMENSION);
+      expect(colE?.aggregateOperator).toEqual(
+        DataCubeQueryAggregateOperator.UNIQUE,
+      );
+      expect(colE?.excludedFromPivot).toEqual(true);
+      expect(colE?.pivotSortDirection).toBeUndefined();
+      expect(colE?.fontSize).toEqual(100);
+    },
+  }),
+  _case(`Configuration: with groupBy() expression`, {
+    query: `select(~[a, b, c, d])->groupBy(~[d, c, b], ~[a:x|$x.a:x|$x->average()])->sort([~d->descending(), ~c->descending(), ~b->descending()])`,
+    columns: ['a:Integer', 'b:Integer', 'c:String', 'd:Date'],
+    configurationBuilder: _generateDefaultConfiguration,
+    validator: (snapshot) => {
+      const config = DataCubeConfiguration.serialization.fromJson(
+        snapshot.data.configuration,
+      );
+
+      expect(config.treeColumnSortDirection).toEqual(
+        DataCubeQuerySortDirection.DESCENDING,
+      );
+
+      const colA = config.columns[0];
+      expect(colA?.name).toEqual('a');
+      expect(colA?.kind).toEqual(DataCubeColumnKind.MEASURE);
+      expect(colA?.aggregateOperator).toEqual(
+        DataCubeQueryAggregateOperator.AVERAGE,
+      );
+
+      const colB = config.columns[1];
+      expect(colB?.name).toEqual('b');
+      expect(colB?.kind).toEqual(DataCubeColumnKind.DIMENSION);
+      expect(colB?.aggregateOperator).toEqual(
+        DataCubeQueryAggregateOperator.SUM,
+      );
+
+      const colC = config.columns[2];
+      expect(colC?.name).toEqual('c');
+      expect(colC?.kind).toEqual(DataCubeColumnKind.DIMENSION);
+      expect(colC?.aggregateOperator).toEqual(
+        DataCubeQueryAggregateOperator.UNIQUE,
+      );
+
+      const colD = config.columns[3];
+      expect(colD?.name).toEqual('d');
+      expect(colD?.kind).toEqual(DataCubeColumnKind.DIMENSION);
+      expect(colD?.aggregateOperator).toEqual(
+        DataCubeQueryAggregateOperator.UNIQUE,
+      );
+    },
+  }),
+  _case(`Configuration: with pivot() expression`, {
+    query: `select(~[a, b, c, d])->sort([~c->ascending(), ~d->descending()])->pivot(~[c, d], ~[b:x|$x.b:x|$x->count()])->cast(@meta::pure::metamodel::relation::Relation<(a:Integer, 'val1__|__val2__|__b':Integer)>)`,
+    columns: ['a:Integer', 'c:String', 'b:Integer', 'd:String'],
+    configurationBuilder: _generateDefaultConfiguration,
+    validator: (snapshot) => {
+      const config = DataCubeConfiguration.serialization.fromJson(
+        snapshot.data.configuration,
+      );
+
+      const colA = config.columns[0];
+      expect(colA?.name).toEqual('a');
+      expect(colA?.kind).toEqual(DataCubeColumnKind.MEASURE);
+      expect(colA?.aggregateOperator).toEqual(
+        DataCubeQueryAggregateOperator.SUM,
+      );
+      expect(colA?.excludedFromPivot).toEqual(true);
+      expect(colA?.pivotSortDirection).toBeUndefined();
+
+      const colB = config.columns[1];
+      expect(colB?.name).toEqual('b');
+      expect(colB?.kind).toEqual(DataCubeColumnKind.MEASURE);
+      expect(colB?.aggregateOperator).toEqual(
+        DataCubeQueryAggregateOperator.COUNT,
+      );
+      expect(colB?.excludedFromPivot).toEqual(false);
+      expect(colB?.pivotSortDirection).toBeUndefined();
+
+      const colC = config.columns[2];
+      expect(colC?.name).toEqual('c');
+      expect(colC?.kind).toEqual(DataCubeColumnKind.DIMENSION);
+      expect(colC?.aggregateOperator).toEqual(
+        DataCubeQueryAggregateOperator.UNIQUE,
+      );
+      expect(colC?.excludedFromPivot).toEqual(true);
+      expect(colC?.pivotSortDirection).toEqual(
+        DataCubeQuerySortDirection.ASCENDING,
+      );
+
+      const colD = config.columns[3];
+      expect(colD?.name).toEqual('d');
+      expect(colD?.kind).toEqual(DataCubeColumnKind.DIMENSION);
+      expect(colD?.aggregateOperator).toEqual(
+        DataCubeQueryAggregateOperator.UNIQUE,
+      );
+      expect(colD?.excludedFromPivot).toEqual(true);
+      expect(colD?.pivotSortDirection).toEqual(
+        DataCubeQuerySortDirection.DESCENDING,
+      );
+    },
+  }),
+  _case(`Configuration: with both pivot() and groupBy() expression`, {
+    query: `select(~[a, b, c, d])->sort([~c->descending()])->pivot(~[c], ~[b:x|$x.b:x|$x->average()])->cast(@meta::pure::metamodel::relation::Relation<(d:String, a:Integer, 'val1__|__b':Integer)>)->groupBy(~[d], ~['val1__|__b':x|$x.'val1__|__b':x|$x->average(), a:x|$x.a:x|$x->count()])->sort([~d->ascending()])`,
+    columns: ['a:Integer', 'c:String', 'b:Integer', 'd:String'],
+    configurationBuilder: _generateDefaultConfiguration,
+    validator: (snapshot) => {
+      const config = DataCubeConfiguration.serialization.fromJson(
+        snapshot.data.configuration,
+      );
+
+      const colA = config.columns[0];
+      expect(colA?.name).toEqual('a');
+      expect(colA?.kind).toEqual(DataCubeColumnKind.MEASURE);
+      expect(colA?.aggregateOperator).toEqual(
+        DataCubeQueryAggregateOperator.COUNT,
+      );
+      expect(colA?.excludedFromPivot).toEqual(true);
+      expect(colA?.pivotSortDirection).toBeUndefined();
+
+      const colB = config.columns[1];
+      expect(colB?.name).toEqual('b');
+      expect(colB?.kind).toEqual(DataCubeColumnKind.MEASURE);
+      expect(colB?.aggregateOperator).toEqual(
+        DataCubeQueryAggregateOperator.AVERAGE,
+      );
+      expect(colB?.excludedFromPivot).toEqual(false);
+      expect(colB?.pivotSortDirection).toBeUndefined();
+
+      const colC = config.columns[2];
+      expect(colC?.name).toEqual('c');
+      expect(colC?.kind).toEqual(DataCubeColumnKind.DIMENSION);
+      expect(colC?.aggregateOperator).toEqual(
+        DataCubeQueryAggregateOperator.UNIQUE,
+      );
+      expect(colC?.excludedFromPivot).toEqual(true);
+      expect(colC?.pivotSortDirection).toEqual(
+        DataCubeQuerySortDirection.DESCENDING,
+      );
+
+      const colD = config.columns[3];
+      expect(colD?.name).toEqual('d');
+      expect(colD?.kind).toEqual(DataCubeColumnKind.DIMENSION);
+      expect(colD?.aggregateOperator).toEqual(
+        DataCubeQueryAggregateOperator.UNIQUE,
+      );
+      expect(colD?.excludedFromPivot).toEqual(true);
+      expect(colD?.pivotSortDirection).toBeUndefined();
+    },
+  }),
+
+  _case(`Configuration: ERROR - tree column sort direction mismatch`, {
+    query: `select(~[a, b])->groupBy(~[b], ~[a:x|$x.a:x|$x->average()])->sort([~b->ascending()])`,
+    columns: ['a:Integer', 'b:String'],
+    configurationBuilder: async (query, columns) => {
+      const config = await _generateDefaultConfiguration(query, columns);
+      config.treeColumnSortDirection = DataCubeQuerySortDirection.DESCENDING;
+      return config;
+    },
+    error: `Can't process configuration: tree column sort direction mismatch (expected: 'ascending', found: 'descending')`,
+  }),
+  _case(`Configuration: ERROR - duplicate columns`, {
+    query: `select(~[a, b])`,
+    columns: ['a:Integer', 'b:String'],
+    configurationBuilder: async (query, columns) => {
+      const config = await _generateDefaultConfiguration(query, columns);
+      config.columns.push(at(config.columns, 1));
+      return config;
+    },
+    error: `Can't process configuration: found duplicate columns 'b'`,
+  }),
+  _case(`Configuration: ERROR - found extra column`, {
+    query: `select(~[a, b])`,
+    columns: ['a:Integer', 'b:String'],
+    configurationBuilder: async (query, columns) => {
+      const config = await _generateDefaultConfiguration(query, columns);
+      const extraCol = DataCubeColumnConfiguration.serialization.fromJson(
+        DataCubeColumnConfiguration.serialization.toJson(at(config.columns, 1)),
+      );
+      extraCol.name = 'c';
+      config.columns.push(extraCol);
+      return config;
+    },
+    error: `Can't process configuration: found extra column 'c'`,
+  }),
+  _case(`Configuration: ERROR - found missing column`, {
+    query: `select(~[a, b])`,
+    columns: ['a:Integer', 'b:String'],
+    configurationBuilder: async (query, columns) => {
+      const config = await _generateDefaultConfiguration(query, columns);
+      config.columns.splice(0, 1);
+      return config;
+    },
+    error: `Can't process configuration: missing column 'a'`,
+  }),
+  _case(`Configuration: ERROR - column ordering mismatch`, {
+    query: `extend(~[d:x|1])->extend(~[f:x|1])->select(~[c, d, a])->extend(~[e:x|'asd'])`,
+    columns: ['a:String', 'b:Integer', 'c:Date'],
+    configurationBuilder: async (query, columns) => {
+      const config = await _generateDefaultConfiguration(query, columns);
+      const [col] = config.columns.splice(0, 1);
+      config.columns.push(guaranteeNonNullable(col));
+      return config;
+    },
+    error: `Can't process configuration: column ordering mismatch at index 0 (expected: 'c', found: 'd)', expected ordering: c, d, a, e, b, f`,
+  }),
+  _case(`Configuration: ERROR - column type mismatch`, {
+    query: `select(~[a, b])->groupBy(~[b], ~[a:x|$x.a:x|$x->average()])->sort([~b->ascending()])`,
+    columns: ['a:Integer', 'b:String'],
+    configurationBuilder: async (query, columns) => {
+      const config = await _generateDefaultConfiguration(query, columns);
+      at(config.columns, 0).type = PRIMITIVE_TYPE.STRING;
+      return config;
+    },
+    error: `Can't process configuration: type mismatch for column 'a' (expected: 'Integer', found: 'String')`,
+  }),
+  _case(`Configuration: ERROR - column selection mismatch`, {
+    query: `select(~[a, b])->groupBy(~[b], ~[a:x|$x.a:x|$x->average()])->sort([~b->ascending()])`,
+    columns: ['a:Integer', 'b:String'],
+    configurationBuilder: async (query, columns) => {
+      const config = await _generateDefaultConfiguration(query, columns);
+      at(config.columns, 0).isSelected = false;
+      return config;
+    },
+    error: `Can't process configuration: selection mismatch for column 'a' (expected: 'true', found: 'false')`,
+  }),
+  _case(
+    `Configuration: ERROR - column kind mismatch (aggregate column in pivot() expression)`,
+    {
+      query: `select(~[a, b])->sort([~a->ascending()])->pivot(~[a], ~[b:x|$x.b:x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(dummy:String)>)`,
+      columns: ['a:String', 'b:Integer'],
+      configurationBuilder: async (query, columns) => {
+        const config = await _generateDefaultConfiguration(query, columns);
+        at(config.columns, 1).kind = DataCubeColumnKind.DIMENSION;
+        return config;
+      },
+      error: `Can't process configuration: kind mismatch for column 'b' (expected: 'measure', found: 'dimension')`,
+    },
+  ),
+  _case(
+    `Configuration: ERROR - column kind mismatch (aggregate column in groupBy() expression)`,
+    {
+      query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->average()])->sort([~a->ascending()])`,
+      columns: ['a:String', 'b:Integer'],
+      configurationBuilder: async (query, columns) => {
+        const config = await _generateDefaultConfiguration(query, columns);
+        at(config.columns, 1).kind = DataCubeColumnKind.DIMENSION;
+        return config;
+      },
+      error: `Can't process configuration: kind mismatch for column 'b' (expected: 'measure', found: 'dimension')`,
+    },
+  ),
+  _case(`Configuration: ERROR - column kind mismatch (pivot column)`, {
+    query: `select(~[a, b])->sort([~a->ascending()])->pivot(~[a], ~[b:x|$x.b:x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(dummy:String)>)`,
+    columns: ['a:String', 'b:Integer'],
+    configurationBuilder: async (query, columns) => {
+      const config = await _generateDefaultConfiguration(query, columns);
+      at(config.columns, 0).kind = DataCubeColumnKind.MEASURE;
+      return config;
+    },
+    error: `Can't process configuration: kind mismatch for column 'a' (expected: 'dimension', found: 'measure')`,
+  }),
+  _case(
+    `Configuration: ERROR - column kind mismatch (group column in groupBy() expression)`,
+    {
+      query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->average()])->sort([~a->ascending()])`,
+      columns: ['a:String', 'b:Integer'],
+      configurationBuilder: async (query, columns) => {
+        const config = await _generateDefaultConfiguration(query, columns);
+        at(config.columns, 0).kind = DataCubeColumnKind.MEASURE;
+        return config;
+      },
+      error: `Can't process configuration: kind mismatch for column 'a' (expected: 'dimension', found: 'measure')`,
+    },
+  ),
+  _case(
+    `Configuration: ERROR - column aggregation operator mismatch (aggregate column in pivot() expression)`,
+    {
+      query: `select(~[a, b])->sort([~a->ascending()])->pivot(~[a], ~[b:x|$x.b:x|$x->average()])->cast(@meta::pure::metamodel::relation::Relation<(dummy:String)>)`,
+      columns: ['a:String', 'b:Integer'],
+      configurationBuilder: async (query, columns) => {
+        const config = await _generateDefaultConfiguration(query, columns);
+        at(config.columns, 1).aggregateOperator =
+          DataCubeQueryAggregateOperator.SUM;
+        return config;
+      },
+      error: `Can't process configuration: aggregation operator mismatch for column 'b' (expected: 'avg', found: 'sum')`,
+    },
+  ),
+  _case(
+    `Configuration: ERROR - column aggregation operator mismatch (aggregate column in groupBy() expression)`,
+    {
+      query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->average()])->sort([~a->ascending()])`,
+      columns: ['a:String', 'b:Integer'],
+      configurationBuilder: async (query, columns) => {
+        const config = await _generateDefaultConfiguration(query, columns);
+        at(config.columns, 1).aggregateOperator =
+          DataCubeQueryAggregateOperator.SUM;
+        return config;
+      },
+      error: `Can't process configuration: aggregation operator mismatch for column 'b' (expected: 'avg', found: 'sum')`,
+    },
+  ),
+  _case(
+    `Configuration: ERROR - incompatible column aggregation parameter values (aggregate column in pivot() expression)`,
+    {
+      query: `select(~[a, b])->sort([~a->ascending()])->pivot(~[a], ~[b:x|$x.b:x|$x->average()])->cast(@meta::pure::metamodel::relation::Relation<(dummy:String)>)`,
+      columns: ['a:String', 'b:Integer'],
+      configurationBuilder: async (query, columns) => {
+        const config = await _generateDefaultConfiguration(query, columns);
+        at(config.columns, 1).aggregationParameters = [
+          {
+            type: DataCubeOperationAdvancedValueType.VOID,
+          },
+        ];
+        return config;
+      },
+      error: `Can't process configuration: incompatible aggregation parameter values for column 'b' (operator: 'avg')`,
+    },
+  ),
+  _case(
+    `Configuration: ERROR - incompatible column aggregation parameter values (aggregate column in groupBy() expression)`,
+    {
+      query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->average()])->sort([~a->ascending()])`,
+      columns: ['a:String', 'b:Integer'],
+      configurationBuilder: async (query, columns) => {
+        const config = await _generateDefaultConfiguration(query, columns);
+        at(config.columns, 1).aggregationParameters = [
+          {
+            type: DataCubeOperationAdvancedValueType.VOID,
+          },
+        ];
+        return config;
+      },
+      error: `Can't process configuration: incompatible aggregation parameter values for column 'b' (operator: 'avg')`,
+    },
+  ),
+  _case(`Configuration: ERROR - column pivot exclusion mismatch`, {
+    query: `select(~[a, b, c])->sort([~a->ascending()])->pivot(~[a], ~[b:x|$x.b:x|$x->average()])->cast(@meta::pure::metamodel::relation::Relation<(c:Integer)>)`,
+    columns: ['a:String', 'b:Integer', 'c:Integer'],
+    configurationBuilder: async (query, columns) => {
+      const config = await _generateDefaultConfiguration(query, columns);
+      at(config.columns, 2).excludedFromPivot = false;
+      return config;
+    },
+    error: `Can't process configuration: pivot exclusion mismatch for column 'c' (expected: 'true', found: 'false')`,
+  }),
+  _case(`Configuration: ERROR - column pivot sort direction mismatch`, {
+    query: `select(~[a, b])->sort([~a->ascending()])->pivot(~[a], ~[b:x|$x.b:x|$x->average()])->cast(@meta::pure::metamodel::relation::Relation<(dummy:String)>)`,
+    columns: ['a:String', 'b:Integer'],
+    configurationBuilder: async (query, columns) => {
+      const config = await _generateDefaultConfiguration(query, columns);
+      at(config.columns, 0).pivotSortDirection = undefined;
+      return config;
+    },
+    error: `Can't process configuration: pivot sort direction mismatch for column 'a' (expected: 'ascending', found: 'none')`,
+  }),
+
+  // --------------------------------- GENERAL ---------------------------------
+
+  _case(`GENERAL: Composition - extend()->filter()->sort()->limit()`, {
     query: `extend(~[a:x|1])->filter(x|$x.a == 1)->select(~[a])->sort([~a->ascending()])->limit(10)`,
   }),
   _case(
-    `GENERIC: Composition - extend()->filter()->select()->sort()->limit()`,
+    `GENERAL: Composition - extend()->filter()->select()->sort()->limit()`,
     {
       query: `extend(~[a:x|1])->filter(x|$x.a == 1)->select(~[a])->sort([~a->ascending()])->limit(10)`,
     },
   ),
   _case(
-    `GENERIC: Composition - extend()->groupBy()->extend()->sort()->limit()`,
+    `GENERAL: Composition - extend()->groupBy()->extend()->sort()->limit()`,
     {
       query: `extend(~[a:x|1])->select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])->extend(~[c:x|2])->limit(10)`,
       columns: ['b:Integer'],
     },
   ),
   _case(
-    `GENERIC: Composition - extend()->groupBy()->extend()->extend()->sort()->limit()`,
+    `GENERAL: Composition - extend()->groupBy()->extend()->extend()->sort()->limit()`,
     {
       query: `extend(~[a:x|1])->select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])->extend(~[c:x|2])->extend(~[d:x|2])->limit(10)`,
       columns: ['b:Integer'],
     },
   ),
   _case(
-    `GENERIC: Composition - extend()->filter()->groupBy()->extend()->sort()->limit()`,
+    `GENERAL: Composition - extend()->filter()->groupBy()->extend()->sort()->limit()`,
     {
       query: `extend(~[a:x|1])->filter(x|$x.a == 1)->select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])->extend(~[c:x|2])->limit(10)`,
       columns: ['b:Integer'],
     },
   ),
   _case(
-    `GENERIC: Composition - extend()->filter()->groupBy()->sort()->limit()`,
+    `GENERAL: Composition - extend()->filter()->groupBy()->sort()->limit()`,
     {
       query: `extend(~[a:x|1])->filter(x|$x.a == 1)->select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])->limit(10)`,
       columns: ['b:Integer'],
     },
   ),
   _case(
-    `GENERIC: Composition - extend()->filter()->sort()->pivot()->cast()->groupBy()->sort()->sort()->limit()`,
+    `GENERAL: Composition - extend()->filter()->sort()->pivot()->cast()->groupBy()->sort()->sort()->limit()`,
     {
       query: `extend(~[a:x|1])->filter(x|$x.a == 1)->select(~[a, b, c, d])->sort([~c->ascending()])->pivot(~[c], ~[b:x|$x.b:x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(d:String, a:Integer, 'val1__|__b':Integer)>)->groupBy(~[d], ~['val1__|__b':x|$x.'val1__|__b':x|$x->sum(), a:x|$x.a:x|$x->sum()])->sort([~d->ascending()])->limit(10)`,
       columns: ['c:String', 'b:Integer', 'd:String'],
     },
   ),
 
-  // --------------------------------- VALIDATION ---------------------------------
-
-  _case(`GENERIC: ERROR - not a function expression`, {
+  // validations
+  _case(`GENERAL: ERROR - not a function expression`, {
     query: `2`,
     error: `Can't process expression: expected a function expression`,
   }),
-  _case(`GENERIC: ERROR - not a chain of function calls`, {
+  _case(`GENERAL: ERROR - not a chain of function calls`, {
     query: `select(~[a, b], 'something')`,
     columns: ['a:Integer', 'b:Integer'],
     error: `Can't process expression: expected a sequence of function calls (e.g. x()->y()->z())`,
   }),
-  _case(`GENERIC: ERROR - unsupported function`, {
+  _case(`GENERAL: ERROR - unsupported function`, {
     query: `sort([~asd->ascending()])->something()`,
     error: `Can't process expression: found unsupported function something()`,
   }),
-  _case(`GENERIC: ERROR - wrong number of paramters provided`, {
+  _case(`GENERAL: ERROR - wrong number of paramters provided`, {
     query: `select(~[a, b], 2, 'asd')`,
     columns: ['a:Integer', 'b:Integer'],
     error: `Can't process select() expression: expected at most 2 parameters provided, got 3`,
   }),
-  _case(`GENERIC: ERROR - bad composition: select()->filter()`, {
+  _case(`GENERAL: ERROR - bad composition: select()->filter()`, {
     query: `select(~a)->filter(x|$x.a==1)`,
     columns: ['a:Integer'],
     error: `Can't process expression: unsupported function composition select()->filter() (supported composition: extend()->filter()->select()->[sort()->pivot()->cast()]->[groupBy()->sort()]->extend()->sort()->limit())`,
   }),
-  _case(`GENERIC: ERROR - duplicate source columns`, {
+  _case(`GENERAL: ERROR - duplicate source columns`, {
     query: `select(~[a, b])`,
     columns: ['a:Integer', 'a:Integer', 'b:Integer'],
     error: `Can't process source: found duplicate source columns 'a'`,
   }),
-  // TODO: vaidation against configuration
 ];
 
-describe(unitTest('Analyze and build base snapshot'), () => {
-  test.each(cases)(
+describe(integrationTest('Roundtrip query processing'), () => {
+  // make sure no tests are accidentally skipped during development
+  if (FOCUSED_TESTS.length) {
+    test('DEV: No test should be skipped!', () => {
+      throw new Error(
+        `No tests should be skipped! Remove any focus tests specified during development.`,
+      );
+    });
+  }
+
+  test.each(
+    cases.filter((c) => {
+      if (
+        !FOCUSED_TESTS.length ||
+        FOCUSED_TESTS.some((pattern) => {
+          if (isString(pattern)) {
+            return pattern.trim() === c[0].trim();
+          } else if (pattern instanceof RegExp) {
+            return c[0].match(pattern);
+          }
+          return false;
+        })
+      ) {
+        return true;
+      }
+      return false;
+    }),
+  )(
     '%s',
     async (
       testName: TestCase[0],
       code: TestCase[1],
       columns: TestCase[2],
-      configuration: TestCase[3],
+      configurationBuilder: TestCase[3],
       error: TestCase[4],
       validator: TestCase[5],
     ) => {
-      if (
-        FOCUSED_TESTS.length &&
-        FOCUSED_TESTS.every((pattern) => {
-          if (isString(pattern)) {
-            return pattern.trim() !== testName.trim();
-          } else if (pattern instanceof RegExp) {
-            return !testName.match(pattern);
-          }
-          return false;
-        })
-      ) {
-        return;
-      }
-
       const engine = new TEST__DataCubeEngine();
-      const partialQuery = await engine.parseValueSpecification(code);
+      const query = await engine.parseValueSpecification(code);
       const baseQuery = new DataCubeQuery();
-      baseQuery.configuration = configuration
-        ? DataCubeConfiguration.serialization.fromJson(configuration)
-        : undefined;
       const source = new INTERNAL__DataCubeSource();
       source.columns = columns;
+      baseQuery.configuration = configurationBuilder
+        ? await configurationBuilder(query, columns)
+        : undefined;
       let snapshot: DataCubeQuerySnapshot | undefined;
 
       try {
         snapshot = await validateAndBuildQuerySnapshot(
-          partialQuery,
+          query,
           source,
           baseQuery,
           engine,
@@ -1448,3 +1956,99 @@ describe(unitTest('Analyze and build base snapshot'), () => {
     },
   );
 });
+
+// --------------------------------- UTILITIES ---------------------------------
+
+type TestCase = [
+  string, // name
+  string, // partial query
+  DataCubeColumn[], // source columns
+  (
+    | ((
+        query: V1_ValueSpecification,
+        columns: DataCubeColumn[],
+      ) => Promise<DataCubeConfiguration>)
+    | undefined
+  ), // configuration builder
+  string | undefined, // error
+  ((snapshot: DataCubeQuerySnapshot) => void) | undefined, // extra checks on snapshot
+];
+
+function _case(
+  name: string,
+  data: {
+    query: string;
+    columns?: string[] | undefined;
+    configurationBuilder?:
+      | ((
+          query: V1_ValueSpecification,
+          columns: DataCubeColumn[],
+        ) => Promise<DataCubeConfiguration>)
+      | undefined;
+    error?: string | undefined;
+    validator?: ((snapshot: DataCubeQuerySnapshot) => void) | undefined;
+  },
+): TestCase {
+  return [
+    name,
+    data.query,
+    data.columns?.map((entry) => {
+      const parts = entry.split(':');
+      return {
+        name: (parts[0] as string).trim(),
+        type: (parts[1] as string).trim(),
+      };
+    }) ?? [],
+    data.configurationBuilder,
+    data.error,
+    data.validator,
+  ];
+}
+
+function _checkFilterOperator(operator: DataCubeQueryFilterOperator) {
+  return (snapshot: DataCubeQuerySnapshot) => {
+    expect(
+      (
+        snapshot.data.filter
+          ?.conditions[0] as DataCubeQuerySnapshotFilterCondition
+      ).operator,
+    ).toBe(operator);
+  };
+}
+
+/**
+ * Generates a default configuration based on the specified partial query and source columns.
+ * And therefore, it saves us from having to specify a JSON for the configuration when we want
+ * to test configuration validation.
+ *
+ * This is often used to generate a default configuration based on the query provided in the test,
+ * then we can provide extra steps to modify and tailor the configuration to the specific test.
+ */
+async function _generateDefaultConfiguration(
+  query: V1_ValueSpecification,
+  columns: DataCubeColumn[],
+) {
+  const engine = new TEST__DataCubeEngine();
+  const baseQuery = new DataCubeQuery();
+  const source = new INTERNAL__DataCubeSource();
+  source.columns = columns;
+  baseQuery.configuration = undefined;
+
+  try {
+    const snapshot = await validateAndBuildQuerySnapshot(
+      query,
+      source,
+      baseQuery,
+      engine,
+    );
+
+    return DataCubeConfiguration.serialization.fromJson(
+      snapshot.data.configuration,
+    );
+  } catch (error) {
+    assertErrorThrown(error);
+    throw new Error(
+      `Can't generate default configuration. Error: ${error.message}`,
+    );
+  }
+}

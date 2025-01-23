@@ -37,7 +37,11 @@ import {
   type DataCubeQuerySnapshotProcessingContext,
   type DataCubeQuerySnapshotSortColumn,
 } from './DataCubeQuerySnapshot.js';
-import { _toCol, type DataCubeColumn } from './model/DataCubeColumn.js';
+import {
+  _findCol,
+  _toCol,
+  type DataCubeColumn,
+} from './model/DataCubeColumn.js';
 import {
   assertTrue,
   at,
@@ -68,6 +72,10 @@ import {
 } from './DataCubeQuerySnapshotBuilderUtils.js';
 import type { DataCubeSource } from './model/DataCubeSource.js';
 import type { DataCubeEngine } from './DataCubeEngine.js';
+import {
+  _deserializeValueSpecification,
+  _serializeValueSpecification,
+} from './DataCubeQueryBuilderUtils.js';
 
 // --------------------------------- BUILDING BLOCKS ---------------------------------
 
@@ -355,7 +363,11 @@ export async function validateAndBuildQuerySnapshot(
   // Build the function call sequence and the function map to make the
   // analysis more ergonomic
 
-  const funcMap = extractFunctionMap(partialQuery);
+  // Clone the query since we will mutate it during the process
+  const query = _deserializeValueSpecification(
+    _serializeValueSpecification(partialQuery),
+  );
+  const funcMap = extractFunctionMap(query);
   const snapshot = DataCubeQuerySnapshot.create({});
   const data = snapshot.data;
   const registeredColumns = new Map<string, DataCubeColumn>();
@@ -575,8 +587,8 @@ export async function validateAndBuildQuerySnapshot(
   // --------------------------------- LIMIT ---------------------------------
 
   if (funcMap.limit) {
-    // NOTE: negative number -10 is parsed as minus(10) so this check will also reject
-    // negative number
+    // NOTE: negative number -10 is parsed as minus(10) so this check will also
+    // reject negative number
     const value = _param(
       funcMap.limit,
       0,
@@ -587,37 +599,17 @@ export async function validateAndBuildQuerySnapshot(
   }
 
   // --------------------------------- CONFIGURATION ---------------------------------
-  //
-  // A data-cube conceptually consists of a data query, in form of a Pure query, instead
-  // of a particular specification object format, and this configuration, that holds mostly
-  // layout and styling customization. But there are overlaps, i.e. certain "meta" query
-  // configuration are stored in this configuration, e.g. column aggregation type, because
-  // a column aggregation's preference needs to be specified even when there's no aggregation
-  // specified over that column in the data query.
-  //
-  // But in the example above, if the column is part of an aggregation, we have to ensure
-  // the configuration is consistent with the query. Conflicts can happen, for example:
-  // - column kind and type conflict with aggregation
-  // - column kind and type conflict with the column configuration
-  //
-  // In those cases, we need to reconcile to make sure the query and the configuration to agree.
-  // The query will take precedence when conflicts happen, and if the conflict cannot be resolved
-  // somehow, we will throw a validation error. We decide so because in certain cases, configuration
-  // needs to be generated from default presets, such as for use cases where the query comes from a
-  // different source, such as Studio or Query, or another part of Engine, where the layout
-  // configuration is not specified.
-  //
-  // ----------------------------------------------------------------------------------
 
   const configuration = validateAndBuildConfiguration(
     {
       snapshot,
-      pivotAggColumns,
       groupByAggColumns,
       groupBySortColumns,
+      pivotAggColumns,
       pivotSortColumns,
     },
     baseQuery,
+    engine,
   );
   data.configuration = configuration.serialize();
 
@@ -625,24 +617,155 @@ export async function validateAndBuildQuerySnapshot(
 }
 
 /**
- * TODO: @datacube roundtrip - implement the logic to reconcile the configuration with the query
- * - [ ] columns (missing/extra columns - remove or generate default column configuration)
- * - [ ] base off the type and kind, check the settings to see if it's compatible
- * - [ ] verify groupBy agg columns, pivot agg columns and configuration agree
- * - [ ] verify groupBy sort columns and tree column sort direction configuration agree
+ * Builds and/or validates the configuration.
+ *
+ * TL;DR;
+ * If not provided, generate a default configuration based off the metadata extracted
+ * when processing the query in previous steps.
+ * If provided, check if the configuration aggree with the query processing metadata.
+ *
+ * CONTEXT:
+ * A data-cube conceptually consists of a data query, in form of a Pure query, instead
+ * of a particular specification object format, and this configuration, that holds mostly
+ * layout and styling customization. But there are overlaps, i.e. certain _meta_ query
+ * configuration are stored in this configuration, e.g. column aggregation type, because
+ * a column aggregation's preference needs to be specified even when there's no aggregation
+ * specified over that column in the data query.
+ *
+ * But in the example above, if the column is part of an aggregation, we have to ensure
+ * the configuration is consistent with the query. Conflicts can happen, for example:
+ * - column kind and type conflict with aggregation
+ * - column kind and type conflict with the column configuration
+ *
+ * In those cases, we need to make sure the query and the configuration to agree.
+ * If a config is provided, we will need to validate that config. If none is provided,
+ * we will generate a config from the query processing metadata, in which case, no
+ * validation is needed. The latter case comes up quite often where the query comes from a
+ * different source, such as Studio or Query, or another part of Engine, and the layout
+ * configuration is not specified.
  */
 function validateAndBuildConfiguration(
   context: DataCubeQuerySnapshotProcessingContext,
   baseQuery: DataCubeQuery,
+  engine: DataCubeEngine,
 ) {
-  const defaultConfiguration = newConfiguration(context);
+  const data = context.snapshot.data;
+  const config = baseQuery.configuration;
+  // generate a default configuration anyway to be used to compare with the
+  // provided configuration for validation purpose
+  const _config = newConfiguration(context);
 
-  // TODO: refactor this to compare between the configs
-  // selected columns
-  // column kind/types
-  // ...
-  const configuration =
-    baseQuery.configuration?.clone() ?? defaultConfiguration;
+  if (!config) {
+    return _config;
+  }
 
-  return configuration;
+  // check tree column sort direction (only relevant if groupBy is present)
+  if (data.groupBy) {
+    assertTrue(
+      config.treeColumnSortDirection === _config.treeColumnSortDirection,
+      `Can't process configuration: tree column sort direction mismatch (expected: '${_config.treeColumnSortDirection.toLowerCase()}', found: '${config.treeColumnSortDirection.toLowerCase()}')`,
+    );
+  }
+
+  // check columns
+  const columns = config.columns;
+  const _columns = _config.columns;
+  const columnNames = new Set<string>();
+
+  // check for duplicate columns
+  columns.forEach((col) => {
+    if (columnNames.has(col.name)) {
+      throw new Error(
+        `Can't process configuration: found duplicate columns '${col.name}'`,
+      );
+    } else {
+      columnNames.add(col.name);
+    }
+  });
+
+  // check for extra columns
+  columns.forEach((col) => {
+    if (!_findCol(_columns, col.name)) {
+      throw new Error(
+        `Can't process configuration: found extra column '${col.name}'`,
+      );
+    }
+  });
+
+  // check for missing columns
+  _columns.forEach((col) => {
+    if (!_findCol(columns, col.name)) {
+      throw new Error(
+        `Can't process configuration: missing column '${col.name}'`,
+      );
+    }
+  });
+
+  // check for columns ordering
+  const columnsOrdering = [
+    ...data.selectColumns,
+    ...data.groupExtendedColumns,
+    ...[...data.sourceColumns, ...data.leafExtendedColumns].filter(
+      (col) => !_findCol(data.selectColumns, col.name),
+    ),
+  ];
+  columnsOrdering.forEach((_col, idx) => {
+    const col = at(columns, idx);
+    assertTrue(
+      _col.name === col.name,
+      `Can't process configuration: column ordering mismatch at index ${idx} (expected: '${_col.name}', found: '${col.name})', expected ordering: ${columnsOrdering.map((c) => c.name).join(', ')}`,
+    );
+  });
+
+  columns.forEach((column) => {
+    const _column = guaranteeNonNullable(_findCol(_columns, column.name));
+
+    // check type
+    assertTrue(
+      column.type === _column.type,
+      `Can't process configuration: type mismatch for column '${column.name}' (expected: '${_column.type}', found: '${column.type}')`,
+    );
+
+    // check selection
+    assertTrue(
+      column.isSelected === _column.isSelected,
+      `Can't process configuration: selection mismatch for column '${column.name}' (expected: '${_column.isSelected}', found: '${column.isSelected}')`,
+    );
+
+    // check kind (only relevant if aggregation is present)
+    if (data.pivot ?? data.groupBy) {
+      assertTrue(
+        column.kind === _column.kind,
+        `Can't process configuration: kind mismatch for column '${column.name}' (expected: '${_column.kind.toLowerCase()}', found: '${column.kind.toLowerCase()}')`,
+      );
+    }
+
+    // check aggregation (only relevant if aggregation is present)
+    if (data.pivot ?? data.groupBy) {
+      assertTrue(
+        column.aggregateOperator === _column.aggregateOperator,
+        `Can't process configuration: aggregation operator mismatch for column '${column.name}' (expected: '${_column.aggregateOperator}', found: '${column.aggregateOperator}')`,
+      );
+      assertTrue(
+        engine
+          .getAggregateOperation(column.aggregateOperator)
+          .isCompatibleWithParameterValues(column.aggregationParameters),
+        `Can't process configuration: incompatible aggregation parameter values for column '${column.name}' (operator: '${column.aggregateOperator}')`,
+      );
+    }
+
+    // check pivot sort direction and exclusion (only relevant if pivot is present)
+    if (data.pivot) {
+      assertTrue(
+        column.excludedFromPivot === _column.excludedFromPivot,
+        `Can't process configuration: pivot exclusion mismatch for column '${column.name}' (expected: '${_column.excludedFromPivot}', found: '${column.excludedFromPivot}')`,
+      );
+      assertTrue(
+        column.pivotSortDirection === _column.pivotSortDirection,
+        `Can't process configuration: pivot sort direction mismatch for column '${column.name}' (expected: '${_column.pivotSortDirection?.toLowerCase() ?? 'none'}', found: '${column.pivotSortDirection?.toLowerCase() ?? 'none'}')`,
+      );
+    }
+  });
+
+  return config;
 }

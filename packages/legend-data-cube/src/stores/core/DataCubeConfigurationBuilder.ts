@@ -69,33 +69,39 @@ export function newColumnConfiguration(
         _findCol(data.selectColumns, name),
     );
 
-    const groupByAggCol = _findCol(groupByAggColumns, name);
-    const pivotAggCol = _findCol(pivotAggColumns, name);
-    const aggCol = groupByAggCol ?? pivotAggCol;
-    if (aggCol) {
-      // aggregator
-      config.aggregateOperator = aggCol.operator;
-      config.aggregationParameters = aggCol.parameterValues;
+    if (data.groupBy ?? data.pivot) {
+      const groupByAggCol = _findCol(groupByAggColumns, name);
+      const pivotAggCol = _findCol(pivotAggColumns, name);
+      const aggCol = groupByAggCol ?? pivotAggCol;
+
+      // process column kind
+      if (aggCol) {
+        config.kind = DataCubeColumnKind.MEASURE;
+      } else if (
+        _findCol(data.pivot?.columns ?? [], name) ??
+        _findCol(data.groupBy?.columns ?? [], name)
+      ) {
+        config.kind = DataCubeColumnKind.DIMENSION;
+      }
+
+      // aggregation
+      if (aggCol) {
+        config.aggregateOperator = aggCol.operator;
+        config.aggregationParameters = aggCol.parameterValues;
+      }
 
       // exclude from pivot
-      config.excludedFromPivot =
-        groupByAggCol !== undefined && pivotAggCol === undefined;
-    }
+      if (data.pivot) {
+        config.excludedFromPivot = !pivotAggCol;
+      }
 
-    // process pivot sort direction
-    const pivotSortCol = _findCol(pivotSortColumns, name);
-    if (pivotSortCol) {
-      config.pivotSortDirection = pivotSortCol.direction;
-    }
-
-    // process column kind
-    //
-    // if aggregation is present and if the column is aggregated on
-    // it must be a measure
-    if (data.groupBy ?? data.pivot) {
-      config.kind = aggCol
-        ? DataCubeColumnKind.MEASURE
-        : DataCubeColumnKind.DIMENSION;
+      // process pivot sort direction
+      if (data.pivot) {
+        const pivotSortCol = _findCol(pivotSortColumns, name);
+        if (pivotSortCol) {
+          config.pivotSortDirection = pivotSortCol.direction;
+        }
+      }
     }
   }
 
@@ -108,10 +114,17 @@ export function newConfiguration(
   const { snapshot, groupBySortColumns } = context;
   const data = snapshot.data;
   const configuration = new DataCubeConfiguration();
+
+  // NOTE: the order of the column configurations is determined by
+  // the order of columns specified in the select() expression.
+  // Unselected columns will follow the order they are defined (i.e. source
+  // columns followed by leaf-level extended columns)
   const columns = [
-    ...data.sourceColumns,
-    ...data.leafExtendedColumns,
+    ...data.selectColumns,
     ...data.groupExtendedColumns,
+    ...[...data.sourceColumns, ...data.leafExtendedColumns].filter(
+      (col) => !_findCol(data.selectColumns, col.name),
+    ),
   ];
   configuration.columns = columns.map((column) =>
     newColumnConfiguration(column, context),

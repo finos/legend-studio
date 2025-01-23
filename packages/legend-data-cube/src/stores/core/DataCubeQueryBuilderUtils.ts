@@ -362,6 +362,13 @@ export function _selectFunction(columns: DataCubeColumn[]) {
   ]);
 }
 
+export function _synthesizeMinimalSourceQuery(columns: DataCubeColumn[]) {
+  return _function(DataCubeFunction.CAST, [
+    _primitiveValue(PRIMITIVE_TYPE.STRING, ''),
+    _castCols(columns),
+  ]);
+}
+
 export function _extendRootAggregation(columnName: string) {
   return _function(DataCubeFunction.EXTEND, [
     _col(
