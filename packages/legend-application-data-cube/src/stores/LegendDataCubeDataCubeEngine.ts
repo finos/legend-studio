@@ -18,11 +18,11 @@ import {
   type V1_Lambda,
   type V1_ValueSpecification,
   type V1_EngineServerClient,
-  V1_PureGraphManager,
   type V1_PureModelContext,
   type ExecutionResult,
   type V1_ExecutionResult,
   RelationalExecutionActivities,
+  V1_PureGraphManager,
   TDSExecutionResult,
   V1_ParameterValue,
   V1_PureModelContextPointer,
@@ -44,12 +44,15 @@ import {
   V1_PackageableType,
   V1_deserializeRawValueSpecificationType,
   V1_Protocol,
+  LET_TOKEN,
+  PURE_DATE_FUNCTIONS_NAMESPACE,
 } from '@finos/legend-graph';
 import {
-  _elementPtr,
-  DataCubeEngine,
   type DataCubeSource,
   type CompletionItem,
+  type DataCubeExecutionOptions,
+  _elementPtr,
+  DataCubeEngine,
   _function,
   DataCubeFunction,
   _deserializeLambda,
@@ -60,13 +63,13 @@ import {
   _serializeValueSpecification,
   _deserializeValueSpecification,
   _defaultPrimitiveTypeValue,
-  type DataCubeExecutionOptions,
+  DataCubeQueryFilterOperator,
 } from '@finos/legend-data-cube';
 import {
+  type PlainObject,
   isNonNullable,
   LogEvent,
   UnsupportedOperationError,
-  type PlainObject,
   assertErrorThrown,
   NetworkClientError,
   HttpStatus,
@@ -181,28 +184,6 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           ),
         );
         source.query = at(source.lambda.body, 0);
-        const parameterValues = await Promise.all(
-          source.lambda.parameters.map(async (parameter) => {
-            if (parameter.genericType?.rawType instanceof V1_PackageableType) {
-              const paramValue = new V1_ParameterValue();
-              paramValue.name = parameter.name;
-              const type = parameter.genericType.rawType.fullPath;
-              const defauleValue = queryInfo.defaultParameterValues?.find(
-                (val) => val.name === parameter.name,
-              )?.content;
-              paramValue.value =
-                defauleValue !== undefined
-                  ? await this.parseValueSpecification(defauleValue)
-                  : {
-                      _type: V1_deserializeRawValueSpecificationType(type),
-                      value: _defaultPrimitiveTypeValue(type),
-                    };
-              return paramValue;
-            }
-            return undefined;
-          }),
-        );
-        source.parameterValues = parameterValues.filter(isNonNullable);
         try {
           source.columns = (
             await this._getLambdaRelationType(
@@ -216,6 +197,50 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
             `Can't get query result columns. Make sure the saved query return a relation (i.e. typed TDS). Error: ${error.message}`,
           );
         }
+        const letsFuncs: V1_ValueSpecification[] = [];
+        const parameterValues = (
+          await Promise.all(
+            source.lambda.parameters.map(async (parameter) => {
+              if (
+                parameter.genericType?.rawType instanceof V1_PackageableType
+              ) {
+                const defauleValue = queryInfo.defaultParameterValues?.find(
+                  (val) => val.name === parameter.name,
+                )?.content;
+                if (defauleValue?.includes(PURE_DATE_FUNCTIONS_NAMESPACE)) {
+                  const letFunc = _deserializeLambda(
+                    await this._engineServerClient.grammarToJSON_lambda(
+                      `${LET_TOKEN} ${parameter.name} ${DataCubeQueryFilterOperator.EQUAL} ${defauleValue}`,
+                      '',
+                      undefined,
+                      undefined,
+                      false,
+                    ),
+                  );
+                  letsFuncs.push(...letFunc.body);
+                } else {
+                  const paramValue = new V1_ParameterValue();
+                  paramValue.name = parameter.name;
+                  const type = parameter.genericType.rawType.fullPath;
+                  paramValue.value =
+                    defauleValue !== undefined
+                      ? await this.parseValueSpecification(defauleValue)
+                      : {
+                          _type: V1_deserializeRawValueSpecificationType(type),
+                          value: _defaultPrimitiveTypeValue(type),
+                        };
+                  return paramValue;
+                }
+              }
+              return undefined;
+            }),
+          )
+        ).filter(isNonNullable);
+        source.letParameterValueSpec = letsFuncs;
+        source.parameterValues = parameterValues;
+        source.lambda.parameters = source.lambda.parameters.filter((param) =>
+          parameterValues.find((p) => p.name === param.name),
+        );
         return source;
       }
       default:
@@ -373,6 +398,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       result = await this._runQuery(query, source.model, undefined, options);
     } else if (source instanceof LegendQueryDataCubeSource) {
       query.parameters = source.lambda.parameters;
+      query.body = [...source.letParameterValueSpec, ...query.body];
       result = await this._runQuery(
         query,
         source.model,
