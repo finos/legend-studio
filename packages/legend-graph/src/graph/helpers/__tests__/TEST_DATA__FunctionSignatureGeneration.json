@@ -159,6 +159,46 @@
     "classifierPath": "meta::pure::metamodel::function::ConcreteFunctionDefinition"
   },
   {
+    "path": "model::functions::relationFunction",
+    "content": {
+      "_type": "function",
+      "body": [
+        {
+          "_type": "collection",
+          "multiplicity": {
+            "lowerBound": 0,
+            "upperBound": 0
+          },
+          "values": []
+        }
+      ],
+      "name": "relationFunction__Relation_$0_1$_",
+      "package": "model::functions",
+      "parameters": [],
+      "postConstraints": [],
+      "preConstraints": [],
+      "returnGenericType": {
+        "rawType": {
+          "_type": "packageableType",
+          "fullPath": "meta::pure::metamodel::relation::Relation"
+        },
+        "typeArguments": [
+          {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Any"
+            }
+          }
+        ]
+      },
+      "returnMultiplicity": {
+        "lowerBound": 0,
+        "upperBound": 1
+      }
+    },
+    "classifierPath": "meta::pure::metamodel::function::ConcreteFunctionDefinition"
+  },
+  {
     "path": "model::Test",
     "content": {
       "_type": "relational",

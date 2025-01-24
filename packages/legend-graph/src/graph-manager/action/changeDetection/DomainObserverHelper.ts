@@ -540,7 +540,7 @@ export const observe_ConcreteFunctionDefinition = skipObservedWithContext(
     });
 
     metamodel.parameters.forEach(observe_RawVariableExpression);
-    observe_PackageableElementReference(metamodel.returnType);
+    observe_GenericTypeReference(metamodel.returnType);
     metamodel.stereotypes.forEach(observe_StereotypeReference);
     metamodel.taggedValues.forEach(observe_TaggedValue);
     metamodel.tests.forEach((t) => observe_FunctionTestSuite(t, context));

@@ -82,6 +82,8 @@ import {
   generateIdentifiedConnectionId,
   getMappingCompatibleRuntimes,
   RuntimePointer,
+  GenericTypeExplicitReference,
+  GenericType,
 } from '@finos/legend-graph';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import {
@@ -949,7 +951,9 @@ export class NewElementState {
       case PACKAGEABLE_ELEMENT_TYPE.FUNCTION: {
         const fn = new ConcreteFunctionDefinition(
           name,
-          PackageableElementExplicitReference.create(PrimitiveType.STRING),
+          GenericTypeExplicitReference.create(
+            new GenericType(PrimitiveType.STRING),
+          ),
           Multiplicity.ONE,
         );
         // default to empty string

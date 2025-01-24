@@ -78,6 +78,21 @@ import { V1_DefaultValue } from '../../../model/packageableElements/domain/V1_De
 import { PackageableElementPointerType } from '../../../../../../../graph/MetaModelConst.js';
 import { V1_createGenericTypeWithElementPath } from '../../../helpers/V1_DomainHelper.js';
 import { V1_PackageableElementPointer } from '../../../model/packageableElements/V1_PackageableElement.js';
+import type { GenericType } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/GenericType.js';
+import type { V1_GenericType } from '../../../model/packageableElements/type/V1_GenericType.js';
+
+export const V1_createGenericType = (
+  genericType: GenericType,
+): V1_GenericType => {
+  const protocolGenType = V1_createGenericTypeWithElementPath(
+    genericType.rawType.path,
+  );
+  const typeArguments = genericType.typeArguments ?? [];
+  protocolGenType.typeArguments = typeArguments.map((t) =>
+    V1_createGenericType(t.value),
+  );
+  return protocolGenType;
+};
 
 export const V1_createRawGenericTypeWithElementPath = (
   path: string,
@@ -331,9 +346,7 @@ export const V1_transformFunction = (
         new V1_RawValueSpecificationTransformer(context),
       ) as V1_RawVariable,
   );
-  _function.returnGenericType = V1_createGenericTypeWithElementPath(
-    element.returnType.valueForSerialization ?? '',
-  );
+  _function.returnGenericType = V1_createGenericType(element.returnType.value);
   _function.stereotypes = element.stereotypes.map(V1_transformStereotype);
   _function.taggedValues = element.taggedValues.map(V1_transformTaggedValue);
   _function.returnMultiplicity = V1_transformMultiplicity(

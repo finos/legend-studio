@@ -104,6 +104,7 @@ import {
   DatabaseType,
   RelationalDatabaseConnection,
   type FunctionActivator,
+  GenericType,
 } from '@finos/legend-graph';
 import {
   type ApplicationStore,
@@ -120,7 +121,7 @@ import {
 } from '@finos/legend-lego/graph-editor';
 import { getElementIcon } from '../../../ElementIconUtils.js';
 import {
-  function_setReturnType,
+  function_setReturnGenericType,
   function_setReturnMultiplicity,
   function_addParameter,
   function_deleteParameter,
@@ -502,7 +503,7 @@ const ReturnTypeEditor = observer(
       editorStore.graphManagerState.usableClassPropertyTypes.map(
         buildElementOption,
       );
-    const typeName = getFunctionParameterType(returnType.value);
+    const typeName = getFunctionParameterType(returnType.value.rawType);
     const filterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
@@ -510,21 +511,24 @@ const ReturnTypeEditor = observer(
         option.data.value.path,
     });
     const selectedType = {
-      value: returnType.value,
-      label: returnType.value.name,
+      value: returnType.value.rawType,
+      label: returnType.value.rawType.name,
     };
     const changeType = (val: PackageableElementOption<Type>): void => {
-      function_setReturnType(functionElement, val.value);
+      function_setReturnGenericType(
+        functionElement,
+        new GenericType(val.value),
+      );
       setIsEditingType(false);
       updateFunctionName(editorStore, applicationStore, functionElement);
     };
 
     const openElement = (): void => {
-      if (!(returnType.value instanceof PrimitiveType)) {
+      if (!(returnType.value.rawType instanceof PrimitiveType)) {
         editorStore.graphEditorMode.openElement(
-          returnType.value instanceof Unit
-            ? returnType.value.measure
-            : returnType.value,
+          returnType.value.rawType instanceof Unit
+            ? returnType.value.rawType.measure
+            : returnType.value.rawType,
         );
       }
     };
@@ -597,11 +601,11 @@ const ReturnTypeEditor = observer(
           >
             {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
               <div className="property-basic-editor__type__abbr">
-                {getElementIcon(returnType.value, editorStore)}
+                {getElementIcon(returnType.value.rawType, editorStore)}
               </div>
             )}
             <div className="property-basic-editor__type__label">
-              {returnType.value.name}
+              {returnType.value.rawType.name}
             </div>
             <div
               className="property-basic-editor__type__label property-basic-editor__type__label--hover"
@@ -635,11 +639,11 @@ const ReturnTypeEditor = observer(
           >
             {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
               <div className="property-basic-editor__type__abbr">
-                {getElementIcon(returnType.value, editorStore)}
+                {getElementIcon(returnType.value.rawType, editorStore)}
               </div>
             )}
             <div className="property-basic-editor__type__label">
-              {returnType.value.name}
+              {returnType.value.rawType.name}
             </div>
             {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
               <button

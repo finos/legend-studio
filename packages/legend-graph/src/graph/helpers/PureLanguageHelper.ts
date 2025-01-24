@@ -28,6 +28,7 @@ import { Enumeration } from '../metamodel/pure/packageableElements/domain/Enumer
 import { formatDate } from '@finos/legend-shared';
 import type { PureModel } from '../PureModel.js';
 import type { FunctionAnalysisInfo } from './FunctionAnalysis.js';
+import type { GenericType } from '../metamodel/pure/packageableElements/domain/GenericType.js';
 
 export enum PURE_ELEMENT_NAME {
   PROFILE = 'Profile',
@@ -165,6 +166,15 @@ export const generateFunctionCallStringFromFunctionAnalysisInfo = (
   return `${functionInfo.packagePath}${ELEMENT_PATH_DELIMITER}${functionInfo.functionName}(${lambdaString})`;
 };
 
+export const generateGenericTypeString = (type: GenericType): string => {
+  return (
+    type.rawType.name +
+    (type.typeArguments?.length
+      ? `<${type.typeArguments.map((t) => generateGenericTypeString(t.value)).join(', ')}>`
+      : '')
+  );
+};
+
 export const generateFunctionPrettyName = (
   element: ConcreteFunctionDefinition,
   options?: {
@@ -187,9 +197,9 @@ export const generateFunctionPrettyName = (
             p.multiplicity.upperBound,
           )}]`,
     )
-    .join(', ')}): ${
-    element.returnType.value.name
-  }[${generateMultiplicityString(
+    .join(', ')}): ${generateGenericTypeString(
+    element.returnType.value,
+  )}[${generateMultiplicityString(
     element.returnMultiplicity.lowerBound,
     element.returnMultiplicity.upperBound,
   )}]`.replaceAll(/\s*/gu, (val) => {

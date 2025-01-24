@@ -25,6 +25,8 @@ import {
   ELEMENT_PATH_DELIMITER,
   RawVariableExpression,
   getFunctionSignature,
+  GenericTypeExplicitReference,
+  GenericType,
 } from '@finos/legend-graph';
 import {
   type QueryBuilderState,
@@ -118,7 +120,7 @@ export const promoteQueryToFunction = async (
     const returnType = queryBuilderState.getQueryReturnType();
     const _function = new ConcreteFunctionDefinition(
       functionName, // use functionName for now and it will be reset after composing _function.parameters and _function.returnType
-      PackageableElementExplicitReference.create(returnType),
+      GenericTypeExplicitReference.create(new GenericType(returnType)),
       Multiplicity.ONE,
     );
     // we will copy the body of the query to the body of the function and extract the parameters out

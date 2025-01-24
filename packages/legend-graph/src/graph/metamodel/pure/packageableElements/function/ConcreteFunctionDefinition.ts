@@ -21,18 +21,17 @@ import {
 } from '../../../../Core_HashUtils.js';
 import type { PackageableElementVisitor } from '../PackageableElement.js';
 import type { RawVariableExpression } from '../../rawValueSpecification/RawVariableExpression.js';
-import type { Type } from '../domain/Type.js';
 import type { Multiplicity } from '../domain/Multiplicity.js';
-import type { PackageableElementReference } from '../PackageableElementReference.js';
 import { FunctionDefinition } from '../domain/Function.js';
 import type { Testable } from '../../test/Testable.js';
 import type { FunctionTestSuite } from './test/FunctionTestSuite.js';
+import type { GenericTypeReference } from '../domain/GenericTypeReference.js';
 
 export class ConcreteFunctionDefinition
   extends FunctionDefinition
   implements Hashable, Testable
 {
-  returnType: PackageableElementReference<Type>;
+  returnType: GenericTypeReference;
   returnMultiplicity: Multiplicity;
   /**
    * Studio does not process value specification, they are left in raw JSON form
@@ -50,7 +49,7 @@ export class ConcreteFunctionDefinition
 
   constructor(
     name: string,
-    returnType: PackageableElementReference<Type>,
+    returnType: GenericTypeReference,
     returnMultiplicity: Multiplicity,
   ) {
     super(name);
@@ -63,7 +62,7 @@ export class ConcreteFunctionDefinition
       CORE_HASH_STRUCTURE.FUNCTION,
       this.path,
       hashArray(this.parameters),
-      this.returnType.valueForSerialization ?? '',
+      this.returnType.ownerReference.valueForSerialization ?? '',
       hashArray(this.taggedValues),
       hashArray(this.stereotypes.map((val) => val.pointerHashCode)),
       hashRawLambda(undefined, this.expressionSequence),

@@ -64,7 +64,7 @@ import type {
 import { DerivedProperty } from '../metamodel/pure/packageableElements/domain/DerivedProperty.js';
 import type { Enum } from '../metamodel/pure/packageableElements/domain/Enum.js';
 import type { Constraint } from '../metamodel/pure/packageableElements/domain/Constraint.js';
-import type { GenericType } from '../metamodel/pure/packageableElements/domain/GenericType.js';
+import { GenericType } from '../metamodel/pure/packageableElements/domain/GenericType.js';
 import { Multiplicity } from '../metamodel/pure/packageableElements/domain/Multiplicity.js';
 import type { AnnotatedElement } from '../metamodel/pure/packageableElements/domain/AnnotatedElement.js';
 import type { ConcreteFunctionDefinition } from '../metamodel/pure/packageableElements/function/ConcreteFunctionDefinition.js';
@@ -74,6 +74,7 @@ import {
   FunctionAnalysisParameterInfo,
 } from './FunctionAnalysis.js';
 import { generateFunctionPrettyName } from './PureLanguageHelper.js';
+import type { GenericTypeReference } from '../metamodel/pure/packageableElements/domain/GenericTypeReference.js';
 
 export const addElementToPackage = (
   parent: Package,
@@ -731,7 +732,7 @@ export const getFunctionSignature = (
           p.multiplicity.upperBound,
         )}_`,
     )
-    .join('_')}_${func.returnType.value.name}_${getMultiplicityString(
+    .join('_')}_${func.returnType.value.rawType.name}_${getMultiplicityString(
     func.returnMultiplicity.lowerBound,
     func.returnMultiplicity.upperBound,
   )}_`;
@@ -759,7 +760,7 @@ export const buildFunctionAnalysisInfoFromConcreteFunctionDefinition = (
       spacing: false,
     });
     functionInfo.packagePath = func.package?.path ?? '';
-    functionInfo.returnType = func.returnType.value.name;
+    functionInfo.returnType = func.returnType.value.rawType.name;
     functionInfo.parameterInfoList = func.parameters.map((param) => {
       const paramInfo = new FunctionAnalysisParameterInfo();
       paramInfo.multiplicity = graph.getMultiplicity(
@@ -831,4 +832,13 @@ export const getElementOrigin = (
     }
   }
   return '';
+};
+
+export const newGenericType = (
+  rawType: Type,
+  typeArguments: GenericTypeReference[],
+): GenericType => {
+  const genericType = new GenericType(rawType);
+  genericType.typeArguments = typeArguments;
+  return genericType;
 };

@@ -31,6 +31,7 @@ import type { XStorePropertyMapping } from './xStore/XStorePropertyMapping.js';
 import type { LocalMappingPropertyInfo } from './LocalMappingPropertyInfo.js';
 import type { SetImplementationReference } from './SetImplementationReference.js';
 import type { INTERNAL__UnknownPropertyMapping } from './INTERNAL__UnknownPropertyMapping.js';
+import type { RelationFunctionPropertyMapping } from './relationFunction/RelationFunctionPropertyMapping.js';
 
 export interface PropertyMappingVisitor<T> {
   visit_PropertyMapping(propertyMapping: PropertyMapping): T;
@@ -62,6 +63,9 @@ export interface PropertyMappingVisitor<T> {
     propertyMapping: AggregationAwarePropertyMapping,
   ): T;
   visit_XStorePropertyMapping(propertyMapping: XStorePropertyMapping): T;
+  visit_RelationFunctionPropertyMapping(
+    propertyMapping: RelationFunctionPropertyMapping,
+  ): T;
 }
 
 export abstract class PropertyMapping implements Hashable {
