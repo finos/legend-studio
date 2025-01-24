@@ -1,5 +1,7 @@
 # @finos/legend-query-builder
 
+## 4.15.43
+
 ## 4.15.42
 
 ## 4.15.41
