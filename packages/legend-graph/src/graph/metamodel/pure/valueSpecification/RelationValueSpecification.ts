@@ -41,7 +41,23 @@ export class ColSpec implements Hashable {
     ]);
   }
 }
+export class ColSpecInstanceValue extends InstanceValue implements Hashable {
+  override values: ColSpec[] = [];
 
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.RELATION_COL_SPEC,
+      this.genericType?.ownerReference.valueForSerialization ?? '',
+      this.multiplicity,
+      hashArray(this.values),
+    ]);
+  }
+  override accept_ValueSpecificationVisitor<T>(
+    visitor: ValueSpecificationVisitor<T>,
+  ): T {
+    return visitor.visit_ColSpecInstance(this);
+  }
+}
 export class ColSpecArray implements Hashable {
   colSpecs: ColSpec[] = [];
 

@@ -27,7 +27,6 @@ import {
   V1_serializeRawValueSpecification,
   V1_transformRawLambda,
   V1_GraphTransformerContextBuilder,
-  matchFunctionName,
   PrimitiveType,
   LambdaFunctionInstanceValue,
 } from '@finos/legend-graph';
@@ -42,10 +41,6 @@ import {
   QueryBuilderSimpleProjectionColumnState,
 } from './QueryBuilderProjectionColumnState.js';
 import type { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
-import {
-  type QueryResultSetModifierState,
-  type SortColumnState,
-} from '../QueryResultSetModifierState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../graph/QueryBuilderMetaModelConst.js';
 import { buildGenericLambdaFunctionInstanceValue } from '../../../QueryBuilderValueSpecificationHelper.js';
 import {
@@ -54,139 +49,9 @@ import {
 } from '../../../QueryBuilderValueSpecificationBuilderHelper.js';
 import { appendOLAPGroupByState } from '../window/QueryBuilderWindowValueSpecificationBuilder.js';
 import { appendPostFilter } from '../post-filter/QueryBuilderPostFilterValueSpecificationBuilder.js';
-import { buildTDSSortTypeExpression } from '../QueryBuilderTDSHelper.js';
 import { buildRelationProjection } from './QueryBuilderRelationProjectValueSpecBuidler.js';
 import { QueryBuilderAggregateOperator_Wavg } from '../aggregation/operators/QueryBuilderAggregateOperator_Wavg.js';
-
-const buildSortExpression = (
-  sortColumnState: SortColumnState,
-): SimpleFunctionExpression =>
-  buildTDSSortTypeExpression(
-    sortColumnState.sortType,
-    sortColumnState.columnState.columnName,
-  );
-
-const appendResultSetModifier = (
-  resultModifierState: QueryResultSetModifierState,
-  lambdaFunction: LambdaFunction,
-  options?:
-    | {
-        overridingLimit?: number | undefined;
-        withDataOverflowCheck?: boolean | undefined;
-      }
-    | undefined,
-): LambdaFunction => {
-  if (lambdaFunction.expressionSequence.length === 1) {
-    const func = lambdaFunction.expressionSequence[0];
-    if (func instanceof SimpleFunctionExpression) {
-      if (
-        matchFunctionName(func.functionName, [
-          QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
-          QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
-          QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_FILTER,
-          QUERY_BUILDER_SUPPORTED_FUNCTIONS.OLAP_GROUPBY,
-        ])
-      ) {
-        let currentExpression = func;
-
-        // build distinct()
-        if (resultModifierState.distinct) {
-          const distinctFunction = new SimpleFunctionExpression(
-            extractElementNameFromPath(
-              QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_DISTINCT,
-            ),
-          );
-          distinctFunction.parametersValues[0] = currentExpression;
-          currentExpression = distinctFunction;
-        }
-
-        // build sort()
-        if (resultModifierState.sortColumns.length) {
-          const sortFunction = new SimpleFunctionExpression(
-            extractElementNameFromPath(
-              QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_SORT,
-            ),
-          );
-          const multiplicity =
-            resultModifierState.tdsState.queryBuilderState.graphManagerState.graph.getMultiplicity(
-              resultModifierState.sortColumns.length,
-              resultModifierState.sortColumns.length,
-            );
-          const collection = new CollectionInstanceValue(
-            multiplicity,
-            undefined,
-          );
-          collection.values =
-            resultModifierState.sortColumns.map(buildSortExpression);
-          sortFunction.parametersValues[0] = currentExpression;
-          sortFunction.parametersValues[1] = collection;
-          currentExpression = sortFunction;
-        }
-
-        // build take()
-        if (resultModifierState.limit || options?.overridingLimit) {
-          const limit = new PrimitiveInstanceValue(
-            GenericTypeExplicitReference.create(
-              new GenericType(PrimitiveType.INTEGER),
-            ),
-          );
-          limit.values = [
-            Math.min(
-              resultModifierState.limit
-                ? options?.withDataOverflowCheck
-                  ? resultModifierState.limit + 1
-                  : resultModifierState.limit
-                : Number.MAX_SAFE_INTEGER,
-              options?.overridingLimit
-                ? options.withDataOverflowCheck
-                  ? options.overridingLimit + 1
-                  : options.overridingLimit
-                : Number.MAX_SAFE_INTEGER,
-            ),
-          ];
-          const takeFunction = new SimpleFunctionExpression(
-            extractElementNameFromPath(
-              QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_TAKE,
-            ),
-          );
-          takeFunction.parametersValues[0] = currentExpression;
-          takeFunction.parametersValues[1] = limit;
-          currentExpression = takeFunction;
-        }
-        // build slice()
-        if (resultModifierState.slice) {
-          const sliceStart = resultModifierState.slice[0];
-          const sliceEnd = resultModifierState.slice[1];
-          const startVal = new PrimitiveInstanceValue(
-            GenericTypeExplicitReference.create(
-              new GenericType(PrimitiveType.INTEGER),
-            ),
-          );
-          const endVal = new PrimitiveInstanceValue(
-            GenericTypeExplicitReference.create(
-              new GenericType(PrimitiveType.INTEGER),
-            ),
-          );
-          startVal.values = [sliceStart];
-          endVal.values = [sliceEnd];
-          const sliceFunction = new SimpleFunctionExpression(
-            extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.SLICE),
-          );
-          sliceFunction.parametersValues = [
-            currentExpression,
-            startVal,
-            endVal,
-          ];
-          currentExpression = sliceFunction;
-        }
-
-        lambdaFunction.expressionSequence[0] = currentExpression;
-        return lambdaFunction;
-      }
-    }
-  }
-  return lambdaFunction;
-};
+import { appendResultSetModifier } from '../result-modifier/ResultModifierValueSpecificationBuilder.js';
 
 const buildProjectColFunc = (
   tdsState: QueryBuilderTDSState,
@@ -542,14 +407,19 @@ export const appendProjection = (
   appendPostFilter(tdsState.postFilterState, lambdaFunction);
 
   // build result set modifiers
-  appendResultSetModifier(tdsState.resultSetModifierState, lambdaFunction, {
-    overridingLimit:
-      options?.isBuildingExecutionQuery && !options.isExportingResult
-        ? queryBuilderState.resultState.previewLimit
-        : undefined,
-    withDataOverflowCheck:
-      options?.isBuildingExecutionQuery && !options.isExportingResult
-        ? options.withDataOverflowCheck
-        : undefined,
-  });
+  appendResultSetModifier(
+    tdsState.resultSetModifierState,
+    lambdaFunction,
+    tdsState.queryBuilderState.isFetchStructureTyped,
+    {
+      overridingLimit:
+        options?.isBuildingExecutionQuery && !options.isExportingResult
+          ? queryBuilderState.resultState.previewLimit
+          : undefined,
+      withDataOverflowCheck:
+        options?.isBuildingExecutionQuery && !options.isExportingResult
+          ? options.withDataOverflowCheck
+          : undefined,
+    },
+  );
 };

@@ -121,7 +121,11 @@ export enum QUERY_BUILDER_SUPPORTED_FUNCTIONS {
   // Relation
   RELATION_PROJECT = 'meta::pure::functions::relation::project',
   RELATION_LIMIT = 'meta::pure::functions::relation::limit',
-
+  RELATION_ASC = 'meta::pure::functions::relation::ascending',
+  RELATION_DESC = 'meta::pure::functions::relation::descending',
+  RELATION_DISTINCT = 'meta::pure::functions::relation::distinct',
+  RELATION_SORT = 'meta::pure::functions::relation::sort',
+  RELATION_SLICE = 'meta::pure::functions::relation::slice',
   // filter
   CONTAINS = 'meta::pure::functions::string::contains',
   ENDS_WITH = 'meta::pure::functions::string::endsWith',

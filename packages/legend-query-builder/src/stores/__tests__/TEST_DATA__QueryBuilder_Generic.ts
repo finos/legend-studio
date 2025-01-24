@@ -124,7 +124,7 @@ export const TEST_DATA_simpleTypedRelationProjection = {
   body: [
     {
       _type: 'func',
-      function: 'take',
+      function: 'limit',
       parameters: [
         {
           _type: 'func',

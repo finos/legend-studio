@@ -114,6 +114,11 @@ import {
   V1_getGenericTypeFullPath,
   V1_createGenericTypeWithElementPath,
 } from '../../../../helpers/V1_DomainHelper.js';
+import {
+  ColSpec,
+  ColSpecInstanceValue,
+} from '../../../../../../../../graph/metamodel/pure/valueSpecification/RelationValueSpecification.js';
+import { V1_ColSpec } from '../../../../model/valueSpecification/raw/classInstance/relation/V1_ColSpec.js';
 
 const buildPrimtiveInstanceValue = (
   type: PRIMITIVE_TYPE,
@@ -456,6 +461,17 @@ export class V1_ValueSpecificationBuilder
           this.processingContext,
         ) as RootGraphFetchTree;
         instanceValue.values = [tree];
+        return instanceValue;
+      }
+      case V1_ClassInstanceType.COL_SPEC: {
+        const instanceValue = new ColSpecInstanceValue(
+          Multiplicity.ONE,
+          undefined,
+        );
+        const protocol = guaranteeType(valueSpecification.value, V1_ColSpec);
+        const value = new ColSpec();
+        value.name = protocol.name;
+        instanceValue.values = [value];
         return instanceValue;
       }
       default: {
