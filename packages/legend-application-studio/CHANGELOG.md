@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.18.86
+
+### Patch Changes
+
+- [#3837](https://github.com/finos/legend-studio/pull/3837) [`a851990`](https://github.com/finos/legend-studio/commit/a8519901c85cdd5f6f2200ee6eea0fe5a7ed2a88) ([@gs-rpant1729](https://github.com/gs-rpant1729)) - Support Relation Function class mapping in Studio.
+
 ## 28.18.85
 
 ## 28.18.84
