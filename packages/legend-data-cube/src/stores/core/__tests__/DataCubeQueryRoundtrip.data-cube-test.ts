@@ -1314,35 +1314,35 @@ const cases: TestCase[] = [
         DataCubeQuerySortDirection.ASCENDING,
       );
 
-      const colA = config.columns[0];
-      expect(colA?.name).toEqual('a');
-      expect(colA?.kind).toEqual(DataCubeColumnKind.DIMENSION);
-      expect(colA?.aggregateOperator).toEqual(
+      const colA = at(config.columns, 0);
+      expect(colA.name).toEqual('a');
+      expect(colA.kind).toEqual(DataCubeColumnKind.DIMENSION);
+      expect(colA.aggregateOperator).toEqual(
         DataCubeQueryAggregateOperator.UNIQUE,
       );
-      expect(colA?.isSelected).toEqual(true);
-      expect(colA?.excludedFromPivot).toEqual(true);
-      expect(colA?.pivotSortDirection).toBeUndefined();
+      expect(colA.isSelected).toEqual(true);
+      expect(colA.excludedFromPivot).toEqual(true);
+      expect(colA.pivotSortDirection).toBeUndefined();
 
-      const colB = config.columns[1];
-      expect(colB?.name).toEqual('b');
-      expect(colB?.kind).toEqual(DataCubeColumnKind.MEASURE);
-      expect(colB?.aggregateOperator).toEqual(
+      const colB = at(config.columns, 1);
+      expect(colB.name).toEqual('b');
+      expect(colB.kind).toEqual(DataCubeColumnKind.MEASURE);
+      expect(colB.aggregateOperator).toEqual(
         DataCubeQueryAggregateOperator.SUM,
       );
-      expect(colB?.isSelected).toEqual(true);
-      expect(colB?.excludedFromPivot).toEqual(false);
-      expect(colB?.pivotSortDirection).toBeUndefined();
+      expect(colB.isSelected).toEqual(true);
+      expect(colB.excludedFromPivot).toEqual(false);
+      expect(colB.pivotSortDirection).toBeUndefined();
 
-      const colC = config.columns[2];
-      expect(colC?.name).toEqual('c');
-      expect(colC?.kind).toEqual(DataCubeColumnKind.DIMENSION);
-      expect(colC?.aggregateOperator).toEqual(
+      const colC = at(config.columns, 2);
+      expect(colC.name).toEqual('c');
+      expect(colC.kind).toEqual(DataCubeColumnKind.DIMENSION);
+      expect(colC.aggregateOperator).toEqual(
         DataCubeQueryAggregateOperator.UNIQUE,
       );
-      expect(colC?.isSelected).toEqual(false);
-      expect(colC?.excludedFromPivot).toEqual(true);
-      expect(colC?.pivotSortDirection).toBeUndefined();
+      expect(colC.isSelected).toEqual(false);
+      expect(colC.excludedFromPivot).toEqual(true);
+      expect(colC.pivotSortDirection).toBeUndefined();
     },
   }),
   _case(`Configuration: generated configuration with extended columns`, {
@@ -1354,23 +1354,23 @@ const cases: TestCase[] = [
       const config = DataCubeConfiguration.serialization.fromJson(
         snapshot.data.configuration,
       );
-      expect(config.columns[0]?.name).toEqual('c');
-      expect(config.columns[1]?.name).toEqual('d');
-      expect(config.columns[2]?.name).toEqual('a');
-      expect(config.columns[3]?.name).toEqual('e');
-      expect(config.columns[4]?.name).toEqual('b');
-      expect(config.columns[5]?.name).toEqual('f');
+      expect(at(config.columns, 0).name).toEqual('c');
+      expect(at(config.columns, 1).name).toEqual('d');
+      expect(at(config.columns, 2).name).toEqual('a');
+      expect(at(config.columns, 3).name).toEqual('e');
+      expect(at(config.columns, 4).name).toEqual('b');
+      expect(at(config.columns, 5).name).toEqual('f');
 
       // do some basic checks on the extended columns
-      const colD = guaranteeNonNullable(config.columns[1]);
+      const colD = at(config.columns, 1);
       expect(colD.type).toEqual(PRIMITIVE_TYPE.INTEGER);
       expect(colD.kind).toEqual(DataCubeColumnKind.MEASURE);
 
-      const colE = guaranteeNonNullable(config.columns[3]);
+      const colE = at(config.columns, 3);
       expect(colE.type).toEqual(PRIMITIVE_TYPE.STRING);
       expect(colE.kind).toEqual(DataCubeColumnKind.DIMENSION);
 
-      const colF = guaranteeNonNullable(config.columns[5]);
+      const colF = at(config.columns, 5);
       expect(colF.type).toEqual(PRIMITIVE_TYPE.INTEGER);
       expect(colF.kind).toEqual(DataCubeColumnKind.MEASURE);
     },
@@ -1383,21 +1383,22 @@ const cases: TestCase[] = [
 
       config.treeColumnSortDirection = DataCubeQuerySortDirection.DESCENDING;
 
-      const colA = guaranteeNonNullable(config.columns[0]);
+      const colA = at(config.columns, 0);
       colA.blur = true;
 
-      const colB = guaranteeNonNullable(config.columns[1]);
+      const colB = at(config.columns, 1);
       colB.kind = DataCubeColumnKind.MEASURE;
       colB.aggregateOperator = DataCubeQueryAggregateOperator.LAST;
 
-      const colC = guaranteeNonNullable(config.columns[2]);
+      const colC = at(config.columns, 2);
       colC.displayName = 'Column C';
 
-      const colD = guaranteeNonNullable(config.columns[3]);
+      const colD = at(config.columns, 3);
       colD.kind = DataCubeColumnKind.DIMENSION;
+      colD.excludedFromPivot = true;
       colD.aggregateOperator = DataCubeQueryAggregateOperator.UNIQUE;
 
-      const colE = guaranteeNonNullable(config.columns[4]);
+      const colE = at(config.columns, 4);
       colE.fontSize = 100;
 
       return config;
@@ -1414,53 +1415,53 @@ const cases: TestCase[] = [
         DataCubeQuerySortDirection.DESCENDING,
       );
 
-      const colA = config.columns[0];
-      expect(colA?.name).toEqual('a');
-      expect(colA?.kind).toEqual(DataCubeColumnKind.DIMENSION);
-      expect(colA?.aggregateOperator).toEqual(
+      const colA = at(config.columns, 0);
+      expect(colA.name).toEqual('a');
+      expect(colA.kind).toEqual(DataCubeColumnKind.DIMENSION);
+      expect(colA.aggregateOperator).toEqual(
         DataCubeQueryAggregateOperator.UNIQUE,
       );
-      expect(colA?.excludedFromPivot).toEqual(true);
-      expect(colA?.pivotSortDirection).toBeUndefined();
-      expect(colA?.blur).toEqual(true);
+      expect(colA.excludedFromPivot).toEqual(true);
+      expect(colA.pivotSortDirection).toBeUndefined();
+      expect(colA.blur).toEqual(true);
 
-      const colB = config.columns[1];
-      expect(colB?.name).toEqual('b');
-      expect(colB?.kind).toEqual(DataCubeColumnKind.MEASURE);
-      expect(colB?.aggregateOperator).toEqual(
+      const colB = at(config.columns, 1);
+      expect(colB.name).toEqual('b');
+      expect(colB.kind).toEqual(DataCubeColumnKind.MEASURE);
+      expect(colB.aggregateOperator).toEqual(
         DataCubeQueryAggregateOperator.LAST,
       );
-      expect(colB?.excludedFromPivot).toEqual(true);
-      expect(colB?.pivotSortDirection).toBeUndefined();
+      expect(colB.excludedFromPivot).toEqual(true);
+      expect(colB.pivotSortDirection).toBeUndefined();
 
-      const colC = config.columns[2];
-      expect(colC?.name).toEqual('c');
-      expect(colC?.kind).toEqual(DataCubeColumnKind.MEASURE);
-      expect(colC?.aggregateOperator).toEqual(
+      const colC = at(config.columns, 2);
+      expect(colC.name).toEqual('c');
+      expect(colC.kind).toEqual(DataCubeColumnKind.MEASURE);
+      expect(colC.aggregateOperator).toEqual(
         DataCubeQueryAggregateOperator.SUM,
       );
-      expect(colC?.excludedFromPivot).toEqual(false);
-      expect(colC?.pivotSortDirection).toBeUndefined();
-      expect(colC?.displayName).toEqual('Column C');
+      expect(colC.excludedFromPivot).toEqual(false);
+      expect(colC.pivotSortDirection).toBeUndefined();
+      expect(colC.displayName).toEqual('Column C');
 
-      const colD = config.columns[3];
-      expect(colD?.name).toEqual('d');
-      expect(colD?.kind).toEqual(DataCubeColumnKind.DIMENSION);
-      expect(colD?.aggregateOperator).toEqual(
+      const colD = at(config.columns, 3);
+      expect(colD.name).toEqual('d');
+      expect(colD.kind).toEqual(DataCubeColumnKind.DIMENSION);
+      expect(colD.aggregateOperator).toEqual(
         DataCubeQueryAggregateOperator.UNIQUE,
       );
-      expect(colD?.excludedFromPivot).toEqual(false);
-      expect(colD?.pivotSortDirection).toBeUndefined();
+      expect(colD.excludedFromPivot).toEqual(true);
+      expect(colD.pivotSortDirection).toBeUndefined();
 
-      const colE = config.columns[4];
-      expect(colE?.name).toEqual('e');
-      expect(colE?.kind).toEqual(DataCubeColumnKind.DIMENSION);
-      expect(colE?.aggregateOperator).toEqual(
+      const colE = at(config.columns, 4);
+      expect(colE.name).toEqual('e');
+      expect(colE.kind).toEqual(DataCubeColumnKind.DIMENSION);
+      expect(colE.aggregateOperator).toEqual(
         DataCubeQueryAggregateOperator.UNIQUE,
       );
-      expect(colE?.excludedFromPivot).toEqual(true);
-      expect(colE?.pivotSortDirection).toBeUndefined();
-      expect(colE?.fontSize).toEqual(100);
+      expect(colE.excludedFromPivot).toEqual(true);
+      expect(colE.pivotSortDirection).toBeUndefined();
+      expect(colE.fontSize).toEqual(100);
     },
   }),
   _case(`Configuration: with groupBy() expression`, {
@@ -1476,35 +1477,67 @@ const cases: TestCase[] = [
         DataCubeQuerySortDirection.DESCENDING,
       );
 
-      const colA = config.columns[0];
-      expect(colA?.name).toEqual('a');
-      expect(colA?.kind).toEqual(DataCubeColumnKind.MEASURE);
-      expect(colA?.aggregateOperator).toEqual(
+      const colA = at(config.columns, 0);
+      expect(colA.name).toEqual('a');
+      expect(colA.kind).toEqual(DataCubeColumnKind.MEASURE);
+      expect(colA.aggregateOperator).toEqual(
         DataCubeQueryAggregateOperator.AVERAGE,
       );
 
-      const colB = config.columns[1];
-      expect(colB?.name).toEqual('b');
-      expect(colB?.kind).toEqual(DataCubeColumnKind.DIMENSION);
-      expect(colB?.aggregateOperator).toEqual(
+      const colB = at(config.columns, 1);
+      expect(colB.name).toEqual('b');
+      expect(colB.kind).toEqual(DataCubeColumnKind.DIMENSION);
+      expect(colB.aggregateOperator).toEqual(
         DataCubeQueryAggregateOperator.SUM,
       );
 
-      const colC = config.columns[2];
-      expect(colC?.name).toEqual('c');
-      expect(colC?.kind).toEqual(DataCubeColumnKind.DIMENSION);
-      expect(colC?.aggregateOperator).toEqual(
+      const colC = at(config.columns, 2);
+      expect(colC.name).toEqual('c');
+      expect(colC.kind).toEqual(DataCubeColumnKind.DIMENSION);
+      expect(colC.aggregateOperator).toEqual(
         DataCubeQueryAggregateOperator.UNIQUE,
       );
 
-      const colD = config.columns[3];
-      expect(colD?.name).toEqual('d');
-      expect(colD?.kind).toEqual(DataCubeColumnKind.DIMENSION);
-      expect(colD?.aggregateOperator).toEqual(
+      const colD = at(config.columns, 3);
+      expect(colD.name).toEqual('d');
+      expect(colD.kind).toEqual(DataCubeColumnKind.DIMENSION);
+      expect(colD.aggregateOperator).toEqual(
         DataCubeQueryAggregateOperator.UNIQUE,
       );
     },
   }),
+  _case(
+    `Configuration: with aggregation on dimension column in pivot() expression`,
+    {
+      query: `select(~[a, b, c])->sort([~a->ascending()])->pivot(~[a], ~[c:x|$x.c:x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(b:Integer)>)`,
+      columns: ['a:String', 'b:Integer', 'c:Integer'],
+      configurationBuilder: async (query, columns) => {
+        const config = await _generateDefaultConfiguration(query, columns);
+
+        const colB = at(config.columns, 1);
+        colB.kind = DataCubeColumnKind.DIMENSION;
+        colB.excludedFromPivot = true;
+
+        return config;
+      },
+    },
+  ),
+  _case(
+    `Configuration: with aggregation on dimension column in groupBy() expression`,
+    {
+      query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->average()])->sort([~a->ascending()])`,
+      columns: ['a:String', 'b:Integer'],
+      configurationBuilder: async (query, columns) => {
+        const config = await _generateDefaultConfiguration(query, columns);
+
+        const colB = at(config.columns, 1);
+        colB.kind = DataCubeColumnKind.DIMENSION;
+        colB.excludedFromPivot = true;
+
+        return config;
+      },
+    },
+  ),
   _case(`Configuration: with pivot() expression`, {
     query: `select(~[a, b, c, d])->sort([~c->ascending(), ~d->descending()])->pivot(~[c, d], ~[b:x|$x.b:x|$x->count()])->cast(@meta::pure::metamodel::relation::Relation<(a:Integer, 'val1__|__val2__|__b':Integer)>)`,
     columns: ['a:Integer', 'c:String', 'b:Integer', 'd:String'],
@@ -1514,43 +1547,43 @@ const cases: TestCase[] = [
         snapshot.data.configuration,
       );
 
-      const colA = config.columns[0];
-      expect(colA?.name).toEqual('a');
-      expect(colA?.kind).toEqual(DataCubeColumnKind.MEASURE);
-      expect(colA?.aggregateOperator).toEqual(
+      const colA = at(config.columns, 0);
+      expect(colA.name).toEqual('a');
+      expect(colA.kind).toEqual(DataCubeColumnKind.MEASURE);
+      expect(colA.aggregateOperator).toEqual(
         DataCubeQueryAggregateOperator.SUM,
       );
-      expect(colA?.excludedFromPivot).toEqual(true);
-      expect(colA?.pivotSortDirection).toBeUndefined();
+      expect(colA.excludedFromPivot).toEqual(true);
+      expect(colA.pivotSortDirection).toBeUndefined();
 
-      const colB = config.columns[1];
-      expect(colB?.name).toEqual('b');
-      expect(colB?.kind).toEqual(DataCubeColumnKind.MEASURE);
-      expect(colB?.aggregateOperator).toEqual(
+      const colB = at(config.columns, 1);
+      expect(colB.name).toEqual('b');
+      expect(colB.kind).toEqual(DataCubeColumnKind.MEASURE);
+      expect(colB.aggregateOperator).toEqual(
         DataCubeQueryAggregateOperator.COUNT,
       );
-      expect(colB?.excludedFromPivot).toEqual(false);
-      expect(colB?.pivotSortDirection).toBeUndefined();
+      expect(colB.excludedFromPivot).toEqual(false);
+      expect(colB.pivotSortDirection).toBeUndefined();
 
-      const colC = config.columns[2];
-      expect(colC?.name).toEqual('c');
-      expect(colC?.kind).toEqual(DataCubeColumnKind.DIMENSION);
-      expect(colC?.aggregateOperator).toEqual(
+      const colC = at(config.columns, 2);
+      expect(colC.name).toEqual('c');
+      expect(colC.kind).toEqual(DataCubeColumnKind.DIMENSION);
+      expect(colC.aggregateOperator).toEqual(
         DataCubeQueryAggregateOperator.UNIQUE,
       );
-      expect(colC?.excludedFromPivot).toEqual(true);
-      expect(colC?.pivotSortDirection).toEqual(
+      expect(colC.excludedFromPivot).toEqual(true);
+      expect(colC.pivotSortDirection).toEqual(
         DataCubeQuerySortDirection.ASCENDING,
       );
 
-      const colD = config.columns[3];
-      expect(colD?.name).toEqual('d');
-      expect(colD?.kind).toEqual(DataCubeColumnKind.DIMENSION);
-      expect(colD?.aggregateOperator).toEqual(
+      const colD = at(config.columns, 3);
+      expect(colD.name).toEqual('d');
+      expect(colD.kind).toEqual(DataCubeColumnKind.DIMENSION);
+      expect(colD.aggregateOperator).toEqual(
         DataCubeQueryAggregateOperator.UNIQUE,
       );
-      expect(colD?.excludedFromPivot).toEqual(true);
-      expect(colD?.pivotSortDirection).toEqual(
+      expect(colD.excludedFromPivot).toEqual(true);
+      expect(colD.pivotSortDirection).toEqual(
         DataCubeQuerySortDirection.DESCENDING,
       );
     },
@@ -1564,43 +1597,43 @@ const cases: TestCase[] = [
         snapshot.data.configuration,
       );
 
-      const colA = config.columns[0];
-      expect(colA?.name).toEqual('a');
-      expect(colA?.kind).toEqual(DataCubeColumnKind.MEASURE);
-      expect(colA?.aggregateOperator).toEqual(
+      const colA = at(config.columns, 0);
+      expect(colA.name).toEqual('a');
+      expect(colA.kind).toEqual(DataCubeColumnKind.MEASURE);
+      expect(colA.aggregateOperator).toEqual(
         DataCubeQueryAggregateOperator.COUNT,
       );
-      expect(colA?.excludedFromPivot).toEqual(true);
-      expect(colA?.pivotSortDirection).toBeUndefined();
+      expect(colA.excludedFromPivot).toEqual(true);
+      expect(colA.pivotSortDirection).toBeUndefined();
 
-      const colB = config.columns[1];
-      expect(colB?.name).toEqual('b');
-      expect(colB?.kind).toEqual(DataCubeColumnKind.MEASURE);
-      expect(colB?.aggregateOperator).toEqual(
+      const colB = at(config.columns, 1);
+      expect(colB.name).toEqual('b');
+      expect(colB.kind).toEqual(DataCubeColumnKind.MEASURE);
+      expect(colB.aggregateOperator).toEqual(
         DataCubeQueryAggregateOperator.AVERAGE,
       );
-      expect(colB?.excludedFromPivot).toEqual(false);
-      expect(colB?.pivotSortDirection).toBeUndefined();
+      expect(colB.excludedFromPivot).toEqual(false);
+      expect(colB.pivotSortDirection).toBeUndefined();
 
-      const colC = config.columns[2];
-      expect(colC?.name).toEqual('c');
-      expect(colC?.kind).toEqual(DataCubeColumnKind.DIMENSION);
-      expect(colC?.aggregateOperator).toEqual(
+      const colC = at(config.columns, 2);
+      expect(colC.name).toEqual('c');
+      expect(colC.kind).toEqual(DataCubeColumnKind.DIMENSION);
+      expect(colC.aggregateOperator).toEqual(
         DataCubeQueryAggregateOperator.UNIQUE,
       );
-      expect(colC?.excludedFromPivot).toEqual(true);
-      expect(colC?.pivotSortDirection).toEqual(
+      expect(colC.excludedFromPivot).toEqual(true);
+      expect(colC.pivotSortDirection).toEqual(
         DataCubeQuerySortDirection.DESCENDING,
       );
 
-      const colD = config.columns[3];
-      expect(colD?.name).toEqual('d');
-      expect(colD?.kind).toEqual(DataCubeColumnKind.DIMENSION);
-      expect(colD?.aggregateOperator).toEqual(
+      const colD = at(config.columns, 3);
+      expect(colD.name).toEqual('d');
+      expect(colD.kind).toEqual(DataCubeColumnKind.DIMENSION);
+      expect(colD.aggregateOperator).toEqual(
         DataCubeQueryAggregateOperator.UNIQUE,
       );
-      expect(colD?.excludedFromPivot).toEqual(true);
-      expect(colD?.pivotSortDirection).toBeUndefined();
+      expect(colD.excludedFromPivot).toEqual(true);
+      expect(colD.pivotSortDirection).toBeUndefined();
     },
   }),
 
@@ -1679,32 +1712,6 @@ const cases: TestCase[] = [
     },
     error: `Can't process configuration: selection mismatch for column 'a' (expected: 'true', found: 'false')`,
   }),
-  _case(
-    `Configuration: ERROR - column kind mismatch (aggregate column in pivot() expression)`,
-    {
-      query: `select(~[a, b])->sort([~a->ascending()])->pivot(~[a], ~[b:x|$x.b:x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(dummy:String)>)`,
-      columns: ['a:String', 'b:Integer'],
-      configurationBuilder: async (query, columns) => {
-        const config = await _generateDefaultConfiguration(query, columns);
-        at(config.columns, 1).kind = DataCubeColumnKind.DIMENSION;
-        return config;
-      },
-      error: `Can't process configuration: kind mismatch for column 'b' (expected: 'measure', found: 'dimension')`,
-    },
-  ),
-  _case(
-    `Configuration: ERROR - column kind mismatch (aggregate column in groupBy() expression)`,
-    {
-      query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->average()])->sort([~a->ascending()])`,
-      columns: ['a:String', 'b:Integer'],
-      configurationBuilder: async (query, columns) => {
-        const config = await _generateDefaultConfiguration(query, columns);
-        at(config.columns, 1).kind = DataCubeColumnKind.DIMENSION;
-        return config;
-      },
-      error: `Can't process configuration: kind mismatch for column 'b' (expected: 'measure', found: 'dimension')`,
-    },
-  ),
   _case(`Configuration: ERROR - column kind mismatch (pivot column)`, {
     query: `select(~[a, b])->sort([~a->ascending()])->pivot(~[a], ~[b:x|$x.b:x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(dummy:String)>)`,
     columns: ['a:String', 'b:Integer'],
@@ -1799,6 +1806,20 @@ const cases: TestCase[] = [
       return config;
     },
     error: `Can't process configuration: pivot exclusion mismatch for column 'c' (expected: 'true', found: 'false')`,
+  }),
+  _case(`Configuration: ERROR - dimension column pivot exclusion mismatch`, {
+    query: `select(~[a, b])->groupBy(~[a], ~[b:x|$x.b:x|$x->average()])->sort([~a->ascending()])`,
+    columns: ['a:String', 'b:Integer'],
+    configurationBuilder: async (query, columns) => {
+      const config = await _generateDefaultConfiguration(query, columns);
+
+      const colB = at(config.columns, 1);
+      colB.kind = DataCubeColumnKind.DIMENSION;
+      colB.excludedFromPivot = false;
+
+      return config;
+    },
+    error: `Can't process configuration: column 'b' is a dimension but not excluded from pivot`,
   }),
   _case(`Configuration: ERROR - column pivot sort direction mismatch`, {
     query: `select(~[a, b])->sort([~a->ascending()])->pivot(~[a], ~[b:x|$x.b:x|$x->average()])->cast(@meta::pure::metamodel::relation::Relation<(dummy:String)>)`,

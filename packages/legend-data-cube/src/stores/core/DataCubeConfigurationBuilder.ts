@@ -72,19 +72,18 @@ export function newColumnConfiguration(
     if (data.groupBy ?? data.pivot) {
       const groupByAggCol = _findCol(groupByAggColumns, name);
       const pivotAggCol = _findCol(pivotAggColumns, name);
-      const aggCol = groupByAggCol ?? pivotAggCol;
 
       // process column kind
-      if (aggCol) {
-        config.kind = DataCubeColumnKind.MEASURE;
-      } else if (
+      if (
         _findCol(data.pivot?.columns ?? [], name) ??
         _findCol(data.groupBy?.columns ?? [], name)
       ) {
         config.kind = DataCubeColumnKind.DIMENSION;
+        config.excludedFromPivot = true;
       }
 
       // aggregation
+      const aggCol = groupByAggCol ?? pivotAggCol;
       if (aggCol) {
         config.aggregateOperator = aggCol.operator;
         config.aggregationParameters = aggCol.parameterValues;

@@ -49,6 +49,7 @@ import {
   isNonNullable,
 } from '@finos/legend-shared';
 import {
+  DataCubeColumnKind,
   DataCubeFunction,
   type DataCubeQueryFunctionMap,
 } from './DataCubeQueryEngine.js';
@@ -732,8 +733,11 @@ function validateAndBuildConfiguration(
       `Can't process configuration: selection mismatch for column '${column.name}' (expected: '${_column.isSelected}', found: '${column.isSelected}')`,
     );
 
-    // check kind (only relevant if aggregation is present)
-    if (data.pivot ?? data.groupBy) {
+    // check kind (only relevant if column is either pivot column or group column)
+    if (
+      _findCol(data.pivot?.columns ?? [], column.name) ??
+      _findCol(data.groupBy?.columns ?? [], column.name)
+    ) {
       assertTrue(
         column.kind === _column.kind,
         `Can't process configuration: kind mismatch for column '${column.name}' (expected: '${_column.kind.toLowerCase()}', found: '${column.kind.toLowerCase()}')`,
@@ -763,6 +767,16 @@ function validateAndBuildConfiguration(
       assertTrue(
         column.pivotSortDirection === _column.pivotSortDirection,
         `Can't process configuration: pivot sort direction mismatch for column '${column.name}' (expected: '${_column.pivotSortDirection?.toLowerCase() ?? 'none'}', found: '${column.pivotSortDirection?.toLowerCase() ?? 'none'}')`,
+      );
+    }
+
+    // check for pivot exclusion and column kind enforcement
+    if (
+      column.kind === DataCubeColumnKind.DIMENSION &&
+      !column.excludedFromPivot
+    ) {
+      throw new Error(
+        `Can't process configuration: column '${column.name}' is a dimension but not excluded from pivot`,
       );
     }
   });
