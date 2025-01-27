@@ -30,18 +30,18 @@
     "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js"
   },
   "dependencies": {
-    "@babel/core": "7.26.0",
+    "@babel/core": "7.26.7",
     "@babel/helper-plugin-utils": "7.26.5",
     "@babel/plugin-syntax-import-attributes": "7.26.0",
-    "@babel/preset-env": "7.26.0",
+    "@babel/preset-env": "7.26.7",
     "@babel/preset-react": "7.26.3",
     "@babel/preset-typescript": "7.26.0",
-    "@babel/runtime": "7.26.0",
+    "@babel/runtime": "7.26.7",
     "react-refresh": "0.16.0"
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "eslint": "9.18.0",
+    "eslint": "9.19.0",
     "rimraf": "6.0.1",
     "typescript": "5.7.3"
   },
