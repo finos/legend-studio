@@ -443,7 +443,10 @@ export {
   V1_serializePureModelContext,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/V1_PureProtocolSerialization.js';
 export { V1_propertyPointerModelSchema } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DomainSerializationHelper.js';
-export { V1_relationTypeModelSchema } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_TypeSerializationHelper.js';
+export {
+  V1_genericTypeModelSchema,
+  V1_relationTypeModelSchema,
+} from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_TypeSerializationHelper.js';
 export {
   V1_deserializeValueSpecification,
   V1_serializeValueSpecification,
