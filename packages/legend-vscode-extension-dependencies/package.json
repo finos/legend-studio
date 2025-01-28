@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-vscode-extension-dependencies",
-  "version": "4.0.64",
+  "version": "4.0.65",
   "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-vscode-extension-dependencies",
   "bugs": {
     "url": "https://github.com/finos/legend-studio/issues"

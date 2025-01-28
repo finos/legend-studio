@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.0.9
+
+### Patch Changes
+
+- [#3848](https://github.com/finos/legend-studio/pull/3848) [`9b009e9`](https://github.com/finos/legend-studio/commit/9b009e93282418ef79f48a760f96079a95eaa3ad) ([@travisstebbins](https://github.com/travisstebbins)) - Additional VSCode dependency exports
+
 ## 32.0.8
 
 ## 32.0.7
