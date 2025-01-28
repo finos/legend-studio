@@ -18,6 +18,7 @@ import { generatePath } from '@finos/legend-application/browser';
 
 export enum LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN {
   QUERY_ID = 'queryId',
+  SOURCE_DATA = 'sourceData',
 }
 
 export const LEGEND_DATA_CUBE_ROUTE_PATTERN = Object.freeze({

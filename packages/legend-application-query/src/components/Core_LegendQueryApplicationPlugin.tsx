@@ -38,6 +38,9 @@ import {
   SaveAsIcon,
   SaveCurrIcon,
   SquareIcon,
+  CubeIcon,
+  CopyIcon,
+  MoreVerticalIcon,
 } from '@finos/legend-art';
 import {
   generateCloneServiceQuerySetupRoute,
@@ -54,12 +57,16 @@ import {
   type LegendApplicationSetup,
   ActionAlertActionType,
   ActionAlertType,
+  useApplicationStore,
 } from '@finos/legend-application';
 import { CloneQueryServiceSetup } from './CloneQueryServiceSetup.js';
 import { QueryProductionizerSetup } from './QueryProductionizerSetup.js';
 import { UpdateExistingServiceQuerySetup } from './UpdateExistingServiceQuerySetup.js';
 import { LoadProjectServiceQuerySetup } from './LoadProjectServiceQuerySetup.js';
-import { setupPureLanguageService } from '@finos/legend-code-editor';
+import {
+  CODE_EDITOR_LANGUAGE,
+  setupPureLanguageService,
+} from '@finos/legend-code-editor';
 import {
   generateDataSpaceQueryCreatorRoute,
   generateDataSpaceQuerySetupRoute,
@@ -70,6 +77,7 @@ import {
   type QueryBuilderMenuActionConfiguration,
   type QueryBuilderPropagateExecutionContextChangeHelper,
   QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS,
+  type QueryExportUsageConfiguration,
 } from '@finos/legend-query-builder';
 import {
   ExistingQueryEditorStore,
@@ -110,7 +118,10 @@ import { QueryEditorExistingQueryHeader } from './QueryEditor.js';
 import { DataSpaceTemplateQueryCreatorStore } from '../stores/data-space/DataSpaceTemplateQueryCreatorStore.js';
 import { createViewSDLCProjectHandler } from '../stores/data-space/DataSpaceQueryBuilderHelper.js';
 import { DataSpaceQueryCreatorStore } from '../stores/data-space/DataSpaceQueryCreatorStore.js';
-import { configureCodeEditorComponent } from '@finos/legend-lego/code-editor';
+import {
+  CodeEditor,
+  configureCodeEditorComponent,
+} from '@finos/legend-lego/code-editor';
 import {
   resolveUsableDataSpaceClasses,
   V1_DataSpace,
@@ -118,6 +129,77 @@ import {
 } from '@finos/legend-extension-dsl-data-space/graph';
 import { flowResult } from 'mobx';
 import { LEGEND_QUERY_APP_EVENT } from '../__lib__/LegendQueryEvent.js';
+import { observer } from 'mobx-react-lite';
+import { useQueryEditorStore } from './QueryEditorStoreProvider.js';
+
+export const QUERY_DATACUBE_USAGE_TITLE = 'Legend DataCube';
+const QUERY_DATACUBE_SOURCE_TYPE = 'legendQuery';
+
+const CopyButton: React.FC<{ onClick: () => void }> = ({ onClick }) => (
+  <button
+    className="query-usage-viewer__code-action__action"
+    tabIndex={-1}
+    title="Copy"
+    onClick={onClick}
+  >
+    <CopyIcon />
+    Copy
+  </button>
+);
+
+const MoreButton: React.FC = () => (
+  <button className="query-usage-viewer__code-action__action" tabIndex={-1}>
+    <MoreVerticalIcon />
+  </button>
+);
+
+export const QueryDataCubeUsage = observer(() => {
+  const applicationStore = useApplicationStore();
+  const queryEditorStore = useQueryEditorStore();
+
+  const generateDataCubeUrl = (): string => {
+    if (
+      queryEditorStore instanceof ExistingQueryEditorStore &&
+      queryEditorStore.query
+    ) {
+      const encodedQuerySource = btoa(
+        JSON.stringify({
+          _type: QUERY_DATACUBE_SOURCE_TYPE,
+          queryId: queryEditorStore.query.id,
+        }),
+      );
+      const baseAddress =
+        applicationStore.navigationService.navigator.getCurrentBaseAddress();
+      return `${baseAddress}/datacube?sourceData=${encodedQuerySource}`;
+    }
+    return 'Legend DataCube URL could not be created';
+  };
+
+  return (
+    <div className="query-usage-viewer__code-action">
+      <div className="query-usage-viewer__code-action__content">
+        <CodeEditor
+          inputValue={generateDataCubeUrl()}
+          isReadOnly={true}
+          language={CODE_EDITOR_LANGUAGE.TEXT}
+          hideMinimap={true}
+          hideGutter={true}
+          extraEditorOptions={{ scrollBeyondLastLine: false, wordWrap: 'on' }}
+        />
+      </div>
+      <div className="query-usage-viewer__code-action__actions">
+        <CopyButton
+          onClick={() => {
+            applicationStore.clipboardService
+              .copyTextToClipboard(generateDataCubeUrl())
+              .catch(applicationStore.alertUnhandledError);
+          }}
+        />
+        <MoreButton />
+      </div>
+    </div>
+  );
+});
 
 export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlugin {
   static NAME = packageJson.extensions.applicationQueryPlugin;
@@ -267,6 +349,17 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
         icon: (
           <SquareIcon className="query-setup__landing-page__icon--data-space" />
         ),
+      },
+    ];
+  }
+
+  getExtraQueryUsageConfigurations(): QueryExportUsageConfiguration[] {
+    return [
+      {
+        key: QUERY_DATACUBE_USAGE_TITLE,
+        title: QUERY_DATACUBE_USAGE_TITLE,
+        icon: <CubeIcon />,
+        renderer: () => <QueryDataCubeUsage />,
       },
     ];
   }

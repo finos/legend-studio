@@ -401,3 +401,62 @@
     margin-top: 0.5rem;
   }
 }
+
+.query-usage-viewer {
+  &__code-action {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+
+    &__icon {
+      font-size: 1.8rem;
+    }
+
+    &__content {
+      height: calc(100% - 3.8rem);
+      border: 0.1rem solid var(--color-dark-grey-200);
+      position: relative;
+    }
+
+    &__actions {
+      @include flexVCenter;
+
+      justify-content: flex-end;
+      gap: 0.5rem;
+      min-height: 3.8rem;
+    }
+
+    &__action {
+      @include flexCenter;
+
+      height: 2.8rem;
+      min-width: 2.8rem;
+      width: fit-content;
+      gap: 0.5rem;
+      color: var(--color-dark-grey-500);
+
+      &:hover {
+        color: var(--color-light-grey-400);
+      }
+    }
+
+    &__action__text-btn {
+      height: 2.8rem;
+      padding: 0 1rem;
+      margin-right: 0.5rem;
+    }
+  }
+
+  &__info-text {
+    padding: 1rem;
+    font-size: 1.2rem;
+
+    code {
+      font-size: 1.2rem;
+      line-height: 1.6rem;
+      padding: 1px 2px;
+      font-family: monospace;
+      background: var(--color-dark-grey-250);
+    }
+  }
+}
