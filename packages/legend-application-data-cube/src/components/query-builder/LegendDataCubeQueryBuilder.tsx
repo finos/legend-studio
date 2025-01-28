@@ -33,6 +33,7 @@ import {
 } from '../../__lib__/LegendDataCubeNavigation.js';
 import { useEffect } from 'react';
 import { LegendDataCubeSettingStorageKey } from '../../__lib__/LegendDataCubeSetting.js';
+import type { PlainObject } from '@finos/legend-shared';
 
 const LegendDataCubeQueryBuilderHeader = observer(() => {
   const store = useLegendDataCubeQueryBuilderStore();
@@ -68,20 +69,27 @@ export const LegendDataCubeQueryBuilder = withLegendDataCubeQueryBuilderStore(
     const application = store.application;
     const params = useParams<LegendDataCubeQueryBuilderQueryPathParams>();
     const queryId = params[LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN.QUERY_ID];
+    const sourceData =
+      application.navigationService.navigator.getCurrentLocationParameterValue(
+        LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN.SOURCE_DATA,
+      );
 
     useEffect(() => {
-      if (queryId !== store.builder?.persistentQuery?.id) {
+      if (sourceData) {
+        const sourceDataJson = JSON.parse(atob(sourceData)) as PlainObject;
+        store.newQueryState.initWithSourceData(sourceDataJson);
+      } else if (queryId !== store.builder?.persistentQuery?.id) {
         store
           .loadQuery(queryId)
           .catch((error) => store.alertService.alertUnhandledError(error));
       }
-    }, [store, queryId]);
+    }, [store, queryId, sourceData]);
 
     useEffect(() => {
-      if (!store.builder && !queryId) {
+      if (!store.builder && !queryId && !sourceData) {
         store.loader.display.open();
       }
-    }, [store, queryId]);
+    }, [store, queryId, sourceData]);
 
     if (!builder) {
       return (

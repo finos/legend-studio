@@ -20,6 +20,7 @@ import {
   assertErrorThrown,
   IllegalStateError,
   UnsupportedOperationError,
+  type PlainObject,
 } from '@finos/legend-shared';
 import { LegendQueryDataCubeSourceBuilderState } from './source-builder/LegendQueryDataCubeSourceBuilderState.js';
 import type { LegendDataCubeApplicationStore } from '../LegendDataCubeBaseStore.js';
@@ -42,6 +43,10 @@ import {
   type LegendDataCubeQueryBuilderStore,
 } from './LegendDataCubeQueryBuilderStore.js';
 import { generateQueryBuilderRoute } from '../../__lib__/LegendDataCubeNavigation.js';
+import {
+  LEGEND_QUERY_DATA_CUBE_SOURCE_TYPE,
+  RawLegendQueryDataCubeSource,
+} from '../model/LegendQueryDataCubeSource.js';
 
 export class LegendDataCubeNewQueryState {
   private readonly _application: LegendDataCubeApplicationStore;
@@ -78,6 +83,30 @@ export class LegendDataCubeNewQueryState {
     this.sourceBuilder = this.createSourceBuilder(
       LegendDataCubeSourceBuilderType.LEGEND_QUERY,
     );
+  }
+
+  initWithSourceData(source: PlainObject) {
+    if (source._type === LEGEND_QUERY_DATA_CUBE_SOURCE_TYPE) {
+      this.changeSourceBuilder(LegendDataCubeSourceBuilderType.LEGEND_QUERY);
+      const serializedSourceData =
+        RawLegendQueryDataCubeSource.serialization.fromJson(source);
+
+      this._store.graphManager
+        .getLightQuery(serializedSourceData.queryId)
+        .then(async (currentQuery) => {
+          if (
+            this.sourceBuilder instanceof LegendQueryDataCubeSourceBuilderState
+          ) {
+            this.sourceBuilder.query = currentQuery;
+            await this.finalize();
+          }
+        })
+        .catch(this._application.alertUnhandledError);
+    } else {
+      this._application.notificationService.notifyError(
+        `Can't generate query: source of type ${source._type} is not supported`,
+      );
+    }
   }
 
   changeSourceBuilder(
@@ -127,7 +156,6 @@ export class LegendDataCubeNewQueryState {
       query.query = await this._engine.getValueSpecificationCode(
         _selectFunction(processedSource.columns),
       );
-
       this._store.setBuilder(new LegendDataCubeQueryBuilderState(query));
       // only update the route instead of reloading in case we are creating
       // a new query when we are editing another query
