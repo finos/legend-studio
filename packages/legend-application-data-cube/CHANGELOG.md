@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.1.20
+
+### Patch Changes
+
+- [#3849](https://github.com/finos/legend-studio/pull/3849) [`3fc168e`](https://github.com/finos/legend-studio/commit/3fc168ebe789d83dc3b7d9fee0c0b618092745dd) ([@kelly-thai](https://github.com/kelly-thai)) - Add integration between Query and DataCube, allow users to now open their saved query results in DataCube via a link provided by Query.
+
 ## 0.1.19
 
 ## 0.1.18
