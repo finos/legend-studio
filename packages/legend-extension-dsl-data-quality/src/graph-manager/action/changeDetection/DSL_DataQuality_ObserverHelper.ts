@@ -164,7 +164,6 @@ export const observe_DataQualityRelationValidation = skipObserved(
       assertion: observable,
       description: observable,
       type: observable,
-      rowMapFunction: observable,
     });
 
     observe_RawLambda(metamodel.assertion);

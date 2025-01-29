@@ -146,17 +146,6 @@ export const dataQualityRelationValidation_setType = action(
   },
 );
 
-export const dataQualityRelationValidation_setRowMapFunction = action(
-  (
-    _constraint: DataQualityRelationValidation,
-    rowMapFunction: RawLambda | undefined,
-  ): void => {
-    _constraint.rowMapFunction = rowMapFunction
-      ? observe_RawLambda(rowMapFunction)
-      : rowMapFunction;
-  },
-);
-
 export const dataQualityRelationValidation_addValidation = action(
   (
     _relationValidation: DataQualityRelationValidationConfiguration,

@@ -18,7 +18,6 @@ import { useCallback, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   type SelectOption,
-  clsx,
   CustomSelectorInput,
   FilledWindowMaximizeIcon,
   PanelDnDEntry,
@@ -71,10 +70,8 @@ export const DataQualityRelationValidationEditor = observer(
     } = props;
     const applicationStore = useApplicationStore();
     const hasParserError =
-      relationValidationConfigurationState.validationStates.some(
-        (state) =>
-          Boolean(state.parserError) ||
-          Boolean(state.rowMapFunctionLambdaEditorState?.parserError),
+      relationValidationConfigurationState.validationStates.some((state) =>
+        Boolean(state.parserError),
       );
     const validationState =
       relationValidationConfigurationState.getValidationState(validation);
@@ -142,9 +139,7 @@ export const DataQualityRelationValidationEditor = observer(
     const onLambdaEditorFocus = (isAssertion: boolean): void =>
       applicationStore.navigationContextService.push(
         ApplicationNavigationContextData.createTransient(
-          isAssertion
-            ? DSL_DATA_QUALITY_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.VALIDATION_ASSERTION_EDITOR
-            : DSL_DATA_QUALITY_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.VALIDATION_ROW_MAP_EDITOR,
+          DSL_DATA_QUALITY_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.VALIDATION_ASSERTION_EDITOR,
         ),
       );
 
@@ -190,15 +185,7 @@ export const DataQualityRelationValidationEditor = observer(
         className="relation-validation__container"
         showPlaceholder={isBeingDragged}
       >
-        <div
-          className={clsx('relation-validation', {
-            backdrop__element:
-              Boolean(validationState.parserError) ||
-              Boolean(
-                validationState.rowMapFunctionLambdaEditorState?.parserError,
-              ),
-          })}
-        >
+        <div>
           <div className="relation-validation__content">
             <PanelEntryDragHandle
               dragSourceConnector={handleRef}
@@ -252,29 +239,6 @@ export const DataQualityRelationValidationEditor = observer(
               <FilledWindowMaximizeIcon />
             </button>
           </div>
-          {validationState.rowMapFunctionLambdaEditorState && (
-            <div className="data-quality-uml-element-editor__lambda">
-              <div className="data-quality-uml-element-editor__lambda__label">
-                Row Map Function
-              </div>
-              <div className="data-quality-uml-element-editor__lambda__value">
-                <InlineLambdaEditor
-                  disabled={
-                    relationValidationConfigurationState.isConvertingValidationLambdaObjects ||
-                    isReadOnly
-                  }
-                  lambdaEditorState={
-                    validationState.rowMapFunctionLambdaEditorState
-                  }
-                  forceBackdrop={hasParserError}
-                  expectedType={PrimitiveType.BOOLEAN}
-                  onEditorFocus={() => onLambdaEditorFocus(false)}
-                  disablePopUp={true}
-                  className="relation-validation__lambda"
-                />
-              </div>
-            </div>
-          )}
           <div className="data-quality-uml-element-editor__lambda">
             <div className="data-quality-uml-element-editor__lambda__label">
               Assertion

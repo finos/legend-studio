@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-  type DataQualityRelationValidation,
+import type {
+  DataQualityRelationValidation,
   RelationValidationType,
 } from '../../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
 import { type EditorStore } from '@finos/legend-application-studio';
@@ -37,20 +37,15 @@ import { LambdaEditorState } from '@finos/legend-query-builder';
 import { VALIDATION_SOURCE_ID_LABEL } from './ConstraintState.js';
 import {
   dataQualityRelationValidation_setAssertion,
-  dataQualityRelationValidation_setRowMapFunction,
   dataQualityRelationValidation_setType,
 } from '../../graph-manager/DSL_DataQuality_GraphModifierHelper.js';
 import { DATA_QUALITY_HASH_STRUCTURE } from '../../graph/metamodel/DSL_DataQuality_HashUtils.js';
-import { DataQualityRelationValidationLambdaEditorState } from './DataQualityRelationValidationLambdaEditorState.js';
 import type { SelectOption } from '@finos/legend-art';
 
 export class DataQualityRelationValidationState extends LambdaEditorState {
   relationValidation: DataQualityRelationValidation;
   editorStore: EditorStore;
   isValidationDialogOpen = false;
-  rowMapFunctionLambdaEditorState:
-    | DataQualityRelationValidationLambdaEditorState
-    | undefined;
   constructor(
     relationValidation: DataQualityRelationValidation,
     editorStore: EditorStore,
@@ -61,20 +56,12 @@ export class DataQualityRelationValidationState extends LambdaEditorState {
       relationValidation: observable,
       editorStore: observable,
       isValidationDialogOpen: observable,
-      rowMapFunctionLambdaEditorState: observable,
       setIsValidationDialogOpen: action,
       onValidationTypeChange: action,
     });
 
     this.relationValidation = relationValidation;
     this.editorStore = editorStore;
-    this.rowMapFunctionLambdaEditorState =
-      relationValidation.type === RelationValidationType.AGGREGATE
-        ? new DataQualityRelationValidationLambdaEditorState(
-            relationValidation,
-            editorStore,
-          )
-        : undefined;
   }
 
   get lambdaId(): string {
@@ -93,22 +80,6 @@ export class DataQualityRelationValidationState extends LambdaEditorState {
     dataQualityRelationValidation_setType(
       this.relationValidation,
       val.value as RelationValidationType,
-    );
-    let defaultLambda;
-    if (val.value === RelationValidationType.AGGREGATE) {
-      this.rowMapFunctionLambdaEditorState =
-        new DataQualityRelationValidationLambdaEditorState(
-          this.relationValidation,
-          this.editorStore,
-        );
-      defaultLambda = stub_RawLambda();
-    } else {
-      this.rowMapFunctionLambdaEditorState = undefined;
-      defaultLambda = undefined;
-    }
-    dataQualityRelationValidation_setRowMapFunction(
-      this.relationValidation,
-      defaultLambda,
     );
   }
 
