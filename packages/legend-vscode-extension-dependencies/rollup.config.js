@@ -28,14 +28,20 @@ const extensions = ['.js', '.ts', '.jsx', '.tsx'];
 
 export default {
   input: 'src/index.ts',
-  external: ['@jest/globals', 'react-dom/server', 'react'],
+  external: [
+    '@jest/globals',
+    'react-dom/server',
+    'react',
+    '@finos/legend-graph',
+    '@finos/legend-shared',
+  ],
   output: [
     {
       file: 'lib/bundles/bundle.cjs.js',
       format: 'cjs',
       sourcemap: false,
       inlineDynamicImports: true,
-      plugins: [terser()],
+      // plugins: [terser()],
       globals: {
         'react/jsx-runtime': 'jsxRuntime',
         'react-dom/client': 'ReactDOM',
