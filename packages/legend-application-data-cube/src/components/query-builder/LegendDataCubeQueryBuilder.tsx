@@ -33,7 +33,7 @@ import {
 } from '../../__lib__/LegendDataCubeNavigation.js';
 import { useEffect } from 'react';
 import { LegendDataCubeSettingStorageKey } from '../../__lib__/LegendDataCubeSetting.js';
-import type { PlainObject } from '@finos/legend-shared';
+import { assertErrorThrown, type PlainObject } from '@finos/legend-shared';
 
 const LegendDataCubeQueryBuilderHeader = observer(() => {
   const store = useLegendDataCubeQueryBuilderStore();
@@ -76,8 +76,16 @@ export const LegendDataCubeQueryBuilder = withLegendDataCubeQueryBuilderStore(
 
     useEffect(() => {
       if (sourceData) {
-        const sourceDataJson = JSON.parse(atob(sourceData)) as PlainObject;
-        store.newQueryState.initWithSourceData(sourceDataJson);
+        try {
+          const sourceDataJson = JSON.parse(
+            decodeURIComponent(atob(sourceData)),
+          ) as PlainObject;
+          store.newQueryState
+            .finalize(sourceDataJson)
+            .catch((error) => store.alertService.alertUnhandledError(error));
+        } catch (error) {
+          assertErrorThrown(error);
+        }
       } else if (queryId !== store.builder?.persistentQuery?.id) {
         store
           .loadQuery(queryId)

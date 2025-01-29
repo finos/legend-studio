@@ -43,10 +43,6 @@ import {
   type LegendDataCubeQueryBuilderStore,
 } from './LegendDataCubeQueryBuilderStore.js';
 import { generateQueryBuilderRoute } from '../../__lib__/LegendDataCubeNavigation.js';
-import {
-  LEGEND_QUERY_DATA_CUBE_SOURCE_TYPE,
-  RawLegendQueryDataCubeSource,
-} from '../model/LegendQueryDataCubeSource.js';
 
 export class LegendDataCubeNewQueryState {
   private readonly _application: LegendDataCubeApplicationStore;
@@ -85,30 +81,6 @@ export class LegendDataCubeNewQueryState {
     );
   }
 
-  initWithSourceData(source: PlainObject) {
-    if (source._type === LEGEND_QUERY_DATA_CUBE_SOURCE_TYPE) {
-      this.changeSourceBuilder(LegendDataCubeSourceBuilderType.LEGEND_QUERY);
-      const serializedSourceData =
-        RawLegendQueryDataCubeSource.serialization.fromJson(source);
-
-      this._store.graphManager
-        .getLightQuery(serializedSourceData.queryId)
-        .then(async (currentQuery) => {
-          if (
-            this.sourceBuilder instanceof LegendQueryDataCubeSourceBuilderState
-          ) {
-            this.sourceBuilder.query = currentQuery;
-            await this.finalize();
-          }
-        })
-        .catch(this._application.alertUnhandledError);
-    } else {
-      this._application.notificationService.notifyError(
-        `Can't generate query: source of type ${source._type} is not supported`,
-      );
-    }
-  }
-
   changeSourceBuilder(
     type: LegendDataCubeSourceBuilderType,
     skipCheck?: boolean | undefined,
@@ -142,14 +114,14 @@ export class LegendDataCubeNewQueryState {
     }
   }
 
-  async finalize() {
-    if (!this.sourceBuilder.isValid) {
+  async finalize(sourceData?: PlainObject) {
+    if (!this.sourceBuilder.isValid && !sourceData) {
       throw new IllegalStateError(`Can't generate query: source is not valid`);
     }
 
     this.finalizeState.inProgress();
     try {
-      const source = await this.sourceBuilder.build();
+      const source = sourceData ?? (await this.sourceBuilder.build());
       const query = new DataCubeQuery();
       const processedSource = await this._engine.processQuerySource(source);
       query.source = source;
