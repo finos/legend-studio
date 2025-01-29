@@ -3125,10 +3125,17 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-graph@workspace:packages/legend-graph"
   dependencies:
+    "@babel/core": "npm:7.26.7"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": "npm:29.7.0"
+    "@rollup/plugin-babel": "npm:6.0.4"
+    "@rollup/plugin-commonjs": "npm:28.0.2"
+    "@rollup/plugin-json": "npm:6.1.0"
+    "@rollup/plugin-node-resolve": "npm:16.0.0"
+    "@rollup/plugin-terser": "npm:0.4.4"
+    "@rollup/plugin-typescript": "npm:^12.1.2"
     axios: "npm:1.7.9"
     cross-env: "npm:7.0.3"
     eslint: "npm:9.19.0"
@@ -3136,6 +3143,10 @@ __metadata:
     mobx: "npm:6.13.5"
     npm-run-all: "npm:4.1.5"
     rimraf: "npm:6.0.1"
+    rollup: "npm:4.32.0"
+    rollup-plugin-flow: "npm:1.1.1"
+    rollup-plugin-import-css: "npm:3.5.8"
+    rollup-plugin-postcss: "npm:4.0.2"
     serializr: "npm:3.0.3"
     typescript: "npm:5.7.3"
   languageName: unknown
@@ -3421,6 +3432,7 @@ __metadata:
     "@rollup/plugin-json": "npm:6.1.0"
     "@rollup/plugin-node-resolve": "npm:16.0.0"
     "@rollup/plugin-terser": "npm:0.4.4"
+    "@rollup/plugin-typescript": "npm:^12.1.2"
     "@types/react": "npm:19.0.8"
     cross-env: "npm:7.0.3"
     eslint: "npm:9.19.0"
@@ -4947,6 +4959,25 @@ __metadata:
     rollup:
       optional: true
   checksum: 10/a5e066ddea55fc8c32188bc8b484cca619713516f10e3a06801881ec98bf37459ca24e5fe8711f93a5fa7f26a6e9132a47bc1a61c01e0b513dfd79a96cdc6eb7
+  languageName: node
+  linkType: hard
+
+"@rollup/plugin-typescript@npm:^12.1.2":
+  version: 12.1.2
+  resolution: "@rollup/plugin-typescript@npm:12.1.2"
+  dependencies:
+    "@rollup/pluginutils": "npm:^5.1.0"
+    resolve: "npm:^1.22.1"
+  peerDependencies:
+    rollup: ^2.14.0||^3.0.0||^4.0.0
+    tslib: "*"
+    typescript: ">=3.7.0"
+  peerDependenciesMeta:
+    rollup:
+      optional: true
+    tslib:
+      optional: true
+  checksum: 10/1fd201b9430125686bcdb3eecfa4f8d9d5005a9d454f2d733c0fdc0f58e28f772209ecbfe4f5d1a42a2a7ac25746a5f37d15897d695326eaea0fe3a30857375d
   languageName: node
   linkType: hard
 

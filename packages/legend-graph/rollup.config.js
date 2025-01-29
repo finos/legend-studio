@@ -28,12 +28,7 @@ const extensions = ['.js', '.ts', '.jsx', '.tsx'];
 
 export default {
   input: 'src/index.ts',
-  external: [
-    '@jest/globals',
-    'react-dom/server',
-    'react',
-    '@finos/legend-graph',
-  ],
+  external: ['@jest/globals', 'react-dom/server', 'react'],
   output: [
     {
       file: 'lib/bundles/bundle.cjs.js',
