@@ -175,13 +175,6 @@ export function V1_buildDataQualityRelationValidation(
   );
   _validation.description = validation.description;
   _validation.type = validation.type;
-  _validation.rowMapFunction = validation.rowMapFunction
-    ? V1_buildRawLambdaWithResolvedPaths(
-        validation.rowMapFunction.parameters,
-        validation.rowMapFunction.body,
-        context,
-      )
-    : validation.rowMapFunction;
   return _validation;
 }
 

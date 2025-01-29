@@ -167,9 +167,6 @@ export function V1_transformDataQualityRelationValidation(
     context,
   );
   relationConstraint.type = value.type;
-  relationConstraint.rowMapFunction = value.rowMapFunction
-    ? V1_transformRawLambda(value.rowMapFunction, context)
-    : value.rowMapFunction;
   return relationConstraint;
 }
 

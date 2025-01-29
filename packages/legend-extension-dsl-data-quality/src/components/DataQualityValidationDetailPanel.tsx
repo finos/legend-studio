@@ -61,8 +61,7 @@ export const DataQualityValidationDetailPanel = observer(
     const {
       editorStore: { applicationStore },
     } = dataQualityRelationValidationState;
-    const { relationValidation, rowMapFunctionLambdaEditorState } =
-      relationValidationState;
+    const { relationValidation } = relationValidationState;
     const closePlanViewer = () => {
       relationValidationState.setIsValidationDialogOpen(false);
     };
@@ -118,29 +117,6 @@ export const DataQualityValidationDetailPanel = observer(
                   />
                 </div>
               </div>
-              {rowMapFunctionLambdaEditorState && (
-                <div className="relation-validation-editor__content">
-                  <div className="relation-validation-editor__label">
-                    Row map function
-                  </div>
-                  <div className="data-quality-uml-element-editor__validation">
-                    <div className="data-quality-uml-element-editor__lambda__value">
-                      <InlineLambdaEditor
-                        disabled={
-                          dataQualityRelationValidationState.isConvertingValidationLambdaObjects ||
-                          isReadOnly
-                        }
-                        lambdaEditorState={rowMapFunctionLambdaEditorState}
-                        forceBackdrop={forceBackdrop}
-                        expectedType={PrimitiveType.BOOLEAN}
-                        onEditorFocus={() => onLambdaEditorFocus(false)}
-                        disablePopUp={true}
-                        className="relation-validation__lambda"
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
               <div className="relation-validation-editor__content">
                 <div className="relation-validation-editor__label">
                   Validation Grammar

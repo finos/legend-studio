@@ -17,5 +17,4 @@
 export enum DSL_DATA_QUALITY_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY {
   LAMBDA_EDITOR = 'dsl-data-quality.studio.editor.lambda-editor',
   VALIDATION_ASSERTION_EDITOR = 'dsl-data-quality.studio.editor.validation-assertion-editor',
-  VALIDATION_ROW_MAP_EDITOR = 'dsl-data-quality.studio.editor.validation-row-map-editor',
 }

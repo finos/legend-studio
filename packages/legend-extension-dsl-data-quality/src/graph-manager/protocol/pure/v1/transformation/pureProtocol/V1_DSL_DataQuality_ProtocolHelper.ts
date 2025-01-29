@@ -141,9 +141,9 @@ const V1_relationValidationModelSchema = createModelSchema(
     name: primitive(),
     description: optional(primitive()),
     assertion: usingModelSchema(V1_rawLambdaModelSchema),
-    rowMapFunction: optional(usingModelSchema(V1_rawLambdaModelSchema)),
     expected: optional(primitive()),
     buffer: optional(primitive()),
+    type: primitive(),
   },
 );
 

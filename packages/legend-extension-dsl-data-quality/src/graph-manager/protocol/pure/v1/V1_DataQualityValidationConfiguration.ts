@@ -64,7 +64,6 @@ export class V1_DataQualityRelationValidation implements Hashable {
   description: string | undefined;
   assertion!: V1_RawLambda;
   type: RelationValidationType = RelationValidationType.ROW_LEVEL;
-  rowMapFunction: V1_RawLambda | undefined;
 
   get hashCode(): string {
     return hashArray([
@@ -73,7 +72,6 @@ export class V1_DataQualityRelationValidation implements Hashable {
       this.type,
       this.description ?? '',
       this.assertion,
-      this.rowMapFunction ?? '',
     ]);
   }
 }

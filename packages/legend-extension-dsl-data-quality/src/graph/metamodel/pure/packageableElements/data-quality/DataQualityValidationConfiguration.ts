@@ -144,7 +144,6 @@ export class DataQualityRelationValidation implements Hashable {
   description: string | undefined;
   assertion: RawLambda;
   type: RelationValidationType = RelationValidationType.ROW_LEVEL;
-  rowMapFunction: RawLambda | undefined;
 
   constructor(name: string, assertion: RawLambda) {
     this.name = name;
@@ -158,7 +157,6 @@ export class DataQualityRelationValidation implements Hashable {
       this.type,
       this.description ?? '',
       this.assertion,
-      this.rowMapFunction ?? '',
     ]);
   }
 }
