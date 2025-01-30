@@ -70,6 +70,7 @@ DataQualityRelationValidation model::relationValidation
    {
      name: 'propertyNotEmpty';
      assertion: row|$row.property_1->isNotEmpty();
+     type: ROW_LEVEL;
     }
    ];
 }
