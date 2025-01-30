@@ -71,7 +71,6 @@ export class LegendDataCubeQueryBuilderState {
 
       query: observable,
       persistentQuery: observable,
-      setPersistentQuery: action,
     });
 
     this.query = query;
@@ -80,12 +79,6 @@ export class LegendDataCubeQueryBuilderState {
 
   setDataCube(val: DataCubeAPI | undefined) {
     this.dataCube = val;
-  }
-
-  setPersistentQuery(val: PersistentDataCubeQuery) {
-    this.persistentQuery = val;
-    this.query = DataCubeQuery.serialization.fromJson(val.content);
-    this.startTime = Date.now();
   }
 }
 
@@ -162,33 +155,29 @@ export class LegendDataCubeQueryBuilderStore {
       this.application.navigationService.navigator.getCurrentLocationParameterValue(
         LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN.SOURCE_DATA,
       );
-    if (sourceData) {
+    if (sourceData && !queryId) {
       this.application.navigationService.navigator.updateCurrentLocation(
         generateQueryBuilderRoute(null),
       );
-    }
-
-    if (!queryId) {
       // populate the new query state if source data is specified
-      if (sourceData) {
-        try {
-          await this.newQueryState.finalize(JSON.parse(atob(sourceData)));
-        } catch (error) {
-          assertErrorThrown(error);
-          this.alertService.alertError(error, {
-            message: `Query Creation Failure: Can't materialize query source from source data. Error: ${error.message}`,
-          });
-          this.setBuilder(undefined);
-          this.loader.display.open();
-        }
-      } else {
+      try {
+        await this.newQueryState.finalize(JSON.parse(atob(sourceData)));
+      } catch (error) {
+        assertErrorThrown(error);
+        this.alertService.alertError(error, {
+          message: `Query Creation Failure: Can't materialize query source from source data. Error: ${error.message}`,
+        });
         this.setBuilder(undefined);
-        this.loader.display.open();
       }
-      return;
     }
 
     if (queryId !== this.builder?.persistentQuery?.id) {
+      if (!queryId) {
+        this.setBuilder(undefined);
+        this.loader.display.open();
+        return;
+      }
+
       this.loadQueryState.inProgress();
 
       try {
@@ -273,7 +262,6 @@ export class LegendDataCubeQueryBuilderStore {
       this.application.navigationService.navigator.updateCurrentLocation(
         generateQueryBuilderRoute(newQuery.id),
       );
-      this.builder.setPersistentQuery(persistentQuery);
       this.updateWindowTitle(persistentQuery);
 
       this.saverDisplay.close();
@@ -320,7 +308,6 @@ export class LegendDataCubeQueryBuilderStore {
       } else {
         await this.baseStore.graphManager.updateDataCubeQuery(persistentQuery);
       }
-      this.builder.setPersistentQuery(persistentQuery);
       this.updateWindowTitle(persistentQuery);
 
       this.saverDisplay.close();

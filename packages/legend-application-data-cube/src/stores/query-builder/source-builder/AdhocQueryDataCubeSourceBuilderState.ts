@@ -29,7 +29,7 @@ export class AdhocQueryDataCubeSourceBuilderState extends LegendDataCubeSourceBu
     return false;
   }
 
-  override build(): Promise<PlainObject> {
+  override generateSourceData(): Promise<PlainObject> {
     throw new Error('Method not implemented.');
   }
 }

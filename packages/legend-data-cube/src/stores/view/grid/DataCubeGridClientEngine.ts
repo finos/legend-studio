@@ -265,29 +265,15 @@ async function getCastColumns(
   snapshot.data.groupExtendedColumns = [];
   snapshot.data.sortColumns = [];
   snapshot.data.limit = 0;
-  const query = buildExecutableQuery(
-    snapshot,
-    view.source,
-    (source) => view.engine.buildExecutionContext(source),
-    view.engine.filterOperations,
-    view.engine.aggregateOperations,
-    {
-      postProcessor: (
-        _snapshot,
-        sequence,
-        funcMap,
-        configuration,
-        filterOperations,
-        aggregateOperations,
-      ) => {
-        // when both pivot and groupBy present, we need to account for the count column
-        // in the cast expression
-        if (funcMap.pivot && currentSnapshot.data.groupBy) {
-          _colSpecArrayParam(funcMap.pivot, 1).colSpecs.push(_aggCountCol());
-        }
-      },
+  const query = buildExecutableQuery(snapshot, view.source, view.engine, {
+    postProcessor: (_snapshot, sequence, funcMap, configuration, engine) => {
+      // when both pivot and groupBy present, we need to account for the count column
+      // in the cast expression
+      if (funcMap.pivot && currentSnapshot.data.groupBy) {
+        _colSpecArrayParam(funcMap.pivot, 1).colSpecs.push(_aggCountCol());
+      }
     },
-  );
+  });
 
   const lambda = new V1_Lambda();
   lambda.body.push(query);
@@ -413,13 +399,22 @@ export class DataCubeGridClientServerSideDataSource
         request,
         newSnapshot,
         this._view.source,
-        (source) => this._view.engine.buildExecutionContext(source),
-        this._view.engine.filterOperations,
-        this._view.engine.aggregateOperations,
+        this._view.engine,
         this._grid.isPaginationEnabled,
       );
       const lambda = new V1_Lambda();
       lambda.body.push(executableQuery);
+      if (
+        this._view.settingService.getBooleanValue(
+          DataCubeSettingKey.DEBUGGER__ENABLE_DEBUG_MODE,
+        )
+      ) {
+        this._view.engine.debugProcess(
+          `Execution Plan`,
+          ['Query', lambda],
+          ['Config', `pagination=${this._grid.isPaginationEnabled}`],
+        );
+      }
       const result = await this._view.engine.executeQuery(
         lambda,
         this._view.source,
@@ -443,7 +438,6 @@ export class DataCubeGridClientServerSideDataSource
         this._view.engine.debugProcess(
           `Execution`,
           ['Query', result.executedQuery],
-          ['Config', `pagination=${this._grid.isPaginationEnabled}`],
           [
             'Stats',
             `${rowData.length} rows, ${result.result.result.columns.length} columns`,

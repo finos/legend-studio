@@ -29,9 +29,7 @@ import {
   type LegendDataCubeSourceBuilderState,
 } from './source-builder/LegendDataCubeSourceBuilderState.js';
 import {
-  _selectFunction,
   type DataCubeAlertService,
-  DataCubeQuery,
   DEFAULT_TOOL_PANEL_WINDOW_CONFIG,
   type DisplayState,
 } from '@finos/legend-data-cube';
@@ -121,12 +119,8 @@ export class LegendDataCubeNewQueryState {
 
     this.finalizeState.inProgress();
     try {
-      const source = sourceData ?? (await this.sourceBuilder.build());
-      const query = new DataCubeQuery();
-      const processedSource = await this._engine.processQuerySource(source);
-      query.source = source;
-      query.query = await this._engine.getValueSpecificationCode(
-        _selectFunction(processedSource.columns),
+      const { query } = await this._engine.generateBaseQuery(
+        sourceData ?? (await this.sourceBuilder.generateSourceData()),
       );
       this._store.setBuilder(new LegendDataCubeQueryBuilderState(query));
       // only update the route instead of reloading in case we are creating

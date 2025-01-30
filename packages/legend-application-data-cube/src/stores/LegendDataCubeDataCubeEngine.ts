@@ -79,13 +79,10 @@ import {
   type CompletionItem,
   _function,
   DataCubeFunction,
-  _deserializeLambda,
   AdhocQueryDataCubeSource,
   ADHOC_QUERY_DATA_CUBE_SOURCE_TYPE,
   RawAdhocQueryDataCubeSource,
   _lambda,
-  _serializeValueSpecification,
-  _deserializeValueSpecification,
   _defaultPrimitiveTypeValue,
   type DataCubeExecutionOptions,
   CachedDataCubeSource,
@@ -159,7 +156,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         try {
           source.columns = (
             await this._getLambdaRelationType(
-              _serializeValueSpecification(_lambda([], [source.query])),
+              this.serializeValueSpecification(_lambda([], [source.query])),
               source.model,
             )
           ).columns;
@@ -189,14 +186,18 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           );
         const source = new LegendQueryDataCubeSource();
         source.info = queryInfo;
-        source.lambda = _deserializeLambda(
-          await this._engineServerClient.grammarToJSON_lambda(
-            queryInfo.content,
-            '',
-            undefined,
-            undefined,
-            false,
+
+        source.lambda = guaranteeType(
+          this.deserializeValueSpecification(
+            await this._engineServerClient.grammarToJSON_lambda(
+              queryInfo.content,
+              '',
+              undefined,
+              undefined,
+              false,
+            ),
           ),
+          V1_Lambda,
         );
         source.mapping = executionContext.mapping;
         source.runtime = executionContext.runtime;
@@ -244,7 +245,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         try {
           source.columns = (
             await this._getLambdaRelationType(
-              _serializeValueSpecification(source.lambda),
+              this.serializeValueSpecification(source.lambda),
               source.model,
             )
           ).columns;
@@ -268,7 +269,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     returnSourceInformation?: boolean | undefined,
   ) {
     try {
-      return _deserializeValueSpecification(
+      return this.deserializeValueSpecification(
         await this._engineServerClient.grammarToJSON_valueSpecification(
           code,
           '',
@@ -298,7 +299,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     pretty?: boolean | undefined,
   ) {
     return this._graphManager.valueSpecificationToPureCode(
-      _serializeValueSpecification(value),
+      this.serializeValueSpecification(value),
       pretty,
     );
   }
@@ -341,7 +342,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   ) {
     try {
       return await this._getQueryRelationType(
-        _serializeValueSpecification(query),
+        this.serializeValueSpecification(query),
         source,
       );
     } catch (error) {
@@ -559,7 +560,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
             (process.env.NODE_ENV === 'development'
               ? PureClientVersion.VX_X_X
               : undefined),
-          function: _serializeValueSpecification(query),
+          function: this.serializeValueSpecification(query),
           model,
           context: serialize(
             V1_rawBaseExecutionContextModelSchema,

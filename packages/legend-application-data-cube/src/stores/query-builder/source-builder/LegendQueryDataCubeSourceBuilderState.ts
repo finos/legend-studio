@@ -132,7 +132,7 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
     return Boolean(this.query);
   }
 
-  override async build() {
+  override async generateSourceData() {
     if (!this.query) {
       throw new IllegalStateError('Query is missing');
     }

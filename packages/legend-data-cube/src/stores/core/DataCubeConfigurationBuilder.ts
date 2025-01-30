@@ -133,7 +133,7 @@ export function newConfiguration(
   //
   // since we have made sure all groupBy sort columns must be of the same direction
   // we simply retrieve the direction from the one of the column provided
-  if (groupBySortColumns.length) {
+  if (groupBySortColumns?.length) {
     configuration.treeColumnSortDirection = at(groupBySortColumns, 0).direction;
   }
 

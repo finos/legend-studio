@@ -79,7 +79,6 @@ import {
   _colSpec,
   _function,
   _lambda,
-  _serializeValueSpecification,
   _synthesizeMinimalSourceQuery,
 } from './DataCubeQueryBuilderUtils.js';
 import { INTERNAL__DataCubeSource } from './model/DataCubeSource.js';
@@ -360,14 +359,14 @@ export async function _extractExtendedColumns(
       _findCol(columns, colSpec.name),
       `Can't process extend() expression: failed to retrieve type information for column '${colSpec.name}'`,
     ).type,
-    mapFn: _serializeValueSpecification(
+    mapFn: engine.serializeValueSpecification(
       guaranteeNonNullable(
         colSpec.function1,
         `Can't process extend() expression: expected a transformation function expression for column '${colSpec.name}'`,
       ),
     ),
     reduceFn: colSpec.function2
-      ? _serializeValueSpecification(colSpec.function2)
+      ? engine.serializeValueSpecification(colSpec.function2)
       : undefined,
   }));
 }

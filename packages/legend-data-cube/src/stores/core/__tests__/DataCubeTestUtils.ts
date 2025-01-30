@@ -43,15 +43,11 @@ import {
   ENGINE_TEST_SUPPORT__JSONToGrammar_valueSpecification,
   ENGINE_TEST_SUPPORT__NetworkClientError,
 } from '@finos/legend-graph/test';
-import {
-  _deserializeValueSpecification,
-  _serializeValueSpecification,
-} from '../DataCubeQueryBuilderUtils.js';
 import { deserialize } from 'serializr';
 
 export class TEST__DataCubeEngine extends DataCubeEngine {
   override async processQuerySource(
-    value: PlainObject,
+    sourceData: PlainObject,
   ): Promise<DataCubeSource> {
     throw new Error('Method not implemented.');
   }
@@ -61,7 +57,7 @@ export class TEST__DataCubeEngine extends DataCubeEngine {
     returnSourceInformation?: boolean | undefined,
   ): Promise<V1_ValueSpecification> {
     try {
-      return _deserializeValueSpecification(
+      return this.deserializeValueSpecification(
         await ENGINE_TEST_SUPPORT__grammarToJSON_valueSpecification(
           code,
           returnSourceInformation,
@@ -89,7 +85,7 @@ export class TEST__DataCubeEngine extends DataCubeEngine {
     pretty?: boolean | undefined,
   ): Promise<string> {
     return ENGINE_TEST_SUPPORT__JSONToGrammar_valueSpecification(
-      _serializeValueSpecification(value),
+      this.serializeValueSpecification(value),
       pretty,
     );
   }
@@ -110,7 +106,7 @@ export class TEST__DataCubeEngine extends DataCubeEngine {
       const relationType = deserialize(
         V1_relationTypeModelSchema,
         await ENGINE_TEST_SUPPORT__getLambdaRelationType(
-          _serializeValueSpecification(query),
+          this.serializeValueSpecification(query),
           {},
         ),
       );
