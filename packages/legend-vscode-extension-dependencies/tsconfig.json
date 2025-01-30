@@ -15,7 +15,6 @@
     { "path": "../legend-art" },
     { "path": "../legend-data-cube" },
     { "path": "../legend-extension-dsl-diagram" },
-    { "path": "../legend-graph" },
     { "path": "../legend-lego" },
     { "path": "../legend-query-builder" },
     { "path": "../legend-shared" },
