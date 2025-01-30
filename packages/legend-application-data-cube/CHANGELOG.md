@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.1.21
+
+### Patch Changes
+
+- [#3856](https://github.com/finos/legend-studio/pull/3856) [`80971ca`](https://github.com/finos/legend-studio/commit/80971cabf2b52b695e5e46b538692883f46d8b6e) ([@kelly-thai](https://github.com/kelly-thai)) - Update error message if Legend DataCube URL could not be generated
+
 ## 0.1.20
 
 ### Patch Changes

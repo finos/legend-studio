@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-quality
 
+## 2.0.34
+
+### Patch Changes
+
+- [#3852](https://github.com/finos/legend-studio/pull/3852) [`9d93dbe`](https://github.com/finos/legend-studio/commit/9d93dbee8540e7d6cd124c28c2370367a83ff3eb) ([@keenkeystrokes](https://github.com/keenkeystrokes)) - support for type and removal row mapper in dataquality aggregate relation validations
+
 ## 2.0.33
 
 ## 2.0.32
