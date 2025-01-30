@@ -126,4 +126,5 @@ export type DataCubeOptions = {
    * URL to the documentation website.
    */
   documentationUrl?: string | undefined;
+  enableCache?: boolean | undefined;
 };

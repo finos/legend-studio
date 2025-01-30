@@ -29,6 +29,7 @@ import {
   INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE,
   INTERNAL__GRID_CLIENT_DEFAULT_ENABLE_PAGINATION,
   computeHashCodeForDataFetchManualTrigger,
+  INTERNAL__GRID_CLIENT_DEFAULT_ENABLE_CACHING,
 } from './DataCubeGridClientEngine.js';
 import { DataCubeQuerySnapshotController } from '../../services/DataCubeQuerySnapshotService.js';
 import type { DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
@@ -65,6 +66,7 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
   queryConfiguration: DataCubeConfiguration;
   rowLimit?: number | undefined;
   isPaginationEnabled = INTERNAL__GRID_CLIENT_DEFAULT_ENABLE_PAGINATION;
+  isCachingEnabled = INTERNAL__GRID_CLIENT_DEFAULT_ENABLE_CACHING;
   scrollHintText?: string | undefined;
   // As we resize columns dynamically to fit their content, virtual columns are being rendered
   // and resized as user scrolls horizontally, this can cause performance issues, so we debounce.
@@ -82,6 +84,9 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
 
       isPaginationEnabled: observable,
       setPaginationEnabled: action,
+
+      isCachingEnabled: observable,
+      setCachingEnabled: action,
 
       scrollHintText: observable,
       setScrollHintText: action,
@@ -117,6 +122,11 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
         ? INTERNAL__GRID_CLIENT_DEFAULT_CACHE_BLOCK_SIZE
         : INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE,
     });
+  }
+
+  setCachingEnabled(val: boolean) {
+    this.isCachingEnabled = val;
+    this._view.engine.initializeCache(this._view.source);
   }
 
   setScrollHintText(val: string | undefined) {

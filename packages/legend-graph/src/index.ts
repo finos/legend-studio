@@ -216,6 +216,19 @@ export {
 export { V1_GenericType } from './graph-manager/protocol/pure/v1/model/packageableElements/type/V1_GenericType.js';
 export { V1_PackageableType } from './graph-manager/protocol/pure/v1/model/packageableElements/type/V1_PackageableType.js';
 
+export { V1_Database } from './graph-manager/protocol/pure/v1/model/packageableElements/store/relational/model/V1_Database.js';
+export { V1_Schema } from './graph-manager/protocol/pure/v1/model/packageableElements/store/relational/model/V1_Schema.js';
+export { V1_Table } from './graph-manager/protocol/pure/v1/model/packageableElements/store/relational/model/V1_Table.js';
+export { V1_Column } from './graph-manager/protocol/pure/v1/model/packageableElements/store/relational/model/V1_Column.js';
+export {
+  V1_Binary,
+  V1_Date,
+  V1_Double,
+  V1_Integer,
+  V1_RelationalDataType,
+  V1_VarChar,
+} from './graph-manager/protocol/pure/v1/model/packageableElements/store/relational/model/V1_RelationalDataType.js';
+
 // --------------------------------------------- EXECUTION PLAN --------------------------------------------------
 
 export { INTERNAL__UnknownExecutionResult } from './graph-manager/action/execution/INTERNAL__UnknownExecutionResult.js';

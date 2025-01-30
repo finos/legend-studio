@@ -316,6 +316,43 @@ const DataCubeGridStatusBar = observer((props: { view: DataCubeViewState }) => {
             Pagination
           </div>
         </button>
+        {view.dataCube.options?.enableCache !== undefined &&
+          view.dataCube.options.enableCache && (
+            <button
+              className="flex h-full items-center p-2"
+              onClick={() => grid.setCachingEnabled(!grid.isCachingEnabled)}
+            >
+              <Switch
+                checked={grid.isCachingEnabled}
+                classes={{
+                  root: 'p-0 w-6 h-5 flex items-center',
+                  input: 'w-2',
+                  checked: '!translate-x-2 ease-in-out duration-100 transition',
+                  thumb: cn('w-2 h-2', {
+                    'bg-sky-600': grid.isCachingEnabled,
+                    'bg-neutral-500': !grid.isCachingEnabled,
+                  }),
+                  switchBase:
+                    'p-0.5 mt-1 translate-x-0 ease-in-out duration-100 transition',
+                  track: cn('h-3 w-5 border', {
+                    '!bg-sky-100 border-sky-600': grid.isCachingEnabled,
+                    '!bg-neutral-100 border-neutral-500':
+                      !grid.isCachingEnabled,
+                  }),
+                }}
+                disableRipple={true}
+                disableFocusRipple={true}
+              />
+              <div
+                className={cn('text-sm', {
+                  'text-sky-600': grid.isCachingEnabled,
+                  'text-neutral-500': !grid.isCachingEnabled,
+                })}
+              >
+                Caching
+              </div>
+            </button>
+          )}
       </div>
     </div>
   );

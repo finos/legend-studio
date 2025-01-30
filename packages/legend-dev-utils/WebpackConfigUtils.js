@@ -154,7 +154,7 @@ export const getBaseWebpackConfig = (
           ].filter(Boolean),
         },
         {
-          test: /\.(?:woff2?|ttf|otf|eot|svg|png|gif)$/,
+          test: /\.(?:woff2?|ttf|otf|eot|svg|png|gif|wasm)$/,
           type: 'asset/resource',
         },
       ],

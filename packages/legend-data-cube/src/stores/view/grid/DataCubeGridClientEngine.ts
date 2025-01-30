@@ -121,6 +121,7 @@ export const generateBackgroundColorUtilityClassName = (
 // See https://www.ag-grid.com/react-data-grid/server-side-model-configuration/#server-side-cache
 export const INTERNAL__GRID_CLIENT_DEFAULT_CACHE_BLOCK_SIZE = 500;
 export const INTERNAL__GRID_CLIENT_DEFAULT_ENABLE_PAGINATION = true;
+export const INTERNAL__GRID_CLIENT_DEFAULT_ENABLE_CACHING = false;
 // NOTE: The cache block size is used by ag-grid to pre-allocate memory for the grid
 // so the value set must be reasonable, or else it can crash the engine!
 export const INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE = 1e3;

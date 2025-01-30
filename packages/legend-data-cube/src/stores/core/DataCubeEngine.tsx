@@ -235,6 +235,12 @@ export abstract class DataCubeEngine {
     source: DataCubeSource,
   ): V1_AppliedFunction | undefined;
 
+  // ---------------------------------- CACHING --------------------------------------
+
+  initializeCache(source: DataCubeSource): Promise<void> {
+    return Promise.resolve();
+  }
+
   // ---------------------------------- APPLICATION ----------------------------------
 
   logDebug(message: string, ...data: unknown[]) {

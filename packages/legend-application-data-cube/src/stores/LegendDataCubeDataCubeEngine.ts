@@ -15,13 +15,13 @@
  */
 
 import {
-  type V1_Lambda,
-  type V1_ValueSpecification,
+  V1_Lambda,
+  V1_ValueSpecification,
   type V1_EngineServerClient,
   V1_PureGraphManager,
   type V1_PureModelContext,
   type ExecutionResult,
-  type V1_ExecutionResult,
+  V1_ExecutionResult,
   RelationalExecutionActivities,
   TDSExecutionResult,
   V1_ParameterValue,
@@ -72,8 +72,10 @@ import {
   HttpStatus,
   at,
   assertType,
+  guaranteeType,
 } from '@finos/legend-shared';
 import type { LegendDataCubeApplicationStore } from './LegendDataCubeBaseStore.js';
+import { LegendDataCubeDataCubeCacheEngine } from './LegendDataCubeDataCubeCacheEngine.js';
 import { APPLICATION_EVENT } from '@finos/legend-application';
 import {
   LEGEND_QUERY_DATA_CUBE_SOURCE_TYPE,
@@ -91,6 +93,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   private readonly _depotServerClient: DepotServerClient;
   private readonly _engineServerClient: V1_EngineServerClient;
   private readonly _graphManager: V1_PureGraphManager;
+  private readonly _cacheManager: LegendDataCubeDataCubeCacheEngine;
 
   constructor(
     application: LegendDataCubeApplicationStore,
@@ -104,6 +107,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     this._depotServerClient = depotServerClient;
     this._engineServerClient = engineServerClient;
     this._graphManager = graphManager;
+    this._cacheManager = new LegendDataCubeDataCubeCacheEngine();
   }
 
   // ---------------------------------- IMPLEMENTATION ----------------------------------
@@ -484,6 +488,31 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         })) as PlainObject<V1_ExecutionResult>,
       ),
     );
+  }
+
+  // ---------------------------------- CACHING --------------------------------------
+
+  override async initializeCache(source: DataCubeSource): Promise<void> {
+    if (source instanceof LegendQueryDataCubeSource) {
+      const fromQuery = this.buildExecutionContext(source);
+      fromQuery?.parameters.unshift(source.query);
+      const valSpec = guaranteeType(
+        fromQuery,
+        V1_ValueSpecification,
+        'Query is not a valueSpecification',
+      );
+      const queryLambda = new V1_Lambda();
+      queryLambda.body = [valSpec];
+      const resultQuery = await this.executeQuery(
+        queryLambda,
+        source,
+        undefined,
+      );
+      const result = resultQuery.result;
+      await this._cacheManager.initializeDuckDb(result);
+      //TODO: synthesize cached datacube source and call it
+    }
+    return Promise.resolve();
   }
 
   // ---------------------------------- APPLICATION ----------------------------------
