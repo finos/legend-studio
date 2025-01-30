@@ -22,10 +22,8 @@
   "sideEffects": false,
   "type": "module",
   "exports": {
-    ".": {
-      "import": "./lib/index.js",
-      "require": "./lib/bundles/bundle.cjs.js"
-    },
+    ".": "./lib/index.js",
+    "./cjs": "./lib/bundles/bundle.cjs.js",
     "./test": "./lib/__test__.js"
   },
   "module": "lib/index.js",
