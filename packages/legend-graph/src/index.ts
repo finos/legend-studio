@@ -32,7 +32,7 @@ export {
   GenericTypeExplicitReference,
 } from './graph/metamodel/pure/packageableElements/domain/GenericTypeReference.js';
 export { GenericType } from './graph/metamodel/pure/packageableElements/domain/GenericType.js';
-export { type Function } from './graph/metamodel/pure/packageableElements/domain/Function.js';
+export type { Function } from './graph/metamodel/pure/packageableElements/domain/Function.js';
 export { Class } from './graph/metamodel/pure/packageableElements/domain/Class.js';
 export { type AnnotatedElement } from './graph/metamodel/pure/packageableElements/domain/AnnotatedElement.js';
 export { Package } from './graph/metamodel/pure/packageableElements/domain/Package.js';
