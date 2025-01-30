@@ -215,18 +215,22 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           ),
         );
         source.query = at(source.lambda.body, 0);
+        // use the default parameter values from the query
+        //
+        // TODO?: we should probably allow configuring the parameters?
+        // this would mean we need to create first-class support for parameters in DataCube component
         const parameterValues = await Promise.all(
           source.lambda.parameters.map(async (parameter) => {
             if (parameter.genericType?.rawType instanceof V1_PackageableType) {
               const paramValue = new V1_ParameterValue();
               paramValue.name = parameter.name;
               const type = parameter.genericType.rawType.fullPath;
-              const defauleValue = queryInfo.defaultParameterValues?.find(
+              const defaultValue = queryInfo.defaultParameterValues?.find(
                 (val) => val.name === parameter.name,
               )?.content;
               paramValue.value =
-                defauleValue !== undefined
-                  ? await this.parseValueSpecification(defauleValue)
+                defaultValue !== undefined
+                  ? await this.parseValueSpecification(defaultValue)
                   : {
                       _type: V1_deserializeRawValueSpecificationType(type),
                       value: _defaultPrimitiveTypeValue(type),

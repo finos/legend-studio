@@ -43,7 +43,10 @@ import {
 } from '@finos/legend-shared';
 import type { LegendDataCubeDataCubeEngine } from '../LegendDataCubeDataCubeEngine.js';
 import { LegendDataCubeQuerySaver } from '../../components/query-builder/LegendDataCubeQuerySaver.js';
-import { generateQueryBuilderRoute } from '../../__lib__/LegendDataCubeNavigation.js';
+import {
+  generateQueryBuilderRoute,
+  LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN,
+} from '../../__lib__/LegendDataCubeNavigation.js';
 import { LegendDataCubeQueryLoaderState } from './LegendDataCubeQueryLoaderState.js';
 import {
   LegendDataCubeUserDataKey,
@@ -154,12 +157,38 @@ export class LegendDataCubeQueryBuilderStore {
   }
 
   async loadQuery(queryId: string | undefined) {
-    if (queryId !== this.builder?.persistentQuery?.id) {
-      if (!queryId) {
-        this.setBuilder(undefined);
-        return;
-      }
+    // internalize the parameters and clean them from the URL
+    const sourceData =
+      this.application.navigationService.navigator.getCurrentLocationParameterValue(
+        LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN.SOURCE_DATA,
+      );
+    if (sourceData) {
+      this.application.navigationService.navigator.updateCurrentLocation(
+        generateQueryBuilderRoute(null),
+      );
+    }
 
+    if (!queryId) {
+      // populate the new query state if source data is specified
+      if (sourceData) {
+        try {
+          await this.newQueryState.finalize(JSON.parse(atob(sourceData)));
+        } catch (error) {
+          assertErrorThrown(error);
+          this.alertService.alertError(error, {
+            message: `Query Creation Failure: Can't materialize query source from source data. Error: ${error.message}`,
+          });
+          this.setBuilder(undefined);
+          this.loader.display.open();
+        }
+      } else {
+        this.setBuilder(undefined);
+        this.loader.display.open();
+      }
+      return;
+    }
+
+    if (queryId !== this.builder?.persistentQuery?.id) {
       this.loadQueryState.inProgress();
 
       try {

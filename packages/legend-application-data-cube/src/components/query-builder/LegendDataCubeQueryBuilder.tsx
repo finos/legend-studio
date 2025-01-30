@@ -29,11 +29,10 @@ import {
 import { useParams } from '@finos/legend-application/browser';
 import {
   LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN,
-  type LegendDataCubeQueryBuilderQueryPathParams,
+  type LegendDataCubeQueryBuilderPathParams,
 } from '../../__lib__/LegendDataCubeNavigation.js';
 import { useEffect } from 'react';
 import { LegendDataCubeSettingStorageKey } from '../../__lib__/LegendDataCubeSetting.js';
-import { assertErrorThrown, type PlainObject } from '@finos/legend-shared';
 
 const LegendDataCubeQueryBuilderHeader = observer(() => {
   const store = useLegendDataCubeQueryBuilderStore();
@@ -67,37 +66,26 @@ export const LegendDataCubeQueryBuilder = withLegendDataCubeQueryBuilderStore(
     const store = useLegendDataCubeQueryBuilderStore();
     const builder = store.builder;
     const application = store.application;
-    const params = useParams<LegendDataCubeQueryBuilderQueryPathParams>();
+    const params = useParams<LegendDataCubeQueryBuilderPathParams>();
     const queryId = params[LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN.QUERY_ID];
-    const sourceData =
-      application.navigationService.navigator.getCurrentLocationParameterValue(
-        LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN.SOURCE_DATA,
+
+    useEffect(() => {
+      application.navigationService.navigator.blockNavigation(
+        // Only block navigation in production, in development, we should have
+        // the flexibility to reload the page quickly
+        // eslint-disable-next-line no-process-env
+        [() => process.env.NODE_ENV === 'production'],
       );
+      return (): void => {
+        application.navigationService.navigator.unblockNavigation();
+      };
+    }, [application]);
 
     useEffect(() => {
-      if (sourceData) {
-        try {
-          const sourceDataJson = JSON.parse(
-            decodeURIComponent(atob(sourceData)),
-          ) as PlainObject;
-          store.newQueryState
-            .finalize(sourceDataJson)
-            .catch((error) => store.alertService.alertUnhandledError(error));
-        } catch (error) {
-          assertErrorThrown(error);
-        }
-      } else if (queryId !== store.builder?.persistentQuery?.id) {
-        store
-          .loadQuery(queryId)
-          .catch((error) => store.alertService.alertUnhandledError(error));
-      }
-    }, [store, queryId, sourceData]);
-
-    useEffect(() => {
-      if (!store.builder && !queryId && !sourceData) {
-        store.loader.display.open();
-      }
-    }, [store, queryId, sourceData]);
+      store
+        .loadQuery(queryId)
+        .catch((error) => store.alertService.alertUnhandledError(error));
+    }, [store, queryId]);
 
     if (!builder) {
       return (

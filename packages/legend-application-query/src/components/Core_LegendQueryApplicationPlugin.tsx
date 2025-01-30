@@ -43,6 +43,7 @@ import {
   MoreVerticalIcon,
 } from '@finos/legend-art';
 import {
+  EXTERNAL_APPLICATION_NAVIGATION__generateDataCubeNewQueryUrl,
   generateCloneServiceQuerySetupRoute,
   generateCreateMappingQuerySetupRoute,
   generateEditExistingQuerySetupRoute,
@@ -57,7 +58,6 @@ import {
   type LegendApplicationSetup,
   ActionAlertActionType,
   ActionAlertType,
-  useApplicationStore,
 } from '@finos/legend-application';
 import { CloneQueryServiceSetup } from './CloneQueryServiceSetup.js';
 import { QueryProductionizerSetup } from './QueryProductionizerSetup.js';
@@ -131,6 +131,7 @@ import { flowResult } from 'mobx';
 import { LEGEND_QUERY_APP_EVENT } from '../__lib__/LegendQueryEvent.js';
 import { observer } from 'mobx-react-lite';
 import { useQueryEditorStore } from './QueryEditorStoreProvider.js';
+import { useLegendQueryApplicationStore } from './LegendQueryFrameworkProvider.js';
 
 export const QUERY_DATACUBE_USAGE_TITLE = 'Legend DataCube';
 const QUERY_DATACUBE_SOURCE_TYPE = 'legendQuery';
@@ -154,29 +155,22 @@ const MoreButton: React.FC = () => (
 );
 
 export const QueryDataCubeUsage = observer(() => {
-  const applicationStore = useApplicationStore();
+  const applicationStore = useLegendQueryApplicationStore();
   const queryEditorStore = useQueryEditorStore();
 
   const generateDataCubeUrl = (): string => {
     if (
       queryEditorStore instanceof ExistingQueryEditorStore &&
-      queryEditorStore.query
+      queryEditorStore.query &&
+      applicationStore.config.dataCubeApplicationUrl
     ) {
-      try {
-        const encodedQuerySource = encodeURIComponent(
-          btoa(
-            JSON.stringify({
-              _type: QUERY_DATACUBE_SOURCE_TYPE,
-              queryId: queryEditorStore.query.id,
-            }),
-          ),
-        );
-        const baseAddress =
-          applicationStore.navigationService.navigator.getCurrentBaseAddress();
-        return `${baseAddress}/datacube?sourceData=${encodedQuerySource}`;
-      } catch (error) {
-        assertErrorThrown(error);
-      }
+      return EXTERNAL_APPLICATION_NAVIGATION__generateDataCubeNewQueryUrl(
+        applicationStore.config.dataCubeApplicationUrl,
+        {
+          _type: QUERY_DATACUBE_SOURCE_TYPE,
+          queryId: queryEditorStore.query.id,
+        },
+      );
     }
     return 'Legend DataCube URL could not be created\n\nEnsure the following:\n1)You are working with a saved query\n2)Typed TDS is enabled (Advanced > Enable Typed TDS)';
   };

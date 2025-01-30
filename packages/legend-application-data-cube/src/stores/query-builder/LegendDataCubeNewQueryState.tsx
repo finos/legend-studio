@@ -44,6 +44,8 @@ import {
 } from './LegendDataCubeQueryBuilderStore.js';
 import { generateQueryBuilderRoute } from '../../__lib__/LegendDataCubeNavigation.js';
 
+const DEFAULT_SOURCE_TYPE = LegendDataCubeSourceBuilderType.LEGEND_QUERY;
+
 export class LegendDataCubeNewQueryState {
   private readonly _application: LegendDataCubeApplicationStore;
   private readonly _store: LegendDataCubeQueryBuilderStore;
@@ -76,9 +78,7 @@ export class LegendDataCubeNewQueryState {
       },
     );
 
-    this.sourceBuilder = this.createSourceBuilder(
-      LegendDataCubeSourceBuilderType.LEGEND_QUERY,
-    );
+    this.sourceBuilder = this.createSourceBuilder(DEFAULT_SOURCE_TYPE);
   }
 
   changeSourceBuilder(
@@ -115,7 +115,7 @@ export class LegendDataCubeNewQueryState {
   }
 
   async finalize(sourceData?: PlainObject) {
-    if (!this.sourceBuilder.isValid && !sourceData) {
+    if (!sourceData && !this.sourceBuilder.isValid) {
       throw new IllegalStateError(`Can't generate query: source is not valid`);
     }
 
@@ -136,10 +136,7 @@ export class LegendDataCubeNewQueryState {
       );
 
       // reset
-      this.changeSourceBuilder(
-        LegendDataCubeSourceBuilderType.LEGEND_QUERY,
-        true,
-      );
+      this.changeSourceBuilder(DEFAULT_SOURCE_TYPE, true);
       this.display.close();
       this.finalizeState.pass();
     } catch (error) {
