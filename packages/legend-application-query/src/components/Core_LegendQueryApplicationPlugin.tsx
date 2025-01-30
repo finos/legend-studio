@@ -162,17 +162,23 @@ export const QueryDataCubeUsage = observer(() => {
       queryEditorStore instanceof ExistingQueryEditorStore &&
       queryEditorStore.query
     ) {
-      const encodedQuerySource = btoa(
-        JSON.stringify({
-          _type: QUERY_DATACUBE_SOURCE_TYPE,
-          queryId: queryEditorStore.query.id,
-        }),
-      );
-      const baseAddress =
-        applicationStore.navigationService.navigator.getCurrentBaseAddress();
-      return `${baseAddress}/datacube?sourceData=${encodedQuerySource}`;
+      try {
+        const encodedQuerySource = encodeURIComponent(
+          btoa(
+            JSON.stringify({
+              _type: QUERY_DATACUBE_SOURCE_TYPE,
+              queryId: queryEditorStore.query.id,
+            }),
+          ),
+        );
+        const baseAddress =
+          applicationStore.navigationService.navigator.getCurrentBaseAddress();
+        return `${baseAddress}/datacube?sourceData=${encodedQuerySource}`;
+      } catch (error) {
+        assertErrorThrown(error);
+      }
     }
-    return 'Legend DataCube URL could not be created';
+    return 'Legend DataCube URL could not be created\n\nEnsure the following:\n1)You are working with a saved query\n2)Typed TDS is enabled (Advanced > Enable Typed TDS)';
   };
 
   return (
