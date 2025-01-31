@@ -44,6 +44,7 @@ import {
   V1_PackageableType,
   V1_deserializeRawValueSpecificationType,
   V1_Protocol,
+  V1_AppliedFunction,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
@@ -61,6 +62,7 @@ import {
   _deserializeValueSpecification,
   _defaultPrimitiveTypeValue,
   type DataCubeExecutionOptions,
+  CachedDataCubeSource,
 } from '@finos/legend-data-cube';
 import {
   isNonNullable,
@@ -87,6 +89,7 @@ import {
   resolveVersion,
   type DepotServerClient,
 } from '@finos/legend-server-depot';
+import { synthesizeCachedSource } from './CachedDataCubeSourceBuilder.js';
 
 export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   private readonly _application: LegendDataCubeApplicationStore;
@@ -383,6 +386,11 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         source.parameterValues,
         options,
       );
+    } else if (source instanceof CachedDataCubeSource) {
+      //execute plan
+      throw new UnsupportedOperationError(
+        `Can't execute query with unsupported source`,
+      );
     } else {
       throw new UnsupportedOperationError(
         `Can't execute query with unsupported source`,
@@ -421,6 +429,11 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           source.mapping ? _elementPtr(source.mapping) : undefined,
           _elementPtr(source.runtime),
         ].filter(isNonNullable),
+      );
+    } else if (source instanceof CachedDataCubeSource) {
+      return _function(
+        DataCubeFunction.FROM,
+        [_elementPtr(source.runtime)].filter(isNonNullable),
       );
     }
     return undefined;
@@ -492,7 +505,9 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
 
   // ---------------------------------- CACHING --------------------------------------
 
-  override async initializeCache(source: DataCubeSource): Promise<void> {
+  override async initializeCache(
+    source: DataCubeSource,
+  ): Promise<CachedDataCubeSource | void> {
     if (source instanceof LegendQueryDataCubeSource) {
       const fromQuery = this.buildExecutionContext(source);
       fromQuery?.parameters.unshift(source.query);
@@ -510,7 +525,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       );
       const result = resultQuery.result;
       await this._cacheManager.initializeDuckDb(result);
-      //TODO: synthesize cached datacube source and call it
+      return synthesizeCachedSource(source, result.builder);
     }
     return Promise.resolve();
   }

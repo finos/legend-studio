@@ -55,6 +55,7 @@ import {
   V1_SpannerDatasourceSpecification,
   V1_TrinoDatasourceSpecification,
   V1_TrinoSslSpecification,
+  V1_DuckDBDatasourceSpecification,
 } from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification.js';
 import {
   type V1_AuthenticationStrategy,
@@ -68,6 +69,7 @@ import {
   V1_GCPWorkloadIdentityFederationAuthenticationStrategy,
   V1_MiddleTierUsernamePasswordAuthenticationStrategy,
   V1_TrinoDelegatedKerberosAuthenticationStrategy,
+  V1_TestAuthenticationStrategy,
 } from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy.js';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
 import type { STO_Relational_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/STO_Relational_PureProtocolProcessorPlugin_Extension.js';
@@ -171,6 +173,7 @@ enum V1_DatasourceSpecificationType {
   BIGQUERY = 'bigQuery',
   SPANNER = 'spanner',
   TRINO = 'Trino',
+  DUCKDB = 'duckDB',
 }
 
 const staticDatasourceSpecificationModelSchema = createModelSchema(
@@ -293,6 +296,14 @@ const trinoDatasourceSpecificationModelSchema = createModelSchema(
   },
 );
 
+const duckDbDatasourceSpecificationModelSchema = createModelSchema(
+  V1_DuckDBDatasourceSpecification,
+  {
+    _type: usingConstantValueSchema(V1_DatasourceSpecificationType.DUCKDB),
+    path: primitive(),
+  },
+);
+
 export const V1_serializeDatasourceSpecification = (
   protocol: V1_DatasourceSpecification,
   plugins: PureProtocolProcessorPlugin[],
@@ -317,6 +328,8 @@ export const V1_serializeDatasourceSpecification = (
     return serialize(spannerDatasourceSpecificationModelSchema, protocol);
   } else if (protocol instanceof V1_TrinoDatasourceSpecification) {
     return serialize(trinoDatasourceSpecificationModelSchema, protocol);
+  } else if (protocol instanceof V1_DuckDBDatasourceSpecification) {
+    return serialize(duckDbDatasourceSpecificationModelSchema, protocol);
   }
   const extraConnectionDatasourceSpecificationProtocolSerializers =
     plugins.flatMap(
@@ -361,6 +374,8 @@ export const V1_deserializeDatasourceSpecification = (
       return deserialize(spannerDatasourceSpecificationModelSchema, json);
     case V1_DatasourceSpecificationType.TRINO:
       return deserialize(trinoDatasourceSpecificationModelSchema, json);
+    case V1_DatasourceSpecificationType.DUCKDB:
+      return deserialize(duckDbDatasourceSpecificationModelSchema, json);
     default: {
       const extraConnectionDatasourceSpecificationProtocolDeserializers =
         plugins.flatMap(
@@ -393,6 +408,7 @@ enum V1_AuthenticationStrategyType {
   GCP_APPLICATION_DEFAULT_CREDENTIALS = 'gcpApplicationDefaultCredentials',
   API_TOKEN = 'apiToken',
   H2_DEFAULT = 'h2Default',
+  TEST = 'Test',
   OAUTH = 'oauth',
   USERNAME_PASSWORD = 'userNamePassword',
   GCP_WORKLOAD_IDENTITY_FEDERATION = 'gcpWorkloadIdentityFederation',
@@ -413,6 +429,11 @@ const V1_delegatedKerberosAuthenticationStrategyModelSchema = createModelSchema(
 const V1_defaultH2AuthenticationStrategyModelSchema = createModelSchema(
   V1_DefaultH2AuthenticationStrategy,
   { _type: usingConstantValueSchema(V1_AuthenticationStrategyType.H2_DEFAULT) },
+);
+
+const V1_testAuthenticationStrategyModelSchema = createModelSchema(
+  V1_TestAuthenticationStrategy,
+  { _type: usingConstantValueSchema(V1_AuthenticationStrategyType.TEST) },
 );
 
 const V1_apiTokenAuthenticationStrategyModelSchema = createModelSchema(
@@ -502,6 +523,8 @@ export const V1_serializeAuthenticationStrategy = (
     );
   } else if (protocol instanceof V1_DefaultH2AuthenticationStrategy) {
     return serialize(V1_defaultH2AuthenticationStrategyModelSchema, protocol);
+  } else if (protocol instanceof V1_TestAuthenticationStrategy) {
+    return serialize(V1_testAuthenticationStrategyModelSchema, protocol);
   } else if (protocol instanceof V1_ApiTokenAuthenticationStrategy) {
     return serialize(V1_apiTokenAuthenticationStrategyModelSchema, protocol);
   } else if (protocol instanceof V1_SnowflakePublicAuthenticationStrategy) {
@@ -578,6 +601,8 @@ export const V1_deserializeAuthenticationStrategy = (
       );
     case V1_AuthenticationStrategyType.H2_DEFAULT:
       return deserialize(V1_defaultH2AuthenticationStrategyModelSchema, json);
+    case V1_AuthenticationStrategyType.TEST:
+      return deserialize(V1_testAuthenticationStrategyModelSchema, json);
     case V1_AuthenticationStrategyType.API_TOKEN:
       return deserialize(V1_apiTokenAuthenticationStrategyModelSchema, json);
     case V1_AuthenticationStrategyType.SNOWFLAKE_PUBLIC:

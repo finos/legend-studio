@@ -124,9 +124,11 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
     });
   }
 
-  setCachingEnabled(val: boolean) {
+  async setCachingEnabled(val: boolean) {
     this.isCachingEnabled = val;
-    this._view.engine.initializeCache(this._view.source);
+    if (this.isCachingEnabled) {
+      await this._view.initializeCache();
+    }
   }
 
   setScrollHintText(val: string | undefined) {

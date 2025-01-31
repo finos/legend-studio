@@ -110,6 +110,13 @@ export class DataCubeViewState {
     return this._source;
   }
 
+  async initializeCache() {
+    const cachedSource = await this.engine.initializeCache(this.source);
+    if (cachedSource !== undefined) {
+      this._source = cachedSource;
+    }
+  }
+
   async initialize(query: DataCubeQuery) {
     this.initializeState.inProgress();
     const task = this.taskService.newTask('Initializing');

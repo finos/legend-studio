@@ -19,9 +19,11 @@ import duckdb_wasm from '@duckdb/duckdb-wasm/dist/duckdb-mvp.wasm';
 import duckdb_wasm_next from '@duckdb/duckdb-wasm/dist/duckdb-eh.wasm';
 import type { TDSExecutionResult } from '@finos/legend-graph';
 import { action, makeObservable, observable } from 'mobx';
+import type { AsyncDuckDBConnection } from '@duckdb/duckdb-wasm';
 
 export class LegendDataCubeDataCubeCacheEngine {
   db?: duckdb.AsyncDuckDB | undefined;
+  conn?: AsyncDuckDBConnection | undefined;
 
   constructor() {
     makeObservable(this, {
@@ -54,7 +56,7 @@ export class LegendDataCubeDataCubeCacheEngine {
     const logger = new duckdb.ConsoleLogger();
     this.db = new duckdb.AsyncDuckDB(logger, worker);
     await this.db.instantiate(bundle.mainModule, bundle.pthreadWorker);
-    const conn = await this.db.connect();
+    this.conn = await this.db.connect();
 
     let columns: string[] = [];
     result.builder.columns.forEach((col) =>
@@ -62,11 +64,11 @@ export class LegendDataCubeDataCubeCacheEngine {
     );
 
     const CREATE_TABLE_SQL = `CREATE TABLE cached_tbl (${columns.join(',')})`;
-    await conn.query(CREATE_TABLE_SQL);
+    await this.conn.query(CREATE_TABLE_SQL);
 
     let rowString: string[] = [];
 
-    result.result.rows.slice(10).forEach((row) => {
+    result.result.rows.forEach((row) => {
       const updatedRows = row.values.map((val) => {
         if (val !== null && typeof val === 'string') {
           return `'${val.replaceAll(`'`, `''`)}'`;
@@ -80,10 +82,7 @@ export class LegendDataCubeDataCubeCacheEngine {
 
     const INSERT_TABLE_SQL = `INSERT INTO cached_tbl VALUES ${rowString.join(',')}`;
 
-    await conn.query(INSERT_TABLE_SQL);
-
-    conn.close();
-
+    await this.conn.query(INSERT_TABLE_SQL);
     return Promise.resolve();
   }
 

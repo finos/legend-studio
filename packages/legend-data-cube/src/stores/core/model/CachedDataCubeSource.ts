@@ -15,11 +15,12 @@
  */
 
 import { DataCubeSource } from '@finos/legend-data-cube';
-import type { PlainObject } from '@finos/legend-shared';
+import type { V1_PureModelContextData } from '@finos/legend-graph';
 
 export const CACHED_DATA_CUBE_SOURCE_TYPE = 'cached';
 
 export class CachedDataCubeSource extends DataCubeSource {
   originalSource!: DataCubeSource;
-  model!: PlainObject;
+  model!: V1_PureModelContextData;
+  runtime!: string;
 }

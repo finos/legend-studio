@@ -16,19 +16,34 @@
 
 import type { TDSBuilder } from '../../../legend-graph/src/graph-manager/action/execution/ExecutionResult.js';
 import {
+  V1_AppliedFunction,
   V1_Binary,
+  V1_ClassInstance,
+  V1_ClassInstanceType,
   V1_Column,
   V1_Database,
   V1_Date,
   V1_Double,
+  V1_DuckDBDatasourceSpecification,
+  V1_EngineRuntime,
+  V1_IdentifiedConnection,
   V1_Integer,
+  V1_RelationStoreAccessor,
+  V1_PackageableElementPointer,
+  V1_PackageableRuntime,
+  V1_PureModelContextData,
   V1_RelationalDataType,
+  V1_RelationalDatabaseConnection,
   V1_Schema,
+  V1_StoreConnections,
   V1_Table,
+  V1_TestAuthenticationStrategy,
   V1_VarChar,
 } from '@finos/legend-graph';
-import { CachedDataCubeSource } from './model/CachedDataCubeSource.js';
 import type { LegendQueryDataCubeSource } from './model/LegendQueryDataCubeSource.js';
+import { serialize } from 'serializr';
+import { CachedDataCubeSource } from '@finos/legend-data-cube';
+import { guaranteeType } from '@finos/legend-shared';
 
 export function synthesizeCachedSource(
   source: LegendQueryDataCubeSource,
@@ -36,20 +51,67 @@ export function synthesizeCachedSource(
 ) {
   const cachedSource = new CachedDataCubeSource();
   cachedSource.columns = source.columns;
-  cachedSource.query = source.query;
+  cachedSource.query = synthesizeQuery(
+    guaranteeType(
+      source.query,
+      V1_AppliedFunction,
+      `Can't process value specification`,
+    ),
+    'local::duckb::cachedStore.cached_tbl',
+  );
   cachedSource.originalSource = source;
-  //  synthesizeModel();
+  cachedSource.model = serialize(synthesizeModel(builder));
+  cachedSource.runtime = 'local::duckdb::runtime';
+  return cachedSource;
+}
+
+function synthesizeQuery(query: V1_AppliedFunction, databaseAccessor: string) {
+  addDatabaseAccessor(query, databaseAccessor);
+  return query;
+}
+
+function addDatabaseAccessor(
+  appliedFunction: V1_AppliedFunction,
+  databaseAccessor: string,
+) {
+  if (
+    appliedFunction.parameters[0] instanceof V1_AppliedFunction &&
+    appliedFunction.parameters[0].function === 'getAll'
+  ) {
+    const classInstance = new V1_ClassInstance();
+    classInstance.type = V1_ClassInstanceType.RELATION_STORE_ACCESSOR;
+    const storeAccessor = new V1_RelationStoreAccessor();
+    storeAccessor.path = [databaseAccessor];
+    classInstance.value = storeAccessor;
+    appliedFunction.parameters[0] = classInstance;
+    return;
+  } else {
+    appliedFunction.parameters.forEach((param) => {
+      if (param instanceof V1_AppliedFunction) {
+        addDatabaseAccessor(param, databaseAccessor);
+      }
+    });
+  }
 }
 
 function synthesizeModel(builder: TDSBuilder) {
   const schemas = synthesizeSchema([synthesizeTable(builder)]);
   const database = synthesizeDatabase([schemas]);
+  const runtime = synthesizeRuntime(synthesizeConnection(), database);
+  const packageableRuntime = new V1_PackageableRuntime();
+  packageableRuntime.runtimeValue = runtime;
+  packageableRuntime.package = 'local::duckdb';
+  packageableRuntime.name = 'runtime';
+
+  const pmcd = new V1_PureModelContextData();
+  pmcd.elements = [database, packageableRuntime];
+  return pmcd;
 }
 
 function synthesizeDatabase(schemas: V1_Schema[]) {
   const database = new V1_Database();
-  database.name = 'DuckDb';
-  database.package = 'cached';
+  database.name = 'cachedStore';
+  database.package = 'local::duckdb';
   database.schemas = schemas;
   return database;
 }
@@ -68,6 +130,7 @@ function synthesizeTable(builder: TDSBuilder) {
 
 function synthesizeSchema(tables: V1_Table[]) {
   const schema = new V1_Schema();
+  schema.name = 'main';
   schema.tables = tables;
   return schema;
 }
@@ -93,8 +156,30 @@ function getColumnType(type: string | undefined): V1_RelationalDataType {
   }
 }
 
-// function synthesizeConnection(database: V1_Database)
-// {
-//   const connection = new V1_RelationalDatabaseConnection();
-//   connection.databaseType =
-// }
+function synthesizeConnection() {
+  const connection = new V1_RelationalDatabaseConnection();
+  connection.databaseType = 'DuckDB';
+  const dataSourceSpec = new V1_DuckDBDatasourceSpecification();
+  dataSourceSpec.path = '/temp/path';
+  connection.datasourceSpecification = dataSourceSpec;
+  connection.authenticationStrategy = new V1_TestAuthenticationStrategy();
+  return connection;
+}
+
+function synthesizeRuntime(
+  connection: V1_RelationalDatabaseConnection,
+  db: V1_Database,
+) {
+  const runtime = new V1_EngineRuntime();
+  const storeConnections = new V1_StoreConnections();
+  storeConnections.store = new V1_PackageableElementPointer(
+    'STORE',
+    db.package + '::' + db.name,
+  );
+  const idConnection = new V1_IdentifiedConnection();
+  idConnection.connection = connection;
+  idConnection.id = 'local_duckdb_connection';
+  storeConnections.storeConnections = [idConnection];
+  runtime.connections = [storeConnections];
+  return runtime;
+}

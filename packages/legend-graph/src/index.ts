@@ -228,6 +228,10 @@ export {
   V1_RelationalDataType,
   V1_VarChar,
 } from './graph-manager/protocol/pure/v1/model/packageableElements/store/relational/model/V1_RelationalDataType.js';
+export { V1_RelationalDatabaseConnection } from './graph-manager/protocol/pure/v1/model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection.js';
+export { V1_DuckDBDatasourceSpecification } from './graph-manager/protocol/pure/v1/model/packageableElements/store/relational/connection/V1_DatasourceSpecification.js';
+export { V1_TestAuthenticationStrategy } from './graph-manager/protocol/pure/v1/model/packageableElements/store/relational/connection/V1_AuthenticationStrategy.js';
+export { V1_RelationStoreAccessor } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/classInstance/relation/V1_RelationStoreAccessor.js';
 
 // --------------------------------------------- EXECUTION PLAN --------------------------------------------------
 
