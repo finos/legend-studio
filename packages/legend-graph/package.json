@@ -23,11 +23,21 @@
   "type": "module",
   "exports": {
     ".": "./lib/index.js",
-    "./cjs": "./lib/bundles/bundle.cjs.js",
+    "./cjs": {
+      "import": "./lib/index.js",
+      "require": "./lib/bundles/bundle.cjs.js"
+    },
     "./test": "./lib/__test__.js"
   },
   "module": "lib/index.js",
   "types": "lib/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "cjs": [
+        "./lib/index.d.ts"
+      ]
+    }
+  },
   "scripts": {
     "build": "yarn clean && yarn build:ts",
     "build:ts": "tsc --project ./tsconfig.build.json",
