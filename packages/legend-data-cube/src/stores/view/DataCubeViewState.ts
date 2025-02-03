@@ -64,6 +64,8 @@ export class DataCubeViewState {
 
   private _source?: DataCubeSource | undefined;
 
+  private _originalSource?: DataCubeSource | undefined;
+
   constructor(dataCube: DataCubeState) {
     makeObservable<DataCubeViewState, '_source'>(this, {
       _source: observable,
@@ -113,8 +115,15 @@ export class DataCubeViewState {
   async initializeCache() {
     const cachedSource = await this.engine.initializeCache(this.source);
     if (cachedSource !== undefined) {
+      this._originalSource = this._source;
       this._source = cachedSource;
+      console.log('cache loaded');
     }
+  }
+
+  async clearCache() {
+    await this.engine.clearCache();
+    this._source = this._originalSource;
   }
 
   async initialize(query: DataCubeQuery) {

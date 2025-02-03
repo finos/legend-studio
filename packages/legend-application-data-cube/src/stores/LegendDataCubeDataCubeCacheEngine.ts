@@ -17,7 +17,11 @@
 import * as duckdb from '@duckdb/duckdb-wasm';
 import duckdb_wasm from '@duckdb/duckdb-wasm/dist/duckdb-mvp.wasm';
 import duckdb_wasm_next from '@duckdb/duckdb-wasm/dist/duckdb-eh.wasm';
-import type { TDSExecutionResult } from '@finos/legend-graph';
+import {
+  TDSExecutionResult,
+  TDSRow,
+  TabularDataSet,
+} from '@finos/legend-graph';
 import { action, makeObservable, observable } from 'mobx';
 import type { AsyncDuckDBConnection } from '@duckdb/duckdb-wasm';
 
@@ -84,6 +88,28 @@ export class LegendDataCubeDataCubeCacheEngine {
 
     await this.conn.query(INSERT_TABLE_SQL);
     return Promise.resolve();
+  }
+
+  async runQuery(sql: string) {
+    const result = await this.conn?.query(sql);
+    const columnNames = Object.keys(result?.toArray().at(0));
+    const result1 = result?.toArray().map((row) => {
+      const values = new TDSRow();
+      values.values = columnNames.map((column) => row[column]);
+      return values;
+    });
+    const tdsExecutionResult = new TDSExecutionResult();
+    const tds = new TabularDataSet();
+    tds.columns = columnNames;
+    tds.rows = result1!;
+    tdsExecutionResult.result = tds;
+    return tdsExecutionResult;
+  }
+
+  async clearDuckDb() {
+    await this.conn?.close();
+    await this.db?.flushFiles();
+    await this.db?.terminate();
   }
 
   private getDuckDbType(type: string | undefined): string {

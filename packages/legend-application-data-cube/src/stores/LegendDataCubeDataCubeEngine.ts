@@ -44,7 +44,10 @@ import {
   V1_PackageableType,
   V1_deserializeRawValueSpecificationType,
   V1_Protocol,
-  V1_AppliedFunction,
+  V1_ExecutionPlan,
+  V1_deserializeExecutionPlan,
+  V1_SQLExecutionNode,
+  V1_SimpleExecutionPlan,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
@@ -388,9 +391,22 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       );
     } else if (source instanceof CachedDataCubeSource) {
       //execute plan
-      throw new UnsupportedOperationError(
-        `Can't execute query with unsupported source`,
+      const executionPlan = await this.generateExecutionPlan(
+        query,
+        source.model,
+        [],
+        options,
       );
+      const sql = this.getSqlFromExecutionPlan(executionPlan);
+      if (sql !== undefined) {
+        return {
+          executedQuery: await queryCodePromise,
+          executedSQL: sql,
+          result: await this._cacheManager.runQuery(sql),
+        };
+      } else {
+        throw new UnsupportedOperationError(`Can't execute generated sql`);
+      }
     } else {
       throw new UnsupportedOperationError(
         `Can't execute query with unsupported source`,
@@ -503,6 +519,42 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     );
   }
 
+  private async generateExecutionPlan(
+    query: V1_Lambda,
+    model: V1_PureModelContext,
+    parameterValues?: V1_ParameterValue[] | undefined,
+    options?: DataCubeExecutionOptions | undefined,
+  ): Promise<V1_ExecutionPlan> {
+    return V1_deserializeExecutionPlan(
+      await this._engineServerClient.generatePlan({
+        clientVersion:
+          options?.clientVersion ??
+          // eslint-disable-next-line no-process-env
+          (process.env.NODE_ENV === 'development'
+            ? PureClientVersion.VX_X_X
+            : undefined),
+        function: _serializeValueSpecification(query),
+        model: serialize(model),
+        context: serialize(
+          V1_rawBaseExecutionContextModelSchema,
+          new V1_RawBaseExecutionContext(),
+        ),
+        parameterValues: (parameterValues ?? []).map((parameterValue) =>
+          serialize(V1_parameterValueModelSchema, parameterValue),
+        ),
+      }),
+    );
+  }
+
+  private getSqlFromExecutionPlan(executionPlan: V1_ExecutionPlan) {
+    if (executionPlan instanceof V1_SimpleExecutionPlan) {
+      return executionPlan.rootExecutionNode.executionNodes
+        .filter((node) => node instanceof V1_SQLExecutionNode)
+        .map((x) => x as V1_SQLExecutionNode)
+        .at(-1)?.sqlQuery;
+    }
+  }
+
   // ---------------------------------- CACHING --------------------------------------
 
   override async initializeCache(
@@ -528,6 +580,10 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       return synthesizeCachedSource(source, result.builder);
     }
     return Promise.resolve();
+  }
+
+  override async clearCache() {
+    await this._cacheManager.clearDuckDb();
   }
 
   // ---------------------------------- APPLICATION ----------------------------------

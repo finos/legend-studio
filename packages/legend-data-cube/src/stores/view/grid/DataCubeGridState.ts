@@ -128,6 +128,8 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
     this.isCachingEnabled = val;
     if (this.isCachingEnabled) {
       await this._view.initializeCache();
+    } else {
+      await this._view.clearCache();
     }
   }
 

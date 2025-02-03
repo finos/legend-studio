@@ -16,7 +16,6 @@
 
 import type { TDSBuilder } from '../../../legend-graph/src/graph-manager/action/execution/ExecutionResult.js';
 import {
-  V1_AppliedFunction,
   V1_Binary,
   V1_ClassInstance,
   V1_ClassInstanceType,
@@ -39,11 +38,10 @@ import {
   V1_Table,
   V1_TestAuthenticationStrategy,
   V1_VarChar,
+  V1_Lambda,
 } from '@finos/legend-graph';
 import type { LegendQueryDataCubeSource } from './model/LegendQueryDataCubeSource.js';
-import { serialize } from 'serializr';
 import { CachedDataCubeSource } from '@finos/legend-data-cube';
-import { guaranteeType } from '@finos/legend-shared';
 
 export function synthesizeCachedSource(
   source: LegendQueryDataCubeSource,
@@ -51,47 +49,27 @@ export function synthesizeCachedSource(
 ) {
   const cachedSource = new CachedDataCubeSource();
   cachedSource.columns = source.columns;
-  cachedSource.query = synthesizeQuery(
-    guaranteeType(
-      source.query,
-      V1_AppliedFunction,
-      `Can't process value specification`,
-    ),
-    'local::duckb::cachedStore.cached_tbl',
-  );
-  cachedSource.originalSource = source;
-  cachedSource.model = serialize(synthesizeModel(builder));
+  cachedSource.query = synthesizeQuery([
+    'local::duckdb::cachedStore',
+    'main',
+    'cached_tbl',
+  ]);
+  cachedSource.model = synthesizeModel(builder);
   cachedSource.runtime = 'local::duckdb::runtime';
   return cachedSource;
 }
 
-function synthesizeQuery(query: V1_AppliedFunction, databaseAccessor: string) {
-  addDatabaseAccessor(query, databaseAccessor);
-  return query;
+function synthesizeQuery(databaseAccessor: string[]) {
+  return addDatabaseAccessor(databaseAccessor);
 }
 
-function addDatabaseAccessor(
-  appliedFunction: V1_AppliedFunction,
-  databaseAccessor: string,
-) {
-  if (
-    appliedFunction.parameters[0] instanceof V1_AppliedFunction &&
-    appliedFunction.parameters[0].function === 'getAll'
-  ) {
-    const classInstance = new V1_ClassInstance();
-    classInstance.type = V1_ClassInstanceType.RELATION_STORE_ACCESSOR;
-    const storeAccessor = new V1_RelationStoreAccessor();
-    storeAccessor.path = [databaseAccessor];
-    classInstance.value = storeAccessor;
-    appliedFunction.parameters[0] = classInstance;
-    return;
-  } else {
-    appliedFunction.parameters.forEach((param) => {
-      if (param instanceof V1_AppliedFunction) {
-        addDatabaseAccessor(param, databaseAccessor);
-      }
-    });
-  }
+function addDatabaseAccessor(databaseAccessor: string[]) {
+  const classInstance = new V1_ClassInstance();
+  classInstance.type = V1_ClassInstanceType.RELATION_STORE_ACCESSOR;
+  const storeAccessor = new V1_RelationStoreAccessor();
+  storeAccessor.path = databaseAccessor;
+  classInstance.value = storeAccessor;
+  return classInstance;
 }
 
 function synthesizeModel(builder: TDSBuilder) {
@@ -159,8 +137,10 @@ function getColumnType(type: string | undefined): V1_RelationalDataType {
 function synthesizeConnection() {
   const connection = new V1_RelationalDatabaseConnection();
   connection.databaseType = 'DuckDB';
+  connection.type = 'DuckDB';
   const dataSourceSpec = new V1_DuckDBDatasourceSpecification();
   dataSourceSpec.path = '/temp/path';
+  connection.store = 'local::duckdb::cachedStore';
   connection.datasourceSpecification = dataSourceSpec;
   connection.authenticationStrategy = new V1_TestAuthenticationStrategy();
   return connection;

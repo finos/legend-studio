@@ -20,7 +20,6 @@ import type { V1_PureModelContextData } from '@finos/legend-graph';
 export const CACHED_DATA_CUBE_SOURCE_TYPE = 'cached';
 
 export class CachedDataCubeSource extends DataCubeSource {
-  originalSource!: DataCubeSource;
   model!: V1_PureModelContextData;
   runtime!: string;
 }

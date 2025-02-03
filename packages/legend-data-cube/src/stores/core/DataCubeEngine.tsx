@@ -244,6 +244,10 @@ export abstract class DataCubeEngine {
     return Promise.resolve();
   }
 
+  async clearCache(): Promise<void> {
+    return Promise.resolve();
+  }
+
   // ---------------------------------- APPLICATION ----------------------------------
 
   logDebug(message: string, ...data: unknown[]) {

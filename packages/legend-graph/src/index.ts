@@ -232,6 +232,7 @@ export { V1_RelationalDatabaseConnection } from './graph-manager/protocol/pure/v
 export { V1_DuckDBDatasourceSpecification } from './graph-manager/protocol/pure/v1/model/packageableElements/store/relational/connection/V1_DatasourceSpecification.js';
 export { V1_TestAuthenticationStrategy } from './graph-manager/protocol/pure/v1/model/packageableElements/store/relational/connection/V1_AuthenticationStrategy.js';
 export { V1_RelationStoreAccessor } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/classInstance/relation/V1_RelationStoreAccessor.js';
+export { V1_PackageableConnection } from './graph-manager/protocol/pure/v1/model/packageableElements/connection/V1_PackageableConnection.js';
 
 // --------------------------------------------- EXECUTION PLAN --------------------------------------------------
 
@@ -269,6 +270,10 @@ export { RelationalTempTableGraphFetchExecutionNode } from './graph/metamodel/pu
 export { RelationalClassQueryTempTableGraphFetchExecutionNode } from './graph/metamodel/pure/executionPlan/nodes/RelationalClassQueryTempTableGraphFetchExecutionNode.js';
 export { RelationalRootQueryTempTableGraphFetchExecutionNode } from './graph/metamodel/pure/executionPlan/nodes/RelationalRootQueryTempTableGraphFetchExecutionNode.js';
 export { RelationalCrossRootQueryTempTableGraphFetchExecutionNode } from './graph/metamodel/pure/executionPlan/nodes/RelationalCrossRootQueryTempTableGraphFetchExecutionNode.js';
+export { V1_deserializeExecutionPlan } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/executionPlan/V1_ExecutionPlanSerializationHelper.js';
+
+export { V1_SimpleExecutionPlan } from './graph-manager/protocol/pure/v1/model/executionPlan/V1_SimpleExecutionPlan.js';
+export { V1_SQLExecutionNode } from './graph-manager/protocol/pure/v1/model/executionPlan/nodes/V1_SQLExecutionNode.js';
 
 // --------------------------------------------- HELPER --------------------------------------------------
 
