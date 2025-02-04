@@ -235,6 +235,11 @@ export abstract class DataCubeEngine {
     source: DataCubeSource,
   ): V1_AppliedFunction | undefined;
 
+  processInitialSnapshot?(
+    source: DataCubeSource,
+    snapshot: DataCubeQuerySnapshot,
+  ): DataCubeQuerySnapshot;
+
   // ---------------------------------- APPLICATION ----------------------------------
 
   logDebug(message: string, ...data: unknown[]) {
