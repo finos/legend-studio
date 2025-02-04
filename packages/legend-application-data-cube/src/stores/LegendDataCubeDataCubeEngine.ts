@@ -61,6 +61,7 @@ import {
   _deserializeValueSpecification,
   _defaultPrimitiveTypeValue,
   type DataCubeExecutionOptions,
+  type DataCubeQuerySnapshot,
 } from '@finos/legend-data-cube';
 import {
   isNonNullable,
@@ -420,6 +421,16 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       );
     }
     return undefined;
+  }
+
+  override processInitialSnapshot(
+    source: DataCubeSource,
+    snapshot: DataCubeQuerySnapshot,
+  ): DataCubeQuerySnapshot {
+    if (source instanceof LegendQueryDataCubeSource) {
+      snapshot.data.configuration.name = source.info.name;
+    }
+    return snapshot;
   }
 
   // ---------------------------------- UTILITIES ----------------------------------

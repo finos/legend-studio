@@ -140,6 +140,7 @@ export class DataCubeViewState {
         query,
         this.engine,
       );
+      this.engine.processInitialSnapshot?.(source, initialSnapshot);
       this.snapshotService.broadcastSnapshot(initialSnapshot);
       this.dataCube.options?.onViewInitialized?.({
         api: this.dataCube.api,
