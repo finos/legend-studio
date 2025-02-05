@@ -7,4 +7,3 @@
 '@finos/legend-query-builder': minor
 ---
 
-Enable caching on hosted data cube
