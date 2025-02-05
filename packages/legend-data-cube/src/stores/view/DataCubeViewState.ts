@@ -93,6 +93,10 @@ export class DataCubeViewState {
     this.extend = new DataCubeExtendManagerState(this);
   }
 
+  getOriginalSource() {
+    return this._source;
+  }
+
   async generateDataCubeQuery() {
     const snapshot = this.snapshotService.currentSnapshot;
     const query = new DataCubeQuery();
@@ -156,7 +160,6 @@ export class DataCubeViewState {
         query,
         this.engine,
       );
-      this.engine.processInitialSnapshot?.(source, initialSnapshot);
       this.snapshotService.broadcastSnapshot(initialSnapshot);
       this.dataCube.options?.onViewInitialized?.({
         api: this.dataCube.api,

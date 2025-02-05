@@ -86,7 +86,6 @@ import {
   _defaultPrimitiveTypeValue,
   type DataCubeExecutionOptions,
   CachedDataCubeSource,
-  type DataCubeQuerySnapshot,
 } from '@finos/legend-data-cube';
 import {
   isNonNullable,
@@ -498,16 +497,6 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     return undefined;
   }
 
-  override processInitialSnapshot(
-    source: DataCubeSource,
-    snapshot: DataCubeQuerySnapshot,
-  ): DataCubeQuerySnapshot {
-    if (source instanceof LegendQueryDataCubeSource) {
-      snapshot.data.configuration.name = source.info.name;
-    }
-    return snapshot;
-  }
-
   // ---------------------------------- UTILITIES ----------------------------------
 
   private async _getQueryRelationType(
@@ -588,7 +577,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           (process.env.NODE_ENV === 'development'
             ? PureClientVersion.VX_X_X
             : undefined),
-        function: _serializeValueSpecification(query),
+        function: this.serializeValueSpecification(query),
         model: serialize(model),
         context: serialize(
           V1_rawBaseExecutionContextModelSchema,

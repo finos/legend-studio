@@ -221,7 +221,7 @@ export abstract class DataCubeEngine {
       snapshot,
     });
     query.configuration = configuration;
-    return { source, query, configuration };
+    return query;
   }
 
   // ---------------------------------- PROCESSOR ----------------------------------
@@ -265,12 +265,7 @@ export abstract class DataCubeEngine {
     source: DataCubeSource,
   ): V1_AppliedFunction | undefined;
 
-  processInitialSnapshot?(
-    source: DataCubeSource,
-    snapshot: DataCubeQuerySnapshot,
-  ): DataCubeQuerySnapshot;
-
-  // ---------------------------------- CACHING --------------------------------------
+  // ---------------------------------- CACHING ----------------------------------
 
   async initializeCache(
     source: DataCubeSource,
@@ -278,9 +273,7 @@ export abstract class DataCubeEngine {
     return undefined;
   }
 
-  async clearCache() {
-    // do nothing
-  }
+  async clearCache() {}
 
   // ---------------------------------- APPLICATION ----------------------------------
 

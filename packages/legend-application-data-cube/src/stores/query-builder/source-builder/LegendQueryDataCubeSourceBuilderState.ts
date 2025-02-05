@@ -39,7 +39,10 @@ import { RawLegendQueryDataCubeSource } from '../../model/LegendQueryDataCubeSou
 import { APPLICATION_EVENT } from '@finos/legend-application';
 import type { LegendDataCubeDataCubeEngine } from '../../LegendDataCubeDataCubeEngine.js';
 import type { LegendDataCubeApplicationStore } from '../../LegendDataCubeBaseStore.js';
-import type { DataCubeAlertService } from '@finos/legend-data-cube';
+import type {
+  DataCubeAlertService,
+  DataCubeConfiguration,
+} from '@finos/legend-data-cube';
 
 export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceBuilderState {
   private readonly _engineServerClient: V1_EngineServerClient;
@@ -139,5 +142,11 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
     const source = new RawLegendQueryDataCubeSource();
     source.queryId = this.query.id;
     return RawLegendQueryDataCubeSource.serialization.toJson(source);
+  }
+
+  override finalizeConfiguration(configuration: DataCubeConfiguration) {
+    if (this.query) {
+      configuration.name = this.query.name;
+    }
   }
 }

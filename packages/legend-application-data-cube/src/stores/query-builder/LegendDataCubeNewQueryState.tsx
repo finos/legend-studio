@@ -119,17 +119,20 @@ export class LegendDataCubeNewQueryState {
 
     this.finalizeState.inProgress();
     try {
-      const { query } = await this._engine.generateBaseQuery(
+      const query = await this._engine.generateBaseQuery(
         sourceData ?? (await this.sourceBuilder.generateSourceData()),
       );
+      if (query.configuration) {
+        this.sourceBuilder.finalizeConfiguration(query.configuration);
+      }
+
+      // reset
       this._store.setBuilder(new LegendDataCubeQueryBuilderState(query));
       // only update the route instead of reloading in case we are creating
       // a new query when we are editing another query
       this._application.navigationService.navigator.updateCurrentLocation(
         generateQueryBuilderRoute(null),
       );
-
-      // reset
       this.changeSourceBuilder(DEFAULT_SOURCE_TYPE, true);
       this.display.close();
       this.finalizeState.pass();
