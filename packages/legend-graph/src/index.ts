@@ -216,6 +216,24 @@ export {
 export { V1_GenericType } from './graph-manager/protocol/pure/v1/model/packageableElements/type/V1_GenericType.js';
 export { V1_PackageableType } from './graph-manager/protocol/pure/v1/model/packageableElements/type/V1_PackageableType.js';
 
+export { V1_Database } from './graph-manager/protocol/pure/v1/model/packageableElements/store/relational/model/V1_Database.js';
+export { V1_Schema } from './graph-manager/protocol/pure/v1/model/packageableElements/store/relational/model/V1_Schema.js';
+export { V1_Table } from './graph-manager/protocol/pure/v1/model/packageableElements/store/relational/model/V1_Table.js';
+export { V1_Column } from './graph-manager/protocol/pure/v1/model/packageableElements/store/relational/model/V1_Column.js';
+export {
+  V1_Binary,
+  V1_Date,
+  V1_Double,
+  V1_Integer,
+  V1_RelationalDataType,
+  V1_VarChar,
+} from './graph-manager/protocol/pure/v1/model/packageableElements/store/relational/model/V1_RelationalDataType.js';
+export { V1_RelationalDatabaseConnection } from './graph-manager/protocol/pure/v1/model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection.js';
+export { V1_DuckDBDatasourceSpecification } from './graph-manager/protocol/pure/v1/model/packageableElements/store/relational/connection/V1_DatasourceSpecification.js';
+export { V1_TestAuthenticationStrategy } from './graph-manager/protocol/pure/v1/model/packageableElements/store/relational/connection/V1_AuthenticationStrategy.js';
+export { V1_RelationStoreAccessor } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/classInstance/relation/V1_RelationStoreAccessor.js';
+export { V1_PackageableConnection } from './graph-manager/protocol/pure/v1/model/packageableElements/connection/V1_PackageableConnection.js';
+
 // --------------------------------------------- EXECUTION PLAN --------------------------------------------------
 
 export { INTERNAL__UnknownExecutionResult } from './graph-manager/action/execution/INTERNAL__UnknownExecutionResult.js';
@@ -252,6 +270,10 @@ export { RelationalTempTableGraphFetchExecutionNode } from './graph/metamodel/pu
 export { RelationalClassQueryTempTableGraphFetchExecutionNode } from './graph/metamodel/pure/executionPlan/nodes/RelationalClassQueryTempTableGraphFetchExecutionNode.js';
 export { RelationalRootQueryTempTableGraphFetchExecutionNode } from './graph/metamodel/pure/executionPlan/nodes/RelationalRootQueryTempTableGraphFetchExecutionNode.js';
 export { RelationalCrossRootQueryTempTableGraphFetchExecutionNode } from './graph/metamodel/pure/executionPlan/nodes/RelationalCrossRootQueryTempTableGraphFetchExecutionNode.js';
+export { V1_deserializeExecutionPlan } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/executionPlan/V1_ExecutionPlanSerializationHelper.js';
+
+export { V1_SimpleExecutionPlan } from './graph-manager/protocol/pure/v1/model/executionPlan/V1_SimpleExecutionPlan.js';
+export { V1_SQLExecutionNode } from './graph-manager/protocol/pure/v1/model/executionPlan/nodes/V1_SQLExecutionNode.js';
 
 // --------------------------------------------- HELPER --------------------------------------------------
 
@@ -330,6 +352,7 @@ export {
   getTDSRowRankByColumnInAsc,
   TabularDataSet,
   INTERNAL__TDSColumn,
+  TDSBuilder,
 } from './graph-manager/action/execution/ExecutionResult.js';
 export { ExecutionError } from './graph-manager/action/ExecutionError.js';
 export { ExternalFormatDescription } from './graph-manager/action/externalFormat/ExternalFormatDescription.js';

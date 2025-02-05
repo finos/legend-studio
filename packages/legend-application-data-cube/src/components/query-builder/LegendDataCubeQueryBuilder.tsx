@@ -157,6 +157,7 @@ export const LegendDataCubeQueryBuilder = withLegendDataCubeQueryBuilderStore(
             );
           },
           documentationUrl: application.documentationService.url,
+          enableCache: true,
         }}
       />
     );

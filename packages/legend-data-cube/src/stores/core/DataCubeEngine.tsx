@@ -78,6 +78,7 @@ import {
   type LogEvent,
   type PlainObject,
 } from '@finos/legend-shared';
+import type { CachedDataCubeSource } from './model/CachedDataCubeSource.js';
 
 export type CompletionItem = {
   completion: string;
@@ -97,6 +98,7 @@ export type DataCubeExecutionResult = {
   result: TDSExecutionResult;
   executedQuery: string;
   executedSQL: string;
+  executionTime: number;
 };
 
 /**
@@ -239,6 +241,18 @@ export abstract class DataCubeEngine {
     source: DataCubeSource,
     snapshot: DataCubeQuerySnapshot,
   ): DataCubeQuerySnapshot;
+
+  // ---------------------------------- CACHING --------------------------------------
+
+  async initializeCache(
+    source: DataCubeSource,
+  ): Promise<CachedDataCubeSource | undefined> {
+    return undefined;
+  }
+
+  async clearCache() {
+    // do nothing
+  }
 
   // ---------------------------------- APPLICATION ----------------------------------
 

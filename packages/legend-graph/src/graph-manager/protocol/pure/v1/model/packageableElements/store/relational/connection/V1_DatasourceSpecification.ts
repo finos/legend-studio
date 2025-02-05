@@ -239,3 +239,17 @@ export class V1_TrinoDatasourceSpecification
     ]);
   }
 }
+
+export class V1_DuckDBDatasourceSpecification
+  extends V1_DatasourceSpecification
+  implements Hashable
+{
+  path!: string;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.DUCKDB_DATASOURCE_SPECIFICATION,
+      this.path,
+    ]);
+  }
+}

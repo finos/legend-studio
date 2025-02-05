@@ -43,6 +43,15 @@ export class V1_DefaultH2AuthenticationStrategy
   }
 }
 
+export class V1_TestAuthenticationStrategy
+  extends V1_DefaultH2AuthenticationStrategy
+  implements Hashable
+{
+  override get hashCode(): string {
+    return hashArray([CORE_HASH_STRUCTURE.TEST_AUTHENTICATION_STRATEGY]);
+  }
+}
+
 export class V1_OAuthAuthenticationStrategy
   extends V1_AuthenticationStrategy
   implements Hashable

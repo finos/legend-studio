@@ -161,6 +161,7 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
   }
 
   override async executeQuery(query: V1_Lambda, source: DataCubeSource) {
+    const startTime = performance.now();
     const lambda = this.buildRawLambdaFromValueSpec(query);
     lambda.parameters = this.parameters;
     const [executionWithMetadata, queryString] = await Promise.all([
@@ -175,6 +176,7 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
       ),
       this.graphState.graphManager.lambdaToPureCode(lambda),
     ]);
+    const endTime = performance.now();
     const expectedTDS = guaranteeType(
       executionWithMetadata.executionResult,
       TDSExecutionResult,
@@ -189,6 +191,7 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
       result: expectedTDS,
       executedQuery: queryString,
       executedSQL: sqlString,
+      executionTime: endTime - startTime,
     };
   }
 
