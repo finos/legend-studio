@@ -1,0 +1,30 @@
+---
+'@finos/legend-extension-dsl-data-space-studio': patch
+'@finos/legend-extension-store-service-store': patch
+'@finos/legend-vscode-extension-dependencies': patch
+'@finos/legend-extension-dsl-data-quality': patch
+'@finos/legend-extension-store-relational': patch
+'@finos/legend-extension-dsl-persistence': patch
+'@finos/legend-extension-store-flat-data': patch
+'@finos/legend-extension-dsl-data-space': patch
+'@finos/legend-application-data-cube': patch
+'@finos/legend-extension-dsl-diagram': patch
+'@finos/legend-extension-dsl-service': patch
+'@finos/legend-application-pure-ide': patch
+'@finos/legend-extension-assortment': patch
+'@finos/legend-application-studio': patch
+'@finos/legend-extension-dsl-text': patch
+'@finos/legend-application-query': patch
+'@finos/legend-application-repl': patch
+'@finos/legend-server-showcase': patch
+'@finos/legend-query-builder': patch
+'@finos/legend-application': patch
+'@finos/legend-server-sdlc': patch
+'@finos/legend-data-cube': patch
+'@finos/stylelint-config-legend-studio': patch
+'@finos/eslint-plugin-legend-studio': patch
+'@finos/legend-shared': patch
+'@finos/legend-graph': patch
+'@finos/legend-lego': patch
+'@finos/legend-art': patch
+---
