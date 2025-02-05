@@ -1,5 +1,11 @@
 # @finos/legend-data-cube
 
+## 0.1.0
+
+### Patch Changes
+
+- [#3861](https://github.com/finos/legend-studio/pull/3861) [`25bf6db`](https://github.com/finos/legend-studio/commit/25bf6db44fa42254b78136695c6c6246b8c77c23) ([@kelly-thai](https://github.com/kelly-thai)) - Update default report title to query name
+
 ## 0.0.48
 
 ## 0.0.47
