@@ -314,7 +314,6 @@ export {
   type DataCubeRelationType,
   _elementPtr,
   _function,
-  _functionName,
   _lambda,
   DataCube,
   DataCubeEngine,

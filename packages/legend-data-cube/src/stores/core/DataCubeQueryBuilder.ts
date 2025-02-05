@@ -21,22 +21,24 @@
  * the query snapshot. The executable query is then used to fetch data.
  ***************************************************************************************/
 
-import { PRIMITIVE_TYPE, type V1_AppliedFunction } from '@finos/legend-graph';
+import {
+  PRIMITIVE_TYPE,
+  V1_Lambda,
+  type V1_AppliedFunction,
+} from '@finos/legend-graph';
 import { type DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
-import { at } from '@finos/legend-shared';
+import { at, guaranteeType } from '@finos/legend-shared';
 import {
   DataCubeFunction,
   DataCubeQuerySortDirection,
   type DataCubeQueryFunctionMap,
 } from './DataCubeQueryEngine.js';
 import { DataCubeConfiguration } from './model/DataCubeConfiguration.js';
-import type { DataCubeQueryFilterOperation } from './filter/DataCubeQueryFilterOperation.js';
 import {
   _col,
   _collection,
   _cols,
   _colSpec,
-  _deserializeLambda,
   _filter,
   _function,
   _groupByAggCols,
@@ -48,26 +50,21 @@ import {
   _functionCompositionProcessor,
   _extendRootAggregation,
 } from './DataCubeQueryBuilderUtils.js';
-import type { DataCubeQueryAggregateOperation } from './aggregation/DataCubeQueryAggregateOperation.js';
 import type { DataCubeSource } from './model/DataCubeSource.js';
 import { _findCol } from './model/DataCubeColumn.js';
+import type { DataCubeEngine } from './DataCubeEngine.js';
 
 export function buildExecutableQuery(
   snapshot: DataCubeQuerySnapshot,
   source: DataCubeSource,
-  executionContextBuilder: (
-    source: DataCubeSource,
-  ) => V1_AppliedFunction | undefined,
-  filterOperations: DataCubeQueryFilterOperation[],
-  aggregateOperations: DataCubeQueryAggregateOperation[],
+  engine: DataCubeEngine,
   options?: {
     postProcessor?: (
       snapshot: DataCubeQuerySnapshot,
       sequence: V1_AppliedFunction[],
       funcMap: DataCubeQueryFunctionMap,
       configuration: DataCubeConfiguration,
-      filterOperations: DataCubeQueryFilterOperation[],
-      aggregateOperations: DataCubeQueryAggregateOperation[],
+      engine: DataCubeEngine,
     ) => void;
     rootAggregation?:
       | {
@@ -101,8 +98,16 @@ export function buildExecutableQuery(
           _cols([
             _colSpec(
               col.name,
-              _deserializeLambda(col.mapFn),
-              col.reduceFn ? _deserializeLambda(col.reduceFn) : undefined,
+              guaranteeType(
+                engine.deserializeValueSpecification(col.mapFn),
+                V1_Lambda,
+              ),
+              col.reduceFn
+                ? guaranteeType(
+                    engine.deserializeValueSpecification(col.reduceFn),
+                    V1_Lambda,
+                  )
+                : undefined,
             ),
           ]),
         ]),
@@ -116,7 +121,7 @@ export function buildExecutableQuery(
     _process(
       'filter',
       _function(DataCubeFunction.FILTER, [
-        _lambda([_var()], [_filter(data.filter, filterOperations)]),
+        _lambda([_var()], [_filter(data.filter, engine.filterOperations)]),
       ]),
     );
   }
@@ -164,7 +169,7 @@ export function buildExecutableQuery(
             pivot.columns,
             snapshot,
             configuration,
-            aggregateOperations,
+            engine.aggregateOperations,
           ),
         ),
       ]),
@@ -194,7 +199,7 @@ export function buildExecutableQuery(
             groupBy.columns,
             snapshot,
             configuration,
-            aggregateOperations,
+            engine.aggregateOperations,
           ),
         ),
       ]),
@@ -227,8 +232,16 @@ export function buildExecutableQuery(
           _cols([
             _colSpec(
               col.name,
-              _deserializeLambda(col.mapFn),
-              col.reduceFn ? _deserializeLambda(col.reduceFn) : undefined,
+              guaranteeType(
+                engine.deserializeValueSpecification(col.mapFn),
+                V1_Lambda,
+              ),
+              col.reduceFn
+                ? guaranteeType(
+                    engine.deserializeValueSpecification(col.reduceFn),
+                    V1_Lambda,
+                  )
+                : undefined,
             ),
           ]),
         ]),
@@ -280,19 +293,14 @@ export function buildExecutableQuery(
 
   // --------------------------------- FINALIZE ---------------------------------
 
-  const executionContext = executionContextBuilder(source);
-  if (executionContext) {
-    sequence.push(executionContext);
+  if (!options?.skipExecutionContext) {
+    const executionContext = engine.buildExecutionContext(source);
+    if (executionContext) {
+      sequence.push(executionContext);
+    }
   }
 
-  options?.postProcessor?.(
-    snapshot,
-    sequence,
-    funcMap,
-    configuration,
-    filterOperations,
-    aggregateOperations,
-  );
+  options?.postProcessor?.(snapshot, sequence, funcMap, configuration, engine);
 
   if (sequence.length === 0) {
     return source.query;

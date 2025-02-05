@@ -60,11 +60,10 @@ import {
   type DataCubeGridClientDataFetchRequest,
 } from './DataCubeGridClientEngine.js';
 import { DataCubeConfiguration } from '../../core/model/DataCubeConfiguration.js';
-import type { DataCubeQueryFilterOperation } from '../../core/filter/DataCubeQueryFilterOperation.js';
-import type { DataCubeQueryAggregateOperation } from '../../core/aggregation/DataCubeQueryAggregateOperation.js';
 import { _colSpecArrayParam } from '../../core/DataCubeQuerySnapshotBuilderUtils.js';
 import { buildExecutableQuery } from '../../core/DataCubeQueryBuilder.js';
 import type { DataCubeSource } from '../../core/model/DataCubeSource.js';
+import type { DataCubeEngine } from '../../core/DataCubeEngine.js';
 
 /*****************************************************************************
  * [GRID]
@@ -148,11 +147,7 @@ export function buildGridDataFetchExecutableQuery(
   request: DataCubeGridClientDataFetchRequest,
   snapshot: DataCubeQuerySnapshot,
   source: DataCubeSource,
-  executionContextBuilder: (
-    source: DataCubeSource,
-  ) => V1_AppliedFunction | undefined,
-  filterOperations: DataCubeQueryFilterOperation[],
-  aggregateOperations: DataCubeQueryAggregateOperation[],
+  engine: DataCubeEngine,
   enablePagination: boolean,
 ) {
   const processedSnapshot = snapshot.clone();
@@ -170,28 +165,21 @@ export function buildGridDataFetchExecutableQuery(
       ],
     };
   }
-  return buildExecutableQuery(
-    processedSnapshot,
-    source,
-    executionContextBuilder,
-    filterOperations,
-    aggregateOperations,
-    {
-      postProcessor: generateGridDataFetchExecutableQueryPostProcessor(request),
-      rootAggregation: {
-        columnName: INTERNAL__GRID_CLIENT_ROOT_AGGREGATION_COLUMN_ID,
-      },
-      pagination:
-        enablePagination &&
-        request.startRow !== undefined &&
-        request.endRow !== undefined
-          ? {
-              start: request.startRow,
-              end: request.endRow,
-            }
-          : undefined,
+  return buildExecutableQuery(processedSnapshot, source, engine, {
+    postProcessor: generateGridDataFetchExecutableQueryPostProcessor(request),
+    rootAggregation: {
+      columnName: INTERNAL__GRID_CLIENT_ROOT_AGGREGATION_COLUMN_ID,
     },
-  );
+    pagination:
+      enablePagination &&
+      request.startRow !== undefined &&
+      request.endRow !== undefined
+        ? {
+            start: request.startRow,
+            end: request.endRow,
+          }
+        : undefined,
+  });
 }
 
 function generateGridDataFetchExecutableQueryPostProcessor(
@@ -202,8 +190,7 @@ function generateGridDataFetchExecutableQueryPostProcessor(
     sequence: V1_AppliedFunction[],
     funcMap: DataCubeQueryFunctionMap,
     configuration: DataCubeConfiguration,
-    filterOperations: DataCubeQueryFilterOperation[],
-    aggregateOperations: DataCubeQueryAggregateOperation[],
+    engine: DataCubeEngine,
   ) => {
     const _unprocess = _functionCompositionUnProcessor(sequence, funcMap);
     const data = snapshot.data;
@@ -285,7 +272,7 @@ function generateGridDataFetchExecutableQueryPostProcessor(
                     }),
                     groupOperator: DataCubeQueryFilterGroupOperator.AND,
                   },
-                  filterOperations,
+                  engine.filterOperations,
                 ),
               ],
             ),
@@ -312,7 +299,7 @@ function generateGridDataFetchExecutableQueryPostProcessor(
               groupByColumns,
               snapshot,
               configuration,
-              aggregateOperations,
+              engine.aggregateOperations,
             ),
 
             // if pivot is present, add sum aggregation columns for each

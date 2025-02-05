@@ -253,3 +253,14 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateTaxonomyDataspaceViewUrl =
       artifactId,
       versionId,
     )}/${dataspacePath}`;
+
+/**
+ * @external_application_navigation This depends on Legend DataCube routing and is hardcoded so it's potentially brittle
+ */
+export const EXTERNAL_APPLICATION_NAVIGATION__generateDataCubeNewQueryUrl = (
+  dataCubeApplicationUrl: string,
+  sourceData: object,
+): string =>
+  `${dataCubeApplicationUrl}?sourceData=${encodeURIComponent(
+    btoa(JSON.stringify(sourceData)),
+  )}`;

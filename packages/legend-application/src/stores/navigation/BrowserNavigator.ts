@@ -236,17 +236,29 @@ export class BrowserNavigator implements ApplicationNavigator {
     this.onBlock = onBlock;
     this.onNativePlatformNavigationBlock = onNativePlatformNavigationBlock;
 
-    // Here we attempt to cancel the effect of the back button
-    // See https://medium.com/codex/angular-guards-disabling-browsers-back-button-for-specific-url-fdf05d9fe155#4f13
-    // This makes the current location the last entry in the browser history and clears any forward history
-    this.window.history.pushState(null, '', this.getCurrentAddress());
-    // The popstate event is triggered every time the user clicks back/forward button, but the forward history
-    // has been cleared, and now if we go back, we call `history.forward()`, which go 1 page forward,
+    // Attempt to cancel the effect of the back button. The mechanism is as follows:
+    //
+    // This makes the current location the last entry in the browser history and clears any forward history.
+    // The popstate event is triggered every time the user clicks back/forward button, but since the forward
+    // history has been cleared, if we call, we call `history.forward()`, which go 1 page forward,
     // but there's no page forward, so effectively, the user remains on the same page
-    this.window.onpopstate = () => {
-      window.history.forward();
-      this.onNativePlatformNavigationBlock?.();
-    };
+    //
+    // NOTE: this approach ideal in that, technically the pop state event still can happen for a brief moment,
+    // and thus, unecesssary renderings are not avoidable.
+    // e.g. we're at route A, then navigate to B
+    // we hit back button, we will go back to route A and then immediately go back to B
+    // another exploit is user can hit the back button consecutively quickly and this would also break this
+    // workaround we have here.
+    //
+    // All in all, this is the kind of workaround that attempts to override browser capabilities
+    // should be avoided
+    if (this.onNativePlatformNavigationBlock) {
+      this.window.history.pushState(null, '', this.getCurrentAddress());
+      this.window.onpopstate = () => {
+        this.window.history.forward();
+        this.onNativePlatformNavigationBlock?.();
+      };
+    }
 
     // Block browser navigation: e.g. reload, setting `window.href` directly, etc.
     this._blockCheckers = blockCheckers;

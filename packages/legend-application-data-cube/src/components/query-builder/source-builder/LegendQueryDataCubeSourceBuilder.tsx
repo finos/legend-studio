@@ -41,6 +41,7 @@ import {
 } from '@finos/legend-data-cube';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { useLegendDataCubeQueryBuilderStore } from '../LegendDataCubeQueryBuilderStoreProvider.js';
+import { useApplicationStore } from '@finos/legend-application';
 
 const LegendQuerySearcher = observer((props: { state: QueryLoaderState }) => {
   const { state } = props;
@@ -252,6 +253,8 @@ const LegendQuerySearcher = observer((props: { state: QueryLoaderState }) => {
 export const LegendQueryDataCubeSourceBuilder = observer(
   (props: { sourceBuilder: LegendQueryDataCubeSourceBuilderState }) => {
     const { sourceBuilder } = props;
+    const application = useApplicationStore();
+    const store = useLegendDataCubeQueryBuilderStore();
     const query = sourceBuilder.query;
 
     if (!query) {
@@ -259,11 +262,24 @@ export const LegendQueryDataCubeSourceBuilder = observer(
     }
     return (
       <div className="h-full">
-        <div className="mb-0.5 flex h-[60px] w-full border border-neutral-200 bg-neutral-100">
+        <div className="relative mb-0.5 flex h-[60px] w-full border border-neutral-200 bg-neutral-100">
           <div className="w-full">
             <div className="h-6 w-4/5 overflow-hidden text-ellipsis whitespace-nowrap px-1.5 leading-6">
               {query.name}
             </div>
+            <button
+              className="absolute right-1 top-1 flex aspect-square w-5 items-center justify-center text-neutral-500"
+              title="Copy ID to clipboard"
+              onClick={() => {
+                application.clipboardService
+                  .copyTextToClipboard(query.id)
+                  .catch((error) =>
+                    store.alertService.alertUnhandledError(error),
+                  );
+              }}
+            >
+              <DataCubeIcon.Clipboard />
+            </button>
             <div className="flex h-[18px] items-start justify-between px-1.5 text-sm text-neutral-500">
               {`[ ${generateGAVCoordinates(
                 query.groupId,

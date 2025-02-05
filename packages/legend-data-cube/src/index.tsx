@@ -19,12 +19,11 @@ export * from './stores/core/model/DataCubeSource.js';
 export { type DataCubeColumn } from './stores/core/model/DataCubeColumn.js';
 export * from './stores/core/model/DataCubeConfiguration.js';
 export * from './stores/core/model/AdhocQueryDataCubeSource.js';
+export { CachedDataCubeSource } from './stores/core/model/CachedDataCubeSource.js';
 
 export * from './stores/core/DataCubeEngine.js';
 export * from './stores/core/DataCubeQueryEngine.js';
-export * from './stores/core/DataCubeQueryBuilderUtils.js';
 export { DataCubeQuerySnapshot } from './stores/core/DataCubeQuerySnapshot.js';
-export * from './stores/core/filter/DataCubeQueryFilterOperation.js';
 
 export {
   type DataCubeSetting,
@@ -54,4 +53,10 @@ export * from './components/DataCube.js';
 export * from './components/core/DataCubeFormUtils.js';
 export * from './components/DataCubePlaceholder.js';
 
-export { CachedDataCubeSource } from './stores/core/model/CachedDataCubeSource.js';
+// some low-level/core utilities we expose for building DataCube extensions
+// or implementing DataCube engine
+export {
+  _function,
+  _lambda,
+  _elementPtr,
+} from './stores/core/DataCubeQueryBuilderUtils.js';

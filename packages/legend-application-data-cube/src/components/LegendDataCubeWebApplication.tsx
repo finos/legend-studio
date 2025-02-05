@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  APPLICATION_EVENT,
-  BrowserEnvironmentProvider,
-  useApplicationStore,
-} from '@finos/legend-application';
+import { BrowserEnvironmentProvider } from '@finos/legend-application';
 import { Route, Routes } from '@finos/legend-application/browser';
 import {
   LegendDataCubeFrameworkProvider,
@@ -27,11 +23,9 @@ import {
 import { observer } from 'mobx-react-lite';
 import { LegendDataCubeQueryBuilder } from './query-builder/LegendDataCubeQueryBuilder.js';
 import { LEGEND_DATA_CUBE_ROUTE_PATTERN } from '../__lib__/LegendDataCubeNavigation.js';
-import { LogEvent } from '@finos/legend-shared';
 import { useEffect } from 'react';
 
 const LegendDataCubeWebApplicationRouter = observer(() => {
-  const application = useApplicationStore();
   const store = useLegendDataCubeBaseStore();
 
   useEffect(() => {
@@ -39,24 +33,6 @@ const LegendDataCubeWebApplicationRouter = observer(() => {
       .initialize()
       .catch((error) => store.alertService.alertUnhandledError(error));
   }, [store]);
-
-  useEffect(() => {
-    application.navigationService.navigator.blockNavigation(
-      // Only block navigation in production
-      // eslint-disable-next-line no-process-env
-      [() => process.env.NODE_ENV === 'production'],
-      undefined,
-      () => {
-        application.logService.warn(
-          LogEvent.create(APPLICATION_EVENT.NAVIGATION_BLOCKED),
-          `Navigation from the application is blocked`,
-        );
-      },
-    );
-    return (): void => {
-      application.navigationService.navigator.unblockNavigation();
-    };
-  }, [application]);
 
   return (
     <div className="h-full">

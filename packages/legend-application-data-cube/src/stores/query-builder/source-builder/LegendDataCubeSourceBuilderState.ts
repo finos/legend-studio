@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-import { ActionState, type PlainObject } from '@finos/legend-shared';
+import { type PlainObject } from '@finos/legend-shared';
 import type { LegendDataCubeApplicationStore } from '../../LegendDataCubeBaseStore.js';
 import type { LegendDataCubeDataCubeEngine } from '../../LegendDataCubeDataCubeEngine.js';
+import type { DataCubeConfiguration } from '@finos/legend-data-cube';
 
 export enum LegendDataCubeSourceBuilderType {
   LEGEND_QUERY = 'Legend Query',
@@ -26,8 +27,6 @@ export enum LegendDataCubeSourceBuilderType {
 export abstract class LegendDataCubeSourceBuilderState {
   protected readonly _application: LegendDataCubeApplicationStore;
   protected readonly _engine: LegendDataCubeDataCubeEngine;
-
-  readonly buildState = ActionState.create();
 
   constructor(
     application: LegendDataCubeApplicationStore,
@@ -39,5 +38,10 @@ export abstract class LegendDataCubeSourceBuilderState {
 
   abstract get label(): LegendDataCubeSourceBuilderType;
   abstract get isValid(): boolean;
-  abstract build(): Promise<PlainObject>;
+  abstract generateSourceData(): Promise<PlainObject>;
+
+  /* Modifies the configuration of the finalized DataCube query based on the source builder */
+  finalizeConfiguration(configuration: DataCubeConfiguration) {
+    // do nothing
+  }
 }

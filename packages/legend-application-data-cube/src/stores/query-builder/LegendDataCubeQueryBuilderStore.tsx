@@ -43,7 +43,10 @@ import {
 } from '@finos/legend-shared';
 import type { LegendDataCubeDataCubeEngine } from '../LegendDataCubeDataCubeEngine.js';
 import { LegendDataCubeQuerySaver } from '../../components/query-builder/LegendDataCubeQuerySaver.js';
-import { generateQueryBuilderRoute } from '../../__lib__/LegendDataCubeNavigation.js';
+import {
+  generateQueryBuilderRoute,
+  LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN,
+} from '../../__lib__/LegendDataCubeNavigation.js';
 import { LegendDataCubeQueryLoaderState } from './LegendDataCubeQueryLoaderState.js';
 import {
   LegendDataCubeUserDataKey,
@@ -68,7 +71,6 @@ export class LegendDataCubeQueryBuilderState {
 
       query: observable,
       persistentQuery: observable,
-      setPersistentQuery: action,
     });
 
     this.query = query;
@@ -77,12 +79,6 @@ export class LegendDataCubeQueryBuilderState {
 
   setDataCube(val: DataCubeAPI | undefined) {
     this.dataCube = val;
-  }
-
-  setPersistentQuery(val: PersistentDataCubeQuery) {
-    this.persistentQuery = val;
-    this.query = DataCubeQuery.serialization.fromJson(val.content);
-    this.startTime = Date.now();
   }
 }
 
@@ -154,9 +150,31 @@ export class LegendDataCubeQueryBuilderStore {
   }
 
   async loadQuery(queryId: string | undefined) {
+    // internalize the parameters and clean them from the URL
+    const sourceData =
+      this.application.navigationService.navigator.getCurrentLocationParameterValue(
+        LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN.SOURCE_DATA,
+      );
+    if (sourceData && !queryId) {
+      this.application.navigationService.navigator.updateCurrentLocation(
+        generateQueryBuilderRoute(null),
+      );
+      // populate the new query state if source data is specified
+      try {
+        await this.newQueryState.finalize(JSON.parse(atob(sourceData)));
+      } catch (error) {
+        assertErrorThrown(error);
+        this.alertService.alertError(error, {
+          message: `Query Creation Failure: Can't materialize query source from source data. Error: ${error.message}`,
+        });
+        this.setBuilder(undefined);
+      }
+    }
+
     if (queryId !== this.builder?.persistentQuery?.id) {
       if (!queryId) {
         this.setBuilder(undefined);
+        this.loader.display.open();
         return;
       }
 
@@ -244,7 +262,6 @@ export class LegendDataCubeQueryBuilderStore {
       this.application.navigationService.navigator.updateCurrentLocation(
         generateQueryBuilderRoute(newQuery.id),
       );
-      this.builder.setPersistentQuery(persistentQuery);
       this.updateWindowTitle(persistentQuery);
 
       this.saverDisplay.close();
@@ -291,7 +308,6 @@ export class LegendDataCubeQueryBuilderStore {
       } else {
         await this.baseStore.graphManager.updateDataCubeQuery(persistentQuery);
       }
-      this.builder.setPersistentQuery(persistentQuery);
       this.updateWindowTitle(persistentQuery);
 
       this.saverDisplay.close();

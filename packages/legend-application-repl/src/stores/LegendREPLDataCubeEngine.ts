@@ -23,8 +23,6 @@ import {
   DataCubeFunction,
   type DataCubeSource,
   type DataCubeExecutionOptions,
-  _deserializeValueSpecification,
-  _serializeValueSpecification,
 } from '@finos/legend-data-cube';
 import {
   TDSExecutionResult,
@@ -73,11 +71,11 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
 
   // ---------------------------------- IMPLEMENTATION ----------------------------------
 
-  override async processQuerySource(value: PlainObject) {
-    switch (value._type) {
+  override async processQuerySource(sourceData: PlainObject) {
+    switch (sourceData._type) {
       case REPL_DATA_CUBE_SOURCE_TYPE: {
         const rawSource =
-          RawLegendREPLDataCubeSource.serialization.fromJson(value);
+          RawLegendREPLDataCubeSource.serialization.fromJson(sourceData);
         const source = new LegendREPLDataCubeSource();
         source.query = await this.parseValueSpecification(
           rawSource.query,
@@ -105,7 +103,7 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
       }
       default: {
         throw new UnsupportedOperationError(
-          `Can't process query source of type '${value._type}'.`,
+          `Can't process query source of type '${sourceData._type}'.`,
         );
       }
     }
@@ -115,7 +113,7 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
     code: string,
     returnSourceInformation?: boolean,
   ) {
-    return _deserializeValueSpecification(
+    return this.deserializeValueSpecification(
       await this._client.parseValueSpecification({
         code,
         returnSourceInformation,
@@ -128,7 +126,7 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
     pretty?: boolean,
   ) {
     return this._client.getValueSpecificationCode({
-      value: _serializeValueSpecification(value),
+      value: this.serializeValueSpecification(value),
       pretty,
     });
   }
@@ -140,7 +138,7 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
   ) {
     return this._client.getQueryTypeahead({
       code,
-      baseQuery: _serializeValueSpecification(baseQuery),
+      baseQuery: this.serializeValueSpecification(baseQuery),
     });
   }
 
@@ -161,7 +159,7 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
         V1_relationTypeModelSchema,
         await this._client.getQueryCodeRelationReturnType({
           code,
-          baseQuery: _serializeValueSpecification(baseQuery),
+          baseQuery: this.serializeValueSpecification(baseQuery),
         }),
       );
       return {
@@ -193,7 +191,7 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
   ) {
     const startTime = performance.now();
     const result = await this._client.executeQuery({
-      query: _serializeValueSpecification(query),
+      query: this.serializeValueSpecification(query),
       debug: options?.debug,
     });
     const endTime = performance.now();
@@ -231,7 +229,7 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
     const relationType = deserialize(
       V1_relationTypeModelSchema,
       await this._client.getQueryRelationReturnType({
-        query: _serializeValueSpecification(query),
+        query: this.serializeValueSpecification(query),
       }),
     );
     return {

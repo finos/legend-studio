@@ -88,8 +88,8 @@ export abstract class DataCubeQuerySnapshotController
       this._engine.debugProcess(
         `New Snapshot`,
         ['Publisher', this.getSnapshotSubscriberName()],
-        ['Snapshot', snapshot],
-        ['Previous Snapshot', previousSnapshot],
+        ['Snapshot', snapshot.serialize()],
+        ['Previous Snapshot', previousSnapshot?.serialize()],
         ['Diff', deepDiff(previousSnapshot ?? {}, snapshot)],
       );
     }

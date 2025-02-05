@@ -22,4 +22,8 @@ export const CACHED_DATA_CUBE_SOURCE_TYPE = 'cached';
 export class CachedDataCubeSource extends DataCubeSource {
   model!: V1_PureModelContextData;
   runtime!: string;
+  db!: string;
+  schema!: string;
+  table!: string;
+  count!: number;
 }

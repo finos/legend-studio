@@ -25,7 +25,7 @@ export const LEGEND_DATA_CUBE_ROUTE_PATTERN = Object.freeze({
   QUERY_BUILDER: `/:${LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN.QUERY_ID}?`,
 });
 
-export type LegendDataCubeQueryBuilderQueryPathParams = {
+export type LegendDataCubeQueryBuilderPathParams = {
   [LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN.QUERY_ID]: string;
 };
 

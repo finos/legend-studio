@@ -19,7 +19,6 @@ import {
   RawLambda,
   RelationalExecutionActivities,
   TDSExecutionResult,
-  V1_AppliedFunction,
   V1_deserializeRawValueSpecification,
   V1_deserializeValueSpecification,
   V1_RawLambda,
@@ -28,7 +27,6 @@ import {
   type V1_ValueSpecification,
   type ParameterValue,
   LAMBDA_PIPE,
-  SUPPORTED_FUNCTIONS,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
@@ -37,7 +35,6 @@ import {
   _function,
   DataCubeFunction,
   type CompletionItem,
-  _functionName,
   DataCubeQuery,
 } from '@finos/legend-data-cube';
 import {
@@ -78,7 +75,7 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     this.parameters = selectQuery.parameters;
   }
 
-  override async processQuerySource(value: PlainObject) {
+  override async processQuerySource(sourceData: PlainObject) {
     // TODO: this is an abnormal usage of this method, this is the place
     // where we can enforce which source this engine supports, instead
     // of hardcoding the logic like this.
@@ -195,9 +192,7 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     };
   }
 
-  override buildExecutionContext(
-    source: DataCubeSource,
-  ): V1_AppliedFunction | undefined {
+  override buildExecutionContext(source: DataCubeSource) {
     if (source instanceof QueryBuilderDataCubeSource) {
       const appendFromFunc = Boolean(source.mapping ?? source.runtime);
       return appendFromFunc
@@ -232,7 +227,7 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
       ),
       [],
     );
-    // We could do a further check here to ensure the experssion is an applied funciton
+    // We could do a further check here to ensure the experession is an applied funciton
     // this is because data cube expects an expression to be able to built further upon the queery
     if (
       srcFuncExp instanceof V1_Lambda &&
@@ -245,16 +240,6 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
   }
 
   async generateInitialQuery() {
-    const srcFuncExp = this.getSourceFunctionExpression();
-    const fromFuncExp = new V1_AppliedFunction();
-    fromFuncExp.function = _functionName(SUPPORTED_FUNCTIONS.FROM);
-    fromFuncExp.parameters = [srcFuncExp];
-    if (this.mappingPath) {
-      fromFuncExp.parameters.push(_elementPtr(this.mappingPath));
-    }
-    if (this.runtimePath) {
-      fromFuncExp.parameters.push(_elementPtr(this.runtimePath));
-    }
     const columns = (await this.getRelationType(this.selectInitialQuery))
       .columns;
     const query = new DataCubeQuery();

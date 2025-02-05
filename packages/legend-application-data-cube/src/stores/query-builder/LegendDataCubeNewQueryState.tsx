@@ -29,9 +29,7 @@ import {
   type LegendDataCubeSourceBuilderState,
 } from './source-builder/LegendDataCubeSourceBuilderState.js';
 import {
-  _selectFunction,
   type DataCubeAlertService,
-  DataCubeQuery,
   DEFAULT_TOOL_PANEL_WINDOW_CONFIG,
   type DisplayState,
 } from '@finos/legend-data-cube';
@@ -43,6 +41,8 @@ import {
   type LegendDataCubeQueryBuilderStore,
 } from './LegendDataCubeQueryBuilderStore.js';
 import { generateQueryBuilderRoute } from '../../__lib__/LegendDataCubeNavigation.js';
+
+const DEFAULT_SOURCE_TYPE = LegendDataCubeSourceBuilderType.LEGEND_QUERY;
 
 export class LegendDataCubeNewQueryState {
   private readonly _application: LegendDataCubeApplicationStore;
@@ -76,9 +76,7 @@ export class LegendDataCubeNewQueryState {
       },
     );
 
-    this.sourceBuilder = this.createSourceBuilder(
-      LegendDataCubeSourceBuilderType.LEGEND_QUERY,
-    );
+    this.sourceBuilder = this.createSourceBuilder(DEFAULT_SOURCE_TYPE);
   }
 
   changeSourceBuilder(
@@ -115,31 +113,27 @@ export class LegendDataCubeNewQueryState {
   }
 
   async finalize(sourceData?: PlainObject) {
-    if (!this.sourceBuilder.isValid && !sourceData) {
+    if (!sourceData && !this.sourceBuilder.isValid) {
       throw new IllegalStateError(`Can't generate query: source is not valid`);
     }
 
     this.finalizeState.inProgress();
     try {
-      const source = sourceData ?? (await this.sourceBuilder.build());
-      const query = new DataCubeQuery();
-      const processedSource = await this._engine.processQuerySource(source);
-      query.source = source;
-      query.query = await this._engine.getValueSpecificationCode(
-        _selectFunction(processedSource.columns),
+      const query = await this._engine.generateBaseQuery(
+        sourceData ?? (await this.sourceBuilder.generateSourceData()),
       );
+      if (query.configuration) {
+        this.sourceBuilder.finalizeConfiguration(query.configuration);
+      }
+
+      // reset
       this._store.setBuilder(new LegendDataCubeQueryBuilderState(query));
       // only update the route instead of reloading in case we are creating
       // a new query when we are editing another query
       this._application.navigationService.navigator.updateCurrentLocation(
         generateQueryBuilderRoute(null),
       );
-
-      // reset
-      this.changeSourceBuilder(
-        LegendDataCubeSourceBuilderType.LEGEND_QUERY,
-        true,
-      );
+      this.changeSourceBuilder(DEFAULT_SOURCE_TYPE, true);
       this.display.close();
       this.finalizeState.pass();
     } catch (error) {

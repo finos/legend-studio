@@ -73,10 +73,6 @@ import {
 } from './DataCubeQuerySnapshotBuilderUtils.js';
 import type { DataCubeSource } from './model/DataCubeSource.js';
 import type { DataCubeEngine } from './DataCubeEngine.js';
-import {
-  _deserializeValueSpecification,
-  _serializeValueSpecification,
-} from './DataCubeQueryBuilderUtils.js';
 
 // --------------------------------- BUILDING BLOCKS ---------------------------------
 
@@ -365,8 +361,8 @@ export async function validateAndBuildQuerySnapshot(
   // analysis more ergonomic
 
   // Clone the query since we will mutate it during the process
-  const query = _deserializeValueSpecification(
-    _serializeValueSpecification(partialQuery),
+  const query = engine.deserializeValueSpecification(
+    engine.serializeValueSpecification(partialQuery),
   );
   const funcMap = extractFunctionMap(query);
   const snapshot = DataCubeQuerySnapshot.create({});

@@ -19,7 +19,7 @@ import {
   guaranteeNonNullable,
   type DebouncedFunc,
 } from '@finos/legend-shared';
-import { action, makeObservable, observable } from 'mobx';
+import { action, makeObservable, observable, runInAction } from 'mobx';
 import type { GridApi } from 'ag-grid-community';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
 import {
@@ -125,16 +125,32 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
   }
 
   async setCachingEnabled(val: boolean) {
-    this.isCachingEnabled = val;
-    if (this.isCachingEnabled) {
-      this._client?.setGridOption('loading', true);
-      await this._view.initializeCache();
-      this._client?.setGridOption('loading', false);
-    } else {
-      this._client?.setGridOption('loading', true);
-      await this._view.clearCache();
-      this._client?.setGridOption('loading', false);
+    const currentVal = this.isCachingEnabled;
+    if (val === currentVal) {
+      return;
     }
+
+    runInAction(() => {
+      this.isCachingEnabled = val;
+    });
+
+    if (val) {
+      await this._view.initializeCache();
+      if (this._view.processCacheState.hasFailed) {
+        this.isCachingEnabled = currentVal;
+        return;
+      }
+    } else {
+      await this._view.disposeCache();
+    }
+
+    runInAction(() => {
+      // hard reset the grid, this will force the grid to fetch data again
+      this.clientDataSource = new DataCubeGridClientServerSideDataSource(
+        this,
+        this._view,
+      );
+    });
   }
 
   setScrollHintText(val: string | undefined) {

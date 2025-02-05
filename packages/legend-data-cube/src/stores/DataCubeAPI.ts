@@ -15,6 +15,7 @@
  */
 
 import type { DataCubeQuery } from './core/model/DataCubeQuery.js';
+import type { DataCubeSource } from './core/model/DataCubeSource.js';
 import type { DataCubeState } from './DataCubeState.js';
 import type { DataCubeViewState } from './view/DataCubeViewState.js';
 
@@ -23,6 +24,10 @@ import type { DataCubeViewState } from './view/DataCubeViewState.js';
  * internal components and functionalities.
  */
 export interface DataCubeAPI {
+  /**
+   * Get the processed source of the DataCube.
+   */
+  getProcessedSource(): DataCubeSource | undefined;
   /**
    * Generates the data cube query (including the query, configuration, and source)
    * from the latest state of the DataCube.
@@ -60,6 +65,10 @@ export class INTERNAL__DataCubeAPI implements DataCubeAPI {
   }
 
   // ----------------------------- API -----------------------------
+
+  getProcessedSource() {
+    return this._dataCube.view.getOriginalSource();
+  }
 
   generateDataCubeQuery() {
     return this._dataCube.view.generateDataCubeQuery();

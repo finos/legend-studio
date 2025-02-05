@@ -43,7 +43,6 @@ import {
   V1_PackageableElementPtr,
   type V1_PrimitiveValueSpecification,
   V1_Variable,
-  V1_deserializeValueSpecification,
   extractElementNameFromPath,
   type V1_ValueSpecification,
   extractPackagePathFromPath,
@@ -53,7 +52,6 @@ import {
   V1_createGenericTypeWithRawType,
   V1_createRelationType,
   V1_createRelationTypeColumn,
-  V1_serializeValueSpecification,
 } from '@finos/legend-graph';
 import {
   type DataCubeQuerySnapshotFilterCondition,
@@ -67,8 +65,6 @@ import {
   guaranteeIsBoolean,
   guaranteeIsNumber,
   UnsupportedOperationError,
-  guaranteeType,
-  type PlainObject,
 } from '@finos/legend-shared';
 import {
   DataCubeFunction,
@@ -90,69 +86,6 @@ import {
 } from './model/DataCubeConfiguration.js';
 
 // --------------------------------- UTILITIES ---------------------------------
-
-export function _functionCompositionProcessor(
-  sequence: V1_AppliedFunction[],
-  funcMap: DataCubeQueryFunctionMap,
-) {
-  return (
-    key: keyof DataCubeQueryFunctionMap,
-    data: V1_AppliedFunction | V1_AppliedFunction[],
-  ) => {
-    switch (key) {
-      case 'leafExtend':
-      case 'groupExtend': {
-        if (Array.isArray(data)) {
-          data.forEach((func) => sequence.push(func));
-          funcMap[key] = data;
-        }
-        break;
-      }
-      default: {
-        funcMap[key] = data as V1_AppliedFunction;
-        sequence.push(data as V1_AppliedFunction);
-      }
-    }
-  };
-}
-
-export function _functionCompositionUnProcessor(
-  sequence: V1_AppliedFunction[],
-  funcMap: DataCubeQueryFunctionMap,
-) {
-  return (key: keyof DataCubeQueryFunctionMap) => {
-    const data = funcMap[key];
-    if (data) {
-      if (Array.isArray(data)) {
-        data.forEach((func) => sequence.splice(sequence.indexOf(func), 1));
-      } else {
-        sequence.splice(sequence.indexOf(data), 1);
-      }
-      funcMap[key] = undefined;
-    }
-  };
-}
-
-export function _deserializeLambda(json: PlainObject<V1_Lambda>) {
-  return guaranteeType(V1_deserializeValueSpecification(json, []), V1_Lambda);
-}
-
-export function _deserializeValueSpecification(
-  json: PlainObject<V1_ValueSpecification>,
-) {
-  return V1_deserializeValueSpecification(json, []);
-}
-
-export function _serializeValueSpecification(protocol: V1_ValueSpecification) {
-  return V1_serializeValueSpecification(protocol, []);
-}
-
-export function _deserializeFunction(json: PlainObject<V1_Lambda>) {
-  return guaranteeType(
-    V1_deserializeValueSpecification(json, []),
-    V1_AppliedFunction,
-  );
-}
 
 export function _var() {
   const variable = new V1_Variable();
@@ -355,6 +288,48 @@ export function _cols(colSpecs: V1_ColSpec[]) {
 }
 
 // --------------------------------- BUILDING BLOCKS ---------------------------------
+
+export function _functionCompositionProcessor(
+  sequence: V1_AppliedFunction[],
+  funcMap: DataCubeQueryFunctionMap,
+) {
+  return (
+    key: keyof DataCubeQueryFunctionMap,
+    data: V1_AppliedFunction | V1_AppliedFunction[],
+  ) => {
+    switch (key) {
+      case 'leafExtend':
+      case 'groupExtend': {
+        if (Array.isArray(data)) {
+          data.forEach((func) => sequence.push(func));
+          funcMap[key] = data;
+        }
+        break;
+      }
+      default: {
+        funcMap[key] = data as V1_AppliedFunction;
+        sequence.push(data as V1_AppliedFunction);
+      }
+    }
+  };
+}
+
+export function _functionCompositionUnProcessor(
+  sequence: V1_AppliedFunction[],
+  funcMap: DataCubeQueryFunctionMap,
+) {
+  return (key: keyof DataCubeQueryFunctionMap) => {
+    const data = funcMap[key];
+    if (data) {
+      if (Array.isArray(data)) {
+        data.forEach((func) => sequence.splice(sequence.indexOf(func), 1));
+      } else {
+        sequence.splice(sequence.indexOf(data), 1);
+      }
+      funcMap[key] = undefined;
+    }
+  };
+}
 
 export function _selectFunction(columns: DataCubeColumn[]) {
   return _function(DataCubeFunction.SELECT, [

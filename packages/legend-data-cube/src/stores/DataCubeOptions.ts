@@ -127,7 +127,7 @@ export type DataCubeOptions = {
    */
   documentationUrl?: string | undefined;
   /**
-   * Enable/Disable caching of data for the application.
+   * Enables caching to suppport local query execution.
    */
   enableCache?: boolean | undefined;
 };

@@ -135,8 +135,7 @@ test(integrationTest('test query execution with parameters'), async () => {
     renderResult.getByRole('dialog'),
   );
   await waitFor(() => fireEvent.click(getByText(parameterValueDialog, 'Run')));
-  // TODO: uncomment when we can resolve issue with ag-grid header not rendering in test only when upgrading to react@19 and ag-grid@33
-  // await waitFor(() => findByText(queryBuilderResultPanel, 'Age'));
+  await waitFor(() => findByText(queryBuilderResultPanel, 'Age'));
   const queryBuilderResultAnalytics = await waitFor(() =>
     renderResult.getByTestId(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_ANALYTICS,
@@ -207,10 +206,9 @@ test(integrationTest('test query execution with parameters'), async () => {
   );
   expect(queryBuilderResultAnalytics1.innerHTML).toContain('1 row(s)');
 
-  // TODO: uncomment when we can resolve issue with ag-grid header not rendering in test only when upgrading to react@19 and ag-grid@33
-  // await waitFor(() => findByText(queryBuilderResultPanel1, 'Age'));
-  // await waitFor(() => findByText(queryBuilderResultPanel1, 'First Name'));
-  // await waitFor(() => findByText(queryBuilderResultPanel1, 'Last Name'));
+  await waitFor(() => findByText(queryBuilderResultPanel1, 'Age'));
+  await waitFor(() => findByText(queryBuilderResultPanel1, 'First Name'));
+  await waitFor(() => findByText(queryBuilderResultPanel1, 'Last Name'));
 
   await waitFor(() =>
     queryBuilderResultPanel1.getElementsByClassName('ag-cell'),

@@ -47,11 +47,7 @@ import {
 } from '@finos/legend-graph';
 import type { DataCubeColumnConfiguration } from '../../core/model/DataCubeConfiguration.js';
 import type { DataCubeQuerySnapshotExtendedColumn } from '../../core/DataCubeQuerySnapshot.js';
-import {
-  _lambda,
-  _serializeValueSpecification,
-  _deserializeValueSpecification,
-} from '../../core/DataCubeQueryBuilderUtils.js';
+import { _lambda } from '../../core/DataCubeQueryBuilderUtils.js';
 import { _findCol } from '../../core/model/DataCubeColumn.js';
 
 export abstract class DataCubeColumnBaseEditorState {
@@ -220,13 +216,9 @@ export abstract class DataCubeColumnBaseEditorState {
     return _lambda(
       [],
       [
-        buildExecutableQuery(
-          snapshot,
-          this.view.source,
-          () => undefined,
-          this.view.engine.filterOperations,
-          this.view.engine.aggregateOperations,
-        ),
+        buildExecutableQuery(snapshot, this.view.source, this.view.engine, {
+          skipExecutionContext: true,
+        }),
       ],
     );
   }
@@ -390,7 +382,7 @@ export class DataCubeNewColumnState extends DataCubeColumnBaseEditorState {
       {
         name: this.name,
         type: returnType,
-        mapFn: _serializeValueSpecification(query),
+        mapFn: this.view.engine.serializeValueSpecification(query),
       },
       this.isGroupLevel,
       this.columnKind,
@@ -440,7 +432,7 @@ export class DataCubeExistingColumnEditorState extends DataCubeColumnBaseEditorS
 
   override async getInitialCode(): Promise<string> {
     return this.view.engine.getValueSpecificationCode(
-      _deserializeValueSpecification(this.initialData.mapFn),
+      this.view.engine.deserializeValueSpecification(this.initialData.mapFn),
       true,
     );
   }
@@ -516,7 +508,7 @@ export class DataCubeExistingColumnEditorState extends DataCubeColumnBaseEditorS
       {
         name: this.name,
         type: returnType,
-        mapFn: _serializeValueSpecification(query),
+        mapFn: this.view.engine.serializeValueSpecification(query),
       },
       this.isGroupLevel,
       this.columnKind,

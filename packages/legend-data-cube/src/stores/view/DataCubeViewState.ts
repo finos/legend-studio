@@ -24,13 +24,6 @@ import {
 import { DataCubeQuerySnapshotService } from '../services/DataCubeQuerySnapshotService.js';
 import { DataCubeInfoState } from './DataCubeInfoState.js';
 import { validateAndBuildQuerySnapshot } from '../core/DataCubeQuerySnapshotBuilder.js';
-import {
-  action,
-  computed,
-  makeObservable,
-  observable,
-  runInAction,
-} from 'mobx';
 import { DataCubeFilterEditorState } from './filter/DataCubeFilterEditorState.js';
 import { DataCubeExtendManagerState } from './extend/DataCubeExtendManagerState.js';
 import type { DataCubeState } from '../DataCubeState.js';
@@ -43,6 +36,7 @@ import { DataCubeConfiguration } from '../core/model/DataCubeConfiguration.js';
 import type { DataCubeLayoutService } from '../services/DataCubeLayoutService.js';
 import type { DataCubeAlertService } from '../services/DataCubeAlertService.js';
 import type { DataCubeSettingService } from '../services/DataCubeSettingService.js';
+import { CachedDataCubeSource } from '../core/model/CachedDataCubeSource.js';
 
 export class DataCubeViewState {
   readonly dataCube: DataCubeState;
@@ -61,18 +55,12 @@ export class DataCubeViewState {
   readonly extend: DataCubeExtendManagerState;
 
   readonly initializeState = ActionState.create();
+  readonly processCacheState = ActionState.create();
 
   private _source?: DataCubeSource | undefined;
   private _originalSource?: DataCubeSource | undefined;
 
   constructor(dataCube: DataCubeState) {
-    makeObservable<DataCubeViewState, '_source'>(this, {
-      _source: observable,
-      source: computed,
-
-      initialize: action,
-    });
-
     this.dataCube = dataCube;
     this.engine = dataCube.engine;
     this.logService = dataCube.logService;
@@ -91,6 +79,10 @@ export class DataCubeViewState {
     this.grid = new DataCubeGridState(this);
     this.filter = new DataCubeFilterEditorState(this);
     this.extend = new DataCubeExtendManagerState(this);
+  }
+
+  getOriginalSource() {
+    return this._originalSource;
   }
 
   async generateDataCubeQuery() {
@@ -112,18 +104,48 @@ export class DataCubeViewState {
   }
 
   async initializeCache() {
-    this.initializeState.inProgress();
-    const cachedSource = await this.engine.initializeCache(this.source);
-    if (cachedSource !== undefined) {
-      this._originalSource = this._source;
-      this._source = cachedSource;
+    this.processCacheState.inProgress();
+    const task = this.taskService.newTask('Initializing Cache');
+
+    try {
+      const cachedSource = await this.engine.initializeCache(this.source);
+      if (cachedSource) {
+        this._source = cachedSource;
+      }
+      this.processCacheState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.alertService.alertError(error, {
+        message: `Cache Processing Failure: ${error.message}`,
+      });
+      this._source = this._originalSource;
+      this.processCacheState.fail();
+    } finally {
+      this.taskService.endTask(task);
     }
-    this.initializeState.pass();
   }
 
-  async clearCache() {
-    await this.engine.clearCache();
+  async disposeCache() {
+    if (!(this._source instanceof CachedDataCubeSource)) {
+      return;
+    }
+    const cachedSource = this._source;
     this._source = this._originalSource;
+
+    this.processCacheState.inProgress();
+    const task = this.taskService.newTask('Disposing Cache');
+
+    try {
+      await this.engine.disposeCache(cachedSource);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.alertService.alertError(error, {
+        message: `Cache Processing Failure: ${error.message}`,
+      });
+    } finally {
+      this.processCacheState.complete();
+      this.taskService.endTask(task);
+    }
   }
 
   async initialize(query: DataCubeQuery) {
@@ -144,9 +166,8 @@ export class DataCubeViewState {
         }),
       );
       const source = await this.engine.processQuerySource(query.source);
-      runInAction(() => {
-        this._source = source;
-      });
+      this._source = source;
+      this._originalSource = source;
       const partialQuery = await this.engine.parseValueSpecification(
         query.query,
       );
@@ -156,7 +177,6 @@ export class DataCubeViewState {
         query,
         this.engine,
       );
-      this.engine.processInitialSnapshot?.(source, initialSnapshot);
       this.snapshotService.broadcastSnapshot(initialSnapshot);
       this.dataCube.options?.onViewInitialized?.({
         api: this.dataCube.api,

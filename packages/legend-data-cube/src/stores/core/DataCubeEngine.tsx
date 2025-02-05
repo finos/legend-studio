@@ -20,6 +20,8 @@ import {
   type TDSExecutionResult,
   type V1_AppliedFunction,
   PRIMITIVE_TYPE,
+  V1_deserializeValueSpecification,
+  V1_serializeValueSpecification,
 } from '@finos/legend-graph';
 import {
   getFilterOperation,
@@ -65,20 +67,25 @@ import { DataCubeQueryFilterOperation__EndWithCaseInsensitive } from './filter/D
 import { DataCubeQueryFilterOperation__NotEndWith } from './filter/DataCubeQueryFilterOperation__NotEndWith.js';
 import { DataCubeQueryFilterOperation__IsNull } from './filter/DataCubeQueryFilterOperation__IsNull.js';
 import { DataCubeQueryFilterOperation__IsNotNull } from './filter/DataCubeQueryFilterOperation__IsNotNull.js';
-import type { DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
+import { DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
 import { buildExecutableQuery } from './DataCubeQueryBuilder.js';
-import type { DataCubeColumn } from './model/DataCubeColumn.js';
+import { _toCol, type DataCubeColumn } from './model/DataCubeColumn.js';
 import {
   type DataCubeSource,
   INTERNAL__DataCubeSource,
 } from './model/DataCubeSource.js';
-import { _primitiveValue } from './DataCubeQueryBuilderUtils.js';
+import {
+  _primitiveValue,
+  _selectFunction,
+} from './DataCubeQueryBuilderUtils.js';
 import {
   type DocumentationEntry,
   type LogEvent,
   type PlainObject,
 } from '@finos/legend-shared';
 import type { CachedDataCubeSource } from './model/CachedDataCubeSource.js';
+import { DataCubeQuery } from './model/DataCubeQuery.js';
+import { newConfiguration } from './DataCubeConfigurationBuilder.js';
 
 export type CompletionItem = {
   completion: string;
@@ -168,6 +175,14 @@ export abstract class DataCubeEngine {
     return getAggregateOperation(value, this.aggregateOperations);
   }
 
+  deserializeValueSpecification(json: PlainObject<V1_ValueSpecification>) {
+    return V1_deserializeValueSpecification(json, []);
+  }
+
+  serializeValueSpecification(protocol: V1_ValueSpecification) {
+    return V1_serializeValueSpecification(protocol, []);
+  }
+
   /**
    * By default, for a function chain, Pure grammar composer will extract the first parameter of the first function
    * and render it as the caller of that function rather than a parameter
@@ -184,21 +199,34 @@ export abstract class DataCubeEngine {
     source.query = _primitiveValue(PRIMITIVE_TYPE.STRING, '');
     return (
       await this.getValueSpecificationCode(
-        buildExecutableQuery(
-          snapshot,
-          source,
-          () => undefined,
-          this.filterOperations,
-          this.aggregateOperations,
-        ),
+        buildExecutableQuery(snapshot, source, this, {
+          skipExecutionContext: true,
+        }),
         pretty,
       )
     ).substring(`''->`.length);
   }
 
+  async generateBaseQuery(sourceData: PlainObject) {
+    const source = await this.processQuerySource(sourceData);
+    const query = new DataCubeQuery();
+    query.source = sourceData;
+    query.query = await this.getValueSpecificationCode(
+      _selectFunction(source.columns),
+    );
+    const snapshot = DataCubeQuerySnapshot.create({});
+    snapshot.data.sourceColumns = source.columns.map(_toCol);
+    snapshot.data.selectColumns = source.columns.map(_toCol);
+    const configuration = newConfiguration({
+      snapshot,
+    });
+    query.configuration = configuration;
+    return query;
+  }
+
   // ---------------------------------- PROCESSOR ----------------------------------
 
-  abstract processQuerySource(value: PlainObject): Promise<DataCubeSource>;
+  abstract processQuerySource(sourceData: PlainObject): Promise<DataCubeSource>;
 
   abstract parseValueSpecification(
     code: string,
@@ -237,12 +265,7 @@ export abstract class DataCubeEngine {
     source: DataCubeSource,
   ): V1_AppliedFunction | undefined;
 
-  processInitialSnapshot?(
-    source: DataCubeSource,
-    snapshot: DataCubeQuerySnapshot,
-  ): DataCubeQuerySnapshot;
-
-  // ---------------------------------- CACHING --------------------------------------
+  // ---------------------------------- CACHING ----------------------------------
 
   async initializeCache(
     source: DataCubeSource,
@@ -250,9 +273,7 @@ export abstract class DataCubeEngine {
     return undefined;
   }
 
-  async clearCache() {
-    // do nothing
-  }
+  async disposeCache(source: CachedDataCubeSource) {}
 
   // ---------------------------------- APPLICATION ----------------------------------
 
