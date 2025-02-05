@@ -62,7 +62,7 @@
     "@types/react": "19.0.8",
     "@types/react-dom": "19.0.3",
     "fast-xml-parser": "4.5.1",
-    "mobx": "6.13.5",
+    "mobx": "6.13.6",
     "mobx-react-lite": "4.1.0",
     "mobx-utils": "6.1.0",
     "monaco-editor": "0.52.2",
