@@ -63,6 +63,7 @@ export class DataCubeViewState {
   readonly initializeState = ActionState.create();
 
   private _source?: DataCubeSource | undefined;
+  private _originalSource?: DataCubeSource | undefined;
 
   constructor(dataCube: DataCubeState) {
     makeObservable<DataCubeViewState, '_source'>(this, {
@@ -108,6 +109,21 @@ export class DataCubeViewState {
       throw new IllegalStateError('Source is not initialized');
     }
     return this._source;
+  }
+
+  async initializeCache() {
+    this.initializeState.inProgress();
+    const cachedSource = await this.engine.initializeCache(this.source);
+    if (cachedSource !== undefined) {
+      this._originalSource = this._source;
+      this._source = cachedSource;
+    }
+    this.initializeState.pass();
+  }
+
+  async clearCache() {
+    await this.engine.clearCache();
+    this._source = this._originalSource;
   }
 
   async initialize(query: DataCubeQuery) {

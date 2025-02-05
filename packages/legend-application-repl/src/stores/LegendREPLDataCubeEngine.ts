@@ -191,10 +191,12 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
     source: DataCubeSource,
     options?: DataCubeExecutionOptions | undefined,
   ) {
+    const startTime = performance.now();
     const result = await this._client.executeQuery({
       query: _serializeValueSpecification(query),
       debug: options?.debug,
     });
+    const endTime = performance.now();
     return {
       result: guaranteeType(
         V1_buildExecutionResult(
@@ -204,6 +206,7 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
       ),
       executedQuery: result.executedQuery,
       executedSQL: result.executedSQL,
+      executionTime: endTime - startTime,
     };
   }
 

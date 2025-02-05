@@ -48,6 +48,7 @@ export enum V1_DatabaseType {
   Redshift = 'Redshift',
   Spanner = 'Spanner',
   Trino = 'Trino',
+  DuckDB = 'DuckDB',
 }
 
 export abstract class V1_DatabaseConnection extends V1_Connection {
