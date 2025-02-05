@@ -44,6 +44,7 @@ import type {
 } from '../../../stores/core/model/DataCubeConfiguration.js';
 import { generateBaseGridOptions } from '../../../stores/view/grid/DataCubeGridConfigurationBuilder.js';
 import type { DataCubeViewState } from '../../../stores/view/DataCubeViewState.js';
+import { FormBadge_WIP } from '../../core/DataCubeFormUtils.js';
 
 // NOTE: This is a workaround to prevent ag-grid license key check from flooding the console screen
 // with its stack trace in Chrome.
@@ -318,8 +319,9 @@ const DataCubeGridStatusBar = observer((props: { view: DataCubeViewState }) => {
             Pagination
           </div>
         </button>
-        {view.dataCube.options?.enableCache !== undefined &&
-          view.dataCube.options.enableCache && (
+        {view.dataCube.options?.enableCache && (
+          <>
+            <div className="h-3 w-[1px] bg-neutral-200" />
             <button
               className="flex h-full items-center p-2"
               // eslint-disable-next-line @typescript-eslint/no-misused-promises
@@ -347,15 +349,16 @@ const DataCubeGridStatusBar = observer((props: { view: DataCubeViewState }) => {
                 disableFocusRipple={true}
               />
               <div
-                className={cn('text-sm', {
+                className={cn('flex items-center text-sm', {
                   'text-sky-600': grid.isCachingEnabled,
                   'text-neutral-500': !grid.isCachingEnabled,
                 })}
               >
-                Cache (BETA)
+                Cache <FormBadge_WIP />
               </div>
             </button>
-          )}
+          </>
+        )}
       </div>
     </div>
   );

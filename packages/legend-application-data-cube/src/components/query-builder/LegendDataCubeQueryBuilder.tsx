@@ -87,6 +87,17 @@ export const LegendDataCubeQueryBuilder = withLegendDataCubeQueryBuilderStore(
         .catch((error) => store.alertService.alertUnhandledError(error));
     }, [store, queryId]);
 
+    useEffect(() => {
+      store.engine
+        .initializeCacheManager()
+        .catch((error) => store.alertService.alertUnhandledError(error));
+      return () => {
+        store.engine
+          .disposeCacheManager()
+          .catch((error) => store.alertService.alertUnhandledError(error));
+      };
+    }, [store]);
+
     if (!builder) {
       return (
         <DataCubePlaceholder

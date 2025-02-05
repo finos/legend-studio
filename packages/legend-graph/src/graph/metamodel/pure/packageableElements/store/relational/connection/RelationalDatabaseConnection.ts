@@ -50,6 +50,7 @@ export enum DatabaseType {
   BigQuery = 'BigQuery',
   Spanner = 'Spanner',
   Trino = 'Trino',
+  DuckDB = 'DuckDB',
 }
 
 export abstract class DatabaseConnection extends Connection {

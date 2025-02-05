@@ -18,19 +18,31 @@ import * as duckdb from '@duckdb/duckdb-wasm';
 import duckdb_wasm from '@duckdb/duckdb-wasm/dist/duckdb-mvp.wasm';
 import duckdb_wasm_next from '@duckdb/duckdb-wasm/dist/duckdb-eh.wasm';
 import {
+  PRIMITIVE_TYPE,
   TDSExecutionResult,
   TDSRow,
   TabularDataSet,
 } from '@finos/legend-graph';
-import type { AsyncDuckDBConnection } from '@duckdb/duckdb-wasm';
-import { assertNonNullable } from '@finos/legend-shared';
+import { assertNonNullable, guaranteeNonNullable } from '@finos/legend-shared';
+import type { CachedDataCubeSource } from '@finos/legend-data-cube';
 
-export class LegendDataCubeDataCubeCacheEngine {
+export class LegendDataCubeDataCubeCacheManager {
+  private static readonly DUCKDB_DEFAULT_SCHEMA_NAME = 'main'; // See https://duckdb.org/docs/sql/statements/use.html
+  private static readonly TABLE_NAME_PREFIX = 'cache';
+  private static tableCounter = 0;
+
   private _database?: duckdb.AsyncDuckDB | undefined;
-  private _connection?: AsyncDuckDBConnection | undefined;
 
-  // Documentation: https://duckdb.org/docs/api/wasm/instantiation.html
-  async initializeDuckDb(result: TDSExecutionResult) {
+  private get database(): duckdb.AsyncDuckDB {
+    return guaranteeNonNullable(
+      this._database,
+      `Cache manager database not initialized`,
+    );
+  }
+
+  async initialize() {
+    // Initialize DuckDB with WASM
+    // See: https://duckdb.org/docs/api/wasm/instantiation.html
     const MANUAL_BUNDLES: duckdb.DuckDBBundles = {
       mvp: {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -52,20 +64,56 @@ export class LegendDataCubeDataCubeCacheEngine {
     // Select a bundle based on browser checks
     const bundle = await duckdb.selectBundle(MANUAL_BUNDLES);
     // Instantiate the asynchronus version of DuckDB-wasm
-    assertNonNullable(bundle.mainWorker, `Can't initialize duck db`);
+    assertNonNullable(
+      bundle.mainWorker,
+      `Can't initialize cache manager: DuckDB main worker not initialized`,
+    );
     const worker = new Worker(bundle.mainWorker);
     const logger = new duckdb.ConsoleLogger();
-    this._database = new duckdb.AsyncDuckDB(logger, worker);
-    await this._database.instantiate(bundle.mainModule, bundle.pthreadWorker);
-    this._connection = await this._database.connect();
+    const database = new duckdb.AsyncDuckDB(logger, worker);
+    await database.instantiate(bundle.mainModule, bundle.pthreadWorker);
+    this._database = database;
+  }
 
+  async cache(result: TDSExecutionResult) {
+    const schema =
+      LegendDataCubeDataCubeCacheManager.DUCKDB_DEFAULT_SCHEMA_NAME;
+    LegendDataCubeDataCubeCacheManager.tableCounter += 1;
+    const table = `${LegendDataCubeDataCubeCacheManager.TABLE_NAME_PREFIX}${LegendDataCubeDataCubeCacheManager.tableCounter}`;
+
+    const connection = await this.database.connect();
+
+    // TODO: review if we can improve performance here using CSV/Arrow for ingestion
     const columns: string[] = [];
-    result.builder.columns.forEach((col) =>
-      columns.push(`"${col.name}" ${this.getDuckDbType(col.type)}`),
-    );
+    result.builder.columns.forEach((col) => {
+      let colType: string;
+      switch (col.type as string) {
+        case PRIMITIVE_TYPE.BOOLEAN: {
+          colType = 'BOOLEAN';
+          break;
+        }
+        case PRIMITIVE_TYPE.NUMBER: {
+          colType = 'DOUBLE';
+          break;
+        }
+        case PRIMITIVE_TYPE.INTEGER: {
+          colType = 'INTEGER';
+          break;
+        }
+        case PRIMITIVE_TYPE.DATE: {
+          colType = 'TIMESTAMP';
+          break;
+        }
+        case PRIMITIVE_TYPE.STRING:
+        default: {
+          colType = 'VARCHAR';
+        }
+      }
+      columns.push(`"${col.name}" ${colType}`);
+    });
 
-    const CREATE_TABLE_SQL = `CREATE TABLE cached_tbl (${columns.join(',')})`;
-    await this._connection.query(CREATE_TABLE_SQL);
+    const CREATE_TABLE_SQL = `CREATE TABLE ${schema}.${table} (${columns.join(',')})`;
+    await connection.query(CREATE_TABLE_SQL);
 
     const rowString: string[] = [];
 
@@ -81,15 +129,19 @@ export class LegendDataCubeDataCubeCacheEngine {
       rowString.push(`(${updatedRows.join(',')})`);
     });
 
-    const INSERT_TABLE_SQL = `INSERT INTO cached_tbl VALUES ${rowString.join(',')}`;
+    const INSERT_TABLE_SQL = `INSERT INTO ${schema}.${table} VALUES ${rowString.join(',')}`;
 
-    await this._connection.query(INSERT_TABLE_SQL);
+    await connection.query(INSERT_TABLE_SQL);
+    await connection.close();
+
+    return { table, schema, rowCount: result.result.rows.length };
   }
 
-  async runQuery(sql: string) {
-    const result = await this._connection?.query(sql);
-    const columnNames = Object.keys(result?.toArray().at(0));
-    const rows = result?.toArray().map((row) => {
+  async runSQLQuery(sql: string) {
+    const connection = await this.database.connect();
+    const result = (await connection.query(sql)).toArray();
+    const columnNames = Object.keys(result.at(0));
+    const rows = result.map((row) => {
       const values = new TDSRow();
       values.values = columnNames.map(
         (column) => row[column] as string | number | boolean | null,
@@ -99,34 +151,20 @@ export class LegendDataCubeDataCubeCacheEngine {
     const tdsExecutionResult = new TDSExecutionResult();
     const tds = new TabularDataSet();
     tds.columns = columnNames;
-    tds.rows = rows !== undefined ? rows : [new TDSRow()];
+    tds.rows = rows;
     tdsExecutionResult.result = tds;
     return tdsExecutionResult;
   }
 
-  async clearDuckDb() {
-    await this._connection?.close();
-    await this._database?.flushFiles();
-    await this._database?.terminate();
+  async disposeCache(source: CachedDataCubeSource) {
+    const connection = await this.database.connect();
+    const DROP_TABLE_SQL = `DROP TABLE IF EXISTS "${source.schema}.${source.table}"`;
+    await connection.query(DROP_TABLE_SQL);
+    await connection.close();
   }
 
-  private getDuckDbType(type: string | undefined): string {
-    switch (type?.toLowerCase()) {
-      //TODO: mapping from tds build to duckdb data types
-      case 'string':
-        return 'VARCHAR';
-      case 'boolean':
-        return 'BOOLEAN';
-      case 'bigint':
-        return 'BIGINT';
-      case 'number':
-        return 'DOUBLE';
-      case 'integer':
-        return 'INTEGER';
-      case 'date':
-        return 'TIMESTAMP';
-      default:
-        return 'VARCHAR';
-    }
+  async dispose() {
+    await this._database?.flushFiles();
+    await this._database?.terminate();
   }
 }

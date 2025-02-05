@@ -20,6 +20,8 @@ import { action, computed, makeObservable, observable } from 'mobx';
 export class Task {
   readonly uuid = uuid();
   readonly name: string;
+  // use Date.now() vs. performance.now() because need to record the moment
+  // the task starts/ends for logging purposes.
   readonly startTime = Date.now();
   readonly ownerId?: string | undefined;
 
