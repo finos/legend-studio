@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.2.2
+
+### Patch Changes
+
+- [#3869](https://github.com/finos/legend-studio/pull/3869) [`ce88ccd`](https://github.com/finos/legend-studio/commit/ce88ccd5d3ed0840427ad2b31afb18604354e554) ([@gs-gunjan](https://github.com/gs-gunjan)) - generating plan with always vX_X_X version
+
 ## 0.2.1
 
 ## 0.2.0
