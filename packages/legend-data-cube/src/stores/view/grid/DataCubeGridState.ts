@@ -166,6 +166,9 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
       }
     };
 
+    // TODO?: we might want to do a quick check here for the amount of data the cache
+    // will handle, so maybe fire a COUNT query to check for the number of records
+    // and check that against a threshold, we will need to alter the prompt below accordingly.
     if (
       this._settingService.getBooleanValue(
         DataCubeSettingKey.GRID_CLIENT__SHOW_CACHE_PERFORMANCE_WARNING,

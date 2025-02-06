@@ -435,7 +435,12 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         query,
         source.model,
         [],
-        options,
+        // NOTE: for caching, we're using DuckDB, but its protocol models
+        // are not available in the latest production protocol version V1_33_0, so
+        // we have to force using VX_X_X
+        // once we either cut another protocol version or backport the DuckDB models
+        // to V1_33_0, we will can remove this
+        { ...options, clientVersion: PureClientVersion.VX_X_X },
       );
       const sql = guaranteeNonNullable(
         executionPlan instanceof V1_SimpleExecutionPlan
