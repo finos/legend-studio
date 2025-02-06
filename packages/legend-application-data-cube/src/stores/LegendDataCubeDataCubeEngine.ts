@@ -574,12 +574,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   ): Promise<V1_ExecutionPlan> {
     return V1_deserializeExecutionPlan(
       await this._engineServerClient.generatePlan({
-        clientVersion:
-          options?.clientVersion ??
-          // eslint-disable-next-line no-process-env
-          (process.env.NODE_ENV === 'development'
-            ? PureClientVersion.VX_X_X
-            : undefined),
+        clientVersion: PureClientVersion.VX_X_X,
         function: this.serializeValueSpecification(query),
         model: serialize(model),
         context: serialize(
