@@ -216,7 +216,6 @@ export class QueryBuilderPropertySearchState {
   async search(): Promise<void> {
     if (!this.searchText) {
       this.setSearchResults([]);
-      return Promise.resolve();
     }
 
     this.searchState.inProgress();

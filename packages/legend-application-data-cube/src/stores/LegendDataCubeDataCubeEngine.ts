@@ -85,8 +85,9 @@ import {
   RawAdhocQueryDataCubeSource,
   _lambda,
   _defaultPrimitiveTypeValue,
-  type DataCubeExecutionOptions,
   CachedDataCubeSource,
+  type DataCubeExecutionOptions,
+  type DataCubeCacheInitializationOptions,
 } from '@finos/legend-data-cube';
 import {
   isNonNullable,
@@ -430,7 +431,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       );
     } else if (source instanceof CachedDataCubeSource) {
       // get the execute plan to extract the generated SQL to run against cached DB
-      const executionPlan = await this.generateExecutionPlan(
+      const executionPlan = await this._generateExecutionPlan(
         query,
         source.model,
         [],
@@ -500,98 +501,11 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     return undefined;
   }
 
-  // ---------------------------------- UTILITIES ----------------------------------
-
-  private async _getQueryRelationType(
-    query: PlainObject<V1_Lambda>,
-    source: DataCubeSource,
-  ) {
-    if (source instanceof AdhocQueryDataCubeSource) {
-      return this._getLambdaRelationType(query, source.model);
-    } else if (source instanceof LegendQueryDataCubeSource) {
-      return this._getLambdaRelationType(query, source.model);
-    } else if (source instanceof CachedDataCubeSource) {
-      return this._getLambdaRelationType(query, serialize(source.model));
-    }
-    throw new UnsupportedOperationError(
-      `Can't get relation type for lambda with unsupported source`,
-    );
-  }
-
-  private async _getLambdaRelationType(
-    lambda: PlainObject<V1_Lambda>,
-    model: PlainObject<V1_PureModelContext>,
-  ) {
-    const relationType = deserialize(
-      V1_relationTypeModelSchema,
-      await this._engineServerClient.lambdaRelationType({
-        lambda,
-        model,
-      }),
-    );
-    return {
-      columns: relationType.columns.map((column) => ({
-        name: column.name,
-        type: V1_getGenericTypeFullPath(column.genericType),
-      })),
-    };
-  }
-
-  private async _runQuery(
-    query: V1_Lambda,
-    model: PlainObject<V1_PureModelContext>,
-    parameterValues?: V1_ParameterValue[] | undefined,
-    options?: DataCubeExecutionOptions | undefined,
-  ): Promise<ExecutionResult> {
-    return V1_buildExecutionResult(
-      V1_deserializeExecutionResult(
-        (await this._engineServerClient.runQuery({
-          clientVersion:
-            options?.clientVersion ??
-            // eslint-disable-next-line no-process-env
-            (process.env.NODE_ENV === 'development'
-              ? PureClientVersion.VX_X_X
-              : undefined),
-          function: this.serializeValueSpecification(query),
-          model,
-          context: serialize(
-            V1_rawBaseExecutionContextModelSchema,
-            new V1_RawBaseExecutionContext(),
-          ),
-          parameterValues: (parameterValues ?? []).map((parameterValue) =>
-            serialize(V1_parameterValueModelSchema, parameterValue),
-          ),
-        })) as PlainObject<V1_ExecutionResult>,
-      ),
-    );
-  }
-
-  private async generateExecutionPlan(
-    query: V1_Lambda,
-    model: V1_PureModelContext,
-    parameterValues?: V1_ParameterValue[] | undefined,
-    options?: DataCubeExecutionOptions | undefined,
-  ): Promise<V1_ExecutionPlan> {
-    return V1_deserializeExecutionPlan(
-      await this._engineServerClient.generatePlan({
-        clientVersion: PureClientVersion.VX_X_X,
-        function: this.serializeValueSpecification(query),
-        model: serialize(model),
-        context: serialize(
-          V1_rawBaseExecutionContextModelSchema,
-          new V1_RawBaseExecutionContext(),
-        ),
-        parameterValues: (parameterValues ?? []).map((parameterValue) =>
-          serialize(V1_parameterValueModelSchema, parameterValue),
-        ),
-      }),
-    );
-  }
-
   // ---------------------------------- CACHING --------------------------------------
 
   override async initializeCache(
     source: DataCubeSource,
+    options?: DataCubeCacheInitializationOptions | undefined,
   ): Promise<CachedDataCubeSource | undefined> {
     const cacheQuery = guaranteeNonNullable(
       this.buildExecutionContext(source),
@@ -601,7 +515,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     const result = await this.executeQuery(
       _lambda([], [cacheQuery]),
       source,
-      undefined,
+      options,
     );
     const {
       schema: schemaName,
@@ -677,10 +591,6 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     return cachedSource;
   }
 
-  override async disposeCache(source: CachedDataCubeSource) {
-    await this._cacheManager.disposeCache(source);
-  }
-
   // TODO: need a better way to infer datatype from tds builder
   private _getColumnType(type: string | undefined): V1_RelationalDataType {
     if (type === undefined) {
@@ -700,6 +610,103 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       default:
         return new V1_VarChar();
     }
+  }
+
+  override async disposeCache(source: CachedDataCubeSource) {
+    await this._cacheManager.disposeCache(source);
+  }
+
+  // ---------------------------------- UTILITIES ----------------------------------
+
+  private async _getQueryRelationType(
+    query: PlainObject<V1_Lambda>,
+    source: DataCubeSource,
+  ) {
+    if (source instanceof AdhocQueryDataCubeSource) {
+      return this._getLambdaRelationType(query, source.model);
+    } else if (source instanceof LegendQueryDataCubeSource) {
+      return this._getLambdaRelationType(query, source.model);
+    } else if (source instanceof CachedDataCubeSource) {
+      return this._getLambdaRelationType(query, serialize(source.model));
+    }
+    throw new UnsupportedOperationError(
+      `Can't get relation type for lambda with unsupported source`,
+    );
+  }
+
+  private async _getLambdaRelationType(
+    lambda: PlainObject<V1_Lambda>,
+    model: PlainObject<V1_PureModelContext>,
+  ) {
+    const relationType = deserialize(
+      V1_relationTypeModelSchema,
+      await this._engineServerClient.lambdaRelationType({
+        lambda,
+        model,
+      }),
+    );
+    return {
+      columns: relationType.columns.map((column) => ({
+        name: column.name,
+        type: V1_getGenericTypeFullPath(column.genericType),
+      })),
+    };
+  }
+
+  private async _runQuery(
+    query: V1_Lambda,
+    model: PlainObject<V1_PureModelContext>,
+    parameterValues?: V1_ParameterValue[] | undefined,
+    options?: DataCubeExecutionOptions | undefined,
+  ): Promise<ExecutionResult> {
+    return V1_buildExecutionResult(
+      V1_deserializeExecutionResult(
+        (await this._engineServerClient.runQuery({
+          clientVersion:
+            options?.clientVersion ??
+            // eslint-disable-next-line no-process-env
+            (process.env.NODE_ENV === 'development'
+              ? PureClientVersion.VX_X_X
+              : undefined),
+          function: this.serializeValueSpecification(query),
+          model,
+          context: serialize(
+            V1_rawBaseExecutionContextModelSchema,
+            new V1_RawBaseExecutionContext(),
+          ),
+          parameterValues: (parameterValues ?? []).map((parameterValue) =>
+            serialize(V1_parameterValueModelSchema, parameterValue),
+          ),
+        })) as PlainObject<V1_ExecutionResult>,
+      ),
+    );
+  }
+
+  private async _generateExecutionPlan(
+    query: V1_Lambda,
+    model: V1_PureModelContext,
+    parameterValues?: V1_ParameterValue[] | undefined,
+    options?: DataCubeExecutionOptions | undefined,
+  ): Promise<V1_ExecutionPlan> {
+    return V1_deserializeExecutionPlan(
+      await this._engineServerClient.generatePlan({
+        clientVersion:
+          options?.clientVersion ??
+          // eslint-disable-next-line no-process-env
+          (process.env.NODE_ENV === 'development'
+            ? PureClientVersion.VX_X_X
+            : undefined),
+        function: this.serializeValueSpecification(query),
+        model: serialize(model),
+        context: serialize(
+          V1_rawBaseExecutionContextModelSchema,
+          new V1_RawBaseExecutionContext(),
+        ),
+        parameterValues: (parameterValues ?? []).map((parameterValue) =>
+          serialize(V1_parameterValueModelSchema, parameterValue),
+        ),
+      }),
+    );
   }
 
   // ---------------------------------- APPLICATION ----------------------------------

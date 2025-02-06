@@ -101,6 +101,11 @@ export type DataCubeExecutionOptions = {
   clientVersion?: string | undefined;
 };
 
+export type DataCubeCacheInitializationOptions = {
+  debug?: boolean | undefined;
+  clientVersion?: string | undefined;
+};
+
 export type DataCubeExecutionResult = {
   result: TDSExecutionResult;
   executedQuery: string;
@@ -269,6 +274,7 @@ export abstract class DataCubeEngine {
 
   async initializeCache(
     source: DataCubeSource,
+    options?: DataCubeCacheInitializationOptions | undefined,
   ): Promise<CachedDataCubeSource | undefined> {
     return undefined;
   }
