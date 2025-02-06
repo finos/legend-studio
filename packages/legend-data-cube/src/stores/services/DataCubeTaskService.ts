@@ -19,7 +19,7 @@ import { action, computed, makeObservable, observable } from 'mobx';
 
 export class Task {
   readonly uuid = uuid();
-  readonly name: string;
+  readonly description: string;
   // use Date.now() vs. performance.now() because need to record the moment
   // the task starts/ends for logging purposes.
   readonly startTime = Date.now();
@@ -27,8 +27,8 @@ export class Task {
 
   endTime?: number | undefined;
 
-  constructor(name: string, ownerId?: string | undefined) {
-    this.name = name;
+  constructor(description: string, ownerId?: string | undefined) {
+    this.description = description;
     this.ownerId = ownerId;
   }
 
@@ -50,8 +50,8 @@ export class TaskManager {
     });
   }
 
-  newTask(name: string, ownerId?: string | undefined) {
-    const task = new Task(name, ownerId);
+  newTask(description: string, ownerId?: string | undefined) {
+    const task = new Task(description, ownerId);
     this.tasks.push(task);
     return task;
   }
@@ -89,8 +89,8 @@ export class DataCubeTaskService {
     return this.manager.tasks.filter((task) => task.ownerId === this.uuid);
   }
 
-  newTask(name: string) {
-    return this.manager.newTask(name, this.uuid);
+  newTask(description: string) {
+    return this.manager.newTask(description, this.uuid);
   }
 
   endTask(task: Task) {

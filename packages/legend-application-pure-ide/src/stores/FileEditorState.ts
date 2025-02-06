@@ -26,12 +26,7 @@ import {
   CODE_EDITOR_LANGUAGE,
 } from '@finos/legend-code-editor';
 import { DIRECTORY_PATH_DELIMITER } from '@finos/legend-graph';
-import {
-  assertErrorThrown,
-  last,
-  guaranteeNonNullable,
-  type GeneratorFn,
-} from '@finos/legend-shared';
+import { at, assertErrorThrown, type GeneratorFn } from '@finos/legend-shared';
 import {
   action,
   computed,
@@ -63,7 +58,7 @@ import { LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY } from '../__lib__/LegendP
 import type { TabState } from '@finos/legend-lego/application';
 
 const getFileEditorLanguage = (filePath: string): string => {
-  const extension = last(filePath.split('.'));
+  const extension = filePath.split('.').at(-1);
   switch (extension) {
     case 'pure':
       return CODE_EDITOR_LANGUAGE.PURE;
@@ -230,9 +225,7 @@ export class FileEditorState
   }
 
   get fileName(): string {
-    return guaranteeNonNullable(
-      last(this.filePath.split(DIRECTORY_PATH_DELIMITER)),
-    );
+    return at(this.filePath.split(DIRECTORY_PATH_DELIMITER), -1);
   }
 
   override match(tab: TabState): boolean {

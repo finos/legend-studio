@@ -324,7 +324,7 @@ export class DataCubeGridClientServerSideDataSource
   }
 
   async fetchRows(params: IServerSideGetRowsParams<unknown, unknown>) {
-    const task = this._view.taskService.newTask('Fetching data');
+    const task = this._view.taskService.newTask('Fetching data...');
 
     // ------------------------------ SNAPSHOT ------------------------------
 

@@ -164,7 +164,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
     // finalize
     newSnapshot.finalize();
     if (newSnapshot.hashCode !== baseSnapshot.hashCode) {
-      const task = this.view.taskService.newTask('Validate query');
+      const task = this.view.taskService.newTask('Validating query...');
       // NOTE: Compile the query to validate. This is a helpful check for a lot of different scenarios
       // where the consistency of the query might be thrown off by changes from various parts that the
       // editor does not have full control over (i.e. extended columns, pivot cast columns, etc.)

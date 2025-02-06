@@ -60,7 +60,7 @@ export function Alert(props: {
         </div>
       </div>
       {actions.length !== 0 && (
-        <div className="flex h-10 items-center justify-center border border-t-neutral-300 px-2">
+        <div className="flex h-10 items-center justify-end border border-t-neutral-300 px-2">
           {actions.map((action, idx) => (
             <FormButton
               className="ml-2 first-of-type:ml-0"

@@ -162,6 +162,14 @@ export class DataCubeSettingService {
         defaultValue: undefined,
       } satisfies DataCubeSetting,
       {
+        key: DataCubeSettingKey.GRID_CLIENT__SHOW_CACHE_PERFORMANCE_WARNING,
+        title: `Caching Performance Warning: Enabled`,
+        description: `Alerts user of potential performance and resource-related issues that caching can cause when enabled.`,
+        group: DataCubeSettingGroup.GRID,
+        type: DataCubeSettingType.BOOLEAN,
+        defaultValue: true,
+      } satisfies DataCubeSetting<boolean>,
+      {
         key: DataCubeSettingKey.GRID_CLIENT__SUPPRESS_LARGE_DATASET_WARNING,
         title: `Large Dataset Warning: Disabled`,
         description: `Suggests user to enable pagination when handling large datasets to improve performance.`,
