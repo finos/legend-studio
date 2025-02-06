@@ -38,6 +38,8 @@ import { DataCubeConfiguration } from '../../core/model/DataCubeConfiguration.js
 import { DataCubeGridControllerState } from './DataCubeGridControllerState.js';
 import { DataCubeGridClientExportEngine } from './DataCubeGridClientExportEngine.js';
 import { DataCubeSettingKey } from '../../../__lib__/DataCubeSetting.js';
+import { DEFAULT_ALERT_WINDOW_CONFIG } from '../../services/DataCubeLayoutService.js';
+import { AlertType } from '../../services/DataCubeAlertService.js';
 
 /**
  * This query editor state is responsible for syncing the internal state of ag-grid
@@ -125,32 +127,95 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
   }
 
   async setCachingEnabled(val: boolean) {
-    const currentVal = this.isCachingEnabled;
-    if (val === currentVal) {
+    if (val === this.isCachingEnabled) {
       return;
     }
 
-    runInAction(() => {
-      this.isCachingEnabled = val;
-    });
-
-    if (val) {
-      await this._view.initializeCache();
-      if (this._view.processCacheState.hasFailed) {
-        this.isCachingEnabled = currentVal;
-        return;
-      }
-    } else {
+    // disable caching
+    if (val === false) {
       await this._view.disposeCache();
+
+      runInAction(() => {
+        this.isCachingEnabled = val;
+
+        // hard reset the grid, this will force the grid to fetch data again
+        this.clientDataSource = new DataCubeGridClientServerSideDataSource(
+          this,
+          this._view,
+        );
+      });
+
+      return;
     }
 
-    runInAction(() => {
-      // hard reset the grid, this will force the grid to fetch data again
-      this.clientDataSource = new DataCubeGridClientServerSideDataSource(
-        this,
-        this._view,
-      );
-    });
+    // enable caching
+    const run = async () => {
+      await this._view.initializeCache();
+
+      // only update value if cache processing succeeds
+      if (this._view.processCacheState.hasSucceeded) {
+        runInAction(() => {
+          this.isCachingEnabled = val;
+
+          // hard reset the grid, this will force the grid to fetch data again
+          this.clientDataSource = new DataCubeGridClientServerSideDataSource(
+            this,
+            this._view,
+          );
+        });
+      }
+    };
+
+    // TODO?: we might want to do a quick check here for the amount of data the cache
+    // will handle, so maybe fire a COUNT query to check for the number of records
+    // and check that against a threshold, we will need to alter the prompt below accordingly.
+    if (
+      this._settingService.getBooleanValue(
+        DataCubeSettingKey.GRID_CLIENT__SHOW_CACHE_PERFORMANCE_WARNING,
+      )
+    ) {
+      this._view.alertService.alert({
+        message: `Confirm you want to proceed with caching`,
+        text: `When enabled, the source dataset will be cached locally in order to boost query performance. But depending on computational resource available to your environment, sometimes, caching can negatively impact the overall performance, and can even lead to crashes.\nDo you still want to proceed?`,
+        type: AlertType.WARNING,
+        actions: [
+          {
+            label: 'Abort',
+            handler: () => {},
+          },
+          {
+            label: 'Proceed',
+            handler: () => {
+              run().catch((error) =>
+                this._view.alertService.alertUnhandledError(error),
+              );
+            },
+          },
+          {
+            label: 'Dismiss Warning and Proceed',
+            handler: () => {
+              this._view.settingService.updateValue(
+                this._view.dataCube.api,
+                DataCubeSettingKey.GRID_CLIENT__SHOW_CACHE_PERFORMANCE_WARNING,
+                false,
+              );
+              run().catch((error) =>
+                this._view.alertService.alertUnhandledError(error),
+              );
+            },
+          },
+        ],
+        windowConfig: {
+          ...DEFAULT_ALERT_WINDOW_CONFIG,
+          width: 600,
+          height: 210,
+          minWidth: 300,
+          minHeight: 150,
+        },
+      });
+    } else {
+      await run();
+    }
   }
 
   setScrollHintText(val: string | undefined) {

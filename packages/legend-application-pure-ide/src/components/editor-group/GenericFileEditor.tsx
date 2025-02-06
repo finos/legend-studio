@@ -21,11 +21,7 @@ import type { FileEditorState } from '../../stores/FileEditorState.js';
 import { useApplicationStore, useCommands } from '@finos/legend-application';
 import { clsx, Dialog, WordWrapIcon } from '@finos/legend-art';
 import { usePureIDEStore } from '../PureIDEStoreProvider.js';
-import {
-  last,
-  guaranteeNonNullable,
-  returnUndefOnError,
-} from '@finos/legend-shared';
+import { at, returnUndefOnError } from '@finos/legend-shared';
 import {
   CODE_EDITOR_THEME,
   getBaseCodeEditorOptions,
@@ -42,8 +38,8 @@ const getPositionFromGoToLinePromptInputValue = (
     return [1, undefined];
   }
   return [
-    returnUndefOnError(() => parseInt(guaranteeNonNullable(parts[0]))) ?? 1,
-    returnUndefOnError(() => parseInt(guaranteeNonNullable(last(parts)))),
+    returnUndefOnError(() => parseInt(at(parts, 0))) ?? 1,
+    returnUndefOnError(() => parseInt(at(parts, -1))),
   ];
 };
 

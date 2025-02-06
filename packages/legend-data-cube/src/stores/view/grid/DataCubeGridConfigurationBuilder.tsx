@@ -62,7 +62,6 @@ import {
 } from './DataCubeGridClientEngine.js';
 import {
   at,
-  last,
   getQueryParameters,
   getQueryParameterValue,
   isNonNullable,
@@ -758,15 +757,15 @@ function generateDefinitionForPivotResultColumns(
 
       // sort the leaf level columns based on the order of selected/configuration columns
       (currentCollection as ColDef[]).sort((a, b) => {
-        const colAName = last(
-          a.colId?.split(PIVOT_COLUMN_NAME_VALUE_SEPARATOR) ?? [],
-        );
+        const colAName = (
+          a.colId?.split(PIVOT_COLUMN_NAME_VALUE_SEPARATOR) ?? []
+        ).at(-1);
         const colAConf = colAName
           ? _findCol(configuration.columns, colAName)
           : undefined;
-        const colBName = last(
-          b.colId?.split(PIVOT_COLUMN_NAME_VALUE_SEPARATOR) ?? [],
-        );
+        const colBName = (
+          b.colId?.split(PIVOT_COLUMN_NAME_VALUE_SEPARATOR) ?? []
+        ).at(-1);
         const colBConf = colBName
           ? _findCol(configuration.columns, colBName)
           : undefined;

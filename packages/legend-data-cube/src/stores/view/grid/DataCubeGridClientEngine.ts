@@ -31,11 +31,7 @@ import {
   pruneObject,
 } from '@finos/legend-shared';
 import { buildExecutableQuery } from '../../core/DataCubeQueryBuilder.js';
-import {
-  PureClientVersion,
-  type TabularDataSet,
-  V1_Lambda,
-} from '@finos/legend-graph';
+import { PureClientVersion, type TabularDataSet } from '@finos/legend-graph';
 import { makeObservable, observable, runInAction } from 'mobx';
 import type {
   DataCubeConfiguration,
@@ -55,6 +51,8 @@ import {
 import { _colSpecArrayParam } from '../../core/DataCubeQuerySnapshotBuilderUtils.js';
 import { DataCubeSettingKey } from '../../../__lib__/DataCubeSetting.js';
 import { DEFAULT_ALERT_WINDOW_CONFIG } from '../../services/DataCubeLayoutService.js';
+import type { DataCubeExecutionResult } from '../../core/DataCubeEngine.js';
+import { _lambda } from '../../core/DataCubeQueryBuilderUtils.js';
 
 type DataCubeGridClientCellValue = string | number | boolean | null | undefined;
 type DataCubeGridClientRowData = {
@@ -275,18 +273,20 @@ async function getCastColumns(
     },
   });
 
-  const lambda = new V1_Lambda();
-  lambda.body.push(query);
-  const result = await view.engine.executeQuery(lambda, view.source, {
-    debug: view.settingService.getBooleanValue(
-      DataCubeSettingKey.DEBUGGER__ENABLE_DEBUG_MODE,
-    ),
-    clientVersion: view.settingService.getBooleanValue(
-      DataCubeSettingKey.DEBUGGER__USE_DEV_CLIENT_PROTOCOL_VERSION,
-    )
-      ? PureClientVersion.VX_X_X
-      : undefined,
-  });
+  const result = await view.engine.executeQuery(
+    _lambda([], [query]),
+    view.source,
+    {
+      debug: view.settingService.getBooleanValue(
+        DataCubeSettingKey.DEBUGGER__ENABLE_DEBUG_MODE,
+      ),
+      clientVersion: view.settingService.getBooleanValue(
+        DataCubeSettingKey.DEBUGGER__USE_DEV_CLIENT_PROTOCOL_VERSION,
+      )
+        ? PureClientVersion.VX_X_X
+        : undefined,
+    },
+  );
 
   return result.result.builder.columns.map((column) => ({
     name: column.name,
@@ -324,7 +324,7 @@ export class DataCubeGridClientServerSideDataSource
   }
 
   async fetchRows(params: IServerSideGetRowsParams<unknown, unknown>) {
-    const task = this._view.taskService.newTask('Fetching data');
+    const task = this._view.taskService.newTask('Fetching data...');
 
     // ------------------------------ SNAPSHOT ------------------------------
 
@@ -394,29 +394,18 @@ export class DataCubeGridClientServerSideDataSource
 
     // ------------------------------ DATA ------------------------------
 
+    const executableQuery = buildGridDataFetchExecutableQuery(
+      request,
+      newSnapshot,
+      this._view.source,
+      this._view.engine,
+      this._grid.isPaginationEnabled,
+    );
+    let result: DataCubeExecutionResult;
+
     try {
-      const executableQuery = buildGridDataFetchExecutableQuery(
-        request,
-        newSnapshot,
-        this._view.source,
-        this._view.engine,
-        this._grid.isPaginationEnabled,
-      );
-      const lambda = new V1_Lambda();
-      lambda.body.push(executableQuery);
-      if (
-        this._view.settingService.getBooleanValue(
-          DataCubeSettingKey.DEBUGGER__ENABLE_DEBUG_MODE,
-        )
-      ) {
-        this._view.engine.debugProcess(
-          `Execution Plan`,
-          ['Query', lambda],
-          ['Config', `pagination=${this._grid.isPaginationEnabled}`],
-        );
-      }
-      const result = await this._view.engine.executeQuery(
-        lambda,
+      result = await this._view.engine.executeQuery(
+        _lambda([], [executableQuery]),
         this._view.source,
         {
           debug: this._view.settingService.getBooleanValue(
@@ -429,136 +418,134 @@ export class DataCubeGridClientServerSideDataSource
             : undefined,
         },
       );
-      const rowData = buildRowData(result.result.result, newSnapshot);
-      if (
-        this._view.settingService.getBooleanValue(
-          DataCubeSettingKey.DEBUGGER__ENABLE_DEBUG_MODE,
-        )
-      ) {
-        this._view.engine.debugProcess(
-          `Execution`,
-          ['Query', result.executedQuery],
-          [
-            'Stats',
-            `${rowData.length} rows, ${result.result.result.columns.length} columns`,
-          ],
-          ['SQL', result.executedSQL],
-          ['SQL Execution Time', result.executionTime],
-        );
-      }
-
-      if (this._grid.isPaginationEnabled) {
-        params.success({ rowData });
-        // only update row count when loading the top-level drilldown data
-        if (isTopLevelRequest) {
-          runInAction(() => {
-            this.rowCount = (request.startRow ?? 0) + rowData.length;
-          });
-        }
-
-        // toggle no-rows overlay
-        if (
-          isTopLevelRequest &&
-          request.startRow === 0 &&
-          rowData.length === 0
-        ) {
-          this._grid.client.showNoRowsOverlay();
-        } else {
-          this._grid.client.hideOverlay();
-        }
-      } else {
-        // NOTE: When pagination is disabled and the user currently scrolls to somewhere in the grid, as data is fetched
-        // and the operation does not force a scroll top (for example, grouping will always force scrolling to the
-        // top, while sorting will leave scroll position as is), the grid ends up showing the wrong data because
-        // the data being displayed does not take into account the scroll position, but by the start and end row
-        // which stay constant as pagination is disabled.
-        //
-        // In order to handle this, when pagination is disabled, we tune the start and end row by setting the cache block size
-        // to a high-enough value (100k-1m). However, ag-grid use cache block size to pre-allocate memory for the rows,
-        // which means we must cap/tune this value reasonably to prevent the app from crashing.
-        //
-        // When there are just too many rows (exceeding the maximum cache block size), we will fallback to a slightly less ideal
-        // behavior by forcing a scroll top for every data fetch and also reset the cache block size to the default value to save memory
-        if (rowData.length > INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE) {
-          if (
-            !this._view.settingService.getBooleanValue(
-              DataCubeSettingKey.GRID_CLIENT__SUPPRESS_LARGE_DATASET_WARNING,
-            )
-          ) {
-            this._view.alertService.alert({
-              message: `Large dataset (>${INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE} rows) detected!`,
-              text: `Overall app performance can be impacted by large dataset due to longer query execution time and increased memory usage. At its limit, the engine can crash!\nTo boost performance, consider enabling pagination while working with large dataset.`,
-              type: AlertType.WARNING,
-              actions: [
-                {
-                  label: 'Enable Pagination',
-                  handler: () => {
-                    this._grid.setPaginationEnabled(true);
-                  },
-                },
-                {
-                  label: 'Dismiss Warning',
-                  handler: () => {
-                    this._view.settingService.updateValue(
-                      this._view.dataCube.api,
-                      DataCubeSettingKey.GRID_CLIENT__SUPPRESS_LARGE_DATASET_WARNING,
-                      true,
-                    );
-                  },
-                },
-              ],
-              windowConfig: {
-                ...DEFAULT_ALERT_WINDOW_CONFIG,
-                width: 600,
-                minWidth: 300,
-                minHeight: 150,
-              },
-            });
-          }
-
-          // NOTE: when drilldown occurs, we will scroll top until the drilldown row is reached
-          params.api.ensureIndexVisible(params.parentNode.rowIndex ?? 0, 'top');
-        }
-
-        params.success({
-          rowData,
-          // Setting row count to disable infinite-scrolling when pagination is disabled
-          // See https://www.ag-grid.com/react-data-grid/infinite-scrolling/#setting-last-row-index
-          rowCount: rowData.length,
-        });
-
-        // only update row count when loading the top-level drilldown data
-        if (isTopLevelRequest) {
-          runInAction(() => {
-            this.rowCount = rowData.length;
-          });
-        }
-
-        // toggle no-rows overlay
-        if (isTopLevelRequest && rowData.length === 0) {
-          this._grid.client.showNoRowsOverlay();
-        } else {
-          this._grid.client.hideOverlay();
-        }
-      }
-
-      // Resize columns to fit content on all actions (drilldown, changing queries, fetching new page, etc.)
-      // NOTE: we might want to restrict this to only happen on certain actions
-      //
-      // `setTimeout()` is need to ensure this runs after the grid has been updated with the new data
-      // since ag-grid does not provide an event hook for this action for server-side row model.
-      setTimeout(() => {
-        this._grid.client.autoSizeAllColumns();
-      }, 0);
     } catch (error) {
       assertErrorThrown(error);
       this._view.alertService.alertError(error, {
         message: `Data Fetch Failure: ${error.message}`,
       });
-      params.fail();
-    } finally {
       this._view.taskService.endTask(task);
+      params.fail();
+      return;
     }
+
+    const rowData = buildRowData(result.result.result, newSnapshot);
+    if (
+      this._view.settingService.getBooleanValue(
+        DataCubeSettingKey.DEBUGGER__ENABLE_DEBUG_MODE,
+      )
+    ) {
+      this._view.engine.debugProcess(
+        `Execution`,
+        ['Query', result.executedQuery],
+        [
+          'Stats',
+          `${rowData.length} rows, ${result.result.result.columns.length} columns`,
+        ],
+        ['SQL', result.executedSQL],
+        ['SQL Execution Time', result.executionTime],
+      );
+    }
+
+    if (this._grid.isPaginationEnabled) {
+      params.success({ rowData });
+      // only update row count when loading the top-level drilldown data
+      if (isTopLevelRequest) {
+        runInAction(() => {
+          this.rowCount = (request.startRow ?? 0) + rowData.length;
+        });
+      }
+
+      // toggle no-rows overlay
+      if (isTopLevelRequest && request.startRow === 0 && rowData.length === 0) {
+        this._grid.client.showNoRowsOverlay();
+      } else {
+        this._grid.client.hideOverlay();
+      }
+    } else {
+      // NOTE: When pagination is disabled and the user currently scrolls to somewhere in the grid, as data is fetched
+      // and the operation does not force a scroll top (for example, grouping will always force scrolling to the
+      // top, while sorting will leave scroll position as is), the grid ends up showing the wrong data because
+      // the data being displayed does not take into account the scroll position, but by the start and end row
+      // which stay constant as pagination is disabled.
+      //
+      // In order to handle this, when pagination is disabled, we tune the start and end row by setting the cache block size
+      // to a high-enough value (100k-1m). However, ag-grid use cache block size to pre-allocate memory for the rows,
+      // which means we must cap/tune this value reasonably to prevent the app from crashing.
+      //
+      // When there are just too many rows (exceeding the maximum cache block size), we will fallback to a slightly less ideal
+      // behavior by forcing a scroll top for every data fetch and also reset the cache block size to the default value to save memory
+      if (rowData.length > INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE) {
+        if (
+          !this._view.settingService.getBooleanValue(
+            DataCubeSettingKey.GRID_CLIENT__SUPPRESS_LARGE_DATASET_WARNING,
+          )
+        ) {
+          this._view.alertService.alert({
+            message: `Large dataset (>${INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE} rows) detected!`,
+            text: `Overall app performance can be impacted by large dataset due to longer query execution time and increased memory usage. At its limit, the engine can crash!\nTo boost performance, consider enabling pagination while working with large dataset.`,
+            type: AlertType.WARNING,
+            actions: [
+              {
+                label: 'Enable Pagination',
+                handler: () => {
+                  this._grid.setPaginationEnabled(true);
+                },
+              },
+              {
+                label: 'Dismiss Warning',
+                handler: () => {
+                  this._view.settingService.updateValue(
+                    this._view.dataCube.api,
+                    DataCubeSettingKey.GRID_CLIENT__SUPPRESS_LARGE_DATASET_WARNING,
+                    true,
+                  );
+                },
+              },
+            ],
+            windowConfig: {
+              ...DEFAULT_ALERT_WINDOW_CONFIG,
+              width: 600,
+              minWidth: 300,
+              minHeight: 150,
+            },
+          });
+        }
+
+        // NOTE: when drilldown occurs, we will scroll top until the drilldown row is reached
+        params.api.ensureIndexVisible(params.parentNode.rowIndex ?? 0, 'top');
+      }
+
+      params.success({
+        rowData,
+        // Setting row count to disable infinite-scrolling when pagination is disabled
+        // See https://www.ag-grid.com/react-data-grid/infinite-scrolling/#setting-last-row-index
+        rowCount: rowData.length,
+      });
+
+      // only update row count when loading the top-level drilldown data
+      if (isTopLevelRequest) {
+        runInAction(() => {
+          this.rowCount = rowData.length;
+        });
+      }
+
+      // toggle no-rows overlay
+      if (isTopLevelRequest && rowData.length === 0) {
+        this._grid.client.showNoRowsOverlay();
+      } else {
+        this._grid.client.hideOverlay();
+      }
+    }
+
+    // Resize columns to fit content on all actions (drilldown, changing queries, fetching new page, etc.)
+    // NOTE: we might want to restrict this to only happen on certain actions
+    //
+    // `setTimeout()` is need to ensure this runs after the grid has been updated with the new data
+    // since ag-grid does not provide an event hook for this action for server-side row model.
+    setTimeout(() => {
+      this._grid.client.autoSizeAllColumns();
+    }, 0);
+    this._view.taskService.endTask(task);
   }
 
   getRows(params: IServerSideGetRowsParams<unknown, unknown>) {

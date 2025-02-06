@@ -208,7 +208,7 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
       _findCol(this.columnConfigurations, columnName),
     );
 
-    const task = this.view.taskService.newTask('Column update check');
+    const task = this.view.taskService.newTask('Checking column update...');
 
     const currentSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
     const tempSnapshot = currentSnapshot.clone();
@@ -333,7 +333,7 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
       return;
     }
 
-    const task = this.view.taskService.newTask('Column delete check');
+    const task = this.view.taskService.newTask('Checking column deletion...');
 
     const currentSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
     const tempSnapshot = currentSnapshot.clone();

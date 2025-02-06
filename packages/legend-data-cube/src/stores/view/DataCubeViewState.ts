@@ -37,6 +37,8 @@ import type { DataCubeLayoutService } from '../services/DataCubeLayoutService.js
 import type { DataCubeAlertService } from '../services/DataCubeAlertService.js';
 import type { DataCubeSettingService } from '../services/DataCubeSettingService.js';
 import { CachedDataCubeSource } from '../core/model/CachedDataCubeSource.js';
+import { DataCubeSettingKey } from '../../__lib__/DataCubeSetting.js';
+import { PureClientVersion } from '@finos/legend-graph';
 
 export class DataCubeViewState {
   readonly dataCube: DataCubeState;
@@ -105,10 +107,19 @@ export class DataCubeViewState {
 
   async initializeCache() {
     this.processCacheState.inProgress();
-    const task = this.taskService.newTask('Initializing Cache');
+    const task = this.taskService.newTask('Initializing cache...');
 
     try {
-      const cachedSource = await this.engine.initializeCache(this.source);
+      const cachedSource = await this.engine.initializeCache(this.source, {
+        debug: this.settingService.getBooleanValue(
+          DataCubeSettingKey.DEBUGGER__ENABLE_DEBUG_MODE,
+        ),
+        clientVersion: this.settingService.getBooleanValue(
+          DataCubeSettingKey.DEBUGGER__USE_DEV_CLIENT_PROTOCOL_VERSION,
+        )
+          ? PureClientVersion.VX_X_X
+          : undefined,
+      });
       if (cachedSource) {
         this._source = cachedSource;
       }
@@ -133,7 +144,7 @@ export class DataCubeViewState {
     this._source = this._originalSource;
 
     this.processCacheState.inProgress();
-    const task = this.taskService.newTask('Disposing Cache');
+    const task = this.taskService.newTask('Disposing cache...');
 
     try {
       await this.engine.disposeCache(cachedSource);
@@ -150,7 +161,7 @@ export class DataCubeViewState {
 
   async initialize(query: DataCubeQuery) {
     this.initializeState.inProgress();
-    const task = this.taskService.newTask('Initializing');
+    const task = this.taskService.newTask('Initializing...');
 
     try {
       await Promise.all(

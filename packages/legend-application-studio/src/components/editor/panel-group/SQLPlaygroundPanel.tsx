@@ -76,7 +76,6 @@ import {
 } from '@finos/legend-lego/data-grid';
 import {
   at,
-  last,
   isNonNullable,
   isNumber,
   isString,
@@ -303,7 +302,7 @@ const PlaygroundSQLCodeEditor = observer(() => {
           const lines = currentValue.split('\n');
           const position = playgroundState.sqlEditor.getPosition() ?? {
             lineNumber: lines.length,
-            column: last(lines)?.length ?? 0,
+            column: lines.at(-1)?.length ?? 0,
           };
           playgroundState.sqlEditor.executeEdits('', [
             {

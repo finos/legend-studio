@@ -18,7 +18,6 @@ import {
   type GeneratorFn,
   assertErrorThrown,
   LogEvent,
-  last,
   ActionState,
 } from '@finos/legend-shared';
 import { observable, makeObservable, flow, flowResult, action } from 'mobx';
@@ -118,7 +117,7 @@ export class SQLPlaygroundPanelState implements CommandRegistrar {
       const lines = this.sqlText.split('\n');
       moveCursorToPosition(val, {
         lineNumber: lines.length,
-        column: last(lines)?.length ?? 0,
+        column: lines.at(-1)?.length ?? 0,
       });
     }
   }
