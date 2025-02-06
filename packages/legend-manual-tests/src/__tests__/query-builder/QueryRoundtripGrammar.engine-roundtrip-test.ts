@@ -155,10 +155,18 @@ const TEST_CASES: QueryTestCase[] = [
   },
   //aggregation
   {
-    testName: '[AGGREGATION] Simple wavg query',
+    testName: '[LEGACY AGGREGATION] Simple wavg query',
     model: 'Northwind',
     queryGrammar:
       "|showcase::northwind::model::OrderLineItem.all()->groupBy([], [agg(x|$x.quantity->meta::pure::functions::math::wavgUtility::wavgRowMapper($x.unitPrice), y|$y->wavg())], ['Quantity (wavg)'])",
+  },
+  {
+    testName: '[AGGREGATION] Simple count query',
+    model: 'Northwind',
+    queryGrammar:
+      "|showcase::northwind::model::Order.all()->groupBy([x|$x.shipToName], [agg(x|$x.id,x|$x->count())], ['Ship To Name','Id (count)'])",
+    convertedRelation:
+      "|showcase::northwind::model::Order.all()->project(~['Ship To Name':x|$x.shipToName,'Id (count)':x|$x.id])->groupBy(~'Ship To Name', ~'Id (count)':x|$x.'Id (count)':y|$y->count())",
   },
 ];
 
