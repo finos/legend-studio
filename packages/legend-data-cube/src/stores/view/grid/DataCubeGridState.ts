@@ -176,7 +176,7 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
     ) {
       this._view.alertService.alert({
         message: `Confirm you want to proceed with caching`,
-        text: `When enabled, the source dataset will be cached locally in order to boost query performance. But depending on computational resource available to your environment, sometimes, caching can negatively impact the overall performance, and can even lead to crashes.\nDo you still want to proceed?`,
+        text: `When enabled, the source dataset will be cached locally in order to boost query performance. But depending on computational resource available to your environment, sometimes, caching can negatively impact the overall performance, and can even lead to crashes.\n\nOverall, caching is still an experimental feature where we only support queries with simple execution plans, certain queries might not work, in which case, you can abort by turning off caching.\n\nDo you still want to proceed?`,
         type: AlertType.WARNING,
         actions: [
           {
@@ -208,7 +208,7 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
         windowConfig: {
           ...DEFAULT_ALERT_WINDOW_CONFIG,
           width: 600,
-          height: 210,
+          height: 300,
           minWidth: 300,
           minHeight: 150,
         },
