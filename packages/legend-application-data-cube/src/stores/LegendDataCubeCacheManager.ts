@@ -18,13 +18,20 @@ import * as duckdb from '@duckdb/duckdb-wasm';
 import duckdb_wasm from '@duckdb/duckdb-wasm/dist/duckdb-mvp.wasm';
 import duckdb_wasm_next from '@duckdb/duckdb-wasm/dist/duckdb-eh.wasm';
 import {
+  INTERNAL__TDSColumn,
   PRIMITIVE_TYPE,
+  TDSBuilder,
   TDSExecutionResult,
   TDSRow,
   TabularDataSet,
 } from '@finos/legend-graph';
-import { assertNonNullable, guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  assertNonNullable,
+  guaranteeNonNullable,
+  UnsupportedOperationError,
+} from '@finos/legend-shared';
 import type { CachedDataCubeSource } from '@finos/legend-data-cube';
+import { Type } from 'apache-arrow';
 
 export class LegendDataCubeDataCubeCacheManager {
   private static readonly DUCKDB_DEFAULT_SCHEMA_NAME = 'main'; // See https://duckdb.org/docs/sql/statements/use.html
@@ -69,7 +76,7 @@ export class LegendDataCubeDataCubeCacheManager {
       `Can't initialize cache manager: DuckDB main worker not initialized`,
     );
     const worker = new Worker(bundle.mainWorker);
-    const logger = new duckdb.ConsoleLogger();
+    const logger = new duckdb.ConsoleLogger(duckdb.LogLevel.WARNING);
     const database = new duckdb.AsyncDuckDB(logger, worker);
     await database.instantiate(bundle.mainModule, bundle.pthreadWorker);
     this._database = database;
@@ -97,16 +104,31 @@ export class LegendDataCubeDataCubeCacheManager {
           break;
         }
         case PRIMITIVE_TYPE.INTEGER: {
-          colType = 'INTEGER';
+          colType = 'FLOAT';
           break;
         }
+        case PRIMITIVE_TYPE.DECIMAL: {
+          colType = 'DECIMAL';
+          break;
+        }
+        case PRIMITIVE_TYPE.FLOAT: {
+          colType = 'FLOAT';
+          break;
+        }
+        case PRIMITIVE_TYPE.STRICTDATE:
+        case PRIMITIVE_TYPE.DATETIME:
         case PRIMITIVE_TYPE.DATE: {
-          colType = 'TIMESTAMP';
+          colType = 'STRING';
           break;
         }
-        case PRIMITIVE_TYPE.STRING:
-        default: {
+        case PRIMITIVE_TYPE.STRING: {
           colType = 'VARCHAR';
+          break;
+        }
+        default: {
+          throw new UnsupportedOperationError(
+            `Can't initialize cache: failed to find matching DuckDB type for Pure type '${col.type}'`,
+          );
         }
       }
       columns.push(`"${col.name}" ${colType}`);
@@ -139,9 +161,12 @@ export class LegendDataCubeDataCubeCacheManager {
 
   async runSQLQuery(sql: string) {
     const connection = await this.database.connect();
-    const result = (await connection.query(sql)).toArray();
-    const columnNames = Object.keys(result.at(0));
-    const rows = result.map((row) => {
+    const result = await connection.query(sql);
+    await connection.close();
+
+    const data = result.toArray();
+    const columnNames = result.schema.fields.map((field) => field.name);
+    const rows = data.map((row) => {
       const values = new TDSRow();
       values.values = columnNames.map(
         (column) => row[column] as string | number | boolean | null,
@@ -153,6 +178,62 @@ export class LegendDataCubeDataCubeCacheManager {
     tds.columns = columnNames;
     tds.rows = rows;
     tdsExecutionResult.result = tds;
+    const builder = new TDSBuilder();
+    builder.columns = result.schema.fields.map((field) => {
+      const col = new INTERNAL__TDSColumn();
+      col.name = field.name;
+      switch (field.typeId) {
+        case Type.Binary: {
+          col.type = PRIMITIVE_TYPE.BINARY;
+          break;
+        }
+        case Type.Bool: {
+          col.type = PRIMITIVE_TYPE.BOOLEAN;
+          break;
+        }
+        case Type.Date:
+        case Type.DateDay:
+        case Type.DateMillisecond: {
+          col.type = PRIMITIVE_TYPE.DATE;
+          break;
+        }
+        case Type.Utf8:
+        case Type.LargeUtf8: {
+          col.type = PRIMITIVE_TYPE.STRING;
+          break;
+        }
+        case Type.Decimal: {
+          col.type = PRIMITIVE_TYPE.DECIMAL;
+          break;
+        }
+        case Type.Int:
+        case Type.Int8:
+        case Type.Uint8:
+        case Type.Int16:
+        case Type.Uint16:
+        case Type.Int32:
+        case Type.Uint32:
+        case Type.Int64:
+        case Type.Uint64: {
+          col.type = PRIMITIVE_TYPE.INTEGER;
+          break;
+        }
+        case Type.Float:
+        case Type.Float16:
+        case Type.Float32:
+        case Type.Float64: {
+          col.type = PRIMITIVE_TYPE.FLOAT;
+          break;
+        }
+        default: {
+          throw new UnsupportedOperationError(
+            `Can't find matching Pure type for Arrow type ID '${field.typeId}' ${Type.Utf8}`,
+          );
+        }
+      }
+      return col;
+    });
+    tdsExecutionResult.builder = builder;
     return tdsExecutionResult;
   }
 

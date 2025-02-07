@@ -87,6 +87,7 @@ export {
   V1_serializeMapper,
   V1_deserializeMapper,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_PostProcessorSerializationHelper.js';
+export * from './graph-manager/protocol/pure/v1/model/packageableElements/store/relational/model/V1_RelationalDataType.js';
 export * from './graph-manager/extensions/STO_Relational_PureGraphManagerPlugin_Extension.js';
 
 export * from './graph/metamodel/pure/data/RelationalCSVData.js';

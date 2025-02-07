@@ -30,7 +30,11 @@ export const LegendDataCubeQuerySaver = observer(() => {
   const builder = guaranteeNonNullable(store.builder);
 
   useEffect(() => {
-    setName(builder.persistentQuery?.name ?? DEFAULT_REPORT_NAME);
+    setName(
+      builder.persistentQuery?.name ??
+        builder.query.configuration?.name ??
+        DEFAULT_REPORT_NAME,
+    );
   }, [builder]);
 
   return (

@@ -35,9 +35,9 @@ export const DataCubeTitleBar = observer(
 
     return (
       <div className="flex h-7 justify-between bg-neutral-100">
-        <div className="flex select-none items-center pl-1 pr-2 text-lg font-medium">
-          <DataCubeIcon.Cube className="mr-1 h-4 w-4" />
-          <div>{title}</div>
+        <div className="flex items-center overflow-hidden pl-1 pr-2 text-lg font-medium">
+          <DataCubeIcon.Cube className="mr-1 h-4 w-4 flex-shrink-0" />
+          <div className="text-ellipsis whitespace-nowrap">{title}</div>
         </div>
         <div className="flex">
           {children}

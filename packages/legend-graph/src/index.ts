@@ -220,14 +220,6 @@ export { V1_Database } from './graph-manager/protocol/pure/v1/model/packageableE
 export { V1_Schema } from './graph-manager/protocol/pure/v1/model/packageableElements/store/relational/model/V1_Schema.js';
 export { V1_Table } from './graph-manager/protocol/pure/v1/model/packageableElements/store/relational/model/V1_Table.js';
 export { V1_Column } from './graph-manager/protocol/pure/v1/model/packageableElements/store/relational/model/V1_Column.js';
-export {
-  V1_Binary,
-  V1_Date,
-  V1_Double,
-  V1_Integer,
-  V1_RelationalDataType,
-  V1_VarChar,
-} from './graph-manager/protocol/pure/v1/model/packageableElements/store/relational/model/V1_RelationalDataType.js';
 export { V1_RelationalDatabaseConnection } from './graph-manager/protocol/pure/v1/model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection.js';
 export { V1_DuckDBDatasourceSpecification } from './graph-manager/protocol/pure/v1/model/packageableElements/store/relational/connection/V1_DatasourceSpecification.js';
 export { V1_TestAuthenticationStrategy } from './graph-manager/protocol/pure/v1/model/packageableElements/store/relational/connection/V1_AuthenticationStrategy.js';

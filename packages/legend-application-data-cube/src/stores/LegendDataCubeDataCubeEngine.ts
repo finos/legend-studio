@@ -48,7 +48,6 @@ import {
   V1_deserializeExecutionPlan,
   V1_SQLExecutionNode,
   V1_SimpleExecutionPlan,
-  V1_Binary,
   V1_ClassInstance,
   V1_ClassInstanceType,
   V1_Column,
@@ -63,15 +62,18 @@ import {
   V1_PackageableRuntime,
   V1_PureModelContextData,
   V1_RelationStoreAccessor,
-  type V1_RelationalDataType,
   V1_RelationalDatabaseConnection,
   V1_Schema,
   V1_StoreConnections,
   V1_Table,
   V1_TestAuthenticationStrategy,
   V1_VarChar,
+  V1_Bit,
+  V1_Decimal,
+  V1_Float,
   PackageableElementPointerType,
   DatabaseType,
+  PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
@@ -536,7 +538,43 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     table.columns = result.result.builder.columns.map((col) => {
       const column = new V1_Column();
       column.name = col.name;
-      column.type = this._getColumnType(col.type);
+      switch (col.type as string) {
+        case PRIMITIVE_TYPE.BOOLEAN: {
+          column.type = new V1_Bit();
+          break;
+        }
+        case PRIMITIVE_TYPE.NUMBER: {
+          column.type = new V1_Double();
+          break;
+        }
+        case PRIMITIVE_TYPE.INTEGER: {
+          column.type = new V1_Integer();
+          break;
+        }
+        case PRIMITIVE_TYPE.FLOAT: {
+          column.type = new V1_Float();
+          break;
+        }
+        case PRIMITIVE_TYPE.DECIMAL: {
+          column.type = new V1_Decimal();
+          break;
+        }
+        case PRIMITIVE_TYPE.DATE:
+        case PRIMITIVE_TYPE.STRICTDATE:
+        case PRIMITIVE_TYPE.DATETIME: {
+          column.type = new V1_Date();
+          break;
+        }
+        case PRIMITIVE_TYPE.STRING: {
+          column.type = new V1_VarChar();
+          break;
+        }
+        default: {
+          throw new UnsupportedOperationError(
+            `Can't initialize cache: failed to find matching relational data type for Pure type '${col.type}' when synthesizing table definition`,
+          );
+        }
+      }
       return column;
     });
 
@@ -594,27 +632,6 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     cachedSource.table = table.name;
     cachedSource.count = rowCount;
     return cachedSource;
-  }
-
-  // TODO: need a better way to infer datatype from tds builder
-  private _getColumnType(type: string | undefined): V1_RelationalDataType {
-    if (type === undefined) {
-      throw Error('Unsupported data type');
-    }
-    switch (type) {
-      case 'string':
-        return new V1_VarChar();
-      case 'integer':
-        return new V1_Integer();
-      case 'date':
-        return new V1_Date();
-      case 'boolean':
-        return new V1_Binary();
-      case 'number':
-        return new V1_Double();
-      default:
-        return new V1_VarChar();
-    }
   }
 
   override async disposeCache(source: CachedDataCubeSource) {
