@@ -101,6 +101,10 @@ import {
   isTypedProjectionExpression,
   processTypedTDSProjectExpression,
 } from './fetch-structure/tds/projection/QueryBuilderTypedProjectionStateBuilder.js';
+import {
+  isTypedGroupByExpression,
+  processTypedGroupByExpression,
+} from './fetch-structure/tds/aggregation/QueryBuilderTypedAggregationStateBuilder.js';
 
 const processGetAllExpression = (
   expression: SimpleFunctionExpression,
@@ -740,16 +744,24 @@ export class QueryBuilderValueSpecificationProcessor
       );
       return;
     } else if (
-      matchFunctionName(
-        functionName,
+      matchFunctionName(functionName, [
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
-      )
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_GROUP_BY,
+      ])
     ) {
-      processTDSGroupByExpression(
-        valueSpecification,
-        this.queryBuilderState,
-        this.parentLambda,
-      );
+      if (isTypedGroupByExpression(valueSpecification)) {
+        processTypedGroupByExpression(
+          valueSpecification,
+          this.queryBuilderState,
+          this.parentLambda,
+        );
+      } else {
+        processTDSGroupByExpression(
+          valueSpecification,
+          this.queryBuilderState,
+          this.parentLambda,
+        );
+      }
       return;
     } else if (
       matchFunctionName(functionName, QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_AGG)
@@ -982,6 +994,7 @@ export class QueryBuilderValueSpecificationProcessor
           lambdaVal.expressionSequence[0],
         );
 
+        // TODO: Handle groupBy col spec (has function1 and function2)
         if (expression instanceof AbstractPropertyExpression) {
           processTDSProjectionColumnPropertyExpression(
             expression,
@@ -999,6 +1012,61 @@ export class QueryBuilderValueSpecificationProcessor
             this.parentExpression,
             this.queryBuilderState,
           );
+        }
+      });
+
+      return;
+    } else if (
+      matchFunctionName(this.parentExpression.functionName, [
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_GROUP_BY,
+      ])
+    ) {
+      const spec = valueSpecification.values;
+      assertTrue(
+        spec.length === 1,
+        `Can't process col spec array instance: value expected to be of size 1`,
+      );
+      guaranteeNonNullable(spec[0]).colSpecs.forEach((col) => {
+        const _function1 = guaranteeType(
+          col.function1,
+          LambdaFunctionInstanceValue,
+          `Can't process col spec: function1 not a lambda function instance value`,
+        );
+        assertTrue(_function1.values.length === 1);
+        const lambdaVal = guaranteeNonNullable(_function1.values[0]);
+        assertTrue(lambdaVal.expressionSequence.length === 1);
+        // const expression = guaranteeNonNullable(
+        //   lambdaVal.expressionSequence[0],
+        // );
+
+        // if (expression instanceof AbstractPropertyExpression) {
+        //   processTDSProjectionColumnPropertyExpression(
+        //     expression,
+        //     col.name,
+        //     this.queryBuilderState,
+        //   );
+        // } else if (expression instanceof INTERNAL__UnknownValueSpecification) {
+        //   assertNonNullable(
+        //     this.parentExpression,
+        //     `Can't process unknown value: parent expression cannot be retrieved`,
+        //   );
+        //   processTDSProjectionDerivationExpression(
+        //     expression,
+        //     col.name,
+        //     this.parentExpression,
+        //     this.queryBuilderState,
+        //   );
+        // }
+
+        if (col.function2) {
+          const _function2 = guaranteeType(
+            col.function2,
+            LambdaFunctionInstanceValue,
+            `Can't process col spec: function2 not a lambda function instance value`,
+          );
+          assertTrue(_function2.values.length === 1);
+          const lambdaVal2 = guaranteeNonNullable(_function2.values[0]);
+          assertTrue(lambdaVal2.expressionSequence.length === 1);
         }
       });
 

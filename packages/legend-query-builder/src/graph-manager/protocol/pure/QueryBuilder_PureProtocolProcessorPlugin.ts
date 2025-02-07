@@ -21,11 +21,11 @@ import {
   V1_buildGetAllFunctionExpression,
   V1_buildGetAllVersionsFunctionExpression,
   V1_buildGetAllVersionsInRangeFunctionExpression,
-  V1_buildGroupByFunctionExpression,
   V1_buildOLAPGroupByFunctionExpression,
   V1_buildProjectFunctionExpression,
   V1_buildSubTypePropertyExpressionTypeInference,
   V1_buildWatermarkFunctionExpression,
+  V1_buildGroupByFunctionExpression,
 } from './v1/V1_QueryValueSpecificationBuilderHelper.js';
 import {
   type V1_GraphBuilderContext,

@@ -30,7 +30,7 @@ import {
   type V1_ProcessingContext,
   type ValueSpecification,
   type Type,
-  type SimpleFunctionExpression,
+  SimpleFunctionExpression,
   V1_ValueSpecification,
   V1_buildBaseSimpleFunctionExpression,
   V1_buildGenericFunctionExpression,
@@ -390,6 +390,83 @@ const buildAggregationExpression = (
     compileContext,
   );
 };
+
+// const buildTypedAggregationExpression = (
+//   mapValueSpecification: V1_ValueSpecification,
+//   reduceValueSpecification: V1_ValueSpecification,
+//   openVariables: string[],
+//   compileContext: V1_GraphBuilderContext,
+//   processingContext: V1_ProcessingContext,
+// ): ValueSpecification => {
+//   assertType(
+//     mapValueSpecification,
+//     V1_Lambda,
+//     `Can't build aggregation: map value specification expected to be lambda`,
+//   );
+//   assertType(
+//     reduceValueSpecification,
+//     V1_Lambda,
+//     `Can't build aggregation: reduce value specification expected to be lambda`,
+//   );
+
+//   // column lambda
+//   let processedColumnLambda;
+//   if (
+//     mapValueSpecification.body[0] instanceof V1_AppliedFunction &&
+//     matchFunctionName(
+//       mapValueSpecification.body[0].function,
+//       Object.values(QUERY_BUILDER_SUPPORTED_CALENDAR_AGGREGATION_FUNCTIONS),
+//     )
+//   ) {
+//     processedColumnLambda =
+//       returnUndefOnError(() =>
+//         buildCalendarFunctionExpression(
+//           mapValueSpecification,
+//           openVariables,
+//           compileContext,
+//           processingContext,
+//         ),
+//       ) ??
+//       new INTERNAL__UnknownValueSpecification(
+//         V1_serializeValueSpecification(
+//           mapValueSpecification,
+//           compileContext.extensions.plugins,
+//         ),
+//       );
+//   } else {
+//     processedColumnLambda =
+//       returnUndefOnError(() =>
+//         buildProjectionColumnLambda(
+//           mapValueSpecification,
+//           openVariables,
+//           compileContext,
+//           processingContext,
+//         ),
+//       ) ??
+//       new INTERNAL__UnknownValueSpecification(
+//         V1_serializeValueSpecification(
+//           mapValueSpecification,
+//           compileContext.extensions.plugins,
+//         ),
+//       );
+//   }
+
+//   // aggregate lambda
+//   const processedAggregateLambda =
+//     reduceValueSpecification.accept_ValueSpecificationVisitor(
+//       new V1_ValueSpecificationBuilder(
+//         compileContext,
+//         processingContext,
+//         openVariables,
+//       ),
+//     );
+
+//   return V1_buildBaseSimpleFunctionExpression(
+//     [processedColumnLambda, processedAggregateLambda],
+//     extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_AGG),
+//     compileContext,
+//   );
+// };
 
 export const V1_buildGetAllFunctionExpression = (
   functionName: string,
@@ -997,7 +1074,7 @@ export const V1_buildProjectFunctionExpression = (
   return expression;
 };
 
-export const V1_buildGroupByFunctionExpression = (
+export const V1_buildTDSGroupByFunctionExpression = (
   functionName: string,
   parameters: V1_ValueSpecification[],
   openVariables: string[],
@@ -1138,6 +1215,231 @@ export const V1_buildGroupByFunctionExpression = (
   );
 
   return expression;
+};
+
+export const V1_buildTypedGroupByFunctionExpression = (
+  functionName: string,
+  parameters: V1_ValueSpecification[],
+  openVariables: string[],
+  compileContext: V1_GraphBuilderContext,
+  processingContext: V1_ProcessingContext,
+): SimpleFunctionExpression => {
+  console.log('V1_buildTypedGroupByFunctionExpression');
+  let topLevelLambdaParameters: V1_Variable[] = [];
+
+  assertTrue(
+    parameters.length === 3,
+    `Can't build relation groupBy() expression: groupBy() expects 2 arguments`,
+  );
+
+  const precedingExpression = (
+    parameters[0] as V1_ValueSpecification
+  ).accept_ValueSpecificationVisitor(
+    new V1_ValueSpecificationBuilder(
+      compileContext,
+      processingContext,
+      openVariables,
+    ),
+  );
+  assertNonNullable(
+    precedingExpression.genericType,
+    `Can't build groupBy() expression: preceding expression return type is missing`,
+  );
+
+  const projectFunction = guaranteeType(
+    precedingExpression,
+    SimpleFunctionExpression,
+  );
+  if (
+    projectFunction.functionName !==
+    extractElementNameFromPath(
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_PROJECT,
+    )
+  ) {
+    throw new UnsupportedOperationError(
+      `Can't build relation groupBy() expression: preceding expression must be project() column expression`,
+    );
+  }
+
+  // normal columns
+  const columnsClassInstance = parameters[1];
+  assertType(
+    columnsClassInstance,
+    V1_ClassInstance,
+    `Can't build relation groupBy() expression: groupBy() expects argument #1 to be a ClassInstance`,
+  );
+  const columnExpressions = guaranteeType(
+    columnsClassInstance.value,
+    V1_ColSpecArray,
+    `Can't build relation groupBy() expression: groupBy() expects argument #1 to hold spec array instances value`,
+  );
+  // topLevelLambdaParameters = columnExpressions.colSpecs
+  //   .map((colSpec) => colSpec.name)
+  //   .flat();
+
+  // aggregation columns
+  const aggregationColumnsClassInstance = parameters[2];
+  assertType(
+    aggregationColumnsClassInstance,
+    V1_ClassInstance,
+    `Can't build groupBy() expression: groupBy() expects argument #2 to be a ClassInstance`,
+  );
+  const aggregationExpressions = guaranteeType(
+    aggregationColumnsClassInstance.value,
+    V1_ColSpecArray,
+    `Can't build relation groupBy() expression: groupBy() expects argument #2 to hold spec array instances value`,
+  );
+  topLevelLambdaParameters = topLevelLambdaParameters.concat(
+    aggregationExpressions.colSpecs
+      .map((colSpec) => [colSpec.function1, colSpec.function2])
+      .flat()
+      .filter(isNonNullable)
+      .map((value) => value.parameters)
+      .flat(),
+  );
+
+  // Make sure top-level lambdas have their lambda parameter types set properly
+  const variables = new Set<string>();
+  topLevelLambdaParameters.forEach((variable) => {
+    if (!variables.has(variable.name) && !variable.genericType) {
+      const variableExpression = new VariableExpression(
+        variable.name,
+        precedingExpression.multiplicity,
+      );
+      variableExpression.genericType = precedingExpression.genericType;
+      processingContext.addInferredVariables(variable.name, variableExpression);
+    }
+  });
+
+  // build column expressions taking into account of derivation
+  const processedColumnExpressions = new ColSpecArrayInstance(Multiplicity.ONE);
+  const processedColSpecArray = new ColSpecArray();
+  processedColumnExpressions.values = [processedColSpecArray];
+  const relationType = new RelationType(RelationType.ID);
+  processedColSpecArray.colSpecs = columnExpressions.colSpecs.map((colSpec) => {
+    const pColSpec = new ColSpec();
+    pColSpec.name = colSpec.name;
+    return pColSpec;
+  });
+
+  // build aggregation expressions taking into account of derivation
+  const processedAggregationExpressions = new ColSpecArrayInstance(
+    Multiplicity.ONE,
+  );
+  const processedAggregationColSpecArray = new ColSpecArray();
+  processedAggregationExpressions.values = [processedAggregationColSpecArray];
+  // const relationType = new RelationType(RelationType.ID);
+  processedAggregationColSpecArray.colSpecs =
+    aggregationExpressions.colSpecs.map((colSpec) => {
+      const pColSpec = new ColSpec();
+      let lambda1: ValueSpecification;
+      let lambda2: ValueSpecification;
+      const _func1 = guaranteeType(
+        colSpec.function1,
+        V1_ValueSpecification,
+        `Can't build relation col spec() expression: expects function1 to be a lambda`,
+      );
+      const _func2 = guaranteeType(
+        colSpec.function2,
+        V1_ValueSpecification,
+        `Can't build relation col spec() expression: expects function2 to be a lambda`,
+      );
+      try {
+        lambda1 = buildProjectionColumnLambda(
+          _func1,
+          openVariables,
+          compileContext,
+          processingContext,
+        );
+      } catch {
+        lambda1 = new INTERNAL__UnknownValueSpecification(
+          V1_serializeValueSpecification(
+            _func1,
+            compileContext.extensions.plugins,
+          ),
+        );
+      }
+      pColSpec.function1 = lambda1;
+      try {
+        lambda2 = _func2.accept_ValueSpecificationVisitor(
+          new V1_ValueSpecificationBuilder(
+            compileContext,
+            processingContext,
+            openVariables,
+          ),
+        );
+      } catch {
+        lambda2 = new INTERNAL__UnknownValueSpecification(
+          V1_serializeValueSpecification(
+            _func1,
+            compileContext.extensions.plugins,
+          ),
+        );
+      }
+      pColSpec.function2 = lambda2;
+      pColSpec.name = colSpec.name;
+      console.log('lambda2', lambda2);
+      const relationColumns = guaranteeType(
+        guaranteeType(lambda2, LambdaFunctionInstanceValue).values?.[0]
+          ?.functionType?.parameters?.[0]?.genericType?.value.typeArguments?.[0]
+          ?.value.rawType,
+        RelationType,
+      ).columns;
+      relationType.columns.push(...relationColumns);
+
+      return pColSpec;
+    });
+
+  console.log('precedingExpression', precedingExpression);
+  console.log('processedColumnExpressions', processedColumnExpressions);
+  console.log(
+    'processedAggregationExpressions',
+    processedAggregationExpressions,
+  );
+
+  const expression = V1_buildBaseSimpleFunctionExpression(
+    [
+      precedingExpression,
+      processedColumnExpressions,
+      processedAggregationExpressions,
+    ],
+    functionName,
+    compileContext,
+  );
+  const relationGenericType = new GenericType(Relation.INSTANCE);
+  const relationTypeGenericType = new GenericType(relationType);
+  relationGenericType.typeArguments = [
+    GenericTypeExplicitReference.create(relationTypeGenericType),
+  ];
+  expression.genericType =
+    GenericTypeExplicitReference.create(relationGenericType);
+
+  return expression;
+};
+
+export const V1_buildGroupByFunctionExpression = (
+  functionName: string,
+  parameters: V1_ValueSpecification[],
+  openVariables: string[],
+  compileContext: V1_GraphBuilderContext,
+  processingContext: V1_ProcessingContext,
+): SimpleFunctionExpression => {
+  if (parameters.length === 3) {
+    return V1_buildTypedGroupByFunctionExpression(
+      functionName,
+      parameters,
+      openVariables,
+      compileContext,
+      processingContext,
+    );
+  }
+  return V1_buildTDSGroupByFunctionExpression(
+    functionName,
+    parameters,
+    openVariables,
+    compileContext,
+    processingContext,
+  );
 };
 
 export const V1_buildWatermarkFunctionExpression = (
