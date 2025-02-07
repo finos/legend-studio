@@ -547,5 +547,8 @@ function _observe_ColSpec(
   if (metamodel.function1) {
     observe_ValueSpecification(metamodel.function1, context);
   }
+  if (metamodel.function2) {
+    observe_ValueSpecification(metamodel.function2, context);
+  }
   return metamodel;
 }
