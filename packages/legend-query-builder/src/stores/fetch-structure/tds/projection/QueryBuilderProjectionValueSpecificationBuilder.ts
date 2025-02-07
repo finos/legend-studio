@@ -49,9 +49,10 @@ import {
 } from '../../../QueryBuilderValueSpecificationBuilderHelper.js';
 import { appendOLAPGroupByState } from '../window/QueryBuilderWindowValueSpecificationBuilder.js';
 import { appendPostFilter } from '../post-filter/QueryBuilderPostFilterValueSpecificationBuilder.js';
-import { buildRelationProjection } from './QueryBuilderRelationProjectValueSpecBuidler.js';
+import { buildRelationProjection } from './QueryBuilderRelationProjectValueSpecBuilder.js';
 import { QueryBuilderAggregateOperator_Wavg } from '../aggregation/operators/QueryBuilderAggregateOperator_Wavg.js';
 import { appendResultSetModifier } from '../result-modifier/ResultModifierValueSpecificationBuilder.js';
+import { buildRelationAggregation } from '../aggregation/QueryBuilderRelationAggregationValueSpecBuilder.js';
 
 const buildProjectColFunc = (
   tdsState: QueryBuilderTDSState,
@@ -120,7 +121,10 @@ export const appendProjection = (
     `Can't build projection expression: preceding expression is not defined`,
   );
   // build projection
-  if (tdsState.aggregationState.columns.length) {
+  if (
+    tdsState.aggregationState.columns.length &&
+    !tdsState.queryBuilderState.isFetchStructureTyped
+  ) {
     // aggregation
     const groupByFunction = new SimpleFunctionExpression(
       extractElementNameFromPath(
@@ -397,7 +401,11 @@ export const appendProjection = (
         tdsState,
         options,
       );
-      lambdaFunction.expressionSequence[0] = projectFunction;
+      const aggregationFunction = tdsState.aggregationState.columns.length
+        ? buildRelationAggregation(projectFunction, tdsState, options)
+        : null;
+      lambdaFunction.expressionSequence[0] =
+        aggregationFunction ?? projectFunction;
     }
   }
   // build olapGroupBy
