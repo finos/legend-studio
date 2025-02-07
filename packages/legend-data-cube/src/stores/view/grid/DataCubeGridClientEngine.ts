@@ -42,7 +42,6 @@ import { _findCol, _sortByColName } from '../../core/model/DataCubeColumn.js';
 import { isPivotResultColumnName } from '../../core/DataCubeQueryEngine.js';
 import { buildQuerySnapshot } from './DataCubeGridQuerySnapshotBuilder.js';
 import { AlertType } from '../../services/DataCubeAlertService.js';
-import { sum } from 'mathjs';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
 import {
   _aggCountCol,
@@ -229,19 +228,17 @@ function buildRowData(
           ? value
           : INTERNAL__GRID_CLIENT_MISSING_VALUE;
       if (snapshot.data.pivot && snapshot.data.groupBy) {
-        row[INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID] = Number(
-          sum(
-            result.columns
-              .filter(
-                (col) =>
-                  isPivotResultColumnName(col) &&
-                  col.endsWith(
-                    INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID,
-                  ),
-              )
-              .map((col) => (row[col] as number | undefined) ?? 0),
-          ).toString(),
-        );
+        row[INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID] =
+          result.columns
+            .filter(
+              (col) =>
+                isPivotResultColumnName(col) &&
+                col.endsWith(
+                  INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID,
+                ),
+            )
+            .map((col) => (row[col] as number | undefined) ?? 0)
+            .reduce((a, b) => a + b, 0);
       }
     });
     return row;

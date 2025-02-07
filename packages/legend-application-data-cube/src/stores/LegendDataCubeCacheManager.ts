@@ -76,7 +76,7 @@ export class LegendDataCubeDataCubeCacheManager {
       `Can't initialize cache manager: DuckDB main worker not initialized`,
     );
     const worker = new Worker(bundle.mainWorker);
-    const logger = new duckdb.ConsoleLogger(duckdb.LogLevel.WARNING);
+    const logger = new duckdb.ConsoleLogger(duckdb.LogLevel.WARNING); // only show warnings and errors
     const database = new duckdb.AsyncDuckDB(logger, worker);
     await database.instantiate(bundle.mainModule, bundle.pthreadWorker);
     this._database = database;
@@ -115,6 +115,7 @@ export class LegendDataCubeDataCubeCacheManager {
           colType = 'FLOAT';
           break;
         }
+        // We don't use type DATE because DuckDB will automatically convert it to a TIMESTAMP
         case PRIMITIVE_TYPE.STRICTDATE:
         case PRIMITIVE_TYPE.DATETIME:
         case PRIMITIVE_TYPE.DATE: {
@@ -167,11 +168,11 @@ export class LegendDataCubeDataCubeCacheManager {
     const data = result.toArray();
     const columnNames = result.schema.fields.map((field) => field.name);
     const rows = data.map((row) => {
-      const values = new TDSRow();
-      values.values = columnNames.map(
+      const tdsRow = new TDSRow();
+      tdsRow.values = columnNames.map(
         (column) => row[column] as string | number | boolean | null,
       );
-      return values;
+      return tdsRow;
     });
     const tdsExecutionResult = new TDSExecutionResult();
     const tds = new TabularDataSet();
