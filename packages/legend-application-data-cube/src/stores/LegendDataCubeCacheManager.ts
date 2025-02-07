@@ -96,21 +96,15 @@ export class LegendDataCubeDataCubeCacheManager {
       let colType: string;
       switch (col.type as string) {
         case PRIMITIVE_TYPE.BOOLEAN: {
-          colType = 'BOOLEAN';
-          break;
-        }
-        case PRIMITIVE_TYPE.NUMBER: {
-          colType = 'DOUBLE';
+          colType = 'BIT';
           break;
         }
         case PRIMITIVE_TYPE.INTEGER: {
-          colType = 'FLOAT';
+          colType = 'INTEGER';
           break;
         }
-        case PRIMITIVE_TYPE.DECIMAL: {
-          colType = 'DECIMAL';
-          break;
-        }
+        case PRIMITIVE_TYPE.NUMBER:
+        case PRIMITIVE_TYPE.DECIMAL:
         case PRIMITIVE_TYPE.FLOAT: {
           colType = 'FLOAT';
           break;
@@ -119,7 +113,7 @@ export class LegendDataCubeDataCubeCacheManager {
         case PRIMITIVE_TYPE.STRICTDATE:
         case PRIMITIVE_TYPE.DATETIME:
         case PRIMITIVE_TYPE.DATE: {
-          colType = 'STRING';
+          colType = 'VARCHAR';
           break;
         }
         case PRIMITIVE_TYPE.STRING: {
@@ -170,7 +164,12 @@ export class LegendDataCubeDataCubeCacheManager {
     const rows = data.map((row) => {
       const tdsRow = new TDSRow();
       tdsRow.values = columnNames.map(
-        (column) => row[column] as string | number | boolean | null,
+        (column) =>
+          // NOTE: DuckDB WASM returns ArrayBuffer for numeric value, such as for count(*)
+          // so we need to convert it to number
+          (ArrayBuffer.isView(row[column])
+            ? row[column].valueOf()
+            : row[column]) as string | number | boolean | null,
       );
       return tdsRow;
     });

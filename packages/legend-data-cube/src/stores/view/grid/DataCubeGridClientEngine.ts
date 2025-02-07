@@ -31,7 +31,11 @@ import {
   pruneObject,
 } from '@finos/legend-shared';
 import { buildExecutableQuery } from '../../core/DataCubeQueryBuilder.js';
-import { PureClientVersion, type TabularDataSet } from '@finos/legend-graph';
+import {
+  PRIMITIVE_TYPE,
+  PureClientVersion,
+  type TabularDataSet,
+} from '@finos/legend-graph';
 import { makeObservable, observable, runInAction } from 'mobx';
 import type {
   DataCubeConfiguration,
@@ -43,15 +47,12 @@ import { isPivotResultColumnName } from '../../core/DataCubeQueryEngine.js';
 import { buildQuerySnapshot } from './DataCubeGridQuerySnapshotBuilder.js';
 import { AlertType } from '../../services/DataCubeAlertService.js';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
-import {
-  _aggCountCol,
-  buildGridDataFetchExecutableQuery,
-} from './DataCubeGridQueryBuilder.js';
-import { _colSpecArrayParam } from '../../core/DataCubeQuerySnapshotBuilderUtils.js';
+import { buildGridDataFetchExecutableQuery } from './DataCubeGridQueryBuilder.js';
 import { DataCubeSettingKey } from '../../../__lib__/DataCubeSetting.js';
 import { DEFAULT_ALERT_WINDOW_CONFIG } from '../../services/DataCubeLayoutService.js';
 import type { DataCubeExecutionResult } from '../../core/DataCubeEngine.js';
 import { _lambda } from '../../core/DataCubeQueryBuilderUtils.js';
+import { sum } from 'mathjs';
 
 type DataCubeGridClientCellValue = string | number | boolean | null | undefined;
 type DataCubeGridClientRowData = {
@@ -136,8 +137,7 @@ export const INTERNAL__GRID_CLIENT_ROOT_AGGREGATION_COLUMN_ID =
   'INTERNAL__rootAggregation';
 export const INTERNAL__GRID_CLIENT_DATA_FETCH_MANUAL_TRIGGER_COLUMN_ID =
   'INTERNAL__dataFetchManualTrigger';
-export const INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID =
-  'INTERNAL__count';
+export const INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID = 'count';
 
 export enum DataCubeGridClientPinnedAlignement {
   LEFT = 'left',
@@ -228,17 +228,19 @@ function buildRowData(
           ? value
           : INTERNAL__GRID_CLIENT_MISSING_VALUE;
       if (snapshot.data.pivot && snapshot.data.groupBy) {
-        row[INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID] =
-          result.columns
-            .filter(
-              (col) =>
-                isPivotResultColumnName(col) &&
-                col.endsWith(
-                  INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID,
-                ),
-            )
-            .map((col) => (row[col] as number | undefined) ?? 0)
-            .reduce((a, b) => a + b, 0);
+        row[INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID] = Number(
+          sum(
+            result.columns
+              .filter(
+                (col) =>
+                  isPivotResultColumnName(col) &&
+                  col.endsWith(
+                    INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID,
+                  ),
+              )
+              .map((col) => (row[col] as number | undefined) ?? 0),
+          ).toString(),
+        );
       }
     });
     return row;
@@ -260,15 +262,7 @@ async function getCastColumns(
   snapshot.data.groupExtendedColumns = [];
   snapshot.data.sortColumns = [];
   snapshot.data.limit = 0;
-  const query = buildExecutableQuery(snapshot, view.source, view.engine, {
-    postProcessor: (_snapshot, sequence, funcMap, configuration, engine) => {
-      // when both pivot and groupBy present, we need to account for the count column
-      // in the cast expression
-      if (funcMap.pivot && currentSnapshot.data.groupBy) {
-        _colSpecArrayParam(funcMap.pivot, 1).colSpecs.push(_aggCountCol());
-      }
-    },
-  });
+  const query = buildExecutableQuery(snapshot, view.source, view.engine);
 
   const result = await view.engine.executeQuery(
     _lambda([], [query]),
@@ -285,10 +279,15 @@ async function getCastColumns(
     },
   );
 
-  return result.result.builder.columns.map((column) => ({
-    name: column.name,
-    type: column.type as string,
-  }));
+  return result.result.builder.columns.map((column) => {
+    const type = column.type as string;
+    return {
+      name: column.name,
+      // FIXME: this is a workaround to help plan generation does not handle well decimal type
+      // Remove this once https://github.com/finos/legend-engine/pull/3400 is productionized
+      type: type === PRIMITIVE_TYPE.DECIMAL ? PRIMITIVE_TYPE.FLOAT : type,
+    };
+  });
 }
 
 export type DataCubeGridClientDataFetchRequest = {
@@ -399,6 +398,7 @@ export class DataCubeGridClientServerSideDataSource
       this._grid.isPaginationEnabled,
     );
     let result: DataCubeExecutionResult;
+    let rowData: DataCubeGridClientRowData[];
 
     try {
       result = await this._view.engine.executeQuery(
@@ -415,6 +415,7 @@ export class DataCubeGridClientServerSideDataSource
             : undefined,
         },
       );
+      rowData = buildRowData(result.result.result, newSnapshot);
     } catch (error) {
       assertErrorThrown(error);
       this._view.alertService.alertError(error, {
@@ -425,7 +426,6 @@ export class DataCubeGridClientServerSideDataSource
       return;
     }
 
-    const rowData = buildRowData(result.result.result, newSnapshot);
     if (
       this._view.settingService.getBooleanValue(
         DataCubeSettingKey.DEBUGGER__ENABLE_DEBUG_MODE,

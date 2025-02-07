@@ -53,7 +53,6 @@ import {
   V1_Column,
   V1_Database,
   V1_Date,
-  V1_Double,
   V1_DuckDBDatasourceSpecification,
   V1_EngineRuntime,
   V1_IdentifiedConnection,
@@ -69,7 +68,6 @@ import {
   V1_TestAuthenticationStrategy,
   V1_VarChar,
   V1_Bit,
-  V1_Decimal,
   V1_Float,
   PackageableElementPointerType,
   DatabaseType,
@@ -543,20 +541,14 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           column.type = new V1_Bit();
           break;
         }
-        case PRIMITIVE_TYPE.NUMBER: {
-          column.type = new V1_Double();
-          break;
-        }
         case PRIMITIVE_TYPE.INTEGER: {
           column.type = new V1_Integer();
           break;
         }
-        case PRIMITIVE_TYPE.FLOAT: {
-          column.type = new V1_Float();
-          break;
-        }
+        case PRIMITIVE_TYPE.NUMBER:
+        case PRIMITIVE_TYPE.FLOAT:
         case PRIMITIVE_TYPE.DECIMAL: {
-          column.type = new V1_Decimal();
+          column.type = new V1_Float();
           break;
         }
         case PRIMITIVE_TYPE.DATE:

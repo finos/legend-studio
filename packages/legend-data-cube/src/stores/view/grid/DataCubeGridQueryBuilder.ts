@@ -22,6 +22,7 @@ import {
   V1_GenericType,
   V1_RelationType,
   V1_getGenericTypeFullPath,
+  V1_createRelationTypeColumn,
 } from '@finos/legend-graph';
 import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
 import {
@@ -102,14 +103,15 @@ function _addCountAggColumnToPivot(
 ): void {
   if (funcMap.pivot && funcMap.pivotCast) {
     _colSpecArrayParam(funcMap.pivot, 1).colSpecs.push(_aggCountCol());
-    const castColumns = guaranteeType(
+    const relationType = guaranteeType(
       guaranteeType(
         guaranteeType(funcMap.pivotCast.parameters[0], V1_GenericTypeInstance)
           .genericType.typeArguments[0],
         V1_GenericType,
       ).rawType,
       V1_RelationType,
-    ).columns.map((column) =>
+    );
+    const castColumns = relationType.columns.map((column) =>
       _colSpec(
         column.name,
         undefined,
@@ -133,10 +135,14 @@ function _addCountAggColumnToPivot(
           PIVOT_COLUMN_NAME_VALUE_SEPARATOR +
           INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID,
       )
-      .map((col) => _colSpec(col, undefined, undefined, PRIMITIVE_TYPE.INTEGER))
       .forEach((col) => {
-        castColumns.push(col);
-        countAggColumns.push(col);
+        // Here we directly modify the list of cast columns in the relation type
+        relationType.columns.push(
+          V1_createRelationTypeColumn(col, PRIMITIVE_TYPE.INTEGER),
+        );
+        countAggColumns.push(
+          _colSpec(col, undefined, undefined, PRIMITIVE_TYPE.INTEGER),
+        );
       });
   }
 }
