@@ -66,12 +66,12 @@ import {
   type DataCubeOperationValue,
 } from './DataCubeQueryEngine.js';
 import type {
-  DataCubeQuerySnapshotAggregateColumn,
-  DataCubeQuerySnapshotFilter,
-  DataCubeQuerySnapshotFilterCondition,
-  DataCubeQuerySnapshotGroupBy,
-  DataCubeQuerySnapshotPivot,
-} from './DataCubeQuerySnapshot.js';
+  DataCubeSnapshotAggregateColumn,
+  DataCubeSnapshotFilter,
+  DataCubeSnapshotFilterCondition,
+  DataCubeSnapshotGroupBy,
+  DataCubeSnapshotPivot,
+} from './DataCubeSnapshot.js';
 import type { DataCubeQueryFilterOperation } from './filter/DataCubeQueryFilterOperation.js';
 import type { DataCubeEngine } from './DataCubeEngine.js';
 import {
@@ -375,14 +375,14 @@ export function _filter(
   value: V1_ValueSpecification,
   columnGetter: (name: string) => DataCubeColumn,
   filterOperations: DataCubeQueryFilterOperation[],
-): DataCubeQuerySnapshotFilter {
+): DataCubeSnapshotFilter {
   if (!(value instanceof V1_AppliedFunction)) {
     throw new Error(
       `Can't process filter() expression: expected a function expression`,
     );
   }
 
-  const group: DataCubeQuerySnapshotFilter = {
+  const group: DataCubeSnapshotFilter = {
     // default to AND group for case where there is only one condition
     groupOperator: DataCubeQueryFilterGroupOperator.AND,
     conditions: [],
@@ -426,7 +426,7 @@ function _filterCondition(
   value: V1_ValueSpecification,
   columnGetter: (name: string) => DataCubeColumn,
   filterOperations: DataCubeQueryFilterOperation[],
-): DataCubeQuerySnapshotFilterCondition | DataCubeQuerySnapshotFilter {
+): DataCubeSnapshotFilterCondition | DataCubeSnapshotFilter {
   if (!(value instanceof V1_AppliedFunction)) {
     throw new UnsupportedOperationError(
       `Can't process filter condition expression: expected a function expression`,
@@ -707,8 +707,8 @@ export function _pivotSort(
 }
 
 export function _validatePivot(
-  pivot: DataCubeQuerySnapshotPivot,
-  pivotAggColumns: DataCubeQuerySnapshotAggregateColumn[],
+  pivot: DataCubeSnapshotPivot,
+  pivotAggColumns: DataCubeSnapshotAggregateColumn[],
   availableColumns: DataCubeColumn[],
 ) {
   // check for duplicate columns
@@ -834,10 +834,10 @@ export function _groupBySort(
 }
 
 export function _validateGroupBy(
-  groupBy: DataCubeQuerySnapshotGroupBy,
-  groupByAggColumns: DataCubeQuerySnapshotAggregateColumn[],
-  pivot: DataCubeQuerySnapshotPivot | undefined,
-  pivotAggColumns: DataCubeQuerySnapshotAggregateColumn[],
+  groupBy: DataCubeSnapshotGroupBy,
+  groupByAggColumns: DataCubeSnapshotAggregateColumn[],
+  pivot: DataCubeSnapshotPivot | undefined,
+  pivotAggColumns: DataCubeSnapshotAggregateColumn[],
   availableColumns: DataCubeColumn[],
 ) {
   // check for duplicate columns
@@ -878,7 +878,7 @@ export function _validateGroupBy(
 
   // check against pivot if present
   if (pivot) {
-    const aggCols = new Map<string, DataCubeQuerySnapshotAggregateColumn>();
+    const aggCols = new Map<string, DataCubeSnapshotAggregateColumn>();
 
     // check if aggregation specification is consistent (i.e. same type, operator, parameterValues)
     // between groupBy aggregate columns

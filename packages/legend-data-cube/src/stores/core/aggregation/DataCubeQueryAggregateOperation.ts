@@ -18,7 +18,7 @@ import type { DataCubeColumn } from '../model/DataCubeColumn.js';
 import { type V1_ColSpec } from '@finos/legend-graph';
 import type { DataCubeColumnConfiguration } from '../model/DataCubeConfiguration.js';
 import type { DataCubeOperationValue } from '../DataCubeQueryEngine.js';
-import type { DataCubeQuerySnapshotAggregateColumn } from '../DataCubeQuerySnapshot.js';
+import type { DataCubeSnapshotAggregateColumn } from '../DataCubeSnapshot.js';
 
 export abstract class DataCubeQueryAggregateOperation {
   abstract get label(): React.ReactNode;
@@ -37,7 +37,7 @@ export abstract class DataCubeQueryAggregateOperation {
   abstract buildAggregateColumnSnapshot(
     colSpec: V1_ColSpec,
     columnGetter: (name: string) => DataCubeColumn,
-  ): DataCubeQuerySnapshotAggregateColumn | undefined;
+  ): DataCubeSnapshotAggregateColumn | undefined;
 
   protected _finalizeAggregateColumnSnapshot(
     data:
@@ -46,7 +46,7 @@ export abstract class DataCubeQueryAggregateOperation {
           paramterValues: DataCubeOperationValue[];
         }
       | undefined,
-  ): DataCubeQuerySnapshotAggregateColumn | undefined {
+  ): DataCubeSnapshotAggregateColumn | undefined {
     if (!data) {
       return undefined;
     }

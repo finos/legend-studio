@@ -17,7 +17,7 @@
 /***************************************************************************************
  * [CORE]
  *
- * These are utilities used to build the executable query from the query snapshot.
+ * These are utilities used to build the executable query from the snapshot.
  * The executable query is then used to fetch data.
  ***************************************************************************************/
 
@@ -54,10 +54,10 @@ import {
   V1_createRelationTypeColumn,
 } from '@finos/legend-graph';
 import {
-  type DataCubeQuerySnapshotFilterCondition,
-  type DataCubeQuerySnapshotFilter,
-  type DataCubeQuerySnapshot,
-} from './DataCubeQuerySnapshot.js';
+  type DataCubeSnapshotFilterCondition,
+  type DataCubeSnapshotFilter,
+  type DataCubeSnapshot,
+} from './DataCubeSnapshot.js';
 import { _findCol, type DataCubeColumn } from './model/DataCubeColumn.js';
 import {
   guaranteeNonNullable,
@@ -402,7 +402,7 @@ export function _aggCol_base(
 
 export function _pivotAggCols(
   pivotColumns: DataCubeColumn[],
-  snapshot: DataCubeQuerySnapshot,
+  snapshot: DataCubeSnapshot,
   configuration: DataCubeConfiguration,
   aggregateOperations: DataCubeQueryAggregateOperation[],
 ) {
@@ -449,7 +449,7 @@ export function _castCols(columns: DataCubeColumn[]) {
 
 export function _groupByAggCols(
   groupByColumns: DataCubeColumn[],
-  snapshot: DataCubeQuerySnapshot,
+  snapshot: DataCubeSnapshot,
   configuration: DataCubeConfiguration,
   aggregateOperations: DataCubeQueryAggregateOperation[],
 ) {
@@ -544,7 +544,7 @@ export function _groupByAggCols(
 }
 
 export function _filter(
-  filter: DataCubeQuerySnapshotFilter | DataCubeQuerySnapshotFilterCondition,
+  filter: DataCubeSnapshotFilter | DataCubeSnapshotFilterCondition,
   filterOperations: DataCubeQueryFilterOperation[],
 ) {
   if ('groupOperator' in filter) {

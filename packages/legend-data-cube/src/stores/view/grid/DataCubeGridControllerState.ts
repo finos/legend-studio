@@ -22,15 +22,15 @@ import {
 } from '@finos/legend-shared';
 import { DataCubeConfiguration } from '../../core/model/DataCubeConfiguration.js';
 import {
-  type DataCubeQuerySnapshot,
-  type DataCubeQuerySnapshotSortColumn,
-} from '../../core/DataCubeQuerySnapshot.js';
+  type DataCubeSnapshot,
+  type DataCubeSnapshotSortColumn,
+} from '../../core/DataCubeSnapshot.js';
 import {
   _findCol,
   _toCol,
   type DataCubeColumn,
 } from '../../core/model/DataCubeColumn.js';
-import { DataCubeQuerySnapshotController } from '../../services/DataCubeQuerySnapshotService.js';
+import { DataCubeSnapshotController } from '../../services/DataCubeSnapshotService.js';
 import {
   type DataCubeColumnPinPlacement,
   DataCubeColumnKind,
@@ -49,13 +49,13 @@ import type { DataCubeViewState } from '../DataCubeViewState.js';
 import { generateMenuBuilder } from './DataCubeGridMenuBuilder.js';
 import {
   buildFilterEditorTree,
-  buildFilterQuerySnapshot,
+  buildFilterSnapshot,
   DataCubeFilterEditorConditionGroupTreeNode,
   type DataCubeFilterEditorConditionTreeNode,
   type DataCubeFilterEditorTree,
   type DataCubeFilterEditorTreeNode,
 } from '../../core/filter/DataCubeQueryFilterEditorState.js';
-import { _pruneExpandedPaths } from '../../core/DataCubeQuerySnapshotBuilderUtils.js';
+import { _pruneExpandedPaths } from '../../core/DataCubeSnapshotBuilderUtils.js';
 
 /**
  * This query editor state is responsible for capturing updates to the data cube query
@@ -72,7 +72,7 @@ import { _pruneExpandedPaths } from '../../core/DataCubeQuerySnapshotBuilderUtil
  * we MUST NEVER use the editor here, as it could potentially create illegal state
  * while the editor is still in the middle of a modification that has not been applied.
  */
-export class DataCubeGridControllerState extends DataCubeQuerySnapshotController {
+export class DataCubeGridControllerState extends DataCubeSnapshotController {
   readonly view: DataCubeViewState;
 
   constructor(view: DataCubeViewState) {
@@ -342,7 +342,7 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
 
   // --------------------------------- SORT ---------------------------------
 
-  sortColumns: DataCubeQuerySnapshotSortColumn[] = [];
+  sortColumns: DataCubeSnapshotSortColumn[] = [];
 
   getSortableColumn(colName: string | undefined) {
     if (!colName) {
@@ -399,8 +399,8 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
   }
 
   override async applySnapshot(
-    snapshot: DataCubeQuerySnapshot,
-    previousSnapshot: DataCubeQuerySnapshot | undefined,
+    snapshot: DataCubeSnapshot,
+    previousSnapshot: DataCubeSnapshot | undefined,
   ) {
     this.configuration = DataCubeConfiguration.serialization.fromJson(
       snapshot.data.configuration,
@@ -430,7 +430,7 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
     this.menuBuilder = generateMenuBuilder(this);
   }
 
-  private propagateChanges(baseSnapshot: DataCubeQuerySnapshot) {
+  private propagateChanges(baseSnapshot: DataCubeSnapshot) {
     this.verticalPivotColumns = this.verticalPivotColumns.filter(
       (col) => !_findCol(this.horizontalPivotColumns, col.name),
     );
@@ -496,7 +496,7 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
     snapshot.data.configuration = this.configuration.serialize();
 
     snapshot.data.filter = this.filterTree.root
-      ? buildFilterQuerySnapshot(this.filterTree.root)
+      ? buildFilterSnapshot(this.filterTree.root)
       : undefined;
     snapshot.data.selectColumns = this.selectColumns;
     snapshot.data.pivot = this.horizontalPivotColumns.length

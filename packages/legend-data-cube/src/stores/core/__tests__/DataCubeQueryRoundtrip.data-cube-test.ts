@@ -16,7 +16,7 @@
 
 import { integrationTest } from '@finos/legend-shared/test';
 import { describe, expect, test } from '@jest/globals';
-import { validateAndBuildQuerySnapshot } from '../DataCubeQuerySnapshotBuilder.js';
+import { validateAndBuildSnapshot } from '../DataCubeSnapshotBuilder.js';
 import {
   assertErrorThrown,
   at,
@@ -31,9 +31,9 @@ import {
 } from '../model/DataCubeConfiguration.js';
 import { TEST__DataCubeEngine } from './DataCubeTestUtils.js';
 import type {
-  DataCubeQuerySnapshot,
-  DataCubeQuerySnapshotFilterCondition,
-} from '../DataCubeQuerySnapshot.js';
+  DataCubeSnapshot,
+  DataCubeSnapshotFilterCondition,
+} from '../DataCubeSnapshot.js';
 import {
   DataCubeColumnKind,
   DataCubeOperationAdvancedValueType,
@@ -1955,10 +1955,10 @@ describe(integrationTest('Roundtrip query processing'), () => {
       baseQuery.configuration = configurationBuilder
         ? await configurationBuilder(query, columns)
         : undefined;
-      let snapshot: DataCubeQuerySnapshot | undefined;
+      let snapshot: DataCubeSnapshot | undefined;
 
       try {
-        snapshot = await validateAndBuildQuerySnapshot(
+        snapshot = await validateAndBuildSnapshot(
           query,
           source,
           baseQuery,
@@ -1992,7 +1992,7 @@ type TestCase = [
     | undefined
   ), // configuration builder
   string | undefined, // error
-  ((snapshot: DataCubeQuerySnapshot) => void) | undefined, // extra checks on snapshot
+  ((snapshot: DataCubeSnapshot) => void) | undefined, // extra checks on snapshot
 ];
 
 function _case(
@@ -2007,7 +2007,7 @@ function _case(
         ) => Promise<DataCubeConfiguration>)
       | undefined;
     error?: string | undefined;
-    validator?: ((snapshot: DataCubeQuerySnapshot) => void) | undefined;
+    validator?: ((snapshot: DataCubeSnapshot) => void) | undefined;
   },
 ): TestCase {
   return [
@@ -2027,12 +2027,10 @@ function _case(
 }
 
 function _checkFilterOperator(operator: DataCubeQueryFilterOperator) {
-  return (snapshot: DataCubeQuerySnapshot) => {
+  return (snapshot: DataCubeSnapshot) => {
     expect(
-      (
-        snapshot.data.filter
-          ?.conditions[0] as DataCubeQuerySnapshotFilterCondition
-      ).operator,
+      (snapshot.data.filter?.conditions[0] as DataCubeSnapshotFilterCondition)
+        .operator,
     ).toBe(operator);
   };
 }
@@ -2056,7 +2054,7 @@ async function _generateDefaultConfiguration(
   baseQuery.configuration = undefined;
 
   try {
-    const snapshot = await validateAndBuildQuerySnapshot(
+    const snapshot = await validateAndBuildSnapshot(
       query,
       source,
       baseQuery,

@@ -16,7 +16,7 @@
 
 import { action, computed, makeObservable, observable } from 'mobx';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
-import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
+import { type DataCubeSnapshot } from '../../core/DataCubeSnapshot.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
 import { DataCubeEditorMutableColumnConfiguration } from './DataCubeEditorMutableConfiguration.js';
@@ -79,7 +79,7 @@ export class DataCubeEditorColumnPropertiesPanelState
   }
 
   applySnaphot(
-    snapshot: DataCubeQuerySnapshot,
+    snapshot: DataCubeSnapshot,
     configuration: DataCubeConfiguration,
   ) {
     this.setColumns(
@@ -98,10 +98,7 @@ export class DataCubeEditorColumnPropertiesPanelState
     }
   }
 
-  buildSnapshot(
-    newSnapshot: DataCubeQuerySnapshot,
-    baseSnapshot: DataCubeQuerySnapshot,
-  ) {
+  buildSnapshot(newSnapshot: DataCubeSnapshot, baseSnapshot: DataCubeSnapshot) {
     newSnapshot.data.configuration = {
       ...newSnapshot.data.configuration,
       columns: this.columns.map((column) => column.serialize()),

@@ -108,7 +108,7 @@ const LegendDataCubeSearcher = observer(() => {
             })}
             onChange={onSearchTextChange}
             value={state.searchText}
-            placeholder="Search for DataCubes by name or ID"
+            placeholder="Search for DataCube(s) by name or ID"
           />
           <div className="absolute flex aspect-square h-full items-center justify-center">
             <DataCubeIcon.Search className="text-lg text-neutral-600" />

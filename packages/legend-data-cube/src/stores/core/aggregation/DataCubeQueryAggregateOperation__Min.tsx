@@ -26,7 +26,7 @@ import {
 import { _aggCol_base } from '../DataCubeQueryBuilderUtils.js';
 import type { DataCubeColumnConfiguration } from '../model/DataCubeConfiguration.js';
 import type { V1_ColSpec } from '@finos/legend-graph';
-import { _agg_base } from '../DataCubeQuerySnapshotBuilderUtils.js';
+import { _agg_base } from '../DataCubeSnapshotBuilderUtils.js';
 
 export class DataCubeQueryAggregateOperation__Min extends DataCubeQueryAggregateOperation {
   override get label() {

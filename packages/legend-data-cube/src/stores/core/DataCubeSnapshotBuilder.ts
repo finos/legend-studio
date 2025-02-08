@@ -17,9 +17,9 @@
 /***************************************************************************************
  * [CORE]
  *
- * This and its corresponding utilitites are used to build the query snapshot from the
- * executable query. This is needed when we initialize the engine by loading a
- * persisted query.
+ * This and its corresponding utilitites are used to build the snapshot from the
+ * executable query and configuration. This is needed when we initialize the engine by
+ * loading a specification.
  ***************************************************************************************/
 
 import {
@@ -32,11 +32,11 @@ import {
 } from '@finos/legend-graph';
 import type { DataCubeSpecification } from './model/DataCubeSpecification.js';
 import {
-  DataCubeQuerySnapshot,
-  type DataCubeQuerySnapshotAggregateColumn,
-  type DataCubeQuerySnapshotProcessingContext,
-  type DataCubeQuerySnapshotSortColumn,
-} from './DataCubeQuerySnapshot.js';
+  DataCubeSnapshot,
+  type DataCubeSnapshotAggregateColumn,
+  type DataCubeSnapshotProcessingContext,
+  type DataCubeSnapshotSortColumn,
+} from './DataCubeSnapshot.js';
 import {
   _findCol,
   _toCol,
@@ -70,7 +70,7 @@ import {
   _validatePivot,
   _checkDuplicateColumns,
   _validateGroupBy,
-} from './DataCubeQuerySnapshotBuilderUtils.js';
+} from './DataCubeSnapshotBuilderUtils.js';
 import type { DataCubeSource } from './model/DataCubeSource.js';
 import type { DataCubeEngine } from './DataCubeEngine.js';
 
@@ -345,12 +345,12 @@ function extractFunctionMap(
 // --------------------------------- MAIN ---------------------------------
 
 /**
- * Analyze the partial query to build a query snapshot.
+ * Analyze the partial query to build a snapshot.
  *
  * Implementation-wise, this extracts the function call sequence, then walk the
  * sequence in order to fill in the information for the snapshot.
  */
-export async function validateAndBuildQuerySnapshot(
+export async function validateAndBuildSnapshot(
   partialQuery: V1_ValueSpecification,
   source: DataCubeSource,
   specification: DataCubeSpecification,
@@ -365,7 +365,7 @@ export async function validateAndBuildQuerySnapshot(
     engine.serializeValueSpecification(partialQuery),
   );
   const funcMap = extractFunctionMap(query);
-  const snapshot = DataCubeQuerySnapshot.create({});
+  const snapshot = DataCubeSnapshot.create({});
   const data = snapshot.data;
   const registeredColumns = new Map<string, DataCubeColumn>();
   /**
@@ -476,8 +476,8 @@ export async function validateAndBuildQuerySnapshot(
 
   // --------------------------------- PIVOT ---------------------------------
 
-  let pivotAggColumns: DataCubeQuerySnapshotAggregateColumn[] = [];
-  let pivotSortColumns: DataCubeQuerySnapshotSortColumn[] = [];
+  let pivotAggColumns: DataCubeSnapshotAggregateColumn[] = [];
+  let pivotSortColumns: DataCubeSnapshotSortColumn[] = [];
   if (funcMap.pivot && funcMap.pivotCast && funcMap.pivotSort) {
     const pivotColumns = _colSpecArrayParam(funcMap.pivot, 0).colSpecs.map(
       (colSpec) => _getCol(colSpec.name),
@@ -510,8 +510,8 @@ export async function validateAndBuildQuerySnapshot(
 
   // --------------------------------- GROUP BY ---------------------------------
 
-  let groupByAggColumns: DataCubeQuerySnapshotAggregateColumn[] = [];
-  let groupBySortColumns: DataCubeQuerySnapshotSortColumn[] = [];
+  let groupByAggColumns: DataCubeSnapshotAggregateColumn[] = [];
+  let groupBySortColumns: DataCubeSnapshotSortColumn[] = [];
   if (funcMap.groupBy && funcMap.groupBySort) {
     const groupByColumns = _colSpecArrayParam(funcMap.groupBy, 0).colSpecs.map(
       (colSpec) => _getCol(colSpec.name),
@@ -642,7 +642,7 @@ export async function validateAndBuildQuerySnapshot(
  * configuration is not specified.
  */
 function validateAndBuildConfiguration(
-  context: DataCubeQuerySnapshotProcessingContext,
+  context: DataCubeSnapshotProcessingContext,
   specification: DataCubeSpecification,
   engine: DataCubeEngine,
 ) {

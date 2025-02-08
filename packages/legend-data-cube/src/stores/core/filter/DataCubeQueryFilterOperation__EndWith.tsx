@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { DataCubeQueryFilterOperation } from './DataCubeQueryFilterOperation.js';
-import type { DataCubeQuerySnapshotFilterCondition } from '../DataCubeQuerySnapshot.js';
+import type { DataCubeSnapshotFilterCondition } from '../DataCubeSnapshot.js';
 import type { DataCubeColumn } from '../model/DataCubeColumn.js';
 import {
   DataCubeColumnDataType,
@@ -32,7 +32,7 @@ import {
   _value,
 } from '../DataCubeQueryBuilderUtils.js';
 import { type V1_AppliedFunction } from '@finos/legend-graph';
-import { _filterCondition_base } from '../DataCubeQuerySnapshotBuilderUtils.js';
+import { _filterCondition_base } from '../DataCubeSnapshotBuilderUtils.js';
 import { isString } from '@finos/legend-shared';
 
 export class DataCubeQueryFilterOperation__EndWith extends DataCubeQueryFilterOperation {
@@ -86,7 +86,7 @@ export class DataCubeQueryFilterOperation__EndWith extends DataCubeQueryFilterOp
     );
   }
 
-  buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {
+  buildConditionExpression(condition: DataCubeSnapshotFilterCondition) {
     return _function(_functionName(DataCubeFunction.ENDS_WITH), [
       _property(condition.name),
       _value(condition.value),

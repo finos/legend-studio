@@ -30,69 +30,66 @@ import type {
 } from './DataCubeQueryEngine.js';
 import type { DataCubeColumn } from './model/DataCubeColumn.js';
 
-export type DataCubeQuerySnapshotFilterCondition = DataCubeColumn & {
+export type DataCubeSnapshotFilterCondition = DataCubeColumn & {
   value: DataCubeOperationValue;
   operator: string;
   not?: boolean | undefined;
 };
 
-export type DataCubeQuerySnapshotFilter = {
+export type DataCubeSnapshotFilter = {
   groupOperator: string;
-  conditions: (
-    | DataCubeQuerySnapshotFilterCondition
-    | DataCubeQuerySnapshotFilter
-  )[];
+  conditions: (DataCubeSnapshotFilterCondition | DataCubeSnapshotFilter)[];
   not?: boolean | undefined;
 };
 
-export type DataCubeQuerySnapshotExtendedColumn = DataCubeColumn & {
+export type DataCubeSnapshotExtendedColumn = DataCubeColumn & {
   windowFn?: PlainObject<V1_AppliedFunction> | undefined;
   mapFn: PlainObject<V1_Lambda>;
   reduceFn?: PlainObject<V1_Lambda> | undefined;
 };
 
-export type DataCubeQuerySnapshotAggregateColumn = DataCubeColumn & {
+export type DataCubeSnapshotAggregateColumn = DataCubeColumn & {
   parameterValues: DataCubeOperationValue[];
   operator: string;
 };
 
-export type DataCubeQuerySnapshotSortColumn = DataCubeColumn & {
+export type DataCubeSnapshotSortColumn = DataCubeColumn & {
   direction: DataCubeQuerySortDirection;
 };
 
-export type DataCubeQuerySnapshotGroupBy = {
+export type DataCubeSnapshotGroupBy = {
   columns: DataCubeColumn[];
 };
 
-export type DataCubeQuerySnapshotPivot = {
+export type DataCubeSnapshotPivot = {
   columns: DataCubeColumn[];
   castColumns: DataCubeColumn[];
 };
 
-export type DataCubeQuerySnapshotProcessingContext = {
-  snapshot: DataCubeQuerySnapshot;
-  pivotAggColumns?: DataCubeQuerySnapshotAggregateColumn[] | undefined;
-  pivotSortColumns?: DataCubeQuerySnapshotSortColumn[] | undefined;
-  groupByAggColumns?: DataCubeQuerySnapshotAggregateColumn[] | undefined;
-  groupBySortColumns?: DataCubeQuerySnapshotSortColumn[] | undefined;
+export type DataCubeSnapshotProcessingContext = {
+  snapshot: DataCubeSnapshot;
+  pivotAggColumns?: DataCubeSnapshotAggregateColumn[] | undefined;
+  pivotSortColumns?: DataCubeSnapshotSortColumn[] | undefined;
+  groupByAggColumns?: DataCubeSnapshotAggregateColumn[] | undefined;
+  groupBySortColumns?: DataCubeSnapshotSortColumn[] | undefined;
 };
 
-export type DataCubeQuerySnapshotData = {
+export type DataCubeSnapshotData = {
   configuration: PlainObject<DataCubeConfiguration>;
   sourceColumns: DataCubeColumn[];
-  leafExtendedColumns: DataCubeQuerySnapshotExtendedColumn[];
-  filter?: DataCubeQuerySnapshotFilter | undefined;
+  leafExtendedColumns: DataCubeSnapshotExtendedColumn[];
+  filter?: DataCubeSnapshotFilter | undefined;
   selectColumns: DataCubeColumn[];
-  groupBy?: DataCubeQuerySnapshotGroupBy | undefined;
-  pivot?: DataCubeQuerySnapshotPivot | undefined;
-  groupExtendedColumns: DataCubeQuerySnapshotExtendedColumn[];
-  sortColumns: DataCubeQuerySnapshotSortColumn[];
+  groupBy?: DataCubeSnapshotGroupBy | undefined;
+  pivot?: DataCubeSnapshotPivot | undefined;
+  groupExtendedColumns: DataCubeSnapshotExtendedColumn[];
+  sortColumns: DataCubeSnapshotSortColumn[];
   limit: number | undefined;
 };
 
-export class DataCubeQuerySnapshot {
+export class DataCubeSnapshot {
   readonly uuid = uuid();
-  readonly data: DataCubeQuerySnapshotData;
+  readonly data: DataCubeSnapshotData;
 
   private _isPatchChange = false;
   private _finalized = false;
@@ -114,7 +111,7 @@ export class DataCubeQuerySnapshot {
   }
 
   static create(configuration: PlainObject<DataCubeConfiguration>) {
-    return new DataCubeQuerySnapshot(configuration);
+    return new DataCubeSnapshot(configuration);
   }
 
   /**
@@ -163,10 +160,10 @@ export class DataCubeQuerySnapshot {
   }
 
   clone() {
-    const clone = new DataCubeQuerySnapshot({});
-    (clone.data as Writable<DataCubeQuerySnapshotData>) = JSON.parse(
+    const clone = new DataCubeSnapshot({});
+    (clone.data as Writable<DataCubeSnapshotData>) = JSON.parse(
       JSON.stringify(this.data),
-    ) as DataCubeQuerySnapshotData;
+    ) as DataCubeSnapshotData;
     return clone;
   }
 
@@ -175,11 +172,11 @@ export class DataCubeQuerySnapshot {
    * This should rarely be used, and ideally by core engine only.
    */
   INTERNAL__fullClone() {
-    const clone = new DataCubeQuerySnapshot({});
-    (clone as Writable<DataCubeQuerySnapshot>).uuid = this.uuid;
-    (clone as Writable<DataCubeQuerySnapshot>).data = JSON.parse(
+    const clone = new DataCubeSnapshot({});
+    (clone as Writable<DataCubeSnapshot>).uuid = this.uuid;
+    (clone as Writable<DataCubeSnapshot>).data = JSON.parse(
       JSON.stringify(this.data),
-    ) as DataCubeQuerySnapshotData;
+    ) as DataCubeSnapshotData;
     clone._isPatchChange = this._isPatchChange;
     clone._finalized = this._finalized;
     clone._hashCode = this._hashCode;

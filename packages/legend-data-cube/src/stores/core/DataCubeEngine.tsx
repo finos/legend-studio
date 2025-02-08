@@ -67,7 +67,7 @@ import { DataCubeQueryFilterOperation__EndWithCaseInsensitive } from './filter/D
 import { DataCubeQueryFilterOperation__NotEndWith } from './filter/DataCubeQueryFilterOperation__NotEndWith.js';
 import { DataCubeQueryFilterOperation__IsNull } from './filter/DataCubeQueryFilterOperation__IsNull.js';
 import { DataCubeQueryFilterOperation__IsNotNull } from './filter/DataCubeQueryFilterOperation__IsNotNull.js';
-import { DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
+import { DataCubeSnapshot } from './DataCubeSnapshot.js';
 import { buildExecutableQuery } from './DataCubeQueryBuilder.js';
 import { _toCol, type DataCubeColumn } from './model/DataCubeColumn.js';
 import {
@@ -197,7 +197,7 @@ export abstract class DataCubeEngine {
    * Then remove this dummy value from the final code.
    */
   async getPartialQueryCode(
-    snapshot: DataCubeQuerySnapshot,
+    snapshot: DataCubeSnapshot,
     pretty?: boolean | undefined,
   ) {
     const source = new INTERNAL__DataCubeSource();
@@ -219,7 +219,7 @@ export abstract class DataCubeEngine {
     query.query = await this.getValueSpecificationCode(
       _selectFunction(source.columns),
     );
-    const snapshot = DataCubeQuerySnapshot.create({});
+    const snapshot = DataCubeSnapshot.create({});
     snapshot.data.sourceColumns = source.columns.map(_toCol);
     snapshot.data.selectColumns = source.columns.map(_toCol);
     const configuration = newConfiguration({

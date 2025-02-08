@@ -19,7 +19,7 @@ import {
   DataCubeQueryFilterGroupOperator,
   DataCubeQueryFilterOperator,
 } from '../../core/DataCubeQueryEngine.js';
-import type { DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
+import type { DataCubeSnapshot } from '../../core/DataCubeSnapshot.js';
 import { deepClone, at, guaranteeNonNullable } from '@finos/legend-shared';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
 import {
@@ -28,9 +28,9 @@ import {
   DataCubeFilterEditorConditionGroupTreeNode,
   DataCubeFilterEditorConditionTreeNode,
   buildFilterEditorTree,
-  buildFilterQuerySnapshot,
+  buildFilterSnapshot,
 } from '../../core/filter/DataCubeQueryFilterEditorState.js';
-import { DataCubeQuerySnapshotController } from '../../services/DataCubeQuerySnapshotService.js';
+import { DataCubeSnapshotController } from '../../services/DataCubeSnapshotService.js';
 import {
   DataCubeConfiguration,
   type DataCubeColumnConfiguration,
@@ -43,7 +43,7 @@ import { _findCol } from '../../core/model/DataCubeColumn.js';
  * This query editor state backs the form editor for filter. It batches changes made
  * to the filter in the form editor.
  */
-export class DataCubeFilterEditorState extends DataCubeQuerySnapshotController {
+export class DataCubeFilterEditorState extends DataCubeSnapshotController {
   private readonly _view: DataCubeViewState;
 
   readonly display: DisplayState;
@@ -288,8 +288,8 @@ export class DataCubeFilterEditorState extends DataCubeQuerySnapshotController {
   }
 
   override async applySnapshot(
-    snapshot: DataCubeQuerySnapshot,
-    previousSnapshot: DataCubeQuerySnapshot | undefined,
+    snapshot: DataCubeSnapshot,
+    previousSnapshot: DataCubeSnapshot | undefined,
   ): Promise<void> {
     const configuration = DataCubeConfiguration.serialization.fromJson(
       snapshot.data.configuration,
@@ -317,7 +317,7 @@ export class DataCubeFilterEditorState extends DataCubeQuerySnapshotController {
     const newSnapshot = baseSnapshot.clone();
 
     newSnapshot.data.filter = this.tree.root
-      ? buildFilterQuerySnapshot(this.tree.root)
+      ? buildFilterSnapshot(this.tree.root)
       : undefined;
 
     newSnapshot.finalize();

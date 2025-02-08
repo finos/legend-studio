@@ -24,7 +24,7 @@ import {
   V1_getGenericTypeFullPath,
   V1_createRelationTypeColumn,
 } from '@finos/legend-graph';
-import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
+import { type DataCubeSnapshot } from '../../core/DataCubeSnapshot.js';
 import {
   DataCubeQueryFilterGroupOperator,
   DataCubeQueryFilterOperator,
@@ -61,7 +61,7 @@ import {
   type DataCubeGridClientDataFetchRequest,
 } from './DataCubeGridClientEngine.js';
 import { DataCubeConfiguration } from '../../core/model/DataCubeConfiguration.js';
-import { _colSpecArrayParam } from '../../core/DataCubeQuerySnapshotBuilderUtils.js';
+import { _colSpecArrayParam } from '../../core/DataCubeSnapshotBuilderUtils.js';
 import { buildExecutableQuery } from '../../core/DataCubeQueryBuilder.js';
 import type { DataCubeSource } from '../../core/model/DataCubeSource.js';
 import type { DataCubeEngine } from '../../core/DataCubeEngine.js';
@@ -151,7 +151,7 @@ function _addCountAggColumnToPivot(
 
 export function buildGridDataFetchExecutableQuery(
   request: DataCubeGridClientDataFetchRequest,
-  snapshot: DataCubeQuerySnapshot,
+  snapshot: DataCubeSnapshot,
   source: DataCubeSource,
   engine: DataCubeEngine,
   enablePagination: boolean,
@@ -192,7 +192,7 @@ function generateGridDataFetchExecutableQueryPostProcessor(
   request: DataCubeGridClientDataFetchRequest,
 ) {
   return (
-    snapshot: DataCubeQuerySnapshot,
+    snapshot: DataCubeSnapshot,
     sequence: V1_AppliedFunction[],
     funcMap: DataCubeQueryFunctionMap,
     configuration: DataCubeConfiguration,

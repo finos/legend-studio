@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
+import { type DataCubeSnapshot } from '../../core/DataCubeSnapshot.js';
 import { _findCol, _toCol } from '../../core/model/DataCubeColumn.js';
 import {
   DataCubeColumnKind,
@@ -96,7 +96,7 @@ export class DataCubeEditorSortsPanelState
   }
 
   applySnaphot(
-    snapshot: DataCubeQuerySnapshot,
+    snapshot: DataCubeSnapshot,
     configuration: DataCubeConfiguration,
   ) {
     this.selector.setSelectedColumns(
@@ -111,10 +111,7 @@ export class DataCubeEditorSortsPanelState
     );
   }
 
-  buildSnapshot(
-    newSnapshot: DataCubeQuerySnapshot,
-    baseSnapshot: DataCubeQuerySnapshot,
-  ) {
+  buildSnapshot(newSnapshot: DataCubeSnapshot, baseSnapshot: DataCubeSnapshot) {
     newSnapshot.data.sortColumns = this.selector.selectedColumns.map((col) => ({
       ..._toCol(col),
       direction: col.direction,

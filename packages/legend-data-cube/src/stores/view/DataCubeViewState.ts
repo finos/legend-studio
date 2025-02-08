@@ -21,9 +21,9 @@ import {
   assertErrorThrown,
   IllegalStateError,
 } from '@finos/legend-shared';
-import { DataCubeQuerySnapshotService } from '../services/DataCubeQuerySnapshotService.js';
+import { DataCubeSnapshotService } from '../services/DataCubeSnapshotService.js';
 import { DataCubeInfoState } from './DataCubeInfoState.js';
-import { validateAndBuildQuerySnapshot } from '../core/DataCubeQuerySnapshotBuilder.js';
+import { validateAndBuildSnapshot } from '../core/DataCubeSnapshotBuilder.js';
 import { DataCubeFilterEditorState } from './filter/DataCubeFilterEditorState.js';
 import { DataCubeExtendManagerState } from './extend/DataCubeExtendManagerState.js';
 import type { DataCubeState } from '../DataCubeState.js';
@@ -48,7 +48,7 @@ export class DataCubeViewState {
   readonly layoutService: DataCubeLayoutService;
   readonly alertService: DataCubeAlertService;
   readonly settingService: DataCubeSettingService;
-  readonly snapshotService: DataCubeQuerySnapshotService;
+  readonly snapshotService: DataCubeSnapshotService;
 
   readonly info: DataCubeInfoState;
   readonly editor: DataCubeEditorState;
@@ -71,7 +71,7 @@ export class DataCubeViewState {
     this.alertService = dataCube.alertService;
     this.settingService = dataCube.settingService;
     // NOTE: snapshot manager must be instantiated before subscribers
-    this.snapshotService = new DataCubeQuerySnapshotService(
+    this.snapshotService = new DataCubeSnapshotService(
       this.engine,
       this.logService,
     );
@@ -182,7 +182,7 @@ export class DataCubeViewState {
       const partialQuery = await this.engine.parseValueSpecification(
         specification.query,
       );
-      const initialSnapshot = await validateAndBuildQuerySnapshot(
+      const initialSnapshot = await validateAndBuildSnapshot(
         partialQuery,
         source,
         specification,

@@ -17,11 +17,11 @@
 /***************************************************************************************
  * [GRID]
  *
- * These are utilities used to build the query snapshot from the internal state
- * of the grid client, AG Grid.
+ * These are utilities used to build the snapshot from the internal state of the grid
+ * client, AG Grid.
  ***************************************************************************************/
 
-import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
+import { type DataCubeSnapshot } from '../../core/DataCubeSnapshot.js';
 import { _toCol } from '../../core/model/DataCubeColumn.js';
 import {
   DataCubeGridClientSortDirection,
@@ -36,7 +36,7 @@ import {
 } from '../../core/DataCubeQueryEngine.js';
 import { DataCubeConfiguration } from '../../core/model/DataCubeConfiguration.js';
 import { guaranteeNonNullable, uniqBy } from '@finos/legend-shared';
-import { _pruneExpandedPaths } from '../../core/DataCubeQuerySnapshotBuilderUtils.js';
+import { _pruneExpandedPaths } from '../../core/DataCubeSnapshotBuilderUtils.js';
 
 export function getColumnConfiguration(
   colName: string,
@@ -50,9 +50,9 @@ export function getColumnConfiguration(
 
 // --------------------------------- MAIN ---------------------------------
 
-export function buildQuerySnapshot(
+export function buildSnapshotFromGridState(
   request: DataCubeGridClientDataFetchRequest,
-  baseSnapshot: DataCubeQuerySnapshot,
+  baseSnapshot: DataCubeSnapshot,
 ) {
   const snapshot = baseSnapshot.clone();
   const configuration = DataCubeConfiguration.serialization.fromJson(

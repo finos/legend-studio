@@ -16,9 +16,9 @@
 
 import { action, computed, makeObservable, observable } from 'mobx';
 import {
-  type DataCubeQuerySnapshot,
-  type DataCubeQuerySnapshotExtendedColumn,
-} from '../../core/DataCubeQuerySnapshot.js';
+  type DataCubeSnapshot,
+  type DataCubeSnapshotExtendedColumn,
+} from '../../core/DataCubeSnapshot.js';
 import {
   _findCol,
   _toCol,
@@ -32,7 +32,7 @@ import {
   uniqBy,
 } from '@finos/legend-shared';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
-import { DataCubeQuerySnapshotController } from '../../services/DataCubeQuerySnapshotService.js';
+import { DataCubeSnapshotController } from '../../services/DataCubeSnapshotService.js';
 import {
   DataCubeConfiguration,
   type DataCubeColumnConfiguration,
@@ -53,9 +53,9 @@ import { EngineError } from '@finos/legend-graph';
 class DataCubeQueryExtendedColumnState {
   readonly name: string;
   readonly type: string;
-  readonly data: DataCubeQuerySnapshotExtendedColumn;
+  readonly data: DataCubeSnapshotExtendedColumn;
 
-  constructor(data: DataCubeQuerySnapshotExtendedColumn) {
+  constructor(data: DataCubeSnapshotExtendedColumn) {
     this.name = data.name;
     this.type = data.type;
     this.data = data;
@@ -65,7 +65,7 @@ class DataCubeQueryExtendedColumnState {
 /**
  * This query editor state backs the form editor for extend columns, i.e. creating new columns.
  */
-export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController {
+export class DataCubeExtendManagerState extends DataCubeSnapshotController {
   readonly view: DataCubeViewState;
 
   columnConfigurations: DataCubeColumnConfiguration[] = [];
@@ -165,7 +165,7 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
   }
 
   addNewColumn(
-    column: DataCubeQuerySnapshotExtendedColumn,
+    column: DataCubeSnapshotExtendedColumn,
     isGroupLevel: boolean,
     columnKind: DataCubeColumnKind | undefined,
     editor: DataCubeNewColumnState,
@@ -193,7 +193,7 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
 
   async updateColumn(
     columnName: string,
-    updatedColumn: DataCubeQuerySnapshotExtendedColumn,
+    updatedColumn: DataCubeSnapshotExtendedColumn,
     isGroupLevel: boolean,
     columnKind: DataCubeColumnKind | undefined,
   ) {
@@ -416,8 +416,8 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
   }
 
   override async applySnapshot(
-    snapshot: DataCubeQuerySnapshot,
-    previousSnapshot: DataCubeQuerySnapshot | undefined,
+    snapshot: DataCubeSnapshot,
+    previousSnapshot: DataCubeSnapshot | undefined,
   ): Promise<void> {
     const configuration = DataCubeConfiguration.serialization.fromJson(
       snapshot.data.configuration,

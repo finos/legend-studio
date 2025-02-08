@@ -47,7 +47,7 @@ import {
   DataCubeConfiguration,
   DataCubePivotLayoutConfiguration,
 } from '../../core/model/DataCubeConfiguration.js';
-import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
+import { type DataCubeSnapshot } from '../../core/DataCubeSnapshot.js';
 import { type DataCubeQueryAggregateOperation } from '../../core/aggregation/DataCubeQueryAggregateOperation.js';
 
 export class DataCubeEditorMutableColumnConfiguration extends DataCubeColumnConfiguration {
@@ -56,7 +56,7 @@ export class DataCubeEditorMutableColumnConfiguration extends DataCubeColumnConf
 
   static create(
     json: PlainObject<DataCubeColumnConfiguration>,
-    snapshot: DataCubeQuerySnapshot | undefined,
+    snapshot: DataCubeSnapshot | undefined,
     aggregateOperations: DataCubeQueryAggregateOperation[],
   ): DataCubeEditorMutableColumnConfiguration {
     const configuration = Object.assign(

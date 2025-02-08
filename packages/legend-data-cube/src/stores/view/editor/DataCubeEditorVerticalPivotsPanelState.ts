@@ -17,7 +17,7 @@
 import { uniqBy } from '@finos/legend-shared';
 import type { DataCubeConfiguration } from '../../core/model/DataCubeConfiguration.js';
 import { DataCubeColumnKind } from '../../core/DataCubeQueryEngine.js';
-import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
+import { type DataCubeSnapshot } from '../../core/DataCubeSnapshot.js';
 import { _findCol, _toCol } from '../../core/model/DataCubeColumn.js';
 import {
   DataCubeEditorColumnSelectorColumnState,
@@ -74,7 +74,7 @@ export class DataCubeEditorVerticalPivotsPanelState
   }
 
   applySnaphot(
-    snapshot: DataCubeQuerySnapshot,
+    snapshot: DataCubeSnapshot,
     configuration: DataCubeConfiguration,
   ) {
     this.selector.setSelectedColumns(
@@ -85,10 +85,7 @@ export class DataCubeEditorVerticalPivotsPanelState
     );
   }
 
-  buildSnapshot(
-    newSnapshot: DataCubeQuerySnapshot,
-    baseSnapshot: DataCubeQuerySnapshot,
-  ) {
+  buildSnapshot(newSnapshot: DataCubeSnapshot, baseSnapshot: DataCubeSnapshot) {
     newSnapshot.data.groupBy = this.selector.selectedColumns.length
       ? {
           columns: this.selector.selectedColumns.map(_toCol),

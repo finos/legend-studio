@@ -15,7 +15,7 @@
  */
 
 import type { DataCubeOperationValue } from '../DataCubeQueryEngine.js';
-import type { DataCubeQuerySnapshotFilterCondition } from '../DataCubeQuerySnapshot.js';
+import type { DataCubeSnapshotFilterCondition } from '../DataCubeSnapshot.js';
 import type { DataCubeColumn } from '../model/DataCubeColumn.js';
 import { type V1_AppliedFunction } from '@finos/legend-graph';
 
@@ -32,7 +32,7 @@ export abstract class DataCubeQueryFilterOperation {
   abstract buildConditionSnapshot(
     expression: V1_AppliedFunction,
     columnGetter: (name: string) => DataCubeColumn,
-  ): DataCubeQuerySnapshotFilterCondition | undefined;
+  ): DataCubeSnapshotFilterCondition | undefined;
 
   protected _finalizeConditionSnapshot(
     data:
@@ -41,7 +41,7 @@ export abstract class DataCubeQueryFilterOperation {
           value: DataCubeOperationValue;
         }
       | undefined,
-  ): DataCubeQuerySnapshotFilterCondition | undefined {
+  ): DataCubeSnapshotFilterCondition | undefined {
     if (!data) {
       return undefined;
     }
@@ -60,6 +60,6 @@ export abstract class DataCubeQueryFilterOperation {
   }
 
   abstract buildConditionExpression(
-    condition: DataCubeQuerySnapshotFilterCondition,
+    condition: DataCubeSnapshotFilterCondition,
   ): V1_AppliedFunction | undefined;
 }

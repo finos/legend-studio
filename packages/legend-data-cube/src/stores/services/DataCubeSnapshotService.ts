@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
+import type { DataCubeSnapshot } from '../core/DataCubeSnapshot.js';
 import {
   IllegalStateError,
   assertErrorThrown,
@@ -31,25 +31,25 @@ import type { DataCubeLogService } from './DataCubeLogService.js';
 // TODO: set a stack depth when we implement undo/redo
 // const DATA_CUBE_MAX_SNAPSHOT_COUNT = 100;
 
-interface DataCubeQuerySnapshotSubscriber {
+interface DataCubeSnapshotSubscriber {
   getSnapshotSubscriberName(): string;
-  getLatestSnapshot(): DataCubeQuerySnapshot | undefined;
-  receiveSnapshot(snapshot: DataCubeQuerySnapshot): Promise<void>;
+  getLatestSnapshot(): DataCubeSnapshot | undefined;
+  receiveSnapshot(snapshot: DataCubeSnapshot): Promise<void>;
 }
 
-export abstract class DataCubeQuerySnapshotController
-  implements DataCubeQuerySnapshotSubscriber
+export abstract class DataCubeSnapshotController
+  implements DataCubeSnapshotSubscriber
 {
   protected readonly _engine: DataCubeEngine;
   protected readonly _settingService: DataCubeSettingService;
-  protected readonly _snapshotService: DataCubeQuerySnapshotService;
+  protected readonly _snapshotService: DataCubeSnapshotService;
 
-  private _latestSnapshot: DataCubeQuerySnapshot | undefined;
+  private _latestSnapshot: DataCubeSnapshot | undefined;
 
   constructor(
     engine: DataCubeEngine,
     settingService: DataCubeSettingService,
-    snapshotService: DataCubeQuerySnapshotService,
+    snapshotService: DataCubeSnapshotService,
   ) {
     this._engine = engine;
     this._settingService = settingService;
@@ -62,7 +62,7 @@ export abstract class DataCubeQuerySnapshotController
     return this._latestSnapshot;
   }
 
-  async receiveSnapshot(snapshot: DataCubeQuerySnapshot) {
+  async receiveSnapshot(snapshot: DataCubeSnapshot) {
     const previousSnapshot = this._latestSnapshot;
     this._latestSnapshot = snapshot;
 
@@ -72,11 +72,11 @@ export abstract class DataCubeQuerySnapshotController
   }
 
   abstract applySnapshot(
-    snapshot: DataCubeQuerySnapshot,
-    previousSnapshot: DataCubeQuerySnapshot | undefined,
+    snapshot: DataCubeSnapshot,
+    previousSnapshot: DataCubeSnapshot | undefined,
   ): Promise<void>;
 
-  publishSnapshot(snapshot: DataCubeQuerySnapshot) {
+  publishSnapshot(snapshot: DataCubeSnapshot) {
     const previousSnapshot = this._latestSnapshot;
     this._latestSnapshot = snapshot;
 
@@ -98,13 +98,13 @@ export abstract class DataCubeQuerySnapshotController
   }
 }
 
-export class DataCubeQuerySnapshotService {
+export class DataCubeSnapshotService {
   private readonly _engine: DataCubeEngine;
   private readonly _logService: DataCubeLogService;
 
-  private readonly _subscribers: DataCubeQuerySnapshotSubscriber[] = [];
-  private readonly _snapshots: DataCubeQuerySnapshot[] = []; // stack
-  private _initialSnapshot: DataCubeQuerySnapshot | undefined;
+  private readonly _subscribers: DataCubeSnapshotSubscriber[] = [];
+  private readonly _snapshots: DataCubeSnapshot[] = []; // stack
+  private _initialSnapshot: DataCubeSnapshot | undefined;
   private _initialSpecification: DataCubeSpecification | undefined;
 
   constructor(engine: DataCubeEngine, logService: DataCubeLogService) {
@@ -116,7 +116,7 @@ export class DataCubeQuerySnapshotService {
     return at(this._snapshots, this._snapshots.length - 1);
   }
 
-  registerSubscriber(subscriber: DataCubeQuerySnapshotSubscriber) {
+  registerSubscriber(subscriber: DataCubeSnapshotSubscriber) {
     const existingSubscriber = this._subscribers.find(
       (sub) =>
         sub.getSnapshotSubscriberName() ===
@@ -137,10 +137,7 @@ export class DataCubeQuerySnapshotService {
     this._subscribers.push(subscriber);
   }
 
-  initialize(
-    snapshot: DataCubeQuerySnapshot,
-    specification: DataCubeSpecification,
-  ) {
+  initialize(snapshot: DataCubeSnapshot, specification: DataCubeSpecification) {
     if (this._initialSnapshot || this._initialSpecification) {
       throw new IllegalStateError(
         `Snapshot manager has already been initialized`,
@@ -164,7 +161,7 @@ export class DataCubeQuerySnapshotService {
     );
   }
 
-  broadcastSnapshot(snapshot: DataCubeQuerySnapshot) {
+  broadcastSnapshot(snapshot: DataCubeSnapshot) {
     if (!snapshot.isFinalized()) {
       this._logService.logIllegalStateError(
         `Snapshot must be finalized before broadcasting`,

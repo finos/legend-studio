@@ -25,9 +25,9 @@ import {
   DataCubeQueryFilterGroupOperator,
 } from '../DataCubeQueryEngine.js';
 import type {
-  DataCubeQuerySnapshotFilter,
-  DataCubeQuerySnapshotFilterCondition,
-} from '../DataCubeQuerySnapshot.js';
+  DataCubeSnapshotFilter,
+  DataCubeSnapshotFilterCondition,
+} from '../DataCubeSnapshot.js';
 import type { DataCubeColumn } from '../model/DataCubeColumn.js';
 import type { DataCubeQueryFilterOperation } from './DataCubeQueryFilterOperation.js';
 
@@ -158,9 +158,9 @@ export class DataCubeFilterEditorConditionGroupTreeNode extends DataCubeFilterEd
   }
 }
 
-export function buildFilterQuerySnapshot(
+export function buildFilterSnapshot(
   node: DataCubeFilterEditorConditionGroupTreeNode,
-): DataCubeQuerySnapshotFilter {
+): DataCubeSnapshotFilter {
   return {
     groupOperator: node.operation,
     not: node.not,
@@ -172,11 +172,11 @@ export function buildFilterQuerySnapshot(
           operator: childNode.operation.operator,
           value: deepClone(childNode.value),
           not: childNode.not,
-        } satisfies DataCubeQuerySnapshotFilterCondition;
+        } satisfies DataCubeSnapshotFilterCondition;
       } else if (
         childNode instanceof DataCubeFilterEditorConditionGroupTreeNode
       ) {
-        return buildFilterQuerySnapshot(childNode);
+        return buildFilterSnapshot(childNode);
       }
       throw new IllegalStateError('Unknown filter node');
     }),
@@ -184,7 +184,7 @@ export function buildFilterQuerySnapshot(
 }
 
 export function buildFilterEditorTree(
-  _node: DataCubeQuerySnapshotFilter,
+  _node: DataCubeSnapshotFilter,
   parent: DataCubeFilterEditorConditionGroupTreeNode | undefined,
   nodes: Map<string, DataCubeFilterEditorTreeNode>,
   operationGetter: (operation: string) => DataCubeQueryFilterOperation,

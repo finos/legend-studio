@@ -15,7 +15,7 @@
  */
 
 import { action, makeObservable, observable, override } from 'mobx';
-import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
+import { type DataCubeSnapshot } from '../../core/DataCubeSnapshot.js';
 import { _findCol, _toCol } from '../../core/model/DataCubeColumn.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import {
@@ -149,7 +149,7 @@ export class DataCubeEditorColumnsPanelState
   }
 
   applySnaphot(
-    snapshot: DataCubeQuerySnapshot,
+    snapshot: DataCubeSnapshot,
     configuration: DataCubeConfiguration,
   ) {
     this.selector.setSelectedColumns(
@@ -167,10 +167,7 @@ export class DataCubeEditorColumnsPanelState
     );
   }
 
-  buildSnapshot(
-    newSnapshot: DataCubeQuerySnapshot,
-    baseSnapshot: DataCubeQuerySnapshot,
-  ) {
+  buildSnapshot(newSnapshot: DataCubeSnapshot, baseSnapshot: DataCubeSnapshot) {
     this.propagateChanges();
     // NOTE: these columns make up just part of the set of columns we want to fetch with `select()`.
     // Subsequently, we need to include columns used for horizontal pivots and vertical pivots.

@@ -15,7 +15,7 @@
  */
 
 import { action, makeObservable, observable } from 'mobx';
-import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
+import { type DataCubeSnapshot } from '../../core/DataCubeSnapshot.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
 import { DataCubeEditorMutableConfiguration } from './DataCubeEditorMutableConfiguration.js';
@@ -43,7 +43,7 @@ export class DataCubeEditorGeneralPropertiesPanelState
   }
 
   applySnaphot(
-    snapshot: DataCubeQuerySnapshot,
+    snapshot: DataCubeSnapshot,
     configuration: DataCubeConfiguration,
   ) {
     this.setLimit(
@@ -56,10 +56,7 @@ export class DataCubeEditorGeneralPropertiesPanelState
     );
   }
 
-  buildSnapshot(
-    newSnapshot: DataCubeQuerySnapshot,
-    baseSnapshot: DataCubeQuerySnapshot,
-  ) {
+  buildSnapshot(newSnapshot: DataCubeSnapshot, baseSnapshot: DataCubeSnapshot) {
     const data = newSnapshot.data;
     data.limit =
       this.limit === undefined || this.limit < 0 ? undefined : this.limit;

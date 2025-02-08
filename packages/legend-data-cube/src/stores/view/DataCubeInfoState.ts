@@ -16,8 +16,8 @@
 
 import { action, makeObservable, observable } from 'mobx';
 import type { DataCubeViewState } from './DataCubeViewState.js';
-import { DataCubeQuerySnapshotController } from '../services/DataCubeQuerySnapshotService.js';
-import type { DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
+import { DataCubeSnapshotController } from '../services/DataCubeSnapshotService.js';
+import type { DataCubeSnapshot } from '../core/DataCubeSnapshot.js';
 import { DataCubeConfiguration } from '../core/model/DataCubeConfiguration.js';
 
 /**
@@ -25,7 +25,7 @@ import { DataCubeConfiguration } from '../core/model/DataCubeConfiguration.js';
  * modification to the query, it simplies subscribe to extract information
  * from the latest snapshot to help display latest static info about the query.
  */
-export class DataCubeInfoState extends DataCubeQuerySnapshotController {
+export class DataCubeInfoState extends DataCubeSnapshotController {
   private readonly _view: DataCubeViewState;
 
   name = '';
@@ -48,8 +48,8 @@ export class DataCubeInfoState extends DataCubeQuerySnapshotController {
   }
 
   override async applySnapshot(
-    snapshot: DataCubeQuerySnapshot,
-    previousSnapshot: DataCubeQuerySnapshot | undefined,
+    snapshot: DataCubeSnapshot,
+    previousSnapshot: DataCubeSnapshot | undefined,
   ) {
     const data = snapshot.data;
     const configuration = DataCubeConfiguration.serialization.fromJson(

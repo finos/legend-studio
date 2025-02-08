@@ -26,7 +26,7 @@ import {
 } from '../DataCubeQueryEngine.js';
 import type { DataCubeColumnConfiguration } from '../model/DataCubeConfiguration.js';
 import { _aggCol_base } from '../DataCubeQueryBuilderUtils.js';
-import { _agg_base } from '../DataCubeQuerySnapshotBuilderUtils.js';
+import { _agg_base } from '../DataCubeSnapshotBuilderUtils.js';
 import { isString } from '@finos/legend-shared';
 
 export class DataCubeQueryAggregateOperation__JoinStrings extends DataCubeQueryAggregateOperation {

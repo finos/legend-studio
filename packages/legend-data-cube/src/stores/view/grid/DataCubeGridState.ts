@@ -31,8 +31,8 @@ import {
   computeHashCodeForDataFetchManualTrigger,
   INTERNAL__GRID_CLIENT_DEFAULT_ENABLE_CACHING,
 } from './DataCubeGridClientEngine.js';
-import { DataCubeQuerySnapshotController } from '../../services/DataCubeQuerySnapshotService.js';
-import type { DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
+import { DataCubeSnapshotController } from '../../services/DataCubeSnapshotService.js';
+import type { DataCubeSnapshot } from '../../core/DataCubeSnapshot.js';
 import { generateGridOptionsFromSnapshot } from './DataCubeGridConfigurationBuilder.js';
 import { DataCubeConfiguration } from '../../core/model/DataCubeConfiguration.js';
 import { DataCubeGridControllerState } from './DataCubeGridControllerState.js';
@@ -56,7 +56,7 @@ import { AlertType } from '../../services/DataCubeAlertService.js';
  * row model datasource, so without the companion grid controller, these changes will not
  * trigger publishing a new snapshot, hence not propagated.
  */
-export class DataCubeGridState extends DataCubeQuerySnapshotController {
+export class DataCubeGridState extends DataCubeSnapshotController {
   private readonly _view: DataCubeViewState;
 
   readonly controller: DataCubeGridControllerState;
@@ -243,8 +243,8 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
   }
 
   override async applySnapshot(
-    snapshot: DataCubeQuerySnapshot,
-    previousSnapshot: DataCubeQuerySnapshot | undefined,
+    snapshot: DataCubeSnapshot,
+    previousSnapshot: DataCubeSnapshot | undefined,
   ) {
     const configuration = DataCubeConfiguration.serialization.fromJson(
       snapshot.data.configuration,

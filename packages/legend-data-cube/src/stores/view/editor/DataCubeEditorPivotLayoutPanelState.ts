@@ -15,13 +15,13 @@
  */
 
 import { action, makeObservable, observable } from 'mobx';
-import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
+import { type DataCubeSnapshot } from '../../core/DataCubeSnapshot.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
 import { DataCubeEditorMutablePivotLayoutConfiguration } from './DataCubeEditorMutableConfiguration.js';
 import type { DataCubeConfiguration } from '../../core/model/DataCubeConfiguration.js';
 import type { PlainObject } from '@finos/legend-shared';
-import { _pruneExpandedPaths } from '../../core/DataCubeQuerySnapshotBuilderUtils.js';
+import { _pruneExpandedPaths } from '../../core/DataCubeSnapshotBuilderUtils.js';
 
 export class DataCubeEditorPivotLayoutPanelState
   implements DataCubeQueryEditorPanelState
@@ -41,7 +41,7 @@ export class DataCubeEditorPivotLayoutPanelState
   }
 
   applySnaphot(
-    snapshot: DataCubeQuerySnapshot,
+    snapshot: DataCubeSnapshot,
     configuration: DataCubeConfiguration,
   ) {
     this.pivotLayout = DataCubeEditorMutablePivotLayoutConfiguration.create(
@@ -49,10 +49,7 @@ export class DataCubeEditorPivotLayoutPanelState
     );
   }
 
-  buildSnapshot(
-    newSnapshot: DataCubeQuerySnapshot,
-    baseSnapshot: DataCubeQuerySnapshot,
-  ) {
+  buildSnapshot(newSnapshot: DataCubeSnapshot, baseSnapshot: DataCubeSnapshot) {
     this.pivotLayout.setExpandedPaths(
       _pruneExpandedPaths(
         baseSnapshot.data.groupBy?.columns ?? [],
