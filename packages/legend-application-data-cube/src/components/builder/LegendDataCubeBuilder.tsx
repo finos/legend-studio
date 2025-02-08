@@ -23,31 +23,31 @@ import {
 } from '@finos/legend-data-cube';
 import {} from '@finos/legend-art';
 import {
-  useLegendDataCubeQueryBuilderStore,
-  withLegendDataCubeQueryBuilderStore,
-} from './LegendDataCubeQueryBuilderStoreProvider.js';
+  useLegendDataCubeBuilderStore,
+  withLegendDataCubeBuilderStore,
+} from './LegendDataCubeBuilderStoreProvider.js';
 import { useParams } from '@finos/legend-application/browser';
 import {
   LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN,
-  type LegendDataCubeQueryBuilderPathParams,
+  type LegendDataCubeBuilderPathParams,
 } from '../../__lib__/LegendDataCubeNavigation.js';
 import { useEffect } from 'react';
 import { LegendDataCubeSettingStorageKey } from '../../__lib__/LegendDataCubeSetting.js';
 
-const LegendDataCubeQueryBuilderHeader = observer(() => {
-  const store = useLegendDataCubeQueryBuilderStore();
+const LegendDataCubeBuilderHeader = observer(() => {
+  const store = useLegendDataCubeBuilderStore();
 
   return (
     <div className="flex h-full items-center">
       <FormButton compact={true} onClick={() => store.loader.display.open()}>
-        Load Query
+        Load DataCube
       </FormButton>
       <FormButton
         compact={true}
         className="ml-1.5"
-        onClick={() => store.newQueryState.display.open()}
+        onClick={() => store.creator.display.open()}
       >
-        New Query
+        New DataCube
       </FormButton>
       <FormButton
         compact={true}
@@ -55,19 +55,20 @@ const LegendDataCubeQueryBuilderHeader = observer(() => {
         disabled={!store.builder?.dataCube}
         onClick={() => store.saverDisplay.open()}
       >
-        Save Query
+        Save DataCube
       </FormButton>
     </div>
   );
 });
 
-export const LegendDataCubeQueryBuilder = withLegendDataCubeQueryBuilderStore(
+export const LegendDataCubeBuilder = withLegendDataCubeBuilderStore(
   observer(() => {
-    const store = useLegendDataCubeQueryBuilderStore();
+    const store = useLegendDataCubeBuilderStore();
     const builder = store.builder;
     const application = store.application;
-    const params = useParams<LegendDataCubeQueryBuilderPathParams>();
-    const queryId = params[LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN.QUERY_ID];
+    const params = useParams<LegendDataCubeBuilderPathParams>();
+    const dataCubeId =
+      params[LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN.DATA_CUBE_ID];
 
     useEffect(() => {
       application.navigationService.navigator.blockNavigation(
@@ -83,9 +84,9 @@ export const LegendDataCubeQueryBuilder = withLegendDataCubeQueryBuilderStore(
 
     useEffect(() => {
       store
-        .loadQuery(queryId)
+        .loadDataCube(dataCubeId)
         .catch((error) => store.alertService.alertUnhandledError(error));
-    }, [store, queryId]);
+    }, [store, dataCubeId]);
 
     useEffect(() => {
       store.engine
@@ -104,7 +105,7 @@ export const LegendDataCubeQueryBuilder = withLegendDataCubeQueryBuilderStore(
           title="[ Legend DataCube ]"
           layoutManager={store.layoutService.manager}
           taskManager={store.taskService.manager}
-          headerContent={<LegendDataCubeQueryBuilderHeader />}
+          headerContent={<LegendDataCubeBuilderHeader />}
           menuItems={[
             {
               label: 'See Documentation',
@@ -119,12 +120,12 @@ export const LegendDataCubeQueryBuilder = withLegendDataCubeQueryBuilderStore(
           ]}
         >
           <div className="h-full w-full p-2">
-            <div>Create a new query to start</div>
+            <div>Create a new DataCube to start</div>
             <FormButton
               className="mt-1.5"
-              onClick={() => store.newQueryState.display.open()}
+              onClick={() => store.creator.display.open()}
             >
-              New Query
+              New DataCube
             </FormButton>
           </div>
         </DataCubePlaceholder>
@@ -132,8 +133,8 @@ export const LegendDataCubeQueryBuilder = withLegendDataCubeQueryBuilderStore(
     }
     return (
       <DataCube
-        key={builder.uuid} // used as mechanism to reload data-cube component when changing between queries or create/edit mode
-        query={builder.query}
+        key={builder.uuid} // used as mechanism to reload data-cube component when changing between DataCubes or between create/edit mode
+        specification={builder.specification}
         engine={store.baseStore.engine}
         options={{
           layoutManager: store.layoutService.manager,
@@ -142,7 +143,7 @@ export const LegendDataCubeQueryBuilder = withLegendDataCubeQueryBuilderStore(
           onInitialized(event) {
             builder.setDataCube(event.api);
           },
-          innerHeaderRenderer: () => <LegendDataCubeQueryBuilderHeader />,
+          innerHeaderRenderer: () => <LegendDataCubeBuilderHeader />,
           settingsData: {
             configurations: store.baseStore.settings,
             values: application.settingService.getObjectValue(

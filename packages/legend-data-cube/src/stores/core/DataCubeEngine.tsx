@@ -84,7 +84,7 @@ import {
   type PlainObject,
 } from '@finos/legend-shared';
 import type { CachedDataCubeSource } from './model/CachedDataCubeSource.js';
-import { DataCubeQuery } from './model/DataCubeQuery.js';
+import { DataCubeSpecification } from './model/DataCubeSpecification.js';
 import { newConfiguration } from './DataCubeConfigurationBuilder.js';
 
 export type CompletionItem = {
@@ -212,9 +212,9 @@ export abstract class DataCubeEngine {
     ).substring(`''->`.length);
   }
 
-  async generateBaseQuery(sourceData: PlainObject) {
-    const source = await this.processQuerySource(sourceData);
-    const query = new DataCubeQuery();
+  async generateBaseSpecification(sourceData: PlainObject) {
+    const source = await this.processSource(sourceData);
+    const query = new DataCubeSpecification();
     query.source = sourceData;
     query.query = await this.getValueSpecificationCode(
       _selectFunction(source.columns),
@@ -231,7 +231,7 @@ export abstract class DataCubeEngine {
 
   // ---------------------------------- PROCESSOR ----------------------------------
 
-  abstract processQuerySource(sourceData: PlainObject): Promise<DataCubeSource>;
+  abstract processSource(sourceData: PlainObject): Promise<DataCubeSource>;
 
   abstract parseValueSpecification(
     code: string,

@@ -22,13 +22,13 @@ import {
 import { createModelSchema, primitive, raw } from 'serializr';
 import { DataCubeConfiguration } from './DataCubeConfiguration.js';
 
-export class DataCubeQuery {
+export class DataCubeSpecification {
   query!: string;
   configuration?: DataCubeConfiguration | undefined;
   source!: PlainObject;
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(DataCubeQuery, {
+    createModelSchema(DataCubeSpecification, {
       configuration: usingModelSchema(
         DataCubeConfiguration.serialization.schema,
       ),

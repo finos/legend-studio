@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { DataCubeQuery } from './core/model/DataCubeQuery.js';
+import type { DataCubeSpecification } from './core/model/DataCubeSpecification.js';
 import type { DataCubeSource } from './core/model/DataCubeSource.js';
 import type { DataCubeState } from './DataCubeState.js';
 import type { DataCubeViewState } from './view/DataCubeViewState.js';
@@ -29,10 +29,10 @@ export interface DataCubeAPI {
    */
   getProcessedSource(): DataCubeSource | undefined;
   /**
-   * Generates the data cube query (including the query, configuration, and source)
+   * Generates the specification (including the query, configuration, and source)
    * from the latest state of the DataCube.
    */
-  generateDataCubeQuery(): Promise<DataCubeQuery>;
+  generateSpecification(): Promise<DataCubeSpecification>;
   /**
    * Retries all failed data fetches and rerender the grid.
    */
@@ -70,8 +70,8 @@ export class INTERNAL__DataCubeAPI implements DataCubeAPI {
     return this._dataCube.view.getOriginalSource();
   }
 
-  generateDataCubeQuery() {
-    return this._dataCube.view.generateDataCubeQuery();
+  generateSpecification() {
+    return this._dataCube.view.generateSpecification();
   }
 
   retryFailedDataFetches() {

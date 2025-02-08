@@ -98,7 +98,7 @@ export class DataCubeColumnConfiguration {
   /**
    * Unlike `isSelected`, this is used to indicate if the column is to be displayed
    * in the grid or not, this would not influence data-fetching, i.e. the column
-   * is still fetched and used in various part of the queries, but the column associated
+   * is still fetched and used in various part of the query, but the column associated
    * will not be displayed in the result grid.
    */
   hideFromView = false;

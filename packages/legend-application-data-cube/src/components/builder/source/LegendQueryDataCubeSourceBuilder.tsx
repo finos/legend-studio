@@ -20,7 +20,7 @@ import {
   SORT_BY_OPTIONS,
   type QueryLoaderState,
 } from '@finos/legend-query-builder';
-import type { LegendQueryDataCubeSourceBuilderState } from '../../../stores/query-builder/source-builder/LegendQueryDataCubeSourceBuilderState.js';
+import type { LegendQueryDataCubeSourceBuilderState } from '../../../stores/builder/source/LegendQueryDataCubeSourceBuilderState.js';
 import { generateGAVCoordinates } from '@finos/legend-storage';
 import { cn, DataCubeIcon, useDropdownMenu } from '@finos/legend-art';
 import {
@@ -40,12 +40,12 @@ import {
   FormTextInput,
 } from '@finos/legend-data-cube';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
-import { useLegendDataCubeQueryBuilderStore } from '../LegendDataCubeQueryBuilderStoreProvider.js';
+import { useLegendDataCubeBuilderStore } from '../LegendDataCubeBuilderStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
 
 const LegendQuerySearcher = observer((props: { state: QueryLoaderState }) => {
   const { state } = props;
-  const store = useLegendDataCubeQueryBuilderStore();
+  const store = useLegendDataCubeBuilderStore();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchResults = state.queries;
 
@@ -54,7 +54,7 @@ const LegendQuerySearcher = observer((props: { state: QueryLoaderState }) => {
   }, [state]);
 
   // search text
-  const debouncedLoadQueries = useMemo(
+  const debouncedLoader = useMemo(
     () =>
       debounce((input: string) => {
         flowResult(state.searchQueries(input)).catch((error) =>
@@ -68,14 +68,14 @@ const LegendQuerySearcher = observer((props: { state: QueryLoaderState }) => {
   ) => {
     if (event.target.value !== state.searchText) {
       state.setSearchText(event.target.value);
-      debouncedLoadQueries.cancel();
-      debouncedLoadQueries(event.target.value);
+      debouncedLoader.cancel();
+      debouncedLoader(event.target.value);
     }
   };
   const clearSearches = () => {
     state.setSearchText('');
-    debouncedLoadQueries.cancel();
-    debouncedLoadQueries('');
+    debouncedLoader.cancel();
+    debouncedLoader('');
   };
 
   // filter and sort
@@ -83,8 +83,8 @@ const LegendQuerySearcher = observer((props: { state: QueryLoaderState }) => {
   const toggleShowCurrentUserQueriesOnly = () => {
     state.setShowCurrentUserQueriesOnly(!state.showCurrentUserQueriesOnly);
     setIsMineOnly(!isMineOnly);
-    debouncedLoadQueries.cancel();
-    debouncedLoadQueries(state.searchText);
+    debouncedLoader.cancel();
+    debouncedLoader(state.searchText);
   };
 
   const [
@@ -95,8 +95,8 @@ const LegendQuerySearcher = observer((props: { state: QueryLoaderState }) => {
   ] = useDropdownMenu();
   const applySort = (value: SORT_BY_OPTIONS) => {
     state.setSortBy(value);
-    debouncedLoadQueries.cancel();
-    debouncedLoadQueries(state.searchText);
+    debouncedLoader.cancel();
+    debouncedLoader(state.searchText);
   };
 
   useEffect(() => {
@@ -254,7 +254,7 @@ export const LegendQueryDataCubeSourceBuilder = observer(
   (props: { sourceBuilder: LegendQueryDataCubeSourceBuilderState }) => {
     const { sourceBuilder } = props;
     const application = useApplicationStore();
-    const store = useLegendDataCubeQueryBuilderStore();
+    const store = useLegendDataCubeBuilderStore();
     const query = sourceBuilder.query;
 
     if (!query) {

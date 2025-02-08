@@ -27,7 +27,7 @@ import {
   DataCubePlaceholder,
   DataCubePlaceholderErrorDisplay,
   DEFAULT_REPORT_NAME,
-  type DataCubeQuery,
+  type DataCubeSpecification,
   type DataCubeSettingValues,
 } from '@finos/legend-data-cube';
 import { APPLICATION_EVENT } from '@finos/legend-application';
@@ -36,71 +36,73 @@ import { LegendREPLDataCubeHeader } from './LegendREPLDataCubeHeader.js';
 import {
   LegendREPLFrameworkProvider,
   useLegendREPLBaseStore,
-} from './LegendREPLFramworkProvider.js';
+} from './LegendREPLFrameworkProvider.js';
 import { LegendREPLSettingStorageKey } from '../__lib__/LegendREPLSetting.js';
 
-const LegendREPLDataCube = observer((props: { query: DataCubeQuery }) => {
-  const { query } = props;
-  const store = useLegendREPLBaseStore();
-  const application = store.application;
+const LegendREPLDataCube = observer(
+  (props: { specification: DataCubeSpecification }) => {
+    const { specification } = props;
+    const store = useLegendREPLBaseStore();
+    const application = store.application;
 
-  useEffect(() => {
-    application.navigationService.navigator.blockNavigation(
-      // Only block navigation in production
-      // eslint-disable-next-line no-process-env
-      [() => process.env.NODE_ENV === 'production'],
-      undefined,
-      () => {
-        application.logService.warn(
-          LogEvent.create(APPLICATION_EVENT.NAVIGATION_BLOCKED),
-          `Navigation from the application is blocked`,
-        );
-      },
+    useEffect(() => {
+      application.navigationService.navigator.blockNavigation(
+        // Only block navigation in production
+        // eslint-disable-next-line no-process-env
+        [() => process.env.NODE_ENV === 'production'],
+        undefined,
+        () => {
+          application.logService.warn(
+            LogEvent.create(APPLICATION_EVENT.NAVIGATION_BLOCKED),
+            `Navigation from the application is blocked`,
+          );
+        },
+      );
+      return (): void => {
+        application.navigationService.navigator.unblockNavigation();
+      };
+    }, [application]);
+
+    return (
+      <DataCube
+        specification={specification}
+        engine={store.engine}
+        options={{
+          gridClientLicense: store.gridClientLicense,
+          layoutManager: store.layoutService.manager,
+          taskManager: store.taskService.manager,
+          onNameChanged(event) {
+            const timestamp =
+              event.source instanceof LegendREPLDataCubeSource
+                ? event.source.timestamp
+                : undefined;
+            application.layoutService.setWindowTitle(
+              `\u229E ${name}${timestamp ? ` - ${formatDate(new Date(timestamp), 'HH:mm:ss EEE MMM dd yyyy')}` : ''}`,
+            );
+          },
+          onViewInitialized(event) {
+            store.setSource(event.source);
+          },
+          innerHeaderRenderer: (params) => (
+            <LegendREPLDataCubeHeader api={params.api} />
+          ),
+          settingsData: {
+            values: application.settingService.getObjectValue(
+              LegendREPLSettingStorageKey.DATA_CUBE,
+            ) as DataCubeSettingValues | undefined,
+          },
+          onSettingsChanged(event) {
+            application.settingService.persistValue(
+              LegendREPLSettingStorageKey.DATA_CUBE,
+              event.values,
+            );
+          },
+          documentationUrl: application.documentationService.url,
+        }}
+      />
     );
-    return (): void => {
-      application.navigationService.navigator.unblockNavigation();
-    };
-  }, [application]);
-
-  return (
-    <DataCube
-      query={query}
-      engine={store.engine}
-      options={{
-        gridClientLicense: store.gridClientLicense,
-        layoutManager: store.layoutService.manager,
-        taskManager: store.taskService.manager,
-        onNameChanged(event) {
-          const timestamp =
-            event.source instanceof LegendREPLDataCubeSource
-              ? event.source.timestamp
-              : undefined;
-          application.layoutService.setWindowTitle(
-            `\u229E ${name}${timestamp ? ` - ${formatDate(new Date(timestamp), 'HH:mm:ss EEE MMM dd yyyy')}` : ''}`,
-          );
-        },
-        onViewInitialized(event) {
-          store.setSource(event.source);
-        },
-        innerHeaderRenderer: (params) => (
-          <LegendREPLDataCubeHeader api={params.api} />
-        ),
-        settingsData: {
-          values: application.settingService.getObjectValue(
-            LegendREPLSettingStorageKey.DATA_CUBE,
-          ) as DataCubeSettingValues | undefined,
-        },
-        onSettingsChanged(event) {
-          application.settingService.persistValue(
-            LegendREPLSettingStorageKey.DATA_CUBE,
-            event.values,
-          );
-        },
-        documentationUrl: application.documentationService.url,
-      }}
-    />
-  );
-});
+  },
+);
 
 export const LEGEND_REPL_GRID_CLIENT_ROUTE_PATTERN = Object.freeze({
   DATA_CUBE: `/dataCube`,
@@ -138,11 +140,11 @@ export const LegendREPLRouter = observer(() => {
   }
   return (
     <div className="h-full">
-      {store.query && (
+      {store.specification && (
         <Routes>
           <Route
             path={LEGEND_REPL_GRID_CLIENT_ROUTE_PATTERN.DATA_CUBE}
-            element={<LegendREPLDataCube query={store.query} />}
+            element={<LegendREPLDataCube specification={store.specification} />}
           />
         </Routes>
       )}

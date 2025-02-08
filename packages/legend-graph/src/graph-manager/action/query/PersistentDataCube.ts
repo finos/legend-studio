@@ -17,7 +17,7 @@
 import { SerializationFactory, type PlainObject } from '@finos/legend-shared';
 import { createModelSchema, optional, primitive, raw } from 'serializr';
 
-export class PersistentDataCubeQuery {
+export class PersistentDataCube {
   id!: string;
   name!: string;
   description: string | undefined;
@@ -29,7 +29,7 @@ export class PersistentDataCubeQuery {
   lastOpenAt?: number | undefined;
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(PersistentDataCubeQuery, {
+    createModelSchema(PersistentDataCube, {
       id: primitive(),
       lastUpdatedAt: optional(primitive()),
       createdAt: optional(primitive()),
@@ -42,13 +42,13 @@ export class PersistentDataCubeQuery {
   );
 
   clone() {
-    return PersistentDataCubeQuery.serialization.fromJson(
-      PersistentDataCubeQuery.serialization.toJson(this),
+    return PersistentDataCube.serialization.fromJson(
+      PersistentDataCube.serialization.toJson(this),
     );
   }
 }
 
-export class LightPersistentDataCubeQuery {
+export class LightPersistentDataCube {
   id!: string;
   name!: string;
   description: string | undefined;
@@ -60,7 +60,7 @@ export class LightPersistentDataCubeQuery {
   lastOpenAt?: number | undefined;
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(LightPersistentDataCubeQuery, {
+    createModelSchema(LightPersistentDataCube, {
       id: primitive(),
       lastUpdatedAt: optional(primitive()),
       createdAt: optional(primitive()),

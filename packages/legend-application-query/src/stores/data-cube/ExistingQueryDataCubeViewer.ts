@@ -29,7 +29,7 @@ import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 import { assertErrorThrown, type GeneratorFn } from '@finos/legend-shared';
 import { QueryBuilderDataCubeEngine } from '@finos/legend-query-builder';
 import { flow, makeObservable, observable } from 'mobx';
-import { type DataCubeQuery } from '@finos/legend-data-cube';
+import { type DataCubeSpecification } from '@finos/legend-data-cube';
 
 export class ExistingQueryDataCubeEditorStore {
   readonly applicationStore: LegendQueryApplicationStore;
@@ -37,7 +37,7 @@ export class ExistingQueryDataCubeEditorStore {
   readonly graphManagerState: GraphManagerState;
   readonly queryId: string;
 
-  query?: DataCubeQuery | undefined;
+  specification?: DataCubeSpecification | undefined;
   engine?: QueryBuilderDataCubeEngine | undefined;
 
   constructor(
@@ -46,7 +46,7 @@ export class ExistingQueryDataCubeEditorStore {
     queryId: string,
   ) {
     makeObservable(this, {
-      query: observable,
+      specification: observable,
       engine: observable,
 
       initialize: flow,
@@ -113,7 +113,8 @@ export class ExistingQueryDataCubeEditorStore {
         this.graphManagerState,
       );
       this.engine = engine;
-      this.query = (yield engine.generateInitialQuery()) as DataCubeQuery;
+      this.specification =
+        (yield engine.generateInitialSpecification()) as DataCubeSpecification;
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(

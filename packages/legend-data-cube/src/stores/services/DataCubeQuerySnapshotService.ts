@@ -22,7 +22,7 @@ import {
   deepDiff,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
-import type { DataCubeQuery } from '../core/model/DataCubeQuery.js';
+import type { DataCubeSpecification } from '../core/model/DataCubeSpecification.js';
 import { DataCubeSettingKey } from '../../__lib__/DataCubeSetting.js';
 import type { DataCubeEngine } from '../core/DataCubeEngine.js';
 import type { DataCubeSettingService } from './DataCubeSettingService.js';
@@ -105,7 +105,7 @@ export class DataCubeQuerySnapshotService {
   private readonly _subscribers: DataCubeQuerySnapshotSubscriber[] = [];
   private readonly _snapshots: DataCubeQuerySnapshot[] = []; // stack
   private _initialSnapshot: DataCubeQuerySnapshot | undefined;
-  private _initialQuery: DataCubeQuery | undefined;
+  private _initialSpecification: DataCubeSpecification | undefined;
 
   constructor(engine: DataCubeEngine, logService: DataCubeLogService) {
     this._engine = engine;
@@ -138,16 +138,16 @@ export class DataCubeQuerySnapshotService {
   }
 
   initialize(
-    initialSnapshot: DataCubeQuerySnapshot,
-    initialQuery: DataCubeQuery,
+    snapshot: DataCubeQuerySnapshot,
+    specification: DataCubeSpecification,
   ) {
-    if (this._initialSnapshot || this._initialQuery) {
+    if (this._initialSnapshot || this._initialSpecification) {
       throw new IllegalStateError(
         `Snapshot manager has already been initialized`,
       );
     }
-    this._initialSnapshot = initialSnapshot;
-    this._initialQuery = initialQuery;
+    this._initialSnapshot = snapshot;
+    this._initialSpecification = specification;
   }
 
   get initialSnapshot() {
@@ -159,7 +159,7 @@ export class DataCubeQuerySnapshotService {
 
   get initialQuery() {
     return guaranteeNonNullable(
-      this._initialQuery,
+      this._initialSpecification,
       `Snapshot manager has not been initialized`,
     );
   }

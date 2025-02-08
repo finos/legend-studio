@@ -20,35 +20,35 @@ import {
   type GenericLegendApplicationStore,
 } from '@finos/legend-application';
 import {
-  type LightPersistentDataCubeQuery,
+  type LightPersistentDataCube,
   QuerySearchSpecification,
   QuerySearchSortBy,
   type V1_PureGraphManager,
 } from '@finos/legend-graph';
 import { ActionState, assertErrorThrown, LogEvent } from '@finos/legend-shared';
 import { makeObservable, observable, action } from 'mobx';
-import type { LegendDataCubeQueryBuilderStore } from './LegendDataCubeQueryBuilderStore.js';
+import type { LegendDataCubeBuilderStore } from './LegendDataCubeBuilderStore.js';
 import { LegendDataCubeUserDataKey } from '../../__lib__/LegendDataCubeUserData.js';
 import {
   type DataCubeAlertService,
   DEFAULT_TOOL_PANEL_WINDOW_CONFIG,
   type DisplayState,
 } from '@finos/legend-data-cube';
-import { LegendDataCubeQueryLoader } from '../../components/query-builder/LegendDataCubeQueryLoader.js';
-import { generateQueryBuilderRoute } from '../../__lib__/LegendDataCubeNavigation.js';
+import { LegendDataCubeLoader } from '../../components/builder/LegendDataCubeLoader.js';
+import { generateBuilderRoute } from '../../__lib__/LegendDataCubeNavigation.js';
 
-export const DATA_CUBE_QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT = 50;
-export const DATA_CUBE_QUERY_LOADER_DEFAULT_QUERY_SEARCH_LIMIT = 10;
+export const DATA_CUBE_LOADER_TYPEAHEAD_SEARCH_LIMIT = 50;
+export const DATA_CUBE_LOADER_DEFAULT_SEARCH_LIMIT = 10;
 
-export enum DataCubeQuerySortByType {
+export enum DataCubeSortByType {
   LAST_CREATED = 'Last Created',
   LAST_VIEWED = 'Last Viewed',
   LAST_UPDATED = 'Last Updated',
 }
 
-export class LegendDataCubeQueryLoaderState {
+export class LegendDataCubeLoaderState {
   private readonly _application: GenericLegendApplicationStore;
-  private readonly _store: LegendDataCubeQueryBuilderStore;
+  private readonly _store: LegendDataCubeBuilderStore;
   private readonly _graphManager: V1_PureGraphManager;
   private readonly _alertService: DataCubeAlertService;
 
@@ -56,33 +56,33 @@ export class LegendDataCubeQueryLoaderState {
   readonly searchState = ActionState.create();
   readonly finalizeState = ActionState.create();
 
-  queries: LightPersistentDataCubeQuery[] = [];
-  selectedQuery?: LightPersistentDataCubeQuery | undefined;
+  searchResults: LightPersistentDataCube[] = [];
+  selectedResult?: LightPersistentDataCube | undefined;
 
   searchText = '';
-  showCurrentUserQueriesOnly = false;
-  showingDefaultQueries = true;
-  sortBy = DataCubeQuerySortByType.LAST_VIEWED;
+  showCurrentUserResultsOnly = false;
+  showingDefaultResults = true;
+  sortBy = DataCubeSortByType.LAST_VIEWED;
 
-  constructor(store: LegendDataCubeQueryBuilderStore) {
+  constructor(store: LegendDataCubeBuilderStore) {
     makeObservable(this, {
-      showingDefaultQueries: observable,
-      setShowingDefaultQueries: action,
+      showingDefaultResults: observable,
+      setShowingDefaultResults: action,
 
       searchText: observable,
       setSearchText: action,
 
-      queries: observable,
-      setQueries: action,
+      searchResults: observable,
+      setSearchResults: action,
 
-      showCurrentUserQueriesOnly: observable,
-      setShowCurrentUserQueriesOnly: action,
+      selectedResult: observable,
+      setSelectedResult: action,
+
+      showCurrentUserResultsOnly: observable,
+      setShowCurrentUserResultsOnly: action,
 
       sortBy: observable,
       setSortBy: action,
-
-      selectedQuery: observable,
-      setSelectedQuery: action,
     });
 
     this._application = store.application;
@@ -91,8 +91,8 @@ export class LegendDataCubeQueryLoaderState {
     this._alertService = store.alertService;
 
     this.display = store.layoutService.newDisplay(
-      'Load Query',
-      () => <LegendDataCubeQueryLoader />,
+      'Load DataCube',
+      () => <LegendDataCubeLoader />,
       {
         ...DEFAULT_TOOL_PANEL_WINDOW_CONFIG,
         width: 500,
@@ -105,85 +105,82 @@ export class LegendDataCubeQueryLoaderState {
     this.searchText = val;
   }
 
-  setQueries(val: LightPersistentDataCubeQuery[]) {
-    this.queries = val;
+  setSearchResults(results: LightPersistentDataCube[]) {
+    this.searchResults = results;
   }
 
-  setShowingDefaultQueries(val: boolean) {
-    this.showingDefaultQueries = val;
+  setSelectedResult(result: LightPersistentDataCube | undefined) {
+    this.selectedResult = result;
   }
 
-  setShowCurrentUserQueriesOnly(val: boolean): void {
-    this.showCurrentUserQueriesOnly = val;
+  setShowingDefaultResults(val: boolean) {
+    this.showingDefaultResults = val;
   }
 
-  setSortBy(val: DataCubeQuerySortByType) {
+  setShowCurrentUserResultsOnly(val: boolean): void {
+    this.showCurrentUserResultsOnly = val;
+  }
+
+  setSortBy(val: DataCubeSortByType) {
     this.sortBy = val;
   }
 
-  private getQuerySearchSortBy(sortByValue: string) {
+  private getSearchSortBy(sortByValue: string) {
     switch (sortByValue) {
-      case DataCubeQuerySortByType.LAST_CREATED:
+      case DataCubeSortByType.LAST_CREATED:
         return QuerySearchSortBy.SORT_BY_CREATE;
-      case DataCubeQuerySortByType.LAST_UPDATED:
+      case DataCubeSortByType.LAST_UPDATED:
         return QuerySearchSortBy.SORT_BY_UPDATE;
-      case DataCubeQuerySortByType.LAST_VIEWED:
+      case DataCubeSortByType.LAST_VIEWED:
         return QuerySearchSortBy.SORT_BY_VIEW;
       default:
         return undefined;
     }
   }
 
-  setSelectedQuery(query: LightPersistentDataCubeQuery | undefined) {
-    this.selectedQuery = query;
-  }
-
   canPerformAdvancedSearch(searchText: string) {
     return !(
       searchText.length < DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH &&
-      !this.showCurrentUserQueriesOnly
+      !this.showCurrentUserResultsOnly
     );
   }
 
-  async searchQueries(searchText: string) {
-    // for the initial search, i.e. no search config is specified, fetch the default queries if possible
+  async searchDataCubes(searchText: string) {
+    // for the initial search, i.e. no search config is specified, fetch the default entries if possible
     if (!this.canPerformAdvancedSearch(searchText)) {
       if (!searchText) {
-        this.setShowingDefaultQueries(true);
+        this.setShowingDefaultResults(true);
         this.searchState.inProgress();
-        this.setQueries([]);
-        let defaultQueries: LightPersistentDataCubeQuery[] = [];
+        this.setSearchResults([]);
+        let defaultResults: LightPersistentDataCube[] = [];
         try {
-          // first, try to fetch recently viewed queries
+          // first, try to fetch recently viewed entries
           try {
-            const recentlyViewedQueryIDs =
-              this._store.getRecentlyViewedQueries();
-            if (recentlyViewedQueryIDs.length) {
-              defaultQueries = await this._graphManager.getDataCubeQueries(
-                recentlyViewedQueryIDs,
+            const recentlyViewedDataCubeIDs =
+              this._store.getRecentlyViewedDataCubes();
+            if (recentlyViewedDataCubeIDs.length) {
+              defaultResults = await this._graphManager.getDataCubes(
+                recentlyViewedDataCubeIDs,
               );
             }
           } catch (error) {
             assertErrorThrown(error);
-            // if there's an error fetching recently viewed queries, most likely because
-            // some queries have been removed, just remove them all from the cached user data
+            // if there's an error fetching recently viewed entries, most likely because
+            // some entries have been removed, just remove them all from the cached user data
             this._application.userDataService.persistValue(
-              LegendDataCubeUserDataKey.RECENTLY_VIEWED_QUERIES,
+              LegendDataCubeUserDataKey.RECENTLY_VIEWED_DATA_CUBES,
               undefined,
             );
           }
-          // if there's no recently viewed queries, just fetch queries of the current user
-          if (!defaultQueries.length) {
+          // if there's no recently viewed entries, just fetch entries of the current user
+          if (!defaultResults.length) {
             const searchSpecification = new QuerySearchSpecification();
-            searchSpecification.limit =
-              DATA_CUBE_QUERY_LOADER_DEFAULT_QUERY_SEARCH_LIMIT;
+            searchSpecification.limit = DATA_CUBE_LOADER_DEFAULT_SEARCH_LIMIT;
             searchSpecification.showCurrentUserQueriesOnly = true;
-            defaultQueries =
-              await this._graphManager.searchDataCubeQueries(
-                searchSpecification,
-              );
+            defaultResults =
+              await this._graphManager.searchDataCubes(searchSpecification);
           }
-          this.setQueries(defaultQueries);
+          this.setSearchResults(defaultResults);
           this.searchState.pass();
         } catch (error) {
           assertErrorThrown(error);
@@ -197,28 +194,27 @@ export class LegendDataCubeQueryLoaderState {
       return;
     }
 
-    this.setShowingDefaultQueries(false);
+    this.setShowingDefaultResults(false);
     this.searchState.inProgress();
 
     try {
       const searchSpecification =
         QuerySearchSpecification.createDefault(searchText);
-      searchSpecification.limit =
-        DATA_CUBE_QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT + 1;
+      searchSpecification.limit = DATA_CUBE_LOADER_TYPEAHEAD_SEARCH_LIMIT + 1;
       searchSpecification.showCurrentUserQueriesOnly =
-        this.showCurrentUserQueriesOnly;
-      const querySearchSortBy = this.getQuerySearchSortBy(this.sortBy);
-      if (querySearchSortBy) {
-        searchSpecification.sortByOption = querySearchSortBy;
+        this.showCurrentUserResultsOnly;
+      const searchSortBy = this.getSearchSortBy(this.sortBy);
+      if (searchSortBy) {
+        searchSpecification.sortByOption = searchSortBy;
       }
-      this.setQueries(
-        await this._graphManager.searchDataCubeQueries(searchSpecification),
+      this.setSearchResults(
+        await this._graphManager.searchDataCubes(searchSpecification),
       );
 
       // if sorting is not configured, sort by name
-      if (!querySearchSortBy) {
-        this.setQueries(
-          this.queries.toSorted((a, b) => a.name.localeCompare(b.name)),
+      if (!searchSortBy) {
+        this.setSearchResults(
+          this.searchResults.toSorted((a, b) => a.name.localeCompare(b.name)),
         );
       }
 
@@ -226,33 +222,33 @@ export class LegendDataCubeQueryLoaderState {
     } catch (error) {
       assertErrorThrown(error);
       this._alertService.alertError(error, {
-        message: `Query Search Failure: ${error.message}`,
+        message: `DataCube Search Failure: ${error.message}`,
       });
       this.searchState.fail();
     }
   }
 
   async finalize() {
-    if (!this.selectedQuery) {
+    if (!this.selectedResult) {
       return;
     }
 
     this.finalizeState.inProgress();
     try {
-      // just simply change the route here and the new query ID will get picked up
-      // and handled by the query builder to load the new query.
+      // just simply change the route here and the new DataCube ID will get picked up
+      // and handled by the builder to load the new DataCube.
       this._application.navigationService.navigator.updateCurrentLocation(
-        generateQueryBuilderRoute(this.selectedQuery.id),
+        generateBuilderRoute(this.selectedResult.id),
       );
 
       // reset
-      this.setSelectedQuery(undefined);
+      this.setSelectedResult(undefined);
       this.display.close();
       this.finalizeState.pass();
     } catch (error) {
       assertErrorThrown(error);
       this._alertService.alertError(error, {
-        message: `Query Load Failure: ${error.message}`,
+        message: `DataCube Load Failure: ${error.message}`,
       });
       this.finalizeState.fail();
     }

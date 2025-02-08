@@ -21,18 +21,18 @@ import {
 } from '@finos/legend-data-cube';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
-import { useLegendDataCubeQueryBuilderStore } from './LegendDataCubeQueryBuilderStoreProvider.js';
+import { useLegendDataCubeBuilderStore } from './LegendDataCubeBuilderStoreProvider.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 
-export const LegendDataCubeQuerySaver = observer(() => {
+export const LegendDataCubeSaver = observer(() => {
   const [name, setName] = useState(DEFAULT_REPORT_NAME);
-  const store = useLegendDataCubeQueryBuilderStore();
+  const store = useLegendDataCubeBuilderStore();
   const builder = guaranteeNonNullable(store.builder);
 
   useEffect(() => {
     setName(
-      builder.persistentQuery?.name ??
-        builder.query.configuration?.name ??
+      builder.persistentDataCube?.name ??
+        builder.specification.configuration?.name ??
         DEFAULT_REPORT_NAME,
     );
   }, [builder]);
@@ -62,15 +62,15 @@ export const LegendDataCubeQuerySaver = observer(() => {
         <FormButton onClick={() => store.saverDisplay.close()}>
           Cancel
         </FormButton>
-        {builder.persistentQuery ? (
-          // updating existing query
+        {builder.persistentDataCube ? (
+          // updating existing DataCube
           <>
             <FormButton
               className="ml-2"
-              disabled={!builder.dataCube || store.saveQueryState.isInProgress}
+              disabled={!builder.dataCube || store.saveState.isInProgress}
               onClick={() => {
                 store
-                  .saveQuery(name, false)
+                  .saveDataCube(name, false)
                   .catch((error) =>
                     store.alertService.alertUnhandledError(error),
                   );
@@ -80,10 +80,10 @@ export const LegendDataCubeQuerySaver = observer(() => {
             </FormButton>
             <FormButton
               className="ml-2"
-              disabled={!builder.dataCube || store.saveQueryState.isInProgress}
+              disabled={!builder.dataCube || store.saveState.isInProgress}
               onClick={() => {
                 store
-                  .saveQuery(name, true)
+                  .saveDataCube(name, true)
                   .catch((error) =>
                     store.alertService.alertUnhandledError(error),
                   );
@@ -93,14 +93,14 @@ export const LegendDataCubeQuerySaver = observer(() => {
             </FormButton>
           </>
         ) : (
-          // creating new query
+          // creating new DataCube
           <>
             <FormButton
               className="ml-2"
-              disabled={!builder.dataCube || store.saveQueryState.isInProgress}
+              disabled={!builder.dataCube || store.saveState.isInProgress}
               onClick={() => {
                 store
-                  .createQuery(name)
+                  .createNewDataCube(name)
                   .catch((error) =>
                     store.alertService.alertUnhandledError(error),
                   );

@@ -17,20 +17,20 @@
 import { generatePath } from '@finos/legend-application/browser';
 
 export enum LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN {
-  QUERY_ID = 'queryId',
+  DATA_CUBE_ID = 'dataCubeId',
   SOURCE_DATA = 'sourceData',
 }
 
 export const LEGEND_DATA_CUBE_ROUTE_PATTERN = Object.freeze({
-  QUERY_BUILDER: `/:${LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN.QUERY_ID}?`,
+  BUILDER: `/:${LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN.DATA_CUBE_ID}?`,
 });
 
-export type LegendDataCubeQueryBuilderPathParams = {
-  [LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN.QUERY_ID]: string;
+export type LegendDataCubeBuilderPathParams = {
+  [LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN.DATA_CUBE_ID]: string;
 };
 
-export const generateQueryBuilderRoute = (queryId: string | null): string => {
-  return generatePath(LEGEND_DATA_CUBE_ROUTE_PATTERN.QUERY_BUILDER, {
-    [LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN.QUERY_ID]: queryId,
+export const generateBuilderRoute = (dataCubeId: string | null): string => {
+  return generatePath(LEGEND_DATA_CUBE_ROUTE_PATTERN.BUILDER, {
+    [LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN.DATA_CUBE_ID]: dataCubeId,
   });
 };

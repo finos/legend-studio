@@ -72,7 +72,10 @@ export const QueryDataCubeViewer = observer(
                 options?.fullScreen,
             })}
           >
-            <DataCube query={state.query} engine={state.engine} />
+            <DataCube
+              specification={state.specification}
+              engine={state.engine}
+            />
           </div>
           {!options?.fullScreen && (
             <ModalFooter>

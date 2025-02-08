@@ -46,7 +46,7 @@ import {
 import { deserialize } from 'serializr';
 
 export class TEST__DataCubeEngine extends DataCubeEngine {
-  override async processQuerySource(
+  override async processSource(
     sourceData: PlainObject,
   ): Promise<DataCubeSource> {
     throw new Error('Method not implemented.');

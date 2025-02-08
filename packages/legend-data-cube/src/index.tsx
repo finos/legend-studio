@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export * from './stores/core/model/DataCubeQuery.js';
+export * from './stores/core/model/DataCubeSpecification.js';
 export * from './stores/core/model/DataCubeSource.js';
 export { type DataCubeColumn } from './stores/core/model/DataCubeColumn.js';
 export * from './stores/core/model/DataCubeConfiguration.js';

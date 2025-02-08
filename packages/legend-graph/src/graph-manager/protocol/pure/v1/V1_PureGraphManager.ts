@@ -343,9 +343,9 @@ import type { CodeCompletionResult } from '../../../action/compilation/Completio
 import { V1_CompleteCodeInput } from './engine/compilation/V1_CompleteCodeInput.js';
 import type { DeploymentResult } from '../../../action/DeploymentResult.js';
 import type {
-  LightPersistentDataCubeQuery,
-  PersistentDataCubeQuery,
-} from '../../../action/query/PersistentDataCubeQuery.js';
+  LightPersistentDataCube,
+  PersistentDataCube,
+} from '../../../action/query/PersistentDataCube.js';
 import { V1_QueryParameterValue } from './engine/query/V1_Query.js';
 
 class V1_PureModelContextDataIndex {
@@ -3266,43 +3266,39 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     }
   }
 
-  // --------------------------------------------- DataCube Query ---------------------------------------------
+  // --------------------------------------------- DataCube ---------------------------------------------
 
-  override searchDataCubeQueries(
+  override searchDataCubes(
     searchSpecification: QuerySearchSpecification,
-  ): Promise<LightPersistentDataCubeQuery[]> {
-    return this.engine.searchDataCubeQueries(
+  ): Promise<LightPersistentDataCube[]> {
+    return this.engine.searchDataCubes(
       V1_transformQuerySearchSpecification(searchSpecification),
     );
   }
 
-  override getDataCubeQueries(
-    queryIds: string[],
-  ): Promise<LightPersistentDataCubeQuery[]> {
-    return this.engine.getDataCubeQueries(queryIds);
+  override getDataCubes(ids: string[]): Promise<LightPersistentDataCube[]> {
+    return this.engine.getDataCubes(ids);
   }
 
-  override async getDataCubeQuery(
-    queryId: string,
-  ): Promise<PersistentDataCubeQuery> {
-    const query = await this.engine.getDataCubeQuery(queryId);
+  override async getDataCube(id: string): Promise<PersistentDataCube> {
+    const query = await this.engine.getDataCube(id);
     return query;
   }
 
-  override async createDataCubeQuery(
-    query: PersistentDataCubeQuery,
-  ): Promise<PersistentDataCubeQuery> {
-    return this.engine.createDataCubeQuery(query);
+  override async createDataCube(
+    dataCube: PersistentDataCube,
+  ): Promise<PersistentDataCube> {
+    return this.engine.createDataCube(dataCube);
   }
 
-  override updateDataCubeQuery(
-    query: PersistentDataCubeQuery,
-  ): Promise<PersistentDataCubeQuery> {
-    return this.engine.updateDataCubeQuery(query);
+  override updateDataCube(
+    dataCube: PersistentDataCube,
+  ): Promise<PersistentDataCube> {
+    return this.engine.updateDataCube(dataCube);
   }
 
-  override async deleteDataCubeQuery(queryId: string): Promise<void> {
-    await this.engine.deleteDataCubeQuery(queryId);
+  override async deleteDataCube(id: string): Promise<void> {
+    await this.engine.deleteDataCube(id);
   }
 
   // --------------------------------------------- Analysis ---------------------------------------------

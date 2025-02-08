@@ -36,7 +36,7 @@ import {
   guaranteeType,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { type DataCubeQuery } from '@finos/legend-data-cube';
+import { type DataCubeSpecification } from '@finos/legend-data-cube';
 
 export const isElementSupportedByDataCube = (
   element: PackageableElement,
@@ -48,7 +48,7 @@ export const openDataCube = async (
   editorStore: EditorStore,
 ): Promise<void> => {
   try {
-    let query: DataCubeQuery;
+    let specification: DataCubeSpecification;
     let engine: QueryBuilderDataCubeEngine;
 
     if (element instanceof ConcreteFunctionDefinition) {
@@ -61,7 +61,7 @@ export const openDataCube = async (
         undefined,
         editorStore.graphManagerState,
       );
-      query = await engine.generateInitialQuery();
+      specification = await engine.generateInitialSpecification();
     } else if (element instanceof Service) {
       const exec = guaranteeType(
         element.execution,
@@ -99,7 +99,7 @@ export const openDataCube = async (
         runtime?.packageableRuntime.value.path,
         editorStore.graphManagerState,
       );
-      query = await engine.generateInitialQuery();
+      specification = await engine.generateInitialSpecification();
     } else {
       throw new UnsupportedOperationError(
         'Element not supported to open Data Cube with',
@@ -116,7 +116,7 @@ export const openDataCube = async (
     }
 
     editorStore.setEmbeddedDataCubeViewerState(
-      new QueryBuilderDataCubeViewerState(query, engine),
+      new QueryBuilderDataCubeViewerState(specification, engine),
     );
   } catch (error) {
     assertErrorThrown(error);

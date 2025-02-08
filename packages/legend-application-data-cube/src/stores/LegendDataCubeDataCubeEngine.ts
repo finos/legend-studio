@@ -149,9 +149,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
 
   // ---------------------------------- IMPLEMENTATION ----------------------------------
 
-  override async processQuerySource(
-    value: PlainObject,
-  ): Promise<DataCubeSource> {
+  override async processSource(value: PlainObject): Promise<DataCubeSource> {
     switch (value._type) {
       case ADHOC_QUERY_DATA_CUBE_SOURCE_TYPE: {
         const rawSource =

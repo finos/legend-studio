@@ -30,29 +30,29 @@ import {
   FormDropdownMenuTrigger,
   FormTextInput,
 } from '@finos/legend-data-cube';
-import { useLegendDataCubeQueryBuilderStore } from './LegendDataCubeQueryBuilderStoreProvider.js';
+import { useLegendDataCubeBuilderStore } from './LegendDataCubeBuilderStoreProvider.js';
 import {
-  DATA_CUBE_QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT,
-  DataCubeQuerySortByType,
-} from '../../stores/query-builder/LegendDataCubeQueryLoaderState.js';
+  DATA_CUBE_LOADER_TYPEAHEAD_SEARCH_LIMIT,
+  DataCubeSortByType,
+} from '../../stores/builder/LegendDataCubeLoaderState.js';
 
-const LegendDataCubeQuerySearcher = observer(() => {
-  const store = useLegendDataCubeQueryBuilderStore();
+const LegendDataCubeSearcher = observer(() => {
+  const store = useLegendDataCubeBuilderStore();
   const state = store.loader;
 
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const searchResults = state.queries;
+  const searchResults = state.searchResults;
 
   useEffect(() => {
     searchInputRef.current?.focus();
   }, [state]);
 
   // search text
-  const debouncedLoadQueries = useMemo(
+  const debouncedLoader = useMemo(
     () =>
       debounce((input: string) => {
         state
-          .searchQueries(input)
+          .searchDataCubes(input)
           .catch((error) => store.alertService.alertUnhandledError(error));
       }, 500),
     [store, state],
@@ -62,21 +62,21 @@ const LegendDataCubeQuerySearcher = observer(() => {
   ) => {
     if (event.target.value !== state.searchText) {
       state.setSearchText(event.target.value);
-      debouncedLoadQueries.cancel();
-      debouncedLoadQueries(event.target.value);
+      debouncedLoader.cancel();
+      debouncedLoader(event.target.value);
     }
   };
   const clearSearches = () => {
     state.setSearchText('');
-    debouncedLoadQueries.cancel();
-    debouncedLoadQueries('');
+    debouncedLoader.cancel();
+    debouncedLoader('');
   };
 
   // filter and sort
-  const toggleShowCurrentUserQueriesOnly = () => {
-    state.setShowCurrentUserQueriesOnly(!state.showCurrentUserQueriesOnly);
-    debouncedLoadQueries.cancel();
-    debouncedLoadQueries(state.searchText);
+  const toggleShowCurrentUserResultsOnly = () => {
+    state.setShowCurrentUserResultsOnly(!state.showCurrentUserResultsOnly);
+    debouncedLoader.cancel();
+    debouncedLoader(state.searchText);
   };
 
   const [
@@ -85,15 +85,15 @@ const LegendDataCubeQuerySearcher = observer(() => {
     sortDropdownProps,
     sortDropdownPropsOpen,
   ] = useDropdownMenu();
-  const applySort = (value: DataCubeQuerySortByType) => {
+  const applySort = (value: DataCubeSortByType) => {
     state.setSortBy(value);
-    debouncedLoadQueries.cancel();
-    debouncedLoadQueries(state.searchText);
+    debouncedLoader.cancel();
+    debouncedLoader(state.searchText);
   };
 
   useEffect(() => {
     state
-      .searchQueries('')
+      .searchDataCubes('')
       .catch((error) => store.alertService.alertUnhandledError(error));
   }, [store, state]);
 
@@ -108,7 +108,7 @@ const LegendDataCubeQuerySearcher = observer(() => {
             })}
             onChange={onSearchTextChange}
             value={state.searchText}
-            placeholder="Search for queries by name or ID"
+            placeholder="Search for DataCubes by name or ID"
           />
           <div className="absolute flex aspect-square h-full items-center justify-center">
             <DataCubeIcon.Search className="text-lg text-neutral-600" />
@@ -132,8 +132,8 @@ const LegendDataCubeQuerySearcher = observer(() => {
             <div className="flex h-6 w-[calc(100%_-_40px)] overflow-x-auto">
               <FormCheckbox
                 label="Mine Only"
-                checked={state.showCurrentUserQueriesOnly}
-                onChange={toggleShowCurrentUserQueriesOnly}
+                checked={state.showCurrentUserResultsOnly}
+                onChange={toggleShowCurrentUserResultsOnly}
               />
             </div>
           </div>
@@ -148,7 +148,7 @@ const LegendDataCubeQuerySearcher = observer(() => {
               Sort by: {state.sortBy}
             </FormDropdownMenuTrigger>
             <FormDropdownMenu className="w-32" {...sortDropdownProps}>
-              {Object.values(DataCubeQuerySortByType).map((option) => (
+              {Object.values(DataCubeSortByType).map((option) => (
                 <FormDropdownMenuItem
                   key={option}
                   onClick={() => {
@@ -170,15 +170,15 @@ const LegendDataCubeQuerySearcher = observer(() => {
           {state.searchState.hasCompleted && (
             <>
               <div className="mb-1 flex h-5 w-full items-center px-1.5 text-sm text-neutral-600">
-                {state.showingDefaultQueries ? (
+                {state.showingDefaultResults ? (
                   `Refine your search to get better matches`
                 ) : searchResults.length >=
-                  DATA_CUBE_QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT ? (
+                  DATA_CUBE_LOADER_TYPEAHEAD_SEARCH_LIMIT ? (
                   <>
-                    {`Found ${DATA_CUBE_QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT}+ matches`}{' '}
+                    {`Found ${DATA_CUBE_LOADER_TYPEAHEAD_SEARCH_LIMIT}+ matches`}{' '}
                     <DataCubeIcon.AlertInfo
                       className="ml-1 text-lg"
-                      title="Some queries are not listed, refine your search to get better matches"
+                      title="Some DataCubes are not listed, refine your search to get better matches"
                     />
                   </>
                 ) : (
@@ -186,25 +186,25 @@ const LegendDataCubeQuerySearcher = observer(() => {
                 )}
               </div>
               {searchResults
-                .slice(0, DATA_CUBE_QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT)
-                .map((query, idx) => (
+                .slice(0, DATA_CUBE_LOADER_TYPEAHEAD_SEARCH_LIMIT)
+                .map((result, idx) => (
                   <div
                     className="mx-1.5 mb-0.5 flex h-[42px] w-[calc(100%_-_12px)] cursor-pointer border border-neutral-200 bg-neutral-100 hover:bg-neutral-200"
-                    key={query.id}
-                    title="Click to choose query"
-                    onClick={() => state.setSelectedQuery(query)}
+                    key={result.id}
+                    title="Click to choose DataCube"
+                    onClick={() => state.setSelectedResult(result)}
                   >
                     <div className="w-[calc(100%_-_16px)]">
                       <div className="h-6 w-4/5 overflow-hidden text-ellipsis whitespace-nowrap px-1.5 leading-6">
-                        {query.name}
+                        {result.name}
                       </div>
                       <div className="flex h-[18px] items-start justify-between px-1.5">
                         <div className="flex">
                           <DataCubeIcon.ClockEdit className="text-sm text-neutral-500" />
                           <div className="ml-1 text-sm text-neutral-500">
-                            {query.lastUpdatedAt
+                            {result.lastUpdatedAt
                               ? formatDistanceToNow(
-                                  new Date(query.lastUpdatedAt),
+                                  new Date(result.lastUpdatedAt),
                                   {
                                     includeSeconds: true,
                                     addSuffix: true,
@@ -216,7 +216,7 @@ const LegendDataCubeQuerySearcher = observer(() => {
                         <div className="flex">
                           <DataCubeIcon.User className="text-sm text-neutral-500" />
                           <div className="ml-1 text-sm text-neutral-500">
-                            {query.owner}
+                            {result.owner}
                           </div>
                         </div>
                       </div>
@@ -240,40 +240,43 @@ const LegendDataCubeQuerySearcher = observer(() => {
   );
 });
 
-export const LegendDataCubeQueryLoader = observer(() => {
-  const store = useLegendDataCubeQueryBuilderStore();
+export const LegendDataCubeLoader = observer(() => {
+  const store = useLegendDataCubeBuilderStore();
   const state = store.loader;
-  const query = state.selectedQuery;
+  const selectedResult = state.selectedResult;
 
   return (
     <>
       <div className="h-[calc(100%_-_40px)] w-full px-2 pt-2">
         <div className="h-full w-full overflow-auto border border-neutral-300 bg-white">
-          {!query ? (
-            <LegendDataCubeQuerySearcher />
+          {!selectedResult ? (
+            <LegendDataCubeSearcher />
           ) : (
             <div className="h-full w-full p-1.5">
               <div className="mb-0.5 flex h-[42px] w-full border border-neutral-200 bg-neutral-100">
                 <div className="w-full">
                   <div className="h-6 w-4/5 overflow-hidden text-ellipsis whitespace-nowrap px-1.5 leading-6">
-                    {query.name}
+                    {selectedResult.name}
                   </div>
                   <div className="flex h-[18px] items-start justify-between px-1.5">
                     <div className="flex">
                       <DataCubeIcon.ClockEdit className="text-sm text-neutral-500" />
                       <div className="ml-1 text-sm text-neutral-500">
-                        {query.lastUpdatedAt
-                          ? formatDistanceToNow(new Date(query.lastUpdatedAt), {
-                              includeSeconds: true,
-                              addSuffix: true,
-                            })
+                        {selectedResult.lastUpdatedAt
+                          ? formatDistanceToNow(
+                              new Date(selectedResult.lastUpdatedAt),
+                              {
+                                includeSeconds: true,
+                                addSuffix: true,
+                              },
+                            )
                           : '(unknown)'}
                       </div>
                     </div>
                     <div className="flex">
                       <DataCubeIcon.User className="text-sm text-neutral-500" />
                       <div className="ml-1 text-sm text-neutral-500">
-                        {query.owner}
+                        {selectedResult.owner}
                       </div>
                     </div>
                   </div>
@@ -282,9 +285,9 @@ export const LegendDataCubeQueryLoader = observer(() => {
 
               <FormButton
                 className="mt-1.5"
-                onClick={() => state.setSelectedQuery(undefined)}
+                onClick={() => state.setSelectedResult(undefined)}
               >
-                Select Another Query
+                Select Another DataCube
               </FormButton>
             </div>
           )}
@@ -294,7 +297,7 @@ export const LegendDataCubeQueryLoader = observer(() => {
         <FormButton onClick={() => state.display.close()}>Cancel</FormButton>
         <FormButton
           className="ml-2"
-          disabled={!query || state.finalizeState.isInProgress}
+          disabled={!selectedResult || state.finalizeState.isInProgress}
           onClick={() => {
             state
               .finalize()

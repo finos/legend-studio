@@ -29,7 +29,7 @@ import { DataCubeExtendManagerState } from './extend/DataCubeExtendManagerState.
 import type { DataCubeState } from '../DataCubeState.js';
 import { type DataCubeEngine } from '../core/DataCubeEngine.js';
 import type { DataCubeSource } from '../core/model/DataCubeSource.js';
-import { DataCubeQuery } from '../core/model/DataCubeQuery.js';
+import { DataCubeSpecification } from '../core/model/DataCubeSpecification.js';
 import { DataCubeTaskService } from '../services/DataCubeTaskService.js';
 import type { DataCubeLogService } from '../services/DataCubeLogService.js';
 import { DataCubeConfiguration } from '../core/model/DataCubeConfiguration.js';
@@ -87,10 +87,10 @@ export class DataCubeViewState {
     return this._originalSource;
   }
 
-  async generateDataCubeQuery() {
+  async generateSpecification() {
     const snapshot = this.snapshotService.currentSnapshot;
-    const query = new DataCubeQuery();
-    query.source = this.dataCube.query.source;
+    const query = new DataCubeSpecification();
+    query.source = this.dataCube.specification.source;
     query.configuration = DataCubeConfiguration.serialization.fromJson(
       snapshot.data.configuration,
     );
@@ -159,7 +159,7 @@ export class DataCubeViewState {
     }
   }
 
-  async initialize(query: DataCubeQuery) {
+  async initialize(specification: DataCubeSpecification) {
     this.initializeState.inProgress();
     const task = this.taskService.newTask('Initializing...');
 
@@ -176,16 +176,16 @@ export class DataCubeViewState {
           this.snapshotService.registerSubscriber(state);
         }),
       );
-      const source = await this.engine.processQuerySource(query.source);
+      const source = await this.engine.processSource(specification.source);
       this._source = source;
       this._originalSource = source;
       const partialQuery = await this.engine.parseValueSpecification(
-        query.query,
+        specification.query,
       );
       const initialSnapshot = await validateAndBuildQuerySnapshot(
         partialQuery,
         source,
-        query,
+        specification,
         this.engine,
       );
       this.snapshotService.broadcastSnapshot(initialSnapshot);

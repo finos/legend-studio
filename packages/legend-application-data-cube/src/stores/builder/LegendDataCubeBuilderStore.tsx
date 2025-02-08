@@ -24,13 +24,13 @@ import {
   type DataCubeAPI,
   type DataCubeLayoutService,
   type DataCubeTaskService,
-  DataCubeQuery,
+  DataCubeSpecification,
   DEFAULT_ALERT_WINDOW_CONFIG,
   type DisplayState,
 } from '@finos/legend-data-cube';
-import { LegendDataCubeNewQueryState } from './LegendDataCubeNewQueryState.js';
+import { LegendDataCubeCreatorState } from './LegendDataCubeCreatorState.js';
 import {
-  PersistentDataCubeQuery,
+  PersistentDataCube,
   type V1_EngineServerClient,
   type V1_PureGraphManager,
 } from '@finos/legend-graph';
@@ -42,39 +42,38 @@ import {
   uuid,
 } from '@finos/legend-shared';
 import type { LegendDataCubeDataCubeEngine } from '../LegendDataCubeDataCubeEngine.js';
-import { LegendDataCubeQuerySaver } from '../../components/query-builder/LegendDataCubeQuerySaver.js';
+import { LegendDataCubeSaver } from '../../components/builder/LegendDataCubeSaver.js';
 import {
-  generateQueryBuilderRoute,
+  generateBuilderRoute,
   LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN,
 } from '../../__lib__/LegendDataCubeNavigation.js';
-import { LegendDataCubeQueryLoaderState } from './LegendDataCubeQueryLoaderState.js';
+import { LegendDataCubeLoaderState } from './LegendDataCubeLoaderState.js';
 import {
   LegendDataCubeUserDataKey,
-  RECENTLY_VIEWED_QUERIES_LIMIT,
+  RECENTLY_VIEWED_DATA_CUBES_LIMIT,
 } from '../../__lib__/LegendDataCubeUserData.js';
 import type { DepotServerClient } from '@finos/legend-server-depot';
 
-export class LegendDataCubeQueryBuilderState {
-  uuid = uuid();
-  startTime = Date.now();
-  query!: DataCubeQuery;
-  persistentQuery?: PersistentDataCubeQuery | undefined;
+export class LegendDataCubeBuilderState {
+  readonly uuid = uuid();
+  readonly startTime = Date.now();
+
+  readonly specification!: DataCubeSpecification;
+  readonly persistentDataCube?: PersistentDataCube | undefined;
+
   dataCube?: DataCubeAPI | undefined;
 
   constructor(
-    query: DataCubeQuery,
-    persistentQuery?: PersistentDataCubeQuery | undefined,
+    specification: DataCubeSpecification,
+    persistentDataCube?: PersistentDataCube | undefined,
   ) {
     makeObservable(this, {
       dataCube: observable,
       setDataCube: action,
-
-      query: observable,
-      persistentQuery: observable,
     });
 
-    this.query = query;
-    this.persistentQuery = persistentQuery;
+    this.specification = specification;
+    this.persistentDataCube = persistentDataCube;
   }
 
   setDataCube(val: DataCubeAPI | undefined) {
@@ -82,7 +81,7 @@ export class LegendDataCubeQueryBuilderState {
   }
 }
 
-export class LegendDataCubeQueryBuilderStore {
+export class LegendDataCubeBuilderStore {
   readonly application: LegendDataCubeApplicationStore;
   readonly baseStore: LegendDataCubeBaseStore;
   readonly engine: LegendDataCubeDataCubeEngine;
@@ -93,14 +92,14 @@ export class LegendDataCubeQueryBuilderStore {
   readonly layoutService: DataCubeLayoutService;
   readonly alertService: DataCubeAlertService;
 
-  readonly newQueryState: LegendDataCubeNewQueryState;
+  readonly creator: LegendDataCubeCreatorState;
 
-  readonly saveQueryState = ActionState.create();
+  readonly saveState = ActionState.create();
   readonly saverDisplay: DisplayState;
 
-  readonly loadQueryState = ActionState.create();
-  loader: LegendDataCubeQueryLoaderState;
-  builder?: LegendDataCubeQueryBuilderState | undefined;
+  readonly loadState = ActionState.create();
+  loader: LegendDataCubeLoaderState;
+  builder?: LegendDataCubeBuilderState | undefined;
 
   constructor(baseStore: LegendDataCubeBaseStore) {
     makeObservable(this, {
@@ -118,11 +117,11 @@ export class LegendDataCubeQueryBuilderStore {
     this.alertService = baseStore.alertService;
     this.layoutService = baseStore.layoutService;
 
-    this.newQueryState = new LegendDataCubeNewQueryState(this);
-    this.loader = new LegendDataCubeQueryLoaderState(this);
+    this.creator = new LegendDataCubeCreatorState(this);
+    this.loader = new LegendDataCubeLoaderState(this);
     this.saverDisplay = this.layoutService.newDisplay(
-      'Save Query',
-      () => <LegendDataCubeQuerySaver />,
+      'Save DataCube',
+      () => <LegendDataCubeSaver />,
       {
         ...DEFAULT_ALERT_WINDOW_CONFIG,
         height: 140,
@@ -130,129 +129,134 @@ export class LegendDataCubeQueryBuilderStore {
     );
   }
 
-  setBuilder(val: LegendDataCubeQueryBuilderState | undefined) {
+  setBuilder(val: LegendDataCubeBuilderState | undefined) {
     this.builder = val;
   }
 
-  private updateWindowTitle(persistentQuery: PersistentDataCubeQuery) {
+  private updateWindowTitle(persistentDataCube: PersistentDataCube) {
     this.application.layoutService.setWindowTitle(
-      `\u229E ${persistentQuery.name}${this.builder ? ` - ${formatDate(new Date(this.builder.startTime), 'HH:mm:ss EEE MMM dd yyyy')}` : ''}`,
+      `\u229E ${persistentDataCube.name}${this.builder ? ` - ${formatDate(new Date(this.builder.startTime), 'HH:mm:ss EEE MMM dd yyyy')}` : ''}`,
     );
   }
 
-  getRecentlyViewedQueries() {
+  getRecentlyViewedDataCubes() {
     const data = this.application.userDataService.getObjectValue(
-      LegendDataCubeUserDataKey.RECENTLY_VIEWED_QUERIES,
+      LegendDataCubeUserDataKey.RECENTLY_VIEWED_DATA_CUBES,
     );
     return data && Array.isArray(data) && data.every((id) => isString(id))
       ? data
       : [];
   }
 
-  async loadQuery(queryId: string | undefined) {
+  async loadDataCube(dataCubeId: string | undefined) {
     // internalize the parameters and clean them from the URL
     const sourceData =
       this.application.navigationService.navigator.getCurrentLocationParameterValue(
         LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN.SOURCE_DATA,
       );
-    if (sourceData && !queryId) {
+    if (sourceData && !dataCubeId) {
       this.application.navigationService.navigator.updateCurrentLocation(
-        generateQueryBuilderRoute(null),
+        generateBuilderRoute(null),
       );
-      // populate the new query state if source data is specified
+      // populate the creator if source data is specified
       try {
-        await this.newQueryState.finalize(JSON.parse(atob(sourceData)));
+        await this.creator.finalize(JSON.parse(atob(sourceData)));
       } catch (error) {
         assertErrorThrown(error);
         this.alertService.alertError(error, {
-          message: `Query Creation Failure: Can't materialize query source from source data. Error: ${error.message}`,
+          message: `DataCube Creation Failure: Can't materialize source from source data. Error: ${error.message}`,
         });
         this.setBuilder(undefined);
       }
     }
 
-    if (queryId !== this.builder?.persistentQuery?.id) {
-      if (!queryId) {
+    if (dataCubeId !== this.builder?.persistentDataCube?.id) {
+      if (!dataCubeId) {
         this.setBuilder(undefined);
         this.loader.display.open();
         return;
       }
 
-      this.loadQueryState.inProgress();
+      this.loadState.inProgress();
 
       try {
-        const persistentQuery =
-          await this.baseStore.graphManager.getDataCubeQuery(queryId);
-        const query = DataCubeQuery.serialization.fromJson(
-          persistentQuery.content,
+        const persistentDataCube =
+          await this.baseStore.graphManager.getDataCube(dataCubeId);
+        const specification = DataCubeSpecification.serialization.fromJson(
+          persistentDataCube.content,
         );
         this.setBuilder(
-          new LegendDataCubeQueryBuilderState(query, persistentQuery),
+          new LegendDataCubeBuilderState(specification, persistentDataCube),
         );
-        this.updateWindowTitle(persistentQuery);
+        this.updateWindowTitle(persistentDataCube);
 
-        // update the list of stack of recently viewed queries
-        const recentlyViewedQueries = this.getRecentlyViewedQueries();
-        const idx = recentlyViewedQueries.findIndex((data) => data === queryId);
+        // update the list of stack of recently viewed DataCubes
+        const recentlyViewedDataCubes = this.getRecentlyViewedDataCubes();
+        const idx = recentlyViewedDataCubes.findIndex(
+          (data) => data === dataCubeId,
+        );
         if (idx === -1) {
-          if (recentlyViewedQueries.length >= RECENTLY_VIEWED_QUERIES_LIMIT) {
-            recentlyViewedQueries.pop();
+          if (
+            recentlyViewedDataCubes.length >= RECENTLY_VIEWED_DATA_CUBES_LIMIT
+          ) {
+            recentlyViewedDataCubes.pop();
           }
-          recentlyViewedQueries.unshift(queryId);
+          recentlyViewedDataCubes.unshift(dataCubeId);
         } else {
-          recentlyViewedQueries.splice(idx, 1);
-          recentlyViewedQueries.unshift(queryId);
+          recentlyViewedDataCubes.splice(idx, 1);
+          recentlyViewedDataCubes.unshift(dataCubeId);
         }
         this.application.userDataService.persistValue(
-          LegendDataCubeUserDataKey.RECENTLY_VIEWED_QUERIES,
-          recentlyViewedQueries,
+          LegendDataCubeUserDataKey.RECENTLY_VIEWED_DATA_CUBES,
+          recentlyViewedDataCubes,
         );
 
-        this.loadQueryState.pass();
+        this.loadState.pass();
       } catch (error) {
         assertErrorThrown(error);
         this.alertService.alertError(error, {
-          message: `Query Load Failure: ${error.message}`,
+          message: `DataCube Load Failure: ${error.message}`,
         });
-        this.loadQueryState.fail();
+        this.loadState.fail();
       }
     }
   }
 
-  private async generatePersistentQuery(
+  private async generatePersistentDataCube(
     api: DataCubeAPI,
     name: string,
-    existingPersistentQuery?: PersistentDataCubeQuery | undefined,
+    existingPersistentDataCube?: PersistentDataCube | undefined,
   ) {
-    const query = await api.generateDataCubeQuery();
-    let persistentQuery: PersistentDataCubeQuery;
-    if (existingPersistentQuery) {
-      persistentQuery = existingPersistentQuery.clone();
+    const specification = await api.generateSpecification();
+    let persistentDataCube: PersistentDataCube;
+    if (existingPersistentDataCube) {
+      persistentDataCube = existingPersistentDataCube.clone();
     } else {
-      persistentQuery = new PersistentDataCubeQuery();
-      persistentQuery.id = uuid();
+      persistentDataCube = new PersistentDataCube();
+      persistentDataCube.id = uuid();
     }
-    persistentQuery.name = name;
-    persistentQuery.content = DataCubeQuery.serialization.toJson(query);
-    return persistentQuery;
+    persistentDataCube.name = name;
+    persistentDataCube.content =
+      DataCubeSpecification.serialization.toJson(specification);
+    return persistentDataCube;
   }
 
-  async createQuery(name: string) {
-    if (!this.builder?.dataCube || this.saveQueryState.isInProgress) {
+  async createNewDataCube(name: string) {
+    if (!this.builder?.dataCube || this.saveState.isInProgress) {
       return;
     }
 
-    this.saveQueryState.inProgress();
+    this.saveState.inProgress();
     try {
-      const persistentQuery = await this.generatePersistentQuery(
+      const persistentDataCube = await this.generatePersistentDataCube(
         this.builder.dataCube,
         name,
       );
 
-      const newQuery =
-        await this.baseStore.graphManager.createDataCubeQuery(persistentQuery);
+      const newPersistentDataCube =
+        await this.baseStore.graphManager.createDataCube(persistentDataCube);
       // NOTE: reload is the cleanest, least bug-prone handling here
-      // but we can opt for just updating the URL to reflect the new query
+      // but we can opt for just updating the URL to reflect the new DataCube
       // as an optimization. Also, it helps preserve the edition history
       // on the existing data-cube.
       //
@@ -260,42 +264,40 @@ export class LegendDataCubeQueryBuilderStore {
       // the <DataCube/> component using the key prop that ties to an ID
       // of the builder.
       this.application.navigationService.navigator.updateCurrentLocation(
-        generateQueryBuilderRoute(newQuery.id),
+        generateBuilderRoute(newPersistentDataCube.id),
       );
-      this.updateWindowTitle(persistentQuery);
+      this.updateWindowTitle(persistentDataCube);
 
       this.saverDisplay.close();
-      this.saveQueryState.pass();
+      this.saveState.pass();
     } catch (error) {
       assertErrorThrown(error);
       this.alertService.alertError(error, {
-        message: `Query Creation Failure: ${error.message}`,
+        message: `DataCube Creation Failure: ${error.message}`,
       });
-      this.saveQueryState.fail();
+      this.saveState.fail();
     }
   }
 
-  async saveQuery(name: string, saveAsNewQuery: boolean) {
-    if (!this.builder?.dataCube || this.saveQueryState.isInProgress) {
+  async saveDataCube(name: string, saveAsNew: boolean) {
+    if (!this.builder?.dataCube || this.saveState.isInProgress) {
       return;
     }
 
-    this.saveQueryState.inProgress();
+    this.saveState.inProgress();
     try {
-      const persistentQuery = await this.generatePersistentQuery(
+      const persistentDataCube = await this.generatePersistentDataCube(
         this.builder.dataCube,
         name,
-        this.builder.persistentQuery,
+        this.builder.persistentDataCube,
       );
 
-      if (saveAsNewQuery) {
-        persistentQuery.id = uuid();
-        const newQuery =
-          await this.baseStore.graphManager.createDataCubeQuery(
-            persistentQuery,
-          );
+      if (saveAsNew) {
+        persistentDataCube.id = uuid();
+        const newPersistentDataCube =
+          await this.baseStore.graphManager.createDataCube(persistentDataCube);
         // NOTE: reload is the cleanest, least bug-prone handling here
-        // but we can opt for just updating the URL to reflect the new query
+        // but we can opt for just updating the URL to reflect the new DataCube
         // as an optimization. Also, it helps preserve the edition history
         // on the existing data-cube.
         //
@@ -303,21 +305,21 @@ export class LegendDataCubeQueryBuilderStore {
         // the <DataCube/> component using the key prop that ties to an ID
         // of the builder.
         this.application.navigationService.navigator.updateCurrentLocation(
-          generateQueryBuilderRoute(newQuery.id),
+          generateBuilderRoute(newPersistentDataCube.id),
         );
       } else {
-        await this.baseStore.graphManager.updateDataCubeQuery(persistentQuery);
+        await this.baseStore.graphManager.updateDataCube(persistentDataCube);
       }
-      this.updateWindowTitle(persistentQuery);
+      this.updateWindowTitle(persistentDataCube);
 
       this.saverDisplay.close();
-      this.saveQueryState.pass();
+      this.saveState.pass();
     } catch (error) {
       assertErrorThrown(error);
       this.alertService.alertError(error, {
-        message: `Query Update Failure: ${error.message}`,
+        message: `DataCube Update Failure: ${error.message}`,
       });
-      this.saveQueryState.fail();
+      this.saveState.fail();
     }
   }
 }

@@ -23,7 +23,7 @@ import {
   guaranteeNonNullable,
   isString,
 } from '@finos/legend-shared';
-import { DataCubeQuery } from '../model/DataCubeQuery.js';
+import { DataCubeSpecification } from '../model/DataCubeSpecification.js';
 import { INTERNAL__DataCubeSource } from '../model/DataCubeSource.js';
 import {
   DataCubeColumnConfiguration,
@@ -1949,7 +1949,7 @@ describe(integrationTest('Roundtrip query processing'), () => {
     ) => {
       const engine = new TEST__DataCubeEngine();
       const query = await engine.parseValueSpecification(code);
-      const baseQuery = new DataCubeQuery();
+      const baseQuery = new DataCubeSpecification();
       const source = new INTERNAL__DataCubeSource();
       source.columns = columns;
       baseQuery.configuration = configurationBuilder
@@ -2050,7 +2050,7 @@ async function _generateDefaultConfiguration(
   columns: DataCubeColumn[],
 ) {
   const engine = new TEST__DataCubeEngine();
-  const baseQuery = new DataCubeQuery();
+  const baseQuery = new DataCubeSpecification();
   const source = new INTERNAL__DataCubeSource();
   source.columns = columns;
   baseQuery.configuration = undefined;

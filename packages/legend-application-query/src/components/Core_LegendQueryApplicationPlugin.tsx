@@ -43,7 +43,7 @@ import {
   MoreVerticalIcon,
 } from '@finos/legend-art';
 import {
-  EXTERNAL_APPLICATION_NAVIGATION__generateDataCubeNewQueryUrl,
+  EXTERNAL_APPLICATION_NAVIGATION__generateNewDataCubeUrl,
   generateCloneServiceQuerySetupRoute,
   generateCreateMappingQuerySetupRoute,
   generateEditExistingQuerySetupRoute,
@@ -164,7 +164,7 @@ export const QueryDataCubeUsage = observer(() => {
       queryEditorStore.query &&
       applicationStore.config.dataCubeApplicationUrl
     ) {
-      return EXTERNAL_APPLICATION_NAVIGATION__generateDataCubeNewQueryUrl(
+      return EXTERNAL_APPLICATION_NAVIGATION__generateNewDataCubeUrl(
         applicationStore.config.dataCubeApplicationUrl,
         {
           _type: QUERY_DATACUBE_SOURCE_TYPE,

@@ -88,7 +88,7 @@ import type { V1_RelationType } from '../model/packageableElements/type/V1_Relat
 import type { CodeCompletionResult } from '../../../../action/compilation/Completion.js';
 import type { V1_CompleteCodeInput } from './compilation/V1_CompleteCodeInput.js';
 import type { DeploymentResult } from '../../../../action/DeploymentResult.js';
-import type { PersistentDataCubeQuery } from '../../../../action/query/PersistentDataCubeQuery.js';
+import type { PersistentDataCube } from '../../../../action/query/PersistentDataCube.js';
 
 enum CORE_ENGINE_ACTIVITY_TRACE {
   GRAMMAR_TO_JSON = 'transform Pure code to protocol',
@@ -123,6 +123,10 @@ enum CORE_ENGINE_ACTIVITY_TRACE {
   UPDATE_QUERY = 'update query',
   PATCH_QUERY = 'patch query',
   DELETE_QUERY = 'delete query',
+
+  CREATE_DATA_CUBE = 'create DataCube',
+  UPDATE_DATA_CUBE = 'update DataCube',
+  DELETE_DATA_CUBE = 'delete DataCube',
 
   CANCEL_USER_EXECUTIONS = 'cancel user executions',
 
@@ -853,53 +857,43 @@ export class V1_EngineServerClient extends AbstractServerClient {
       this._query(queryId),
     );
 
-  // ------------------------------------------- DataCube Query -------------------------------------------
+  // ------------------------------------------- DataCube -------------------------------------------
 
-  _dataCubeQuery = (queryId?: string): string =>
+  _dataCube = (id?: string): string =>
     `${this.queryBaseUrl ?? this.baseUrl}/pure/v1/query/dataCube${
-      queryId ? `/${encodeURIComponent(queryId)}` : ''
+      id ? `/${encodeURIComponent(id)}` : ''
     }`;
-  searchDataCubeQueries = (
+  searchDataCubes = (
     searchSpecification: PlainObject<V1_QuerySearchSpecification>,
-  ): Promise<PlainObject<PersistentDataCubeQuery>[]> =>
-    this.post(
-      `${this._dataCubeQuery()}/search`,
-      searchSpecification,
-      undefined,
-    );
-  getDataCubeQueries = (
-    queryIds: string[],
-  ): Promise<PlainObject<PersistentDataCubeQuery>[]> =>
-    this.get(`${this._dataCubeQuery()}/batch`, {}, undefined, {
-      queryIds,
+  ): Promise<PlainObject<PersistentDataCube>[]> =>
+    this.post(`${this._dataCube()}/search`, searchSpecification, undefined);
+  getDataCubes = (ids: string[]): Promise<PlainObject<PersistentDataCube>[]> =>
+    this.get(`${this._dataCube()}/batch`, {}, undefined, {
+      ids,
     });
-  getDataCubeQuery = (
-    queryId: string,
-  ): Promise<PlainObject<PersistentDataCubeQuery>> =>
-    this.get(this._dataCubeQuery(queryId));
-  createDataCubeQuery = (
-    query: PlainObject<PersistentDataCubeQuery>,
-  ): Promise<PlainObject<PersistentDataCubeQuery>> =>
+  getDataCube = (id: string): Promise<PlainObject<PersistentDataCube>> =>
+    this.get(this._dataCube(id));
+  createDataCube = (
+    dataCube: PlainObject<PersistentDataCube>,
+  ): Promise<PlainObject<PersistentDataCube>> =>
     this.postWithTracing(
-      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.CREATE_QUERY),
-      this._dataCubeQuery(),
-      query,
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.CREATE_DATA_CUBE),
+      this._dataCube(),
+      dataCube,
     );
-  updateDataCubeQuery = (
-    queryId: string,
-    query: PlainObject<PersistentDataCubeQuery>,
-  ): Promise<PlainObject<PersistentDataCubeQuery>> =>
+  updateDataCube = (
+    id: string,
+    dataCube: PlainObject<PersistentDataCube>,
+  ): Promise<PlainObject<PersistentDataCube>> =>
     this.putWithTracing(
-      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.UPDATE_QUERY),
-      this._dataCubeQuery(queryId),
-      query,
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.UPDATE_DATA_CUBE),
+      this._dataCube(id),
+      dataCube,
     );
-  deleteDataCubeQuery = (
-    queryId: string,
-  ): Promise<PlainObject<PersistentDataCubeQuery>> =>
+  deleteDataCube = (id: string): Promise<PlainObject<PersistentDataCube>> =>
     this.deleteWithTracing(
-      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.DELETE_QUERY),
-      this._dataCubeQuery(queryId),
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.DELETE_DATA_CUBE),
+      this._dataCube(id),
     );
 
   // --------------------------------------- Analysis ---------------------------------------

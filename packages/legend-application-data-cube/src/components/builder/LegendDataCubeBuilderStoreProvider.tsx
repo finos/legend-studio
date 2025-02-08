@@ -17,40 +17,38 @@
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useLocalObservable } from 'mobx-react-lite';
 import { createContext, useContext } from 'react';
-import { LegendDataCubeQueryBuilderStore } from '../../stores/query-builder/LegendDataCubeQueryBuilderStore.js';
+import { LegendDataCubeBuilderStore } from '../../stores/builder/LegendDataCubeBuilderStore.js';
 import { useLegendDataCubeBaseStore } from '../LegendDataCubeFrameworkProvider.js';
 
-const LegendDataCubeQueryBuilderStoreContext = createContext<
-  LegendDataCubeQueryBuilderStore | undefined
+const LegendDataCubeBuilderStoreContext = createContext<
+  LegendDataCubeBuilderStore | undefined
 >(undefined);
-const LegendDataCubeQueryBuilderStoreProvider = (props: {
+const LegendDataCubeBuilderStoreProvider = (props: {
   children: React.ReactNode;
 }) => {
   const { children } = props;
   const baseStore = useLegendDataCubeBaseStore();
   const store = useLocalObservable(
-    () => new LegendDataCubeQueryBuilderStore(baseStore),
+    () => new LegendDataCubeBuilderStore(baseStore),
   );
   return (
-    <LegendDataCubeQueryBuilderStoreContext.Provider value={store}>
+    <LegendDataCubeBuilderStoreContext.Provider value={store}>
       {children}
-    </LegendDataCubeQueryBuilderStoreContext.Provider>
+    </LegendDataCubeBuilderStoreContext.Provider>
   );
 };
 
-export const useLegendDataCubeQueryBuilderStore = () =>
+export const useLegendDataCubeBuilderStore = () =>
   guaranteeNonNullable(
-    useContext(LegendDataCubeQueryBuilderStoreContext),
-    `Can't find query builder store in context`,
+    useContext(LegendDataCubeBuilderStoreContext),
+    `Can't find builder store in context`,
   );
 
-export const withLegendDataCubeQueryBuilderStore = (
-  WrappedComponent: React.FC,
-) =>
-  function WithLegendDataCubeQueryBuilderStore() {
+export const withLegendDataCubeBuilderStore = (WrappedComponent: React.FC) =>
+  function WithLegendDataCubeBuilderStore() {
     return (
-      <LegendDataCubeQueryBuilderStoreProvider>
+      <LegendDataCubeBuilderStoreProvider>
         <WrappedComponent />
-      </LegendDataCubeQueryBuilderStoreProvider>
+      </LegendDataCubeBuilderStoreProvider>
     );
   };

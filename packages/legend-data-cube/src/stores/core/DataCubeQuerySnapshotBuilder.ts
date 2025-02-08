@@ -30,7 +30,7 @@ import {
   type V1_ValueSpecification,
   V1_Lambda,
 } from '@finos/legend-graph';
-import type { DataCubeQuery } from './model/DataCubeQuery.js';
+import type { DataCubeSpecification } from './model/DataCubeSpecification.js';
 import {
   DataCubeQuerySnapshot,
   type DataCubeQuerySnapshotAggregateColumn,
@@ -353,7 +353,7 @@ function extractFunctionMap(
 export async function validateAndBuildQuerySnapshot(
   partialQuery: V1_ValueSpecification,
   source: DataCubeSource,
-  baseQuery: DataCubeQuery,
+  specification: DataCubeSpecification,
   engine: DataCubeEngine,
 ) {
   // --------------------------------- BASE ---------------------------------
@@ -605,7 +605,7 @@ export async function validateAndBuildQuerySnapshot(
       pivotAggColumns,
       pivotSortColumns,
     },
-    baseQuery,
+    specification,
     engine,
   );
   data.configuration = configuration.serialize();
@@ -643,11 +643,11 @@ export async function validateAndBuildQuerySnapshot(
  */
 function validateAndBuildConfiguration(
   context: DataCubeQuerySnapshotProcessingContext,
-  baseQuery: DataCubeQuery,
+  specification: DataCubeSpecification,
   engine: DataCubeEngine,
 ) {
   const data = context.snapshot.data;
-  const config = baseQuery.configuration;
+  const config = specification.configuration;
   // generate a default configuration anyway to be used to compare with the
   // provided configuration for validation purpose
   const _config = newConfiguration(context);

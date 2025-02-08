@@ -71,7 +71,7 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
 
   // ---------------------------------- IMPLEMENTATION ----------------------------------
 
-  override async processQuerySource(sourceData: PlainObject) {
+  override async processSource(sourceData: PlainObject) {
     switch (sourceData._type) {
       case REPL_DATA_CUBE_SOURCE_TYPE: {
         const rawSource =

@@ -21,7 +21,7 @@ import {
   useLegendDataCubeBaseStore,
 } from './LegendDataCubeFrameworkProvider.js';
 import { observer } from 'mobx-react-lite';
-import { LegendDataCubeQueryBuilder } from './query-builder/LegendDataCubeQueryBuilder.js';
+import { LegendDataCubeBuilder } from './builder/LegendDataCubeBuilder.js';
 import { LEGEND_DATA_CUBE_ROUTE_PATTERN } from '../__lib__/LegendDataCubeNavigation.js';
 import { useEffect } from 'react';
 
@@ -39,8 +39,8 @@ const LegendDataCubeWebApplicationRouter = observer(() => {
       {store.initializeState.hasSucceeded && (
         <Routes>
           <Route
-            path={LEGEND_DATA_CUBE_ROUTE_PATTERN.QUERY_BUILDER}
-            element={<LegendDataCubeQueryBuilder />}
+            path={LEGEND_DATA_CUBE_ROUTE_PATTERN.BUILDER}
+            element={<LegendDataCubeBuilder />}
           />
         </Routes>
       )}
