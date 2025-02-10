@@ -22,6 +22,7 @@ import {
   DataCubePlaceholder,
   DataCubeNativeMenuItem,
   DataCubePlaceholderErrorDisplay,
+  type DataCubeMenuItem,
 } from '@finos/legend-data-cube';
 import {} from '@finos/legend-art';
 import {
@@ -263,9 +264,28 @@ export const LegendDataCubeBuilder = withLegendDataCubeBuilderStore(
           },
           innerHeaderRenderer: () => <LegendDataCubeBuilderHeader />,
           getHeaderMenuItems: () => {
-            return [
+            const menuItems: (DataCubeMenuItem | DataCubeNativeMenuItem)[] = [
+              {
+                label: 'View Source',
+                action: () => {
+                  // TODO: show a window with source details
+                  // e.g. for Legend Query source, we should allow user to navigate
+                  // to the Legend Query editor view of the source query.
+                },
+                disabled: true,
+              },
               ...(builder.persistentDataCube
                 ? [
+                    {
+                      label: 'Update Info...',
+                      action: () => {
+                        // effectively, we open the save window to let user update the DataCube info, such as name, auto-enable caching, etc.
+                        store.saverDisplay.open();
+                      },
+                      disabled: !store.canCurrentUserManageDataCube(
+                        builder.persistentDataCube,
+                      ),
+                    },
                     {
                       label: 'Delete DataCube...',
                       action: () => {
@@ -276,9 +296,12 @@ export const LegendDataCubeBuilder = withLegendDataCubeBuilderStore(
                         builder.persistentDataCube,
                       ),
                     },
-                    DataCubeNativeMenuItem.SEPARATOR,
                   ]
                 : []),
+              DataCubeNativeMenuItem.SEPARATOR,
+            ];
+            return [
+              ...menuItems,
               {
                 label: 'See Documentation',
                 action: () => {

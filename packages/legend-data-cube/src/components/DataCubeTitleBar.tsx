@@ -94,8 +94,11 @@ export const DataCubeTitleBar = observer(
                 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
               } else if (item === DataCubeNativeMenuItem.SEPARATOR) {
                 return (
-                  // eslint-disable-next-line react/no-array-index-key
-                  <div key={idx} className="h-[1px] w-full bg-neutral-200" />
+                  <div
+                    // eslint-disable-next-line react/no-array-index-key
+                    key={idx}
+                    className="my-1 h-[1px] w-full bg-neutral-200"
+                  />
                 );
               }
               return null;
