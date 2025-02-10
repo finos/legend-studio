@@ -102,6 +102,7 @@ export class LegendDataCubeBuilderStore {
   readonly layoutService: DataCubeLayoutService;
   readonly alertService: DataCubeAlertService;
 
+  readonly initializeState = ActionState.create();
   readonly aboutDisplay: DisplayState;
 
   readonly creator: LegendDataCubeCreatorState;
@@ -195,6 +196,35 @@ export class LegendDataCubeBuilderStore {
     return (
       persistentDataCube.owner === this.application.identityService.currentUser
     );
+  }
+
+  async initialize() {
+    if (this.initializeState.isInProgress) {
+      return;
+    }
+
+    this.initializeState.inProgress();
+    try {
+      await this.engine.initializeCacheManager();
+      this.initializeState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.alertService.alertError(error, {
+        message: `Infrastructure Failure: ${error.message}`,
+      });
+      this.initializeState.fail();
+    }
+  }
+
+  async cleanUp() {
+    try {
+      await this.engine.disposeCacheManager();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.alertService.alertError(error, {
+        message: `Infrastructure Failure: ${error.message}`,
+      });
+    }
   }
 
   async loadDataCube(dataCubeId: string | undefined) {

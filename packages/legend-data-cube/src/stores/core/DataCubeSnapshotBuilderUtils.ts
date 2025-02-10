@@ -862,7 +862,7 @@ export function _validateGroupBy(
     }
   });
 
-  // check all available columns are either grouped on or aggregatd on
+  // check all available columns are either grouped on or aggregated on
   availableColumns.forEach((col) => {
     if (
       !(
@@ -880,8 +880,10 @@ export function _validateGroupBy(
   if (pivot) {
     const aggCols = new Map<string, DataCubeSnapshotAggregateColumn>();
 
-    // check if aggregation specification is consistent (i.e. same type, operator, parameterValues)
+    // check if aggregation specification is consistent (i.e. same name, operator, parameterValues)
     // between groupBy aggregate columns
+    // NOTE: we should not check type here as it can change dynamically due to aggregation, e.g.
+    // an average aggregation on an integer-value column will result in a float-value column
     groupByAggColumns
       .filter((col) => isPivotResultColumnName(col.name))
       .forEach((col) => {
@@ -895,25 +897,37 @@ export function _validateGroupBy(
 
         if (!existingAggCol) {
           aggCols.set(aggColName, aggCol);
-        } else if (!deepEqual(existingAggCol, aggCol)) {
+        } else if (
+          // type should not be compared here as it can change dynamically due to aggregation
+          !deepEqual(
+            { ...existingAggCol, type: undefined },
+            { ...aggCol, type: undefined },
+          )
+        ) {
           throw new Error(
             `Can't process groupBy() expression: found conflicting aggregation specification for column '${aggColName}'`,
           );
         }
       });
 
-    // check if pivot() aggregate columns are consistent with groupBy() aggregate columns
-    pivotAggColumns.forEach((col) => {
-      const existingAggCol = aggCols.get(col.name);
+    // check if groupBy() aggregate columns are consistent with pivot() aggregate columns
+    pivotAggColumns.forEach((pivotAggCol) => {
+      const existingAggCol = aggCols.get(pivotAggCol.name);
       if (!existingAggCol) {
         throw new Error(
-          `Can't process groupBy() expression: column '${col.name}' is aggregated in pivot() expression but not in groupBy() expression`,
+          `Can't process groupBy() expression: column '${pivotAggCol.name}' is aggregated in pivot() expression but not in groupBy() expression`,
         );
       }
 
-      if (!deepEqual(existingAggCol, col)) {
+      if (
+        // type should not be compared here as it can change dynamically due to aggregation
+        !deepEqual(
+          { ...existingAggCol, type: undefined },
+          { ...pivotAggCol, type: undefined },
+        )
+      ) {
         throw new Error(
-          `Can't process groupBy() expression: found conflicting aggregation specification for column '${col.name}'`,
+          `Can't process groupBy() expression: found conflicting aggregation specification for column '${pivotAggCol.name}'`,
         );
       }
     });

@@ -21,6 +21,7 @@ import {
   type DataCubeSettingValues,
   DataCubePlaceholder,
   DataCubeNativeMenuItem,
+  DataCubePlaceholderErrorDisplay,
 } from '@finos/legend-data-cube';
 import {} from '@finos/legend-art';
 import {
@@ -151,21 +152,63 @@ export const LegendDataCubeBuilder = withLegendDataCubeBuilderStore(
 
     useEffect(() => {
       store
-        .loadDataCube(dataCubeId)
-        .catch((error) => store.alertService.alertUnhandledError(error));
-    }, [store, dataCubeId]);
-
-    useEffect(() => {
-      store.engine
-        .initializeCacheManager()
+        .initialize()
         .catch((error) => store.alertService.alertUnhandledError(error));
       return () => {
-        store.engine
-          .disposeCacheManager()
+        store
+          .cleanUp()
           .catch((error) => store.alertService.alertUnhandledError(error));
       };
     }, [store]);
 
+    useEffect(() => {
+      store
+        .loadDataCube(dataCubeId)
+        .catch((error) => store.alertService.alertUnhandledError(error));
+    }, [store, dataCubeId]);
+
+    if (!store.initializeState.hasSucceeded) {
+      return (
+        <DataCubePlaceholder
+          title="[ Legend DataCube ]"
+          layoutManager={store.layoutService.manager}
+          taskManager={store.taskService.manager}
+          headerContent={<LegendDataCubeBuilderHeader />}
+          menuItems={[
+            {
+              label: 'See Documentation',
+              action: () => {
+                const url = application.documentationService.url;
+                if (url) {
+                  application.navigationService.navigator.visitAddress(
+                    application.documentationService.url,
+                  );
+                }
+              },
+              disabled: !application.documentationService.url,
+            },
+            {
+              label: 'About',
+              action: () => {
+                store.aboutDisplay.open();
+              },
+            },
+          ]}
+        >
+          {store.initializeState.isInProgress && (
+            <div className="h-full w-full p-2">
+              <div>Initializing...</div>
+            </div>
+          )}
+          {store.initializeState.hasFailed && (
+            <DataCubePlaceholderErrorDisplay
+              message="Initialization Failure"
+              prompt="Resolve the issue and reload."
+            />
+          )}
+        </DataCubePlaceholder>
+      );
+    }
     if (!builder) {
       return (
         <DataCubePlaceholder

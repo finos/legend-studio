@@ -1092,6 +1092,13 @@ const cases: TestCase[] = [
     query: `select(~[a, b, c, d])->sort([~c->ascending()])->pivot(~[c], ~[b:x|$x.b:x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(d:String, a:Integer, 'val1__|__b':Integer)>)->groupBy(~[d], ~['val1__|__b':x|$x.'val1__|__b':x|$x->sum(), a:x|$x.a:x|$x->sum()])->sort([~d->ascending()])`,
     columns: ['a:Integer', 'c:String', 'b:Integer', 'd:String'],
   }),
+  _case(
+    `GroupBy: following pivot() expression where aggregation changes column type`,
+    {
+      query: `select(~[a, b, c, d])->sort([~c->ascending()])->pivot(~[c], ~[b:x|$x.b:x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(d:String, a:Integer, 'val1__|__b':Float)>)->groupBy(~[d], ~['val1__|__b':x|$x.'val1__|__b':x|$x->sum(), a:x|$x.a:x|$x->sum()])->sort([~d->ascending()])`,
+      columns: ['a:Integer', 'c:String', 'b:Integer', 'd:String'],
+    },
+  ),
   _case(`GroupBy: ERROR - group column not found`, {
     query: `select(~[b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])`,
     columns: ['a:String', 'b:Integer'],

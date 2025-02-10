@@ -33,8 +33,14 @@ import { DataCubeSpecification } from '../core/model/DataCubeSpecification.js';
 import { DataCubeTaskService } from '../services/DataCubeTaskService.js';
 import type { DataCubeLogService } from '../services/DataCubeLogService.js';
 import { DataCubeConfiguration } from '../core/model/DataCubeConfiguration.js';
-import type { DataCubeLayoutService } from '../services/DataCubeLayoutService.js';
-import type { DataCubeAlertService } from '../services/DataCubeAlertService.js';
+import {
+  DEFAULT_ALERT_WINDOW_CONFIG,
+  type DataCubeLayoutService,
+} from '../services/DataCubeLayoutService.js';
+import {
+  AlertType,
+  type DataCubeAlertService,
+} from '../services/DataCubeAlertService.js';
 import type { DataCubeSettingService } from '../services/DataCubeSettingService.js';
 import { CachedDataCubeSource } from '../core/model/CachedDataCubeSource.js';
 import { DataCubeSettingKey } from '../../__lib__/DataCubeSetting.js';
@@ -207,6 +213,62 @@ export class DataCubeViewState {
         specification,
         this.engine,
       );
+
+      // auto-enable cache if specified before broadcasting the first snapshot
+      // so first data-fetches will be against cache
+      if (specification.options?.autoEnableCache) {
+        await this.grid.setCachingEnabled(true, {
+          suppressWarning: true,
+        });
+
+        if (
+          this.settingService.getBooleanValue(
+            DataCubeSettingKey.GRID_CLIENT__SHOW_AUTO_ENABLE_CACHE_PERFORMANCE_WARNING,
+          )
+        ) {
+          this.alertService.alert({
+            message: `Caching is auto-enabled for this DataCube`,
+            text: `When enabled, the source dataset will be cached locally in order to boost query performance. But depending on computational resource available to your environment, sometimes, caching can negatively impact the overall performance, and can even lead to crashes.\n\nOverall, caching is still an experimental feature where we only support queries with simple execution plans, certain queries might not work.\n\nYou can disable caching if needed, otherwise, please proceed with caution.`,
+            type: AlertType.WARNING,
+            actions: [
+              {
+                label: 'OK',
+                handler: () => {},
+              },
+              {
+                label: 'Disable Caching',
+                handler: () => {
+                  this.grid
+                    .setCachingEnabled(false, {
+                      suppressWarning: true,
+                    })
+                    .catch((error) =>
+                      this.alertService.alertUnhandledError(error),
+                    );
+                },
+              },
+              {
+                label: 'Dismiss Warning',
+                handler: () => {
+                  this.settingService.updateValue(
+                    this.dataCube.api,
+                    DataCubeSettingKey.GRID_CLIENT__SHOW_AUTO_ENABLE_CACHE_PERFORMANCE_WARNING,
+                    false,
+                  );
+                },
+              },
+            ],
+            windowConfig: {
+              ...DEFAULT_ALERT_WINDOW_CONFIG,
+              width: 600,
+              height: 300,
+              minWidth: 300,
+              minHeight: 150,
+            },
+          });
+        }
+      }
+
       this.snapshotService.broadcastSnapshot(initialSnapshot);
       this.dataCube.options?.onViewInitialized?.({
         api: this.dataCube.api,

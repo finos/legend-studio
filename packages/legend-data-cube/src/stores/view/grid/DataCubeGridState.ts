@@ -126,7 +126,12 @@ export class DataCubeGridState extends DataCubeSnapshotController {
     });
   }
 
-  async setCachingEnabled(val: boolean) {
+  async setCachingEnabled(
+    val: boolean,
+    options?: {
+      suppressWarning?: boolean | undefined;
+    },
+  ) {
     if (val === this.isCachingEnabled) {
       return;
     }
@@ -172,7 +177,8 @@ export class DataCubeGridState extends DataCubeSnapshotController {
     if (
       this._settingService.getBooleanValue(
         DataCubeSettingKey.GRID_CLIENT__SHOW_CACHE_PERFORMANCE_WARNING,
-      )
+      ) &&
+      !options?.suppressWarning
     ) {
       this._view.alertService.alert({
         message: `Confirm you want to proceed with caching`,

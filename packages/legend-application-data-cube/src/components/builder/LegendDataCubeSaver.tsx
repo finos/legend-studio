@@ -16,6 +16,7 @@
 
 import {
   DEFAULT_REPORT_NAME,
+  FormBadge_Advanced,
   FormButton,
   FormCheckbox,
   FormTextInput,
@@ -29,6 +30,7 @@ export const LegendDataCubeSaver = observer(() => {
   const [name, setName] = useState(DEFAULT_REPORT_NAME);
   const [syncName, setSyncName] = useState(false);
   const [autoEnableCache, setAutoEnableCache] = useState(false);
+  const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
   const store = useLegendDataCubeBuilderStore();
   const builder = guaranteeNonNullable(store.builder);
 
@@ -68,82 +70,98 @@ export const LegendDataCubeSaver = observer(() => {
                 onChange={() => setSyncName(!syncName)}
               />
             </div>
-            <div className="mt-2 flex h-5 w-full items-center">
-              <div className="flex h-full w-20 flex-shrink-0 items-center text-sm">
-                Options:
-              </div>
-              <FormCheckbox
-                label="Auto-enable caching"
-                checked={autoEnableCache}
-                onChange={() => setAutoEnableCache(!autoEnableCache)}
-              />
-            </div>
+            {showAdvancedSettings && (
+              <>
+                <div className="my-2 h-[1px] w-full bg-neutral-200" />
+                <div className="mt-2 flex h-5 w-full items-center">
+                  <div className="flex h-full w-20 flex-shrink-0 items-center text-sm">
+                    Caching:
+                  </div>
+                  <FormCheckbox
+                    label="Auto-enable caching"
+                    checked={autoEnableCache}
+                    onChange={() => setAutoEnableCache(!autoEnableCache)}
+                  />
+                  <FormBadge_Advanced />
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
-      <div className="flex h-10 items-center justify-end px-2">
-        <FormButton onClick={() => store.saverDisplay.close()}>
-          Cancel
-        </FormButton>
-        {builder.persistentDataCube ? (
-          // updating existing DataCube
-          <>
-            <FormButton
-              className="ml-2"
-              disabled={!builder.dataCube || store.saveState.isInProgress}
-              onClick={() => {
-                store
-                  .saveDataCube(name, {
-                    syncName,
-                    autoEnableCache,
-                    saveAsNew: false,
-                  })
-                  .catch((error) =>
-                    store.alertService.alertUnhandledError(error),
-                  );
-              }}
-            >
-              Save
-            </FormButton>
-            <FormButton
-              className="ml-2"
-              disabled={!builder.dataCube || store.saveState.isInProgress}
-              onClick={() => {
-                store
-                  .saveDataCube(name, {
-                    syncName,
-                    autoEnableCache,
-                    saveAsNew: true,
-                  })
-                  .catch((error) =>
-                    store.alertService.alertUnhandledError(error),
-                  );
-              }}
-            >
-              Save As
-            </FormButton>
-          </>
-        ) : (
-          // creating new DataCube
-          <>
-            <FormButton
-              className="ml-2"
-              disabled={!builder.dataCube || store.saveState.isInProgress}
-              onClick={() => {
-                store
-                  .createNewDataCube(name, {
-                    syncName,
-                    autoEnableCache,
-                  })
-                  .catch((error) =>
-                    store.alertService.alertUnhandledError(error),
-                  );
-              }}
-            >
-              Save
-            </FormButton>
-          </>
-        )}
+      <div className="flex h-10 items-center justify-between px-2">
+        <div className="flex h-full items-center pl-1">
+          <FormCheckbox
+            label="Show advanced settings?"
+            checked={showAdvancedSettings}
+            onChange={() => setShowAdvancedSettings(!showAdvancedSettings)}
+          />
+          <FormBadge_Advanced />
+        </div>
+        <div className="flex">
+          <FormButton onClick={() => store.saverDisplay.close()}>
+            Cancel
+          </FormButton>
+          {builder.persistentDataCube ? (
+            // updating existing DataCube
+            <>
+              <FormButton
+                className="ml-2"
+                disabled={!builder.dataCube || store.saveState.isInProgress}
+                onClick={() => {
+                  store
+                    .saveDataCube(name, {
+                      syncName,
+                      autoEnableCache,
+                      saveAsNew: false,
+                    })
+                    .catch((error) =>
+                      store.alertService.alertUnhandledError(error),
+                    );
+                }}
+              >
+                Save
+              </FormButton>
+              <FormButton
+                className="ml-2"
+                disabled={!builder.dataCube || store.saveState.isInProgress}
+                onClick={() => {
+                  store
+                    .saveDataCube(name, {
+                      syncName,
+                      autoEnableCache,
+                      saveAsNew: true,
+                    })
+                    .catch((error) =>
+                      store.alertService.alertUnhandledError(error),
+                    );
+                }}
+              >
+                Save As
+              </FormButton>
+            </>
+          ) : (
+            // creating new DataCube
+            <>
+              <FormButton
+                className="ml-2"
+                disabled={!builder.dataCube || store.saveState.isInProgress}
+                onClick={() => {
+                  store
+                    .createNewDataCube(name, {
+                      syncName,
+                      autoEnableCache,
+                    })
+                    .catch((error) =>
+                      store.alertService.alertUnhandledError(error),
+                    );
+                }}
+              >
+                Save
+              </FormButton>
+            </>
+          )}
+        </div>
       </div>
     </>
   );
