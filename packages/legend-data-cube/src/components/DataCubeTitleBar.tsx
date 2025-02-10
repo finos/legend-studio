@@ -75,7 +75,7 @@ export const DataCubeTitleBar = observer(
               },
             }}
           >
-            {items?.map((item, idx) => {
+            {items.map((item, idx) => {
               if (isObject(item)) {
                 return (
                   <DropdownMenuItem
@@ -91,7 +91,8 @@ export const DataCubeTitleBar = observer(
                     {item.label}
                   </DropdownMenuItem>
                 );
-              } else if (item === 'separator') {
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+              } else if (item === DataCubeNativeMenuItem.SEPARATOR) {
                 return (
                   // eslint-disable-next-line react/no-array-index-key
                   <div key={idx} className="h-[1px] w-full bg-neutral-200" />

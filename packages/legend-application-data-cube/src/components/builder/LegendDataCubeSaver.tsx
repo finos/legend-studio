@@ -17,6 +17,7 @@
 import {
   DEFAULT_REPORT_NAME,
   FormButton,
+  FormCheckbox,
   FormTextInput,
 } from '@finos/legend-data-cube';
 import { observer } from 'mobx-react-lite';
@@ -26,6 +27,8 @@ import { guaranteeNonNullable } from '@finos/legend-shared';
 
 export const LegendDataCubeSaver = observer(() => {
   const [name, setName] = useState(DEFAULT_REPORT_NAME);
+  const [syncName, setSyncName] = useState(false);
+  const [autoEnableCache, setAutoEnableCache] = useState(false);
   const store = useLegendDataCubeBuilderStore();
   const builder = guaranteeNonNullable(store.builder);
 
@@ -35,6 +38,8 @@ export const LegendDataCubeSaver = observer(() => {
         builder.specification.configuration?.name ??
         DEFAULT_REPORT_NAME,
     );
+    setSyncName(false);
+    setAutoEnableCache(builder.specification.options?.autoEnableCache ?? false);
   }, [builder]);
 
   return (
@@ -42,8 +47,8 @@ export const LegendDataCubeSaver = observer(() => {
       <div className="h-[calc(100%_-_40px)] w-full px-2 pt-2">
         <div className="h-full w-full overflow-auto border border-neutral-300 bg-white">
           <div className="h-full w-full select-none p-2">
-            <div className="flex h-6 w-full items-center">
-              <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
+            <div className="flex h-5 w-full items-center">
+              <div className="flex h-full w-20 flex-shrink-0 items-center text-sm">
                 Name:
               </div>
               <FormTextInput
@@ -53,6 +58,24 @@ export const LegendDataCubeSaver = observer(() => {
                   setName(event.target.value);
                 }}
                 autoFocus={true}
+              />
+            </div>
+            <div className="mt-2 flex h-5 w-full items-center">
+              <div className="flex h-full w-20 flex-shrink-0" />
+              <FormCheckbox
+                label="Ensure report name is in sync with DataCube name"
+                checked={syncName}
+                onChange={() => setSyncName(!syncName)}
+              />
+            </div>
+            <div className="mt-2 flex h-5 w-full items-center">
+              <div className="flex h-full w-20 flex-shrink-0 items-center text-sm">
+                Options:
+              </div>
+              <FormCheckbox
+                label="Auto-enable caching"
+                checked={autoEnableCache}
+                onChange={() => setAutoEnableCache(!autoEnableCache)}
               />
             </div>
           </div>
@@ -70,7 +93,11 @@ export const LegendDataCubeSaver = observer(() => {
               disabled={!builder.dataCube || store.saveState.isInProgress}
               onClick={() => {
                 store
-                  .saveDataCube(name, false)
+                  .saveDataCube(name, {
+                    syncName,
+                    autoEnableCache,
+                    saveAsNew: false,
+                  })
                   .catch((error) =>
                     store.alertService.alertUnhandledError(error),
                   );
@@ -83,7 +110,11 @@ export const LegendDataCubeSaver = observer(() => {
               disabled={!builder.dataCube || store.saveState.isInProgress}
               onClick={() => {
                 store
-                  .saveDataCube(name, true)
+                  .saveDataCube(name, {
+                    syncName,
+                    autoEnableCache,
+                    saveAsNew: true,
+                  })
                   .catch((error) =>
                     store.alertService.alertUnhandledError(error),
                   );
@@ -100,7 +131,10 @@ export const LegendDataCubeSaver = observer(() => {
               disabled={!builder.dataCube || store.saveState.isInProgress}
               onClick={() => {
                 store
-                  .createNewDataCube(name)
+                  .createNewDataCube(name, {
+                    syncName,
+                    autoEnableCache,
+                  })
                   .catch((error) =>
                     store.alertService.alertUnhandledError(error),
                   );

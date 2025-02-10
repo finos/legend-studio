@@ -19,18 +19,32 @@ import {
   usingModelSchema,
   type PlainObject,
 } from '@finos/legend-shared';
-import { createModelSchema, primitive, raw } from 'serializr';
+import { createModelSchema, optional, primitive, raw } from 'serializr';
 import { DataCubeConfiguration } from './DataCubeConfiguration.js';
+
+export class DataCubeSpecificationOptions {
+  autoEnableCache?: boolean | undefined;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(DataCubeSpecificationOptions, {
+      autoEnableCache: optional(primitive()),
+    }),
+  );
+}
 
 export class DataCubeSpecification {
   query!: string;
   configuration?: DataCubeConfiguration | undefined;
   source!: PlainObject;
+  options?: DataCubeSpecificationOptions | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(DataCubeSpecification, {
       configuration: usingModelSchema(
         DataCubeConfiguration.serialization.schema,
+      ),
+      options: optional(
+        usingModelSchema(DataCubeSpecificationOptions.serialization.schema),
       ),
       query: primitive(),
       source: raw(),

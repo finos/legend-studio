@@ -69,7 +69,7 @@ export const LegendDataCubeBlockingWindow = observer(
           ref={ref}
         >
           <div className="flex h-6 w-full select-none items-center justify-between border-b border-b-neutral-300 bg-white">
-            <div className="px-2">{windowState.configuration.title ?? ''}</div>
+            <div className="px-2">{windowState.configuration.title}</div>
             <button
               className="flex h-[23px] w-6 items-center justify-center hover:bg-red-500 hover:text-white"
               onClick={() => windowState.close()}

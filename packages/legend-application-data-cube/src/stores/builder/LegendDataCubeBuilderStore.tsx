@@ -27,6 +27,7 @@ import {
   DataCubeSpecification,
   DEFAULT_ALERT_WINDOW_CONFIG,
   type DisplayState,
+  DataCubeSpecificationOptions,
 } from '@finos/legend-data-cube';
 import { LegendDataCubeCreatorState } from './LegendDataCubeCreatorState.js';
 import {
@@ -84,6 +85,11 @@ export class LegendDataCubeBuilderState {
     this.dataCube = val;
   }
 }
+
+export type LegendDataCubeSaveOptions = {
+  syncName?: boolean | undefined;
+  autoEnableCache?: boolean | undefined;
+};
 
 export class LegendDataCubeBuilderStore {
   readonly application: LegendDataCubeApplicationStore;
@@ -151,7 +157,7 @@ export class LegendDataCubeBuilderStore {
       () => <LegendDataCubeSaver />,
       {
         ...DEFAULT_ALERT_WINDOW_CONFIG,
-        height: 140,
+        height: 200,
       },
     );
     this.deleteConfirmationDisplay = new LegendDataCubeBlockingWindowState(
@@ -278,6 +284,7 @@ export class LegendDataCubeBuilderStore {
     api: DataCubeAPI,
     name: string,
     existingPersistentDataCube?: PersistentDataCube | undefined,
+    options?: LegendDataCubeSaveOptions,
   ) {
     const specification = await api.generateSpecification();
     let persistentDataCube: PersistentDataCube;
@@ -287,13 +294,24 @@ export class LegendDataCubeBuilderStore {
       persistentDataCube = new PersistentDataCube();
       persistentDataCube.id = uuid();
     }
+
+    if (options !== undefined) {
+      specification.options =
+        specification.options ?? new DataCubeSpecificationOptions();
+      specification.options.autoEnableCache = options.autoEnableCache;
+
+      if (options.syncName && specification.configuration) {
+        specification.configuration.name = name;
+      }
+    }
+
     persistentDataCube.name = name;
     persistentDataCube.content =
       DataCubeSpecification.serialization.toJson(specification);
     return persistentDataCube;
   }
 
-  async createNewDataCube(name: string) {
+  async createNewDataCube(name: string, options?: LegendDataCubeSaveOptions) {
     if (!this.builder?.dataCube || this.saveState.isInProgress) {
       return;
     }
@@ -303,6 +321,8 @@ export class LegendDataCubeBuilderStore {
       const persistentDataCube = await this.generatePersistentDataCube(
         this.builder.dataCube,
         name,
+        undefined,
+        options,
       );
 
       const newPersistentDataCube =
@@ -319,6 +339,9 @@ export class LegendDataCubeBuilderStore {
         generateBuilderRoute(newPersistentDataCube.id),
       );
       this.updateWindowTitle(persistentDataCube);
+      if (options?.syncName) {
+        this.builder.dataCube.updateName(name);
+      }
 
       this.saverDisplay.close();
       this.saveState.pass();
@@ -331,7 +354,10 @@ export class LegendDataCubeBuilderStore {
     }
   }
 
-  async saveDataCube(name: string, saveAsNew: boolean) {
+  async saveDataCube(
+    name: string,
+    options?: LegendDataCubeSaveOptions & { saveAsNew?: boolean | undefined },
+  ) {
     if (!this.builder?.dataCube || this.saveState.isInProgress) {
       return;
     }
@@ -342,9 +368,10 @@ export class LegendDataCubeBuilderStore {
         this.builder.dataCube,
         name,
         this.builder.persistentDataCube,
+        options,
       );
 
-      if (saveAsNew) {
+      if (options?.saveAsNew) {
         persistentDataCube.id = uuid();
         const newPersistentDataCube =
           await this.baseStore.graphManager.createDataCube(persistentDataCube);
@@ -363,6 +390,9 @@ export class LegendDataCubeBuilderStore {
         await this.baseStore.graphManager.updateDataCube(persistentDataCube);
       }
       this.updateWindowTitle(persistentDataCube);
+      if (options?.syncName) {
+        this.builder.dataCube.updateName(name);
+      }
 
       this.saverDisplay.close();
       this.saveState.pass();

@@ -34,6 +34,10 @@ export interface DataCubeAPI {
    */
   generateSpecification(): Promise<DataCubeSpecification>;
   /**
+   * Updates the name of the DataCube main view.
+   */
+  updateName(name: string): void;
+  /**
    * Retries all failed data fetches and rerender the grid.
    */
   retryFailedDataFetches(): void;
@@ -72,6 +76,10 @@ export class INTERNAL__DataCubeAPI implements DataCubeAPI {
 
   generateSpecification() {
     return this._dataCube.view.generateSpecification();
+  }
+
+  updateName(name: string) {
+    this._dataCube.view.updateName(name);
   }
 
   retryFailedDataFetches() {

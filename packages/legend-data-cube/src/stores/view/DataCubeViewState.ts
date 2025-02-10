@@ -105,6 +105,25 @@ export class DataCubeViewState {
     return this._source;
   }
 
+  updateName(name: string) {
+    const baseSnapshot = this.snapshotService.currentSnapshot;
+    const snapshot = baseSnapshot.clone();
+
+    const configuration = DataCubeConfiguration.serialization.fromJson(
+      baseSnapshot.data.configuration,
+    );
+    if (configuration.name === name) {
+      return;
+    }
+    configuration.name = name;
+    snapshot.data.configuration = configuration.serialize();
+
+    snapshot.finalize();
+    if (snapshot.hashCode !== baseSnapshot.hashCode) {
+      this.snapshotService.broadcastSnapshot(snapshot);
+    }
+  }
+
   async initializeCache() {
     this.processCacheState.inProgress();
     const task = this.taskService.newTask('Initializing cache...');
