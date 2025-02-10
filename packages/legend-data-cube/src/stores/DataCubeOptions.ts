@@ -48,7 +48,9 @@ export type DataCubeMenuItem = {
   disabled?: boolean | undefined;
   action: () => void;
 };
-export type DataCubeNativeMenuItem = 'separator';
+export enum DataCubeNativeMenuItem {
+  SEPARATOR = 'separator',
+}
 
 type DataCubeOptionsBaseParams = {
   api: DataCubeAPI;

@@ -86,6 +86,22 @@ const LegendREPLDataCube = observer(
           innerHeaderRenderer: (params) => (
             <LegendREPLDataCubeHeader api={params.api} />
           ),
+          getHeaderMenuItems: () => {
+            return [
+              {
+                label: 'See Documentation',
+                action: () => {
+                  const url = application.documentationService.url;
+                  if (url) {
+                    application.navigationService.navigator.visitAddress(
+                      application.documentationService.url,
+                    );
+                  }
+                },
+                disabled: !application.documentationService.url,
+              },
+            ];
+          },
           settingsData: {
             values: application.settingService.getObjectValue(
               LegendREPLSettingStorageKey.DATA_CUBE,

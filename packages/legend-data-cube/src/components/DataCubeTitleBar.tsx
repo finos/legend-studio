@@ -21,9 +21,9 @@ import {
   DropdownMenuItem,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-import type {
-  DataCubeMenuItem,
+import {
   DataCubeNativeMenuItem,
+  type DataCubeMenuItem,
 } from '../stores/DataCubeOptions.js';
 import { useState } from 'react';
 import { isObject } from '@finos/legend-shared';
@@ -55,7 +55,7 @@ export const DataCubeTitleBar = observer(
             onClick={(event) => {
               const extraItems = getMenuItems?.() ?? [];
               if (extraItems.length) {
-                extraItems.unshift('separator');
+                extraItems.unshift(DataCubeNativeMenuItem.SEPARATOR);
               }
               setItems([...(menuItems ?? []), ...extraItems]);
               openMenuDropdown(event);

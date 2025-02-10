@@ -20,6 +20,7 @@ import {
   FormButton,
   type DataCubeSettingValues,
   DataCubePlaceholder,
+  DataCubeNativeMenuItem,
 } from '@finos/legend-data-cube';
 import {} from '@finos/legend-art';
 import {
@@ -33,7 +34,6 @@ import {
 } from '../../__lib__/LegendDataCubeNavigation.js';
 import { useEffect } from 'react';
 import { LegendDataCubeSettingStorageKey } from '../../__lib__/LegendDataCubeSetting.js';
-import { isNonNullable } from '@finos/legend-shared';
 
 const LegendDataCubeBuilderHeader = observer(() => {
   const store = useLegendDataCubeBuilderStore();
@@ -58,6 +58,72 @@ const LegendDataCubeBuilderHeader = observer(() => {
       >
         Save DataCube
       </FormButton>
+    </div>
+  );
+});
+
+export const LegendDataCubeAbout = observer(() => {
+  const store = useLegendDataCubeBuilderStore();
+  const config = store.application.config;
+
+  return (
+    <div className="h-full items-center p-4">
+      <div className="my-0.5 flex font-mono">
+        <div>Environment:</div>
+        <div className="ml-1 font-bold">{config.env}</div>
+      </div>
+      <div className="my-0.5 flex font-mono">
+        <div>Version:</div>
+        <div className="ml-1 font-bold">{config.appVersion}</div>
+      </div>
+      <div className="my-0.5 flex font-mono">
+        <div>Revision:</div>
+        <div className="ml-1 font-bold">{config.appVersionCommitId}</div>
+      </div>
+      <div className="my-0.5 flex font-mono">
+        <div>Build Time:</div>
+        <div className="ml-1 font-bold">{config.appVersionBuildTime}</div>
+      </div>
+      <div className="mt-3 rounded-sm bg-white px-4 py-2">
+        <div className="my-0.5 flex font-mono">
+          <div>Engine Server:</div>
+          <div className="ml-1 font-bold text-sky-600">
+            <a
+              href={config.engineServerUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {config.engineServerUrl}
+            </a>
+          </div>
+        </div>
+        <div className="my-0.5 flex font-mono">
+          <div>Depot Server:</div>
+          <div className="ml-1 font-bold text-sky-600">
+            <a
+              href={config.depotServerUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {config.depotServerUrl}
+            </a>
+          </div>
+        </div>
+        {config.engineQueryServerUrl !== undefined && (
+          <div className="my-0.5 flex font-mono">
+            <div>DataCube Server:</div>
+            <div className="ml-1 font-bold text-sky-600">
+              <a
+                href={config.engineQueryServerUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {config.engineQueryServerUrl}
+              </a>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 });
@@ -107,7 +173,26 @@ export const LegendDataCubeBuilder = withLegendDataCubeBuilderStore(
           layoutManager={store.layoutService.manager}
           taskManager={store.taskService.manager}
           headerContent={<LegendDataCubeBuilderHeader />}
-          menuItems={[]}
+          menuItems={[
+            {
+              label: 'See Documentation',
+              action: () => {
+                const url = application.documentationService.url;
+                if (url) {
+                  application.navigationService.navigator.visitAddress(
+                    application.documentationService.url,
+                  );
+                }
+              },
+              disabled: !application.documentationService.url,
+            },
+            {
+              label: 'About',
+              action: () => {
+                store.aboutDisplay.open();
+              },
+            },
+          ]}
         >
           <div className="h-full w-full p-2">
             <div>Create a new DataCube to start</div>
@@ -136,17 +221,40 @@ export const LegendDataCubeBuilder = withLegendDataCubeBuilderStore(
           innerHeaderRenderer: () => <LegendDataCubeBuilderHeader />,
           getHeaderMenuItems: () => {
             return [
-              builder.persistentDataCube &&
-              store.canCurrentUserManageDataCube(builder.persistentDataCube)
-                ? {
-                    label: 'Delete DataCube...',
-                    action: () => {
-                      store.setDataCubeToDelete(builder.persistentDataCube);
-                      store.deleteConfirmationDisplay.open();
+              ...(builder.persistentDataCube
+                ? [
+                    {
+                      label: 'Delete DataCube...',
+                      action: () => {
+                        store.setDataCubeToDelete(builder.persistentDataCube);
+                        store.deleteConfirmationDisplay.open();
+                      },
+                      disabled: !store.canCurrentUserManageDataCube(
+                        builder.persistentDataCube,
+                      ),
                     },
+                    DataCubeNativeMenuItem.SEPARATOR,
+                  ]
+                : []),
+              {
+                label: 'See Documentation',
+                action: () => {
+                  const url = application.documentationService.url;
+                  if (url) {
+                    application.navigationService.navigator.visitAddress(
+                      application.documentationService.url,
+                    );
                   }
-                : undefined,
-            ].filter(isNonNullable);
+                },
+                disabled: !application.documentationService.url,
+              },
+              {
+                label: 'About',
+                action: () => {
+                  store.aboutDisplay.open();
+                },
+              },
+            ];
           },
           settingsData: {
             configurations: store.baseStore.settings,

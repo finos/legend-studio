@@ -26,6 +26,7 @@ import {
   type DataCubeTaskService,
   DataCubeSpecification,
   DEFAULT_ALERT_WINDOW_CONFIG,
+  type DisplayState,
 } from '@finos/legend-data-cube';
 import { LegendDataCubeCreatorState } from './LegendDataCubeCreatorState.js';
 import {
@@ -55,6 +56,7 @@ import {
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import { LegendDataCubeBlockingWindowState } from '../../components/LegendDataCubeBlockingWindow.js';
 import { LegendDataCubeDeleteConfirmation } from '../../components/builder/LegendDataCubeDeleteConfirmation.js';
+import { LegendDataCubeAbout } from '../../components/builder/LegendDataCubeBuilder.js';
 
 export class LegendDataCubeBuilderState {
   readonly uuid = uuid();
@@ -94,6 +96,8 @@ export class LegendDataCubeBuilderStore {
   readonly layoutService: DataCubeLayoutService;
   readonly alertService: DataCubeAlertService;
 
+  readonly aboutDisplay: DisplayState;
+
   readonly creator: LegendDataCubeCreatorState;
 
   readonly saveState = ActionState.create();
@@ -127,6 +131,18 @@ export class LegendDataCubeBuilderStore {
     this.taskService = baseStore.taskService;
     this.alertService = baseStore.alertService;
     this.layoutService = baseStore.layoutService;
+
+    this.aboutDisplay = this.layoutService.newDisplay(
+      'About',
+      () => <LegendDataCubeAbout />,
+      {
+        ...DEFAULT_ALERT_WINDOW_CONFIG,
+        height: 220,
+        x: -50,
+        y: 50,
+        center: false,
+      },
+    );
 
     this.creator = new LegendDataCubeCreatorState(this);
     this.loader = new LegendDataCubeLoaderState(this);
