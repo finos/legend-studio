@@ -15,7 +15,13 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { cn, DataCubeIcon, useDropdownMenu } from '@finos/legend-art';
+import {
+  cn,
+  DataCubeIcon,
+  DropdownMenu,
+  DropdownMenuItem,
+  useDropdownMenu,
+} from '@finos/legend-art';
 import {
   debounce,
   formatDistanceToNow,
@@ -35,6 +41,7 @@ import {
   DATA_CUBE_LOADER_TYPEAHEAD_SEARCH_LIMIT,
   DataCubeSortByType,
 } from '../../stores/builder/LegendDataCubeLoaderState.js';
+import { useApplicationStore } from '@finos/legend-application';
 
 const LegendDataCubeSearcher = observer(() => {
   const store = useLegendDataCubeBuilderStore();
@@ -242,8 +249,11 @@ const LegendDataCubeSearcher = observer(() => {
 
 export const LegendDataCubeLoader = observer(() => {
   const store = useLegendDataCubeBuilderStore();
+  const application = useApplicationStore();
   const state = store.loader;
   const selectedResult = state.selectedResult;
+  const [openManageDropdown, closeManageDropdown, manageDropdownProps] =
+    useDropdownMenu();
 
   return (
     <>
@@ -253,11 +263,24 @@ export const LegendDataCubeLoader = observer(() => {
             <LegendDataCubeSearcher />
           ) : (
             <div className="h-full w-full p-1.5">
-              <div className="mb-0.5 flex h-[42px] w-full border border-neutral-200 bg-neutral-100">
+              <div className="relative mb-0.5 flex h-[42px] w-full border border-neutral-200 bg-neutral-100">
                 <div className="w-full">
                   <div className="h-6 w-4/5 overflow-hidden text-ellipsis whitespace-nowrap px-1.5 leading-6">
                     {selectedResult.name}
                   </div>
+                  <button
+                    className="absolute right-0.5 top-0.5 flex aspect-square w-5 items-center justify-center text-neutral-500"
+                    title="Copy ID to clipboard"
+                    onClick={() => {
+                      application.clipboardService
+                        .copyTextToClipboard(selectedResult.id)
+                        .catch((error) =>
+                          store.alertService.alertUnhandledError(error),
+                        );
+                    }}
+                  >
+                    <DataCubeIcon.Clipboard />
+                  </button>
                   <div className="flex h-[18px] items-start justify-between px-1.5">
                     <div className="flex">
                       <DataCubeIcon.ClockEdit className="text-sm text-neutral-500" />
@@ -283,12 +306,58 @@ export const LegendDataCubeLoader = observer(() => {
                 </div>
               </div>
 
-              <FormButton
-                className="mt-1.5"
-                onClick={() => state.setSelectedResult(undefined)}
-              >
-                Select Another DataCube
-              </FormButton>
+              <div className="mt-1.5 flex justify-between">
+                <FormButton
+                  className="flex items-center pl-1"
+                  onClick={() => state.setSelectedResult(undefined)}
+                >
+                  <DataCubeIcon.ChevronLeft className="mr-0.5" />
+                  Go Back
+                </FormButton>
+
+                {store.canCurrentUserManageDataCube(selectedResult) && (
+                  <>
+                    <FormButton
+                      className="flex w-[138px] items-center justify-start px-0"
+                      onClick={openManageDropdown}
+                    >
+                      <div className="px-2.5">Manage DataCube</div>
+                      <div className="flex h-4 w-4 items-center justify-center border-l border-neutral-400">
+                        <DataCubeIcon.CaretDown className="text-sm" />
+                      </div>
+                    </FormButton>
+                    <DropdownMenu
+                      {...manageDropdownProps}
+                      menuProps={{
+                        classes: {
+                          paper: 'rounded-none mt-[1px]',
+                          list: 'w-[138px] p-0 rounded-none border border-neutral-400 bg-white max-h-40 overflow-y-auto py-0.5',
+                        },
+                      }}
+                    >
+                      <DropdownMenuItem
+                        className="flex h-[22px] w-full items-center px-2.5 text-base hover:bg-neutral-100 focus:bg-neutral-100"
+                        onClick={() => {
+                          // state.changeSourceBuilder(type);
+                          closeManageDropdown();
+                        }}
+                      >
+                        Update Info...
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="flex h-[22px] w-full items-center px-2.5 text-base hover:bg-neutral-100 focus:bg-neutral-100"
+                        onClick={() => {
+                          store.setDataCubeToDelete(selectedResult);
+                          store.deleteConfirmationDisplay.open();
+                          closeManageDropdown();
+                        }}
+                      >
+                        Delete...
+                      </DropdownMenuItem>
+                    </DropdownMenu>
+                  </>
+                )}
+              </div>
             </div>
           )}
         </div>

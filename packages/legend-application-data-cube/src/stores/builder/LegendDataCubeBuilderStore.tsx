@@ -26,11 +26,11 @@ import {
   type DataCubeTaskService,
   DataCubeSpecification,
   DEFAULT_ALERT_WINDOW_CONFIG,
-  type DisplayState,
 } from '@finos/legend-data-cube';
 import { LegendDataCubeCreatorState } from './LegendDataCubeCreatorState.js';
 import {
   PersistentDataCube,
+  type LightPersistentDataCube,
   type V1_EngineServerClient,
   type V1_PureGraphManager,
 } from '@finos/legend-graph';
@@ -53,6 +53,8 @@ import {
   RECENTLY_VIEWED_DATA_CUBES_LIMIT,
 } from '../../__lib__/LegendDataCubeUserData.js';
 import type { DepotServerClient } from '@finos/legend-server-depot';
+import { LegendDataCubeBlockingWindowState } from '../../components/LegendDataCubeBlockingWindow.js';
+import { LegendDataCubeDeleteConfirmation } from '../../components/builder/LegendDataCubeDeleteConfirmation.js';
 
 export class LegendDataCubeBuilderState {
   readonly uuid = uuid();
@@ -95,16 +97,25 @@ export class LegendDataCubeBuilderStore {
   readonly creator: LegendDataCubeCreatorState;
 
   readonly saveState = ActionState.create();
-  readonly saverDisplay: DisplayState;
+  readonly saverDisplay: LegendDataCubeBlockingWindowState;
+
+  readonly deleteState = ActionState.create();
+  dataCubeToDelete?: LightPersistentDataCube | PersistentDataCube | undefined;
+  readonly deleteConfirmationDisplay: LegendDataCubeBlockingWindowState;
 
   readonly loadState = ActionState.create();
-  loader: LegendDataCubeLoaderState;
+  readonly loader: LegendDataCubeLoaderState;
   builder?: LegendDataCubeBuilderState | undefined;
+
+  private passedFirstLoad = false;
 
   constructor(baseStore: LegendDataCubeBaseStore) {
     makeObservable(this, {
       builder: observable,
       setBuilder: action,
+
+      dataCubeToDelete: observable,
+      setDataCubeToDelete: action,
     });
 
     this.application = baseStore.application;
@@ -119,12 +130,20 @@ export class LegendDataCubeBuilderStore {
 
     this.creator = new LegendDataCubeCreatorState(this);
     this.loader = new LegendDataCubeLoaderState(this);
-    this.saverDisplay = this.layoutService.newDisplay(
+    this.saverDisplay = new LegendDataCubeBlockingWindowState(
       'Save DataCube',
       () => <LegendDataCubeSaver />,
       {
         ...DEFAULT_ALERT_WINDOW_CONFIG,
         height: 140,
+      },
+    );
+    this.deleteConfirmationDisplay = new LegendDataCubeBlockingWindowState(
+      'Delete DataCube',
+      () => <LegendDataCubeDeleteConfirmation />,
+      {
+        ...DEFAULT_ALERT_WINDOW_CONFIG,
+        height: 180,
       },
     );
   }
@@ -146,6 +165,14 @@ export class LegendDataCubeBuilderStore {
     return data && Array.isArray(data) && data.every((id) => isString(id))
       ? data
       : [];
+  }
+
+  canCurrentUserManageDataCube(
+    persistentDataCube: PersistentDataCube | LightPersistentDataCube,
+  ) {
+    return (
+      persistentDataCube.owner === this.application.identityService.currentUser
+    );
   }
 
   async loadDataCube(dataCubeId: string | undefined) {
@@ -170,10 +197,15 @@ export class LegendDataCubeBuilderStore {
       }
     }
 
+    // When user just starts the application with no DataCube ID, and source data
+    if (!dataCubeId && !sourceData && !this.builder && !this.passedFirstLoad) {
+      this.loader.display.open();
+    }
+    this.passedFirstLoad = true;
+
     if (dataCubeId !== this.builder?.persistentDataCube?.id) {
       if (!dataCubeId) {
         this.setBuilder(undefined);
-        this.loader.display.open();
         return;
       }
 
@@ -217,6 +249,10 @@ export class LegendDataCubeBuilderStore {
         this.alertService.alertError(error, {
           message: `DataCube Load Failure: ${error.message}`,
         });
+        this.application.navigationService.navigator.updateCurrentLocation(
+          generateBuilderRoute(null),
+        );
+
         this.loadState.fail();
       }
     }
@@ -320,6 +356,57 @@ export class LegendDataCubeBuilderStore {
         message: `DataCube Update Failure: ${error.message}`,
       });
       this.saveState.fail();
+    }
+  }
+
+  setDataCubeToDelete(
+    val: LightPersistentDataCube | PersistentDataCube | undefined,
+  ) {
+    this.dataCubeToDelete = val;
+  }
+
+  async deleteDataCube() {
+    if (this.deleteState.isInProgress || !this.dataCubeToDelete) {
+      return;
+    }
+    const dataCubeId = this.dataCubeToDelete.id;
+
+    this.deleteState.inProgress();
+    try {
+      await this.baseStore.graphManager.deleteDataCube(dataCubeId);
+
+      // update the list of stack of recently viewed DataCubes
+      const recentlyViewedDataCubes = this.getRecentlyViewedDataCubes();
+      const idx = recentlyViewedDataCubes.findIndex(
+        (data) => data === dataCubeId,
+      );
+      if (idx !== -1) {
+        recentlyViewedDataCubes.splice(idx, 1);
+        this.application.userDataService.persistValue(
+          LegendDataCubeUserDataKey.RECENTLY_VIEWED_DATA_CUBES,
+          recentlyViewedDataCubes,
+        );
+      }
+
+      if (this.builder?.persistentDataCube?.id === dataCubeId) {
+        this.application.navigationService.navigator.updateCurrentLocation(
+          generateBuilderRoute(null),
+        );
+      }
+
+      if (this.loader.selectedResult?.id === dataCubeId) {
+        this.loader.setSelectedResult(undefined);
+      }
+
+      this.setDataCubeToDelete(undefined);
+      this.deleteConfirmationDisplay.close();
+      this.deleteState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.alertService.alertError(error, {
+        message: `DataCube Delete Failure: ${error.message}`,
+      });
+      this.deleteState.fail();
     }
   }
 }

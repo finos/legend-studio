@@ -34,6 +34,7 @@ export {
 export {
   DataCubeLayoutService,
   WindowState,
+  type WindowConfiguration,
   DisplayState,
   LayoutConfiguration,
   DEFAULT_TOOL_PANEL_WINDOW_CONFIG,

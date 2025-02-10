@@ -33,6 +33,7 @@ import {
 } from '../../__lib__/LegendDataCubeNavigation.js';
 import { useEffect } from 'react';
 import { LegendDataCubeSettingStorageKey } from '../../__lib__/LegendDataCubeSetting.js';
+import { isNonNullable } from '@finos/legend-shared';
 
 const LegendDataCubeBuilderHeader = observer(() => {
   const store = useLegendDataCubeBuilderStore();
@@ -106,18 +107,7 @@ export const LegendDataCubeBuilder = withLegendDataCubeBuilderStore(
           layoutManager={store.layoutService.manager}
           taskManager={store.taskService.manager}
           headerContent={<LegendDataCubeBuilderHeader />}
-          menuItems={[
-            {
-              label: 'See Documentation',
-              action: () => {
-                const url = application.documentationService.url;
-                if (url) {
-                  application.navigationService.navigator.visitAddress(url);
-                }
-              },
-              disabled: true, // TODO: enable when we set up the documentation websit
-            },
-          ]}
+          menuItems={[]}
         >
           <div className="h-full w-full p-2">
             <div>Create a new DataCube to start</div>
@@ -144,6 +134,20 @@ export const LegendDataCubeBuilder = withLegendDataCubeBuilderStore(
             builder.setDataCube(event.api);
           },
           innerHeaderRenderer: () => <LegendDataCubeBuilderHeader />,
+          getHeaderMenuItems: () => {
+            return [
+              builder.persistentDataCube &&
+              store.canCurrentUserManageDataCube(builder.persistentDataCube)
+                ? {
+                    label: 'Delete DataCube...',
+                    action: () => {
+                      store.setDataCubeToDelete(builder.persistentDataCube);
+                      store.deleteConfirmationDisplay.open();
+                    },
+                  }
+                : undefined,
+            ].filter(isNonNullable);
+          },
           settingsData: {
             configurations: store.baseStore.settings,
             values: application.settingService.getObjectValue(
@@ -156,7 +160,6 @@ export const LegendDataCubeBuilder = withLegendDataCubeBuilderStore(
               event.values,
             );
           },
-          documentationUrl: application.documentationService.url,
           enableCache: true,
         }}
       />

@@ -21,17 +21,26 @@ import {
   DropdownMenuItem,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-import type { DataCubeMenuItem } from '../stores/DataCubeOptions.js';
+import type {
+  DataCubeMenuItem,
+  DataCubeNativeMenuItem,
+} from '../stores/DataCubeOptions.js';
+import { useState } from 'react';
+import { isObject } from '@finos/legend-shared';
 
 export const DataCubeTitleBar = observer(
   (props: {
     children: React.ReactNode;
     title: string;
-    menuItems?: DataCubeMenuItem[] | undefined;
+    menuItems?: (DataCubeMenuItem | DataCubeNativeMenuItem)[] | undefined;
+    getMenuItems?:
+      | (() => (DataCubeMenuItem | DataCubeNativeMenuItem)[])
+      | undefined;
   }) => {
-    const { children, title, menuItems } = props;
+    const { children, title, menuItems, getMenuItems } = props;
     const [openMenuDropdown, closeMenuDropdown, menuDropdownProps] =
       useDropdownMenu();
+    const [items, setItems] = useState([...(menuItems ?? [])]);
 
     return (
       <div className="flex h-7 justify-between bg-neutral-100">
@@ -43,7 +52,14 @@ export const DataCubeTitleBar = observer(
           {children}
           <button
             className="flex aspect-square h-full flex-shrink-0 items-center justify-center text-lg disabled:text-neutral-400"
-            onClick={openMenuDropdown}
+            onClick={(event) => {
+              const extraItems = getMenuItems?.() ?? [];
+              if (extraItems.length) {
+                extraItems.unshift('separator');
+              }
+              setItems([...(menuItems ?? []), ...extraItems]);
+              openMenuDropdown(event);
+            }}
             disabled={!menuItems?.length}
           >
             <DataCubeIcon.Menu />
@@ -59,20 +75,30 @@ export const DataCubeTitleBar = observer(
               },
             }}
           >
-            {menuItems?.map((item, idx) => (
-              <DropdownMenuItem
-                // eslint-disable-next-line react/no-array-index-key
-                key={idx}
-                className="flex h-[22px] w-full items-center px-2.5 text-base hover:bg-neutral-100 focus:bg-neutral-100"
-                onClick={() => {
-                  item.action();
-                  closeMenuDropdown();
-                }}
-                disabled={Boolean(item.disabled)}
-              >
-                {item.label}
-              </DropdownMenuItem>
-            ))}
+            {items?.map((item, idx) => {
+              if (isObject(item)) {
+                return (
+                  <DropdownMenuItem
+                    // eslint-disable-next-line react/no-array-index-key
+                    key={idx}
+                    className="flex h-[22px] w-full items-center px-2.5 text-base hover:bg-neutral-100 focus:bg-neutral-100"
+                    onClick={() => {
+                      item.action();
+                      closeMenuDropdown();
+                    }}
+                    disabled={Boolean(item.disabled)}
+                  >
+                    {item.label}
+                  </DropdownMenuItem>
+                );
+              } else if (item === 'separator') {
+                return (
+                  // eslint-disable-next-line react/no-array-index-key
+                  <div key={idx} className="h-[1px] w-full bg-neutral-200" />
+                );
+              }
+              return null;
+            })}
           </DropdownMenu>
         </div>
       </div>

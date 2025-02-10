@@ -19,6 +19,7 @@ import { useLocalObservable } from 'mobx-react-lite';
 import { createContext, useContext } from 'react';
 import { LegendDataCubeBuilderStore } from '../../stores/builder/LegendDataCubeBuilderStore.js';
 import { useLegendDataCubeBaseStore } from '../LegendDataCubeFrameworkProvider.js';
+import { LegendDataCubeBlockingWindow } from '../LegendDataCubeBlockingWindow.js';
 
 const LegendDataCubeBuilderStoreContext = createContext<
   LegendDataCubeBuilderStore | undefined
@@ -34,6 +35,10 @@ const LegendDataCubeBuilderStoreProvider = (props: {
   return (
     <LegendDataCubeBuilderStoreContext.Provider value={store}>
       {children}
+      <LegendDataCubeBlockingWindow windowState={store.saverDisplay} />
+      <LegendDataCubeBlockingWindow
+        windowState={store.deleteConfirmationDisplay}
+      />
     </LegendDataCubeBuilderStoreContext.Provider>
   );
 };

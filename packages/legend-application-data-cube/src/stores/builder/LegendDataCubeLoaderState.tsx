@@ -234,23 +234,15 @@ export class LegendDataCubeLoaderState {
     }
 
     this.finalizeState.inProgress();
-    try {
-      // just simply change the route here and the new DataCube ID will get picked up
-      // and handled by the builder to load the new DataCube.
-      this._application.navigationService.navigator.updateCurrentLocation(
-        generateBuilderRoute(this.selectedResult.id),
-      );
+    // just simply change the route here and the new DataCube ID will get picked up
+    // and handled by the builder to load the new DataCube.
+    this._application.navigationService.navigator.updateCurrentLocation(
+      generateBuilderRoute(this.selectedResult.id),
+    );
 
-      // reset
-      this.setSelectedResult(undefined);
-      this.display.close();
-      this.finalizeState.pass();
-    } catch (error) {
-      assertErrorThrown(error);
-      this._alertService.alertError(error, {
-        message: `DataCube Load Failure: ${error.message}`,
-      });
-      this.finalizeState.fail();
-    }
+    // reset
+    this.setSelectedResult(undefined);
+    this.display.close();
+    this.finalizeState.pass();
   }
 }

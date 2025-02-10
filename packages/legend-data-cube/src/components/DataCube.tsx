@@ -47,19 +47,11 @@ const DataCubeRoot = observer(() => {
         title={view.info.name}
         menuItems={[
           {
-            label: 'See Documentation',
-            action: () => {
-              const url = dataCube.options?.documentationUrl;
-              if (url) {
-                dataCube.navigationService.openLink(url);
-              }
-            },
-          },
-          {
             label: 'Settings...',
             action: () => dataCube.settingService.display.open(),
           },
         ]}
+        getMenuItems={dataCube.options?.getHeaderMenuItems}
       >
         {dataCube.options?.innerHeaderRenderer?.({ api: dataCube.api }) ?? null}
       </DataCubeTitleBar>

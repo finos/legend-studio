@@ -320,10 +320,11 @@ export const LegendQueryDataCubeSourceBuilder = observer(
           </div>
         )}
         <FormButton
-          className="mt-1.5"
+          className="mt-1.5 flex items-center pl-1"
           onClick={() => sourceBuilder.unsetQuery()}
         >
-          Select Another Query
+          <DataCubeIcon.ChevronLeft className="mr-0.5" />
+          Go Back
         </FormButton>
       </div>
     );

@@ -869,7 +869,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
     this.post(`${this._dataCube()}/search`, searchSpecification, undefined);
   getDataCubes = (ids: string[]): Promise<PlainObject<PersistentDataCube>[]> =>
     this.get(`${this._dataCube()}/batch`, {}, undefined, {
-      ids,
+      queryIds: ids,
     });
   getDataCube = (id: string): Promise<PlainObject<PersistentDataCube>> =>
     this.get(this._dataCube(id));

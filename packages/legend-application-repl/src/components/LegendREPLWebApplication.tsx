@@ -97,7 +97,6 @@ const LegendREPLDataCube = observer(
               event.values,
             );
           },
-          documentationUrl: application.documentationService.url,
         }}
       />
     );
