@@ -47,6 +47,16 @@ const DataCubeRoot = observer(() => {
         title={view.info.name}
         menuItems={[
           {
+            label: 'Undo',
+            action: () => dataCube.view.snapshotService.undo(),
+            disabled: !dataCube.view.snapshotService.canUndo,
+          },
+          {
+            label: 'Redo',
+            action: () => dataCube.view.snapshotService.redo(),
+            disabled: !dataCube.view.snapshotService.canRedo,
+          },
+          {
             label: 'Settings...',
             action: () => dataCube.settingService.display.open(),
           },

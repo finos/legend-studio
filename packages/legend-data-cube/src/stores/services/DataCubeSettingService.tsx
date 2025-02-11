@@ -55,6 +55,7 @@ export type DataCubeSettingValues = {
 
 export enum DataCubeSettingGroup {
   DEBUG = 'Debug',
+  EDITOR = 'Editor',
   GRID = 'Grid',
 }
 
@@ -177,6 +178,20 @@ export class DataCubeSettingService {
         type: DataCubeSettingType.BOOLEAN,
         defaultValue: true,
       } satisfies DataCubeSetting<boolean>,
+      {
+        key: DataCubeSettingKey.EDITOR__MAX_HISTORY_STACK_SIZE,
+        title: `Max History Stack Size`,
+        description: `Sets the number of maximum snapshots to store in edit history.`,
+        group: DataCubeSettingGroup.EDITOR,
+        type: DataCubeSettingType.NUMERIC,
+        defaultValue: 100,
+        numericValueMin: 10,
+        numericValueStep: 10,
+        action: (api, newValue) =>
+          (api as INTERNAL__DataCubeAPI)._runTaskForEachView((view) => {
+            view.snapshotService.adjustHistorySize(newValue);
+          }),
+      } satisfies DataCubeSetting<number>,
       {
         key: DataCubeSettingKey.GRID_CLIENT__SUPPRESS_LARGE_DATASET_WARNING,
         title: `Large Dataset Warning: Disabled`,

@@ -338,15 +338,6 @@ export const LegendDataCubeLoader = observer(() => {
                       <DropdownMenuItem
                         className="flex h-[22px] w-full items-center px-2.5 text-base hover:bg-neutral-100 focus:bg-neutral-100"
                         onClick={() => {
-                          // state.changeSourceBuilder(type);
-                          closeManageDropdown();
-                        }}
-                      >
-                        Update Info...
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="flex h-[22px] w-full items-center px-2.5 text-base hover:bg-neutral-100 focus:bg-neutral-100"
-                        onClick={() => {
                           store.setDataCubeToDelete(selectedResult);
                           store.deleteConfirmationDisplay.open();
                           closeManageDropdown();

@@ -71,7 +71,7 @@ export const DataCubeTitleBar = observer(
               transformOrigin: { vertical: 'top', horizontal: 'left' },
               classes: {
                 paper: 'rounded-none mt-[1px]',
-                list: 'w-40 p-0 rounded-none border border-neutral-400 bg-white max-h-40 overflow-y-auto py-0.5',
+                list: 'w-40 p-0 rounded-none border border-neutral-400 bg-white overflow-y-auto py-0.5',
               },
             }}
           >

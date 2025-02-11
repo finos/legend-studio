@@ -23,6 +23,7 @@ import {
   DataCubeNativeMenuItem,
   DataCubePlaceholderErrorDisplay,
   type DataCubeMenuItem,
+  DataCubeSpecification,
 } from '@finos/legend-data-cube';
 import {} from '@finos/legend-art';
 import {
@@ -36,6 +37,7 @@ import {
 } from '../../__lib__/LegendDataCubeNavigation.js';
 import { useEffect } from 'react';
 import { LegendDataCubeSettingStorageKey } from '../../__lib__/LegendDataCubeSetting.js';
+import type { LegendDataCubeBuilderStore } from '../../stores/builder/LegendDataCubeBuilderStore.js';
 
 const LegendDataCubeBuilderHeader = observer(() => {
   const store = useLegendDataCubeBuilderStore();
@@ -130,6 +132,84 @@ export const LegendDataCubeAbout = observer(() => {
   );
 });
 
+function generateMenuItems(store: LegendDataCubeBuilderStore) {
+  const application = store.application;
+  const builder = store.builder;
+  const persistentDataCube = builder?.persistentDataCube;
+
+  const menuItems: (DataCubeMenuItem | DataCubeNativeMenuItem)[] = builder
+    ? [
+        {
+          label: 'View Source',
+          action: () => {
+            // TODO: show a window with source details
+            // e.g. for Legend Query source, we should allow user to navigate
+            // to the Legend Query editor view of the source query.
+          },
+          disabled: true,
+        },
+        ...(persistentDataCube
+          ? [
+              {
+                label: 'Reset to Latest Save',
+                action: () => {
+                  const latestSpecification =
+                    DataCubeSpecification.serialization.fromJson(
+                      persistentDataCube.content,
+                    );
+                  builder.dataCube
+                    ?.applySpecification(latestSpecification)
+                    .catch((error) =>
+                      store.alertService.alertUnhandledError(error),
+                    );
+                },
+              },
+              {
+                label: 'Update Info...',
+                action: () => {
+                  // effectively, we open the save window to let user update the DataCube info, such as name, auto-enable caching, etc.
+                  store.saverDisplay.open();
+                },
+                disabled:
+                  !store.canCurrentUserManageDataCube(persistentDataCube),
+              },
+              {
+                label: 'Delete DataCube...',
+                action: () => {
+                  store.setDataCubeToDelete(builder.persistentDataCube);
+                  store.deleteConfirmationDisplay.open();
+                },
+                disabled:
+                  !store.canCurrentUserManageDataCube(persistentDataCube),
+              },
+            ]
+          : []),
+        DataCubeNativeMenuItem.SEPARATOR,
+      ]
+    : [];
+  return [
+    ...menuItems,
+    {
+      label: 'See Documentation',
+      action: () => {
+        const url = application.documentationService.url;
+        if (url) {
+          application.navigationService.navigator.visitAddress(
+            application.documentationService.url,
+          );
+        }
+      },
+      disabled: !application.documentationService.url,
+    },
+    {
+      label: 'About',
+      action: () => {
+        store.aboutDisplay.open();
+      },
+    },
+  ];
+}
+
 export const LegendDataCubeBuilder = withLegendDataCubeBuilderStore(
   observer(() => {
     const store = useLegendDataCubeBuilderStore();
@@ -175,26 +255,7 @@ export const LegendDataCubeBuilder = withLegendDataCubeBuilderStore(
           layoutManager={store.layoutService.manager}
           taskManager={store.taskService.manager}
           headerContent={<LegendDataCubeBuilderHeader />}
-          menuItems={[
-            {
-              label: 'See Documentation',
-              action: () => {
-                const url = application.documentationService.url;
-                if (url) {
-                  application.navigationService.navigator.visitAddress(
-                    application.documentationService.url,
-                  );
-                }
-              },
-              disabled: !application.documentationService.url,
-            },
-            {
-              label: 'About',
-              action: () => {
-                store.aboutDisplay.open();
-              },
-            },
-          ]}
+          menuItems={generateMenuItems(store)}
         >
           {store.initializeState.isInProgress && (
             <div className="h-full w-full p-2">
@@ -217,26 +278,7 @@ export const LegendDataCubeBuilder = withLegendDataCubeBuilderStore(
           layoutManager={store.layoutService.manager}
           taskManager={store.taskService.manager}
           headerContent={<LegendDataCubeBuilderHeader />}
-          menuItems={[
-            {
-              label: 'See Documentation',
-              action: () => {
-                const url = application.documentationService.url;
-                if (url) {
-                  application.navigationService.navigator.visitAddress(
-                    application.documentationService.url,
-                  );
-                }
-              },
-              disabled: !application.documentationService.url,
-            },
-            {
-              label: 'About',
-              action: () => {
-                store.aboutDisplay.open();
-              },
-            },
-          ]}
+          menuItems={generateMenuItems(store)}
         >
           <div className="h-full w-full p-2">
             <div>Create a new DataCube to start</div>
@@ -253,7 +295,7 @@ export const LegendDataCubeBuilder = withLegendDataCubeBuilderStore(
     return (
       <DataCube
         key={builder.uuid} // used as mechanism to reload data-cube component when changing between DataCubes or between create/edit mode
-        specification={builder.specification}
+        specification={builder.initialSpecification}
         engine={store.baseStore.engine}
         options={{
           layoutManager: store.layoutService.manager,
@@ -263,65 +305,7 @@ export const LegendDataCubeBuilder = withLegendDataCubeBuilderStore(
             builder.setDataCube(event.api);
           },
           innerHeaderRenderer: () => <LegendDataCubeBuilderHeader />,
-          getHeaderMenuItems: () => {
-            const menuItems: (DataCubeMenuItem | DataCubeNativeMenuItem)[] = [
-              {
-                label: 'View Source',
-                action: () => {
-                  // TODO: show a window with source details
-                  // e.g. for Legend Query source, we should allow user to navigate
-                  // to the Legend Query editor view of the source query.
-                },
-                disabled: true,
-              },
-              ...(builder.persistentDataCube
-                ? [
-                    {
-                      label: 'Update Info...',
-                      action: () => {
-                        // effectively, we open the save window to let user update the DataCube info, such as name, auto-enable caching, etc.
-                        store.saverDisplay.open();
-                      },
-                      disabled: !store.canCurrentUserManageDataCube(
-                        builder.persistentDataCube,
-                      ),
-                    },
-                    {
-                      label: 'Delete DataCube...',
-                      action: () => {
-                        store.setDataCubeToDelete(builder.persistentDataCube);
-                        store.deleteConfirmationDisplay.open();
-                      },
-                      disabled: !store.canCurrentUserManageDataCube(
-                        builder.persistentDataCube,
-                      ),
-                    },
-                  ]
-                : []),
-              DataCubeNativeMenuItem.SEPARATOR,
-            ];
-            return [
-              ...menuItems,
-              {
-                label: 'See Documentation',
-                action: () => {
-                  const url = application.documentationService.url;
-                  if (url) {
-                    application.navigationService.navigator.visitAddress(
-                      application.documentationService.url,
-                    );
-                  }
-                },
-                disabled: !application.documentationService.url,
-              },
-              {
-                label: 'About',
-                action: () => {
-                  store.aboutDisplay.open();
-                },
-              },
-            ];
-          },
+          getHeaderMenuItems: () => generateMenuItems(store),
           settingsData: {
             configurations: store.baseStore.settings,
             values: application.settingService.getObjectValue(

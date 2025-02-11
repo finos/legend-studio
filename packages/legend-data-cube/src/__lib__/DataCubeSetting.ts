@@ -15,6 +15,7 @@
  */
 
 export enum DataCubeSettingKey {
+  EDITOR__MAX_HISTORY_STACK_SIZE = 'dataCube.editor.maxHistoryStackSize',
   DEBUGGER__ENABLE_DEBUG_MODE = 'dataCube.debugger.enableDebugMode',
   DEBUGGER__USE_DEV_CLIENT_PROTOCOL_VERSION = 'dataCube.debugger.useDevClientProtocolVersion',
   DEBUGGER__ACTION__RELOAD = 'dataCube.debugger.action.reload',

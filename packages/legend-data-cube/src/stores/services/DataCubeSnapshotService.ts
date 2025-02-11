@@ -20,16 +20,12 @@ import {
   assertErrorThrown,
   at,
   deepDiff,
-  guaranteeNonNullable,
 } from '@finos/legend-shared';
-import type { DataCubeSpecification } from '../core/model/DataCubeSpecification.js';
 import { DataCubeSettingKey } from '../../__lib__/DataCubeSetting.js';
 import type { DataCubeEngine } from '../core/DataCubeEngine.js';
 import type { DataCubeSettingService } from './DataCubeSettingService.js';
 import type { DataCubeLogService } from './DataCubeLogService.js';
-
-// TODO: set a stack depth when we implement undo/redo
-// const DATA_CUBE_MAX_SNAPSHOT_COUNT = 100;
+import { action, computed, makeObservable, observable } from 'mobx';
 
 interface DataCubeSnapshotSubscriber {
   getSnapshotSubscriberName(): string;
@@ -98,22 +94,41 @@ export abstract class DataCubeSnapshotController
   }
 }
 
+const MINIMUM_HISTORY_SIZE = 10;
+
 export class DataCubeSnapshotService {
-  private readonly _engine: DataCubeEngine;
   private readonly _logService: DataCubeLogService;
+  private readonly _settingService: DataCubeSettingService;
 
   private readonly _subscribers: DataCubeSnapshotSubscriber[] = [];
-  private readonly _snapshots: DataCubeSnapshot[] = []; // stack
-  private _initialSnapshot: DataCubeSnapshot | undefined;
-  private _initialSpecification: DataCubeSpecification | undefined;
 
-  constructor(engine: DataCubeEngine, logService: DataCubeLogService) {
-    this._engine = engine;
+  private _snapshots: DataCubeSnapshot[] = []; // stack
+  private _pointer = -1;
+  private _historySize;
+
+  constructor(
+    logService: DataCubeLogService,
+    settingService: DataCubeSettingService,
+  ) {
+    makeObservable<DataCubeSnapshotService, '_snapshots' | '_pointer'>(this, {
+      _snapshots: observable.struct,
+      _pointer: observable,
+      canUndo: computed,
+      canRedo: computed,
+      undo: action,
+      redo: action,
+      adjustHistorySize: action,
+      broadcastSnapshot: action,
+    });
     this._logService = logService;
-  }
+    this._settingService = settingService;
 
-  get currentSnapshot() {
-    return at(this._snapshots, this._snapshots.length - 1);
+    this._historySize = Math.max(
+      this._settingService.getNumericValue(
+        DataCubeSettingKey.EDITOR__MAX_HISTORY_STACK_SIZE,
+      ),
+      MINIMUM_HISTORY_SIZE,
+    );
   }
 
   registerSubscriber(subscriber: DataCubeSnapshotSubscriber) {
@@ -137,38 +152,7 @@ export class DataCubeSnapshotService {
     this._subscribers.push(subscriber);
   }
 
-  initialize(snapshot: DataCubeSnapshot, specification: DataCubeSpecification) {
-    if (this._initialSnapshot || this._initialSpecification) {
-      throw new IllegalStateError(
-        `Snapshot manager has already been initialized`,
-      );
-    }
-    this._initialSnapshot = snapshot;
-    this._initialSpecification = specification;
-  }
-
-  get initialSnapshot() {
-    return guaranteeNonNullable(
-      this._initialSnapshot,
-      `Snapshot manager has not been initialized`,
-    );
-  }
-
-  get initialQuery() {
-    return guaranteeNonNullable(
-      this._initialSpecification,
-      `Snapshot manager has not been initialized`,
-    );
-  }
-
-  broadcastSnapshot(snapshot: DataCubeSnapshot) {
-    if (!snapshot.isFinalized()) {
-      this._logService.logIllegalStateError(
-        `Snapshot must be finalized before broadcasting`,
-      );
-      return;
-    }
-    this._snapshots.push(snapshot);
+  private propagateSnapshot(snapshot: DataCubeSnapshot): void {
     this._subscribers.forEach((subscriber) => {
       const currentSnapshot = subscriber.getLatestSnapshot();
       if (currentSnapshot?.uuid !== snapshot.uuid) {
@@ -181,5 +165,75 @@ export class DataCubeSnapshotService {
         });
       }
     });
+  }
+
+  getCurrentSnapshot() {
+    return at(this._snapshots, this._pointer);
+  }
+
+  getHistory(options?: { full?: boolean }) {
+    return options?.full
+      ? [...this._snapshots]
+      : this._snapshots.slice(0, this._pointer + 1);
+  }
+
+  get canUndo() {
+    return this._pointer > 0;
+  }
+
+  get canRedo() {
+    return this._pointer < this._snapshots.length - 1;
+  }
+
+  undo() {
+    // Always leave one snapshot in the stack
+    this._pointer = Math.max(this._pointer - 1, 0);
+    this.propagateSnapshot(this.getCurrentSnapshot());
+  }
+
+  redo() {
+    this._pointer = Math.min(this._pointer + 1, this._snapshots.length - 1);
+    this.propagateSnapshot(this.getCurrentSnapshot());
+  }
+
+  adjustHistorySize(size: number): void {
+    let newSize = size;
+    if (size <= MINIMUM_HISTORY_SIZE) {
+      this._logService.logIllegalStateError(
+        `Can't adjust history size to ${size}: value must be greator than ${MINIMUM_HISTORY_SIZE}`,
+      );
+      newSize = Math.max(size, MINIMUM_HISTORY_SIZE);
+    }
+    const snapshots = this.getHistory();
+    if (snapshots.length > newSize) {
+      this._snapshots = snapshots.slice(-newSize);
+      this._pointer = Math.min(
+        Math.max(this._pointer - (snapshots.length - newSize), 0),
+        snapshots.length - 1,
+      );
+    } else {
+      this._snapshots = snapshots;
+      this._pointer = snapshots.length - 1;
+    }
+    this._historySize = newSize;
+  }
+
+  broadcastSnapshot(snapshot: DataCubeSnapshot) {
+    if (!snapshot.isFinalized()) {
+      this._logService.logIllegalStateError(
+        `Snapshot must be finalized before broadcasting`,
+      );
+      return;
+    }
+
+    this._snapshots = [
+      ...this._snapshots.slice(0, this._pointer + 1),
+      snapshot,
+    ];
+    this._pointer += 1;
+    // always adjust to history size after adding a new snapshot
+    this.adjustHistorySize(this._historySize);
+
+    this.propagateSnapshot(snapshot);
   }
 }

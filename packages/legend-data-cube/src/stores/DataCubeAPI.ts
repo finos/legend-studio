@@ -38,6 +38,13 @@ export interface DataCubeAPI {
    */
   updateName(name: string): void;
   /**
+   * Applies the specification to the DataCube, i.e. update the query, configuration.
+   *
+   * Note that source cannot be updated via this method, providing a different source
+   * than the one the DataCube has will result in an error.
+   */
+  applySpecification(specification: DataCubeSpecification): Promise<void>;
+  /**
    * Retries all failed data fetches and rerender the grid.
    */
   retryFailedDataFetches(): void;
@@ -71,7 +78,7 @@ export class INTERNAL__DataCubeAPI implements DataCubeAPI {
   // ----------------------------- API -----------------------------
 
   getProcessedSource() {
-    return this._dataCube.view.getOriginalSource();
+    return this._dataCube.view.getInitialSource();
   }
 
   generateSpecification() {
@@ -80,6 +87,10 @@ export class INTERNAL__DataCubeAPI implements DataCubeAPI {
 
   updateName(name: string) {
     this._dataCube.view.updateName(name);
+  }
+
+  async applySpecification(specification: DataCubeSpecification) {
+    await this._dataCube.view.applySpecification(specification);
   }
 
   retryFailedDataFetches() {

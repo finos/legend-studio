@@ -63,8 +63,8 @@ export class LegendDataCubeBuilderState {
   readonly uuid = uuid();
   readonly startTime = Date.now();
 
-  readonly specification!: DataCubeSpecification;
-  readonly persistentDataCube?: PersistentDataCube | undefined;
+  readonly initialSpecification!: DataCubeSpecification;
+  persistentDataCube?: PersistentDataCube | undefined;
 
   dataCube?: DataCubeAPI | undefined;
 
@@ -73,12 +73,19 @@ export class LegendDataCubeBuilderState {
     persistentDataCube?: PersistentDataCube | undefined,
   ) {
     makeObservable(this, {
+      persistentDataCube: observable,
+      setPersistentDataCube: action,
+
       dataCube: observable,
       setDataCube: action,
     });
 
-    this.specification = specification;
+    this.initialSpecification = specification;
     this.persistentDataCube = persistentDataCube;
+  }
+
+  setPersistentDataCube(val: PersistentDataCube | undefined) {
+    this.persistentDataCube = val;
   }
 
   setDataCube(val: DataCubeAPI | undefined) {
@@ -417,7 +424,9 @@ export class LegendDataCubeBuilderStore {
           generateBuilderRoute(newPersistentDataCube.id),
         );
       } else {
-        await this.baseStore.graphManager.updateDataCube(persistentDataCube);
+        const updatedPersistentDataCube =
+          await this.baseStore.graphManager.updateDataCube(persistentDataCube);
+        this.builder.setPersistentDataCube(updatedPersistentDataCube);
       }
       this.updateWindowTitle(persistentDataCube);
       if (options?.syncName) {

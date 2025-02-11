@@ -15,6 +15,7 @@
  */
 
 import {
+  DataCubeSpecification,
   DEFAULT_REPORT_NAME,
   FormBadge_Advanced,
   FormButton,
@@ -24,7 +25,7 @@ import {
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { useLegendDataCubeBuilderStore } from './LegendDataCubeBuilderStoreProvider.js';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { guaranteeNonNullable, returnUndefOnError } from '@finos/legend-shared';
 
 export const LegendDataCubeSaver = observer(() => {
   const [name, setName] = useState(DEFAULT_REPORT_NAME);
@@ -35,13 +36,22 @@ export const LegendDataCubeSaver = observer(() => {
   const builder = guaranteeNonNullable(store.builder);
 
   useEffect(() => {
+    const persistentDataCube = builder.persistentDataCube;
+    const latestSpecification = persistentDataCube
+      ? returnUndefOnError(() =>
+          DataCubeSpecification.serialization.fromJson(
+            persistentDataCube.content,
+          ),
+        )
+      : undefined;
+
     setName(
-      builder.persistentDataCube?.name ??
-        builder.specification.configuration?.name ??
+      persistentDataCube?.name ??
+        builder.initialSpecification.configuration?.name ??
         DEFAULT_REPORT_NAME,
     );
     setSyncName(false);
-    setAutoEnableCache(builder.specification.options?.autoEnableCache ?? false);
+    setAutoEnableCache(latestSpecification?.options?.autoEnableCache ?? false);
   }, [builder]);
 
   return (
@@ -107,7 +117,13 @@ export const LegendDataCubeSaver = observer(() => {
             <>
               <FormButton
                 className="ml-2"
-                disabled={!builder.dataCube || store.saveState.isInProgress}
+                disabled={
+                  !builder.dataCube ||
+                  store.saveState.isInProgress ||
+                  !store.canCurrentUserManageDataCube(
+                    builder.persistentDataCube,
+                  )
+                }
                 onClick={() => {
                   store
                     .saveDataCube(name, {

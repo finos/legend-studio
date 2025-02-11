@@ -29,7 +29,7 @@ import {
   DataCubeColumnConfiguration,
   DataCubeConfiguration,
 } from '../model/DataCubeConfiguration.js';
-import { TEST__DataCubeEngine } from './DataCubeTestUtils.js';
+import { TEST__DataCubeEngine } from '../../__tests__/DataCubeTestUtils.js';
 import type {
   DataCubeSnapshot,
   DataCubeSnapshotFilterCondition,
