@@ -29,7 +29,7 @@
     "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js"
   },
   "dependencies": {
-    "postcss": "8.5.1",
+    "postcss": "8.5.2",
     "postcss-scss": "4.0.9",
     "stylelint": "16.14.1",
     "stylelint-config-standard": "37.0.0",
@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "eslint": "9.19.0",
+    "eslint": "9.20.0",
     "rimraf": "6.0.1"
   },
   "peerDependencies": {
