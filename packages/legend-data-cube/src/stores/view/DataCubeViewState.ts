@@ -19,22 +19,29 @@ import { DataCubeEditorState } from './editor/DataCubeEditorState.js';
 import {
   ActionState,
   assertErrorThrown,
+  deepEqual,
   IllegalStateError,
 } from '@finos/legend-shared';
-import { DataCubeQuerySnapshotService } from '../services/DataCubeQuerySnapshotService.js';
+import { DataCubeSnapshotService } from '../services/DataCubeSnapshotService.js';
 import { DataCubeInfoState } from './DataCubeInfoState.js';
-import { validateAndBuildQuerySnapshot } from '../core/DataCubeQuerySnapshotBuilder.js';
+import { validateAndBuildSnapshot } from '../core/DataCubeSnapshotBuilder.js';
 import { DataCubeFilterEditorState } from './filter/DataCubeFilterEditorState.js';
 import { DataCubeExtendManagerState } from './extend/DataCubeExtendManagerState.js';
 import type { DataCubeState } from '../DataCubeState.js';
 import { type DataCubeEngine } from '../core/DataCubeEngine.js';
 import type { DataCubeSource } from '../core/model/DataCubeSource.js';
-import { DataCubeQuery } from '../core/model/DataCubeQuery.js';
+import { DataCubeSpecification } from '../core/model/DataCubeSpecification.js';
 import { DataCubeTaskService } from '../services/DataCubeTaskService.js';
 import type { DataCubeLogService } from '../services/DataCubeLogService.js';
 import { DataCubeConfiguration } from '../core/model/DataCubeConfiguration.js';
-import type { DataCubeLayoutService } from '../services/DataCubeLayoutService.js';
-import type { DataCubeAlertService } from '../services/DataCubeAlertService.js';
+import {
+  DEFAULT_ALERT_WINDOW_CONFIG,
+  type DataCubeLayoutService,
+} from '../services/DataCubeLayoutService.js';
+import {
+  AlertType,
+  type DataCubeAlertService,
+} from '../services/DataCubeAlertService.js';
 import type { DataCubeSettingService } from '../services/DataCubeSettingService.js';
 import { CachedDataCubeSource } from '../core/model/CachedDataCubeSource.js';
 import { DataCubeSettingKey } from '../../__lib__/DataCubeSetting.js';
@@ -48,7 +55,7 @@ export class DataCubeViewState {
   readonly layoutService: DataCubeLayoutService;
   readonly alertService: DataCubeAlertService;
   readonly settingService: DataCubeSettingService;
-  readonly snapshotService: DataCubeQuerySnapshotService;
+  readonly snapshotService: DataCubeSnapshotService;
 
   readonly info: DataCubeInfoState;
   readonly editor: DataCubeEditorState;
@@ -60,7 +67,8 @@ export class DataCubeViewState {
   readonly processCacheState = ActionState.create();
 
   private _source?: DataCubeSource | undefined;
-  private _originalSource?: DataCubeSource | undefined;
+  private _initialSource?: DataCubeSource | undefined;
+  private _initialSpecification?: DataCubeSpecification | undefined;
 
   constructor(dataCube: DataCubeState) {
     this.dataCube = dataCube;
@@ -71,9 +79,9 @@ export class DataCubeViewState {
     this.alertService = dataCube.alertService;
     this.settingService = dataCube.settingService;
     // NOTE: snapshot manager must be instantiated before subscribers
-    this.snapshotService = new DataCubeQuerySnapshotService(
-      this.engine,
+    this.snapshotService = new DataCubeSnapshotService(
       this.logService,
+      this.settingService,
     );
 
     this.info = new DataCubeInfoState(this);
@@ -83,14 +91,14 @@ export class DataCubeViewState {
     this.extend = new DataCubeExtendManagerState(this);
   }
 
-  getOriginalSource() {
-    return this._originalSource;
+  getInitialSource() {
+    return this._initialSource;
   }
 
-  async generateDataCubeQuery() {
-    const snapshot = this.snapshotService.currentSnapshot;
-    const query = new DataCubeQuery();
-    query.source = this.dataCube.query.source;
+  async generateSpecification() {
+    const snapshot = this.snapshotService.getCurrentSnapshot();
+    const query = new DataCubeSpecification();
+    query.source = this.dataCube.specification.source;
     query.configuration = DataCubeConfiguration.serialization.fromJson(
       snapshot.data.configuration,
     );
@@ -103,6 +111,61 @@ export class DataCubeViewState {
       throw new IllegalStateError('Source is not initialized');
     }
     return this._source;
+  }
+
+  updateName(name: string) {
+    const baseSnapshot = this.snapshotService.getCurrentSnapshot();
+    const snapshot = baseSnapshot.clone();
+
+    const configuration = DataCubeConfiguration.serialization.fromJson(
+      baseSnapshot.data.configuration,
+    );
+    if (configuration.name === name) {
+      return;
+    }
+    configuration.name = name;
+    snapshot.data.configuration = configuration.serialize();
+
+    snapshot.finalize();
+    if (snapshot.hashCode !== baseSnapshot.hashCode) {
+      this.snapshotService.broadcastSnapshot(snapshot);
+    }
+  }
+
+  async applySpecification(specification: DataCubeSpecification) {
+    const task = this.taskService.newTask('Applying specification...');
+
+    try {
+      if (!this._initialSource || !this._initialSpecification) {
+        throw new Error(`DataCube is not initialized`);
+      }
+      if (!deepEqual(specification.source, this._initialSpecification.source)) {
+        throw new Error(`Can't apply specification with different source`);
+      }
+      const partialQuery = await this.engine.parseValueSpecification(
+        specification.query,
+      );
+      const snapshot = await validateAndBuildSnapshot(
+        partialQuery,
+        this._initialSource,
+        specification,
+        this.engine,
+      );
+      snapshot.finalize();
+      if (
+        snapshot.hashCode !== this.snapshotService.getCurrentSnapshot().hashCode
+      ) {
+        this.snapshotService.broadcastSnapshot(snapshot);
+      }
+    } catch (error) {
+      assertErrorThrown(error);
+      this.alertService.alertError(error, {
+        message: `Specification Application Failure: ${error.message}`,
+      });
+      this.initializeState.fail();
+    } finally {
+      this.taskService.endTask(task);
+    }
   }
 
   async initializeCache() {
@@ -129,7 +192,7 @@ export class DataCubeViewState {
       this.alertService.alertError(error, {
         message: `Cache Processing Failure: ${error.message}`,
       });
-      this._source = this._originalSource;
+      this._source = this._initialSource;
       this.processCacheState.fail();
     } finally {
       this.taskService.endTask(task);
@@ -141,7 +204,7 @@ export class DataCubeViewState {
       return;
     }
     const cachedSource = this._source;
-    this._source = this._originalSource;
+    this._source = this._initialSource;
 
     this.processCacheState.inProgress();
     const task = this.taskService.newTask('Disposing cache...');
@@ -159,7 +222,7 @@ export class DataCubeViewState {
     }
   }
 
-  async initialize(query: DataCubeQuery) {
+  async initialize(specification: DataCubeSpecification) {
     this.initializeState.inProgress();
     const task = this.taskService.newTask('Initializing...');
 
@@ -176,18 +239,75 @@ export class DataCubeViewState {
           this.snapshotService.registerSubscriber(state);
         }),
       );
-      const source = await this.engine.processQuerySource(query.source);
+      const source = await this.engine.processSource(specification.source);
       this._source = source;
-      this._originalSource = source;
+      this._initialSource = source;
+      this._initialSpecification = specification;
       const partialQuery = await this.engine.parseValueSpecification(
-        query.query,
+        specification.query,
       );
-      const initialSnapshot = await validateAndBuildQuerySnapshot(
+      const initialSnapshot = await validateAndBuildSnapshot(
         partialQuery,
         source,
-        query,
+        specification,
         this.engine,
       );
+
+      // auto-enable cache if specified before broadcasting the first snapshot
+      // so first data-fetches will be against cache
+      if (specification.options?.autoEnableCache) {
+        await this.grid.setCachingEnabled(true, {
+          suppressWarning: true,
+        });
+
+        if (
+          this.settingService.getBooleanValue(
+            DataCubeSettingKey.GRID_CLIENT__SHOW_AUTO_ENABLE_CACHE_PERFORMANCE_WARNING,
+          )
+        ) {
+          this.alertService.alert({
+            message: `Caching is auto-enabled for this DataCube`,
+            text: `When enabled, the source dataset will be cached locally in order to boost query performance. But depending on computational resource available to your environment, sometimes, caching can negatively impact the overall performance, and can even lead to crashes.\n\nOverall, caching is still an experimental feature where we only support queries with simple execution plans, certain queries might not work.\n\nYou can disable caching if needed, otherwise, please proceed with caution.`,
+            type: AlertType.WARNING,
+            actions: [
+              {
+                label: 'OK',
+                handler: () => {},
+              },
+              {
+                label: 'Disable Caching',
+                handler: () => {
+                  this.grid
+                    .setCachingEnabled(false, {
+                      suppressWarning: true,
+                    })
+                    .catch((error) =>
+                      this.alertService.alertUnhandledError(error),
+                    );
+                },
+              },
+              {
+                label: 'Dismiss Warning',
+                handler: () => {
+                  this.settingService.updateValue(
+                    this.dataCube.api,
+                    DataCubeSettingKey.GRID_CLIENT__SHOW_AUTO_ENABLE_CACHE_PERFORMANCE_WARNING,
+                    false,
+                  );
+                },
+              },
+            ],
+            windowConfig: {
+              ...DEFAULT_ALERT_WINDOW_CONFIG,
+              width: 600,
+              height: 300,
+              minWidth: 300,
+              minHeight: 150,
+            },
+          });
+        }
+      }
+
       this.snapshotService.broadcastSnapshot(initialSnapshot);
       this.dataCube.options?.onViewInitialized?.({
         api: this.dataCube.api,

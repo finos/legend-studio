@@ -15,7 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import type { AdhocQueryDataCubeSourceBuilderState } from '../../../stores/query-builder/source-builder/AdhocQueryDataCubeSourceBuilderState.js';
+import type { AdhocQueryDataCubeSourceBuilderState } from '../../../stores/builder/source/AdhocQueryDataCubeSourceBuilderState.js';
 import { FormBadge_WIP } from '@finos/legend-data-cube';
 
 export const AdhocQueryDataCubeSourceBuilder = observer(

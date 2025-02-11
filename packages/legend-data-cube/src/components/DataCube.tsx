@@ -23,7 +23,7 @@ import type { DataCubeEngine } from '../stores/core/DataCubeEngine.js';
 import { DataCubeState } from '../stores/DataCubeState.js';
 import { type DataCubeOptions } from '../stores/DataCubeOptions.js';
 import { DataCubeContextProvider, useDataCube } from './DataCubeProvider.js';
-import type { DataCubeQuery } from '../stores/core/model/DataCubeQuery.js';
+import type { DataCubeSpecification } from '../stores/core/model/DataCubeSpecification.js';
 import { DataCubeTitleBar } from './DataCubeTitleBar.js';
 import { DEFAULT_REPORT_NAME } from '../stores/core/DataCubeQueryEngine.js';
 import {
@@ -37,7 +37,7 @@ const DataCubeRoot = observer(() => {
 
   useEffect(() => {
     dataCube.view
-      .initialize(dataCube.query)
+      .initialize(dataCube.specification)
       .catch((error) => dataCube.logService.logUnhandledError(error));
   }, [dataCube]);
 
@@ -47,19 +47,21 @@ const DataCubeRoot = observer(() => {
         title={view.info.name}
         menuItems={[
           {
-            label: 'See Documentation',
-            action: () => {
-              const url = dataCube.options?.documentationUrl;
-              if (url) {
-                dataCube.navigationService.openLink(url);
-              }
-            },
+            label: 'Undo',
+            action: () => dataCube.view.snapshotService.undo(),
+            disabled: !dataCube.view.snapshotService.canUndo,
+          },
+          {
+            label: 'Redo',
+            action: () => dataCube.view.snapshotService.redo(),
+            disabled: !dataCube.view.snapshotService.canRedo,
           },
           {
             label: 'Settings...',
             action: () => dataCube.settingService.display.open(),
           },
         ]}
+        getMenuItems={dataCube.options?.getHeaderMenuItems}
       >
         {dataCube.options?.innerHeaderRenderer?.({ api: dataCube.api }) ?? null}
       </DataCubeTitleBar>
@@ -74,13 +76,13 @@ const DataCubeRoot = observer(() => {
 
 export const DataCube = observer(
   (props: {
-    query: DataCubeQuery;
+    specification: DataCubeSpecification;
     engine: DataCubeEngine;
     options?: DataCubeOptions | undefined;
   }) => {
-    const { query, engine, options } = props;
+    const { specification, engine, options } = props;
     const dataCube = useLocalObservable(
-      () => new DataCubeState(query, engine, options),
+      () => new DataCubeState(specification, engine, options),
     );
 
     useEffect(() => {

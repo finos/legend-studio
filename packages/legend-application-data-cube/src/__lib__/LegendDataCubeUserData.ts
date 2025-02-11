@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-export const RECENTLY_VIEWED_QUERIES_LIMIT = 10;
+export const RECENTLY_VIEWED_DATA_CUBES_LIMIT = 10;
 
 export enum LegendDataCubeUserDataKey {
-  RECENTLY_VIEWED_QUERIES = 'recentlyViewedQueries',
+  RECENTLY_VIEWED_DATA_CUBES = 'recentlyViewedDataCubes',
 }

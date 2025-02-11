@@ -21,7 +21,7 @@ import {
   DataCubeQuerySortDirection,
   isPivotResultColumnName,
 } from '../../core/DataCubeQueryEngine.js';
-import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
+import { type DataCubeSnapshot } from '../../core/DataCubeSnapshot.js';
 import {
   _findCol,
   _toCol,
@@ -117,7 +117,7 @@ export class DataCubeEditorHorizontalPivotsPanelState
   }
 
   applySnaphot(
-    snapshot: DataCubeQuerySnapshot,
+    snapshot: DataCubeSnapshot,
     configuration: DataCubeConfiguration,
   ) {
     this.selector.setSelectedColumns(
@@ -135,10 +135,7 @@ export class DataCubeEditorHorizontalPivotsPanelState
     this.setCastColumns(snapshot.data.pivot?.castColumns ?? []);
   }
 
-  buildSnapshot(
-    newSnapshot: DataCubeQuerySnapshot,
-    baseSnapshot: DataCubeQuerySnapshot,
-  ) {
+  buildSnapshot(newSnapshot: DataCubeSnapshot, baseSnapshot: DataCubeSnapshot) {
     newSnapshot.data.pivot = this.selector.selectedColumns.length
       ? {
           columns: this.selector.selectedColumns.map(_toCol),

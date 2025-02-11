@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export * from './stores/core/model/DataCubeQuery.js';
+export * from './stores/core/model/DataCubeSpecification.js';
 export * from './stores/core/model/DataCubeSource.js';
 export { type DataCubeColumn } from './stores/core/model/DataCubeColumn.js';
 export * from './stores/core/model/DataCubeConfiguration.js';
@@ -23,7 +23,7 @@ export { CachedDataCubeSource } from './stores/core/model/CachedDataCubeSource.j
 
 export * from './stores/core/DataCubeEngine.js';
 export * from './stores/core/DataCubeQueryEngine.js';
-export { DataCubeQuerySnapshot } from './stores/core/DataCubeQuerySnapshot.js';
+export { DataCubeSnapshot } from './stores/core/DataCubeSnapshot.js';
 
 export {
   type DataCubeSetting,
@@ -34,6 +34,7 @@ export {
 export {
   DataCubeLayoutService,
   WindowState,
+  type WindowConfiguration,
   DisplayState,
   LayoutConfiguration,
   DEFAULT_TOOL_PANEL_WINDOW_CONFIG,

@@ -35,7 +35,7 @@ import {
   _function,
   DataCubeFunction,
   type CompletionItem,
-  DataCubeQuery,
+  DataCubeSpecification,
 } from '@finos/legend-data-cube';
 import {
   guaranteeType,
@@ -75,7 +75,7 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     this.parameters = selectQuery.parameters;
   }
 
-  override async processQuerySource(sourceData: PlainObject) {
+  override async processSource(sourceData: PlainObject) {
     // TODO: this is an abnormal usage of this method, this is the place
     // where we can enforce which source this engine supports, instead
     // of hardcoding the logic like this.
@@ -239,19 +239,18 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     return srcFuncExp;
   }
 
-  async generateInitialQuery() {
+  async generateInitialSpecification() {
     const columns = (await this.getRelationType(this.selectInitialQuery))
       .columns;
-    const query = new DataCubeQuery();
-    query.query = `~[${columns.map((e) => `'${e.name}'`)}]->select()`;
-
-    return query;
+    const specification = new DataCubeSpecification();
+    specification.query = `~[${columns.map((e) => `'${e.name}'`)}]->select()`;
+    return specification;
   }
 
-  async getRelationType(query: RawLambda) {
+  async getRelationType(lambda: RawLambda) {
     const relationType =
       await this.graphState.graphManager.getLambdaRelationType(
-        query,
+        lambda,
         this.graphState.graph,
       );
     return relationType;

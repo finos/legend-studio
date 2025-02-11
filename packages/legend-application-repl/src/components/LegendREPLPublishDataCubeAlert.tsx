@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-import { useLegendREPLBaseStore } from './LegendREPLFramworkProvider.js';
-import type { PersistentDataCubeQuery } from '@finos/legend-graph';
+import { useLegendREPLBaseStore } from './LegendREPLFrameworkProvider.js';
+import type { PersistentDataCube } from '@finos/legend-graph';
 import { EXTERNAL_APPLICATION_NAVIGATION__generateDataCubeViewUrl } from '../application/LegendREPLNavigation.js';
 import { DataCubeIcon } from '@finos/legend-art';
 
 export const LegendREPLPublishDataCubeAlert = (props: {
-  query: PersistentDataCubeQuery;
+  persistentDataCube: PersistentDataCube;
 }) => {
-  const { query } = props;
+  const { persistentDataCube } = props;
   const store = useLegendREPLBaseStore();
   const link = store.hostedApplicationBaseUrl
     ? EXTERNAL_APPLICATION_NAVIGATION__generateDataCubeViewUrl(
         store.hostedApplicationBaseUrl,
-        query.id,
+        persistentDataCube.id,
       )
     : undefined;
 
@@ -39,23 +39,23 @@ export const LegendREPLPublishDataCubeAlert = (props: {
         </div>
         <div>
           <div className="whitespace-break-spaces text-lg">
-            Published query successfully!
+            Published DataCube successfully!
           </div>
           {link && (
             <div className="mt-1 whitespace-break-spaces text-neutral-500">
-              To view or share the published query, use the link below.
+              To view or share the published DataCube, use the link below.
             </div>
           )}
           {!link && (
             <div className="mt-1 whitespace-break-spaces text-neutral-500">
-              See the published query ID below.
+              See the published DataCube ID below.
             </div>
           )}
         </div>
       </div>
       {link && (
         <div className="mt-3 flex h-6 w-full">
-          <div className="flex h-full w-[calc(100%_-_20px)] items-center border border-r-0 border-neutral-400 bg-neutral-200 px-1.5">
+          <div className="flex h-full w-[calc(100%_-_20px)] items-center border border-r-0 border-neutral-400 px-1.5 font-bold text-sky-500 underline">
             <a
               href={link}
               target="_blank"
@@ -82,14 +82,14 @@ export const LegendREPLPublishDataCubeAlert = (props: {
         <div className="mt-3 flex h-6 w-full">
           <div className="flex h-full w-[calc(100%_-_20px)] items-center border border-r-0 border-neutral-400 bg-neutral-200 px-1.5">
             <div className="overflow-hidden overflow-ellipsis whitespace-nowrap">
-              {query.id}
+              {persistentDataCube.id}
             </div>
           </div>
           <button
             className="flex aspect-square h-full w-6 items-center justify-center border border-neutral-400 bg-neutral-300 hover:brightness-95"
             onClick={() => {
               store.application.clipboardService
-                .copyTextToClipboard(query.id)
+                .copyTextToClipboard(persistentDataCube.id)
                 .catch(store.application.alertUnhandledError);
             }}
             title="Copy ID"

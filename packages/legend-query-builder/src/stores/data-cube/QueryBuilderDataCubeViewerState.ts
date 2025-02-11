@@ -14,15 +14,18 @@
  * limitations under the License.
  */
 
-import type { DataCubeQuery } from '@finos/legend-data-cube';
+import type { DataCubeSpecification } from '@finos/legend-data-cube';
 import type { QueryBuilderDataCubeEngine } from './QueryBuilderDataCubeEngine.js';
 
 export class QueryBuilderDataCubeViewerState {
-  query: DataCubeQuery;
-  engine: QueryBuilderDataCubeEngine;
+  readonly specification: DataCubeSpecification;
+  readonly engine: QueryBuilderDataCubeEngine;
 
-  constructor(query: DataCubeQuery, engine: QueryBuilderDataCubeEngine) {
-    this.query = query;
+  constructor(
+    specification: DataCubeSpecification,
+    engine: QueryBuilderDataCubeEngine,
+  ) {
+    this.specification = specification;
     this.engine = engine;
   }
 }

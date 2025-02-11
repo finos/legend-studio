@@ -18,7 +18,7 @@
  * [CORE]
  *
  * This and its corresponding utilitites are used to build the executable query from
- * the query snapshot. The executable query is then used to fetch data.
+ * the snapshot. The executable query is then used to fetch data.
  ***************************************************************************************/
 
 import {
@@ -26,7 +26,7 @@ import {
   V1_Lambda,
   type V1_AppliedFunction,
 } from '@finos/legend-graph';
-import { type DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
+import { type DataCubeSnapshot } from './DataCubeSnapshot.js';
 import { at, guaranteeType } from '@finos/legend-shared';
 import {
   DataCubeFunction,
@@ -55,12 +55,12 @@ import { _findCol } from './model/DataCubeColumn.js';
 import type { DataCubeEngine } from './DataCubeEngine.js';
 
 export function buildExecutableQuery(
-  snapshot: DataCubeQuerySnapshot,
+  snapshot: DataCubeSnapshot,
   source: DataCubeSource,
   engine: DataCubeEngine,
   options?: {
     postProcessor?: (
-      snapshot: DataCubeQuerySnapshot,
+      snapshot: DataCubeSnapshot,
       sequence: V1_AppliedFunction[],
       funcMap: DataCubeQueryFunctionMap,
       configuration: DataCubeConfiguration,

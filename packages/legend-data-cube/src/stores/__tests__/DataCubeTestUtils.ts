@@ -35,8 +35,8 @@ import {
   type DataCubeRelationType,
   type DataCubeExecutionOptions,
   type DataCubeExecutionResult,
-} from '../DataCubeEngine.js';
-import type { DataCubeSource } from '../model/DataCubeSource.js';
+} from '../core/DataCubeEngine.js';
+import type { DataCubeSource } from '../core/model/DataCubeSource.js';
 import {
   ENGINE_TEST_SUPPORT__getLambdaRelationType,
   ENGINE_TEST_SUPPORT__grammarToJSON_valueSpecification,
@@ -46,7 +46,7 @@ import {
 import { deserialize } from 'serializr';
 
 export class TEST__DataCubeEngine extends DataCubeEngine {
-  override async processQuerySource(
+  override async processSource(
     sourceData: PlainObject,
   ): Promise<DataCubeSource> {
     throw new Error('Method not implemented.');

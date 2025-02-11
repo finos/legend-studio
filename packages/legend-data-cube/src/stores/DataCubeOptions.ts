@@ -48,6 +48,9 @@ export type DataCubeMenuItem = {
   disabled?: boolean | undefined;
   action: () => void;
 };
+export enum DataCubeNativeMenuItem {
+  SEPARATOR = 'separator',
+}
 
 type DataCubeOptionsBaseParams = {
   api: DataCubeAPI;
@@ -75,6 +78,10 @@ export type DataCubeOptions = {
   onViewInitialized?:
     | ((event: DataCubeViewInitializedEvent) => void)
     | undefined;
+  /**
+   * Enables caching to suppport local query execution.
+   */
+  enableCache?: boolean | undefined;
 
   // ------------------------------ GRID ------------------------------
 
@@ -103,6 +110,12 @@ export type DataCubeOptions = {
   innerHeaderRenderer?:
     | ((params: DataCubeInnerHeaderComponentParams) => React.ReactNode)
     | undefined;
+  /**
+   * Provides a list of items to be displayed in the header dropdown menu.
+   */
+  getHeaderMenuItems?:
+    | (() => (DataCubeMenuItem | DataCubeNativeMenuItem)[])
+    | undefined;
 
   // ------------------------------ SETTINGS ------------------------------
 
@@ -119,15 +132,4 @@ export type DataCubeOptions = {
   onSettingsChanged?:
     | ((event: DataCubeSettingsChangedEvent) => void)
     | undefined;
-
-  // ------------------------------ DOCUMENTATION ------------------------------
-
-  /**
-   * URL to the documentation website.
-   */
-  documentationUrl?: string | undefined;
-  /**
-   * Enables caching to suppport local query execution.
-   */
-  enableCache?: boolean | undefined;
 };

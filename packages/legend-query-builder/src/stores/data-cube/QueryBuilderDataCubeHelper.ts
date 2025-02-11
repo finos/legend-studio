@@ -54,6 +54,6 @@ export const createDataCubeViewerStateFromQueryBuilder = async (
     queryBuilderState.graphManagerState,
   );
   queryBuilderState.setLambdaWriteMode(currentLambdaWriterMode);
-  const query = await engine.generateInitialQuery();
+  const query = await engine.generateInitialSpecification();
   return new QueryBuilderDataCubeViewerState(query, engine);
 };

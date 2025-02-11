@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { DataCubeQueryFilterOperation } from './DataCubeQueryFilterOperation.js';
-import type { DataCubeQuerySnapshotFilterCondition } from '../DataCubeQuerySnapshot.js';
+import type { DataCubeSnapshotFilterCondition } from '../DataCubeSnapshot.js';
 import type { DataCubeColumn } from '../model/DataCubeColumn.js';
 import {
   DataCubeColumnDataType,
@@ -34,7 +34,7 @@ import { type V1_AppliedFunction } from '@finos/legend-graph';
 import {
   _unwrapNotFilterCondition,
   _filterCondition_base,
-} from '../DataCubeQuerySnapshotBuilderUtils.js';
+} from '../DataCubeSnapshotBuilderUtils.js';
 import { returnUndefOnError } from '@finos/legend-shared';
 
 export class DataCubeQueryFilterOperation__IsNotNull extends DataCubeQueryFilterOperation {
@@ -89,7 +89,7 @@ export class DataCubeQueryFilterOperation__IsNotNull extends DataCubeQueryFilter
     );
   }
 
-  buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {
+  buildConditionExpression(condition: DataCubeSnapshotFilterCondition) {
     return _not(
       _function(_functionName(DataCubeFunction.IS_EMPTY), [
         _property(condition.name),

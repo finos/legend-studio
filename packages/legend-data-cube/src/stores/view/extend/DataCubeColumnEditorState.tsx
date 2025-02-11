@@ -46,7 +46,7 @@ import {
   type V1_ValueSpecification,
 } from '@finos/legend-graph';
 import type { DataCubeColumnConfiguration } from '../../core/model/DataCubeConfiguration.js';
-import type { DataCubeQuerySnapshotExtendedColumn } from '../../core/DataCubeQuerySnapshot.js';
+import type { DataCubeSnapshotExtendedColumn } from '../../core/DataCubeSnapshot.js';
 import { _lambda } from '../../core/DataCubeQueryBuilderUtils.js';
 import { _findCol } from '../../core/model/DataCubeColumn.js';
 
@@ -404,7 +404,7 @@ export class DataCubeExistingColumnEditorState extends DataCubeColumnBaseEditorS
 
   constructor(
     manager: DataCubeExtendManagerState,
-    column: DataCubeQuerySnapshotExtendedColumn,
+    column: DataCubeSnapshotExtendedColumn,
     kind: DataCubeColumnKind,
     isGroupLevel: boolean,
   ) {

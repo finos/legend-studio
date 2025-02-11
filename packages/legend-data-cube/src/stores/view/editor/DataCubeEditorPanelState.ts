@@ -15,14 +15,14 @@
  */
 
 import type { DataCubeConfiguration } from '../../core/model/DataCubeConfiguration.js';
-import type { DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
+import type { DataCubeSnapshot } from '../../core/DataCubeSnapshot.js';
 
 export interface DataCubeQueryEditorPanelState {
   /**
    * Update the editor state based on the snapshot
    */
   applySnaphot(
-    snapshot: DataCubeQuerySnapshot,
+    snapshot: DataCubeSnapshot,
     configuration: DataCubeConfiguration,
   ): void;
 
@@ -31,7 +31,7 @@ export interface DataCubeQueryEditorPanelState {
    * @returns whether the snapshot should be updated or not
    */
   buildSnapshot(
-    newSnapshot: DataCubeQuerySnapshot,
-    baseSnapshot: DataCubeQuerySnapshot,
+    newSnapshot: DataCubeSnapshot,
+    baseSnapshot: DataCubeSnapshot,
   ): void;
 }

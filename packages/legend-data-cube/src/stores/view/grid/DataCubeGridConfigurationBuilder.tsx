@@ -18,13 +18,13 @@
  * [GRID]
  *
  * These are utilities used to build the configuration for the grid client,
- * AG Grid, from the query snapshot.
+ * AG Grid, from the snapshot.
  ***************************************************************************************/
 
 import {
-  type DataCubeQuerySnapshot,
-  type DataCubeQuerySnapshotPivot,
-} from '../../core/DataCubeQuerySnapshot.js';
+  type DataCubeSnapshot,
+  type DataCubeSnapshotPivot,
+} from '../../core/DataCubeSnapshot.js';
 import {
   _findCol,
   _toCol,
@@ -147,7 +147,7 @@ function DataCubeGridLoadingCellRenderer(
 
 type ColumnData = {
   name: string;
-  snapshot: DataCubeQuerySnapshot;
+  snapshot: DataCubeSnapshot;
   column: DataCubeColumnConfiguration;
   configuration: DataCubeConfiguration;
 };
@@ -346,7 +346,7 @@ function _displaySpec(columnData: ColumnData) {
 }
 
 function _groupDisplaySpec(
-  snapshot: DataCubeQuerySnapshot,
+  snapshot: DataCubeSnapshot,
   configuration: DataCubeConfiguration,
 ) {
   // TODO?: we can technically alternate the styling based on the column at various drilldown level
@@ -633,7 +633,7 @@ export function generateBaseGridOptions(view: DataCubeViewState): GridOptions {
 
 function generatePivotResultColumnHeaderTooltip(
   id: string,
-  snapshot: DataCubeQuerySnapshot,
+  snapshot: DataCubeSnapshot,
   configuration: DataCubeConfiguration,
 ) {
   const values = id.split(PIVOT_COLUMN_NAME_VALUE_SEPARATOR);
@@ -665,7 +665,7 @@ function generatePivotResultColumnHeaderTooltip(
 
 function generateDefinitionForPivotResultColumns(
   pivotResultColumns: DataCubeColumn[],
-  snapshot: DataCubeQuerySnapshot,
+  snapshot: DataCubeSnapshot,
   configuration: DataCubeConfiguration,
 ) {
   const columns = pivotResultColumns
@@ -793,7 +793,7 @@ function generateDefinitionForPivotResultColumns(
  */
 function rearrangePivotResultColumns(
   pivotResultColumns: DataCubeColumn[],
-  pivotData: DataCubeQuerySnapshotPivot,
+  pivotData: DataCubeSnapshotPivot,
   configuration: DataCubeConfiguration,
 ) {
   try {
@@ -832,7 +832,7 @@ function rearrangePivotResultColumns(
 }
 
 export function generateColumnDefs(
-  snapshot: DataCubeQuerySnapshot,
+  snapshot: DataCubeSnapshot,
   configuration: DataCubeConfiguration,
 ) {
   // NOTE: only show columns which are fetched in select() as we
@@ -923,7 +923,7 @@ export function generateColumnDefs(
 }
 
 export function generateGridOptionsFromSnapshot(
-  snapshot: DataCubeQuerySnapshot,
+  snapshot: DataCubeSnapshot,
   configuration: DataCubeConfiguration,
   view: DataCubeViewState,
 ): GridOptions {
@@ -989,7 +989,7 @@ export function generateGridOptionsFromSnapshot(
     // -------------------------------------- EVENT HANDLERS --------------------------------------
     // NOTE: make sure the event source must not be 'api' since these handlers are meant for direct
     // user interaction with the grid. Actions through context menu (i.e. grid controller) or programatic
-    // update of the grid options due to change in query snapshot should not trigger these handlers.
+    // update of the grid options due to change in snapshot should not trigger these handlers.
 
     onColumnPinned: (event) => {
       if (event.source !== 'api' && event.column) {

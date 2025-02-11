@@ -48,7 +48,7 @@ const LegendREPLBaseStoreProvider: React.FC<{
 export const useLegendREPLBaseStore = (): LegendREPLBaseStore =>
   guaranteeNonNullable(
     useContext(LegendREPLBaseStoreContext),
-    `Can't find Legend Query base store in context`,
+    `Can't find Legend REPL base store in context`,
   );
 
 export const LegendREPLFrameworkProvider: React.FC<{

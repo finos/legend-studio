@@ -31,8 +31,8 @@ import {
   computeHashCodeForDataFetchManualTrigger,
   INTERNAL__GRID_CLIENT_DEFAULT_ENABLE_CACHING,
 } from './DataCubeGridClientEngine.js';
-import { DataCubeQuerySnapshotController } from '../../services/DataCubeQuerySnapshotService.js';
-import type { DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
+import { DataCubeSnapshotController } from '../../services/DataCubeSnapshotService.js';
+import type { DataCubeSnapshot } from '../../core/DataCubeSnapshot.js';
 import { generateGridOptionsFromSnapshot } from './DataCubeGridConfigurationBuilder.js';
 import { DataCubeConfiguration } from '../../core/model/DataCubeConfiguration.js';
 import { DataCubeGridControllerState } from './DataCubeGridControllerState.js';
@@ -56,7 +56,7 @@ import { AlertType } from '../../services/DataCubeAlertService.js';
  * row model datasource, so without the companion grid controller, these changes will not
  * trigger publishing a new snapshot, hence not propagated.
  */
-export class DataCubeGridState extends DataCubeQuerySnapshotController {
+export class DataCubeGridState extends DataCubeSnapshotController {
   private readonly _view: DataCubeViewState;
 
   readonly controller: DataCubeGridControllerState;
@@ -126,7 +126,12 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
     });
   }
 
-  async setCachingEnabled(val: boolean) {
+  async setCachingEnabled(
+    val: boolean,
+    options?: {
+      suppressWarning?: boolean | undefined;
+    },
+  ) {
     if (val === this.isCachingEnabled) {
       return;
     }
@@ -172,11 +177,12 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
     if (
       this._settingService.getBooleanValue(
         DataCubeSettingKey.GRID_CLIENT__SHOW_CACHE_PERFORMANCE_WARNING,
-      )
+      ) &&
+      !options?.suppressWarning
     ) {
       this._view.alertService.alert({
         message: `Confirm you want to proceed with caching`,
-        text: `When enabled, the source dataset will be cached locally in order to boost query performance. But depending on computational resource available to your environment, sometimes, caching can negatively impact the overall performance, and can even lead to crashes.\nDo you still want to proceed?`,
+        text: `When enabled, the source dataset will be cached locally in order to boost query performance. But depending on computational resource available to your environment, sometimes, caching can negatively impact the overall performance, and can even lead to crashes.\n\nOverall, caching is still an experimental feature where we only support queries with simple execution plans, certain queries might not work, in which case, you can abort by turning off caching.\n\nDo you still want to proceed?`,
         type: AlertType.WARNING,
         actions: [
           {
@@ -208,7 +214,7 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
         windowConfig: {
           ...DEFAULT_ALERT_WINDOW_CONFIG,
           width: 600,
-          height: 210,
+          height: 300,
           minWidth: 300,
           minHeight: 150,
         },
@@ -243,8 +249,8 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
   }
 
   override async applySnapshot(
-    snapshot: DataCubeQuerySnapshot,
-    previousSnapshot: DataCubeQuerySnapshot | undefined,
+    snapshot: DataCubeSnapshot,
+    previousSnapshot: DataCubeSnapshot | undefined,
   ) {
     const configuration = DataCubeConfiguration.serialization.fromJson(
       snapshot.data.configuration,

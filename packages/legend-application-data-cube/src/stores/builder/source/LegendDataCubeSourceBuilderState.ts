@@ -40,7 +40,7 @@ export abstract class LegendDataCubeSourceBuilderState {
   abstract get isValid(): boolean;
   abstract generateSourceData(): Promise<PlainObject>;
 
-  /* Modifies the configuration of the finalized DataCube query based on the source builder */
+  /* Modifies the configuration of the finalized DataCube based on the source builder */
   finalizeConfiguration(configuration: DataCubeConfiguration) {
     // do nothing
   }

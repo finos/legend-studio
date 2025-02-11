@@ -21,7 +21,7 @@ import { action, makeObservable, observable } from 'mobx';
 import { DataCubeSettingService } from './services/DataCubeSettingService.js';
 import { INTERNAL__DataCubeAPI } from './DataCubeAPI.js';
 import type { DataCubeOptions } from './DataCubeOptions.js';
-import type { DataCubeQuery } from './core/model/DataCubeQuery.js';
+import type { DataCubeSpecification } from './core/model/DataCubeSpecification.js';
 import { LicenseManager } from 'ag-grid-enterprise';
 import {
   configureCodeEditor,
@@ -47,7 +47,7 @@ export class DataCubeState {
   readonly navigationService: DataCubeNavigationService;
   readonly telemetryService: DataCubeTelemetryService;
 
-  readonly query: DataCubeQuery;
+  readonly specification: DataCubeSpecification;
   readonly options?: DataCubeOptions | undefined;
 
   readonly initializeState = ActionState.create();
@@ -59,7 +59,7 @@ export class DataCubeState {
   view: DataCubeViewState;
 
   constructor(
-    query: DataCubeQuery,
+    specification: DataCubeSpecification,
     engine: DataCubeEngine,
     options?: DataCubeOptions | undefined,
   ) {
@@ -90,7 +90,7 @@ export class DataCubeState {
     this.telemetryService = new DataCubeTelemetryService(this.engine);
 
     this.api = new INTERNAL__DataCubeAPI(this);
-    this.query = query;
+    this.specification = specification;
     this.options = options;
 
     this.view = new DataCubeViewState(this);

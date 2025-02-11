@@ -15,7 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { LegendDataCubeSourceBuilderType } from '../../stores/query-builder/source-builder/LegendDataCubeSourceBuilderState.js';
+import { LegendDataCubeSourceBuilderType } from '../../stores/builder/source/LegendDataCubeSourceBuilderState.js';
 import { useDropdownMenu } from '@finos/legend-art';
 import {
   FormButton,
@@ -23,15 +23,15 @@ import {
   FormDropdownMenuItem,
   FormDropdownMenuTrigger,
 } from '@finos/legend-data-cube';
-import { LegendQueryDataCubeSourceBuilderState } from '../../stores/query-builder/source-builder/LegendQueryDataCubeSourceBuilderState.js';
-import { LegendQueryDataCubeSourceBuilder } from './source-builder/LegendQueryDataCubeSourceBuilder.js';
-import { AdhocQueryDataCubeSourceBuilder } from './source-builder/AdhocQueryDataCubeSourceBuilder.js';
-import { AdhocQueryDataCubeSourceBuilderState } from '../../stores/query-builder/source-builder/AdhocQueryDataCubeSourceBuilderState.js';
-import { useLegendDataCubeQueryBuilderStore } from './LegendDataCubeQueryBuilderStoreProvider.js';
+import { LegendQueryDataCubeSourceBuilderState } from '../../stores/builder/source/LegendQueryDataCubeSourceBuilderState.js';
+import { LegendQueryDataCubeSourceBuilder } from './source/LegendQueryDataCubeSourceBuilder.js';
+import { AdhocQueryDataCubeSourceBuilder } from './source/AdhocQueryDataCubeSourceBuilder.js';
+import { AdhocQueryDataCubeSourceBuilderState } from '../../stores/builder/source/AdhocQueryDataCubeSourceBuilderState.js';
+import { useLegendDataCubeBuilderStore } from './LegendDataCubeBuilderStoreProvider.js';
 
-export const LegendDataCubeNewQueryBuilder = observer(() => {
-  const store = useLegendDataCubeQueryBuilderStore();
-  const state = store.newQueryState;
+export const LegendDataCubeCreator = observer(() => {
+  const store = useLegendDataCubeBuilderStore();
+  const state = store.creator;
   const sourceBuilder = state.sourceBuilder;
   const selectedSourceType = sourceBuilder.label;
   const [

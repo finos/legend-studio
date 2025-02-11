@@ -25,12 +25,12 @@ import {
   DataCubeFontTextAlignment,
 } from './DataCubeQueryEngine.js';
 import { _findCol, type DataCubeColumn } from './model/DataCubeColumn.js';
-import type { DataCubeQuerySnapshotProcessingContext } from './DataCubeQuerySnapshot.js';
+import type { DataCubeSnapshotProcessingContext } from './DataCubeSnapshot.js';
 import { at } from '@finos/legend-shared';
 
 export function newColumnConfiguration(
   column: DataCubeColumn,
-  context?: DataCubeQuerySnapshotProcessingContext | undefined,
+  context?: DataCubeSnapshotProcessingContext | undefined,
 ): DataCubeColumnConfiguration {
   const { name, type } = column;
   const config = new DataCubeColumnConfiguration(name, type);
@@ -108,7 +108,7 @@ export function newColumnConfiguration(
 }
 
 export function newConfiguration(
-  context: DataCubeQuerySnapshotProcessingContext,
+  context: DataCubeSnapshotProcessingContext,
 ): DataCubeConfiguration {
   const { snapshot, groupBySortColumns } = context;
   const data = snapshot.data;

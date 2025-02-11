@@ -15,31 +15,37 @@
  */
 
 import { observer } from 'mobx-react-lite';
+import {
+  QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT,
+  SORT_BY_OPTIONS,
+  type QueryLoaderState,
+} from '@finos/legend-query-builder';
+import type { LegendQueryDataCubeSourceBuilderState } from '../../../stores/builder/source/LegendQueryDataCubeSourceBuilderState.js';
+import { generateGAVCoordinates } from '@finos/legend-storage';
 import { cn, DataCubeIcon, useDropdownMenu } from '@finos/legend-art';
 import {
   debounce,
   formatDistanceToNow,
   quantifyList,
 } from '@finos/legend-shared';
-import { useRef, useMemo, useEffect } from 'react';
+import { flowResult } from 'mobx';
+import { useRef, useState, useMemo, useEffect } from 'react';
 import {
   FormButton,
   FormCheckbox,
+  FormCodeEditor,
   FormDropdownMenu,
   FormDropdownMenuItem,
   FormDropdownMenuTrigger,
   FormTextInput,
 } from '@finos/legend-data-cube';
-import { useLegendDataCubeQueryBuilderStore } from './LegendDataCubeQueryBuilderStoreProvider.js';
-import {
-  DATA_CUBE_QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT,
-  DataCubeQuerySortByType,
-} from '../../stores/query-builder/LegendDataCubeQueryLoaderState.js';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
+import { useLegendDataCubeBuilderStore } from '../LegendDataCubeBuilderStoreProvider.js';
+import { useApplicationStore } from '@finos/legend-application';
 
-const LegendDataCubeQuerySearcher = observer(() => {
-  const store = useLegendDataCubeQueryBuilderStore();
-  const state = store.loader;
-
+const LegendQuerySearcher = observer((props: { state: QueryLoaderState }) => {
+  const { state } = props;
+  const store = useLegendDataCubeBuilderStore();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchResults = state.queries;
 
@@ -48,12 +54,12 @@ const LegendDataCubeQuerySearcher = observer(() => {
   }, [state]);
 
   // search text
-  const debouncedLoadQueries = useMemo(
+  const debouncedLoader = useMemo(
     () =>
       debounce((input: string) => {
-        state
-          .searchQueries(input)
-          .catch((error) => store.alertService.alertUnhandledError(error));
+        flowResult(state.searchQueries(input)).catch((error) =>
+          store.alertService.alertUnhandledError(error),
+        );
       }, 500),
     [store, state],
   );
@@ -62,21 +68,23 @@ const LegendDataCubeQuerySearcher = observer(() => {
   ) => {
     if (event.target.value !== state.searchText) {
       state.setSearchText(event.target.value);
-      debouncedLoadQueries.cancel();
-      debouncedLoadQueries(event.target.value);
+      debouncedLoader.cancel();
+      debouncedLoader(event.target.value);
     }
   };
   const clearSearches = () => {
     state.setSearchText('');
-    debouncedLoadQueries.cancel();
-    debouncedLoadQueries('');
+    debouncedLoader.cancel();
+    debouncedLoader('');
   };
 
   // filter and sort
+  const [isMineOnly, setIsMineOnly] = useState(false);
   const toggleShowCurrentUserQueriesOnly = () => {
     state.setShowCurrentUserQueriesOnly(!state.showCurrentUserQueriesOnly);
-    debouncedLoadQueries.cancel();
-    debouncedLoadQueries(state.searchText);
+    setIsMineOnly(!isMineOnly);
+    debouncedLoader.cancel();
+    debouncedLoader(state.searchText);
   };
 
   const [
@@ -85,16 +93,16 @@ const LegendDataCubeQuerySearcher = observer(() => {
     sortDropdownProps,
     sortDropdownPropsOpen,
   ] = useDropdownMenu();
-  const applySort = (value: DataCubeQuerySortByType) => {
+  const applySort = (value: SORT_BY_OPTIONS) => {
     state.setSortBy(value);
-    debouncedLoadQueries.cancel();
-    debouncedLoadQueries(state.searchText);
+    debouncedLoader.cancel();
+    debouncedLoader(state.searchText);
   };
 
   useEffect(() => {
-    state
-      .searchQueries('')
-      .catch((error) => store.alertService.alertUnhandledError(error));
+    flowResult(state.searchQueries('')).catch((error) =>
+      store.alertService.alertUnhandledError(error),
+    );
   }, [store, state]);
 
   return (
@@ -132,10 +140,11 @@ const LegendDataCubeQuerySearcher = observer(() => {
             <div className="flex h-6 w-[calc(100%_-_40px)] overflow-x-auto">
               <FormCheckbox
                 label="Mine Only"
-                checked={state.showCurrentUserQueriesOnly}
+                checked={isMineOnly}
                 onChange={toggleShowCurrentUserQueriesOnly}
               />
             </div>
+            {/* TODO?: support extra filters */}
           </div>
 
           <div>
@@ -148,7 +157,7 @@ const LegendDataCubeQuerySearcher = observer(() => {
               Sort by: {state.sortBy}
             </FormDropdownMenuTrigger>
             <FormDropdownMenu className="w-32" {...sortDropdownProps}>
-              {Object.values(DataCubeQuerySortByType).map((option) => (
+              {Object.values(SORT_BY_OPTIONS).map((option) => (
                 <FormDropdownMenuItem
                   key={option}
                   onClick={() => {
@@ -167,15 +176,16 @@ const LegendDataCubeQuerySearcher = observer(() => {
       <div className="mx-1.5 mb-1 h-[1px] bg-neutral-200" />
       <div className="h-[calc(100%_-_71px)]">
         <div className="h-full overflow-y-auto">
-          {state.searchState.hasCompleted && (
+          {state.searchQueriesState.hasCompleted && (
             <>
               <div className="mb-1 flex h-5 w-full items-center px-1.5 text-sm text-neutral-600">
                 {state.showingDefaultQueries ? (
-                  `Refine your search to get better matches`
+                  (state.generateDefaultQueriesSummaryText?.(searchResults) ??
+                  `Refine your search to get better matches`)
                 ) : searchResults.length >=
-                  DATA_CUBE_QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT ? (
+                  QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT ? (
                   <>
-                    {`Found ${DATA_CUBE_QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT}+ matches`}{' '}
+                    {`Found ${QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT}+ matches`}{' '}
                     <DataCubeIcon.AlertInfo
                       className="ml-1 text-lg"
                       title="Some queries are not listed, refine your search to get better matches"
@@ -186,13 +196,13 @@ const LegendDataCubeQuerySearcher = observer(() => {
                 )}
               </div>
               {searchResults
-                .slice(0, DATA_CUBE_QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT)
+                .slice(0, QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT)
                 .map((query, idx) => (
                   <div
                     className="mx-1.5 mb-0.5 flex h-[42px] w-[calc(100%_-_12px)] cursor-pointer border border-neutral-200 bg-neutral-100 hover:bg-neutral-200"
                     key={query.id}
                     title="Click to choose query"
-                    onClick={() => state.setSelectedQuery(query)}
+                    onClick={() => state.loadQuery(query)}
                   >
                     <div className="w-[calc(100%_-_16px)]">
                       <div className="h-6 w-4/5 overflow-hidden text-ellipsis whitespace-nowrap px-1.5 leading-6">
@@ -228,7 +238,7 @@ const LegendDataCubeQuerySearcher = observer(() => {
                 ))}
             </>
           )}
-          {!state.searchState.hasCompleted && (
+          {!state.searchQueriesState.hasCompleted && (
             <div className="mb-1 flex h-5 w-full items-center px-1.5 text-sm text-neutral-600">
               <DataCubeIcon.Loader className="animate-spin stroke-2 text-lg" />
               <span className="ml-1">Searching...</span>
@@ -240,70 +250,83 @@ const LegendDataCubeQuerySearcher = observer(() => {
   );
 });
 
-export const LegendDataCubeQueryLoader = observer(() => {
-  const store = useLegendDataCubeQueryBuilderStore();
-  const state = store.loader;
-  const query = state.selectedQuery;
+export const LegendQueryDataCubeSourceBuilder = observer(
+  (props: { sourceBuilder: LegendQueryDataCubeSourceBuilderState }) => {
+    const { sourceBuilder } = props;
+    const application = useApplicationStore();
+    const store = useLegendDataCubeBuilderStore();
+    const query = sourceBuilder.query;
 
-  return (
-    <>
-      <div className="h-[calc(100%_-_40px)] w-full px-2 pt-2">
-        <div className="h-full w-full overflow-auto border border-neutral-300 bg-white">
-          {!query ? (
-            <LegendDataCubeQuerySearcher />
-          ) : (
-            <div className="h-full w-full p-1.5">
-              <div className="mb-0.5 flex h-[42px] w-full border border-neutral-200 bg-neutral-100">
-                <div className="w-full">
-                  <div className="h-6 w-4/5 overflow-hidden text-ellipsis whitespace-nowrap px-1.5 leading-6">
-                    {query.name}
-                  </div>
-                  <div className="flex h-[18px] items-start justify-between px-1.5">
-                    <div className="flex">
-                      <DataCubeIcon.ClockEdit className="text-sm text-neutral-500" />
-                      <div className="ml-1 text-sm text-neutral-500">
-                        {query.lastUpdatedAt
-                          ? formatDistanceToNow(new Date(query.lastUpdatedAt), {
-                              includeSeconds: true,
-                              addSuffix: true,
-                            })
-                          : '(unknown)'}
-                      </div>
-                    </div>
-                    <div className="flex">
-                      <DataCubeIcon.User className="text-sm text-neutral-500" />
-                      <div className="ml-1 text-sm text-neutral-500">
-                        {query.owner}
-                      </div>
-                    </div>
-                  </div>
+    if (!query) {
+      return <LegendQuerySearcher state={sourceBuilder.queryLoader} />;
+    }
+    return (
+      <div className="h-full">
+        <div className="relative mb-0.5 flex h-[60px] w-full border border-neutral-200 bg-neutral-100">
+          <div className="w-full">
+            <div className="h-6 w-4/5 overflow-hidden text-ellipsis whitespace-nowrap px-1.5 leading-6">
+              {query.name}
+            </div>
+            <button
+              className="absolute right-1 top-1 flex aspect-square w-5 items-center justify-center text-neutral-500"
+              title="Copy ID to clipboard"
+              onClick={() => {
+                application.clipboardService
+                  .copyTextToClipboard(query.id)
+                  .catch((error) =>
+                    store.alertService.alertUnhandledError(error),
+                  );
+              }}
+            >
+              <DataCubeIcon.Clipboard />
+            </button>
+            <div className="flex h-[18px] items-start justify-between px-1.5 text-sm text-neutral-500">
+              {`[ ${generateGAVCoordinates(
+                query.groupId,
+                query.artifactId,
+                query.versionId,
+              )} ]`}
+            </div>
+            <div className="flex h-[18px] items-start justify-between px-1.5">
+              <div className="flex">
+                <DataCubeIcon.ClockEdit className="text-sm text-neutral-500" />
+                <div className="ml-1 text-sm text-neutral-500">
+                  {query.lastUpdatedAt
+                    ? formatDistanceToNow(new Date(query.lastUpdatedAt), {
+                        includeSeconds: true,
+                        addSuffix: true,
+                      })
+                    : '(unknown)'}
                 </div>
               </div>
-
-              <FormButton
-                className="mt-1.5"
-                onClick={() => state.setSelectedQuery(undefined)}
-              >
-                Select Another Query
-              </FormButton>
+              <div className="flex">
+                <DataCubeIcon.User className="text-sm text-neutral-500" />
+                <div className="ml-1 text-sm text-neutral-500">
+                  {query.owner}
+                </div>
+              </div>
             </div>
-          )}
+          </div>
         </div>
-      </div>
-      <div className="flex h-10 items-center justify-end px-2">
-        <FormButton onClick={() => state.display.close()}>Cancel</FormButton>
+        {sourceBuilder.queryCode !== undefined && (
+          <div className="mt-1.5 h-40 w-full">
+            <FormCodeEditor
+              value={sourceBuilder.queryCode}
+              title="Query Code"
+              isReadOnly={true}
+              language={CODE_EDITOR_LANGUAGE.PURE}
+              hidePadding={true}
+            />
+          </div>
+        )}
         <FormButton
-          className="ml-2"
-          disabled={!query || state.finalizeState.isInProgress}
-          onClick={() => {
-            state
-              .finalize()
-              .catch((error) => store.alertService.alertUnhandledError(error));
-          }}
+          className="mt-1.5 flex items-center pl-1"
+          onClick={() => sourceBuilder.unsetQuery()}
         >
-          OK
+          <DataCubeIcon.ChevronLeft className="mr-0.5" />
+          Go Back
         </FormButton>
       </div>
-    </>
-  );
-});
+    );
+  },
+);

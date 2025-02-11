@@ -106,9 +106,9 @@ test(
       TEST__getTestLegendQueryApplicationConfig(),
       pluginManager,
     );
-    const MOCk_lastOpenedVersion = createMock();
-    appStore.releaseNotesService.getViewedVersion = MOCk_lastOpenedVersion;
-    MOCk_lastOpenedVersion.mockReturnValue('1.0.0');
+    const MOCK__lastOpenedVersion = createMock();
+    appStore.releaseNotesService.getViewedVersion = MOCK__lastOpenedVersion;
+    MOCK__lastOpenedVersion.mockReturnValue('1.0.0');
     appStore.releaseNotesService.configure(releaseLog as VersionReleaseNotes[]);
     const mockedQueryEditorStore = TEST__provideMockedQueryEditorStore({
       applicationStore: appStore,
@@ -165,9 +165,9 @@ test(
       TEST__getTestLegendQueryApplicationConfig(),
       pluginManager,
     );
-    const MOCk_lastOpenedVersion = createMock();
-    appStore.releaseNotesService.getViewedVersion = MOCk_lastOpenedVersion;
-    MOCk_lastOpenedVersion.mockReturnValue('2.0.0');
+    const MOCK__lastOpenedVersion = createMock();
+    appStore.releaseNotesService.getViewedVersion = MOCK__lastOpenedVersion;
+    MOCK__lastOpenedVersion.mockReturnValue('2.0.0');
     appStore.releaseNotesService.configure(releaseLog as VersionReleaseNotes[]);
     const mockedQueryEditorStore = TEST__provideMockedQueryEditorStore({
       applicationStore: appStore,

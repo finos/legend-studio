@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { DataCubeQueryFilterOperation } from './DataCubeQueryFilterOperation.js';
-import type { DataCubeQuerySnapshotFilterCondition } from '../DataCubeQuerySnapshot.js';
+import type { DataCubeSnapshotFilterCondition } from '../DataCubeSnapshot.js';
 import type { DataCubeColumn } from '../model/DataCubeColumn.js';
 import {
   DataCubeColumnDataType,
@@ -32,7 +32,7 @@ import {
 } from '../DataCubeQueryBuilderUtils.js';
 import { isString } from '@finos/legend-shared';
 import { type V1_AppliedFunction } from '@finos/legend-graph';
-import { _filterCondition_base } from '../DataCubeQuerySnapshotBuilderUtils.js';
+import { _filterCondition_base } from '../DataCubeSnapshotBuilderUtils.js';
 
 export class DataCubeQueryFilterOperation__LessThanOrEqualColumn extends DataCubeQueryFilterOperation {
   override get label() {
@@ -87,7 +87,7 @@ export class DataCubeQueryFilterOperation__LessThanOrEqualColumn extends DataCub
     );
   }
 
-  buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {
+  buildConditionExpression(condition: DataCubeSnapshotFilterCondition) {
     return _function(_functionName(DataCubeFunction.LESS_THAN_OR_EQUAL), [
       _property(condition.name),
       _value(condition.value),

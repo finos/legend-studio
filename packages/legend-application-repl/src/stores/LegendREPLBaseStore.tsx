@@ -25,7 +25,7 @@ import {
 import type { LegendREPLApplicationStore } from '../application/LegendREPLApplicationStore.js';
 import { LegendREPLServerClient } from './LegendREPLServerClient.js';
 import {
-  DataCubeQuery,
+  DataCubeSpecification,
   type DataCubeSource,
   LayoutConfiguration,
   RawAdhocQueryDataCubeSource,
@@ -41,7 +41,7 @@ import {
   LegendREPLDataCubeSource,
   RawLegendREPLDataCubeSource,
 } from './LegendREPLDataCubeSource.js';
-import { PersistentDataCubeQuery } from '@finos/legend-graph';
+import { PersistentDataCube } from '@finos/legend-graph';
 import { LegendREPLPublishDataCubeAlert } from '../components/LegendREPLPublishDataCubeAlert.js';
 import { APPLICATION_EVENT } from '@finos/legend-application';
 import { action, makeObservable, observable } from 'mobx';
@@ -62,12 +62,12 @@ export class LegendREPLBaseStore {
   gridClientLicense?: string | undefined;
   queryServerBaseUrl?: string | undefined;
   hostedApplicationBaseUrl?: string | undefined;
-  query?: DataCubeQuery | undefined;
+  specification?: DataCubeSpecification | undefined;
 
   constructor(application: LegendREPLApplicationStore) {
     makeObservable(this, {
-      query: observable,
-      setQuery: action,
+      specification: observable,
+      setSpecification: action,
 
       source: observable,
       setSource: action,
@@ -93,8 +93,8 @@ export class LegendREPLBaseStore {
     );
   }
 
-  setQuery(query: DataCubeQuery | undefined) {
-    this.query = query;
+  setSpecification(specification: DataCubeSpecification | undefined) {
+    this.specification = specification;
   }
 
   setSource(source: DataCubeSource | undefined) {
@@ -115,8 +115,10 @@ export class LegendREPLBaseStore {
       this.queryServerBaseUrl = info.queryServerBaseUrl;
       this.hostedApplicationBaseUrl = info.hostedApplicationBaseUrl;
       this.gridClientLicense = info.gridClientLicense;
-      this.setQuery(
-        DataCubeQuery.serialization.fromJson(await this._client.getBaseQuery()),
+      this.setSpecification(
+        DataCubeSpecification.serialization.fromJson(
+          await this._client.getBaseSpecification(),
+        ),
       );
 
       this.initializeState.pass();
@@ -153,7 +155,7 @@ export class LegendREPLBaseStore {
     const task = this.taskService.newTask('Publish query');
 
     try {
-      const query = await api.generateDataCubeQuery();
+      const query = await api.generateSpecification();
 
       const source = new RawAdhocQueryDataCubeSource();
       source.query = RawLegendREPLDataCubeSource.serialization.fromJson(
@@ -163,22 +165,22 @@ export class LegendREPLBaseStore {
       source.model = this.source.model;
       query.source = RawAdhocQueryDataCubeSource.serialization.toJson(source);
 
-      const newQuery = new PersistentDataCubeQuery();
+      const newQuery = new PersistentDataCube();
       newQuery.id = uuid();
       newQuery.name = query.configuration?.name ?? DEFAULT_REPORT_NAME;
-      newQuery.content = DataCubeQuery.serialization.toJson(query);
+      newQuery.content = DataCubeSpecification.serialization.toJson(query);
       newQuery.owner = this.application.identityService.currentUser;
 
-      const publishedQuery = PersistentDataCubeQuery.serialization.fromJson(
+      const publishedQuery = PersistentDataCube.serialization.fromJson(
         await this._client.publishQuery(
-          PersistentDataCubeQuery.serialization.toJson(newQuery),
+          PersistentDataCube.serialization.toJson(newQuery),
           this.queryServerBaseUrl,
         ),
       );
 
       const window = new WindowState(
         new LayoutConfiguration('Publish Query', () => (
-          <LegendREPLPublishDataCubeAlert query={publishedQuery} />
+          <LegendREPLPublishDataCubeAlert persistentDataCube={publishedQuery} />
         )),
       );
       window.configuration.window = {

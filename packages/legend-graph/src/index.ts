@@ -232,9 +232,9 @@ export { INTERNAL__UnknownExecutionResult } from './graph-manager/action/executi
 export { INTERNAL__UnknownExecutionNode } from './graph/metamodel/pure/executionPlan/nodes/INTERNAL__UnknownExecutionNode.js';
 export { INTERNAL__UnknownResultType } from './graph/metamodel/pure/executionPlan/result/INTERNAL__UnknownResultType.js';
 export {
-  PersistentDataCubeQuery,
-  LightPersistentDataCubeQuery,
-} from './graph-manager/action/query/PersistentDataCubeQuery.js';
+  PersistentDataCube,
+  LightPersistentDataCube,
+} from './graph-manager/action/query/PersistentDataCube.js';
 
 export * from './graph/metamodel/pure/executionPlan/ExecutionPlan.js';
 export { ExecutionNode } from './graph/metamodel/pure/executionPlan/nodes/ExecutionNode.js';

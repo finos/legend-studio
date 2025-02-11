@@ -16,24 +16,24 @@
 
 import { integrationTest } from '@finos/legend-shared/test';
 import { describe, expect, test } from '@jest/globals';
-import { validateAndBuildQuerySnapshot } from '../DataCubeQuerySnapshotBuilder.js';
+import { validateAndBuildSnapshot } from '../DataCubeSnapshotBuilder.js';
 import {
   assertErrorThrown,
   at,
   guaranteeNonNullable,
   isString,
 } from '@finos/legend-shared';
-import { DataCubeQuery } from '../model/DataCubeQuery.js';
+import { DataCubeSpecification } from '../model/DataCubeSpecification.js';
 import { INTERNAL__DataCubeSource } from '../model/DataCubeSource.js';
 import {
   DataCubeColumnConfiguration,
   DataCubeConfiguration,
 } from '../model/DataCubeConfiguration.js';
-import { TEST__DataCubeEngine } from './DataCubeTestUtils.js';
+import { TEST__DataCubeEngine } from '../../__tests__/DataCubeTestUtils.js';
 import type {
-  DataCubeQuerySnapshot,
-  DataCubeQuerySnapshotFilterCondition,
-} from '../DataCubeQuerySnapshot.js';
+  DataCubeSnapshot,
+  DataCubeSnapshotFilterCondition,
+} from '../DataCubeSnapshot.js';
 import {
   DataCubeColumnKind,
   DataCubeOperationAdvancedValueType,
@@ -1092,6 +1092,13 @@ const cases: TestCase[] = [
     query: `select(~[a, b, c, d])->sort([~c->ascending()])->pivot(~[c], ~[b:x|$x.b:x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(d:String, a:Integer, 'val1__|__b':Integer)>)->groupBy(~[d], ~['val1__|__b':x|$x.'val1__|__b':x|$x->sum(), a:x|$x.a:x|$x->sum()])->sort([~d->ascending()])`,
     columns: ['a:Integer', 'c:String', 'b:Integer', 'd:String'],
   }),
+  _case(
+    `GroupBy: following pivot() expression where aggregation changes column type`,
+    {
+      query: `select(~[a, b, c, d])->sort([~c->ascending()])->pivot(~[c], ~[b:x|$x.b:x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(d:String, a:Integer, 'val1__|__b':Float)>)->groupBy(~[d], ~['val1__|__b':x|$x.'val1__|__b':x|$x->sum(), a:x|$x.a:x|$x->sum()])->sort([~d->ascending()])`,
+      columns: ['a:Integer', 'c:String', 'b:Integer', 'd:String'],
+    },
+  ),
   _case(`GroupBy: ERROR - group column not found`, {
     query: `select(~[b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([~a->ascending()])`,
     columns: ['a:String', 'b:Integer'],
@@ -1949,16 +1956,16 @@ describe(integrationTest('Roundtrip query processing'), () => {
     ) => {
       const engine = new TEST__DataCubeEngine();
       const query = await engine.parseValueSpecification(code);
-      const baseQuery = new DataCubeQuery();
+      const baseQuery = new DataCubeSpecification();
       const source = new INTERNAL__DataCubeSource();
       source.columns = columns;
       baseQuery.configuration = configurationBuilder
         ? await configurationBuilder(query, columns)
         : undefined;
-      let snapshot: DataCubeQuerySnapshot | undefined;
+      let snapshot: DataCubeSnapshot | undefined;
 
       try {
-        snapshot = await validateAndBuildQuerySnapshot(
+        snapshot = await validateAndBuildSnapshot(
           query,
           source,
           baseQuery,
@@ -1992,7 +1999,7 @@ type TestCase = [
     | undefined
   ), // configuration builder
   string | undefined, // error
-  ((snapshot: DataCubeQuerySnapshot) => void) | undefined, // extra checks on snapshot
+  ((snapshot: DataCubeSnapshot) => void) | undefined, // extra checks on snapshot
 ];
 
 function _case(
@@ -2007,7 +2014,7 @@ function _case(
         ) => Promise<DataCubeConfiguration>)
       | undefined;
     error?: string | undefined;
-    validator?: ((snapshot: DataCubeQuerySnapshot) => void) | undefined;
+    validator?: ((snapshot: DataCubeSnapshot) => void) | undefined;
   },
 ): TestCase {
   return [
@@ -2027,12 +2034,10 @@ function _case(
 }
 
 function _checkFilterOperator(operator: DataCubeQueryFilterOperator) {
-  return (snapshot: DataCubeQuerySnapshot) => {
+  return (snapshot: DataCubeSnapshot) => {
     expect(
-      (
-        snapshot.data.filter
-          ?.conditions[0] as DataCubeQuerySnapshotFilterCondition
-      ).operator,
+      (snapshot.data.filter?.conditions[0] as DataCubeSnapshotFilterCondition)
+        .operator,
     ).toBe(operator);
   };
 }
@@ -2050,13 +2055,13 @@ async function _generateDefaultConfiguration(
   columns: DataCubeColumn[],
 ) {
   const engine = new TEST__DataCubeEngine();
-  const baseQuery = new DataCubeQuery();
+  const baseQuery = new DataCubeSpecification();
   const source = new INTERNAL__DataCubeSource();
   source.columns = columns;
   baseQuery.configuration = undefined;
 
   try {
-    const snapshot = await validateAndBuildQuerySnapshot(
+    const snapshot = await validateAndBuildSnapshot(
       query,
       source,
       baseQuery,

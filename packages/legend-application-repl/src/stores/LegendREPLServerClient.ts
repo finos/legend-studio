@@ -22,12 +22,12 @@ import {
   type PlainObject,
 } from '@finos/legend-shared';
 import {
-  type DataCubeQuery,
+  type DataCubeSpecification,
   type CompletionItem,
 } from '@finos/legend-data-cube';
 import {
   type V1_RelationType,
-  type PersistentDataCubeQuery,
+  type PersistentDataCube,
   type V1_Lambda,
   type V1_ValueSpecification,
 } from '@finos/legend-graph';
@@ -122,7 +122,7 @@ export class LegendREPLServerClient {
     );
   }
 
-  async getBaseQuery(): Promise<PlainObject<DataCubeQuery>> {
+  async getBaseSpecification(): Promise<PlainObject<DataCubeSpecification>> {
     return this.networkClient.get(`${this.dataCube}/getBaseQuery`);
   }
 
@@ -151,9 +151,9 @@ export class LegendREPLServerClient {
   }
 
   async publishQuery(
-    query: PlainObject<PersistentDataCubeQuery>,
+    query: PlainObject<PersistentDataCube>,
     queryStoreBaseUrl: string,
-  ): Promise<PlainObject<PersistentDataCubeQuery>> {
+  ): Promise<PlainObject<PersistentDataCube>> {
     return this.networkClient.post(`${queryStoreBaseUrl}`, query);
   }
 }

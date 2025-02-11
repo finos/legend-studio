@@ -66,12 +66,12 @@ import {
   type DataCubeOperationValue,
 } from './DataCubeQueryEngine.js';
 import type {
-  DataCubeQuerySnapshotAggregateColumn,
-  DataCubeQuerySnapshotFilter,
-  DataCubeQuerySnapshotFilterCondition,
-  DataCubeQuerySnapshotGroupBy,
-  DataCubeQuerySnapshotPivot,
-} from './DataCubeQuerySnapshot.js';
+  DataCubeSnapshotAggregateColumn,
+  DataCubeSnapshotFilter,
+  DataCubeSnapshotFilterCondition,
+  DataCubeSnapshotGroupBy,
+  DataCubeSnapshotPivot,
+} from './DataCubeSnapshot.js';
 import type { DataCubeQueryFilterOperation } from './filter/DataCubeQueryFilterOperation.js';
 import type { DataCubeEngine } from './DataCubeEngine.js';
 import {
@@ -375,14 +375,14 @@ export function _filter(
   value: V1_ValueSpecification,
   columnGetter: (name: string) => DataCubeColumn,
   filterOperations: DataCubeQueryFilterOperation[],
-): DataCubeQuerySnapshotFilter {
+): DataCubeSnapshotFilter {
   if (!(value instanceof V1_AppliedFunction)) {
     throw new Error(
       `Can't process filter() expression: expected a function expression`,
     );
   }
 
-  const group: DataCubeQuerySnapshotFilter = {
+  const group: DataCubeSnapshotFilter = {
     // default to AND group for case where there is only one condition
     groupOperator: DataCubeQueryFilterGroupOperator.AND,
     conditions: [],
@@ -426,7 +426,7 @@ function _filterCondition(
   value: V1_ValueSpecification,
   columnGetter: (name: string) => DataCubeColumn,
   filterOperations: DataCubeQueryFilterOperation[],
-): DataCubeQuerySnapshotFilterCondition | DataCubeQuerySnapshotFilter {
+): DataCubeSnapshotFilterCondition | DataCubeSnapshotFilter {
   if (!(value instanceof V1_AppliedFunction)) {
     throw new UnsupportedOperationError(
       `Can't process filter condition expression: expected a function expression`,
@@ -707,8 +707,8 @@ export function _pivotSort(
 }
 
 export function _validatePivot(
-  pivot: DataCubeQuerySnapshotPivot,
-  pivotAggColumns: DataCubeQuerySnapshotAggregateColumn[],
+  pivot: DataCubeSnapshotPivot,
+  pivotAggColumns: DataCubeSnapshotAggregateColumn[],
   availableColumns: DataCubeColumn[],
 ) {
   // check for duplicate columns
@@ -834,10 +834,10 @@ export function _groupBySort(
 }
 
 export function _validateGroupBy(
-  groupBy: DataCubeQuerySnapshotGroupBy,
-  groupByAggColumns: DataCubeQuerySnapshotAggregateColumn[],
-  pivot: DataCubeQuerySnapshotPivot | undefined,
-  pivotAggColumns: DataCubeQuerySnapshotAggregateColumn[],
+  groupBy: DataCubeSnapshotGroupBy,
+  groupByAggColumns: DataCubeSnapshotAggregateColumn[],
+  pivot: DataCubeSnapshotPivot | undefined,
+  pivotAggColumns: DataCubeSnapshotAggregateColumn[],
   availableColumns: DataCubeColumn[],
 ) {
   // check for duplicate columns
@@ -862,7 +862,7 @@ export function _validateGroupBy(
     }
   });
 
-  // check all available columns are either grouped on or aggregatd on
+  // check all available columns are either grouped on or aggregated on
   availableColumns.forEach((col) => {
     if (
       !(
@@ -878,10 +878,12 @@ export function _validateGroupBy(
 
   // check against pivot if present
   if (pivot) {
-    const aggCols = new Map<string, DataCubeQuerySnapshotAggregateColumn>();
+    const aggCols = new Map<string, DataCubeSnapshotAggregateColumn>();
 
-    // check if aggregation specification is consistent (i.e. same type, operator, parameterValues)
+    // check if aggregation specification is consistent (i.e. same name, operator, parameterValues)
     // between groupBy aggregate columns
+    // NOTE: we should not check type here as it can change dynamically due to aggregation, e.g.
+    // an average aggregation on an integer-value column will result in a float-value column
     groupByAggColumns
       .filter((col) => isPivotResultColumnName(col.name))
       .forEach((col) => {
@@ -895,25 +897,37 @@ export function _validateGroupBy(
 
         if (!existingAggCol) {
           aggCols.set(aggColName, aggCol);
-        } else if (!deepEqual(existingAggCol, aggCol)) {
+        } else if (
+          // type should not be compared here as it can change dynamically due to aggregation
+          !deepEqual(
+            { ...existingAggCol, type: undefined },
+            { ...aggCol, type: undefined },
+          )
+        ) {
           throw new Error(
             `Can't process groupBy() expression: found conflicting aggregation specification for column '${aggColName}'`,
           );
         }
       });
 
-    // check if pivot() aggregate columns are consistent with groupBy() aggregate columns
-    pivotAggColumns.forEach((col) => {
-      const existingAggCol = aggCols.get(col.name);
+    // check if groupBy() aggregate columns are consistent with pivot() aggregate columns
+    pivotAggColumns.forEach((pivotAggCol) => {
+      const existingAggCol = aggCols.get(pivotAggCol.name);
       if (!existingAggCol) {
         throw new Error(
-          `Can't process groupBy() expression: column '${col.name}' is aggregated in pivot() expression but not in groupBy() expression`,
+          `Can't process groupBy() expression: column '${pivotAggCol.name}' is aggregated in pivot() expression but not in groupBy() expression`,
         );
       }
 
-      if (!deepEqual(existingAggCol, col)) {
+      if (
+        // type should not be compared here as it can change dynamically due to aggregation
+        !deepEqual(
+          { ...existingAggCol, type: undefined },
+          { ...pivotAggCol, type: undefined },
+        )
+      ) {
         throw new Error(
-          `Can't process groupBy() expression: found conflicting aggregation specification for column '${col.name}'`,
+          `Can't process groupBy() expression: found conflicting aggregation specification for column '${pivotAggCol.name}'`,
         );
       }
     });

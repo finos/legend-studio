@@ -15,11 +15,13 @@
  */
 
 export enum DataCubeSettingKey {
+  EDITOR__MAX_HISTORY_STACK_SIZE = 'dataCube.editor.maxHistoryStackSize',
   DEBUGGER__ENABLE_DEBUG_MODE = 'dataCube.debugger.enableDebugMode',
   DEBUGGER__USE_DEV_CLIENT_PROTOCOL_VERSION = 'dataCube.debugger.useDevClientProtocolVersion',
   DEBUGGER__ACTION__RELOAD = 'dataCube.debugger.action.reload',
   GRID_CLIENT__ROW_BUFFER = 'dataCube.grid.rowBuffer',
   GRID_CLIENT__PURGE_CLOSED_ROW_NODES = 'dataCube.grid.purgeClosedRowNodes',
+  GRID_CLIENT__SHOW_AUTO_ENABLE_CACHE_PERFORMANCE_WARNING = 'dataCube.grid.showAutoEnableCachePerformanceWarning',
   GRID_CLIENT__SHOW_CACHE_PERFORMANCE_WARNING = 'dataCube.grid.showCachePerformanceWarning',
   GRID_CLIENT__SUPPRESS_LARGE_DATASET_WARNING = 'dataCube.grid.suppressLargeDatasetWarning',
   GRID_CLIENT__ACTION__RETRY_FAILED_DATA_FETCHES = 'dataCube.grid.action.retryFailedDataFetches',

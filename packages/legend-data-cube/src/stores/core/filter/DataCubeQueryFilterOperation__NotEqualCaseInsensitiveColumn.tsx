@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { DataCubeQueryFilterOperation } from './DataCubeQueryFilterOperation.js';
-import type { DataCubeQuerySnapshotFilterCondition } from '../DataCubeQuerySnapshot.js';
+import type { DataCubeSnapshotFilterCondition } from '../DataCubeSnapshot.js';
 import type { DataCubeColumn } from '../model/DataCubeColumn.js';
 import {
   DataCubeColumnDataType,
@@ -36,7 +36,7 @@ import { type V1_AppliedFunction } from '@finos/legend-graph';
 import {
   _filterCondition_caseSensitive,
   _unwrapNotFilterCondition,
-} from '../DataCubeQuerySnapshotBuilderUtils.js';
+} from '../DataCubeSnapshotBuilderUtils.js';
 
 export class DataCubeQueryFilterOperation__NotEqualCaseInsensitiveColumn extends DataCubeQueryFilterOperation {
   override get label() {
@@ -87,7 +87,7 @@ export class DataCubeQueryFilterOperation__NotEqualCaseInsensitiveColumn extends
     );
   }
 
-  buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {
+  buildConditionExpression(condition: DataCubeSnapshotFilterCondition) {
     return _not(
       _function(_functionName(DataCubeFunction.EQUAL), [
         _function(_functionName(DataCubeFunction.TO_LOWERCASE), [

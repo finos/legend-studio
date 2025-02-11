@@ -17,11 +17,11 @@
 import { action, makeObservable, observable } from 'mobx';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
 import { DataCubeEditorSortsPanelState } from './DataCubeEditorSortsPanelState.js';
-import { DataCubeQuerySnapshotController } from '../../services/DataCubeQuerySnapshotService.js';
+import { DataCubeSnapshotController } from '../../services/DataCubeSnapshotService.js';
 import {
-  type DataCubeQuerySnapshot,
-  type DataCubeQuerySnapshotExtendedColumn,
-} from '../../core/DataCubeQuerySnapshot.js';
+  type DataCubeSnapshot,
+  type DataCubeSnapshotExtendedColumn,
+} from '../../core/DataCubeSnapshot.js';
 import {
   _findCol,
   _toCol,
@@ -62,7 +62,7 @@ export enum DataCubeEditorTab {
  * It could also host other form editor states like filter editors, but due to ergonomic
  * reasons, those have been separated out into their own respective query editor states.
  */
-export class DataCubeEditorState extends DataCubeQuerySnapshotController {
+export class DataCubeEditorState extends DataCubeSnapshotController {
   readonly view: DataCubeViewState;
   readonly display: DisplayState;
   readonly finalizationState = ActionState.create();
@@ -79,8 +79,8 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
   currentTab = DataCubeEditorTab.GENERAL_PROPERTIES;
 
   sourceColumns: DataCubeColumn[] = [];
-  leafExtendColumns: DataCubeQuerySnapshotExtendedColumn[] = [];
-  groupExtendColumns: DataCubeQuerySnapshotExtendedColumn[] = [];
+  leafExtendColumns: DataCubeSnapshotExtendedColumn[] = [];
+  groupExtendColumns: DataCubeSnapshotExtendedColumn[] = [];
 
   constructor(view: DataCubeViewState) {
     super(view.engine, view.settingService, view.snapshotService);
@@ -118,8 +118,8 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
   }
 
   override async applySnapshot(
-    snapshot: DataCubeQuerySnapshot,
-    previousSnapshot: DataCubeQuerySnapshot | undefined,
+    snapshot: DataCubeSnapshot,
+    previousSnapshot: DataCubeSnapshot | undefined,
   ) {
     this.sourceColumns = snapshot.data.sourceColumns;
     this.leafExtendColumns = snapshot.data.leafExtendedColumns;

@@ -20,7 +20,7 @@ import {
 } from '@finos/legend-data-cube';
 import { observer } from 'mobx-react-lite';
 import { LegendREPLDataCubeSource } from '../stores/LegendREPLDataCubeSource.js';
-import { useLegendREPLBaseStore } from './LegendREPLFramworkProvider.js';
+import { useLegendREPLBaseStore } from './LegendREPLFrameworkProvider.js';
 
 export const LegendREPLDataCubeHeader = observer(
   (props: DataCubeInnerHeaderComponentParams) => {

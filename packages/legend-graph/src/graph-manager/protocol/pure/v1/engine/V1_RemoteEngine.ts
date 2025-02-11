@@ -163,9 +163,9 @@ import { V1_CompleteCodeInput } from './compilation/V1_CompleteCodeInput.js';
 import { CodeCompletionResult } from '../../../../action/compilation/Completion.js';
 import { DeploymentResult } from '../../../../action/DeploymentResult.js';
 import {
-  LightPersistentDataCubeQuery,
-  PersistentDataCubeQuery,
-} from '../../../../action/query/PersistentDataCubeQuery.js';
+  LightPersistentDataCube,
+  PersistentDataCube,
+} from '../../../../action/query/PersistentDataCube.js';
 import { V1_getGenericTypeFullPath } from '../helpers/V1_DomainHelper.js';
 import { V1_relationTypeModelSchema } from '../transformation/pureProtocol/serializationHelpers/V1_TypeSerializationHelper.js';
 
@@ -1174,55 +1174,51 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
   }
   // ------------------------------------------ QueryData Cube ------------------------------------------
 
-  async searchDataCubeQueries(
+  async searchDataCubes(
     searchSpecification: V1_QuerySearchSpecification,
-  ): Promise<LightPersistentDataCubeQuery[]> {
+  ): Promise<LightPersistentDataCube[]> {
     return (
-      await this.engineServerClient.searchDataCubeQueries(
+      await this.engineServerClient.searchDataCubes(
         V1_QuerySearchSpecification.serialization.toJson(searchSpecification),
       )
-    ).map((query) =>
-      LightPersistentDataCubeQuery.serialization.fromJson(query),
+    ).map((query) => LightPersistentDataCube.serialization.fromJson(query));
+  }
+
+  async getDataCubes(ids: string[]): Promise<LightPersistentDataCube[]> {
+    return (await this.engineServerClient.getDataCubes(ids)).map((query) =>
+      LightPersistentDataCube.serialization.fromJson(query),
     );
   }
 
-  async getDataCubeQueries(
-    queryIds: string[],
-  ): Promise<LightPersistentDataCubeQuery[]> {
-    return (await this.engineServerClient.getDataCubeQueries(queryIds)).map(
-      (query) => LightPersistentDataCubeQuery.serialization.fromJson(query),
+  async getDataCube(id: string): Promise<PersistentDataCube> {
+    return PersistentDataCube.serialization.fromJson(
+      await this.engineServerClient.getDataCube(id),
     );
   }
 
-  async getDataCubeQuery(id: string): Promise<PersistentDataCubeQuery> {
-    return PersistentDataCubeQuery.serialization.fromJson(
-      await this.engineServerClient.getDataCubeQuery(id),
-    );
-  }
-
-  async createDataCubeQuery(
-    query: PersistentDataCubeQuery,
-  ): Promise<PersistentDataCubeQuery> {
-    return PersistentDataCubeQuery.serialization.fromJson(
-      await this.engineServerClient.createDataCubeQuery(
-        PersistentDataCubeQuery.serialization.toJson(query),
+  async createDataCube(
+    dataCube: PersistentDataCube,
+  ): Promise<PersistentDataCube> {
+    return PersistentDataCube.serialization.fromJson(
+      await this.engineServerClient.createDataCube(
+        PersistentDataCube.serialization.toJson(dataCube),
       ),
     );
   }
 
-  async updateDataCubeQuery(
-    query: PersistentDataCubeQuery,
-  ): Promise<PersistentDataCubeQuery> {
-    return PersistentDataCubeQuery.serialization.fromJson(
-      await this.engineServerClient.updateDataCubeQuery(
-        query.id,
-        PersistentDataCubeQuery.serialization.toJson(query),
+  async updateDataCube(
+    dataCube: PersistentDataCube,
+  ): Promise<PersistentDataCube> {
+    return PersistentDataCube.serialization.fromJson(
+      await this.engineServerClient.updateDataCube(
+        dataCube.id,
+        PersistentDataCube.serialization.toJson(dataCube),
       ),
     );
   }
 
-  async deleteDataCubeQuery(queryId: string): Promise<void> {
-    await this.engineServerClient.deleteDataCubeQuery(queryId);
+  async deleteDataCube(queryId: string): Promise<void> {
+    await this.engineServerClient.deleteDataCube(queryId);
   }
 
   // ------------------------------------------ Analysis ------------------------------------------

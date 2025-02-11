@@ -41,10 +41,10 @@ import type {
   DataCubeConfiguration,
   DataCubeConfigurationColorKey,
 } from '../../core/model/DataCubeConfiguration.js';
-import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
+import { type DataCubeSnapshot } from '../../core/DataCubeSnapshot.js';
 import { _findCol, _sortByColName } from '../../core/model/DataCubeColumn.js';
 import { isPivotResultColumnName } from '../../core/DataCubeQueryEngine.js';
-import { buildQuerySnapshot } from './DataCubeGridQuerySnapshotBuilder.js';
+import { buildSnapshotFromGridState } from './DataCubeGridSnapshotBuilder.js';
 import { AlertType } from '../../services/DataCubeAlertService.js';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
 import { buildGridDataFetchExecutableQuery } from './DataCubeGridQueryBuilder.js';
@@ -178,7 +178,7 @@ export function getDataForAllFilteredNodes<T>(client: GridApi<T>): T[] {
  * This is used to manually trigger server-side row model data source getRows() method.
  */
 export function computeHashCodeForDataFetchManualTrigger(
-  snapshot: DataCubeQuerySnapshot,
+  snapshot: DataCubeSnapshot,
   configuration: DataCubeConfiguration,
 ) {
   return hashObject(
@@ -214,7 +214,7 @@ export function computeHashCodeForDataFetchManualTrigger(
 
 function buildRowData(
   result: TabularDataSet,
-  snapshot: DataCubeQuerySnapshot,
+  snapshot: DataCubeSnapshot,
 ): DataCubeGridClientRowData[] {
   return result.rows.map((_row, rowIdx) => {
     const row: DataCubeGridClientRowData = {};
@@ -248,7 +248,7 @@ function buildRowData(
 }
 
 async function getCastColumns(
-  currentSnapshot: DataCubeQuerySnapshot,
+  currentSnapshot: DataCubeSnapshot,
   view: DataCubeViewState,
 ) {
   if (!currentSnapshot.data.pivot) {
@@ -344,7 +344,7 @@ export class DataCubeGridClientServerSideDataSource
 
     // only recompute the snapshot if this is not a drilldown request
     if (isTopLevelRequest) {
-      newSnapshot = buildQuerySnapshot(request, currentSnapshot);
+      newSnapshot = buildSnapshotFromGridState(request, currentSnapshot);
 
       // NOTE: if h-pivot is enabled, update the cast columns
       // and panels which might be affected by this (e.g. sorts)

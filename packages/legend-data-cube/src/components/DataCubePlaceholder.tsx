@@ -15,7 +15,10 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import type { DataCubeMenuItem } from '../stores/DataCubeOptions.js';
+import type {
+  DataCubeMenuItem,
+  DataCubeNativeMenuItem,
+} from '../stores/DataCubeOptions.js';
 import { DataCubeTitleBar } from './DataCubeTitleBar.js';
 import { DataCubeStatusBar } from './DataCubeStatusBar.js';
 import type { LayoutManager } from '../stores/services/DataCubeLayoutService.js';
@@ -67,7 +70,7 @@ export const DataCubePlaceholder = observer(
     children?: React.ReactNode | undefined;
     title: string;
     headerContent?: React.ReactNode | undefined;
-    menuItems?: DataCubeMenuItem[] | undefined;
+    menuItems?: (DataCubeMenuItem | DataCubeNativeMenuItem)[] | undefined;
     layoutManager?: LayoutManager | undefined;
     taskManager?: TaskManager | undefined;
   }) => {
