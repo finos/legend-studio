@@ -36,6 +36,7 @@ import { Type } from 'apache-arrow';
 export class LegendDataCubeDataCubeCacheManager {
   private static readonly DUCKDB_DEFAULT_SCHEMA_NAME = 'main'; // See https://duckdb.org/docs/sql/statements/use.html
   private static readonly TABLE_NAME_PREFIX = 'cache';
+  private static readonly CSV_FILE_NAME = 'data';
   private static tableCounter = 0;
 
   private _database?: duckdb.AsyncDuckDB | undefined;
@@ -87,52 +88,15 @@ export class LegendDataCubeDataCubeCacheManager {
       LegendDataCubeDataCubeCacheManager.DUCKDB_DEFAULT_SCHEMA_NAME;
     LegendDataCubeDataCubeCacheManager.tableCounter += 1;
     const table = `${LegendDataCubeDataCubeCacheManager.TABLE_NAME_PREFIX}${LegendDataCubeDataCubeCacheManager.tableCounter}`;
+    const csvFileName = `${LegendDataCubeDataCubeCacheManager.CSV_FILE_NAME}${LegendDataCubeDataCubeCacheManager.tableCounter}.csv`;
 
     const connection = await this.database.connect();
 
-    // TODO: review if we can improve performance here using CSV/Arrow for ingestion
-    const columns: string[] = [];
-    result.builder.columns.forEach((col) => {
-      let colType: string;
-      switch (col.type as string) {
-        case PRIMITIVE_TYPE.BOOLEAN: {
-          colType = 'BIT';
-          break;
-        }
-        case PRIMITIVE_TYPE.INTEGER: {
-          colType = 'INTEGER';
-          break;
-        }
-        case PRIMITIVE_TYPE.NUMBER:
-        case PRIMITIVE_TYPE.DECIMAL:
-        case PRIMITIVE_TYPE.FLOAT: {
-          colType = 'FLOAT';
-          break;
-        }
-        // We don't use type DATE because DuckDB will automatically convert it to a TIMESTAMP
-        case PRIMITIVE_TYPE.STRICTDATE:
-        case PRIMITIVE_TYPE.DATETIME:
-        case PRIMITIVE_TYPE.DATE: {
-          colType = 'VARCHAR';
-          break;
-        }
-        case PRIMITIVE_TYPE.STRING: {
-          colType = 'VARCHAR';
-          break;
-        }
-        default: {
-          throw new UnsupportedOperationError(
-            `Can't initialize cache: failed to find matching DuckDB type for Pure type '${col.type}'`,
-          );
-        }
-      }
-      columns.push(`"${col.name}" ${colType}`);
-    });
+    const columnString = result.builder.columns
+      .map((col) => col.name)
+      .join(',');
 
-    const CREATE_TABLE_SQL = `CREATE TABLE ${schema}.${table} (${columns.join(',')})`;
-    await connection.query(CREATE_TABLE_SQL);
-
-    const rowString: string[] = [];
+    const dataString: string[] = [columnString];
 
     result.result.rows.forEach((row) => {
       const updatedRows = row.values.map((val) => {
@@ -143,12 +107,24 @@ export class LegendDataCubeDataCubeCacheManager {
         }
         return val;
       });
-      rowString.push(`(${updatedRows.join(',')})`);
+      dataString.push(`${updatedRows.join(',')}`);
     });
 
-    const INSERT_TABLE_SQL = `INSERT INTO ${schema}.${table} VALUES ${rowString.join(',')}`;
+    const csvString = dataString.join('\n');
 
-    await connection.query(INSERT_TABLE_SQL);
+    await this._database?.registerFileText(csvFileName, csvString);
+
+    await connection.insertCSVFromPath(csvFileName, {
+      schema: schema,
+      name: table,
+      create: false,
+      header: true,
+      detect: true,
+      escape: `'`,
+      quote: `'`,
+      delimiter: ',',
+    });
+
     await connection.close();
 
     return { table, schema, rowCount: result.result.rows.length };
