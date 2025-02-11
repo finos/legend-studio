@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.2.7
+
+### Patch Changes
+
+- [#3885](https://github.com/finos/legend-studio/pull/3885) [`dd00138`](https://github.com/finos/legend-studio/commit/dd00138cddfeaa034e2528b23a067326cd233b69) ([@gs-gunjan](https://github.com/gs-gunjan)) - Improve performance for caching data
+
 ## 0.2.6
 
 ## 0.2.5
