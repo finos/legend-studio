@@ -261,6 +261,7 @@ export class DataCubeViewState {
         });
 
         if (
+          this.grid.isCachingEnabled &&
           this.settingService.getBooleanValue(
             DataCubeSettingKey.GRID_CLIENT__SHOW_AUTO_ENABLE_CACHE_PERFORMANCE_WARNING,
           )
