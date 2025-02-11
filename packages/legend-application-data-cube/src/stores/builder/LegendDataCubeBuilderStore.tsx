@@ -28,6 +28,7 @@ import {
   DEFAULT_ALERT_WINDOW_CONFIG,
   type DisplayState,
   DataCubeSpecificationOptions,
+  type DataCubeSource,
 } from '@finos/legend-data-cube';
 import { LegendDataCubeCreatorState } from './LegendDataCubeCreatorState.js';
 import {
@@ -58,6 +59,7 @@ import type { DepotServerClient } from '@finos/legend-server-depot';
 import { LegendDataCubeBlockingWindowState } from '../../components/LegendDataCubeBlockingWindow.js';
 import { LegendDataCubeDeleteConfirmation } from '../../components/builder/LegendDataCubeDeleteConfirmation.js';
 import { LegendDataCubeAbout } from '../../components/builder/LegendDataCubeBuilder.js';
+import { LegendDataCubeSourceViewer } from '../../components/builder/LegendDataCubeSourceViewer.js';
 
 export class LegendDataCubeBuilderState {
   readonly uuid = uuid();
@@ -67,6 +69,7 @@ export class LegendDataCubeBuilderState {
   persistentDataCube?: PersistentDataCube | undefined;
 
   dataCube?: DataCubeAPI | undefined;
+  source?: DataCubeSource | undefined;
 
   constructor(
     specification: DataCubeSpecification,
@@ -78,6 +81,9 @@ export class LegendDataCubeBuilderState {
 
       dataCube: observable,
       setDataCube: action,
+
+      source: observable,
+      setSource: action,
     });
 
     this.initialSpecification = specification;
@@ -90,6 +96,10 @@ export class LegendDataCubeBuilderState {
 
   setDataCube(val: DataCubeAPI | undefined) {
     this.dataCube = val;
+  }
+
+  setSource(val: DataCubeSource | undefined) {
+    this.source = val;
   }
 }
 
@@ -124,6 +134,7 @@ export class LegendDataCubeBuilderStore {
   readonly loadState = ActionState.create();
   readonly loader: LegendDataCubeLoaderState;
   builder?: LegendDataCubeBuilderState | undefined;
+  readonly sourceViewerDisplay: DisplayState;
 
   private passedFirstLoad = false;
 
@@ -174,6 +185,14 @@ export class LegendDataCubeBuilderStore {
       {
         ...DEFAULT_ALERT_WINDOW_CONFIG,
         height: 180,
+      },
+    );
+    this.sourceViewerDisplay = this.layoutService.newDisplay(
+      'DataCube Source',
+      () => <LegendDataCubeSourceViewer />,
+      {
+        ...DEFAULT_ALERT_WINDOW_CONFIG,
+        height: 200,
       },
     );
   }

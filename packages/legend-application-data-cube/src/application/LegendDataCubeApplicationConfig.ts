@@ -30,12 +30,16 @@ export interface LegendDataCubeApplicationConfigurationData
     url: string;
   };
   engine: { url: string; queryUrl: string };
+  query?: {
+    url: string;
+  };
 }
 
 export class LegendDataCubeApplicationConfig extends LegendApplicationConfig {
   readonly engineServerUrl: string;
   readonly depotServerUrl: string;
   readonly engineQueryServerUrl?: string | undefined;
+  readonly queryApplicationUrl?: string | undefined;
 
   constructor(
     input: LegendApplicationConfigurationInput<LegendDataCubeApplicationConfigurationData>,
@@ -58,6 +62,7 @@ export class LegendDataCubeApplicationConfig extends LegendApplicationConfig {
           input.configData.engine.queryUrl,
         )
       : undefined;
+
     // depot
     assertNonNullable(
       input.configData.depot,
@@ -69,6 +74,13 @@ export class LegendDataCubeApplicationConfig extends LegendApplicationConfig {
         `Can't configure application: 'depot.url' field is missing or empty`,
       ),
     );
+
+    // query
+    if (input.configData.query?.url) {
+      this.queryApplicationUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+        input.configData.query.url,
+      );
+    }
   }
   getDefaultApplicationStorageKey(): string {
     return 'legend-data-cube';

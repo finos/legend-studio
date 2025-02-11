@@ -91,7 +91,7 @@ export const LegendDataCubeAbout = observer(() => {
       <div className="mt-3 rounded-sm bg-white px-4 py-2">
         <div className="my-0.5 flex font-mono">
           <div>Engine Server:</div>
-          <div className="ml-1 font-bold text-sky-600">
+          <div className="ml-1 font-bold text-sky-500 underline">
             <a
               href={config.engineServerUrl}
               target="_blank"
@@ -103,7 +103,7 @@ export const LegendDataCubeAbout = observer(() => {
         </div>
         <div className="my-0.5 flex font-mono">
           <div>Depot Server:</div>
-          <div className="ml-1 font-bold text-sky-600">
+          <div className="ml-1 font-bold text-sky-500 underline">
             <a
               href={config.depotServerUrl}
               target="_blank"
@@ -116,7 +116,7 @@ export const LegendDataCubeAbout = observer(() => {
         {config.engineQueryServerUrl !== undefined && (
           <div className="my-0.5 flex font-mono">
             <div>DataCube Server:</div>
-            <div className="ml-1 font-bold text-sky-600">
+            <div className="ml-1 font-bold text-sky-500 underline">
               <a
                 href={config.engineQueryServerUrl}
                 target="_blank"
@@ -139,15 +139,16 @@ function generateMenuItems(store: LegendDataCubeBuilderStore) {
 
   const menuItems: (DataCubeMenuItem | DataCubeNativeMenuItem)[] = builder
     ? [
-        {
-          label: 'View Source',
-          action: () => {
-            // TODO: show a window with source details
-            // e.g. for Legend Query source, we should allow user to navigate
-            // to the Legend Query editor view of the source query.
-          },
-          disabled: true,
-        },
+        ...(builder.source
+          ? [
+              {
+                label: 'View Source',
+                action: () => {
+                  store.sourceViewerDisplay.open();
+                },
+              },
+            ]
+          : []),
         ...(persistentDataCube
           ? [
               {
@@ -184,11 +185,12 @@ function generateMenuItems(store: LegendDataCubeBuilderStore) {
               },
             ]
           : []),
-        DataCubeNativeMenuItem.SEPARATOR,
       ]
     : [];
   return [
-    ...menuItems,
+    ...(menuItems.length
+      ? [...menuItems, DataCubeNativeMenuItem.SEPARATOR]
+      : []),
     {
       label: 'See Documentation',
       action: () => {
@@ -303,6 +305,9 @@ export const LegendDataCubeBuilder = withLegendDataCubeBuilderStore(
           gridClientLicense: store.baseStore.gridClientLicense,
           onInitialized(event) {
             builder.setDataCube(event.api);
+          },
+          onViewInitialized(event) {
+            builder.setSource(event.source);
           },
           innerHeaderRenderer: () => <LegendDataCubeBuilderHeader />,
           getHeaderMenuItems: () => generateMenuItems(store),

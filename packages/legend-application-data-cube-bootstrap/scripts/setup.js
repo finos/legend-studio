@@ -48,6 +48,9 @@ export const setup = (outputDir, dataCubeDocsDir) => {
         depot: {
           url: 'http://localhost:6200/depot/api',
         },
+        query: {
+          url: 'http://localhost:9001/query',
+        },
         documentation: {
           url: 'https://legend.finos.org',
           registry: [],

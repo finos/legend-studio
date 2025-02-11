@@ -55,7 +55,7 @@ export const LegendREPLPublishDataCubeAlert = (props: {
       </div>
       {link && (
         <div className="mt-3 flex h-6 w-full">
-          <div className="flex h-full w-[calc(100%_-_20px)] items-center border border-r-0 border-neutral-400 bg-neutral-200 px-1.5">
+          <div className="flex h-full w-[calc(100%_-_20px)] items-center border border-r-0 border-neutral-400 px-1.5 font-bold text-sky-500 underline">
             <a
               href={link}
               target="_blank"

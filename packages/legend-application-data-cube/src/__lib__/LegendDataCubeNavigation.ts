@@ -34,3 +34,11 @@ export const generateBuilderRoute = (dataCubeId: string | null): string => {
     [LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN.DATA_CUBE_ID]: dataCubeId,
   });
 };
+
+/**
+ * @external_application_navigation This depends on Legend Query routing and is hardcoded so it's potentially brittle
+ */
+export const EXTERNAL_APPLICATION_NAVIGATION__generateQueryViewUrl = (
+  queryApplicationUrl: string,
+  queryId: string,
+) => `${queryApplicationUrl}/edit/${queryId}`;
