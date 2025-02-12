@@ -166,7 +166,7 @@ const TEST_CASES: QueryTestCase[] = [
     queryGrammar:
       "|showcase::northwind::model::Order.all()->groupBy([x|$x.shipToName], [agg(x|$x.id,x|$x->count())], ['Ship To Name','Id (count)'])",
     convertedRelation:
-      "|showcase::northwind::model::Order.all()->project(~['Ship To Name':x|$x.shipToName,'Id (count)':x|$x.id])->groupBy(~'Ship To Name', ~'Id (count)':x|$x.'Id (count)':y|$y->count())",
+      "|showcase::northwind::model::Order.all()->project(~['Ship To Name':x|$x.shipToName, 'Id (count)':x|$x.id])->groupBy(~['Ship To Name'], ~['Id (count)':x|$x.'Id (count)':x|$x->count()])",
   },
 ];
 
