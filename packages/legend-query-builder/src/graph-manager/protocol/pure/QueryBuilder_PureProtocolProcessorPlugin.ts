@@ -159,10 +159,10 @@ export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProces
             processingContext,
           );
         } else if (
-          matchFunctionName(
-            functionName,
+          matchFunctionName(functionName, [
             QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
-          )
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_GROUP_BY,
+          ])
         ) {
           return V1_buildGroupByFunctionExpression(
             functionName,
