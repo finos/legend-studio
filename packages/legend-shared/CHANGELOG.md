@@ -1,5 +1,11 @@
 # @finos/legend-shared
 
+## 11.0.4
+
+### Patch Changes
+
+- [#3891](https://github.com/finos/legend-studio/pull/3891) [`8a89338`](https://github.com/finos/legend-studio/commit/8a89338a6ec252882891247b0d23dc842a1fd01b) ([@gs-gunjan](https://github.com/gs-gunjan)) - Fixing Caching for CSV
+
 ## 11.0.3
 
 ## 11.0.2

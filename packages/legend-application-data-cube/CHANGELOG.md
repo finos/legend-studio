@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.2.8
+
+### Patch Changes
+
+- [#3891](https://github.com/finos/legend-studio/pull/3891) [`8a89338`](https://github.com/finos/legend-studio/commit/8a89338a6ec252882891247b0d23dc842a1fd01b) ([@gs-gunjan](https://github.com/gs-gunjan)) - Fixing Caching for CSV
+
 ## 0.2.7
 
 ### Patch Changes
