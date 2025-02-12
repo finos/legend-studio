@@ -93,48 +93,8 @@ export class LegendDataCubeDataCubeCacheManager {
 
     const connection = await this.database.connect();
 
-    const columns: string[] = [];
     const columnNames: string[] = [];
-    result.builder.columns.forEach((col) => {
-      let colType: string;
-      switch (col.type as string) {
-        case PRIMITIVE_TYPE.BOOLEAN: {
-          colType = 'BOOLEAN';
-          break;
-        }
-        case PRIMITIVE_TYPE.INTEGER: {
-          colType = 'INTEGER';
-          break;
-        }
-        case PRIMITIVE_TYPE.NUMBER:
-        case PRIMITIVE_TYPE.DECIMAL:
-        case PRIMITIVE_TYPE.FLOAT: {
-          colType = 'FLOAT';
-          break;
-        }
-        // We don't use type DATE because DuckDB will automatically convert it to a TIMESTAMP
-        case PRIMITIVE_TYPE.STRICTDATE:
-        case PRIMITIVE_TYPE.DATETIME:
-        case PRIMITIVE_TYPE.DATE: {
-          colType = 'VARCHAR';
-          break;
-        }
-        case PRIMITIVE_TYPE.STRING: {
-          colType = 'VARCHAR';
-          break;
-        }
-        default: {
-          throw new UnsupportedOperationError(
-            `Can't initialize cache: failed to find matching DuckDB type for Pure type '${col.type}'`,
-          );
-        }
-      }
-      columns.push(`"${col.name}" ${colType}`);
-      columnNames.push(col.name);
-    });
-
-    const CREATE_TABLE_SQL = `CREATE TABLE ${schema}.${table} (${columns.join(',')})`;
-    await connection.query(CREATE_TABLE_SQL);
+    result.builder.columns.forEach((col) => columnNames.push(col.name));
 
     const data = result.result.rows.map((row) => row.values);
 
@@ -148,7 +108,9 @@ export class LegendDataCubeDataCubeCacheManager {
     await connection.insertCSVFromPath(csvFileName, {
       schema: schema,
       name: table,
-      create: false,
+      create: true,
+      header: true,
+      detect: true,
       escape: `'`,
       quote: `'`,
       delimiter: ',',
