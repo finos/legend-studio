@@ -27,6 +27,7 @@ import {
 } from '@finos/legend-graph';
 import {
   assertNonNullable,
+  csvStringify,
   guaranteeNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
@@ -92,34 +93,62 @@ export class LegendDataCubeDataCubeCacheManager {
 
     const connection = await this.database.connect();
 
-    const columnString = result.builder.columns
-      .map((col) => col.name)
-      .join(',');
-
-    const dataString: string[] = [columnString];
-
-    result.result.rows.forEach((row) => {
-      const updatedRows = row.values.map((val) => {
-        if (val !== null && typeof val === 'string') {
-          return `'${val.replaceAll(`'`, `''`)}'`;
-        } else if (val === null) {
-          return `NULL`;
+    const columns: string[] = [];
+    const columnNames: string[] = [];
+    result.builder.columns.forEach((col) => {
+      let colType: string;
+      switch (col.type as string) {
+        case PRIMITIVE_TYPE.BOOLEAN: {
+          colType = 'BOOLEAN';
+          break;
         }
-        return val;
-      });
-      dataString.push(`${updatedRows.join(',')}`);
+        case PRIMITIVE_TYPE.INTEGER: {
+          colType = 'INTEGER';
+          break;
+        }
+        case PRIMITIVE_TYPE.NUMBER:
+        case PRIMITIVE_TYPE.DECIMAL:
+        case PRIMITIVE_TYPE.FLOAT: {
+          colType = 'FLOAT';
+          break;
+        }
+        // We don't use type DATE because DuckDB will automatically convert it to a TIMESTAMP
+        case PRIMITIVE_TYPE.STRICTDATE:
+        case PRIMITIVE_TYPE.DATETIME:
+        case PRIMITIVE_TYPE.DATE: {
+          colType = 'VARCHAR';
+          break;
+        }
+        case PRIMITIVE_TYPE.STRING: {
+          colType = 'VARCHAR';
+          break;
+        }
+        default: {
+          throw new UnsupportedOperationError(
+            `Can't initialize cache: failed to find matching DuckDB type for Pure type '${col.type}'`,
+          );
+        }
+      }
+      columns.push(`"${col.name}" ${colType}`);
+      columnNames.push(col.name);
     });
 
-    const csvString = dataString.join('\n');
+    const CREATE_TABLE_SQL = `CREATE TABLE ${schema}.${table} (${columns.join(',')})`;
+    await connection.query(CREATE_TABLE_SQL);
 
-    await this._database?.registerFileText(csvFileName, csvString);
+    const data = result.result.rows.map((row) => row.values);
+
+    const csv = csvStringify([columnNames, ...data], {
+      escapeChar: `'`,
+      quoteChar: `'`,
+    });
+
+    await this._database?.registerFileText(csvFileName, csv);
 
     await connection.insertCSVFromPath(csvFileName, {
       schema: schema,
       name: table,
       create: false,
-      header: true,
-      detect: true,
       escape: `'`,
       quote: `'`,
       delimiter: ',',
