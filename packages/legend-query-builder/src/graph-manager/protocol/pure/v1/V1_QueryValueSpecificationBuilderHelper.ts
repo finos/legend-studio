@@ -1224,7 +1224,6 @@ export const V1_buildTypedGroupByFunctionExpression = (
   compileContext: V1_GraphBuilderContext,
   processingContext: V1_ProcessingContext,
 ): SimpleFunctionExpression => {
-  console.log('V1_buildTypedGroupByFunctionExpression');
   let topLevelLambdaParameters: V1_Variable[] = [];
 
   assertTrue(
@@ -1332,8 +1331,6 @@ export const V1_buildTypedGroupByFunctionExpression = (
   processedAggregationColSpecArray.colSpecs =
     aggregationExpressions.colSpecs.map((colSpec) => {
       const pColSpec = new ColSpec();
-      let lambda1: ValueSpecification;
-      let lambda2: ValueSpecification;
       const _func1 = guaranteeType(
         colSpec.function1,
         V1_ValueSpecification,
@@ -1344,41 +1341,23 @@ export const V1_buildTypedGroupByFunctionExpression = (
         V1_ValueSpecification,
         `Can't build relation col spec() expression: expects function2 to be a lambda`,
       );
-      try {
-        lambda1 = buildProjectionColumnLambda(
-          _func1,
-          openVariables,
-          compileContext,
-          processingContext,
-        );
-      } catch {
-        lambda1 = new INTERNAL__UnknownValueSpecification(
-          V1_serializeValueSpecification(
-            _func1,
-            compileContext.extensions.plugins,
-          ),
-        );
-      }
+      const lambda1: ValueSpecification = buildProjectionColumnLambda(
+        _func1,
+        openVariables,
+        compileContext,
+        processingContext,
+      );
       pColSpec.function1 = lambda1;
-      try {
-        lambda2 = _func2.accept_ValueSpecificationVisitor(
+      const lambda2: ValueSpecification =
+        _func2.accept_ValueSpecificationVisitor(
           new V1_ValueSpecificationBuilder(
             compileContext,
             processingContext,
             openVariables,
           ),
         );
-      } catch {
-        lambda2 = new INTERNAL__UnknownValueSpecification(
-          V1_serializeValueSpecification(
-            _func1,
-            compileContext.extensions.plugins,
-          ),
-        );
-      }
       pColSpec.function2 = lambda2;
       pColSpec.name = colSpec.name;
-      console.log('lambda2', lambda2);
       const relationColumns = guaranteeType(
         guaranteeType(lambda2, LambdaFunctionInstanceValue).values?.[0]
           ?.functionType?.parameters?.[0]?.genericType?.value.typeArguments?.[0]
@@ -1389,13 +1368,6 @@ export const V1_buildTypedGroupByFunctionExpression = (
 
       return pColSpec;
     });
-
-  console.log('precedingExpression', precedingExpression);
-  console.log('processedColumnExpressions', processedColumnExpressions);
-  console.log(
-    'processedAggregationExpressions',
-    processedAggregationExpressions,
-  );
 
   const expression = V1_buildBaseSimpleFunctionExpression(
     [

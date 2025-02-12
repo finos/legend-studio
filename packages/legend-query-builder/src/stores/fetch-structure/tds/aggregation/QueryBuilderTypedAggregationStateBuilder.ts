@@ -15,30 +15,146 @@
  */
 
 import {
+  type ColSpec,
   type LambdaFunction,
-  SimpleFunctionExpression,
-  matchFunctionName,
   ColSpecArrayInstance,
+  LambdaFunctionInstanceValue,
+  matchFunctionName,
+  SimpleFunctionExpression,
+  VariableExpression,
 } from '@finos/legend-graph';
-import { FETCH_STRUCTURE_IMPLEMENTATION } from '../../QueryBuilderFetchStructureImplementationState.js';
-import { assertTrue, assertType, guaranteeType } from '@finos/legend-shared';
+import {
+  assertTrue,
+  assertType,
+  guaranteeNonNullable,
+  guaranteeType,
+  returnUndefOnError,
+  UnsupportedOperationError,
+} from '@finos/legend-shared';
 import {
   QUERY_BUILDER_LAMBDA_WRITER_MODE,
   type QueryBuilderState,
 } from '../../../QueryBuilderState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../graph/QueryBuilderMetaModelConst.js';
 import { QueryBuilderValueSpecificationProcessor } from '../../../QueryBuilderStateBuilder.js';
+import { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
+import { QueryBuilderAggregateOperator_Wavg } from './operators/QueryBuilderAggregateOperator_Wavg.js';
+
+export const processTypedAggregationColSpec = (
+  colSpec: ColSpec,
+  parentExpression: SimpleFunctionExpression | undefined,
+  queryBuilderState: QueryBuilderState,
+): void => {
+  // check parent expression
+  assertTrue(
+    Boolean(
+      parentExpression &&
+        matchFunctionName(
+          parentExpression.functionName,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_GROUP_BY,
+        ),
+    ),
+    `Can't process typed aggregate ColSpec: only supported when used within a groupBy() expression`,
+  );
+
+  // Check that there are 2 lambdas, one for column selection and 1 for aggregation
+  const columnLambdaFuncInstance = guaranteeType(
+    colSpec.function1,
+    LambdaFunctionInstanceValue,
+    `Can't process colSpec: function1 not a lambda function instance value`,
+  );
+  assertTrue(columnLambdaFuncInstance.values.length === 1);
+  assertTrue(
+    guaranteeNonNullable(columnLambdaFuncInstance.values[0]).expressionSequence
+      .length === 1,
+  );
+
+  const aggregationLambdaFuncInstance = guaranteeType(
+    colSpec.function2,
+    LambdaFunctionInstanceValue,
+    `Can't process colSpec: function2 not a lambda function instance value`,
+  );
+  assertTrue(aggregationLambdaFuncInstance.values.length === 1);
+  assertTrue(
+    guaranteeNonNullable(aggregationLambdaFuncInstance.values[0])
+      .expressionSequence.length === 1,
+  );
+
+  // build state
+  if (
+    queryBuilderState.fetchStructureState.implementation instanceof
+    QueryBuilderTDSState
+  ) {
+    const tdsState = queryBuilderState.fetchStructureState.implementation;
+    const aggregationState = tdsState.aggregationState;
+    const projectionColumnState = guaranteeNonNullable(
+      tdsState.projectionColumns.find(
+        (projectionColumn) => projectionColumn.columnName === colSpec.name,
+      ),
+      `Projection column with name ${colSpec.name} not found`,
+    );
+    const aggregateLambdaFunc = guaranteeNonNullable(
+      aggregationLambdaFuncInstance.values[0],
+      `Can't process colSpec: function2 lambda function is missing`,
+    );
+    assertTrue(
+      aggregateLambdaFunc.expressionSequence.length === 1,
+      `Can't process colSpec: only support colSpec function2 lambda body with 1 expression`,
+    );
+    const aggregateColumnExpression = guaranteeType(
+      aggregateLambdaFunc.expressionSequence[0],
+      SimpleFunctionExpression,
+      `Can't process colSpec: only support colSpec function2 lambda body with 1 expression`,
+    );
+
+    assertTrue(
+      aggregateLambdaFunc.functionType.parameters.length === 1,
+      `Can't process colSpec function2 lambda: only support lambda with 1 parameter`,
+    );
+
+    const lambdaParam = guaranteeType(
+      aggregateLambdaFunc.functionType.parameters[0],
+      VariableExpression,
+      `Can't process colSpec function2 lambda: only support lambda with 1 parameter`,
+    );
+
+    for (const operator of aggregationState.operators) {
+      // NOTE: this allow plugin author to either return `undefined` or throw error
+      // if there is a problem with building the lambda. Either case, the plugin is
+      // considered as not supporting the lambda.
+      const aggregateColumnState = returnUndefOnError(() =>
+        operator.buildAggregateColumnState(
+          aggregateColumnExpression,
+          lambdaParam,
+          projectionColumnState,
+        ),
+      );
+      if (
+        projectionColumnState.wavgWeight &&
+        aggregateColumnState &&
+        aggregateColumnState.operator instanceof
+          QueryBuilderAggregateOperator_Wavg
+      ) {
+        aggregateColumnState.operator.setWeight(
+          projectionColumnState.wavgWeight,
+        );
+      }
+      if (aggregateColumnState) {
+        aggregationState.addColumn(aggregateColumnState);
+        return;
+      }
+    }
+  }
+  throw new UnsupportedOperationError(
+    `Can't process aggregate expression function: no compatible aggregate operator processer available from plugins`,
+  );
+};
 
 export const processTypedGroupByExpression = (
   expression: SimpleFunctionExpression,
   queryBuilderState: QueryBuilderState,
   parentLambda: LambdaFunction,
 ): void => {
-  // update fetch-structureTABULAR_DATA_STRUCTURE
-  queryBuilderState.fetchStructureState.changeImplementation(
-    FETCH_STRUCTURE_IMPLEMENTATION.TABULAR_DATA_STRUCTURE,
-  );
-
   // check parameters
   assertTrue(
     expression.parametersValues.length === 3,
@@ -65,22 +181,32 @@ export const processTypedGroupByExpression = (
     queryBuilderState,
   );
 
-  // process columns
-  const columnExpressions = expression.parametersValues[1];
-  assertType(
-    columnExpressions,
+  const tdsState = guaranteeType(
+    queryBuilderState.fetchStructureState.implementation,
+    QueryBuilderTDSState,
+  );
+
+  // process columns (ensure columns exist in project expression)
+  const columnExpressions = guaranteeType(
+    expression.parametersValues[1],
     ColSpecArrayInstance,
     `Can't process groupBy() expression: groupBy() expects argument #1 to be a ColSpecArrayInstance`,
+  );
+  assertTrue(
+    columnExpressions.values.length === 1,
+    `Can't process groupBy() expression: groupBy() expects argument #1 to be a ColSpecArrayInstance with 1 element`,
   );
   queryBuilderState.setLambdaWriteMode(
     QUERY_BUILDER_LAMBDA_WRITER_MODE.TYPED_FETCH_STRUCTURE,
   );
-  QueryBuilderValueSpecificationProcessor.processChild(
-    columnExpressions,
-    expression,
-    parentLambda,
-    queryBuilderState,
-  );
+  columnExpressions.values[0]?.colSpecs.forEach((colSpec) => {
+    assertTrue(
+      tdsState.projectionColumns.filter(
+        (projectedColumn) => projectedColumn.columnName === colSpec.name,
+      ).length === 1,
+      `Can't process groupBy() expression: column '${colSpec.name}' not found in project() expression`,
+    );
+  });
 
   // process aggregations
   const aggregateLambdas = expression.parametersValues[2];
@@ -95,17 +221,6 @@ export const processTypedGroupByExpression = (
     parentLambda,
     queryBuilderState,
   );
-
-  // build state
-  // if (
-  //   queryBuilderState.fetchStructureState.implementation instanceof
-  //   QueryBuilderTDSState
-  // ) {
-  //   const tdsState = queryBuilderState.fetchStructureState.implementation;
-  //   tdsState.projectionColumns.forEach((column, idx) =>
-  //     column.setColumnName(aliases[idx] as string),
-  //   );
-  // }
 };
 
 export const isTypedGroupByExpression = (

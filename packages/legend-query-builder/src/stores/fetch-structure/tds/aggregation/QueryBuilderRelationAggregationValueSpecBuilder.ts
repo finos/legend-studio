@@ -31,6 +31,7 @@ import {
   AbstractPropertyExpression,
   PropertyExplicitReference,
   Property,
+  VariableExpression,
 } from '@finos/legend-graph';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../graph/QueryBuilderMetaModelConst.js';
 import type { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
@@ -141,7 +142,7 @@ export const buildRelationAggregation = (
       ),
     );
     newPropertyExpression.parametersValues = [
-      ...projectedPropertyExpression.parametersValues,
+      new VariableExpression(DEFAULT_LAMBDA_VARIABLE_NAME, Multiplicity.ONE),
     ];
     const columnLambda = buildGenericLambdaFunctionInstanceValue(
       DEFAULT_LAMBDA_VARIABLE_NAME,
