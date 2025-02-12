@@ -1,5 +1,7 @@
 # @finos/legend-application
 
+## 16.0.25
+
 ## 16.0.24
 
 ## 16.0.23
