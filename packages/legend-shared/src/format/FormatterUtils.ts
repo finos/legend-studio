@@ -21,7 +21,7 @@ import {
   parse as losslessParse,
   isSafeNumber as lossIsSafeNumber,
 } from 'lossless-json';
-import CSVParser from 'papaparse';
+import CSVParser, { type UnparseConfig } from 'papaparse';
 import { assertNonNullable } from '../error/AssertionUtils.js';
 
 export const capitalize = (value: string): string =>
@@ -152,8 +152,10 @@ export const parseCSVString = (value: string): string[] | undefined => {
   }
 };
 
-export const csvStringify = (value: unknown[]): string =>
-  CSVParser.unparse(value);
+export const csvStringify = (
+  value: unknown[],
+  config?: UnparseConfig,
+): string => CSVParser.unparse(value, config);
 
 /**
  * One very common use case is that we get the JSON as response from the server than we will convert this to a string and persist

@@ -27,6 +27,7 @@ import {
 } from '@finos/legend-graph';
 import {
   assertNonNullable,
+  csvStringify,
   guaranteeNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
@@ -92,32 +93,22 @@ export class LegendDataCubeDataCubeCacheManager {
 
     const connection = await this.database.connect();
 
-    const columnString = result.builder.columns
-      .map((col) => col.name)
-      .join(',');
+    const columnNames: string[] = [];
+    result.builder.columns.forEach((col) => columnNames.push(col.name));
 
-    const dataString: string[] = [columnString];
+    const data = result.result.rows.map((row) => row.values);
 
-    result.result.rows.forEach((row) => {
-      const updatedRows = row.values.map((val) => {
-        if (val !== null && typeof val === 'string') {
-          return `'${val.replaceAll(`'`, `''`)}'`;
-        } else if (val === null) {
-          return `NULL`;
-        }
-        return val;
-      });
-      dataString.push(`${updatedRows.join(',')}`);
+    const csv = csvStringify([columnNames, ...data], {
+      escapeChar: `'`,
+      quoteChar: `'`,
     });
 
-    const csvString = dataString.join('\n');
-
-    await this._database?.registerFileText(csvFileName, csvString);
+    await this._database?.registerFileText(csvFileName, csv);
 
     await connection.insertCSVFromPath(csvFileName, {
       schema: schema,
       name: table,
-      create: false,
+      create: true,
       header: true,
       detect: true,
       escape: `'`,
