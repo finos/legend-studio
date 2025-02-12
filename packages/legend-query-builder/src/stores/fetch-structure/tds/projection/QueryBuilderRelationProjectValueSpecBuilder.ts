@@ -53,15 +53,6 @@ export const buildRelationProjection = (
   tdsState: QueryBuilderTDSState,
   options?: LambdaFunctionBuilderOption,
 ): SimpleFunctionExpression => {
-  console.log(
-    'buildRelationProjection:',
-    'precedingExpression:',
-    precedingExpression,
-    'tdsState:',
-    tdsState,
-    'options:',
-    options,
-  );
   const projectFunction = new SimpleFunctionExpression(
     extractElementNameFromPath(
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_PROJECT,
@@ -138,6 +129,5 @@ export const buildRelationProjection = (
   ];
   projectFunction.genericType =
     GenericTypeExplicitReference.create(relationGenericType);
-  console.log('built projectFunction:', projectFunction);
   return projectFunction;
 };
