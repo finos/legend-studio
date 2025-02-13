@@ -21,7 +21,11 @@ import {
   parse as losslessParse,
   isSafeNumber as lossIsSafeNumber,
 } from 'lossless-json';
-import CSVParser, { type UnparseConfig } from 'papaparse';
+import CSVParser, {
+  type LocalFile,
+  type ParseLocalConfig,
+  type UnparseConfig,
+} from 'papaparse';
 import { assertNonNullable } from '../error/AssertionUtils.js';
 
 export const capitalize = (value: string): string =>
@@ -151,6 +155,11 @@ export const parseCSVString = (value: string): string[] | undefined => {
     }
   }
 };
+
+export const parseCSVFile = (
+  file: LocalFile,
+  config: ParseLocalConfig<unknown[], LocalFile>,
+): void => CSVParser.parse(file, config);
 
 export const csvStringify = (
   value: unknown[],

@@ -28,6 +28,8 @@ import { LegendQueryDataCubeSourceBuilder } from './source/LegendQueryDataCubeSo
 import { AdhocQueryDataCubeSourceBuilder } from './source/AdhocQueryDataCubeSourceBuilder.js';
 import { AdhocQueryDataCubeSourceBuilderState } from '../../stores/builder/source/AdhocQueryDataCubeSourceBuilderState.js';
 import { useLegendDataCubeBuilderStore } from './LegendDataCubeBuilderStoreProvider.js';
+import { CSVFileQueryDataCubeSourceBuilderState } from '../../stores/builder/source/CSVFileQueryDataCubeSourceBuilderState.js';
+import { CSVFileQueryDataCubeSourceBuilder } from './source/CSVFileQueryDataCubeSourceBuilder.js';
 
 export const LegendDataCubeCreator = observer(() => {
   const store = useLegendDataCubeBuilderStore();
@@ -61,6 +63,7 @@ export const LegendDataCubeCreator = observer(() => {
                 {[
                   LegendDataCubeSourceBuilderType.LEGEND_QUERY,
                   LegendDataCubeSourceBuilderType.ADHOC_QUERY,
+                  LegendDataCubeSourceBuilderType.CSV_FILE_QUERY,
                 ].map((type) => (
                   <FormDropdownMenuItem
                     key={type}
@@ -86,6 +89,12 @@ export const LegendDataCubeCreator = observer(() => {
               {sourceBuilder instanceof
                 AdhocQueryDataCubeSourceBuilderState && (
                 <AdhocQueryDataCubeSourceBuilder
+                  sourceBuilder={sourceBuilder}
+                />
+              )}
+              {sourceBuilder instanceof
+                CSVFileQueryDataCubeSourceBuilderState && (
+                <CSVFileQueryDataCubeSourceBuilder
                   sourceBuilder={sourceBuilder}
                 />
               )}

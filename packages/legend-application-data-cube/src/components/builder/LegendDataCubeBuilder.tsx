@@ -38,6 +38,7 @@ import {
 import { useEffect } from 'react';
 import { LegendDataCubeSettingStorageKey } from '../../__lib__/LegendDataCubeSetting.js';
 import type { LegendDataCubeBuilderStore } from '../../stores/builder/LegendDataCubeBuilderStore.js';
+import { CSVFileQueryDataCubeSource } from '../../stores/model/CSVFileQueryDataCubeSource.js';
 
 const LegendDataCubeBuilderHeader = observer(() => {
   const store = useLegendDataCubeBuilderStore();
@@ -57,7 +58,10 @@ const LegendDataCubeBuilderHeader = observer(() => {
       <FormButton
         compact={true}
         className="ml-1.5"
-        disabled={!store.builder?.dataCube}
+        disabled={
+          !store.builder?.dataCube ||
+          store.builder.source instanceof CSVFileQueryDataCubeSource
+        }
         onClick={() => store.saverDisplay.open()}
       >
         Save DataCube

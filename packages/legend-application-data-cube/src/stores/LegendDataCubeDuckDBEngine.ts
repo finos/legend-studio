@@ -34,11 +34,20 @@ import {
 import type { CachedDataCubeSource } from '@finos/legend-data-cube';
 import { Type } from 'apache-arrow';
 
-export class LegendDataCubeDataCubeCacheManager {
+export class LegendDataCubeDuckDBEngine {
   private static readonly DUCKDB_DEFAULT_SCHEMA_NAME = 'main'; // See https://duckdb.org/docs/sql/statements/use.html
-  private static readonly TABLE_NAME_PREFIX = 'cache';
-  private static readonly CSV_FILE_NAME = 'data';
-  private static tableCounter = 0;
+  private static readonly CACHE_TABLE_NAME_PREFIX = 'cache';
+  private static readonly INGEST_TABLE_NAME_PREFIX = 'ingest';
+  private static readonly CACHE_FILE_NAME = 'cacheData';
+  private static readonly INGEST_FILE_DATA_FILE_NAME = 'ingestData';
+  private static cacheTableCounter = 0;
+  private static ingestFileTableCounter = 0;
+  // https://duckdb.org/docs/guides/meta/describe.html
+  private static readonly COLUMN_NAME = 'column_name';
+  private static readonly COLUMN_TYPE = 'column_type';
+  // Options for creating csv using papa parser: https://www.papaparse.com/docs#config
+  private static readonly ESCAPE_CHAR = `'`;
+  private static readonly QUOTE_CHAR = `'`;
 
   private _database?: duckdb.AsyncDuckDB | undefined;
 
@@ -85,11 +94,10 @@ export class LegendDataCubeDataCubeCacheManager {
   }
 
   async cache(result: TDSExecutionResult) {
-    const schema =
-      LegendDataCubeDataCubeCacheManager.DUCKDB_DEFAULT_SCHEMA_NAME;
-    LegendDataCubeDataCubeCacheManager.tableCounter += 1;
-    const table = `${LegendDataCubeDataCubeCacheManager.TABLE_NAME_PREFIX}${LegendDataCubeDataCubeCacheManager.tableCounter}`;
-    const csvFileName = `${LegendDataCubeDataCubeCacheManager.CSV_FILE_NAME}${LegendDataCubeDataCubeCacheManager.tableCounter}.csv`;
+    const schema = LegendDataCubeDuckDBEngine.DUCKDB_DEFAULT_SCHEMA_NAME;
+    LegendDataCubeDuckDBEngine.cacheTableCounter += 1;
+    const table = `${LegendDataCubeDuckDBEngine.CACHE_TABLE_NAME_PREFIX}${LegendDataCubeDuckDBEngine.cacheTableCounter}`;
+    const csvFileName = `${LegendDataCubeDuckDBEngine.CACHE_FILE_NAME}${LegendDataCubeDuckDBEngine.cacheTableCounter}.csv`;
 
     const connection = await this.database.connect();
 
@@ -99,8 +107,8 @@ export class LegendDataCubeDataCubeCacheManager {
     const data = result.result.rows.map((row) => row.values);
 
     const csv = csvStringify([columnNames, ...data], {
-      escapeChar: `'`,
-      quoteChar: `'`,
+      escapeChar: LegendDataCubeDuckDBEngine.ESCAPE_CHAR,
+      quoteChar: LegendDataCubeDuckDBEngine.QUOTE_CHAR,
     });
 
     await this._database?.registerFileText(csvFileName, csv);
@@ -111,14 +119,47 @@ export class LegendDataCubeDataCubeCacheManager {
       create: true,
       header: true,
       detect: true,
-      escape: `'`,
-      quote: `'`,
-      delimiter: ',',
+      escape: LegendDataCubeDuckDBEngine.ESCAPE_CHAR,
+      quote: LegendDataCubeDuckDBEngine.QUOTE_CHAR,
     });
 
     await connection.close();
 
-    return { table, schema, rowCount: result.result.rows.length };
+    return { schema, table, rowCount: result.result.rows.length };
+  }
+
+  async ingestFileData(csvString: string) {
+    const schema = LegendDataCubeDuckDBEngine.DUCKDB_DEFAULT_SCHEMA_NAME;
+    LegendDataCubeDuckDBEngine.ingestFileTableCounter += 1;
+    const table = `${LegendDataCubeDuckDBEngine.INGEST_TABLE_NAME_PREFIX}${LegendDataCubeDuckDBEngine.ingestFileTableCounter}`;
+    const csvFileName = `${LegendDataCubeDuckDBEngine.INGEST_FILE_DATA_FILE_NAME}${LegendDataCubeDuckDBEngine.ingestFileTableCounter}.csv`;
+
+    const connection = await this.database.connect();
+
+    await this._database?.registerFileText(csvFileName, csvString);
+
+    await connection.insertCSVFromPath(csvFileName, {
+      schema: schema,
+      name: table,
+      header: true,
+      detect: true,
+      escape: LegendDataCubeDuckDBEngine.ESCAPE_CHAR,
+      quote: LegendDataCubeDuckDBEngine.QUOTE_CHAR,
+    });
+
+    const dbSchemaResult = await connection.query(
+      `DESCRIBE ${schema}.${table}`,
+    );
+    const dbSchema = dbSchemaResult
+      .toArray()
+      .map((data) => [
+        data[LegendDataCubeDuckDBEngine.COLUMN_NAME],
+        data[LegendDataCubeDuckDBEngine.COLUMN_TYPE],
+      ]);
+
+    await connection.close();
+
+    return { schema, table, dbSchema };
   }
 
   async runSQLQuery(sql: string) {
@@ -215,4 +256,21 @@ export class LegendDataCubeDataCubeCacheManager {
     await this._database?.flushFiles();
     await this._database?.terminate();
   }
+}
+
+// https://duckdb.org/docs/sql/data_types/overview.html
+export const enum DUCKDB_DATA_TYPES {
+  // TODO: confirm this is in accordance to engine
+  BIGINT = 'BIGINT',
+  BIT = 'BIT',
+  BOOLEAN = 'BOOLEAN',
+  DATE = 'DATE',
+  DECIMAL = 'DECIMAL',
+  DOUBLE = 'DOUBLE',
+  FLOAT = 'FLOAT',
+  INTEGER = 'INTEGER',
+  SMALLINT = 'SMALLINT',
+  TIMESTAMP = 'TIMESTAMP',
+  TINYINT = 'TININT',
+  VARCHAR = 'VARCHAR',
 }
