@@ -1216,9 +1216,8 @@ export const V1_buildTypedGroupByFunctionExpression = (
       .filter(isNonNullable)
       .map((value) => value.parameters)
       .flat();
-  const variables = new Set<string>();
   topLevelLambdaParameters.forEach((variable) => {
-    if (!variables.has(variable.name) && !variable.genericType) {
+    if (!variable.genericType) {
       const variableExpression = new VariableExpression(
         variable.name,
         precedingExpression.multiplicity,
