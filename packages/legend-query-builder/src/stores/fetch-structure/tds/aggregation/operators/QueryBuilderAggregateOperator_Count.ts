@@ -23,7 +23,6 @@ import {
   type PureModel,
   type AbstractPropertyExpression,
   Enumeration,
-  PrimitiveType,
 } from '@finos/legend-graph';
 import type { QueryBuilderAggregateColumnState } from '../QueryBuilderAggregationState.js';
 import { QueryBuilderAggregateOperator } from '../QueryBuilderAggregateOperator.js';
@@ -36,8 +35,13 @@ import {
   buildAggregateExpression,
 } from './QueryBuilderAggregateOperatorValueSpecificationBuilder.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graph/QueryBuilderMetaModelConst.js';
-import { type Hashable, hashArray } from '@finos/legend-shared';
+import {
+  type Hashable,
+  guaranteeNonNullable,
+  hashArray,
+} from '@finos/legend-shared';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../../../QueryBuilderStateHashUtils.js';
+import { getNumericAggregateOperatorReturnType } from '../../../../../graph-manager/helpers/QueryBuilderAggregateOperatorHelper.js';
 
 export class QueryBuilderAggregateOperator_Count
   extends QueryBuilderAggregateOperator
@@ -104,7 +108,11 @@ export class QueryBuilderAggregateOperator_Count
   override getReturnType(
     aggregateColumnState: QueryBuilderAggregateColumnState,
   ): Type {
-    return PrimitiveType.INTEGER;
+    return guaranteeNonNullable(
+      getNumericAggregateOperatorReturnType(
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.COUNT,
+      ),
+    );
   }
 
   get hashCode(): string {

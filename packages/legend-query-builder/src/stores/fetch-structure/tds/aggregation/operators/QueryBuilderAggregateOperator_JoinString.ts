@@ -31,6 +31,7 @@ import {
 } from '@finos/legend-graph';
 import {
   assertTrue,
+  guaranteeNonNullable,
   guaranteeType,
   type Hashable,
   hashArray,
@@ -43,6 +44,7 @@ import {
 } from '../../projection/QueryBuilderProjectionColumnState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graph/QueryBuilderMetaModelConst.js';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../../../QueryBuilderStateHashUtils.js';
+import { getNumericAggregateOperatorReturnType } from '../../../../../graph-manager/helpers/QueryBuilderAggregateOperatorHelper.js';
 
 export class QueryBuilderAggregateOperator_JoinString
   extends QueryBuilderAggregateOperator
@@ -152,7 +154,11 @@ export class QueryBuilderAggregateOperator_JoinString
   override getReturnType(
     aggregateColumnState: QueryBuilderAggregateColumnState,
   ): Type {
-    return PrimitiveType.STRING;
+    return guaranteeNonNullable(
+      getNumericAggregateOperatorReturnType(
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.JOIN_STRINGS,
+      ),
+    );
   }
 
   get hashCode(): string {
