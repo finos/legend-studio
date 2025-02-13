@@ -1147,8 +1147,6 @@ export const V1_buildTypedGroupByFunctionExpression = (
   compileContext: V1_GraphBuilderContext,
   processingContext: V1_ProcessingContext,
 ): SimpleFunctionExpression => {
-  let topLevelLambdaParameters: V1_Variable[] = [];
-
   assertTrue(
     parameters.length === 3,
     `Can't build relation groupBy() expression: groupBy() expects 2 arguments`,
@@ -1168,6 +1166,7 @@ export const V1_buildTypedGroupByFunctionExpression = (
     `Can't build groupBy() expression: preceding expression return type is missing`,
   );
 
+  // Get preceding project function
   const projectFunction = guaranteeType(
     precedingExpression,
     SimpleFunctionExpression,
@@ -1193,11 +1192,8 @@ export const V1_buildTypedGroupByFunctionExpression = (
   const columnExpressions = guaranteeType(
     columnsClassInstance.value,
     V1_ColSpecArray,
-    `Can't build relation groupBy() expression: groupBy() expects argument #1 to hold spec array instances value`,
+    `Can't build relation groupBy() expression: groupBy() expects argument #1 to hold col spec array instances value`,
   );
-  // topLevelLambdaParameters = columnExpressions.colSpecs
-  //   .map((colSpec) => colSpec.name)
-  //   .flat();
 
   // aggregation columns
   const aggregationColumnsClassInstance = parameters[2];
@@ -1209,18 +1205,17 @@ export const V1_buildTypedGroupByFunctionExpression = (
   const aggregationExpressions = guaranteeType(
     aggregationColumnsClassInstance.value,
     V1_ColSpecArray,
-    `Can't build relation groupBy() expression: groupBy() expects argument #2 to hold spec array instances value`,
+    `Can't build relation groupBy() expression: groupBy() expects argument #2 to hold col spec array instances value`,
   );
-  topLevelLambdaParameters = topLevelLambdaParameters.concat(
+
+  // Make sure top-level lambdas have their lambda parameter types set properly
+  const topLevelLambdaParameters: V1_Variable[] =
     aggregationExpressions.colSpecs
       .map((colSpec) => [colSpec.function1, colSpec.function2])
       .flat()
       .filter(isNonNullable)
       .map((value) => value.parameters)
-      .flat(),
-  );
-
-  // Make sure top-level lambdas have their lambda parameter types set properly
+      .flat();
   const variables = new Set<string>();
   topLevelLambdaParameters.forEach((variable) => {
     if (!variables.has(variable.name) && !variable.genericType) {
@@ -1250,39 +1245,38 @@ export const V1_buildTypedGroupByFunctionExpression = (
   );
   const processedAggregationColSpecArray = new ColSpecArray();
   processedAggregationExpressions.values = [processedAggregationColSpecArray];
-  // const relationType = new RelationType(RelationType.ID);
   processedAggregationColSpecArray.colSpecs =
     aggregationExpressions.colSpecs.map((colSpec) => {
       const pColSpec = new ColSpec();
-      const _func1 = guaranteeType(
+      const selectFunction = guaranteeType(
         colSpec.function1,
         V1_ValueSpecification,
         `Can't build relation col spec() expression: expects function1 to be a lambda`,
       );
-      const _func2 = guaranteeType(
+      const aggregationFunction = guaranteeType(
         colSpec.function2,
         V1_ValueSpecification,
         `Can't build relation col spec() expression: expects function2 to be a lambda`,
       );
-      const lambda1: ValueSpecification = buildProjectionColumnLambda(
-        _func1,
+      const selectLambda: ValueSpecification = buildProjectionColumnLambda(
+        selectFunction,
         openVariables,
         compileContext,
         processingContext,
       );
-      pColSpec.function1 = lambda1;
-      const lambda2: ValueSpecification =
-        _func2.accept_ValueSpecificationVisitor(
+      pColSpec.function1 = selectLambda;
+      const aggregationLambda: ValueSpecification =
+        aggregationFunction.accept_ValueSpecificationVisitor(
           new V1_ValueSpecificationBuilder(
             compileContext,
             processingContext,
             openVariables,
           ),
         );
-      pColSpec.function2 = lambda2;
+      pColSpec.function2 = aggregationLambda;
       pColSpec.name = colSpec.name;
       const relationColumns = guaranteeType(
-        guaranteeType(lambda2, LambdaFunctionInstanceValue).values[0]
+        guaranteeType(aggregationLambda, LambdaFunctionInstanceValue).values[0]
           ?.functionType?.parameters?.[0]?.genericType?.value.typeArguments?.[0]
           ?.value.rawType,
         RelationType,
