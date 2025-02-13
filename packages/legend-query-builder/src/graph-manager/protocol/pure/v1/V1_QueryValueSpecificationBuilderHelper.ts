@@ -1282,7 +1282,7 @@ export const V1_buildTypedGroupByFunctionExpression = (
       pColSpec.function2 = lambda2;
       pColSpec.name = colSpec.name;
       const relationColumns = guaranteeType(
-        guaranteeType(lambda2, LambdaFunctionInstanceValue).values?.[0]
+        guaranteeType(lambda2, LambdaFunctionInstanceValue).values[0]
           ?.functionType?.parameters?.[0]?.genericType?.value.typeArguments?.[0]
           ?.value.rawType,
         RelationType,

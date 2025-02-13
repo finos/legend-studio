@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2025-present, Goldman Sachs
+ * Copyright (c) 2020-present, Goldman Sachs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -116,16 +116,17 @@ export const buildRelationAggregation = (
 
     // Aggregation projection (function1)
     const projectedColSpec = guaranteeNonNullable(
-      (
-        projectFunction.parametersValues[1]! as ColSpecArrayInstance
-      ).values[0]!.colSpecs.find(
+      guaranteeNonNullable(
+        (projectFunction.parametersValues[1] as ColSpecArrayInstance).values[0],
+        'Could not find ColSpec array in project() function first parameter',
+      ).colSpecs.find(
         (_colSpec) => _colSpec.name === aggregationColumnState.columnName,
       ),
       `Could not find projected column matching matching aggregation column '${aggregationColumnState.columnName}'`,
     );
     const projectedPropertyExpression = guaranteeType(
       guaranteeType(projectedColSpec.function1, LambdaFunctionInstanceValue)
-        .values?.[0]?.expressionSequence?.[0],
+        .values[0]?.expressionSequence[0],
       AbstractPropertyExpression,
     );
     const projectedProperty = guaranteeType(
