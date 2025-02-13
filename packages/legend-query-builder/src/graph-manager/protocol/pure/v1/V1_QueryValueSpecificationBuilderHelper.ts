@@ -74,6 +74,7 @@ import {
   QUERY_BUILDER_SUPPORTED_CALENDAR_AGGREGATION_FUNCTIONS,
 } from '../../../../graph/QueryBuilderMetaModelConst.js';
 import { QUERY_BUILDER_CALENDAR_TYPE } from '../../../QueryBuilderConst.js';
+import { getNumericAggregateOperatorReturnType } from '../../../helpers/QueryBuilderAggregateOperatorHelper.js';
 
 const buildProjectionColumnLambda = (
   valueSpecification: V1_ValueSpecification,
@@ -1227,6 +1228,12 @@ export const V1_buildTypedGroupByFunctionExpression = (
     }
   });
 
+  const projectRelationReturnType = guaranteeType(
+    projectFunction.genericType?.value.typeArguments?.[0]?.value.rawType,
+    RelationType,
+    `Can't build relation groupBy() expression: project() function does not return a relation`,
+  );
+
   // build column expressions
   const processedColumnExpressions = new ColSpecArrayInstance(Multiplicity.ONE);
   const processedColSpecArray = new ColSpecArray();
@@ -1236,15 +1243,11 @@ export const V1_buildTypedGroupByFunctionExpression = (
     const pColSpec = new ColSpec();
     pColSpec.name = colSpec.name;
     // Add the column using the return type of the preceding project
-    const projectRelationReturnType =
-      projectFunction.genericType?.value.typeArguments?.[0]?.value?.rawType;
-    if (projectRelationReturnType instanceof RelationType) {
-      const column = projectRelationReturnType.columns.find(
-        (_column) => _column.name === colSpec.name,
-      );
-      if (column) {
-        relationType.columns.push(column);
-      }
+    const column = projectRelationReturnType.columns.find(
+      (_column) => _column.name === colSpec.name,
+    );
+    if (column) {
+      relationType.columns.push(column);
     }
     return pColSpec;
   });
@@ -1275,20 +1278,34 @@ export const V1_buildTypedGroupByFunctionExpression = (
         processingContext,
       );
       pColSpec.function1 = selectLambda;
-      const aggregationLambda: ValueSpecification =
+      const aggregationLambda = guaranteeType(
         aggregationFunction.accept_ValueSpecificationVisitor(
           new V1_ValueSpecificationBuilder(
             compileContext,
             processingContext,
             openVariables,
           ),
-        );
+        ),
+        LambdaFunctionInstanceValue,
+        `Can't build relation col spec() expression: expected aggregation function to be a lambda`,
+      );
       pColSpec.function2 = aggregationLambda;
       pColSpec.name = colSpec.name;
-      // TODO: figure out how to get the actual return type of the aggregation function
-      relationType.columns.push(
-        new RelationColumn(colSpec.name, PrimitiveType.NUMBER),
-      );
+      const aggregateFunctionName = guaranteeType(
+        aggregationLambda.values[0]?.expressionSequence[0],
+        SimpleFunctionExpression,
+        `Can't build relation col spec() expression: expects function2 expression sequence to be a SimpleFunctionExpression`,
+      ).functionName;
+      // Try to get the return type of the aggregate function. If it's numeric, use the helper function. Otherwise, use
+      // the same return type as the column in the preceding project function.
+      const returnType =
+        getNumericAggregateOperatorReturnType(aggregateFunctionName) ??
+        projectRelationReturnType.columns.find(
+          (_column) => _column.name === colSpec.name,
+        )?.type;
+      if (returnType) {
+        relationType.columns.push(new RelationColumn(colSpec.name, returnType));
+      }
 
       return pColSpec;
     });
