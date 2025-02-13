@@ -1166,7 +1166,7 @@ export const V1_buildTypedGroupByFunctionExpression = (
     `Can't build groupBy() expression: preceding expression return type is missing`,
   );
 
-  // Get preceding project function
+  // Assert that preceding function is a project() function
   const projectFunction = guaranteeType(
     precedingExpression,
     SimpleFunctionExpression,
@@ -1182,7 +1182,7 @@ export const V1_buildTypedGroupByFunctionExpression = (
     );
   }
 
-  // normal columns
+  // Get normal (grouped) columns
   const columnsClassInstance = parameters[1];
   assertType(
     columnsClassInstance,
@@ -1195,7 +1195,7 @@ export const V1_buildTypedGroupByFunctionExpression = (
     `Can't build relation groupBy() expression: groupBy() expects argument #1 to hold col spec array instances value`,
   );
 
-  // aggregation columns
+  // Get aggregation columns
   const aggregationColumnsClassInstance = parameters[2];
   assertType(
     aggregationColumnsClassInstance,
@@ -1227,7 +1227,7 @@ export const V1_buildTypedGroupByFunctionExpression = (
     }
   });
 
-  // build column expressions taking into account of derivation
+  // build column expressions
   const processedColumnExpressions = new ColSpecArrayInstance(Multiplicity.ONE);
   const processedColSpecArray = new ColSpecArray();
   processedColumnExpressions.values = [processedColSpecArray];
@@ -1235,10 +1235,21 @@ export const V1_buildTypedGroupByFunctionExpression = (
   processedColSpecArray.colSpecs = columnExpressions.colSpecs.map((colSpec) => {
     const pColSpec = new ColSpec();
     pColSpec.name = colSpec.name;
+    // Add the column using the return type of the preceding project
+    const projectRelationReturnType =
+      projectFunction.genericType?.value.typeArguments?.[0]?.value?.rawType;
+    if (projectRelationReturnType instanceof RelationType) {
+      const column = projectRelationReturnType.columns.find(
+        (_column) => _column.name === colSpec.name,
+      );
+      if (column) {
+        relationType.columns.push(column);
+      }
+    }
     return pColSpec;
   });
 
-  // build aggregation expressions taking into account of derivation
+  // build aggregation column expressions
   const processedAggregationExpressions = new ColSpecArrayInstance(
     Multiplicity.ONE,
   );
@@ -1249,12 +1260,12 @@ export const V1_buildTypedGroupByFunctionExpression = (
       const pColSpec = new ColSpec();
       const selectFunction = guaranteeType(
         colSpec.function1,
-        V1_ValueSpecification,
+        V1_Lambda,
         `Can't build relation col spec() expression: expects function1 to be a lambda`,
       );
       const aggregationFunction = guaranteeType(
         colSpec.function2,
-        V1_ValueSpecification,
+        V1_Lambda,
         `Can't build relation col spec() expression: expects function2 to be a lambda`,
       );
       const selectLambda: ValueSpecification = buildProjectionColumnLambda(
@@ -1274,13 +1285,10 @@ export const V1_buildTypedGroupByFunctionExpression = (
         );
       pColSpec.function2 = aggregationLambda;
       pColSpec.name = colSpec.name;
-      const relationColumns = guaranteeType(
-        guaranteeType(aggregationLambda, LambdaFunctionInstanceValue).values[0]
-          ?.functionType?.parameters?.[0]?.genericType?.value.typeArguments?.[0]
-          ?.value.rawType,
-        RelationType,
-      ).columns;
-      relationType.columns.push(...relationColumns);
+      // TODO: figure out how to get the actual return type of the aggregation function
+      relationType.columns.push(
+        new RelationColumn(colSpec.name, PrimitiveType.NUMBER),
+      );
 
       return pColSpec;
     });
