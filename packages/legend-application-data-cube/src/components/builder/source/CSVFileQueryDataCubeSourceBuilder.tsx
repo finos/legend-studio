@@ -42,6 +42,7 @@ export const CSVFileQueryDataCubeSourceBuilder = observer(
       }
     };
 
+    // TODO: use a react library which gives preview and let users set advance options
     return (
       <div className="flex h-full w-full">
         <div className="flex h-6 items-center text-neutral-500">
