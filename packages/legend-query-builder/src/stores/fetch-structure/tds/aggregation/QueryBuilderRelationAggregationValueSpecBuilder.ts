@@ -49,6 +49,7 @@ export const buildRelationAggregation = (
   tdsState: QueryBuilderTDSState,
   options?: LambdaFunctionBuilderOption,
 ): SimpleFunctionExpression => {
+  // Verify that preceding expression is a relation project
   const projectFunction = guaranteeType(
     precedingExpression,
     SimpleFunctionExpression,
@@ -63,6 +64,8 @@ export const buildRelationAggregation = (
       `Can't build relation groupBy() expression: previous expression must be project() column expression`,
     );
   }
+
+  // Build groupBy() expression
   const groupByFunction = new SimpleFunctionExpression(
     extractElementNameFromPath(
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_GROUP_BY,
@@ -70,18 +73,20 @@ export const buildRelationAggregation = (
   );
   const queryBuilderState = tdsState.queryBuilderState;
 
+  // Build normal (grouped) columns
   const groupByCols = new ColSpecArrayInstance(Multiplicity.ONE, undefined);
-  const aggregationCols = new ColSpecArrayInstance(Multiplicity.ONE, undefined);
-
   const groupByColSpecArray = new ColSpecArray();
   groupByCols.values = [groupByColSpecArray];
 
+  // Build aggregation columns
+  const aggregationCols = new ColSpecArrayInstance(Multiplicity.ONE, undefined);
   const aggregationColSpecArray = new ColSpecArray();
   aggregationCols.values = [aggregationColSpecArray];
 
+  // Build relation return type
   const relationType = new RelationType(RelationType.ID);
 
-  // Add non-aggregated columns to groupByCols
+  // Add normal (non-aggregated) columns to groupByCols
   tdsState.projectionColumns
     .filter(
       (projectionColumnState) =>
@@ -94,38 +99,39 @@ export const buildRelationAggregation = (
     .forEach((projectionColumnState) => {
       // Create and add column to groupByColSpecArray
       const colSpec = new ColSpec();
-      groupByColSpecArray.colSpecs.push(colSpec);
       colSpec.name = projectionColumnState.columnName;
+      groupByColSpecArray.colSpecs.push(colSpec);
 
       // Add column return type to relationType
       const returnType = guaranteeNonNullable(
         projectionColumnState.getColumnType(),
-        `Can't create value spec for projection column ${projectionColumnState.columnName}`,
+        `Can't create value spec for projection column ${projectionColumnState.columnName}. Missing type.`,
       );
       relationType.columns.push(
         new RelationColumn(projectionColumnState.columnName, returnType),
       );
     });
 
-  // Add aggregated columns to aggregationCols
+  // Add aggregation columns to aggregationCols
   tdsState.aggregationState.columns.forEach((aggregationColumnState) => {
     // Create and add column to aggregationColSpecArray
     const colSpec = new ColSpec();
-    aggregationColSpecArray.colSpecs.push(colSpec);
     colSpec.name = aggregationColumnState.columnName;
+    aggregationColSpecArray.colSpecs.push(colSpec);
 
-    // Aggregation projection (function1)
-    const projectedColSpec = guaranteeNonNullable(
+    // Build map function (function1)
+    // First, get the ColSpec from the preceding projection so we can get the name of the projected column.
+    const projectionColSpec = guaranteeNonNullable(
       guaranteeNonNullable(
         (projectFunction.parametersValues[1] as ColSpecArrayInstance).values[0],
         'Could not find ColSpec array in project() function first parameter',
       ).colSpecs.find(
         (_colSpec) => _colSpec.name === aggregationColumnState.columnName,
       ),
-      `Could not find projected column matching matching aggregation column '${aggregationColumnState.columnName}'`,
+      `Could not find projected column matching aggregation column '${aggregationColumnState.columnName}'`,
     );
     const projectedPropertyExpression = guaranteeType(
-      guaranteeType(projectedColSpec.function1, LambdaFunctionInstanceValue)
+      guaranteeType(projectionColSpec.function1, LambdaFunctionInstanceValue)
         .values[0]?.expressionSequence[0],
       AbstractPropertyExpression,
     );
@@ -133,10 +139,11 @@ export const buildRelationAggregation = (
       projectedPropertyExpression.func.value,
       Property,
     );
+    // Second, build a new AbstractPropertyExpression for our map function
     const newPropertyExpression = new AbstractPropertyExpression('');
     newPropertyExpression.func = PropertyExplicitReference.create(
       new Property(
-        projectedColSpec.name,
+        projectionColSpec.name,
         projectedProperty.multiplicity,
         projectedProperty.genericType,
         projectedProperty._OWNER,
@@ -145,15 +152,15 @@ export const buildRelationAggregation = (
     newPropertyExpression.parametersValues = [
       new VariableExpression(DEFAULT_LAMBDA_VARIABLE_NAME, Multiplicity.ONE),
     ];
-    const columnLambda = buildGenericLambdaFunctionInstanceValue(
+    const mapLambda = buildGenericLambdaFunctionInstanceValue(
       DEFAULT_LAMBDA_VARIABLE_NAME,
       [newPropertyExpression],
       queryBuilderState.graphManagerState.graph,
     );
-    colSpec.function1 = columnLambda;
+    colSpec.function1 = mapLambda;
 
-    // Aggregation operation (function2)
-    const aggregateLambda = buildGenericLambdaFunctionInstanceValue(
+    // Reduce function (function2)
+    const reduceLambda = buildGenericLambdaFunctionInstanceValue(
       aggregationColumnState.lambdaParameterName,
       [
         aggregationColumnState.operator.buildAggregateExpressionFromState(
@@ -163,12 +170,12 @@ export const buildRelationAggregation = (
       aggregationColumnState.aggregationState.tdsState.queryBuilderState
         .graphManagerState.graph,
     );
-    colSpec.function2 = aggregateLambda;
+    colSpec.function2 = reduceLambda;
 
     // Add column return type to relationType
     const returnType = guaranteeNonNullable(
       aggregationColumnState.getColumnType(),
-      `Can't create value spec for aggregation column ${aggregationColumnState.columnName}`,
+      `Can't create value spec for aggregation column ${aggregationColumnState.columnName}. Missing type.`,
     );
     relationType.columns.push(
       new RelationColumn(aggregationColumnState.columnName, returnType),
