@@ -22,7 +22,7 @@ import type { DataCubeConfiguration } from '@finos/legend-data-cube';
 export enum LegendDataCubeSourceBuilderType {
   LEGEND_QUERY = 'Legend Query',
   ADHOC_QUERY = 'Ad hoc Query',
-  CSV_FILE_QUERY = 'CSV File Query',
+  CSV_FILE_QUERY = 'CSV File',
 }
 
 export abstract class LegendDataCubeSourceBuilderState {

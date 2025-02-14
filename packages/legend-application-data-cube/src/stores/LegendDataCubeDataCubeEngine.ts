@@ -127,9 +127,9 @@ import {
 } from '@finos/legend-server-depot';
 import {
   CSV_FILE_QUERY_DATA_CUBE_SOURCE_TYPE,
-  CSVFileQueryDataCubeSource,
+  CSVFileDataCubeSource,
   RawCSVFileQueryDataCubeSource,
-} from './model/CSVFileQueryDataCubeSource.js';
+} from './model/CSVFileDataCubeSource.js';
 
 export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   private readonly _application: LegendDataCubeApplicationStore;
@@ -193,7 +193,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       case CSV_FILE_QUERY_DATA_CUBE_SOURCE_TYPE: {
         const rawSource =
           RawCSVFileQueryDataCubeSource.serialization.fromJson(value);
-        const source = new CSVFileQueryDataCubeSource();
+        const source = new CSVFileDataCubeSource();
         source.fileName = rawSource.fileName;
         source.count = rawSource.count;
         source.db = rawSource.db;
@@ -503,7 +503,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         result: await this._cacheManager.runSQLQuery(sql),
         executionTime: endTime - startTime,
       };
-    } else if (source instanceof CSVFileQueryDataCubeSource) {
+    } else if (source instanceof CSVFileDataCubeSource) {
       // get the execute plan to extract the generated SQL to run against cached DB
       const executionPlan = await this._generateExecutionPlan(
         query,
@@ -576,7 +576,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         DataCubeFunction.FROM,
         [_elementPtr(source.runtime)].filter(isNonNullable),
       );
-    } else if (source instanceof CSVFileQueryDataCubeSource) {
+    } else if (source instanceof CSVFileDataCubeSource) {
       return _function(
         DataCubeFunction.FROM,
         [_elementPtr(source.runtime)].filter(isNonNullable),
@@ -700,7 +700,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     const model = new V1_PureModelContextData();
     model.elements = [database, packageableRuntime];
 
-    const csvFileSource = new CSVFileQueryDataCubeSource();
+    const csvFileSource = new CSVFileDataCubeSource();
     csvFileSource.model = model;
     csvFileSource.runtime = packageableRuntime.path;
     csvFileSource.db = database.path;
@@ -845,7 +845,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       return this._getLambdaRelationType(query, source.model);
     } else if (source instanceof CachedDataCubeSource) {
       return this._getLambdaRelationType(query, serialize(source.model));
-    } else if (source instanceof CSVFileQueryDataCubeSource) {
+    } else if (source instanceof CSVFileDataCubeSource) {
       return this._getLambdaRelationType(query, serialize(source.model));
     }
     throw new UnsupportedOperationError(

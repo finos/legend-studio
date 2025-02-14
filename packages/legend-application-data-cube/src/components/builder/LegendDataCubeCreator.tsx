@@ -28,8 +28,8 @@ import { LegendQueryDataCubeSourceBuilder } from './source/LegendQueryDataCubeSo
 import { AdhocQueryDataCubeSourceBuilder } from './source/AdhocQueryDataCubeSourceBuilder.js';
 import { AdhocQueryDataCubeSourceBuilderState } from '../../stores/builder/source/AdhocQueryDataCubeSourceBuilderState.js';
 import { useLegendDataCubeBuilderStore } from './LegendDataCubeBuilderStoreProvider.js';
-import { CSVFileQueryDataCubeSourceBuilderState } from '../../stores/builder/source/CSVFileQueryDataCubeSourceBuilderState.js';
-import { CSVFileQueryDataCubeSourceBuilder } from './source/CSVFileQueryDataCubeSourceBuilder.js';
+import { CSVFileDataCubeSourceBuilderState } from '../../stores/builder/source/CSVFileDataCubeSourceBuilderState.js';
+import { CSVFileDataCubeSourceBuilder } from './source/CSVFileDataCubeSourceBuilder.js';
 
 export const LegendDataCubeCreator = observer(() => {
   const store = useLegendDataCubeBuilderStore();
@@ -92,11 +92,8 @@ export const LegendDataCubeCreator = observer(() => {
                   sourceBuilder={sourceBuilder}
                 />
               )}
-              {sourceBuilder instanceof
-                CSVFileQueryDataCubeSourceBuilderState && (
-                <CSVFileQueryDataCubeSourceBuilder
-                  sourceBuilder={sourceBuilder}
-                />
+              {sourceBuilder instanceof CSVFileDataCubeSourceBuilderState && (
+                <CSVFileDataCubeSourceBuilder sourceBuilder={sourceBuilder} />
               )}
             </div>
           </div>

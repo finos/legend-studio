@@ -25,9 +25,9 @@ import {
 } from '@finos/legend-shared';
 import { createModelSchema, primitive } from 'serializr';
 
-export const CSV_FILE_QUERY_DATA_CUBE_SOURCE_TYPE = 'csvFileQuery';
+export const CSV_FILE_QUERY_DATA_CUBE_SOURCE_TYPE = 'csvFile';
 
-export class CSVFileQueryDataCubeSource extends DataCubeSource {
+export class CSVFileDataCubeSource extends DataCubeSource {
   model!: V1_PureModelContextData;
   runtime!: string;
   db!: string;

@@ -23,11 +23,11 @@ import type { LegendDataCubeApplicationStore } from '../../LegendDataCubeBaseSto
 import { action, makeObservable, observable } from 'mobx';
 import type { LegendDataCubeDataCubeEngine } from '../../LegendDataCubeDataCubeEngine.js';
 import {
-  CSVFileQueryDataCubeSource,
+  CSVFileDataCubeSource,
   RawCSVFileQueryDataCubeSource,
-} from '../../model/CSVFileQueryDataCubeSource.js';
+} from '../../model/CSVFileDataCubeSource.js';
 
-export class CSVFileQueryDataCubeSourceBuilderState extends LegendDataCubeSourceBuilderState {
+export class CSVFileDataCubeSourceBuilderState extends LegendDataCubeSourceBuilderState {
   fileData!: string;
   fileName!: string;
   rowCount!: number;
@@ -71,7 +71,7 @@ export class CSVFileQueryDataCubeSourceBuilderState extends LegendDataCubeSource
   override async generateSourceData(): Promise<PlainObject> {
     const csvDataSource = guaranteeType(
       await this._engine.ingestFileData(this.fileData),
-      CSVFileQueryDataCubeSource,
+      CSVFileDataCubeSource,
       `Can't generate data source`,
     );
 
