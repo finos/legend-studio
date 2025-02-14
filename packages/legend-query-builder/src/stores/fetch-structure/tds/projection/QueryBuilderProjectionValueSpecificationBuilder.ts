@@ -402,7 +402,7 @@ export const appendProjection = (
         options,
       );
       const aggregationFunction = tdsState.aggregationState.columns.length
-        ? buildRelationAggregation(projectFunction, tdsState, options)
+        ? buildRelationAggregation(projectFunction, tdsState)
         : null;
       lambdaFunction.expressionSequence[0] =
         aggregationFunction ?? projectFunction;
