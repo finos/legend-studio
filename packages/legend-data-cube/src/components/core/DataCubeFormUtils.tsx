@@ -776,7 +776,7 @@ export const FormCodeEditor: React.FC<{
   return (
     <div className="h-full w-full border border-neutral-200">
       {!hideActionBar && (
-        <div className="flex h-5 w-full items-center justify-between border-b border-neutral-200">
+        <div className="flex h-5 w-full items-center justify-between border-b border-neutral-200 bg-white">
           <div className="pl-1 text-sm text-neutral-500">{title ?? ''}</div>
           <button
             tabIndex={-1}

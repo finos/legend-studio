@@ -50,7 +50,10 @@ import type { DataCubeViewState } from '../DataCubeViewState.js';
 import { buildGridDataFetchExecutableQuery } from './DataCubeGridQueryBuilder.js';
 import { DataCubeSettingKey } from '../../../__lib__/DataCubeSetting.js';
 import { DEFAULT_ALERT_WINDOW_CONFIG } from '../../services/DataCubeLayoutService.js';
-import type { DataCubeExecutionResult } from '../../core/DataCubeEngine.js';
+import {
+  DataCubeExecutionError,
+  type DataCubeExecutionResult,
+} from '../../core/DataCubeEngine.js';
 import { _lambda } from '../../core/DataCubeQueryBuilderUtils.js';
 import { sum } from 'mathjs';
 
@@ -365,9 +368,16 @@ export class DataCubeGridClientServerSideDataSource
             );
           } catch (error) {
             assertErrorThrown(error);
-            this._view.alertService.alertError(error, {
-              message: `Query Validation Failure: Can't retrieve pivot results column metadata. ${error.message}`,
-            });
+            if (error instanceof DataCubeExecutionError) {
+              this._view.alertService.alertExecutionError(error, {
+                message: `Query Validation Failure: Can't retrieve pivot results column metadata.`,
+                text: `Error: ${error.message}`,
+              });
+            } else {
+              this._view.alertService.alertError(error, {
+                message: `Query Validation Failure: Can't retrieve pivot results column metadata. ${error.message}`,
+              });
+            }
             // fail early since we can't proceed without the cast columns validated
             params.fail();
             this._view.taskService.endTask(task);
@@ -418,9 +428,16 @@ export class DataCubeGridClientServerSideDataSource
       rowData = buildRowData(result.result.result, newSnapshot);
     } catch (error) {
       assertErrorThrown(error);
-      this._view.alertService.alertError(error, {
-        message: `Data Fetch Failure: ${error.message}`,
-      });
+      if (error instanceof DataCubeExecutionError) {
+        this._view.alertService.alertExecutionError(error, {
+          message: `Data Fetch Failure: Can't execute query.`,
+          text: `Error: ${error.message}`,
+        });
+      } else {
+        this._view.alertService.alertError(error, {
+          message: `Data Fetch Failure: ${error.message}`,
+        });
+      }
       this._view.taskService.endTask(task);
       params.fail();
       return;
