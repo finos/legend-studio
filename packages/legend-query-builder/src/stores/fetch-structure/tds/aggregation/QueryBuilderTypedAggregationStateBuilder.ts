@@ -54,30 +54,29 @@ export const processTypedAggregationColSpec = (
           QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_GROUP_BY,
         ),
     ),
-    `Can't process typed aggregate ColSpec: only supported when used within a groupBy() expression`,
+    `Can't process typed aggregation ColSpec: only supported when used within a groupBy() expression`,
   );
 
-  // Check that there are 2 lambdas, one for column selection and 1 for aggregation
-  const columnLambdaFuncInstance = guaranteeType(
+  // Check that there are 2 lambdas, one for map and one for reduce
+  const mapLambdaFunctionInstance = guaranteeType(
     colSpec.function1,
     LambdaFunctionInstanceValue,
-    `Can't process colSpec: function1 not a lambda function instance value`,
+    `Can't process colSpec: function1 is not a lambda function instance value`,
   );
-  assertTrue(columnLambdaFuncInstance.values.length === 1);
   assertTrue(
-    guaranteeNonNullable(columnLambdaFuncInstance.values[0]).expressionSequence
+    mapLambdaFunctionInstance.values.length === 1,
+    `Can't process typed aggregation ColSpec. function1 should only have 1 lambda value.`,
+  );
+  assertTrue(
+    guaranteeNonNullable(mapLambdaFunctionInstance.values[0]).expressionSequence
       .length === 1,
+    `Can't process typed aggregation ColSpec. function1 lambda should only have 1 expression.`,
   );
 
-  const aggregationLambdaFuncInstance = guaranteeType(
+  const reduceLambdaFunctionInstance = guaranteeType(
     colSpec.function2,
     LambdaFunctionInstanceValue,
-    `Can't process colSpec: function2 not a lambda function instance value`,
-  );
-  assertTrue(aggregationLambdaFuncInstance.values.length === 1);
-  assertTrue(
-    guaranteeNonNullable(aggregationLambdaFuncInstance.values[0])
-      .expressionSequence.length === 1,
+    `Can't process colSpec: function2 is not a lambda function instance value`,
   );
 
   // build state
@@ -93,29 +92,28 @@ export const processTypedAggregationColSpec = (
       ),
       `Projection column with name ${colSpec.name} not found`,
     );
-    const aggregateLambdaFunc = guaranteeNonNullable(
-      aggregationLambdaFuncInstance.values[0],
+    const reduceLambdaFunction = guaranteeNonNullable(
+      reduceLambdaFunctionInstance.values[0],
       `Can't process colSpec: function2 lambda function is missing`,
     );
     assertTrue(
-      aggregateLambdaFunc.expressionSequence.length === 1,
+      reduceLambdaFunction.expressionSequence.length === 1,
       `Can't process colSpec: only support colSpec function2 lambda body with 1 expression`,
     );
-    const aggregateColumnExpression = guaranteeType(
-      aggregateLambdaFunc.expressionSequence[0],
+    assertTrue(
+      reduceLambdaFunction.functionType.parameters.length === 1,
+      `Can't process colSpec function2 lambda: only support lambda with 1 parameter`,
+    );
+    const reduceFunctionExpression = guaranteeType(
+      reduceLambdaFunction.expressionSequence[0],
       SimpleFunctionExpression,
       `Can't process colSpec: only support colSpec function2 lambda body with 1 expression`,
     );
 
-    assertTrue(
-      aggregateLambdaFunc.functionType.parameters.length === 1,
-      `Can't process colSpec function2 lambda: only support lambda with 1 parameter`,
-    );
-
     const lambdaParam = guaranteeType(
-      aggregateLambdaFunc.functionType.parameters[0],
+      reduceLambdaFunction.functionType.parameters[0],
       VariableExpression,
-      `Can't process colSpec function2 lambda: only support lambda with 1 parameter`,
+      `Can't process colSpec function2 lambda: parameter is missing`,
     );
 
     for (const operator of aggregationState.operators) {
@@ -124,7 +122,7 @@ export const processTypedAggregationColSpec = (
       // considered as not supporting the lambda.
       const aggregateColumnState = returnUndefOnError(() =>
         operator.buildAggregateColumnState(
-          aggregateColumnExpression,
+          reduceFunctionExpression,
           lambdaParam,
           projectionColumnState,
         ),
@@ -161,14 +159,12 @@ export const processTypedGroupByExpression = (
     `Can't process groupBy() expression: groupBy() expects 2 arguments`,
   );
 
-  // check preceding expression
+  // check preceding expression is relation project, then process the project
   const precedingExpression = guaranteeType(
     expression.parametersValues[0],
     SimpleFunctionExpression,
     `Can't process groupBy() expression: only support groupBy() immediately following an expression`,
   );
-
-  // TODO: Confirm that the below assumption is true
   assertTrue(
     matchFunctionName(precedingExpression.functionName, [
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_PROJECT,
@@ -186,7 +182,7 @@ export const processTypedGroupByExpression = (
     QueryBuilderTDSState,
   );
 
-  // process columns (ensure columns exist in project expression)
+  // process normal (non-aggregation) columns (ensure columns exist in project expression)
   const columnExpressions = guaranteeType(
     expression.parametersValues[1],
     ColSpecArrayInstance,
@@ -208,15 +204,15 @@ export const processTypedGroupByExpression = (
     );
   });
 
-  // process aggregations
-  const aggregateLambdas = expression.parametersValues[2];
+  // process aggregation columns
+  const aggregationLambdas = expression.parametersValues[2];
   assertType(
-    aggregateLambdas,
+    aggregationLambdas,
     ColSpecArrayInstance,
     `Can't process groupBy() expression: groupBy() expects argument #2 to be a ColSpecArrayInstance`,
   );
   QueryBuilderValueSpecificationProcessor.processChild(
-    aggregateLambdas,
+    aggregationLambdas,
     expression,
     parentLambda,
     queryBuilderState,
