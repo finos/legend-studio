@@ -41,6 +41,7 @@ import {
   type LegendDataCubeBuilderStore,
 } from './LegendDataCubeBuilderStore.js';
 import { generateBuilderRoute } from '../../__lib__/LegendDataCubeNavigation.js';
+import { CSVFileDataCubeSourceBuilderState } from './source/CSVFileDataCubeSourceBuilderState.js';
 
 const DEFAULT_SOURCE_TYPE = LegendDataCubeSourceBuilderType.LEGEND_QUERY;
 
@@ -102,6 +103,11 @@ export class LegendDataCubeCreatorState {
         );
       case LegendDataCubeSourceBuilderType.ADHOC_QUERY:
         return new AdhocQueryDataCubeSourceBuilderState(
+          this._application,
+          this._engine,
+        );
+      case LegendDataCubeSourceBuilderType.CSV_FILE_QUERY:
+        return new CSVFileDataCubeSourceBuilderState(
           this._application,
           this._engine,
         );

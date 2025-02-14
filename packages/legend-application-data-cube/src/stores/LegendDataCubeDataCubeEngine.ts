@@ -72,6 +72,12 @@ import {
   PackageableElementPointerType,
   DatabaseType,
   PRIMITIVE_TYPE,
+  V1_BigInt,
+  V1_Decimal,
+  V1_Double,
+  V1_Timestamp,
+  V1_TinyInt,
+  V1_SmallInt,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
@@ -104,7 +110,10 @@ import {
   filterByType,
 } from '@finos/legend-shared';
 import type { LegendDataCubeApplicationStore } from './LegendDataCubeBaseStore.js';
-import { LegendDataCubeDataCubeCacheManager } from './LegendDataCubeCacheManager.js';
+import {
+  DUCKDB_DATA_TYPES,
+  LegendDataCubeDuckDBEngine,
+} from './LegendDataCubeDuckDBEngine.js';
 import { APPLICATION_EVENT } from '@finos/legend-application';
 import {
   LEGEND_QUERY_DATA_CUBE_SOURCE_TYPE,
@@ -116,13 +125,18 @@ import {
   resolveVersion,
   type DepotServerClient,
 } from '@finos/legend-server-depot';
+import {
+  CSV_FILE_QUERY_DATA_CUBE_SOURCE_TYPE,
+  CSVFileDataCubeSource,
+  RawCSVFileQueryDataCubeSource,
+} from './model/CSVFileDataCubeSource.js';
 
 export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   private readonly _application: LegendDataCubeApplicationStore;
   private readonly _depotServerClient: DepotServerClient;
   private readonly _engineServerClient: V1_EngineServerClient;
   private readonly _graphManager: V1_PureGraphManager;
-  private readonly _cacheManager: LegendDataCubeDataCubeCacheManager;
+  private readonly _cacheManager: LegendDataCubeDuckDBEngine;
 
   constructor(
     application: LegendDataCubeApplicationStore,
@@ -136,7 +150,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     this._depotServerClient = depotServerClient;
     this._engineServerClient = engineServerClient;
     this._graphManager = graphManager;
-    this._cacheManager = new LegendDataCubeDataCubeCacheManager();
+    this._cacheManager = new LegendDataCubeDuckDBEngine();
   }
 
   async initializeCacheManager() {
@@ -166,6 +180,40 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
             await this._getLambdaRelationType(
               this.serializeValueSpecification(_lambda([], [source.query])),
               source.model,
+            )
+          ).columns;
+        } catch (error) {
+          assertErrorThrown(error);
+          throw new Error(
+            `Can't get query result columns. Make sure the source query return a relation (i.e. typed TDS). Error: ${error.message}`,
+          );
+        }
+        return source;
+      }
+      case CSV_FILE_QUERY_DATA_CUBE_SOURCE_TYPE: {
+        const rawSource =
+          RawCSVFileQueryDataCubeSource.serialization.fromJson(value);
+        const source = new CSVFileDataCubeSource();
+        source.fileName = rawSource.fileName;
+        source.count = rawSource.count;
+        source.db = rawSource.db;
+        source.model = rawSource.model;
+        source.runtime = rawSource.runtime;
+        source.schema = rawSource.schema;
+        source.table = rawSource.table;
+
+        const query = new V1_ClassInstance();
+        query.type = V1_ClassInstanceType.RELATION_STORE_ACCESSOR;
+        const storeAccessor = new V1_RelationStoreAccessor();
+        storeAccessor.path = [source.db, source.schema, source.table];
+        query.value = storeAccessor;
+        source.query = query;
+
+        try {
+          source.columns = (
+            await this._getLambdaRelationType(
+              this.serializeValueSpecification(_lambda([], [source.query])),
+              serialize(source.model),
             )
           ).columns;
         } catch (error) {
@@ -455,6 +503,34 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         result: await this._cacheManager.runSQLQuery(sql),
         executionTime: endTime - startTime,
       };
+    } else if (source instanceof CSVFileDataCubeSource) {
+      // get the execute plan to extract the generated SQL to run against cached DB
+      const executionPlan = await this._generateExecutionPlan(
+        query,
+        source.model,
+        [],
+        // NOTE: for caching, we're using DuckDB, but its protocol models
+        // are not available in the latest production protocol version V1_33_0, so
+        // we have to force using VX_X_X
+        // once we either cut another protocol version or backport the DuckDB models
+        // to V1_33_0, we will can remove this
+        { ...options, clientVersion: PureClientVersion.VX_X_X },
+      );
+      const sql = guaranteeNonNullable(
+        executionPlan instanceof V1_SimpleExecutionPlan
+          ? executionPlan.rootExecutionNode.executionNodes
+              .filter(filterByType(V1_SQLExecutionNode))
+              .at(-1)?.sqlQuery
+          : undefined,
+        `Can't process execution plan: failed to extract generated SQL`,
+      );
+      const endTime = performance.now();
+      return {
+        executedQuery: await queryCodePromise,
+        executedSQL: sql,
+        result: await this._cacheManager.runSQLQuery(sql),
+        executionTime: endTime - startTime,
+      };
     } else {
       throw new UnsupportedOperationError(
         `Can't execute query with unsupported source`,
@@ -500,8 +576,137 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         DataCubeFunction.FROM,
         [_elementPtr(source.runtime)].filter(isNonNullable),
       );
+    } else if (source instanceof CSVFileDataCubeSource) {
+      return _function(
+        DataCubeFunction.FROM,
+        [_elementPtr(source.runtime)].filter(isNonNullable),
+      );
     }
     return undefined;
+  }
+
+  // --------------------------------- FILE INGEST -----------------------------------
+
+  override async ingestFileData(
+    csvString: string,
+  ): Promise<DataCubeSource | undefined> {
+    const {
+      schema: schemaName,
+      table: tableName,
+      dbSchema: dbSchema,
+    } = await this._cacheManager.ingestFileData(csvString);
+
+    const packagePath = 'ingest::local';
+
+    const table = new V1_Table();
+    table.name = tableName;
+    table.columns = dbSchema.map((col) => {
+      const column = new V1_Column();
+      column.name = col[0] as string;
+      // TODO: check if we have a duckdb enum mapping
+      switch (col[1] as string) {
+        case DUCKDB_DATA_TYPES.BIGINT: {
+          column.type = new V1_BigInt();
+          break;
+        }
+        case DUCKDB_DATA_TYPES.BIT: {
+          column.type = new V1_Bit();
+          break;
+        }
+        case DUCKDB_DATA_TYPES.BOOLEAN: {
+          // TODO: understand why boolean is not present in relationalDataType
+          column.type = new V1_VarChar();
+          break;
+        }
+        case DUCKDB_DATA_TYPES.DATE: {
+          column.type = new V1_Date();
+          break;
+        }
+        case DUCKDB_DATA_TYPES.DECIMAL: {
+          column.type = new V1_Decimal();
+          break;
+        }
+        case DUCKDB_DATA_TYPES.DOUBLE: {
+          column.type = new V1_Double();
+          break;
+        }
+        case DUCKDB_DATA_TYPES.FLOAT: {
+          column.type = new V1_Float();
+          break;
+        }
+        case DUCKDB_DATA_TYPES.INTEGER: {
+          column.type = new V1_Integer();
+          break;
+        }
+        case DUCKDB_DATA_TYPES.SMALLINT: {
+          column.type = new V1_SmallInt();
+          break;
+        }
+        case DUCKDB_DATA_TYPES.TIMESTAMP: {
+          column.type = new V1_Timestamp();
+          break;
+        }
+        case DUCKDB_DATA_TYPES.TINYINT: {
+          column.type = new V1_TinyInt();
+          break;
+        }
+        case DUCKDB_DATA_TYPES.VARCHAR: {
+          column.type = new V1_VarChar();
+          break;
+        }
+        default: {
+          throw new UnsupportedOperationError(
+            `Can't initialize cache: failed to find matching relational data type for DuckDB type '${col[1]}' when synthesizing table definition`,
+          );
+        }
+      }
+      return column;
+    });
+
+    const schema = new V1_Schema();
+    schema.name = schemaName;
+    schema.tables = [table];
+    const database = new V1_Database();
+    database.name = 'db';
+    database.package = packagePath;
+    database.schemas = [schema];
+
+    const connection = new V1_RelationalDatabaseConnection();
+    connection.databaseType = DatabaseType.DuckDB;
+    connection.type = DatabaseType.DuckDB;
+    const dataSourceSpec = new V1_DuckDBDatasourceSpecification();
+    dataSourceSpec.path = '/tmpIngestFile';
+    connection.store = database.path;
+    connection.datasourceSpecification = dataSourceSpec;
+    connection.authenticationStrategy = new V1_TestAuthenticationStrategy();
+
+    const runtime = new V1_EngineRuntime();
+    const storeConnections = new V1_StoreConnections();
+    storeConnections.store = new V1_PackageableElementPointer(
+      PackageableElementPointerType.STORE,
+      database.path,
+    );
+    const identifiedConnection = new V1_IdentifiedConnection();
+    identifiedConnection.connection = connection;
+    identifiedConnection.id = 'c0';
+    storeConnections.storeConnections = [identifiedConnection];
+    runtime.connections = [storeConnections];
+
+    const packageableRuntime = new V1_PackageableRuntime();
+    packageableRuntime.runtimeValue = runtime;
+    packageableRuntime.package = packagePath;
+    packageableRuntime.name = 'rt';
+
+    const model = new V1_PureModelContextData();
+    model.elements = [database, packageableRuntime];
+
+    const csvFileSource = new CSVFileDataCubeSource();
+    csvFileSource.model = model;
+    csvFileSource.runtime = packageableRuntime.path;
+    csvFileSource.db = database.path;
+    csvFileSource.schema = schema.name;
+    csvFileSource.table = table.name;
+    return csvFileSource;
   }
 
   // ---------------------------------- CACHING --------------------------------------
@@ -527,7 +732,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     } = await this._cacheManager.cache(result.result);
 
     // model
-    const pacakgePath = 'local';
+    const packagePath = 'local';
 
     const table = new V1_Table();
     table.name = tableName;
@@ -573,7 +778,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     schema.tables = [table];
     const database = new V1_Database();
     database.name = 'db';
-    database.package = pacakgePath;
+    database.package = packagePath;
     database.schemas = [schema];
 
     const connection = new V1_RelationalDatabaseConnection();
@@ -599,7 +804,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
 
     const packageableRuntime = new V1_PackageableRuntime();
     packageableRuntime.runtimeValue = runtime;
-    packageableRuntime.package = pacakgePath;
+    packageableRuntime.package = packagePath;
     packageableRuntime.name = 'rt';
 
     const model = new V1_PureModelContextData();
@@ -639,6 +844,8 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     } else if (source instanceof LegendQueryDataCubeSource) {
       return this._getLambdaRelationType(query, source.model);
     } else if (source instanceof CachedDataCubeSource) {
+      return this._getLambdaRelationType(query, serialize(source.model));
+    } else if (source instanceof CSVFileDataCubeSource) {
       return this._getLambdaRelationType(query, serialize(source.model));
     }
     throw new UnsupportedOperationError(
