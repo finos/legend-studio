@@ -14,15 +14,11 @@
  * limitations under the License.
  */
 
-import type { V1_PureModelContextData } from '@finos/legend-graph';
-import { DataCubeSource } from './DataCubeSource.js';
-import type { PlainObject } from '@finos/legend-shared';
+import { observer } from 'mobx-react-lite';
+import type { DataCubeViewState } from '../../../stores/view/DataCubeViewState.js';
 
-export class CachedDataCubeSource extends DataCubeSource {
-  model!: PlainObject<V1_PureModelContextData>;
-  runtime!: string;
-  db!: string;
-  schema!: string;
-  table!: string;
-  count!: number;
-}
+export const DataCubeMultidimensionalGrid = observer(
+  (props: { view: DataCubeViewState }) => {
+    return null;
+  },
+);

@@ -270,11 +270,6 @@ export abstract class DataCubeEngine {
     source: DataCubeSource,
   ): V1_AppliedFunction | undefined;
 
-  // ---------------------------------- FILE UPLOAD ------------------------------
-  async ingestFileData(csvString: string): Promise<DataCubeSource | undefined> {
-    return undefined;
-  }
-
   // ---------------------------------- CACHING ----------------------------------
 
   async initializeCache(

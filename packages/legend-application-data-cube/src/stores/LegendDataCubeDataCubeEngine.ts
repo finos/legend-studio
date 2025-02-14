@@ -78,6 +78,7 @@ import {
   V1_Timestamp,
   V1_TinyInt,
   V1_SmallInt,
+  V1_serializePureModelContextData,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
@@ -587,14 +588,14 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
 
   // --------------------------------- FILE INGEST -----------------------------------
 
-  override async ingestFileData(
-    csvString: string,
+  async ingestFileData(
+    csvContent: string,
   ): Promise<DataCubeSource | undefined> {
     const {
       schema: schemaName,
       table: tableName,
       dbSchema: dbSchema,
-    } = await this._cacheManager.ingestFileData(csvString);
+    } = await this._cacheManager.ingestFileData(csvContent);
 
     const packagePath = 'ingest::local';
 
@@ -701,7 +702,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     model.elements = [database, packageableRuntime];
 
     const csvFileSource = new CSVFileDataCubeSource();
-    csvFileSource.model = model;
+    csvFileSource.model = V1_serializePureModelContextData(model);
     csvFileSource.runtime = packageableRuntime.path;
     csvFileSource.db = database.path;
     csvFileSource.schema = schema.name;
@@ -820,7 +821,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     const cachedSource = new CachedDataCubeSource();
     cachedSource.columns = source.columns;
     cachedSource.query = query;
-    cachedSource.model = model;
+    cachedSource.model = V1_serializePureModelContextData(model);
     cachedSource.runtime = packageableRuntime.path;
     cachedSource.db = database.path;
     cachedSource.schema = schema.name;
@@ -844,9 +845,9 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     } else if (source instanceof LegendQueryDataCubeSource) {
       return this._getLambdaRelationType(query, source.model);
     } else if (source instanceof CachedDataCubeSource) {
-      return this._getLambdaRelationType(query, serialize(source.model));
+      return this._getLambdaRelationType(query, source.model);
     } else if (source instanceof CSVFileDataCubeSource) {
-      return this._getLambdaRelationType(query, serialize(source.model));
+      return this._getLambdaRelationType(query, source.model);
     }
     throw new UnsupportedOperationError(
       `Can't get relation type for lambda with unsupported source`,
@@ -903,7 +904,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
 
   private async _generateExecutionPlan(
     query: V1_Lambda,
-    model: V1_PureModelContext,
+    model: PlainObject<V1_PureModelContext>,
     parameterValues?: V1_ParameterValue[] | undefined,
     options?: DataCubeExecutionOptions | undefined,
   ): Promise<V1_ExecutionPlan> {
@@ -916,7 +917,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
             ? PureClientVersion.VX_X_X
             : undefined),
         function: this.serializeValueSpecification(query),
-        model: serialize(model),
+        model,
         context: serialize(
           V1_rawBaseExecutionContextModelSchema,
           new V1_RawBaseExecutionContext(),

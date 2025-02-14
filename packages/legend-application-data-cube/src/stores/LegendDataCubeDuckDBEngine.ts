@@ -99,20 +99,18 @@ export class LegendDataCubeDuckDBEngine {
     const table = `${LegendDataCubeDuckDBEngine.CACHE_TABLE_NAME_PREFIX}${LegendDataCubeDuckDBEngine.cacheTableCounter}`;
     const csvFileName = `${LegendDataCubeDuckDBEngine.CACHE_FILE_NAME}${LegendDataCubeDuckDBEngine.cacheTableCounter}.csv`;
 
-    const connection = await this.database.connect();
-
     const columnNames: string[] = [];
     result.builder.columns.forEach((col) => columnNames.push(col.name));
 
     const data = result.result.rows.map((row) => row.values);
 
-    const csv = csvStringify([columnNames, ...data], {
+    const csvContent = csvStringify([columnNames, ...data], {
       escapeChar: LegendDataCubeDuckDBEngine.ESCAPE_CHAR,
       quoteChar: LegendDataCubeDuckDBEngine.QUOTE_CHAR,
     });
+    await this.database.registerFileText(csvFileName, csvContent);
 
-    await this._database?.registerFileText(csvFileName, csv);
-
+    const connection = await this.database.connect();
     await connection.insertCSVFromPath(csvFileName, {
       schema: schema,
       name: table,
@@ -122,7 +120,6 @@ export class LegendDataCubeDuckDBEngine {
       escape: LegendDataCubeDuckDBEngine.ESCAPE_CHAR,
       quote: LegendDataCubeDuckDBEngine.QUOTE_CHAR,
     });
-
     await connection.close();
 
     return { schema, table, rowCount: result.result.rows.length };

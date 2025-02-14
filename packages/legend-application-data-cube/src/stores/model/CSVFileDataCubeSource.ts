@@ -22,13 +22,14 @@ import {
 import {
   SerializationFactory,
   usingConstantValueSchema,
+  type PlainObject,
 } from '@finos/legend-shared';
 import { createModelSchema, primitive } from 'serializr';
 
 export const CSV_FILE_QUERY_DATA_CUBE_SOURCE_TYPE = 'csvFile';
 
 export class CSVFileDataCubeSource extends DataCubeSource {
-  model!: V1_PureModelContextData;
+  model!: PlainObject<V1_PureModelContextData>;
   runtime!: string;
   db!: string;
   schema!: string;
@@ -38,7 +39,7 @@ export class CSVFileDataCubeSource extends DataCubeSource {
 }
 
 export class RawCSVFileQueryDataCubeSource {
-  model!: V1_PureModelContextData;
+  model!: PlainObject<V1_PureModelContextData>;
   runtime!: string;
   db!: string;
   schema!: string;
