@@ -1193,7 +1193,7 @@ export const V1_buildTypedGroupByFunctionExpression = (
   const columnExpressions = guaranteeType(
     columnsClassInstance.value,
     V1_ColSpecArray,
-    `Can't build relation groupBy() expression: groupBy() expects argument #1 to hold col spec array instances value`,
+    `Can't build relation groupBy() expression: groupBy() expects argument #1 to hold col spec array instance value`,
   );
 
   // Get aggregation columns
@@ -1206,7 +1206,7 @@ export const V1_buildTypedGroupByFunctionExpression = (
   const aggregationExpressions = guaranteeType(
     aggregationColumnsClassInstance.value,
     V1_ColSpecArray,
-    `Can't build relation groupBy() expression: groupBy() expects argument #2 to hold col spec array instances value`,
+    `Can't build relation groupBy() expression: groupBy() expects argument #2 to hold col spec array instance value`,
   );
 
   // Make sure top-level lambdas have their lambda parameter types set properly
@@ -1242,6 +1242,7 @@ export const V1_buildTypedGroupByFunctionExpression = (
   processedColSpecArray.colSpecs = columnExpressions.colSpecs.map((colSpec) => {
     const pColSpec = new ColSpec();
     pColSpec.name = colSpec.name;
+
     // Add the column using the return type of the preceding project
     const column = projectRelationReturnType.columns.find(
       (_column) => _column.name === colSpec.name,
@@ -1261,23 +1262,29 @@ export const V1_buildTypedGroupByFunctionExpression = (
   processedAggregationColSpecArray.colSpecs =
     aggregationExpressions.colSpecs.map((colSpec) => {
       const pColSpec = new ColSpec();
-      const selectFunction = guaranteeType(
+      pColSpec.name = colSpec.name;
+
+      // Build the project function
+      const columnProjectFunction = guaranteeType(
         colSpec.function1,
         V1_Lambda,
         `Can't build relation col spec() expression: expects function1 to be a lambda`,
       );
+      const columnProjectLambda: ValueSpecification =
+        buildProjectionColumnLambda(
+          columnProjectFunction,
+          openVariables,
+          compileContext,
+          processingContext,
+        );
+      pColSpec.function1 = columnProjectLambda;
+
+      // Build the aggregation function
       const aggregationFunction = guaranteeType(
         colSpec.function2,
         V1_Lambda,
         `Can't build relation col spec() expression: expects function2 to be a lambda`,
       );
-      const selectLambda: ValueSpecification = buildProjectionColumnLambda(
-        selectFunction,
-        openVariables,
-        compileContext,
-        processingContext,
-      );
-      pColSpec.function1 = selectLambda;
       const aggregationLambda = guaranteeType(
         aggregationFunction.accept_ValueSpecificationVisitor(
           new V1_ValueSpecificationBuilder(
@@ -1290,16 +1297,16 @@ export const V1_buildTypedGroupByFunctionExpression = (
         `Can't build relation col spec() expression: expected aggregation function to be a lambda`,
       );
       pColSpec.function2 = aggregationLambda;
-      pColSpec.name = colSpec.name;
-      const aggregateFunctionName = guaranteeType(
+
+      // Try to get the return type of the aggregation function. If it's numeric, use the getNumericAggregateOperatorReturnType
+      // helper function. Otherwise, use the same return type as the column in the preceding project function.
+      const aggregationFunctionName = guaranteeType(
         aggregationLambda.values[0]?.expressionSequence[0],
         SimpleFunctionExpression,
         `Can't build relation col spec() expression: expects function2 expression sequence to be a SimpleFunctionExpression`,
       ).functionName;
-      // Try to get the return type of the aggregate function. If it's numeric, use the helper function. Otherwise, use
-      // the same return type as the column in the preceding project function.
       const returnType =
-        getNumericAggregateOperatorReturnType(aggregateFunctionName) ??
+        getNumericAggregateOperatorReturnType(aggregationFunctionName) ??
         projectRelationReturnType.columns.find(
           (_column) => _column.name === colSpec.name,
         )?.type;
