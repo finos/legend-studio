@@ -36,7 +36,6 @@ import {
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../graph/QueryBuilderMetaModelConst.js';
 import type { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
 import { buildGenericLambdaFunctionInstanceValue } from '../../../QueryBuilderValueSpecificationHelper.js';
-import { type LambdaFunctionBuilderOption } from '../../../QueryBuilderValueSpecificationBuilderHelper.js';
 import {
   guaranteeNonNullable,
   guaranteeType,
@@ -47,7 +46,6 @@ import { DEFAULT_LAMBDA_VARIABLE_NAME } from '@finos/legend-data-cube';
 export const buildRelationAggregation = (
   precedingExpression: ValueSpecification,
   tdsState: QueryBuilderTDSState,
-  options?: LambdaFunctionBuilderOption,
 ): SimpleFunctionExpression => {
   // Verify that preceding expression is a relation project
   const projectFunction = guaranteeType(
