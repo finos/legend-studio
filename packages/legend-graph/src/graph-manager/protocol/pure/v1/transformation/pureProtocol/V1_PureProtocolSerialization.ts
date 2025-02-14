@@ -20,7 +20,6 @@ import {
   primitive,
   custom,
   optional,
-  SKIP,
   serialize,
   deserialize,
   object,
@@ -235,6 +234,26 @@ export const V1_serializePureModelContext = (
   );
 };
 
+export const V1_deserializePureModelContext = (
+  json: PlainObject<V1_PureModelContext>,
+): V1_PureModelContext => {
+  switch (json._type) {
+    case V1_PureModelContextType.POINTER:
+      return deserialize(V1_pureModelContextPointerModelSchema, json);
+    case V1_PureModelContextType.DATA:
+      return V1_deserializePureModelContextData(json);
+    case V1_PureModelContextType.COMPOSITE:
+      return deserialize(V1_pureModelContextCompositeModelSchema, json);
+    case V1_PureModelContextType.TEXT:
+      return deserialize(V1_pureModelContextTextSchema, json);
+    default:
+      throw new UnsupportedOperationError(
+        `Can't deserialize Pure model context`,
+        json,
+      );
+  }
+};
+
 export const V1_pureModelContextDataPropSchema = custom(
   (val: V1_PureModelContextData) => V1_serializePureModelContextData(val),
   (val: PlainObject<V1_PureModelContextData>) =>
@@ -243,6 +262,5 @@ export const V1_pureModelContextDataPropSchema = custom(
 
 export const V1_pureModelContextPropSchema = custom(
   (val: V1_PureModelContext) => V1_serializePureModelContext(val),
-  // TODO: we will populate this when we need to `deserialize`
-  (val) => SKIP,
+  (val) => V1_deserializePureModelContext(val),
 );

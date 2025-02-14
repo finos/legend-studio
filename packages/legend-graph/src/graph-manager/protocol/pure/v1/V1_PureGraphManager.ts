@@ -41,6 +41,7 @@ import {
   uniq,
   guaranteeType,
   guaranteeNonEmptyString,
+  uuid,
 } from '@finos/legend-shared';
 import type { TEMPORARY__AbstractEngineConfig } from '../../../../graph-manager/action/TEMPORARY__AbstractEngineConfig.js';
 import {
@@ -244,7 +245,11 @@ import {
   getNullableIDFromTestable,
   getNullableTestable,
 } from '../../../helpers/DSL_Data_GraphManagerHelper.js';
-import { pruneSourceInformation } from '../../../../graph/MetaModelUtils.js';
+import {
+  extractElementNameFromPath,
+  extractPackagePathFromPath,
+  pruneSourceInformation,
+} from '../../../../graph/MetaModelUtils.js';
 import {
   V1_buildModelCoverageAnalysisResult,
   V1_MappingModelCoverageAnalysisInput,
@@ -347,6 +352,11 @@ import type {
   PersistentDataCube,
 } from '../../../action/query/PersistentDataCube.js';
 import { V1_QueryParameterValue } from './engine/query/V1_Query.js';
+import { V1_Multiplicity } from './model/packageableElements/domain/V1_Multiplicity.js';
+import {
+  V1_buildFunctionSignature,
+  V1_createGenericTypeWithElementPath,
+} from './helpers/V1_DomainHelper.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -3042,6 +3052,81 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   async cancelUserExecutions(broadcastToCluster: boolean): Promise<string> {
     return this.engine.cancelUserExecutions(broadcastToCluster);
+  }
+
+  override async analyzeExecuteInput(
+    data: PlainObject,
+    executablePath: string,
+  ): Promise<{ origin: GraphDataOrigin; entities: Entity[] }> {
+    const executeInput = V1_ExecuteInput.serialization.fromJson(data);
+    let origin: GraphDataOrigin | undefined;
+    if (executeInput.model instanceof V1_PureModelContextData) {
+      origin = new GraphEntities(
+        this.pureModelContextDataToEntities(executeInput.model),
+      );
+    } else if (
+      executeInput.model instanceof V1_PureModelContextPointer &&
+      executeInput.model.sdlcInfo instanceof V1_LegendSDLC
+    ) {
+      origin = new LegendSDLC(
+        executeInput.model.sdlcInfo.groupId,
+        executeInput.model.sdlcInfo.artifactId,
+        executeInput.model.sdlcInfo.version,
+      );
+    }
+
+    let executable: V1_PackageableElement | undefined;
+
+    if (
+      executeInput.mapping !== undefined &&
+      executeInput.runtime !== undefined
+    ) {
+      const service = new V1_Service();
+      service.name = extractElementNameFromPath(executablePath);
+      service.package = extractPackagePathFromPath(executablePath) ?? 'test';
+      service.pattern = `/${uuid()}`;
+      service.documentation = '';
+      const execution = new V1_PureSingleExecution();
+      execution.mapping = executeInput.mapping;
+      execution.runtime = executeInput.runtime;
+      execution.func = executeInput.function;
+      service.execution = execution;
+      executable = service;
+    } else if (
+      executeInput.mapping === undefined &&
+      executeInput.runtime === undefined
+    ) {
+      // TODO: we don't support runtime, mapping, parameter values,
+      // we assume the function does not take parameters and we won't
+      // unpack the function body to decorate with ->from() to build
+      // the execution context for simplicity sake, we fall back to use
+      // service instead
+      const func = new V1_ConcreteFunctionDefinition();
+      func.name = extractElementNameFromPath(executablePath);
+      func.package = extractPackagePathFromPath(executablePath) ?? 'test';
+      func.body = executeInput.function.body as object[];
+      func.returnMultiplicity = V1_Multiplicity.ZERO_ONE;
+      func.returnGenericType = V1_createGenericTypeWithElementPath(
+        CORE_PURE_PATH.ANY,
+      );
+      func.name = V1_buildFunctionSignature(func);
+      executable = func;
+    }
+
+    // TODO: we can also add a new Text element with the content of
+    // the execute input and instruction to go to debugger function
+    if (!origin) {
+      throw new Error(`Can't analyze execute input: failed to extract origin`);
+    }
+    if (!executable) {
+      throw new Error(
+        `Can't analyze execute input: failed to synthesize debugger executable`,
+      );
+    }
+    return {
+      origin,
+      entities: [this.elementProtocolToEntity(executable)],
+    };
   }
 
   // --------------------------------------------- Query ---------------------------------------------

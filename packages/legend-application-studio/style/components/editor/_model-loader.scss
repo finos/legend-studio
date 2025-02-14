@@ -200,5 +200,28 @@
   &__editor {
     overflow-y: hidden;
     position: relative;
+    background: var(--color-dark-grey-50);
+  }
+
+  &__debugger__function-path {
+    @include flexVCenter;
+
+    border-bottom: 0.1rem solid var(--color-dark-grey-250);
+    height: 4rem;
+    padding: 0.5rem;
+  }
+
+  &__debugger__function-path__label {
+    @include flexVCenter;
+
+    flex-shrink: 0;
+    padding: 0 1rem;
+    font-size: 1.2rem;
+    color: var(--color-light-grey-400);
+    margin-right: 0.5rem;
+  }
+
+  &__debugger__execute-input {
+    height: calc(100% - 4rem);
   }
 }

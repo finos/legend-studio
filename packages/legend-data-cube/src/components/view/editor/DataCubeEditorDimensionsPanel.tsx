@@ -15,7 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { DataCubeIcon, useDropdownMenu } from '@finos/legend-art';
+import { DataCubeIcon } from '@finos/legend-art';
 import {
   type ColDef,
   type ColDefField,

@@ -34,7 +34,7 @@ import {
 } from '@finos/legend-shared';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../__lib__/LegendStudioEvent.js';
 import type { EditorStore } from '../EditorStore.js';
-import type { Entity } from '@finos/legend-storage';
+import { generateGAVCoordinates, type Entity } from '@finos/legend-storage';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 import type {
   ModelImporterExtensionConfiguration,
@@ -42,6 +42,8 @@ import type {
 } from '../../LegendStudioApplicationPlugin.js';
 import {
   type ExternalFormatDescription,
+  GraphEntities,
+  LegendSDLC,
   type PureModel,
   SchemaSet,
   observe_SchemaSet,
@@ -51,6 +53,11 @@ import {
   externalFormat_schemaSet_setSchemas,
 } from '../../graph-modifier/DSL_ExternalFormat_GraphModifierHelper.js';
 import { InnerSchemaSetEditorState } from './element-editor-state/external-format/DSL_ExternalFormat_SchemaSetEditorState.js';
+import {
+  ProjectDependency,
+  UpdateProjectConfigurationCommand,
+} from '@finos/legend-server-sdlc';
+import { generateEditorRoute } from '../../../__lib__/LegendStudioNavigation.js';
 
 export enum MODEL_IMPORT_NATIVE_INPUT_TYPE {
   ENTITIES = 'ENTITIES',
@@ -263,6 +270,130 @@ export class NativeModelImporterEditorState extends ModelImporterEditorState {
       this.editorStore.applicationStore.navigationService.navigator.reload({
         ignoreBlocking: true,
       });
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.logService.error(
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.MODEL_LOADER_FAILURE),
+        error,
+      );
+      this.editorStore.applicationStore.notificationService.notifyError(error);
+    } finally {
+      this.loadModelActionState.complete();
+      this.editorStore.applicationStore.alertService.setBlockingAlert(
+        undefined,
+      );
+    }
+  }
+}
+
+export class ExecuteInputDebugModelImporterEditorState extends ModelImporterEditorState {
+  executeInput = '{}';
+  executablePath = 'test::Debugger';
+  readonly loadState = ActionState.create();
+
+  constructor(modelImporterState: ModelImporterState) {
+    super(modelImporterState);
+
+    makeObservable(this, {
+      executeInput: observable,
+      setExecuteInput: action,
+
+      executablePath: observable,
+      setExecutablePath: action,
+    });
+  }
+
+  get label(): string {
+    return `Execute Input [DEBUG]`;
+  }
+
+  get allowHardReplace(): boolean {
+    return false;
+  }
+
+  get isLoadingDisabled(): boolean {
+    return this.loadState.isInProgress;
+  }
+
+  setExecuteInput(val: string): void {
+    this.executeInput = val;
+  }
+
+  setExecutablePath(val: string): void {
+    this.executablePath = val;
+  }
+
+  async loadModel(): Promise<void> {
+    this.loadModelActionState.inProgress();
+    try {
+      this.editorStore.applicationStore.alertService.setBlockingAlert({
+        message: 'Loading model...',
+        prompt: 'Please do not close the application',
+        showLoading: true,
+      });
+      const result =
+        await this.editorStore.graphManagerState.graphManager.analyzeExecuteInput(
+          JSON.parse(this.executeInput),
+          this.executablePath,
+        );
+      let entities: Entity[] = [];
+      let dependencies: ProjectDependency[] = [];
+      if (result.origin instanceof GraphEntities) {
+        entities = [...result.origin.entities, ...result.entities];
+      } else if (result.origin instanceof LegendSDLC) {
+        entities = [...result.entities];
+        dependencies = [
+          new ProjectDependency(
+            generateGAVCoordinates(
+              result.origin.groupId,
+              result.origin.artifactId,
+              undefined,
+            ),
+            result.origin.versionId,
+          ),
+        ];
+      }
+      const message = `loading entities from ${
+        this.editorStore.applicationStore.config.appName
+      } [${this.modelImporterState.replace ? `potentially affected ` : ''} ${
+        entities.length
+      } entities]`;
+      await this.editorStore.sdlcServerClient.updateEntities(
+        this.editorStore.sdlcState.activeProject.projectId,
+        this.editorStore.sdlcState.activeWorkspace,
+        { replace: this.modelImporterState.replace, entities, message },
+      );
+
+      const currentProjectConfiguration =
+        this.editorStore.projectConfigurationEditorState.originalConfig;
+      const updateProjectConfigurationCommand =
+        new UpdateProjectConfigurationCommand(
+          currentProjectConfiguration.groupId,
+          currentProjectConfiguration.artifactId,
+          currentProjectConfiguration.projectStructureVersion,
+          `update project configuration from ${this.editorStore.applicationStore.config.appName}`,
+        );
+      updateProjectConfigurationCommand.projectDependenciesToAdd = dependencies;
+      updateProjectConfigurationCommand.projectDependenciesToRemove =
+        currentProjectConfiguration.projectDependencies;
+      await flowResult(
+        this.editorStore.projectConfigurationEditorState.updateProjectConfiguration(
+          updateProjectConfigurationCommand,
+        ),
+      );
+      // open the debugger element
+      this.editorStore.applicationStore.navigationService.navigator.goToLocation(
+        generateEditorRoute(
+          this.editorStore.sdlcState.activeProject.projectId,
+          undefined,
+          this.editorStore.sdlcState.activeWorkspace.workspaceId,
+          this.editorStore.sdlcState.activeWorkspace.workspaceType,
+          this.executablePath,
+        ),
+        {
+          ignoreBlocking: true,
+        },
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(
@@ -540,5 +671,14 @@ export class ModelImporterState extends EditorState {
       this.setImportEditorState(modelImporterEditorState);
       return modelImporterEditorState;
     }
+  }
+
+  setExecuteInputDebugModelImporter() {
+    const executeInputDebugModelImporterEditorState =
+      this.modelImportEditorState instanceof
+      ExecuteInputDebugModelImporterEditorState
+        ? this.modelImportEditorState
+        : new ExecuteInputDebugModelImporterEditorState(this);
+    this.setImportEditorState(executeInputDebugModelImporterEditorState);
   }
 }

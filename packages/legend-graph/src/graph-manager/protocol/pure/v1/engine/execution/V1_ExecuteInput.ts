@@ -30,7 +30,10 @@ import {
 import type { V1_Runtime } from '../../model/packageableElements/runtime/V1_Runtime.js';
 import type { V1_RawExecutionContext } from '../../model/rawValueSpecification/V1_RawExecutionContext.js';
 import type { V1_RawLambda } from '../../model/rawValueSpecification/V1_RawLambda.js';
-import { V1_serializeRuntime } from '../../transformation/pureProtocol/serializationHelpers/V1_RuntimeSerializationHelper.js';
+import {
+  V1_deserializeRuntime,
+  V1_serializeRuntime,
+} from '../../transformation/pureProtocol/serializationHelpers/V1_RuntimeSerializationHelper.js';
 import {
   V1_rawBaseExecutionContextModelSchema,
   V1_rawLambdaModelSchema,
@@ -63,7 +66,7 @@ export class V1_ExecuteInput {
       model: V1_pureModelContextPropSchema,
       runtime: custom(
         (val) => (val ? V1_serializeRuntime(val) : SKIP),
-        () => SKIP,
+        (val) => (val ? V1_deserializeRuntime(val) : SKIP),
       ),
       context: usingModelSchema(V1_rawBaseExecutionContextModelSchema),
       parameterValues: customListWithSchema(V1_parameterValueModelSchema),

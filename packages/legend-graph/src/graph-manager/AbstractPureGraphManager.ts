@@ -607,6 +607,14 @@ export abstract class AbstractPureGraphManager {
 
   abstract serializeExecutionNode(executionNode: ExecutionNode): object;
 
+  abstract analyzeExecuteInput(
+    data: PlainObject,
+    executablePath: string,
+  ): Promise<{
+    origin: GraphDataOrigin;
+    entities: Entity[];
+  }>;
+
   // ------------------------------------------- Query -------------------------------------------
 
   abstract searchQueries(
