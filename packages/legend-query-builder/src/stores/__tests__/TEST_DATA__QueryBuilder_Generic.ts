@@ -2241,6 +2241,167 @@ export const TEST_DATA__projectionWithWAVGAggregation = {
   parameters: [],
 };
 
+export const TEST_DATA__simpleTypedRelationAggregation = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'groupBy',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'project',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'getAll',
+              parameters: [
+                {
+                  _type: 'packageableElementPtr',
+                  fullPath: 'model::pure::tests::model::simple::Order',
+                },
+              ],
+            },
+            {
+              _type: 'classInstance',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              type: 'colSpecArray',
+              value: {
+                colSpecs: [
+                  {
+                    function1: {
+                      _type: 'lambda',
+                      body: [
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'x',
+                            },
+                          ],
+                          property: 'id',
+                        },
+                      ],
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                    },
+                    name: 'Id',
+                  },
+                  {
+                    function1: {
+                      _type: 'lambda',
+                      body: [
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'x',
+                            },
+                          ],
+                          property: 'quantity',
+                        },
+                      ],
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                    },
+                    name: 'Quantity (count)',
+                  },
+                ],
+              },
+            },
+          ],
+        },
+        {
+          _type: 'classInstance',
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          type: 'colSpecArray',
+          value: {
+            colSpecs: [
+              {
+                name: 'Id',
+              },
+            ],
+          },
+        },
+        {
+          _type: 'classInstance',
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          type: 'colSpecArray',
+          value: {
+            colSpecs: [
+              {
+                function1: {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                      property: 'Quantity (count)',
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                },
+                function2: {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'func',
+                      function: 'count',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                },
+                name: 'Quantity (count)',
+              },
+            ],
+          },
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
+
 export const TEST_DATA__getAllWithOneConditionFilter = {
   _type: 'lambda',
   body: [

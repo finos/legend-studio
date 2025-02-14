@@ -784,6 +784,204 @@ export const TEST_DATA__lambda_aggregationPostFilter = {
   parameters: [],
 };
 
+export const TEST_DATA__lambda_typedAggregationPostFilter = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'filter',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'groupBy',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'project',
+              parameters: [
+                {
+                  _type: 'func',
+                  function: 'getAll',
+                  parameters: [
+                    {
+                      _type: 'packageableElementPtr',
+                      fullPath: 'model::pure::tests::model::simple::Order',
+                    },
+                  ],
+                },
+                {
+                  _type: 'classInstance',
+                  multiplicity: {
+                    lowerBound: 1,
+                    upperBound: 1,
+                  },
+                  type: 'colSpecArray',
+                  value: {
+                    colSpecs: [
+                      {
+                        function1: {
+                          _type: 'lambda',
+                          body: [
+                            {
+                              _type: 'property',
+                              parameters: [
+                                {
+                                  _type: 'var',
+                                  name: 'x',
+                                },
+                              ],
+                              property: 'id',
+                            },
+                          ],
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'x',
+                            },
+                          ],
+                        },
+                        name: 'Id',
+                      },
+                      {
+                        function1: {
+                          _type: 'lambda',
+                          body: [
+                            {
+                              _type: 'property',
+                              parameters: [
+                                {
+                                  _type: 'var',
+                                  name: 'x',
+                                },
+                              ],
+                              property: 'quantity',
+                            },
+                          ],
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'x',
+                            },
+                          ],
+                        },
+                        name: 'Quantity (count)',
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+            {
+              _type: 'classInstance',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              type: 'colSpecArray',
+              value: {
+                colSpecs: [
+                  {
+                    name: 'Id',
+                  },
+                ],
+              },
+            },
+            {
+              _type: 'classInstance',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              type: 'colSpecArray',
+              value: {
+                colSpecs: [
+                  {
+                    function1: {
+                      _type: 'lambda',
+                      body: [
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'x',
+                            },
+                          ],
+                          property: 'Quantity (count)',
+                        },
+                      ],
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                    },
+                    function2: {
+                      _type: 'lambda',
+                      body: [
+                        {
+                          _type: 'func',
+                          function: 'count',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'x',
+                            },
+                          ],
+                        },
+                      ],
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                    },
+                    name: 'Quantity (count)',
+                  },
+                ],
+              },
+            },
+          ],
+        },
+        {
+          _type: 'lambda',
+          body: [
+            {
+              _type: 'func',
+              function: 'greaterThanEqual',
+              parameters: [
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'row',
+                    },
+                  ],
+                  property: 'Quantity (count)',
+                },
+                {
+                  _type: 'integer',
+                  value: 5,
+                },
+              ],
+            },
+          ],
+          parameters: [
+            {
+              _type: 'var',
+              name: 'row',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
+
 export const TEST_DATA__lambda_derivationPostFilter = {
   _type: 'lambda',
   body: [
