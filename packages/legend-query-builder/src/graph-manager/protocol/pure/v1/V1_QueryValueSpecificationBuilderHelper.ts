@@ -1264,29 +1264,28 @@ export const V1_buildTypedGroupByFunctionExpression = (
       const pColSpec = new ColSpec();
       pColSpec.name = colSpec.name;
 
-      // Build the project function
-      const columnProjectFunction = guaranteeType(
+      // Build the map lambda
+      const mapFunction = guaranteeType(
         colSpec.function1,
         V1_Lambda,
         `Can't build relation col spec() expression: expects function1 to be a lambda`,
       );
-      const columnProjectLambda: ValueSpecification =
-        buildProjectionColumnLambda(
-          columnProjectFunction,
-          openVariables,
-          compileContext,
-          processingContext,
-        );
-      pColSpec.function1 = columnProjectLambda;
+      const mapLambda: ValueSpecification = buildProjectionColumnLambda(
+        mapFunction,
+        openVariables,
+        compileContext,
+        processingContext,
+      );
+      pColSpec.function1 = mapLambda;
 
-      // Build the aggregation function
-      const aggregationFunction = guaranteeType(
+      // Build the reduce lambda
+      const reduceFunction = guaranteeType(
         colSpec.function2,
         V1_Lambda,
         `Can't build relation col spec() expression: expects function2 to be a lambda`,
       );
-      const aggregationLambda = guaranteeType(
-        aggregationFunction.accept_ValueSpecificationVisitor(
+      const reduceLambda = guaranteeType(
+        reduceFunction.accept_ValueSpecificationVisitor(
           new V1_ValueSpecificationBuilder(
             compileContext,
             processingContext,
@@ -1296,12 +1295,12 @@ export const V1_buildTypedGroupByFunctionExpression = (
         LambdaFunctionInstanceValue,
         `Can't build relation col spec() expression: expected aggregation function to be a lambda`,
       );
-      pColSpec.function2 = aggregationLambda;
+      pColSpec.function2 = reduceLambda;
 
-      // Try to get the return type of the aggregation function. If it's numeric, use the getNumericAggregateOperatorReturnType
+      // Try to get the return type of the reduce (aggregation) function. If it's numeric, use the getNumericAggregateOperatorReturnType
       // helper function. Otherwise, use the same return type as the column in the preceding project function.
       const aggregationFunctionName = guaranteeType(
-        aggregationLambda.values[0]?.expressionSequence[0],
+        reduceLambda.values[0]?.expressionSequence[0],
         SimpleFunctionExpression,
         `Can't build relation col spec() expression: expects function2 expression sequence to be a SimpleFunctionExpression`,
       ).functionName;
