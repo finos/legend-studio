@@ -107,7 +107,7 @@ const LegendQuerySearcher = observer((props: { state: QueryLoaderState }) => {
 
   return (
     <div className="h-full">
-      <div className="p-1.5">
+      <div className="p-2">
         <div className="relative flex h-6 w-full items-center justify-between">
           <FormTextInput
             ref={searchInputRef}
@@ -137,7 +137,7 @@ const LegendQuerySearcher = observer((props: { state: QueryLoaderState }) => {
         <div className="mt-1 flex h-6 w-full items-center">
           <div className="flex w-[calc(100%_-_128px)] items-center">
             <div className="w-10 text-sm">Filters:</div>
-            <div className="flex h-6 w-[calc(100%_-_40px)] overflow-x-auto">
+            <div className="flex h-5 w-[calc(100%_-_40px)] overflow-x-auto">
               <FormCheckbox
                 label="Mine Only"
                 checked={isMineOnly}
@@ -174,11 +174,11 @@ const LegendQuerySearcher = observer((props: { state: QueryLoaderState }) => {
         </div>
       </div>
       <div className="mx-1.5 mb-1 h-[1px] bg-neutral-200" />
-      <div className="h-[calc(100%_-_71px)]">
+      <div className="h-[calc(100%_-_75px)]">
         <div className="h-full overflow-y-auto">
           {state.searchQueriesState.hasCompleted && (
             <>
-              <div className="mb-1 flex h-5 w-full items-center px-1.5 text-sm text-neutral-600">
+              <div className="mb-1 flex h-5 w-full items-center px-2 text-sm text-neutral-600">
                 {state.showingDefaultQueries ? (
                   (state.generateDefaultQueriesSummaryText?.(searchResults) ??
                   `Refine your search to get better matches`)
@@ -199,7 +199,7 @@ const LegendQuerySearcher = observer((props: { state: QueryLoaderState }) => {
                 .slice(0, QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT)
                 .map((query, idx) => (
                   <div
-                    className="mx-1.5 mb-0.5 flex h-[42px] w-[calc(100%_-_12px)] cursor-pointer border border-neutral-200 bg-neutral-100 hover:bg-neutral-200"
+                    className="mx-2 mb-0.5 flex h-[42px] w-[calc(100%_-_16px)] cursor-pointer border border-neutral-200 bg-neutral-100 hover:bg-neutral-200"
                     key={query.id}
                     title="Click to choose query"
                     onClick={() => state.loadQuery(query)}
@@ -261,7 +261,7 @@ export const LegendQueryDataCubeSourceBuilder = observer(
       return <LegendQuerySearcher state={sourceBuilder.queryLoader} />;
     }
     return (
-      <div className="h-full">
+      <div className="h-full w-full p-2">
         <div className="relative mb-0.5 flex h-[60px] w-full border border-neutral-200 bg-neutral-100">
           <div className="w-full">
             <div className="h-6 w-4/5 overflow-hidden text-ellipsis whitespace-nowrap px-1.5 leading-6">
@@ -309,7 +309,7 @@ export const LegendQueryDataCubeSourceBuilder = observer(
           </div>
         </div>
         {sourceBuilder.queryCode !== undefined && (
-          <div className="mt-1.5 h-40 w-full">
+          <div className="mt-2 h-40 w-full">
             <FormCodeEditor
               value={sourceBuilder.queryCode}
               title="Query Code"
@@ -320,7 +320,7 @@ export const LegendQueryDataCubeSourceBuilder = observer(
           </div>
         )}
         <FormButton
-          className="mt-1.5 flex items-center pl-1"
+          className="mt-2 flex items-center pl-1"
           onClick={() => sourceBuilder.unsetQuery()}
         >
           <DataCubeIcon.ChevronLeft className="mr-0.5" />

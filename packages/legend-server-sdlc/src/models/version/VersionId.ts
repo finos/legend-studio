@@ -18,7 +18,7 @@ import { createModelSchema, primitive } from 'serializr';
 import { action, computed, observable, makeObservable } from 'mobx';
 import { SerializationFactory } from '@finos/legend-shared';
 
-const VERSION_DELIMETER = '.';
+const VERSION_DELIMITER = '.';
 
 export class VersionId {
   majorVersion: number;
@@ -64,6 +64,6 @@ export class VersionId {
   }
 
   get id(): string {
-    return `${this.majorVersion}${VERSION_DELIMETER}${this.minorVersion}${VERSION_DELIMETER}${this.patchVersion}`;
+    return `${this.majorVersion}${VERSION_DELIMITER}${this.minorVersion}${VERSION_DELIMITER}${this.patchVersion}`;
   }
 }

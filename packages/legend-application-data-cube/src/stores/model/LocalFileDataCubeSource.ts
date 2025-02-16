@@ -15,30 +15,22 @@
  */
 
 import { DataCubeSource } from '@finos/legend-data-cube';
-import {
-  V1_pureModelContextDataPropSchema,
-  type V1_PureModelContextData,
-} from '@finos/legend-graph';
+import { type V1_PureModelContextData } from '@finos/legend-graph';
 import {
   SerializationFactory,
   usingConstantValueSchema,
   type PlainObject,
 } from '@finos/legend-shared';
-import { createModelSchema, primitive } from 'serializr';
+import { createModelSchema, primitive, raw } from 'serializr';
 
-export const CSV_FILE_QUERY_DATA_CUBE_SOURCE_TYPE = 'csvFile';
+export const LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE = 'localFile';
 
-export class CSVFileDataCubeSource extends DataCubeSource {
-  model!: PlainObject<V1_PureModelContextData>;
-  runtime!: string;
-  db!: string;
-  schema!: string;
-  table!: string;
-  count!: number;
-  fileName!: string;
+export enum LocalFileDataCubeSourceFormat {
+  CSV = 'csv',
+  // TODO: arrow/parquet/excel, etc.
 }
 
-export class RawCSVFileQueryDataCubeSource {
+export class LocalFileDataCubeSource extends DataCubeSource {
   model!: PlainObject<V1_PureModelContextData>;
   runtime!: string;
   db!: string;
@@ -46,17 +38,30 @@ export class RawCSVFileQueryDataCubeSource {
   table!: string;
   count!: number;
   fileName!: string;
+  fileFormat!: LocalFileDataCubeSourceFormat;
+}
+
+export class RawLocalFileQueryDataCubeSource {
+  model!: PlainObject<V1_PureModelContextData>;
+  runtime!: string;
+  db!: string;
+  schema!: string;
+  table!: string;
+  count!: number;
+  fileName!: string;
+  fileFormat!: LocalFileDataCubeSourceFormat;
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(RawCSVFileQueryDataCubeSource, {
-      _type: usingConstantValueSchema(CSV_FILE_QUERY_DATA_CUBE_SOURCE_TYPE),
-      model: V1_pureModelContextDataPropSchema,
-      runtime: primitive(),
+    createModelSchema(RawLocalFileQueryDataCubeSource, {
+      _type: usingConstantValueSchema(LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE),
+      count: primitive(),
       db: primitive(),
+      fileFormat: primitive(),
+      fileName: primitive(),
+      model: raw(),
+      runtime: primitive(),
       schema: primitive(),
       table: primitive(),
-      count: primitive(),
-      fileName: primitive(),
     }),
   );
 }

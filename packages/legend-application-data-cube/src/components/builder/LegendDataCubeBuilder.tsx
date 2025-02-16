@@ -38,7 +38,7 @@ import {
 import { useEffect } from 'react';
 import { LegendDataCubeSettingStorageKey } from '../../__lib__/LegendDataCubeSetting.js';
 import type { LegendDataCubeBuilderStore } from '../../stores/builder/LegendDataCubeBuilderStore.js';
-import { CSVFileDataCubeSource } from '../../stores/model/CSVFileDataCubeSource.js';
+import { LocalFileDataCubeSource } from '../../stores/model/LocalFileDataCubeSource.js';
 
 const LegendDataCubeBuilderHeader = observer(() => {
   const store = useLegendDataCubeBuilderStore();
@@ -60,7 +60,8 @@ const LegendDataCubeBuilderHeader = observer(() => {
         className="ml-1.5"
         disabled={
           !store.builder?.dataCube ||
-          store.builder.source instanceof CSVFileDataCubeSource
+          /* TODO: @gs-gunjan we should allow saving DataCube using CSV file source */
+          store.builder.source instanceof LocalFileDataCubeSource
         }
         onClick={() => store.saverDisplay.open()}
       >

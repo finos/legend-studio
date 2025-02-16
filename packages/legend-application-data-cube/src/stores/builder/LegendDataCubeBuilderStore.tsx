@@ -231,7 +231,7 @@ export class LegendDataCubeBuilderStore {
 
     this.initializeState.inProgress();
     try {
-      await this.engine.initializeCacheManager();
+      await this.engine.initialize();
       this.initializeState.pass();
     } catch (error) {
       assertErrorThrown(error);
@@ -244,7 +244,7 @@ export class LegendDataCubeBuilderStore {
 
   async cleanUp() {
     try {
-      await this.engine.disposeCacheManager();
+      await this.engine.dispose();
     } catch (error) {
       assertErrorThrown(error);
       this.alertService.alertError(error, {

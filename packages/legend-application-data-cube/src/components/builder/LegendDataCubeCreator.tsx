@@ -18,6 +18,7 @@ import { observer } from 'mobx-react-lite';
 import { LegendDataCubeSourceBuilderType } from '../../stores/builder/source/LegendDataCubeSourceBuilderState.js';
 import { useDropdownMenu } from '@finos/legend-art';
 import {
+  FormBadge_WIP,
   FormButton,
   FormDropdownMenu,
   FormDropdownMenuItem,
@@ -28,14 +29,18 @@ import { LegendQueryDataCubeSourceBuilder } from './source/LegendQueryDataCubeSo
 import { AdhocQueryDataCubeSourceBuilder } from './source/AdhocQueryDataCubeSourceBuilder.js';
 import { AdhocQueryDataCubeSourceBuilderState } from '../../stores/builder/source/AdhocQueryDataCubeSourceBuilderState.js';
 import { useLegendDataCubeBuilderStore } from './LegendDataCubeBuilderStoreProvider.js';
-import { CSVFileDataCubeSourceBuilderState } from '../../stores/builder/source/CSVFileDataCubeSourceBuilderState.js';
-import { CSVFileDataCubeSourceBuilder } from './source/CSVFileDataCubeSourceBuilder.js';
+import { LocalFileDataCubeSourceBuilderState } from '../../stores/builder/source/LocalFileDataCubeSourceBuilderState.js';
+import { LocalFileDataCubeSourceBuilder } from './source/LocalFileDataCubeSourceBuilder.js';
 
 export const LegendDataCubeCreator = observer(() => {
   const store = useLegendDataCubeBuilderStore();
   const state = store.creator;
   const sourceBuilder = state.sourceBuilder;
   const selectedSourceType = sourceBuilder.label;
+  const WIPSourceTypes = [
+    LegendDataCubeSourceBuilderType.ADHOC_QUERY,
+    LegendDataCubeSourceBuilderType.LOCAL_FILE,
+  ];
   const [
     openSourceTypeDropdown,
     closeSourceTypeDropdown,
@@ -46,9 +51,9 @@ export const LegendDataCubeCreator = observer(() => {
   return (
     <>
       <div className="h-[calc(100%_-_40px)] w-full px-2 pt-2">
-        <div className="h-full w-full overflow-auto border border-neutral-300 bg-white">
-          <div className="h-full w-full select-none p-2">
-            <div className="flex h-6 w-full items-center">
+        <div className="h-full w-full border border-neutral-300 bg-white">
+          <div className="h-full w-full select-none">
+            <div className="flex h-10 w-full items-center p-2">
               <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
                 Choose Source Type:
               </div>
@@ -57,13 +62,18 @@ export const LegendDataCubeCreator = observer(() => {
                 onClick={openSourceTypeDropdown}
                 open={sourceTypeDropdownPropsOpen}
               >
-                {selectedSourceType}
+                <div className="flex items-center">
+                  {selectedSourceType}
+                  {WIPSourceTypes.includes(selectedSourceType) && (
+                    <FormBadge_WIP />
+                  )}
+                </div>
               </FormDropdownMenuTrigger>
               <FormDropdownMenu className="w-80" {...sourceTypeDropdownProps}>
                 {[
                   LegendDataCubeSourceBuilderType.LEGEND_QUERY,
                   LegendDataCubeSourceBuilderType.ADHOC_QUERY,
-                  LegendDataCubeSourceBuilderType.CSV_FILE_QUERY,
+                  LegendDataCubeSourceBuilderType.LOCAL_FILE,
                 ].map((type) => (
                   <FormDropdownMenuItem
                     key={type}
@@ -74,12 +84,13 @@ export const LegendDataCubeCreator = observer(() => {
                     autoFocus={type === selectedSourceType}
                   >
                     {type}
+                    {WIPSourceTypes.includes(type) && <FormBadge_WIP />}
                   </FormDropdownMenuItem>
                 ))}
               </FormDropdownMenu>
             </div>
-            <div className="-ml-2 mb-2 mt-2 h-[1px] w-[calc(100%_+_16px)] bg-neutral-200" />
-            <div className="h-[calc(100%_-_40px)] w-full">
+            <div className="ml-2 h-[1px] w-[calc(100%_-_16px)] bg-neutral-200" />
+            <div className="h-[calc(100%_-_41px)] w-full overflow-auto">
               {sourceBuilder instanceof
                 LegendQueryDataCubeSourceBuilderState && (
                 <LegendQueryDataCubeSourceBuilder
@@ -92,8 +103,8 @@ export const LegendDataCubeCreator = observer(() => {
                   sourceBuilder={sourceBuilder}
                 />
               )}
-              {sourceBuilder instanceof CSVFileDataCubeSourceBuilderState && (
-                <CSVFileDataCubeSourceBuilder sourceBuilder={sourceBuilder} />
+              {sourceBuilder instanceof LocalFileDataCubeSourceBuilderState && (
+                <LocalFileDataCubeSourceBuilder sourceBuilder={sourceBuilder} />
               )}
             </div>
           </div>

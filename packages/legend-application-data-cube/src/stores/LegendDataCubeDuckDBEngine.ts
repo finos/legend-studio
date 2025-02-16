@@ -117,6 +117,8 @@ export class LegendDataCubeDuckDBEngine {
       create: true,
       header: true,
       detect: true,
+      dateFormat: 'YYYY-MM-DD',
+      timestampFormat: 'YYYY-MM-DD', // make sure Date is not auto-converted to timestamp
       escape: LegendDataCubeDuckDBEngine.ESCAPE_CHAR,
       quote: LegendDataCubeDuckDBEngine.QUOTE_CHAR,
     });
@@ -125,38 +127,46 @@ export class LegendDataCubeDuckDBEngine {
     return { schema, table, rowCount: result.result.rows.length };
   }
 
-  async ingestFileData(csvString: string) {
+  async ingestLocalFileData(data: string, format: string) {
     const schema = LegendDataCubeDuckDBEngine.DUCKDB_DEFAULT_SCHEMA_NAME;
     LegendDataCubeDuckDBEngine.ingestFileTableCounter += 1;
     const table = `${LegendDataCubeDuckDBEngine.INGEST_TABLE_NAME_PREFIX}${LegendDataCubeDuckDBEngine.ingestFileTableCounter}`;
-    const csvFileName = `${LegendDataCubeDuckDBEngine.INGEST_FILE_DATA_FILE_NAME}${LegendDataCubeDuckDBEngine.ingestFileTableCounter}.csv`;
+    const fileName = `${LegendDataCubeDuckDBEngine.INGEST_FILE_DATA_FILE_NAME}${LegendDataCubeDuckDBEngine.ingestFileTableCounter}`;
+
+    await this._database?.registerFileText(fileName, data);
 
     const connection = await this.database.connect();
 
-    await this._database?.registerFileText(csvFileName, csvString);
+    switch (format.toLowerCase()) {
+      case 'csv': {
+        await connection.insertCSVFromPath(fileName, {
+          schema: schema,
+          name: table,
+          header: true,
+          detect: true,
+          dateFormat: 'YYYY-MM-DD',
+          timestampFormat: 'YYYY-MM-DD', // make sure Date is not auto-converted to timestamp
+          escape: LegendDataCubeDuckDBEngine.ESCAPE_CHAR,
+          quote: LegendDataCubeDuckDBEngine.QUOTE_CHAR,
+        });
+        break;
+      }
+      default: {
+        throw new UnsupportedOperationError(
+          `Can't ingest local file data: unsupported format '${format}'`,
+        );
+      }
+    }
 
-    await connection.insertCSVFromPath(csvFileName, {
-      schema: schema,
-      name: table,
-      header: true,
-      detect: true,
-      escape: LegendDataCubeDuckDBEngine.ESCAPE_CHAR,
-      quote: LegendDataCubeDuckDBEngine.QUOTE_CHAR,
-    });
-
-    const dbSchemaResult = await connection.query(
-      `DESCRIBE ${schema}.${table}`,
-    );
-    const dbSchema = dbSchemaResult
+    const tableSpec = (await connection.query(`DESCRIBE ${schema}.${table}`))
       .toArray()
-      .map((data) => [
-        data[LegendDataCubeDuckDBEngine.COLUMN_NAME],
-        data[LegendDataCubeDuckDBEngine.COLUMN_TYPE],
+      .map((spec) => [
+        spec[LegendDataCubeDuckDBEngine.COLUMN_NAME],
+        spec[LegendDataCubeDuckDBEngine.COLUMN_TYPE],
       ]);
-
     await connection.close();
 
-    return { schema, table, dbSchema };
+    return { schema, table, tableSpec };
   }
 
   async runSQLQuery(sql: string) {
@@ -168,14 +178,18 @@ export class LegendDataCubeDuckDBEngine {
     const columnNames = result.schema.fields.map((field) => field.name);
     const rows = data.map((row) => {
       const tdsRow = new TDSRow();
-      tdsRow.values = columnNames.map(
-        (column) =>
-          // NOTE: DuckDB WASM returns ArrayBuffer for numeric value, such as for count(*)
-          // so we need to convert it to number
-          (ArrayBuffer.isView(row[column])
-            ? row[column].valueOf()
-            : row[column]) as string | number | boolean | null,
-      );
+      tdsRow.values = columnNames.map((column) => {
+        const value = row[column] as unknown;
+        // NOTE: DuckDB WASM returns ArrayBuffer for numeric value, such as for count(*)
+        // so we need to convert it to number
+        if (ArrayBuffer.isView(value)) {
+          return row[column].valueOf() as number;
+          // BigInt is not supported by ag-grid, so we need to convert it to native number
+        } else if (typeof value === 'bigint') {
+          return Number(value);
+        }
+        return value as string | number | boolean | null;
+      });
       return tdsRow;
     });
     const tdsExecutionResult = new TDSExecutionResult();
@@ -196,6 +210,7 @@ export class LegendDataCubeDuckDBEngine {
           col.type = PRIMITIVE_TYPE.BOOLEAN;
           break;
         }
+        case Type.Timestamp:
         case Type.Date:
         case Type.DateDay:
         case Type.DateMillisecond: {
@@ -253,21 +268,4 @@ export class LegendDataCubeDuckDBEngine {
     await this._database?.flushFiles();
     await this._database?.terminate();
   }
-}
-
-// https://duckdb.org/docs/sql/data_types/overview.html
-export const enum DUCKDB_DATA_TYPES {
-  // TODO: confirm this is in accordance to engine
-  BIGINT = 'BIGINT',
-  BIT = 'BIT',
-  BOOLEAN = 'BOOLEAN',
-  DATE = 'DATE',
-  DECIMAL = 'DECIMAL',
-  DOUBLE = 'DOUBLE',
-  FLOAT = 'FLOAT',
-  INTEGER = 'INTEGER',
-  SMALLINT = 'SMALLINT',
-  TIMESTAMP = 'TIMESTAMP',
-  TINYINT = 'TININT',
-  VARCHAR = 'VARCHAR',
 }

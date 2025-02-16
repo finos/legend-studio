@@ -284,7 +284,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
               )}
             </div>
 
-            <div className="-ml-2 mb-2 mt-3 h-[1px] w-[calc(100%_+_16px)] bg-neutral-200" />
+            <div className="mb-2 ml-2 mt-3 h-[1px] w-[calc(100%_-_16px)] bg-neutral-200" />
 
             {selectedColumn && (
               <>

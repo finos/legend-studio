@@ -137,7 +137,9 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
 
   override async generateSourceData() {
     if (!this.query) {
-      throw new IllegalStateError('Query is missing');
+      throw new IllegalStateError(
+        `Can't generate source data: query is not set`,
+      );
     }
     const source = new RawLegendQueryDataCubeSource();
     source.queryId = this.query.id;
