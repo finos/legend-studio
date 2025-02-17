@@ -252,6 +252,7 @@ export class SDLCServerClient extends AbstractServerClient {
     );
 
   // ------------------------------------------- Project Access -------------------------------------------
+
   private _authorizedActionProject = (projectId: string): string =>
     `${this._project(projectId)}/authorizedActions`;
   getAutorizedActions = (

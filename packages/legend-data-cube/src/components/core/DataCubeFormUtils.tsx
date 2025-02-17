@@ -45,6 +45,7 @@ import {
   resetLineNumberGutterWidth,
   setErrorMarkers,
 } from '@finos/legend-code-editor';
+import { AlertType } from '../../stores/services/DataCubeAlertService.js';
 
 export function FormBadge_WIP() {
   return (
@@ -776,12 +777,12 @@ export const FormCodeEditor: React.FC<{
   return (
     <div className="h-full w-full border border-neutral-200">
       {!hideActionBar && (
-        <div className="flex h-5 w-full items-center justify-between border-b border-neutral-200">
+        <div className="flex h-5 w-full items-center justify-between border-b border-neutral-200 bg-white">
           <div className="pl-1 text-sm text-neutral-500">{title ?? ''}</div>
           <button
             tabIndex={-1}
             className={cn(
-              'flex aspect-square h-5 items-center justify-center text-neutral-300 hover:text-neutral-600',
+              'flex aspect-square h-5 items-center justify-center text-neutral-400 hover:text-neutral-600',
               {
                 'text-neutral-600': isWordWrap,
               },
@@ -807,3 +808,37 @@ export const FormCodeEditor: React.FC<{
     </div>
   );
 };
+
+export function FormAlert(props: {
+  message: string;
+  type: AlertType;
+  text?: string | undefined;
+}) {
+  const { message, type, text } = props;
+  return (
+    <div className="flex rounded-sm bg-neutral-200 p-3">
+      <div className="mr-3">
+        {type === AlertType.ERROR && (
+          <DataCubeIcon.AlertError className="flex-shrink-0 stroke-[0.5px] text-[40px] text-red-500" />
+        )}
+        {type === AlertType.INFO && (
+          <DataCubeIcon.AlertInfo className="flex-shrink-0 stroke-[0.5px] text-[40px] text-sky-500" />
+        )}
+        {type === AlertType.SUCCESS && (
+          <DataCubeIcon.AlertSuccess className="flex-shrink-0 stroke-[0.5px] text-[40px] text-green-500" />
+        )}
+        {type === AlertType.WARNING && (
+          <DataCubeIcon.AlertWarning className="flex-shrink-0 stroke-[0.3px] text-[40px] text-amber-500" />
+        )}
+      </div>
+      <div>
+        <div className="whitespace-break-spaces">{message}</div>
+        {text !== undefined && (
+          <div className="mt-1 whitespace-break-spaces text-sm leading-[13px] text-neutral-500">
+            {text}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

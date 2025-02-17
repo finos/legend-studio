@@ -16,14 +16,13 @@
 
 import { observer } from 'mobx-react-lite';
 import type { AdhocQueryDataCubeSourceBuilderState } from '../../../stores/builder/source/AdhocQueryDataCubeSourceBuilderState.js';
-import { FormBadge_WIP } from '@finos/legend-data-cube';
 
 export const AdhocQueryDataCubeSourceBuilder = observer(
   (props: { sourceBuilder: AdhocQueryDataCubeSourceBuilderState }) => {
     return (
-      <div className="flex h-full w-full">
+      <div className="flex h-full w-full p-2">
         <div className="flex h-6 items-center text-neutral-500">
-          This is a work-in-progress. <FormBadge_WIP />
+          This is a work-in-progress.
         </div>
       </div>
     );

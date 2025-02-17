@@ -22,6 +22,7 @@ import {
   MODEL_IMPORT_NATIVE_INPUT_TYPE,
   NativeModelImporterEditorState,
   ExternalFormatModelImporterState,
+  ExecuteInputDebugModelImporterEditorState,
 } from '../../../stores/editor/editor-state/ModelImporterState.js';
 import { prettyCONSTName } from '@finos/legend-shared';
 import {
@@ -220,6 +221,33 @@ export const ModelImporter = observer(() => {
           externalFormatState={modelImportEditorState}
         />
       );
+    } else if (
+      modelImportEditorState instanceof
+      ExecuteInputDebugModelImporterEditorState
+    ) {
+      return (
+        <PanelContent className="model-loader__editor">
+          <div className="model-loader__debugger__function-path">
+            <div className="model-loader__debugger__function-path__label">
+              Debug Executable:
+            </div>
+            <input
+              className="panel__content__form__section__input"
+              value={modelImportEditorState.executablePath}
+              onChange={(event) =>
+                modelImportEditorState.setExecutablePath(event.target.value)
+              }
+            />
+          </div>
+          <div className="model-loader__debugger__execute-input">
+            <CodeEditor
+              language={CODE_EDITOR_LANGUAGE.JSON}
+              inputValue={modelImportEditorState.executeInput}
+              updateInput={(val) => modelImportEditorState.setExecuteInput(val)}
+            />
+          </div>
+        </PanelContent>
+      );
     }
     return null;
   };
@@ -248,6 +276,14 @@ export const ModelImporter = observer(() => {
                         {prettyCONSTName(inputType)}
                       </MenuContentItem>
                     ))}
+                    <MenuContentItem
+                      className="model-loader__header__configs__type-option__group__option"
+                      onClick={() =>
+                        modelImporterState.setExecuteInputDebugModelImporter()
+                      }
+                    >
+                      {`Execute Input (DEBUG)`}
+                    </MenuContentItem>
                   </div>
                 </div>
                 {Boolean(externalFormatDescriptions.length) && (

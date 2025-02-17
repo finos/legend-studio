@@ -15,7 +15,6 @@
  */
 
 import {
-  type JavaScriptValue,
   type Replacer,
   stringify as losslessStringify,
   parse as losslessParse,
@@ -195,7 +194,7 @@ export const toGrammarString = (value: string): string =>
 export { losslessParse as parseLosslessJSON };
 export { lossIsSafeNumber as isLossSafeNumber };
 export const stringifyLosslessJSON = (
-  val: JavaScriptValue,
+  val: unknown,
   replacer?: Replacer,
   space?: number | string,
 ): string => {

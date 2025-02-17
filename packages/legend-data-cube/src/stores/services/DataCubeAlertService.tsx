@@ -28,6 +28,8 @@ import { editor as monacoEditorAPI, Uri } from 'monaco-editor';
 import { DataCubeCodeCheckErrorAlert } from '../../components/core/DataCubeCodeCheckErrorAlert.js';
 import { uuid } from '@finos/legend-shared';
 import type { DataCubeLogService } from './DataCubeLogService.js';
+import type { DataCubeExecutionError } from '../core/DataCubeEngine.js';
+import { DataCubeExecutionErrorAlert } from '../../components/core/DataCubeExecutionErrorAlert.js';
 
 export enum AlertType {
   ERROR = 'ERROR',
@@ -165,5 +167,30 @@ export class DataCubeAlertService {
       };
       this._layoutService.newWindow(window);
     }
+  }
+
+  alertExecutionError(
+    error: DataCubeExecutionError,
+    options: ActionAlertOptions,
+  ) {
+    const { message, text, windowTitle, windowConfig } = options;
+    const window = new WindowState(
+      new LayoutConfiguration(windowTitle ?? 'Error', () => (
+        <DataCubeExecutionErrorAlert
+          error={error}
+          message={message}
+          text={text}
+          onClose={() => this._layoutService.closeWindow(window)}
+        />
+      )),
+    );
+    window.configuration.window = windowConfig ?? {
+      width: 600,
+      height: 250, // leave some space to show debug content
+      minWidth: 500,
+      minHeight: 200,
+      center: true,
+    };
+    this._layoutService.newWindow(window);
   }
 }

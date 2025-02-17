@@ -22,7 +22,7 @@ import type { DataCubeConfiguration } from '@finos/legend-data-cube';
 export enum LegendDataCubeSourceBuilderType {
   LEGEND_QUERY = 'Legend Query',
   ADHOC_QUERY = 'Ad hoc Query',
-  CSV_FILE_QUERY = 'CSV File',
+  LOCAL_FILE = 'Local File',
 }
 
 export abstract class LegendDataCubeSourceBuilderState {
@@ -41,7 +41,9 @@ export abstract class LegendDataCubeSourceBuilderState {
   abstract get isValid(): boolean;
   abstract generateSourceData(): Promise<PlainObject>;
 
-  /* Modifies the configuration of the finalized DataCube based on the source builder */
+  /**
+   * Modifies the configuration of the finalized DataCube based on the source builder.
+   */
   finalizeConfiguration(configuration: DataCubeConfiguration) {
     // do nothing
   }

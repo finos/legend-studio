@@ -117,7 +117,7 @@ import { resolveVersion } from '@finos/legend-server-depot';
 import { DATASPACE_ANALYTICS_FILE_NAME } from '../../../action/analytics/DataSpaceAnalysisHelper.js';
 
 const ANALYZE_DATA_SPACE_TRACE = 'analyze data product';
-const TEMPORARY__TDS_SAMPLE_VALUES__DELIMETER = '-- e.g.';
+const TEMPORARY__TDS_SAMPLE_VALUES__DELIMITER = '-- e.g.';
 
 export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_PureGraphManagerExtension {
   declare graphManager: V1_PureGraphManager;
@@ -1069,22 +1069,22 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
               column.documentation = tdsColumn.documentation;
               if (
                 tdsColumn.documentation?.includes(
-                  TEMPORARY__TDS_SAMPLE_VALUES__DELIMETER,
+                  TEMPORARY__TDS_SAMPLE_VALUES__DELIMITER,
                 )
               ) {
                 column.documentation = tdsColumn.documentation
                   .substring(
                     0,
                     tdsColumn.documentation.indexOf(
-                      TEMPORARY__TDS_SAMPLE_VALUES__DELIMETER,
+                      TEMPORARY__TDS_SAMPLE_VALUES__DELIMITER,
                     ),
                   )
                   .trim();
                 column.sampleValues = tdsColumn.documentation
                   .substring(
                     tdsColumn.documentation.indexOf(
-                      TEMPORARY__TDS_SAMPLE_VALUES__DELIMETER,
-                    ) + TEMPORARY__TDS_SAMPLE_VALUES__DELIMETER.length,
+                      TEMPORARY__TDS_SAMPLE_VALUES__DELIMITER,
+                    ) + TEMPORARY__TDS_SAMPLE_VALUES__DELIMITER.length,
                   )
                   .trim();
               }

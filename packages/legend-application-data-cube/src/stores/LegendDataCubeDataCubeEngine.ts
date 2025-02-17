@@ -78,6 +78,7 @@ import {
   V1_Timestamp,
   V1_TinyInt,
   V1_SmallInt,
+  V1_serializePureModelContextData,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
@@ -94,6 +95,7 @@ import {
   CachedDataCubeSource,
   type DataCubeExecutionOptions,
   type DataCubeCacheInitializationOptions,
+  DataCubeExecutionError,
 } from '@finos/legend-data-cube';
 import {
   isNonNullable,
@@ -110,10 +112,7 @@ import {
   filterByType,
 } from '@finos/legend-shared';
 import type { LegendDataCubeApplicationStore } from './LegendDataCubeBaseStore.js';
-import {
-  DUCKDB_DATA_TYPES,
-  LegendDataCubeDuckDBEngine,
-} from './LegendDataCubeDuckDBEngine.js';
+import { LegendDataCubeDuckDBEngine } from './LegendDataCubeDuckDBEngine.js';
 import { APPLICATION_EVENT } from '@finos/legend-application';
 import {
   LEGEND_QUERY_DATA_CUBE_SOURCE_TYPE,
@@ -126,17 +125,17 @@ import {
   type DepotServerClient,
 } from '@finos/legend-server-depot';
 import {
-  CSV_FILE_QUERY_DATA_CUBE_SOURCE_TYPE,
-  CSVFileDataCubeSource,
-  RawCSVFileQueryDataCubeSource,
-} from './model/CSVFileDataCubeSource.js';
+  LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE,
+  LocalFileDataCubeSource,
+  RawLocalFileQueryDataCubeSource,
+} from './model/LocalFileDataCubeSource.js';
 
 export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   private readonly _application: LegendDataCubeApplicationStore;
   private readonly _depotServerClient: DepotServerClient;
   private readonly _engineServerClient: V1_EngineServerClient;
   private readonly _graphManager: V1_PureGraphManager;
-  private readonly _cacheManager: LegendDataCubeDuckDBEngine;
+  private readonly _duckDBEngine: LegendDataCubeDuckDBEngine;
 
   constructor(
     application: LegendDataCubeApplicationStore,
@@ -150,15 +149,15 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     this._depotServerClient = depotServerClient;
     this._engineServerClient = engineServerClient;
     this._graphManager = graphManager;
-    this._cacheManager = new LegendDataCubeDuckDBEngine();
+    this._duckDBEngine = new LegendDataCubeDuckDBEngine();
   }
 
-  async initializeCacheManager() {
-    await this._cacheManager.initialize();
+  async initialize() {
+    await this._duckDBEngine.initialize();
   }
 
-  async disposeCacheManager() {
-    await this._cacheManager.dispose();
+  async dispose() {
+    await this._duckDBEngine.dispose();
   }
 
   // ---------------------------------- IMPLEMENTATION ----------------------------------
@@ -190,10 +189,10 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         }
         return source;
       }
-      case CSV_FILE_QUERY_DATA_CUBE_SOURCE_TYPE: {
+      case LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE: {
         const rawSource =
-          RawCSVFileQueryDataCubeSource.serialization.fromJson(value);
-        const source = new CSVFileDataCubeSource();
+          RawLocalFileQueryDataCubeSource.serialization.fromJson(value);
+        const source = new LocalFileDataCubeSource();
         source.fileName = rawSource.fileName;
         source.count = rawSource.count;
         source.db = rawSource.db;
@@ -213,7 +212,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           source.columns = (
             await this._getLambdaRelationType(
               this.serializeValueSpecification(_lambda([], [source.query])),
-              serialize(source.model),
+              source.model,
             )
           ).columns;
         } catch (error) {
@@ -465,96 +464,109 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     const queryCodePromise = this.getValueSpecificationCode(query);
     let result: ExecutionResult;
     const startTime = performance.now();
-    if (source instanceof AdhocQueryDataCubeSource) {
-      result = await this._runQuery(query, source.model, undefined, options);
-    } else if (source instanceof LegendQueryDataCubeSource) {
-      query.parameters = source.lambda.parameters;
-      result = await this._runQuery(
-        query,
-        source.model,
-        source.parameterValues,
-        options,
-      );
-    } else if (source instanceof CachedDataCubeSource) {
-      // get the execute plan to extract the generated SQL to run against cached DB
-      const executionPlan = await this._generateExecutionPlan(
-        query,
-        source.model,
-        [],
-        // NOTE: for caching, we're using DuckDB, but its protocol models
-        // are not available in the latest production protocol version V1_33_0, so
-        // we have to force using VX_X_X
-        // once we either cut another protocol version or backport the DuckDB models
-        // to V1_33_0, we will can remove this
-        { ...options, clientVersion: PureClientVersion.VX_X_X },
-      );
-      const sql = guaranteeNonNullable(
-        executionPlan instanceof V1_SimpleExecutionPlan
-          ? executionPlan.rootExecutionNode.executionNodes
-              .filter(filterByType(V1_SQLExecutionNode))
-              .at(-1)?.sqlQuery
-          : undefined,
-        `Can't process execution plan: failed to extract generated SQL`,
+
+    try {
+      if (source instanceof AdhocQueryDataCubeSource) {
+        result = await this._runQuery(query, source.model, undefined, options);
+      } else if (source instanceof LegendQueryDataCubeSource) {
+        query.parameters = source.lambda.parameters;
+        result = await this._runQuery(
+          query,
+          source.model,
+          source.parameterValues,
+          options,
+        );
+      } else if (source instanceof CachedDataCubeSource) {
+        // get the execute plan to extract the generated SQL to run against cached DB
+        const executionPlan = await this._generateExecutionPlan(
+          query,
+          source.model,
+          [],
+          // NOTE: for caching, we're using DuckDB, but its protocol models
+          // are not available in the latest production protocol version V1_33_0, so
+          // we have to force using VX_X_X
+          // once we either cut another protocol version or backport the DuckDB models
+          // to V1_33_0, we will can remove this
+          { ...options, clientVersion: PureClientVersion.VX_X_X },
+        );
+        const sql = guaranteeNonNullable(
+          executionPlan instanceof V1_SimpleExecutionPlan
+            ? executionPlan.rootExecutionNode.executionNodes
+                .filter(filterByType(V1_SQLExecutionNode))
+                .at(-1)?.sqlQuery
+            : undefined,
+          `Can't process execution plan: failed to extract generated SQL`,
+        );
+        const endTime = performance.now();
+        return {
+          executedQuery: await queryCodePromise,
+          executedSQL: sql,
+          result: await this._duckDBEngine.runSQLQuery(sql),
+          executionTime: endTime - startTime,
+        };
+      } else if (source instanceof LocalFileDataCubeSource) {
+        // get the execute plan to extract the generated SQL to run against cached DB
+        const executionPlan = await this._generateExecutionPlan(
+          query,
+          source.model,
+          [],
+          // NOTE: for local file, we're using DuckDB, but its protocol models
+          // are not available in the latest production protocol version V1_33_0, so
+          // we have to force using VX_X_X
+          // once we either cut another protocol version or backport the DuckDB models
+          // to V1_33_0, we will can remove this
+          { ...options, clientVersion: PureClientVersion.VX_X_X },
+        );
+        const sql = guaranteeNonNullable(
+          executionPlan instanceof V1_SimpleExecutionPlan
+            ? executionPlan.rootExecutionNode.executionNodes
+                .filter(filterByType(V1_SQLExecutionNode))
+                .at(-1)?.sqlQuery
+            : undefined,
+          `Can't process execution plan: failed to extract generated SQL`,
+        );
+        const endTime = performance.now();
+        return {
+          executedQuery: await queryCodePromise,
+          executedSQL: sql,
+          result: await this._duckDBEngine.runSQLQuery(sql),
+          executionTime: endTime - startTime,
+        };
+      } else {
+        throw new UnsupportedOperationError(
+          `Can't execute query with unsupported source`,
+        );
+      }
+      assertType(
+        result,
+        TDSExecutionResult,
+        `Can't process execution result: expected tabular data set format`,
       );
       const endTime = performance.now();
-      return {
-        executedQuery: await queryCodePromise,
-        executedSQL: sql,
-        result: await this._cacheManager.runSQLQuery(sql),
-        executionTime: endTime - startTime,
-      };
-    } else if (source instanceof CSVFileDataCubeSource) {
-      // get the execute plan to extract the generated SQL to run against cached DB
-      const executionPlan = await this._generateExecutionPlan(
-        query,
-        source.model,
-        [],
-        // NOTE: for caching, we're using DuckDB, but its protocol models
-        // are not available in the latest production protocol version V1_33_0, so
-        // we have to force using VX_X_X
-        // once we either cut another protocol version or backport the DuckDB models
-        // to V1_33_0, we will can remove this
-        { ...options, clientVersion: PureClientVersion.VX_X_X },
-      );
+      const queryCode = await queryCodePromise;
       const sql = guaranteeNonNullable(
-        executionPlan instanceof V1_SimpleExecutionPlan
-          ? executionPlan.rootExecutionNode.executionNodes
-              .filter(filterByType(V1_SQLExecutionNode))
-              .at(-1)?.sqlQuery
+        result.activities?.[0] instanceof RelationalExecutionActivities
+          ? result.activities[0].sql
           : undefined,
-        `Can't process execution plan: failed to extract generated SQL`,
+        `Can't process execution result: failed to extract generated SQL`,
       );
-      const endTime = performance.now();
       return {
-        executedQuery: await queryCodePromise,
+        result: result,
+        executedQuery: queryCode,
         executedSQL: sql,
-        result: await this._cacheManager.runSQLQuery(sql),
         executionTime: endTime - startTime,
       };
-    } else {
-      throw new UnsupportedOperationError(
-        `Can't execute query with unsupported source`,
-      );
+    } catch (error) {
+      assertErrorThrown(error);
+      if (error instanceof DataCubeExecutionError) {
+        try {
+          error.queryCode = await this.getValueSpecificationCode(query, true);
+        } catch {
+          // ignore
+        }
+      }
+      throw error;
     }
-    assertType(
-      result,
-      TDSExecutionResult,
-      `Can't process execution result: expected tabular data set format`,
-    );
-    const endTime = performance.now();
-    const queryCode = await queryCodePromise;
-    const sql = guaranteeNonNullable(
-      result.activities?.[0] instanceof RelationalExecutionActivities
-        ? result.activities[0].sql
-        : undefined,
-      `Can't process execution result: failed to extract generated SQL`,
-    );
-    return {
-      result: result,
-      executedQuery: queryCode,
-      executedSQL: sql,
-      executionTime: endTime - startTime,
-    };
   }
 
   override buildExecutionContext(source: DataCubeSource) {
@@ -576,137 +588,13 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         DataCubeFunction.FROM,
         [_elementPtr(source.runtime)].filter(isNonNullable),
       );
-    } else if (source instanceof CSVFileDataCubeSource) {
+    } else if (source instanceof LocalFileDataCubeSource) {
       return _function(
         DataCubeFunction.FROM,
         [_elementPtr(source.runtime)].filter(isNonNullable),
       );
     }
     return undefined;
-  }
-
-  // --------------------------------- FILE INGEST -----------------------------------
-
-  override async ingestFileData(
-    csvString: string,
-  ): Promise<DataCubeSource | undefined> {
-    const {
-      schema: schemaName,
-      table: tableName,
-      dbSchema: dbSchema,
-    } = await this._cacheManager.ingestFileData(csvString);
-
-    const packagePath = 'ingest::local';
-
-    const table = new V1_Table();
-    table.name = tableName;
-    table.columns = dbSchema.map((col) => {
-      const column = new V1_Column();
-      column.name = col[0] as string;
-      // TODO: check if we have a duckdb enum mapping
-      switch (col[1] as string) {
-        case DUCKDB_DATA_TYPES.BIGINT: {
-          column.type = new V1_BigInt();
-          break;
-        }
-        case DUCKDB_DATA_TYPES.BIT: {
-          column.type = new V1_Bit();
-          break;
-        }
-        case DUCKDB_DATA_TYPES.BOOLEAN: {
-          // TODO: understand why boolean is not present in relationalDataType
-          column.type = new V1_VarChar();
-          break;
-        }
-        case DUCKDB_DATA_TYPES.DATE: {
-          column.type = new V1_Date();
-          break;
-        }
-        case DUCKDB_DATA_TYPES.DECIMAL: {
-          column.type = new V1_Decimal();
-          break;
-        }
-        case DUCKDB_DATA_TYPES.DOUBLE: {
-          column.type = new V1_Double();
-          break;
-        }
-        case DUCKDB_DATA_TYPES.FLOAT: {
-          column.type = new V1_Float();
-          break;
-        }
-        case DUCKDB_DATA_TYPES.INTEGER: {
-          column.type = new V1_Integer();
-          break;
-        }
-        case DUCKDB_DATA_TYPES.SMALLINT: {
-          column.type = new V1_SmallInt();
-          break;
-        }
-        case DUCKDB_DATA_TYPES.TIMESTAMP: {
-          column.type = new V1_Timestamp();
-          break;
-        }
-        case DUCKDB_DATA_TYPES.TINYINT: {
-          column.type = new V1_TinyInt();
-          break;
-        }
-        case DUCKDB_DATA_TYPES.VARCHAR: {
-          column.type = new V1_VarChar();
-          break;
-        }
-        default: {
-          throw new UnsupportedOperationError(
-            `Can't initialize cache: failed to find matching relational data type for DuckDB type '${col[1]}' when synthesizing table definition`,
-          );
-        }
-      }
-      return column;
-    });
-
-    const schema = new V1_Schema();
-    schema.name = schemaName;
-    schema.tables = [table];
-    const database = new V1_Database();
-    database.name = 'db';
-    database.package = packagePath;
-    database.schemas = [schema];
-
-    const connection = new V1_RelationalDatabaseConnection();
-    connection.databaseType = DatabaseType.DuckDB;
-    connection.type = DatabaseType.DuckDB;
-    const dataSourceSpec = new V1_DuckDBDatasourceSpecification();
-    dataSourceSpec.path = '/tmpIngestFile';
-    connection.store = database.path;
-    connection.datasourceSpecification = dataSourceSpec;
-    connection.authenticationStrategy = new V1_TestAuthenticationStrategy();
-
-    const runtime = new V1_EngineRuntime();
-    const storeConnections = new V1_StoreConnections();
-    storeConnections.store = new V1_PackageableElementPointer(
-      PackageableElementPointerType.STORE,
-      database.path,
-    );
-    const identifiedConnection = new V1_IdentifiedConnection();
-    identifiedConnection.connection = connection;
-    identifiedConnection.id = 'c0';
-    storeConnections.storeConnections = [identifiedConnection];
-    runtime.connections = [storeConnections];
-
-    const packageableRuntime = new V1_PackageableRuntime();
-    packageableRuntime.runtimeValue = runtime;
-    packageableRuntime.package = packagePath;
-    packageableRuntime.name = 'rt';
-
-    const model = new V1_PureModelContextData();
-    model.elements = [database, packageableRuntime];
-
-    const csvFileSource = new CSVFileDataCubeSource();
-    csvFileSource.model = model;
-    csvFileSource.runtime = packageableRuntime.path;
-    csvFileSource.db = database.path;
-    csvFileSource.schema = schema.name;
-    csvFileSource.table = table.name;
-    return csvFileSource;
   }
 
   // ---------------------------------- CACHING --------------------------------------
@@ -729,49 +617,288 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       schema: schemaName,
       table: tableName,
       rowCount,
-    } = await this._cacheManager.cache(result.result);
+    } = await this._duckDBEngine.cache(result.result);
+
+    const { model, database, schema, table, runtime } =
+      this._synthesizeMinimalModelContext({
+        schemaName,
+        tableName,
+        tableColumns: result.result.builder.columns.map((col) => {
+          const column = new V1_Column();
+          column.name = col.name;
+          switch (col.type as string) {
+            case PRIMITIVE_TYPE.BOOLEAN: {
+              column.type = new V1_Bit();
+              break;
+            }
+            case PRIMITIVE_TYPE.INTEGER: {
+              column.type = new V1_Integer();
+              break;
+            }
+            case PRIMITIVE_TYPE.NUMBER:
+            case PRIMITIVE_TYPE.FLOAT:
+            case PRIMITIVE_TYPE.DECIMAL: {
+              column.type = new V1_Float();
+              break;
+            }
+            case PRIMITIVE_TYPE.DATE:
+            case PRIMITIVE_TYPE.STRICTDATE:
+            case PRIMITIVE_TYPE.DATETIME: {
+              column.type = new V1_Date();
+              break;
+            }
+            case PRIMITIVE_TYPE.STRING: {
+              column.type = new V1_VarChar();
+              break;
+            }
+            default: {
+              throw new UnsupportedOperationError(
+                `Can't initialize cache: failed to find matching relational data type for Pure type '${col.type}' when synthesizing table definition`,
+              );
+            }
+          }
+          return column;
+        }),
+      });
+
+    // query
+    const query = new V1_ClassInstance();
+    query.type = V1_ClassInstanceType.RELATION_STORE_ACCESSOR;
+    const storeAccessor = new V1_RelationStoreAccessor();
+    storeAccessor.path = [database.path, schema.name, table.name];
+    query.value = storeAccessor;
+
+    const cachedSource = new CachedDataCubeSource();
+    cachedSource.columns = source.columns;
+    cachedSource.query = query;
+    cachedSource.model = model;
+    cachedSource.runtime = runtime.path;
+    cachedSource.db = database.path;
+    cachedSource.schema = schema.name;
+    cachedSource.table = table.name;
+    cachedSource.count = rowCount;
+    return cachedSource;
+  }
+
+  override async disposeCache(source: CachedDataCubeSource) {
+    await this._duckDBEngine.disposeCache(source);
+  }
+
+  // ---------------------------------- UTILITIES ----------------------------------
+
+  private async _getQueryRelationType(
+    query: PlainObject<V1_Lambda>,
+    source: DataCubeSource,
+  ) {
+    if (source instanceof AdhocQueryDataCubeSource) {
+      return this._getLambdaRelationType(query, source.model);
+    } else if (source instanceof LegendQueryDataCubeSource) {
+      return this._getLambdaRelationType(query, source.model);
+    } else if (source instanceof CachedDataCubeSource) {
+      return this._getLambdaRelationType(query, source.model);
+    } else if (source instanceof LocalFileDataCubeSource) {
+      return this._getLambdaRelationType(query, source.model);
+    }
+    throw new UnsupportedOperationError(
+      `Can't get relation type for lambda with unsupported source`,
+    );
+  }
+
+  private async _getLambdaRelationType(
+    lambda: PlainObject<V1_Lambda>,
+    model: PlainObject<V1_PureModelContext>,
+  ) {
+    const relationType = deserialize(
+      V1_relationTypeModelSchema,
+      await this._engineServerClient.lambdaRelationType({
+        lambda,
+        model,
+      }),
+    );
+    return {
+      columns: relationType.columns.map((column) => ({
+        name: column.name,
+        type: V1_getGenericTypeFullPath(column.genericType),
+      })),
+    };
+  }
+
+  private async _runQuery(
+    query: V1_Lambda,
+    model: PlainObject<V1_PureModelContext>,
+    parameterValues?: V1_ParameterValue[] | undefined,
+    options?: DataCubeExecutionOptions | undefined,
+  ): Promise<ExecutionResult> {
+    const input = {
+      clientVersion:
+        options?.clientVersion ??
+        // eslint-disable-next-line no-process-env
+        (process.env.NODE_ENV === 'development'
+          ? PureClientVersion.VX_X_X
+          : undefined),
+      function: this.serializeValueSpecification(query),
+      model,
+      context: serialize(
+        V1_rawBaseExecutionContextModelSchema,
+        new V1_RawBaseExecutionContext(),
+      ) as PlainObject<V1_RawBaseExecutionContext>,
+      parameterValues: (parameterValues ?? []).map((parameterValue) =>
+        serialize(V1_parameterValueModelSchema, parameterValue),
+      ),
+    };
+    try {
+      return V1_buildExecutionResult(
+        V1_deserializeExecutionResult(
+          (await this._engineServerClient.runQuery(
+            input,
+          )) as PlainObject<V1_ExecutionResult>,
+        ),
+      );
+    } catch (err) {
+      assertErrorThrown(err);
+      const error = new DataCubeExecutionError(err.message);
+      error.executeInput = input;
+      throw error;
+    }
+  }
+
+  private async _generateExecutionPlan(
+    query: V1_Lambda,
+    model: PlainObject<V1_PureModelContext>,
+    parameterValues?: V1_ParameterValue[] | undefined,
+    options?: DataCubeExecutionOptions | undefined,
+  ): Promise<V1_ExecutionPlan> {
+    const input = {
+      clientVersion:
+        options?.clientVersion ??
+        // eslint-disable-next-line no-process-env
+        (process.env.NODE_ENV === 'development'
+          ? PureClientVersion.VX_X_X
+          : undefined),
+      function: this.serializeValueSpecification(query),
+      model,
+      context: serialize(
+        V1_rawBaseExecutionContextModelSchema,
+        new V1_RawBaseExecutionContext(),
+      ) as PlainObject<V1_RawBaseExecutionContext>,
+      parameterValues: (parameterValues ?? []).map((parameterValue) =>
+        serialize(V1_parameterValueModelSchema, parameterValue),
+      ),
+    };
+    try {
+      return V1_deserializeExecutionPlan(
+        await this._engineServerClient.generatePlan(input),
+      );
+    } catch (err) {
+      assertErrorThrown(err);
+      const error = new DataCubeExecutionError(err.message);
+      error.executeInput = input;
+      throw error;
+    }
+  }
+
+  async ingestLocalFileData(
+    data: string,
+    format: string,
+  ): Promise<DataCubeSource | undefined> {
+    const {
+      schema: schemaName,
+      table: tableName,
+      tableSpec,
+    } = await this._duckDBEngine.ingestLocalFileData(data, format);
+
+    const { model, database, schema, table, runtime } =
+      this._synthesizeMinimalModelContext({
+        schemaName,
+        tableName,
+        tableColumns: tableSpec.map((col) => {
+          const column = new V1_Column();
+          column.name = col[0] as string;
+          // TODO: confirm this is in accordance to engine
+          // check if we have a duckdb enum mapping
+          // See https://duckdb.org/docs/sql/data_types/overview.html
+          switch (col[1] as string) {
+            case 'BIT': {
+              column.type = new V1_Bit();
+              break;
+            }
+            case 'BOOLEAN': {
+              // TODO: understand why boolean is not present in relationalDataType
+              column.type = new V1_VarChar();
+              break;
+            }
+            case 'DATE': {
+              column.type = new V1_Date();
+              break;
+            }
+            case 'DECIMAL': {
+              column.type = new V1_Decimal();
+              break;
+            }
+            case 'DOUBLE': {
+              column.type = new V1_Double();
+              break;
+            }
+            case 'FLOAT': {
+              column.type = new V1_Float();
+              break;
+            }
+            case 'INTEGER': {
+              column.type = new V1_Integer();
+              break;
+            }
+            case 'TININT': {
+              column.type = new V1_TinyInt();
+              break;
+            }
+            case 'SMALLINT': {
+              column.type = new V1_SmallInt();
+              break;
+            }
+            case 'BIGINT': {
+              column.type = new V1_BigInt();
+              break;
+            }
+            case 'TIMESTAMP': {
+              column.type = new V1_Timestamp();
+              break;
+            }
+            case 'VARCHAR': {
+              column.type = new V1_VarChar();
+              break;
+            }
+            default: {
+              throw new UnsupportedOperationError(
+                `Can't ingest local file data: failed to find matching relational data type for DuckDB type '${col[1]}' when synthesizing table definition`,
+              );
+            }
+          }
+          return column;
+        }),
+      });
+
+    const source = new LocalFileDataCubeSource();
+    source.model = model;
+    source.runtime = runtime.path;
+    source.db = database.path;
+    source.schema = schema.name;
+    source.table = table.name;
+    return source;
+  }
+
+  private _synthesizeMinimalModelContext(data: {
+    schemaName: string;
+    tableName: string;
+    tableColumns: V1_Column[];
+  }) {
+    const { schemaName, tableName, tableColumns } = data;
 
     // model
     const packagePath = 'local';
 
     const table = new V1_Table();
     table.name = tableName;
-    table.columns = result.result.builder.columns.map((col) => {
-      const column = new V1_Column();
-      column.name = col.name;
-      switch (col.type as string) {
-        case PRIMITIVE_TYPE.BOOLEAN: {
-          column.type = new V1_Bit();
-          break;
-        }
-        case PRIMITIVE_TYPE.INTEGER: {
-          column.type = new V1_Integer();
-          break;
-        }
-        case PRIMITIVE_TYPE.NUMBER:
-        case PRIMITIVE_TYPE.FLOAT:
-        case PRIMITIVE_TYPE.DECIMAL: {
-          column.type = new V1_Float();
-          break;
-        }
-        case PRIMITIVE_TYPE.DATE:
-        case PRIMITIVE_TYPE.STRICTDATE:
-        case PRIMITIVE_TYPE.DATETIME: {
-          column.type = new V1_Date();
-          break;
-        }
-        case PRIMITIVE_TYPE.STRING: {
-          column.type = new V1_VarChar();
-          break;
-        }
-        default: {
-          throw new UnsupportedOperationError(
-            `Can't initialize cache: failed to find matching relational data type for Pure type '${col.type}' when synthesizing table definition`,
-          );
-        }
-      }
-      return column;
-    });
+    table.columns = [...tableColumns];
 
     const schema = new V1_Schema();
     schema.name = schemaName;
@@ -810,122 +937,13 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     const model = new V1_PureModelContextData();
     model.elements = [database, packageableRuntime];
 
-    // query
-    const query = new V1_ClassInstance();
-    query.type = V1_ClassInstanceType.RELATION_STORE_ACCESSOR;
-    const storeAccessor = new V1_RelationStoreAccessor();
-    storeAccessor.path = [database.path, schema.name, table.name];
-    query.value = storeAccessor;
-
-    const cachedSource = new CachedDataCubeSource();
-    cachedSource.columns = source.columns;
-    cachedSource.query = query;
-    cachedSource.model = model;
-    cachedSource.runtime = packageableRuntime.path;
-    cachedSource.db = database.path;
-    cachedSource.schema = schema.name;
-    cachedSource.table = table.name;
-    cachedSource.count = rowCount;
-    return cachedSource;
-  }
-
-  override async disposeCache(source: CachedDataCubeSource) {
-    await this._cacheManager.disposeCache(source);
-  }
-
-  // ---------------------------------- UTILITIES ----------------------------------
-
-  private async _getQueryRelationType(
-    query: PlainObject<V1_Lambda>,
-    source: DataCubeSource,
-  ) {
-    if (source instanceof AdhocQueryDataCubeSource) {
-      return this._getLambdaRelationType(query, source.model);
-    } else if (source instanceof LegendQueryDataCubeSource) {
-      return this._getLambdaRelationType(query, source.model);
-    } else if (source instanceof CachedDataCubeSource) {
-      return this._getLambdaRelationType(query, serialize(source.model));
-    } else if (source instanceof CSVFileDataCubeSource) {
-      return this._getLambdaRelationType(query, serialize(source.model));
-    }
-    throw new UnsupportedOperationError(
-      `Can't get relation type for lambda with unsupported source`,
-    );
-  }
-
-  private async _getLambdaRelationType(
-    lambda: PlainObject<V1_Lambda>,
-    model: PlainObject<V1_PureModelContext>,
-  ) {
-    const relationType = deserialize(
-      V1_relationTypeModelSchema,
-      await this._engineServerClient.lambdaRelationType({
-        lambda,
-        model,
-      }),
-    );
     return {
-      columns: relationType.columns.map((column) => ({
-        name: column.name,
-        type: V1_getGenericTypeFullPath(column.genericType),
-      })),
+      model: V1_serializePureModelContextData(model),
+      database,
+      schema,
+      table,
+      runtime: packageableRuntime,
     };
-  }
-
-  private async _runQuery(
-    query: V1_Lambda,
-    model: PlainObject<V1_PureModelContext>,
-    parameterValues?: V1_ParameterValue[] | undefined,
-    options?: DataCubeExecutionOptions | undefined,
-  ): Promise<ExecutionResult> {
-    return V1_buildExecutionResult(
-      V1_deserializeExecutionResult(
-        (await this._engineServerClient.runQuery({
-          clientVersion:
-            options?.clientVersion ??
-            // eslint-disable-next-line no-process-env
-            (process.env.NODE_ENV === 'development'
-              ? PureClientVersion.VX_X_X
-              : undefined),
-          function: this.serializeValueSpecification(query),
-          model,
-          context: serialize(
-            V1_rawBaseExecutionContextModelSchema,
-            new V1_RawBaseExecutionContext(),
-          ),
-          parameterValues: (parameterValues ?? []).map((parameterValue) =>
-            serialize(V1_parameterValueModelSchema, parameterValue),
-          ),
-        })) as PlainObject<V1_ExecutionResult>,
-      ),
-    );
-  }
-
-  private async _generateExecutionPlan(
-    query: V1_Lambda,
-    model: V1_PureModelContext,
-    parameterValues?: V1_ParameterValue[] | undefined,
-    options?: DataCubeExecutionOptions | undefined,
-  ): Promise<V1_ExecutionPlan> {
-    return V1_deserializeExecutionPlan(
-      await this._engineServerClient.generatePlan({
-        clientVersion:
-          options?.clientVersion ??
-          // eslint-disable-next-line no-process-env
-          (process.env.NODE_ENV === 'development'
-            ? PureClientVersion.VX_X_X
-            : undefined),
-        function: this.serializeValueSpecification(query),
-        model: serialize(model),
-        context: serialize(
-          V1_rawBaseExecutionContextModelSchema,
-          new V1_RawBaseExecutionContext(),
-        ),
-        parameterValues: (parameterValues ?? []).map((parameterValue) =>
-          serialize(V1_parameterValueModelSchema, parameterValue),
-        ),
-      }),
-    );
   }
 
   // ---------------------------------- APPLICATION ----------------------------------

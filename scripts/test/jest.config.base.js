@@ -175,7 +175,7 @@ export const getBaseJestConfig = (isGlobal) => {
 };
 
 export const getBaseJestProjectConfig = (projectName, packageDir) => {
-  let testMatch = [];
+  const testMatch = [];
   if (!process.env.TEST_GROUP) {
     testMatch.push(
       `<rootDir>/${packageDir}/**/__tests__/**/*(*.)test.[jt]s?(x)`,

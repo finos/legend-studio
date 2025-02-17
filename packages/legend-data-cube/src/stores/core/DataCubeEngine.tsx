@@ -22,6 +22,7 @@ import {
   PRIMITIVE_TYPE,
   V1_deserializeValueSpecification,
   V1_serializeValueSpecification,
+  type V1_ExecuteInput,
 } from '@finos/legend-graph';
 import {
   getFilterOperation,
@@ -112,6 +113,11 @@ export type DataCubeExecutionResult = {
   executedSQL: string;
   executionTime: number;
 };
+
+export class DataCubeExecutionError extends Error {
+  executeInput?: PlainObject<V1_ExecuteInput> | undefined;
+  queryCode?: string | undefined;
+}
 
 /**
  * This is the base engine of DataCube, it provides capabilities that DataCube cannot itself
@@ -270,11 +276,6 @@ export abstract class DataCubeEngine {
     source: DataCubeSource,
   ): V1_AppliedFunction | undefined;
 
-  // ---------------------------------- FILE UPLOAD ------------------------------
-  async ingestFileData(csvString: string): Promise<DataCubeSource | undefined> {
-    return undefined;
-  }
-
   // ---------------------------------- CACHING ----------------------------------
 
   async initializeCache(
@@ -284,7 +285,9 @@ export abstract class DataCubeEngine {
     return undefined;
   }
 
-  async disposeCache(source: CachedDataCubeSource) {}
+  async disposeCache(source: CachedDataCubeSource) {
+    // do nothing
+  }
 
   // ---------------------------------- APPLICATION ----------------------------------
 
