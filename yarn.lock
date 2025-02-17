@@ -4584,12 +4584,12 @@ __metadata:
   linkType: hard
 
 "@octokit/endpoint@npm:^9.0.1":
-  version: 9.0.5
-  resolution: "@octokit/endpoint@npm:9.0.5"
+  version: 9.0.6
+  resolution: "@octokit/endpoint@npm:9.0.6"
   dependencies:
     "@octokit/types": "npm:^13.1.0"
     universal-user-agent: "npm:^6.0.0"
-  checksum: 10/212122f653bf076ec37dd7de44bd54db74aa3cd16be4c395c91444488331becd83351e26b30248168e2cc28fc07b1a96e8f74adbbab02826f76de92e069f391f
+  checksum: 10/2bf776423365ee926bf3f722a664e52f1070758eff4a176279fb132103fd0c76e3541f83ace49bbad9a64f9c9b8de453be565ca8d6136989e9514dea65380ecf
   languageName: node
   linkType: hard
 
