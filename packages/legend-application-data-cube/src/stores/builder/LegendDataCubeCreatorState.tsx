@@ -30,8 +30,11 @@ import {
 } from './source/LegendDataCubeSourceBuilderState.js';
 import {
   type DataCubeAlertService,
-  DEFAULT_TOOL_PANEL_WINDOW_CONFIG,
   type DisplayState,
+  AlertType,
+  DataCubeSpecification,
+  DEFAULT_ALERT_WINDOW_CONFIG,
+  DEFAULT_TOOL_PANEL_WINDOW_CONFIG,
 } from '@finos/legend-data-cube';
 import type { LegendDataCubeDataCubeEngine } from '../LegendDataCubeDataCubeEngine.js';
 import { LegendDataCubeCreator } from '../../components/builder/LegendDataCubeCreator.js';
@@ -138,9 +141,40 @@ export class LegendDataCubeCreatorState {
 
     this.finalizeState.inProgress();
     try {
-      const specification = await this._engine.generateBaseSpecification(
-        sourceData ?? (await this.sourceBuilder.generateSourceData()),
-      );
+      let specification: DataCubeSpecification;
+      try {
+        specification = await this._engine.generateBaseSpecification(
+          sourceData ?? (await this.sourceBuilder.generateSourceData()),
+        );
+      } catch (e) {
+        this._alertService.alert({
+          message: `Convert to Relation protocol?`,
+          text: 'Your saved query might not be returning a relation (i.e., typed TDS). Would you like to try converting your query to use the new relation protocol? Without converting, you will be unable to use your query in DataCube.',
+          type: AlertType.ERROR,
+          actions: [
+            {
+              label: 'No',
+              handler: () => {},
+            },
+            {
+              label: 'Yes',
+              handler: () => {
+                // TODO: call new protocol conversion API here
+              },
+            },
+          ],
+          windowConfig: {
+            ...DEFAULT_ALERT_WINDOW_CONFIG,
+            width: 600,
+            height: 300,
+            minWidth: 300,
+            minHeight: 150,
+          },
+        });
+        this.finalizeState.fail();
+        return;
+      }
+
       if (specification.configuration) {
         this.sourceBuilder.finalizeConfiguration(specification.configuration);
       }
