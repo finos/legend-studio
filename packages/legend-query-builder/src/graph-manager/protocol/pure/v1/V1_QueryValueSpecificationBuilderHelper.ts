@@ -1296,7 +1296,8 @@ export const V1_buildTypedGroupByFunctionExpression = (
       );
       pColSpec.function2 = reduceLambda;
 
-      // For now, we just get the return type of the column in the preceding project function.
+      // For now, we temporarily set the return type of the column in the groupBy() expression to be
+      // the same as the return type of the column in the preceding project() expression.
       // The actual return type for the groupBy() expression will be determined when we process/build the graph.
       const returnType = projectRelationReturnType.columns.find(
         (_column) => _column.name === colSpec.name,
