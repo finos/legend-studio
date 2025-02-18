@@ -419,8 +419,19 @@ class V1_ValueSpecificationTransformer
           this.useAppliedFunction,
         ),
       );
+      const fun2 = col.function2?.accept_ValueSpecificationVisitor(
+        new V1_ValueSpecificationTransformer(
+          this.inScope,
+          this.open,
+          this.isParameter,
+          this.useAppliedFunction,
+        ),
+      );
       if (fun1) {
         colProtocol.function1 = guaranteeType(fun1, V1_Lambda);
+      }
+      if (fun2) {
+        colProtocol.function2 = guaranteeType(fun2, V1_Lambda);
       }
       return colProtocol;
     });
@@ -444,8 +455,19 @@ class V1_ValueSpecificationTransformer
         this.useAppliedFunction,
       ),
     );
+    const fun2 = val.function2?.accept_ValueSpecificationVisitor(
+      new V1_ValueSpecificationTransformer(
+        this.inScope,
+        this.open,
+        this.isParameter,
+        this.useAppliedFunction,
+      ),
+    );
     if (fun1) {
       colProtocol.function1 = guaranteeType(fun1, V1_Lambda);
+    }
+    if (fun2) {
+      colProtocol.function2 = guaranteeType(fun1, V1_Lambda);
     }
     classInstance.value = colProtocol;
     return classInstance;

@@ -124,6 +124,7 @@ const TEST_CASES: QueryTestCase[] = [
     queryGrammar:
       "|showcase::northwind::model::crm::Customer.all()->filter(x|$x.companyTitle == 'company title')->project(~['Company Name':x|$x.companyName, 'Company Title':x|$x.companyTitle])->filter(row|$row.'Company Name' == 'company name')",
   },
+  // result modifier
   {
     testName: '[LEGACY] Result Modifier: Sort',
     model: 'Northwind',
@@ -153,12 +154,41 @@ const TEST_CASES: QueryTestCase[] = [
     convertedRelation:
       "|showcase::northwind::model::crm::Customer.all()->filter(x|$x.companyTitle == 'company title')->project(~['Company Name':x|$x.companyName, 'Company Title':x|$x.companyTitle])->filter(row|$row.'Company Name' == 'company name')",
   },
-  //aggregation
+  // aggregation
   {
-    testName: '[AGGREGATION] Simple wavg query',
+    testName: '[LEGACY AGGREGATION] Simple wavg query',
     model: 'Northwind',
     queryGrammar:
       "|showcase::northwind::model::OrderLineItem.all()->groupBy([], [agg(x|$x.quantity->meta::pure::functions::math::wavgUtility::wavgRowMapper($x.unitPrice), y|$y->wavg())], ['Quantity (wavg)'])",
+  },
+  {
+    testName: '[LEGACY AGGREGATION] Simple group by count query',
+    model: 'Northwind',
+    queryGrammar:
+      "|showcase::northwind::model::Order.all()->groupBy([x|$x.shipToName], [agg(x|$x.id,x|$x->count())], ['Ship To Name','Id (count)'])",
+    convertedRelation:
+      "|showcase::northwind::model::Order.all()->project(~['Ship To Name':x|$x.shipToName, 'Id (count)':x|$x.id])->groupBy(~['Ship To Name'], ~['Id (count)':x|$x.'Id (count)':x|$x->count()])",
+  },
+  {
+    testName: '[AGGREGATION] Group by count query with nested property',
+    model: 'Northwind',
+    queryGrammar:
+      "|showcase::northwind::model::Order.all()->project(~['Ship To Name':x|$x.shipToName, 'Customer/Id (count)':x|$x.customer.id])->groupBy(~['Ship To Name'], ~['Customer/Id (count)':x|$x.'Customer/Id (count)':x|$x->count()])",
+  },
+  {
+    testName:
+      '[AGGREGATION] Group by count query with pre-filter and post-filter',
+    model: 'Northwind',
+    queryGrammar:
+      "|showcase::northwind::model::Order.all()->filter(x|$x.shipToName == 'test')->project(~['Ship To Name':x|$x.shipToName, 'Id (count)':x|$x.id])->groupBy(~['Ship To Name'], ~['Id (count)':x|$x.'Id (count)':x|$x->count()])->filter(row|$row.'Id (count)' >= 5)",
+  },
+  {
+    testName:
+      '[AGGREGATION] Group by count query with post-filter before groupBy',
+    model: 'Northwind',
+    queryGrammar:
+      "|showcase::northwind::model::Order.all()->project(~['Ship To Name':x|$x.shipToName, 'Id (count)':x|$x.id])->filter(row|$row.'Id (count)' >= 5)->groupBy(~['Ship To Name'], ~['Id (count)':x|$x.'Id (count)':x|$x->count()])",
+    isUnsupported: true,
   },
 ];
 

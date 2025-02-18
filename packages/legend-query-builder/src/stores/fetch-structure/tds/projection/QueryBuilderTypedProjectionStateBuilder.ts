@@ -89,15 +89,14 @@ export const processTypedTDSProjectExpression = (
 export const isTypedProjectionExpression = (
   expression: SimpleFunctionExpression,
 ): boolean => {
-  if (
-    matchFunctionName(expression.functionName, [
+  return (
+    expression.functionName ===
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_PROJECT ||
+    (matchFunctionName(expression.functionName, [
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_PROJECT,
-    ])
-  ) {
-    if (expression.parametersValues.length === 2) {
-      return expression.parametersValues[1] instanceof ColSpecArrayInstance;
-    }
-  }
-  return false;
+    ]) &&
+      expression.parametersValues.length === 2 &&
+      expression.parametersValues[1] instanceof ColSpecArrayInstance)
+  );
 };

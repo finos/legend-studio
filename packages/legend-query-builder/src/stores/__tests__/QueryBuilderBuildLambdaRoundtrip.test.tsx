@@ -40,6 +40,7 @@ import {
   TEST_DATA_simpleTypedRelationProjection,
   TEST_DATA__projectionWithPercentileAggregation,
   TEST_DATA__projectionWithWAVGAggregation,
+  TEST_DATA__simpleTypedRelationAggregation,
 } from './TEST_DATA__QueryBuilder_Generic.js';
 import TEST_DATA__ComplexRelationalModel from './TEST_DATA__QueryBuilder_Model_ComplexRelational.json' with { type: 'json' };
 import TEST_DATA__ComplexM2MModel from './TEST_DATA__QueryBuilder_Model_ComplexM2M.json' with { type: 'json' };
@@ -96,6 +97,7 @@ import {
   TEST_DATA__lambda_postFilterWithRightValAsColEnums,
   TEST_DATA_lambda__postFilterOnAggregatedColWithDerivation,
   TEST_DATA__lambda_postFilterWithRightValAsWindowFunctionCol,
+  TEST_DATA__lambda_typedAggregationPostFilter,
 } from './TEST_DATA__QueryBuilder_Roundtrip_TestPostFilterQueries.js';
 import { INTERNAL__BasicQueryBuilderState } from '../QueryBuilderState.js';
 import {
@@ -291,6 +293,12 @@ const cases: RoundtripTestCase[] = [
     TEST_DATA__projectionWithWAVGAggregation,
     undefined,
   ],
+  [
+    'Projection column with simple count aggregation (relation)',
+    projectionCtx,
+    TEST_DATA__simpleTypedRelationAggregation,
+    undefined,
+  ],
   // graph fetch
   ['Simple graph fetch', graphFetchCtx, TEST_DATA__simpleGraphFetch, undefined],
   [
@@ -478,6 +486,12 @@ const cases: RoundtripTestCase[] = [
     'Post-filter on aggregation column',
     postFilterCtx,
     TEST_DATA__lambda_aggregationPostFilter,
+    undefined,
+  ],
+  [
+    'Post-filter on aggregation column (relation)',
+    projectionCtx,
+    TEST_DATA__lambda_typedAggregationPostFilter,
     undefined,
   ],
   [

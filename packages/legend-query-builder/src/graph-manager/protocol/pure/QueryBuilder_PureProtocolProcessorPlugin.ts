@@ -21,11 +21,11 @@ import {
   V1_buildGetAllFunctionExpression,
   V1_buildGetAllVersionsFunctionExpression,
   V1_buildGetAllVersionsInRangeFunctionExpression,
-  V1_buildGroupByFunctionExpression,
   V1_buildOLAPGroupByFunctionExpression,
   V1_buildProjectFunctionExpression,
   V1_buildSubTypePropertyExpressionTypeInference,
   V1_buildWatermarkFunctionExpression,
+  V1_buildGroupByFunctionExpression,
 } from './v1/V1_QueryValueSpecificationBuilderHelper.js';
 import {
   type V1_GraphBuilderContext,
@@ -159,10 +159,10 @@ export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProces
             processingContext,
           );
         } else if (
-          matchFunctionName(
-            functionName,
+          matchFunctionName(functionName, [
             QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
-          )
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_GROUP_BY,
+          ])
         ) {
           return V1_buildGroupByFunctionExpression(
             functionName,

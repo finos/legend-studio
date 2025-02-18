@@ -38,6 +38,7 @@ export class ColSpec implements Hashable {
       CORE_HASH_STRUCTURE.RELATION_COL_SPEC,
       this.name,
       this.function1 ?? '',
+      this.function2 ?? '',
     ]);
   }
 }

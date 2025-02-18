@@ -126,6 +126,7 @@ export enum QUERY_BUILDER_SUPPORTED_FUNCTIONS {
   RELATION_DISTINCT = 'meta::pure::functions::relation::distinct',
   RELATION_SORT = 'meta::pure::functions::relation::sort',
   RELATION_SLICE = 'meta::pure::functions::relation::slice',
+  RELATION_GROUP_BY = 'meta::pure::functions::relation::groupBy',
   // filter
   CONTAINS = 'meta::pure::functions::string::contains',
   ENDS_WITH = 'meta::pure::functions::string::endsWith',
