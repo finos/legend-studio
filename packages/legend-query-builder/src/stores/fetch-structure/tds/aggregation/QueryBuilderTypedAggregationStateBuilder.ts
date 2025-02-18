@@ -142,6 +142,7 @@ export const processTypedAggregationColSpec = (
         aggregationState.addColumn(aggregateColumnState);
 
         // Update parent groupBy() expression's return type with this column's return type
+        // (a temporary return type was set when we processed the groupBy() protocol)
         const parentGroupByRelationType = guaranteeType(
           parentExpression?.genericType?.value.typeArguments?.[0]?.value
             .rawType,
