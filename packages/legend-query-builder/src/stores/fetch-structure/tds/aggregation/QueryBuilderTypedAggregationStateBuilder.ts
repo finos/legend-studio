@@ -222,15 +222,14 @@ export const processTypedGroupByExpression = (
 export const isTypedGroupByExpression = (
   expression: SimpleFunctionExpression,
 ): boolean => {
-  if (
-    matchFunctionName(expression.functionName, [
+  return (
+    expression.functionName ===
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_GROUP_BY ||
+    (matchFunctionName(expression.functionName, [
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_GROUP_BY,
-    ])
-  ) {
-    if (expression.parametersValues.length === 3) {
-      return expression.parametersValues[1] instanceof ColSpecArrayInstance;
-    }
-  }
-  return false;
+    ]) &&
+      expression.parametersValues.length === 3 &&
+      expression.parametersValues[1] instanceof ColSpecArrayInstance)
+  );
 };
