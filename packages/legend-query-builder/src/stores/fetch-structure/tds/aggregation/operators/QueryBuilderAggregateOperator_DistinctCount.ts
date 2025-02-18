@@ -26,10 +26,10 @@ import {
   type Type,
   Enumeration,
   Multiplicity,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import {
   assertTrue,
-  guaranteeNonNullable,
   guaranteeType,
   type Hashable,
   hashArray,
@@ -42,7 +42,6 @@ import {
 } from '../../projection/QueryBuilderProjectionColumnState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graph/QueryBuilderMetaModelConst.js';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../../../QueryBuilderStateHashUtils.js';
-import { getNumericAggregateOperatorReturnType } from '../../../../../graph-manager/helpers/QueryBuilderAggregateOperatorHelper.js';
 
 export class QueryBuilderAggregateOperator_DistinctCount
   extends QueryBuilderAggregateOperator
@@ -171,11 +170,7 @@ export class QueryBuilderAggregateOperator_DistinctCount
   override getReturnType(
     aggregateColumnState: QueryBuilderAggregateColumnState,
   ): Type {
-    return guaranteeNonNullable(
-      getNumericAggregateOperatorReturnType(
-        QUERY_BUILDER_SUPPORTED_FUNCTIONS.COUNT,
-      ),
-    );
+    return PrimitiveType.INTEGER;
   }
 
   get hashCode(): string {

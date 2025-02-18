@@ -74,7 +74,6 @@ import {
   QUERY_BUILDER_SUPPORTED_CALENDAR_AGGREGATION_FUNCTIONS,
 } from '../../../../graph/QueryBuilderMetaModelConst.js';
 import { QUERY_BUILDER_CALENDAR_TYPE } from '../../../QueryBuilderConst.js';
-import { getNumericAggregateOperatorReturnType } from '../../../helpers/QueryBuilderAggregateOperatorHelper.js';
 
 const buildProjectionColumnLambda = (
   valueSpecification: V1_ValueSpecification,
@@ -1139,6 +1138,38 @@ export const V1_buildTDSGroupByFunctionExpression = (
   );
 
   return expression;
+};
+
+const getNumericAggregateOperatorReturnType = (
+  aggregateOperator: string,
+): Type | undefined => {
+  if (
+    matchFunctionName(aggregateOperator, [
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.AVERAGE,
+    ])
+  ) {
+    return PrimitiveType.FLOAT;
+  } else if (
+    matchFunctionName(aggregateOperator, [
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.COUNT,
+    ])
+  ) {
+    return PrimitiveType.INTEGER;
+  } else if (
+    matchFunctionName(aggregateOperator, [
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.JOIN_STRINGS,
+    ])
+  ) {
+    return PrimitiveType.STRING;
+  } else if (
+    matchFunctionName(aggregateOperator, [
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.STD_DEV_POPULATION,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.STD_DEV_SAMPLE,
+    ])
+  ) {
+    return PrimitiveType.NUMBER;
+  }
+  return undefined;
 };
 
 export const V1_buildTypedGroupByFunctionExpression = (
