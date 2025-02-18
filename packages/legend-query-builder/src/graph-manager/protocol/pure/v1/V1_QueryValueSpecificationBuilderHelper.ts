@@ -1374,7 +1374,10 @@ export const V1_buildGroupByFunctionExpression = (
   compileContext: V1_GraphBuilderContext,
   processingContext: V1_ProcessingContext,
 ): SimpleFunctionExpression => {
-  if (parameters.length === 3) {
+  if (
+    functionName === QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_GROUP_BY ||
+    parameters.length === 3
+  ) {
     return V1_buildTypedGroupByFunctionExpression(
       functionName,
       parameters,
