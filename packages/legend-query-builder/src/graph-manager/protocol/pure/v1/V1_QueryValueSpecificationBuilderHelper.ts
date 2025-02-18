@@ -1195,7 +1195,7 @@ export const V1_buildTypedGroupByFunctionExpression = (
   );
   assertNonNullable(
     precedingExpression.genericType,
-    `Can't build groupBy() expression: preceding expression return type is missing`,
+    `Can't build relation groupBy() expression: preceding expression return type is missing`,
   );
 
   // Assert that preceding function is a project() function
