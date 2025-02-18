@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.1.6
+
+### Patch Changes
+
+- [#3892](https://github.com/finos/legend-studio/pull/3892) [`db7ebfb`](https://github.com/finos/legend-studio/commit/db7ebfbedeafe49e3761b7c3f00513ab1578506f) ([@travisstebbins](https://github.com/travisstebbins)) - Ensure function2 is handled in ColSpec ValueSpecification
+
 ## 32.1.5
 
 ## 32.1.4
