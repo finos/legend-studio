@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.16.8
+
+### Patch Changes
+
+- [#3892](https://github.com/finos/legend-studio/pull/3892) [`db7ebfb`](https://github.com/finos/legend-studio/commit/db7ebfbedeafe49e3761b7c3f00513ab1578506f) ([@travisstebbins](https://github.com/travisstebbins)) - Add support for TDS v2 (relation) groupBy in QueryBuilder
+
 ## 4.16.7
 
 ## 4.16.6
