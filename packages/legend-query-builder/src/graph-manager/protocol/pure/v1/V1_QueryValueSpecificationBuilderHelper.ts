@@ -1140,38 +1140,6 @@ export const V1_buildTDSGroupByFunctionExpression = (
   return expression;
 };
 
-const getNumericAggregateOperatorReturnType = (
-  aggregateOperator: string,
-): Type | undefined => {
-  if (
-    matchFunctionName(aggregateOperator, [
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.AVERAGE,
-    ])
-  ) {
-    return PrimitiveType.FLOAT;
-  } else if (
-    matchFunctionName(aggregateOperator, [
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.COUNT,
-    ])
-  ) {
-    return PrimitiveType.INTEGER;
-  } else if (
-    matchFunctionName(aggregateOperator, [
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.JOIN_STRINGS,
-    ])
-  ) {
-    return PrimitiveType.STRING;
-  } else if (
-    matchFunctionName(aggregateOperator, [
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.STD_DEV_POPULATION,
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.STD_DEV_SAMPLE,
-    ])
-  ) {
-    return PrimitiveType.NUMBER;
-  }
-  return undefined;
-};
-
 export const V1_buildTypedGroupByFunctionExpression = (
   functionName: string,
   parameters: V1_ValueSpecification[],
@@ -1328,20 +1296,17 @@ export const V1_buildTypedGroupByFunctionExpression = (
       );
       pColSpec.function2 = reduceLambda;
 
-      // Try to get the return type of the reduce (aggregation) function. If it's numeric, use the getNumericAggregateOperatorReturnType
-      // helper function. Otherwise, use the same return type as the column in the preceding project function.
-      const aggregationFunctionName = guaranteeType(
-        reduceLambda.values[0]?.expressionSequence[0],
-        SimpleFunctionExpression,
-        `Can't build relation col spec() expression: expects function2 expression sequence to be a SimpleFunctionExpression`,
-      ).functionName;
-      const returnType =
-        getNumericAggregateOperatorReturnType(aggregationFunctionName) ??
-        projectRelationReturnType.columns.find(
-          (_column) => _column.name === colSpec.name,
-        )?.type;
+      // For now, we just get the return type of the column in the preceding project function.
+      // The actual return type for the groupBy() expression will be determined when we process/build the graph.
+      const returnType = projectRelationReturnType.columns.find(
+        (_column) => _column.name === colSpec.name,
+      )?.type;
       if (returnType) {
         relationType.columns.push(new RelationColumn(colSpec.name, returnType));
+      } else {
+        throw new UnsupportedOperationError(
+          `Unable to find projected column with name ${colSpec.name}`,
+        );
       }
 
       return pColSpec;

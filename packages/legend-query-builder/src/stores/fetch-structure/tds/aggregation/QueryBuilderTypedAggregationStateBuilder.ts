@@ -20,6 +20,7 @@ import {
   ColSpecArrayInstance,
   LambdaFunctionInstanceValue,
   matchFunctionName,
+  RelationType,
   SimpleFunctionExpression,
   VariableExpression,
 } from '@finos/legend-graph';
@@ -139,6 +140,22 @@ export const processTypedAggregationColSpec = (
       }
       if (aggregateColumnState) {
         aggregationState.addColumn(aggregateColumnState);
+
+        // Update parent groupBy() expression's return type with this column's return type
+        const parentGroupByRelationType = guaranteeType(
+          parentExpression?.genericType?.value.typeArguments?.[0]?.value
+            .rawType,
+          RelationType,
+          `Can't process colSpec: parent groupBy() expression's return type is not a relation`,
+        );
+        const relationTypeColumn = guaranteeNonNullable(
+          parentGroupByRelationType.columns.find(
+            (_column) => _column.name === colSpec.name,
+          ),
+          `Can't process colSpec: Can't find column '${colSpec.name}' in parent groupBy() expression's relation return type`,
+        );
+        relationTypeColumn.type =
+          aggregateColumnState.getColumnType() ?? relationTypeColumn.type;
         return;
       }
     }
