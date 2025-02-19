@@ -84,6 +84,7 @@ import {
   V1_deserializeValueSpecification,
   LET_TOKEN,
   V1_AppliedFunction,
+  V1_RawLambda,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
@@ -138,6 +139,7 @@ import {
   LocalFileDataCubeSource,
   RawLocalFileQueryDataCubeSource,
 } from './model/LocalFileDataCubeSource.js';
+import { V1_LambdaTdsToRelationInput } from '@finos/legend-graph/src/graph-manager/protocol/pure/v1/engine/pureProtocol/V1_LambdaTdsToRelationInput.js';
 
 export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   private readonly _application: LegendDataCubeApplicationStore;
@@ -1062,6 +1064,91 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       table,
       runtime: packageableRuntime,
     };
+  }
+
+  private async processLegendQuerySource(
+    value: PlainObject,
+  ): Promise<LegendQueryDataCubeSource> {
+    const rawSource =
+      RawLegendQueryDataCubeSource.serialization.fromJson(value);
+    const queryInfo = await this._graphManager.getQueryInfo(rawSource.queryId);
+    const executionContext =
+      await this._graphManager.resolveQueryInfoExecutionContext(queryInfo, () =>
+        this._depotServerClient.getVersionEntities(
+          queryInfo.groupId,
+          queryInfo.artifactId,
+          queryInfo.versionId,
+        ),
+      );
+    const source = new LegendQueryDataCubeSource();
+    source.info = queryInfo;
+
+    source.lambda = guaranteeType(
+      this.deserializeValueSpecification(
+        await this._engineServerClient.grammarToJSON_lambda(
+          queryInfo.content,
+          '',
+          undefined,
+          undefined,
+          false,
+        ),
+      ),
+      V1_Lambda,
+    );
+    source.mapping = executionContext.mapping;
+    source.runtime = executionContext.runtime;
+    source.model = V1_serializePureModelContext(
+      new V1_PureModelContextPointer(
+        // TODO: remove as backend should handle undefined protocol input
+        new V1_Protocol(
+          V1_PureGraphManager.PURE_PROTOCOL_NAME,
+          PureClientVersion.VX_X_X,
+        ),
+        new V1_LegendSDLC(
+          queryInfo.groupId,
+          queryInfo.artifactId,
+          resolveVersion(queryInfo.versionId),
+        ),
+      ),
+    );
+    source.query = at(source.lambda.body, 0);
+    // use the default parameter values from the query
+    //
+    // TODO?: we should probably allow configuring the parameters?
+    // this would mean we need to create first-class support for parameters in DataCube component
+    const parameterValues = await Promise.all(
+      source.lambda.parameters.map(async (parameter) => {
+        if (parameter.genericType?.rawType instanceof V1_PackageableType) {
+          const paramValue = new V1_ParameterValue();
+          paramValue.name = parameter.name;
+          const type = parameter.genericType.rawType.fullPath;
+          const defaultValue = queryInfo.defaultParameterValues?.find(
+            (val) => val.name === parameter.name,
+          )?.content;
+          paramValue.value =
+            defaultValue !== undefined
+              ? await this.parseValueSpecification(defaultValue)
+              : {
+                  _type: V1_deserializeRawValueSpecificationType(type),
+                  value: _defaultPrimitiveTypeValue(type),
+                };
+          return paramValue;
+        }
+        return undefined;
+      }),
+    );
+    source.parameterValues = parameterValues.filter(isNonNullable);
+
+    return source;
+  }
+
+  async transformTdsToRelationProtocol(
+    value: LegendQueryDataCubeSource,
+  ): V1_RawLambda {
+    const input = new V1_LambdaTdsToRelationInput();
+    input.lambda = value.lambda;
+    input.pureModelContext = value.model;
+    return this._engineServerClient.transformTdsToRelation_lambda(input);
   }
 
   // ---------------------------------- APPLICATION ----------------------------------
