@@ -30,6 +30,7 @@ import {
   csvStringify,
   guaranteeNonNullable,
   UnsupportedOperationError,
+  uuid,
 } from '@finos/legend-shared';
 import type { CachedDataCubeSource } from '@finos/legend-data-cube';
 import { Type } from 'apache-arrow';
@@ -48,6 +49,10 @@ export class LegendDataCubeDuckDBEngine {
   // Options for creating csv using papa parser: https://www.papaparse.com/docs#config
   private static readonly ESCAPE_CHAR = `'`;
   private static readonly QUOTE_CHAR = `'`;
+  private static dbReferenceMap: Map<
+    string,
+    { schemaName: string; tableName: string; tableSpec: unknown[][] }
+  > = new Map();
 
   private _database?: duckdb.AsyncDuckDB | undefined;
 
@@ -55,6 +60,13 @@ export class LegendDataCubeDuckDBEngine {
     return guaranteeNonNullable(
       this._database,
       `Cache manager database not initialized`,
+    );
+  }
+
+  static getTableDetailsByReference(ref: string) {
+    return guaranteeNonNullable(
+      LegendDataCubeDuckDBEngine.dbReferenceMap.get(ref),
+      `Can't find reference ${ref}`,
     );
   }
 
@@ -128,6 +140,7 @@ export class LegendDataCubeDuckDBEngine {
   }
 
   async ingestLocalFileData(data: string, format: string) {
+    LegendDataCubeDuckDBEngine.dbReferenceMap.clear();
     const schema = LegendDataCubeDuckDBEngine.DUCKDB_DEFAULT_SCHEMA_NAME;
     LegendDataCubeDuckDBEngine.ingestFileTableCounter += 1;
     const table = `${LegendDataCubeDuckDBEngine.INGEST_TABLE_NAME_PREFIX}${LegendDataCubeDuckDBEngine.ingestFileTableCounter}`;
@@ -166,7 +179,14 @@ export class LegendDataCubeDuckDBEngine {
       ]);
     await connection.close();
 
-    return { schema, table, tableSpec };
+    const ref = uuid();
+    LegendDataCubeDuckDBEngine.dbReferenceMap.set(ref, {
+      schemaName: schema,
+      tableName: table,
+      tableSpec,
+    });
+
+    return { dbReference: ref };
   }
 
   async runSQLQuery(sql: string) {

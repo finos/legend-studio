@@ -17,7 +17,7 @@
 import {
   ActionState,
   csvStringify,
-  guaranteeType,
+  guaranteeNonNullable,
   IllegalStateError,
   parseCSVFile,
   type PlainObject,
@@ -30,7 +30,6 @@ import type { LegendDataCubeApplicationStore } from '../../LegendDataCubeBaseSto
 import { action, makeObservable, observable } from 'mobx';
 import type { LegendDataCubeDataCubeEngine } from '../../LegendDataCubeDataCubeEngine.js';
 import {
-  LocalFileDataCubeSource,
   LocalFileDataCubeSourceFormat,
   RawLocalFileQueryDataCubeSource,
 } from '../../model/LocalFileDataCubeSource.js';
@@ -39,7 +38,7 @@ export class LocalFileDataCubeSourceBuilderState extends LegendDataCubeSourceBui
   readonly processState = ActionState.create();
 
   fileName?: string | undefined;
-  fileFormat?: string | undefined;
+  fileFormat?: LocalFileDataCubeSourceFormat | undefined;
   // NOTE: type string is suitable for CSV/Excel, etc. but will not be appropriate
   // for other format that we want to support, e.g. arrow/parquet
   fileData?: string | undefined;
@@ -74,7 +73,7 @@ export class LocalFileDataCubeSourceBuilderState extends LegendDataCubeSourceBui
     this.fileName = fileName;
   }
 
-  setFileFormat(format: string | undefined) {
+  setFileFormat(format: LocalFileDataCubeSourceFormat | undefined) {
     this.fileFormat = format;
   }
 
@@ -114,7 +113,7 @@ export class LocalFileDataCubeSourceBuilderState extends LegendDataCubeSourceBui
               csvStringify(result.data, { escapeChar: `'`, quoteChar: `'` }),
             );
             this.setFileName(fileName);
-            this.setFileFormat(fileFormat);
+            this.setFileFormat(LocalFileDataCubeSourceFormat.CSV);
             this.setRowCount(result.data.length);
             this.setPreviewText(
               csvStringify(result.data.slice(0, 100), {
@@ -160,19 +159,15 @@ export class LocalFileDataCubeSourceBuilderState extends LegendDataCubeSourceBui
       );
     }
 
-    const source = guaranteeType(
+    const dbReference = guaranteeNonNullable(
       await this._engine.ingestLocalFileData(this.fileData, this.fileFormat),
-      LocalFileDataCubeSource,
-      `Can't generate data source`,
+      `Can't generate reference for local file source`,
     );
     const rawSource = new RawLocalFileQueryDataCubeSource();
-    rawSource.count = this.rowCount;
     rawSource.fileName = this.fileName;
-    rawSource.db = source.db;
-    rawSource.model = source.model;
-    rawSource.schema = source.schema;
-    rawSource.table = source.table;
-    rawSource.runtime = source.runtime;
+    rawSource.fileFormat = this.fileFormat;
+    rawSource.dbReference = dbReference;
+    rawSource.count = this.rowCount;
 
     return RawLocalFileQueryDataCubeSource.serialization.toJson(rawSource);
   }
