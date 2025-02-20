@@ -243,7 +243,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
 
   transformTdsToRelation_lambda = (
     input: PlainObject<V1_LambdaTdsToRelationInput>,
-  ) =>
+  ): Promise<PlainObject<V1_RawLambda>> =>
     this.post(
       `${this._pure()}/protocol/pure/transformTdsToRelation/lambda`,
       input,

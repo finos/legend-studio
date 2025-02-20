@@ -158,8 +158,11 @@ export class LegendDataCubeCreatorState {
             },
             {
               label: 'Yes',
-              handler: () => {
-                // TODO: call new protocol conversion API here
+              handler: async () => {
+                console.log('about to call transformTdsToRelationProtocol');
+                this._engine.transformTdsToRelationProtocol(
+                  sourceData ?? (await this.sourceBuilder.generateSourceData()),
+                );
               },
             },
           ],

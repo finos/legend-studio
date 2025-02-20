@@ -75,6 +75,7 @@ import {
   V1_BigInt,
   V1_Decimal,
   V1_Double,
+  V1_LambdaTdsToRelationInput,
   V1_Timestamp,
   V1_TinyInt,
   V1_SmallInt,
@@ -84,6 +85,7 @@ import {
   V1_deserializeValueSpecification,
   LET_TOKEN,
   V1_AppliedFunction,
+  V1_serializeLambdaTdsToRelationInput,
   V1_RawLambda,
 } from '@finos/legend-graph';
 import {
@@ -139,7 +141,6 @@ import {
   LocalFileDataCubeSource,
   RawLocalFileQueryDataCubeSource,
 } from './model/LocalFileDataCubeSource.js';
-import { V1_LambdaTdsToRelationInput } from '@finos/legend-graph/src/graph-manager/protocol/pure/v1/engine/pureProtocol/V1_LambdaTdsToRelationInput.js';
 
 export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   private readonly _application: LegendDataCubeApplicationStore;
@@ -1142,13 +1143,46 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     return source;
   }
 
-  async transformTdsToRelationProtocol(
-    value: LegendQueryDataCubeSource,
-  ): V1_RawLambda {
+  async transformTdsToRelationProtocol(value: PlainObject): Promise<V1_Lambda> {
+    const rawSource =
+      RawLegendQueryDataCubeSource.serialization.fromJson(value);
+    const queryInfo = await this._graphManager.getQueryInfo(rawSource.queryId);
+    const model = new V1_PureModelContextPointer(
+      // TODO: remove as backend should handle undefined protocol input
+      new V1_Protocol(
+        V1_PureGraphManager.PURE_PROTOCOL_NAME,
+        PureClientVersion.VX_X_X,
+      ),
+      new V1_LegendSDLC(
+        queryInfo.groupId,
+        queryInfo.artifactId,
+        resolveVersion(queryInfo.versionId),
+      ),
+    );
+    const lambda = guaranteeType(
+      this.deserializeValueSpecification(
+        await this._engineServerClient.grammarToJSON_lambda(
+          queryInfo.content,
+          '',
+          undefined,
+          undefined,
+          false,
+        ),
+      ),
+      V1_Lambda,
+    );
     const input = new V1_LambdaTdsToRelationInput();
-    input.lambda = value.lambda;
-    input.pureModelContext = value.model;
-    return this._engineServerClient.transformTdsToRelation_lambda(input);
+    input.model = model;
+    input.lambda = lambda;
+    console.log('transformTdsToRelationProtocol input:', input);
+    return guaranteeType(
+      this.deserializeValueSpecification(
+        await this._engineServerClient.transformTdsToRelation_lambda(
+          V1_serializeLambdaTdsToRelationInput(input, []),
+        ),
+      ),
+      V1_Lambda,
+    );
   }
 
   // ---------------------------------- APPLICATION ----------------------------------
