@@ -27,6 +27,7 @@ import {
   type V1_ValueSpecification,
   type ParameterValue,
   LAMBDA_PIPE,
+  reportGraphAnalytics,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
@@ -41,8 +42,11 @@ import {
   guaranteeType,
   isNonNullable,
   LogService,
+  StopWatch,
   type PlainObject,
 } from '@finos/legend-shared';
+import { QueryBuilderTelemetryHelper } from '../../__lib__/QueryBuilderTelemetryHelper.js';
+import type { QueryBuilderState } from '../QueryBuilderState.js';
 
 class QueryBuilderDataCubeSource extends DataCubeSource {
   mapping?: string | undefined;
@@ -52,6 +56,7 @@ class QueryBuilderDataCubeSource extends DataCubeSource {
 export class QueryBuilderDataCubeEngine extends DataCubeEngine {
   readonly logService = new LogService();
   readonly graphState: GraphManagerState;
+  readonly queryBuilderState: QueryBuilderState | undefined;
   readonly selectInitialQuery: RawLambda;
   readonly mappingPath: string | undefined;
   readonly parameterValues: ParameterValue[] | undefined;
@@ -64,10 +69,12 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     mappingPath: string | undefined,
     runtimePath: string | undefined,
     graphManagerState: GraphManagerState,
+    queryBuilderState?: QueryBuilderState,
   ) {
     super();
 
     this.graphState = graphManagerState;
+    this.queryBuilderState = queryBuilderState;
     this.selectInitialQuery = selectQuery;
     this.mappingPath = mappingPath;
     this.runtimePath = runtimePath;
@@ -158,7 +165,7 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
   }
 
   override async executeQuery(query: V1_Lambda, source: DataCubeSource) {
-    const startTime = performance.now();
+    const stopWatch = new StopWatch();
     const lambda = this.buildRawLambdaFromValueSpec(query);
     lambda.parameters = this.parameters;
     const [executionWithMetadata, queryString] = await Promise.all([
@@ -173,7 +180,7 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
       ),
       this.graphState.graphManager.lambdaToPureCode(lambda),
     ]);
-    const endTime = performance.now();
+    const elapsed = stopWatch.elapsed;
     const expectedTDS = guaranteeType(
       executionWithMetadata.executionResult,
       TDSExecutionResult,
@@ -184,11 +191,30 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     if (sql instanceof RelationalExecutionActivities) {
       sqlString = sql.sql;
     }
+
+    if (this.queryBuilderState) {
+      const report = reportGraphAnalytics(this.graphState.graph);
+      report.timings =
+        this.queryBuilderState.applicationStore.timeService.finalizeTimingsRecord(
+          stopWatch,
+          report.timings,
+        );
+      const reportWithState = Object.assign(
+        {},
+        report,
+        this.queryBuilderState?.getStateInfo(),
+      );
+      QueryBuilderTelemetryHelper.logEvent_EmbeddedDataCubeQueryRunSucceeded(
+        this.queryBuilderState.applicationStore.telemetryService,
+        reportWithState,
+      );
+    }
+
     return {
       result: expectedTDS,
       executedQuery: queryString,
       executedSQL: sqlString,
-      executionTime: endTime - startTime,
+      executionTime: elapsed,
     };
   }
 
