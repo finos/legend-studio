@@ -443,7 +443,7 @@ export class QueryBuilderResultState {
             report,
             this.queryBuilderState.getStateInfo(),
           );
-          QueryBuilderTelemetryHelper.logEvent_ExportQueryDatSucceeded(
+          QueryBuilderTelemetryHelper.logEvent_ExportQueryDataSucceeded(
             this.queryBuilderState.applicationStore.telemetryService,
             reportWithState,
           );

@@ -63,7 +63,7 @@ export class QueryBuilderTelemetryHelper {
     service.logEvent(QUERY_BUILDER_EVENT.RUN_QUERY__SUCCESS, data);
   }
 
-  static logEvent_ExportQueryDatSucceeded(
+  static logEvent_ExportQueryDataSucceeded(
     service: TelemetryService,
     data: QueryExecution_TelemetryData,
   ): void {
