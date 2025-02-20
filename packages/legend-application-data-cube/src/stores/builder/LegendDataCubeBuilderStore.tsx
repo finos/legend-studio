@@ -41,6 +41,7 @@ import {
   ActionState,
   assertErrorThrown,
   formatDate,
+  guaranteeNonNullable,
   isString,
   uuid,
 } from '@finos/legend-shared';
@@ -60,6 +61,7 @@ import { LegendDataCubeBlockingWindowState } from '../../components/LegendDataCu
 import { LegendDataCubeDeleteConfirmation } from '../../components/builder/LegendDataCubeDeleteConfirmation.js';
 import { LegendDataCubeAbout } from '../../components/builder/LegendDataCubeBuilder.js';
 import { LegendDataCubeSourceViewer } from '../../components/builder/LegendDataCubeSourceViewer.js';
+import { LegendDataCubeSourceLoaderState } from './LegendDataCubeSourceLoaderState.js';
 
 export class LegendDataCubeBuilderState {
   readonly uuid = uuid();
@@ -134,6 +136,7 @@ export class LegendDataCubeBuilderStore {
   readonly loadState = ActionState.create();
   readonly loader: LegendDataCubeLoaderState;
   builder?: LegendDataCubeBuilderState | undefined;
+  readonly sourceLoader: LegendDataCubeSourceLoaderState;
   readonly sourceViewerDisplay: DisplayState;
 
   private passedFirstLoad = false;
@@ -171,6 +174,7 @@ export class LegendDataCubeBuilderStore {
 
     this.creator = new LegendDataCubeCreatorState(this);
     this.loader = new LegendDataCubeLoaderState(this);
+    this.sourceLoader = new LegendDataCubeSourceLoaderState(this);
     this.saverDisplay = new LegendDataCubeBlockingWindowState(
       'Save DataCube',
       () => <LegendDataCubeSaver />,
@@ -295,6 +299,24 @@ export class LegendDataCubeBuilderStore {
         const specification = DataCubeSpecification.serialization.fromJson(
           persistentDataCube.content,
         );
+
+        if (
+          !this.saveState.hasSucceeded &&
+          this.sourceLoader.isPartialSouce(specification.source._type as string)
+        ) {
+          this.sourceLoader.setSource(specification.source);
+          this.sourceLoader.display.open();
+          await new Promise<void>((resolve) => {
+            const checkIfClosed = setInterval(() => {
+              if (!this.sourceLoader.display.isOpen) {
+                clearInterval(checkIfClosed);
+                resolve();
+              }
+            }, 100);
+          });
+          specification.source = guaranteeNonNullable(this.sourceLoader.source);
+        }
+
         this.setBuilder(
           new LegendDataCubeBuilderState(specification, persistentDataCube),
         );
