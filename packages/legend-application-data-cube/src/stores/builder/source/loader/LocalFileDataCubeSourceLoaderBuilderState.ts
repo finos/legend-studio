@@ -166,6 +166,8 @@ export class LocalFileDataCubeSourceLoaderBuilderState extends LegendDataCubeSou
       );
     }
 
+    await this._engine.clearLocalFileIngestData();
+
     const tableDetails = guaranteeNonNullable(
       await this._engine.ingestLocalFileData(this.fileData, this.fileFormat),
       `Can't generate reference for local file source`,
