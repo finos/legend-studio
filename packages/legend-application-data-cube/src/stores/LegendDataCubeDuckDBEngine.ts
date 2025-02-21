@@ -30,6 +30,7 @@ import {
   csvStringify,
   guaranteeNonNullable,
   UnsupportedOperationError,
+  uuid,
 } from '@finos/legend-shared';
 import type { CachedDataCubeSource } from '@finos/legend-data-cube';
 import { Type } from 'apache-arrow';
@@ -45,9 +46,14 @@ export class LegendDataCubeDuckDBEngine {
   // https://duckdb.org/docs/guides/meta/describe.html
   private static readonly COLUMN_NAME = 'column_name';
   private static readonly COLUMN_TYPE = 'column_type';
+  private static readonly TABLE_NAME = 'table_name';
   // Options for creating csv using papa parser: https://www.papaparse.com/docs#config
   private static readonly ESCAPE_CHAR = `'`;
   private static readonly QUOTE_CHAR = `'`;
+  private static dbReferenceMap: Map<
+    string,
+    { schemaName: string; tableName: string; tableSpec: unknown[][] }
+  > = new Map();
 
   private _database?: duckdb.AsyncDuckDB | undefined;
 
@@ -55,6 +61,13 @@ export class LegendDataCubeDuckDBEngine {
     return guaranteeNonNullable(
       this._database,
       `Cache manager database not initialized`,
+    );
+  }
+
+  static getTableDetailsByReference(ref: string) {
+    return guaranteeNonNullable(
+      LegendDataCubeDuckDBEngine.dbReferenceMap.get(ref),
+      `Can't find reference ${ref}`,
     );
   }
 
@@ -128,6 +141,7 @@ export class LegendDataCubeDuckDBEngine {
   }
 
   async ingestLocalFileData(data: string, format: string) {
+    LegendDataCubeDuckDBEngine.dbReferenceMap.clear();
     const schema = LegendDataCubeDuckDBEngine.DUCKDB_DEFAULT_SCHEMA_NAME;
     LegendDataCubeDuckDBEngine.ingestFileTableCounter += 1;
     const table = `${LegendDataCubeDuckDBEngine.INGEST_TABLE_NAME_PREFIX}${LegendDataCubeDuckDBEngine.ingestFileTableCounter}`;
@@ -166,7 +180,38 @@ export class LegendDataCubeDuckDBEngine {
       ]);
     await connection.close();
 
-    return { schema, table, tableSpec };
+    const ref = uuid();
+    LegendDataCubeDuckDBEngine.dbReferenceMap.set(ref, {
+      schemaName: schema,
+      tableName: table,
+      tableSpec,
+    });
+
+    return {
+      dbReference: ref,
+      columnNames: tableSpec.map((spec) => spec[0] as string),
+    };
+  }
+
+  async clearLocalFileDataIngest() {
+    const connection = await this.database.connect();
+    const tablesResult = await connection.query(`
+      SELECT table_name
+      FROM information_schema.tables
+      WHERE table_schema = '${LegendDataCubeDuckDBEngine.DUCKDB_DEFAULT_SCHEMA_NAME}'
+      AND table_name LIKE '${LegendDataCubeDuckDBEngine.INGEST_TABLE_NAME_PREFIX}%'`); // Filter tables starting with the prefix
+
+    const tableNames = tablesResult
+      .toArray()
+      .map((row) => row[LegendDataCubeDuckDBEngine.TABLE_NAME] as string);
+
+    await Promise.all(
+      tableNames.map((table) =>
+        connection.query(`
+        DROP TABLE IF EXISTS "${LegendDataCubeDuckDBEngine.DUCKDB_DEFAULT_SCHEMA_NAME}.${table}";
+      `),
+      ),
+    );
   }
 
   async runSQLQuery(sql: string) {

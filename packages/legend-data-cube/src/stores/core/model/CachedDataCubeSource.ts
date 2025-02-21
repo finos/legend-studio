@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-import type { V1_PureModelContextData } from '@finos/legend-graph';
 import { DataCubeSource } from './DataCubeSource.js';
 import type { PlainObject } from '@finos/legend-shared';
 
 export class CachedDataCubeSource extends DataCubeSource {
-  model!: PlainObject<V1_PureModelContextData>;
+  model!: PlainObject;
   runtime!: string;
   db!: string;
   schema!: string;
