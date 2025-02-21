@@ -186,7 +186,10 @@ export class LegendDataCubeDuckDBEngine {
       tableSpec,
     });
 
-    return { dbReference: ref };
+    return {
+      dbReference: ref,
+      columnNames: tableSpec.map((spec) => spec[0] as string),
+    };
   }
 
   async runSQLQuery(sql: string) {

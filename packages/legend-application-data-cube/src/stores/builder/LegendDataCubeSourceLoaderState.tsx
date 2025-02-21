@@ -29,14 +29,9 @@ import {
 import { LegendDataCubeSourceLoader } from '../../components/builder/LegendDataCubeSourceLoader.js';
 import type { LegendDataCubeDataCubeEngine } from '../LegendDataCubeDataCubeEngine.js';
 import type { LegendDataCubeApplicationStore } from '../LegendDataCubeBaseStore.js';
-import {
-  LegendDataCubeSourceLoaderType,
-  type LegendDataCubeSourceLoaderBuilderState,
-} from './source/loader/LegendDataCubeSourceLoaderBuilderState.js';
+import { type LegendDataCubeSourceLoaderBuilderState } from './source/loader/LegendDataCubeSourceLoaderBuilderState.js';
 import { LocalFileDataCubeSourceLoaderBuilderState } from './source/loader/LocalFileDataCubeSourceLoaderBuilderState.js';
 import { LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE } from '../model/LocalFileDataCubeSource.js';
-
-const DEFAULT_SOURCE_TYPE = LegendDataCubeSourceLoaderType.LOCAL_FILE;
 
 export class LegendDataCubeSourceLoaderState {
   private readonly _application: LegendDataCubeApplicationStore;
@@ -49,13 +44,10 @@ export class LegendDataCubeSourceLoaderState {
   readonly searchState = ActionState.create();
   readonly finalizeState = ActionState.create();
 
-  sourceLoader: LegendDataCubeSourceLoaderBuilderState;
+  sourceLoaderBuilder: LegendDataCubeSourceLoaderBuilderState;
 
   constructor(store: LegendDataCubeBuilderStore) {
     makeObservable(this, {
-      sourceLoader: observable,
-      changeSourceLoader: action,
-
       source: observable,
       setSource: action,
     });
@@ -63,7 +55,9 @@ export class LegendDataCubeSourceLoaderState {
     this._application = store.application;
     this._engine = store.engine;
     this._alertService = store.alertService;
-    this.sourceLoader = this.createSourceLoader(DEFAULT_SOURCE_TYPE);
+    this.sourceLoaderBuilder = this.createSourceLoaderBuilder(
+      LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE,
+    );
 
     this.display = store.layoutService.newDisplay(
       'Reupload Source Data',
@@ -80,15 +74,6 @@ export class LegendDataCubeSourceLoaderState {
     this.source = source;
   }
 
-  changeSourceLoader(
-    type: LegendDataCubeSourceLoaderType,
-    skipCheck?: boolean | undefined,
-  ): void {
-    if (this.sourceLoader.label !== type || skipCheck) {
-      this.sourceLoader = this.createSourceLoader(type);
-    }
-  }
-
   isPartialSouce(type: string): boolean {
     if (type === LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE) {
       return true;
@@ -96,11 +81,16 @@ export class LegendDataCubeSourceLoaderState {
     return false;
   }
 
-  private createSourceLoader(
-    type: LegendDataCubeSourceLoaderType,
+  changeSourceBuilder(type: string): void {
+    this.sourceLoaderBuilder = this.createSourceLoaderBuilder(type);
+  }
+
+  private createSourceLoaderBuilder(
+    type: string,
   ): LegendDataCubeSourceLoaderBuilderState {
+    // We can implement this as a switch when
     switch (type) {
-      case LegendDataCubeSourceLoaderType.LOCAL_FILE:
+      case LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE:
         return new LocalFileDataCubeSourceLoaderBuilderState(
           this._application,
           this._engine,
@@ -115,14 +105,10 @@ export class LegendDataCubeSourceLoaderState {
   async finalize() {
     try {
       this.finalizeState.inProgress();
-      const validated = this.sourceLoader.validateSourceData(this.source);
-      if (validated) {
-        this.source = await this.sourceLoader.generateSourceData();
-        this.display.close();
-        this.finalizeState.pass();
-      } else {
-        throw new Error('Validation Failed');
-      }
+      this.sourceLoaderBuilder.validateSourceData(this.source);
+      this.source = await this.sourceLoaderBuilder.generateSourceData();
+      this.display.close();
+      this.finalizeState.pass();
     } catch (error) {
       assertErrorThrown(error);
       this._alertService.alertError(error, {

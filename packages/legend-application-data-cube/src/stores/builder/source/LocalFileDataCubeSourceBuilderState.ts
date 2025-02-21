@@ -159,14 +159,15 @@ export class LocalFileDataCubeSourceBuilderState extends LegendDataCubeSourceBui
       );
     }
 
-    const dbReference = guaranteeNonNullable(
+    const tableDetails = guaranteeNonNullable(
       await this._engine.ingestLocalFileData(this.fileData, this.fileFormat),
       `Can't generate reference for local file source`,
     );
     const rawSource = new RawLocalFileQueryDataCubeSource();
     rawSource.fileName = this.fileName;
     rawSource.fileFormat = this.fileFormat;
-    rawSource.dbReference = dbReference;
+    rawSource.dbReference = tableDetails.dbReference;
+    rawSource.columnNames = tableDetails.columnNames;
     rawSource.count = this.rowCount;
 
     return RawLocalFileQueryDataCubeSource.serialization.toJson(rawSource);

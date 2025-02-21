@@ -20,7 +20,7 @@ import {
   usingConstantValueSchema,
   type PlainObject,
 } from '@finos/legend-shared';
-import { createModelSchema, primitive } from 'serializr';
+import { createModelSchema, list, primitive } from 'serializr';
 
 export const LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE = 'localFile';
 
@@ -45,6 +45,7 @@ export class RawLocalFileQueryDataCubeSource {
   fileFormat!: LocalFileDataCubeSourceFormat;
   dbReference!: string;
   count!: number;
+  columnNames!: string[];
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(RawLocalFileQueryDataCubeSource, {
@@ -53,6 +54,7 @@ export class RawLocalFileQueryDataCubeSource {
       fileName: primitive(),
       count: primitive(),
       dbReference: primitive(),
+      columnNames: list(primitive()),
     }),
   );
 }

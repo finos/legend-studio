@@ -948,15 +948,10 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     }
   }
 
-  async ingestLocalFileData(
-    data: string,
-    format: string,
-  ): Promise<string | undefined> {
-    const { dbReference } = await this._duckDBEngine.ingestLocalFileData(
-      data,
-      format,
-    );
-    return dbReference;
+  async ingestLocalFileData(data: string, format: string) {
+    const { dbReference, columnNames } =
+      await this._duckDBEngine.ingestLocalFileData(data, format);
+    return { dbReference, columnNames };
   }
 
   private _synthesizeMinimalModelContext(data: {

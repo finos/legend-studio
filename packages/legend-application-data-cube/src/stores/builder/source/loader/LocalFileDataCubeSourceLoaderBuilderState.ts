@@ -29,10 +29,7 @@ import {
   LocalFileDataCubeSourceFormat,
   RawLocalFileQueryDataCubeSource,
 } from '../../../model/LocalFileDataCubeSource.js';
-import {
-  LegendDataCubeSourceLoaderBuilderState,
-  LegendDataCubeSourceLoaderType,
-} from './LegendDataCubeSourceLoaderBuilderState.js';
+import { LegendDataCubeSourceLoaderBuilderState } from './LegendDataCubeSourceLoaderBuilderState.js';
 
 export class LocalFileDataCubeSourceLoaderBuilderState extends LegendDataCubeSourceLoaderBuilderState {
   readonly processState = ActionState.create();
@@ -44,6 +41,7 @@ export class LocalFileDataCubeSourceLoaderBuilderState extends LegendDataCubeSou
   fileData?: string | undefined;
   previewText?: string | undefined;
   rowCount?: number | undefined;
+  columnNames?: string[] | undefined;
 
   constructor(
     application: LegendDataCubeApplicationStore,
@@ -54,6 +52,9 @@ export class LocalFileDataCubeSourceLoaderBuilderState extends LegendDataCubeSou
     makeObservable(this, {
       fileName: observable,
       setFileName: action,
+
+      columnNames: observable,
+      setColumnNames: action,
 
       fileFormat: observable,
       setFileFormat: action,
@@ -71,6 +72,10 @@ export class LocalFileDataCubeSourceLoaderBuilderState extends LegendDataCubeSou
 
   setFileName(fileName: string | undefined) {
     this.fileName = fileName;
+  }
+
+  setColumnNames(columnNames: string[] | undefined) {
+    this.columnNames = columnNames;
   }
 
   setFileFormat(format: LocalFileDataCubeSourceFormat | undefined) {
@@ -91,6 +96,7 @@ export class LocalFileDataCubeSourceLoaderBuilderState extends LegendDataCubeSou
 
   processFile(file: File | undefined) {
     this.setFileName(undefined);
+    this.setColumnNames(undefined);
     this.setFileFormat(undefined);
     this.setFileData(undefined);
     this.setRowCount(undefined);
@@ -111,6 +117,11 @@ export class LocalFileDataCubeSourceLoaderBuilderState extends LegendDataCubeSou
           complete: (result) => {
             this.setFileData(
               csvStringify(result.data, { escapeChar: `'`, quoteChar: `'` }),
+            );
+            this.setColumnNames(
+              Object.keys(result.data.at(0) as object).filter(
+                (key) => key !== '',
+              ),
             );
             this.setFileName(fileName);
             this.setFileFormat(LocalFileDataCubeSourceFormat.CSV);
@@ -139,10 +150,6 @@ export class LocalFileDataCubeSourceLoaderBuilderState extends LegendDataCubeSou
     this.processState.complete();
   }
 
-  override get label(): LegendDataCubeSourceLoaderType {
-    return LegendDataCubeSourceLoaderType.LOCAL_FILE;
-  }
-
   override get isValid(): boolean {
     return Boolean(this.fileData);
   }
@@ -159,7 +166,7 @@ export class LocalFileDataCubeSourceLoaderBuilderState extends LegendDataCubeSou
       );
     }
 
-    const dbReference = guaranteeNonNullable(
+    const tableDetails = guaranteeNonNullable(
       await this._engine.ingestLocalFileData(this.fileData, this.fileFormat),
       `Can't generate reference for local file source`,
     );
@@ -167,22 +174,36 @@ export class LocalFileDataCubeSourceLoaderBuilderState extends LegendDataCubeSou
     const rawSource = new RawLocalFileQueryDataCubeSource();
     rawSource.fileName = this.fileName;
     rawSource.fileFormat = this.fileFormat;
-    rawSource.dbReference = dbReference;
+    rawSource.dbReference = tableDetails.dbReference;
+    rawSource.columnNames = tableDetails.columnNames;
     rawSource.count = this.rowCount;
 
     return RawLocalFileQueryDataCubeSource.serialization.toJson(rawSource);
   }
 
-  override validateSourceData(source: PlainObject): boolean {
-    //TODO : might validate columnName to the csvData headers
+  override validateSourceData(source: PlainObject) {
     const deserializeSource =
       RawLocalFileQueryDataCubeSource.serialization.fromJson(source);
-    if (
-      deserializeSource.fileName === this.fileName &&
-      deserializeSource.fileFormat === this.fileFormat
-    ) {
-      return true;
+    const intersectingColumns = guaranteeNonNullable(
+      this.columnNames?.filter((col) =>
+        deserializeSource.columnNames.includes(col),
+      ),
+    );
+    if (deserializeSource.fileName !== this.fileName) {
+      throw new Error(
+        `File name mismatch: Expected ${deserializeSource.fileName}, got ${this.fileName}`,
+      );
     }
-    return false;
+    if (deserializeSource.fileFormat !== this.fileFormat) {
+      throw new Error(
+        `File format mismatch: Expected ${deserializeSource.fileFormat}, got ${this.fileFormat}`,
+      );
+    }
+    if (intersectingColumns.length !== deserializeSource.columnNames.length) {
+      throw new Error(
+        `Columns mismatch: Expected [${deserializeSource.columnNames.join(',')}], got [${this.columnNames?.join(',')}]`,
+      );
+    }
+    return true;
   }
 }

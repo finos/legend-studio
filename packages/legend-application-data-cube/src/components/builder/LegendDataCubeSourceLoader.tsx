@@ -15,74 +15,28 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { useDropdownMenu } from '@finos/legend-art';
-import {
-  FormBadge_WIP,
-  FormButton,
-  FormDropdownMenu,
-  FormDropdownMenuItem,
-  FormDropdownMenuTrigger,
-} from '@finos/legend-data-cube';
+import { FormButton } from '@finos/legend-data-cube';
 import { useLegendDataCubeBuilderStore } from './LegendDataCubeBuilderStoreProvider.js';
-import { LegendDataCubeSourceLoaderType } from '../../stores/builder/source/loader/LegendDataCubeSourceLoaderBuilderState.js';
 import { LocalFileDataCubeSourceLoaderBuilderState } from '../../stores/builder/source/loader/LocalFileDataCubeSourceLoaderBuilderState.js';
 import { LocalFileDataCubeSourceLoader } from './source/loader/LocalFileDataCubeSourceLoader.js';
 
 export const LegendDataCubeSourceLoader = observer(() => {
   const store = useLegendDataCubeBuilderStore();
   const state = store.sourceLoader;
-  const sourceLoader = state.sourceLoader;
-  const selectedSourceType = sourceLoader.label;
-  const WIPSourceTypes = [LegendDataCubeSourceLoaderType.LOCAL_FILE];
-  const [
-    openSourceTypeDropdown,
-    closeSourceTypeDropdown,
-    sourceTypeDropdownProps,
-    sourceTypeDropdownPropsOpen,
-  ] = useDropdownMenu();
+  const sourceLoaderBuilder = state.sourceLoaderBuilder;
 
   return (
     <>
       <div className="h-[calc(100%_-_40px)] w-full px-2 pt-2">
         <div className="h-full w-full border border-neutral-300 bg-white">
           <div className="h-full w-full select-none">
-            <div className="flex h-10 w-full items-center p-2">
-              <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
-                Reupload Source Type:
-              </div>
-              <FormDropdownMenuTrigger
-                className="w-80"
-                onClick={openSourceTypeDropdown}
-                open={sourceTypeDropdownPropsOpen}
-              >
-                <div className="flex items-center">
-                  {selectedSourceType}
-                  {WIPSourceTypes.includes(selectedSourceType) && (
-                    <FormBadge_WIP />
-                  )}
-                </div>
-              </FormDropdownMenuTrigger>
-              <FormDropdownMenu className="w-80" {...sourceTypeDropdownProps}>
-                {[LegendDataCubeSourceLoaderType.LOCAL_FILE].map((type) => (
-                  <FormDropdownMenuItem
-                    key={type}
-                    onClick={() => {
-                      state.changeSourceLoader(type);
-                      closeSourceTypeDropdown();
-                    }}
-                    autoFocus={type === selectedSourceType}
-                  >
-                    {type}
-                    {WIPSourceTypes.includes(type) && <FormBadge_WIP />}
-                  </FormDropdownMenuItem>
-                ))}
-              </FormDropdownMenu>
-            </div>
             <div className="ml-2 h-[1px] w-[calc(100%_-_16px)] bg-neutral-200" />
             <div className="h-[calc(100%_-_41px)] w-full overflow-auto">
-              {sourceLoader instanceof
+              {sourceLoaderBuilder instanceof
                 LocalFileDataCubeSourceLoaderBuilderState && (
-                <LocalFileDataCubeSourceLoader sourceBuilder={sourceLoader} />
+                <LocalFileDataCubeSourceLoader
+                  sourceBuilder={sourceLoaderBuilder}
+                />
               )}
             </div>
           </div>
@@ -92,7 +46,9 @@ export const LegendDataCubeSourceLoader = observer(() => {
         <FormButton onClick={() => state.display.close()}>Cancel</FormButton>
         <FormButton
           className="ml-2"
-          disabled={!sourceLoader.isValid || state.finalizeState.isInProgress}
+          disabled={
+            !sourceLoaderBuilder.isValid || state.finalizeState.isInProgress
+          }
           onClick={() => {
             state
               .finalize()

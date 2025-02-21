@@ -304,6 +304,9 @@ export class LegendDataCubeBuilderStore {
           !this.saveState.hasSucceeded &&
           this.sourceLoader.isPartialSouce(specification.source._type as string)
         ) {
+          this.sourceLoader.changeSourceBuilder(
+            specification.source._type as string,
+          );
           this.sourceLoader.setSource(specification.source);
           this.sourceLoader.display.open();
           await new Promise<void>((resolve) => {
