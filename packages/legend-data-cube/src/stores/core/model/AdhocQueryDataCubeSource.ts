@@ -27,8 +27,6 @@ export class AdhocQueryDataCubeSource extends DataCubeSource {
   runtime!: string;
   mapping?: string;
   model!: PlainObject<V1_PureModelContext>;
-  lambda!: V1_Lambda;
-  mapping?: string | undefined;
 }
 
 export class UserDefinedFunctionDataCubeSource extends DataCubeSource {
@@ -41,19 +39,17 @@ export const ADHOC_QUERY_DATA_CUBE_SOURCE_TYPE = 'adhocQuery';
 export const ADHOC_FUNCTION_DATA_CUBE_SOURCE_TYPE = 'userDefinedFunction';
 
 export class RawAdhocQueryDataCubeSource {
-  lambda!: string;
+  query!: string;
   runtime!: string;
   mapping?: string;
   model!: PlainObject<V1_PureModelContext>;
-  mapping?: string | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(RawAdhocQueryDataCubeSource, {
       _type: usingConstantValueSchema(ADHOC_QUERY_DATA_CUBE_SOURCE_TYPE),
       model: raw(),
-      lambda: primitive(),
+      query: primitive(),
       runtime: primitive(),
-      mapping: optional(primitive()),
     }),
   );
 }

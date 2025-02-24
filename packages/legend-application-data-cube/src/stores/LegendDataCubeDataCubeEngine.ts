@@ -75,7 +75,6 @@ import {
   V1_BigInt,
   V1_Decimal,
   V1_Double,
-  V1_LambdaTdsToRelationInput,
   V1_Timestamp,
   V1_TinyInt,
   V1_SmallInt,
@@ -85,9 +84,7 @@ import {
   V1_deserializeValueSpecification,
   LET_TOKEN,
   V1_AppliedFunction,
-  V1_serializeLambdaTdsToRelationInput,
-  V1_RawLambda,
-  V1_serializeRawValueSpecification,
+  type V1_LambdaReturnTypeResult,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
@@ -142,6 +139,7 @@ import {
   LocalFileDataCubeSource,
   RawLocalFileQueryDataCubeSource,
 } from './model/LocalFileDataCubeSource.js';
+import { QUERY_BUILDER_PURE_PATH } from '@finos/legend-query-builder';
 
 export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   private readonly _application: LegendDataCubeApplicationStore;
@@ -186,16 +184,14 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         }
         source.runtime = rawSource.runtime;
         source.model = rawSource.model;
-        source.mapping = rawSource.mapping;
-        source.lambda = guaranteeType(
-          await this.parseValueSpecification(rawSource.lambda, false),
-          V1_Lambda,
+        source.query = await this.parseValueSpecification(
+          rawSource.query,
+          false,
         );
-        source.query = at(source.lambda.body, 0);
         try {
           source.columns = (
             await this._getLambdaRelationType(
-              this.serializeValueSpecification(source.lambda),
+              this.serializeValueSpecification(_lambda([], [source.query])),
               source.model,
             )
           ).columns;
@@ -415,6 +411,26 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
             ),
           ),
         );
+
+        // Check return type of lambda. If it is a TDS type, convert it to
+        // the new relation protocol.
+        const returnType = await this._getLambdaReturnType(
+          this.serializeValueSpecification(source.lambda),
+          source.model,
+        );
+        if (returnType === QUERY_BUILDER_PURE_PATH.TDS_TABULAR_DATASET) {
+          const transformedLambda = guaranteeType(
+            this.deserializeValueSpecification(
+              await this._engineServerClient.transformTdsToRelation_lambda({
+                model: source.model,
+                lambda: source.lambda,
+              }),
+            ),
+            V1_Lambda,
+          );
+          source.lambda = transformedLambda;
+        }
+
         // If the lambda has multiple expressions, the source query should only be the final
         // expression of the lambda. All previous expressions should be left untouched and will
         // be prepended to the transformed query when it is executed.
@@ -770,10 +786,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     if (source instanceof AdhocQueryDataCubeSource) {
       return _function(
         DataCubeFunction.FROM,
-        [
-          source.mapping ? _elementPtr(source.mapping) : undefined,
-          _elementPtr(source.runtime),
-        ].filter(isNonNullable),
+        [_elementPtr(source.runtime)].filter(isNonNullable),
       );
     } else if (source instanceof UserDefinedFunctionDataCubeSource) {
       return _function(
@@ -911,7 +924,19 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     );
   }
 
-  async _getLambdaRelationType(
+  private async _getLambdaReturnType(
+    lambda: PlainObject<V1_Lambda>,
+    model: PlainObject<V1_PureModelContext>,
+  ): Promise<string> {
+    return (
+      (await this._engineServerClient.lambdaReturnType({
+        lambda,
+        model,
+      })) as unknown as V1_LambdaReturnTypeResult
+    ).returnType;
+  }
+
+  private async _getLambdaRelationType(
     lambda: PlainObject<V1_Lambda>,
     model: PlainObject<V1_PureModelContext>,
   ) {
@@ -1068,69 +1093,6 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       table,
       runtime: packageableRuntime,
     };
-  }
-
-  async transformTdsQueryToAdHocRelationQuery(
-    rawSource: RawLegendQueryDataCubeSource,
-  ): Promise<RawAdhocQueryDataCubeSource> {
-    const queryInfo = await this._graphManager.getQueryInfo(rawSource.queryId);
-    const executionContext =
-      await this._graphManager.resolveQueryInfoExecutionContext(queryInfo, () =>
-        this._depotServerClient.getVersionEntities(
-          queryInfo.groupId,
-          queryInfo.artifactId,
-          queryInfo.versionId,
-        ),
-      );
-    const model = new V1_PureModelContextPointer(
-      // TODO: remove as backend should handle undefined protocol input
-      new V1_Protocol(
-        V1_PureGraphManager.PURE_PROTOCOL_NAME,
-        PureClientVersion.VX_X_X,
-      ),
-      new V1_LegendSDLC(
-        queryInfo.groupId,
-        queryInfo.artifactId,
-        resolveVersion(queryInfo.versionId),
-      ),
-    );
-    const lambda = guaranteeType(
-      this.deserializeValueSpecification(
-        await this._engineServerClient.grammarToJSON_lambda(
-          queryInfo.content,
-          '',
-          undefined,
-          undefined,
-          false,
-        ),
-      ),
-      V1_Lambda,
-    );
-    const input = new V1_LambdaTdsToRelationInput();
-    input.model = model;
-    input.lambda = lambda;
-    console.log('transformTdsToRelationProtocol input:', input);
-    const transformedLambda = guaranteeType(
-      this.deserializeValueSpecification(
-        await this._engineServerClient.transformTdsToRelation_lambda(
-          V1_serializeLambdaTdsToRelationInput(input, []),
-        ),
-      ),
-      V1_Lambda,
-    );
-    const transformedRawLambda = new V1_RawLambda();
-    transformedRawLambda.body = transformedLambda.body;
-    transformedRawLambda.parameters = transformedLambda.parameters;
-    const transformedLambdaGrammar =
-      await this._engineServerClient.JSONToGrammar_lambda(
-        V1_serializeRawValueSpecification(transformedRawLambda),
-      );
-    const adHocSource = new RawAdhocQueryDataCubeSource();
-    adHocSource.model = V1_serializePureModelContext(model);
-    adHocSource.lambda = transformedLambdaGrammar;
-    adHocSource.runtime = executionContext.runtime;
-    adHocSource.mapping = executionContext.mapping;
-    return adHocSource;
   }
 
   // ---------------------------------- APPLICATION ----------------------------------
