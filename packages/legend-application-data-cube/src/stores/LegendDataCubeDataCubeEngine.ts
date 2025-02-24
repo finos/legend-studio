@@ -79,6 +79,7 @@ import {
   V1_TinyInt,
   V1_SmallInt,
   V1_serializePureModelContextData,
+  type V1_LambdaReturnTypeResult,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
@@ -129,6 +130,7 @@ import {
   LocalFileDataCubeSource,
   RawLocalFileQueryDataCubeSource,
 } from './model/LocalFileDataCubeSource.js';
+import { QUERY_BUILDER_PURE_PATH } from '@finos/legend-query-builder';
 
 export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   private readonly _application: LegendDataCubeApplicationStore;
@@ -270,6 +272,26 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
             ),
           ),
         );
+
+        // Check return type of lambda. If it is a TDS type, convert it to
+        // the new relation protocol.
+        const returnType = await this._getLambdaReturnType(
+          this.serializeValueSpecification(source.lambda),
+          source.model,
+        );
+        if (returnType === QUERY_BUILDER_PURE_PATH.TDS_TABULAR_DATASET) {
+          const transformedLambda = guaranteeType(
+            this.deserializeValueSpecification(
+              await this._engineServerClient.transformTdsToRelation_lambda({
+                model: source.model,
+                lambda: source.lambda,
+              }),
+            ),
+            V1_Lambda,
+          );
+          source.lambda = transformedLambda;
+        }
+
         source.query = at(source.lambda.body, 0);
         // use the default parameter values from the query
         //
@@ -702,6 +724,18 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     throw new UnsupportedOperationError(
       `Can't get relation type for lambda with unsupported source`,
     );
+  }
+
+  private async _getLambdaReturnType(
+    lambda: PlainObject<V1_Lambda>,
+    model: PlainObject<V1_PureModelContext>,
+  ): Promise<string> {
+    return (
+      (await this._engineServerClient.lambdaReturnType({
+        lambda,
+        model,
+      })) as unknown as V1_LambdaReturnTypeResult
+    ).returnType;
   }
 
   private async _getLambdaRelationType(
