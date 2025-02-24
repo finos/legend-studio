@@ -30,8 +30,8 @@ import {
 } from './source/LegendDataCubeSourceBuilderState.js';
 import {
   type DataCubeAlertService,
-  type DisplayState,
   DEFAULT_TOOL_PANEL_WINDOW_CONFIG,
+  type DisplayState,
 } from '@finos/legend-data-cube';
 import type { LegendDataCubeDataCubeEngine } from '../LegendDataCubeDataCubeEngine.js';
 import { LegendDataCubeCreator } from '../../components/builder/LegendDataCubeCreator.js';
@@ -42,7 +42,6 @@ import {
 } from './LegendDataCubeBuilderStore.js';
 import { generateBuilderRoute } from '../../__lib__/LegendDataCubeNavigation.js';
 import { LocalFileDataCubeSourceBuilderState } from './source/LocalFileDataCubeSourceBuilderState.js';
-import { RawLegendQueryDataCubeSource } from '../model/LegendQueryDataCubeSource.js';
 
 const DEFAULT_SOURCE_TYPE = LegendDataCubeSourceBuilderType.LEGEND_QUERY;
 
@@ -131,7 +130,6 @@ export class LegendDataCubeCreatorState {
       const specification = await this._engine.generateBaseSpecification(
         sourceData ?? (await this.sourceBuilder.generateSourceData()),
       );
-
       if (specification.configuration) {
         this.sourceBuilder.finalizeConfiguration(specification.configuration);
       }
