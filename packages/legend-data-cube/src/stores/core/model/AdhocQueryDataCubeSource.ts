@@ -20,8 +20,8 @@ import {
   type PlainObject,
 } from '@finos/legend-shared';
 import { DataCubeSource } from './DataCubeSource.js';
-import { createModelSchema, optional, primitive, raw } from 'serializr';
-import type { V1_Lambda, V1_PureModelContext } from '@finos/legend-graph';
+import { createModelSchema, primitive, raw } from 'serializr';
+import type { V1_PureModelContext } from '@finos/legend-graph';
 
 export class AdhocQueryDataCubeSource extends DataCubeSource {
   runtime!: string;
