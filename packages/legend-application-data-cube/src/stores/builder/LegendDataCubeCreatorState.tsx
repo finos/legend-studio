@@ -35,6 +35,7 @@ import {
   DataCubeSpecification,
   DEFAULT_ALERT_WINDOW_CONFIG,
   DEFAULT_TOOL_PANEL_WINDOW_CONFIG,
+  RawAdhocQueryDataCubeSource,
 } from '@finos/legend-data-cube';
 import type { LegendDataCubeDataCubeEngine } from '../LegendDataCubeDataCubeEngine.js';
 import { LegendDataCubeCreator } from '../../components/builder/LegendDataCubeCreator.js';
@@ -46,6 +47,7 @@ import {
 import { generateBuilderRoute } from '../../__lib__/LegendDataCubeNavigation.js';
 import { LocalFileDataCubeSourceBuilderState } from './source/LocalFileDataCubeSourceBuilderState.js';
 import { UserDefinedFunctionDataCubeSourceBuilderState } from './source/UserDefinedFunctionDataCubeSourceBuilderState.js';
+import { RawLegendQueryDataCubeSource } from '../model/LegendQueryDataCubeSource.js';
 
 const DEFAULT_SOURCE_TYPE = LegendDataCubeSourceBuilderType.LEGEND_QUERY;
 
@@ -159,9 +161,19 @@ export class LegendDataCubeCreatorState {
             {
               label: 'Yes',
               handler: async () => {
-                console.log('about to call transformTdsToRelationProtocol');
-                this._engine.transformTdsToRelationProtocol(
-                  sourceData ?? (await this.sourceBuilder.generateSourceData()),
+                const rawSource =
+                  RawLegendQueryDataCubeSource.serialization.fromJson(
+                    sourceData ??
+                      (await this.sourceBuilder.generateSourceData()),
+                  );
+                const transformedSource =
+                  await this._engine.transformTdsQueryToAdHocRelationQuery(
+                    rawSource,
+                  );
+                await this.finalize(
+                  RawAdhocQueryDataCubeSource.serialization.toJson(
+                    transformedSource,
+                  ),
                 );
               },
             },

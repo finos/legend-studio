@@ -87,6 +87,7 @@ import {
   V1_AppliedFunction,
   V1_serializeLambdaTdsToRelationInput,
   V1_RawLambda,
+  V1_serializeRawValueSpecification,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
@@ -185,14 +186,16 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         }
         source.runtime = rawSource.runtime;
         source.model = rawSource.model;
-        source.query = await this.parseValueSpecification(
-          rawSource.query,
-          false,
+        source.mapping = rawSource.mapping;
+        source.lambda = guaranteeType(
+          await this.parseValueSpecification(rawSource.lambda, false),
+          V1_Lambda,
         );
+        source.query = at(source.lambda.body, 0);
         try {
           source.columns = (
             await this._getLambdaRelationType(
-              this.serializeValueSpecification(_lambda([], [source.query])),
+              this.serializeValueSpecification(source.lambda),
               source.model,
             )
           ).columns;
@@ -1143,10 +1146,18 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     return source;
   }
 
-  async transformTdsToRelationProtocol(value: PlainObject): Promise<V1_Lambda> {
-    const rawSource =
-      RawLegendQueryDataCubeSource.serialization.fromJson(value);
+  async transformTdsQueryToAdHocRelationQuery(
+    rawSource: RawLegendQueryDataCubeSource,
+  ): Promise<RawAdhocQueryDataCubeSource> {
     const queryInfo = await this._graphManager.getQueryInfo(rawSource.queryId);
+    const executionContext =
+      await this._graphManager.resolveQueryInfoExecutionContext(queryInfo, () =>
+        this._depotServerClient.getVersionEntities(
+          queryInfo.groupId,
+          queryInfo.artifactId,
+          queryInfo.versionId,
+        ),
+      );
     const model = new V1_PureModelContextPointer(
       // TODO: remove as backend should handle undefined protocol input
       new V1_Protocol(
@@ -1175,7 +1186,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     input.model = model;
     input.lambda = lambda;
     console.log('transformTdsToRelationProtocol input:', input);
-    return guaranteeType(
+    const transformedLambda = guaranteeType(
       this.deserializeValueSpecification(
         await this._engineServerClient.transformTdsToRelation_lambda(
           V1_serializeLambdaTdsToRelationInput(input, []),
@@ -1183,6 +1194,19 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       ),
       V1_Lambda,
     );
+    const transformedRawLambda = new V1_RawLambda();
+    transformedRawLambda.body = transformedLambda.body;
+    transformedRawLambda.parameters = transformedLambda.parameters;
+    const transformedLambdaGrammar =
+      await this._engineServerClient.JSONToGrammar_lambda(
+        V1_serializeRawValueSpecification(transformedRawLambda),
+      );
+    const adHocSource = new RawAdhocQueryDataCubeSource();
+    adHocSource.model = V1_serializePureModelContext(model);
+    adHocSource.lambda = transformedLambdaGrammar;
+    adHocSource.runtime = executionContext.runtime;
+    adHocSource.mapping = executionContext.mapping;
+    return adHocSource;
   }
 
   // ---------------------------------- APPLICATION ----------------------------------
