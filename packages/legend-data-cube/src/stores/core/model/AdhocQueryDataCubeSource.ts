@@ -20,27 +20,31 @@ import {
   type PlainObject,
 } from '@finos/legend-shared';
 import { DataCubeSource } from './DataCubeSource.js';
-import { createModelSchema, primitive, raw } from 'serializr';
-import type { V1_PureModelContext } from '@finos/legend-graph';
+import { createModelSchema, optional, primitive, raw } from 'serializr';
+import type { V1_Lambda, V1_PureModelContext } from '@finos/legend-graph';
 
 export class AdhocQueryDataCubeSource extends DataCubeSource {
   runtime!: string;
   model!: PlainObject<V1_PureModelContext>;
+  lambda!: V1_Lambda;
+  mapping?: string | undefined;
 }
 
 export const ADHOC_QUERY_DATA_CUBE_SOURCE_TYPE = 'adhocQuery';
 
 export class RawAdhocQueryDataCubeSource {
-  query!: string;
+  lambda!: string;
   runtime!: string;
   model!: PlainObject<V1_PureModelContext>;
+  mapping?: string | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(RawAdhocQueryDataCubeSource, {
       _type: usingConstantValueSchema(ADHOC_QUERY_DATA_CUBE_SOURCE_TYPE),
       model: raw(),
-      query: primitive(),
+      lambda: primitive(),
       runtime: primitive(),
+      mapping: optional(primitive()),
     }),
   );
 }
