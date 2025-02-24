@@ -23,6 +23,7 @@ export enum LegendDataCubeSourceBuilderType {
   LEGEND_QUERY = 'Legend Query',
   ADHOC_QUERY = 'Ad hoc Query',
   LOCAL_FILE = 'Local File',
+  USER_DEFINED_FUNCTION = 'User Defined Function',
 }
 
 export abstract class LegendDataCubeSourceBuilderState {

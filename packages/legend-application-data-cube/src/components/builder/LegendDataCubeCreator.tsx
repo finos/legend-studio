@@ -31,6 +31,8 @@ import { AdhocQueryDataCubeSourceBuilderState } from '../../stores/builder/sourc
 import { useLegendDataCubeBuilderStore } from './LegendDataCubeBuilderStoreProvider.js';
 import { LocalFileDataCubeSourceBuilderState } from '../../stores/builder/source/LocalFileDataCubeSourceBuilderState.js';
 import { LocalFileDataCubeSourceBuilder } from './source/LocalFileDataCubeSourceBuilder.js';
+import { UserDefinedFunctionDataCubeSourceBuilderState } from '../../stores/builder/source/UserDefinedFunctionDataCubeSourceBuilderState.js';
+import { UserDefinedFunctionDataCubeSourceBuilder } from './source/UserDefinedFunctionDataCubeSourceBuilder.js';
 
 export const LegendDataCubeCreator = observer(() => {
   const store = useLegendDataCubeBuilderStore();
@@ -72,6 +74,7 @@ export const LegendDataCubeCreator = observer(() => {
               <FormDropdownMenu className="w-80" {...sourceTypeDropdownProps}>
                 {[
                   LegendDataCubeSourceBuilderType.LEGEND_QUERY,
+                  LegendDataCubeSourceBuilderType.USER_DEFINED_FUNCTION,
                   LegendDataCubeSourceBuilderType.ADHOC_QUERY,
                   LegendDataCubeSourceBuilderType.LOCAL_FILE,
                 ].map((type) => (
@@ -105,6 +108,13 @@ export const LegendDataCubeCreator = observer(() => {
               )}
               {sourceBuilder instanceof LocalFileDataCubeSourceBuilderState && (
                 <LocalFileDataCubeSourceBuilder sourceBuilder={sourceBuilder} />
+              )}
+              {sourceBuilder instanceof
+                UserDefinedFunctionDataCubeSourceBuilderState && (
+                <UserDefinedFunctionDataCubeSourceBuilder
+                  sourceBuilder={sourceBuilder}
+                  store={store}
+                />
               )}
             </div>
           </div>

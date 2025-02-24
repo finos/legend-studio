@@ -453,6 +453,7 @@ export {
   V1_pureModelContextPropSchema,
   V1_pureModelContextDataPropSchema,
   V1_deserializePureModelContextData,
+  V1_deserializePureModelContext,
   V1_serializePureModelContextData,
   V1_legendSDLCSerializationModelSchema,
   V1_serializePureModelContext,
