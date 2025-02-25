@@ -79,6 +79,9 @@ import {
   V1_TinyInt,
   V1_SmallInt,
   V1_serializePureModelContextData,
+  V1_deserializePureModelContext,
+  type V1_ConcreteFunctionDefinition,
+  V1_deserializeValueSpecification,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
@@ -96,6 +99,8 @@ import {
   type DataCubeExecutionOptions,
   type DataCubeCacheInitializationOptions,
   DataCubeExecutionError,
+  RawUserDefinedFunctionDataCubeSource,
+  ADHOC_FUNCTION_DATA_CUBE_SOURCE_TYPE,
 } from '@finos/legend-data-cube';
 import {
   isNonNullable,
@@ -220,6 +225,57 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           throw new Error(
             `Can't get query result columns. Make sure the source query return a relation (i.e. typed TDS). Error: ${error.message}`,
           );
+        }
+        return source;
+      }
+      case ADHOC_FUNCTION_DATA_CUBE_SOURCE_TYPE: {
+        const rawSource =
+          RawUserDefinedFunctionDataCubeSource.serialization.fromJson(value);
+        const deserializedModel = V1_deserializePureModelContext(
+          rawSource.model,
+        );
+
+        if (
+          rawSource.runtime === undefined ||
+          !(deserializedModel instanceof V1_PureModelContextPointer)
+        ) {
+          throw new Error(
+            `Unsupported user defined function source. Runtime is needed and model must be a pointer.`,
+          );
+        }
+
+        const source = new AdhocQueryDataCubeSource();
+        source.runtime = rawSource.runtime;
+        source.model = rawSource.model;
+        if (deserializedModel.sdlcInfo instanceof V1_LegendSDLC) {
+          const sdlcInfo = deserializedModel.sdlcInfo;
+          const fetchedFunction =
+            await this._depotServerClient.getVersionEntity(
+              sdlcInfo.groupId,
+              sdlcInfo.artifactId,
+              sdlcInfo.version,
+              rawSource.functionPath,
+            );
+          const functionContent =
+            fetchedFunction.content as V1_ConcreteFunctionDefinition;
+
+          //TODO add support for parameters
+          if (functionContent.body.length > 1) {
+            throw new Error(
+              `Unsupported user defined function source. Functions with parameters are not yet supported.`,
+            );
+          }
+
+          source.query = V1_deserializeValueSpecification(
+            functionContent.body[0] as PlainObject,
+            this._application.pluginManager.getPureProtocolProcessorPlugins(),
+          );
+          source.columns = (
+            await this._getLambdaRelationType(
+              this.serializeValueSpecification(_lambda([], [source.query])),
+              source.model,
+            )
+          ).columns;
         }
         return source;
       }
