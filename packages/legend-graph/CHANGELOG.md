@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.1.7
+
+### Patch Changes
+
+- [#3907](https://github.com/finos/legend-studio/pull/3907) [`59983e2`](https://github.com/finos/legend-studio/commit/59983e2f8065207e82d7329a2879b8c4d5773ffd) ([@kelly-thai](https://github.com/kelly-thai)) - Add User Defined Functions as a supported DataCube Source
+
 ## 32.1.6
 
 ### Patch Changes
