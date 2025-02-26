@@ -16,7 +16,7 @@
 
 import { DataCubeIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-import { DataCubeEditorColumnSelector } from './DataCubeEditorColumnSelector.js';
+import { DataCubeEditorColumnsSelector } from './DataCubeEditorColumnsSelector.js';
 import type { DataCubeViewState } from '../../../stores/view/DataCubeViewState.js';
 
 export const DataCubeEditorVerticalPivotsPanel = observer(
@@ -35,7 +35,7 @@ export const DataCubeEditorVerticalPivotsPanel = observer(
           </div>
         </div>
         <div className="flex h-[calc(100%_-_24px)] w-full">
-          <DataCubeEditorColumnSelector selector={panel.selector} />
+          <DataCubeEditorColumnsSelector selector={panel.selector} />
         </div>
       </div>
     );
