@@ -231,21 +231,25 @@ export const shallowStringify = (object: unknown): string =>
 export const generateEnumerableNameFromToken = (
   existingNames: string[],
   token: string,
+  delim: 'whitespace' | 'underscore' = 'underscore',
 ): string => {
   if (!token.match(/^[\w_-]+$/)) {
     throw new Error(
       `Token must only contain digits, letters, or special characters _ and -`,
     );
   }
+  const delimiter = delim === 'whitespace' ? ' ' : '_';
   const maxCounter = existingNames
     .map((name) => {
-      const matchingCount = name.match(new RegExp(`^${token}_(?<count>\\d+)$`));
+      const matchingCount = name.match(
+        new RegExp(`^${token}${delimiter}(?<count>\\d+)$`),
+      );
       return matchingCount?.groups?.count
         ? parseInt(matchingCount.groups.count, 10)
         : 0;
     })
     .reduce((max, num) => Math.max(max, num), 0);
-  return `${token}_${maxCounter + 1}`;
+  return `${token}${delimiter}${maxCounter + 1}`;
 };
 
 export const at = <T>(

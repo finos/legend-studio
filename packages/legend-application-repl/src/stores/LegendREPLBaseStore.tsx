@@ -102,7 +102,7 @@ export class LegendREPLBaseStore {
   }
 
   async initialize() {
-    const task = this.taskService.newTask('Initialize REPL');
+    const task = this.taskService.newTask('Initializing REPL...');
 
     this.initializeState.inProgress();
     try {
@@ -152,7 +152,7 @@ export class LegendREPLBaseStore {
     }
 
     this.publishState.inProgress();
-    const task = this.taskService.newTask('Publish query');
+    const task = this.taskService.newTask('Publishing DataCube...');
 
     try {
       const query = await api.generateSpecification();
