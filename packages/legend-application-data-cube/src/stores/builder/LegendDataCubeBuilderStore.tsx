@@ -362,6 +362,7 @@ export class LegendDataCubeBuilderStore {
       }
 
       this.loadState.inProgress();
+      const task = this.taskService.newTask('Loading DataCube...');
 
       try {
         const persistentDataCube =
@@ -391,6 +392,8 @@ export class LegendDataCubeBuilderStore {
         );
 
         this.loadState.fail();
+      } finally {
+        this.taskService.endTask(task);
       }
     }
   }
@@ -462,6 +465,8 @@ export class LegendDataCubeBuilderStore {
     }
 
     this.saveState.inProgress();
+    const task = this.taskService.newTask('Creating DataCube...');
+
     try {
       const persistentDataCube = await this.generatePersistentDataCube(
         this.builder.dataCube,
@@ -497,6 +502,8 @@ export class LegendDataCubeBuilderStore {
         message: `DataCube Creation Failure: ${error.message}`,
       });
       this.saveState.fail();
+    } finally {
+      this.taskService.endTask(task);
     }
   }
 
@@ -509,6 +516,8 @@ export class LegendDataCubeBuilderStore {
     }
 
     this.saveState.inProgress();
+    const task = this.taskService.newTask('Saving DataCube...');
+
     try {
       const persistentDataCube = await this.generatePersistentDataCube(
         this.builder.dataCube,
@@ -551,6 +560,8 @@ export class LegendDataCubeBuilderStore {
         message: `DataCube Update Failure: ${error.message}`,
       });
       this.saveState.fail();
+    } finally {
+      this.taskService.endTask(task);
     }
   }
 
@@ -567,6 +578,8 @@ export class LegendDataCubeBuilderStore {
     const dataCubeId = this.dataCubeToDelete.id;
 
     this.deleteState.inProgress();
+    const task = this.taskService.newTask('Deleting DataCube...');
+
     try {
       await this.baseStore.graphManager.deleteDataCube(dataCubeId);
 
@@ -602,6 +615,8 @@ export class LegendDataCubeBuilderStore {
         message: `DataCube Delete Failure: ${error.message}`,
       });
       this.deleteState.fail();
+    } finally {
+      this.taskService.endTask(task);
     }
   }
 }

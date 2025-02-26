@@ -34,6 +34,7 @@ import {
   DataCubeFontCase,
   DataCubeFontFormatUnderlineVariant,
   DataCubeFontTextAlignment,
+  DataCubeGridMode,
   DEFAULT_ROW_BACKGROUND_COLOR,
   DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR,
 } from '../../../stores/core/DataCubeQueryEngine.js';
@@ -46,6 +47,7 @@ import { generateBaseGridOptions } from '../../../stores/view/grid/DataCubeGridC
 import type { DataCubeViewState } from '../../../stores/view/DataCubeViewState.js';
 import { FormBadge_WIP } from '../../core/DataCubeFormUtils.js';
 import { useDataCube } from '../../DataCubeProvider.js';
+import { DataCubeMultidimensionalGrid } from './DataCubeMultidimensionalGrid.js';
 
 // NOTE: This is a workaround to prevent ag-grid license key check from flooding the console screen
 // with its stack trace in Chrome.
@@ -92,34 +94,29 @@ function backgroundColorStyle(
 }
 
 export const DataCubeGridStyleController = observer(
-  (props: { view: DataCubeViewState }) => {
-    const { view } = props;
-    const grid = view.grid;
-    const configuration = grid.queryConfiguration;
+  (props: { configuration: DataCubeConfiguration }) => {
+    const { configuration } = props;
 
     return (
       <Global
         styles={css`
           .${INTERNAL__GridClientUtilityCssClassName.ROOT} {
-            --ag-odd-row-background-color: ${grid.queryConfiguration
-              .alternateRowsStandardMode &&
-            !grid.queryConfiguration.alternateRows
+            --ag-odd-row-background-color: ${configuration.alternateRowsStandardMode &&
+            !configuration.alternateRows
               ? DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR
               : DEFAULT_ROW_BACKGROUND_COLOR};
-            --ag-cell-horizontal-border: ${grid.queryConfiguration
-              .showVerticalGridLines
+            --ag-cell-horizontal-border: ${configuration.showVerticalGridLines
               ? `1px solid
-            ${grid.queryConfiguration.gridLineColor}`
+            ${configuration.gridLineColor}`
               : 'none'};
-            --ag-row-border-color: ${grid.queryConfiguration
-              .showHorizontalGridLines
-              ? grid.queryConfiguration.gridLineColor
+            --ag-row-border-color: ${configuration.showHorizontalGridLines
+              ? configuration.gridLineColor
               : 'transparent'};
           }
           .${INTERNAL__GridClientUtilityCssClassName.ROOT}
             .${INTERNAL__GridClientUtilityCssClassName.HIGHLIGHT_ROW} {
-            background-color: ${grid.queryConfiguration.alternateRows
-              ? grid.queryConfiguration.alternateRowsColor
+            background-color: ${configuration.alternateRows
+              ? configuration.alternateRowsColor
               : DEFAULT_ROW_BACKGROUND_COLOR};
           }
           ${[
@@ -271,7 +268,7 @@ const DataCubeGridStatusBar = observer((props: { view: DataCubeViewState }) => {
             : ''}
         </div>
         {grid.rowLimit !== undefined &&
-          grid.queryConfiguration.showWarningForTruncatedResult && (
+          grid.configuration.showWarningForTruncatedResult && (
             // TODO: if we want to properly warn if the data has been truncated due to row limit,
             // this would require us to fetch n+1 rows when limit=n
             // This is feature is not difficult to implement, but it would be implemented most cleanly
@@ -377,39 +374,56 @@ const DataCubeGridStatusBar = observer((props: { view: DataCubeViewState }) => {
   );
 });
 
-const DataCubeGridClient = observer((props: { view: DataCubeViewState }) => {
-  const { view } = props;
-  const grid = view.grid;
+const DataCubeStandardGridClient = observer(
+  (props: { view: DataCubeViewState }) => {
+    const { view } = props;
+    const grid = view.grid;
 
-  // eslint-disable-next-line no-process-env
-  if (process.env.NODE_ENV !== 'production' && !grid.isClientConfigured) {
-    // eslint-disable-next-line no-console
-    console.error = (message?: unknown, ...agrs: unknown[]) => {
-      console.debug(`%c ${message}`, 'color: silver'); // eslint-disable-line no-console
-    };
-  }
+    // eslint-disable-next-line no-process-env
+    if (process.env.NODE_ENV !== 'production' && !grid.isClientConfigured) {
+      // eslint-disable-next-line no-console
+      console.error = (message?: unknown, ...agrs: unknown[]) => {
+        console.debug(`%c ${message}`, 'color: silver'); // eslint-disable-line no-console
+      };
+    }
+
+    return (
+      <div className="relative h-[calc(100%_-_20px)] w-full">
+        <AgGridReact
+          theme="legacy"
+          className="data-cube-grid ag-theme-quartz"
+          rowModelType="serverSide"
+          serverSideDatasource={grid.clientDataSource}
+          context={{
+            view,
+          }}
+          onGridReady={(params) => {
+            grid
+              .configureClient(params.api)
+              .catch((error) => view.alertService.alertUnhandledError(error));
+            // eslint-disable-next-line no-process-env
+            if (process.env.NODE_ENV !== 'production') {
+              // restore original error logging
+              console.error = __INTERNAL__original_console_error; // eslint-disable-line no-console
+            }
+          }}
+          modules={[AllCommunityModule, AllEnterpriseModule]}
+          {...generateBaseGridOptions(view)}
+        />
+      </div>
+    );
+  },
+);
+
+const DataCubeStandardGrid = observer((props: { view: DataCubeViewState }) => {
+  const { view } = props;
+  const configuration = view.grid.configuration;
 
   return (
-    <div className="relative h-[calc(100%_-_20px)] w-full">
-      <AgGridReact
-        theme="legacy"
-        className="data-cube-grid ag-theme-quartz"
-        rowModelType="serverSide"
-        serverSideDatasource={grid.clientDataSource}
-        context={{
-          view,
-        }}
-        onGridReady={(params) => {
-          grid.configureClient(params.api);
-          // eslint-disable-next-line no-process-env
-          if (process.env.NODE_ENV !== 'production') {
-            // restore original error logging
-            console.error = __INTERNAL__original_console_error; // eslint-disable-line no-console
-          }
-        }}
-        modules={[AllCommunityModule, AllEnterpriseModule]}
-        {...generateBaseGridOptions(view)}
-      />
+    <div className="h-[calc(100%_-_48px)] w-full">
+      <DataCubeGridStyleController configuration={configuration} />
+      <DataCubeStandardGridClient view={view} />
+      <DataCubeGridStatusBar view={view} />
     </div>
   );
 });
@@ -417,11 +431,14 @@ const DataCubeGridClient = observer((props: { view: DataCubeViewState }) => {
 export const DataCubeGrid = observer((props: { view: DataCubeViewState }) => {
   const { view } = props;
 
-  return (
-    <div className="h-[calc(100%_-_48px)] w-full">
-      <DataCubeGridStyleController view={view} />
-      <DataCubeGridClient view={view} />
-      <DataCubeGridStatusBar view={view} />
-    </div>
-  );
+  switch (view.info.configuration.gridMode) {
+    case DataCubeGridMode.MULTIDIMENSIONAL:
+      return <DataCubeMultidimensionalGrid view={view} />;
+    case DataCubeGridMode.STANDARD:
+      return <DataCubeStandardGrid view={view} />;
+    default:
+      return (
+        <div className="border-t-1 border-b-1 h-[calc(100%_-_48px)] w-full border border-neutral-200 bg-neutral-50" />
+      );
+  }
 });

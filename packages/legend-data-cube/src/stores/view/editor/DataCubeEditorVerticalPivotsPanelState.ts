@@ -20,17 +20,17 @@ import { DataCubeColumnKind } from '../../core/DataCubeQueryEngine.js';
 import { type DataCubeSnapshot } from '../../core/DataCubeSnapshot.js';
 import { _findCol, _toCol } from '../../core/model/DataCubeColumn.js';
 import {
-  DataCubeEditorColumnSelectorColumnState,
-  DataCubeEditorColumnSelectorState,
-} from './DataCubeEditorColumnSelectorState.js';
+  DataCubeEditorColumnsSelectorColumnState,
+  DataCubeEditorColumnsSelectorState,
+} from './DataCubeEditorColumnsSelectorState.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
 
-export class DataCubeEditorVerticalPivotColumnSelectorState extends DataCubeEditorColumnSelectorState<DataCubeEditorColumnSelectorColumnState> {
+export class DataCubeEditorVerticalPivotColumnsSelectorState extends DataCubeEditorColumnsSelectorState<DataCubeEditorColumnsSelectorColumnState> {
   override cloneColumn(
-    column: DataCubeEditorColumnSelectorColumnState,
-  ): DataCubeEditorColumnSelectorColumnState {
-    return new DataCubeEditorColumnSelectorColumnState(
+    column: DataCubeEditorColumnsSelectorColumnState,
+  ): DataCubeEditorColumnsSelectorColumnState {
+    return new DataCubeEditorColumnsSelectorColumnState(
       column.name,
       column.type,
     );
@@ -51,7 +51,7 @@ export class DataCubeEditorVerticalPivotColumnSelectorState extends DataCubeEdit
       )
       .map(
         (col) =>
-          new DataCubeEditorColumnSelectorColumnState(col.name, col.type),
+          new DataCubeEditorColumnsSelectorColumnState(col.name, col.type),
       );
   }
 }
@@ -59,10 +59,10 @@ export class DataCubeEditorVerticalPivotColumnSelectorState extends DataCubeEdit
 export class DataCubeEditorVerticalPivotsPanelState
   implements DataCubeQueryEditorPanelState
 {
-  readonly selector!: DataCubeEditorVerticalPivotColumnSelectorState;
+  readonly selector!: DataCubeEditorVerticalPivotColumnsSelectorState;
 
   constructor(editor: DataCubeEditorState) {
-    this.selector = new DataCubeEditorVerticalPivotColumnSelectorState(editor);
+    this.selector = new DataCubeEditorVerticalPivotColumnsSelectorState(editor);
   }
 
   adaptPropagatedChanges(): void {
@@ -80,7 +80,7 @@ export class DataCubeEditorVerticalPivotsPanelState
     this.selector.setSelectedColumns(
       (snapshot.data.groupBy?.columns ?? []).map(
         (col) =>
-          new DataCubeEditorColumnSelectorColumnState(col.name, col.type),
+          new DataCubeEditorColumnsSelectorColumnState(col.name, col.type),
       ),
     );
   }

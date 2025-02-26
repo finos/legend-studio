@@ -87,7 +87,7 @@ export class DataCubeGridClientExportEngine {
   }
 
   private generateFileName() {
-    return `${this._grid.queryConfiguration.name} - ${formatDate(new Date(), 'EEE MMM dd yyyy HH_mm_ss')}`;
+    return `${this._grid.configuration.name} - ${formatDate(new Date(), 'EEE MMM dd yyyy HH_mm_ss')}`;
   }
 
   exportFile(format: DataCubeGridClientExportFormat) {

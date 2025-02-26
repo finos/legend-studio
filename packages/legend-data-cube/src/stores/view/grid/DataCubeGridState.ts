@@ -40,6 +40,7 @@ import { DataCubeGridClientExportEngine } from './DataCubeGridClientExportEngine
 import { DataCubeSettingKey } from '../../../__lib__/DataCubeSetting.js';
 import { DEFAULT_ALERT_WINDOW_CONFIG } from '../../services/DataCubeLayoutService.js';
 import { AlertType } from '../../services/DataCubeAlertService.js';
+import { DataCubeGridMode } from '../../core/DataCubeQueryEngine.js';
 
 /**
  * This query editor state is responsible for syncing the internal state of ag-grid
@@ -65,7 +66,7 @@ export class DataCubeGridState extends DataCubeSnapshotController {
   private _client?: GridApi | undefined;
   clientDataSource: DataCubeGridClientServerSideDataSource;
 
-  queryConfiguration: DataCubeConfiguration;
+  configuration: DataCubeConfiguration = new DataCubeConfiguration();
   rowLimit?: number | undefined;
   isPaginationEnabled = INTERNAL__GRID_CLIENT_DEFAULT_ENABLE_PAGINATION;
   isCachingEnabled = INTERNAL__GRID_CLIENT_DEFAULT_ENABLE_CACHING;
@@ -80,7 +81,7 @@ export class DataCubeGridState extends DataCubeSnapshotController {
     makeObservable(this, {
       clientDataSource: observable,
 
-      queryConfiguration: observable,
+      configuration: observable,
 
       rowLimit: observable,
 
@@ -99,7 +100,6 @@ export class DataCubeGridState extends DataCubeSnapshotController {
     this._view = view;
     this.controller = new DataCubeGridControllerState(this._view);
     this.exportEngine = new DataCubeGridClientExportEngine(this);
-    this.queryConfiguration = new DataCubeConfiguration();
     this.clientDataSource = new DataCubeGridClientServerSideDataSource(
       this,
       this._view,
@@ -236,12 +236,19 @@ export class DataCubeGridState extends DataCubeSnapshotController {
     return guaranteeNonNullable(this._client, 'Grid client is not configured');
   }
 
-  configureClient(val: GridApi | undefined) {
+  async configureClient(val: GridApi | undefined) {
     this._client = val;
     this.debouncedAutoResizeColumns = debounce(
       () => val?.autoSizeAllColumns(),
       100,
     );
+
+    // reapply latest snapshot when grid client is configured
+    // this happens during initialization/switching between grid modes
+    const latestSnapshot = this.getLatestSnapshot();
+    if (latestSnapshot) {
+      await this.applySnapshot(latestSnapshot, undefined);
+    }
   }
 
   override getSnapshotSubscriberName() {
@@ -255,8 +262,18 @@ export class DataCubeGridState extends DataCubeSnapshotController {
     const configuration = DataCubeConfiguration.serialization.fromJson(
       snapshot.data.configuration,
     );
-    this.queryConfiguration = configuration;
-    this.rowLimit = snapshot.data.limit;
+    this.configuration = configuration;
+
+    // Only proceed if the grid mode is standard, else the client won't be populated properly
+    // and we cannot continue anyway.
+    if (
+      configuration.gridMode !== DataCubeGridMode.STANDARD ||
+      // NOTE: have to make sure the grid API client has been properly configured before proceeding
+      !this._client ||
+      this._client.isDestroyed()
+    ) {
+      return;
+    }
 
     const gridOptions = generateGridOptionsFromSnapshot(
       snapshot,

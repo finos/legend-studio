@@ -17,45 +17,50 @@
 import type { DataCubeConfiguration } from '../../core/model/DataCubeConfiguration.js';
 import { DataCubeColumnKind } from '../../core/DataCubeQueryEngine.js';
 import { type DataCubeSnapshot } from '../../core/DataCubeSnapshot.js';
-import { _findCol } from '../../core/model/DataCubeColumn.js';
-import {
-  DataCubeEditorColumnSelectorColumnState,
-  DataCubeEditorColumnSelectorState,
-} from './DataCubeEditorColumnSelectorState.js';
+import { _findCol, _sortByColName } from '../../core/model/DataCubeColumn.js';
+import { DataCubeEditorColumnsSelectorColumnState } from './DataCubeEditorColumnsSelectorState.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
 import { action, computed, makeObservable, observable } from 'mobx';
+import { generateEnumerableNameFromToken } from '@finos/legend-shared';
 
-export class DataCubeEditorVerticalPivotColumnSelectorState extends DataCubeEditorColumnSelectorState<DataCubeEditorColumnSelectorColumnState> {
-  override cloneColumn(
-    column: DataCubeEditorColumnSelectorColumnState,
-  ): DataCubeEditorColumnSelectorColumnState {
-    return new DataCubeEditorColumnSelectorColumnState(
-      column.name,
-      column.type,
-    );
+export type DataCubeEditorDimensionsTreeNode = {
+  name: string;
+  data: DataCubeEditorDimensionState | DataCubeEditorColumnsSelectorColumnState;
+  children?: DataCubeEditorDimensionsTreeNode[] | undefined;
+};
+
+export class DataCubeEditorDimensionState {
+  name: string;
+  isRenaming = false;
+  columns: DataCubeEditorColumnsSelectorColumnState[] = [];
+
+  constructor(name: string) {
+    makeObservable(this, {
+      name: observable,
+      setName: action,
+
+      isRenaming: observable,
+      setIsRenaming: action,
+
+      columns: observable,
+      setColumns: action,
+    });
+
+    this.name = name;
   }
 
-  override get availableColumns() {
-    return this._editor.columnProperties.columns
-      .filter(
-        (column) =>
-          column.kind === DataCubeColumnKind.DIMENSION &&
-          // exclude group-level extended columns
-          !_findCol(this._editor.groupExtendColumns, column.name) &&
-          // exclude pivot columns
-          !_findCol(
-            this._editor.horizontalPivots.selector.selectedColumns,
-            column.name,
-          ),
-      )
-      .map(
-        (col) =>
-          new DataCubeEditorColumnSelectorColumnState(col.name, col.type),
-      );
+  setName(name: string) {
+    this.name = name;
   }
 
-  //
+  setIsRenaming(val: boolean) {
+    this.isRenaming = val;
+  }
+
+  setColumns(columns: DataCubeEditorColumnsSelectorColumnState[]) {
+    this.columns = columns;
+  }
 }
 
 export class DataCubeEditorDimensionsPanelState
@@ -64,14 +69,32 @@ export class DataCubeEditorDimensionsPanelState
   readonly _editor!: DataCubeEditorState;
 
   availableColumnsSearchText = '';
-  // readonly selector!: DataCubeEditorVerticalPivotColumnSelectorState;
+  dimensions: DataCubeEditorDimensionState[] = [];
+  dimensionsTreeData: {
+    nodes: DataCubeEditorDimensionsTreeNode[];
+  } = { nodes: [] };
+  dimensionsTreeSearchText = '';
 
   constructor(editor: DataCubeEditorState) {
     makeObservable(this, {
+      availableColumns: computed,
+      availableColumnsForDisplay: computed,
+
       availableColumnsSearchText: observable,
       setAvailableColumnsSearchText: action,
 
-      availableColumns: computed,
+      selectedColumns: computed,
+      deselectColumns: action,
+
+      dimensions: observable,
+      setDimensions: action,
+      newDimension: action,
+
+      dimensionsTreeData: observable.ref,
+      refreshDimensionsTreeData: action,
+
+      dimensionsTreeSearchText: observable,
+      setDimensionsTreeSearchText: action,
     });
 
     this._editor = editor;
@@ -92,21 +115,73 @@ export class DataCubeEditorDimensionsPanelState
       )
       .map(
         (col) =>
-          new DataCubeEditorColumnSelectorColumnState(col.name, col.type),
+          new DataCubeEditorColumnsSelectorColumnState(col.name, col.type),
       );
+  }
+
+  get availableColumnsForDisplay() {
+    return this.availableColumns
+      .filter((column) => !_findCol(this.selectedColumns, column.name))
+      .sort(_sortByColName);
   }
 
   setAvailableColumnsSearchText(val: string) {
     this.availableColumnsSearchText = val;
   }
 
-  // adaptPropagatedChanges(): void {
-  //   this.selector.setSelectedColumns(
-  //     this.selector.selectedColumns.filter((column) =>
-  //       _findCol(this.selector.availableColumns, column.name),
-  //     ),
-  //   );
-  // }
+  get selectedColumns() {
+    return this.dimensions.flatMap((dimension) => dimension.columns);
+  }
+
+  deselectColumns(columns: DataCubeEditorColumnsSelectorColumnState[]) {
+    this.dimensions.forEach((dimension) => {
+      dimension.setColumns(
+        dimension.columns.filter((column) => !_findCol(columns, column.name)),
+      );
+    });
+  }
+
+  setDimensions(dimensions: DataCubeEditorDimensionState[]) {
+    this.dimensions = dimensions;
+  }
+
+  newDimension() {
+    const newDimension = new DataCubeEditorDimensionState(
+      generateEnumerableNameFromToken(
+        this.dimensions.map((dimension) => dimension.name),
+        'Dimension',
+        'whitespace',
+      ),
+    );
+    this.dimensions.push(newDimension);
+    return newDimension;
+  }
+
+  refreshDimensionsTreeData() {
+    this.dimensionsTreeData = {
+      nodes: this.dimensions.map((dimension) => ({
+        name: dimension.name,
+        data: dimension,
+        children: dimension.columns.map((column) => ({
+          name: column.name,
+          data: column,
+        })),
+      })),
+    };
+  }
+
+  setDimensionsTreeSearchText(val: string) {
+    this.dimensionsTreeSearchText = val;
+  }
+
+  adaptPropagatedChanges(): void {
+    this.deselectColumns(
+      this.selectedColumns.filter(
+        (column) => !_findCol(this.availableColumns, column.name),
+      ),
+    );
+    this.refreshDimensionsTreeData();
+  }
 
   applySnaphot(
     snapshot: DataCubeSnapshot,

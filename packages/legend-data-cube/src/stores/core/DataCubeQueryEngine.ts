@@ -268,6 +268,11 @@ export enum DataCubeColumnDataType {
   TIME = 'Time',
 }
 
+export enum DataCubeGridMode {
+  STANDARD = 'Standard',
+  MULTIDIMENSIONAL = 'Multidimensional',
+}
+
 export const PIVOT_COLUMN_NAME_VALUE_SEPARATOR = '__|__';
 
 export const TREE_COLUMN_VALUE_SEPARATOR = '__/__';
@@ -291,6 +296,7 @@ export const DEFAULT_COLUMN_WIDTH = 300;
 export const DEFAULT_COLUMN_MIN_WIDTH = 50;
 export const DEFAULT_COLUMN_MAX_WIDTH = undefined;
 
+export const DEFAULT_GRID_MODE = DataCubeGridMode.STANDARD;
 export const DEFAULT_FONT_FAMILY = DataCubeFont.ROBOTO;
 export const DEFAULT_FONT_SIZE = 11;
 export const DEFAULT_FONT_BOLD = false;
