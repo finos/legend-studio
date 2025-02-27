@@ -19,13 +19,13 @@ import { type DataCubeSnapshot } from '../../core/DataCubeSnapshot.js';
 import { _findCol, _toCol } from '../../core/model/DataCubeColumn.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import {
-  DataCubeEditorColumnSelectorColumnState,
-  DataCubeEditorColumnSelectorState,
-} from './DataCubeEditorColumnSelectorState.js';
+  DataCubeEditorColumnsSelectorColumnState,
+  DataCubeEditorColumnsSelectorState,
+} from './DataCubeEditorColumnsSelectorState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
 import { type DataCubeConfiguration } from '../../core/model/DataCubeConfiguration.js';
 
-export class DataCubeEditorBasicColumnSelectorState extends DataCubeEditorColumnSelectorState<DataCubeEditorColumnSelectorColumnState> {
+export class DataCubeEditorBasicColumnsSelectorState extends DataCubeEditorColumnsSelectorState<DataCubeEditorColumnsSelectorColumnState> {
   showHiddenColumns = false;
 
   constructor(
@@ -33,7 +33,7 @@ export class DataCubeEditorBasicColumnSelectorState extends DataCubeEditorColumn
     options?: {
       onChange?:
         | ((
-            select: DataCubeEditorColumnSelectorState<DataCubeEditorColumnSelectorColumnState>,
+            select: DataCubeEditorColumnsSelectorState<DataCubeEditorColumnsSelectorColumnState>,
           ) => void)
         | undefined;
     },
@@ -49,8 +49,8 @@ export class DataCubeEditorBasicColumnSelectorState extends DataCubeEditorColumn
     });
   }
 
-  override cloneColumn(column: DataCubeEditorColumnSelectorColumnState) {
-    return new DataCubeEditorColumnSelectorColumnState(
+  override cloneColumn(column: DataCubeEditorColumnsSelectorColumnState) {
+    return new DataCubeEditorColumnsSelectorColumnState(
       column.name,
       column.type,
     );
@@ -62,11 +62,11 @@ export class DataCubeEditorBasicColumnSelectorState extends DataCubeEditorColumn
       ...this._editor.leafExtendColumns,
       ...this._editor.groupExtendColumns,
     ].map(
-      (col) => new DataCubeEditorColumnSelectorColumnState(col.name, col.type),
+      (col) => new DataCubeEditorColumnsSelectorColumnState(col.name, col.type),
     );
   }
 
-  override get availableColumnsForDisplay(): DataCubeEditorColumnSelectorColumnState[] {
+  override get availableColumnsForDisplay(): DataCubeEditorColumnsSelectorColumnState[] {
     return super.availableColumnsForDisplay.filter(
       (column) =>
         this.showHiddenColumns ||
@@ -75,7 +75,7 @@ export class DataCubeEditorBasicColumnSelectorState extends DataCubeEditorColumn
     );
   }
 
-  override get selectedColumnsForDisplay(): DataCubeEditorColumnSelectorColumnState[] {
+  override get selectedColumnsForDisplay(): DataCubeEditorColumnsSelectorColumnState[] {
     return super.selectedColumnsForDisplay.filter(
       (column) =>
         this.showHiddenColumns ||
@@ -104,7 +104,7 @@ export class DataCubeEditorColumnsPanelState
 {
   private readonly _editor!: DataCubeEditorState;
 
-  readonly selector!: DataCubeEditorBasicColumnSelectorState;
+  readonly selector!: DataCubeEditorBasicColumnsSelectorState;
 
   constructor(editor: DataCubeEditorState) {
     makeObservable(this, {
@@ -112,7 +112,7 @@ export class DataCubeEditorColumnsPanelState
     });
 
     this._editor = editor;
-    this.selector = new DataCubeEditorBasicColumnSelectorState(editor, {
+    this.selector = new DataCubeEditorBasicColumnsSelectorState(editor, {
       onChange: (selector) => {
         const selectedColumnConfigurations = selector.selectedColumns.map(
           (col) =>
@@ -159,7 +159,7 @@ export class DataCubeEditorColumnsPanelState
         .filter((col) => col.isSelected)
         .map((col) => {
           const column = this.selector.getColumn(col.name);
-          return new DataCubeEditorColumnSelectorColumnState(
+          return new DataCubeEditorColumnsSelectorColumnState(
             column.name,
             column.type,
           );
