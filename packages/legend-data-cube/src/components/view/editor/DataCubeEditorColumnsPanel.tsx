@@ -16,17 +16,17 @@
 
 import { cn, DataCubeIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-import { DataCubeEditorColumnSelector } from './DataCubeEditorColumnSelector.js';
+import { DataCubeEditorColumnsSelector } from './DataCubeEditorColumnsSelector.js';
 import { useEffect } from 'react';
 import type { DataCubeViewState } from '../../../stores/view/DataCubeViewState.js';
 import { FormCheckbox } from '../../core/DataCubeFormUtils.js';
-import type { DataCubeEditorColumnSelectorColumnState } from '../../../stores/view/editor/DataCubeEditorColumnSelectorState.js';
+import type { DataCubeEditorColumnsSelectorColumnState } from '../../../stores/view/editor/DataCubeEditorColumnsSelectorState.js';
 import type { DataCubeEditorState } from '../../../stores/view/editor/DataCubeEditorState.js';
 import { _findCol } from '../../../stores/core/model/DataCubeColumn.js';
 
-const ColumnSelectorLabel = observer(
+const ColumnLabel = observer(
   (props: {
-    column: DataCubeEditorColumnSelectorColumnState;
+    column: DataCubeEditorColumnsSelectorColumnState;
     editor: DataCubeEditorState;
   }) => {
     const { column, editor } = props;
@@ -93,7 +93,7 @@ export const DataCubeEditorColumnsPanel = observer(
           </div>
         </div>
         <div className="flex h-[calc(100%_-_24px)] w-full">
-          <DataCubeEditorColumnSelector
+          <DataCubeEditorColumnsSelector
             selector={panel.selector}
             noColumnsSelectedRenderer={() => (
               <div className="flex items-center border-[1.5px] border-neutral-200 p-2 font-semibold text-neutral-400">
@@ -103,9 +103,7 @@ export const DataCubeEditorColumnsPanel = observer(
                 No columns selected
               </div>
             )}
-            columnLabelRenderer={(p) => (
-              <ColumnSelectorLabel {...p} editor={editor} />
-            )}
+            columnLabelRenderer={(p) => <ColumnLabel {...p} editor={editor} />}
           />
         </div>
       </div>

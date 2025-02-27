@@ -26,6 +26,7 @@ import { cn } from '@finos/legend-art';
 import type { DataCubeViewState } from '../../../stores/view/DataCubeViewState.js';
 import { FormButton } from '../../core/DataCubeFormUtils.js';
 import { useDataCube } from '../../DataCubeProvider.js';
+import { DataCubeEditorDimensionsPanel } from './DataCubeEditorDimensionsPanel.js';
 
 export const DataCubeEditor = observer((props: { view: DataCubeViewState }) => {
   const dataCube = useDataCube();
@@ -36,8 +37,9 @@ export const DataCubeEditor = observer((props: { view: DataCubeViewState }) => {
   const selectedTab = editor.currentTab;
   const tabs = [
     DataCubeEditorTab.COLUMNS,
-    DataCubeEditorTab.VERTICAL_PIVOTS,
     DataCubeEditorTab.HORIZONTAL_PIVOTS,
+    DataCubeEditorTab.VERTICAL_PIVOTS,
+    DataCubeEditorTab.DIMENSIONS,
     DataCubeEditorTab.SORTS,
     DataCubeEditorTab.GENERAL_PROPERTIES,
     DataCubeEditorTab.COLUMN_PROPERTIES,
@@ -66,11 +68,14 @@ export const DataCubeEditor = observer((props: { view: DataCubeViewState }) => {
           {selectedTab === DataCubeEditorTab.COLUMNS && (
             <DataCubeEditorColumnsPanel view={view} />
           )}
+          {selectedTab === DataCubeEditorTab.HORIZONTAL_PIVOTS && (
+            <DataCubeEditorHorizontalPivotsPanel view={view} />
+          )}
           {selectedTab === DataCubeEditorTab.VERTICAL_PIVOTS && (
             <DataCubeEditorVerticalPivotsPanel view={view} />
           )}
-          {selectedTab === DataCubeEditorTab.HORIZONTAL_PIVOTS && (
-            <DataCubeEditorHorizontalPivotsPanel view={view} />
+          {selectedTab === DataCubeEditorTab.DIMENSIONS && (
+            <DataCubeEditorDimensionsPanel view={view} />
           )}
           {selectedTab === DataCubeEditorTab.SORTS && (
             <DataCubeEditorSortsPanel view={view} />
