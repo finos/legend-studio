@@ -42,3 +42,24 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateQueryViewUrl = (
   queryApplicationUrl: string,
   queryId: string,
 ) => `${queryApplicationUrl}/edit/${queryId}`;
+
+export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCViewUrl = (
+  studioApplicationUrl: string,
+  projectId: string,
+  versionId: string,
+  element: string | undefined,
+) =>
+  `${studioApplicationUrl}/view/${projectId}/version/${versionId}${
+    element ? `/entity/${element}` : ''
+  }`;
+
+export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioViewUrl = (
+  studioApplicationUrl: string,
+  groupId: string,
+  artifactId: string,
+  versionId: string,
+  element: string | undefined,
+) =>
+  `${studioApplicationUrl}/view/archive/${groupId}:${artifactId}:${versionId}${
+    element ? `/entity/${element}` : ''
+  }`;

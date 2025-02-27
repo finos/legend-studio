@@ -101,6 +101,7 @@ import {
   DataCubeExecutionError,
   RawUserDefinedFunctionDataCubeSource,
   ADHOC_FUNCTION_DATA_CUBE_SOURCE_TYPE,
+  UserDefinedFunctionDataCubeSource,
 } from '@finos/legend-data-cube';
 import {
   isNonNullable,
@@ -244,7 +245,8 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           );
         }
 
-        const source = new AdhocQueryDataCubeSource();
+        const source = new UserDefinedFunctionDataCubeSource();
+        source.functionPath = rawSource.functionPath;
         source.runtime = rawSource.runtime;
         source.model = rawSource.model;
         if (deserializedModel.sdlcInfo instanceof V1_LegendSDLC) {
@@ -434,6 +436,13 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           model: source.model,
         })
       ).completions as CompletionItem[];
+    } else if (source instanceof UserDefinedFunctionDataCubeSource) {
+      return (
+        await this._engineServerClient.completeCode({
+          codeBlock,
+          model: source.model,
+        })
+      ).completions as CompletionItem[];
     } else if (source instanceof LegendQueryDataCubeSource) {
       return (
         await this._engineServerClient.completeCode({
@@ -523,6 +532,8 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
 
     try {
       if (source instanceof AdhocQueryDataCubeSource) {
+        result = await this._runQuery(query, source.model, undefined, options);
+      } else if (source instanceof UserDefinedFunctionDataCubeSource) {
         result = await this._runQuery(query, source.model, undefined, options);
       } else if (source instanceof LegendQueryDataCubeSource) {
         query.parameters = source.lambda.parameters;
@@ -627,6 +638,11 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
 
   override buildExecutionContext(source: DataCubeSource) {
     if (source instanceof AdhocQueryDataCubeSource) {
+      return _function(
+        DataCubeFunction.FROM,
+        [_elementPtr(source.runtime)].filter(isNonNullable),
+      );
+    } else if (source instanceof UserDefinedFunctionDataCubeSource) {
       return _function(
         DataCubeFunction.FROM,
         [_elementPtr(source.runtime)].filter(isNonNullable),
@@ -747,6 +763,8 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     source: DataCubeSource,
   ) {
     if (source instanceof AdhocQueryDataCubeSource) {
+      return this._getLambdaRelationType(query, source.model);
+    } else if (source instanceof UserDefinedFunctionDataCubeSource) {
       return this._getLambdaRelationType(query, source.model);
     } else if (source instanceof LegendQueryDataCubeSource) {
       return this._getLambdaRelationType(query, source.model);

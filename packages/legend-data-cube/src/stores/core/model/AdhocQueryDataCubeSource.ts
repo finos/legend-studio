@@ -28,6 +28,12 @@ export class AdhocQueryDataCubeSource extends DataCubeSource {
   model!: PlainObject<V1_PureModelContext>;
 }
 
+export class UserDefinedFunctionDataCubeSource extends DataCubeSource {
+  functionPath!: string;
+  runtime!: string;
+  model!: PlainObject<V1_PureModelContext>;
+}
+
 export const ADHOC_QUERY_DATA_CUBE_SOURCE_TYPE = 'adhocQuery';
 export const ADHOC_FUNCTION_DATA_CUBE_SOURCE_TYPE = 'userDefinedFunction';
 

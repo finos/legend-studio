@@ -33,6 +33,9 @@ export interface LegendDataCubeApplicationConfigurationData
   query?: {
     url: string;
   };
+  studio?: {
+    url: string;
+  };
 }
 
 export class LegendDataCubeApplicationConfig extends LegendApplicationConfig {
@@ -40,6 +43,7 @@ export class LegendDataCubeApplicationConfig extends LegendApplicationConfig {
   readonly depotServerUrl: string;
   readonly engineQueryServerUrl?: string | undefined;
   readonly queryApplicationUrl?: string | undefined;
+  readonly studioApplicationUrl?: string | undefined;
 
   constructor(
     input: LegendApplicationConfigurationInput<LegendDataCubeApplicationConfigurationData>,
@@ -79,6 +83,12 @@ export class LegendDataCubeApplicationConfig extends LegendApplicationConfig {
     if (input.configData.query?.url) {
       this.queryApplicationUrl = LegendApplicationConfig.resolveAbsoluteUrl(
         input.configData.query.url,
+      );
+    }
+    // stduio
+    if (input.configData.studio?.url) {
+      this.studioApplicationUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+        input.configData.studio.url,
       );
     }
   }
