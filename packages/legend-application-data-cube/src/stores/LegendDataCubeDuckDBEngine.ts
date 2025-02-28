@@ -29,6 +29,7 @@ import {
   assertNonNullable,
   csvStringify,
   guaranteeNonNullable,
+  isNullable,
   UnsupportedOperationError,
   uuid,
 } from '@finos/legend-shared';
@@ -46,14 +47,10 @@ export class LegendDataCubeDuckDBEngine {
   // https://duckdb.org/docs/guides/meta/describe.html
   private static readonly COLUMN_NAME = 'column_name';
   private static readonly COLUMN_TYPE = 'column_type';
-  private static readonly TABLE_NAME = 'table_name';
   // Options for creating csv using papa parser: https://www.papaparse.com/docs#config
   private static readonly ESCAPE_CHAR = `'`;
   private static readonly QUOTE_CHAR = `'`;
-  private static dbReferenceMap: Map<
-    string,
-    { schemaName: string; tableName: string; tableSpec: unknown[][] }
-  > = new Map();
+  private _catalog: Map<string, DuckDBCatalogTable> = new Map();
 
   private _database?: duckdb.AsyncDuckDB | undefined;
 
@@ -64,9 +61,9 @@ export class LegendDataCubeDuckDBEngine {
     );
   }
 
-  static getTableDetailsByReference(ref: string) {
+  retrieveCatalogTable(ref: string) {
     return guaranteeNonNullable(
-      LegendDataCubeDuckDBEngine.dbReferenceMap.get(ref),
+      this._catalog.get(ref),
       `Can't find reference ${ref}`,
     );
   }
@@ -140,8 +137,14 @@ export class LegendDataCubeDuckDBEngine {
     return { schema, table, rowCount: result.result.rows.length };
   }
 
-  async ingestLocalFileData(data: string, format: string) {
-    LegendDataCubeDuckDBEngine.dbReferenceMap.clear();
+  async ingestLocalFileData(data: string, format: string, refId?: string) {
+    if (!isNullable(refId) && this._catalog.has(refId)) {
+      const dbDetails = guaranteeNonNullable(this._catalog.get(refId));
+      return {
+        dbReference: refId,
+        columnNames: dbDetails.columns.map((col) => col[0] as string),
+      };
+    }
     const schema = LegendDataCubeDuckDBEngine.DUCKDB_DEFAULT_SCHEMA_NAME;
     LegendDataCubeDuckDBEngine.ingestFileTableCounter += 1;
     const table = `${LegendDataCubeDuckDBEngine.INGEST_TABLE_NAME_PREFIX}${LegendDataCubeDuckDBEngine.ingestFileTableCounter}`;
@@ -175,43 +178,22 @@ export class LegendDataCubeDuckDBEngine {
     const tableSpec = (await connection.query(`DESCRIBE ${schema}.${table}`))
       .toArray()
       .map((spec) => [
-        spec[LegendDataCubeDuckDBEngine.COLUMN_NAME],
-        spec[LegendDataCubeDuckDBEngine.COLUMN_TYPE],
+        spec[LegendDataCubeDuckDBEngine.COLUMN_NAME] as string,
+        spec[LegendDataCubeDuckDBEngine.COLUMN_TYPE] as string,
       ]);
     await connection.close();
 
-    const ref = uuid();
-    LegendDataCubeDuckDBEngine.dbReferenceMap.set(ref, {
+    const ref = isNullable(refId) ? uuid() : refId;
+    this._catalog.set(ref, {
       schemaName: schema,
       tableName: table,
-      tableSpec,
-    });
+      columns: tableSpec,
+    } satisfies DuckDBCatalogTable);
 
     return {
       dbReference: ref,
       columnNames: tableSpec.map((spec) => spec[0] as string),
     };
-  }
-
-  async clearLocalFileDataIngest() {
-    const connection = await this.database.connect();
-    const tablesResult = await connection.query(`
-      SELECT table_name
-      FROM information_schema.tables
-      WHERE table_schema = '${LegendDataCubeDuckDBEngine.DUCKDB_DEFAULT_SCHEMA_NAME}'
-      AND table_name LIKE '${LegendDataCubeDuckDBEngine.INGEST_TABLE_NAME_PREFIX}%'`); // Filter tables starting with the prefix
-
-    const tableNames = tablesResult
-      .toArray()
-      .map((row) => row[LegendDataCubeDuckDBEngine.TABLE_NAME] as string);
-
-    await Promise.all(
-      tableNames.map((table) =>
-        connection.query(`
-        DROP TABLE IF EXISTS "${LegendDataCubeDuckDBEngine.DUCKDB_DEFAULT_SCHEMA_NAME}.${table}";
-      `),
-      ),
-    );
   }
 
   async runSQLQuery(sql: string) {
@@ -314,3 +296,9 @@ export class LegendDataCubeDuckDBEngine {
     await this._database?.terminate();
   }
 }
+
+type DuckDBCatalogTable = {
+  schemaName: string;
+  tableName: string;
+  columns: string[][];
+};

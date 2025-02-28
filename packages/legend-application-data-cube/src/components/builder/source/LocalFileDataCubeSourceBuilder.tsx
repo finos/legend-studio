@@ -30,8 +30,7 @@ export const LocalFileDataCubeSourceBuilder = observer(
           type={AlertType.WARNING}
           text={`Currently, support for local file comes with the following limitations:
 - Only CSV files are supported, but not all variants of CSV files are supported (required header row, comma delimiter, single escape quote).
-- Data from uploaded file will not be stored nor shared.
-- DataCube from uploaded file can be stored but when loading this, you will have to reupload source data.`}
+- Data from uploaded file will not be stored nor shared.`}
         />
         <div className="mt-2 flex h-6 w-full items-center text-neutral-500">
           <input

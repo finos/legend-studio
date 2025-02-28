@@ -29,8 +29,8 @@ import {
 import { LegendDataCubeSourceLoader } from '../../components/builder/LegendDataCubeSourceLoader.js';
 import type { LegendDataCubeDataCubeEngine } from '../LegendDataCubeDataCubeEngine.js';
 import type { LegendDataCubeApplicationStore } from '../LegendDataCubeBaseStore.js';
-import { type LegendDataCubeSourceLoaderBuilderState } from './source/loader/LegendDataCubeSourceLoaderBuilderState.js';
-import { LocalFileDataCubeSourceLoaderBuilderState } from './source/loader/LocalFileDataCubeSourceLoaderBuilderState.js';
+import { LegendDataCubePartialSourceLoaderState } from './source/loader/LegendDataCubePartialSourceLoaderState.js';
+import { LocalFileDataCubePartialSourceLoaderState } from './source/loader/LocalFileDataCubePartialSourceLoaderState.js';
 import { LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE } from '../model/LocalFileDataCubeSource.js';
 
 export class LegendDataCubeSourceLoaderState {
@@ -44,7 +44,7 @@ export class LegendDataCubeSourceLoaderState {
   readonly searchState = ActionState.create();
   readonly finalizeState = ActionState.create();
 
-  sourceLoaderBuilder: LegendDataCubeSourceLoaderBuilderState;
+  sourceLoaderBuilder: LegendDataCubePartialSourceLoaderState;
 
   constructor(store: LegendDataCubeBuilderStore) {
     makeObservable(this, {
@@ -87,11 +87,11 @@ export class LegendDataCubeSourceLoaderState {
 
   private createSourceLoaderBuilder(
     type: string,
-  ): LegendDataCubeSourceLoaderBuilderState {
+  ): LegendDataCubePartialSourceLoaderState {
     // We can implement this as a switch when
     switch (type) {
       case LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE:
-        return new LocalFileDataCubeSourceLoaderBuilderState(
+        return new LocalFileDataCubePartialSourceLoaderState(
           this._application,
           this._engine,
         );
@@ -105,8 +105,7 @@ export class LegendDataCubeSourceLoaderState {
   async finalize() {
     try {
       this.finalizeState.inProgress();
-      this.sourceLoaderBuilder.validateSourceData(this.source);
-      this.source = await this.sourceLoaderBuilder.generateSourceData();
+      this.source = await this.sourceLoaderBuilder.loadSourceData(this.source);
       this.display.close();
       this.finalizeState.pass();
     } catch (error) {

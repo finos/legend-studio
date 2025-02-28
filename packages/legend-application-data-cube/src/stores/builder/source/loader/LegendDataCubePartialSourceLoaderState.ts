@@ -18,7 +18,7 @@ import { type PlainObject } from '@finos/legend-shared';
 import type { LegendDataCubeApplicationStore } from '../../../LegendDataCubeBaseStore.js';
 import type { LegendDataCubeDataCubeEngine } from '../../../LegendDataCubeDataCubeEngine.js';
 
-export abstract class LegendDataCubeSourceLoaderBuilderState {
+export abstract class LegendDataCubePartialSourceLoaderState {
   protected readonly _application: LegendDataCubeApplicationStore;
   protected readonly _engine: LegendDataCubeDataCubeEngine;
 
@@ -32,7 +32,7 @@ export abstract class LegendDataCubeSourceLoaderBuilderState {
 
   abstract get isValid(): boolean;
 
-  abstract generateSourceData(): Promise<PlainObject>;
-
-  abstract validateSourceData(source: PlainObject | undefined): boolean;
+  abstract loadSourceData(
+    source: PlainObject | undefined,
+  ): Promise<PlainObject>;
 }

@@ -201,18 +201,16 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         const source = new LocalFileDataCubeSource();
         source.fileName = rawSource.fileName;
         source.fileFormat = rawSource.fileFormat;
-        source.count = rawSource.count;
 
-        const { schemaName, tableName, tableSpec } =
-          LegendDataCubeDuckDBEngine.getTableDetailsByReference(
-            rawSource.dbReference,
-          );
+        const tableCatalog = this._duckDBEngine.retrieveCatalogTable(
+          rawSource._ref,
+        );
 
         const { model, database, schema, table, runtime } =
           this._synthesizeMinimalModelContext({
-            schemaName,
-            tableName,
-            tableColumns: tableSpec.map((col) => {
+            schemaName: tableCatalog.schemaName,
+            tableName: tableCatalog.tableName,
+            tableColumns: tableCatalog.columns.map((col) => {
               const column = new V1_Column();
               column.name = col[0] as string;
               // TODO: confirm this is in accordance to engine
@@ -948,14 +946,10 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     }
   }
 
-  async ingestLocalFileData(data: string, format: string) {
+  async ingestLocalFileData(data: string, format: string, refId?: string) {
     const { dbReference, columnNames } =
-      await this._duckDBEngine.ingestLocalFileData(data, format);
+      await this._duckDBEngine.ingestLocalFileData(data, format, refId);
     return { dbReference, columnNames };
-  }
-
-  async clearLocalFileIngestData() {
-    await this._duckDBEngine.clearLocalFileDataIngest();
   }
 
   private _synthesizeMinimalModelContext(data: {

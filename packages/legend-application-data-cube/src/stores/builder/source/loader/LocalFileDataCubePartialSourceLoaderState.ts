@@ -29,9 +29,9 @@ import {
   LocalFileDataCubeSourceFormat,
   RawLocalFileQueryDataCubeSource,
 } from '../../../model/LocalFileDataCubeSource.js';
-import { LegendDataCubeSourceLoaderBuilderState } from './LegendDataCubeSourceLoaderBuilderState.js';
+import { LegendDataCubePartialSourceLoaderState } from './LegendDataCubePartialSourceLoaderState.js';
 
-export class LocalFileDataCubeSourceLoaderBuilderState extends LegendDataCubeSourceLoaderBuilderState {
+export class LocalFileDataCubePartialSourceLoaderState extends LegendDataCubePartialSourceLoaderState {
   readonly processState = ActionState.create();
 
   fileName?: string | undefined;
@@ -154,7 +154,14 @@ export class LocalFileDataCubeSourceLoaderBuilderState extends LegendDataCubeSou
     return Boolean(this.fileData);
   }
 
-  override async generateSourceData(): Promise<PlainObject> {
+  override async loadSourceData(
+    source: PlainObject | undefined,
+  ): Promise<PlainObject> {
+    const deserializeSource =
+      RawLocalFileQueryDataCubeSource.serialization.fromJson(
+        guaranteeNonNullable(source),
+      );
+
     if (
       !this.fileData ||
       !this.fileName ||
@@ -166,46 +173,33 @@ export class LocalFileDataCubeSourceLoaderBuilderState extends LegendDataCubeSou
       );
     }
 
-    await this._engine.clearLocalFileIngestData();
-
-    const tableDetails = guaranteeNonNullable(
-      await this._engine.ingestLocalFileData(this.fileData, this.fileFormat),
-      `Can't generate reference for local file source`,
-    );
-    // TODO: might have to store columnNames for validation purpose
-    const rawSource = new RawLocalFileQueryDataCubeSource();
-    rawSource.fileName = this.fileName;
-    rawSource.fileFormat = this.fileFormat;
-    rawSource.dbReference = tableDetails.dbReference;
-    rawSource.columnNames = tableDetails.columnNames;
-    rawSource.count = this.rowCount;
-
-    return RawLocalFileQueryDataCubeSource.serialization.toJson(rawSource);
-  }
-
-  override validateSourceData(source: PlainObject) {
-    const deserializeSource =
-      RawLocalFileQueryDataCubeSource.serialization.fromJson(source);
     const intersectingColumns = guaranteeNonNullable(
       this.columnNames?.filter((col) =>
         deserializeSource.columnNames.includes(col),
       ),
     );
-    if (deserializeSource.fileName !== this.fileName) {
-      throw new Error(
-        `File name mismatch: Expected ${deserializeSource.fileName}, got ${this.fileName}`,
-      );
-    }
-    if (deserializeSource.fileFormat !== this.fileFormat) {
-      throw new Error(
-        `File format mismatch: Expected ${deserializeSource.fileFormat}, got ${this.fileFormat}`,
-      );
-    }
     if (intersectingColumns.length !== deserializeSource.columnNames.length) {
       throw new Error(
         `Columns mismatch: Expected [${deserializeSource.columnNames.join(',')}], got [${this.columnNames?.join(',')}]`,
       );
     }
-    return true;
+
+    const tableDetails = guaranteeNonNullable(
+      await this._engine.ingestLocalFileData(
+        this.fileData,
+        this.fileFormat,
+        deserializeSource._ref,
+      ),
+      `Can't generate source data: failed to ingest data from local file`,
+    );
+
+    // TODO: do a type check for columns
+    const rawSource = new RawLocalFileQueryDataCubeSource();
+    rawSource.fileName = this.fileName;
+    rawSource.fileFormat = this.fileFormat;
+    rawSource._ref = tableDetails.dbReference;
+    rawSource.columnNames = tableDetails.columnNames;
+
+    return RawLocalFileQueryDataCubeSource.serialization.toJson(rawSource);
   }
 }

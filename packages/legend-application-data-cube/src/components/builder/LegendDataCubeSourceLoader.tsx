@@ -17,7 +17,7 @@
 import { observer } from 'mobx-react-lite';
 import { FormButton } from '@finos/legend-data-cube';
 import { useLegendDataCubeBuilderStore } from './LegendDataCubeBuilderStoreProvider.js';
-import { LocalFileDataCubeSourceLoaderBuilderState } from '../../stores/builder/source/loader/LocalFileDataCubeSourceLoaderBuilderState.js';
+import { LocalFileDataCubePartialSourceLoaderState } from '../../stores/builder/source/loader/LocalFileDataCubePartialSourceLoaderState.js';
 import { LocalFileDataCubeSourceLoader } from './source/loader/LocalFileDataCubeSourceLoader.js';
 
 export const LegendDataCubeSourceLoader = observer(() => {
@@ -33,7 +33,7 @@ export const LegendDataCubeSourceLoader = observer(() => {
             <div className="ml-2 h-[1px] w-[calc(100%_-_16px)] bg-neutral-200" />
             <div className="h-[calc(100%_-_41px)] w-full overflow-auto">
               {sourceLoaderBuilder instanceof
-                LocalFileDataCubeSourceLoaderBuilderState && (
+                LocalFileDataCubePartialSourceLoaderState && (
                 <LocalFileDataCubeSourceLoader
                   sourceBuilder={sourceLoaderBuilder}
                 />
