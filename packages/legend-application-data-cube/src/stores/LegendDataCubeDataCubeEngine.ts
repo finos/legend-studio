@@ -200,12 +200,87 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           RawLocalFileQueryDataCubeSource.serialization.fromJson(value);
         const source = new LocalFileDataCubeSource();
         source.fileName = rawSource.fileName;
-        source.count = rawSource.count;
-        source.db = rawSource.db;
-        source.model = rawSource.model;
-        source.runtime = rawSource.runtime;
-        source.schema = rawSource.schema;
-        source.table = rawSource.table;
+        source.fileFormat = rawSource.fileFormat;
+
+        const tableCatalog = this._duckDBEngine.retrieveCatalogTable(
+          rawSource._ref,
+        );
+
+        const { model, database, schema, table, runtime } =
+          this._synthesizeMinimalModelContext({
+            schemaName: tableCatalog.schemaName,
+            tableName: tableCatalog.tableName,
+            tableColumns: tableCatalog.columns.map((col) => {
+              const column = new V1_Column();
+              column.name = col[0] as string;
+              // TODO: confirm this is in accordance to engine
+              // check if we have a duckdb enum mapping
+              // See https://duckdb.org/docs/sql/data_types/overview.html
+              switch (col[1] as string) {
+                case 'BIT': {
+                  column.type = new V1_Bit();
+                  break;
+                }
+                case 'BOOLEAN': {
+                  // TODO: understand why boolean is not present in relationalDataType
+                  column.type = new V1_VarChar();
+                  break;
+                }
+                case 'DATE': {
+                  column.type = new V1_Date();
+                  break;
+                }
+                case 'DECIMAL': {
+                  column.type = new V1_Decimal();
+                  break;
+                }
+                case 'DOUBLE': {
+                  column.type = new V1_Double();
+                  break;
+                }
+                case 'FLOAT': {
+                  column.type = new V1_Float();
+                  break;
+                }
+                case 'INTEGER': {
+                  column.type = new V1_Integer();
+                  break;
+                }
+                case 'TININT': {
+                  column.type = new V1_TinyInt();
+                  break;
+                }
+                case 'SMALLINT': {
+                  column.type = new V1_SmallInt();
+                  break;
+                }
+                case 'BIGINT': {
+                  column.type = new V1_BigInt();
+                  break;
+                }
+                case 'TIMESTAMP': {
+                  column.type = new V1_Timestamp();
+                  break;
+                }
+                case 'VARCHAR': {
+                  column.type = new V1_VarChar();
+                  break;
+                }
+                default: {
+                  throw new UnsupportedOperationError(
+                    `Can't ingest local file data: failed to find matching relational data type for DuckDB type '${col[1]}' when synthesizing table definition`,
+                  );
+                }
+              }
+              return column;
+            }),
+          });
+
+        source.db = database.path;
+        source.model = model;
+        source.table = table.name;
+        source.schema = schema.name;
+        source.runtime = runtime.path;
 
         const query = new V1_ClassInstance();
         query.type = V1_ClassInstanceType.RELATION_STORE_ACCESSOR;
@@ -871,93 +946,10 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     }
   }
 
-  async ingestLocalFileData(
-    data: string,
-    format: string,
-  ): Promise<DataCubeSource | undefined> {
-    const {
-      schema: schemaName,
-      table: tableName,
-      tableSpec,
-    } = await this._duckDBEngine.ingestLocalFileData(data, format);
-
-    const { model, database, schema, table, runtime } =
-      this._synthesizeMinimalModelContext({
-        schemaName,
-        tableName,
-        tableColumns: tableSpec.map((col) => {
-          const column = new V1_Column();
-          column.name = col[0] as string;
-          // TODO: confirm this is in accordance to engine
-          // check if we have a duckdb enum mapping
-          // See https://duckdb.org/docs/sql/data_types/overview.html
-          switch (col[1] as string) {
-            case 'BIT': {
-              column.type = new V1_Bit();
-              break;
-            }
-            case 'BOOLEAN': {
-              // TODO: understand why boolean is not present in relationalDataType
-              column.type = new V1_VarChar();
-              break;
-            }
-            case 'DATE': {
-              column.type = new V1_Date();
-              break;
-            }
-            case 'DECIMAL': {
-              column.type = new V1_Decimal();
-              break;
-            }
-            case 'DOUBLE': {
-              column.type = new V1_Double();
-              break;
-            }
-            case 'FLOAT': {
-              column.type = new V1_Float();
-              break;
-            }
-            case 'INTEGER': {
-              column.type = new V1_Integer();
-              break;
-            }
-            case 'TININT': {
-              column.type = new V1_TinyInt();
-              break;
-            }
-            case 'SMALLINT': {
-              column.type = new V1_SmallInt();
-              break;
-            }
-            case 'BIGINT': {
-              column.type = new V1_BigInt();
-              break;
-            }
-            case 'TIMESTAMP': {
-              column.type = new V1_Timestamp();
-              break;
-            }
-            case 'VARCHAR': {
-              column.type = new V1_VarChar();
-              break;
-            }
-            default: {
-              throw new UnsupportedOperationError(
-                `Can't ingest local file data: failed to find matching relational data type for DuckDB type '${col[1]}' when synthesizing table definition`,
-              );
-            }
-          }
-          return column;
-        }),
-      });
-
-    const source = new LocalFileDataCubeSource();
-    source.model = model;
-    source.runtime = runtime.path;
-    source.db = database.path;
-    source.schema = schema.name;
-    source.table = table.name;
-    return source;
+  async ingestLocalFileData(data: string, format: string, refId?: string) {
+    const { dbReference, columnNames } =
+      await this._duckDBEngine.ingestLocalFileData(data, format, refId);
+    return { dbReference, columnNames };
   }
 
   private _synthesizeMinimalModelContext(data: {
