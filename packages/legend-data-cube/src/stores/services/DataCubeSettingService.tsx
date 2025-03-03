@@ -211,9 +211,11 @@ export class DataCubeSettingService {
         numericValueStep: 10,
         action: (api, newValue) =>
           (api as INTERNAL__DataCubeAPI)._runTaskForEachView((view) => {
-            view.grid.client.updateGridOptions({
-              rowBuffer: newValue,
-            });
+            if (view.grid.isClientConfigured) {
+              view.grid.client.updateGridOptions({
+                rowBuffer: newValue,
+              });
+            }
           }),
       } satisfies DataCubeSetting<number>,
       {
@@ -225,9 +227,11 @@ export class DataCubeSettingService {
         defaultValue: false,
         action: (api, newValue) =>
           (api as INTERNAL__DataCubeAPI)._runTaskForEachView((view) => {
-            view.grid.client.updateGridOptions({
-              purgeClosedRowNodes: newValue,
-            });
+            if (view.grid.isClientConfigured) {
+              view.grid.client.updateGridOptions({
+                purgeClosedRowNodes: newValue,
+              });
+            }
           }),
       } satisfies DataCubeSetting<boolean>,
       {

@@ -20,7 +20,6 @@ import type {
   GetMainMenuItemsParams,
   MenuItemDef,
 } from 'ag-grid-community';
-import { WIP_GridMenuItem } from '../../../components/view/grid/DataCubeGridShared.js';
 import {
   DataCubeQuerySortDirection,
   DataCubeColumnPinPlacement,
@@ -48,6 +47,32 @@ import type { DataCubeColumnConfiguration } from '../../core/model/DataCubeConfi
 import { DataCubeFilterEditorConditionTreeNode } from '../../core/filter/DataCubeQueryFilterEditorState.js';
 import { DataCubeEditorTab } from '../editor/DataCubeEditorState.js';
 import { _findCol } from '../../core/model/DataCubeColumn.js';
+import { useGridMenuItem, type CustomMenuItemProps } from 'ag-grid-react';
+import { FormBadge_WIP } from '../../../components/core/DataCubeFormUtils.js';
+
+export function WIP_GridMenuItem({
+  name,
+  subMenu,
+  checked,
+}: CustomMenuItemProps) {
+  useGridMenuItem({
+    configureDefaults: () => true,
+  });
+
+  return (
+    <div>
+      <span className="ag-menu-option-part ag-menu-option-icon"></span>
+      <span className="ag-menu-option-part ag-menu-option-text !inline-flex items-center">
+        <span className="opacity-50">{name}</span>
+        <FormBadge_WIP />
+      </span>
+      <span className="ag-menu-option-part ag-menu-option-shortcut"></span>
+      <span className="ag-menu-option-part ag-menu-option-popup-pointer select-none">
+        {subMenu && <span className="ag-icon ag-icon-small-right"></span>}
+      </span>
+    </div>
+  );
+}
 
 function toFilterValue(
   value: unknown,

@@ -28,6 +28,7 @@ import { DataCubeConfiguration } from '../core/model/DataCubeConfiguration.js';
 export class DataCubeInfoState extends DataCubeSnapshotController {
   private readonly _view: DataCubeViewState;
 
+  configuration = new DataCubeConfiguration();
   name = '';
   // TODO: filter preview text
 
@@ -35,6 +36,8 @@ export class DataCubeInfoState extends DataCubeSnapshotController {
     super(view.engine, view.settingService, view.snapshotService);
 
     makeObservable(this, {
+      configuration: observable,
+
       name: observable,
 
       applySnapshot: action,
@@ -55,6 +58,7 @@ export class DataCubeInfoState extends DataCubeSnapshotController {
     const configuration = DataCubeConfiguration.serialization.fromJson(
       data.configuration,
     );
+    this.configuration = configuration;
 
     if (configuration.name !== this.name) {
       this.name = configuration.name;

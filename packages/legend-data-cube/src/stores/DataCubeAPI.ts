@@ -95,7 +95,9 @@ export class INTERNAL__DataCubeAPI implements DataCubeAPI {
 
   retryFailedDataFetches() {
     this._runTaskForEachView((view) => {
-      view.grid.client.retryServerSideLoads();
+      if (view.grid.isClientConfigured) {
+        view.grid.client.retryServerSideLoads();
+      }
     });
   }
 

@@ -17,20 +17,20 @@
 import { observer } from 'mobx-react-lite';
 import { DataCubeIcon } from '@finos/legend-art';
 import {
-  DataCubeColumnSelectorSortDirectionDropdown,
-  DataCubeEditorColumnSelector,
-} from './DataCubeEditorColumnSelector.js';
+  DataCubeEditorColumnsSelectorSortDirectionDropdown,
+  DataCubeEditorColumnsSelector,
+} from './DataCubeEditorColumnsSelector.js';
 import type {
-  DataCubeEditorColumnSelectorState,
-  DataCubeEditorSortColumnState,
-} from '../../../stores/view/editor/DataCubeEditorColumnSelectorState.js';
+  DataCubeEditorColumnsSelectorState,
+  DataCubeEditorColumnsSelectorSortColumnState,
+} from '../../../stores/view/editor/DataCubeEditorColumnsSelectorState.js';
 import { PIVOT_COLUMN_NAME_VALUE_SEPARATOR } from '../../../stores/core/DataCubeQueryEngine.js';
 import type { DataCubeViewState } from '../../../stores/view/DataCubeViewState.js';
 
 const SortColumnLabel = observer(
   (props: {
-    selector: DataCubeEditorColumnSelectorState<DataCubeEditorSortColumnState>;
-    column: DataCubeEditorSortColumnState;
+    selector: DataCubeEditorColumnsSelectorState<DataCubeEditorColumnsSelectorSortColumnState>;
+    column: DataCubeEditorColumnsSelectorSortColumnState;
   }) => {
     const { column } = props;
 
@@ -58,11 +58,11 @@ export const DataCubeEditorSortsPanel = observer(
           </div>
         </div>
         <div className="flex h-[calc(100%_-_24px)] w-full">
-          <DataCubeEditorColumnSelector
+          <DataCubeEditorColumnsSelector
             selector={panel.selector}
             columnLabelRenderer={(p) => <SortColumnLabel {...p} />}
             columnActionRenderer={(p) => (
-              <DataCubeColumnSelectorSortDirectionDropdown {...p} />
+              <DataCubeEditorColumnsSelectorSortDirectionDropdown {...p} />
             )}
           />
         </div>
