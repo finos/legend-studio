@@ -202,7 +202,7 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
       const reportWithState = Object.assign(
         {},
         report,
-        this.queryBuilderState?.getStateInfo(),
+        this.queryBuilderState.getStateInfo(),
       );
       QueryBuilderTelemetryHelper.logEvent_EmbeddedDataCubeQueryRunSucceeded(
         this.queryBuilderState.applicationStore.telemetryService,
