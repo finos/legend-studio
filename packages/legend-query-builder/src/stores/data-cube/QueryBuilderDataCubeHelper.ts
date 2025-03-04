@@ -52,6 +52,7 @@ export const createDataCubeViewerStateFromQueryBuilder = async (
     mappingPath,
     runtimePath,
     queryBuilderState.graphManagerState,
+    queryBuilderState,
   );
   queryBuilderState.setLambdaWriteMode(currentLambdaWriterMode);
   const query = await engine.generateInitialSpecification();

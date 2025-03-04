@@ -114,6 +114,7 @@ import { type QueryChatState } from './QueryChatState.js';
 import type { QueryBuilder_LegendApplicationPlugin_Extension } from './QueryBuilder_LegendApplicationPlugin_Extension.js';
 import { createDataCubeViewerStateFromQueryBuilder } from './data-cube/QueryBuilderDataCubeHelper.js';
 import type { QueryBuilderDataCubeViewerState } from './data-cube/QueryBuilderDataCubeViewerState.js';
+import { QueryBuilderTelemetryHelper } from '../__lib__/QueryBuilderTelemetryHelper.js';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface QueryableSourceInfo {}
@@ -475,6 +476,9 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
   async openDataCubeEngine() {
     try {
+      QueryBuilderTelemetryHelper.logEvent_EmbeddedDataCubeLaunched(
+        this.applicationStore.telemetryService,
+      );
       this.setDataCubeViewerState(
         await createDataCubeViewerStateFromQueryBuilder(this),
       );

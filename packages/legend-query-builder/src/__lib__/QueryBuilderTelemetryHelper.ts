@@ -56,6 +56,10 @@ export class QueryBuilderTelemetryHelper {
     service.logEvent(QUERY_BUILDER_EVENT.DEBUG_EXECUTION_PLAN__LAUNCH, {});
   }
 
+  static logEvent_EmbeddedDataCubeLaunched(service: TelemetryService): void {
+    service.logEvent(QUERY_BUILDER_EVENT.EMBEDDED_DATA_CUBE__LAUNCH, {});
+  }
+
   static logEvent_QueryRunSucceeded(
     service: TelemetryService,
     data: QueryExecution_TelemetryData,
@@ -63,7 +67,7 @@ export class QueryBuilderTelemetryHelper {
     service.logEvent(QUERY_BUILDER_EVENT.RUN_QUERY__SUCCESS, data);
   }
 
-  static logEvent_ExportQueryDatSucceeded(
+  static logEvent_ExportQueryDataSucceeded(
     service: TelemetryService,
     data: QueryExecution_TelemetryData,
   ): void {
@@ -85,6 +89,13 @@ export class QueryBuilderTelemetryHelper {
     data: QueryExecution_TelemetryData,
   ): void {
     service.logEvent(QUERY_BUILDER_EVENT.DEBUG_EXECUTION_PLAN__SUCCESS, data);
+  }
+
+  static logEvent_EmbeddedDataCubeQueryRunSucceeded(
+    service: TelemetryService,
+    data: QueryExecution_TelemetryData,
+  ): void {
+    service.logEvent(QUERY_BUILDER_EVENT.EMBEDDED_DATA_CUBE__SUCCESS, data);
   }
 
   static logEvent_FilterCreateConditionLaunched(
