@@ -19,6 +19,7 @@ import type {
   QueryInfo,
   V1_Lambda,
   V1_ParameterValue,
+  V1_ValueSpecification,
 } from '@finos/legend-graph';
 import {
   SerializationFactory,
@@ -36,6 +37,7 @@ export class LegendQueryDataCubeSource extends DataCubeSource {
   runtime!: string;
   model!: PlainObject;
   parameterValues: V1_ParameterValue[] = [];
+  letParameterValueSpec: V1_ValueSpecification[] = [];
 }
 
 export class RawLegendQueryDataCubeSource {
