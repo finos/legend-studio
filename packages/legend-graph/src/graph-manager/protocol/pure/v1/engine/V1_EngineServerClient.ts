@@ -89,7 +89,7 @@ import type { CodeCompletionResult } from '../../../../action/compilation/Comple
 import type { V1_CompleteCodeInput } from './compilation/V1_CompleteCodeInput.js';
 import type { DeploymentResult } from '../../../../action/DeploymentResult.js';
 import type { PersistentDataCube } from '../../../../action/query/PersistentDataCube.js';
-import { V1_LambdaTdsToRelationInput } from './pureProtocol/V1_LambdaTdsToRelationInput.js';
+import { type V1_LambdaTdsToRelationInput } from './pureProtocol/V1_LambdaTdsToRelationInput.js';
 
 enum CORE_ENGINE_ACTIVITY_TRACE {
   GRAMMAR_TO_JSON = 'transform Pure code to protocol',
