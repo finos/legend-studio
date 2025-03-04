@@ -419,16 +419,23 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           source.model,
         );
         if (returnType === QUERY_BUILDER_PURE_PATH.TDS_TABULAR_DATASET) {
-          const transformedLambda = guaranteeType(
-            this.deserializeValueSpecification(
-              await this._engineServerClient.transformTdsToRelation_lambda({
-                model: source.model,
-                lambda: source.lambda,
-              }),
-            ),
-            V1_Lambda,
-          );
-          source.lambda = transformedLambda;
+          try {
+            const transformedLambda = guaranteeType(
+              this.deserializeValueSpecification(
+                await this._engineServerClient.transformTdsToRelation_lambda({
+                  model: source.model,
+                  lambda: source.lambda,
+                }),
+              ),
+              V1_Lambda,
+            );
+            source.lambda = transformedLambda;
+          } catch (e) {
+            assertErrorThrown(e);
+            throw new Error(
+              `Error transforming TDS protocol to relation protocol:\n${e.message}`,
+            );
+          }
         }
 
         // If the lambda has multiple expressions, the source query should only be the final
