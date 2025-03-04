@@ -82,8 +82,8 @@ import {
   V1_deserializePureModelContext,
   type V1_ConcreteFunctionDefinition,
   V1_deserializeValueSpecification,
-  PURE_DATE_FUNCTIONS_NAMESPACE,
   LET_TOKEN,
+  V1_AppliedFunction,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
@@ -345,6 +345,10 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
             `Can't get query result columns. Make sure the saved query return a relation (i.e. typed TDS). Error: ${error.message}`,
           );
         }
+        // To handle parameter value with function calls we
+        // 1. Separate the parameters with function calls from regular parameters
+        // 2. Add let statements for function parameter values and store them in the source's letParameterValueSpec
+        // 3. Prepend the let statements to the lambda body when we execute the query
         const letFuncs: V1_ValueSpecification[] = [];
         const parameterValues = (
           await Promise.all(
@@ -352,14 +356,23 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
               if (
                 parameter.genericType?.rawType instanceof V1_PackageableType
               ) {
-                const defaultValue = queryInfo.defaultParameterValues?.find(
-                  (val) => val.name === parameter.name,
-                )?.content;
-                if (defaultValue?.includes(PURE_DATE_FUNCTIONS_NAMESPACE)) {
+                const type = parameter.genericType.rawType.fullPath;
+                const defaultValueString =
+                  queryInfo.defaultParameterValues?.find(
+                    (val) => val.name === parameter.name,
+                  )?.content;
+                const defaultValueSpec =
+                  defaultValueString !== undefined
+                    ? await this.parseValueSpecification(defaultValueString)
+                    : {
+                        _type: V1_deserializeRawValueSpecificationType(type),
+                        value: _defaultPrimitiveTypeValue(type),
+                      };
+                if (defaultValueSpec instanceof V1_AppliedFunction) {
                   const letFunc = guaranteeType(
                     this.deserializeValueSpecification(
                       await this._engineServerClient.grammarToJSON_lambda(
-                        `${LET_TOKEN} ${parameter.name} ${DataCubeQueryFilterOperator.EQUAL} ${defaultValue}`,
+                        `${LET_TOKEN} ${parameter.name} ${DataCubeQueryFilterOperator.EQUAL} ${defaultValueString}`,
                         '',
                         undefined,
                         undefined,
@@ -372,14 +385,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
                 } else {
                   const paramValue = new V1_ParameterValue();
                   paramValue.name = parameter.name;
-                  const type = parameter.genericType.rawType.fullPath;
-                  paramValue.value =
-                    defaultValue !== undefined
-                      ? await this.parseValueSpecification(defaultValue)
-                      : {
-                          _type: V1_deserializeRawValueSpecificationType(type),
-                          value: _defaultPrimitiveTypeValue(type),
-                        };
+                  paramValue.value = defaultValueSpec;
                   return paramValue;
                 }
               }
