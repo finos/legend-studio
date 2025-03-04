@@ -82,9 +82,6 @@ import {
   V1_deserializePureModelContext,
   type V1_ConcreteFunctionDefinition,
   V1_deserializeValueSpecification,
-  V1_serializeLambdaTdsToRelationInput,
-  V1_RawLambda,
-  V1_serializeRawValueSpecification,
   type V1_LambdaReturnTypeResult,
 } from '@finos/legend-graph';
 import {
