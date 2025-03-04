@@ -19,9 +19,11 @@ import { AlertType, FormAlert, FormCodeEditor } from '@finos/legend-data-cube';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import type { LocalFileDataCubePartialSourceLoaderState } from '../../../../stores/builder/source/loader/LocalFileDataCubePartialSourceLoaderState.js';
 
-export const LocalFileDataCubeSourceLoader = observer(
-  (props: { sourceBuilder: LocalFileDataCubePartialSourceLoaderState }) => {
-    const { sourceBuilder } = props;
+export const LocalFileDataCubePartialSourceLoader = observer(
+  (props: {
+    partialSourceLoader: LocalFileDataCubePartialSourceLoaderState;
+  }) => {
+    const { partialSourceLoader } = props;
 
     return (
       <div className="h-full w-full p-2">
@@ -36,15 +38,15 @@ export const LocalFileDataCubeSourceLoader = observer(
           <input
             type="file"
             onChange={(event) => {
-              sourceBuilder.processFile(event.target.files?.[0]);
+              partialSourceLoader.processFile(event.target.files?.[0]);
             }}
             className="w-full"
           />
         </div>
-        {sourceBuilder.previewText !== undefined && (
+        {partialSourceLoader.previewText !== undefined && (
           <div className="mt-2 h-40">
             <FormCodeEditor
-              value={sourceBuilder.previewText}
+              value={partialSourceLoader.previewText}
               language={CODE_EDITOR_LANGUAGE.TEXT}
               isReadOnly={true}
               hidePadding={true}

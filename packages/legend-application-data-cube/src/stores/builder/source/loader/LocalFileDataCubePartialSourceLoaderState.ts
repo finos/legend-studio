@@ -30,6 +30,7 @@ import {
   RawLocalFileQueryDataCubeSource,
 } from '../../../model/LocalFileDataCubeSource.js';
 import { LegendDataCubePartialSourceLoaderState } from './LegendDataCubePartialSourceLoaderState.js';
+import { LegendDataCubeSourceLoaderType } from '../../LegendDataCubeSourceLoaderState.js';
 
 export class LocalFileDataCubePartialSourceLoaderState extends LegendDataCubePartialSourceLoaderState {
   readonly processState = ActionState.create();
@@ -94,6 +95,15 @@ export class LocalFileDataCubePartialSourceLoaderState extends LegendDataCubePar
     this.previewText = text;
   }
 
+  override initialize(): void {
+    this.setFileName(undefined);
+    this.setColumnNames(undefined);
+    this.setFileFormat(undefined);
+    this.setFileData(undefined);
+    this.setRowCount(undefined);
+    this.setPreviewText(undefined);
+  }
+
   processFile(file: File | undefined) {
     this.setFileName(undefined);
     this.setColumnNames(undefined);
@@ -154,10 +164,14 @@ export class LocalFileDataCubePartialSourceLoaderState extends LegendDataCubePar
     return Boolean(this.fileData);
   }
 
+  override get label(): LegendDataCubeSourceLoaderType {
+    return LegendDataCubeSourceLoaderType.LOCAL_FILE;
+  }
+
   override async loadSourceData(
     source: PlainObject | undefined,
   ): Promise<PlainObject> {
-    const deserializeSource =
+    const deserializedSource =
       RawLocalFileQueryDataCubeSource.serialization.fromJson(
         guaranteeNonNullable(source),
       );
@@ -169,18 +183,18 @@ export class LocalFileDataCubePartialSourceLoaderState extends LegendDataCubePar
       this.rowCount === undefined
     ) {
       throw new IllegalStateError(
-        `Can't generate source data: file data and information is not set`,
+        `Can't load source data: file data and information is not set`,
       );
     }
 
     const intersectingColumns = guaranteeNonNullable(
       this.columnNames?.filter((col) =>
-        deserializeSource.columnNames.includes(col),
+        deserializedSource.columnNames.includes(col),
       ),
     );
-    if (intersectingColumns.length !== deserializeSource.columnNames.length) {
+    if (intersectingColumns.length !== deserializedSource.columnNames.length) {
       throw new Error(
-        `Columns mismatch: Expected [${deserializeSource.columnNames.join(',')}], got [${this.columnNames?.join(',')}]`,
+        `Columns mismatch: Expected [${deserializedSource.columnNames.join(',')}], got [${this.columnNames?.join(',')}]`,
       );
     }
 
@@ -188,9 +202,9 @@ export class LocalFileDataCubePartialSourceLoaderState extends LegendDataCubePar
       await this._engine.ingestLocalFileData(
         this.fileData,
         this.fileFormat,
-        deserializeSource._ref,
+        deserializedSource._ref,
       ),
-      `Can't generate source data: failed to ingest data from local file`,
+      `Can't load source data: failed to ingest data from local file`,
     );
 
     // TODO: do a type check for columns

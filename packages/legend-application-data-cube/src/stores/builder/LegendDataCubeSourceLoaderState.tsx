@@ -23,15 +23,19 @@ import { makeObservable, observable, action } from 'mobx';
 import type { LegendDataCubeBuilderStore } from './LegendDataCubeBuilderStore.js';
 import {
   DEFAULT_TOOL_PANEL_WINDOW_CONFIG,
-  type DisplayState,
   type DataCubeAlertService,
 } from '@finos/legend-data-cube';
-import { LegendDataCubeSourceLoader } from '../../components/builder/LegendDataCubeSourceLoader.js';
+import { LegendDataCubePartialSourceLoader } from '../../components/builder/LegendDataCubePartialSourceLoader.js';
 import type { LegendDataCubeDataCubeEngine } from '../LegendDataCubeDataCubeEngine.js';
 import type { LegendDataCubeApplicationStore } from '../LegendDataCubeBaseStore.js';
-import { LegendDataCubePartialSourceLoaderState } from './source/loader/LegendDataCubePartialSourceLoaderState.js';
+import type { LegendDataCubePartialSourceLoaderState } from './source/loader/LegendDataCubePartialSourceLoaderState.js';
 import { LocalFileDataCubePartialSourceLoaderState } from './source/loader/LocalFileDataCubePartialSourceLoaderState.js';
 import { LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE } from '../model/LocalFileDataCubeSource.js';
+import { LegendDataCubeBlockingWindowState } from '../../components/LegendDataCubeBlockingWindow.js';
+
+export enum LegendDataCubeSourceLoaderType {
+  LOCAL_FILE = 'Local File',
+}
 
 export class LegendDataCubeSourceLoaderState {
   private readonly _application: LegendDataCubeApplicationStore;
@@ -40,28 +44,33 @@ export class LegendDataCubeSourceLoaderState {
 
   source: PlainObject | undefined;
 
-  readonly display: DisplayState;
+  readonly display: LegendDataCubeBlockingWindowState;
   readonly searchState = ActionState.create();
   readonly finalizeState = ActionState.create();
 
-  sourceLoaderBuilder: LegendDataCubePartialSourceLoaderState;
+  partialSourceLoader: LegendDataCubePartialSourceLoaderState;
+
+  partialSourceResolved = false;
 
   constructor(store: LegendDataCubeBuilderStore) {
     makeObservable(this, {
       source: observable,
       setSource: action,
+
+      partialSourceResolved: observable,
+      setPartialSourceResolved: action,
     });
 
     this._application = store.application;
     this._engine = store.engine;
     this._alertService = store.alertService;
-    this.sourceLoaderBuilder = this.createSourceLoaderBuilder(
+    this.partialSourceLoader = this.createSourceLoader(
       LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE,
     );
 
-    this.display = store.layoutService.newDisplay(
-      'Reupload Source Data',
-      () => <LegendDataCubeSourceLoader />,
+    this.display = new LegendDataCubeBlockingWindowState(
+      'Resolve Partial Source',
+      () => <LegendDataCubePartialSourceLoader />,
       {
         ...DEFAULT_TOOL_PANEL_WINDOW_CONFIG,
         width: 500,
@@ -74,21 +83,18 @@ export class LegendDataCubeSourceLoaderState {
     this.source = source;
   }
 
-  isPartialSouce(type: string): boolean {
-    if (type === LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE) {
-      return true;
-    }
-    return false;
+  setPartialSourceResolved(sourceResolved: boolean) {
+    this.partialSourceResolved = sourceResolved;
   }
 
-  changeSourceBuilder(type: string): void {
-    this.sourceLoaderBuilder = this.createSourceLoaderBuilder(type);
+  changeSourceLoader(type: string): void {
+    this.partialSourceLoader = this.createSourceLoader(type);
   }
 
-  private createSourceLoaderBuilder(
+  private createSourceLoader(
     type: string,
   ): LegendDataCubePartialSourceLoaderState {
-    // We can implement this as a switch when
+    // We can add more partial sources
     switch (type) {
       case LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE:
         return new LocalFileDataCubePartialSourceLoaderState(
@@ -97,7 +103,7 @@ export class LegendDataCubeSourceLoaderState {
         );
       default:
         throw new UnsupportedOperationError(
-          `Can't create source builder for unsupported type '${type}'`,
+          `Can't create source loader for unsupported type '${type}'`,
         );
     }
   }
@@ -105,13 +111,16 @@ export class LegendDataCubeSourceLoaderState {
   async finalize() {
     try {
       this.finalizeState.inProgress();
-      this.source = await this.sourceLoaderBuilder.loadSourceData(this.source);
+      this.setSource(
+        await this.partialSourceLoader.loadSourceData(this.source),
+      );
       this.display.close();
       this.finalizeState.pass();
+      this.setPartialSourceResolved(true);
     } catch (error) {
       assertErrorThrown(error);
       this._alertService.alertError(error, {
-        message: `DataCube Load Failure: ${error.message}`,
+        message: `DataCube Source Load Failure: ${error.message}`,
       });
       this.finalizeState.fail();
     }

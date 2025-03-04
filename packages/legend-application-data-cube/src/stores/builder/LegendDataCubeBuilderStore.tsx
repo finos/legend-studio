@@ -61,7 +61,6 @@ import { LegendDataCubeBlockingWindowState } from '../../components/LegendDataCu
 import { LegendDataCubeDeleteConfirmation } from '../../components/builder/LegendDataCubeDeleteConfirmation.js';
 import { LegendDataCubeAbout } from '../../components/builder/LegendDataCubeBuilder.js';
 import { LegendDataCubeSourceViewer } from '../../components/builder/LegendDataCubeSourceViewer.js';
-import { LegendDataCubeSourceLoaderState } from './LegendDataCubeSourceLoaderState.js';
 
 export class LegendDataCubeBuilderState {
   readonly uuid = uuid();
@@ -136,7 +135,8 @@ export class LegendDataCubeBuilderStore {
   readonly loadState = ActionState.create();
   readonly loader: LegendDataCubeLoaderState;
   builder?: LegendDataCubeBuilderState | undefined;
-  readonly sourceLoader: LegendDataCubeSourceLoaderState;
+  partialSourceDataCubeToLoad?: PersistentDataCube | undefined;
+  partialSourceDataCubeId: string | undefined;
   readonly sourceViewerDisplay: DisplayState;
 
   private passedFirstLoad = false;
@@ -174,7 +174,6 @@ export class LegendDataCubeBuilderStore {
 
     this.creator = new LegendDataCubeCreatorState(this);
     this.loader = new LegendDataCubeLoaderState(this);
-    this.sourceLoader = new LegendDataCubeSourceLoaderState(this);
     this.saverDisplay = new LegendDataCubeBlockingWindowState(
       'Save DataCube',
       () => <LegendDataCubeSaver />,
@@ -257,6 +256,64 @@ export class LegendDataCubeBuilderStore {
     }
   }
 
+  loadPartialSourceDataCube() {
+    if (!this.loader.isPartialSourceResolved()) {
+      this.application.navigationService.navigator.updateCurrentLocation(
+        generateBuilderRoute(null),
+      );
+    }
+    try {
+      const persistentDataCube = guaranteeNonNullable(
+        this.partialSourceDataCubeToLoad,
+      );
+      const dataCubeId = guaranteeNonNullable(this.partialSourceDataCubeId);
+      const specification = DataCubeSpecification.serialization.fromJson(
+        persistentDataCube.content,
+      );
+      specification.source = guaranteeNonNullable(
+        this.loader.getResolvedSource(),
+      );
+      this.setBuilder(
+        new LegendDataCubeBuilderState(specification, persistentDataCube),
+      );
+      this.updateWindowTitle(persistentDataCube);
+
+      // update the list of stack of recently viewed DataCubes
+      const recentlyViewedDataCubes = this.getRecentlyViewedDataCubes();
+      const idx = recentlyViewedDataCubes.findIndex(
+        (data) => data === dataCubeId,
+      );
+      if (idx === -1) {
+        if (
+          recentlyViewedDataCubes.length >= RECENTLY_VIEWED_DATA_CUBES_LIMIT
+        ) {
+          recentlyViewedDataCubes.pop();
+        }
+        recentlyViewedDataCubes.unshift(dataCubeId);
+      } else {
+        recentlyViewedDataCubes.splice(idx, 1);
+        recentlyViewedDataCubes.unshift(dataCubeId);
+      }
+      this.application.userDataService.persistValue(
+        LegendDataCubeUserDataKey.RECENTLY_VIEWED_DATA_CUBES,
+        recentlyViewedDataCubes,
+      );
+
+      this.loadState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.alertService.alertError(error, {
+        message: `DataCube Load Failure: ${error.message}`,
+      });
+      this.application.navigationService.navigator.updateCurrentLocation(
+        generateBuilderRoute(null),
+      );
+
+      this.loadState.fail();
+      throw error;
+    }
+  }
+
   async loadDataCube(dataCubeId: string | undefined) {
     // internalize the parameters and clean them from the URL
     const sourceData =
@@ -300,24 +357,12 @@ export class LegendDataCubeBuilderStore {
           persistentDataCube.content,
         );
 
-        if (
-          !this.saveState.hasSucceeded &&
-          this.sourceLoader.isPartialSouce(specification.source._type as string)
-        ) {
-          this.sourceLoader.changeSourceBuilder(
-            specification.source._type as string,
-          );
-          this.sourceLoader.setSource(specification.source);
-          this.sourceLoader.display.open();
-          await new Promise<void>((resolve) => {
-            const checkIfClosed = setInterval(() => {
-              if (!this.sourceLoader.display.isOpen) {
-                clearInterval(checkIfClosed);
-                resolve();
-              }
-            }, 100);
-          });
-          specification.source = guaranteeNonNullable(this.sourceLoader.source);
+        if (this.loader.isPartialSouce(specification.source._type as string)) {
+          this.setPartialSourceDataCubeToLoad(persistentDataCube);
+          this.setPartialSourceDataCubeId(dataCubeId);
+          this.loader.setPartialSource(specification.source);
+          this.loader.resolvePartialSource();
+          return;
         }
 
         this.setBuilder(
@@ -416,6 +461,7 @@ export class LegendDataCubeBuilderStore {
       // Another way to avoid reloading the whole app it to force update
       // the <DataCube/> component using the key prop that ties to an ID
       // of the builder.
+      this.builder.setPersistentDataCube(newPersistentDataCube);
       this.application.navigationService.navigator.updateCurrentLocation(
         generateBuilderRoute(newPersistentDataCube.id),
       );
@@ -464,6 +510,7 @@ export class LegendDataCubeBuilderStore {
         // Another way to avoid reloading the whole app it to force update
         // the <DataCube/> component using the key prop that ties to an ID
         // of the builder.
+        this.builder.setPersistentDataCube(newPersistentDataCube);
         this.application.navigationService.navigator.updateCurrentLocation(
           generateBuilderRoute(newPersistentDataCube.id),
         );
@@ -492,6 +539,14 @@ export class LegendDataCubeBuilderStore {
     val: LightPersistentDataCube | PersistentDataCube | undefined,
   ) {
     this.dataCubeToDelete = val;
+  }
+
+  setPartialSourceDataCubeToLoad(val: PersistentDataCube | undefined) {
+    this.partialSourceDataCubeToLoad = val;
+  }
+
+  setPartialSourceDataCubeId(val: string | undefined) {
+    this.partialSourceDataCubeId = val;
   }
 
   async deleteDataCube() {

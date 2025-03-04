@@ -25,8 +25,14 @@ import { observer } from 'mobx-react-lite';
 import { useRef } from 'react';
 
 export const LegendDataCubeBlockingWindow = observer(
-  (props: { windowState: LegendDataCubeBlockingWindowState }) => {
-    const { windowState } = props;
+  (props: {
+    windowState: LegendDataCubeBlockingWindowState;
+    closeModal?: () => void;
+  }) => {
+    const { windowState, closeModal } = props;
+    const newCloseModal = !closeModal
+      ? (): void => windowState.close()
+      : closeModal;
     const ref = useRef<HTMLDivElement>(null);
 
     // set the width and height of the dialog to make sure content overflow works properly
@@ -45,7 +51,7 @@ export const LegendDataCubeBlockingWindow = observer(
     return (
       <Dialog
         open={windowState.isOpen}
-        onClose={() => windowState.close()}
+        onClose={newCloseModal}
         slotProps={{
           transition: {
             onEnter: handleEnter,
@@ -72,7 +78,7 @@ export const LegendDataCubeBlockingWindow = observer(
             <div className="px-2">{windowState.configuration.title}</div>
             <button
               className="flex h-[23px] w-6 items-center justify-center hover:bg-red-500 hover:text-white"
-              onClick={() => windowState.close()}
+              onClick={newCloseModal}
             >
               <DataCubeIcon.X />
             </button>

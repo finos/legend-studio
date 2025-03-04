@@ -25,7 +25,12 @@ import {
   QuerySearchSortBy,
   type V1_PureGraphManager,
 } from '@finos/legend-graph';
-import { ActionState, assertErrorThrown, LogEvent } from '@finos/legend-shared';
+import {
+  ActionState,
+  assertErrorThrown,
+  LogEvent,
+  type PlainObject,
+} from '@finos/legend-shared';
 import { makeObservable, observable, action } from 'mobx';
 import type { LegendDataCubeBuilderStore } from './LegendDataCubeBuilderStore.js';
 import { LegendDataCubeUserDataKey } from '../../__lib__/LegendDataCubeUserData.js';
@@ -36,6 +41,9 @@ import {
 } from '@finos/legend-data-cube';
 import { LegendDataCubeLoader } from '../../components/builder/LegendDataCubeLoader.js';
 import { generateBuilderRoute } from '../../__lib__/LegendDataCubeNavigation.js';
+import { LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE } from '../model/LocalFileDataCubeSource.js';
+import { LegendDataCubeSourceLoaderState } from './LegendDataCubeSourceLoaderState.js';
+import type { LegendDataCubeBlockingWindowState } from '../../components/LegendDataCubeBlockingWindow.js';
 
 export const DATA_CUBE_LOADER_TYPEAHEAD_SEARCH_LIMIT = 50;
 export const DATA_CUBE_LOADER_DEFAULT_SEARCH_LIMIT = 10;
@@ -64,6 +72,9 @@ export class LegendDataCubeLoaderState {
   showingDefaultResults = true;
   sortBy = DataCubeSortByType.LAST_VIEWED;
 
+  readonly sourceLoaderState: LegendDataCubeSourceLoaderState;
+  readonly sourceLoaderDisplay: LegendDataCubeBlockingWindowState;
+
   constructor(store: LegendDataCubeBuilderStore) {
     makeObservable(this, {
       showingDefaultResults: observable,
@@ -89,6 +100,7 @@ export class LegendDataCubeLoaderState {
     this._store = store;
     this._graphManager = store.graphManager;
     this._alertService = store.alertService;
+    this.sourceLoaderState = new LegendDataCubeSourceLoaderState(store);
 
     this.display = store.layoutService.newDisplay(
       'Load DataCube',
@@ -99,6 +111,7 @@ export class LegendDataCubeLoaderState {
         minWidth: 500,
       },
     );
+    this.sourceLoaderDisplay = this.sourceLoaderState.display;
   }
 
   setSearchText(val: string) {
@@ -143,6 +156,30 @@ export class LegendDataCubeLoaderState {
       searchText.length < DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH &&
       !this.showCurrentUserResultsOnly
     );
+  }
+
+  isPartialSouce(type: string): boolean {
+    if (type === LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE) {
+      this.sourceLoaderState.setPartialSourceResolved(false);
+      return true;
+    }
+    return false;
+  }
+
+  isPartialSourceResolved() {
+    return this.sourceLoaderState.partialSourceResolved;
+  }
+
+  setPartialSource(partialSource: PlainObject) {
+    this.sourceLoaderState.source = partialSource;
+  }
+
+  getResolvedSource() {
+    return this.sourceLoaderState.source;
+  }
+
+  resolvePartialSource() {
+    this.sourceLoaderDisplay.open();
   }
 
   async searchDataCubes(searchText: string) {

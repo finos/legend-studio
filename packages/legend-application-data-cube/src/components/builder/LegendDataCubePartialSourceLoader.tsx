@@ -18,24 +18,35 @@ import { observer } from 'mobx-react-lite';
 import { FormButton } from '@finos/legend-data-cube';
 import { useLegendDataCubeBuilderStore } from './LegendDataCubeBuilderStoreProvider.js';
 import { LocalFileDataCubePartialSourceLoaderState } from '../../stores/builder/source/loader/LocalFileDataCubePartialSourceLoaderState.js';
-import { LocalFileDataCubeSourceLoader } from './source/loader/LocalFileDataCubeSourceLoader.js';
+import { LocalFileDataCubePartialSourceLoader } from './source/loader/LocalFileDataCubePartialSourceLoader.js';
+import { useEffect } from 'react';
 
-export const LegendDataCubeSourceLoader = observer(() => {
+export const LegendDataCubePartialSourceLoader = observer(() => {
   const store = useLegendDataCubeBuilderStore();
-  const state = store.sourceLoader;
-  const sourceLoaderBuilder = state.sourceLoaderBuilder;
+  const state = store.loader.sourceLoaderState;
+  const sourceLoader = state.partialSourceLoader;
+
+  useEffect(() => {
+    sourceLoader.initialize();
+  }, [sourceLoader]);
 
   return (
     <>
       <div className="h-[calc(100%_-_40px)] w-full px-2 pt-2">
         <div className="h-full w-full border border-neutral-300 bg-white">
           <div className="h-full w-full select-none">
+            <div className="flex h-10 w-full items-center p-2">
+              <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
+                Source Type:&nbsp;&nbsp;&nbsp;
+                {sourceLoader.label}
+              </div>
+            </div>
             <div className="ml-2 h-[1px] w-[calc(100%_-_16px)] bg-neutral-200" />
             <div className="h-[calc(100%_-_41px)] w-full overflow-auto">
-              {sourceLoaderBuilder instanceof
+              {sourceLoader instanceof
                 LocalFileDataCubePartialSourceLoaderState && (
-                <LocalFileDataCubeSourceLoader
-                  sourceBuilder={sourceLoaderBuilder}
+                <LocalFileDataCubePartialSourceLoader
+                  partialSourceLoader={sourceLoader}
                 />
               )}
             </div>
@@ -43,16 +54,27 @@ export const LegendDataCubeSourceLoader = observer(() => {
         </div>
       </div>
       <div className="flex h-10 items-center justify-end px-2">
-        <FormButton onClick={() => state.display.close()}>Cancel</FormButton>
+        <FormButton
+          onClick={() => {
+            state.display.close();
+            store.loadPartialSourceDataCube();
+          }}
+        >
+          Cancel
+        </FormButton>
         <FormButton
           className="ml-2"
-          disabled={
-            !sourceLoaderBuilder.isValid || state.finalizeState.isInProgress
-          }
+          disabled={!sourceLoader.isValid || state.finalizeState.isInProgress}
           onClick={() => {
             state
               .finalize()
-              .catch((error) => store.alertService.alertUnhandledError(error));
+              .then(() => store.loadPartialSourceDataCube())
+              .catch((error) => {
+                store.alertService.alertUnhandledError(error);
+              })
+              .finally(() => {
+                state.display.close();
+              });
           }}
         >
           OK
