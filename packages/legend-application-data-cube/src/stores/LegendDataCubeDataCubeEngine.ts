@@ -82,6 +82,8 @@ import {
   V1_deserializePureModelContext,
   type V1_ConcreteFunctionDefinition,
   V1_deserializeValueSpecification,
+  PURE_DATE_FUNCTIONS_NAMESPACE,
+  LET_TOKEN,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
@@ -102,6 +104,7 @@ import {
   RawUserDefinedFunctionDataCubeSource,
   ADHOC_FUNCTION_DATA_CUBE_SOURCE_TYPE,
   UserDefinedFunctionDataCubeSource,
+  DataCubeQueryFilterOperator,
 } from '@finos/legend-data-cube';
 import {
   isNonNullable,
@@ -329,32 +332,6 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           ),
         );
         source.query = at(source.lambda.body, 0);
-        // use the default parameter values from the query
-        //
-        // TODO?: we should probably allow configuring the parameters?
-        // this would mean we need to create first-class support for parameters in DataCube component
-        const parameterValues = await Promise.all(
-          source.lambda.parameters.map(async (parameter) => {
-            if (parameter.genericType?.rawType instanceof V1_PackageableType) {
-              const paramValue = new V1_ParameterValue();
-              paramValue.name = parameter.name;
-              const type = parameter.genericType.rawType.fullPath;
-              const defaultValue = queryInfo.defaultParameterValues?.find(
-                (val) => val.name === parameter.name,
-              )?.content;
-              paramValue.value =
-                defaultValue !== undefined
-                  ? await this.parseValueSpecification(defaultValue)
-                  : {
-                      _type: V1_deserializeRawValueSpecificationType(type),
-                      value: _defaultPrimitiveTypeValue(type),
-                    };
-              return paramValue;
-            }
-            return undefined;
-          }),
-        );
-        source.parameterValues = parameterValues.filter(isNonNullable);
         try {
           source.columns = (
             await this._getLambdaRelationType(
@@ -368,6 +345,53 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
             `Can't get query result columns. Make sure the saved query return a relation (i.e. typed TDS). Error: ${error.message}`,
           );
         }
+        const letFuncs: V1_ValueSpecification[] = [];
+        const parameterValues = (
+          await Promise.all(
+            source.lambda.parameters.map(async (parameter) => {
+              if (
+                parameter.genericType?.rawType instanceof V1_PackageableType
+              ) {
+                const defaultValue = queryInfo.defaultParameterValues?.find(
+                  (val) => val.name === parameter.name,
+                )?.content;
+                if (defaultValue?.includes(PURE_DATE_FUNCTIONS_NAMESPACE)) {
+                  const letFunc = guaranteeType(
+                    this.deserializeValueSpecification(
+                      await this._engineServerClient.grammarToJSON_lambda(
+                        `${LET_TOKEN} ${parameter.name} ${DataCubeQueryFilterOperator.EQUAL} ${defaultValue}`,
+                        '',
+                        undefined,
+                        undefined,
+                        false,
+                      ),
+                    ),
+                    V1_Lambda,
+                  );
+                  letFuncs.push(...letFunc.body);
+                } else {
+                  const paramValue = new V1_ParameterValue();
+                  paramValue.name = parameter.name;
+                  const type = parameter.genericType.rawType.fullPath;
+                  paramValue.value =
+                    defaultValue !== undefined
+                      ? await this.parseValueSpecification(defaultValue)
+                      : {
+                          _type: V1_deserializeRawValueSpecificationType(type),
+                          value: _defaultPrimitiveTypeValue(type),
+                        };
+                  return paramValue;
+                }
+              }
+              return undefined;
+            }),
+          )
+        ).filter(isNonNullable);
+        source.letParameterValueSpec = letFuncs;
+        source.parameterValues = parameterValues;
+        source.lambda.parameters = source.lambda.parameters.filter((param) =>
+          parameterValues.find((p) => p.name === param.name),
+        );
         return source;
       }
       default:
@@ -537,6 +561,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         result = await this._runQuery(query, source.model, undefined, options);
       } else if (source instanceof LegendQueryDataCubeSource) {
         query.parameters = source.lambda.parameters;
+        query.body = [...source.letParameterValueSpec, ...query.body];
         result = await this._runQuery(
           query,
           source.model,
