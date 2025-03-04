@@ -43,7 +43,6 @@ import {
 import { generateBuilderRoute } from '../../__lib__/LegendDataCubeNavigation.js';
 import { LocalFileDataCubeSourceBuilderState } from './source/LocalFileDataCubeSourceBuilderState.js';
 import { UserDefinedFunctionDataCubeSourceBuilderState } from './source/UserDefinedFunctionDataCubeSourceBuilderState.js';
-import { RawLegendQueryDataCubeSource } from '../model/LegendQueryDataCubeSource.js';
 
 const DEFAULT_SOURCE_TYPE = LegendDataCubeSourceBuilderType.LEGEND_QUERY;
 
