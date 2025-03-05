@@ -29,7 +29,9 @@ import {
   assertNonNullable,
   csvStringify,
   guaranteeNonNullable,
+  isNullable,
   UnsupportedOperationError,
+  uuid,
 } from '@finos/legend-shared';
 import type { CachedDataCubeSource } from '@finos/legend-data-cube';
 import { Type } from 'apache-arrow';
@@ -48,6 +50,7 @@ export class LegendDataCubeDuckDBEngine {
   // Options for creating csv using papa parser: https://www.papaparse.com/docs#config
   private static readonly ESCAPE_CHAR = `'`;
   private static readonly QUOTE_CHAR = `'`;
+  private _catalog: Map<string, DuckDBCatalogTable> = new Map();
 
   private _database?: duckdb.AsyncDuckDB | undefined;
 
@@ -55,6 +58,13 @@ export class LegendDataCubeDuckDBEngine {
     return guaranteeNonNullable(
       this._database,
       `Cache manager database not initialized`,
+    );
+  }
+
+  retrieveCatalogTable(ref: string) {
+    return guaranteeNonNullable(
+      this._catalog.get(ref),
+      `Can't find reference ${ref}`,
     );
   }
 
@@ -127,7 +137,14 @@ export class LegendDataCubeDuckDBEngine {
     return { schema, table, rowCount: result.result.rows.length };
   }
 
-  async ingestLocalFileData(data: string, format: string) {
+  async ingestLocalFileData(data: string, format: string, refId?: string) {
+    if (!isNullable(refId) && this._catalog.has(refId)) {
+      const dbDetails = guaranteeNonNullable(this._catalog.get(refId));
+      return {
+        dbReference: refId,
+        columnNames: dbDetails.columns.map((col) => col[0] as string),
+      };
+    }
     const schema = LegendDataCubeDuckDBEngine.DUCKDB_DEFAULT_SCHEMA_NAME;
     LegendDataCubeDuckDBEngine.ingestFileTableCounter += 1;
     const table = `${LegendDataCubeDuckDBEngine.INGEST_TABLE_NAME_PREFIX}${LegendDataCubeDuckDBEngine.ingestFileTableCounter}`;
@@ -161,12 +178,22 @@ export class LegendDataCubeDuckDBEngine {
     const tableSpec = (await connection.query(`DESCRIBE ${schema}.${table}`))
       .toArray()
       .map((spec) => [
-        spec[LegendDataCubeDuckDBEngine.COLUMN_NAME],
-        spec[LegendDataCubeDuckDBEngine.COLUMN_TYPE],
+        spec[LegendDataCubeDuckDBEngine.COLUMN_NAME] as string,
+        spec[LegendDataCubeDuckDBEngine.COLUMN_TYPE] as string,
       ]);
     await connection.close();
 
-    return { schema, table, tableSpec };
+    const ref = isNullable(refId) ? uuid() : refId;
+    this._catalog.set(ref, {
+      schemaName: schema,
+      tableName: table,
+      columns: tableSpec,
+    } satisfies DuckDBCatalogTable);
+
+    return {
+      dbReference: ref,
+      columnNames: tableSpec.map((spec) => spec[0] as string),
+    };
   }
 
   async runSQLQuery(sql: string) {
@@ -269,3 +296,9 @@ export class LegendDataCubeDuckDBEngine {
     await this._database?.terminate();
   }
 }
+
+type DuckDBCatalogTable = {
+  schemaName: string;
+  tableName: string;
+  columns: string[][];
+};
