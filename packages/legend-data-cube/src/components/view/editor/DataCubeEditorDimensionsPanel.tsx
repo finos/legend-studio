@@ -18,7 +18,8 @@ import { observer } from 'mobx-react-lite';
 import { cn, DataCubeIcon } from '@finos/legend-art';
 import {
   type GridApi,
-  type RowDragEndEvent,
+  type IRowNode,
+  type RowDragEvent,
   type SelectionChangedEvent,
   AllCommunityModule,
 } from 'ag-grid-community';
@@ -28,8 +29,11 @@ import {
   type CustomCellRendererProps,
   type CustomNoRowsOverlayProps,
 } from 'ag-grid-react';
-import { isNonNullable } from '@finos/legend-shared';
-import { getDataForAllFilteredNodes } from '../../../stores/view/grid/DataCubeGridClientEngine.js';
+import { filterByType, isNonNullable } from '@finos/legend-shared';
+import {
+  getAllNodes,
+  getDataForAllFilteredNodes,
+} from '../../../stores/view/grid/DataCubeGridClientEngine.js';
 import type { DataCubeViewState } from '../../../stores/view/DataCubeViewState.js';
 import {
   FormAlert,
@@ -38,7 +42,10 @@ import {
 } from '../../core/DataCubeFormUtils.js';
 import { DataCubeGridMode } from '../../../stores/core/DataCubeQueryEngine.js';
 import { DataCubeEditorColumnsSelectorColumnState } from '../../../stores/view/editor/DataCubeEditorColumnsSelectorState.js';
-import { getColumnsSelectorBaseGridProps } from './DataCubeEditorColumnsSelector.js';
+import {
+  getColumnsSelectorBaseGridProps,
+  INTERNAL__EDITOR_COLUMNS_SELECTOR_ROW_HEIGHT,
+} from './DataCubeEditorColumnsSelector.js';
 import {
   DataCubeEditorDimensionState,
   type DataCubeEditorDimensionsPanelState,
@@ -141,21 +148,16 @@ const DimensionLabel = observer(
 
     return (
       <div
-        className={cn('flex h-full w-full items-center pl-1', {
-          'cursor-pointer': !dimension.isRenaming,
-        })}
-        title={
-          dimension.isRenaming
-            ? undefined
-            : `[Dimension: ${dimension.name}]\nDouble-click to rename dimension`
-        }
+        className="flex h-full w-full items-center pl-1"
+        title={`[Dimension: ${dimension.name}]\nDouble-click to remove all columns`}
       >
         <div className="text-2xs flex h-3 flex-shrink-0 items-center justify-center rounded-sm bg-neutral-500 px-1 font-bold text-white">
           DIM
         </div>
         {!dimension.isRenaming && (
           <div
-            className="h-full flex-1 items-center overflow-hidden overflow-ellipsis whitespace-nowrap pl-1"
+            className="h-full flex-1 cursor-pointer items-center overflow-hidden overflow-ellipsis whitespace-nowrap pl-1"
+            title="Double-click to remove dimension"
             /**
              * ag-grid row select event listener is at a deeper layer so we need to stop
              * the propagation as event capturing is happening, not when it's bubbling.
@@ -228,7 +230,7 @@ const DimensionLabel = observer(
   },
 );
 
-function confirmPopulateStubDimensionForColumnsAdding(
+function confirmPopulateStubDimensionWhenAddingColumns(
   view: DataCubeViewState,
   handler: () => void,
 ) {
@@ -252,6 +254,29 @@ function confirmPopulateStubDimensionForColumnsAdding(
       height: 180,
     },
   });
+}
+
+function computeDragOverNode<T = DataCubeEditorDimensionsTreeNode>(
+  event: RowDragEvent,
+) {
+  let overIndex = event.overIndex === -1 ? undefined : event.overIndex;
+
+  // if the drag point passes the middle of the row, we consider
+  // the spot to be the one before the row
+  if (
+    overIndex !== undefined &&
+    event.y % INTERNAL__EDITOR_COLUMNS_SELECTOR_ROW_HEIGHT <
+      INTERNAL__EDITOR_COLUMNS_SELECTOR_ROW_HEIGHT / 2
+  ) {
+    overIndex -= 1;
+  }
+
+  return {
+    overIndex,
+    overNode: (overIndex !== undefined
+      ? getAllNodes(event.api).at(overIndex === -1 ? 0 : overIndex)
+      : undefined) as IRowNode<T> | undefined,
+  };
 }
 
 export const DataCubeEditorDimensionsPanel = observer(
@@ -279,196 +304,300 @@ export const DataCubeEditorDimensionsPanel = observer(
     const [dimensionsTreeGridApi, setDimensionsTreeGridApi] =
       useState<GridApi | null>(null);
 
-    /**
-     * Since we use managed row dragging for selected columns,
-     * we just need to sync the row data with the state.
-     * Dragging (multiple) rows to specific position have been
-     * handled by ag-grid.
-     */
-    // const onSelectedColumnsDragStop = useCallback(
-    //   (params: RowDragEndEvent<>) => {
-    //     // panel.setSelectedColumns(getDataForAllNodes(params.api));
-    //   },
-    //   [panel],
-    // );
+    const onAvailableColumnsExternalDragStop = useCallback(
+      (params: RowDragEvent<DataCubeEditorDimensionsTreeNode>) => {
+        // NOTE: here, we do not scope the columns being moved by the search
+        // this is a complicated behavior to implement and it's not clear if
+        // it's necessary, the current behavior is sensible in its own way.
+        const columnsToMove = params.nodes
+          .map((node) => node.data?.data)
+          .filter(filterByType(DataCubeEditorColumnsSelectorColumnState));
+        panel.deselectColumns(columnsToMove);
+        panel.refreshDimensionsTreeData();
+      },
+      [panel],
+    );
 
-    // const onAvailableColumnsDragStop = useCallback(
-    //   (params: RowDragEndEvent<T>) => {
-    //     const nodes = params.nodes;
-    //     const columnsToMove = nodes
-    //       .map((node) => node.data)
-    //       .filter(isNonNullable);
-    //     selector.setSelectedColumns(
-    //       selector.selectedColumns.filter(
-    //         (column) => !columnsToMove.includes(column),
-    //       ),
-    //     );
-    //   },
-    //   [selector],
-    // );
+    const onDimensionsTreeExternalDragStop = useCallback(
+      (event: RowDragEvent<DataCubeEditorColumnsSelectorColumnState>) => {
+        const { overNode } = computeDragOverNode(event);
+
+        // NOTE: here, we do not scope the columns being moved by the search
+        // this is a complicated behavior to implement and it's not clear if
+        // it's necessary, the current behavior is sensible in its own way.
+        const columnsToMove = event.nodes
+          .map((node) => node.data)
+          .filter(isNonNullable);
+
+        const dimension =
+          (!overNode?.data
+            ? undefined
+            : overNode.data.data instanceof DataCubeEditorDimensionState
+              ? overNode.data.data
+              : overNode.parent?.data?.data instanceof
+                  DataCubeEditorDimensionState
+                ? overNode.parent.data.data
+                : undefined) ?? panel.dimensions.at(-1);
+        if (dimension) {
+          // dropping position will be honored and affect columns
+          // ordering within the dimension accordingly
+          const colIdx =
+            overNode?.data?.data instanceof
+            DataCubeEditorColumnsSelectorColumnState
+              ? dimension.columns.indexOf(overNode.data.data)
+              : overNode?.data?.data instanceof DataCubeEditorDimensionState
+                ? -1
+                : undefined;
+          dimension.setColumns(
+            colIdx !== undefined
+              ? [
+                  ...dimension.columns.slice(0, colIdx + 1),
+                  ...columnsToMove,
+                  ...dimension.columns.slice(colIdx + 1),
+                ]
+              : [...dimension.columns, ...columnsToMove],
+          );
+
+          panel.refreshDimensionsTreeData();
+        } else {
+          confirmPopulateStubDimensionWhenAddingColumns(view, () => {
+            const newDimension = panel.newDimension();
+            newDimension.setColumns([...columnsToMove]);
+            panel.refreshDimensionsTreeData();
+          });
+        }
+      },
+      [panel, view],
+    );
 
     /**
-     * Since we use managed row dragging for selected columns,
-     * we just need to sync the row data with the state
-     * Dragging (multiple) rows to specific position have been
-     * handled by ag-grid.
-     */
-    // const onSelectedColumnsDragEnd = useCallback(
-    //   (event: RowDragEndEvent) => {
-    //     if (event.overIndex === -1) {
-    //       return;
-    //     }
-    //     selector.setSelectedColumns(getDataForAllNodes(event.api));
-    //   },
-    //   [selector],
-    // );
-
-    /**
-     * Setup row drop zones for each grid to be the other
+     * Setup drop zones for each grid to allow moving columns between them
      * See https://www.ag-grid.com/react-data-grid/row-dragging-to-grid/
      */
-    // useEffect(() => {
-    //   if (!availableColumnsGridApi || !selectedColumnsGridApi) {
-    //     return;
-    //   }
-    //   const selectedColumnsDropZoneParams =
-    //     selectedColumnsGridApi.getRowDropZoneParams({
-    //       onDragStop: (event) => {
-    //         onSelectedColumnsDragStop(event);
-    //         availableColumnsGridApi.clearFocusedCell();
-    //       },
-    //     });
-    //   if (selectedColumnsDropZoneParams) {
-    //     availableColumnsGridApi.removeRowDropZone(selectedColumnsDropZoneParams);
-    //     availableColumnsGridApi.addRowDropZone(selectedColumnsDropZoneParams);
-    //   }
+    useEffect(() => {
+      if (!availableColumnsGridApi || !dimensionsTreeGridApi) {
+        return;
+      }
 
-    //   const availableColumnsDropZoneParams =
-    //     availableColumnsGridApi.getRowDropZoneParams({
-    //       onDragStop: (event) => {
-    //         onAvailableColumnsDragStop(event);
-    //         selectedColumnsGridApi.clearFocusedCell();
-    //       },
-    //     });
-    //   if (availableColumnsDropZoneParams) {
-    //     selectedColumnsGridApi.removeRowDropZone(availableColumnsDropZoneParams);
-    //     selectedColumnsGridApi.addRowDropZone(availableColumnsDropZoneParams);
-    //   }
-    // }, [
-    //   availableColumnsGridApi,
-    //   selectedColumnsGridApi,
-    //   onSelectedColumnsDragStop,
-    //   onAvailableColumnsDragStop,
-    // ]);
+      const dimensionstreeDropZoneParams = !dimensionsTreeGridApi.isDestroyed()
+        ? dimensionsTreeGridApi.getRowDropZoneParams({
+            onDragStop: (event) => {
+              onDimensionsTreeExternalDragStop(event);
+              availableColumnsGridApi.clearFocusedCell();
+            },
+          })
+        : undefined;
+      if (
+        dimensionstreeDropZoneParams &&
+        !availableColumnsGridApi.isDestroyed()
+      ) {
+        availableColumnsGridApi.addRowDropZone(dimensionstreeDropZoneParams);
+      }
 
-    // const overDimensionRef =
-    //   useRef<IRowNode<DataCubeEditorDimensionsTreeNode>>(null);
+      const availableColumnsDropZoneParams =
+        !availableColumnsGridApi.isDestroyed()
+          ? availableColumnsGridApi.getRowDropZoneParams({
+              onDragStop: (event) => {
+                onAvailableColumnsExternalDragStop(event);
+                dimensionsTreeGridApi.clearFocusedCell();
+              },
+            })
+          : undefined;
+      if (
+        availableColumnsDropZoneParams &&
+        !dimensionsTreeGridApi.isDestroyed()
+      ) {
+        dimensionsTreeGridApi.addRowDropZone(availableColumnsDropZoneParams);
+      }
+    }, [
+      availableColumnsGridApi,
+      dimensionsTreeGridApi,
+      onDimensionsTreeExternalDragStop,
+      onAvailableColumnsExternalDragStop,
+    ]);
 
-    // const setPotentialParentForNode = (
-    //   api: GridApi,
-    //   overNode: IRowNode<DataCubeEditorDimensionsTreeNode> | undefined | null,
-    // ) => {
-    //   let potentialParentNode;
-    //   if (overNode) {
-    //     potentialParentNode =
-    //       overNode.data?.data instanceof DataCubeEditorDimensionState
-    //         ? // if over a dimension, we take the immediate row
-    //           overNode
-    //         : // if over a column, we take the parent row (which will be a folder)
-    //           overNode.parent;
-    //   } else {
-    //     potentialParentNode = null;
-    //   }
-    //   if (overDimensionRef.current === potentialParentNode) {
-    //     return;
-    //   }
-    //   // we refresh the previous selection (if it exists) to clear
-    //   // the highlighted and then the new selection.
-    //   const rowsToRefresh = [];
-    //   if (overDimensionRef.current) {
-    //     rowsToRefresh.push(overDimensionRef.current);
-    //   }
-    //   if (potentialParentNode) {
-    //     rowsToRefresh.push(potentialParentNode);
-    //   }
-    //   overDimensionRef.current = potentialParentNode;
+    const [dimensionsTreeOnHoverIndex, setDimensionsTreeOnHoverIndex] =
+      useState<number | undefined>(undefined);
 
-    //   api.refreshCells({
-    //     // refresh these rows only.
-    //     rowNodes: rowsToRefresh,
-    //     // because the grid does change detection, the refresh
-    //     // will not happen because the underlying value has not
-    //     // changed. to get around this, we force the refresh,
-    //     // which skips change detection.
-    //     force: true,
-    //   });
-    // };
-
-    // const onDimensionsTreeRowDragMove = useCallback(
-    //   (event: RowDragMoveEvent<DataCubeEditorDimensionsTreeNode>) => {
-    //     setPotentialParentForNode(event.api, event.overNode);
-    //   },
-    //   [],
-    // );
-
-    // const onDimensionsTreeRowDragLeave = useCallback(
-    //   (event: RowDragLeaveEvent<DataCubeEditorDimensionsTreeNode>) => {
-    //     setPotentialParentForNode(event.api, null);
-    //   },
-    //   [],
-    // );
-
+    // This event will be triggered when user drops any node on the dimensions tree,
+    // regardless of the source, i.e. this includes columns from available columns grid
+    // so we have to guard against that case because the logic should already been handled
+    // by the drag stop hook in the external drop zone config for dimensions tree.
     const isDimensionsTreeRowDragEnabled =
       selectedDimensions.length === 0 || selectedSelectedColumns.length === 0;
     const onDimensionsTreeRowDragEnd = useCallback(
-      (event: RowDragEndEvent<DataCubeEditorDimensionsTreeNode>) => {
-        // console.log(event);
-        // console.log('end');
-        // if (!overDimensionRef.current) {
-        //   return;
-        // }
-        // const movingData = event.node.data;
-        // // take new parent path from parent, if data is missing, means it's the root node,
-        // // which has no data.
-        // const newParentPath = potentialParent.data
-        //   ? potentialParent.data.filePath
-        //   : [];
-        // const needToChangeParent = !arePathsEqual(
-        //   newParentPath,
-        //   movingData.filePath,
-        // );
-        // // check we are not moving a folder into a child folder
-        // const invalidMode = isSelectionParentOfTarget(
-        //   event.node,
-        //   potentialParent,
-        // );
-        // if (invalidMode) {
-        //   console.log('invalid move');
-        // }
-        // if (needToChangeParent && !invalidMode) {
-        //   const updatedRows: any[] = [];
-        //   moveToPath(newParentPath, event.node, updatedRows);
-        //   gridRef.current!.api.applyTransaction({
-        //     update: updatedRows,
-        //   });
-        //   gridRef.current!.api.clearFocusedCell();
-        // }
-        // clear node to highlight
-        // setPotentialParentForNode(event.api, null);
+      (event: RowDragEvent<DataCubeEditorDimensionsTreeNode>) => {
+        const { overIndex, overNode } = computeDragOverNode(event);
+
+        setDimensionsTreeOnHoverIndex(undefined);
+
+        // NOTE: here, we do not scope the columns being moved by the search
+        // this is a complicated behavior to implement and it's not clear if
+        // it's necessary, the current behavior is sensible in its own way.
+        const dragEntities = event.nodes
+          .map(
+            (node) =>
+              // this assertion is valid because we also need to handle columns being dragged from external sources
+              node.data as
+                | DataCubeEditorDimensionsTreeNode
+                | DataCubeEditorColumnsSelectorColumnState,
+          )
+          .filter(
+            (data): data is DataCubeEditorDimensionsTreeNode =>
+              !(data instanceof DataCubeEditorDimensionState),
+          );
+
+        // we guard against DnD from the available columns grid to the dimensions tree
+        if (dragEntities.length === 0) {
+          return;
+        }
+
+        const dragColumns: DataCubeEditorColumnsSelectorColumnState[] = [];
+        const dragDimensions: DataCubeEditorDimensionState[] = [];
+        dragEntities.forEach((node) => {
+          if (node.data instanceof DataCubeEditorDimensionState) {
+            dragDimensions.push(node.data);
+          } else if (
+            node.data instanceof DataCubeEditorColumnsSelectorColumnState
+          ) {
+            dragColumns.push(node.data);
+          }
+        });
+
+        if (dragColumns.length > 0 && dragDimensions.length > 0) {
+          // we don't support DnD for a mixture of columns and dimensions
+          return;
+        }
+
+        // moving dimensions
+        if (dragDimensions.length > 0) {
+          // dropping position will be honored and affect dimensions ordering
+          let dimensionIdx: number | undefined = undefined;
+          if (overIndex === -1) {
+            dimensionIdx = -1;
+          } else if (overNode !== undefined) {
+            const dimension = !overNode.data
+              ? undefined
+              : overNode.data.data instanceof DataCubeEditorDimensionState
+                ? overNode.data.data
+                : overNode.parent?.data?.data instanceof
+                    DataCubeEditorDimensionState
+                  ? overNode.parent.data.data
+                  : undefined;
+            if (dimension) {
+              const _idx = panel.dimensions.indexOf(dimension);
+              // when compute the move position, account for dimensions which will be moved out
+              // these would shift the move position up.
+              dimensionIdx =
+                _idx === -1
+                  ? -1
+                  : _idx -
+                    panel.dimensions
+                      .slice(0, _idx + 1)
+                      .filter((dim) =>
+                        dragDimensions.find((_dim) => dim.name === _dim.name),
+                      ).length;
+            }
+          }
+
+          const dimensions = panel.dimensions.filter(
+            (dim) => !dragDimensions.find((_dim) => dim.name === _dim.name),
+          );
+          panel.setDimensions(
+            dimensionIdx !== undefined
+              ? [
+                  ...dimensions.slice(0, dimensionIdx + 1),
+                  ...dragDimensions,
+                  ...dimensions.slice(dimensionIdx + 1),
+                ]
+              : [...dimensions, ...dragDimensions],
+          );
+          panel.refreshDimensionsTreeData();
+          return;
+        }
+
+        // moving columns
+        if (dragColumns.length > 0) {
+          const dimension =
+            (!overNode?.data
+              ? undefined
+              : overNode.data.data instanceof DataCubeEditorDimensionState
+                ? overNode.data.data
+                : overNode.parent?.data?.data instanceof
+                    DataCubeEditorDimensionState
+                  ? overNode.parent.data.data
+                  : undefined) ?? panel.dimensions.at(-1);
+          if (dimension) {
+            // dropping position will be honored and affect columns
+            // ordering within the dimension accordingly
+            let colIdx: number | undefined = undefined;
+            if (overNode?.data?.data instanceof DataCubeEditorDimensionState) {
+              colIdx = -1;
+            } else if (
+              overNode?.data?.data instanceof
+              DataCubeEditorColumnsSelectorColumnState
+            ) {
+              const _idx = dimension.columns.indexOf(overNode.data.data);
+              // when compute the move position, account for columns which will be moved out
+              // these would shift the move position up.
+              colIdx =
+                _idx === -1
+                  ? -1
+                  : _idx -
+                    dimension.columns
+                      .slice(0, _idx + 1)
+                      .filter((col) => _findCol(dragColumns, col.name)).length;
+            }
+
+            panel.deselectColumns(dragColumns);
+            dimension.setColumns(
+              colIdx !== undefined
+                ? [
+                    ...dimension.columns.slice(0, colIdx + 1),
+                    ...dragColumns,
+                    ...dimension.columns.slice(colIdx + 1),
+                  ]
+                : [...dimension.columns, ...dragColumns],
+            );
+            panel.refreshDimensionsTreeData();
+          }
+
+          return;
+        }
+      },
+      [panel],
+    );
+    const onDimensionsTreeRowDragMove = useCallback(
+      (event: RowDragEvent<DataCubeEditorDimensionsTreeNode>) => {
+        const { overIndex, overNode } = computeDragOverNode(event);
+
+        setDimensionsTreeOnHoverIndex(overIndex);
+        event.api.refreshCells({
+          rowNodes: overNode ? [overNode] : [],
+          force: true, // since no data change is happening, we need to force refresh
+        });
+      },
+      [],
+    );
+    const onDimensionsTreeRowDragCancel = useCallback(
+      (event: RowDragEvent<DataCubeEditorDimensionsTreeNode>) => {
+        setDimensionsTreeOnHoverIndex(undefined);
+      },
+      [],
+    );
+    const onDimensionsTreeRowDragLeave = useCallback(
+      (event: RowDragEvent<DataCubeEditorDimensionsTreeNode>) => {
+        setDimensionsTreeOnHoverIndex(undefined);
       },
       [],
     );
 
-    // const onDimensionsTreeRowDragCancel = useCallback(
-    //   (event: RowDragCancelEvent<DataCubeEditorDimensionsTreeNode>) => {
-    //     setPotentialParentForNode(event.api, null);
-    //   },
-    //   [],
-    // );
-
-    // on load, reset all renaming state for all dimensions
     useEffect(() => {
+      // on load, reset all renaming state for all dimensions
       panel.dimensions.forEach((dimension) => dimension.setIsRenaming(false));
+
+      // reset transient grid states
+      setDimensionsTreeOnHoverIndex(undefined);
     }, [panel]);
 
     // eslint-disable-next-line no-process-env
@@ -640,6 +769,7 @@ export const DataCubeEditorDimensionsPanel = observer(
                         // Using ag-grid quick filter is a cheap way to implement search
                         quickFilterText={panel.availableColumnsSearchText}
                         rowData={panel.availableColumnsForDisplay}
+                        rowClass="border-t border-b border-1 border-transparent"
                         columnDefs={[
                           {
                             field: 'name',
@@ -673,7 +803,7 @@ export const DataCubeEditorDimensionsPanel = observer(
                                     ]);
                                     panel.refreshDimensionsTreeData();
                                   } else {
-                                    confirmPopulateStubDimensionForColumnsAdding(
+                                    confirmPopulateStubDimensionWhenAddingColumns(
                                       view,
                                       () => {
                                         const newDimension =
@@ -717,7 +847,7 @@ export const DataCubeEditorDimensionsPanel = observer(
                                       ]);
                                       panel.refreshDimensionsTreeData();
                                     } else {
-                                      confirmPopulateStubDimensionForColumnsAdding(
+                                      confirmPopulateStubDimensionWhenAddingColumns(
                                         view,
                                         () => {
                                           const newDimension =
@@ -776,7 +906,7 @@ export const DataCubeEditorDimensionsPanel = observer(
                           ]);
                           panel.refreshDimensionsTreeData();
                         } else {
-                          confirmPopulateStubDimensionForColumnsAdding(
+                          confirmPopulateStubDimensionWhenAddingColumns(
                             view,
                             () => {
                               const newDimension = panel.newDimension();
@@ -1031,13 +1161,12 @@ export const DataCubeEditorDimensionsPanel = observer(
                             console.error = __INTERNAL__original_console_error; // eslint-disable-line no-console
                           }
                         }}
-                        onSelectionChanged={(event: SelectionChangedEvent) => {
+                        onSelectionChanged={(
+                          event: SelectionChangedEvent<DataCubeEditorDimensionsTreeNode>,
+                        ) => {
                           const selectedNodes = event.api
                             .getSelectedNodes()
-                            .map(
-                              (node) =>
-                                node.data as DataCubeEditorDimensionsTreeNode,
-                            )
+                            .map((node) => node.data)
                             .filter(isNonNullable);
                           const _selectedColumns: DataCubeEditorColumnsSelectorColumnState[] =
                             [];
@@ -1066,6 +1195,22 @@ export const DataCubeEditorDimensionsPanel = observer(
                         // Using ag-grid quick filter is a cheap way to implement search
                         quickFilterText={panel.dimensionsTreeSearchText}
                         rowData={panel.dimensionsTreeData.nodes}
+                        rowClassRules={{
+                          'border-t border-b border-1 border-transparent': () =>
+                            true,
+                          'border-b-sky-600': (params) => {
+                            return (
+                              dimensionsTreeOnHoverIndex !== undefined &&
+                              params.rowIndex === dimensionsTreeOnHoverIndex
+                            );
+                          },
+                          'border-t-sky-600': (params) => {
+                            return (
+                              dimensionsTreeOnHoverIndex === -1 &&
+                              params.rowIndex === 0
+                            );
+                          },
+                        }}
                         autoGroupColumnDef={{
                           headerName: 'Name',
                           field: 'name',
@@ -1186,16 +1331,9 @@ export const DataCubeEditorDimensionsPanel = observer(
                         suppressRowDrag={!isDimensionsTreeRowDragEnabled}
                         rowDragEntireRow={isDimensionsTreeRowDragEnabled}
                         onRowDragEnd={onDimensionsTreeRowDragEnd}
-                        // rowDragText={(params, dragItemCount) => {
-                        //   // const nodes = params.rowNodes;
-                        //   // if (
-                        //   //   params.rowNodes?.data instanceof
-                        //   //   DataCubeEditorDimensionState
-                        //   // ) {
-                        //   //   return `Move dimension: ${params.node.data.name}`;
-                        //   // }
-                        //   // return `Move column: ${params.node.data.name}`;
-                        // }}
+                        onRowDragMove={onDimensionsTreeRowDragMove}
+                        onRowDragCancel={onDimensionsTreeRowDragCancel}
+                        onRowDragLeave={onDimensionsTreeRowDragLeave}
                       />
                     </div>
                   </div>
