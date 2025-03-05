@@ -152,6 +152,14 @@ export enum DataCubeGridClientSortDirection {
   DESCENDING = 'desc',
 }
 
+export function getAllNodes<T>(client: GridApi<T>): IRowNode<T>[] {
+  const rows: IRowNode<T>[] = [];
+  client.forEachNode((node: IRowNode<T>) => {
+    rows.push(node);
+  });
+  return rows;
+}
+
 export function getDataForAllNodes<T>(client: GridApi<T>): T[] {
   const rows: T[] = [];
   client.forEachNode((node: IRowNode<T>) => {

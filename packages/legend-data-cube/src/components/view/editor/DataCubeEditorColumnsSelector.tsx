@@ -49,6 +49,8 @@ import {
 import { DataCubeQuerySortDirection } from '../../../stores/core/DataCubeQueryEngine.js';
 import { _findCol } from '../../../stores/core/model/DataCubeColumn.js';
 
+export const INTERNAL__EDITOR_COLUMNS_SELECTOR_ROW_HEIGHT = 20;
+
 export function getColumnsSelectorBaseGridProps<
   T extends { name: string } = DataCubeEditorColumnsSelectorColumnState,
 >(): AgGridReactProps<T> {
@@ -83,8 +85,8 @@ export function getColumnsSelectorBaseGridProps<
       suppressHeaderMenuButton: true,
     },
     suppressMoveWhenRowDragging: true,
-    rowHeight: 20,
-    headerHeight: 20,
+    rowHeight: INTERNAL__EDITOR_COLUMNS_SELECTOR_ROW_HEIGHT,
+    headerHeight: INTERNAL__EDITOR_COLUMNS_SELECTOR_ROW_HEIGHT,
     suppressRowHoverHighlight: false,
     noRowsOverlayComponent: (
       params: CustomNoRowsOverlayProps<T> & {
@@ -252,32 +254,43 @@ export const DataCubeEditorColumnsSelector = observer(
     );
 
     /**
-     * Setup row drop zones for each grid to be the other
+     * Setup drop zones for each grid to allow moving columns between them
      * See https://www.ag-grid.com/react-data-grid/row-dragging-to-grid/
      */
     useEffect(() => {
       if (!availableColumnsGridApi || !selectedColumnsGridApi) {
         return;
       }
+
       const selectedColumnsDropZoneParams =
-        selectedColumnsGridApi.getRowDropZoneParams({
-          onDragStop: (event) => {
-            onSelectedColumnsDragStop(event);
-            availableColumnsGridApi.clearFocusedCell();
-          },
-        });
-      if (selectedColumnsDropZoneParams) {
+        !selectedColumnsGridApi.isDestroyed()
+          ? selectedColumnsGridApi.getRowDropZoneParams({
+              onDragStop: (event) => {
+                onSelectedColumnsDragStop(event);
+                availableColumnsGridApi.clearFocusedCell();
+              },
+            })
+          : undefined;
+      if (
+        selectedColumnsDropZoneParams &&
+        !availableColumnsGridApi.isDestroyed()
+      ) {
         availableColumnsGridApi.addRowDropZone(selectedColumnsDropZoneParams);
       }
 
       const availableColumnsDropZoneParams =
-        availableColumnsGridApi.getRowDropZoneParams({
-          onDragStop: (event) => {
-            onAvailableColumnsDragStop(event);
-            selectedColumnsGridApi.clearFocusedCell();
-          },
-        });
-      if (availableColumnsDropZoneParams) {
+        !availableColumnsGridApi.isDestroyed()
+          ? availableColumnsGridApi.getRowDropZoneParams({
+              onDragStop: (event) => {
+                onAvailableColumnsDragStop(event);
+                selectedColumnsGridApi.clearFocusedCell();
+              },
+            })
+          : undefined;
+      if (
+        availableColumnsDropZoneParams &&
+        !selectedColumnsGridApi.isDestroyed()
+      ) {
         selectedColumnsGridApi.addRowDropZone(availableColumnsDropZoneParams);
       }
     }, [
