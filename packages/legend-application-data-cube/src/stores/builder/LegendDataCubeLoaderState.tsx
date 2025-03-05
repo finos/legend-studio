@@ -19,12 +19,12 @@ import {
   DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
   type GenericLegendApplicationStore,
 } from '@finos/legend-application';
-import type { PersistentDataCube } from '@finos/legend-graph';
 import {
   type LightPersistentDataCube,
   QuerySearchSpecification,
   QuerySearchSortBy,
   type V1_PureGraphManager,
+  type PersistentDataCube,
 } from '@finos/legend-graph';
 import {
   ActionState,
