@@ -168,9 +168,7 @@ export class LocalFileDataCubePartialSourceLoaderState extends LegendDataCubePar
     return LegendDataCubeSourceLoaderType.LOCAL_FILE;
   }
 
-  override async loadSourceData(
-    source: PlainObject | undefined,
-  ): Promise<PlainObject> {
+  override async load(source: PlainObject | undefined): Promise<PlainObject> {
     const deserializedSource =
       RawLocalFileQueryDataCubeSource.serialization.fromJson(
         guaranteeNonNullable(source),

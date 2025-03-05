@@ -25,14 +25,11 @@ import { observer } from 'mobx-react-lite';
 import { useRef } from 'react';
 
 export const LegendDataCubeBlockingWindow = observer(
-  (props: {
-    windowState: LegendDataCubeBlockingWindowState;
-    closeModal?: () => void;
-  }) => {
-    const { windowState, closeModal } = props;
-    const newCloseModal = !closeModal
+  (props: { windowState: LegendDataCubeBlockingWindowState }) => {
+    const { windowState } = props;
+    const closeModal = !windowState.onClose
       ? (): void => windowState.close()
-      : closeModal;
+      : windowState.onClose;
     const ref = useRef<HTMLDivElement>(null);
 
     // set the width and height of the dialog to make sure content overflow works properly
@@ -51,7 +48,7 @@ export const LegendDataCubeBlockingWindow = observer(
     return (
       <Dialog
         open={windowState.isOpen}
-        onClose={newCloseModal}
+        onClose={closeModal}
         slotProps={{
           transition: {
             onEnter: handleEnter,
@@ -78,7 +75,7 @@ export const LegendDataCubeBlockingWindow = observer(
             <div className="px-2">{windowState.configuration.title}</div>
             <button
               className="flex h-[23px] w-6 items-center justify-center hover:bg-red-500 hover:text-white"
-              onClick={newCloseModal}
+              onClick={closeModal}
             >
               <DataCubeIcon.X />
             </button>
@@ -97,11 +94,13 @@ export const LegendDataCubeBlockingWindow = observer(
 export class LegendDataCubeBlockingWindowState {
   isOpen = false;
   readonly configuration: LayoutConfiguration;
+  readonly onClose: (() => void) | undefined;
 
   constructor(
     title: string,
     contentRenderer: (config: LayoutConfiguration) => React.ReactNode,
     windowConfiguration?: WindowConfiguration | undefined,
+    closeModal?: (() => void) | undefined,
   ) {
     makeObservable(this, {
       isOpen: observable,
@@ -114,6 +113,7 @@ export class LegendDataCubeBlockingWindowState {
     if (windowConfiguration) {
       this.configuration.window = windowConfiguration;
     }
+    this.onClose = closeModal;
   }
 
   open() {

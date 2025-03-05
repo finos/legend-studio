@@ -16,6 +16,7 @@
 import {
   ActionState,
   assertErrorThrown,
+  guaranteeNonNullable,
   UnsupportedOperationError,
   type PlainObject,
 } from '@finos/legend-shared';
@@ -32,6 +33,7 @@ import type { LegendDataCubePartialSourceLoaderState } from './source/loader/Leg
 import { LocalFileDataCubePartialSourceLoaderState } from './source/loader/LocalFileDataCubePartialSourceLoaderState.js';
 import { LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE } from '../model/LocalFileDataCubeSource.js';
 import { LegendDataCubeBlockingWindowState } from '../../components/LegendDataCubeBlockingWindow.js';
+import type { PersistentDataCube } from '@finos/legend-graph';
 
 export enum LegendDataCubeSourceLoaderType {
   LOCAL_FILE = 'Local File',
@@ -43,6 +45,7 @@ export class LegendDataCubeSourceLoaderState {
   private readonly _alertService: DataCubeAlertService;
 
   source: PlainObject | undefined;
+  persistentDataCube: PersistentDataCube | undefined;
 
   readonly display: LegendDataCubeBlockingWindowState;
   readonly searchState = ActionState.create();
@@ -69,18 +72,34 @@ export class LegendDataCubeSourceLoaderState {
     );
 
     this.display = new LegendDataCubeBlockingWindowState(
-      'Resolve Partial Source',
+      'Load DataCube',
       () => <LegendDataCubePartialSourceLoader />,
       {
         ...DEFAULT_TOOL_PANEL_WINDOW_CONFIG,
         width: 500,
         minWidth: 500,
       },
+      () => {
+        store.loader.sourceLoaderDisplay.close();
+        store.loadPartialSourceDataCube();
+      },
     );
+  }
+
+  initialize(
+    source: PlainObject,
+    persistentDataCube: PersistentDataCube | undefined,
+  ) {
+    this.setSource(source);
+    this.setPersistentDataCube(persistentDataCube);
   }
 
   setSource(source: PlainObject) {
     this.source = source;
+  }
+
+  setPersistentDataCube(persistentDataCube: PersistentDataCube | undefined) {
+    this.persistentDataCube = guaranteeNonNullable(persistentDataCube);
   }
 
   setPartialSourceResolved(sourceResolved: boolean) {
@@ -111,9 +130,7 @@ export class LegendDataCubeSourceLoaderState {
   async finalize() {
     try {
       this.finalizeState.inProgress();
-      this.setSource(
-        await this.partialSourceLoader.loadSourceData(this.source),
-      );
+      this.setSource(await this.partialSourceLoader.load(this.source));
       this.display.close();
       this.finalizeState.pass();
       this.setPartialSourceResolved(true);

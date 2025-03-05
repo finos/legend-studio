@@ -37,7 +37,5 @@ export abstract class LegendDataCubePartialSourceLoaderState {
 
   abstract get isValid(): boolean;
 
-  abstract loadSourceData(
-    source: PlainObject | undefined,
-  ): Promise<PlainObject>;
+  abstract load(source: PlainObject | undefined): Promise<PlainObject>;
 }

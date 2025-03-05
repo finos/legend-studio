@@ -19,6 +19,7 @@ import {
   DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
   type GenericLegendApplicationStore,
 } from '@finos/legend-application';
+import type { PersistentDataCube } from '@finos/legend-graph';
 import {
   type LightPersistentDataCube,
   QuerySearchSpecification,
@@ -72,7 +73,7 @@ export class LegendDataCubeLoaderState {
   showingDefaultResults = true;
   sortBy = DataCubeSortByType.LAST_VIEWED;
 
-  readonly sourceLoaderState: LegendDataCubeSourceLoaderState;
+  readonly sourceLoader: LegendDataCubeSourceLoaderState;
   readonly sourceLoaderDisplay: LegendDataCubeBlockingWindowState;
 
   constructor(store: LegendDataCubeBuilderStore) {
@@ -100,7 +101,7 @@ export class LegendDataCubeLoaderState {
     this._store = store;
     this._graphManager = store.graphManager;
     this._alertService = store.alertService;
-    this.sourceLoaderState = new LegendDataCubeSourceLoaderState(store);
+    this.sourceLoader = new LegendDataCubeSourceLoaderState(store);
 
     this.display = store.layoutService.newDisplay(
       'Load DataCube',
@@ -111,7 +112,7 @@ export class LegendDataCubeLoaderState {
         minWidth: 500,
       },
     );
-    this.sourceLoaderDisplay = this.sourceLoaderState.display;
+    this.sourceLoaderDisplay = this.sourceLoader.display;
   }
 
   setSearchText(val: string) {
@@ -158,27 +159,32 @@ export class LegendDataCubeLoaderState {
     );
   }
 
-  isPartialSouce(type: string): boolean {
+  isPartialSource(source: PlainObject): boolean {
+    const type = source._type as string;
     if (type === LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE) {
-      this.sourceLoaderState.setPartialSourceResolved(false);
+      this.sourceLoader.setPartialSourceResolved(false);
       return true;
     }
     return false;
   }
 
   isPartialSourceResolved() {
-    return this.sourceLoaderState.partialSourceResolved;
-  }
-
-  setPartialSource(partialSource: PlainObject) {
-    this.sourceLoaderState.source = partialSource;
+    return this.sourceLoader.partialSourceResolved;
   }
 
   getResolvedSource() {
-    return this.sourceLoaderState.source;
+    return this.sourceLoader.source;
   }
 
-  resolvePartialSource() {
+  getPersistentDataCube() {
+    return this.sourceLoader.persistentDataCube;
+  }
+
+  resolvePartialSource(
+    partialSource: PlainObject,
+    persistentDataCube: PersistentDataCube | undefined,
+  ) {
+    this.sourceLoader.initialize(partialSource, persistentDataCube);
     this.sourceLoaderDisplay.open();
   }
 

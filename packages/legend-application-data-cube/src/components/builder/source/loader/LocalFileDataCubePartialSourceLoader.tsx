@@ -26,7 +26,7 @@ export const LocalFileDataCubePartialSourceLoader = observer(
     const { partialSourceLoader } = props;
 
     return (
-      <div className="h-full w-full p-2">
+      <div className="h-full w-full">
         <FormAlert
           message="Local file support is experimental"
           type={AlertType.WARNING}
