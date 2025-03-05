@@ -25,6 +25,7 @@ import type { LayoutManager } from '../stores/services/DataCubeLayoutService.js'
 import { DataCubeLayout } from './core/DataCubeLayout.js';
 import { DataCubeIcon } from '@finos/legend-art';
 import type { TaskManager } from '../stores/services/DataCubeTaskService.js';
+import { LEGEND_DATACUBE_TEST_ID } from '../__lib__/DataCubeTesting.js';
 
 export const DataCubePlaceholderErrorDisplay = (props: {
   message: string;
@@ -84,7 +85,10 @@ export const DataCubePlaceholder = observer(
     } = props;
 
     return (
-      <div className="data-cube relative flex h-full w-full flex-col bg-white">
+      <div
+        className="data-cube relative flex h-full w-full flex-col bg-white"
+        data-testid={LEGEND_DATACUBE_TEST_ID.PLACEHOLDER}
+      >
         <DataCubeTitleBar title={title} menuItems={menuItems}>
           {headerContent ?? null}
         </DataCubeTitleBar>
