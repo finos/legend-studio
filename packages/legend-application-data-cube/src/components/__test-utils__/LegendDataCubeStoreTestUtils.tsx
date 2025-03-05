@@ -16,7 +16,7 @@
 
 import { type RenderResult, render, waitFor } from '@testing-library/react';
 import { type AbstractPlugin, type AbstractPreset } from '@finos/legend-shared';
-import { createMock } from '@finos/legend-shared/test';
+import { createMock, createSpy } from '@finos/legend-shared/test';
 import {
   ApplicationStore,
   ApplicationStoreProvider,
@@ -39,6 +39,7 @@ import { LEGEND_DATA_CUBE_ROUTE_PATTERN } from '../../__lib__/LegendDataCubeNavi
 import { LegendDataCubeBuilder } from '../builder/LegendDataCubeBuilder.js';
 import { LEGEND_DATACUBE_TEST_ID } from '@finos/legend-data-cube';
 import { Core_LegendDataCube_LegendApplicationPlugin } from '../../application/Core_LegendDataCube_LegendApplicationPlugin.js';
+import { type PersistentDataCube } from '@finos/legend-graph';
 
 export const TEST_QUERY_NAME = 'MyTestQuery';
 
@@ -109,47 +110,20 @@ export const TEST__provideMockedLegendDataCubeBuilderStore =
 
 export const TEST__setUpDataCubeBuilder = async (
   MOCK__builderStore: LegendDataCubeBuilderStore,
-  // lambda: RawLambda,
-  // mappingPath: string,
-  // runtimePath: string,
-  // rawMappingModelCoverageAnalysisResult?: RawMappingModelCoverageAnalysisResult,
+  dataCubeId?: string,
 ): Promise<{
   renderResult: RenderResult;
   legendDataCubeBuilderState: LegendDataCubeBuilderState | undefined;
 }> => {
-  const graphManager = MOCK__builderStore.graphManager;
-
-  await graphManager.initialize({
-    env: 'test',
-    tabSize: 2,
-    clientConfig: {},
-  });
-
-  // createSpy(
-  //   MOCK__builderStore.depotServerClient,
-  //   'getProject',
-  // ).mockResolvedValue(projectData);
-  // createSpy(
-  //   MOCK__builderStore.depotServerClient,
-  //   'getEntities',
-  // ).mockResolvedValue(entities);
-  // createSpy(graphManager.graphManager, 'getLightQuery').mockResolvedValue(
-  //   lightQuery,
-  // );
-  // createSpy(graphManager.graphManager, 'getQueryInfo').mockResolvedValue(
-  //   queryInfo,
-  // );
-  // createSpy(
-  //   graphManager.graphManager,
-  //   'pureCodeToLambda',
-  // ).mockResolvedValue(new RawLambda(lambda.parameters, lambda.body));
-  // createSpy(graphManager.graphManager, 'getQuery').mockResolvedValue(
-  //   query,
-  // );
+  createSpy(MOCK__builderStore.graphManager, 'getDataCube').mockResolvedValue(
+    {} as PersistentDataCube,
+  );
 
   const renderResult = render(
     <ApplicationStoreProvider store={MOCK__builderStore.application}>
-      <TEST__BrowserEnvironmentProvider initialEntries={['/']}>
+      <TEST__BrowserEnvironmentProvider
+        initialEntries={[dataCubeId ? `/${dataCubeId}` : '/']}
+      >
         <LegendDataCubeFrameworkProvider>
           <Routes>
             <Route
