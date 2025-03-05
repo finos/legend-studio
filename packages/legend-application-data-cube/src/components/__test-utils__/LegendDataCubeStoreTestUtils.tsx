@@ -38,42 +38,74 @@ import { Route, Routes } from '@finos/legend-application/browser';
 import { LEGEND_DATA_CUBE_ROUTE_PATTERN } from '../../__lib__/LegendDataCubeNavigation.js';
 import { LegendDataCubeBuilder } from '../builder/LegendDataCubeBuilder.js';
 import { LEGEND_DATACUBE_TEST_ID } from '@finos/legend-data-cube';
+import { Core_LegendDataCube_LegendApplicationPlugin } from '../../application/Core_LegendDataCube_LegendApplicationPlugin.js';
 
 export const TEST_QUERY_NAME = 'MyTestQuery';
 
-export const TEST__provideMockedLegendDataCubeBuilderStore = (customization?: {
-  mock?: LegendDataCubeBuilderStore;
-  applicationStore?: LegendDataCubeApplicationStore;
-  pluginManager?: LegendDataCubePluginManager;
-  extraPlugins?: AbstractPlugin[];
-  extraPresets?: AbstractPreset[];
-}): LegendDataCubeBuilderStore => {
-  const pluginManager =
-    customization?.pluginManager ?? LegendDataCubePluginManager.create();
-  pluginManager
-    .usePlugins([
-      new Core_LegendDataCubeApplicationPlugin(),
-      ...(customization?.extraPlugins ?? []),
-    ])
-    .usePresets([...(customization?.extraPresets ?? [])])
-    .install();
-  const applicationStore =
-    customization?.applicationStore ??
-    new ApplicationStore(
-      TEST__getTestLegendDataCubeApplicationConfig(),
-      pluginManager,
+export const TEST__provideMockedLegendDataCubeBaseStore =
+  async (customization?: {
+    mock?: LegendDataCubeBaseStore | undefined;
+    applicationStore?: LegendDataCubeApplicationStore | undefined;
+    pluginManager?: LegendDataCubePluginManager | undefined;
+    extraPlugins?: AbstractPlugin[] | undefined;
+    extraPresets?: AbstractPreset[] | undefined;
+  }): Promise<LegendDataCubeBaseStore> => {
+    const pluginManager =
+      customization?.pluginManager ?? LegendDataCubePluginManager.create();
+    pluginManager
+      .usePlugins([
+        new Core_LegendDataCube_LegendApplicationPlugin(),
+        new Core_LegendDataCubeApplicationPlugin(),
+        ...(customization?.extraPlugins ?? []),
+      ])
+      .usePresets([...(customization?.extraPresets ?? [])])
+      .install();
+    const applicationStore =
+      customization?.applicationStore ??
+      new ApplicationStore(
+        TEST__getTestLegendDataCubeApplicationConfig(),
+        pluginManager,
+      );
+    const value =
+      customization?.mock ?? new LegendDataCubeBaseStore(applicationStore);
+    await value.initialize();
+    const MOCK__LegendDataCubeBaseStoreProvider = require('../LegendDataCubeFrameworkProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-require-imports
+    MOCK__LegendDataCubeBaseStoreProvider.useLegendDataCubeBaseStore =
+      createMock();
+    MOCK__LegendDataCubeBaseStoreProvider.useLegendDataCubeBaseStore.mockReturnValue(
+      value,
     );
-  const baseStore = new LegendDataCubeBaseStore(applicationStore);
-  const value =
-    customization?.mock ?? new LegendDataCubeBuilderStore(baseStore);
-  const MOCK__LegendDataCubeBuilderStoreProvider = require('../builder/LegendDataCubeBuilderStoreProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-require-imports
-  MOCK__LegendDataCubeBuilderStoreProvider.useLegendDataCubeBuilderStore =
-    createMock();
-  MOCK__LegendDataCubeBuilderStoreProvider.useLegendDataCubeBuilderStore.mockReturnValue(
-    value,
-  );
-  return value;
-};
+    return value;
+  };
+
+export const TEST__provideMockedLegendDataCubeBuilderStore =
+  async (customization?: {
+    mock?: LegendDataCubeBuilderStore;
+    mockBaseStore?: LegendDataCubeBaseStore;
+    applicationStore?: LegendDataCubeApplicationStore;
+    pluginManager?: LegendDataCubePluginManager;
+    extraPlugins?: AbstractPlugin[];
+    extraPresets?: AbstractPreset[];
+  }): Promise<LegendDataCubeBuilderStore> => {
+    const value =
+      customization?.mock ??
+      new LegendDataCubeBuilderStore(
+        await TEST__provideMockedLegendDataCubeBaseStore({
+          mock: customization?.mockBaseStore,
+          applicationStore: customization?.applicationStore,
+          pluginManager: customization?.pluginManager,
+          extraPlugins: customization?.extraPlugins,
+          extraPresets: customization?.extraPresets,
+        }),
+      );
+    const MOCK__LegendDataCubeBuilderStoreProvider = require('../builder/LegendDataCubeBuilderStoreProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-require-imports
+    MOCK__LegendDataCubeBuilderStoreProvider.useLegendDataCubeBuilderStore =
+      createMock();
+    MOCK__LegendDataCubeBuilderStoreProvider.useLegendDataCubeBuilderStore.mockReturnValue(
+      value,
+    );
+    return value;
+  };
 
 export const TEST__setUpDataCubeBuilder = async (
   MOCK__builderStore: LegendDataCubeBuilderStore,
@@ -117,7 +149,7 @@ export const TEST__setUpDataCubeBuilder = async (
 
   const renderResult = render(
     <ApplicationStoreProvider store={MOCK__builderStore.application}>
-      <TEST__BrowserEnvironmentProvider initialEntries={['/datacube']}>
+      <TEST__BrowserEnvironmentProvider initialEntries={['/']}>
         <LegendDataCubeFrameworkProvider>
           <Routes>
             <Route

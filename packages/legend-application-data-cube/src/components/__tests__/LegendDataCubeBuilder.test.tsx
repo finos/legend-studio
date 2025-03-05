@@ -26,14 +26,41 @@ import {
   TEST__provideMockedLegendDataCubeBuilderStore,
   TEST__setUpDataCubeBuilder,
 } from '../__test-utils__/LegendDataCubeStoreTestUtils.js';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
 test(
   integrationTest('Load DataCube window appears on first load'),
   async () => {
     const mockedLegendDataCubeBuilderStore =
-      TEST__provideMockedLegendDataCubeBuilderStore();
+      await TEST__provideMockedLegendDataCubeBuilderStore();
     const { renderResult, legendDataCubeBuilderState } =
       await TEST__setUpDataCubeBuilder(mockedLegendDataCubeBuilderStore);
-    await renderResult.findByText('Load DataCube');
+    await renderResult.findByPlaceholderText(
+      'Search for DataCube(s) by name or ID',
+    );
+  },
+);
+
+test(
+  integrationTest('New DataCube window appears on button click'),
+  async () => {
+    const mockedLegendDataCubeBuilderStore =
+      await TEST__provideMockedLegendDataCubeBuilderStore();
+    const { renderResult, legendDataCubeBuilderState } =
+      await TEST__setUpDataCubeBuilder(mockedLegendDataCubeBuilderStore);
+    await renderResult.findByPlaceholderText(
+      'Search for DataCube(s) by name or ID',
+    );
+    fireEvent.click(
+      await renderResult.findByRole('button', { name: 'Cancel' }),
+    );
+    fireEvent.click(
+      guaranteeNonNullable(
+        (
+          await renderResult.findAllByRole('button', { name: 'New DataCube' })
+        )?.[0],
+      ),
+    );
+    await renderResult.findByText('Choose Source Type:');
   },
 );
