@@ -23,8 +23,9 @@ import type { LegendDataCubePluginManager } from '../application/LegendDataCubeP
 import { DepotServerClient } from '@finos/legend-server-depot';
 import type { LegendDataCubeApplicationConfig } from '../application/LegendDataCubeApplicationConfig.js';
 import {
-  V1_EngineServerClient,
+  type V1_EngineServerClient,
   V1_PureGraphManager,
+  V1_RemoteEngine,
 } from '@finos/legend-graph';
 import {
   ActionState,
@@ -61,6 +62,7 @@ export class LegendDataCubeBaseStore {
   readonly pluginManager: LegendDataCubePluginManager;
   readonly depotServerClient: DepotServerClient;
   readonly graphManager: V1_PureGraphManager;
+  readonly remoteEngine: V1_RemoteEngine;
   readonly engineServerClient: V1_EngineServerClient;
 
   readonly engine: LegendDataCubeDataCubeEngine;
@@ -116,11 +118,15 @@ export class LegendDataCubeBaseStore {
       } satisfies DataCubeSetting<string>,
     ];
 
-    this.engineServerClient = new V1_EngineServerClient({
-      baseUrl: this.getEngineServerBaseUrlSettingValue(),
-      queryBaseUrl: this.application.config.engineQueryServerUrl,
-      enableCompression: this.getEngineEnableCompressionSettingValue(),
-    });
+    this.remoteEngine = new V1_RemoteEngine(
+      {
+        baseUrl: this.getEngineServerBaseUrlSettingValue(),
+        queryBaseUrl: this.application.config.engineQueryServerUrl,
+        enableCompression: this.getEngineEnableCompressionSettingValue(),
+      },
+      application.logService,
+    );
+    this.engineServerClient = this.remoteEngine.getEngineServerClient();
     this.engineServerClient.setTracerService(application.tracerService);
 
     this.engine = new LegendDataCubeDataCubeEngine(
@@ -200,6 +206,7 @@ export class LegendDataCubeBaseStore {
           },
         },
         {
+          engine: this.remoteEngine,
           tracerService: this.application.tracerService,
         },
       );

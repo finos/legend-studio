@@ -190,11 +190,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
   private queryBaseUrl?: string | undefined;
   private baseUrlForServiceRegistration?: string | undefined;
 
-  constructor(
-    config: ServerClientConfig & {
-      queryBaseUrl?: string | undefined;
-    },
-  ) {
+  constructor(config: ServerClientConfig) {
     super(config);
     this.queryBaseUrl = config.queryBaseUrl;
   }

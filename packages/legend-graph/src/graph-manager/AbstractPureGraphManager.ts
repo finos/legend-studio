@@ -122,9 +122,7 @@ import type {
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
   tabSize: number;
-  clientConfig: ServerClientConfig & {
-    queryBaseUrl?: string | undefined;
-  };
+  clientConfig: ServerClientConfig;
   /**
    * Theses are workarounds we need to manually supply the configuration data
    * for roundtrip grammar test, as the network call to engine is blocked in test
