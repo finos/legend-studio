@@ -14,14 +14,9 @@
  * limitations under the License.
  */
 
-import { stub_RawLambda } from '@finos/legend-graph';
 import { integrationTest } from '@finos/legend-shared/test';
 import { test } from '@jest/globals';
-import { DSL_DataSpace_GraphManagerPreset } from '@finos/legend-extension-dsl-data-space/graph';
-import { act } from 'react';
-import { QUERY_BUILDER_TEST_ID } from '@finos/legend-query-builder';
-import { fireEvent, getByText, waitFor } from '@testing-library/dom';
-import { DSL_DataSpace_LegendApplicationPlugin } from '@finos/legend-extension-dsl-data-space/application';
+import { fireEvent } from '@testing-library/dom';
 import {
   TEST__provideMockedLegendDataCubeBuilderStore,
   TEST__setUpDataCubeBuilder,
@@ -33,8 +28,9 @@ test(
   async () => {
     const mockedLegendDataCubeBuilderStore =
       await TEST__provideMockedLegendDataCubeBuilderStore();
-    const { renderResult, legendDataCubeBuilderState } =
-      await TEST__setUpDataCubeBuilder(mockedLegendDataCubeBuilderStore);
+    const { renderResult } = await TEST__setUpDataCubeBuilder(
+      mockedLegendDataCubeBuilderStore,
+    );
     await renderResult.findByPlaceholderText(
       'Search for DataCube(s) by name or ID',
     );
@@ -46,8 +42,9 @@ test(
   async () => {
     const mockedLegendDataCubeBuilderStore =
       await TEST__provideMockedLegendDataCubeBuilderStore();
-    const { renderResult, legendDataCubeBuilderState } =
-      await TEST__setUpDataCubeBuilder(mockedLegendDataCubeBuilderStore);
+    const { renderResult } = await TEST__setUpDataCubeBuilder(
+      mockedLegendDataCubeBuilderStore,
+    );
     await renderResult.findByPlaceholderText(
       'Search for DataCube(s) by name or ID',
     );
@@ -64,3 +61,27 @@ test(
     await renderResult.findByText('Choose Source Type:');
   },
 );
+
+test(integrationTest('Loads DataCube from Legend Query'), async () => {
+  const mockedLegendDataCubeBuilderStore =
+    await TEST__provideMockedLegendDataCubeBuilderStore();
+  const { renderResult } = await TEST__setUpDataCubeBuilder(
+    mockedLegendDataCubeBuilderStore,
+    'test-data-cube-id',
+  );
+  await renderResult.findByText('test-data-cube-id');
+  // await renderResult.findByPlaceholderText(
+  //   'Search for DataCube(s) by name or ID',
+  // );
+  // fireEvent.click(
+  //   await renderResult.findByRole('button', { name: 'Cancel' }),
+  // );
+  // fireEvent.click(
+  //   guaranteeNonNullable(
+  //     (
+  //       await renderResult.findAllByRole('button', { name: 'New DataCube' })
+  //     )?.[0],
+  //   ),
+  // );
+  // await renderResult.findByText('Choose Source Type:');
+});
