@@ -15,9 +15,16 @@
  */
 
 import type { DataCubeConfiguration } from '../../core/model/DataCubeConfiguration.js';
-import { DataCubeColumnKind } from '../../core/DataCubeQueryEngine.js';
+import {
+  DataCubeColumnKind,
+  DataCubeGridMode,
+} from '../../core/DataCubeQueryEngine.js';
 import { type DataCubeSnapshot } from '../../core/DataCubeSnapshot.js';
-import { _findCol, _sortByColName } from '../../core/model/DataCubeColumn.js';
+import {
+  _findCol,
+  _sortByColName,
+  _toCol,
+} from '../../core/model/DataCubeColumn.js';
 import { DataCubeEditorColumnsSelectorColumnState } from './DataCubeEditorColumnsSelectorState.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
@@ -187,23 +194,37 @@ export class DataCubeEditorDimensionsPanelState
     snapshot: DataCubeSnapshot,
     configuration: DataCubeConfiguration,
   ) {
-    // this.selector.setSelectedColumns(
-    //   (snapshot.data.groupBy?.columns ?? []).map(
-    //     (col) =>
-    //       new DataCubeEditorColumnSelectorColumnState(col.name, col.type),
-    //   ),
-    // );
+    this.setDimensions(
+      snapshot.data.dimension?.dimensions.map((dimension) => {
+        const _dimension = new DataCubeEditorDimensionState(dimension.name);
+        _dimension.setColumns(
+          dimension.columns.map(
+            (col) =>
+              new DataCubeEditorColumnsSelectorColumnState(col.name, col.type),
+          ),
+        );
+        return _dimension;
+      }) ?? [],
+    );
   }
 
   buildSnapshot(newSnapshot: DataCubeSnapshot, baseSnapshot: DataCubeSnapshot) {
-    // newSnapshot.data.groupBy = this.selector.selectedColumns.length
-    //   ? {
-    //       columns: this.selector.selectedColumns.map(_toCol),
-    //     }
-    //   : undefined;
-    // newSnapshot.data.selectColumns = uniqBy(
-    //   [...newSnapshot.data.selectColumns, ...this.selector.selectedColumns],
-    //   (col) => col.name,
-    // ).map(_toCol);
+    if (
+      this._editor.generalProperties.configuration.gridMode ===
+      DataCubeGridMode.MULTIDIMENSIONAL
+    ) {
+      const dimensions = this.dimensions.map((dimension) => ({
+        name: dimension.name,
+        columns: dimension.columns.map(_toCol),
+      }));
+      newSnapshot.data.dimension =
+        dimensions.length !== 0
+          ? {
+              dimensions,
+            }
+          : undefined;
+    } else {
+      newSnapshot.data.dimension = undefined;
+    }
   }
 }

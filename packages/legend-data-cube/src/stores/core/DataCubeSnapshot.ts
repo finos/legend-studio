@@ -75,12 +75,13 @@ export type DataCubeSnapshotProcessingContext = {
 };
 
 export type DataCubeSnapshotDimension = {
+  name: string;
   columns: DataCubeColumn[];
 };
 
 export type DataCubeSnapshotMultiDimension = {
   dimensions: DataCubeSnapshotDimension[];
-  // TODO: tree
+  // TODO: explorer tree state
 };
 
 export type DataCubeSnapshotData = {
@@ -91,7 +92,7 @@ export type DataCubeSnapshotData = {
   selectColumns: DataCubeColumn[];
   pivot?: DataCubeSnapshotPivot | undefined;
   groupBy?: DataCubeSnapshotGroupBy | undefined;
-  dimension?: DataCubeSnapshotDimension | undefined;
+  dimension?: DataCubeSnapshotMultiDimension | undefined;
   groupExtendedColumns: DataCubeSnapshotExtendedColumn[];
   sortColumns: DataCubeSnapshotSortColumn[];
   limit: number | undefined;
