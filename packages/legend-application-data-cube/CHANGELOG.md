@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.3.3
+
+### Patch Changes
+
+- [#3903](https://github.com/finos/legend-studio/pull/3903) [`dc54b97`](https://github.com/finos/legend-studio/commit/dc54b97ed08bbb289f5645343ff1f1c4dfece209) ([@gs-gunjan](https://github.com/gs-gunjan)) - Enabled saving and loading local file source.
+
 ## 0.3.2
 
 ### Patch Changes
