@@ -30,7 +30,10 @@ import depotEntities from './TEST_DATA__DSL_DataSpace_Entities.json' with { type
 // problems when running in the jest environment.
 jest.mock('../../stores/LegendDataCubeDuckDBEngine', () => {
   return {
-    LegendDataCubeDuckDBEngine: jest.fn(),
+    LegendDataCubeDuckDBEngine: jest.fn(() => ({
+      initialize: jest.fn(),
+      dispose: jest.fn(),
+    })),
   };
 });
 
