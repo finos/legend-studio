@@ -15,7 +15,7 @@
  */
 
 import { integrationTest } from '@finos/legend-shared/test';
-import { jest, test } from '@jest/globals';
+import { expect, jest, test } from '@jest/globals';
 import { fireEvent, screen } from '@testing-library/dom';
 import {
   TEST__provideMockedLegendDataCubeBuilderStore,
@@ -110,8 +110,8 @@ test(integrationTest('Loads DataCube from Legend Query'), async () => {
     depotEntities,
   );
   await screen.findByText('test-data-cube-id-query-name');
-  await screen.findByText('Id');
-  await screen.findByText('Case Type');
+  expect((await screen.findAllByText('Id')).length).toBe(2);
+  expect((await screen.findAllByText('Case Type')).length).toBe(2);
   await screen.findByText('1');
   await screen.findByText('Active');
   await screen.findByText('2');
