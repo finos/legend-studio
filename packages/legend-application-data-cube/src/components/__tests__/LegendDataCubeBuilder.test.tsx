@@ -22,6 +22,7 @@ import {
   TEST__setUpDataCubeBuilder,
 } from '../__test-utils__/LegendDataCubeStoreTestUtils.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
+import { MockedMonacoEditorAPI } from '@finos/legend-lego/code-editor/test';
 
 test(
   integrationTest('Load DataCube window appears on first load'),
@@ -63,6 +64,7 @@ test(
 );
 
 test(integrationTest('Loads DataCube from Legend Query'), async () => {
+  MockedMonacoEditorAPI.remeasureFonts.mockReturnValue(undefined);
   const mockedLegendDataCubeBuilderStore =
     await TEST__provideMockedLegendDataCubeBuilderStore();
   const { renderResult } = await TEST__setUpDataCubeBuilder(
@@ -70,6 +72,7 @@ test(integrationTest('Loads DataCube from Legend Query'), async () => {
     'test-data-cube-id',
   );
   await renderResult.findByText('test-data-cube-id');
+
   // await renderResult.findByPlaceholderText(
   //   'Search for DataCube(s) by name or ID',
   // );
