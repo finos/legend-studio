@@ -23,6 +23,8 @@ import {
 } from '../__test-utils__/LegendDataCubeStoreTestUtils.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { MockedMonacoEditorAPI } from '@finos/legend-lego/code-editor/test';
+import { PersistentDataCube, V1_Query } from '@finos/legend-graph';
+import depotEntities from './TEST_DATA__DSL_DataSpace_Entities.json' with { type: 'json' };
 
 // Mock the LegendDataCubeDuckDBEngine module because it causes
 // problems when running in the jest environment.
@@ -61,11 +63,48 @@ test(
 
 test(integrationTest('Loads DataCube from Legend Query'), async () => {
   MockedMonacoEditorAPI.remeasureFonts.mockReturnValue(undefined);
+
+  const mockDataCubeId = 'test-data-cube-id';
+  const mockDataCube: PersistentDataCube =
+    PersistentDataCube.serialization.fromJson({
+      id: mockDataCubeId,
+      name: `${mockDataCubeId}-name`,
+      description: undefined,
+      content: {
+        query: `select(~[Id, 'Case Type'])`,
+        source: {
+          queryId: `${mockDataCubeId}-query-id`,
+          _type: 'legendQuery',
+        },
+        configuration: {
+          name: `${mockDataCubeId}-query-name`,
+          columns: [
+            { name: 'Id', type: 'Integer' },
+            { name: 'Case Type', type: 'String' },
+          ],
+        },
+      },
+    });
+  const mockQuery: V1_Query = V1_Query.serialization.fromJson({
+    name: `${mockDataCubeId}-query-name`,
+    id: `${mockDataCubeId}-query-id`,
+    versionId: 'latest',
+    groupId: 'com.legend',
+    artifactId: 'test-project',
+    content: `|domain::COVIDData.all()->project(~[Id:x|$x.id, 'Case Type':x|$x.caseType])`,
+    executionContext: {
+      dataSpacePath: 'domain::COVIDDatapace',
+      executionKey: 'dummyContext',
+      _type: 'dataSpaceExecutionContext',
+    },
+  });
   const mockedLegendDataCubeBuilderStore =
     await TEST__provideMockedLegendDataCubeBuilderStore();
   await TEST__setUpDataCubeBuilder(
     guaranteeNonNullable(mockedLegendDataCubeBuilderStore),
-    'test-data-cube-id',
+    mockDataCube,
+    mockQuery,
+    depotEntities,
   );
   screen.findByText('test-data-cube-id-query-name');
   screen.findByText('Id');

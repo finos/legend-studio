@@ -44,15 +44,16 @@ import { LegendDataCubeBuilder } from '../builder/LegendDataCubeBuilder.js';
 import { LEGEND_DATACUBE_TEST_ID } from '@finos/legend-data-cube';
 import { Core_LegendDataCube_LegendApplicationPlugin } from '../../application/Core_LegendDataCube_LegendApplicationPlugin.js';
 import {
+  type PersistentDataCube,
   type V1_LambdaReturnTypeInput,
+  type V1_Query,
   type V1_RawLambda,
   type V1_ValueSpecification,
-  PersistentDataCube,
+  V1_entitiesToPureModelContextData,
   V1_ExecuteInput,
-  V1_Query,
+  V1_PureModelContextData,
   V1_serializePureModelContext,
 } from '@finos/legend-graph';
-import depotEntities from '../__tests__/TEST_DATA__DSL_DataSpace_Entities.json' with { type: 'json' };
 import { DSL_DataSpace_GraphManagerPreset } from '@finos/legend-extension-dsl-data-space/graph';
 import {
   ENGINE_TEST_SUPPORT__execute,
@@ -61,8 +62,7 @@ import {
   ENGINE_TEST_SUPPORT__grammarToJSON_valueSpecification,
   ENGINE_TEST_SUPPORT__JSONToGrammar_valueSpecification,
 } from '@finos/legend-graph/test';
-
-export const TEST_QUERY_NAME = 'MyTestQuery';
+import type { Entity } from '@finos/legend-storage';
 
 export const TEST__provideMockedLegendDataCubeBaseStore =
   async (customization?: {
@@ -134,82 +134,62 @@ export const TEST__provideMockedLegendDataCubeBuilderStore =
 
 export const TEST__setUpDataCubeBuilder = async (
   MOCK__builderStore: LegendDataCubeBuilderStore,
-  dataCubeId?: string,
+  mockDataCube?: PersistentDataCube,
+  mockQuery?: V1_Query,
+  mockEntities?: PlainObject<Entity>[],
 ): Promise<{
   renderResult: RenderResult;
   legendDataCubeBuilderState: LegendDataCubeBuilderState | undefined;
 }> => {
-  if (dataCubeId) {
+  if (mockDataCube) {
     createSpy(MOCK__builderStore.graphManager, 'getDataCube').mockResolvedValue(
-      PersistentDataCube.serialization.fromJson({
-        id: dataCubeId,
-        name: `${dataCubeId}-name`,
-        description: undefined,
-        content: {
-          query: `select(~[Id, 'Case Type'])`,
-          source: {
-            queryId: `${dataCubeId}-query-id`,
-            _type: 'legendQuery',
-          },
-          configuration: {
-            name: `${dataCubeId}-query-name`,
-            columns: [
-              { name: 'Id', type: 'Integer' },
-              { name: 'Case Type', type: 'String' },
-            ],
-          },
-        },
-      }),
+      mockDataCube,
     );
+  }
+  if (mockQuery) {
     createSpy(
       MOCK__builderStore.graphManager.engine,
       'getQuery',
-    ).mockResolvedValue(
-      V1_Query.serialization.fromJson({
-        name: `${dataCubeId}-query-name`,
-        id: `${dataCubeId}-query-id`,
-        versionId: 'latest',
-        groupId: 'com.legend',
-        artifactId: 'test-project',
-        content: `|domain::COVIDData.all()->project(~[Id:x|$x.id, 'Case Type':x|$x.caseType])`,
-        executionContext: {
-          dataSpacePath: 'domain::COVIDDatapace',
-          executionKey: 'dummyContext',
-          _type: 'dataSpaceExecutionContext',
-        },
-      }),
-    );
+    ).mockResolvedValue(mockQuery);
+  }
+  if (mockEntities) {
     createSpy(
       MOCK__builderStore.depotServerClient,
       'getVersionEntities',
-    ).mockResolvedValue(depotEntities);
-    createSpy(
-      MOCK__builderStore.engineServerClient,
-      'grammarToJSON_lambda',
-    ).mockImplementation(async (input: string) =>
-      ENGINE_TEST_SUPPORT__grammarToJSON_lambda(input),
-    );
-    createSpy(
-      MOCK__builderStore.engineServerClient,
-      'grammarToJSON_valueSpecification',
-    ).mockImplementation(async (input: string) =>
-      ENGINE_TEST_SUPPORT__grammarToJSON_valueSpecification(input),
-    );
-    createSpy(
-      MOCK__builderStore.engineServerClient,
-      'JSONToGrammar_valueSpecification',
-    ).mockImplementation(async (input: PlainObject<V1_ValueSpecification>) =>
-      ENGINE_TEST_SUPPORT__JSONToGrammar_valueSpecification(input),
+    ).mockResolvedValue(mockEntities);
+  }
+  createSpy(
+    MOCK__builderStore.engineServerClient,
+    'grammarToJSON_lambda',
+  ).mockImplementation(async (input: string) =>
+    ENGINE_TEST_SUPPORT__grammarToJSON_lambda(input),
+  );
+  createSpy(
+    MOCK__builderStore.engineServerClient,
+    'grammarToJSON_valueSpecification',
+  ).mockImplementation(async (input: string) =>
+    ENGINE_TEST_SUPPORT__grammarToJSON_valueSpecification(input),
+  );
+  createSpy(
+    MOCK__builderStore.engineServerClient,
+    'JSONToGrammar_valueSpecification',
+  ).mockImplementation(async (input: PlainObject<V1_ValueSpecification>) =>
+    ENGINE_TEST_SUPPORT__JSONToGrammar_valueSpecification(input),
+  );
+  if (mockEntities) {
+    const pmcd = new V1_PureModelContextData();
+    await V1_entitiesToPureModelContextData(
+      mockEntities as unknown as Entity[],
+      pmcd,
+      MOCK__builderStore.application.pluginManager.getPureProtocolProcessorPlugins(),
+      undefined,
+      undefined,
     );
     createSpy(
       MOCK__builderStore.engineServerClient,
       'lambdaRelationType',
     ).mockImplementation(
       async (input: PlainObject<V1_LambdaReturnTypeInput>) => {
-        const pmcd =
-          await MOCK__builderStore.graphManager.entitiesToPureModelContextData(
-            depotEntities,
-          );
         return ENGINE_TEST_SUPPORT__getLambdaRelationType(
           input.lambda as PlainObject<V1_RawLambda>,
           V1_serializePureModelContext(pmcd),
@@ -221,10 +201,7 @@ export const TEST__setUpDataCubeBuilder = async (
       'runQuery',
     ).mockImplementation(async (input: PlainObject<V1_ExecuteInput>) => {
       const executeInput = V1_ExecuteInput.serialization.fromJson(input);
-      executeInput.model =
-        await MOCK__builderStore.graphManager.entitiesToPureModelContextData(
-          depotEntities,
-        );
+      executeInput.model = pmcd;
       return ENGINE_TEST_SUPPORT__execute(executeInput);
     });
   }
@@ -232,7 +209,7 @@ export const TEST__setUpDataCubeBuilder = async (
   const renderResult = render(
     <ApplicationStoreProvider store={MOCK__builderStore.application}>
       <TEST__BrowserEnvironmentProvider
-        initialEntries={[dataCubeId ? `/${dataCubeId}` : '/']}
+        initialEntries={[mockDataCube?.id ? `/${mockDataCube.id}` : '/']}
       >
         <LegendDataCubeFrameworkProvider>
           <Routes>

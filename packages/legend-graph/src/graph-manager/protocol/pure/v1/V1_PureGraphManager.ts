@@ -4274,7 +4274,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       this.elementProtocolToEntity(element),
     );
 
-  async entitiesToPureModelContextData(
+  private async entitiesToPureModelContextData(
     entities: Entity[],
   ): Promise<V1_PureModelContextData> {
     const graphData = new V1_PureModelContextData();
