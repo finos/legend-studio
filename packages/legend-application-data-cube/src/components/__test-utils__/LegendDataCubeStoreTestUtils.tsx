@@ -153,30 +153,6 @@ export const TEST__setUpDataCubeBuilder = async (
     ).mockResolvedValue(mockQuery);
   }
   if (mockEntities) {
-    createSpy(
-      MOCK__builderStore.depotServerClient,
-      'getVersionEntities',
-    ).mockResolvedValue(mockEntities);
-  }
-  createSpy(
-    MOCK__builderStore.engineServerClient,
-    'grammarToJSON_lambda',
-  ).mockImplementation(async (input: string) =>
-    ENGINE_TEST_SUPPORT__grammarToJSON_lambda(input),
-  );
-  createSpy(
-    MOCK__builderStore.engineServerClient,
-    'grammarToJSON_valueSpecification',
-  ).mockImplementation(async (input: string) =>
-    ENGINE_TEST_SUPPORT__grammarToJSON_valueSpecification(input),
-  );
-  createSpy(
-    MOCK__builderStore.engineServerClient,
-    'JSONToGrammar_valueSpecification',
-  ).mockImplementation(async (input: PlainObject<V1_ValueSpecification>) =>
-    ENGINE_TEST_SUPPORT__JSONToGrammar_valueSpecification(input),
-  );
-  if (mockEntities) {
     const pmcd = new V1_PureModelContextData();
     await V1_entitiesToPureModelContextData(
       mockEntities as unknown as Entity[],
@@ -185,6 +161,10 @@ export const TEST__setUpDataCubeBuilder = async (
       undefined,
       undefined,
     );
+    createSpy(
+      MOCK__builderStore.depotServerClient,
+      'getVersionEntities',
+    ).mockResolvedValue(mockEntities);
     createSpy(
       MOCK__builderStore.engineServerClient,
       'lambdaRelationType',
@@ -205,6 +185,24 @@ export const TEST__setUpDataCubeBuilder = async (
       return ENGINE_TEST_SUPPORT__execute(executeInput);
     });
   }
+  createSpy(
+    MOCK__builderStore.engineServerClient,
+    'grammarToJSON_lambda',
+  ).mockImplementation(async (input: string) =>
+    ENGINE_TEST_SUPPORT__grammarToJSON_lambda(input),
+  );
+  createSpy(
+    MOCK__builderStore.engineServerClient,
+    'grammarToJSON_valueSpecification',
+  ).mockImplementation(async (input: string) =>
+    ENGINE_TEST_SUPPORT__grammarToJSON_valueSpecification(input),
+  );
+  createSpy(
+    MOCK__builderStore.engineServerClient,
+    'JSONToGrammar_valueSpecification',
+  ).mockImplementation(async (input: PlainObject<V1_ValueSpecification>) =>
+    ENGINE_TEST_SUPPORT__JSONToGrammar_valueSpecification(input),
+  );
 
   const renderResult = render(
     <ApplicationStoreProvider store={MOCK__builderStore.application}>
