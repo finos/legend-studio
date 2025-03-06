@@ -486,12 +486,6 @@ function _aggregationSpec(columnData: ColumnData) {
 export function generateBaseGridOptions(view: DataCubeViewState): GridOptions {
   const grid = view.grid;
 
-  // Note: when running tests, we don't use enterprise modules and thus don't have
-  // access to certain enterprise configurations. Thus, we disable these configurations
-  // when running tests.
-  // eslint-disable-next-line no-process-env
-  const isTestEnv = process.env.NODE_ENV === 'test';
-
   return {
     // -------------------------------------- README --------------------------------------
     // NOTE: we observe performance degradataion when configuring the grid via React component
@@ -501,7 +495,7 @@ export function generateBaseGridOptions(view: DataCubeViewState): GridOptions {
     //
     //
     // -------------------------------------- ROW GROUPING --------------------------------------
-    ...(isTestEnv ? {} : { rowGroupPanelShow: 'always' }),
+    rowGroupPanelShow: 'always',
     // use the auto-generated group column to make it work with pivot mode
     // See https://github.com/ag-grid/ag-grid/issues/8088
     groupDisplayType: 'singleColumn',
@@ -567,18 +561,10 @@ export function generateBaseGridOptions(view: DataCubeViewState): GridOptions {
     preventDefaultOnContextMenu: true, // prevent showing the browser's context menu
     columnMenu: 'new', // ensure context menu works on header
     // NOTE: dynamically generate the content of the context menu to make sure the items are not stale
-    ...(isTestEnv
-      ? {}
-      : {
-          getContextMenuItems: (params) =>
-            grid.controller.menuBuilder?.(params, false) ?? [],
-        }),
-    ...(isTestEnv
-      ? {}
-      : {
-          getMainMenuItems: (params) =>
-            grid.controller.menuBuilder?.(params, true) ?? [],
-        }),
+    getContextMenuItems: (params) =>
+      grid.controller.menuBuilder?.(params, false) ?? [],
+    getMainMenuItems: (params) =>
+      grid.controller.menuBuilder?.(params, true) ?? [],
     // NOTE: when right-clicking empty space in the header, a menu will show up
     // with 2 default options: 'Choose Columns` and `Reset Columns`, which is not
     // a desired behavior, so we hide the popup menu immediately
@@ -616,32 +602,28 @@ export function generateBaseGridOptions(view: DataCubeViewState): GridOptions {
     loadingCellRenderer: DataCubeGridLoadingCellRenderer,
     // By default, when row-grouping is active, ag-grid's caching mechanism causes sort
     // to not work properly for pivot result columns, so we must disable this mechanism.
-    serverSideSortAllLevels: !isTestEnv,
+    serverSideSortAllLevels: true,
     // -------------------------------------- SELECTION --------------------------------------
-    cellSelection: !isTestEnv,
+    cellSelection: true,
     // -------------------------------------- SIDEBAR --------------------------------------
-    ...(isTestEnv
-      ? {}
-      : {
-          sideBar: {
-            toolPanels: [
-              {
-                id: 'columns',
-                labelDefault: 'Columns',
-                labelKey: 'columns',
-                iconKey: 'columns',
-                toolPanel: 'agColumnsToolPanel',
-                minWidth: INTERNAL__GRID_CLIENT_SIDE_BAR_WIDTH,
-                width: INTERNAL__GRID_CLIENT_SIDE_BAR_WIDTH,
-                toolPanelParams: {
-                  suppressValues: true,
-                  suppressPivotMode: true,
-                },
-              },
-            ],
-            position: 'right',
+    sideBar: {
+      toolPanels: [
+        {
+          id: 'columns',
+          labelDefault: 'Columns',
+          labelKey: 'columns',
+          iconKey: 'columns',
+          toolPanel: 'agColumnsToolPanel',
+          minWidth: INTERNAL__GRID_CLIENT_SIDE_BAR_WIDTH,
+          width: INTERNAL__GRID_CLIENT_SIDE_BAR_WIDTH,
+          toolPanelParams: {
+            suppressValues: true,
+            suppressPivotMode: true,
           },
-        }),
+        },
+      ],
+      position: 'right',
+    },
     allowDragFromColumnsToolPanel: true,
     // -------------------------------------- PERFORMANCE --------------------------------------
     animateRows: false, // improve performance

@@ -389,18 +389,13 @@ const DataCubeGridClient = observer((props: { view: DataCubeViewState }) => {
     };
   }
 
-  // NOTE: for test, we don't want to handle the error messages outputed by ag-grid so
-  // we disable enterprise features for now
-  // eslint-disable-next-line no-process-env
-  const isTestEnv = process.env.NODE_ENV === 'test';
-
   return (
     <div className="relative h-[calc(100%_-_20px)] w-full">
       <AgGridReact
         theme="legacy"
         className="data-cube-grid ag-theme-quartz"
-        rowModelType={isTestEnv ? 'clientSide' : 'serverSide'}
-        {...(isTestEnv ? {} : { serverSideDatasource: grid.clientDataSource })}
+        rowModelType="serverSide"
+        serverSideDatasource={grid.clientDataSource}
         context={{
           view,
         }}
@@ -412,11 +407,7 @@ const DataCubeGridClient = observer((props: { view: DataCubeViewState }) => {
             console.error = __INTERNAL__original_console_error; // eslint-disable-line no-console
           }
         }}
-        modules={
-          isTestEnv
-            ? [AllCommunityModule]
-            : [AllCommunityModule, AllEnterpriseModule]
-        }
+        modules={[AllCommunityModule, AllEnterpriseModule]}
         {...generateBaseGridOptions(view)}
       />
     </div>
