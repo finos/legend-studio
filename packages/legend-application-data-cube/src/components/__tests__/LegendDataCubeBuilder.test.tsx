@@ -54,7 +54,7 @@ test(
     fireEvent.click(await screen.findByRole('button', { name: 'Cancel' }));
     fireEvent.click(
       guaranteeNonNullable(
-        (await screen.findAllByRole('button', { name: 'New DataCube' }))?.[0],
+        (await screen.findAllByRole('button', { name: 'New DataCube' }))[0],
       ),
     );
     await screen.findByText('Choose Source Type:');
@@ -106,11 +106,11 @@ test(integrationTest('Loads DataCube from Legend Query'), async () => {
     mockQuery,
     depotEntities,
   );
-  screen.findByText('test-data-cube-id-query-name');
-  screen.findByText('Id');
-  screen.findByText('Case Type');
-  screen.findByText('1');
-  screen.findByText('Active');
-  screen.findByText('2');
-  screen.findByText('Confirmed');
+  await screen.findByText('test-data-cube-id-query-name');
+  await screen.findByText('Id');
+  await screen.findByText('Case Type');
+  await screen.findByText('1');
+  await screen.findByText('Active');
+  await screen.findByText('2');
+  await screen.findByText('Confirmed');
 });
