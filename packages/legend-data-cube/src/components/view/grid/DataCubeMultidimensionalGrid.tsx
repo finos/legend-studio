@@ -19,6 +19,8 @@ import type { DataCubeViewState } from '../../../stores/view/DataCubeViewState.j
 
 export const DataCubeMultidimensionalGrid = observer(
   (props: { view: DataCubeViewState }) => {
-    return null;
+    return (
+      <div className="border-t-1 border-b-1 h-[calc(100%_-_48px)] w-full border border-neutral-200 bg-neutral-50" />
+    );
   },
 );

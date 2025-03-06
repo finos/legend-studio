@@ -74,14 +74,25 @@ export type DataCubeSnapshotProcessingContext = {
   groupBySortColumns?: DataCubeSnapshotSortColumn[] | undefined;
 };
 
+export type DataCubeSnapshotDimension = {
+  name: string;
+  columns: DataCubeColumn[];
+};
+
+export type DataCubeSnapshotMultiDimension = {
+  dimensions: DataCubeSnapshotDimension[];
+  // TODO: explorer tree state
+};
+
 export type DataCubeSnapshotData = {
   configuration: PlainObject<DataCubeConfiguration>;
   sourceColumns: DataCubeColumn[];
   leafExtendedColumns: DataCubeSnapshotExtendedColumn[];
   filter?: DataCubeSnapshotFilter | undefined;
   selectColumns: DataCubeColumn[];
-  groupBy?: DataCubeSnapshotGroupBy | undefined;
   pivot?: DataCubeSnapshotPivot | undefined;
+  groupBy?: DataCubeSnapshotGroupBy | undefined;
+  dimension?: DataCubeSnapshotMultiDimension | undefined;
   groupExtendedColumns: DataCubeSnapshotExtendedColumn[];
   sortColumns: DataCubeSnapshotSortColumn[];
   limit: number | undefined;

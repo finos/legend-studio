@@ -28,18 +28,18 @@ import {
   type DataCubeColumn,
 } from '../../core/model/DataCubeColumn.js';
 import {
-  DataCubeEditorColumnSelectorState,
-  DataCubeEditorSortColumnState,
-} from './DataCubeEditorColumnSelectorState.js';
+  DataCubeEditorColumnsSelectorState,
+  DataCubeEditorColumnsSelectorSortColumnState,
+} from './DataCubeEditorColumnsSelectorState.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
 import { uniqBy } from '@finos/legend-shared';
 
-export class DataCubeEditorHorizontalPivotColumnSelectorState extends DataCubeEditorColumnSelectorState<DataCubeEditorSortColumnState> {
+export class DataCubeEditorHorizontalPivotColumnsSelectorState extends DataCubeEditorColumnsSelectorState<DataCubeEditorColumnsSelectorSortColumnState> {
   override cloneColumn(
-    column: DataCubeEditorSortColumnState,
-  ): DataCubeEditorSortColumnState {
-    return new DataCubeEditorSortColumnState(
+    column: DataCubeEditorColumnsSelectorSortColumnState,
+  ): DataCubeEditorColumnsSelectorSortColumnState {
+    return new DataCubeEditorColumnsSelectorSortColumnState(
       column.name,
       column.type,
       column.direction,
@@ -57,7 +57,7 @@ export class DataCubeEditorHorizontalPivotColumnSelectorState extends DataCubeEd
       )
       .map(
         (col) =>
-          new DataCubeEditorSortColumnState(
+          new DataCubeEditorColumnsSelectorSortColumnState(
             col.name,
             col.type,
             DataCubeQuerySortDirection.ASCENDING,
@@ -72,7 +72,7 @@ export class DataCubeEditorHorizontalPivotsPanelState
 {
   private readonly _editor!: DataCubeEditorState;
 
-  readonly selector!: DataCubeEditorHorizontalPivotColumnSelectorState;
+  readonly selector!: DataCubeEditorHorizontalPivotColumnsSelectorState;
 
   castColumns: DataCubeColumn[] = [];
 
@@ -86,7 +86,7 @@ export class DataCubeEditorHorizontalPivotsPanelState
     });
 
     this._editor = editor;
-    this.selector = new DataCubeEditorHorizontalPivotColumnSelectorState(
+    this.selector = new DataCubeEditorHorizontalPivotColumnsSelectorState(
       editor,
       {
         onChange: (selector) => {
@@ -113,6 +113,7 @@ export class DataCubeEditorHorizontalPivotsPanelState
 
   propagateChanges() {
     this._editor.verticalPivots.adaptPropagatedChanges();
+    this._editor.dimensions.adaptPropagatedChanges();
     this._editor.sorts.adaptPropagatedChanges();
   }
 
@@ -123,7 +124,7 @@ export class DataCubeEditorHorizontalPivotsPanelState
     this.selector.setSelectedColumns(
       (snapshot.data.pivot?.columns ?? []).map(
         (col) =>
-          new DataCubeEditorSortColumnState(
+          new DataCubeEditorColumnsSelectorSortColumnState(
             col.name,
             col.type,
             _findCol(configuration.columns, col.name)?.pivotSortDirection ??
