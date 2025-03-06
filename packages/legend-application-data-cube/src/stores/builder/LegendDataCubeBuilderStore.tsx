@@ -41,6 +41,7 @@ import {
   ActionState,
   assertErrorThrown,
   formatDate,
+  guaranteeNonNullable,
   isString,
   uuid,
 } from '@finos/legend-shared';
@@ -253,6 +254,38 @@ export class LegendDataCubeBuilderStore {
     }
   }
 
+  loadPartialSourceDataCube() {
+    if (!this.loader.isPartialSourceResolved()) {
+      this.application.navigationService.navigator.updateCurrentLocation(
+        generateBuilderRoute(null),
+      );
+    }
+    try {
+      const persistentDataCube = guaranteeNonNullable(
+        this.loader.getPersistentDataCube(),
+      );
+      const dataCubeId = persistentDataCube.id;
+      const specification = DataCubeSpecification.serialization.fromJson(
+        persistentDataCube.content,
+      );
+      specification.source = guaranteeNonNullable(
+        this.loader.getResolvedSource(),
+      );
+      this.postLoad(specification, persistentDataCube, dataCubeId);
+      this.loadState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.alertService.alertError(error, {
+        message: `DataCube Load Failure: ${error.message}`,
+      });
+      this.application.navigationService.navigator.updateCurrentLocation(
+        generateBuilderRoute(null),
+      );
+      this.loadState.fail();
+      throw error;
+    }
+  }
+
   async loadDataCube(dataCubeId: string | undefined) {
     // internalize the parameters and clean them from the URL
     const sourceData =
@@ -295,31 +328,16 @@ export class LegendDataCubeBuilderStore {
         const specification = DataCubeSpecification.serialization.fromJson(
           persistentDataCube.content,
         );
-        this.setBuilder(
-          new LegendDataCubeBuilderState(specification, persistentDataCube),
-        );
-        this.updateWindowTitle(persistentDataCube);
 
-        // update the list of stack of recently viewed DataCubes
-        const recentlyViewedDataCubes = this.getRecentlyViewedDataCubes();
-        const idx = recentlyViewedDataCubes.findIndex(
-          (data) => data === dataCubeId,
-        );
-        if (idx === -1) {
-          if (
-            recentlyViewedDataCubes.length >= RECENTLY_VIEWED_DATA_CUBES_LIMIT
-          ) {
-            recentlyViewedDataCubes.pop();
-          }
-          recentlyViewedDataCubes.unshift(dataCubeId);
-        } else {
-          recentlyViewedDataCubes.splice(idx, 1);
-          recentlyViewedDataCubes.unshift(dataCubeId);
+        if (this.loader.isPartialSource(specification.source)) {
+          this.loader.resolvePartialSource(
+            specification.source,
+            persistentDataCube,
+          );
+          return;
         }
-        this.application.userDataService.persistValue(
-          LegendDataCubeUserDataKey.RECENTLY_VIEWED_DATA_CUBES,
-          recentlyViewedDataCubes,
-        );
+
+        this.postLoad(specification, persistentDataCube, dataCubeId);
 
         this.loadState.pass();
       } catch (error) {
@@ -334,6 +352,36 @@ export class LegendDataCubeBuilderStore {
         this.loadState.fail();
       }
     }
+  }
+
+  private postLoad(
+    specification: DataCubeSpecification,
+    persistentDataCube: PersistentDataCube,
+    dataCubeId: string,
+  ) {
+    this.setBuilder(
+      new LegendDataCubeBuilderState(specification, persistentDataCube),
+    );
+    this.updateWindowTitle(persistentDataCube);
+
+    // update the list of stack of recently viewed DataCubes
+    const recentlyViewedDataCubes = this.getRecentlyViewedDataCubes();
+    const idx = recentlyViewedDataCubes.findIndex(
+      (data) => data === dataCubeId,
+    );
+    if (idx === -1) {
+      if (recentlyViewedDataCubes.length >= RECENTLY_VIEWED_DATA_CUBES_LIMIT) {
+        recentlyViewedDataCubes.pop();
+      }
+      recentlyViewedDataCubes.unshift(dataCubeId);
+    } else {
+      recentlyViewedDataCubes.splice(idx, 1);
+      recentlyViewedDataCubes.unshift(dataCubeId);
+    }
+    this.application.userDataService.persistValue(
+      LegendDataCubeUserDataKey.RECENTLY_VIEWED_DATA_CUBES,
+      recentlyViewedDataCubes,
+    );
   }
 
   private async generatePersistentDataCube(
@@ -391,6 +439,7 @@ export class LegendDataCubeBuilderStore {
       // Another way to avoid reloading the whole app it to force update
       // the <DataCube/> component using the key prop that ties to an ID
       // of the builder.
+      this.builder.setPersistentDataCube(newPersistentDataCube);
       this.application.navigationService.navigator.updateCurrentLocation(
         generateBuilderRoute(newPersistentDataCube.id),
       );
@@ -439,6 +488,7 @@ export class LegendDataCubeBuilderStore {
         // Another way to avoid reloading the whole app it to force update
         // the <DataCube/> component using the key prop that ties to an ID
         // of the builder.
+        this.builder.setPersistentDataCube(newPersistentDataCube);
         this.application.navigationService.navigator.updateCurrentLocation(
           generateBuilderRoute(newPersistentDataCube.id),
         );

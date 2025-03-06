@@ -15,16 +15,18 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import type { LocalFileDataCubeSourceBuilderState } from '../../../stores/builder/source/LocalFileDataCubeSourceBuilderState.js';
 import { AlertType, FormAlert, FormCodeEditor } from '@finos/legend-data-cube';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
+import type { LocalFileDataCubePartialSourceLoaderState } from '../../../../stores/builder/source/loader/LocalFileDataCubePartialSourceLoaderState.js';
 
-export const LocalFileDataCubeSourceBuilder = observer(
-  (props: { sourceBuilder: LocalFileDataCubeSourceBuilderState }) => {
-    const { sourceBuilder } = props;
+export const LocalFileDataCubePartialSourceLoader = observer(
+  (props: {
+    partialSourceLoader: LocalFileDataCubePartialSourceLoaderState;
+  }) => {
+    const { partialSourceLoader } = props;
 
     return (
-      <div className="h-full w-full p-2">
+      <div className="h-full w-full">
         <FormAlert
           message="Local file support is experimental"
           type={AlertType.WARNING}
@@ -36,15 +38,15 @@ export const LocalFileDataCubeSourceBuilder = observer(
           <input
             type="file"
             onChange={(event) => {
-              sourceBuilder.processFile(event.target.files?.[0]);
+              partialSourceLoader.processFile(event.target.files?.[0]);
             }}
             className="w-full"
           />
         </div>
-        {sourceBuilder.previewText !== undefined && (
+        {partialSourceLoader.previewText !== undefined && (
           <div className="mt-2 h-40">
             <FormCodeEditor
-              value={sourceBuilder.previewText}
+              value={partialSourceLoader.previewText}
               language={CODE_EDITOR_LANGUAGE.TEXT}
               isReadOnly={true}
               hidePadding={true}

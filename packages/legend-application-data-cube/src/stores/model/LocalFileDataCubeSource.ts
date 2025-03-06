@@ -15,13 +15,13 @@
  */
 
 import { DataCubeSource } from '@finos/legend-data-cube';
-import { type V1_PureModelContextData } from '@finos/legend-graph';
+import type { V1_PureModelContextData } from '@finos/legend-graph';
 import {
   SerializationFactory,
   usingConstantValueSchema,
   type PlainObject,
 } from '@finos/legend-shared';
-import { createModelSchema, primitive, raw } from 'serializr';
+import { createModelSchema, list, primitive } from 'serializr';
 
 export const LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE = 'localFile';
 
@@ -36,32 +36,23 @@ export class LocalFileDataCubeSource extends DataCubeSource {
   db!: string;
   schema!: string;
   table!: string;
-  count!: number;
   fileName!: string;
   fileFormat!: LocalFileDataCubeSourceFormat;
 }
 
 export class RawLocalFileQueryDataCubeSource {
-  model!: PlainObject<V1_PureModelContextData>;
-  runtime!: string;
-  db!: string;
-  schema!: string;
-  table!: string;
-  count!: number;
   fileName!: string;
   fileFormat!: LocalFileDataCubeSourceFormat;
+  _ref!: string;
+  columnNames!: string[];
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(RawLocalFileQueryDataCubeSource, {
       _type: usingConstantValueSchema(LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE),
-      count: primitive(),
-      db: primitive(),
       fileFormat: primitive(),
       fileName: primitive(),
-      model: raw(),
-      runtime: primitive(),
-      schema: primitive(),
-      table: primitive(),
+      _ref: primitive(),
+      columnNames: list(primitive()),
     }),
   );
 }

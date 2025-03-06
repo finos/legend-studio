@@ -22,19 +22,17 @@ import {
   parseCSVFile,
   type PlainObject,
 } from '@finos/legend-shared';
-import {
-  LegendDataCubeSourceBuilderState,
-  LegendDataCubeSourceBuilderType,
-} from './LegendDataCubeSourceBuilderState.js';
-import type { LegendDataCubeApplicationStore } from '../../LegendDataCubeBaseStore.js';
-import { action, makeObservable, observable } from 'mobx';
-import type { LegendDataCubeDataCubeEngine } from '../../LegendDataCubeDataCubeEngine.js';
+import { makeObservable, observable, action } from 'mobx';
+import type { LegendDataCubeApplicationStore } from '../../../LegendDataCubeBaseStore.js';
+import type { LegendDataCubeDataCubeEngine } from '../../../LegendDataCubeDataCubeEngine.js';
 import {
   LocalFileDataCubeSourceFormat,
   RawLocalFileQueryDataCubeSource,
-} from '../../model/LocalFileDataCubeSource.js';
+} from '../../../model/LocalFileDataCubeSource.js';
+import { LegendDataCubePartialSourceLoaderState } from './LegendDataCubePartialSourceLoaderState.js';
+import { LegendDataCubeSourceLoaderType } from '../../LegendDataCubeSourceLoaderState.js';
 
-export class LocalFileDataCubeSourceBuilderState extends LegendDataCubeSourceBuilderState {
+export class LocalFileDataCubePartialSourceLoaderState extends LegendDataCubePartialSourceLoaderState {
   readonly processState = ActionState.create();
 
   fileName?: string | undefined;
@@ -44,6 +42,7 @@ export class LocalFileDataCubeSourceBuilderState extends LegendDataCubeSourceBui
   fileData?: string | undefined;
   previewText?: string | undefined;
   rowCount?: number | undefined;
+  columnNames?: string[] | undefined;
 
   constructor(
     application: LegendDataCubeApplicationStore,
@@ -54,6 +53,9 @@ export class LocalFileDataCubeSourceBuilderState extends LegendDataCubeSourceBui
     makeObservable(this, {
       fileName: observable,
       setFileName: action,
+
+      columnNames: observable,
+      setColumnNames: action,
 
       fileFormat: observable,
       setFileFormat: action,
@@ -73,6 +75,10 @@ export class LocalFileDataCubeSourceBuilderState extends LegendDataCubeSourceBui
     this.fileName = fileName;
   }
 
+  setColumnNames(columnNames: string[] | undefined) {
+    this.columnNames = columnNames;
+  }
+
   setFileFormat(format: LocalFileDataCubeSourceFormat | undefined) {
     this.fileFormat = format;
   }
@@ -89,8 +95,18 @@ export class LocalFileDataCubeSourceBuilderState extends LegendDataCubeSourceBui
     this.previewText = text;
   }
 
+  override initialize(): void {
+    this.setFileName(undefined);
+    this.setColumnNames(undefined);
+    this.setFileFormat(undefined);
+    this.setFileData(undefined);
+    this.setRowCount(undefined);
+    this.setPreviewText(undefined);
+  }
+
   processFile(file: File | undefined) {
     this.setFileName(undefined);
+    this.setColumnNames(undefined);
     this.setFileFormat(undefined);
     this.setFileData(undefined);
     this.setRowCount(undefined);
@@ -111,6 +127,11 @@ export class LocalFileDataCubeSourceBuilderState extends LegendDataCubeSourceBui
           complete: (result) => {
             this.setFileData(
               csvStringify(result.data, { escapeChar: `'`, quoteChar: `'` }),
+            );
+            this.setColumnNames(
+              Object.keys(result.data.at(0) as object).filter(
+                (key) => key !== '',
+              ),
             );
             this.setFileName(fileName);
             this.setFileFormat(LocalFileDataCubeSourceFormat.CSV);
@@ -139,15 +160,20 @@ export class LocalFileDataCubeSourceBuilderState extends LegendDataCubeSourceBui
     this.processState.complete();
   }
 
-  override get label(): LegendDataCubeSourceBuilderType {
-    return LegendDataCubeSourceBuilderType.LOCAL_FILE;
-  }
-
   override get isValid(): boolean {
     return Boolean(this.fileData);
   }
 
-  override async generateSourceData(): Promise<PlainObject> {
+  override get label(): LegendDataCubeSourceLoaderType {
+    return LegendDataCubeSourceLoaderType.LOCAL_FILE;
+  }
+
+  override async load(source: PlainObject | undefined): Promise<PlainObject> {
+    const deserializedSource =
+      RawLocalFileQueryDataCubeSource.serialization.fromJson(
+        guaranteeNonNullable(source),
+      );
+
     if (
       !this.fileData ||
       !this.fileName ||
@@ -155,14 +181,31 @@ export class LocalFileDataCubeSourceBuilderState extends LegendDataCubeSourceBui
       this.rowCount === undefined
     ) {
       throw new IllegalStateError(
-        `Can't generate source data: file data and information is not set`,
+        `Can't load source data: file data and information is not set`,
+      );
+    }
+
+    const intersectingColumns = guaranteeNonNullable(
+      this.columnNames?.filter((col) =>
+        deserializedSource.columnNames.includes(col),
+      ),
+    );
+    if (intersectingColumns.length !== deserializedSource.columnNames.length) {
+      throw new Error(
+        `Columns mismatch: Expected [${deserializedSource.columnNames.join(',')}], got [${this.columnNames?.join(',')}]`,
       );
     }
 
     const tableDetails = guaranteeNonNullable(
-      await this._engine.ingestLocalFileData(this.fileData, this.fileFormat),
-      `Can't generate source data: failed to ingest data from local file`,
+      await this._engine.ingestLocalFileData(
+        this.fileData,
+        this.fileFormat,
+        deserializedSource._ref,
+      ),
+      `Can't load source data: failed to ingest data from local file`,
     );
+
+    // TODO: do a type check for columns
     const rawSource = new RawLocalFileQueryDataCubeSource();
     rawSource.fileName = this.fileName;
     rawSource.fileFormat = this.fileFormat;

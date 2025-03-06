@@ -39,6 +39,9 @@ const LegendDataCubeBuilderStoreProvider = (props: {
       <LegendDataCubeBlockingWindow
         windowState={store.deleteConfirmationDisplay}
       />
+      <LegendDataCubeBlockingWindow
+        windowState={store.loader.sourceLoader.display}
+      />
     </LegendDataCubeBuilderStoreContext.Provider>
   );
 };
