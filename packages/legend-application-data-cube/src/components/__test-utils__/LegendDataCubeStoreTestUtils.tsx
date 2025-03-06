@@ -15,7 +15,11 @@
  */
 
 import { type RenderResult, render, waitFor } from '@testing-library/react';
-import { type AbstractPlugin, type AbstractPreset } from '@finos/legend-shared';
+import {
+  type AbstractPlugin,
+  type AbstractPreset,
+  type PlainObject,
+} from '@finos/legend-shared';
 import { createMock, createSpy } from '@finos/legend-shared/test';
 import {
   ApplicationStore,
@@ -39,7 +43,22 @@ import { LEGEND_DATA_CUBE_ROUTE_PATTERN } from '../../__lib__/LegendDataCubeNavi
 import { LegendDataCubeBuilder } from '../builder/LegendDataCubeBuilder.js';
 import { LEGEND_DATACUBE_TEST_ID } from '@finos/legend-data-cube';
 import { Core_LegendDataCube_LegendApplicationPlugin } from '../../application/Core_LegendDataCube_LegendApplicationPlugin.js';
-import { type PersistentDataCube } from '@finos/legend-graph';
+import {
+  PersistentDataCube,
+  type V1_ExecuteInput,
+  type V1_LambdaReturnTypeInput,
+  V1_Query,
+  type V1_RawLambda,
+  V1_serializePureModelContext,
+} from '@finos/legend-graph';
+import depotEntities from '../__tests__/TEST_DATA__DSL_DataSpace_Entities.json' with { type: 'json' };
+import { DSL_DataSpace_GraphManagerPreset } from '@finos/legend-extension-dsl-data-space/graph';
+import {
+  ENGINE_TEST_SUPPORT__execute,
+  ENGINE_TEST_SUPPORT__getLambdaRelationType,
+  ENGINE_TEST_SUPPORT__grammarToJSON_lambda,
+  ENGINE_TEST_SUPPORT__grammarToJSON_valueSpecification,
+} from '@finos/legend-graph/test';
 
 export const TEST_QUERY_NAME = 'MyTestQuery';
 
@@ -59,7 +78,10 @@ export const TEST__provideMockedLegendDataCubeBaseStore =
         new Core_LegendDataCubeApplicationPlugin(),
         ...(customization?.extraPlugins ?? []),
       ])
-      .usePresets([...(customization?.extraPresets ?? [])])
+      .usePresets([
+        new DSL_DataSpace_GraphManagerPreset(),
+        ...(customization?.extraPresets ?? []),
+      ])
       .install();
     const applicationStore =
       customization?.applicationStore ??
@@ -115,9 +137,94 @@ export const TEST__setUpDataCubeBuilder = async (
   renderResult: RenderResult;
   legendDataCubeBuilderState: LegendDataCubeBuilderState | undefined;
 }> => {
-  createSpy(MOCK__builderStore.graphManager, 'getDataCube').mockResolvedValue(
-    {} as PersistentDataCube,
-  );
+  if (dataCubeId) {
+    createSpy(MOCK__builderStore.graphManager, 'getDataCube').mockResolvedValue(
+      PersistentDataCube.serialization.fromJson({
+        id: dataCubeId,
+        name: dataCubeId,
+        description: undefined,
+        content: {
+          query: `select(~[Id, 'Case Type'])`,
+          source: {
+            queryId: `${dataCubeId}-query-id`,
+            _type: 'legendQuery',
+          },
+        },
+      }),
+    );
+    createSpy(
+      MOCK__builderStore.graphManager.engine,
+      'getQuery',
+    ).mockResolvedValue(
+      V1_Query.serialization.fromJson({
+        name: `${dataCubeId}-query-name`,
+        id: `${dataCubeId}-query-id`,
+        versionId: 'latest',
+        groupId: 'com.legend',
+        artifactId: 'test-project',
+        content: `|domain::COVIDData.all()->project(~[Id:x|$x.id, 'Case Type':x|$x.caseType])`,
+        executionContext: {
+          dataSpacePath: 'domain::COVIDDatapace',
+          executionKey: 'dummyContext',
+          _type: 'dataSpaceExecutionContext',
+        },
+      }),
+    );
+    createSpy(
+      MOCK__builderStore.depotServerClient,
+      'getVersionEntities',
+    ).mockResolvedValue(depotEntities);
+    createSpy(
+      MOCK__builderStore.engineServerClient,
+      'grammarToJSON_lambda',
+    ).mockImplementation(async (input: string) =>
+      ENGINE_TEST_SUPPORT__grammarToJSON_lambda(input),
+    );
+    createSpy(
+      MOCK__builderStore.engineServerClient,
+      'grammarToJSON_valueSpecification',
+    ).mockImplementation(async (input: string) =>
+      ENGINE_TEST_SUPPORT__grammarToJSON_valueSpecification(input),
+    );
+    createSpy(
+      MOCK__builderStore.engineServerClient,
+      'lambdaRelationType',
+    ).mockImplementation(
+      async (input: PlainObject<V1_LambdaReturnTypeInput>) => {
+        const pmcd =
+          await MOCK__builderStore.graphManager.entitiesToPureModelContextData(
+            depotEntities,
+          );
+        return ENGINE_TEST_SUPPORT__getLambdaRelationType(
+          input.lambda as PlainObject<V1_RawLambda>,
+          V1_serializePureModelContext(pmcd),
+        );
+      },
+    );
+    // const executionInput = MOCK__builderStore.graphManager.createExecutionInput(
+    //   queryBuilderState.graphManagerState.graph,
+    //   guaranteeNonNullable(queryBuilderState.executionContextState.mapping),
+    //   queryBuilderState.resultState.buildExecutionRawLambda(),
+    //   guaranteeNonNullable(queryBuilderState.executionContextState.runtimeValue),
+    //   V1_PureGraphManager.DEV_PROTOCOL_VERSION,
+    //   parameterValues,
+    // );
+    // const executionResult = await ENGINE_TEST_SUPPORT__execute(executionInput);
+    // createSpy(
+    //   queryBuilderState.graphManagerState.graphManager,
+    //   'runQuery',
+    // ).mockResolvedValue({
+    //   executionResult: V1_buildExecutionResult(
+    //     V1_deserializeExecutionResult(executionResult),
+    //   ),
+    // });
+    createSpy(
+      MOCK__builderStore.engineServerClient,
+      'runQuery',
+    ).mockImplementation((input: PlainObject<V1_ExecuteInput>) =>
+      ENGINE_TEST_SUPPORT__execute(input as unknown as V1_ExecuteInput),
+    );
+  }
 
   const renderResult = render(
     <ApplicationStoreProvider store={MOCK__builderStore.application}>

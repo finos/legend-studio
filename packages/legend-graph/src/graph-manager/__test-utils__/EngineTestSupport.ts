@@ -94,21 +94,20 @@ export async function ENGINE_TEST_SUPPORT__grammarToJSON_model(
   ).data;
 }
 
-export async function ENGINE_TEST_SUPPORT__JSONToGrammar_valueSpecification(
-  value: PlainObject<V1_ValueSpecification>,
-  pretty?: boolean | undefined,
-): Promise<string> {
+export async function ENGINE_TEST_SUPPORT__grammarToJSON_lambda(
+  code: string,
+  returnSourceInformation?: boolean | undefined,
+): Promise<PlainObject<V1_ValueSpecification>> {
   return (
     await axios.post<unknown, AxiosResponse>(
-      `${ENGINE_TEST_SUPPORT_API_URL}/pure/v1/grammar/jsonToGrammar/valueSpecification`,
-      value,
+      `${ENGINE_TEST_SUPPORT_API_URL}/pure/v1/grammar/grammarToJson/lambda`,
+      code,
       {
         headers: {
-          [HttpHeader.CONTENT_TYPE]: ContentType.APPLICATION_JSON,
-          [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN,
+          [HttpHeader.CONTENT_TYPE]: ContentType.TEXT_PLAIN,
         },
         params: {
-          renderStyle: pretty ? 'PRETTY' : 'STANDARD',
+          returnSourceInformation,
         },
       },
     )
@@ -145,6 +144,27 @@ export async function ENGINE_TEST_SUPPORT__JSONToGrammar_model(
       model,
       {
         headers: {
+          [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN,
+        },
+        params: {
+          renderStyle: pretty ? 'PRETTY' : 'STANDARD',
+        },
+      },
+    )
+  ).data;
+}
+
+export async function ENGINE_TEST_SUPPORT__JSONToGrammar_valueSpecification(
+  value: PlainObject<V1_ValueSpecification>,
+  pretty?: boolean | undefined,
+): Promise<string> {
+  return (
+    await axios.post<unknown, AxiosResponse>(
+      `${ENGINE_TEST_SUPPORT_API_URL}/pure/v1/grammar/jsonToGrammar/valueSpecification`,
+      value,
+      {
+        headers: {
+          [HttpHeader.CONTENT_TYPE]: ContentType.APPLICATION_JSON,
           [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN,
         },
         params: {

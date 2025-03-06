@@ -23,3 +23,8 @@ window.ResizeObserver = ResizeObserver;
 // https://github.com/jsdom/jsdom/issues/2524
 window.TextEncoder = TextEncoder;
 window.TextDecoder = TextDecoder;
+
+document.fonts = {
+  load: () => Promise.resolve([]),
+  check: () => true,
+};

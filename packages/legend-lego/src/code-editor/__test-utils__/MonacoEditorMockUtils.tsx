@@ -89,6 +89,7 @@ export const MockedMonacoEditorAPI = {
   defineTheme: createMock(),
   EndOfLinePreference: MockedMonacoEditorEndOfLinePreference,
   removeAllMarkers: createMock(),
+  remeasureFonts: createMock(),
 };
 
 export enum MockedMonacoLanguageCompletionItemKind {
