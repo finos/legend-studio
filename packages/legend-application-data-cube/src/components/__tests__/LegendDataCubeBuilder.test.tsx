@@ -15,7 +15,7 @@
  */
 
 import { integrationTest } from '@finos/legend-shared/test';
-import { test } from '@jest/globals';
+import { jest, test } from '@jest/globals';
 import { fireEvent, screen } from '@testing-library/dom';
 import {
   TEST__provideMockedLegendDataCubeBuilderStore,
@@ -23,6 +23,14 @@ import {
 } from '../__test-utils__/LegendDataCubeStoreTestUtils.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { MockedMonacoEditorAPI } from '@finos/legend-lego/code-editor/test';
+
+// Mock the LegendDataCubeDuckDBEngine module because it causes
+// problems when running in the jest environment.
+jest.mock('../../stores/LegendDataCubeDuckDBEngine', () => {
+  return {
+    LegendDataCubeDuckDBEngine: jest.fn(),
+  };
+});
 
 test(
   integrationTest('Load DataCube window appears on first load'),
