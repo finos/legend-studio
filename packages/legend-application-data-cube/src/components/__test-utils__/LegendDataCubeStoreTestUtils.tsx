@@ -44,11 +44,12 @@ import { LegendDataCubeBuilder } from '../builder/LegendDataCubeBuilder.js';
 import { LEGEND_DATACUBE_TEST_ID } from '@finos/legend-data-cube';
 import { Core_LegendDataCube_LegendApplicationPlugin } from '../../application/Core_LegendDataCube_LegendApplicationPlugin.js';
 import {
-  PersistentDataCube,
-  type V1_ExecuteInput,
   type V1_LambdaReturnTypeInput,
-  V1_Query,
   type V1_RawLambda,
+  type V1_ValueSpecification,
+  PersistentDataCube,
+  V1_ExecuteInput,
+  V1_Query,
   V1_serializePureModelContext,
 } from '@finos/legend-graph';
 import depotEntities from '../__tests__/TEST_DATA__DSL_DataSpace_Entities.json' with { type: 'json' };
@@ -58,6 +59,7 @@ import {
   ENGINE_TEST_SUPPORT__getLambdaRelationType,
   ENGINE_TEST_SUPPORT__grammarToJSON_lambda,
   ENGINE_TEST_SUPPORT__grammarToJSON_valueSpecification,
+  ENGINE_TEST_SUPPORT__JSONToGrammar_valueSpecification,
 } from '@finos/legend-graph/test';
 
 export const TEST_QUERY_NAME = 'MyTestQuery';
@@ -141,13 +143,20 @@ export const TEST__setUpDataCubeBuilder = async (
     createSpy(MOCK__builderStore.graphManager, 'getDataCube').mockResolvedValue(
       PersistentDataCube.serialization.fromJson({
         id: dataCubeId,
-        name: dataCubeId,
+        name: `${dataCubeId}-name`,
         description: undefined,
         content: {
           query: `select(~[Id, 'Case Type'])`,
           source: {
             queryId: `${dataCubeId}-query-id`,
             _type: 'legendQuery',
+          },
+          configuration: {
+            name: `${dataCubeId}-query-name`,
+            columns: [
+              { name: 'Id', type: 'Integer' },
+              { name: 'Case Type', type: 'String' },
+            ],
           },
         },
       }),
@@ -188,6 +197,12 @@ export const TEST__setUpDataCubeBuilder = async (
     );
     createSpy(
       MOCK__builderStore.engineServerClient,
+      'JSONToGrammar_valueSpecification',
+    ).mockImplementation(async (input: PlainObject<V1_ValueSpecification>) =>
+      ENGINE_TEST_SUPPORT__JSONToGrammar_valueSpecification(input),
+    );
+    createSpy(
+      MOCK__builderStore.engineServerClient,
       'lambdaRelationType',
     ).mockImplementation(
       async (input: PlainObject<V1_LambdaReturnTypeInput>) => {
@@ -201,29 +216,17 @@ export const TEST__setUpDataCubeBuilder = async (
         );
       },
     );
-    // const executionInput = MOCK__builderStore.graphManager.createExecutionInput(
-    //   queryBuilderState.graphManagerState.graph,
-    //   guaranteeNonNullable(queryBuilderState.executionContextState.mapping),
-    //   queryBuilderState.resultState.buildExecutionRawLambda(),
-    //   guaranteeNonNullable(queryBuilderState.executionContextState.runtimeValue),
-    //   V1_PureGraphManager.DEV_PROTOCOL_VERSION,
-    //   parameterValues,
-    // );
-    // const executionResult = await ENGINE_TEST_SUPPORT__execute(executionInput);
-    // createSpy(
-    //   queryBuilderState.graphManagerState.graphManager,
-    //   'runQuery',
-    // ).mockResolvedValue({
-    //   executionResult: V1_buildExecutionResult(
-    //     V1_deserializeExecutionResult(executionResult),
-    //   ),
-    // });
     createSpy(
       MOCK__builderStore.engineServerClient,
       'runQuery',
-    ).mockImplementation((input: PlainObject<V1_ExecuteInput>) =>
-      ENGINE_TEST_SUPPORT__execute(input as unknown as V1_ExecuteInput),
-    );
+    ).mockImplementation(async (input: PlainObject<V1_ExecuteInput>) => {
+      const executeInput = V1_ExecuteInput.serialization.fromJson(input);
+      executeInput.model =
+        await MOCK__builderStore.graphManager.entitiesToPureModelContextData(
+          depotEntities,
+        );
+      return ENGINE_TEST_SUPPORT__execute(executeInput);
+    });
   }
 
   const renderResult = render(

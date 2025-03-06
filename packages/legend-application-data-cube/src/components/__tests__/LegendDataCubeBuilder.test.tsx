@@ -16,7 +16,7 @@
 
 import { integrationTest } from '@finos/legend-shared/test';
 import { test } from '@jest/globals';
-import { fireEvent } from '@testing-library/dom';
+import { fireEvent, screen } from '@testing-library/dom';
 import {
   TEST__provideMockedLegendDataCubeBuilderStore,
   TEST__setUpDataCubeBuilder,
@@ -29,12 +29,8 @@ test(
   async () => {
     const mockedLegendDataCubeBuilderStore =
       await TEST__provideMockedLegendDataCubeBuilderStore();
-    const { renderResult } = await TEST__setUpDataCubeBuilder(
-      mockedLegendDataCubeBuilderStore,
-    );
-    await renderResult.findByPlaceholderText(
-      'Search for DataCube(s) by name or ID',
-    );
+    await TEST__setUpDataCubeBuilder(mockedLegendDataCubeBuilderStore);
+    await screen.findByPlaceholderText('Search for DataCube(s) by name or ID');
   },
 );
 
@@ -43,23 +39,15 @@ test(
   async () => {
     const mockedLegendDataCubeBuilderStore =
       await TEST__provideMockedLegendDataCubeBuilderStore();
-    const { renderResult } = await TEST__setUpDataCubeBuilder(
-      mockedLegendDataCubeBuilderStore,
-    );
-    await renderResult.findByPlaceholderText(
-      'Search for DataCube(s) by name or ID',
-    );
-    fireEvent.click(
-      await renderResult.findByRole('button', { name: 'Cancel' }),
-    );
+    await TEST__setUpDataCubeBuilder(mockedLegendDataCubeBuilderStore);
+    await screen.findByPlaceholderText('Search for DataCube(s) by name or ID');
+    fireEvent.click(await screen.findByRole('button', { name: 'Cancel' }));
     fireEvent.click(
       guaranteeNonNullable(
-        (
-          await renderResult.findAllByRole('button', { name: 'New DataCube' })
-        )?.[0],
+        (await screen.findAllByRole('button', { name: 'New DataCube' }))?.[0],
       ),
     );
-    await renderResult.findByText('Choose Source Type:');
+    await screen.findByText('Choose Source Type:');
   },
 );
 
@@ -67,24 +55,15 @@ test(integrationTest('Loads DataCube from Legend Query'), async () => {
   MockedMonacoEditorAPI.remeasureFonts.mockReturnValue(undefined);
   const mockedLegendDataCubeBuilderStore =
     await TEST__provideMockedLegendDataCubeBuilderStore();
-  const { renderResult } = await TEST__setUpDataCubeBuilder(
-    mockedLegendDataCubeBuilderStore,
+  await TEST__setUpDataCubeBuilder(
+    guaranteeNonNullable(mockedLegendDataCubeBuilderStore),
     'test-data-cube-id',
   );
-  await renderResult.findByText('test-data-cube-id');
-
-  // await renderResult.findByPlaceholderText(
-  //   'Search for DataCube(s) by name or ID',
-  // );
-  // fireEvent.click(
-  //   await renderResult.findByRole('button', { name: 'Cancel' }),
-  // );
-  // fireEvent.click(
-  //   guaranteeNonNullable(
-  //     (
-  //       await renderResult.findAllByRole('button', { name: 'New DataCube' })
-  //     )?.[0],
-  //   ),
-  // );
-  // await renderResult.findByText('Choose Source Type:');
+  screen.findByText('test-data-cube-id-query-name');
+  screen.findByText('Id');
+  screen.findByText('Case Type');
+  screen.findByText('1');
+  screen.findByText('Active');
+  screen.findByText('2');
+  screen.findByText('Confirmed');
 });
