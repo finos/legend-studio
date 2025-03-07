@@ -67,56 +67,33 @@ const LegendDataCubeBuilderHeader = observer(() => {
   );
 });
 
-// For showing latest release notes (since last version
-// loaded by user)
-export const LegendDataCubeReleaseNotesManager = observer(() => {
-  const store = useLegendDataCubeBuilderStore();
-  const applicationStore = store.application;
-  const releaseService = applicationStore.releaseNotesService;
-  const releaseNotes = releaseService.showableVersions();
+export const LegendDataCubeReleaseLogManager = observer(
+  (props: { showOnlyLatestNotes: boolean }) => {
+    const { showOnlyLatestNotes } = props;
+    const store = useLegendDataCubeBuilderStore();
+    const applicationStore = store.application;
+    const releaseService = applicationStore.releaseNotesService;
+    const releaseNotes =
+      (showOnlyLatestNotes
+        ? releaseService.showableVersions()
+        : releaseService.releaseNotes) ?? [];
 
-  applicationStore.releaseNotesService.updateViewedVersion();
+    applicationStore.releaseNotesService.updateViewedVersion();
 
-  return (
-    <div className="legend-datacube-release-notes h-full items-center p-3">
-      <div className="my-0.5 flex font-mono">
-        New features, enhancements and bug fixes that were released
+    return (
+      <div className="legend-datacube-release-notes h-full items-center p-3">
+        <div className="my-0.5 flex font-mono">
+          New features, enhancements and bug fixes that were released
+        </div>
+        <div className="p-2">
+          {releaseNotes.map((e) => (
+            <ReleaseViewer key={e.version} releaseNotes={e} />
+          ))}
+        </div>
       </div>
-      <div className="p-2">
-        {releaseNotes?.map((e) => (
-          <ReleaseViewer key={e.version} releaseNotes={e} />
-        ))}
-      </div>
-    </div>
-  );
-});
-
-// For showing all release notes.
-export const LegendDataCubeReleaseLogManager = observer(() => {
-  const store = useLegendDataCubeBuilderStore();
-  const applicationStore = store.application;
-  const releaseService = applicationStore.releaseNotesService;
-
-  if (!releaseService.isConfigured) {
-    return null;
-  }
-  const releaseNotes = releaseService.releaseNotes ?? [];
-
-  applicationStore.releaseNotesService.updateViewedVersion();
-
-  return (
-    <div className="legend-datacube-release-notes h-full items-center p-3">
-      <div className="my-0.5 flex font-mono">
-        New features, enhancements and bug fixes that were released
-      </div>
-      <div className="p-2">
-        {releaseNotes.map((e) => (
-          <ReleaseViewer key={e.version} releaseNotes={e} />
-        ))}
-      </div>
-    </div>
-  );
-});
+    );
+  },
+);
 
 export const LegendDataCubeAbout = observer(() => {
   const store = useLegendDataCubeBuilderStore();
