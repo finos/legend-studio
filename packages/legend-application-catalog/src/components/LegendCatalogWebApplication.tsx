@@ -93,17 +93,13 @@ export const LegendCatalogWebApplicationRouter = observer(() => {
     <div className="app">
       {baseStore.initState.hasCompleted && (
         <>
-          {baseStore.isSDLCAuthorized && (
-            <>
-              <Routes>
-                <Route
-                  path={LEGEND_CATALOG_ROUTE_PATTERN.HOME}
-                  element={<LegendCatalogHome />}
-                />
-                <Route path="*" element={<NotFoundPage />} />
-              </Routes>
-            </>
-          )}
+          <Routes>
+            <Route
+              path={LEGEND_CATALOG_ROUTE_PATTERN.HOME}
+              element={<LegendCatalogHome />}
+            />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
         </>
       )}
     </div>
