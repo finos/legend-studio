@@ -38,6 +38,7 @@ import {
 import { useEffect } from 'react';
 import { LegendDataCubeSettingStorageKey } from '../../__lib__/LegendDataCubeSetting.js';
 import type { LegendDataCubeBuilderStore } from '../../stores/builder/LegendDataCubeBuilderStore.js';
+import { ReleaseViewer } from '@finos/legend-application';
 
 const LegendDataCubeBuilderHeader = observer(() => {
   const store = useLegendDataCubeBuilderStore();
@@ -66,8 +67,37 @@ const LegendDataCubeBuilderHeader = observer(() => {
   );
 });
 
+export const LegendDataCubeReleaseLogManager = observer(
+  (props: { showOnlyLatestNotes: boolean }) => {
+    const { showOnlyLatestNotes } = props;
+    const store = useLegendDataCubeBuilderStore();
+    const applicationStore = store.application;
+    const releaseService = applicationStore.releaseNotesService;
+    const releaseNotes =
+      (showOnlyLatestNotes
+        ? releaseService.showableVersions()
+        : releaseService.releaseNotes) ?? [];
+
+    applicationStore.releaseNotesService.updateViewedVersion();
+
+    return (
+      <div className="legend-datacube-release-notes h-full items-center p-3">
+        <div className="my-0.5 flex font-mono">
+          New features, enhancements and bug fixes that were released
+        </div>
+        <div className="p-2">
+          {releaseNotes.map((e) => (
+            <ReleaseViewer key={e.version} releaseNotes={e} />
+          ))}
+        </div>
+      </div>
+    );
+  },
+);
+
 export const LegendDataCubeAbout = observer(() => {
   const store = useLegendDataCubeBuilderStore();
+  const releaseService = store.application.releaseNotesService;
   const config = store.application.config;
 
   return (
@@ -88,6 +118,14 @@ export const LegendDataCubeAbout = observer(() => {
         <div>Build Time:</div>
         <div className="ml-1 font-bold">{config.appVersionBuildTime}</div>
       </div>
+      {releaseService.isConfigured && (
+        <div
+          onClick={() => store.releaseLogDisplay.open()}
+          className="my-0.5 flex cursor-pointer font-bold text-sky-500 underline"
+        >
+          <div>Details of Released Versions</div>
+        </div>
+      )}
       <div className="mt-3 rounded-sm bg-white px-4 py-2">
         <div className="my-0.5 flex font-mono">
           <div>Engine Server:</div>
@@ -249,6 +287,18 @@ export const LegendDataCubeBuilder = withLegendDataCubeBuilderStore(
         .loadDataCube(dataCubeId)
         .catch((error) => store.alertService.alertUnhandledError(error));
     }, [store, dataCubeId]);
+
+    useEffect(() => {
+      const releaseService = application.releaseNotesService;
+      const releaseNotes = releaseService.showableVersions();
+      const isOpen = releaseService.showCurrentReleaseModal;
+
+      if (releaseService.isConfigured && isOpen && releaseNotes?.length) {
+        store.releaseNotesDisplay.open();
+      } else {
+        releaseService.updateViewedVersion();
+      }
+    }, [application, store.releaseNotesDisplay]);
 
     if (!store.initializeState.hasSucceeded) {
       return (
