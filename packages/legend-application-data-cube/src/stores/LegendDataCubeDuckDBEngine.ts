@@ -34,7 +34,18 @@ import {
   uuid,
 } from '@finos/legend-shared';
 import type { CachedDataCubeSource } from '@finos/legend-data-cube';
-import { Type } from 'apache-arrow';
+import type { DataType } from 'apache-arrow';
+import {
+  Binary,
+  Bool,
+  DateDay,
+  Float64,
+  Int64,
+  Timestamp,
+  TimeUnit,
+  Type,
+  Utf8,
+} from 'apache-arrow';
 
 export class LegendDataCubeDuckDBEngine {
   private static readonly DUCKDB_DEFAULT_SCHEMA_NAME = 'main'; // See https://duckdb.org/docs/sql/statements/use.html
@@ -109,16 +120,20 @@ export class LegendDataCubeDuckDBEngine {
     const table = `${LegendDataCubeDuckDBEngine.CACHE_TABLE_NAME_PREFIX}${LegendDataCubeDuckDBEngine.cacheTableCounter}`;
     const csvFileName = `${LegendDataCubeDuckDBEngine.CACHE_FILE_NAME}${LegendDataCubeDuckDBEngine.cacheTableCounter}.csv`;
 
-    const columnNames: string[] = [];
-    result.builder.columns.forEach((col) => columnNames.push(col.name));
-
     const data = result.result.rows.map((row) => row.values);
 
-    const csvContent = csvStringify([columnNames, ...data], {
-      escapeChar: LegendDataCubeDuckDBEngine.ESCAPE_CHAR,
-      quoteChar: LegendDataCubeDuckDBEngine.QUOTE_CHAR,
-    });
+    const csvContent = csvStringify(data);
     await this.database.registerFileText(csvFileName, csvContent);
+
+    const columns = result.builder.columns.reduce(
+      (result, col) => {
+        result[col.name] = this.convertToArrowType(
+          guaranteeNonNullable(col.type),
+        );
+        return result;
+      },
+      {} as { [key: string]: DataType },
+    );
 
     const connection = await this.database.connect();
     await connection.insertCSVFromPath(csvFileName, {
@@ -128,13 +143,40 @@ export class LegendDataCubeDuckDBEngine {
       header: true,
       detect: true,
       dateFormat: 'YYYY-MM-DD',
-      timestampFormat: 'YYYY-MM-DD', // make sure Date is not auto-converted to timestamp
-      escape: LegendDataCubeDuckDBEngine.ESCAPE_CHAR,
-      quote: LegendDataCubeDuckDBEngine.QUOTE_CHAR,
+      timestampFormat: 'YYYY-MM-DD hh:mm:ss', // make sure Date is not auto-converted to timestamp
+      columns: columns,
     });
     await connection.close();
 
     return { schema, table, rowCount: result.result.rows.length };
+  }
+
+  private convertToArrowType(type: string) {
+    // TODO: decimal type requires precision and scale
+    // Date handling is inconsistent between arrow and duckdb
+    switch (type) {
+      case PRIMITIVE_TYPE.BINARY:
+        return new Binary();
+      case PRIMITIVE_TYPE.BOOLEAN:
+        return new Bool();
+      case PRIMITIVE_TYPE.INTEGER:
+        return new Int64();
+      case PRIMITIVE_TYPE.STRING:
+        return new Utf8();
+      case PRIMITIVE_TYPE.FLOAT:
+      case PRIMITIVE_TYPE.NUMBER:
+        return new Float64();
+      case PRIMITIVE_TYPE.DATE:
+      case PRIMITIVE_TYPE.DATETIME:
+        return new Timestamp(TimeUnit.MILLISECOND);
+      case PRIMITIVE_TYPE.STRICTDATE:
+        return new DateDay();
+      default: {
+        throw new UnsupportedOperationError(
+          `Can't find matching Arrow type ID for pure type '${type}'`,
+        );
+      }
+    }
   }
 
   async ingestLocalFileData(data: string, format: string, refId?: string) {
@@ -162,7 +204,7 @@ export class LegendDataCubeDuckDBEngine {
           header: true,
           detect: true,
           dateFormat: 'YYYY-MM-DD',
-          timestampFormat: 'YYYY-MM-DD', // make sure Date is not auto-converted to timestamp
+          timestampFormat: 'YYYY-MM-DD hh:mm:ss', // make sure Date is not auto-converted to timestamp
           escape: LegendDataCubeDuckDBEngine.ESCAPE_CHAR,
           quote: LegendDataCubeDuckDBEngine.QUOTE_CHAR,
         });
