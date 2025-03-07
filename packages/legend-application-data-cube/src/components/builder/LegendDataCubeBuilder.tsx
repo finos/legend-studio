@@ -97,7 +97,7 @@ export const LegendDataCubeReleaseLogManager = observer(
 
 export const LegendDataCubeAbout = observer(() => {
   const store = useLegendDataCubeBuilderStore();
-  const applicationStore = store.application;
+  const releaseService = store.application.releaseNotesService;
   const config = store.application.config;
 
   return (
@@ -118,12 +118,14 @@ export const LegendDataCubeAbout = observer(() => {
         <div>Build Time:</div>
         <div className="ml-1 font-bold">{config.appVersionBuildTime}</div>
       </div>
-      <div
-        onClick={() => store.releaseLogDisplay.open()}
-        className="my-0.5 flex cursor-pointer font-bold text-sky-500 underline"
-      >
-        <div>Details of Released Versions</div>
-      </div>
+      {releaseService.isConfigured && (
+        <div
+          onClick={() => store.releaseLogDisplay.open()}
+          className="my-0.5 flex cursor-pointer font-bold text-sky-500 underline"
+        >
+          <div>Details of Released Versions</div>
+        </div>
+      )}
       <div className="mt-3 rounded-sm bg-white px-4 py-2">
         <div className="my-0.5 flex font-mono">
           <div>Engine Server:</div>
