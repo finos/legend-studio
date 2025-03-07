@@ -67,6 +67,31 @@ const LegendDataCubeBuilderHeader = observer(() => {
   );
 });
 
+// For showing latest release notes (since last version
+// loaded by user)
+export const LegendDataCubeReleaseNotesManager = observer(() => {
+  const store = useLegendDataCubeBuilderStore();
+  const applicationStore = store.application;
+  const releaseService = applicationStore.releaseNotesService;
+  const releaseNotes = releaseService.showableVersions();
+
+  applicationStore.releaseNotesService.updateViewedVersion();
+
+  return (
+    <div className="legend-datacube-release-notes h-full items-center p-3">
+      <div className="my-0.5 flex font-mono">
+        New features, enhancements and bug fixes that were released
+      </div>
+      <div className="p-2">
+        {releaseNotes?.map((e) => (
+          <ReleaseViewer key={e.version} releaseNotes={e} />
+        ))}
+      </div>
+    </div>
+  );
+});
+
+// For showing all release notes.
 export const LegendDataCubeReleaseLogManager = observer(() => {
   const store = useLegendDataCubeBuilderStore();
   const applicationStore = store.application;
@@ -76,6 +101,8 @@ export const LegendDataCubeReleaseLogManager = observer(() => {
     return null;
   }
   const releaseNotes = releaseService.releaseNotes ?? [];
+
+  applicationStore.releaseNotesService.updateViewedVersion();
 
   return (
     <div className="legend-datacube-release-notes h-full items-center p-3">
@@ -115,10 +142,7 @@ export const LegendDataCubeAbout = observer(() => {
         <div className="ml-1 font-bold">{config.appVersionBuildTime}</div>
       </div>
       <div
-        onClick={() => {
-          store.releaseLogDisplay.open();
-          applicationStore.releaseNotesService.setReleaseLog(true);
-        }}
+        onClick={() => store.releaseLogDisplay.open()}
         className="my-0.5 flex cursor-pointer font-bold text-sky-500 underline"
       >
         <div>Details of Released Versions</div>
@@ -284,6 +308,18 @@ export const LegendDataCubeBuilder = withLegendDataCubeBuilderStore(
         .loadDataCube(dataCubeId)
         .catch((error) => store.alertService.alertUnhandledError(error));
     }, [store, dataCubeId]);
+
+    useEffect(() => {
+      const releaseService = application.releaseNotesService;
+      const releaseNotes = releaseService.showableVersions();
+      const isOpen = releaseService.showCurrentReleaseModal;
+
+      if (releaseService.isConfigured && isOpen && releaseNotes?.length) {
+        store.releaseNotesDisplay.open();
+      } else {
+        releaseService.updateViewedVersion();
+      }
+    }, [application]);
 
     if (!store.initializeState.hasSucceeded) {
       return (
