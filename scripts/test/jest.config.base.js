@@ -61,7 +61,7 @@ export function printTestGroups() {
     });
 }
 
-export const getBaseJestConfig = (isGlobal) => {
+export const getBaseJestConfig = (isGlobal, options) => {
   const baseConfig = getBaseConfig({
     isGlobal,
     babelConfigPath: resolve(__dirname, '../../babel.config.cjs'),
@@ -104,7 +104,9 @@ export const getBaseJestConfig = (isGlobal) => {
   const config = {
     ...baseConfig,
     setupFiles: [
-      '@finos/legend-dev-utils/jest/disallowConsoleError',
+      ...(options?.allowConsoleError
+        ? []
+        : ['@finos/legend-dev-utils/jest/disallowConsoleError']),
       '@finos/legend-dev-utils/jest/handleUnhandledRejection',
       // TODO: remove this when we no longer need to mock `Window.fetch()` for tests
       // See https://github.com/finos/legend-studio/issues/758
@@ -174,7 +176,7 @@ export const getBaseJestConfig = (isGlobal) => {
     : config;
 };
 
-export const getBaseJestProjectConfig = (projectName, packageDir) => {
+export const getBaseJestProjectConfig = (projectName, packageDir, options) => {
   const testMatch = [];
   if (!process.env.TEST_GROUP) {
     testMatch.push(
@@ -205,15 +207,19 @@ export const getBaseJestProjectConfig = (projectName, packageDir) => {
   }
 
   return {
-    ...getBaseJestConfig(false),
+    ...getBaseJestConfig(false, options),
     displayName: projectName,
     rootDir: '../..',
     testMatch,
   };
 };
 
-export const getBaseJestDOMProjectConfig = (projectName, packageDir) => {
-  const baseConfig = getBaseJestProjectConfig(projectName, packageDir);
+export const getBaseJestDOMProjectConfig = (
+  projectName,
+  packageDir,
+  options,
+) => {
+  const baseConfig = getBaseJestProjectConfig(projectName, packageDir, options);
 
   /** @type {import('jest').Config} */
   const config = {
