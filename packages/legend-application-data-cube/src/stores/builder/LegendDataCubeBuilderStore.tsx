@@ -59,7 +59,10 @@ import {
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import { LegendDataCubeBlockingWindowState } from '../../components/LegendDataCubeBlockingWindow.js';
 import { LegendDataCubeDeleteConfirmation } from '../../components/builder/LegendDataCubeDeleteConfirmation.js';
-import { LegendDataCubeAbout } from '../../components/builder/LegendDataCubeBuilder.js';
+import {
+  LegendDataCubeAbout,
+  LegendDataCubeReleaseLogManager,
+} from '../../components/builder/LegendDataCubeBuilder.js';
 import { LegendDataCubeSourceViewer } from '../../components/builder/LegendDataCubeSourceViewer.js';
 
 export class LegendDataCubeBuilderState {
@@ -122,6 +125,7 @@ export class LegendDataCubeBuilderStore {
 
   readonly initializeState = ActionState.create();
   readonly aboutDisplay: DisplayState;
+  readonly releaseLogDisplay: DisplayState;
 
   readonly creator: LegendDataCubeCreatorState;
 
@@ -167,6 +171,15 @@ export class LegendDataCubeBuilderStore {
         x: -50,
         y: 50,
         center: false,
+      },
+    );
+
+    this.releaseLogDisplay = this.layoutService.newDisplay(
+      'Release Log',
+      () => <LegendDataCubeReleaseLogManager />,
+      {
+        ...DEFAULT_ALERT_WINDOW_CONFIG,
+        height: 250,
       },
     );
 
