@@ -14,4 +14,56 @@
  * limitations under the License.
  */
 
-// nothing
+.legend-datacube-release-notes {
+  .release-viewer {
+    background-color: var(--tw-color-white);
+    margin-bottom: 1rem;
+
+    &__version {
+      font-weight: bold;
+      padding-left: 0.5rem;
+      padding-top: 0.5rem;
+    }
+
+    &__content {
+      padding: 0.5rem;
+    }
+
+    &__update {
+      padding-left: 0.5rem;
+
+      &__description {
+        padding-left: 0.5rem;
+      }
+
+      &-type {
+        margin: 0.25rem 0;
+      }
+
+      &__items {
+        padding-top: 0.25rem;
+      }
+
+      &__item {
+        display: flex;
+        margin: 0 0 0.5rem;
+
+        &-btn {
+          color: var(--tw-color-sky-500);
+        }
+
+        &-btn-bug {
+          color: var(--tw-color-red-500) !important;
+        }
+      }
+
+      &__link {
+        padding-left: 0.5rem;
+
+        &-btn {
+          color: var(--tw-color-sky-500);
+        }
+      }
+    }
+  }
+}
