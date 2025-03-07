@@ -117,7 +117,7 @@ test(integrationTest('Loads DataCube from Legend Query'), async () => {
   expect(
     (await screen.findAllByText('Id', {}, { timeout: 30000 })).length,
   ).toBeGreaterThanOrEqual(1);
-  await screen.findAllByText('Case Type', {}, { timeout: 30000 });
+  await screen.findByText('Case Type', {}, { timeout: 30000 });
   await screen.findByText('1', {}, { timeout: 30000 });
   await screen.findByText('Active', {}, { timeout: 30000 });
   await screen.findByText('2', {}, { timeout: 30000 });
