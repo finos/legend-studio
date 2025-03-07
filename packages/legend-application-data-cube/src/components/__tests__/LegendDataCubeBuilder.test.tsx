@@ -109,7 +109,17 @@ test(integrationTest('Loads DataCube from Legend Query'), async () => {
     mockQuery,
     depotEntities,
   );
-  await screen.findByText('test-data-cube-id-query-name');
-  expect((await screen.findAllByText('Id')).length).toBeGreaterThanOrEqual(1);
-  await screen.findAllByText('Case Type');
+  await screen.findByText(
+    'test-data-cube-id-query-name',
+    {},
+    { timeout: 30000 },
+  );
+  expect(
+    (await screen.findAllByText('Id', {}, { timeout: 30000 })).length,
+  ).toBeGreaterThanOrEqual(1);
+  await screen.findAllByText('Case Type', {}, { timeout: 30000 });
+  await screen.findByText('1', {}, { timeout: 30000 });
+  await screen.findByText('Active', {}, { timeout: 30000 });
+  await screen.findByText('2', {}, { timeout: 30000 });
+  await screen.findByText('Confirmed', {}, { timeout: 30000 });
 });
