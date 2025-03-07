@@ -1,0 +1,25 @@
+{
+  "extends": "@finos/legend-dev-utils/tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "lib",
+    "tsBuildInfoFile": "build/dev.tsbuildinfo",
+    "rootDir": "src",
+    "jsx": "react-jsxdev"
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.json"],
+  "references": [
+    { "path": "./tsconfig.package.json" },
+    { "path": "../legend-shared" },
+    { "path": "../legend-storage" },
+    { "path": "../legend-server-depot" },
+    { "path": "../legend-server-sdlc" },
+    { "path": "../legend-server-showcase" },
+    { "path": "../legend-application" },
+    { "path": "../legend-data-cube" },
+    { "path": "../legend-query-builder" },
+    { "path": "../legend-art" },
+    { "path": "../legend-code-editor" },
+    { "path": "../legend-lego" },
+    { "path": "../legend-graph" }
+  ]
+}

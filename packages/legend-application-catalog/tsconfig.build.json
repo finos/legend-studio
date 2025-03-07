@@ -1,0 +1,23 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "build/prod.tsbuildinfo",
+    "jsx": "react-jsx"
+  },
+  "exclude": ["src/**/__tests__/**/*.*", "src/**/__mocks__/**/*.*"],
+  "references": [
+    { "path": "./tsconfig.package.json" },
+    { "path": "../legend-shared/tsconfig.build.json" },
+    { "path": "../legend-storage/tsconfig.build.json" },
+    { "path": "../legend-server-depot/tsconfig.build.json" },
+    { "path": "../legend-server-sdlc/tsconfig.build.json" },
+    { "path": "../legend-server-showcase/tsconfig.build.json" },
+    { "path": "../legend-application/tsconfig.build.json" },
+    { "path": "../legend-data-cube/tsconfig.build.json" },
+    { "path": "../legend-query-builder/tsconfig.build.json" },
+    { "path": "../legend-art/tsconfig.build.json" },
+    { "path": "../legend-code-editor/tsconfig.build.json" },
+    { "path": "../legend-lego/tsconfig.build.json" },
+    { "path": "../legend-graph/tsconfig.build.json" }
+  ]
+}

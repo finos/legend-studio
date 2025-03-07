@@ -2274,6 +2274,44 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@finos/legend-application-catalog@workspace:packages/legend-application-catalog":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-application-catalog@workspace:packages/legend-application-catalog"
+  dependencies:
+    "@finos/legend-application": "workspace:*"
+    "@finos/legend-art": "workspace:*"
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-lego": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
+    "@finos/legend-storage": "workspace:*"
+    "@jest/globals": "npm:29.7.0"
+    "@testing-library/dom": "npm:10.4.0"
+    "@testing-library/react": "npm:16.2.0"
+    "@types/react": "npm:19.0.10"
+    "@types/react-dom": "npm:19.0.4"
+    cross-env: "npm:7.0.3"
+    eslint: "npm:9.20.1"
+    fast-xml-parser: "npm:4.5.2"
+    jest: "npm:29.7.0"
+    mobx: "npm:6.13.6"
+    mobx-react-lite: "npm:4.1.0"
+    mobx-utils: "npm:6.1.0"
+    monaco-editor: "npm:0.52.2"
+    node-diff3: "npm:3.1.2"
+    npm-run-all: "npm:4.1.5"
+    react: "npm:19.0.0"
+    react-dnd: "npm:16.0.1"
+    react-dom: "npm:19.0.0"
+    rimraf: "npm:6.0.1"
+    sass: "npm:1.85.0"
+    serializr: "npm:3.0.3"
+    typescript: "npm:5.7.3"
+    yaml: "npm:2.7.0"
+  peerDependencies:
+    react: ^19.0.0
+  languageName: unknown
+  linkType: soft
+
 "@finos/legend-application-data-cube-bootstrap@workspace:*, @finos/legend-application-data-cube-bootstrap@workspace:packages/legend-application-data-cube-bootstrap":
   version: 0.0.0-use.local
   resolution: "@finos/legend-application-data-cube-bootstrap@workspace:packages/legend-application-data-cube-bootstrap"
