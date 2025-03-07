@@ -34,6 +34,7 @@
     "dev:repl": "yarn workspace @finos/legend-application-repl-deployment dev",
     "dev:query": "yarn workspace @finos/legend-application-query-deployment dev",
     "dev:datacube": "yarn workspace @finos/legend-application-data-cube-deployment dev",
+    "dev:catalog": "yarn workspace @finos/legend-application-catalog-deployment dev",
     "dev:sass": "node ./scripts/workflow/buildSassAll.js --watch",
     "dev:showcase-server": "yarn workspace @finos/legend-server-showcase-deployment dev",
     "dev:studio": "yarn workspace @finos/legend-application-studio-deployment dev",
