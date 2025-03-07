@@ -1,0 +1,16 @@
+{
+  "appName": "catalog",
+  "env": "local",
+  "sdlc": {
+    "url": "${PROTOCOL}://${SDLC_HOST}:${SDLC_PORT}/api"
+  },
+  "engine": {
+    "url": "${PROTOCOL}://${ENGINE_HOST}:${ENGINE_PORT}/api"
+  },
+  "depot": {
+    "url": "${PROTOCOL}://${DEPOT_HOST}:${DEPOT_PORT}/depot/api"
+  },
+  "documentation": {
+    "url": "https://legend.finos.org"
+  }
+}
