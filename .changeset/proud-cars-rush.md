@@ -2,4 +2,4 @@
 '@finos/legend-graph': patch
 ---
 
-Add cost for let token
+Add const for let token
