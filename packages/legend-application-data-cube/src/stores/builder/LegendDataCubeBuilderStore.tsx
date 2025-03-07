@@ -62,7 +62,6 @@ import { LegendDataCubeDeleteConfirmation } from '../../components/builder/Legen
 import {
   LegendDataCubeAbout,
   LegendDataCubeReleaseLogManager,
-  LegendDataCubeReleaseNotesManager,
 } from '../../components/builder/LegendDataCubeBuilder.js';
 import { LegendDataCubeSourceViewer } from '../../components/builder/LegendDataCubeSourceViewer.js';
 
@@ -178,7 +177,7 @@ export class LegendDataCubeBuilderStore {
 
     this.releaseLogDisplay = this.layoutService.newDisplay(
       'Release Log',
-      () => <LegendDataCubeReleaseLogManager />,
+      () => <LegendDataCubeReleaseLogManager showOnlyLatestNotes={false} />,
       {
         ...DEFAULT_ALERT_WINDOW_CONFIG,
         height: 350,
@@ -186,7 +185,7 @@ export class LegendDataCubeBuilderStore {
     );
     this.releaseNotesDisplay = this.layoutService.newDisplay(
       'Release Notes',
-      () => <LegendDataCubeReleaseNotesManager />,
+      () => <LegendDataCubeReleaseLogManager showOnlyLatestNotes={true} />,
       {
         ...DEFAULT_ALERT_WINDOW_CONFIG,
         height: 250,
