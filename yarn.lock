@@ -2274,7 +2274,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@finos/legend-application-catalog-bootstrap@workspace:packages/legend-application-catalog-bootstrap":
+"@finos/legend-application-catalog-bootstrap@workspace:*, @finos/legend-application-catalog-bootstrap@workspace:packages/legend-application-catalog-bootstrap":
   version: 0.0.0-use.local
   resolution: "@finos/legend-application-catalog-bootstrap@workspace:packages/legend-application-catalog-bootstrap"
   dependencies:
@@ -2292,6 +2292,26 @@ __metadata:
     rimraf: "npm:6.0.1"
     sass: "npm:1.85.0"
     typescript: "npm:5.7.3"
+  languageName: unknown
+  linkType: soft
+
+"@finos/legend-application-catalog-deployment@workspace:packages/legend-application-catalog-deployment":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-application-catalog-deployment@workspace:packages/legend-application-catalog-deployment"
+  dependencies:
+    "@finos/legend-application-catalog-bootstrap": "workspace:*"
+    "@finos/legend-dev-utils": "workspace:*"
+    copy-webpack-plugin: "npm:12.0.2"
+    cross-env: "npm:7.0.3"
+    eslint: "npm:9.20.1"
+    npm-run-all: "npm:4.1.5"
+    rimraf: "npm:6.0.1"
+    tailwindcss: "npm:3.4.17"
+    typescript: "npm:5.7.3"
+    webpack: "npm:5.98.0"
+    webpack-bundle-analyzer: "npm:4.10.2"
+    webpack-cli: "npm:6.0.1"
+    webpack-dev-server: "npm:5.2.0"
   languageName: unknown
   linkType: soft
 
