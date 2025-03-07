@@ -180,7 +180,7 @@ export class LegendDataCubeBuilderStore {
       () => <LegendDataCubeReleaseLogManager showOnlyLatestNotes={false} />,
       {
         ...DEFAULT_ALERT_WINDOW_CONFIG,
-        height: 350,
+        height: 500,
       },
     );
     this.releaseNotesDisplay = this.layoutService.newDisplay(
@@ -188,7 +188,7 @@ export class LegendDataCubeBuilderStore {
       () => <LegendDataCubeReleaseLogManager showOnlyLatestNotes={true} />,
       {
         ...DEFAULT_ALERT_WINDOW_CONFIG,
-        height: 250,
+        height: 350,
       },
     );
 
