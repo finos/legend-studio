@@ -18,7 +18,6 @@
 export * from './application/LegendCatalog.js';
 export * from './application/LegendCatalogApplicationConfig.js';
 export * from './application/LegendCatalogPluginManager.js';
-export * from './__lib__/LegendCatalogEvent.js';
 export {
   useLegendCatalogApplicationStore,
   useLegendCatalogBaseStore,
