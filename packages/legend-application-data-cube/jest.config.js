@@ -26,5 +26,4 @@ const packageJson = loadJSON(resolve(__dirname, './package.json'));
 export default getBaseJestDOMProjectConfig(
   packageJson.name,
   'packages/legend-application-data-cube',
-  { allowConsoleError: true },
 );
