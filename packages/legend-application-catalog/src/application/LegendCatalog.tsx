@@ -23,11 +23,6 @@ import {
   Core_LegendApplicationPlugin,
   getApplicationRootElement,
 } from '@finos/legend-application';
-import { Core_GraphManagerPreset } from '@finos/legend-graph';
-import {
-  QueryBuilder_GraphManagerPreset,
-  QueryBuilder_LegendApplicationPlugin,
-} from '@finos/legend-query-builder';
 import {
   LegendCatalogApplicationConfig,
   type LegendCatalogApplicationConfigurationData,
@@ -43,10 +38,6 @@ export class LegendCatalog extends LegendApplication {
 
   static create(): LegendCatalog {
     const application = new LegendCatalog(LegendCatalogPluginManager.create());
-    application.withBasePresets([
-      new Core_GraphManagerPreset(),
-      new QueryBuilder_GraphManagerPreset(),
-    ]);
     application.withBasePlugins([
       new Core_LegendApplicationPlugin(),
       new Core_LegendCatalogApplicationPlugin(),
