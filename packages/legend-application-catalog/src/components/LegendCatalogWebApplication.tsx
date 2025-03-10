@@ -95,7 +95,7 @@ export const LegendCatalogWebApplicationRouter = observer(() => {
         <>
           <Routes>
             <Route
-              path={LEGEND_CATALOG_ROUTE_PATTERN.HOME}
+              path={LEGEND_CATALOG_ROUTE_PATTERN.DEFAULT}
               element={<LegendCatalogHome />}
             />
             <Route path="*" element={<NotFoundPage />} />

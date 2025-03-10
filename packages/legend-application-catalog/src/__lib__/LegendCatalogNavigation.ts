@@ -15,5 +15,5 @@
  */
 
 export const LEGEND_CATALOG_ROUTE_PATTERN = Object.freeze({
-  HOME: '/home',
+  DEFAULT: '/',
 });
