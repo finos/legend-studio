@@ -33,6 +33,8 @@ export const LegendCatalogAppInfo: React.FC<{
           `Build Time: ${config.appVersionBuildTime}`,
           `Engine Server: ${config.engineServerUrl}`,
           `Depot Server: ${config.depotServerUrl}`,
+          `Studio URL: ${config.studioApplicationUrl}`,
+          `Query URL: ${config.queryApplicationUrl}`,
         ]
           .filter(isNonNullable)
           .join('\n'),
@@ -116,6 +118,30 @@ export const LegendCatalogAppInfo: React.FC<{
                   rel="noopener noreferrer"
                 >
                   {config.depotServerUrl}
+                </a>
+              </div>
+            </div>
+            <div className="app__info__entry">
+              <div className="app__info__entry__title">Studio URL:</div>
+              <div className="app__info__entry__value">
+                <a
+                  href={config.studioApplicationUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {config.studioApplicationUrl}
+                </a>
+              </div>
+            </div>
+            <div className="app__info__entry">
+              <div className="app__info__entry__title">Query URL:</div>
+              <div className="app__info__entry__value">
+                <a
+                  href={config.queryApplicationUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {config.queryApplicationUrl}
                 </a>
               </div>
             </div>
