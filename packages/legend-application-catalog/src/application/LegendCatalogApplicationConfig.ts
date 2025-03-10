@@ -53,7 +53,6 @@ class LegendCatalogApplicationCoreOptions {
 
 export interface LegendCatalogApplicationConfigurationData
   extends LegendApplicationConfigurationData {
-  sdlc: { url: string; baseHeaders?: RequestHeaders };
   depot: { url: string };
   engine: {
     url: string;
@@ -70,8 +69,6 @@ export class LegendCatalogApplicationConfig extends LegendApplicationConfig {
   readonly engineServerUrl: string;
   readonly engineQueryServerUrl?: string | undefined;
   readonly depotServerUrl: string;
-  readonly sdlcServerUrl: string;
-  readonly sdlcServerBaseHeaders?: RequestHeaders | undefined;
   readonly queryApplicationUrl?: string | undefined;
   readonly showcaseServerUrl?: string | undefined;
   readonly pctReportUrl?: string | undefined;
@@ -109,19 +106,6 @@ export class LegendCatalogApplicationConfig extends LegendApplicationConfig {
         `Can't configure application: 'depot.url' field is missing or empty`,
       ),
     );
-
-    // sdlc
-    assertNonNullable(
-      input.configData.sdlc,
-      `Can't configure application: 'sdlc' field is missing`,
-    );
-    this.sdlcServerUrl = LegendApplicationConfig.resolveAbsoluteUrl(
-      guaranteeNonEmptyString(
-        input.configData.sdlc.url,
-        `Can't configure application: 'sdlc.url' field is missing or empty`,
-      ),
-    );
-    this.sdlcServerBaseHeaders = input.configData.sdlc.baseHeaders;
 
     // query
     if (input.configData.query?.url) {

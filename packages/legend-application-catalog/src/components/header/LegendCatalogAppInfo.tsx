@@ -31,7 +31,6 @@ export const LegendCatalogAppInfo: React.FC<{
           `Version: ${config.appVersion}`,
           `Revision: ${config.appVersionCommitId}`,
           `Build Time: ${config.appVersionBuildTime}`,
-          `SDLC Server: ${config.sdlcServerUrl}`,
           `Engine Server: ${config.engineServerUrl}`,
           `Depot Server: ${config.depotServerUrl}`,
         ]
@@ -96,18 +95,6 @@ export const LegendCatalogAppInfo: React.FC<{
             </div>
           </div>
           <div className="app__info__group">
-            <div className="app__info__entry">
-              <div className="app__info__entry__title">SDLC Server:</div>
-              <div className="app__info__entry__value">
-                <a
-                  href={config.sdlcServerUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {config.sdlcServerUrl}
-                </a>
-              </div>
-            </div>
             <div className="app__info__entry">
               <div className="app__info__entry__title">Engine Server:</div>
               <div className="app__info__entry__value">
