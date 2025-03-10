@@ -44,10 +44,7 @@
     "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js"
   },
   "dependencies": {
-    "@finos/legend-application": "workspace:*",
     "@finos/legend-application-catalog": "workspace:*",
-    "@finos/legend-art": "workspace:*",
-    "@finos/legend-lego": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@types/react": "19.0.10",
     "react": "19.0.0"
