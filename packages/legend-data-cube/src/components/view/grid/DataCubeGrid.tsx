@@ -381,9 +381,10 @@ const DataCubeGridClient = observer((props: { view: DataCubeViewState }) => {
   const { view } = props;
   const grid = view.grid;
 
-  // eslint-disable-next-line no-process-env
   if (
+    // eslint-disable-next-line no-process-env
     (process.env.NODE_ENV === 'development' ||
+      // eslint-disable-next-line no-process-env
       process.env.NODE_ENV === 'test') &&
     !grid.isClientConfigured
   ) {
@@ -405,9 +406,10 @@ const DataCubeGridClient = observer((props: { view: DataCubeViewState }) => {
         }}
         onGridReady={(params) => {
           grid.configureClient(params.api);
-          // eslint-disable-next-line no-process-env
           if (
+            // eslint-disable-next-line no-process-env
             process.env.NODE_ENV === 'development' ||
+            // eslint-disable-next-line no-process-env
             process.env.NODE_ENV === 'test'
           ) {
             // restore original error logging
