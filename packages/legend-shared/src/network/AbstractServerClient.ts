@@ -30,6 +30,7 @@ import type { TraceData, TracerService } from './TracerService.js';
 
 export interface ServerClientConfig {
   baseUrl?: string;
+  queryBaseUrl?: string | undefined;
   networkClientOptions?: PlainObject;
   enableCompression?: boolean;
   /**
