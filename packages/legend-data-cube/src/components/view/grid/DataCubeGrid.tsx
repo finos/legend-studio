@@ -19,6 +19,7 @@ import { AllCommunityModule } from 'ag-grid-community';
 import { AllEnterpriseModule } from 'ag-grid-enterprise';
 import { AgGridReact } from 'ag-grid-react';
 import { DataCubeIcon, Switch, cn, Global, css } from '@finos/legend-art';
+import { useApplicationStore } from '@finos/legend-application';
 import {
   generateBackgroundColorUtilityClassName,
   generateFontCaseUtilityClassName,
@@ -380,6 +381,9 @@ const DataCubeGridStatusBar = observer((props: { view: DataCubeViewState }) => {
 const DataCubeGridClient = observer((props: { view: DataCubeViewState }) => {
   const { view } = props;
   const grid = view.grid;
+  const applicationStore = useApplicationStore();
+  const darkMode =
+    !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
 
   // eslint-disable-next-line no-process-env
   if (process.env.NODE_ENV === 'development' && !grid.isClientConfigured) {
@@ -392,8 +396,11 @@ const DataCubeGridClient = observer((props: { view: DataCubeViewState }) => {
   return (
     <div className="relative h-[calc(100%_-_20px)] w-full">
       <AgGridReact
-        theme="legacy"
-        className="data-cube-grid ag-theme-quartz"
+        theme={darkMode ? 'dark' : 'legacy'}
+        className={cn('data-cube-grid', {
+          'ag-theme-quartz': !darkMode,
+          'ag-theme-quartz-dark': darkMode,
+        })}
         rowModelType="serverSide"
         serverSideDatasource={grid.clientDataSource}
         context={{
