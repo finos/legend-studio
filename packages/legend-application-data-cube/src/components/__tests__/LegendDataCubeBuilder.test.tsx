@@ -14,9 +14,16 @@
  * limitations under the License.
  */
 
-import { integrationTest } from '@finos/legend-shared/test';
+import { createMock, integrationTest } from '@finos/legend-shared/test';
 import { expect, jest, test } from '@jest/globals';
-import { fireEvent, screen } from '@testing-library/dom';
+import {
+  fireEvent,
+  getAllByTitle,
+  getByRole,
+  getByText,
+  queryByText,
+  screen,
+} from '@testing-library/dom';
 import {
   TEST__provideMockedLegendDataCubeBuilderStore,
   TEST__setUpDataCubeBuilder,
@@ -25,6 +32,12 @@ import { guaranteeNonNullable } from '@finos/legend-shared';
 import { MockedMonacoEditorAPI } from '@finos/legend-lego/code-editor/test';
 import { PersistentDataCube, V1_Query } from '@finos/legend-graph';
 import depotEntities from './TEST_DATA__DSL_DataSpace_Entities.json' with { type: 'json' };
+import { LegendDataCubePluginManager } from '../../application/LegendDataCubePluginManager.js';
+import {
+  ApplicationStore,
+  type VersionReleaseNotes,
+} from '@finos/legend-application';
+import { TEST__getTestLegendDataCubeApplicationConfig } from '../../application/__test-utils__/LegendDataCubeApplicationTestUtils.js';
 
 // Mock the LegendDataCubeDuckDBEngine module because it causes
 // problems when running in the jest environment.
@@ -123,3 +136,201 @@ test(integrationTest('Loads DataCube from Legend Query'), async () => {
   await screen.findByText('2', {}, { timeout: 30000 });
   await screen.findByText('Confirmed', {}, { timeout: 30000 });
 });
+
+const releaseLog = [
+  {
+    version: '3.0.0',
+    notes: [
+      {
+        type: 'ENHANCEMENT',
+        description:
+          'This is a test description for enhancement 1 version 3.0.0',
+        docLink: 'https://github.com/finos/legend-engine',
+      },
+
+      {
+        type: 'ENHANCEMENT',
+        description: 'This is a test description for enhancement 2',
+        docLink: 'https://github.com/finos/legend-engine',
+      },
+      {
+        type: 'BUG_FIX',
+        description: 'This is a bug description for bug fix 1',
+      },
+      {
+        type: 'BUG_FIX',
+        description: 'This is a bug description for bug fix 2',
+        docLink: 'https://github.com/finos/legend-engine',
+      },
+    ],
+  },
+  {
+    version: '2.0.0',
+    notes: [
+      {
+        type: 'ENHANCEMENT',
+        description: 'This is a test description for enhancement 1',
+        docLink: 'https://github.com/finos/legend-engine',
+      },
+      {
+        type: 'ENHANCEMENT',
+        description: 'This is a test description for enhancement 2',
+        docLink: 'https://github.com/finos/legend-engine',
+      },
+      {
+        type: 'BUG_FIX',
+        description:
+          'This is a bug description for bug fix for version 2.0.0 bug 1',
+      },
+      {
+        type: 'BUG_FIX',
+        description:
+          'This is a bug description for bug fix for version 2.0.0 bug 2',
+        docLink: 'https://github.com/finos/legend-engine',
+      },
+    ],
+  },
+];
+
+test(
+  integrationTest(
+    'Legend DataCube shows Release Updates from last viewed version',
+  ),
+  async () => {
+    const pluginManager = LegendDataCubePluginManager.create();
+    const appStore = new ApplicationStore(
+      TEST__getTestLegendDataCubeApplicationConfig(),
+      pluginManager,
+    );
+    const MOCK__lastOpenedVersion = createMock();
+    appStore.releaseNotesService.getViewedVersion = MOCK__lastOpenedVersion;
+    MOCK__lastOpenedVersion.mockReturnValue('1.0.0');
+    appStore.releaseNotesService.configure(releaseLog as VersionReleaseNotes[]);
+    const mockedLegendDataCubeBuilderStore =
+      await TEST__provideMockedLegendDataCubeBuilderStore({
+        applicationStore: appStore,
+      });
+    await TEST__setUpDataCubeBuilder(mockedLegendDataCubeBuilderStore);
+
+    const windowHeader = guaranteeNonNullable(
+      (await screen.findByText('Release Notes')).parentElement,
+    );
+    const releaseDialog = guaranteeNonNullable(windowHeader.parentElement);
+    expect(
+      getByText(
+        releaseDialog,
+        'New features, enhancements and bug fixes that were released',
+      ),
+    ).not.toBeNull();
+    expect(
+      getByText(releaseDialog, 'This is a bug description for bug fix 1'),
+    ).not.toBeNull();
+    expect(
+      getByText(
+        releaseDialog,
+        'This is a test description for enhancement 1 version 3.0.0',
+      ),
+    ).not.toBeNull();
+
+    expect(getByText(releaseDialog, 'Version 2.0.0')).not.toBeNull();
+    expect(getByText(releaseDialog, 'Version 3.0.0')).not.toBeNull();
+
+    expect(getAllByTitle(releaseDialog, 'Visit...')).toHaveLength(6);
+
+    fireEvent.click(getByRole(windowHeader, 'button'));
+    expect(screen.queryByText('Release Notes')).toBeNull();
+  },
+);
+
+test(
+  integrationTest('Legend DataCube does not show viewed release notes'),
+  async () => {
+    const pluginManager = LegendDataCubePluginManager.create();
+    const appStore = new ApplicationStore(
+      TEST__getTestLegendDataCubeApplicationConfig(),
+      pluginManager,
+    );
+    const MOCK__lastOpenedVersion = createMock();
+    appStore.releaseNotesService.getViewedVersion = MOCK__lastOpenedVersion;
+    MOCK__lastOpenedVersion.mockReturnValue('2.0.0');
+    appStore.releaseNotesService.configure(releaseLog as VersionReleaseNotes[]);
+    const mockedLegendDataCubeBuilderStore =
+      await TEST__provideMockedLegendDataCubeBuilderStore({
+        applicationStore: appStore,
+      });
+    await TEST__setUpDataCubeBuilder(mockedLegendDataCubeBuilderStore);
+
+    const windowHeader = guaranteeNonNullable(
+      (await screen.findByText('Release Notes')).parentElement,
+    );
+    const releaseDialog = guaranteeNonNullable(windowHeader.parentElement);
+    expect(
+      getByText(
+        releaseDialog,
+        'New features, enhancements and bug fixes that were released',
+      ),
+    ).not.toBeNull();
+    expect(
+      getByText(releaseDialog, 'This is a bug description for bug fix 1'),
+    ).not.toBeNull();
+    expect(
+      getByText(
+        releaseDialog,
+        'This is a test description for enhancement 1 version 3.0.0',
+      ),
+    ).not.toBeNull();
+
+    expect(queryByText(releaseDialog, 'Version 2.0.0')).toBeNull();
+    expect(queryByText(releaseDialog, 'Version 3.0.0')).not.toBeNull();
+
+    expect(getAllByTitle(releaseDialog, 'Visit...')).toHaveLength(3);
+
+    fireEvent.click(getByRole(windowHeader, 'button'));
+    expect(screen.queryByText('Release Notes')).toBeNull();
+  },
+);
+
+test(
+  integrationTest(
+    'Legend DataCube does not render release updates if latest version has been viewed',
+  ),
+  async () => {
+    const pluginManager = LegendDataCubePluginManager.create();
+    const appStore = new ApplicationStore(
+      TEST__getTestLegendDataCubeApplicationConfig(),
+      pluginManager,
+    );
+    const MOCK__lastOpenedVersion = createMock();
+    appStore.releaseNotesService.getViewedVersion = MOCK__lastOpenedVersion;
+    MOCK__lastOpenedVersion.mockReturnValue('3.0.0');
+    appStore.releaseNotesService.configure(releaseLog as VersionReleaseNotes[]);
+    const mockedLegendDataCubeBuilderStore =
+      await TEST__provideMockedLegendDataCubeBuilderStore({
+        applicationStore: appStore,
+      });
+    await TEST__setUpDataCubeBuilder(mockedLegendDataCubeBuilderStore);
+
+    expect(screen.queryByText('Release Notes')).toBeNull();
+  },
+);
+
+test(
+  integrationTest(
+    'Legend DataCube does not render release updates for new users',
+  ),
+  async () => {
+    const pluginManager = LegendDataCubePluginManager.create();
+    const appStore = new ApplicationStore(
+      TEST__getTestLegendDataCubeApplicationConfig(),
+      pluginManager,
+    );
+    appStore.releaseNotesService.configure(releaseLog as VersionReleaseNotes[]);
+    const mockedLegendDataCubeBuilderStore =
+      await TEST__provideMockedLegendDataCubeBuilderStore({
+        applicationStore: appStore,
+      });
+    await TEST__setUpDataCubeBuilder(mockedLegendDataCubeBuilderStore);
+
+    expect(screen.queryByText('Release Notes')).toBeNull();
+  },
+);
