@@ -32,6 +32,6 @@ Mapping test::Map
   }
   *test::Person: Operation
   {
-    meta::pure::router::operations::merge_OperationSetImplementation_1__SetImplementation_MANY_([s1,s2],{x: test::S_PersonLastName[1],y: test::S_PersonFirstName[1]|$x.id == $y.id})
+    meta::pure::router::operations::merge_OperationSetImplementation_1__SetImplementation_MANY_([s1,s2],{x: test::S_PersonLastName[1], y: test::S_PersonFirstName[1]|$x.id == $y.id})
   }
 )
