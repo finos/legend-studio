@@ -17,11 +17,9 @@
 import { createModelSchema, optional, primitive } from 'serializr';
 import {
   type PlainObject,
-  type RequestHeaders,
   assertNonNullable,
   guaranteeNonEmptyString,
   SerializationFactory,
-  usingModelSchema,
 } from '@finos/legend-shared';
 import {
   LegendApplicationConfig,
@@ -58,9 +56,8 @@ export interface LegendCatalogApplicationConfigurationData
     url: string;
     queryUrl?: string;
   };
+  studio?: { url: string };
   query?: { url: string };
-  showcase?: { url: string };
-  pct?: { reportUrl: string };
 }
 
 export class LegendCatalogApplicationConfig extends LegendApplicationConfig {
@@ -69,9 +66,8 @@ export class LegendCatalogApplicationConfig extends LegendApplicationConfig {
   readonly engineServerUrl: string;
   readonly engineQueryServerUrl?: string | undefined;
   readonly depotServerUrl: string;
+  readonly studioApplicationUrl?: string | undefined;
   readonly queryApplicationUrl?: string | undefined;
-  readonly showcaseServerUrl?: string | undefined;
-  readonly pctReportUrl?: string | undefined;
 
   constructor(
     input: LegendApplicationConfigurationInput<LegendCatalogApplicationConfigurationData>,
@@ -107,24 +103,17 @@ export class LegendCatalogApplicationConfig extends LegendApplicationConfig {
       ),
     );
 
+    // studio
+    if (input.configData.studio?.url) {
+      this.studioApplicationUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+        input.configData.studio.url,
+      );
+    }
+
     // query
     if (input.configData.query?.url) {
       this.queryApplicationUrl = LegendApplicationConfig.resolveAbsoluteUrl(
         input.configData.query.url,
-      );
-    }
-
-    // showcase
-    if (input.configData.showcase?.url) {
-      this.showcaseServerUrl = LegendApplicationConfig.resolveAbsoluteUrl(
-        input.configData.showcase.url,
-      );
-    }
-
-    // pct
-    if (input.configData.pct?.reportUrl) {
-      this.pctReportUrl = LegendApplicationConfig.resolveAbsoluteUrl(
-        input.configData.pct.reportUrl,
       );
     }
 

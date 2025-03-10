@@ -47,11 +47,11 @@ export const setup = (outputDir) => {
         depot: {
           url: 'http://localhost:6200/depot/api',
         },
+        studio: {
+          url: 'http://localhost:9000/studio',
+        },
         query: {
           url: 'http://localhost:9001/query',
-        },
-        showcase: {
-          url: 'http://localhost:9003/api',
         },
         documentation: {
           url: 'https://legend.finos.org',
