@@ -7,6 +7,18 @@
   "depot": {
     "url": "${PROTOCOL}://${DEPOT_HOST}:${DEPOT_PORT}/depot/api"
   },
+  "studio": {
+    "url": "${PROTOCOL}://${STUDIO_HOST}:${STUDIO_PORT}/studio",
+    "instances": [
+      {
+        "sdlcProjectIDPrefix": "PROD",
+        "url": "${PROTOCOL}://${STUDIO_HOST}:${STUDIO_PORT}/studio"
+      }
+    ]
+  },
+  "query": {
+    "url": "${PROTOCOL}://${QUERY_HOST}:${QUERY_PORT}/query"
+  },
   "documentation": {
     "url": "https://legend.finos.org"
   }
