@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.1.8
+
+### Patch Changes
+
+- [#3915](https://github.com/finos/legend-studio/pull/3915) [`99e8b9b`](https://github.com/finos/legend-studio/commit/99e8b9b9f181bc16a21fee19c593660ed0fb7f14) ([@travisstebbins](https://github.com/travisstebbins)) - Add const for let token
+
 ## 32.1.7
 
 ### Patch Changes
