@@ -31,10 +31,15 @@
     {
       "path": "packages/legend-application-query-bootstrap/tsconfig.build.json"
     },
-    // query
+    // data-cube
     { "path": "packages/legend-application-data-cube/tsconfig.build.json" },
     {
       "path": "packages/legend-application-data-cube-bootstrap/tsconfig.build.json"
+    },
+    // catalog
+    { "path": "packages/legend-application-catalog/tsconfig.build.json" },
+    {
+      "path": "packages/legend-application-catalog-bootstrap/tsconfig.build.json"
     },
     // pure ide
     { "path": "packages/legend-application-pure-ide/tsconfig.build.json" },

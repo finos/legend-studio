@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "build/prod.tsbuildinfo",
+    "jsx": "react-jsx"
+  },
+  "exclude": ["src/**/__tests__/**/*.*", "src/**/__mocks__/**/*.*"],
+  "references": [
+    { "path": "../legend-application/tsconfig.build.json" },
+    { "path": "../legend-art/tsconfig.build.json" },
+    { "path": "../legend-lego/tsconfig.build.json" },
+    { "path": "../legend-application-catalog/tsconfig.build.json" },
+    { "path": "../legend-shared/tsconfig.build.json" }
+  ]
+}
