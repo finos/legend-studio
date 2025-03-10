@@ -41,9 +41,6 @@ export const setup = (outputDir) => {
       {
         appName: 'catalog',
         env: 'local',
-        sdlc: {
-          url: 'http://localhost:6100/api',
-        },
         engine: {
           url: 'http://localhost:6300/api',
         },
