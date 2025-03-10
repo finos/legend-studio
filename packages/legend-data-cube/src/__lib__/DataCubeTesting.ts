@@ -14,17 +14,6 @@
  * limitations under the License.
  */
 
-import { ResizeObserver } from '@juggle/resize-observer';
-import { TextEncoder, TextDecoder } from 'util';
-
-// Polyfills
-window.ResizeObserver = ResizeObserver;
-
-// https://github.com/jsdom/jsdom/issues/2524
-window.TextEncoder = TextEncoder;
-window.TextDecoder = TextDecoder;
-
-document.fonts = {
-  load: () => Promise.resolve([]),
-  check: () => true,
-};
+export enum LEGEND_DATACUBE_TEST_ID {
+  PLACEHOLDER = 'legend-data-cube__placeholder',
+}

@@ -449,6 +449,7 @@ export { V1_ParserError } from './graph-manager/protocol/pure/v1/engine/grammar/
 export { V1_EngineError } from './graph-manager/protocol/pure/v1/engine/V1_EngineError.js';
 export { V1_RenderStyle } from './graph-manager/protocol/pure/v1/engine/grammar/V1_RenderStyle.js';
 export {
+  V1_entitiesToPureModelContextData,
   V1_PureModelContextType,
   V1_pureModelContextPropSchema,
   V1_pureModelContextDataPropSchema,
