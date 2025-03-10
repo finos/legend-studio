@@ -16,25 +16,37 @@
 
 @use 'mixins' as *;
 
-.legend-catalog-home {
-  width: 100%;
-  height: 100%;
+.legend-catalog-header {
+  @include flexVCenter;
 
-  &__body {
-    height: 100%;
-    width: 100%;
+  background: var(--color-dark-grey-80);
+  height: 3.4rem;
+
+  &__menu {
+    // @include flexVCenter;
+
+    height: 3.4rem;
+    width: 5rem;
+    border-right: 0.1rem solid var(--color-dark-grey-200);
+    background: var(--color-dark-grey-100);
   }
 
-  &__content {
+  &__menu-item {
     @include flexCenter;
 
-    flex-direction: column;
-    height: calc(100% - 3.4rem);
+    height: 3.4rem;
     width: 100%;
     color: var(--color-dark-grey-500);
 
-    &__title {
-      font-size: 4rem;
+    svg {
+      font-size: 2.3rem;
     }
+  }
+
+  &__name {
+    color: var(--color-dark-grey-500);
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 1rem;
   }
 }
