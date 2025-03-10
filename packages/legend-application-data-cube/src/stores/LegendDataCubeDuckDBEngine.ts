@@ -109,28 +109,76 @@ export class LegendDataCubeDuckDBEngine {
     const table = `${LegendDataCubeDuckDBEngine.CACHE_TABLE_NAME_PREFIX}${LegendDataCubeDuckDBEngine.cacheTableCounter}`;
     const csvFileName = `${LegendDataCubeDuckDBEngine.CACHE_FILE_NAME}${LegendDataCubeDuckDBEngine.cacheTableCounter}.csv`;
 
+    const columns: string[] = [];
     const columnNames: string[] = [];
-    result.builder.columns.forEach((col) => columnNames.push(col.name));
+    result.builder.columns.forEach((col) => {
+      let colType: string;
+      switch (col.type as string) {
+        case PRIMITIVE_TYPE.BINARY: {
+          colType = 'BIT';
+          break;
+        }
+        case PRIMITIVE_TYPE.BOOLEAN: {
+          colType = 'BOOLEAN';
+          break;
+        }
+        case PRIMITIVE_TYPE.NUMBER: {
+          colType = 'DOUBLE';
+          break;
+        }
+        case PRIMITIVE_TYPE.INTEGER: {
+          colType = 'INTEGER';
+          break;
+        }
+        // TODO: we need precision and scale
+        case PRIMITIVE_TYPE.DECIMAL: {
+          colType = 'DECIMAL';
+          break;
+        }
+        case PRIMITIVE_TYPE.FLOAT: {
+          colType = 'FLOAT';
+          break;
+        }
+        case PRIMITIVE_TYPE.STRICTDATE:
+        case PRIMITIVE_TYPE.DATE: {
+          colType = 'DATE';
+          break;
+        }
+        case PRIMITIVE_TYPE.DATETIME: {
+          colType = 'TIMESTAMP';
+          break;
+        }
+        case PRIMITIVE_TYPE.STRING: {
+          colType = 'VARCHAR';
+          break;
+        }
+        default: {
+          throw new UnsupportedOperationError(
+            `Can't initialize cache: failed to find matching DuckDB type for Pure type '${col.type}'`,
+          );
+        }
+      }
+      columns.push(`"${col.name}" ${colType}`);
+      columnNames.push(col.name);
+    });
 
     const data = result.result.rows.map((row) => row.values);
 
-    const csvContent = csvStringify([columnNames, ...data], {
-      escapeChar: LegendDataCubeDuckDBEngine.ESCAPE_CHAR,
-      quoteChar: LegendDataCubeDuckDBEngine.QUOTE_CHAR,
-    });
+    const csvContent = csvStringify([columnNames, ...data]);
     await this.database.registerFileText(csvFileName, csvContent);
 
     const connection = await this.database.connect();
+
+    // we create our own table schema becuase of date type conversions from arrow to duckDB data types
+    const CREATE_TABLE_SQL = `CREATE TABLE ${schema}.${table} (${columns.join(',')})`;
+    await connection.query(CREATE_TABLE_SQL);
+
     await connection.insertCSVFromPath(csvFileName, {
       schema: schema,
       name: table,
-      create: true,
-      header: true,
+      create: false,
+      header: true, // we add header and get it to autodetect otherwise we would have to provide column details with arrow datatypes
       detect: true,
-      dateFormat: 'YYYY-MM-DD',
-      timestampFormat: 'YYYY-MM-DD', // make sure Date is not auto-converted to timestamp
-      escape: LegendDataCubeDuckDBEngine.ESCAPE_CHAR,
-      quote: LegendDataCubeDuckDBEngine.QUOTE_CHAR,
     });
     await connection.close();
 
@@ -162,7 +210,7 @@ export class LegendDataCubeDuckDBEngine {
           header: true,
           detect: true,
           dateFormat: 'YYYY-MM-DD',
-          timestampFormat: 'YYYY-MM-DD', // make sure Date is not auto-converted to timestamp
+          timestampFormat: 'YYYY-MM-DD hh:mm:ss[.zzzzzzzzz][+-TT[:tt]]', // make sure Date is not auto-converted to timestamp
           escape: LegendDataCubeDuckDBEngine.ESCAPE_CHAR,
           quote: LegendDataCubeDuckDBEngine.QUOTE_CHAR,
         });
@@ -237,12 +285,14 @@ export class LegendDataCubeDuckDBEngine {
           col.type = PRIMITIVE_TYPE.BOOLEAN;
           break;
         }
-        case Type.Timestamp:
         case Type.Date:
         case Type.DateDay:
         case Type.DateMillisecond: {
           col.type = PRIMITIVE_TYPE.DATE;
           break;
+        }
+        case Type.Timestamp: {
+          col.type = PRIMITIVE_TYPE.DATETIME;
         }
         case Type.Utf8:
         case Type.LargeUtf8: {
