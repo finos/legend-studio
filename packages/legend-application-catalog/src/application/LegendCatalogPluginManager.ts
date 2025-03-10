@@ -15,62 +15,14 @@
  */
 
 import { LegendApplicationPluginManager } from '@finos/legend-application';
-import {
-  Core_PureGraphManagerPlugin,
-  type GraphManagerPluginManager,
-  type PureGraphManagerPlugin,
-  type PureGraphPlugin,
-  type PureProtocolProcessorPlugin,
-} from '@finos/legend-graph';
 import type { LegendCatalogApplicationPlugin } from '../stores/LegendCatalogApplicationPlugin.js';
-import { Core_LegendCatalogApplicationPlugin } from '../components/extensions/Core_LegendCatalogApplicationPlugin.js';
 
-export class LegendCatalogPluginManager
-  extends LegendApplicationPluginManager<LegendCatalogApplicationPlugin>
-  implements GraphManagerPluginManager
-{
-  private pureProtocolProcessorPlugins: PureProtocolProcessorPlugin[] = [];
-  private pureGraphManagerPlugins: PureGraphManagerPlugin[] = [];
-  private pureGraphPlugins: PureGraphPlugin[] = [];
-
+export class LegendCatalogPluginManager extends LegendApplicationPluginManager<LegendCatalogApplicationPlugin> {
   private constructor() {
     super();
   }
 
   static create(): LegendCatalogPluginManager {
     return new LegendCatalogPluginManager();
-  }
-
-  registerPureProtocolProcessorPlugin(
-    plugin: PureProtocolProcessorPlugin,
-  ): void {
-    this.pureProtocolProcessorPlugins.push(plugin);
-  }
-
-  registerPureGraphManagerPlugin(plugin: PureGraphManagerPlugin): void {
-    this.pureGraphManagerPlugins.push(plugin);
-  }
-
-  registerPureGraphPlugin(plugin: PureGraphPlugin): void {
-    this.pureGraphPlugins.push(plugin);
-  }
-
-  getPureGraphManagerPlugins(): PureGraphManagerPlugin[] {
-    return [...this.pureGraphManagerPlugins];
-  }
-
-  getPureProtocolProcessorPlugins(): PureProtocolProcessorPlugin[] {
-    return [...this.pureProtocolProcessorPlugins];
-  }
-
-  getPureGraphPlugins(): PureGraphPlugin[] {
-    return [...this.pureGraphPlugins];
-  }
-
-  override getHiddenPluginNames(): string[] {
-    return [
-      Core_LegendCatalogApplicationPlugin.NAME,
-      Core_PureGraphManagerPlugin.NAME,
-    ];
   }
 }
