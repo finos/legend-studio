@@ -108,9 +108,10 @@ export type DataCubeCacheInitializationOptions = {
 };
 
 export type DataCubeExecutionResult = {
+  // TODO: we probably should simplify this shape down to exactly what needed by ag-grid to render and cache engine to produce
   result: TDSExecutionResult;
   executedQuery: string;
-  executedSQL: string;
+  executedSQL?: string | undefined;
   executionTime: number;
 };
 

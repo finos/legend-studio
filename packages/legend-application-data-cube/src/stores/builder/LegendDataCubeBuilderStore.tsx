@@ -142,6 +142,8 @@ export class LegendDataCubeBuilderStore {
   builder?: LegendDataCubeBuilderState | undefined;
   readonly sourceViewerDisplay: DisplayState;
 
+  // readonly sourceLoader = .../;
+
   private passedFirstLoad = false;
 
   constructor(baseStore: LegendDataCubeBaseStore) {

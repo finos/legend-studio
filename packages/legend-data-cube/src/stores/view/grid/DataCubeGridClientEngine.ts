@@ -455,7 +455,10 @@ export class DataCubeGridClientServerSideDataSource
           'Stats',
           `${rowData.length} rows, ${result.result.result.columns.length} columns`,
         ],
-        ['SQL', result.executedSQL],
+        [
+          'SQL',
+          result.executedSQL ?? `-- Error: failed to extract executed SQL`,
+        ],
         ['SQL Execution Time', result.executionTime],
       );
     }
