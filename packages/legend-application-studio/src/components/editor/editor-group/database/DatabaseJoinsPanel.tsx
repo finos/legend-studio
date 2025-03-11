@@ -16,10 +16,18 @@
 
 import { observer } from 'mobx-react-lite';
 import React from 'react';
-import { BlankPanelContent, Button, PanelDivider, PanelFormTextField } from '@finos/legend-art';
+import {
+  BlankPanelContent,
+  Button,
+  PanelDivider,
+  PanelFormTextField,
+} from '@finos/legend-art';
 import type { DatabaseEditorState } from '../../../../stores/editor/editor-state/element-editor-state/database/DatabaseEditorState.js';
 import { Join } from '@finos/legend-graph';
-import { database_addJoin, database_removeJoin } from '../../../../stores/graph-modifier/STO_Relational_GraphModifierHelper.js';
+import {
+  database_addJoin,
+  database_removeJoin,
+} from '../../../../stores/graph-modifier/STO_Relational_GraphModifierHelper.js';
 
 export const DatabaseJoinsPanel = observer(
   (props: { databaseEditorState: DatabaseEditorState }) => {
@@ -39,7 +47,10 @@ export const DatabaseJoinsPanel = observer(
       database_removeJoin(database, join);
     };
 
-    const handleJoinNameChange = (join: Join, value: string | undefined): void => {
+    const handleJoinNameChange = (
+      join: Join,
+      value: string | undefined,
+    ): void => {
       join.name = value ?? '';
     };
 
@@ -81,7 +92,9 @@ export const DatabaseJoinsPanel = observer(
                 </div>
                 <div className="database-editor__join__details">
                   <div className="database-editor__join__operation">
-                    {join.operation ? 'Has operation defined' : 'No operation defined'}
+                    {join.operation
+                      ? 'Has operation defined'
+                      : 'No operation defined'}
                   </div>
                   {join.target && (
                     <div className="database-editor__join__target">

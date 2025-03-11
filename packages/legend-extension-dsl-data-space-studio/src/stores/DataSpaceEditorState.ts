@@ -45,7 +45,7 @@ export class DataSpaceEditorState extends ElementEditorState {
       reprocess: action,
     });
   }
-  
+
   // Use the inherited isReadOnly property from ElementEditorState
 
   get dataSpace(): DataSpace {
@@ -55,7 +55,7 @@ export class DataSpaceEditorState extends ElementEditorState {
       'Element inside dataspace editor state must be a dataspace element',
     );
   }
-  
+
   setSelectedTab(tab: DATASPACE_EDITOR_TAB): void {
     this.selectedTab = tab;
   }

@@ -63,7 +63,7 @@ export const DatabaseGeneralPanel = observer(
               </div>
             </div>
           </div>
-        
+
           <div className="database-editor__general-panel__section">
             <div className="database-editor__general-panel__section__header">
               Database Statistics

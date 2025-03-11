@@ -16,10 +16,18 @@
 
 import { observer } from 'mobx-react-lite';
 import React from 'react';
-import { BlankPanelContent, Button, PanelDivider, PanelFormTextField } from '@finos/legend-art';
+import {
+  BlankPanelContent,
+  Button,
+  PanelDivider,
+  PanelFormTextField,
+} from '@finos/legend-art';
 import type { DatabaseEditorState } from '../../../../stores/editor/editor-state/element-editor-state/database/DatabaseEditorState.js';
 import { Schema } from '@finos/legend-graph';
-import { database_addSchema, database_removeSchema } from '../../../../stores/graph-modifier/STO_Relational_GraphModifierHelper.js';
+import {
+  database_addSchema,
+  database_removeSchema,
+} from '../../../../stores/graph-modifier/STO_Relational_GraphModifierHelper.js';
 
 export const DatabaseSchemasPanel = observer(
   (props: { databaseEditorState: DatabaseEditorState }) => {
@@ -37,7 +45,10 @@ export const DatabaseSchemasPanel = observer(
       database_removeSchema(database, schema);
     };
 
-    const handleSchemaNameChange = (schema: Schema, value: string | undefined): void => {
+    const handleSchemaNameChange = (
+      schema: Schema,
+      value: string | undefined,
+    ): void => {
       schema.name = value ?? '';
     };
 
@@ -87,7 +98,10 @@ export const DatabaseSchemasPanel = observer(
                     </div>
                   ) : (
                     schema.tables.map((table, tableIdx) => (
-                      <div key={`table-${tableIdx}`} className="database-editor__table">
+                      <div
+                        key={`table-${tableIdx}`}
+                        className="database-editor__table"
+                      >
                         <div className="database-editor__table__name">
                           {table.name}
                         </div>

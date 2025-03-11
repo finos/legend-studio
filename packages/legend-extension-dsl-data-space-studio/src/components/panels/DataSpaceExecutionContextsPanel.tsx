@@ -69,7 +69,9 @@ export const DataSpaceExecutionContextsPanel = observer(
                     Runtime: {context.runtime?.name ?? 'None'}
                   </div>
                 </div>
-                {idx < dataSpace.executionContexts.length - 1 && <PanelDivider />}
+                {idx < dataSpace.executionContexts.length - 1 && (
+                  <PanelDivider />
+                )}
               </div>
             ))
           )}

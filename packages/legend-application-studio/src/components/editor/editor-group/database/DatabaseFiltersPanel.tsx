@@ -16,9 +16,17 @@
 
 import { observer } from 'mobx-react-lite';
 import React from 'react';
-import { BlankPanelContent, Button, PanelDivider, PanelFormTextField } from '@finos/legend-art';
+import {
+  BlankPanelContent,
+  Button,
+  PanelDivider,
+  PanelFormTextField,
+} from '@finos/legend-art';
 import type { DatabaseEditorState } from '../../../../stores/editor/editor-state/element-editor-state/database/DatabaseEditorState.js';
-import { database_addFilter, database_removeFilter } from '../../../../stores/graph-modifier/STO_Relational_GraphModifierHelper.js';
+import {
+  database_addFilter,
+  database_removeFilter,
+} from '../../../../stores/graph-modifier/STO_Relational_GraphModifierHelper.js';
 
 // Create a Filter interface to match the structure
 interface Filter {
@@ -38,7 +46,7 @@ export const DatabaseFiltersPanel = observer(
       const dummyOperation = {} as unknown; // Temporary workaround
       const newFilter = {
         name: 'New Filter',
-        operation: dummyOperation
+        operation: dummyOperation,
       } as Filter;
       database_addFilter(database, newFilter);
     };
@@ -47,7 +55,10 @@ export const DatabaseFiltersPanel = observer(
       database_removeFilter(database, filter);
     };
 
-    const handleFilterNameChange = (filter: Filter, value: string | undefined): void => {
+    const handleFilterNameChange = (
+      filter: Filter,
+      value: string | undefined,
+    ): void => {
       filter.name = value ?? '';
     };
 
@@ -89,7 +100,9 @@ export const DatabaseFiltersPanel = observer(
                 </div>
                 <div className="database-editor__filter__details">
                   <div className="database-editor__filter__operation">
-                    {filter.operation ? 'Has operation defined' : 'No operation defined'}
+                    {filter.operation
+                      ? 'Has operation defined'
+                      : 'No operation defined'}
                   </div>
                 </div>
                 {idx < database.filters.length - 1 && <PanelDivider />}

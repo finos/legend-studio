@@ -59,13 +59,19 @@ export const DatabaseEditor = observer(() => {
   const renderTabContent = (): React.ReactNode => {
     switch (databaseEditorState.selectedTab) {
       case DATABASE_EDITOR_TAB.GENERAL:
-        return <DatabaseGeneralPanel databaseEditorState={databaseEditorState} />;
+        return (
+          <DatabaseGeneralPanel databaseEditorState={databaseEditorState} />
+        );
       case DATABASE_EDITOR_TAB.SCHEMAS:
-        return <DatabaseSchemasPanel databaseEditorState={databaseEditorState} />;
+        return (
+          <DatabaseSchemasPanel databaseEditorState={databaseEditorState} />
+        );
       case DATABASE_EDITOR_TAB.JOINS:
         return <DatabaseJoinsPanel databaseEditorState={databaseEditorState} />;
       case DATABASE_EDITOR_TAB.FILTERS:
-        return <DatabaseFiltersPanel databaseEditorState={databaseEditorState} />;
+        return (
+          <DatabaseFiltersPanel databaseEditorState={databaseEditorState} />
+        );
       case DATABASE_EDITOR_TAB.QUERY:
         return (
           <div className="embedded-query-builder">
