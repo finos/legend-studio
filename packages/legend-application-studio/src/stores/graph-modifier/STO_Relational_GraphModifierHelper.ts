@@ -19,6 +19,7 @@ import {
   type AuthenticationStrategy,
   type BigQueryDatasourceSpecification,
   type BindingTransformer,
+  type Database,
   type DatabaseConnection,
   type DatabricksDatasourceSpecification,
   type DatasourceSpecification,
@@ -33,6 +34,7 @@ import {
   type RelationalInputData,
   type RelationalPropertyMapping,
   type RootRelationalInstanceSetImplementation,
+  type Schema,
   type SnowflakeDatasourceSpecification,
   type SnowflakePublicAuthenticationStrategy,
   type StaticDatasourceSpecification,
@@ -58,6 +60,8 @@ import {
   observe_PostProcessor,
   observe_Mapper,
 } from '@finos/legend-graph';
+// Using 'any' type for Filter and Join to avoid import issues
+// These are used in the database graph modifier helpers
 import { addUniqueEntry, deleteEntry } from '@finos/legend-shared';
 import { action } from 'mobx';
 import type { RelationalDatabaseConnectionValueState } from '../editor/editor-state/element-editor-state/connection/ConnectionEditorState.js';
@@ -603,5 +607,48 @@ export const schemaNameMapper_setFrom = action(
 export const mapperPostProcessor_deleteMapper = action(
   (mapperPostProcessor: MapperPostProcessor, val: Mapper): void => {
     deleteEntry(mapperPostProcessor.mappers, val);
+  },
+);
+// --------------------------------------------- Database -------------------------------------
+
+export const database_setName = action(
+  (database: Database, name: string): void => {
+    database.name = name;
+  },
+);
+
+export const database_addSchema = action(
+  (database: Database, schema: Schema): void => {
+    addUniqueEntry(database.schemas, schema);
+  },
+);
+
+export const database_removeSchema = action(
+  (database: Database, schema: Schema): void => {
+    deleteEntry(database.schemas, schema);
+  },
+);
+
+export const database_addJoin = action(
+  (database: Database, join: unknown): void => {
+    addUniqueEntry(database.joins, join);
+  },
+);
+
+export const database_removeJoin = action(
+  (database: Database, join: unknown): void => {
+    deleteEntry(database.joins, join);
+  },
+);
+
+export const database_addFilter = action(
+  (database: Database, filter: unknown): void => {
+    addUniqueEntry(database.filters, filter);
+  },
+);
+
+export const database_removeFilter = action(
+  (database: Database, filter: unknown): void => {
+    deleteEntry(database.filters, filter);
   },
 );
