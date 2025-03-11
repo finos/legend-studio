@@ -1,5 +1,11 @@
 # @finos/legend-lego
 
+## 2.0.53
+
+### Patch Changes
+
+- [#3916](https://github.com/finos/legend-studio/pull/3916) [`f7432e6`](https://github.com/finos/legend-studio/commit/f7432e620874b1253eef783f9ce8c1c6bbcf83cd) ([@travisstebbins](https://github.com/travisstebbins)) - Add remeasureFonts mock to MockedMonacoEditorAPI
+
 ## 2.0.52
 
 ## 2.0.51

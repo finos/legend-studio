@@ -1,5 +1,19 @@
 # @finos/legend-application-data-cube
 
+## 0.3.3
+
+### Patch Changes
+
+- [#3916](https://github.com/finos/legend-studio/pull/3916) [`f7432e6`](https://github.com/finos/legend-studio/commit/f7432e620874b1253eef783f9ce8c1c6bbcf83cd) ([@travisstebbins](https://github.com/travisstebbins)) - Add basic DataCube UI integration tests
+
+- [#3903](https://github.com/finos/legend-studio/pull/3903) [`dc54b97`](https://github.com/finos/legend-studio/commit/dc54b97ed08bbb289f5645343ff1f1c4dfece209) ([@gs-gunjan](https://github.com/gs-gunjan)) - Enabled saving and loading local file source.
+
+- [#3919](https://github.com/finos/legend-studio/pull/3919) [`4559d62`](https://github.com/finos/legend-studio/commit/4559d62a8eec7900490ad03df1fe5e399101c7ff) ([@gs-gunjan](https://github.com/gs-gunjan)) - Build cache tables schema using tds information
+
+- [#3915](https://github.com/finos/legend-studio/pull/3915) [`99e8b9b`](https://github.com/finos/legend-studio/commit/99e8b9b9f181bc16a21fee19c593660ed0fb7f14) ([@travisstebbins](https://github.com/travisstebbins)) - Support parameters that use functions in hosted DataCube
+
+- [#3918](https://github.com/finos/legend-studio/pull/3918) [`2cf0c63`](https://github.com/finos/legend-studio/commit/2cf0c63bd735eb720197b6c54dc2898237b98a26) ([@travisstebbins](https://github.com/travisstebbins)) - Add release notes for DataCube
+
 ## 0.3.2
 
 ### Patch Changes
