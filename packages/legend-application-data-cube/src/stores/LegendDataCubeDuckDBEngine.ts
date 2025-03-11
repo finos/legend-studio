@@ -209,8 +209,6 @@ export class LegendDataCubeDuckDBEngine {
           name: table,
           header: true,
           detect: true,
-          dateFormat: 'YYYY-MM-DD',
-          timestampFormat: 'YYYY-MM-DD hh:mm:ss[.zzzzzzzzz][+-TT[:tt]]', // make sure Date is not auto-converted to timestamp
           escape: LegendDataCubeDuckDBEngine.ESCAPE_CHAR,
           quote: LegendDataCubeDuckDBEngine.QUOTE_CHAR,
         });
@@ -251,15 +249,25 @@ export class LegendDataCubeDuckDBEngine {
 
     const data = result.toArray();
     const columnNames = result.schema.fields.map((field) => field.name);
+    const columnTypesIds = result.schema.fields.map((field) => field.typeId);
     const rows = data.map((row) => {
       const tdsRow = new TDSRow();
-      tdsRow.values = columnNames.map((column) => {
+      tdsRow.values = columnNames.map((column, idx) => {
         const value = row[column] as unknown;
         // NOTE: DuckDB WASM returns ArrayBuffer for numeric value, such as for count(*)
         // so we need to convert it to number
         if (ArrayBuffer.isView(value)) {
           return row[column].valueOf() as number;
           // BigInt is not supported by ag-grid, so we need to convert it to native number
+        } else if (columnTypesIds[idx] === Type.Date) {
+          const date = new Date(Number(value));
+          const year = date.getUTCFullYear();
+          const month = String(date.getUTCMonth() + 1).padStart(2, '0'); // Months are 0-indexed, so add 1
+          const day = String(date.getUTCDate()).padStart(2, '0'); // Ensure two-digit format for day
+          return `${year}-${month}-${day}`;
+        } else if (columnTypesIds[idx] === Type.Timestamp) {
+          const date = new Date(Number(value));
+          return date.toISOString();
         } else if (typeof value === 'bigint') {
           return Number(value);
         }
