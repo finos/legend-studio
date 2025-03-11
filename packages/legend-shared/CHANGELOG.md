@@ -1,5 +1,11 @@
 # @finos/legend-shared
 
+## 11.0.7
+
+### Patch Changes
+
+- [#3916](https://github.com/finos/legend-studio/pull/3916) [`f7432e6`](https://github.com/finos/legend-studio/commit/f7432e620874b1253eef783f9ce8c1c6bbcf83cd) ([@travisstebbins](https://github.com/travisstebbins)) - Update ServerClientConfig to include queryBaseUrl
+
 ## 11.0.6
 
 ## 11.0.5

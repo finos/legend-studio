@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.16.10
+
+### Patch Changes
+
+- [#3912](https://github.com/finos/legend-studio/pull/3912) [`7885829`](https://github.com/finos/legend-studio/commit/78858294e4ad8e6f140b1641f1ac6f6d4b5dc1d3) ([@travisstebbins](https://github.com/travisstebbins)) - Add export datacube logging to QueryBuilder
+
 ## 4.16.9
 
 ## 4.16.8
