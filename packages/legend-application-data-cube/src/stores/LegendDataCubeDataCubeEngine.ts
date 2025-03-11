@@ -84,6 +84,7 @@ import {
   V1_deserializeValueSpecification,
   LET_TOKEN,
   V1_AppliedFunction,
+  type V1_LambdaReturnTypeResult,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
@@ -138,6 +139,7 @@ import {
   LocalFileDataCubeSource,
   RawLocalFileQueryDataCubeSource,
 } from './model/LocalFileDataCubeSource.js';
+import { QUERY_BUILDER_PURE_PATH } from '@finos/legend-query-builder';
 
 export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   private readonly _application: LegendDataCubeApplicationStore;
@@ -406,7 +408,35 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
             ),
           ),
         );
+
+        // Check return type of lambda. If it is a TDS type, convert it to
+        // the new relation protocol.
+        const returnType = await this._getLambdaReturnType(
+          this.serializeValueSpecification(source.lambda),
+          source.model,
+        );
+        if (returnType === QUERY_BUILDER_PURE_PATH.TDS_TABULAR_DATASET) {
+          try {
+            const transformedLambda = guaranteeType(
+              this.deserializeValueSpecification(
+                await this._engineServerClient.transformTdsToRelation_lambda({
+                  model: source.model,
+                  lambda: source.lambda,
+                }),
+              ),
+              V1_Lambda,
+            );
+            source.lambda = transformedLambda;
+          } catch (e) {
+            assertErrorThrown(e);
+            throw new Error(
+              `Error transforming TDS protocol to relation protocol:\n${e.message}`,
+            );
+          }
+        }
+
         source.query = at(source.lambda.body, 0);
+
         try {
           source.columns = (
             await this._getLambdaRelationType(
@@ -420,6 +450,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
             `Can't get query result columns. Make sure the saved query return a relation (i.e. typed TDS). Error: ${error.message}`,
           );
         }
+
         // To handle parameter value with function calls we
         // 1. Separate the parameters with function calls from regular parameters
         // 2. Add let statements for function parameter values and store them in the source's letParameterValueSpec
@@ -882,6 +913,18 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     throw new UnsupportedOperationError(
       `Can't get relation type for lambda with unsupported source`,
     );
+  }
+
+  private async _getLambdaReturnType(
+    lambda: PlainObject<V1_Lambda>,
+    model: PlainObject<V1_PureModelContext>,
+  ): Promise<string> {
+    return (
+      (await this._engineServerClient.lambdaReturnType({
+        lambda,
+        model,
+      })) as unknown as V1_LambdaReturnTypeResult
+    ).returnType;
   }
 
   private async _getLambdaRelationType(
