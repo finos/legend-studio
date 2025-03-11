@@ -20,10 +20,36 @@ import {
   ElementEditorState,
 } from '@finos/legend-application-studio';
 import type { PackageableElement } from '@finos/legend-graph';
-import { DataSpace } from '@finos/legend-extension-dsl-data-space/graph';
-import { guaranteeType } from '@finos/legend-shared';
+import {
+  DataSpace,
+  DataSpaceExecutionContext,
+  DataSpaceElementPointer,
+  DataSpaceDiagram,
+  DataSpaceSupportEmail,
+  DataSpaceSupportCombinedInfo,
+  DataSpacePackageableElementExecutable,
+} from '@finos/legend-extension-dsl-data-space/graph';
+import { guaranteeType, uuid } from '@finos/legend-shared';
 
 export class DataSpaceEditorState extends ElementEditorState {
+  override readonly uuid = uuid();
+
+  readonly dataSpaceElementBuilder = {
+    DataSpaceExecutionContext: DataSpaceExecutionContext,
+    DataSpaceElementPointer: DataSpaceElementPointer,
+    DataSpaceDiagram: DataSpaceDiagram,
+    DataSpaceSupportEmail: DataSpaceSupportEmail,
+    DataSpaceSupportCombinedInfo: DataSpaceSupportCombinedInfo,
+    DataSpacePackageableElementExecutable:
+      DataSpacePackageableElementExecutable,
+    isDataSpaceSupportEmail: (obj: unknown): obj is DataSpaceSupportEmail =>
+      obj instanceof DataSpaceSupportEmail,
+    isDataSpaceSupportCombinedInfo: (
+      obj: unknown,
+    ): obj is DataSpaceSupportCombinedInfo =>
+      obj instanceof DataSpaceSupportCombinedInfo,
+  };
+
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
 
@@ -37,7 +63,7 @@ export class DataSpaceEditorState extends ElementEditorState {
     return guaranteeType(
       this.element,
       DataSpace,
-      'Element inside text element editor state must be a text element',
+      'Element inside DataSpace editor state must be a DataSpace element',
     );
   }
 
