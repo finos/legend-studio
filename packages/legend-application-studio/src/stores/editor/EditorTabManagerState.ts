@@ -64,6 +64,7 @@ import { INTERNAL__UnknownFunctionActivatorEdtiorState } from './editor-state/el
 import { SnowflakeAppFunctionActivatorEdtiorState } from './editor-state/element-editor-state/function-activator/SnowflakeAppFunctionActivatorEditorState.js';
 import { HostedServiceFunctionActivatorEditorState } from './editor-state/element-editor-state/function-activator/HostedServiceFunctionActivatorEditorState.js';
 import { ArtifactGenerationViewerState } from './editor-state/ArtifactGenerationViewerState.js';
+import { DatabaseEditorState } from './editor-state/element-editor-state/database/DatabaseEditorState.js';
 
 export class EditorTabManagerState extends TabManagerState {
   readonly editorStore: EditorStore;
@@ -159,12 +160,10 @@ export class EditorTabManagerState extends TabManagerState {
       return new UMLEditorState(this.editorStore, element);
     } else if (element instanceof ConcreteFunctionDefinition) {
       return new FunctionEditorState(this.editorStore, element);
-    } else if (
-      element instanceof Measure ||
-      element instanceof Database ||
-      element instanceof FlatData
-    ) {
+    } else if (element instanceof Measure || element instanceof FlatData) {
       return new UnsupportedElementEditorState(this.editorStore, element);
+    } else if (element instanceof Database) {
+      return new DatabaseEditorState(this.editorStore, element);
     } else if (element instanceof PackageableRuntime) {
       return new PackageableRuntimeEditorState(this.editorStore, element);
     } else if (element instanceof PackageableConnection) {

@@ -119,3 +119,11 @@ export type { EmbeddedDataTypeOption } from './stores/editor/editor-state/elemen
 
 export { SnowflakeAppFunctionActivatorEdtiorState } from './stores/editor/editor-state/element-editor-state/function-activator/SnowflakeAppFunctionActivatorEditorState.js';
 export { SnowflakeAppFunctionActivatorEditor } from './components/editor/editor-group/function-activator/SnowflakeAppFunctionActivatorEditor.js';
+
+// Database Editor
+export { DatabaseEditorState } from './stores/editor/editor-state/element-editor-state/database/DatabaseEditorState.js';
+export { DatabaseEditor } from './components/editor/editor-group/database/DatabaseEditor.js';
+export { DatabaseGeneralPanel } from './components/editor/editor-group/database/DatabaseGeneralPanel.js';
+export { DatabaseSchemasPanel } from './components/editor/editor-group/database/DatabaseSchemasPanel.js';
+export { DatabaseJoinsPanel } from './components/editor/editor-group/database/DatabaseJoinsPanel.js';
+export { DatabaseFiltersPanel } from './components/editor/editor-group/database/DatabaseFiltersPanel.js';
