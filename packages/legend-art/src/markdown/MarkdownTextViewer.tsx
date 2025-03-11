@@ -34,34 +34,35 @@ export const MarkdownTextViewer: React.FC<{
   }, [props.value]);
 
   return (
-    <ReactMarkdown
-      className={clsx('markdown-content', props.className)}
-      remarkPlugins={[remarkGFM]}
-      components={
-        props.components ?? {
-          // customize the rendering of the <code> block, if the language is mermaid
-          // the class name must include `mermaid` and it will get picked up by the mermaid renderer
-          code: (_props: {
-            children: React.ReactNode;
-            className?: string | undefined;
-            node: unknown;
-          }) => {
-            const { children, className, node, ...rest } = _props;
-            const match = /language-(?<language>\w+)/.exec(className ?? '');
-            return match?.groups?.language ? (
-              <code {...rest} className={clsx(match.groups.language)}>
-                {children}
-              </code>
-            ) : (
-              <code {...rest} className={className}>
-                {children}
-              </code>
-            );
-          },
+    <div className={clsx('markdown-content', props.className)}>
+      <ReactMarkdown
+        remarkPlugins={[remarkGFM]}
+        components={
+          props.components ?? {
+            // customize the rendering of the <code> block, if the language is mermaid
+            // the class name must include `mermaid` and it will get picked up by the mermaid renderer
+            code: (_props: {
+              children: React.ReactNode;
+              className?: string | undefined;
+              node: unknown;
+            }) => {
+              const { children, className, node, ...rest } = _props;
+              const match = /language-(?<language>\w+)/.exec(className ?? '');
+              return match?.groups?.language ? (
+                <code {...rest} className={clsx(match.groups.language)}>
+                  {children}
+                </code>
+              ) : (
+                <code {...rest} className={className}>
+                  {children}
+                </code>
+              );
+            },
+          }
         }
-      }
-    >
-      {props.value.value}
-    </ReactMarkdown>
+      >
+        {props.value.value}
+      </ReactMarkdown>
+    </div>
   );
 };
