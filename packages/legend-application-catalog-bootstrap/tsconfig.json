@@ -12,6 +12,6 @@
     { "path": "../legend-art" },
     { "path": "../legend-lego" },
     { "path": "../legend-application-catalog" },
-    { "path": "../legend-shared" },
+    { "path": "../legend-shared" }
   ]
 }
