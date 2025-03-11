@@ -1,0 +1,197 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.database-editor {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+
+  &__header {
+    &__lock {
+      margin-right: 0.5rem;
+      display: flex;
+      align-items: center;
+    }
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  &__tabs {
+    display: flex;
+    border-bottom: 1px solid var(--color-dark-grey-200);
+  }
+
+  &__tab {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--color-dark-grey-400);
+
+    &:hover {
+      color: var(--color-dark-grey-50);
+    }
+
+    &--active {
+      color: var(--color-dark-grey-50);
+      border-bottom: 2px solid var(--color-blue-200);
+    }
+  }
+
+  &__tab-content {
+    flex: 1;
+    overflow: auto;
+  }
+
+  &__general-panel {
+    padding: 1rem;
+
+    &__section {
+      margin-bottom: 1.5rem;
+
+      &__header {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+
+      &__content {
+        padding-left: 0.5rem;
+      }
+    }
+
+    &__field {
+      margin-bottom: 0.5rem;
+      display: flex;
+
+      &__label {
+        font-weight: 500;
+        width: 120px;
+      }
+
+      &__value {
+        flex: 1;
+      }
+    }
+  }
+
+  &__schemas-panel,
+  &__joins-panel,
+  &__filters-panel {
+    padding: 1rem;
+
+    &__actions {
+      margin-bottom: 1rem;
+    }
+
+    &__empty {
+      color: var(--color-dark-grey-400);
+      font-style: italic;
+    }
+  }
+
+  &__schema,
+  &__join,
+  &__filter {
+    margin-bottom: 1rem;
+
+    &__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    &__name-input {
+      flex: 1;
+      margin-right: 0.5rem;
+    }
+
+    &__remove-button {
+      flex-shrink: 0;
+    }
+  }
+
+  &__schema__tables {
+    margin-left: 1rem;
+
+    &__header {
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    &__empty {
+      color: var(--color-dark-grey-400);
+      font-style: italic;
+      margin-left: 1rem;
+    }
+  }
+
+  &__table {
+    margin-left: 1rem;
+    margin-bottom: 0.25rem;
+  }
+
+  &__join__details,
+  &__filter__details {
+    margin-left: 1rem;
+    margin-bottom: 0.5rem;
+    color: var(--color-dark-grey-300);
+  }
+
+  .embedded-query-builder {
+    height: 100%;
+  }
+}
+
+.dark-mode {
+  .database-editor {
+    &__tab {
+      color: var(--color-light-grey-200);
+
+      &:hover {
+        color: var(--color-light-grey-50);
+      }
+
+      &--active {
+        color: var(--color-light-grey-50);
+        border-bottom-color: var(--color-blue-400);
+      }
+    }
+
+    &__schemas-panel,
+    &__joins-panel,
+    &__filters-panel {
+      &__empty {
+        color: var(--color-light-grey-200);
+      }
+    }
+
+    &__schema__tables {
+      &__empty {
+        color: var(--color-light-grey-200);
+      }
+    }
+
+    &__join__details,
+    &__filter__details {
+      color: var(--color-light-grey-200);
+    }
+  }
+}

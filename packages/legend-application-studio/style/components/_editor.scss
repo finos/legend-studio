@@ -40,6 +40,7 @@
 @forward 'editor/runtime-editor';
 @forward 'editor/connection-editor';
 @forward 'editor/database-builder';
+@forward 'editor/database-editor';
 @forward 'editor/file-generation-editor';
 @forward 'editor/unsupported-element-editor';
 @forward 'editor/workspace-sync-conflict-resolver';
