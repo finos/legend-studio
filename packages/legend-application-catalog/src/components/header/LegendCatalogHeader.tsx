@@ -7,6 +7,7 @@ import {
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { LegendCatalogAppInfo } from './LegendCatalogAppInfo.js';
+import { LEGEND_CATALOG_TEST_ID } from '../../__lib__/LegendCatalogTesting.js';
 
 const LegendCatalogHeaderMenu = observer(() => {
   // about modal
@@ -40,7 +41,10 @@ const LegendCatalogHeaderMenu = observer(() => {
 
 export const LegendCatalogHeader = observer(() => {
   return (
-    <div className="legend-catalog-header">
+    <div
+      className="legend-catalog-header"
+      data-testid={LEGEND_CATALOG_TEST_ID.HEADER}
+    >
       <LegendCatalogHeaderMenu />
       <div className="legend-catalog-header__name">Legend Catalog</div>
     </div>
