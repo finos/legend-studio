@@ -17,15 +17,15 @@
 import { createRoot } from 'react-dom/client';
 import {
   type LegendApplicationConfig,
-  ApplicationStoreProvider,
-  LegendApplication,
   type LegendApplicationConfigurationInput,
+  ApplicationStoreProvider,
   Core_LegendApplicationPlugin,
   getApplicationRootElement,
+  LegendApplication,
 } from '@finos/legend-application';
 import {
-  LegendCatalogApplicationConfig,
   type LegendCatalogApplicationConfigurationData,
+  LegendCatalogApplicationConfig,
 } from './LegendCatalogApplicationConfig.js';
 import { LegendCatalogPluginManager } from './LegendCatalogPluginManager.js';
 import { Core_LegendCatalogApplicationPlugin } from '../components/extensions/Core_LegendCatalogApplicationPlugin.js';

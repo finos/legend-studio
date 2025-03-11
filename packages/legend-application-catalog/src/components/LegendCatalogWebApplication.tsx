@@ -80,10 +80,6 @@ export const LegendCatalogWebApplicationRouter = observer(() => {
   const baseStore = useLegendCatalogBaseStore();
   const applicationStore = useLegendCatalogApplicationStore();
 
-  const extraApplicationPageEntries = applicationStore.pluginManager
-    .getApplicationPlugins()
-    .flatMap((plugin) => plugin.getExtraApplicationPageEntries?.() ?? []);
-
   useEffect(() => {
     flowResult(baseStore.initialize()).catch(
       applicationStore.alertUnhandledError,

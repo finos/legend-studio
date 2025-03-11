@@ -22,9 +22,9 @@ import {
   SerializationFactory,
 } from '@finos/legend-shared';
 import {
-  LegendApplicationConfig,
-  type LegendApplicationConfigurationInput,
   type LegendApplicationConfigurationData,
+  type LegendApplicationConfigurationInput,
+  LegendApplicationConfig,
 } from '@finos/legend-application';
 
 class LegendCatalogApplicationCoreOptions {

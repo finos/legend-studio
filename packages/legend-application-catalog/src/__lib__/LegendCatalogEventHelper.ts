@@ -15,8 +15,8 @@
  */
 
 import {
-  APPLICATION_EVENT,
   type EventService,
+  APPLICATION_EVENT,
 } from '@finos/legend-application';
 
 export class LegendCatalogEventHelper {

@@ -22,8 +22,8 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import {
-  LegendCatalogBaseStore,
   type LegendCatalogApplicationStore,
+  LegendCatalogBaseStore,
 } from '../stores/LegendCatalogBaseStore.js';
 import type { LegendCatalogApplicationConfig } from '../application/LegendCatalogApplicationConfig.js';
 import type { LegendCatalogPluginManager } from '../application/LegendCatalogPluginManager.js';

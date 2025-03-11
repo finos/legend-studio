@@ -24,8 +24,8 @@ import {
 import { TEST__BrowserEnvironmentProvider } from '@finos/legend-application/test';
 import { Route, Routes } from '@finos/legend-application/browser';
 import {
-  LegendCatalogBaseStore,
   type LegendCatalogApplicationStore,
+  LegendCatalogBaseStore,
 } from '../../stores/LegendCatalogBaseStore.js';
 import { LegendCatalogFrameworkProvider } from '../LegendCatalogFrameworkProvider.js';
 import { LEGEND_CATALOG_ROUTE_PATTERN } from '../../__lib__/LegendCatalogNavigation.js';

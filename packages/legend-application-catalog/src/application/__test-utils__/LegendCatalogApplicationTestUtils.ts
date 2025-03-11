@@ -16,8 +16,8 @@
 
 import { TEST__getApplicationVersionData } from '@finos/legend-application/test';
 import {
-  LegendCatalogApplicationConfig,
   type LegendCatalogApplicationConfigurationData,
+  LegendCatalogApplicationConfig,
 } from '../LegendCatalogApplicationConfig.js';
 
 const TEST_DATA__appConfig: LegendCatalogApplicationConfigurationData = {
