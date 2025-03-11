@@ -2278,8 +2278,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-application-catalog-bootstrap@workspace:packages/legend-application-catalog-bootstrap"
   dependencies:
+    "@finos/legend-application": "workspace:*"
     "@finos/legend-application-catalog": "workspace:*"
+    "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-lego": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@types/react": "npm:19.0.10"
     cross-env: "npm:7.0.3"
