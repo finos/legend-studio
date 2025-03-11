@@ -84,9 +84,6 @@ import {
   V1_deserializeValueSpecification,
   LET_TOKEN,
   V1_AppliedFunction,
-  V1_serializeLambdaTdsToRelationInput,
-  V1_RawLambda,
-  V1_serializeRawValueSpecification,
   type V1_LambdaReturnTypeResult,
 } from '@finos/legend-graph';
 import {
@@ -439,32 +436,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         }
 
         source.query = at(source.lambda.body, 0);
-        // use the default parameter values from the query
-        //
-        // TODO?: we should probably allow configuring the parameters?
-        // this would mean we need to create first-class support for parameters in DataCube component
-        const parameterValues = await Promise.all(
-          source.lambda.parameters.map(async (parameter) => {
-            if (parameter.genericType?.rawType instanceof V1_PackageableType) {
-              const paramValue = new V1_ParameterValue();
-              paramValue.name = parameter.name;
-              const type = parameter.genericType.rawType.fullPath;
-              const defaultValue = queryInfo.defaultParameterValues?.find(
-                (val) => val.name === parameter.name,
-              )?.content;
-              paramValue.value =
-                defaultValue !== undefined
-                  ? await this.parseValueSpecification(defaultValue)
-                  : {
-                      _type: V1_deserializeRawValueSpecificationType(type),
-                      value: _defaultPrimitiveTypeValue(type),
-                    };
-              return paramValue;
-            }
-            return undefined;
-          }),
-        );
-        source.parameterValues = parameterValues.filter(isNonNullable);
+
         try {
           source.columns = (
             await this._getLambdaRelationType(
@@ -478,6 +450,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
             `Can't get query result columns. Make sure the saved query return a relation (i.e. typed TDS). Error: ${error.message}`,
           );
         }
+
         // To handle parameter value with function calls we
         // 1. Separate the parameters with function calls from regular parameters
         // 2. Add let statements for function parameter values and store them in the source's letParameterValueSpec
