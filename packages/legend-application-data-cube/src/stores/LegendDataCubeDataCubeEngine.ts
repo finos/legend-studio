@@ -442,6 +442,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         // expression of the lambda. All previous expressions should be left untouched and will
         // be prepended to the transformed query when it is executed.
         source.query = at(source.lambda.body, source.lambda.body.length - 1);
+
         try {
           source.columns = (
             await this._getLambdaRelationType(
@@ -455,6 +456,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
             `Can't get query result columns. Make sure the saved query return a relation (i.e. typed TDS). Error: ${error.message}`,
           );
         }
+
         // To handle parameter value with function calls we
         // 1. Separate the parameters with function calls from regular parameters
         // 2. Add let statements for function parameter values and store them in the source's letParameterValueSpec
