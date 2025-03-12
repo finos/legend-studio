@@ -20,6 +20,7 @@ import { createContext, useContext } from 'react';
 import { LegendDataCubeBuilderStore } from '../../stores/builder/LegendDataCubeBuilderStore.js';
 import { useLegendDataCubeBaseStore } from '../LegendDataCubeFrameworkProvider.js';
 import { LegendDataCubeBlockingWindow } from '../LegendDataCubeBlockingWindow.js';
+import { LegendDataCubeSourceLoaderBlockingWindow } from './source/LegendDataCubeSourceLoader.js';
 
 const LegendDataCubeBuilderStoreContext = createContext<
   LegendDataCubeBuilderStore | undefined
@@ -39,9 +40,7 @@ const LegendDataCubeBuilderStoreProvider = (props: {
       <LegendDataCubeBlockingWindow
         windowState={store.deleteConfirmationDisplay}
       />
-      <LegendDataCubeBlockingWindow
-        windowState={store.loader.sourceLoader.display}
-      />
+      <LegendDataCubeSourceLoaderBlockingWindow />
     </LegendDataCubeBuilderStoreContext.Provider>
   );
 };

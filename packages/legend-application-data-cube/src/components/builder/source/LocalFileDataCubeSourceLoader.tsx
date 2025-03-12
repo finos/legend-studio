@@ -17,12 +17,10 @@
 import { observer } from 'mobx-react-lite';
 import { AlertType, FormAlert, FormCodeEditor } from '@finos/legend-data-cube';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
-import type { LocalFileDataCubePartialSourceLoaderState } from '../../../../stores/builder/source/loader/LocalFileDataCubePartialSourceLoaderState.js';
+import type { LocalFileDataCubeSourceLoaderState } from '../../../stores/builder/source/LocalFileDataCubeSourceLoaderState.js';
 
 export const LocalFileDataCubePartialSourceLoader = observer(
-  (props: {
-    partialSourceLoader: LocalFileDataCubePartialSourceLoaderState;
-  }) => {
+  (props: { partialSourceLoader: LocalFileDataCubeSourceLoaderState }) => {
     const { partialSourceLoader } = props;
 
     return (
