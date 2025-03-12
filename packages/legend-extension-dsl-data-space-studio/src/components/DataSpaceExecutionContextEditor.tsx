@@ -50,6 +50,7 @@ import {
   ResizablePanelSplitterLine,
 } from '@finos/legend-art';
 import {
+  DataElementReference,
   Mapping,
   PackageableElementExplicitReference,
   PackageableRuntime,
@@ -58,9 +59,12 @@ import {
 import {
   dataSpace_setExecutionContextDefaultRuntime,
   dataSpace_setExecutionContextMapping,
+  dataSpace_setExecutionContextTitle,
+  dataSpace_setExecutionContextDescription,
+  dataSpace_setExecutionContextTestData,
 } from '../stores/studio/DSL_DataSpace_GraphModifierHelper.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { forwardRef, useCallback, useState } from 'react';
+import { forwardRef, useCallback, useMemo, useState } from 'react';
 import type { DataSpaceExecutionContextState } from '../stores/DataSpaceExecutionContextState.js';
 import type { DataSpaceExecutionContext } from '@finos/legend-extension-dsl-data-space/graph';
 import {
@@ -223,6 +227,16 @@ const DataSpaceExecutionContextConfigurationEditor = observer(
       [handleMappingOrRuntimeDrop],
     );
 
+    // Data element options for test data selector
+    const dataElementOptions = useMemo(() => {
+      return editorStore.graphManagerState.graph.dataElements.map(
+        (dataElement) => ({
+          label: dataElement.path,
+          value: dataElement,
+        }),
+      );
+    }, [editorStore.graphManagerState.graph.dataElements]);
+
     return (
       <PanelContent>
         <PanelDropZone
@@ -278,6 +292,90 @@ const DataSpaceExecutionContextConfigurationEditor = observer(
               >
                 <LongArrowRightIcon />
               </button>
+            </div>
+
+            {/* Title input */}
+            <div className="execution-context-editor__form-section">
+              <div className="execution-context-editor__form-section__label">
+                Title
+              </div>
+              <div className="execution-context-editor__form-section__content">
+                <input
+                  className="execution-context-editor__form-section__content__input panel__content__form__section__input"
+                  spellCheck={false}
+                  disabled={isReadOnly}
+                  value={executionContext.title ?? ''}
+                  onChange={(event): void =>
+                    dataSpace_setExecutionContextTitle(
+                      executionContext,
+                      event.target.value,
+                    )
+                  }
+                />
+              </div>
+            </div>
+
+            {/* Description input */}
+            <div className="execution-context-editor__form-section">
+              <div className="execution-context-editor__form-section__label">
+                Description
+              </div>
+              <div className="execution-context-editor__form-section__content">
+                <textarea
+                  className="execution-context-editor__form-section__content__textarea panel__content__form__section__input"
+                  spellCheck={false}
+                  disabled={isReadOnly}
+                  value={executionContext.description ?? ''}
+                  onChange={(event): void =>
+                    dataSpace_setExecutionContextDescription(
+                      executionContext,
+                      event.target.value,
+                    )
+                  }
+                  rows={4}
+                />
+              </div>
+            </div>
+
+            {/* Test Data input */}
+            <div className="execution-context-editor__form-section">
+              <div className="execution-context-editor__form-section__label">
+                Test Data
+              </div>
+              <div className="execution-context-editor__form-section__content">
+                <CustomSelectorInput
+                  className="panel__content__form__section__dropdown"
+                  disabled={isReadOnly}
+                  options={dataElementOptions}
+                  onChange={(
+                    option: { label: string; value: unknown } | null,
+                  ): void => {
+                    if (option && option.value) {
+                      // Create a reference to the selected data element
+                      const dataElementRef =
+                        PackageableElementExplicitReference.create(
+                          option.value as any,
+                        );
+                      // Pass the reference to the action method
+                      dataSpace_setExecutionContextTestData(
+                        executionContext,
+                        dataElementRef as any,
+                      );
+                    } else {
+                      dataSpace_setExecutionContextTestData(
+                        executionContext,
+                        undefined,
+                      );
+                    }
+                  }}
+                  value={null} // Temporarily set to null to avoid type errors
+                  placeholder="Select test data..."
+                  darkMode={
+                    !applicationStore.layoutService
+                      .TEMPORARY__isLightColorThemeEnabled
+                  }
+                />
+              </div>
             </div>
           </div>
         </PanelDropZone>

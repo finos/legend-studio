@@ -63,15 +63,10 @@ export const DataSpaceGeneralEditor = observer(() => {
 
   // DefaultExecutionContext handler
   const handleDefaultExecutionContextChange = (option: {
+    label: string;
     value: unknown;
   }): void => {
-    if (
-      option &&
-      typeof option === 'object' &&
-      'value' in option &&
-      option.value &&
-      typeof option.value === 'object'
-    ) {
+    if (option && option.value && typeof option.value === 'object') {
       const context = option.value as DataSpaceExecutionContext;
       dataSpace_setDefaultExecutionContext(dataSpace, context);
     }
@@ -170,6 +165,7 @@ export const DataSpaceGeneralEditor = observer(() => {
               value: dataSpace.defaultExecutionContext,
             }}
             darkMode={true}
+            key={`default-execution-context-${dataSpace.defaultExecutionContext.name}`}
           />
         </PanelFormSection>
         {/* Elements Section */}
