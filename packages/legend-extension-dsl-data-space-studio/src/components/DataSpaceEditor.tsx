@@ -33,6 +33,7 @@ import {
 } from '@finos/legend-extension-dsl-data-space/graph';
 import { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
 import {
+  set_name,
   set_title,
   set_description,
   set_defaultExecutionContext,
@@ -59,6 +60,12 @@ export const DataSpaceEditor = observer(() => {
   const formElement = formEditorState.dataSpace;
 
   // Basic properties handlers
+  const handleNameChange = (value: string | undefined): void => {
+    if (value !== undefined) {
+      set_name(formElement, value);
+    }
+  };
+
   const handleTitleChange = (value: string | undefined): void => {
     set_title(formElement, value);
   };
@@ -187,11 +194,11 @@ export const DataSpaceEditor = observer(() => {
           {/* Basic Properties Section */}
           <PanelFormSection>
             <PanelFormTextField
-              name="Data Space Title"
+              name="Data Space Name"
               value={formElement.title ?? ''}
-              prompt="Data Space title is the user facing name for the Data Space. It is used in downstream applications as the default identifier for this Data Space. When not provided, the DataSpace name property is used."
+              prompt="Data Space name is the unique identifier for this Data Space."
               update={handleTitleChange}
-              placeholder="Enter title"
+              placeholder="Enter name"
             />
           </PanelFormSection>
 

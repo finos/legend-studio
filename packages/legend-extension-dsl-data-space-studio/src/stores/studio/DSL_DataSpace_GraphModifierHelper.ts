@@ -31,6 +31,10 @@ import type {
 } from '@finos/legend-graph';
 
 // Basic properties
+export const set_name = action((dataSpace: DataSpace, name: string): void => {
+  dataSpace.name = name;
+});
+
 export const set_title = action(
   (dataSpace: DataSpace, type: string | undefined): void => {
     dataSpace.title = type;
