@@ -17,7 +17,6 @@
 import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '@finos/legend-application-studio';
 import {
-  LockIcon,
   Panel,
   PanelContent,
   PanelHeader,
@@ -38,28 +37,29 @@ export const DataSpaceEditor = observer(() => {
 
   return (
     <Panel className="dataSpace-editor">
-      <PanelHeader title="Data Space Editor" darkMode={true}>
-        {dataSpaceState.isReadOnly && (
-          <div className="uml-element-editor__header__lock">
-            <LockIcon />
-          </div>
-        )}
-      </PanelHeader>
-      <PanelContent darkMode={true}>
-        <div className="service-execution-editor__execution">
-          <ResizablePanelGroup orientation="horizontal">
-            <ResizablePanel size={300} minSize={200}>
-              <DataSpaceGeneralEditor />
-            </ResizablePanel>
-            <ResizablePanelSplitter>
-              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
-            </ResizablePanelSplitter>
-            <ResizablePanel minSize={56}>
-              <DataSpaceExecutionContextEditor />
-            </ResizablePanel>
-          </ResizablePanelGroup>
-        </div>
-      </PanelContent>
+      <PanelHeader
+        title="DataSpace"
+        titleContent={dataSpaceState.dataSpace.name}
+        darkMode={true}
+        isReadOnly={dataSpaceState.isReadOnly}
+      />
+      <ResizablePanelGroup orientation="horizontal">
+        <ResizablePanel size={400} minSize={200}>
+          <PanelHeader title="General" darkMode={true} />
+          <PanelContent>
+            <DataSpaceGeneralEditor />
+          </PanelContent>
+        </ResizablePanel>
+        <ResizablePanelSplitter>
+          <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+        </ResizablePanelSplitter>
+        <ResizablePanel minSize={200}>
+          <PanelHeader title="Execution Contexts" darkMode={true} />
+          <PanelContent>
+            <DataSpaceExecutionContextEditor />
+          </PanelContent>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </Panel>
   );
 });
