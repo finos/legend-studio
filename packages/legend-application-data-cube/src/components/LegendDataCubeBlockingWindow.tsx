@@ -27,9 +27,10 @@ import { useRef } from 'react';
 export const LegendDataCubeBlockingWindow = observer(
   (props: { windowState: LegendDataCubeBlockingWindowState }) => {
     const { windowState } = props;
-    const closeModal = !windowState.onClose
-      ? (): void => windowState.close()
-      : windowState.onClose;
+    const onClose = () => {
+      windowState.onClose?.();
+      windowState.close();
+    };
     const ref = useRef<HTMLDivElement>(null);
 
     // set the width and height of the dialog to make sure content overflow works properly
@@ -48,7 +49,7 @@ export const LegendDataCubeBlockingWindow = observer(
     return (
       <Dialog
         open={windowState.isOpen}
-        onClose={closeModal}
+        onClose={onClose}
         slotProps={{
           transition: {
             onEnter: handleEnter,
@@ -75,7 +76,7 @@ export const LegendDataCubeBlockingWindow = observer(
             <div className="px-2">{windowState.configuration.title}</div>
             <button
               className="flex h-[23px] w-6 items-center justify-center hover:bg-red-500 hover:text-white"
-              onClick={closeModal}
+              onClick={onClose}
             >
               <DataCubeIcon.X />
             </button>
@@ -94,7 +95,7 @@ export const LegendDataCubeBlockingWindow = observer(
 export class LegendDataCubeBlockingWindowState {
   isOpen = false;
   readonly configuration: LayoutConfiguration;
-  readonly onClose: (() => void) | undefined;
+  readonly onClose?: (() => void) | undefined;
 
   constructor(
     title: string,

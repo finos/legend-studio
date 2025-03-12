@@ -181,16 +181,11 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
       this.graphState.graphManager.lambdaToPureCode(lambda),
     ]);
     const elapsed = stopWatch.elapsed;
-    const expectedTDS = guaranteeType(
+    const result = guaranteeType(
       executionWithMetadata.executionResult,
       TDSExecutionResult,
       'Query returned expected to be of tabular data set',
     );
-    const sql = expectedTDS.activities?.[0];
-    let sqlString = '### NO SQL FOUND';
-    if (sql instanceof RelationalExecutionActivities) {
-      sqlString = sql.sql;
-    }
 
     if (this.queryBuilderState) {
       const report = reportGraphAnalytics(this.graphState.graph);
@@ -211,9 +206,12 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     }
 
     return {
-      result: expectedTDS,
+      result: result,
       executedQuery: queryString,
-      executedSQL: sqlString,
+      executedSQL:
+        result.activities?.at(-1) instanceof RelationalExecutionActivities
+          ? (result.activities.at(-1) as RelationalExecutionActivities).sql
+          : undefined,
       executionTime: elapsed,
     };
   }

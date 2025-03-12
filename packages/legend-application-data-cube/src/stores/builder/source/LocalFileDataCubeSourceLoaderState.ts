@@ -23,16 +23,18 @@ import {
   type PlainObject,
 } from '@finos/legend-shared';
 import { makeObservable, observable, action } from 'mobx';
-import type { LegendDataCubeApplicationStore } from '../../../LegendDataCubeBaseStore.js';
-import type { LegendDataCubeDataCubeEngine } from '../../../LegendDataCubeDataCubeEngine.js';
+import type { LegendDataCubeApplicationStore } from '../../LegendDataCubeBaseStore.js';
+import type { LegendDataCubeDataCubeEngine } from '../../LegendDataCubeDataCubeEngine.js';
 import {
   LocalFileDataCubeSourceFormat,
   RawLocalFileQueryDataCubeSource,
-} from '../../../model/LocalFileDataCubeSource.js';
-import { LegendDataCubePartialSourceLoaderState } from './LegendDataCubePartialSourceLoaderState.js';
-import { LegendDataCubeSourceLoaderType } from '../../LegendDataCubeSourceLoaderState.js';
+} from '../../model/LocalFileDataCubeSource.js';
+import { LegendDataCubeSourceLoaderState } from './LegendDataCubeSourceLoaderState.js';
+import { LegendDataCubeSourceBuilderType } from './LegendDataCubeSourceBuilderState.js';
+import type { DataCubeAlertService } from '@finos/legend-data-cube';
+import type { PersistentDataCube } from '@finos/legend-graph';
 
-export class LocalFileDataCubePartialSourceLoaderState extends LegendDataCubePartialSourceLoaderState {
+export class LocalFileDataCubeSourceLoaderState extends LegendDataCubeSourceLoaderState {
   readonly processState = ActionState.create();
 
   fileName?: string | undefined;
@@ -47,8 +49,21 @@ export class LocalFileDataCubePartialSourceLoaderState extends LegendDataCubePar
   constructor(
     application: LegendDataCubeApplicationStore,
     engine: LegendDataCubeDataCubeEngine,
+    alertService: DataCubeAlertService,
+    sourceData: PlainObject,
+    persistentDataCube: PersistentDataCube,
+    onSuccess: () => Promise<void>,
+    onError: (error: unknown) => Promise<void>,
   ) {
-    super(application, engine);
+    super(
+      application,
+      engine,
+      alertService,
+      sourceData,
+      persistentDataCube,
+      onSuccess,
+      onError,
+    );
 
     makeObservable(this, {
       fileName: observable,
@@ -164,11 +179,11 @@ export class LocalFileDataCubePartialSourceLoaderState extends LegendDataCubePar
     return Boolean(this.fileData);
   }
 
-  override get label(): LegendDataCubeSourceLoaderType {
-    return LegendDataCubeSourceLoaderType.LOCAL_FILE;
+  override get label() {
+    return LegendDataCubeSourceBuilderType.LOCAL_FILE;
   }
 
-  override async load(source: PlainObject | undefined): Promise<PlainObject> {
+  override async load(source: PlainObject | undefined) {
     const deserializedSource =
       RawLocalFileQueryDataCubeSource.serialization.fromJson(
         guaranteeNonNullable(source),

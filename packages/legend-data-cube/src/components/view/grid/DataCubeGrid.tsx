@@ -381,13 +381,8 @@ const DataCubeGridClient = observer((props: { view: DataCubeViewState }) => {
   const { view } = props;
   const grid = view.grid;
 
-  if (
-    // eslint-disable-next-line no-process-env
-    (process.env.NODE_ENV === 'development' ||
-      // eslint-disable-next-line no-process-env
-      process.env.NODE_ENV === 'test') &&
-    !grid.isClientConfigured
-  ) {
+  // eslint-disable-next-line no-process-env
+  if (process.env.NODE_ENV !== 'production' && !grid.isClientConfigured) {
     // eslint-disable-next-line no-console
     console.error = (message?: unknown, ...agrs: unknown[]) => {
       console.debug(`%c ${message}`, 'color: silver'); // eslint-disable-line no-console
@@ -406,12 +401,8 @@ const DataCubeGridClient = observer((props: { view: DataCubeViewState }) => {
         }}
         onGridReady={(params) => {
           grid.configureClient(params.api);
-          if (
-            // eslint-disable-next-line no-process-env
-            process.env.NODE_ENV === 'development' ||
-            // eslint-disable-next-line no-process-env
-            process.env.NODE_ENV === 'test'
-          ) {
+          // eslint-disable-next-line no-process-env
+          if (process.env.NODE_ENV !== 'production') {
             // restore original error logging
             console.error = __INTERNAL__original_console_error; // eslint-disable-line no-console
           }

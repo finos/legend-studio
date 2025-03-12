@@ -298,7 +298,7 @@ export const LegendDataCubeBuilder = withLegendDataCubeBuilderStore(
       } else {
         releaseService.updateViewedVersion();
       }
-    }, [application, store.releaseNotesDisplay]);
+    }, [application, store]);
 
     if (!store.initializeState.hasSucceeded) {
       return (

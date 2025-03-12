@@ -41,8 +41,9 @@ import {
   ActionState,
   assertErrorThrown,
   formatDate,
-  guaranteeNonNullable,
   isString,
+  returnUndefOnError,
+  UnsupportedOperationError,
   uuid,
 } from '@finos/legend-shared';
 import type { LegendDataCubeDataCubeEngine } from '../LegendDataCubeDataCubeEngine.js';
@@ -64,6 +65,9 @@ import {
   LegendDataCubeReleaseLogManager,
 } from '../../components/builder/LegendDataCubeBuilder.js';
 import { LegendDataCubeSourceViewer } from '../../components/builder/LegendDataCubeSourceViewer.js';
+import { LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE } from '../model/LocalFileDataCubeSource.js';
+import type { LegendDataCubeSourceLoaderState } from './source/LegendDataCubeSourceLoaderState.js';
+import { LocalFileDataCubeSourceLoaderState } from './source/LocalFileDataCubeSourceLoaderState.js';
 
 export class LegendDataCubeBuilderState {
   readonly uuid = uuid();
@@ -142,12 +146,17 @@ export class LegendDataCubeBuilderStore {
   builder?: LegendDataCubeBuilderState | undefined;
   readonly sourceViewerDisplay: DisplayState;
 
+  sourceLoader?: LegendDataCubeSourceLoaderState | undefined;
+
   private passedFirstLoad = false;
 
   constructor(baseStore: LegendDataCubeBaseStore) {
     makeObservable(this, {
       builder: observable,
       setBuilder: action,
+
+      sourceLoader: observable,
+      setSourceLoader: action,
 
       dataCubeToDelete: observable,
       setDataCubeToDelete: action,
@@ -224,6 +233,10 @@ export class LegendDataCubeBuilderStore {
     this.builder = val;
   }
 
+  setSourceLoader(val: LegendDataCubeSourceLoaderState | undefined) {
+    this.sourceLoader = val;
+  }
+
   private updateWindowTitle(persistentDataCube: PersistentDataCube) {
     this.application.layoutService.setWindowTitle(
       `\u229E ${persistentDataCube.name}${this.builder ? ` - ${formatDate(new Date(this.builder.startTime), 'HH:mm:ss EEE MMM dd yyyy')}` : ''}`,
@@ -276,26 +289,17 @@ export class LegendDataCubeBuilderStore {
     }
   }
 
-  loadPartialSourceDataCube() {
-    if (!this.loader.isPartialSourceResolved()) {
-      this.application.navigationService.navigator.updateCurrentLocation(
-        generateBuilderRoute(null),
-      );
-    }
-    try {
-      const persistentDataCube = guaranteeNonNullable(
-        this.loader.getPersistentDataCube(),
-      );
+  private getSourceLoader(
+    specification: DataCubeSpecification,
+    persistentDataCube: PersistentDataCube,
+  ) {
+    const sourceData = specification.source;
+    const onSuccess = async () => {
       const dataCubeId = persistentDataCube.id;
-      const specification = DataCubeSpecification.serialization.fromJson(
-        persistentDataCube.content,
-      );
-      specification.source = guaranteeNonNullable(
-        this.loader.getResolvedSource(),
-      );
-      this.postLoad(specification, persistentDataCube, dataCubeId);
+      this.finalizeLoad(specification, persistentDataCube, dataCubeId);
       this.loadState.pass();
-    } catch (error) {
+    };
+    const onError = async (error: unknown) => {
       assertErrorThrown(error);
       this.alertService.alertError(error, {
         message: `DataCube Load Failure: ${error.message}`,
@@ -304,7 +308,22 @@ export class LegendDataCubeBuilderStore {
         generateBuilderRoute(null),
       );
       this.loadState.fail();
-      throw error;
+    };
+    switch (sourceData._type) {
+      case LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE:
+        return new LocalFileDataCubeSourceLoaderState(
+          this.application,
+          this.engine,
+          this.alertService,
+          sourceData,
+          persistentDataCube,
+          onSuccess,
+          onError,
+        );
+      default:
+        throw new UnsupportedOperationError(
+          `Can't create source loader for unsupported type '${sourceData._type}'`,
+        );
     }
   }
 
@@ -351,16 +370,16 @@ export class LegendDataCubeBuilderStore {
           persistentDataCube.content,
         );
 
-        if (this.loader.isPartialSource(specification.source)) {
-          this.loader.resolvePartialSource(
-            specification.source,
-            persistentDataCube,
-          );
+        const sourceLoader = returnUndefOnError(() =>
+          this.getSourceLoader(specification, persistentDataCube),
+        );
+        if (sourceLoader !== undefined) {
+          this.setSourceLoader(sourceLoader);
+          sourceLoader.display.open();
           return;
         }
 
-        this.postLoad(specification, persistentDataCube, dataCubeId);
-
+        this.finalizeLoad(specification, persistentDataCube, dataCubeId);
         this.loadState.pass();
       } catch (error) {
         assertErrorThrown(error);
@@ -376,7 +395,7 @@ export class LegendDataCubeBuilderStore {
     }
   }
 
-  private postLoad(
+  private finalizeLoad(
     specification: DataCubeSpecification,
     persistentDataCube: PersistentDataCube,
     dataCubeId: string,

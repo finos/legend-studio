@@ -715,19 +715,14 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         TDSExecutionResult,
         `Can't process execution result: expected tabular data set format`,
       );
-      const endTime = performance.now();
-      const queryCode = await queryCodePromise;
-      const sql = guaranteeNonNullable(
-        result.activities?.[0] instanceof RelationalExecutionActivities
-          ? result.activities[0].sql
-          : undefined,
-        `Can't process execution result: failed to extract generated SQL`,
-      );
       return {
         result: result,
-        executedQuery: queryCode,
-        executedSQL: sql,
-        executionTime: endTime - startTime,
+        executedQuery: await queryCodePromise,
+        executedSQL:
+          result.activities?.at(-1) instanceof RelationalExecutionActivities
+            ? (result.activities.at(-1) as RelationalExecutionActivities).sql
+            : undefined,
+        executionTime: performance.now() - startTime,
       };
     } catch (error) {
       assertErrorThrown(error);

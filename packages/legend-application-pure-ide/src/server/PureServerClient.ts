@@ -224,7 +224,7 @@ export class PureServerClient {
         func: 'meta::pure::ide::testing::getPCTAdapters__Pair_MANY_',
       },
     );
-    return Array.isArray(result) ? result : [result];
+    return (Array.isArray(result) ? result : [result]) as PlainObject<Usage>[];
   };
 
   // ------------------------------------------- Concept -------------------------------------------
@@ -269,7 +269,7 @@ export class PureServerClient {
         param,
       },
     );
-    return Array.isArray(result) ? result : [result];
+    return (Array.isArray(result) ? result : [result]) as PlainObject<Usage>[];
   };
 
   renameConcept = (input: RenameConceptInput): Promise<void> =>
@@ -292,7 +292,7 @@ export class PureServerClient {
         param: [`'${paths.join(',')}'`],
       },
     );
-    return Array.isArray(result) ? result : [result];
+    return (Array.isArray(result) ? result : [result]) as PlainObject<Usage>[];
   };
 
   getChildPackageableElements = async (
