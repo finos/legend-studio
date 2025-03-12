@@ -195,11 +195,11 @@ export const DataSpaceEditor = observer(() => {
           {/* Basic Properties Section */}
           <PanelFormSection>
             <PanelFormTextField
-              name="Data Space Name"
+              name="Data Space Title"
               value={formElement.title ?? ''}
-              prompt="Data Space name is the unique identifier for this Data Space."
+              prompt="Data Space title is the unique identifier for this Data Space."
               update={handleTitleChange}
-              placeholder="Enter name"
+              placeholder="Enter title"
             />
           </PanelFormSection>
 
