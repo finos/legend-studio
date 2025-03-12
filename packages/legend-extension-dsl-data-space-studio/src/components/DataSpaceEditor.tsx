@@ -17,17 +17,16 @@
 import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '@finos/legend-application-studio';
 import {
-  clsx,
   LockIcon,
   Panel,
   PanelContent,
   PanelHeader,
+  ResizablePanel,
+  ResizablePanelGroup,
+  ResizablePanelSplitter,
+  ResizablePanelSplitterLine,
 } from '@finos/legend-art';
-import {
-  DATASPACE_TAB,
-  DataSpaceEditorState,
-} from '../stores/DataSpaceEditorState.js';
-import { prettyCONSTName } from '@finos/legend-shared';
+import { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
 import { DataSpaceGeneralEditor } from './DataSpaceGeneralEditor.js';
 import { DataSpaceExecutionContextEditor } from './DataSpaceExecutionContextEditor.js';
 
@@ -36,23 +35,6 @@ export const DataSpaceEditor = observer(() => {
 
   const dataSpaceState =
     editorStore.tabManagerState.getCurrentEditorState(DataSpaceEditorState);
-  const selectedTab = dataSpaceState.selectedTab;
-
-  const changeTab =
-    (tab: DATASPACE_TAB): (() => void) =>
-    (): void =>
-      dataSpaceState.setSelectedTab(tab);
-
-  const renderDataSpaceEditorTab = (): React.ReactNode => {
-    switch (selectedTab) {
-      case DATASPACE_TAB.GENERAL:
-        return <DataSpaceGeneralEditor />;
-      case DATASPACE_TAB.EXECUTION_CONTEXT:
-        return <DataSpaceExecutionContextEditor />;
-      default:
-        return null;
-    }
-  };
 
   return (
     <Panel className="dataSpace-editor">
@@ -62,21 +44,22 @@ export const DataSpaceEditor = observer(() => {
             <LockIcon />
           </div>
         )}
-        <div className="uml-element-editor__tabs">
-          {Object.values(DATASPACE_TAB).map((tab) => (
-            <div
-              key={tab}
-              onClick={changeTab(tab)}
-              className={clsx('dataspace-editor__tab', {
-                'dataspace-editor__tab--active': tab === selectedTab,
-              })}
-            >
-              {prettyCONSTName(tab)}
-            </div>
-          ))}
-        </div>
       </PanelHeader>
-      <PanelContent darkMode={true}>{renderDataSpaceEditorTab()}</PanelContent>
+      <PanelContent darkMode={true}>
+        <div className="service-execution-editor__execution">
+          <ResizablePanelGroup orientation="vertical">
+            <ResizablePanel size={300} minSize={200}>
+              <DataSpaceGeneralEditor />
+            </ResizablePanel>
+            <ResizablePanelSplitter>
+              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+            </ResizablePanelSplitter>
+            <ResizablePanel minSize={56}>
+              <DataSpaceExecutionContextEditor />
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </div>
+      </PanelContent>
     </Panel>
   );
 });
