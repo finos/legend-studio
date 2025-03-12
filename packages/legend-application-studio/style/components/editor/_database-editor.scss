@@ -1,0 +1,107 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.database-editor {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+.database-editor__panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  background-color: var(--color-dark-grey-50);
+  border-bottom: 1px solid var(--color-dark-grey-200);
+}
+
+.database-editor__panel-header__title {
+  font-weight: 500;
+  font-size: 1.1rem;
+}
+
+.database-editor__content {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+.database-editor__schemas-panel,
+.database-editor__tables-panel,
+.database-editor__columns-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  flex: 1;
+  border-right: 1px solid var(--color-dark-grey-200);
+}
+
+.database-editor__schema-item,
+.database-editor__table-item,
+.database-editor__column-item {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  border-bottom: 1px solid var(--color-dark-grey-100);
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: var(--color-dark-grey-50);
+  }
+
+  &--selected {
+    background-color: var(--color-blue-100);
+  }
+}
+
+.database-editor__schema-item__name,
+.database-editor__table-item__name,
+.database-editor__column-item__name {
+  font-weight: 500;
+}
+
+.database-editor__column-item {
+  display: flex;
+  justify-content: space-between;
+}
+
+.database-editor__column-item__type {
+  color: var(--color-dark-grey-400);
+  font-size: 0.9rem;
+}
+
+.column-editor {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 300px;
+  height: 100%;
+  background-color: var(--color-dark-grey-50);
+  border-left: 1px solid var(--color-dark-grey-200);
+  z-index: 10;
+}
+
+.column-editor__header__lock {
+  display: flex;
+  align-items: center;
+  margin-right: 0.5rem;
+  color: var(--color-dark-grey-400);
+}
