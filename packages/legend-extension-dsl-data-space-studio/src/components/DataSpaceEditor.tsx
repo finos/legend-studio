@@ -47,7 +47,7 @@ export const DataSpaceEditor = observer(() => {
       </PanelHeader>
       <PanelContent darkMode={true}>
         <div className="service-execution-editor__execution">
-          <ResizablePanelGroup orientation="vertical">
+          <ResizablePanelGroup orientation="horizontal">
             <ResizablePanel size={300} minSize={200}>
               <DataSpaceGeneralEditor />
             </ResizablePanel>
