@@ -20,6 +20,9 @@ import {
   PanelContent,
   PanelLoadingIndicator,
   BlankPanelPlaceholder,
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizablePanelSplitter,
 } from '@finos/legend-art';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import type { DatabaseEditorState } from '../../../../stores/editor/editor-state/element-editor-state/database/DatabaseEditorState.js';
@@ -121,91 +124,105 @@ export const DatabaseEditor = observer(
     return (
       <div className="database-editor">
         <div className="database-editor__content">
-          <div className="database-editor__schemas-panel">
-            <div className="database-editor__panel-header">
-              <div className="database-editor__panel-header__title">
-                Schemas
+          <ResizablePanelGroup orientation="horizontal">
+            <ResizablePanel minSize={200}>
+              <div className="database-editor__schemas-panel">
+                <div className="database-editor__panel-header">
+                  <div className="database-editor__panel-header__title">
+                    Schemas
+                  </div>
+                </div>
+                <PanelContent>
+                  <PanelLoadingIndicator
+                    isLoading={editorState.isLoadingSchemas}
+                  />
+                  {!database.schemas.length && (
+                    <BlankPanelPlaceholder
+                      text="No schemas available"
+                      tooltipText="No schemas available"
+                    />
+                  )}
+                  {database.schemas.map((schema) => (
+                    <SchemaItem
+                      key={schema.name}
+                      schema={schema}
+                      editorState={editorState}
+                      isReadOnly={isReadOnly}
+                    />
+                  ))}
+                </PanelContent>
               </div>
-            </div>
-            <PanelContent>
-              <PanelLoadingIndicator isLoading={editorState.isLoadingSchemas} />
-              {!database.schemas.length && (
-                <BlankPanelPlaceholder
-                  text="No schemas available"
-                  tooltipText="No schemas available"
-                />
-              )}
-              {database.schemas.map((schema) => (
-                <SchemaItem
-                  key={schema.name}
-                  schema={schema}
-                  editorState={editorState}
-                  isReadOnly={isReadOnly}
-                />
-              ))}
-            </PanelContent>
-          </div>
-          <div className="database-editor__tables-panel">
-            <div className="database-editor__panel-header">
-              <div className="database-editor__panel-header__title">Tables</div>
-            </div>
-            <PanelContent>
-              {!editorState.selectedSchema && (
-                <BlankPanelPlaceholder
-                  text="Select a schema to view tables"
-                  tooltipText="Select a schema to view tables"
-                />
-              )}
-              {editorState.selectedSchema &&
-                !editorState.selectedSchema.tables.length && (
-                  <BlankPanelPlaceholder
-                    text="No tables available in this schema"
-                    tooltipText="No tables available in this schema"
-                  />
-                )}
-              {editorState.selectedSchema?.tables.map((table) => (
-                <TableItem
-                  key={table.name}
-                  table={table}
-                  editorState={editorState}
-                  isReadOnly={isReadOnly}
-                />
-              ))}
-            </PanelContent>
-          </div>
-          <div className="database-editor__columns-panel">
-            <div className="database-editor__panel-header">
-              <div className="database-editor__panel-header__title">
-                Columns
+            </ResizablePanel>
+            <ResizablePanelSplitter />
+            <ResizablePanel minSize={200}>
+              <div className="database-editor__tables-panel">
+                <div className="database-editor__panel-header">
+                  <div className="database-editor__panel-header__title">
+                    Tables
+                  </div>
+                </div>
+                <PanelContent>
+                  {!editorState.selectedSchema && (
+                    <BlankPanelPlaceholder
+                      text="Select a schema to view tables"
+                      tooltipText="Select a schema to view tables"
+                    />
+                  )}
+                  {editorState.selectedSchema &&
+                    !editorState.selectedSchema.tables.length && (
+                      <BlankPanelPlaceholder
+                        text="No tables available in this schema"
+                        tooltipText="No tables available in this schema"
+                      />
+                    )}
+                  {editorState.selectedSchema?.tables.map((table) => (
+                    <TableItem
+                      key={table.name}
+                      table={table}
+                      editorState={editorState}
+                      isReadOnly={isReadOnly}
+                    />
+                  ))}
+                </PanelContent>
               </div>
-            </div>
-            <PanelContent>
-              {!editorState.selectedTable && (
-                <BlankPanelPlaceholder
-                  text="Select a table to view columns"
-                  tooltipText="Select a table to view columns"
-                />
-              )}
-              {editorState.selectedTable &&
-                !editorState.selectedTable.columns.length && (
-                  <BlankPanelPlaceholder
-                    text="No columns available in this table"
-                    tooltipText="No columns available in this table"
-                  />
-                )}
-              {editorState.selectedTable?.columns.map((column) => {
-                const typedColumn = column as unknown as Column;
-                return (
-                  <ColumnItem
-                    key={guaranteeNonNullable(typedColumn.name)}
-                    column={typedColumn}
-                    editorState={editorState}
-                    isReadOnly={isReadOnly}
-                  />
-                );
-              })}
-            </PanelContent>
-          </div>
+            </ResizablePanel>
+            <ResizablePanelSplitter />
+            <ResizablePanel minSize={200}>
+              <div className="database-editor__columns-panel">
+                <div className="database-editor__panel-header">
+                  <div className="database-editor__panel-header__title">
+                    Columns
+                  </div>
+                </div>
+                <PanelContent>
+                  {!editorState.selectedTable && (
+                    <BlankPanelPlaceholder
+                      text="Select a table to view columns"
+                      tooltipText="Select a table to view columns"
+                    />
+                  )}
+                  {editorState.selectedTable &&
+                    !editorState.selectedTable.columns.length && (
+                      <BlankPanelPlaceholder
+                        text="No columns available in this table"
+                        tooltipText="No columns available in this table"
+                      />
+                    )}
+                  {editorState.selectedTable?.columns.map((column) => {
+                    const typedColumn = column as unknown as Column;
+                    return (
+                      <ColumnItem
+                        key={guaranteeNonNullable(typedColumn.name)}
+                        column={typedColumn}
+                        editorState={editorState}
+                        isReadOnly={isReadOnly}
+                      />
+                    );
+                  })}
+                </PanelContent>
+              </div>
+            </ResizablePanel>
+          </ResizablePanelGroup>
         </div>
         {editorState.selectedColumn && (
           <ColumnEditor

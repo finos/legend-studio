@@ -23,15 +23,151 @@ import {
   PanelFormSection,
   PanelFormTextField,
   TimesIcon,
+  CustomSelectorInput,
 } from '@finos/legend-art';
-import { type Column } from '@finos/legend-graph';
+import {
+  type Column,
+  type RelationalDataType,
+  BigInt,
+  SmallInt,
+  TinyInt,
+  Integer,
+  Float,
+  Double,
+  VarChar,
+  Char,
+  VarBinary,
+  Decimal,
+  Numeric,
+  Timestamp,
+  Date,
+  Other,
+  Bit,
+  Binary,
+  Real,
+  SemiStructured,
+  Json,
+} from '@finos/legend-graph';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
+import {} from '@finos/legend-shared';
 
+type RelationalDataTypeOption = {
+  label: string;
+  value: string;
+  create: () => RelationalDataType;
+};
+
+const RELATIONAL_DATA_TYPE_OPTIONS: RelationalDataTypeOption[] = [
+  {
+    label: 'BigInt',
+    value: 'BigInt',
+    create: () => new BigInt(),
+  },
+  {
+    label: 'SmallInt',
+    value: 'SmallInt',
+    create: () => new SmallInt(),
+  },
+  {
+    label: 'TinyInt',
+    value: 'TinyInt',
+    create: () => new TinyInt(),
+  },
+  {
+    label: 'Integer',
+    value: 'Integer',
+    create: () => new Integer(),
+  },
+  {
+    label: 'Float',
+    value: 'Float',
+    create: () => new Float(),
+  },
+  {
+    label: 'Double',
+    value: 'Double',
+    create: () => new Double(),
+  },
+  {
+    label: 'VarChar',
+    value: 'VarChar',
+    create: () => new VarChar(255),
+  },
+  {
+    label: 'Char',
+    value: 'Char',
+    create: () => new Char(255),
+  },
+  {
+    label: 'VarBinary',
+    value: 'VarBinary',
+    create: () => new VarBinary(255),
+  },
+  {
+    label: 'Decimal',
+    value: 'Decimal',
+    create: () => new Decimal(10, 2),
+  },
+  {
+    label: 'Numeric',
+    value: 'Numeric',
+    create: () => new Numeric(10, 2),
+  },
+  {
+    label: 'Timestamp',
+    value: 'Timestamp',
+    create: () => new Timestamp(),
+  },
+  {
+    label: 'Date',
+    value: 'Date',
+    create: () => new Date(),
+  },
+  {
+    label: 'Other',
+    value: 'Other',
+    create: () => new Other(),
+  },
+  {
+    label: 'Bit',
+    value: 'Bit',
+    create: () => new Bit(),
+  },
+  {
+    label: 'Binary',
+    value: 'Binary',
+    create: () => new Binary(255),
+  },
+  {
+    label: 'Real',
+    value: 'Real',
+    create: () => new Real(),
+  },
+  {
+    label: 'SemiStructured',
+    value: 'SemiStructured',
+    create: () => new SemiStructured(),
+  },
+  {
+    label: 'Json',
+    value: 'Json',
+    create: () => new Json(),
+  },
+];
+
+const getRelationalDataTypeOption = (
+  type: RelationalDataType,
+): RelationalDataTypeOption | undefined => {
+  const typeName = type.constructor.name;
+  return RELATIONAL_DATA_TYPE_OPTIONS.find(
+    (option) => option.value === typeName,
+  );
+};
 export const ColumnEditor = observer(
   (props: { column: Column; isReadOnly: boolean; onClose: () => void }) => {
     const { column, isReadOnly, onClose } = props;
     const [columnName, setColumnName] = useState(column.name);
-    const [columnType, setColumnType] = useState(String(column.type));
+    const [, setColumnType] = useState(String(column.type));
 
     const updateColumnName = (value: string | undefined): void => {
       if (!isReadOnly && value !== undefined) {
@@ -40,11 +176,12 @@ export const ColumnEditor = observer(
       }
     };
 
-    const updateColumnType = (value: string | undefined): void => {
-      if (!isReadOnly && value !== undefined) {
-        setColumnType(value);
-        // Note: In a real implementation, we would need to convert the string to the proper RelationalDataType
-        // For now, we're just updating the UI state
+    const updateColumnType = (
+      option: RelationalDataTypeOption | null,
+    ): void => {
+      if (!isReadOnly && option) {
+        setColumnType(option.label);
+        column.type = option.create();
       }
     };
 
@@ -89,11 +226,13 @@ export const ColumnEditor = observer(
                 <div className="panel__content__form__section__header__label">
                   Type
                 </div>
-                <PanelFormTextField
-                  name="columnType"
-                  value={columnType}
-                  isReadOnly={isReadOnly}
-                  update={updateColumnType}
+                <CustomSelectorInput
+                  className="panel__content__form__section__dropdown"
+                  options={RELATIONAL_DATA_TYPE_OPTIONS}
+                  onChange={updateColumnType}
+                  value={getRelationalDataTypeOption(column.type) ?? null}
+                  isClearable={false}
+                  isDisabled={isReadOnly}
                 />
               </PanelFormSection>
             </PanelForm>
