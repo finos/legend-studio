@@ -16,6 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '@finos/legend-application-studio';
+import { useApplicationStore } from '@finos/legend-application';
 import {
   Panel,
   PanelContent,
@@ -187,9 +188,9 @@ export const DataSpaceEditor = observer(() => {
   };
 
   return (
-    <Panel className="dataSpace-editor panel dataSpace-editor--dark">
-      <PanelHeader title="Data Space Editor" />
-      <PanelContent>
+    <Panel className="dataSpace-editor connection-editor">
+      <PanelHeader title="Data Space Editor" darkMode={true} />
+      <PanelContent darkMode={true}>
         <div className="panel__content__form">
           {/* Basic Properties Section */}
           <PanelFormSection>
@@ -279,6 +280,7 @@ export const DataSpaceEditor = observer(() => {
                 label: formElement.defaultExecutionContext.name,
                 value: formElement.defaultExecutionContext,
               }}
+              darkMode={true}
             />
           </PanelFormSection>
 
@@ -448,6 +450,7 @@ export const DataSpaceEditor = observer(() => {
                     : 'combined'
                   : 'none',
               }}
+              darkMode={true}
             />
             {formElement.supportInfo && (
               <div className="panel__content__form__section__list__item">
