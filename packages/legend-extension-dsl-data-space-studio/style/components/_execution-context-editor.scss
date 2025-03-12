@@ -29,3 +29,29 @@
     }
   }
 }
+
+.service-execution-editor__configuration__items {
+  background-color: var(--color-dark-grey-85);
+  padding: 1rem;
+  border-radius: 3px;
+}
+
+.service-execution-editor__execution {
+  background-color: var(--color-dark-grey-85);
+}
+
+.service-multi-execution-editor__panel {
+  background-color: var(--color-dark-grey-85);
+}
+
+/* Additional styles for DataSpaceExecutionContextConfigurationEditor */
+.panel__content {
+  background-color: var(--color-dark-grey-85);
+}
+
+.service-execution-editor__configuration__item {
+  &__dropdown {
+    background-color: var(--color-dark-grey-85);
+    color: var(--color-light-grey-200);
+  }
+}
