@@ -88,6 +88,8 @@ import {
 } from '../../workspace-setup/WorkspaceSetup.js';
 import { HostedServiceFunctionActivatorEditorState } from '../../../stores/editor/editor-state/element-editor-state/function-activator/HostedServiceFunctionActivatorEditorState.js';
 import { HostedServiceFunctionActivatorEditor } from './function-activator/HostedServiceFunctionActivatorEditor.js';
+import { DatabaseEditorState } from '../../../stores/editor/editor-state/element-editor-state/database/DatabaseEditorState.js';
+import { DatabaseEditor } from './database/DatabaseEditor.js';
 
 export const ViewerEditorGroupSplashScreen: React.FC = () => {
   const commandListWidth = 300;
@@ -300,6 +302,13 @@ export const EditorGroup = observer(() => {
             return (
               <HostedServiceFunctionActivatorEditor
                 key={currentTabState.uuid}
+              />
+            );
+          } else if (currentTabState instanceof DatabaseEditorState) {
+            return (
+              <DatabaseEditor
+                key={currentTabState.uuid}
+                editorState={currentTabState}
               />
             );
           } else if (currentTabState instanceof UnsupportedElementEditorState) {
