@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.3.4
+
+### Patch Changes
+
+- [#3927](https://github.com/finos/legend-studio/pull/3927) [`cc87652`](https://github.com/finos/legend-studio/commit/cc8765297e638e710024c05be4cc9b7d436705dc) ([@gs-gunjan](https://github.com/gs-gunjan)) - Fixing date handling for result data from Duckdb
+
 ## 0.3.3
 
 ### Patch Changes
