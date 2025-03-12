@@ -337,46 +337,7 @@ const DataSpaceExecutionContextConfigurationEditor = observer(
               </div>
             </div>
 
-            {/* Test Data input */}
-            <div className="execution-context-editor__form-section">
-              <div className="execution-context-editor__form-section__label">
-                Test Data
-              </div>
-              <div className="execution-context-editor__form-section__content">
-                <CustomSelectorInput
-                  className="panel__content__form__section__dropdown"
-                  disabled={isReadOnly}
-                  options={dataElementOptions}
-                  onChange={(
-                    option: { label: string; value: unknown } | null,
-                  ): void => {
-                    if (option && option.value) {
-                      // Create a reference to the selected data element
-                      const dataElementRef =
-                        PackageableElementExplicitReference.create(
-                          option.value as any,
-                        );
-                      // Pass the reference to the action method
-                      dataSpace_setExecutionContextTestData(
-                        executionContext,
-                        dataElementRef as any,
-                      );
-                    } else {
-                      dataSpace_setExecutionContextTestData(
-                        executionContext,
-                        undefined,
-                      );
-                    }
-                  }}
-                  value={null} // Temporarily set to null to avoid type errors
-                  placeholder="Select test data..."
-                  darkMode={
-                    !applicationStore.layoutService
-                      .TEMPORARY__isLightColorThemeEnabled
-                  }
-                />
-              </div>
-            </div>
+            {/* Test Data input removed as it's not used */}
           </div>
         </PanelDropZone>
       </PanelContent>
