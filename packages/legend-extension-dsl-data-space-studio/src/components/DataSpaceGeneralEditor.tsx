@@ -23,6 +23,7 @@ import {
   PanelFormTextField,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
+import { useEffect, useState } from 'react';
 import { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
 import {
   dataSpace_addDiagram,
@@ -47,6 +48,8 @@ import {
 
 export const DataSpaceGeneralEditor = observer(() => {
   const editorStore = useEditorStore();
+  // Use a unique key to force re-render of the dropdown after mode switch
+  const [modeChangeKey] = useState(Date.now());
 
   const dataSpaceState =
     editorStore.tabManagerState.getCurrentEditorState(DataSpaceEditorState);
@@ -165,7 +168,7 @@ export const DataSpaceGeneralEditor = observer(() => {
               value: dataSpace.defaultExecutionContext,
             }}
             darkMode={true}
-            key={`default-execution-context-${dataSpace.defaultExecutionContext.name}`}
+            key={`default-execution-context-${dataSpace.defaultExecutionContext.name}-${modeChangeKey}`}
           />
         </PanelFormSection>
         {/* Elements Section */}
