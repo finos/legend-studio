@@ -29,7 +29,7 @@ import {
   type Column,
   isElementReadOnly,
 } from '@finos/legend-graph';
-import { ColumnEditor } from './ColumnEditor';
+import { ColumnEditor } from './ColumnEditor.js';
 
 const SchemaItem = observer(
   (props: {
