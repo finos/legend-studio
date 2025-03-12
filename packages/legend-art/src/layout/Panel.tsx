@@ -18,7 +18,7 @@ import { capitalize, prettyCONSTName, toTitleCase } from '@finos/legend-shared';
 import { clsx } from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { forwardRef, useEffect, useState } from 'react';
-import { CheckSquareIcon, SquareIcon } from '../icon/Icon.js';
+import { CheckSquareIcon, LockIcon, SquareIcon } from '../icon/Icon.js';
 import { generateSimpleDIVComponent } from '../utils/ComponentCreatorUtils.js';
 
 export const Panel = generateSimpleDIVComponent('Panel', 'panel');
@@ -29,36 +29,67 @@ export const PanelFullContent = generateSimpleDIVComponent(
 
 export const PanelHeader: React.FC<{
   title?: string;
+  titleContent?: string;
   keepTitleFormat?: boolean | undefined;
   darkMode?: boolean | undefined;
   className?: string;
   labelClassName?: string;
+  contentClassName?: string;
+  isReadOnly?: boolean;
   children?: React.ReactNode;
 }> = (props) => {
   const {
     title,
+    titleContent,
     keepTitleFormat,
     labelClassName,
+    contentClassName,
     darkMode,
     className,
+    isReadOnly,
     children,
   } = props;
-  const isLightMode = Boolean(darkMode);
+  const isDarkMode = Boolean(darkMode);
   const isKeepTitleFormat = Boolean(keepTitleFormat);
   return (
-    <div className={clsx('panel__header', className)}>
+    <div
+      className={clsx(
+        'panel__header',
+        { 'panel__header--dark': isDarkMode },
+        className,
+      )}
+    >
       {title && (
         <div className="panel__header__title">
+          {isReadOnly && (
+            <div className="uml-element-editor__header__lock">
+              <LockIcon />
+            </div>
+          )}
           <div
-            className={clsx('panel__header__title__label', labelClassName, {
-              'panel__header__title__label--light': isLightMode,
-            })}
+            className={clsx(
+              'panel__header__title__label',
+              {
+                'panel__header__title__label--light': !isDarkMode,
+              },
+              labelClassName,
+            )}
           >
             {isKeepTitleFormat ? title : title.toLowerCase()}
           </div>
+          {titleContent && (
+            <div
+              className={clsx(
+                'panel__header__title__content',
+                { 'panel__header__title__content--light': !isDarkMode },
+                contentClassName,
+              )}
+            >
+              {titleContent}
+            </div>
+          )}
         </div>
       )}
-
       {children}
     </div>
   );
