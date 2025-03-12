@@ -17,8 +17,6 @@
 import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
-  clsx,
-  CustomSelectorInput,
   LockIcon,
   PanelContent,
   PanelForm,

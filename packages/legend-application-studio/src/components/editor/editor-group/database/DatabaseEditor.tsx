@@ -21,6 +21,7 @@ import {
   PanelLoadingIndicator,
   BlankPanelPlaceholder,
 } from '@finos/legend-art';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import type { DatabaseEditorState } from '../../../../stores/editor/editor-state/element-editor-state/database/DatabaseEditorState.js';
 import {
   type Schema,
@@ -192,14 +193,17 @@ export const DatabaseEditor = observer(
                     tooltipText="No columns available in this table"
                   />
                 )}
-              {editorState.selectedTable?.columns.map((column, index) => (
-                <ColumnItem
-                  key={`column-${index}`}
-                  column={column as unknown as Column}
-                  editorState={editorState}
-                  isReadOnly={isReadOnly}
-                />
-              ))}
+              {editorState.selectedTable?.columns.map((column) => {
+                const typedColumn = column as unknown as Column;
+                return (
+                  <ColumnItem
+                    key={guaranteeNonNullable(typedColumn.name)}
+                    column={typedColumn}
+                    editorState={editorState}
+                    isReadOnly={isReadOnly}
+                  />
+                );
+              })}
             </PanelContent>
           </div>
         </div>
