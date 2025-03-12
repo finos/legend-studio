@@ -51,13 +51,13 @@ import {
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import {} from '@finos/legend-shared';
 
-type RelationalDataTypeOption = {
+export type RelationalDataTypeOption = {
   label: string;
   value: string;
   create: () => RelationalDataType;
 };
 
-const RELATIONAL_DATA_TYPE_OPTIONS: RelationalDataTypeOption[] = [
+export const RELATIONAL_DATA_TYPE_OPTIONS: RelationalDataTypeOption[] = [
   {
     label: 'BigInt',
     value: 'BigInt',
@@ -155,7 +155,7 @@ const RELATIONAL_DATA_TYPE_OPTIONS: RelationalDataTypeOption[] = [
   },
 ];
 
-const getRelationalDataTypeOption = (
+export const getRelationalDataTypeOption = (
   type: RelationalDataType,
 ): RelationalDataTypeOption | undefined => {
   const typeName = type.constructor.name;

@@ -36,6 +36,22 @@
   font-size: 1.1rem;
 }
 
+.database-editor__panel-header__action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  background-color: transparent;
+  color: var(--color-dark-grey-400);
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--color-dark-grey-100);
+  }
+}
+
 .database-editor__content {
   display: flex;
   width: 100%;
@@ -86,6 +102,29 @@
 .database-editor__column-item__type {
   color: var(--color-dark-grey-400);
   font-size: 0.9rem;
+}
+
+.database-editor__item-delete-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  background-color: transparent;
+  color: var(--color-dark-grey-400);
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--color-dark-grey-100);
+    color: var(--color-red-50);
+  }
+}
+
+.database-editor__schema-item:hover .database-editor__item-delete-btn,
+.database-editor__table-item:hover .database-editor__item-delete-btn,
+.database-editor__column-item:hover .database-editor__item-delete-btn {
+  display: flex;
 }
 
 .column-editor {
