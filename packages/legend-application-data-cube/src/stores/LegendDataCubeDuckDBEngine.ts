@@ -18,6 +18,8 @@ import * as duckdb from '@duckdb/duckdb-wasm';
 import duckdb_wasm from '@duckdb/duckdb-wasm/dist/duckdb-mvp.wasm';
 import duckdb_wasm_next from '@duckdb/duckdb-wasm/dist/duckdb-eh.wasm';
 import {
+  DATE_FORMAT,
+  DATE_TIME_FORMAT,
   INTERNAL__TDSColumn,
   PRIMITIVE_TYPE,
   TDSBuilder,
@@ -28,6 +30,7 @@ import {
 import {
   assertNonNullable,
   csvStringify,
+  formatDate,
   guaranteeNonNullable,
   isNullable,
   UnsupportedOperationError,
@@ -209,8 +212,6 @@ export class LegendDataCubeDuckDBEngine {
           name: table,
           header: true,
           detect: true,
-          dateFormat: 'YYYY-MM-DD',
-          timestampFormat: 'YYYY-MM-DD hh:mm:ss[.zzzzzzzzz][+-TT[:tt]]', // make sure Date is not auto-converted to timestamp
           escape: LegendDataCubeDuckDBEngine.ESCAPE_CHAR,
           quote: LegendDataCubeDuckDBEngine.QUOTE_CHAR,
         });
@@ -251,16 +252,21 @@ export class LegendDataCubeDuckDBEngine {
 
     const data = result.toArray();
     const columnNames = result.schema.fields.map((field) => field.name);
+    const columnTypesIds = result.schema.fields.map((field) => field.typeId);
     const rows = data.map((row) => {
       const tdsRow = new TDSRow();
-      tdsRow.values = columnNames.map((column) => {
+      tdsRow.values = columnNames.map((column, idx) => {
         const value = row[column] as unknown;
         // NOTE: DuckDB WASM returns ArrayBuffer for numeric value, such as for count(*)
         // so we need to convert it to number
         if (ArrayBuffer.isView(value)) {
           return row[column].valueOf() as number;
-          // BigInt is not supported by ag-grid, so we need to convert it to native number
+        } else if (columnTypesIds[idx] === Type.Date) {
+          return formatDate(new Date(Number(value)), DATE_FORMAT);
+        } else if (columnTypesIds[idx] === Type.Timestamp) {
+          return formatDate(new Date(Number(value)), DATE_TIME_FORMAT);
         } else if (typeof value === 'bigint') {
+          // BigInt is not supported by ag-grid, so we need to convert it to native number
           return Number(value);
         }
         return value as string | number | boolean | null;
