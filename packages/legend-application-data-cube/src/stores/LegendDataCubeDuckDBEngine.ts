@@ -18,6 +18,8 @@ import * as duckdb from '@duckdb/duckdb-wasm';
 import duckdb_wasm from '@duckdb/duckdb-wasm/dist/duckdb-mvp.wasm';
 import duckdb_wasm_next from '@duckdb/duckdb-wasm/dist/duckdb-eh.wasm';
 import {
+  DATE_FORMAT,
+  DATE_TIME_FORMAT,
   INTERNAL__TDSColumn,
   PRIMITIVE_TYPE,
   TDSBuilder,
@@ -28,6 +30,7 @@ import {
 import {
   assertNonNullable,
   csvStringify,
+  formatDate,
   guaranteeNonNullable,
   isNullable,
   UnsupportedOperationError,
@@ -258,17 +261,12 @@ export class LegendDataCubeDuckDBEngine {
         // so we need to convert it to number
         if (ArrayBuffer.isView(value)) {
           return row[column].valueOf() as number;
-          // BigInt is not supported by ag-grid, so we need to convert it to native number
         } else if (columnTypesIds[idx] === Type.Date) {
-          const date = new Date(Number(value));
-          const year = date.getUTCFullYear();
-          const month = String(date.getUTCMonth() + 1).padStart(2, '0'); // Months are 0-indexed, so add 1
-          const day = String(date.getUTCDate()).padStart(2, '0'); // Ensure two-digit format for day
-          return `${year}-${month}-${day}`;
+          return formatDate(new Date(Number(value)), DATE_FORMAT);
         } else if (columnTypesIds[idx] === Type.Timestamp) {
-          const date = new Date(Number(value));
-          return date.toISOString();
+          return formatDate(new Date(Number(value)), DATE_TIME_FORMAT);
         } else if (typeof value === 'bigint') {
+          // BigInt is not supported by ag-grid, so we need to convert it to native number
           return Number(value);
         }
         return value as string | number | boolean | null;
