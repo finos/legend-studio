@@ -572,6 +572,7 @@ export {
   observe_ModelData,
   observe_ModelStoreData,
   observe_DataElement,
+  observe_DataElementReference,
 } from './graph-manager/action/changeDetection/DSL_Data_ObserverHelper.js';
 export { V1_transformExternalFormatData } from './graph-manager/protocol/pure/v1/transformation/pureGraph/from/V1_DataElementTransformer.js';
 export { V1_externalFormatDataModelSchema } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DataElementSerializationHelper.js';

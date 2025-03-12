@@ -14,49 +14,40 @@
  * limitations under the License.
  */
 
-import { action, computed, makeObservable } from 'mobx';
+import { action, computed, makeObservable, observable } from 'mobx';
 import {
   type EditorStore,
   ElementEditorState,
 } from '@finos/legend-application-studio';
 import type { PackageableElement } from '@finos/legend-graph';
-import {
-  DataSpace,
-  DataSpaceExecutionContext,
-  DataSpaceElementPointer,
-  DataSpaceDiagram,
-  DataSpaceSupportEmail,
-  DataSpaceSupportCombinedInfo,
-  DataSpacePackageableElementExecutable,
-} from '@finos/legend-extension-dsl-data-space/graph';
-import { guaranteeType, uuid } from '@finos/legend-shared';
+import { DataSpace } from '@finos/legend-extension-dsl-data-space/graph';
+import { guaranteeType } from '@finos/legend-shared';
+import { DataSpaceExecutionContextState } from './DataSpaceExecutionContextState.js';
 
+export enum DATASPACE_TAB {
+  GENERAL = 'GENERAL',
+  EXECUTION_CONTEXT = 'EXECUTION_CONTEXT',
+}
 export class DataSpaceEditorState extends ElementEditorState {
-  override readonly uuid = uuid();
-
-  readonly dataSpaceElementBuilder = {
-    DataSpaceExecutionContext: DataSpaceExecutionContext,
-    DataSpaceElementPointer: DataSpaceElementPointer,
-    DataSpaceDiagram: DataSpaceDiagram,
-    DataSpaceSupportEmail: DataSpaceSupportEmail,
-    DataSpaceSupportCombinedInfo: DataSpaceSupportCombinedInfo,
-    DataSpacePackageableElementExecutable:
-      DataSpacePackageableElementExecutable,
-    isDataSpaceSupportEmail: (obj: unknown): obj is DataSpaceSupportEmail =>
-      obj instanceof DataSpaceSupportEmail,
-    isDataSpaceSupportCombinedInfo: (
-      obj: unknown,
-    ): obj is DataSpaceSupportCombinedInfo =>
-      obj instanceof DataSpaceSupportCombinedInfo,
-  };
+  executionContextState: DataSpaceExecutionContextState;
+  selectedTab: DATASPACE_TAB = DATASPACE_TAB.GENERAL;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
 
     makeObservable(this, {
+      executionContextState: observable,
+      selectedTab: observable,
       dataSpace: computed,
       reprocess: action,
+      setSelectedTab: action,
     });
+
+    this.executionContextState = new DataSpaceExecutionContextState(this);
+  }
+
+  setSelectedTab(tab: DATASPACE_TAB): void {
+    this.selectedTab = tab;
   }
 
   get dataSpace(): DataSpace {

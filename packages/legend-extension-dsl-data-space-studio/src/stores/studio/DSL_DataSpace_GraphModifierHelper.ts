@@ -15,13 +15,14 @@
  */
 
 import { action } from 'mobx';
-import type {
-  DataSpace,
-  DataSpaceExecutionContext,
-  DataSpaceElementPointer,
-  DataSpaceExecutable,
-  DataSpaceDiagram,
-  DataSpaceSupportInfo,
+import {
+  type DataSpace,
+  type DataSpaceDiagram,
+  type DataSpaceElementPointer,
+  type DataSpaceExecutable,
+  type DataSpaceExecutionContext,
+  type DataSpaceSupportInfo,
+  observe_DataSpaceExecutionContext,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import type {
   PackageableElementReference,
@@ -29,26 +30,23 @@ import type {
   PackageableRuntime,
   DataElementReference,
 } from '@finos/legend-graph';
+import { addUniqueEntry } from '@finos/legend-shared';
 
 // Basic properties
-export const set_name = action((dataSpace: DataSpace, name: string): void => {
-  dataSpace.name = name;
-});
-
-export const set_title = action(
+export const dataSpace_setTitle = action(
   (dataSpace: DataSpace, type: string | undefined): void => {
     dataSpace.title = type;
   },
 );
 
-export const set_description = action(
+export const dataSpace_setDescription = action(
   (dataSpace: DataSpace, content: string | undefined): void => {
     dataSpace.description = content;
   },
 );
 
 // Array properties
-export const set_executionContexts = action(
+export const dataSpace_setExecutionContexts = action(
   (
     dataSpace: DataSpace,
     executionContexts: DataSpaceExecutionContext[],
@@ -57,7 +55,7 @@ export const set_executionContexts = action(
   },
 );
 
-export const set_defaultExecutionContext = action(
+export const dataSpace_setDefaultExecutionContext = action(
   (
     dataSpace: DataSpace,
     defaultExecutionContext: DataSpaceExecutionContext,
@@ -66,7 +64,7 @@ export const set_defaultExecutionContext = action(
   },
 );
 
-export const set_elements = action(
+export const dataSpace_setElements = action(
   (
     dataSpace: DataSpace,
     elements: DataSpaceElementPointer[] | undefined,
@@ -75,7 +73,7 @@ export const set_elements = action(
   },
 );
 
-export const set_executables = action(
+export const dataSpace_setExecutables = action(
   (
     dataSpace: DataSpace,
     executables: DataSpaceExecutable[] | undefined,
@@ -84,13 +82,13 @@ export const set_executables = action(
   },
 );
 
-export const set_diagrams = action(
+export const dataSpace_setDiagrams = action(
   (dataSpace: DataSpace, diagrams: DataSpaceDiagram[] | undefined): void => {
     dataSpace.diagrams = diagrams;
   },
 );
 
-export const set_supportInfo = action(
+export const dataSpace_setSupportInfo = action(
   (
     dataSpace: DataSpace,
     supportInfo: DataSpaceSupportInfo | undefined,
@@ -100,19 +98,28 @@ export const set_supportInfo = action(
 );
 
 // Array item management
-export const add_executionContext = action(
+export const dataSpace_addExecutionContext = action(
   (dataSpace: DataSpace, executionContext: DataSpaceExecutionContext): void => {
-    dataSpace.executionContexts.push(executionContext);
+    addUniqueEntry(
+      dataSpace.executionContexts,
+      observe_DataSpaceExecutionContext(executionContext),
+    );
   },
 );
 
-export const remove_executionContext = action(
-  (dataSpace: DataSpace, index: number): void => {
+export const dataSpace_removeExecutionContext = action(
+  (
+    dataSpace: DataSpace,
+    dataSpaceExecutionContext: DataSpaceExecutionContext,
+  ): void => {
+    const index = dataSpace.executionContexts.indexOf(
+      dataSpaceExecutionContext,
+    );
     dataSpace.executionContexts.splice(index, 1);
   },
 );
 
-export const add_element = action(
+export const dataSpace_addElement = action(
   (dataSpace: DataSpace, element: DataSpaceElementPointer): void => {
     if (!dataSpace.elements) {
       dataSpace.elements = [];
@@ -121,7 +128,7 @@ export const add_element = action(
   },
 );
 
-export const remove_element = action(
+export const dataSpace_removeElement = action(
   (dataSpace: DataSpace, index: number): void => {
     if (dataSpace.elements) {
       dataSpace.elements.splice(index, 1);
@@ -129,7 +136,7 @@ export const remove_element = action(
   },
 );
 
-export const add_executable = action(
+export const dataSpace_addExecutable = action(
   (dataSpace: DataSpace, executable: DataSpaceExecutable): void => {
     if (!dataSpace.executables) {
       dataSpace.executables = [];
@@ -138,7 +145,7 @@ export const add_executable = action(
   },
 );
 
-export const remove_executable = action(
+export const dataSpace_removeExecutable = action(
   (dataSpace: DataSpace, index: number): void => {
     if (dataSpace.executables) {
       dataSpace.executables.splice(index, 1);
@@ -146,7 +153,7 @@ export const remove_executable = action(
   },
 );
 
-export const add_diagram = action(
+export const dataSpace_addDiagram = action(
   (dataSpace: DataSpace, diagram: DataSpaceDiagram): void => {
     if (!dataSpace.diagrams) {
       dataSpace.diagrams = [];
@@ -155,7 +162,7 @@ export const add_diagram = action(
   },
 );
 
-export const remove_diagram = action(
+export const dataSpace_removeDiagram = action(
   (dataSpace: DataSpace, index: number): void => {
     if (dataSpace.diagrams) {
       dataSpace.diagrams.splice(index, 1);
@@ -164,13 +171,13 @@ export const remove_diagram = action(
 );
 
 // Nested object properties
-export const set_executionContext_name = action(
+export const dataSpace_setExecutionContextName = action(
   (executionContext: DataSpaceExecutionContext, name: string): void => {
     executionContext.name = name;
   },
 );
 
-export const set_executionContext_title = action(
+export const dataSpace_setExecutionContextTitle = action(
   (
     executionContext: DataSpaceExecutionContext,
     title: string | undefined,
@@ -179,7 +186,7 @@ export const set_executionContext_title = action(
   },
 );
 
-export const set_executionContext_description = action(
+export const dataSpace_setExecutionContextDescription = action(
   (
     executionContext: DataSpaceExecutionContext,
     description: string | undefined,
@@ -188,7 +195,7 @@ export const set_executionContext_description = action(
   },
 );
 
-export const set_executionContext_mapping = action(
+export const dataSpace_setExecutionContextMapping = action(
   (
     executionContext: DataSpaceExecutionContext,
     mapping: PackageableElementReference<Mapping>,
@@ -197,7 +204,7 @@ export const set_executionContext_mapping = action(
   },
 );
 
-export const set_executionContext_defaultRuntime = action(
+export const dataSpace_setExecutionContextDefaultRuntime = action(
   (
     executionContext: DataSpaceExecutionContext,
     defaultRuntime: PackageableElementReference<PackageableRuntime>,
@@ -206,7 +213,7 @@ export const set_executionContext_defaultRuntime = action(
   },
 );
 
-export const set_executionContext_testData = action(
+export const dataSpace_setExecutionContextTestData = action(
   (
     executionContext: DataSpaceExecutionContext,
     testData: DataElementReference | undefined,

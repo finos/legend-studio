@@ -38,7 +38,10 @@ export * from './protocol/pure/DSL_DataSpace_PureGraphManagerExtension.js';
 export * from '../stores/shared/DataSpaceInfo.js';
 export * from '../stores/query-builder/DataSpaceQueryBuilderState.js';
 
-export { observe_DataSpace } from '../graph-manager/action/changeDetection/DSL_DataSpace_ObserverHelper.js';
+export {
+  observe_DataSpace,
+  observe_DataSpaceExecutionContext,
+} from '../graph-manager/action/changeDetection/DSL_DataSpace_ObserverHelper.js';
 export {
   V1_DataSpaceExecutionContext,
   V1_DataSpace,
