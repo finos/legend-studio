@@ -37,6 +37,8 @@ import {
   dataSpace_removeExecutable,
   dataSpace_setDefaultExecutionContext,
   dataSpace_setDescription,
+  dataSpace_setDiagramDescription,
+  dataSpace_setDiagramTitle,
   dataSpace_setElementExclude,
   dataSpace_setSupportInfo,
   dataSpace_setTitle,
@@ -50,6 +52,7 @@ import {
   DataSpaceSupportCombinedInfo,
   DataSpaceSupportEmail,
 } from '@finos/legend-extension-dsl-data-space/graph';
+import { Diagram } from '@finos/legend-extension-dsl-diagram/graph';
 import { PackageableElementExplicitReference } from '@finos/legend-graph';
 
 export const DataSpaceGeneralEditor = observer(() => {
@@ -116,14 +119,36 @@ export const DataSpaceGeneralEditor = observer(() => {
   };
 
   // Diagrams handlers
-  const handleAddDiagram = (): void => {
-    const newDiagram = new DataSpaceDiagram();
-    newDiagram.title = `Diagram ${dataSpace.diagrams?.length ?? 0 + 1}`;
-    dataSpace_addDiagram(dataSpace, newDiagram);
+  const handleAddDiagram = (option: {
+    label: string;
+    value: Diagram;
+  }): void => {
+    if (option && option.value && typeof option.value === 'object') {
+      const diagramValue = option.value;
+      const newDiagram = new DataSpaceDiagram();
+      newDiagram.title = diagramValue.name;
+      newDiagram.diagram =
+        PackageableElementExplicitReference.create(diagramValue);
+      dataSpace_addDiagram(dataSpace, newDiagram);
+    }
   };
 
-  const handleRemoveDiagram = (index: number): void => {
-    dataSpace_removeDiagram(dataSpace, index);
+  const handleRemoveDiagram = (diagram: DataSpaceDiagram): void => {
+    dataSpace_removeDiagram(dataSpace, diagram);
+  };
+
+  const handleDiagramTitleChange = (
+    diagram: DataSpaceDiagram,
+    value: string | undefined,
+  ): void => {
+    dataSpace_setDiagramTitle(diagram, value ?? '');
+  };
+
+  const handleDiagramDescriptionChange = (
+    diagram: DataSpaceDiagram,
+    value: string | undefined,
+  ): void => {
+    dataSpace_setDiagramDescription(diagram, value);
   };
 
   // SupportInfo handlers
@@ -311,47 +336,73 @@ export const DataSpaceGeneralEditor = observer(() => {
           </PanelFormListItems> */}
 
         {/* Diagrams Section */}
-        {/* <PanelFormListItems title="Diagrams">
-            {formElement.diagrams?.map((diagram, index) => (
+        <PanelFormSection>
+          <PanelFormListItems
+            title="Diagrams"
+            prompt="Add diagrams to include in this Data Space. Set a title and description for each diagram."
+          >
+            {dataSpace.diagrams?.map((diagram) => (
               <div
-                key={index}
+                key={diagram.diagram.value.path}
                 className="panel__content__form__section__list__item"
               >
-                <PanelFormTextField
-                  name={`Diagram ${index + 1} Title`}
-                  value={diagram.title}
-                  update={(value) => {
-                    if (formElement.diagrams && formElement.diagrams[index]) {
-                      formElement.diagrams[index].title = value ?? '';
-                    }
-                  }}
-                  placeholder="Enter title"
-                />
-                <PanelFormTextField
-                  name={`Diagram ${index + 1} Description`}
-                  value={diagram.description ?? ''}
-                  update={(value) => {
-                    if (formElement.diagrams && formElement.diagrams[index]) {
-                      formElement.diagrams[index].description = value;
-                    }
-                  }}
-                  placeholder="Enter description"
-                />
-                <button
-                  className="panel__content__form__section__button"
-                  onClick={() => handleRemoveDiagram(index)}
-                >
-                  Remove
-                </button>
+                <div className="panel__content__form__section__list__item__content">
+                  <div className="panel__content__form__section__list__item__content__form">
+                    <PanelFormTextField
+                      name="Title"
+                      value={diagram.title}
+                      update={(value) =>
+                        handleDiagramTitleChange(diagram, value)
+                      }
+                      placeholder="Enter title"
+                    />
+                    <PanelFormTextField
+                      name="Description"
+                      value={diagram.description ?? ''}
+                      update={(value) =>
+                        handleDiagramDescriptionChange(diagram, value)
+                      }
+                      placeholder="Enter description"
+                    />
+                  </div>
+                  <div className="panel__content__form__section__list__item__content__actions">
+                    {!dataSpaceState.isReadOnly && (
+                      <button
+                        className="panel__content__form__section__list__item__content__actions__btn"
+                        onClick={() => handleRemoveDiagram(diagram)}
+                        tabIndex={-1}
+                        title="Remove diagram"
+                      >
+                        <TrashIcon />
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
-            )) ?? <div>No diagrams defined</div>}
-            <button
-              className="panel__content__form__section__button"
-              onClick={handleAddDiagram}
-            >
-              Add Diagram
-            </button>
-          </PanelFormListItems> */}
+            ))}
+            {!dataSpaceState.isReadOnly && (
+              <div className="panel__content__form__section__list__add">
+                <div className="panel__content__form__section__list__add__input">
+                  <CustomSelectorInput
+                    options={dataSpaceState.getDiagramOptions()}
+                    onChange={handleAddDiagram}
+                    placeholder="Select a diagram to add..."
+                    darkMode={true}
+                  />
+                </div>
+                <div className="panel__content__form__section__list__add__actions">
+                  <button
+                    className="panel__content__form__section__list__add__actions__btn"
+                    tabIndex={-1}
+                    title="Add diagram"
+                  >
+                    <PlusIcon />
+                  </button>
+                </div>
+              </div>
+            )}
+          </PanelFormListItems>
+        </PanelFormSection>
 
         {/* Support Info Section */}
         {/* <PanelFormListItems title="Support Information">

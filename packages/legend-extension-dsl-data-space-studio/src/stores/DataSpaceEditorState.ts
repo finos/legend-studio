@@ -25,7 +25,9 @@ import {
   Class,
   Enumeration,
   Association,
+  PackageableElementExplicitReference,
 } from '@finos/legend-graph';
+import { Diagram } from '@finos/legend-extension-dsl-diagram/graph';
 import {
   DataSpace,
   type DataSpaceElement,
@@ -45,6 +47,7 @@ export class DataSpaceEditorState extends ElementEditorState {
       reprocess: action,
       isValidDataSpaceElement: action,
       getDataSpaceElementOptions: action,
+      getDiagramOptions: action,
     });
 
     this.executionContextState = new DataSpaceExecutionContextState(this);
@@ -72,6 +75,20 @@ export class DataSpaceEditorState extends ElementEditorState {
       .map((element) => ({
         label: element.path,
         value: element,
+      }));
+  }
+
+  getDiagramOptions(): { label: string; value: Diagram }[] {
+    const currentDiagrams =
+      this.dataSpace.diagrams?.map(
+        (diagramPointer) => diagramPointer.diagram.value,
+      ) ?? [];
+    return this.editorStore.graphManagerState.graph.allOwnElements
+      .filter((element): element is Diagram => element instanceof Diagram)
+      .filter((diagram) => !currentDiagrams.includes(diagram))
+      .map((diagram) => ({
+        label: diagram.path,
+        value: diagram,
       }));
   }
 

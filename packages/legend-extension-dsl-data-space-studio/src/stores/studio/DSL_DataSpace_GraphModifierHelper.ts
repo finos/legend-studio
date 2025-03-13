@@ -22,6 +22,7 @@ import {
   type DataSpaceExecutable,
   type DataSpaceExecutionContext,
   type DataSpaceSupportInfo,
+  observe_DataSpaceDiagram,
   observe_DataSpaceElementPointer,
   observe_DataSpaceExecutionContext,
 } from '@finos/legend-extension-dsl-data-space/graph';
@@ -169,15 +170,30 @@ export const dataSpace_addDiagram = action(
     if (!dataSpace.diagrams) {
       dataSpace.diagrams = [];
     }
-    dataSpace.diagrams.push(diagram);
+    dataSpace.diagrams.push(observe_DataSpaceDiagram(diagram));
   },
 );
 
 export const dataSpace_removeDiagram = action(
-  (dataSpace: DataSpace, index: number): void => {
+  (dataSpace: DataSpace, diagram: DataSpaceDiagram): void => {
     if (dataSpace.diagrams) {
-      dataSpace.diagrams.splice(index, 1);
+      const index = dataSpace.diagrams.indexOf(diagram);
+      if (index !== -1) {
+        dataSpace.diagrams.splice(index, 1);
+      }
     }
+  },
+);
+
+export const dataSpace_setDiagramTitle = action(
+  (diagram: DataSpaceDiagram, title: string): void => {
+    diagram.title = title;
+  },
+);
+
+export const dataSpace_setDiagramDescription = action(
+  (diagram: DataSpaceDiagram, description: string | undefined): void => {
+    diagram.description = description;
   },
 );
 
