@@ -20,8 +20,12 @@ import type { Database } from './Database.js';
 import type { Table } from './Table.js';
 import type { View } from './View.js';
 import type { TabularFunction } from './TabularFunction.js';
+import type { StereotypeReference } from '../../../domain/StereotypeReference.js';
+import type { TaggedValue } from '../../../domain/TaggedValue.js';
 
 export class Schema implements Hashable {
+  stereotypes: StereotypeReference[] = [];
+  taggedValues: TaggedValue[] = [];
   readonly _OWNER: Database;
 
   name: string;
@@ -41,6 +45,8 @@ export class Schema implements Hashable {
       hashArray(this.tables),
       hashArray(this.views),
       hashArray(this.tabularFunctions),
+      hashArray(this.stereotypes.map((val) => val.pointerHashCode)),
+      hashArray(this.taggedValues),
     ]);
   }
 }

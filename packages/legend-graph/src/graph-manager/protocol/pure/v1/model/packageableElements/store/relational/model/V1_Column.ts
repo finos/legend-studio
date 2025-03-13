@@ -17,11 +17,15 @@
 import { CORE_HASH_STRUCTURE } from '../../../../../../../../../graph/Core_HashUtils.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import type { V1_RelationalDataType } from './V1_RelationalDataType.js';
+import type { V1_StereotypePtr } from '../../../domain/V1_StereotypePtr.js';
+import type { V1_TaggedValue } from '../../../domain/V1_TaggedValue.js';
 
 export class V1_Column implements Hashable {
   name!: string;
   nullable!: boolean;
   type!: V1_RelationalDataType;
+  stereotypes: V1_StereotypePtr[] = [];
+  taggedValues: V1_TaggedValue[] = [];
 
   get hashCode(): string {
     return hashArray([
@@ -29,6 +33,8 @@ export class V1_Column implements Hashable {
       this.name,
       this.nullable.toString(),
       this.type,
+      hashArray(this.stereotypes),
+      hashArray(this.taggedValues),
     ]);
   }
 }

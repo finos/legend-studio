@@ -20,8 +20,10 @@ import { NamedRelation } from './RelationalOperationElement.js';
 import type { Schema } from './Schema.js';
 import type { Column } from './Column.js';
 import type { Milestoning } from './milestoning/Milestoning.js';
+// NamedRelation already extends RelationalOperationElement which implements AnnotatedElement
 
 export class Table extends NamedRelation implements Hashable {
+  // NamedRelation already extends RelationalOperationElement which extends AnnotatedElement
   schema!: Schema;
   primaryKey: Column[] = [];
   milestoning: Milestoning[] = [];
@@ -39,6 +41,8 @@ export class Table extends NamedRelation implements Hashable {
       hashArray(this.columns),
       hashArray(this.primaryKey.map((e) => e.name)),
       hashArray(this.milestoning),
+      hashArray(this.stereotypes.map((val) => val.pointerHashCode)),
+      hashArray(this.taggedValues),
     ]);
   }
 }

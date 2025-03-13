@@ -18,12 +18,16 @@ import { CORE_HASH_STRUCTURE } from '../../../../../../../../../graph/Core_HashU
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import type { V1_Column } from './V1_Column.js';
 import type { V1_Milestoning } from './milestoning/V1_Milestoning.js';
+import type { V1_StereotypePtr } from '../../../domain/V1_StereotypePtr.js';
+import type { V1_TaggedValue } from '../../../domain/V1_TaggedValue.js';
 
 export class V1_Table implements Hashable {
   name!: string;
   columns: V1_Column[] = [];
   primaryKey: string[] = [];
   milestoning: V1_Milestoning[] = [];
+  stereotypes: V1_StereotypePtr[] = [];
+  taggedValues: V1_TaggedValue[] = [];
 
   get hashCode(): string {
     return hashArray([
@@ -32,6 +36,8 @@ export class V1_Table implements Hashable {
       hashArray(this.columns),
       hashArray(this.primaryKey),
       hashArray(this.milestoning),
+      hashArray(this.stereotypes),
+      hashArray(this.taggedValues),
     ]);
   }
 }
