@@ -22,7 +22,6 @@ import {
   observe_StereotypeReference,
   observe_TaggedValue,
   skipObserved,
-  skipObservedWithContext,
 } from '@finos/legend-graph';
 import { makeObservable, override, observable, computed } from 'mobx';
 import {
@@ -191,8 +190,8 @@ export const observe_DataSpaceSupportInfo = (
   return metamodel;
 };
 
-export const observe_DataSpace = skipObservedWithContext(
-  (metamodel: DataSpace, context): DataSpace => {
+export const observe_DataSpace = skipObserved(
+  (metamodel: DataSpace): DataSpace => {
     observe_Abstract_PackageableElement(metamodel);
 
     makeObservable<DataSpace, '_elementHashCode'>(metamodel, {
