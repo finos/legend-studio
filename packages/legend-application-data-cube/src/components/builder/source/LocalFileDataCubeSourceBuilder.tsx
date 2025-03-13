@@ -18,10 +18,17 @@ import { observer } from 'mobx-react-lite';
 import type { LocalFileDataCubeSourceBuilderState } from '../../../stores/builder/source/LocalFileDataCubeSourceBuilderState.js';
 import { AlertType, FormAlert, FormCodeEditor } from '@finos/legend-data-cube';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
+import { useLegendDataCubeBuilderStore } from '../LegendDataCubeBuilderStoreProvider.js';
+import { useEffect } from 'react';
 
 export const LocalFileDataCubeSourceBuilder = observer(
   (props: { sourceBuilder: LocalFileDataCubeSourceBuilderState }) => {
     const { sourceBuilder } = props;
+    const store = useLegendDataCubeBuilderStore();
+
+    useEffect(() => {
+      sourceBuilder.reset();
+    }, [sourceBuilder]);
 
     return (
       <div className="h-full w-full p-2">
@@ -36,11 +43,26 @@ export const LocalFileDataCubeSourceBuilder = observer(
           <input
             type="file"
             onChange={(event) => {
-              sourceBuilder.processFile(event.target.files?.[0]);
+              sourceBuilder
+                .processFile(event.target.files?.[0])
+                .catch((error) =>
+                  store.alertService.alertUnhandledError(error),
+                );
             }}
             className="w-full"
           />
         </div>
+        {sourceBuilder.processState.hasFailed && (
+          <div className="mt-2 h-40">
+            <FormCodeEditor
+              value={`ERR: Failed to process file.`}
+              language={CODE_EDITOR_LANGUAGE.TEXT}
+              isReadOnly={true}
+              hidePadding={true}
+              hideActionBar={true}
+            />
+          </div>
+        )}
         {sourceBuilder.previewText !== undefined && (
           <div className="mt-2 h-40">
             <FormCodeEditor

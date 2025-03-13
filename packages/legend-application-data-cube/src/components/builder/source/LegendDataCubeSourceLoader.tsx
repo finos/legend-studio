@@ -15,7 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { FormButton } from '@finos/legend-data-cube';
+import { FormButton, FormDropdownMenuTrigger } from '@finos/legend-data-cube';
 import { useLegendDataCubeBuilderStore } from '../LegendDataCubeBuilderStoreProvider.js';
 import { LocalFileDataCubeSourceLoaderState } from '../../../stores/builder/source/LocalFileDataCubeSourceLoaderState.js';
 import { LocalFileDataCubePartialSourceLoader } from './LocalFileDataCubeSourceLoader.js';
@@ -64,13 +64,22 @@ export const LegendDataCubeSourceLoader = observer(
                   </div>
                 </div>
               </div>
-              <div className="flex h-10 w-full items-center">
+              <div className="mt-2 h-[1px] w-full bg-neutral-200" />
+              <div className="flex h-10 w-full items-center py-2">
                 <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
                   Source Type:
-                  <div className="pl-3">{state.label}</div>
                 </div>
+                <FormDropdownMenuTrigger
+                  className="w-80"
+                  onClick={() => {}}
+                  open={false}
+                  disabled={true}
+                >
+                  <div className="flex items-center">{state.label}</div>
+                </FormDropdownMenuTrigger>
               </div>
-              <div className="h-[calc(100%_-_41px)] w-full overflow-auto">
+              <div className="mb-2 h-[1px] w-full bg-neutral-200" />
+              <div className="h-[calc(100%_-_98px)] w-full overflow-auto">
                 {state instanceof LocalFileDataCubeSourceLoaderState && (
                   <LocalFileDataCubePartialSourceLoader
                     partialSourceLoader={state}
@@ -81,7 +90,14 @@ export const LegendDataCubeSourceLoader = observer(
           </div>
         </div>
         <div className="flex h-10 items-center justify-end px-2">
-          <FormButton onClick={state.display.onClose}>Cancel</FormButton>
+          <FormButton
+            onClick={() => {
+              state.display.onClose?.();
+              state.display.close();
+            }}
+          >
+            Cancel
+          </FormButton>
           <FormButton
             className="ml-2"
             disabled={!state.isValid || state.finalizeState.isInProgress}
