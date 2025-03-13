@@ -62,8 +62,13 @@ export class DataSpaceEditorState extends ElementEditorState {
   }
 
   getDataSpaceElementOptions(): { label: string; value: DataSpaceElement }[] {
+    const currentElements =
+      this.dataSpace.elements?.map(
+        (elementPointer) => elementPointer.element.value,
+      ) ?? [];
     return this.editorStore.graphManagerState.graph.allOwnElements
       .filter((element) => this.isValidDataSpaceElement(element))
+      .filter((element) => !currentElements.includes(element))
       .map((element) => ({
         label: element.path,
         value: element,
