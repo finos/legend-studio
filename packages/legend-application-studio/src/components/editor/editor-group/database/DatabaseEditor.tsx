@@ -399,7 +399,7 @@ export const DatabaseEditor = observer(
           <CreateColumnModal editorState={editorState} />
         )}
         <div className="database-editor__content">
-          <ResizablePanelGroup orientation="horizontal">
+          <ResizablePanelGroup orientation="vertical">
             <ResizablePanel minSize={200}>
               <div className="database-editor__schemas-panel">
                 <div className="database-editor__panel-header">
