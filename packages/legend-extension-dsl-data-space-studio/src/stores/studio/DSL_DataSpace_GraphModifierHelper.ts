@@ -22,6 +22,7 @@ import {
   type DataSpaceExecutable,
   type DataSpaceExecutionContext,
   type DataSpaceSupportInfo,
+  observe_DataSpaceElementPointer,
   observe_DataSpaceExecutionContext,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import type {
@@ -124,27 +125,25 @@ export const dataSpace_addElement = action(
     if (!dataSpace.elements) {
       dataSpace.elements = [];
     }
-    dataSpace.elements.push(element);
+    addUniqueEntry(
+      dataSpace.elements,
+      observe_DataSpaceElementPointer(element),
+    );
   },
 );
 
 export const dataSpace_removeElement = action(
-  (dataSpace: DataSpace, index: number): void => {
+  (dataSpace: DataSpace, element: DataSpaceElementPointer): void => {
     if (dataSpace.elements) {
+      const index = dataSpace.elements.indexOf(element);
       dataSpace.elements.splice(index, 1);
     }
   },
 );
 
 export const dataSpace_setElementExclude = action(
-  'DATA_SPACE_SET_ELEMENT_EXCLUDE',
-  (dataSpace: DataSpace, index: number, exclude: boolean | undefined): void => {
-    if (dataSpace.elements && index >= 0 && index < dataSpace.elements.length) {
-      const element = dataSpace.elements[index];
-      if (element) {
-        element.exclude = exclude;
-      }
-    }
+  (element: DataSpaceElementPointer, exclude: boolean): void => {
+    element.exclude = exclude;
   },
 );
 

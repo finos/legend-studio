@@ -42,6 +42,7 @@ import {
   dataSpace_setTitle,
 } from '../stores/studio/DSL_DataSpace_GraphModifierHelper.js';
 import {
+  type DataSpaceElement,
   type DataSpaceExecutionContext,
   DataSpaceDiagram,
   DataSpaceElementPointer,
@@ -81,25 +82,26 @@ export const DataSpaceGeneralEditor = observer(() => {
   // Elements handlers
   const handleAddElement = (option: {
     label: string;
-    value: unknown;
+    value: DataSpaceElement;
   }): void => {
     if (option && option.value && typeof option.value === 'object') {
       const element = option.value;
       const elementPointer = new DataSpaceElementPointer();
-      // We'll set the element reference in the action
+      elementPointer.element =
+        PackageableElementExplicitReference.create(element);
       dataSpace_addElement(dataSpace, elementPointer);
     }
   };
 
-  const handleRemoveElement = (index: number): void => {
-    dataSpace_removeElement(dataSpace, index);
+  const handleRemoveElement = (element: DataSpaceElementPointer): void => {
+    dataSpace_removeElement(dataSpace, element);
   };
 
   const handleElementExcludeChange = (
-    index: number,
+    element: DataSpaceElementPointer,
     event: React.ChangeEvent<HTMLInputElement>,
   ): void => {
-    dataSpace_setElementExclude(dataSpace, index, event.target.checked);
+    dataSpace_setElementExclude(element, event.target.checked);
   };
 
   // Executables handlers
@@ -196,7 +198,7 @@ export const DataSpaceGeneralEditor = observer(() => {
           >
             {dataSpace.elements?.map((element, index) => (
               <div
-                key={index}
+                key={element.element.value.path}
                 className="panel__content__form__section__list__item"
               >
                 <div className="panel__content__form__section__list__item__content">
@@ -208,7 +210,7 @@ export const DataSpaceGeneralEditor = observer(() => {
                       disabled={dataSpaceState.isReadOnly}
                       checked={element.exclude ?? false}
                       onChange={(event) =>
-                        handleElementExcludeChange(index, event)
+                        handleElementExcludeChange(element, event)
                       }
                       size="small"
                       sx={{
@@ -224,7 +226,7 @@ export const DataSpaceGeneralEditor = observer(() => {
                     {!dataSpaceState.isReadOnly && (
                       <button
                         className="panel__content__form__section__list__item__content__actions__btn"
-                        onClick={() => handleRemoveElement(index)}
+                        onClick={() => handleRemoveElement(element)}
                         tabIndex={-1}
                         title="Remove element"
                       >

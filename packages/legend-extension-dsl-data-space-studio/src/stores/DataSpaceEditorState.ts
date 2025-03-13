@@ -25,7 +25,6 @@ import {
   Class,
   Enumeration,
   Association,
-  PackageableElementExplicitReference,
 } from '@finos/legend-graph';
 import {
   DataSpace,
@@ -51,7 +50,9 @@ export class DataSpaceEditorState extends ElementEditorState {
     this.executionContextState = new DataSpaceExecutionContextState(this);
   }
 
-  isValidDataSpaceElement(element: PackageableElement): boolean {
+  isValidDataSpaceElement(
+    element: PackageableElement,
+  ): element is DataSpaceElement {
     return (
       element instanceof Package ||
       element instanceof Class ||
@@ -60,7 +61,7 @@ export class DataSpaceEditorState extends ElementEditorState {
     );
   }
 
-  getDataSpaceElementOptions(): { label: string; value: PackageableElement }[] {
+  getDataSpaceElementOptions(): { label: string; value: DataSpaceElement }[] {
     return this.editorStore.graphManagerState.graph.allOwnElements
       .filter((element) => this.isValidDataSpaceElement(element))
       .map((element) => ({
