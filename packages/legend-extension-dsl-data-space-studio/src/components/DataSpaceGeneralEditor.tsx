@@ -21,16 +21,8 @@ import {
   PanelForm,
   PanelFormSection,
   PanelFormTextField,
-  type SelectOption,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useRef, useState } from 'react';
-import type {
-  OnChangeValue,
-  ActionMeta,
-  PropsValue,
-  Props,
-} from 'react-select';
 import { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
 import {
   dataSpace_addDiagram,
@@ -53,61 +45,6 @@ import {
   DataSpaceSupportEmail,
 } from '@finos/legend-extension-dsl-data-space/graph';
 
-import { getObjectIdentityKey, toJSForReact } from '../utils/ReactMobXUtils.js';
-
-// Create a MobX-aware wrapper for CustomSelectorInput that handles reference changes
-const MobXAwareCustomSelectorInput = observer(
-  <Option extends SelectOption, IsMulti extends boolean = false>(props: {
-    options: readonly Option[];
-    onChange: (option: any) => void;
-    value?: any;
-    className?: string;
-    allowCreating?: boolean;
-    noMatchMessage?: string;
-    disabled?: boolean;
-    darkMode?: boolean;
-    hasError?: boolean;
-    optionCustomization?: { rowHeight?: number };
-    onPaste?: React.ClipboardEventHandler<HTMLInputElement>;
-    inputName?: string;
-    placeholder?: string;
-    components?: Record<string, React.ComponentType<any>>;
-    inputRef?: React.Ref<any>;
-  }) => {
-    // Force re-render when value reference changes
-    const valueRef = useRef(props.value);
-    const [modeChangeCounter, setModeChangeCounter] = useState(0);
-
-    // Listen for mode changes
-    useEffect(() => {
-      const handleModeChange = (): void => {
-        setModeChangeCounter((prev) => prev + 1);
-      };
-
-      // Subscribe to mode change events if available
-      if (window.addEventListener) {
-        window.addEventListener('editor-mode-changed', handleModeChange);
-
-        return () => {
-          window.removeEventListener('editor-mode-changed', handleModeChange);
-        };
-      }
-      return undefined;
-    }, []);
-
-    // Force re-render when value reference changes
-    useEffect(() => {
-      if (valueRef.current !== props.value) {
-        valueRef.current = props.value;
-        setModeChangeCounter((prev) => prev + 1);
-      }
-    }, [props.value]);
-
-    return (
-      <CustomSelectorInput {...props} key={`mobx-aware-${modeChangeCounter}`} />
-    );
-  },
-);
 export const DataSpaceGeneralEditor = observer(() => {
   const editorStore = useEditorStore();
 
@@ -215,17 +152,20 @@ export const DataSpaceGeneralEditor = observer(() => {
           <div className="panel__content__form__section__header__prompt">
             Select the default execution context for this Data Space.
           </div>
-          <MobXAwareCustomSelectorInput
+          <CustomSelectorInput
             options={dataSpace.executionContexts.map((context) => ({
               label: context.name,
               value: context,
             }))}
-            onChange={(option) => handleDefaultExecutionContextChange(option)}
+            onChange={(option: { label: string; value: unknown }) =>
+              handleDefaultExecutionContextChange(option)
+            }
             value={{
               label: dataSpace.defaultExecutionContext.name,
               value: dataSpace.defaultExecutionContext,
             }}
             darkMode={true}
+            key={`default-execution-context-${dataSpace.defaultExecutionContext.name}`}
           />
         </PanelFormSection>
         {/* Elements Section */}
