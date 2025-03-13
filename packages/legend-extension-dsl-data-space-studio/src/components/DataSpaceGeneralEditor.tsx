@@ -16,11 +16,15 @@
 
 import { useEditorStore } from '@finos/legend-application-studio';
 import {
+  Checkbox,
   CustomSelectorInput,
   PanelContentLists,
   PanelForm,
+  PanelFormListItems,
   PanelFormSection,
   PanelFormTextField,
+  PlusIcon,
+  TrashIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
@@ -33,6 +37,7 @@ import {
   dataSpace_removeExecutable,
   dataSpace_setDefaultExecutionContext,
   dataSpace_setDescription,
+  dataSpace_setElementExclude,
   dataSpace_setSupportInfo,
   dataSpace_setTitle,
 } from '../stores/studio/DSL_DataSpace_GraphModifierHelper.js';
@@ -44,6 +49,7 @@ import {
   DataSpaceSupportCombinedInfo,
   DataSpaceSupportEmail,
 } from '@finos/legend-extension-dsl-data-space/graph';
+import { PackageableElementExplicitReference } from '@finos/legend-graph';
 
 export const DataSpaceGeneralEditor = observer(() => {
   const editorStore = useEditorStore();
@@ -73,13 +79,27 @@ export const DataSpaceGeneralEditor = observer(() => {
   };
 
   // Elements handlers
-  const handleAddElement = (): void => {
-    const newElement = new DataSpaceElementPointer();
-    dataSpace_addElement(dataSpace, newElement);
+  const handleAddElement = (option: {
+    label: string;
+    value: unknown;
+  }): void => {
+    if (option && option.value && typeof option.value === 'object') {
+      const element = option.value;
+      const elementPointer = new DataSpaceElementPointer();
+      // We'll set the element reference in the action
+      dataSpace_addElement(dataSpace, elementPointer);
+    }
   };
 
   const handleRemoveElement = (index: number): void => {
     dataSpace_removeElement(dataSpace, index);
+  };
+
+  const handleElementExcludeChange = (
+    index: number,
+    event: React.ChangeEvent<HTMLInputElement>,
+  ): void => {
+    dataSpace_setElementExclude(dataSpace, index, event.target.checked);
   };
 
   // Executables handlers
@@ -169,48 +189,75 @@ export const DataSpaceGeneralEditor = observer(() => {
           />
         </PanelFormSection>
         {/* Elements Section */}
-        {/* <PanelFormListItems title="Elements">
-            {formElement.elements?.map((element, index) => (
+        <PanelFormSection>
+          <PanelFormListItems
+            title="Elements"
+            prompt="Add elements to include in this Data Space. Use the exclude checkbox to exclude elements."
+          >
+            {dataSpace.elements?.map((element, index) => (
               <div
                 key={index}
                 className="panel__content__form__section__list__item"
               >
-                <div className="panel__content__form__section__header__label">
-                  Element {index + 1}
-                </div>
-                <div className="panel__content__form__section__checkbox">
-                  <label>
-                    <input
-                      type="checkbox"
+                <div className="panel__content__form__section__list__item__content">
+                  <div className="panel__content__form__section__list__item__content__label">
+                    {element.element?.value?.path ?? 'Unknown Element'}
+                  </div>
+                  <div className="panel__content__form__section__list__item__content__actions">
+                    <Checkbox
+                      disabled={dataSpaceState.isReadOnly}
                       checked={element.exclude ?? false}
-                      onChange={(e) => {
-                        if (
-                          formElement.elements &&
-                          formElement.elements[index]
-                        ) {
-                          formElement.elements[index].exclude =
-                            e.target.checked;
-                        }
+                      onChange={(event) =>
+                        handleElementExcludeChange(index, event)
+                      }
+                      size="small"
+                      sx={{
+                        color: 'var(--color-light-grey-200)',
+                        '&.Mui-checked': {
+                          color: 'var(--color-light-grey-200)',
+                        },
                       }}
                     />
-                    Exclude
-                  </label>
+                    <span className="panel__content__form__section__list__item__content__actions__label">
+                      Exclude
+                    </span>
+                    {!dataSpaceState.isReadOnly && (
+                      <button
+                        className="panel__content__form__section__list__item__content__actions__btn"
+                        onClick={() => handleRemoveElement(index)}
+                        tabIndex={-1}
+                        title="Remove element"
+                      >
+                        <TrashIcon />
+                      </button>
+                    )}
+                  </div>
                 </div>
-                <button
-                  className="panel__content__form__section__button"
-                  onClick={() => handleRemoveElement(index)}
-                >
-                  Remove
-                </button>
               </div>
-            )) ?? <div>No elements defined</div>}
-            <button
-              className="panel__content__form__section__button"
-              onClick={handleAddElement}
-            >
-              Add Element
-            </button>
-          </PanelFormListItems> */}
+            ))}
+            {!dataSpaceState.isReadOnly && (
+              <div className="panel__content__form__section__list__add">
+                <div className="panel__content__form__section__list__add__input">
+                  <CustomSelectorInput
+                    options={dataSpaceState.getDataSpaceElementOptions()}
+                    onChange={handleAddElement}
+                    placeholder="Select an element to add..."
+                    darkMode={true}
+                  />
+                </div>
+                <div className="panel__content__form__section__list__add__actions">
+                  <button
+                    className="panel__content__form__section__list__add__actions__btn"
+                    tabIndex={-1}
+                    title="Add element"
+                  >
+                    <PlusIcon />
+                  </button>
+                </div>
+              </div>
+            )}
+          </PanelFormListItems>
+        </PanelFormSection>
 
         {/* Executables Section */}
         {/* <PanelFormListItems title="Executables">

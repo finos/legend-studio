@@ -37,3 +37,83 @@
     }
   }
 }
+
+.panel__content__form__section__list {
+  &__item {
+    background-color: var(--color-dark-grey-85);
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    border-radius: 3px;
+
+    &__content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      &__label {
+        color: var(--color-light-grey-200);
+        font-size: 1.2rem;
+      }
+
+      &__actions {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        &__label {
+          color: var(--color-light-grey-200);
+          font-size: 1.2rem;
+          margin-left: 0.5rem;
+        }
+
+        &__btn {
+          background: none;
+          border: none;
+          cursor: pointer;
+          color: var(--color-light-grey-200);
+
+          &:hover {
+            color: var(--color-light-grey-100);
+          }
+        }
+      }
+    }
+  }
+
+  &__add {
+    display: flex;
+    align-items: center;
+    margin-top: 0.5rem;
+
+    &__input {
+      flex: 1;
+    }
+
+    &__actions {
+      margin-left: 0.5rem;
+
+      &__btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--color-light-grey-200);
+
+        &:hover {
+          color: var(--color-light-grey-100);
+        }
+      }
+    }
+  }
+}
+
+.dataSpace-editor {
+  background-color: var(--color-dark-grey-85);
+
+  .panel__content {
+    background-color: var(--color-dark-grey-85);
+  }
+
+  .panel__header {
+    background-color: var(--color-dark-grey-50);
+  }
+}

@@ -19,8 +19,18 @@ import {
   type EditorStore,
   ElementEditorState,
 } from '@finos/legend-application-studio';
-import type { PackageableElement } from '@finos/legend-graph';
-import { DataSpace } from '@finos/legend-extension-dsl-data-space/graph';
+import {
+  type PackageableElement,
+  Package,
+  Class,
+  Enumeration,
+  Association,
+  PackageableElementExplicitReference,
+} from '@finos/legend-graph';
+import {
+  DataSpace,
+  type DataSpaceElement,
+} from '@finos/legend-extension-dsl-data-space/graph';
 import { guaranteeType } from '@finos/legend-shared';
 import { DataSpaceExecutionContextState } from './DataSpaceExecutionContextState.js';
 
@@ -34,9 +44,29 @@ export class DataSpaceEditorState extends ElementEditorState {
       executionContextState: observable,
       dataSpace: computed,
       reprocess: action,
+      isValidDataSpaceElement: action,
+      getDataSpaceElementOptions: action,
     });
 
     this.executionContextState = new DataSpaceExecutionContextState(this);
+  }
+
+  isValidDataSpaceElement(element: PackageableElement): boolean {
+    return (
+      element instanceof Package ||
+      element instanceof Class ||
+      element instanceof Enumeration ||
+      element instanceof Association
+    );
+  }
+
+  getDataSpaceElementOptions(): { label: string; value: PackageableElement }[] {
+    return this.editorStore.graphManagerState.graph.allOwnElements
+      .filter((element) => this.isValidDataSpaceElement(element))
+      .map((element) => ({
+        label: element.path,
+        value: element,
+      }));
   }
 
   get dataSpace(): DataSpace {

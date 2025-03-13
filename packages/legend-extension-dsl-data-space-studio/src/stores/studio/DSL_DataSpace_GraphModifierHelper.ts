@@ -136,6 +136,18 @@ export const dataSpace_removeElement = action(
   },
 );
 
+export const dataSpace_setElementExclude = action(
+  'DATA_SPACE_SET_ELEMENT_EXCLUDE',
+  (dataSpace: DataSpace, index: number, exclude: boolean | undefined): void => {
+    if (dataSpace.elements && index >= 0 && index < dataSpace.elements.length) {
+      const element = dataSpace.elements[index];
+      if (element) {
+        element.exclude = exclude;
+      }
+    }
+  },
+);
+
 export const dataSpace_addExecutable = action(
   (dataSpace: DataSpace, executable: DataSpaceExecutable): void => {
     if (!dataSpace.executables) {
