@@ -93,6 +93,21 @@
         }
       }
     }
+
+    &__form {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      margin-top: 0.5rem;
+
+      .panel__content__form__section {
+        margin-bottom: 0.5rem;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+    }
   }
 
   &__add {
