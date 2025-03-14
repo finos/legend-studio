@@ -42,6 +42,7 @@ import {
   DEFAULT_TREE_COLUMN_SORT_DIRECTION,
   DEFAULT_REPORT_NAME,
   type DataCubeQuerySortDirection,
+  DEFAULT_GRID_MODE,
 } from '../DataCubeQueryEngine.js';
 import {
   SerializationFactory,
@@ -188,6 +189,30 @@ export class DataCubePivotLayoutConfiguration {
   }
 }
 
+export class DataCubeDimensionConfiguration {
+  name!: string;
+  columns: string[] = [];
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(DataCubeDimensionConfiguration, {
+      columns: list(primitive()),
+      name: primitive(),
+    }),
+  );
+}
+
+export class DataCubeDimensionsConfiguration {
+  dimensions: DataCubeDimensionConfiguration[] = [];
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(DataCubeDimensionsConfiguration, {
+      dimensions: list(
+        usingModelSchema(DataCubeDimensionConfiguration.serialization.schema),
+      ),
+    }),
+  );
+}
+
 export class DataCubeConfiguration {
   readonly uuid = uuid();
 
@@ -198,6 +223,7 @@ export class DataCubeConfiguration {
   showHorizontalGridLines = false;
   showVerticalGridLines = true;
   gridLineColor = DEFAULT_GRID_LINE_COLOR;
+  gridMode = DEFAULT_GRID_MODE;
 
   fontFamily = DEFAULT_FONT_FAMILY;
   fontSize = DEFAULT_FONT_SIZE;
@@ -234,6 +260,7 @@ export class DataCubeConfiguration {
   pivotStatisticColumnPlacement?: DataCubeColumnPinPlacement | undefined; // unspecified -> hide the column
 
   pivotLayout = new DataCubePivotLayoutConfiguration();
+  dimensions = new DataCubeDimensionsConfiguration();
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(DataCubeConfiguration, {
@@ -247,6 +274,9 @@ export class DataCubeConfiguration {
       errorBackgroundColor: primitive(),
       errorForegroundColor: primitive(),
       description: optional(primitive()),
+      dimensions: usingModelSchema(
+        DataCubeDimensionsConfiguration.serialization.schema,
+      ),
       fontBold: primitive(),
       fontCase: optional(primitive()),
       fontFamily: primitive(),
@@ -255,6 +285,7 @@ export class DataCubeConfiguration {
       fontStrikethrough: primitive(),
       fontUnderline: optional(primitive()),
       gridLineColor: primitive(),
+      gridMode: primitive(),
       initialExpandLevel: optional(primitive()),
       name: primitive(),
       negativeBackgroundColor: primitive(),

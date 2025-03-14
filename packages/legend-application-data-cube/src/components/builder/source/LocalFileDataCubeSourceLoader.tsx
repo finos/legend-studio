@@ -18,10 +18,17 @@ import { observer } from 'mobx-react-lite';
 import { AlertType, FormAlert, FormCodeEditor } from '@finos/legend-data-cube';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import type { LocalFileDataCubeSourceLoaderState } from '../../../stores/builder/source/LocalFileDataCubeSourceLoaderState.js';
+import { useLegendDataCubeBuilderStore } from '../LegendDataCubeBuilderStoreProvider.js';
+import { useEffect } from 'react';
 
 export const LocalFileDataCubePartialSourceLoader = observer(
   (props: { partialSourceLoader: LocalFileDataCubeSourceLoaderState }) => {
     const { partialSourceLoader } = props;
+    const store = useLegendDataCubeBuilderStore();
+
+    useEffect(() => {
+      partialSourceLoader.reset();
+    }, [partialSourceLoader]);
 
     return (
       <div className="h-full w-full">
@@ -36,11 +43,26 @@ export const LocalFileDataCubePartialSourceLoader = observer(
           <input
             type="file"
             onChange={(event) => {
-              partialSourceLoader.processFile(event.target.files?.[0]);
+              partialSourceLoader
+                .processFile(event.target.files?.[0])
+                .catch((error) =>
+                  store.alertService.alertUnhandledError(error),
+                );
             }}
             className="w-full"
           />
         </div>
+        {partialSourceLoader.processState.hasFailed && (
+          <div className="mt-2 h-40">
+            <FormCodeEditor
+              value={`ERR: Failed to process file.`}
+              language={CODE_EDITOR_LANGUAGE.TEXT}
+              isReadOnly={true}
+              hidePadding={true}
+              hideActionBar={true}
+            />
+          </div>
+        )}
         {partialSourceLoader.previewText !== undefined && (
           <div className="mt-2 h-40">
             <FormCodeEditor

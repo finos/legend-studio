@@ -106,16 +106,19 @@ export class LegendDataCubeCreatorState {
         return new AdhocQueryDataCubeSourceBuilderState(
           this._application,
           this._engine,
+          this._alertService,
         );
       case LegendDataCubeSourceBuilderType.LOCAL_FILE:
         return new LocalFileDataCubeSourceBuilderState(
           this._application,
           this._engine,
+          this._alertService,
         );
       case LegendDataCubeSourceBuilderType.USER_DEFINED_FUNCTION:
         return new UserDefinedFunctionDataCubeSourceBuilderState(
           this._application,
           this._engine,
+          this._alertService,
           this._store,
         );
       default:

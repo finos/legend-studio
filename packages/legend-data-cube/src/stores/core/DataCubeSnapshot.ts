@@ -80,8 +80,8 @@ export type DataCubeSnapshotData = {
   leafExtendedColumns: DataCubeSnapshotExtendedColumn[];
   filter?: DataCubeSnapshotFilter | undefined;
   selectColumns: DataCubeColumn[];
-  groupBy?: DataCubeSnapshotGroupBy | undefined;
   pivot?: DataCubeSnapshotPivot | undefined;
+  groupBy?: DataCubeSnapshotGroupBy | undefined;
   groupExtendedColumns: DataCubeSnapshotExtendedColumn[];
   sortColumns: DataCubeSnapshotSortColumn[];
   limit: number | undefined;

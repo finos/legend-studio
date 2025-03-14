@@ -17,7 +17,10 @@
 import { type PlainObject } from '@finos/legend-shared';
 import type { LegendDataCubeApplicationStore } from '../../LegendDataCubeBaseStore.js';
 import type { LegendDataCubeDataCubeEngine } from '../../LegendDataCubeDataCubeEngine.js';
-import type { DataCubeConfiguration } from '@finos/legend-data-cube';
+import type {
+  DataCubeAlertService,
+  DataCubeConfiguration,
+} from '@finos/legend-data-cube';
 
 export enum LegendDataCubeSourceBuilderType {
   LEGEND_QUERY = 'Legend Query',
@@ -29,13 +32,16 @@ export enum LegendDataCubeSourceBuilderType {
 export abstract class LegendDataCubeSourceBuilderState {
   protected readonly _application: LegendDataCubeApplicationStore;
   protected readonly _engine: LegendDataCubeDataCubeEngine;
+  protected readonly _alertService: DataCubeAlertService;
 
   constructor(
     application: LegendDataCubeApplicationStore,
     engine: LegendDataCubeDataCubeEngine,
+    alertService: DataCubeAlertService,
   ) {
     this._application = application;
     this._engine = engine;
+    this._alertService = alertService;
   }
 
   abstract get label(): LegendDataCubeSourceBuilderType;

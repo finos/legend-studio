@@ -43,12 +43,14 @@ import { DataCubeEditorHorizontalPivotsPanelState } from './DataCubeEditorHorizo
 import { DataCubeEditorPivotLayoutPanelState } from './DataCubeEditorPivotLayoutPanelState.js';
 import { _lambda } from '../../core/DataCubeQueryBuilderUtils.js';
 import { EngineError } from '@finos/legend-graph';
+import { DataCubeEditorDimensionsPanelState } from './DataCubeEditorDimensionsPanelState.js';
 
 export enum DataCubeEditorTab {
   GENERAL_PROPERTIES = 'General Properties',
   COLUMN_PROPERTIES = 'Column Properties',
   COLUMNS = 'Columns',
   VERTICAL_PIVOTS = 'Vertical Pivots',
+  DIMENSIONS = 'Dimensions',
   HORIZONTAL_PIVOTS = 'Horizontal Pivots',
   SORTS = 'Sorts',
 }
@@ -74,6 +76,7 @@ export class DataCubeEditorState extends DataCubeSnapshotController {
   readonly columns: DataCubeEditorColumnsPanelState;
   readonly horizontalPivots: DataCubeEditorHorizontalPivotsPanelState;
   readonly verticalPivots: DataCubeEditorVerticalPivotsPanelState;
+  readonly dimensions: DataCubeEditorDimensionsPanelState;
   readonly sorts: DataCubeEditorSortsPanelState;
 
   currentTab = DataCubeEditorTab.GENERAL_PROPERTIES;
@@ -107,6 +110,7 @@ export class DataCubeEditorState extends DataCubeSnapshotController {
     );
     this.pivotLayout = new DataCubeEditorPivotLayoutPanelState(this);
     this.columnProperties = new DataCubeEditorColumnPropertiesPanelState(this);
+    this.dimensions = new DataCubeEditorDimensionsPanelState(this);
     this.columns = new DataCubeEditorColumnsPanelState(this);
     this.horizontalPivots = new DataCubeEditorHorizontalPivotsPanelState(this);
     this.verticalPivots = new DataCubeEditorVerticalPivotsPanelState(this);
@@ -131,6 +135,7 @@ export class DataCubeEditorState extends DataCubeSnapshotController {
     this.generalProperties.applySnaphot(snapshot, configuration);
     this.pivotLayout.applySnaphot(snapshot, configuration);
     this.columnProperties.applySnaphot(snapshot, configuration);
+    this.dimensions.applySnaphot(snapshot, configuration);
 
     this.columns.applySnaphot(snapshot, configuration);
     this.horizontalPivots.applySnaphot(snapshot, configuration);
@@ -153,6 +158,7 @@ export class DataCubeEditorState extends DataCubeSnapshotController {
     this.generalProperties.buildSnapshot(newSnapshot, baseSnapshot);
     this.pivotLayout.buildSnapshot(newSnapshot, baseSnapshot);
     this.columnProperties.buildSnapshot(newSnapshot, baseSnapshot);
+    this.dimensions.buildSnapshot(newSnapshot, baseSnapshot);
 
     // NOTE: column selection must be processed first since the snapshot
     // processing of other parts of the query can be affected by column selection.

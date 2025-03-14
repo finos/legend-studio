@@ -22,16 +22,16 @@ import {
 } from '../../core/DataCubeQueryEngine.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import {
-  DataCubeEditorColumnSelectorState,
-  DataCubeEditorSortColumnState,
-} from './DataCubeEditorColumnSelectorState.js';
+  DataCubeEditorColumnsSelectorState,
+  DataCubeEditorColumnsSelectorSortColumnState,
+} from './DataCubeEditorColumnsSelectorState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
 import type { DataCubeConfiguration } from '../../core/model/DataCubeConfiguration.js';
 import { uniqBy } from '@finos/legend-shared';
 
-export class DataCubeEditorSortColumnSelectorState extends DataCubeEditorColumnSelectorState<DataCubeEditorSortColumnState> {
-  override cloneColumn(column: DataCubeEditorSortColumnState) {
-    return new DataCubeEditorSortColumnState(
+export class DataCubeEditorSortColumnsSelectorState extends DataCubeEditorColumnsSelectorState<DataCubeEditorColumnsSelectorSortColumnState> {
+  override cloneColumn(column: DataCubeEditorColumnsSelectorSortColumnState) {
+    return new DataCubeEditorColumnsSelectorSortColumnState(
       column.name,
       column.type,
       column.direction,
@@ -69,7 +69,7 @@ export class DataCubeEditorSortColumnSelectorState extends DataCubeEditorColumnS
       (col) => col.name,
     ).map(
       (col) =>
-        new DataCubeEditorSortColumnState(
+        new DataCubeEditorColumnsSelectorSortColumnState(
           col.name,
           col.type,
           DataCubeQuerySortDirection.ASCENDING,
@@ -81,10 +81,10 @@ export class DataCubeEditorSortColumnSelectorState extends DataCubeEditorColumnS
 export class DataCubeEditorSortsPanelState
   implements DataCubeQueryEditorPanelState
 {
-  readonly selector!: DataCubeEditorColumnSelectorState<DataCubeEditorSortColumnState>;
+  readonly selector!: DataCubeEditorColumnsSelectorState<DataCubeEditorColumnsSelectorSortColumnState>;
 
   constructor(editor: DataCubeEditorState) {
-    this.selector = new DataCubeEditorSortColumnSelectorState(editor);
+    this.selector = new DataCubeEditorSortColumnsSelectorState(editor);
   }
 
   adaptPropagatedChanges(): void {
@@ -102,7 +102,7 @@ export class DataCubeEditorSortsPanelState
     this.selector.setSelectedColumns(
       snapshot.data.sortColumns.map((col) => {
         const column = this.selector.getColumn(col.name);
-        return new DataCubeEditorSortColumnState(
+        return new DataCubeEditorColumnsSelectorSortColumnState(
           column.name,
           column.type,
           col.direction,

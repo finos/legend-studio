@@ -37,6 +37,7 @@ import {
   type V1_ConcreteFunctionDefinition,
 } from '@finos/legend-graph';
 import {
+  type DataCubeAlertService,
   type DataCubeConfiguration,
   RawUserDefinedFunctionDataCubeSource,
 } from '@finos/legend-data-cube';
@@ -57,9 +58,10 @@ export class UserDefinedFunctionDataCubeSourceBuilderState extends LegendDataCub
   constructor(
     application: LegendDataCubeApplicationStore,
     engine: LegendDataCubeDataCubeEngine,
+    alertService: DataCubeAlertService,
     builderStore: LegendDataCubeBuilderStore,
   ) {
-    super(application, engine);
+    super(application, engine, alertService);
     this.builderStore = builderStore;
 
     makeObservable(this, {

@@ -16,6 +16,7 @@
 
 import {
   ActionState,
+  assertErrorThrown,
   csvStringify,
   guaranteeNonNullable,
   IllegalStateError,
@@ -110,7 +111,7 @@ export class LocalFileDataCubeSourceLoaderState extends LegendDataCubeSourceLoad
     this.previewText = text;
   }
 
-  override initialize(): void {
+  reset() {
     this.setFileName(undefined);
     this.setColumnNames(undefined);
     this.setFileFormat(undefined);
@@ -119,60 +120,58 @@ export class LocalFileDataCubeSourceLoaderState extends LegendDataCubeSourceLoad
     this.setPreviewText(undefined);
   }
 
-  processFile(file: File | undefined) {
-    this.setFileName(undefined);
-    this.setColumnNames(undefined);
-    this.setFileFormat(undefined);
-    this.setFileData(undefined);
-    this.setRowCount(undefined);
-    this.setPreviewText(undefined);
-
+  async processFile(file: File | undefined) {
     if (!file) {
       return;
     }
 
+    this.reset();
     this.processState.inProgress();
 
-    const fileName = file.name;
-    const fileFormat = fileName.split('.').pop();
+    try {
+      const fileName = file.name;
+      const fileFormat = fileName.split('.').pop();
 
-    switch (fileFormat?.toLowerCase()) {
-      case LocalFileDataCubeSourceFormat.CSV.toLowerCase(): {
-        parseCSVFile(file, {
-          complete: (result) => {
-            this.setFileData(
-              csvStringify(result.data, { escapeChar: `'`, quoteChar: `'` }),
-            );
-            this.setColumnNames(
-              Object.keys(result.data.at(0) as object).filter(
-                (key) => key !== '',
-              ),
-            );
-            this.setFileName(fileName);
-            this.setFileFormat(LocalFileDataCubeSourceFormat.CSV);
-            this.setRowCount(result.data.length);
-            this.setPreviewText(
-              csvStringify(result.data.slice(0, 100), {
-                escapeChar: `'`,
-                quoteChar: `'`,
-              }),
-            );
-          },
-          header: true,
-          dynamicTyping: false,
-          skipEmptyLines: true,
-        });
-        break;
+      switch (fileFormat?.toLowerCase()) {
+        case LocalFileDataCubeSourceFormat.CSV.toLowerCase(): {
+          parseCSVFile(file, {
+            complete: (result) => {
+              this.setFileData(
+                csvStringify(result.data, { escapeChar: `'`, quoteChar: `'` }),
+              );
+              this.setColumnNames(
+                Object.keys(result.data.at(0) as object).filter(
+                  (key) => key !== '',
+                ),
+              );
+              this.setFileName(fileName);
+              this.setFileFormat(LocalFileDataCubeSourceFormat.CSV);
+              this.setRowCount(result.data.length);
+              this.setPreviewText(
+                csvStringify(result.data.slice(0, 100), {
+                  escapeChar: `'`,
+                  quoteChar: `'`,
+                }),
+              );
+            },
+            header: true,
+            dynamicTyping: false,
+            skipEmptyLines: true,
+          });
+          break;
+        }
+        default: {
+          throw new IllegalStateError(
+            `Can't process file with format '${fileFormat}'`,
+          );
+        }
       }
-      default: {
-        this.processState.complete();
-        throw new IllegalStateError(
-          `Can't process file with format '${fileFormat}'`,
-        );
-      }
+      this.processState.complete();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.processState.fail();
+      this.reset();
     }
-
-    this.processState.complete();
   }
 
   override get isValid(): boolean {

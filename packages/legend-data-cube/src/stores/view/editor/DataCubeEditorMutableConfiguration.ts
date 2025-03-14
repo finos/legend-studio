@@ -39,6 +39,7 @@ import {
   DEFAULT_ERROR_FOREGROUND_COLOR,
   DEFAULT_BACKGROUND_COLOR,
   type DataCubeColumnDataType,
+  type DataCubeGridMode,
 } from '../../core/DataCubeQueryEngine.js';
 import { type PlainObject, type Writable } from '@finos/legend-shared';
 import { makeObservable, observable, action, computed } from 'mobx';
@@ -434,6 +435,9 @@ export class DataCubeEditorMutableConfiguration extends DataCubeConfiguration {
       gridLineColor: observable,
       setGridLineColor: action,
 
+      gridMode: observable,
+      setGridMode: action,
+
       fontFamily: observable,
       setFontFamily: action,
 
@@ -581,6 +585,10 @@ export class DataCubeEditorMutableConfiguration extends DataCubeConfiguration {
 
   setGridLineColor(value: string) {
     this.gridLineColor = value;
+  }
+
+  setGridMode(value: DataCubeGridMode) {
+    this.gridMode = value;
   }
 
   setFontFamily(value: DataCubeFont) {

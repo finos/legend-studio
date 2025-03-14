@@ -16,6 +16,7 @@
 
 import {
   ActionState,
+  assertErrorThrown,
   csvStringify,
   guaranteeNonNullable,
   IllegalStateError,
@@ -33,6 +34,7 @@ import {
   LocalFileDataCubeSourceFormat,
   RawLocalFileQueryDataCubeSource,
 } from '../../model/LocalFileDataCubeSource.js';
+import type { DataCubeAlertService } from '@finos/legend-data-cube';
 
 export class LocalFileDataCubeSourceBuilderState extends LegendDataCubeSourceBuilderState {
   readonly processState = ActionState.create();
@@ -48,8 +50,9 @@ export class LocalFileDataCubeSourceBuilderState extends LegendDataCubeSourceBui
   constructor(
     application: LegendDataCubeApplicationStore,
     engine: LegendDataCubeDataCubeEngine,
+    alertService: DataCubeAlertService,
   ) {
-    super(application, engine);
+    super(application, engine, alertService);
 
     makeObservable(this, {
       fileName: observable,
@@ -89,54 +92,61 @@ export class LocalFileDataCubeSourceBuilderState extends LegendDataCubeSourceBui
     this.previewText = text;
   }
 
-  processFile(file: File | undefined) {
+  reset() {
     this.setFileName(undefined);
     this.setFileFormat(undefined);
     this.setFileData(undefined);
     this.setRowCount(undefined);
     this.setPreviewText(undefined);
+  }
 
+  async processFile(file: File | undefined) {
     if (!file) {
       return;
     }
 
+    this.reset();
     this.processState.inProgress();
 
-    const fileName = file.name;
-    const fileFormat = fileName.split('.').pop();
+    try {
+      const fileName = file.name;
+      const fileFormat = fileName.split('.').pop();
 
-    switch (fileFormat?.toLowerCase()) {
-      case LocalFileDataCubeSourceFormat.CSV.toLowerCase(): {
-        parseCSVFile(file, {
-          complete: (result) => {
-            this.setFileData(
-              csvStringify(result.data, { escapeChar: `'`, quoteChar: `'` }),
-            );
-            this.setFileName(fileName);
-            this.setFileFormat(LocalFileDataCubeSourceFormat.CSV);
-            this.setRowCount(result.data.length);
-            this.setPreviewText(
-              csvStringify(result.data.slice(0, 100), {
-                escapeChar: `'`,
-                quoteChar: `'`,
-              }),
-            );
-          },
-          header: true,
-          dynamicTyping: false,
-          skipEmptyLines: true,
-        });
-        break;
+      switch (fileFormat?.toLowerCase()) {
+        case LocalFileDataCubeSourceFormat.CSV.toLowerCase(): {
+          parseCSVFile(file, {
+            complete: (result) => {
+              this.setFileData(
+                csvStringify(result.data, { escapeChar: `'`, quoteChar: `'` }),
+              );
+              this.setFileName(fileName);
+              this.setFileFormat(LocalFileDataCubeSourceFormat.CSV);
+              this.setRowCount(result.data.length);
+              this.setPreviewText(
+                csvStringify(result.data.slice(0, 100), {
+                  escapeChar: `'`,
+                  quoteChar: `'`,
+                }),
+              );
+            },
+            header: true,
+            dynamicTyping: false,
+            skipEmptyLines: true,
+          });
+          break;
+        }
+        default: {
+          throw new IllegalStateError(
+            `Can't process file with format '${fileFormat}'`,
+          );
+        }
       }
-      default: {
-        this.processState.complete();
-        throw new IllegalStateError(
-          `Can't process file with format '${fileFormat}'`,
-        );
-      }
+      this.processState.complete();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.reset();
+      this.processState.fail();
     }
-
-    this.processState.complete();
   }
 
   override get label(): LegendDataCubeSourceBuilderType {

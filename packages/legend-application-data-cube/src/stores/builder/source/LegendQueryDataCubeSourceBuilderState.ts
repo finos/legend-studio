@@ -47,7 +47,6 @@ import type {
 export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceBuilderState {
   private readonly _engineServerClient: V1_EngineServerClient;
   private readonly _graphManager: V1_PureGraphManager;
-  private readonly _alertService: DataCubeAlertService;
 
   readonly queryLoader: QueryLoaderState;
 
@@ -61,7 +60,7 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
     graphManager: V1_PureGraphManager,
     alertService: DataCubeAlertService,
   ) {
-    super(application, engine);
+    super(application, engine, alertService);
 
     makeObservable(this, {
       query: observable,
@@ -72,7 +71,6 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
 
     this._graphManager = graphManager;
     this._engineServerClient = engineServerClient;
-    this._alertService = alertService;
 
     this.queryLoader = new QueryLoaderState(
       this._application,

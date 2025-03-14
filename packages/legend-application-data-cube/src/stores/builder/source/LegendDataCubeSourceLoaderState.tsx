@@ -77,8 +77,6 @@ export abstract class LegendDataCubeSourceLoaderState {
     );
   }
 
-  abstract initialize(): void;
-
   abstract get label(): string;
 
   abstract get isValid(): boolean;

@@ -20,7 +20,7 @@ import { guaranteeNonNullable } from '@finos/legend-shared';
 import { _findCol, _sortByColName } from '../../core/model/DataCubeColumn.js';
 import type { DataCubeQuerySortDirection } from '../../core/DataCubeQueryEngine.js';
 
-export class DataCubeEditorColumnSelectorColumnState {
+export class DataCubeEditorColumnsSelectorColumnState {
   readonly name: string;
   readonly type: string;
 
@@ -30,8 +30,8 @@ export class DataCubeEditorColumnSelectorColumnState {
   }
 }
 
-export abstract class DataCubeEditorColumnSelectorState<
-  T extends DataCubeEditorColumnSelectorColumnState,
+export abstract class DataCubeEditorColumnsSelectorState<
+  T extends DataCubeEditorColumnsSelectorColumnState,
 > {
   protected readonly _editor!: DataCubeEditorState;
 
@@ -41,14 +41,14 @@ export abstract class DataCubeEditorColumnSelectorState<
   selectedColumnsSearchText = '';
 
   readonly onChange?:
-    | ((selector: DataCubeEditorColumnSelectorState<T>) => void)
+    | ((selector: DataCubeEditorColumnsSelectorState<T>) => void)
     | undefined;
 
   constructor(
     editor: DataCubeEditorState,
     options?: {
       onChange?:
-        | ((select: DataCubeEditorColumnSelectorState<T>) => void)
+        | ((select: DataCubeEditorColumnsSelectorState<T>) => void)
         | undefined;
     },
   ) {
@@ -109,7 +109,7 @@ export abstract class DataCubeEditorColumnSelectorState<
   protected abstract cloneColumn(column: T): T;
 }
 
-export class DataCubeEditorSortColumnState extends DataCubeEditorColumnSelectorColumnState {
+export class DataCubeEditorColumnsSelectorSortColumnState extends DataCubeEditorColumnsSelectorColumnState {
   readonly onChange?: (() => void) | undefined;
   direction: DataCubeQuerySortDirection;
 
