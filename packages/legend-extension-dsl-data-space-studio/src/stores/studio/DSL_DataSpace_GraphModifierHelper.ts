@@ -15,13 +15,17 @@
  */
 
 import { action } from 'mobx';
+import type {
+  DataSpace,
+  DataSpaceDiagram,
+  DataSpaceElementPointer,
+  DataSpaceExecutable,
+  DataSpaceExecutionContext,
+  DataSpaceSupportInfo,
+  DataSpaceSupportEmail,
+  DataSpaceSupportCombinedInfo,
+} from '@finos/legend-extension-dsl-data-space/graph';
 import {
-  type DataSpace,
-  type DataSpaceDiagram,
-  type DataSpaceElementPointer,
-  type DataSpaceExecutable,
-  type DataSpaceExecutionContext,
-  type DataSpaceSupportInfo,
   observe_DataSpaceDiagram,
   observe_DataSpaceElementPointer,
   observe_DataSpaceExecutionContext,
@@ -96,6 +100,82 @@ export const dataSpace_setSupportInfo = action(
     supportInfo: DataSpaceSupportInfo | undefined,
   ): void => {
     dataSpace.supportInfo = supportInfo;
+  },
+);
+
+// Support Info Email actions
+export const dataSpace_setSupportEmailAddress = action(
+  (supportInfo: DataSpaceSupportEmail, address: string): void => {
+    supportInfo.address = address;
+  },
+);
+
+export const dataSpace_setSupportEmailDocumentationUrl = action(
+  (supportInfo: DataSpaceSupportEmail, url: string | undefined): void => {
+    supportInfo.documentationUrl = url;
+  },
+);
+
+// Support Info Combined actions
+export const dataSpace_setSupportCombinedInfoEmails = action(
+  (supportInfo: DataSpaceSupportCombinedInfo, emails: string[]): void => {
+    supportInfo.emails = emails;
+  },
+);
+
+export const dataSpace_addSupportCombinedInfoEmail = action(
+  (supportInfo: DataSpaceSupportCombinedInfo, email: string): void => {
+    if (!supportInfo.emails) {
+      supportInfo.emails = [];
+    }
+    addUniqueEntry(supportInfo.emails, email);
+  },
+);
+
+export const dataSpace_removeSupportCombinedInfoEmail = action(
+  (supportInfo: DataSpaceSupportCombinedInfo, email: string): void => {
+    if (supportInfo.emails) {
+      const index = supportInfo.emails.indexOf(email);
+      if (index !== -1) {
+        supportInfo.emails.splice(index, 1);
+      }
+    }
+  },
+);
+
+export const dataSpace_setSupportCombinedInfoWebsite = action(
+  (
+    supportInfo: DataSpaceSupportCombinedInfo,
+    website: string | undefined,
+  ): void => {
+    supportInfo.website = website;
+  },
+);
+
+export const dataSpace_setSupportCombinedInfoFaqUrl = action(
+  (
+    supportInfo: DataSpaceSupportCombinedInfo,
+    faqUrl: string | undefined,
+  ): void => {
+    supportInfo.faqUrl = faqUrl;
+  },
+);
+
+export const dataSpace_setSupportCombinedInfoSupportUrl = action(
+  (
+    supportInfo: DataSpaceSupportCombinedInfo,
+    supportUrl: string | undefined,
+  ): void => {
+    supportInfo.supportUrl = supportUrl;
+  },
+);
+
+export const dataSpace_setSupportCombinedInfoDocumentationUrl = action(
+  (
+    supportInfo: DataSpaceSupportCombinedInfo,
+    url: string | undefined,
+  ): void => {
+    supportInfo.documentationUrl = url;
   },
 );
 
