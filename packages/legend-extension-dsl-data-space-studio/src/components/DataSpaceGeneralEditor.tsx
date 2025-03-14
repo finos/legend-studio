@@ -23,8 +23,6 @@ import {
   PanelForm,
   PanelFormSection,
   PanelFormTextField,
-  PlusIcon,
-  TrashIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
@@ -32,6 +30,8 @@ import {
   dataSpace_addDiagram,
   dataSpace_addElement,
   dataSpace_addExecutable,
+  dataSpace_combined_addEmail,
+  dataSpace_combined_deleteEmail,
   dataSpace_combined_setFaqUrl,
   dataSpace_combined_setSupportUrl,
   dataSpace_combined_setWebsite,
@@ -59,6 +59,7 @@ import {
 } from '@finos/legend-extension-dsl-data-space/graph';
 import { type Diagram } from '@finos/legend-extension-dsl-diagram/graph';
 import { PackageableElementExplicitReference } from '@finos/legend-graph';
+import { useState } from 'react';
 
 export const DataSpaceGeneralEditor = observer(() => {
   const editorStore = useEditorStore();
@@ -185,6 +186,18 @@ export const DataSpaceGeneralEditor = observer(() => {
     }
   };
 
+  const handleSupportInfoEmailAdd = (email: string): void => {
+    if (dataSpace.supportInfo instanceof DataSpaceSupportCombinedInfo) {
+      dataSpace_combined_addEmail(dataSpace.supportInfo, email);
+    }
+  };
+
+  const handleSupportInfoEmailRemove = (email: string): void => {
+    if (dataSpace.supportInfo instanceof DataSpaceSupportCombinedInfo) {
+      dataSpace_combined_deleteEmail(dataSpace.supportInfo, email);
+    }
+  };
+
   const elementsRenderer = (
     element: DataSpaceElementPointer,
   ): React.ReactElement => (
@@ -209,21 +222,22 @@ export const DataSpaceGeneralEditor = observer(() => {
     </div>
   );
 
-  const newElementRenderer = (
-    onFinishEditing: () => void,
-  ): React.ReactElement => (
-    <div className="panel__content__form__section__list__new-item__input">
-      <CustomSelectorInput
-        options={dataSpaceState.getDataSpaceElementOptions()}
-        onChange={(event: { label: string; value: DataSpaceElement }) => {
-          onFinishEditing();
-          handleAddElement(event);
-        }}
-        placeholder="Select an element to add..."
-        darkMode={true}
-      />
-    </div>
-  );
+  const NewElementRenderer = (props: { onFinishEditing: () => void }) => {
+    const { onFinishEditing } = props;
+    return (
+      <div className="panel__content__form__section__list__new-item__input">
+        <CustomSelectorInput
+          options={dataSpaceState.getDataSpaceElementOptions()}
+          onChange={(event: { label: string; value: DataSpaceElement }) => {
+            onFinishEditing();
+            handleAddElement(event);
+          }}
+          placeholder="Select an element to add..."
+          darkMode={true}
+        />
+      </div>
+    );
+  };
 
   const diagramsRenderer = (diagram: DataSpaceDiagram): React.ReactElement => (
     <>
@@ -254,21 +268,60 @@ export const DataSpaceGeneralEditor = observer(() => {
     </>
   );
 
-  const newDiagramRenderer = (
-    onFinishEditing: () => void,
-  ): React.ReactElement => (
-    <div className="panel__content__form__section__list__new-item__input">
-      <CustomSelectorInput
-        options={dataSpaceState.getDiagramOptions()}
-        onChange={(event: { label: string; value: Diagram }) => {
-          onFinishEditing();
-          handleAddDiagram(event);
-        }}
-        placeholder="Select a diagram to add..."
-        darkMode={true}
-      />
+  const NewDiagramRenderer = (props: {
+    onFinishEditing: () => void;
+  }): React.ReactElement => {
+    const { onFinishEditing } = props;
+    return (
+      <div className="panel__content__form__section__list__new-item__input">
+        <CustomSelectorInput
+          options={dataSpaceState.getDiagramOptions()}
+          onChange={(event: { label: string; value: Diagram }) => {
+            onFinishEditing();
+            handleAddDiagram(event);
+          }}
+          placeholder="Select a diagram to add..."
+          darkMode={true}
+        />
+      </div>
+    );
+  };
+
+  const supportEmailRenderer = (email: string): React.ReactElement => (
+    <div className="panel__content__form__section__list__item__content">
+      <div className="panel__content__form__section__header__label">
+        {email}
+      </div>
     </div>
   );
+
+  const NewSupportEmailRenderer = (props: { onFinishEditing: () => void }) => {
+    const { onFinishEditing } = props;
+    const [email, setEmail] = useState('');
+    return (
+      <div className="panel__content__form__section__list__new-item__input">
+        <PanelFormTextField
+          name="Email"
+          value={email}
+          prompt="Data Space title is the unique identifier for this Data Space."
+          update={(event) => {
+            setEmail(event ?? '');
+          }}
+          placeholder="Enter title"
+        />
+        <button
+          className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
+          onClick={() => {
+            handleSupportInfoEmailAdd(email);
+            setEmail('');
+            onFinishEditing();
+          }}
+        >
+          Save
+        </button>
+      </div>
+    );
+  };
 
   return (
     <PanelContentLists className="dataSpace-editor__general">
@@ -327,7 +380,7 @@ export const DataSpaceGeneralEditor = observer(() => {
               element.element.value.path
             }
             elementRenderer={elementsRenderer}
-            newElementRenderer={newElementRenderer}
+            NewElementRenderer={NewElementRenderer}
             handleRemoveElement={handleRemoveElement}
             isReadOnly={dataSpaceState.isReadOnly}
           />
@@ -390,7 +443,7 @@ export const DataSpaceGeneralEditor = observer(() => {
               element.diagram.value.path
             }
             elementRenderer={diagramsRenderer}
-            newElementRenderer={newDiagramRenderer}
+            NewElementRenderer={NewDiagramRenderer}
             handleRemoveElement={handleRemoveDiagram}
             isReadOnly={dataSpaceState.isReadOnly}
           />
@@ -461,6 +514,15 @@ export const DataSpaceGeneralEditor = observer(() => {
             ) : dataSpace.supportInfo instanceof
               DataSpaceSupportCombinedInfo ? (
               <PanelFormSection>
+                <ListEditor
+                  title="Emails"
+                  elements={dataSpace.supportInfo.emails}
+                  keySelector={(element: string) => element}
+                  elementRenderer={supportEmailRenderer}
+                  NewElementRenderer={NewSupportEmailRenderer}
+                  handleRemoveElement={handleSupportInfoEmailRemove}
+                  isReadOnly={dataSpaceState.isReadOnly}
+                />
                 <PanelFormTextField
                   name="Documentation URL"
                   value={dataSpace.supportInfo.documentationUrl}

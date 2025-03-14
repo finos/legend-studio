@@ -26,7 +26,9 @@ export const ListEditor = observer(
     elements: T[] | undefined;
     keySelector: (element: T) => string;
     elementRenderer: (element: T) => React.ReactElement;
-    newElementRenderer: (onFinishEditing: () => void) => React.ReactElement;
+    NewElementRenderer: (props: {
+      onFinishEditing: () => void;
+    }) => React.ReactElement;
     handleRemoveElement: (element: T) => void;
     isReadOnly: boolean;
     emptyMessage?: string;
@@ -37,7 +39,7 @@ export const ListEditor = observer(
       elements,
       keySelector,
       elementRenderer,
-      newElementRenderer,
+      NewElementRenderer,
       handleRemoveElement,
       isReadOnly,
       emptyMessage,
@@ -75,7 +77,7 @@ export const ListEditor = observer(
           </div>
           {!showAddButton && (
             <div className="panel__content__form__section__list__new-item">
-              {newElementRenderer(onFinishEditing)}
+              <NewElementRenderer onFinishEditing={onFinishEditing} />
               <button
                 className="panel__content__form__section__list__new-item__cancel-btn btn btn--dark"
                 disabled={isReadOnly}
