@@ -34,6 +34,8 @@ export class Column extends RelationalOperationElement implements Hashable {
       this.name,
       this.nullable?.toString() ?? '',
       this.type,
+      hashArray(this.stereotypes.map((val) => val.pointerHashCode)),
+      hashArray(this.taggedValues),
     ]);
   }
 }

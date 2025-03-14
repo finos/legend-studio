@@ -51,6 +51,8 @@ export class View
       hashArray(this.primaryKey.map((p) => p.name)),
       hashArray(this.columnMappings),
       hashArray(this.groupBy?.columns ?? []),
+      hashArray(this.stereotypes.map((val) => val.pointerHashCode)),
+      hashArray(this.taggedValues),
     ]);
   }
 }

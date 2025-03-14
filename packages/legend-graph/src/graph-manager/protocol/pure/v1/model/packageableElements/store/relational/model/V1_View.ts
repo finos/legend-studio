@@ -20,6 +20,8 @@ import type { V1_RelationalOperationElement } from '../../../../../model/package
 import type { V1_TablePtr } from '../../../../../model/packageableElements/store/relational/model/V1_TablePtr.js';
 import type { V1_FilterMapping } from '../../../../../model/packageableElements/store/relational/mapping/V1_FilterMapping.js';
 import type { V1_ColumnMapping } from '../../../../../model/packageableElements/store/relational/model/V1_ColumnMapping.js';
+import type { V1_StereotypePtr } from '../../../domain/V1_StereotypePtr.js';
+import type { V1_TaggedValue } from '../../../domain/V1_TaggedValue.js';
 
 export class V1_View {
   name!: string;
@@ -29,6 +31,8 @@ export class V1_View {
   primaryKey: string[] = [];
   columnMappings: V1_ColumnMapping[] = [];
   groupBy: V1_RelationalOperationElement[] = [];
+  stereotypes: V1_StereotypePtr[] = [];
+  taggedValues: V1_TaggedValue[] = [];
 
   get hashCode(): string {
     return hashArray([
@@ -39,6 +43,8 @@ export class V1_View {
       hashArray(this.primaryKey),
       hashArray(this.columnMappings),
       hashArray(this.groupBy),
+      hashArray(this.stereotypes),
+      hashArray(this.taggedValues),
     ]);
   }
 }

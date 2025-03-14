@@ -107,7 +107,10 @@ import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js
 import { V1_FilterMapping } from '../../../model/packageableElements/store/relational/mapping/V1_FilterMapping.js';
 import { V1_FilterPointer } from '../../../model/packageableElements/store/relational/mapping/V1_FilterPointer.js';
 import type { TablePtr } from '../../../../../../../graph/metamodel/pure/packageableElements/service/TablePtr.js';
-import { V1_transformStereotype } from './V1_DomainTransformer.js';
+import {
+  V1_transformStereotype,
+  V1_transformTaggedValue,
+} from './V1_DomainTransformer.js';
 import { V1_PackageableElementPointer } from '../../../model/packageableElements/V1_PackageableElement.js';
 import type { TabularFunction } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/TabularFunction.js';
 import { V1_TabularFunction } from '../../../model/packageableElements/store/relational/model/V1_TabularFunction.js';
@@ -327,6 +330,12 @@ const transformColumn = (element: Column): V1_Column => {
     column.nullable = element.nullable;
   }
   column.type = transformRelationalDataType(element.type);
+  column.stereotypes = element.stereotypes.map((stereotype) =>
+    V1_transformStereotype(stereotype),
+  );
+  column.taggedValues = element.taggedValues.map((taggedValue) =>
+    V1_transformTaggedValue(taggedValue),
+  );
   return column;
 };
 
@@ -343,6 +352,12 @@ const transformTable = (
       V1_transformMilestoning(milestoning, context),
     );
   }
+  table.stereotypes = element.stereotypes.map((stereotype) =>
+    V1_transformStereotype(stereotype),
+  );
+  table.taggedValues = element.taggedValues.map((taggedValue) =>
+    V1_transformTaggedValue(taggedValue),
+  );
   return table;
 };
 
@@ -414,6 +429,12 @@ const transformView = (
       : [];
     view.filter = filter;
   }
+  view.stereotypes = element.stereotypes.map((stereotype) =>
+    V1_transformStereotype(stereotype),
+  );
+  view.taggedValues = element.taggedValues.map((taggedValue) =>
+    V1_transformTaggedValue(taggedValue),
+  );
   return view;
 };
 
@@ -427,6 +448,12 @@ const transformSchema = (
   schema.views = element.views.map((view) => transformView(view, context));
   schema.tabularFunctions = element.tabularFunctions.map((tabularFunction) =>
     transformTabularFunction(tabularFunction, context),
+  );
+  schema.stereotypes = element.stereotypes.map((stereotype) =>
+    V1_transformStereotype(stereotype),
+  );
+  schema.taggedValues = element.taggedValues.map((taggedValue) =>
+    V1_transformTaggedValue(taggedValue),
   );
   return schema;
 };
@@ -446,6 +473,9 @@ export const V1_transformDatabase = (
   );
   database.stereotypes = element.stereotypes.map((stereotype) =>
     V1_transformStereotype(stereotype),
+  );
+  database.taggedValues = element.taggedValues.map((taggedValue) =>
+    V1_transformTaggedValue(taggedValue),
   );
   database.includedStores = element.includes.map(
     (store) =>

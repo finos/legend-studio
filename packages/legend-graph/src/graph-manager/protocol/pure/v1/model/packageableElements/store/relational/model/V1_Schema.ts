@@ -19,12 +19,16 @@ import { type Hashable, hashArray } from '@finos/legend-shared';
 import type { V1_Table } from './V1_Table.js';
 import type { V1_View } from './V1_View.js';
 import type { V1_TabularFunction } from './V1_TabularFunction.js';
+import type { V1_StereotypePtr } from '../../../domain/V1_StereotypePtr.js';
+import type { V1_TaggedValue } from '../../../domain/V1_TaggedValue.js';
 
 export class V1_Schema implements Hashable {
   name!: string;
   tables: V1_Table[] = [];
   views: V1_View[] = [];
   tabularFunctions: V1_TabularFunction[] = [];
+  stereotypes: V1_StereotypePtr[] = [];
+  taggedValues: V1_TaggedValue[] = [];
 
   get hashCode(): string {
     return hashArray([
@@ -33,6 +37,8 @@ export class V1_Schema implements Hashable {
       hashArray(this.tables),
       hashArray(this.views),
       hashArray(this.tabularFunctions),
+      hashArray(this.stereotypes),
+      hashArray(this.taggedValues),
     ]);
   }
 }

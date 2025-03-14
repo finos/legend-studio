@@ -22,6 +22,7 @@ import {
   assertNonNullable,
   guaranteeType,
   assertTrue,
+  isNonNullable,
 } from '@finos/legend-shared';
 import { Database } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
 import {
@@ -133,6 +134,7 @@ import type { V1_TablePtr } from '../../../../model/packageableElements/store/re
 import { TablePtr } from '../../../../../../../../graph/metamodel/pure/packageableElements/service/TablePtr.js';
 import type { TabularFunction } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/TabularFunction.js';
 import type { V1_TabularFunction } from '../../../../model/packageableElements/store/relational/model/V1_TabularFunction.js';
+import { V1_buildTaggedValue } from './V1_DomainBuilderHelper.js';
 
 const _schemaExists = (
   db: Database,
@@ -423,13 +425,23 @@ export const V1_transformDatabaseDataType = (
   );
 };
 
-const buildColumn = (column: V1_Column, table: Table): Column => {
+const buildColumn = (
+  column: V1_Column,
+  table: Table,
+  context: V1_GraphBuilderContext,
+): Column => {
   assertNonEmptyString(column.name, `Column 'name' field is missing or empty`);
   const col = new Column();
   col.name = column.name;
   col.type = V1_transformDatabaseDataType(column.type);
   col.owner = table;
   col.nullable = column.nullable;
+  col.stereotypes = column.stereotypes
+    .map((stereotype) => context.resolveStereotype(stereotype))
+    .filter(isNonNullable);
+  col.taggedValues = column.taggedValues
+    .map((taggedValue) => V1_buildTaggedValue(taggedValue, context))
+    .filter(isNonNullable);
   return col;
 };
 
@@ -440,7 +452,9 @@ const buildDatabaseTable = (
 ): Table => {
   assertNonEmptyString(srcTable.name, `Table 'name' field is missing or empty`);
   const table = new Table(srcTable.name, schema);
-  const columns = srcTable.columns.map((column) => buildColumn(column, table));
+  const columns = srcTable.columns.map((column) =>
+    buildColumn(column, table, context),
+  );
   table.columns = columns;
   table.primaryKey = srcTable.primaryKey.map((key) =>
     guaranteeNonNullable(
@@ -451,12 +465,19 @@ const buildDatabaseTable = (
   table.milestoning = srcTable.milestoning.map((m) =>
     V1_buildMilestoning(m, context),
   );
+  table.stereotypes = srcTable.stereotypes
+    .map((stereotype) => context.resolveStereotype(stereotype))
+    .filter(isNonNullable);
+  table.taggedValues = srcTable.taggedValues
+    .map((taggedValue) => V1_buildTaggedValue(taggedValue, context))
+    .filter(isNonNullable);
   return table;
 };
 
 const buildDatabaseTabularFunction = (
   srcTabularFunction: V1_TabularFunction,
   schema: Schema,
+  context: V1_GraphBuilderContext,
 ): TabularFunction => {
   assertNonEmptyString(
     srcTabularFunction.name,
@@ -464,7 +485,7 @@ const buildDatabaseTabularFunction = (
   );
   const tabularFunction = new Table(srcTabularFunction.name, schema);
   const columns = srcTabularFunction.columns.map((column) =>
-    buildColumn(column, tabularFunction),
+    buildColumn(column, tabularFunction, context),
   );
   tabularFunction.columns = columns;
   return tabularFunction;
@@ -484,12 +505,22 @@ export const V1_buildSchema = (
     buildDatabaseTable(table, schema, context),
   );
   schema.tabularFunctions = srcSchema.tabularFunctions.map((tabularFunction) =>
-    buildDatabaseTabularFunction(tabularFunction, schema),
+    buildDatabaseTabularFunction(tabularFunction, schema, context),
   );
+  schema.stereotypes = srcSchema.stereotypes
+    .map((stereotype) => context.resolveStereotype(stereotype))
+    .filter(isNonNullable);
+  schema.taggedValues = srcSchema.taggedValues
+    .map((taggedValue) => V1_buildTaggedValue(taggedValue, context))
+    .filter(isNonNullable);
   return schema;
 };
 
-const buildViewFirstPass = (srcView: V1_View, schema: Schema): View => {
+const buildViewFirstPass = (
+  srcView: V1_View,
+  schema: Schema,
+  context: V1_GraphBuilderContext,
+): View => {
   assertNonEmptyString(srcView.name, `View 'name' field is missing or empty`);
   const view = new View(srcView.name, schema);
   const columns = srcView.columnMappings.map((colMapping) => {
@@ -503,6 +534,12 @@ const buildViewFirstPass = (srcView: V1_View, schema: Schema): View => {
   view.primaryKey = srcView.primaryKey.map((primaryKey) =>
     guaranteeNonNullable(columns.find((column) => column.name === primaryKey)),
   );
+  view.stereotypes = srcView.stereotypes
+    .map((stereotype) => context.resolveStereotype(stereotype))
+    .filter(isNonNullable);
+  view.taggedValues = srcView.taggedValues
+    .map((taggedValue) => V1_buildTaggedValue(taggedValue, context))
+    .filter(isNonNullable);
   return view;
 };
 
@@ -580,7 +617,7 @@ export const V1_buildDatabaseSchemaViewsFirstPass = (
 ): Schema => {
   const schema = getSchema(database, srcSchema.name);
   schema.views = srcSchema.views.map((view) =>
-    buildViewFirstPass(view, schema),
+    buildViewFirstPass(view, schema, context),
   );
   return schema;
 };

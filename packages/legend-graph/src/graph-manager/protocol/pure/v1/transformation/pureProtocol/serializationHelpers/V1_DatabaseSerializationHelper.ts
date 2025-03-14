@@ -101,6 +101,7 @@ import {
   V1_stereotypePtrModelSchema,
   V1_packageableElementPointerModelSchema,
   V1_serializePackageableElementPointer,
+  V1_taggedValueModelSchema,
 } from './V1_CoreSerializationHelper.js';
 import { PackageableElementPointerType } from '../../../../../../../graph/MetaModelConst.js';
 import { V1_TabularFunction } from '../../../model/packageableElements/store/relational/model/V1_TabularFunction.js';
@@ -150,9 +151,7 @@ const V1_otherRelationalDataTypeModelSchema = createModelSchema(V1_Other, {
 });
 const V1_timestampRelationalDataTypeModelSchema = createModelSchema(
   V1_Timestamp,
-  {
-    _type: usingConstantValueSchema(V1_RelationalDataTypeType.TIMESTAMP),
-  },
+  { _type: usingConstantValueSchema(V1_RelationalDataTypeType.TIMESTAMP) },
 );
 const V1_dateRelationalDataTypeModelSchema = createModelSchema(V1_Date, {
   _type: usingConstantValueSchema(V1_RelationalDataTypeType.DATE),
@@ -184,9 +183,7 @@ const V1_tinyIntRelationalDataTypeModelSchema = createModelSchema(V1_TinyInt, {
 });
 const V1_smallIntRelationalDataTypeModelSchema = createModelSchema(
   V1_SmallInt,
-  {
-    _type: usingConstantValueSchema(V1_RelationalDataTypeType.SMALLINT),
-  },
+  { _type: usingConstantValueSchema(V1_RelationalDataTypeType.SMALLINT) },
 );
 const V1_bigIntRelationalDataTypeModelSchema = createModelSchema(V1_BigInt, {
   _type: usingConstantValueSchema(V1_RelationalDataTypeType.BIGINT),
@@ -223,9 +220,7 @@ const V1_varCharRelationalDataTypeModelSchema = createModelSchema(V1_VarChar, {
 
 const V1_semiStructuredRelationalDataTypeModelSchema = createModelSchema(
   V1_SemiStructured,
-  {
-    _type: usingConstantValueSchema(V1_RelationalDataTypeType.SEMISTRUCTURED),
-  },
+  { _type: usingConstantValueSchema(V1_RelationalDataTypeType.SEMISTRUCTURED) },
 );
 
 const V1_jsonRelationalDataTypeModelSchema = createModelSchema(V1_Json, {
@@ -338,6 +333,8 @@ const columnModelSchema = createModelSchema(V1_Column, {
     (val) => V1_serializeColType(val),
     (val) => V1_deserializeColType(val),
   ),
+  stereotypes: customListWithSchema(V1_stereotypePtrModelSchema),
+  taggedValues: customListWithSchema(V1_taggedValueModelSchema),
 });
 
 export const V1_tablePtrModelSchema = createModelSchema(V1_TablePtr, {
@@ -495,6 +492,8 @@ const V1_viewModelSchema = createModelSchema(V1_View, {
   mainTable: usingModelSchema(V1_tablePtrModelSchema),
   name: primitive(),
   primaryKey: list(primitive()),
+  stereotypes: customListWithSchema(V1_stereotypePtrModelSchema),
+  taggedValues: customListWithSchema(V1_taggedValueModelSchema),
 });
 
 const V1_schemaModelSchema = createModelSchema(V1_Schema, {
@@ -506,6 +505,8 @@ const V1_schemaModelSchema = createModelSchema(V1_Schema, {
     { INTERNAL__forceReturnEmptyInTest: true },
   ),
   views: list(usingModelSchema(V1_viewModelSchema)),
+  stereotypes: customListWithSchema(V1_stereotypePtrModelSchema),
+  taggedValues: customListWithSchema(V1_taggedValueModelSchema),
 });
 
 const V1_joinModelSchema = createModelSchema(V1_Join, {
@@ -538,6 +539,8 @@ const V1_setupTableSerialization = (
     ),
     name: primitive(),
     primaryKey: list(primitive()),
+    stereotypes: customListWithSchema(V1_stereotypePtrModelSchema),
+    taggedValues: customListWithSchema(V1_taggedValueModelSchema),
   });
 };
 
@@ -574,9 +577,7 @@ const V1_setupRelationalDatabaseConnectionModelSchema = (
     postProcessors: customList(
       (value: V1_PostProcessor) => V1_serializePostProcessor(value, plugins),
       (value) => V1_deserializePostProcessor(value, plugins),
-      {
-        INTERNAL__forceReturnEmptyInTest: true,
-      },
+      { INTERNAL__forceReturnEmptyInTest: true },
     ),
     postProcessorWithParameter: customEquivalentList({
       INTERNAL__forceReturnEmptyInTest: true,
@@ -604,7 +605,6 @@ export const V1_databaseModelSchema = createModelSchema(V1_Database, {
         val,
         PackageableElementPointerType.STORE,
       ),
-
     { INTERNAL__forceReturnEmptyInTest: true },
   ),
   joins: list(usingModelSchema(V1_joinModelSchema)),
@@ -614,4 +614,5 @@ export const V1_databaseModelSchema = createModelSchema(V1_Database, {
   stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
     INTERNAL__forceReturnEmptyInTest: true,
   }),
+  taggedValues: customListWithSchema(V1_taggedValueModelSchema),
 });

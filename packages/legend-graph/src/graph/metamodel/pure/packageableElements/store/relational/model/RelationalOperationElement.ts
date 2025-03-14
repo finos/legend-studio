@@ -29,8 +29,13 @@ import type { ColumnReference } from './ColumnReference.js';
 import type { Database } from './Database.js';
 import { SELF_JOIN_TABLE_NAME } from './Join.js';
 
+import type { StereotypeReference } from '../../../domain/StereotypeReference.js';
+import type { TaggedValue } from '../../../domain/TaggedValue.js';
+
 export abstract class RelationalOperationElement {
   abstract get hashCode(): string;
+  stereotypes: StereotypeReference[] = [];
+  taggedValues: TaggedValue[] = [];
 }
 
 export abstract class Relation extends RelationalOperationElement {
