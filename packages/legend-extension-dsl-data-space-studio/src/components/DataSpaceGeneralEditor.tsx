@@ -14,535 +14,533 @@
  * limitations under the License.
  */
 
+import { useEditorStore } from '@finos/legend-application-studio';
 import {
+  Checkbox,
   CustomSelectorInput,
+  PanelContentLists,
+  PanelForm,
+  PanelFormListItems,
   PanelFormSection,
   PanelFormTextField,
-  PanelFormValidatedTextField,
   PlusIcon,
-  ResizablePanelGroup,
-  ResizablePanel,
   TrashIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
-import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
   dataSpace_addDiagram,
   dataSpace_addElement,
+  dataSpace_addExecutable,
   dataSpace_removeDiagram,
   dataSpace_removeElement,
+  dataSpace_removeExecutable,
   dataSpace_setDefaultExecutionContext,
   dataSpace_setDescription,
   dataSpace_setDiagramDescription,
   dataSpace_setDiagramTitle,
   dataSpace_setElementExclude,
-  dataSpace_setSupportCombinedInfoFaqUrl,
-  dataSpace_setSupportCombinedInfoSupportUrl,
-  dataSpace_setSupportCombinedInfoWebsite,
-  dataSpace_setSupportEmailAddress,
   dataSpace_setSupportInfo,
   dataSpace_setTitle,
-  dataSpace_addSupportCombinedInfoEmail,
-  dataSpace_removeSupportCombinedInfoEmail,
 } from '../stores/studio/DSL_DataSpace_GraphModifierHelper.js';
 import {
+  type DataSpaceElement,
+  type DataSpaceExecutionContext,
+  DataSpaceDiagram,
+  DataSpaceElementPointer,
+  DataSpacePackageableElementExecutable,
   DataSpaceSupportCombinedInfo,
   DataSpaceSupportEmail,
-  PackageableElementExplicitReference,
-  type DataSpaceDiagram,
-  type DataSpaceElementPointer,
 } from '@finos/legend-extension-dsl-data-space/graph';
-import { validateEmail, validateUrl } from '../utils/ValidationUtils.js';
-import { useState } from 'react';
+import { type Diagram } from '@finos/legend-extension-dsl-diagram/graph';
+import { PackageableElementExplicitReference } from '@finos/legend-graph';
 
-export const DataSpaceGeneralEditor = observer(
-  (props: { dataSpaceState: DataSpaceEditorState }) => {
-    const { dataSpaceState } = props;
-    const dataSpace = dataSpaceState.dataSpace;
-    const [newEmail, setNewEmail] = useState('');
+export const DataSpaceGeneralEditor = observer(() => {
+  const editorStore = useEditorStore();
 
-    const handleTitleChange = (val: string): void => {
-      dataSpace_setTitle(dataSpace, val);
-    };
+  const dataSpaceState =
+    editorStore.tabManagerState.getCurrentEditorState(DataSpaceEditorState);
+  const dataSpace = dataSpaceState.dataSpace;
 
-    const handleDescriptionChange = (val: string): void => {
-      dataSpace_setDescription(dataSpace, val);
-    };
+  // Basic properties handlers
+  const handleTitleChange = (value: string | undefined): void => {
+    dataSpace_setTitle(dataSpace, value);
+  };
 
-    const handleDefaultExecutionContextChange = (val: {
-      label: string;
-      value: string;
-    }): void => {
-      const executionContext = dataSpace.executionContexts.find(
-        (ec) => ec.name === val.value,
-      );
-      if (executionContext) {
-        dataSpace_setDefaultExecutionContext(dataSpace, executionContext);
-      }
-    };
+  const handleDescriptionChange = (value: string | undefined): void => {
+    dataSpace_setDescription(dataSpace, value);
+  };
 
-    const handleAddElement = (val: {
-      label: string;
-      value: DataSpaceElementPointer['element']['value'];
-    }): void => {
+  // DefaultExecutionContext handler
+  const handleDefaultExecutionContextChange = (option: {
+    label: string;
+    value: unknown;
+  }): void => {
+    if (option && option.value && typeof option.value === 'object') {
+      const context = option.value as DataSpaceExecutionContext;
+      dataSpace_setDefaultExecutionContext(dataSpace, context);
+    }
+  };
+
+  // Elements handlers
+  const handleAddElement = (option: {
+    label: string;
+    value: DataSpaceElement;
+  }): void => {
+    if (option && option.value && typeof option.value === 'object') {
+      const element = option.value;
       const elementPointer = new DataSpaceElementPointer();
-      elementPointer.element = new PackageableElementExplicitReference();
-      elementPointer.element.value = val.value;
+      elementPointer.element =
+        PackageableElementExplicitReference.create(element);
       dataSpace_addElement(dataSpace, elementPointer);
-    };
+    }
+  };
 
-    const handleRemoveElement = (element: DataSpaceElementPointer): void => {
-      dataSpace_removeElement(dataSpace, element);
-    };
+  const handleRemoveElement = (element: DataSpaceElementPointer): void => {
+    dataSpace_removeElement(dataSpace, element);
+  };
 
-    const handleElementExcludeChange = (
-      element: DataSpaceElementPointer,
-      exclude: boolean,
-    ): void => {
-      dataSpace_setElementExclude(element, exclude);
-    };
+  const handleElementExcludeChange = (
+    element: DataSpaceElementPointer,
+    event: React.ChangeEvent<HTMLInputElement>,
+  ): void => {
+    dataSpace_setElementExclude(element, event.target.checked);
+  };
 
-    const handleAddDiagram = (val: {
-      label: string;
-      value: DataSpaceDiagram['diagram']['value'];
-    }): void => {
+  // Executables handlers
+  const handleAddExecutable = (): void => {
+    const newExecutable = new DataSpacePackageableElementExecutable();
+    newExecutable.title = `Executable ${dataSpace.executables?.length ?? 0 + 1}`;
+    dataSpace_addExecutable(dataSpace, newExecutable);
+  };
+
+  const handleRemoveExecutable = (index: number): void => {
+    dataSpace_removeExecutable(dataSpace, index);
+  };
+
+  // Diagrams handlers
+  const handleAddDiagram = (option: {
+    label: string;
+    value: Diagram;
+  }): void => {
+    if (option && option.value && typeof option.value === 'object') {
+      const diagramValue = option.value;
       const newDiagram = new DataSpaceDiagram();
-      newDiagram.diagram = new PackageableElementExplicitReference();
-      newDiagram.diagram.value = val.value;
-      newDiagram.title = val.value.name;
+      newDiagram.title = diagramValue.name;
+      newDiagram.diagram =
+        PackageableElementExplicitReference.create(diagramValue);
       dataSpace_addDiagram(dataSpace, newDiagram);
-    };
+    }
+  };
 
-    const handleRemoveDiagram = (diagram: DataSpaceDiagram): void => {
-      dataSpace_removeDiagram(dataSpace, diagram);
-    };
+  const handleRemoveDiagram = (diagram: DataSpaceDiagram): void => {
+    dataSpace_removeDiagram(dataSpace, diagram);
+  };
 
-    const handleDiagramTitleChange = (
-      diagram: DataSpaceDiagram,
-      title: string,
-    ): void => {
-      dataSpace_setDiagramTitle(diagram, title);
-    };
+  const handleDiagramTitleChange = (
+    diagram: DataSpaceDiagram,
+    value: string | undefined,
+  ): void => {
+    dataSpace_setDiagramTitle(diagram, value ?? '');
+  };
 
-    const handleDiagramDescriptionChange = (
-      diagram: DataSpaceDiagram,
-      description: string,
-    ): void => {
-      dataSpace_setDiagramDescription(diagram, description);
-    };
+  const handleDiagramDescriptionChange = (
+    diagram: DataSpaceDiagram,
+    value: string | undefined,
+  ): void => {
+    dataSpace_setDiagramDescription(diagram, value);
+  };
 
-    // Support Info handlers
-    const handleSupportInfoTypeChange = (val: {
-      label: string;
-      value: string;
-    }): void => {
-      if (val.value === 'none') {
-        dataSpace_setSupportInfo(dataSpace, undefined);
-      } else if (val.value === 'email') {
-        // Convert from Combined to Email if needed
-        if (
-          dataSpace.supportInfo instanceof DataSpaceSupportCombinedInfo &&
-          dataSpace.supportInfo.emails?.length
-        ) {
-          const emailSupportInfo = new DataSpaceSupportEmail();
-          emailSupportInfo.address = dataSpace.supportInfo.emails[0] ?? '';
-          emailSupportInfo.documentationUrl =
-            dataSpace.supportInfo.documentationUrl;
-          dataSpace_setSupportInfo(dataSpace, emailSupportInfo);
-        } else if (!dataSpace.supportInfo) {
-          // Create new Email support info
-          const emailSupportInfo = new DataSpaceSupportEmail();
-          emailSupportInfo.address = '';
-          dataSpace_setSupportInfo(dataSpace, emailSupportInfo);
-        }
-      } else if (val.value === 'combined') {
-        // Convert from Email to Combined if needed
-        if (dataSpace.supportInfo instanceof DataSpaceSupportEmail) {
-          const combinedSupportInfo = new DataSpaceSupportCombinedInfo();
-          combinedSupportInfo.emails = [dataSpace.supportInfo.address];
-          combinedSupportInfo.documentationUrl =
-            dataSpace.supportInfo.documentationUrl;
-          dataSpace_setSupportInfo(dataSpace, combinedSupportInfo);
-        } else if (!dataSpace.supportInfo) {
-          // Create new Combined support info
-          const combinedSupportInfo = new DataSpaceSupportCombinedInfo();
-          combinedSupportInfo.emails = [];
-          dataSpace_setSupportInfo(dataSpace, combinedSupportInfo);
-        }
-      }
-    };
+  // SupportInfo handlers
+  const handleSupportInfoTypeChange = (option: { value: unknown }): void => {
+    if (!option || typeof option !== 'object' || !('value' in option)) {
+      return;
+    }
+    const type = option.value as string;
+    if (type === 'email') {
+      const supportInfo = new DataSpaceSupportEmail();
+      dataSpace_setSupportInfo(dataSpace, supportInfo);
+    } else if (type === 'combined') {
+      const supportInfo = new DataSpaceSupportCombinedInfo();
+      dataSpace_setSupportInfo(dataSpace, supportInfo);
+    } else {
+      dataSpace_setSupportInfo(dataSpace, undefined);
+    }
+  };
 
-    const handleSupportEmailAddressChange = (address: string): void => {
-      if (dataSpace.supportInfo instanceof DataSpaceSupportEmail) {
-        dataSpace_setSupportEmailAddress(dataSpace.supportInfo, address);
-      }
-    };
+  return (
+    <PanelContentLists className="dataSpace-editor__general">
+      <PanelForm>
+        {/* Basic Properties Section */}
+        <PanelFormSection>
+          <PanelFormTextField
+            name="Data Space Title"
+            value={dataSpace.title ?? ''}
+            prompt="Data Space title is the unique identifier for this Data Space."
+            update={handleTitleChange}
+            placeholder="Enter title"
+          />
+        </PanelFormSection>
 
-    const handleSupportCombinedInfoWebsiteChange = (website: string): void => {
-      if (dataSpace.supportInfo instanceof DataSpaceSupportCombinedInfo) {
-        dataSpace_setSupportCombinedInfoWebsite(
-          dataSpace.supportInfo,
-          website || undefined,
-        );
-      }
-    };
-
-    const handleSupportCombinedInfoFaqUrlChange = (faqUrl: string): void => {
-      if (dataSpace.supportInfo instanceof DataSpaceSupportCombinedInfo) {
-        dataSpace_setSupportCombinedInfoFaqUrl(
-          dataSpace.supportInfo,
-          faqUrl || undefined,
-        );
-      }
-    };
-
-    const handleSupportCombinedInfoSupportUrlChange = (
-      supportUrl: string,
-    ): void => {
-      if (dataSpace.supportInfo instanceof DataSpaceSupportCombinedInfo) {
-        dataSpace_setSupportCombinedInfoSupportUrl(
-          dataSpace.supportInfo,
-          supportUrl || undefined,
-        );
-      }
-    };
-
-    const handleAddSupportCombinedInfoEmail = (): void => {
-      if (
-        dataSpace.supportInfo instanceof DataSpaceSupportCombinedInfo &&
-        newEmail
-      ) {
-        dataSpace_addSupportCombinedInfoEmail(dataSpace.supportInfo, newEmail);
-        setNewEmail('');
-      }
-    };
-
-    const handleRemoveSupportCombinedInfoEmail = (email: string): void => {
-      if (dataSpace.supportInfo instanceof DataSpaceSupportCombinedInfo) {
-        dataSpace_removeSupportCombinedInfoEmail(dataSpace.supportInfo, email);
-      }
-    };
-
-    return (
-      <div className="dataSpace-editor__general">
-        <ResizablePanelGroup orientation="vertical">
-          <ResizablePanel>
-            <div className="panel">
-              <div className="panel__header">
-                <div className="panel__header__title">General</div>
-              </div>
-              <div className="panel__content">
-                <div className="panel__content__form">
-                  <PanelFormSection>
-                    <div className="panel__content__form__section__header__label">
-                      Title
+        <PanelFormSection>
+          <PanelFormTextField
+            name="Data Space Description"
+            value={dataSpace.description ?? ''}
+            prompt="Provide a description for this Data Space."
+            update={handleDescriptionChange}
+            placeholder="Enter description"
+          />
+        </PanelFormSection>
+        {/* Default Execution Context Section */}
+        <PanelFormSection>
+          <div className="panel__content__form__section__header__label">
+            Default Execution Context
+          </div>
+          <div className="panel__content__form__section__header__prompt">
+            Select the default execution context for this Data Space.
+          </div>
+          <CustomSelectorInput
+            options={dataSpace.executionContexts.map((context) => ({
+              label: context.name,
+              value: context,
+            }))}
+            onChange={(option: { label: string; value: unknown }) =>
+              handleDefaultExecutionContextChange(option)
+            }
+            value={{
+              label: dataSpace.defaultExecutionContext.name,
+              value: dataSpace.defaultExecutionContext,
+            }}
+            darkMode={true}
+            key={`default-execution-context-${dataSpace.defaultExecutionContext.name}`}
+          />
+        </PanelFormSection>
+        {/* Elements Section */}
+        <PanelFormSection className="dataSpace-editor__general__elements">
+          <PanelFormListItems
+            title="Elements"
+            prompt="Add elements to include in this Data Space. Use the exclude checkbox to exclude elements."
+          >
+            {dataSpace.elements?.map((element, index) => (
+              <div
+                key={element.element.value.path}
+                className="panel__content__form__section__list__item"
+              >
+                <div className="panel__content__form__section__list__item__content">
+                  <div className="panel__content__form__section__list__item__content__label">
+                    {element.element?.value?.path ?? 'Unknown Element'}
+                  </div>
+                  <div className="panel__content__form__section__list__item__content__actions">
+                    <div className="panel__content__form__section__list__item__content__actions-exclude">
+                      <Checkbox
+                        disabled={dataSpaceState.isReadOnly}
+                        checked={element.exclude ?? false}
+                        onChange={(event) =>
+                          handleElementExcludeChange(element, event)
+                        }
+                        size="small"
+                        className="panel__content__form__section__list__item__content__actions-exclude__btn"
+                      />
+                      <span className="panel__content__form__section__list__item__content__actions__label">
+                        Exclude
+                      </span>
                     </div>
-                    <PanelFormTextField
-                      value={dataSpace.title ?? ''}
-                      onChange={handleTitleChange}
-                      placeholder="Enter title..."
-                    />
-                  </PanelFormSection>
-                  <PanelFormSection>
-                    <div className="panel__content__form__section__header__label">
-                      Description
-                    </div>
-                    <PanelFormTextField
-                      value={dataSpace.description ?? ''}
-                      onChange={handleDescriptionChange}
-                      placeholder="Enter description..."
-                      isTextArea={true}
-                    />
-                  </PanelFormSection>
-                  <PanelFormSection>
-                    <div className="panel__content__form__section__header__label">
-                      Default Execution Context
-                    </div>
-                    <CustomSelectorInput
-                      options={dataSpace.executionContexts.map((ec) => ({
-                        label: ec.name,
-                        value: ec.name,
-                      }))}
-                      onChange={handleDefaultExecutionContextChange}
-                      value={
-                        dataSpace.defaultExecutionContext
-                          ? {
-                              label: dataSpace.defaultExecutionContext.name,
-                              value: dataSpace.defaultExecutionContext.name,
-                            }
-                          : undefined
-                      }
-                      placeholder="Select default execution context..."
-                      darkMode={true}
-                    />
-                  </PanelFormSection>
-                  <PanelFormSection className="dataSpace-editor__general__elements">
-                    <div className="panel__content__form__section__header__label">
-                      Elements
-                    </div>
-                    <div className="panel__content__form__section__list">
-                      {dataSpace.elements?.map((element) => (
-                        <div
-                          key={element.element.value.path}
-                          className="panel__content__form__section__list__item"
-                        >
-                          <div className="panel__content__form__section__list__item__content">
-                            <div className="panel__content__form__section__list__item__content__label">
-                              {element.element.value.path}
-                            </div>
-                            <div className="panel__content__form__section__list__item__content__actions">
-                              <div className="panel__content__form__section__list__item__content__actions-exclude">
-                                <input
-                                  type="checkbox"
-                                  checked={element.exclude ?? false}
-                                  onChange={(e) =>
-                                    handleElementExcludeChange(
-                                      element,
-                                      e.target.checked,
-                                    )
-                                  }
-                                />
-                                <div className="panel__content__form__section__list__item__content__actions__label">
-                                  Exclude
-                                </div>
-                              </div>
-                              <button
-                                className="panel__content__form__section__list__item__content__actions__btn"
-                                onClick={() => handleRemoveElement(element)}
-                                tabIndex={-1}
-                                title="Remove element"
-                              >
-                                <TrashIcon />
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                      <div className="panel__content__form__section__list__add">
-                        <div className="panel__content__form__section__list__add__input">
-                          <CustomSelectorInput
-                            options={dataSpaceState.getDataSpaceElementOptions()}
-                            onChange={handleAddElement}
-                            placeholder="Select element to add..."
-                            darkMode={true}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </PanelFormSection>
-                  <PanelFormSection className="dataSpace-editor__general__diagrams">
-                    <div className="panel__content__form__section__header__label">
-                      Diagrams
-                    </div>
-                    <div className="panel__content__form__section__list">
-                      {dataSpace.diagrams?.map((diagram) => (
-                        <div
-                          key={diagram.diagram.value.path}
-                          className="panel__content__form__section__list__item"
-                        >
-                          <div className="panel__content__form__section__list__item__content">
-                            <div className="panel__content__form__section__list__item__content__label">
-                              {diagram.diagram.value.path}
-                            </div>
-                            <div className="panel__content__form__section__list__item__content__actions">
-                              <button
-                                className="panel__content__form__section__list__item__content__actions__btn"
-                                onClick={() => handleRemoveDiagram(diagram)}
-                                tabIndex={-1}
-                                title="Remove diagram"
-                              >
-                                <TrashIcon />
-                              </button>
-                            </div>
-                          </div>
-                          <div className="panel__content__form__section__list__item__form">
-                            <PanelFormSection>
-                              <div className="panel__content__form__section__header__label">
-                                Title
-                              </div>
-                              <PanelFormTextField
-                                className="dataSpace-editor__general__diagrams__title"
-                                value={diagram.title ?? ''}
-                                onChange={(val) =>
-                                  handleDiagramTitleChange(diagram, val)
-                                }
-                                placeholder="Enter title..."
-                              />
-                            </PanelFormSection>
-                            <PanelFormSection>
-                              <div className="panel__content__form__section__header__label">
-                                Description
-                              </div>
-                              <PanelFormTextField
-                                className="dataSpace-editor__general__diagrams__description"
-                                value={diagram.description ?? ''}
-                                onChange={(val) =>
-                                  handleDiagramDescriptionChange(diagram, val)
-                                }
-                                placeholder="Enter description..."
-                              />
-                            </PanelFormSection>
-                          </div>
-                        </div>
-                      ))}
-                      <div className="panel__content__form__section__list__add">
-                        <div className="panel__content__form__section__list__add__input">
-                          <CustomSelectorInput
-                            options={dataSpaceState.getDiagramOptions()}
-                            onChange={handleAddDiagram}
-                            placeholder="Select diagram to add..."
-                            darkMode={true}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </PanelFormSection>
-                  <PanelFormSection className="dataSpace-editor__general__support-info">
-                    <div className="panel__content__form__section__header__label">
-                      Support Information
-                    </div>
-                    <CustomSelectorInput
-                      options={[
-                        { label: 'None', value: 'none' },
-                        { label: 'Email', value: 'email' },
-                        { label: 'Combined', value: 'combined' },
-                      ]}
-                      onChange={handleSupportInfoTypeChange}
-                      value={{
-                        label: dataSpace.supportInfo
-                          ? dataSpace.supportInfo instanceof
-                            DataSpaceSupportEmail
-                            ? 'Email'
-                            : 'Combined'
-                          : 'None',
-                        value: dataSpace.supportInfo
-                          ? dataSpace.supportInfo instanceof
-                            DataSpaceSupportEmail
-                            ? 'email'
-                            : 'combined'
-                          : 'none',
-                      }}
-                      placeholder="Select support info type..."
-                      darkMode={true}
-                    />
-                    {dataSpace.supportInfo instanceof DataSpaceSupportEmail && (
-                      <div className="dataSpace-editor__general__support-info__email">
-                        <PanelFormSection>
-                          <div className="panel__content__form__section__header__label">
-                            Email Address
-                          </div>
-                          <PanelFormValidatedTextField
-                            value={dataSpace.supportInfo.address}
-                            onChange={handleSupportEmailAddressChange}
-                            placeholder="Enter email address..."
-                            validator={validateEmail}
-                          />
-                        </PanelFormSection>
-                      </div>
+                    {!dataSpaceState.isReadOnly && (
+                      <button
+                        className="panel__content__form__section__list__item__content__actions__btn"
+                        onClick={() => handleRemoveElement(element)}
+                        tabIndex={-1}
+                        title="Remove element"
+                      >
+                        <TrashIcon />
+                      </button>
                     )}
-                    {dataSpace.supportInfo instanceof
-                      DataSpaceSupportCombinedInfo && (
-                      <div className="dataSpace-editor__general__support-info__combined">
-                        <PanelFormSection>
-                          <div className="panel__content__form__section__header__label">
-                            Email Addresses
-                          </div>
-                          <div className="panel__content__form__section__list">
-                            {dataSpace.supportInfo.emails?.map((email, idx) => (
-                              <div
-                                key={`email-${guaranteeNonNullable(idx)}`}
-                                className="panel__content__form__section__list__item"
-                              >
-                                <div className="panel__content__form__section__list__item__content">
-                                  <div className="panel__content__form__section__list__item__content__label">
-                                    {email}
-                                  </div>
-                                  <div className="panel__content__form__section__list__item__content__actions">
-                                    <button
-                                      className="panel__content__form__section__list__item__content__actions__btn"
-                                      onClick={() =>
-                                        handleRemoveSupportCombinedInfoEmail(
-                                          email,
-                                        )
-                                      }
-                                      tabIndex={-1}
-                                      title="Remove email"
-                                    >
-                                      <TrashIcon />
-                                    </button>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                            <div className="panel__content__form__section__list__add">
-                              <div className="panel__content__form__section__list__add__input">
-                                <PanelFormValidatedTextField
-                                  value={newEmail}
-                                  onChange={setNewEmail}
-                                  placeholder="Enter email address..."
-                                  validator={validateEmail}
-                                />
-                              </div>
-                              <div className="panel__content__form__section__list__add__actions">
-                                <button
-                                  className="panel__content__form__section__list__add__actions__btn"
-                                  onClick={handleAddSupportCombinedInfoEmail}
-                                  tabIndex={-1}
-                                  title="Add email"
-                                  disabled={
-                                    !newEmail ||
-                                    validateEmail(newEmail) !== undefined
-                                  }
-                                >
-                                  <PlusIcon />
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </PanelFormSection>
-                        <PanelFormSection>
-                          <div className="panel__content__form__section__header__label">
-                            Website
-                          </div>
-                          <PanelFormValidatedTextField
-                            value={dataSpace.supportInfo.website ?? ''}
-                            onChange={handleSupportCombinedInfoWebsiteChange}
-                            placeholder="Enter website URL..."
-                            validator={validateUrl}
-                          />
-                        </PanelFormSection>
-                        <PanelFormSection>
-                          <div className="panel__content__form__section__header__label">
-                            FAQ URL
-                          </div>
-                          <PanelFormValidatedTextField
-                            value={dataSpace.supportInfo.faqUrl ?? ''}
-                            onChange={handleSupportCombinedInfoFaqUrlChange}
-                            placeholder="Enter FAQ URL..."
-                            validator={validateUrl}
-                          />
-                        </PanelFormSection>
-                        <PanelFormSection>
-                          <div className="panel__content__form__section__header__label">
-                            Support URL
-                          </div>
-                          <PanelFormValidatedTextField
-                            value={dataSpace.supportInfo.supportUrl ?? ''}
-                            onChange={handleSupportCombinedInfoSupportUrlChange}
-                            placeholder="Enter support URL..."
-                            validator={validateUrl}
-                          />
-                        </PanelFormSection>
-                      </div>
-                    )}
-                  </PanelFormSection>
+                  </div>
                 </div>
               </div>
+            ))}
+            {!dataSpaceState.isReadOnly && (
+              <div className="panel__content__form__section__list__add">
+                <div className="panel__content__form__section__list__add__input">
+                  <CustomSelectorInput
+                    options={dataSpaceState.getDataSpaceElementOptions()}
+                    onChange={handleAddElement}
+                    placeholder="Select an element to add..."
+                    darkMode={true}
+                  />
+                </div>
+                <div className="panel__content__form__section__list__add__actions">
+                  <button
+                    className="panel__content__form__section__list__add__actions__btn"
+                    tabIndex={-1}
+                    title="Add element"
+                  >
+                    <PlusIcon />
+                  </button>
+                </div>
+              </div>
+            )}
+          </PanelFormListItems>
+        </PanelFormSection>
+
+        {/* Executables Section */}
+        {/* <PanelFormListItems title="Executables">
+            {formElement.executables?.map((executable, index) => (
+              <div
+                key={index}
+                className="panel__content__form__section__list__item"
+              >
+                <PanelFormTextField
+                  name={`Executable ${index + 1} Title`}
+                  value={executable.title}
+                  update={(value) => {
+                    if (
+                      formElement.executables &&
+                      formElement.executables[index]
+                    ) {
+                      formElement.executables[index].title = value ?? '';
+                    }
+                  }}
+                  placeholder="Enter title"
+                />
+                <PanelFormTextField
+                  name={`Executable ${index + 1} Description`}
+                  value={executable.description ?? ''}
+                  update={(value) => {
+                    if (
+                      formElement.executables &&
+                      formElement.executables[index]
+                    ) {
+                      formElement.executables[index].description = value;
+                    }
+                  }}
+                  placeholder="Enter description"
+                />
+                <button
+                  className="panel__content__form__section__button"
+                  onClick={() => handleRemoveExecutable(index)}
+                >
+                  Remove
+                </button>
+              </div>
+            )) ?? <div>No executables defined</div>}
+            <button
+              className="panel__content__form__section__button"
+              onClick={handleAddExecutable}
+            >
+              Add Executable
+            </button>
+          </PanelFormListItems> */}
+
+        {/* Diagrams Section */}
+        <PanelFormSection className="dataSpace-editor__general__diagrams">
+          <div className="panel__content__form__section__header__label">
+            Diagrams
+          </div>
+          <div className="panel__content__form__section__header__prompt">
+            Add diagrams to include in this Data Space. Set a title and
+            description for each diagram.
+          </div>
+          {dataSpace.diagrams?.map((diagram) => (
+            <div
+              key={diagram.diagram.value.path}
+              className="panel__content__form__section__list__item"
+            >
+              <div className="panel__content__form__section__list__item__content">
+                <div className="panel__content__form__section__header__label">
+                  Diagram
+                </div>
+                <div className="panel__content__form__section__list__item__content__title">
+                  {diagram.diagram.value.path}
+                </div>
+              </div>
+              <div className="panel__content__form__section__list__item__form">
+                <PanelFormTextField
+                  name="Title"
+                  value={diagram.title}
+                  update={(value) => handleDiagramTitleChange(diagram, value)}
+                  placeholder="Enter title"
+                  className="dataSpace-editor__general__diagrams__title"
+                />
+                <PanelFormTextField
+                  name="Description"
+                  value={diagram.description ?? ''}
+                  update={(value) =>
+                    handleDiagramDescriptionChange(diagram, value)
+                  }
+                  placeholder="Enter description"
+                  className="dataSpace-editor__general__diagrams__description"
+                />
+              </div>
+              {!dataSpaceState.isReadOnly && (
+                <div className="panel__content__form__section__list__item__content__actions">
+                  <button
+                    className="panel__content__form__section__list__item__content__actions__btn"
+                    onClick={() => handleRemoveDiagram(diagram)}
+                    tabIndex={-1}
+                    title="Remove diagram"
+                  >
+                    <TrashIcon />
+                  </button>
+                </div>
+              )}
             </div>
-          </ResizablePanel>
-        </ResizablePanelGroup>
-      </div>
-    );
-  },
-);
+          ))}
+          {!dataSpaceState.isReadOnly && (
+            <div className="panel__content__form__section__list__add">
+              <div className="panel__content__form__section__list__add__input">
+                <CustomSelectorInput
+                  options={dataSpaceState.getDiagramOptions()}
+                  onChange={handleAddDiagram}
+                  placeholder="Select a diagram to add..."
+                  darkMode={true}
+                />
+              </div>
+              <div className="panel__content__form__section__list__add__actions">
+                <button
+                  className="panel__content__form__section__list__add__actions__btn"
+                  tabIndex={-1}
+                  title="Add diagram"
+                >
+                  <PlusIcon />
+                </button>
+              </div>
+            </div>
+          )}
+        </PanelFormSection>
+
+        {/* Support Info Section */}
+        {/* <PanelFormListItems title="Support Information">
+            <div className="panel__content__form__section__header__prompt">
+              Configure support information for this Data Space.
+            </div>
+            <CustomSelectorInput
+              options={[
+                { label: 'None', value: 'none' },
+                { label: 'Email', value: 'email' },
+                { label: 'Combined', value: 'combined' },
+              ]}
+              onChange={(option: { label: string; value: unknown }) =>
+                handleSupportInfoTypeChange(option)
+              }
+              value={{
+                label: formElement.supportInfo
+                  ? dataSpaceState.dataSpaceElementBuilder.isDataSpaceSupportEmail(
+                      formElement.supportInfo,
+                    )
+                    ? 'Email'
+                    : 'Combined'
+                  : 'None',
+                value: formElement.supportInfo
+                  ? dataSpaceState.dataSpaceElementBuilder.isDataSpaceSupportEmail(
+                      formElement.supportInfo,
+                    )
+                    ? 'email'
+                    : 'combined'
+                  : 'none',
+              }}
+              darkMode={true}
+            />
+            {formElement.supportInfo && (
+              <div className="panel__content__form__section__list__item">
+                {dataSpaceState.dataSpaceElementBuilder.isDataSpaceSupportEmail(
+                  formElement.supportInfo,
+                ) ? (
+                  <PanelFormTextField
+                    name="Email Address"
+                    value={formElement.supportInfo.address}
+                    update={(value) => {
+                      if (
+                        dataSpaceState.dataSpaceElementBuilder.isDataSpaceSupportEmail(
+                          formElement.supportInfo,
+                        )
+                      ) {
+                        formElement.supportInfo.address = value ?? '';
+                      }
+                    }}
+                    placeholder="Enter email address"
+                  />
+                ) : (
+                  <div>
+                    <PanelFormTextField
+                      name="Website"
+                      value={
+                        dataSpaceState.dataSpaceElementBuilder.isDataSpaceSupportCombinedInfo(
+                          formElement.supportInfo,
+                        )
+                          ? (formElement.supportInfo.website ?? '')
+                          : ''
+                      }
+                      update={(value) => {
+                        if (
+                          formElement.supportInfo &&
+                          dataSpaceState.dataSpaceElementBuilder.isDataSpaceSupportCombinedInfo(
+                            formElement.supportInfo,
+                          )
+                        ) {
+                          formElement.supportInfo.website = value;
+                        }
+                      }}
+                      placeholder="Enter website URL"
+                    />
+                    <PanelFormTextField
+                      name="FAQ URL"
+                      value={
+                        dataSpaceState.dataSpaceElementBuilder.isDataSpaceSupportCombinedInfo(
+                          formElement.supportInfo,
+                        )
+                          ? (formElement.supportInfo.faqUrl ?? '')
+                          : ''
+                      }
+                      update={(value) => {
+                        if (
+                          formElement.supportInfo &&
+                          dataSpaceState.dataSpaceElementBuilder.isDataSpaceSupportCombinedInfo(
+                            formElement.supportInfo,
+                          )
+                        ) {
+                          formElement.supportInfo.faqUrl = value;
+                        }
+                      }}
+                      placeholder="Enter FAQ URL"
+                    />
+                    <PanelFormTextField
+                      name="Support URL"
+                      value={
+                        dataSpaceState.dataSpaceElementBuilder.isDataSpaceSupportCombinedInfo(
+                          formElement.supportInfo,
+                        )
+                          ? (formElement.supportInfo.supportUrl ?? '')
+                          : ''
+                      }
+                      update={(value) => {
+                        if (
+                          formElement.supportInfo &&
+                          dataSpaceState.dataSpaceElementBuilder.isDataSpaceSupportCombinedInfo(
+                            formElement.supportInfo,
+                          )
+                        ) {
+                          formElement.supportInfo.supportUrl = value;
+                        }
+                      }}
+                      placeholder="Enter support URL"
+                    />
+                    <PanelFormTextField
+                      name="Documentation URL"
+                      value={formElement.supportInfo.documentationUrl ?? ''}
+                      update={(value) => {
+                        if (formElement.supportInfo) {
+                          formElement.supportInfo.documentationUrl = value;
+                        }
+                      }}
+                      placeholder="Enter documentation URL"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+          </PanelFormListItems> */}
+      </PanelForm>
+    </PanelContentLists>
+  );
+});

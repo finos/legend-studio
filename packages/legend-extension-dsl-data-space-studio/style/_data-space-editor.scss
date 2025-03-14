@@ -14,109 +14,26 @@
  * limitations under the License.
  */
 
-.dataSpace-editor {
-  &__tabs {
-    &__tab {
-      &__content {
-        padding: 1rem;
-      }
-    }
-  }
+@use 'mixins' as *;
 
-  &__execution-context {
-    &__selector {
+.dataSpace-editor--dark {
+  &__header {
+    padding-left: 0;
+    background: var(--color-dark-grey-50);
+
+    &__configs {
       display: flex;
-      align-items: center;
-      margin-bottom: 1rem;
-
-      &__label {
-        margin-right: 1rem;
-      }
-    }
-  }
-
-  background-color: var(--color-dark-grey-85);
-
-  .panel__content {
-    background-color: var(--color-dark-grey-85);
-  }
-
-  .panel__header {
-    background-color: var(--color-dark-grey-50);
-  }
-
-  &__general {
-    .panel__content__form__section__list__item {
-      height: fit-content;
-
-      &__form {
-        flex-direction: row;
-      }
-
-      &__content {
-        display: flex;
-        align-items: center;
-      }
-
-      .panel__content__form__section {
-        margin-top: 0;
-      }
-
-      .dataSpace-editor__general__diagrams__title {
-        width: 25rem;
-      }
-
-      .dataSpace-editor__general__diagrams__description {
-        width: 40rem;
-      }
+      width: 100%;
     }
 
-    &__elements {
-      .panel__content__form__section__list__item__content__label {
-        width: 35rem;
-      }
-
-      .panel__content__form__section__list__item__content__actions {
-        &-exclude {
-          display: flex;
-          align-items: center;
-
-          &__btn {
-            padding: 0;
-          }
-        }
-
-        &__btn {
-          margin-left: 1rem;
-        }
-      }
+    &__name {
+      background: var(--color-dark-grey-100);
+      border: 0.1rem solid var(--color-dark-grey-300);
+      color: var(--color-light-grey-0);
     }
 
-    &__diagrams {
-      .panel__content__form__section__list__item__content {
-        flex-direction: column;
-        align-items: start;
-
-        &__actions__btn {
-          margin-top: 2.4rem;
-        }
-      }
-    }
-
-    &__support-info {
-      &__combined {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-      }
-    }
-
-    .panel__content__form {
-      max-width: unset;
-    }
-
-    .selector-input--dark {
-      max-width: 40rem;
+    &__name::placeholder {
+      color: var(--color-dark-grey-300);
     }
   }
 }
@@ -216,6 +133,85 @@
           color: var(--color-light-grey-100);
         }
       }
+    }
+  }
+}
+
+.dataSpace-editor {
+  background-color: var(--color-dark-grey-85);
+
+  .panel__content {
+    background-color: var(--color-dark-grey-85);
+  }
+
+  .panel__header {
+    background-color: var(--color-dark-grey-50);
+  }
+
+  &__general {
+    .panel__content__form__section__list__item {
+      height: fit-content;
+
+      &__form {
+        flex-direction: row;
+      }
+
+      &__content {
+        display: flex;
+        align-items: center;
+      }
+
+      .panel__content__form__section {
+        margin-top: 0;
+      }
+
+      .dataSpace-editor__general__diagrams__title {
+        width: 25rem;
+      }
+
+      .dataSpace-editor__general__diagrams__description {
+        width: 40rem;
+      }
+    }
+
+    &__elements {
+      .panel__content__form__section__list__item__content__label {
+        width: 35rem;
+      }
+
+      .panel__content__form__section__list__item__content__actions {
+        &-exclude {
+          display: flex;
+          align-items: center;
+
+          &__btn {
+            padding: 0;
+          }
+        }
+
+        &__btn {
+          margin-left: 1rem;
+        }
+      }
+    }
+
+    &__diagrams {
+      .panel__content__form__section__list__item__content {
+        flex-direction: column;
+        align-items: start;
+
+        &__actions__btn {
+          margin-top: 2.4rem;
+        }
+      }
+    }
+
+    .panel__content__form {
+      max-width: unset;
+    }
+
+    .selector-input--dark {
+      max-width: 40rem;
     }
   }
 }
