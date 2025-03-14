@@ -111,6 +111,14 @@
     }
   }
 
+  &__new-item {
+    &__input {
+      height: fit-content;
+      width: 35rem;
+      padding: 0;
+    }
+  }
+
   &__add {
     display: flex;
     align-items: center;

@@ -18,9 +18,9 @@ import { useEditorStore } from '@finos/legend-application-studio';
 import {
   Checkbox,
   CustomSelectorInput,
+  ListEditor,
   PanelContentLists,
   PanelForm,
-  PanelFormListItems,
   PanelFormSection,
   PanelFormTextField,
   PlusIcon,
@@ -185,6 +185,46 @@ export const DataSpaceGeneralEditor = observer(() => {
     }
   };
 
+  const elementsRenderer = (
+    element: DataSpaceElementPointer,
+  ): React.ReactElement => (
+    <div className="panel__content__form__section__list__item__content">
+      <div className="panel__content__form__section__list__item__content__label">
+        {element.element?.value?.path ?? 'Unknown Element'}
+      </div>
+      <div className="panel__content__form__section__list__item__content__actions">
+        <div className="panel__content__form__section__list__item__content__actions-exclude">
+          <Checkbox
+            disabled={dataSpaceState.isReadOnly}
+            checked={element.exclude ?? false}
+            onChange={(event) => handleElementExcludeChange(element, event)}
+            size="small"
+            className="panel__content__form__section__list__item__content__actions-exclude__btn"
+          />
+          <span className="panel__content__form__section__list__item__content__actions__label">
+            Exclude
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+
+  const newElementRenderer = (
+    onFinishEditing: () => void,
+  ): React.ReactElement => (
+    <div className="panel__content__form__section__list__new-item__input">
+      <CustomSelectorInput
+        options={dataSpaceState.getDataSpaceElementOptions()}
+        onChange={(event: { label: string; value: DataSpaceElement }) => {
+          onFinishEditing();
+          handleAddElement(event);
+        }}
+        placeholder="Select an element to add..."
+        darkMode={true}
+      />
+    </div>
+  );
+
   return (
     <PanelContentLists className="dataSpace-editor__general">
       <PanelForm>
@@ -234,70 +274,18 @@ export const DataSpaceGeneralEditor = observer(() => {
         </PanelFormSection>
         {/* Elements Section */}
         <PanelFormSection className="dataSpace-editor__general__elements">
-          <PanelFormListItems
+          <ListEditor
             title="Elements"
             prompt="Add elements to include in this Data Space. Use the exclude checkbox to exclude elements."
-          >
-            {dataSpace.elements?.map((element, index) => (
-              <div
-                key={element.element.value.path}
-                className="panel__content__form__section__list__item"
-              >
-                <div className="panel__content__form__section__list__item__content">
-                  <div className="panel__content__form__section__list__item__content__label">
-                    {element.element?.value?.path ?? 'Unknown Element'}
-                  </div>
-                  <div className="panel__content__form__section__list__item__content__actions">
-                    <div className="panel__content__form__section__list__item__content__actions-exclude">
-                      <Checkbox
-                        disabled={dataSpaceState.isReadOnly}
-                        checked={element.exclude ?? false}
-                        onChange={(event) =>
-                          handleElementExcludeChange(element, event)
-                        }
-                        size="small"
-                        className="panel__content__form__section__list__item__content__actions-exclude__btn"
-                      />
-                      <span className="panel__content__form__section__list__item__content__actions__label">
-                        Exclude
-                      </span>
-                    </div>
-                    {!dataSpaceState.isReadOnly && (
-                      <button
-                        className="panel__content__form__section__list__item__content__actions__btn"
-                        onClick={() => handleRemoveElement(element)}
-                        tabIndex={-1}
-                        title="Remove element"
-                      >
-                        <TrashIcon />
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-            {!dataSpaceState.isReadOnly && (
-              <div className="panel__content__form__section__list__add">
-                <div className="panel__content__form__section__list__add__input">
-                  <CustomSelectorInput
-                    options={dataSpaceState.getDataSpaceElementOptions()}
-                    onChange={handleAddElement}
-                    placeholder="Select an element to add..."
-                    darkMode={true}
-                  />
-                </div>
-                <div className="panel__content__form__section__list__add__actions">
-                  <button
-                    className="panel__content__form__section__list__add__actions__btn"
-                    tabIndex={-1}
-                    title="Add element"
-                  >
-                    <PlusIcon />
-                  </button>
-                </div>
-              </div>
-            )}
-          </PanelFormListItems>
+            elements={dataSpace.elements}
+            keySelector={(element: DataSpaceElementPointer) =>
+              element.element.value.path
+            }
+            elementRenderer={elementsRenderer}
+            newElementRenderer={newElementRenderer}
+            handleRemoveElement={handleRemoveElement}
+            isReadOnly={dataSpaceState.isReadOnly}
+          />
         </PanelFormSection>
 
         {/* Executables Section */}
