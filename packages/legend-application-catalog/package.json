@@ -47,6 +47,8 @@
   "dependencies": {
     "@finos/legend-application": "workspace:*",
     "@finos/legend-art": "workspace:*",
+    "@finos/legend-graph": "workspace:*",
+    "@finos/legend-server-depot": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@testing-library/dom": "10.4.0",
     "@testing-library/react": "16.2.0",
