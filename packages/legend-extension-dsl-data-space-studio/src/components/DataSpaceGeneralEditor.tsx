@@ -299,16 +299,18 @@ export const DataSpaceGeneralEditor = observer(() => {
     const { onFinishEditing } = props;
     const [email, setEmail] = useState('');
     return (
-      <div className="panel__content__form__section__list__new-item__input">
-        <PanelFormTextField
-          name="Email"
-          value={email}
-          prompt="Data Space title is the unique identifier for this Data Space."
-          update={(event) => {
-            setEmail(event ?? '');
-          }}
-          placeholder="Enter title"
-        />
+      <div className="dataSpace-editor__general__support-info__new-email">
+        <div className="panel__content__form__section__list__new-item__input">
+          <input
+            className="input input-group__input panel__content__form__section__input input--dark"
+            type="email"
+            placeholder="Enter email"
+            value={email}
+            onChange={(event) => {
+              setEmail(event.target.value ?? '');
+            }}
+          />
+        </div>
         <button
           className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
           onClick={() => {
@@ -481,7 +483,7 @@ export const DataSpaceGeneralEditor = observer(() => {
           />
           {dataSpace.supportInfo ? (
             dataSpace.supportInfo instanceof DataSpaceSupportEmail ? (
-              <PanelFormSection>
+              <PanelFormSection className="dataSpace-editor__general__support-info__content">
                 <PanelFormTextField
                   name="Email Address"
                   value={dataSpace.supportInfo.address}
@@ -513,7 +515,7 @@ export const DataSpaceGeneralEditor = observer(() => {
               </PanelFormSection>
             ) : dataSpace.supportInfo instanceof
               DataSpaceSupportCombinedInfo ? (
-              <PanelFormSection>
+              <PanelFormSection className="dataSpace-editor__general__support-info__content">
                 <ListEditor
                   title="Emails"
                   elements={dataSpace.supportInfo.emails}
