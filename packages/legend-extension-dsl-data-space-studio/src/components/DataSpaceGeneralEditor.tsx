@@ -225,6 +225,51 @@ export const DataSpaceGeneralEditor = observer(() => {
     </div>
   );
 
+  const diagramsRenderer = (diagram: DataSpaceDiagram): React.ReactElement => (
+    <>
+      <div className="panel__content__form__section__list__item__content">
+        <div className="panel__content__form__section__header__label">
+          Diagram
+        </div>
+        <div className="panel__content__form__section__list__item__content__title">
+          {diagram.diagram.value.path}
+        </div>
+      </div>
+      <div className="panel__content__form__section__list__item__form">
+        <PanelFormTextField
+          name="Title"
+          value={diagram.title}
+          update={(value) => handleDiagramTitleChange(diagram, value)}
+          placeholder="Enter title"
+          className="dataSpace-editor__general__diagrams__title"
+        />
+        <PanelFormTextField
+          name="Description"
+          value={diagram.description ?? ''}
+          update={(value) => handleDiagramDescriptionChange(diagram, value)}
+          placeholder="Enter description"
+          className="dataSpace-editor__general__diagrams__description"
+        />
+      </div>
+    </>
+  );
+
+  const newDiagramRenderer = (
+    onFinishEditing: () => void,
+  ): React.ReactElement => (
+    <div className="panel__content__form__section__list__new-item__input">
+      <CustomSelectorInput
+        options={dataSpaceState.getDiagramOptions()}
+        onChange={(event: { label: string; value: Diagram }) => {
+          onFinishEditing();
+          handleAddDiagram(event);
+        }}
+        placeholder="Select a diagram to add..."
+        darkMode={true}
+      />
+    </div>
+  );
+
   return (
     <PanelContentLists className="dataSpace-editor__general">
       <PanelForm>
@@ -287,7 +332,6 @@ export const DataSpaceGeneralEditor = observer(() => {
             isReadOnly={dataSpaceState.isReadOnly}
           />
         </PanelFormSection>
-
         {/* Executables Section */}
         {/* <PanelFormListItems title="Executables">
             {formElement.executables?.map((executable, index) => (
@@ -336,84 +380,21 @@ export const DataSpaceGeneralEditor = observer(() => {
               Add Executable
             </button>
           </PanelFormListItems> */}
-
         {/* Diagrams Section */}
         <PanelFormSection className="dataSpace-editor__general__diagrams">
-          <div className="panel__content__form__section__header__label">
-            Diagrams
-          </div>
-          <div className="panel__content__form__section__header__prompt">
-            Add diagrams to include in this Data Space. Set a title and
-            description for each diagram.
-          </div>
-          {dataSpace.diagrams?.map((diagram) => (
-            <div
-              key={diagram.diagram.value.path}
-              className="panel__content__form__section__list__item"
-            >
-              <div className="panel__content__form__section__list__item__content">
-                <div className="panel__content__form__section__header__label">
-                  Diagram
-                </div>
-                <div className="panel__content__form__section__list__item__content__title">
-                  {diagram.diagram.value.path}
-                </div>
-              </div>
-              <div className="panel__content__form__section__list__item__form">
-                <PanelFormTextField
-                  name="Title"
-                  value={diagram.title}
-                  update={(value) => handleDiagramTitleChange(diagram, value)}
-                  placeholder="Enter title"
-                  className="dataSpace-editor__general__diagrams__title"
-                />
-                <PanelFormTextField
-                  name="Description"
-                  value={diagram.description ?? ''}
-                  update={(value) =>
-                    handleDiagramDescriptionChange(diagram, value)
-                  }
-                  placeholder="Enter description"
-                  className="dataSpace-editor__general__diagrams__description"
-                />
-              </div>
-              {!dataSpaceState.isReadOnly && (
-                <div className="panel__content__form__section__list__item__content__actions">
-                  <button
-                    className="panel__content__form__section__list__item__content__actions__btn"
-                    onClick={() => handleRemoveDiagram(diagram)}
-                    tabIndex={-1}
-                    title="Remove diagram"
-                  >
-                    <TrashIcon />
-                  </button>
-                </div>
-              )}
-            </div>
-          ))}
-          {!dataSpaceState.isReadOnly && (
-            <div className="panel__content__form__section__list__add">
-              <div className="panel__content__form__section__list__add__input">
-                <CustomSelectorInput
-                  options={dataSpaceState.getDiagramOptions()}
-                  onChange={handleAddDiagram}
-                  placeholder="Select a diagram to add..."
-                  darkMode={true}
-                />
-              </div>
-              <div className="panel__content__form__section__list__add__actions">
-                <button
-                  className="panel__content__form__section__list__add__actions__btn"
-                  tabIndex={-1}
-                  title="Add diagram"
-                >
-                  <PlusIcon />
-                </button>
-              </div>
-            </div>
-          )}
+          <ListEditor
+            title="Diagrams"
+            prompt="Add diagrams to include in this Data Space. Set a title and description for each diagram."
+            elements={dataSpace.diagrams}
+            keySelector={(element: DataSpaceDiagram) =>
+              element.diagram.value.path
+            }
+            elementRenderer={diagramsRenderer}
+            newElementRenderer={newDiagramRenderer}
+            handleRemoveElement={handleRemoveDiagram}
+            isReadOnly={dataSpaceState.isReadOnly}
+          />
         </PanelFormSection>
-
         {/* Support Info Section */}
         <PanelFormSection className="dataSpace-editor__general__support-info">
           <div className="panel__content__form__section__header__label">
