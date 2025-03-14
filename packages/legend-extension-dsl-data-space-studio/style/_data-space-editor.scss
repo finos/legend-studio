@@ -149,24 +149,38 @@
   }
 
   &__general {
+    .panel__content__form__section__list__item {
+      height: fit-content;
+
+      &__form {
+        flex-direction: row;
+      }
+
+      &__content {
+        display: flex;
+        align-items: center;
+      }
+
+      .panel__content__form__section {
+        margin-top: 0;
+      }
+
+      .dataSpace-editor__general__diagrams__title {
+        width: 25rem;
+      }
+
+      .dataSpace-editor__general__diagrams__description {
+        width: 40rem;
+      }
+    }
+
     &__diagrams {
-      .panel__content__form__section__list__item {
-        height: fit-content;
+      .panel__content__form__section__list__item__content {
+        flex-direction: column;
+        align-items: start;
 
-        &__form {
-          flex-direction: row;
-        }
-
-        .panel__content__form__section {
-          margin-top: 0;
-        }
-
-        .dataSpace-editor__general__diagrams__title {
-          width: 25rem;
-        }
-
-        .dataSpace-editor__general__diagrams__description {
-          width: 40rem;
+        &__actions__btn {
+          margin-top: 2.4rem;
         }
       }
     }
