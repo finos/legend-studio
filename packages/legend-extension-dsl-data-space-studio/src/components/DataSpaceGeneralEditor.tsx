@@ -52,7 +52,7 @@ import {
   DataSpaceSupportCombinedInfo,
   DataSpaceSupportEmail,
 } from '@finos/legend-extension-dsl-data-space/graph';
-import { Diagram } from '@finos/legend-extension-dsl-diagram/graph';
+import { type Diagram } from '@finos/legend-extension-dsl-diagram/graph';
 import { PackageableElementExplicitReference } from '@finos/legend-graph';
 
 export const DataSpaceGeneralEditor = observer(() => {
@@ -216,7 +216,7 @@ export const DataSpaceGeneralEditor = observer(() => {
           />
         </PanelFormSection>
         {/* Elements Section */}
-        <PanelFormSection>
+        <PanelFormSection className="dataSpace-editor__general__elements">
           <PanelFormListItems
             title="Elements"
             prompt="Add elements to include in this Data Space. Use the exclude checkbox to exclude elements."
@@ -231,23 +231,20 @@ export const DataSpaceGeneralEditor = observer(() => {
                     {element.element?.value?.path ?? 'Unknown Element'}
                   </div>
                   <div className="panel__content__form__section__list__item__content__actions">
-                    <Checkbox
-                      disabled={dataSpaceState.isReadOnly}
-                      checked={element.exclude ?? false}
-                      onChange={(event) =>
-                        handleElementExcludeChange(element, event)
-                      }
-                      size="small"
-                      sx={{
-                        color: 'var(--color-light-grey-200)',
-                        '&.Mui-checked': {
-                          color: 'var(--color-light-grey-200)',
-                        },
-                      }}
-                    />
-                    <span className="panel__content__form__section__list__item__content__actions__label">
-                      Exclude
-                    </span>
+                    <div className="panel__content__form__section__list__item__content__actions-exclude">
+                      <Checkbox
+                        disabled={dataSpaceState.isReadOnly}
+                        checked={element.exclude ?? false}
+                        onChange={(event) =>
+                          handleElementExcludeChange(element, event)
+                        }
+                        size="small"
+                        className="panel__content__form__section__list__item__content__actions-exclude__btn"
+                      />
+                      <span className="panel__content__form__section__list__item__content__actions__label">
+                        Exclude
+                      </span>
+                    </div>
                     {!dataSpaceState.isReadOnly && (
                       <button
                         className="panel__content__form__section__list__item__content__actions__btn"
