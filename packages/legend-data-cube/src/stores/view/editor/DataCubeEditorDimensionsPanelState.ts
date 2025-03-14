@@ -14,15 +14,24 @@
  * limitations under the License.
  */
 
-import type { DataCubeConfiguration } from '../../core/model/DataCubeConfiguration.js';
-import { DataCubeColumnKind } from '../../core/DataCubeQueryEngine.js';
+import {
+  DataCubeDimensionsConfiguration,
+  type DataCubeConfiguration,
+} from '../../core/model/DataCubeConfiguration.js';
+import {
+  DataCubeColumnKind,
+  DataCubeGridMode,
+} from '../../core/DataCubeQueryEngine.js';
 import { type DataCubeSnapshot } from '../../core/DataCubeSnapshot.js';
 import { _findCol, _sortByColName } from '../../core/model/DataCubeColumn.js';
 import { DataCubeEditorColumnsSelectorColumnState } from './DataCubeEditorColumnsSelectorState.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
 import { action, computed, makeObservable, observable } from 'mobx';
-import { generateEnumerableNameFromToken } from '@finos/legend-shared';
+import {
+  generateEnumerableNameFromToken,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
 
 export type DataCubeEditorDimensionsTreeNode = {
   name: string;
@@ -187,23 +196,43 @@ export class DataCubeEditorDimensionsPanelState
     snapshot: DataCubeSnapshot,
     configuration: DataCubeConfiguration,
   ) {
-    // this.selector.setSelectedColumns(
-    //   (snapshot.data.groupBy?.columns ?? []).map(
-    //     (col) =>
-    //       new DataCubeEditorColumnSelectorColumnState(col.name, col.type),
-    //   ),
-    // );
+    this.setDimensions(
+      configuration.dimensions.dimensions.map((dimension) => {
+        const _dimension = new DataCubeEditorDimensionState(dimension.name);
+        _dimension.setColumns(
+          dimension.columns.map((colName) => {
+            const column = guaranteeNonNullable(
+              _findCol(configuration.columns, colName),
+            );
+            return new DataCubeEditorColumnsSelectorColumnState(
+              column.name,
+              column.type,
+            );
+          }),
+        );
+        return _dimension;
+      }),
+    );
   }
 
   buildSnapshot(newSnapshot: DataCubeSnapshot, baseSnapshot: DataCubeSnapshot) {
-    // newSnapshot.data.groupBy = this.selector.selectedColumns.length
-    //   ? {
-    //       columns: this.selector.selectedColumns.map(_toCol),
-    //     }
-    //   : undefined;
-    // newSnapshot.data.selectColumns = uniqBy(
-    //   [...newSnapshot.data.selectColumns, ...this.selector.selectedColumns],
-    //   (col) => col.name,
-    // ).map(_toCol);
+    const dimensionsConfiguration = new DataCubeDimensionsConfiguration();
+
+    if (
+      this._editor.generalProperties.configuration.gridMode ===
+      DataCubeGridMode.MULTIDIMENSIONAL
+    ) {
+      dimensionsConfiguration.dimensions = this.dimensions.map((dimension) => ({
+        name: dimension.name,
+        columns: dimension.columns.map((column) => column.name),
+      }));
+    }
+
+    newSnapshot.data.configuration = {
+      ...newSnapshot.data.configuration,
+      dimensions: DataCubeDimensionsConfiguration.serialization.toJson(
+        dimensionsConfiguration,
+      ),
+    };
   }
 }

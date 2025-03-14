@@ -189,6 +189,30 @@ export class DataCubePivotLayoutConfiguration {
   }
 }
 
+export class DataCubeDimensionConfiguration {
+  name!: string;
+  columns: string[] = [];
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(DataCubeDimensionConfiguration, {
+      columns: list(primitive()),
+      name: primitive(),
+    }),
+  );
+}
+
+export class DataCubeDimensionsConfiguration {
+  dimensions: DataCubeDimensionConfiguration[] = [];
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(DataCubeDimensionsConfiguration, {
+      dimensions: list(
+        usingModelSchema(DataCubeDimensionConfiguration.serialization.schema),
+      ),
+    }),
+  );
+}
+
 export class DataCubeConfiguration {
   readonly uuid = uuid();
 
@@ -236,6 +260,7 @@ export class DataCubeConfiguration {
   pivotStatisticColumnPlacement?: DataCubeColumnPinPlacement | undefined; // unspecified -> hide the column
 
   pivotLayout = new DataCubePivotLayoutConfiguration();
+  dimensions = new DataCubeDimensionsConfiguration();
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(DataCubeConfiguration, {
@@ -249,6 +274,9 @@ export class DataCubeConfiguration {
       errorBackgroundColor: primitive(),
       errorForegroundColor: primitive(),
       description: optional(primitive()),
+      dimensions: usingModelSchema(
+        DataCubeDimensionsConfiguration.serialization.schema,
+      ),
       fontBold: primitive(),
       fontCase: optional(primitive()),
       fontFamily: primitive(),

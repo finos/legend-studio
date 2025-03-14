@@ -74,15 +74,6 @@ export type DataCubeSnapshotProcessingContext = {
   groupBySortColumns?: DataCubeSnapshotSortColumn[] | undefined;
 };
 
-export type DataCubeSnapshotDimension = {
-  columns: DataCubeColumn[];
-};
-
-export type DataCubeSnapshotMultiDimension = {
-  dimensions: DataCubeSnapshotDimension[];
-  // TODO: tree
-};
-
 export type DataCubeSnapshotData = {
   configuration: PlainObject<DataCubeConfiguration>;
   sourceColumns: DataCubeColumn[];
@@ -91,7 +82,6 @@ export type DataCubeSnapshotData = {
   selectColumns: DataCubeColumn[];
   pivot?: DataCubeSnapshotPivot | undefined;
   groupBy?: DataCubeSnapshotGroupBy | undefined;
-  dimension?: DataCubeSnapshotDimension | undefined;
   groupExtendedColumns: DataCubeSnapshotExtendedColumn[];
   sortColumns: DataCubeSnapshotSortColumn[];
   limit: number | undefined;

@@ -1221,6 +1221,20 @@ export const DataCubeEditorDimensionsPanel = observer(
                           sortable: false,
                           resizable: false,
                           suppressHeaderMenuButton: true,
+                          suppressKeyboardEvent: (event) => {
+                            if (
+                              panel.dimensions.some(
+                                (dimension) => dimension.isRenaming,
+                              )
+                            ) {
+                              // only allow tabbing through the grid when renaming
+                              if (event.event.code === 'Tab') {
+                                return false;
+                              }
+                              return true;
+                            }
+                            return false;
+                          },
                           getQuickFilterText: (params) => params.value,
                           /**
                            * Support double-click to remove all (filtered by search) columns
