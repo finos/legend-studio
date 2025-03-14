@@ -14,21 +14,12 @@
  * limitations under the License.
  */
 
-import { getBaseJestProjectConfig } from '../../scripts/test/jest.config.base.js';
-import { loadJSON } from '@finos/legend-dev-utils/DevUtils';
-import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { render, type RenderResult } from '@testing-library/react';
+import type { ReactElement } from 'react';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-
-const packageJson = loadJSON(resolve(__dirname, './package.json'));
-const base = getBaseJestProjectConfig(packageJson.name, 'packages/legend-art');
-
-export default {
-  ...base,
-  testEnvironment: 'jsdom',
-  setupFiles: [
-    ...base.setupFiles,
-    '@finos/legend-dev-utils/jest/setupDOMPolyfills',
-  ],
+/**
+ * Renders a component for testing with standard options
+ */
+export const renderComponent = (ui: ReactElement): RenderResult => {
+  return render(ui);
 };
