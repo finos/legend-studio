@@ -461,8 +461,8 @@ export const PanelFormBooleanField = observer(
 );
 
 export const PanelFormListItems: React.FC<{
-  title?: string;
-  prompt?: string;
+  title?: string | undefined;
+  prompt?: string | undefined;
   children: React.ReactNode;
 }> = (props) => {
   const { children, title, prompt } = props;
