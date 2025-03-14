@@ -21,10 +21,13 @@ import {
   type DataSpaceElementPointer,
   type DataSpaceExecutable,
   type DataSpaceExecutionContext,
+  type DataSpaceSupportCombinedInfo,
+  type DataSpaceSupportEmail,
   type DataSpaceSupportInfo,
   observe_DataSpaceDiagram,
   observe_DataSpaceElementPointer,
   observe_DataSpaceExecutionContext,
+  observe_DataSpaceSupportInfo,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import type {
   PackageableElementReference,
@@ -95,7 +98,10 @@ export const dataSpace_setSupportInfo = action(
     dataSpace: DataSpace,
     supportInfo: DataSpaceSupportInfo | undefined,
   ): void => {
-    dataSpace.supportInfo = supportInfo;
+    dataSpace.supportInfo =
+      supportInfo !== undefined
+        ? observe_DataSpaceSupportInfo(supportInfo)
+        : undefined;
   },
 );
 
@@ -246,5 +252,53 @@ export const dataSpace_setExecutionContextTestData = action(
     testData: DataElementReference | undefined,
   ): void => {
     executionContext.testData = testData;
+  },
+);
+
+export const dataSpace_setDocumentationUrl = action(
+  (supportInfo: DataSpaceSupportInfo, url: string): void => {
+    supportInfo.documentationUrl = url;
+  },
+);
+
+export const dataSpace_email_setSupportInfoEmail = action(
+  (supportInfo: DataSpaceSupportEmail, email: string): void => {
+    supportInfo.address = email;
+  },
+);
+
+export const dataSpace_combined_addEmail = action(
+  (supportInfo: DataSpaceSupportCombinedInfo, email: string): void => {
+    if (supportInfo.emails === undefined) {
+      supportInfo.emails = [];
+    }
+    addUniqueEntry(supportInfo.emails, email);
+  },
+);
+
+export const dataSpace_combined_deleteEmail = action(
+  (supportInfo: DataSpaceSupportCombinedInfo, email: string): void => {
+    const index = supportInfo.emails?.indexOf(email);
+    if (index !== undefined && index !== -1) {
+      supportInfo.emails?.splice(index, 1);
+    }
+  },
+);
+
+export const dataSpace_combined_setWebsite = action(
+  (supportInfo: DataSpaceSupportCombinedInfo, website: string): void => {
+    supportInfo.website = website;
+  },
+);
+
+export const dataSpace_combined_setFaqUrl = action(
+  (supportInfo: DataSpaceSupportCombinedInfo, faqUrl: string): void => {
+    supportInfo.faqUrl = faqUrl;
+  },
+);
+
+export const dataSpace_combined_setSupportUrl = action(
+  (supportInfo: DataSpaceSupportCombinedInfo, supportUrl: string): void => {
+    supportInfo.supportUrl = supportUrl;
   },
 );
