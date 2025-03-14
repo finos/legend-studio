@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.1.10
+
+### Patch Changes
+
+- [#3939](https://github.com/finos/legend-studio/pull/3939) [`2cef01a`](https://github.com/finos/legend-studio/commit/2cef01a34dd0ec7d76538c92b72cf1a4e436c689) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `taggedValues` and `stereotypes` metamodel properties to Database, Schema, View, Table and Column classes in the relational model. Also remove `INTERNAL__forceReturnEmptyInTest` flag from serialization helpers.
+
 ## 32.1.9
 
 ## 32.1.8
