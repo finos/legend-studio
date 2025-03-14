@@ -177,7 +177,10 @@ export const DataSpaceGeneralEditor = observer(() => {
       !(dataSpace.supportInfo instanceof DataSpaceSupportCombinedInfo)
     ) {
       const supportInfo = new DataSpaceSupportCombinedInfo();
-      if (dataSpace.supportInfo instanceof DataSpaceSupportEmail) {
+      if (
+        dataSpace.supportInfo instanceof DataSpaceSupportEmail &&
+        dataSpace.supportInfo.address
+      ) {
         supportInfo.emails = [dataSpace.supportInfo.address];
       }
       dataSpace_setSupportInfo(dataSpace, supportInfo);
