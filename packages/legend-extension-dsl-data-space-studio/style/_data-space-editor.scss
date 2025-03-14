@@ -44,13 +44,15 @@
     margin-bottom: 0.5rem;
     padding: 0.5rem;
     border-radius: 3px;
+    width: fit-content;
 
     &__content {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-
       &__label {
+        color: var(--color-light-grey-200);
+        font-size: 1.2rem;
+      }
+
+      &__title {
         color: var(--color-light-grey-200);
         font-size: 1.2rem;
       }
@@ -97,7 +99,6 @@
     &__form {
       display: flex;
       flex-direction: column;
-      width: 100%;
       margin-top: 0.5rem;
 
       .panel__content__form__section {
@@ -145,5 +146,37 @@
 
   .panel__header {
     background-color: var(--color-dark-grey-50);
+  }
+
+  &__general {
+    &__diagrams {
+      .panel__content__form__section__list__item {
+        height: fit-content;
+
+        &__form {
+          flex-direction: row;
+        }
+
+        .panel__content__form__section {
+          margin-top: 0;
+        }
+
+        .dataSpace-editor__general__diagrams__title {
+          width: 25rem;
+        }
+
+        .dataSpace-editor__general__diagrams__description {
+          width: 40rem;
+        }
+      }
+    }
+
+    .panel__content__form {
+      max-width: unset;
+    }
+
+    .selector-input--dark {
+      max-width: 40rem;
+    }
   }
 }

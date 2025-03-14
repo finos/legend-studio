@@ -169,7 +169,7 @@ export const DataSpaceGeneralEditor = observer(() => {
   };
 
   return (
-    <PanelContentLists className="service-editor__general">
+    <PanelContentLists className="dataSpace-editor__general">
       <PanelForm>
         {/* Basic Properties Section */}
         <PanelFormSection>
@@ -336,7 +336,7 @@ export const DataSpaceGeneralEditor = observer(() => {
           </PanelFormListItems> */}
 
         {/* Diagrams Section */}
-        <PanelFormSection>
+        <PanelFormSection className="dataSpace-editor__general__diagrams">
           <div className="panel__content__form__section__header__label">
             Diagrams
           </div>
@@ -350,20 +350,11 @@ export const DataSpaceGeneralEditor = observer(() => {
               className="panel__content__form__section__list__item"
             >
               <div className="panel__content__form__section__list__item__content">
-                <div className="panel__content__form__section__list__item__content__label">
-                  {diagram.diagram.value.path}
+                <div className="panel__content__form__section__header__label">
+                  Diagram
                 </div>
-                <div className="panel__content__form__section__list__item__content__actions">
-                  {!dataSpaceState.isReadOnly && (
-                    <button
-                      className="panel__content__form__section__list__item__content__actions__btn"
-                      onClick={() => handleRemoveDiagram(diagram)}
-                      tabIndex={-1}
-                      title="Remove diagram"
-                    >
-                      <TrashIcon />
-                    </button>
-                  )}
+                <div className="panel__content__form__section__list__item__content__title">
+                  {diagram.diagram.value.path}
                 </div>
               </div>
               <div className="panel__content__form__section__list__item__form">
@@ -372,6 +363,7 @@ export const DataSpaceGeneralEditor = observer(() => {
                   value={diagram.title}
                   update={(value) => handleDiagramTitleChange(diagram, value)}
                   placeholder="Enter title"
+                  className="dataSpace-editor__general__diagrams__title"
                 />
                 <PanelFormTextField
                   name="Description"
@@ -380,8 +372,21 @@ export const DataSpaceGeneralEditor = observer(() => {
                     handleDiagramDescriptionChange(diagram, value)
                   }
                   placeholder="Enter description"
+                  className="dataSpace-editor__general__diagrams__description"
                 />
               </div>
+              {!dataSpaceState.isReadOnly && (
+                <div className="panel__content__form__section__list__item__content__actions">
+                  <button
+                    className="panel__content__form__section__list__item__content__actions__btn"
+                    onClick={() => handleRemoveDiagram(diagram)}
+                    tabIndex={-1}
+                    title="Remove diagram"
+                  >
+                    <TrashIcon />
+                  </button>
+                </div>
+              )}
             </div>
           ))}
           {!dataSpaceState.isReadOnly && (
