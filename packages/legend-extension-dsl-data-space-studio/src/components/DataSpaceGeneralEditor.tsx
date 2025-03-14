@@ -32,6 +32,10 @@ import {
   dataSpace_addDiagram,
   dataSpace_addElement,
   dataSpace_addExecutable,
+  dataSpace_combined_setFaqUrl,
+  dataSpace_combined_setSupportUrl,
+  dataSpace_combined_setWebsite,
+  dataSpace_email_setSupportInfoEmail,
   dataSpace_removeDiagram,
   dataSpace_removeElement,
   dataSpace_removeExecutable,
@@ -39,6 +43,7 @@ import {
   dataSpace_setDescription,
   dataSpace_setDiagramDescription,
   dataSpace_setDiagramTitle,
+  dataSpace_setDocumentationUrl,
   dataSpace_setElementExclude,
   dataSpace_setSupportInfo,
   dataSpace_setTitle,
@@ -152,16 +157,28 @@ export const DataSpaceGeneralEditor = observer(() => {
   };
 
   // SupportInfo handlers
-  const handleSupportInfoTypeChange = (option: { value: unknown }): void => {
+  const handleSupportInfoTypeChange = (option: { value: string }): void => {
     if (!option || typeof option !== 'object' || !('value' in option)) {
       return;
     }
-    const type = option.value as string;
-    if (type === 'email') {
+    const type = option.value;
+    if (
+      type === 'email' &&
+      !(dataSpace.supportInfo instanceof DataSpaceSupportEmail)
+    ) {
       const supportInfo = new DataSpaceSupportEmail();
+      if (dataSpace.supportInfo instanceof DataSpaceSupportCombinedInfo) {
+        supportInfo.address = dataSpace.supportInfo.emails?.[0] ?? '';
+      }
       dataSpace_setSupportInfo(dataSpace, supportInfo);
-    } else if (type === 'combined') {
+    } else if (
+      type === 'combined' &&
+      !(dataSpace.supportInfo instanceof DataSpaceSupportCombinedInfo)
+    ) {
       const supportInfo = new DataSpaceSupportCombinedInfo();
+      if (dataSpace.supportInfo instanceof DataSpaceSupportEmail) {
+        supportInfo.emails = [dataSpace.supportInfo.address];
+      }
       dataSpace_setSupportInfo(dataSpace, supportInfo);
     } else {
       dataSpace_setSupportInfo(dataSpace, undefined);
@@ -410,136 +427,138 @@ export const DataSpaceGeneralEditor = observer(() => {
         </PanelFormSection>
 
         {/* Support Info Section */}
-        {/* <PanelFormListItems title="Support Information">
-            <div className="panel__content__form__section__header__prompt">
-              Configure support information for this Data Space.
-            </div>
-            <CustomSelectorInput
-              options={[
-                { label: 'None', value: 'none' },
-                { label: 'Email', value: 'email' },
-                { label: 'Combined', value: 'combined' },
-              ]}
-              onChange={(option: { label: string; value: unknown }) =>
-                handleSupportInfoTypeChange(option)
-              }
-              value={{
-                label: formElement.supportInfo
-                  ? dataSpaceState.dataSpaceElementBuilder.isDataSpaceSupportEmail(
-                      formElement.supportInfo,
-                    )
-                    ? 'Email'
-                    : 'Combined'
-                  : 'None',
-                value: formElement.supportInfo
-                  ? dataSpaceState.dataSpaceElementBuilder.isDataSpaceSupportEmail(
-                      formElement.supportInfo,
-                    )
-                    ? 'email'
-                    : 'combined'
-                  : 'none',
-              }}
-              darkMode={true}
-            />
-            {formElement.supportInfo && (
-              <div className="panel__content__form__section__list__item">
-                {dataSpaceState.dataSpaceElementBuilder.isDataSpaceSupportEmail(
-                  formElement.supportInfo,
-                ) ? (
-                  <PanelFormTextField
-                    name="Email Address"
-                    value={formElement.supportInfo.address}
-                    update={(value) => {
-                      if (
-                        dataSpaceState.dataSpaceElementBuilder.isDataSpaceSupportEmail(
-                          formElement.supportInfo,
-                        )
-                      ) {
-                        formElement.supportInfo.address = value ?? '';
-                      }
-                    }}
-                    placeholder="Enter email address"
-                  />
-                ) : (
-                  <div>
-                    <PanelFormTextField
-                      name="Website"
-                      value={
-                        dataSpaceState.dataSpaceElementBuilder.isDataSpaceSupportCombinedInfo(
-                          formElement.supportInfo,
-                        )
-                          ? (formElement.supportInfo.website ?? '')
-                          : ''
-                      }
-                      update={(value) => {
-                        if (
-                          formElement.supportInfo &&
-                          dataSpaceState.dataSpaceElementBuilder.isDataSpaceSupportCombinedInfo(
-                            formElement.supportInfo,
-                          )
-                        ) {
-                          formElement.supportInfo.website = value;
-                        }
-                      }}
-                      placeholder="Enter website URL"
-                    />
-                    <PanelFormTextField
-                      name="FAQ URL"
-                      value={
-                        dataSpaceState.dataSpaceElementBuilder.isDataSpaceSupportCombinedInfo(
-                          formElement.supportInfo,
-                        )
-                          ? (formElement.supportInfo.faqUrl ?? '')
-                          : ''
-                      }
-                      update={(value) => {
-                        if (
-                          formElement.supportInfo &&
-                          dataSpaceState.dataSpaceElementBuilder.isDataSpaceSupportCombinedInfo(
-                            formElement.supportInfo,
-                          )
-                        ) {
-                          formElement.supportInfo.faqUrl = value;
-                        }
-                      }}
-                      placeholder="Enter FAQ URL"
-                    />
-                    <PanelFormTextField
-                      name="Support URL"
-                      value={
-                        dataSpaceState.dataSpaceElementBuilder.isDataSpaceSupportCombinedInfo(
-                          formElement.supportInfo,
-                        )
-                          ? (formElement.supportInfo.supportUrl ?? '')
-                          : ''
-                      }
-                      update={(value) => {
-                        if (
-                          formElement.supportInfo &&
-                          dataSpaceState.dataSpaceElementBuilder.isDataSpaceSupportCombinedInfo(
-                            formElement.supportInfo,
-                          )
-                        ) {
-                          formElement.supportInfo.supportUrl = value;
-                        }
-                      }}
-                      placeholder="Enter support URL"
-                    />
-                    <PanelFormTextField
-                      name="Documentation URL"
-                      value={formElement.supportInfo.documentationUrl ?? ''}
-                      update={(value) => {
-                        if (formElement.supportInfo) {
-                          formElement.supportInfo.documentationUrl = value;
-                        }
-                      }}
-                      placeholder="Enter documentation URL"
-                    />
-                  </div>
-                )}
-              </div>
-            )}
-          </PanelFormListItems> */}
+        <PanelFormSection className="dataSpace-editor__general__support-info">
+          <div className="panel__content__form__section__header__label">
+            Support Information
+          </div>
+          <div className="panel__content__form__section__header__prompt">
+            Configure support information for this Data Space.
+          </div>
+          <CustomSelectorInput
+            options={[
+              { label: 'None', value: 'none' },
+              { label: 'Email', value: 'email' },
+              { label: 'Combined', value: 'combined' },
+            ]}
+            onChange={(option: { label: string; value: string }) =>
+              handleSupportInfoTypeChange(option)
+            }
+            value={{
+              label: dataSpace.supportInfo
+                ? dataSpace.supportInfo instanceof DataSpaceSupportEmail
+                  ? 'Email'
+                  : 'Combined'
+                : 'None',
+              value: dataSpace.supportInfo
+                ? dataSpace.supportInfo instanceof DataSpaceSupportEmail
+                  ? 'email'
+                  : 'combined'
+                : 'none',
+            }}
+            darkMode={true}
+          />
+          {dataSpace.supportInfo ? (
+            dataSpace.supportInfo instanceof DataSpaceSupportEmail ? (
+              <PanelFormSection>
+                <PanelFormTextField
+                  name="Email Address"
+                  value={dataSpace.supportInfo.address}
+                  update={(value) => {
+                    if (
+                      dataSpace.supportInfo instanceof DataSpaceSupportEmail
+                    ) {
+                      dataSpace_email_setSupportInfoEmail(
+                        dataSpace.supportInfo,
+                        value ?? '',
+                      );
+                    }
+                  }}
+                  placeholder="Enter email address"
+                />
+                <PanelFormTextField
+                  name="Documentation URL"
+                  value={dataSpace.supportInfo.documentationUrl}
+                  update={(value) => {
+                    if (dataSpace.supportInfo) {
+                      dataSpace_setDocumentationUrl(
+                        dataSpace.supportInfo,
+                        value ?? '',
+                      );
+                    }
+                  }}
+                  placeholder="Enter documentation URL"
+                />
+              </PanelFormSection>
+            ) : dataSpace.supportInfo instanceof
+              DataSpaceSupportCombinedInfo ? (
+              <PanelFormSection>
+                <PanelFormTextField
+                  name="Documentation URL"
+                  value={dataSpace.supportInfo.documentationUrl}
+                  update={(value) => {
+                    if (dataSpace.supportInfo) {
+                      dataSpace_setDocumentationUrl(
+                        dataSpace.supportInfo,
+                        value ?? '',
+                      );
+                    }
+                  }}
+                  placeholder="Enter documentation URL"
+                />
+                <PanelFormTextField
+                  name="Website"
+                  value={dataSpace.supportInfo.website}
+                  update={(value) => {
+                    if (
+                      dataSpace.supportInfo instanceof
+                      DataSpaceSupportCombinedInfo
+                    ) {
+                      dataSpace_combined_setWebsite(
+                        dataSpace.supportInfo,
+                        value ?? '',
+                      );
+                    }
+                  }}
+                  placeholder="Enter website URL"
+                />
+                <PanelFormTextField
+                  name="FAQ URL"
+                  value={dataSpace.supportInfo.faqUrl}
+                  update={(value) => {
+                    if (
+                      dataSpace.supportInfo instanceof
+                      DataSpaceSupportCombinedInfo
+                    ) {
+                      dataSpace_combined_setFaqUrl(
+                        dataSpace.supportInfo,
+                        value ?? '',
+                      );
+                    }
+                  }}
+                  placeholder="Enter FAQ URL"
+                />
+                <PanelFormTextField
+                  name="Support URL"
+                  value={dataSpace.supportInfo.supportUrl}
+                  update={(value) => {
+                    if (
+                      dataSpace.supportInfo instanceof
+                      DataSpaceSupportCombinedInfo
+                    ) {
+                      dataSpace_combined_setSupportUrl(
+                        dataSpace.supportInfo,
+                        value ?? '',
+                      );
+                    }
+                  }}
+                  placeholder="Enter support URL"
+                />
+              </PanelFormSection>
+            ) : (
+              <div>Unknown support info type</div>
+            )
+          ) : null}
+        </PanelFormSection>
       </PanelForm>
     </PanelContentLists>
   );
