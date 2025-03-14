@@ -214,6 +214,18 @@
       }
     }
 
+    &__support-info {
+      &__content {
+        margin-top: 1rem;
+      }
+
+      &__new-email {
+        display: flex;
+        align-items: center;
+        margin-right: 0.5rem;
+      }
+    }
+
     .panel__content__form {
       max-width: unset;
     }
