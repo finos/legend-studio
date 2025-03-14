@@ -16,52 +16,50 @@
 
 import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '@finos/legend-application-studio';
-import { PanelFormTextField } from '@finos/legend-art';
-import { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
 import {
-  set_description,
-  set_title,
-} from '../stores/studio/DSL_DataSpace_GraphModifierHelper.js';
+  Panel,
+  PanelContent,
+  PanelHeader,
+  ResizablePanel,
+  ResizablePanelGroup,
+  ResizablePanelSplitter,
+  ResizablePanelSplitterLine,
+} from '@finos/legend-art';
+import { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
+import { DataSpaceGeneralEditor } from './DataSpaceGeneralEditor.js';
+import { DataSpaceExecutionContextEditor } from './DataSpaceExecutionContextEditor.js';
 
 export const DataSpaceEditor = observer(() => {
   const editorStore = useEditorStore();
 
-  const formEditorState =
+  const dataSpaceState =
     editorStore.tabManagerState.getCurrentEditorState(DataSpaceEditorState);
 
-  const formElement = formEditorState.dataSpace;
-
-  const handleTitleChange = (value: string | undefined): void => {
-    set_title(formElement, value);
-  };
-
-  const handleDescriptionChange = (value: string | undefined): void => {
-    set_description(formElement, value);
-  };
-
   return (
-    <div className="dataSpace-editor panel dataSpace-editor--dark">
-      <div className="panel__content__form">
-        <div className="panel__content__form__section">
-          <PanelFormTextField
-            name="Data Product Title"
-            value={formElement.title ?? ''}
-            prompt="Data Product title is the user facing name for the Data Product. It used in downstream applications as the default identifier for this Data Product. When not provided, the DataProduct name property is used"
-            update={handleTitleChange}
-            placeholder="Enter title"
-          />
-        </div>
-      </div>
-      <div className="panel__content__form">
-        <div className="panel__content__form__section">
-          <PanelFormTextField
-            name="Data Product Description"
-            value={formElement.description ?? ''}
-            update={handleDescriptionChange}
-            placeholder="Enter Description"
-          />
-        </div>
-      </div>
-    </div>
+    <Panel className="dataSpace-editor">
+      <PanelHeader
+        title="DataSpace"
+        titleContent={dataSpaceState.dataSpace.name}
+        darkMode={true}
+        isReadOnly={dataSpaceState.isReadOnly}
+      />
+      <ResizablePanelGroup orientation="horizontal">
+        <ResizablePanel size={400} minSize={200}>
+          <PanelHeader title="General" darkMode={true} />
+          <PanelContent>
+            <DataSpaceGeneralEditor />
+          </PanelContent>
+        </ResizablePanel>
+        <ResizablePanelSplitter>
+          <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+        </ResizablePanelSplitter>
+        <ResizablePanel minSize={200}>
+          <PanelHeader title="Execution Contexts" darkMode={true} />
+          <PanelContent>
+            <DataSpaceExecutionContextEditor />
+          </PanelContent>
+        </ResizablePanel>
+      </ResizablePanelGroup>
+    </Panel>
   );
 });

@@ -65,6 +65,8 @@ export * from './layout/PanelDropZone.js';
 export * from './layout/PanelDisplayState.js';
 export * from './layout/ResizablePanel.js';
 
+export * from './list-editor/ListEditor.js';
+
 export * from './loader/ProgressBar.js';
 
 export * from './tooltip/Tooltip.js';

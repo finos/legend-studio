@@ -223,8 +223,8 @@ export class DSL_DataSpace_LegendStudioApplicationPlugin
         element: PackageableElement,
       ): ElementEditorState | undefined => {
         if (element instanceof DataSpace) {
-          return new UnsupportedElementEditorState(editorStore, element);
-          // return new DataSpaceEditorState(editorStore, element);
+          // return new UnsupportedElementEditorState(editorStore, element);
+          return new DataSpaceEditorState(editorStore, element);
         }
         return undefined;
       },
