@@ -332,12 +332,6 @@ export class GraphEditFormModeState extends GraphEditorMode {
 
       this.editorStore.explorerTreeState.reprocess();
 
-      /**
-       * Re-build the editor states which were opened before from the information we have stored before
-       * creating the new graph
-       */
-      this.editorStore.tabManagerState.recoverTabs();
-
       this.editorStore.applicationStore.logService.info(
         LogEvent.create(GRAPH_MANAGER_EVENT.UPDATE_AND_REBUILD_GRAPH__SUCCESS),
         '[TOTAL]',
@@ -359,6 +353,15 @@ export class GraphEditFormModeState extends GraphEditorMode {
       );
 
       // ======= FINISHED (RE)START CHANGE DETECTION =======
+
+      /**
+       * Re-build the editor states which were opened before from the information we have stored before
+       * creating the new graph.
+       * NOTE: We must recover the tabs after we have called observeGraph above. Otherwise, the tab states
+       * will be recreated using the graph elements before they get observed, and this will cause the editor
+       * components to not update when users make changes, since mobx will not be able to detect the changes.
+       */
+      this.editorStore.tabManagerState.recoverTabs();
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(
