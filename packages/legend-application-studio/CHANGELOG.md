@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.18.101
+
+### Patch Changes
+
+- [#3938](https://github.com/finos/legend-studio/pull/3938) [`18f0d86`](https://github.com/finos/legend-studio/commit/18f0d86ae5eb43c791ea8f3a5637d5211f0486d5) ([@travisstebbins](https://github.com/travisstebbins)) - Fix bug with toggling form mode making editors not respond to changes
+
 ## 28.18.100
 
 ## 28.18.99
