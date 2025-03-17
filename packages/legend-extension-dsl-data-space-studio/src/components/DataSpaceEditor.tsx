@@ -26,7 +26,7 @@ import {
   ResizablePanelSplitterLine,
 } from '@finos/legend-art';
 import { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
-import { DataSpaceGeneralEditor } from './DataSpaceGeneralEditor.js';
+import { DataSpaceGeneralEditor } from './DataSpaceGeneralEditor/DataSpaceGeneralEditor.js';
 import { DataSpaceExecutionContextEditor } from './DataSpaceExecutionContextEditor.js';
 
 export const DataSpaceEditor = observer(() => {

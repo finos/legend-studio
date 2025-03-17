@@ -25,7 +25,7 @@ import {
   PanelFormTextField,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-import { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
+import { DataSpaceEditorState } from '../../stores/DataSpaceEditorState.js';
 import {
   dataSpace_addDiagram,
   dataSpace_addElement,
@@ -39,7 +39,6 @@ import {
   dataSpace_removeDiagram,
   dataSpace_removeElement,
   dataSpace_removeExecutable,
-  dataSpace_setDefaultExecutionContext,
   dataSpace_setDescription,
   dataSpace_setDiagramDescription,
   dataSpace_setDiagramTitle,
@@ -47,10 +46,9 @@ import {
   dataSpace_setElementExclude,
   dataSpace_setSupportInfo,
   dataSpace_setTitle,
-} from '../stores/studio/DSL_DataSpace_GraphModifierHelper.js';
+} from '../../stores/studio/DSL_DataSpace_GraphModifierHelper.js';
 import {
   type DataSpaceElement,
-  type DataSpaceExecutionContext,
   DataSpaceDiagram,
   DataSpaceElementPointer,
   DataSpacePackageableElementExecutable,
@@ -60,6 +58,7 @@ import {
 import { type Diagram } from '@finos/legend-extension-dsl-diagram/graph';
 import { PackageableElementExplicitReference } from '@finos/legend-graph';
 import { useState } from 'react';
+import { DataSpaceDefaultExecutionContextSection } from './DataSpaceDefaultExecutionContextSection.js';
 
 export const DataSpaceGeneralEditor = observer(() => {
   const editorStore = useEditorStore();
@@ -75,17 +74,6 @@ export const DataSpaceGeneralEditor = observer(() => {
 
   const handleDescriptionChange = (value: string | undefined): void => {
     dataSpace_setDescription(dataSpace, value);
-  };
-
-  // DefaultExecutionContext handler
-  const handleDefaultExecutionContextChange = (option: {
-    label: string;
-    value: unknown;
-  }): void => {
-    if (option && option.value && typeof option.value === 'object') {
-      const context = option.value as DataSpaceExecutionContext;
-      dataSpace_setDefaultExecutionContext(dataSpace, context);
-    }
   };
 
   // Elements handlers
@@ -374,30 +362,7 @@ export const DataSpaceGeneralEditor = observer(() => {
             placeholder="Enter description"
           />
         </PanelFormSection>
-        {/* Default Execution Context Section */}
-        <PanelFormSection>
-          <div className="panel__content__form__section__header__label">
-            Default Execution Context
-          </div>
-          <div className="panel__content__form__section__header__prompt">
-            Select the default execution context for this Data Space.
-          </div>
-          <CustomSelectorInput
-            options={dataSpace.executionContexts.map((context) => ({
-              label: context.name,
-              value: context,
-            }))}
-            onChange={(option: { label: string; value: unknown }) =>
-              handleDefaultExecutionContextChange(option)
-            }
-            value={{
-              label: dataSpace.defaultExecutionContext.name,
-              value: dataSpace.defaultExecutionContext,
-            }}
-            darkMode={true}
-            key={`default-execution-context-${dataSpace.defaultExecutionContext.name}`}
-          />
-        </PanelFormSection>
+        <DataSpaceDefaultExecutionContextSection />
         {/* Elements Section */}
         <PanelFormSection className="dataSpace-editor__general__elements">
           <ListEditor
