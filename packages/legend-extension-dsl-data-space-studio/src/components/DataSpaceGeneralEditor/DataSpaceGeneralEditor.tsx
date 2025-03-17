@@ -26,21 +26,18 @@ import {
 import { observer } from 'mobx-react-lite';
 import { DataSpaceEditorState } from '../../stores/DataSpaceEditorState.js';
 import {
-  dataSpace_addExecutable,
   dataSpace_combined_addEmail,
   dataSpace_combined_deleteEmail,
   dataSpace_combined_setFaqUrl,
   dataSpace_combined_setSupportUrl,
   dataSpace_combined_setWebsite,
   dataSpace_email_setSupportInfoEmail,
-  dataSpace_removeExecutable,
   dataSpace_setDescription,
   dataSpace_setDocumentationUrl,
   dataSpace_setSupportInfo,
   dataSpace_setTitle,
 } from '../../stores/studio/DSL_DataSpace_GraphModifierHelper.js';
 import {
-  DataSpacePackageableElementExecutable,
   DataSpaceSupportCombinedInfo,
   DataSpaceSupportEmail,
 } from '@finos/legend-extension-dsl-data-space/graph';
@@ -48,6 +45,7 @@ import { useState } from 'react';
 import { DataSpaceDefaultExecutionContextSection } from './DataSpaceDefaultExecutionContextSection.js';
 import { DataSpaceDiagramsSection } from './DataSpaceDiagramsSection.js';
 import { DataSpaceElementsSection } from './DataSpaceElementsSection.js';
+import { DataspaceExecutablesSection } from './DataSpaceExecutablesSection.js';
 
 export const DataSpaceGeneralEditor = observer(() => {
   const editorStore = useEditorStore();
@@ -63,17 +61,6 @@ export const DataSpaceGeneralEditor = observer(() => {
 
   const handleDescriptionChange = (value: string | undefined): void => {
     dataSpace_setDescription(dataSpace, value);
-  };
-
-  // Executables handlers
-  const handleAddExecutable = (): void => {
-    const newExecutable = new DataSpacePackageableElementExecutable();
-    newExecutable.title = `Executable ${dataSpace.executables?.length ?? 0 + 1}`;
-    dataSpace_addExecutable(dataSpace, newExecutable);
-  };
-
-  const handleRemoveExecutable = (index: number): void => {
-    dataSpace_removeExecutable(dataSpace, index);
   };
 
   // SupportInfo handlers
@@ -192,54 +179,7 @@ export const DataSpaceGeneralEditor = observer(() => {
         </PanelFormSection>
         <DataSpaceDefaultExecutionContextSection />
         <DataSpaceElementsSection />
-        {/* Executables Section */}
-        {/* <PanelFormListItems title="Executables">
-            {formElement.executables?.map((executable, index) => (
-              <div
-                key={index}
-                className="panel__content__form__section__list__item"
-              >
-                <PanelFormTextField
-                  name={`Executable ${index + 1} Title`}
-                  value={executable.title}
-                  update={(value) => {
-                    if (
-                      formElement.executables &&
-                      formElement.executables[index]
-                    ) {
-                      formElement.executables[index].title = value ?? '';
-                    }
-                  }}
-                  placeholder="Enter title"
-                />
-                <PanelFormTextField
-                  name={`Executable ${index + 1} Description`}
-                  value={executable.description ?? ''}
-                  update={(value) => {
-                    if (
-                      formElement.executables &&
-                      formElement.executables[index]
-                    ) {
-                      formElement.executables[index].description = value;
-                    }
-                  }}
-                  placeholder="Enter description"
-                />
-                <button
-                  className="panel__content__form__section__button"
-                  onClick={() => handleRemoveExecutable(index)}
-                >
-                  Remove
-                </button>
-              </div>
-            )) ?? <div>No executables defined</div>}
-            <button
-              className="panel__content__form__section__button"
-              onClick={handleAddExecutable}
-            >
-              Add Executable
-            </button>
-          </PanelFormListItems> */}
+        <DataspaceExecutablesSection />
         <DataSpaceDiagramsSection />
         {/* Support Info Section */}
         <PanelFormSection className="dataSpace-editor__general__support-info">
