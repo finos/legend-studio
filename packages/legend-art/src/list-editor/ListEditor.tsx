@@ -23,24 +23,24 @@ export const ListEditor = observer(
   <T,>(props: {
     title?: string;
     prompt?: string;
-    elements: T[] | undefined;
-    keySelector: (element: T) => string;
-    elementRenderer: (element: T) => React.ReactElement;
-    NewElementRenderer: (props: {
+    items: T[] | undefined;
+    keySelector: (item: T) => string;
+    ItemComponent: (props: { item: T }) => React.ReactElement;
+    NewItemComponent: (props: {
       onFinishEditing: () => void;
     }) => React.ReactElement;
-    handleRemoveElement: (element: T) => void;
+    handleRemoveItem: (item: T) => void;
     isReadOnly: boolean;
     emptyMessage?: string;
   }) => {
     const {
       title,
       prompt,
-      elements,
+      items,
       keySelector,
-      elementRenderer,
-      NewElementRenderer,
-      handleRemoveElement,
+      ItemComponent,
+      NewItemComponent,
+      handleRemoveItem,
       isReadOnly,
       emptyMessage,
     } = props;
@@ -54,19 +54,19 @@ export const ListEditor = observer(
       <PanelFormListItems title={title} prompt={prompt}>
         <div className="panel__content__form__section__list">
           <div className="panel__content__form__section__list__items">
-            {elements?.map((element) => {
+            {items?.map((item) => {
               return (
                 <div
-                  key={keySelector(element)}
+                  key={keySelector(item)}
                   className="panel__content__form__section__list__item"
                 >
-                  {elementRenderer(element)}
+                  <ItemComponent item={item} />
                   {!isReadOnly && (
                     <button
                       className="panel__content__form__section__list__item__content__actions__btn"
-                      onClick={() => handleRemoveElement(element)}
+                      onClick={() => handleRemoveItem(item)}
                       tabIndex={-1}
-                      title="Remove element"
+                      title="Remove item"
                     >
                       <TimesIcon />
                     </button>
@@ -77,7 +77,7 @@ export const ListEditor = observer(
           </div>
           {!showAddButton && (
             <div className="panel__content__form__section__list__new-item">
-              <NewElementRenderer onFinishEditing={onFinishEditing} />
+              <NewItemComponent onFinishEditing={onFinishEditing} />
               <button
                 className="panel__content__form__section__list__new-item__cancel-btn btn btn--dark"
                 disabled={isReadOnly}
@@ -88,9 +88,9 @@ export const ListEditor = observer(
               </button>
             </div>
           )}
-          {!elements?.length && showAddButton && (
+          {!items?.length && showAddButton && (
             <div className="panel__content__form__section__list__empty">
-              {emptyMessage ?? 'No elements specified'}
+              {emptyMessage ?? 'No items specified'}
             </div>
           )}
           {showAddButton && (

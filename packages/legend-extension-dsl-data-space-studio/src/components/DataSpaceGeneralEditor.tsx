@@ -201,132 +201,155 @@ export const DataSpaceGeneralEditor = observer(() => {
     }
   };
 
-  const elementsRenderer = (
-    element: DataSpaceElementPointer,
-  ): React.ReactElement => (
-    <div className="panel__content__form__section__list__item__content">
-      <div className="panel__content__form__section__list__item__content__label">
-        {element.element?.value?.path ?? 'Unknown Element'}
-      </div>
-      <div className="panel__content__form__section__list__item__content__actions">
-        <div className="panel__content__form__section__list__item__content__actions-exclude">
-          <Checkbox
-            disabled={dataSpaceState.isReadOnly}
-            checked={element.exclude ?? false}
-            onChange={(event) => handleElementExcludeChange(element, event)}
-            size="small"
-            className="panel__content__form__section__list__item__content__actions-exclude__btn"
-          />
-          <span className="panel__content__form__section__list__item__content__actions__label">
-            Exclude
-          </span>
+  const ElementComponent = observer(
+    (props: { item: DataSpaceElementPointer }): React.ReactElement => {
+      const { item } = props;
+
+      return (
+        <div className="panel__content__form__section__list__item__content">
+          <div className="panel__content__form__section__list__item__content__label">
+            {item.element?.value?.path ?? 'Unknown Element'}
+          </div>
+          <div className="panel__content__form__section__list__item__content__actions">
+            <div className="panel__content__form__section__list__item__content__actions-exclude">
+              <Checkbox
+                disabled={dataSpaceState.isReadOnly}
+                checked={item.exclude ?? false}
+                onChange={(event) => handleElementExcludeChange(item, event)}
+                size="small"
+                className="panel__content__form__section__list__item__content__actions-exclude__btn"
+              />
+              <span className="panel__content__form__section__list__item__content__actions__label">
+                Exclude
+              </span>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      );
+    },
   );
 
-  const NewElementRenderer = (props: { onFinishEditing: () => void }) => {
-    const { onFinishEditing } = props;
-    return (
-      <div className="panel__content__form__section__list__new-item__input">
-        <CustomSelectorInput
-          options={dataSpaceState.getDataSpaceElementOptions()}
-          onChange={(event: { label: string; value: DataSpaceElement }) => {
-            onFinishEditing();
-            handleAddElement(event);
-          }}
-          placeholder="Select an element to add..."
-          darkMode={true}
-        />
-      </div>
-    );
-  };
+  const NewElementComponent = observer(
+    (props: { onFinishEditing: () => void }) => {
+      const { onFinishEditing } = props;
 
-  const diagramsRenderer = (diagram: DataSpaceDiagram): React.ReactElement => (
-    <>
-      <div className="panel__content__form__section__list__item__content">
-        <div className="panel__content__form__section__header__label">
-          Diagram
-        </div>
-        <div className="panel__content__form__section__list__item__content__title">
-          {diagram.diagram.value.path}
-        </div>
-      </div>
-      <div className="panel__content__form__section__list__item__form">
-        <PanelFormTextField
-          name="Title"
-          value={diagram.title}
-          update={(value) => handleDiagramTitleChange(diagram, value)}
-          placeholder="Enter title"
-          className="dataSpace-editor__general__diagrams__title"
-        />
-        <PanelFormTextField
-          name="Description"
-          value={diagram.description ?? ''}
-          update={(value) => handleDiagramDescriptionChange(diagram, value)}
-          placeholder="Enter description"
-          className="dataSpace-editor__general__diagrams__description"
-        />
-      </div>
-    </>
-  );
-
-  const NewDiagramRenderer = (props: {
-    onFinishEditing: () => void;
-  }): React.ReactElement => {
-    const { onFinishEditing } = props;
-    return (
-      <div className="panel__content__form__section__list__new-item__input">
-        <CustomSelectorInput
-          options={dataSpaceState.getDiagramOptions()}
-          onChange={(event: { label: string; value: Diagram }) => {
-            onFinishEditing();
-            handleAddDiagram(event);
-          }}
-          placeholder="Select a diagram to add..."
-          darkMode={true}
-        />
-      </div>
-    );
-  };
-
-  const supportEmailRenderer = (email: string): React.ReactElement => (
-    <div className="panel__content__form__section__list__item__content">
-      <div className="panel__content__form__section__header__label">
-        {email}
-      </div>
-    </div>
-  );
-
-  const NewSupportEmailRenderer = (props: { onFinishEditing: () => void }) => {
-    const { onFinishEditing } = props;
-    const [email, setEmail] = useState('');
-    return (
-      <div className="dataSpace-editor__general__support-info__new-email">
+      return (
         <div className="panel__content__form__section__list__new-item__input">
-          <input
-            className="input input-group__input panel__content__form__section__input input--dark"
-            type="email"
-            placeholder="Enter email"
-            value={email}
-            onChange={(event) => {
-              setEmail(event.target.value ?? '');
+          <CustomSelectorInput
+            options={dataSpaceState.getDataSpaceElementOptions()}
+            onChange={(event: { label: string; value: DataSpaceElement }) => {
+              onFinishEditing();
+              handleAddElement(event);
             }}
+            placeholder="Select an element to add..."
+            darkMode={true}
           />
         </div>
-        <button
-          className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-          onClick={() => {
-            handleSupportInfoEmailAdd(email);
-            setEmail('');
-            onFinishEditing();
-          }}
-        >
-          Save
-        </button>
-      </div>
-    );
-  };
+      );
+    },
+  );
+
+  const DiagramComponent = observer(
+    (props: { item: DataSpaceDiagram }): React.ReactElement => {
+      const { item } = props;
+
+      return (
+        <>
+          <div className="panel__content__form__section__list__item__content">
+            <div className="panel__content__form__section__header__label">
+              Diagram
+            </div>
+            <div className="panel__content__form__section__list__item__content__title">
+              {item.diagram.value.path}
+            </div>
+          </div>
+          <div className="panel__content__form__section__list__item__form">
+            <PanelFormTextField
+              name="Title"
+              value={item.title}
+              update={(value) => handleDiagramTitleChange(item, value)}
+              placeholder="Enter title"
+              className="dataSpace-editor__general__diagrams__title"
+            />
+            <PanelFormTextField
+              name="Description"
+              value={item.description ?? ''}
+              update={(value) => handleDiagramDescriptionChange(item, value)}
+              placeholder="Enter description"
+              className="dataSpace-editor__general__diagrams__description"
+            />
+          </div>
+        </>
+      );
+    },
+  );
+
+  const NewDiagramComponent = observer(
+    (props: { onFinishEditing: () => void }): React.ReactElement => {
+      const { onFinishEditing } = props;
+
+      return (
+        <div className="panel__content__form__section__list__new-item__input">
+          <CustomSelectorInput
+            options={dataSpaceState.getDiagramOptions()}
+            onChange={(event: { label: string; value: Diagram }) => {
+              onFinishEditing();
+              handleAddDiagram(event);
+            }}
+            placeholder="Select a diagram to add..."
+            darkMode={true}
+          />
+        </div>
+      );
+    },
+  );
+
+  const SupportEmailComponent = observer(
+    (props: { item: string }): React.ReactElement => {
+      const { item } = props;
+
+      return (
+        <div className="panel__content__form__section__list__item__content">
+          <div className="panel__content__form__section__header__label">
+            {item}
+          </div>
+        </div>
+      );
+    },
+  );
+
+  const NewSupportEmailComponent = observer(
+    (props: { onFinishEditing: () => void }) => {
+      const { onFinishEditing } = props;
+      const [email, setEmail] = useState('');
+
+      return (
+        <div className="dataSpace-editor__general__support-info__new-email">
+          <div className="panel__content__form__section__list__new-item__input">
+            <input
+              className="input input-group__input panel__content__form__section__input input--dark"
+              type="email"
+              placeholder="Enter email"
+              value={email}
+              onChange={(event) => {
+                setEmail(event.target.value ?? '');
+              }}
+            />
+          </div>
+          <button
+            className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
+            onClick={() => {
+              handleSupportInfoEmailAdd(email);
+              setEmail('');
+              onFinishEditing();
+            }}
+          >
+            Save
+          </button>
+        </div>
+      );
+    },
+  );
 
   return (
     <PanelContentLists className="dataSpace-editor__general">
@@ -380,14 +403,15 @@ export const DataSpaceGeneralEditor = observer(() => {
           <ListEditor
             title="Elements"
             prompt="Add elements to include in this Data Space. Use the exclude checkbox to exclude elements."
-            elements={dataSpace.elements}
+            items={dataSpace.elements}
             keySelector={(element: DataSpaceElementPointer) =>
               element.element.value.path
             }
-            elementRenderer={elementsRenderer}
-            NewElementRenderer={NewElementRenderer}
-            handleRemoveElement={handleRemoveElement}
+            ItemComponent={ElementComponent}
+            NewItemComponent={NewElementComponent}
+            handleRemoveItem={handleRemoveElement}
             isReadOnly={dataSpaceState.isReadOnly}
+            emptyMessage="No elements specified"
           />
         </PanelFormSection>
         {/* Executables Section */}
@@ -443,14 +467,15 @@ export const DataSpaceGeneralEditor = observer(() => {
           <ListEditor
             title="Diagrams"
             prompt="Add diagrams to include in this Data Space. Set a title and description for each diagram."
-            elements={dataSpace.diagrams}
+            items={dataSpace.diagrams}
             keySelector={(element: DataSpaceDiagram) =>
               element.diagram.value.path
             }
-            elementRenderer={diagramsRenderer}
-            NewElementRenderer={NewDiagramRenderer}
-            handleRemoveElement={handleRemoveDiagram}
+            ItemComponent={DiagramComponent}
+            NewItemComponent={NewDiagramComponent}
+            handleRemoveItem={handleRemoveDiagram}
             isReadOnly={dataSpaceState.isReadOnly}
+            emptyMessage="No diagrams specified"
           />
         </PanelFormSection>
         {/* Support Info Section */}
@@ -521,12 +546,13 @@ export const DataSpaceGeneralEditor = observer(() => {
               <PanelFormSection className="dataSpace-editor__general__support-info__content">
                 <ListEditor
                   title="Emails"
-                  elements={dataSpace.supportInfo.emails}
+                  items={dataSpace.supportInfo.emails}
                   keySelector={(element: string) => element}
-                  elementRenderer={supportEmailRenderer}
-                  NewElementRenderer={NewSupportEmailRenderer}
-                  handleRemoveElement={handleSupportInfoEmailRemove}
+                  ItemComponent={SupportEmailComponent}
+                  NewItemComponent={NewSupportEmailComponent}
+                  handleRemoveItem={handleSupportInfoEmailRemove}
                   isReadOnly={dataSpaceState.isReadOnly}
+                  emptyMessage="No emails specified"
                 />
                 <PanelFormTextField
                   name="Documentation URL"
