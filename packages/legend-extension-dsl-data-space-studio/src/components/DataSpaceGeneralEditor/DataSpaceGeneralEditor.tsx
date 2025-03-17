@@ -27,7 +27,6 @@ import {
 import { observer } from 'mobx-react-lite';
 import { DataSpaceEditorState } from '../../stores/DataSpaceEditorState.js';
 import {
-  dataSpace_addDiagram,
   dataSpace_addElement,
   dataSpace_addExecutable,
   dataSpace_combined_addEmail,
@@ -36,12 +35,9 @@ import {
   dataSpace_combined_setSupportUrl,
   dataSpace_combined_setWebsite,
   dataSpace_email_setSupportInfoEmail,
-  dataSpace_removeDiagram,
   dataSpace_removeElement,
   dataSpace_removeExecutable,
   dataSpace_setDescription,
-  dataSpace_setDiagramDescription,
-  dataSpace_setDiagramTitle,
   dataSpace_setDocumentationUrl,
   dataSpace_setElementExclude,
   dataSpace_setSupportInfo,
@@ -49,16 +45,15 @@ import {
 } from '../../stores/studio/DSL_DataSpace_GraphModifierHelper.js';
 import {
   type DataSpaceElement,
-  DataSpaceDiagram,
   DataSpaceElementPointer,
   DataSpacePackageableElementExecutable,
   DataSpaceSupportCombinedInfo,
   DataSpaceSupportEmail,
 } from '@finos/legend-extension-dsl-data-space/graph';
-import { type Diagram } from '@finos/legend-extension-dsl-diagram/graph';
 import { PackageableElementExplicitReference } from '@finos/legend-graph';
 import { useState } from 'react';
 import { DataSpaceDefaultExecutionContextSection } from './DataSpaceDefaultExecutionContextSection.js';
+import { DataSpaceDiagramsSection } from './DataSpaceDiagramsSection.js';
 
 export const DataSpaceGeneralEditor = observer(() => {
   const editorStore = useEditorStore();
@@ -110,39 +105,6 @@ export const DataSpaceGeneralEditor = observer(() => {
 
   const handleRemoveExecutable = (index: number): void => {
     dataSpace_removeExecutable(dataSpace, index);
-  };
-
-  // Diagrams handlers
-  const handleAddDiagram = (option: {
-    label: string;
-    value: Diagram;
-  }): void => {
-    if (option && option.value && typeof option.value === 'object') {
-      const diagramValue = option.value;
-      const newDiagram = new DataSpaceDiagram();
-      newDiagram.title = diagramValue.name;
-      newDiagram.diagram =
-        PackageableElementExplicitReference.create(diagramValue);
-      dataSpace_addDiagram(dataSpace, newDiagram);
-    }
-  };
-
-  const handleRemoveDiagram = (diagram: DataSpaceDiagram): void => {
-    dataSpace_removeDiagram(dataSpace, diagram);
-  };
-
-  const handleDiagramTitleChange = (
-    diagram: DataSpaceDiagram,
-    value: string | undefined,
-  ): void => {
-    dataSpace_setDiagramTitle(diagram, value ?? '');
-  };
-
-  const handleDiagramDescriptionChange = (
-    diagram: DataSpaceDiagram,
-    value: string | undefined,
-  ): void => {
-    dataSpace_setDiagramDescription(diagram, value);
   };
 
   // SupportInfo handlers
@@ -230,61 +192,6 @@ export const DataSpaceGeneralEditor = observer(() => {
               handleAddElement(event);
             }}
             placeholder="Select an element to add..."
-            darkMode={true}
-          />
-        </div>
-      );
-    },
-  );
-
-  const DiagramComponent = observer(
-    (props: { item: DataSpaceDiagram }): React.ReactElement => {
-      const { item } = props;
-
-      return (
-        <>
-          <div className="panel__content__form__section__list__item__content">
-            <div className="panel__content__form__section__header__label">
-              Diagram
-            </div>
-            <div className="panel__content__form__section__list__item__content__title">
-              {item.diagram.value.path}
-            </div>
-          </div>
-          <div className="panel__content__form__section__list__item__form">
-            <PanelFormTextField
-              name="Title"
-              value={item.title}
-              update={(value) => handleDiagramTitleChange(item, value)}
-              placeholder="Enter title"
-              className="dataSpace-editor__general__diagrams__title"
-            />
-            <PanelFormTextField
-              name="Description"
-              value={item.description ?? ''}
-              update={(value) => handleDiagramDescriptionChange(item, value)}
-              placeholder="Enter description"
-              className="dataSpace-editor__general__diagrams__description"
-            />
-          </div>
-        </>
-      );
-    },
-  );
-
-  const NewDiagramComponent = observer(
-    (props: { onFinishEditing: () => void }): React.ReactElement => {
-      const { onFinishEditing } = props;
-
-      return (
-        <div className="panel__content__form__section__list__new-item__input">
-          <CustomSelectorInput
-            options={dataSpaceState.getDiagramOptions()}
-            onChange={(event: { label: string; value: Diagram }) => {
-              onFinishEditing();
-              handleAddDiagram(event);
-            }}
-            placeholder="Select a diagram to add..."
             darkMode={true}
           />
         </div>
@@ -427,22 +334,7 @@ export const DataSpaceGeneralEditor = observer(() => {
               Add Executable
             </button>
           </PanelFormListItems> */}
-        {/* Diagrams Section */}
-        <PanelFormSection className="dataSpace-editor__general__diagrams">
-          <ListEditor
-            title="Diagrams"
-            prompt="Add diagrams to include in this Data Space. Set a title and description for each diagram."
-            items={dataSpace.diagrams}
-            keySelector={(element: DataSpaceDiagram) =>
-              element.diagram.value.path
-            }
-            ItemComponent={DiagramComponent}
-            NewItemComponent={NewDiagramComponent}
-            handleRemoveItem={handleRemoveDiagram}
-            isReadOnly={dataSpaceState.isReadOnly}
-            emptyMessage="No diagrams specified"
-          />
-        </PanelFormSection>
+        <DataSpaceDiagramsSection />
         {/* Support Info Section */}
         <PanelFormSection className="dataSpace-editor__general__support-info">
           <div className="panel__content__form__section__header__label">
