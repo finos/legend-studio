@@ -406,7 +406,9 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
             ),
           ),
         );
-        source.query = at(source.lambda.body, 0);
+        // TODO: we should implement this logic for other types of query sources because the same issue
+        // could happen from other sources.
+        source.query = at(source.lambda.body, source.lambda.body.length - 1);
         try {
           source.columns = (
             await this._getLambdaRelationType(
@@ -642,7 +644,15 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         result = await this._runQuery(query, source.model, undefined, options);
       } else if (source instanceof LegendQueryDataCubeSource) {
         query.parameters = source.lambda.parameters;
-        query.body = [...source.letParameterValueSpec, ...query.body];
+        // TODO: we should implement this logic for other types of query sources because the same issue
+        // could happen from other sources.
+        query.body = [
+          ...source.letParameterValueSpec,
+          ...(source.lambda.body.length > 1
+            ? source.lambda.body.slice(0, -1)
+            : []),
+          ...query.body,
+        ];
         result = await this._runQuery(
           query,
           source.model,
