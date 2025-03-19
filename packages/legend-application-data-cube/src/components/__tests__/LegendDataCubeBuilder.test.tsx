@@ -137,6 +137,78 @@ test(integrationTest('Loads DataCube from Legend Query'), async () => {
   await screen.findByText('Confirmed', {}, { timeout: 30000 });
 });
 
+test(
+  integrationTest('Loads DataCube from Legend Query with multi-line lambda'),
+  async () => {
+    MockedMonacoEditorAPI.remeasureFonts.mockReturnValue(undefined);
+
+    const mockDataCubeId = 'test-data-cube-id';
+    const mockDataCube: PersistentDataCube =
+      PersistentDataCube.serialization.fromJson({
+        id: mockDataCubeId,
+        name: `${mockDataCubeId}-name`,
+        description: undefined,
+        content: {
+          query: `select(~[Id, 'Case Type'])`,
+          source: {
+            queryId: `${mockDataCubeId}-query-id`,
+            _type: 'legendQuery',
+          },
+          configuration: {
+            name: `${mockDataCubeId}-query-name`,
+            columns: [
+              { name: 'Id', type: 'Integer' },
+              { name: 'Case Type', type: 'String' },
+            ],
+          },
+        },
+      });
+    const mockQuery: V1_Query = V1_Query.serialization.fromJson({
+      name: `${mockDataCubeId}-query-name`,
+      id: `${mockDataCubeId}-query-id`,
+      versionId: 'latest',
+      groupId: 'com.legend',
+      artifactId: 'test-project',
+      content: `{|let date = now(); domain::COVIDData.all()->project(~[Id:x|$x.id, 'Case Type':x|$x.caseType])}`,
+      executionContext: {
+        dataSpacePath: 'domain::COVIDDatapace',
+        executionKey: 'dummyContext',
+        _type: 'dataSpaceExecutionContext',
+      },
+    });
+    const mockedLegendDataCubeBuilderStore =
+      await TEST__provideMockedLegendDataCubeBuilderStore();
+    // const runQuerySpy = jest.spyOn(
+    //   mockedLegendDataCubeBuilderStore.engineServerClient,
+    //   'runQuery',
+    // );
+
+    const { runQuerySpy } = await TEST__setUpDataCubeBuilder(
+      guaranteeNonNullable(mockedLegendDataCubeBuilderStore),
+      mockDataCube,
+      mockQuery,
+      depotEntities,
+    );
+    // mockedLegendDataCubeBuilderStore.engine.processSource()
+    // expect(runQuerySpy.mock.lastCall).not.toBeNull();
+
+    await screen.findByText(
+      'test-data-cube-id-query-name',
+      {},
+      { timeout: 30000 },
+    );
+    expect(
+      (await screen.findAllByText('Id', {}, { timeout: 30000 })).length,
+    ).toBeGreaterThanOrEqual(1);
+    await screen.findByText('Case Type', {}, { timeout: 30000 });
+    await screen.findByText('1', {}, { timeout: 30000 });
+    await screen.findByText('Active', {}, { timeout: 30000 });
+    await screen.findByText('2', {}, { timeout: 30000 });
+    await screen.findByText('Confirmed', {}, { timeout: 30000 });
+  },
+  100000,
+);
+
 const releaseLog = [
   {
     version: '3.0.0',
