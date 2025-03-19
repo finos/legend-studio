@@ -28,9 +28,13 @@ import {
   TEST__provideMockedLegendDataCubeBuilderStore,
   TEST__setUpDataCubeBuilder,
 } from '../__test-utils__/LegendDataCubeStoreTestUtils.js';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { type PlainObject, guaranteeNonNullable } from '@finos/legend-shared';
 import { MockedMonacoEditorAPI } from '@finos/legend-lego/code-editor/test';
-import { PersistentDataCube, V1_Query } from '@finos/legend-graph';
+import {
+  type V1_Lambda,
+  PersistentDataCube,
+  V1_Query,
+} from '@finos/legend-graph';
 import depotEntities from './TEST_DATA__DSL_DataSpace_Entities.json' with { type: 'json' };
 import { LegendDataCubePluginManager } from '../../application/LegendDataCubePluginManager.js';
 import {
@@ -38,6 +42,7 @@ import {
   type VersionReleaseNotes,
 } from '@finos/legend-application';
 import { TEST__getTestLegendDataCubeApplicationConfig } from '../../application/__test-utils__/LegendDataCubeApplicationTestUtils.js';
+import { ENGINE_TEST_SUPPORT__JSONToGrammar_lambda } from '@finos/legend-graph/test';
 
 // Mock the LegendDataCubeDuckDBEngine module because it causes
 // problems when running in the jest environment.
@@ -169,7 +174,7 @@ test(
       versionId: 'latest',
       groupId: 'com.legend',
       artifactId: 'test-project',
-      content: `{|let date = now(); domain::COVIDData.all()->project(~[Id:x|$x.id, 'Case Type':x|$x.caseType])}`,
+      content: `{|let date = now(); domain::COVIDData.all()->project(~[Id:x|$x.id, 'Case Type':x|$x.caseType]);}`,
       executionContext: {
         dataSpacePath: 'domain::COVIDDatapace',
         executionKey: 'dummyContext',
@@ -178,20 +183,15 @@ test(
     });
     const mockedLegendDataCubeBuilderStore =
       await TEST__provideMockedLegendDataCubeBuilderStore();
-    // const runQuerySpy = jest.spyOn(
-    //   mockedLegendDataCubeBuilderStore.engineServerClient,
-    //   'runQuery',
-    // );
 
-    const { runQuerySpy } = await TEST__setUpDataCubeBuilder(
-      guaranteeNonNullable(mockedLegendDataCubeBuilderStore),
+    await TEST__setUpDataCubeBuilder(
+      mockedLegendDataCubeBuilderStore,
       mockDataCube,
       mockQuery,
       depotEntities,
     );
-    // mockedLegendDataCubeBuilderStore.engine.processSource()
-    // expect(runQuerySpy.mock.lastCall).not.toBeNull();
 
+    // Verify grid renders
     await screen.findByText(
       'test-data-cube-id-query-name',
       {},
@@ -205,6 +205,22 @@ test(
     await screen.findByText('Active', {}, { timeout: 30000 });
     await screen.findByText('2', {}, { timeout: 30000 });
     await screen.findByText('Confirmed', {}, { timeout: 30000 });
+
+    // Verify runQuery was called with correct lambda
+    const runQueryCall = guaranteeNonNullable(
+      (
+        mockedLegendDataCubeBuilderStore.engineServerClient
+          .runQuery as unknown as jest.SpiedFunction<
+          typeof mockedLegendDataCubeBuilderStore.engineServerClient.runQuery
+        >
+      ).mock.lastCall,
+    );
+    const lambdaGrammar = await ENGINE_TEST_SUPPORT__JSONToGrammar_lambda(
+      runQueryCall[0].function as PlainObject<V1_Lambda>,
+    );
+    expect(lambdaGrammar).toBe(
+      "{|\nlet date = now();\ndomain::COVIDData.all()->project(~[Id:x|$x.id, 'Case Type':x|$x.caseType])->select(~[Id, 'Case Type'])->slice(0, 500)->meta::pure::mapping::from(mapping::CovidDataMapping, runtime::H2Runtime);\n}",
+    );
   },
   100000,
 );

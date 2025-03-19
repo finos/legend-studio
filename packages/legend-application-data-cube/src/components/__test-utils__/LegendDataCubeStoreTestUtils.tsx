@@ -140,9 +140,7 @@ export const TEST__setUpDataCubeBuilder = async (
 ): Promise<{
   renderResult: RenderResult;
   legendDataCubeBuilderState: LegendDataCubeBuilderState | undefined;
-  runQuerySpy: SpiedFunction | undefined;
 }> => {
-  let runQuerySpy;
   if (mockDataCube) {
     createSpy(MOCK__builderStore.graphManager, 'getDataCube').mockResolvedValue(
       mockDataCube,
@@ -178,7 +176,7 @@ export const TEST__setUpDataCubeBuilder = async (
         );
       },
     );
-    runQuerySpy = createSpy(
+    createSpy(
       MOCK__builderStore.engineServerClient,
       'runQuery',
     ).mockImplementation(async (input: PlainObject<V1_ExecuteInput>) => {
@@ -229,6 +227,5 @@ export const TEST__setUpDataCubeBuilder = async (
   return {
     renderResult,
     legendDataCubeBuilderState: MOCK__builderStore.builder,
-    runQuerySpy,
   };
 };
