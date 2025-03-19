@@ -406,8 +406,9 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
             ),
           ),
         );
-        // TODO: we should implement this logic for other types of query sources because the same issue
-        // could happen from other sources.
+        // If the lambda has multiple expressions, the source query should only be the final
+        // expression of the lambda. All previous expressions should be left untouched and will
+        // be prepended to the transformed query when it is executed.
         source.query = at(source.lambda.body, source.lambda.body.length - 1);
         try {
           source.columns = (
@@ -644,8 +645,9 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         result = await this._runQuery(query, source.model, undefined, options);
       } else if (source instanceof LegendQueryDataCubeSource) {
         query.parameters = source.lambda.parameters;
-        // TODO: we should implement this logic for other types of query sources because the same issue
-        // could happen from other sources.
+        // If the source lambda has multiple expressions, we should prepend all but the
+        // last expression to the transformed query body (which came from the final
+        // expression of the source lambda).
         query.body = [
           ...source.letParameterValueSpec,
           ...(source.lambda.body.length > 1
