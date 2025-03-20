@@ -17,6 +17,7 @@
 import { observer } from 'mobx-react-lite';
 import {
   BasicValueSpecificationEditor,
+  buildV1PrimitiveValueSpecification,
   QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT,
   SORT_BY_OPTIONS,
   type QueryLoaderState,
@@ -27,6 +28,7 @@ import { cn, DataCubeIcon, useDropdownMenu } from '@finos/legend-art';
 import {
   debounce,
   formatDistanceToNow,
+  guaranteeNonNullable,
   quantifyList,
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
@@ -331,7 +333,20 @@ export const LegendQueryDataCubeSourceBuilder = observer(
         {sourceBuilder.queryParameters?.length && (
           <div className="mt-2 h-40 w-full">
             {sourceBuilder.queryParameters.map((param: V1_Variable) => {
-              return <>{param.name}</>;
+              try {
+                const valueSpec = buildV1PrimitiveValueSpecification(
+                  guaranteeNonNullable(param.genericType),
+                  undefined,
+                );
+                return <>{param.name}</>;
+              } catch (error) {
+                return (
+                  <div className="text-red-500">
+                    Error building value specification editor for parameter `
+                    {param.name}`
+                  </div>
+                );
+              }
             })}
           </div>
         )}
