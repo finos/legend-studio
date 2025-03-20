@@ -93,7 +93,7 @@ export class TEST__DataCubeEngine extends DataCubeEngine {
   override async getQueryTypeahead(
     code: string,
     baseQuery: V1_Lambda,
-    source: DataCubeSource,
+    context: DataCubeSource | PlainObject,
   ): Promise<CompletionItem[]> {
     throw new Error('Method not implemented.');
   }

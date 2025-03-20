@@ -134,7 +134,7 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
   override async getQueryTypeahead(
     code: string,
     baseQuery: V1_Lambda,
-    source: DataCubeSource,
+    context: DataCubeSource | PlainObject,
   ) {
     return this._client.getQueryTypeahead({
       code,

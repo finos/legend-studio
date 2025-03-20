@@ -26,6 +26,7 @@ import { DataCubeLayout } from './core/DataCubeLayout.js';
 import { DataCubeIcon } from '@finos/legend-art';
 import type { TaskManager } from '../stores/services/DataCubeTaskService.js';
 import { LEGEND_DATACUBE_TEST_ID } from '../__lib__/DataCubeTesting.js';
+import { INTERNAL__MonacoEditorWidgetsRoot } from './core/DataCubePureCodeEditorUtils.js';
 
 export const DataCubePlaceholderErrorDisplay = (props: {
   message: string;
@@ -97,6 +98,7 @@ export const DataCubePlaceholder = observer(
           {children}
         </DataCubeViewPlaceholder>
         {layoutManager ? <DataCubeLayout layout={layoutManager} /> : null}
+        <INTERNAL__MonacoEditorWidgetsRoot />
       </div>
     );
   },

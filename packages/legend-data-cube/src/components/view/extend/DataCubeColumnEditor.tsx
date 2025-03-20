@@ -20,22 +20,6 @@ import {
   type DataCubeColumnBaseEditorState,
 } from '../../../stores/view/extend/DataCubeColumnEditorState.js';
 import {
-  editor as monacoEditorAPI,
-  languages as monacoLanguagesAPI,
-  type IDisposable,
-} from 'monaco-editor';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  CODE_EDITOR_THEME,
-  PURE_CODE_EDITOR_WORD_SEPARATORS,
-  CODE_EDITOR_LANGUAGE,
-  getBaseCodeEditorOptions,
-} from '@finos/legend-code-editor';
-import {
-  getCodeSuggestions,
-  MONACO_EDITOR_OVERFLOW_WIDGETS_ROOT_ID,
-} from '../../core/DataCubePureCodeEditorUtils.js';
-import {
   FormButton,
   FormDocumentation,
   FormDropdownMenu,
@@ -43,14 +27,16 @@ import {
   FormDropdownMenuTrigger,
   FormTextInput,
 } from '../../core/DataCubeFormUtils.js';
-import { debounce, isNonNullable } from '@finos/legend-shared';
-import { cn, DataCubeIcon, useDropdownMenu } from '@finos/legend-art';
+import { DataCubeIcon, useDropdownMenu } from '@finos/legend-art';
 import {
   DataCubeColumnDataType,
   DataCubeColumnKind,
 } from '../../../stores/core/DataCubeQueryEngine.js';
 import { DataCubeDocumentationKey } from '../../../__lib__/DataCubeDocumentation.js';
 import { useDataCube } from '../../DataCubeProvider.js';
+import { useMemo, useRef } from 'react';
+import { debounce } from '@finos/legend-shared';
+import { DataCubeCodeEditor } from './DataCubeCodeEditor.js';
 
 enum DataCubeExtendedColumnKind {
   LEAF_LEVEL_MEASURE = 'Leaf Level Measure',
@@ -84,11 +70,6 @@ export const DataCubeColumnCreator = observer(
       typeDropPropsOpen,
     ] = useDropdownMenu();
 
-    const suggestionsProvider = useRef<IDisposable | undefined>(undefined);
-    const editorRef = useRef<HTMLDivElement>(null);
-    const [editor, setEditor] = useState<
-      monacoEditorAPI.IStandaloneCodeEditor | undefined
-    >();
     const debouncedCheckReturnType = useMemo(
       () =>
         debounce((): void => {
@@ -98,103 +79,6 @@ export const DataCubeColumnCreator = observer(
         }, 500),
       [state, dataCube],
     );
-
-    useEffect(() => {
-      if (!editor && editorRef.current) {
-        const element = editorRef.current;
-        const widgetRoot = document.getElementById(
-          MONACO_EDITOR_OVERFLOW_WIDGETS_ROOT_ID,
-        );
-        const newEditor = monacoEditorAPI.create(element, {
-          ...getBaseCodeEditorOptions(),
-          fontSize: 12,
-          language: CODE_EDITOR_LANGUAGE.PURE,
-          theme: CODE_EDITOR_THEME.GITHUB_LIGHT,
-          wordSeparators: PURE_CODE_EDITOR_WORD_SEPARATORS,
-          // Make sure the widgets (tooltips, menus) are not clipped by the container bounds
-          // and fix the problem where widgets are rendered with position=fixed not working well with parent
-          // containers (i.e. the draggable window) which has been transformed
-          // See https://dev.to/salilnaik/the-uncanny-relationship-between-position-fixed-and-transform-property-32f6
-          // See https://github.com/microsoft/monaco-editor/issues/2793#issuecomment-999337740
-          fixedOverflowWidgets: true,
-          ...(isNonNullable(widgetRoot)
-            ? { overflowWidgetsDomNode: widgetRoot }
-            : {}),
-        });
-
-        // NOTE: since engine suggestions are computed based on the current text content
-        // we put it in this block to simplify the flow and really to "bend" monaco-editor
-        // suggestion provider to our needs. But we also need to make sure this suggestion
-        // provider is scoped to the current editor only by checking the editor model
-        suggestionsProvider.current?.dispose();
-        suggestionsProvider.current =
-          monacoLanguagesAPI.registerCompletionItemProvider(
-            CODE_EDITOR_LANGUAGE.PURE,
-            {
-              // NOTE: this is a hack to fetch suggestions from engine for every keystroke
-              triggerCharacters: [...PURE_CODE_EDITOR_WORD_SEPARATORS, '$'],
-              provideCompletionItems: async (model, position, context) => {
-                let suggestions: monacoLanguagesAPI.CompletionItem[] = [];
-
-                if (model.uri === state.editorModelUri) {
-                  suggestions = suggestions.concat(
-                    await getCodeSuggestions(
-                      position,
-                      model,
-                      state.codePrefix,
-                      view.engine,
-                      view.source,
-                      () => state.buildExtendBaseQuery(),
-                    ),
-                  );
-                }
-
-                return { suggestions };
-              },
-            },
-          );
-
-        newEditor.setModel(state.editorModel);
-        newEditor.onDidChangeModelContent(() => {
-          const currentVal = newEditor.getValue();
-          if (currentVal !== state.code) {
-            state.code = currentVal;
-            // clear error on content change/typing
-            state.clearError();
-            state.setReturnType(undefined);
-            debouncedCheckReturnType.cancel();
-            debouncedCheckReturnType();
-          }
-        });
-        // focus on the editor initially and set the cursor to the end
-        // since we're trying to create a new column
-        newEditor.focus();
-        newEditor.setPosition({
-          lineNumber: 1,
-          column: state.code.length + 1,
-        });
-        state.setEditor(newEditor);
-        setEditor(newEditor);
-      }
-    }, [state, editor, debouncedCheckReturnType, view]);
-
-    // clean up
-    useEffect(
-      () => (): void => {
-        if (editor) {
-          editor.dispose();
-
-          suggestionsProvider.current?.dispose();
-        }
-      },
-      [editor],
-    );
-
-    useEffect(() => {
-      state.editor?.updateOptions({
-        readOnly: state.finalizationState.isInProgress,
-      });
-    }, [state, state.finalizationState.isInProgress]);
 
     return (
       <>
@@ -329,19 +213,7 @@ export const DataCubeColumnCreator = observer(
                 </div>
               </div>
               <div className="h-[calc(100%_-_96px)] w-full p-2 pt-1">
-                <div
-                  className={cn(
-                    'relative h-full w-full border border-neutral-200',
-                    {
-                      'border-red-500': Boolean(state.codeError),
-                    },
-                  )}
-                >
-                  <div
-                    className="absolute left-0 top-0 h-full w-full overflow-hidden"
-                    ref={editorRef}
-                  />
-                </div>
+                <DataCubeCodeEditor state={state} />
               </div>
             </div>
           </div>

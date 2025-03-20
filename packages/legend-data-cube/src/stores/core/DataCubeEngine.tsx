@@ -253,7 +253,7 @@ export abstract class DataCubeEngine {
   abstract getQueryTypeahead(
     code: string,
     baseQuery: V1_Lambda,
-    source: DataCubeSource,
+    context: DataCubeSource | PlainObject,
   ): Promise<CompletionItem[]>;
 
   abstract getQueryRelationReturnType(

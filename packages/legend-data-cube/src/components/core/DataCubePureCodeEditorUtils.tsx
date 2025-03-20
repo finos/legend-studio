@@ -24,6 +24,7 @@ import type {
   DataCubeEngine,
 } from '../../stores/core/DataCubeEngine.js';
 import type { V1_Lambda } from '@finos/legend-graph';
+import type { PlainObject } from '@finos/legend-shared';
 import type { DataCubeSource } from '../../stores/core/model/DataCubeSource.js';
 
 // Since we render the editor in a window which has been CSS transformed, and monaco-editor renders
@@ -47,7 +48,7 @@ export async function getCodeSuggestions(
   model: monacoEditorAPI.ITextModel,
   prefix: string | undefined,
   engine: DataCubeEngine,
-  source: DataCubeSource,
+  source: DataCubeSource | PlainObject,
   baseQueryBuilder: () => V1_Lambda,
 ) {
   const textUntilPosition = model.getValueInRange({

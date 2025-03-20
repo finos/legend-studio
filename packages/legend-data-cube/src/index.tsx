@@ -45,8 +45,11 @@ export {
 export * from './stores/services/DataCubeTaskService.js';
 export * from './stores/services/DataCubeLogService.js';
 export * from './stores/services/DataCubeAlertService.js';
+export * from './components/view/extend/DataCubeCodeEditor.js';
+export * from './components/view/extend/DataCubeCodeEditorState.js';
 export * from './components/core/DataCubeAlert.js';
 export * from './components/core/DataCubeLayout.js';
+export { INTERNAL__MonacoEditorWidgetsRoot } from './components/core/DataCubePureCodeEditorUtils.js';
 
 export { useDataCube } from './components/DataCubeProvider.js';
 export { type DataCubeAPI } from './stores/DataCubeAPI.js';

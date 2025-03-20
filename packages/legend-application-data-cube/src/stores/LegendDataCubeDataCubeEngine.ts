@@ -88,7 +88,6 @@ import {
 import {
   _elementPtr,
   DataCubeEngine,
-  type DataCubeSource,
   type CompletionItem,
   _function,
   DataCubeFunction,
@@ -103,6 +102,7 @@ import {
   DataCubeExecutionError,
   RawUserDefinedFunctionDataCubeSource,
   ADHOC_FUNCTION_DATA_CUBE_SOURCE_TYPE,
+  type DataCubeSource,
   UserDefinedFunctionDataCubeSource,
   DataCubeQueryFilterOperator,
 } from '@finos/legend-data-cube';
@@ -177,6 +177,9 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         const rawSource =
           RawAdhocQueryDataCubeSource.serialization.fromJson(value);
         const source = new AdhocQueryDataCubeSource();
+        if (rawSource.mapping) {
+          source.mapping = rawSource.mapping;
+        }
         source.runtime = rawSource.runtime;
         source.model = rawSource.model;
         source.query = await this.parseValueSpecification(
@@ -530,35 +533,43 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   override async getQueryTypeahead(
     code: string,
     baseQuery: V1_Lambda,
-    source: DataCubeSource,
+    context: DataCubeSource | PlainObject,
   ) {
     const baseQueryCode = await this.getValueSpecificationCode(baseQuery);
     let codeBlock = baseQueryCode + code;
     codeBlock = codeBlock.startsWith(LAMBDA_PIPE)
       ? codeBlock.substring(LAMBDA_PIPE.length)
       : codeBlock;
-    if (source instanceof AdhocQueryDataCubeSource) {
+    if (context instanceof AdhocQueryDataCubeSource) {
       return (
         await this._engineServerClient.completeCode({
           codeBlock,
-          model: source.model,
+          model: context.model,
         })
       ).completions as CompletionItem[];
-    } else if (source instanceof UserDefinedFunctionDataCubeSource) {
+    } else if (context instanceof UserDefinedFunctionDataCubeSource) {
       return (
         await this._engineServerClient.completeCode({
           codeBlock,
-          model: source.model,
+          model: context.model,
         })
       ).completions as CompletionItem[];
-    } else if (source instanceof LegendQueryDataCubeSource) {
+    } else if (context instanceof LegendQueryDataCubeSource) {
       return (
         await this._engineServerClient.completeCode({
           codeBlock,
-          model: source.model,
+          model: context.model,
+        })
+      ).completions as CompletionItem[];
+    } else if (Object.getPrototypeOf(context) === Object.prototype) {
+      return (
+        await this._engineServerClient.completeCode({
+          codeBlock,
+          model: context,
         })
       ).completions as CompletionItem[];
     }
+
     throw new UnsupportedOperationError(
       `Can't get code completion for lambda with unsupported source`,
     );
@@ -753,7 +764,10 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     if (source instanceof AdhocQueryDataCubeSource) {
       return _function(
         DataCubeFunction.FROM,
-        [_elementPtr(source.runtime)].filter(isNonNullable),
+        [
+          source.mapping ? _elementPtr(source.mapping) : undefined,
+          _elementPtr(source.runtime),
+        ].filter(isNonNullable),
       );
     } else if (source instanceof UserDefinedFunctionDataCubeSource) {
       return _function(
@@ -891,7 +905,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     );
   }
 
-  private async _getLambdaRelationType(
+  async _getLambdaRelationType(
     lambda: PlainObject<V1_Lambda>,
     model: PlainObject<V1_PureModelContext>,
   ) {
