@@ -20,6 +20,7 @@ import {
   buildV1PrimitiveValueSpecification,
   QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT,
   SORT_BY_OPTIONS,
+  V1_BasicValueSpecificationEditor,
   type QueryLoaderState,
 } from '@finos/legend-query-builder';
 import type { LegendQueryDataCubeSourceBuilderState } from '../../../stores/builder/source/LegendQueryDataCubeSourceBuilderState.js';
@@ -29,6 +30,7 @@ import {
   debounce,
   formatDistanceToNow,
   guaranteeNonNullable,
+  guaranteeType,
   quantifyList,
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
@@ -50,6 +52,8 @@ import {
   PureModel,
   SystemModel,
   V1_buildValueSpecification,
+  V1_PackageableType,
+  V1_ValueSpecification,
   V1_ValueSpecificationBuilder,
   type V1_Variable,
 } from '@finos/legend-graph';
@@ -334,12 +338,27 @@ export const LegendQueryDataCubeSourceBuilder = observer(
           <div className="mt-2 h-40 w-full">
             {sourceBuilder.queryParameters.map((param: V1_Variable) => {
               try {
+                const type = guaranteeType(
+                  param.genericType?.rawType,
+                  V1_PackageableType,
+                );
                 const valueSpec = buildV1PrimitiveValueSpecification(
-                  guaranteeNonNullable(param.genericType),
+                  type,
                   undefined,
                 );
-                return <>{param.name}</>;
-              } catch (error) {
+                return (
+                  <V1_BasicValueSpecificationEditor
+                    valueSpecification={valueSpec}
+                    typeCheckOption={{
+                      expectedType: type.fullPath,
+                    }}
+                    setValueSpecification={(val: V1_ValueSpecification) => {
+                      console.log('setValueSpecification', val);
+                    }}
+                    resetValue={() => null}
+                  />
+                );
+              } catch {
                 return (
                   <div className="text-red-500">
                     Error building value specification editor for parameter `

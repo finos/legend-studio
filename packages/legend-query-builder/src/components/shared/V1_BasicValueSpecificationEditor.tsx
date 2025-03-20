@@ -19,57 +19,43 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import {
-  type TooltipPlacement,
   type InputActionData,
-  type SelectActionData,
   type SelectComponent,
-  Tooltip,
-  DollarIcon,
-  clsx,
-  InfoCircleIcon,
-  RefreshIcon,
-  CheckSquareIcon,
-  SquareIcon,
-  CustomSelectorInput,
-  SaveIcon,
-  PencilIcon,
-  DragPreviewLayer,
+  type TooltipPlacement,
   CalculateIcon,
+  CheckSquareIcon,
+  clsx,
+  CustomSelectorInput,
   InputWithInlineValidation,
-  CopyIcon,
+  PencilIcon,
+  RefreshIcon,
+  SquareIcon,
+  Tooltip,
 } from '@finos/legend-art';
 import {
-  Enumeration,
-  PrimitiveType,
-  type V1_ValueSpecification,
-  type PureModel,
-  type Type,
   type Enum,
-  type ObserverContext,
-  V1_PrimitiveValueSpecification,
-  V1_Collection,
-  V1_EnumValue,
-  V1_CInteger,
-  V1_CString,
+  type Type,
+  type V1_ValueSpecification,
+  type V1_Variable,
+  Enumeration,
+  getMultiplicityDescription,
+  PrimitiveType,
   V1_CBoolean,
   V1_CDateTime,
-  V1_CStrictDate,
+  V1_CInteger,
   V1_CLatestDate,
-  V1_Variable,
-  getMultiplicityDescription,
+  V1_Collection,
+  V1_CStrictDate,
+  V1_CString,
+  V1_EnumValue,
+  V1_PrimitiveValueSpecification,
 } from '@finos/legend-graph';
 import {
   type DebouncedFunc,
   type GeneratorFn,
-  guaranteeNonNullable,
-  isNonNullable,
-  guaranteeIsNumber,
   csvStringify,
   guaranteeType,
-  isNonEmptyString,
-  parseCSVString,
-  uniq,
-  at,
+  isNonNullable,
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
@@ -99,7 +85,7 @@ interface V1_BasicValueSpecificationEditorSelectorConfig {
 }
 
 export interface V1_TypeCheckOption {
-  expectedType: Type;
+  expectedType: string;
   match?: boolean;
 }
 
@@ -174,7 +160,7 @@ const V1_StringPrimitiveInstanceValueEditor = observer(
       selectorConfig?:
         | V1_BasicValueSpecificationEditorSelectorConfig
         | undefined;
-      observerContext: ObserverContext;
+      // observerContext: ObserverContext;
       handleBlur?: (() => void) | undefined;
       handleKeyDown?: React.KeyboardEventHandler<HTMLDivElement> | undefined;
     }
@@ -185,7 +171,7 @@ const V1_StringPrimitiveInstanceValueEditor = observer(
       resetValue,
       setValueSpecification,
       selectorConfig,
-      observerContext,
+      // observerContext,
       handleBlur,
       handleKeyDown,
     } = props;
@@ -325,14 +311,14 @@ const V1_BooleanPrimitiveInstanceValueEditor = observer(
     className?: string | undefined;
     setValueSpecification: (val: V1_ValueSpecification) => void;
     resetValue: () => void;
-    observerContext: ObserverContext;
+    // observerContext: ObserverContext;
   }) => {
     const {
       valueSpecification,
       className,
       resetValue,
       setValueSpecification,
-      observerContext,
+      // observerContext,
     } = props;
 
     const toggleValue = (): void => {
@@ -374,7 +360,7 @@ const V1_NumberPrimitiveInstanceValueEditor = observer(
       className?: string | undefined;
       setValueSpecification: (val: V1_ValueSpecification) => void;
       resetValue: () => void;
-      observerContext: ObserverContext;
+      // observerContext: ObserverContext;
       handleBlur?: (() => void) | undefined;
       handleKeyDown?:
         | ((event: React.KeyboardEvent<HTMLInputElement>) => void)
@@ -387,7 +373,7 @@ const V1_NumberPrimitiveInstanceValueEditor = observer(
       className,
       resetValue,
       setValueSpecification,
-      observerContext,
+      // observerContext,
       handleBlur,
       handleKeyDown,
     } = props;
@@ -546,7 +532,7 @@ const V1_stringifyValue = (values: V1_ValueSpecification[]): string => {
       .map((val) => {
         if (val instanceof V1_PrimitiveValueSpecification) {
           if (!(val instanceof V1_CLatestDate)) {
-            return (val as unknown as any).value;
+            return (val as unknown as { value: unknown }).value;
           } else {
             return val;
           }
@@ -581,7 +567,7 @@ const V1_EnumValueInstanceValueEditor = observer(
     className?: string | undefined;
     resetValue: () => void;
     setValueSpecification: (val: V1_EnumValue) => void;
-    observerContext: ObserverContext;
+    // observerContext: ObserverContext;
     handleBlur?: (() => void) | undefined;
   }) => {
     const {
@@ -589,7 +575,7 @@ const V1_EnumValueInstanceValueEditor = observer(
       className,
       resetValue,
       setValueSpecification,
-      observerContext,
+      // observerContext,
       handleBlur,
     } = props;
 
@@ -659,12 +645,11 @@ const V1_EnumValueInstanceValueEditor = observer(
 const V1_CollectionValueInstanceValueEditor = observer(
   (props: {
     valueSpecification: V1_Collection;
-    graph: PureModel;
     expectedType: Type;
     className?: string | undefined;
     setValueSpecification: (val: V1_ValueSpecification) => void;
     selectorConfig?: V1_BasicValueSpecificationEditorSelectorConfig | undefined;
-    observerContext: ObserverContext;
+    // observerContext: ObserverContext;
   }) => {
     const {
       valueSpecification,
@@ -672,7 +657,7 @@ const V1_CollectionValueInstanceValueEditor = observer(
       className,
       setValueSpecification,
       selectorConfig,
-      observerContext,
+      // observerContext,
     } = props;
 
     const [editable, setEditable] = useState(false);
@@ -741,8 +726,7 @@ const V1_CollectionValueInstanceValueEditor = observer(
 const V1_DateInstanceValueEditor = observer(
   (props: {
     valueSpecification: V1_CDateTime | V1_CStrictDate | V1_CLatestDate;
-    graph: PureModel;
-    observerContext: ObserverContext;
+    // observerContext: ObserverContext;
     typeCheckOption: V1_TypeCheckOption;
     className?: string | undefined;
     setValueSpecification: (val: V1_ValueSpecification) => void;
@@ -753,8 +737,7 @@ const V1_DateInstanceValueEditor = observer(
     const {
       valueSpecification,
       setValueSpecification,
-      graph,
-      observerContext,
+      // observerContext,
       typeCheckOption,
       resetValue,
       handleBlur,
@@ -786,7 +769,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
   HTMLInputElement | null,
   {
     valueSpecification: V1_ValueSpecification;
-    observerContext: ObserverContext;
+    // observerContext: ObserverContext;
     typeCheckOption: V1_TypeCheckOption;
     className?: string | undefined;
     setValueSpecification: (val: V1_ValueSpecification) => void;
@@ -803,7 +786,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
   const {
     className,
     valueSpecification,
-    observerContext,
+    // observerContext,
     typeCheckOption,
     setValueSpecification,
     resetValue,
@@ -823,7 +806,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
         setValueSpecification={setValueSpecification}
         resetValue={resetValue}
         selectorConfig={selectorConfig}
-        observerContext={observerContext}
+        // observerContext={observerContext}
         handleBlur={handleBlur}
         handleKeyDown={handleKeyDown}
         ref={ref}
@@ -836,7 +819,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
         className={className}
         setValueSpecification={setValueSpecification}
         resetValue={resetValue}
-        observerContext={observerContext}
+        // observerContext={observerContext}
       />
     );
   } else if (valueSpecification instanceof V1_CInteger) {
@@ -847,7 +830,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
         className={className}
         setValueSpecification={setValueSpecification}
         resetValue={resetValue}
-        observerContext={observerContext}
+        // observerContext={observerContext}
         handleBlur={handleBlur}
         handleKeyDown={handleKeyDown}
         ref={ref}
@@ -861,8 +844,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
     return (
       <V1_DateInstanceValueEditor
         valueSpecification={valueSpecification}
-        graph={graph}
-        observerContext={observerContext}
+        // observerContext={observerContext}
         typeCheckOption={typeCheckOption}
         className={className}
         setValueSpecification={setValueSpecification}
@@ -883,17 +865,16 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
     //   />
     // );
   } else if (valueSpecification instanceof V1_Collection) {
-    return (
-      <V1_CollectionValueInstanceValueEditor
-        valueSpecification={valueSpecification}
-        graph={graph}
-        expectedType={typeCheckOption.expectedType}
-        className={className}
-        setValueSpecification={setValueSpecification}
-        selectorConfig={selectorConfig}
-        observerContext={observerContext}
-      />
-    );
+    // return (
+    //   <V1_CollectionValueInstanceValueEditor
+    //     valueSpecification={valueSpecification}
+    //     expectedType={typeCheckOption.expectedType}
+    //     className={className}
+    //     setValueSpecification={setValueSpecification}
+    //     selectorConfig={selectorConfig}
+    //     observerContext={observerContext}
+    //   />
+    // );
   }
 
   // Default case for unsupported value specifications

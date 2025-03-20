@@ -17,12 +17,11 @@ import {
 import { guaranteeType } from '@finos/legend-shared';
 
 export const buildV1PrimitiveValueSpecification = (
-  type: V1_GenericType,
+  type: V1_PackageableType,
   value: unknown,
   // observerContext: ObserverContext,
 ): V1_PrimitiveValueSpecification => {
-  const packageableType = guaranteeType(type.rawType, V1_PackageableType);
-  switch (packageableType.fullPath) {
+  switch (type.fullPath) {
     case PRIMITIVE_TYPE.STRING: {
       const val = new V1_CString();
       val.value = value as string;
