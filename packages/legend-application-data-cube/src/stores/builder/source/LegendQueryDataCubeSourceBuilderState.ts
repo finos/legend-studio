@@ -16,6 +16,7 @@
 
 import {
   assertErrorThrown,
+  guaranteeNonNullable,
   guaranteeType,
   IllegalStateError,
   LogEvent,
@@ -32,6 +33,7 @@ import {
   V1_PackageableType,
   observe_V1ValueSpecification,
   V1_deserializeRawValueSpecificationType,
+  V1_serializeValueSpecification,
 } from '@finos/legend-graph';
 import {
   buildV1PrimitiveValueSpecification,
@@ -64,9 +66,7 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
   queryParameters?: V1_Variable[] | undefined;
   queryParameterValues?:
     | {
-        [paramName: string]:
-          | V1_ValueSpecification
-          | { _type: string; value: unknown };
+        [paramName: string]: V1_ValueSpecification;
       }
     | undefined;
 
@@ -135,9 +135,7 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
       );
 
       const queryParameterValues: {
-        [paramName: string]:
-          | V1_ValueSpecification
-          | { _type: string; value: unknown };
+        [paramName: string]: V1_ValueSpecification;
       } = {};
       for (const param of queryParameters) {
         const type = guaranteeType(
@@ -203,6 +201,19 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
     }
     const source = new RawLegendQueryDataCubeSource();
     source.queryId = this.query.id;
+    source.parameterValues = this.queryParameterValues
+      ? Object.entries(this.queryParameterValues).map(([name, value]) => [
+          JSON.stringify(
+            V1_serializeValueSpecification(
+              guaranteeNonNullable(
+                this.queryParameters?.find((param) => param.name === name),
+              ),
+              [],
+            ),
+          ),
+          JSON.stringify(V1_serializeValueSpecification(value, [])),
+        ])
+      : [];
     return RawLegendQueryDataCubeSource.serialization.toJson(source);
   }
 
