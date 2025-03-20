@@ -237,6 +237,9 @@ const V1_StringPrimitiveInstanceValueEditor = observer(
     useImperativeHandle(ref, () => inputRef.current as HTMLInputElement, []);
 
     const updateValueSpec = (val: string): void => {
+      // Using a similar pattern to the original implementation
+      // Note: V1 protocol doesn't have instanceValue_setValue helper, so we use direct assignment
+      // but follow the same pattern of updating and then calling setValueSpecification
       valueSpecification.value = val;
       setValueSpecification(valueSpecification);
     };
@@ -294,34 +297,48 @@ const V1_StringPrimitiveInstanceValueEditor = observer(
 
     return (
       <div className={clsx('value-spec-editor', className)} onBlur={onBlur}>
-        <CustomSelectorInput
-          className="value-spec-editor__string-selector"
-          options={queryOptions}
-          onChange={changeValue}
-          onInputChange={handleInputChange}
-          onKeyDown={handleKeyDown}
-          value={
-            valueSpecification.value
-              ? { value: valueSpecification.value, label: valueSpecification.value }
-              : null
-          }
-          darkMode={
-            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
-          }
-          hasError={false}
-          placeholder="Add"
-          autoFocus={true}
-          inputRef={inputRef}
-          inputName={inputName}
-          menuIsOpen={
-            selectorConfig !== undefined &&
-            valueSpecification.value !== undefined &&
-            valueSpecification.value.length >=
-              DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH
-          }
-          isLoading={selectorConfig?.isLoading}
-          noMatchMessage={noOptionsMessage}
-        />
+        {Boolean(selectorConfig) ? (
+          <CustomSelectorInput
+            className="value-spec-editor__string-selector"
+            options={queryOptions}
+            onChange={changeValue}
+            onInputChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            value={
+              valueSpecification.value
+                ? { value: valueSpecification.value, label: valueSpecification.value }
+                : null
+            }
+            darkMode={
+              !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+            }
+            hasError={false}
+            placeholder="Add"
+            autoFocus={true}
+            inputRef={inputRef}
+            inputName={inputName}
+            menuIsOpen={
+              selectorConfig !== undefined &&
+              valueSpecification.value !== undefined &&
+              valueSpecification.value.length >=
+                DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH
+            }
+            isLoading={selectorConfig?.isLoading}
+            noMatchMessage={noOptionsMessage}
+          />
+        ) : (
+          <InputWithInlineValidation
+            className="panel__content__form__section__input value-spec-editor__input"
+            spellCheck={false}
+            value={valueSpecification.value ?? ''}
+            placeholder={valueSpecification.value === '' ? '(empty)' : undefined}
+            onChange={(e) => changeInputValue(e.target.value)}
+            ref={inputRef}
+            error={false ? 'Invalid String value' : undefined}
+            onKeyDown={handleKeyDown}
+            name={inputName}
+          />
+        )}
         <button
           className="value-spec-editor__reset-btn"
           name={resetButtonName}
@@ -353,6 +370,9 @@ const V1_BooleanPrimitiveInstanceValueEditor = observer(
     } = props;
 
     const toggleValue = (): void => {
+      // Using a similar pattern to the original implementation
+      // Note: V1 protocol doesn't have instanceValue_setValue helper, so we use direct assignment
+      // but follow the same pattern of updating and then calling setValueSpecification
       valueSpecification.value = !valueSpecification.value;
       setValueSpecification(valueSpecification);
     };
@@ -420,8 +440,13 @@ const V1_NumberPrimitiveInstanceValueEditor = observer(
 
     const updateValueSpecIfValid = (): void => {
       if (value !== null) {
-        const parsedValue = Number(value);
-        if (!Number.isNaN(parsedValue)) {
+        const parsedValue = isInteger
+          ? Number.parseInt(Number(value).toString(), 10)
+          : Number(value);
+        if (!Number.isNaN(parsedValue) && parsedValue !== valueSpecification.value) {
+          // Using a similar pattern to the original implementation
+          // Note: V1 protocol doesn't have instanceValue_setValue helper, so we use direct assignment
+          // but follow the same pattern of updating and then calling setValueSpecification
           valueSpecification.value = parsedValue;
           setValueSpecification(valueSpecification);
         } else {
@@ -494,24 +519,41 @@ const V1_NumberPrimitiveInstanceValueEditor = observer(
 
     return (
       <div className={clsx('value-spec-editor', className)} onBlur={onBlur}>
-        <InputWithInlineValidation
-          className="value-spec-editor__number-input"
-          value={value ?? ''}
-          onChange={handleInputChange}
-          onKeyDown={onKeyDown}
-          placeholder="Add"
-          type="text"
-          hasError={numericValue === null && value !== null && value !== ''}
-          ref={inputRef}
-        />
-        <button
-          className="value-spec-editor__calculate-btn"
-          name={calculateButtonName}
-          title="Calculate"
-          onClick={calculateExpression}
-        >
-          <CalculateIcon />
-        </button>
+        <div className="value-spec-editor__number__input-container">
+          <input
+            ref={inputRef}
+            className={clsx(
+              'panel__content__form__section__input',
+              'value-spec-editor__input',
+              'value-spec-editor__number__input',
+              {
+                'value-spec-editor__number__input--error':
+                  numericValue === null && value !== null && value !== '',
+              },
+            )}
+            spellCheck={false}
+            type="text" // NOTE: we leave this as text so that we can support expression evaluation
+            inputMode="numeric"
+            value={value ?? ''}
+            onChange={handleInputChange}
+            onBlur={calculateExpression}
+            onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
+              onKeyDown(event);
+              handleKeyDown?.(event);
+            }}
+            name={`input-${valueSpecification.accept_ValueSpecificationVisitor}`}
+          />
+          <div className="value-spec-editor__number__actions">
+            <button
+              className="value-spec-editor__number__action"
+              title="Evaluate Expression (Enter)"
+              name={calculateButtonName}
+              onClick={calculateExpression}
+            >
+              <CalculateIcon />
+            </button>
+          </div>
+        </div>
         <button
           className="value-spec-editor__reset-btn"
           name={resetButtonName}
@@ -589,6 +631,9 @@ const V1_EnumValueInstanceValueEditor = observer(
     const inputName = `input-${valueSpecification.accept_ValueSpecificationVisitor}`;
 
     const changeValue = (val: { value: Enum; label: string }): void => {
+      // Using a similar pattern to the original implementation
+      // Note: V1 protocol doesn't have EnumValueExplicitReference, so we use direct assignment
+      // but follow the same pattern of updating and then calling setValueSpecification
       valueSpecification.value = val.value.name;
       setValueSpecification(valueSpecification);
       handleBlur?.();
