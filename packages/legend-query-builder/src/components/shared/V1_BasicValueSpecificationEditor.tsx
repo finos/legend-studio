@@ -39,14 +39,13 @@ import {
   CopyIcon,
 } from '@finos/legend-art';
 import {
+  Enumeration,
+  PrimitiveType,
   type V1_ValueSpecification,
-  type V1_Variable,
   type PureModel,
   type Type,
-  type Enumeration,
   type Enum,
   type ObserverContext,
-  type PrimitiveType,
   V1_PrimitiveValueSpecification,
   V1_Collection,
   V1_EnumValue,
@@ -56,6 +55,7 @@ import {
   V1_CDateTime,
   V1_CStrictDate,
   V1_CLatestDate,
+  V1_Variable,
   getMultiplicityDescription,
 } from '@finos/legend-graph';
 import {
@@ -110,7 +110,7 @@ export const V1_VariableInfoTooltip: React.FC<{
   placement?: TooltipPlacement | undefined;
 }> = (props) => {
   const { variable, children, placement } = props;
-  const type = variable.genericType?.value.rawType;
+  const type = variable.genericType?.rawType;
   return (
     <Tooltip
       arrow={true}
@@ -130,7 +130,7 @@ export const V1_VariableInfoTooltip: React.FC<{
               Type
             </div>
             <div className="value-spec-paramater__tooltip__item__value">
-              {type?.name ?? '(unknown)'}
+              {(type as unknown as string) ?? '(unknown)'}
             </div>
           </div>
           <div className="value-spec-paramater__tooltip__item">
@@ -157,49 +157,6 @@ export const V1_VariableInfoTooltip: React.FC<{
   );
 };
 
-// Variable expression parameter editor
-const V1_VariableExpressionParameterEditor = observer(
-  (props: {
-    valueSpecification: V1_Variable;
-    resetValue: () => void;
-    className?: string | undefined;
-    isConstant?: boolean;
-  }) => {
-    const { valueSpecification, className, resetValue, isConstant } = props;
-
-    return (
-      <div className={clsx('value-spec-editor', className)}>
-        <div className="value-spec-editor__parameter">
-          <V1_VariableInfoTooltip
-            variable={valueSpecification}
-            placement="right"
-          >
-            <div className="value-spec-editor__parameter__name">
-              <DollarIcon />
-              <div className="value-spec-editor__parameter__name__text">
-                {valueSpecification.name}
-              </div>
-              {isConstant && (
-                <div className="value-spec-editor__parameter__name__constant-indicator">
-                  <InfoCircleIcon />
-                </div>
-              )}
-            </div>
-          </V1_VariableInfoTooltip>
-        </div>
-        <button
-          className="value-spec-editor__reset-btn"
-          name="Reset"
-          title="Reset"
-          onClick={resetValue}
-        >
-          <RefreshIcon />
-        </button>
-      </div>
-    );
-  },
-);
-
 // Placeholder for unsupported value specifications
 const V1_UnsupportedValueSpecificationEditor: React.FC = () => (
   <div className="value-spec-editor--unsupported">unsupported V1 type</div>
@@ -214,7 +171,9 @@ const V1_StringPrimitiveInstanceValueEditor = observer(
       className?: string | undefined;
       setValueSpecification: (val: V1_ValueSpecification) => void;
       resetValue: () => void;
-      selectorConfig?: V1_BasicValueSpecificationEditorSelectorConfig | undefined;
+      selectorConfig?:
+        | V1_BasicValueSpecificationEditorSelectorConfig
+        | undefined;
       observerContext: ObserverContext;
       handleBlur?: (() => void) | undefined;
       handleKeyDown?: React.KeyboardEventHandler<HTMLDivElement> | undefined;
@@ -232,9 +191,6 @@ const V1_StringPrimitiveInstanceValueEditor = observer(
     } = props;
 
     const applicationStore = useApplicationStore();
-    const inputRef = useRef<HTMLInputElement>(null);
-
-    useImperativeHandle(ref, () => inputRef.current as HTMLInputElement, []);
 
     const updateValueSpec = (val: string): void => {
       // Using a similar pattern to the original implementation
@@ -279,7 +235,9 @@ const V1_StringPrimitiveInstanceValueEditor = observer(
       label: e.toString(),
     }));
 
-    const noOptionsMessage = selectorConfig?.isLoading ? 'Loading...' : undefined;
+    const noOptionsMessage = selectorConfig?.isLoading
+      ? 'Loading...'
+      : undefined;
 
     const resetButtonName = `reset-${valueSpecification.accept_ValueSpecificationVisitor}`;
     const inputName = `input-${valueSpecification.accept_ValueSpecificationVisitor}`;
@@ -303,19 +261,25 @@ const V1_StringPrimitiveInstanceValueEditor = observer(
             options={queryOptions}
             onChange={changeValue}
             onInputChange={handleInputChange}
-            onKeyDown={handleKeyDown}
+            onKeyDown={
+              handleKeyDown as React.KeyboardEventHandler<HTMLDivElement>
+            }
             value={
               valueSpecification.value
-                ? { value: valueSpecification.value, label: valueSpecification.value }
+                ? {
+                    value: valueSpecification.value,
+                    label: valueSpecification.value,
+                  }
                 : null
             }
             darkMode={
-              !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+              !applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
             }
             hasError={false}
             placeholder="Add"
             autoFocus={true}
-            inputRef={inputRef}
+            inputRef={ref as React.Ref<SelectComponent>}
             inputName={inputName}
             menuIsOpen={
               selectorConfig !== undefined &&
@@ -331,9 +295,11 @@ const V1_StringPrimitiveInstanceValueEditor = observer(
             className="panel__content__form__section__input value-spec-editor__input"
             spellCheck={false}
             value={valueSpecification.value ?? ''}
-            placeholder={valueSpecification.value === '' ? '(empty)' : undefined}
+            placeholder={
+              valueSpecification.value === '' ? '(empty)' : undefined
+            }
             onChange={(e) => changeInputValue(e.target.value)}
-            ref={inputRef}
+            ref={ref as React.Ref<HTMLInputElement>}
             error={false ? 'Invalid String value' : undefined}
             onKeyDown={handleKeyDown}
             name={inputName}
@@ -443,7 +409,10 @@ const V1_NumberPrimitiveInstanceValueEditor = observer(
         const parsedValue = isInteger
           ? Number.parseInt(Number(value).toString(), 10)
           : Number(value);
-        if (!Number.isNaN(parsedValue) && parsedValue !== valueSpecification.value) {
+        if (
+          !Number.isNaN(parsedValue) &&
+          parsedValue !== valueSpecification.value
+        ) {
           // Using a similar pattern to the original implementation
           // Note: V1 protocol doesn't have instanceValue_setValue helper, so we use direct assignment
           // but follow the same pattern of updating and then calling setValueSpecification
@@ -576,7 +545,11 @@ const V1_stringifyValue = (values: V1_ValueSpecification[]): string => {
     values
       .map((val) => {
         if (val instanceof V1_PrimitiveValueSpecification) {
-          return val.value;
+          if (!(val instanceof V1_CLatestDate)) {
+            return (val as unknown as any).value;
+          } else {
+            return val;
+          }
         } else if (val instanceof V1_EnumValue) {
           return val.value;
         }
@@ -607,7 +580,7 @@ const V1_EnumValueInstanceValueEditor = observer(
     valueSpecification: V1_EnumValue;
     className?: string | undefined;
     resetValue: () => void;
-    setValueSpecification: (val: V1_ValueSpecification) => void;
+    setValueSpecification: (val: V1_EnumValue) => void;
     observerContext: ObserverContext;
     handleBlur?: (() => void) | undefined;
   }) => {
@@ -621,14 +594,14 @@ const V1_EnumValueInstanceValueEditor = observer(
     } = props;
 
     const applicationStore = useApplicationStore();
-    const enumType = guaranteeType(valueSpecification.fullPath, Enumeration);
+    const enumType = guaranteeType(valueSpecification.value, Enumeration);
     const enumValue = valueSpecification.value;
     const options = enumType.values.map((value) => ({
       label: value.name,
       value: value,
     }));
-    const resetButtonName = `reset-${valueSpecification.accept_ValueSpecificationVisitor}`;
-    const inputName = `input-${valueSpecification.accept_ValueSpecificationVisitor}`;
+    const resetButtonName = `reset-${valueSpecification.value}`;
+    const inputName = `input-${valueSpecification.value}`;
 
     const changeValue = (val: { value: Enum; label: string }): void => {
       // Using a similar pattern to the original implementation
@@ -656,7 +629,11 @@ const V1_EnumValueInstanceValueEditor = observer(
           className="value-spec-editor__enum-selector"
           options={options}
           onChange={changeValue}
-          value={enumValue ? { value: enumValue, label: enumValue } : null}
+          value={
+            enumValue
+              ? { value: enumValue as unknown as Enum, label: enumValue }
+              : null
+          }
           darkMode={
             !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
           }
@@ -809,7 +786,6 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
   HTMLInputElement | null,
   {
     valueSpecification: V1_ValueSpecification;
-    graph: PureModel;
     observerContext: ObserverContext;
     typeCheckOption: V1_TypeCheckOption;
     className?: string | undefined;
@@ -823,11 +799,10 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
       | undefined;
     displayDateEditorAsEditableValue?: boolean | undefined;
   }
->(function _V1_BasicValueSpecificationEditor(props, ref) {
+>(function V1_BasicValueSpecificationEditor(props, ref) {
   const {
     className,
     valueSpecification,
-    graph,
     observerContext,
     typeCheckOption,
     setValueSpecification,
@@ -840,16 +815,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
   } = props;
 
   // Handle different types of value specifications
-  if (valueSpecification instanceof V1_Variable) {
-    return (
-      <V1_VariableExpressionParameterEditor
-        valueSpecification={valueSpecification}
-        resetValue={resetValue}
-        className={className}
-        isConstant={isConstant}
-      />
-    );
-  } else if (valueSpecification instanceof V1_CString) {
+  if (valueSpecification instanceof V1_CString) {
     return (
       <V1_StringPrimitiveInstanceValueEditor
         valueSpecification={valueSpecification}
@@ -906,16 +872,16 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
       />
     );
   } else if (valueSpecification instanceof V1_EnumValue) {
-    return (
-      <V1_EnumValueInstanceValueEditor
-        valueSpecification={valueSpecification}
-        className={className}
-        resetValue={resetValue}
-        setValueSpecification={setValueSpecification}
-        observerContext={observerContext}
-        handleBlur={handleBlur}
-      />
-    );
+    // return (
+    //   <V1_EnumValueInstanceValueEditor
+    //     valueSpecification={valueSpecification}
+    //     className={className}
+    //     resetValue={resetValue}
+    //     setValueSpecification={setValueSpecification}
+    //     observerContext={observerContext}
+    //     handleBlur={handleBlur}
+    //   />
+    // );
   } else if (valueSpecification instanceof V1_Collection) {
     return (
       <V1_CollectionValueInstanceValueEditor
@@ -933,118 +899,3 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
   // Default case for unsupported value specifications
   return <V1_UnsupportedValueSpecificationEditor />;
 });
-
-// Editable version of the component
-export const V1_EditableBasicValueSpecificationEditor = observer(
-  (props: {
-    valueSpecification: V1_ValueSpecification;
-    setValueSpecification: (valueSpec: V1_ValueSpecification) => void;
-    graph: PureModel;
-    observerContext: ObserverContext;
-    typeCheckOption: V1_TypeCheckOption;
-    resetValue: () => void;
-    selectorConfig?: V1_BasicValueSpecificationEditorSelectorConfig | undefined;
-    isConstant?: boolean;
-    initializeAsEditable?: boolean;
-  }) => {
-    const {
-      valueSpecification,
-      setValueSpecification,
-      graph,
-      observerContext,
-      typeCheckOption,
-      resetValue,
-      selectorConfig,
-      isConstant,
-      initializeAsEditable,
-    } = props;
-
-    const [isEditing, setIsEditing] = useState(initializeAsEditable ?? false);
-    const inputRef = useRef<HTMLInputElement>(null);
-
-    const enableEdit = (): void => {
-      setIsEditing(true);
-    };
-
-    const saveEdit = (): void => {
-      setIsEditing(false);
-    };
-
-    const copyValue = (): void => {
-      let valueToCopy = '';
-      if (valueSpecification instanceof V1_PrimitiveValueSpecification) {
-        valueToCopy = valueSpecification.value?.toString() ?? '';
-      } else if (valueSpecification instanceof V1_EnumValue) {
-        valueToCopy = valueSpecification.value ?? '';
-      } else if (valueSpecification instanceof V1_Collection) {
-        valueToCopy = V1_stringifyValue(valueSpecification.values ?? []);
-      }
-      navigator.clipboard.writeText(valueToCopy).catch(() => {
-        // do nothing
-      });
-    };
-
-    if (isEditing) {
-      return (
-        <div className="value-spec-editor__editable">
-          <V1_BasicValueSpecificationEditor
-            valueSpecification={valueSpecification}
-            graph={graph}
-            observerContext={observerContext}
-            typeCheckOption={typeCheckOption}
-            setValueSpecification={setValueSpecification}
-            resetValue={resetValue}
-            selectorConfig={selectorConfig}
-            isConstant={isConstant}
-            ref={inputRef}
-          />
-          <button
-            className="value-spec-editor__editable__save-btn"
-            onClick={saveEdit}
-            title="Save"
-          >
-            <SaveIcon />
-          </button>
-        </div>
-      );
-    }
-
-    return (
-      <div className="value-spec-editor__editable">
-        <div
-          className="value-spec-editor__editable__preview"
-          onClick={enableEdit}
-          title="Click to edit"
-        >
-          <V1_BasicValueSpecificationEditor
-            valueSpecification={valueSpecification}
-            graph={graph}
-            observerContext={observerContext}
-            typeCheckOption={typeCheckOption}
-            setValueSpecification={setValueSpecification}
-            resetValue={resetValue}
-            selectorConfig={selectorConfig}
-            isConstant={isConstant}
-            displayDateEditorAsEditableValue={true}
-          />
-        </div>
-        <div className="value-spec-editor__editable__actions">
-          <button
-            className="value-spec-editor__editable__edit-btn"
-            onClick={enableEdit}
-            title="Edit"
-          >
-            <PencilIcon />
-          </button>
-          <button
-            className="value-spec-editor__editable__copy-btn"
-            onClick={copyValue}
-            title="Copy"
-          >
-            <CopyIcon />
-          </button>
-        </div>
-      </div>
-    );
-  },
-);
