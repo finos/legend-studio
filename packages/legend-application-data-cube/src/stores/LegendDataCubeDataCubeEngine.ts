@@ -85,6 +85,8 @@ import {
   LET_TOKEN,
   V1_AppliedFunction,
   type V1_LambdaReturnTypeResult,
+  V1_Variable,
+  V1_serializeValueSpecification,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
@@ -557,6 +559,17 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         const queryInfo = await this._graphManager.getQueryInfo(
           rawSource.queryId,
         );
+        const parameterValues: [V1_Variable, V1_ValueSpecification][] =
+          rawSource.parameterValues.map(
+            ([variable, value]) =>
+              [
+                guaranteeType(
+                  V1_deserializeValueSpecification(JSON.parse(variable), []),
+                  V1_Variable,
+                ),
+                V1_deserializeValueSpecification(JSON.parse(value), []),
+              ] as [V1_Variable, V1_ValueSpecification],
+          );
         const executionContext =
           await this._graphManager.resolveQueryInfoExecutionContext(
             queryInfo,
@@ -649,29 +662,15 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         // 2. Add let statements for function parameter values and store them in the source's letParameterValueSpec
         // 3. Prepend the let statements to the lambda body when we execute the query
         const letFuncs: V1_ValueSpecification[] = [];
-        const parameterValues = (
+        const filteredParameterValues = (
           await Promise.all(
-            source.lambda.parameters.map(async (parameter) => {
-              if (
-                parameter.genericType?.rawType instanceof V1_PackageableType
-              ) {
-                const type = parameter.genericType.rawType.fullPath;
-                const defaultValueString =
-                  queryInfo.defaultParameterValues?.find(
-                    (val) => val.name === parameter.name,
-                  )?.content;
-                const defaultValueSpec =
-                  defaultValueString !== undefined
-                    ? await this.parseValueSpecification(defaultValueString)
-                    : {
-                        _type: V1_deserializeRawValueSpecificationType(type),
-                        value: _defaultPrimitiveTypeValue(type),
-                      };
-                if (defaultValueSpec instanceof V1_AppliedFunction) {
+            parameterValues.map(async ([variable, valueSpec]) => {
+              if (variable.genericType?.rawType instanceof V1_PackageableType) {
+                if (valueSpec instanceof V1_AppliedFunction) {
                   const letFunc = guaranteeType(
                     this.deserializeValueSpecification(
                       await this._engineServerClient.grammarToJSON_lambda(
-                        `${LET_TOKEN} ${parameter.name} ${DataCubeQueryFilterOperator.EQUAL} ${defaultValueString}`,
+                        `${LET_TOKEN} ${variable.name} ${DataCubeQueryFilterOperator.EQUAL} ${V1_serializeValueSpecification(valueSpec, [])}`,
                         '',
                         undefined,
                         undefined,
@@ -683,8 +682,8 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
                   letFuncs.push(...letFunc.body);
                 } else {
                   const paramValue = new V1_ParameterValue();
-                  paramValue.name = parameter.name;
-                  paramValue.value = defaultValueSpec;
+                  paramValue.name = variable.name;
+                  paramValue.value = valueSpec;
                   return paramValue;
                 }
               }
@@ -693,9 +692,9 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           )
         ).filter(isNonNullable);
         source.letParameterValueSpec = letFuncs;
-        source.parameterValues = parameterValues;
+        source.parameterValues = filteredParameterValues;
         source.lambda.parameters = source.lambda.parameters.filter((param) =>
-          parameterValues.find((p) => p.name === param.name),
+          filteredParameterValues.find((p) => p.name === param.name),
         );
         return source;
       }
