@@ -113,6 +113,7 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
         true,
       );
       const queryParameters = queryLambda.parameters;
+      console.log('queyParameters:', queryParameters);
       runInAction(() => {
         this.query = lightQuery;
         this.queryCode = queryCode;
