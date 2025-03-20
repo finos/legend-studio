@@ -175,6 +175,27 @@ export async function ENGINE_TEST_SUPPORT__JSONToGrammar_valueSpecification(
   ).data;
 }
 
+export async function ENGINE_TEST_SUPPORT__JSONToGrammar_lambda(
+  value: PlainObject<V1_Lambda>,
+  pretty?: boolean | undefined,
+): Promise<string> {
+  return (
+    await axios.post<unknown, AxiosResponse>(
+      `${ENGINE_TEST_SUPPORT_API_URL}/pure/v1/grammar/jsonToGrammar/lambda`,
+      value,
+      {
+        headers: {
+          [HttpHeader.CONTENT_TYPE]: ContentType.APPLICATION_JSON,
+          [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN,
+        },
+        params: {
+          renderStyle: pretty ? 'PRETTY' : 'STANDARD',
+        },
+      },
+    )
+  ).data;
+}
+
 export async function ENGINE_TEST_SUPPORT__compile(
   model: PlainObject<V1_PureModelContext>,
 ): Promise<AxiosResponse<{ message: string }>> {

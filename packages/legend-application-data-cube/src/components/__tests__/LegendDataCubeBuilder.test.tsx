@@ -28,9 +28,13 @@ import {
   TEST__provideMockedLegendDataCubeBuilderStore,
   TEST__setUpDataCubeBuilder,
 } from '../__test-utils__/LegendDataCubeStoreTestUtils.js';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { type PlainObject, guaranteeNonNullable } from '@finos/legend-shared';
 import { MockedMonacoEditorAPI } from '@finos/legend-lego/code-editor/test';
-import { PersistentDataCube, V1_Query } from '@finos/legend-graph';
+import {
+  type V1_Lambda,
+  PersistentDataCube,
+  V1_Query,
+} from '@finos/legend-graph';
 import depotEntities from './TEST_DATA__DSL_DataSpace_Entities.json' with { type: 'json' };
 import { LegendDataCubePluginManager } from '../../application/LegendDataCubePluginManager.js';
 import {
@@ -38,6 +42,7 @@ import {
   type VersionReleaseNotes,
 } from '@finos/legend-application';
 import { TEST__getTestLegendDataCubeApplicationConfig } from '../../application/__test-utils__/LegendDataCubeApplicationTestUtils.js';
+import { ENGINE_TEST_SUPPORT__JSONToGrammar_lambda } from '@finos/legend-graph/test';
 
 // Mock the LegendDataCubeDuckDBEngine module because it causes
 // problems when running in the jest environment.
@@ -136,6 +141,89 @@ test(integrationTest('Loads DataCube from Legend Query'), async () => {
   await screen.findByText('2', {}, { timeout: 30000 });
   await screen.findByText('Confirmed', {}, { timeout: 30000 });
 });
+
+test(
+  integrationTest('Loads DataCube from Legend Query with multi-line lambda'),
+  async () => {
+    MockedMonacoEditorAPI.remeasureFonts.mockReturnValue(undefined);
+
+    const mockDataCubeId = 'test-data-cube-id';
+    const mockDataCube: PersistentDataCube =
+      PersistentDataCube.serialization.fromJson({
+        id: mockDataCubeId,
+        name: `${mockDataCubeId}-name`,
+        description: undefined,
+        content: {
+          query: `select(~[Id, 'Case Type'])`,
+          source: {
+            queryId: `${mockDataCubeId}-query-id`,
+            _type: 'legendQuery',
+          },
+          configuration: {
+            name: `${mockDataCubeId}-query-name`,
+            columns: [
+              { name: 'Id', type: 'Integer' },
+              { name: 'Case Type', type: 'String' },
+            ],
+          },
+        },
+      });
+    const mockQuery: V1_Query = V1_Query.serialization.fromJson({
+      name: `${mockDataCubeId}-query-name`,
+      id: `${mockDataCubeId}-query-id`,
+      versionId: 'latest',
+      groupId: 'com.legend',
+      artifactId: 'test-project',
+      content: `{|let date = now(); domain::COVIDData.all()->project(~[Id:x|$x.id, 'Case Type':x|$x.caseType]);}`,
+      executionContext: {
+        dataSpacePath: 'domain::COVIDDatapace',
+        executionKey: 'dummyContext',
+        _type: 'dataSpaceExecutionContext',
+      },
+    });
+    const mockedLegendDataCubeBuilderStore =
+      await TEST__provideMockedLegendDataCubeBuilderStore();
+
+    await TEST__setUpDataCubeBuilder(
+      mockedLegendDataCubeBuilderStore,
+      mockDataCube,
+      mockQuery,
+      depotEntities,
+    );
+
+    // Verify grid renders
+    await screen.findByText(
+      'test-data-cube-id-query-name',
+      {},
+      { timeout: 30000 },
+    );
+    expect(
+      (await screen.findAllByText('Id', {}, { timeout: 30000 })).length,
+    ).toBeGreaterThanOrEqual(1);
+    await screen.findByText('Case Type', {}, { timeout: 30000 });
+    await screen.findByText('1', {}, { timeout: 30000 });
+    await screen.findByText('Active', {}, { timeout: 30000 });
+    await screen.findByText('2', {}, { timeout: 30000 });
+    await screen.findByText('Confirmed', {}, { timeout: 30000 });
+
+    // Verify runQuery was called with correct lambda
+    const runQueryCall = guaranteeNonNullable(
+      (
+        mockedLegendDataCubeBuilderStore.engineServerClient
+          .runQuery as unknown as jest.SpiedFunction<
+          typeof mockedLegendDataCubeBuilderStore.engineServerClient.runQuery
+        >
+      ).mock.lastCall,
+    );
+    const lambdaGrammar = await ENGINE_TEST_SUPPORT__JSONToGrammar_lambda(
+      runQueryCall[0].function as PlainObject<V1_Lambda>,
+    );
+    expect(lambdaGrammar).toBe(
+      "{|\nlet date = now();\ndomain::COVIDData.all()->project(~[Id:x|$x.id, 'Case Type':x|$x.caseType])->select(~[Id, 'Case Type'])->slice(0, 500)->meta::pure::mapping::from(mapping::CovidDataMapping, runtime::H2Runtime);\n}",
+    );
+  },
+  100000,
+);
 
 const releaseLog = [
   {
