@@ -30,9 +30,11 @@ import {
   V1_Variable,
   V1_ValueSpecification,
   V1_PackageableType,
+  observe_V1ValueSpecification,
   V1_deserializeRawValueSpecificationType,
 } from '@finos/legend-graph';
 import {
+  buildV1PrimitiveValueSpecification,
   QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT,
   QueryLoaderState,
 } from '@finos/legend-query-builder';
@@ -148,11 +150,12 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
         const defaultValueSpec =
           defaultValue?.content !== undefined
             ? await this._engine.parseValueSpecification(defaultValue.content)
-            : {
-                _type: V1_deserializeRawValueSpecificationType(type.fullPath),
-                value: _defaultPrimitiveTypeValue(type.fullPath),
-              };
-        queryParameterValues[param.name] = defaultValueSpec;
+            : buildV1PrimitiveValueSpecification(
+                V1_deserializeRawValueSpecificationType(type.fullPath),
+                _defaultPrimitiveTypeValue(type.fullPath),
+              );
+        queryParameterValues[param.name] =
+          observe_V1ValueSpecification(defaultValueSpec);
       }
       runInAction(() => {
         this.query = lightQuery;
