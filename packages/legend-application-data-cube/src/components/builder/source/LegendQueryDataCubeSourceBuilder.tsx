@@ -340,19 +340,23 @@ export const LegendQueryDataCubeSourceBuilder = observer(
               Object.entries(sourceBuilder.queryParameterValues).map(
                 ([name, value]) => {
                   return (
-                    <V1_BasicValueSpecificationEditor
-                      key={name}
-                      valueSpecification={
-                        value as unknown as V1_ValueSpecification
-                      }
-                      typeCheckOption={{
-                        expectedType: 'String',
-                      }}
-                      setValueSpecification={(val: V1_ValueSpecification) => {
-                        console.log('setValueSpecification', val);
-                      }}
-                      resetValue={() => null}
-                    />
+                    <div>
+                      {name}
+                      {': '}
+                      <V1_BasicValueSpecificationEditor
+                        key={name}
+                        valueSpecification={
+                          value as unknown as V1_ValueSpecification
+                        }
+                        typeCheckOption={{
+                          expectedType: 'String',
+                        }}
+                        setValueSpecification={(
+                          val: V1_ValueSpecification,
+                        ) => {}}
+                        resetValue={() => null}
+                      />
+                    </div>
                   );
                 },
               )}
