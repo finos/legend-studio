@@ -348,6 +348,7 @@ export const LegendQueryDataCubeSourceBuilder = observer(
                 );
                 return (
                   <V1_BasicValueSpecificationEditor
+                    key={param.name}
                     valueSpecification={valueSpec}
                     typeCheckOption={{
                       expectedType: type.fullPath,
