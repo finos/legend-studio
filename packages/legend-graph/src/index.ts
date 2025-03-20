@@ -175,6 +175,10 @@ export {
   V1_createRelationTypeColumn,
 } from './graph-manager/protocol/pure/v1/helpers/V1_DomainHelper.js';
 export {
+  V1_createValueSpecificationFromVariable,
+  V1_createValueSpecificationFromGenericType,
+} from './graph-manager/protocol/pure/v1/helpers/V1_ValueSpecificationHelper.js';
+export {
   V1_buildExecutionResult,
   V1_deserializeExecutionResult,
 } from './graph-manager/protocol/pure/v1/engine/execution/V1_ExecutionHelper.js';

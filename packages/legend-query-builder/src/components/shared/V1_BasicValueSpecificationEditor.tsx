@@ -57,6 +57,8 @@ import {
   V1_CStrictDate,
   V1_CLatestDate,
   getMultiplicityDescription,
+  V1_createValueSpecificationFromVariable,
+  V1_createValueSpecificationFromGenericType,
 } from '@finos/legend-graph';
 import {
   type DebouncedFunc,
