@@ -16,6 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import {
+  BasicValueSpecificationEditor,
   QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT,
   SORT_BY_OPTIONS,
   type QueryLoaderState,
@@ -42,6 +43,14 @@ import {
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { useLegendDataCubeBuilderStore } from '../LegendDataCubeBuilderStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
+import {
+  CoreModel,
+  PureModel,
+  SystemModel,
+  V1_buildValueSpecification,
+  V1_ValueSpecificationBuilder,
+  type V1_Variable,
+} from '@finos/legend-graph';
 
 const LegendQuerySearcher = observer((props: { state: QueryLoaderState }) => {
   const { state } = props;
@@ -317,6 +326,13 @@ export const LegendQueryDataCubeSourceBuilder = observer(
               language={CODE_EDITOR_LANGUAGE.PURE}
               hidePadding={true}
             />
+          </div>
+        )}
+        {sourceBuilder.queryParameters?.length && (
+          <div className="mt-2 h-40 w-full">
+            {sourceBuilder.queryParameters.map((param: V1_Variable) => {
+              return <>{param.name}</>;
+            })}
           </div>
         )}
         <FormButton
