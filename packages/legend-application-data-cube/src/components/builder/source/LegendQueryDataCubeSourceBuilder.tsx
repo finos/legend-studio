@@ -336,38 +336,26 @@ export const LegendQueryDataCubeSourceBuilder = observer(
         )}
         {sourceBuilder.queryParameters?.length && (
           <div className="mt-2 h-40 w-full">
-            {sourceBuilder.queryParameters.map((param: V1_Variable) => {
-              try {
-                const type = guaranteeType(
-                  param.genericType?.rawType,
-                  V1_PackageableType,
-                );
-                const valueSpec = buildV1PrimitiveValueSpecification(
-                  type,
-                  undefined,
-                );
-                return (
-                  <V1_BasicValueSpecificationEditor
-                    key={param.name}
-                    valueSpecification={valueSpec}
-                    typeCheckOption={{
-                      expectedType: type.fullPath,
-                    }}
-                    setValueSpecification={(val: V1_ValueSpecification) => {
-                      console.log('setValueSpecification', val);
-                    }}
-                    resetValue={() => null}
-                  />
-                );
-              } catch {
-                return (
-                  <div className="text-red-500">
-                    Error building value specification editor for parameter `
-                    {param.name}`
-                  </div>
-                );
-              }
-            })}
+            {sourceBuilder.queryParameterValues &&
+              Object.entries(sourceBuilder.queryParameterValues).map(
+                ([name, value]) => {
+                  return (
+                    <V1_BasicValueSpecificationEditor
+                      key={name}
+                      valueSpecification={
+                        value as unknown as V1_ValueSpecification
+                      }
+                      typeCheckOption={{
+                        expectedType: 'String',
+                      }}
+                      setValueSpecification={(val: V1_ValueSpecification) => {
+                        console.log('setValueSpecification', val);
+                      }}
+                      resetValue={() => null}
+                    />
+                  );
+                },
+              )}
           </div>
         )}
         <FormButton

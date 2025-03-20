@@ -28,6 +28,9 @@ import {
   type LightQuery,
   V1_Lambda,
   V1_Variable,
+  V1_ValueSpecification,
+  V1_PackageableType,
+  V1_deserializeRawValueSpecificationType,
 } from '@finos/legend-graph';
 import {
   QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT,
@@ -42,9 +45,10 @@ import { RawLegendQueryDataCubeSource } from '../../model/LegendQueryDataCubeSou
 import { APPLICATION_EVENT } from '@finos/legend-application';
 import type { LegendDataCubeDataCubeEngine } from '../../LegendDataCubeDataCubeEngine.js';
 import type { LegendDataCubeApplicationStore } from '../../LegendDataCubeBaseStore.js';
-import type {
-  DataCubeAlertService,
-  DataCubeConfiguration,
+import {
+  _defaultPrimitiveTypeValue,
+  type DataCubeAlertService,
+  type DataCubeConfiguration,
 } from '@finos/legend-data-cube';
 
 export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceBuilderState {
@@ -56,6 +60,13 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
   query?: LightQuery | undefined;
   queryCode?: string | undefined;
   queryParameters?: V1_Variable[] | undefined;
+  queryParameterValues?:
+    | {
+        [paramName: string]:
+          | V1_ValueSpecification
+          | { _type: string; value: unknown };
+      }
+    | undefined;
 
   constructor(
     application: LegendDataCubeApplicationStore,
@@ -71,6 +82,10 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
       unsetQuery: action,
 
       queryCode: observable,
+      queryParameters: observable,
+      queryParameterValues: observable,
+
+      setQueryParameterValue: action,
     });
 
     this._graphManager = graphManager;
@@ -113,11 +128,37 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
         true,
       );
       const queryParameters = queryLambda.parameters;
-      console.log('queyParameters:', queryParameters);
+      const queryInfo = await this._graphManager.getQueryInfo(
+        processedQuery.id,
+      );
+
+      const queryParameterValues: {
+        [paramName: string]:
+          | V1_ValueSpecification
+          | { _type: string; value: unknown };
+      } = {};
+      for (const param of queryParameters) {
+        const type = guaranteeType(
+          param?.genericType?.rawType,
+          V1_PackageableType,
+        );
+        const defaultValue = queryInfo.defaultParameterValues?.find(
+          (defaultParam) => defaultParam.name === param.name,
+        );
+        const defaultValueSpec =
+          defaultValue?.content !== undefined
+            ? await this._engine.parseValueSpecification(defaultValue.content)
+            : {
+                _type: V1_deserializeRawValueSpecificationType(type.fullPath),
+                value: _defaultPrimitiveTypeValue(type.fullPath),
+              };
+        queryParameterValues[param.name] = defaultValueSpec;
+      }
       runInAction(() => {
         this.query = lightQuery;
         this.queryCode = queryCode;
         this.queryParameters = queryParameters;
+        this.queryParameterValues = queryParameterValues;
       });
     } catch (error) {
       assertErrorThrown(error);
@@ -135,6 +176,12 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
   unsetQuery(): void {
     this.query = undefined;
     this.queryCode = undefined;
+  }
+
+  setQueryParameterValue(name: string, value: V1_ValueSpecification) {
+    if (this.queryParameterValues) {
+      this.queryParameterValues[name] = value;
+    }
   }
 
   override get label() {
