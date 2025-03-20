@@ -16,6 +16,7 @@
 
 import {
   assertErrorThrown,
+  guaranteeType,
   IllegalStateError,
   LogEvent,
 } from '@finos/legend-shared';
@@ -25,6 +26,8 @@ import {
   type V1_PureGraphManager,
   V1_Query,
   type LightQuery,
+  V1_Lambda,
+  V1_Variable,
 } from '@finos/legend-graph';
 import {
   QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT,
@@ -52,6 +55,7 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
 
   query?: LightQuery | undefined;
   queryCode?: string | undefined;
+  queryParameters?: V1_Variable[] | undefined;
 
   constructor(
     application: LegendDataCubeApplicationStore,
@@ -99,13 +103,20 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
       const processedQuery = V1_Query.serialization.fromJson(
         await this._engineServerClient.getQuery(lightQuery.id),
       );
-      const queryCode = await this._engine.getValueSpecificationCode(
+      const queryLambda = guaranteeType(
         await this._engine.parseValueSpecification(processedQuery.content),
+        V1_Lambda,
+        'Expected query content to be a V1_Lambda',
+      );
+      const queryCode = await this._engine.getValueSpecificationCode(
+        queryLambda,
         true,
       );
+      const queryParameters = queryLambda.parameters;
       runInAction(() => {
         this.query = lightQuery;
         this.queryCode = queryCode;
+        this.queryParameters = queryParameters;
       });
     } catch (error) {
       assertErrorThrown(error);
