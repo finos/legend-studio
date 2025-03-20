@@ -142,6 +142,7 @@ export * from './graph-manager/protocol/pure/v1/engine/artifactGeneration/V1_Dat
 
 // V1 protocols
 export { V1_Class } from './graph-manager/protocol/pure/v1/model/packageableElements/domain/V1_Class.js';
+export { V1_EnumValue } from './graph-manager/protocol/pure/v1/model/packageableElements/domain/V1_EnumValue.js';
 export { V1_AppliedFunction } from './graph-manager/protocol/pure/v1/model/valueSpecification/application/V1_AppliedFunction.js';
 export { V1_AppliedProperty } from './graph-manager/protocol/pure/v1/model/valueSpecification/application/V1_AppliedProperty.js';
 export { V1_Collection } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_Collection.js';
@@ -189,6 +190,7 @@ export { V1_CFloat } from './graph-manager/protocol/pure/v1/model/valueSpecifica
 export { V1_CStrictDate } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CStrictDate.js';
 export { V1_CDateTime } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CDateTime.js';
 export { V1_CStrictTime } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CStrictTime.js';
+export { V1_CLatestDate } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CLatestDate.js';
 export { V1_ClassInstance } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_ClassInstance.js';
 export { V1_PackageableElementPtr } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_PackageableElementPtr.js';
 export { V1_ColSpec } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/classInstance/relation/V1_ColSpec.js';
