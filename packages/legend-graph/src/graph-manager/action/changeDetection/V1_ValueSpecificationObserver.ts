@@ -14,34 +14,33 @@
  * limitations under the License.
  */
 
-import { filterByType } from '@finos/legend-shared';
-import { computed, makeObservable, observable, override } from 'mobx';
+import { makeObservable, observable } from 'mobx';
 import { skipObserved } from './CoreObserverHelper.js';
-import { 
+import {
   type V1_ValueSpecification,
   type V1_ValueSpecificationVisitor,
-} from '../../../protocol/pure/v1/model/valueSpecification/V1_ValueSpecification.js';
-import type { V1_Variable } from '../../../protocol/pure/v1/model/valueSpecification/V1_Variable.js';
-import type { V1_Lambda } from '../../../protocol/pure/v1/model/valueSpecification/raw/V1_Lambda.js';
-import type { V1_EnumValue } from '../../../protocol/pure/v1/model/valueSpecification/raw/V1_EnumValue.js';
-import type { V1_AppliedFunction } from '../../../protocol/pure/v1/model/valueSpecification/application/V1_AppliedFunction.js';
-import type { V1_Collection } from '../../../protocol/pure/v1/model/valueSpecification/raw/V1_Collection.js';
-import type { V1_KeyExpression } from '../../../protocol/pure/v1/model/valueSpecification/raw/V1_KeyExpression.js';
-import type { V1_AppliedProperty } from '../../../protocol/pure/v1/model/valueSpecification/application/V1_AppliedProperty.js';
-import type { V1_PackageableElementPtr } from '../../../protocol/pure/v1/model/valueSpecification/raw/V1_PackageableElementPtr.js';
-import type { V1_INTERNAL__UnknownValueSpecification } from '../../../protocol/pure/v1/model/valueSpecification/V1_INTERNAL__UnknownValueSpecfication.js';
-import type { V1_GenericTypeInstance } from '../../../protocol/pure/v1/model/valueSpecification/raw/V1_GenericTypeInstance.js';
-import type { V1_ClassInstance } from '../../../protocol/pure/v1/model/valueSpecification/raw/V1_ClassInstance.js';
-import type { V1_CInteger } from '../../../protocol/pure/v1/model/valueSpecification/raw/V1_CInteger.js';
-import type { V1_CDecimal } from '../../../protocol/pure/v1/model/valueSpecification/raw/V1_CDecimal.js';
-import type { V1_CString } from '../../../protocol/pure/v1/model/valueSpecification/raw/V1_CString.js';
-import type { V1_CBoolean } from '../../../protocol/pure/v1/model/valueSpecification/raw/V1_CBoolean.js';
-import type { V1_CFloat } from '../../../protocol/pure/v1/model/valueSpecification/raw/V1_CFloat.js';
-import type { V1_CDateTime } from '../../../protocol/pure/v1/model/valueSpecification/raw/V1_CDateTime.js';
-import type { V1_CStrictDate } from '../../../protocol/pure/v1/model/valueSpecification/raw/V1_CStrictDate.js';
-import type { V1_CStrictTime } from '../../../protocol/pure/v1/model/valueSpecification/raw/V1_CStrictTime.js';
-import type { V1_CLatestDate } from '../../../protocol/pure/v1/model/valueSpecification/raw/V1_CLatestDate.js';
-import type { V1_CByteArray } from '../../../protocol/pure/v1/model/valueSpecification/raw/V1_CByteArray.js';
+} from '../../protocol/pure/v1/model/valueSpecification/V1_ValueSpecification.js';
+import type { V1_Variable } from '../../protocol/pure/v1/model/valueSpecification/V1_Variable.js';
+import type { V1_Lambda } from '../../protocol/pure/v1/model/valueSpecification/raw/V1_Lambda.js';
+import type { V1_EnumValue } from '../../protocol/pure/v1/model/valueSpecification/raw/V1_EnumValue.js';
+import type { V1_AppliedFunction } from '../../protocol/pure/v1/model/valueSpecification/application/V1_AppliedFunction.js';
+import type { V1_Collection } from '../../protocol/pure/v1/model/valueSpecification/raw/V1_Collection.js';
+import type { V1_KeyExpression } from '../../protocol/pure/v1/model/valueSpecification/raw/V1_KeyExpression.js';
+import type { V1_AppliedProperty } from '../../protocol/pure/v1/model/valueSpecification/application/V1_AppliedProperty.js';
+import type { V1_PackageableElementPtr } from '../../protocol/pure/v1/model/valueSpecification/raw/V1_PackageableElementPtr.js';
+import type { V1_INTERNAL__UnknownValueSpecification } from '../../protocol/pure/v1/model/valueSpecification/V1_INTERNAL__UnknownValueSpecfication.js';
+import type { V1_GenericTypeInstance } from '../../protocol/pure/v1/model/valueSpecification/raw/V1_GenericTypeInstance.js';
+import type { V1_ClassInstance } from '../../protocol/pure/v1/model/valueSpecification/raw/V1_ClassInstance.js';
+import type { V1_CInteger } from '../../protocol/pure/v1/model/valueSpecification/raw/V1_CInteger.js';
+import type { V1_CDecimal } from '../../protocol/pure/v1/model/valueSpecification/raw/V1_CDecimal.js';
+import type { V1_CString } from '../../protocol/pure/v1/model/valueSpecification/raw/V1_CString.js';
+import type { V1_CBoolean } from '../../protocol/pure/v1/model/valueSpecification/raw/V1_CBoolean.js';
+import type { V1_CFloat } from '../../protocol/pure/v1/model/valueSpecification/raw/V1_CFloat.js';
+import type { V1_CDateTime } from '../../protocol/pure/v1/model/valueSpecification/raw/V1_CDateTime.js';
+import type { V1_CStrictDate } from '../../protocol/pure/v1/model/valueSpecification/raw/V1_CStrictDate.js';
+import type { V1_CStrictTime } from '../../protocol/pure/v1/model/valueSpecification/raw/V1_CStrictTime.js';
+import type { V1_CLatestDate } from '../../protocol/pure/v1/model/valueSpecification/raw/V1_CLatestDate.js';
+import type { V1_CByteArray } from '../../protocol/pure/v1/model/valueSpecification/raw/V1_CByteArray.js';
 
 const observe_Abstract_V1_ValueSpecification = (
   metamodel: V1_ValueSpecification,
@@ -69,13 +68,13 @@ export const observe_V1_Variable = skipObserved(
 export const observe_V1_Collection = skipObserved(
   (metamodel: V1_Collection): V1_Collection => {
     observe_Abstract_V1_ValueSpecification(metamodel);
-    
+
     makeObservable<V1_Collection>(metamodel, {
       values: observable,
     });
-    
+
     metamodel.values.forEach(observe_V1ValueSpecification);
-    
+
     return metamodel;
   },
 );
@@ -83,12 +82,12 @@ export const observe_V1_Collection = skipObserved(
 export const observe_V1_EnumValue = skipObserved(
   (metamodel: V1_EnumValue): V1_EnumValue => {
     observe_Abstract_V1_ValueSpecification(metamodel);
-    
+
     makeObservable<V1_EnumValue>(metamodel, {
       fullPath: observable,
       value: observable,
     });
-    
+
     return metamodel;
   },
 );
@@ -96,15 +95,15 @@ export const observe_V1_EnumValue = skipObserved(
 export const observe_V1_AppliedFunction = skipObserved(
   (metamodel: V1_AppliedFunction): V1_AppliedFunction => {
     observe_Abstract_V1_ValueSpecification(metamodel);
-    
+
     makeObservable<V1_AppliedFunction>(metamodel, {
       function: observable,
       fControl: observable,
       parameters: observable,
     });
-    
+
     metamodel.parameters.forEach(observe_V1ValueSpecification);
-    
+
     return metamodel;
   },
 );
@@ -112,14 +111,14 @@ export const observe_V1_AppliedFunction = skipObserved(
 export const observe_V1_AppliedProperty = skipObserved(
   (metamodel: V1_AppliedProperty): V1_AppliedProperty => {
     observe_Abstract_V1_ValueSpecification(metamodel);
-    
+
     makeObservable<V1_AppliedProperty>(metamodel, {
       property: observable,
       parameters: observable,
     });
-    
+
     metamodel.parameters.forEach(observe_V1ValueSpecification);
-    
+
     return metamodel;
   },
 );
@@ -127,18 +126,18 @@ export const observe_V1_AppliedProperty = skipObserved(
 export const observe_V1_Lambda = skipObserved(
   (metamodel: V1_Lambda): V1_Lambda => {
     observe_Abstract_V1_ValueSpecification(metamodel);
-    
+
     makeObservable<V1_Lambda>(metamodel, {
       body: observable,
       parameters: observable,
     });
-    
+
     if (metamodel.body) {
-      observe_V1ValueSpecification(metamodel.body);
+      metamodel.body.forEach(observe_V1ValueSpecification);
     }
-    
+
     metamodel.parameters.forEach(observe_V1_Variable);
-    
+
     return metamodel;
   },
 );
@@ -146,20 +145,20 @@ export const observe_V1_Lambda = skipObserved(
 export const observe_V1_KeyExpression = skipObserved(
   (metamodel: V1_KeyExpression): V1_KeyExpression => {
     observe_Abstract_V1_ValueSpecification(metamodel);
-    
+
     makeObservable<V1_KeyExpression>(metamodel, {
       key: observable,
       expression: observable,
     });
-    
+
     if (metamodel.key) {
       observe_V1ValueSpecification(metamodel.key);
     }
-    
+
     if (metamodel.expression) {
       observe_V1ValueSpecification(metamodel.expression);
     }
-    
+
     return metamodel;
   },
 );
@@ -167,11 +166,11 @@ export const observe_V1_KeyExpression = skipObserved(
 export const observe_V1_PackageableElementPtr = skipObserved(
   (metamodel: V1_PackageableElementPtr): V1_PackageableElementPtr => {
     observe_Abstract_V1_ValueSpecification(metamodel);
-    
+
     makeObservable<V1_PackageableElementPtr>(metamodel, {
       fullPath: observable,
     });
-    
+
     return metamodel;
   },
 );
@@ -179,11 +178,11 @@ export const observe_V1_PackageableElementPtr = skipObserved(
 export const observe_V1_GenericTypeInstance = skipObserved(
   (metamodel: V1_GenericTypeInstance): V1_GenericTypeInstance => {
     observe_Abstract_V1_ValueSpecification(metamodel);
-    
+
     makeObservable<V1_GenericTypeInstance>(metamodel, {
       genericType: observable,
     });
-    
+
     return metamodel;
   },
 );
@@ -191,68 +190,38 @@ export const observe_V1_GenericTypeInstance = skipObserved(
 export const observe_V1_ClassInstance = skipObserved(
   (metamodel: V1_ClassInstance): V1_ClassInstance => {
     observe_Abstract_V1_ValueSpecification(metamodel);
-    
+
     makeObservable<V1_ClassInstance>(metamodel, {
       type: observable,
       value: observable,
     });
-    
+
     return metamodel;
   },
 );
 
 // Observer functions for primitive types
 const observe_V1_PrimitiveType = skipObserved(
-  (metamodel: V1_CInteger | V1_CDecimal | V1_CString | V1_CBoolean | V1_CFloat | 
-    V1_CDateTime | V1_CStrictDate | V1_CStrictTime | V1_CLatestDate | V1_CByteArray) => {
+  (
+    metamodel:
+      | V1_CInteger
+      | V1_CDecimal
+      | V1_CString
+      | V1_CBoolean
+      | V1_CFloat
+      | V1_CDateTime
+      | V1_CStrictDate
+      | V1_CStrictTime
+      | V1_CByteArray,
+  ) => {
     observe_Abstract_V1_ValueSpecification(metamodel);
-    
+
     makeObservable(metamodel, {
       value: observable,
     });
-    
+
     return metamodel;
   },
-);
-
-export const observe_V1_CInteger = skipObserved(
-  (metamodel: V1_CInteger): V1_CInteger => observe_V1_PrimitiveType(metamodel),
-);
-
-export const observe_V1_CDecimal = skipObserved(
-  (metamodel: V1_CDecimal): V1_CDecimal => observe_V1_PrimitiveType(metamodel),
-);
-
-export const observe_V1_CString = skipObserved(
-  (metamodel: V1_CString): V1_CString => observe_V1_PrimitiveType(metamodel),
-);
-
-export const observe_V1_CBoolean = skipObserved(
-  (metamodel: V1_CBoolean): V1_CBoolean => observe_V1_PrimitiveType(metamodel),
-);
-
-export const observe_V1_CFloat = skipObserved(
-  (metamodel: V1_CFloat): V1_CFloat => observe_V1_PrimitiveType(metamodel),
-);
-
-export const observe_V1_CDateTime = skipObserved(
-  (metamodel: V1_CDateTime): V1_CDateTime => observe_V1_PrimitiveType(metamodel),
-);
-
-export const observe_V1_CStrictDate = skipObserved(
-  (metamodel: V1_CStrictDate): V1_CStrictDate => observe_V1_PrimitiveType(metamodel),
-);
-
-export const observe_V1_CStrictTime = skipObserved(
-  (metamodel: V1_CStrictTime): V1_CStrictTime => observe_V1_PrimitiveType(metamodel),
-);
-
-export const observe_V1_CLatestDate = skipObserved(
-  (metamodel: V1_CLatestDate): V1_CLatestDate => observe_V1_PrimitiveType(metamodel),
-);
-
-export const observe_V1_CByteArray = skipObserved(
-  (metamodel: V1_CByteArray): V1_CByteArray => observe_V1_PrimitiveType(metamodel),
 );
 
 export const observe_V1_INTERNAL__UnknownValueSpecification = skipObserved(
@@ -269,7 +238,9 @@ export const observe_V1_INTERNAL__UnknownValueSpecification = skipObserved(
   },
 );
 
-class V1_ValueSpecificationObserver implements V1_ValueSpecificationVisitor<void> {
+class V1_ValueSpecificationObserver
+  implements V1_ValueSpecificationVisitor<void>
+{
   visit_INTERNAL__UnknownValueSpecfication(
     valueSpecification: V1_INTERNAL__UnknownValueSpecification,
   ): void {
@@ -315,43 +286,43 @@ class V1_ValueSpecificationObserver implements V1_ValueSpecificationVisitor<void
   }
 
   visit_CInteger(valueSpecification: V1_CInteger): void {
-    observe_V1_CInteger(valueSpecification);
+    observe_V1_PrimitiveType(valueSpecification);
   }
 
   visit_CDecimal(valueSpecification: V1_CDecimal): void {
-    observe_V1_CDecimal(valueSpecification);
+    observe_V1_PrimitiveType(valueSpecification);
   }
 
   visit_CString(valueSpecification: V1_CString): void {
-    observe_V1_CString(valueSpecification);
+    observe_V1_PrimitiveType(valueSpecification);
   }
 
   visit_CBoolean(valueSpecification: V1_CBoolean): void {
-    observe_V1_CBoolean(valueSpecification);
+    observe_V1_PrimitiveType(valueSpecification);
   }
 
   visit_CByteArray(valueSpecification: V1_CByteArray): void {
-    observe_V1_CByteArray(valueSpecification);
+    observe_V1_PrimitiveType(valueSpecification);
   }
 
   visit_CFloat(valueSpecification: V1_CFloat): void {
-    observe_V1_CFloat(valueSpecification);
+    observe_V1_PrimitiveType(valueSpecification);
   }
 
   visit_CDateTime(valueSpecification: V1_CDateTime): void {
-    observe_V1_CDateTime(valueSpecification);
+    observe_V1_PrimitiveType(valueSpecification);
   }
 
   visit_CStrictDate(valueSpecification: V1_CStrictDate): void {
-    observe_V1_CStrictDate(valueSpecification);
+    observe_V1_PrimitiveType(valueSpecification);
   }
 
   visit_CStrictTime(valueSpecification: V1_CStrictTime): void {
-    observe_V1_CStrictTime(valueSpecification);
+    observe_V1_PrimitiveType(valueSpecification);
   }
 
   visit_CLatestDate(valueSpecification: V1_CLatestDate): void {
-    observe_V1_CLatestDate(valueSpecification);
+    observe_Abstract_V1_ValueSpecification(valueSpecification);
   }
 
   visit_ClassInstance(valueSpecification: V1_ClassInstance): void {
@@ -361,7 +332,7 @@ class V1_ValueSpecificationObserver implements V1_ValueSpecificationVisitor<void
 
 /**
  * Make a V1_ValueSpecification observable
- * 
+ *
  * @param valueSpecification - The V1_ValueSpecification to make observable
  * @returns The observed V1_ValueSpecification
  */
