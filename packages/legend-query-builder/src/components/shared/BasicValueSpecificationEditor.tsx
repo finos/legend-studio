@@ -226,7 +226,7 @@ const VariableExpressionParameterEditor = observer(
 
 interface PrimitiveInstanceValueEditorProps<
   T extends Hashable,
-  U extends string | number | boolean | null,
+  U extends string | number | boolean | Enum | null,
 > {
   valueSpecification: T;
   valueSelector: (val: T) => U;
@@ -607,87 +607,80 @@ const NumberPrimitiveInstanceValueEditor = observer(
   ) => ReturnType<typeof NumberPrimitiveInstanceValueEditorInner>,
 );
 
-const EnumValueInstanceValueEditor = observer(
-  (props: {
-    valueSpecification: EnumValueInstanceValue;
-    className?: string | undefined;
-    setValueSpecification: (val: ValueSpecification) => void;
-    resetValue: () => void;
-    observerContext: ObserverContext;
-    handleBlur?: (() => void) | undefined;
-  }) => {
-    const {
-      valueSpecification,
-      className,
-      resetValue,
-      setValueSpecification,
-      observerContext,
-      handleBlur,
-    } = props;
-    const applicationStore = useApplicationStore();
-    const enumType = guaranteeType(
-      valueSpecification.genericType?.value.rawType,
-      Enumeration,
-    );
-    const enumValue =
-      valueSpecification.values[0] === undefined
-        ? null
-        : valueSpecification.values[0].value;
-    const options = enumType.values.map((value) => ({
-      label: value.name,
-      value: value,
-    }));
-    const resetButtonName = `reset-${valueSpecification.hashCode}`;
-    const inputName = `input-${valueSpecification.hashCode}`;
+interface EnumInstanceValueEditorProps<T extends Hashable>
+  extends PrimitiveInstanceValueEditorProps<T, Enum | null> {
+  enumType: Enumeration;
+}
 
-    const changeValue = (val: { value: Enum; label: string }): void => {
-      instanceValue_setValue(
-        valueSpecification,
-        EnumValueExplicitReference.create(val.value),
-        0,
-        observerContext,
-      );
-      setValueSpecification(valueSpecification);
+const EnumInstanceValueEditorInner = <T extends Hashable>(
+  props: EnumInstanceValueEditorProps<T>,
+): React.ReactElement => {
+  const {
+    valueSpecification,
+    valueSelector,
+    updateValueSpecification,
+    errorChecker,
+    resetValue,
+    handleBlur,
+    enumType,
+    className,
+  } = props;
+  const applicationStore = useApplicationStore();
+  const enumValue = valueSelector(valueSpecification);
+  const options = enumType.values.map((value) => ({
+    label: value.name,
+    value: value,
+  }));
+  const resetButtonName = `reset-${valueSpecification.hashCode}`;
+  const inputName = `input-${valueSpecification.hashCode}`;
+
+  const changeValue = (val: { value: Enum; label: string }): void => {
+    updateValueSpecification(valueSpecification, val.value);
+    handleBlur?.();
+  };
+
+  const onBlur = (
+    event: React.FocusEvent<HTMLInputElement, HTMLButtonElement>,
+  ): void => {
+    if (
+      event.relatedTarget?.name !== resetButtonName &&
+      event.relatedTarget?.name !== inputName
+    ) {
       handleBlur?.();
-    };
+    }
+  };
 
-    const onBlur = (
-      event: React.FocusEvent<HTMLInputElement, HTMLButtonElement>,
-    ): void => {
-      if (
-        event.relatedTarget?.name !== resetButtonName &&
-        event.relatedTarget?.name !== inputName
-      ) {
-        handleBlur?.();
-      }
-    };
+  return (
+    <div className={clsx('value-spec-editor', className)} onBlur={onBlur}>
+      <CustomSelectorInput
+        className="value-spec-editor__enum-selector"
+        options={options}
+        onChange={changeValue}
+        value={enumValue ? { value: enumValue, label: enumValue.name } : null}
+        darkMode={
+          !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+        }
+        hasError={errorChecker?.(valueSpecification)}
+        placeholder="Select value"
+        autoFocus={true}
+        inputName={inputName}
+      />
+      <button
+        className="value-spec-editor__reset-btn"
+        name={resetButtonName}
+        title="Reset"
+        onClick={resetValue}
+      >
+        <RefreshIcon />
+      </button>
+    </div>
+  );
+};
 
-    return (
-      <div className={clsx('value-spec-editor', className)} onBlur={onBlur}>
-        <CustomSelectorInput
-          className="value-spec-editor__enum-selector"
-          options={options}
-          onChange={changeValue}
-          value={enumValue ? { value: enumValue, label: enumValue.name } : null}
-          darkMode={
-            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
-          }
-          hasError={!isValidInstanceValue(valueSpecification)}
-          placeholder="Select value"
-          autoFocus={true}
-          inputName={inputName}
-        />
-        <button
-          className="value-spec-editor__reset-btn"
-          name={resetButtonName}
-          title="Reset"
-          onClick={resetValue}
-        >
-          <RefreshIcon />
-        </button>
-      </div>
-    );
-  },
+const EnumInstanceValueEditor = observer(
+  EnumInstanceValueEditorInner as <T extends Hashable>(
+    props: EnumInstanceValueEditorProps<T>,
+  ) => ReturnType<typeof EnumInstanceValueEditorInner>,
 );
 
 const stringifyValue = (values: ValueSpecification[]): string => {
@@ -1536,12 +1529,29 @@ export const BasicValueSpecificationEditor = forwardRef<
     }
   } else if (valueSpecification instanceof EnumValueInstanceValue) {
     return (
-      <EnumValueInstanceValueEditor
+      <EnumInstanceValueEditor<EnumValueInstanceValue>
         valueSpecification={valueSpecification}
+        valueSelector={(val) =>
+          val.values[0] === undefined ? null : val.values[0].value
+        }
+        enumType={guaranteeType(
+          valueSpecification.genericType?.value.rawType,
+          Enumeration,
+        )}
         className={className}
         resetValue={resetValue}
-        setValueSpecification={setValueSpecification}
-        observerContext={observerContext}
+        updateValueSpecification={(
+          _valueSpecification: EnumValueInstanceValue,
+          value: Enum | null,
+        ) => {
+          instanceValue_setValue(
+            _valueSpecification,
+            EnumValueExplicitReference.create(guaranteeNonNullable(value)),
+            0,
+            observerContext,
+          );
+          setValueSpecification(_valueSpecification);
+        }}
         handleBlur={handleBlur}
       />
     );
