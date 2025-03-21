@@ -67,6 +67,7 @@ import React, {
   useState,
 } from 'react';
 import { evaluate } from 'mathjs';
+import { StringPrimitiveInstanceValueEditor } from './BasicValueSpecificationEditor.js';
 
 // Constants and helper functions
 export const V1_QUERY_BUILDER_VARIABLE_DND_TYPE = 'V1_VARIABLE';
@@ -146,162 +147,6 @@ export const V1_VariableInfoTooltip: React.FC<{
 // Placeholder for unsupported value specifications
 const V1_UnsupportedValueSpecificationEditor: React.FC = () => (
   <div className="value-spec-editor--unsupported">unsupported V1 type</div>
-);
-
-// String primitive value editor
-const V1_StringPrimitiveInstanceValueEditor = observer(
-  forwardRef<
-    HTMLInputElement | SelectComponent,
-    {
-      valueSpecification: V1_CString;
-      className?: string | undefined;
-      setValueSpecification: (val: V1_ValueSpecification) => void;
-      resetValue: () => void;
-      selectorConfig?:
-        | V1_BasicValueSpecificationEditorSelectorConfig
-        | undefined;
-      // observerContext: ObserverContext;
-      handleBlur?: (() => void) | undefined;
-      handleKeyDown?: React.KeyboardEventHandler<HTMLDivElement> | undefined;
-    }
-  >(function V1_StringPrimitiveInstanceValueEditor(props, ref) {
-    const {
-      valueSpecification,
-      className,
-      resetValue,
-      setValueSpecification,
-      selectorConfig,
-      // observerContext,
-      handleBlur,
-      handleKeyDown,
-    } = props;
-
-    const applicationStore = useApplicationStore();
-
-    const updateValueSpec = (val: string): void => {
-      // Using a similar pattern to the original implementation
-      // Note: V1 protocol doesn't have instanceValue_setValue helper, so we use direct assignment
-      // but follow the same pattern of updating and then calling setValueSpecification
-      valueSpecification.value = val;
-      setValueSpecification(valueSpecification);
-    };
-
-    const changeInputValue = (val: string): void => {
-      updateValueSpec(val);
-      handleBlur?.();
-    };
-
-    const changeValue = (val: { value: string; label: string }): void => {
-      updateValueSpec(val.value);
-      handleBlur?.();
-    };
-
-    const handleInputChange = (
-      newInputValue: string,
-      actionChange: InputActionData,
-    ): void => {
-      if (actionChange.action === 'input-change') {
-        selectorConfig?.reloadValues?.cancel();
-        const reloadValuesFuncTransformation =
-          selectorConfig?.reloadValues?.(newInputValue);
-        if (reloadValuesFuncTransformation) {
-          flowResult(reloadValuesFuncTransformation).catch(
-            applicationStore.alertUnhandledError,
-          );
-        }
-      }
-      if (actionChange.action === 'input-blur') {
-        selectorConfig?.reloadValues?.cancel();
-        selectorConfig?.cleanUpReloadValues?.();
-      }
-    };
-
-    const queryOptions = selectorConfig?.values?.map((e) => ({
-      value: e,
-      label: e.toString(),
-    }));
-
-    const noOptionsMessage = selectorConfig?.isLoading
-      ? 'Loading...'
-      : undefined;
-
-    const resetButtonName = `reset-${valueSpecification.accept_ValueSpecificationVisitor}`;
-    const inputName = `input-${valueSpecification.accept_ValueSpecificationVisitor}`;
-
-    const onBlur = (
-      event: React.FocusEvent<HTMLInputElement, HTMLButtonElement>,
-    ): void => {
-      if (
-        event.relatedTarget?.name !== resetButtonName &&
-        event.relatedTarget?.name !== inputName
-      ) {
-        handleBlur?.();
-      }
-    };
-
-    return (
-      <div className={clsx('value-spec-editor', className)} onBlur={onBlur}>
-        {Boolean(selectorConfig) ? (
-          <CustomSelectorInput
-            className="value-spec-editor__string-selector"
-            options={queryOptions}
-            onChange={changeValue}
-            onInputChange={handleInputChange}
-            onKeyDown={
-              handleKeyDown as React.KeyboardEventHandler<HTMLDivElement>
-            }
-            value={
-              valueSpecification.value
-                ? {
-                    value: valueSpecification.value,
-                    label: valueSpecification.value,
-                  }
-                : null
-            }
-            darkMode={
-              !applicationStore.layoutService
-                .TEMPORARY__isLightColorThemeEnabled
-            }
-            hasError={false}
-            placeholder="Add"
-            autoFocus={true}
-            inputRef={ref as React.Ref<SelectComponent>}
-            inputName={inputName}
-            menuIsOpen={
-              selectorConfig !== undefined &&
-              valueSpecification.value !== undefined &&
-              valueSpecification.value.length >=
-                DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH
-            }
-            isLoading={selectorConfig?.isLoading}
-            noMatchMessage={noOptionsMessage}
-          />
-        ) : (
-          <InputWithInlineValidation
-            className="panel__content__form__section__input value-spec-editor__input"
-            spellCheck={false}
-            value={valueSpecification.value ?? ''}
-            placeholder={
-              valueSpecification.value === '' ? '(empty)' : undefined
-            }
-            onChange={(e) => changeInputValue(e.target.value)}
-            ref={ref as React.Ref<HTMLInputElement>}
-            error={false ? 'Invalid String value' : undefined}
-            onKeyDown={handleKeyDown}
-            name={inputName}
-          />
-        )}
-        <button
-          className="value-spec-editor__reset-btn"
-          name={resetButtonName}
-          title="Reset"
-          onClick={resetValue}
-        >
-          <RefreshIcon />
-        </button>
-      </div>
-    );
-  }),
 );
 
 // Boolean primitive value editor
@@ -790,8 +635,6 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
     typeCheckOption,
     setValueSpecification,
     resetValue,
-    selectorConfig,
-    isConstant,
     handleBlur,
     handleKeyDown,
     displayDateEditorAsEditableValue,
@@ -800,16 +643,22 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
   // Handle different types of value specifications
   if (valueSpecification instanceof V1_CString) {
     return (
-      <V1_StringPrimitiveInstanceValueEditor
+      <StringPrimitiveInstanceValueEditor<V1_CString>
         valueSpecification={valueSpecification}
+        valueSelector={(val: V1_CString) => val.value}
+        updateValueSpecification={(
+          _valueSpecification: V1_CString,
+          value: string | null,
+        ) => {
+          setValueSpecification(_valueSpecification);
+        }}
         className={className}
-        setValueSpecification={setValueSpecification}
         resetValue={resetValue}
-        selectorConfig={selectorConfig}
-        // observerContext={observerContext}
+        ref={
+          ref as React.ForwardedRef<HTMLInputElement | SelectComponent | null>
+        }
         handleBlur={handleBlur}
         handleKeyDown={handleKeyDown}
-        ref={ref}
       />
     );
   } else if (valueSpecification instanceof V1_CBoolean) {

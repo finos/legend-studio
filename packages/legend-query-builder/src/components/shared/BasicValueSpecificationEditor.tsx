@@ -225,7 +225,7 @@ const VariableExpressionParameterEditor = observer(
 );
 
 interface PrimitiveInstanceValueEditorProps<
-  T extends Hashable,
+  T,
   U extends string | number | boolean | Enum | null,
 > {
   valueSpecification: T;
@@ -238,12 +238,12 @@ interface PrimitiveInstanceValueEditorProps<
   className?: string | undefined;
 }
 
-interface StringPrimitiveInstanceValueEditorProps<T extends Hashable>
+interface StringPrimitiveInstanceValueEditorProps<T>
   extends PrimitiveInstanceValueEditorProps<T, string | null> {
   selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
 }
 
-const StringPrimitiveInstanceValueEditorInner = <T extends Hashable>(
+const StringPrimitiveInstanceValueEditorInner = <T,>(
   props: StringPrimitiveInstanceValueEditorProps<T>,
   ref: React.ForwardedRef<HTMLInputElement | SelectComponent | null>,
 ): React.ReactElement => {
@@ -303,8 +303,8 @@ const StringPrimitiveInstanceValueEditorInner = <T extends Hashable>(
     : undefined;
   const noOptionsMessage =
     selectorConfig?.values === undefined ? (): null => null : undefined;
-  const resetButtonName = `reset-${valueSpecification.hashCode}`;
-  const inputName = `input-${valueSpecification.hashCode}`;
+  const resetButtonName = `reset-${valueSpecification}`;
+  const inputName = `input-${valueSpecification}`;
 
   const onBlur = (
     event: React.FocusEvent<HTMLInputElement, HTMLButtonElement>,
@@ -373,18 +373,20 @@ const StringPrimitiveInstanceValueEditorInner = <T extends Hashable>(
   );
 };
 
-const StringPrimitiveInstanceValueEditor = observer(
-  forwardRef(StringPrimitiveInstanceValueEditorInner) as <T extends Hashable>(
+export const StringPrimitiveInstanceValueEditor = observer(
+  forwardRef(StringPrimitiveInstanceValueEditorInner) as <T>(
     props: StringPrimitiveInstanceValueEditorProps<T> & {
       ref: React.ForwardedRef<HTMLInputElement | SelectComponent | null>;
     },
   ) => ReturnType<typeof StringPrimitiveInstanceValueEditorInner>,
 );
 
-type BooleanInstanceValueEditorProps<T extends Hashable> =
-  PrimitiveInstanceValueEditorProps<T, boolean>;
+type BooleanInstanceValueEditorProps<T> = PrimitiveInstanceValueEditorProps<
+  T,
+  boolean
+>;
 
-const BooleanInstanceValueEditorInner = <T extends Hashable>(
+const BooleanInstanceValueEditorInner = <T,>(
   props: BooleanInstanceValueEditorProps<T>,
 ): React.ReactElement => {
   const {
@@ -421,18 +423,18 @@ const BooleanInstanceValueEditorInner = <T extends Hashable>(
   );
 };
 
-const BooleanPrimitiveInstanceValueEditor = observer(
-  BooleanInstanceValueEditorInner as <T extends Hashable>(
+export const BooleanPrimitiveInstanceValueEditor = observer(
+  BooleanInstanceValueEditorInner as <T>(
     props: BooleanInstanceValueEditorProps<T>,
   ) => ReturnType<typeof BooleanInstanceValueEditorInner>,
 );
 
-interface NumberPrimitiveInstanceValueEditorProps<T extends Hashable>
+interface NumberPrimitiveInstanceValueEditorProps<T>
   extends PrimitiveInstanceValueEditorProps<T, number> {
   isInteger: boolean;
 }
 
-const NumberPrimitiveInstanceValueEditorInner = <T extends Hashable>(
+const NumberPrimitiveInstanceValueEditorInner = <T,>(
   props: NumberPrimitiveInstanceValueEditorProps<T>,
   ref: React.ForwardedRef<HTMLInputElement>,
 ): React.ReactElement => {
@@ -534,9 +536,9 @@ const NumberPrimitiveInstanceValueEditorInner = <T extends Hashable>(
     }
   }, [numericValue, valueSpecification, valueSelector]);
 
-  const resetButtonName = `reset-${valueSpecification.hashCode}`;
-  const inputName = `input-${valueSpecification.hashCode}`;
-  const calculateButtonName = `calculate-${valueSpecification.hashCode}`;
+  const resetButtonName = `reset-${valueSpecification}`;
+  const inputName = `input-${valueSpecification}`;
+  const calculateButtonName = `calculate-${valueSpecification}`;
 
   const onBlur = (
     event: React.FocusEvent<HTMLInputElement, HTMLButtonElement>,
@@ -599,20 +601,20 @@ const NumberPrimitiveInstanceValueEditorInner = <T extends Hashable>(
   );
 };
 
-const NumberPrimitiveInstanceValueEditor = observer(
-  forwardRef(NumberPrimitiveInstanceValueEditorInner) as <T extends Hashable>(
+export const NumberPrimitiveInstanceValueEditor = observer(
+  forwardRef(NumberPrimitiveInstanceValueEditorInner) as <T>(
     props: NumberPrimitiveInstanceValueEditorProps<T> & {
       ref: React.ForwardedRef<HTMLInputElement>;
     },
   ) => ReturnType<typeof NumberPrimitiveInstanceValueEditorInner>,
 );
 
-interface EnumInstanceValueEditorProps<T extends Hashable>
+interface EnumInstanceValueEditorProps<T>
   extends PrimitiveInstanceValueEditorProps<T, Enum | null> {
   enumType: Enumeration;
 }
 
-const EnumInstanceValueEditorInner = <T extends Hashable>(
+const EnumInstanceValueEditorInner = <T,>(
   props: EnumInstanceValueEditorProps<T>,
 ): React.ReactElement => {
   const {
@@ -631,8 +633,8 @@ const EnumInstanceValueEditorInner = <T extends Hashable>(
     label: value.name,
     value: value,
   }));
-  const resetButtonName = `reset-${valueSpecification.hashCode}`;
-  const inputName = `input-${valueSpecification.hashCode}`;
+  const resetButtonName = `reset-${valueSpecification}`;
+  const inputName = `input-${valueSpecification}`;
 
   const changeValue = (val: { value: Enum; label: string }): void => {
     updateValueSpecification(valueSpecification, val.value);
@@ -677,8 +679,8 @@ const EnumInstanceValueEditorInner = <T extends Hashable>(
   );
 };
 
-const EnumInstanceValueEditor = observer(
-  EnumInstanceValueEditorInner as <T extends Hashable>(
+export const EnumInstanceValueEditor = observer(
+  EnumInstanceValueEditorInner as <T>(
     props: EnumInstanceValueEditorProps<T>,
   ) => ReturnType<typeof EnumInstanceValueEditorInner>,
 );
@@ -781,8 +783,8 @@ const PrimitiveCollectionInstanceValueEditor = observer(
         : undefined;
     const noMatchMessage =
       isTypeaheadSearchEnabled && isLoading ? 'Loading...' : undefined;
-    const copyButtonName = `copy-${valueSpecification.hashCode}`;
-    const inputName = `input-${valueSpecification.hashCode}`;
+    const copyButtonName = `copy-${valueSpecification}`;
+    const inputName = `input-${valueSpecification}`;
 
     // helper functions
     const buildOptionForValueSpec = (
@@ -1057,8 +1059,8 @@ const EnumCollectionInstanceValueEditor = observer(
         value: value,
       }));
 
-    const copyButtonName = `copy-${valueSpecification.hashCode}`;
-    const inputName = `input-${valueSpecification.hashCode}`;
+    const copyButtonName = `copy-${valueSpecification}`;
+    const inputName = `input-${valueSpecification}`;
 
     // helper functions
     const isValueAlreadySelected = (value: Enum): boolean =>
@@ -1423,27 +1425,25 @@ export const BasicValueSpecificationEditor = forwardRef<
   } = props;
   if (valueSpecification instanceof PrimitiveInstanceValue) {
     const _type = valueSpecification.genericType.value.rawType;
+    const valueSelector = <T,>(val: PrimitiveInstanceValue): T =>
+      val.values[0] as T;
+    const updateValueSpecification = <T,>(
+      _valueSpecification: PrimitiveInstanceValue,
+      value: T,
+    ) => {
+      instanceValue_setValue(_valueSpecification, value, 0, observerContext);
+      setValueSpecification(_valueSpecification);
+    };
+    const errorChecker = (_valueSpecification: PrimitiveInstanceValue) =>
+      !isValidInstanceValue(_valueSpecification);
     switch (_type.path) {
       case PRIMITIVE_TYPE.STRING:
         return (
           <StringPrimitiveInstanceValueEditor<PrimitiveInstanceValue>
             valueSpecification={valueSpecification}
-            valueSelector={(val) => val.values[0] as string | null}
-            updateValueSpecification={(
-              _valueSpecification: PrimitiveInstanceValue,
-              value: string | null,
-            ) => {
-              instanceValue_setValue(
-                _valueSpecification,
-                value,
-                0,
-                observerContext,
-              );
-              setValueSpecification(valueSpecification);
-            }}
-            errorChecker={(_valueSpecification: PrimitiveInstanceValue) =>
-              !isValidInstanceValue(_valueSpecification)
-            }
+            valueSelector={valueSelector}
+            updateValueSpecification={updateValueSpecification}
+            errorChecker={errorChecker}
             className={className}
             resetValue={resetValue}
             selectorConfig={selectorConfig}
@@ -1460,19 +1460,8 @@ export const BasicValueSpecificationEditor = forwardRef<
         return (
           <BooleanPrimitiveInstanceValueEditor<PrimitiveInstanceValue>
             valueSpecification={valueSpecification}
-            valueSelector={(val) => val.values[0] as boolean}
-            updateValueSpecification={(
-              _valueSpecification: PrimitiveInstanceValue,
-              value: boolean,
-            ) => {
-              instanceValue_setValue(
-                _valueSpecification,
-                value,
-                0,
-                observerContext,
-              );
-              setValueSpecification(_valueSpecification);
-            }}
+            valueSelector={valueSelector}
+            updateValueSpecification={updateValueSpecification}
             className={className}
             resetValue={resetValue}
           />
@@ -1486,23 +1475,10 @@ export const BasicValueSpecificationEditor = forwardRef<
         return (
           <NumberPrimitiveInstanceValueEditor<PrimitiveInstanceValue>
             valueSpecification={valueSpecification}
-            valueSelector={(val) => val.values[0] as number}
+            valueSelector={valueSelector}
             isInteger={_type.path === PRIMITIVE_TYPE.INTEGER}
-            updateValueSpecification={(
-              _valueSpecification: PrimitiveInstanceValue,
-              value: number,
-            ) => {
-              instanceValue_setValue(
-                _valueSpecification,
-                value,
-                0,
-                observerContext,
-              );
-              setValueSpecification(_valueSpecification);
-            }}
-            errorChecker={(_valueSpecification: PrimitiveInstanceValue) =>
-              !isValidInstanceValue(_valueSpecification)
-            }
+            updateValueSpecification={updateValueSpecification}
+            errorChecker={errorChecker}
             className={className}
             resetValue={resetValue}
             ref={ref}
