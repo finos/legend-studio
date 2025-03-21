@@ -73,6 +73,7 @@ import {
   parseCSVString,
   uniq,
   at,
+  type Hashable,
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
@@ -223,149 +224,155 @@ const VariableExpressionParameterEditor = observer(
   },
 );
 
-const StringPrimitiveInstanceValueEditor = observer(
-  forwardRef<
-    HTMLInputElement | SelectComponent,
-    {
-      valueSpecification: PrimitiveInstanceValue;
-      className?: string | undefined;
-      setValueSpecification: (val: ValueSpecification) => void;
-      resetValue: () => void;
-      selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
-      observerContext: ObserverContext;
-      handleBlur?: (() => void) | undefined;
-      handleKeyDown?: React.KeyboardEventHandler<HTMLDivElement> | undefined;
+type StringPrimitiveInstanceValueEditorProps<T extends Hashable> = {
+  valueSpecification: T;
+  valueSelector: (val: T) => string | null;
+  updateValueSpecification: (valueSpecification: T, value: string) => void;
+  errorChecker: (valueSpecification: T) => boolean;
+  className?: string | undefined;
+  resetValue: () => void;
+  selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
+  observerContext: ObserverContext;
+  handleBlur?: (() => void) | undefined;
+  handleKeyDown?: React.KeyboardEventHandler<HTMLDivElement> | undefined;
+};
+
+const StringPrimitiveInstanceValueEditorInner = <T extends Hashable>(
+  props: StringPrimitiveInstanceValueEditorProps<T>,
+  ref: React.ForwardedRef<HTMLInputElement | SelectComponent | null>,
+): React.ReactElement => {
+  const {
+    valueSpecification,
+    valueSelector,
+    updateValueSpecification,
+    errorChecker,
+    className,
+    resetValue,
+    selectorConfig,
+    handleBlur,
+    handleKeyDown,
+  } = props;
+  const useSelector = Boolean(selectorConfig);
+  const applicationStore = useApplicationStore();
+  const value = valueSelector(valueSpecification);
+  const changeInputValue: React.ChangeEventHandler<HTMLInputElement> = (
+    event,
+  ) => {
+    updateValueSpecification(valueSpecification, event.target.value);
+  };
+  // custom select
+  const selectedValue = value ? { value: value, label: value } : null;
+  const reloadValuesFunc = selectorConfig?.reloadValues;
+  const changeValue = (
+    val: null | { value: number | string; label: string },
+  ): void => {
+    const newValue = val === null ? '' : val.value.toString();
+    updateValueSpecification(valueSpecification, newValue);
+  };
+  const handleInputChange = (
+    inputValue: string,
+    actionChange: InputActionData,
+  ): void => {
+    if (actionChange.action === 'input-change') {
+      updateValueSpecification(valueSpecification, inputValue);
+      reloadValuesFunc?.cancel();
+      const reloadValuesFuncTransformation = reloadValuesFunc?.(inputValue);
+      if (reloadValuesFuncTransformation) {
+        flowResult(reloadValuesFuncTransformation).catch(
+          applicationStore.alertUnhandledError,
+        );
+      }
     }
-  >(function StringPrimitiveInstanceValueEditor(props, ref) {
-    const {
-      valueSpecification,
-      className,
-      resetValue,
-      setValueSpecification,
-      selectorConfig,
-      observerContext,
-      handleBlur,
-      handleKeyDown,
-    } = props;
-    const useSelector = Boolean(selectorConfig);
-    const applicationStore = useApplicationStore();
-    const value = valueSpecification.values[0] as string | null;
-    const updateValueSpec = (val: string): void => {
-      instanceValue_setValue(valueSpecification, val, 0, observerContext);
-      setValueSpecification(valueSpecification);
-    };
-    const changeInputValue: React.ChangeEventHandler<HTMLInputElement> = (
-      event,
-    ) => {
-      updateValueSpec(event.target.value);
-    };
-    // custom select
-    const selectedValue = value ? { value: value, label: value } : null;
-    const reloadValuesFunc = selectorConfig?.reloadValues;
-    const changeValue = (
-      val: null | { value: number | string; label: string },
-    ): void => {
-      const newValue = val === null ? '' : val.value.toString();
-      updateValueSpec(newValue);
-    };
-    const handleInputChange = (
-      inputValue: string,
-      actionChange: InputActionData,
-    ): void => {
-      if (actionChange.action === 'input-change') {
-        updateValueSpec(inputValue);
-        reloadValuesFunc?.cancel();
-        const reloadValuesFuncTransformation = reloadValuesFunc?.(inputValue);
-        if (reloadValuesFuncTransformation) {
-          flowResult(reloadValuesFuncTransformation).catch(
-            applicationStore.alertUnhandledError,
-          );
-        }
-      }
-      if (actionChange.action === 'input-blur') {
-        reloadValuesFunc?.cancel();
-        selectorConfig?.cleanUpReloadValues?.();
-      }
-    };
-    const isLoading = selectorConfig?.isLoading;
-    const queryOptions = selectorConfig?.values?.length
-      ? selectorConfig.values.map((e) => ({
-          value: e,
-          label: e.toString(),
-        }))
-      : undefined;
-    const noOptionsMessage =
-      selectorConfig?.values === undefined ? (): null => null : undefined;
-    const resetButtonName = `reset-${valueSpecification.hashCode}`;
-    const inputName = `input-${valueSpecification.hashCode}`;
+    if (actionChange.action === 'input-blur') {
+      reloadValuesFunc?.cancel();
+      selectorConfig?.cleanUpReloadValues?.();
+    }
+  };
+  const isLoading = selectorConfig?.isLoading;
+  const queryOptions = selectorConfig?.values?.length
+    ? selectorConfig.values.map((e) => ({
+        value: e,
+        label: e.toString(),
+      }))
+    : undefined;
+  const noOptionsMessage =
+    selectorConfig?.values === undefined ? (): null => null : undefined;
+  const resetButtonName = `reset-${valueSpecification.hashCode}`;
+  const inputName = `input-${valueSpecification.hashCode}`;
 
-    const onBlur = (
-      event: React.FocusEvent<HTMLInputElement, HTMLButtonElement>,
-    ): void => {
-      if (
-        event.relatedTarget?.name !== resetButtonName &&
-        event.relatedTarget?.name !== inputName
-      ) {
-        handleBlur?.();
-      }
-    };
+  const onBlur = (
+    event: React.FocusEvent<HTMLInputElement, HTMLButtonElement>,
+  ): void => {
+    if (
+      event.relatedTarget?.name !== resetButtonName &&
+      event.relatedTarget?.name !== inputName
+    ) {
+      handleBlur?.();
+    }
+  };
 
-    return (
-      <div className={clsx('value-spec-editor', className)} onBlur={onBlur}>
-        {useSelector ? (
-          <CustomSelectorInput
-            className="value-spec-editor__enum-selector"
-            options={queryOptions}
-            onChange={changeValue}
-            value={selectedValue}
-            inputValue={value ?? ''}
-            onInputChange={handleInputChange}
-            darkMode={
-              !applicationStore.layoutService
-                .TEMPORARY__isLightColorThemeEnabled
-            }
-            isLoading={isLoading}
-            allowCreateWhileLoading={true}
-            noOptionsMessage={noOptionsMessage}
-            components={{
-              DropdownIndicator: null,
-            }}
-            hasError={!isValidInstanceValue(valueSpecification)}
-            placeholder={value === '' ? '(empty)' : undefined}
-            inputRef={ref as React.Ref<SelectComponent>}
-            onKeyDown={
-              handleKeyDown as React.KeyboardEventHandler<HTMLDivElement>
-            }
-            inputName={inputName}
-          />
-        ) : (
-          <InputWithInlineValidation
-            className="panel__content__form__section__input value-spec-editor__input"
-            spellCheck={false}
-            value={value ?? ''}
-            placeholder={value === '' ? '(empty)' : undefined}
-            onChange={changeInputValue}
-            ref={ref as React.Ref<HTMLInputElement>}
-            error={
-              !isValidInstanceValue(valueSpecification)
-                ? 'Invalid String value'
-                : undefined
-            }
-            onKeyDown={handleKeyDown}
-            name={inputName}
-          />
-        )}
-        <button
-          className="value-spec-editor__reset-btn"
-          name={resetButtonName}
-          title="Reset"
-          onClick={resetValue}
-        >
-          <RefreshIcon />
-        </button>
-      </div>
-    );
-  }),
+  return (
+    <div className={clsx('value-spec-editor', className)} onBlur={onBlur}>
+      {useSelector ? (
+        <CustomSelectorInput
+          className="value-spec-editor__enum-selector"
+          options={queryOptions}
+          onChange={changeValue}
+          value={selectedValue}
+          inputValue={value ?? ''}
+          onInputChange={handleInputChange}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+          isLoading={isLoading}
+          allowCreateWhileLoading={true}
+          noOptionsMessage={noOptionsMessage}
+          components={{
+            DropdownIndicator: null,
+          }}
+          hasError={errorChecker(valueSpecification)}
+          placeholder={value === '' ? '(empty)' : undefined}
+          inputRef={ref as React.Ref<SelectComponent>}
+          onKeyDown={
+            handleKeyDown as React.KeyboardEventHandler<HTMLDivElement>
+          }
+          inputName={inputName}
+        />
+      ) : (
+        <InputWithInlineValidation
+          className="panel__content__form__section__input value-spec-editor__input"
+          spellCheck={false}
+          value={value ?? ''}
+          placeholder={value === '' ? '(empty)' : undefined}
+          onChange={changeInputValue}
+          ref={ref as React.Ref<HTMLInputElement>}
+          error={
+            errorChecker(valueSpecification)
+              ? 'Invalid String value'
+              : undefined
+          }
+          onKeyDown={handleKeyDown}
+          name={inputName}
+        />
+      )}
+      <button
+        className="value-spec-editor__reset-btn"
+        name={resetButtonName}
+        title="Reset"
+        onClick={resetValue}
+      >
+        <RefreshIcon />
+      </button>
+    </div>
+  );
+};
+
+const StringPrimitiveInstanceValueEditor = observer(
+  forwardRef(StringPrimitiveInstanceValueEditorInner) as <T extends Hashable>(
+    props: StringPrimitiveInstanceValueEditorProps<T> & {
+      ref: React.ForwardedRef<HTMLInputElement | SelectComponent | null>;
+    },
+  ) => ReturnType<typeof StringPrimitiveInstanceValueEditorInner>,
 );
 
 const BooleanPrimitiveInstanceValueEditor = observer(
@@ -1423,14 +1430,33 @@ export const BasicValueSpecificationEditor = forwardRef<
     switch (_type.path) {
       case PRIMITIVE_TYPE.STRING:
         return (
-          <StringPrimitiveInstanceValueEditor
+          <StringPrimitiveInstanceValueEditor<PrimitiveInstanceValue>
             valueSpecification={valueSpecification}
-            setValueSpecification={setValueSpecification}
+            valueSelector={(val) => val.values[0] as string | null}
+            updateValueSpecification={(
+              _valueSpecification: PrimitiveInstanceValue,
+              value: string,
+            ) => {
+              instanceValue_setValue(
+                _valueSpecification,
+                value,
+                0,
+                observerContext,
+              );
+              setValueSpecification(valueSpecification);
+            }}
+            errorChecker={(_valueSpecification: PrimitiveInstanceValue) =>
+              !isValidInstanceValue(_valueSpecification)
+            }
             className={className}
             resetValue={resetValue}
             selectorConfig={selectorConfig}
             observerContext={observerContext}
-            ref={ref}
+            ref={
+              ref as React.ForwardedRef<
+                HTMLInputElement | SelectComponent | null
+              >
+            }
             handleBlur={handleBlur}
             handleKeyDown={handleKeyDown}
           />
