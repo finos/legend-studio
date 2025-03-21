@@ -74,3 +74,29 @@ DataQualityRelationValidation model::relationValidation
     }
    ];
 }
+
+DataQualityRelationValidation model::relationValidation_separateRuntime
+{
+   query: |#>{store::db.table1}#->select(~[property_1]);
+   runtime: model::DummyRuntime;
+   validations: [
+   {
+     name: 'propertyNotEmpty';
+     assertion: row|$row.property_1->isNotEmpty();
+     type: ROW_LEVEL;
+    }
+   ];
+}
+
+DataQualityRelationValidation model::relationValidation_aggregate
+{
+   query: |#>{store::db.table1}#->select(~[property_1])->from(model::DummyRuntime);
+   validations: [
+   {
+     name: 'datasetNotEmpty';
+     assertion: rel|$rel->relationNotEmpty();
+     type: AGGREGATE;
+    }
+   ];
+}
+

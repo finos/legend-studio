@@ -167,6 +167,7 @@ export class DataQualityRelationValidationConfiguration
 {
   query!: DataQualityRelationQueryLambda;
   validations: DataQualityRelationValidation[] = [];
+  runtime?: PackageableElementReference<PackageableRuntime> | undefined;
 
   protected override get _elementHashCode(): string {
     return hashArray([
