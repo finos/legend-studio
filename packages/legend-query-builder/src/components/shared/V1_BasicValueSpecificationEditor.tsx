@@ -18,7 +18,6 @@ import { useApplicationStore } from '@finos/legend-application';
 import {
   type SelectComponent,
   type TooltipPlacement,
-  CalculateIcon,
   clsx,
   CustomSelectorInput,
   PencilIcon,
@@ -53,19 +52,13 @@ import {
   isNonNullable,
 } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
-import React, {
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from 'react';
-import { evaluate } from 'mathjs';
+import React, { forwardRef, useState } from 'react';
 import {
   BooleanPrimitiveInstanceValueEditor,
   NumberPrimitiveInstanceValueEditor,
   StringPrimitiveInstanceValueEditor,
 } from './BasicValueSpecificationEditor.js';
+import { V1_PrimitiveValue_setValue } from '../../stores/shared/V1_ValueSpecificationModifierHelper.js';
 
 // Constants and helper functions
 export const V1_QUERY_BUILDER_VARIABLE_DND_TYPE = 'V1_VARIABLE';
@@ -430,7 +423,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
           _valueSpecification: V1_CString,
           value: string | null,
         ) => {
-          _valueSpecification.value = value ?? '';
+          V1_PrimitiveValue_setValue(_valueSpecification, value ?? '');
           setValueSpecification(_valueSpecification);
         }}
         className={className}
@@ -451,7 +444,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
           _valueSpecification: V1_CBoolean,
           value: boolean,
         ) => {
-          _valueSpecification.value = value;
+          V1_PrimitiveValue_setValue(_valueSpecification, value);
           setValueSpecification(_valueSpecification);
         }}
         className={className}
@@ -474,7 +467,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
           _valueSpecification: V1_CInteger | V1_CDecimal | V1_CFloat,
           value: number,
         ) => {
-          _valueSpecification.value = value;
+          V1_PrimitiveValue_setValue(_valueSpecification, value);
           setValueSpecification(_valueSpecification);
         }}
         className={className}
