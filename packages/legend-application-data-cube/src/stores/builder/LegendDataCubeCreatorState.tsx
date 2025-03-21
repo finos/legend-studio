@@ -107,6 +107,7 @@ export class LegendDataCubeCreatorState {
           this._application,
           this._engine,
           this._alertService,
+          this._store,
         );
       case LegendDataCubeSourceBuilderType.LOCAL_FILE:
         return new LocalFileDataCubeSourceBuilderState(

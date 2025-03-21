@@ -35,7 +35,6 @@ import {
   isPrimitiveType,
 } from '../../core/DataCubeQueryEngine.js';
 import {
-  clearMarkers,
   CODE_EDITOR_LANGUAGE,
   setErrorMarkers,
 } from '@finos/legend-code-editor';
@@ -49,9 +48,11 @@ import type { DataCubeColumnConfiguration } from '../../core/model/DataCubeConfi
 import type { DataCubeSnapshotExtendedColumn } from '../../core/DataCubeSnapshot.js';
 import { _lambda } from '../../core/DataCubeQueryBuilderUtils.js';
 import { _findCol } from '../../core/model/DataCubeColumn.js';
+import { DataCubeCodeEditorState } from '../../../components/view/extend/DataCubeCodeEditorState.js';
+import type { DataCubeSource } from '../../core/model/DataCubeSource.js';
 
-export abstract class DataCubeColumnBaseEditorState {
-  protected readonly uuid = uuid();
+export abstract class DataCubeColumnBaseEditorState extends DataCubeCodeEditorState {
+  protected override readonly uuid = uuid();
   protected readonly _manager: DataCubeExtendManagerState;
   readonly view: DataCubeViewState;
 
@@ -60,22 +61,16 @@ export abstract class DataCubeColumnBaseEditorState {
   private readonly _name = `col_${this.uuid.replaceAll('-', '_')}`;
   readonly display: DisplayState;
   readonly validationState = ActionState.create();
-  readonly finalizationState = ActionState.create();
 
   name: string;
   expectedType: string;
   isGroupLevel: boolean;
   columnKind?: DataCubeColumnKind | undefined;
 
-  code = '';
-  codePrefix: string;
   codeSuffix: string;
 
-  editor?: monacoEditorAPI.IStandaloneCodeEditor | undefined;
-  readonly editorModel: monacoEditorAPI.ITextModel;
-  readonly editorModelUri: Uri;
-  codeError?: EngineError | undefined;
-  returnType?: string | undefined;
+  override model: DataCubeSource;
+  queryLambda: () => V1_Lambda;
 
   constructor(
     manager: DataCubeExtendManagerState,
@@ -84,6 +79,7 @@ export abstract class DataCubeColumnBaseEditorState {
     isGroupLevel: boolean,
     columnKind: DataCubeColumnKind | undefined,
   ) {
+    super(manager.view.engine);
     makeObservable(this, {
       name: observable,
       setName: action,
@@ -110,6 +106,8 @@ export abstract class DataCubeColumnBaseEditorState {
 
     this._manager = manager;
     this.view = manager.view;
+    this.model = manager.view.source;
+    this.engine = this.view.engine;
     this.display = this.newDisplay(this);
 
     this.name = name;
@@ -126,7 +124,12 @@ export abstract class DataCubeColumnBaseEditorState {
       CODE_EDITOR_LANGUAGE.PURE,
       this.editorModelUri,
     );
+    this.queryLambda = this.buildExtendBaseQuery;
   }
+
+  alertHandler = (error: Error): void => {
+    this.view.dataCube.alertService.alertUnhandledError(error);
+  };
 
   abstract getInitialCode(): Promise<string>;
 
@@ -166,14 +169,6 @@ export abstract class DataCubeColumnBaseEditorState {
     this.columnKind = columnKind;
   }
 
-  setEditor(editor: monacoEditorAPI.IStandaloneCodeEditor) {
-    this.editor = editor;
-  }
-
-  setReturnType(value: string | undefined) {
-    this.returnType = value;
-  }
-
   showError(error: EngineError) {
     this.codeError = error;
     if (error.sourceInformation) {
@@ -193,12 +188,7 @@ export abstract class DataCubeColumnBaseEditorState {
     }
   }
 
-  clearError() {
-    this.codeError = undefined;
-    clearMarkers(this.uuid);
-  }
-
-  buildExtendBaseQuery() {
+  buildExtendBaseQuery = () => {
     const currentSnapshot = guaranteeNonNullable(
       this._manager.getLatestSnapshot(),
     );
@@ -221,7 +211,7 @@ export abstract class DataCubeColumnBaseEditorState {
         }),
       ],
     );
-  }
+  };
 
   async getReturnType() {
     this.validationState.inProgress();

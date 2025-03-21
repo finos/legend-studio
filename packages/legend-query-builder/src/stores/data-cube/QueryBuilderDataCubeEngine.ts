@@ -123,7 +123,7 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
   override async getQueryTypeahead(
     code: string,
     baseQuery: V1_Lambda,
-    source: DataCubeSource,
+    context: DataCubeSource | PlainObject,
   ) {
     const lambda = this.buildRawLambdaFromValueSpec(baseQuery);
     const queryString =

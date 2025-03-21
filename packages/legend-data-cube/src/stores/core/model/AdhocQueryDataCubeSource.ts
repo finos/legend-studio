@@ -25,6 +25,7 @@ import type { V1_PureModelContext } from '@finos/legend-graph';
 
 export class AdhocQueryDataCubeSource extends DataCubeSource {
   runtime!: string;
+  mapping?: string;
   model!: PlainObject<V1_PureModelContext>;
 }
 
@@ -40,6 +41,7 @@ export const ADHOC_FUNCTION_DATA_CUBE_SOURCE_TYPE = 'userDefinedFunction';
 export class RawAdhocQueryDataCubeSource {
   query!: string;
   runtime!: string;
+  mapping?: string;
   model!: PlainObject<V1_PureModelContext>;
 
   static readonly serialization = new SerializationFactory(
@@ -48,6 +50,7 @@ export class RawAdhocQueryDataCubeSource {
       model: raw(),
       query: primitive(),
       runtime: primitive(),
+      mapping: optional(primitive()),
     }),
   );
 }

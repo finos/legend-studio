@@ -39,10 +39,7 @@ export const LegendDataCubeCreator = observer(() => {
   const state = store.creator;
   const sourceBuilder = state.sourceBuilder;
   const selectedSourceType = sourceBuilder.label;
-  const WIPSourceTypes = [
-    LegendDataCubeSourceBuilderType.ADHOC_QUERY,
-    LegendDataCubeSourceBuilderType.LOCAL_FILE,
-  ];
+  const WIPSourceTypes = [LegendDataCubeSourceBuilderType.LOCAL_FILE];
   const [
     openSourceTypeDropdown,
     closeSourceTypeDropdown,
@@ -104,6 +101,7 @@ export const LegendDataCubeCreator = observer(() => {
                 AdhocQueryDataCubeSourceBuilderState && (
                 <AdhocQueryDataCubeSourceBuilder
                   sourceBuilder={sourceBuilder}
+                  store={store}
                 />
               )}
               {sourceBuilder instanceof LocalFileDataCubeSourceBuilderState && (

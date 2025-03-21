@@ -151,6 +151,7 @@ const LambdaEditor_Inner = observer(
         }),
       ).catch(applicationStore.alertUnhandledError);
     };
+
     const discardChanges = applicationStore.guardUnhandledError(() =>
       transformLambdaToString(isExpanded),
     );
