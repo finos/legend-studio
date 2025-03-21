@@ -188,6 +188,10 @@ const V1_dataQualityRelationValidationModelSchema = (
     name: primitive(),
     package: primitive(),
     query: usingModelSchema(V1_rawLambdaModelSchemaParameters),
+    runtime: optionalCustom(
+      (val) => serialize(V1_packageableElementPointerModelSchema, val),
+      (val) => deserialize(V1_packageableElementPointerModelSchema, val),
+    ),
     validations: list(usingModelSchema(V1_relationValidationModelSchema)),
     stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
       INTERNAL__forceReturnEmptyInTest: true,

@@ -322,6 +322,12 @@ export function V1_buildDataQualityRelationValidationConfiguration(
   element.validations = elementProtocol.validations.map((validation) =>
     V1_buildDataQualityRelationValidation(validation, context),
   );
+  element.runtime = elementProtocol.runtime
+    ? (context.resolveElement(
+        elementProtocol.runtime.path,
+        false,
+      ) as PackageableElementImplicitReference<PackageableRuntime>)
+    : undefined;
 }
 
 export function V1_buildDataQualityServiceValidationConfiguration(
