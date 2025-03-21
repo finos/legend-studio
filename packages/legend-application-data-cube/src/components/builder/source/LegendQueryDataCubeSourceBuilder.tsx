@@ -340,11 +340,10 @@ export const LegendQueryDataCubeSourceBuilder = observer(
               Object.entries(sourceBuilder.queryParameterValues).map(
                 ([name, value]) => {
                   return (
-                    <div>
+                    <div key={name} className="flex w-full">
                       {name}
                       {': '}
                       <V1_BasicValueSpecificationEditor
-                        key={name}
                         valueSpecification={
                           value as unknown as V1_ValueSpecification
                         }
@@ -354,7 +353,10 @@ export const LegendQueryDataCubeSourceBuilder = observer(
                         setValueSpecification={(
                           val: V1_ValueSpecification,
                         ) => {}}
-                        resetValue={() => null}
+                        resetValue={() => {
+                          console.log('called reset value');
+                        }}
+                        className="ml-2 flex w-full"
                       />
                     </div>
                   );
