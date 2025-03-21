@@ -101,12 +101,7 @@
   }
 
   .menu__item {
-    color: var(--color-legacylight-dark-grey-200);
-
-    &__label,
-    &__icon svg {
-      color: var(--color-dark-grey-300);
-    }
+    color: var(--color-dark-grey-300);
 
     &:hover {
       background: var(--color-legacylight-light-grey-100);
@@ -114,7 +109,7 @@
   }
 
   .menu__item[disabled] {
-    color: var(--color-light-grey-400);
+    color: var(--color-light-grey-300);
   }
 
   // ---------------------------- Button -------------------------------

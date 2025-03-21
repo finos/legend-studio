@@ -46,7 +46,6 @@ import {
   CubesLoadingIndicator,
   InfoCircleIcon,
   ShareBoxIcon,
-  CubeIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
@@ -57,7 +56,6 @@ import {
   TDSExecutionResult,
   RawExecutionResult,
   ExecutionError,
-  RuntimePointer,
 } from '@finos/legend-graph';
 import {
   ActionAlertActionType,
@@ -409,25 +407,6 @@ export const QueryBuilderResultPanel = observer(
       resultState.pressedRunQuery.complete();
     };
 
-    const openDataCube = (): void => {
-      if (
-        queryParametersState.parameterStates.length &&
-        queryParametersState.parameterStates.find(
-          (param) =>
-            !queryBuilderState.milestoningState.isMilestoningParameter(
-              param.parameter,
-            ),
-        )
-      ) {
-        queryParametersState.parameterValuesEditorState.open(async () => {
-          await queryBuilderState.openDataCubeEngine();
-        }, PARAMETER_SUBMIT_ACTION.DATA_CUBE);
-      } else {
-        queryBuilderState
-          .openDataCubeEngine()
-          .catch(applicationStore.alertUnhandledError);
-      }
-    };
     const cancelQuery = applicationStore.guardUnhandledError(() =>
       flowResult(resultState.cancelQuery()),
     );
@@ -533,7 +512,11 @@ export const QueryBuilderResultPanel = observer(
       .map((item) => (
         <MenuContentItem
           key={item.key}
-          title={item.title ?? ''}
+          title={
+            !item.disableFunc?.(queryBuilderState)
+              ? item.title
+              : 'Requires Saved Query'
+          }
           disabled={item.disableFunc?.(queryBuilderState) ?? false}
           onClick={() => {
             item.onClick(queryBuilderState);
@@ -859,26 +842,6 @@ export const QueryBuilderResultPanel = observer(
                     </MenuContentItemIcon>
                     <MenuContentItemLabel>Others...</MenuContentItemLabel>
                   </MenuContentItem>
-                  {queryBuilderState.config?.TEMPORARY__enableExportToCube && (
-                    <MenuContentItem
-                      onClick={openDataCube}
-                      disabled={
-                        !queryBuilderState.fetchStructureState.implementation
-                          .canBeExportedToCube ||
-                        !(
-                          queryBuilderState.executionContextState
-                            .runtimeValue instanceof RuntimePointer
-                        )
-                      }
-                    >
-                      <MenuContentItemIcon>
-                        <CubeIcon />
-                      </MenuContentItemIcon>
-                      <MenuContentItemLabel>
-                        Data Cube (BETA)
-                      </MenuContentItemLabel>
-                    </MenuContentItem>
-                  )}
                   {extraExportMenuContentItems}
                 </MenuContent>
               }
