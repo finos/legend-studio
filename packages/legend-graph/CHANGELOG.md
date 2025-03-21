@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.1.11
+
+### Patch Changes
+
+- [#3945](https://github.com/finos/legend-studio/pull/3945) [`00eaeaa`](https://github.com/finos/legend-studio/commit/00eaeaa875f1b0e431c75ace6d582284a0ff04c6) ([@travisstebbins](https://github.com/travisstebbins)) - Add ENGINE_TEST_SUPPORT\_\_JSONToGrammar_lambda function
+
 ## 32.1.10
 
 ### Patch Changes
