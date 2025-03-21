@@ -14,22 +14,15 @@
  * limitations under the License.
  */
 
+import { useApplicationStore } from '@finos/legend-application';
 import {
-  DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
-  useApplicationStore,
-} from '@finos/legend-application';
-import {
-  type InputActionData,
   type SelectComponent,
   type TooltipPlacement,
   CalculateIcon,
-  CheckSquareIcon,
   clsx,
   CustomSelectorInput,
-  InputWithInlineValidation,
   PencilIcon,
   RefreshIcon,
-  SquareIcon,
   Tooltip,
 } from '@finos/legend-art';
 import {
@@ -42,6 +35,8 @@ import {
   PrimitiveType,
   V1_CBoolean,
   V1_CDateTime,
+  V1_CDecimal,
+  V1_CFloat,
   V1_CInteger,
   V1_CLatestDate,
   V1_Collection,
@@ -57,7 +52,6 @@ import {
   guaranteeType,
   isNonNullable,
 } from '@finos/legend-shared';
-import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import React, {
   forwardRef,
@@ -67,7 +61,11 @@ import React, {
   useState,
 } from 'react';
 import { evaluate } from 'mathjs';
-import { StringPrimitiveInstanceValueEditor } from './BasicValueSpecificationEditor.js';
+import {
+  BooleanPrimitiveInstanceValueEditor,
+  NumberPrimitiveInstanceValueEditor,
+  StringPrimitiveInstanceValueEditor,
+} from './BasicValueSpecificationEditor.js';
 
 // Constants and helper functions
 export const V1_QUERY_BUILDER_VARIABLE_DND_TYPE = 'V1_VARIABLE';
@@ -147,224 +145,6 @@ export const V1_VariableInfoTooltip: React.FC<{
 // Placeholder for unsupported value specifications
 const V1_UnsupportedValueSpecificationEditor: React.FC = () => (
   <div className="value-spec-editor--unsupported">unsupported V1 type</div>
-);
-
-// Boolean primitive value editor
-const V1_BooleanPrimitiveInstanceValueEditor = observer(
-  (props: {
-    valueSpecification: V1_CBoolean;
-    className?: string | undefined;
-    setValueSpecification: (val: V1_ValueSpecification) => void;
-    resetValue: () => void;
-    // observerContext: ObserverContext;
-  }) => {
-    const {
-      valueSpecification,
-      className,
-      resetValue,
-      setValueSpecification,
-      // observerContext,
-    } = props;
-
-    const toggleValue = (): void => {
-      // Using a similar pattern to the original implementation
-      // Note: V1 protocol doesn't have instanceValue_setValue helper, so we use direct assignment
-      // but follow the same pattern of updating and then calling setValueSpecification
-      valueSpecification.value = !valueSpecification.value;
-      setValueSpecification(valueSpecification);
-    };
-
-    return (
-      <div className={clsx('value-spec-editor', className)}>
-        <div
-          className="value-spec-editor__boolean-selector"
-          onClick={toggleValue}
-        >
-          {valueSpecification.value ? <CheckSquareIcon /> : <SquareIcon />}
-        </div>
-        <button
-          className="value-spec-editor__reset-btn"
-          name="Reset"
-          title="Reset"
-          onClick={resetValue}
-        >
-          <RefreshIcon />
-        </button>
-      </div>
-    );
-  },
-);
-
-// Number primitive value editor
-const V1_NumberPrimitiveInstanceValueEditor = observer(
-  forwardRef<
-    HTMLInputElement,
-    {
-      valueSpecification: V1_CInteger;
-      isInteger: boolean;
-      className?: string | undefined;
-      setValueSpecification: (val: V1_ValueSpecification) => void;
-      resetValue: () => void;
-      // observerContext: ObserverContext;
-      handleBlur?: (() => void) | undefined;
-      handleKeyDown?:
-        | ((event: React.KeyboardEvent<HTMLInputElement>) => void)
-        | undefined;
-    }
-  >(function V1_NumberPrimitiveInstanceValueEditor(props, ref) {
-    const {
-      valueSpecification,
-      isInteger,
-      className,
-      resetValue,
-      setValueSpecification,
-      // observerContext,
-      handleBlur,
-      handleKeyDown,
-    } = props;
-    const [value, setValue] = useState<string | null>(
-      valueSpecification.value !== undefined
-        ? valueSpecification.value.toString()
-        : null,
-    );
-    const inputRef = useRef<HTMLInputElement>(null);
-    useImperativeHandle(ref, () => inputRef.current as HTMLInputElement, []);
-    const numericValue = value
-      ? isInteger
-        ? Number.parseInt(Number(value).toString(), 10)
-        : Number(value)
-      : null;
-
-    const updateValueSpecIfValid = (): void => {
-      if (value !== null) {
-        const parsedValue = isInteger
-          ? Number.parseInt(Number(value).toString(), 10)
-          : Number(value);
-        if (
-          !Number.isNaN(parsedValue) &&
-          parsedValue !== valueSpecification.value
-        ) {
-          // Using a similar pattern to the original implementation
-          // Note: V1 protocol doesn't have instanceValue_setValue helper, so we use direct assignment
-          // but follow the same pattern of updating and then calling setValueSpecification
-          valueSpecification.value = parsedValue;
-          setValueSpecification(valueSpecification);
-        } else {
-          setValue(
-            valueSpecification.value !== undefined
-              ? valueSpecification.value.toString()
-              : null,
-          );
-        }
-      }
-    };
-
-    const handleInputChange = (
-      event: React.ChangeEvent<HTMLInputElement>,
-    ): void => {
-      setValue(event.target.value);
-    };
-
-    const calculateExpression = (): void => {
-      try {
-        if (value !== null) {
-          const prevValue = value;
-          const result = evaluate(value);
-          if (typeof result === 'number') {
-            setValue(result.toString());
-            valueSpecification.value = result;
-            setValueSpecification(valueSpecification);
-          } else {
-            setValue(prevValue);
-          }
-        }
-      } catch (error) {
-        // do nothing
-      }
-    };
-
-    const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>): void => {
-      if (event.key === 'Enter') {
-        calculateExpression();
-        handleKeyDown?.(event);
-      }
-    };
-
-    const valueFromValueSpec =
-      valueSpecification.value !== undefined
-        ? valueSpecification.value.toString()
-        : '';
-
-    useEffect(() => {
-      if (value !== valueFromValueSpec) {
-        setValue(valueFromValueSpec);
-      }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [valueFromValueSpec]);
-
-    const resetButtonName = `reset-${valueSpecification.accept_ValueSpecificationVisitor}`;
-    const calculateButtonName = `calculate-${valueSpecification.accept_ValueSpecificationVisitor}`;
-
-    const onBlur = (
-      event: React.FocusEvent<HTMLInputElement, HTMLButtonElement>,
-    ): void => {
-      if (
-        event.relatedTarget?.name !== resetButtonName &&
-        event.relatedTarget?.name !== calculateButtonName
-      ) {
-        updateValueSpecIfValid();
-        handleBlur?.();
-      }
-    };
-
-    return (
-      <div className={clsx('value-spec-editor', className)} onBlur={onBlur}>
-        <div className="value-spec-editor__number__input-container">
-          <input
-            ref={inputRef}
-            className={clsx(
-              'panel__content__form__section__input',
-              'value-spec-editor__input',
-              'value-spec-editor__number__input',
-              {
-                'value-spec-editor__number__input--error':
-                  numericValue === null && value !== null && value !== '',
-              },
-            )}
-            spellCheck={false}
-            type="text" // NOTE: we leave this as text so that we can support expression evaluation
-            inputMode="numeric"
-            value={value ?? ''}
-            onChange={handleInputChange}
-            onBlur={calculateExpression}
-            onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
-              onKeyDown(event);
-              handleKeyDown?.(event);
-            }}
-            name={`input-${valueSpecification.accept_ValueSpecificationVisitor}`}
-          />
-          <div className="value-spec-editor__number__actions">
-            <button
-              className="value-spec-editor__number__action"
-              title="Evaluate Expression (Enter)"
-              name={calculateButtonName}
-              onClick={calculateExpression}
-            >
-              <CalculateIcon />
-            </button>
-          </div>
-        </div>
-        <button
-          className="value-spec-editor__reset-btn"
-          name={resetButtonName}
-          title="Reset"
-          onClick={resetValue}
-        >
-          <RefreshIcon />
-        </button>
-      </div>
-    );
-  }),
 );
 
 // Helper functions for collection values
@@ -664,26 +444,44 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
     );
   } else if (valueSpecification instanceof V1_CBoolean) {
     return (
-      <V1_BooleanPrimitiveInstanceValueEditor
+      <BooleanPrimitiveInstanceValueEditor<V1_CBoolean>
         valueSpecification={valueSpecification}
+        valueSelector={(val: V1_CBoolean) => val.value}
+        updateValueSpecification={(
+          _valueSpecification: V1_CBoolean,
+          value: boolean,
+        ) => {
+          _valueSpecification.value = value;
+          setValueSpecification(_valueSpecification);
+        }}
         className={className}
-        setValueSpecification={setValueSpecification}
         resetValue={resetValue}
-        // observerContext={observerContext}
       />
     );
-  } else if (valueSpecification instanceof V1_CInteger) {
+  } else if (
+    valueSpecification instanceof V1_CInteger ||
+    valueSpecification instanceof V1_CDecimal ||
+    valueSpecification instanceof V1_CFloat
+  ) {
     return (
-      <V1_NumberPrimitiveInstanceValueEditor
+      <NumberPrimitiveInstanceValueEditor<V1_CInteger | V1_CDecimal | V1_CFloat>
         valueSpecification={valueSpecification}
-        isInteger={true}
+        valueSelector={(val: V1_CInteger | V1_CDecimal | V1_CFloat) =>
+          val.value
+        }
+        isInteger={valueSpecification instanceof V1_CInteger}
+        updateValueSpecification={(
+          _valueSpecification: V1_CInteger | V1_CDecimal | V1_CFloat,
+          value: number,
+        ) => {
+          _valueSpecification.value = value;
+          setValueSpecification(_valueSpecification);
+        }}
         className={className}
-        setValueSpecification={setValueSpecification}
         resetValue={resetValue}
-        // observerContext={observerContext}
+        ref={ref}
         handleBlur={handleBlur}
         handleKeyDown={handleKeyDown}
-        ref={ref}
       />
     );
   } else if (
