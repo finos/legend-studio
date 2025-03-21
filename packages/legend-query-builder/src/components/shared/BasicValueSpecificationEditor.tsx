@@ -610,8 +610,8 @@ export const NumberPrimitiveInstanceValueEditor = observer(
 );
 
 interface EnumInstanceValueEditorProps<T>
-  extends PrimitiveInstanceValueEditorProps<T, Enum | null> {
-  enumType: Enumeration;
+  extends PrimitiveInstanceValueEditorProps<T, string | null> {
+  options: { label: string; value: string }[];
 }
 
 const EnumInstanceValueEditorInner = <T,>(
@@ -624,19 +624,15 @@ const EnumInstanceValueEditorInner = <T,>(
     errorChecker,
     resetValue,
     handleBlur,
-    enumType,
+    options,
     className,
   } = props;
   const applicationStore = useApplicationStore();
   const enumValue = valueSelector(valueSpecification);
-  const options = enumType.values.map((value) => ({
-    label: value.name,
-    value: value,
-  }));
   const resetButtonName = `reset-${valueSpecification}`;
   const inputName = `input-${valueSpecification}`;
 
-  const changeValue = (val: { value: Enum; label: string }): void => {
+  const changeValue = (val: { value: string; label: string }): void => {
     updateValueSpecification(valueSpecification, val.value);
     handleBlur?.();
   };
@@ -658,7 +654,7 @@ const EnumInstanceValueEditorInner = <T,>(
         className="value-spec-editor__enum-selector"
         options={options}
         onChange={changeValue}
-        value={enumValue ? { value: enumValue, label: enumValue.name } : null}
+        value={enumValue ? { value: enumValue, label: enumValue } : null}
         darkMode={
           !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
         }
@@ -1507,25 +1503,34 @@ export const BasicValueSpecificationEditor = forwardRef<
         return <UnsupportedValueSpecificationEditor />;
     }
   } else if (valueSpecification instanceof EnumValueInstanceValue) {
+    const enumType = guaranteeType(
+      valueSpecification.genericType?.value.rawType,
+      Enumeration,
+    );
+    const options = enumType.values.map((value) => ({
+      label: value.name,
+      value: value.name,
+    }));
     return (
       <EnumInstanceValueEditor<EnumValueInstanceValue>
         valueSpecification={valueSpecification}
         valueSelector={(val) =>
-          val.values[0] === undefined ? null : val.values[0].value
+          val.values[0] === undefined ? null : val.values[0].value.name
         }
-        enumType={guaranteeType(
-          valueSpecification.genericType?.value.rawType,
-          Enumeration,
-        )}
+        options={options}
         className={className}
         resetValue={resetValue}
         updateValueSpecification={(
           _valueSpecification: EnumValueInstanceValue,
-          value: Enum | null,
+          value: string | null,
         ) => {
+          const enumValue = guaranteeNonNullable(
+            enumType.values.find((val: Enum) => val.name === value),
+            `Unable to find enum value ${value} in enumeration ${enumType.name}`,
+          );
           instanceValue_setValue(
             _valueSpecification,
-            EnumValueExplicitReference.create(guaranteeNonNullable(value)),
+            EnumValueExplicitReference.create(enumValue),
             0,
             observerContext,
           );
