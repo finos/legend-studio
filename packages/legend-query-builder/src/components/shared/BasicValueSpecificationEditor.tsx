@@ -224,18 +224,24 @@ const VariableExpressionParameterEditor = observer(
   },
 );
 
-type StringPrimitiveInstanceValueEditorProps<T extends Hashable> = {
+interface PrimitiveInstanceValueEditorProps<
+  T extends Hashable,
+  U extends string | number | boolean | null,
+> {
   valueSpecification: T;
-  valueSelector: (val: T) => string | null;
-  updateValueSpecification: (valueSpecification: T, value: string) => void;
-  errorChecker: (valueSpecification: T) => boolean;
-  className?: string | undefined;
+  valueSelector: (val: T) => U;
+  updateValueSpecification: (valueSpecification: T, value: U) => void;
+  errorChecker?: (valueSpecification: T) => boolean;
   resetValue: () => void;
-  selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
-  observerContext: ObserverContext;
   handleBlur?: (() => void) | undefined;
   handleKeyDown?: React.KeyboardEventHandler<HTMLDivElement> | undefined;
-};
+  className?: string | undefined;
+}
+
+interface StringPrimitiveInstanceValueEditorProps<T extends Hashable>
+  extends PrimitiveInstanceValueEditorProps<T, string | null> {
+  selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
+}
 
 const StringPrimitiveInstanceValueEditorInner = <T extends Hashable>(
   props: StringPrimitiveInstanceValueEditorProps<T>,
@@ -246,11 +252,11 @@ const StringPrimitiveInstanceValueEditorInner = <T extends Hashable>(
     valueSelector,
     updateValueSpecification,
     errorChecker,
-    className,
     resetValue,
-    selectorConfig,
     handleBlur,
     handleKeyDown,
+    className,
+    selectorConfig,
   } = props;
   const useSelector = Boolean(selectorConfig);
   const applicationStore = useApplicationStore();
@@ -330,7 +336,7 @@ const StringPrimitiveInstanceValueEditorInner = <T extends Hashable>(
           components={{
             DropdownIndicator: null,
           }}
-          hasError={errorChecker(valueSpecification)}
+          hasError={errorChecker?.(valueSpecification)}
           placeholder={value === '' ? '(empty)' : undefined}
           inputRef={ref as React.Ref<SelectComponent>}
           onKeyDown={
@@ -347,7 +353,7 @@ const StringPrimitiveInstanceValueEditorInner = <T extends Hashable>(
           onChange={changeInputValue}
           ref={ref as React.Ref<HTMLInputElement>}
           error={
-            errorChecker(valueSpecification)
+            errorChecker?.(valueSpecification)
               ? 'Invalid String value'
               : undefined
           }
@@ -375,48 +381,50 @@ const StringPrimitiveInstanceValueEditor = observer(
   ) => ReturnType<typeof StringPrimitiveInstanceValueEditorInner>,
 );
 
-const BooleanPrimitiveInstanceValueEditor = observer(
-  (props: {
-    valueSpecification: PrimitiveInstanceValue;
-    className?: string | undefined;
-    resetValue: () => void;
-    setValueSpecification: (val: ValueSpecification) => void;
-    observerContext: ObserverContext;
-  }) => {
-    const {
-      valueSpecification,
-      className,
-      resetValue,
-      setValueSpecification,
-      observerContext,
-    } = props;
-    const value = valueSpecification.values[0] as boolean;
-    const toggleValue = (): void => {
-      instanceValue_setValue(valueSpecification, !value, 0, observerContext);
-      setValueSpecification(valueSpecification);
-    };
+type BooleanInstanceValueEditorProps<T extends Hashable> =
+  PrimitiveInstanceValueEditorProps<T, boolean>;
 
-    return (
-      <div className={clsx('value-spec-editor', className)}>
-        <button
-          className={clsx('value-spec-editor__toggler__btn', {
-            'value-spec-editor__toggler__btn--toggled': value,
-          })}
-          onClick={toggleValue}
-        >
-          {value ? <CheckSquareIcon /> : <SquareIcon />}
-        </button>
-        <button
-          className="value-spec-editor__reset-btn"
-          name="Reset"
-          title="Reset"
-          onClick={resetValue}
-        >
-          <RefreshIcon />
-        </button>
-      </div>
-    );
-  },
+const BooleanInstanceValueEditorInner = <T extends Hashable>(
+  props: BooleanInstanceValueEditorProps<T>,
+): React.ReactElement => {
+  const {
+    valueSpecification,
+    valueSelector,
+    updateValueSpecification,
+    resetValue,
+    className,
+  } = props;
+  const value = valueSelector(valueSpecification);
+  const toggleValue = (): void => {
+    updateValueSpecification(valueSpecification, !value);
+  };
+
+  return (
+    <div className={clsx('value-spec-editor', className)}>
+      <button
+        className={clsx('value-spec-editor__toggler__btn', {
+          'value-spec-editor__toggler__btn--toggled': value,
+        })}
+        onClick={toggleValue}
+      >
+        {value ? <CheckSquareIcon /> : <SquareIcon />}
+      </button>
+      <button
+        className="value-spec-editor__reset-btn"
+        name="Reset"
+        title="Reset"
+        onClick={resetValue}
+      >
+        <RefreshIcon />
+      </button>
+    </div>
+  );
+};
+
+const BooleanPrimitiveInstanceValueEditor = observer(
+  BooleanInstanceValueEditorInner as <T extends Hashable>(
+    props: BooleanInstanceValueEditorProps<T>,
+  ) => ReturnType<typeof BooleanInstanceValueEditorInner>,
 );
 
 const NumberPrimitiveInstanceValueEditor = observer(
@@ -1435,7 +1443,7 @@ export const BasicValueSpecificationEditor = forwardRef<
             valueSelector={(val) => val.values[0] as string | null}
             updateValueSpecification={(
               _valueSpecification: PrimitiveInstanceValue,
-              value: string,
+              value: string | null,
             ) => {
               instanceValue_setValue(
                 _valueSpecification,
@@ -1451,7 +1459,6 @@ export const BasicValueSpecificationEditor = forwardRef<
             className={className}
             resetValue={resetValue}
             selectorConfig={selectorConfig}
-            observerContext={observerContext}
             ref={
               ref as React.ForwardedRef<
                 HTMLInputElement | SelectComponent | null
@@ -1463,12 +1470,23 @@ export const BasicValueSpecificationEditor = forwardRef<
         );
       case PRIMITIVE_TYPE.BOOLEAN:
         return (
-          <BooleanPrimitiveInstanceValueEditor
+          <BooleanPrimitiveInstanceValueEditor<PrimitiveInstanceValue>
             valueSpecification={valueSpecification}
-            setValueSpecification={setValueSpecification}
+            valueSelector={(val) => val.values[0] as boolean}
+            updateValueSpecification={(
+              _valueSpecification: PrimitiveInstanceValue,
+              value: boolean,
+            ) => {
+              instanceValue_setValue(
+                _valueSpecification,
+                value,
+                0,
+                observerContext,
+              );
+              setValueSpecification(_valueSpecification);
+            }}
             className={className}
             resetValue={resetValue}
-            observerContext={observerContext}
           />
         );
       case PRIMITIVE_TYPE.NUMBER:
