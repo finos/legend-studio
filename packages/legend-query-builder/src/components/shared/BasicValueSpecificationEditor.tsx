@@ -427,189 +427,184 @@ const BooleanPrimitiveInstanceValueEditor = observer(
   ) => ReturnType<typeof BooleanInstanceValueEditorInner>,
 );
 
-const NumberPrimitiveInstanceValueEditor = observer(
-  forwardRef<
-    HTMLInputElement,
-    {
-      valueSpecification: PrimitiveInstanceValue;
-      isInteger: boolean;
-      className?: string | undefined;
-      resetValue: () => void;
-      setValueSpecification: (val: ValueSpecification) => void;
-      observerContext: ObserverContext;
-      handleBlur?: (() => void) | undefined;
-      handleKeyDown?:
-        | ((event: React.KeyboardEvent<HTMLInputElement>) => void)
-        | undefined;
+interface NumberPrimitiveInstanceValueEditorProps<T extends Hashable>
+  extends PrimitiveInstanceValueEditorProps<T, number> {
+  isInteger: boolean;
+}
+
+const NumberPrimitiveInstanceValueEditorInner = <T extends Hashable>(
+  props: NumberPrimitiveInstanceValueEditorProps<T>,
+  ref: React.ForwardedRef<HTMLInputElement>,
+): React.ReactElement => {
+  const {
+    valueSpecification,
+    valueSelector,
+    updateValueSpecification,
+    errorChecker,
+    resetValue,
+    handleBlur,
+    handleKeyDown,
+    className,
+    isInteger,
+  } = props;
+  const [value, setValue] = useState(
+    valueSelector(valueSpecification) === null
+      ? ''
+      : valueSelector(valueSpecification).toString(),
+  );
+  const inputRef = useRef<HTMLInputElement>(null);
+  useImperativeHandle(ref, () => inputRef.current as HTMLInputElement, []);
+  const numericValue = value
+    ? isInteger
+      ? Number.parseInt(Number(value).toString(), 10)
+      : Number(value)
+    : null;
+
+  const updateValueSpecIfValid = (val: string): void => {
+    if (val) {
+      const parsedValue = isInteger
+        ? Number.parseInt(Number(val).toString(), 10)
+        : Number(val);
+      if (
+        !isNaN(parsedValue) &&
+        parsedValue !== valueSelector(valueSpecification)
+      ) {
+        updateValueSpecification(valueSpecification, parsedValue);
+      }
+    } else {
+      resetValue();
     }
-  >(function NumberPrimitiveInstanceValueEditor(props, ref) {
-    const {
-      valueSpecification,
-      isInteger,
-      className,
-      resetValue,
-      setValueSpecification,
-      observerContext,
-      handleBlur,
-      handleKeyDown,
-    } = props;
-    const [value, setValue] = useState(
-      valueSpecification.values[0] === null
-        ? ''
-        : (valueSpecification.values[0] as number).toString(),
-    );
-    const inputRef = useRef<HTMLInputElement>(null);
-    useImperativeHandle(ref, () => inputRef.current as HTMLInputElement, []);
-    const numericValue = value
-      ? isInteger
-        ? Number.parseInt(Number(value).toString(), 10)
-        : Number(value)
-      : null;
+  };
 
-    const updateValueSpecIfValid = (val: string): void => {
-      if (val) {
-        const parsedValue = isInteger
-          ? Number.parseInt(Number(val).toString(), 10)
-          : Number(val);
-        if (
-          !isNaN(parsedValue) &&
-          parsedValue !== valueSpecification.values[0]
-        ) {
-          instanceValue_setValue(
-            valueSpecification,
-            parsedValue,
-            0,
-            observerContext,
-          );
-          setValueSpecification(valueSpecification);
-        }
-      } else {
-        resetValue();
-      }
-    };
+  const handleInputChange: React.ChangeEventHandler<HTMLInputElement> = (
+    event,
+  ) => {
+    setValue(event.target.value);
+    updateValueSpecIfValid(event.target.value);
+  };
 
-    const handleInputChange: React.ChangeEventHandler<HTMLInputElement> = (
-      event,
-    ) => {
-      setValue(event.target.value);
-      updateValueSpecIfValid(event.target.value);
-    };
-
-    // Support expression evaluation
-    const calculateExpression = (): void => {
-      if (numericValue !== null && isNaN(numericValue)) {
-        // If the value is not a number, try to evaluate it as an expression
-        try {
-          const calculatedValue = guaranteeIsNumber(evaluate(value));
-          updateValueSpecIfValid(calculatedValue.toString());
-          setValue(calculatedValue.toString());
-        } catch {
-          // If we fail to evaluate the expression, we just keep the previous value
-          const prevValue =
-            valueSpecification.values[0] !== null &&
-            valueSpecification.values[0] !== undefined
-              ? valueSpecification.values[0].toString()
-              : '';
-          updateValueSpecIfValid(prevValue);
-          setValue(prevValue);
-        }
-      } else if (numericValue !== null) {
-        // If numericValue is a number, update the value spec
-        updateValueSpecIfValid(numericValue.toString());
-        setValue(numericValue.toString());
-      } else {
-        // If numericValue is null, reset the value spec
-        resetValue();
-      }
-    };
-
-    const onKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (event) => {
-      if (event.code === 'Enter') {
-        calculateExpression();
-        inputRef.current?.focus();
-      } else if (event.code === 'Escape') {
-        inputRef.current?.select();
-      }
-    };
-
-    useEffect(() => {
-      if (
-        numericValue !== null &&
-        !isNaN(numericValue) &&
-        numericValue !== valueSpecification.values[0]
-      ) {
-        const valueFromValueSpec =
-          valueSpecification.values[0] !== null
-            ? (valueSpecification.values[0] as number).toString()
+  // Support expression evaluation
+  const calculateExpression = (): void => {
+    if (numericValue !== null && isNaN(numericValue)) {
+      // If the value is not a number, try to evaluate it as an expression
+      try {
+        const calculatedValue = guaranteeIsNumber(evaluate(value));
+        updateValueSpecIfValid(calculatedValue.toString());
+        setValue(calculatedValue.toString());
+      } catch {
+        // If we fail to evaluate the expression, we just keep the previous value
+        const prevValue =
+          valueSelector(valueSpecification) !== null &&
+          valueSelector(valueSpecification) !== undefined
+            ? valueSelector(valueSpecification).toString()
             : '';
-        setValue(valueFromValueSpec);
+        updateValueSpecIfValid(prevValue);
+        setValue(prevValue);
       }
-    }, [numericValue, valueSpecification]);
+    } else if (numericValue !== null) {
+      // If numericValue is a number, update the value spec
+      updateValueSpecIfValid(numericValue.toString());
+      setValue(numericValue.toString());
+    } else {
+      // If numericValue is null, reset the value spec
+      resetValue();
+    }
+  };
 
-    const resetButtonName = `reset-${valueSpecification.hashCode}`;
-    const inputName = `input-${valueSpecification.hashCode}`;
-    const calculateButtonName = `calculate-${valueSpecification.hashCode}`;
+  const onKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (event) => {
+    if (event.code === 'Enter') {
+      calculateExpression();
+      inputRef.current?.focus();
+    } else if (event.code === 'Escape') {
+      inputRef.current?.select();
+    }
+  };
 
-    const onBlur = (
-      event: React.FocusEvent<HTMLInputElement, HTMLButtonElement>,
-    ): void => {
-      if (
-        event.relatedTarget?.name !== resetButtonName &&
-        event.relatedTarget?.name !== inputName &&
-        event.relatedTarget?.name !== calculateButtonName
-      ) {
-        handleBlur?.();
-      }
-    };
+  useEffect(() => {
+    if (
+      numericValue !== null &&
+      !isNaN(numericValue) &&
+      numericValue !== valueSelector(valueSpecification)
+    ) {
+      const valueFromValueSpec =
+        valueSelector(valueSpecification) !== null
+          ? (valueSelector(valueSpecification) as number).toString()
+          : '';
+      setValue(valueFromValueSpec);
+    }
+  }, [numericValue, valueSpecification, valueSelector]);
 
-    return (
-      <div className={clsx('value-spec-editor', className)} onBlur={onBlur}>
-        <div className="value-spec-editor__number__input-container">
-          <input
-            ref={inputRef}
-            className={clsx(
-              'panel__content__form__section__input',
-              'value-spec-editor__input',
-              'value-spec-editor__number__input',
-              {
-                'value-spec-editor__number__input--error':
-                  !isValidInstanceValue(valueSpecification),
-              },
-            )}
-            spellCheck={false}
-            type="text" // NOTE: we leave this as text so that we can support expression evaluation
-            inputMode="numeric"
-            value={value}
-            onChange={handleInputChange}
-            onBlur={calculateExpression}
-            onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
-              onKeyDown(event);
-              handleKeyDown?.(event);
-            }}
-            name={inputName}
-          />
-          <div className="value-spec-editor__number__actions">
-            <button
-              className="value-spec-editor__number__action"
-              title="Evaluate Expression (Enter)"
-              name={calculateButtonName}
-              onClick={calculateExpression}
-            >
-              <CalculateIcon />
-            </button>
-          </div>
+  const resetButtonName = `reset-${valueSpecification.hashCode}`;
+  const inputName = `input-${valueSpecification.hashCode}`;
+  const calculateButtonName = `calculate-${valueSpecification.hashCode}`;
+
+  const onBlur = (
+    event: React.FocusEvent<HTMLInputElement, HTMLButtonElement>,
+  ): void => {
+    if (
+      event.relatedTarget?.name !== resetButtonName &&
+      event.relatedTarget?.name !== inputName &&
+      event.relatedTarget?.name !== calculateButtonName
+    ) {
+      handleBlur?.();
+    }
+  };
+
+  return (
+    <div className={clsx('value-spec-editor', className)} onBlur={onBlur}>
+      <div className="value-spec-editor__number__input-container">
+        <input
+          ref={inputRef}
+          className={clsx(
+            'panel__content__form__section__input',
+            'value-spec-editor__input',
+            'value-spec-editor__number__input',
+            {
+              'value-spec-editor__number__input--error':
+                errorChecker?.(valueSpecification),
+            },
+          )}
+          spellCheck={false}
+          type="text" // NOTE: we leave this as text so that we can support expression evaluation
+          inputMode="numeric"
+          value={value}
+          onChange={handleInputChange}
+          onBlur={calculateExpression}
+          onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
+            onKeyDown(event);
+            handleKeyDown?.(event);
+          }}
+          name={inputName}
+        />
+        <div className="value-spec-editor__number__actions">
+          <button
+            className="value-spec-editor__number__action"
+            title="Evaluate Expression (Enter)"
+            name={calculateButtonName}
+            onClick={calculateExpression}
+          >
+            <CalculateIcon />
+          </button>
         </div>
-        <button
-          className="value-spec-editor__reset-btn"
-          name={resetButtonName}
-          title="Reset"
-          onClick={resetValue}
-        >
-          <RefreshIcon />
-        </button>
       </div>
-    );
-  }),
+      <button
+        className="value-spec-editor__reset-btn"
+        name={resetButtonName}
+        title="Reset"
+        onClick={resetValue}
+      >
+        <RefreshIcon />
+      </button>
+    </div>
+  );
+};
+
+const NumberPrimitiveInstanceValueEditor = observer(
+  forwardRef(NumberPrimitiveInstanceValueEditorInner) as <T extends Hashable>(
+    props: NumberPrimitiveInstanceValueEditorProps<T> & {
+      ref: React.ForwardedRef<HTMLInputElement>;
+    },
+  ) => ReturnType<typeof NumberPrimitiveInstanceValueEditorInner>,
 );
 
 const EnumValueInstanceValueEditor = observer(
@@ -1496,13 +1491,24 @@ export const BasicValueSpecificationEditor = forwardRef<
       case PRIMITIVE_TYPE.BYTE:
       case PRIMITIVE_TYPE.INTEGER:
         return (
-          <NumberPrimitiveInstanceValueEditor
+          <NumberPrimitiveInstanceValueEditor<PrimitiveInstanceValue>
             valueSpecification={valueSpecification}
+            valueSelector={(val) => val.values[0] as number}
             isInteger={_type.path === PRIMITIVE_TYPE.INTEGER}
-            setValueSpecification={setValueSpecification}
+            updateValueSpecification={(
+              _valueSpecification: PrimitiveInstanceValue,
+              value: number,
+            ) => {
+              instanceValue_setValue(
+                _valueSpecification,
+                value,
+                0,
+                observerContext,
+              );
+              setValueSpecification(_valueSpecification);
+            }}
             className={className}
             resetValue={resetValue}
-            observerContext={observerContext}
             ref={ref}
             handleBlur={handleBlur}
             handleKeyDown={handleKeyDown}
@@ -1624,14 +1630,25 @@ export const BasicValueSpecificationEditor = forwardRef<
         return (
           <NumberPrimitiveInstanceValueEditor
             valueSpecification={simplifiedValue}
+            valueSelector={(val) => val.values[0] as number}
             isInteger={
               simplifiedValue.genericType.value.rawType ===
               PrimitiveType.INTEGER
             }
-            setValueSpecification={setValueSpecification}
+            updateValueSpecification={(
+              _valueSpecification: PrimitiveInstanceValue,
+              value: number,
+            ) => {
+              instanceValue_setValue(
+                _valueSpecification,
+                value,
+                0,
+                observerContext,
+              );
+              setValueSpecification(_valueSpecification);
+            }}
             className={className}
             resetValue={resetValue}
-            observerContext={observerContext}
             ref={ref}
             handleBlur={handleBlur}
             handleKeyDown={handleKeyDown}
