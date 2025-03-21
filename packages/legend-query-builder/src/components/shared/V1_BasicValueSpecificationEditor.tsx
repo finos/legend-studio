@@ -650,6 +650,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
           _valueSpecification: V1_CString,
           value: string | null,
         ) => {
+          _valueSpecification.value = value ?? '';
           setValueSpecification(_valueSpecification);
         }}
         className={className}
