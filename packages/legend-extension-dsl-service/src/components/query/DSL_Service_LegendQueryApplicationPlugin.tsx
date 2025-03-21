@@ -39,6 +39,17 @@ export class DSL_Service_LegendQueryApplicationPlugin extends LegendQueryApplica
         key: 'export-as-productionized-query',
         title: 'Productionize query...',
         label: 'Productionized Query',
+        disableFunc: (queryBuilderState): boolean => {
+          if (
+            queryBuilderState.workflowState.actionConfig instanceof
+            QueryBuilderActionConfig_QueryApplication
+          ) {
+            const editorStore =
+              queryBuilderState.workflowState.actionConfig.editorStore;
+            return !(editorStore instanceof ExistingQueryEditorStore);
+          }
+          return true;
+        },
         onClick: (queryBuilderState): void => {
           if (
             queryBuilderState.workflowState.actionConfig instanceof
