@@ -1500,6 +1500,9 @@ export const BasicValueSpecificationEditor = forwardRef<
               );
               setValueSpecification(_valueSpecification);
             }}
+            errorChecker={(_valueSpecification: PrimitiveInstanceValue) =>
+              !isValidInstanceValue(_valueSpecification)
+            }
             className={className}
             resetValue={resetValue}
             ref={ref}
@@ -1552,6 +1555,9 @@ export const BasicValueSpecificationEditor = forwardRef<
           );
           setValueSpecification(_valueSpecification);
         }}
+        errorChecker={(_valueSpecification: EnumValueInstanceValue) =>
+          !isValidInstanceValue(_valueSpecification)
+        }
         handleBlur={handleBlur}
       />
     );
