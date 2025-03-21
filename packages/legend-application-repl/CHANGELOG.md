@@ -1,5 +1,11 @@
 # @finos/legend-application-repl
 
+## 1.1.13
+
+### Patch Changes
+
+- [#3947](https://github.com/finos/legend-studio/pull/3947) [`8c96f99`](https://github.com/finos/legend-studio/commit/8c96f9985b3c89c17c64343cfb6d938417650b8d) ([@kelly-thai](https://github.com/kelly-thai)) - Adding support for Ad Hoc queryes as a DataCubeSource type
+
 ## 1.1.12
 
 ## 1.1.11

@@ -1,5 +1,13 @@
 # @finos/legend-application-data-cube
 
+## 0.3.6
+
+### Patch Changes
+
+- [#3947](https://github.com/finos/legend-studio/pull/3947) [`8c96f99`](https://github.com/finos/legend-studio/commit/8c96f9985b3c89c17c64343cfb6d938417650b8d) ([@kelly-thai](https://github.com/kelly-thai)) - Adding support for Ad Hoc queryes as a DataCubeSource type
+
+- [#3945](https://github.com/finos/legend-studio/pull/3945) [`00eaeaa`](https://github.com/finos/legend-studio/commit/00eaeaa875f1b0e431c75ace6d582284a0ff04c6) ([@travisstebbins](https://github.com/travisstebbins)) - Add support for query lambdas with multiple expressions in Datacube
+
 ## 0.3.5
 
 ## 0.3.4
