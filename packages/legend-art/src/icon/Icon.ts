@@ -559,9 +559,10 @@ export const XIcon = GoX;
 export const PluginIcon = GoPlug;
 
 //======================================================= SI =======================================================
-import { SiSwagger } from 'react-icons/si';
+import { SiSwagger, SiJupyter } from 'react-icons/si';
 
 export const SwaggerIcon = SiSwagger; // to be reviewed
+export const JupyterIcon = SiJupyter;
 
 //======================================================= BI =======================================================
 
@@ -632,3 +633,9 @@ export const CostCircleIcon = RiMoneyDollarCircleFill;
 import { FcWorkflow } from 'react-icons/fc';
 
 export const WorkflowIcon = FcWorkflow;
+
+//======================================================= IM =======================================================
+
+import { ImTerminal } from 'react-icons/im';
+
+export const Code_Terminal = ImTerminal;
