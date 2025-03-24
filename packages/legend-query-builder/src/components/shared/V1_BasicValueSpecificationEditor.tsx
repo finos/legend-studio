@@ -138,7 +138,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
     displayDateEditorAsEditableValue?: boolean | undefined;
     enumeration?: V1_Enumeration | undefined;
   }
->(function V1_BasicValueSpecificationEditor(props, ref) {
+>(function _V1_BasicValueSpecificationEditor(props, ref) {
   const {
     className,
     valueSpecification,

@@ -16,6 +16,7 @@
 
 import {
   type V1_ValueSpecification,
+  V1_AppliedFunction,
   V1_AppliedProperty,
   V1_CBoolean,
   V1_CByteArray,
@@ -110,4 +111,12 @@ export const isValidV1_ValueSpecification = (
   }
 
   return true;
+};
+
+export const createV1SupportedFunctionExpression = (
+  supportedFuncName: string,
+): V1_AppliedFunction => {
+  const appliedFunction = new V1_AppliedFunction();
+  appliedFunction.function = supportedFuncName;
+  return appliedFunction;
 };
