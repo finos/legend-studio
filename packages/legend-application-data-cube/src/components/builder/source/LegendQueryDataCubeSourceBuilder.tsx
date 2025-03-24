@@ -47,16 +47,7 @@ import {
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { useLegendDataCubeBuilderStore } from '../LegendDataCubeBuilderStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
-import {
-  CoreModel,
-  PureModel,
-  SystemModel,
-  V1_buildValueSpecification,
-  V1_PackageableType,
-  V1_ValueSpecification,
-  V1_ValueSpecificationBuilder,
-  type V1_Variable,
-} from '@finos/legend-graph';
+import { V1_ValueSpecification } from '@finos/legend-graph';
 
 const LegendQuerySearcher = observer((props: { state: QueryLoaderState }) => {
   const { state } = props;
@@ -339,14 +330,13 @@ export const LegendQueryDataCubeSourceBuilder = observer(
             {sourceBuilder.queryParameterValues &&
               Object.entries(sourceBuilder.queryParameterValues).map(
                 ([name, value]) => {
+                  const enumeration = sourceBuilder.queryEnumerations?.[name];
                   return (
                     <div key={name} className="flex w-full">
                       {name}
                       {': '}
                       <V1_BasicValueSpecificationEditor
-                        valueSpecification={
-                          value as unknown as V1_ValueSpecification
-                        }
+                        valueSpecification={value}
                         typeCheckOption={{
                           expectedType: 'String',
                         }}
@@ -357,6 +347,7 @@ export const LegendQueryDataCubeSourceBuilder = observer(
                           console.log('called reset value');
                         }}
                         className="ml-2 flex w-full"
+                        enumeration={enumeration}
                       />
                     </div>
                   );

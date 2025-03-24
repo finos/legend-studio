@@ -100,6 +100,7 @@ export class LegendDataCubeCreatorState {
           this._application,
           this._engine,
           this._store.engineServerClient,
+          this._store.depotServerClient,
           this._store.graphManager,
           this._alertService,
         );
