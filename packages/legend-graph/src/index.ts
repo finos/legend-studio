@@ -142,6 +142,7 @@ export * from './graph-manager/protocol/pure/v1/engine/artifactGeneration/V1_Dat
 
 // V1 protocols
 export { V1_Class } from './graph-manager/protocol/pure/v1/model/packageableElements/domain/V1_Class.js';
+export { V1_Enumeration } from './graph-manager/protocol/pure/v1/model/packageableElements/domain/V1_Enumeration.js';
 export { V1_EnumValue } from './graph-manager/protocol/pure/v1/model/packageableElements/domain/V1_EnumValue.js';
 export { V1_AppliedFunction } from './graph-manager/protocol/pure/v1/model/valueSpecification/application/V1_AppliedFunction.js';
 export { V1_AppliedProperty } from './graph-manager/protocol/pure/v1/model/valueSpecification/application/V1_AppliedProperty.js';

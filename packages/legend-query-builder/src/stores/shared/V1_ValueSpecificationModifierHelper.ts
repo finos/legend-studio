@@ -8,6 +8,7 @@ import {
   V1_CDateTime,
   V1_CDecimal,
   V1_CStrictDate,
+  V1_AppliedProperty,
 } from '@finos/legend-graph';
 import {
   guaranteeIsBoolean,
@@ -41,5 +42,11 @@ export const V1_PrimitiveValue_setValue = action(
     } else {
       target.value = guaranteeIsString(val);
     }
+  },
+);
+
+export const V1_AppliedPropert_setProperty = action(
+  (target: V1_AppliedProperty, val: string) => {
+    target.property = val;
   },
 );

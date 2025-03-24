@@ -15,6 +15,7 @@
  */
 
 import {
+  type PlainObject,
   assertErrorThrown,
   guaranteeNonNullable,
   guaranteeType,
@@ -34,6 +35,11 @@ import {
   observe_V1ValueSpecification,
   V1_deserializeRawValueSpecificationType,
   V1_serializeValueSpecification,
+  V1_deserializePackageableElement,
+  Enumeration,
+  V1_AppliedProperty,
+  V1_PackageableElementPtr,
+  V1_Enumeration,
 } from '@finos/legend-graph';
 import {
   buildV1PrimitiveValueSpecification,
@@ -54,9 +60,11 @@ import {
   type DataCubeAlertService,
   type DataCubeConfiguration,
 } from '@finos/legend-data-cube';
+import type { DepotServerClient } from '@finos/legend-server-depot';
 
 export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceBuilderState {
   private readonly _engineServerClient: V1_EngineServerClient;
+  private readonly _depotServerClient: DepotServerClient;
   private readonly _graphManager: V1_PureGraphManager;
 
   readonly queryLoader: QueryLoaderState;
@@ -69,11 +77,13 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
         [paramName: string]: V1_ValueSpecification;
       }
     | undefined;
+  queryEnumerations?: { [paramName: string]: V1_Enumeration };
 
   constructor(
     application: LegendDataCubeApplicationStore,
     engine: LegendDataCubeDataCubeEngine,
     engineServerClient: V1_EngineServerClient,
+    depotServerClient: DepotServerClient,
     graphManager: V1_PureGraphManager,
     alertService: DataCubeAlertService,
   ) {
@@ -86,12 +96,14 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
       queryCode: observable,
       queryParameters: observable,
       queryParameterValues: observable,
+      queryEnumerations: observable,
 
       setQueryParameterValue: action,
     });
 
     this._graphManager = graphManager;
     this._engineServerClient = engineServerClient;
+    this._depotServerClient = depotServerClient;
 
     this.queryLoader = new QueryLoaderState(
       this._application,
@@ -155,6 +167,10 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
         queryParameterValues[param.name] =
           observe_V1ValueSpecification(defaultValueSpec);
       }
+      const enumerationParameters = Object.entries(queryParameterValues).filter(
+        ([_, param]) => param instanceof V1_AppliedProperty,
+      ) as [string, V1_AppliedProperty][];
+      this.populateEnumerations(enumerationParameters, lightQuery);
       runInAction(() => {
         this.query = lightQuery;
         this.queryCode = queryCode;
@@ -208,10 +224,15 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
               guaranteeNonNullable(
                 this.queryParameters?.find((param) => param.name === name),
               ),
-              [],
+              this._application.pluginManager.getPureProtocolProcessorPlugins(),
             ),
           ),
-          JSON.stringify(V1_serializeValueSpecification(value, [])),
+          JSON.stringify(
+            V1_serializeValueSpecification(
+              value,
+              this._application.pluginManager.getPureProtocolProcessorPlugins(),
+            ),
+          ),
         ])
       : [];
     return RawLegendQueryDataCubeSource.serialization.toJson(source);
@@ -221,5 +242,47 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
     if (this.query) {
       configuration.name = this.query.name;
     }
+  }
+
+  private async populateEnumerations(
+    queryParameters: [string, V1_AppliedProperty][],
+    query: LightQuery,
+  ): Promise<void> {
+    const queryEnumerations: { [paramName: string]: V1_Enumeration } = {};
+    for (const [name, param] of queryParameters) {
+      const enumerationValue = await this.getEnumerationValues(
+        guaranteeNonNullable(
+          guaranteeType(param.parameters?.[0], V1_PackageableElementPtr)
+            ?.fullPath,
+        ),
+        query,
+      );
+      queryEnumerations[name] = enumerationValue;
+    }
+    runInAction(() => {
+      this.queryEnumerations = queryEnumerations;
+    });
+  }
+
+  private async getEnumerationValues(
+    enumerationPath: string,
+    query: LightQuery,
+  ): Promise<V1_Enumeration> {
+    const enumerationElement = (
+      await this._depotServerClient.getVersionEntity(
+        query.groupId,
+        query.artifactId,
+        query.versionId,
+        enumerationPath,
+      )
+    ).content as PlainObject<Enumeration>;
+    const enumeration = guaranteeType(
+      V1_deserializePackageableElement(
+        enumerationElement,
+        this._application.pluginManager.getPureProtocolProcessorPlugins(),
+      ),
+      V1_Enumeration,
+    );
+    return enumeration;
   }
 }

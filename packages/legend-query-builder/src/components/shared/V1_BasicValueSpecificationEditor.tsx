@@ -32,6 +32,7 @@ import {
   Enumeration,
   getMultiplicityDescription,
   PrimitiveType,
+  V1_AppliedProperty,
   V1_CBoolean,
   V1_CDateTime,
   V1_CDecimal,
@@ -41,13 +42,16 @@ import {
   V1_Collection,
   V1_CStrictDate,
   V1_CString,
+  V1_Enumeration,
   V1_EnumValue,
+  V1_PackageableElementPtr,
   V1_PrimitiveValueSpecification,
 } from '@finos/legend-graph';
 import {
   type DebouncedFunc,
   type GeneratorFn,
   csvStringify,
+  guaranteeNonNullable,
   guaranteeType,
   isNonNullable,
 } from '@finos/legend-shared';
@@ -55,10 +59,14 @@ import { observer } from 'mobx-react-lite';
 import React, { forwardRef, useState } from 'react';
 import {
   BooleanPrimitiveInstanceValueEditor,
+  EnumInstanceValueEditor,
   NumberPrimitiveInstanceValueEditor,
   StringPrimitiveInstanceValueEditor,
 } from './BasicValueSpecificationEditor.js';
-import { V1_PrimitiveValue_setValue } from '../../stores/shared/V1_ValueSpecificationModifierHelper.js';
+import {
+  V1_AppliedPropert_setProperty,
+  V1_PrimitiveValue_setValue,
+} from '../../stores/shared/V1_ValueSpecificationModifierHelper.js';
 
 // Constants and helper functions
 export const V1_QUERY_BUILDER_VARIABLE_DND_TYPE = 'V1_VARIABLE';
@@ -387,7 +395,6 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
   HTMLInputElement | null,
   {
     valueSpecification: V1_ValueSpecification;
-    // observerContext: ObserverContext;
     typeCheckOption: V1_TypeCheckOption;
     className?: string | undefined;
     setValueSpecification: (val: V1_ValueSpecification) => void;
@@ -399,18 +406,19 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
       | ((event: React.KeyboardEvent<HTMLInputElement>) => void)
       | undefined;
     displayDateEditorAsEditableValue?: boolean | undefined;
+    enumeration?: V1_Enumeration | undefined;
   }
 >(function V1_BasicValueSpecificationEditor(props, ref) {
   const {
     className,
     valueSpecification,
-    // observerContext,
     typeCheckOption,
     setValueSpecification,
     resetValue,
     handleBlur,
     handleKeyDown,
     displayDateEditorAsEditableValue,
+    enumeration,
   } = props;
 
   // Handle different types of value specifications
@@ -494,17 +502,35 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
         displayAsEditableValue={displayDateEditorAsEditableValue}
       />
     );
-  } else if (valueSpecification instanceof V1_EnumValue) {
-    // return (
-    //   <V1_EnumValueInstanceValueEditor
-    //     valueSpecification={valueSpecification}
-    //     className={className}
-    //     resetValue={resetValue}
-    //     setValueSpecification={setValueSpecification}
-    //     observerContext={observerContext}
-    //     handleBlur={handleBlur}
-    //   />
-    // );
+  } else if (
+    valueSpecification instanceof V1_AppliedProperty &&
+    valueSpecification.parameters?.[0] instanceof V1_PackageableElementPtr
+  ) {
+    const options =
+      enumeration?.values.map((enumValue) => ({
+        label: enumValue.value,
+        value: enumValue.value,
+      })) ?? [];
+    return (
+      <EnumInstanceValueEditor<V1_AppliedProperty>
+        valueSpecification={valueSpecification}
+        valueSelector={(val) => val.property}
+        options={options}
+        className={className}
+        resetValue={resetValue}
+        updateValueSpecification={(
+          _valueSpecification: V1_AppliedProperty,
+          value: string | null,
+        ) => {
+          V1_AppliedPropert_setProperty(
+            _valueSpecification,
+            guaranteeNonNullable(value),
+          );
+          setValueSpecification(_valueSpecification);
+        }}
+        handleBlur={handleBlur}
+      />
+    );
   } else if (valueSpecification instanceof V1_Collection) {
     // return (
     //   <V1_CollectionValueInstanceValueEditor
