@@ -1,0 +1,6 @@
+{
+  "DataSpace Editor Improvements": {
+    "type": "minor",
+    "description": "Add support for editing DataSpace diagrams with title and description fields"
+  }
+}
