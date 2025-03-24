@@ -26,7 +26,10 @@ export { SectionIndex } from './graph/metamodel/pure/packageableElements/section
 export { Multiplicity } from './graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
 export { Type } from './graph/metamodel/pure/packageableElements/domain/Type.js';
 export { DataType } from './graph/metamodel/pure/packageableElements/domain/DataType.js';
-export { PrimitiveType } from './graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
+export {
+  PrimitiveType,
+  getPrimitiveTypeInstanceFromEnum,
+} from './graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
 export {
   GenericTypeReference,
   GenericTypeExplicitReference,

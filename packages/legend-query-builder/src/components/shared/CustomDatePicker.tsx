@@ -25,10 +25,8 @@ import {
   type PureModel,
   type Enum,
   type Type,
-  type ValueSpecification,
   PRIMITIVE_TYPE,
   SimpleFunctionExpression,
-  InstanceValue,
   GenericType,
   PrimitiveInstanceValue,
   GenericTypeExplicitReference,
@@ -37,10 +35,17 @@ import {
   matchFunctionName,
   type ObserverContext,
   PrimitiveType,
+  V1_AppliedFunction,
+  V1_AppliedProperty,
+  V1_CInteger,
+  V1_CString,
+  V1_CStrictDate,
+  V1_CDateTime,
 } from '@finos/legend-graph';
 import {
   assertErrorThrown,
   guaranteeNonNullable,
+  guaranteeType,
   parseNumber,
   returnUndefOnError,
   UnsupportedOperationError,
@@ -67,6 +72,28 @@ import {
   type LegendApplicationPlugin,
   type LegendApplicationPluginManager,
 } from '@finos/legend-application';
+import type { V1_CDate } from '../../../../legend-graph/src/graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CDate.js';
+import type { PrimitiveInstanceValueEditorProps } from './BasicValueSpecificationEditor.js';
+
+export type CustomDatePickerValueSpecification =
+  | SimpleFunctionExpression
+  | PrimitiveInstanceValue
+  | V1_AppliedFunction
+  | V1_CDate
+  | V1_CString;
+
+export type CustomDatePickerUpdateValueSpecification<T> = (
+  _valueSpecification: T | undefined,
+  value:
+    | string
+    | CustomDateOption
+    | CustomFirstDayOfOption
+    | CustomPreviousDayOfWeekOption
+    | DatePickerOption,
+  options?: {
+    primitiveTypeEnum?: PRIMITIVE_TYPE;
+  },
+) => void;
 
 export enum CUSTOM_DATE_PICKER_OPTION {
   ABSOLUTE_DATE = 'Absolute Date',
@@ -125,7 +152,7 @@ enum CUSTOM_DATE_OPTION_REFERENCE_MOMENT {
 /**
  * DatePickerOption is the base class being used to display and generate the corresponding pure date function.
  */
-class DatePickerOption {
+export class DatePickerOption {
   /**
    * label is the text that shows up in the valueSpecification box.
    */
@@ -141,7 +168,7 @@ class DatePickerOption {
   }
 }
 
-class CustomDateOption extends DatePickerOption {
+export class CustomDateOption extends DatePickerOption {
   /**
    * duration is the amount of time span that will be adjusted.
    */
@@ -188,7 +215,7 @@ class CustomDateOption extends DatePickerOption {
   }
 }
 
-class CustomFirstDayOfOption extends DatePickerOption {
+export class CustomFirstDayOfOption extends DatePickerOption {
   /**
    * unit: time unit, e.g. Week, Month, etc.
    */
@@ -200,7 +227,7 @@ class CustomFirstDayOfOption extends DatePickerOption {
   }
 }
 
-class CustomPreviousDayOfWeekOption extends DatePickerOption {
+export class CustomPreviousDayOfWeekOption extends DatePickerOption {
   /**
    * day: which day in the week will be selected.
    */
@@ -257,7 +284,7 @@ const getSupportedDateFunctionFullPath = (
 /**
  * Generate pure date functions based on the DatePickerOption.
  */
-const buildPureDateFunctionExpression = (
+export const buildPureDateFunctionExpression = (
   datePickerOption: DatePickerOption,
   graph: PureModel,
   observerContext: ObserverContext,
@@ -449,7 +476,7 @@ const buildPureDurationEnumValue = (
 /**
  * Generate the pure date adjust() function based on the CustomDateOption.
  */
-const buildPureAdjustDateFunction = (
+export const buildPureAdjustDateFunction = (
   customDateOption: CustomDateOption,
   graph: PureModel,
   observerContext: ObserverContext,
@@ -536,66 +563,115 @@ const buildPureAdjustDateFunction = (
  * Generate the value of CustomDateOption.duration from the pure date adjust() function.
  */
 const buildCustomDateOptionDurationValue = (
-  pureDateAdjustFunction: SimpleFunctionExpression,
+  pureDateAdjustFunction: SimpleFunctionExpression | V1_AppliedFunction,
 ): number => {
-  const durationParam = pureDateAdjustFunction.parametersValues[1];
-  return durationParam instanceof PrimitiveInstanceValue
-    ? (durationParam.values[0] as number)
-    : durationParam instanceof SimpleFunctionExpression &&
-        matchFunctionName(
-          durationParam.functionName,
-          QUERY_BUILDER_SUPPORTED_FUNCTIONS.MINUS,
-        )
-      ? durationParam.parametersValues[0] instanceof PrimitiveInstanceValue
-        ? (durationParam.parametersValues[0].values[0] as number)
-        : 0
-      : 0;
+  if (pureDateAdjustFunction instanceof SimpleFunctionExpression) {
+    const durationParam = pureDateAdjustFunction.parametersValues[1];
+    return durationParam instanceof PrimitiveInstanceValue
+      ? (durationParam.values[0] as number)
+      : durationParam instanceof SimpleFunctionExpression &&
+          matchFunctionName(
+            durationParam.functionName,
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.MINUS,
+          )
+        ? durationParam.parametersValues[0] instanceof PrimitiveInstanceValue
+          ? (durationParam.parametersValues[0].values[0] as number)
+          : 0
+        : 0;
+  } else {
+    const durationParam = pureDateAdjustFunction.parameters[1];
+    return durationParam instanceof V1_CInteger
+      ? durationParam.value
+      : durationParam instanceof V1_AppliedFunction &&
+          matchFunctionName(
+            durationParam.function,
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.MINUS,
+          )
+        ? durationParam.parameters[0] instanceof V1_CInteger
+          ? durationParam.parameters[0].value
+          : 0
+        : 0;
+  }
 };
 
 /**
  * Generate the value of CustomDateOption.direction from the pure date adjust() function.
  */
 const buildCustomDateOptionDirectionValue = (
-  pureDateAdjustFunction: SimpleFunctionExpression,
-): CUSTOM_DATE_OPTION_DIRECTION =>
-  pureDateAdjustFunction.parametersValues[1] instanceof
-    SimpleFunctionExpression &&
-  matchFunctionName(
-    pureDateAdjustFunction.parametersValues[1].functionName,
-    QUERY_BUILDER_SUPPORTED_FUNCTIONS.MINUS,
-  )
-    ? CUSTOM_DATE_OPTION_DIRECTION.BEFORE
-    : CUSTOM_DATE_OPTION_DIRECTION.AFTER;
+  pureDateAdjustFunction: SimpleFunctionExpression | V1_AppliedFunction,
+): CUSTOM_DATE_OPTION_DIRECTION => {
+  if (pureDateAdjustFunction instanceof SimpleFunctionExpression) {
+    return pureDateAdjustFunction.parametersValues[1] instanceof
+      SimpleFunctionExpression &&
+      matchFunctionName(
+        pureDateAdjustFunction.parametersValues[1].functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.MINUS,
+      )
+      ? CUSTOM_DATE_OPTION_DIRECTION.BEFORE
+      : CUSTOM_DATE_OPTION_DIRECTION.AFTER;
+  } else {
+    return pureDateAdjustFunction.parameters[1] instanceof V1_AppliedFunction &&
+      matchFunctionName(
+        pureDateAdjustFunction.parameters[1].function,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.MINUS,
+      )
+      ? CUSTOM_DATE_OPTION_DIRECTION.BEFORE
+      : CUSTOM_DATE_OPTION_DIRECTION.AFTER;
+  }
+};
 
 /**
  * Generate the value of CustomDateOption.unit from the pure date adjust() function.
  */
 const buildCustomDateOptionUnitValue = (
-  valueSpecification: SimpleFunctionExpression,
-): CUSTOM_DATE_OPTION_UNIT =>
-  guaranteeNonNullable(
-    Object.keys(CUSTOM_DATE_OPTION_UNIT)
-      .filter(
-        (key) =>
-          key ===
-          (valueSpecification.parametersValues[2] as EnumValueInstanceValue)
-            .values[0]?.value.name,
-      )
-      .map(
-        (key) =>
-          CUSTOM_DATE_OPTION_UNIT[key as keyof typeof CUSTOM_DATE_OPTION_UNIT],
-      )[0],
-  );
+  valueSpecification: SimpleFunctionExpression | V1_AppliedFunction,
+): CUSTOM_DATE_OPTION_UNIT => {
+  if (valueSpecification instanceof SimpleFunctionExpression) {
+    return guaranteeNonNullable(
+      Object.keys(CUSTOM_DATE_OPTION_UNIT)
+        .filter(
+          (key) =>
+            key ===
+            (valueSpecification.parametersValues[2] as EnumValueInstanceValue)
+              .values[0]?.value.name,
+        )
+        .map(
+          (key) =>
+            CUSTOM_DATE_OPTION_UNIT[
+              key as keyof typeof CUSTOM_DATE_OPTION_UNIT
+            ],
+        )[0],
+    );
+  } else {
+    return guaranteeNonNullable(
+      Object.keys(CUSTOM_DATE_OPTION_UNIT)
+        .filter(
+          (key) =>
+            key ===
+            guaranteeType(valueSpecification.parameters[2], V1_AppliedProperty)
+              .property,
+        )
+        .map(
+          (key) =>
+            CUSTOM_DATE_OPTION_UNIT[
+              key as keyof typeof CUSTOM_DATE_OPTION_UNIT
+            ],
+        )[0],
+    );
+  }
+};
 
 /**
  * Generate the value of CustomDateOption.moment from the pure date adjust() function.
  */
 const buildCustomDateOptionReferenceMomentValue = (
-  pureDateAjustFunction: SimpleFunctionExpression,
+  pureDateAjustFunction: SimpleFunctionExpression | V1_AppliedFunction,
 ): CUSTOM_DATE_OPTION_REFERENCE_MOMENT => {
-  const funcName = (
-    pureDateAjustFunction.parametersValues[0] as SimpleFunctionExpression
-  ).functionName;
+  const funcName =
+    pureDateAjustFunction instanceof SimpleFunctionExpression
+      ? (pureDateAjustFunction.parametersValues[0] as SimpleFunctionExpression)
+          .functionName
+      : (pureDateAjustFunction.parameters[0] as V1_AppliedFunction).function;
   switch (getSupportedDateFunctionFullPath(funcName)) {
     case QUERY_BUILDER_SUPPORTED_FUNCTIONS.TODAY:
       return CUSTOM_DATE_OPTION_REFERENCE_MOMENT.TODAY;
@@ -623,18 +699,27 @@ const buildCustomDateOptionReferenceMomentValue = (
  * Transform CustomDateOption if it matches any preserved custom adjust date functions. e.g. One Month Ago..
  */
 const buildCustomDateOption = (
-  valueSpecification: SimpleFunctionExpression | PrimitiveInstanceValue,
+  valueSpecification:
+    | SimpleFunctionExpression
+    | PrimitiveInstanceValue
+    | V1_AppliedFunction
+    | V1_CDate,
   applicationStore: ApplicationStore<
     LegendApplicationConfig,
     LegendApplicationPluginManager<LegendApplicationPlugin>
   >,
 ): CustomDateOption => {
   if (
-    valueSpecification instanceof SimpleFunctionExpression &&
-    matchFunctionName(
-      valueSpecification.functionName,
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.ADJUST,
-    )
+    (valueSpecification instanceof SimpleFunctionExpression &&
+      matchFunctionName(
+        valueSpecification.functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.ADJUST,
+      )) ||
+    (valueSpecification instanceof V1_AppliedFunction &&
+      matchFunctionName(
+        valueSpecification.function,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.ADJUST,
+      ))
   ) {
     try {
       const customDateOption = new CustomDateOption(
@@ -674,14 +759,26 @@ const buildCustomDateOption = (
  * Build DatePickerOption from pure date functions or PrimitiveInstanceValue
  */
 export const buildDatePickerOption = (
-  valueSpecification: SimpleFunctionExpression | PrimitiveInstanceValue,
+  valueSpecification:
+    | SimpleFunctionExpression
+    | PrimitiveInstanceValue
+    | V1_AppliedFunction
+    | V1_CDate
+    | V1_CString,
   applicationStore: ApplicationStore<
     LegendApplicationConfig,
     LegendApplicationPluginManager<LegendApplicationPlugin>
   >,
 ): DatePickerOption => {
-  if (valueSpecification instanceof SimpleFunctionExpression) {
-    switch (getSupportedDateFunctionFullPath(valueSpecification.functionName)) {
+  if (
+    valueSpecification instanceof SimpleFunctionExpression ||
+    valueSpecification instanceof V1_AppliedFunction
+  ) {
+    const functionName =
+      valueSpecification instanceof SimpleFunctionExpression
+        ? valueSpecification.functionName
+        : valueSpecification.function;
+    switch (getSupportedDateFunctionFullPath(functionName)) {
       case QUERY_BUILDER_SUPPORTED_FUNCTIONS.TODAY:
         return new DatePickerOption(
           CUSTOM_DATE_PICKER_OPTION.TODAY,
@@ -713,20 +810,24 @@ export const buildDatePickerOption = (
           CUSTOM_DATE_FIRST_DAY_OF_UNIT.WEEK,
         );
       case QUERY_BUILDER_SUPPORTED_FUNCTIONS.PREVIOUS_DAY_OF_WEEK:
+        const dayOfWeek =
+          valueSpecification instanceof SimpleFunctionExpression
+            ? (valueSpecification.parametersValues[0] as EnumValueInstanceValue)
+                .values[0]?.value.name
+            : guaranteeType(
+                valueSpecification.parameters[0],
+                V1_AppliedProperty,
+              ).property;
         return new CustomPreviousDayOfWeekOption(
-          `Previous ${
-            (valueSpecification.parametersValues[0] as EnumValueInstanceValue)
-              .values[0]?.value.name
-          }`,
-          (valueSpecification.parametersValues[0] as EnumValueInstanceValue)
-            .values[0]?.value.name as CUSTOM_DATE_DAY_OF_WEEK,
+          `Previous ${dayOfWeek}`,
+          dayOfWeek as CUSTOM_DATE_DAY_OF_WEEK,
         );
       case QUERY_BUILDER_SUPPORTED_FUNCTIONS.ADJUST:
         return buildCustomDateOption(valueSpecification, applicationStore);
       default:
         return new DatePickerOption('', '');
     }
-  } else {
+  } else if (valueSpecification instanceof PrimitiveInstanceValue) {
     return valueSpecification.genericType.value.rawType.path ===
       PRIMITIVE_TYPE.LATESTDATE
       ? new DatePickerOption(
@@ -742,60 +843,59 @@ export const buildDatePickerOption = (
               ? CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_TIME
               : CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_DATE,
         );
+  } else {
+    // LatestDate gets passed as a V1_CString
+    if (valueSpecification instanceof V1_CString) {
+      return new DatePickerOption(
+        CUSTOM_DATE_PICKER_OPTION.LATEST_DATE,
+        CUSTOM_DATE_PICKER_OPTION.LATEST_DATE,
+      );
+    } else if (valueSpecification instanceof V1_CStrictDate) {
+      return new DatePickerOption(
+        valueSpecification.value,
+        valueSpecification.value === null
+          ? ''
+          : CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_DATE,
+      );
+    } else if (valueSpecification instanceof V1_CDateTime) {
+      return new DatePickerOption(
+        valueSpecification.value,
+        valueSpecification.value === null
+          ? ''
+          : CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_TIME,
+      );
+    }
+    throw new Error(
+      `Unexpected date V1_ValueSpecification: ${valueSpecification}`,
+    );
   }
 };
 
-const AbsoluteDateValueSpecificationEditor: React.FC<{
-  valueSpecification: SimpleFunctionExpression | PrimitiveInstanceValue;
-  graph: PureModel;
-  setValueSpecification: (val: ValueSpecification) => void;
+interface AbsoluteDateValueSpecificationEditorProps<
+  T extends CustomDatePickerValueSpecification,
+> extends Omit<CustomDatePickerProps<T>, 'typeCheckOption'> {
   setDatePickerOption: (datePickerOption: DatePickerOption) => void;
-  observerContext: ObserverContext;
-}> = (props) => {
+}
+
+const AbsoluteDateValueSpecificationEditor = <
+  T extends CustomDatePickerValueSpecification,
+>(
+  props: AbsoluteDateValueSpecificationEditorProps<T>,
+) => {
   const {
     valueSpecification,
-    graph,
-    setValueSpecification,
+    valueSelector,
+    updateValueSpecification,
     setDatePickerOption,
-    observerContext,
   } = props;
   const inputRef = useRef<HTMLInputElement>(null);
-  const absoluteDateValue =
-    valueSpecification instanceof SimpleFunctionExpression
-      ? ''
-      : (valueSpecification.values[0] as string | null);
+  const absoluteDateValue = valueSelector(valueSpecification);
   const updateAbsoluteDateValue: React.ChangeEventHandler<HTMLInputElement> = (
     event,
   ) => {
-    if (valueSpecification instanceof SimpleFunctionExpression) {
-      setValueSpecification(
-        buildPrimitiveInstanceValue(
-          graph,
-          PRIMITIVE_TYPE.STRICTDATE,
-          event.target.value,
-          observerContext,
-        ),
-      );
-    } else if (valueSpecification instanceof InstanceValue) {
-      instanceValue_setValue(
-        valueSpecification,
-        event.target.value,
-        0,
-        observerContext,
-      );
-      if (
-        valueSpecification.genericType.value.rawType.path !==
-        PRIMITIVE_TYPE.STRICTDATE
-      ) {
-        valueSpecification_setGenericType(
-          valueSpecification,
-          GenericTypeExplicitReference.create(
-            new GenericType(PrimitiveType.STRICTDATE),
-          ),
-        );
-      }
-      setValueSpecification(valueSpecification);
-    }
+    updateValueSpecification(valueSpecification, event.target.value, {
+      primitiveTypeEnum: PRIMITIVE_TYPE.STRICTDATE,
+    });
     setDatePickerOption(
       new DatePickerOption(
         event.target.value,
@@ -822,25 +922,25 @@ const AbsoluteDateValueSpecificationEditor: React.FC<{
   );
 };
 
-const AbsoluteTimeValueSpecificationEditor: React.FC<{
-  valueSpecification: SimpleFunctionExpression | PrimitiveInstanceValue;
-  graph: PureModel;
-  setValueSpecification: (val: ValueSpecification) => void;
+interface AbsoluteTimeValueSpecificationEditorProps<
+  T extends CustomDatePickerValueSpecification,
+> extends Omit<CustomDatePickerProps<T>, 'typeCheckOption'> {
   setDatePickerOption: (datePickerOption: DatePickerOption) => void;
-  observerContext: ObserverContext;
-}> = (props) => {
+}
+
+const AbsoluteTimeValueSpecificationEditor = <
+  T extends CustomDatePickerValueSpecification,
+>(
+  props: AbsoluteTimeValueSpecificationEditorProps<T>,
+) => {
   const {
     valueSpecification,
-    graph,
-    setValueSpecification,
+    valueSelector,
+    updateValueSpecification,
     setDatePickerOption,
-    observerContext,
   } = props;
   const inputRef = useRef<HTMLInputElement>(null);
-  const absoluteTimeValue =
-    valueSpecification instanceof SimpleFunctionExpression
-      ? ''
-      : (valueSpecification.values[0] as string | null);
+  const absoluteTimeValue = valueSelector(valueSpecification);
   const updateAbsoluteTimeValue: React.ChangeEventHandler<HTMLInputElement> = (
     event,
   ) => {
@@ -848,30 +948,9 @@ const AbsoluteTimeValueSpecificationEditor: React.FC<{
     const value = new Date(event.target.value).getUTCSeconds()
       ? event.target.value
       : `${event.target.value}:00`;
-    if (valueSpecification instanceof SimpleFunctionExpression) {
-      setValueSpecification(
-        buildPrimitiveInstanceValue(
-          graph,
-          PRIMITIVE_TYPE.DATETIME,
-          value,
-          observerContext,
-        ),
-      );
-    } else {
-      instanceValue_setValue(valueSpecification, value, 0, observerContext);
-      if (
-        valueSpecification.genericType.value.rawType.path !==
-        PRIMITIVE_TYPE.DATETIME
-      ) {
-        valueSpecification_setGenericType(
-          valueSpecification,
-          GenericTypeExplicitReference.create(
-            new GenericType(PrimitiveType.DATETIME),
-          ),
-        );
-      }
-      setValueSpecification(valueSpecification);
-    }
+    updateValueSpecification(valueSpecification, value, {
+      primitiveTypeEnum: PRIMITIVE_TYPE.DATETIME,
+    });
     setDatePickerOption(
       new DatePickerOption(
         event.target.value,
@@ -903,19 +982,25 @@ const AbsoluteTimeValueSpecificationEditor: React.FC<{
   );
 };
 
-const CustomDateInstanceValueEditor: React.FC<{
+interface CustomDateInstanceValueEditorProps<
+  T extends CustomDatePickerValueSpecification,
+> extends Omit<
+    CustomDatePickerProps<T>,
+    'typeCheckOption' | 'valueSpecification' | 'valueSelector'
+  > {
   customDateOptionValue: CustomDateOption;
-  graph: PureModel;
-  observerContext: ObserverContext;
-  setValueSpecification: (val: ValueSpecification) => void;
   setDatePickerOption: (datePickerOption: DatePickerOption) => void;
-}> = (props) => {
+}
+
+const CustomDateInstanceValueEditor = <
+  T extends CustomDatePickerValueSpecification,
+>(
+  props: CustomDateInstanceValueEditorProps<T>,
+) => {
   const {
     customDateOptionValue,
-    graph,
-    setValueSpecification,
+    updateValueSpecification,
     setDatePickerOption,
-    observerContext,
   } = props;
   const applicationStore = useApplicationStore();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -952,9 +1037,7 @@ const CustomDateInstanceValueEditor: React.FC<{
         latestDirectionValue as CUSTOM_DATE_OPTION_DIRECTION,
         latestReferenceMomentValue as CUSTOM_DATE_OPTION_REFERENCE_MOMENT,
       );
-      setValueSpecification(
-        buildPureAdjustDateFunction(dateOption, graph, observerContext),
-      );
+      updateValueSpecification(undefined, dateOption);
       const matchedPreservedCustomAdjustDates =
         reservedCustomDateOptions.filter(
           (t) => t.generateDisplayLabel() === dateOption.generateDisplayLabel(),
@@ -1069,18 +1152,24 @@ const CustomDateInstanceValueEditor: React.FC<{
   );
 };
 
-const CustomFirstDayOfValueSpecificationEditor: React.FC<{
+interface CustomFirstDayOfValueSpecificationEditorProps<
+  T extends CustomDatePickerValueSpecification,
+> extends Omit<
+    CustomDatePickerProps<T>,
+    'typeCheckOption' | 'valueSpecification' | 'valueSelector'
+  > {
   customDateAdjustOptionValue: DatePickerOption;
-  graph: PureModel;
-  observerContext: ObserverContext;
-  setValueSpecification: (val: ValueSpecification) => void;
   setDatePickerOption: (datePickerOption: DatePickerOption) => void;
-}> = (props) => {
+}
+
+const CustomFirstDayOfValueSpecificationEditor = <
+  T extends CustomDatePickerValueSpecification,
+>(
+  props: CustomFirstDayOfValueSpecificationEditorProps<T>,
+) => {
   const {
     customDateAdjustOptionValue,
-    graph,
-    observerContext,
-    setValueSpecification,
+    updateValueSpecification,
     setDatePickerOption,
   } = props;
   const applicationStore = useApplicationStore();
@@ -1102,13 +1191,7 @@ const CustomFirstDayOfValueSpecificationEditor: React.FC<{
               latestUnitValue as CUSTOM_DATE_FIRST_DAY_OF_UNIT,
             )
           : new CustomFirstDayOfOption('', undefined);
-      setValueSpecification(
-        buildPureDateFunctionExpression(
-          startDayOfDateOption,
-          graph,
-          observerContext,
-        ),
-      );
+      updateValueSpecification(undefined, startDayOfDateOption);
       setDatePickerOption(startDayOfDateOption);
     }
   };
@@ -1144,18 +1227,24 @@ const CustomFirstDayOfValueSpecificationEditor: React.FC<{
   );
 };
 
-const CustomPreviousDayOfWeekValueSpecificationEditor: React.FC<{
+interface CustomPreviousDayOfWeekValueSpecificationEditorProps<
+  T extends CustomDatePickerValueSpecification,
+> extends Omit<
+    CustomDatePickerProps<T>,
+    'typeCheckOption' | 'valueSpecification' | 'valueSelector'
+  > {
   customDateAdjustOptionValue: DatePickerOption;
-  graph: PureModel;
-  observerContext: ObserverContext;
-  setValueSpecification: (val: ValueSpecification) => void;
   setDatePickerOption: (datePickerOption: DatePickerOption) => void;
-}> = (props) => {
+}
+
+const CustomPreviousDayOfWeekValueSpecificationEditor = <
+  T extends CustomDatePickerValueSpecification,
+>(
+  props: CustomPreviousDayOfWeekValueSpecificationEditorProps<T>,
+) => {
   const {
     customDateAdjustOptionValue,
-    graph,
-    observerContext,
-    setValueSpecification,
+    updateValueSpecification,
     setDatePickerOption,
   } = props;
   const applicationStore = useApplicationStore();
@@ -1171,13 +1260,7 @@ const CustomPreviousDayOfWeekValueSpecificationEditor: React.FC<{
         `Previous ${latestDurationUnitValue}`,
         latestDurationUnitValue as CUSTOM_DATE_DAY_OF_WEEK,
       );
-      setValueSpecification(
-        buildPureDateFunctionExpression(
-          previousDayOfWeekDateOption,
-          graph,
-          observerContext,
-        ),
-      );
+      updateValueSpecification(undefined, previousDayOfWeekDateOption);
       setDatePickerOption(previousDayOfWeekDateOption);
     }
   };
@@ -1217,10 +1300,12 @@ const CustomPreviousDayOfWeekValueSpecificationEditor: React.FC<{
   );
 };
 
-export const CustomDatePicker: React.FC<{
-  valueSpecification: PrimitiveInstanceValue | SimpleFunctionExpression;
-  graph: PureModel;
-  observerContext: ObserverContext;
+interface CustomDatePickerProps<T extends CustomDatePickerValueSpecification>
+  extends Omit<
+    PrimitiveInstanceValueEditorProps<T, string | null>,
+    'updateValueSpecification' | 'resetValue'
+  > {
+  updateValueSpecification: CustomDatePickerUpdateValueSpecification<T>;
   hasError?: boolean;
   typeCheckOption: {
     expectedType: Type;
@@ -1238,14 +1323,16 @@ export const CustomDatePicker: React.FC<{
     match?: boolean;
   };
   displayAsEditableValue?: boolean | undefined;
-  setValueSpecification: (val: ValueSpecification) => void;
   handleBlur?: (() => void) | undefined;
-}> = (props) => {
+}
+
+export const CustomDatePicker = <T extends CustomDatePickerValueSpecification>(
+  props: CustomDatePickerProps<T>,
+) => {
   const {
     valueSpecification,
-    setValueSpecification,
-    graph,
-    observerContext,
+    valueSelector,
+    updateValueSpecification,
     hasError,
     typeCheckOption,
     displayAsEditableValue,
@@ -1292,14 +1379,9 @@ export const CustomDatePicker: React.FC<{
     if (
       CUSTOM_DATE_PICKER_OPTION.LATEST_DATE === chosenDatePickerOption.value
     ) {
-      setValueSpecification(
-        buildPrimitiveInstanceValue(
-          graph,
-          PRIMITIVE_TYPE.LATESTDATE,
-          event.target.value,
-          observerContext,
-        ),
-      );
+      updateValueSpecification(undefined, event.target.value, {
+        primitiveTypeEnum: PRIMITIVE_TYPE.LATESTDATE,
+      });
     } else if (
       // Elements in this list will trigger children date components
       ![
@@ -1314,21 +1396,12 @@ export const CustomDatePicker: React.FC<{
         (d) => d.value === chosenDatePickerOption.value,
       );
       if (theReservedCustomDateOption.length > 0) {
-        setValueSpecification(
-          buildPureAdjustDateFunction(
-            guaranteeNonNullable(theReservedCustomDateOption[0]),
-            graph,
-            observerContext,
-          ),
+        updateValueSpecification(
+          undefined,
+          guaranteeNonNullable(theReservedCustomDateOption[0]),
         );
       } else {
-        setValueSpecification(
-          buildPureDateFunctionExpression(
-            chosenDatePickerOption,
-            graph,
-            observerContext,
-          ),
-        );
+        updateValueSpecification(undefined, chosenDatePickerOption);
       }
     }
     setDatePickerOption(chosenDatePickerOption);
@@ -1337,60 +1410,52 @@ export const CustomDatePicker: React.FC<{
     switch (datePickerOption.value) {
       case CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_DATE:
         return (
-          <AbsoluteDateValueSpecificationEditor
-            graph={graph}
+          <AbsoluteDateValueSpecificationEditor<T>
             valueSpecification={valueSpecification}
-            setValueSpecification={setValueSpecification}
+            valueSelector={valueSelector}
+            updateValueSpecification={updateValueSpecification}
             setDatePickerOption={setDatePickerOption}
-            observerContext={observerContext}
           />
         );
       case CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_TIME:
         return (
-          <AbsoluteTimeValueSpecificationEditor
-            graph={graph}
+          <AbsoluteTimeValueSpecificationEditor<T>
             valueSpecification={valueSpecification}
-            setValueSpecification={setValueSpecification}
+            valueSelector={valueSelector}
+            updateValueSpecification={updateValueSpecification}
             setDatePickerOption={setDatePickerOption}
-            observerContext={observerContext}
           />
         );
       case CUSTOM_DATE_PICKER_OPTION.CUSTOM_DATE:
         return (
-          <CustomDateInstanceValueEditor
-            graph={graph}
-            observerContext={observerContext}
+          <CustomDateInstanceValueEditor<T>
             customDateOptionValue={buildCustomDateOption(
               valueSpecification,
               applicationStore,
             )}
-            setValueSpecification={setValueSpecification}
+            updateValueSpecification={updateValueSpecification}
             setDatePickerOption={setDatePickerOption}
           />
         );
       case CUSTOM_DATE_PICKER_OPTION.FIRST_DAY_OF:
         return (
-          <CustomFirstDayOfValueSpecificationEditor
-            graph={graph}
-            observerContext={observerContext}
+          <CustomFirstDayOfValueSpecificationEditor<T>
             customDateAdjustOptionValue={buildDatePickerOption(
               valueSpecification,
               applicationStore,
             )}
-            setValueSpecification={setValueSpecification}
+            updateValueSpecification={updateValueSpecification}
             setDatePickerOption={setDatePickerOption}
           />
         );
       case CUSTOM_DATE_PICKER_OPTION.PREVIOUS_DAY_OF_WEEK:
         return (
-          <CustomPreviousDayOfWeekValueSpecificationEditor
-            graph={graph}
-            observerContext={observerContext}
+          <CustomPreviousDayOfWeekValueSpecificationEditor<T>
             customDateAdjustOptionValue={buildDatePickerOption(
               valueSpecification,
               applicationStore,
             )}
-            setValueSpecification={setValueSpecification}
+            updateValueSpecification={updateValueSpecification}
             setDatePickerOption={setDatePickerOption}
           />
         );

@@ -40,26 +40,27 @@ import {
 } from '@finos/legend-art';
 import {
   type Enum,
+  type ObserverContext,
+  type PureModel,
   type Type,
   type ValueSpecification,
-  type PureModel,
-  type ObserverContext,
-  PrimitiveInstanceValue,
   CollectionInstanceValue,
+  Enumeration,
+  EnumValueExplicitReference,
   EnumValueInstanceValue,
+  GenericType,
+  GenericTypeExplicitReference,
+  getMultiplicityDescription,
+  getPrimitiveTypeInstanceFromEnum,
+  InstanceValue,
   INTERNAL__PropagatedValue,
+  isSubType,
+  matchFunctionName,
+  PRIMITIVE_TYPE,
+  PrimitiveInstanceValue,
+  PrimitiveType,
   SimpleFunctionExpression,
   VariableExpression,
-  EnumValueExplicitReference,
-  PrimitiveType,
-  PRIMITIVE_TYPE,
-  GenericTypeExplicitReference,
-  GenericType,
-  Enumeration,
-  getMultiplicityDescription,
-  matchFunctionName,
-  isSubType,
-  InstanceValue,
 } from '@finos/legend-graph';
 import {
   type DebouncedFunc,
@@ -87,8 +88,18 @@ import React, {
 import {
   instanceValue_setValue,
   instanceValue_setValues,
+  valueSpecification_setGenericType,
 } from '../../stores/shared/ValueSpecificationModifierHelper.js';
-import { CustomDatePicker } from './CustomDatePicker.js';
+import {
+  buildPureAdjustDateFunction,
+  buildPureDateFunctionExpression,
+  CustomDateOption,
+  CustomDatePicker,
+  CustomFirstDayOfOption,
+  CustomPreviousDayOfWeekOption,
+  DatePickerOption,
+  type CustomDatePickerUpdateValueSpecification,
+} from './CustomDatePicker.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
 import {
   isValidInstanceValue,
@@ -97,6 +108,7 @@ import {
 import { evaluate } from 'mathjs';
 import { isUsedDateFunctionSupportedInFormMode } from '../../stores/QueryBuilderStateBuilder.js';
 import {
+  buildPrimitiveInstanceValue,
   convertTextToEnum,
   convertTextToPrimitiveInstanceValue,
   getValueSpecificationStringValue,
@@ -224,7 +236,7 @@ const VariableExpressionParameterEditor = observer(
   },
 );
 
-interface PrimitiveInstanceValueEditorProps<
+export interface PrimitiveInstanceValueEditorProps<
   T,
   U extends string | number | boolean | Enum | null,
 > {
@@ -1327,57 +1339,66 @@ const UnsupportedValueSpecificationEditor: React.FC = () => (
   <div className="value-spec-editor--unsupported">unsupported</div>
 );
 
-const DateInstanceValueEditor = observer(
-  (props: {
-    valueSpecification: PrimitiveInstanceValue | SimpleFunctionExpression;
-    graph: PureModel;
-    observerContext: ObserverContext;
-    typeCheckOption: TypeCheckOption;
-    className?: string | undefined;
-    setValueSpecification: (val: ValueSpecification) => void;
-    resetValue: () => void;
-    handleBlur?: (() => void) | undefined;
-    displayAsEditableValue?: boolean | undefined;
-  }) => {
-    const {
-      valueSpecification,
-      setValueSpecification,
-      graph,
-      observerContext,
-      typeCheckOption,
-      resetValue,
-      handleBlur,
-      displayAsEditableValue,
-    } = props;
+interface DateInstanceValueEditorProps<
+  T extends SimpleFunctionExpression | PrimitiveInstanceValue | undefined,
+> extends Omit<
+    PrimitiveInstanceValueEditorProps<T, string | null>,
+    'updateValueSpecification'
+  > {
+  updateValueSpecification: CustomDatePickerUpdateValueSpecification<T>;
+  typeCheckOption: TypeCheckOption;
+  displayAsEditableValue?: boolean | undefined;
+}
 
-    return (
-      <div className="value-spec-editor">
-        <CustomDatePicker
-          valueSpecification={valueSpecification}
-          graph={graph}
-          observerContext={observerContext}
-          typeCheckOption={typeCheckOption}
-          setValueSpecification={setValueSpecification}
-          hasError={
-            valueSpecification instanceof PrimitiveInstanceValue &&
-            !isValidInstanceValue(valueSpecification)
-          }
-          handleBlur={handleBlur}
-          displayAsEditableValue={displayAsEditableValue}
-        />
-        {!displayAsEditableValue && (
-          <button
-            className="value-spec-editor__reset-btn"
-            name="Reset"
-            title="Reset"
-            onClick={resetValue}
-          >
-            <RefreshIcon />
-          </button>
-        )}
-      </div>
-    );
-  },
+const DateInstanceValueEditorInner = <
+  T extends SimpleFunctionExpression | PrimitiveInstanceValue,
+>(
+  props: DateInstanceValueEditorProps<T>,
+): React.ReactElement => {
+  const {
+    valueSpecification,
+    valueSelector,
+    updateValueSpecification,
+    resetValue,
+    handleBlur,
+    typeCheckOption,
+    displayAsEditableValue,
+  } = props;
+
+  return (
+    <div className="value-spec-editor">
+      <CustomDatePicker<T>
+        valueSpecification={valueSpecification}
+        valueSelector={valueSelector}
+        typeCheckOption={typeCheckOption}
+        updateValueSpecification={updateValueSpecification}
+        hasError={
+          valueSpecification instanceof PrimitiveInstanceValue &&
+          !isValidInstanceValue(valueSpecification)
+        }
+        handleBlur={handleBlur}
+        displayAsEditableValue={displayAsEditableValue}
+      />
+      {!displayAsEditableValue && (
+        <button
+          className="value-spec-editor__reset-btn"
+          name="Reset"
+          title="Reset"
+          onClick={resetValue}
+        >
+          <RefreshIcon />
+        </button>
+      )}
+    </div>
+  );
+};
+
+export const DateInstanceValueEditor = observer(
+  DateInstanceValueEditorInner as <
+    T extends SimpleFunctionExpression | PrimitiveInstanceValue | undefined,
+  >(
+    props: DateInstanceValueEditorProps<T>,
+  ) => ReturnType<typeof DateInstanceValueEditorInner>,
 );
 
 /**
@@ -1419,8 +1440,79 @@ export const BasicValueSpecificationEditor = forwardRef<
     handleKeyDown,
     displayDateEditorAsEditableValue,
   } = props;
+
+  const dateValueSelector = (
+    val: SimpleFunctionExpression | PrimitiveInstanceValue,
+  ): string | null => {
+    return valueSpecification instanceof SimpleFunctionExpression
+      ? ''
+      : ((valueSpecification as PrimitiveInstanceValue).values[0] as
+          | string
+          | null);
+  };
+  const dateUpdateValueSpecification: CustomDatePickerUpdateValueSpecification<
+    SimpleFunctionExpression | PrimitiveInstanceValue | undefined
+  > = (_valueSpecification, value, options): void => {
+    if (value instanceof CustomDateOption) {
+      setValueSpecification(
+        buildPureAdjustDateFunction(value, graph, observerContext),
+      );
+    } else if (value instanceof CustomFirstDayOfOption) {
+      setValueSpecification(
+        buildPureDateFunctionExpression(value, graph, observerContext),
+      );
+    } else if (value instanceof CustomPreviousDayOfWeekOption) {
+      setValueSpecification(
+        buildPureDateFunctionExpression(value, graph, observerContext),
+      );
+    } else if (value instanceof DatePickerOption) {
+      setValueSpecification(
+        buildPureDateFunctionExpression(value, graph, observerContext),
+      );
+    } else {
+      if (_valueSpecification instanceof SimpleFunctionExpression) {
+        setValueSpecification(
+          buildPrimitiveInstanceValue(
+            graph,
+            guaranteeNonNullable(options?.primitiveTypeEnum),
+            value,
+            observerContext,
+          ),
+        );
+      } else if (_valueSpecification instanceof InstanceValue) {
+        instanceValue_setValue(_valueSpecification, value, 0, observerContext);
+        if (
+          _valueSpecification.genericType.value.rawType.path !==
+          guaranteeNonNullable(options?.primitiveTypeEnum)
+        ) {
+          valueSpecification_setGenericType(
+            _valueSpecification,
+            GenericTypeExplicitReference.create(
+              new GenericType(
+                getPrimitiveTypeInstanceFromEnum(
+                  guaranteeNonNullable(options?.primitiveTypeEnum),
+                ),
+              ),
+            ),
+          );
+        }
+        setValueSpecification(_valueSpecification);
+      } else if (options?.primitiveTypeEnum === PRIMITIVE_TYPE.LATESTDATE) {
+        setValueSpecification(
+          buildPrimitiveInstanceValue(
+            graph,
+            PRIMITIVE_TYPE.LATESTDATE,
+            value,
+            observerContext,
+          ),
+        );
+      }
+    }
+  };
+
   if (valueSpecification instanceof PrimitiveInstanceValue) {
     const _type = valueSpecification.genericType.value.rawType;
+
     const valueSelector = <T,>(val: PrimitiveInstanceValue): T =>
       val.values[0] as T;
     const updateValueSpecification = <T,>(
@@ -1487,13 +1579,14 @@ export const BasicValueSpecificationEditor = forwardRef<
       case PRIMITIVE_TYPE.DATETIME:
       case PRIMITIVE_TYPE.LATESTDATE:
         return (
-          <DateInstanceValueEditor
+          <DateInstanceValueEditor<
+            SimpleFunctionExpression | PrimitiveInstanceValue
+          >
             valueSpecification={valueSpecification}
-            graph={graph}
-            observerContext={observerContext}
+            valueSelector={dateValueSelector}
             typeCheckOption={typeCheckOption}
             className={className}
-            setValueSpecification={setValueSpecification}
+            updateValueSpecification={dateUpdateValueSpecification}
             resetValue={resetValue}
             handleBlur={handleBlur}
             displayAsEditableValue={displayDateEditorAsEditableValue}
@@ -1589,13 +1682,14 @@ export const BasicValueSpecificationEditor = forwardRef<
     if (isSubType(typeCheckOption.expectedType, PrimitiveType.DATE)) {
       if (isUsedDateFunctionSupportedInFormMode(valueSpecification)) {
         return (
-          <DateInstanceValueEditor
+          <DateInstanceValueEditor<
+            SimpleFunctionExpression | PrimitiveInstanceValue
+          >
             valueSpecification={valueSpecification}
-            graph={graph}
-            observerContext={observerContext}
+            valueSelector={dateValueSelector}
             typeCheckOption={typeCheckOption}
             className={className}
-            setValueSpecification={setValueSpecification}
+            updateValueSpecification={dateUpdateValueSpecification}
             resetValue={resetValue}
             handleBlur={handleBlur}
             displayAsEditableValue={displayDateEditorAsEditableValue}
