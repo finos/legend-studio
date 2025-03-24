@@ -90,17 +90,6 @@ import {
   instanceValue_setValues,
   valueSpecification_setGenericType,
 } from '../../stores/shared/ValueSpecificationModifierHelper.js';
-import {
-  buildPureAdjustDateFunction,
-  buildPureDateFunctionExpression,
-  CustomDateOption,
-  CustomDatePicker,
-  CustomFirstDayOfOption,
-  CustomPreviousDayOfWeekOption,
-  DatePickerOption,
-  type CustomDatePickerUpdateValueSpecification,
-  type CustomDatePickerValueSpecification,
-} from './CustomDatePicker.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
 import {
   isValidInstanceValue,
@@ -114,6 +103,17 @@ import {
   convertTextToPrimitiveInstanceValue,
   getValueSpecificationStringValue,
 } from '../../stores/shared/ValueSpecificationEditorHelper.js';
+import { CustomDatePicker } from './CustomDatePicker.js';
+import {
+  type CustomDatePickerValueSpecification,
+  type CustomDatePickerUpdateValueSpecification,
+  CustomDateOption,
+  buildPureAdjustDateFunction,
+  CustomFirstDayOfOption,
+  buildPureDateFunctionExpression,
+  CustomPreviousDayOfWeekOption,
+  DatePickerOption,
+} from './CustomDatePickerHelper.js';
 
 type TypeCheckOption = {
   expectedType: Type;
