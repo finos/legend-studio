@@ -60,6 +60,11 @@ import {
   type LegendApplicationPluginManager,
 } from '@finos/legend-application';
 import type { V1_CDate } from '../../../../legend-graph/src/graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CDate.js';
+import { _elementPtr } from '@finos/legend-data-cube';
+import {
+  buildV1PrimitiveValueSpecification,
+  createV1SupportedFunctionExpression,
+} from '../../stores/shared/V1_ValueSpecificationEditorHelper.js';
 
 export type CustomDatePickerValueSpecification =
   | SimpleFunctionExpression
@@ -434,6 +439,99 @@ export const buildPureDateFunctionExpression = (
 };
 
 /**
+ * Generate pure date functions based on the DatePickerOption (for V1 protocol).
+ */
+export const buildV1PureDateFunctionExpression = (
+  datePickerOption: DatePickerOption,
+  observerContext: ObserverContext,
+): V1_AppliedFunction => {
+  if (datePickerOption instanceof CustomPreviousDayOfWeekOption) {
+    const previousDayAF = createV1SupportedFunctionExpression(
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.PREVIOUS_DAY_OF_WEEK,
+    );
+    const dayOfWeekProperty = new V1_AppliedProperty();
+    dayOfWeekProperty.parameters.push(
+      _elementPtr(QUERY_BUILDER_PURE_PATH.DAY_OF_WEEK),
+    );
+    dayOfWeekProperty.property = datePickerOption.day;
+    previousDayAF.parameters.push(dayOfWeekProperty);
+    return previousDayAF;
+  } else if (datePickerOption instanceof CustomFirstDayOfOption) {
+    switch (datePickerOption.unit) {
+      case CUSTOM_DATE_FIRST_DAY_OF_UNIT.YEAR: {
+        const firstDayOfThisYearAF = createV1SupportedFunctionExpression(
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_THIS_YEAR,
+        );
+        return firstDayOfThisYearAF;
+      }
+      case CUSTOM_DATE_FIRST_DAY_OF_UNIT.QUARTER: {
+        const firstDayOfQuarterAF = createV1SupportedFunctionExpression(
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_QUARTER,
+        );
+        return firstDayOfQuarterAF;
+      }
+      case CUSTOM_DATE_FIRST_DAY_OF_UNIT.MONTH: {
+        const firstDayOfMonthAF = createV1SupportedFunctionExpression(
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_THIS_MONTH,
+        );
+        return firstDayOfMonthAF;
+      }
+      case CUSTOM_DATE_FIRST_DAY_OF_UNIT.WEEK: {
+        const firstDayOfWeekAF = createV1SupportedFunctionExpression(
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_WEEK,
+        );
+        return firstDayOfWeekAF;
+      }
+      default:
+        throw new UnsupportedOperationError(
+          `Can't build expression for 'First Day Of ...' date picker option for unit '${datePickerOption.unit}'`,
+        );
+    }
+  } else {
+    switch (datePickerOption.value) {
+      case CUSTOM_DATE_PICKER_OPTION.TODAY: {
+        return createV1SupportedFunctionExpression(
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.TODAY,
+        );
+      }
+      case CUSTOM_DATE_PICKER_OPTION.NOW: {
+        return createV1SupportedFunctionExpression(
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.NOW,
+        );
+      }
+      case CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_THIS_YEAR: {
+        const firstDayOfYearAF = createV1SupportedFunctionExpression(
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_THIS_YEAR,
+        );
+        return firstDayOfYearAF;
+      }
+      case CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_QUARTER: {
+        const firstDayOfQuarterAF = createV1SupportedFunctionExpression(
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_QUARTER,
+        );
+        return firstDayOfQuarterAF;
+      }
+      case CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_MONTH: {
+        const firstDayOfMonthAF = createV1SupportedFunctionExpression(
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_THIS_MONTH,
+        );
+        return firstDayOfMonthAF;
+      }
+      case CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_WEEK: {
+        const firstDayOfWeekAF = createV1SupportedFunctionExpression(
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_WEEK,
+        );
+        return firstDayOfWeekAF;
+      }
+      default:
+        throw new UnsupportedOperationError(
+          `Can't build expression for date picker option '${datePickerOption.value}'`,
+        );
+    }
+  }
+};
+
+/**
  * Generate the enum value of type Pure Enum, DURATION_UNIT, based on the input string.
  */
 const buildPureDurationEnumValue = (
@@ -543,6 +641,57 @@ export const buildPureAdjustDateFunction = (
     GenericTypeExplicitReference.create(new GenericType(PrimitiveType.DATE)),
   );
   return dateAdjustSimpleFunctionExpression;
+};
+
+/**
+ * Generate the pure date adjust() function based on the CustomDateOption (for V1 protocol).
+ */
+export const buildV1PureAdjustDateFunction = (
+  customDateOption: CustomDateOption,
+  observerContext: ObserverContext,
+): V1_AppliedFunction => {
+  const dateAdjustAF = createV1SupportedFunctionExpression(
+    QUERY_BUILDER_SUPPORTED_FUNCTIONS.ADJUST,
+  );
+  // Starting point
+  dateAdjustAF.parameters.push(
+    buildV1PureDateFunctionExpression(
+      new DatePickerOption(
+        guaranteeNonNullable(customDateOption.referenceMoment),
+        guaranteeNonNullable(customDateOption.referenceMoment),
+      ),
+      observerContext,
+    ),
+  );
+  // Direction and duration
+  if (customDateOption.direction === CUSTOM_DATE_OPTION_DIRECTION.BEFORE) {
+    const minusAF = createV1SupportedFunctionExpression(
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.MINUS,
+    );
+    minusAF.parameters.push(
+      buildV1PrimitiveValueSpecification(
+        PRIMITIVE_TYPE.INTEGER,
+        customDateOption.duration,
+      ),
+    );
+    dateAdjustAF.parameters.push(minusAF);
+  } else {
+    dateAdjustAF.parameters.push(
+      buildV1PrimitiveValueSpecification(
+        PRIMITIVE_TYPE.INTEGER,
+        customDateOption.duration,
+      ),
+    );
+  }
+  const durationUnitProperty = new V1_AppliedProperty();
+  durationUnitProperty.parameters.push(
+    _elementPtr(QUERY_BUILDER_PURE_PATH.DURATION_UNIT),
+  );
+  durationUnitProperty.property = guaranteeNonNullable(customDateOption.unit);
+
+  dateAdjustAF.parameters.push(durationUnitProperty);
+
+  return dateAdjustAF;
 };
 
 /**

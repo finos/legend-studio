@@ -1,8 +1,7 @@
 import {
-  type ObserverContext,
-  type V1_GenericType,
   type V1_PrimitiveValueSpecification,
   PRIMITIVE_TYPE,
+  V1_AppliedFunction,
   V1_CBoolean,
   V1_CByteArray,
   V1_CDateTime,
@@ -76,4 +75,12 @@ export const buildV1PrimitiveValueSpecification = (
       throw new Error('Unsupported primitive type');
     }
   }
+};
+
+export const createV1SupportedFunctionExpression = (
+  supportedFuncName: string,
+): V1_AppliedFunction => {
+  const appliedFunction = new V1_AppliedFunction();
+  appliedFunction.function = supportedFuncName;
+  return appliedFunction;
 };

@@ -64,13 +64,13 @@ import {
   QUERY_BUILDER_PURE_PATH,
   QUERY_BUILDER_SUPPORTED_FUNCTIONS,
 } from '../../graph/QueryBuilderMetaModelConst.js';
-import { buildDatePickerOption } from '../../components/shared/CustomDatePicker.js';
 import type {
   ApplicationStore,
   LegendApplicationConfig,
   LegendApplicationPlugin,
   LegendApplicationPluginManager,
 } from '@finos/legend-application';
+import { buildDatePickerOption } from '../../components/shared/CustomDatePickerHelper.js';
 
 export const createSupportedFunctionExpression = (
   supportedFuncName: string,

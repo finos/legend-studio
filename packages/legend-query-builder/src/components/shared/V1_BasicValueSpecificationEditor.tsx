@@ -59,6 +59,7 @@ import { observer } from 'mobx-react-lite';
 import React, { forwardRef, useState } from 'react';
 import {
   BooleanPrimitiveInstanceValueEditor,
+  DateInstanceValueEditor,
   EnumInstanceValueEditor,
   NumberPrimitiveInstanceValueEditor,
   StringPrimitiveInstanceValueEditor,
@@ -67,6 +68,7 @@ import {
   V1_AppliedPropert_setProperty,
   V1_PrimitiveValue_setValue,
 } from '../../stores/shared/V1_ValueSpecificationModifierHelper.js';
+import type { CustomDatePickerUpdateValueSpecification } from './CustomDatePicker.js';
 
 // Constants and helper functions
 export const V1_QUERY_BUILDER_VARIABLE_DND_TYPE = 'V1_VARIABLE';
@@ -408,7 +410,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
     displayDateEditorAsEditableValue?: boolean | undefined;
     enumeration?: V1_Enumeration | undefined;
   }
->(function V1_BasicValueSpecificationEditor(props, ref) {
+>(function _V1_BasicValueSpecificationEditor(props, ref) {
   const {
     className,
     valueSpecification,
@@ -490,16 +492,82 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
     valueSpecification instanceof V1_CStrictDate ||
     valueSpecification instanceof V1_CLatestDate
   ) {
+    const dateUpdateValueSpecification: CustomDatePickerUpdateValueSpecification<
+      V1_CDateTime | V1_CStrictDate | V1_CLatestDate | undefined
+    > = (_valueSpecification, value, options): void => {
+      if (value instanceof CustomDateOption) {
+        setValueSpecification(
+          buildPureAdjustDateFunction(value, graph, observerContext),
+        );
+      } else if (value instanceof CustomFirstDayOfOption) {
+        setValueSpecification(
+          buildPureDateFunctionExpression(value, graph, observerContext),
+        );
+      } else if (value instanceof CustomPreviousDayOfWeekOption) {
+        setValueSpecification(
+          buildPureDateFunctionExpression(value, graph, observerContext),
+        );
+      } else if (value instanceof DatePickerOption) {
+        setValueSpecification(
+          buildPureDateFunctionExpression(value, graph, observerContext),
+        );
+      } else {
+        if (_valueSpecification instanceof SimpleFunctionExpression) {
+          setValueSpecification(
+            buildPrimitiveInstanceValue(
+              graph,
+              guaranteeNonNullable(options?.primitiveTypeEnum),
+              value,
+              observerContext,
+            ),
+          );
+        } else if (_valueSpecification instanceof InstanceValue) {
+          instanceValue_setValue(
+            _valueSpecification,
+            value,
+            0,
+            observerContext,
+          );
+          if (
+            _valueSpecification.genericType.value.rawType.path !==
+            guaranteeNonNullable(options?.primitiveTypeEnum)
+          ) {
+            valueSpecification_setGenericType(
+              _valueSpecification,
+              GenericTypeExplicitReference.create(
+                new GenericType(
+                  getPrimitiveTypeInstanceFromEnum(
+                    guaranteeNonNullable(options?.primitiveTypeEnum),
+                  ),
+                ),
+              ),
+            );
+          }
+          setValueSpecification(_valueSpecification);
+        } else if (options?.primitiveTypeEnum === PRIMITIVE_TYPE.LATESTDATE) {
+          setValueSpecification(
+            buildPrimitiveInstanceValue(
+              graph,
+              PRIMITIVE_TYPE.LATESTDATE,
+              value,
+              observerContext,
+            ),
+          );
+        }
+      }
+    };
     return (
-      <V1_DateInstanceValueEditor
+      <DateInstanceValueEditor<V1_CDateTime | V1_CStrictDate | V1_CLatestDate>
         valueSpecification={valueSpecification}
-        // observerContext={observerContext}
-        typeCheckOption={typeCheckOption}
+        valueSelector={(_valueSpecification) =>
+          _valueSpecification instanceof V1_CDateTime ||
+          _valueSpecification instanceof V1_CStrictDate
+            ? _valueSpecification.value
+            : ''
+        }
+        // typeCheckOption={typeCheckOption}
         className={className}
-        setValueSpecification={setValueSpecification}
-        resetValue={resetValue}
-        handleBlur={handleBlur}
-        displayAsEditableValue={displayDateEditorAsEditableValue}
+        updateValueSpecification={}
       />
     );
   } else if (
