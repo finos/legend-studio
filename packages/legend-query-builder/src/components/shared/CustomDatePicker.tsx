@@ -944,7 +944,6 @@ const AbsoluteTimeValueSpecificationEditor = <
   const updateAbsoluteTimeValue: React.ChangeEventHandler<HTMLInputElement> = (
     event,
   ) => {
-    //
     const value = new Date(event.target.value).getUTCSeconds()
       ? event.target.value
       : `${event.target.value}:00`;

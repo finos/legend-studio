@@ -1442,13 +1442,11 @@ export const BasicValueSpecificationEditor = forwardRef<
   } = props;
 
   const dateValueSelector = (
-    val: SimpleFunctionExpression | PrimitiveInstanceValue,
+    _valueSpecification: SimpleFunctionExpression | PrimitiveInstanceValue,
   ): string | null => {
-    return valueSpecification instanceof SimpleFunctionExpression
+    return _valueSpecification instanceof SimpleFunctionExpression
       ? ''
-      : ((valueSpecification as PrimitiveInstanceValue).values[0] as
-          | string
-          | null);
+      : (_valueSpecification.values[0] as string | null);
   };
   const dateUpdateValueSpecification: CustomDatePickerUpdateValueSpecification<
     SimpleFunctionExpression | PrimitiveInstanceValue | undefined
