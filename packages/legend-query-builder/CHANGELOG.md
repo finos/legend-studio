@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.16.15
+
+### Patch Changes
+
+- [#3948](https://github.com/finos/legend-studio/pull/3948) [`47c9874`](https://github.com/finos/legend-studio/commit/47c9874ade0e23843be8d21d5b995dedfbe946bb) ([@kelly-thai](https://github.com/kelly-thai)) - Clean up Hosted DataCube workflow on Query
+
 ## 4.16.14
 
 ## 4.16.13
