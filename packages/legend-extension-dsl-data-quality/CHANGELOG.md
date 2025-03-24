@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-quality
 
+## 2.0.50
+
+### Patch Changes
+
+- [#3953](https://github.com/finos/legend-studio/pull/3953) [`19f95da`](https://github.com/finos/legend-studio/commit/19f95da5d7ff92da6b0030f593998e5032228249) ([@keenkeystrokes](https://github.com/keenkeystrokes)) - support runtime field in dq relation validation protocol
+
 ## 2.0.49
 
 ## 2.0.48
