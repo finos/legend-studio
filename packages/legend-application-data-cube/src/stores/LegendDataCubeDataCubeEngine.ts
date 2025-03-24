@@ -795,7 +795,10 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     if (source instanceof AdhocQueryDataCubeSource) {
       return _function(
         DataCubeFunction.FROM,
-        [_elementPtr(source.runtime)].filter(isNonNullable),
+        [
+          source.mapping ? _elementPtr(source.mapping) : undefined,
+          _elementPtr(source.runtime),
+        ].filter(isNonNullable),
       );
     } else if (source instanceof UserDefinedFunctionDataCubeSource) {
       return _function(

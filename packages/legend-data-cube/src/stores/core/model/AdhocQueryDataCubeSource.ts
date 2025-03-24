@@ -50,6 +50,7 @@ export class RawAdhocQueryDataCubeSource {
       model: raw(),
       query: primitive(),
       runtime: primitive(),
+      mapping: optional(primitive()),
     }),
   );
 }
