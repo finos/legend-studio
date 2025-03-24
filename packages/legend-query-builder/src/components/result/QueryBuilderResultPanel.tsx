@@ -515,7 +515,7 @@ export const QueryBuilderResultPanel = observer(
           title={
             !item.disableFunc?.(queryBuilderState)
               ? item.title
-              : 'Requires Saved Query'
+              : (item.disableMessage ?? 'Unsupported')
           }
           disabled={item.disableFunc?.(queryBuilderState) ?? false}
           onClick={() => {

@@ -93,6 +93,7 @@ export type QueryBuilderMenuActionConfiguration = {
   renderExtraComponent?: (
     queryBuilderState: QueryBuilderState,
   ) => React.ReactNode;
+  disableMessage?: string | undefined;
 };
 
 export type QueryBuilderPropagateExecutionContextChangeHelper = (

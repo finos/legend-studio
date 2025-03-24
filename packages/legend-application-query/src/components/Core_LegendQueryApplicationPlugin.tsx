@@ -456,6 +456,7 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
           }
         },
         icon: <ArrowCircleUpIcon />,
+        disableMessage: 'Requires saved query',
       },
       {
         key: 'legend-datacube-query',
@@ -489,6 +490,7 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
           }
         },
         icon: <CubeIcon />,
+        disableMessage: 'Requires saved query',
       },
     ];
   }

@@ -100,6 +100,7 @@ export class DSL_Service_LegendQueryApplicationPlugin extends LegendQueryApplica
           }
         },
         icon: <ArrowCircleUpIcon />,
+        disableMessage: 'Requires saved query',
       },
       {
         key: 'export-as-dev-service',
