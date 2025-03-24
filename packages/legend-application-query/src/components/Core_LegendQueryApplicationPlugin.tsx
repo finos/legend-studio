@@ -82,6 +82,7 @@ import {
 import {
   ExistingQueryEditorStore,
   QueryBuilderActionConfig_QueryApplication,
+  type QueryEditorStore,
 } from '../stores/QueryEditorStore.js';
 import {
   DataSpaceQueryBuilderState,
@@ -154,32 +155,40 @@ const MoreButton: React.FC = () => (
   </button>
 );
 
+const generateDataCubeUrl = (
+  queryEditorStore: QueryEditorStore,
+): string | undefined => {
+  if (
+    queryEditorStore instanceof ExistingQueryEditorStore &&
+    queryEditorStore.query &&
+    queryEditorStore.applicationStore.config.dataCubeApplicationUrl
+  ) {
+    return EXTERNAL_APPLICATION_NAVIGATION__generateNewDataCubeUrl(
+      queryEditorStore.applicationStore.config.dataCubeApplicationUrl,
+      {
+        _type: QUERY_DATACUBE_SOURCE_TYPE,
+        queryId: queryEditorStore.query.id,
+      },
+    );
+  }
+  return undefined;
+};
+
 export const QueryDataCubeUsage = observer(() => {
   const applicationStore = useLegendQueryApplicationStore();
   const queryEditorStore = useQueryEditorStore();
 
-  const generateDataCubeUrl = (): string => {
-    if (
-      queryEditorStore instanceof ExistingQueryEditorStore &&
-      queryEditorStore.query &&
-      applicationStore.config.dataCubeApplicationUrl
-    ) {
-      return EXTERNAL_APPLICATION_NAVIGATION__generateNewDataCubeUrl(
-        applicationStore.config.dataCubeApplicationUrl,
-        {
-          _type: QUERY_DATACUBE_SOURCE_TYPE,
-          queryId: queryEditorStore.query.id,
-        },
-      );
-    }
-    return 'Legend DataCube URL could not be created\n\nEnsure the following:\n1)You are working with a saved query\n2)Typed TDS is enabled (Advanced > Enable Typed TDS)';
+  const getDataCubeUrl = (): string => {
+    const errorMsg =
+      'Legend DataCube URL could not be created\n\nEnsure the following:\n1)You are working with a saved query\n2)Typed TDS is enabled (Advanced > Enable Typed TDS)';
+    return generateDataCubeUrl(queryEditorStore) ?? errorMsg;
   };
 
   return (
     <div className="query-usage-viewer__code-action">
       <div className="query-usage-viewer__code-action__content">
         <CodeEditor
-          inputValue={generateDataCubeUrl()}
+          inputValue={getDataCubeUrl()}
           isReadOnly={true}
           language={CODE_EDITOR_LANGUAGE.TEXT}
           hideMinimap={true}
@@ -191,7 +200,7 @@ export const QueryDataCubeUsage = observer(() => {
         <CopyButton
           onClick={() => {
             applicationStore.clipboardService
-              .copyTextToClipboard(generateDataCubeUrl())
+              .copyTextToClipboard(getDataCubeUrl())
               .catch(applicationStore.alertUnhandledError);
           }}
         />
@@ -447,6 +456,41 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
           }
         },
         icon: <ArrowCircleUpIcon />,
+        disableMessage: 'Requires saved query',
+      },
+      {
+        key: 'legend-datacube-query',
+        title: 'Launch Legend DataCube...',
+        label: 'Legend DataCube',
+        disableFunc: (queryBuilderState): boolean => {
+          if (
+            queryBuilderState.workflowState.actionConfig instanceof
+            QueryBuilderActionConfig_QueryApplication
+          ) {
+            const editorStore =
+              queryBuilderState.workflowState.actionConfig.editorStore;
+            return !(editorStore instanceof ExistingQueryEditorStore);
+          }
+          return true;
+        },
+        onClick: (queryBuilderState): void => {
+          if (
+            queryBuilderState.workflowState.actionConfig instanceof
+            QueryBuilderActionConfig_QueryApplication
+          ) {
+            const editorStore =
+              queryBuilderState.workflowState.actionConfig.editorStore;
+            const dataCubeUrl = generateDataCubeUrl(editorStore);
+
+            if (dataCubeUrl) {
+              editorStore.applicationStore.navigationService.navigator.visitAddress(
+                dataCubeUrl,
+              );
+            }
+          }
+        },
+        icon: <CubeIcon />,
+        disableMessage: 'Requires saved query',
       },
     ];
   }
