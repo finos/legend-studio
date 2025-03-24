@@ -99,6 +99,7 @@ import {
   CustomPreviousDayOfWeekOption,
   DatePickerOption,
   type CustomDatePickerUpdateValueSpecification,
+  type CustomDatePickerValueSpecification,
 } from './CustomDatePicker.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
 import {
@@ -1340,7 +1341,7 @@ const UnsupportedValueSpecificationEditor: React.FC = () => (
 );
 
 interface DateInstanceValueEditorProps<
-  T extends SimpleFunctionExpression | PrimitiveInstanceValue | undefined,
+  T extends CustomDatePickerValueSpecification | undefined,
 > extends Omit<
     PrimitiveInstanceValueEditorProps<T, string | null>,
     'updateValueSpecification'
@@ -1351,7 +1352,7 @@ interface DateInstanceValueEditorProps<
 }
 
 const DateInstanceValueEditorInner = <
-  T extends SimpleFunctionExpression | PrimitiveInstanceValue,
+  T extends CustomDatePickerValueSpecification | undefined,
 >(
   props: DateInstanceValueEditorProps<T>,
 ): React.ReactElement => {
@@ -1395,7 +1396,7 @@ const DateInstanceValueEditorInner = <
 
 export const DateInstanceValueEditor = observer(
   DateInstanceValueEditorInner as <
-    T extends SimpleFunctionExpression | PrimitiveInstanceValue | undefined,
+    T extends CustomDatePickerValueSpecification | undefined,
   >(
     props: DateInstanceValueEditorProps<T>,
   ) => ReturnType<typeof DateInstanceValueEditorInner>,

@@ -699,11 +699,7 @@ const buildCustomDateOptionReferenceMomentValue = (
  * Transform CustomDateOption if it matches any preserved custom adjust date functions. e.g. One Month Ago..
  */
 const buildCustomDateOption = (
-  valueSpecification:
-    | SimpleFunctionExpression
-    | PrimitiveInstanceValue
-    | V1_AppliedFunction
-    | V1_CDate,
+  valueSpecification: CustomDatePickerValueSpecification | undefined,
   applicationStore: ApplicationStore<
     LegendApplicationConfig,
     LegendApplicationPluginManager<LegendApplicationPlugin>
@@ -759,12 +755,7 @@ const buildCustomDateOption = (
  * Build DatePickerOption from pure date functions or PrimitiveInstanceValue
  */
 export const buildDatePickerOption = (
-  valueSpecification:
-    | SimpleFunctionExpression
-    | PrimitiveInstanceValue
-    | V1_AppliedFunction
-    | V1_CDate
-    | V1_CString,
+  valueSpecification: CustomDatePickerValueSpecification | undefined,
   applicationStore: ApplicationStore<
     LegendApplicationConfig,
     LegendApplicationPluginManager<LegendApplicationPlugin>
@@ -872,13 +863,13 @@ export const buildDatePickerOption = (
 };
 
 interface AbsoluteDateValueSpecificationEditorProps<
-  T extends CustomDatePickerValueSpecification,
+  T extends CustomDatePickerValueSpecification | undefined,
 > extends Omit<CustomDatePickerProps<T>, 'typeCheckOption'> {
   setDatePickerOption: (datePickerOption: DatePickerOption) => void;
 }
 
 const AbsoluteDateValueSpecificationEditor = <
-  T extends CustomDatePickerValueSpecification,
+  T extends CustomDatePickerValueSpecification | undefined,
 >(
   props: AbsoluteDateValueSpecificationEditorProps<T>,
 ) => {
@@ -923,13 +914,13 @@ const AbsoluteDateValueSpecificationEditor = <
 };
 
 interface AbsoluteTimeValueSpecificationEditorProps<
-  T extends CustomDatePickerValueSpecification,
+  T extends CustomDatePickerValueSpecification | undefined,
 > extends Omit<CustomDatePickerProps<T>, 'typeCheckOption'> {
   setDatePickerOption: (datePickerOption: DatePickerOption) => void;
 }
 
 const AbsoluteTimeValueSpecificationEditor = <
-  T extends CustomDatePickerValueSpecification,
+  T extends CustomDatePickerValueSpecification | undefined,
 >(
   props: AbsoluteTimeValueSpecificationEditorProps<T>,
 ) => {
@@ -982,7 +973,7 @@ const AbsoluteTimeValueSpecificationEditor = <
 };
 
 interface CustomDateInstanceValueEditorProps<
-  T extends CustomDatePickerValueSpecification,
+  T extends CustomDatePickerValueSpecification | undefined,
 > extends Omit<
     CustomDatePickerProps<T>,
     'typeCheckOption' | 'valueSpecification' | 'valueSelector'
@@ -992,7 +983,7 @@ interface CustomDateInstanceValueEditorProps<
 }
 
 const CustomDateInstanceValueEditor = <
-  T extends CustomDatePickerValueSpecification,
+  T extends CustomDatePickerValueSpecification | undefined,
 >(
   props: CustomDateInstanceValueEditorProps<T>,
 ) => {
@@ -1152,7 +1143,7 @@ const CustomDateInstanceValueEditor = <
 };
 
 interface CustomFirstDayOfValueSpecificationEditorProps<
-  T extends CustomDatePickerValueSpecification,
+  T extends CustomDatePickerValueSpecification | undefined,
 > extends Omit<
     CustomDatePickerProps<T>,
     'typeCheckOption' | 'valueSpecification' | 'valueSelector'
@@ -1162,7 +1153,7 @@ interface CustomFirstDayOfValueSpecificationEditorProps<
 }
 
 const CustomFirstDayOfValueSpecificationEditor = <
-  T extends CustomDatePickerValueSpecification,
+  T extends CustomDatePickerValueSpecification | undefined,
 >(
   props: CustomFirstDayOfValueSpecificationEditorProps<T>,
 ) => {
@@ -1227,7 +1218,7 @@ const CustomFirstDayOfValueSpecificationEditor = <
 };
 
 interface CustomPreviousDayOfWeekValueSpecificationEditorProps<
-  T extends CustomDatePickerValueSpecification,
+  T extends CustomDatePickerValueSpecification | undefined,
 > extends Omit<
     CustomDatePickerProps<T>,
     'typeCheckOption' | 'valueSpecification' | 'valueSelector'
@@ -1237,7 +1228,7 @@ interface CustomPreviousDayOfWeekValueSpecificationEditorProps<
 }
 
 const CustomPreviousDayOfWeekValueSpecificationEditor = <
-  T extends CustomDatePickerValueSpecification,
+  T extends CustomDatePickerValueSpecification | undefined,
 >(
   props: CustomPreviousDayOfWeekValueSpecificationEditorProps<T>,
 ) => {
@@ -1299,8 +1290,9 @@ const CustomPreviousDayOfWeekValueSpecificationEditor = <
   );
 };
 
-interface CustomDatePickerProps<T extends CustomDatePickerValueSpecification>
-  extends Omit<
+interface CustomDatePickerProps<
+  T extends CustomDatePickerValueSpecification | undefined,
+> extends Omit<
     PrimitiveInstanceValueEditorProps<T, string | null>,
     'updateValueSpecification' | 'resetValue'
   > {
@@ -1325,7 +1317,9 @@ interface CustomDatePickerProps<T extends CustomDatePickerValueSpecification>
   handleBlur?: (() => void) | undefined;
 }
 
-export const CustomDatePicker = <T extends CustomDatePickerValueSpecification>(
+export const CustomDatePicker = <
+  T extends CustomDatePickerValueSpecification | undefined,
+>(
   props: CustomDatePickerProps<T>,
 ) => {
   const {
