@@ -948,7 +948,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     ).returnType;
   }
 
-  private async _getLambdaRelationType(
+  async _getLambdaRelationType(
     lambda: PlainObject<V1_Lambda>,
     model: PlainObject<V1_PureModelContext>,
   ) {
