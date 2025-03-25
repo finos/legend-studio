@@ -60,6 +60,7 @@ import {
   PrimitiveInstanceValue,
   PrimitiveType,
   SimpleFunctionExpression,
+  V1_PackageableType,
   VariableExpression,
 } from '@finos/legend-graph';
 import {
@@ -74,7 +75,6 @@ import {
   parseCSVString,
   uniq,
   at,
-  type Hashable,
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
@@ -115,6 +115,7 @@ import {
   DatePickerOption,
 } from './CustomDatePickerHelper.js';
 import type { V1_TypeCheckOption } from './V1_BasicValueSpecificationEditor.js';
+import type { V1_Type } from '../../../../legend-graph/src/graph-manager/protocol/pure/v1/model/packageableElements/type/V1_Type.js';
 
 export type TypeCheckOption = {
   expectedType: Type;
@@ -244,7 +245,7 @@ const VariableExpressionParameterEditor = observer(
 
 export interface PrimitiveInstanceValueEditorProps<
   T,
-  U extends string | number | boolean | Enum | null,
+  U extends T[] | string | number | boolean | Enum | null,
 > {
   valueSpecification: T;
   valueSelector: (val: T) => U;
@@ -717,13 +718,24 @@ const stringifyValue = (values: ValueSpecification[]): string => {
   ]).trim();
 };
 
-const getPlaceHolder = (expectedType: Type): string => {
+const getPlaceHolder = (expectedType: Type | V1_Type): string => {
   if (expectedType instanceof PrimitiveType) {
     switch (expectedType.path) {
       case PRIMITIVE_TYPE.DATE:
       case PRIMITIVE_TYPE.STRICTDATE:
         return 'yyyy-mm-dd';
       case PRIMITIVE_TYPE.DATETIME:
+        return 'yyyy-mm-ddThh:mm:ss';
+      default:
+        return 'Add';
+    }
+  } else if (expectedType instanceof V1_PackageableType) {
+    switch (expectedType.fullPath) {
+      case PRIMITIVE_TYPE.DATE:
+      case PRIMITIVE_TYPE.STRICTDATE:
+        return 'yyyy-mm-dd';
+      case PRIMITIVE_TYPE.DATETIME:
+      case PRIMITIVE_TYPE.STRICTTIME:
         return 'yyyy-mm-ddThh:mm:ss';
       default:
         return 'Add';
@@ -741,515 +753,518 @@ interface BasicValueSpecificationEditorSelectorConfig {
   cleanUpReloadValues?: () => void;
 }
 
-const PrimitiveCollectionInstanceValueEditor = observer(
-  (props: {
-    valueSpecification: CollectionInstanceValue;
-    expectedType: Type;
-    saveEdit: () => void;
-    selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
-    observerContext: ObserverContext;
-  }) => {
-    const {
-      valueSpecification,
-      expectedType,
-      saveEdit,
-      selectorConfig,
-      observerContext,
-    } = props;
+interface PrimitiveCollectionInstanceValueEditorProps<T>
+  extends PrimitiveInstanceValueEditorProps<T, T[]> {
+  stringValuesSelector: (valueSpecification: T) => string[];
+  convertTextToValueSpecification: (type: Type | V1_Type, text: string) => T;
+  convertValueSpecificationToText: (valueSpecification: T) => string;
+  expectedType: Type | V1_Type;
+  saveEdit: () => void;
+  selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
+}
 
-    // local state and variables
-    const applicationStore = useApplicationStore();
-    const inputRef = useRef(null);
-    const [inputValue, setInputValue] = useState('');
-    const [inputValueIsError, setInputValueIsError] = useState(false);
-    const [selectedOptions, setSelectedOptions] = useState<
-      { label: string; value: string }[]
-    >(
-      valueSpecification.values
-        .map((valueSpec) =>
-          getValueSpecificationStringValue(valueSpec, applicationStore),
-        )
-        .filter(isNonEmptyString)
-        .map((value) => ({
-          label: value,
-          value,
-        })),
+const PrimitiveCollectionInstanceValueEditorInner = <T,>(
+  props: PrimitiveCollectionInstanceValueEditorProps<T>,
+): React.ReactElement => {
+  const {
+    valueSpecification,
+    valueSelector,
+    stringValuesSelector,
+    convertTextToValueSpecification,
+    convertValueSpecificationToText,
+    updateValueSpecification,
+    errorChecker,
+    saveEdit,
+    resetValue,
+    handleBlur,
+    className,
+    selectorConfig,
+    expectedType,
+  } = props;
+
+  // local state and variables
+  const applicationStore = useApplicationStore();
+  const inputRef = useRef(null);
+  const [inputValue, setInputValue] = useState('');
+  const [inputValueIsError, setInputValueIsError] = useState(false);
+  const [selectedOptions, setSelectedOptions] = useState<
+    { label: string; value: string }[]
+  >(
+    stringValuesSelector(valueSpecification)
+      .filter(isNonEmptyString)
+      .map((value) => ({
+        label: value,
+        value,
+      })),
+  );
+
+  // typehead search setup
+  const isTypeaheadSearchEnabled =
+    expectedType === PrimitiveType.STRING && Boolean(selectorConfig);
+  const reloadValuesFunc = isTypeaheadSearchEnabled
+    ? selectorConfig?.reloadValues
+    : undefined;
+  const cleanUpReloadValuesFunc = isTypeaheadSearchEnabled
+    ? selectorConfig?.cleanUpReloadValues
+    : undefined;
+  const isLoading = isTypeaheadSearchEnabled
+    ? selectorConfig?.isLoading
+    : undefined;
+  const queryOptions =
+    isTypeaheadSearchEnabled && selectorConfig?.values?.length
+      ? selectorConfig.values.map((e) => ({
+          value: e,
+          label: e.toString(),
+        }))
+      : undefined;
+  const noMatchMessage =
+    isTypeaheadSearchEnabled && isLoading ? 'Loading...' : undefined;
+  const copyButtonName = `copy-${valueSpecification}`;
+  const inputName = `input-${valueSpecification}`;
+
+  // helper functions
+  const buildOptionForValueSpec = (
+    value: T,
+  ): { label: string; value: string } => {
+    const stringValue = guaranteeNonNullable(
+      convertValueSpecificationToText(value),
     );
+    return {
+      label: stringValue,
+      value: stringValue,
+    };
+  };
 
-    // typehead search setup
-    const isTypeaheadSearchEnabled =
-      expectedType === PrimitiveType.STRING && Boolean(selectorConfig);
-    const reloadValuesFunc = isTypeaheadSearchEnabled
-      ? selectorConfig?.reloadValues
-      : undefined;
-    const cleanUpReloadValuesFunc = isTypeaheadSearchEnabled
-      ? selectorConfig?.cleanUpReloadValues
-      : undefined;
-    const isLoading = isTypeaheadSearchEnabled
-      ? selectorConfig?.isLoading
-      : undefined;
-    const queryOptions =
-      isTypeaheadSearchEnabled && selectorConfig?.values?.length
-        ? selectorConfig.values.map((e) => ({
-            value: e,
-            label: e.toString(),
-          }))
-        : undefined;
-    const noMatchMessage =
-      isTypeaheadSearchEnabled && isLoading ? 'Loading...' : undefined;
-    const copyButtonName = `copy-${valueSpecification}`;
-    const inputName = `input-${valueSpecification}`;
+  const isValueAlreadySelected = (value: string): boolean =>
+    selectedOptions.map((option) => option.value).includes(value);
 
-    // helper functions
-    const buildOptionForValueSpec = (
-      value: ValueSpecification,
-    ): { label: string; value: string } => {
-      const stringValue = guaranteeNonNullable(
-        getValueSpecificationStringValue(value, applicationStore),
+  /**
+   * NOTE: We attempt to be less disruptive here by not throwing errors left and right, instead
+   * we simply return null for values which are not valid or parsable. But perhaps, we can consider
+   * passing in logger or notifier to give the users some idea of what went wrong instead of ignoring
+   * their input.
+   */
+  const convertInputValueToValueSpec = (): T | null => {
+    const trimmedInputValue = inputValue.trim();
+
+    if (trimmedInputValue.length) {
+      const newValueSpec = convertTextToValueSpecification(
+        expectedType,
+        trimmedInputValue,
       );
-      return {
-        label: stringValue,
-        value: stringValue,
-      };
-    };
 
-    const isValueAlreadySelected = (value: string): boolean =>
-      selectedOptions.map((option) => option.value).includes(value);
-
-    /**
-     * NOTE: We attempt to be less disruptive here by not throwing errors left and right, instead
-     * we simply return null for values which are not valid or parsable. But perhaps, we can consider
-     * passing in logger or notifier to give the users some idea of what went wrong instead of ignoring
-     * their input.
-     */
-    const convertInputValueToValueSpec = (): ValueSpecification | null => {
-      const trimmedInputValue = inputValue.trim();
-
-      if (trimmedInputValue.length) {
-        const newValueSpec = convertTextToPrimitiveInstanceValue(
-          expectedType,
-          trimmedInputValue,
-          observerContext,
-        );
-
-        if (
-          newValueSpec === null ||
-          getValueSpecificationStringValue(newValueSpec, applicationStore) ===
-            undefined ||
-          isValueAlreadySelected(
-            guaranteeNonNullable(
-              getValueSpecificationStringValue(newValueSpec, applicationStore),
-            ),
-          )
-        ) {
-          return null;
-        }
-
-        return newValueSpec;
-      }
-      return null;
-    };
-
-    const addInputValueToSelectedOptions = (): void => {
-      const newValueSpec = convertInputValueToValueSpec();
-
-      if (newValueSpec !== null) {
-        setSelectedOptions([
-          ...selectedOptions,
-          buildOptionForValueSpec(newValueSpec),
-        ]);
-        setInputValue('');
-        reloadValuesFunc?.cancel();
-      } else if (inputValue.trim().length) {
-        setInputValueIsError(true);
-      }
-    };
-
-    // event handlers
-    const changeValue = (
-      newSelectedOptions: { value: string; label: string }[],
-      actionChange: SelectActionData<{ value: string; label: string }>,
-    ): void => {
-      setSelectedOptions(newSelectedOptions);
-      if (actionChange.action === 'select-option') {
-        setInputValue('');
-      } else if (
-        actionChange.action === 'remove-value' &&
-        actionChange.removedValue.value === inputValue
+      if (
+        newValueSpec === null ||
+        convertValueSpecificationToText(newValueSpec) === undefined ||
+        isValueAlreadySelected(
+          guaranteeNonNullable(convertValueSpecificationToText(newValueSpec)),
+        )
       ) {
-        setInputValueIsError(false);
+        return null;
       }
-    };
 
-    const handleInputChange = (
-      newInputValue: string,
-      actionChange: InputActionData,
-    ): void => {
-      if (actionChange.action === 'input-change') {
-        setInputValue(newInputValue);
-        setInputValueIsError(false);
-        reloadValuesFunc?.cancel();
-        const reloadValuesFuncTransformation =
-          reloadValuesFunc?.(newInputValue);
-        if (reloadValuesFuncTransformation) {
-          flowResult(reloadValuesFuncTransformation).catch(
-            applicationStore.alertUnhandledError,
-          );
-        }
-      }
-      if (actionChange.action === 'input-blur') {
-        reloadValuesFunc?.cancel();
-        cleanUpReloadValuesFunc?.();
-      }
-    };
+      return newValueSpec;
+    }
+    return null;
+  };
 
-    const copyValueToClipboard = async () =>
-      navigator.clipboard.writeText(
-        selectedOptions.map((option) => option.value).join(','),
-      );
+  const addInputValueToSelectedOptions = (): void => {
+    const newValueSpec = convertInputValueToValueSpec();
 
-    const updateValueSpecAndSaveEdit = (): void => {
-      const newValueSpec = convertInputValueToValueSpec();
-      const finalSelectedOptions =
-        newValueSpec !== null
-          ? [...selectedOptions, buildOptionForValueSpec(newValueSpec)]
-          : selectedOptions;
-      instanceValue_setValues(
-        valueSpecification,
-        finalSelectedOptions
-          .map((option) => option.value)
-          .map((value) =>
-            convertTextToPrimitiveInstanceValue(
-              expectedType,
-              value,
-              observerContext,
-            ),
-          )
-          .filter(isNonNullable),
-        observerContext,
-      );
-      saveEdit();
-    };
-
-    const handleKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (
-      event,
-    ) => {
-      if ((event.key === 'Enter' || event.key === ',') && !event.shiftKey) {
-        addInputValueToSelectedOptions();
-        event.preventDefault();
-      }
-    };
-
-    const handlePaste: React.ClipboardEventHandler<HTMLInputElement> = (
-      event,
-    ) => {
-      const pastedText = event.clipboardData.getData('text');
-      const parsedData = parseCSVString(pastedText);
-      if (!parsedData) {
-        return;
-      }
-      const newValues = uniq(
-        uniq(parsedData)
-          .map((value) => {
-            const newValueSpec = convertTextToPrimitiveInstanceValue(
-              expectedType,
-              value,
-              observerContext,
-            );
-            return newValueSpec
-              ? getValueSpecificationStringValue(newValueSpec, applicationStore)
-              : null;
-          })
-          .filter(isNonNullable),
-      ).filter((value) => !isValueAlreadySelected(value));
+    if (newValueSpec !== null) {
       setSelectedOptions([
         ...selectedOptions,
-        ...newValues.map((value) => ({ label: value, value })),
+        buildOptionForValueSpec(newValueSpec),
       ]);
-      event.preventDefault();
-    };
+      setInputValue('');
+      reloadValuesFunc?.cancel();
+    } else if (inputValue.trim().length) {
+      setInputValueIsError(true);
+    }
+  };
 
-    const onBlur = (
-      event: React.FocusEvent<HTMLInputElement, HTMLButtonElement>,
-    ): void => {
-      if (
-        event.relatedTarget?.name !== copyButtonName &&
-        event.relatedTarget?.name !== inputName
-      ) {
-        updateValueSpecAndSaveEdit();
+  // event handlers
+  const changeValue = (
+    newSelectedOptions: { value: string; label: string }[],
+    actionChange: SelectActionData<{ value: string; label: string }>,
+  ): void => {
+    setSelectedOptions(newSelectedOptions);
+    if (actionChange.action === 'select-option') {
+      setInputValue('');
+    } else if (
+      actionChange.action === 'remove-value' &&
+      actionChange.removedValue.value === inputValue
+    ) {
+      setInputValueIsError(false);
+    }
+  };
+
+  const handleInputChange = (
+    newInputValue: string,
+    actionChange: InputActionData,
+  ): void => {
+    if (actionChange.action === 'input-change') {
+      setInputValue(newInputValue);
+      setInputValueIsError(false);
+      reloadValuesFunc?.cancel();
+      const reloadValuesFuncTransformation = reloadValuesFunc?.(newInputValue);
+      if (reloadValuesFuncTransformation) {
+        flowResult(reloadValuesFuncTransformation).catch(
+          applicationStore.alertUnhandledError,
+        );
       }
-    };
+    }
+    if (actionChange.action === 'input-blur') {
+      reloadValuesFunc?.cancel();
+      cleanUpReloadValuesFunc?.();
+    }
+  };
 
-    return (
-      <div className="value-spec-editor" onBlur={onBlur}>
-        <CustomSelectorInput
-          className={clsx('value-spec-editor__primitive-collection-selector', {
-            'value-spec-editor__primitive-collection-selector--error':
-              inputValueIsError,
-          })}
-          options={queryOptions}
-          inputValue={inputValue}
-          isMulti={true}
-          menuIsOpen={
-            isTypeaheadSearchEnabled &&
-            inputValue.length >= DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH
-          }
-          autoFocus={true}
-          inputRef={inputRef}
-          onChange={changeValue}
-          onInputChange={handleInputChange}
-          onKeyDown={handleKeyDown}
-          onPaste={handlePaste}
-          value={selectedOptions}
-          darkMode={
-            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
-          }
-          isLoading={isLoading}
-          noMatchMessage={noMatchMessage}
-          placeholder={getPlaceHolder(expectedType)}
-          components={{
-            DropdownIndicator: null,
-          }}
-          inputName={inputName}
-        />
-        <button
-          className="value-spec-editor__list-editor__copy-button"
-          // eslint-disable-next-line no-void
-          onClick={() => void copyValueToClipboard()}
-          name={copyButtonName}
-          title="Copy values to clipboard"
-        >
-          <CopyIcon />
-        </button>
-        <button
-          className="value-spec-editor__list-editor__save-button btn--dark"
-          name="Save"
-          title="Save"
-          onClick={updateValueSpecAndSaveEdit}
-        >
-          <SaveIcon />
-        </button>
-      </div>
+  const copyValueToClipboard = async () =>
+    navigator.clipboard.writeText(
+      selectedOptions.map((option) => option.value).join(','),
     );
-  },
+
+  const updateValueSpecAndSaveEdit = (): void => {
+    const newValueSpec = convertInputValueToValueSpec();
+    const finalSelectedOptions =
+      newValueSpec !== null
+        ? [...selectedOptions, buildOptionForValueSpec(newValueSpec)]
+        : selectedOptions;
+    const finalFormattedSelectedOptions = finalSelectedOptions
+      .map((option) => option.value)
+      .map((value) => convertTextToValueSpecification(expectedType, value))
+      .filter(isNonNullable);
+    updateValueSpecification(valueSpecification, finalFormattedSelectedOptions);
+    saveEdit();
+  };
+
+  const handleKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (event) => {
+    if ((event.key === 'Enter' || event.key === ',') && !event.shiftKey) {
+      addInputValueToSelectedOptions();
+      event.preventDefault();
+    }
+  };
+
+  const handlePaste: React.ClipboardEventHandler<HTMLInputElement> = (
+    event,
+  ) => {
+    const pastedText = event.clipboardData.getData('text');
+    const parsedData = parseCSVString(pastedText);
+    if (!parsedData) {
+      return;
+    }
+    const newValues = uniq(
+      uniq(parsedData)
+        .map((value) => {
+          const newValueSpec = convertTextToValueSpecification(
+            expectedType,
+            value,
+          );
+          return newValueSpec
+            ? convertValueSpecificationToText(newValueSpec)
+            : null;
+        })
+        .filter(isNonNullable),
+    ).filter((value) => !isValueAlreadySelected(value));
+    setSelectedOptions([
+      ...selectedOptions,
+      ...newValues.map((value) => ({ label: value, value })),
+    ]);
+    event.preventDefault();
+  };
+
+  const onBlur = (
+    event: React.FocusEvent<HTMLInputElement, HTMLButtonElement>,
+  ): void => {
+    if (
+      event.relatedTarget?.name !== copyButtonName &&
+      event.relatedTarget?.name !== inputName
+    ) {
+      updateValueSpecAndSaveEdit();
+    }
+  };
+
+  return (
+    <div className="value-spec-editor" onBlur={onBlur}>
+      <CustomSelectorInput
+        className={clsx('value-spec-editor__primitive-collection-selector', {
+          'value-spec-editor__primitive-collection-selector--error':
+            inputValueIsError,
+        })}
+        options={queryOptions}
+        inputValue={inputValue}
+        isMulti={true}
+        menuIsOpen={
+          isTypeaheadSearchEnabled &&
+          inputValue.length >= DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH
+        }
+        autoFocus={true}
+        inputRef={inputRef}
+        onChange={changeValue}
+        onInputChange={handleInputChange}
+        onKeyDown={handleKeyDown}
+        onPaste={handlePaste}
+        value={selectedOptions}
+        darkMode={
+          !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+        }
+        isLoading={isLoading}
+        noMatchMessage={noMatchMessage}
+        placeholder={getPlaceHolder(expectedType)}
+        components={{
+          DropdownIndicator: null,
+        }}
+        inputName={inputName}
+      />
+      <button
+        className="value-spec-editor__list-editor__copy-button"
+        // eslint-disable-next-line no-void
+        onClick={() => void copyValueToClipboard()}
+        name={copyButtonName}
+        title="Copy values to clipboard"
+      >
+        <CopyIcon />
+      </button>
+      <button
+        className="value-spec-editor__list-editor__save-button btn--dark"
+        name="Save"
+        title="Save"
+        onClick={updateValueSpecAndSaveEdit}
+      >
+        <SaveIcon />
+      </button>
+    </div>
+  );
+};
+
+export const PrimitiveCollectionInstanceValueEditor = observer(
+  PrimitiveCollectionInstanceValueEditorInner as <T>(
+    props: PrimitiveCollectionInstanceValueEditorProps<T>,
+  ) => ReturnType<typeof PrimitiveCollectionInstanceValueEditorInner>,
 );
 
-const EnumCollectionInstanceValueEditor = observer(
-  (props: {
-    valueSpecification: CollectionInstanceValue;
-    observerContext: ObserverContext;
-    saveEdit: () => void;
-  }) => {
-    const { valueSpecification, observerContext, saveEdit } = props;
+interface EnumCollectionInstanceValueEditorProps<T>
+  extends PrimitiveInstanceValueEditorProps<T, T[]> {
+  options: { label: string; value: string }[];
+  stringValuesSelector: (valueSpecification: T) => string[];
+  convertTextToValueSpecification: (text: string) => T;
+  // convertValueSpecificationToText: (valueSpecification: T) => string;
+  saveEdit: () => void;
+}
 
-    // local state and variables
-    const applicationStore = useApplicationStore();
-    const enumType = guaranteeType(
-      valueSpecification.genericType?.value.rawType,
-      Enumeration,
-    );
-    const [inputValue, setInputValue] = useState('');
-    const [inputValueIsError, setInputValueIsError] = useState(false);
-    const [selectedOptions, setSelectedOptions] = useState<
-      { label: string; value: Enum }[]
-    >(
-      (valueSpecification.values as EnumValueInstanceValue[])
-        .filter((valueSpec) => valueSpec.values[0]?.value !== undefined)
-        .map((valueSpec) => ({
-          label: at(valueSpec.values, 0).value.name,
-          value: at(valueSpec.values, 0).value,
-        })),
-    );
+const EnumCollectionInstanceValueEditorInner = <T,>(
+  props: EnumCollectionInstanceValueEditorProps<T>,
+): React.ReactElement => {
+  const {
+    valueSpecification,
+    stringValuesSelector,
+    options,
+    valueSelector,
+    stringValuesSelector,
+    convertTextToValueSpecification,
+    convertValueSpecificationToText,
+    updateValueSpecification,
+    errorChecker,
+    saveEdit,
+    resetValue,
+    handleBlur,
+    className,
+    selectorConfig,
+    expectedType,
+  } = props;
 
-    const availableOptions = enumType.values
-      .filter(
-        (value) =>
-          !selectedOptions.some(
-            (selectedValue) => selectedValue.value.name === value.name,
-          ),
-      )
+  // local state and variables
+  const applicationStore = useApplicationStore();
+  const [inputValue, setInputValue] = useState('');
+  const [inputValueIsError, setInputValueIsError] = useState(false);
+  const [selectedOptions, setSelectedOptions] = useState<
+    { label: string; value: string }[]
+  >(
+    stringValuesSelector(valueSpecification)
+      .filter(isNonEmptyString)
       .map((value) => ({
-        label: value.name,
-        value: value,
-      }));
+        label: value,
+        value,
+      })),
+  );
 
-    const copyButtonName = `copy-${valueSpecification}`;
-    const inputName = `input-${valueSpecification}`;
+  const availableOptions = options.filter(
+    (value) =>
+      !selectedOptions.some(
+        (selectedValue) => selectedValue.value === value.value,
+      ),
+  );
 
-    // helper functions
-    const isValueAlreadySelected = (value: Enum): boolean =>
-      selectedOptions.map((option) => option.value).includes(value);
+  const copyButtonName = `copy-${valueSpecification}`;
+  const inputName = `input-${valueSpecification}`;
 
-    /**
-     * NOTE: We attempt to be less disruptive here by not throwing errors left and right, instead
-     * we simply return null for values which are not valid or parsable. But perhaps, we can consider
-     * passing in logger or notifier to give the users some idea of what went wrong instead of ignoring
-     * their input.
-     */
-    const convertInputValueToEnum = (): Enum | null => {
-      const trimmedInputValue = inputValue.trim();
+  // helper functions
+  const isValueAlreadySelected = (value: string): boolean =>
+    selectedOptions.map((option) => option.value).includes(value);
 
-      if (trimmedInputValue.length) {
-        const newEnum = convertTextToEnum(trimmedInputValue, enumType);
+  /**
+   * NOTE: We attempt to be less disruptive here by not throwing errors left and right, instead
+   * we simply return null for values which are not valid or parsable. But perhaps, we can consider
+   * passing in logger or notifier to give the users some idea of what went wrong instead of ignoring
+   * their input.
+   */
+  const convertInputValueToEnum = (): string | null => {
+    const trimmedInputValue = inputValue.trim();
 
-        if (newEnum === undefined || isValueAlreadySelected(newEnum)) {
-          return null;
-        }
-
-        return newEnum;
-      }
+    if (
+      !trimmedInputValue.length ||
+      isValueAlreadySelected(trimmedInputValue)
+    ) {
       return null;
-    };
+    }
 
-    const addInputValueToSelectedOptions = (): void => {
-      const newEnum = convertInputValueToEnum();
+    return trimmedInputValue;
+  };
 
-      if (newEnum !== null) {
-        setSelectedOptions([
-          ...selectedOptions,
-          {
-            label: newEnum.name,
-            value: newEnum,
-          },
-        ]);
-        setInputValue('');
-      } else if (inputValue.trim().length) {
-        setInputValueIsError(true);
-      }
-    };
+  const addInputValueToSelectedOptions = (): void => {
+    const newEnum = convertInputValueToEnum();
 
-    // event handlers
-    const changeValue = (
-      newSelectedOptions: { value: Enum; label: string }[],
-      actionChange: SelectActionData<{ value: Enum; label: string }>,
-    ): void => {
-      setSelectedOptions(newSelectedOptions);
-      if (actionChange.action === 'select-option') {
-        setInputValue('');
-      } else if (
-        actionChange.action === 'remove-value' &&
-        actionChange.removedValue.value.name === inputValue
-      ) {
-        setInputValueIsError(false);
-      }
-    };
-
-    const handleInputChange = (
-      newInputValue: string,
-      actionChange: InputActionData,
-    ): void => {
-      if (actionChange.action === 'input-change') {
-        setInputValue(newInputValue);
-        setInputValueIsError(false);
-      }
-    };
-
-    const handleKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (
-      event,
-    ) => {
-      if ((event.key === 'Enter' || event.key === ',') && !event.shiftKey) {
-        addInputValueToSelectedOptions();
-        event.preventDefault();
-      }
-    };
-
-    const handlePaste: React.ClipboardEventHandler<HTMLInputElement> = (
-      event,
-    ) => {
-      const pastedText = event.clipboardData.getData('text');
-      const parsedData = parseCSVString(pastedText);
-      if (!parsedData) {
-        return;
-      }
-      const newValues = uniq(
-        uniq(parsedData)
-          .map((value) => convertTextToEnum(value, enumType))
-          .filter(isNonNullable),
-      ).filter((value) => !isValueAlreadySelected(value));
+    if (newEnum !== null) {
       setSelectedOptions([
         ...selectedOptions,
-        ...newValues.map((value) => ({ label: value.name, value })),
+        {
+          label: newEnum,
+          value: newEnum,
+        },
       ]);
+      setInputValue('');
+    } else if (inputValue.trim().length) {
+      setInputValueIsError(true);
+    }
+  };
+
+  // event handlers
+  const changeValue = (
+    newSelectedOptions: { value: string; label: string }[],
+    actionChange: SelectActionData<{ value: string; label: string }>,
+  ): void => {
+    setSelectedOptions(newSelectedOptions);
+    if (actionChange.action === 'select-option') {
+      setInputValue('');
+    } else if (
+      actionChange.action === 'remove-value' &&
+      actionChange.removedValue.value === inputValue
+    ) {
+      setInputValueIsError(false);
+    }
+  };
+
+  const handleInputChange = (
+    newInputValue: string,
+    actionChange: InputActionData,
+  ): void => {
+    if (actionChange.action === 'input-change') {
+      setInputValue(newInputValue);
+      setInputValueIsError(false);
+    }
+  };
+
+  const handleKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (event) => {
+    if ((event.key === 'Enter' || event.key === ',') && !event.shiftKey) {
+      addInputValueToSelectedOptions();
       event.preventDefault();
-    };
+    }
+  };
 
-    const copyValueToClipboard = async () =>
-      navigator.clipboard.writeText(
-        selectedOptions.map((option) => option.value.name).join(','),
-      );
+  const handlePaste: React.ClipboardEventHandler<HTMLInputElement> = (
+    event,
+  ) => {
+    const pastedText = event.clipboardData.getData('text');
+    const parsedData = parseCSVString(pastedText);
+    if (!parsedData) {
+      return;
+    }
+    const newValues = uniq(
+      uniq(parsedData).filter((value) =>
+        options.some((option) => option.value === value),
+      ),
+    ).filter((value) => !isValueAlreadySelected(value));
+    setSelectedOptions([
+      ...selectedOptions,
+      ...newValues.map((value) => ({ label: value, value })),
+    ]);
+    event.preventDefault();
+  };
 
-    const updateValueSpecAndSaveEdit = (): void => {
-      const result = selectedOptions
-        .map((value) => {
-          const enumValueInstanceValue = new EnumValueInstanceValue(
-            GenericTypeExplicitReference.create(new GenericType(enumType)),
-          );
-          instanceValue_setValues(
-            enumValueInstanceValue,
-            [EnumValueExplicitReference.create(value.value)],
-            observerContext,
-          );
-          return enumValueInstanceValue;
-        })
-        .filter(isNonNullable);
-      instanceValue_setValues(valueSpecification, result, observerContext);
-      saveEdit();
-    };
-
-    const onBlur = (
-      event: React.FocusEvent<HTMLInputElement, HTMLButtonElement>,
-    ): void => {
-      if (
-        event.relatedTarget?.name !== copyButtonName &&
-        event.relatedTarget?.name !== inputName
-      ) {
-        updateValueSpecAndSaveEdit();
-      }
-    };
-
-    return (
-      <div className="value-spec-editor" onBlur={onBlur}>
-        <CustomSelectorInput
-          className={clsx('value-spec-editor__enum-collection-selector', {
-            'value-spec-editor__enum-collection-selector--error':
-              inputValueIsError,
-          })}
-          options={availableOptions}
-          inputValue={inputValue}
-          isMulti={true}
-          autoFocus={true}
-          onChange={changeValue}
-          onInputChange={handleInputChange}
-          onKeyDown={handleKeyDown}
-          onPaste={handlePaste}
-          value={selectedOptions}
-          darkMode={
-            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
-          }
-          placeholder="Add"
-          menuIsOpen={true}
-          inputName={inputName}
-        />
-        <button
-          className="value-spec-editor__list-editor__copy-button"
-          // eslint-disable-next-line no-void
-          onClick={() => void copyValueToClipboard()}
-          name={copyButtonName}
-          title="Copy values to clipboard"
-        >
-          <CopyIcon />
-        </button>
-        <button
-          className="value-spec-editor__list-editor__save-button btn--dark"
-          name="Save"
-          title="Save"
-          onClick={updateValueSpecAndSaveEdit}
-        >
-          <SaveIcon />
-        </button>
-      </div>
+  const copyValueToClipboard = async () =>
+    navigator.clipboard.writeText(
+      selectedOptions.map((option) => option.value).join(','),
     );
-  },
+
+  const updateValueSpecAndSaveEdit = (): void => {
+    const result = selectedOptions
+      .map((option) => option.value)
+      .map(convertTextToValueSpecification)
+      .filter(isNonNullable);
+    updateValueSpecification(valueSpecification, result);
+    saveEdit();
+  };
+
+  const onBlur = (
+    event: React.FocusEvent<HTMLInputElement, HTMLButtonElement>,
+  ): void => {
+    if (
+      event.relatedTarget?.name !== copyButtonName &&
+      event.relatedTarget?.name !== inputName
+    ) {
+      updateValueSpecAndSaveEdit();
+    }
+  };
+
+  return (
+    <div className="value-spec-editor" onBlur={onBlur}>
+      <CustomSelectorInput
+        className={clsx('value-spec-editor__enum-collection-selector', {
+          'value-spec-editor__enum-collection-selector--error':
+            inputValueIsError,
+        })}
+        options={availableOptions}
+        inputValue={inputValue}
+        isMulti={true}
+        autoFocus={true}
+        onChange={changeValue}
+        onInputChange={handleInputChange}
+        onKeyDown={handleKeyDown}
+        onPaste={handlePaste}
+        value={selectedOptions}
+        darkMode={
+          !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+        }
+        placeholder="Add"
+        menuIsOpen={true}
+        inputName={inputName}
+      />
+      <button
+        className="value-spec-editor__list-editor__copy-button"
+        // eslint-disable-next-line no-void
+        onClick={() => void copyValueToClipboard()}
+        name={copyButtonName}
+        title="Copy values to clipboard"
+      >
+        <CopyIcon />
+      </button>
+      <button
+        className="value-spec-editor__list-editor__save-button btn--dark"
+        name="Save"
+        title="Save"
+        onClick={updateValueSpecAndSaveEdit}
+      >
+        <SaveIcon />
+      </button>
+    </div>
+  );
+};
+
+export const EnumCollectionInstanceValueEditor = observer(
+  EnumCollectionInstanceValueEditorInner as <T>(
+    props: EnumCollectionInstanceValueEditorProps<T>,
+  ) => ReturnType<typeof EnumCollectionInstanceValueEditorInner>,
 );
 
 const COLLECTION_PREVIEW_CHAR_LIMIT = 50;
