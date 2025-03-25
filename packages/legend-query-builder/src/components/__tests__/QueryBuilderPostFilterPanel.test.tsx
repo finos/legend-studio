@@ -93,7 +93,7 @@ import {
 } from '@finos/legend-graph/test';
 import { INTERNAL__BasicQueryBuilderState } from '../../stores/QueryBuilderState.js';
 import { QueryBuilderAdvancedWorkflowState } from '../../stores/query-workflow/QueryBuilderWorkFlowState.js';
-import { CUSTOM_DATE_PICKER_OPTION } from '../shared/CustomDatePicker.js';
+import { CUSTOM_DATE_PICKER_OPTION } from '../shared/CustomDatePickerHelper.js';
 import type { Entity } from '@finos/legend-storage';
 
 test(

@@ -100,7 +100,7 @@ import {
   TEST_DATA__nestedFilterWithSubType,
   TEST_DATA__simpleFilterWithSubType,
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Roundtrip_TestFilterQueries.js';
-import { CUSTOM_DATE_PICKER_OPTION } from '../shared/CustomDatePicker.js';
+import { CUSTOM_DATE_PICKER_OPTION } from '../shared/CustomDatePickerHelper.js';
 import {
   FilterValueSpecConditionValueState,
   QueryBuilderFilterTreeConditionNodeData,
