@@ -16,8 +16,6 @@
 
 import { observer } from 'mobx-react-lite';
 import {
-  BasicValueSpecificationEditor,
-  buildV1PrimitiveValueSpecification,
   QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT,
   SORT_BY_OPTIONS,
   V1_BasicValueSpecificationEditor,
@@ -47,7 +45,12 @@ import {
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { useLegendDataCubeBuilderStore } from '../LegendDataCubeBuilderStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
-import { V1_ValueSpecification } from '@finos/legend-graph';
+import {
+  observe_V1ValueSpecification,
+  PRIMITIVE_TYPE,
+  V1_PackageableType,
+  V1_ValueSpecification,
+} from '@finos/legend-graph';
 
 const LegendQuerySearcher = observer((props: { state: QueryLoaderState }) => {
   const { state } = props;
@@ -329,7 +332,12 @@ export const LegendQueryDataCubeSourceBuilder = observer(
           <div className="mt-2 h-40 w-full">
             {sourceBuilder.queryParameterValues &&
               Object.entries(sourceBuilder.queryParameterValues).map(
-                ([name, value]) => {
+                ([name, { variable, value }]) => {
+                  const packageableType = guaranteeType(
+                    variable.genericType?.rawType,
+                    V1_PackageableType,
+                    'Can only edit parameters with packageable type',
+                  );
                   const enumeration = sourceBuilder.queryEnumerations?.[name];
                   return (
                     <div key={name} className="flex w-full">
@@ -337,12 +345,22 @@ export const LegendQueryDataCubeSourceBuilder = observer(
                       {': '}
                       <V1_BasicValueSpecificationEditor
                         valueSpecification={value}
+                        type={packageableType}
+                        multiplicity={variable.multiplicity}
                         typeCheckOption={{
-                          expectedType: 'String',
+                          expectedType: packageableType.fullPath,
+                          match:
+                            packageableType.fullPath ===
+                              PRIMITIVE_TYPE.DATETIME ||
+                            packageableType.fullPath ===
+                              PRIMITIVE_TYPE.STRICTTIME,
                         }}
-                        setValueSpecification={(
-                          val: V1_ValueSpecification,
-                        ) => {}}
+                        setValueSpecification={(val: V1_ValueSpecification) => {
+                          sourceBuilder.setQueryParameterValue(
+                            name,
+                            observe_V1ValueSpecification(val),
+                          );
+                        }}
                         resetValue={() => {
                           console.log('called reset value');
                         }}
