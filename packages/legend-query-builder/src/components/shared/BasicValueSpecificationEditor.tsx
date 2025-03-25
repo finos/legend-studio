@@ -257,7 +257,7 @@ const VariableExpressionParameterEditor = observer(
  */
 export interface PrimitiveInstanceValueEditorProps<
   T,
-  U extends string | number | boolean | Enum | null,
+  U extends T[] | string | number | boolean | Enum | null,
 > {
   valueSpecification: T;
   valueSelector: (val: T) => U;
