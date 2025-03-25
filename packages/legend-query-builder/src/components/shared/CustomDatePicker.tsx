@@ -29,7 +29,10 @@ import {
 } from '@finos/legend-shared';
 import { useEffect, useRef, useState } from 'react';
 import { useApplicationStore } from '@finos/legend-application';
-import type { PrimitiveInstanceValueEditorProps } from './BasicValueSpecificationEditor.js';
+import type {
+  PrimitiveInstanceValueEditorProps,
+  TypeCheckOption,
+} from './BasicValueSpecificationEditor.js';
 import {
   buildCustomDateOption,
   buildDatePickerOption,
@@ -47,6 +50,7 @@ import {
   type CustomDatePickerUpdateValueSpecification,
   type CustomDatePickerValueSpecification,
 } from './CustomDatePickerHelper.js';
+import type { V1_TypeCheckOption } from './V1_BasicValueSpecificationEditor.js';
 
 interface AbsoluteDateValueSpecificationEditorProps<
   T extends CustomDatePickerValueSpecification | undefined,
@@ -484,21 +488,7 @@ interface CustomDatePickerProps<
   > {
   updateValueSpecification: CustomDatePickerUpdateValueSpecification<T>;
   hasError?: boolean;
-  typeCheckOption: {
-    expectedType: Type;
-    /**
-     * Indicates if a strict type-matching will happen.
-     * Sometimes, auto-boxing allow some rooms to wiggle,
-     * for example we can assign a Float to an Integer, a
-     * Date to a DateTime. With this flag set to `true`
-     * we will not allow this.
-     *
-     * For example, if `match=true`, it means that options in the
-     * date-capability-dropdown which are not returning type DateTime
-     * will be filtered out.
-     */
-    match?: boolean;
-  };
+  typeCheckOption: TypeCheckOption | V1_TypeCheckOption;
   displayAsEditableValue?: boolean | undefined;
   handleBlur?: (() => void) | undefined;
 }

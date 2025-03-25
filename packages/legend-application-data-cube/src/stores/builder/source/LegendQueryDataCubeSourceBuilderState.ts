@@ -42,11 +42,16 @@ import {
   V1_Enumeration,
 } from '@finos/legend-graph';
 import {
-  buildV1PrimitiveValueSpecification,
   QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT,
   QueryLoaderState,
 } from '@finos/legend-query-builder';
-import { action, makeObservable, observable, runInAction } from 'mobx';
+import {
+  action,
+  computed,
+  makeObservable,
+  observable,
+  runInAction,
+} from 'mobx';
 import {
   LegendDataCubeSourceBuilderState,
   LegendDataCubeSourceBuilderType,
@@ -57,10 +62,18 @@ import type { LegendDataCubeDataCubeEngine } from '../../LegendDataCubeDataCubeE
 import type { LegendDataCubeApplicationStore } from '../../LegendDataCubeBaseStore.js';
 import {
   _defaultPrimitiveTypeValue,
+  _primitiveValue,
   type DataCubeAlertService,
   type DataCubeConfiguration,
 } from '@finos/legend-data-cube';
 import type { DepotServerClient } from '@finos/legend-server-depot';
+
+type QueryParameterValues = {
+  [varName: string]: {
+    variable: V1_Variable;
+    value: V1_ValueSpecification;
+  };
+};
 
 export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceBuilderState {
   private readonly _engineServerClient: V1_EngineServerClient;
@@ -71,13 +84,8 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
 
   query?: LightQuery | undefined;
   queryCode?: string | undefined;
-  queryParameters?: V1_Variable[] | undefined;
-  queryParameterValues?:
-    | {
-        [paramName: string]: V1_ValueSpecification;
-      }
-    | undefined;
-  queryEnumerations?: { [paramName: string]: V1_Enumeration };
+  queryParameterValues?: QueryParameterValues | undefined;
+  queryEnumerations?: { [varName: string]: V1_Enumeration };
 
   constructor(
     application: LegendDataCubeApplicationStore,
@@ -94,7 +102,7 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
       unsetQuery: action,
 
       queryCode: observable,
-      queryParameters: observable,
+      queryParameters: computed,
       queryParameterValues: observable,
       queryEnumerations: observable,
 
@@ -146,12 +154,11 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
         processedQuery.id,
       );
 
-      const queryParameterValues: {
-        [paramName: string]: V1_ValueSpecification;
-      } = {};
+      const queryParameterValues: QueryParameterValues = {};
       for (const param of queryParameters) {
-        const type = guaranteeType(
-          param?.genericType?.rawType,
+        const genericType = guaranteeNonNullable(param.genericType);
+        const packageableType = guaranteeType(
+          genericType.rawType,
           V1_PackageableType,
         );
         const defaultValue = queryInfo.defaultParameterValues?.find(
@@ -160,21 +167,26 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
         const defaultValueSpec =
           defaultValue?.content !== undefined
             ? await this._engine.parseValueSpecification(defaultValue.content)
-            : buildV1PrimitiveValueSpecification(
-                V1_deserializeRawValueSpecificationType(type.fullPath),
-                _defaultPrimitiveTypeValue(type.fullPath),
+            : _primitiveValue(
+                V1_deserializeRawValueSpecificationType(
+                  packageableType.fullPath,
+                ),
+                _defaultPrimitiveTypeValue(packageableType.fullPath),
               );
-        queryParameterValues[param.name] =
-          observe_V1ValueSpecification(defaultValueSpec);
+        queryParameterValues[param.name] = {
+          variable: param,
+          value: observe_V1ValueSpecification(defaultValueSpec),
+        };
       }
-      const enumerationParameters = Object.entries(queryParameterValues).filter(
-        ([_, param]) => param instanceof V1_AppliedProperty,
-      ) as [string, V1_AppliedProperty][];
+      const enumerationParameters = Object.entries(queryParameterValues)
+        .map(([name, paramValue]) => [name, paramValue.value])
+        .filter(
+          ([_, valueSpec]) => valueSpec instanceof V1_AppliedProperty,
+        ) as [string, V1_AppliedProperty][];
       this.populateEnumerations(enumerationParameters, lightQuery);
       runInAction(() => {
         this.query = lightQuery;
         this.queryCode = queryCode;
-        this.queryParameters = queryParameters;
         this.queryParameterValues = queryParameterValues;
       });
     } catch (error) {
@@ -196,9 +208,15 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
   }
 
   setQueryParameterValue(name: string, value: V1_ValueSpecification) {
-    if (this.queryParameterValues) {
-      this.queryParameterValues[name] = value;
+    if (this.queryParameterValues?.[name]) {
+      this.queryParameterValues[name].value = value;
     }
+  }
+
+  get queryParameters(): V1_Variable[] | undefined {
+    return this.queryParameterValues
+      ? Object.values(this.queryParameterValues).map((elem) => elem.variable)
+      : undefined;
   }
 
   override get label() {
@@ -229,7 +247,7 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
           ),
           JSON.stringify(
             V1_serializeValueSpecification(
-              value,
+              value.value,
               this._application.pluginManager.getPureProtocolProcessorPlugins(),
             ),
           ),

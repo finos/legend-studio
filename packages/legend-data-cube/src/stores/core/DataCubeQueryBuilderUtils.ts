@@ -52,6 +52,7 @@ import {
   V1_createGenericTypeWithRawType,
   V1_createRelationType,
   V1_createRelationTypeColumn,
+  V1_CLatestDate,
 } from '@finos/legend-graph';
 import {
   type DataCubeSnapshotFilterCondition,
@@ -94,10 +95,10 @@ export function _var() {
   return variable;
 }
 
-export function _property(name: string) {
+export function _property(name: string, parameters?: V1_ValueSpecification[]) {
   const property = new V1_AppliedProperty();
   property.property = name;
-  property.parameters.push(_var());
+  property.parameters = parameters ?? [_var()];
   return property;
 }
 
@@ -204,6 +205,8 @@ export function _primitiveValue(
       return _val(new V1_CDateTime(), guaranteeIsString(value));
     case PRIMITIVE_TYPE.STRICTTIME:
       return _val(new V1_CStrictTime(), guaranteeIsString(value));
+    case PRIMITIVE_TYPE.LATESTDATE:
+      return new V1_CLatestDate();
     default:
       throw new UnsupportedOperationError(
         `Can't build primitive value instance for unsupported type '${type}'`,

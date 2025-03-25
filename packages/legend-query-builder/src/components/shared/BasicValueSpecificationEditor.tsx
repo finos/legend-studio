@@ -114,8 +114,9 @@ import {
   CustomPreviousDayOfWeekOption,
   DatePickerOption,
 } from './CustomDatePickerHelper.js';
+import type { V1_TypeCheckOption } from './V1_BasicValueSpecificationEditor.js';
 
-type TypeCheckOption = {
+export type TypeCheckOption = {
   expectedType: Type;
   /**
    * Indicates if a strict type-matching will happen.
@@ -123,6 +124,10 @@ type TypeCheckOption = {
    * for example we can assign a Float to an Integer, a
    * Date to a DateTime. With this flag set to `true`
    * we will not allow this.
+   *
+   * For example, if `match=true`, it means that options in the
+   * date-capability-dropdown which are not returning type DateTime
+   * will be filtered out.
    */
   match?: boolean;
 };
@@ -1347,7 +1352,7 @@ interface DateInstanceValueEditorProps<
     'updateValueSpecification'
   > {
   updateValueSpecification: CustomDatePickerUpdateValueSpecification<T>;
-  typeCheckOption: TypeCheckOption;
+  typeCheckOption: TypeCheckOption | V1_TypeCheckOption;
   displayAsEditableValue?: boolean | undefined;
 }
 

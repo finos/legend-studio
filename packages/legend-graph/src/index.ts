@@ -192,6 +192,7 @@ export { V1_CByteArray } from './graph-manager/protocol/pure/v1/model/valueSpeci
 export { V1_CDecimal } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CDecimal.js';
 export { V1_CInteger } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CInteger.js';
 export { V1_CFloat } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CFloat.js';
+export { V1_CDate } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CDate.js';
 export { V1_CStrictDate } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CStrictDate.js';
 export { V1_CDateTime } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CDateTime.js';
 export { V1_CStrictTime } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CStrictTime.js';

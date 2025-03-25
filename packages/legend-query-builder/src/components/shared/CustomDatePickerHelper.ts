@@ -31,7 +31,9 @@ import {
   V1_AppliedProperty,
   V1_CDateTime,
   V1_CInteger,
+  V1_CLatestDate,
   V1_CStrictDate,
+  V1_CStrictTime,
   V1_CString,
 } from '@finos/legend-graph';
 import {
@@ -60,17 +62,19 @@ import {
   type LegendApplicationPluginManager,
 } from '@finos/legend-application';
 import type { V1_CDate } from '../../../../legend-graph/src/graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CDate.js';
-import { _elementPtr } from '@finos/legend-data-cube';
 import {
-  buildV1PrimitiveValueSpecification,
-  createV1SupportedFunctionExpression,
-} from '../../stores/shared/V1_ValueSpecificationEditorHelper.js';
+  _elementPtr,
+  _function,
+  _primitiveValue,
+  _property,
+} from '@finos/legend-data-cube';
 
 export type CustomDatePickerValueSpecification =
   | SimpleFunctionExpression
   | PrimitiveInstanceValue
   | V1_AppliedFunction
   | V1_CDate
+  | V1_CStrictTime
   | V1_CString;
 
 export type CustomDatePickerUpdateValueSpecification<T> = (
@@ -443,42 +447,43 @@ export const buildPureDateFunctionExpression = (
  */
 export const buildV1PureDateFunctionExpression = (
   datePickerOption: DatePickerOption,
-  observerContext: ObserverContext,
 ): V1_AppliedFunction => {
   if (datePickerOption instanceof CustomPreviousDayOfWeekOption) {
-    const previousDayAF = createV1SupportedFunctionExpression(
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.PREVIOUS_DAY_OF_WEEK,
-    );
-    const dayOfWeekProperty = new V1_AppliedProperty();
-    dayOfWeekProperty.parameters.push(
+    const dayOfWeekProperty = _property(datePickerOption.day, [
       _elementPtr(QUERY_BUILDER_PURE_PATH.DAY_OF_WEEK),
+    ]);
+    const previousDayAF = _function(
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.PREVIOUS_DAY_OF_WEEK,
+      [dayOfWeekProperty],
     );
-    dayOfWeekProperty.property = datePickerOption.day;
-    previousDayAF.parameters.push(dayOfWeekProperty);
     return previousDayAF;
   } else if (datePickerOption instanceof CustomFirstDayOfOption) {
     switch (datePickerOption.unit) {
       case CUSTOM_DATE_FIRST_DAY_OF_UNIT.YEAR: {
-        const firstDayOfThisYearAF = createV1SupportedFunctionExpression(
+        const firstDayOfThisYearAF = _function(
           QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_THIS_YEAR,
+          [],
         );
         return firstDayOfThisYearAF;
       }
       case CUSTOM_DATE_FIRST_DAY_OF_UNIT.QUARTER: {
-        const firstDayOfQuarterAF = createV1SupportedFunctionExpression(
+        const firstDayOfQuarterAF = _function(
           QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_QUARTER,
+          [],
         );
         return firstDayOfQuarterAF;
       }
       case CUSTOM_DATE_FIRST_DAY_OF_UNIT.MONTH: {
-        const firstDayOfMonthAF = createV1SupportedFunctionExpression(
+        const firstDayOfMonthAF = _function(
           QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_THIS_MONTH,
+          [],
         );
         return firstDayOfMonthAF;
       }
       case CUSTOM_DATE_FIRST_DAY_OF_UNIT.WEEK: {
-        const firstDayOfWeekAF = createV1SupportedFunctionExpression(
+        const firstDayOfWeekAF = _function(
           QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_WEEK,
+          [],
         );
         return firstDayOfWeekAF;
       }
@@ -490,38 +495,34 @@ export const buildV1PureDateFunctionExpression = (
   } else {
     switch (datePickerOption.value) {
       case CUSTOM_DATE_PICKER_OPTION.TODAY: {
-        return createV1SupportedFunctionExpression(
-          QUERY_BUILDER_SUPPORTED_FUNCTIONS.TODAY,
-        );
+        return _function(QUERY_BUILDER_SUPPORTED_FUNCTIONS.TODAY, []);
       }
       case CUSTOM_DATE_PICKER_OPTION.NOW: {
-        return createV1SupportedFunctionExpression(
-          QUERY_BUILDER_SUPPORTED_FUNCTIONS.NOW,
-        );
+        return _function(QUERY_BUILDER_SUPPORTED_FUNCTIONS.NOW, []);
       }
       case CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_THIS_YEAR: {
-        const firstDayOfYearAF = createV1SupportedFunctionExpression(
+        return _function(
           QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_THIS_YEAR,
+          [],
         );
-        return firstDayOfYearAF;
       }
       case CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_QUARTER: {
-        const firstDayOfQuarterAF = createV1SupportedFunctionExpression(
+        return _function(
           QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_QUARTER,
+          [],
         );
-        return firstDayOfQuarterAF;
       }
       case CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_MONTH: {
-        const firstDayOfMonthAF = createV1SupportedFunctionExpression(
+        return _function(
           QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_THIS_MONTH,
+          [],
         );
-        return firstDayOfMonthAF;
       }
       case CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_WEEK: {
-        const firstDayOfWeekAF = createV1SupportedFunctionExpression(
+        return _function(
           QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_WEEK,
+          [],
         );
-        return firstDayOfWeekAF;
       }
       default:
         throw new UnsupportedOperationError(
@@ -648,50 +649,32 @@ export const buildPureAdjustDateFunction = (
  */
 export const buildV1PureAdjustDateFunction = (
   customDateOption: CustomDateOption,
-  observerContext: ObserverContext,
 ): V1_AppliedFunction => {
-  const dateAdjustAF = createV1SupportedFunctionExpression(
-    QUERY_BUILDER_SUPPORTED_FUNCTIONS.ADJUST,
-  );
-  // Starting point
-  dateAdjustAF.parameters.push(
-    buildV1PureDateFunctionExpression(
-      new DatePickerOption(
-        guaranteeNonNullable(customDateOption.referenceMoment),
-        guaranteeNonNullable(customDateOption.referenceMoment),
-      ),
-      observerContext,
+  // Starting point function
+  const startingPointAF = buildV1PureDateFunctionExpression(
+    new DatePickerOption(
+      guaranteeNonNullable(customDateOption.referenceMoment),
+      guaranteeNonNullable(customDateOption.referenceMoment),
     ),
   );
   // Direction and duration
-  if (customDateOption.direction === CUSTOM_DATE_OPTION_DIRECTION.BEFORE) {
-    const minusAF = createV1SupportedFunctionExpression(
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.MINUS,
-    );
-    minusAF.parameters.push(
-      buildV1PrimitiveValueSpecification(
-        PRIMITIVE_TYPE.INTEGER,
-        customDateOption.duration,
-      ),
-    );
-    dateAdjustAF.parameters.push(minusAF);
-  } else {
-    dateAdjustAF.parameters.push(
-      buildV1PrimitiveValueSpecification(
-        PRIMITIVE_TYPE.INTEGER,
-        customDateOption.duration,
-      ),
-    );
-  }
-  const durationUnitProperty = new V1_AppliedProperty();
-  durationUnitProperty.parameters.push(
-    _elementPtr(QUERY_BUILDER_PURE_PATH.DURATION_UNIT),
+  const directionDuration =
+    customDateOption.direction === CUSTOM_DATE_OPTION_DIRECTION.BEFORE
+      ? _function(QUERY_BUILDER_SUPPORTED_FUNCTIONS.MINUS, [
+          _primitiveValue(PRIMITIVE_TYPE.INTEGER, customDateOption.duration),
+        ])
+      : _primitiveValue(PRIMITIVE_TYPE.INTEGER, customDateOption.duration);
+  // Unit property
+  const durationUnitProperty = _property(
+    guaranteeNonNullable(customDateOption.unit),
+    [_elementPtr(QUERY_BUILDER_PURE_PATH.DURATION_UNIT)],
   );
-  durationUnitProperty.property = guaranteeNonNullable(customDateOption.unit);
 
-  dateAdjustAF.parameters.push(durationUnitProperty);
-
-  return dateAdjustAF;
+  return _function(QUERY_BUILDER_SUPPORTED_FUNCTIONS.ADJUST, [
+    startingPointAF,
+    directionDuration,
+    durationUnitProperty,
+  ]);
 };
 
 /**
@@ -779,19 +762,12 @@ const buildCustomDateOptionUnitValue = (
     );
   } else {
     return guaranteeNonNullable(
-      Object.keys(CUSTOM_DATE_OPTION_UNIT)
-        .filter(
-          (key) =>
-            key ===
-            guaranteeType(valueSpecification.parameters[2], V1_AppliedProperty)
-              .property,
-        )
-        .map(
-          (key) =>
-            CUSTOM_DATE_OPTION_UNIT[
-              key as keyof typeof CUSTOM_DATE_OPTION_UNIT
-            ],
-        )[0],
+      Object.values(CUSTOM_DATE_OPTION_UNIT).filter(
+        (value) =>
+          value ===
+          guaranteeType(valueSpecification.parameters[2], V1_AppliedProperty)
+            .property,
+      )[0],
     );
   }
 };
@@ -970,8 +946,7 @@ export const buildDatePickerOption = (
               : CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_DATE,
         );
   } else {
-    // LatestDate gets passed as a V1_CString
-    if (valueSpecification instanceof V1_CString) {
+    if (valueSpecification instanceof V1_CLatestDate) {
       return new DatePickerOption(
         CUSTOM_DATE_PICKER_OPTION.LATEST_DATE,
         CUSTOM_DATE_PICKER_OPTION.LATEST_DATE,
