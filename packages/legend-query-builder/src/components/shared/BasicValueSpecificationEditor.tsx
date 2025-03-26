@@ -42,7 +42,6 @@ import {
   type Enum,
   type ObserverContext,
   type PureModel,
-  type Type,
   type ValueSpecification,
   CollectionInstanceValue,
   Enumeration,
@@ -60,6 +59,8 @@ import {
   PrimitiveInstanceValue,
   PrimitiveType,
   SimpleFunctionExpression,
+  Type,
+  V1_Collection,
   V1_PackageableType,
   VariableExpression,
 } from '@finos/legend-graph';
@@ -245,7 +246,7 @@ const VariableExpressionParameterEditor = observer(
 
 export interface PrimitiveInstanceValueEditorProps<
   T,
-  U extends T[] | string | number | boolean | Enum | null,
+  U extends string | number | boolean | Enum | null,
 > {
   valueSpecification: T;
   valueSelector: (val: T) => U;
@@ -753,30 +754,43 @@ interface BasicValueSpecificationEditorSelectorConfig {
   cleanUpReloadValues?: () => void;
 }
 
-interface PrimitiveCollectionInstanceValueEditorProps<T>
-  extends PrimitiveInstanceValueEditorProps<T, T[]> {
-  stringValuesSelector: (valueSpecification: T) => string[];
-  convertTextToValueSpecification: (type: Type | V1_Type, text: string) => T;
-  convertValueSpecificationToText: (valueSpecification: T) => string;
+interface PrimitiveCollectionInstanceValueEditorProps<T, U>
+  extends Omit<
+    PrimitiveInstanceValueEditorProps<
+      T,
+      string | number | boolean | Enum | null
+    >,
+    'valueSpecification' | 'valueSelector' | 'updateValueSpecification'
+  > {
+  collectionValueSpecification: U;
+  valueSpecifications: T[];
+  updateValueSpecification: (
+    collectionValueSpecification: U,
+    valueSpecifications: T[],
+  ) => void;
+  convertTextToValueSpecification: (
+    type: Type | V1_Type,
+    text: string,
+  ) => T | null;
+  convertValueSpecificationToText: (
+    valueSpecification: T,
+  ) => string | undefined;
   expectedType: Type | V1_Type;
   saveEdit: () => void;
   selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
 }
 
-const PrimitiveCollectionInstanceValueEditorInner = <T,>(
-  props: PrimitiveCollectionInstanceValueEditorProps<T>,
+const PrimitiveCollectionInstanceValueEditorInner = <T, U>(
+  props: PrimitiveCollectionInstanceValueEditorProps<T, U>,
 ): React.ReactElement => {
   const {
-    valueSpecification,
-    valueSelector,
-    stringValuesSelector,
+    collectionValueSpecification,
+    valueSpecifications,
     convertTextToValueSpecification,
     convertValueSpecificationToText,
     updateValueSpecification,
-    errorChecker,
     saveEdit,
     resetValue,
-    handleBlur,
     className,
     selectorConfig,
     expectedType,
@@ -790,7 +804,9 @@ const PrimitiveCollectionInstanceValueEditorInner = <T,>(
   const [selectedOptions, setSelectedOptions] = useState<
     { label: string; value: string }[]
   >(
-    stringValuesSelector(valueSpecification)
+    valueSpecifications
+      .filter((value) => guaranteeNonNullable(value))
+      .map(convertValueSpecificationToText)
       .filter(isNonEmptyString)
       .map((value) => ({
         label: value,
@@ -819,8 +835,8 @@ const PrimitiveCollectionInstanceValueEditorInner = <T,>(
       : undefined;
   const noMatchMessage =
     isTypeaheadSearchEnabled && isLoading ? 'Loading...' : undefined;
-  const copyButtonName = `copy-${valueSpecification}`;
-  const inputName = `input-${valueSpecification}`;
+  const copyButtonName = `copy-${valueSpecifications}`;
+  const inputName = `input-${valueSpecifications}`;
 
   // helper functions
   const buildOptionForValueSpec = (
@@ -935,7 +951,10 @@ const PrimitiveCollectionInstanceValueEditorInner = <T,>(
       .map((option) => option.value)
       .map((value) => convertTextToValueSpecification(expectedType, value))
       .filter(isNonNullable);
-    updateValueSpecification(valueSpecification, finalFormattedSelectedOptions);
+    updateValueSpecification(
+      collectionValueSpecification,
+      finalFormattedSelectedOptions,
+    );
     saveEdit();
   };
 
@@ -1039,29 +1058,22 @@ const PrimitiveCollectionInstanceValueEditorInner = <T,>(
 };
 
 export const PrimitiveCollectionInstanceValueEditor = observer(
-  PrimitiveCollectionInstanceValueEditorInner as <T>(
-    props: PrimitiveCollectionInstanceValueEditorProps<T>,
+  PrimitiveCollectionInstanceValueEditorInner as <T, U>(
+    props: PrimitiveCollectionInstanceValueEditorProps<T, U>,
   ) => ReturnType<typeof PrimitiveCollectionInstanceValueEditorInner>,
 );
 
-interface EnumCollectionInstanceValueEditorProps<T>
-  extends PrimitiveInstanceValueEditorProps<T, T[]> {
-  options: { label: string; value: string }[];
-  stringValuesSelector: (valueSpecification: T) => string[];
-  convertTextToValueSpecification: (text: string) => T;
-  // convertValueSpecificationToText: (valueSpecification: T) => string;
-  saveEdit: () => void;
+interface EnumCollectionInstanceValueEditorProps<T, U>
+  extends PrimitiveCollectionInstanceValueEditorProps<T, U> {
+  options: { label: string; value: string }[] | undefined;
 }
 
-const EnumCollectionInstanceValueEditorInner = <T,>(
-  props: EnumCollectionInstanceValueEditorProps<T>,
+const EnumCollectionInstanceValueEditorInner = <T, U>(
+  props: EnumCollectionInstanceValueEditorProps<T, U>,
 ): React.ReactElement => {
   const {
-    valueSpecification,
-    stringValuesSelector,
-    options,
-    valueSelector,
-    stringValuesSelector,
+    collectionValueSpecification,
+    valueSpecifications,
     convertTextToValueSpecification,
     convertValueSpecificationToText,
     updateValueSpecification,
@@ -1072,7 +1084,13 @@ const EnumCollectionInstanceValueEditorInner = <T,>(
     className,
     selectorConfig,
     expectedType,
+    options,
   } = props;
+
+  guaranteeNonNullable(
+    options,
+    'Must pass enum options to EnumCollectionInstanceValueEditor',
+  );
 
   // local state and variables
   const applicationStore = useApplicationStore();
@@ -1081,7 +1099,9 @@ const EnumCollectionInstanceValueEditorInner = <T,>(
   const [selectedOptions, setSelectedOptions] = useState<
     { label: string; value: string }[]
   >(
-    stringValuesSelector(valueSpecification)
+    valueSpecifications
+      .filter((value) => guaranteeNonNullable(value))
+      .map(convertValueSpecificationToText)
       .filter(isNonEmptyString)
       .map((value) => ({
         label: value,
@@ -1089,15 +1109,15 @@ const EnumCollectionInstanceValueEditorInner = <T,>(
       })),
   );
 
-  const availableOptions = options.filter(
+  const availableOptions = options?.filter(
     (value) =>
       !selectedOptions.some(
         (selectedValue) => selectedValue.value === value.value,
       ),
   );
 
-  const copyButtonName = `copy-${valueSpecification}`;
-  const inputName = `input-${valueSpecification}`;
+  const copyButtonName = `copy-${valueSpecifications}`;
+  const inputName = `input-${valueSpecifications}`;
 
   // helper functions
   const isValueAlreadySelected = (value: string): boolean =>
@@ -1114,7 +1134,8 @@ const EnumCollectionInstanceValueEditorInner = <T,>(
 
     if (
       !trimmedInputValue.length ||
-      isValueAlreadySelected(trimmedInputValue)
+      isValueAlreadySelected(trimmedInputValue) ||
+      !options?.some((option) => option.value === trimmedInputValue)
     ) {
       return null;
     }
@@ -1182,7 +1203,7 @@ const EnumCollectionInstanceValueEditorInner = <T,>(
     }
     const newValues = uniq(
       uniq(parsedData).filter((value) =>
-        options.some((option) => option.value === value),
+        options?.some((option) => option.value === value),
       ),
     ).filter((value) => !isValueAlreadySelected(value));
     setSelectedOptions([
@@ -1200,9 +1221,9 @@ const EnumCollectionInstanceValueEditorInner = <T,>(
   const updateValueSpecAndSaveEdit = (): void => {
     const result = selectedOptions
       .map((option) => option.value)
-      .map(convertTextToValueSpecification)
+      .map((value) => convertTextToValueSpecification(expectedType, value))
       .filter(isNonNullable);
-    updateValueSpecification(valueSpecification, result);
+    updateValueSpecification(collectionValueSpecification, result);
     saveEdit();
   };
 
@@ -1262,98 +1283,130 @@ const EnumCollectionInstanceValueEditorInner = <T,>(
 };
 
 export const EnumCollectionInstanceValueEditor = observer(
-  EnumCollectionInstanceValueEditorInner as <T>(
-    props: EnumCollectionInstanceValueEditorProps<T>,
+  EnumCollectionInstanceValueEditorInner as <T, U>(
+    props: EnumCollectionInstanceValueEditorProps<T, U>,
   ) => ReturnType<typeof EnumCollectionInstanceValueEditorInner>,
 );
 
 const COLLECTION_PREVIEW_CHAR_LIMIT = 50;
 
-const CollectionValueInstanceValueEditor = observer(
-  (props: {
-    valueSpecification: CollectionInstanceValue;
-    graph: PureModel;
-    expectedType: Type;
-    className?: string | undefined;
-    setValueSpecification: (val: ValueSpecification) => void;
-    selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
-    observerContext: ObserverContext;
-  }) => {
-    const {
-      valueSpecification,
-      expectedType,
-      className,
-      setValueSpecification,
-      selectorConfig,
-      observerContext,
-    } = props;
+interface CollectionValueInstanceValueEditorProps<T, U>
+  extends Omit<
+      PrimitiveCollectionInstanceValueEditorProps<T, U>,
+      'errorChecker' | 'saveEdit'
+    >,
+    Omit<
+      EnumCollectionInstanceValueEditorProps<T, U>,
+      'errorChecker' | 'saveEdit'
+    > {
+  stringifyCollectionValueSpecification: (valueSpecification: U) => string;
+  errorChecker?: (collectionValueSpecification: U) => boolean;
+}
 
-    const [editable, setEditable] = useState(false);
-    const valueText = stringifyValue(valueSpecification.values);
-    const previewText = `List(${
-      valueSpecification.values.length === 0
-        ? 'empty'
-        : valueSpecification.values.length
-    })${
-      valueSpecification.values.length === 0
-        ? ''
-        : `: ${
-            valueText.length > COLLECTION_PREVIEW_CHAR_LIMIT
-              ? `${valueText.substring(0, COLLECTION_PREVIEW_CHAR_LIMIT)}...`
-              : valueText
-          }`
-    }`;
-    const enableEdit = (): void => setEditable(true);
-    const saveEdit = (): void => {
-      if (editable) {
-        setEditable(false);
-        setValueSpecification(valueSpecification);
-      }
-    };
+const CollectionValueInstanceValueEditorInner = <T, U>(
+  props: CollectionValueInstanceValueEditorProps<T, U>,
+): React.ReactElement => {
+  const {
+    collectionValueSpecification,
+    valueSpecifications,
+    convertTextToValueSpecification,
+    convertValueSpecificationToText,
+    updateValueSpecification,
+    stringifyCollectionValueSpecification,
+    errorChecker,
+    resetValue,
+    handleBlur,
+    className,
+    selectorConfig,
+    expectedType,
+    options,
+  } = props;
 
+  const [editable, setEditable] = useState(false);
+  const valueText = stringifyCollectionValueSpecification(
+    collectionValueSpecification,
+  );
+  const previewText = `List(${
+    valueSpecifications.length === 0 ? 'empty' : valueSpecifications.length
+  })${
+    valueSpecifications.length === 0
+      ? ''
+      : `: ${
+          valueText.length > COLLECTION_PREVIEW_CHAR_LIMIT
+            ? `${valueText.substring(0, COLLECTION_PREVIEW_CHAR_LIMIT)}...`
+            : valueText
+        }`
+  }`;
+  const enableEdit = (): void => setEditable(true);
+  const saveEdit = (): void => {
     if (editable) {
-      return (
-        <>
-          <div className={clsx('value-spec-editor', className)}>
-            {expectedType instanceof Enumeration ? (
-              <EnumCollectionInstanceValueEditor
-                valueSpecification={valueSpecification}
-                observerContext={observerContext}
-                saveEdit={saveEdit}
-              />
-            ) : (
-              <PrimitiveCollectionInstanceValueEditor
-                valueSpecification={valueSpecification}
-                expectedType={expectedType}
-                saveEdit={saveEdit}
-                selectorConfig={selectorConfig}
-                observerContext={observerContext}
-              />
-            )}
-          </div>
-        </>
+      setEditable(false);
+      updateValueSpecification(
+        collectionValueSpecification,
+        valueSpecifications,
       );
     }
+  };
+
+  if (editable) {
     return (
-      <div
-        className={clsx('value-spec-editor', className)}
-        onClick={enableEdit}
-        title="Click to edit"
-      >
-        <div
-          className={clsx('value-spec-editor__list-editor__preview', {
-            'value-spec-editor__list-editor__preview--error':
-              !isValidInstanceValue(valueSpecification),
-          })}
-        >
-          {previewText}
+      <>
+        <div className={clsx('value-spec-editor', className)}>
+          {expectedType instanceof Enumeration ? (
+            <EnumCollectionInstanceValueEditor<T, U>
+              collectionValueSpecification={collectionValueSpecification}
+              valueSpecifications={valueSpecifications}
+              updateValueSpecification={updateValueSpecification}
+              convertTextToValueSpecification={convertTextToValueSpecification}
+              convertValueSpecificationToText={convertValueSpecificationToText}
+              expectedType={expectedType}
+              saveEdit={saveEdit}
+              options={options}
+              resetValue={resetValue}
+            />
+          ) : (
+            <PrimitiveCollectionInstanceValueEditor<T, U>
+              collectionValueSpecification={collectionValueSpecification}
+              valueSpecifications={valueSpecifications}
+              updateValueSpecification={updateValueSpecification}
+              convertTextToValueSpecification={convertTextToValueSpecification}
+              convertValueSpecificationToText={convertValueSpecificationToText}
+              expectedType={expectedType}
+              saveEdit={saveEdit}
+              selectorConfig={selectorConfig}
+              resetValue={resetValue}
+            />
+          )}
         </div>
-        <button className="value-spec-editor__list-editor__edit-icon">
-          <PencilIcon />
-        </button>
-      </div>
+      </>
     );
-  },
+  }
+  return (
+    <div
+      className={clsx('value-spec-editor', className)}
+      onClick={enableEdit}
+      title="Click to edit"
+    >
+      <div
+        className={clsx('value-spec-editor__list-editor__preview', {
+          'value-spec-editor__list-editor__preview--error': errorChecker?.(
+            collectionValueSpecification,
+          ),
+        })}
+      >
+        {previewText}
+      </div>
+      <button className="value-spec-editor__list-editor__edit-icon">
+        <PencilIcon />
+      </button>
+    </div>
+  );
+};
+
+export const CollectionValueInstanceValueEditor = observer(
+  CollectionValueInstanceValueEditorInner as <T, U>(
+    props: CollectionValueInstanceValueEditorProps<T, U>,
+  ) => ReturnType<typeof CollectionValueInstanceValueEditorInner>,
 );
 
 const UnsupportedValueSpecificationEditor: React.FC = () => (
@@ -1658,18 +1711,61 @@ export const BasicValueSpecificationEditor = forwardRef<
     valueSpecification instanceof CollectionInstanceValue &&
     valueSpecification.genericType
   ) {
+    const applicationStore = useApplicationStore();
+    const updateValueSpecification = (
+      collectionValueSpecification: CollectionInstanceValue,
+      valueSpecifications: ValueSpecification[],
+    ) => {
+      instanceValue_setValues(
+        collectionValueSpecification,
+        valueSpecifications,
+        observerContext,
+      );
+    };
+    const options =
+      typeCheckOption.expectedType instanceof Enumeration
+        ? typeCheckOption.expectedType.values.map((enumValue) => ({
+            label: enumValue.name,
+            value: enumValue.name,
+          }))
+        : undefined;
     // NOTE: since when we fill in the arguments, `[]` (or `nullish` value in Pure)
     // is used for parameters we don't handle, we should not attempt to support empty collection
     // without generic type here as that  is equivalent to `[]`
     return (
-      <CollectionValueInstanceValueEditor
-        valueSpecification={valueSpecification}
-        graph={graph}
+      <CollectionValueInstanceValueEditor<
+        ValueSpecification,
+        CollectionInstanceValue
+      >
+        collectionValueSpecification={valueSpecification}
+        valueSpecifications={valueSpecification.values}
+        updateValueSpecification={updateValueSpecification}
         expectedType={typeCheckOption.expectedType}
         className={className}
-        setValueSpecification={setValueSpecification}
         selectorConfig={selectorConfig}
-        observerContext={observerContext}
+        stringifyCollectionValueSpecification={(
+          collectionValueSpecification: CollectionInstanceValue,
+        ) => stringifyValue(collectionValueSpecification.values)}
+        resetValue={resetValue}
+        convertValueSpecificationToText={(
+          _valueSpecification: ValueSpecification,
+        ) =>
+          getValueSpecificationStringValue(
+            _valueSpecification,
+            applicationStore,
+          )
+        }
+        convertTextToValueSpecification={(
+          type: Type | V1_Type,
+          text: string,
+        ): ValueSpecification | null =>
+          convertTextToPrimitiveInstanceValue(
+            guaranteeType(type, Type),
+            text,
+            observerContext,
+          )
+        }
+        options={options}
       />
     );
   }
