@@ -223,6 +223,7 @@ export {
   V1_RelationTypeColumn,
 } from './graph-manager/protocol/pure/v1/model/packageableElements/type/V1_RelationType.js';
 export { V1_GenericType } from './graph-manager/protocol/pure/v1/model/packageableElements/type/V1_GenericType.js';
+export { type V1_Type } from './graph-manager/protocol/pure/v1/model/packageableElements/type/V1_Type.js';
 export { V1_PackageableType } from './graph-manager/protocol/pure/v1/model/packageableElements/type/V1_PackageableType.js';
 
 export { V1_Database } from './graph-manager/protocol/pure/v1/model/packageableElements/store/relational/model/V1_Database.js';

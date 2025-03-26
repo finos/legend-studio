@@ -43,6 +43,7 @@ import {
   type ObserverContext,
   type PureModel,
   type ValueSpecification,
+  type V1_Type,
   CollectionInstanceValue,
   Enumeration,
   EnumValueExplicitReference,
@@ -60,9 +61,9 @@ import {
   PrimitiveType,
   SimpleFunctionExpression,
   Type,
-  V1_Collection,
   V1_PackageableType,
   VariableExpression,
+  observe_ValueSpecification,
 } from '@finos/legend-graph';
 import {
   type DebouncedFunc,
@@ -116,7 +117,6 @@ import {
   DatePickerOption,
 } from './CustomDatePickerHelper.js';
 import type { V1_TypeCheckOption } from './V1_BasicValueSpecificationEditor.js';
-import type { V1_Type } from '../../../../legend-graph/src/graph-manager/protocol/pure/v1/model/packageableElements/type/V1_Type.js';
 
 export type TypeCheckOption = {
   expectedType: Type;
@@ -1315,7 +1315,6 @@ const CollectionValueInstanceValueEditorInner = <T, U>(
     stringifyCollectionValueSpecification,
     errorChecker,
     resetValue,
-    handleBlur,
     className,
     selectorConfig,
     expectedType,
@@ -1341,10 +1340,6 @@ const CollectionValueInstanceValueEditorInner = <T, U>(
   const saveEdit = (): void => {
     if (editable) {
       setEditable(false);
-      updateValueSpecification(
-        collectionValueSpecification,
-        valueSpecifications,
-      );
     }
   };
 
@@ -1499,7 +1494,7 @@ export const BasicValueSpecificationEditor = forwardRef<
       | undefined;
     displayDateEditorAsEditableValue?: boolean | undefined;
   }
->(function _BasicValueSpecificationEditor(props, ref) {
+>(function BasicValueSpecificationEditorInner(props, ref) {
   const {
     className,
     valueSpecification,
@@ -1514,6 +1509,8 @@ export const BasicValueSpecificationEditor = forwardRef<
     handleKeyDown,
     displayDateEditorAsEditableValue,
   } = props;
+
+  const applicationStore = useApplicationStore();
 
   const dateValueSelector = (
     _valueSpecification: SimpleFunctionExpression | PrimitiveInstanceValue,
@@ -1711,16 +1708,20 @@ export const BasicValueSpecificationEditor = forwardRef<
     valueSpecification instanceof CollectionInstanceValue &&
     valueSpecification.genericType
   ) {
-    const applicationStore = useApplicationStore();
     const updateValueSpecification = (
       collectionValueSpecification: CollectionInstanceValue,
       valueSpecifications: ValueSpecification[],
     ) => {
-      instanceValue_setValues(
+      const observedCollectionValueSpecification = observe_ValueSpecification(
         collectionValueSpecification,
+        observerContext,
+      ) as CollectionInstanceValue;
+      instanceValue_setValues(
+        observedCollectionValueSpecification,
         valueSpecifications,
         observerContext,
       );
+      setValueSpecification(observedCollectionValueSpecification);
     };
     const options =
       typeCheckOption.expectedType instanceof Enumeration
@@ -1753,18 +1754,41 @@ export const BasicValueSpecificationEditor = forwardRef<
           getValueSpecificationStringValue(
             _valueSpecification,
             applicationStore,
+            { omitEnumOwnerName: true },
           )
         }
         convertTextToValueSpecification={(
           type: Type | V1_Type,
           text: string,
-        ): ValueSpecification | null =>
-          convertTextToPrimitiveInstanceValue(
-            guaranteeType(type, Type),
-            text,
-            observerContext,
-          )
-        }
+        ): ValueSpecification | null => {
+          if (type instanceof Enumeration) {
+            const enumValue = convertTextToEnum(text, type);
+            if (enumValue) {
+              const enumValueInstanceValue = new EnumValueInstanceValue(
+                GenericTypeExplicitReference.create(new GenericType(type)),
+              );
+              instanceValue_setValues(
+                enumValueInstanceValue,
+                [EnumValueExplicitReference.create(enumValue)],
+                observerContext,
+              );
+              return observe_ValueSpecification(
+                enumValueInstanceValue,
+                observerContext,
+              );
+            }
+          } else {
+            const primitiveVal = convertTextToPrimitiveInstanceValue(
+              guaranteeType(type, Type),
+              text,
+              observerContext,
+            );
+            if (primitiveVal) {
+              return observe_ValueSpecification(primitiveVal, observerContext);
+            }
+          }
+          return null;
+        }}
         options={options}
       />
     );
