@@ -1000,6 +1000,9 @@ const PrimitiveCollectionInstanceValueEditorInner = <T, U>(
       event.relatedTarget?.name !== copyButtonName &&
       event.relatedTarget?.name !== inputName
     ) {
+      if (inputValue.trim().length) {
+        addInputValueToSelectedOptions();
+      }
       updateValueSpecAndSaveEdit();
     }
   };
@@ -1234,6 +1237,9 @@ const EnumCollectionInstanceValueEditorInner = <T, U>(
       event.relatedTarget?.name !== copyButtonName &&
       event.relatedTarget?.name !== inputName
     ) {
+      if (inputValue.trim().length) {
+        addInputValueToSelectedOptions();
+      }
       updateValueSpecAndSaveEdit();
     }
   };
@@ -1339,6 +1345,10 @@ const CollectionValueInstanceValueEditorInner = <T, U>(
   const enableEdit = (): void => setEditable(true);
   const saveEdit = (): void => {
     if (editable) {
+      updateValueSpecification(
+        collectionValueSpecification,
+        valueSpecifications
+      );
       setEditable(false);
     }
   };
