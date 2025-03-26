@@ -15,9 +15,9 @@
  */
 
 import { type V1_Lambda } from '../../model/valueSpecification/raw/V1_Lambda.js';
-import { type V1_PureModelContextPointer } from '../../model/context/V1_PureModelContextPointer.js';
+import type { V1_PureModelContext } from '../../model/context/V1_PureModelContext.js';
 
 export class V1_LambdaTdsToRelationInput {
-  model!: V1_PureModelContextPointer;
+  model!: V1_PureModelContext;
   lambda!: V1_Lambda;
 }

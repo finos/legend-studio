@@ -62,6 +62,7 @@ import {
   ENGINE_TEST_SUPPORT__grammarToJSON_lambda,
   ENGINE_TEST_SUPPORT__grammarToJSON_valueSpecification,
   ENGINE_TEST_SUPPORT__JSONToGrammar_valueSpecification,
+  ENGINE_TEST_SUPPORT__transformTdsToRelation_lambda,
 } from '@finos/legend-graph/test';
 import type { Entity } from '@finos/legend-storage';
 
@@ -183,6 +184,17 @@ export const TEST__setUpDataCubeBuilder = async (
     ).mockImplementation(
       async (input: PlainObject<V1_LambdaReturnTypeInput>) => {
         return ENGINE_TEST_SUPPORT__getLambdaRelationType(
+          input.lambda as PlainObject<V1_RawLambda>,
+          V1_serializePureModelContext(pmcd),
+        );
+      },
+    );
+    createSpy(
+      MOCK__builderStore.engineServerClient,
+      'transformTdsToRelation_lambda',
+    ).mockImplementation(
+      async (input: PlainObject<V1_LambdaReturnTypeInput>) => {
+        return ENGINE_TEST_SUPPORT__transformTdsToRelation_lambda(
           input.lambda as PlainObject<V1_RawLambda>,
           V1_serializePureModelContext(pmcd),
         );
