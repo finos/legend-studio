@@ -257,7 +257,7 @@ const VariableExpressionParameterEditor = observer(
  */
 export interface PrimitiveInstanceValueEditorProps<
   T,
-  U extends T[] | string | number | boolean | Enum | null,
+  U extends string | number | boolean | Enum | null,
 > {
   valueSpecification: T;
   valueSelector: (val: T) => U;
@@ -992,7 +992,10 @@ const PrimitiveCollectionInstanceValueEditorInner = <
       .map((option) => option.value)
       .map((value) => convertTextToValueSpecification(expectedType, value))
       .filter(isNonNullable);
-    updateValueSpecification(valueSpecification, finalFormattedSelectedOptions);
+    updateValueSpecification(
+      collectionValueSpecification,
+      finalFormattedSelectedOptions,
+    );
     saveEdit();
   };
 
@@ -1257,7 +1260,7 @@ const EnumCollectionInstanceValueEditorInner = <T, U extends { values: T[] }>(
       .map((option) => option.value)
       .map((value) => convertTextToValueSpecification(expectedType, value))
       .filter(isNonNullable);
-    updateValueSpecification(valueSpecification, result);
+    updateValueSpecification(collectionValueSpecification, result);
     saveEdit();
   };
 
