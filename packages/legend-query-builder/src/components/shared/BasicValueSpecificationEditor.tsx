@@ -992,10 +992,7 @@ const PrimitiveCollectionInstanceValueEditorInner = <
       .map((option) => option.value)
       .map((value) => convertTextToValueSpecification(expectedType, value))
       .filter(isNonNullable);
-    updateValueSpecification(
-      collectionValueSpecification,
-      finalFormattedSelectedOptions,
-    );
+    updateValueSpecification(valueSpecification, finalFormattedSelectedOptions);
     saveEdit();
   };
 
@@ -1260,7 +1257,7 @@ const EnumCollectionInstanceValueEditorInner = <T, U extends { values: T[] }>(
       .map((option) => option.value)
       .map((value) => convertTextToValueSpecification(expectedType, value))
       .filter(isNonNullable);
-    updateValueSpecification(collectionValueSpecification, result);
+    updateValueSpecification(valueSpecification, result);
     saveEdit();
   };
 
