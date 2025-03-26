@@ -1712,16 +1712,12 @@ export const BasicValueSpecificationEditor = forwardRef<
       collectionValueSpecification: CollectionInstanceValue,
       valueSpecifications: ValueSpecification[],
     ) => {
-      const observedCollectionValueSpecification = observe_ValueSpecification(
-        collectionValueSpecification,
-        observerContext,
-      ) as CollectionInstanceValue;
       instanceValue_setValues(
-        observedCollectionValueSpecification,
+        collectionValueSpecification,
         valueSpecifications,
         observerContext,
       );
-      setValueSpecification(observedCollectionValueSpecification);
+      setValueSpecification(collectionValueSpecification);
     };
     const options =
       typeCheckOption.expectedType instanceof Enumeration
