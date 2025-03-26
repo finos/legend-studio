@@ -304,7 +304,7 @@ test(
       runQueryCall[0].function as PlainObject<V1_Lambda>,
     );
     expect(lambdaGrammar).toBe(
-      "{|\ndomain::COVIDData.all()->project(~[Id:x|$x.id, 'Case Type':x|$x.caseType])->select(~[Id, 'Case Type'])->slice(0, 500)->meta::pure::mapping::from(mapping::CovidDataMapping, runtime::H2Runtime);\n}",
+      "|domain::COVIDData.all()->project(~[Id:x: domain::COVIDData[1]|$x.id, 'Case Type':x: domain::COVIDData[1]|$x.caseType])->select(~[Id, 'Case Type'])->slice(0, 500)->meta::pure::mapping::from(mapping::CovidDataMapping, runtime::H2Runtime)",
     );
   },
   100000,
