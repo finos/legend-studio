@@ -754,20 +754,12 @@ interface BasicValueSpecificationEditorSelectorConfig {
   cleanUpReloadValues?: () => void;
 }
 
-interface PrimitiveCollectionInstanceValueEditorProps<T, U>
-  extends Omit<
-    PrimitiveInstanceValueEditorProps<
-      T,
-      string | number | boolean | Enum | null
-    >,
-    'valueSpecification' | 'valueSelector' | 'updateValueSpecification'
-  > {
-  collectionValueSpecification: U;
-  valueSpecifications: T[];
-  updateValueSpecification: (
-    collectionValueSpecification: U,
-    valueSpecifications: T[],
-  ) => void;
+interface PrimitiveCollectionInstanceValueEditorProps<
+  T,
+  U extends { values: T[] },
+> {
+  valueSpecification: U;
+  updateValueSpecification: (valueSpecification: U, values: T[]) => void;
   convertTextToValueSpecification: (
     type: Type | V1_Type,
     text: string,
@@ -778,14 +770,19 @@ interface PrimitiveCollectionInstanceValueEditorProps<T, U>
   expectedType: Type | V1_Type;
   saveEdit: () => void;
   selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
+  errorChecker?: (valueSpecification: T) => boolean;
+  resetValue: () => void;
+  className?: string | undefined;
 }
 
-const PrimitiveCollectionInstanceValueEditorInner = <T, U>(
+const PrimitiveCollectionInstanceValueEditorInner = <
+  T,
+  U extends { values: T[] },
+>(
   props: PrimitiveCollectionInstanceValueEditorProps<T, U>,
 ): React.ReactElement => {
   const {
-    collectionValueSpecification,
-    valueSpecifications,
+    valueSpecification,
     convertTextToValueSpecification,
     convertValueSpecificationToText,
     updateValueSpecification,
@@ -804,7 +801,7 @@ const PrimitiveCollectionInstanceValueEditorInner = <T, U>(
   const [selectedOptions, setSelectedOptions] = useState<
     { label: string; value: string }[]
   >(
-    valueSpecifications
+    valueSpecification.values
       .filter((value) => guaranteeNonNullable(value))
       .map(convertValueSpecificationToText)
       .filter(isNonEmptyString)
@@ -835,8 +832,8 @@ const PrimitiveCollectionInstanceValueEditorInner = <T, U>(
       : undefined;
   const noMatchMessage =
     isTypeaheadSearchEnabled && isLoading ? 'Loading...' : undefined;
-  const copyButtonName = `copy-${valueSpecifications}`;
-  const inputName = `input-${valueSpecifications}`;
+  const copyButtonName = `copy-${valueSpecification}`;
+  const inputName = `input-${valueSpecification}`;
 
   // helper functions
   const buildOptionForValueSpec = (
@@ -951,10 +948,7 @@ const PrimitiveCollectionInstanceValueEditorInner = <T, U>(
       .map((option) => option.value)
       .map((value) => convertTextToValueSpecification(expectedType, value))
       .filter(isNonNullable);
-    updateValueSpecification(
-      collectionValueSpecification,
-      finalFormattedSelectedOptions,
-    );
+    updateValueSpecification(valueSpecification, finalFormattedSelectedOptions);
     saveEdit();
   };
 
@@ -1058,29 +1052,27 @@ const PrimitiveCollectionInstanceValueEditorInner = <T, U>(
 };
 
 export const PrimitiveCollectionInstanceValueEditor = observer(
-  PrimitiveCollectionInstanceValueEditorInner as <T, U>(
+  PrimitiveCollectionInstanceValueEditorInner as <T, U extends { values: T[] }>(
     props: PrimitiveCollectionInstanceValueEditorProps<T, U>,
   ) => ReturnType<typeof PrimitiveCollectionInstanceValueEditorInner>,
 );
 
-interface EnumCollectionInstanceValueEditorProps<T, U>
+interface EnumCollectionInstanceValueEditorProps<T, U extends { values: T[] }>
   extends PrimitiveCollectionInstanceValueEditorProps<T, U> {
   options: { label: string; value: string }[] | undefined;
 }
 
-const EnumCollectionInstanceValueEditorInner = <T, U>(
+const EnumCollectionInstanceValueEditorInner = <T, U extends { values: T[] }>(
   props: EnumCollectionInstanceValueEditorProps<T, U>,
 ): React.ReactElement => {
   const {
-    collectionValueSpecification,
-    valueSpecifications,
+    valueSpecification,
     convertTextToValueSpecification,
     convertValueSpecificationToText,
     updateValueSpecification,
     errorChecker,
     saveEdit,
     resetValue,
-    handleBlur,
     className,
     selectorConfig,
     expectedType,
@@ -1099,7 +1091,7 @@ const EnumCollectionInstanceValueEditorInner = <T, U>(
   const [selectedOptions, setSelectedOptions] = useState<
     { label: string; value: string }[]
   >(
-    valueSpecifications
+    valueSpecification.values
       .filter((value) => guaranteeNonNullable(value))
       .map(convertValueSpecificationToText)
       .filter(isNonEmptyString)
@@ -1116,8 +1108,8 @@ const EnumCollectionInstanceValueEditorInner = <T, U>(
       ),
   );
 
-  const copyButtonName = `copy-${valueSpecifications}`;
-  const inputName = `input-${valueSpecifications}`;
+  const copyButtonName = `copy-${valueSpecification}`;
+  const inputName = `input-${valueSpecification}`;
 
   // helper functions
   const isValueAlreadySelected = (value: string): boolean =>
@@ -1223,7 +1215,7 @@ const EnumCollectionInstanceValueEditorInner = <T, U>(
       .map((option) => option.value)
       .map((value) => convertTextToValueSpecification(expectedType, value))
       .filter(isNonNullable);
-    updateValueSpecification(collectionValueSpecification, result);
+    updateValueSpecification(valueSpecification, result);
     saveEdit();
   };
 
@@ -1283,14 +1275,14 @@ const EnumCollectionInstanceValueEditorInner = <T, U>(
 };
 
 export const EnumCollectionInstanceValueEditor = observer(
-  EnumCollectionInstanceValueEditorInner as <T, U>(
+  EnumCollectionInstanceValueEditorInner as <T, U extends { values: T[] }>(
     props: EnumCollectionInstanceValueEditorProps<T, U>,
   ) => ReturnType<typeof EnumCollectionInstanceValueEditorInner>,
 );
 
 const COLLECTION_PREVIEW_CHAR_LIMIT = 50;
 
-interface CollectionValueInstanceValueEditorProps<T, U>
+interface CollectionValueInstanceValueEditorProps<T, U extends { values: T[] }>
   extends Omit<
       PrimitiveCollectionInstanceValueEditorProps<T, U>,
       'errorChecker' | 'saveEdit'
@@ -1300,15 +1292,14 @@ interface CollectionValueInstanceValueEditorProps<T, U>
       'errorChecker' | 'saveEdit'
     > {
   stringifyCollectionValueSpecification: (valueSpecification: U) => string;
-  errorChecker?: (collectionValueSpecification: U) => boolean;
+  errorChecker?: (valueSpecification: U) => boolean;
 }
 
-const CollectionValueInstanceValueEditorInner = <T, U>(
+const CollectionValueInstanceValueEditorInner = <T, U extends { values: T[] }>(
   props: CollectionValueInstanceValueEditorProps<T, U>,
 ): React.ReactElement => {
   const {
-    collectionValueSpecification,
-    valueSpecifications,
+    valueSpecification,
     convertTextToValueSpecification,
     convertValueSpecificationToText,
     updateValueSpecification,
@@ -1322,13 +1313,13 @@ const CollectionValueInstanceValueEditorInner = <T, U>(
   } = props;
 
   const [editable, setEditable] = useState(false);
-  const valueText = stringifyCollectionValueSpecification(
-    collectionValueSpecification,
-  );
+  const valueText = stringifyCollectionValueSpecification(valueSpecification);
   const previewText = `List(${
-    valueSpecifications.length === 0 ? 'empty' : valueSpecifications.length
+    valueSpecification.values.length === 0
+      ? 'empty'
+      : valueSpecification.values.length
   })${
-    valueSpecifications.length === 0
+    valueSpecification.values.length === 0
       ? ''
       : `: ${
           valueText.length > COLLECTION_PREVIEW_CHAR_LIMIT
@@ -1349,8 +1340,7 @@ const CollectionValueInstanceValueEditorInner = <T, U>(
         <div className={clsx('value-spec-editor', className)}>
           {expectedType instanceof Enumeration ? (
             <EnumCollectionInstanceValueEditor<T, U>
-              collectionValueSpecification={collectionValueSpecification}
-              valueSpecifications={valueSpecifications}
+              valueSpecification={valueSpecification}
               updateValueSpecification={updateValueSpecification}
               convertTextToValueSpecification={convertTextToValueSpecification}
               convertValueSpecificationToText={convertValueSpecificationToText}
@@ -1361,8 +1351,7 @@ const CollectionValueInstanceValueEditorInner = <T, U>(
             />
           ) : (
             <PrimitiveCollectionInstanceValueEditor<T, U>
-              collectionValueSpecification={collectionValueSpecification}
-              valueSpecifications={valueSpecifications}
+              valueSpecification={valueSpecification}
               updateValueSpecification={updateValueSpecification}
               convertTextToValueSpecification={convertTextToValueSpecification}
               convertValueSpecificationToText={convertValueSpecificationToText}
@@ -1384,9 +1373,8 @@ const CollectionValueInstanceValueEditorInner = <T, U>(
     >
       <div
         className={clsx('value-spec-editor__list-editor__preview', {
-          'value-spec-editor__list-editor__preview--error': errorChecker?.(
-            collectionValueSpecification,
-          ),
+          'value-spec-editor__list-editor__preview--error':
+            errorChecker?.(valueSpecification),
         })}
       >
         {previewText}
@@ -1399,7 +1387,7 @@ const CollectionValueInstanceValueEditorInner = <T, U>(
 };
 
 export const CollectionValueInstanceValueEditor = observer(
-  CollectionValueInstanceValueEditorInner as <T, U>(
+  CollectionValueInstanceValueEditorInner as <T, U extends { values: T[] }>(
     props: CollectionValueInstanceValueEditorProps<T, U>,
   ) => ReturnType<typeof CollectionValueInstanceValueEditorInner>,
 );
@@ -1734,8 +1722,7 @@ export const BasicValueSpecificationEditor = forwardRef<
         ValueSpecification,
         CollectionInstanceValue
       >
-        collectionValueSpecification={valueSpecification}
-        valueSpecifications={valueSpecification.values}
+        valueSpecification={valueSpecification}
         updateValueSpecification={updateValueSpecification}
         expectedType={typeCheckOption.expectedType}
         className={className}
