@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.16.16
+
+### Patch Changes
+
+- [#3906](https://github.com/finos/legend-studio/pull/3906) [`507fdaa`](https://github.com/finos/legend-studio/commit/507fdaa70eaa32e8eea04aa87403fabab6f58a5e) ([@travisstebbins](https://github.com/travisstebbins)) - Export QUERY_BUILDER_PURE_PATH
+
 ## 4.16.15
 
 ### Patch Changes
