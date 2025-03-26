@@ -89,10 +89,13 @@ import type { CodeCompletionResult } from '../../../../action/compilation/Comple
 import type { V1_CompleteCodeInput } from './compilation/V1_CompleteCodeInput.js';
 import type { DeploymentResult } from '../../../../action/DeploymentResult.js';
 import type { PersistentDataCube } from '../../../../action/query/PersistentDataCube.js';
+import { type V1_LambdaTdsToRelationInput } from './pureProtocol/V1_LambdaTdsToRelationInput.js';
 
 enum CORE_ENGINE_ACTIVITY_TRACE {
   GRAMMAR_TO_JSON = 'transform Pure code to protocol',
   JSON_TO_GRAMMAR = 'transform protocol to Pure code',
+
+  AUTOFIX_TDS_TO_RELATION = 'transform TDS protocol to relation protocol',
 
   DATABASE_TO_MODELS = 'generate models from database',
   TEST_DATA_GENERATION = 'generate test data',
@@ -239,6 +242,21 @@ export class V1_EngineServerClient extends AbstractServerClient {
 
   getSubtypeInfo = (): Promise<SubtypeInfo> =>
     this.get(`${this._pure()}/protocol/pure/getSubtypeInfo`);
+
+  transformTdsToRelation_lambda = (
+    input: PlainObject<V1_LambdaTdsToRelationInput>,
+  ): Promise<PlainObject<V1_RawLambda>> =>
+    this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.AUTOFIX_TDS_TO_RELATION),
+      `${this._pure()}/compilation/autofix/transformTdsToRelation/lambda`,
+      input,
+      {},
+      {
+        [HttpHeader.ACCEPT]: ContentType.APPLICATION_JSON,
+        [HttpHeader.CONTENT_TYPE]: ContentType.APPLICATION_JSON,
+      },
+      { enableCompression: true },
+    );
 
   // ------------------------------------------- SDLC -------------------------------------------
 

@@ -225,6 +225,91 @@ test(
   100000,
 );
 
+test(
+  integrationTest(
+    'Automatically converts TDS query to Relation query when loading DataCube from Legend Query',
+  ),
+  async () => {
+    MockedMonacoEditorAPI.remeasureFonts.mockReturnValue(undefined);
+
+    const mockDataCubeId = 'test-data-cube-id';
+    const mockDataCube: PersistentDataCube =
+      PersistentDataCube.serialization.fromJson({
+        id: mockDataCubeId,
+        name: `${mockDataCubeId}-name`,
+        description: undefined,
+        content: {
+          query: `select(~[Id, 'Case Type'])`,
+          source: {
+            queryId: `${mockDataCubeId}-query-id`,
+            _type: 'legendQuery',
+          },
+          configuration: {
+            name: `${mockDataCubeId}-query-name`,
+            columns: [
+              { name: 'Id', type: 'Integer' },
+              { name: 'Case Type', type: 'String' },
+            ],
+          },
+        },
+      });
+    const mockQuery: V1_Query = V1_Query.serialization.fromJson({
+      name: `${mockDataCubeId}-query-name`,
+      id: `${mockDataCubeId}-query-id`,
+      versionId: 'latest',
+      groupId: 'com.legend',
+      artifactId: 'test-project',
+      content: `|domain::COVIDData.all()->project([x|$x.id,x|$x.caseType],['Id','Case Type'])`,
+      executionContext: {
+        dataSpacePath: 'domain::COVIDDatapace',
+        executionKey: 'dummyContext',
+        _type: 'dataSpaceExecutionContext',
+      },
+    });
+    const mockedLegendDataCubeBuilderStore =
+      await TEST__provideMockedLegendDataCubeBuilderStore();
+
+    await TEST__setUpDataCubeBuilder(
+      mockedLegendDataCubeBuilderStore,
+      mockDataCube,
+      mockQuery,
+      depotEntities,
+    );
+
+    // Verify grid renders
+    await screen.findByText(
+      'test-data-cube-id-query-name',
+      {},
+      { timeout: 30000 },
+    );
+    expect(
+      (await screen.findAllByText('Id', {}, { timeout: 30000 })).length,
+    ).toBeGreaterThanOrEqual(1);
+    await screen.findByText('Case Type', {}, { timeout: 30000 });
+    await screen.findByText('1', {}, { timeout: 30000 });
+    await screen.findByText('Active', {}, { timeout: 30000 });
+    await screen.findByText('2', {}, { timeout: 30000 });
+    await screen.findByText('Confirmed', {}, { timeout: 30000 });
+
+    // Verify runQuery was called with correct lambda
+    const runQueryCall = guaranteeNonNullable(
+      (
+        mockedLegendDataCubeBuilderStore.engineServerClient
+          .runQuery as unknown as jest.SpiedFunction<
+          typeof mockedLegendDataCubeBuilderStore.engineServerClient.runQuery
+        >
+      ).mock.lastCall,
+    );
+    const lambdaGrammar = await ENGINE_TEST_SUPPORT__JSONToGrammar_lambda(
+      runQueryCall[0].function as PlainObject<V1_Lambda>,
+    );
+    expect(lambdaGrammar).toBe(
+      "|domain::COVIDData.all()->project(~[Id:x: domain::COVIDData[1]|$x.id, 'Case Type':x: domain::COVIDData[1]|$x.caseType])->select(~[Id, 'Case Type'])->slice(0, 500)->meta::pure::mapping::from(mapping::CovidDataMapping, runtime::H2Runtime)",
+    );
+  },
+  100000,
+);
+
 const releaseLog = [
   {
     version: '3.0.0',
