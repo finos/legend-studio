@@ -58,6 +58,7 @@ import { DSL_DataSpace_GraphManagerPreset } from '@finos/legend-extension-dsl-da
 import {
   ENGINE_TEST_SUPPORT__execute,
   ENGINE_TEST_SUPPORT__getLambdaRelationType,
+  ENGINE_TEST_SUPPORT__getLambdaReturnType,
   ENGINE_TEST_SUPPORT__grammarToJSON_lambda,
   ENGINE_TEST_SUPPORT__grammarToJSON_valueSpecification,
   ENGINE_TEST_SUPPORT__JSONToGrammar_valueSpecification,
@@ -165,6 +166,17 @@ export const TEST__setUpDataCubeBuilder = async (
       MOCK__builderStore.depotServerClient,
       'getVersionEntities',
     ).mockResolvedValue(mockEntities);
+    createSpy(
+      MOCK__builderStore.engineServerClient,
+      'lambdaReturnType',
+    ).mockImplementation(
+      async (input: PlainObject<V1_LambdaReturnTypeInput>) => {
+        return ENGINE_TEST_SUPPORT__getLambdaReturnType(
+          input.lambda as PlainObject<V1_RawLambda>,
+          V1_serializePureModelContext(pmcd),
+        );
+      },
+    );
     createSpy(
       MOCK__builderStore.engineServerClient,
       'lambdaRelationType',

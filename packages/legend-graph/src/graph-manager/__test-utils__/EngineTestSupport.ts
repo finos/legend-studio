@@ -35,6 +35,10 @@ import {
 } from '../protocol/pure/v1/engine/generation/V1_ArtifactGenerationExtensionApi.js';
 import type { V1_Lambda } from '../protocol/pure/v1/model/valueSpecification/raw/V1_Lambda.js';
 import type { V1_RelationType } from '../protocol/pure/v1/model/packageableElements/type/V1_RelationType.js';
+import type {
+  V1_LambdaReturnTypeInput,
+  V1_LambdaReturnTypeResult,
+} from '../protocol/pure/v1/engine/compilation/V1_LambdaReturnType.js';
 
 export const ENGINE_TEST_SUPPORT_API_URL = 'http://localhost:6300/api';
 
@@ -203,6 +207,21 @@ export async function ENGINE_TEST_SUPPORT__compile(
     `${ENGINE_TEST_SUPPORT_API_URL}/pure/v1/compilation/compile`,
     model,
   );
+}
+
+export async function ENGINE_TEST_SUPPORT__getLambdaReturnType(
+  lambda: PlainObject<V1_LambdaReturnTypeInput>,
+  model: PlainObject<V1_PureModelContext>,
+): Promise<PlainObject<V1_LambdaReturnTypeResult>> {
+  return (
+    await axios.post<unknown, AxiosResponse>(
+      `${ENGINE_TEST_SUPPORT_API_URL}/pure/v1/compilation/lambdaReturnType`,
+      {
+        lambda,
+        model,
+      },
+    )
+  ).data;
 }
 
 export async function ENGINE_TEST_SUPPORT__getLambdaRelationType(
