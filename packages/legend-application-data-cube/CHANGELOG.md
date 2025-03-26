@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.3.9
+
+### Patch Changes
+
+- [#3906](https://github.com/finos/legend-studio/pull/3906) [`507fdaa`](https://github.com/finos/legend-studio/commit/507fdaa70eaa32e8eea04aa87403fabab6f58a5e) ([@travisstebbins](https://github.com/travisstebbins)) - Automatically convert TDS to relation protocol in hosted datacube
+
 ## 0.3.8
 
 ## 0.3.7
