@@ -1752,8 +1752,12 @@ export const BasicValueSpecificationEditor = forwardRef<
       collectionValueSpecification: CollectionInstanceValue,
       valueSpecifications: ValueSpecification[],
     ) => {
-      instanceValue_setValues(
+      const observedCollectionValueSpecification = observe_ValueSpecification(
         collectionValueSpecification,
+        observerContext,
+      ) as CollectionInstanceValue;
+      instanceValue_setValues(
+        observedCollectionValueSpecification,
         valueSpecifications,
         observerContext,
       );
