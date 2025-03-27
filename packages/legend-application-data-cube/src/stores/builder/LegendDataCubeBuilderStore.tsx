@@ -68,6 +68,8 @@ import { LegendDataCubeSourceViewer } from '../../components/builder/LegendDataC
 import { LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE } from '../model/LocalFileDataCubeSource.js';
 import type { LegendDataCubeSourceLoaderState } from './source/LegendDataCubeSourceLoaderState.js';
 import { LocalFileDataCubeSourceLoaderState } from './source/LocalFileDataCubeSourceLoaderState.js';
+import { DATACUBE_APP_EVENT } from '../../__lib__/DataCubeEvent.js';
+import { LegendApplicationTelemetryHelper } from '@finos/legend-application';
 
 export class LegendDataCubeBuilderState {
   readonly uuid = uuid();
@@ -382,10 +384,20 @@ export class LegendDataCubeBuilderStore {
 
         this.finalizeLoad(specification, persistentDataCube, dataCubeId);
         this.loadState.pass();
+        this.creator.logFromRawSource(
+          DATACUBE_APP_EVENT.LOAD_DATACUBE__SUCCESS,
+          specification.source,
+        );
       } catch (error) {
         assertErrorThrown(error);
+        const message = `DataCube Load Failure: ${error.message}`;
+        this.creator.logFromRawSource(
+          DATACUBE_APP_EVENT.LOAD_DATACUBE__FAILURE,
+          this.builder?.initialSpecification.source,
+          message,
+        );
         this.alertService.alertError(error, {
-          message: `DataCube Load Failure: ${error.message}`,
+          message: message,
         });
         this.application.navigationService.navigator.updateCurrentLocation(
           generateBuilderRoute(null),
@@ -396,6 +408,11 @@ export class LegendDataCubeBuilderStore {
         this.taskService.endTask(task);
       }
     }
+
+    LegendApplicationTelemetryHelper.logEvent_ApplicationInitializationSucceeded(
+      this.application.telemetryService,
+      this.application,
+    );
   }
 
   private finalizeLoad(
@@ -496,12 +513,22 @@ export class LegendDataCubeBuilderStore {
 
       this.saverDisplay.close();
       this.saveState.pass();
+      this.creator.logFromSource(
+        DATACUBE_APP_EVENT.CREATE_DATACUBE__SUCCESS,
+        this.builder.source,
+      );
     } catch (error) {
       assertErrorThrown(error);
+      const message = `DataCube Creation Failure: ${error.message}`;
       this.alertService.alertError(error, {
-        message: `DataCube Creation Failure: ${error.message}`,
+        message: message,
       });
       this.saveState.fail();
+      this.creator.logFromSource(
+        DATACUBE_APP_EVENT.CREATE_DATACUBE__FAILURE,
+        this.builder.source,
+        message,
+      );
     } finally {
       this.taskService.endTask(task);
     }
@@ -554,10 +581,24 @@ export class LegendDataCubeBuilderStore {
 
       this.saverDisplay.close();
       this.saveState.pass();
+      this.creator.logFromSource(
+        options?.saveAsNew
+          ? DATACUBE_APP_EVENT.CREATE_DATACUBE__SUCCESS
+          : DATACUBE_APP_EVENT.UPDATE_DATACUBE__SUCCESS,
+        this.builder.source,
+      );
     } catch (error) {
       assertErrorThrown(error);
+      const message = `DataCube Update Failure: ${error.message}`;
+      this.creator.logFromSource(
+        options?.saveAsNew
+          ? DATACUBE_APP_EVENT.CREATE_DATACUBE__FAILURE
+          : DATACUBE_APP_EVENT.UPDATE_DATACUBE__FAILURE,
+        this.builder.source,
+        message,
+      );
       this.alertService.alertError(error, {
-        message: `DataCube Update Failure: ${error.message}`,
+        message: message,
       });
       this.saveState.fail();
     } finally {
@@ -581,6 +622,11 @@ export class LegendDataCubeBuilderStore {
     const task = this.taskService.newTask('Deleting DataCube...');
 
     try {
+      const persistentDataCubeToDelete =
+        await this.baseStore.graphManager.getDataCube(dataCubeId);
+      const specification = DataCubeSpecification.serialization.fromJson(
+        persistentDataCubeToDelete.content,
+      );
       await this.baseStore.graphManager.deleteDataCube(dataCubeId);
 
       // update the list of stack of recently viewed DataCubes
@@ -609,10 +655,20 @@ export class LegendDataCubeBuilderStore {
       this.setDataCubeToDelete(undefined);
       this.deleteConfirmationDisplay.close();
       this.deleteState.pass();
+      this.creator.logFromRawSource(
+        DATACUBE_APP_EVENT.DELETE_DATACUBE__SUCCESS,
+        specification.source,
+      );
     } catch (error) {
       assertErrorThrown(error);
+      const message = `DataCube Delete Failure: ${error.message}`;
+      this.creator.logFromRawSource(
+        DATACUBE_APP_EVENT.DELETE_DATACUBE__FAILURE,
+        undefined,
+        message,
+      );
       this.alertService.alertError(error, {
-        message: `DataCube Delete Failure: ${error.message}`,
+        message: message,
       });
       this.deleteState.fail();
     } finally {
