@@ -765,8 +765,8 @@ const getPlaceHolder = (expectedType: Type | V1_PackageableType): string => {
       default:
         return 'Add';
     }
-  } else if (expectedType instanceof V1_PackageableType) {
-    switch (expectedType.fullPath) {
+  } else {
+    switch (expectedType) {
       case PRIMITIVE_TYPE.DATE:
       case PRIMITIVE_TYPE.STRICTDATE:
         return 'yyyy-mm-dd';
