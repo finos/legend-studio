@@ -181,11 +181,11 @@ test(
     };
 
     const typeCheckOption = {
-      expectedType: (floatValueSpec as PrimitiveInstanceValue).genericType
-        .value.rawType,
+      expectedType: (floatValueSpec as PrimitiveInstanceValue).genericType.value
+        .rawType,
       match:
-        (floatValueSpec as PrimitiveInstanceValue).genericType.value
-          .rawType === PrimitiveType.DATETIME,
+        (floatValueSpec as PrimitiveInstanceValue).genericType.value.rawType ===
+        PrimitiveType.DATETIME,
     };
 
     TEST__setUpBasicValueSpecificationEditor(pluginManager, {
@@ -238,11 +238,11 @@ test(
     };
 
     const typeCheckOption = {
-      expectedType: (boolValueSpec as PrimitiveInstanceValue).genericType
-        .value.rawType,
+      expectedType: (boolValueSpec as PrimitiveInstanceValue).genericType.value
+        .rawType,
       match:
-        (boolValueSpec as PrimitiveInstanceValue).genericType.value
-          .rawType === PrimitiveType.DATETIME,
+        (boolValueSpec as PrimitiveInstanceValue).genericType.value.rawType ===
+        PrimitiveType.DATETIME,
     };
 
     TEST__setUpBasicValueSpecificationEditor(pluginManager, {
@@ -256,11 +256,13 @@ test(
 
     const toggleElement = await screen.findByRole('checkbox');
     expect(toggleElement).not.toBeNull();
-    
+
     expect((boolValueSpec as PrimitiveInstanceValue).values[0]).toBe(false);
-    
+
     fireEvent.click(toggleElement);
-    
-    await waitFor(() => expect((boolValueSpec as PrimitiveInstanceValue).values[0]).toBe(true));
+
+    await waitFor(() => {
+      expect((boolValueSpec as PrimitiveInstanceValue).values[0]).toBe(true);
+    });
   },
 );
