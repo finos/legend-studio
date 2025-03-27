@@ -2854,7 +2854,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@finos/legend-data-cube@workspace:*, @finos/legend-data-cube@workspace:packages/legend-data-cube":
+"@finos/legend-data-cube@workspace:*, @finos/legend-data-cube@workspace:^, @finos/legend-data-cube@workspace:packages/legend-data-cube":
   version: 0.0.0-use.local
   resolution: "@finos/legend-data-cube@workspace:packages/legend-data-cube"
   dependencies:
@@ -3325,7 +3325,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@finos/legend-graph@workspace:*, @finos/legend-graph@workspace:packages/legend-graph":
+"@finos/legend-graph@workspace:*, @finos/legend-graph@workspace:^, @finos/legend-graph@workspace:packages/legend-graph":
   version: 0.0.0-use.local
   resolution: "@finos/legend-graph@workspace:packages/legend-graph"
   dependencies:
@@ -3431,9 +3431,9 @@ __metadata:
     "@finos/legend-application": "workspace:*"
     "@finos/legend-art": "workspace:*"
     "@finos/legend-code-editor": "workspace:*"
-    "@finos/legend-data-cube": "workspace:*"
+    "@finos/legend-data-cube": "workspace:^"
     "@finos/legend-dev-utils": "workspace:*"
-    "@finos/legend-graph": "workspace:*"
+    "@finos/legend-graph": "workspace:^"
     "@finos/legend-lego": "workspace:*"
     "@finos/legend-server-depot": "workspace:*"
     "@finos/legend-shared": "workspace:*"
