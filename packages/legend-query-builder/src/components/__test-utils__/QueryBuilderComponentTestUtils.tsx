@@ -28,8 +28,12 @@ import {
 import { LogService, guaranteeNonNullable } from '@finos/legend-shared';
 import { createSpy } from '@finos/legend-shared/test';
 import {
-  type RawMappingModelCoverageAnalysisResult,
+  type GraphManagerPluginManager,
+  type ObserverContext,
+  type PureModel,
   type RawLambda,
+  type RawMappingModelCoverageAnalysisResult,
+  type ValueSpecification,
   GraphManagerState,
   PackageableElementExplicitReference,
   RuntimePointer,
@@ -56,6 +60,10 @@ import { STYLE_PREFIX, STYLE_PREFIX__DARK } from '@finos/legend-art';
 import { expect } from '@jest/globals';
 import { QueryBuilderAdvancedWorkflowState } from '../../stores/query-workflow/QueryBuilderWorkFlowState.js';
 import { Route, Routes } from '@finos/legend-application/browser';
+import {
+  BasicValueSpecificationEditor,
+  type TypeCheckOption,
+} from '../shared/BasicValueSpecificationEditor.js';
 
 const getSelectorContainerClassName = (lightMode?: boolean): string =>
   '.' + `${lightMode ? STYLE_PREFIX : STYLE_PREFIX__DARK}__value-container`;
@@ -189,6 +197,29 @@ export const setDerivedPropertyValue = async (
   await waitFor(() => expect(renderResult.queryByRole('dialog')).toBeNull());
 };
 
+export const TEST__setUpGraphManagerState = async (
+  entities: Entity[],
+  pluginManager: GraphManagerPluginManager,
+): Promise<GraphManagerState> => {
+  pluginManager.usePresets([new QueryBuilder_GraphManagerPreset()]).install();
+  const graphManagerState = new GraphManagerState(
+    pluginManager,
+    new LogService(),
+  );
+  await graphManagerState.graphManager.initialize({
+    env: 'test',
+    tabSize: 2,
+    clientConfig: {},
+  });
+  await graphManagerState.initializeSystem();
+  await graphManagerState.graphManager.buildGraph(
+    graphManagerState.graph,
+    entities,
+    graphManagerState.graphBuildState,
+  );
+  return graphManagerState;
+};
+
 export const TEST__setUpQueryBuilder = async (
   entities: Entity[],
   lambda: RawLambda,
@@ -200,22 +231,9 @@ export const TEST__setUpQueryBuilder = async (
   queryBuilderState: QueryBuilderState;
 }> => {
   const pluginManager = TEST__LegendApplicationPluginManager.create();
-  pluginManager.usePresets([new QueryBuilder_GraphManagerPreset()]).install();
-  const graphManagerState = new GraphManagerState(
-    pluginManager,
-    new LogService(),
-  );
-
-  await graphManagerState.graphManager.initialize({
-    env: 'test',
-    tabSize: 2,
-    clientConfig: {},
-  });
-  await graphManagerState.initializeSystem();
-  await graphManagerState.graphManager.buildGraph(
-    graphManagerState.graph,
+  const graphManagerState = await TEST__setUpGraphManagerState(
     entities,
-    graphManagerState.graphBuildState,
+    pluginManager,
   );
 
   const MOCK__applicationStore = new ApplicationStore(
@@ -274,4 +292,36 @@ export const TEST__setUpQueryBuilder = async (
     renderResult,
     queryBuilderState,
   };
+};
+
+export const TEST__setUpBasicValueSpecificationEditor = (
+  pluginManager: TEST__LegendApplicationPluginManager,
+  props: {
+    valueSpecification: ValueSpecification;
+    setValueSpecification: (val: ValueSpecification) => void;
+    typeCheckOption: TypeCheckOption;
+    resetValue: () => void;
+    graph: PureModel;
+    observerContext: ObserverContext;
+  },
+): void => {
+  const MOCK__applicationStore = new ApplicationStore(
+    TEST__getGenericApplicationConfig(),
+    pluginManager,
+  );
+
+  render(
+    <ApplicationStoreProvider store={MOCK__applicationStore}>
+      <TEST__BrowserEnvironmentProvider initialEntries={['/']}>
+        <ApplicationFrameworkProvider>
+          <Routes>
+            <Route
+              path="*"
+              element={<BasicValueSpecificationEditor {...props} />}
+            />
+          </Routes>
+        </ApplicationFrameworkProvider>
+      </TEST__BrowserEnvironmentProvider>
+    </ApplicationStoreProvider>,
+  );
 };
