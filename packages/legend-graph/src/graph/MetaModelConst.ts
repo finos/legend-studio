@@ -61,6 +61,24 @@ export enum PRIMITIVE_TYPE {
   BYTE = 'Byte',
 }
 
+export enum PRECISE_PRIMITIVE_TYPE {
+  STRING = 'meta::pure::precisePrimitives::Varchar',
+  INT = 'meta::pure::precisePrimitives::Int',
+  TINY_INT = 'meta::pure::precisePrimitives::TinyInt',
+  U_TINY_INT = 'meta::pure::precisePrimitives::UTinyInt',
+  SMALL_INT = 'meta::pure::precisePrimitives::SmallInt',
+  U_SMALL_INT = 'meta::pure::precisePrimitives::USmallInt',
+  U_INT = 'meta::pure::precisePrimitives::UInt',
+  BIG_INT = 'meta::pure::precisePrimitives::BigInt',
+  U_BIG_INT = 'meta::pure::precisePrimitives::UBigInt',
+  FLOAT = 'meta::pure::precisePrimitives::Float4',
+  DOUBLE = 'meta::pure::precisePrimitives::Double',
+  DECIMAL = 'meta::pure::precisePrimitives::Decimal',
+  STRICTDATE = 'meta::pure::precisePrimitives::Date',
+  DATETIME = 'meta::pure::precisePrimitives::Timestamp',
+  STRICTTIME = 'meta::pure::precisePrimitives::Time',
+}
+
 export enum ATOMIC_TEST_TYPE {
   Service_Test = 'serviceTest',
   Mapping_Test = 'mappingTest',
