@@ -18,6 +18,9 @@ import {
   type Enum,
   type ObserverContext,
   type PureModel,
+  type V1_CDate,
+  type V1_CStrictTime,
+  type V1_CString,
   EnumValueExplicitReference,
   EnumValueInstanceValue,
   GenericType,
@@ -33,8 +36,6 @@ import {
   V1_CInteger,
   V1_CLatestDate,
   V1_CStrictDate,
-  V1_CStrictTime,
-  V1_CString,
 } from '@finos/legend-graph';
 import {
   assertErrorThrown,
@@ -61,7 +62,6 @@ import {
   type LegendApplicationPlugin,
   type LegendApplicationPluginManager,
 } from '@finos/legend-application';
-import type { V1_CDate } from '../../../../legend-graph/src/graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CDate.js';
 import {
   _elementPtr,
   _function,

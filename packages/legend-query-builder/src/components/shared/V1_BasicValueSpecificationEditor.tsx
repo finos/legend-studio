@@ -14,29 +14,25 @@
  * limitations under the License.
  */
 
-import { useApplicationStore } from '@finos/legend-application';
 import {
   type SelectComponent,
   type TooltipPlacement,
-  clsx,
-  CustomSelectorInput,
-  PencilIcon,
-  RefreshIcon,
   Tooltip,
 } from '@finos/legend-art';
 import {
-  type Enum,
   type Type,
+  type V1_AppliedFunction,
+  type V1_CDate,
+  type V1_CStrictTime,
+  type V1_Enumeration,
+  type V1_Multiplicity,
+  type V1_PackageableType,
   type V1_ValueSpecification,
   type V1_Variable,
-  Enumeration,
   getMultiplicityDescription,
   PRIMITIVE_TYPE,
-  PrimitiveType,
-  V1_AppliedFunction,
   V1_AppliedProperty,
   V1_CBoolean,
-  V1_CDate,
   V1_CDateTime,
   V1_CDecimal,
   V1_CFloat,
@@ -44,27 +40,24 @@ import {
   V1_CLatestDate,
   V1_Collection,
   V1_CStrictDate,
-  V1_CStrictTime,
   V1_CString,
-  V1_Enumeration,
   V1_EnumValue,
-  V1_Multiplicity,
-  V1_PackageableElementPtr,
-  V1_PackageableType,
   V1_PrimitiveValueSpecification,
+  V1_serializeValueSpecification,
 } from '@finos/legend-graph';
 import {
   type DebouncedFunc,
   type GeneratorFn,
   csvStringify,
+  guaranteeIsString,
   guaranteeNonNullable,
   guaranteeType,
   isNonNullable,
 } from '@finos/legend-shared';
-import { observer } from 'mobx-react-lite';
-import React, { forwardRef, useState } from 'react';
+import React, { forwardRef } from 'react';
 import {
   BooleanPrimitiveInstanceValueEditor,
+  CollectionValueInstanceValueEditor,
   DateInstanceValueEditor,
   EnumInstanceValueEditor,
   NumberPrimitiveInstanceValueEditor,
@@ -192,183 +185,6 @@ const V1_stringifyValue = (values: V1_ValueSpecification[]): string => {
   ]).trim();
 };
 
-const V1_getPlaceHolder = (expectedType: Type): string => {
-  if (expectedType instanceof PrimitiveType) {
-    switch (expectedType.path) {
-      case 'Date':
-      case 'StrictDate':
-        return 'yyyy-mm-dd';
-      case 'DateTime':
-        return 'yyyy-mm-ddThh:mm:ss';
-      default:
-        return 'Add';
-    }
-  }
-  return 'Add';
-};
-
-// Enum value editor
-const V1_EnumValueInstanceValueEditor = observer(
-  (props: {
-    valueSpecification: V1_EnumValue;
-    className?: string | undefined;
-    resetValue: () => void;
-    setValueSpecification: (val: V1_EnumValue) => void;
-    // observerContext: ObserverContext;
-    handleBlur?: (() => void) | undefined;
-  }) => {
-    const {
-      valueSpecification,
-      className,
-      resetValue,
-      setValueSpecification,
-      // observerContext,
-      handleBlur,
-    } = props;
-
-    const applicationStore = useApplicationStore();
-    const enumType = guaranteeType(valueSpecification.value, Enumeration);
-    const enumValue = valueSpecification.value;
-    const options = enumType.values.map((value) => ({
-      label: value.name,
-      value: value,
-    }));
-    const resetButtonName = `reset-${valueSpecification.value}`;
-    const inputName = `input-${valueSpecification.value}`;
-
-    const changeValue = (val: { value: Enum; label: string }): void => {
-      // Using a similar pattern to the original implementation
-      // Note: V1 protocol doesn't have EnumValueExplicitReference, so we use direct assignment
-      // but follow the same pattern of updating and then calling setValueSpecification
-      valueSpecification.value = val.value.name;
-      setValueSpecification(valueSpecification);
-      handleBlur?.();
-    };
-
-    const onBlur = (
-      event: React.FocusEvent<HTMLInputElement, HTMLButtonElement>,
-    ): void => {
-      if (
-        event.relatedTarget?.name !== resetButtonName &&
-        event.relatedTarget?.name !== inputName
-      ) {
-        handleBlur?.();
-      }
-    };
-
-    return (
-      <div className={clsx('value-spec-editor', className)} onBlur={onBlur}>
-        <CustomSelectorInput
-          className="value-spec-editor__enum-selector"
-          options={options}
-          onChange={changeValue}
-          value={
-            enumValue
-              ? { value: enumValue as unknown as Enum, label: enumValue }
-              : null
-          }
-          darkMode={
-            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
-          }
-          hasError={false}
-          placeholder="Select value"
-          autoFocus={true}
-          inputName={inputName}
-        />
-        <button
-          className="value-spec-editor__reset-btn"
-          name={resetButtonName}
-          title="Reset"
-          onClick={resetValue}
-        >
-          <RefreshIcon />
-        </button>
-      </div>
-    );
-  },
-);
-
-// Collection value editor
-const V1_CollectionValueInstanceValueEditor = observer(
-  (props: {
-    valueSpecification: V1_Collection;
-    expectedType: Type;
-    className?: string | undefined;
-    setValueSpecification: (val: V1_ValueSpecification) => void;
-    selectorConfig?: V1_BasicValueSpecificationEditorSelectorConfig | undefined;
-    // observerContext: ObserverContext;
-  }) => {
-    const {
-      valueSpecification,
-      expectedType,
-      className,
-      setValueSpecification,
-      selectorConfig,
-      // observerContext,
-    } = props;
-
-    const [editable, setEditable] = useState(false);
-    const valueText = V1_stringifyValue(valueSpecification.values ?? []);
-    const COLLECTION_PREVIEW_CHAR_LIMIT = 50;
-    const previewText = `List(${
-      !valueSpecification.values || valueSpecification.values.length === 0
-        ? 'empty'
-        : valueSpecification.values.length
-    })${
-      !valueSpecification.values || valueSpecification.values.length === 0
-        ? ''
-        : `: ${
-            valueText.length > COLLECTION_PREVIEW_CHAR_LIMIT
-              ? `${valueText.substring(0, COLLECTION_PREVIEW_CHAR_LIMIT)}...`
-              : valueText
-          }`
-    }`;
-    const enableEdit = (): void => setEditable(true);
-    const saveEdit = (): void => {
-      if (editable) {
-        setEditable(false);
-        setValueSpecification(valueSpecification);
-      }
-    };
-
-    if (editable) {
-      return (
-        <>
-          <div className={clsx('value-spec-editor', className)}>
-            {expectedType instanceof Enumeration ? (
-              <div className="value-spec-editor--unsupported">
-                V1 enum collection editor not yet implemented
-              </div>
-            ) : (
-              <div className="value-spec-editor--unsupported">
-                V1 primitive collection editor not yet implemented
-              </div>
-            )}
-          </div>
-        </>
-      );
-    }
-    return (
-      <div
-        className={clsx('value-spec-editor', className)}
-        onClick={enableEdit}
-        title="Click to edit"
-      >
-        <div
-          className={clsx('value-spec-editor__list-editor__preview', {
-            'value-spec-editor__list-editor__preview--error': false,
-          })}
-        >
-          {previewText}
-        </div>
-        <button className="value-spec-editor__list-editor__edit-icon">
-          <PencilIcon />
-        </button>
-      </div>
-    );
-  },
-);
-
 // Main component
 export const V1_BasicValueSpecificationEditor = forwardRef<
   HTMLInputElement | null,
@@ -405,125 +221,126 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
 
   // Handle non-collection editors
   if (multiplicity.upperBound !== undefined) {
-    switch (type.fullPath) {
-      case PRIMITIVE_TYPE.STRING:
-        return (
-          <StringPrimitiveInstanceValueEditor<V1_CString>
-            valueSpecification={guaranteeType(valueSpecification, V1_CString)}
-            valueSelector={(val: V1_CString) => val.value}
-            updateValueSpecification={(
-              _valueSpecification: V1_CString,
-              value: string | null,
-            ) => {
-              V1_PrimitiveValue_setValue(_valueSpecification, value ?? '');
-              setValueSpecification(_valueSpecification);
-            }}
-            className={className}
-            resetValue={resetValue}
-            ref={
-              ref as React.ForwardedRef<
-                HTMLInputElement | SelectComponent | null
-              >
-            }
-            handleBlur={handleBlur}
-            handleKeyDown={handleKeyDown}
-          />
-        );
-      case PRIMITIVE_TYPE.BOOLEAN:
-        return (
-          <BooleanPrimitiveInstanceValueEditor<V1_CBoolean>
-            valueSpecification={guaranteeType(valueSpecification, V1_CBoolean)}
-            valueSelector={(val: V1_CBoolean) => val.value}
-            updateValueSpecification={(
-              _valueSpecification: V1_CBoolean,
-              value: boolean,
-            ) => {
-              V1_PrimitiveValue_setValue(_valueSpecification, value);
-              setValueSpecification(_valueSpecification);
-            }}
-            className={className}
-            resetValue={resetValue}
-          />
-        );
-      case PRIMITIVE_TYPE.BINARY:
-      case PRIMITIVE_TYPE.BYTE:
-      case PRIMITIVE_TYPE.DECIMAL:
-      case PRIMITIVE_TYPE.FLOAT:
-      case PRIMITIVE_TYPE.INTEGER:
-      case PRIMITIVE_TYPE.NUMBER:
-        const numericValueSpecification =
-          type.fullPath === PRIMITIVE_TYPE.INTEGER
-            ? guaranteeType(valueSpecification, V1_CInteger)
-            : type.fullPath === PRIMITIVE_TYPE.DECIMAL
-              ? guaranteeType(valueSpecification, V1_CDecimal)
-              : guaranteeType(valueSpecification, V1_CFloat);
-        return (
-          <NumberPrimitiveInstanceValueEditor<
-            V1_CInteger | V1_CDecimal | V1_CFloat
-          >
-            valueSpecification={numericValueSpecification}
-            valueSelector={(val: V1_CInteger | V1_CDecimal | V1_CFloat) =>
-              val.value
-            }
-            isInteger={valueSpecification instanceof V1_CInteger}
-            updateValueSpecification={(
-              _valueSpecification: V1_CInteger | V1_CDecimal | V1_CFloat,
-              value: number,
-            ) => {
-              V1_PrimitiveValue_setValue(_valueSpecification, value);
-              setValueSpecification(_valueSpecification);
-            }}
-            className={className}
-            resetValue={resetValue}
-            ref={ref}
-            handleBlur={handleBlur}
-            handleKeyDown={handleKeyDown}
-          />
-        );
-      case PRIMITIVE_TYPE.DATE:
-      case PRIMITIVE_TYPE.STRICTDATE:
-      case PRIMITIVE_TYPE.DATETIME:
-      case PRIMITIVE_TYPE.STRICTTIME:
-      case PRIMITIVE_TYPE.LATESTDATE:
-        const dateUpdateValueSpecification: CustomDatePickerUpdateValueSpecification<
-          V1_CDateTime | V1_CStrictDate | V1_CLatestDate | undefined
-        > = (_valueSpecification, value, options): void => {
-          if (value instanceof CustomDateOption) {
-            setValueSpecification(buildV1PureAdjustDateFunction(value));
-          } else if (value instanceof CustomFirstDayOfOption) {
-            setValueSpecification(buildV1PureDateFunctionExpression(value));
-          } else if (value instanceof CustomPreviousDayOfWeekOption) {
-            setValueSpecification(buildV1PureDateFunctionExpression(value));
-          } else if (value instanceof DatePickerOption) {
-            setValueSpecification(buildV1PureDateFunctionExpression(value));
-          } else {
-            const _type = guaranteeNonNullable(options?.primitiveTypeEnum);
-            setValueSpecification(_primitiveValue(_type, value));
+    if (type.fullPath === PRIMITIVE_TYPE.STRING) {
+      return (
+        <StringPrimitiveInstanceValueEditor<V1_CString>
+          valueSpecification={guaranteeType(valueSpecification, V1_CString)}
+          valueSelector={(val: V1_CString) => val.value}
+          updateValueSpecification={(
+            _valueSpecification: V1_CString,
+            value: string | null,
+          ) => {
+            V1_PrimitiveValue_setValue(_valueSpecification, value ?? '');
+            setValueSpecification(_valueSpecification);
+          }}
+          className={className}
+          resetValue={resetValue}
+          ref={
+            ref as React.ForwardedRef<HTMLInputElement | SelectComponent | null>
           }
-        };
-        return (
-          <DateInstanceValueEditor<
-            V1_CDate | V1_CStrictTime | V1_AppliedFunction | V1_CString
-          >
-            valueSpecification={
-              valueSpecification as
-                | V1_CDate
-                | V1_CStrictTime
-                | V1_AppliedFunction
-                | V1_CString
-            }
-            valueSelector={(_valueSpecification) =>
-              _valueSpecification instanceof V1_CDateTime ||
-              _valueSpecification instanceof V1_CStrictDate
-                ? _valueSpecification.value
-                : ''
-            }
-            updateValueSpecification={dateUpdateValueSpecification}
-            typeCheckOption={typeCheckOption}
-            resetValue={resetValue}
-            className={className}
-          />
-        );
+          handleBlur={handleBlur}
+          handleKeyDown={handleKeyDown}
+        />
+      );
+    } else if (type.fullPath === PRIMITIVE_TYPE.BOOLEAN) {
+      return (
+        <BooleanPrimitiveInstanceValueEditor<V1_CBoolean>
+          valueSpecification={guaranteeType(valueSpecification, V1_CBoolean)}
+          valueSelector={(val: V1_CBoolean) => val.value}
+          updateValueSpecification={(
+            _valueSpecification: V1_CBoolean,
+            value: boolean,
+          ) => {
+            V1_PrimitiveValue_setValue(_valueSpecification, value);
+            setValueSpecification(_valueSpecification);
+          }}
+          className={className}
+          resetValue={resetValue}
+        />
+      );
+    } else if (
+      type.fullPath === PRIMITIVE_TYPE.BINARY ||
+      type.fullPath === PRIMITIVE_TYPE.BYTE ||
+      type.fullPath === PRIMITIVE_TYPE.DECIMAL ||
+      type.fullPath === PRIMITIVE_TYPE.FLOAT ||
+      type.fullPath === PRIMITIVE_TYPE.INTEGER ||
+      type.fullPath === PRIMITIVE_TYPE.NUMBER
+    ) {
+      const numericValueSpecification =
+        type.fullPath === PRIMITIVE_TYPE.INTEGER
+          ? guaranteeType(valueSpecification, V1_CInteger)
+          : type.fullPath === PRIMITIVE_TYPE.DECIMAL
+            ? guaranteeType(valueSpecification, V1_CDecimal)
+            : guaranteeType(valueSpecification, V1_CFloat);
+      return (
+        <NumberPrimitiveInstanceValueEditor<
+          V1_CInteger | V1_CDecimal | V1_CFloat
+        >
+          valueSpecification={numericValueSpecification}
+          valueSelector={(val: V1_CInteger | V1_CDecimal | V1_CFloat) =>
+            val.value
+          }
+          isInteger={valueSpecification instanceof V1_CInteger}
+          updateValueSpecification={(
+            _valueSpecification: V1_CInteger | V1_CDecimal | V1_CFloat,
+            value: number,
+          ) => {
+            V1_PrimitiveValue_setValue(_valueSpecification, value);
+            setValueSpecification(_valueSpecification);
+          }}
+          className={className}
+          resetValue={resetValue}
+          ref={ref}
+          handleBlur={handleBlur}
+          handleKeyDown={handleKeyDown}
+        />
+      );
+    } else if (
+      type.fullPath === PRIMITIVE_TYPE.DATE ||
+      type.fullPath === PRIMITIVE_TYPE.STRICTDATE ||
+      type.fullPath === PRIMITIVE_TYPE.DATETIME ||
+      type.fullPath === PRIMITIVE_TYPE.STRICTTIME ||
+      type.fullPath === PRIMITIVE_TYPE.LATESTDATE
+    ) {
+      const dateUpdateValueSpecification: CustomDatePickerUpdateValueSpecification<
+        V1_CDateTime | V1_CStrictDate | V1_CLatestDate | undefined
+      > = (_valueSpecification, value, options): void => {
+        if (value instanceof CustomDateOption) {
+          setValueSpecification(buildV1PureAdjustDateFunction(value));
+        } else if (value instanceof CustomFirstDayOfOption) {
+          setValueSpecification(buildV1PureDateFunctionExpression(value));
+        } else if (value instanceof CustomPreviousDayOfWeekOption) {
+          setValueSpecification(buildV1PureDateFunctionExpression(value));
+        } else if (value instanceof DatePickerOption) {
+          setValueSpecification(buildV1PureDateFunctionExpression(value));
+        } else {
+          const _type = guaranteeNonNullable(options?.primitiveTypeEnum);
+          setValueSpecification(_primitiveValue(_type, value));
+        }
+      };
+      return (
+        <DateInstanceValueEditor<
+          V1_CDate | V1_CStrictTime | V1_AppliedFunction | V1_CString
+        >
+          valueSpecification={
+            valueSpecification as
+              | V1_CDate
+              | V1_CStrictTime
+              | V1_AppliedFunction
+              | V1_CString
+          }
+          valueSelector={(_valueSpecification) =>
+            _valueSpecification instanceof V1_CDateTime ||
+            _valueSpecification instanceof V1_CStrictDate
+              ? _valueSpecification.value
+              : ''
+          }
+          updateValueSpecification={dateUpdateValueSpecification}
+          typeCheckOption={typeCheckOption}
+          resetValue={resetValue}
+          className={className}
+        />
+      );
     }
     // Enum editors should have enumeration passed in the props
     if (enumeration) {
@@ -556,17 +373,63 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
         />
       );
     }
-  } else if (valueSpecification instanceof V1_Collection) {
-    // return (
-    //   <V1_CollectionValueInstanceValueEditor
-    //     valueSpecification={valueSpecification}
-    //     expectedType={typeCheckOption.expectedType}
-    //     className={className}
-    //     setValueSpecification={setValueSpecification}
-    //     selectorConfig={selectorConfig}
-    //     observerContext={observerContext}
-    //   />
-    // );
+  } else {
+    const collectionValueSpecification = guaranteeType(
+      valueSpecification,
+      V1_Collection,
+    );
+    // Handle collection editors
+    const updateValueSpecification = (
+      _collectionValueSpecification: V1_Collection,
+      valueSpecifications: V1_ValueSpecification[],
+    ) => {
+      _collectionValueSpecification.values = valueSpecifications;
+      setValueSpecification(_collectionValueSpecification);
+    };
+    const stringifyCollectionValueSpecification = (
+      _collectionValueSpecification: V1_Collection,
+    ): string => {
+      return V1_stringifyValue(_collectionValueSpecification.values);
+    };
+    const convertValueSpecificationToText = (
+      _valueSpecification: V1_ValueSpecification,
+    ): string => {
+      return JSON.stringify(
+        V1_serializeValueSpecification(_valueSpecification, []),
+      );
+    };
+    const convertTextToValueSpecification = (
+      _type: Type | string,
+      text: string,
+    ): V1_ValueSpecification | null => {
+      return _primitiveValue(
+        guaranteeIsString(
+          _type,
+          'Cannot convert text to V1_ValueSpecification. Expected type to be a string',
+        ),
+        text,
+      );
+    };
+    const options =
+      enumeration?.values.map((enumValue) => ({
+        label: enumValue.value,
+        value: enumValue.value,
+      })) ?? [];
+
+    return (
+      <CollectionValueInstanceValueEditor<V1_ValueSpecification, V1_Collection>
+        valueSpecification={collectionValueSpecification}
+        updateValueSpecification={updateValueSpecification}
+        expectedType={typeCheckOption.expectedType}
+        stringifyCollectionValueSpecification={
+          stringifyCollectionValueSpecification
+        }
+        convertValueSpecificationToText={convertValueSpecificationToText}
+        convertTextToValueSpecification={convertTextToValueSpecification}
+        resetValue={resetValue}
+        options={options}
+      />
+    );
   }
 
   // Default case for unsupported value specifications

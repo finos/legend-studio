@@ -43,7 +43,6 @@ import {
   type ObserverContext,
   type PureModel,
   type ValueSpecification,
-  type V1_Type,
   CollectionInstanceValue,
   Enumeration,
   EnumValueExplicitReference,
@@ -61,7 +60,6 @@ import {
   PrimitiveType,
   SimpleFunctionExpression,
   Type,
-  V1_PackageableType,
   VariableExpression,
   observe_ValueSpecification,
 } from '@finos/legend-graph';
@@ -719,7 +717,7 @@ const stringifyValue = (values: ValueSpecification[]): string => {
   ]).trim();
 };
 
-const getPlaceHolder = (expectedType: Type | V1_Type): string => {
+const getPlaceHolder = (expectedType: Type | string): string => {
   if (expectedType instanceof PrimitiveType) {
     switch (expectedType.path) {
       case PRIMITIVE_TYPE.DATE:
@@ -730,8 +728,8 @@ const getPlaceHolder = (expectedType: Type | V1_Type): string => {
       default:
         return 'Add';
     }
-  } else if (expectedType instanceof V1_PackageableType) {
-    switch (expectedType.fullPath) {
+  } else {
+    switch (expectedType) {
       case PRIMITIVE_TYPE.DATE:
       case PRIMITIVE_TYPE.STRICTDATE:
         return 'yyyy-mm-dd';
@@ -742,7 +740,6 @@ const getPlaceHolder = (expectedType: Type | V1_Type): string => {
         return 'Add';
     }
   }
-  return 'Add';
 };
 
 interface BasicValueSpecificationEditorSelectorConfig {
@@ -761,13 +758,13 @@ interface PrimitiveCollectionInstanceValueEditorProps<
   valueSpecification: U;
   updateValueSpecification: (valueSpecification: U, values: T[]) => void;
   convertTextToValueSpecification: (
-    type: Type | V1_Type,
+    type: Type | string,
     text: string,
   ) => T | null;
   convertValueSpecificationToText: (
     valueSpecification: T,
   ) => string | undefined;
-  expectedType: Type | V1_Type;
+  expectedType: Type | string;
   saveEdit: () => void;
   selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
   errorChecker?: (valueSpecification: T) => boolean;
@@ -1740,7 +1737,7 @@ export const BasicValueSpecificationEditor = forwardRef<
           )
         }
         convertTextToValueSpecification={(
-          type: Type | V1_Type,
+          type: Type | string,
           text: string,
         ): ValueSpecification | null => {
           if (type instanceof Enumeration) {
