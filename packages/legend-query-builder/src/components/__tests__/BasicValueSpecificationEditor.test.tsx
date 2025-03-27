@@ -370,6 +370,11 @@ test(
 
     expect((boolValueSpec as PrimitiveInstanceValue).values[0]).toBe(false);
 
+    const toggleElement = await screen.findByRole('checkbox');
+    expect(toggleElement).not.toBeNull();
+
+    expect((boolValueSpec as PrimitiveInstanceValue).values[0]).toBe(false);
+
     fireEvent.click(toggleElement);
 
     await waitFor(() => {
