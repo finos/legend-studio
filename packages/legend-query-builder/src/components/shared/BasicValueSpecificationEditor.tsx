@@ -787,8 +787,6 @@ const PrimitiveCollectionInstanceValueEditorInner = <
     convertValueSpecificationToText,
     updateValueSpecification,
     saveEdit,
-    resetValue,
-    className,
     selectorConfig,
     expectedType,
   } = props;
@@ -1070,11 +1068,7 @@ const EnumCollectionInstanceValueEditorInner = <T, U extends { values: T[] }>(
     convertTextToValueSpecification,
     convertValueSpecificationToText,
     updateValueSpecification,
-    errorChecker,
     saveEdit,
-    resetValue,
-    className,
-    selectorConfig,
     expectedType,
     options,
   } = props;
@@ -1500,6 +1494,8 @@ export const BasicValueSpecificationEditor = forwardRef<
 
   const applicationStore = useApplicationStore();
 
+  const errorChecker = (_valueSpecification: InstanceValue) =>
+    !isValidInstanceValue(_valueSpecification);
   const dateValueSelector = (
     _valueSpecification: SimpleFunctionExpression | PrimitiveInstanceValue,
   ): string | null => {
@@ -1579,8 +1575,6 @@ export const BasicValueSpecificationEditor = forwardRef<
       instanceValue_setValue(_valueSpecification, value, 0, observerContext);
       setValueSpecification(_valueSpecification);
     };
-    const errorChecker = (_valueSpecification: PrimitiveInstanceValue) =>
-      !isValidInstanceValue(_valueSpecification);
     switch (_type.path) {
       case PRIMITIVE_TYPE.STRING:
         return (
@@ -1647,6 +1641,10 @@ export const BasicValueSpecificationEditor = forwardRef<
             resetValue={resetValue}
             handleBlur={handleBlur}
             displayAsEditableValue={displayDateEditorAsEditableValue}
+            errorChecker={(_valueSpecification) =>
+              _valueSpecification instanceof PrimitiveInstanceValue &&
+              errorChecker(_valueSpecification)
+            }
           />
         );
       default:
@@ -1731,6 +1729,7 @@ export const BasicValueSpecificationEditor = forwardRef<
           collectionValueSpecification: CollectionInstanceValue,
         ) => stringifyValue(collectionValueSpecification.values)}
         resetValue={resetValue}
+        errorChecker={errorChecker}
         convertValueSpecificationToText={(
           _valueSpecification: ValueSpecification,
         ) =>
