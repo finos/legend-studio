@@ -97,46 +97,115 @@ test(
 
 test(
   integrationTest(
-    'BasicValueSpecificationEditor renders and updates number primitive values correctly',
+    'BasicValueSpecificationEditor renders and updates integer primitive values correctly',
   ),
   async () => {
-    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
+    const graphManagerState = await TEST__setUpGraphManagerState(
       TEST_DATA__SimpleRelationalModel,
-      stub_RawLambda(),
-      'execution::RelationalMapping',
-      'execution::Runtime',
-      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelational,
+      pluginManager,
+    );
+    const observerContext = new ObserverContext(
+      graphManagerState.pluginManager.getPureGraphManagerPlugins(),
     );
 
-    let numberValueSpec = buildPrimitiveInstanceValue(
-      queryBuilderState.graphManagerState.graph,
-      PRIMITIVE_TYPE.INTEGER,
-      42,
-      queryBuilderState.observerContext,
+    let integerValueSpec: ValueSpecification = observe_ValueSpecification(
+      buildPrimitiveInstanceValue(
+        graphManagerState.graph,
+        PRIMITIVE_TYPE.INTEGER,
+        42,
+        observerContext,
+      ),
+      observerContext,
     );
 
-    const setValueSpecification = (newVal: PrimitiveInstanceValue): void => {
-      numberValueSpec = newVal;
+    const setValueSpecification = (newVal: ValueSpecification): void => {
+      integerValueSpec = newVal;
     };
 
-    const { getByDisplayValue: getByDisplayValueInEditor } = render(
-      <TestEditorWrapper
-        valueSpecification={numberValueSpec}
-        setValueSpecification={setValueSpecification}
-        graph={queryBuilderState.graphManagerState.graph}
-        observerContext={queryBuilderState.observerContext}
-      />,
-    );
+    const typeCheckOption = {
+      expectedType: (integerValueSpec as PrimitiveInstanceValue).genericType
+        .value.rawType,
+      match:
+        (integerValueSpec as PrimitiveInstanceValue).genericType.value
+          .rawType === PrimitiveType.DATETIME,
+    };
 
-    const inputElement = getByDisplayValueInEditor('42');
+    TEST__setUpBasicValueSpecificationEditor(pluginManager, {
+      valueSpecification: integerValueSpec,
+      setValueSpecification: setValueSpecification,
+      typeCheckOption: typeCheckOption,
+      resetValue: () => {},
+      graph: graphManagerState.graph,
+      observerContext: observerContext,
+    });
+
+    const inputElement = await screen.findByDisplayValue('42');
     expect(inputElement).not.toBeNull();
 
-    fireEvent.change(inputElement, { target: { value: '123' } });
+    fireEvent.change(inputElement, { target: { value: '123.45' } });
     fireEvent.blur(inputElement);
 
-    await waitFor(() => getByDisplayValueInEditor('123'));
+    await screen.findByDisplayValue('123');
 
-    expect(numberValueSpec.values[0]).toBe(123);
+    expect((integerValueSpec as PrimitiveInstanceValue).values[0]).toBe(123);
+  },
+);
+
+test(
+  integrationTest(
+    'BasicValueSpecificationEditor renders and updates float primitive values correctly',
+  ),
+  async () => {
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
+    const graphManagerState = await TEST__setUpGraphManagerState(
+      TEST_DATA__SimpleRelationalModel,
+      pluginManager,
+    );
+    const observerContext = new ObserverContext(
+      graphManagerState.pluginManager.getPureGraphManagerPlugins(),
+    );
+
+    let floatValueSpec: ValueSpecification = observe_ValueSpecification(
+      buildPrimitiveInstanceValue(
+        graphManagerState.graph,
+        PRIMITIVE_TYPE.FLOAT,
+        10.5,
+        observerContext,
+      ),
+      observerContext,
+    );
+
+    const setValueSpecification = (newVal: ValueSpecification): void => {
+      floatValueSpec = newVal;
+    };
+
+    const typeCheckOption = {
+      expectedType: (floatValueSpec as PrimitiveInstanceValue).genericType
+        .value.rawType,
+      match:
+        (floatValueSpec as PrimitiveInstanceValue).genericType.value
+          .rawType === PrimitiveType.DATETIME,
+    };
+
+    TEST__setUpBasicValueSpecificationEditor(pluginManager, {
+      valueSpecification: floatValueSpec,
+      setValueSpecification: setValueSpecification,
+      typeCheckOption: typeCheckOption,
+      resetValue: () => {},
+      graph: graphManagerState.graph,
+      observerContext: observerContext,
+    });
+
+    const inputElement = await screen.findByDisplayValue('10.5');
+    expect(inputElement).not.toBeNull();
+
+    fireEvent.change(inputElement, { target: { value: '10.0' } });
+    fireEvent.blur(inputElement);
+
+    await screen.findByDisplayValue('10');
+
+    expect((floatValueSpec as PrimitiveInstanceValue).values[0]).toBe(10);
   },
 );
 
@@ -145,42 +214,53 @@ test(
     'BasicValueSpecificationEditor renders and updates boolean primitive values correctly',
   ),
   async () => {
-    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
+    const graphManagerState = await TEST__setUpGraphManagerState(
       TEST_DATA__SimpleRelationalModel,
-      stub_RawLambda(),
-      'execution::RelationalMapping',
-      'execution::Runtime',
-      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelational,
+      pluginManager,
+    );
+    const observerContext = new ObserverContext(
+      graphManagerState.pluginManager.getPureGraphManagerPlugins(),
     );
 
-    let boolValueSpec = buildPrimitiveInstanceValue(
-      queryBuilderState.graphManagerState.graph,
-      PRIMITIVE_TYPE.BOOLEAN,
-      false,
-      queryBuilderState.observerContext,
+    let boolValueSpec: ValueSpecification = observe_ValueSpecification(
+      buildPrimitiveInstanceValue(
+        graphManagerState.graph,
+        PRIMITIVE_TYPE.BOOLEAN,
+        false,
+        observerContext,
+      ),
+      observerContext,
     );
 
-    const setValueSpecification = (newVal: PrimitiveInstanceValue): void => {
+    const setValueSpecification = (newVal: ValueSpecification): void => {
       boolValueSpec = newVal;
     };
 
-    const component = render(
-      <TestEditorWrapper
-        valueSpecification={boolValueSpec}
-        setValueSpecification={setValueSpecification}
-        graph={queryBuilderState.graphManagerState.graph}
-        observerContext={queryBuilderState.observerContext}
-      />,
-    );
+    const typeCheckOption = {
+      expectedType: (boolValueSpec as PrimitiveInstanceValue).genericType
+        .value.rawType,
+      match:
+        (boolValueSpec as PrimitiveInstanceValue).genericType.value
+          .rawType === PrimitiveType.DATETIME,
+    };
 
-    const toggleElement = guaranteeNonNullable(
-      component.container.querySelector('.toggle-switch__slider'),
-    );
+    TEST__setUpBasicValueSpecificationEditor(pluginManager, {
+      valueSpecification: boolValueSpec,
+      setValueSpecification: setValueSpecification,
+      typeCheckOption: typeCheckOption,
+      resetValue: () => {},
+      graph: graphManagerState.graph,
+      observerContext: observerContext,
+    });
 
-    expect(boolValueSpec.values[0]).toBe(false);
-
+    const toggleElement = await screen.findByRole('checkbox');
+    expect(toggleElement).not.toBeNull();
+    
+    expect((boolValueSpec as PrimitiveInstanceValue).values[0]).toBe(false);
+    
     fireEvent.click(toggleElement);
-
-    await waitFor(() => expect(boolValueSpec.values[0]).toBe(true));
+    
+    await waitFor(() => expect((boolValueSpec as PrimitiveInstanceValue).values[0]).toBe(true));
   },
 );
