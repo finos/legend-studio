@@ -219,8 +219,10 @@ export abstract class DataCubeEngine {
     ).substring(`''->`.length);
   }
 
-  async generateBaseSpecification(sourceData: PlainObject) {
-    const source = await this.processSource(sourceData);
+  async generateBaseSpecification(
+    sourceData: PlainObject,
+    source: DataCubeSource,
+  ) {
     const query = new DataCubeSpecification();
     query.source = sourceData;
     query.query = await this.getValueSpecificationCode(

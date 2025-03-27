@@ -16,6 +16,7 @@
 
 export { LEGEND_DATACUBE_TEST_ID } from './__lib__/DataCubeTesting.js';
 
+export * from './__lib__/DataCubeTelemetryHelper.js';
 export * from './stores/core/model/DataCubeSpecification.js';
 export * from './stores/core/model/DataCubeSource.js';
 export { type DataCubeColumn } from './stores/core/model/DataCubeColumn.js';
