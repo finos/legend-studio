@@ -16,7 +16,7 @@
 
 import { test, expect } from '@jest/globals';
 import { waitFor, fireEvent, screen } from '@testing-library/react';
-import { integrationTest } from '@finos/legend-shared/test';
+const integrationTest = (name: string): string => `[INTEGRATION] ${name}`;
 import {
   type PrimitiveInstanceValue,
   type ValueSpecification,
@@ -24,12 +24,20 @@ import {
   PRIMITIVE_TYPE,
   PrimitiveType,
   observe_ValueSpecification,
+  CollectionInstanceValue,
+  EnumValueExplicitReference,
+  EnumValueInstanceValue,
+  GenericType,
+  GenericTypeExplicitReference,
+  getEnumValue,
+  Multiplicity,
 } from '@finos/legend-graph';
 import {
   TEST__setUpBasicValueSpecificationEditor,
   TEST__setUpGraphManagerState,
 } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
-import TEST_DATA__SimpleRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelational.json' with { type: 'json' };
+const TEST_DATA__SimpleRelationalModel = require('../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelational.json');
+const TEST_DATA__QueryBuilder_Model_ComplexRelational = require('../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json');
 import { buildPrimitiveInstanceValue } from '../../stores/shared/ValueSpecificationEditorHelper.js';
 import { TEST__LegendApplicationPluginManager } from '../../stores/__test-utils__/QueryBuilderStateTestUtils.js';
 
@@ -261,5 +269,343 @@ test(
     await waitFor(() => {
       expect((boolValueSpec as PrimitiveInstanceValue).values[0]).toBe(true);
     });
+  },
+);
+
+test(
+  integrationTest(
+    'BasicValueSpecificationEditor renders and updates string collection values correctly',
+  ),
+  async () => {
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
+    const graphManagerState = await TEST__setUpGraphManagerState(
+      TEST_DATA__SimpleRelationalModel,
+      pluginManager,
+    );
+    const observerContext = new ObserverContext(
+      graphManagerState.pluginManager.getPureGraphManagerPlugins(),
+    );
+
+    const stringCollectionValue = new CollectionInstanceValue(
+      new Multiplicity(0, null),
+      GenericTypeExplicitReference.create(
+        new GenericType(PrimitiveType.STRING),
+      ),
+    );
+
+    stringCollectionValue.values = [
+      buildPrimitiveInstanceValue(
+        graphManagerState.graph,
+        PRIMITIVE_TYPE.STRING,
+        'value1',
+        observerContext,
+      ),
+      buildPrimitiveInstanceValue(
+        graphManagerState.graph,
+        PRIMITIVE_TYPE.STRING,
+        'value2',
+        observerContext,
+      ),
+    ];
+
+    let updatedValue: ValueSpecification | undefined;
+    const setValueSpecification = (val: ValueSpecification): void => {
+      updatedValue = val;
+    };
+
+    TEST__setUpBasicValueSpecificationEditor(pluginManager, {
+      valueSpecification: stringCollectionValue,
+      setValueSpecification,
+      typeCheckOption: {
+        expectedType: PrimitiveType.STRING,
+      },
+      resetValue: (): void => {},
+      graph: graphManagerState.graph,
+      observerContext: observerContext,
+    });
+
+    await waitFor(() => {
+      const element = screen.getByText(
+        (content) => content.includes('value1') && content.includes('value2'),
+      );
+      expect(element).not.toBeNull();
+    });
+
+    const editButton = screen.getByRole('button', { name: '' });
+    fireEvent.click(editButton);
+
+    const input = await screen.findByRole('combobox');
+    fireEvent.change(input, { target: { value: 'value3' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+
+    const saveButton = screen.getByTitle('Save');
+    fireEvent.click(saveButton);
+
+    expect(updatedValue).not.toBeUndefined();
+    expect(updatedValue instanceof CollectionInstanceValue).toBe(true);
+    if (updatedValue instanceof CollectionInstanceValue) {
+      expect(updatedValue.values.length).toBe(3);
+      const values = updatedValue.values.map(
+        (v) => (v as PrimitiveInstanceValue).values[0],
+      );
+      expect(values).toContain('value1');
+      expect(values).toContain('value2');
+      expect(values).toContain('value3');
+    }
+  },
+);
+
+test(
+  integrationTest(
+    'BasicValueSpecificationEditor renders and updates integer collection values correctly',
+  ),
+  async () => {
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
+    const graphManagerState = await TEST__setUpGraphManagerState(
+      TEST_DATA__SimpleRelationalModel,
+      pluginManager,
+    );
+    const observerContext = new ObserverContext(
+      graphManagerState.pluginManager.getPureGraphManagerPlugins(),
+    );
+
+    const integerCollectionValue = new CollectionInstanceValue(
+      new Multiplicity(0, null),
+      GenericTypeExplicitReference.create(
+        new GenericType(PrimitiveType.INTEGER),
+      ),
+    );
+
+    integerCollectionValue.values = [
+      buildPrimitiveInstanceValue(
+        graphManagerState.graph,
+        PRIMITIVE_TYPE.INTEGER,
+        1,
+        observerContext,
+      ),
+      buildPrimitiveInstanceValue(
+        graphManagerState.graph,
+        PRIMITIVE_TYPE.INTEGER,
+        2,
+        observerContext,
+      ),
+    ];
+
+    let updatedValue: ValueSpecification | undefined;
+    const setValueSpecification = (val: ValueSpecification): void => {
+      updatedValue = val;
+    };
+
+    TEST__setUpBasicValueSpecificationEditor(pluginManager, {
+      valueSpecification: integerCollectionValue,
+      setValueSpecification,
+      typeCheckOption: {
+        expectedType: PrimitiveType.INTEGER,
+      },
+      resetValue: (): void => {},
+      graph: graphManagerState.graph,
+      observerContext: observerContext,
+    });
+
+    await waitFor(() => {
+      const element = screen.getByText(
+        (content) => content.includes('1') && content.includes('2'),
+      );
+      expect(element).not.toBeNull();
+    });
+
+    const editButton = screen.getByRole('button', { name: '' });
+    fireEvent.click(editButton);
+
+    const input = await screen.findByRole('combobox');
+    fireEvent.change(input, { target: { value: '3' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+
+    const saveButton = screen.getByTitle('Save');
+    fireEvent.click(saveButton);
+
+    expect(updatedValue).not.toBeUndefined();
+    expect(updatedValue instanceof CollectionInstanceValue).toBe(true);
+    if (updatedValue instanceof CollectionInstanceValue) {
+      expect(updatedValue.values.length).toBe(3);
+      const values = updatedValue.values.map(
+        (v) => (v as PrimitiveInstanceValue).values[0],
+      );
+      expect(values).toContain(1);
+      expect(values).toContain(2);
+      expect(values).toContain(3);
+    }
+  },
+);
+
+test(
+  integrationTest(
+    'BasicValueSpecificationEditor renders and updates float collection values correctly',
+  ),
+  async () => {
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
+    const graphManagerState = await TEST__setUpGraphManagerState(
+      TEST_DATA__SimpleRelationalModel,
+      pluginManager,
+    );
+    const observerContext = new ObserverContext(
+      graphManagerState.pluginManager.getPureGraphManagerPlugins(),
+    );
+
+    const floatCollectionValue = new CollectionInstanceValue(
+      new Multiplicity(0, null),
+      GenericTypeExplicitReference.create(new GenericType(PrimitiveType.FLOAT)),
+    );
+
+    floatCollectionValue.values = [
+      buildPrimitiveInstanceValue(
+        graphManagerState.graph,
+        PRIMITIVE_TYPE.FLOAT,
+        1.1,
+        observerContext,
+      ),
+      buildPrimitiveInstanceValue(
+        graphManagerState.graph,
+        PRIMITIVE_TYPE.FLOAT,
+        2.2,
+        observerContext,
+      ),
+    ];
+
+    let updatedValue: ValueSpecification | undefined;
+    const setValueSpecification = (val: ValueSpecification): void => {
+      updatedValue = val;
+    };
+
+    TEST__setUpBasicValueSpecificationEditor(pluginManager, {
+      valueSpecification: floatCollectionValue,
+      setValueSpecification,
+      typeCheckOption: {
+        expectedType: PrimitiveType.FLOAT,
+      },
+      resetValue: (): void => {},
+      graph: graphManagerState.graph,
+      observerContext: observerContext,
+    });
+
+    await waitFor(() => {
+      const element = screen.getByText(
+        (content) => content.includes('1.1') && content.includes('2.2'),
+      );
+      expect(element).not.toBeNull();
+    });
+
+    const editButton = screen.getByRole('button', { name: '' });
+    fireEvent.click(editButton);
+
+    const input = await screen.findByRole('combobox');
+    fireEvent.change(input, { target: { value: '3.3' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+
+    const saveButton = screen.getByTitle('Save');
+    fireEvent.click(saveButton);
+
+    expect(updatedValue).not.toBeUndefined();
+    expect(updatedValue instanceof CollectionInstanceValue).toBe(true);
+    if (updatedValue instanceof CollectionInstanceValue) {
+      expect(updatedValue.values.length).toBe(3);
+      const values = updatedValue.values.map(
+        (v) => (v as PrimitiveInstanceValue).values[0],
+      );
+      expect(values).toContain(1.1);
+      expect(values).toContain(2.2);
+      expect(values).toContain(3.3);
+    }
+  },
+);
+
+test(
+  integrationTest(
+    'BasicValueSpecificationEditor renders and updates enum collection values correctly',
+  ),
+  async () => {
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
+    const graphManagerState = await TEST__setUpGraphManagerState(
+      TEST_DATA__QueryBuilder_Model_ComplexRelational,
+      pluginManager,
+    );
+    const observerContext = new ObserverContext(
+      graphManagerState.pluginManager.getPureGraphManagerPlugins(),
+    );
+
+    const genderTypeEnum = graphManagerState.graph.getEnumeration(
+      'model::owl::tests::model::GenderType',
+    );
+    expect(genderTypeEnum).not.toBeUndefined();
+
+    const enumCollectionValue = new CollectionInstanceValue(
+      new Multiplicity(0, null),
+      GenericTypeExplicitReference.create(new GenericType(genderTypeEnum)),
+    );
+
+    const maleEnumValue = new EnumValueInstanceValue(
+      GenericTypeExplicitReference.create(new GenericType(genderTypeEnum)),
+    );
+    maleEnumValue.values = [
+      EnumValueExplicitReference.create(
+        genderTypeEnum.values.find((v) => v.name === 'MALE'),
+      ),
+    ];
+
+    const femaleEnumValue = new EnumValueInstanceValue(
+      GenericTypeExplicitReference.create(new GenericType(genderTypeEnum)),
+    );
+    femaleEnumValue.values = [
+      EnumValueExplicitReference.create(
+        genderTypeEnum.values.find((v) => v.name === 'FEMALE'),
+      ),
+    ];
+
+    enumCollectionValue.values = [maleEnumValue, femaleEnumValue];
+
+    let updatedValue: ValueSpecification | undefined;
+    const setValueSpecification = (val: ValueSpecification): void => {
+      updatedValue = val;
+    };
+
+    TEST__setUpBasicValueSpecificationEditor(pluginManager, {
+      valueSpecification: enumCollectionValue,
+      setValueSpecification,
+      typeCheckOption: {
+        expectedType: genderTypeEnum,
+      },
+      resetValue: (): void => {},
+      graph: graphManagerState.graph,
+      observerContext: observerContext,
+    });
+
+    await waitFor(() => {
+      const element = screen.getByText(
+        (content) => content.includes('MALE') && content.includes('FEMALE'),
+      );
+      expect(element).not.toBeNull();
+    });
+
+    const editButton = screen.getByRole('button', { name: '' });
+    fireEvent.click(editButton);
+
+    const input = await screen.findByRole('combobox');
+
+    fireEvent.change(input, { target: { value: 'FEMALE' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+
+    const saveButton = screen.getByTitle('Save');
+    fireEvent.click(saveButton);
+
+    expect(updatedValue).not.toBeUndefined();
+    expect(updatedValue instanceof CollectionInstanceValue).toBe(true);
+    if (updatedValue instanceof CollectionInstanceValue) {
+      expect(updatedValue.values.length).toBe(2);
+      const enumNames = updatedValue.values
+        .filter((v) => v instanceof EnumValueInstanceValue)
+        .map((v) => (v as EnumValueInstanceValue).values[0]?.value.name);
+      expect(enumNames).toContain('MALE');
+      expect(enumNames).toContain('FEMALE');
+    }
   },
 );
