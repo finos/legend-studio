@@ -322,8 +322,8 @@ const StringPrimitiveInstanceValueEditorInner = <T,>(
     : undefined;
   const noOptionsMessage =
     selectorConfig?.values === undefined ? (): null => null : undefined;
-  const resetButtonName = `reset-${valueSpecification}`;
-  const inputName = `input-${valueSpecification}`;
+  const resetButtonName = `reset-${valueSelector(valueSpecification)}`;
+  const inputName = `input-${valueSelector(valueSpecification)}`;
 
   const onBlur = (
     event: React.FocusEvent<HTMLInputElement, HTMLButtonElement>,
@@ -556,9 +556,9 @@ const NumberPrimitiveInstanceValueEditorInner = <T,>(
     }
   }, [numericValue, valueSpecification, valueSelector]);
 
-  const resetButtonName = `reset-${valueSpecification}`;
-  const inputName = `input-${valueSpecification}`;
-  const calculateButtonName = `calculate-${valueSpecification}`;
+  const resetButtonName = `reset-${valueSelector(valueSpecification)}`;
+  const inputName = `input-${valueSelector(valueSpecification)}`;
+  const calculateButtonName = `calculate-${valueSelector(valueSpecification)}`;
 
   const onBlur = (
     event: React.FocusEvent<HTMLInputElement, HTMLButtonElement>,
@@ -649,8 +649,8 @@ const EnumInstanceValueEditorInner = <T,>(
   } = props;
   const applicationStore = useApplicationStore();
   const enumValue = valueSelector(valueSpecification);
-  const resetButtonName = `reset-${valueSpecification}`;
-  const inputName = `input-${valueSpecification}`;
+  const resetButtonName = `reset-${valueSelector(valueSpecification)}`;
+  const inputName = `input-${valueSelector(valueSpecification)}`;
 
   const changeValue = (val: { value: string; label: string }): void => {
     updateValueSpecification(valueSpecification, val.value);
@@ -832,8 +832,8 @@ const PrimitiveCollectionInstanceValueEditorInner = <
       : undefined;
   const noMatchMessage =
     isTypeaheadSearchEnabled && isLoading ? 'Loading...' : undefined;
-  const copyButtonName = `copy-${valueSpecification}`;
-  const inputName = `input-${valueSpecification}`;
+  const copyButtonName = `copy-${valueSpecification.values[0] ? convertValueSpecificationToText(valueSpecification.values[0]) : ''}`;
+  const inputName = `input-${valueSpecification.values[0] ? convertValueSpecificationToText(valueSpecification.values[0]) : ''}`;
 
   // helper functions
   const buildOptionForValueSpec = (
@@ -1108,8 +1108,8 @@ const EnumCollectionInstanceValueEditorInner = <T, U extends { values: T[] }>(
       ),
   );
 
-  const copyButtonName = `copy-${valueSpecification}`;
-  const inputName = `input-${valueSpecification}`;
+  const copyButtonName = `copy-${valueSpecification.values[0] ? convertValueSpecificationToText(valueSpecification.values[0]) : ''}`;
+  const inputName = `input-${valueSpecification.values[0] ? convertValueSpecificationToText(valueSpecification.values[0]) : ''}`;
 
   // helper functions
   const isValueAlreadySelected = (value: string): boolean =>
