@@ -76,7 +76,6 @@ import {
   isNonEmptyString,
   parseCSVString,
   uniq,
-  at,
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
@@ -424,6 +423,7 @@ const BooleanInstanceValueEditorInner = <T,>(
   return (
     <div className={clsx('value-spec-editor', className)}>
       <button
+        role="checkbox"
         className={clsx('value-spec-editor__toggler__btn', {
           'value-spec-editor__toggler__btn--toggled': value,
         })}

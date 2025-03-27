@@ -15,7 +15,7 @@
  */
 
 import { test, expect } from '@jest/globals';
-import { waitFor, fireEvent, screen, render } from '@testing-library/react';
+import { waitFor, fireEvent, screen } from '@testing-library/react';
 import { integrationTest } from '@finos/legend-shared/test';
 import {
   type PrimitiveInstanceValue,
@@ -28,12 +28,9 @@ import {
 import {
   TEST__setUpBasicValueSpecificationEditor,
   TEST__setUpGraphManagerState,
-  TEST__setUpQueryBuilder,
 } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
-import { TEST_DATA__ModelCoverageAnalysisResult_SimpleRelational } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
 import TEST_DATA__SimpleRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelational.json' with { type: 'json' };
 import { buildPrimitiveInstanceValue } from '../../stores/shared/ValueSpecificationEditorHelper.js';
-import { guaranteeNonNullable } from '@finos/legend-shared';
 import { TEST__LegendApplicationPluginManager } from '../../stores/__test-utils__/QueryBuilderStateTestUtils.js';
 
 test(
