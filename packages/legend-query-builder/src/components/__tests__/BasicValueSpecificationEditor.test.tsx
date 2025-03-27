@@ -16,7 +16,7 @@
 
 import { test, expect } from '@jest/globals';
 import { waitFor, fireEvent, screen } from '@testing-library/react';
-import { integrationTest } from '@finos/legend-shared/test';
+const integrationTest = (name: string): string => `[INTEGRATION] ${name}`;
 import {
   type ValueSpecification,
   ObserverContext,
