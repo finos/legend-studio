@@ -1,5 +1,11 @@
 # @finos/legend-data-cube
 
+## 0.1.16
+
+### Patch Changes
+
+- [#3962](https://github.com/finos/legend-studio/pull/3962) [`79dd0aa`](https://github.com/finos/legend-studio/commit/79dd0aa10b4a84820759347f6e51def58aa57ffb) ([@yash0024](https://github.com/yash0024)) - Add Analytics for DataCube
+
 ## 0.1.15
 
 ## 0.1.14

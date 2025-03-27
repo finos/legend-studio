@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-application-catalog-deployment",
-  "version": "13.38.0",
+  "version": "13.39.0",
   "private": true,
   "description": "Legend Catalog web application deployment",
   "keywords": [
