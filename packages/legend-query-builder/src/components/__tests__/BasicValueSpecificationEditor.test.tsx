@@ -35,10 +35,12 @@ import TEST_DATA__SimpleRelationalModel from '../../stores/__tests__/TEST_DATA__
 import TEST_DATA__QueryBuilder_Model_ComplexRelational from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json' with { type: 'json' };
 import {
   buildEnumCollectionInstanceValue,
+  buildEnumInstanceValue,
   buildPrimitiveCollectionInstanceValue,
   buildPrimitiveInstanceValue,
 } from '../../stores/shared/ValueSpecificationEditorHelper.js';
 import { TEST__LegendApplicationPluginManager } from '../../stores/__test-utils__/QueryBuilderStateTestUtils.js';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
 test(
   integrationTest(
@@ -268,6 +270,68 @@ test(
     await waitFor(() => {
       expect((boolValueSpec as PrimitiveInstanceValue).values[0]).toBe(true);
     });
+  },
+);
+
+test(
+  integrationTest(
+    'BasicValueSpecificationEditor renders and updates enum values correctly',
+  ),
+  async () => {
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
+    const graphManagerState = await TEST__setUpGraphManagerState(
+      TEST_DATA__QueryBuilder_Model_ComplexRelational,
+      pluginManager,
+    );
+    const observerContext = new ObserverContext(
+      graphManagerState.pluginManager.getPureGraphManagerPlugins(),
+    );
+
+    const enumType = graphManagerState.graph.getType(
+      'model::pure::tests::model::simple::GeographicEntityType',
+    );
+    let enumValueSpec: ValueSpecification = observe_ValueSpecification(
+      buildEnumInstanceValue(
+        graphManagerState.graph,
+        'model::pure::tests::model::simple::GeographicEntityType',
+        'STATE',
+        observerContext,
+      ),
+      observerContext,
+    );
+
+    const setValueSpecification = (newVal: ValueSpecification): void => {
+      enumValueSpec = newVal;
+    };
+
+    TEST__setUpBasicValueSpecificationEditor(pluginManager, {
+      valueSpecification: enumValueSpec,
+      setValueSpecification: setValueSpecification,
+      typeCheckOption: {
+        expectedType: enumType,
+      },
+      resetValue: () => {},
+      graph: graphManagerState.graph,
+      observerContext: observerContext,
+    });
+
+    const inputElement = guaranteeNonNullable(
+      (await screen.findByText('STATE')).parentElement?.querySelector('input'),
+    );
+    expect(inputElement).not.toBeNull();
+
+    // TODO: figure out how to test clicking on an enum option from
+    // the dropdown
+
+    // Test that typing in a value and blurring input updates value
+    fireEvent.change(inputElement, { target: { value: 'REGION' } });
+    fireEvent.keyDown(inputElement, { key: 'Enter' });
+
+    await screen.findByText('REGION');
+
+    expect(
+      (enumValueSpec as EnumValueInstanceValue).values[0]?.value.name,
+    ).toBe('REGION');
   },
 );
 
