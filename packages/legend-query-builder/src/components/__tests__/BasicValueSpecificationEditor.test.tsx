@@ -37,7 +37,10 @@ import {
 } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import TEST_DATA__SimpleRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelational.json' with { type: 'json' };
 import TEST_DATA__QueryBuilder_Model_ComplexRelational from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json' with { type: 'json' };
-import { buildPrimitiveInstanceValue } from '../../stores/shared/ValueSpecificationEditorHelper.js';
+import {
+  buildPrimitiveCollectionInstanceValue,
+  buildPrimitiveInstanceValue,
+} from '../../stores/shared/ValueSpecificationEditorHelper.js';
 import { TEST__LegendApplicationPluginManager } from '../../stores/__test-utils__/QueryBuilderStateTestUtils.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 
@@ -286,31 +289,18 @@ test(
       graphManagerState.pluginManager.getPureGraphManagerPlugins(),
     );
 
-    const stringCollectionValue = new CollectionInstanceValue(
-      new Multiplicity(0, undefined),
-      GenericTypeExplicitReference.create(
-        new GenericType(PrimitiveType.STRING),
+    let stringCollectionValue = observe_ValueSpecification(
+      buildPrimitiveCollectionInstanceValue(
+        graphManagerState.graph,
+        PRIMITIVE_TYPE.STRING,
+        ['value1', 'value2'],
+        observerContext,
       ),
+      observerContext,
     );
 
-    stringCollectionValue.values = [
-      buildPrimitiveInstanceValue(
-        graphManagerState.graph,
-        PRIMITIVE_TYPE.STRING,
-        'value1',
-        observerContext,
-      ),
-      buildPrimitiveInstanceValue(
-        graphManagerState.graph,
-        PRIMITIVE_TYPE.STRING,
-        'value2',
-        observerContext,
-      ),
-    ];
-
-    let updatedValue: ValueSpecification | undefined;
     const setValueSpecification = (val: ValueSpecification): void => {
-      updatedValue = val;
+      stringCollectionValue = val;
     };
 
     TEST__setUpBasicValueSpecificationEditor(pluginManager, {
@@ -324,33 +314,32 @@ test(
       observerContext: observerContext,
     });
 
-    await waitFor(() => {
-      const element = screen.getByText(
-        (content) => content.includes('value1') && content.includes('value2'),
-      );
-      expect(element).not.toBeNull();
-    });
+    const listEditorElement = await screen.findByText('List(2): value1,value2');
 
-    const editButton = screen.getByRole('button', { name: '' });
-    fireEvent.click(editButton);
+    fireEvent.click(listEditorElement);
 
     const input = await screen.findByRole('combobox');
+    fireEvent.change(input, { target: { value: 'value3' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+
+    // Test that duplicate values don't get added
     fireEvent.change(input, { target: { value: 'value3' } });
     fireEvent.keyDown(input, { key: 'Enter' });
 
     const saveButton = screen.getByTitle('Save');
     fireEvent.click(saveButton);
 
-    expect(updatedValue).not.toBeUndefined();
-    expect(updatedValue instanceof CollectionInstanceValue).toBe(true);
-    if (updatedValue instanceof CollectionInstanceValue) {
-      expect(updatedValue.values.length).toBe(3);
-      const values = updatedValue.values.map(
+    await screen.findByText('List(3): value1,value2,value3');
+
+    expect(stringCollectionValue instanceof CollectionInstanceValue).toBe(true);
+    if (stringCollectionValue instanceof CollectionInstanceValue) {
+      expect(stringCollectionValue.values.length).toBe(3);
+      const values = stringCollectionValue.values.map(
         (v) => (v as PrimitiveInstanceValue).values[0],
       );
-      expect(values).toContain('value1');
-      expect(values).toContain('value2');
-      expect(values).toContain('value3');
+      expect(values[0]).toBe('value1');
+      expect(values[1]).toBe('value2');
+      expect(values[2]).toBe('value3');
     }
   },
 );

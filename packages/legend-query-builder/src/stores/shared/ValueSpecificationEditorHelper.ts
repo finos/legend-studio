@@ -98,6 +98,28 @@ export const buildPrimitiveInstanceValue = (
   return instance;
 };
 
+export const buildPrimitiveCollectionInstanceValue = (
+  graph: PureModel,
+  type: PRIMITIVE_TYPE,
+  values: unknown[],
+  observerContext: ObserverContext,
+): CollectionInstanceValue => {
+  const instance = new CollectionInstanceValue(
+    Multiplicity.ZERO_MANY,
+    GenericTypeExplicitReference.create(
+      new GenericType(graph.getPrimitiveType(type)),
+    ),
+  );
+  instanceValue_setValues(
+    instance,
+    values.map((value) =>
+      buildPrimitiveInstanceValue(graph, type, value, observerContext),
+    ),
+    observerContext,
+  );
+  return instance;
+};
+
 export const cloneValueSpecification = (
   valueSpecification: ValueSpecification,
   observerContext: ObserverContext,
