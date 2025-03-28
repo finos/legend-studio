@@ -325,6 +325,7 @@ test(
     // Test that duplicate values don't get added
     fireEvent.change(input, { target: { value: 'value3' } });
     fireEvent.keyDown(input, { key: 'Enter' });
+    expect(screen.getByDisplayValue('value3')).not.toBeNull();
 
     const saveButton = screen.getByTitle('Save');
     fireEvent.click(saveButton);
@@ -358,31 +359,18 @@ test(
       graphManagerState.pluginManager.getPureGraphManagerPlugins(),
     );
 
-    const integerCollectionValue = new CollectionInstanceValue(
-      new Multiplicity(0, undefined),
-      GenericTypeExplicitReference.create(
-        new GenericType(PrimitiveType.INTEGER),
+    let integerCollectionValue = observe_ValueSpecification(
+      buildPrimitiveCollectionInstanceValue(
+        graphManagerState.graph,
+        PRIMITIVE_TYPE.INTEGER,
+        [1, 2],
+        observerContext,
       ),
+      observerContext,
     );
 
-    integerCollectionValue.values = [
-      buildPrimitiveInstanceValue(
-        graphManagerState.graph,
-        PRIMITIVE_TYPE.INTEGER,
-        1,
-        observerContext,
-      ),
-      buildPrimitiveInstanceValue(
-        graphManagerState.graph,
-        PRIMITIVE_TYPE.INTEGER,
-        2,
-        observerContext,
-      ),
-    ];
-
-    let updatedValue: ValueSpecification | undefined;
     const setValueSpecification = (val: ValueSpecification): void => {
-      updatedValue = val;
+      integerCollectionValue = val;
     };
 
     TEST__setUpBasicValueSpecificationEditor(pluginManager, {
@@ -396,33 +384,37 @@ test(
       observerContext: observerContext,
     });
 
-    await waitFor(() => {
-      const element = screen.getByText(
-        (content) => content.includes('1') && content.includes('2'),
-      );
-      expect(element).not.toBeNull();
-    });
+    const listEditorElement = await screen.findByText('List(2): 1,2');
 
-    const editButton = screen.getByRole('button', { name: '' });
-    fireEvent.click(editButton);
+    fireEvent.click(listEditorElement);
 
+    // Test that float is converted to int
     const input = await screen.findByRole('combobox');
+    fireEvent.change(input, { target: { value: '3.2' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await screen.findByText('3');
+
+    // Test that duplicate values don't get added
     fireEvent.change(input, { target: { value: '3' } });
     fireEvent.keyDown(input, { key: 'Enter' });
+    expect(screen.getByDisplayValue('3')).not.toBeNull();
 
     const saveButton = screen.getByTitle('Save');
     fireEvent.click(saveButton);
 
-    expect(updatedValue).not.toBeUndefined();
-    expect(updatedValue instanceof CollectionInstanceValue).toBe(true);
-    if (updatedValue instanceof CollectionInstanceValue) {
-      expect(updatedValue.values.length).toBe(3);
-      const values = updatedValue.values.map(
+    await screen.findByText('List(3): 1,2,3');
+
+    expect(integerCollectionValue instanceof CollectionInstanceValue).toBe(
+      true,
+    );
+    if (integerCollectionValue instanceof CollectionInstanceValue) {
+      expect(integerCollectionValue.values.length).toBe(3);
+      const values = integerCollectionValue.values.map(
         (v) => (v as PrimitiveInstanceValue).values[0],
       );
-      expect(values).toContain(1);
-      expect(values).toContain(2);
-      expect(values).toContain(3);
+      expect(values[0]).toBe(1);
+      expect(values[1]).toBe(2);
+      expect(values[2]).toBe(3);
     }
   },
 );
