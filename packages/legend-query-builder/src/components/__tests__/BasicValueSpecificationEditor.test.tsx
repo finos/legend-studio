@@ -25,11 +25,7 @@ import {
   PrimitiveType,
   observe_ValueSpecification,
   CollectionInstanceValue,
-  EnumValueExplicitReference,
   EnumValueInstanceValue,
-  GenericType,
-  GenericTypeExplicitReference,
-  Multiplicity,
 } from '@finos/legend-graph';
 import {
   TEST__setUpBasicValueSpecificationEditor,
@@ -38,11 +34,11 @@ import {
 import TEST_DATA__SimpleRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelational.json' with { type: 'json' };
 import TEST_DATA__QueryBuilder_Model_ComplexRelational from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json' with { type: 'json' };
 import {
+  buildEnumCollectionInstanceValue,
   buildPrimitiveCollectionInstanceValue,
   buildPrimitiveInstanceValue,
 } from '../../stores/shared/ValueSpecificationEditorHelper.js';
 import { TEST__LegendApplicationPluginManager } from '../../stores/__test-utils__/QueryBuilderStateTestUtils.js';
-import { guaranteeNonNullable } from '@finos/legend-shared';
 
 test(
   integrationTest(
@@ -505,83 +501,66 @@ test(
       graphManagerState.pluginManager.getPureGraphManagerPlugins(),
     );
 
-    const genderTypeEnum = graphManagerState.graph.getEnumeration(
-      'model::owl::tests::model::GenderType',
+    const enumType = graphManagerState.graph.getType(
+      'model::pure::tests::model::simple::GeographicEntityType',
     );
-    expect(genderTypeEnum).not.toBeUndefined();
-
-    const enumCollectionValue = new CollectionInstanceValue(
-      new Multiplicity(0, undefined),
-      GenericTypeExplicitReference.create(new GenericType(genderTypeEnum)),
-    );
-
-    const maleEnumValue = new EnumValueInstanceValue(
-      GenericTypeExplicitReference.create(new GenericType(genderTypeEnum)),
-    );
-    maleEnumValue.values = [
-      EnumValueExplicitReference.create(
-        guaranteeNonNullable(
-          genderTypeEnum.values.find((v) => v.name === 'MALE'),
-        ),
+    let enumCollectionValue = observe_ValueSpecification(
+      buildEnumCollectionInstanceValue(
+        graphManagerState.graph,
+        'model::pure::tests::model::simple::GeographicEntityType',
+        ['CITY'],
+        observerContext,
       ),
-    ];
-
-    const femaleEnumValue = new EnumValueInstanceValue(
-      GenericTypeExplicitReference.create(new GenericType(genderTypeEnum)),
+      observerContext,
     );
-    femaleEnumValue.values = [
-      EnumValueExplicitReference.create(
-        guaranteeNonNullable(
-          genderTypeEnum.values.find((v) => v.name === 'FEMALE'),
-        ),
-      ),
-    ];
 
-    enumCollectionValue.values = [maleEnumValue, femaleEnumValue];
-
-    let updatedValue: ValueSpecification | undefined;
     const setValueSpecification = (val: ValueSpecification): void => {
-      updatedValue = val;
+      enumCollectionValue = val;
     };
 
     TEST__setUpBasicValueSpecificationEditor(pluginManager, {
       valueSpecification: enumCollectionValue,
       setValueSpecification,
       typeCheckOption: {
-        expectedType: genderTypeEnum,
+        expectedType: enumType,
       },
       resetValue: (): void => {},
       graph: graphManagerState.graph,
       observerContext: observerContext,
     });
 
-    await waitFor(() => {
-      const element = screen.getByText(
-        (content) => content.includes('MALE') && content.includes('FEMALE'),
-      );
-      expect(element).not.toBeNull();
-    });
+    const listEditorElement = await screen.findByText('List(1): CITY');
 
-    const editButton = screen.getByRole('button', { name: '' });
-    fireEvent.click(editButton);
+    fireEvent.click(listEditorElement);
 
     const input = await screen.findByRole('combobox');
 
-    fireEvent.change(input, { target: { value: 'FEMALE' } });
+    // TODO: figure out how to test clicking on an enum option from
+    // the dropdown
+
+    // Test that typing in a value exactly adds it
+    fireEvent.change(input, { target: { value: 'COUNTRY' } });
     fireEvent.keyDown(input, { key: 'Enter' });
+
+    // Test that typing in a value that doesn't exist doesn't add it
+    fireEvent.change(input, { target: { value: 'REG' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(screen.getByDisplayValue('REG')).not.toBeNull();
 
     const saveButton = screen.getByTitle('Save');
     fireEvent.click(saveButton);
 
-    expect(updatedValue).not.toBeUndefined();
-    expect(updatedValue instanceof CollectionInstanceValue).toBe(true);
-    if (updatedValue instanceof CollectionInstanceValue) {
-      expect(updatedValue.values.length).toBe(2);
-      const enumNames = updatedValue.values
+    await screen.findByText('List(2): CITY,COUNTRY');
+
+    expect(enumCollectionValue).not.toBeUndefined();
+    expect(enumCollectionValue instanceof CollectionInstanceValue).toBe(true);
+    if (enumCollectionValue instanceof CollectionInstanceValue) {
+      expect(enumCollectionValue.values.length).toBe(2);
+      const enumNames = enumCollectionValue.values
         .filter((v) => v instanceof EnumValueInstanceValue)
         .map((v) => (v as EnumValueInstanceValue).values[0]?.value.name);
-      expect(enumNames).toContain('MALE');
-      expect(enumNames).toContain('FEMALE');
+      expect(enumNames[0]).toBe('CITY');
+      expect(enumNames[1]).toContain('COUNTRY');
     }
   },
 );

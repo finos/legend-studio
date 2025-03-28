@@ -98,6 +98,28 @@ export const buildPrimitiveInstanceValue = (
   return instance;
 };
 
+export const buildEnumInstanceValue = (
+  graph: PureModel,
+  enumPath: string,
+  value: string,
+  observerContext: ObserverContext,
+): EnumValueInstanceValue => {
+  const enumType = graph.getEnumeration(enumPath);
+  const enumValue = guaranteeNonNullable(
+    enumType.values.find((v) => v.name === value),
+    `Can't find enum value '${value}' in enumeration '${enumType.path}'`,
+  );
+  const instance = new EnumValueInstanceValue(
+    GenericTypeExplicitReference.create(new GenericType(enumType)),
+  );
+  instanceValue_setValues(
+    instance,
+    [EnumValueExplicitReference.create(enumValue)],
+    observerContext,
+  );
+  return instance;
+};
+
 export const buildPrimitiveCollectionInstanceValue = (
   graph: PureModel,
   type: PRIMITIVE_TYPE,
@@ -114,6 +136,27 @@ export const buildPrimitiveCollectionInstanceValue = (
     instance,
     values.map((value) =>
       buildPrimitiveInstanceValue(graph, type, value, observerContext),
+    ),
+    observerContext,
+  );
+  return instance;
+};
+
+export const buildEnumCollectionInstanceValue = (
+  graph: PureModel,
+  enumPath: string,
+  values: string[],
+  observerContext: ObserverContext,
+): CollectionInstanceValue => {
+  const enumType = graph.getEnumeration(enumPath);
+  const instance = new CollectionInstanceValue(
+    Multiplicity.ZERO_MANY,
+    GenericTypeExplicitReference.create(new GenericType(enumType)),
+  );
+  instanceValue_setValues(
+    instance,
+    values.map((value) =>
+      buildEnumInstanceValue(graph, enumPath, value, observerContext),
     ),
     observerContext,
   );
