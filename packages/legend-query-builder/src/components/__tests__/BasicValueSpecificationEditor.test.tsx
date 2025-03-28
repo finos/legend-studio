@@ -16,7 +16,7 @@
 
 import { test, expect } from '@jest/globals';
 import { waitFor, fireEvent, screen } from '@testing-library/react';
-const integrationTest = (name: string): string => `[INTEGRATION] ${name}`;
+import { integrationTest } from '@finos/legend-shared/test';
 import {
   type PrimitiveInstanceValue,
   type ValueSpecification,
@@ -29,17 +29,17 @@ import {
   EnumValueInstanceValue,
   GenericType,
   GenericTypeExplicitReference,
-  getEnumValue,
   Multiplicity,
 } from '@finos/legend-graph';
 import {
   TEST__setUpBasicValueSpecificationEditor,
   TEST__setUpGraphManagerState,
 } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
-const TEST_DATA__SimpleRelationalModel = require('../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelational.json');
-const TEST_DATA__QueryBuilder_Model_ComplexRelational = require('../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json');
+import TEST_DATA__SimpleRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelational.json' with { type: 'json' };
+import TEST_DATA__QueryBuilder_Model_ComplexRelational from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json' with { type: 'json' };
 import { buildPrimitiveInstanceValue } from '../../stores/shared/ValueSpecificationEditorHelper.js';
 import { TEST__LegendApplicationPluginManager } from '../../stores/__test-utils__/QueryBuilderStateTestUtils.js';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
 test(
   integrationTest(
@@ -287,7 +287,7 @@ test(
     );
 
     const stringCollectionValue = new CollectionInstanceValue(
-      new Multiplicity(0, null),
+      new Multiplicity(0, undefined),
       GenericTypeExplicitReference.create(
         new GenericType(PrimitiveType.STRING),
       ),
@@ -370,7 +370,7 @@ test(
     );
 
     const integerCollectionValue = new CollectionInstanceValue(
-      new Multiplicity(0, null),
+      new Multiplicity(0, undefined),
       GenericTypeExplicitReference.create(
         new GenericType(PrimitiveType.INTEGER),
       ),
@@ -453,7 +453,7 @@ test(
     );
 
     const floatCollectionValue = new CollectionInstanceValue(
-      new Multiplicity(0, null),
+      new Multiplicity(0, undefined),
       GenericTypeExplicitReference.create(new GenericType(PrimitiveType.FLOAT)),
     );
 
@@ -539,7 +539,7 @@ test(
     expect(genderTypeEnum).not.toBeUndefined();
 
     const enumCollectionValue = new CollectionInstanceValue(
-      new Multiplicity(0, null),
+      new Multiplicity(0, undefined),
       GenericTypeExplicitReference.create(new GenericType(genderTypeEnum)),
     );
 
@@ -548,7 +548,9 @@ test(
     );
     maleEnumValue.values = [
       EnumValueExplicitReference.create(
-        genderTypeEnum.values.find((v) => v.name === 'MALE'),
+        guaranteeNonNullable(
+          genderTypeEnum.values.find((v) => v.name === 'MALE'),
+        ),
       ),
     ];
 
@@ -557,7 +559,9 @@ test(
     );
     femaleEnumValue.values = [
       EnumValueExplicitReference.create(
-        genderTypeEnum.values.find((v) => v.name === 'FEMALE'),
+        guaranteeNonNullable(
+          genderTypeEnum.values.find((v) => v.name === 'FEMALE'),
+        ),
       ),
     ];
 
