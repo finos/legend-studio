@@ -206,12 +206,29 @@ test(
     const inputElement = await screen.findByDisplayValue('10.5');
     expect(inputElement).not.toBeNull();
 
+    // Test that trailing zeros are removed
     fireEvent.change(inputElement, { target: { value: '10.0' } });
     fireEvent.blur(inputElement);
 
     await screen.findByDisplayValue('10');
 
     expect((floatValueSpec as PrimitiveInstanceValue).values[0]).toBe(10);
+
+    // Test that expressions are evaluated correctly
+    fireEvent.change(inputElement, { target: { value: '5.2 * 2' } });
+    fireEvent.blur(inputElement);
+
+    await screen.findByDisplayValue('10.4');
+
+    expect((floatValueSpec as PrimitiveInstanceValue).values[0]).toBe(10.4);
+
+    // Test that invalid input resets to previous value
+    fireEvent.change(inputElement, { target: { value: 'invalid' } });
+    fireEvent.blur(inputElement);
+
+    await screen.findByDisplayValue('10.4');
+
+    expect((floatValueSpec as PrimitiveInstanceValue).values[0]).toBe(10.4);
   },
 );
 
