@@ -48,6 +48,70 @@ import { instanceValue_setValue } from '../../stores/shared/ValueSpecificationMo
 
 test(
   integrationTest(
+    'BasicValueSpecificationEditor reset button calls reset callback and shows error styling',
+  ),
+  async () => {
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
+    const graphManagerState = await TEST__setUpGraphManagerState(
+      TEST_DATA__SimpleRelationalModel,
+      pluginManager,
+    );
+    const observerContext = new ObserverContext(
+      graphManagerState.pluginManager.getPureGraphManagerPlugins(),
+    );
+
+    let stringValueSpec: ValueSpecification = observe_ValueSpecification(
+      buildPrimitiveInstanceValue(
+        graphManagerState.graph,
+        PRIMITIVE_TYPE.STRING,
+        'initial value',
+        observerContext,
+      ),
+      observerContext,
+    );
+
+    const setValueSpecification = (newVal: ValueSpecification): void => {
+      stringValueSpec = newVal;
+    };
+
+    const resetValue = (): void => {
+      instanceValue_setValue(
+        stringValueSpec as PrimitiveInstanceValue,
+        null,
+        0,
+        observerContext,
+      );
+    };
+
+    const typeCheckOption = {
+      expectedType: (stringValueSpec as PrimitiveInstanceValue).genericType
+        .value.rawType,
+      match:
+        (stringValueSpec as PrimitiveInstanceValue).genericType.value
+          .rawType === PrimitiveType.DATETIME,
+    };
+
+    TEST__setUpBasicValueSpecificationEditor(pluginManager, {
+      valueSpecification: stringValueSpec,
+      setValueSpecification: setValueSpecification,
+      typeCheckOption: typeCheckOption,
+      resetValue: resetValue,
+      graph: graphManagerState.graph,
+      observerContext: observerContext,
+    });
+
+    const inputElement = await screen.findByDisplayValue('initial value');
+    expect(inputElement).not.toBeNull();
+
+    // Test resetting value shows error styling
+    fireEvent.click(screen.getByTitle('Reset'));
+    expect((stringValueSpec as PrimitiveInstanceValue).values[0]).toBeNull();
+    expect(inputElement.classList).toContain('input--with-validation--error');
+  },
+);
+
+test(
+  integrationTest(
     'BasicValueSpecificationEditor renders and updates string primitive values correctly',
   ),
   async () => {
@@ -113,13 +177,7 @@ test(
       'updated value',
     );
 
-    // Test resetting value shows error styling
-    fireEvent.click(screen.getByTitle('Reset'));
-    expect((stringValueSpec as PrimitiveInstanceValue).values[0]).toBeNull();
-    expect(inputElement.classList).toContain('input--with-validation--error');
-
     // Test that empty string is allowed
-    fireEvent.change(inputElement, { target: { value: 'test' } });
     fireEvent.change(inputElement, { target: { value: '' } });
     fireEvent.blur(inputElement);
 
