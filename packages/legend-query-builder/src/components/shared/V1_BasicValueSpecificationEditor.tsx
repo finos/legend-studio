@@ -77,6 +77,8 @@ import {
   DatePickerOption,
 } from './CustomDatePickerHelper.js';
 import { _primitiveValue } from '@finos/legend-data-cube';
+import { getV1_ValueSpecificationStringValue } from '../../stores/shared/V1_ValueSpecificationEditorHelper.js';
+import { useApplicationStore } from '@finos/legend-application';
 
 // Constants and helper functions
 export const V1_QUERY_BUILDER_VARIABLE_DND_TYPE = 'V1_VARIABLE';
@@ -218,6 +220,8 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
     handleKeyDown,
     enumeration,
   } = props;
+
+  const applicationStore = useApplicationStore();
 
   // Handle non-collection editors
   if (multiplicity.upperBound !== undefined) {
@@ -393,22 +397,28 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
     };
     const convertValueSpecificationToText = (
       _valueSpecification: V1_ValueSpecification,
-    ): string => {
-      return JSON.stringify(
-        V1_serializeValueSpecification(_valueSpecification, []),
+    ): string | undefined => {
+      return getV1_ValueSpecificationStringValue(
+        _valueSpecification,
+        applicationStore,
       );
     };
     const convertTextToValueSpecification = (
       _type: Type | string,
       text: string,
     ): V1_ValueSpecification | null => {
-      return _primitiveValue(
-        guaranteeIsString(
-          _type,
-          'Cannot convert text to V1_ValueSpecification. Expected type to be a string',
-        ),
-        text,
-      );
+      try {
+        return _primitiveValue(
+          guaranteeIsString(
+            _type,
+            'Cannot convert text to V1_ValueSpecification. Expected type to be a string',
+          ),
+          text,
+          true,
+        );
+      } catch {
+        return null;
+      }
     };
     const options =
       enumeration?.values.map((enumValue) => ({

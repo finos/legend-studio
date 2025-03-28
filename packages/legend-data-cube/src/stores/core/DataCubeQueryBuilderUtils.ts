@@ -178,6 +178,7 @@ export function _collection(values: V1_ValueSpecification[]) {
 export function _primitiveValue(
   type: string,
   value: unknown,
+  coerceType?: boolean,
 ): V1_PrimitiveValueSpecification {
   const _val = <T extends V1_PrimitiveValueSpecification & { value: unknown }>(
     primitiveValue: T,
@@ -190,14 +191,40 @@ export function _primitiveValue(
     case PRIMITIVE_TYPE.STRING:
       return _val(new V1_CString(), guaranteeIsString(value));
     case PRIMITIVE_TYPE.BOOLEAN:
-      return _val(new V1_CBoolean(), guaranteeIsBoolean(value));
+      return _val(
+        new V1_CBoolean(),
+        guaranteeIsBoolean(
+          coerceType
+            ? value === 'true'
+              ? true
+              : value === 'false'
+                ? false
+                : value
+            : value,
+        ),
+      );
     case PRIMITIVE_TYPE.NUMBER:
     case PRIMITIVE_TYPE.DECIMAL:
-      return _val(new V1_CDecimal(), guaranteeIsNumber(value));
+      return _val(
+        new V1_CDecimal(),
+        guaranteeIsNumber(
+          coerceType ? parseFloat(guaranteeIsString(value)) : value,
+        ),
+      );
     case PRIMITIVE_TYPE.INTEGER:
-      return _val(new V1_CInteger(), guaranteeIsNumber(value));
+      return _val(
+        new V1_CInteger(),
+        guaranteeIsNumber(
+          coerceType ? parseInt(guaranteeIsString(value)) : value,
+        ),
+      );
     case PRIMITIVE_TYPE.FLOAT:
-      return _val(new V1_CFloat(), guaranteeIsNumber(value));
+      return _val(
+        new V1_CFloat(),
+        guaranteeIsNumber(
+          coerceType ? parseFloat(guaranteeIsString(value)) : value,
+        ),
+      );
     case PRIMITIVE_TYPE.DATE:
     case PRIMITIVE_TYPE.STRICTDATE:
       return _val(new V1_CStrictDate(), guaranteeIsString(value));
