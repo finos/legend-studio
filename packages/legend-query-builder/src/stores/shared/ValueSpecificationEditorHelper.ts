@@ -453,10 +453,14 @@ export const convertTextToPrimitiveInstanceValue = (
         if (isNaN(Number(value))) {
           return null;
         }
+        const formattedNumber =
+          expectedType.path === PRIMITIVE_TYPE.INTEGER
+            ? Number.parseInt(Number(value).toString(), 10)
+            : Number(value);
         result = new PrimitiveInstanceValue(
           GenericTypeExplicitReference.create(new GenericType(expectedType)),
         );
-        instanceValue_setValues(result, [Number(value)], observerContext);
+        instanceValue_setValues(result, [formattedNumber], observerContext);
         break;
       }
       case PRIMITIVE_TYPE.DATE:
