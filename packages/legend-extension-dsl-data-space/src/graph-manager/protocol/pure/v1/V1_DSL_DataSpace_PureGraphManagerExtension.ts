@@ -48,6 +48,7 @@ import {
   V1_deserializeDataspaceCoveragePartition,
   V1_MappingModelCoveragePartition,
   V1_getGenericTypeFullPath,
+  V1_buildFullPath,
 } from '@finos/legend-graph';
 import type {
   Entity,
@@ -115,6 +116,8 @@ import {
 import { getDiagram } from '@finos/legend-extension-dsl-diagram/graph';
 import { resolveVersion } from '@finos/legend-server-depot';
 import { DATASPACE_ANALYTICS_FILE_NAME } from '../../../action/analytics/DataSpaceAnalysisHelper.js';
+import { buildDataSpaceElements } from '../../../DSL_DataSpaceAnalyticsHelper.js';
+import { DSL_DATASPACE_EVENT } from '../../../../__lib__/DS__DataSpace_Event.js';
 
 const ANALYZE_DATA_SPACE_TRACE = 'analyze data product';
 const TEMPORARY__TDS_SAMPLE_VALUES__DELIMITER = '-- e.g.';
@@ -530,6 +533,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
       info.value = stereotype.value;
       return info;
     });
+    result.elements = analysisResult.elements;
 
     if (analysisResult.supportInfo) {
       if (analysisResult.supportInfo instanceof V1_DataSpaceSupportEmail) {
@@ -678,6 +682,20 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
         },
         graphReport,
       );
+
+      try {
+        buildDataSpaceElements(
+          graph,
+          V1_buildFullPath(analysisResult.package, analysisResult.name),
+          analysisResult.elements,
+        );
+      } catch (error) {
+        assertErrorThrown(error);
+        this.graphManager.logService.warn(
+          LogEvent.create(DSL_DATASPACE_EVENT.BUILD_ANALYTICS_RESULT),
+          `Error building dataspace elements: ${error.message}`,
+        );
+      }
 
       // build extra function analysis info
       if (entitiesWithClassifierRetriever) {

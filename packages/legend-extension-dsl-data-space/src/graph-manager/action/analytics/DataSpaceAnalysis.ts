@@ -211,6 +211,8 @@ export class DataSpaceAnalysisResult {
 
   elementDocs: NormalizedDataSpaceDocumentationEntry[] = [];
 
+  elements: string[] = [];
+
   diagrams: DataSpaceDiagramAnalysisResult[] = [];
 
   executables: DataSpaceExecutableAnalysisResult[] = [];
