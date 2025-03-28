@@ -18,14 +18,15 @@ import { test, expect } from '@jest/globals';
 import { waitFor, fireEvent, screen } from '@testing-library/react';
 import { integrationTest } from '@finos/legend-shared/test';
 import {
-  type PrimitiveInstanceValue,
   type ValueSpecification,
   ObserverContext,
   PRIMITIVE_TYPE,
+  PrimitiveInstanceValue,
   PrimitiveType,
   observe_ValueSpecification,
   CollectionInstanceValue,
   EnumValueInstanceValue,
+  SimpleFunctionExpression,
 } from '@finos/legend-graph';
 import {
   TEST__setUpBasicValueSpecificationEditor,
@@ -40,7 +41,9 @@ import {
   buildPrimitiveInstanceValue,
 } from '../../stores/shared/ValueSpecificationEditorHelper.js';
 import { TEST__LegendApplicationPluginManager } from '../../stores/__test-utils__/QueryBuilderStateTestUtils.js';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
+import { CUSTOM_DATE_PICKER_OPTION } from '../shared/CustomDatePickerHelper.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
 
 test(
   integrationTest(
@@ -287,6 +290,274 @@ test(
     await waitFor(() => {
       expect((boolValueSpec as PrimitiveInstanceValue).values[0]).toBe(true);
     });
+  },
+);
+
+test(
+  integrationTest(
+    'BasicValueSpecificationEditor renders and updates date primitive values correctly',
+  ),
+  async () => {
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
+    const graphManagerState = await TEST__setUpGraphManagerState(
+      TEST_DATA__SimpleRelationalModel,
+      pluginManager,
+    );
+    const observerContext = new ObserverContext(
+      graphManagerState.pluginManager.getPureGraphManagerPlugins(),
+    );
+
+    let dateValueSpec: ValueSpecification = observe_ValueSpecification(
+      buildPrimitiveInstanceValue(
+        graphManagerState.graph,
+        PRIMITIVE_TYPE.DATE,
+        '2025-03-28',
+        observerContext,
+      ),
+      observerContext,
+    );
+
+    const setValueSpecification = (newVal: ValueSpecification): void => {
+      dateValueSpec = newVal;
+    };
+
+    const typeCheckOption = {
+      expectedType: (dateValueSpec as PrimitiveInstanceValue).genericType.value
+        .rawType,
+      match:
+        (dateValueSpec as PrimitiveInstanceValue).genericType.value.rawType ===
+        PrimitiveType.DATETIME,
+    };
+
+    TEST__setUpBasicValueSpecificationEditor(pluginManager, {
+      valueSpecification: dateValueSpec,
+      setValueSpecification: setValueSpecification,
+      typeCheckOption: typeCheckOption,
+      resetValue: () => {},
+      graph: graphManagerState.graph,
+      observerContext: observerContext,
+    });
+
+    const customDatePickerButton = await screen.findByTitle(
+      'Click to edit and pick from more date options',
+    );
+    expect(customDatePickerButton).not.toBeNull();
+
+    expect((dateValueSpec as PrimitiveInstanceValue).values[0]).toBe(
+      '2025-03-28',
+    );
+
+    // Test changing to custom date
+    fireEvent.click(customDatePickerButton);
+    fireEvent.click(
+      await screen.findByText(CUSTOM_DATE_PICKER_OPTION.CUSTOM_DATE),
+    );
+    const customDateDurationInput = await screen.findByDisplayValue('0');
+    fireEvent.click(customDateDurationInput);
+    fireEvent.change(customDateDurationInput, { target: { value: '03' } });
+
+    // TODO: we should be able to enter Escape key here to close the modal
+    // and check the updated value, but it seems to reset it for some reaspon.
+
+    await screen.findByText('3 Day(s) Before Today');
+    expect(dateValueSpec instanceof SimpleFunctionExpression).toBeTruthy();
+    if (dateValueSpec instanceof SimpleFunctionExpression) {
+      expect(dateValueSpec.functionName).toBe(
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.ADJUST,
+      );
+      expect(dateValueSpec.parametersValues).toHaveLength(3);
+      const referenceMomentValueSpec = guaranteeType(
+        dateValueSpec.parametersValues[0],
+        SimpleFunctionExpression,
+      );
+      expect(referenceMomentValueSpec.functionName).toBe(
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.TODAY,
+      );
+      const directionValueSpec = guaranteeType(
+        dateValueSpec.parametersValues[1],
+        SimpleFunctionExpression,
+      );
+      expect(directionValueSpec.functionName).toBe(
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.MINUS,
+      );
+      expect(
+        directionValueSpec.parametersValues[0] instanceof
+          PrimitiveInstanceValue,
+      ).toBeTruthy();
+      expect(
+        (directionValueSpec.parametersValues[0] as PrimitiveInstanceValue)
+          .values[0],
+      ).toBe(3);
+    }
+
+    // Test changing to today
+    fireEvent.keyDown(
+      screen.getByText(CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_DATE),
+      {
+        key: 'Escape',
+        code: 'Escape',
+      },
+    );
+    fireEvent.click(customDatePickerButton);
+    fireEvent.click(await screen.findByText(CUSTOM_DATE_PICKER_OPTION.TODAY));
+    fireEvent.keyDown(
+      screen.getByText(CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_DATE),
+      {
+        key: 'Escape',
+        code: 'Escape',
+      },
+    );
+
+    await screen.findByText('Today');
+    expect(dateValueSpec instanceof SimpleFunctionExpression).toBeTruthy();
+    if (dateValueSpec instanceof SimpleFunctionExpression) {
+      expect(dateValueSpec.functionName).toBe(
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.TODAY,
+      );
+    }
+
+    // Test that not selecting a valid value doesn't change the value
+    fireEvent.click(customDatePickerButton);
+    fireEvent.click(
+      await screen.findByText(CUSTOM_DATE_PICKER_OPTION.FIRST_DAY_OF),
+    );
+    fireEvent.keyDown(
+      screen.getByText(CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_DATE),
+      {
+        key: 'Escape',
+        code: 'Escape',
+      },
+    );
+
+    await screen.findByText('Today');
+    expect(dateValueSpec instanceof SimpleFunctionExpression).toBeTruthy();
+    if (dateValueSpec instanceof SimpleFunctionExpression) {
+      expect(dateValueSpec.functionName).toBe(
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.TODAY,
+      );
+    }
+
+    // Test latest date
+    fireEvent.click(customDatePickerButton);
+    fireEvent.click(
+      await screen.findByText(CUSTOM_DATE_PICKER_OPTION.LATEST_DATE),
+    );
+    fireEvent.keyDown(
+      screen.getByText(CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_DATE),
+      {
+        key: 'Escape',
+        code: 'Escape',
+      },
+    );
+
+    await screen.findByText('Latest Date');
+    expect(dateValueSpec instanceof PrimitiveInstanceValue).toBeTruthy();
+    expect(
+      (dateValueSpec as PrimitiveInstanceValue).genericType.value.rawType.path,
+    ).toBe(PRIMITIVE_TYPE.LATESTDATE);
+
+    // Test that setting absolute time changes the type of the value specification to DateTime
+    fireEvent.click(customDatePickerButton);
+    fireEvent.click(
+      await screen.findByText(CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_TIME),
+    );
+    const dateTimeInput = guaranteeNonNullable(
+      document.querySelector('input[type="datetime-local"]'),
+    );
+    fireEvent.change(dateTimeInput, {
+      target: { value: '2025-03-20T12:00:00' },
+    });
+    fireEvent.keyDown(
+      screen.getByText(CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_DATE),
+      {
+        key: 'Escape',
+        code: 'Escape',
+      },
+    );
+
+    await screen.findByText('2025-03-20T12:00:00');
+    expect(dateValueSpec instanceof PrimitiveInstanceValue).toBeTruthy();
+    expect(
+      (dateValueSpec as PrimitiveInstanceValue).genericType.value.rawType.path,
+    ).toBe(PRIMITIVE_TYPE.DATETIME);
+    expect((dateValueSpec as PrimitiveInstanceValue).values[0]).toBe(
+      '2025-03-20T12:00:00',
+    );
+  },
+);
+
+test(
+  integrationTest(
+    'BasicValueSpecificationEditor renders and updates datetime primitive values correctly',
+  ),
+  async () => {
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
+    const graphManagerState = await TEST__setUpGraphManagerState(
+      TEST_DATA__SimpleRelationalModel,
+      pluginManager,
+    );
+    const observerContext = new ObserverContext(
+      graphManagerState.pluginManager.getPureGraphManagerPlugins(),
+    );
+
+    let dateValueSpec: ValueSpecification = observe_ValueSpecification(
+      buildPrimitiveInstanceValue(
+        graphManagerState.graph,
+        PRIMITIVE_TYPE.DATETIME,
+        '2025-03-28-T12:00:00',
+        observerContext,
+      ),
+      observerContext,
+    );
+
+    const setValueSpecification = (newVal: ValueSpecification): void => {
+      dateValueSpec = newVal;
+    };
+
+    const typeCheckOption = {
+      expectedType: (dateValueSpec as PrimitiveInstanceValue).genericType.value
+        .rawType,
+      match:
+        (dateValueSpec as PrimitiveInstanceValue).genericType.value.rawType ===
+        PrimitiveType.DATETIME,
+    };
+
+    TEST__setUpBasicValueSpecificationEditor(pluginManager, {
+      valueSpecification: dateValueSpec,
+      setValueSpecification: setValueSpecification,
+      typeCheckOption: typeCheckOption,
+      resetValue: () => {},
+      graph: graphManagerState.graph,
+      observerContext: observerContext,
+    });
+
+    const customDatePickerButton = await screen.findByTitle(
+      'Click to edit and pick from more date options',
+    );
+    expect(customDatePickerButton).not.toBeNull();
+
+    expect((dateValueSpec as PrimitiveInstanceValue).values[0]).toBe(
+      '2025-03-28-T12:00:00',
+    );
+
+    // Test changing to now function
+    fireEvent.click(customDatePickerButton);
+    fireEvent.click(await screen.findByText(CUSTOM_DATE_PICKER_OPTION.NOW));
+    fireEvent.keyDown(
+      screen.getByText(CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_TIME),
+      {
+        key: 'Escape',
+        code: 'Escape',
+      },
+    );
+
+    await screen.findByText('Now');
+    expect(dateValueSpec instanceof SimpleFunctionExpression).toBeTruthy();
+    if (dateValueSpec instanceof SimpleFunctionExpression) {
+      expect(dateValueSpec.functionName).toBe(
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.NOW,
+      );
+    }
   },
 );
 
