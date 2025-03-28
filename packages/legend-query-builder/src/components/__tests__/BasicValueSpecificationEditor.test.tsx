@@ -44,6 +44,7 @@ import { TEST__LegendApplicationPluginManager } from '../../stores/__test-utils_
 import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import { CUSTOM_DATE_PICKER_OPTION } from '../shared/CustomDatePickerHelper.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
+import { instanceValue_setValue } from '../../stores/shared/ValueSpecificationModifierHelper.js';
 
 test(
   integrationTest(
@@ -73,6 +74,15 @@ test(
       stringValueSpec = newVal;
     };
 
+    const resetValue = (): void => {
+      instanceValue_setValue(
+        stringValueSpec as PrimitiveInstanceValue,
+        null,
+        0,
+        observerContext,
+      );
+    };
+
     const typeCheckOption = {
       expectedType: (stringValueSpec as PrimitiveInstanceValue).genericType
         .value.rawType,
@@ -85,7 +95,7 @@ test(
       valueSpecification: stringValueSpec,
       setValueSpecification: setValueSpecification,
       typeCheckOption: typeCheckOption,
-      resetValue: () => {},
+      resetValue: resetValue,
       graph: graphManagerState.graph,
       observerContext: observerContext,
     });
@@ -93,6 +103,7 @@ test(
     const inputElement = await screen.findByDisplayValue('initial value');
     expect(inputElement).not.toBeNull();
 
+    // Test updating value
     fireEvent.change(inputElement, { target: { value: 'updated value' } });
     fireEvent.blur(inputElement);
 
@@ -100,6 +111,22 @@ test(
 
     expect((stringValueSpec as PrimitiveInstanceValue).values[0]).toBe(
       'updated value',
+    );
+
+    // Test resetting value shows error styling
+    fireEvent.click(screen.getByTitle('Reset'));
+    expect((stringValueSpec as PrimitiveInstanceValue).values[0]).toBeNull();
+    expect(inputElement.classList).toContain('input--with-validation--error');
+
+    // Test that empty string is allowed
+    fireEvent.change(inputElement, { target: { value: 'test' } });
+    fireEvent.change(inputElement, { target: { value: '' } });
+    fireEvent.blur(inputElement);
+
+    await screen.findByPlaceholderText('(empty)');
+    expect((stringValueSpec as PrimitiveInstanceValue).values[0]).toBe('');
+    expect(inputElement.classList).not.toContain(
+      'input--with-validation--error',
     );
   },
 );
