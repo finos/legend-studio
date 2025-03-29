@@ -132,6 +132,10 @@ import type { DEPRECATED__RelationalInputData } from '../../../graph/metamodel/p
 import { INTERNAL__UnknownPostProcessor } from '../../../graph/metamodel/pure/packageableElements/store/relational/connection/postprocessor/INTERNAL__UnknownPostProcessor.js';
 import { INTERNAL__UnknownDatasourceSpecification } from '../../../graph/metamodel/pure/packageableElements/store/relational/connection/INTERNAL__UnknownDatasourceSpecification.js';
 import { INTERNAL__UnknownAuthenticationStrategy } from '../../../graph/metamodel/pure/packageableElements/store/relational/connection/INTERNAL__UnknownAuthenticationStrategy.js';
+import {
+  type RelationalQueryGenerationConfig,
+  GenerationFeaturesConfig,
+} from '../../../graph/metamodel/pure/packageableElements/store/relational/connection/RelationalQueryGenerationConfig.js';
 
 // ------------------------------------- Operation -------------------------------------
 
@@ -1194,8 +1198,40 @@ export const observe_PostProcessor = (
   return metamodel;
 };
 
+export const observe_Abstract_RelationalQueryGenerationConfig = (
+  metamodel: RelationalQueryGenerationConfig,
+): void => {
+  makeObservable(metamodel, {
+    hashCode: computed,
+  });
+};
+
+export const observe_GenerationFeaturesConfig = (
+  metamodel: GenerationFeaturesConfig,
+): GenerationFeaturesConfig => {
+  observe_Abstract_RelationalQueryGenerationConfig(metamodel);
+
+  makeObservable(metamodel, {
+    enabled: observable,
+    disabled: observable,
+  });
+
+  return metamodel;
+};
+
+export const observe_RelationalQueryGenerationConfig = (
+  metamodel: RelationalQueryGenerationConfig,
+  context: ObserverContext,
+): RelationalQueryGenerationConfig => {
+  if (metamodel instanceof GenerationFeaturesConfig) {
+    return observe_GenerationFeaturesConfig(metamodel);
+  }
+  return metamodel;
+};
+
 const observe_Abstract_DatabaseConnection = (
   metamodel: DatabaseConnection,
+  context: ObserverContext,
 ): void => {
   observe_Abstract_Connection(metamodel);
 
@@ -1204,6 +1240,11 @@ const observe_Abstract_DatabaseConnection = (
     timeZone: observable,
     quoteIdentifiers: observable,
     queryTimeOutInSeconds: observable,
+    queryGenerationConfigs: observable,
+  });
+
+  metamodel.queryGenerationConfigs.forEach((config) => {
+    observe_RelationalQueryGenerationConfig(config, context);
   });
 };
 
@@ -1212,7 +1253,7 @@ export const observe_RelationalDatabaseConnection = skipObservedWithContext(
     metamodel: RelationalDatabaseConnection,
     context,
   ): RelationalDatabaseConnection => {
-    observe_Abstract_DatabaseConnection(metamodel);
+    observe_Abstract_DatabaseConnection(metamodel, context);
 
     makeObservable(metamodel, {
       datasourceSpecification: observable,

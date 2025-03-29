@@ -4146,6 +4146,68 @@ export const TEST_DATA__RelationalDatabaseConnectionRoundtrip = [
     classifierPath: 'meta::pure::runtime::PackageableConnection',
   },
   {
+    path: 'simple::H2ConnectionWithQueryGenerationConfigs1',
+    content: {
+      _type: 'connection',
+      connectionValue: {
+        _type: 'RelationalDatabaseConnection',
+        authenticationStrategy: {
+          _type: 'h2Default',
+        },
+        databaseType: 'H2',
+        datasourceSpecification: {
+          _type: 'static',
+          databaseName: 'myDb',
+          host: 'somehost',
+          port: 999,
+        },
+        element: 'apps::pure::studio::relational::tests::dbInc',
+        type: 'H2',
+        queryGenerationConfigs: [
+          {
+            _type: 'generationFeaturesConfig',
+            enabled: ['REMOVE_UNION_OR_JOINS'],
+            disabled: [],
+          },
+        ],
+      },
+      name: 'H2ConnectionWithQueryGenerationConfigs1',
+      package: 'simple',
+    },
+    classifierPath: 'meta::pure::runtime::PackageableConnection',
+  },
+  {
+    path: 'simple::H2ConnectionWithQueryGenerationConfigs2',
+    content: {
+      _type: 'connection',
+      connectionValue: {
+        _type: 'RelationalDatabaseConnection',
+        authenticationStrategy: {
+          _type: 'h2Default',
+        },
+        databaseType: 'H2',
+        datasourceSpecification: {
+          _type: 'static',
+          databaseName: 'myDb',
+          host: 'somehost',
+          port: 999,
+        },
+        element: 'apps::pure::studio::relational::tests::dbInc',
+        type: 'H2',
+        queryGenerationConfigs: [
+          {
+            _type: 'generationFeaturesConfig',
+            enabled: [],
+            disabled: ['REMOVE_UNION_OR_JOINS'],
+          },
+        ],
+      },
+      name: 'H2ConnectionWithQueryGenerationConfigs2',
+      package: 'simple',
+    },
+    classifierPath: 'meta::pure::runtime::PackageableConnection',
+  },
+  {
     path: 'apps::myBigQueryWithApplicationDefaultCredentials',
     content: {
       _type: 'connection',

@@ -81,6 +81,7 @@ import {
   V1_deserializeMilestoning,
   V1_serializeMilestoning,
 } from './V1_MilestoningSerializationHelper.js';
+import type { V1_RelationalQueryGenerationConfig } from '../../../model/packageableElements/store/relational/connection/V1_RelationalQueryGenerationConfig.js';
 import type { V1_Milestoning } from '../../../model/packageableElements/store/relational/model/milestoning/V1_Milestoning.js';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
 import { V1_RelationalDatabaseConnection } from '../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection.js';
@@ -105,6 +106,10 @@ import {
 } from './V1_CoreSerializationHelper.js';
 import { PackageableElementPointerType } from '../../../../../../../graph/MetaModelConst.js';
 import { V1_TabularFunction } from '../../../model/packageableElements/store/relational/model/V1_TabularFunction.js';
+import {
+  V1_serializeQueryGenerationConfig,
+  V1_deserializeQueryGenerationConfig,
+} from './V1_QueryGenerationConfigSerializationHelper.js';
 
 export const V1_DATABASE_ELEMENT_PROTOCOL_TYPE = 'relational';
 
@@ -582,6 +587,11 @@ const V1_setupRelationalDatabaseConnectionModelSchema = (
     postProcessorWithParameter: customEquivalentList({
       INTERNAL__forceReturnEmptyInTest: true,
     }),
+    queryGenerationConfigs: customList(
+      (value: V1_RelationalQueryGenerationConfig) =>
+        V1_serializeQueryGenerationConfig(value, plugins),
+      (value) => V1_deserializeQueryGenerationConfig(value, plugins),
+    ),
     type: primitive(),
   });
 };

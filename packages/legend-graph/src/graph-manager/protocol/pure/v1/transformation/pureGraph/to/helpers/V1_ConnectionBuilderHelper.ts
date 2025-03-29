@@ -60,6 +60,7 @@ import type { V1_ModelChainConnection } from '../../../../model/packageableEleme
 import { V1_buildPostProcessor } from './V1_PostProcessorBuilderHelper.js';
 import type { V1_INTERNAL__UnknownConnection } from '../../../../model/packageableElements/connection/V1_INTERNAL__UnknownConnection.js';
 import { INTERNAL__UnknownConnection } from '../../../../../../../../graph/metamodel/pure/packageableElements/connection/INTERNAL__UnknownConnection.js';
+import { V1_buildQueryGenerationConfig } from './V1_QueryGenerationConfigBuilderHelper.js';
 
 class V1_ConnectionBuilder implements V1_ConnectionVisitor<Connection> {
   context: V1_GraphBuilderContext;
@@ -293,6 +294,9 @@ class V1_ConnectionBuilder implements V1_ConnectionVisitor<Connection> {
       V1_buildPostProcessor(p, this.context),
     );
     val.postProcessorWithParameter = connection.postProcessorWithParameter;
+    val.queryGenerationConfigs = connection.queryGenerationConfigs.map(
+      (config) => V1_buildQueryGenerationConfig(config, this.context),
+    );
     return val;
   }
 }
