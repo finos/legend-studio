@@ -51,6 +51,7 @@ import {
 } from '@finos/legend-shared';
 import { createModelSchema, list, optional, primitive, raw } from 'serializr';
 import { _findCol } from './DataCubeColumn.js';
+import { PRECISE_PRIMITIVE_TYPE, PRIMITIVE_TYPE } from '@finos/legend-graph';
 
 export type DataCubeConfigurationColorKey =
   | 'normal'
@@ -122,7 +123,37 @@ export class DataCubeColumnConfiguration {
 
   constructor(name: string, type: string) {
     this.name = name;
-    this.type = type;
+    this.type = this._convertPreciseToPrimitiveType(type);
+  }
+
+  _convertPreciseToPrimitiveType(type: string) {
+    switch (type) {
+      case PRECISE_PRIMITIVE_TYPE.STRING:
+        return PRIMITIVE_TYPE.STRING;
+      case PRECISE_PRIMITIVE_TYPE.SMALL_INT:
+      case PRECISE_PRIMITIVE_TYPE.TINY_INT:
+      case PRECISE_PRIMITIVE_TYPE.U_SMALL_INT:
+      case PRECISE_PRIMITIVE_TYPE.U_TINY_INT:
+      case PRECISE_PRIMITIVE_TYPE.INT:
+      case PRECISE_PRIMITIVE_TYPE.U_INT:
+        return PRIMITIVE_TYPE.INTEGER;
+      case PRECISE_PRIMITIVE_TYPE.DOUBLE:
+      case PRECISE_PRIMITIVE_TYPE.BIG_INT:
+      case PRECISE_PRIMITIVE_TYPE.U_BIG_INT:
+        return PRIMITIVE_TYPE.NUMBER;
+      case PRECISE_PRIMITIVE_TYPE.FLOAT:
+        return PRIMITIVE_TYPE.FLOAT;
+      case PRECISE_PRIMITIVE_TYPE.DECIMAL:
+        return PRIMITIVE_TYPE.DECIMAL;
+      case PRECISE_PRIMITIVE_TYPE.STRICTDATE:
+        return PRIMITIVE_TYPE.STRICTDATE;
+      case PRECISE_PRIMITIVE_TYPE.DATETIME:
+        return PRIMITIVE_TYPE.DATETIME;
+      case PRECISE_PRIMITIVE_TYPE.STRICTTIME:
+        return PRIMITIVE_TYPE.STRICTTIME;
+      default:
+        return type;
+    }
   }
 
   static readonly serialization = new SerializationFactory(
