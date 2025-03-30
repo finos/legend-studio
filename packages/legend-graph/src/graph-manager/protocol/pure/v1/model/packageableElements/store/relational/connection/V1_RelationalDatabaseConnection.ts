@@ -23,6 +23,7 @@ import {
 import type { V1_DatasourceSpecification } from './V1_DatasourceSpecification.js';
 import type { V1_AuthenticationStrategy } from './V1_AuthenticationStrategy.js';
 import type { V1_PostProcessor } from './postprocessor/V1_PostProcessor.js';
+import type { V1_RelationalQueryGenerationConfig } from './V1_RelationalQueryGenerationConfig.js';
 
 /**
  * TODO: to be modularized or handled differently
@@ -59,6 +60,7 @@ export abstract class V1_DatabaseConnection extends V1_Connection {
   quoteIdentifiers?: boolean | undefined;
   queryTimeOutInSeconds?: number | undefined;
   postProcessorWithParameter: unknown[] = [];
+  queryGenerationConfigs: V1_RelationalQueryGenerationConfig[] = [];
 }
 
 export class V1_RelationalDatabaseConnection
@@ -86,6 +88,7 @@ export class V1_RelationalDatabaseConnection
       this.localMode?.toString() ?? '',
       this.queryTimeOutInSeconds?.toString() ?? '',
       hashArray(this.postProcessors),
+      hashArray(this.queryGenerationConfigs),
     ]);
   }
 

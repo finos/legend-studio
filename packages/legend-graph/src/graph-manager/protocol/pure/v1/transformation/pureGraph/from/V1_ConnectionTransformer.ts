@@ -99,6 +99,7 @@ import { INTERNAL__UnknownDatasourceSpecification } from '../../../../../../../g
 import { INTERNAL__UnknownAuthenticationStrategy } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/connection/INTERNAL__UnknownAuthenticationStrategy.js';
 import { V1_INTERNAL__UnknownDatasourceSpecification } from '../../../model/packageableElements/store/relational/connection/V1_INTERNAL__UnknownDatasourceSpecification.js';
 import { V1_INTERNAL__UnknownAuthenticationStrategy } from '../../../model/packageableElements/store/relational/connection/V1_INTERNAL__UnknownAuthenticationStrategy.js';
+import { V1_transformQueryGenerationConfig } from './V1_QueryGenerationConfigTransformer.js';
 
 const transformStaticDatasourceSpecification = (
   metamodel: StaticDatasourceSpecification,
@@ -367,6 +368,11 @@ export const V1_transformRelationalDatabaseConnection = (
   if (metamodel.postProcessors.length) {
     connection.postProcessors = metamodel.postProcessors.map((postprocessor) =>
       V1_transformPostProcessor(postprocessor, context),
+    );
+  }
+  if (metamodel.queryGenerationConfigs.length) {
+    connection.queryGenerationConfigs = metamodel.queryGenerationConfigs.map(
+      (config) => V1_transformQueryGenerationConfig(config, context),
     );
   }
   return connection;
