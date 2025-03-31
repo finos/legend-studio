@@ -27,7 +27,6 @@ import {
   type V1_Enumeration,
   type V1_Multiplicity,
   type V1_PackageableType,
-  type V1_ValueSpecification,
   type V1_Variable,
   getMultiplicityDescription,
   PRIMITIVE_TYPE,
@@ -43,7 +42,7 @@ import {
   V1_CString,
   V1_EnumValue,
   V1_PrimitiveValueSpecification,
-  V1_serializeValueSpecification,
+  V1_ValueSpecification,
 } from '@finos/legend-graph';
 import {
   type DebouncedFunc,
@@ -82,7 +81,10 @@ import {
   _primitiveValue,
   _property,
 } from '@finos/legend-data-cube';
-import { getV1_ValueSpecificationStringValue } from '../../stores/shared/V1_ValueSpecificationEditorHelper.js';
+import {
+  getV1_ValueSpecificationStringValue,
+  isValidV1_ValueSpecification,
+} from '../../stores/shared/V1_ValueSpecificationEditorHelper.js';
 import { useApplicationStore } from '@finos/legend-application';
 
 // Constants and helper functions
@@ -229,6 +231,8 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
   } = props;
 
   const applicationStore = useApplicationStore();
+  const errorChecker = (_valueSpecification: V1_PrimitiveValueSpecification) =>
+    isValidV1_ValueSpecification(_valueSpecification);
 
   // Handle non-collection editors
   if (multiplicity.upperBound !== undefined) {
@@ -251,6 +255,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
           }
           handleBlur={handleBlur}
           handleKeyDown={handleKeyDown}
+          errorChecker={errorChecker}
         />
       );
     } else if (type.fullPath === PRIMITIVE_TYPE.BOOLEAN) {
@@ -304,6 +309,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
           ref={ref}
           handleBlur={handleBlur}
           handleKeyDown={handleKeyDown}
+          errorChecker={errorChecker}
         />
       );
     } else if (
@@ -350,6 +356,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
           typeCheckOption={typeCheckOption}
           resetValue={resetValue}
           className={className}
+          errorChecker={errorChecker}
         />
       );
     }
@@ -381,6 +388,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
             setValueSpecification(_valueSpecification);
           }}
           handleBlur={handleBlur}
+          errorChecker={errorChecker}
         />
       );
     }
@@ -440,8 +448,8 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
         }
         convertValueSpecificationToText={convertValueSpecificationToText}
         convertTextToValueSpecification={convertTextToValueSpecification}
-        resetValue={resetValue}
         enumOptions={enumOptions}
+        errorChecker={errorChecker}
       />
     );
   }
