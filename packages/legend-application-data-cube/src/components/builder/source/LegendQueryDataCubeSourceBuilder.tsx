@@ -27,13 +27,16 @@ import { cn, DataCubeIcon, useDropdownMenu } from '@finos/legend-art';
 import {
   debounce,
   formatDistanceToNow,
-  guaranteeNonNullable,
+  guaranteeIsString,
   guaranteeType,
   quantifyList,
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { useRef, useState, useMemo, useEffect } from 'react';
 import {
+  _elementPtr,
+  _primitiveValue,
+  _property,
   FormButton,
   FormCheckbox,
   FormCodeEditor,
@@ -41,6 +44,7 @@ import {
   FormDropdownMenuItem,
   FormDropdownMenuTrigger,
   FormTextInput,
+  isPrimitiveType,
 } from '@finos/legend-data-cube';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { useLegendDataCubeBuilderStore } from '../LegendDataCubeBuilderStoreProvider.js';
@@ -339,6 +343,25 @@ export const LegendQueryDataCubeSourceBuilder = observer(
                     'Can only edit parameters with packageable type',
                   );
                   const enumeration = sourceBuilder.queryEnumerations?.[name];
+                  const resetValue = (): void => {
+                    if (isPrimitiveType(packageableType.fullPath)) {
+                      sourceBuilder.setQueryParameterValue(
+                        name,
+                        observe_V1ValueSpecification(
+                          _primitiveValue(packageableType.fullPath, null),
+                        ),
+                      );
+                    }
+                    // If not a primitive, assume it is an enum
+                    const typeParam = _elementPtr(
+                      guaranteeIsString(packageableType.fullPath),
+                    );
+                    const valueSpec = _property('', [typeParam]);
+                    sourceBuilder.setQueryParameterValue(
+                      name,
+                      observe_V1ValueSpecification(valueSpec),
+                    );
+                  };
                   return (
                     <div key={name} className="flex w-full">
                       {name}
@@ -361,9 +384,7 @@ export const LegendQueryDataCubeSourceBuilder = observer(
                             observe_V1ValueSpecification(val),
                           );
                         }}
-                        resetValue={() => {
-                          console.log('called reset value');
-                        }}
+                        resetValue={resetValue}
                         className="ml-2 flex w-full"
                         enumeration={enumeration}
                       />
