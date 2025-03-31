@@ -27,6 +27,7 @@ import {
   type V1_Enumeration,
   type V1_Multiplicity,
   type V1_PackageableType,
+  type V1_ValueSpecification,
   type V1_Variable,
   getMultiplicityDescription,
   PRIMITIVE_TYPE,
@@ -42,7 +43,6 @@ import {
   V1_CString,
   V1_EnumValue,
   V1_PrimitiveValueSpecification,
-  V1_ValueSpecification,
 } from '@finos/legend-graph';
 import {
   type DebouncedFunc,
@@ -207,7 +207,6 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
     className?: string | undefined;
     setValueSpecification: (val: V1_ValueSpecification) => void;
     resetValue: () => void;
-    isConstant?: boolean | undefined;
     selectorConfig?: V1_BasicValueSpecificationEditorSelectorConfig | undefined;
     handleBlur?: (() => void) | undefined;
     handleKeyDown?:
@@ -216,7 +215,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
     displayDateEditorAsEditableValue?: boolean | undefined;
     enumeration?: V1_Enumeration | undefined;
   }
->(function _V1_BasicValueSpecificationEditor(props, ref) {
+>(function V1_BasicValueSpecificationEditor(props, ref) {
   const {
     className,
     valueSpecification,
@@ -232,7 +231,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
 
   const applicationStore = useApplicationStore();
   const errorChecker = (_valueSpecification: V1_PrimitiveValueSpecification) =>
-    isValidV1_ValueSpecification(_valueSpecification);
+    !isValidV1_ValueSpecification(_valueSpecification);
 
   // Handle non-collection editors
   if (multiplicity.upperBound !== undefined) {

@@ -1,4 +1,5 @@
 import {
+  type V1_ValueSpecification,
   PRIMITIVE_TYPE,
   V1_AppliedProperty,
   V1_CBoolean,
@@ -8,14 +9,12 @@ import {
   V1_CDecimal,
   V1_CFloat,
   V1_CInteger,
-  V1_CLatestDate,
   V1_Collection,
   V1_CStrictDate,
   V1_CStrictTime,
   V1_CString,
   V1_EnumValue,
   V1_PrimitiveValueSpecification,
-  V1_ValueSpecification,
 } from '@finos/legend-graph';
 import { buildDatePickerOption } from '../../components/shared/CustomDatePickerHelper.js';
 import type {
@@ -27,7 +26,7 @@ import type {
 
 export const isPritiveType = (type: string): boolean =>
   !Object.values(PRIMITIVE_TYPE)
-    .map((type) => type.toString())
+    .map((_type) => _type.toString())
     .includes(type);
 
 export const getV1_ValueSpecificationStringValue = (
