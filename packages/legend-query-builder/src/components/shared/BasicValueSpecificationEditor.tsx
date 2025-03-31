@@ -767,8 +767,7 @@ interface PrimitiveCollectionInstanceValueEditorProps<
   expectedType: Type | string;
   saveEdit: () => void;
   selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
-  errorChecker?: (valueSpecification: T) => boolean;
-  resetValue: () => void;
+  errorChecker?: (valueSpecification: U) => boolean;
   className?: string | undefined;
 }
 
@@ -1274,16 +1273,9 @@ export const EnumCollectionInstanceValueEditor = observer(
 const COLLECTION_PREVIEW_CHAR_LIMIT = 50;
 
 interface CollectionValueInstanceValueEditorProps<T, U extends { values: T[] }>
-  extends Omit<
-      PrimitiveCollectionInstanceValueEditorProps<T, U>,
-      'errorChecker' | 'saveEdit'
-    >,
-    Omit<
-      EnumCollectionInstanceValueEditorProps<T, U>,
-      'errorChecker' | 'saveEdit'
-    > {
+  extends Omit<PrimitiveCollectionInstanceValueEditorProps<T, U>, 'saveEdit'>,
+    Omit<EnumCollectionInstanceValueEditorProps<T, U>, 'saveEdit'> {
   stringifyCollectionValueSpecification: (valueSpecification: U) => string;
-  errorChecker?: (valueSpecification: U) => boolean;
 }
 
 const CollectionValueInstanceValueEditorInner = <T, U extends { values: T[] }>(
@@ -1296,7 +1288,6 @@ const CollectionValueInstanceValueEditorInner = <T, U extends { values: T[] }>(
     updateValueSpecification,
     stringifyCollectionValueSpecification,
     errorChecker,
-    resetValue,
     className,
     selectorConfig,
     expectedType,
@@ -1338,7 +1329,6 @@ const CollectionValueInstanceValueEditorInner = <T, U extends { values: T[] }>(
               expectedType={expectedType}
               saveEdit={saveEdit}
               enumOptions={enumOptions}
-              resetValue={resetValue}
             />
           ) : (
             <PrimitiveCollectionInstanceValueEditor<T, U>
@@ -1349,7 +1339,6 @@ const CollectionValueInstanceValueEditorInner = <T, U extends { values: T[] }>(
               expectedType={expectedType}
               saveEdit={saveEdit}
               selectorConfig={selectorConfig}
-              resetValue={resetValue}
             />
           )}
         </div>
@@ -1725,7 +1714,6 @@ export const BasicValueSpecificationEditor = forwardRef<
         stringifyCollectionValueSpecification={(
           collectionValueSpecification: CollectionInstanceValue,
         ) => stringifyValue(collectionValueSpecification.values)}
-        resetValue={resetValue}
         errorChecker={errorChecker}
         convertValueSpecificationToText={(
           _valueSpecification: ValueSpecification,
