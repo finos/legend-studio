@@ -1,5 +1,11 @@
 # @finos/legend-data-cube
 
+## 0.1.17
+
+### Patch Changes
+
+- [#3961](https://github.com/finos/legend-studio/pull/3961) [`4b07f11`](https://github.com/finos/legend-studio/commit/4b07f11792261875d42f7a53bbb7cce6b97fa2fa) ([@gs-gunjan](https://github.com/gs-gunjan)) - Implementing data cube column configuration for precise types
+
 ## 0.1.16
 
 ### Patch Changes
