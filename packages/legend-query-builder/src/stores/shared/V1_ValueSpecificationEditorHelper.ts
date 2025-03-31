@@ -43,7 +43,7 @@ import type {
 
 export const isPritiveType = (type: string): boolean =>
   !Object.values(PRIMITIVE_TYPE)
-    .map((type) => type.toString())
+    .map((_type) => _type.toString())
     .includes(type);
 
 export const getV1_ValueSpecificationStringValue = (
