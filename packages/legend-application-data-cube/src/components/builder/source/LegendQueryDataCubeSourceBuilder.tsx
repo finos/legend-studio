@@ -16,10 +16,10 @@
 
 import { observer } from 'mobx-react-lite';
 import {
+  type QueryLoaderState,
   QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT,
   SORT_BY_OPTIONS,
   V1_BasicValueSpecificationEditor,
-  type QueryLoaderState,
 } from '@finos/legend-query-builder';
 import type { LegendQueryDataCubeSourceBuilderState } from '../../../stores/builder/source/LegendQueryDataCubeSourceBuilderState.js';
 import { generateGAVCoordinates } from '@finos/legend-storage';
@@ -34,6 +34,7 @@ import {
 import { flowResult } from 'mobx';
 import { useRef, useState, useMemo, useEffect } from 'react';
 import {
+  _defaultPrimitiveTypeValue,
   _elementPtr,
   _primitiveValue,
   _property,
@@ -50,10 +51,10 @@ import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { useLegendDataCubeBuilderStore } from '../LegendDataCubeBuilderStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
 import {
+  type V1_ValueSpecification,
   observe_V1ValueSpecification,
   PRIMITIVE_TYPE,
   V1_PackageableType,
-  V1_ValueSpecification,
 } from '@finos/legend-graph';
 
 const LegendQuerySearcher = observer((props: { state: QueryLoaderState }) => {
@@ -348,7 +349,12 @@ export const LegendQueryDataCubeSourceBuilder = observer(
                       sourceBuilder.setQueryParameterValue(
                         name,
                         observe_V1ValueSpecification(
-                          _primitiveValue(packageableType.fullPath, null),
+                          _primitiveValue(
+                            packageableType.fullPath,
+                            _defaultPrimitiveTypeValue(
+                              packageableType.fullPath,
+                            ),
+                          ),
                         ),
                       );
                     }

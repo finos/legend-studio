@@ -22,6 +22,11 @@
  ***************************************************************************************/
 
 import {
+  type V1_PrimitiveValueSpecification,
+  type V1_ValueSpecification,
+  CORE_PURE_PATH,
+  extractElementNameFromPath,
+  extractPackagePathFromPath,
   PRIMITIVE_TYPE,
   V1_AppliedFunction,
   V1_AppliedProperty,
@@ -30,29 +35,25 @@ import {
   V1_CDecimal,
   V1_CFloat,
   V1_CInteger,
-  V1_CStrictDate,
-  V1_CStrictTime,
-  V1_CString,
   V1_ClassInstance,
   V1_ClassInstanceType,
+  V1_CLatestDate,
+  V1_Collection,
   V1_ColSpec,
   V1_ColSpecArray,
-  V1_Collection,
-  V1_Lambda,
-  V1_Multiplicity,
-  V1_PackageableElementPtr,
-  type V1_PrimitiveValueSpecification,
-  V1_Variable,
-  extractElementNameFromPath,
-  type V1_ValueSpecification,
-  extractPackagePathFromPath,
-  CORE_PURE_PATH,
-  V1_GenericTypeInstance,
   V1_createGenericTypeWithElementPath,
   V1_createGenericTypeWithRawType,
   V1_createRelationType,
   V1_createRelationTypeColumn,
-  V1_CLatestDate,
+  V1_CStrictDate,
+  V1_CStrictTime,
+  V1_CString,
+  V1_GenericTypeInstance,
+  V1_Lambda,
+  V1_Multiplicity,
+  V1_PackageableElementPtr,
+  V1_PackageableType,
+  V1_Variable,
 } from '@finos/legend-graph';
 import {
   type DataCubeSnapshotFilterCondition,
@@ -245,6 +246,12 @@ export function _elementPtr(fullPath: string) {
   const ptr = new V1_PackageableElementPtr();
   ptr.fullPath = fullPath;
   return ptr;
+}
+
+export function _type(fullPath: string) {
+  const type = new V1_PackageableType();
+  type.fullPath = fullPath;
+  return type;
 }
 
 function _classInstance(type: string, value: unknown) {

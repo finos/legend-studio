@@ -33,6 +33,10 @@ import {
   type PureModel,
   type RawLambda,
   type RawMappingModelCoverageAnalysisResult,
+  type V1_Enumeration,
+  type V1_Multiplicity,
+  type V1_PackageableType,
+  type V1_ValueSpecification,
   type ValueSpecification,
   GraphManagerState,
   PackageableElementExplicitReference,
@@ -64,6 +68,10 @@ import {
   BasicValueSpecificationEditor,
   type TypeCheckOption,
 } from '../shared/BasicValueSpecificationEditor.js';
+import {
+  V1_BasicValueSpecificationEditor,
+  type V1_TypeCheckOption,
+} from '../shared/V1_BasicValueSpecificationEditor.js';
 
 const getSelectorContainerClassName = (lightMode?: boolean): string =>
   '.' + `${lightMode ? STYLE_PREFIX : STYLE_PREFIX__DARK}__value-container`;
@@ -318,6 +326,39 @@ export const TEST__setUpBasicValueSpecificationEditor = (
             <Route
               path="*"
               element={<BasicValueSpecificationEditor {...props} />}
+            />
+          </Routes>
+        </ApplicationFrameworkProvider>
+      </TEST__BrowserEnvironmentProvider>
+    </ApplicationStoreProvider>,
+  );
+};
+
+export const TEST__setUpV1BasicValueSpecificationEditor = (
+  pluginManager: TEST__LegendApplicationPluginManager,
+  props: {
+    valueSpecification: V1_ValueSpecification;
+    setValueSpecification: (val: V1_ValueSpecification) => void;
+    type: V1_PackageableType;
+    multiplicity: V1_Multiplicity;
+    typeCheckOption: V1_TypeCheckOption;
+    resetValue: () => void;
+    enumeration?: V1_Enumeration | undefined;
+  },
+): void => {
+  const MOCK__applicationStore = new ApplicationStore(
+    TEST__getGenericApplicationConfig(),
+    pluginManager,
+  );
+
+  render(
+    <ApplicationStoreProvider store={MOCK__applicationStore}>
+      <TEST__BrowserEnvironmentProvider initialEntries={['/']}>
+        <ApplicationFrameworkProvider>
+          <Routes>
+            <Route
+              path="*"
+              element={<V1_BasicValueSpecificationEditor {...props} />}
             />
           </Routes>
         </ApplicationFrameworkProvider>

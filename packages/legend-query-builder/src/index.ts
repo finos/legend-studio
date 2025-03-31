@@ -116,6 +116,9 @@ export * from './components/shared/V1_BasicValueSpecificationEditor.js';
 export * from './stores/shared/ValueSpecificationModifierHelper.js';
 export * from './stores/shared/ValueSpecificationEditorHelper.js';
 
+export * from './stores/shared/V1_ValueSpecificationModifierHelper.js';
+export * from './stores/shared/V1_ValueSpecificationEditorHelper.js';
+
 export * from './components/execution-plan/ExecutionPlanViewer.js';
 export * from './stores/execution-plan/ExecutionPlanState.js';
 

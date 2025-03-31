@@ -68,4 +68,5 @@ export {
   _lambda,
   _primitiveValue,
   _property,
+  _type,
 } from './stores/core/DataCubeQueryBuilderUtils.js';
