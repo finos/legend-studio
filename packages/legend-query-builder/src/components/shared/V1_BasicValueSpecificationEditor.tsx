@@ -64,7 +64,8 @@ import {
   StringPrimitiveInstanceValueEditor,
 } from './BasicValueSpecificationEditor.js';
 import {
-  V1_AppliedPropert_setProperty,
+  V1_AppliedProperty_setProperty,
+  V1_Collection_setValues,
   V1_PrimitiveValue_setValue,
 } from '../../stores/shared/V1_ValueSpecificationModifierHelper.js';
 import {
@@ -76,7 +77,11 @@ import {
   CustomPreviousDayOfWeekOption,
   DatePickerOption,
 } from './CustomDatePickerHelper.js';
-import { _primitiveValue } from '@finos/legend-data-cube';
+import {
+  _elementPtr,
+  _primitiveValue,
+  _property,
+} from '@finos/legend-data-cube';
 import { getV1_ValueSpecificationStringValue } from '../../stores/shared/V1_ValueSpecificationEditorHelper.js';
 import { useApplicationStore } from '@finos/legend-application';
 
@@ -180,6 +185,8 @@ const V1_stringifyValue = (values: V1_ValueSpecification[]): string => {
           }
         } else if (val instanceof V1_EnumValue) {
           return val.value;
+        } else if (val instanceof V1_AppliedProperty) {
+          return val.property;
         }
         return undefined;
       })
@@ -367,7 +374,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
             _valueSpecification: V1_AppliedProperty,
             value: string | null,
           ) => {
-            V1_AppliedPropert_setProperty(
+            V1_AppliedProperty_setProperty(
               _valueSpecification,
               guaranteeNonNullable(value),
             );
@@ -387,7 +394,10 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
       _collectionValueSpecification: V1_Collection,
       valueSpecifications: V1_ValueSpecification[],
     ) => {
-      _collectionValueSpecification.values = valueSpecifications;
+      V1_Collection_setValues(
+        _collectionValueSpecification,
+        valueSpecifications,
+      );
       setValueSpecification(_collectionValueSpecification);
     };
     const stringifyCollectionValueSpecification = (
@@ -408,19 +418,13 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
       text: string,
     ): V1_ValueSpecification | null => {
       try {
-        return _primitiveValue(
-          guaranteeIsString(
-            _type,
-            'Cannot convert text to V1_ValueSpecification. Expected type to be a string',
-          ),
-          text,
-          true,
-        );
+        const typeParam = _elementPtr(guaranteeIsString(_type));
+        return _property(text, [typeParam]);
       } catch {
         return null;
       }
     };
-    const options =
+    const enumOptions =
       enumeration?.values.map((enumValue) => ({
         label: enumValue.value,
         value: enumValue.value,
@@ -437,7 +441,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
         convertValueSpecificationToText={convertValueSpecificationToText}
         convertTextToValueSpecification={convertTextToValueSpecification}
         resetValue={resetValue}
-        options={options}
+        enumOptions={enumOptions}
       />
     );
   }

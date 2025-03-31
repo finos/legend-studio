@@ -1,4 +1,5 @@
 import {
+  V1_AppliedProperty,
   V1_CBoolean,
   V1_CByteArray,
   V1_CDate,
@@ -48,6 +49,8 @@ export const getV1_ValueSpecificationStringValue = (
     valueSpecification instanceof V1_EnumValue
   ) {
     return valueSpecification.value.toString();
+  } else if (valueSpecification instanceof V1_AppliedProperty) {
+    return valueSpecification.property;
   } else if (valueSpecification instanceof V1_Collection) {
     return valueSpecification.values
       .map((valueSpec) =>

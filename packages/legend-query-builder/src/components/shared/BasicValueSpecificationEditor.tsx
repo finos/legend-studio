@@ -1054,7 +1054,7 @@ export const PrimitiveCollectionInstanceValueEditor = observer(
 
 interface EnumCollectionInstanceValueEditorProps<T, U extends { values: T[] }>
   extends PrimitiveCollectionInstanceValueEditorProps<T, U> {
-  options: { label: string; value: string }[] | undefined;
+  enumOptions: { label: string; value: string }[] | undefined;
 }
 
 const EnumCollectionInstanceValueEditorInner = <T, U extends { values: T[] }>(
@@ -1067,11 +1067,11 @@ const EnumCollectionInstanceValueEditorInner = <T, U extends { values: T[] }>(
     updateValueSpecification,
     saveEdit,
     expectedType,
-    options,
+    enumOptions,
   } = props;
 
   guaranteeNonNullable(
-    options,
+    enumOptions,
     'Must pass enum options to EnumCollectionInstanceValueEditor',
   );
 
@@ -1092,7 +1092,7 @@ const EnumCollectionInstanceValueEditorInner = <T, U extends { values: T[] }>(
       })),
   );
 
-  const availableOptions = options?.filter(
+  const availableOptions = enumOptions?.filter(
     (value) =>
       !selectedOptions.some(
         (selectedValue) => selectedValue.value === value.value,
@@ -1118,7 +1118,7 @@ const EnumCollectionInstanceValueEditorInner = <T, U extends { values: T[] }>(
     if (
       !trimmedInputValue.length ||
       isValueAlreadySelected(trimmedInputValue) ||
-      !options?.some((option) => option.value === trimmedInputValue)
+      !enumOptions?.some((option) => option.value === trimmedInputValue)
     ) {
       return null;
     }
@@ -1186,7 +1186,7 @@ const EnumCollectionInstanceValueEditorInner = <T, U extends { values: T[] }>(
     }
     const newValues = uniq(
       uniq(parsedData).filter((value) =>
-        options?.some((option) => option.value === value),
+        enumOptions?.some((option) => option.value === value),
       ),
     ).filter((value) => !isValueAlreadySelected(value));
     setSelectedOptions([
@@ -1300,7 +1300,7 @@ const CollectionValueInstanceValueEditorInner = <T, U extends { values: T[] }>(
     className,
     selectorConfig,
     expectedType,
-    options,
+    enumOptions,
   } = props;
 
   const [editable, setEditable] = useState(false);
@@ -1329,7 +1329,7 @@ const CollectionValueInstanceValueEditorInner = <T, U extends { values: T[] }>(
     return (
       <>
         <div className={clsx('value-spec-editor', className)}>
-          {expectedType instanceof Enumeration ? (
+          {enumOptions !== undefined ? (
             <EnumCollectionInstanceValueEditor<T, U>
               valueSpecification={valueSpecification}
               updateValueSpecification={updateValueSpecification}
@@ -1337,7 +1337,7 @@ const CollectionValueInstanceValueEditorInner = <T, U extends { values: T[] }>(
               convertValueSpecificationToText={convertValueSpecificationToText}
               expectedType={expectedType}
               saveEdit={saveEdit}
-              options={options}
+              enumOptions={enumOptions}
               resetValue={resetValue}
             />
           ) : (
@@ -1702,7 +1702,7 @@ export const BasicValueSpecificationEditor = forwardRef<
       );
       setValueSpecification(collectionValueSpecification);
     };
-    const options =
+    const enumOptions =
       typeCheckOption.expectedType instanceof Enumeration
         ? typeCheckOption.expectedType.values.map((enumValue) => ({
             label: enumValue.name,
@@ -1768,7 +1768,7 @@ export const BasicValueSpecificationEditor = forwardRef<
           }
           return null;
         }}
-        options={options}
+        enumOptions={enumOptions}
       />
     );
   }

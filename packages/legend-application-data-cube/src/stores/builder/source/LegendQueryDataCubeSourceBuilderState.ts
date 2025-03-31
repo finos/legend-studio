@@ -37,9 +37,8 @@ import {
   V1_serializeValueSpecification,
   V1_deserializePackageableElement,
   Enumeration,
-  V1_AppliedProperty,
-  V1_PackageableElementPtr,
   V1_Enumeration,
+  PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
 import {
   QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT,
@@ -178,11 +177,13 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
           value: observe_V1ValueSpecification(defaultValueSpec),
         };
       }
-      const enumerationParameters = Object.entries(queryParameterValues)
-        .map(([name, paramValue]) => [name, paramValue.value])
-        .filter(
-          ([_, valueSpec]) => valueSpec instanceof V1_AppliedProperty,
-        ) as [string, V1_AppliedProperty][];
+      const enumerationParameters = queryParameters.filter(
+        (param: V1_Variable) =>
+          param.genericType?.rawType instanceof V1_PackageableType &&
+          !Object.values(PRIMITIVE_TYPE)
+            .map((type) => type.toString())
+            .includes(param.genericType.rawType.fullPath),
+      );
       this.populateEnumerations(enumerationParameters, lightQuery);
       runInAction(() => {
         this.query = lightQuery;
@@ -263,19 +264,19 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
   }
 
   private async populateEnumerations(
-    queryParameters: [string, V1_AppliedProperty][],
+    queryParameters: V1_Variable[],
     query: LightQuery,
   ): Promise<void> {
     const queryEnumerations: { [paramName: string]: V1_Enumeration } = {};
-    for (const [name, param] of queryParameters) {
+    for (const param of queryParameters) {
       const enumerationValue = await this.getEnumerationValues(
         guaranteeNonNullable(
-          guaranteeType(param.parameters?.[0], V1_PackageableElementPtr)
+          guaranteeType(param.genericType?.rawType, V1_PackageableType)
             ?.fullPath,
         ),
         query,
       );
-      queryEnumerations[name] = enumerationValue;
+      queryEnumerations[param.name] = enumerationValue;
     }
     runInAction(() => {
       this.queryEnumerations = queryEnumerations;
