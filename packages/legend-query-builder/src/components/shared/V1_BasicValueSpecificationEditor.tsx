@@ -29,6 +29,8 @@ import {
   type V1_ValueSpecification,
   type V1_Variable,
   getMultiplicityDescription,
+  observe_V1_AppliedProperty,
+  observe_V1ValueSpecification,
   PRIMITIVE_TYPE,
   V1_AppliedProperty,
   V1_CBoolean,
@@ -79,6 +81,7 @@ import {
   _elementPtr,
   _primitiveValue,
   _property,
+  isPrimitiveType,
 } from '@finos/legend-data-cube';
 import {
   getV1_ValueSpecificationStringValue,
@@ -387,11 +390,11 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
       );
     }
   } else {
+    // Handle collection editors
     const collectionValueSpecification = guaranteeType(
       valueSpecification,
       V1_Collection,
     );
-    // Handle collection editors
     const updateValueSpecification = (
       _collectionValueSpecification: V1_Collection,
       valueSpecifications: V1_ValueSpecification[],
@@ -419,11 +422,17 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
       _type: Type | string,
       text: string,
     ): V1_ValueSpecification | null => {
-      try {
-        const typeParam = _elementPtr(guaranteeIsString(_type));
-        return _property(text, [typeParam]);
-      } catch {
-        return null;
+      const stringType = guaranteeIsString(
+        _type,
+        'Cannot convert text to V1_ValueSpecification. Expected type to be a string',
+      );
+      if (isPrimitiveType(stringType)) {
+        const primitiveVal = _primitiveValue(stringType, text, true);
+        return observe_V1ValueSpecification(primitiveVal);
+      } else {
+        // If not a primitive, assume it is an enum
+        const typeParam = _elementPtr(stringType);
+        return observe_V1_AppliedProperty(_property(text, [typeParam]));
       }
     };
     const enumOptions = enumeration?.values.map((enumValue) => ({
