@@ -715,8 +715,6 @@ test.skip(
     fireEvent.change(input, { target: { value: 'value3' } });
     fireEvent.keyDown(input, { key: 'Enter' });
 
-    screen.debug();
-
     // Test that duplicate values don't get added
     fireEvent.change(input, { target: { value: 'value3' } });
     fireEvent.keyDown(input, { key: 'Enter' });
@@ -743,194 +741,194 @@ test.skip(
   },
 );
 
-// test(
-//   integrationTest(
-//     'V1_BasicValueSpecificationEditor renders and updates integer collection values correctly',
-//   ),
-//   async () => {
-//     const pluginManager = TEST__LegendApplicationPluginManager.create();
+test(
+  integrationTest(
+    'V1_BasicValueSpecificationEditor renders and updates integer collection values correctly',
+  ),
+  async () => {
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-//     let integerCollectionValue = observe_V1ValueSpecification(
-//       _collection([
-//         _primitiveValue(PRIMITIVE_TYPE.INTEGER, 1),
-//         _primitiveValue(PRIMITIVE_TYPE.INTEGER, 2),
-//       ]),
-//     );
+    let integerCollectionValue = observe_V1ValueSpecification(
+      _collection([
+        _primitiveValue(PRIMITIVE_TYPE.INTEGER, 1),
+        _primitiveValue(PRIMITIVE_TYPE.INTEGER, 2),
+      ]),
+    );
 
-//     const setValueSpecification = (val: V1_ValueSpecification): void => {
-//       integerCollectionValue = val;
-//     };
+    const setValueSpecification = (val: V1_ValueSpecification): void => {
+      integerCollectionValue = val;
+    };
 
-//     TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
-//       valueSpecification: integerCollectionValue,
-//       setValueSpecification,
-//       type: _type(PRIMITIVE_TYPE.INTEGER),
-//       multiplicity: V1_Multiplicity.ZERO_MANY,
-//       typeCheckOption: {
-//         expectedType: PRIMITIVE_TYPE.INTEGER,
-//         match: false,
-//       },
-//       resetValue: (): void => {},
-//     });
+    TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
+      valueSpecification: integerCollectionValue,
+      setValueSpecification,
+      type: _type(PRIMITIVE_TYPE.INTEGER),
+      multiplicity: V1_Multiplicity.ZERO_MANY,
+      typeCheckOption: {
+        expectedType: PRIMITIVE_TYPE.INTEGER,
+        match: false,
+      },
+      resetValue: (): void => {},
+    });
 
-//     const listEditorElement = await screen.findByText('List(2): 1,2');
+    const listEditorElement = await screen.findByText('List(2): 1,2');
 
-//     fireEvent.click(listEditorElement);
+    fireEvent.click(listEditorElement);
 
-//     // Test that float is converted to int
-//     const input = await screen.findByRole('combobox');
-//     fireEvent.change(input, { target: { value: '3.2' } });
-//     fireEvent.keyDown(input, { key: 'Enter' });
-//     await screen.findByText('3');
+    // Test that float is converted to int
+    const input = await screen.findByRole('combobox');
+    fireEvent.change(input, { target: { value: '3.2' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await screen.findByText('3');
 
-//     // Test that duplicate values don't get added
-//     fireEvent.change(input, { target: { value: '3' } });
-//     fireEvent.keyDown(input, { key: 'Enter' });
-//     expect(screen.getByDisplayValue('3')).not.toBeNull();
+    // Test that duplicate values don't get added
+    fireEvent.change(input, { target: { value: '3' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(screen.getByDisplayValue('3')).not.toBeNull();
 
-//     const saveButton = screen.getByTitle('Save');
-//     fireEvent.click(saveButton);
+    const saveButton = screen.getByTitle('Save');
+    fireEvent.click(saveButton);
 
-//     await screen.findByText('List(3): 1,2,3');
+    await screen.findByText('List(3): 1,2,3');
 
-//     expect(integerCollectionValue instanceof V1_Collection).toBe(true);
-//     if (integerCollectionValue instanceof V1_Collection) {
-//       expect(integerCollectionValue.values.length).toBe(3);
-//       expect(
-//         integerCollectionValue.values.every((v) => v instanceof V1_CInteger),
-//       ).toBeTruthy();
-//       const values = integerCollectionValue.values.map(
-//         (v) => (v as V1_CInteger).value,
-//       );
-//       expect(values[0]).toBe(1);
-//       expect(values[1]).toBe(2);
-//       expect(values[2]).toBe(3);
-//     }
-//   },
-// );
+    expect(integerCollectionValue instanceof V1_Collection).toBe(true);
+    if (integerCollectionValue instanceof V1_Collection) {
+      expect(integerCollectionValue.values.length).toBe(3);
+      expect(
+        integerCollectionValue.values.every((v) => v instanceof V1_CInteger),
+      ).toBeTruthy();
+      const values = integerCollectionValue.values.map(
+        (v) => (v as V1_CInteger).value,
+      );
+      expect(values[0]).toBe(1);
+      expect(values[1]).toBe(2);
+      expect(values[2]).toBe(3);
+    }
+  },
+);
 
-// test(
-//   integrationTest(
-//     'V1_BasicValueSpecificationEditor renders and updates float collection values correctly',
-//   ),
-//   async () => {
-//     const pluginManager = TEST__LegendApplicationPluginManager.create();
+test(
+  integrationTest(
+    'V1_BasicValueSpecificationEditor renders and updates float collection values correctly',
+  ),
+  async () => {
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-//     let floatCollectionValue = observe_V1ValueSpecification(
-//       _collection([
-//         _primitiveValue(PRIMITIVE_TYPE.FLOAT, 1.1),
-//         _primitiveValue(PRIMITIVE_TYPE.FLOAT, 2.2),
-//       ]),
-//     );
+    let floatCollectionValue = observe_V1ValueSpecification(
+      _collection([
+        _primitiveValue(PRIMITIVE_TYPE.FLOAT, 1.1),
+        _primitiveValue(PRIMITIVE_TYPE.FLOAT, 2.2),
+      ]),
+    );
 
-//     const setValueSpecification = (val: V1_ValueSpecification): void => {
-//       floatCollectionValue = val;
-//     };
+    const setValueSpecification = (val: V1_ValueSpecification): void => {
+      floatCollectionValue = val;
+    };
 
-//     TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
-//       valueSpecification: floatCollectionValue,
-//       setValueSpecification,
-//       type: _type(PRIMITIVE_TYPE.FLOAT),
-//       multiplicity: V1_Multiplicity.ZERO_MANY,
-//       typeCheckOption: {
-//         expectedType: PRIMITIVE_TYPE.FLOAT,
-//         match: false,
-//       },
-//       resetValue: (): void => {},
-//     });
+    TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
+      valueSpecification: floatCollectionValue,
+      setValueSpecification,
+      type: _type(PRIMITIVE_TYPE.FLOAT),
+      multiplicity: V1_Multiplicity.ZERO_MANY,
+      typeCheckOption: {
+        expectedType: PRIMITIVE_TYPE.FLOAT,
+        match: false,
+      },
+      resetValue: (): void => {},
+    });
 
-//     const listEditorElement = await screen.findByText('List(2): 1.1,2.2');
+    const listEditorElement = await screen.findByText('List(2): 1.1,2.2');
 
-//     fireEvent.click(listEditorElement);
+    fireEvent.click(listEditorElement);
 
-//     // Test that trailing zeros are removed
-//     const input = await screen.findByRole('combobox');
-//     fireEvent.change(input, { target: { value: '3.0' } });
-//     fireEvent.keyDown(input, { key: 'Enter' });
-//     await screen.findByText('3');
+    // Test that trailing zeros are removed
+    const input = await screen.findByRole('combobox');
+    fireEvent.change(input, { target: { value: '3.0' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await screen.findByText('3');
 
-//     // Test that duplicate values don't get added
-//     fireEvent.change(input, { target: { value: '3.0' } });
-//     fireEvent.keyDown(input, { key: 'Enter' });
-//     expect(screen.getByDisplayValue('3.0')).not.toBeNull();
+    // Test that duplicate values don't get added
+    fireEvent.change(input, { target: { value: '3.0' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(screen.getByDisplayValue('3.0')).not.toBeNull();
 
-//     const saveButton = screen.getByTitle('Save');
-//     fireEvent.click(saveButton);
+    const saveButton = screen.getByTitle('Save');
+    fireEvent.click(saveButton);
 
-//     await screen.findByText('List(3): 1.1,2.2,3');
+    await screen.findByText('List(3): 1.1,2.2,3');
 
-//     expect(floatCollectionValue instanceof V1_Collection).toBe(true);
-//     if (floatCollectionValue instanceof V1_Collection) {
-//       expect(floatCollectionValue.values.length).toBe(3);
-//       expect(
-//         floatCollectionValue.values.every((v) => v instanceof V1_CFloat),
-//       ).toBeTruthy();
-//       const values = floatCollectionValue.values.map(
-//         (v) => (v as V1_CFloat).value,
-//       );
-//       expect(values[0]).toBe(1.1);
-//       expect(values[1]).toBe(2.2);
-//       expect(values[2]).toBe(3);
-//     }
-//   },
-// );
+    expect(floatCollectionValue instanceof V1_Collection).toBe(true);
+    if (floatCollectionValue instanceof V1_Collection) {
+      expect(floatCollectionValue.values.length).toBe(3);
+      expect(
+        floatCollectionValue.values.every((v) => v instanceof V1_CFloat),
+      ).toBeTruthy();
+      const values = floatCollectionValue.values.map(
+        (v) => (v as V1_CFloat).value,
+      );
+      expect(values[0]).toBe(1.1);
+      expect(values[1]).toBe(2.2);
+      expect(values[2]).toBe(3);
+    }
+  },
+);
 
-// test(
-//   integrationTest(
-//     'V1_BasicValueSpecificationEditor renders and updates enum collection values correctly',
-//   ),
-//   async () => {
-//     const pluginManager = TEST__LegendApplicationPluginManager.create();
+test(
+  integrationTest(
+    'V1_BasicValueSpecificationEditor renders and updates enum collection values correctly',
+  ),
+  async () => {
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-//     let enumCollectionValue = observe_V1ValueSpecification(
-//       _collection([_property('Mr', [_elementPtr('test::myEnum')])]),
-//     );
-//     const enumeration = _enumeration('test', 'myEnum', [
-//       _enumValue('Mr'),
-//       _enumValue('Mrs'),
-//       _enumValue('Ms'),
-//       _enumValue('Dr'),
-//     ]);
+    let enumCollectionValue = observe_V1ValueSpecification(
+      _collection([_property('Mr', [_elementPtr('test::myEnum')])]),
+    );
+    const enumeration = _enumeration('test', 'myEnum', [
+      _enumValue('Mr'),
+      _enumValue('Mrs'),
+      _enumValue('Ms'),
+      _enumValue('Dr'),
+    ]);
 
-//     const setValueSpecification = (val: V1_ValueSpecification): void => {
-//       enumCollectionValue = val;
-//     };
+    const setValueSpecification = (val: V1_ValueSpecification): void => {
+      enumCollectionValue = val;
+    };
 
-//     TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
-//       valueSpecification: enumCollectionValue,
-//       setValueSpecification,
-//       type: _type('test::myEnum'),
-//       multiplicity: V1_Multiplicity.ZERO_MANY,
-//       typeCheckOption: {
-//         expectedType: 'test::myEnum',
-//         match: false,
-//       },
-//       resetValue: (): void => {},
-//       enumeration: enumeration,
-//     });
+    TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
+      valueSpecification: enumCollectionValue,
+      setValueSpecification,
+      type: _type('test::myEnum'),
+      multiplicity: V1_Multiplicity.ZERO_MANY,
+      typeCheckOption: {
+        expectedType: 'test::myEnum',
+        match: false,
+      },
+      resetValue: (): void => {},
+      enumeration: enumeration,
+    });
 
-//     const listEditorElement = await screen.findByText('List(1): Mr');
+    const listEditorElement = await screen.findByText('List(1): Mr');
 
-//     fireEvent.click(listEditorElement);
+    fireEvent.click(listEditorElement);
 
-//     const input = await screen.findByRole('combobox');
+    const input = await screen.findByRole('combobox');
 
-//     // TODO: figure out how to test clicking on an enum option from
-//     // the dropdown
+    // TODO: figure out how to test clicking on an enum option from
+    // the dropdown
 
-//     // Test that typing in a value exactly adds it
-//     fireEvent.change(input, { target: { value: 'Mrs' } });
-//     fireEvent.keyDown(input, { key: 'Enter' });
+    // Test that typing in a value exactly adds it
+    fireEvent.change(input, { target: { value: 'Mrs' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
 
-//     // Test that typing in a value that doesn't exist doesn't add it
-//     fireEvent.change(input, { target: { value: 'Professor' } });
-//     fireEvent.keyDown(input, { key: 'Enter' });
-//     expect(screen.getByDisplayValue('Professor')).not.toBeNull();
+    // Test that typing in a value that doesn't exist doesn't add it
+    fireEvent.change(input, { target: { value: 'Professor' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(screen.getByDisplayValue('Professor')).not.toBeNull();
 
-//     const saveButton = screen.getByTitle('Save');
-//     fireEvent.click(saveButton);
+    const saveButton = screen.getByTitle('Save');
+    fireEvent.click(saveButton);
 
-//     await screen.findByText('List(2): Mr,Mrs');
+    await screen.findByText('List(2): Mr,Mrs');
 
     const listEditorElement = await screen.findByText('List(1): CITY');
 
