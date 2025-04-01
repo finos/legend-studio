@@ -544,7 +544,7 @@ export * from './graph-manager/action/changeDetection/DomainObserverHelper.js';
 export * from './graph-manager/action/changeDetection/DSL_Mapping_ObserverHelper.js';
 export * from './graph-manager/action/changeDetection/RawValueSpecificationObserver.js';
 export * from './graph-manager/action/changeDetection/ValueSpecificationObserver.js';
-export { observe_V1ValueSpecification } from './graph-manager/action/changeDetection/V1_ValueSpecificationObserver.js';
+export * from './graph-manager/action/changeDetection/V1_ValueSpecificationObserver.js';
 export * from './graph-manager/action/changeDetection/STO_Relational_ObserverHelper.js';
 export * from './graph-manager/action/changeDetection/STO_FlatData_ObserverHelper.js';
 export * from './graph-manager/action/changeDetection/GraphObserverHelper.js';
