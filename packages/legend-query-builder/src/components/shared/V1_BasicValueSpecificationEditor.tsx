@@ -23,7 +23,6 @@ import {
   type Type,
   type V1_AppliedFunction,
   type V1_CDate,
-  type V1_CStrictTime,
   type V1_Enumeration,
   type V1_Multiplicity,
   type V1_PackageableType,
@@ -167,7 +166,7 @@ const V1_UnsupportedValueSpecificationEditor: React.FC<{ type: string }> = (
   props,
 ) => (
   <div className="value-spec-editor--unsupported">
-    unsupported V1 type: {props.type}
+    Unsupported V1 type: {props.type}
   </div>
 );
 
@@ -315,9 +314,16 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
       type.fullPath === PRIMITIVE_TYPE.DATE ||
       type.fullPath === PRIMITIVE_TYPE.STRICTDATE ||
       type.fullPath === PRIMITIVE_TYPE.DATETIME ||
-      type.fullPath === PRIMITIVE_TYPE.STRICTTIME ||
       type.fullPath === PRIMITIVE_TYPE.LATESTDATE
     ) {
+      const dateValueSelector = (
+        _valueSpecification: V1_CDate | V1_AppliedFunction | V1_CString,
+      ) =>
+        _valueSpecification instanceof V1_CDateTime ||
+        _valueSpecification instanceof V1_CStrictDate ||
+        _valueSpecification instanceof V1_CString
+          ? _valueSpecification.value
+          : '';
       const dateUpdateValueSpecification: CustomDatePickerUpdateValueSpecification<
         V1_CDateTime | V1_CStrictDate | V1_CLatestDate | undefined
       > = (_valueSpecification, value, options): void => {
@@ -335,22 +341,11 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
         }
       };
       return (
-        <DateInstanceValueEditor<
-          V1_CDate | V1_CStrictTime | V1_AppliedFunction | V1_CString
-        >
+        <DateInstanceValueEditor<V1_CDate | V1_AppliedFunction | V1_CString>
           valueSpecification={
-            valueSpecification as
-              | V1_CDate
-              | V1_CStrictTime
-              | V1_AppliedFunction
-              | V1_CString
+            valueSpecification as V1_CDate | V1_AppliedFunction | V1_CString
           }
-          valueSelector={(_valueSpecification) =>
-            _valueSpecification instanceof V1_CDateTime ||
-            _valueSpecification instanceof V1_CStrictDate
-              ? _valueSpecification.value
-              : ''
-          }
+          valueSelector={dateValueSelector}
           updateValueSpecification={dateUpdateValueSpecification}
           typeCheckOption={typeCheckOption}
           resetValue={resetValue}
@@ -372,7 +367,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
             valueSpecification,
             V1_AppliedProperty,
           )}
-          valueSelector={(val) => val.property}
+          valueSelector={(val: V1_AppliedProperty) => val.property}
           options={options}
           className={className}
           resetValue={resetValue}
