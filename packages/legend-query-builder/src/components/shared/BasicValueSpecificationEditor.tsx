@@ -1691,6 +1691,38 @@ export const BasicValueSpecificationEditor = forwardRef<
       );
       setValueSpecification(collectionValueSpecification);
     };
+    const convertTextToValueSpecification = (
+      type: Type | string,
+      text: string,
+    ): ValueSpecification | null => {
+      if (type instanceof Enumeration) {
+        const enumValue = convertTextToEnum(text, type);
+        if (enumValue) {
+          const enumValueInstanceValue = new EnumValueInstanceValue(
+            GenericTypeExplicitReference.create(new GenericType(type)),
+          );
+          instanceValue_setValues(
+            enumValueInstanceValue,
+            [EnumValueExplicitReference.create(enumValue)],
+            observerContext,
+          );
+          return observe_ValueSpecification(
+            enumValueInstanceValue,
+            observerContext,
+          );
+        }
+      } else {
+        const primitiveVal = convertTextToPrimitiveInstanceValue(
+          guaranteeType(type, Type),
+          text,
+          observerContext,
+        );
+        if (primitiveVal) {
+          return observe_ValueSpecification(primitiveVal, observerContext);
+        }
+      }
+      return null;
+    };
     const enumOptions =
       typeCheckOption.expectedType instanceof Enumeration
         ? typeCheckOption.expectedType.values.map((enumValue) => ({
@@ -1724,38 +1756,7 @@ export const BasicValueSpecificationEditor = forwardRef<
             { omitEnumOwnerName: true },
           )
         }
-        convertTextToValueSpecification={(
-          type: Type | string,
-          text: string,
-        ): ValueSpecification | null => {
-          if (type instanceof Enumeration) {
-            const enumValue = convertTextToEnum(text, type);
-            if (enumValue) {
-              const enumValueInstanceValue = new EnumValueInstanceValue(
-                GenericTypeExplicitReference.create(new GenericType(type)),
-              );
-              instanceValue_setValues(
-                enumValueInstanceValue,
-                [EnumValueExplicitReference.create(enumValue)],
-                observerContext,
-              );
-              return observe_ValueSpecification(
-                enumValueInstanceValue,
-                observerContext,
-              );
-            }
-          } else {
-            const primitiveVal = convertTextToPrimitiveInstanceValue(
-              guaranteeType(type, Type),
-              text,
-              observerContext,
-            );
-            if (primitiveVal) {
-              return observe_ValueSpecification(primitiveVal, observerContext);
-            }
-          }
-          return null;
-        }}
+        convertTextToValueSpecification={convertTextToValueSpecification}
         enumOptions={enumOptions}
       />
     );
