@@ -67,3 +67,106 @@
     }
   }
 }
+
+.data-cube {
+  .value-spec-editor {
+    .selector-input--dark {
+      &__control {
+        min-height: 20px;
+      }
+
+      &__value-container {
+        padding: 0 4px;
+      }
+
+      &__input {
+        height: 10px;
+      }
+    }
+
+    &__list-editor {
+      &__preview {
+        height: 100%;
+        font-size: unset;
+        line-height: unset;
+        background: var(--tw-color-gray-200);
+        color: unset;
+
+        &--error {
+          background: var(--tw-color-gray-200);
+          border-color: var(--tw-color-red-500);
+        }
+      }
+
+      &__edit-icon {
+        height: 20px;
+        width: 20px;
+        min-width: 10px;
+        background: var(--tw-color-gray-200);
+
+        svg {
+          height: 10px;
+          width: 10px;
+          color: unset;
+        }
+      }
+
+      &__copy-button {
+        background: var(--tw-color-gray-100);
+
+        svg {
+          color: unset;
+        }
+
+        &:hover svg {
+          color: var(--tw-color-gray-600);
+        }
+      }
+
+      &__textarea__description {
+        color: var(--tw-color-gray-500);
+      }
+    }
+
+    &__reset-btn {
+      background: var(--tw-color-gray-300);
+      border-color: var(--tw-color-gray-500);
+
+      svg {
+        color: var(--tw-color-gray-500);
+      }
+    }
+
+    &__date-picker__trigger {
+      background: var(--tw-color-white);
+      border: 1px solid var(--tw-color-gray-300);
+      color: var(--tw-color-gray-500);
+
+      &--error {
+        border-color: var(--tw-color-red-500);
+      }
+    }
+
+    &__toggler__btn {
+      svg {
+        color: var(--tw-color-gray-500);
+      }
+
+      &--toggled svg {
+        color: var(--tw-color-sky-500);
+      }
+    }
+
+    &__number__input--error {
+      border-color: var(--tw-color-red-500);
+    }
+
+    &:hover {
+      .value-spec-editor__list-editor__preview,
+      .value-spec-editor__list-editor__edit-icon {
+        color: unset;
+        background: var(--tw-color-gray-300);
+      }
+    }
+  }
+}

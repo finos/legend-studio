@@ -369,9 +369,14 @@ export const LegendQueryDataCubeSourceBuilder = observer(
                     );
                   };
                   return (
-                    <div key={name} className="flex w-full">
-                      {name}
-                      {': '}
+                    <div
+                      key={name}
+                      className="theme__legacy-light flex h-5 w-full"
+                    >
+                      <div className="m-auto">
+                        {name}
+                        {': '}
+                      </div>
                       <V1_BasicValueSpecificationEditor
                         valueSpecification={value}
                         type={packageableType}
