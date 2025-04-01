@@ -48,6 +48,8 @@ import {
   V1_CStrictDate,
   V1_CStrictTime,
   V1_CString,
+  V1_Enumeration,
+  V1_EnumValue,
   V1_GenericTypeInstance,
   V1_Lambda,
   V1_Multiplicity,
@@ -148,7 +150,12 @@ const PURE_AUTO_IMPORT_PACKAGE_PATHS = [
   'meta::pure::profiles',
 ];
 
-export function _functionName(funcNameOrPath: string) {
+export function _functionName(
+  funcNameOrPath: string,
+  options?: { useFullFunctionPath?: boolean },
+) {
+  if (options?.useFullFunctionPath) return funcNameOrPath;
+
   const funcPakagePath = extractPackagePathFromPath(funcNameOrPath);
   if (
     funcPakagePath &&
@@ -162,9 +169,12 @@ export function _functionName(funcNameOrPath: string) {
 export function _function(
   functionName: string,
   parameters: V1_ValueSpecification[],
+  options?: {
+    useFullFunctionPath?: boolean;
+  },
 ) {
   const func = new V1_AppliedFunction();
-  func.function = _functionName(functionName);
+  func.function = _functionName(functionName, options);
   func.parameters = parameters;
   return func;
 }
@@ -240,6 +250,24 @@ export function _primitiveValue(
         `Can't build primitive value instance for unsupported type '${type}'`,
       );
   }
+}
+
+export function _enumValue(value: string): V1_EnumValue {
+  const enumValue = new V1_EnumValue();
+  enumValue.value = value;
+  return enumValue;
+}
+
+export function _enumeration(
+  enumerationPackage: string,
+  enumerationName: string,
+  values: V1_EnumValue[],
+): V1_Enumeration {
+  const enumeration = new V1_Enumeration();
+  enumeration.package = enumerationPackage;
+  enumeration.name = enumerationName;
+  enumeration.values = values;
+  return enumeration;
 }
 
 export function _elementPtr(fullPath: string) {

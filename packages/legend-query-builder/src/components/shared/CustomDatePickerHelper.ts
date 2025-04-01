@@ -455,6 +455,7 @@ export const buildV1PureDateFunctionExpression = (
     const previousDayAF = _function(
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.PREVIOUS_DAY_OF_WEEK,
       [dayOfWeekProperty],
+      { useFullFunctionPath: true },
     );
     return previousDayAF;
   } else if (datePickerOption instanceof CustomFirstDayOfOption) {
@@ -463,6 +464,7 @@ export const buildV1PureDateFunctionExpression = (
         const firstDayOfThisYearAF = _function(
           QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_THIS_YEAR,
           [],
+          { useFullFunctionPath: true },
         );
         return firstDayOfThisYearAF;
       }
@@ -470,6 +472,7 @@ export const buildV1PureDateFunctionExpression = (
         const firstDayOfQuarterAF = _function(
           QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_QUARTER,
           [],
+          { useFullFunctionPath: true },
         );
         return firstDayOfQuarterAF;
       }
@@ -477,6 +480,7 @@ export const buildV1PureDateFunctionExpression = (
         const firstDayOfMonthAF = _function(
           QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_THIS_MONTH,
           [],
+          { useFullFunctionPath: true },
         );
         return firstDayOfMonthAF;
       }
@@ -484,6 +488,7 @@ export const buildV1PureDateFunctionExpression = (
         const firstDayOfWeekAF = _function(
           QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_WEEK,
           [],
+          { useFullFunctionPath: true },
         );
         return firstDayOfWeekAF;
       }
@@ -495,33 +500,41 @@ export const buildV1PureDateFunctionExpression = (
   } else {
     switch (datePickerOption.value) {
       case CUSTOM_DATE_PICKER_OPTION.TODAY: {
-        return _function(QUERY_BUILDER_SUPPORTED_FUNCTIONS.TODAY, []);
+        return _function(QUERY_BUILDER_SUPPORTED_FUNCTIONS.TODAY, [], {
+          useFullFunctionPath: true,
+        });
       }
       case CUSTOM_DATE_PICKER_OPTION.NOW: {
-        return _function(QUERY_BUILDER_SUPPORTED_FUNCTIONS.NOW, []);
+        return _function(QUERY_BUILDER_SUPPORTED_FUNCTIONS.NOW, [], {
+          useFullFunctionPath: true,
+        });
       }
       case CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_THIS_YEAR: {
         return _function(
           QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_THIS_YEAR,
           [],
+          { useFullFunctionPath: true },
         );
       }
       case CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_QUARTER: {
         return _function(
           QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_QUARTER,
           [],
+          { useFullFunctionPath: true },
         );
       }
       case CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_MONTH: {
         return _function(
           QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_THIS_MONTH,
           [],
+          { useFullFunctionPath: true },
         );
       }
       case CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_WEEK: {
         return _function(
           QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_WEEK,
           [],
+          { useFullFunctionPath: true },
         );
       }
       default:
@@ -660,9 +673,11 @@ export const buildV1PureAdjustDateFunction = (
   // Direction and duration
   const directionDuration =
     customDateOption.direction === CUSTOM_DATE_OPTION_DIRECTION.BEFORE
-      ? _function(QUERY_BUILDER_SUPPORTED_FUNCTIONS.MINUS, [
-          _primitiveValue(PRIMITIVE_TYPE.INTEGER, customDateOption.duration),
-        ])
+      ? _function(
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.MINUS,
+          [_primitiveValue(PRIMITIVE_TYPE.INTEGER, customDateOption.duration)],
+          { useFullFunctionPath: true },
+        )
       : _primitiveValue(PRIMITIVE_TYPE.INTEGER, customDateOption.duration);
   // Unit property
   const durationUnitProperty = _property(
@@ -670,11 +685,11 @@ export const buildV1PureAdjustDateFunction = (
     [_elementPtr(QUERY_BUILDER_PURE_PATH.DURATION_UNIT)],
   );
 
-  return _function(QUERY_BUILDER_SUPPORTED_FUNCTIONS.ADJUST, [
-    startingPointAF,
-    directionDuration,
-    durationUnitProperty,
-  ]);
+  return _function(
+    QUERY_BUILDER_SUPPORTED_FUNCTIONS.ADJUST,
+    [startingPointAF, directionDuration, durationUnitProperty],
+    { useFullFunctionPath: true },
+  );
 };
 
 /**
