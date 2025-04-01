@@ -40,26 +40,28 @@ import {
 } from '@finos/legend-art';
 import {
   type Enum,
-  type Type,
-  type ValueSpecification,
-  type PureModel,
   type ObserverContext,
-  PrimitiveInstanceValue,
+  type PureModel,
+  type ValueSpecification,
   CollectionInstanceValue,
-  EnumValueInstanceValue,
-  INTERNAL__PropagatedValue,
-  SimpleFunctionExpression,
-  VariableExpression,
-  EnumValueExplicitReference,
-  PrimitiveType,
-  PRIMITIVE_TYPE,
-  GenericTypeExplicitReference,
-  GenericType,
   Enumeration,
+  EnumValueExplicitReference,
+  EnumValueInstanceValue,
+  GenericType,
+  GenericTypeExplicitReference,
   getMultiplicityDescription,
-  matchFunctionName,
-  isSubType,
+  getPrimitiveTypeInstanceFromEnum,
   InstanceValue,
+  INTERNAL__PropagatedValue,
+  isSubType,
+  matchFunctionName,
+  PRIMITIVE_TYPE,
+  PrimitiveInstanceValue,
+  PrimitiveType,
+  SimpleFunctionExpression,
+  Type,
+  VariableExpression,
+  observe_ValueSpecification,
 } from '@finos/legend-graph';
 import {
   type DebouncedFunc,
@@ -72,7 +74,6 @@ import {
   isNonEmptyString,
   parseCSVString,
   uniq,
-  at,
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
@@ -86,8 +87,8 @@ import React, {
 import {
   instanceValue_setValue,
   instanceValue_setValues,
+  valueSpecification_setGenericType,
 } from '../../stores/shared/ValueSpecificationModifierHelper.js';
-import { CustomDatePicker } from './CustomDatePicker.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
 import {
   isValidInstanceValue,
@@ -96,12 +97,25 @@ import {
 import { evaluate } from 'mathjs';
 import { isUsedDateFunctionSupportedInFormMode } from '../../stores/QueryBuilderStateBuilder.js';
 import {
+  buildPrimitiveInstanceValue,
   convertTextToEnum,
   convertTextToPrimitiveInstanceValue,
   getValueSpecificationStringValue,
 } from '../../stores/shared/ValueSpecificationEditorHelper.js';
+import { CustomDatePicker } from './CustomDatePicker.js';
+import {
+  type CustomDatePickerValueSpecification,
+  type CustomDatePickerUpdateValueSpecification,
+  CustomDateOption,
+  buildPureAdjustDateFunction,
+  CustomFirstDayOfOption,
+  buildPureDateFunctionExpression,
+  CustomPreviousDayOfWeekOption,
+  DatePickerOption,
+} from './CustomDatePickerHelper.js';
+import type { V1_TypeCheckOption } from './V1_BasicValueSpecificationEditor.js';
 
-type TypeCheckOption = {
+export type TypeCheckOption = {
   expectedType: Type;
   /**
    * Indicates if a strict type-matching will happen.
@@ -109,6 +123,10 @@ type TypeCheckOption = {
    * for example we can assign a Float to an Integer, a
    * Date to a DateTime. With this flag set to `true`
    * we will not allow this.
+   *
+   * For example, if `match=true`, it means that options in the
+   * date-capability-dropdown which are not returning type DateTime
+   * will be filtered out.
    */
   match?: boolean;
 };
@@ -223,461 +241,462 @@ const VariableExpressionParameterEditor = observer(
   },
 );
 
-const StringPrimitiveInstanceValueEditor = observer(
-  forwardRef<
-    HTMLInputElement | SelectComponent,
-    {
-      valueSpecification: PrimitiveInstanceValue;
-      className?: string | undefined;
-      setValueSpecification: (val: ValueSpecification) => void;
-      resetValue: () => void;
-      selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
-      observerContext: ObserverContext;
-      handleBlur?: (() => void) | undefined;
-      handleKeyDown?: React.KeyboardEventHandler<HTMLDivElement> | undefined;
+export interface PrimitiveInstanceValueEditorProps<
+  T,
+  U extends string | number | boolean | Enum | null,
+> {
+  valueSpecification: T;
+  valueSelector: (val: T) => U;
+  updateValueSpecification: (valueSpecification: T, value: U) => void;
+  errorChecker?: (valueSpecification: T) => boolean;
+  resetValue: () => void;
+  handleBlur?: (() => void) | undefined;
+  handleKeyDown?: React.KeyboardEventHandler<HTMLDivElement> | undefined;
+  className?: string | undefined;
+}
+
+interface StringPrimitiveInstanceValueEditorProps<T>
+  extends PrimitiveInstanceValueEditorProps<T, string | null> {
+  selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
+}
+
+const StringPrimitiveInstanceValueEditorInner = <T,>(
+  props: StringPrimitiveInstanceValueEditorProps<T>,
+  ref: React.ForwardedRef<HTMLInputElement | SelectComponent | null>,
+): React.ReactElement => {
+  const {
+    valueSpecification,
+    valueSelector,
+    updateValueSpecification,
+    errorChecker,
+    resetValue,
+    handleBlur,
+    handleKeyDown,
+    className,
+    selectorConfig,
+  } = props;
+  const useSelector = Boolean(selectorConfig);
+  const applicationStore = useApplicationStore();
+  const value = valueSelector(valueSpecification);
+  const changeInputValue: React.ChangeEventHandler<HTMLInputElement> = (
+    event,
+  ) => {
+    updateValueSpecification(valueSpecification, event.target.value);
+  };
+  // custom select
+  const selectedValue = value ? { value: value, label: value } : null;
+  const reloadValuesFunc = selectorConfig?.reloadValues;
+  const changeValue = (
+    val: null | { value: number | string; label: string },
+  ): void => {
+    const newValue = val === null ? '' : val.value.toString();
+    updateValueSpecification(valueSpecification, newValue);
+  };
+  const handleInputChange = (
+    inputValue: string,
+    actionChange: InputActionData,
+  ): void => {
+    if (actionChange.action === 'input-change') {
+      updateValueSpecification(valueSpecification, inputValue);
+      reloadValuesFunc?.cancel();
+      const reloadValuesFuncTransformation = reloadValuesFunc?.(inputValue);
+      if (reloadValuesFuncTransformation) {
+        flowResult(reloadValuesFuncTransformation).catch(
+          applicationStore.alertUnhandledError,
+        );
+      }
     }
-  >(function StringPrimitiveInstanceValueEditor(props, ref) {
-    const {
-      valueSpecification,
-      className,
-      resetValue,
-      setValueSpecification,
-      selectorConfig,
-      observerContext,
-      handleBlur,
-      handleKeyDown,
-    } = props;
-    const useSelector = Boolean(selectorConfig);
-    const applicationStore = useApplicationStore();
-    const value = valueSpecification.values[0] as string | null;
-    const updateValueSpec = (val: string): void => {
-      instanceValue_setValue(valueSpecification, val, 0, observerContext);
-      setValueSpecification(valueSpecification);
-    };
-    const changeInputValue: React.ChangeEventHandler<HTMLInputElement> = (
-      event,
-    ) => {
-      updateValueSpec(event.target.value);
-    };
-    // custom select
-    const selectedValue = value ? { value: value, label: value } : null;
-    const reloadValuesFunc = selectorConfig?.reloadValues;
-    const changeValue = (
-      val: null | { value: number | string; label: string },
-    ): void => {
-      const newValue = val === null ? '' : val.value.toString();
-      updateValueSpec(newValue);
-    };
-    const handleInputChange = (
-      inputValue: string,
-      actionChange: InputActionData,
-    ): void => {
-      if (actionChange.action === 'input-change') {
-        updateValueSpec(inputValue);
-        reloadValuesFunc?.cancel();
-        const reloadValuesFuncTransformation = reloadValuesFunc?.(inputValue);
-        if (reloadValuesFuncTransformation) {
-          flowResult(reloadValuesFuncTransformation).catch(
-            applicationStore.alertUnhandledError,
-          );
-        }
-      }
-      if (actionChange.action === 'input-blur') {
-        reloadValuesFunc?.cancel();
-        selectorConfig?.cleanUpReloadValues?.();
-      }
-    };
-    const isLoading = selectorConfig?.isLoading;
-    const queryOptions = selectorConfig?.values?.length
-      ? selectorConfig.values.map((e) => ({
-          value: e,
-          label: e.toString(),
-        }))
-      : undefined;
-    const noOptionsMessage =
-      selectorConfig?.values === undefined ? (): null => null : undefined;
-    const resetButtonName = `reset-${valueSpecification.hashCode}`;
-    const inputName = `input-${valueSpecification.hashCode}`;
-
-    const onBlur = (
-      event: React.FocusEvent<HTMLInputElement, HTMLButtonElement>,
-    ): void => {
-      if (
-        event.relatedTarget?.name !== resetButtonName &&
-        event.relatedTarget?.name !== inputName
-      ) {
-        handleBlur?.();
-      }
-    };
-
-    return (
-      <div className={clsx('value-spec-editor', className)} onBlur={onBlur}>
-        {useSelector ? (
-          <CustomSelectorInput
-            className="value-spec-editor__enum-selector"
-            options={queryOptions}
-            onChange={changeValue}
-            value={selectedValue}
-            inputValue={value ?? ''}
-            onInputChange={handleInputChange}
-            darkMode={
-              !applicationStore.layoutService
-                .TEMPORARY__isLightColorThemeEnabled
-            }
-            isLoading={isLoading}
-            allowCreateWhileLoading={true}
-            noOptionsMessage={noOptionsMessage}
-            components={{
-              DropdownIndicator: null,
-            }}
-            hasError={!isValidInstanceValue(valueSpecification)}
-            placeholder={value === '' ? '(empty)' : undefined}
-            inputRef={ref as React.Ref<SelectComponent>}
-            onKeyDown={
-              handleKeyDown as React.KeyboardEventHandler<HTMLDivElement>
-            }
-            inputName={inputName}
-          />
-        ) : (
-          <InputWithInlineValidation
-            className="panel__content__form__section__input value-spec-editor__input"
-            spellCheck={false}
-            value={value ?? ''}
-            placeholder={value === '' ? '(empty)' : undefined}
-            onChange={changeInputValue}
-            ref={ref as React.Ref<HTMLInputElement>}
-            error={
-              !isValidInstanceValue(valueSpecification)
-                ? 'Invalid String value'
-                : undefined
-            }
-            onKeyDown={handleKeyDown}
-            name={inputName}
-          />
-        )}
-        <button
-          className="value-spec-editor__reset-btn"
-          name={resetButtonName}
-          title="Reset"
-          onClick={resetValue}
-        >
-          <RefreshIcon />
-        </button>
-      </div>
-    );
-  }),
-);
-
-const BooleanPrimitiveInstanceValueEditor = observer(
-  (props: {
-    valueSpecification: PrimitiveInstanceValue;
-    className?: string | undefined;
-    resetValue: () => void;
-    setValueSpecification: (val: ValueSpecification) => void;
-    observerContext: ObserverContext;
-  }) => {
-    const {
-      valueSpecification,
-      className,
-      resetValue,
-      setValueSpecification,
-      observerContext,
-    } = props;
-    const value = valueSpecification.values[0] as boolean;
-    const toggleValue = (): void => {
-      instanceValue_setValue(valueSpecification, !value, 0, observerContext);
-      setValueSpecification(valueSpecification);
-    };
-
-    return (
-      <div className={clsx('value-spec-editor', className)}>
-        <button
-          className={clsx('value-spec-editor__toggler__btn', {
-            'value-spec-editor__toggler__btn--toggled': value,
-          })}
-          onClick={toggleValue}
-        >
-          {value ? <CheckSquareIcon /> : <SquareIcon />}
-        </button>
-        <button
-          className="value-spec-editor__reset-btn"
-          name="Reset"
-          title="Reset"
-          onClick={resetValue}
-        >
-          <RefreshIcon />
-        </button>
-      </div>
-    );
-  },
-);
-
-const NumberPrimitiveInstanceValueEditor = observer(
-  forwardRef<
-    HTMLInputElement,
-    {
-      valueSpecification: PrimitiveInstanceValue;
-      isInteger: boolean;
-      className?: string | undefined;
-      resetValue: () => void;
-      setValueSpecification: (val: ValueSpecification) => void;
-      observerContext: ObserverContext;
-      handleBlur?: (() => void) | undefined;
-      handleKeyDown?:
-        | ((event: React.KeyboardEvent<HTMLInputElement>) => void)
-        | undefined;
+    if (actionChange.action === 'input-blur') {
+      reloadValuesFunc?.cancel();
+      selectorConfig?.cleanUpReloadValues?.();
     }
-  >(function NumberPrimitiveInstanceValueEditor(props, ref) {
-    const {
-      valueSpecification,
-      isInteger,
-      className,
-      resetValue,
-      setValueSpecification,
-      observerContext,
-      handleBlur,
-      handleKeyDown,
-    } = props;
-    const [value, setValue] = useState(
-      valueSpecification.values[0] === null
-        ? ''
-        : (valueSpecification.values[0] as number).toString(),
-    );
-    const inputRef = useRef<HTMLInputElement>(null);
-    useImperativeHandle(ref, () => inputRef.current as HTMLInputElement, []);
-    const numericValue = value
-      ? isInteger
-        ? Number.parseInt(Number(value).toString(), 10)
-        : Number(value)
-      : null;
+  };
+  const isLoading = selectorConfig?.isLoading;
+  const queryOptions = selectorConfig?.values?.length
+    ? selectorConfig.values.map((e) => ({
+        value: e,
+        label: e.toString(),
+      }))
+    : undefined;
+  const noOptionsMessage =
+    selectorConfig?.values === undefined ? (): null => null : undefined;
+  const resetButtonName = `reset-${valueSelector(valueSpecification)}`;
+  const inputName = `input-${valueSelector(valueSpecification)}`;
 
-    const updateValueSpecIfValid = (val: string): void => {
-      if (val) {
-        const parsedValue = isInteger
-          ? Number.parseInt(Number(val).toString(), 10)
-          : Number(val);
-        if (
-          !isNaN(parsedValue) &&
-          parsedValue !== valueSpecification.values[0]
-        ) {
-          instanceValue_setValue(
-            valueSpecification,
-            parsedValue,
-            0,
-            observerContext,
-          );
-          setValueSpecification(valueSpecification);
-        }
-      } else {
-        resetValue();
-      }
-    };
-
-    const handleInputChange: React.ChangeEventHandler<HTMLInputElement> = (
-      event,
-    ) => {
-      setValue(event.target.value);
-      updateValueSpecIfValid(event.target.value);
-    };
-
-    // Support expression evaluation
-    const calculateExpression = (): void => {
-      if (numericValue !== null && isNaN(numericValue)) {
-        // If the value is not a number, try to evaluate it as an expression
-        try {
-          const calculatedValue = guaranteeIsNumber(evaluate(value));
-          updateValueSpecIfValid(calculatedValue.toString());
-          setValue(calculatedValue.toString());
-        } catch {
-          // If we fail to evaluate the expression, we just keep the previous value
-          const prevValue =
-            valueSpecification.values[0] !== null &&
-            valueSpecification.values[0] !== undefined
-              ? valueSpecification.values[0].toString()
-              : '';
-          updateValueSpecIfValid(prevValue);
-          setValue(prevValue);
-        }
-      } else if (numericValue !== null) {
-        // If numericValue is a number, update the value spec
-        updateValueSpecIfValid(numericValue.toString());
-        setValue(numericValue.toString());
-      } else {
-        // If numericValue is null, reset the value spec
-        resetValue();
-      }
-    };
-
-    const onKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (event) => {
-      if (event.code === 'Enter') {
-        calculateExpression();
-        inputRef.current?.focus();
-      } else if (event.code === 'Escape') {
-        inputRef.current?.select();
-      }
-    };
-
-    useEffect(() => {
-      if (
-        numericValue !== null &&
-        !isNaN(numericValue) &&
-        numericValue !== valueSpecification.values[0]
-      ) {
-        const valueFromValueSpec =
-          valueSpecification.values[0] !== null
-            ? (valueSpecification.values[0] as number).toString()
-            : '';
-        setValue(valueFromValueSpec);
-      }
-    }, [numericValue, valueSpecification]);
-
-    const resetButtonName = `reset-${valueSpecification.hashCode}`;
-    const inputName = `input-${valueSpecification.hashCode}`;
-    const calculateButtonName = `calculate-${valueSpecification.hashCode}`;
-
-    const onBlur = (
-      event: React.FocusEvent<HTMLInputElement, HTMLButtonElement>,
-    ): void => {
-      if (
-        event.relatedTarget?.name !== resetButtonName &&
-        event.relatedTarget?.name !== inputName &&
-        event.relatedTarget?.name !== calculateButtonName
-      ) {
-        handleBlur?.();
-      }
-    };
-
-    return (
-      <div className={clsx('value-spec-editor', className)} onBlur={onBlur}>
-        <div className="value-spec-editor__number__input-container">
-          <input
-            ref={inputRef}
-            className={clsx(
-              'panel__content__form__section__input',
-              'value-spec-editor__input',
-              'value-spec-editor__number__input',
-              {
-                'value-spec-editor__number__input--error':
-                  !isValidInstanceValue(valueSpecification),
-              },
-            )}
-            spellCheck={false}
-            type="text" // NOTE: we leave this as text so that we can support expression evaluation
-            inputMode="numeric"
-            value={value}
-            onChange={handleInputChange}
-            onBlur={calculateExpression}
-            onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
-              onKeyDown(event);
-              handleKeyDown?.(event);
-            }}
-            name={inputName}
-          />
-          <div className="value-spec-editor__number__actions">
-            <button
-              className="value-spec-editor__number__action"
-              title="Evaluate Expression (Enter)"
-              name={calculateButtonName}
-              onClick={calculateExpression}
-            >
-              <CalculateIcon />
-            </button>
-          </div>
-        </div>
-        <button
-          className="value-spec-editor__reset-btn"
-          name={resetButtonName}
-          title="Reset"
-          onClick={resetValue}
-        >
-          <RefreshIcon />
-        </button>
-      </div>
-    );
-  }),
-);
-
-const EnumValueInstanceValueEditor = observer(
-  (props: {
-    valueSpecification: EnumValueInstanceValue;
-    className?: string | undefined;
-    setValueSpecification: (val: ValueSpecification) => void;
-    resetValue: () => void;
-    observerContext: ObserverContext;
-    handleBlur?: (() => void) | undefined;
-  }) => {
-    const {
-      valueSpecification,
-      className,
-      resetValue,
-      setValueSpecification,
-      observerContext,
-      handleBlur,
-    } = props;
-    const applicationStore = useApplicationStore();
-    const enumType = guaranteeType(
-      valueSpecification.genericType?.value.rawType,
-      Enumeration,
-    );
-    const enumValue =
-      valueSpecification.values[0] === undefined
-        ? null
-        : valueSpecification.values[0].value;
-    const options = enumType.values.map((value) => ({
-      label: value.name,
-      value: value,
-    }));
-    const resetButtonName = `reset-${valueSpecification.hashCode}`;
-    const inputName = `input-${valueSpecification.hashCode}`;
-
-    const changeValue = (val: { value: Enum; label: string }): void => {
-      instanceValue_setValue(
-        valueSpecification,
-        EnumValueExplicitReference.create(val.value),
-        0,
-        observerContext,
-      );
-      setValueSpecification(valueSpecification);
+  const onBlur = (
+    event: React.FocusEvent<HTMLInputElement, HTMLButtonElement>,
+  ): void => {
+    if (
+      event.relatedTarget?.name !== resetButtonName &&
+      event.relatedTarget?.name !== inputName
+    ) {
       handleBlur?.();
-    };
+    }
+  };
 
-    const onBlur = (
-      event: React.FocusEvent<HTMLInputElement, HTMLButtonElement>,
-    ): void => {
-      if (
-        event.relatedTarget?.name !== resetButtonName &&
-        event.relatedTarget?.name !== inputName
-      ) {
-        handleBlur?.();
-      }
-    };
-
-    return (
-      <div className={clsx('value-spec-editor', className)} onBlur={onBlur}>
+  return (
+    <div className={clsx('value-spec-editor', className)} onBlur={onBlur}>
+      {useSelector ? (
         <CustomSelectorInput
           className="value-spec-editor__enum-selector"
-          options={options}
+          options={queryOptions}
           onChange={changeValue}
-          value={enumValue ? { value: enumValue, label: enumValue.name } : null}
+          value={selectedValue}
+          inputValue={value ?? ''}
+          onInputChange={handleInputChange}
           darkMode={
             !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
           }
-          hasError={!isValidInstanceValue(valueSpecification)}
-          placeholder="Select value"
-          autoFocus={true}
+          isLoading={isLoading}
+          allowCreateWhileLoading={true}
+          noOptionsMessage={noOptionsMessage}
+          components={{
+            DropdownIndicator: null,
+          }}
+          hasError={errorChecker?.(valueSpecification)}
+          placeholder={value === '' ? '(empty)' : undefined}
+          inputRef={ref as React.Ref<SelectComponent>}
+          onKeyDown={
+            handleKeyDown as React.KeyboardEventHandler<HTMLDivElement>
+          }
           inputName={inputName}
         />
-        <button
-          className="value-spec-editor__reset-btn"
-          name={resetButtonName}
-          title="Reset"
-          onClick={resetValue}
-        >
-          <RefreshIcon />
-        </button>
+      ) : (
+        <InputWithInlineValidation
+          className="panel__content__form__section__input value-spec-editor__input"
+          spellCheck={false}
+          value={value ?? ''}
+          placeholder={value === '' ? '(empty)' : undefined}
+          onChange={changeInputValue}
+          ref={ref as React.Ref<HTMLInputElement>}
+          error={
+            errorChecker?.(valueSpecification)
+              ? 'Invalid String value'
+              : undefined
+          }
+          onKeyDown={handleKeyDown}
+          name={inputName}
+        />
+      )}
+      <button
+        className="value-spec-editor__reset-btn"
+        name={resetButtonName}
+        title="Reset"
+        onClick={resetValue}
+      >
+        <RefreshIcon />
+      </button>
+    </div>
+  );
+};
+
+export const StringPrimitiveInstanceValueEditor = observer(
+  forwardRef(StringPrimitiveInstanceValueEditorInner) as <T>(
+    props: StringPrimitiveInstanceValueEditorProps<T> & {
+      ref: React.ForwardedRef<HTMLInputElement | SelectComponent | null>;
+    },
+  ) => ReturnType<typeof StringPrimitiveInstanceValueEditorInner>,
+);
+
+type BooleanInstanceValueEditorProps<T> = PrimitiveInstanceValueEditorProps<
+  T,
+  boolean
+>;
+
+const BooleanInstanceValueEditorInner = <T,>(
+  props: BooleanInstanceValueEditorProps<T>,
+): React.ReactElement => {
+  const {
+    valueSpecification,
+    valueSelector,
+    updateValueSpecification,
+    resetValue,
+    className,
+  } = props;
+  const value = valueSelector(valueSpecification);
+  const toggleValue = (): void => {
+    updateValueSpecification(valueSpecification, !value);
+  };
+
+  return (
+    <div className={clsx('value-spec-editor', className)}>
+      <button
+        role="checkbox"
+        className={clsx('value-spec-editor__toggler__btn', {
+          'value-spec-editor__toggler__btn--toggled': value,
+        })}
+        onClick={toggleValue}
+      >
+        {value ? <CheckSquareIcon /> : <SquareIcon />}
+      </button>
+      <button
+        className="value-spec-editor__reset-btn"
+        name="Reset"
+        title="Reset"
+        onClick={resetValue}
+      >
+        <RefreshIcon />
+      </button>
+    </div>
+  );
+};
+
+export const BooleanPrimitiveInstanceValueEditor = observer(
+  BooleanInstanceValueEditorInner as <T>(
+    props: BooleanInstanceValueEditorProps<T>,
+  ) => ReturnType<typeof BooleanInstanceValueEditorInner>,
+);
+
+interface NumberPrimitiveInstanceValueEditorProps<T>
+  extends PrimitiveInstanceValueEditorProps<T, number> {
+  isInteger: boolean;
+}
+
+const NumberPrimitiveInstanceValueEditorInner = <T,>(
+  props: NumberPrimitiveInstanceValueEditorProps<T>,
+  ref: React.ForwardedRef<HTMLInputElement>,
+): React.ReactElement => {
+  const {
+    valueSpecification,
+    valueSelector,
+    updateValueSpecification,
+    errorChecker,
+    resetValue,
+    handleBlur,
+    handleKeyDown,
+    className,
+    isInteger,
+  } = props;
+  const [value, setValue] = useState(
+    valueSelector(valueSpecification) === null
+      ? ''
+      : valueSelector(valueSpecification).toString(),
+  );
+  const inputRef = useRef<HTMLInputElement>(null);
+  useImperativeHandle(ref, () => inputRef.current as HTMLInputElement, []);
+  const numericValue = value
+    ? isInteger
+      ? Number.parseInt(Number(value).toString(), 10)
+      : Number(value)
+    : null;
+
+  const updateValueSpecIfValid = (val: string): void => {
+    if (val) {
+      const parsedValue = isInteger
+        ? Number.parseInt(Number(val).toString(), 10)
+        : Number(val);
+      if (
+        !isNaN(parsedValue) &&
+        parsedValue !== valueSelector(valueSpecification)
+      ) {
+        updateValueSpecification(valueSpecification, parsedValue);
+      }
+    } else {
+      resetValue();
+    }
+  };
+
+  const handleInputChange: React.ChangeEventHandler<HTMLInputElement> = (
+    event,
+  ) => {
+    setValue(event.target.value);
+    updateValueSpecIfValid(event.target.value);
+  };
+
+  // Support expression evaluation
+  const calculateExpression = (): void => {
+    if (numericValue !== null && isNaN(numericValue)) {
+      // If the value is not a number, try to evaluate it as an expression
+      try {
+        const calculatedValue = guaranteeIsNumber(evaluate(value));
+        updateValueSpecIfValid(calculatedValue.toString());
+        setValue(calculatedValue.toString());
+      } catch {
+        // If we fail to evaluate the expression, we just keep the previous value
+        const prevValue =
+          valueSelector(valueSpecification) !== null &&
+          valueSelector(valueSpecification) !== undefined
+            ? valueSelector(valueSpecification).toString()
+            : '';
+        updateValueSpecIfValid(prevValue);
+        setValue(prevValue);
+      }
+    } else if (numericValue !== null) {
+      // If numericValue is a number, update the value spec
+      updateValueSpecIfValid(numericValue.toString());
+      setValue(numericValue.toString());
+    } else {
+      // If numericValue is null, reset the value spec
+      resetValue();
+    }
+  };
+
+  const onKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (event) => {
+    if (event.code === 'Enter') {
+      calculateExpression();
+      inputRef.current?.focus();
+    } else if (event.code === 'Escape') {
+      inputRef.current?.select();
+    }
+  };
+
+  useEffect(() => {
+    if (
+      numericValue !== null &&
+      !isNaN(numericValue) &&
+      numericValue !== valueSelector(valueSpecification)
+    ) {
+      const valueFromValueSpec =
+        valueSelector(valueSpecification) !== null
+          ? (valueSelector(valueSpecification) as number).toString()
+          : '';
+      setValue(valueFromValueSpec);
+    }
+  }, [numericValue, valueSpecification, valueSelector]);
+
+  const resetButtonName = `reset-${valueSelector(valueSpecification)}`;
+  const inputName = `input-${valueSelector(valueSpecification)}`;
+  const calculateButtonName = `calculate-${valueSelector(valueSpecification)}`;
+
+  const onBlur = (
+    event: React.FocusEvent<HTMLInputElement, HTMLButtonElement>,
+  ): void => {
+    if (
+      event.relatedTarget?.name !== resetButtonName &&
+      event.relatedTarget?.name !== inputName &&
+      event.relatedTarget?.name !== calculateButtonName
+    ) {
+      handleBlur?.();
+    }
+  };
+
+  return (
+    <div className={clsx('value-spec-editor', className)} onBlur={onBlur}>
+      <div className="value-spec-editor__number__input-container">
+        <input
+          ref={inputRef}
+          className={clsx(
+            'panel__content__form__section__input',
+            'value-spec-editor__input',
+            'value-spec-editor__number__input',
+            {
+              'value-spec-editor__number__input--error':
+                errorChecker?.(valueSpecification),
+            },
+          )}
+          spellCheck={false}
+          type="text" // NOTE: we leave this as text so that we can support expression evaluation
+          inputMode="numeric"
+          value={value}
+          onChange={handleInputChange}
+          onBlur={calculateExpression}
+          onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
+            onKeyDown(event);
+            handleKeyDown?.(event);
+          }}
+          name={inputName}
+        />
+        <div className="value-spec-editor__number__actions">
+          <button
+            className="value-spec-editor__number__action"
+            title="Evaluate Expression (Enter)"
+            name={calculateButtonName}
+            onClick={calculateExpression}
+          >
+            <CalculateIcon />
+          </button>
+        </div>
       </div>
-    );
-  },
+      <button
+        className="value-spec-editor__reset-btn"
+        name={resetButtonName}
+        title="Reset"
+        onClick={resetValue}
+      >
+        <RefreshIcon />
+      </button>
+    </div>
+  );
+};
+
+export const NumberPrimitiveInstanceValueEditor = observer(
+  forwardRef(NumberPrimitiveInstanceValueEditorInner) as <T>(
+    props: NumberPrimitiveInstanceValueEditorProps<T> & {
+      ref: React.ForwardedRef<HTMLInputElement>;
+    },
+  ) => ReturnType<typeof NumberPrimitiveInstanceValueEditorInner>,
+);
+
+interface EnumInstanceValueEditorProps<T>
+  extends PrimitiveInstanceValueEditorProps<T, string | null> {
+  options: { label: string; value: string }[];
+}
+
+const EnumInstanceValueEditorInner = <T,>(
+  props: EnumInstanceValueEditorProps<T>,
+): React.ReactElement => {
+  const {
+    valueSpecification,
+    valueSelector,
+    updateValueSpecification,
+    errorChecker,
+    resetValue,
+    handleBlur,
+    options,
+    className,
+  } = props;
+  const applicationStore = useApplicationStore();
+  const enumValue = valueSelector(valueSpecification);
+  const resetButtonName = `reset-${valueSelector(valueSpecification)}`;
+  const inputName = `input-${valueSelector(valueSpecification)}`;
+
+  const changeValue = (val: { value: string; label: string }): void => {
+    updateValueSpecification(valueSpecification, val.value);
+    handleBlur?.();
+  };
+
+  const onBlur = (
+    event: React.FocusEvent<HTMLInputElement, HTMLButtonElement>,
+  ): void => {
+    if (
+      event.relatedTarget?.name !== resetButtonName &&
+      event.relatedTarget?.name !== inputName
+    ) {
+      handleBlur?.();
+    }
+  };
+
+  return (
+    <div className={clsx('value-spec-editor', className)} onBlur={onBlur}>
+      <CustomSelectorInput
+        className="value-spec-editor__enum-selector"
+        options={options}
+        onChange={changeValue}
+        value={enumValue ? { value: enumValue, label: enumValue } : null}
+        darkMode={
+          !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+        }
+        hasError={errorChecker?.(valueSpecification)}
+        placeholder="Select value"
+        autoFocus={true}
+        inputName={inputName}
+      />
+      <button
+        className="value-spec-editor__reset-btn"
+        name={resetButtonName}
+        title="Reset"
+        onClick={resetValue}
+      >
+        <RefreshIcon />
+      </button>
+    </div>
+  );
+};
+
+export const EnumInstanceValueEditor = observer(
+  EnumInstanceValueEditorInner as <T>(
+    props: EnumInstanceValueEditorProps<T>,
+  ) => ReturnType<typeof EnumInstanceValueEditorInner>,
 );
 
 const stringifyValue = (values: ValueSpecification[]): string => {
@@ -698,7 +717,7 @@ const stringifyValue = (values: ValueSpecification[]): string => {
   ]).trim();
 };
 
-const getPlaceHolder = (expectedType: Type): string => {
+const getPlaceHolder = (expectedType: Type | string): string => {
   if (expectedType instanceof PrimitiveType) {
     switch (expectedType.path) {
       case PRIMITIVE_TYPE.DATE:
@@ -709,8 +728,18 @@ const getPlaceHolder = (expectedType: Type): string => {
       default:
         return 'Add';
     }
+  } else {
+    switch (expectedType) {
+      case PRIMITIVE_TYPE.DATE:
+      case PRIMITIVE_TYPE.STRICTDATE:
+        return 'yyyy-mm-dd';
+      case PRIMITIVE_TYPE.DATETIME:
+      case PRIMITIVE_TYPE.STRICTTIME:
+        return 'yyyy-mm-ddThh:mm:ss';
+      default:
+        return 'Add';
+    }
   }
-  return 'Add';
 };
 
 interface BasicValueSpecificationEditorSelectorConfig {
@@ -722,661 +751,691 @@ interface BasicValueSpecificationEditorSelectorConfig {
   cleanUpReloadValues?: () => void;
 }
 
-const PrimitiveCollectionInstanceValueEditor = observer(
-  (props: {
-    valueSpecification: CollectionInstanceValue;
-    expectedType: Type;
-    saveEdit: () => void;
-    selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
-    observerContext: ObserverContext;
-  }) => {
-    const {
-      valueSpecification,
-      expectedType,
-      saveEdit,
-      selectorConfig,
-      observerContext,
-    } = props;
+interface PrimitiveCollectionInstanceValueEditorProps<
+  T,
+  U extends { values: T[] },
+> {
+  valueSpecification: U;
+  updateValueSpecification: (valueSpecification: U, values: T[]) => void;
+  convertTextToValueSpecification: (
+    type: Type | string,
+    text: string,
+  ) => T | null;
+  convertValueSpecificationToText: (
+    valueSpecification: T,
+  ) => string | undefined;
+  expectedType: Type | string;
+  saveEdit: () => void;
+  selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
+  errorChecker?: (valueSpecification: U) => boolean;
+  className?: string | undefined;
+}
 
-    // local state and variables
-    const applicationStore = useApplicationStore();
-    const inputRef = useRef(null);
-    const [inputValue, setInputValue] = useState('');
-    const [inputValueIsError, setInputValueIsError] = useState(false);
-    const [selectedOptions, setSelectedOptions] = useState<
-      { label: string; value: string }[]
-    >(
-      valueSpecification.values
-        .map((valueSpec) =>
-          getValueSpecificationStringValue(valueSpec, applicationStore),
-        )
-        .filter(isNonEmptyString)
-        .map((value) => ({
-          label: value,
-          value,
-        })),
+const PrimitiveCollectionInstanceValueEditorInner = <
+  T,
+  U extends { values: T[] },
+>(
+  props: PrimitiveCollectionInstanceValueEditorProps<T, U>,
+): React.ReactElement => {
+  const {
+    valueSpecification,
+    convertTextToValueSpecification,
+    convertValueSpecificationToText,
+    updateValueSpecification,
+    saveEdit,
+    selectorConfig,
+    expectedType,
+  } = props;
+
+  // local state and variables
+  const applicationStore = useApplicationStore();
+  const inputRef = useRef(null);
+  const [inputValue, setInputValue] = useState('');
+  const [inputValueIsError, setInputValueIsError] = useState(false);
+  const [selectedOptions, setSelectedOptions] = useState<
+    { label: string; value: string }[]
+  >(
+    valueSpecification.values
+      .filter((value) => guaranteeNonNullable(value))
+      .map(convertValueSpecificationToText)
+      .filter(isNonEmptyString)
+      .map((value) => ({
+        label: value,
+        value,
+      })),
+  );
+
+  // typehead search setup
+  const isTypeaheadSearchEnabled =
+    expectedType === PrimitiveType.STRING && Boolean(selectorConfig);
+  const reloadValuesFunc = isTypeaheadSearchEnabled
+    ? selectorConfig?.reloadValues
+    : undefined;
+  const cleanUpReloadValuesFunc = isTypeaheadSearchEnabled
+    ? selectorConfig?.cleanUpReloadValues
+    : undefined;
+  const isLoading = isTypeaheadSearchEnabled
+    ? selectorConfig?.isLoading
+    : undefined;
+  const queryOptions =
+    isTypeaheadSearchEnabled && selectorConfig?.values?.length
+      ? selectorConfig.values.map((e) => ({
+          value: e,
+          label: e.toString(),
+        }))
+      : undefined;
+  const noMatchMessage =
+    isTypeaheadSearchEnabled && isLoading ? 'Loading...' : undefined;
+  const copyButtonName = `copy-${valueSpecification.values[0] ? convertValueSpecificationToText(valueSpecification.values[0]) : ''}`;
+  const inputName = `input-${valueSpecification.values[0] ? convertValueSpecificationToText(valueSpecification.values[0]) : ''}`;
+
+  // helper functions
+  const buildOptionForValueSpec = (
+    value: T,
+  ): { label: string; value: string } => {
+    const stringValue = guaranteeNonNullable(
+      convertValueSpecificationToText(value),
     );
+    return {
+      label: stringValue,
+      value: stringValue,
+    };
+  };
 
-    // typehead search setup
-    const isTypeaheadSearchEnabled =
-      expectedType === PrimitiveType.STRING && Boolean(selectorConfig);
-    const reloadValuesFunc = isTypeaheadSearchEnabled
-      ? selectorConfig?.reloadValues
-      : undefined;
-    const cleanUpReloadValuesFunc = isTypeaheadSearchEnabled
-      ? selectorConfig?.cleanUpReloadValues
-      : undefined;
-    const isLoading = isTypeaheadSearchEnabled
-      ? selectorConfig?.isLoading
-      : undefined;
-    const queryOptions =
-      isTypeaheadSearchEnabled && selectorConfig?.values?.length
-        ? selectorConfig.values.map((e) => ({
-            value: e,
-            label: e.toString(),
-          }))
-        : undefined;
-    const noMatchMessage =
-      isTypeaheadSearchEnabled && isLoading ? 'Loading...' : undefined;
-    const copyButtonName = `copy-${valueSpecification.hashCode}`;
-    const inputName = `input-${valueSpecification.hashCode}`;
+  const isValueAlreadySelected = (value: string): boolean =>
+    selectedOptions.map((option) => option.value).includes(value);
 
-    // helper functions
-    const buildOptionForValueSpec = (
-      value: ValueSpecification,
-    ): { label: string; value: string } => {
-      const stringValue = guaranteeNonNullable(
-        getValueSpecificationStringValue(value, applicationStore),
+  /**
+   * NOTE: We attempt to be less disruptive here by not throwing errors left and right, instead
+   * we simply return null for values which are not valid or parsable. But perhaps, we can consider
+   * passing in logger or notifier to give the users some idea of what went wrong instead of ignoring
+   * their input.
+   */
+  const convertInputValueToValueSpec = (): T | null => {
+    const trimmedInputValue = inputValue.trim();
+
+    if (trimmedInputValue.length) {
+      const newValueSpec = convertTextToValueSpecification(
+        expectedType,
+        trimmedInputValue,
       );
-      return {
-        label: stringValue,
-        value: stringValue,
-      };
-    };
 
-    const isValueAlreadySelected = (value: string): boolean =>
-      selectedOptions.map((option) => option.value).includes(value);
-
-    /**
-     * NOTE: We attempt to be less disruptive here by not throwing errors left and right, instead
-     * we simply return null for values which are not valid or parsable. But perhaps, we can consider
-     * passing in logger or notifier to give the users some idea of what went wrong instead of ignoring
-     * their input.
-     */
-    const convertInputValueToValueSpec = (): ValueSpecification | null => {
-      const trimmedInputValue = inputValue.trim();
-
-      if (trimmedInputValue.length) {
-        const newValueSpec = convertTextToPrimitiveInstanceValue(
-          expectedType,
-          trimmedInputValue,
-          observerContext,
-        );
-
-        if (
-          newValueSpec === null ||
-          getValueSpecificationStringValue(newValueSpec, applicationStore) ===
-            undefined ||
-          isValueAlreadySelected(
-            guaranteeNonNullable(
-              getValueSpecificationStringValue(newValueSpec, applicationStore),
-            ),
-          )
-        ) {
-          return null;
-        }
-
-        return newValueSpec;
-      }
-      return null;
-    };
-
-    const addInputValueToSelectedOptions = (): void => {
-      const newValueSpec = convertInputValueToValueSpec();
-
-      if (newValueSpec !== null) {
-        setSelectedOptions([
-          ...selectedOptions,
-          buildOptionForValueSpec(newValueSpec),
-        ]);
-        setInputValue('');
-        reloadValuesFunc?.cancel();
-      } else if (inputValue.trim().length) {
-        setInputValueIsError(true);
-      }
-    };
-
-    // event handlers
-    const changeValue = (
-      newSelectedOptions: { value: string; label: string }[],
-      actionChange: SelectActionData<{ value: string; label: string }>,
-    ): void => {
-      setSelectedOptions(newSelectedOptions);
-      if (actionChange.action === 'select-option') {
-        setInputValue('');
-      } else if (
-        actionChange.action === 'remove-value' &&
-        actionChange.removedValue.value === inputValue
+      if (
+        newValueSpec === null ||
+        convertValueSpecificationToText(newValueSpec) === undefined ||
+        isValueAlreadySelected(
+          guaranteeNonNullable(convertValueSpecificationToText(newValueSpec)),
+        )
       ) {
-        setInputValueIsError(false);
+        return null;
       }
-    };
 
-    const handleInputChange = (
-      newInputValue: string,
-      actionChange: InputActionData,
-    ): void => {
-      if (actionChange.action === 'input-change') {
-        setInputValue(newInputValue);
-        setInputValueIsError(false);
-        reloadValuesFunc?.cancel();
-        const reloadValuesFuncTransformation =
-          reloadValuesFunc?.(newInputValue);
-        if (reloadValuesFuncTransformation) {
-          flowResult(reloadValuesFuncTransformation).catch(
-            applicationStore.alertUnhandledError,
-          );
-        }
-      }
-      if (actionChange.action === 'input-blur') {
-        reloadValuesFunc?.cancel();
-        cleanUpReloadValuesFunc?.();
-      }
-    };
+      return newValueSpec;
+    }
+    return null;
+  };
 
-    const copyValueToClipboard = async () =>
-      navigator.clipboard.writeText(
-        selectedOptions.map((option) => option.value).join(','),
-      );
+  const addInputValueToSelectedOptions = (): void => {
+    const newValueSpec = convertInputValueToValueSpec();
 
-    const updateValueSpecAndSaveEdit = (): void => {
-      const newValueSpec = convertInputValueToValueSpec();
-      const finalSelectedOptions =
-        newValueSpec !== null
-          ? [...selectedOptions, buildOptionForValueSpec(newValueSpec)]
-          : selectedOptions;
-      instanceValue_setValues(
-        valueSpecification,
-        finalSelectedOptions
-          .map((option) => option.value)
-          .map((value) =>
-            convertTextToPrimitiveInstanceValue(
-              expectedType,
-              value,
-              observerContext,
-            ),
-          )
-          .filter(isNonNullable),
-        observerContext,
-      );
-      saveEdit();
-    };
-
-    const handleKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (
-      event,
-    ) => {
-      if ((event.key === 'Enter' || event.key === ',') && !event.shiftKey) {
-        addInputValueToSelectedOptions();
-        event.preventDefault();
-      }
-    };
-
-    const handlePaste: React.ClipboardEventHandler<HTMLInputElement> = (
-      event,
-    ) => {
-      const pastedText = event.clipboardData.getData('text');
-      const parsedData = parseCSVString(pastedText);
-      if (!parsedData) {
-        return;
-      }
-      const newValues = uniq(
-        uniq(parsedData)
-          .map((value) => {
-            const newValueSpec = convertTextToPrimitiveInstanceValue(
-              expectedType,
-              value,
-              observerContext,
-            );
-            return newValueSpec
-              ? getValueSpecificationStringValue(newValueSpec, applicationStore)
-              : null;
-          })
-          .filter(isNonNullable),
-      ).filter((value) => !isValueAlreadySelected(value));
+    if (newValueSpec !== null) {
       setSelectedOptions([
         ...selectedOptions,
-        ...newValues.map((value) => ({ label: value, value })),
+        buildOptionForValueSpec(newValueSpec),
       ]);
-      event.preventDefault();
-    };
+      setInputValue('');
+      reloadValuesFunc?.cancel();
+    } else if (inputValue.trim().length) {
+      setInputValueIsError(true);
+    }
+  };
 
-    const onBlur = (
-      event: React.FocusEvent<HTMLInputElement, HTMLButtonElement>,
-    ): void => {
-      if (
-        event.relatedTarget?.name !== copyButtonName &&
-        event.relatedTarget?.name !== inputName
-      ) {
-        updateValueSpecAndSaveEdit();
+  // event handlers
+  const changeValue = (
+    newSelectedOptions: { value: string; label: string }[],
+    actionChange: SelectActionData<{ value: string; label: string }>,
+  ): void => {
+    setSelectedOptions(newSelectedOptions);
+    if (actionChange.action === 'select-option') {
+      setInputValue('');
+    } else if (
+      actionChange.action === 'remove-value' &&
+      actionChange.removedValue.value === inputValue
+    ) {
+      setInputValueIsError(false);
+    }
+  };
+
+  const handleInputChange = (
+    newInputValue: string,
+    actionChange: InputActionData,
+  ): void => {
+    if (actionChange.action === 'input-change') {
+      setInputValue(newInputValue);
+      setInputValueIsError(false);
+      reloadValuesFunc?.cancel();
+      const reloadValuesFuncTransformation = reloadValuesFunc?.(newInputValue);
+      if (reloadValuesFuncTransformation) {
+        flowResult(reloadValuesFuncTransformation).catch(
+          applicationStore.alertUnhandledError,
+        );
       }
-    };
+    }
+    if (actionChange.action === 'input-blur') {
+      reloadValuesFunc?.cancel();
+      cleanUpReloadValuesFunc?.();
+    }
+  };
 
-    return (
-      <div className="value-spec-editor" onBlur={onBlur}>
-        <CustomSelectorInput
-          className={clsx('value-spec-editor__primitive-collection-selector', {
-            'value-spec-editor__primitive-collection-selector--error':
-              inputValueIsError,
-          })}
-          options={queryOptions}
-          inputValue={inputValue}
-          isMulti={true}
-          menuIsOpen={
-            isTypeaheadSearchEnabled &&
-            inputValue.length >= DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH
-          }
-          autoFocus={true}
-          inputRef={inputRef}
-          onChange={changeValue}
-          onInputChange={handleInputChange}
-          onKeyDown={handleKeyDown}
-          onPaste={handlePaste}
-          value={selectedOptions}
-          darkMode={
-            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
-          }
-          isLoading={isLoading}
-          noMatchMessage={noMatchMessage}
-          placeholder={getPlaceHolder(expectedType)}
-          components={{
-            DropdownIndicator: null,
-          }}
-          inputName={inputName}
-        />
-        <button
-          className="value-spec-editor__list-editor__copy-button"
-          // eslint-disable-next-line no-void
-          onClick={() => void copyValueToClipboard()}
-          name={copyButtonName}
-          title="Copy values to clipboard"
-        >
-          <CopyIcon />
-        </button>
-        <button
-          className="value-spec-editor__list-editor__save-button btn--dark"
-          name="Save"
-          title="Save"
-          onClick={updateValueSpecAndSaveEdit}
-        >
-          <SaveIcon />
-        </button>
-      </div>
+  const copyValueToClipboard = async () =>
+    navigator.clipboard.writeText(
+      selectedOptions.map((option) => option.value).join(','),
     );
-  },
+
+  const updateValueSpecAndSaveEdit = (): void => {
+    const newValueSpec = convertInputValueToValueSpec();
+    const finalSelectedOptions =
+      newValueSpec !== null
+        ? [...selectedOptions, buildOptionForValueSpec(newValueSpec)]
+        : selectedOptions;
+    const finalFormattedSelectedOptions = finalSelectedOptions
+      .map((option) => option.value)
+      .map((value) => convertTextToValueSpecification(expectedType, value))
+      .filter(isNonNullable);
+    updateValueSpecification(valueSpecification, finalFormattedSelectedOptions);
+    saveEdit();
+  };
+
+  const handleKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (event) => {
+    if ((event.key === 'Enter' || event.key === ',') && !event.shiftKey) {
+      addInputValueToSelectedOptions();
+      event.preventDefault();
+    }
+  };
+
+  const handlePaste: React.ClipboardEventHandler<HTMLInputElement> = (
+    event,
+  ) => {
+    const pastedText = event.clipboardData.getData('text');
+    const parsedData = parseCSVString(pastedText);
+    if (!parsedData) {
+      return;
+    }
+    const newValues = uniq(
+      uniq(parsedData)
+        .map((value) => {
+          const newValueSpec = convertTextToValueSpecification(
+            expectedType,
+            value,
+          );
+          return newValueSpec
+            ? convertValueSpecificationToText(newValueSpec)
+            : null;
+        })
+        .filter(isNonNullable),
+    ).filter((value) => !isValueAlreadySelected(value));
+    setSelectedOptions([
+      ...selectedOptions,
+      ...newValues.map((value) => ({ label: value, value })),
+    ]);
+    event.preventDefault();
+  };
+
+  const onBlur = (
+    event: React.FocusEvent<HTMLInputElement, HTMLButtonElement>,
+  ): void => {
+    if (
+      event.relatedTarget?.name !== copyButtonName &&
+      event.relatedTarget?.name !== inputName
+    ) {
+      updateValueSpecAndSaveEdit();
+    }
+  };
+
+  return (
+    <div className="value-spec-editor" onBlur={onBlur}>
+      <CustomSelectorInput
+        className={clsx('value-spec-editor__primitive-collection-selector', {
+          'value-spec-editor__primitive-collection-selector--error':
+            inputValueIsError,
+        })}
+        options={queryOptions}
+        inputValue={inputValue}
+        isMulti={true}
+        menuIsOpen={
+          isTypeaheadSearchEnabled &&
+          inputValue.length >= DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH
+        }
+        autoFocus={true}
+        inputRef={inputRef}
+        onChange={changeValue}
+        onInputChange={handleInputChange}
+        onKeyDown={handleKeyDown}
+        onPaste={handlePaste}
+        value={selectedOptions}
+        darkMode={
+          !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+        }
+        isLoading={isLoading}
+        noMatchMessage={noMatchMessage}
+        placeholder={getPlaceHolder(expectedType)}
+        components={{
+          DropdownIndicator: null,
+        }}
+        inputName={inputName}
+      />
+      <button
+        className="value-spec-editor__list-editor__copy-button"
+        // eslint-disable-next-line no-void
+        onClick={() => void copyValueToClipboard()}
+        name={copyButtonName}
+        title="Copy values to clipboard"
+      >
+        <CopyIcon />
+      </button>
+      <button
+        className="value-spec-editor__list-editor__save-button btn--dark"
+        name="Save"
+        title="Save"
+        onClick={updateValueSpecAndSaveEdit}
+      >
+        <SaveIcon />
+      </button>
+    </div>
+  );
+};
+
+export const PrimitiveCollectionInstanceValueEditor = observer(
+  PrimitiveCollectionInstanceValueEditorInner as <T, U extends { values: T[] }>(
+    props: PrimitiveCollectionInstanceValueEditorProps<T, U>,
+  ) => ReturnType<typeof PrimitiveCollectionInstanceValueEditorInner>,
 );
 
-const EnumCollectionInstanceValueEditor = observer(
-  (props: {
-    valueSpecification: CollectionInstanceValue;
-    observerContext: ObserverContext;
-    saveEdit: () => void;
-  }) => {
-    const { valueSpecification, observerContext, saveEdit } = props;
+interface EnumCollectionInstanceValueEditorProps<T, U extends { values: T[] }>
+  extends PrimitiveCollectionInstanceValueEditorProps<T, U> {
+  enumOptions: { label: string; value: string }[] | undefined;
+}
 
-    // local state and variables
-    const applicationStore = useApplicationStore();
-    const enumType = guaranteeType(
-      valueSpecification.genericType?.value.rawType,
-      Enumeration,
-    );
-    const [inputValue, setInputValue] = useState('');
-    const [inputValueIsError, setInputValueIsError] = useState(false);
-    const [selectedOptions, setSelectedOptions] = useState<
-      { label: string; value: Enum }[]
-    >(
-      (valueSpecification.values as EnumValueInstanceValue[])
-        .filter((valueSpec) => valueSpec.values[0]?.value !== undefined)
-        .map((valueSpec) => ({
-          label: at(valueSpec.values, 0).value.name,
-          value: at(valueSpec.values, 0).value,
-        })),
-    );
+const EnumCollectionInstanceValueEditorInner = <T, U extends { values: T[] }>(
+  props: EnumCollectionInstanceValueEditorProps<T, U>,
+): React.ReactElement => {
+  const {
+    valueSpecification,
+    convertTextToValueSpecification,
+    convertValueSpecificationToText,
+    updateValueSpecification,
+    saveEdit,
+    expectedType,
+    enumOptions,
+  } = props;
 
-    const availableOptions = enumType.values
-      .filter(
-        (value) =>
-          !selectedOptions.some(
-            (selectedValue) => selectedValue.value.name === value.name,
-          ),
-      )
+  guaranteeNonNullable(
+    enumOptions,
+    'Must pass enum options to EnumCollectionInstanceValueEditor',
+  );
+
+  // local state and variables
+  const applicationStore = useApplicationStore();
+  const [inputValue, setInputValue] = useState('');
+  const [inputValueIsError, setInputValueIsError] = useState(false);
+  const [selectedOptions, setSelectedOptions] = useState<
+    { label: string; value: string }[]
+  >(
+    valueSpecification.values
+      .filter((value) => guaranteeNonNullable(value))
+      .map(convertValueSpecificationToText)
+      .filter(isNonEmptyString)
       .map((value) => ({
-        label: value.name,
-        value: value,
-      }));
+        label: value,
+        value,
+      })),
+  );
 
-    const copyButtonName = `copy-${valueSpecification.hashCode}`;
-    const inputName = `input-${valueSpecification.hashCode}`;
+  const availableOptions = enumOptions?.filter(
+    (value) =>
+      !selectedOptions.some(
+        (selectedValue) => selectedValue.value === value.value,
+      ),
+  );
 
-    // helper functions
-    const isValueAlreadySelected = (value: Enum): boolean =>
-      selectedOptions.map((option) => option.value).includes(value);
+  const copyButtonName = `copy-${valueSpecification.values[0] ? convertValueSpecificationToText(valueSpecification.values[0]) : ''}`;
+  const inputName = `input-${valueSpecification.values[0] ? convertValueSpecificationToText(valueSpecification.values[0]) : ''}`;
 
-    /**
-     * NOTE: We attempt to be less disruptive here by not throwing errors left and right, instead
-     * we simply return null for values which are not valid or parsable. But perhaps, we can consider
-     * passing in logger or notifier to give the users some idea of what went wrong instead of ignoring
-     * their input.
-     */
-    const convertInputValueToEnum = (): Enum | null => {
-      const trimmedInputValue = inputValue.trim();
+  // helper functions
+  const isValueAlreadySelected = (value: string): boolean =>
+    selectedOptions.map((option) => option.value).includes(value);
 
-      if (trimmedInputValue.length) {
-        const newEnum = convertTextToEnum(trimmedInputValue, enumType);
+  /**
+   * NOTE: We attempt to be less disruptive here by not throwing errors left and right, instead
+   * we simply return null for values which are not valid or parsable. But perhaps, we can consider
+   * passing in logger or notifier to give the users some idea of what went wrong instead of ignoring
+   * their input.
+   */
+  const convertInputValueToEnum = (): string | null => {
+    const trimmedInputValue = inputValue.trim();
 
-        if (newEnum === undefined || isValueAlreadySelected(newEnum)) {
-          return null;
-        }
-
-        return newEnum;
-      }
+    if (
+      !trimmedInputValue.length ||
+      isValueAlreadySelected(trimmedInputValue) ||
+      !enumOptions?.some((option) => option.value === trimmedInputValue)
+    ) {
       return null;
-    };
+    }
 
-    const addInputValueToSelectedOptions = (): void => {
-      const newEnum = convertInputValueToEnum();
+    return trimmedInputValue;
+  };
 
-      if (newEnum !== null) {
-        setSelectedOptions([
-          ...selectedOptions,
-          {
-            label: newEnum.name,
-            value: newEnum,
-          },
-        ]);
-        setInputValue('');
-      } else if (inputValue.trim().length) {
-        setInputValueIsError(true);
-      }
-    };
+  const addInputValueToSelectedOptions = (): void => {
+    const newEnum = convertInputValueToEnum();
 
-    // event handlers
-    const changeValue = (
-      newSelectedOptions: { value: Enum; label: string }[],
-      actionChange: SelectActionData<{ value: Enum; label: string }>,
-    ): void => {
-      setSelectedOptions(newSelectedOptions);
-      if (actionChange.action === 'select-option') {
-        setInputValue('');
-      } else if (
-        actionChange.action === 'remove-value' &&
-        actionChange.removedValue.value.name === inputValue
-      ) {
-        setInputValueIsError(false);
-      }
-    };
-
-    const handleInputChange = (
-      newInputValue: string,
-      actionChange: InputActionData,
-    ): void => {
-      if (actionChange.action === 'input-change') {
-        setInputValue(newInputValue);
-        setInputValueIsError(false);
-      }
-    };
-
-    const handleKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (
-      event,
-    ) => {
-      if ((event.key === 'Enter' || event.key === ',') && !event.shiftKey) {
-        addInputValueToSelectedOptions();
-        event.preventDefault();
-      }
-    };
-
-    const handlePaste: React.ClipboardEventHandler<HTMLInputElement> = (
-      event,
-    ) => {
-      const pastedText = event.clipboardData.getData('text');
-      const parsedData = parseCSVString(pastedText);
-      if (!parsedData) {
-        return;
-      }
-      const newValues = uniq(
-        uniq(parsedData)
-          .map((value) => convertTextToEnum(value, enumType))
-          .filter(isNonNullable),
-      ).filter((value) => !isValueAlreadySelected(value));
+    if (newEnum !== null) {
       setSelectedOptions([
         ...selectedOptions,
-        ...newValues.map((value) => ({ label: value.name, value })),
+        {
+          label: newEnum,
+          value: newEnum,
+        },
       ]);
+      setInputValue('');
+    } else if (inputValue.trim().length) {
+      setInputValueIsError(true);
+    }
+  };
+
+  // event handlers
+  const changeValue = (
+    newSelectedOptions: { value: string; label: string }[],
+    actionChange: SelectActionData<{ value: string; label: string }>,
+  ): void => {
+    setSelectedOptions(newSelectedOptions);
+    if (actionChange.action === 'select-option') {
+      setInputValue('');
+    } else if (
+      actionChange.action === 'remove-value' &&
+      actionChange.removedValue.value === inputValue
+    ) {
+      setInputValueIsError(false);
+    }
+  };
+
+  const handleInputChange = (
+    newInputValue: string,
+    actionChange: InputActionData,
+  ): void => {
+    if (actionChange.action === 'input-change') {
+      setInputValue(newInputValue);
+      setInputValueIsError(false);
+    }
+  };
+
+  const handleKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (event) => {
+    if ((event.key === 'Enter' || event.key === ',') && !event.shiftKey) {
+      addInputValueToSelectedOptions();
       event.preventDefault();
-    };
+    }
+  };
 
-    const copyValueToClipboard = async () =>
-      navigator.clipboard.writeText(
-        selectedOptions.map((option) => option.value.name).join(','),
-      );
+  const handlePaste: React.ClipboardEventHandler<HTMLInputElement> = (
+    event,
+  ) => {
+    const pastedText = event.clipboardData.getData('text');
+    const parsedData = parseCSVString(pastedText);
+    if (!parsedData) {
+      return;
+    }
+    const newValues = uniq(
+      uniq(parsedData).filter((value) =>
+        enumOptions?.some((option) => option.value === value),
+      ),
+    ).filter((value) => !isValueAlreadySelected(value));
+    setSelectedOptions([
+      ...selectedOptions,
+      ...newValues.map((value) => ({ label: value, value })),
+    ]);
+    event.preventDefault();
+  };
 
-    const updateValueSpecAndSaveEdit = (): void => {
-      const result = selectedOptions
-        .map((value) => {
-          const enumValueInstanceValue = new EnumValueInstanceValue(
-            GenericTypeExplicitReference.create(new GenericType(enumType)),
-          );
-          instanceValue_setValues(
-            enumValueInstanceValue,
-            [EnumValueExplicitReference.create(value.value)],
-            observerContext,
-          );
-          return enumValueInstanceValue;
-        })
-        .filter(isNonNullable);
-      instanceValue_setValues(valueSpecification, result, observerContext);
-      saveEdit();
-    };
-
-    const onBlur = (
-      event: React.FocusEvent<HTMLInputElement, HTMLButtonElement>,
-    ): void => {
-      if (
-        event.relatedTarget?.name !== copyButtonName &&
-        event.relatedTarget?.name !== inputName
-      ) {
-        updateValueSpecAndSaveEdit();
-      }
-    };
-
-    return (
-      <div className="value-spec-editor" onBlur={onBlur}>
-        <CustomSelectorInput
-          className={clsx('value-spec-editor__enum-collection-selector', {
-            'value-spec-editor__enum-collection-selector--error':
-              inputValueIsError,
-          })}
-          options={availableOptions}
-          inputValue={inputValue}
-          isMulti={true}
-          autoFocus={true}
-          onChange={changeValue}
-          onInputChange={handleInputChange}
-          onKeyDown={handleKeyDown}
-          onPaste={handlePaste}
-          value={selectedOptions}
-          darkMode={
-            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
-          }
-          placeholder="Add"
-          menuIsOpen={true}
-          inputName={inputName}
-        />
-        <button
-          className="value-spec-editor__list-editor__copy-button"
-          // eslint-disable-next-line no-void
-          onClick={() => void copyValueToClipboard()}
-          name={copyButtonName}
-          title="Copy values to clipboard"
-        >
-          <CopyIcon />
-        </button>
-        <button
-          className="value-spec-editor__list-editor__save-button btn--dark"
-          name="Save"
-          title="Save"
-          onClick={updateValueSpecAndSaveEdit}
-        >
-          <SaveIcon />
-        </button>
-      </div>
+  const copyValueToClipboard = async () =>
+    navigator.clipboard.writeText(
+      selectedOptions.map((option) => option.value).join(','),
     );
-  },
+
+  const updateValueSpecAndSaveEdit = (): void => {
+    const result = selectedOptions
+      .map((option) => option.value)
+      .map((value) => convertTextToValueSpecification(expectedType, value))
+      .filter(isNonNullable);
+    updateValueSpecification(valueSpecification, result);
+    saveEdit();
+  };
+
+  const onBlur = (
+    event: React.FocusEvent<HTMLInputElement, HTMLButtonElement>,
+  ): void => {
+    if (
+      event.relatedTarget?.name !== copyButtonName &&
+      event.relatedTarget?.name !== inputName
+    ) {
+      updateValueSpecAndSaveEdit();
+    }
+  };
+
+  return (
+    <div className="value-spec-editor" onBlur={onBlur}>
+      <CustomSelectorInput
+        className={clsx('value-spec-editor__enum-collection-selector', {
+          'value-spec-editor__enum-collection-selector--error':
+            inputValueIsError,
+        })}
+        options={availableOptions}
+        inputValue={inputValue}
+        isMulti={true}
+        autoFocus={true}
+        onChange={changeValue}
+        onInputChange={handleInputChange}
+        onKeyDown={handleKeyDown}
+        onPaste={handlePaste}
+        value={selectedOptions}
+        darkMode={
+          !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+        }
+        placeholder="Add"
+        menuIsOpen={true}
+        inputName={inputName}
+      />
+      <button
+        className="value-spec-editor__list-editor__copy-button"
+        // eslint-disable-next-line no-void
+        onClick={() => void copyValueToClipboard()}
+        name={copyButtonName}
+        title="Copy values to clipboard"
+      >
+        <CopyIcon />
+      </button>
+      <button
+        className="value-spec-editor__list-editor__save-button btn--dark"
+        name="Save"
+        title="Save"
+        onClick={updateValueSpecAndSaveEdit}
+      >
+        <SaveIcon />
+      </button>
+    </div>
+  );
+};
+
+export const EnumCollectionInstanceValueEditor = observer(
+  EnumCollectionInstanceValueEditorInner as <T, U extends { values: T[] }>(
+    props: EnumCollectionInstanceValueEditorProps<T, U>,
+  ) => ReturnType<typeof EnumCollectionInstanceValueEditorInner>,
 );
 
 const COLLECTION_PREVIEW_CHAR_LIMIT = 50;
 
-const CollectionValueInstanceValueEditor = observer(
-  (props: {
-    valueSpecification: CollectionInstanceValue;
-    graph: PureModel;
-    expectedType: Type;
-    className?: string | undefined;
-    setValueSpecification: (val: ValueSpecification) => void;
-    selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
-    observerContext: ObserverContext;
-  }) => {
-    const {
-      valueSpecification,
-      expectedType,
-      className,
-      setValueSpecification,
-      selectorConfig,
-      observerContext,
-    } = props;
+interface CollectionValueInstanceValueEditorProps<T, U extends { values: T[] }>
+  extends Omit<PrimitiveCollectionInstanceValueEditorProps<T, U>, 'saveEdit'>,
+    Omit<EnumCollectionInstanceValueEditorProps<T, U>, 'saveEdit'> {
+  stringifyCollectionValueSpecification: (valueSpecification: U) => string;
+}
 
-    const [editable, setEditable] = useState(false);
-    const valueText = stringifyValue(valueSpecification.values);
-    const previewText = `List(${
-      valueSpecification.values.length === 0
-        ? 'empty'
-        : valueSpecification.values.length
-    })${
-      valueSpecification.values.length === 0
-        ? ''
-        : `: ${
-            valueText.length > COLLECTION_PREVIEW_CHAR_LIMIT
-              ? `${valueText.substring(0, COLLECTION_PREVIEW_CHAR_LIMIT)}...`
-              : valueText
-          }`
-    }`;
-    const enableEdit = (): void => setEditable(true);
-    const saveEdit = (): void => {
-      if (editable) {
-        setEditable(false);
-        setValueSpecification(valueSpecification);
-      }
-    };
+const CollectionValueInstanceValueEditorInner = <T, U extends { values: T[] }>(
+  props: CollectionValueInstanceValueEditorProps<T, U>,
+): React.ReactElement => {
+  const {
+    valueSpecification,
+    convertTextToValueSpecification,
+    convertValueSpecificationToText,
+    updateValueSpecification,
+    stringifyCollectionValueSpecification,
+    errorChecker,
+    className,
+    selectorConfig,
+    expectedType,
+    enumOptions,
+  } = props;
 
+  const [editable, setEditable] = useState(false);
+  const valueText = stringifyCollectionValueSpecification(valueSpecification);
+  const previewText = `List(${
+    valueSpecification.values.length === 0
+      ? 'empty'
+      : valueSpecification.values.length
+  })${
+    valueSpecification.values.length === 0
+      ? ''
+      : `: ${
+          valueText.length > COLLECTION_PREVIEW_CHAR_LIMIT
+            ? `${valueText.substring(0, COLLECTION_PREVIEW_CHAR_LIMIT)}...`
+            : valueText
+        }`
+  }`;
+  const enableEdit = (): void => setEditable(true);
+  const saveEdit = (): void => {
     if (editable) {
-      return (
-        <>
-          <div className={clsx('value-spec-editor', className)}>
-            {expectedType instanceof Enumeration ? (
-              <EnumCollectionInstanceValueEditor
-                valueSpecification={valueSpecification}
-                observerContext={observerContext}
-                saveEdit={saveEdit}
-              />
-            ) : (
-              <PrimitiveCollectionInstanceValueEditor
-                valueSpecification={valueSpecification}
-                expectedType={expectedType}
-                saveEdit={saveEdit}
-                selectorConfig={selectorConfig}
-                observerContext={observerContext}
-              />
-            )}
-          </div>
-        </>
-      );
+      setEditable(false);
     }
+  };
+
+  if (editable) {
     return (
-      <div
-        className={clsx('value-spec-editor', className)}
-        onClick={enableEdit}
-        title="Click to edit"
-      >
-        <div
-          className={clsx('value-spec-editor__list-editor__preview', {
-            'value-spec-editor__list-editor__preview--error':
-              !isValidInstanceValue(valueSpecification),
-          })}
-        >
-          {previewText}
+      <>
+        <div className={clsx('value-spec-editor', className)}>
+          {enumOptions !== undefined ? (
+            <EnumCollectionInstanceValueEditor<T, U>
+              valueSpecification={valueSpecification}
+              updateValueSpecification={updateValueSpecification}
+              convertTextToValueSpecification={convertTextToValueSpecification}
+              convertValueSpecificationToText={convertValueSpecificationToText}
+              expectedType={expectedType}
+              saveEdit={saveEdit}
+              enumOptions={enumOptions}
+            />
+          ) : (
+            <PrimitiveCollectionInstanceValueEditor<T, U>
+              valueSpecification={valueSpecification}
+              updateValueSpecification={updateValueSpecification}
+              convertTextToValueSpecification={convertTextToValueSpecification}
+              convertValueSpecificationToText={convertValueSpecificationToText}
+              expectedType={expectedType}
+              saveEdit={saveEdit}
+              selectorConfig={selectorConfig}
+            />
+          )}
         </div>
-        <button className="value-spec-editor__list-editor__edit-icon">
-          <PencilIcon />
-        </button>
-      </div>
+      </>
     );
-  },
+  }
+  return (
+    <div
+      className={clsx('value-spec-editor', className)}
+      onClick={enableEdit}
+      title="Click to edit"
+    >
+      <div
+        className={clsx('value-spec-editor__list-editor__preview', {
+          'value-spec-editor__list-editor__preview--error':
+            errorChecker?.(valueSpecification),
+        })}
+      >
+        {previewText}
+      </div>
+      <button className="value-spec-editor__list-editor__edit-icon">
+        <PencilIcon />
+      </button>
+    </div>
+  );
+};
+
+export const CollectionValueInstanceValueEditor = observer(
+  CollectionValueInstanceValueEditorInner as <T, U extends { values: T[] }>(
+    props: CollectionValueInstanceValueEditorProps<T, U>,
+  ) => ReturnType<typeof CollectionValueInstanceValueEditorInner>,
 );
 
 const UnsupportedValueSpecificationEditor: React.FC = () => (
   <div className="value-spec-editor--unsupported">unsupported</div>
 );
 
-const DateInstanceValueEditor = observer(
-  (props: {
-    valueSpecification: PrimitiveInstanceValue | SimpleFunctionExpression;
-    graph: PureModel;
-    observerContext: ObserverContext;
-    typeCheckOption: TypeCheckOption;
-    className?: string | undefined;
-    setValueSpecification: (val: ValueSpecification) => void;
-    resetValue: () => void;
-    handleBlur?: (() => void) | undefined;
-    displayAsEditableValue?: boolean | undefined;
-  }) => {
-    const {
-      valueSpecification,
-      setValueSpecification,
-      graph,
-      observerContext,
-      typeCheckOption,
-      resetValue,
-      handleBlur,
-      displayAsEditableValue,
-    } = props;
+interface DateInstanceValueEditorProps<
+  T extends CustomDatePickerValueSpecification | undefined,
+> extends Omit<
+    PrimitiveInstanceValueEditorProps<T, string | null>,
+    'updateValueSpecification'
+  > {
+  updateValueSpecification: CustomDatePickerUpdateValueSpecification<T>;
+  typeCheckOption: TypeCheckOption | V1_TypeCheckOption;
+  displayAsEditableValue?: boolean | undefined;
+}
 
-    return (
-      <div className="value-spec-editor">
-        <CustomDatePicker
-          valueSpecification={valueSpecification}
-          graph={graph}
-          observerContext={observerContext}
-          typeCheckOption={typeCheckOption}
-          setValueSpecification={setValueSpecification}
-          hasError={
-            valueSpecification instanceof PrimitiveInstanceValue &&
-            !isValidInstanceValue(valueSpecification)
-          }
-          handleBlur={handleBlur}
-          displayAsEditableValue={displayAsEditableValue}
-        />
-        {!displayAsEditableValue && (
-          <button
-            className="value-spec-editor__reset-btn"
-            name="Reset"
-            title="Reset"
-            onClick={resetValue}
-          >
-            <RefreshIcon />
-          </button>
-        )}
-      </div>
-    );
-  },
+const DateInstanceValueEditorInner = <
+  T extends CustomDatePickerValueSpecification | undefined,
+>(
+  props: DateInstanceValueEditorProps<T>,
+): React.ReactElement => {
+  const {
+    valueSpecification,
+    valueSelector,
+    updateValueSpecification,
+    resetValue,
+    handleBlur,
+    typeCheckOption,
+    displayAsEditableValue,
+  } = props;
+
+  return (
+    <div className="value-spec-editor">
+      <CustomDatePicker<T>
+        valueSpecification={valueSpecification}
+        valueSelector={valueSelector}
+        typeCheckOption={typeCheckOption}
+        updateValueSpecification={updateValueSpecification}
+        hasError={
+          valueSpecification instanceof PrimitiveInstanceValue &&
+          !isValidInstanceValue(valueSpecification)
+        }
+        handleBlur={handleBlur}
+        displayAsEditableValue={displayAsEditableValue}
+      />
+      {!displayAsEditableValue && (
+        <button
+          className="value-spec-editor__reset-btn"
+          name="Reset"
+          title="Reset"
+          onClick={resetValue}
+        >
+          <RefreshIcon />
+        </button>
+      )}
+    </div>
+  );
+};
+
+export const DateInstanceValueEditor = observer(
+  DateInstanceValueEditorInner as <
+    T extends CustomDatePickerValueSpecification | undefined,
+  >(
+    props: DateInstanceValueEditorProps<T>,
+  ) => ReturnType<typeof DateInstanceValueEditorInner>,
 );
 
 /**
@@ -1403,7 +1462,7 @@ export const BasicValueSpecificationEditor = forwardRef<
       | undefined;
     displayDateEditorAsEditableValue?: boolean | undefined;
   }
->(function _BasicValueSpecificationEditor(props, ref) {
+>(function BasicValueSpecificationEditorInner(props, ref) {
   const {
     className,
     valueSpecification,
@@ -1418,31 +1477,118 @@ export const BasicValueSpecificationEditor = forwardRef<
     handleKeyDown,
     displayDateEditorAsEditableValue,
   } = props;
+
+  const applicationStore = useApplicationStore();
+
+  const errorChecker = (_valueSpecification: InstanceValue) =>
+    !isValidInstanceValue(_valueSpecification);
+  const dateValueSelector = (
+    _valueSpecification: SimpleFunctionExpression | PrimitiveInstanceValue,
+  ): string | null => {
+    return _valueSpecification instanceof SimpleFunctionExpression
+      ? ''
+      : (_valueSpecification.values[0] as string | null);
+  };
+  const dateUpdateValueSpecification: CustomDatePickerUpdateValueSpecification<
+    SimpleFunctionExpression | PrimitiveInstanceValue | undefined
+  > = (_valueSpecification, value, options): void => {
+    if (value instanceof CustomDateOption) {
+      setValueSpecification(
+        buildPureAdjustDateFunction(value, graph, observerContext),
+      );
+    } else if (value instanceof CustomFirstDayOfOption) {
+      setValueSpecification(
+        buildPureDateFunctionExpression(value, graph, observerContext),
+      );
+    } else if (value instanceof CustomPreviousDayOfWeekOption) {
+      setValueSpecification(
+        buildPureDateFunctionExpression(value, graph, observerContext),
+      );
+    } else if (value instanceof DatePickerOption) {
+      setValueSpecification(
+        buildPureDateFunctionExpression(value, graph, observerContext),
+      );
+    } else {
+      if (_valueSpecification instanceof SimpleFunctionExpression) {
+        setValueSpecification(
+          buildPrimitiveInstanceValue(
+            graph,
+            guaranteeNonNullable(options?.primitiveTypeEnum),
+            value,
+            observerContext,
+          ),
+        );
+      } else if (_valueSpecification instanceof InstanceValue) {
+        instanceValue_setValue(_valueSpecification, value, 0, observerContext);
+        if (
+          _valueSpecification.genericType.value.rawType.path !==
+          guaranteeNonNullable(options?.primitiveTypeEnum)
+        ) {
+          valueSpecification_setGenericType(
+            _valueSpecification,
+            GenericTypeExplicitReference.create(
+              new GenericType(
+                getPrimitiveTypeInstanceFromEnum(
+                  guaranteeNonNullable(options?.primitiveTypeEnum),
+                ),
+              ),
+            ),
+          );
+        }
+        setValueSpecification(_valueSpecification);
+      } else if (options?.primitiveTypeEnum === PRIMITIVE_TYPE.LATESTDATE) {
+        setValueSpecification(
+          buildPrimitiveInstanceValue(
+            graph,
+            PRIMITIVE_TYPE.LATESTDATE,
+            value,
+            observerContext,
+          ),
+        );
+      }
+    }
+  };
+
   if (valueSpecification instanceof PrimitiveInstanceValue) {
     const _type = valueSpecification.genericType.value.rawType;
+
+    const valueSelector = <T,>(val: PrimitiveInstanceValue): T =>
+      val.values[0] as T;
+    const updateValueSpecification = <T,>(
+      _valueSpecification: PrimitiveInstanceValue,
+      value: T,
+    ) => {
+      instanceValue_setValue(_valueSpecification, value, 0, observerContext);
+      setValueSpecification(_valueSpecification);
+    };
     switch (_type.path) {
       case PRIMITIVE_TYPE.STRING:
         return (
-          <StringPrimitiveInstanceValueEditor
+          <StringPrimitiveInstanceValueEditor<PrimitiveInstanceValue>
             valueSpecification={valueSpecification}
-            setValueSpecification={setValueSpecification}
+            valueSelector={valueSelector}
+            updateValueSpecification={updateValueSpecification}
+            errorChecker={errorChecker}
             className={className}
             resetValue={resetValue}
             selectorConfig={selectorConfig}
-            observerContext={observerContext}
-            ref={ref}
+            ref={
+              ref as React.ForwardedRef<
+                HTMLInputElement | SelectComponent | null
+              >
+            }
             handleBlur={handleBlur}
             handleKeyDown={handleKeyDown}
           />
         );
       case PRIMITIVE_TYPE.BOOLEAN:
         return (
-          <BooleanPrimitiveInstanceValueEditor
+          <BooleanPrimitiveInstanceValueEditor<PrimitiveInstanceValue>
             valueSpecification={valueSpecification}
-            setValueSpecification={setValueSpecification}
+            valueSelector={valueSelector}
+            updateValueSpecification={updateValueSpecification}
             className={className}
             resetValue={resetValue}
-            observerContext={observerContext}
           />
         );
       case PRIMITIVE_TYPE.NUMBER:
@@ -1452,13 +1598,14 @@ export const BasicValueSpecificationEditor = forwardRef<
       case PRIMITIVE_TYPE.BYTE:
       case PRIMITIVE_TYPE.INTEGER:
         return (
-          <NumberPrimitiveInstanceValueEditor
+          <NumberPrimitiveInstanceValueEditor<PrimitiveInstanceValue>
             valueSpecification={valueSpecification}
+            valueSelector={valueSelector}
             isInteger={_type.path === PRIMITIVE_TYPE.INTEGER}
-            setValueSpecification={setValueSpecification}
+            updateValueSpecification={updateValueSpecification}
+            errorChecker={errorChecker}
             className={className}
             resetValue={resetValue}
-            observerContext={observerContext}
             ref={ref}
             handleBlur={handleBlur}
             handleKeyDown={handleKeyDown}
@@ -1469,29 +1616,63 @@ export const BasicValueSpecificationEditor = forwardRef<
       case PRIMITIVE_TYPE.DATETIME:
       case PRIMITIVE_TYPE.LATESTDATE:
         return (
-          <DateInstanceValueEditor
+          <DateInstanceValueEditor<
+            SimpleFunctionExpression | PrimitiveInstanceValue
+          >
             valueSpecification={valueSpecification}
-            graph={graph}
-            observerContext={observerContext}
+            valueSelector={dateValueSelector}
             typeCheckOption={typeCheckOption}
             className={className}
-            setValueSpecification={setValueSpecification}
+            updateValueSpecification={dateUpdateValueSpecification}
             resetValue={resetValue}
             handleBlur={handleBlur}
             displayAsEditableValue={displayDateEditorAsEditableValue}
+            errorChecker={(_valueSpecification) =>
+              _valueSpecification instanceof PrimitiveInstanceValue &&
+              errorChecker(_valueSpecification)
+            }
           />
         );
       default:
         return <UnsupportedValueSpecificationEditor />;
     }
   } else if (valueSpecification instanceof EnumValueInstanceValue) {
+    const enumType = guaranteeType(
+      valueSpecification.genericType?.value.rawType,
+      Enumeration,
+    );
+    const options = enumType.values.map((value) => ({
+      label: value.name,
+      value: value.name,
+    }));
     return (
-      <EnumValueInstanceValueEditor
+      <EnumInstanceValueEditor<EnumValueInstanceValue>
         valueSpecification={valueSpecification}
+        valueSelector={(val) =>
+          val.values[0] === undefined ? null : val.values[0].value.name
+        }
+        options={options}
         className={className}
         resetValue={resetValue}
-        setValueSpecification={setValueSpecification}
-        observerContext={observerContext}
+        updateValueSpecification={(
+          _valueSpecification: EnumValueInstanceValue,
+          value: string | null,
+        ) => {
+          const enumValue = guaranteeNonNullable(
+            enumType.values.find((val: Enum) => val.name === value),
+            `Unable to find enum value ${value} in enumeration ${enumType.name}`,
+          );
+          instanceValue_setValue(
+            _valueSpecification,
+            EnumValueExplicitReference.create(enumValue),
+            0,
+            observerContext,
+          );
+          setValueSpecification(_valueSpecification);
+        }}
+        errorChecker={(_valueSpecification: EnumValueInstanceValue) =>
+          !isValidInstanceValue(_valueSpecification)
+        }
         handleBlur={handleBlur}
       />
     );
@@ -1499,18 +1680,84 @@ export const BasicValueSpecificationEditor = forwardRef<
     valueSpecification instanceof CollectionInstanceValue &&
     valueSpecification.genericType
   ) {
+    const updateValueSpecification = (
+      collectionValueSpecification: CollectionInstanceValue,
+      valueSpecifications: ValueSpecification[],
+    ) => {
+      instanceValue_setValues(
+        collectionValueSpecification,
+        valueSpecifications,
+        observerContext,
+      );
+      setValueSpecification(collectionValueSpecification);
+    };
+    const convertTextToValueSpecification = (
+      type: Type | string,
+      text: string,
+    ): ValueSpecification | null => {
+      if (type instanceof Enumeration) {
+        const enumValue = convertTextToEnum(text, type);
+        if (enumValue) {
+          const enumValueInstanceValue = new EnumValueInstanceValue(
+            GenericTypeExplicitReference.create(new GenericType(type)),
+          );
+          instanceValue_setValues(
+            enumValueInstanceValue,
+            [EnumValueExplicitReference.create(enumValue)],
+            observerContext,
+          );
+          return observe_ValueSpecification(
+            enumValueInstanceValue,
+            observerContext,
+          );
+        }
+      } else {
+        const primitiveVal = convertTextToPrimitiveInstanceValue(
+          guaranteeType(type, Type),
+          text,
+          observerContext,
+        );
+        if (primitiveVal) {
+          return observe_ValueSpecification(primitiveVal, observerContext);
+        }
+      }
+      return null;
+    };
+    const enumOptions =
+      typeCheckOption.expectedType instanceof Enumeration
+        ? typeCheckOption.expectedType.values.map((enumValue) => ({
+            label: enumValue.name,
+            value: enumValue.name,
+          }))
+        : undefined;
     // NOTE: since when we fill in the arguments, `[]` (or `nullish` value in Pure)
     // is used for parameters we don't handle, we should not attempt to support empty collection
     // without generic type here as that  is equivalent to `[]`
     return (
-      <CollectionValueInstanceValueEditor
+      <CollectionValueInstanceValueEditor<
+        ValueSpecification,
+        CollectionInstanceValue
+      >
         valueSpecification={valueSpecification}
-        graph={graph}
+        updateValueSpecification={updateValueSpecification}
         expectedType={typeCheckOption.expectedType}
         className={className}
-        setValueSpecification={setValueSpecification}
         selectorConfig={selectorConfig}
-        observerContext={observerContext}
+        stringifyCollectionValueSpecification={(
+          collectionValueSpecification: CollectionInstanceValue,
+        ) => stringifyValue(collectionValueSpecification.values)}
+        errorChecker={errorChecker}
+        convertValueSpecificationToText={(
+          _valueSpecification: ValueSpecification,
+        ) =>
+          getValueSpecificationStringValue(
+            _valueSpecification,
+            applicationStore,
+            { omitEnumOwnerName: true },
+          )
+        }
+        convertTextToValueSpecification={convertTextToValueSpecification}
+        enumOptions={enumOptions}
       />
     );
   }
@@ -1542,13 +1789,14 @@ export const BasicValueSpecificationEditor = forwardRef<
     if (isSubType(typeCheckOption.expectedType, PrimitiveType.DATE)) {
       if (isUsedDateFunctionSupportedInFormMode(valueSpecification)) {
         return (
-          <DateInstanceValueEditor
+          <DateInstanceValueEditor<
+            SimpleFunctionExpression | PrimitiveInstanceValue
+          >
             valueSpecification={valueSpecification}
-            graph={graph}
-            observerContext={observerContext}
+            valueSelector={dateValueSelector}
             typeCheckOption={typeCheckOption}
             className={className}
-            setValueSpecification={setValueSpecification}
+            updateValueSpecification={dateUpdateValueSpecification}
             resetValue={resetValue}
             handleBlur={handleBlur}
             displayAsEditableValue={displayDateEditorAsEditableValue}
@@ -1580,14 +1828,25 @@ export const BasicValueSpecificationEditor = forwardRef<
         return (
           <NumberPrimitiveInstanceValueEditor
             valueSpecification={simplifiedValue}
+            valueSelector={(val) => val.values[0] as number}
             isInteger={
               simplifiedValue.genericType.value.rawType ===
               PrimitiveType.INTEGER
             }
-            setValueSpecification={setValueSpecification}
+            updateValueSpecification={(
+              _valueSpecification: PrimitiveInstanceValue,
+              value: number,
+            ) => {
+              instanceValue_setValue(
+                _valueSpecification,
+                value,
+                0,
+                observerContext,
+              );
+              setValueSpecification(_valueSpecification);
+            }}
             className={className}
             resetValue={resetValue}
-            observerContext={observerContext}
             ref={ref}
             handleBlur={handleBlur}
             handleKeyDown={handleKeyDown}

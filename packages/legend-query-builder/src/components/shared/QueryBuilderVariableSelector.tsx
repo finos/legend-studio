@@ -42,7 +42,7 @@ import {
   QUERY_BUILDER_VARIABLE_DND_TYPE,
   VariableInfoTooltip,
 } from './BasicValueSpecificationEditor.js';
-import { buildDatePickerOption } from './CustomDatePicker.js';
+import { buildDatePickerOption } from './CustomDatePickerHelper.js';
 import { QueryBuilderSimpleConstantExpressionState } from '../../stores/QueryBuilderConstantsState.js';
 import { forwardRef, useRef, useState } from 'react';
 

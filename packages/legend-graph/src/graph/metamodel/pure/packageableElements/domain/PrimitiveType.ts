@@ -39,3 +39,36 @@ export class PrimitiveType extends DataType {
   static readonly LATESTDATE = new PrimitiveType(PRIMITIVE_TYPE.LATESTDATE);
   static readonly BYTE = new PrimitiveType(PRIMITIVE_TYPE.BYTE);
 }
+
+export const getPrimitiveTypeInstanceFromEnum = (
+  type: PRIMITIVE_TYPE,
+): PrimitiveType => {
+  switch (type) {
+    case PRIMITIVE_TYPE.STRING:
+      return PrimitiveType.STRING;
+    case PRIMITIVE_TYPE.BOOLEAN:
+      return PrimitiveType.BOOLEAN;
+    case PRIMITIVE_TYPE.BINARY:
+      return PrimitiveType.BINARY;
+    case PRIMITIVE_TYPE.NUMBER:
+      return PrimitiveType.NUMBER;
+    case PRIMITIVE_TYPE.INTEGER:
+      return PrimitiveType.INTEGER;
+    case PRIMITIVE_TYPE.FLOAT:
+      return PrimitiveType.FLOAT;
+    case PRIMITIVE_TYPE.DECIMAL:
+      return PrimitiveType.DECIMAL;
+    case PRIMITIVE_TYPE.DATE:
+      return PrimitiveType.DATE;
+    case PRIMITIVE_TYPE.STRICTDATE:
+      return PrimitiveType.STRICTDATE;
+    case PRIMITIVE_TYPE.DATETIME:
+      return PrimitiveType.DATETIME;
+    case PRIMITIVE_TYPE.STRICTTIME:
+      return PrimitiveType.STRICTTIME;
+    case PRIMITIVE_TYPE.LATESTDATE:
+      return PrimitiveType.LATESTDATE;
+    case PRIMITIVE_TYPE.BYTE:
+      return PrimitiveType.BYTE;
+  }
+};
