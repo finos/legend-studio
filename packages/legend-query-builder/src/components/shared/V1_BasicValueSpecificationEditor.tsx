@@ -426,11 +426,10 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
         return null;
       }
     };
-    const enumOptions =
-      enumeration?.values.map((enumValue) => ({
-        label: enumValue.value,
-        value: enumValue.value,
-      })) ?? [];
+    const enumOptions = enumeration?.values.map((enumValue) => ({
+      label: enumValue.value,
+      value: enumValue.value,
+    }));
 
     return (
       <CollectionValueInstanceValueEditor<V1_ValueSpecification, V1_Collection>
