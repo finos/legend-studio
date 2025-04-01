@@ -380,9 +380,7 @@ export const LegendQueryDataCubeSourceBuilder = observer(
                           expectedType: packageableType.fullPath,
                           match:
                             packageableType.fullPath ===
-                              PRIMITIVE_TYPE.DATETIME ||
-                            packageableType.fullPath ===
-                              PRIMITIVE_TYPE.STRICTTIME,
+                            PRIMITIVE_TYPE.DATETIME,
                         }}
                         setValueSpecification={(val: V1_ValueSpecification) => {
                           sourceBuilder.setQueryParameterValue(
