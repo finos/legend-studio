@@ -709,116 +709,30 @@ test.skip(
 
     const listEditorElement = await screen.findByText('List(2): value1,value2');
 
-    let editButton = document.querySelector(
-      '.value-spec-editor__list-editor__edit-icon',
-    );
-    if (!editButton) {
-      editButton = document.querySelector(
-        '.value-spec-editor__list-editor__edit-button',
-      );
-    }
-    if (!editButton) {
-      editButton = document.querySelector('[title="Edit"]');
-    }
-    if (!editButton) {
-      const buttons = document.querySelectorAll('button');
-      for (const button of Array.from(buttons)) {
-        if (
-          button.textContent?.includes('Edit') ||
-          button.className?.includes('edit')
-        ) {
-          editButton = button;
-          break;
-        }
-      }
-    }
-    expect(editButton).not.toBeNull();
-    fireEvent.click(editButton);
+    fireEvent.click(listEditorElement);
 
     const input = await screen.findByRole('combobox');
     fireEvent.change(input, { target: { value: 'value3' } });
     fireEvent.keyDown(input, { key: 'Enter' });
 
-    await waitFor(() => {
-      expect(screen.getByDisplayValue('value3')).not.toBeNull();
-    });
+    screen.debug();
 
-    fireEvent.click(document.body);
+    // Test that duplicate values don't get added
+    fireEvent.change(input, { target: { value: 'value3' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(screen.getByDisplayValue('value3')).not.toBeNull();
 
-    if (stringCollectionValue instanceof V1_Collection) {
-      const newValues = [
-        ...stringCollectionValue.values,
-        _primitiveValue(PRIMITIVE_TYPE.STRING, 'value3'),
-      ];
-      stringCollectionValue.values = newValues;
-    }
+    const saveButton = screen.getByTitle('Save');
+    fireEvent.click(saveButton);
 
-    let editButtonForSave = document.querySelector(
-      '.value-spec-editor__list-editor__edit-icon',
-    );
-    if (!editButtonForSave) {
-      editButtonForSave = document.querySelector(
-        '.value-spec-editor__list-editor__edit-button',
-      );
-    }
-    if (!editButtonForSave) {
-      editButtonForSave = document.querySelector('[title="Edit"]');
-    }
-    if (!editButtonForSave) {
-      const buttons = document.querySelectorAll('button');
-      for (const button of Array.from(buttons)) {
-        if (
-          button.textContent?.includes('Edit') ||
-          button.className?.includes('edit')
-        ) {
-          editButtonForSave = button;
-          break;
-        }
-      }
-    }
-    expect(editButtonForSave).not.toBeNull();
-    fireEvent.click(editButtonForSave);
-
-    try {
-      const saveButton = screen.getByText('Save');
-      fireEvent.click(saveButton);
-    } catch (e) {
-      try {
-        const saveButtonByTitle = screen.getByTitle('Save');
-        fireEvent.click(saveButtonByTitle);
-      } catch (e2) {
-        const saveButtonBySelector = document.querySelector(
-          '.value-spec-editor__list-editor__save-button',
-        );
-        if (saveButtonBySelector) {
-          fireEvent.click(saveButtonBySelector);
-        }
-      }
-    }
-
-    let listText;
-    try {
-      listText = await screen.findByText('List(3): value1,value2,value3');
-    } catch (e) {
-      const elements = document.querySelectorAll(
-        '.value-spec-editor__list-editor__preview',
-      );
-      for (const element of Array.from(elements)) {
-        if (
-          element.textContent?.includes('value1') &&
-          element.textContent?.includes('value2') &&
-          element.textContent?.includes('value3')
-        ) {
-          listText = element;
-          break;
-        }
-      }
-    }
-    expect(listText).not.toBeNull();
+    await screen.findByText('List(3): value1,value2,value3');
 
     expect(stringCollectionValue instanceof V1_Collection).toBe(true);
     if (stringCollectionValue instanceof V1_Collection) {
       expect(stringCollectionValue.values.length).toBe(3);
+      expect(
+        stringCollectionValue.values.every((v) => v instanceof V1_CString),
+      ).toBeTruthy();
       const values = stringCollectionValue.values.map(
         (v) => (v as V1_CString).value,
       );
@@ -829,347 +743,194 @@ test.skip(
   },
 );
 
-test.skip(
-  integrationTest(
-    'V1_BasicValueSpecificationEditor renders and updates integer collection values correctly',
-  ),
-  async () => {
-    const pluginManager = TEST__LegendApplicationPluginManager.create();
+// test(
+//   integrationTest(
+//     'V1_BasicValueSpecificationEditor renders and updates integer collection values correctly',
+//   ),
+//   async () => {
+//     const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-    let integerCollectionValue = observe_V1ValueSpecification(
-      _collection([
-        _primitiveValue(PRIMITIVE_TYPE.INTEGER, 1),
-        _primitiveValue(PRIMITIVE_TYPE.INTEGER, 2),
-      ]),
-    );
+//     let integerCollectionValue = observe_V1ValueSpecification(
+//       _collection([
+//         _primitiveValue(PRIMITIVE_TYPE.INTEGER, 1),
+//         _primitiveValue(PRIMITIVE_TYPE.INTEGER, 2),
+//       ]),
+//     );
 
-    const setValueSpecification = (val: V1_ValueSpecification): void => {
-      integerCollectionValue = val;
-    };
+//     const setValueSpecification = (val: V1_ValueSpecification): void => {
+//       integerCollectionValue = val;
+//     };
 
-    TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
-      valueSpecification: integerCollectionValue,
-      setValueSpecification,
-      type: _type(PRIMITIVE_TYPE.INTEGER),
-      multiplicity: V1_Multiplicity.ZERO_MANY,
-      typeCheckOption: {
-        expectedType: PRIMITIVE_TYPE.INTEGER,
-        match: false,
-      },
-      resetValue: (): void => {},
-    });
+//     TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
+//       valueSpecification: integerCollectionValue,
+//       setValueSpecification,
+//       type: _type(PRIMITIVE_TYPE.INTEGER),
+//       multiplicity: V1_Multiplicity.ZERO_MANY,
+//       typeCheckOption: {
+//         expectedType: PRIMITIVE_TYPE.INTEGER,
+//         match: false,
+//       },
+//       resetValue: (): void => {},
+//     });
 
-    const listEditorElement = await screen.findByText('List(2): 1,2');
+//     const listEditorElement = await screen.findByText('List(2): 1,2');
 
-    let editButton = document.querySelector(
-      '.value-spec-editor__list-editor__edit-icon',
-    );
-    if (!editButton) {
-      editButton = document.querySelector(
-        '.value-spec-editor__list-editor__edit-button',
-      );
-    }
-    if (!editButton) {
-      editButton = document.querySelector('[title="Edit"]');
-    }
-    if (!editButton) {
-      const buttons = document.querySelectorAll('button');
-      for (const button of Array.from(buttons)) {
-        if (
-          button.textContent?.includes('Edit') ||
-          button.className?.includes('edit')
-        ) {
-          editButton = button;
-          break;
-        }
-      }
-    }
-    expect(editButton).not.toBeNull();
-    fireEvent.click(editButton);
+//     fireEvent.click(listEditorElement);
 
-    const input = await screen.findByRole('combobox');
-    fireEvent.change(input, { target: { value: '3.2' } });
-    fireEvent.keyDown(input, { key: 'Enter' });
+//     // Test that float is converted to int
+//     const input = await screen.findByRole('combobox');
+//     fireEvent.change(input, { target: { value: '3.2' } });
+//     fireEvent.keyDown(input, { key: 'Enter' });
+//     await screen.findByText('3');
 
-    await waitFor(() => {
-      expect(screen.getByDisplayValue('3.2')).not.toBeNull();
-    });
+//     // Test that duplicate values don't get added
+//     fireEvent.change(input, { target: { value: '3' } });
+//     fireEvent.keyDown(input, { key: 'Enter' });
+//     expect(screen.getByDisplayValue('3')).not.toBeNull();
 
-    fireEvent.change(input, { target: { value: '3' } });
-    fireEvent.keyDown(input, { key: 'Enter' });
+//     const saveButton = screen.getByTitle('Save');
+//     fireEvent.click(saveButton);
 
-    fireEvent.click(document.body);
+//     await screen.findByText('List(3): 1,2,3');
 
-    if (integerCollectionValue instanceof V1_Collection) {
-      const newValues = [
-        ...integerCollectionValue.values,
-        _primitiveValue(PRIMITIVE_TYPE.INTEGER, 3),
-      ];
-      integerCollectionValue.values = newValues;
-    }
+//     expect(integerCollectionValue instanceof V1_Collection).toBe(true);
+//     if (integerCollectionValue instanceof V1_Collection) {
+//       expect(integerCollectionValue.values.length).toBe(3);
+//       expect(
+//         integerCollectionValue.values.every((v) => v instanceof V1_CInteger),
+//       ).toBeTruthy();
+//       const values = integerCollectionValue.values.map(
+//         (v) => (v as V1_CInteger).value,
+//       );
+//       expect(values[0]).toBe(1);
+//       expect(values[1]).toBe(2);
+//       expect(values[2]).toBe(3);
+//     }
+//   },
+// );
 
-    let editButtonForSave = document.querySelector(
-      '.value-spec-editor__list-editor__edit-icon',
-    );
-    if (!editButtonForSave) {
-      editButtonForSave = document.querySelector(
-        '.value-spec-editor__list-editor__edit-button',
-      );
-    }
-    if (!editButtonForSave) {
-      editButtonForSave = document.querySelector('[title="Edit"]');
-    }
-    if (!editButtonForSave) {
-      const buttons = document.querySelectorAll('button');
-      for (const button of Array.from(buttons)) {
-        if (
-          button.textContent?.includes('Edit') ||
-          button.className?.includes('edit')
-        ) {
-          editButtonForSave = button;
-          break;
-        }
-      }
-    }
-    expect(editButtonForSave).not.toBeNull();
-    fireEvent.click(editButtonForSave);
+// test(
+//   integrationTest(
+//     'V1_BasicValueSpecificationEditor renders and updates float collection values correctly',
+//   ),
+//   async () => {
+//     const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-    try {
-      const saveButton = screen.getByText('Save');
-      fireEvent.click(saveButton);
-    } catch (e) {
-      try {
-        const saveButtonByTitle = screen.getByTitle('Save');
-        fireEvent.click(saveButtonByTitle);
-      } catch (e2) {
-        const saveButtonBySelector = document.querySelector(
-          '.value-spec-editor__list-editor__save-button',
-        );
-        if (saveButtonBySelector) {
-          fireEvent.click(saveButtonBySelector);
-        }
-      }
-    }
+//     let floatCollectionValue = observe_V1ValueSpecification(
+//       _collection([
+//         _primitiveValue(PRIMITIVE_TYPE.FLOAT, 1.1),
+//         _primitiveValue(PRIMITIVE_TYPE.FLOAT, 2.2),
+//       ]),
+//     );
 
-    let listText;
-    try {
-      listText = await screen.findByText('List(3): 1,2,3');
-    } catch (e) {
-      const elements = document.querySelectorAll(
-        '.value-spec-editor__list-editor__preview',
-      );
-      for (const element of Array.from(elements)) {
-        if (
-          element.textContent?.includes('1') &&
-          element.textContent?.includes('2') &&
-          element.textContent?.includes('3')
-        ) {
-          listText = element;
-          break;
-        }
-      }
-    }
-    expect(listText).not.toBeNull();
+//     const setValueSpecification = (val: V1_ValueSpecification): void => {
+//       floatCollectionValue = val;
+//     };
 
-    expect(integerCollectionValue instanceof V1_Collection).toBe(true);
-    if (integerCollectionValue instanceof V1_Collection) {
-      expect(integerCollectionValue.values.length).toBe(3);
-      const values = integerCollectionValue.values.map(
-        (v) => (v as V1_CInteger).value,
-      );
-      expect(values[0]).toBe(1);
-      expect(values[1]).toBe(2);
-      expect(values[2]).toBe(3);
-    }
-  },
-);
+//     TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
+//       valueSpecification: floatCollectionValue,
+//       setValueSpecification,
+//       type: _type(PRIMITIVE_TYPE.FLOAT),
+//       multiplicity: V1_Multiplicity.ZERO_MANY,
+//       typeCheckOption: {
+//         expectedType: PRIMITIVE_TYPE.FLOAT,
+//         match: false,
+//       },
+//       resetValue: (): void => {},
+//     });
 
-test.skip(
-  integrationTest(
-    'V1_BasicValueSpecificationEditor renders and updates float collection values correctly',
-  ),
-  async () => {
-    const pluginManager = TEST__LegendApplicationPluginManager.create();
+//     const listEditorElement = await screen.findByText('List(2): 1.1,2.2');
 
-    let floatCollectionValue = observe_V1ValueSpecification(
-      _collection([
-        _primitiveValue(PRIMITIVE_TYPE.FLOAT, 1.1),
-        _primitiveValue(PRIMITIVE_TYPE.FLOAT, 2.2),
-      ]),
-    );
+//     fireEvent.click(listEditorElement);
 
-    const setValueSpecification = (val: V1_ValueSpecification): void => {
-      floatCollectionValue = val;
-    };
+//     // Test that trailing zeros are removed
+//     const input = await screen.findByRole('combobox');
+//     fireEvent.change(input, { target: { value: '3.0' } });
+//     fireEvent.keyDown(input, { key: 'Enter' });
+//     await screen.findByText('3');
 
-    TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
-      valueSpecification: floatCollectionValue,
-      setValueSpecification,
-      type: _type(PRIMITIVE_TYPE.FLOAT),
-      multiplicity: V1_Multiplicity.ZERO_MANY,
-      typeCheckOption: {
-        expectedType: PRIMITIVE_TYPE.FLOAT,
-        match: false,
-      },
-      resetValue: (): void => {},
-    });
+//     // Test that duplicate values don't get added
+//     fireEvent.change(input, { target: { value: '3.0' } });
+//     fireEvent.keyDown(input, { key: 'Enter' });
+//     expect(screen.getByDisplayValue('3.0')).not.toBeNull();
 
-    const listEditorElement = await screen.findByText('List(2): 1.1,2.2');
+//     const saveButton = screen.getByTitle('Save');
+//     fireEvent.click(saveButton);
 
-    let editButton = document.querySelector(
-      '.value-spec-editor__list-editor__edit-icon',
-    );
-    if (!editButton) {
-      editButton = document.querySelector(
-        '.value-spec-editor__list-editor__edit-button',
-      );
-    }
-    if (!editButton) {
-      editButton = document.querySelector('[title="Edit"]');
-    }
-    if (!editButton) {
-      const buttons = document.querySelectorAll('button');
-      for (const button of Array.from(buttons)) {
-        if (
-          button.textContent?.includes('Edit') ||
-          button.className?.includes('edit')
-        ) {
-          editButton = button;
-          break;
-        }
-      }
-    }
-    expect(editButton).not.toBeNull();
-    fireEvent.click(editButton);
+//     await screen.findByText('List(3): 1.1,2.2,3');
 
-    const input = await screen.findByRole('combobox');
-    fireEvent.change(input, { target: { value: '3.0' } });
-    fireEvent.keyDown(input, { key: 'Enter' });
+//     expect(floatCollectionValue instanceof V1_Collection).toBe(true);
+//     if (floatCollectionValue instanceof V1_Collection) {
+//       expect(floatCollectionValue.values.length).toBe(3);
+//       expect(
+//         floatCollectionValue.values.every((v) => v instanceof V1_CFloat),
+//       ).toBeTruthy();
+//       const values = floatCollectionValue.values.map(
+//         (v) => (v as V1_CFloat).value,
+//       );
+//       expect(values[0]).toBe(1.1);
+//       expect(values[1]).toBe(2.2);
+//       expect(values[2]).toBe(3);
+//     }
+//   },
+// );
 
-    await waitFor(() => {
-      expect(screen.getByDisplayValue('3.0')).not.toBeNull();
-    });
+// test(
+//   integrationTest(
+//     'V1_BasicValueSpecificationEditor renders and updates enum collection values correctly',
+//   ),
+//   async () => {
+//     const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-    fireEvent.change(input, { target: { value: '3.0' } });
-    fireEvent.keyDown(input, { key: 'Enter' });
+//     let enumCollectionValue = observe_V1ValueSpecification(
+//       _collection([_property('Mr', [_elementPtr('test::myEnum')])]),
+//     );
+//     const enumeration = _enumeration('test', 'myEnum', [
+//       _enumValue('Mr'),
+//       _enumValue('Mrs'),
+//       _enumValue('Ms'),
+//       _enumValue('Dr'),
+//     ]);
 
-    fireEvent.click(document.body);
+//     const setValueSpecification = (val: V1_ValueSpecification): void => {
+//       enumCollectionValue = val;
+//     };
 
-    if (floatCollectionValue instanceof V1_Collection) {
-      const newValues = [
-        ...floatCollectionValue.values,
-        _primitiveValue(PRIMITIVE_TYPE.FLOAT, 3.0),
-      ];
-      floatCollectionValue.values = newValues;
-    }
+//     TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
+//       valueSpecification: enumCollectionValue,
+//       setValueSpecification,
+//       type: _type('test::myEnum'),
+//       multiplicity: V1_Multiplicity.ZERO_MANY,
+//       typeCheckOption: {
+//         expectedType: 'test::myEnum',
+//         match: false,
+//       },
+//       resetValue: (): void => {},
+//       enumeration: enumeration,
+//     });
 
-    let editButtonForSave = document.querySelector(
-      '.value-spec-editor__list-editor__edit-icon',
-    );
-    if (!editButtonForSave) {
-      editButtonForSave = document.querySelector(
-        '.value-spec-editor__list-editor__edit-button',
-      );
-    }
-    if (!editButtonForSave) {
-      editButtonForSave = document.querySelector('[title="Edit"]');
-    }
-    if (!editButtonForSave) {
-      const buttons = document.querySelectorAll('button');
-      for (const button of Array.from(buttons)) {
-        if (
-          button.textContent?.includes('Edit') ||
-          button.className?.includes('edit')
-        ) {
-          editButtonForSave = button;
-          break;
-        }
-      }
-    }
-    expect(editButtonForSave).not.toBeNull();
-    fireEvent.click(editButtonForSave);
+//     const listEditorElement = await screen.findByText('List(1): Mr');
 
-    try {
-      const saveButton = screen.getByText('Save');
-      fireEvent.click(saveButton);
-    } catch (e) {
-      try {
-        const saveButtonByTitle = screen.getByTitle('Save');
-        fireEvent.click(saveButtonByTitle);
-      } catch (e2) {
-        const saveButtonBySelector = document.querySelector(
-          '.value-spec-editor__list-editor__save-button',
-        );
-        if (saveButtonBySelector) {
-          fireEvent.click(saveButtonBySelector);
-        }
-      }
-    }
+//     fireEvent.click(listEditorElement);
 
-    let listText;
-    try {
-      listText = await screen.findByText('List(3): 1.1,2.2,3');
-    } catch (e) {
-      const elements = document.querySelectorAll(
-        '.value-spec-editor__list-editor__preview',
-      );
-      for (const element of Array.from(elements)) {
-        if (
-          element.textContent?.includes('1.1') &&
-          element.textContent?.includes('2.2') &&
-          element.textContent?.includes('3')
-        ) {
-          listText = element;
-          break;
-        }
-      }
-    }
-    expect(listText).not.toBeNull();
+//     const input = await screen.findByRole('combobox');
 
-    expect(floatCollectionValue instanceof V1_Collection).toBe(true);
-    if (floatCollectionValue instanceof V1_Collection) {
-      expect(floatCollectionValue.values.length).toBe(3);
-      const values = floatCollectionValue.values.map(
-        (v) => (v as V1_CFloat).value,
-      );
-      expect(values[0]).toBe(1.1);
-      expect(values[1]).toBe(2.2);
-      expect(values[2]).toBe(3);
-    }
-  },
-);
+//     // TODO: figure out how to test clicking on an enum option from
+//     // the dropdown
 
-test.skip(
-  integrationTest(
-    'V1_BasicValueSpecificationEditor renders and updates enum collection values correctly',
-  ),
-  async () => {
-    const pluginManager = TEST__LegendApplicationPluginManager.create();
+//     // Test that typing in a value exactly adds it
+//     fireEvent.change(input, { target: { value: 'Mrs' } });
+//     fireEvent.keyDown(input, { key: 'Enter' });
 
-    let enumCollectionValue = observe_V1ValueSpecification(
-      _collection([
-        _enumValue(
-          'model::pure::tests::model::simple::GeographicEntityType',
-          'CITY',
-        ),
-      ]),
-    );
+//     // Test that typing in a value that doesn't exist doesn't add it
+//     fireEvent.change(input, { target: { value: 'Professor' } });
+//     fireEvent.keyDown(input, { key: 'Enter' });
+//     expect(screen.getByDisplayValue('Professor')).not.toBeNull();
 
-    const setValueSpecification = (val: V1_ValueSpecification): void => {
-      enumCollectionValue = val;
-    };
+//     const saveButton = screen.getByTitle('Save');
+//     fireEvent.click(saveButton);
 
-    TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
-      valueSpecification: enumCollectionValue,
-      setValueSpecification,
-      type: _type('model::pure::tests::model::simple::GeographicEntityType'),
-      multiplicity: V1_Multiplicity.ZERO_MANY,
-      typeCheckOption: {
-        expectedType: 'model::pure::tests::model::simple::GeographicEntityType',
-        match: false,
-      },
-      resetValue: (): void => {},
-    });
+//     await screen.findByText('List(2): Mr,Mrs');
 
     const listEditorElement = await screen.findByText('List(1): CITY');
 
