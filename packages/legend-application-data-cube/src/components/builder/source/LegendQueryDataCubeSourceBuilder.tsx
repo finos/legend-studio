@@ -52,8 +52,8 @@ import { useLegendDataCubeBuilderStore } from '../LegendDataCubeBuilderStoreProv
 import { useApplicationStore } from '@finos/legend-application';
 import {
   type V1_ValueSpecification,
-  observe_V1ValueSpecification,
   PRIMITIVE_TYPE,
+  V1_observe_ValueSpecification,
   V1_PackageableType,
 } from '@finos/legend-graph';
 
@@ -348,7 +348,7 @@ export const LegendQueryDataCubeSourceBuilder = observer(
                     if (isPrimitiveType(packageableType.fullPath)) {
                       sourceBuilder.setQueryParameterValue(
                         name,
-                        observe_V1ValueSpecification(
+                        V1_observe_ValueSpecification(
                           _primitiveValue(
                             packageableType.fullPath,
                             _defaultPrimitiveTypeValue(
@@ -365,7 +365,7 @@ export const LegendQueryDataCubeSourceBuilder = observer(
                       const valueSpec = _property('', [typeParam]);
                       sourceBuilder.setQueryParameterValue(
                         name,
-                        observe_V1ValueSpecification(valueSpec),
+                        V1_observe_ValueSpecification(valueSpec),
                       );
                     }
                   };
@@ -391,7 +391,7 @@ export const LegendQueryDataCubeSourceBuilder = observer(
                         setValueSpecification={(val: V1_ValueSpecification) => {
                           sourceBuilder.setQueryParameterValue(
                             name,
-                            observe_V1ValueSpecification(val),
+                            V1_observe_ValueSpecification(val),
                           );
                         }}
                         resetValue={resetValue}

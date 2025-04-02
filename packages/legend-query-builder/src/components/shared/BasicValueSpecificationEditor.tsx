@@ -575,10 +575,7 @@ const NumberPrimitiveInstanceValueEditorInner = <T,>(
       !isNaN(numericValue) &&
       numericValue !== valueSelector(valueSpecification)
     ) {
-      const valueFromValueSpec =
-        valueSelector(valueSpecification) !== null
-          ? (valueSelector(valueSpecification) as number).toString()
-          : '';
+      const valueFromValueSpec = valueSelector(valueSpecification).toString();
       setValue(valueFromValueSpec);
     }
   }, [numericValue, valueSpecification, valueSelector]);

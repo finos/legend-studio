@@ -42,7 +42,6 @@ import {
   V1_buildEngineError,
   V1_EngineError,
   V1_PackageableType,
-  V1_deserializeRawValueSpecificationType,
   V1_Protocol,
   type V1_ExecutionPlan,
   V1_deserializeExecutionPlan,
@@ -98,7 +97,6 @@ import {
   ADHOC_QUERY_DATA_CUBE_SOURCE_TYPE,
   RawAdhocQueryDataCubeSource,
   _lambda,
-  _defaultPrimitiveTypeValue,
   CachedDataCubeSource,
   type DataCubeExecutionOptions,
   type DataCubeCacheInitializationOptions,
@@ -561,13 +559,13 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         );
         const parameterValues: [V1_Variable, V1_ValueSpecification][] =
           rawSource.parameterValues.map(
-            ([variable, value]) =>
+            ([variable, _value]) =>
               [
                 guaranteeType(
                   V1_deserializeValueSpecification(JSON.parse(variable), []),
                   V1_Variable,
                 ),
-                V1_deserializeValueSpecification(JSON.parse(value), []),
+                V1_deserializeValueSpecification(JSON.parse(_value), []),
               ] as [V1_Variable, V1_ValueSpecification],
           );
         const executionContext =

@@ -201,7 +201,7 @@ test(
   async () => {
     const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-    let integerValueSpec = observe_V1ValueSpecification(
+    let integerValueSpec = V1_observe_ValueSpecification(
       _primitiveValue(PRIMITIVE_TYPE.INTEGER, 42),
     );
 
@@ -260,7 +260,7 @@ test(
   async () => {
     const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-    let floatValueSpec = observe_V1ValueSpecification(
+    let floatValueSpec = V1_observe_ValueSpecification(
       _primitiveValue(PRIMITIVE_TYPE.FLOAT, 10.5),
     );
 
@@ -333,7 +333,7 @@ test(
   async () => {
     const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-    let boolValueSpec = observe_V1ValueSpecification(
+    let boolValueSpec = V1_observe_ValueSpecification(
       _primitiveValue(PRIMITIVE_TYPE.BOOLEAN, false),
     );
 
@@ -420,7 +420,7 @@ test.skip(
   async () => {
     const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-    let dateValueSpec = observe_V1ValueSpecification(
+    let dateValueSpec = V1_observe_ValueSpecification(
       _primitiveValue(PRIMITIVE_TYPE.DATE, '2025-03-28'),
     );
 
@@ -571,7 +571,7 @@ test.skip(
   async () => {
     const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-    let dateValueSpec = observe_V1ValueSpecification(
+    let dateValueSpec = V1_observe_ValueSpecification(
       _primitiveValue(PRIMITIVE_TYPE.DATETIME, '2025-03-28-T12:00:00'),
     );
 
@@ -684,7 +684,7 @@ test.skip(
   async () => {
     const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-    let stringCollectionValue = observe_V1ValueSpecification(
+    let stringCollectionValue = V1_observe_ValueSpecification(
       _collection([
         _primitiveValue(PRIMITIVE_TYPE.STRING, 'value1'),
         _primitiveValue(PRIMITIVE_TYPE.STRING, 'value2'),
@@ -748,7 +748,7 @@ test(
   async () => {
     const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-    let integerCollectionValue = observe_V1ValueSpecification(
+    let integerCollectionValue = V1_observe_ValueSpecification(
       _collection([
         _primitiveValue(PRIMITIVE_TYPE.INTEGER, 1),
         _primitiveValue(PRIMITIVE_TYPE.INTEGER, 2),
@@ -814,7 +814,7 @@ test(
   async () => {
     const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-    let floatCollectionValue = observe_V1ValueSpecification(
+    let floatCollectionValue = V1_observe_ValueSpecification(
       _collection([
         _primitiveValue(PRIMITIVE_TYPE.FLOAT, 1.1),
         _primitiveValue(PRIMITIVE_TYPE.FLOAT, 2.2),
@@ -880,7 +880,7 @@ test(
   async () => {
     const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-    let enumCollectionValue = observe_V1ValueSpecification(
+    let enumCollectionValue = V1_observe_ValueSpecification(
       _collection([_property('Mr', [_elementPtr('test::myEnum')])]),
     );
     const enumeration = _enumeration('test', 'myEnum', [
