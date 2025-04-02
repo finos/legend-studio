@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  type SelectComponent,
-  type TooltipPlacement,
-  Tooltip,
-} from '@finos/legend-art';
+import { type SelectComponent } from '@finos/legend-art';
 import {
   type Type,
   type V1_AppliedFunction,
@@ -27,8 +23,6 @@ import {
   type V1_Multiplicity,
   type V1_PackageableType,
   type V1_ValueSpecification,
-  type V1_Variable,
-  getMultiplicityDescription,
   PRIMITIVE_TYPE,
   V1_AppliedProperty,
   V1_CBoolean,
@@ -88,71 +82,10 @@ import {
 } from '../../stores/shared/V1_ValueSpecificationEditorHelper.js';
 import { useApplicationStore } from '@finos/legend-application';
 
-// Constants and helper functions
-export const V1_QUERY_BUILDER_VARIABLE_DND_TYPE = 'V1_VARIABLE';
-
-export interface V1_QueryBuilderVariableDragSource {
-  variable: V1_Variable;
-}
-
 export interface V1_TypeCheckOption {
   expectedType: string;
   match?: boolean;
 }
-
-// Tooltip component for variable information
-export const V1_VariableInfoTooltip: React.FC<{
-  variable: V1_Variable;
-  children: React.ReactElement;
-  placement?: TooltipPlacement | undefined;
-}> = (props) => {
-  const { variable, children, placement } = props;
-  const type = variable.genericType?.rawType;
-  return (
-    <Tooltip
-      arrow={true}
-      {...(placement !== undefined ? { placement } : {})}
-      classes={{
-        tooltip: 'value-spec-paramater__tooltip',
-        arrow: 'value-spec-paramater__tooltip__arrow',
-        tooltipPlacementRight: 'value-spec-paramater__tooltip--right',
-      }}
-      TransitionProps={{
-        timeout: 0,
-      }}
-      title={
-        <div className="value-spec-paramater__tooltip__content">
-          <div className="value-spec-paramater__tooltip__item">
-            <div className="value-spec-paramater__tooltip__item__label">
-              Type
-            </div>
-            <div className="value-spec-paramater__tooltip__item__value">
-              {(type as unknown as string | null) ?? '(unknown)'}
-            </div>
-          </div>
-          <div className="value-spec-paramater__tooltip__item">
-            <div className="value-spec-paramater__tooltip__item__label">
-              Var Name
-            </div>
-            <div className="value-spec-paramater__tooltip__item__value">
-              {variable.name}
-            </div>
-          </div>
-          <div className="value-spec-paramater__tooltip__item">
-            <div className="value-spec-paramater__tooltip__item__label">
-              Multiplicity
-            </div>
-            <div className="value-spec-paramater__tooltip__item__value">
-              {getMultiplicityDescription(variable.multiplicity)}
-            </div>
-          </div>
-        </div>
-      }
-    >
-      {children}
-    </Tooltip>
-  );
-};
 
 // Placeholder for unsupported value specifications
 const V1_UnsupportedValueSpecificationEditor: React.FC<{ type: string }> = (
