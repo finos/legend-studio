@@ -403,6 +403,7 @@ export function isPrimitiveType(type: string) {
       PRIMITIVE_TYPE.STRICTDATE,
       PRIMITIVE_TYPE.DATETIME,
       PRIMITIVE_TYPE.STRING,
+      PRIMITIVE_TYPE.BOOLEAN,
     ] as string[]
   ).includes(type);
 }
