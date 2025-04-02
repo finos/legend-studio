@@ -357,16 +357,17 @@ export const LegendQueryDataCubeSourceBuilder = observer(
                           ),
                         ),
                       );
+                    } else {
+                      // If not a primitive, assume it is an enum
+                      const typeParam = _elementPtr(
+                        guaranteeIsString(packageableType.fullPath),
+                      );
+                      const valueSpec = _property('', [typeParam]);
+                      sourceBuilder.setQueryParameterValue(
+                        name,
+                        observe_V1ValueSpecification(valueSpec),
+                      );
                     }
-                    // If not a primitive, assume it is an enum
-                    const typeParam = _elementPtr(
-                      guaranteeIsString(packageableType.fullPath),
-                    );
-                    const valueSpec = _property('', [typeParam]);
-                    sourceBuilder.setQueryParameterValue(
-                      name,
-                      observe_V1ValueSpecification(valueSpec),
-                    );
                   };
                   return (
                     <div
