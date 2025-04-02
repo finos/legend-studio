@@ -371,7 +371,7 @@ export const LegendQueryDataCubeSourceBuilder = observer(
                   return (
                     <div
                       key={name}
-                      className="theme__legacy-light flex h-5 w-full"
+                      className="theme__legacy-light mt-1 flex h-5 w-full"
                     >
                       <div className="m-auto">
                         {name}
@@ -396,6 +396,9 @@ export const LegendQueryDataCubeSourceBuilder = observer(
                         resetValue={resetValue}
                         className="ml-2 flex w-full"
                         enumeration={enumeration}
+                        selectorConfig={{
+                          optionCustomization: { rowHeight: 20 },
+                        }}
                       />
                     </div>
                   );

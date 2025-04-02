@@ -70,6 +70,41 @@
 
 .data-cube {
   .value-spec-editor {
+    .input--with-validation {
+      height: 20px;
+      width: 100%;
+    }
+
+    &__input {
+      height: 20px;
+      font-size: unset;
+      border: 1px solid var(--tw-color-gray-100);
+    }
+
+    &__number {
+      &__input-container {
+        height: 20px;
+      }
+
+      &__actions {
+        top: 1px;
+      }
+
+      &__action {
+        height: 18px;
+        width: 18px;
+
+        svg {
+          font-size: 18px;
+          color: var(--tw-color-gray-200);
+        }
+
+        &:hover svg {
+          color: var(--tw-color-gray-400);
+        }
+      }
+    }
+
     .selector-input--dark {
       &__control {
         min-height: 20px;
@@ -80,7 +115,17 @@
       }
 
       &__input {
-        height: 10px;
+        height: unset; //10px;
+
+        &-container {
+          height: unset;
+          margin: 0;
+          padding: 0;
+        }
+      }
+
+      &__single-value {
+        height: unset;
       }
     }
 
@@ -129,15 +174,20 @@
     }
 
     &__reset-btn {
-      background: var(--tw-color-gray-300);
+      height: 20px;
+      width: 20px;
+      background: var(--tw-color-gray-200);
       border-color: var(--tw-color-gray-500);
 
       svg {
+        font-size: unset;
         color: var(--tw-color-gray-500);
       }
     }
 
     &__date-picker__trigger {
+      height: unset;
+      font-size: unset;
       background: var(--tw-color-white);
       border: 1px solid var(--tw-color-gray-300);
       color: var(--tw-color-gray-500);
@@ -149,11 +199,35 @@
 
     &__toggler__btn {
       svg {
+        font-size: unset;
         color: var(--tw-color-gray-500);
       }
 
-      &--toggled svg {
-        color: var(--tw-color-sky-500);
+      &:hover svg {
+        font-size: unset;
+        color: var(--tw-color-gray-600);
+      }
+
+      &[disabled] svg,
+      &[disabled]:hover svg {
+        color: var(--tw-color-gray-300);
+      }
+
+      &--toggled {
+        svg {
+          font-size: unset;
+          color: var(--tw-color-sky-500);
+        }
+
+        &:hover svg {
+          font-size: unset;
+          color: var(--tw-color-sky-600);
+        }
+
+        &[disabled] svg,
+        &[disabled]:hover svg {
+          color: var(--tw-color-gray-400);
+        }
       }
     }
 
@@ -169,4 +243,9 @@
       }
     }
   }
+}
+
+.selector-input--dark__option {
+  font-size: 12px;
+  padding: 2px 4px;
 }
