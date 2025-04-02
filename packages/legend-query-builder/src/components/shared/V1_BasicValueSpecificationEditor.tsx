@@ -224,7 +224,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
           isInteger={valueSpecification instanceof V1_CInteger}
           updateValueSpecification={(
             _valueSpecification: V1_CInteger | V1_CDecimal | V1_CFloat,
-            value: number,
+            value: number | null,
           ) => {
             V1_PrimitiveValue_setValue(_valueSpecification, value);
             setValueSpecification(_valueSpecification);
