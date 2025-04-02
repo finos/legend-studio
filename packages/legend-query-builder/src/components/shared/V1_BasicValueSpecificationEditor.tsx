@@ -46,8 +46,6 @@ import {
   V1_PrimitiveValueSpecification,
 } from '@finos/legend-graph';
 import {
-  type DebouncedFunc,
-  type GeneratorFn,
   csvStringify,
   guaranteeIsString,
   guaranteeNonNullable,
@@ -56,6 +54,7 @@ import {
 } from '@finos/legend-shared';
 import React, { forwardRef } from 'react';
 import {
+  type BasicValueSpecificationEditorSelectorConfig,
   BooleanPrimitiveInstanceValueEditor,
   CollectionValueInstanceValueEditor,
   DateInstanceValueEditor,
@@ -94,15 +93,6 @@ export const V1_QUERY_BUILDER_VARIABLE_DND_TYPE = 'V1_VARIABLE';
 
 export interface V1_QueryBuilderVariableDragSource {
   variable: V1_Variable;
-}
-
-interface V1_BasicValueSpecificationEditorSelectorConfig {
-  values: string[] | undefined;
-  isLoading: boolean;
-  reloadValues:
-    | DebouncedFunc<(inputValue: string) => GeneratorFn<void>>
-    | undefined;
-  cleanUpReloadValues?: () => void;
 }
 
 export interface V1_TypeCheckOption {
@@ -209,7 +199,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
     className?: string | undefined;
     setValueSpecification: (val: V1_ValueSpecification) => void;
     resetValue: () => void;
-    selectorConfig?: V1_BasicValueSpecificationEditorSelectorConfig | undefined;
+    selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
     handleBlur?: (() => void) | undefined;
     handleKeyDown?:
       | ((event: React.KeyboardEvent<HTMLInputElement>) => void)
@@ -229,6 +219,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
     handleBlur,
     handleKeyDown,
     enumeration,
+    selectorConfig,
   } = props;
 
   const applicationStore = useApplicationStore();
@@ -257,6 +248,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
           handleBlur={handleBlur}
           handleKeyDown={handleKeyDown}
           errorChecker={errorChecker}
+          selectorConfig={selectorConfig}
         />
       );
     } else if (type.fullPath === PRIMITIVE_TYPE.BOOLEAN) {
@@ -386,6 +378,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
           }}
           handleBlur={handleBlur}
           errorChecker={errorChecker}
+          selectorConfig={selectorConfig}
         />
       );
     }
@@ -453,6 +446,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
         enumOptions={enumOptions}
         errorChecker={errorChecker}
         className={className}
+        selectorConfig={selectorConfig}
       />
     );
   }

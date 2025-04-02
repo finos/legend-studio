@@ -1046,7 +1046,7 @@ const QueryBuilderFilterConditionEditor = observer(
                       .func.value.genericType.value.rawType,
                 }}
                 resetValue={resetNode}
-                selectorConfig={selectorConfig}
+                selectorSearchConfig={selectorConfig}
                 isConstant={queryBuilderState.constantState.isValueSpecConstant(
                   rightConditionValue.value,
                 )}

@@ -255,8 +255,24 @@ export interface PrimitiveInstanceValueEditorProps<
   className?: string | undefined;
 }
 
+export interface BasicValueSpecificationEditorSelectorSearchConfig {
+  values: string[] | undefined;
+  isLoading: boolean;
+  reloadValues:
+    | DebouncedFunc<(inputValue: string) => GeneratorFn<void>>
+    | undefined;
+  cleanUpReloadValues?: () => void;
+}
+
+export interface BasicValueSpecificationEditorSelectorConfig {
+  optionCustomization?: { rowHeight?: number | undefined } | undefined;
+}
+
 interface StringPrimitiveInstanceValueEditorProps<T>
   extends PrimitiveInstanceValueEditorProps<T, string | null> {
+  selectorSearchConfig?:
+    | BasicValueSpecificationEditorSelectorSearchConfig
+    | undefined;
   selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
 }
 
@@ -273,9 +289,10 @@ const StringPrimitiveInstanceValueEditorInner = <T,>(
     handleBlur,
     handleKeyDown,
     className,
+    selectorSearchConfig,
     selectorConfig,
   } = props;
-  const useSelector = Boolean(selectorConfig);
+  const useSelector = Boolean(selectorSearchConfig);
   const applicationStore = useApplicationStore();
   const value = valueSelector(valueSpecification);
   const changeInputValue: React.ChangeEventHandler<HTMLInputElement> = (
@@ -285,7 +302,7 @@ const StringPrimitiveInstanceValueEditorInner = <T,>(
   };
   // custom select
   const selectedValue = value ? { value: value, label: value } : null;
-  const reloadValuesFunc = selectorConfig?.reloadValues;
+  const reloadValuesFunc = selectorSearchConfig?.reloadValues;
   const changeValue = (
     val: null | { value: number | string; label: string },
   ): void => {
@@ -308,18 +325,18 @@ const StringPrimitiveInstanceValueEditorInner = <T,>(
     }
     if (actionChange.action === 'input-blur') {
       reloadValuesFunc?.cancel();
-      selectorConfig?.cleanUpReloadValues?.();
+      selectorSearchConfig?.cleanUpReloadValues?.();
     }
   };
-  const isLoading = selectorConfig?.isLoading;
-  const queryOptions = selectorConfig?.values?.length
-    ? selectorConfig.values.map((e) => ({
+  const isLoading = selectorSearchConfig?.isLoading;
+  const queryOptions = selectorSearchConfig?.values?.length
+    ? selectorSearchConfig.values.map((e) => ({
         value: e,
         label: e.toString(),
       }))
     : undefined;
   const noOptionsMessage =
-    selectorConfig?.values === undefined ? (): null => null : undefined;
+    selectorSearchConfig?.values === undefined ? (): null => null : undefined;
   const resetButtonName = `reset-${valueSelector(valueSpecification)}`;
   const inputName = `input-${valueSelector(valueSpecification)}`;
 
@@ -360,6 +377,7 @@ const StringPrimitiveInstanceValueEditorInner = <T,>(
             handleKeyDown as React.KeyboardEventHandler<HTMLDivElement>
           }
           inputName={inputName}
+          optionCustomization={selectorConfig?.optionCustomization}
         />
       ) : (
         <InputWithInlineValidation
@@ -630,6 +648,7 @@ export const NumberPrimitiveInstanceValueEditor = observer(
 interface EnumInstanceValueEditorProps<T>
   extends PrimitiveInstanceValueEditorProps<T, string | null> {
   options: { label: string; value: string }[];
+  selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
 }
 
 const EnumInstanceValueEditorInner = <T,>(
@@ -644,6 +663,7 @@ const EnumInstanceValueEditorInner = <T,>(
     handleBlur,
     options,
     className,
+    selectorConfig,
   } = props;
   const applicationStore = useApplicationStore();
   const enumValue = valueSelector(valueSpecification);
@@ -680,6 +700,7 @@ const EnumInstanceValueEditorInner = <T,>(
         placeholder="Select value"
         autoFocus={true}
         inputName={inputName}
+        optionCustomization={selectorConfig?.optionCustomization}
       />
       <button
         className="value-spec-editor__reset-btn"
@@ -742,15 +763,6 @@ const getPlaceHolder = (expectedType: Type | string): string => {
   }
 };
 
-interface BasicValueSpecificationEditorSelectorConfig {
-  values: string[] | undefined;
-  isLoading: boolean;
-  reloadValues:
-    | DebouncedFunc<(inputValue: string) => GeneratorFn<void>>
-    | undefined;
-  cleanUpReloadValues?: () => void;
-}
-
 interface PrimitiveCollectionInstanceValueEditorProps<
   T,
   U extends { values: T[] },
@@ -766,6 +778,9 @@ interface PrimitiveCollectionInstanceValueEditorProps<
   ) => string | undefined;
   expectedType: Type | string;
   saveEdit: () => void;
+  selectorSearchConfig?:
+    | BasicValueSpecificationEditorSelectorSearchConfig
+    | undefined;
   selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
   errorChecker?: (valueSpecification: U) => boolean;
   className?: string | undefined;
@@ -783,6 +798,7 @@ const PrimitiveCollectionInstanceValueEditorInner = <
     convertValueSpecificationToText,
     updateValueSpecification,
     saveEdit,
+    selectorSearchConfig,
     selectorConfig,
     expectedType,
   } = props;
@@ -807,19 +823,19 @@ const PrimitiveCollectionInstanceValueEditorInner = <
 
   // typehead search setup
   const isTypeaheadSearchEnabled =
-    expectedType === PrimitiveType.STRING && Boolean(selectorConfig);
+    expectedType === PrimitiveType.STRING && Boolean(selectorSearchConfig);
   const reloadValuesFunc = isTypeaheadSearchEnabled
-    ? selectorConfig?.reloadValues
+    ? selectorSearchConfig?.reloadValues
     : undefined;
   const cleanUpReloadValuesFunc = isTypeaheadSearchEnabled
-    ? selectorConfig?.cleanUpReloadValues
+    ? selectorSearchConfig?.cleanUpReloadValues
     : undefined;
   const isLoading = isTypeaheadSearchEnabled
-    ? selectorConfig?.isLoading
+    ? selectorSearchConfig?.isLoading
     : undefined;
   const queryOptions =
-    isTypeaheadSearchEnabled && selectorConfig?.values?.length
-      ? selectorConfig.values.map((e) => ({
+    isTypeaheadSearchEnabled && selectorSearchConfig?.values?.length
+      ? selectorSearchConfig.values.map((e) => ({
           value: e,
           label: e.toString(),
         }))
@@ -1023,6 +1039,7 @@ const PrimitiveCollectionInstanceValueEditorInner = <
           DropdownIndicator: null,
         }}
         inputName={inputName}
+        optionCustomization={selectorConfig?.optionCustomization}
       />
       <button
         className="value-spec-editor__list-editor__copy-button"
@@ -1067,6 +1084,7 @@ const EnumCollectionInstanceValueEditorInner = <T, U extends { values: T[] }>(
     saveEdit,
     expectedType,
     enumOptions,
+    selectorConfig,
   } = props;
 
   guaranteeNonNullable(
@@ -1242,6 +1260,7 @@ const EnumCollectionInstanceValueEditorInner = <T, U extends { values: T[] }>(
         placeholder="Add"
         menuIsOpen={true}
         inputName={inputName}
+        optionCustomization={selectorConfig?.optionCustomization}
       />
       <button
         className="value-spec-editor__list-editor__copy-button"
@@ -1289,6 +1308,7 @@ const CollectionValueInstanceValueEditorInner = <T, U extends { values: T[] }>(
     stringifyCollectionValueSpecification,
     errorChecker,
     className,
+    selectorSearchConfig,
     selectorConfig,
     expectedType,
     enumOptions,
@@ -1329,6 +1349,7 @@ const CollectionValueInstanceValueEditorInner = <T, U extends { values: T[] }>(
               expectedType={expectedType}
               saveEdit={saveEdit}
               enumOptions={enumOptions}
+              selectorConfig={selectorConfig}
             />
           ) : (
             <PrimitiveCollectionInstanceValueEditor<T, U>
@@ -1338,6 +1359,7 @@ const CollectionValueInstanceValueEditorInner = <T, U extends { values: T[] }>(
               convertValueSpecificationToText={convertValueSpecificationToText}
               expectedType={expectedType}
               saveEdit={saveEdit}
+              selectorSearchConfig={selectorSearchConfig}
               selectorConfig={selectorConfig}
             />
           )}
@@ -1400,10 +1422,11 @@ const DateInstanceValueEditorInner = <
     handleBlur,
     typeCheckOption,
     displayAsEditableValue,
+    className,
   } = props;
 
   return (
-    <div className="value-spec-editor">
+    <div className={clsx('value-spec-editor', className)}>
       <CustomDatePicker<T>
         valueSpecification={valueSpecification}
         valueSelector={valueSelector}
@@ -1455,6 +1478,9 @@ export const BasicValueSpecificationEditor = forwardRef<
     setValueSpecification: (val: ValueSpecification) => void;
     resetValue: () => void;
     isConstant?: boolean | undefined;
+    selectorSearchConfig?:
+      | BasicValueSpecificationEditorSelectorSearchConfig
+      | undefined;
     selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
     handleBlur?: (() => void) | undefined;
     handleKeyDown?:
@@ -1471,6 +1497,7 @@ export const BasicValueSpecificationEditor = forwardRef<
     typeCheckOption,
     setValueSpecification,
     resetValue,
+    selectorSearchConfig,
     selectorConfig,
     isConstant,
     handleBlur,
@@ -1571,6 +1598,7 @@ export const BasicValueSpecificationEditor = forwardRef<
             errorChecker={errorChecker}
             className={className}
             resetValue={resetValue}
+            selectorSearchConfig={selectorSearchConfig}
             selectorConfig={selectorConfig}
             ref={
               ref as React.ForwardedRef<
@@ -1674,6 +1702,7 @@ export const BasicValueSpecificationEditor = forwardRef<
           !isValidInstanceValue(_valueSpecification)
         }
         handleBlur={handleBlur}
+        selectorConfig={selectorConfig}
       />
     );
   } else if (
@@ -1742,6 +1771,7 @@ export const BasicValueSpecificationEditor = forwardRef<
         updateValueSpecification={updateValueSpecification}
         expectedType={typeCheckOption.expectedType}
         className={className}
+        selectorSearchConfig={selectorSearchConfig}
         selectorConfig={selectorConfig}
         stringifyCollectionValueSpecification={(
           collectionValueSpecification: CollectionInstanceValue,
@@ -1783,6 +1813,8 @@ export const BasicValueSpecificationEditor = forwardRef<
         handleBlur={handleBlur}
         handleKeyDown={handleKeyDown}
         displayDateEditorAsEditableValue={displayDateEditorAsEditableValue}
+        selectorSearchConfig={selectorSearchConfig}
+        selectorConfig={selectorConfig}
       />
     );
   } else if (valueSpecification instanceof SimpleFunctionExpression) {
@@ -1867,6 +1899,9 @@ export const EditableBasicValueSpecificationEditor = observer(
     observerContext: ObserverContext;
     typeCheckOption: TypeCheckOption;
     resetValue: () => void;
+    selectorSearchConfig?:
+      | BasicValueSpecificationEditorSelectorSearchConfig
+      | undefined;
     selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
     isConstant?: boolean;
     initializeAsEditable?: boolean;
@@ -1878,6 +1913,7 @@ export const EditableBasicValueSpecificationEditor = observer(
       observerContext,
       typeCheckOption,
       resetValue,
+      selectorSearchConfig,
       selectorConfig,
       isConstant,
       initializeAsEditable,
@@ -1923,6 +1959,7 @@ export const EditableBasicValueSpecificationEditor = observer(
         observerContext={observerContext}
         typeCheckOption={typeCheckOption}
         resetValue={resetValue}
+        selectorSearchConfig={selectorSearchConfig}
         selectorConfig={selectorConfig}
         isConstant={isConstant}
         ref={inputRef}
