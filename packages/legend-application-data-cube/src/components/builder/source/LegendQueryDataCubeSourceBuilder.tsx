@@ -334,7 +334,7 @@ export const LegendQueryDataCubeSourceBuilder = observer(
           </div>
         )}
         {sourceBuilder.queryParameters?.length && (
-          <div className="mt-2 h-40 w-full">
+          <div className="h-50 mt-2 w-full overflow-auto">
             {sourceBuilder.queryParameterValues &&
               Object.entries(sourceBuilder.queryParameterValues).map(
                 ([name, { variable, value }]) => {
