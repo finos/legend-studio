@@ -154,7 +154,9 @@ export function _functionName(
   funcNameOrPath: string,
   options?: { useFullFunctionPath?: boolean },
 ) {
-  if (options?.useFullFunctionPath) return funcNameOrPath;
+  if (options?.useFullFunctionPath) {
+    return funcNameOrPath;
+  }
 
   const funcPakagePath = extractPackagePathFromPath(funcNameOrPath);
   if (

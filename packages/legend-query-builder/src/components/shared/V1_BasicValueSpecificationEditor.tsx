@@ -14,23 +14,14 @@
  * limitations under the License.
  */
 
-import {
-  type SelectComponent,
-  type TooltipPlacement,
-  Tooltip,
-} from '@finos/legend-art';
+import { type SelectComponent } from '@finos/legend-art';
 import {
   type Type,
   type V1_AppliedFunction,
   type V1_CDate,
   type V1_Enumeration,
   type V1_Multiplicity,
-  type V1_PackageableType,
   type V1_ValueSpecification,
-  type V1_Variable,
-  getMultiplicityDescription,
-  observe_V1_AppliedProperty,
-  observe_V1ValueSpecification,
   PRIMITIVE_TYPE,
   V1_AppliedProperty,
   V1_CBoolean,
@@ -43,19 +34,20 @@ import {
   V1_CStrictDate,
   V1_CString,
   V1_EnumValue,
+  V1_observe_AppliedProperty,
+  V1_observe_ValueSpecification,
+  V1_PackageableType,
   V1_PrimitiveValueSpecification,
 } from '@finos/legend-graph';
 import {
-  type DebouncedFunc,
-  type GeneratorFn,
   csvStringify,
-  guaranteeIsString,
   guaranteeNonNullable,
   guaranteeType,
   isNonNullable,
 } from '@finos/legend-shared';
 import React, { forwardRef } from 'react';
 import {
+  type BasicValueSpecificationEditorSelectorConfig,
   BooleanPrimitiveInstanceValueEditor,
   CollectionValueInstanceValueEditor,
   DateInstanceValueEditor,
@@ -89,80 +81,10 @@ import {
 } from '../../stores/shared/V1_ValueSpecificationEditorHelper.js';
 import { useApplicationStore } from '@finos/legend-application';
 
-// Constants and helper functions
-export const V1_QUERY_BUILDER_VARIABLE_DND_TYPE = 'V1_VARIABLE';
-
-export interface V1_QueryBuilderVariableDragSource {
-  variable: V1_Variable;
-}
-
-interface V1_BasicValueSpecificationEditorSelectorConfig {
-  values: string[] | undefined;
-  isLoading: boolean;
-  reloadValues:
-    | DebouncedFunc<(inputValue: string) => GeneratorFn<void>>
-    | undefined;
-  cleanUpReloadValues?: () => void;
-}
-
 export interface V1_TypeCheckOption {
-  expectedType: string;
+  expectedType: V1_PackageableType;
   match?: boolean;
 }
-
-// Tooltip component for variable information
-export const V1_VariableInfoTooltip: React.FC<{
-  variable: V1_Variable;
-  children: React.ReactElement;
-  placement?: TooltipPlacement | undefined;
-}> = (props) => {
-  const { variable, children, placement } = props;
-  const type = variable.genericType?.rawType;
-  return (
-    <Tooltip
-      arrow={true}
-      {...(placement !== undefined ? { placement } : {})}
-      classes={{
-        tooltip: 'value-spec-paramater__tooltip',
-        arrow: 'value-spec-paramater__tooltip__arrow',
-        tooltipPlacementRight: 'value-spec-paramater__tooltip--right',
-      }}
-      TransitionProps={{
-        timeout: 0,
-      }}
-      title={
-        <div className="value-spec-paramater__tooltip__content">
-          <div className="value-spec-paramater__tooltip__item">
-            <div className="value-spec-paramater__tooltip__item__label">
-              Type
-            </div>
-            <div className="value-spec-paramater__tooltip__item__value">
-              {(type as unknown as string) ?? '(unknown)'}
-            </div>
-          </div>
-          <div className="value-spec-paramater__tooltip__item">
-            <div className="value-spec-paramater__tooltip__item__label">
-              Var Name
-            </div>
-            <div className="value-spec-paramater__tooltip__item__value">
-              {variable.name}
-            </div>
-          </div>
-          <div className="value-spec-paramater__tooltip__item">
-            <div className="value-spec-paramater__tooltip__item__label">
-              Multiplicity
-            </div>
-            <div className="value-spec-paramater__tooltip__item__value">
-              {getMultiplicityDescription(variable.multiplicity)}
-            </div>
-          </div>
-        </div>
-      }
-    >
-      {children}
-    </Tooltip>
-  );
-};
 
 // Placeholder for unsupported value specifications
 const V1_UnsupportedValueSpecificationEditor: React.FC<{ type: string }> = (
@@ -203,13 +125,12 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
   HTMLInputElement | null,
   {
     valueSpecification: V1_ValueSpecification;
-    type: V1_PackageableType;
     multiplicity: V1_Multiplicity;
     typeCheckOption: V1_TypeCheckOption;
     className?: string | undefined;
     setValueSpecification: (val: V1_ValueSpecification) => void;
     resetValue: () => void;
-    selectorConfig?: V1_BasicValueSpecificationEditorSelectorConfig | undefined;
+    selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
     handleBlur?: (() => void) | undefined;
     handleKeyDown?:
       | ((event: React.KeyboardEvent<HTMLInputElement>) => void)
@@ -221,7 +142,6 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
   const {
     className,
     valueSpecification,
-    type,
     multiplicity,
     typeCheckOption,
     setValueSpecification,
@@ -229,6 +149,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
     handleBlur,
     handleKeyDown,
     enumeration,
+    selectorConfig,
   } = props;
 
   const applicationStore = useApplicationStore();
@@ -237,7 +158,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
 
   // Handle non-collection editors
   if (multiplicity.upperBound !== undefined) {
-    if (type.fullPath === PRIMITIVE_TYPE.STRING) {
+    if (typeCheckOption.expectedType.fullPath === PRIMITIVE_TYPE.STRING) {
       return (
         <StringPrimitiveInstanceValueEditor<V1_CString>
           valueSpecification={guaranteeType(valueSpecification, V1_CString)}
@@ -257,9 +178,12 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
           handleBlur={handleBlur}
           handleKeyDown={handleKeyDown}
           errorChecker={errorChecker}
+          selectorConfig={selectorConfig}
         />
       );
-    } else if (type.fullPath === PRIMITIVE_TYPE.BOOLEAN) {
+    } else if (
+      typeCheckOption.expectedType.fullPath === PRIMITIVE_TYPE.BOOLEAN
+    ) {
       return (
         <BooleanPrimitiveInstanceValueEditor<V1_CBoolean>
           valueSpecification={guaranteeType(valueSpecification, V1_CBoolean)}
@@ -276,17 +200,17 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
         />
       );
     } else if (
-      type.fullPath === PRIMITIVE_TYPE.BINARY ||
-      type.fullPath === PRIMITIVE_TYPE.BYTE ||
-      type.fullPath === PRIMITIVE_TYPE.DECIMAL ||
-      type.fullPath === PRIMITIVE_TYPE.FLOAT ||
-      type.fullPath === PRIMITIVE_TYPE.INTEGER ||
-      type.fullPath === PRIMITIVE_TYPE.NUMBER
+      typeCheckOption.expectedType.fullPath === PRIMITIVE_TYPE.BINARY ||
+      typeCheckOption.expectedType.fullPath === PRIMITIVE_TYPE.BYTE ||
+      typeCheckOption.expectedType.fullPath === PRIMITIVE_TYPE.DECIMAL ||
+      typeCheckOption.expectedType.fullPath === PRIMITIVE_TYPE.FLOAT ||
+      typeCheckOption.expectedType.fullPath === PRIMITIVE_TYPE.INTEGER ||
+      typeCheckOption.expectedType.fullPath === PRIMITIVE_TYPE.NUMBER
     ) {
       const numericValueSpecification =
-        type.fullPath === PRIMITIVE_TYPE.INTEGER
+        typeCheckOption.expectedType.fullPath === PRIMITIVE_TYPE.INTEGER
           ? guaranteeType(valueSpecification, V1_CInteger)
-          : type.fullPath === PRIMITIVE_TYPE.DECIMAL
+          : typeCheckOption.expectedType.fullPath === PRIMITIVE_TYPE.DECIMAL
             ? guaranteeType(valueSpecification, V1_CDecimal)
             : guaranteeType(valueSpecification, V1_CFloat);
       return (
@@ -314,10 +238,10 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
         />
       );
     } else if (
-      type.fullPath === PRIMITIVE_TYPE.DATE ||
-      type.fullPath === PRIMITIVE_TYPE.STRICTDATE ||
-      type.fullPath === PRIMITIVE_TYPE.DATETIME ||
-      type.fullPath === PRIMITIVE_TYPE.LATESTDATE
+      typeCheckOption.expectedType.fullPath === PRIMITIVE_TYPE.DATE ||
+      typeCheckOption.expectedType.fullPath === PRIMITIVE_TYPE.STRICTDATE ||
+      typeCheckOption.expectedType.fullPath === PRIMITIVE_TYPE.DATETIME ||
+      typeCheckOption.expectedType.fullPath === PRIMITIVE_TYPE.LATESTDATE
     ) {
       const dateValueSelector = (
         _valueSpecification: V1_CDate | V1_AppliedFunction | V1_CString,
@@ -359,11 +283,10 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
     }
     // Enum editors should have enumeration passed in the props
     if (enumeration) {
-      const options =
-        enumeration?.values.map((enumValue) => ({
-          label: enumValue.value,
-          value: enumValue.value,
-        })) ?? [];
+      const options = enumeration.values.map((enumValue) => ({
+        label: enumValue.value,
+        value: enumValue.value,
+      }));
       return (
         <EnumInstanceValueEditor<V1_AppliedProperty>
           valueSpecification={guaranteeType(
@@ -386,6 +309,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
           }}
           handleBlur={handleBlur}
           errorChecker={errorChecker}
+          selectorConfig={selectorConfig}
         />
       );
     }
@@ -419,20 +343,25 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
       );
     };
     const convertTextToValueSpecification = (
-      _type: Type | string,
+      _type: Type | V1_PackageableType,
       text: string,
     ): V1_ValueSpecification | null => {
-      const stringType = guaranteeIsString(
+      const packageableType = guaranteeType(
         _type,
-        'Cannot convert text to V1_ValueSpecification. Expected type to be a string',
+        V1_PackageableType,
+        'Cannot convert text to V1_ValueSpecification. Expected type to be a V1_PackageableType',
       );
-      if (isPrimitiveType(stringType)) {
-        const primitiveVal = _primitiveValue(stringType, text, true);
-        return observe_V1ValueSpecification(primitiveVal);
+      if (isPrimitiveType(packageableType.fullPath)) {
+        const primitiveVal = _primitiveValue(
+          packageableType.fullPath,
+          text,
+          true,
+        );
+        return V1_observe_ValueSpecification(primitiveVal);
       } else {
         // If not a primitive, assume it is an enum
-        const typeParam = _elementPtr(stringType);
-        return observe_V1_AppliedProperty(_property(text, [typeParam]));
+        const typeParam = _elementPtr(packageableType.fullPath);
+        return V1_observe_AppliedProperty(_property(text, [typeParam]));
       }
     };
     const enumOptions = enumeration?.values.map((enumValue) => ({
@@ -453,10 +382,15 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
         enumOptions={enumOptions}
         errorChecker={errorChecker}
         className={className}
+        selectorConfig={selectorConfig}
       />
     );
   }
 
   // Default case for unsupported value specifications
-  return <V1_UnsupportedValueSpecificationEditor type={type.fullPath} />;
+  return (
+    <V1_UnsupportedValueSpecificationEditor
+      type={typeCheckOption.expectedType.fullPath}
+    />
+  );
 });

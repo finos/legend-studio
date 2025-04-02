@@ -339,7 +339,6 @@ export const TEST__setUpV1BasicValueSpecificationEditor = (
   props: {
     valueSpecification: V1_ValueSpecification;
     setValueSpecification: (val: V1_ValueSpecification) => void;
-    type: V1_PackageableType;
     multiplicity: V1_Multiplicity;
     typeCheckOption: V1_TypeCheckOption;
     resetValue: () => void;

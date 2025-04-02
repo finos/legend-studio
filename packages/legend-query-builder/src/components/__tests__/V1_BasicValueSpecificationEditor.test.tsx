@@ -21,7 +21,6 @@ import {
   type V1_CDateTime,
   type V1_CStrictDate,
   type V1_ValueSpecification,
-  observe_V1ValueSpecification,
   PRIMITIVE_TYPE,
   V1_AppliedFunction,
   V1_AppliedProperty,
@@ -31,6 +30,7 @@ import {
   V1_Collection,
   V1_CString,
   V1_Multiplicity,
+  V1_observe_ValueSpecification,
   V1_PackageableElementPtr,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
@@ -58,7 +58,7 @@ test(
   async () => {
     const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-    let stringValueSpec = observe_V1ValueSpecification(
+    let stringValueSpec = V1_observe_ValueSpecification(
       _primitiveValue(PRIMITIVE_TYPE.STRING, 'initial value'),
     );
 
@@ -76,10 +76,9 @@ test(
     TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
       valueSpecification: stringValueSpec,
       setValueSpecification: setValueSpecification,
-      type: _type(PRIMITIVE_TYPE.STRING),
       multiplicity: V1_Multiplicity.ONE,
       typeCheckOption: {
-        expectedType: PRIMITIVE_TYPE.STRING,
+        expectedType: _type(PRIMITIVE_TYPE.STRING),
         match: false,
       },
       resetValue: resetValue,
@@ -102,7 +101,7 @@ test(
   async () => {
     const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-    let stringValueSpec = observe_V1ValueSpecification(
+    let stringValueSpec = V1_observe_ValueSpecification(
       _primitiveValue(PRIMITIVE_TYPE.STRING, 'initial value'),
     );
 
@@ -120,10 +119,9 @@ test(
     TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
       valueSpecification: stringValueSpec,
       setValueSpecification: setValueSpecification,
-      type: _type(PRIMITIVE_TYPE.STRING),
       multiplicity: V1_Multiplicity.ONE,
       typeCheckOption: {
-        expectedType: PRIMITIVE_TYPE.STRING,
+        expectedType: _type(PRIMITIVE_TYPE.STRING),
         match: false,
       },
       resetValue: resetValue,
@@ -159,7 +157,7 @@ test(
   async () => {
     const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-    let integerValueSpec = observe_V1ValueSpecification(
+    let integerValueSpec = V1_observe_ValueSpecification(
       _primitiveValue(PRIMITIVE_TYPE.INTEGER, 42),
     );
 
@@ -170,10 +168,9 @@ test(
     TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
       valueSpecification: integerValueSpec,
       setValueSpecification: setValueSpecification,
-      type: _type(PRIMITIVE_TYPE.INTEGER),
       multiplicity: V1_Multiplicity.ONE,
       typeCheckOption: {
-        expectedType: PRIMITIVE_TYPE.INTEGER,
+        expectedType: _type(PRIMITIVE_TYPE.INTEGER),
         match: false,
       },
       resetValue: () => {},
@@ -198,7 +195,7 @@ test(
   async () => {
     const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-    let floatValueSpec = observe_V1ValueSpecification(
+    let floatValueSpec = V1_observe_ValueSpecification(
       _primitiveValue(PRIMITIVE_TYPE.FLOAT, 10.5),
     );
 
@@ -209,10 +206,9 @@ test(
     TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
       valueSpecification: floatValueSpec,
       setValueSpecification: setValueSpecification,
-      type: _type(PRIMITIVE_TYPE.FLOAT),
       multiplicity: V1_Multiplicity.ONE,
       typeCheckOption: {
-        expectedType: PRIMITIVE_TYPE.FLOAT,
+        expectedType: _type(PRIMITIVE_TYPE.FLOAT),
         match: false,
       },
       resetValue: () => {},
@@ -254,7 +250,7 @@ test(
   async () => {
     const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-    let boolValueSpec = observe_V1ValueSpecification(
+    let boolValueSpec = V1_observe_ValueSpecification(
       _primitiveValue(PRIMITIVE_TYPE.BOOLEAN, false),
     );
 
@@ -265,10 +261,9 @@ test(
     TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
       valueSpecification: boolValueSpec,
       setValueSpecification: setValueSpecification,
-      type: _type(PRIMITIVE_TYPE.BOOLEAN),
       multiplicity: V1_Multiplicity.ONE,
       typeCheckOption: {
-        expectedType: PRIMITIVE_TYPE.BOOLEAN,
+        expectedType: _type(PRIMITIVE_TYPE.BOOLEAN),
         match: false,
       },
       resetValue: () => {},
@@ -294,7 +289,7 @@ test(
   async () => {
     const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-    let dateValueSpec = observe_V1ValueSpecification(
+    let dateValueSpec = V1_observe_ValueSpecification(
       _primitiveValue(PRIMITIVE_TYPE.DATE, '2025-03-28'),
     );
 
@@ -305,10 +300,9 @@ test(
     TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
       valueSpecification: dateValueSpec,
       setValueSpecification: setValueSpecification,
-      type: _type(PRIMITIVE_TYPE.DATE),
       multiplicity: V1_Multiplicity.ONE,
       typeCheckOption: {
-        expectedType: PRIMITIVE_TYPE.DATE,
+        expectedType: _type(PRIMITIVE_TYPE.DATE),
         match: false,
       },
       resetValue: () => {},
@@ -422,6 +416,10 @@ test(
 
     await screen.findByText('Latest Date');
     expect(dateValueSpec instanceof V1_CLatestDate).toBeTruthy();
+
+    // TODO: figure out why entering an Absolute Date updates the
+    // value specification but not the rendered component (note:
+    // the component works fine in practice, just not in the test)
   },
 );
 
@@ -432,7 +430,7 @@ test(
   async () => {
     const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-    let dateValueSpec = observe_V1ValueSpecification(
+    let dateValueSpec = V1_observe_ValueSpecification(
       _primitiveValue(PRIMITIVE_TYPE.DATETIME, '2025-03-28-T12:00:00'),
     );
 
@@ -443,10 +441,9 @@ test(
     TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
       valueSpecification: dateValueSpec,
       setValueSpecification: setValueSpecification,
-      type: _type(PRIMITIVE_TYPE.DATETIME),
       multiplicity: V1_Multiplicity.ONE,
       typeCheckOption: {
-        expectedType: PRIMITIVE_TYPE.DATETIME,
+        expectedType: _type(PRIMITIVE_TYPE.DATETIME),
         match: true,
       },
       resetValue: () => {},
@@ -487,7 +484,7 @@ test(
   async () => {
     const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-    let strictTimeValueSpec = observe_V1ValueSpecification(
+    let strictTimeValueSpec = V1_observe_ValueSpecification(
       _primitiveValue(PRIMITIVE_TYPE.STRICTTIME, '2025-03-28'),
     );
 
@@ -498,10 +495,9 @@ test(
     TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
       valueSpecification: strictTimeValueSpec,
       setValueSpecification: setValueSpecification,
-      type: _type(PRIMITIVE_TYPE.STRICTTIME),
       multiplicity: V1_Multiplicity.ONE,
       typeCheckOption: {
-        expectedType: PRIMITIVE_TYPE.STRICTTIME,
+        expectedType: _type(PRIMITIVE_TYPE.STRICTTIME),
         match: false,
       },
       resetValue: () => {},
@@ -518,7 +514,7 @@ test(
   async () => {
     const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-    let enumValueSpec = observe_V1ValueSpecification(
+    let enumValueSpec = V1_observe_ValueSpecification(
       _property('Mr', [_elementPtr('test::myEnum')]),
     );
     const enumeration = _enumeration('test', 'myEnum', [
@@ -535,10 +531,9 @@ test(
     TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
       valueSpecification: enumValueSpec,
       setValueSpecification: setValueSpecification,
-      type: _type('test::myEnum'),
       multiplicity: V1_Multiplicity.ONE,
       typeCheckOption: {
-        expectedType: 'test::myEnum',
+        expectedType: _type('test::myEnum'),
         match: false,
       },
       resetValue: () => {},
@@ -581,7 +576,7 @@ test(
   async () => {
     const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-    let stringCollectionValue = observe_V1ValueSpecification(
+    let stringCollectionValue = V1_observe_ValueSpecification(
       _collection([
         _primitiveValue(PRIMITIVE_TYPE.STRING, 'value1'),
         _primitiveValue(PRIMITIVE_TYPE.STRING, 'value2'),
@@ -595,10 +590,9 @@ test(
     TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
       valueSpecification: stringCollectionValue,
       setValueSpecification,
-      type: _type(PRIMITIVE_TYPE.STRING),
       multiplicity: V1_Multiplicity.ZERO_MANY,
       typeCheckOption: {
-        expectedType: PRIMITIVE_TYPE.STRING,
+        expectedType: _type(PRIMITIVE_TYPE.STRING),
         match: false,
       },
       resetValue: (): void => {},
@@ -645,7 +639,7 @@ test(
   async () => {
     const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-    let integerCollectionValue = observe_V1ValueSpecification(
+    let integerCollectionValue = V1_observe_ValueSpecification(
       _collection([
         _primitiveValue(PRIMITIVE_TYPE.INTEGER, 1),
         _primitiveValue(PRIMITIVE_TYPE.INTEGER, 2),
@@ -659,10 +653,9 @@ test(
     TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
       valueSpecification: integerCollectionValue,
       setValueSpecification,
-      type: _type(PRIMITIVE_TYPE.INTEGER),
       multiplicity: V1_Multiplicity.ZERO_MANY,
       typeCheckOption: {
-        expectedType: PRIMITIVE_TYPE.INTEGER,
+        expectedType: _type(PRIMITIVE_TYPE.INTEGER),
         match: false,
       },
       resetValue: (): void => {},
@@ -711,7 +704,7 @@ test(
   async () => {
     const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-    let floatCollectionValue = observe_V1ValueSpecification(
+    let floatCollectionValue = V1_observe_ValueSpecification(
       _collection([
         _primitiveValue(PRIMITIVE_TYPE.FLOAT, 1.1),
         _primitiveValue(PRIMITIVE_TYPE.FLOAT, 2.2),
@@ -725,10 +718,9 @@ test(
     TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
       valueSpecification: floatCollectionValue,
       setValueSpecification,
-      type: _type(PRIMITIVE_TYPE.FLOAT),
       multiplicity: V1_Multiplicity.ZERO_MANY,
       typeCheckOption: {
-        expectedType: PRIMITIVE_TYPE.FLOAT,
+        expectedType: _type(PRIMITIVE_TYPE.FLOAT),
         match: false,
       },
       resetValue: (): void => {},
@@ -777,7 +769,7 @@ test(
   async () => {
     const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-    let enumCollectionValue = observe_V1ValueSpecification(
+    let enumCollectionValue = V1_observe_ValueSpecification(
       _collection([_property('Mr', [_elementPtr('test::myEnum')])]),
     );
     const enumeration = _enumeration('test', 'myEnum', [
@@ -794,10 +786,9 @@ test(
     TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
       valueSpecification: enumCollectionValue,
       setValueSpecification,
-      type: _type('test::myEnum'),
       multiplicity: V1_Multiplicity.ZERO_MANY,
       typeCheckOption: {
-        expectedType: 'test::myEnum',
+        expectedType: _type('test::myEnum'),
         match: false,
       },
       resetValue: (): void => {},
@@ -838,7 +829,7 @@ test(
       ).toBeTruthy();
       const enumNames = enumCollectionValue.values
         .filter((v) => v instanceof V1_AppliedProperty)
-        .map((v) => (v as V1_AppliedProperty).property);
+        .map((v) => v.property);
       expect(enumNames[0]).toBe('Mr');
       expect(enumNames[1]).toContain('Mrs');
     }

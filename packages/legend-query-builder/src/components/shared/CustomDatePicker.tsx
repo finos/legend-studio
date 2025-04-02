@@ -21,7 +21,7 @@ import {
   CustomSelectorInput,
   clsx,
 } from '@finos/legend-art';
-import { type Type, PRIMITIVE_TYPE } from '@finos/legend-graph';
+import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
   parseNumber,
