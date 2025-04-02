@@ -212,10 +212,9 @@ test(
     TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
       valueSpecification: integerValueSpec,
       setValueSpecification: setValueSpecification,
-      type: _type(PRIMITIVE_TYPE.INTEGER),
       multiplicity: V1_Multiplicity.ONE,
       typeCheckOption: {
-        expectedType: PRIMITIVE_TYPE.INTEGER,
+        expectedType: _type(PRIMITIVE_TYPE.INTEGER),
         match: false,
       },
       resetValue: () => {},
@@ -271,10 +270,9 @@ test(
     TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
       valueSpecification: floatValueSpec,
       setValueSpecification: setValueSpecification,
-      type: _type(PRIMITIVE_TYPE.FLOAT),
       multiplicity: V1_Multiplicity.ONE,
       typeCheckOption: {
-        expectedType: PRIMITIVE_TYPE.FLOAT,
+        expectedType: _type(PRIMITIVE_TYPE.FLOAT),
         match: false,
       },
       resetValue: () => {},
@@ -344,10 +342,9 @@ test(
     TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
       valueSpecification: boolValueSpec,
       setValueSpecification: setValueSpecification,
-      type: _type(PRIMITIVE_TYPE.BOOLEAN),
       multiplicity: V1_Multiplicity.ONE,
       typeCheckOption: {
-        expectedType: PRIMITIVE_TYPE.BOOLEAN,
+        expectedType: _type(PRIMITIVE_TYPE.BOOLEAN),
         match: false,
       },
       resetValue: () => {},
@@ -431,10 +428,9 @@ test.skip(
     TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
       valueSpecification: dateValueSpec,
       setValueSpecification: setValueSpecification,
-      type: _type(PRIMITIVE_TYPE.DATE),
       multiplicity: V1_Multiplicity.ONE,
       typeCheckOption: {
-        expectedType: PRIMITIVE_TYPE.DATE,
+        expectedType: _type(PRIMITIVE_TYPE.DATE),
         match: false,
       },
       resetValue: () => {},
@@ -582,10 +578,9 @@ test.skip(
     TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
       valueSpecification: dateValueSpec,
       setValueSpecification: setValueSpecification,
-      type: _type(PRIMITIVE_TYPE.DATETIME),
       multiplicity: V1_Multiplicity.ONE,
       typeCheckOption: {
-        expectedType: PRIMITIVE_TYPE.DATETIME,
+        expectedType: _type(PRIMITIVE_TYPE.DATETIME),
         match: true,
       },
       resetValue: () => {},
@@ -698,10 +693,9 @@ test.skip(
     TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
       valueSpecification: stringCollectionValue,
       setValueSpecification,
-      type: _type(PRIMITIVE_TYPE.STRING),
       multiplicity: V1_Multiplicity.ZERO_MANY,
       typeCheckOption: {
-        expectedType: PRIMITIVE_TYPE.STRING,
+        expectedType: _type(PRIMITIVE_TYPE.STRING),
         match: false,
       },
       resetValue: (): void => {},
@@ -762,10 +756,9 @@ test(
     TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
       valueSpecification: integerCollectionValue,
       setValueSpecification,
-      type: _type(PRIMITIVE_TYPE.INTEGER),
       multiplicity: V1_Multiplicity.ZERO_MANY,
       typeCheckOption: {
-        expectedType: PRIMITIVE_TYPE.INTEGER,
+        expectedType: _type(PRIMITIVE_TYPE.INTEGER),
         match: false,
       },
       resetValue: (): void => {},
@@ -828,10 +821,9 @@ test(
     TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
       valueSpecification: floatCollectionValue,
       setValueSpecification,
-      type: _type(PRIMITIVE_TYPE.FLOAT),
       multiplicity: V1_Multiplicity.ZERO_MANY,
       typeCheckOption: {
-        expectedType: PRIMITIVE_TYPE.FLOAT,
+        expectedType: _type(PRIMITIVE_TYPE.FLOAT),
         match: false,
       },
       resetValue: (): void => {},
@@ -897,10 +889,9 @@ test(
     TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
       valueSpecification: enumCollectionValue,
       setValueSpecification,
-      type: _type('test::myEnum'),
       multiplicity: V1_Multiplicity.ZERO_MANY,
       typeCheckOption: {
-        expectedType: 'test::myEnum',
+        expectedType: _type('test::myEnum'),
         match: false,
       },
       resetValue: (): void => {},

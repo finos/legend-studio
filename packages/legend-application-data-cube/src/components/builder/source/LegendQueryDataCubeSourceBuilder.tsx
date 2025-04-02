@@ -380,10 +380,9 @@ export const LegendQueryDataCubeSourceBuilder = observer(
                       </div>
                       <V1_BasicValueSpecificationEditor
                         valueSpecification={value}
-                        type={packageableType}
                         multiplicity={variable.multiplicity}
                         typeCheckOption={{
-                          expectedType: packageableType.fullPath,
+                          expectedType: packageableType,
                           match:
                             packageableType.fullPath ===
                             PRIMITIVE_TYPE.DATETIME,
