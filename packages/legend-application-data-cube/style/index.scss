@@ -78,7 +78,7 @@
     &__input {
       height: 20px;
       font-size: unset;
-      border: 1px solid var(--tw-color-gray-100);
+      border: 1px solid var(--tw-color-gray-300);
     }
 
     &__number {
@@ -198,6 +198,8 @@
     }
 
     &__toggler__btn {
+      border: 1px solid var(--tw-color-gray-300);
+
       svg {
         font-size: unset;
         color: var(--tw-color-gray-500);
