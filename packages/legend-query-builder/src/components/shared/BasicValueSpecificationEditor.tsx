@@ -482,7 +482,7 @@ export const BooleanPrimitiveInstanceValueEditor = observer(
 );
 
 interface NumberPrimitiveInstanceValueEditorProps<T>
-  extends PrimitiveInstanceValueEditorProps<T, number> {
+  extends PrimitiveInstanceValueEditorProps<T, number | null> {
   isInteger: boolean;
 }
 
@@ -503,7 +503,7 @@ const NumberPrimitiveInstanceValueEditorInner = <T,>(
     isInteger,
   } = props;
   const [value, setValue] = useState(
-    valueSelector(valueSpecification).toString(),
+    valueSelector(valueSpecification)?.toString() ?? '',
   );
   const inputRef = useRef<HTMLInputElement>(null);
   useImperativeHandle(ref, () => inputRef.current as HTMLInputElement, []);
@@ -546,7 +546,7 @@ const NumberPrimitiveInstanceValueEditorInner = <T,>(
         setValue(calculatedValue.toString());
       } catch {
         // If we fail to evaluate the expression, we just keep the previous value
-        const prevValue = valueSelector(valueSpecification).toString();
+        const prevValue = valueSelector(valueSpecification)?.toString() ?? '';
         updateValueSpecIfValid(prevValue);
         setValue(prevValue);
       }
@@ -575,7 +575,10 @@ const NumberPrimitiveInstanceValueEditorInner = <T,>(
       !isNaN(numericValue) &&
       numericValue !== valueSelector(valueSpecification)
     ) {
-      const valueFromValueSpec = valueSelector(valueSpecification).toString();
+      const valueFromValueSpec =
+        valueSelector(valueSpecification) !== null
+          ? (valueSelector(valueSpecification) as number).toString()
+          : '';
       setValue(valueFromValueSpec);
     }
   }, [numericValue, valueSpecification, valueSelector]);
@@ -1900,7 +1903,7 @@ export const BasicValueSpecificationEditor = forwardRef<
             }
             updateValueSpecification={(
               _valueSpecification: PrimitiveInstanceValue,
-              value: number,
+              value: number | null,
             ) => {
               instanceValue_setValue(
                 _valueSpecification,
