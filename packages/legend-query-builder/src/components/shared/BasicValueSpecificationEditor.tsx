@@ -241,6 +241,19 @@ const VariableExpressionParameterEditor = observer(
   },
 );
 
+/**
+ * This is the base interface for primitive instance value editors (non-collection values).
+ * The interface is made generic so that it can support various types of objects that hold the value
+ * to be edited (currently, we just use this for ValueSpecification and V1_ValueSpecification).
+ *
+ * T represents the type of the object that holds the value to be edited (i.e. ValueSpecification or V1_ValueSpecification).
+ * U represents the type of data that the object holds.
+ *
+ * valueSelector: callback that handles extracting the data value from the object.
+ * updateValueSpecification: callback that takes the valueSpecification object and the new value and handles updating
+ * the object with the new value.
+ * errorChecker: optional callback that should return true if the valueSpecification is invalid.
+ */
 export interface PrimitiveInstanceValueEditorProps<
   T,
   U extends string | number | boolean | Enum | null,
@@ -639,6 +652,10 @@ export const NumberPrimitiveInstanceValueEditor = observer(
   ) => ReturnType<typeof NumberPrimitiveInstanceValueEditorInner>,
 );
 
+/**
+ * Generic interface for handling editing enum values. The editor component
+ * expects an options array which contains the list of possible enum values.
+ */
 interface EnumInstanceValueEditorProps<T>
   extends PrimitiveInstanceValueEditorProps<T, string | null> {
   options: { label: string; value: string }[];
@@ -758,6 +775,22 @@ const getPlaceHolder = (expectedType: Type | string): string => {
   }
 };
 
+/**
+ * This is the base interface for collection primitive instance value editors.
+ * The interface is made generic so that it can support various types of objects that hold the value
+ * to be edited (currently, we just use this for CollectionInstanceValue and V1_Collection).
+ *
+ * T represents the type of the objects held in the collection (i.e. ValueSpecification or V1_ValueSpecification).
+ * U represents the interface of the collection object (i.e. CollectionInstanceValue or V1_Collection). Currently,
+ * this only supports collection objects that hold their data in a property called values.
+ *
+ * updateValueSpecification: callback that takes the collection object and the new values and handles updating
+ * the collection object with the new values.
+ * convertTextToValueSpecification: callback that takes a string and converts it to the expected valueSpecification type.
+ * convertValueSpecificationToText: callback that takes a valueSpecification and converts it to a string.
+ * expectedType: the expected type of the values in the collection.
+ * errorChecker: optional callback that should return true if the valueSpecification is invalid.
+ */
 interface PrimitiveCollectionInstanceValueEditorProps<
   T,
   U extends { values: T[] },
