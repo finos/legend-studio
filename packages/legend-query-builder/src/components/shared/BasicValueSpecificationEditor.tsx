@@ -62,6 +62,7 @@ import {
   Type,
   VariableExpression,
   observe_ValueSpecification,
+  V1_PackageableType,
 } from '@finos/legend-graph';
 import {
   type DebouncedFunc,
@@ -750,7 +751,7 @@ const stringifyValue = (values: ValueSpecification[]): string => {
   ]).trim();
 };
 
-const getPlaceHolder = (expectedType: Type | string): string => {
+const getPlaceHolder = (expectedType: Type | V1_PackageableType): string => {
   if (expectedType instanceof PrimitiveType) {
     switch (expectedType.path) {
       case PRIMITIVE_TYPE.DATE:
@@ -761,8 +762,8 @@ const getPlaceHolder = (expectedType: Type | string): string => {
       default:
         return 'Add';
     }
-  } else {
-    switch (expectedType) {
+  } else if (expectedType instanceof V1_PackageableType) {
+    switch (expectedType.fullPath) {
       case PRIMITIVE_TYPE.DATE:
       case PRIMITIVE_TYPE.STRICTDATE:
         return 'yyyy-mm-dd';
@@ -772,6 +773,8 @@ const getPlaceHolder = (expectedType: Type | string): string => {
       default:
         return 'Add';
     }
+  } else {
+    throw new Error(`Cannot get placeholder for type ${expectedType}`);
   }
 };
 
@@ -798,13 +801,13 @@ interface PrimitiveCollectionInstanceValueEditorProps<
   valueSpecification: U;
   updateValueSpecification: (valueSpecification: U, values: T[]) => void;
   convertTextToValueSpecification: (
-    type: Type | string,
+    type: Type | V1_PackageableType,
     text: string,
   ) => T | null;
   convertValueSpecificationToText: (
     valueSpecification: T,
   ) => string | undefined;
-  expectedType: Type | string;
+  expectedType: Type | V1_PackageableType;
   saveEdit: () => void;
   selectorSearchConfig?:
     | BasicValueSpecificationEditorSelectorSearchConfig
@@ -1751,7 +1754,7 @@ export const BasicValueSpecificationEditor = forwardRef<
       setValueSpecification(collectionValueSpecification);
     };
     const convertTextToValueSpecification = (
-      type: Type | string,
+      type: Type | V1_PackageableType,
       text: string,
     ): ValueSpecification | null => {
       if (type instanceof Enumeration) {

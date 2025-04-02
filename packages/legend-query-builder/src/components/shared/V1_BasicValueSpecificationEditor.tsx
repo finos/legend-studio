@@ -21,7 +21,6 @@ import {
   type V1_CDate,
   type V1_Enumeration,
   type V1_Multiplicity,
-  type V1_PackageableType,
   type V1_ValueSpecification,
   PRIMITIVE_TYPE,
   V1_AppliedProperty,
@@ -37,11 +36,11 @@ import {
   V1_EnumValue,
   V1_observe_AppliedProperty,
   V1_observe_ValueSpecification,
+  V1_PackageableType,
   V1_PrimitiveValueSpecification,
 } from '@finos/legend-graph';
 import {
   csvStringify,
-  guaranteeIsString,
   guaranteeNonNullable,
   guaranteeType,
   isNonNullable,
@@ -83,7 +82,7 @@ import {
 import { useApplicationStore } from '@finos/legend-application';
 
 export interface V1_TypeCheckOption {
-  expectedType: string;
+  expectedType: V1_PackageableType;
   match?: boolean;
 }
 
@@ -126,7 +125,6 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
   HTMLInputElement | null,
   {
     valueSpecification: V1_ValueSpecification;
-    type: V1_PackageableType;
     multiplicity: V1_Multiplicity;
     typeCheckOption: V1_TypeCheckOption;
     className?: string | undefined;
@@ -144,7 +142,6 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
   const {
     className,
     valueSpecification,
-    type,
     multiplicity,
     typeCheckOption,
     setValueSpecification,
@@ -161,7 +158,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
 
   // Handle non-collection editors
   if (multiplicity.upperBound !== undefined) {
-    if (type.fullPath === PRIMITIVE_TYPE.STRING) {
+    if (typeCheckOption.expectedType.fullPath === PRIMITIVE_TYPE.STRING) {
       return (
         <StringPrimitiveInstanceValueEditor<V1_CString>
           valueSpecification={guaranteeType(valueSpecification, V1_CString)}
@@ -184,7 +181,9 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
           selectorConfig={selectorConfig}
         />
       );
-    } else if (type.fullPath === PRIMITIVE_TYPE.BOOLEAN) {
+    } else if (
+      typeCheckOption.expectedType.fullPath === PRIMITIVE_TYPE.BOOLEAN
+    ) {
       return (
         <BooleanPrimitiveInstanceValueEditor<V1_CBoolean>
           valueSpecification={guaranteeType(valueSpecification, V1_CBoolean)}
@@ -201,17 +200,17 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
         />
       );
     } else if (
-      type.fullPath === PRIMITIVE_TYPE.BINARY ||
-      type.fullPath === PRIMITIVE_TYPE.BYTE ||
-      type.fullPath === PRIMITIVE_TYPE.DECIMAL ||
-      type.fullPath === PRIMITIVE_TYPE.FLOAT ||
-      type.fullPath === PRIMITIVE_TYPE.INTEGER ||
-      type.fullPath === PRIMITIVE_TYPE.NUMBER
+      typeCheckOption.expectedType.fullPath === PRIMITIVE_TYPE.BINARY ||
+      typeCheckOption.expectedType.fullPath === PRIMITIVE_TYPE.BYTE ||
+      typeCheckOption.expectedType.fullPath === PRIMITIVE_TYPE.DECIMAL ||
+      typeCheckOption.expectedType.fullPath === PRIMITIVE_TYPE.FLOAT ||
+      typeCheckOption.expectedType.fullPath === PRIMITIVE_TYPE.INTEGER ||
+      typeCheckOption.expectedType.fullPath === PRIMITIVE_TYPE.NUMBER
     ) {
       const numericValueSpecification =
-        type.fullPath === PRIMITIVE_TYPE.INTEGER
+        typeCheckOption.expectedType.fullPath === PRIMITIVE_TYPE.INTEGER
           ? guaranteeType(valueSpecification, V1_CInteger)
-          : type.fullPath === PRIMITIVE_TYPE.DECIMAL
+          : typeCheckOption.expectedType.fullPath === PRIMITIVE_TYPE.DECIMAL
             ? guaranteeType(valueSpecification, V1_CDecimal)
             : guaranteeType(valueSpecification, V1_CFloat);
       return (
@@ -239,10 +238,10 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
         />
       );
     } else if (
-      type.fullPath === PRIMITIVE_TYPE.DATE ||
-      type.fullPath === PRIMITIVE_TYPE.STRICTDATE ||
-      type.fullPath === PRIMITIVE_TYPE.DATETIME ||
-      type.fullPath === PRIMITIVE_TYPE.LATESTDATE
+      typeCheckOption.expectedType.fullPath === PRIMITIVE_TYPE.DATE ||
+      typeCheckOption.expectedType.fullPath === PRIMITIVE_TYPE.STRICTDATE ||
+      typeCheckOption.expectedType.fullPath === PRIMITIVE_TYPE.DATETIME ||
+      typeCheckOption.expectedType.fullPath === PRIMITIVE_TYPE.LATESTDATE
     ) {
       const dateValueSelector = (
         _valueSpecification: V1_CDate | V1_AppliedFunction | V1_CString,
@@ -344,19 +343,24 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
       );
     };
     const convertTextToValueSpecification = (
-      _type: Type | string,
+      _type: Type | V1_PackageableType,
       text: string,
     ): V1_ValueSpecification | null => {
-      const stringType = guaranteeIsString(
+      const packageableType = guaranteeType(
         _type,
-        'Cannot convert text to V1_ValueSpecification. Expected type to be a string',
+        V1_PackageableType,
+        'Cannot convert text to V1_ValueSpecification. Expected type to be a V1_PackageableType',
       );
-      if (isPrimitiveType(stringType)) {
-        const primitiveVal = _primitiveValue(stringType, text, true);
+      if (isPrimitiveType(packageableType.fullPath)) {
+        const primitiveVal = _primitiveValue(
+          packageableType.fullPath,
+          text,
+          true,
+        );
         return V1_observe_ValueSpecification(primitiveVal);
       } else {
         // If not a primitive, assume it is an enum
-        const typeParam = _elementPtr(stringType);
+        const typeParam = _elementPtr(packageableType.fullPath);
         return V1_observe_AppliedProperty(_property(text, [typeParam]));
       }
     };
@@ -384,5 +388,9 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
   }
 
   // Default case for unsupported value specifications
-  return <V1_UnsupportedValueSpecificationEditor type={type.fullPath} />;
+  return (
+    <V1_UnsupportedValueSpecificationEditor
+      type={typeCheckOption.expectedType.fullPath}
+    />
+  );
 });
