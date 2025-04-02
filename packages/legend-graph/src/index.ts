@@ -172,6 +172,8 @@ export {
   V1_buildEngineError,
   V1_buildFunctionInfoAnalysis,
 } from './graph-manager/protocol/pure/v1/engine/V1_EngineHelper.js';
+export * from './graph-manager/protocol/pure/v1/helpers/V1_ValueSpecificationObserver.js';
+export * from './graph-manager/protocol/pure/v1/helpers/V1_DomainObserverHelper.js';
 export {
   V1_getFunctionNameWithoutSignature,
   V1_getGenericTypeFullPath,
@@ -542,7 +544,6 @@ export * from './graph-manager/action/changeDetection/DomainObserverHelper.js';
 export * from './graph-manager/action/changeDetection/DSL_Mapping_ObserverHelper.js';
 export * from './graph-manager/action/changeDetection/RawValueSpecificationObserver.js';
 export * from './graph-manager/action/changeDetection/ValueSpecificationObserver.js';
-export * from './graph-manager/action/changeDetection/V1_ValueSpecificationObserver.js';
 export * from './graph-manager/action/changeDetection/STO_Relational_ObserverHelper.js';
 export * from './graph-manager/action/changeDetection/STO_FlatData_ObserverHelper.js';
 export * from './graph-manager/action/changeDetection/GraphObserverHelper.js';

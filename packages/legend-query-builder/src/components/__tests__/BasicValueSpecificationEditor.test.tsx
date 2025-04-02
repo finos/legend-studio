@@ -995,7 +995,7 @@ test(
       expect(enumCollectionValue.values.length).toBe(2);
       const enumNames = enumCollectionValue.values
         .filter((v) => v instanceof EnumValueInstanceValue)
-        .map((v) => (v as EnumValueInstanceValue).values[0]?.value.name);
+        .map((v) => v.values[0]?.value.name);
       expect(enumNames[0]).toBe('CITY');
       expect(enumNames[1]).toContain('COUNTRY');
     }

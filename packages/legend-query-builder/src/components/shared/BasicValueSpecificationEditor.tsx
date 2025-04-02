@@ -276,6 +276,7 @@ interface StringPrimitiveInstanceValueEditorProps<T>
   selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
 }
 
+// eslint-disable-next-line comma-spacing
 const StringPrimitiveInstanceValueEditorInner = <T,>(
   props: StringPrimitiveInstanceValueEditorProps<T>,
   ref: React.ForwardedRef<HTMLInputElement | SelectComponent | null>,
@@ -421,6 +422,7 @@ type BooleanInstanceValueEditorProps<T> = PrimitiveInstanceValueEditorProps<
   boolean
 >;
 
+// eslint-disable-next-line comma-spacing
 const BooleanInstanceValueEditorInner = <T,>(
   props: BooleanInstanceValueEditorProps<T>,
 ): React.ReactElement => {
@@ -470,6 +472,7 @@ interface NumberPrimitiveInstanceValueEditorProps<T>
   isInteger: boolean;
 }
 
+// eslint-disable-next-line comma-spacing
 const NumberPrimitiveInstanceValueEditorInner = <T,>(
   props: NumberPrimitiveInstanceValueEditorProps<T>,
   ref: React.ForwardedRef<HTMLInputElement>,
@@ -486,9 +489,7 @@ const NumberPrimitiveInstanceValueEditorInner = <T,>(
     isInteger,
   } = props;
   const [value, setValue] = useState(
-    valueSelector(valueSpecification) === null
-      ? ''
-      : valueSelector(valueSpecification).toString(),
+    valueSelector(valueSpecification).toString(),
   );
   const inputRef = useRef<HTMLInputElement>(null);
   useImperativeHandle(ref, () => inputRef.current as HTMLInputElement, []);
@@ -531,11 +532,7 @@ const NumberPrimitiveInstanceValueEditorInner = <T,>(
         setValue(calculatedValue.toString());
       } catch {
         // If we fail to evaluate the expression, we just keep the previous value
-        const prevValue =
-          valueSelector(valueSpecification) !== null &&
-          valueSelector(valueSpecification) !== undefined
-            ? valueSelector(valueSpecification).toString()
-            : '';
+        const prevValue = valueSelector(valueSpecification).toString();
         updateValueSpecIfValid(prevValue);
         setValue(prevValue);
       }
@@ -564,10 +561,7 @@ const NumberPrimitiveInstanceValueEditorInner = <T,>(
       !isNaN(numericValue) &&
       numericValue !== valueSelector(valueSpecification)
     ) {
-      const valueFromValueSpec =
-        valueSelector(valueSpecification) !== null
-          ? (valueSelector(valueSpecification) as number).toString()
-          : '';
+      const valueFromValueSpec = valueSelector(valueSpecification).toString();
       setValue(valueFromValueSpec);
     }
   }, [numericValue, valueSpecification, valueSelector]);
@@ -651,6 +645,7 @@ interface EnumInstanceValueEditorProps<T>
   selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
 }
 
+// eslint-disable-next-line comma-spacing
 const EnumInstanceValueEditorInner = <T,>(
   props: EnumInstanceValueEditorProps<T>,
 ): React.ReactElement => {
@@ -1579,8 +1574,10 @@ export const BasicValueSpecificationEditor = forwardRef<
   if (valueSpecification instanceof PrimitiveInstanceValue) {
     const _type = valueSpecification.genericType.value.rawType;
 
+    // eslint-disable-next-line comma-spacing
     const valueSelector = <T,>(val: PrimitiveInstanceValue): T =>
       val.values[0] as T;
+    // eslint-disable-next-line comma-spacing
     const updateValueSpecification = <T,>(
       _valueSpecification: PrimitiveInstanceValue,
       value: T,

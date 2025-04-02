@@ -969,16 +969,12 @@ export const buildDatePickerOption = (
     } else if (valueSpecification instanceof V1_CStrictDate) {
       return new DatePickerOption(
         valueSpecification.value,
-        valueSpecification.value === null
-          ? ''
-          : CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_DATE,
+        CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_DATE,
       );
     } else if (valueSpecification instanceof V1_CDateTime) {
       return new DatePickerOption(
         valueSpecification.value,
-        valueSpecification.value === null
-          ? ''
-          : CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_TIME,
+        CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_TIME,
       );
     }
     throw new Error(

@@ -70,5 +70,7 @@ export const getPrimitiveTypeInstanceFromEnum = (
       return PrimitiveType.LATESTDATE;
     case PRIMITIVE_TYPE.BYTE:
       return PrimitiveType.BYTE;
+    default:
+      throw new Error(`Unable to get PrimitiveType class for type ${type}`);
   }
 };

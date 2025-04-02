@@ -29,8 +29,6 @@ import {
   type V1_ValueSpecification,
   type V1_Variable,
   getMultiplicityDescription,
-  observe_V1_AppliedProperty,
-  observe_V1ValueSpecification,
   PRIMITIVE_TYPE,
   V1_AppliedProperty,
   V1_CBoolean,
@@ -43,6 +41,8 @@ import {
   V1_CStrictDate,
   V1_CString,
   V1_EnumValue,
+  V1_observe_AppliedProperty,
+  V1_observe_ValueSpecification,
   V1_PrimitiveValueSpecification,
 } from '@finos/legend-graph';
 import {
@@ -127,7 +127,7 @@ export const V1_VariableInfoTooltip: React.FC<{
               Type
             </div>
             <div className="value-spec-paramater__tooltip__item__value">
-              {(type as unknown as string) ?? '(unknown)'}
+              {(type as unknown as string | null) ?? '(unknown)'}
             </div>
           </div>
           <div className="value-spec-paramater__tooltip__item">
@@ -351,11 +351,10 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
     }
     // Enum editors should have enumeration passed in the props
     if (enumeration) {
-      const options =
-        enumeration?.values.map((enumValue) => ({
-          label: enumValue.value,
-          value: enumValue.value,
-        })) ?? [];
+      const options = enumeration.values.map((enumValue) => ({
+        label: enumValue.value,
+        value: enumValue.value,
+      }));
       return (
         <EnumInstanceValueEditor<V1_AppliedProperty>
           valueSpecification={guaranteeType(
@@ -421,11 +420,11 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
       );
       if (isPrimitiveType(stringType)) {
         const primitiveVal = _primitiveValue(stringType, text, true);
-        return observe_V1ValueSpecification(primitiveVal);
+        return V1_observe_ValueSpecification(primitiveVal);
       } else {
         // If not a primitive, assume it is an enum
         const typeParam = _elementPtr(stringType);
-        return observe_V1_AppliedProperty(_property(text, [typeParam]));
+        return V1_observe_AppliedProperty(_property(text, [typeParam]));
       }
     };
     const enumOptions = enumeration?.values.map((enumValue) => ({

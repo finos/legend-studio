@@ -27,12 +27,8 @@ export const V1_observe_GenericType = skipObserved(
       hashCode: computed,
     });
 
-    if (metamodel.typeArguments) {
-      metamodel.typeArguments.forEach(V1_observe_GenericType);
-    }
-    if (metamodel.typeVariableValues) {
-      metamodel.typeVariableValues.forEach(V1_observe_ValueSpecification);
-    }
+    metamodel.typeArguments.forEach(V1_observe_GenericType);
+    metamodel.typeVariableValues.forEach(V1_observe_ValueSpecification);
 
     return metamodel;
   },

@@ -21,7 +21,6 @@ import {
   type V1_CDateTime,
   type V1_CStrictDate,
   type V1_ValueSpecification,
-  observe_V1ValueSpecification,
   PRIMITIVE_TYPE,
   V1_AppliedFunction,
   V1_AppliedProperty,
@@ -31,6 +30,7 @@ import {
   V1_Collection,
   V1_CString,
   V1_Multiplicity,
+  V1_observe_ValueSpecification,
   V1_PackageableElementPtr,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
@@ -58,7 +58,7 @@ test(
   async () => {
     const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-    let stringValueSpec = observe_V1ValueSpecification(
+    let stringValueSpec = V1_observe_ValueSpecification(
       _primitiveValue(PRIMITIVE_TYPE.STRING, 'initial value'),
     );
 
@@ -102,7 +102,7 @@ test(
   async () => {
     const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-    let stringValueSpec = observe_V1ValueSpecification(
+    let stringValueSpec = V1_observe_ValueSpecification(
       _primitiveValue(PRIMITIVE_TYPE.STRING, 'initial value'),
     );
 
@@ -159,7 +159,7 @@ test(
   async () => {
     const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-    let integerValueSpec = observe_V1ValueSpecification(
+    let integerValueSpec = V1_observe_ValueSpecification(
       _primitiveValue(PRIMITIVE_TYPE.INTEGER, 42),
     );
 
@@ -198,7 +198,7 @@ test(
   async () => {
     const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-    let floatValueSpec = observe_V1ValueSpecification(
+    let floatValueSpec = V1_observe_ValueSpecification(
       _primitiveValue(PRIMITIVE_TYPE.FLOAT, 10.5),
     );
 
@@ -254,7 +254,7 @@ test(
   async () => {
     const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-    let boolValueSpec = observe_V1ValueSpecification(
+    let boolValueSpec = V1_observe_ValueSpecification(
       _primitiveValue(PRIMITIVE_TYPE.BOOLEAN, false),
     );
 
@@ -294,7 +294,7 @@ test(
   async () => {
     const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-    let dateValueSpec = observe_V1ValueSpecification(
+    let dateValueSpec = V1_observe_ValueSpecification(
       _primitiveValue(PRIMITIVE_TYPE.DATE, '2025-03-28'),
     );
 
@@ -422,6 +422,10 @@ test(
 
     await screen.findByText('Latest Date');
     expect(dateValueSpec instanceof V1_CLatestDate).toBeTruthy();
+
+    // TODO: figure out why entering an Absolute Date updates the
+    // value specification but not the rendered component (note:
+    // the component works fine in practice, just not in the test)
   },
 );
 
@@ -432,7 +436,7 @@ test(
   async () => {
     const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-    let dateValueSpec = observe_V1ValueSpecification(
+    let dateValueSpec = V1_observe_ValueSpecification(
       _primitiveValue(PRIMITIVE_TYPE.DATETIME, '2025-03-28-T12:00:00'),
     );
 
@@ -487,7 +491,7 @@ test(
   async () => {
     const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-    let strictTimeValueSpec = observe_V1ValueSpecification(
+    let strictTimeValueSpec = V1_observe_ValueSpecification(
       _primitiveValue(PRIMITIVE_TYPE.STRICTTIME, '2025-03-28'),
     );
 
@@ -518,7 +522,7 @@ test(
   async () => {
     const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-    let enumValueSpec = observe_V1ValueSpecification(
+    let enumValueSpec = V1_observe_ValueSpecification(
       _property('Mr', [_elementPtr('test::myEnum')]),
     );
     const enumeration = _enumeration('test', 'myEnum', [
@@ -581,7 +585,7 @@ test(
   async () => {
     const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-    let stringCollectionValue = observe_V1ValueSpecification(
+    let stringCollectionValue = V1_observe_ValueSpecification(
       _collection([
         _primitiveValue(PRIMITIVE_TYPE.STRING, 'value1'),
         _primitiveValue(PRIMITIVE_TYPE.STRING, 'value2'),
@@ -645,7 +649,7 @@ test(
   async () => {
     const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-    let integerCollectionValue = observe_V1ValueSpecification(
+    let integerCollectionValue = V1_observe_ValueSpecification(
       _collection([
         _primitiveValue(PRIMITIVE_TYPE.INTEGER, 1),
         _primitiveValue(PRIMITIVE_TYPE.INTEGER, 2),
@@ -711,7 +715,7 @@ test(
   async () => {
     const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-    let floatCollectionValue = observe_V1ValueSpecification(
+    let floatCollectionValue = V1_observe_ValueSpecification(
       _collection([
         _primitiveValue(PRIMITIVE_TYPE.FLOAT, 1.1),
         _primitiveValue(PRIMITIVE_TYPE.FLOAT, 2.2),
@@ -777,7 +781,7 @@ test(
   async () => {
     const pluginManager = TEST__LegendApplicationPluginManager.create();
 
-    let enumCollectionValue = observe_V1ValueSpecification(
+    let enumCollectionValue = V1_observe_ValueSpecification(
       _collection([_property('Mr', [_elementPtr('test::myEnum')])]),
     );
     const enumeration = _enumeration('test', 'myEnum', [
@@ -838,7 +842,7 @@ test(
       ).toBeTruthy();
       const enumNames = enumCollectionValue.values
         .filter((v) => v instanceof V1_AppliedProperty)
-        .map((v) => (v as V1_AppliedProperty).property);
+        .map((v) => v.property);
       expect(enumNames[0]).toBe('Mr');
       expect(enumNames[1]).toContain('Mrs');
     }

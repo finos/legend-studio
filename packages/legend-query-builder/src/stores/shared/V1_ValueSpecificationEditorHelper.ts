@@ -47,8 +47,8 @@ export const getV1_ValueSpecificationStringValue = (
     return buildDatePickerOption(valueSpecification, applicationStore).label;
   } else if (valueSpecification instanceof V1_CString) {
     return options?.wrapStringInDoubleQuotes
-      ? `"${valueSpecification.value?.toString()}"`
-      : valueSpecification.value?.toString();
+      ? `"${valueSpecification.value.toString()}"`
+      : valueSpecification.value.toString();
   } else if (
     valueSpecification instanceof V1_CBoolean ||
     valueSpecification instanceof V1_CByteArray ||
@@ -92,10 +92,7 @@ export const isValidV1_ValueSpecification = (
         valueSpecification instanceof V1_CDateTime ||
         valueSpecification instanceof V1_CStrictDate)
     ) {
-      return (
-        valueSpecification.value !== null &&
-        valueSpecification.value !== undefined
-      );
+      return true;
     }
   } else if (valueSpecification instanceof V1_Collection) {
     // collection instance must have all valid values.

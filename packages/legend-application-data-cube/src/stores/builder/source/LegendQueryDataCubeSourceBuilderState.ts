@@ -30,7 +30,6 @@ import {
   type V1_PureModelContextData,
   type V1_ValueSpecification,
   type V1_Variable,
-  observe_V1ValueSpecification,
   PRIMITIVE_TYPE,
   QuerySearchSpecification,
   V1_CORE_SYSTEM_MODELS,
@@ -39,6 +38,7 @@ import {
   V1_deserializeRawValueSpecificationType,
   V1_Enumeration,
   V1_Lambda,
+  V1_observe_ValueSpecification,
   V1_PackageableType,
   V1_Query,
   V1_serializeValueSpecification,
@@ -181,7 +181,7 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
               );
         queryParameterValues[param.name] = {
           variable: param,
-          value: observe_V1ValueSpecification(defaultValueSpec),
+          value: V1_observe_ValueSpecification(defaultValueSpec),
         };
       }
       const enumerationParameters = queryParameters.filter(
@@ -191,7 +191,8 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
             .map((type) => type.toString())
             .includes(param.genericType.rawType.fullPath),
       );
-      this.populateEnumerations(enumerationParameters, lightQuery);
+      // eslint-disable-next-line no-void
+      void this.populateEnumerations(enumerationParameters, lightQuery);
       runInAction(() => {
         this.query = lightQuery;
         this.queryCode = queryCode;
@@ -279,7 +280,7 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
       const enumerationValue = await this.getEnumerationValues(
         guaranteeNonNullable(
           guaranteeType(param.genericType?.rawType, V1_PackageableType)
-            ?.fullPath,
+            .fullPath,
         ),
         query,
       );
