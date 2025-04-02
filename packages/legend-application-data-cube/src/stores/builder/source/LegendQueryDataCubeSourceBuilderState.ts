@@ -23,22 +23,25 @@ import {
   LogEvent,
 } from '@finos/legend-shared';
 import {
-  QuerySearchSpecification,
+  type Enumeration,
+  type LightQuery,
   type V1_EngineServerClient,
   type V1_PureGraphManager,
-  V1_Query,
-  type LightQuery,
-  V1_Lambda,
-  V1_Variable,
-  V1_ValueSpecification,
-  V1_PackageableType,
+  type V1_PureModelContextData,
+  type V1_ValueSpecification,
+  type V1_Variable,
   observe_V1ValueSpecification,
-  V1_deserializeRawValueSpecificationType,
-  V1_serializeValueSpecification,
-  V1_deserializePackageableElement,
-  Enumeration,
-  V1_Enumeration,
   PRIMITIVE_TYPE,
+  QuerySearchSpecification,
+  V1_CORE_SYSTEM_MODELS,
+  V1_deserializePackageableElement,
+  V1_deserializePureModelContextData,
+  V1_deserializeRawValueSpecificationType,
+  V1_Enumeration,
+  V1_Lambda,
+  V1_PackageableType,
+  V1_Query,
+  V1_serializeValueSpecification,
 } from '@finos/legend-graph';
 import {
   QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT,
@@ -60,10 +63,10 @@ import { APPLICATION_EVENT } from '@finos/legend-application';
 import type { LegendDataCubeDataCubeEngine } from '../../LegendDataCubeDataCubeEngine.js';
 import type { LegendDataCubeApplicationStore } from '../../LegendDataCubeBaseStore.js';
 import {
-  _defaultPrimitiveTypeValue,
-  _primitiveValue,
   type DataCubeAlertService,
   type DataCubeConfiguration,
+  _defaultPrimitiveTypeValue,
+  _primitiveValue,
 } from '@finos/legend-data-cube';
 import type { DepotServerClient } from '@finos/legend-server-depot';
 
@@ -78,6 +81,7 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
   private readonly _engineServerClient: V1_EngineServerClient;
   private readonly _depotServerClient: DepotServerClient;
   private readonly _graphManager: V1_PureGraphManager;
+  private readonly _systemModel: V1_PureModelContextData;
 
   readonly queryLoader: QueryLoaderState;
 
@@ -111,6 +115,9 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
     this._graphManager = graphManager;
     this._engineServerClient = engineServerClient;
     this._depotServerClient = depotServerClient;
+    this._systemModel = V1_deserializePureModelContextData(
+      V1_CORE_SYSTEM_MODELS,
+    );
 
     this.queryLoader = new QueryLoaderState(
       this._application,
@@ -287,6 +294,16 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
     enumerationPath: string,
     query: LightQuery,
   ): Promise<V1_Enumeration> {
+    // First, check if the enumeration exists in the system model
+    const systemEnumeration = this._systemModel.elements.find(
+      (element) =>
+        element.path === enumerationPath && element instanceof V1_Enumeration,
+    );
+    if (systemEnumeration) {
+      return systemEnumeration as V1_Enumeration;
+    }
+
+    // If not in the system model, fetch the enumeration from the depot server
     const enumerationElement = (
       await this._depotServerClient.getVersionEntity(
         query.groupId,

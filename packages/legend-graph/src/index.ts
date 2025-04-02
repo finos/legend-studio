@@ -140,6 +140,7 @@ export {
   RootGraphFetchTree,
   GraphFetchTreeInstanceValue,
 } from './graph/metamodel/pure/valueSpecification/GraphFetchTree.js';
+export { default as V1_CORE_SYSTEM_MODELS } from './graph-manager/protocol/pure/v1/V1_Core_SystemModels.json' with { type: 'json' };
 export { V1_PureGraphManager } from './graph-manager/protocol/pure/v1/V1_PureGraphManager.js';
 export * from './graph-manager/protocol/pure/v1/engine/artifactGeneration/V1_DataSpaceArtifacts.js';
 
