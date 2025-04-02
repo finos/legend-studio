@@ -35,7 +35,6 @@ import {
   type RawMappingModelCoverageAnalysisResult,
   type V1_Enumeration,
   type V1_Multiplicity,
-  type V1_PackageableType,
   type V1_ValueSpecification,
   type ValueSpecification,
   GraphManagerState,
