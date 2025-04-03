@@ -29,4 +29,5 @@ export enum LEGEND_QUERY_APP_EVENT {
   VIEW_SDLC_PROJECT__LAUNCH = 'query-editor.view-sdlc-project.launch',
 
   LOCAL_STORAGE_PERSIST_ERROR = 'LOCAL_STORAGE_PERSIST_ERROR',
+  HOSTED_DATA_CUBE__LAUNCH = 'query-editor.hosted-data-cube.launch',
 }

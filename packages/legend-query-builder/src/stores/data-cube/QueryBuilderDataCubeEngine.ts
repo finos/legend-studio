@@ -44,6 +44,7 @@ import {
   LogService,
   StopWatch,
   type PlainObject,
+  type TimingsRecord,
 } from '@finos/legend-shared';
 import { QueryBuilderTelemetryHelper } from '../../__lib__/QueryBuilderTelemetryHelper.js';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
@@ -52,6 +53,8 @@ class QueryBuilderDataCubeSource extends DataCubeSource {
   mapping?: string | undefined;
   runtime: string | undefined;
 }
+
+export const QUERY_BUILDER_DATA_CUBE_SOURCE_TYPE = 'queryBuilder';
 
 export class QueryBuilderDataCubeEngine extends DataCubeEngine {
   readonly logService = new LogService();
@@ -80,6 +83,32 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     this.runtimePath = runtimePath;
     this.parameterValues = parameterValues;
     this.parameters = selectQuery.parameters;
+  }
+
+  override finalizeTimingRecord(
+    stopWatch: StopWatch,
+    timings?: TimingsRecord,
+  ): TimingsRecord | undefined {
+    if (this.queryBuilderState) {
+      return this.queryBuilderState.applicationStore.timeService.finalizeTimingsRecord(
+        stopWatch,
+        timings,
+      );
+    }
+    return undefined;
+  }
+
+  override getDataFromSource(source?: DataCubeSource): PlainObject {
+    if (source instanceof QueryBuilderDataCubeSource) {
+      return {
+        query: {
+          mapping: source.mapping,
+          runtime: source.runtime,
+        },
+        sourceType: QUERY_BUILDER_DATA_CUBE_SOURCE_TYPE,
+      };
+    }
+    return {};
   }
 
   override async processSource(sourceData: PlainObject) {
@@ -230,6 +259,13 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
         : undefined;
     }
     return undefined;
+  }
+
+  override sendTelemetry(event: string, data: PlainObject) {
+    this.queryBuilderState?.applicationStore.telemetryService.logEvent(
+      event,
+      data,
+    );
   }
 
   // ---------------------------------- UTILITIES ----------------------------------

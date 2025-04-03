@@ -30,6 +30,7 @@ import {
   isPivotResultColumnName,
   getPivotResultColumnBaseColumnName,
   DataCubeOperationAdvancedValueType,
+  DataCubeOpenEditorSource,
 } from '../../core/DataCubeQueryEngine.js';
 import {
   guaranteeIsNumber,
@@ -49,6 +50,7 @@ import { DataCubeEditorTab } from '../editor/DataCubeEditorState.js';
 import { _findCol } from '../../core/model/DataCubeColumn.js';
 import { useGridMenuItem, type CustomMenuItemProps } from 'ag-grid-react';
 import { FormBadge_WIP } from '../../../components/core/DataCubeFormUtils.js';
+import { DataCubeEvent } from '../../../__lib__/DataCubeEvent.js';
 
 export function WIP_GridMenuItem({
   name,
@@ -200,6 +202,57 @@ export function generateMenuBuilder(
   const editor = view.editor;
   const extend = view.extend;
 
+  const logEmail = (format: string) => {
+    view.dataCube.telemetryService.sendTelemetry(DataCubeEvent.EMAIL_DATACUBE, {
+      ...view.engine.getDataFromSource(view.getInitialSource()),
+      emailFormat: format,
+    });
+  };
+
+  const logExport = (format: string) => {
+    view.dataCube.telemetryService.sendTelemetry(
+      DataCubeEvent.EXPORT_DATACUBE,
+      {
+        ...view.engine.getDataFromSource(view.getInitialSource()),
+        exportFormat: format,
+      },
+    );
+  };
+
+  const logOpeningPropertiesEditor = () => {
+    view.dataCube.telemetryService.sendTelemetry(
+      DataCubeEvent.OPEN_EDITOR_PROPERTIES,
+      {
+        ...view.engine.getDataFromSource(view.getInitialSource()),
+        openedFrom: DataCubeOpenEditorSource.GRID_MENU,
+      },
+    );
+  };
+
+  const logOpeningFilterEditor = () => {
+    view.dataCube.telemetryService.sendTelemetry(
+      DataCubeEvent.OPEN_EDITOR_FILTER,
+      {
+        ...view.engine.getDataFromSource(view.getInitialSource()),
+        openedFrom: DataCubeOpenEditorSource.GRID_MENU,
+      },
+    );
+  };
+
+  const logMenuItem = (menuName: string, subMenuName?: string) => {
+    const menuItem =
+      subMenuName === undefined
+        ? { menuName: menuName }
+        : { menuName: menuName, subMenuName: subMenuName };
+    view.dataCube.telemetryService.sendTelemetry(
+      DataCubeEvent.SELECT_ITEM_GRIDMENU,
+      {
+        ...view.engine.getDataFromSource(view.getInitialSource()),
+        ...menuItem,
+      },
+    );
+  };
+
   return (
     params: GetContextMenuItemsParams | GetMainMenuItemsParams,
     fromHeader: boolean,
@@ -230,24 +283,31 @@ export function generateMenuBuilder(
             ? [
                 {
                   name: 'Ascending',
-                  action: () =>
+                  action: () => {
                     controller.setSortByColumn(
                       columnName,
                       DataCubeQuerySortDirection.ASCENDING,
-                    ),
+                    );
+                    logMenuItem('Sort', 'Ascending');
+                  },
                 },
                 {
                   name: 'Descending',
-                  action: () =>
+                  action: () => {
                     controller.setSortByColumn(
                       columnName,
                       DataCubeQuerySortDirection.DESCENDING,
-                    ),
+                    );
+                    logMenuItem('Sort', 'Descending');
+                  },
                 },
                 {
                   name: 'Clear Sort',
                   disabled: !_findCol(controller.sortColumns, columnName),
-                  action: () => controller.clearSortByColumn(columnName),
+                  action: () => {
+                    controller.clearSortByColumn(columnName);
+                    logMenuItem('Sort', 'Clear Sort');
+                  },
                 },
                 'separator',
                 {
@@ -259,11 +319,13 @@ export function generateMenuBuilder(
                         col.direction === DataCubeQuerySortDirection.ASCENDING,
                     ),
                   ),
-                  action: () =>
+                  action: () => {
                     controller.addSortByColumn(
                       columnName,
                       DataCubeQuerySortDirection.ASCENDING,
-                    ),
+                    );
+                    logMenuItem('Sort', 'Add Ascending');
+                  },
                 },
                 {
                   name: 'Add Descending',
@@ -274,11 +336,13 @@ export function generateMenuBuilder(
                         col.direction === DataCubeQuerySortDirection.DESCENDING,
                     ),
                   ),
-                  action: () =>
+                  action: () => {
                     controller.addSortByColumn(
                       columnName,
                       DataCubeQuerySortDirection.DESCENDING,
-                    ),
+                    );
+                    logMenuItem('Sort', 'Add Descending');
+                  },
                 },
                 'separator',
               ]
@@ -286,7 +350,10 @@ export function generateMenuBuilder(
           {
             name: 'Clear All Sorts',
             disabled: controller.sortColumns.length === 0,
-            action: () => controller.clearAllSorts(),
+            action: () => {
+              controller.clearAllSorts();
+              logMenuItem('Clear All Sorts');
+            },
           },
         ],
       },
@@ -395,17 +462,21 @@ export function generateMenuBuilder(
           },
           {
             name: 'Excel',
-            action: () =>
+            action: () => {
               view.grid.exportEngine.exportFile(
                 DataCubeGridClientExportFormat.EXCEL,
-              ),
+              );
+              logExport(DataCubeGridClientExportFormat.EXCEL);
+            },
           },
           {
             name: 'CSV',
-            action: () =>
+            action: () => {
               view.grid.exportEngine.exportFile(
                 DataCubeGridClientExportFormat.CSV,
-              ),
+              );
+              logExport(DataCubeGridClientExportFormat.CSV);
+            },
           },
           'separator',
           {
@@ -458,6 +529,7 @@ export function generateMenuBuilder(
                 .catch((error) =>
                   dataCube.alertService.alertUnhandledError(error),
                 );
+              logEmail(DataCubeGridClientExportFormat.EXCEL);
             },
           },
           {
@@ -468,6 +540,7 @@ export function generateMenuBuilder(
                 .catch((error) =>
                   dataCube.alertService.alertUnhandledError(error),
                 );
+              logEmail(DataCubeGridClientExportFormat.CSV);
             },
           },
           {
@@ -514,11 +587,15 @@ export function generateMenuBuilder(
             name: 'Filters...',
             action: () => {
               filter.display.open();
+              logOpeningFilterEditor();
             },
           },
           {
             name: 'Clear All Filters',
-            action: () => controller.clearFilters(),
+            action: () => {
+              controller.clearFilters();
+              logMenuItem('Filter', 'Clear All Filters');
+            },
           },
         ].filter(isNonNullable),
       },
@@ -532,14 +609,20 @@ export function generateMenuBuilder(
             ? [
                 {
                   name: `Vertical Pivot on ${columnName}`,
-                  action: () => controller.setVerticalPivotOnColumn(columnName),
+                  action: () => {
+                    controller.setVerticalPivotOnColumn(columnName);
+                    logMenuItem('Pivot', 'Vertical Pivot');
+                  },
                 },
                 {
                   name: `Add Vertical Pivot on ${columnName}`,
                   disabled: Boolean(
                     _findCol(controller.verticalPivotColumns, columnName),
                   ),
-                  action: () => controller.addVerticalPivotOnColumn(columnName),
+                  action: () => {
+                    controller.addVerticalPivotOnColumn(columnName);
+                    logMenuItem('Pivot', 'Add Vertical Pivot');
+                  },
                 },
                 {
                   name: `Remove Vertical Pivot on ${columnName}`,
@@ -547,8 +630,10 @@ export function generateMenuBuilder(
                     controller.verticalPivotColumns,
                     columnName,
                   ),
-                  action: () =>
-                    controller.removeVerticalPivotOnColumn(columnName),
+                  action: () => {
+                    controller.removeVerticalPivotOnColumn(columnName);
+                    logMenuItem('Pivot', 'Remove Vertical Pivot');
+                  },
                 },
                 'separator',
               ]
@@ -560,16 +645,20 @@ export function generateMenuBuilder(
             ? [
                 {
                   name: `Horizontal Pivot on ${columnName}`,
-                  action: () =>
-                    controller.setHorizontalPivotOnColumn(columnName),
+                  action: () => {
+                    controller.setHorizontalPivotOnColumn(columnName);
+                    logMenuItem('Pivot', 'Horizontal Pivot');
+                  },
                 },
                 {
                   name: `Add Horizontal Pivot on ${columnName}`,
                   disabled: Boolean(
                     _findCol(controller.horizontalPivotColumns, columnName),
                   ),
-                  action: () =>
-                    controller.addHorizontalPivotOnColumn(columnName),
+                  action: () => {
+                    controller.addHorizontalPivotOnColumn(columnName);
+                    logMenuItem('Pivot', 'Add Horizontal Pivot');
+                  },
                 },
                 'separator',
               ]
@@ -582,8 +671,13 @@ export function generateMenuBuilder(
             ? [
                 {
                   name: `Exclude Column ${baseColumnConfiguration.name} from Horizontal Pivot`,
-                  action: () =>
-                    controller.excludeColumnFromHorizontalPivot(columnName),
+                  action: () => {
+                    controller.excludeColumnFromHorizontalPivot(columnName);
+                    logMenuItem(
+                      'Pivot',
+                      'Exclude Column From Horizontal Pivot',
+                    );
+                  },
                 },
                 'separator',
               ]
@@ -596,8 +690,10 @@ export function generateMenuBuilder(
             ? [
                 {
                   name: `Include Column ${columnName} in Horizontal Pivot`,
-                  action: () =>
-                    controller.includeColumnInHorizontalPivot(columnName),
+                  action: () => {
+                    controller.includeColumnInHorizontalPivot(columnName);
+                    logMenuItem('Pivot', 'Include Column in Horizontal Pivot');
+                  },
                 },
                 'separator',
               ]
@@ -605,12 +701,18 @@ export function generateMenuBuilder(
           {
             name: `Clear All Vertical Pivots`,
             disabled: controller.verticalPivotColumns.length === 0,
-            action: () => controller.clearAllVerticalPivots(),
+            action: () => {
+              controller.clearAllVerticalPivots();
+              logMenuItem('Pivot', 'Clear All Vertical Pivots');
+            },
           },
           {
             name: `Clear All Horizontal Pivots`,
             disabled: controller.horizontalPivotColumns.length === 0,
-            action: () => controller.clearAllHorizontalPivots(),
+            action: () => {
+              controller.clearAllHorizontalPivots();
+              logMenuItem('Pivot', 'Clear All Horizontal Pivots');
+            },
           },
         ],
       },
@@ -625,6 +727,7 @@ export function generateMenuBuilder(
                 .catch((error) =>
                   dataCube.alertService.alertUnhandledError(error),
                 );
+              logMenuItem('Extended Columns', 'Add New Column...');
             },
           },
           ...(columnConfiguration && columnName
@@ -637,6 +740,7 @@ export function generateMenuBuilder(
                       .catch((error) =>
                         dataCube.alertService.alertUnhandledError(error),
                       );
+                    logMenuItem('Extended Columns', 'Extend Column');
                   },
                 },
               ]
@@ -652,6 +756,7 @@ export function generateMenuBuilder(
                       .catch((error) =>
                         dataCube.alertService.alertUnhandledError(error),
                       );
+                    logMenuItem('Extended Columns', 'Edit Column');
                   },
                 },
                 {
@@ -662,6 +767,7 @@ export function generateMenuBuilder(
                       .catch((error) =>
                         dataCube.alertService.alertUnhandledError(error),
                       );
+                    logMenuItem('Extended Columns', 'Delete Column');
                   },
                 },
               ]
@@ -678,10 +784,12 @@ export function generateMenuBuilder(
               !column ||
               !columnConfiguration ||
               columnConfiguration.fixedWidth !== undefined,
-            action: () =>
+            action: () => {
               params.api.autoSizeColumns(
                 [column?.getColId()].filter(isNonNullable),
-              ),
+              );
+              logMenuItem('Resize', 'Auto-size to Fit Content');
+            },
           },
           {
             name: `Minimize Column`,
@@ -699,12 +807,13 @@ export function generateMenuBuilder(
                   },
                 ]);
               }
+              logMenuItem('Resize', 'Minimize Column');
             },
           },
           'separator',
           {
             name: `Auto-size All Columns`,
-            action: () =>
+            action: () => {
               params.api.autoSizeColumns([
                 ...controller.configuration.columns
                   .filter(
@@ -733,7 +842,9 @@ export function generateMenuBuilder(
                     return undefined;
                   })
                   .filter(isNonNullable),
-              ]),
+              ]);
+              logMenuItem('Resize', 'Auto-size All Columns');
+            },
           },
           {
             name: `Minimize All Columns`,
@@ -770,11 +881,15 @@ export function generateMenuBuilder(
                   })
                   .filter(isNonNullable),
               ]);
+              logMenuItem('Resize', 'Minimize All Columns');
             },
           },
           {
             name: `Size Grid to Fit Screen`,
-            action: () => params.api.sizeColumnsToFit(),
+            action: () => {
+              params.api.sizeColumnsToFit();
+              logMenuItem('Resize', 'Size Grid to Fit Screen');
+            },
           },
         ],
       },
@@ -787,26 +902,33 @@ export function generateMenuBuilder(
                   name: `Pin Left`,
                   disabled: !column || column.isPinnedLeft(),
                   checked: Boolean(column?.isPinnedLeft()),
-                  action: () =>
+                  action: () => {
                     controller.pinColumn(
                       columnName,
                       DataCubeColumnPinPlacement.LEFT,
-                    ),
+                    );
+                    logMenuItem('Pin', 'Pin Left');
+                  },
                 },
                 {
                   name: `Pin Right`,
                   disabled: !column || column.isPinnedRight(),
                   checked: Boolean(column?.isPinnedRight()),
-                  action: () =>
+                  action: () => {
                     controller.pinColumn(
                       columnName,
                       DataCubeColumnPinPlacement.RIGHT,
-                    ),
+                    );
+                    logMenuItem('Pin', 'Pin Right');
+                  },
                 },
                 {
                   name: `Unpin`,
                   disabled: !column?.isPinned(),
-                  action: () => controller.pinColumn(columnName, undefined),
+                  action: () => {
+                    controller.pinColumn(columnName, undefined);
+                    logMenuItem('Pin', 'Unpin');
+                  },
                 },
                 'separator',
               ]
@@ -816,14 +938,20 @@ export function generateMenuBuilder(
             disabled: controller.configuration.columns.every(
               (col) => col.pinned === undefined,
             ),
-            action: () => controller.removeAllPins(),
+            action: () => {
+              controller.removeAllPins();
+              logMenuItem('Pin', 'Remove All Pinnings');
+            },
           },
         ],
       },
       {
         name: 'Hide',
         disabled: !columnConfiguration,
-        action: () => controller.showColumn(columnName, false),
+        action: () => {
+          controller.showColumn(columnName, false);
+          logMenuItem('Hide');
+        },
       },
       ...((columnName === INTERNAL__GRID_CLIENT_TREE_COLUMN_ID
         ? [
@@ -886,6 +1014,7 @@ export function generateMenuBuilder(
             );
           }
           editor.display.open();
+          logOpeningPropertiesEditor();
         },
       },
     ] satisfies (DefaultMenuItem | MenuItemDef)[];

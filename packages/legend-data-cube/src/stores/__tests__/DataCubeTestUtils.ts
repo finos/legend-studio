@@ -28,6 +28,8 @@ import {
   assertErrorThrown,
   HttpStatus,
   type PlainObject,
+  type TimingsRecord,
+  type StopWatch,
 } from '@finos/legend-shared';
 import {
   DataCubeEngine,
@@ -46,6 +48,17 @@ import {
 import { deserialize } from 'serializr';
 
 export class TEST__DataCubeEngine extends DataCubeEngine {
+  override getDataFromSource(source?: DataCubeSource): PlainObject {
+    throw new Error('Method not implemented.');
+  }
+
+  override finalizeTimingRecord(
+    stopWatch: StopWatch,
+    timings?: TimingsRecord,
+  ): TimingsRecord {
+    throw new Error('Method not implemented.');
+  }
+
   override async processSource(
     sourceData: PlainObject,
   ): Promise<DataCubeSource> {

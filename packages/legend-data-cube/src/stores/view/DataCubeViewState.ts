@@ -46,6 +46,7 @@ import type { DataCubeSettingService } from '../services/DataCubeSettingService.
 import { CachedDataCubeSource } from '../core/model/CachedDataCubeSource.js';
 import { DataCubeSettingKey } from '../../__lib__/DataCubeSetting.js';
 import { PureClientVersion } from '@finos/legend-graph';
+import { DataCubeEvent } from '../../__lib__/DataCubeEvent.js';
 
 export class DataCubeViewState {
   readonly dataCube: DataCubeState;
@@ -253,6 +254,16 @@ export class DataCubeViewState {
         this.engine,
       );
 
+      const logAlertAction = (cachingEnabled: boolean) => {
+        this.dataCube.telemetryService.sendTelemetry(
+          DataCubeEvent.SELECT_ACTION_CACHE_LOAD_ALERT,
+          {
+            ...this.engine.getDataFromSource(this._initialSource),
+            keepCachingEnabled: cachingEnabled,
+          },
+        );
+      };
+
       // auto-enable cache if specified before broadcasting the first snapshot
       // so first data-fetches will be against cache
       if (specification.options?.autoEnableCache) {
@@ -273,11 +284,14 @@ export class DataCubeViewState {
             actions: [
               {
                 label: 'OK',
-                handler: () => {},
+                handler: () => {
+                  logAlertAction(true);
+                },
               },
               {
                 label: 'Disable Caching',
                 handler: () => {
+                  logAlertAction(false);
                   this.grid
                     .setCachingEnabled(false, {
                       suppressWarning: true,
@@ -290,6 +304,7 @@ export class DataCubeViewState {
               {
                 label: 'Dismiss Warning',
                 handler: () => {
+                  logAlertAction(true);
                   this.settingService.updateValue(
                     this.dataCube.api,
                     DataCubeSettingKey.GRID_CLIENT__SHOW_AUTO_ENABLE_CACHE_PERFORMANCE_WARNING,

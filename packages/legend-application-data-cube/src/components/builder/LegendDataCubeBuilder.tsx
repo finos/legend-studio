@@ -24,6 +24,8 @@ import {
   DataCubePlaceholderErrorDisplay,
   type DataCubeMenuItem,
   DataCubeSpecification,
+  DataCubeEvent,
+  DataCubeTitleBarMenuItems,
 } from '@finos/legend-data-cube';
 import {} from '@finos/legend-art';
 import {
@@ -175,14 +177,24 @@ function generateMenuItems(store: LegendDataCubeBuilderStore) {
   const builder = store.builder;
   const persistentDataCube = builder?.persistentDataCube;
 
+  const logMenuItem = (menuName: string) => {
+    store.engine.sendTelemetry(DataCubeEvent.SELECT_ITEM_TITLE_BAR, {
+      ...store.engine.getDataFromSource(
+        builder?.dataCube?.getProcessedSource(),
+      ),
+      menuName: menuName,
+    });
+  };
+
   const menuItems: (DataCubeMenuItem | DataCubeNativeMenuItem)[] = builder
     ? [
         ...(builder.source
           ? [
               {
-                label: 'View Source',
+                label: DataCubeTitleBarMenuItems.VIEW_SOURCE,
                 action: () => {
                   store.sourceViewerDisplay.open();
+                  logMenuItem(DataCubeTitleBarMenuItems.VIEW_SOURCE);
                 },
               },
             ]
@@ -190,7 +202,7 @@ function generateMenuItems(store: LegendDataCubeBuilderStore) {
         ...(persistentDataCube
           ? [
               {
-                label: 'Reset to Latest Save',
+                label: DataCubeTitleBarMenuItems.RESET_TO_LATEST_SAVE,
                 action: () => {
                   const latestSpecification =
                     DataCubeSpecification.serialization.fromJson(
@@ -201,22 +213,25 @@ function generateMenuItems(store: LegendDataCubeBuilderStore) {
                     .catch((error) =>
                       store.alertService.alertUnhandledError(error),
                     );
+                  logMenuItem(DataCubeTitleBarMenuItems.VIEW_SOURCE);
                 },
               },
               {
-                label: 'Update Info...',
+                label: DataCubeTitleBarMenuItems.UPDATE_INFO,
                 action: () => {
                   // effectively, we open the save window to let user update the DataCube info, such as name, auto-enable caching, etc.
                   store.saverDisplay.open();
+                  logMenuItem(DataCubeTitleBarMenuItems.UPDATE_INFO);
                 },
                 disabled:
                   !store.canCurrentUserManageDataCube(persistentDataCube),
               },
               {
-                label: 'Delete DataCube...',
+                label: DataCubeTitleBarMenuItems.DELETE_DATACUBE,
                 action: () => {
                   store.setDataCubeToDelete(builder.persistentDataCube);
                   store.deleteConfirmationDisplay.open();
+                  logMenuItem(DataCubeTitleBarMenuItems.DELETE_DATACUBE);
                 },
                 disabled:
                   !store.canCurrentUserManageDataCube(persistentDataCube),
@@ -230,7 +245,7 @@ function generateMenuItems(store: LegendDataCubeBuilderStore) {
       ? [...menuItems, DataCubeNativeMenuItem.SEPARATOR]
       : []),
     {
-      label: 'See Documentation',
+      label: DataCubeTitleBarMenuItems.SEE_DOCUMENTATION,
       action: () => {
         const url = application.documentationService.url;
         if (url) {
@@ -238,13 +253,15 @@ function generateMenuItems(store: LegendDataCubeBuilderStore) {
             application.documentationService.url,
           );
         }
+        logMenuItem(DataCubeTitleBarMenuItems.SEE_DOCUMENTATION);
       },
       disabled: !application.documentationService.url,
     },
     {
-      label: 'About',
+      label: DataCubeTitleBarMenuItems.ABOUT,
       action: () => {
         store.aboutDisplay.open();
+        logMenuItem(DataCubeTitleBarMenuItems.ABOUT);
       },
     },
   ];

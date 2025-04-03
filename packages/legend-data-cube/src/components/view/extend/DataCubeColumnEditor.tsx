@@ -37,6 +37,7 @@ import { useDataCube } from '../../DataCubeProvider.js';
 import { useMemo, useRef } from 'react';
 import { debounce } from '@finos/legend-shared';
 import { DataCubeCodeEditor } from './DataCubeCodeEditor.js';
+import { DataCubeEvent } from '../../../__lib__/DataCubeEvent.js';
 
 enum DataCubeExtendedColumnKind {
   LEAF_LEVEL_MEASURE = 'Leaf Level Measure',
@@ -69,6 +70,13 @@ export const DataCubeColumnCreator = observer(
       typeDropdownProps,
       typeDropPropsOpen,
     ] = useDropdownMenu();
+
+    const logAddingNewColumn = (): void => {
+      view.dataCube.telemetryService.sendTelemetry(
+        DataCubeEvent.ADD_NEW_COLUMN,
+        view.engine.getDataFromSource(view.getInitialSource()),
+      );
+    };
 
     const debouncedCheckReturnType = useMemo(
       () =>
@@ -262,6 +270,7 @@ export const DataCubeColumnCreator = observer(
                 .catch((error) =>
                   dataCube.alertService.alertUnhandledError(error),
                 );
+              logAddingNewColumn();
             }}
           >
             OK

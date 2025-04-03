@@ -71,6 +71,13 @@ export class LegendQueryTelemetryHelper {
     service.logEvent(LEGEND_QUERY_APP_EVENT.CREATE_QUERY__SUCCESS, data);
   }
 
+  static logEvent_HostedDataCubeLaunched(
+    service: TelemetryService,
+    data: Query_TelemetryData,
+  ): void {
+    service.logEvent(LEGEND_QUERY_APP_EVENT.HOSTED_DATA_CUBE__LAUNCH, data);
+  }
+
   static logEvent_UpdateQuerySucceeded(
     service: TelemetryService,
     data: Query_TelemetryData,

@@ -17,6 +17,7 @@
 import {
   debounce,
   guaranteeNonNullable,
+  StopWatch,
   type DebouncedFunc,
 } from '@finos/legend-shared';
 import { action, makeObservable, observable, runInAction } from 'mobx';
@@ -41,7 +42,7 @@ import { DataCubeSettingKey } from '../../../__lib__/DataCubeSetting.js';
 import { DEFAULT_ALERT_WINDOW_CONFIG } from '../../services/DataCubeLayoutService.js';
 import { AlertType } from '../../services/DataCubeAlertService.js';
 import { DataCubeGridMode } from '../../core/DataCubeQueryEngine.js';
-
+import { DataCubeEvent } from '../../../__lib__/DataCubeEvent.js';
 /**
  * This query editor state is responsible for syncing the internal state of ag-grid
  * server-side row model data source with the data cube query state. When new snapshot
@@ -124,6 +125,13 @@ export class DataCubeGridState extends DataCubeSnapshotController {
         ? INTERNAL__GRID_CLIENT_DEFAULT_CACHE_BLOCK_SIZE
         : INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE,
     });
+
+    this._engine.sendTelemetry(
+      val
+        ? DataCubeEvent.PAGINATION_ENABLE__SUCCESS
+        : DataCubeEvent.PAGINATION_DISABLE__SUCCESS,
+      this._engine.getDataFromSource(this._view.getInitialSource()),
+    );
   }
 
   async setCachingEnabled(
@@ -138,6 +146,7 @@ export class DataCubeGridState extends DataCubeSnapshotController {
 
     // disable caching
     if (val === false) {
+      const stopWatch = new StopWatch();
       await this._view.disposeCache();
 
       runInAction(() => {
@@ -150,11 +159,17 @@ export class DataCubeGridState extends DataCubeSnapshotController {
         );
       });
 
+      this._engine.sendTelemetry(DataCubeEvent.CACHING_DISABLE__SUCCESS, {
+        ...this._engine.getDataFromSource(this._view.getInitialSource()),
+        timings: this._engine.finalizeTimingRecord(stopWatch),
+      });
+
       return;
     }
 
     // enable caching
     const run = async () => {
+      const stopWatch = new StopWatch();
       await this._view.initializeCache();
 
       // only update value if cache processing succeeds
@@ -169,6 +184,11 @@ export class DataCubeGridState extends DataCubeSnapshotController {
           );
         });
       }
+
+      this._engine.sendTelemetry(DataCubeEvent.CACHING_ENABLE__SUCCESS, {
+        ...this._engine.getDataFromSource(this._view.getInitialSource()),
+        timings: this._engine.finalizeTimingRecord(stopWatch),
+      });
     };
 
     // TODO?: we might want to do a quick check here for the amount of data the cache
