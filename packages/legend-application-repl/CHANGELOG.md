@@ -1,5 +1,11 @@
 # @finos/legend-application-repl
 
+## 1.1.18
+
+### Patch Changes
+
+- [#3972](https://github.com/finos/legend-studio/pull/3972) [`419298f`](https://github.com/finos/legend-studio/commit/419298f76a6921b5a8a178b5f3bd68febef36c30) ([@yash0024](https://github.com/yash0024)) - Add more Analytics for DataCube
+
 ## 1.1.17
 
 ## 1.1.16

@@ -1,5 +1,7 @@
 # @finos/legend-application-catalog-deployment
 
+## 13.41.0
+
 ## 13.40.0
 
 ## 13.39.0
