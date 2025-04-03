@@ -44,6 +44,8 @@ import {
   LogEvent,
   NetworkClientError,
   type PlainObject,
+  type TimingsRecord,
+  type StopWatch,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import {
@@ -107,6 +109,17 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
         );
       }
     }
+  }
+
+  override getDataFromSource(source?: DataCubeSource): PlainObject {
+    return {};
+  }
+
+  override finalizeTimingRecord(
+    stopWatch: StopWatch,
+    timings?: TimingsRecord,
+  ): TimingsRecord | undefined {
+    return undefined;
   }
 
   override async parseValueSpecification(
@@ -302,6 +315,6 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
   }
 
   override sendTelemetry(event: string, data: PlainObject) {
-    this._application.telemetryService.logEvent(event, data);
+    // do nothing
   }
 }

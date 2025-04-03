@@ -56,6 +56,7 @@ import {
 } from '../../core/DataCubeEngine.js';
 import { _lambda } from '../../core/DataCubeQueryBuilderUtils.js';
 import { sum } from 'mathjs';
+import { DataCubeEvent } from '../../../__lib__/DataCubeEvent.js';
 
 type DataCubeGridClientCellValue = string | number | boolean | null | undefined;
 type DataCubeGridClientRowData = {
@@ -418,6 +419,16 @@ export class DataCubeGridClientServerSideDataSource
     let result: DataCubeExecutionResult;
     let rowData: DataCubeGridClientRowData[];
 
+    const logAlertAction = (paginationDisabled: boolean) => {
+      this._view.dataCube.telemetryService.sendTelemetry(
+        DataCubeEvent.SELECT_ACTION_PAGINATION_ALERT,
+        {
+          ...this._view.engine.getDataFromSource(this._view.getInitialSource()),
+          keepPaginationDisabled: paginationDisabled,
+        },
+      );
+    };
+
     try {
       result = await this._view.engine.executeQuery(
         _lambda([], [executableQuery]),
@@ -514,6 +525,7 @@ export class DataCubeGridClientServerSideDataSource
                 label: 'Enable Pagination',
                 handler: () => {
                   this._grid.setPaginationEnabled(true);
+                  logAlertAction(false);
                 },
               },
               {
@@ -524,6 +536,7 @@ export class DataCubeGridClientServerSideDataSource
                     DataCubeSettingKey.GRID_CLIENT__SUPPRESS_LARGE_DATASET_WARNING,
                     true,
                   );
+                  logAlertAction(true);
                 },
               },
             ],

@@ -487,6 +487,24 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
                 dataCubeUrl,
               );
             }
+            if (
+              editorStore instanceof ExistingQueryEditorStore &&
+              editorStore.query
+            ) {
+              const query = editorStore.query;
+              LegendQueryTelemetryHelper.logEvent_HostedDataCubeLaunched(
+                editorStore.applicationStore.telemetryService,
+                {
+                  query: {
+                    name: query.name,
+                    id: query.id,
+                    groupId: query.groupId,
+                    artifactId: query.artifactId,
+                    versionId: query.versionId,
+                  },
+                },
+              );
+            }
           }
         },
         icon: <CubeIcon />,

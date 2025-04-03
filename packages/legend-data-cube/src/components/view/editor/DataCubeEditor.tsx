@@ -27,6 +27,7 @@ import type { DataCubeViewState } from '../../../stores/view/DataCubeViewState.j
 import { FormButton } from '../../core/DataCubeFormUtils.js';
 import { useDataCube } from '../../DataCubeProvider.js';
 import { DataCubeEditorDimensionsPanel } from './DataCubeEditorDimensionsPanel.js';
+import { DataCubeEvent } from '../../../__lib__/DataCubeEvent.js';
 
 export const DataCubeEditor = observer((props: { view: DataCubeViewState }) => {
   const dataCube = useDataCube();
@@ -44,6 +45,13 @@ export const DataCubeEditor = observer((props: { view: DataCubeViewState }) => {
     DataCubeEditorTab.GENERAL_PROPERTIES,
     DataCubeEditorTab.COLUMN_PROPERTIES,
   ];
+
+  const logApplyChangesFromPropertiesEditor = (): void => {
+    view.dataCube.telemetryService.sendTelemetry(
+      DataCubeEvent.APPLY_CHANGES_PROPERTIES,
+      view.engine.getDataFromSource(view.getInitialSource()),
+    );
+  };
 
   return (
     <>
@@ -94,6 +102,7 @@ export const DataCubeEditor = observer((props: { view: DataCubeViewState }) => {
           className="ml-2"
           disabled={editor.finalizationState.isInProgress}
           onClick={() => {
+            logApplyChangesFromPropertiesEditor();
             editor
               .applyChanges()
               .catch((error) => alertService.alertUnhandledError(error));
@@ -105,6 +114,7 @@ export const DataCubeEditor = observer((props: { view: DataCubeViewState }) => {
           className="ml-2"
           disabled={editor.finalizationState.isInProgress}
           onClick={() => {
+            logApplyChangesFromPropertiesEditor();
             editor
               .applyChanges({ closeAfterApply: true })
               .catch((error) => alertService.alertUnhandledError(error));

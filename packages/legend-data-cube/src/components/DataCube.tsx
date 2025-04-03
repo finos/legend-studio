@@ -25,15 +25,29 @@ import { type DataCubeOptions } from '../stores/DataCubeOptions.js';
 import { DataCubeContextProvider, useDataCube } from './DataCubeProvider.js';
 import type { DataCubeSpecification } from '../stores/core/model/DataCubeSpecification.js';
 import { DataCubeTitleBar } from './DataCubeTitleBar.js';
-import { DEFAULT_REPORT_NAME } from '../stores/core/DataCubeQueryEngine.js';
+import {
+  DataCubeTitleBarMenuItems,
+  DEFAULT_REPORT_NAME,
+} from '../stores/core/DataCubeQueryEngine.js';
 import {
   DataCubePlaceholderErrorDisplay,
   DataCubePlaceholder,
 } from './DataCubePlaceholder.js';
+import { DataCubeEvent } from '../__lib__/DataCubeEvent.js';
 
 const DataCubeRoot = observer(() => {
   const dataCube = useDataCube();
   const view = dataCube.view;
+
+  const logMenuItem = (menuName: string) => {
+    view.dataCube.telemetryService.sendTelemetry(
+      DataCubeEvent.SELECT_ITEM_TITLE_BAR,
+      {
+        ...view.engine.getDataFromSource(view.getInitialSource()),
+        menuName: menuName,
+      },
+    );
+  };
 
   useEffect(() => {
     dataCube.view
@@ -47,18 +61,27 @@ const DataCubeRoot = observer(() => {
         title={view.info.name}
         menuItems={[
           {
-            label: 'Undo',
-            action: () => dataCube.view.snapshotService.undo(),
+            label: DataCubeTitleBarMenuItems.UNDO,
+            action: () => {
+              dataCube.view.snapshotService.undo();
+              logMenuItem(DataCubeTitleBarMenuItems.UNDO);
+            },
             disabled: !dataCube.view.snapshotService.canUndo,
           },
           {
-            label: 'Redo',
-            action: () => dataCube.view.snapshotService.redo(),
+            label: DataCubeTitleBarMenuItems.REDO,
+            action: () => {
+              dataCube.view.snapshotService.redo();
+              logMenuItem(DataCubeTitleBarMenuItems.REDO);
+            },
             disabled: !dataCube.view.snapshotService.canRedo,
           },
           {
-            label: 'Settings...',
-            action: () => dataCube.settingService.display.open(),
+            label: DataCubeTitleBarMenuItems.SETTINGS,
+            action: () => {
+              dataCube.settingService.display.open();
+              logMenuItem(DataCubeTitleBarMenuItems.SETTINGS);
+            },
           },
         ]}
         getMenuItems={dataCube.options?.getHeaderMenuItems}

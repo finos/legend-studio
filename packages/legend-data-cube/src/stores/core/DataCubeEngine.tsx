@@ -83,6 +83,8 @@ import {
   type DocumentationEntry,
   type LogEvent,
   type PlainObject,
+  type TimingsRecord,
+  type StopWatch,
 } from '@finos/legend-shared';
 import type { CachedDataCubeSource } from './model/CachedDataCubeSource.js';
 import { DataCubeSpecification } from './model/DataCubeSpecification.js';
@@ -241,6 +243,13 @@ export abstract class DataCubeEngine {
   // ---------------------------------- PROCESSOR ----------------------------------
 
   abstract processSource(sourceData: PlainObject): Promise<DataCubeSource>;
+
+  abstract getDataFromSource(source?: DataCubeSource): PlainObject;
+
+  abstract finalizeTimingRecord(
+    stopWatch: StopWatch,
+    timings?: TimingsRecord,
+  ): TimingsRecord | undefined;
 
   abstract parseValueSpecification(
     code: string,

@@ -49,6 +49,7 @@ import { formatDate, guaranteeIsNumber, parseISO } from '@finos/legend-shared';
 import { evaluate } from 'mathjs';
 import { useDataCube } from '../../DataCubeProvider.js';
 import { _findCol } from '../../../stores/core/model/DataCubeColumn.js';
+import { DataCubeEvent } from '../../../__lib__/DataCubeEvent.js';
 
 const FILTER_TREE_OFFSET = 10;
 const FILTER_TREE_INDENTATION_SPACE = 36;
@@ -818,6 +819,13 @@ export const DataCubeFilterEditor = observer(
     const { view } = props;
     const editor = view.filter;
 
+    const logApplyChangesFromFilterEditor = (): void => {
+      view.dataCube.telemetryService.sendTelemetry(
+        DataCubeEvent.APPLY_CHANGES_FILTER,
+        view.engine.getDataFromSource(view.getInitialSource()),
+      );
+    };
+
     useEffect(() => {
       editor.setSelectedNode(undefined);
     }, [editor]);
@@ -872,7 +880,13 @@ export const DataCubeFilterEditor = observer(
         </div>
         <div className="flex h-10 items-center justify-end px-2">
           <FormButton onClick={() => editor.display.close()}>Cancel</FormButton>
-          <FormButton className="ml-2" onClick={() => editor.applyChanges()}>
+          <FormButton
+            className="ml-2"
+            onClick={() => {
+              editor.applyChanges();
+              logApplyChangesFromFilterEditor();
+            }}
+          >
             Apply
           </FormButton>
           <FormButton
@@ -880,6 +894,7 @@ export const DataCubeFilterEditor = observer(
             onClick={() => {
               editor.applyChanges();
               editor.display.close();
+              logApplyChangesFromFilterEditor();
             }}
           >
             OK

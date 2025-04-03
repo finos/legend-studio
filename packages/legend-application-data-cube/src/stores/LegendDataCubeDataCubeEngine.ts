@@ -112,6 +112,7 @@ import {
   LogEvent,
   UnsupportedOperationError,
   type PlainObject,
+  type StopWatch,
   assertErrorThrown,
   NetworkClientError,
   HttpStatus,
@@ -120,6 +121,7 @@ import {
   guaranteeType,
   guaranteeNonNullable,
   filterByType,
+  type TimingsRecord,
 } from '@finos/legend-shared';
 import type { LegendDataCubeApplicationStore } from './LegendDataCubeBaseStore.js';
 import { LegendDataCubeDuckDBEngine } from './LegendDataCubeDuckDBEngine.js';
@@ -172,6 +174,191 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   }
 
   // ---------------------------------- IMPLEMENTATION ----------------------------------
+
+  override getDataFromSource(source?: DataCubeSource): PlainObject {
+    if (source instanceof LegendQueryDataCubeSource) {
+      const queryInfo = source.info;
+      return {
+        project: {
+          groupId: queryInfo.groupId,
+          artifactId: queryInfo.artifactId,
+          versionId: queryInfo.versionId,
+        },
+        query: {
+          id: queryInfo.id,
+          name: queryInfo.name,
+        },
+        sourceType: LEGEND_QUERY_DATA_CUBE_SOURCE_TYPE,
+      };
+    } else if (source instanceof UserDefinedFunctionDataCubeSource) {
+      const deserializedModel = V1_deserializePureModelContext(source.model);
+
+      const sdlcInfo =
+        deserializedModel instanceof V1_PureModelContextPointer &&
+        deserializedModel.sdlcInfo instanceof V1_LegendSDLC
+          ? deserializedModel.sdlcInfo
+          : undefined;
+      return {
+        project:
+          sdlcInfo !== undefined
+            ? {
+                groupId: sdlcInfo.groupId,
+                artifactId: sdlcInfo.artifactId,
+                versionId: sdlcInfo.version,
+              }
+            : undefined,
+        function: {
+          path: source.functionPath,
+          runtime: source.runtime,
+        },
+        sourceType: ADHOC_FUNCTION_DATA_CUBE_SOURCE_TYPE,
+      };
+    } else if (source instanceof LocalFileDataCubeSource) {
+      const deserializedModel = V1_deserializePureModelContext(source.model);
+
+      const sdlcInfo =
+        deserializedModel instanceof V1_PureModelContextPointer &&
+        deserializedModel.sdlcInfo instanceof V1_LegendSDLC
+          ? deserializedModel.sdlcInfo
+          : undefined;
+      return {
+        project:
+          sdlcInfo !== undefined
+            ? {
+                groupId: sdlcInfo.groupId,
+                artifactId: sdlcInfo.artifactId,
+                versionId: sdlcInfo.version,
+              }
+            : undefined,
+        file: {
+          name: source.fileName,
+          format: source.fileFormat,
+          runtime: source.runtime,
+          db: source.db,
+          schema: source.schema,
+          table: source.table,
+        },
+        sourceType: LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE,
+      };
+    } else if (source instanceof AdhocQueryDataCubeSource) {
+      const deserializedModel = V1_deserializePureModelContext(source.model);
+
+      const sdlcInfo =
+        deserializedModel instanceof V1_PureModelContextPointer &&
+        deserializedModel.sdlcInfo instanceof V1_LegendSDLC
+          ? deserializedModel.sdlcInfo
+          : undefined;
+
+      return {
+        project:
+          sdlcInfo !== undefined
+            ? {
+                groupId: sdlcInfo.groupId,
+                artifactId: sdlcInfo.artifactId,
+                versionId: sdlcInfo.version,
+              }
+            : undefined,
+        adhocQuery: {
+          mapping: source.mapping,
+          runtime: source.runtime,
+        },
+        sourceType: ADHOC_QUERY_DATA_CUBE_SOURCE_TYPE,
+      };
+    }
+    return {};
+  }
+
+  getDataFromRawSource(source?: PlainObject): PlainObject {
+    if (!source) {
+      return {};
+    }
+
+    if (source._type === LEGEND_QUERY_DATA_CUBE_SOURCE_TYPE) {
+      const rawSource =
+        RawLegendQueryDataCubeSource.serialization.fromJson(source);
+
+      return {
+        query: {
+          id: rawSource.queryId,
+        },
+        sourceType: source._type,
+      };
+    } else if (source._type === ADHOC_FUNCTION_DATA_CUBE_SOURCE_TYPE) {
+      const rawSource =
+        RawUserDefinedFunctionDataCubeSource.serialization.fromJson(source);
+      const deserializedModel = V1_deserializePureModelContext(rawSource.model);
+
+      const sdlcInfo =
+        deserializedModel instanceof V1_PureModelContextPointer &&
+        deserializedModel.sdlcInfo instanceof V1_LegendSDLC
+          ? deserializedModel.sdlcInfo
+          : undefined;
+
+      return {
+        project:
+          sdlcInfo !== undefined
+            ? {
+                groupId: sdlcInfo.groupId,
+                artifactId: sdlcInfo.artifactId,
+                versionId: sdlcInfo.version,
+              }
+            : undefined,
+        function: {
+          path: rawSource.functionPath,
+          runtime: rawSource.runtime,
+        },
+        sourceType: source._type,
+      };
+    } else if (source._type === LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE) {
+      const rawSource =
+        RawLocalFileQueryDataCubeSource.serialization.fromJson(source);
+
+      return {
+        file: {
+          name: rawSource.fileName,
+          format: rawSource.fileFormat,
+        },
+        sourceType: source._type,
+      };
+    } else if (source._type === ADHOC_QUERY_DATA_CUBE_SOURCE_TYPE) {
+      const rawSource =
+        RawAdhocQueryDataCubeSource.serialization.fromJson(source);
+      const deserializedModel = V1_deserializePureModelContext(rawSource.model);
+
+      const sdlcInfo =
+        deserializedModel instanceof V1_PureModelContextPointer &&
+        deserializedModel.sdlcInfo instanceof V1_LegendSDLC
+          ? deserializedModel.sdlcInfo
+          : undefined;
+
+      return {
+        project:
+          sdlcInfo !== undefined
+            ? {
+                groupId: sdlcInfo.groupId,
+                artifactId: sdlcInfo.artifactId,
+                versionId: sdlcInfo.version,
+              }
+            : undefined,
+        adhocQuery: {
+          mapping: rawSource.mapping,
+          runtime: rawSource.runtime,
+        },
+        sourceType: source._type,
+      };
+    }
+    return {};
+  }
+
+  override finalizeTimingRecord(
+    stopWatch: StopWatch,
+    timings?: TimingsRecord,
+  ): TimingsRecord | undefined {
+    return this._application.timeService.finalizeTimingsRecord(
+      stopWatch,
+      timings,
+    );
+  }
 
   override async processSource(value: PlainObject): Promise<DataCubeSource> {
     switch (value._type) {

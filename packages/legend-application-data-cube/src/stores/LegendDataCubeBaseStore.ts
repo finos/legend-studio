@@ -17,6 +17,7 @@
 import {
   APPLICATION_EVENT,
   DEFAULT_TAB_SIZE,
+  LegendApplicationTelemetryHelper,
   type ApplicationStore,
 } from '@finos/legend-application';
 import type { LegendDataCubePluginManager } from '../application/LegendDataCubePluginManager.js';
@@ -211,6 +212,10 @@ export class LegendDataCubeBaseStore {
         },
       );
       this.initializeState.pass();
+      LegendApplicationTelemetryHelper.logEvent_ApplicationInitializationSucceeded(
+        this.application.telemetryService,
+        this.application,
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.application.logService.error(

@@ -273,6 +273,23 @@ export enum DataCubeGridMode {
   MULTIDIMENSIONAL = 'Multidimensional',
 }
 
+export enum DataCubeTitleBarMenuItems {
+  VIEW_SOURCE = 'View Source',
+  RESET_TO_LATEST_SAVE = 'Reset to Latest Save',
+  UPDATE_INFO = 'Update Info...',
+  DELETE_DATACUBE = 'Delete DataCube...',
+  SEE_DOCUMENTATION = 'See Documentation',
+  ABOUT = 'About',
+  UNDO = 'Undo',
+  REDO = 'Redo',
+  SETTINGS = 'Settings...',
+}
+
+export enum DataCubeOpenEditorSource {
+  STATUS_BAR = 'Status Bar',
+  GRID_MENU = 'Grid Menu',
+}
+
 export const PIVOT_COLUMN_NAME_VALUE_SEPARATOR = '__|__';
 
 export const TREE_COLUMN_VALUE_SEPARATOR = '__/__';
