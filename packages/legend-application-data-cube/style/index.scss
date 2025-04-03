@@ -68,8 +68,31 @@
   }
 }
 
+:root {
+  --value-spec-border-color: var(--tw-color-neutral-200);
+  --value-spec-error-color: var(--tw-color-red-500);
+  --value-spec-btn-backgorund-color: var(--tw-color-neutral-200);
+  --value-spec-btn-color: var(--tw-color-neutral-400);
+  --value-spec-btn-color-hover: var(--tw-color-neutral-600);
+  --value-spec-btn-color-disabled: var(--tw-color-neutral-300);
+  --value-spec-toggler-btn-color-toggled: var(--tw-color-sky-500);
+  --value-spec-toggler-btn-color-toggled-hover: var(--tw-color-sky-600);
+  --value-spec-toggler-btn-color-toggled-disabled: var(--tw-color-sky-400);
+  --value-spec-list-editor-preview-color-hover: var(--tw-color-neutral-300);
+}
+
 .data-cube {
   .value-spec-editor {
+    input {
+      background: var(--tw-color-white);
+      color: unset;
+      border-color: var(--value-spec-border-color);
+
+      &:focus {
+        border-color: var(--value-spec-border-color);
+      }
+    }
+
     .input--with-validation {
       height: 20px;
       width: 100%;
@@ -78,7 +101,7 @@
     &__input {
       height: 20px;
       font-size: unset;
-      border: 1px solid var(--tw-color-gray-300);
+      border: 1px solid var(--value-spec-border-color);
     }
 
     &__number {
@@ -96,26 +119,38 @@
 
         svg {
           font-size: 18px;
-          color: var(--tw-color-gray-200);
+          color: var(--value-spec-btn-backgorund-color);
         }
 
         &:hover svg {
-          color: var(--tw-color-gray-400);
+          color: var(--value-spec-btn-color);
         }
       }
     }
 
-    .selector-input--dark {
+    .selector-input {
       &__control {
         min-height: 20px;
+        height: fit-content;
+        border-width: 1px;
       }
 
       &__value-container {
-        padding: 0 4px;
+        height: 18px;
+        padding: 0 1px;
+
+        .selector-input__multi-value {
+          margin: 1px;
+
+          .selector-input__multi-value__label {
+            padding: 0;
+            padding-left: 6px;
+          }
+        }
       }
 
       &__input {
-        height: unset; //10px;
+        height: unset !important;
 
         &-container {
           height: unset;
@@ -131,23 +166,26 @@
 
     &__list-editor {
       &__preview {
+        width: 100%;
         height: 100%;
+        min-height: 20px;
         font-size: unset;
         line-height: unset;
-        background: var(--tw-color-gray-200);
+        background: var(--value-spec-border-color);
         color: unset;
 
         &--error {
-          background: var(--tw-color-gray-200);
-          border-color: var(--tw-color-red-500);
+          background: var(--value-spec-border-color);
+          border-color: var(--value-spec-error-color);
         }
       }
 
       &__edit-icon {
-        height: 20px;
+        height: 100%;
+        min-height: 20px;
         width: 20px;
         min-width: 10px;
-        background: var(--tw-color-gray-200);
+        background: var(--value-spec-border-color);
 
         svg {
           height: 10px;
@@ -157,97 +195,138 @@
       }
 
       &__copy-button {
-        background: var(--tw-color-gray-100);
+        width: 20px;
+        min-width: 20px;
+        min-height: 20px;
+        background: var(--value-spec-btn-backgorund-color);
 
         svg {
-          color: unset;
+          color: var(--value-spec-btn-color);
+          font-size: 12px;
         }
 
         &:hover svg {
-          color: var(--tw-color-gray-600);
+          color: var(--value-spec-btn-color-hover);
         }
       }
 
-      &__textarea__description {
-        color: var(--tw-color-gray-500);
+      &__save-button {
+        width: 20px;
+        min-width: 20px;
+        min-height: 20px;
+        background: var(--value-spec-btn-backgorund-color);
+
+        svg {
+          color: var(--value-spec-btn-color);
+          font-size: 12px;
+        }
+
+        &:hover svg {
+          color: var(--value-spec-btn-color-hover);
+        }
       }
     }
 
     &__reset-btn {
       height: 20px;
       width: 20px;
-      background: var(--tw-color-gray-200);
-      border-color: var(--tw-color-gray-500);
+      background: var(--value-spec-btn-backgorund-color);
+      border-color: var(--value-spec-border-color);
 
       svg {
         font-size: unset;
-        color: var(--tw-color-gray-500);
+        color: var(--value-spec-btn-color);
+      }
+
+      &:hover svg {
+        color: var(--value-spec-btn-color-hover);
       }
     }
 
-    &__date-picker__trigger {
-      height: unset;
-      font-size: unset;
-      background: var(--tw-color-white);
-      border: 1px solid var(--tw-color-gray-300);
-      color: var(--tw-color-gray-500);
+    &__date-picker {
+      &__trigger {
+        height: 20px;
+        font-size: unset;
+        background: var(--tw-color-white);
+        border: 1px solid var(--value-spec-border-color);
+        color: unset;
 
-      &--error {
-        border-color: var(--tw-color-red-500);
+        &--error {
+          border-color: var(--value-spec-error-color);
+        }
       }
     }
 
     &__toggler__btn {
-      border: 1px solid var(--tw-color-gray-300);
+      border: 1px solid var(--value-spec-border-color);
 
       svg {
         font-size: unset;
-        color: var(--tw-color-gray-500);
+        color: var(--value-spec-btn-color);
       }
 
       &:hover svg {
         font-size: unset;
-        color: var(--tw-color-gray-600);
+        color: var(--value-spec-btn-color-hover);
       }
 
       &[disabled] svg,
       &[disabled]:hover svg {
-        color: var(--tw-color-gray-300);
+        color: var(--value-spec-btn-color-disabled);
       }
 
       &--toggled {
         svg {
           font-size: unset;
-          color: var(--tw-color-sky-500);
+          color: var(--value-spec-toggler-btn-color-toggled);
         }
 
         &:hover svg {
           font-size: unset;
-          color: var(--tw-color-sky-600);
+          color: var(--value-spec-toggler-btn-color-toggled-hover);
         }
 
         &[disabled] svg,
         &[disabled]:hover svg {
-          color: var(--tw-color-gray-400);
+          color: var(--value-spec-toggler-btn-color-toggled-disabled);
         }
       }
     }
 
     &__number__input--error {
-      border-color: var(--tw-color-red-500);
+      border-color: var(--value-spec-error-color);
     }
 
     &:hover {
       .value-spec-editor__list-editor__preview,
       .value-spec-editor__list-editor__edit-icon {
         color: unset;
-        background: var(--tw-color-gray-300);
+        background: var(--value-spec-list-editor-preview-color-hover);
       }
     }
   }
 }
 
-.selector-input--dark__option {
+.selector-input__option {
   font-size: 12px;
   padding: 2px 4px;
+}
+
+.theme__legacy-light {
+  .mui-popover__paper {
+    background: var(--tw-color-white);
+  }
+
+  .mui-radio-group__group {
+    color: unset;
+  }
+
+  .value-spec-editor__date-picker__absolute-date,
+  .value-spec-editor__date-picker__custom-date__input {
+    input {
+      background: var(--tw-color-white);
+      color: unset;
+      border-color: var(--value-spec-border-color);
+    }
+  }
 }
