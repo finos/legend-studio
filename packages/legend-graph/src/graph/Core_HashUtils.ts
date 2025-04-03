@@ -332,6 +332,9 @@ export enum CORE_HASH_STRUCTURE {
   SCHEMA_MAPPER = 'SCHEMA_MAPPER',
   TABLE_MAPPER = 'TABLE_MAPPER',
 
+  // relational database connection query generation config
+  GENERATION_FEATURES_CONFIG = 'GENERATION_FEATURES_CONFIG',
+
   // ---------------------------------- STO Flat-Data --------------------------------------
 
   FLAT_DATA = 'FLAT_DATA',

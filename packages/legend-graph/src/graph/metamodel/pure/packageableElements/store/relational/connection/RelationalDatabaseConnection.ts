@@ -25,6 +25,7 @@ import type { AuthenticationStrategy } from './AuthenticationStrategy.js';
 import type { Database } from '../model/Database.js';
 import type { PackageableElementReference } from '../../../PackageableElementReference.js';
 import type { PostProcessor } from './postprocessor/PostProcessor.js';
+import type { RelationalQueryGenerationConfig } from './RelationalQueryGenerationConfig.js';
 
 /**
  * TODO: to be modularized or handled differently
@@ -67,6 +68,7 @@ export abstract class DatabaseConnection extends Connection {
   quoteIdentifiers?: boolean | undefined;
   queryTimeOutInSeconds?: number | undefined;
   postProcessorWithParameter: unknown[] = [];
+  queryGenerationConfigs: RelationalQueryGenerationConfig[] = [];
 
   constructor(store: PackageableElementReference<Database>, type: string) {
     super(store);
@@ -107,6 +109,7 @@ export class RelationalDatabaseConnection extends DatabaseConnection {
       this.localMode?.toString() ?? '',
       this.queryTimeOutInSeconds?.toString() ?? '',
       hashArray(this.postProcessors),
+      hashArray(this.queryGenerationConfigs),
     ]);
   }
 
