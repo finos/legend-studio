@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-dsl-persistence",
-  "version": "5.0.299",
+  "version": "5.0.300",
   "description": "Legend extension for Persistence DSL",
   "keywords": [
     "legend",

@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.1.14
+
+### Patch Changes
+
+- [#3969](https://github.com/finos/legend-studio/pull/3969) [`3cfacce`](https://github.com/finos/legend-studio/commit/3cfacce6354c0b76fe3a6763bc5ba7729ebe8b94) ([@gs-ssh16](https://github.com/gs-ssh16)) - Add queryGenerationConfigs property to DatabaseConnection
+
 ## 32.1.13
 
 ### Patch Changes
