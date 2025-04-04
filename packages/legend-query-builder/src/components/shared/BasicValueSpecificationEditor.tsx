@@ -288,6 +288,7 @@ interface StringPrimitiveInstanceValueEditorProps<T>
     | BasicValueSpecificationEditorSelectorSearchConfig
     | undefined;
   selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
+  lightMode?: boolean | undefined;
 }
 
 // eslint-disable-next-line comma-spacing
@@ -306,6 +307,7 @@ const StringPrimitiveInstanceValueEditorInner = <T,>(
     className,
     selectorSearchConfig,
     selectorConfig,
+    lightMode,
   } = props;
   const useSelector = Boolean(selectorSearchConfig);
   const applicationStore = useApplicationStore();
@@ -376,9 +378,7 @@ const StringPrimitiveInstanceValueEditorInner = <T,>(
           value={selectedValue}
           inputValue={value ?? ''}
           onInputChange={handleInputChange}
-          darkMode={
-            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
-          }
+          darkMode={!lightMode}
           isLoading={isLoading}
           allowCreateWhileLoading={true}
           noOptionsMessage={noOptionsMessage}
@@ -664,6 +664,7 @@ interface EnumInstanceValueEditorProps<T>
   extends PrimitiveInstanceValueEditorProps<T, string | null> {
   options: { label: string; value: string }[];
   selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
+  lightMode?: boolean | undefined;
 }
 
 // eslint-disable-next-line comma-spacing
@@ -680,8 +681,8 @@ const EnumInstanceValueEditorInner = <T,>(
     options,
     className,
     selectorConfig,
+    lightMode,
   } = props;
-  const applicationStore = useApplicationStore();
   const enumValue = valueSelector(valueSpecification);
   const resetButtonName = `reset-${valueSelector(valueSpecification)}`;
   const inputName = `input-${valueSelector(valueSpecification)}`;
@@ -709,9 +710,7 @@ const EnumInstanceValueEditorInner = <T,>(
         options={options}
         onChange={changeValue}
         value={enumValue ? { value: enumValue, label: enumValue } : null}
-        darkMode={
-          !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
-        }
+        darkMode={!lightMode}
         hasError={errorChecker?.(valueSpecification)}
         placeholder="Select value"
         autoFocus={true}
@@ -818,6 +817,7 @@ interface PrimitiveCollectionInstanceValueEditorProps<
   selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
   errorChecker?: (valueSpecification: U) => boolean;
   className?: string | undefined;
+  lightMode?: boolean | undefined;
 }
 
 const PrimitiveCollectionInstanceValueEditorInner = <
@@ -835,6 +835,7 @@ const PrimitiveCollectionInstanceValueEditorInner = <
     selectorSearchConfig,
     selectorConfig,
     expectedType,
+    lightMode,
   } = props;
 
   // local state and variables
@@ -1063,9 +1064,7 @@ const PrimitiveCollectionInstanceValueEditorInner = <
         onKeyDown={handleKeyDown}
         onPaste={handlePaste}
         value={selectedOptions}
-        darkMode={
-          !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
-        }
+        darkMode={!lightMode}
         isLoading={isLoading}
         noMatchMessage={noMatchMessage}
         placeholder={getPlaceHolder(expectedType)}
@@ -1119,6 +1118,7 @@ const EnumCollectionInstanceValueEditorInner = <T, U extends { values: T[] }>(
     expectedType,
     enumOptions,
     selectorConfig,
+    lightMode,
   } = props;
 
   guaranteeNonNullable(
@@ -1127,7 +1127,6 @@ const EnumCollectionInstanceValueEditorInner = <T, U extends { values: T[] }>(
   );
 
   // local state and variables
-  const applicationStore = useApplicationStore();
   const [inputValue, setInputValue] = useState('');
   const [inputValueIsError, setInputValueIsError] = useState(false);
   const [selectedOptions, setSelectedOptions] = useState<
@@ -1288,9 +1287,7 @@ const EnumCollectionInstanceValueEditorInner = <T, U extends { values: T[] }>(
         onKeyDown={handleKeyDown}
         onPaste={handlePaste}
         value={selectedOptions}
-        darkMode={
-          !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
-        }
+        darkMode={!lightMode}
         placeholder="Add"
         menuIsOpen={true}
         inputName={inputName}
@@ -1346,6 +1343,7 @@ const CollectionValueInstanceValueEditorInner = <T, U extends { values: T[] }>(
     selectorConfig,
     expectedType,
     enumOptions,
+    lightMode,
   } = props;
 
   const [editable, setEditable] = useState(false);
@@ -1384,6 +1382,7 @@ const CollectionValueInstanceValueEditorInner = <T, U extends { values: T[] }>(
               saveEdit={saveEdit}
               enumOptions={enumOptions}
               selectorConfig={selectorConfig}
+              lightMode={lightMode}
             />
           ) : (
             <PrimitiveCollectionInstanceValueEditor<T, U>
@@ -1395,6 +1394,7 @@ const CollectionValueInstanceValueEditorInner = <T, U extends { values: T[] }>(
               saveEdit={saveEdit}
               selectorSearchConfig={selectorSearchConfig}
               selectorConfig={selectorConfig}
+              lightMode={lightMode}
             />
           )}
         </div>
@@ -1643,6 +1643,9 @@ export const BasicValueSpecificationEditor = forwardRef<
             }
             handleBlur={handleBlur}
             handleKeyDown={handleKeyDown}
+            lightMode={
+              applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+            }
           />
         );
       case PRIMITIVE_TYPE.BOOLEAN:
@@ -1739,6 +1742,9 @@ export const BasicValueSpecificationEditor = forwardRef<
         }
         handleBlur={handleBlur}
         selectorConfig={selectorConfig}
+        lightMode={
+          applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+        }
       />
     );
   } else if (
@@ -1824,6 +1830,9 @@ export const BasicValueSpecificationEditor = forwardRef<
         }
         convertTextToValueSpecification={convertTextToValueSpecification}
         enumOptions={enumOptions}
+        lightMode={
+          applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+        }
       />
     );
   }
