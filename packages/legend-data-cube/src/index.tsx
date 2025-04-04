@@ -63,7 +63,13 @@ export * from './components/DataCubePlaceholder.js';
 // some low-level/core utilities we expose for building DataCube extensions
 // or implementing DataCube engine
 export {
+  _collection,
+  _elementPtr,
+  _enumeration,
+  _enumValue,
   _function,
   _lambda,
-  _elementPtr,
+  _primitiveValue,
+  _property,
+  _type,
 } from './stores/core/DataCubeQueryBuilderUtils.js';

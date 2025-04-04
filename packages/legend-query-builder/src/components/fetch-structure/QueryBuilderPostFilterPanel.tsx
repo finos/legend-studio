@@ -446,7 +446,7 @@ const QueryBuilderPostFilterConditionEditor = observer(
                   ),
                 }}
                 resetValue={resetNode}
-                selectorConfig={selectorConfig}
+                selectorSearchConfig={selectorConfig}
                 isConstant={queryBuilderState.constantState.isValueSpecConstant(
                   rightConditionValue.value,
                 )}

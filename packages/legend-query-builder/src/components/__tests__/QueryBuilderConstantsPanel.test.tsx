@@ -43,7 +43,7 @@ import {
   selectFirstOptionFromCustomSelectorInput,
   selectFromCustomSelectorInput,
 } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
-import { CUSTOM_DATE_PICKER_OPTION } from '../shared/CustomDatePicker.js';
+import { CUSTOM_DATE_PICKER_OPTION } from '../shared/CustomDatePickerHelper.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 
