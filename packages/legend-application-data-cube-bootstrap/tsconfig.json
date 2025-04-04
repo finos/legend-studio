@@ -12,6 +12,7 @@
     { "path": "../legend-data-cube" },
     { "path": "../legend-application" },
     { "path": "../legend-application-data-cube" },
-    { "path": "../legend-extension-dsl-data-space" }
+    { "path": "../legend-extension-dsl-data-space" },
+    { "path": "../legend-query-builder" }
   ]
 }

@@ -26,7 +26,7 @@ import {
   usingConstantValueSchema,
   type PlainObject,
 } from '@finos/legend-shared';
-import { createModelSchema, primitive } from 'serializr';
+import { createModelSchema, list, primitive } from 'serializr';
 
 export const LEGEND_QUERY_DATA_CUBE_SOURCE_TYPE = 'legendQuery';
 
@@ -42,11 +42,13 @@ export class LegendQueryDataCubeSource extends DataCubeSource {
 
 export class RawLegendQueryDataCubeSource {
   queryId!: string;
+  parameterValues!: [string, string][];
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(RawLegendQueryDataCubeSource, {
       _type: usingConstantValueSchema(LEGEND_QUERY_DATA_CUBE_SOURCE_TYPE),
       queryId: primitive(),
+      parameterValues: list(list(primitive())),
     }),
   );
 }

@@ -41,30 +41,62 @@ import { useEffect } from 'react';
 import { LegendDataCubeSettingStorageKey } from '../../__lib__/LegendDataCubeSetting.js';
 import type { LegendDataCubeBuilderStore } from '../../stores/builder/LegendDataCubeBuilderStore.js';
 import { ReleaseViewer } from '@finos/legend-application';
+import { LegendQueryDataCubeSource } from '../../stores/model/LegendQueryDataCubeSource.js';
+import { getV1_ValueSpecificationStringValue } from '@finos/legend-query-builder';
+import { V1_ValueSpecification } from '@finos/legend-graph';
+import { guaranteeType } from '@finos/legend-shared';
 
 const LegendDataCubeBuilderHeader = observer(() => {
   const store = useLegendDataCubeBuilderStore();
 
   return (
-    <div className="flex h-full items-center">
-      <FormButton compact={true} onClick={() => store.loader.display.open()}>
-        Load DataCube
-      </FormButton>
-      <FormButton
-        compact={true}
-        className="ml-1.5"
-        onClick={() => store.creator.display.open()}
-      >
-        New DataCube
-      </FormButton>
-      <FormButton
-        compact={true}
-        className="ml-1.5"
-        disabled={!store.builder?.dataCube}
-        onClick={() => store.saverDisplay.open()}
-      >
-        Save DataCube
-      </FormButton>
+    <div className="flex h-full w-full items-center justify-end">
+      {store.builder?.source instanceof LegendQueryDataCubeSource &&
+        store.builder.source.parameterValues.length > 0 && (
+          <div className="flex h-full w-full items-center overflow-auto">
+            {store.builder.source.parameterValues.map((param) => (
+              <div
+                key={param.name}
+                className="max-w-200 ml-2 flex cursor-pointer hover:brightness-95"
+                onClick={() => store.sourceViewerDisplay.open()}
+              >
+                <span className="truncate bg-neutral-300 px-1">
+                  {param.name}
+                </span>
+                <span className="truncate bg-neutral-400 px-1">
+                  {getV1_ValueSpecificationStringValue(
+                    guaranteeType(param.value, V1_ValueSpecification),
+                    store.application,
+                  )}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      <div className="flex h-full w-fit items-center justify-end">
+        <FormButton
+          className="w-30"
+          compact={true}
+          onClick={() => store.loader.display.open()}
+        >
+          Load DataCube
+        </FormButton>
+        <FormButton
+          compact={true}
+          className="w-30 ml-1.5"
+          onClick={() => store.creator.display.open()}
+        >
+          New DataCube
+        </FormButton>
+        <FormButton
+          compact={true}
+          className="w-30 ml-1.5"
+          disabled={!store.builder?.dataCube}
+          onClick={() => store.saverDisplay.open()}
+        >
+          Save DataCube
+        </FormButton>
+      </div>
     </div>
   );
 });
