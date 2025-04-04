@@ -43,6 +43,7 @@ import {
   StoreProjectData,
 } from '@finos/legend-server-depot';
 import {
+  deepClone,
   guaranteeIsString,
   guaranteeNonNullable,
   guaranteeType,
@@ -62,7 +63,6 @@ import {
   V1_deserializePureModelContext,
   V1_deserializePureModelContextData,
   V1_LegendSDLC,
-  V1_observe_ParameterValue,
   V1_observe_ValueSpecification,
   V1_PackageableType,
   V1_PureModelContextPointer,
@@ -123,9 +123,7 @@ const LegendQuerySourceViewer = observer(
       [],
     );
     const [params, setParams] = useState<V1_ParameterValue[]>(
-      source instanceof LegendQueryDataCubeSource
-        ? source.parameterValues.map(V1_observe_ParameterValue)
-        : [],
+      source.parameterValues.map(deepClone),
     );
     const [enumerations, setEnumerations] = useState<{
       [name: string]: V1_Enumeration;
