@@ -203,6 +203,8 @@ const LegendQuerySourceViewer = observer(
         RawLegendQueryDataCubeSource.serialization.toJson(newRawSource),
         newSource,
       );
+      newSpecification.configuration =
+        store.builder?.initialSpecification.configuration;
 
       // Update the builder with a new state containing the new specification
       // We pass in the existing persistent data cube so we don't lose the
