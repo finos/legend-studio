@@ -15,7 +15,6 @@
  */
 
 import {
-  type PlainObject,
   assertErrorThrown,
   guaranteeNonNullable,
   guaranteeType,
@@ -23,20 +22,17 @@ import {
   LogEvent,
 } from '@finos/legend-shared';
 import {
-  type Enumeration,
   type LightQuery,
   type V1_EngineServerClient,
+  type V1_Enumeration,
   type V1_PureGraphManager,
   type V1_PureModelContextData,
   type V1_ValueSpecification,
   type V1_Variable,
-  PRIMITIVE_TYPE,
   QuerySearchSpecification,
   V1_CORE_SYSTEM_MODELS,
-  V1_deserializePackageableElement,
   V1_deserializePureModelContextData,
   V1_deserializeRawValueSpecificationType,
-  V1_Enumeration,
   V1_Lambda,
   V1_observe_ValueSpecification,
   V1_PackageableType,
@@ -69,6 +65,10 @@ import {
   _primitiveValue,
 } from '@finos/legend-data-cube';
 import type { DepotServerClient } from '@finos/legend-server-depot';
+import {
+  fetchV1Enumeration,
+  isVariableEnumerationType,
+} from './SourceBuilderStateHelper.js';
 
 type QueryParameterValues = {
   [varName: string]: {
@@ -185,11 +185,7 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
         };
       }
       const enumerationParameters = queryParameters.filter(
-        (param: V1_Variable) =>
-          param.genericType?.rawType instanceof V1_PackageableType &&
-          !Object.values(PRIMITIVE_TYPE)
-            .map((type) => type.toString())
-            .includes(param.genericType.rawType.fullPath),
+        isVariableEnumerationType,
       );
       // eslint-disable-next-line no-void
       void this.populateEnumerations(enumerationParameters, lightQuery);
@@ -277,49 +273,20 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
   ): Promise<void> {
     const queryEnumerations: { [paramName: string]: V1_Enumeration } = {};
     for (const param of queryParameters) {
-      const enumerationValue = await this.getEnumerationValues(
+      const enumerationValue = await fetchV1Enumeration(
         guaranteeNonNullable(
           guaranteeType(param.genericType?.rawType, V1_PackageableType)
             .fullPath,
         ),
         query,
+        this._systemModel,
+        this._depotServerClient,
+        this._application.pluginManager.getPureProtocolProcessorPlugins(),
       );
       queryEnumerations[param.name] = enumerationValue;
     }
     runInAction(() => {
       this.queryEnumerations = queryEnumerations;
     });
-  }
-
-  private async getEnumerationValues(
-    enumerationPath: string,
-    query: LightQuery,
-  ): Promise<V1_Enumeration> {
-    // First, check if the enumeration exists in the system model
-    const systemEnumeration = this._systemModel.elements.find(
-      (element) =>
-        element.path === enumerationPath && element instanceof V1_Enumeration,
-    );
-    if (systemEnumeration) {
-      return systemEnumeration as V1_Enumeration;
-    }
-
-    // If not in the system model, fetch the enumeration from the depot server
-    const enumerationElement = (
-      await this._depotServerClient.getVersionEntity(
-        query.groupId,
-        query.artifactId,
-        query.versionId,
-        enumerationPath,
-      )
-    ).content as PlainObject<Enumeration>;
-    const enumeration = guaranteeType(
-      V1_deserializePackageableElement(
-        enumerationElement,
-        this._application.pluginManager.getPureProtocolProcessorPlugins(),
-      ),
-      V1_Enumeration,
-    );
-    return enumeration;
   }
 }
