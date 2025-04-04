@@ -14,9 +14,12 @@
  * limitations under the License.
  */
 
-import { observer, useLocalObservable } from 'mobx-react-lite';
+import { observer } from 'mobx-react-lite';
 import { useLegendDataCubeBuilderStore } from './LegendDataCubeBuilderStoreProvider.js';
-import { LegendQueryDataCubeSource } from '../../stores/model/LegendQueryDataCubeSource.js';
+import {
+  LegendQueryDataCubeSource,
+  RawLegendQueryDataCubeSource,
+} from '../../stores/model/LegendQueryDataCubeSource.js';
 import { useLegendDataCubeApplicationStore } from '../LegendDataCubeFrameworkProvider.js';
 import {
   EXTERNAL_APPLICATION_NAVIGATION__generateQueryViewUrl,
@@ -40,8 +43,8 @@ import {
   StoreProjectData,
 } from '@finos/legend-server-depot';
 import {
-  deepClone,
   guaranteeIsString,
+  guaranteeNonNullable,
   guaranteeType,
   returnUndefOnError,
   type PlainObject,
@@ -63,12 +66,12 @@ import {
   type Enumeration,
   V1_deserializePackageableElement,
   type QueryInfo,
-  V1_PureModelContextData,
-  PureProtocolProcessorPlugin,
+  type PureProtocolProcessorPlugin,
   V1_observe_ParameterValue,
+  V1_serializeValueSpecification,
 } from '@finos/legend-graph';
 import { V1_BasicValueSpecificationEditor } from '@finos/legend-query-builder';
-import { observable, observe, runInAction } from 'mobx';
+import { LegendDataCubeBuilderState } from '../../stores/builder/LegendDataCubeBuilderStore.js';
 
 const handleFetchProject = (
   depotServerClient: DepotServerClient,
@@ -261,6 +264,11 @@ export const LegendDataCubeSourceViewer = observer(() => {
   const store = useLegendDataCubeBuilderStore();
   const source = store.builder?.source;
   const application = useLegendDataCubeApplicationStore();
+  const [params, setParams] = useState<V1_ParameterValue[]>(
+    source instanceof LegendQueryDataCubeSource
+      ? source.parameterValues.map(V1_observe_ParameterValue)
+      : [],
+  );
 
   const [enumerations, setEnumerations] = useState<{
     [name: string]: V1_Enumeration;
@@ -301,13 +309,6 @@ export const LegendDataCubeSourceViewer = observer(() => {
     return null;
   }
   if (source instanceof LegendQueryDataCubeSource) {
-    console.log('source:', source);
-    console.log('builder:', store.builder);
-    const sourceClone = deepClone(source);
-    const params = useLocalObservable(() =>
-      sourceClone.parameterValues.map(V1_observe_ParameterValue),
-    );
-
     const link = application.config.queryApplicationUrl
       ? EXTERNAL_APPLICATION_NAVIGATION__generateQueryViewUrl(
           application.config.queryApplicationUrl,
@@ -319,17 +320,17 @@ export const LegendDataCubeSourceViewer = observer(() => {
       name: string,
       valueSpec: V1_ValueSpecification,
     ): void => {
-      console.log('updating name:', name, 'with value:', valueSpec);
-      const paramToUpdate = params.find((param) => param.name === name);
-      console.log('paramToUpdate:', paramToUpdate);
-      if (paramToUpdate) {
-        runInAction(() => {
-          paramToUpdate.value = valueSpec;
-        });
-      }
+      setParams(
+        params.map((param) => {
+          if (param.name === name) {
+            param.value = valueSpec;
+          }
+          return param;
+        }),
+      );
     };
 
-    const queryHasParameters = sourceClone.parameterValues.length;
+    const queryHasParameters = params.length > 0;
 
     return (
       <div className="h-full w-full px-2 pt-2">
@@ -398,7 +399,7 @@ export const LegendDataCubeSourceViewer = observer(() => {
               <div className="h-50 mt-2 w-full overflow-auto">
                 <div>Parameters:</div>
                 {params.map((parameter: V1_ParameterValue) => {
-                  const parameterVariable = sourceClone.lambda.parameters.find(
+                  const parameterVariable = source.lambda.parameters.find(
                     (param) => param.name === parameter.name,
                   );
                   if (parameterVariable) {
@@ -490,9 +491,48 @@ export const LegendDataCubeSourceViewer = observer(() => {
             </FormButton>
             <FormButton
               className="ml-2"
-              onClick={() => {
-                console.log('setting builder source to:', sourceClone);
-                store.builder?.setSource(sourceClone);
+              onClick={async () => {
+                const newRawSource = new RawLegendQueryDataCubeSource();
+                newRawSource.queryId = source.info.id;
+                newRawSource.parameterValues = params.map((param) => {
+                  const parameterVariable = source.lambda.parameters.find(
+                    (_param) => _param.name === param.name,
+                  );
+                  return [
+                    JSON.stringify(
+                      V1_serializeValueSpecification(
+                        guaranteeNonNullable(parameterVariable),
+                        application.pluginManager.getPureProtocolProcessorPlugins(),
+                      ),
+                    ),
+                    JSON.stringify(
+                      V1_serializeValueSpecification(
+                        guaranteeType(param.value, V1_ValueSpecification),
+                        application.pluginManager.getPureProtocolProcessorPlugins(),
+                      ),
+                    ),
+                  ];
+                });
+                const newRawSourceData =
+                  RawLegendQueryDataCubeSource.serialization.toJson(
+                    newRawSource,
+                  );
+                const newSource =
+                  await store.engine.processSource(newRawSourceData);
+                const newSpecification =
+                  await store.engine.generateBaseSpecification(
+                    RawLegendQueryDataCubeSource.serialization.toJson(
+                      newRawSource,
+                    ),
+                    newSource,
+                  );
+                store.setBuilder(
+                  new LegendDataCubeBuilderState(
+                    newSpecification,
+                    store.builder?.persistentDataCube,
+                  ),
+                );
+                store.sourceViewerDisplay.close();
               }}
             >
               Update Query Parameters
