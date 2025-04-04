@@ -494,7 +494,9 @@ export const LegendDataCubeSourceViewer = observer(() => {
                 console.log('setting builder source to:', sourceClone);
                 store.builder?.setSource(sourceClone);
               }}
-            ></FormButton>
+            >
+              Update Query Parameters
+            </FormButton>
           </div>
         )}
       </div>
