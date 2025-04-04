@@ -46,9 +46,9 @@ export const DataCubeTitleBar = observer(
       <div className="flex h-7 justify-between bg-neutral-100">
         <div className="flex items-center overflow-hidden pl-1 pr-2 text-lg font-medium">
           <DataCubeIcon.Cube className="mr-1 h-4 w-4 flex-shrink-0" />
-          <div className="text-ellipsis whitespace-nowrap">{title}</div>
+          <div className="truncate">{title}</div>
         </div>
-        <div className="flex">
+        <div className="flex flex-auto">
           {children}
           <button
             className="flex aspect-square h-full flex-shrink-0 items-center justify-center text-lg disabled:text-neutral-400"
