@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observer } from 'mobx-react-lite';
+import { observer, useLocalObservable } from 'mobx-react-lite';
 import { useLegendDataCubeBuilderStore } from './LegendDataCubeBuilderStoreProvider.js';
 import { LegendQueryDataCubeSource } from '../../stores/model/LegendQueryDataCubeSource.js';
 import { useLegendDataCubeApplicationStore } from '../LegendDataCubeFrameworkProvider.js';
@@ -29,6 +29,7 @@ import {
   _elementPtr,
   _primitiveValue,
   _property,
+  FormButton,
   isPrimitiveType,
   UserDefinedFunctionDataCubeSource,
 } from '@finos/legend-data-cube';
@@ -39,8 +40,8 @@ import {
   StoreProjectData,
 } from '@finos/legend-server-depot';
 import {
+  deepClone,
   guaranteeIsString,
-  guaranteeNonNullable,
   guaranteeType,
   returnUndefOnError,
   type PlainObject,
@@ -49,23 +50,25 @@ import {
   PRIMITIVE_TYPE,
   V1_deserializePureModelContext,
   V1_Enumeration,
-  V1_EnumValue,
   V1_LegendSDLC,
   V1_observe_ValueSpecification,
   V1_PackageableType,
-  V1_ParameterValue,
+  type V1_ParameterValue,
   V1_PureModelContextPointer,
   V1_ValueSpecification,
-  V1_Variable,
+  type V1_Variable,
   type V1_PureModelContext,
   V1_CORE_SYSTEM_MODELS,
   V1_deserializePureModelContextData,
-  Enumeration,
+  type Enumeration,
   V1_deserializePackageableElement,
   type QueryInfo,
+  V1_PureModelContextData,
+  PureProtocolProcessorPlugin,
+  V1_observe_ParameterValue,
 } from '@finos/legend-graph';
 import { V1_BasicValueSpecificationEditor } from '@finos/legend-query-builder';
-import { runInAction } from 'mobx';
+import { observable, observe, runInAction } from 'mobx';
 
 const handleFetchProject = (
   depotServerClient: DepotServerClient,
@@ -216,48 +219,83 @@ const UserDefinedFunctionSourceViewer = observer(
   },
 );
 
+const isEnumerationParameter = (param: V1_Variable): boolean =>
+  param.genericType?.rawType instanceof V1_PackageableType &&
+  !Object.values(PRIMITIVE_TYPE)
+    .map((type) => type.toString())
+    .includes(param.genericType.rawType.fullPath);
+
+const getEnumerationFromPath = async (
+  path: string,
+  queryInfo: QueryInfo,
+  depotServerClient: DepotServerClient,
+  plugins: PureProtocolProcessorPlugin[],
+): Promise<V1_Enumeration> => {
+  const systemModel = V1_deserializePureModelContextData(V1_CORE_SYSTEM_MODELS);
+
+  // First, check if the enumeration exists in the system model
+  const systemEnumeration = systemModel.elements.find(
+    (element) => element.path === path && element instanceof V1_Enumeration,
+  );
+  if (systemEnumeration) {
+    return systemEnumeration as V1_Enumeration;
+  }
+
+  // If not in the system model, fetch the enumeration from the depot server
+  const enumerationElement = (
+    await depotServerClient.getVersionEntity(
+      queryInfo.groupId,
+      queryInfo.artifactId,
+      queryInfo.versionId,
+      path,
+    )
+  ).content as PlainObject<Enumeration>;
+  const enumeration = guaranteeType(
+    V1_deserializePackageableElement(enumerationElement, plugins),
+    V1_Enumeration,
+  );
+  return enumeration;
+};
+
 export const LegendDataCubeSourceViewer = observer(() => {
   const store = useLegendDataCubeBuilderStore();
   const source = store.builder?.source;
   const application = useLegendDataCubeApplicationStore();
-  const systemModel = V1_deserializePureModelContextData(V1_CORE_SYSTEM_MODELS);
 
-  const isEnumerationParameter = (param: V1_Variable): boolean =>
-    param.genericType?.rawType instanceof V1_PackageableType &&
-    !Object.values(PRIMITIVE_TYPE)
-      .map((type) => type.toString())
-      .includes(param.genericType.rawType.fullPath);
+  const [enumerations, setEnumerations] = useState<{
+    [name: string]: V1_Enumeration;
+  }>({});
 
-  const getEnumerationFromPath = async (
-    path: string,
-    queryInfo: QueryInfo,
-  ): Promise<V1_Enumeration> => {
-    // First, check if the enumeration exists in the system model
-    const systemEnumeration = systemModel.elements.find(
-      (element) => element.path === path && element instanceof V1_Enumeration,
-    );
-    if (systemEnumeration) {
-      return systemEnumeration as V1_Enumeration;
+  useEffect(() => {
+    const fetchEnumerations = async (
+      querySource: LegendQueryDataCubeSource,
+    ) => {
+      const fetchedEnumerations: typeof enumerations = {};
+      for (const param of querySource.parameterValues) {
+        const parameterVariable = querySource.lambda.parameters.find(
+          (_param) => _param.name === param.name,
+        );
+
+        if (parameterVariable && isEnumerationParameter(parameterVariable)) {
+          const packageableType = guaranteeType(
+            parameterVariable.genericType?.rawType,
+            V1_PackageableType,
+            'Can only edit parameters with packageable type',
+          );
+          fetchedEnumerations[param.name] = await getEnumerationFromPath(
+            packageableType.fullPath,
+            querySource.info,
+            store.depotServerClient,
+            application.pluginManager.getPureProtocolProcessorPlugins(),
+          );
+        }
+      }
+      setEnumerations(fetchedEnumerations);
+    };
+    if (source instanceof LegendQueryDataCubeSource) {
+      fetchEnumerations(source);
     }
-
-    // If not in the system model, fetch the enumeration from the depot server
-    const enumerationElement = (
-      await store.depotServerClient.getVersionEntity(
-        queryInfo.groupId,
-        queryInfo.artifactId,
-        queryInfo.versionId,
-        path,
-      )
-    ).content as PlainObject<Enumeration>;
-    const enumeration = guaranteeType(
-      V1_deserializePackageableElement(
-        enumerationElement,
-        application.pluginManager.getPureProtocolProcessorPlugins(),
-      ),
-      V1_Enumeration,
-    );
-    return enumeration;
-  };
+  }, [source, application.pluginManager, store.depotServerClient]);
 
   if (!source) {
     return null;
@@ -265,6 +303,11 @@ export const LegendDataCubeSourceViewer = observer(() => {
   if (source instanceof LegendQueryDataCubeSource) {
     console.log('source:', source);
     console.log('builder:', store.builder);
+    const sourceClone = deepClone(source);
+    const params = useLocalObservable(() =>
+      sourceClone.parameterValues.map(V1_observe_ParameterValue),
+    );
+
     const link = application.config.queryApplicationUrl
       ? EXTERNAL_APPLICATION_NAVIGATION__generateQueryViewUrl(
           application.config.queryApplicationUrl,
@@ -272,9 +315,27 @@ export const LegendDataCubeSourceViewer = observer(() => {
         )
       : undefined;
 
+    const updateParameterValue = (
+      name: string,
+      valueSpec: V1_ValueSpecification,
+    ): void => {
+      console.log('updating name:', name, 'with value:', valueSpec);
+      const paramToUpdate = params.find((param) => param.name === name);
+      console.log('paramToUpdate:', paramToUpdate);
+      if (paramToUpdate) {
+        runInAction(() => {
+          paramToUpdate.value = valueSpec;
+        });
+      }
+    };
+
+    const queryHasParameters = sourceClone.parameterValues.length;
+
     return (
       <div className="h-full w-full px-2 pt-2">
-        <div className="h-[calc(100%_-_8px)] w-full border border-neutral-300 bg-white">
+        <div
+          className={`h-[calc(100%_-_${queryHasParameters ? 40 : 8}px)] w-full border border-neutral-300 bg-white`}
+        >
           <div className="h-full w-full select-none p-2">
             <div className="flex h-6">
               <div className="flex h-6 items-center text-xl font-medium">
@@ -333,94 +394,109 @@ export const LegendDataCubeSourceViewer = observer(() => {
                 </button>
               </div>
             )}
-            {source.parameterValues?.length && (
+            {queryHasParameters && (
               <div className="h-50 mt-2 w-full overflow-auto">
-                {source.parameterValues &&
-                  source.parameterValues.map((parameter: V1_ParameterValue) => {
-                    const parameterVariable = source.lambda.parameters.find(
-                      (param) => param.name === parameter.name,
+                <div>Parameters:</div>
+                {params.map((parameter: V1_ParameterValue) => {
+                  const parameterVariable = sourceClone.lambda.parameters.find(
+                    (param) => param.name === parameter.name,
+                  );
+                  if (parameterVariable) {
+                    const packageableType = guaranteeType(
+                      parameterVariable.genericType?.rawType,
+                      V1_PackageableType,
+                      'Can only edit parameters with packageable type',
                     );
-                    if (parameterVariable) {
-                      const packageableType = guaranteeType(
-                        parameterVariable.genericType?.rawType,
-                        V1_PackageableType,
-                        'Can only edit parameters with packageable type',
-                      );
-                      const enumeration = isEnumerationParameter(
-                        parameterVariable,
-                      )
-                        ? getEnumerationFromPath(
-                            packageableType.fullPath,
-                            source.info,
-                          )
-                        : undefined;
-                      const resetValue = (): void => {
-                        if (isPrimitiveType(packageableType.fullPath)) {
-                          sourceBuilder.setQueryParameterValue(
-                            name,
-                            V1_observe_ValueSpecification(
-                              _primitiveValue(
+                    const resetValue = (): void => {
+                      if (isPrimitiveType(packageableType.fullPath)) {
+                        updateParameterValue(
+                          parameter.name,
+                          V1_observe_ValueSpecification(
+                            _primitiveValue(
+                              packageableType.fullPath,
+                              _defaultPrimitiveTypeValue(
                                 packageableType.fullPath,
-                                _defaultPrimitiveTypeValue(
-                                  packageableType.fullPath,
-                                ),
                               ),
                             ),
-                          );
-                        } else {
-                          // If not a primitive, assume it is an enum
-                          const typeParam = _elementPtr(
-                            guaranteeIsString(packageableType.fullPath),
-                          );
-                          const valueSpec = _property('', [typeParam]);
-                          sourceBuilder.setQueryParameterValue(
-                            name,
-                            V1_observe_ValueSpecification(valueSpec),
-                          );
-                        }
-                      };
-                      return (
-                        <div
-                          key={name}
-                          className="mt-1 flex h-fit min-h-5 w-full"
-                        >
-                          <div className="my-auto">
-                            {name}
-                            {': '}
-                          </div>
-                          <V1_BasicValueSpecificationEditor
-                            valueSpecification={value}
-                            multiplicity={variable.multiplicity}
-                            typeCheckOption={{
-                              expectedType: packageableType,
-                              match:
-                                packageableType.fullPath ===
-                                PRIMITIVE_TYPE.DATETIME,
-                            }}
-                            setValueSpecification={(
-                              val: V1_ValueSpecification,
-                            ) => {
-                              sourceBuilder.setQueryParameterValue(
-                                name,
-                                V1_observe_ValueSpecification(val),
-                              );
-                            }}
-                            resetValue={resetValue}
-                            className="ml-2 flex flex-auto"
-                            enumeration={enumeration}
-                            selectorConfig={{
-                              optionCustomization: { rowHeight: 20 },
-                            }}
-                            lightMode={true}
-                          />
+                          ),
+                        );
+                      } else {
+                        // If not a primitive, assume it is an enum
+                        const typeParam = _elementPtr(
+                          guaranteeIsString(packageableType.fullPath),
+                        );
+                        const valueSpec = _property('', [typeParam]);
+                        updateParameterValue(
+                          parameter.name,
+                          V1_observe_ValueSpecification(valueSpec),
+                        );
+                      }
+                    };
+                    return (
+                      <div
+                        key={parameter.name}
+                        className="mt-1 flex h-fit min-h-5 w-full"
+                      >
+                        <div className="my-auto">
+                          {parameter.name}
+                          {': '}
                         </div>
-                      );
-                    }
-                  })}
+                        <V1_BasicValueSpecificationEditor
+                          valueSpecification={guaranteeType(
+                            parameter.value,
+                            V1_ValueSpecification,
+                          )}
+                          multiplicity={parameterVariable.multiplicity}
+                          typeCheckOption={{
+                            expectedType: packageableType,
+                            match:
+                              packageableType.fullPath ===
+                              PRIMITIVE_TYPE.DATETIME,
+                          }}
+                          setValueSpecification={(
+                            val: V1_ValueSpecification,
+                          ) => {
+                            updateParameterValue(
+                              parameter.name,
+                              V1_observe_ValueSpecification(val),
+                            );
+                          }}
+                          resetValue={resetValue}
+                          className="ml-2 flex flex-auto"
+                          enumeration={enumerations[parameter.name]}
+                          selectorConfig={{
+                            optionCustomization: { rowHeight: 20 },
+                          }}
+                          lightMode={true}
+                        />
+                      </div>
+                    );
+                  } else {
+                    return (
+                      <div key={parameter.name}>
+                        Unable to find variable for parameter {parameter.name}
+                      </div>
+                    );
+                  }
+                })}
               </div>
             )}
           </div>
         </div>
+        {queryHasParameters && (
+          <div className="flex h-10 items-center justify-end px-2">
+            <FormButton onClick={() => store.sourceViewerDisplay.close()}>
+              Close
+            </FormButton>
+            <FormButton
+              className="ml-2"
+              onClick={() => {
+                console.log('setting builder source to:', sourceClone);
+                store.builder?.setSource(sourceClone);
+              }}
+            ></FormButton>
+          </div>
+        )}
       </div>
     );
   } else if (source instanceof UserDefinedFunctionDataCubeSource) {
