@@ -231,7 +231,7 @@ const LegendQuerySourceViewer = observer(
         <div
           className={`h-[calc(100%_-_${queryHasParameters ? 40 : 8}px)] w-full border border-neutral-300 bg-white`}
         >
-          <div className="h-full w-full select-none p-2">
+          <div className="h-full w-full select-none overflow-auto p-2">
             <div className="flex h-6">
               <div className="flex h-6 items-center text-xl font-medium">
                 <DataCubeIcon.Table />
