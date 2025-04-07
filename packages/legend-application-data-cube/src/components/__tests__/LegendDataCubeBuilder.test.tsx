@@ -310,6 +310,10 @@ test(
   100000,
 );
 
+// ----------------- PARAMETER EDITING TESTS -----------------
+
+// -------------------- RELEASE LOG TESTS --------------------
+
 const releaseLog = [
   {
     version: '3.0.0',
