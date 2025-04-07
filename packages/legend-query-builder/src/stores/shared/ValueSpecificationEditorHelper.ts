@@ -64,13 +64,13 @@ import {
   QUERY_BUILDER_PURE_PATH,
   QUERY_BUILDER_SUPPORTED_FUNCTIONS,
 } from '../../graph/QueryBuilderMetaModelConst.js';
-import { buildDatePickerOption } from '../../components/shared/CustomDatePicker.js';
 import type {
   ApplicationStore,
   LegendApplicationConfig,
   LegendApplicationPlugin,
   LegendApplicationPluginManager,
 } from '@finos/legend-application';
+import { buildDatePickerOption } from '../../components/shared/CustomDatePickerHelper.js';
 
 export const createSupportedFunctionExpression = (
   supportedFuncName: string,
@@ -95,6 +95,71 @@ export const buildPrimitiveInstanceValue = (
     ),
   );
   instanceValue_setValues(instance, [value], observerContext);
+  return instance;
+};
+
+export const buildEnumInstanceValue = (
+  graph: PureModel,
+  enumPath: string,
+  value: string,
+  observerContext: ObserverContext,
+): EnumValueInstanceValue => {
+  const enumType = graph.getEnumeration(enumPath);
+  const enumValue = guaranteeNonNullable(
+    enumType.values.find((v) => v.name === value),
+    `Can't find enum value '${value}' in enumeration '${enumType.path}'`,
+  );
+  const instance = new EnumValueInstanceValue(
+    GenericTypeExplicitReference.create(new GenericType(enumType)),
+  );
+  instanceValue_setValues(
+    instance,
+    [EnumValueExplicitReference.create(enumValue)],
+    observerContext,
+  );
+  return instance;
+};
+
+export const buildPrimitiveCollectionInstanceValue = (
+  graph: PureModel,
+  type: PRIMITIVE_TYPE,
+  values: unknown[],
+  observerContext: ObserverContext,
+): CollectionInstanceValue => {
+  const instance = new CollectionInstanceValue(
+    Multiplicity.ZERO_MANY,
+    GenericTypeExplicitReference.create(
+      new GenericType(graph.getPrimitiveType(type)),
+    ),
+  );
+  instanceValue_setValues(
+    instance,
+    values.map((value) =>
+      buildPrimitiveInstanceValue(graph, type, value, observerContext),
+    ),
+    observerContext,
+  );
+  return instance;
+};
+
+export const buildEnumCollectionInstanceValue = (
+  graph: PureModel,
+  enumPath: string,
+  values: string[],
+  observerContext: ObserverContext,
+): CollectionInstanceValue => {
+  const enumType = graph.getEnumeration(enumPath);
+  const instance = new CollectionInstanceValue(
+    Multiplicity.ZERO_MANY,
+    GenericTypeExplicitReference.create(new GenericType(enumType)),
+  );
+  instanceValue_setValues(
+    instance,
+    values.map((value) =>
+      buildEnumInstanceValue(graph, enumPath, value, observerContext),
+    ),
+    observerContext,
+  );
   return instance;
 };
 
@@ -431,10 +496,14 @@ export const convertTextToPrimitiveInstanceValue = (
         if (isNaN(Number(value))) {
           return null;
         }
+        const formattedNumber =
+          expectedType.path === PRIMITIVE_TYPE.INTEGER
+            ? Number.parseInt(Number(value).toString(), 10)
+            : Number(value);
         result = new PrimitiveInstanceValue(
           GenericTypeExplicitReference.create(new GenericType(expectedType)),
         );
-        instanceValue_setValues(result, [Number(value)], observerContext);
+        instanceValue_setValues(result, [formattedNumber], observerContext);
         break;
       }
       case PRIMITIVE_TYPE.DATE:

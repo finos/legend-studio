@@ -22,6 +22,11 @@
  ***************************************************************************************/
 
 import {
+  type V1_PrimitiveValueSpecification,
+  type V1_ValueSpecification,
+  CORE_PURE_PATH,
+  extractElementNameFromPath,
+  extractPackagePathFromPath,
   PRIMITIVE_TYPE,
   V1_AppliedFunction,
   V1_AppliedProperty,
@@ -30,28 +35,27 @@ import {
   V1_CDecimal,
   V1_CFloat,
   V1_CInteger,
-  V1_CStrictDate,
-  V1_CStrictTime,
-  V1_CString,
   V1_ClassInstance,
   V1_ClassInstanceType,
+  V1_CLatestDate,
+  V1_Collection,
   V1_ColSpec,
   V1_ColSpecArray,
-  V1_Collection,
-  V1_Lambda,
-  V1_Multiplicity,
-  V1_PackageableElementPtr,
-  type V1_PrimitiveValueSpecification,
-  V1_Variable,
-  extractElementNameFromPath,
-  type V1_ValueSpecification,
-  extractPackagePathFromPath,
-  CORE_PURE_PATH,
-  V1_GenericTypeInstance,
   V1_createGenericTypeWithElementPath,
   V1_createGenericTypeWithRawType,
   V1_createRelationType,
   V1_createRelationTypeColumn,
+  V1_CStrictDate,
+  V1_CStrictTime,
+  V1_CString,
+  V1_Enumeration,
+  V1_EnumValue,
+  V1_GenericTypeInstance,
+  V1_Lambda,
+  V1_Multiplicity,
+  V1_PackageableElementPtr,
+  V1_PackageableType,
+  V1_Variable,
 } from '@finos/legend-graph';
 import {
   type DataCubeSnapshotFilterCondition,
@@ -94,10 +98,10 @@ export function _var() {
   return variable;
 }
 
-export function _property(name: string) {
+export function _property(name: string, parameters?: V1_ValueSpecification[]) {
   const property = new V1_AppliedProperty();
   property.property = name;
-  property.parameters.push(_var());
+  property.parameters = parameters ?? [_var()];
   return property;
 }
 
@@ -146,7 +150,14 @@ const PURE_AUTO_IMPORT_PACKAGE_PATHS = [
   'meta::pure::profiles',
 ];
 
-export function _functionName(funcNameOrPath: string) {
+export function _functionName(
+  funcNameOrPath: string,
+  options?: { useFullFunctionPath?: boolean },
+) {
+  if (options?.useFullFunctionPath) {
+    return funcNameOrPath;
+  }
+
   const funcPakagePath = extractPackagePathFromPath(funcNameOrPath);
   if (
     funcPakagePath &&
@@ -160,9 +171,12 @@ export function _functionName(funcNameOrPath: string) {
 export function _function(
   functionName: string,
   parameters: V1_ValueSpecification[],
+  options?: {
+    useFullFunctionPath?: boolean;
+  },
 ) {
   const func = new V1_AppliedFunction();
-  func.function = _functionName(functionName);
+  func.function = _functionName(functionName, options);
   func.parameters = parameters;
   return func;
 }
@@ -177,6 +191,7 @@ export function _collection(values: V1_ValueSpecification[]) {
 export function _primitiveValue(
   type: string,
   value: unknown,
+  coerceType?: boolean,
 ): V1_PrimitiveValueSpecification {
   const _val = <T extends V1_PrimitiveValueSpecification & { value: unknown }>(
     primitiveValue: T,
@@ -189,14 +204,40 @@ export function _primitiveValue(
     case PRIMITIVE_TYPE.STRING:
       return _val(new V1_CString(), guaranteeIsString(value));
     case PRIMITIVE_TYPE.BOOLEAN:
-      return _val(new V1_CBoolean(), guaranteeIsBoolean(value));
+      return _val(
+        new V1_CBoolean(),
+        guaranteeIsBoolean(
+          coerceType
+            ? value === 'true'
+              ? true
+              : value === 'false'
+                ? false
+                : value
+            : value,
+        ),
+      );
     case PRIMITIVE_TYPE.NUMBER:
     case PRIMITIVE_TYPE.DECIMAL:
-      return _val(new V1_CDecimal(), guaranteeIsNumber(value));
+      return _val(
+        new V1_CDecimal(),
+        guaranteeIsNumber(
+          coerceType ? parseFloat(guaranteeIsString(value)) : value,
+        ),
+      );
     case PRIMITIVE_TYPE.INTEGER:
-      return _val(new V1_CInteger(), guaranteeIsNumber(value));
+      return _val(
+        new V1_CInteger(),
+        guaranteeIsNumber(
+          coerceType ? parseInt(guaranteeIsString(value)) : value,
+        ),
+      );
     case PRIMITIVE_TYPE.FLOAT:
-      return _val(new V1_CFloat(), guaranteeIsNumber(value));
+      return _val(
+        new V1_CFloat(),
+        guaranteeIsNumber(
+          coerceType ? parseFloat(guaranteeIsString(value)) : value,
+        ),
+      );
     case PRIMITIVE_TYPE.DATE:
     case PRIMITIVE_TYPE.STRICTDATE:
       return _val(new V1_CStrictDate(), guaranteeIsString(value));
@@ -204,6 +245,8 @@ export function _primitiveValue(
       return _val(new V1_CDateTime(), guaranteeIsString(value));
     case PRIMITIVE_TYPE.STRICTTIME:
       return _val(new V1_CStrictTime(), guaranteeIsString(value));
+    case PRIMITIVE_TYPE.LATESTDATE:
+      return new V1_CLatestDate();
     default:
       throw new UnsupportedOperationError(
         `Can't build primitive value instance for unsupported type '${type}'`,
@@ -211,10 +254,34 @@ export function _primitiveValue(
   }
 }
 
+export function _enumValue(value: string): V1_EnumValue {
+  const enumValue = new V1_EnumValue();
+  enumValue.value = value;
+  return enumValue;
+}
+
+export function _enumeration(
+  enumerationPackage: string,
+  enumerationName: string,
+  values: V1_EnumValue[],
+): V1_Enumeration {
+  const enumeration = new V1_Enumeration();
+  enumeration.package = enumerationPackage;
+  enumeration.name = enumerationName;
+  enumeration.values = values;
+  return enumeration;
+}
+
 export function _elementPtr(fullPath: string) {
   const ptr = new V1_PackageableElementPtr();
   ptr.fullPath = fullPath;
   return ptr;
+}
+
+export function _type(fullPath: string) {
+  const type = new V1_PackageableType();
+  type.fullPath = fullPath;
+  return type;
 }
 
 function _classInstance(type: string, value: unknown) {

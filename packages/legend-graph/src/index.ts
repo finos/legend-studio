@@ -26,7 +26,10 @@ export { SectionIndex } from './graph/metamodel/pure/packageableElements/section
 export { Multiplicity } from './graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
 export { Type } from './graph/metamodel/pure/packageableElements/domain/Type.js';
 export { DataType } from './graph/metamodel/pure/packageableElements/domain/DataType.js';
-export { PrimitiveType } from './graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
+export {
+  PrimitiveType,
+  getPrimitiveTypeInstanceFromEnum,
+} from './graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
 export {
   GenericTypeReference,
   GenericTypeExplicitReference,
@@ -137,11 +140,14 @@ export {
   RootGraphFetchTree,
   GraphFetchTreeInstanceValue,
 } from './graph/metamodel/pure/valueSpecification/GraphFetchTree.js';
+export { default as V1_CORE_SYSTEM_MODELS } from './graph-manager/protocol/pure/v1/V1_Core_SystemModels.json' with { type: 'json' };
 export { V1_PureGraphManager } from './graph-manager/protocol/pure/v1/V1_PureGraphManager.js';
 export * from './graph-manager/protocol/pure/v1/engine/artifactGeneration/V1_DataSpaceArtifacts.js';
 
 // V1 protocols
 export { V1_Class } from './graph-manager/protocol/pure/v1/model/packageableElements/domain/V1_Class.js';
+export { V1_Enumeration } from './graph-manager/protocol/pure/v1/model/packageableElements/domain/V1_Enumeration.js';
+export { V1_EnumValue } from './graph-manager/protocol/pure/v1/model/packageableElements/domain/V1_EnumValue.js';
 export { V1_AppliedFunction } from './graph-manager/protocol/pure/v1/model/valueSpecification/application/V1_AppliedFunction.js';
 export { V1_AppliedProperty } from './graph-manager/protocol/pure/v1/model/valueSpecification/application/V1_AppliedProperty.js';
 export { V1_Collection } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_Collection.js';
@@ -166,6 +172,8 @@ export {
   V1_buildEngineError,
   V1_buildFunctionInfoAnalysis,
 } from './graph-manager/protocol/pure/v1/engine/V1_EngineHelper.js';
+export * from './graph-manager/protocol/pure/v1/helpers/V1_ValueSpecificationObserver.js';
+export * from './graph-manager/protocol/pure/v1/helpers/V1_DomainObserverHelper.js';
 export {
   V1_getFunctionNameWithoutSignature,
   V1_getGenericTypeFullPath,
@@ -183,12 +191,15 @@ export * from './graph-manager/protocol/pure/v1/engine/execution/V1_ExecutionRes
 export { V1_LambdaTdsToRelationInput } from './graph-manager/protocol/pure/v1/engine/pureProtocol/V1_LambdaTdsToRelationInput.js';
 export { V1_CString } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CString.js';
 export { V1_CBoolean } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CBoolean.js';
+export { V1_CByteArray } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CByteArray.js';
 export { V1_CDecimal } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CDecimal.js';
 export { V1_CInteger } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CInteger.js';
 export { V1_CFloat } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CFloat.js';
+export { V1_CDate } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CDate.js';
 export { V1_CStrictDate } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CStrictDate.js';
 export { V1_CDateTime } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CDateTime.js';
 export { V1_CStrictTime } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CStrictTime.js';
+export { V1_CLatestDate } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CLatestDate.js';
 export { V1_ClassInstance } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_ClassInstance.js';
 export { V1_PackageableElementPtr } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_PackageableElementPtr.js';
 export { V1_ColSpec } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/classInstance/relation/V1_ColSpec.js';
@@ -215,6 +226,7 @@ export {
   V1_RelationTypeColumn,
 } from './graph-manager/protocol/pure/v1/model/packageableElements/type/V1_RelationType.js';
 export { V1_GenericType } from './graph-manager/protocol/pure/v1/model/packageableElements/type/V1_GenericType.js';
+export { type V1_Type } from './graph-manager/protocol/pure/v1/model/packageableElements/type/V1_Type.js';
 export { V1_PackageableType } from './graph-manager/protocol/pure/v1/model/packageableElements/type/V1_PackageableType.js';
 
 export { V1_Database } from './graph-manager/protocol/pure/v1/model/packageableElements/store/relational/model/V1_Database.js';

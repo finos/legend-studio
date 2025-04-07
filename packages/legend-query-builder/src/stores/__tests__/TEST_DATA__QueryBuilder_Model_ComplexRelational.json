@@ -19,6 +19,18 @@
           "value": "CITY"
         },
         {
+          "taggedValues": [
+            {
+              "tag": {
+                "profile": "doc",
+                "value": "doc"
+              },
+              "value": "A state or province of a country."
+            }
+          ],
+          "value": "STATE"
+        },
+        {
           "stereotypes": [
             {
               "profile": "doc",
