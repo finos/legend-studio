@@ -96,6 +96,10 @@
     .input--with-validation {
       height: 20px;
       width: 100%;
+
+      &--error {
+        border-color: var(--value-spec-error-color);
+      }
     }
 
     &__input {
