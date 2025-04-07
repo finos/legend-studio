@@ -27,7 +27,7 @@ import {
   DataCubeEvent,
   DataCubeTitleBarMenuItems,
 } from '@finos/legend-data-cube';
-import {} from '@finos/legend-art';
+import { clsx } from '@finos/legend-art';
 import {
   useLegendDataCubeBuilderStore,
   withLegendDataCubeBuilderStore,
@@ -53,44 +53,48 @@ const LegendDataCubeBuilderHeader = observer(() => {
     <div className="flex h-full w-full items-center justify-end">
       {store.builder?.source instanceof LegendQueryDataCubeSource &&
         store.builder.source.parameterValues.length > 0 && (
-          <div className="flex h-full w-full items-center overflow-auto">
-            {store.builder.source.parameterValues.map((param) => (
-              <div
-                key={param.name}
-                className="max-w-200 ml-2 flex cursor-pointer hover:brightness-95"
-                onClick={() => store.sourceViewerDisplay.open()}
-              >
-                <span className="truncate bg-neutral-300 px-1">
-                  {param.name}
-                </span>
-                <span className="truncate bg-neutral-400 px-1">
-                  {getV1_ValueSpecificationStringValue(
-                    guaranteeType(param.value, V1_ValueSpecification),
-                    store.application,
-                  )}
-                </span>
-              </div>
-            ))}
+          <div className="flex h-full flex-auto items-center overflow-auto border-l border-neutral-300 pl-2">
+            Parameters:
+            {store.builder.source.parameterValues.map((param) => {
+              const paramValue = getV1_ValueSpecificationStringValue(
+                guaranteeType(param.value, V1_ValueSpecification),
+                store.application,
+              );
+              return (
+                <div
+                  key={param.name}
+                  className="max-w-200 ml-2 flex cursor-pointer hover:brightness-95"
+                  onClick={() => store.sourceViewerDisplay.open()}
+                >
+                  <span className="truncate bg-neutral-300 px-1">
+                    {param.name}
+                  </span>
+                  <span
+                    className={clsx('truncate bg-neutral-200 px-1', {
+                      'text-neutral-500': paramValue === '',
+                    })}
+                  >
+                    {paramValue === '' ? '(empty)' : paramValue}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         )}
-      <div className="flex h-full w-fit items-center justify-end">
-        <FormButton
-          className="w-30"
-          compact={true}
-          onClick={() => store.loader.display.open()}
-        >
+      <div className="flex h-full w-fit items-center justify-end text-nowrap pl-2">
+        <FormButton compact={true} onClick={() => store.loader.display.open()}>
           Load DataCube
         </FormButton>
         <FormButton
           compact={true}
-          className="w-30 ml-1.5"
+          className="ml-1.5 text-nowrap"
           onClick={() => store.creator.display.open()}
         >
           New DataCube
         </FormButton>
         <FormButton
           compact={true}
-          className="w-30 ml-1.5"
+          className="ml-1.5 text-nowrap"
           disabled={!store.builder?.dataCube}
           onClick={() => store.saverDisplay.open()}
         >
