@@ -97,19 +97,21 @@ export const isValidV1_ValueSpecification = (
   if (valueSpecification instanceof V1_PrimitiveValueSpecification) {
     const isRequired = valueSpecification.multiplicity.lowerBound >= 1;
     // required and no values provided. LatestDate doesn't have any values so we skip that check for it.
-    if (
-      isRequired &&
-      (valueSpecification instanceof V1_CBoolean ||
+    if (isRequired) {
+      if (valueSpecification instanceof V1_CString) {
+        return valueSpecification.value === '';
+      } else if (
+        valueSpecification instanceof V1_CBoolean ||
         valueSpecification instanceof V1_CByteArray ||
         valueSpecification instanceof V1_CDecimal ||
         valueSpecification instanceof V1_CFloat ||
         valueSpecification instanceof V1_CInteger ||
         valueSpecification instanceof V1_CStrictTime ||
-        valueSpecification instanceof V1_CString ||
         valueSpecification instanceof V1_CDateTime ||
-        valueSpecification instanceof V1_CStrictDate)
-    ) {
-      return true;
+        valueSpecification instanceof V1_CStrictDate
+      ) {
+        return true;
+      }
     }
   } else if (valueSpecification instanceof V1_Collection) {
     // collection instance must have all valid values.
