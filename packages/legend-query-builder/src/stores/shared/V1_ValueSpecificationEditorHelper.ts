@@ -99,7 +99,7 @@ export const isValidV1_ValueSpecification = (
     // required and no values provided. LatestDate doesn't have any values so we skip that check for it.
     if (isRequired) {
       if (valueSpecification instanceof V1_CString) {
-        return valueSpecification.value === '';
+        return valueSpecification.value.length > 0;
       } else if (
         valueSpecification instanceof V1_CBoolean ||
         valueSpecification instanceof V1_CByteArray ||
