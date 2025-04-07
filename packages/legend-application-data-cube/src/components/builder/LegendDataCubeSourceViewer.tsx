@@ -211,6 +211,7 @@ const LegendQuerySourceViewer = observer(
       // saved state of the data cube, if it exists.
       store.setBuilder(
         new LegendDataCubeBuilderState(
+          store,
           newSpecification,
           store.builder?.persistentDataCube,
         ),

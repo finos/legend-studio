@@ -153,7 +153,9 @@ export class LegendDataCubeCreatorState {
         }
 
         // reset
-        this._store.setBuilder(new LegendDataCubeBuilderState(specification));
+        this._store.setBuilder(
+          new LegendDataCubeBuilderState(this._store, specification),
+        );
         // only update the route instead of reloading in case we are creating
         // a new DataCube when we are editing another DataCube
         this._application.navigationService.navigator.updateCurrentLocation(
