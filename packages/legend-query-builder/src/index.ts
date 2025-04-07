@@ -113,6 +113,8 @@ export * from './components/shared/LambdaParameterValuesEditor.js';
 
 export * from './components/shared/V1_BasicValueSpecificationEditor.js';
 
+export * from './components/shared/CustomDatePickerHelper.js';
+
 export * from './stores/shared/ValueSpecificationModifierHelper.js';
 export * from './stores/shared/ValueSpecificationEditorHelper.js';
 

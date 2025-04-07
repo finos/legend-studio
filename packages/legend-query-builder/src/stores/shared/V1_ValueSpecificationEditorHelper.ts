@@ -77,6 +77,8 @@ export const getV1_ValueSpecificationStringValue = (
     return valueSpecification.value.toString();
   } else if (valueSpecification instanceof V1_AppliedProperty) {
     return valueSpecification.property;
+  } else if (valueSpecification instanceof V1_AppliedFunction) {
+    return valueSpecification.function;
   } else if (valueSpecification instanceof V1_Collection) {
     return valueSpecification.values
       .map((valueSpec) =>

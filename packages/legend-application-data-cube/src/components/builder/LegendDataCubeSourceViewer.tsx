@@ -54,7 +54,6 @@ import {
   type LightQuery,
   type PureProtocolProcessorPlugin,
   type V1_Enumeration,
-  type V1_ParameterValue,
   type V1_PureModelContext,
   type V1_PureModelContextData,
   type V1_Variable,
@@ -122,9 +121,9 @@ const LegendQuerySourceViewer = observer(
       () => V1_deserializePureModelContextData(V1_CORE_SYSTEM_MODELS),
       [],
     );
-    const [params, setParams] = useState<V1_ParameterValue[]>(
-      source.parameterValues.map(deepClone),
-    );
+    const [params, setParams] = useState<
+      { variable: V1_Variable; valueSpec: V1_ValueSpecification }[]
+    >(source.parameterValues.map(deepClone));
     const [enumerations, setEnumerations] = useState<{
       [name: string]: V1_Enumeration;
     }>({});
@@ -133,7 +132,7 @@ const LegendQuerySourceViewer = observer(
       const enumerationVariables = source.parameterValues
         .map((parameter) =>
           source.lambda.parameters.find(
-            (_param) => parameter.name === _param.name,
+            (_param) => parameter.variable.name === _param.name,
           ),
         )
         .filter(isNonNullable)
@@ -163,8 +162,8 @@ const LegendQuerySourceViewer = observer(
     ): void => {
       setParams(
         params.map((param) => {
-          if (param.name === name) {
-            param.value = valueSpec;
+          if (param.variable.name === name) {
+            param.valueSpec = valueSpec;
           }
           return param;
         }),
@@ -177,7 +176,7 @@ const LegendQuerySourceViewer = observer(
       newRawSource.queryId = source.info.id;
       newRawSource.parameterValues = params.map((param) => {
         const parameterVariable = source.lambda.parameters.find(
-          (_param) => _param.name === param.name,
+          (_param) => _param.name === param.variable.name,
         );
         return [
           JSON.stringify(
@@ -188,7 +187,7 @@ const LegendQuerySourceViewer = observer(
           ),
           JSON.stringify(
             V1_serializeValueSpecification(
-              guaranteeType(param.value, V1_ValueSpecification),
+              guaranteeType(param.valueSpec, V1_ValueSpecification),
               application.pluginManager.getPureProtocolProcessorPlugins(),
             ),
           ),
@@ -293,83 +292,90 @@ const LegendQuerySourceViewer = observer(
             {queryHasParameters && (
               <div className="h-50 mt-2 w-full overflow-auto">
                 <div>Parameters:</div>
-                {params.map((parameter: V1_ParameterValue) => {
-                  const parameterVariable = guaranteeNonNullable(
-                    source.lambda.parameters.find(
-                      (param) => param.name === parameter.name,
-                    ),
-                    `Unable to find parameter with name ${parameter.name} in source lambda`,
-                  );
-                  const packageableType = guaranteeType(
-                    parameterVariable.genericType?.rawType,
-                    V1_PackageableType,
-                    'Can only edit parameters with packageable type',
-                  );
+                {params.map(
+                  (parameter: {
+                    variable: V1_Variable;
+                    valueSpec: V1_ValueSpecification;
+                  }) => {
+                    const parameterVariable = guaranteeNonNullable(
+                      source.lambda.parameters.find(
+                        (param) => param.name === parameter.variable.name,
+                      ),
+                      `Unable to find parameter with name ${parameter.variable.name} in source lambda`,
+                    );
+                    const packageableType = guaranteeType(
+                      parameterVariable.genericType?.rawType,
+                      V1_PackageableType,
+                      'Can only edit parameters with packageable type',
+                    );
 
-                  const resetValue = (): void => {
-                    if (isPrimitiveType(packageableType.fullPath)) {
-                      updateParameterValue(
-                        parameter.name,
-                        V1_observe_ValueSpecification(
-                          _primitiveValue(
-                            packageableType.fullPath,
-                            _defaultPrimitiveTypeValue(
+                    const resetValue = (): void => {
+                      if (isPrimitiveType(packageableType.fullPath)) {
+                        updateParameterValue(
+                          parameter.variable.name,
+                          V1_observe_ValueSpecification(
+                            _primitiveValue(
                               packageableType.fullPath,
+                              _defaultPrimitiveTypeValue(
+                                packageableType.fullPath,
+                              ),
                             ),
                           ),
-                        ),
-                      );
-                    } else {
-                      // If not a primitive, assume it is an enum
-                      const typeParam = _elementPtr(
-                        guaranteeIsString(packageableType.fullPath),
-                      );
-                      const valueSpec = _property('', [typeParam]);
-                      updateParameterValue(
-                        parameter.name,
-                        V1_observe_ValueSpecification(valueSpec),
-                      );
-                    }
-                  };
+                        );
+                      } else {
+                        // If not a primitive, assume it is an enum
+                        const typeParam = _elementPtr(
+                          guaranteeIsString(packageableType.fullPath),
+                        );
+                        const valueSpec = _property('', [typeParam]);
+                        updateParameterValue(
+                          parameter.variable.name,
+                          V1_observe_ValueSpecification(valueSpec),
+                        );
+                      }
+                    };
 
-                  return (
-                    <div
-                      key={parameter.name}
-                      className="mt-1 flex h-fit min-h-5 w-full"
-                    >
-                      <div className="my-auto">
-                        {parameter.name}
-                        {': '}
+                    return (
+                      <div
+                        key={parameter.variable.name}
+                        className="mt-1 flex h-fit min-h-5 w-full"
+                      >
+                        <div className="my-auto">
+                          {parameter.variable.name}
+                          {': '}
+                        </div>
+                        <V1_BasicValueSpecificationEditor
+                          valueSpecification={guaranteeType(
+                            parameter.valueSpec,
+                            V1_ValueSpecification,
+                          )}
+                          multiplicity={parameterVariable.multiplicity}
+                          typeCheckOption={{
+                            expectedType: packageableType,
+                            match:
+                              packageableType.fullPath ===
+                              PRIMITIVE_TYPE.DATETIME,
+                          }}
+                          setValueSpecification={(
+                            val: V1_ValueSpecification,
+                          ) => {
+                            updateParameterValue(
+                              parameter.variable.name,
+                              V1_observe_ValueSpecification(val),
+                            );
+                          }}
+                          resetValue={resetValue}
+                          className="ml-2 flex flex-auto"
+                          enumeration={enumerations[parameter.variable.name]}
+                          selectorConfig={{
+                            optionCustomization: { rowHeight: 20 },
+                          }}
+                          lightMode={true}
+                        />
                       </div>
-                      <V1_BasicValueSpecificationEditor
-                        valueSpecification={guaranteeType(
-                          parameter.value,
-                          V1_ValueSpecification,
-                        )}
-                        multiplicity={parameterVariable.multiplicity}
-                        typeCheckOption={{
-                          expectedType: packageableType,
-                          match:
-                            packageableType.fullPath ===
-                            PRIMITIVE_TYPE.DATETIME,
-                        }}
-                        setValueSpecification={(val: V1_ValueSpecification) => {
-                          updateParameterValue(
-                            parameter.name,
-                            V1_observe_ValueSpecification(val),
-                          );
-                        }}
-                        resetValue={resetValue}
-                        className="ml-2 flex flex-auto"
-                        enumeration={enumerations[parameter.name]}
-                        selectorConfig={{
-                          optionCustomization: { rowHeight: 20 },
-                        }}
-                        lightMode={true}
-                      />
-                    </div>
-                  );
-                })}
+                    );
+                  },
+                )}
               </div>
             )}
           </div>

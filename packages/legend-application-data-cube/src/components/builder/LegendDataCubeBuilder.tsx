@@ -42,9 +42,9 @@ import { LegendDataCubeSettingStorageKey } from '../../__lib__/LegendDataCubeSet
 import type { LegendDataCubeBuilderStore } from '../../stores/builder/LegendDataCubeBuilderStore.js';
 import { ReleaseViewer } from '@finos/legend-application';
 import { LegendQueryDataCubeSource } from '../../stores/model/LegendQueryDataCubeSource.js';
-import { getV1_ValueSpecificationStringValue } from '@finos/legend-query-builder';
 import { V1_ValueSpecification } from '@finos/legend-graph';
 import { guaranteeType } from '@finos/legend-shared';
+import { getNameOfV1ValueSpecification } from './LegendDataCubeBuilderHelper.js';
 
 const LegendDataCubeBuilderHeader = observer(() => {
   const store = useLegendDataCubeBuilderStore();
@@ -56,18 +56,18 @@ const LegendDataCubeBuilderHeader = observer(() => {
           <div className="flex h-full flex-auto items-center overflow-auto border-l border-neutral-300 pl-2">
             Parameters:
             {store.builder.source.parameterValues.map((param) => {
-              const paramValue = getV1_ValueSpecificationStringValue(
-                guaranteeType(param.value, V1_ValueSpecification),
+              const paramValue = getNameOfV1ValueSpecification(
+                guaranteeType(param.valueSpec, V1_ValueSpecification),
                 store.application,
               );
               return (
                 <div
-                  key={param.name}
+                  key={param.variable.name}
                   className="max-w-200 ml-2 flex cursor-pointer hover:brightness-95"
                   onClick={() => store.sourceViewerDisplay.open()}
                 >
                   <span className="truncate bg-neutral-300 px-1">
-                    {param.name}
+                    {param.variable.name}
                   </span>
                   <span
                     className={clsx('truncate bg-neutral-200 px-1', {
