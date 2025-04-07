@@ -43,12 +43,12 @@ export const DataCubeTitleBar = observer(
     const [items, setItems] = useState([...(menuItems ?? [])]);
 
     return (
-      <div className="flex h-7 justify-between bg-neutral-100">
-        <div className="flex items-center overflow-hidden pl-1 pr-2 text-lg font-medium">
+      <div className="flex h-7 w-full bg-neutral-100">
+        <div className="flex w-fit max-w-80 items-center pl-1 pr-2 text-lg font-medium">
           <DataCubeIcon.Cube className="mr-1 h-4 w-4 flex-shrink-0" />
           <div className="truncate">{title}</div>
         </div>
-        <div className="flex flex-auto">
+        <div className="flex w-full flex-auto">
           {children}
           <button
             className="flex aspect-square h-full flex-shrink-0 items-center justify-center text-lg disabled:text-neutral-400"

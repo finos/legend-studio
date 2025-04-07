@@ -50,7 +50,7 @@ const LegendDataCubeBuilderHeader = observer(() => {
   const store = useLegendDataCubeBuilderStore();
 
   return (
-    <div className="flex h-full w-full items-center justify-end">
+    <div className="flex h-full w-full items-center justify-between">
       {store.builder?.source instanceof LegendQueryDataCubeSource &&
         store.builder.source.parameterValues.length > 0 && (
           <div className="flex h-full flex-auto items-center overflow-auto border-l border-neutral-300 pl-2">
@@ -81,7 +81,7 @@ const LegendDataCubeBuilderHeader = observer(() => {
             })}
           </div>
         )}
-      <div className="flex h-full w-fit items-center justify-end text-nowrap pl-2">
+      <div className="flex h-full w-fit flex-auto items-center justify-end text-nowrap pl-2">
         <FormButton compact={true} onClick={() => store.loader.display.open()}>
           Load DataCube
         </FormButton>
