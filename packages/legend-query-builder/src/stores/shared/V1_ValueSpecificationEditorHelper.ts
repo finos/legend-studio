@@ -16,7 +16,6 @@
 
 import {
   type V1_ValueSpecification,
-  PRIMITIVE_TYPE,
   V1_AppliedProperty,
   V1_CBoolean,
   V1_CByteArray,
@@ -39,11 +38,6 @@ import type {
   LegendApplicationPluginManager,
   LegendApplicationPlugin,
 } from '@finos/legend-application';
-
-export const isPritiveType = (type: string): boolean =>
-  !Object.values(PRIMITIVE_TYPE)
-    .map((_type) => _type.toString())
-    .includes(type);
 
 export const getV1_ValueSpecificationStringValue = (
   valueSpecification: V1_ValueSpecification,
