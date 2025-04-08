@@ -156,7 +156,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
 
   const applicationStore = useApplicationStore();
   const errorChecker = (_valueSpecification: V1_PrimitiveValueSpecification) =>
-    !isValidV1_ValueSpecification(_valueSpecification);
+    !isValidV1_ValueSpecification(_valueSpecification, multiplicity);
 
   // Handle non-collection editors
   if (multiplicity.upperBound !== undefined) {

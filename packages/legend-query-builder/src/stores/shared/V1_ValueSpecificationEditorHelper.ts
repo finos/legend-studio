@@ -30,6 +30,7 @@ import {
   V1_CStrictTime,
   V1_CString,
   V1_EnumValue,
+  V1_Multiplicity,
   V1_PrimitiveValueSpecification,
 } from '@finos/legend-graph';
 import { buildDatePickerOption } from '../../components/shared/CustomDatePickerHelper.js';
@@ -89,9 +90,10 @@ export const getV1_ValueSpecificationStringValue = (
 
 export const isValidV1_ValueSpecification = (
   valueSpecification: V1_ValueSpecification,
+  multiplicity: V1_Multiplicity,
 ): boolean => {
   if (valueSpecification instanceof V1_PrimitiveValueSpecification) {
-    const isRequired = valueSpecification.multiplicity.lowerBound >= 1;
+    const isRequired = multiplicity.lowerBound >= 1;
     // required and no values provided. LatestDate doesn't have any values so we skip that check for it.
     if (isRequired) {
       if (valueSpecification instanceof V1_CString) {
@@ -111,7 +113,9 @@ export const isValidV1_ValueSpecification = (
     }
   } else if (valueSpecification instanceof V1_Collection) {
     // collection instance must have all valid values.
-    return valueSpecification.values.every(isValidV1_ValueSpecification);
+    return valueSpecification.values.every((val) =>
+      isValidV1_ValueSpecification(val, V1_Multiplicity.ONE),
+    );
   }
 
   return true;
