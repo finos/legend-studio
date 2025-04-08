@@ -68,7 +68,10 @@ import {
   V1_serializeValueSpecification,
   V1_ValueSpecification,
 } from '@finos/legend-graph';
-import { V1_BasicValueSpecificationEditor } from '@finos/legend-query-builder';
+import {
+  isValidV1_ValueSpecification,
+  V1_BasicValueSpecificationEditor,
+} from '@finos/legend-query-builder';
 import { LegendDataCubeBuilderState } from '../../stores/builder/LegendDataCubeBuilderStore.js';
 import {
   fetchV1Enumeration,
@@ -171,6 +174,19 @@ const LegendQuerySourceViewer = observer(
     };
 
     const updateBuilderWithNewSpecification = async () => {
+      // Verify that all params are valid
+      if (
+        params.some(
+          (param) =>
+            !isValidV1_ValueSpecification(
+              param.valueSpec,
+              param.variable.multiplicity,
+            ),
+        )
+      ) {
+        return;
+      }
+
       // Create the new raw source with new parameter values
       const newRawSource = new RawLegendQueryDataCubeSource();
       newRawSource.queryId = source.info.id;
@@ -387,6 +403,13 @@ const LegendQuerySourceViewer = observer(
             </FormButton>
             <FormButton
               className="ml-2"
+              disabled={params.some(
+                (param) =>
+                  !isValidV1_ValueSpecification(
+                    param.valueSpec,
+                    param.variable.multiplicity,
+                  ),
+              )}
               onClick={async () => {
                 await updateBuilderWithNewSpecification();
                 store.sourceViewerDisplay.close();
