@@ -40,6 +40,7 @@ import {
   V1_serializeValueSpecification,
 } from '@finos/legend-graph';
 import {
+  isValidV1_ValueSpecification,
   QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT,
   QueryLoaderState,
 } from '@finos/legend-query-builder';
@@ -110,6 +111,7 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
       queryEnumerations: observable,
 
       setQueryParameterValue: action,
+      hasInvalidQueryParameters: computed,
     });
 
     this._graphManager = graphManager;
@@ -224,12 +226,25 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
       : undefined;
   }
 
+  get hasInvalidQueryParameters(): boolean {
+    if (this.queryParameterValues) {
+      return Object.values(this.queryParameterValues).some(
+        (paramVal) =>
+          !isValidV1_ValueSpecification(
+            paramVal.value,
+            paramVal.variable.multiplicity,
+          ),
+      );
+    }
+    return false;
+  }
+
   override get label() {
     return LegendDataCubeSourceBuilderType.LEGEND_QUERY;
   }
 
   override get isValid(): boolean {
-    return Boolean(this.query);
+    return Boolean(this.query) && !this.hasInvalidQueryParameters;
   }
 
   override async generateSourceData() {
