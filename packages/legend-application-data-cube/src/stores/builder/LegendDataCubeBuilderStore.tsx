@@ -69,11 +69,13 @@ import { LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE } from '../model/LocalFileDataCu
 import type { LegendDataCubeSourceLoaderState } from './source/LegendDataCubeSourceLoaderState.js';
 import { LocalFileDataCubeSourceLoaderState } from './source/LocalFileDataCubeSourceLoaderState.js';
 import { LEGEND_DATACUBE_APP_EVENT } from '../../__lib__/LegendDataCubeEvent.js';
+import { LegendQueryDataCubeSource } from '../model/LegendQueryDataCubeSource.js';
 
 export class LegendDataCubeBuilderState {
   readonly uuid = uuid();
   readonly startTime = Date.now();
 
+  readonly _store!: LegendDataCubeBuilderStore;
   readonly initialSpecification!: DataCubeSpecification;
   persistentDataCube?: PersistentDataCube | undefined;
 
@@ -81,6 +83,7 @@ export class LegendDataCubeBuilderState {
   source?: DataCubeSource | undefined;
 
   constructor(
+    store: LegendDataCubeBuilderStore,
     specification: DataCubeSpecification,
     persistentDataCube?: PersistentDataCube | undefined,
   ) {
@@ -95,6 +98,7 @@ export class LegendDataCubeBuilderState {
       setSource: action,
     });
 
+    this._store = store;
     this.initialSpecification = specification;
     this.persistentDataCube = persistentDataCube;
   }
@@ -109,6 +113,16 @@ export class LegendDataCubeBuilderState {
 
   setSource(val: DataCubeSource | undefined) {
     this.source = val;
+    // Set sourceViewerDisplay height based on length of parameters
+    if (
+      val instanceof LegendQueryDataCubeSource &&
+      val.parameterValues.length > 0
+    ) {
+      this._store.sourceViewerDisplay.configuration.window.height = Math.min(
+        600,
+        200 + 20 * val.parameterValues.length,
+      );
+    }
   }
 }
 
@@ -423,7 +437,7 @@ export class LegendDataCubeBuilderStore {
     dataCubeId: string,
   ) {
     this.setBuilder(
-      new LegendDataCubeBuilderState(specification, persistentDataCube),
+      new LegendDataCubeBuilderState(this, specification, persistentDataCube),
     );
     this.updateWindowTitle(persistentDataCube);
 

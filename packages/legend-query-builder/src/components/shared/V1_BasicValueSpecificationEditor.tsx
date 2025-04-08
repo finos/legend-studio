@@ -137,6 +137,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
       | undefined;
     displayDateEditorAsEditableValue?: boolean | undefined;
     enumeration?: V1_Enumeration | undefined;
+    lightMode?: boolean;
   }
 >(function V1_BasicValueSpecificationEditor(props, ref) {
   const {
@@ -150,11 +151,12 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
     handleKeyDown,
     enumeration,
     selectorConfig,
+    lightMode,
   } = props;
 
   const applicationStore = useApplicationStore();
   const errorChecker = (_valueSpecification: V1_PrimitiveValueSpecification) =>
-    !isValidV1_ValueSpecification(_valueSpecification);
+    !isValidV1_ValueSpecification(_valueSpecification, multiplicity);
 
   // Handle non-collection editors
   if (multiplicity.upperBound !== undefined) {
@@ -179,6 +181,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
           handleKeyDown={handleKeyDown}
           errorChecker={errorChecker}
           selectorConfig={selectorConfig}
+          lightMode={lightMode}
         />
       );
     } else if (
@@ -310,6 +313,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
           handleBlur={handleBlur}
           errorChecker={errorChecker}
           selectorConfig={selectorConfig}
+          lightMode={lightMode}
         />
       );
     }
@@ -383,6 +387,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
         errorChecker={errorChecker}
         className={className}
         selectorConfig={selectorConfig}
+        lightMode={lightMode}
       />
     );
   }

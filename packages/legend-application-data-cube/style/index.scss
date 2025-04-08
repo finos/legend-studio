@@ -67,3 +67,284 @@
     }
   }
 }
+
+:root {
+  --value-spec-border-color: var(--tw-color-neutral-200);
+  --value-spec-error-color: var(--tw-color-red-500);
+  --value-spec-btn-backgorund-color: var(--tw-color-neutral-200);
+  --value-spec-btn-color: var(--tw-color-neutral-400);
+  --value-spec-btn-color-hover: var(--tw-color-neutral-600);
+  --value-spec-btn-color-disabled: var(--tw-color-neutral-300);
+  --value-spec-toggler-btn-color-toggled: var(--tw-color-sky-500);
+  --value-spec-toggler-btn-color-toggled-hover: var(--tw-color-sky-600);
+  --value-spec-toggler-btn-color-toggled-disabled: var(--tw-color-sky-400);
+  --value-spec-list-editor-preview-color-hover: var(--tw-color-neutral-300);
+}
+
+.data-cube {
+  .value-spec-editor {
+    input {
+      background: var(--tw-color-white);
+      color: unset;
+      border-color: var(--value-spec-border-color);
+
+      &:focus {
+        border-color: var(--value-spec-border-color);
+      }
+    }
+
+    .input--with-validation {
+      height: 20px;
+      width: 100%;
+
+      &--error {
+        border-color: var(--value-spec-error-color);
+      }
+    }
+
+    &__input {
+      height: 20px;
+      font-size: unset;
+      border: 1px solid var(--value-spec-border-color);
+    }
+
+    &__number {
+      &__input-container {
+        height: 20px;
+      }
+
+      &__actions {
+        top: 1px;
+      }
+
+      &__action {
+        height: 18px;
+        width: 18px;
+
+        svg {
+          font-size: 18px;
+          color: var(--value-spec-btn-backgorund-color);
+        }
+
+        &:hover svg {
+          color: var(--value-spec-btn-color);
+        }
+      }
+    }
+
+    .selector-input {
+      &__control {
+        min-height: 20px;
+        height: fit-content;
+        border-width: 1px;
+      }
+
+      &__value-container {
+        height: 18px;
+        padding: 0 1px;
+
+        .selector-input__multi-value {
+          margin: 1px;
+
+          .selector-input__multi-value__label {
+            padding: 0;
+            padding-left: 6px;
+          }
+        }
+      }
+
+      &__input {
+        height: unset !important;
+
+        &-container {
+          height: unset;
+          margin: 0;
+          padding: 0;
+        }
+      }
+
+      &__single-value {
+        height: unset;
+      }
+
+      &--has-error {
+        .selector-input__control {
+          border-color: var(--value-spec-error-color);
+        }
+
+        .selector-input__indicator-separator {
+          background: var(--value-spec-error-color);
+        }
+
+        .selector-input__indicators svg {
+          color: var(--value-spec-error-color);
+        }
+      }
+    }
+
+    &__list-editor {
+      &__preview {
+        width: 100%;
+        height: 100%;
+        min-height: 20px;
+        font-size: unset;
+        line-height: unset;
+        background: var(--value-spec-border-color);
+        color: unset;
+
+        &--error {
+          background: var(--value-spec-border-color);
+          border-color: var(--value-spec-error-color);
+        }
+      }
+
+      &__edit-icon {
+        height: 100%;
+        min-height: 20px;
+        width: 20px;
+        min-width: 10px;
+        background: var(--value-spec-border-color);
+
+        svg {
+          height: 10px;
+          width: 10px;
+          color: unset;
+        }
+      }
+
+      &__copy-button {
+        width: 20px;
+        min-width: 20px;
+        min-height: 20px;
+        background: var(--value-spec-btn-backgorund-color);
+
+        svg {
+          color: var(--value-spec-btn-color);
+          font-size: 12px;
+        }
+
+        &:hover svg {
+          color: var(--value-spec-btn-color-hover);
+        }
+      }
+
+      &__save-button {
+        width: 20px;
+        min-width: 20px;
+        min-height: 20px;
+        background: var(--value-spec-btn-backgorund-color);
+
+        svg {
+          color: var(--value-spec-btn-color);
+          font-size: 12px;
+        }
+
+        &:hover svg {
+          color: var(--value-spec-btn-color-hover);
+        }
+      }
+    }
+
+    &__reset-btn {
+      height: 20px;
+      width: 20px;
+      background: var(--value-spec-btn-backgorund-color);
+      border-color: var(--value-spec-border-color);
+
+      svg {
+        font-size: unset;
+        color: var(--value-spec-btn-color);
+      }
+
+      &:hover svg {
+        color: var(--value-spec-btn-color-hover);
+      }
+    }
+
+    &__date-picker {
+      &__trigger {
+        height: 20px;
+        font-size: unset;
+        background: var(--tw-color-white);
+        border: 1px solid var(--value-spec-border-color);
+        color: unset;
+
+        &--error {
+          border-color: var(--value-spec-error-color);
+        }
+      }
+    }
+
+    &__toggler__btn {
+      border: 1px solid var(--value-spec-border-color);
+
+      svg {
+        font-size: unset;
+        color: var(--value-spec-btn-color);
+      }
+
+      &:hover svg {
+        font-size: unset;
+        color: var(--value-spec-btn-color-hover);
+      }
+
+      &[disabled] svg,
+      &[disabled]:hover svg {
+        color: var(--value-spec-btn-color-disabled);
+      }
+
+      &--toggled {
+        svg {
+          font-size: unset;
+          color: var(--value-spec-toggler-btn-color-toggled);
+        }
+
+        &:hover svg {
+          font-size: unset;
+          color: var(--value-spec-toggler-btn-color-toggled-hover);
+        }
+
+        &[disabled] svg,
+        &[disabled]:hover svg {
+          color: var(--value-spec-toggler-btn-color-toggled-disabled);
+        }
+      }
+    }
+
+    &__number__input--error {
+      border-color: var(--value-spec-error-color);
+    }
+
+    &:hover {
+      .value-spec-editor__list-editor__preview,
+      .value-spec-editor__list-editor__edit-icon {
+        color: unset;
+        background: var(--value-spec-list-editor-preview-color-hover);
+      }
+    }
+  }
+}
+
+.selector-input__option {
+  font-size: 12px;
+  padding: 2px 4px;
+}
+
+.theme__legacy-light {
+  .mui-popover__paper {
+    background: var(--tw-color-white);
+  }
+
+  .mui-radio-group__group {
+    color: unset;
+  }
+
+  .value-spec-editor__date-picker__absolute-date,
+  .value-spec-editor__date-picker__custom-date__input {
+    input {
+      background: var(--tw-color-white);
+      color: unset;
+      border-color: var(--value-spec-border-color);
+    }
+  }
+}

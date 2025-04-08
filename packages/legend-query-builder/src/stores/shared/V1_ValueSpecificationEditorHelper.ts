@@ -16,6 +16,7 @@
 
 import {
   type V1_ValueSpecification,
+  V1_AppliedFunction,
   V1_AppliedProperty,
   V1_CBoolean,
   V1_CByteArray,
@@ -29,6 +30,7 @@ import {
   V1_CStrictTime,
   V1_CString,
   V1_EnumValue,
+  V1_Multiplicity,
   V1_PrimitiveValueSpecification,
 } from '@finos/legend-graph';
 import { buildDatePickerOption } from '../../components/shared/CustomDatePickerHelper.js';
@@ -70,6 +72,8 @@ export const getV1_ValueSpecificationStringValue = (
     return valueSpecification.value.toString();
   } else if (valueSpecification instanceof V1_AppliedProperty) {
     return valueSpecification.property;
+  } else if (valueSpecification instanceof V1_AppliedFunction) {
+    return valueSpecification.function;
   } else if (valueSpecification instanceof V1_Collection) {
     return valueSpecification.values
       .map((valueSpec) =>
@@ -86,27 +90,38 @@ export const getV1_ValueSpecificationStringValue = (
 
 export const isValidV1_ValueSpecification = (
   valueSpecification: V1_ValueSpecification,
+  multiplicity: V1_Multiplicity,
 ): boolean => {
+  const isRequired = multiplicity.lowerBound >= 1;
   if (valueSpecification instanceof V1_PrimitiveValueSpecification) {
-    const isRequired = valueSpecification.multiplicity.lowerBound >= 1;
     // required and no values provided. LatestDate doesn't have any values so we skip that check for it.
-    if (
-      isRequired &&
-      (valueSpecification instanceof V1_CBoolean ||
+    if (isRequired) {
+      if (valueSpecification instanceof V1_CString) {
+        return valueSpecification.value.length > 0;
+      } else if (
+        valueSpecification instanceof V1_CBoolean ||
         valueSpecification instanceof V1_CByteArray ||
         valueSpecification instanceof V1_CDecimal ||
         valueSpecification instanceof V1_CFloat ||
         valueSpecification instanceof V1_CInteger ||
         valueSpecification instanceof V1_CStrictTime ||
-        valueSpecification instanceof V1_CString ||
         valueSpecification instanceof V1_CDateTime ||
-        valueSpecification instanceof V1_CStrictDate)
-    ) {
-      return true;
+        valueSpecification instanceof V1_CStrictDate
+      ) {
+        return true;
+      }
     }
+  } else if (valueSpecification instanceof V1_AppliedProperty && isRequired) {
+    return valueSpecification.property.length > 0;
   } else if (valueSpecification instanceof V1_Collection) {
+    // collection instance can't be empty
+    if (valueSpecification.values.length === 0) {
+      return false;
+    }
     // collection instance must have all valid values.
-    return valueSpecification.values.every(isValidV1_ValueSpecification);
+    return valueSpecification.values.every((val) =>
+      isValidV1_ValueSpecification(val, V1_Multiplicity.ONE),
+    );
   }
 
   return true;

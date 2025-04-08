@@ -2376,6 +2376,7 @@ __metadata:
     "@finos/legend-data-cube": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-extension-dsl-data-space": "workspace:*"
+    "@finos/legend-query-builder": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@types/react": "npm:19.0.10"
     cross-env: "npm:7.0.3"

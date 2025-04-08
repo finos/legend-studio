@@ -14,6 +14,25 @@
  * limitations under the License.
  */
 
-import { Core_LegendApplicationPlugin } from '@finos/legend-application';
+import {
+  type SettingConfigurationEntry,
+  collectSettingConfigurationEntriesFromConfig,
+  Core_LegendApplicationPlugin,
+  LEGEND_APPLICATION_COLOR_THEME,
+  LEGEND_APPLICATION_SETTING_KEY,
+} from '@finos/legend-application';
 
-export class Core_LegendDataCube_LegendApplicationPlugin extends Core_LegendApplicationPlugin {}
+export const LEGEND_QUERY_APPLICATION_SETTING_CONFIG = {
+  [LEGEND_APPLICATION_SETTING_KEY.COLOR_THEME]: {
+    // default application query to light mode
+    defaultValue: LEGEND_APPLICATION_COLOR_THEME.LEGACY_LIGHT,
+  },
+};
+
+export class Core_LegendDataCube_LegendApplicationPlugin extends Core_LegendApplicationPlugin {
+  override getExtraSettingConfigurationEntries(): SettingConfigurationEntry[] {
+    return collectSettingConfigurationEntriesFromConfig(
+      LEGEND_QUERY_APPLICATION_SETTING_CONFIG,
+    );
+  }
+}
