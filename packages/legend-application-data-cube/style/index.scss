@@ -166,6 +166,20 @@
       &__single-value {
         height: unset;
       }
+
+      &--has-error {
+        .selector-input__control {
+          border-color: var(--value-spec-error-color);
+        }
+
+        .selector-input__indicator-separator {
+          background: var(--value-spec-error-color);
+        }
+
+        .selector-input__indicators svg {
+          color: var(--value-spec-error-color);
+        }
+      }
     }
 
     &__list-editor {
