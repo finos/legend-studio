@@ -191,11 +191,7 @@ test(
     );
 
     // Verify grid renders
-    await screen.findByText(
-      'test-data-cube-id-query-name',
-      {},
-      { timeout: 10000 },
-    );
+    await screen.findByText('test-data-cube-id-query-name');
     expect(
       (await screen.findAllByText('Id', {}, { timeout: 10000 })).length,
     ).toBeGreaterThanOrEqual(1);
@@ -276,11 +272,7 @@ test(
     );
 
     // Verify grid renders
-    await screen.findByText(
-      'test-data-cube-id-query-name',
-      {},
-      { timeout: 10000 },
-    );
+    await screen.findByText('test-data-cube-id-query-name');
     expect(
       (await screen.findAllByText('Id', {}, { timeout: 10000 })).length,
     ).toBeGreaterThanOrEqual(1);
