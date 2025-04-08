@@ -92,8 +92,8 @@ export const isValidV1_ValueSpecification = (
   valueSpecification: V1_ValueSpecification,
   multiplicity: V1_Multiplicity,
 ): boolean => {
+  const isRequired = multiplicity.lowerBound >= 1;
   if (valueSpecification instanceof V1_PrimitiveValueSpecification) {
-    const isRequired = multiplicity.lowerBound >= 1;
     // required and no values provided. LatestDate doesn't have any values so we skip that check for it.
     if (isRequired) {
       if (valueSpecification instanceof V1_CString) {
@@ -111,6 +111,8 @@ export const isValidV1_ValueSpecification = (
         return true;
       }
     }
+  } else if (valueSpecification instanceof V1_AppliedProperty && isRequired) {
+    return valueSpecification.property.length > 0;
   } else if (valueSpecification instanceof V1_Collection) {
     // collection instance can't be empty
     if (valueSpecification.values.length === 0) {
