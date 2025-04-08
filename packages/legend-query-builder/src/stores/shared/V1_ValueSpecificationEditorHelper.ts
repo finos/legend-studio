@@ -112,6 +112,10 @@ export const isValidV1_ValueSpecification = (
       }
     }
   } else if (valueSpecification instanceof V1_Collection) {
+    // collection instance can't be empty
+    if (valueSpecification.values.length === 0) {
+      return false;
+    }
     // collection instance must have all valid values.
     return valueSpecification.values.every((val) =>
       isValidV1_ValueSpecification(val, V1_Multiplicity.ONE),
