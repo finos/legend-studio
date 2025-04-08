@@ -44,7 +44,7 @@ export class LegendQueryDataCubeSource extends DataCubeSource {
 
 export class RawLegendQueryDataCubeSource {
   queryId!: string;
-  parameterValues!: [string, string][];
+  parameterValues?: [string, string][] | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(RawLegendQueryDataCubeSource, {

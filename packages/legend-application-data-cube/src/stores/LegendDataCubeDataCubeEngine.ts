@@ -86,7 +86,6 @@ import {
   type V1_LambdaReturnTypeResult,
   V1_Variable,
   type QueryInfo,
-  V1_deserializeRawValueSpecificationType,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
@@ -1154,13 +1153,14 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     const rawSourceParameters: {
       variable: V1_Variable;
       valueSpec: V1_ValueSpecification;
-    }[] = rawSource.parameterValues.map(([variable, _value]) => ({
-      variable: guaranteeType(
-        V1_deserializeValueSpecification(JSON.parse(variable), []),
-        V1_Variable,
-      ),
-      valueSpec: V1_deserializeValueSpecification(JSON.parse(_value), []),
-    }));
+    }[] =
+      rawSource.parameterValues?.map(([variable, _value]) => ({
+        variable: guaranteeType(
+          V1_deserializeValueSpecification(JSON.parse(variable), []),
+          V1_Variable,
+        ),
+        valueSpec: V1_deserializeValueSpecification(JSON.parse(_value), []),
+      })) ?? [];
 
     const lambdaParameterValues: {
       variable: V1_Variable;
@@ -1176,10 +1176,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
             const defaultValueSpec =
               defaultValueString !== undefined
                 ? await this.parseValueSpecification(defaultValueString)
-                : _primitiveValue(
-                    V1_deserializeRawValueSpecificationType(type),
-                    _defaultPrimitiveTypeValue(type),
-                  );
+                : _primitiveValue(type, _defaultPrimitiveTypeValue(type));
             return { variable: parameter, valueSpec: defaultValueSpec };
           }
           return undefined;
