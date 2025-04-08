@@ -138,15 +138,13 @@ test(
 
     expect((stringValueSpec as V1_CString).value).toBe('updated value');
 
-    // Test that empty string is allowed
+    // Test that empty string is not allowed
     fireEvent.change(inputElement, { target: { value: '' } });
     fireEvent.blur(inputElement);
 
     await screen.findByPlaceholderText('(empty)');
     expect((stringValueSpec as V1_CString).value).toBe('');
-    expect(inputElement.classList).not.toContain(
-      'input--with-validation--error',
-    );
+    expect(inputElement.classList).toContain('input--with-validation--error');
   },
 );
 
