@@ -509,6 +509,8 @@ test(
     });
     fireEvent.blur(valueSpecEditorInput);
     await screen.findByPlaceholderText('(empty)');
+
+    // Test that button is disabled
     expect(
       (
         await screen.findByRole('button', { name: 'Update Query Parameters' })
