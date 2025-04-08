@@ -383,7 +383,7 @@ const LegendQuerySourceViewer = observer(
         {queryHasParameters && (
           <div className="flex h-10 items-center justify-end px-2">
             <FormButton onClick={() => store.sourceViewerDisplay.close()}>
-              Close
+              Cancel
             </FormButton>
             <FormButton
               className="ml-2"
