@@ -333,77 +333,83 @@ export const LegendQueryDataCubeSourceBuilder = observer(
             />
           </div>
         )}
-        {sourceBuilder.queryParameters?.length && (
-          <div className="h-50 mt-2 w-full overflow-auto">
-            {sourceBuilder.queryParameterValues &&
-              Object.entries(sourceBuilder.queryParameterValues).map(
-                ([name, { variable, value }]) => {
-                  const packageableType = guaranteeType(
-                    variable.genericType?.rawType,
-                    V1_PackageableType,
-                    'Can only edit parameters with packageable type',
-                  );
-                  const enumeration = sourceBuilder.queryEnumerations?.[name];
-                  const resetValue = (): void => {
-                    if (isPrimitiveType(packageableType.fullPath)) {
-                      sourceBuilder.setQueryParameterValue(
-                        name,
-                        V1_observe_ValueSpecification(
-                          _primitiveValue(
-                            packageableType.fullPath,
-                            _defaultPrimitiveTypeValue(
+        {sourceBuilder.queryParameters &&
+          sourceBuilder.queryParameters.length > 0 && (
+            <div className="h-50 mt-2 w-full overflow-auto">
+              {sourceBuilder.queryParameterValues &&
+                Object.entries(sourceBuilder.queryParameterValues).map(
+                  ([name, { variable, value }]) => {
+                    const packageableType = guaranteeType(
+                      variable.genericType?.rawType,
+                      V1_PackageableType,
+                      'Can only edit parameters with packageable type',
+                    );
+                    const enumeration = sourceBuilder.queryEnumerations?.[name];
+                    const resetValue = (): void => {
+                      if (isPrimitiveType(packageableType.fullPath)) {
+                        sourceBuilder.setQueryParameterValue(
+                          name,
+                          V1_observe_ValueSpecification(
+                            _primitiveValue(
                               packageableType.fullPath,
+                              _defaultPrimitiveTypeValue(
+                                packageableType.fullPath,
+                              ),
                             ),
                           ),
-                        ),
-                      );
-                    } else {
-                      // If not a primitive, assume it is an enum
-                      const typeParam = _elementPtr(
-                        guaranteeIsString(packageableType.fullPath),
-                      );
-                      const valueSpec = _property('', [typeParam]);
-                      sourceBuilder.setQueryParameterValue(
-                        name,
-                        V1_observe_ValueSpecification(valueSpec),
-                      );
-                    }
-                  };
-                  return (
-                    <div key={name} className="mt-1 flex h-fit min-h-5 w-full">
-                      <div className="my-auto">
-                        {name}
-                        {': '}
+                        );
+                      } else {
+                        // If not a primitive, assume it is an enum
+                        const typeParam = _elementPtr(
+                          guaranteeIsString(packageableType.fullPath),
+                        );
+                        const valueSpec = _property('', [typeParam]);
+                        sourceBuilder.setQueryParameterValue(
+                          name,
+                          V1_observe_ValueSpecification(valueSpec),
+                        );
+                      }
+                    };
+                    return (
+                      <div
+                        key={name}
+                        className="mt-1 flex h-fit min-h-5 w-full"
+                      >
+                        <div className="my-auto">
+                          {name}
+                          {': '}
+                        </div>
+                        <V1_BasicValueSpecificationEditor
+                          valueSpecification={value}
+                          multiplicity={variable.multiplicity}
+                          typeCheckOption={{
+                            expectedType: packageableType,
+                            match:
+                              packageableType.fullPath ===
+                              PRIMITIVE_TYPE.DATETIME,
+                          }}
+                          setValueSpecification={(
+                            val: V1_ValueSpecification,
+                          ) => {
+                            sourceBuilder.setQueryParameterValue(
+                              name,
+                              V1_observe_ValueSpecification(val),
+                            );
+                          }}
+                          resetValue={resetValue}
+                          className="ml-2 flex flex-auto"
+                          enumeration={enumeration}
+                          selectorConfig={{
+                            optionCustomization: { rowHeight: 20 },
+                          }}
+                          lightMode={true}
+                        />
                       </div>
-                      <V1_BasicValueSpecificationEditor
-                        valueSpecification={value}
-                        multiplicity={variable.multiplicity}
-                        typeCheckOption={{
-                          expectedType: packageableType,
-                          match:
-                            packageableType.fullPath ===
-                            PRIMITIVE_TYPE.DATETIME,
-                        }}
-                        setValueSpecification={(val: V1_ValueSpecification) => {
-                          sourceBuilder.setQueryParameterValue(
-                            name,
-                            V1_observe_ValueSpecification(val),
-                          );
-                        }}
-                        resetValue={resetValue}
-                        className="ml-2 flex flex-auto"
-                        enumeration={enumeration}
-                        selectorConfig={{
-                          optionCustomization: { rowHeight: 20 },
-                        }}
-                        lightMode={true}
-                      />
-                    </div>
-                  );
-                },
-              )}
-          </div>
-        )}
+                    );
+                  },
+                )}
+            </div>
+          )}
         <FormButton
           className="mt-2 flex items-center pl-1"
           onClick={() => sourceBuilder.unsetQuery()}
