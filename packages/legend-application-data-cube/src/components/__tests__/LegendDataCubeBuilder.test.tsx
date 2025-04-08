@@ -441,6 +441,135 @@ test(
 
 test(
   integrationTest(
+    "DataCube with LegendQueryDataCubeSource doesn't change parameters when cancel button is clicked",
+  ),
+  async () => {
+    MockedMonacoEditorAPI.remeasureFonts.mockReturnValue(undefined);
+
+    const mockDataCubeId = 'test-data-cube-id';
+    const mockDataCube: PersistentDataCube =
+      PersistentDataCube.serialization.fromJson({
+        id: mockDataCubeId,
+        name: `${mockDataCubeId}-name`,
+        description: undefined,
+        content: {
+          query: `select(~[Id, 'Case Type'])`,
+          source: {
+            queryId: `${mockDataCubeId}-query-id`,
+            parameterValues: [
+              [
+                '{"_type": "var", "genericType": {"rawType": {"_type": "packageableType", "fullPath": "Integer"}}, "multiplicity": {"lowerBound": 1, "upperBound": 1}, "name": "minId"}',
+                '{"_type": "integer", "value": 1}',
+              ],
+            ],
+            _type: 'legendQuery',
+          },
+          configuration: {
+            name: `${mockDataCubeId}-query-name`,
+            columns: [
+              { name: 'Id', type: 'Integer' },
+              { name: 'Case Type', type: 'String' },
+            ],
+          },
+        },
+      });
+    const mockQuery: V1_Query = V1_Query.serialization.fromJson({
+      name: `${mockDataCubeId}-query-name`,
+      id: `${mockDataCubeId}-query-id`,
+      versionId: 'latest',
+      groupId: 'com.legend',
+      artifactId: 'test-project',
+      content: `{minId: Integer[1]|domain::COVIDData.all()->filter(x|$x.id >= $minId)->project(~[Id:x|$x.id, 'Case Type':x|$x.caseType])}`,
+      executionContext: {
+        dataSpacePath: 'domain::COVIDDatapace',
+        executionKey: 'dummyContext',
+        _type: 'dataSpaceExecutionContext',
+      },
+    });
+    const mockedLegendDataCubeBuilderStore =
+      await TEST__provideMockedLegendDataCubeBuilderStore();
+    await TEST__setUpDataCubeBuilder(
+      guaranteeNonNullable(mockedLegendDataCubeBuilderStore),
+      mockDataCube,
+      mockQuery,
+      depotEntities,
+    );
+
+    // Test that initial query loads correctly
+    await screen.findByText('test-data-cube-id-query-name');
+    expect(
+      (await screen.findAllByText('Id', {}, { timeout: 10000 })).length,
+    ).toBeGreaterThanOrEqual(1);
+    await screen.findByText('Case Type', {}, { timeout: 10000 });
+    await screen.findByText('1', {}, { timeout: 10000 });
+    await screen.findByText('Confirmed', {}, { timeout: 10000 });
+    await screen.findByText('2', {}, { timeout: 10000 });
+    await screen.findByText('Active', {}, { timeout: 10000 });
+
+    // Change parameter value
+    await screen.findByText('Parameters:');
+    const paramButton = await screen.findByText('minId');
+    fireEvent.click(paramButton);
+    await screen.findByText('DataCube Source');
+    const valueSpecEditorInput = await screen.findByDisplayValue('1');
+    fireEvent.change(valueSpecEditorInput, {
+      target: { value: '2' },
+    });
+    fireEvent.blur(valueSpecEditorInput);
+    await screen.findByDisplayValue('2');
+
+    // Click cancel
+    fireEvent.click(await screen.findByRole('button', { name: 'Cancel' }));
+
+    // Test that parameter value is not updated
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('button', { name: 'Update Query Parameters' }),
+      ).toBeNull(),
+    );
+    await waitFor(() =>
+      expect(
+        mockedLegendDataCubeBuilderStore.builder?.source instanceof
+          LegendQueryDataCubeSource,
+      ).toBeTruthy(),
+    );
+    expect(
+      (
+        mockedLegendDataCubeBuilderStore.builder
+          ?.source as LegendQueryDataCubeSource
+      ).parameterValues,
+    ).toHaveLength(1);
+    expect(
+      (
+        mockedLegendDataCubeBuilderStore.builder
+          ?.source as LegendQueryDataCubeSource
+      ).parameterValues[0]?.valueSpec instanceof V1_CInteger,
+    ).toBeTruthy();
+    expect(
+      (
+        mockedLegendDataCubeBuilderStore.builder
+          ?.source as LegendQueryDataCubeSource
+      ).parameterValues[0]?.valueSpec instanceof V1_CInteger,
+    ).toBeTruthy();
+    expect(
+      (
+        (
+          mockedLegendDataCubeBuilderStore.builder
+            ?.source as LegendQueryDataCubeSource
+        ).parameterValues[0]?.valueSpec as V1_CInteger
+      ).value,
+    ).toBe(1);
+
+    // Test that re-opening parameter editor panel resets the editor to the current parameter value
+    fireEvent.click(paramButton);
+    await screen.findByText('DataCube Source');
+    await screen.findByDisplayValue('1');
+    expect(screen.queryByDisplayValue('2')).toBeNull();
+  },
+);
+
+test(
+  integrationTest(
     'DataCube uses raw source parameter value if name and type matches query lambda parameter',
   ),
   async () => {
