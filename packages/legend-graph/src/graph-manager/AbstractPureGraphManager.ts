@@ -525,6 +525,15 @@ export abstract class AbstractPureGraphManager {
     report?: GraphManagerOperationReport,
   ): Promise<ExecutionResultWithMetadata>;
 
+  abstract runQueryWithUncompiledGraph(
+    lambda: RawLambda | string,
+    mapping: string | undefined,
+    runtime: string | undefined,
+    graph: PureModel,
+    options?: ExecutionOptions,
+    report?: GraphManagerOperationReport,
+  ): Promise<ExecutionResultWithMetadata>;
+
   abstract exportData(
     lambda: RawLambda,
     mapping: Mapping | undefined,

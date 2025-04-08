@@ -117,7 +117,7 @@ import { getDiagram } from '@finos/legend-extension-dsl-diagram/graph';
 import { resolveVersion } from '@finos/legend-server-depot';
 import { DATASPACE_ANALYTICS_FILE_NAME } from '../../../action/analytics/DataSpaceAnalysisHelper.js';
 import { buildDataSpaceElements } from '../../../DSL_DataSpaceAnalyticsHelper.js';
-import { DSL_DATASPACE_EVENT } from '../../../../__lib__/DS__DataSpace_Event.js';
+import { DSL_DATASPACE_EVENT } from '../../../../__lib__/DSL_DataSpace_Event.js';
 
 const ANALYZE_DATA_SPACE_TRACE = 'analyze data product';
 const TEMPORARY__TDS_SAMPLE_VALUES__DELIMITER = '-- e.g.';

@@ -122,7 +122,7 @@ import {
   V1_RawValueSpecificationTransformer,
 } from './transformation/pureGraph/from/V1_RawValueSpecificationTransformer.js';
 import { V1_transformRuntime } from './transformation/pureGraph/from/V1_RuntimeTransformer.js';
-import type { V1_RawLambda } from './model/rawValueSpecification/V1_RawLambda.js';
+import { V1_RawLambda } from './model/rawValueSpecification/V1_RawLambda.js';
 import {
   V1_ExecuteInput,
   V1_TestDataGenerationExecutionInput,
@@ -339,7 +339,10 @@ import { V1_HostedService } from './model/packageableElements/function/V1_Hosted
 import type { PostValidationAssertionResult } from '../../../../DSL_Service_Exports.js';
 import { V1_UserListOwnership } from './model/packageableElements/service/V1_ServiceOwnership.js';
 import { V1_PureSingleExecution } from './model/packageableElements/service/V1_ServiceExecution.js';
-import { V1_RuntimePointer } from './model/packageableElements/runtime/V1_Runtime.js';
+import {
+  type V1_Runtime,
+  V1_RuntimePointer,
+} from './model/packageableElements/runtime/V1_Runtime.js';
 import type { TestDebug } from '../../../../graph/metamodel/pure/test/result/DebugTestsResult.js';
 import { V1_buildDebugTestsResult } from './engine/test/V1_DebugTestsResult.js';
 import type { V1_GraphManagerEngine } from './engine/V1_GraphManagerEngine.js';
@@ -2650,24 +2653,44 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     executeInput: V1_ExecuteInput,
     parameterValues?: ParameterValue[],
   ): V1_ExecuteInput => {
+    return this.createExecutionInputWithPureModelContextWithV1(
+      data,
+      mapping?.path,
+      V1_transformRawLambda(
+        lambda,
+        new V1_GraphTransformerContextBuilder(
+          this.pluginManager.getPureProtocolProcessorPlugins(),
+        ).build(),
+      ),
+      runtime
+        ? V1_transformRuntime(
+            runtime,
+            new V1_GraphTransformerContextBuilder(
+              this.pluginManager.getPureProtocolProcessorPlugins(),
+            ).build(),
+          )
+        : undefined,
+      clientVersion,
+      executeInput,
+      parameterValues,
+    );
+  };
+
+  private createExecutionInputWithPureModelContextWithV1 = (
+    data: V1_PureModelContext,
+    mapping: string | undefined,
+    lambda: V1_RawLambda,
+    runtime: V1_Runtime | undefined,
+    clientVersion: string | undefined,
+    executeInput: V1_ExecuteInput,
+    parameterValues?: ParameterValue[],
+  ): V1_ExecuteInput => {
     // NOTE: for execution, we usually will just assume that we send the connections embedded in the runtime value, since we don't want the user to have to create
     // packageable runtime and connection just to play with execution.
     executeInput.clientVersion = clientVersion;
-    executeInput.function = V1_transformRawLambda(
-      lambda,
-      new V1_GraphTransformerContextBuilder(
-        this.pluginManager.getPureProtocolProcessorPlugins(),
-      ).build(),
-    );
-    executeInput.mapping = mapping?.path;
-    executeInput.runtime = runtime
-      ? V1_transformRuntime(
-          runtime,
-          new V1_GraphTransformerContextBuilder(
-            this.pluginManager.getPureProtocolProcessorPlugins(),
-          ).build(),
-        )
-      : undefined;
+    executeInput.function = lambda;
+    executeInput.mapping = mapping;
+    executeInput.runtime = runtime;
     executeInput.model = data;
     executeInput.context = new V1_RawBaseExecutionContext(); // TODO: potentially need to support more types
     if (parameterValues) {
@@ -2678,6 +2701,54 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return executeInput;
   };
 
+  async runQueryWithUncompiledGraph(
+    lambda: RawLambda | string,
+    mapping: string | undefined,
+    runtime: string | undefined,
+    graph: PureModel,
+    options?: ExecutionOptions,
+    _report?: GraphManagerOperationReport,
+  ): Promise<ExecutionResultWithMetadata> {
+    let rawLambda: V1_RawLambda;
+    if (isString(lambda)) {
+      const rawValueSpecification = V1_deserializeRawValueSpecification(
+        await this.pureCodeToValueSpecification(lambda),
+      );
+      rawLambda = guaranteeType(rawValueSpecification, V1_RawLambda);
+    } else {
+      rawLambda = V1_transformRawLambda(
+        lambda,
+        new V1_GraphTransformerContextBuilder(
+          this.pluginManager.getPureProtocolProcessorPlugins(),
+        ).build(),
+      );
+    }
+    let v1Runtime: V1_RuntimePointer | undefined = undefined;
+    if (runtime) {
+      const _run = new V1_RuntimePointer();
+      _run.runtime = runtime;
+      v1Runtime = _run;
+    }
+    return this._runQuery(
+      () =>
+        this.createExecutionInputWithPureModelContextWithV1(
+          graph.origin
+            ? this.buildPureModelSDLCPointer(graph.origin, undefined)
+            : this.getFullGraphModelData(graph),
+          mapping,
+          rawLambda,
+          v1Runtime,
+          this.engine.config.useDevClientProtocol
+            ? V1_PureGraphManager.DEV_PROTOCOL_VERSION
+            : V1_PureGraphManager.PROD_PROTOCOL_VERSION,
+          new V1_ExecuteInput(),
+          options?.parameterValues,
+        ),
+      options,
+      _report,
+    );
+  }
+
   async runQuery(
     lambda: RawLambda,
     mapping: Mapping,
@@ -2686,19 +2757,31 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     options?: ExecutionOptions,
     _report?: GraphManagerOperationReport,
   ): Promise<ExecutionResultWithMetadata> {
+    return this._runQuery(
+      () =>
+        this.createExecutionInput(
+          graph,
+          mapping,
+          lambda,
+          runtime,
+          this.engine.config.useDevClientProtocol
+            ? V1_PureGraphManager.DEV_PROTOCOL_VERSION
+            : V1_PureGraphManager.PROD_PROTOCOL_VERSION,
+          options?.parameterValues,
+        ),
+      options,
+      _report,
+    );
+  }
+
+  async _runQuery(
+    createV1ExecuteInputFunc: () => V1_ExecuteInput,
+    options?: ExecutionOptions,
+    _report?: GraphManagerOperationReport,
+  ): Promise<ExecutionResultWithMetadata> {
     const report = _report ?? createGraphManagerOperationReport();
     const stopWatch = new StopWatch();
-
-    const input = this.createExecutionInput(
-      graph,
-      mapping,
-      lambda,
-      runtime,
-      this.engine.config.useDevClientProtocol
-        ? V1_PureGraphManager.DEV_PROTOCOL_VERSION
-        : V1_PureGraphManager.PROD_PROTOCOL_VERSION,
-      options?.parameterValues,
-    );
+    const input = createV1ExecuteInputFunc();
     stopWatch.record(GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_INPUT__SUCCESS);
 
     const result = await this.engine.runQuery(input, options);
