@@ -91,6 +91,55 @@ test(
     fireEvent.click(screen.getByTitle('Reset'));
     await screen.findByPlaceholderText('(empty)');
     expect((stringValueSpec as V1_CString).value).toBe('');
+    expect(inputElement.classList).toContain('input--with-validation--error');
+  },
+);
+
+test(
+  integrationTest(
+    'V1_BasicValueSpecificationEditor allows empty value if not required',
+  ),
+  async () => {
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
+
+    let stringValueSpec = V1_observe_ValueSpecification(
+      _primitiveValue(PRIMITIVE_TYPE.STRING, 'initial value'),
+    );
+
+    const setValueSpecification = (newVal: V1_ValueSpecification): void => {
+      stringValueSpec = newVal;
+    };
+
+    const resetValue = (): void => {
+      V1_PrimitiveValue_setValue(
+        stringValueSpec as V1_CString,
+        _defaultPrimitiveTypeValue(PRIMITIVE_TYPE.STRING),
+      );
+    };
+
+    TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
+      valueSpecification: stringValueSpec,
+      setValueSpecification: setValueSpecification,
+      multiplicity: V1_Multiplicity.ZERO_ONE,
+      typeCheckOption: {
+        expectedType: _type(PRIMITIVE_TYPE.STRING),
+        match: false,
+      },
+      resetValue: resetValue,
+    });
+
+    const inputElement = await screen.findByDisplayValue('initial value');
+    expect(inputElement).not.toBeNull();
+
+    // Reset value
+    fireEvent.click(screen.getByTitle('Reset'));
+    await screen.findByPlaceholderText('(empty)');
+    expect((stringValueSpec as V1_CString).value).toBe('');
+
+    // Verify no error styling
+    expect(inputElement.classList).not.toContain(
+      'input--with-validation--error',
+    );
   },
 );
 
