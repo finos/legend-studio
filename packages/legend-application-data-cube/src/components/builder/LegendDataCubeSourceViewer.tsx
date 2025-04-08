@@ -156,7 +156,8 @@ const LegendQuerySourceViewer = observer(
     ]);
 
     useEffect(() => {
-      _handleFetchEnumerations();
+      // eslint-disable-next-line no-void
+      void void _handleFetchEnumerations();
     }, [_handleFetchEnumerations]);
 
     const updateParameterValue = (
