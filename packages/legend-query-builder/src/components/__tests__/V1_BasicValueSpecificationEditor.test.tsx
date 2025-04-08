@@ -36,7 +36,10 @@ import {
 import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import { TEST__setUpV1BasicValueSpecificationEditor } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import { TEST__LegendApplicationPluginManager } from '../../stores/__test-utils__/QueryBuilderStateTestUtils.js';
-import { V1_PrimitiveValue_setValue } from '../../stores/shared/V1_ValueSpecificationModifierHelper.js';
+import {
+  V1_AppliedProperty_setProperty,
+  V1_PrimitiveValue_setValue,
+} from '../../stores/shared/V1_ValueSpecificationModifierHelper.js';
 import { CUSTOM_DATE_PICKER_OPTION } from '../shared/CustomDatePickerHelper.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
 import {
@@ -563,7 +566,7 @@ test(
 
     let enumValueSpec = V1_observe_ValueSpecification(
       _property('Mr', [_elementPtr('test::myEnum')]),
-    );
+    ) as V1_AppliedProperty;
     const enumeration = _enumeration('test', 'myEnum', [
       _enumValue('Mr'),
       _enumValue('Mrs'),
@@ -572,7 +575,11 @@ test(
     ]);
 
     const setValueSpecification = (newVal: V1_ValueSpecification): void => {
-      enumValueSpec = newVal;
+      enumValueSpec = guaranteeType(newVal, V1_AppliedProperty);
+    };
+
+    const resetValue = (): void => {
+      V1_AppliedProperty_setProperty(enumValueSpec, '');
     };
 
     TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
@@ -583,7 +590,7 @@ test(
         expectedType: _type('test::myEnum'),
         match: false,
       },
-      resetValue: () => {},
+      resetValue: resetValue,
       enumeration: enumeration,
     });
 
@@ -613,6 +620,15 @@ test(
           .parameters[0] as V1_PackageableElementPtr
       ).fullPath,
     ).toBe('test::myEnum');
+
+    // Test that resetting value shows error styling
+    fireEvent.click(screen.getByTitle('Reset'));
+    await screen.findByDisplayValue('');
+    expect((enumValueSpec as V1_AppliedProperty).property).toBe('');
+    expect(
+      inputElement.parentElement?.parentElement?.parentElement?.parentElement
+        ?.classList,
+    ).toContain('selector-input--has-error');
   },
 );
 
