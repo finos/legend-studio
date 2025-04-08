@@ -16,4 +16,5 @@
 
 export enum DSL_DATASPACE_EVENT {
   BUILD_ANALYTICS_RESULT = 'dataProduct.builder.analytics-result',
+  ERROR_GENERATE_SAMPLE_VALUES = 'dataProduct.error.build-sample-values',
 }

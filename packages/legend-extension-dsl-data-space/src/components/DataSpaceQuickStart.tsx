@@ -31,8 +31,6 @@ import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 import { useApplicationStore } from '@finos/legend-application';
 import {
   DataSpaceExecutableTDSResult,
-  type DataSpaceExecutableAnalysisResult,
-  type DataSpaceExecutableTDSResultColumn,
   DataSpaceServiceExecutableInfo,
   DataSpaceMultiExecutionServiceExecutableInfo,
 } from '../graph-manager/action/analytics/DataSpaceAnalysis.js';
@@ -55,6 +53,11 @@ import {
   generateAnchorForQuickStart,
 } from '../stores/DataSpaceViewerNavigation.js';
 import { DataAccessOverview } from '@finos/legend-query-builder';
+import {
+  DataSpaceExecutableTDSResultState,
+  type DataSpaceViewerExecutableState,
+  type ResultColumnData,
+} from '../stores/DataSpaceViewerExecutableState.js';
 
 enum TDS_EXECUTABLE_ACTION_TAB {
   COLUMN_SPECS = 'COLUMN_SPECS',
@@ -66,7 +69,7 @@ enum TDS_EXECUTABLE_ACTION_TAB {
 }
 
 const TDSColumnDocumentationCellRenderer = (
-  params: DataGridCellRendererParams<DataSpaceExecutableTDSResultColumn>,
+  params: DataGridCellRendererParams<ResultColumnData>,
 ): React.ReactNode => {
   const data = params.data;
   if (!data) {
@@ -82,7 +85,7 @@ const TDSColumnDocumentationCellRenderer = (
 };
 
 const TDSColumnSampleValuesCellRenderer = (
-  params: DataGridCellRendererParams<DataSpaceExecutableTDSResultColumn>,
+  params: DataGridCellRendererParams<ResultColumnData>,
 ): React.ReactNode => {
   const data = params.data;
   if (!data) {
@@ -92,18 +95,21 @@ const TDSColumnSampleValuesCellRenderer = (
     data.sampleValues
   ) : (
     <div className="data-space__viewer__grid__empty-cell">
-      No sample values provided
+      {data.isLoadingSamples
+        ? `Loading Sample Data...`
+        : `No sample values provided`}
     </div>
   );
 };
 
 const DataSpaceExecutableTDSResultView = observer(
   (props: {
-    dataSpaceViewerState: DataSpaceViewerState;
-    executableAnalysisResult: DataSpaceExecutableAnalysisResult;
-    tdsResult: DataSpaceExecutableTDSResult;
+    executableState: DataSpaceViewerExecutableState;
+    resultState: DataSpaceExecutableTDSResultState;
   }) => {
-    const { dataSpaceViewerState, executableAnalysisResult, tdsResult } = props;
+    const { executableState, resultState } = props;
+    const executableAnalysisResult = executableState.value;
+    const dataSpaceViewerState = executableState.viewerState;
     const applicationStore = useApplicationStore();
     const [selectedTab, setSelectedTab] = useState<string>(
       TDS_EXECUTABLE_ACTION_TAB.COLUMN_SPECS,
@@ -113,6 +119,10 @@ const DataSpaceExecutableTDSResultView = observer(
       dataSpaceViewerState.quickStartState.dataAccessStateIndex.get(
         executableAnalysisResult,
       );
+
+    useEffect(() => {
+      resultState.buildSampleValues();
+    }, [resultState]);
 
     const openServiceQuery = (): void => {
       if (
@@ -128,7 +138,7 @@ const DataSpaceExecutableTDSResultView = observer(
         }
       }
     };
-    const columnSpecifications = tdsResult.columns;
+    const columnSpecifications = resultState.gridData;
     const extractTDSExecutableActionConfigurations =
       applicationStore.pluginManager
         .getApplicationPlugins()
@@ -142,7 +152,7 @@ const DataSpaceExecutableTDSResultView = observer(
           configuration.isSupported(
             dataSpaceViewerState,
             executableAnalysisResult,
-            tdsResult,
+            resultState.value,
           ),
         );
     const currentTabExtensionConfig =
@@ -293,7 +303,7 @@ const DataSpaceExecutableTDSResultView = observer(
                 rowData={columnSpecifications}
                 gridOptions={{
                   suppressScrollOnNewData: true,
-                  getRowId: (rowData) => rowData.data.uuid,
+                  getRowId: (rowData) => rowData.data.id,
                 }}
                 suppressFieldDotNotation={true}
                 columnDefs={[
@@ -330,6 +340,9 @@ const DataSpaceExecutableTDSResultView = observer(
                     flex: 1,
                   },
                 ]}
+                onRowDataUpdated={(params) => {
+                  params.api.refreshCells({ force: true });
+                }}
               />
             </div>
           )}
@@ -411,7 +424,7 @@ const DataSpaceExecutableTDSResultView = observer(
           {currentTabExtensionConfig?.renderer(
             dataSpaceViewerState,
             executableAnalysisResult,
-            tdsResult,
+            resultState.value,
           )}
         </div>
       </div>
@@ -420,11 +433,10 @@ const DataSpaceExecutableTDSResultView = observer(
 );
 
 const DataSpaceExecutableAnalysisResultView = observer(
-  (props: {
-    dataSpaceViewerState: DataSpaceViewerState;
-    executableAnalysisResult: DataSpaceExecutableAnalysisResult;
-  }) => {
-    const { dataSpaceViewerState, executableAnalysisResult } = props;
+  (props: { executableState: DataSpaceViewerExecutableState }) => {
+    const { executableState } = props;
+    const dataSpaceViewerState = executableState.viewerState;
+    const executableAnalysisResult = executableState.value;
     const quickStartRef = useRef<HTMLDivElement>(null);
     const anchor = generateAnchorForQuickStart(executableAnalysisResult);
 
@@ -465,12 +477,11 @@ const DataSpaceExecutableAnalysisResultView = observer(
             />
           </div>
         )}
-        {executableAnalysisResult.result instanceof
-          DataSpaceExecutableTDSResult && (
+        {executableState.resultState instanceof
+          DataSpaceExecutableTDSResultState && (
           <DataSpaceExecutableTDSResultView
-            dataSpaceViewerState={dataSpaceViewerState}
-            executableAnalysisResult={executableAnalysisResult}
-            tdsResult={executableAnalysisResult.result}
+            executableState={executableState}
+            resultState={executableState.resultState}
           />
         )}
       </div>
@@ -532,13 +543,12 @@ export const DataSpaceQuickStart = observer(
           )}
         </div>
         <div className="data-space__viewer__wiki__section__content">
-          {analysisResult.executables.length !== 0 && (
+          {dataSpaceViewerState.executableStates.length !== 0 && (
             <div className="data-space__viewer__quickstart">
-              {analysisResult.executables.map((executable) => (
+              {dataSpaceViewerState.executableStates.map((executableState) => (
                 <DataSpaceExecutableAnalysisResultView
-                  key={executable.uuid}
-                  dataSpaceViewerState={dataSpaceViewerState}
-                  executableAnalysisResult={executable}
+                  key={executableState.uuid}
+                  executableState={executableState}
                 />
               ))}
             </div>

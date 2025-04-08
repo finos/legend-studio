@@ -19,16 +19,16 @@ import {
   type GenericLegendApplicationStore,
   type NavigationZone,
 } from '@finos/legend-application';
-import type {
-  BasicGraphManagerState,
-  Class,
-  GraphData,
-  PackageableRuntime,
+import {
+  type Class,
+  type GraphData,
+  type GraphManagerState,
+  type PackageableRuntime,
 } from '@finos/legend-graph';
 import { action, computed, makeObservable, observable } from 'mobx';
-import type {
-  DataSpaceAnalysisResult,
-  DataSpaceExecutionContextAnalysisResult,
+import {
+  type DataSpaceAnalysisResult,
+  type DataSpaceExecutionContextAnalysisResult,
 } from '../graph-manager/action/analytics/DataSpaceAnalysis.js';
 import {
   PURE_DATA_SPACE_INFO_PROFILE_PATH,
@@ -46,10 +46,11 @@ import {
 } from './DataSpaceViewerNavigation.js';
 import { DataAccessState } from '@finos/legend-query-builder';
 import { DataSpaceQuickStartState } from './DataSpaceQuickStartState.js';
+import { DataSpaceViewerExecutableState } from './DataSpaceViewerExecutableState.js';
 
 export class DataSpaceViewerState {
   readonly applicationStore: GenericLegendApplicationStore;
-  readonly graphManagerState: BasicGraphManagerState;
+  readonly graphManagerState: GraphManagerState;
   readonly layoutState: DataSpaceLayoutState;
 
   readonly dataSpaceAnalysisResult: DataSpaceAnalysisResult;
@@ -69,6 +70,7 @@ export class DataSpaceViewerState {
   readonly diagramViewerState: DataSpaceViewerDiagramViewerState;
   readonly modelsDocumentationState: DataSpaceViewerModelsDocumentationState;
   readonly quickStartState: DataSpaceQuickStartState;
+  executableStates: DataSpaceViewerExecutableState[] = [];
 
   currentActivity = DATA_SPACE_VIEWER_ACTIVITY_MODE.DESCRIPTION;
   currentDataAccessState: DataAccessState;
@@ -77,7 +79,7 @@ export class DataSpaceViewerState {
 
   constructor(
     applicationStore: GenericLegendApplicationStore,
-    graphManagerState: BasicGraphManagerState,
+    graphManagerState: GraphManagerState,
     groupId: string,
     artifactId: string,
     versionId: string,
@@ -97,6 +99,7 @@ export class DataSpaceViewerState {
       currentExecutionContext: observable,
       currentRuntime: observable,
       currentDataAccessState: observable,
+      executableStates: observable,
       isVerified: computed,
       setCurrentActivity: action,
       setCurrentExecutionContext: action,
@@ -108,6 +111,9 @@ export class DataSpaceViewerState {
     this.layoutState = new DataSpaceLayoutState(this);
 
     this.dataSpaceAnalysisResult = dataSpaceAnalysisResult;
+    this.executableStates = this.dataSpaceAnalysisResult.executables.map(
+      (exec) => new DataSpaceViewerExecutableState(this, exec),
+    );
     this.groupId = groupId;
     this.artifactId = artifactId;
     this.versionId = versionId;
