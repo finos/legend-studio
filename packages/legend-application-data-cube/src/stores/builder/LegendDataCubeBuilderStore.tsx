@@ -69,6 +69,7 @@ import { LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE } from '../model/LocalFileDataCu
 import type { LegendDataCubeSourceLoaderState } from './source/LegendDataCubeSourceLoaderState.js';
 import { LocalFileDataCubeSourceLoaderState } from './source/LocalFileDataCubeSourceLoaderState.js';
 import { LEGEND_DATACUBE_APP_EVENT } from '../../__lib__/LegendDataCubeEvent.js';
+import { LegendQueryDataCubeSource } from '../model/LegendQueryDataCubeSource.js';
 
 export class LegendDataCubeBuilderState {
   readonly uuid = uuid();
