@@ -78,7 +78,7 @@ import {
   isVariableEnumerationType,
 } from '../../stores/builder/source/SourceBuilderStateHelper.js';
 
-const handleFetchEnumerations = (
+const handleFetchEnumerations = async (
   enumerationVariables: V1_Variable[],
   query: LightQuery,
   systemModel: V1_PureModelContextData,
@@ -86,7 +86,7 @@ const handleFetchEnumerations = (
   plugins: PureProtocolProcessorPlugin[],
   updateCallback: (val: { [name: string]: V1_Enumeration }) => void,
 ) => {
-  Promise.all(
+  await Promise.all(
     enumerationVariables.map(async (variable) => {
       const packageableType = guaranteeType(
         variable.genericType?.rawType,
@@ -131,7 +131,7 @@ const LegendQuerySourceViewer = observer(
       [name: string]: V1_Enumeration;
     }>({});
 
-    const _handleFetchEnumerations = useCallback(() => {
+    const _handleFetchEnumerations = useCallback(async () => {
       const enumerationVariables = source.parameterValues
         .map((parameter) =>
           source.lambda.parameters.find(
@@ -140,7 +140,7 @@ const LegendQuerySourceViewer = observer(
         )
         .filter(isNonNullable)
         .filter(isVariableEnumerationType);
-      handleFetchEnumerations(
+      await handleFetchEnumerations(
         enumerationVariables,
         source.info,
         systemModel,
@@ -410,9 +410,12 @@ const LegendQuerySourceViewer = observer(
                     param.variable.multiplicity,
                   ),
               )}
-              onClick={async () => {
-                await updateBuilderWithNewSpecification();
-                store.sourceViewerDisplay.close();
+              onClick={() => {
+                // eslint-disable-next-line no-void
+                void (async () => {
+                  await updateBuilderWithNewSpecification();
+                  store.sourceViewerDisplay.close();
+                })();
               }}
             >
               Update Query Parameters
