@@ -61,6 +61,19 @@ export class LegendQueryDataCubeSourceBuilder_DataCubeApplicationPlugin extends 
     );
   }
 
+  override getSourceViewerHeight(
+    builder: LegendDataCubeBuilderState | undefined,
+  ): number | undefined {
+    if (builder?.source instanceof LegendQueryDataCubeSource) {
+      return (
+        200 +
+        20 * builder?.source?.parameterValues?.length +
+        (builder?.dataCube?.isCachingEnabled() ? 70 : 0)
+      );
+    }
+    return undefined;
+  }
+
   override builderInnerHeaderRenderer(
     builder: LegendDataCubeBuilderState | undefined,
   ): React.ReactNode | null {
@@ -87,14 +100,7 @@ export class LegendQueryDataCubeSourceBuilder_DataCubeApplicationPlugin extends 
                   // Height should also be increased if we need to show the parameter
                   // editing disabled message.
                   builder._store.sourceViewerDisplay.configuration.window.height =
-                    Math.min(
-                      600,
-                      200 +
-                        20 * source.parameterValues.length +
-                        (builder._store.builder?.dataCube?.isCachingEnabled()
-                          ? 70
-                          : 0),
-                    );
+                    Math.min(600, this.getSourceViewerHeight(builder) ?? 200);
                   builder._store.sourceViewerDisplay.open();
                 }}
               >

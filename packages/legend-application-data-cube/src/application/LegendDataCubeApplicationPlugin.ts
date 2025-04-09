@@ -35,4 +35,11 @@ export class LegendDataCubeApplicationPlugin extends LegendApplicationPlugin {
   builderInnerHeaderRenderer?(
     builder: LegendDataCubeBuilderState | undefined,
   ): React.ReactNode | null;
+
+  /**
+   * Returns the height that should be used when rendering the DataCube source viewer.
+   */
+  getSourceViewerHeight?(
+    builder: LegendDataCubeBuilderState | undefined,
+  ): number | undefined;
 }

@@ -40,7 +40,7 @@ import { useEffect } from 'react';
 import { LegendDataCubeSettingStorageKey } from '../../__lib__/LegendDataCubeSetting.js';
 import type { LegendDataCubeBuilderStore } from '../../stores/builder/LegendDataCubeBuilderStore.js';
 import { ReleaseViewer } from '@finos/legend-application';
-import { type LegendQueryDataCubeSource } from '../../stores/model/LegendQueryDataCubeSource.js';
+import { isNonNullable } from '@finos/legend-shared';
 
 const LegendDataCubeBuilderHeader = observer(() => {
   const store = useLegendDataCubeBuilderStore();
@@ -198,18 +198,15 @@ function generateMenuItems(store: LegendDataCubeBuilderStore) {
               {
                 label: DataCubeTitleBarMenuItems.VIEW_SOURCE,
                 action: () => {
-                  // Set sourceViewerDisplay height based on length of parameters.
-                  // Height should also be increased if we need to show the parameter
-                  // editing disabled message.
+                  const sourceViewerHeight =
+                    store.application.pluginManager
+                      .getApplicationPlugins()
+                      .map((plugin) =>
+                        plugin.getSourceViewerHeight?.(store.builder),
+                      )
+                      .filter(isNonNullable)?.[0] ?? 200;
                   store.sourceViewerDisplay.configuration.window.height =
-                    Math.min(
-                      600,
-                      200 +
-                        20 *
-                          (store.builder?.source as LegendQueryDataCubeSource)
-                            ?.parameterValues?.length +
-                        (store.builder?.dataCube?.isCachingEnabled() ? 70 : 0),
-                    );
+                    Math.min(600, sourceViewerHeight);
                   store.sourceViewerDisplay.open();
                   logMenuItem(DataCubeTitleBarMenuItems.VIEW_SOURCE);
                 },
