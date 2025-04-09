@@ -338,7 +338,7 @@ export const LegendQueryDataCubeSourceBuilder = observer(
             <div className="h-50 mt-2 w-full overflow-auto">
               {sourceBuilder.queryParameterValues &&
                 Object.entries(sourceBuilder.queryParameterValues).map(
-                  ([name, { variable, value }]) => {
+                  ([name, { variable, valueSpec }]) => {
                     const packageableType = guaranteeType(
                       variable.genericType?.rawType,
                       V1_PackageableType,
@@ -363,10 +363,10 @@ export const LegendQueryDataCubeSourceBuilder = observer(
                         const typeParam = _elementPtr(
                           guaranteeIsString(packageableType.fullPath),
                         );
-                        const valueSpec = _property('', [typeParam]);
+                        const enumValueSpec = _property('', [typeParam]);
                         sourceBuilder.setQueryParameterValue(
                           name,
-                          V1_observe_ValueSpecification(valueSpec),
+                          V1_observe_ValueSpecification(enumValueSpec),
                         );
                       }
                     };
@@ -380,7 +380,7 @@ export const LegendQueryDataCubeSourceBuilder = observer(
                           {': '}
                         </div>
                         <V1_BasicValueSpecificationEditor
-                          valueSpecification={value}
+                          valueSpecification={valueSpec}
                           multiplicity={variable.multiplicity}
                           typeCheckOption={{
                             expectedType: packageableType,

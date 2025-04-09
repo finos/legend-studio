@@ -74,7 +74,7 @@ import {
 type QueryParameterValues = {
   [varName: string]: {
     variable: V1_Variable;
-    value: V1_ValueSpecification;
+    valueSpec: V1_ValueSpecification;
   };
 };
 
@@ -183,7 +183,7 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
               );
         queryParameterValues[param.name] = {
           variable: param,
-          value: V1_observe_ValueSpecification(defaultValueSpec),
+          valueSpec: V1_observe_ValueSpecification(defaultValueSpec),
         };
       }
       const enumerationParameters = queryParameters.filter(
@@ -216,7 +216,7 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
 
   setQueryParameterValue(name: string, value: V1_ValueSpecification) {
     if (this.queryParameterValues?.[name]) {
-      this.queryParameterValues[name].value = value;
+      this.queryParameterValues[name].valueSpec = value;
     }
   }
 
@@ -231,7 +231,7 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
       return Object.values(this.queryParameterValues).some(
         (paramVal) =>
           !isValidV1_ValueSpecification(
-            paramVal.value,
+            paramVal.valueSpec,
             paramVal.variable.multiplicity,
           ),
       );
@@ -256,18 +256,16 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
     const source = new RawLegendQueryDataCubeSource();
     source.queryId = this.query.id;
     source.parameterValues = this.queryParameterValues
-      ? Object.entries(this.queryParameterValues).map(([name, value]) => [
+      ? Object.values(this.queryParameterValues).map((variableAndValueSpec) => [
           JSON.stringify(
             V1_serializeValueSpecification(
-              guaranteeNonNullable(
-                this.queryParameters?.find((param) => param.name === name),
-              ),
+              variableAndValueSpec.variable,
               this._application.pluginManager.getPureProtocolProcessorPlugins(),
             ),
           ),
           JSON.stringify(
             V1_serializeValueSpecification(
-              value.value,
+              variableAndValueSpec.valueSpec,
               this._application.pluginManager.getPureProtocolProcessorPlugins(),
             ),
           ),
