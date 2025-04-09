@@ -23,7 +23,7 @@ import { DataCubeSource } from './DataCubeSource.js';
 import { createModelSchema, optional, primitive, raw } from 'serializr';
 import type { V1_PureModelContext } from '@finos/legend-graph';
 
-export class AdhocQueryDataCubeSource extends DataCubeSource {
+export class FreeformTDSExpressionDataCubeSource extends DataCubeSource {
   runtime!: string;
   mapping?: string;
   model!: PlainObject<V1_PureModelContext>;
@@ -35,18 +35,21 @@ export class UserDefinedFunctionDataCubeSource extends DataCubeSource {
   model!: PlainObject<V1_PureModelContext>;
 }
 
-export const ADHOC_QUERY_DATA_CUBE_SOURCE_TYPE = 'adhocQuery';
-export const ADHOC_FUNCTION_DATA_CUBE_SOURCE_TYPE = 'userDefinedFunction';
+export const FREEFORM_TDS_EXPRESSION_DATA_CUBE_SOURCE_TYPE =
+  'freeformTDSExpression';
+export const USER_FUNCTION_DATA_CUBE_SOURCE_TYPE = 'userDefinedFunction';
 
-export class RawAdhocQueryDataCubeSource {
+export class RawFreeformTDSExpressionDataCubeSource {
   query!: string;
   runtime!: string;
   mapping?: string;
   model!: PlainObject<V1_PureModelContext>;
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(RawAdhocQueryDataCubeSource, {
-      _type: usingConstantValueSchema(ADHOC_QUERY_DATA_CUBE_SOURCE_TYPE),
+    createModelSchema(RawFreeformTDSExpressionDataCubeSource, {
+      _type: usingConstantValueSchema(
+        FREEFORM_TDS_EXPRESSION_DATA_CUBE_SOURCE_TYPE,
+      ),
       model: raw(),
       query: primitive(),
       runtime: primitive(),
@@ -62,7 +65,7 @@ export class RawUserDefinedFunctionDataCubeSource {
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(RawUserDefinedFunctionDataCubeSource, {
-      _type: usingConstantValueSchema(ADHOC_FUNCTION_DATA_CUBE_SOURCE_TYPE),
+      _type: usingConstantValueSchema(USER_FUNCTION_DATA_CUBE_SOURCE_TYPE),
       model: raw(),
       runtime: optional(primitive()),
       functionPath: primitive(),

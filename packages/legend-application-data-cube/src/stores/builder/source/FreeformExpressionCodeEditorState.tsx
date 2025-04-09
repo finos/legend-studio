@@ -28,7 +28,7 @@ import {
 } from '@finos/legend-shared';
 import { action, makeObservable, observable, runInAction } from 'mobx';
 
-export class AdHocCodeEditorState extends DataCubeCodeEditorState {
+export class FreeformExpressionCodeEditorState extends DataCubeCodeEditorState {
   protected override readonly uuid = uuid();
   codeSuffix: string;
 
