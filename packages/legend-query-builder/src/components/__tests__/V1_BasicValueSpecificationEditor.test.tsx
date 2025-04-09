@@ -609,22 +609,18 @@ test(
     await screen.findByText('Mrs');
 
     expect(enumValueSpec instanceof V1_AppliedProperty).toBeTruthy();
-    expect((enumValueSpec as V1_AppliedProperty).property).toBe('Mrs');
+    expect(enumValueSpec.property).toBe('Mrs');
     expect(
-      (enumValueSpec as V1_AppliedProperty).parameters[0] instanceof
-        V1_PackageableElementPtr,
+      enumValueSpec.parameters[0] instanceof V1_PackageableElementPtr,
     ).toBeTruthy();
     expect(
-      (
-        (enumValueSpec as V1_AppliedProperty)
-          .parameters[0] as V1_PackageableElementPtr
-      ).fullPath,
+      (enumValueSpec.parameters[0] as V1_PackageableElementPtr).fullPath,
     ).toBe('test::myEnum');
 
     // Test that resetting value shows error styling
     fireEvent.click(screen.getByTitle('Reset'));
     await screen.findByDisplayValue('');
-    expect((enumValueSpec as V1_AppliedProperty).property).toBe('');
+    expect(enumValueSpec.property).toBe('');
     expect(
       inputElement.parentElement?.parentElement?.parentElement?.parentElement
         ?.classList,
