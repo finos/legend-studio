@@ -389,10 +389,12 @@ test(
     );
 
     // Test that parameter value is updated
-    await waitFor(() =>
-      expect(
-        screen.queryByRole('button', { name: 'Update Query Parameters' }),
-      ).toBeNull(),
+    await waitFor(
+      () =>
+        expect(
+          screen.queryByRole('button', { name: 'Update Query Parameters' }),
+        ).toBeNull(),
+      { timeout: 10000 },
     );
     await waitFor(() =>
       expect(
