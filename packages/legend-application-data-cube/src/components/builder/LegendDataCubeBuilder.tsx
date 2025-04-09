@@ -64,7 +64,23 @@ const LegendDataCubeBuilderHeader = observer(() => {
                 <div
                   key={param.variable.name}
                   className="max-w-200 ml-2 flex cursor-pointer hover:brightness-95"
-                  onClick={() => store.sourceViewerDisplay.open()}
+                  onClick={() => {
+                    // Set sourceViewerDisplay height based on length of parameters.
+                    // Height should also be increased if we need to show the parameter
+                    // editing disabled message.
+                    store.sourceViewerDisplay.configuration.window.height =
+                      Math.min(
+                        600,
+                        200 +
+                          20 *
+                            (store.builder?.source as LegendQueryDataCubeSource)
+                              ?.parameterValues?.length +
+                          (store.builder?.dataCube?.isCachingEnabled()
+                            ? 70
+                            : 0),
+                      );
+                    store.sourceViewerDisplay.open();
+                  }}
                 >
                   <span className="truncate bg-neutral-300 px-1">
                     {param.variable.name}
@@ -229,6 +245,18 @@ function generateMenuItems(store: LegendDataCubeBuilderStore) {
               {
                 label: DataCubeTitleBarMenuItems.VIEW_SOURCE,
                 action: () => {
+                  // Set sourceViewerDisplay height based on length of parameters.
+                  // Height should also be increased if we need to show the parameter
+                  // editing disabled message.
+                  store.sourceViewerDisplay.configuration.window.height =
+                    Math.min(
+                      600,
+                      200 +
+                        20 *
+                          (store.builder?.source as LegendQueryDataCubeSource)
+                            ?.parameterValues?.length +
+                        (store.builder?.dataCube?.isCachingEnabled() ? 70 : 0),
+                    );
                   store.sourceViewerDisplay.open();
                   logMenuItem(DataCubeTitleBarMenuItems.VIEW_SOURCE);
                 },

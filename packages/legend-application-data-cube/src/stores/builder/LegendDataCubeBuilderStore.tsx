@@ -69,7 +69,6 @@ import { LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE } from '../model/LocalFileDataCu
 import type { LegendDataCubeSourceLoaderState } from './source/LegendDataCubeSourceLoaderState.js';
 import { LocalFileDataCubeSourceLoaderState } from './source/LocalFileDataCubeSourceLoaderState.js';
 import { LEGEND_DATACUBE_APP_EVENT } from '../../__lib__/LegendDataCubeEvent.js';
-import { LegendQueryDataCubeSource } from '../model/LegendQueryDataCubeSource.js';
 
 export class LegendDataCubeBuilderState {
   readonly uuid = uuid();
@@ -113,16 +112,6 @@ export class LegendDataCubeBuilderState {
 
   setSource(val: DataCubeSource | undefined) {
     this.source = val;
-    // Set sourceViewerDisplay height based on length of parameters
-    if (
-      val instanceof LegendQueryDataCubeSource &&
-      val.parameterValues.length > 0
-    ) {
-      this._store.sourceViewerDisplay.configuration.window.height = Math.min(
-        600,
-        200 + 20 * val.parameterValues.length,
-      );
-    }
   }
 }
 
