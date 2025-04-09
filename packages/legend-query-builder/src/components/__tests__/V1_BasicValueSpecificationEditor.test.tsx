@@ -147,6 +147,48 @@ test(
 );
 
 test(
+  integrationTest('V1_BasicValueSpecificationEditor readOnly disables input'),
+  async () => {
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
+
+    let stringValueSpec = V1_observe_ValueSpecification(
+      _primitiveValue(PRIMITIVE_TYPE.STRING, 'initial value'),
+    );
+
+    const setValueSpecification = (newVal: V1_ValueSpecification): void => {
+      stringValueSpec = newVal;
+    };
+
+    const resetValue = (): void => {
+      V1_PrimitiveValue_setValue(
+        stringValueSpec as V1_CString,
+        _defaultPrimitiveTypeValue(PRIMITIVE_TYPE.STRING),
+      );
+    };
+
+    TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
+      valueSpecification: stringValueSpec,
+      setValueSpecification: setValueSpecification,
+      multiplicity: V1_Multiplicity.ONE,
+      typeCheckOption: {
+        expectedType: _type(PRIMITIVE_TYPE.STRING),
+        match: false,
+      },
+      resetValue: resetValue,
+      readOnly: true,
+    });
+
+    const inputElement = await screen.findByDisplayValue('initial value');
+    expect(inputElement).not.toBeNull();
+    expect(inputElement.hasAttribute('disabled')).toBe(true);
+
+    const resetButton = screen.getByTitle('Reset');
+    expect(resetButton).not.toBeNull();
+    expect(resetButton.hasAttribute('disabled')).toBe(true);
+  },
+);
+
+test(
   integrationTest(
     'V1_BasicValueSpecificationEditor renders and updates string primitive values correctly',
   ),

@@ -310,6 +310,7 @@ export const TEST__setUpBasicValueSpecificationEditor = (
     resetValue: () => void;
     graph: PureModel;
     observerContext: ObserverContext;
+    readOnly?: boolean | undefined;
   },
 ): void => {
   const MOCK__applicationStore = new ApplicationStore(
@@ -342,6 +343,7 @@ export const TEST__setUpV1BasicValueSpecificationEditor = (
     typeCheckOption: V1_TypeCheckOption;
     resetValue: () => void;
     enumeration?: V1_Enumeration | undefined;
+    readOnly?: boolean | undefined;
   },
 ): void => {
   const MOCK__applicationStore = new ApplicationStore(
