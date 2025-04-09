@@ -65,6 +65,7 @@ import {
   ENGINE_TEST_SUPPORT__transformTdsToRelation_lambda,
 } from '@finos/legend-graph/test';
 import type { Entity } from '@finos/legend-storage';
+import { LegendQueryDataCubeSourceBuilder_DataCubeApplicationPlugin } from '../builder/source/LegendQueryDataCubeSourceBuilder_DataCubeApplicationPlugin.js';
 
 export const TEST__provideMockedLegendDataCubeBaseStore =
   async (customization?: {
@@ -80,6 +81,7 @@ export const TEST__provideMockedLegendDataCubeBaseStore =
       .usePlugins([
         new Core_LegendDataCube_LegendApplicationPlugin(),
         new Core_LegendDataCubeApplicationPlugin(),
+        new LegendQueryDataCubeSourceBuilder_DataCubeApplicationPlugin(),
         ...(customization?.extraPlugins ?? []),
       ])
       .usePresets([

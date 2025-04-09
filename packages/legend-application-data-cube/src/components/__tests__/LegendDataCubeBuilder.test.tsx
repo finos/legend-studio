@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { createMock, integrationTest } from '@finos/legend-shared/test';
+import {
+  createMock,
+  createSpy,
+  integrationTest,
+} from '@finos/legend-shared/test';
 import { expect, jest, test } from '@jest/globals';
 import {
   fireEvent,
@@ -33,6 +37,7 @@ import {
   type PlainObject,
   guaranteeNonNullable,
   guaranteeType,
+  isNonNullable,
 } from '@finos/legend-shared';
 import { MockedMonacoEditorAPI } from '@finos/legend-lego/code-editor/test';
 import {
@@ -384,9 +389,13 @@ test(
       target: { value: '2' },
     });
     fireEvent.blur(valueSpecEditorInput);
-    fireEvent.click(
-      await screen.findByRole('button', { name: 'Update Query Parameters' }),
-    );
+    const updateButton = await screen.findByRole('button', {
+      name: 'Update Query Parameters',
+    });
+    fireEvent.click(updateButton);
+
+    // Test that update button is disabled after click
+    expect(updateButton.hasAttribute('disabled')).toBe(true);
 
     // Test that parameter value is updated
     await waitFor(
@@ -1131,6 +1140,86 @@ test(
     expect(
       guaranteeType(source.parameterValues[2]?.valueSpec, V1_CFloat).value,
     ).toBe(0);
+  },
+);
+
+test(
+  integrationTest(
+    'DataCube disables editing parameter values if cache is enabled',
+  ),
+  async () => {
+    MockedMonacoEditorAPI.remeasureFonts.mockReturnValue(undefined);
+
+    const mockDataCubeId = 'test-data-cube-id';
+    const mockDataCube: PersistentDataCube =
+      PersistentDataCube.serialization.fromJson({
+        id: mockDataCubeId,
+        name: `${mockDataCubeId}-name`,
+        description: undefined,
+        content: {
+          query: `select(~[Id, 'Case Type'])`,
+          source: {
+            queryId: `${mockDataCubeId}-query-id`,
+            parameterValues: [
+              [
+                '{"_type": "var", "genericType": {"rawType": {"_type": "packageableType", "fullPath": "Integer"}}, "multiplicity": {"lowerBound": 1, "upperBound": 1}, "name": "minId"}',
+                '{"_type": "integer", "value": 1}',
+              ],
+            ],
+            _type: 'legendQuery',
+          },
+          configuration: {
+            name: `${mockDataCubeId}-query-name`,
+            columns: [
+              { name: 'Id', type: 'Integer' },
+              { name: 'Case Type', type: 'String' },
+            ],
+          },
+        },
+      });
+    const mockQuery: V1_Query = V1_Query.serialization.fromJson({
+      name: `${mockDataCubeId}-query-name`,
+      id: `${mockDataCubeId}-query-id`,
+      versionId: 'latest',
+      groupId: 'com.legend',
+      artifactId: 'test-project',
+      content: `{minId: Integer[1]|domain::COVIDData.all()->filter(x|$x.id >= $minId)->project(~[Id:x|$x.id, 'Case Type':x|$x.caseType])}`,
+      executionContext: {
+        dataSpacePath: 'domain::COVIDDatapace',
+        executionKey: 'dummyContext',
+        _type: 'dataSpaceExecutionContext',
+      },
+    });
+    const mockedLegendDataCubeBuilderStore =
+      await TEST__provideMockedLegendDataCubeBuilderStore();
+    await TEST__setUpDataCubeBuilder(
+      guaranteeNonNullable(mockedLegendDataCubeBuilderStore),
+      mockDataCube,
+      mockQuery,
+      depotEntities,
+    );
+    await waitFor(() =>
+      isNonNullable(mockedLegendDataCubeBuilderStore.builder?.dataCube),
+    );
+    const dataCube = guaranteeNonNullable(
+      mockedLegendDataCubeBuilderStore.builder?.dataCube,
+    );
+    createSpy(dataCube, 'isCachingEnabled').mockReturnValue(true);
+
+    await screen.findByText('test-data-cube-id-query-name');
+    await screen.findByText('Parameters:');
+
+    // Check that parameter editing is disabled
+    const paramButton = await screen.findByText('minId');
+    fireEvent.click(paramButton);
+    await screen.findByText('DataCube Source');
+    const valueSpecEditorInput = await screen.findByDisplayValue('1');
+    expect(valueSpecEditorInput.hasAttribute('disabled')).toBe(true);
+    const updateButton = await screen.findByRole('button', {
+      name: 'Update Query Parameters',
+    });
+    expect(updateButton.hasAttribute('disabled')).toBe(true);
+    expect(screen.getByText('Parameter editing disabled')).not.toBeNull();
   },
 );
 
