@@ -132,6 +132,7 @@ const LegendQuerySourceViewer = observer(
     const [enumerations, setEnumerations] = useState<{
       [name: string]: V1_Enumeration;
     }>({});
+    const [isUpdatingParameters, setIsUpdatingParameters] = useState(false);
 
     // If caching is enabled on the grid, we disable editing the query parameters.
     // User will need to disable caching to be able to edit parameters.
@@ -194,50 +195,58 @@ const LegendQuerySourceViewer = observer(
         return;
       }
 
-      // Create the new raw source with new parameter values
-      const newRawSource = new RawLegendQueryDataCubeSource();
-      newRawSource.queryId = source.info.id;
-      newRawSource.parameterValues = params.map((param) => {
-        const parameterVariable = source.lambda.parameters.find(
-          (_param) => _param.name === param.variable.name,
+      setIsUpdatingParameters(true);
+
+      try {
+        // Create the new raw source with new parameter values
+        const newRawSource = new RawLegendQueryDataCubeSource();
+        newRawSource.queryId = source.info.id;
+        newRawSource.parameterValues = params.map((param) => {
+          const parameterVariable = source.lambda.parameters.find(
+            (_param) => _param.name === param.variable.name,
+          );
+          return [
+            JSON.stringify(
+              V1_serializeValueSpecification(
+                guaranteeNonNullable(parameterVariable),
+                application.pluginManager.getPureProtocolProcessorPlugins(),
+              ),
+            ),
+            JSON.stringify(
+              V1_serializeValueSpecification(
+                guaranteeType(param.valueSpec, V1_ValueSpecification),
+                application.pluginManager.getPureProtocolProcessorPlugins(),
+              ),
+            ),
+          ];
+        });
+        const newRawSourceData =
+          RawLegendQueryDataCubeSource.serialization.toJson(newRawSource);
+
+        // Process the new raw source and create the new specification
+        const newSource = await store.engine.processSource(newRawSourceData);
+        const newSpecification = await store.engine.generateBaseSpecification(
+          RawLegendQueryDataCubeSource.serialization.toJson(newRawSource),
+          newSource,
         );
-        return [
-          JSON.stringify(
-            V1_serializeValueSpecification(
-              guaranteeNonNullable(parameterVariable),
-              application.pluginManager.getPureProtocolProcessorPlugins(),
-            ),
-          ),
-          JSON.stringify(
-            V1_serializeValueSpecification(
-              guaranteeType(param.valueSpec, V1_ValueSpecification),
-              application.pluginManager.getPureProtocolProcessorPlugins(),
-            ),
-          ),
-        ];
-      });
-      const newRawSourceData =
-        RawLegendQueryDataCubeSource.serialization.toJson(newRawSource);
+        newSpecification.configuration =
+          store.builder?.initialSpecification.configuration;
 
-      // Process the new raw source and create the new specification
-      const newSource = await store.engine.processSource(newRawSourceData);
-      const newSpecification = await store.engine.generateBaseSpecification(
-        RawLegendQueryDataCubeSource.serialization.toJson(newRawSource),
-        newSource,
-      );
-      newSpecification.configuration =
-        store.builder?.initialSpecification.configuration;
+        // Update the builder with a new state containing the new specification
+        // We pass in the existing persistent data cube so we don't lose the
+        // saved state of the data cube, if it exists.
+        store.setBuilder(
+          new LegendDataCubeBuilderState(
+            store,
+            newSpecification,
+            store.builder?.persistentDataCube,
+          ),
+        );
 
-      // Update the builder with a new state containing the new specification
-      // We pass in the existing persistent data cube so we don't lose the
-      // saved state of the data cube, if it exists.
-      store.setBuilder(
-        new LegendDataCubeBuilderState(
-          store,
-          newSpecification,
-          store.builder?.persistentDataCube,
-        ),
-      );
+        store.sourceViewerDisplay.close();
+      } finally {
+        setIsUpdatingParameters(false);
+      }
     };
 
     const link = application.config.queryApplicationUrl
@@ -414,7 +423,10 @@ const LegendQuerySourceViewer = observer(
         </div>
         {queryHasParameters && (
           <div className="flex h-10 items-center justify-end px-2">
-            <FormButton onClick={() => store.sourceViewerDisplay.close()}>
+            <FormButton
+              disabled={isUpdatingParameters}
+              onClick={() => store.sourceViewerDisplay.close()}
+            >
               Cancel
             </FormButton>
             <FormButton
@@ -426,13 +438,14 @@ const LegendQuerySourceViewer = observer(
                       param.valueSpec,
                       param.variable.multiplicity,
                     ),
-                ) || isCachingEnabled
+                ) ||
+                isCachingEnabled ||
+                isUpdatingParameters
               }
               onClick={() => {
                 // eslint-disable-next-line no-void
                 void (async () => {
                   await updateBuilderWithNewSpecification();
-                  store.sourceViewerDisplay.close();
                 })();
               }}
             >
