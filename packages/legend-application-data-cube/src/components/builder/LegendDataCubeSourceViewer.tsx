@@ -32,6 +32,8 @@ import {
   _elementPtr,
   _primitiveValue,
   _property,
+  AlertType,
+  FormAlert,
   FormButton,
   isPrimitiveType,
   UserDefinedFunctionDataCubeSource,
@@ -130,6 +132,10 @@ const LegendQuerySourceViewer = observer(
     const [enumerations, setEnumerations] = useState<{
       [name: string]: V1_Enumeration;
     }>({});
+
+    // If caching is enabled on the grid, we disable editing the query parameters.
+    // User will need to disable caching to be able to edit parameters.
+    const isCachingEnabled = store.builder?.dataCube?.isCachingEnabled();
 
     const _handleFetchEnumerations = useCallback(async () => {
       const enumerationVariables = source.parameterValues
@@ -388,10 +394,19 @@ const LegendQuerySourceViewer = observer(
                             optionCustomization: { rowHeight: 20 },
                           }}
                           lightMode={true}
+                          readOnly={isCachingEnabled}
                         />
                       </div>
                     );
                   },
+                )}
+                {isCachingEnabled && (
+                  <FormAlert
+                    message="Parameter editing disabled"
+                    type={AlertType.WARNING}
+                    text="Parameter editing is disabled while caching is enabled. To update query parameter values, disable caching first."
+                    className="mt-3"
+                  />
                 )}
               </div>
             )}
@@ -404,13 +419,15 @@ const LegendQuerySourceViewer = observer(
             </FormButton>
             <FormButton
               className="ml-2"
-              disabled={params.some(
-                (param) =>
-                  !isValidV1_ValueSpecification(
-                    param.valueSpec,
-                    param.variable.multiplicity,
-                  ),
-              )}
+              disabled={
+                params.some(
+                  (param) =>
+                    !isValidV1_ValueSpecification(
+                      param.valueSpec,
+                      param.variable.multiplicity,
+                    ),
+                ) || isCachingEnabled
+              }
               onClick={() => {
                 // eslint-disable-next-line no-void
                 void (async () => {
