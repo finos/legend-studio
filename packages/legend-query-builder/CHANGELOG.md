@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.16.21
+
+### Patch Changes
+
+- [#3971](https://github.com/finos/legend-studio/pull/3971) [`58b9658`](https://github.com/finos/legend-studio/commit/58b96584c24fc37c6714ad0932af4e9e4b40d6f1) ([@travisstebbins](https://github.com/travisstebbins)) - Add V1_BasicValueSpecificationEditor component
+
 ## 4.16.20
 
 ## 4.16.19
