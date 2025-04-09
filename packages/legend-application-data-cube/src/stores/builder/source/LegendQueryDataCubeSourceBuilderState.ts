@@ -69,7 +69,7 @@ import type { DepotServerClient } from '@finos/legend-server-depot';
 import {
   fetchV1Enumeration,
   isVariableEnumerationType,
-} from './SourceBuilderStateHelper.js';
+} from './LegendQueryDataCubeSourceBuilderStateHelper.js';
 
 type QueryParameterValues = {
   [varName: string]: {

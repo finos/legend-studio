@@ -76,7 +76,7 @@ import { LegendDataCubeBuilderState } from '../../stores/builder/LegendDataCubeB
 import {
   fetchV1Enumeration,
   isVariableEnumerationType,
-} from '../../stores/builder/source/SourceBuilderStateHelper.js';
+} from '../../stores/builder/source/LegendQueryDataCubeSourceBuilderStateHelper.js';
 
 const handleFetchEnumerations = async (
   enumerationVariables: V1_Variable[],
