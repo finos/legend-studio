@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.1.15
+
+### Patch Changes
+
+- [#3971](https://github.com/finos/legend-studio/pull/3971) [`58b9658`](https://github.com/finos/legend-studio/commit/58b96584c24fc37c6714ad0932af4e9e4b40d6f1) ([@travisstebbins](https://github.com/travisstebbins)) - Add V1_ValueSpecificationObserver and additional exports for V1_BasicValueSpecificationEditor component
+
 ## 32.1.14
 
 ### Patch Changes
