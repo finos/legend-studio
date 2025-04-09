@@ -54,6 +54,10 @@ export interface DataCubeAPI {
    * This is often used when updating settings that requires a restart.
    */
   reload(): void;
+  /**
+   * Get the caching enabled state of the underlying grid.
+   */
+  isCachingEnabled(): boolean;
 }
 
 /**
@@ -103,5 +107,9 @@ export class INTERNAL__DataCubeAPI implements DataCubeAPI {
 
   reload() {
     this._dataCube.reload();
+  }
+
+  isCachingEnabled() {
+    return this._dataCube.view.grid.isCachingEnabled;
   }
 }
