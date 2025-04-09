@@ -656,7 +656,7 @@ export const CustomDatePicker = <
             readOnly ? '' : 'Click to edit and pick from more date options'
           }
           onClick={readOnly ? () => {} : openCustomDatePickerPopover}
-          style={{ cursor: readOnly ? 'not-allowed' : 'unset' }}
+          style={{ cursor: readOnly ? 'not-allowed' : '' }}
         >
           {datePickerOption.label ? (
             `"${datePickerOption.label}"`

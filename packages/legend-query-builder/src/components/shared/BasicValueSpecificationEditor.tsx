@@ -1431,7 +1431,7 @@ const CollectionValueInstanceValueEditorInner = <T, U extends { values: T[] }>(
       className={clsx('value-spec-editor', className)}
       onClick={readOnly ? () => {} : enableEdit}
       title={readOnly ? '' : 'Click to edit'}
-      style={{ cursor: readOnly ? 'not-allowed' : 'unset' }}
+      style={{ cursor: readOnly ? 'not-allowed' : '' }}
     >
       <div
         className={clsx('value-spec-editor__list-editor__preview', {
@@ -2077,7 +2077,7 @@ export const EditableBasicValueSpecificationEditor = observer(
                   setIsEditingValue(true);
                 }
           }
-          style={{ cursor: readOnly ? 'not-allowed' : 'unset' }}
+          style={{ cursor: readOnly ? 'not-allowed' : '' }}
         >
           {`"${valueSpecStringValue !== undefined ? valueSpecStringValue : ''}"`}
         </span>
