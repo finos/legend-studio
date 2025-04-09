@@ -81,6 +81,7 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "applicationDataCubePlugin": "@finos/legend-application-data-cube-plugin-core"
+    "applicationDataCubePlugin": "@finos/legend-application-data-cube-plugin-core",
+    "legendQueryDataCubeSourceBuilderPlugin": "@finos/legend-query-data-cube-source-builder-plugin"
   }
 }

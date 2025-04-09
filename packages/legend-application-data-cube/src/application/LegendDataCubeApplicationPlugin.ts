@@ -16,6 +16,7 @@
 
 import { LegendApplicationPlugin } from '@finos/legend-application';
 import { type LegendDataCubePluginManager } from './LegendDataCubePluginManager.js';
+import type { LegendDataCubeBuilderState } from '../stores/builder/LegendDataCubeBuilderStore.js';
 
 export class LegendDataCubeApplicationPlugin extends LegendApplicationPlugin {
   /**
@@ -27,4 +28,11 @@ export class LegendDataCubeApplicationPlugin extends LegendApplicationPlugin {
   install(pluginManager: LegendDataCubePluginManager): void {
     pluginManager.registerApplicationPlugin(this);
   }
+
+  /**
+   * Custom renderer for the builder header, before the load/new/save buttons
+   */
+  builderInnerHeaderRenderer?(
+    builder: LegendDataCubeBuilderState | undefined,
+  ): React.ReactNode | null;
 }

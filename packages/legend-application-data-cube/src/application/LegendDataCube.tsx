@@ -33,6 +33,7 @@ import { Core_LegendDataCube_LegendApplicationPlugin } from './Core_LegendDataCu
 import { Core_LegendDataCubeApplicationPlugin } from './Core_LegendDataCubeApplicationPlugin.js';
 import { LegendDataCubeWebApplication } from '../components/LegendDataCubeWebApplication.js';
 import { createRoot } from 'react-dom/client';
+import { LegendQueryDataCubeSourceBuilder_DataCubeApplicationPlugin } from '../components/builder/source/LegendQueryDataCubeSourceBuilder_DataCubeApplicationPlugin.js';
 
 export class LegendDataCube extends LegendApplication {
   declare config: LegendDataCubeApplicationConfig;
@@ -46,6 +47,7 @@ export class LegendDataCube extends LegendApplication {
     application.withBasePlugins([
       new Core_LegendDataCube_LegendApplicationPlugin(),
       new Core_LegendDataCubeApplicationPlugin(),
+      new LegendQueryDataCubeSourceBuilder_DataCubeApplicationPlugin(),
     ]);
     return application;
   }

@@ -27,7 +27,6 @@ import {
   DataCubeEvent,
   DataCubeTitleBarMenuItems,
 } from '@finos/legend-data-cube';
-import { clsx } from '@finos/legend-art';
 import {
   useLegendDataCubeBuilderStore,
   withLegendDataCubeBuilderStore,
@@ -41,62 +40,16 @@ import { useEffect } from 'react';
 import { LegendDataCubeSettingStorageKey } from '../../__lib__/LegendDataCubeSetting.js';
 import type { LegendDataCubeBuilderStore } from '../../stores/builder/LegendDataCubeBuilderStore.js';
 import { ReleaseViewer } from '@finos/legend-application';
-import { LegendQueryDataCubeSource } from '../../stores/model/LegendQueryDataCubeSource.js';
-import { V1_ValueSpecification } from '@finos/legend-graph';
-import { guaranteeType } from '@finos/legend-shared';
-import { getNameOfV1ValueSpecification } from './LegendDataCubeBuilderHelper.js';
+import { type LegendQueryDataCubeSource } from '../../stores/model/LegendQueryDataCubeSource.js';
 
 const LegendDataCubeBuilderHeader = observer(() => {
   const store = useLegendDataCubeBuilderStore();
 
   return (
     <div className="flex h-full w-full items-center justify-between">
-      {store.builder?.source instanceof LegendQueryDataCubeSource &&
-        store.builder.source.parameterValues.length > 0 && (
-          <div className="flex h-full flex-auto items-center overflow-auto border-l border-neutral-300 pl-2">
-            Parameters:
-            {store.builder.source.parameterValues.map((param) => {
-              const paramValue = getNameOfV1ValueSpecification(
-                guaranteeType(param.valueSpec, V1_ValueSpecification),
-                store.application,
-              );
-              return (
-                <div
-                  key={param.variable.name}
-                  className="max-w-200 ml-2 flex cursor-pointer hover:brightness-95"
-                  onClick={() => {
-                    // Set sourceViewerDisplay height based on length of parameters.
-                    // Height should also be increased if we need to show the parameter
-                    // editing disabled message.
-                    store.sourceViewerDisplay.configuration.window.height =
-                      Math.min(
-                        600,
-                        200 +
-                          20 *
-                            (store.builder?.source as LegendQueryDataCubeSource)
-                              ?.parameterValues?.length +
-                          (store.builder?.dataCube?.isCachingEnabled()
-                            ? 70
-                            : 0),
-                      );
-                    store.sourceViewerDisplay.open();
-                  }}
-                >
-                  <span className="truncate bg-neutral-300 px-1">
-                    {param.variable.name}
-                  </span>
-                  <span
-                    className={clsx('truncate bg-neutral-200 px-1', {
-                      'text-neutral-500': paramValue === '',
-                    })}
-                  >
-                    {paramValue === '' ? '(empty)' : paramValue}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        )}
+      {store.application.pluginManager
+        .getApplicationPlugins()
+        .map((plugin) => plugin.builderInnerHeaderRenderer?.(store.builder))}
       <div className="flex h-full w-fit flex-auto items-center justify-end text-nowrap pl-2">
         <FormButton compact={true} onClick={() => store.loader.display.open()}>
           Load DataCube
