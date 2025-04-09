@@ -92,9 +92,9 @@ import {
   type CompletionItem,
   _function,
   DataCubeFunction,
-  AdhocQueryDataCubeSource,
-  ADHOC_QUERY_DATA_CUBE_SOURCE_TYPE,
-  RawAdhocQueryDataCubeSource,
+  FreeformTDSExpressionDataCubeSource,
+  FREEFORM_TDS_EXPRESSION_DATA_CUBE_SOURCE_TYPE,
+  RawFreeformTDSExpressionDataCubeSource,
   _lambda,
   _defaultPrimitiveTypeValue,
   CachedDataCubeSource,
@@ -102,7 +102,7 @@ import {
   type DataCubeCacheInitializationOptions,
   DataCubeExecutionError,
   RawUserDefinedFunctionDataCubeSource,
-  ADHOC_FUNCTION_DATA_CUBE_SOURCE_TYPE,
+  USER_FUNCTION_DATA_CUBE_SOURCE_TYPE,
   type DataCubeSource,
   UserDefinedFunctionDataCubeSource,
   DataCubeQueryFilterOperator,
@@ -211,7 +211,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           path: source.functionPath,
           runtime: source.runtime,
         },
-        sourceType: ADHOC_FUNCTION_DATA_CUBE_SOURCE_TYPE,
+        sourceType: USER_FUNCTION_DATA_CUBE_SOURCE_TYPE,
       };
     } else if (source instanceof LocalFileDataCubeSource) {
       const deserializedModel = V1_deserializePureModelContext(source.model);
@@ -240,7 +240,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         },
         sourceType: LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE,
       };
-    } else if (source instanceof AdhocQueryDataCubeSource) {
+    } else if (source instanceof FreeformTDSExpressionDataCubeSource) {
       const deserializedModel = V1_deserializePureModelContext(source.model);
 
       const sdlcInfo =
@@ -262,7 +262,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           mapping: source.mapping,
           runtime: source.runtime,
         },
-        sourceType: ADHOC_QUERY_DATA_CUBE_SOURCE_TYPE,
+        sourceType: FREEFORM_TDS_EXPRESSION_DATA_CUBE_SOURCE_TYPE,
       };
     }
     return {};
@@ -283,7 +283,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         },
         sourceType: source._type,
       };
-    } else if (source._type === ADHOC_FUNCTION_DATA_CUBE_SOURCE_TYPE) {
+    } else if (source._type === USER_FUNCTION_DATA_CUBE_SOURCE_TYPE) {
       const rawSource =
         RawUserDefinedFunctionDataCubeSource.serialization.fromJson(source);
       const deserializedModel = V1_deserializePureModelContext(rawSource.model);
@@ -320,9 +320,9 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         },
         sourceType: source._type,
       };
-    } else if (source._type === ADHOC_QUERY_DATA_CUBE_SOURCE_TYPE) {
+    } else if (source._type === FREEFORM_TDS_EXPRESSION_DATA_CUBE_SOURCE_TYPE) {
       const rawSource =
-        RawAdhocQueryDataCubeSource.serialization.fromJson(source);
+        RawFreeformTDSExpressionDataCubeSource.serialization.fromJson(source);
       const deserializedModel = V1_deserializePureModelContext(rawSource.model);
 
       const sdlcInfo =
@@ -362,10 +362,10 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
 
   override async processSource(value: PlainObject): Promise<DataCubeSource> {
     switch (value._type) {
-      case ADHOC_QUERY_DATA_CUBE_SOURCE_TYPE: {
+      case FREEFORM_TDS_EXPRESSION_DATA_CUBE_SOURCE_TYPE: {
         const rawSource =
-          RawAdhocQueryDataCubeSource.serialization.fromJson(value);
-        const source = new AdhocQueryDataCubeSource();
+          RawFreeformTDSExpressionDataCubeSource.serialization.fromJson(value);
+        const source = new FreeformTDSExpressionDataCubeSource();
         if (rawSource.mapping) {
           source.mapping = rawSource.mapping;
         }
@@ -499,7 +499,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         }
         return source;
       }
-      case ADHOC_FUNCTION_DATA_CUBE_SOURCE_TYPE: {
+      case USER_FUNCTION_DATA_CUBE_SOURCE_TYPE: {
         const rawSource =
           RawUserDefinedFunctionDataCubeSource.serialization.fromJson(value);
         const deserializedModel = V1_deserializePureModelContext(
@@ -758,7 +758,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     codeBlock = codeBlock.startsWith(LAMBDA_PIPE)
       ? codeBlock.substring(LAMBDA_PIPE.length)
       : codeBlock;
-    if (context instanceof AdhocQueryDataCubeSource) {
+    if (context instanceof FreeformTDSExpressionDataCubeSource) {
       return (
         await this._engineServerClient.completeCode({
           codeBlock,
@@ -868,7 +868,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     const startTime = performance.now();
 
     try {
-      if (source instanceof AdhocQueryDataCubeSource) {
+      if (source instanceof FreeformTDSExpressionDataCubeSource) {
         result = await this._runQuery(query, source.model, undefined, options);
       } else if (source instanceof UserDefinedFunctionDataCubeSource) {
         result = await this._runQuery(query, source.model, undefined, options);
@@ -979,7 +979,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   }
 
   override buildExecutionContext(source: DataCubeSource) {
-    if (source instanceof AdhocQueryDataCubeSource) {
+    if (source instanceof FreeformTDSExpressionDataCubeSource) {
       return _function(
         DataCubeFunction.FROM,
         [
@@ -1107,7 +1107,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     query: PlainObject<V1_Lambda>,
     source: DataCubeSource,
   ) {
-    if (source instanceof AdhocQueryDataCubeSource) {
+    if (source instanceof FreeformTDSExpressionDataCubeSource) {
       return this._getLambdaRelationType(query, source.model);
     } else if (source instanceof UserDefinedFunctionDataCubeSource) {
       return this._getLambdaRelationType(query, source.model);

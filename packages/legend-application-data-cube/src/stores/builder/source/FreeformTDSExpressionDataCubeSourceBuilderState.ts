@@ -41,11 +41,11 @@ import {
 import {
   _lambda,
   type DataCubeAlertService,
-  RawAdhocQueryDataCubeSource,
+  RawFreeformTDSExpressionDataCubeSource,
 } from '@finos/legend-data-cube';
-import { AdHocCodeEditorState } from './AdHocCodeEditorState.js';
+import { FreeformExpressionCodeEditorState } from './FreeformExpressionCodeEditorState.js';
 
-export class AdhocQueryDataCubeSourceBuilderState extends LegendDataCubeSourceBuilderState {
+export class FreeformTDSExpressionDataCubeSourceBuilderState extends LegendDataCubeSourceBuilderState {
   builderStore: LegendDataCubeBuilderStore;
   projects: StoreProjectData[] = [];
   currentProject?: StoreProjectData | undefined;
@@ -57,7 +57,7 @@ export class AdhocQueryDataCubeSourceBuilderState extends LegendDataCubeSourceBu
   currentMapping?: V1_Mapping | undefined;
   modelPointer: PlainObject<V1_PureModelContextPointer> | undefined;
 
-  codeEditorState: AdHocCodeEditorState;
+  codeEditorState: FreeformExpressionCodeEditorState;
   queryCompileState = ActionState.create();
   code = '';
 
@@ -92,7 +92,7 @@ export class AdhocQueryDataCubeSourceBuilderState extends LegendDataCubeSourceBu
     });
 
     this.modelPointer = this.buildPureModelContextPointer();
-    this.codeEditorState = new AdHocCodeEditorState(
+    this.codeEditorState = new FreeformExpressionCodeEditorState(
       application.alertUnhandledError,
       this.modelPointer,
       this.compileQueryCallback,
@@ -157,7 +157,7 @@ export class AdhocQueryDataCubeSourceBuilderState extends LegendDataCubeSourceBu
   }
 
   override get label(): LegendDataCubeSourceBuilderType {
-    return LegendDataCubeSourceBuilderType.ADHOC_QUERY;
+    return LegendDataCubeSourceBuilderType.FREEFORM_TDS_EXPRESSION;
   }
 
   override get isValid(): boolean {
@@ -231,7 +231,7 @@ export class AdhocQueryDataCubeSourceBuilderState extends LegendDataCubeSourceBu
       );
     }
 
-    const source = new RawAdhocQueryDataCubeSource();
+    const source = new RawFreeformTDSExpressionDataCubeSource();
     if (this.currentMapping) {
       source.mapping = this.currentMapping.path;
     }
@@ -247,6 +247,6 @@ export class AdhocQueryDataCubeSourceBuilderState extends LegendDataCubeSourceBu
         );
       }
     }
-    return RawAdhocQueryDataCubeSource.serialization.toJson(source);
+    return RawFreeformTDSExpressionDataCubeSource.serialization.toJson(source);
   }
 }

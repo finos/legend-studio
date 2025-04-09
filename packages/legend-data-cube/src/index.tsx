@@ -21,7 +21,7 @@ export * from './stores/core/model/DataCubeSpecification.js';
 export * from './stores/core/model/DataCubeSource.js';
 export { type DataCubeColumn } from './stores/core/model/DataCubeColumn.js';
 export * from './stores/core/model/DataCubeConfiguration.js';
-export * from './stores/core/model/AdhocQueryDataCubeSource.js';
+export * from './stores/core/model/FreeformTDSExpressionDataCubeSource.js';
 export { CachedDataCubeSource } from './stores/core/model/CachedDataCubeSource.js';
 
 export * from './stores/core/DataCubeEngine.js';

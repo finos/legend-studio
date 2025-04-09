@@ -28,7 +28,7 @@ import {
   DataCubeSpecification,
   type DataCubeSource,
   LayoutConfiguration,
-  RawAdhocQueryDataCubeSource,
+  RawFreeformTDSExpressionDataCubeSource,
   WindowState,
   type DataCubeAPI,
   DEFAULT_REPORT_NAME,
@@ -157,13 +157,14 @@ export class LegendREPLBaseStore {
     try {
       const query = await api.generateSpecification();
 
-      const source = new RawAdhocQueryDataCubeSource();
+      const source = new RawFreeformTDSExpressionDataCubeSource();
       source.query = RawLegendREPLDataCubeSource.serialization.fromJson(
         query.source,
       ).query;
       source.runtime = this.source.runtime;
       source.model = this.source.model;
-      query.source = RawAdhocQueryDataCubeSource.serialization.toJson(source);
+      query.source =
+        RawFreeformTDSExpressionDataCubeSource.serialization.toJson(source);
 
       const newQuery = new PersistentDataCube();
       newQuery.id = uuid();

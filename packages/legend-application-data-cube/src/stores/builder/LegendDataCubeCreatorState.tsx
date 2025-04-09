@@ -35,7 +35,7 @@ import {
 } from '@finos/legend-data-cube';
 import type { LegendDataCubeDataCubeEngine } from '../LegendDataCubeDataCubeEngine.js';
 import { LegendDataCubeCreator } from '../../components/builder/LegendDataCubeCreator.js';
-import { AdhocQueryDataCubeSourceBuilderState } from './source/AdhocQueryDataCubeSourceBuilderState.js';
+import { FreeformTDSExpressionDataCubeSourceBuilderState } from './source/FreeformTDSExpressionDataCubeSourceBuilderState.js';
 import {
   LegendDataCubeBuilderState,
   type LegendDataCubeBuilderStore,
@@ -103,8 +103,8 @@ export class LegendDataCubeCreatorState {
           this._store.graphManager,
           this._alertService,
         );
-      case LegendDataCubeSourceBuilderType.ADHOC_QUERY:
-        return new AdhocQueryDataCubeSourceBuilderState(
+      case LegendDataCubeSourceBuilderType.FREEFORM_TDS_EXPRESSION:
+        return new FreeformTDSExpressionDataCubeSourceBuilderState(
           this._application,
           this._engine,
           this._alertService,

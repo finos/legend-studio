@@ -26,8 +26,8 @@ import {
 } from '@finos/legend-data-cube';
 import { LegendQueryDataCubeSourceBuilderState } from '../../stores/builder/source/LegendQueryDataCubeSourceBuilderState.js';
 import { LegendQueryDataCubeSourceBuilder } from './source/LegendQueryDataCubeSourceBuilder.js';
-import { AdhocQueryDataCubeSourceBuilder } from './source/AdhocQueryDataCubeSourceBuilder.js';
-import { AdhocQueryDataCubeSourceBuilderState } from '../../stores/builder/source/AdhocQueryDataCubeSourceBuilderState.js';
+import { FreeformTDSExpressionDataCubeSourceBuilder } from './source/FreeformTDSExpressionDataCubeSourceBuilder.js';
+import { FreeformTDSExpressionDataCubeSourceBuilderState } from '../../stores/builder/source/FreeformTDSExpressionDataCubeSourceBuilderState.js';
 import { useLegendDataCubeBuilderStore } from './LegendDataCubeBuilderStoreProvider.js';
 import { LocalFileDataCubeSourceBuilderState } from '../../stores/builder/source/LocalFileDataCubeSourceBuilderState.js';
 import { LocalFileDataCubeSourceBuilder } from './source/LocalFileDataCubeSourceBuilder.js';
@@ -72,7 +72,7 @@ export const LegendDataCubeCreator = observer(() => {
                 {[
                   LegendDataCubeSourceBuilderType.LEGEND_QUERY,
                   LegendDataCubeSourceBuilderType.USER_DEFINED_FUNCTION,
-                  LegendDataCubeSourceBuilderType.ADHOC_QUERY,
+                  LegendDataCubeSourceBuilderType.FREEFORM_TDS_EXPRESSION,
                   LegendDataCubeSourceBuilderType.LOCAL_FILE,
                 ].map((type) => (
                   <FormDropdownMenuItem
@@ -98,8 +98,8 @@ export const LegendDataCubeCreator = observer(() => {
                 />
               )}
               {sourceBuilder instanceof
-                AdhocQueryDataCubeSourceBuilderState && (
-                <AdhocQueryDataCubeSourceBuilder
+                FreeformTDSExpressionDataCubeSourceBuilderState && (
+                <FreeformTDSExpressionDataCubeSourceBuilder
                   sourceBuilder={sourceBuilder}
                   store={store}
                 />

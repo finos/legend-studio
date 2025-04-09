@@ -33,7 +33,7 @@ import {
   V1_deserializePackageableElement,
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-storage';
-import type { AdhocQueryDataCubeSourceBuilderState } from '../../../stores/builder/source/AdhocQueryDataCubeSourceBuilderState.js';
+import type { FreeformTDSExpressionDataCubeSourceBuilderState } from '../../../stores/builder/source/FreeformTDSExpressionDataCubeSourceBuilderState.js';
 import {
   buildProjectOption,
   buildRuntimeOption,
@@ -53,9 +53,9 @@ export const buildMappingOption = (mapping: V1_Mapping): MappingOption => ({
   value: mapping,
 });
 
-export const AdhocQueryDataCubeSourceBuilder = observer(
+export const FreeformTDSExpressionDataCubeSourceBuilder = observer(
   (props: {
-    sourceBuilder: AdhocQueryDataCubeSourceBuilderState;
+    sourceBuilder: FreeformTDSExpressionDataCubeSourceBuilderState;
     store: LegendDataCubeBuilderStore;
   }) => {
     const { sourceBuilder, store } = props;
