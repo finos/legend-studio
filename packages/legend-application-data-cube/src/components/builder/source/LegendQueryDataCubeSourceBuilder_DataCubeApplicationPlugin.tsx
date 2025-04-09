@@ -67,8 +67,8 @@ export class LegendQueryDataCubeSourceBuilder_DataCubeApplicationPlugin extends 
     if (builder?.source instanceof LegendQueryDataCubeSource) {
       return (
         200 +
-        20 * builder?.source?.parameterValues?.length +
-        (builder?.dataCube?.isCachingEnabled() ? 70 : 0)
+        20 * builder.source.parameterValues.length +
+        (builder.dataCube?.isCachingEnabled() ? 70 : 0)
       );
     }
     return undefined;

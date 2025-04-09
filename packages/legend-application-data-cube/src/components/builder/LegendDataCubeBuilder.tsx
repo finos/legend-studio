@@ -204,7 +204,7 @@ function generateMenuItems(store: LegendDataCubeBuilderStore) {
                       .map((plugin) =>
                         plugin.getSourceViewerHeight?.(store.builder),
                       )
-                      .filter(isNonNullable)?.[0] ?? 200;
+                      .filter(isNonNullable)[0] ?? 200;
                   store.sourceViewerDisplay.configuration.window.height =
                     Math.min(600, sourceViewerHeight);
                   store.sourceViewerDisplay.open();

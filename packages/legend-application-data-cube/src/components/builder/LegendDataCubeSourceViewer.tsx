@@ -136,7 +136,8 @@ const LegendQuerySourceViewer = observer(
 
     // If caching is enabled on the grid, we disable editing the query parameters.
     // User will need to disable caching to be able to edit parameters.
-    const isCachingEnabled = store.builder?.dataCube?.isCachingEnabled();
+    const isCachingEnabled =
+      store.builder?.dataCube?.isCachingEnabled() ?? false;
 
     const _handleFetchEnumerations = useCallback(async () => {
       const enumerationVariables = source.parameterValues
