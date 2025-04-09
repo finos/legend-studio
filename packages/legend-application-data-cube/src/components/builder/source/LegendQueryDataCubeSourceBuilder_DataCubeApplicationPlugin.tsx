@@ -84,7 +84,10 @@ export class LegendQueryDataCubeSourceBuilder_DataCubeApplicationPlugin extends 
       const source = guaranteeType(builder.source, LegendQueryDataCubeSource);
 
       return (
-        <div className="flex h-full flex-auto items-center overflow-auto border-l border-neutral-300 pl-2">
+        <div
+          key={LegendQueryDataCubeSourceBuilder_DataCubeApplicationPlugin.NAME}
+          className="flex h-full flex-auto items-center overflow-auto border-l border-neutral-300 pl-2"
+        >
           Parameters:
           {source.parameterValues.map((param) => {
             const paramValue = getNameOfV1ValueSpecification(
