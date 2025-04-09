@@ -137,7 +137,8 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
       | undefined;
     displayDateEditorAsEditableValue?: boolean | undefined;
     enumeration?: V1_Enumeration | undefined;
-    lightMode?: boolean;
+    lightMode?: boolean | undefined;
+    readOnly?: boolean | undefined;
   }
 >(function V1_BasicValueSpecificationEditor(props, ref) {
   const {
@@ -152,6 +153,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
     enumeration,
     selectorConfig,
     lightMode,
+    readOnly,
   } = props;
 
   const applicationStore = useApplicationStore();
@@ -182,6 +184,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
           errorChecker={errorChecker}
           selectorConfig={selectorConfig}
           lightMode={lightMode}
+          readOnly={readOnly}
         />
       );
     } else if (
@@ -200,6 +203,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
           }}
           className={className}
           resetValue={resetValue}
+          readOnly={readOnly}
         />
       );
     } else if (
@@ -238,6 +242,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
           handleBlur={handleBlur}
           handleKeyDown={handleKeyDown}
           errorChecker={errorChecker}
+          readOnly={readOnly}
         />
       );
     } else if (
@@ -281,6 +286,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
           resetValue={resetValue}
           className={className}
           errorChecker={errorChecker}
+          readOnly={readOnly}
         />
       );
     }
@@ -314,6 +320,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
           errorChecker={errorChecker}
           selectorConfig={selectorConfig}
           lightMode={lightMode}
+          readOnly={readOnly}
         />
       );
     }
@@ -388,6 +395,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
         className={className}
         selectorConfig={selectorConfig}
         lightMode={lightMode}
+        readOnly={readOnly}
       />
     );
   }
