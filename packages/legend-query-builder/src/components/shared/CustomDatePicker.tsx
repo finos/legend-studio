@@ -506,6 +506,7 @@ export const CustomDatePicker = <
     typeCheckOption,
     displayAsEditableValue,
     handleBlur,
+    readOnly,
   } = props;
   const applicationStore = useApplicationStore();
   // For some cases where types need to be matched strictly.
@@ -651,8 +652,11 @@ export const CustomDatePicker = <
                 hasError,
             },
           )}
-          title="Click to edit and pick from more date options"
-          onClick={openCustomDatePickerPopover}
+          title={
+            readOnly ? '' : 'Click to edit and pick from more date options'
+          }
+          onClick={readOnly ? () => {} : openCustomDatePickerPopover}
+          style={{ cursor: readOnly ? 'not-allowed' : 'unset' }}
         >
           {datePickerOption.label ? (
             `"${datePickerOption.label}"`
@@ -665,8 +669,11 @@ export const CustomDatePicker = <
           className={clsx('value-spec-editor__date-picker__trigger', {
             'value-spec-editor__date-picker__trigger--error': hasError,
           })}
-          title="Click to edit and pick from more date options"
+          title={
+            readOnly ? '' : 'Click to edit and pick from more date options'
+          }
           onClick={openCustomDatePickerPopover}
+          disabled={readOnly}
         >
           {datePickerOption.label || 'Select value'}
         </button>
