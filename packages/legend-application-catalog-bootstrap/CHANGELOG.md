@@ -1,5 +1,7 @@
 # @finos/legend-application-catalog-bootstrap
 
+## 13.44.0
+
 ## 13.43.0
 
 ## 13.42.0

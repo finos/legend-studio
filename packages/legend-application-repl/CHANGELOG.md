@@ -1,5 +1,11 @@
 # @finos/legend-application-repl
 
+## 1.1.21
+
+### Patch Changes
+
+- [#3982](https://github.com/finos/legend-studio/pull/3982) [`dfdb723`](https://github.com/finos/legend-studio/commit/dfdb723e3f4f574ba12abfdeccd39871cb3ca584) ([@kelly-thai](https://github.com/kelly-thai)) - Rename Adhoc Queries to Freeform TDS Expression
+
 ## 1.1.20
 
 ## 1.1.19

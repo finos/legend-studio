@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.1.16
+
+### Patch Changes
+
+- [#3980](https://github.com/finos/legend-studio/pull/3980) [`e482faa`](https://github.com/finos/legend-studio/commit/e482faabb5494cb7e024e24e6a60aae2f3cc3d30) ([@travisstebbins](https://github.com/travisstebbins)) - Add V1_observe_ParameterValue function
+
 ## 32.1.15
 
 ### Patch Changes
