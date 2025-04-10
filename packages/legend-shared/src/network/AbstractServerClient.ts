@@ -312,12 +312,13 @@ export abstract class AbstractServerClient {
       url,
       parameters ?? {},
     );
+    headers = createRequestHeaders(method, headers);
     // tracing
     const trace = this.tracerService.createTrace(
       traceData,
       method.toString(),
       requestUrl,
-      createRequestHeaders(method, headers),
+      headers,
     );
     return this.networkClient
       .request<T>(
@@ -325,9 +326,7 @@ export abstract class AbstractServerClient {
         url,
         data,
         options,
-        this.baseHeaders
-          ? { ...this.baseHeaders, ...(headers ?? {}) }
-          : headers,
+        this.baseHeaders ? { ...this.baseHeaders, ...headers } : headers,
         parameters,
         {
           ...(requestProcessConfig ?? {}),
@@ -347,9 +346,6 @@ export abstract class AbstractServerClient {
       .catch((error) => {
         trace.reportError(error);
         return Promise.reject(error);
-      })
-      .finally(() => {
-        trace.close();
       });
   }
 }

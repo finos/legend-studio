@@ -110,24 +110,8 @@ export class ZipkinTracerPlugin extends TracerServicePlugin<ZipkinSpan> {
     );
   }
 
-  createClientSpan(traceData: TraceData): ZipkinSpan {
-    const clientSpan = this.spanBuilder.startSpan(traceData.name) as ZipkinSpan;
-    if (traceData.tags) {
-      Object.entries(traceData.tags).forEach(([tag, value]) => {
-        if (isNonNullable(value)) {
-          clientSpan.setTag(tag, value);
-        }
-      });
-    }
-    return clientSpan;
-  }
-
-  /**
-   * Create a server span (or server span) for the specified client span. This child span acts as a placeholder span
-   * which holds the trace ID, so in case the backend supports tracing (Open Tracing), this span will be replaced by the server
-   */
-  createServerSpan(
-    clientSpan: ZipkinSpan,
+  createClientSpan(
+    traceData: TraceData,
     method: string,
     url: string,
     headers: PlainObject = {},
@@ -137,17 +121,22 @@ export class ZipkinTracerPlugin extends TracerServicePlugin<ZipkinSpan> {
     // `inject` the SpanContext into the payload and the downstream services need to `extract` the context info create more Spans
     // See https://opentracing.io/guides/java/inject-extract/
     // See https://github.com/DanielMSchmidt/zipkin-javascript-opentracing
+    const clientSpan = this.spanBuilder.startSpan(traceData.name) as ZipkinSpan;
+    if (traceData.tags) {
+      Object.entries(traceData.tags).forEach(([tag, value]) => {
+        if (isNonNullable(value)) {
+          clientSpan.setTag(tag, value);
+        }
+      });
+    }
+    clientSpan.setTag(CORE_TRACER_TAG.HTTP_REQUEST_METHOD, method);
+    clientSpan.setTag(CORE_TRACER_TAG.HTTP_REQUEST_URL, url);
     this.spanBuilder.inject(
       clientSpan,
       SpanBuilder.Zipkin.FORMAT_HTTP_HEADERS,
       headers,
     );
-    const serverSpan = this.spanBuilder.startSpan('http request', {
-      childOf: clientSpan,
-    }) as ZipkinSpan;
-    serverSpan.setTag(CORE_TRACER_TAG.HTTP_REQUEST_METHOD, method);
-    serverSpan.setTag(CORE_TRACER_TAG.HTTP_REQUEST_URL, url);
-    return serverSpan;
+    return clientSpan;
   }
 
   concludeClientSpan(
@@ -166,9 +155,5 @@ export class ZipkinTracerPlugin extends TracerServicePlugin<ZipkinSpan> {
       clientSpan.setTag(CORE_TRACER_TAG.RESULT, 'success');
     }
     clientSpan.finish();
-  }
-
-  concludeServerSpan(serverSpan: ZipkinSpan | undefined): void {
-    serverSpan?.finish();
   }
 }
