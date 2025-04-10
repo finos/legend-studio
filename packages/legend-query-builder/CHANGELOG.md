@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.16.22
+
+### Patch Changes
+
+- [#3980](https://github.com/finos/legend-studio/pull/3980) [`e482faa`](https://github.com/finos/legend-studio/commit/e482faabb5494cb7e024e24e6a60aae2f3cc3d30) ([@travisstebbins](https://github.com/travisstebbins)) - Add lightMode prop to value spec editors, fix checking V1_ValueSpecification validity, and fix size of CustomDatePicker dropdown text
+
 ## 4.16.21
 
 ### Patch Changes

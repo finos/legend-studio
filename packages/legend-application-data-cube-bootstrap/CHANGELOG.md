@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube-bootstrap
 
+## 13.44.0
+
+### Patch Changes
+
+- [#3980](https://github.com/finos/legend-studio/pull/3980) [`e482faa`](https://github.com/finos/legend-studio/commit/e482faabb5494cb7e024e24e6a60aae2f3cc3d30) ([@travisstebbins](https://github.com/travisstebbins)) - Add support for editing parameters with LegendQueryDataCubeSource queries
+
 ## 13.43.0
 
 ## 13.42.0
