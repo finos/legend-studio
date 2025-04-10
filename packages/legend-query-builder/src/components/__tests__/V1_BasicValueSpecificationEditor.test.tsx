@@ -36,7 +36,10 @@ import {
 import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import { TEST__setUpV1BasicValueSpecificationEditor } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import { TEST__LegendApplicationPluginManager } from '../../stores/__test-utils__/QueryBuilderStateTestUtils.js';
-import { V1_PrimitiveValue_setValue } from '../../stores/shared/V1_ValueSpecificationModifierHelper.js';
+import {
+  V1_AppliedProperty_setProperty,
+  V1_PrimitiveValue_setValue,
+} from '../../stores/shared/V1_ValueSpecificationModifierHelper.js';
 import { CUSTOM_DATE_PICKER_OPTION } from '../shared/CustomDatePickerHelper.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
 import {
@@ -91,6 +94,97 @@ test(
     fireEvent.click(screen.getByTitle('Reset'));
     await screen.findByPlaceholderText('(empty)');
     expect((stringValueSpec as V1_CString).value).toBe('');
+    expect(inputElement.classList).toContain('input--with-validation--error');
+  },
+);
+
+test(
+  integrationTest(
+    'V1_BasicValueSpecificationEditor allows empty value if not required',
+  ),
+  async () => {
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
+
+    let stringValueSpec = V1_observe_ValueSpecification(
+      _primitiveValue(PRIMITIVE_TYPE.STRING, 'initial value'),
+    );
+
+    const setValueSpecification = (newVal: V1_ValueSpecification): void => {
+      stringValueSpec = newVal;
+    };
+
+    const resetValue = (): void => {
+      V1_PrimitiveValue_setValue(
+        stringValueSpec as V1_CString,
+        _defaultPrimitiveTypeValue(PRIMITIVE_TYPE.STRING),
+      );
+    };
+
+    TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
+      valueSpecification: stringValueSpec,
+      setValueSpecification: setValueSpecification,
+      multiplicity: V1_Multiplicity.ZERO_ONE,
+      typeCheckOption: {
+        expectedType: _type(PRIMITIVE_TYPE.STRING),
+        match: false,
+      },
+      resetValue: resetValue,
+    });
+
+    const inputElement = await screen.findByDisplayValue('initial value');
+    expect(inputElement).not.toBeNull();
+
+    // Reset value
+    fireEvent.click(screen.getByTitle('Reset'));
+    await screen.findByPlaceholderText('(empty)');
+    expect((stringValueSpec as V1_CString).value).toBe('');
+
+    // Verify no error styling
+    expect(inputElement.classList).not.toContain(
+      'input--with-validation--error',
+    );
+  },
+);
+
+test(
+  integrationTest('V1_BasicValueSpecificationEditor readOnly disables input'),
+  async () => {
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
+
+    let stringValueSpec = V1_observe_ValueSpecification(
+      _primitiveValue(PRIMITIVE_TYPE.STRING, 'initial value'),
+    );
+
+    const setValueSpecification = (newVal: V1_ValueSpecification): void => {
+      stringValueSpec = newVal;
+    };
+
+    const resetValue = (): void => {
+      V1_PrimitiveValue_setValue(
+        stringValueSpec as V1_CString,
+        _defaultPrimitiveTypeValue(PRIMITIVE_TYPE.STRING),
+      );
+    };
+
+    TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
+      valueSpecification: stringValueSpec,
+      setValueSpecification: setValueSpecification,
+      multiplicity: V1_Multiplicity.ONE,
+      typeCheckOption: {
+        expectedType: _type(PRIMITIVE_TYPE.STRING),
+        match: false,
+      },
+      resetValue: resetValue,
+      readOnly: true,
+    });
+
+    const inputElement = await screen.findByDisplayValue('initial value');
+    expect(inputElement).not.toBeNull();
+    expect(inputElement.hasAttribute('disabled')).toBe(true);
+
+    const resetButton = screen.getByTitle('Reset');
+    expect(resetButton).not.toBeNull();
+    expect(resetButton.hasAttribute('disabled')).toBe(true);
   },
 );
 
@@ -138,15 +232,13 @@ test(
 
     expect((stringValueSpec as V1_CString).value).toBe('updated value');
 
-    // Test that empty string is allowed
+    // Test that empty string is not allowed
     fireEvent.change(inputElement, { target: { value: '' } });
     fireEvent.blur(inputElement);
 
     await screen.findByPlaceholderText('(empty)');
     expect((stringValueSpec as V1_CString).value).toBe('');
-    expect(inputElement.classList).not.toContain(
-      'input--with-validation--error',
-    );
+    expect(inputElement.classList).toContain('input--with-validation--error');
   },
 );
 
@@ -516,7 +608,7 @@ test(
 
     let enumValueSpec = V1_observe_ValueSpecification(
       _property('Mr', [_elementPtr('test::myEnum')]),
-    );
+    ) as V1_AppliedProperty;
     const enumeration = _enumeration('test', 'myEnum', [
       _enumValue('Mr'),
       _enumValue('Mrs'),
@@ -525,7 +617,11 @@ test(
     ]);
 
     const setValueSpecification = (newVal: V1_ValueSpecification): void => {
-      enumValueSpec = newVal;
+      enumValueSpec = guaranteeType(newVal, V1_AppliedProperty);
+    };
+
+    const resetValue = (): void => {
+      V1_AppliedProperty_setProperty(enumValueSpec, '');
     };
 
     TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
@@ -536,7 +632,7 @@ test(
         expectedType: _type('test::myEnum'),
         match: false,
       },
-      resetValue: () => {},
+      resetValue: resetValue,
       enumeration: enumeration,
     });
 
@@ -555,17 +651,88 @@ test(
     await screen.findByText('Mrs');
 
     expect(enumValueSpec instanceof V1_AppliedProperty).toBeTruthy();
-    expect((enumValueSpec as V1_AppliedProperty).property).toBe('Mrs');
+    expect(enumValueSpec.property).toBe('Mrs');
     expect(
-      (enumValueSpec as V1_AppliedProperty).parameters[0] instanceof
-        V1_PackageableElementPtr,
+      enumValueSpec.parameters[0] instanceof V1_PackageableElementPtr,
     ).toBeTruthy();
     expect(
-      (
-        (enumValueSpec as V1_AppliedProperty)
-          .parameters[0] as V1_PackageableElementPtr
-      ).fullPath,
+      (enumValueSpec.parameters[0] as V1_PackageableElementPtr).fullPath,
     ).toBe('test::myEnum');
+
+    // Test that resetting value shows error styling
+    fireEvent.click(screen.getByTitle('Reset'));
+    await screen.findByDisplayValue('');
+    expect(enumValueSpec.property).toBe('');
+    expect(
+      inputElement.parentElement?.parentElement?.parentElement?.parentElement
+        ?.classList,
+    ).toContain('selector-input--has-error');
+  },
+);
+
+test(
+  integrationTest(
+    "V1_BasicValueSpecificationEditor doesn't allow empty collection if multiplicity lower bound is >= 1",
+  ),
+  async () => {
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
+
+    let stringCollectionValue = V1_observe_ValueSpecification(_collection([]));
+
+    const setValueSpecification = (val: V1_ValueSpecification): void => {
+      stringCollectionValue = val;
+    };
+
+    TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
+      valueSpecification: stringCollectionValue,
+      setValueSpecification,
+      multiplicity: V1_Multiplicity.ONE_MANY,
+      typeCheckOption: {
+        expectedType: _type(PRIMITIVE_TYPE.STRING),
+        match: false,
+      },
+      resetValue: (): void => {},
+    });
+
+    const listEditorElement = await screen.findByText('List(empty)');
+
+    // Verify error styling
+    expect(listEditorElement.classList).toContain(
+      'value-spec-editor__list-editor__preview--error',
+    );
+  },
+);
+
+test(
+  integrationTest(
+    'V1_BasicValueSpecificationEditor allows empty collection if multiplicity lower bound is 0',
+  ),
+  async () => {
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
+
+    let stringCollectionValue = V1_observe_ValueSpecification(_collection([]));
+
+    const setValueSpecification = (val: V1_ValueSpecification): void => {
+      stringCollectionValue = val;
+    };
+
+    TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
+      valueSpecification: stringCollectionValue,
+      setValueSpecification,
+      multiplicity: V1_Multiplicity.ZERO_MANY,
+      typeCheckOption: {
+        expectedType: _type(PRIMITIVE_TYPE.STRING),
+        match: false,
+      },
+      resetValue: (): void => {},
+    });
+
+    const listEditorElement = await screen.findByText('List(empty)');
+
+    // Verify no error styling
+    expect(listEditorElement.classList).not.toContain(
+      'value-spec-editor__list-editor__preview--error',
+    );
   },
 );
 

@@ -27,7 +27,6 @@ import {
   DataCubeEvent,
   DataCubeTitleBarMenuItems,
 } from '@finos/legend-data-cube';
-import {} from '@finos/legend-art';
 import {
   useLegendDataCubeBuilderStore,
   withLegendDataCubeBuilderStore,
@@ -41,30 +40,36 @@ import { useEffect } from 'react';
 import { LegendDataCubeSettingStorageKey } from '../../__lib__/LegendDataCubeSetting.js';
 import type { LegendDataCubeBuilderStore } from '../../stores/builder/LegendDataCubeBuilderStore.js';
 import { ReleaseViewer } from '@finos/legend-application';
+import { isNonNullable } from '@finos/legend-shared';
 
 const LegendDataCubeBuilderHeader = observer(() => {
   const store = useLegendDataCubeBuilderStore();
 
   return (
-    <div className="flex h-full items-center">
-      <FormButton compact={true} onClick={() => store.loader.display.open()}>
-        Load DataCube
-      </FormButton>
-      <FormButton
-        compact={true}
-        className="ml-1.5"
-        onClick={() => store.creator.display.open()}
-      >
-        New DataCube
-      </FormButton>
-      <FormButton
-        compact={true}
-        className="ml-1.5"
-        disabled={!store.builder?.dataCube}
-        onClick={() => store.saverDisplay.open()}
-      >
-        Save DataCube
-      </FormButton>
+    <div className="flex h-full w-full items-center justify-between">
+      {store.application.pluginManager
+        .getApplicationPlugins()
+        .map((plugin) => plugin.builderInnerHeaderRenderer?.(store.builder))}
+      <div className="flex h-full w-fit flex-auto items-center justify-end text-nowrap pl-2">
+        <FormButton compact={true} onClick={() => store.loader.display.open()}>
+          Load DataCube
+        </FormButton>
+        <FormButton
+          compact={true}
+          className="ml-1.5 text-nowrap"
+          onClick={() => store.creator.display.open()}
+        >
+          New DataCube
+        </FormButton>
+        <FormButton
+          compact={true}
+          className="ml-1.5 text-nowrap"
+          disabled={!store.builder?.dataCube}
+          onClick={() => store.saverDisplay.open()}
+        >
+          Save DataCube
+        </FormButton>
+      </div>
     </div>
   );
 });
@@ -193,6 +198,15 @@ function generateMenuItems(store: LegendDataCubeBuilderStore) {
               {
                 label: DataCubeTitleBarMenuItems.VIEW_SOURCE,
                 action: () => {
+                  const sourceViewerHeight =
+                    store.application.pluginManager
+                      .getApplicationPlugins()
+                      .map((plugin) =>
+                        plugin.getSourceViewerHeight?.(store.builder),
+                      )
+                      .filter(isNonNullable)[0] ?? 200;
+                  store.sourceViewerDisplay.configuration.window.height =
+                    Math.min(600, sourceViewerHeight);
                   store.sourceViewerDisplay.open();
                   logMenuItem(DataCubeTitleBarMenuItems.VIEW_SOURCE);
                 },

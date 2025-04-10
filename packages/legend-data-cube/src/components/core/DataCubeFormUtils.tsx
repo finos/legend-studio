@@ -18,6 +18,7 @@ import { type IDisposable, editor as monacoEditorAPI } from 'monaco-editor';
 import {
   BasePopover,
   Checkbox,
+  clsx,
   cn,
   DataCubeIcon,
   DropdownMenu,
@@ -813,10 +814,11 @@ export function FormAlert(props: {
   message: string;
   type: AlertType;
   text?: string | undefined;
+  className?: string | undefined;
 }) {
-  const { message, type, text } = props;
+  const { message, type, text, className } = props;
   return (
-    <div className="flex rounded-sm bg-neutral-200 p-3">
+    <div className={clsx('flex rounded-sm bg-neutral-200 p-3', className)}>
       <div className="mr-3">
         {type === AlertType.ERROR && (
           <DataCubeIcon.AlertError className="flex-shrink-0 stroke-[0.5px] text-[40px] text-red-500" />

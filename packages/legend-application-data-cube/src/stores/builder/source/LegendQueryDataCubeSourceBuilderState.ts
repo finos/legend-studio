@@ -16,21 +16,41 @@
 
 import {
   assertErrorThrown,
+  guaranteeNonNullable,
+  guaranteeType,
   IllegalStateError,
   LogEvent,
 } from '@finos/legend-shared';
 import {
-  QuerySearchSpecification,
-  type V1_EngineServerClient,
-  type V1_PureGraphManager,
-  V1_Query,
   type LightQuery,
+  type V1_EngineServerClient,
+  type V1_Enumeration,
+  type V1_PureGraphManager,
+  type V1_PureModelContextData,
+  type V1_ValueSpecification,
+  type V1_Variable,
+  QuerySearchSpecification,
+  V1_CORE_SYSTEM_MODELS,
+  V1_deserializePureModelContextData,
+  V1_deserializeRawValueSpecificationType,
+  V1_Lambda,
+  V1_observe_ValueSpecification,
+  V1_PackageableType,
+  V1_Query,
+  V1_serializeValueSpecification,
 } from '@finos/legend-graph';
 import {
+  isValidV1_ValueSpecification,
   QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT,
   QueryLoaderState,
 } from '@finos/legend-query-builder';
-import { action, makeObservable, observable, runInAction } from 'mobx';
+import {
+  action,
+  computed,
+  makeObservable,
+  observable,
+  runInAction,
+} from 'mobx';
 import {
   LegendDataCubeSourceBuilderState,
   LegendDataCubeSourceBuilderType,
@@ -39,24 +59,43 @@ import { RawLegendQueryDataCubeSource } from '../../model/LegendQueryDataCubeSou
 import { APPLICATION_EVENT } from '@finos/legend-application';
 import type { LegendDataCubeDataCubeEngine } from '../../LegendDataCubeDataCubeEngine.js';
 import type { LegendDataCubeApplicationStore } from '../../LegendDataCubeBaseStore.js';
-import type {
-  DataCubeAlertService,
-  DataCubeConfiguration,
+import {
+  type DataCubeAlertService,
+  type DataCubeConfiguration,
+  _defaultPrimitiveTypeValue,
+  _primitiveValue,
 } from '@finos/legend-data-cube';
+import type { DepotServerClient } from '@finos/legend-server-depot';
+import {
+  fetchV1Enumeration,
+  isVariableEnumerationType,
+} from './LegendQueryDataCubeSourceBuilderStateHelper.js';
+
+type QueryParameterValues = {
+  [varName: string]: {
+    variable: V1_Variable;
+    valueSpec: V1_ValueSpecification;
+  };
+};
 
 export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceBuilderState {
   private readonly _engineServerClient: V1_EngineServerClient;
+  private readonly _depotServerClient: DepotServerClient;
   private readonly _graphManager: V1_PureGraphManager;
+  private readonly _systemModel: V1_PureModelContextData;
 
   readonly queryLoader: QueryLoaderState;
 
   query?: LightQuery | undefined;
   queryCode?: string | undefined;
+  queryParameterValues?: QueryParameterValues | undefined;
+  queryEnumerations?: { [varName: string]: V1_Enumeration };
 
   constructor(
     application: LegendDataCubeApplicationStore,
     engine: LegendDataCubeDataCubeEngine,
     engineServerClient: V1_EngineServerClient,
+    depotServerClient: DepotServerClient,
     graphManager: V1_PureGraphManager,
     alertService: DataCubeAlertService,
   ) {
@@ -67,10 +106,20 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
       unsetQuery: action,
 
       queryCode: observable,
+      queryParameters: computed,
+      queryParameterValues: observable,
+      queryEnumerations: observable,
+
+      setQueryParameterValue: action,
+      hasInvalidQueryParameters: computed,
     });
 
     this._graphManager = graphManager;
     this._engineServerClient = engineServerClient;
+    this._depotServerClient = depotServerClient;
+    this._systemModel = V1_deserializePureModelContextData(
+      V1_CORE_SYSTEM_MODELS,
+    );
 
     this.queryLoader = new QueryLoaderState(
       this._application,
@@ -99,13 +148,53 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
       const processedQuery = V1_Query.serialization.fromJson(
         await this._engineServerClient.getQuery(lightQuery.id),
       );
-      const queryCode = await this._engine.getValueSpecificationCode(
+      const queryLambda = guaranteeType(
         await this._engine.parseValueSpecification(processedQuery.content),
+        V1_Lambda,
+        'Expected query content to be a V1_Lambda',
+      );
+      const queryCode = await this._engine.getValueSpecificationCode(
+        queryLambda,
         true,
       );
+      const queryParameters = queryLambda.parameters;
+      const queryInfo = await this._graphManager.getQueryInfo(
+        processedQuery.id,
+      );
+
+      const queryParameterValues: QueryParameterValues = {};
+      for (const param of queryParameters) {
+        const genericType = guaranteeNonNullable(param.genericType);
+        const packageableType = guaranteeType(
+          genericType.rawType,
+          V1_PackageableType,
+        );
+        const defaultValue = queryInfo.defaultParameterValues?.find(
+          (defaultParam) => defaultParam.name === param.name,
+        );
+        const defaultValueSpec =
+          defaultValue?.content !== undefined
+            ? await this._engine.parseValueSpecification(defaultValue.content)
+            : _primitiveValue(
+                V1_deserializeRawValueSpecificationType(
+                  packageableType.fullPath,
+                ),
+                _defaultPrimitiveTypeValue(packageableType.fullPath),
+              );
+        queryParameterValues[param.name] = {
+          variable: param,
+          valueSpec: V1_observe_ValueSpecification(defaultValueSpec),
+        };
+      }
+      const enumerationParameters = queryParameters.filter(
+        isVariableEnumerationType,
+      );
+      // eslint-disable-next-line no-void
+      void this.populateEnumerations(enumerationParameters, lightQuery);
       runInAction(() => {
         this.query = lightQuery;
         this.queryCode = queryCode;
+        this.queryParameterValues = queryParameterValues;
       });
     } catch (error) {
       assertErrorThrown(error);
@@ -125,12 +214,37 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
     this.queryCode = undefined;
   }
 
+  setQueryParameterValue(name: string, value: V1_ValueSpecification) {
+    if (this.queryParameterValues?.[name]) {
+      this.queryParameterValues[name].valueSpec = value;
+    }
+  }
+
+  get queryParameters(): V1_Variable[] | undefined {
+    return this.queryParameterValues
+      ? Object.values(this.queryParameterValues).map((elem) => elem.variable)
+      : undefined;
+  }
+
+  get hasInvalidQueryParameters(): boolean {
+    if (this.queryParameterValues) {
+      return Object.values(this.queryParameterValues).some(
+        (paramVal) =>
+          !isValidV1_ValueSpecification(
+            paramVal.valueSpec,
+            paramVal.variable.multiplicity,
+          ),
+      );
+    }
+    return false;
+  }
+
   override get label() {
     return LegendDataCubeSourceBuilderType.LEGEND_QUERY;
   }
 
   override get isValid(): boolean {
-    return Boolean(this.query);
+    return Boolean(this.query) && !this.hasInvalidQueryParameters;
   }
 
   override async generateSourceData() {
@@ -141,6 +255,22 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
     }
     const source = new RawLegendQueryDataCubeSource();
     source.queryId = this.query.id;
+    source.parameterValues = this.queryParameterValues
+      ? Object.values(this.queryParameterValues).map((variableAndValueSpec) => [
+          JSON.stringify(
+            V1_serializeValueSpecification(
+              variableAndValueSpec.variable,
+              this._application.pluginManager.getPureProtocolProcessorPlugins(),
+            ),
+          ),
+          JSON.stringify(
+            V1_serializeValueSpecification(
+              variableAndValueSpec.valueSpec,
+              this._application.pluginManager.getPureProtocolProcessorPlugins(),
+            ),
+          ),
+        ])
+      : [];
     return RawLegendQueryDataCubeSource.serialization.toJson(source);
   }
 
@@ -148,5 +278,28 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
     if (this.query) {
       configuration.name = this.query.name;
     }
+  }
+
+  private async populateEnumerations(
+    queryParameters: V1_Variable[],
+    query: LightQuery,
+  ): Promise<void> {
+    const queryEnumerations: { [paramName: string]: V1_Enumeration } = {};
+    for (const param of queryParameters) {
+      const enumerationValue = await fetchV1Enumeration(
+        guaranteeNonNullable(
+          guaranteeType(param.genericType?.rawType, V1_PackageableType)
+            .fullPath,
+        ),
+        query,
+        this._systemModel,
+        this._depotServerClient,
+        this._application.pluginManager.getPureProtocolProcessorPlugins(),
+      );
+      queryEnumerations[param.name] = enumerationValue;
+    }
+    runInAction(() => {
+      this.queryEnumerations = queryEnumerations;
+    });
   }
 }

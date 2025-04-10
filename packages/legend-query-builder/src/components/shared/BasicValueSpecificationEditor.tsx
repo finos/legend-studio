@@ -267,6 +267,7 @@ export interface PrimitiveInstanceValueEditorProps<
   handleBlur?: (() => void) | undefined;
   handleKeyDown?: React.KeyboardEventHandler<HTMLDivElement> | undefined;
   className?: string | undefined;
+  readOnly?: boolean | undefined;
 }
 
 export interface BasicValueSpecificationEditorSelectorSearchConfig {
@@ -288,6 +289,7 @@ interface StringPrimitiveInstanceValueEditorProps<T>
     | BasicValueSpecificationEditorSelectorSearchConfig
     | undefined;
   selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
+  lightMode?: boolean | undefined;
 }
 
 // eslint-disable-next-line comma-spacing
@@ -306,6 +308,8 @@ const StringPrimitiveInstanceValueEditorInner = <T,>(
     className,
     selectorSearchConfig,
     selectorConfig,
+    lightMode,
+    readOnly,
   } = props;
   const useSelector = Boolean(selectorSearchConfig);
   const applicationStore = useApplicationStore();
@@ -376,9 +380,7 @@ const StringPrimitiveInstanceValueEditorInner = <T,>(
           value={selectedValue}
           inputValue={value ?? ''}
           onInputChange={handleInputChange}
-          darkMode={
-            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
-          }
+          darkMode={!lightMode}
           isLoading={isLoading}
           allowCreateWhileLoading={true}
           noOptionsMessage={noOptionsMessage}
@@ -393,6 +395,7 @@ const StringPrimitiveInstanceValueEditorInner = <T,>(
           }
           inputName={inputName}
           optionCustomization={selectorConfig?.optionCustomization}
+          disabled={readOnly}
         />
       ) : (
         <InputWithInlineValidation
@@ -409,6 +412,7 @@ const StringPrimitiveInstanceValueEditorInner = <T,>(
           }
           onKeyDown={handleKeyDown}
           name={inputName}
+          disabled={readOnly}
         />
       )}
       <button
@@ -416,6 +420,7 @@ const StringPrimitiveInstanceValueEditorInner = <T,>(
         name={resetButtonName}
         title="Reset"
         onClick={resetValue}
+        disabled={readOnly}
       >
         <RefreshIcon />
       </button>
@@ -446,6 +451,7 @@ const BooleanInstanceValueEditorInner = <T,>(
     updateValueSpecification,
     resetValue,
     className,
+    readOnly,
   } = props;
   const value = valueSelector(valueSpecification);
   const toggleValue = (): void => {
@@ -460,6 +466,7 @@ const BooleanInstanceValueEditorInner = <T,>(
           'value-spec-editor__toggler__btn--toggled': value,
         })}
         onClick={toggleValue}
+        disabled={readOnly}
       >
         {value ? <CheckSquareIcon /> : <SquareIcon />}
       </button>
@@ -468,6 +475,7 @@ const BooleanInstanceValueEditorInner = <T,>(
         name="Reset"
         title="Reset"
         onClick={resetValue}
+        disabled={readOnly}
       >
         <RefreshIcon />
       </button>
@@ -501,6 +509,7 @@ const NumberPrimitiveInstanceValueEditorInner = <T,>(
     handleKeyDown,
     className,
     isInteger,
+    readOnly,
   } = props;
   const [value, setValue] = useState(
     valueSelector(valueSpecification)?.toString() ?? '',
@@ -624,6 +633,7 @@ const NumberPrimitiveInstanceValueEditorInner = <T,>(
             handleKeyDown?.(event);
           }}
           name={inputName}
+          disabled={readOnly}
         />
         <div className="value-spec-editor__number__actions">
           <button
@@ -631,6 +641,7 @@ const NumberPrimitiveInstanceValueEditorInner = <T,>(
             title="Evaluate Expression (Enter)"
             name={calculateButtonName}
             onClick={calculateExpression}
+            disabled={readOnly}
           >
             <CalculateIcon />
           </button>
@@ -641,6 +652,7 @@ const NumberPrimitiveInstanceValueEditorInner = <T,>(
         name={resetButtonName}
         title="Reset"
         onClick={resetValue}
+        disabled={readOnly}
       >
         <RefreshIcon />
       </button>
@@ -664,6 +676,7 @@ interface EnumInstanceValueEditorProps<T>
   extends PrimitiveInstanceValueEditorProps<T, string | null> {
   options: { label: string; value: string }[];
   selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
+  lightMode?: boolean | undefined;
 }
 
 // eslint-disable-next-line comma-spacing
@@ -680,8 +693,9 @@ const EnumInstanceValueEditorInner = <T,>(
     options,
     className,
     selectorConfig,
+    lightMode,
+    readOnly,
   } = props;
-  const applicationStore = useApplicationStore();
   const enumValue = valueSelector(valueSpecification);
   const resetButtonName = `reset-${valueSelector(valueSpecification)}`;
   const inputName = `input-${valueSelector(valueSpecification)}`;
@@ -709,20 +723,20 @@ const EnumInstanceValueEditorInner = <T,>(
         options={options}
         onChange={changeValue}
         value={enumValue ? { value: enumValue, label: enumValue } : null}
-        darkMode={
-          !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
-        }
+        darkMode={!lightMode}
         hasError={errorChecker?.(valueSpecification)}
         placeholder="Select value"
         autoFocus={true}
         inputName={inputName}
         optionCustomization={selectorConfig?.optionCustomization}
+        disabled={readOnly}
       />
       <button
         className="value-spec-editor__reset-btn"
         name={resetButtonName}
         title="Reset"
         onClick={resetValue}
+        disabled={readOnly}
       >
         <RefreshIcon />
       </button>
@@ -818,6 +832,8 @@ interface PrimitiveCollectionInstanceValueEditorProps<
   selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
   errorChecker?: (valueSpecification: U) => boolean;
   className?: string | undefined;
+  lightMode?: boolean | undefined;
+  readOnly?: boolean | undefined;
 }
 
 const PrimitiveCollectionInstanceValueEditorInner = <
@@ -835,6 +851,8 @@ const PrimitiveCollectionInstanceValueEditorInner = <
     selectorSearchConfig,
     selectorConfig,
     expectedType,
+    lightMode,
+    readOnly,
   } = props;
 
   // local state and variables
@@ -1063,9 +1081,7 @@ const PrimitiveCollectionInstanceValueEditorInner = <
         onKeyDown={handleKeyDown}
         onPaste={handlePaste}
         value={selectedOptions}
-        darkMode={
-          !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
-        }
+        darkMode={!lightMode}
         isLoading={isLoading}
         noMatchMessage={noMatchMessage}
         placeholder={getPlaceHolder(expectedType)}
@@ -1074,6 +1090,7 @@ const PrimitiveCollectionInstanceValueEditorInner = <
         }}
         inputName={inputName}
         optionCustomization={selectorConfig?.optionCustomization}
+        disabled={readOnly}
       />
       <button
         className="value-spec-editor__list-editor__copy-button"
@@ -1089,6 +1106,7 @@ const PrimitiveCollectionInstanceValueEditorInner = <
         name="Save"
         title="Save"
         onClick={updateValueSpecAndSaveEdit}
+        disabled={readOnly}
       >
         <SaveIcon />
       </button>
@@ -1119,6 +1137,8 @@ const EnumCollectionInstanceValueEditorInner = <T, U extends { values: T[] }>(
     expectedType,
     enumOptions,
     selectorConfig,
+    lightMode,
+    readOnly,
   } = props;
 
   guaranteeNonNullable(
@@ -1127,7 +1147,6 @@ const EnumCollectionInstanceValueEditorInner = <T, U extends { values: T[] }>(
   );
 
   // local state and variables
-  const applicationStore = useApplicationStore();
   const [inputValue, setInputValue] = useState('');
   const [inputValueIsError, setInputValueIsError] = useState(false);
   const [selectedOptions, setSelectedOptions] = useState<
@@ -1288,13 +1307,12 @@ const EnumCollectionInstanceValueEditorInner = <T, U extends { values: T[] }>(
         onKeyDown={handleKeyDown}
         onPaste={handlePaste}
         value={selectedOptions}
-        darkMode={
-          !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
-        }
+        darkMode={!lightMode}
         placeholder="Add"
         menuIsOpen={true}
         inputName={inputName}
         optionCustomization={selectorConfig?.optionCustomization}
+        disabled={readOnly}
       />
       <button
         className="value-spec-editor__list-editor__copy-button"
@@ -1310,6 +1328,7 @@ const EnumCollectionInstanceValueEditorInner = <T, U extends { values: T[] }>(
         name="Save"
         title="Save"
         onClick={updateValueSpecAndSaveEdit}
+        disabled={readOnly}
       >
         <SaveIcon />
       </button>
@@ -1346,6 +1365,8 @@ const CollectionValueInstanceValueEditorInner = <T, U extends { values: T[] }>(
     selectorConfig,
     expectedType,
     enumOptions,
+    lightMode,
+    readOnly,
   } = props;
 
   const [editable, setEditable] = useState(false);
@@ -1384,6 +1405,8 @@ const CollectionValueInstanceValueEditorInner = <T, U extends { values: T[] }>(
               saveEdit={saveEdit}
               enumOptions={enumOptions}
               selectorConfig={selectorConfig}
+              lightMode={lightMode}
+              readOnly={readOnly}
             />
           ) : (
             <PrimitiveCollectionInstanceValueEditor<T, U>
@@ -1395,6 +1418,8 @@ const CollectionValueInstanceValueEditorInner = <T, U extends { values: T[] }>(
               saveEdit={saveEdit}
               selectorSearchConfig={selectorSearchConfig}
               selectorConfig={selectorConfig}
+              lightMode={lightMode}
+              readOnly={readOnly}
             />
           )}
         </div>
@@ -1404,8 +1429,9 @@ const CollectionValueInstanceValueEditorInner = <T, U extends { values: T[] }>(
   return (
     <div
       className={clsx('value-spec-editor', className)}
-      onClick={enableEdit}
-      title="Click to edit"
+      onClick={readOnly ? () => {} : enableEdit}
+      title={readOnly ? '' : 'Click to edit'}
+      style={{ cursor: readOnly ? 'not-allowed' : '' }}
     >
       <div
         className={clsx('value-spec-editor__list-editor__preview', {
@@ -1457,6 +1483,7 @@ const DateInstanceValueEditorInner = <
     typeCheckOption,
     displayAsEditableValue,
     className,
+    readOnly,
   } = props;
 
   return (
@@ -1472,6 +1499,7 @@ const DateInstanceValueEditorInner = <
         }
         handleBlur={handleBlur}
         displayAsEditableValue={displayAsEditableValue}
+        readOnly={readOnly}
       />
       {!displayAsEditableValue && (
         <button
@@ -1479,6 +1507,7 @@ const DateInstanceValueEditorInner = <
           name="Reset"
           title="Reset"
           onClick={resetValue}
+          disabled={readOnly}
         >
           <RefreshIcon />
         </button>
@@ -1521,6 +1550,7 @@ export const BasicValueSpecificationEditor = forwardRef<
       | ((event: React.KeyboardEvent<HTMLInputElement>) => void)
       | undefined;
     displayDateEditorAsEditableValue?: boolean | undefined;
+    readOnly?: boolean | undefined;
   }
 >(function BasicValueSpecificationEditorInner(props, ref) {
   const {
@@ -1537,6 +1567,7 @@ export const BasicValueSpecificationEditor = forwardRef<
     handleBlur,
     handleKeyDown,
     displayDateEditorAsEditableValue,
+    readOnly,
   } = props;
 
   const applicationStore = useApplicationStore();
@@ -1643,6 +1674,10 @@ export const BasicValueSpecificationEditor = forwardRef<
             }
             handleBlur={handleBlur}
             handleKeyDown={handleKeyDown}
+            lightMode={
+              applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+            }
+            readOnly={readOnly}
           />
         );
       case PRIMITIVE_TYPE.BOOLEAN:
@@ -1653,6 +1688,7 @@ export const BasicValueSpecificationEditor = forwardRef<
             updateValueSpecification={updateValueSpecification}
             className={className}
             resetValue={resetValue}
+            readOnly={readOnly}
           />
         );
       case PRIMITIVE_TYPE.NUMBER:
@@ -1673,6 +1709,7 @@ export const BasicValueSpecificationEditor = forwardRef<
             ref={ref}
             handleBlur={handleBlur}
             handleKeyDown={handleKeyDown}
+            readOnly={readOnly}
           />
         );
       case PRIMITIVE_TYPE.DATE:
@@ -1695,6 +1732,7 @@ export const BasicValueSpecificationEditor = forwardRef<
               _valueSpecification instanceof PrimitiveInstanceValue &&
               errorChecker(_valueSpecification)
             }
+            readOnly={readOnly}
           />
         );
       default:
@@ -1739,6 +1777,10 @@ export const BasicValueSpecificationEditor = forwardRef<
         }
         handleBlur={handleBlur}
         selectorConfig={selectorConfig}
+        lightMode={
+          applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+        }
+        readOnly={readOnly}
       />
     );
   } else if (
@@ -1824,6 +1866,10 @@ export const BasicValueSpecificationEditor = forwardRef<
         }
         convertTextToValueSpecification={convertTextToValueSpecification}
         enumOptions={enumOptions}
+        lightMode={
+          applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+        }
+        readOnly={readOnly}
       />
     );
   }
@@ -1851,6 +1897,7 @@ export const BasicValueSpecificationEditor = forwardRef<
         displayDateEditorAsEditableValue={displayDateEditorAsEditableValue}
         selectorSearchConfig={selectorSearchConfig}
         selectorConfig={selectorConfig}
+        readOnly={readOnly}
       />
     );
   } else if (valueSpecification instanceof SimpleFunctionExpression) {
@@ -1868,6 +1915,7 @@ export const BasicValueSpecificationEditor = forwardRef<
             resetValue={resetValue}
             handleBlur={handleBlur}
             displayAsEditableValue={displayDateEditorAsEditableValue}
+            readOnly={readOnly}
           />
         );
       } else {
@@ -1918,6 +1966,7 @@ export const BasicValueSpecificationEditor = forwardRef<
             ref={ref}
             handleBlur={handleBlur}
             handleKeyDown={handleKeyDown}
+            readOnly={readOnly}
           />
         );
       }
@@ -1941,6 +1990,7 @@ export const EditableBasicValueSpecificationEditor = observer(
     selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
     isConstant?: boolean;
     initializeAsEditable?: boolean;
+    readOnly?: boolean;
   }) => {
     const {
       valueSpecification,
@@ -1953,6 +2003,7 @@ export const EditableBasicValueSpecificationEditor = observer(
       selectorConfig,
       isConstant,
       initializeAsEditable,
+      readOnly,
     } = props;
     const applicationStore = useApplicationStore();
 
@@ -2006,6 +2057,7 @@ export const EditableBasicValueSpecificationEditor = observer(
           }
         }}
         displayDateEditorAsEditableValue={true}
+        readOnly={readOnly}
       />
     ) : (
       <div className="value-spec-editor__editable__display">
@@ -2018,9 +2070,14 @@ export const EditableBasicValueSpecificationEditor = observer(
                 !isValidInstanceValue(valueSpecification),
             },
           )}
-          onClick={() => {
-            setIsEditingValue(true);
-          }}
+          onClick={
+            readOnly
+              ? () => {}
+              : () => {
+                  setIsEditingValue(true);
+                }
+          }
+          style={{ cursor: readOnly ? 'not-allowed' : '' }}
         >
           {`"${valueSpecStringValue !== undefined ? valueSpecStringValue : ''}"`}
         </span>

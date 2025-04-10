@@ -111,6 +111,69 @@ test(
 );
 
 test(
+  integrationTest('BasicValueSpecificationEditor readOnly disables input'),
+  async () => {
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
+    const graphManagerState = await TEST__setUpGraphManagerState(
+      TEST_DATA__SimpleRelationalModel,
+      pluginManager,
+    );
+    const observerContext = new ObserverContext(
+      graphManagerState.pluginManager.getPureGraphManagerPlugins(),
+    );
+
+    let stringValueSpec: ValueSpecification = observe_ValueSpecification(
+      buildPrimitiveInstanceValue(
+        graphManagerState.graph,
+        PRIMITIVE_TYPE.STRING,
+        'initial value',
+        observerContext,
+      ),
+      observerContext,
+    );
+
+    const setValueSpecification = (newVal: ValueSpecification): void => {
+      stringValueSpec = newVal;
+    };
+
+    const resetValue = (): void => {
+      instanceValue_setValue(
+        stringValueSpec as PrimitiveInstanceValue,
+        null,
+        0,
+        observerContext,
+      );
+    };
+
+    const typeCheckOption = {
+      expectedType: (stringValueSpec as PrimitiveInstanceValue).genericType
+        .value.rawType,
+      match:
+        (stringValueSpec as PrimitiveInstanceValue).genericType.value
+          .rawType === PrimitiveType.DATETIME,
+    };
+
+    TEST__setUpBasicValueSpecificationEditor(pluginManager, {
+      valueSpecification: stringValueSpec,
+      setValueSpecification: setValueSpecification,
+      typeCheckOption: typeCheckOption,
+      resetValue: resetValue,
+      graph: graphManagerState.graph,
+      observerContext: observerContext,
+      readOnly: true,
+    });
+
+    const inputElement = await screen.findByDisplayValue('initial value');
+    expect(inputElement).not.toBeNull();
+    expect(inputElement.hasAttribute('disabled')).toBe(true);
+
+    const resetButton = screen.getByTitle('Reset');
+    expect(resetButton).not.toBeNull();
+    expect(resetButton.hasAttribute('disabled')).toBe(true);
+  },
+);
+
+test(
   integrationTest(
     'BasicValueSpecificationEditor renders and updates string primitive values correctly',
   ),
