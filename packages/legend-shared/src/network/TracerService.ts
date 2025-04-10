@@ -50,9 +50,8 @@ export abstract class TracerServicePlugin<T> extends AbstractPlugin {
   }
 
   abstract bootstrap(clientSpan: T | undefined, response: Response): void;
-  abstract createClientSpan(traceData: TraceData): T;
-  abstract createServerSpan(
-    clientSpan: T,
+  abstract createClientSpan(
+    traceData: TraceData,
     method: string,
     url: string,
     headers: PlainObject,
@@ -61,12 +60,10 @@ export abstract class TracerServicePlugin<T> extends AbstractPlugin {
     clientSpan: T | undefined,
     error: Error | undefined,
   ): void;
-  abstract concludeServerSpan(serverSpan: T | undefined): void;
 }
 
 interface TraceEntry<T> {
   clientSpan: T;
-  serverSpan: T;
   plugin: TracerServicePlugin<T>;
 }
 
@@ -94,12 +91,6 @@ export class Trace {
       entry.plugin.concludeClientSpan(entry.clientSpan, error);
     });
   }
-
-  close(): void {
-    this.traceEntries.forEach((entry) => {
-      entry.plugin.concludeServerSpan(entry.serverSpan);
-    });
-  }
 }
 
 export class TracerService {
@@ -119,16 +110,14 @@ export class TracerService {
     if (traceData) {
       trace.setup(
         this.plugins.map((plugin) => {
-          const clientSpan = plugin.createClientSpan(traceData);
-          const serverSpan = plugin.createServerSpan(
-            clientSpan,
+          const clientSpan = plugin.createClientSpan(
+            traceData,
             method,
             url,
             headers,
           );
           return {
             clientSpan,
-            serverSpan,
             plugin,
           };
         }),
