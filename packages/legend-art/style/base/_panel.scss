@@ -100,6 +100,12 @@
     @include ellipsisTextOverflow;
 
     font-weight: bold;
+    color: var(--color-light-grey-100);
+
+    &--light {
+      color: var(--color-dark-grey-400);
+      background: var(--color-light-grey-50);
+    }
   }
 
   &__header--with-tabs {
@@ -305,10 +311,9 @@
   }
 
   &__section {
-    padding: 0 1rem;
-
     & + & {
       margin-top: 2rem;
+      margin-bottom: 2rem;
     }
 
     &__divider {
@@ -576,6 +581,7 @@
 
   &__section__list__new-item {
     display: flex;
+    align-items: center;
 
     &__add {
       display: flex;

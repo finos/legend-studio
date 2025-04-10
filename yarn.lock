@@ -3027,6 +3027,7 @@ __metadata:
     mobx-react-lite: "npm:4.1.0"
     npm-run-all: "npm:4.1.5"
     react: "npm:19.0.0"
+    react-dnd: "npm:16.0.1"
     rimraf: "npm:6.0.1"
     sass: "npm:1.85.1"
     typescript: "npm:5.8.2"
