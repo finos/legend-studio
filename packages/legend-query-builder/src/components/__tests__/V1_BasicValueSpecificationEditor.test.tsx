@@ -672,7 +672,40 @@ test(
 
 test(
   integrationTest(
-    "V1_BasicValueSpecificationEditor doesn't allow empty collection",
+    "V1_BasicValueSpecificationEditor doesn't allow empty collection if multiplicity lower bound is >= 1",
+  ),
+  async () => {
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
+
+    let stringCollectionValue = V1_observe_ValueSpecification(_collection([]));
+
+    const setValueSpecification = (val: V1_ValueSpecification): void => {
+      stringCollectionValue = val;
+    };
+
+    TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
+      valueSpecification: stringCollectionValue,
+      setValueSpecification,
+      multiplicity: V1_Multiplicity.ONE_MANY,
+      typeCheckOption: {
+        expectedType: _type(PRIMITIVE_TYPE.STRING),
+        match: false,
+      },
+      resetValue: (): void => {},
+    });
+
+    const listEditorElement = await screen.findByText('List(empty)');
+
+    // Verify error styling
+    expect(listEditorElement.classList).toContain(
+      'value-spec-editor__list-editor__preview--error',
+    );
+  },
+);
+
+test(
+  integrationTest(
+    'V1_BasicValueSpecificationEditor allows empty collection if multiplicity lower bound is 0',
   ),
   async () => {
     const pluginManager = TEST__LegendApplicationPluginManager.create();
@@ -696,8 +729,8 @@ test(
 
     const listEditorElement = await screen.findByText('List(empty)');
 
-    // Verify error styling
-    expect(listEditorElement.classList).toContain(
+    // Verify no error styling
+    expect(listEditorElement.classList).not.toContain(
       'value-spec-editor__list-editor__preview--error',
     );
   },

@@ -114,8 +114,11 @@ export const isValidV1_ValueSpecification = (
   } else if (valueSpecification instanceof V1_AppliedProperty && isRequired) {
     return valueSpecification.property.length > 0;
   } else if (valueSpecification instanceof V1_Collection) {
-    // collection instance can't be empty
-    if (valueSpecification.values.length === 0) {
+    // collection instance can't be empty if multiplicity lower bound is 1 or more.
+    if (
+      multiplicity.lowerBound >= 1 &&
+      valueSpecification.values.length === 0
+    ) {
       return false;
     }
     // collection instance must have all valid values.
