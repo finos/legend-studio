@@ -34,12 +34,11 @@ import {
   type EditorExtensionStateBuilder,
   type EditorExtensionComponentRendererConfiguration,
   PACKAGEABLE_ELEMENT_GROUP_BY_CATEGORY,
-  UnsupportedElementEditorState,
+  type NewElementDriverEditorRenderer,
+  type NewElementDriverCreator,
+  type NewElementDriver,
 } from '@finos/legend-application-studio';
 import {
-  PackageableElementExplicitReference,
-  stub_Mapping,
-  stub_PackageableRuntime,
   type ElementObserver,
   type PackageableElement,
 } from '@finos/legend-graph';
@@ -47,7 +46,6 @@ import type { ApplicationPageEntry } from '@finos/legend-application';
 import type { PureGrammarTextSuggestion } from '@finos/legend-code-editor';
 import {
   DataSpace,
-  DataSpaceExecutionContext,
   observe_DataSpace,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import { DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../__lib__/DSL_DataSpace_LegendStudioDocumentation.js';
@@ -67,6 +65,8 @@ import {
 import { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
 import { DataSpaceEditor } from './DataSpaceEditor.js';
 import type { DocumentationEntry } from '@finos/legend-shared';
+import { NewDataProductDriverEditor } from './DSL_NewDataProductEditor.js';
+import { NewDataProductDriver } from './DSL_DataProduct_ElementDriver.js';
 
 const DATA_SPACE_ELEMENT_TYPE = 'DATA PRODUCT';
 const DATA_SPACE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
@@ -185,18 +185,34 @@ export class DSL_DataSpace_LegendStudioApplicationPlugin
         state: NewElementState,
       ): PackageableElement | undefined => {
         if (type === DATA_SPACE_ELEMENT_TYPE) {
-          const dataSpace = new DataSpace(name);
-          const dataSpaceExecutionContext = new DataSpaceExecutionContext();
-          dataSpaceExecutionContext.name = 'dummyContext';
-          dataSpaceExecutionContext.mapping =
-            PackageableElementExplicitReference.create(stub_Mapping());
-          dataSpaceExecutionContext.defaultRuntime =
-            PackageableElementExplicitReference.create(
-              stub_PackageableRuntime(),
-            );
-          dataSpace.executionContexts = [dataSpaceExecutionContext];
-          dataSpace.defaultExecutionContext = dataSpaceExecutionContext;
-          return dataSpace;
+          return state
+            .getNewElementDriver(NewDataProductDriver)
+            .createElement(name);
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraNewElementDriverEditorRenderers(): NewElementDriverEditorRenderer[] {
+    return [
+      (type: string): React.ReactNode | undefined => {
+        if (type === DATA_SPACE_ELEMENT_TYPE) {
+          return <NewDataProductDriverEditor />;
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraNewElementDriverCreators(): NewElementDriverCreator[] {
+    return [
+      (
+        editorStore: EditorStore,
+        type: string,
+      ): NewElementDriver<PackageableElement> | undefined => {
+        if (type === DATA_SPACE_ELEMENT_TYPE) {
+          return new NewDataProductDriver(editorStore);
         }
         return undefined;
       },
@@ -223,8 +239,8 @@ export class DSL_DataSpace_LegendStudioApplicationPlugin
         element: PackageableElement,
       ): ElementEditorState | undefined => {
         if (element instanceof DataSpace) {
-          return new UnsupportedElementEditorState(editorStore, element);
-          // return new DataSpaceEditorState(editorStore, element);
+          // return new UnsupportedElementEditorState(editorStore, element);
+          return new DataSpaceEditorState(editorStore, element);
         }
         return undefined;
       },
