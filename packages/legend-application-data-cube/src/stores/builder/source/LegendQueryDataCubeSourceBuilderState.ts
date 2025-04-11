@@ -30,6 +30,7 @@ import {
   type V1_ValueSpecification,
   type V1_Variable,
   QuerySearchSpecification,
+  V1_AppliedProperty,
   V1_CORE_SYSTEM_MODELS,
   V1_deserializePureModelContextData,
   V1_deserializeRawValueSpecificationType,
@@ -63,7 +64,9 @@ import {
   type DataCubeAlertService,
   type DataCubeConfiguration,
   _defaultPrimitiveTypeValue,
+  _enumValue,
   _primitiveValue,
+  isPrimitiveType,
 } from '@finos/legend-data-cube';
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import {
@@ -175,15 +178,28 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
         const defaultValueSpec =
           defaultValue?.content !== undefined
             ? await this._engine.parseValueSpecification(defaultValue.content)
-            : _primitiveValue(
-                V1_deserializeRawValueSpecificationType(
-                  packageableType.fullPath,
-                ),
-                _defaultPrimitiveTypeValue(packageableType.fullPath),
-              );
+            : isPrimitiveType(packageableType.fullPath)
+              ? _primitiveValue(
+                  V1_deserializeRawValueSpecificationType(
+                    packageableType.fullPath,
+                  ),
+                  _defaultPrimitiveTypeValue(packageableType.fullPath),
+                )
+              : _enumValue('', packageableType.fullPath);
+
         queryParameterValues[param.name] = {
           variable: param,
-          valueSpec: V1_observe_ValueSpecification(defaultValueSpec),
+          // If the param valueSpec is a V1_AppliedProperty, we can assume that it is
+          // actually an enum value, so we will convert it to a V1_EnumValue.
+          valueSpec:
+            defaultValueSpec instanceof V1_AppliedProperty
+              ? V1_observe_ValueSpecification(
+                  _enumValue(
+                    defaultValueSpec.property,
+                    packageableType.fullPath,
+                  ),
+                )
+              : V1_observe_ValueSpecification(defaultValueSpec),
         };
       }
       const enumerationParameters = queryParameters.filter(
