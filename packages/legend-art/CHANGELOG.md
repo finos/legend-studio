@@ -1,5 +1,13 @@
 # @finos/legend-art
 
+## 7.1.92
+
+### Patch Changes
+
+- [#3994](https://github.com/finos/legend-studio/pull/3994) [`036e2d4`](https://github.com/finos/legend-studio/commit/036e2d4c3022461d39167b88e0259303e4572a4c) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - rename Code_TerminalIcon
+
+- [#4002](https://github.com/finos/legend-studio/pull/4002) [`13b558a`](https://github.com/finos/legend-studio/commit/13b558a6cb0ed5ecf7cf4978a08ecf2e7ffacf43) ([@kelly-thai](https://github.com/kelly-thai)) - Update CSS for Data Product form editor
+
 ## 7.1.91
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space-studio
 
+## 0.1.154
+
+### Patch Changes
+
+- [#4002](https://github.com/finos/legend-studio/pull/4002) [`13b558a`](https://github.com/finos/legend-studio/commit/13b558a6cb0ed5ecf7cf4978a08ecf2e7ffacf43) ([@kelly-thai](https://github.com/kelly-thai)) - Update CSS for Data Product form editor
+
 ## 0.1.153
 
 ### Patch Changes

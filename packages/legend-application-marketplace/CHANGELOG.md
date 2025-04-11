@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.0.11
+
+### Patch Changes
+
+- [#3994](https://github.com/finos/legend-studio/pull/3994) [`036e2d4`](https://github.com/finos/legend-studio/commit/036e2d4c3022461d39167b88e0259303e4572a4c) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - rename from catalog
+
 ## 0.0.10
 
 ### Patch Changes
