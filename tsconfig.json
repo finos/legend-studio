@@ -43,10 +43,10 @@
     { "path": "packages/legend-application-data-cube" },
     { "path": "packages/legend-application-data-cube-bootstrap" },
     { "path": "packages/legend-application-data-cube-deployment" },
-    // catalog
-    { "path": "packages/legend-application-catalog" },
-    { "path": "packages/legend-application-catalog-bootstrap" },
-    { "path": "packages/legend-application-catalog-deployment" },
+    // marketplace
+    { "path": "packages/legend-application-marketplace" },
+    { "path": "packages/legend-application-marketplace-bootstrap" },
+    { "path": "packages/legend-application-marketplace-deployment" },
     // pure ide
     { "path": "packages/legend-application-pure-ide" },
     { "path": "packages/legend-application-pure-ide-deployment" },

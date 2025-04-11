@@ -1,0 +1,16 @@
+{
+  "extends": "@finos/legend-dev-utils/tsconfig.base.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "build/dev.tsbuildinfo",
+    "noEmit": true,
+    "jsx": "react-jsxdev",
+    "allowJs": true
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.json",
+    "marketplace.config.js"
+  ],
+  "references": [{ "path": "../legend-application-marketplace-bootstrap" }]
+}
