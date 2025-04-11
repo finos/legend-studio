@@ -18,7 +18,6 @@ import { useEditorStore } from '@finos/legend-application-studio';
 import {
   CustomSelectorInput,
   ListEditor,
-  PanelFormSection,
   PanelFormTextField,
 } from '@finos/legend-art';
 import { DataSpaceDiagram } from '@finos/legend-extension-dsl-data-space/graph';
@@ -130,18 +129,16 @@ export const DataSpaceDiagramsSection = observer(() => {
   );
 
   return (
-    <PanelFormSection className="dataSpace-editor__general__diagrams">
-      <ListEditor
-        title="Diagrams"
-        prompt="Add diagrams to include in this Data Product. Set a title and description for each diagram."
-        items={dataSpace.diagrams}
-        keySelector={(element: DataSpaceDiagram) => element.diagram.value.path}
-        ItemComponent={DiagramComponent}
-        NewItemComponent={NewDiagramComponent}
-        handleRemoveItem={handleRemoveDiagram}
-        isReadOnly={dataSpaceState.isReadOnly}
-        emptyMessage="No diagrams specified"
-      />
-    </PanelFormSection>
+    <ListEditor
+      title="Diagrams"
+      prompt="Add diagrams to include in this Data Product. Set a title and description for each diagram."
+      items={dataSpace.diagrams}
+      keySelector={(element: DataSpaceDiagram) => element.diagram.value.path}
+      ItemComponent={DiagramComponent}
+      NewItemComponent={NewDiagramComponent}
+      handleRemoveItem={handleRemoveDiagram}
+      isReadOnly={dataSpaceState.isReadOnly}
+      emptyMessage="No diagrams specified"
+    />
   );
 });

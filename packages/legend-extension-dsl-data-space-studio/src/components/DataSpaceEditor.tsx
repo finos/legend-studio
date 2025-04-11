@@ -38,7 +38,6 @@ export const DataSpaceEditor = observer(() => {
   }
 
   const validPreviewState = (): boolean => {
-    //KXT isStubbed_PackageableElement
     const stubDefault = Boolean(
       isStubbed_PackageableElement(
         dataSpace.defaultExecutionContext.defaultRuntime.value,

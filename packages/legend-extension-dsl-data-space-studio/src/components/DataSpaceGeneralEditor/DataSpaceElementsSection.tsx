@@ -15,12 +15,7 @@
  */
 
 import { useEditorStore } from '@finos/legend-application-studio';
-import {
-  PanelFormSection,
-  ListEditor,
-  Checkbox,
-  CustomSelectorInput,
-} from '@finos/legend-art';
+import { ListEditor, Checkbox, CustomSelectorInput } from '@finos/legend-art';
 import {
   type DataSpaceElement,
   DataSpaceElementPointer,
@@ -116,20 +111,18 @@ export const DataSpaceElementsSection = observer(() => {
   );
 
   return (
-    <PanelFormSection className="dataSpace-editor__general__elements">
-      <ListEditor
-        title="Elements"
-        prompt="Add classes and associations to display under Models Documentation. Use the exclude checkbox to exclude certain elements from this Data Product entirely."
-        items={dataSpace.elements}
-        keySelector={(element: DataSpaceElementPointer) =>
-          element.element.value.path
-        }
-        ItemComponent={ElementComponent}
-        NewItemComponent={NewElementComponent}
-        handleRemoveItem={handleRemoveElement}
-        isReadOnly={dataSpaceState.isReadOnly}
-        emptyMessage="No elements specified"
-      />
-    </PanelFormSection>
+    <ListEditor
+      title="Elements"
+      prompt="Add classes and associations to display under Models Documentation. Use the exclude checkbox to exclude certain elements from this Data Product entirely."
+      items={dataSpace.elements}
+      keySelector={(element: DataSpaceElementPointer) =>
+        element.element.value.path
+      }
+      ItemComponent={ElementComponent}
+      NewItemComponent={NewElementComponent}
+      handleRemoveItem={handleRemoveElement}
+      isReadOnly={dataSpaceState.isReadOnly}
+      emptyMessage="No elements specified"
+    />
   );
 });

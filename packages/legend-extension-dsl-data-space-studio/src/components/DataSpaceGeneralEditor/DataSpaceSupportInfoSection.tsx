@@ -203,7 +203,7 @@ export const DataSpaceSupportInfoSection = observer(() => {
             />
           </PanelFormSection>
         ) : dataSpace.supportInfo instanceof DataSpaceSupportCombinedInfo ? (
-          <PanelFormSection className="dataSpace-editor__general__support-info__content">
+          <div>
             <ListEditor
               title="Emails"
               items={dataSpace.supportInfo.emails}
@@ -266,7 +266,7 @@ export const DataSpaceSupportInfoSection = observer(() => {
               }}
               placeholder="Enter FAQ URL"
             />
-          </PanelFormSection>
+          </div>
         ) : (
           <div>Unknown support info type</div>
         )

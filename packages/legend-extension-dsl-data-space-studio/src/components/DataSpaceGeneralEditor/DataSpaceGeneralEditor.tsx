@@ -18,7 +18,6 @@ import { useEditorStore } from '@finos/legend-application-studio';
 import {
   PanelContentLists,
   PanelForm,
-  PanelFormSection,
   PanelFormTextField,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
@@ -52,24 +51,20 @@ export const DataSpaceGeneralEditor = observer(() => {
   return (
     <PanelContentLists className="dataSpace-editor__general">
       <PanelForm>
-        <PanelFormSection>
-          <PanelFormTextField
-            name="Title"
-            value={dataSpace.title ?? ''}
-            prompt="Provide a title for this Data Product."
-            update={handleTitleChange}
-            placeholder="Enter title"
-          />
-        </PanelFormSection>
-        <PanelFormSection>
-          <PanelFormTextField
-            name="Description"
-            value={dataSpace.description ?? ''}
-            prompt="Provide a description for this Data Product."
-            update={handleDescriptionChange}
-            placeholder="Enter description"
-          />
-        </PanelFormSection>
+        <PanelFormTextField
+          name="Title"
+          value={dataSpace.title ?? ''}
+          prompt="Provide a title for this Data Product."
+          update={handleTitleChange}
+          placeholder="Enter title"
+        />
+        <PanelFormTextField
+          name="Description"
+          value={dataSpace.description ?? ''}
+          prompt="Provide a description for this Data Product."
+          update={handleDescriptionChange}
+          placeholder="Enter description"
+        />
         <DataSpaceDefaultExecutionContextSection />
         <DataSpaceDiagramsSection />
         <DataSpaceElementsSection />
