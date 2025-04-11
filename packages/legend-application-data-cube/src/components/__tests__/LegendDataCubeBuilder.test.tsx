@@ -45,6 +45,7 @@ import { MockedMonacoEditorAPI } from '@finos/legend-lego/code-editor/test';
 import {
   type V1_Lambda,
   PersistentDataCube,
+  V1_CEnumValue,
   V1_CFloat,
   V1_CInteger,
   V1_CString,
@@ -1441,6 +1442,224 @@ test(
     fireEvent.click(valueSpecEditorInput);
     fireEvent.keyDown(valueSpecEditorInput, { key: 'ArrowDown' });
     await screen.findByText('March');
+  },
+);
+
+test(
+  integrationTest(
+    'DataCube correctly uses enum type raw source parameter value',
+  ),
+  async () => {
+    MockedMonacoEditorAPI.remeasureFonts.mockReturnValue(undefined);
+
+    const mockDataCubeId = 'test-data-cube-id';
+    const mockDataCube: PersistentDataCube =
+      PersistentDataCube.serialization.fromJson({
+        id: mockDataCubeId,
+        name: `${mockDataCubeId}-name`,
+        description: undefined,
+        content: {
+          query: `select(~[Id, 'Case Type'])`,
+          source: {
+            queryId: `${mockDataCubeId}-query-id`,
+            parameterValues: [
+              [
+                '{"_type": "var", "genericType": {"rawType": {"_type": "packageableType", "fullPath": "enum::MonthEnum"}}, "multiplicity": {"lowerBound": 1, "upperBound": 1}, "name": "enumParam"}',
+                '{"_type": "enumValue", "fullPath": "enum::MonthEnum", "value": "June"}',
+              ],
+            ],
+            _type: 'legendQuery',
+          },
+          configuration: {
+            name: `${mockDataCubeId}-query-name`,
+            columns: [
+              { name: 'Id', type: 'Integer' },
+              { name: 'Case Type', type: 'String' },
+            ],
+          },
+        },
+      });
+    const mockQuery: V1_Query = V1_Query.serialization.fromJson({
+      name: `${mockDataCubeId}-query-name`,
+      id: `${mockDataCubeId}-query-id`,
+      versionId: 'latest',
+      groupId: 'com.legend',
+      artifactId: 'test-project',
+      content: `{enumParam: enum::MonthEnum[1]|domain::COVIDData.all()->project(~[Id:x|$x.id, 'Case Type':x|$x.caseType])}`,
+      defaultParameterValues: [{ name: 'enumParam', content: 'January' }],
+      executionContext: {
+        dataSpacePath: 'domain::COVIDDatapace',
+        executionKey: 'dummyContext',
+        _type: 'dataSpaceExecutionContext',
+      },
+    });
+    const mockedLegendDataCubeBuilderStore =
+      await TEST__provideMockedLegendDataCubeBuilderStore();
+    await TEST__setUpDataCubeBuilder(
+      guaranteeNonNullable(mockedLegendDataCubeBuilderStore),
+      mockDataCube,
+      mockQuery,
+      depotEntities,
+    );
+
+    // Test that parameter value from raw source is used
+    await screen.findByText('test-data-cube-id-query-name');
+    await screen.findByText('Parameters:');
+    await screen.findByText('enumParam');
+    await screen.findByText('June');
+
+    // Teset that parameter value has the correct name, type, and value
+    const source = guaranteeType(
+      mockedLegendDataCubeBuilderStore.builder?.source,
+      LegendQueryDataCubeSource,
+    );
+    expect(source.parameterValues[0]?.variable?.name).toBe('enumParam');
+    const parameterValue = guaranteeType(
+      source.parameterValues[0]?.valueSpec,
+      V1_CEnumValue,
+    );
+    expect(parameterValue.value).toBe('June');
+  },
+);
+
+test(
+  integrationTest(
+    'DataCube correctly uses default value for enum type from query lambda',
+  ),
+  async () => {
+    MockedMonacoEditorAPI.remeasureFonts.mockReturnValue(undefined);
+
+    const mockDataCubeId = 'test-data-cube-id';
+    const mockDataCube: PersistentDataCube =
+      PersistentDataCube.serialization.fromJson({
+        id: mockDataCubeId,
+        name: `${mockDataCubeId}-name`,
+        description: undefined,
+        content: {
+          query: `select(~[Id, 'Case Type'])`,
+          source: {
+            queryId: `${mockDataCubeId}-query-id`,
+            _type: 'legendQuery',
+          },
+          configuration: {
+            name: `${mockDataCubeId}-query-name`,
+            columns: [
+              { name: 'Id', type: 'Integer' },
+              { name: 'Case Type', type: 'String' },
+            ],
+          },
+        },
+      });
+    const mockQuery: V1_Query = V1_Query.serialization.fromJson({
+      name: `${mockDataCubeId}-query-name`,
+      id: `${mockDataCubeId}-query-id`,
+      versionId: 'latest',
+      groupId: 'com.legend',
+      artifactId: 'test-project',
+      content: `{enumParam: enum::MonthEnum[1]|domain::COVIDData.all()->project(~[Id:x|$x.id, 'Case Type':x|$x.caseType])}`,
+      defaultParameterValues: [{ name: 'enumParam', content: 'January' }],
+      executionContext: {
+        dataSpacePath: 'domain::COVIDDatapace',
+        executionKey: 'dummyContext',
+        _type: 'dataSpaceExecutionContext',
+      },
+    });
+    const mockedLegendDataCubeBuilderStore =
+      await TEST__provideMockedLegendDataCubeBuilderStore();
+    await TEST__setUpDataCubeBuilder(
+      guaranteeNonNullable(mockedLegendDataCubeBuilderStore),
+      mockDataCube,
+      mockQuery,
+      depotEntities,
+    );
+
+    // Test that parameter value from raw source is used
+    await screen.findByText('test-data-cube-id-query-name');
+    await screen.findByText('Parameters:');
+    await screen.findByText('enumParam');
+    await screen.findByText('January');
+
+    // Teset that parameter value has the correct name, type, and value
+    const source = guaranteeType(
+      mockedLegendDataCubeBuilderStore.builder?.source,
+      LegendQueryDataCubeSource,
+    );
+    expect(source.parameterValues[0]?.variable?.name).toBe('enumParam');
+    const parameterValue = guaranteeType(
+      source.parameterValues[0]?.valueSpec,
+      V1_CEnumValue,
+    );
+    expect(parameterValue.value).toBe('January');
+  },
+);
+
+test(
+  integrationTest(
+    'DataCube correctly builds default value for enum type from query lambda if there is no defaultParameterValue',
+  ),
+  async () => {
+    MockedMonacoEditorAPI.remeasureFonts.mockReturnValue(undefined);
+
+    const mockDataCubeId = 'test-data-cube-id';
+    const mockDataCube: PersistentDataCube =
+      PersistentDataCube.serialization.fromJson({
+        id: mockDataCubeId,
+        name: `${mockDataCubeId}-name`,
+        description: undefined,
+        content: {
+          query: `select(~[Id, 'Case Type'])`,
+          source: {
+            queryId: `${mockDataCubeId}-query-id`,
+            _type: 'legendQuery',
+          },
+          configuration: {
+            name: `${mockDataCubeId}-query-name`,
+            columns: [
+              { name: 'Id', type: 'Integer' },
+              { name: 'Case Type', type: 'String' },
+            ],
+          },
+        },
+      });
+    const mockQuery: V1_Query = V1_Query.serialization.fromJson({
+      name: `${mockDataCubeId}-query-name`,
+      id: `${mockDataCubeId}-query-id`,
+      versionId: 'latest',
+      groupId: 'com.legend',
+      artifactId: 'test-project',
+      content: `{enumParam: enum::MonthEnum[1]|domain::COVIDData.all()->project(~[Id:x|$x.id, 'Case Type':x|$x.caseType])}`,
+      executionContext: {
+        dataSpacePath: 'domain::COVIDDatapace',
+        executionKey: 'dummyContext',
+        _type: 'dataSpaceExecutionContext',
+      },
+    });
+    const mockedLegendDataCubeBuilderStore =
+      await TEST__provideMockedLegendDataCubeBuilderStore();
+    await TEST__setUpDataCubeBuilder(
+      guaranteeNonNullable(mockedLegendDataCubeBuilderStore),
+      mockDataCube,
+      mockQuery,
+      depotEntities,
+    );
+
+    // Test that parameter value from raw source is used
+    await screen.findByText('test-data-cube-id-query-name');
+    await screen.findByText('Parameters:');
+    await screen.findByText('enumParam');
+    await screen.findByText('(empty)');
+
+    // Teset that parameter value has the correct name, type, and value
+    const source = guaranteeType(
+      mockedLegendDataCubeBuilderStore.builder?.source,
+      LegendQueryDataCubeSource,
+    );
+    expect(source.parameterValues[0]?.variable?.name).toBe('enumParam');
+    const parameterValue = guaranteeType(
+      source.parameterValues[0]?.valueSpec,
+      V1_CEnumValue,
+    );
+    expect(parameterValue.value).toBe('');
   },
 );
 
