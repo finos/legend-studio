@@ -1557,7 +1557,9 @@ test(
       groupId: 'com.legend',
       artifactId: 'test-project',
       content: `{enumParam: enum::MonthEnum[1]|domain::COVIDData.all()->project(~[Id:x|$x.id, 'Case Type':x|$x.caseType])}`,
-      defaultParameterValues: [{ name: 'enumParam', content: 'January' }],
+      defaultParameterValues: [
+        { name: 'enumParam', content: 'enum::MonthEnum.January' },
+      ],
       executionContext: {
         dataSpacePath: 'domain::COVIDDatapace',
         executionKey: 'dummyContext',
