@@ -193,6 +193,7 @@ export { V1_CString } from './graph-manager/protocol/pure/v1/model/valueSpecific
 export { V1_CBoolean } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CBoolean.js';
 export { V1_CByteArray } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CByteArray.js';
 export { V1_CDecimal } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CDecimal.js';
+export { V1_EnumValue as V1_CEnumValue } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_EnumValue.js';
 export { V1_CInteger } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CInteger.js';
 export { V1_CFloat } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CFloat.js';
 export { V1_CDate } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CDate.js';
@@ -204,6 +205,7 @@ export { V1_ClassInstance } from './graph-manager/protocol/pure/v1/model/valueSp
 export { V1_PackageableElementPtr } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_PackageableElementPtr.js';
 export { V1_ColSpec } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/classInstance/relation/V1_ColSpec.js';
 export { V1_ColSpecArray } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/classInstance/relation/V1_ColSpecArray.js';
+export { V1_DataTypeValueSpecification } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_DataTypeValueSpecification.js';
 export { V1_PrimitiveValueSpecification } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_PrimitiveValueSpecification.js';
 export { V1_INTERNAL__UnknownFunctionActivator } from './graph-manager/protocol/pure/v1/model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
 export { V1_ConcreteFunctionDefinition } from './graph-manager/protocol/pure/v1/model/packageableElements/function/V1_ConcreteFunctionDefinition.js';
