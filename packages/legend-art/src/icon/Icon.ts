@@ -638,4 +638,4 @@ export const WorkflowIcon = FcWorkflow;
 
 import { ImTerminal } from 'react-icons/im';
 
-export const Code_Terminal = ImTerminal;
+export const Code_TerminalIcon = ImTerminal;
