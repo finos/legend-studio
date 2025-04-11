@@ -55,7 +55,8 @@
     "@types/react": "19.0.10",
     "mobx": "6.13.6",
     "mobx-react-lite": "4.1.0",
-    "react": "19.0.0"
+    "react": "19.0.0",
+    "react-dnd": "16.0.1"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",

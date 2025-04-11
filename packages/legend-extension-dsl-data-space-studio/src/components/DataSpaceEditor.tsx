@@ -16,52 +16,74 @@
 
 import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '@finos/legend-application-studio';
-import { PanelFormTextField } from '@finos/legend-art';
+import { EyeIcon, Panel, PanelContent, PanelHeader } from '@finos/legend-art';
 import { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
-import {
-  set_description,
-  set_title,
-} from '../stores/studio/DSL_DataSpace_GraphModifierHelper.js';
+import { DataSpaceGeneralEditor } from './DataSpaceGeneralEditor/DataSpaceGeneralEditor.js';
+import { DataSpacePreviewState } from '../stores/DataSpacePreviewState.js';
+import { flowResult } from 'mobx';
+import { isStubbed_PackageableElement } from '@finos/legend-graph';
 
 export const DataSpaceEditor = observer(() => {
   const editorStore = useEditorStore();
 
-  const formEditorState =
+  const dataSpaceState =
     editorStore.tabManagerState.getCurrentEditorState(DataSpaceEditorState);
 
-  const formElement = formEditorState.dataSpace;
+  const dataSpace = dataSpaceState.dataSpace;
 
-  const handleTitleChange = (value: string | undefined): void => {
-    set_title(formElement, value);
+  const dataSpacePreviewState =
+    DataSpacePreviewState.retrieveNullableState(editorStore);
+  if (!dataSpacePreviewState) {
+    return null;
+  }
+
+  const validPreviewState = (): boolean => {
+    //KXT isStubbed_PackageableElement
+    const stubDefault = Boolean(
+      isStubbed_PackageableElement(
+        dataSpace.defaultExecutionContext.defaultRuntime.value,
+      ) &&
+        isStubbed_PackageableElement(
+          dataSpace.defaultExecutionContext.mapping.value,
+        ),
+    );
+    return Boolean(!stubDefault);
   };
 
-  const handleDescriptionChange = (value: string | undefined): void => {
-    set_description(formElement, value);
+  const previewDataSpace = (): void => {
+    flowResult(
+      dataSpacePreviewState.previewDataSpace(dataSpaceState.dataSpace),
+    ).catch(editorStore.applicationStore.alertUnhandledError);
   };
 
   return (
-    <div className="dataSpace-editor panel dataSpace-editor--dark">
-      <div className="panel__content__form">
-        <div className="panel__content__form__section">
-          <PanelFormTextField
-            name="Data Product Title"
-            value={formElement.title ?? ''}
-            prompt="Data Product title is the user facing name for the Data Product. It used in downstream applications as the default identifier for this Data Product. When not provided, the DataProduct name property is used"
-            update={handleTitleChange}
-            placeholder="Enter title"
-          />
+    <Panel className="dataSpace-editor">
+      <PanelHeader
+        title="Data Product"
+        titleContent={dataSpaceState.dataSpace.name}
+        darkMode={true}
+        isReadOnly={dataSpaceState.isReadOnly}
+      />
+      <PanelHeader title="General" darkMode={true}>
+        <div className="panel__header__actions">
+          <div className="btn__dropdown-combo btn__dropdown-combo--primary">
+            <button
+              className="btn__dropdown-combo__label"
+              onClick={previewDataSpace}
+              title="Preview Data Product"
+              tabIndex={-1}
+              disabled={!validPreviewState()}
+            >
+              <EyeIcon className="btn__dropdown-combo__label__icon" />
+              <div className="btn__dropdown-combo__label__title">Preview</div>
+            </button>
+          </div>
         </div>
-      </div>
-      <div className="panel__content__form">
-        <div className="panel__content__form__section">
-          <PanelFormTextField
-            name="Data Product Description"
-            value={formElement.description ?? ''}
-            update={handleDescriptionChange}
-            placeholder="Enter Description"
-          />
-        </div>
-      </div>
-    </div>
+      </PanelHeader>
+
+      <PanelContent>
+        <DataSpaceGeneralEditor />
+      </PanelContent>
+    </Panel>
   );
 });
