@@ -2,11 +2,11 @@
 
 ## This document is a WIP
 
-This is the `Legend Catalog` web application deployment. This is used for development locally and publishing of image [finos/legend-catalog](https://hub.docker.com/r/finos/legend-catalog) on [Docker Hub](https://hub.docker.com/).
+This is the `Legend Marketplace` web application deployment. This is used for development locally and publishing of image [finos/legend-catalog](https://hub.docker.com/r/finos/legend-catalog) on [Docker Hub](https://hub.docker.com/).
 
 ## Backend
 
-`Legend Catalog` relies on:
+`Legend Marketplace` relies on:
 
 - TBD
 
