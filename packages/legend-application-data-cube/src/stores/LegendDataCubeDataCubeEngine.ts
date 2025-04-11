@@ -108,6 +108,8 @@ import {
   DataCubeQueryFilterOperator,
   _primitiveValue,
   _defaultPrimitiveTypeValue,
+  isPrimitiveType,
+  _property,
 } from '@finos/legend-data-cube';
 import {
   isNonNullable,
@@ -1173,10 +1175,13 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
             const defaultValueString = queryInfo.defaultParameterValues?.find(
               (val) => val.name === parameter.name,
             )?.content;
+            // If not a primitive value, assume enum type.
             const defaultValueSpec =
               defaultValueString !== undefined
                 ? await this.parseValueSpecification(defaultValueString)
-                : _primitiveValue(type, _defaultPrimitiveTypeValue(type));
+                : isPrimitiveType(type)
+                  ? _primitiveValue(type, _defaultPrimitiveTypeValue(type))
+                  : _property('', [_elementPtr(type)]);
             return { variable: parameter, valueSpec: defaultValueSpec };
           }
           return undefined;

@@ -955,5 +955,28 @@
       "title": "COVID Sample Data"
     },
     "classifierPath": "meta::pure::metamodel::dataSpace::DataSpace"
+  },
+  {
+    "classifierPath": "meta::pure::metamodel::type::Enumeration",
+    "path": "enum::MonthEnum",
+    "content": {
+      "_type": "Enumeration",
+      "name": "MonthEnum",
+      "package": "enum",
+      "values": [
+        { "value": "January" },
+        { "value": "February" },
+        { "value": "March" },
+        { "value": "April" },
+        { "value": "May" },
+        { "value": "June" },
+        { "value": "July" },
+        { "value": "August" },
+        { "value": "September" },
+        { "value": "October" },
+        { "value": "November" },
+        { "value": "December" }
+      ]
+    }
   }
 ]

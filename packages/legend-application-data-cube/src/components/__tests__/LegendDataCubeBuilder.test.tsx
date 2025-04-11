@@ -21,6 +21,7 @@ import {
 } from '@finos/legend-shared/test';
 import { expect, jest, test } from '@jest/globals';
 import {
+  findByText,
   fireEvent,
   getAllByTitle,
   getByRole,
@@ -34,6 +35,7 @@ import {
   TEST__setUpDataCubeBuilder,
 } from '../__test-utils__/LegendDataCubeStoreTestUtils.js';
 import {
+  NetworkClientError,
   type PlainObject,
   guaranteeNonNullable,
   guaranteeType,
@@ -1220,6 +1222,225 @@ test(
     });
     expect(updateButton.hasAttribute('disabled')).toBe(true);
     expect(screen.getByText('Parameter editing disabled')).not.toBeNull();
+  },
+);
+
+test(
+  integrationTest(
+    'DataCube handles fetching enum parameter values from project correctly',
+  ),
+  async () => {
+    MockedMonacoEditorAPI.remeasureFonts.mockReturnValue(undefined);
+
+    const mockDataCubeId = 'test-data-cube-id';
+    const mockDataCube: PersistentDataCube =
+      PersistentDataCube.serialization.fromJson({
+        id: mockDataCubeId,
+        name: `${mockDataCubeId}-name`,
+        description: undefined,
+        content: {
+          query: `select(~[Id, 'Case Type'])`,
+          source: {
+            queryId: `${mockDataCubeId}-query-id`,
+            parameterValues: [
+              [
+                '{"_type": "var", "genericType": {"rawType": {"_type": "packageableType", "fullPath": "enum::MonthEnum"}}, "multiplicity": {"lowerBound": 1, "upperBound": 1}, "name": "monthEnumParam"}',
+                '{"_type": "property", "parameters": [{"_type": "packageableElementPtr", "fullPath": "enum::MonthEnum"}], "property": "April"}',
+              ],
+            ],
+            _type: 'legendQuery',
+          },
+          configuration: {
+            name: `${mockDataCubeId}-query-name`,
+            columns: [
+              { name: 'Id', type: 'Integer' },
+              { name: 'Case Type', type: 'String' },
+            ],
+          },
+        },
+      });
+    const mockQuery: V1_Query = V1_Query.serialization.fromJson({
+      name: `${mockDataCubeId}-query-name`,
+      id: `${mockDataCubeId}-query-id`,
+      versionId: 'latest',
+      groupId: 'com.legend',
+      artifactId: 'test-project',
+      content: `{monthEnumParam: enum::MonthEnum[1]|domain::COVIDData.all()->project(~[Id:x|$x.id, 'Case Type':x|$x.caseType])}`,
+      executionContext: {
+        dataSpacePath: 'domain::COVIDDatapace',
+        executionKey: 'dummyContext',
+        _type: 'dataSpaceExecutionContext',
+      },
+    });
+    const mockedLegendDataCubeBuilderStore =
+      await TEST__provideMockedLegendDataCubeBuilderStore();
+    await TEST__setUpDataCubeBuilder(
+      guaranteeNonNullable(mockedLegendDataCubeBuilderStore),
+      mockDataCube,
+      mockQuery,
+      depotEntities,
+    );
+    createSpy(
+      mockedLegendDataCubeBuilderStore.depotServerClient,
+      'getVersionEntity',
+    ).mockResolvedValue({
+      classifierPath: 'meta::pure::metamodel::type::Enumeration',
+      path: 'enum::MonthEnum',
+      content: {
+        _type: 'Enumeration',
+        name: 'MonthEnum',
+        package: 'enum',
+        values: [
+          { value: 'January' },
+          { value: 'February' },
+          { value: 'March' },
+          { value: 'April' },
+          { value: 'May' },
+          { value: 'June' },
+          { value: 'July' },
+          { value: 'August' },
+          { value: 'September' },
+          { value: 'October' },
+          { value: 'November' },
+          { value: 'December' },
+        ],
+      },
+    });
+
+    // Open parameter editor
+    await screen.findByText('Parameters:');
+    const paramButton = await screen.findByText('monthEnumParam');
+    await screen.findByText('April');
+    fireEvent.click(paramButton);
+    const sourceViewerPanel = guaranteeNonNullable(
+      (await screen.findByText('DataCube Source')).parentElement?.parentElement,
+    );
+
+    // Test that other enum values appear when clicking on value spec editor
+    const valueSpecEditorInput = await findByText(sourceViewerPanel, 'April');
+    expect(screen.queryByText('March')).toBeNull();
+    fireEvent.click(valueSpecEditorInput);
+    fireEvent.keyDown(valueSpecEditorInput, { key: 'ArrowDown' });
+    await screen.findByText('March');
+  },
+);
+
+test(
+  integrationTest(
+    'DataCube handles fetching enum parameter values from dependency project correctly',
+  ),
+  async () => {
+    MockedMonacoEditorAPI.remeasureFonts.mockReturnValue(undefined);
+
+    const mockDataCubeId = 'test-data-cube-id';
+    const mockDataCube: PersistentDataCube =
+      PersistentDataCube.serialization.fromJson({
+        id: mockDataCubeId,
+        name: `${mockDataCubeId}-name`,
+        description: undefined,
+        content: {
+          query: `select(~[Id, 'Case Type'])`,
+          source: {
+            queryId: `${mockDataCubeId}-query-id`,
+            parameterValues: [
+              [
+                '{"_type": "var", "genericType": {"rawType": {"_type": "packageableType", "fullPath": "enum::MonthEnum"}}, "multiplicity": {"lowerBound": 1, "upperBound": 1}, "name": "monthEnumParam"}',
+                '{"_type": "property", "parameters": [{"_type": "packageableElementPtr", "fullPath": "enum::MonthEnum"}], "property": "April"}',
+              ],
+            ],
+            _type: 'legendQuery',
+          },
+          configuration: {
+            name: `${mockDataCubeId}-query-name`,
+            columns: [
+              { name: 'Id', type: 'Integer' },
+              { name: 'Case Type', type: 'String' },
+            ],
+          },
+        },
+      });
+    const mockQuery: V1_Query = V1_Query.serialization.fromJson({
+      name: `${mockDataCubeId}-query-name`,
+      id: `${mockDataCubeId}-query-id`,
+      versionId: 'latest',
+      groupId: 'com.legend',
+      artifactId: 'test-project',
+      content: `{monthEnumParam: enum::MonthEnum[1]|domain::COVIDData.all()->project(~[Id:x|$x.id, 'Case Type':x|$x.caseType])}`,
+      executionContext: {
+        dataSpacePath: 'domain::COVIDDatapace',
+        executionKey: 'dummyContext',
+        _type: 'dataSpaceExecutionContext',
+      },
+    });
+    const mockedLegendDataCubeBuilderStore =
+      await TEST__provideMockedLegendDataCubeBuilderStore();
+    await TEST__setUpDataCubeBuilder(
+      guaranteeNonNullable(mockedLegendDataCubeBuilderStore),
+      mockDataCube,
+      mockQuery,
+      depotEntities,
+    );
+    createSpy(
+      mockedLegendDataCubeBuilderStore.depotServerClient,
+      'getVersionEntity',
+    ).mockRejectedValue(
+      new NetworkClientError(
+        {
+          status: 404,
+        } as unknown as Response,
+        undefined,
+      ),
+    );
+    createSpy(
+      mockedLegendDataCubeBuilderStore.depotServerClient,
+      'getDependencyEntities',
+    ).mockResolvedValue([
+      {
+        entities: [
+          {
+            entity: {
+              path: 'enum::MonthEnum',
+              classifierPath: 'meta::pure::metamodel::type::Enumeration',
+              content: {
+                _type: 'Enumeration',
+                name: 'MonthEnum',
+                package: 'enum',
+                values: [
+                  { value: 'January' },
+                  { value: 'February' },
+                  { value: 'March' },
+                  { value: 'April' },
+                  { value: 'May' },
+                  { value: 'June' },
+                  { value: 'July' },
+                  { value: 'August' },
+                  { value: 'September' },
+                  { value: 'October' },
+                  { value: 'November' },
+                  { value: 'December' },
+                ],
+              },
+            },
+          },
+        ],
+      },
+    ]);
+
+    // Open parameter editor
+    await screen.findByText('Parameters:');
+    const paramButton = await screen.findByText('monthEnumParam');
+    await screen.findByText('April');
+    fireEvent.click(paramButton);
+    const sourceViewerPanel = guaranteeNonNullable(
+      (await screen.findByText('DataCube Source')).parentElement?.parentElement,
+    );
+
+    // Test that other enum values appear when clicking on value spec editor
+    const valueSpecEditorInput = await findByText(sourceViewerPanel, 'April');
+    expect(screen.queryByText('March')).toBeNull();
+    fireEvent.click(valueSpecEditorInput);
+    fireEvent.keyDown(valueSpecEditorInput, { key: 'ArrowDown' });
+    await screen.findByText('March');
   },
 );
 
