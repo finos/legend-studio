@@ -837,6 +837,7 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
         returnAsResponse: true,
         serializationFormat: options?.serializationFormat,
         abortController: options?.abortController,
+        tracingTags: options?.tracingtags,
       },
     )) as Response;
     result.set(V1_EXECUTION_RESULT, await response.text());

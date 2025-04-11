@@ -164,6 +164,7 @@ export interface ExecutionOptions {
   parameterValues?: ParameterValue[];
   abortController?: AbortController | undefined;
   preservedResponseHeadersList?: string[];
+  tracingtags?: PlainObject | undefined;
 }
 
 export interface ServiceRegistrationOptions {

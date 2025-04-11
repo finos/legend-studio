@@ -1482,6 +1482,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
           groupId: queryInfo.groupId,
           artifactId: queryInfo.artifactId,
           versionId: queryInfo.versionId,
+          queryId: queryInfo.id,
           dataSpace: dataSpace.path,
         };
         const visitedDataSpaces =
