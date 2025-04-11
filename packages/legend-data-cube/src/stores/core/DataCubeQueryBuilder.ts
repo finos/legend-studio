@@ -23,10 +23,16 @@
 
 import {
   PRIMITIVE_TYPE,
+  V1_CString,
   V1_Lambda,
+  V1_Variable,
   type V1_AppliedFunction,
 } from '@finos/legend-graph';
-import { type DataCubeSnapshot } from './DataCubeSnapshot.js';
+import {
+  type DataCubeSnapshot,
+  type DataCubeSnapshotExtendedColumn,
+  type DataCubeSnapshotGroupBy,
+} from './DataCubeSnapshot.js';
 import { at, guaranteeType } from '@finos/legend-shared';
 import {
   DataCubeFunction,
@@ -51,8 +57,9 @@ import {
   _extendRootAggregation,
 } from './DataCubeQueryBuilderUtils.js';
 import type { DataCubeSource } from './model/DataCubeSource.js';
-import { _findCol } from './model/DataCubeColumn.js';
+import { _findCol, _toCol } from './model/DataCubeColumn.js';
 import type { DataCubeEngine } from './DataCubeEngine.js';
+import type { DataCubeDimensionalNode } from '../view/grid/DataCubeGridDimensionalTree.js';
 
 export function buildExecutableQuery(
   snapshot: DataCubeSnapshot,
@@ -87,6 +94,364 @@ export function buildExecutableQuery(
   const sequence: V1_AppliedFunction[] = [];
   const funcMap: DataCubeQueryFunctionMap = {};
   const _process = _functionCompositionProcessor(sequence, funcMap);
+
+  // ------------------------------ DIMENSIONS -------------------------------------
+
+  if (configuration.dimensions.dimensions) {
+    const dimensionColNames = configuration.dimensions.dimensions.flatMap(
+      (col) => col.columns,
+    );
+    //Adding remove these columns from selection
+    configuration.columns = configuration.columns.map((col) => {
+      if (dimensionColNames.includes(col.name)) {
+        col.isSelected = false;
+      }
+      return col;
+    });
+
+    // Adding dimensions to the extended column
+    configuration.dimensions.dimensions.forEach((col) => {
+      const lambda = new V1_Lambda();
+      const defaultValue = new V1_CString();
+      const parameter = new V1_Variable();
+      parameter.name = 'temp';
+      defaultValue.value = 'ALL';
+      lambda.body = [defaultValue];
+      lambda.parameters = [parameter];
+      data.leafExtendedColumns.unshift({
+        name: col.name,
+        type: 'String',
+        mapFn: engine.serializeValueSpecification(lambda),
+      } satisfies DataCubeSnapshotExtendedColumn);
+    });
+
+    // Adding dimensions to selected list
+    data.selectColumns = data.selectColumns.filter(
+      (col) => !dimensionColNames.includes(col.name),
+    );
+    const dimensionCols = configuration.dimensions.dimensions.map((col) =>
+      _toCol({ name: col.name, type: 'String' }),
+    );
+    data.selectColumns.unshift(...dimensionCols);
+
+    // Adding dimensions to groupby
+    if (data.groupBy) {
+      data.groupBy.columns.unshift(...dimensionCols);
+    } else {
+      data.groupBy = {
+        columns: dimensionCols,
+      } satisfies DataCubeSnapshotGroupBy;
+    }
+  }
+
+  // --------------------------------- LEAF-LEVEL EXTEND ---------------------------------
+
+  if (data.leafExtendedColumns.length) {
+    _process(
+      'leafExtend',
+      data.leafExtendedColumns.map((col) =>
+        _function(DataCubeFunction.EXTEND, [
+          _cols([
+            _colSpec(
+              col.name,
+              guaranteeType(
+                engine.deserializeValueSpecification(col.mapFn),
+                V1_Lambda,
+              ),
+              col.reduceFn
+                ? guaranteeType(
+                    engine.deserializeValueSpecification(col.reduceFn),
+                    V1_Lambda,
+                  )
+                : undefined,
+            ),
+          ]),
+        ]),
+      ),
+    );
+  }
+
+  // --------------------------------- FILTER ---------------------------------
+
+  if (data.filter) {
+    _process(
+      'filter',
+      _function(DataCubeFunction.FILTER, [
+        _lambda([_var()], [_filter(data.filter, engine.filterOperations)]),
+      ]),
+    );
+  }
+
+  // --------------------------------- SELECT ---------------------------------
+
+  if (data.selectColumns.length) {
+    _process(
+      'select',
+      _function(DataCubeFunction.SELECT, [
+        _cols(data.selectColumns.map((col) => _colSpec(col.name))),
+      ]),
+    );
+  }
+
+  // --------------------------------- PIVOT ---------------------------------
+
+  if (data.pivot) {
+    const pivot = data.pivot;
+
+    // pre-sort to maintain stable order for pivot result columns
+    _process(
+      'sort',
+      _function(DataCubeFunction.SORT, [
+        _collection(
+          data.pivot.columns.map((col) =>
+            _function(
+              _findCol(configuration.columns, col.name)?.pivotSortDirection ===
+                DataCubeQuerySortDirection.DESCENDING
+                ? DataCubeFunction.DESCENDING
+                : DataCubeFunction.ASCENDING,
+              [_col(col.name)],
+            ),
+          ),
+        ),
+      ]),
+    );
+
+    _process(
+      'pivot',
+      _function(DataCubeFunction.PIVOT, [
+        _cols(pivot.columns.map((col) => _colSpec(col.name))),
+        _cols(
+          _pivotAggCols(
+            pivot.columns,
+            snapshot,
+            configuration,
+            engine.aggregateOperations,
+          ),
+        ),
+      ]),
+    );
+
+    if (pivot.castColumns.length) {
+      _process(
+        'pivotCast',
+        _function(DataCubeFunction.CAST, [_castCols(pivot.castColumns)]),
+      );
+    }
+  }
+
+  // --------------------------------- GROUP BY ---------------------------------
+
+  if (data.groupBy) {
+    const groupBy = data.groupBy;
+    if (configuration.showRootAggregation && options?.rootAggregation) {
+      sequence.push(_extendRootAggregation(options.rootAggregation.columnName));
+    }
+    _process(
+      'groupBy',
+      _function(DataCubeFunction.GROUP_BY, [
+        _cols(groupBy.columns.map((col) => _colSpec(col.name))),
+        _cols(
+          _groupByAggCols(
+            groupBy.columns,
+            snapshot,
+            configuration,
+            engine.aggregateOperations,
+          ),
+        ),
+      ]),
+    );
+    _process(
+      'groupBySort',
+      _function(DataCubeFunction.SORT, [
+        _collection(
+          groupBy.columns.map((col) =>
+            _function(
+              configuration.treeColumnSortDirection ===
+                DataCubeQuerySortDirection.ASCENDING
+                ? DataCubeFunction.ASCENDING
+                : DataCubeFunction.DESCENDING,
+              [_col(col.name)],
+            ),
+          ),
+        ),
+      ]),
+    );
+  }
+
+  // --------------------------------- GROUP-LEVEL EXTEND ---------------------------------
+
+  if (data.groupExtendedColumns.length) {
+    _process(
+      'groupExtend',
+      data.groupExtendedColumns.map((col) =>
+        _function(DataCubeFunction.EXTEND, [
+          _cols([
+            _colSpec(
+              col.name,
+              guaranteeType(
+                engine.deserializeValueSpecification(col.mapFn),
+                V1_Lambda,
+              ),
+              col.reduceFn
+                ? guaranteeType(
+                    engine.deserializeValueSpecification(col.reduceFn),
+                    V1_Lambda,
+                  )
+                : undefined,
+            ),
+          ]),
+        ]),
+      ),
+    );
+  }
+
+  // --------------------------------- SORT ---------------------------------
+
+  if (data.sortColumns.length) {
+    _process(
+      'sort',
+      _function(DataCubeFunction.SORT, [
+        _collection(
+          data.sortColumns.map((col) =>
+            _function(
+              col.direction === DataCubeQuerySortDirection.ASCENDING
+                ? DataCubeFunction.ASCENDING
+                : DataCubeFunction.DESCENDING,
+              [_col(col.name)],
+            ),
+          ),
+        ),
+      ]),
+    );
+  }
+
+  // --------------------------------- LIMIT ---------------------------------
+
+  if (data.limit !== undefined) {
+    _process(
+      'limit',
+      _function(DataCubeFunction.LIMIT, [
+        _primitiveValue(PRIMITIVE_TYPE.INTEGER, data.limit),
+      ]),
+    );
+  }
+
+  // --------------------------------- SLICE ---------------------------------
+
+  if (options?.pagination) {
+    sequence.push(
+      _function(DataCubeFunction.SLICE, [
+        _primitiveValue(PRIMITIVE_TYPE.INTEGER, options.pagination.start),
+        _primitiveValue(PRIMITIVE_TYPE.INTEGER, options.pagination.end),
+      ]),
+    );
+  }
+
+  // --------------------------------- FINALIZE ---------------------------------
+
+  if (!options?.skipExecutionContext) {
+    const executionContext = engine.buildExecutionContext(source);
+    if (executionContext) {
+      sequence.push(executionContext);
+    }
+  }
+
+  options?.postProcessor?.(snapshot, sequence, funcMap, configuration, engine);
+
+  if (sequence.length === 0) {
+    return source.query;
+  }
+  for (let i = 0; i < sequence.length; i++) {
+    at(sequence, i).parameters.unshift(
+      i === 0 ? source.query : at(sequence, i - 1),
+    );
+  }
+  return at(sequence, sequence.length - 1);
+}
+
+export function buildDimensionalExecutableQuery(
+  snapshot: DataCubeSnapshot,
+  source: DataCubeSource,
+  engine: DataCubeEngine,
+  nodes: DataCubeDimensionalNode[],
+  options?: {
+    postProcessor?: (
+      snapshot: DataCubeSnapshot,
+      sequence: V1_AppliedFunction[],
+      funcMap: DataCubeQueryFunctionMap,
+      configuration: DataCubeConfiguration,
+      engine: DataCubeEngine,
+    ) => void;
+    rootAggregation?:
+      | {
+          columnName: string;
+        }
+      | undefined;
+    pagination?:
+      | {
+          start: number;
+          end: number;
+        }
+      | undefined;
+    skipExecutionContext?: boolean;
+  },
+) {
+  const data = snapshot.data;
+  const configuration = DataCubeConfiguration.serialization.fromJson(
+    data.configuration,
+  );
+  const sequence: V1_AppliedFunction[] = [];
+  const funcMap: DataCubeQueryFunctionMap = {};
+  const _process = _functionCompositionProcessor(sequence, funcMap);
+
+  // ------------------------------ DIMENSIONS -------------------------------------
+
+  if (configuration.dimensions.dimensions && nodes.length == 0) {
+    const dimensionColNames = configuration.dimensions.dimensions.flatMap(
+      (col) => col.columns,
+    );
+    //Adding remove these columns from selection
+    configuration.columns = configuration.columns.map((col) => {
+      if (dimensionColNames.includes(col.name)) {
+        col.isSelected = false;
+      }
+      return col;
+    });
+
+    // Adding dimensions to the extended column
+    configuration.dimensions.dimensions.forEach((col) => {
+      const lambda = new V1_Lambda();
+      const defaultValue = new V1_CString();
+      const parameter = new V1_Variable();
+      parameter.name = 'temp';
+      defaultValue.value = 'ALL';
+      lambda.body = [defaultValue];
+      lambda.parameters = [parameter];
+      data.leafExtendedColumns.unshift({
+        name: col.name,
+        type: 'String',
+        mapFn: engine.serializeValueSpecification(lambda),
+      } satisfies DataCubeSnapshotExtendedColumn);
+    });
+
+    // Adding dimensions to selected list
+    data.selectColumns = data.selectColumns.filter(
+      (col) => !dimensionColNames.includes(col.name),
+    );
+    const dimensionCols = configuration.dimensions.dimensions.map((col) =>
+      _toCol({ name: col.name, type: 'String' }),
+    );
+    data.selectColumns.unshift(...dimensionCols);
+
+    // Adding dimensions to groupby
+    if (data.groupBy) {
+      data.groupBy.columns.unshift(...dimensionCols);
+    } else {
+      data.groupBy = {
+        columns: dimensionCols,
+      } satisfies DataCubeSnapshotGroupBy;
+    }
+  }
 
   // --------------------------------- LEAF-LEVEL EXTEND ---------------------------------
 

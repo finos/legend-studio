@@ -70,9 +70,9 @@ import {
   isValidUrl,
   assertTrue,
 } from '@finos/legend-shared';
-import type {
+import {
   DataCubeColumnConfiguration,
-  DataCubeConfiguration,
+  type DataCubeConfiguration,
 } from '../../core/model/DataCubeConfiguration.js';
 import {
   DataCubeColumnDataType,
@@ -841,11 +841,21 @@ export function generateColumnDefs(
   // which are grouped must be present in the column definitions, so even
   // when some of these might not be selected explicitly by the users, they
   // must still be included in the column definitions, and made hidden instead.
-  const columns = configuration.columns.filter(
+  const dimensionColNames = configuration.dimensions.dimensions.flatMap(
+    (col) => col.columns,
+  );
+  const dimCols = configuration.dimensions.dimensions.map(
+    (col) => new DataCubeColumnConfiguration(col.name, 'String'),
+  );
+
+  let columns = configuration.columns.filter(
     (col) =>
       _findCol(snapshot.data.selectColumns, col.name) ??
       _findCol(snapshot.data.groupExtendedColumns, col.name),
   );
+  columns = columns.filter((col) => !dimensionColNames.includes(col.name));
+  columns.unshift(...dimCols);
+
   let pivotResultColumns: DataCubeColumn[] = [];
 
   if (snapshot.data.pivot) {

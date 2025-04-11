@@ -37,17 +37,24 @@ import {
   type TabularDataSet,
 } from '@finos/legend-graph';
 import { makeObservable, observable, runInAction } from 'mobx';
-import type {
+import {
   DataCubeConfiguration,
-  DataCubeConfigurationColorKey,
+  type DataCubeConfigurationColorKey,
 } from '../../core/model/DataCubeConfiguration.js';
 import { type DataCubeSnapshot } from '../../core/DataCubeSnapshot.js';
-import { _findCol, _sortByColName } from '../../core/model/DataCubeColumn.js';
+import {
+  _findCol,
+  _sortByColName,
+  _toCol,
+} from '../../core/model/DataCubeColumn.js';
 import { isPivotResultColumnName } from '../../core/DataCubeQueryEngine.js';
 import { buildSnapshotFromGridState } from './DataCubeGridSnapshotBuilder.js';
 import { AlertType } from '../../services/DataCubeAlertService.js';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
-import { buildGridDataFetchExecutableQuery } from './DataCubeGridQueryBuilder.js';
+import {
+  buildDimensionalGridDataFetchExecutableQuery,
+  buildGridDataFetchExecutableQuery,
+} from './DataCubeGridQueryBuilder.js';
 import { DataCubeSettingKey } from '../../../__lib__/DataCubeSetting.js';
 import { DEFAULT_ALERT_WINDOW_CONFIG } from '../../services/DataCubeLayoutService.js';
 import {
@@ -56,8 +63,15 @@ import {
 } from '../../core/DataCubeEngine.js';
 import { _lambda } from '../../core/DataCubeQueryBuilderUtils.js';
 import { sum } from 'mathjs';
+import { generateColumnDefs } from './DataCubeGridConfigurationBuilder.js';
 
-type DataCubeGridClientCellValue = string | number | boolean | null | undefined;
+type DataCubeGridClientCellValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | Map<string, string>;
 type DataCubeGridClientRowData = {
   [key: string]: DataCubeGridClientCellValue;
 };
@@ -258,6 +272,63 @@ function buildRowData(
   });
 }
 
+function buildDimensionalRowData(
+  result: TabularDataSet,
+  snapshot: DataCubeSnapshot,
+  dimensionalColumns?: string[],
+): DataCubeGridClientRowData[] {
+  return result.rows.map((_row, rowIdx) => {
+    const row: DataCubeGridClientRowData = {};
+    const cols = result.columns;
+    _row.values.forEach((value, colIdx) => {
+      // `ag-grid` shows `false` value as empty string so we have
+      // call `.toString()` to avoid this behavior.
+      row[cols[colIdx] as string] = isBoolean(value)
+        ? String(value)
+        : isNonNullable(value)
+          ? value
+          : INTERNAL__GRID_CLIENT_MISSING_VALUE;
+      if (snapshot.data.pivot && snapshot.data.groupBy) {
+        row[INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID] = Number(
+          sum(
+            result.columns
+              .filter(
+                (col) =>
+                  isPivotResultColumnName(col) &&
+                  col.endsWith(
+                    INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID,
+                  ),
+              )
+              .map((col) => (row[col] as number | undefined) ?? 0),
+          ).toString(),
+        );
+      }
+      const configuration = DataCubeConfiguration.serialization.fromJson(
+        snapshot.data.configuration,
+      );
+      const metadata = new Map<string, string>();
+      if (dimensionalColumns) {
+        configuration.dimensions.dimensions.forEach((dimension) => {
+          const column = dimensionalColumns.find((dim) =>
+            dimension.columns.includes(dim),
+          );
+          if (column) {
+            metadata.set(dimension.name, column);
+          }
+        });
+      } else {
+        configuration.dimensions.dimensions.forEach((dimension) => {
+          if (!metadata.has(dimension.name)) {
+            metadata.set(dimension.name, '');
+          }
+        });
+      }
+      row['metadata'] = metadata;
+    });
+    return row;
+  });
+}
+
 async function getCastColumns(
   currentSnapshot: DataCubeSnapshot,
   view: DataCubeViewState,
@@ -299,6 +370,87 @@ async function getCastColumns(
       type: type === PRIMITIVE_TYPE.DECIMAL ? PRIMITIVE_TYPE.FLOAT : type,
     };
   });
+}
+
+export async function fetchDimensionalData(
+  snapshot: DataCubeSnapshot,
+  view: DataCubeViewState,
+) {
+  if (snapshot.data.tree) {
+  }
+}
+
+export async function fetchDimensionalQueryRows(
+  snapshot: DataCubeSnapshot,
+  view: DataCubeViewState,
+) {
+  const task = view.taskService.newTask('Fetching data...');
+  const executableQuery = buildDimensionalGridDataFetchExecutableQuery(
+    snapshot,
+    view.source,
+    view.engine,
+    [],
+  );
+  let result: DataCubeExecutionResult;
+  let rowData: DataCubeGridClientRowData[];
+  const configuration = DataCubeConfiguration.serialization.fromJson(
+    snapshot.data.configuration,
+  );
+
+  try {
+    result = await view.engine.executeQuery(
+      _lambda([], [executableQuery]),
+      view.source,
+      {
+        debug: view.settingService.getBooleanValue(
+          DataCubeSettingKey.DEBUGGER__ENABLE_DEBUG_MODE,
+        ),
+        clientVersion: view.settingService.getBooleanValue(
+          DataCubeSettingKey.DEBUGGER__USE_DEV_CLIENT_PROTOCOL_VERSION,
+        )
+          ? PureClientVersion.VX_X_X
+          : undefined,
+      },
+    );
+
+    rowData = buildDimensionalRowData(result.result.result, snapshot);
+    view.taskService.endTask(task);
+  } catch (error) {
+    assertErrorThrown(error);
+    if (error instanceof DataCubeExecutionError) {
+      view.alertService.alertExecutionError(error, {
+        message: `Data Fetch Failure: Can't execute query.`,
+        text: `Error: ${error.message}`,
+      });
+    } else {
+      view.alertService.alertError(error, {
+        message: `Data Fetch Failure: ${error.message}`,
+      });
+    }
+    view.taskService.endTask(task);
+    return;
+  }
+
+  if (
+    view.settingService.getBooleanValue(
+      DataCubeSettingKey.DEBUGGER__ENABLE_DEBUG_MODE,
+    )
+  ) {
+    view.engine.debugProcess(
+      `Execution`,
+      ['Query', result.executedQuery],
+      [
+        'Stats',
+        `${rowData.length} rows, ${result.result.result.columns.length} columns`,
+      ],
+      ['SQL', result.executedSQL ?? `-- Error: failed to extract executed SQL`],
+      ['SQL Execution Time', result.executionTime],
+    );
+  }
+  return {
+    rowData: rowData,
+    columnDefs: generateColumnDefs(snapshot, configuration),
+  };
 }
 
 export type DataCubeGridClientDataFetchRequest = {

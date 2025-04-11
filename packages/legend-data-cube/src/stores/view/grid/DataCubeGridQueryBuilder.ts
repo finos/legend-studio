@@ -62,9 +62,13 @@ import {
 } from './DataCubeGridClientEngine.js';
 import { DataCubeConfiguration } from '../../core/model/DataCubeConfiguration.js';
 import { _colSpecArrayParam } from '../../core/DataCubeSnapshotBuilderUtils.js';
-import { buildExecutableQuery } from '../../core/DataCubeQueryBuilder.js';
+import {
+  buildDimensionalExecutableQuery,
+  buildExecutableQuery,
+} from '../../core/DataCubeQueryBuilder.js';
 import type { DataCubeSource } from '../../core/model/DataCubeSource.js';
 import type { DataCubeEngine } from '../../core/DataCubeEngine.js';
+import type { DataCubeDimensionalNode } from './DataCubeGridDimensionalTree.js';
 
 /*****************************************************************************
  * [GRID]
@@ -186,6 +190,40 @@ export function buildGridDataFetchExecutableQuery(
           }
         : undefined,
   });
+}
+
+export function buildDimensionalGridDataFetchExecutableQuery(
+  snapshot: DataCubeSnapshot,
+  source: DataCubeSource,
+  engine: DataCubeEngine,
+  nodes: DataCubeDimensionalNode[],
+) {
+  const processedSnapshot = snapshot.clone();
+  const configuration = DataCubeConfiguration.serialization.fromJson(
+    processedSnapshot.data.configuration,
+  );
+  if (configuration.showRootAggregation) {
+    processedSnapshot.data.groupBy = {
+      columns: [
+        {
+          name: INTERNAL__GRID_CLIENT_ROOT_AGGREGATION_COLUMN_ID,
+          type: PRIMITIVE_TYPE.STRING,
+        },
+        ...(processedSnapshot.data.groupBy?.columns ?? []),
+      ],
+    };
+  }
+  return buildDimensionalExecutableQuery(
+    processedSnapshot,
+    source,
+    engine,
+    nodes,
+    {
+      rootAggregation: {
+        columnName: INTERNAL__GRID_CLIENT_ROOT_AGGREGATION_COLUMN_ID,
+      },
+    },
+  );
 }
 
 function generateGridDataFetchExecutableQueryPostProcessor(
