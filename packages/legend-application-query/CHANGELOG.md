@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.7.68
+
+### Patch Changes
+
+- [#4001](https://github.com/finos/legend-studio/pull/4001) [`5f76d17`](https://github.com/finos/legend-studio/commit/5f76d17241a7a10831acd06716269e57518e3886) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add queryId to legend query runQuery clientSpan
+
 ## 13.7.67
 
 ## 13.7.66
