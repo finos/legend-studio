@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.3.16
+
+### Patch Changes
+
+- [#3989](https://github.com/finos/legend-studio/pull/3989) [`5d1d97e`](https://github.com/finos/legend-studio/commit/5d1d97e845c51e559708677563bdad4024952ffc) ([@travisstebbins](https://github.com/travisstebbins)) - Fix bug with fetching enum values from project dependency
+
 ## 0.3.15
 
 ### Patch Changes

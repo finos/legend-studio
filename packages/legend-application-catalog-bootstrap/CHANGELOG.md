@@ -1,5 +1,11 @@
 # @finos/legend-application-catalog-bootstrap
 
+## 13.45.0
+
+### Patch Changes
+
+- [#3993](https://github.com/finos/legend-studio/pull/3993) [`12bcb4f`](https://github.com/finos/legend-studio/commit/12bcb4f10ae014f327bb99aab5c6dbb7bcd67342) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Rename legend catalog to Legend Marketplace
+
 ## 13.44.0
 
 ## 13.43.0

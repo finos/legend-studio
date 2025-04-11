@@ -1,5 +1,7 @@
 # @finos/legend-application-data-cube-bootstrap
 
+## 13.45.0
+
 ## 13.44.0
 
 ### Patch Changes

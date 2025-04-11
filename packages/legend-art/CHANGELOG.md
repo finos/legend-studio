@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.91
+
+### Patch Changes
+
+- [#3987](https://github.com/finos/legend-studio/pull/3987) [`2d5c727`](https://github.com/finos/legend-studio/commit/2d5c72769d5786a8c1cb8f54f233c266d8f066f2) ([@kelly-thai](https://github.com/kelly-thai)) - Add List Editor component
+
 ## 7.1.90
 
 ## 7.1.89
