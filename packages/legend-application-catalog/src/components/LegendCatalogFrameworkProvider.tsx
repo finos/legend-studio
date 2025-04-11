@@ -56,7 +56,7 @@ const LegendCatalogBaseStoreProvider: React.FC<{
 export const useLegendCatalogBaseStore = (): LegendCatalogBaseStore =>
   guaranteeNonNullable(
     useContext(LegendCatalogBaseStoreContext),
-    `Can't find Legend Catalog base store in context`,
+    `Can't find Legend Marketplace base store in context`,
   );
 
 export const LegendCatalogFrameworkProvider: React.FC<{

@@ -23,12 +23,12 @@ import {
 } from '../__test-utils__/LegendCatalogStoreTestUtils.js';
 
 test(
-  integrationTest('Legend Catalog home page with header loads'),
+  integrationTest('Legend Marketplace home page with header loads'),
   async () => {
     const mockedLegendDataCubeBuilderStore =
       await TEST__provideMockedLegendCatalogBaseStore();
     await TEST__setUpCatalog(mockedLegendDataCubeBuilderStore);
-    await screen.findByText(/^Legend Catalog$/);
-    await screen.findByText('Welcome to Legend Catalog');
+    await screen.findByText(/^Legend Marketplace$/);
+    await screen.findByText('Welcome to Legend Marketplace');
   },
 );
