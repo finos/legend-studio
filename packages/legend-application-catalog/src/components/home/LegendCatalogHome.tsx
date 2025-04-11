@@ -25,11 +25,11 @@ export const LegendCatalogHome = observer(() => {
           <LegendCatalogHeader />
           <div className="legend-catalog-home__content">
             <div className="legend-catalog-home__content__title">
-              Welcome to Legend Catalog
+              Welcome to Legend Marketplace
             </div>
             <div className="legend-catalog-home__content__description">
               <p>
-                Legend Catalog is a WIP. Please check back in the future for
+                Legend Marketplace is a WIP. Please check back in the future for
                 updates.
               </p>
             </div>

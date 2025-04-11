@@ -1,3 +1,3 @@
 # @finos/legend-application-catalog
 
-Legend Catalog core
+Legend Marketplace core

@@ -62,7 +62,7 @@ export const LegendCatalogHeader = observer(() => {
       data-testid={LEGEND_CATALOG_TEST_ID.HEADER}
     >
       <LegendCatalogHeaderMenu />
-      <div className="legend-catalog-header__name">Legend Catalog</div>
+      <div className="legend-catalog-header__name">Legend Marketplace</div>
     </div>
   );
 });
