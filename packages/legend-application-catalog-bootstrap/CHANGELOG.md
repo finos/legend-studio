@@ -1,5 +1,7 @@
 # @finos/legend-application-catalog-bootstrap
 
+## 13.46.0
+
 ## 13.45.0
 
 ### Patch Changes
