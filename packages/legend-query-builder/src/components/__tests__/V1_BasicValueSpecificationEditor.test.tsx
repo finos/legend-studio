@@ -24,35 +24,51 @@ import {
   PRIMITIVE_TYPE,
   V1_AppliedFunction,
   V1_AppliedProperty,
+  V1_CEnumValue,
   V1_CFloat,
   V1_CInteger,
   V1_CLatestDate,
   V1_Collection,
   V1_CString,
+  V1_Enumeration,
+  V1_EnumValue,
   V1_Multiplicity,
   V1_observe_ValueSpecification,
-  V1_PackageableElementPtr,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import { TEST__setUpV1BasicValueSpecificationEditor } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import { TEST__LegendApplicationPluginManager } from '../../stores/__test-utils__/QueryBuilderStateTestUtils.js';
-import {
-  V1_AppliedProperty_setProperty,
-  V1_PrimitiveValue_setValue,
-} from '../../stores/shared/V1_ValueSpecificationModifierHelper.js';
+import { V1_PrimitiveValue_setValue } from '../../stores/shared/V1_ValueSpecificationModifierHelper.js';
 import { CUSTOM_DATE_PICKER_OPTION } from '../shared/CustomDatePickerHelper.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
 import {
   _collection,
   _defaultPrimitiveTypeValue,
   _elementPtr,
-  _enumeration,
   _enumValue,
   _primitiveValue,
   _property,
   _type,
 } from '@finos/legend-data-cube';
 import { integrationTest } from '@finos/legend-shared/test';
+
+function _packageableEnumeration(
+  enumerationPackage: string,
+  enumerationName: string,
+  values: V1_EnumValue[],
+): V1_Enumeration {
+  const enumeration = new V1_Enumeration();
+  enumeration.package = enumerationPackage;
+  enumeration.name = enumerationName;
+  enumeration.values = values;
+  return enumeration;
+}
+
+function _packageableEnumValue(value: string): V1_EnumValue {
+  const enumValue = new V1_EnumValue();
+  enumValue.value = value;
+  return enumValue;
+}
 
 test(
   integrationTest(
@@ -607,21 +623,21 @@ test(
     const pluginManager = TEST__LegendApplicationPluginManager.create();
 
     let enumValueSpec = V1_observe_ValueSpecification(
-      _property('Mr', [_elementPtr('test::myEnum')]),
-    ) as V1_AppliedProperty;
-    const enumeration = _enumeration('test', 'myEnum', [
-      _enumValue('Mr'),
-      _enumValue('Mrs'),
-      _enumValue('Ms'),
-      _enumValue('Dr'),
+      _enumValue('Mr', 'test::myEnum'),
+    ) as V1_CEnumValue;
+    const enumeration = _packageableEnumeration('test', 'myEnum', [
+      _packageableEnumValue('Mr'),
+      _packageableEnumValue('Mrs'),
+      _packageableEnumValue('Ms'),
+      _packageableEnumValue('Dr'),
     ]);
 
     const setValueSpecification = (newVal: V1_ValueSpecification): void => {
-      enumValueSpec = guaranteeType(newVal, V1_AppliedProperty);
+      enumValueSpec = guaranteeType(newVal, V1_CEnumValue);
     };
 
     const resetValue = (): void => {
-      V1_AppliedProperty_setProperty(enumValueSpec, '');
+      V1_PrimitiveValue_setValue(enumValueSpec as V1_CEnumValue, '');
     };
 
     TEST__setUpV1BasicValueSpecificationEditor(pluginManager, {
@@ -650,19 +666,14 @@ test(
 
     await screen.findByText('Mrs');
 
-    expect(enumValueSpec instanceof V1_AppliedProperty).toBeTruthy();
-    expect(enumValueSpec.property).toBe('Mrs');
-    expect(
-      enumValueSpec.parameters[0] instanceof V1_PackageableElementPtr,
-    ).toBeTruthy();
-    expect(
-      (enumValueSpec.parameters[0] as V1_PackageableElementPtr).fullPath,
-    ).toBe('test::myEnum');
+    expect(enumValueSpec instanceof V1_CEnumValue).toBeTruthy();
+    expect(enumValueSpec.value).toBe('Mrs');
+    expect(enumValueSpec.fullPath).toBe('test::myEnum');
 
     // Test that resetting value shows error styling
     fireEvent.click(screen.getByTitle('Reset'));
     await screen.findByDisplayValue('');
-    expect(enumValueSpec.property).toBe('');
+    expect(enumValueSpec.value).toBe('');
     expect(
       inputElement.parentElement?.parentElement?.parentElement?.parentElement
         ?.classList,
@@ -939,11 +950,11 @@ test(
     let enumCollectionValue = V1_observe_ValueSpecification(
       _collection([_property('Mr', [_elementPtr('test::myEnum')])]),
     );
-    const enumeration = _enumeration('test', 'myEnum', [
-      _enumValue('Mr'),
-      _enumValue('Mrs'),
-      _enumValue('Ms'),
-      _enumValue('Dr'),
+    const enumeration = _packageableEnumeration('test', 'myEnum', [
+      _packageableEnumValue('Mr'),
+      _packageableEnumValue('Mrs'),
+      _packageableEnumValue('Ms'),
+      _packageableEnumValue('Dr'),
     ]);
 
     const setValueSpecification = (val: V1_ValueSpecification): void => {

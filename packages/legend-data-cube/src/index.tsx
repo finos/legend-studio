@@ -65,7 +65,6 @@ export * from './components/DataCubePlaceholder.js';
 export {
   _collection,
   _elementPtr,
-  _enumeration,
   _enumValue,
   _function,
   _lambda,
