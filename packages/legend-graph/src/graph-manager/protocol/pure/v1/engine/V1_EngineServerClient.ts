@@ -721,10 +721,14 @@ export class V1_EngineServerClient extends AbstractServerClient {
       returnAsResponse?: boolean;
       serializationFormat?: EXECUTION_SERIALIZATION_FORMAT | undefined;
       abortController?: AbortController | undefined;
+      tracingTags?: PlainObject | undefined;
     },
   ): Promise<PlainObject<V1_ExecutionResult> | Response> =>
     this.postWithTracing(
-      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.EXECUTE),
+      this.getTraceData(
+        CORE_ENGINE_ACTIVITY_TRACE.EXECUTE,
+        options?.tracingTags,
+      ),
       `${this._execution()}/execute`,
       this.debugPayload(input, CORE_ENGINE_ACTIVITY_TRACE.EXECUTE),
       {
