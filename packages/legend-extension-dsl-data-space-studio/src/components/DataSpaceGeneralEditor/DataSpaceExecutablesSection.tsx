@@ -25,11 +25,7 @@ import {
 } from '../../stores/studio/DSL_DataSpace_GraphModifierHelper.js';
 import { useEditorStore } from '@finos/legend-application-studio';
 import { DataSpaceEditorState } from '../../stores/DataSpaceEditorState.js';
-import {
-  CustomSelectorInput,
-  ListEditor,
-  PanelFormSection,
-} from '@finos/legend-art';
+import { CustomSelectorInput, ListEditor } from '@finos/legend-art';
 import {
   type PackageableElement,
   PackageableElementExplicitReference,
@@ -97,18 +93,16 @@ export const DataspaceExecutablesSection = observer(() => {
   );
 
   return (
-    <PanelFormSection className="dataSpace-editor__general__elements">
-      <ListEditor
-        title="Executables"
-        prompt="Add functions and services to display under Quick Start for users to see how this Data Product can be used."
-        items={dataSpace.executables}
-        keySelector={(element: DataSpaceExecutable) => element.hashCode}
-        ItemComponent={ExecutableComponent}
-        NewItemComponent={NewExecutableComponent}
-        handleRemoveItem={handleRemoveExecutable}
-        isReadOnly={dataSpaceState.isReadOnly}
-        emptyMessage="No executables specified"
-      />
-    </PanelFormSection>
+    <ListEditor
+      title="Executables"
+      prompt="Add functions and services to display under Quick Start for users to see how this Data Product can be used."
+      items={dataSpace.executables}
+      keySelector={(element: DataSpaceExecutable) => element.hashCode}
+      ItemComponent={ExecutableComponent}
+      NewItemComponent={NewExecutableComponent}
+      handleRemoveItem={handleRemoveExecutable}
+      isReadOnly={dataSpaceState.isReadOnly}
+      emptyMessage="No executables specified"
+    />
   );
 });

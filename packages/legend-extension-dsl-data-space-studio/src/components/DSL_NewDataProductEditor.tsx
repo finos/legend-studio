@@ -19,7 +19,6 @@ import { PanelFormTextField } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { NewDataProductDriver } from './DSL_DataProduct_ElementDriver.js';
 
-//KXT here
 export const NewDataProductDriverEditor = observer(() => {
   const editorStore = useEditorStore();
 
