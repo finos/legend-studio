@@ -15,8 +15,8 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { LegendMarketplaceHeader } from '../../components/Header/LegendMarketplaceHeader.js';
 import { LegendMarketplaceSearchBar } from '../../components/SearchBar/LegendMarketplaceSearchBar.js';
+import { LegendMarketplaceHeader } from '../../components/header/LegendMarketplaceHeader.js';
 
 export const LegendMarketplaceHome = observer(() => {
   return (
