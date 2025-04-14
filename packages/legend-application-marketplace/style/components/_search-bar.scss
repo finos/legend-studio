@@ -22,4 +22,10 @@
   width: 40%;
   background: var(--color-white);
   border-radius: 4px;
+
+  button {
+    height: 100%;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
 }
