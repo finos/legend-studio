@@ -7,7 +7,11 @@ export interface Vendor {
   type: string;
 }
 
-export const LegendMarketplaceSearchBar = (): JSX.Element => {
+export const LegendMarketplaceSearchBar = (props: {
+  onSearch: (provider: string | undefined, query: string | undefined) => void;
+}): JSX.Element => {
+  const { onSearch } = props;
+
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   return (
@@ -27,7 +31,12 @@ export const LegendMarketplaceSearchBar = (): JSX.Element => {
           },
         }}
       />
-      <Button variant="contained">Go</Button>
+      <Button
+        onClick={() => onSearch(undefined, searchQuery)}
+        variant="contained"
+      >
+        Go
+      </Button>
     </div>
   );
 };

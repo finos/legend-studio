@@ -14,6 +14,37 @@
  * limitations under the License.
  */
 
+import { generatePath } from '@finos/legend-application/browser';
+import {
+  addQueryParametersToUrl,
+  stringifyQueryParams,
+} from '@finos/legend-shared';
+
+export enum LEGEND_MARKETPLACE_SEARCH_RESULTS_QUERY_PARAM_TOKEN {
+  PROVIDER = 'provider',
+  QUERY = 'query',
+}
+
 export const LEGEND_MARKETPLACE_ROUTE_PATTERN = Object.freeze({
   DEFAULT: '/',
+  SEARCH_RESULTS: '/results',
 });
+
+export const generateSearchResultsRoute = (
+  provider: string | undefined,
+  query: string | undefined,
+): string =>
+  addQueryParametersToUrl(
+    generatePath(LEGEND_MARKETPLACE_ROUTE_PATTERN.SEARCH_RESULTS, {
+      provider,
+      query,
+    }),
+    stringifyQueryParams({
+      [LEGEND_MARKETPLACE_SEARCH_RESULTS_QUERY_PARAM_TOKEN.PROVIDER]: provider
+        ? provider
+        : undefined,
+      [LEGEND_MARKETPLACE_SEARCH_RESULTS_QUERY_PARAM_TOKEN.QUERY]: query
+        ? query
+        : undefined,
+    }),
+  );

@@ -17,8 +17,21 @@
 import { observer } from 'mobx-react-lite';
 import { LegendMarketplaceSearchBar } from '../../components/SearchBar/LegendMarketplaceSearchBar.js';
 import { LegendMarketplaceHeader } from '../../components/header/LegendMarketplaceHeader.js';
+import { useApplicationStore } from '@finos/legend-application';
+import { generateSearchResultsRoute } from '../../__lib__/LegendMarketplaceNavigation.js';
 
 export const LegendMarketplaceHome = observer(() => {
+  const applicationStore = useApplicationStore();
+
+  const onSearch = (
+    provider: string | undefined,
+    query: string | undefined,
+  ): void => {
+    applicationStore.navigationService.navigator.goToLocation(
+      generateSearchResultsRoute(provider, query),
+    );
+  };
+
   return (
     <div className="app__page">
       <div className="legend-marketplace-home">
@@ -35,7 +48,7 @@ export const LegendMarketplaceHome = observer(() => {
                   Discover the right data and accelerate analytic productivity.
                 </h3>
               </div>
-              <LegendMarketplaceSearchBar />
+              <LegendMarketplaceSearchBar onSearch={onSearch} />
             </div>
           </div>
         </div>
