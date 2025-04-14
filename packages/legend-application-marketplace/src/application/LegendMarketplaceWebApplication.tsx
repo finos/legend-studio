@@ -30,7 +30,7 @@ import {
   useLegendMarketplaceBaseStore,
 } from './LegendMarketplaceFrameworkProvider.js';
 import { LEGEND_MARKETPLACE_ROUTE_PATTERN } from '../__lib__/LegendMarketplaceNavigation.js';
-import { LegendMarketplaceHome } from './home/LegendMarketplaceHome.js';
+import { LegendMarketplaceHome } from '../pages/home/LegendMarketplaceHome.js';
 
 const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();

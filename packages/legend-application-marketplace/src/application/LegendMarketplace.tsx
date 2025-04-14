@@ -19,7 +19,6 @@ import {
   type LegendApplicationConfig,
   type LegendApplicationConfigurationInput,
   ApplicationStoreProvider,
-  Core_LegendApplicationPlugin,
   getApplicationRootElement,
   LegendApplication,
 } from '@finos/legend-application';
@@ -28,9 +27,10 @@ import {
   LegendMarketplaceApplicationConfig,
 } from './LegendMarketplaceApplicationConfig.js';
 import { LegendMarketplacePluginManager } from './LegendMarketplacePluginManager.js';
-import { Core_LegendMarketplaceApplicationPlugin } from '../components/extensions/Core_LegendMarketplaceApplicationPlugin.js';
+import { Core_LegendMarketplaceApplicationPlugin } from './extensions/Core_LegendMarketplaceApplicationPlugin.js';
 import type { LegendMarketplaceApplicationStore } from '../stores/LegendMarketplaceBaseStore.js';
-import { LegendMarketplaceWebApplication } from '../components/LegendMarketplaceWebApplication.js';
+import { LegendMarketplaceWebApplication } from './LegendMarketplaceWebApplication.js';
+import { Core_LegendMarketplace_LegendApplicationPlugin } from './extensions/Core_LegendMarketplace_LegendApplicationPlugin.js';
 
 export class LegendMarketplace extends LegendApplication {
   declare config: LegendMarketplaceApplicationConfig;
@@ -41,7 +41,7 @@ export class LegendMarketplace extends LegendApplication {
       LegendMarketplacePluginManager.create(),
     );
     application.withBasePlugins([
-      new Core_LegendApplicationPlugin(),
+      new Core_LegendMarketplace_LegendApplicationPlugin(),
       new Core_LegendMarketplaceApplicationPlugin(),
     ]);
     return application;

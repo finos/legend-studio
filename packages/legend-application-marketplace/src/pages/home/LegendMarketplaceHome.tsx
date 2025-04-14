@@ -15,7 +15,8 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { LegendMarketplaceHeader } from '../header/LegendMarketplaceHeader.js';
+import { LegendMarketplaceHeader } from '../../components/Header/LegendMarketplaceHeader.js';
+import { LegendMarketplaceSearchBar } from '../../components/SearchBar/LegendMarketplaceSearchBar.js';
 
 export const LegendMarketplaceHome = observer(() => {
   return (
@@ -24,14 +25,17 @@ export const LegendMarketplaceHome = observer(() => {
         <div className="legend-marketplace-home__body">
           <LegendMarketplaceHeader />
           <div className="legend-marketplace-home__content">
-            <div className="legend-marketplace-home__content__title">
-              Welcome to Legend Marketplace
-            </div>
-            <div className="legend-marketplace-home__content__description">
-              <p>
-                Legend Marketplace is a WIP. Please check back in the future for
-                updates.
-              </p>
+            <div className="legend-marketplace-home__landing">
+              <div className="legend-marketplace-home__landing__title">
+                <span style={{ color: '#76A1E3' }}>All data in </span>
+                <span style={{ color: 'white' }}>One Place</span>
+              </div>
+              <div className="legend-marketplace-home__landing__description">
+                <h3>
+                  Discover the right data and accelerate analytic productivity.
+                </h3>
+              </div>
+              <LegendMarketplaceSearchBar />
             </div>
           </div>
         </div>
