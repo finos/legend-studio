@@ -47,12 +47,13 @@
     { "path": "packages/legend-application-marketplace" },
     { "path": "packages/legend-application-marketplace-bootstrap" },
     { "path": "packages/legend-application-marketplace-deployment" },
+    { "path": "packages/legend-server-marketplace" },
     // pure ide
     { "path": "packages/legend-application-pure-ide" },
     { "path": "packages/legend-application-pure-ide-deployment" },
-     // repl
-     { "path": "packages/legend-application-repl" },
-     { "path": "packages/legend-application-repl-deployment" },
+    // repl
+    { "path": "packages/legend-application-repl" },
+    { "path": "packages/legend-application-repl-deployment" },
     // extensions
     { "path": "packages/legend-extension-tracer-zipkin" },
     { "path": "packages/legend-extension-assortment" },
@@ -66,8 +67,8 @@
     { "path": "packages/legend-extension-store-flat-data" },
     { "path": "packages/legend-extension-store-relational" },
     { "path": "packages/legend-vscode-extension-dependencies" },
-    { "path":  "packages/legend-extension-dsl-data-quality"},
+    { "path": "packages/legend-extension-dsl-data-quality" },
     // fixtures
-    { "path": "fixtures/legend-mock-server" },
+    { "path": "fixtures/legend-mock-server" }
   ]
 }

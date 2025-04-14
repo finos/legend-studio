@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "build/prod.tsbuildinfo",
+    "jsx": "react-jsx"
+  },
+  "exclude": ["src/**/__tests__/**/*.*", "src/**/__mocks__/**/*.*"],
+  "references": [
+    { "path": "./tsconfig.package.json" },
+    { "path": "../legend-shared/tsconfig.build.json" }
+  ]
+}

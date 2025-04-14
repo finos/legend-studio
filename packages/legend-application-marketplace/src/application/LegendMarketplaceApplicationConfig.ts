@@ -51,6 +51,7 @@ class LegendMarketplaceApplicationCoreOptions {
 
 export interface LegendMarketplaceApplicationConfigurationData
   extends LegendApplicationConfigurationData {
+  marketplace: { url: string };
   depot: { url: string };
   engine: {
     url: string;
@@ -63,6 +64,7 @@ export interface LegendMarketplaceApplicationConfigurationData
 export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig {
   readonly options = new LegendMarketplaceApplicationCoreOptions();
 
+  readonly marketplaceServerUrl: string;
   readonly engineServerUrl: string;
   readonly engineQueryServerUrl?: string | undefined;
   readonly depotServerUrl: string;
@@ -73,6 +75,18 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
     input: LegendApplicationConfigurationInput<LegendMarketplaceApplicationConfigurationData>,
   ) {
     super(input);
+
+    // marketplace
+    assertNonNullable(
+      input.configData.marketplace,
+      `Can't configure application: 'marketplace' field is missing`,
+    );
+    this.marketplaceServerUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+      guaranteeNonEmptyString(
+        input.configData.marketplace.url,
+        `Can't configure application: 'marketplace.url' field is missing or empty`,
+      ),
+    );
 
     // engine
     assertNonNullable(

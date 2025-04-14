@@ -27,6 +27,7 @@ import {
 } from '@finos/legend-application';
 import { flow, makeObservable } from 'mobx';
 import { DepotServerClient } from '@finos/legend-server-depot';
+import { MarketplaceServerClient } from '@finos/legend-server-marketplace';
 import { getCurrentUserIDFromEngineServer } from '@finos/legend-graph';
 import type { LegendMarketplaceApplicationConfig } from '../application/LegendMarketplaceApplicationConfig.js';
 import type { LegendMarketplacePluginManager } from '../application/LegendMarketplacePluginManager.js';
@@ -39,6 +40,7 @@ export type LegendMarketplaceApplicationStore = ApplicationStore<
 
 export class LegendMarketplaceBaseStore {
   readonly applicationStore: LegendMarketplaceApplicationStore;
+  readonly marketplaceServerClient: MarketplaceServerClient;
   readonly depotServerClient: DepotServerClient;
   readonly pluginManager: LegendMarketplacePluginManager;
 
@@ -51,6 +53,11 @@ export class LegendMarketplaceBaseStore {
 
     this.applicationStore = applicationStore;
     this.pluginManager = applicationStore.pluginManager;
+
+    // marketplace
+    this.marketplaceServerClient = new MarketplaceServerClient({
+      serverUrl: this.applicationStore.config.marketplaceServerUrl,
+    });
 
     // depot
     this.depotServerClient = new DepotServerClient({
