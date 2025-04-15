@@ -1,5 +1,6 @@
 import { type JSX, useState } from 'react';
-import { Button, TextField } from '@mui/material';
+import { Button, InputAdornment, TextField } from '@mui/material';
+import { SearchIcon } from '@finos/legend-art';
 
 export interface Vendor {
   provider: string;
@@ -23,6 +24,15 @@ export const LegendMarketplaceSearchBar = (props: {
         value={searchQuery}
         onChange={(event) => {
           setSearchQuery(event.target.value);
+        }}
+        slotProps={{
+          input: {
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          },
         }}
         sx={{
           height: '100%',
