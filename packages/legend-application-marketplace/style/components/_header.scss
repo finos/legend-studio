@@ -21,6 +21,8 @@
 
   background: var(--color-blue-500);
   height: 6rem;
+  position: sticky;
+  top: 0;
 
   &__menu {
     height: 3.4rem;
