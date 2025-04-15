@@ -45,5 +45,16 @@
     &__title {
       font-size: 4rem;
     }
+
+    &__description {
+      font-size: 1.8rem;
+      margin-top: 2rem;
+      margin-bottom: 4rem;
+    }
+
+    &__search-bar {
+      width: 60%;
+      max-width: 60rem;
+    }
   }
 }

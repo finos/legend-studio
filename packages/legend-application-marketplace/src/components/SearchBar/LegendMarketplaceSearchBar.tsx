@@ -25,7 +25,9 @@ export const LegendMarketplaceSearchBar = (props: {
           setSearchQuery(event.target.value);
         }}
         sx={{
+          height: '100%',
           '& .MuiOutlinedInput-root': {
+            height: '100%',
             borderTopRightRadius: 0,
             borderBottomRightRadius: 0,
           },
@@ -34,6 +36,7 @@ export const LegendMarketplaceSearchBar = (props: {
       <Button
         onClick={() => onSearch(undefined, searchQuery)}
         variant="contained"
+        disabled={!searchQuery}
       >
         Go
       </Button>

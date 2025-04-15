@@ -40,15 +40,19 @@ export const LegendMarketplaceHome = observer(() => {
           <div className="legend-marketplace-home__content">
             <div className="legend-marketplace-home__landing">
               <div className="legend-marketplace-home__landing__title">
-                <span style={{ color: '#76A1E3' }}>All data in </span>
-                <span style={{ color: 'white' }}>One Place</span>
+                <h1>
+                  <span style={{ color: '#76A1E3' }}>All data in </span>
+                  <span style={{ color: 'white' }}>One Place</span>
+                </h1>
               </div>
               <div className="legend-marketplace-home__landing__description">
                 <h3>
                   Discover the right data and accelerate analytic productivity.
                 </h3>
               </div>
-              <LegendMarketplaceSearchBar onSearch={onSearch} />
+              <div className="legend-marketplace-home__landing__search-bar">
+                <LegendMarketplaceSearchBar onSearch={onSearch} />
+              </div>
             </div>
           </div>
         </div>
