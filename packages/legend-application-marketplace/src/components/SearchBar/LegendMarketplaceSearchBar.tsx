@@ -16,7 +16,13 @@ export const LegendMarketplaceSearchBar = (props: {
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   return (
-    <div className="legend-marketplace__search-bar">
+    <form
+      className="legend-marketplace__search-bar"
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSearch(undefined, searchQuery);
+      }}
+    >
       <TextField
         type="search"
         placeholder="Search"
@@ -43,13 +49,9 @@ export const LegendMarketplaceSearchBar = (props: {
           },
         }}
       />
-      <Button
-        onClick={() => onSearch(undefined, searchQuery)}
-        variant="contained"
-        disabled={!searchQuery}
-      >
+      <Button type="submit" variant="contained" disabled={!searchQuery}>
         Go
       </Button>
-    </div>
+    </form>
   );
 };
