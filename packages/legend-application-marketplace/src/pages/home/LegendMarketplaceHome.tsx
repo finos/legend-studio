@@ -16,9 +16,57 @@
 
 import { observer } from 'mobx-react-lite';
 import { LegendMarketplaceSearchBar } from '../../components/SearchBar/LegendMarketplaceSearchBar.js';
-import { LegendMarketplaceHeader } from '../../components/header/LegendMarketplaceHeader.js';
+import { LegendMarketplaceHeader } from '../../components/Header/LegendMarketplaceHeader.js';
 import { useApplicationStore } from '@finos/legend-application';
-import { generateSearchResultsRoute } from '../../__lib__/LegendMarketplaceNavigation.js';
+import {
+  generateSearchResultsRoute,
+  generateVendorDetailsRoute,
+} from '../../__lib__/LegendMarketplaceNavigation.js';
+import type { DataAsset } from '@finos/legend-server-marketplace';
+import { shuffle } from '@finos/legend-shared';
+import { LegendMarketplaceVendorCard } from '../../components/VendorCard/LegendMarketplaceVendorCard.js';
+import { Grid2 as Grid } from '@mui/material';
+
+// Temporary placeholder data for assets
+
+const dataAssets: DataAsset[] = [
+  {
+    description: 'This is a test data asset',
+    provider: 'Vendor 1',
+    type: 'vendor',
+    moreInfo: 'More information about the test data asset',
+  },
+  {
+    description: 'This is another test data asset',
+    provider: 'Vendor 2',
+    type: 'curated',
+    moreInfo: 'More information about the test2 data asset',
+  },
+  {
+    description: 'This is a third test data asset',
+    provider: 'Vendor 3',
+    type: 'vendor',
+    moreInfo: 'More information about the test3 data asset',
+  },
+  {
+    description: 'This is a fourth test data asset',
+    provider: 'Vendor 4',
+    type: 'curated',
+    moreInfo: 'More information about the test4 data asset',
+  },
+  {
+    description: 'This is a fifth test data asset',
+    provider: 'Vendor 5',
+    type: 'vendor',
+    moreInfo: 'More information about the test5 data asset',
+  },
+  {
+    description: 'This is a sixth test data asset',
+    provider: 'Vendor 6',
+    type: 'curated',
+    moreInfo: '',
+  },
+];
 
 export const LegendMarketplaceHome = observer(() => {
   const applicationStore = useApplicationStore();
@@ -53,6 +101,33 @@ export const LegendMarketplaceHome = observer(() => {
               <div className="legend-marketplace-home__landing__search-bar">
                 <LegendMarketplaceSearchBar onSearch={onSearch} />
               </div>
+            </div>
+            <div className="legend-marketplace-home__vendors-title">
+              <h3>Explore our Data</h3>
+            </div>
+            <div className="legend-marketplace-home__vendors-cards">
+              <Grid
+                container={true}
+                spacing={{ xs: 2, md: 3, xl: 6 }}
+                columns={{ xs: 2, md: 3, xl: 6 }}
+                sx={{ justifyContent: 'center' }}
+              >
+                {shuffle(dataAssets).map((asset) => (
+                  <Grid
+                    key={`${asset.provider}.${asset.type}.${asset.description}`}
+                    size={1}
+                  >
+                    <LegendMarketplaceVendorCard
+                      dataAsset={asset}
+                      onClick={(dataAsset: DataAsset) => {
+                        applicationStore.navigationService.navigator.goToLocation(
+                          generateVendorDetailsRoute(dataAsset.provider),
+                        );
+                      }}
+                    />
+                  </Grid>
+                ))}
+              </Grid>
             </div>
           </div>
         </div>

@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-export * from './models/DataAsset.js';
-export * from './models/SearchResult.js';
-export * from './models/Vendor.js';
-
-export { MarketplaceServerClient } from './MarketplaceServerClient.js';
+export interface DataAsset {
+  description: string;
+  provider: string;
+  type: 'vendor' | 'curated';
+  moreInfo: string;
+}

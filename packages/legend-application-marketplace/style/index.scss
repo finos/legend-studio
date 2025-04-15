@@ -15,7 +15,10 @@
  */
 
 @forward 'app';
+
 @forward 'components/header';
 @forward 'components/search-bar';
+@forward 'components/vendor-card';
+
 @forward 'pages/home';
 @forward 'pages/not-found-screen';

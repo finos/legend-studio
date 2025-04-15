@@ -39,7 +39,7 @@ const NotFoundPage = observer(() => {
     applicationStore.navigationService.navigator.getCurrentLocation();
 
   return (
-    <div className="app__page">
+    <div className="app__page legend-marketplace__app__page">
       <div className="not-found-screen not-found-screen--no-documentation">
         <div className="not-found-screen__icon">
           <div className="not-found-screen__icon__ghost">
