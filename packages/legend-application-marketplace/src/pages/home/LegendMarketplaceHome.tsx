@@ -108,8 +108,8 @@ export const LegendMarketplaceHome = observer(() => {
             <div className="legend-marketplace-home__vendors-cards">
               <Grid
                 container={true}
-                spacing={{ xs: 2, md: 3, xl: 6 }}
-                columns={{ xs: 2, md: 3, xl: 6 }}
+                spacing={{ xs: 2, md: 3, xl: 4 }}
+                columns={{ xs: 1, sm: 2, md: 3, xl: 6 }}
                 sx={{ justifyContent: 'center' }}
               >
                 {shuffle(dataAssets).map((asset) => (
