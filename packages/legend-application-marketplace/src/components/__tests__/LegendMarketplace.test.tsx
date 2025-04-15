@@ -29,6 +29,12 @@ test(
       await TEST__provideMockedLegendMarketplaceBaseStore();
     await TEST__setUpMarketplace(mockedLegendDataCubeBuilderStore);
     await screen.findByText(/^Legend Marketplace$/);
-    await screen.findByText('Welcome to Legend Marketplace');
+    screen.getByText('All data in');
+    screen.getByText('One Place');
+    screen.getByText(
+      'Discover the right data and accelerate analytic productivity.',
+    );
+    screen.getByPlaceholderText('Search');
+    screen.getByText('Explore our Data');
   },
 );

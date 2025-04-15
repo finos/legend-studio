@@ -60,7 +60,7 @@ export const TEST__provideMockedLegendMarketplaceBaseStore =
       );
     const value =
       customization?.mock ?? new LegendMarketplaceBaseStore(applicationStore);
-    const MOCK__LegendMarketplaceBaseStoreProvider = require('../LegendMarketplaceFrameworkProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-require-imports
+    const MOCK__LegendMarketplaceBaseStoreProvider = require('../../application/LegendMarketplaceFrameworkProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-require-imports
     MOCK__LegendMarketplaceBaseStoreProvider.useLegendMarketplaceBaseStore =
       createMock();
     MOCK__LegendMarketplaceBaseStoreProvider.useLegendMarketplaceBaseStore.mockReturnValue(
