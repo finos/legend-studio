@@ -16,7 +16,7 @@
 
 import { type PlainObject, AbstractServerClient } from '@finos/legend-shared';
 import type { Vendor } from './models/Vendor.js';
-import type { SearchResult } from './models/SearchResult.js';
+import type { ProductSearchResult } from './models/ProductSearchResult.js';
 
 export interface DepotServerClientConfig {
   serverUrl: string;
@@ -43,7 +43,7 @@ export class MarketplaceServerClient extends AbstractServerClient {
     query: string,
     vendorName: string,
     limit: number,
-  ): Promise<PlainObject<SearchResult>[]> =>
+  ): Promise<PlainObject<ProductSearchResult>[]> =>
     this.get(
       `${this._search()}/semantic/catalog?query=${query}&vendor_name=${vendorName}&limit=${limit}`,
     );
