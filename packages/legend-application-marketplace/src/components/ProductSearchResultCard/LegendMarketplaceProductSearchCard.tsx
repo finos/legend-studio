@@ -17,6 +17,8 @@
 import { type JSX } from 'react';
 import { Button, Card, CardActions, CardContent } from '@mui/material';
 import type { ProductSearchResult } from '@finos/legend-server-marketplace';
+import DOMPurify from 'dompurify';
+import { default as parse } from 'html-react-parser';
 
 const MAX_DESCRIPTION_LENGTH = 250;
 
@@ -50,8 +52,12 @@ export const LegendMarketplaceProductSearchCard = (props: {
           {productSearchResult.data_product_description.length > 0 && (
             <p>
               {productSearchResult.data_product_description.length > 250
-                ? truncatedDescriptionSnippet
-                : productSearchResult.data_product_description}
+                ? parse.default(DOMPurify.sanitize(truncatedDescriptionSnippet))
+                : parse.default(
+                    DOMPurify.sanitize(
+                      productSearchResult.data_product_description,
+                    ),
+                  )}
             </p>
           )}
         </div>
