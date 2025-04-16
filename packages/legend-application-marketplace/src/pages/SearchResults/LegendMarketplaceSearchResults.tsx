@@ -107,7 +107,11 @@ export const LegendMarketplaceSearchResults = observer(() => {
                     onPreviewClick={() => {
                       setSelectedPreviewResult(result);
                     }}
-                    onLearnMoreClick={() => {}}
+                    onLearnMoreClick={() => {
+                      applicationStore.navigationService.navigator.visitAddress(
+                        result.data_product_link,
+                      );
+                    }}
                   />
                 ))
               )}
