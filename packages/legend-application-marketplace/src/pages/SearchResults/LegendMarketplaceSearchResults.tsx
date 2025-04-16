@@ -108,7 +108,10 @@ export const LegendMarketplaceSearchResults = observer(() => {
                   sx={{ justifyContent: 'center' }}
                 >
                   {results?.map((result) => (
-                    <Grid key={result.data_product_name} size={1}>
+                    <Grid
+                      key={`${result.vendor_name}-${result.data_product_name}`}
+                      size={1}
+                    >
                       <LegendMarketplaceProductSearchCard
                         productSearchResult={result}
                         onPreviewClick={() => {
