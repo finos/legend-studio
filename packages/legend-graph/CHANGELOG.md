@@ -1,5 +1,7 @@
 # @finos/legend-graph
 
+## 32.1.19
+
 ## 32.1.18
 
 ### Patch Changes

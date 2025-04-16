@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.7.69
+
+### Patch Changes
+
+- [#4009](https://github.com/finos/legend-studio/pull/4009) [`35992a6`](https://github.com/finos/legend-studio/commit/35992a61ef21a30a3edf1d250ff368ea05119fcf) ([@yash0024](https://github.com/yash0024)) - Add queryId to ClassQueryBuilderState sourceInfo
+
 ## 13.7.68
 
 ### Patch Changes
