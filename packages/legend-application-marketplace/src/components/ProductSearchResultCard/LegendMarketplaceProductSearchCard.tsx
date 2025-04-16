@@ -15,13 +15,7 @@
  */
 
 import { type JSX } from 'react';
-import {
-  Button,
-  Card,
-  CardActions,
-  CardContent,
-  CardHeader,
-} from '@mui/material';
+import { Button, Card, CardActions, CardContent } from '@mui/material';
 import type { ProductSearchResult } from '@finos/legend-server-marketplace';
 
 const MAX_DESCRIPTION_LENGTH = 250;
@@ -35,6 +29,7 @@ export const LegendMarketplaceProductSearchCard = (props: {
 
   const descriptionSnippet =
     productSearchResult.data_product_description.substring(
+      0,
       MAX_DESCRIPTION_LENGTH,
     );
   const truncatedDescriptionSnippet = `${descriptionSnippet.substring(0, descriptionSnippet.lastIndexOf(' '))}...`;
@@ -44,8 +39,10 @@ export const LegendMarketplaceProductSearchCard = (props: {
       variant="outlined"
       className="legend-marketplace-product-search-result-card"
     >
-      <CardHeader title={productSearchResult.vendor_name} />
       <CardContent className="legend-marketplace-product-search-result-card__content">
+        <div className="legend-marketplace-product-search-result-card__vendor-name">
+          {productSearchResult.vendor_name}
+        </div>
         <div className="legend-marketplace-product-search-result-card__data-product-name">
           {productSearchResult.data_product_name}
         </div>
@@ -58,23 +55,23 @@ export const LegendMarketplaceProductSearchCard = (props: {
             </p>
           )}
         </div>
-        <CardActions className="legend-marketplace-product-search-result-card__actions">
-          <Button
-            variant="outlined"
-            onClick={() => onPreviewClick(productSearchResult)}
-          >
-            Preview
-          </Button>
-          {productSearchResult.data_product_link && (
-            <Button
-              variant="contained"
-              onClick={() => onLearnMoreClick(productSearchResult)}
-            >
-              Learn More
-            </Button>
-          )}
-        </CardActions>
       </CardContent>
+      <CardActions className="legend-marketplace-product-search-result-card__actions">
+        <Button
+          variant="outlined"
+          onClick={() => onPreviewClick(productSearchResult)}
+        >
+          Preview
+        </Button>
+        {productSearchResult.data_product_link && (
+          <Button
+            variant="contained"
+            onClick={() => onLearnMoreClick(productSearchResult)}
+          >
+            Learn More
+          </Button>
+        )}
+      </CardActions>
     </Card>
   );
 };

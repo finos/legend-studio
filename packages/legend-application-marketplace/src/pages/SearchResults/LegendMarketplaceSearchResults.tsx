@@ -104,8 +104,8 @@ export const LegendMarketplaceSearchResults = observer(() => {
                 <Grid
                   container={true}
                   spacing={{ xs: 2, md: 3, xl: 4 }}
-                  columns={{ xs: 1, sm: 2, md: 3, xl: 4 }}
-                  sx={{ justifyContent: 'center' }}
+                  columns={{ xs: 1, sm: 2, md: 3 }}
+                  className="legend-marketplace-search-results__results__cards"
                 >
                   {results?.map((result) => (
                     <Grid
