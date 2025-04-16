@@ -28,8 +28,9 @@ import {
 import { useLegendMarketplaceBaseStore } from '../../application/LegendMarketplaceFrameworkProvider.js';
 import { LegendMarketplaceProductSearchCard } from '../../components/ProductSearchResultCard/LegendMarketplaceProductSearchCard.js';
 import { assertErrorThrown } from '@finos/legend-shared';
+import { LegendMarketplaceSearchResultDrawer } from './LegendMarketplaceSearchResultDrawer.js';
 
-export const LegendMarketplaceHome = observer(() => {
+export const LegendMarketplaceSearchResults = observer(() => {
   const applicationStore = useApplicationStore();
   const store = useLegendMarketplaceBaseStore();
   const marketplaceServerClient = store.marketplaceServerClient;
@@ -44,8 +45,8 @@ export const LegendMarketplaceHome = observer(() => {
   const [isError, setIsError] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const [infoPage, setInfoPage] = useState<number>();
-  const [showDrawer, setShowDrawer] = useState<boolean>(false);
+  const [selectedPreviewResult, setSelectedPreviewResult] =
+    useState<ProductSearchResult>();
 
   useEffect(() => {
     const fetchResults = async () => {
@@ -103,13 +104,20 @@ export const LegendMarketplaceHome = observer(() => {
                   <LegendMarketplaceProductSearchCard
                     key={result.data_product_name}
                     productSearchResult={result}
-                    onPreviewClick={() => {}}
+                    onPreviewClick={() => {
+                      setSelectedPreviewResult(result);
+                    }}
                     onLearnMoreClick={() => {}}
                   />
                 ))
               )}
             </div>
           </div>
+          <LegendMarketplaceSearchResultDrawer
+            productSearchResult={selectedPreviewResult}
+            show={selectedPreviewResult !== undefined}
+            setShow={() => setSelectedPreviewResult(undefined)}
+          />
         </div>
       </div>
     </div>
