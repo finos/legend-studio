@@ -29,6 +29,7 @@ import { useLegendMarketplaceBaseStore } from '../../application/LegendMarketpla
 import { LegendMarketplaceProductSearchCard } from '../../components/ProductSearchResultCard/LegendMarketplaceProductSearchCard.js';
 import { assertErrorThrown } from '@finos/legend-shared';
 import { LegendMarketplaceSearchResultDrawer } from './LegendMarketplaceSearchResultDrawer.js';
+import { Grid2 as Grid } from '@mui/material';
 
 export const LegendMarketplaceSearchResults = observer(() => {
   const applicationStore = useApplicationStore();
@@ -100,20 +101,28 @@ export const LegendMarketplaceSearchResults = observer(() => {
               {isError ? (
                 <div>Error loading results</div>
               ) : (
-                results?.map((result) => (
-                  <LegendMarketplaceProductSearchCard
-                    key={result.data_product_name}
-                    productSearchResult={result}
-                    onPreviewClick={() => {
-                      setSelectedPreviewResult(result);
-                    }}
-                    onLearnMoreClick={() => {
-                      applicationStore.navigationService.navigator.visitAddress(
-                        result.data_product_link,
-                      );
-                    }}
-                  />
-                ))
+                <Grid
+                  container={true}
+                  spacing={{ xs: 2, md: 3, xl: 4 }}
+                  columns={{ xs: 1, sm: 2, md: 3, xl: 4 }}
+                  sx={{ justifyContent: 'center' }}
+                >
+                  {results?.map((result) => (
+                    <Grid key={result.data_product_name} size={1}>
+                      <LegendMarketplaceProductSearchCard
+                        productSearchResult={result}
+                        onPreviewClick={() => {
+                          setSelectedPreviewResult(result);
+                        }}
+                        onLearnMoreClick={() => {
+                          applicationStore.navigationService.navigator.visitAddress(
+                            result.data_product_link,
+                          );
+                        }}
+                      />
+                    </Grid>
+                  ))}
+                </Grid>
               )}
             </div>
           </div>
