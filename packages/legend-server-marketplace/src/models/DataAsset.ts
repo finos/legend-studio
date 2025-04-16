@@ -14,27 +14,9 @@
  * limitations under the License.
  */
 
-@use 'mixins' as *;
-
-.legend-marketplace-home {
-  width: 100%;
-  height: 100%;
-
-  &__body {
-    height: 100%;
-    width: 100%;
-  }
-
-  &__content {
-    @include flexCenter;
-
-    flex-direction: column;
-    height: calc(100% - 3.4rem);
-    width: 100%;
-    color: var(--color-dark-grey-500);
-
-    &__title {
-      font-size: 4rem;
-    }
-  }
+export interface DataAsset {
+  description: string;
+  provider: string;
+  type: 'vendor' | 'curated';
+  moreInfo: string;
 }

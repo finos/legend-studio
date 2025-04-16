@@ -21,7 +21,7 @@ export * from './application/LegendMarketplacePluginManager.js';
 export {
   useLegendMarketplaceApplicationStore,
   useLegendMarketplaceBaseStore,
-} from './components/LegendMarketplaceFrameworkProvider.js';
+} from './application/LegendMarketplaceFrameworkProvider.js';
 export { type LegendMarketplaceApplicationStore } from './stores/LegendMarketplaceBaseStore.js';
 
 // stores

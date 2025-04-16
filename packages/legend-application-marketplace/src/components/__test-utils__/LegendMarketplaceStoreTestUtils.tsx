@@ -27,13 +27,13 @@ import {
   type LegendMarketplaceApplicationStore,
   LegendMarketplaceBaseStore,
 } from '../../stores/LegendMarketplaceBaseStore.js';
-import { LegendMarketplaceFrameworkProvider } from '../LegendMarketplaceFrameworkProvider.js';
 import { LEGEND_MARKETPLACE_ROUTE_PATTERN } from '../../__lib__/LegendMarketplaceNavigation.js';
-import { LegendMarketplaceHome } from '../home/LegendMarketplaceHome.js';
+import { LegendMarketplaceHome } from '../../pages/home/LegendMarketplaceHome.js';
 import { LEGEND_MARKETPLACE_TEST_ID } from '../../__lib__/LegendMarketplaceTesting.js';
 import { LegendMarketplacePluginManager } from '../../application/LegendMarketplacePluginManager.js';
-import { Core_LegendMarketplaceApplicationPlugin } from '../extensions/Core_LegendMarketplaceApplicationPlugin.js';
+import { Core_LegendMarketplaceApplicationPlugin } from '../../application/extensions/Core_LegendMarketplaceApplicationPlugin.js';
 import { TEST__getTestLegendMarketplaceApplicationConfig } from '../../application/__test-utils__/LegendMarketplaceApplicationTestUtils.js';
+import { LegendMarketplaceFrameworkProvider } from '../../application/LegendMarketplaceFrameworkProvider.js';
 
 export const TEST__provideMockedLegendMarketplaceBaseStore =
   async (customization?: {
@@ -60,7 +60,7 @@ export const TEST__provideMockedLegendMarketplaceBaseStore =
       );
     const value =
       customization?.mock ?? new LegendMarketplaceBaseStore(applicationStore);
-    const MOCK__LegendMarketplaceBaseStoreProvider = require('../LegendMarketplaceFrameworkProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-require-imports
+    const MOCK__LegendMarketplaceBaseStoreProvider = require('../../application/LegendMarketplaceFrameworkProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-require-imports
     MOCK__LegendMarketplaceBaseStoreProvider.useLegendMarketplaceBaseStore =
       createMock();
     MOCK__LegendMarketplaceBaseStoreProvider.useLegendMarketplaceBaseStore.mockReturnValue(

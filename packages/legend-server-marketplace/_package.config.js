@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-@import url('@finos/legend-art/lib/normalize.css');
-@import url('@finos/legend-art/lib/index.css');
-@import url('@finos/legend-lego/lib/index.css');
-@import url('@finos/legend-application-marketplace/lib/index.css');
+export default {
+  publish: {
+    typescript: {
+      main: './tsconfig.publish.json',
+    },
+  },
+};

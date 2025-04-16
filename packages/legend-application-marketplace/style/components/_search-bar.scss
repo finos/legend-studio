@@ -14,7 +14,34 @@
  * limitations under the License.
  */
 
-@import url('@finos/legend-art/lib/normalize.css');
-@import url('@finos/legend-art/lib/index.css');
-@import url('@finos/legend-lego/lib/index.css');
-@import url('@finos/legend-application-marketplace/lib/index.css');
+@use 'mixins' as *;
+
+.legend-marketplace__search-bar {
+  @include flexVCenter;
+
+  height: 4rem;
+  width: 100%;
+  background: var(--color-white);
+  border-radius: 4px;
+
+  input {
+    font-size: 1.4rem;
+    height: 100%;
+    padding: 0 1rem 0 0.4rem;
+  }
+
+  button {
+    min-width: 4rem;
+    width: 4rem;
+    height: 100%;
+    font-size: 1.4rem;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    color: var(--color-black);
+    background: var(--color-light-blue-50);
+
+    &:disabled {
+      background: rgb(from var(--color-light-blue-50) r g b / 75%);
+    }
+  }
+}

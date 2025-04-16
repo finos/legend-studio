@@ -14,7 +14,16 @@
  * limitations under the License.
  */
 
-@import url('@finos/legend-art/lib/normalize.css');
-@import url('@finos/legend-art/lib/index.css');
-@import url('@finos/legend-lego/lib/index.css');
-@import url('@finos/legend-application-marketplace/lib/index.css');
+import { getBaseJestProjectConfig } from '../../scripts/test/jest.config.base.js';
+import { loadJSON } from '@finos/legend-dev-utils/DevUtils';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+const packageJson = loadJSON(resolve(__dirname, './package.json'));
+
+export default getBaseJestProjectConfig(
+  packageJson.name,
+  'packages/legend-server-marketplace',
+);

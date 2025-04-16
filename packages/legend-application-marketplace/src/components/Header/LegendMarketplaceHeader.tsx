@@ -22,8 +22,8 @@ import {
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
-import { LegendMarketplaceAppInfo } from './LegendMarketplaceAppInfo.js';
 import { LEGEND_MARKETPLACE_TEST_ID } from '../../__lib__/LegendMarketplaceTesting.js';
+import { LegendMarketplaceAppInfo } from './LegendMarketplaceAppInfo.js';
 
 const LegendMarketplaceHeaderMenu = observer(() => {
   // about modal

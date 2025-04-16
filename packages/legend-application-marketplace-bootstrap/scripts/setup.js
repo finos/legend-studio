@@ -41,6 +41,9 @@ export const setup = (outputDir) => {
       {
         appName: 'marketplace',
         env: 'local',
+        marketplace: {
+          url: 'http://localhost:6400/api',
+        },
         engine: {
           url: 'http://localhost:6300/api',
         },

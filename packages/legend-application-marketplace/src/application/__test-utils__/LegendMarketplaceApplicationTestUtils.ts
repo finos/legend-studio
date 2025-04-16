@@ -23,6 +23,9 @@ import {
 const TEST_DATA__appConfig: LegendMarketplaceApplicationConfigurationData = {
   appName: 'marketplace',
   env: 'test-env',
+  marketplace: {
+    url: 'https://testMarketplaceUrl',
+  },
   engine: {
     url: 'https://testEngineUrl',
     queryUrl: 'https://testEngineQueryUrl',

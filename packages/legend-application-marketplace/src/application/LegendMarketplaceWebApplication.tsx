@@ -30,7 +30,7 @@ import {
   useLegendMarketplaceBaseStore,
 } from './LegendMarketplaceFrameworkProvider.js';
 import { LEGEND_MARKETPLACE_ROUTE_PATTERN } from '../__lib__/LegendMarketplaceNavigation.js';
-import { LegendMarketplaceHome } from './home/LegendMarketplaceHome.js';
+import { LegendMarketplaceHome } from '../pages/home/LegendMarketplaceHome.js';
 
 const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();
@@ -39,7 +39,7 @@ const NotFoundPage = observer(() => {
     applicationStore.navigationService.navigator.getCurrentLocation();
 
   return (
-    <div className="app__page">
+    <div className="app__page legend-marketplace__app__page">
       <div className="not-found-screen not-found-screen--no-documentation">
         <div className="not-found-screen__icon">
           <div className="not-found-screen__icon__ghost">

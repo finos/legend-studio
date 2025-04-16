@@ -7,11 +7,6 @@
   "exclude": ["src/**/__tests__/**/*.*", "src/**/__mocks__/**/*.*"],
   "references": [
     { "path": "./tsconfig.package.json" },
-    { "path": "../legend-application/tsconfig.build.json" },
-    { "path": "../legend-art/tsconfig.build.json" },
-    { "path": "../legend-graph/tsconfig.build.json" },
-    { "path": "../legend-server-depot/tsconfig.build.json" },
-    { "path": "../legend-server-marketplace/tsconfig.build.json" },
     { "path": "../legend-shared/tsconfig.build.json" }
   ]
 }

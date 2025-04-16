@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-@import url('@finos/legend-art/lib/normalize.css');
-@import url('@finos/legend-art/lib/index.css');
-@import url('@finos/legend-lego/lib/index.css');
-@import url('@finos/legend-application-marketplace/lib/index.css');
+export * from './models/DataAsset.js';
+export * from './models/SearchResult.js';
+export * from './models/Vendor.js';
+
+export { MarketplaceServerClient } from './MarketplaceServerClient.js';

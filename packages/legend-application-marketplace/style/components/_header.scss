@@ -19,16 +19,15 @@
 .legend-marketplace-header {
   @include flexVCenter;
 
-  background: var(--color-dark-grey-80);
-  height: 3.4rem;
+  background: var(--color-blue-500);
+  height: 6rem;
+  position: sticky;
+  top: 0;
 
   &__menu {
-    // @include flexVCenter;
-
     height: 3.4rem;
     width: 5rem;
-    border-right: 0.1rem solid var(--color-dark-grey-200);
-    background: var(--color-dark-grey-100);
+    background: var(--color-blue-500);
   }
 
   &__menu-item {
@@ -36,7 +35,7 @@
 
     height: 3.4rem;
     width: 100%;
-    color: var(--color-dark-grey-500);
+    color: var(--color-white);
 
     svg {
       font-size: 2.3rem;
@@ -44,9 +43,32 @@
   }
 
   &__name {
-    color: var(--color-dark-grey-500);
+    color: var(--color-white);
     font-size: 2rem;
     font-weight: 700;
     margin: 1rem;
   }
+}
+
+// ---------------------------- Menu -------------------------------
+
+.menu {
+  background: var(--color-white);
+  border-color: var(--color-light-grey-400);
+}
+
+.menu__item {
+  color: var(--color-dark-grey-300);
+
+  &:hover {
+    background: var(--color-light-grey-100);
+  }
+
+  &:not([disabled]):hover {
+    background: var(--color-light-grey-100);
+  }
+}
+
+.menu__item[disabled] {
+  color: var(--color-light-grey-300);
 }
