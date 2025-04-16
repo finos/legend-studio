@@ -21,6 +21,7 @@ import { AgGridReact } from 'ag-grid-react';
 import { generateBaseGridOptions } from '../../../stores/view/grid/DataCubeGridConfigurationBuilder.js';
 import { AllCommunityModule } from 'ag-grid-community';
 import { AllEnterpriseModule } from 'ag-grid-enterprise';
+import { INTERNAL__GRID_CLIENT_TREE_COLUMN_ID } from '../../../stores/view/grid/DataCubeGridClientEngine.js';
 
 const __INTERNAL__original_console_error = console.error; // eslint-disable-line no-console
 
@@ -51,6 +52,7 @@ const DataCubeMultidimensionalGridClient = observer(
       };
     }
 
+    // TODO: check if we can use treeData option
     return (
       <div className="relative h-[calc(100%_-_20px)] w-full">
         <AgGridReact

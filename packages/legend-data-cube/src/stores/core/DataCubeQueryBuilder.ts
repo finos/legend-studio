@@ -23,6 +23,7 @@
 
 import {
   PRIMITIVE_TYPE,
+  V1_AppliedProperty,
   V1_CString,
   V1_Lambda,
   V1_Variable,
@@ -36,6 +37,7 @@ import {
 import { at, guaranteeType } from '@finos/legend-shared';
 import {
   DataCubeFunction,
+  DataCubeQueryFilterGroupOperator,
   DataCubeQuerySortDirection,
   type DataCubeQueryFunctionMap,
 } from './DataCubeQueryEngine.js';
@@ -55,6 +57,7 @@ import {
   _var,
   _functionCompositionProcessor,
   _extendRootAggregation,
+  _buildFlatSnapshotFilter,
 } from './DataCubeQueryBuilderUtils.js';
 import type { DataCubeSource } from './model/DataCubeSource.js';
 import { _findCol, _toCol } from './model/DataCubeColumn.js';
@@ -406,10 +409,11 @@ export function buildDimensionalExecutableQuery(
 
   // ------------------------------ DIMENSIONS -------------------------------------
 
-  if (configuration.dimensions.dimensions && nodes.length == 0) {
+  if (data.tree && nodes.length > 0) {
     const dimensionColNames = configuration.dimensions.dimensions.flatMap(
       (col) => col.columns,
     );
+
     //Adding remove these columns from selection
     configuration.columns = configuration.columns.map((col) => {
       if (dimensionColNames.includes(col.name)) {
@@ -419,16 +423,24 @@ export function buildDimensionalExecutableQuery(
     });
 
     // Adding dimensions to the extended column
-    configuration.dimensions.dimensions.forEach((col) => {
+    nodes.forEach((node) => {
       const lambda = new V1_Lambda();
       const defaultValue = new V1_CString();
       const parameter = new V1_Variable();
       parameter.name = 'temp';
-      defaultValue.value = 'ALL';
-      lambda.body = [defaultValue];
+      if (node.column === 'ALL') {
+        const defaultValue = new V1_CString();
+        defaultValue.value = node.column;
+        lambda.body = [defaultValue];
+      } else {
+        const defaultValue = new V1_AppliedProperty();
+        defaultValue.parameters = [parameter];
+        defaultValue.property = node.column;
+        lambda.body = [defaultValue];
+      }
       lambda.parameters = [parameter];
       data.leafExtendedColumns.unshift({
-        name: col.name,
+        name: node.dimension,
         type: 'String',
         mapFn: engine.serializeValueSpecification(lambda),
       } satisfies DataCubeSnapshotExtendedColumn);
@@ -438,10 +450,28 @@ export function buildDimensionalExecutableQuery(
     data.selectColumns = data.selectColumns.filter(
       (col) => !dimensionColNames.includes(col.name),
     );
-    const dimensionCols = configuration.dimensions.dimensions.map((col) =>
-      _toCol({ name: col.name, type: 'String' }),
+
+    const dimensionCols = nodes.map((col) =>
+      _toCol({ name: col.dimension, type: 'String' }),
     );
     data.selectColumns.unshift(...dimensionCols);
+
+    // Adding filter based on group by nodes
+    const groupByNodes = nodes.flatMap((x) => x.groupByNodes);
+    if (groupByNodes.length > 0) {
+      const filter = [
+        _buildFlatSnapshotFilter(nodes.flatMap((x) => x.groupByNodes)),
+      ];
+      if (data.filter) {
+        filter.push(data.filter);
+        data.filter = {
+          groupOperator: DataCubeQueryFilterGroupOperator.AND,
+          conditions: filter,
+        };
+      } else {
+        data.filter = filter.at(0);
+      }
+    }
 
     // Adding dimensions to groupby
     if (data.groupBy) {

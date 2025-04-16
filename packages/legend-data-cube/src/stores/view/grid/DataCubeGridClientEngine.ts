@@ -64,6 +64,10 @@ import {
 import { _lambda } from '../../core/DataCubeQueryBuilderUtils.js';
 import { sum } from 'mathjs';
 import { generateColumnDefs } from './DataCubeGridConfigurationBuilder.js';
+import {
+  DataCubeDimensionalMetadata,
+  type DataCubeDimensionalNode,
+} from './DataCubeGridDimensionalTree.js';
 
 type DataCubeGridClientCellValue =
   | string
@@ -71,7 +75,7 @@ type DataCubeGridClientCellValue =
   | boolean
   | null
   | undefined
-  | Map<string, string>;
+  | Map<string, DataCubeDimensionalMetadata>;
 type DataCubeGridClientRowData = {
   [key: string]: DataCubeGridClientCellValue;
 };
@@ -275,9 +279,10 @@ function buildRowData(
 function buildDimensionalRowData(
   result: TabularDataSet,
   snapshot: DataCubeSnapshot,
-  dimensionalColumns?: string[],
-): DataCubeGridClientRowData[] {
-  return result.rows.map((_row, rowIdx) => {
+  dimensionalNodes: DataCubeDimensionalNode[],
+  rowData: DataCubeGridClientRowData[],
+) {
+  const rows = result.rows.map((_row, rowIdx) => {
     const row: DataCubeGridClientRowData = {};
     const cols = result.columns;
     _row.values.forEach((value, colIdx) => {
@@ -303,30 +308,25 @@ function buildDimensionalRowData(
           ).toString(),
         );
       }
-      const configuration = DataCubeConfiguration.serialization.fromJson(
-        snapshot.data.configuration,
-      );
-      const metadata = new Map<string, string>();
-      if (dimensionalColumns) {
-        configuration.dimensions.dimensions.forEach((dimension) => {
-          const column = dimensionalColumns.find((dim) =>
-            dimension.columns.includes(dim),
-          );
-          if (column) {
-            metadata.set(dimension.name, column);
-          }
-        });
-      } else {
-        configuration.dimensions.dimensions.forEach((dimension) => {
-          if (!metadata.has(dimension.name)) {
-            metadata.set(dimension.name, '');
-          }
-        });
-      }
+
+      const metadata = new Map<string, DataCubeDimensionalMetadata>();
+      dimensionalNodes.forEach((dimension) => {
+        metadata.set(
+          dimension.dimension,
+          new DataCubeDimensionalMetadata(
+            dimension.column,
+            dimension.groupByNodes,
+          ),
+        );
+      });
       row['metadata'] = metadata;
     });
     return row;
   });
+
+  console.log(rows);
+
+  rowData.push(...rows);
 }
 
 async function getCastColumns(
@@ -385,68 +385,85 @@ export async function fetchDimensionalQueryRows(
   view: DataCubeViewState,
 ) {
   const task = view.taskService.newTask('Fetching data...');
-  const executableQuery = buildDimensionalGridDataFetchExecutableQuery(
-    snapshot,
-    view.source,
-    view.engine,
-    [],
-  );
-  let result: DataCubeExecutionResult;
-  let rowData: DataCubeGridClientRowData[];
+
+  let rowData: DataCubeGridClientRowData[] = [];
+
   const configuration = DataCubeConfiguration.serialization.fromJson(
     snapshot.data.configuration,
   );
+  // upgrade here by not shooting extra sqls
+  const paths = guaranteeNonNullable(
+    snapshot.data.tree?.generateDimensionalPaths(),
+  );
+  // console.log(snapshot.data.tree);
 
-  try {
-    result = await view.engine.executeQuery(
-      _lambda([], [executableQuery]),
+  console.log(JSON.stringify(paths));
+
+  for (const path of paths) {
+    const executableQuery = buildDimensionalGridDataFetchExecutableQuery(
+      snapshot,
       view.source,
-      {
-        debug: view.settingService.getBooleanValue(
-          DataCubeSettingKey.DEBUGGER__ENABLE_DEBUG_MODE,
-        ),
-        clientVersion: view.settingService.getBooleanValue(
-          DataCubeSettingKey.DEBUGGER__USE_DEV_CLIENT_PROTOCOL_VERSION,
-        )
-          ? PureClientVersion.VX_X_X
-          : undefined,
-      },
+      view.engine,
+      path,
     );
+    let result: DataCubeExecutionResult;
 
-    rowData = buildDimensionalRowData(result.result.result, snapshot);
-    view.taskService.endTask(task);
-  } catch (error) {
-    assertErrorThrown(error);
-    if (error instanceof DataCubeExecutionError) {
-      view.alertService.alertExecutionError(error, {
-        message: `Data Fetch Failure: Can't execute query.`,
-        text: `Error: ${error.message}`,
-      });
-    } else {
-      view.alertService.alertError(error, {
-        message: `Data Fetch Failure: ${error.message}`,
-      });
+    try {
+      result = await view.engine.executeQuery(
+        _lambda([], [executableQuery]),
+        view.source,
+        {
+          debug: view.settingService.getBooleanValue(
+            DataCubeSettingKey.DEBUGGER__ENABLE_DEBUG_MODE,
+          ),
+          clientVersion: view.settingService.getBooleanValue(
+            DataCubeSettingKey.DEBUGGER__USE_DEV_CLIENT_PROTOCOL_VERSION,
+          )
+            ? PureClientVersion.VX_X_X
+            : undefined,
+        },
+      );
+
+      buildDimensionalRowData(result.result.result, snapshot, path, rowData);
+
+      view.taskService.endTask(task);
+    } catch (error) {
+      assertErrorThrown(error);
+      if (error instanceof DataCubeExecutionError) {
+        view.alertService.alertExecutionError(error, {
+          message: `Data Fetch Failure: Can't execute query.`,
+          text: `Error: ${error.message}`,
+        });
+      } else {
+        view.alertService.alertError(error, {
+          message: `Data Fetch Failure: ${error.message}`,
+        });
+      }
+      view.taskService.endTask(task);
+      return;
     }
-    view.taskService.endTask(task);
-    return;
+
+    if (
+      view.settingService.getBooleanValue(
+        DataCubeSettingKey.DEBUGGER__ENABLE_DEBUG_MODE,
+      )
+    ) {
+      view.engine.debugProcess(
+        `Execution`,
+        ['Query', result.executedQuery],
+        [
+          'Stats',
+          `${rowData.length} rows, ${result.result.result.columns.length} columns`,
+        ],
+        [
+          'SQL',
+          result.executedSQL ?? `-- Error: failed to extract executed SQL`,
+        ],
+        ['SQL Execution Time', result.executionTime],
+      );
+    }
   }
 
-  if (
-    view.settingService.getBooleanValue(
-      DataCubeSettingKey.DEBUGGER__ENABLE_DEBUG_MODE,
-    )
-  ) {
-    view.engine.debugProcess(
-      `Execution`,
-      ['Query', result.executedQuery],
-      [
-        'Stats',
-        `${rowData.length} rows, ${result.result.result.columns.length} columns`,
-      ],
-      ['SQL', result.executedSQL ?? `-- Error: failed to extract executed SQL`],
-      ['SQL Execution Time', result.executionTime],
-    );
-  }
   return {
     rowData: rowData,
     columnDefs: generateColumnDefs(snapshot, configuration),

@@ -284,8 +284,12 @@ export class DataCubeGridState extends DataCubeSnapshotController {
       data,
       latestSnapshot.data.tree,
     );
-    console.log(latestSnapshot);
-    console.log(data);
+    // console.log(latestSnapshot);
+    // console.log(data);
+    const result = await fetchDimensionalQueryRows(latestSnapshot, this._view);
+    this._client?.setGridOption('rowData', result?.rowData);
+    this._client?.setGridOption('columnDefs', result?.columnDefs);
+    this.publishSnapshot(latestSnapshot);
   }
 
   override getSnapshotSubscriberName() {
