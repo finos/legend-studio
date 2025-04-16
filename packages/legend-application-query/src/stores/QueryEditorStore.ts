@@ -1605,6 +1605,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
         groupId: projectInfo.groupId,
         artifactId: projectInfo.artifactId,
         versionId: projectInfo.versionId,
+        queryId: queryInfo.id,
       };
       const classQueryBuilderState = new ClassQueryBuilderState(
         this.applicationStore,
