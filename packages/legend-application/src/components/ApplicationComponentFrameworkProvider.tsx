@@ -115,8 +115,11 @@ export const BackdropContainer: React.FC<{ elementId: string }> = (props) => (
 );
 
 export const ApplicationComponentFrameworkProvider = observer(
-  (props: { children: React.ReactNode }) => {
-    const { children } = props;
+  (props: {
+    children: React.ReactNode;
+    enableTransitions?: boolean | undefined;
+  }) => {
+    const { children, enableTransitions } = props;
     const applicationStore = useApplicationStore();
     const disableContextMenu: React.MouseEventHandler = (event) => {
       event.stopPropagation();
@@ -170,7 +173,7 @@ export const ApplicationComponentFrameworkProvider = observer(
     }, [applicationStore]);
 
     return (
-      <LegendStyleProvider>
+      <LegendStyleProvider enableTransitions={enableTransitions}>
         <BlockingAlert />
         <ActionAlert />
         <NotificationManager />
@@ -219,8 +222,11 @@ export const ApplicationComponentFrameworkProvider = observer(
 );
 
 export const SimpleApplicationComponentFrameworkProvider = observer(
-  (props: { children: React.ReactNode }) => {
-    const { children } = props;
+  (props: {
+    children: React.ReactNode;
+    enableTransitions?: boolean | undefined;
+  }) => {
+    const { children, enableTransitions } = props;
     const applicationStore = useApplicationStore();
     const disableContextMenu: React.MouseEventHandler = (event) => {
       event.stopPropagation();
@@ -251,7 +257,7 @@ export const SimpleApplicationComponentFrameworkProvider = observer(
     }, [keyBindingMap]);
 
     return (
-      <LegendStyleProvider>
+      <LegendStyleProvider enableTransitions={enableTransitions}>
         <DndProvider backend={HTML5Backend}>
           <div
             style={{ height: '100%', width: '100%' }}
