@@ -18,7 +18,6 @@ import { type ProductSearchResult } from '@finos/legend-server-marketplace';
 import {
   Card,
   CardContent,
-  Paper,
   Table,
   TableBody,
   TableCell,
@@ -41,10 +40,10 @@ export const LegendMarketplaceSearchResultDrawerContent = (props: {
       <div className="legend-marketplace-search-results__drawer__vendor-name">
         {productSearchResult.vendor_name}
       </div>
-      <div className="legend-marketplace-search-results__drawer__product-name">
+      <div className="legend-marketplace-search-results__drawer__data-product-name">
         {productSearchResult.data_product_name}
       </div>
-      <div className="legend-marketplace-search-results__drawer__product-description">
+      <div className="legend-marketplace-search-results__drawer__data-product-description">
         {productSearchResult.data_product_description}
       </div>
       <hr />
@@ -55,15 +54,15 @@ export const LegendMarketplaceSearchResultDrawerContent = (props: {
             variant="outlined"
             className="legend-marketplace-search-results__drawer__table-card"
           >
-            <CardContent className="egend-marketplace-search-results__drawer__table-card__content">
-              <div className="egend-marketplace-search-results__drawer__table-card__name">
+            <CardContent className="legend-marketplace-search-results__drawer__table-card__content">
+              <div className="legend-marketplace-search-results__drawer__table-card__name">
                 <strong>Table Name: </strong> {table.table_name}
               </div>
-              <div className="egend-marketplace-search-results__drawer__table-card__description">
-                <strong>Table Description: </strong> {table.table_description}
+              <div className="legend-marketplace-search-results__drawer__table-card__description">
+                <strong>Description: </strong> {table.table_description}
               </div>
               {table.table_fields.length > 0 && (
-                <TableContainer component={Paper}>
+                <TableContainer className="legend-marketplace-search-results__drawer__table-card__table">
                   <Table>
                     <TableHead>
                       <TableRow>
