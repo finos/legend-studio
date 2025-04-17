@@ -28,8 +28,8 @@ import {
 import { useLegendMarketplaceBaseStore } from '../../application/LegendMarketplaceFrameworkProvider.js';
 import { LegendMarketplaceProductSearchCard } from '../../components/ProductSearchResultCard/LegendMarketplaceProductSearchCard.js';
 import { assertErrorThrown } from '@finos/legend-shared';
-import { LegendMarketplaceSearchResultDrawer } from './LegendMarketplaceSearchResultDrawer.js';
-import { Grid2 as Grid } from '@mui/material';
+import { LegendMarketplaceSearchResultDrawerContent } from './LegendMarketplaceSearchResultDrawerContent.js';
+import { Drawer, Grid2 as Grid } from '@mui/material';
 
 export const LegendMarketplaceSearchResults = observer(() => {
   const applicationStore = useApplicationStore();
@@ -129,11 +129,23 @@ export const LegendMarketplaceSearchResults = observer(() => {
               )}
             </div>
           </div>
-          <LegendMarketplaceSearchResultDrawer
-            productSearchResult={selectedPreviewResult}
-            show={selectedPreviewResult !== undefined}
-            setShow={() => setSelectedPreviewResult(undefined)}
-          />
+          <Drawer
+            anchor="right"
+            open={selectedPreviewResult !== undefined}
+            onClose={() => setSelectedPreviewResult(undefined)}
+            slotProps={{
+              paper: {
+                sx: {
+                  width: '40%',
+                  maxWidth: '100rem',
+                },
+              },
+            }}
+          >
+            <LegendMarketplaceSearchResultDrawerContent
+              productSearchResult={selectedPreviewResult}
+            />
+          </Drawer>
         </div>
       </div>
     </div>
