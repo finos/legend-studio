@@ -33,6 +33,7 @@
     padding: 1.4rem;
     margin-left: 0;
     height: calc(100% - 6rem);
+    overflow: auto;
   }
 
   &__data-product-name {
