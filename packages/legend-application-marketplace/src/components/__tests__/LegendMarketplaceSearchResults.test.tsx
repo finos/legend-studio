@@ -15,7 +15,7 @@
  */
 
 import { integrationTest } from '@finos/legend-shared/test';
-import { afterEach, beforeEach, expect, jest, test } from '@jest/globals';
+import { expect, jest, test } from '@jest/globals';
 import {
   fireEvent,
   getAllByText,
@@ -29,16 +29,6 @@ import {
 } from '../__test-utils__/LegendMarketplaceStoreTestUtils.js';
 import { LEGEND_MARKETPLACE_ROUTE_PATTERN } from '../../__lib__/LegendMarketplaceNavigation.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-
-let windowSpy: ReturnType<typeof jest.spyOn>;
-
-beforeEach(() => {
-  windowSpy = jest.spyOn(window, 'window', 'get');
-});
-
-afterEach(() => {
-  windowSpy.mockRestore();
-});
 
 test(
   integrationTest(
