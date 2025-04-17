@@ -22,6 +22,15 @@ import {
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3/index.js';
 
+declare module '@mui/system' {
+  interface BreakpointOverrides {
+    // Custom breakpoints
+    xxl: true;
+    xxxl: true;
+    xxxxl: true;
+  }
+}
+
 const LegendCustomMUITheme = (enableTransitions?: boolean | undefined) =>
   createTheme({
     ...(!!enableTransitions
@@ -39,6 +48,18 @@ const LegendCustomMUITheme = (enableTransitions?: boolean | undefined) =>
         defaultProps: {
           disableRipple: true,
         },
+      },
+    },
+    breakpoints: {
+      values: {
+        xs: 0,
+        sm: 600,
+        md: 900,
+        lg: 1200,
+        xl: 1536,
+        xxl: 1800,
+        xxxl: 2300,
+        xxxxl: 2800,
       },
     },
   });
