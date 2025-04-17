@@ -25,6 +25,7 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
+import DOMPurify from 'dompurify';
 
 export const LegendMarketplaceSearchResultDrawerContent = (props: {
   productSearchResult: ProductSearchResult | undefined;
@@ -35,55 +36,91 @@ export const LegendMarketplaceSearchResultDrawerContent = (props: {
     return null;
   }
 
+  const vendorNameHTML = {
+    __html: DOMPurify.sanitize(productSearchResult.vendor_name),
+  };
+  const dataProductNameHTML = {
+    __html: DOMPurify.sanitize(productSearchResult.data_product_name),
+  };
+  const dataProductDescriptionHTML = {
+    __html: DOMPurify.sanitize(productSearchResult.data_product_description),
+  };
+
   return (
     <div className="legend-marketplace-search-results__drawer">
-      <div className="legend-marketplace-search-results__drawer__vendor-name">
-        {productSearchResult.vendor_name}
-      </div>
-      <div className="legend-marketplace-search-results__drawer__data-product-name">
-        {productSearchResult.data_product_name}
-      </div>
-      <div className="legend-marketplace-search-results__drawer__data-product-description">
-        {productSearchResult.data_product_description}
-      </div>
+      <div
+        dangerouslySetInnerHTML={vendorNameHTML}
+        className="legend-marketplace-search-results__drawer__vendor-name"
+      />
+      <div
+        dangerouslySetInnerHTML={dataProductNameHTML}
+        className="legend-marketplace-search-results__drawer__data-product-name"
+      />
+      <div
+        dangerouslySetInnerHTML={dataProductDescriptionHTML}
+        className="legend-marketplace-search-results__drawer__data-product-description"
+      />
       <hr />
       <div className="legend-marketplace-search-results__drawer__tables">
-        {productSearchResult.tables.map((table) => (
-          <Card
-            key={table.table_name}
-            variant="outlined"
-            className="legend-marketplace-search-results__drawer__table-card"
-          >
-            <CardContent className="legend-marketplace-search-results__drawer__table-card__content">
-              <div className="legend-marketplace-search-results__drawer__table-card__name">
-                <strong>Table Name: </strong> {table.table_name}
-              </div>
-              <div className="legend-marketplace-search-results__drawer__table-card__description">
-                <strong>Description: </strong> {table.table_description}
-              </div>
-              {table.table_fields.length > 0 && (
-                <TableContainer className="legend-marketplace-search-results__drawer__table-card__table">
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Field Name</TableCell>
-                        <TableCell>Field Description</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {table.table_fields.map((field) => (
-                        <TableRow key={field.field_name}>
-                          <TableCell>{field.field_name}</TableCell>
-                          <TableCell>{field.field_description}</TableCell>
+        {productSearchResult.tables.map((table) => {
+          const tableNameHTML = {
+            __html: DOMPurify.sanitize(table.table_name),
+          };
+          const tableDescriptionHTML = {
+            __html: DOMPurify.sanitize(table.table_description),
+          };
+
+          return (
+            <Card
+              key={table.table_name}
+              variant="outlined"
+              className="legend-marketplace-search-results__drawer__table-card"
+            >
+              <CardContent className="legend-marketplace-search-results__drawer__table-card__content">
+                <div className="legend-marketplace-search-results__drawer__table-card__name">
+                  <strong>Table Name: </strong>
+                  <span dangerouslySetInnerHTML={tableNameHTML} />
+                </div>
+                <div className="legend-marketplace-search-results__drawer__table-card__description">
+                  <strong>Description: </strong>
+                  <span dangerouslySetInnerHTML={tableDescriptionHTML} />
+                </div>
+                {table.table_fields.length > 0 && (
+                  <TableContainer className="legend-marketplace-search-results__drawer__table-card__table">
+                    <Table>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Field Name</TableCell>
+                          <TableCell>Field Description</TableCell>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              )}
-            </CardContent>
-          </Card>
-        ))}
+                      </TableHead>
+                      <TableBody>
+                        {table.table_fields.map((field) => {
+                          const fieldNameHTML = {
+                            __html: DOMPurify.sanitize(field.field_name),
+                          };
+                          const fieldDescriptionHTML = {
+                            __html: DOMPurify.sanitize(field.field_description),
+                          };
+                          return (
+                            <TableRow key={field.field_name}>
+                              <TableCell
+                                dangerouslySetInnerHTML={fieldNameHTML}
+                              />
+                              <TableCell
+                                dangerouslySetInnerHTML={fieldDescriptionHTML}
+                              />
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
     </div>
   );
