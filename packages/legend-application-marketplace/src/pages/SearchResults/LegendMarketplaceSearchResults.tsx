@@ -92,7 +92,10 @@ export const LegendMarketplaceSearchResults = observer(() => {
           <LegendMarketplaceHeader />
           <div className="legend-marketplace-search-results__content">
             <div className="legend-marketplace-search-results__search-bar">
-              <LegendMarketplaceSearchBar onSearch={onSearch} />
+              <LegendMarketplaceSearchBar
+                onSearch={onSearch}
+                initialValue={params.query?.trim() ?? ''}
+              />
             </div>
             <div className="legend-marketplace-search-results__results">
               <CubesLoadingIndicator isLoading={isLoading}>
