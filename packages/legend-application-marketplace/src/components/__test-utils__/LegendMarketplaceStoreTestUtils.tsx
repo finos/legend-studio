@@ -35,6 +35,7 @@ import { Core_LegendMarketplaceApplicationPlugin } from '../../application/exten
 import { TEST__getTestLegendMarketplaceApplicationConfig } from '../../application/__test-utils__/LegendMarketplaceApplicationTestUtils.js';
 import { LegendMarketplaceFrameworkProvider } from '../../application/LegendMarketplaceFrameworkProvider.js';
 import searchResults from './TEST_DATA__SearchResults.json' with { type: 'json' };
+import { LegendMarketplaceSearchResults } from '../../pages/SearchResults/LegendMarketplaceSearchResults.js';
 
 export const TEST__provideMockedLegendMarketplaceBaseStore =
   async (customization?: {
@@ -72,6 +73,7 @@ export const TEST__provideMockedLegendMarketplaceBaseStore =
 
 export const TEST__setUpMarketplace = async (
   MOCK__store: LegendMarketplaceBaseStore,
+  route?: string,
 ): Promise<{
   renderResult: RenderResult;
 }> => {
@@ -82,12 +84,16 @@ export const TEST__setUpMarketplace = async (
 
   const renderResult = render(
     <ApplicationStoreProvider store={MOCK__store.applicationStore}>
-      <TEST__BrowserEnvironmentProvider initialEntries={['/']}>
+      <TEST__BrowserEnvironmentProvider initialEntries={[route ?? '/']}>
         <LegendMarketplaceFrameworkProvider>
           <Routes>
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.DEFAULT}
               element={<LegendMarketplaceHome />}
+            />
+            <Route
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.SEARCH_RESULTS}
+              element={<LegendMarketplaceSearchResults />}
             />
           </Routes>
         </LegendMarketplaceFrameworkProvider>
