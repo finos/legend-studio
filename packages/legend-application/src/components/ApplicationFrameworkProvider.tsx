@@ -24,8 +24,12 @@ import { useApplicationStore } from './ApplicationStoreProvider.js';
 import { useApplicationPlatform } from './ApplicationPlatformProvider.js';
 
 export const ApplicationFrameworkProvider = observer(
-  (props: { children: React.ReactNode; simple?: boolean | undefined }) => {
-    const { children, simple } = props;
+  (props: {
+    children: React.ReactNode;
+    simple?: boolean | undefined;
+    enableTransitions?: boolean | undefined;
+  }) => {
+    const { children, simple, enableTransitions } = props;
     const platform = useApplicationPlatform();
     const applicationStore = useApplicationStore();
 
@@ -43,13 +47,17 @@ export const ApplicationFrameworkProvider = observer(
     // See https://github.com/mobxjs/mobx/issues/2526
     if (simple) {
       return (
-        <SimpleApplicationComponentFrameworkProvider>
+        <SimpleApplicationComponentFrameworkProvider
+          enableTransitions={enableTransitions}
+        >
           {children}
         </SimpleApplicationComponentFrameworkProvider>
       );
     }
     return (
-      <ApplicationComponentFrameworkProvider>
+      <ApplicationComponentFrameworkProvider
+        enableTransitions={enableTransitions}
+      >
         {children}
       </ApplicationComponentFrameworkProvider>
     );
