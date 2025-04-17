@@ -15,8 +15,8 @@
  */
 
 import { integrationTest } from '@finos/legend-shared/test';
-import { test } from '@jest/globals';
-import { screen } from '@testing-library/dom';
+import { expect, jest, test } from '@jest/globals';
+import { fireEvent, screen } from '@testing-library/dom';
 import {
   TEST__provideMockedLegendMarketplaceBaseStore,
   TEST__setUpMarketplace,
@@ -36,5 +36,30 @@ test(
     );
     screen.getByPlaceholderText('Search');
     screen.getByText('Explore our Data');
+  },
+);
+
+test(
+  integrationTest(
+    'Legend Marketplace search box navigates to search results page with query paramereters',
+  ),
+  async () => {
+    const mockedLegendDataCubeBuilderStore =
+      await TEST__provideMockedLegendMarketplaceBaseStore();
+    await TEST__setUpMarketplace(mockedLegendDataCubeBuilderStore);
+    // Mock navigation service
+    mockedLegendDataCubeBuilderStore.applicationStore.navigationService.navigator.goToLocation =
+      jest.fn();
+
+    await screen.findByText(/^Legend Marketplace$/);
+
+    const searchBox = screen.getByPlaceholderText('Search');
+    fireEvent.change(searchBox, { target: { value: 'test' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Go' }));
+
+    expect(
+      mockedLegendDataCubeBuilderStore.applicationStore.navigationService
+        .navigator.goToLocation,
+    ).toHaveBeenCalledWith('/results?query=test');
   },
 );

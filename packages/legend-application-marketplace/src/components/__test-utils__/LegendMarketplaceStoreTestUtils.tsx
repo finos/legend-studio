@@ -16,7 +16,7 @@
 
 import { type RenderResult, render, waitFor } from '@testing-library/react';
 import { type AbstractPlugin, type AbstractPreset } from '@finos/legend-shared';
-import { createMock } from '@finos/legend-shared/test';
+import { createMock, createSpy } from '@finos/legend-shared/test';
 import {
   ApplicationStore,
   ApplicationStoreProvider,
@@ -34,6 +34,7 @@ import { LegendMarketplacePluginManager } from '../../application/LegendMarketpl
 import { Core_LegendMarketplaceApplicationPlugin } from '../../application/extensions/Core_LegendMarketplaceApplicationPlugin.js';
 import { TEST__getTestLegendMarketplaceApplicationConfig } from '../../application/__test-utils__/LegendMarketplaceApplicationTestUtils.js';
 import { LegendMarketplaceFrameworkProvider } from '../../application/LegendMarketplaceFrameworkProvider.js';
+import searchResults from './TEST_DATA__SearchResults.json' with { type: 'json' };
 
 export const TEST__provideMockedLegendMarketplaceBaseStore =
   async (customization?: {
@@ -74,6 +75,11 @@ export const TEST__setUpMarketplace = async (
 ): Promise<{
   renderResult: RenderResult;
 }> => {
+  createSpy(
+    MOCK__store.marketplaceServerClient,
+    'semanticSearch',
+  ).mockResolvedValue(searchResults);
+
   const renderResult = render(
     <ApplicationStoreProvider store={MOCK__store.applicationStore}>
       <TEST__BrowserEnvironmentProvider initialEntries={['/']}>
