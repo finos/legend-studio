@@ -26,10 +26,11 @@ export interface Vendor {
 
 export const LegendMarketplaceSearchBar = (props: {
   onSearch: (provider: string | undefined, query: string | undefined) => void;
+  initialValue?: string;
 }): JSX.Element => {
-  const { onSearch } = props;
+  const { onSearch, initialValue } = props;
 
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState<string>(initialValue ?? '');
 
   return (
     <form

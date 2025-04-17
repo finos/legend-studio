@@ -17,13 +17,13 @@
 import { SerializationFactory } from '@finos/legend-shared';
 import { createModelSchema, list, object, primitive } from 'serializr';
 
-export class SearchResultTableField {
+export class ProductSearchResultTableField {
   field_description!: string;
   field_name!: string;
   similarity!: number;
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(SearchResultTableField, {
+    createModelSchema(ProductSearchResultTableField, {
       field_description: primitive(),
       field_name: primitive(),
       similarity: primitive(),
@@ -31,37 +31,37 @@ export class SearchResultTableField {
   );
 }
 
-export class SearchResultTable {
+export class ProductSearchResultTable {
   dataset_score!: number;
   table_description!: string;
-  table_fields!: SearchResultTableField[];
+  table_fields!: ProductSearchResultTableField[];
   table_name!: string;
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(SearchResultTable, {
+    createModelSchema(ProductSearchResultTable, {
       dataset_score: primitive(),
       table_description: primitive(),
-      table_fields: list(object(SearchResultTableField)),
+      table_fields: list(object(ProductSearchResultTableField)),
       table_name: primitive(),
     }),
   );
 }
 
-export class SearchResult {
+export class ProductSearchResult {
   data_product_description!: string;
   data_product_link!: string;
   data_product_name!: string;
   product_score!: number;
-  tables!: SearchResultTable[];
+  tables!: ProductSearchResultTable[];
   vendor_name!: string;
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(SearchResult, {
+    createModelSchema(ProductSearchResult, {
       data_product_description: primitive(),
       data_product_link: primitive(),
       data_product_name: primitive(),
       product_score: primitive(),
-      tables: list(object(SearchResultTable)),
+      tables: list(object(ProductSearchResultTable)),
       vendor_name: primitive(),
     }),
   );

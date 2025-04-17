@@ -1,0 +1,745 @@
+[
+  {
+    "data_product_description": "Comprehensive dataset containing sales information for business analysis.",
+    "data_product_link": "https://example.com/products/dp-1",
+    "data_product_name": "Data Product 1",
+    "product_score": 0.51,
+    "tables": [
+      {
+        "dataset_score": 0.66,
+        "table_description": "Contains detailed customers data with comprehensive attributes.",
+        "table_fields": [
+          {
+            "field_description": "Item price",
+            "field_name": "price",
+            "similarity": 0.35
+          },
+          {
+            "field_description": "Full name",
+            "field_name": "name",
+            "similarity": 0.59
+          },
+          {
+            "field_description": "Item category",
+            "field_name": "category",
+            "similarity": 0.79
+          }
+        ],
+        "table_name": "customers_table_1"
+      }
+    ],
+    "vendor_name": "Vendor Beta"
+  },
+  {
+    "data_product_description": "High-fidelity inventory management dataset that tracks stock levels, warehouse operations, and supply chain events across global distribution centers. Features detailed SKU-level data with supplier information, lead times, carrying costs, and inventory turnover metrics. Optimized for supply chain analysts seeking to minimize stockouts while reducing excess inventory.",
+    "data_product_link": "https://example.com/products/dp-2",
+    "data_product_name": "Data Product 2",
+    "product_score": 0.91,
+    "tables": [
+      {
+        "dataset_score": 0.83,
+        "table_description": "Contains detailed analytics data with comprehensive attributes.",
+        "table_fields": [
+          {
+            "field_description": "Item price",
+            "field_name": "price",
+            "similarity": 0.87
+          },
+          {
+            "field_description": "Email address",
+            "field_name": "email",
+            "similarity": 0.83
+          },
+          {
+            "field_description": "Detailed description",
+            "field_name": "description",
+            "similarity": 0.92
+          },
+          {
+            "field_description": "Last update timestamp",
+            "field_name": "updated_at",
+            "similarity": 0.88
+          }
+        ],
+        "table_name": "analytics_table_1"
+      }
+    ],
+    "vendor_name": "Vendor Gamma"
+  },
+  {
+    "data_product_description": "Comprehensive dataset containing marketing information for business analysis.",
+    "data_product_link": "https://example.com/products/dp-3",
+    "data_product_name": "Data Product 3",
+    "product_score": 0.75,
+    "tables": [
+      {
+        "dataset_score": 0.93,
+        "table_description": "Contains detailed products data with comprehensive attributes.",
+        "table_fields": [
+          {
+            "field_description": "Detailed description",
+            "field_name": "description",
+            "similarity": 0.92
+          },
+          {
+            "field_description": "Creation timestamp",
+            "field_name": "created_at",
+            "similarity": 0.95
+          },
+          {
+            "field_description": "Unique identifier",
+            "field_name": "id",
+            "similarity": 0.8
+          },
+          {
+            "field_description": "Item category",
+            "field_name": "category",
+            "similarity": 0.63
+          },
+          {
+            "field_description": "Item price",
+            "field_name": "price",
+            "similarity": 0.6
+          }
+        ],
+        "table_name": "products_table_1"
+      },
+      {
+        "dataset_score": 0.98,
+        "table_description": "Contains detailed transactions data with comprehensive attributes.",
+        "table_fields": [
+          {
+            "field_description": "Email address",
+            "field_name": "email",
+            "similarity": 0.33
+          },
+          {
+            "field_description": "Unique identifier",
+            "field_name": "id",
+            "similarity": 0.64
+          },
+          {
+            "field_description": "Full name",
+            "field_name": "name",
+            "similarity": 0.76
+          },
+          {
+            "field_description": "Creation timestamp",
+            "field_name": "created_at",
+            "similarity": 0.78
+          }
+        ],
+        "table_name": "transactions_table_2"
+      }
+    ],
+    "vendor_name": "Vendor Delta"
+  },
+  {
+    "data_product_description": "Enterprise financial analytics dataset containing detailed P&L statements, balance sheets, cash flow analysis, and financial ratios across business units and cost centers. Includes budget vs. actual comparisons, variance analysis, and forecasting models. This dataset adheres to international accounting standards and supports multi-currency reporting.",
+    "data_product_link": "https://example.com/products/dp-4",
+    "data_product_name": "Data Product 4",
+    "product_score": 0.79,
+    "tables": [
+      {
+        "dataset_score": 0.44,
+        "table_description": "Contains detailed orders data with comprehensive attributes.",
+        "table_fields": [
+          {
+            "field_description": "Creation timestamp",
+            "field_name": "created_at",
+            "similarity": 0.34
+          },
+          {
+            "field_description": "Item category",
+            "field_name": "category",
+            "similarity": 0.95
+          },
+          {
+            "field_description": "Unique identifier",
+            "field_name": "id",
+            "similarity": 0.36
+          },
+          {
+            "field_description": "Last update timestamp",
+            "field_name": "updated_at",
+            "similarity": 0.43
+          }
+        ],
+        "table_name": "orders_table_1"
+      },
+      {
+        "dataset_score": 0.66,
+        "table_description": "Contains detailed analytics data with comprehensive attributes.",
+        "table_fields": [
+          {
+            "field_description": "Email address",
+            "field_name": "email",
+            "similarity": 0.67
+          },
+          {
+            "field_description": "Item category",
+            "field_name": "category",
+            "similarity": 0.82
+          },
+          {
+            "field_description": "Detailed description",
+            "field_name": "description",
+            "similarity": 0.61
+          }
+        ],
+        "table_name": "analytics_table_2"
+      },
+      {
+        "dataset_score": 0.83,
+        "table_description": "Contains detailed analytics data with comprehensive attributes.",
+        "table_fields": [
+          {
+            "field_description": "Full name",
+            "field_name": "name",
+            "similarity": 0.92
+          },
+          {
+            "field_description": "Available quantity",
+            "field_name": "quantity",
+            "similarity": 0.92
+          },
+          {
+            "field_description": "Item category",
+            "field_name": "category",
+            "similarity": 0.93
+          },
+          {
+            "field_description": "Email address",
+            "field_name": "email",
+            "similarity": 0.56
+          },
+          {
+            "field_description": "Item price",
+            "field_name": "price",
+            "similarity": 0.91
+          }
+        ],
+        "table_name": "analytics_table_3"
+      }
+    ],
+    "vendor_name": "Vendor Epsilon"
+  },
+  {
+    "data_product_description": "Comprehensive dataset containing customer information for business analysis.",
+    "data_product_link": "https://example.com/products/dp-5",
+    "data_product_name": "Data Product 5",
+    "product_score": 0.97,
+    "tables": [
+      {
+        "dataset_score": 0.65,
+        "table_description": "Contains detailed orders data with comprehensive attributes.",
+        "table_fields": [
+          {
+            "field_description": "Email address",
+            "field_name": "email",
+            "similarity": 0.88
+          },
+          {
+            "field_description": "Item category",
+            "field_name": "category",
+            "similarity": 0.68
+          },
+          {
+            "field_description": "Available quantity",
+            "field_name": "quantity",
+            "similarity": 0.6
+          },
+          {
+            "field_description": "Unique identifier",
+            "field_name": "id",
+            "similarity": 0.49
+          },
+          {
+            "field_description": "Current status",
+            "field_name": "status",
+            "similarity": 0.71
+          }
+        ],
+        "table_name": "orders_table_1"
+      },
+      {
+        "dataset_score": 0.53,
+        "table_description": "Contains detailed analytics data with comprehensive attributes.",
+        "table_fields": [
+          {
+            "field_description": "Creation timestamp",
+            "field_name": "created_at",
+            "similarity": 0.67
+          },
+          {
+            "field_description": "Full name",
+            "field_name": "name",
+            "similarity": 0.3
+          },
+          {
+            "field_description": "Last update timestamp",
+            "field_name": "updated_at",
+            "similarity": 0.89
+          },
+          {
+            "field_description": "Available quantity",
+            "field_name": "quantity",
+            "similarity": 0.76
+          }
+        ],
+        "table_name": "analytics_table_2"
+      },
+      {
+        "dataset_score": 0.87,
+        "table_description": "Contains detailed products data with comprehensive attributes.",
+        "table_fields": [
+          {
+            "field_description": "Current status",
+            "field_name": "status",
+            "similarity": 0.53
+          },
+          {
+            "field_description": "Unique identifier",
+            "field_name": "id",
+            "similarity": 0.55
+          },
+          {
+            "field_description": "Full name",
+            "field_name": "name",
+            "similarity": 0.54
+          },
+          {
+            "field_description": "Available quantity",
+            "field_name": "quantity",
+            "similarity": 0.44
+          }
+        ],
+        "table_name": "products_table_3"
+      }
+    ],
+    "vendor_name": "Vendor Alpha"
+  },
+  {
+    "data_product_description": "Comprehensive HR analytics dataset containing employee performance metrics, compensation data, skills inventories, and workforce planning information. Features detailed turnover analysis, engagement survey results, and talent acquisition metrics. This anonymized dataset helps HR leaders make data-driven decisions about talent management and organizational development.",
+    "data_product_link": "https://example.com/products/dp-6",
+    "data_product_name": "Data Product 6",
+    "product_score": 0.57,
+    "tables": [
+      {
+        "dataset_score": 0.98,
+        "table_description": "Contains detailed orders data with comprehensive attributes.",
+        "table_fields": [
+          {
+            "field_description": "Item price",
+            "field_name": "price",
+            "similarity": 0.8
+          },
+          {
+            "field_description": "Last update timestamp",
+            "field_name": "updated_at",
+            "similarity": 0.73
+          },
+          {
+            "field_description": "Creation timestamp",
+            "field_name": "created_at",
+            "similarity": 0.61
+          },
+          {
+            "field_description": "Current status",
+            "field_name": "status",
+            "similarity": 0.65
+          },
+          {
+            "field_description": "Unique identifier",
+            "field_name": "id",
+            "similarity": 0.54
+          }
+        ],
+        "table_name": "orders_table_1"
+      },
+      {
+        "dataset_score": 0.46,
+        "table_description": "Contains detailed customers data with comprehensive attributes.",
+        "table_fields": [
+          {
+            "field_description": "Current status",
+            "field_name": "status",
+            "similarity": 0.43
+          },
+          {
+            "field_description": "Available quantity",
+            "field_name": "quantity",
+            "similarity": 0.9
+          },
+          {
+            "field_description": "Item price",
+            "field_name": "price",
+            "similarity": 0.9
+          },
+          {
+            "field_description": "Email address",
+            "field_name": "email",
+            "similarity": 0.53
+          },
+          {
+            "field_description": "Unique identifier",
+            "field_name": "id",
+            "similarity": 0.66
+          }
+        ],
+        "table_name": "customers_table_2"
+      },
+      {
+        "dataset_score": 0.92,
+        "table_description": "Contains detailed customers data with comprehensive attributes.",
+        "table_fields": [
+          {
+            "field_description": "Creation timestamp",
+            "field_name": "created_at",
+            "similarity": 0.65
+          },
+          {
+            "field_description": "Detailed description",
+            "field_name": "description",
+            "similarity": 0.53
+          },
+          {
+            "field_description": "Full name",
+            "field_name": "name",
+            "similarity": 0.43
+          },
+          {
+            "field_description": "Email address",
+            "field_name": "email",
+            "similarity": 0.66
+          },
+          {
+            "field_description": "Item category",
+            "field_name": "category",
+            "similarity": 0.71
+          }
+        ],
+        "table_name": "customers_table_3"
+      }
+    ],
+    "vendor_name": "Vendor Beta"
+  },
+  {
+    "data_product_description": "Comprehensive dataset containing inventory information for business analysis.",
+    "data_product_link": "https://example.com/products/dp-7",
+    "data_product_name": "Data Product 7",
+    "product_score": 0.69,
+    "tables": [
+      {
+        "dataset_score": 0.44,
+        "table_description": "Contains detailed transactions data with comprehensive attributes.",
+        "table_fields": [
+          {
+            "field_description": "Item category",
+            "field_name": "category",
+            "similarity": 0.95
+          },
+          {
+            "field_description": "Email address",
+            "field_name": "email",
+            "similarity": 0.56
+          },
+          {
+            "field_description": "Available quantity",
+            "field_name": "quantity",
+            "similarity": 0.8
+          },
+          {
+            "field_description": "Detailed description",
+            "field_name": "description",
+            "similarity": 0.8
+          }
+        ],
+        "table_name": "transactions_table_1"
+      },
+      {
+        "dataset_score": 0.7,
+        "table_description": "Contains detailed products data with comprehensive attributes.",
+        "table_fields": [
+          {
+            "field_description": "Detailed description",
+            "field_name": "description",
+            "similarity": 0.59
+          },
+          {
+            "field_description": "Current status",
+            "field_name": "status",
+            "similarity": 0.53
+          },
+          {
+            "field_description": "Last update timestamp",
+            "field_name": "updated_at",
+            "similarity": 0.65
+          }
+        ],
+        "table_name": "products_table_2"
+      },
+      {
+        "dataset_score": 0.5,
+        "table_description": "Contains detailed products data with comprehensive attributes.",
+        "table_fields": [
+          {
+            "field_description": "Last update timestamp",
+            "field_name": "updated_at",
+            "similarity": 0.74
+          },
+          {
+            "field_description": "Creation timestamp",
+            "field_name": "created_at",
+            "similarity": 0.59
+          },
+          {
+            "field_description": "Detailed description",
+            "field_name": "description",
+            "similarity": 0.57
+          },
+          {
+            "field_description": "Email address",
+            "field_name": "email",
+            "similarity": 0.91
+          },
+          {
+            "field_description": "Available quantity",
+            "field_name": "quantity",
+            "similarity": 0.57
+          }
+        ],
+        "table_name": "products_table_3"
+      }
+    ],
+    "vendor_name": "Vendor Gamma"
+  },
+  {
+    "data_product_description": "Multi-channel retail analytics dataset containing in-store and online performance metrics, basket analysis, pricing optimization data, and merchandising effectiveness. Features customer journey mapping across touchpoints with detailed conversion attribution. This dataset helps retailers create seamless omnichannel experiences and optimize store layouts.",
+    "data_product_link": "https://example.com/products/dp-8",
+    "data_product_name": "Data Product 8",
+    "product_score": 0.57,
+    "tables": [
+      {
+        "dataset_score": 0.75,
+        "table_description": "Contains detailed analytics data with comprehensive attributes.",
+        "table_fields": [
+          {
+            "field_description": "Creation timestamp",
+            "field_name": "created_at",
+            "similarity": 0.82
+          },
+          {
+            "field_description": "Item price",
+            "field_name": "price",
+            "similarity": 0.44
+          },
+          {
+            "field_description": "Current status",
+            "field_name": "status",
+            "similarity": 0.37
+          },
+          {
+            "field_description": "Available quantity",
+            "field_name": "quantity",
+            "similarity": 0.88
+          }
+        ],
+        "table_name": "analytics_table_1"
+      },
+      {
+        "dataset_score": 0.41,
+        "table_description": "Contains detailed analytics data with comprehensive attributes.",
+        "table_fields": [
+          {
+            "field_description": "Creation timestamp",
+            "field_name": "created_at",
+            "similarity": 0.42
+          },
+          {
+            "field_description": "Last update timestamp",
+            "field_name": "updated_at",
+            "similarity": 0.56
+          },
+          {
+            "field_description": "Current status",
+            "field_name": "status",
+            "similarity": 0.82
+          },
+          {
+            "field_description": "Detailed description",
+            "field_name": "description",
+            "similarity": 0.57
+          }
+        ],
+        "table_name": "analytics_table_2"
+      }
+    ],
+    "vendor_name": "Vendor Delta"
+  },
+  {
+    "data_product_description": "Comprehensive dataset containing financial information for business analysis.",
+    "data_product_link": "https://example.com/products/dp-9",
+    "data_product_name": "Data Product 9",
+    "product_score": 0.71,
+    "tables": [
+      {
+        "dataset_score": 0.58,
+        "table_description": "Contains detailed orders data with comprehensive attributes.",
+        "table_fields": [
+          {
+            "field_description": "Detailed description",
+            "field_name": "description",
+            "similarity": 0.57
+          },
+          {
+            "field_description": "Item price",
+            "field_name": "price",
+            "similarity": 0.85
+          },
+          {
+            "field_description": "Item category",
+            "field_name": "category",
+            "similarity": 0.98
+          },
+          {
+            "field_description": "Unique identifier",
+            "field_name": "id",
+            "similarity": 0.72
+          },
+          {
+            "field_description": "Email address",
+            "field_name": "email",
+            "similarity": 0.79
+          }
+        ],
+        "table_name": "orders_table_1"
+      },
+      {
+        "dataset_score": 0.5,
+        "table_description": "Contains detailed analytics data with comprehensive attributes.",
+        "table_fields": [
+          {
+            "field_description": "Unique identifier",
+            "field_name": "id",
+            "similarity": 0.56
+          },
+          {
+            "field_description": "Creation timestamp",
+            "field_name": "created_at",
+            "similarity": 0.62
+          },
+          {
+            "field_description": "Detailed description",
+            "field_name": "description",
+            "similarity": 0.84
+          }
+        ],
+        "table_name": "analytics_table_2"
+      },
+      {
+        "dataset_score": 0.69,
+        "table_description": "Contains detailed analytics data with comprehensive attributes.",
+        "table_fields": [
+          {
+            "field_description": "Creation timestamp",
+            "field_name": "created_at",
+            "similarity": 0.43
+          },
+          {
+            "field_description": "Item price",
+            "field_name": "price",
+            "similarity": 0.85
+          },
+          {
+            "field_description": "Detailed description",
+            "field_name": "description",
+            "similarity": 0.89
+          }
+        ],
+        "table_name": "analytics_table_3"
+      }
+    ],
+    "vendor_name": "Vendor Epsilon"
+  },
+  {
+    "data_product_description": "Comprehensive customer analytics dataset containing demographic information, purchase history, browsing behavior, and customer lifetime value metrics. This dataset is enriched with third-party data sources to provide a 360-degree view of customer profiles and segments. Perfect for marketing analytics teams looking to improve customer targeting and personalization strategies.",
+    "data_product_link": "https://example.com/products/dp-10",
+    "data_product_name": "Data Product 10",
+    "product_score": 0.55,
+    "tables": [
+      {
+        "dataset_score": 0.85,
+        "table_description": "Contains detailed orders data with comprehensive attributes.",
+        "table_fields": [
+          {
+            "field_description": "Email address",
+            "field_name": "email",
+            "similarity": 0.59
+          },
+          {
+            "field_description": "Last update timestamp",
+            "field_name": "updated_at",
+            "similarity": 0.93
+          },
+          {
+            "field_description": "Full name",
+            "field_name": "name",
+            "similarity": 0.53
+          },
+          {
+            "field_description": "Item price",
+            "field_name": "price",
+            "similarity": 0.87
+          }
+        ],
+        "table_name": "orders_table_1"
+      },
+      {
+        "dataset_score": 0.93,
+        "table_description": "Contains detailed analytics data with comprehensive attributes.",
+        "table_fields": [
+          {
+            "field_description": "Full name",
+            "field_name": "name",
+            "similarity": 0.9
+          },
+          {
+            "field_description": "Item category",
+            "field_name": "category",
+            "similarity": 0.84
+          },
+          {
+            "field_description": "Current status",
+            "field_name": "status",
+            "similarity": 0.41
+          }
+        ],
+        "table_name": "analytics_table_2"
+      },
+      {
+        "dataset_score": 0.52,
+        "table_description": "Contains detailed transactions data with comprehensive attributes.",
+        "table_fields": [
+          {
+            "field_description": "Current status",
+            "field_name": "status",
+            "similarity": 0.82
+          },
+          {
+            "field_description": "Email address",
+            "field_name": "email",
+            "similarity": 0.99
+          },
+          {
+            "field_description": "Item category",
+            "field_name": "category",
+            "similarity": 0.6
+          }
+        ],
+        "table_name": "transactions_table_3"
+      }
+    ],
+    "vendor_name": "Vendor Alpha"
+  }
+]

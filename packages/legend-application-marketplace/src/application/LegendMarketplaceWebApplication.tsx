@@ -30,7 +30,8 @@ import {
   useLegendMarketplaceBaseStore,
 } from './LegendMarketplaceFrameworkProvider.js';
 import { LEGEND_MARKETPLACE_ROUTE_PATTERN } from '../__lib__/LegendMarketplaceNavigation.js';
-import { LegendMarketplaceHome } from '../pages/home/LegendMarketplaceHome.js';
+import { LegendMarketplaceHome } from '../pages/Home/LegendMarketplaceHome.js';
+import { LegendMarketplaceSearchResults } from '../pages/SearchResults/LegendMarketplaceSearchResults.js';
 
 const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();
@@ -93,6 +94,10 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.DEFAULT}
               element={<LegendMarketplaceHome />}
+            />
+            <Route
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.SEARCH_RESULTS}
+              element={<LegendMarketplaceSearchResults />}
             />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>

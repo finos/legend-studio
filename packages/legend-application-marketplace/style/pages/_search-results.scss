@@ -1,0 +1,104 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+.legend-marketplace-search-results {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+
+  &__content {
+    @include flexVCenter;
+
+    flex-direction: column;
+    height: calc(100% - 6rem);
+    width: 100%;
+    padding: 2rem;
+  }
+
+  &__search-bar {
+    margin-top: 2rem;
+    margin-bottom: 4rem;
+    width: 60%;
+    max-width: 60rem;
+  }
+
+  &__results {
+    &__cards {
+      width: 100%;
+      max-width: 300rem;
+      padding: 2rem;
+    }
+  }
+}
+
+.legend-marketplace-search-results__drawer {
+  padding: 2rem;
+
+  &__vendor-name {
+    font-weight: 500;
+  }
+
+  &__data-product-name {
+    font-size: 2rem;
+    font-weight: 500;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    color: var(--color-blue-100);
+  }
+
+  &__data-product-description {
+    font-size: 1.6rem;
+    margin-bottom: 1rem;
+  }
+
+  &__tables {
+    margin-top: 2rem;
+  }
+
+  .legend-marketplace-search-results__drawer__table-card {
+    margin-top: 2rem;
+    box-shadow: 5px 5px 5px rgb(0 0 0 / 10%);
+    border-radius: 2rem;
+
+    &__content {
+      margin-left: 0;
+      padding: 2rem;
+    }
+
+    &__name {
+      font-size: 1.6rem;
+    }
+
+    &__description {
+      font-size: 1.6rem;
+      margin-top: 1rem;
+    }
+
+    &__table {
+      margin-top: 1rem;
+
+      table,
+      th,
+      td {
+        border: 1px solid var(--color-dark-grey-500);
+        padding: 1rem;
+        font-size: 1.4rem;
+      }
+    }
+  }
+}
