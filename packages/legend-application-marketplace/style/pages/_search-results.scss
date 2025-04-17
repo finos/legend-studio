@@ -45,3 +45,60 @@
     }
   }
 }
+
+.legend-marketplace-search-results__drawer {
+  padding: 2rem;
+
+  &__vendor-name {
+    font-weight: 500;
+  }
+
+  &__data-product-name {
+    font-size: 2rem;
+    font-weight: 500;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    color: var(--color-blue-100);
+  }
+
+  &__data-product-description {
+    font-size: 1.6rem;
+    margin-bottom: 1rem;
+  }
+
+  &__tables {
+    margin-top: 2rem;
+  }
+
+  .legend-marketplace-search-results__drawer__table-card {
+    margin-top: 2rem;
+    box-shadow: 5px 5px 5px rgb(0 0 0 / 10%);
+    border-radius: 2rem;
+
+    &__content {
+      margin-left: 0;
+      padding: 2rem;
+    }
+
+    &__name {
+      font-size: 1.6rem;
+    }
+
+    &__description {
+      font-size: 1.6rem;
+      margin-top: 1rem;
+    }
+
+    &__table {
+      margin-top: 1rem;
+
+      table,
+      th,
+      td {
+        border: 1px solid var(--color-dark-grey-500);
+        padding: 1rem;
+        font-size: 1.4rem;
+      }
+    }
+  }
+}
