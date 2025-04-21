@@ -122,13 +122,13 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         (yield this.depotServerClient.getEntitiesSummaryByClassifier(
           CORE_PURE_PATH.DATA_PRODUCT,
           {
-            scope: DepotScope.SNAPSHOT,
+            scope: DepotScope.RELEASES,
             summary: true,
           },
         )) as PlainObject<StoredSummaryEntity>[]
       ).map((p) => StoredSummaryEntity.serialization.fromJson(p));
       // for now we will do 2 calls;
-      const productsE = (
+      const allProducts = (
         (yield Promise.all(
           summaryP.map((p) =>
             this.depotServerClient
@@ -144,8 +144,10 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
               })),
           ),
         )) as DataProductEntity[]
-      ).map((e) => new DataProductState(e, this));
-      this.setProducts(productsE);
+      )
+        .map((e) => new DataProductState(e, this))
+        .sort((a, b) => a.product.name.localeCompare(b.product.name));
+      this.setProducts(allProducts);
       this.loadingProductsState.complete();
     } catch (error) {
       assertErrorThrown(error);

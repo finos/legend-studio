@@ -56,3 +56,17 @@ export const generateVendorDetailsRoute = (vendorName: string): string =>
   generatePath(LEGEND_MARKETPLACE_ROUTE_PATTERN.VENDOR_DETAILS, {
     vendorName,
   });
+
+/**
+ * @external_application_navigation This depends on Legend Studio routing and is hardcoded so it's potentially brittle
+ */
+export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl =
+  (
+    studioApplicationUrl: string,
+    projectId: string,
+    versionId: string | undefined,
+    entityPath: string | undefined,
+  ): string =>
+    `${studioApplicationUrl}/view/${projectId}${
+      versionId ? `/version/${versionId}` : ''
+    }${entityPath ? `/entity/${entityPath}` : ''}`;

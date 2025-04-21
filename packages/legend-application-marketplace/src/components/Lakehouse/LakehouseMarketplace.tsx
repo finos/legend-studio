@@ -28,6 +28,15 @@ import { LegendMarketplaceHeader } from '../Header/LegendMarketplaceHeader.js';
 import { Grid2 as Grid } from '@mui/material';
 import { LegendMarketplaceVendorCard } from '../VendorCard/LegendMarketplaceVendorCard.js';
 import type { DataAsset } from '@finos/legend-server-marketplace';
+import type { DataProductState } from '../../stores/lakehouse/MarketplaceLakehouseStore.js';
+import {
+  LATEST_VERSION_ALIAS,
+  StoreProjectData,
+  VersionedProjectData,
+} from '@finos/legend-server-depot';
+import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
+import { EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl } from '../../__lib__/LegendMarketplaceNavigation.js';
+import { flowResult } from 'mobx';
 
 export const LakehouseMarketplace = withMarketplaceLakehouseStore(
   observer(() => {
@@ -36,6 +45,47 @@ export const LakehouseMarketplace = withMarketplaceLakehouseStore(
     useEffect(() => {
       marketPlaceStore.init();
     }, [marketPlaceStore]);
+
+    const openDataProduct = async (state: DataProductState): Promise<void> => {
+      const path = `${state.product.package}::${state.product.name}`;
+      try {
+        const studioUrl = guaranteeNonNullable(
+          marketPlaceStore.applicationStore.config.studioServerUrl,
+          'studio url required',
+        );
+        const project = StoreProjectData.serialization.fromJson(
+          await marketPlaceStore.depotServerClient.getProject(
+            state.productEntity.groupId,
+            state.productEntity.artifactId,
+          ),
+        );
+        const versionId =
+          state.productEntity.versionId === LATEST_VERSION_ALIAS
+            ? VersionedProjectData.serialization.fromJson(
+                await marketPlaceStore.depotServerClient.getLatestVersion(
+                  state.productEntity.groupId,
+                  state.productEntity.artifactId,
+                ),
+              ).versionId
+            : state.productEntity.versionId;
+
+        marketPlaceStore.applicationStore.navigationService.navigator.visitAddress(
+          EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl(
+            studioUrl,
+            project.projectId,
+            versionId,
+            path,
+          ),
+        );
+      } catch (error) {
+        assertErrorThrown(error);
+        marketPlaceStore.applicationStore.notificationService.notifyError(
+          path
+            ? `Can't visit element of path: '${path}'`
+            : `Can't visit project`,
+        );
+      }
+    };
 
     return (
       <div className="app__page">
@@ -56,25 +106,21 @@ export const LakehouseMarketplace = withMarketplaceLakehouseStore(
                     columns={{ xs: 1, sm: 2, md: 3, xl: 6 }}
                     sx={{ justifyContent: 'center' }}
                   >
-                    {marketPlaceStore.productStates
-                      ?.map((e) => e.dataSet)
-                      .map((asset) => (
-                        <Grid
-                          key={`${asset.provider}.${asset.type}.${asset.description}`}
-                          size={1}
-                        >
-                          <LegendMarketplaceVendorCard
-                            dataAsset={asset}
-                            onClick={(dataAsset: DataAsset) => {
-                              {
-                                // TODO: for now lets have it take you to the studio project
-                                // eslint-disable-next-line no-console
-                                console.log('clicked');
-                              }
-                            }}
-                          />
-                        </Grid>
-                      ))}
+                    {marketPlaceStore.productStates?.map((dpState) => (
+                      <Grid
+                        key={`${dpState.dataSet.provider}.${dpState.dataSet.type}.${dpState.dataSet.description}`}
+                        size={1}
+                      >
+                        <LegendMarketplaceVendorCard
+                          dataAsset={dpState.dataSet}
+                          onClick={(dataAsset: DataAsset) => {
+                            {
+                              flowResult(openDataProduct(dpState));
+                            }
+                          }}
+                        />
+                      </Grid>
+                    ))}
                   </Grid>
                 </div>
               </div>

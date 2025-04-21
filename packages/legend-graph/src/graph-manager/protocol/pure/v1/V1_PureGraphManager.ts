@@ -1183,6 +1183,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_DATA_ELEMENTS__SUCCESS,
     );
 
+    // build data products
+    graphBuilderState.setMessage(`Building data products...`);
+    await this.buildDataProducts(graph, inputs, options);
+    stopWatch.record(
+      GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_DATA_PRODUCTS__SUCCESS,
+    );
+
     // build other elements
     graphBuilderState.setMessage(`Building other elements...`);
     await this.buildFileGenerations(graph, inputs, options);
@@ -1609,6 +1616,25 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.dataElements.map((element) =>
+          this.visitWithGraphBuilderErrorHandling(
+            element,
+            new V1_ElementSecondPassBuilder(
+              this.getBuilderContext(graph, input.model, element, options),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  private async buildDataProducts(
+    graph: PureModel,
+    inputs: V1_PureGraphBuilderInput[],
+    options?: GraphBuilderOptions,
+  ): Promise<void> {
+    await Promise.all(
+      inputs.flatMap((input) =>
+        input.data.products.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ElementSecondPassBuilder(
