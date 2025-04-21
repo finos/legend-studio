@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.18.114
+
+### Patch Changes
+
+- [#4013](https://github.com/finos/legend-studio/pull/4013) [`b11c369`](https://github.com/finos/legend-studio/commit/b11c3698da37d0af502556365f13aec5c62d4729) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add editor of data proudct (lakehouse)
+
 ## 28.18.113
 
 ## 28.18.112

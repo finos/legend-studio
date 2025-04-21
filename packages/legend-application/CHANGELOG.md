@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 16.0.36
+
+### Patch Changes
+
+- [#4010](https://github.com/finos/legend-studio/pull/4010) [`f0111cf`](https://github.com/finos/legend-studio/commit/f0111cf28045129a7bc27e06d3c0b285b0d8ffb0) ([@travisstebbins](https://github.com/travisstebbins)) - Add enableTransitions property to ApplicationComponentFrameworkProvider/LegendStyleProvider
+
 ## 16.0.35
 
 ## 16.0.34

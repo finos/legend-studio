@@ -1,5 +1,13 @@
 # @finos/legend-application-marketplace-bootstrap
 
+## 13.47.0
+
+### Patch Changes
+
+- [#4013](https://github.com/finos/legend-studio/pull/4013) [`b11c369`](https://github.com/finos/legend-studio/commit/b11c3698da37d0af502556365f13aec5c62d4729) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Basic view of all data products
+
+- [#4006](https://github.com/finos/legend-studio/pull/4006) [`aa70eff`](https://github.com/finos/legend-studio/commit/aa70eff09347e043ca3af66767e4ad94d6f09a90) ([@travisstebbins](https://github.com/travisstebbins)) - Create Legend Marketplace home page
+
 ## 13.46.0
 
 ### Patch Changes
