@@ -15,7 +15,7 @@
  */
 
 export * from './models/DataAsset.js';
-export * from './models/SearchResult.js';
+export * from './models/ProductSearchResult.js';
 export * from './models/Vendor.js';
 
 export { MarketplaceServerClient } from './MarketplaceServerClient.js';

@@ -16,7 +16,7 @@
 
 import { type RenderResult, render, waitFor } from '@testing-library/react';
 import { type AbstractPlugin, type AbstractPreset } from '@finos/legend-shared';
-import { createMock } from '@finos/legend-shared/test';
+import { createMock, createSpy } from '@finos/legend-shared/test';
 import {
   ApplicationStore,
   ApplicationStoreProvider,
@@ -28,12 +28,14 @@ import {
   LegendMarketplaceBaseStore,
 } from '../../stores/LegendMarketplaceBaseStore.js';
 import { LEGEND_MARKETPLACE_ROUTE_PATTERN } from '../../__lib__/LegendMarketplaceNavigation.js';
-import { LegendMarketplaceHome } from '../../pages/home/LegendMarketplaceHome.js';
+import { LegendMarketplaceHome } from '../../pages/Home/LegendMarketplaceHome.js';
 import { LEGEND_MARKETPLACE_TEST_ID } from '../../__lib__/LegendMarketplaceTesting.js';
 import { LegendMarketplacePluginManager } from '../../application/LegendMarketplacePluginManager.js';
 import { Core_LegendMarketplaceApplicationPlugin } from '../../application/extensions/Core_LegendMarketplaceApplicationPlugin.js';
 import { TEST__getTestLegendMarketplaceApplicationConfig } from '../../application/__test-utils__/LegendMarketplaceApplicationTestUtils.js';
 import { LegendMarketplaceFrameworkProvider } from '../../application/LegendMarketplaceFrameworkProvider.js';
+import searchResults from './TEST_DATA__SearchResults.json' with { type: 'json' };
+import { LegendMarketplaceSearchResults } from '../../pages/SearchResults/LegendMarketplaceSearchResults.js';
 
 export const TEST__provideMockedLegendMarketplaceBaseStore =
   async (customization?: {
@@ -71,17 +73,27 @@ export const TEST__provideMockedLegendMarketplaceBaseStore =
 
 export const TEST__setUpMarketplace = async (
   MOCK__store: LegendMarketplaceBaseStore,
+  route?: string,
 ): Promise<{
   renderResult: RenderResult;
 }> => {
+  createSpy(
+    MOCK__store.marketplaceServerClient,
+    'semanticSearch',
+  ).mockResolvedValue(searchResults);
+
   const renderResult = render(
     <ApplicationStoreProvider store={MOCK__store.applicationStore}>
-      <TEST__BrowserEnvironmentProvider initialEntries={['/']}>
+      <TEST__BrowserEnvironmentProvider initialEntries={[route ?? '/']}>
         <LegendMarketplaceFrameworkProvider>
           <Routes>
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.DEFAULT}
               element={<LegendMarketplaceHome />}
+            />
+            <Route
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.SEARCH_RESULTS}
+              element={<LegendMarketplaceSearchResults />}
             />
           </Routes>
         </LegendMarketplaceFrameworkProvider>

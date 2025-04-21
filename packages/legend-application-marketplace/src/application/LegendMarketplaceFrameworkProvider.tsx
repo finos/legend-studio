@@ -62,7 +62,7 @@ export const useLegendMarketplaceBaseStore = (): LegendMarketplaceBaseStore =>
 export const LegendMarketplaceFrameworkProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => (
-  <ApplicationFrameworkProvider simple={true}>
+  <ApplicationFrameworkProvider simple={true} enableTransitions={true}>
     <LegendMarketplaceBaseStoreProvider>
       {children}
     </LegendMarketplaceBaseStoreProvider>

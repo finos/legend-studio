@@ -17,11 +17,13 @@
 @forward 'app';
 
 @forward 'components/header';
+@forward 'components/product-search-card';
 @forward 'components/search-bar';
 @forward 'components/vendor-card';
 
 @forward 'pages/home';
 @forward 'pages/not-found-screen';
+@forward 'pages/search-results';
 
 :root {
   --color-legacylight-light-grey-100: #edf0f1;

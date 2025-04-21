@@ -16,16 +16,28 @@
 
 import { type PlainObject, AbstractServerClient } from '@finos/legend-shared';
 import type { Vendor } from './models/Vendor.js';
-import type { SearchResult } from './models/SearchResult.js';
+import type { ProductSearchResult } from './models/ProductSearchResult.js';
 
-export interface DepotServerClientConfig {
+export interface MarketplaceServerClientConfig {
   serverUrl: string;
 }
 
+interface MarketplaceServerResponse<T> {
+  response_code: string;
+  status: string;
+  results: T;
+}
+
 export class MarketplaceServerClient extends AbstractServerClient {
-  constructor(config: DepotServerClientConfig) {
+  constructor(config: MarketplaceServerClientConfig) {
     super({
       baseUrl: config.serverUrl,
+      networkClientOptions: {
+        // NOTE: with the way we setup this server, we allow any (*) origin for CORS
+        // so here we have to explicit omit credentials
+        // See https://fetch.spec.whatwg.org/#concept-request-credentials-mode
+        credentials: 'omit',
+      },
     });
   }
 
@@ -39,12 +51,16 @@ export class MarketplaceServerClient extends AbstractServerClient {
 
   private _search = (): string => `${this.baseUrl}/v1/search`;
 
-  semanticSearch = (
+  semanticSearch = async (
     query: string,
     vendorName: string,
     limit: number,
-  ): Promise<PlainObject<SearchResult>[]> =>
-    this.get(
-      `${this._search()}/semantic/catalog?query=${query}&vendor_name=${vendorName}&limit=${limit}`,
-    );
+  ): Promise<PlainObject<ProductSearchResult>[]> =>
+    (
+      await this.get<
+        MarketplaceServerResponse<PlainObject<ProductSearchResult>[]>
+      >(
+        `${this._search()}/semantic/catalog?query=${query}&vendor_name=${vendorName}&limit=${limit}`,
+      )
+    ).results;
 }

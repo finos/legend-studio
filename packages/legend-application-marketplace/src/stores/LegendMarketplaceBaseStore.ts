@@ -60,6 +60,9 @@ export class LegendMarketplaceBaseStore {
     this.marketplaceServerClient = new MarketplaceServerClient({
       serverUrl: this.applicationStore.config.marketplaceServerUrl,
     });
+    this.marketplaceServerClient.setTracerService(
+      this.applicationStore.tracerService,
+    );
 
     // depot
     this.depotServerClient = new DepotServerClient({

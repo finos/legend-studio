@@ -24,6 +24,8 @@ import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { LEGEND_MARKETPLACE_TEST_ID } from '../../__lib__/LegendMarketplaceTesting.js';
 import { LegendMarketplaceAppInfo } from './LegendMarketplaceAppInfo.js';
+import { useApplicationStore } from '@finos/legend-application';
+import { LEGEND_MARKETPLACE_ROUTE_PATTERN } from '../../__lib__/LegendMarketplaceNavigation.js';
 
 const LegendMarketplaceHeaderMenu = observer(() => {
   // about modal
@@ -56,13 +58,26 @@ const LegendMarketplaceHeaderMenu = observer(() => {
 });
 
 export const LegendMarketplaceHeader = observer(() => {
+  const applicationStore = useApplicationStore();
+
+  const navigateToHome = (): void => {
+    applicationStore.navigationService.navigator.goToLocation(
+      LEGEND_MARKETPLACE_ROUTE_PATTERN.DEFAULT,
+    );
+  };
+
   return (
     <div
       className="legend-marketplace-header"
       data-testid={LEGEND_MARKETPLACE_TEST_ID.HEADER}
     >
       <LegendMarketplaceHeaderMenu />
-      <div className="legend-marketplace-header__name">Legend Marketplace</div>
+      <div
+        className="legend-marketplace-header__name"
+        onClick={() => navigateToHome()}
+      >
+        Legend Marketplace
+      </div>
     </div>
   );
 });
