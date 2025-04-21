@@ -32,6 +32,7 @@ import { getCurrentUserIDFromEngineServer } from '@finos/legend-graph';
 import type { LegendMarketplaceApplicationConfig } from '../application/LegendMarketplaceApplicationConfig.js';
 import type { LegendMarketplacePluginManager } from '../application/LegendMarketplacePluginManager.js';
 import { LegendMarketplaceEventHelper } from '../__lib__/LegendMarketplaceEventHelper.js';
+import { MarketplaceLakehouseServerClient } from './MarketplaceLakehouseServerClient.js';
 
 export type LegendMarketplaceApplicationStore = ApplicationStore<
   LegendMarketplaceApplicationConfig,
@@ -42,6 +43,7 @@ export class LegendMarketplaceBaseStore {
   readonly applicationStore: LegendMarketplaceApplicationStore;
   readonly marketplaceServerClient: MarketplaceServerClient;
   readonly depotServerClient: DepotServerClient;
+  readonly lakehouseServerClient: MarketplaceLakehouseServerClient | undefined;
   readonly pluginManager: LegendMarketplacePluginManager;
 
   readonly initState = ActionState.create();
@@ -66,6 +68,12 @@ export class LegendMarketplaceBaseStore {
     this.depotServerClient.setTracerService(
       this.applicationStore.tracerService,
     );
+    if (this.applicationStore.config.lakehouseServerUrl) {
+      // lakehouse server
+      this.lakehouseServerClient = new MarketplaceLakehouseServerClient({
+        baseUrl: this.applicationStore.config.lakehouseServerUrl,
+      });
+    }
   }
 
   *initialize(): GeneratorFn<void> {

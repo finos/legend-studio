@@ -15,6 +15,7 @@
  */
 
 import {
+  AccessPointIcon,
   BusinessTimeIcon,
   DatabaseIcon,
   FileCodeIcon,
@@ -153,6 +154,12 @@ export const PURE_DataIcon: React.FC = () => (
 export const PURE_SnowflakeAppIcon: React.FC = () => (
   <div className="icon color--snowflake-app">
     <Snowflake_BrandIcon />
+  </div>
+);
+
+export const PURE_DataProductIcon: React.FC = () => (
+  <div className="icon color--snowflake-app">
+    <AccessPointIcon />
   </div>
 );
 

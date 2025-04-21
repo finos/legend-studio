@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { createModelSchema, optional, primitive } from 'serializr';
+import { createModelSchema } from 'serializr';
 import {
   type PlainObject,
   assertNonNullable,
@@ -28,16 +28,8 @@ import {
 } from '@finos/legend-application';
 
 class LegendMarketplaceApplicationCoreOptions {
-  /**
-   * This flag is for any feature that is not production ready.
-   * Used to iterate over features until they are ready for production.
-   */
-  NonProductionFeatureFlag = false;
-
   private static readonly serialization = new SerializationFactory(
-    createModelSchema(LegendMarketplaceApplicationCoreOptions, {
-      NonProductionFeatureFlag: optional(primitive()),
-    }),
+    createModelSchema(LegendMarketplaceApplicationCoreOptions, {}),
   );
 
   static create(
@@ -55,10 +47,11 @@ export interface LegendMarketplaceApplicationConfigurationData
   depot: { url: string };
   engine: {
     url: string;
-    queryUrl?: string;
   };
-  studio?: { url: string };
-  query?: { url: string };
+  lakehouse?: {
+    // can expand this if more than one server is required
+    url: string;
+  };
 }
 
 export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig {
@@ -66,10 +59,8 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
 
   readonly marketplaceServerUrl: string;
   readonly engineServerUrl: string;
-  readonly engineQueryServerUrl?: string | undefined;
   readonly depotServerUrl: string;
-  readonly studioApplicationUrl?: string | undefined;
-  readonly queryApplicationUrl?: string | undefined;
+  readonly lakehouseServerUrl?: string;
 
   constructor(
     input: LegendApplicationConfigurationInput<LegendMarketplaceApplicationConfigurationData>,
@@ -99,11 +90,6 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
         `Can't configure application: 'engine.url' field is missing or empty`,
       ),
     );
-    if (input.configData.engine.queryUrl) {
-      this.engineQueryServerUrl = LegendApplicationConfig.resolveAbsoluteUrl(
-        input.configData.engine.queryUrl,
-      );
-    }
 
     // depot
     assertNonNullable(
@@ -117,17 +103,14 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
       ),
     );
 
-    // studio
-    if (input.configData.studio?.url) {
-      this.studioApplicationUrl = LegendApplicationConfig.resolveAbsoluteUrl(
-        input.configData.studio.url,
-      );
-    }
+    // lakehouse
 
-    // query
-    if (input.configData.query?.url) {
-      this.queryApplicationUrl = LegendApplicationConfig.resolveAbsoluteUrl(
-        input.configData.query.url,
+    if (input.configData.lakehouse) {
+      this.lakehouseServerUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+        guaranteeNonEmptyString(
+          input.configData.depot.url,
+          `Can't configure application: 'lakehouse.url' field is missing or empty`,
+        ),
       );
     }
 

@@ -35,6 +35,7 @@ import {
   INTERNAL__UnknownFunctionActivator,
   SnowflakeApp,
   HostedService,
+  DataProduct,
 } from '@finos/legend-graph';
 import {
   type Clazz,
@@ -64,6 +65,7 @@ import { INTERNAL__UnknownFunctionActivatorEdtiorState } from './editor-state/el
 import { SnowflakeAppFunctionActivatorEdtiorState } from './editor-state/element-editor-state/function-activator/SnowflakeAppFunctionActivatorEditorState.js';
 import { HostedServiceFunctionActivatorEditorState } from './editor-state/element-editor-state/function-activator/HostedServiceFunctionActivatorEditorState.js';
 import { ArtifactGenerationViewerState } from './editor-state/ArtifactGenerationViewerState.js';
+import { DataProductEditorState } from './editor-state/element-editor-state/dataProduct/DataProductEditorState.js';
 
 export class EditorTabManagerState extends TabManagerState {
   readonly editorStore: EditorStore;
@@ -173,6 +175,8 @@ export class EditorTabManagerState extends TabManagerState {
       return new MappingEditorState(this.editorStore, element);
     } else if (element instanceof Service) {
       return new ServiceEditorState(this.editorStore, element);
+    } else if (element instanceof DataProduct) {
+      return new DataProductEditorState(this.editorStore, element);
     } else if (element instanceof GenerationSpecification) {
       return new GenerationSpecificationEditorState(this.editorStore, element);
     } else if (element instanceof FileGenerationSpecification) {

@@ -88,6 +88,8 @@ import {
 } from '../../workspace-setup/WorkspaceSetup.js';
 import { HostedServiceFunctionActivatorEditorState } from '../../../stores/editor/editor-state/element-editor-state/function-activator/HostedServiceFunctionActivatorEditorState.js';
 import { HostedServiceFunctionActivatorEditor } from './function-activator/HostedServiceFunctionActivatorEditor.js';
+import { DataProductEditorState } from '../../../stores/editor/editor-state/element-editor-state/dataProduct/DataProductEditorState.js';
+import { DataProductEditor } from './dataProduct/DataPoductEditor.js';
 
 export const ViewerEditorGroupSplashScreen: React.FC = () => {
   const commandListWidth = 300;
@@ -274,6 +276,8 @@ export const EditorGroup = observer(() => {
             return <MappingEditor key={currentTabState.uuid} />;
           } else if (currentTabState instanceof ServiceEditorState) {
             return <ServiceEditor key={currentTabState.uuid} />;
+          } else if (currentTabState instanceof DataProductEditorState) {
+            return <DataProductEditor key={currentTabState.uuid} />;
           } else if (currentTabState instanceof PackageableRuntimeEditorState) {
             return <PackageableRuntimeEditor key={currentTabState.uuid} />;
           } else if (

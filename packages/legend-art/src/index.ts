@@ -36,6 +36,7 @@ export * from './button/Button.js';
 export * from './button/Switch.js';
 
 export * from './card/BaseCard.js';
+export * from './card/Box.js';
 
 export * from './dialog/Dialog.js';
 export * from './dialog/NonBlockingDialog.js';

@@ -360,6 +360,7 @@ import {
   V1_buildFunctionSignature,
   V1_createGenericTypeWithElementPath,
 } from './helpers/V1_DomainHelper.js';
+import { V1_DataProduct } from './model/packageableElements/dataProduct/V1_DataProduct.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -387,6 +388,7 @@ class V1_PureModelContextDataIndex {
 
   services: V1_Service[] = [];
   executionEnvironments: V1_ExecutionEnvironmentInstance[] = [];
+  products: V1_DataProduct[] = [];
 
   INTERNAL__UnknownElement: V1_INTERNAL__UnknownElement[] = [];
   INTERNAL__unknownElements: V1_INTERNAL__UnknownPackageableElement[] = [];
@@ -469,6 +471,8 @@ export const V1_indexPureModelContextData = (
       index.dataElements.push(el);
     } else if (el instanceof V1_ExecutionEnvironmentInstance) {
       index.executionEnvironments.push(el);
+    } else if (el instanceof V1_DataProduct) {
+      index.products.push(el);
     } else {
       const clazz = getClass<V1_PackageableElement>(el);
       if (otherElementsByClass.has(clazz)) {
@@ -4445,6 +4449,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       return CORE_PURE_PATH.SNOWFLAKE_APP;
     } else if (protocol instanceof V1_HostedService) {
       return CORE_PURE_PATH.HOSTED_SERVICE;
+    } else if (protocol instanceof V1_DataProduct) {
+      return CORE_PURE_PATH.DATA_PRODUCT;
     }
     const extraElementProtocolClassifierPathGetters = this.pluginManager
       .getPureProtocolProcessorPlugins()

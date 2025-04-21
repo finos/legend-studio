@@ -159,6 +159,11 @@ export { V1_ExternalFormatDescription } from './graph-manager/protocol/pure/v1/e
 export { V1_ExternalFormatModelGenerationInput } from './graph-manager/protocol/pure/v1/engine/externalFormat/V1_ExternalFormatModelGeneration.js';
 export { V1_GenerateSchemaInput } from './graph-manager/protocol/pure/v1/engine/externalFormat/V1_GenerateSchemaInput.js';
 export {
+  V1_DataProduct,
+  V1_LakehouseAccessPoint,
+  V1_AccessPoint,
+} from './graph-manager/protocol/pure/v1/model/packageableElements/dataProduct/V1_DataProduct.js';
+export {
   V1_ExecuteInput,
   V1_TestDataGenerationExecutionInput,
   V1_TestDataGenerationExecutionWithSeedInput,
@@ -448,6 +453,7 @@ export {
   V1_RawValueSpecificationType,
   V1_deserializeRawValueSpecificationType,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper.js';
+export { V1_dataProductModelSchema } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DataProductSerializationHelper.js';
 export { V1_transformPropertyReference } from './graph-manager/protocol/pure/v1/transformation/pureGraph/from/V1_MappingTransformer.js';
 export * from './graph-manager/protocol/pure/v1/transformation/pureGraph/from/V1_DataElementTransformer.js';
 export {
@@ -552,6 +558,16 @@ export * from './graph-manager/action/changeDetection/DSL_Service_ObserverHelper
 export * from './graph-manager/action/changeDetection/DSL_Generation_ObserverHelper.js';
 export * from './graph-manager/action/changeDetection/Testable_ObserverHelper.js';
 export * from './graph-manager/action/changeDetection/DSL_FunctionActivatorObserverHelper.js';
+
+// ------------------------------------- Data Product --------------------------------------------
+
+export {
+  DataProduct,
+  LakehouseAccessPoint,
+  LakehouseTargetEnv,
+  AccessPoint,
+} from './graph/metamodel/pure/dataProduct/DataProduct.js';
+export * from './graph-manager/action/changeDetection/DataProductObserveHelper.js';
 
 // ------------------------------------- DSL Data --------------------------------------------
 

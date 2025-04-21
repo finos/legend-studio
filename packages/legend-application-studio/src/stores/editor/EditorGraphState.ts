@@ -90,6 +90,7 @@ import {
   SnowflakeApp,
   GraphEntities,
   HostedService,
+  DataProduct,
 } from '@finos/legend-graph';
 import { CONFIGURATION_EDITOR_TAB } from './editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
 import { PACKAGEABLE_ELEMENT_TYPE } from './utils/ModelClassifierUtils.js';
@@ -854,6 +855,8 @@ export class EditorGraphState {
       return PACKAGEABLE_ELEMENT_TYPE.SNOWFLAKE_APP;
     } else if (element instanceof HostedService) {
       return PACKAGEABLE_ELEMENT_TYPE.HOSTED_SERVICE;
+    } else if (element instanceof DataProduct) {
+      return PACKAGEABLE_ELEMENT_TYPE._DATA_PRODUCT;
     }
     const extraElementTypeLabelGetters = this.editorStore.pluginManager
       .getApplicationPlugins()

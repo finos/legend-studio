@@ -44,6 +44,7 @@ import {
   PURE_SnowflakeAppIcon,
   LaunchIcon,
   LinkIcon,
+  PURE_DataProductIcon,
 } from '@finos/legend-art';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../stores/editor/utils/ModelClassifierUtils.js';
 
@@ -90,6 +91,8 @@ export const getElementTypeIcon = (
       return <PURE_ServiceIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.CONNECTION:
       return <PURE_ConnectionIcon />;
+    case PACKAGEABLE_ELEMENT_TYPE._DATA_PRODUCT:
+      return <PURE_DataProductIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.TEMPORARY__LOCAL_CONNECTION:
       return <LinkIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.RUNTIME:

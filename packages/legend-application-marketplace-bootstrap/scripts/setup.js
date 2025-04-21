@@ -44,26 +44,18 @@ export const setup = (outputDir) => {
         marketplace: {
           url: 'http://localhost:6400/api',
         },
+        lakehouse: {
+          url: 'http://localhost:6400/api',
+        },
         engine: {
           url: 'http://localhost:6300/api',
         },
         depot: {
           url: 'http://localhost:6200/depot/api',
         },
-        studio: {
-          url: 'http://localhost:9000/studio',
-        },
-        query: {
-          url: 'http://localhost:9001/query',
-        },
         documentation: {
           url: 'https://legend.finos.org',
           registry: [],
-        },
-        extensions: {
-          core: {
-            NonProductionFeatureFlag: true,
-          },
         },
       },
       undefined,

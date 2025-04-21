@@ -38,7 +38,6 @@ export class LegendMarketplaceWebApplication {
       .setup({ baseAddress: baseUrl })
       .withPresets(LegendMarketplaceWebApplication.getPresetCollection())
       .withPlugins(LegendMarketplaceWebApplication.getPluginCollection())
-      .withDownloadHelper()
       .start()
       .catch((e: unknown) => {
         throw e;

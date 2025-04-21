@@ -30,7 +30,10 @@ import {
   type ProjectDependencyCoordinates,
   ProjectVersionEntities,
 } from './models/ProjectVersionEntities.js';
-import type { StoredEntity } from './models/StoredEntity.js';
+import type {
+  StoredEntity,
+  StoredSummaryEntity,
+} from './models/StoredEntity.js';
 import type { RawProjectDependencyReport } from './models/RawProjectDependencyReport.js';
 import type { ProjectVersionPlatformDependency } from './models/ProjectVersionPlatformDependency.js';
 import type { VersionedProjectData } from './models/VersionedProjectData.js';
@@ -170,6 +173,25 @@ export class DepotServerClient extends AbstractServerClient {
       undefined,
       {
         scope: options?.scope,
+      },
+    );
+
+  getEntitiesSummaryByClassifier = (
+    classifierPath: string,
+    options?: {
+      scope?: DepotScope | undefined;
+      summary?: boolean | undefined;
+      latest?: boolean | undefined;
+    },
+  ): Promise<PlainObject<StoredSummaryEntity>[]> =>
+    this.get(
+      `${this.baseUrl}/classifiers/${encodeURIComponent(classifierPath)}`,
+      undefined,
+      undefined,
+      {
+        scope: options?.scope,
+        summary: options?.summary,
+        latest: options?.latest,
       },
     );
 

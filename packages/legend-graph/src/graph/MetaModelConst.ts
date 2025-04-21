@@ -150,6 +150,7 @@ export enum CORE_PURE_PATH {
   SNOWFLAKE_APP = 'meta::external::function::activator::snowflakeApp::SnowflakeApp',
   HOSTED_SERVICE = 'meta::external::function::activator::hostedService::HostedService',
   TABULAR_RESULT = 'meta::pure::mapping::Result',
+  DATA_PRODUCT = 'meta::external::catalog::dataProduct::specification::metamodel::DataProduct',
 }
 
 export const PURE_DOC_TAG = 'doc';

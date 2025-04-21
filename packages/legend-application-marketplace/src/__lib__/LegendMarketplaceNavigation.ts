@@ -33,6 +33,7 @@ export const LEGEND_MARKETPLACE_ROUTE_PATTERN = Object.freeze({
   DEFAULT: '/',
   SEARCH_RESULTS: '/results',
   VENDOR_DETAILS: `/vendor/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.VENDOR_NAME}`,
+  LAKEHOUSE: '/lakehouse',
 });
 
 export const generateSearchResultsRoute = (

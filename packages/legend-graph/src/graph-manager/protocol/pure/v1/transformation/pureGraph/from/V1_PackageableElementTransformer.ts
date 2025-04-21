@@ -95,6 +95,8 @@ import { V1_INTERNAL__UnknownElement } from '../../../model/packageableElements/
 import type { HostedService } from '../../../../../../../graph/metamodel/pure/packageableElements/function/HostedService.js';
 import { V1_HostedService } from '../../../model/packageableElements/function/V1_HostedService.js';
 import { V1_transformFunctionActivatorActions } from '../to/helpers/V1_LegendLambdaTransformerHelper.js';
+import type { DataProduct } from '../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
+import { V1_transformDataProduct } from './V1_DataProductTransformer.js';
 
 class V1_PackageableElementTransformer
   implements PackageableElementVisitor<V1_PackageableElement>
@@ -273,6 +275,10 @@ class V1_PackageableElementTransformer
 
   visit_Database(element: Database): V1_PackageableElement {
     return V1_transformDatabase(element, this.context);
+  }
+
+  visit_DataProduct(element: DataProduct): V1_PackageableElement {
+    return V1_transformDataProduct(element, this.context);
   }
 
   visit_Mapping(element: Mapping): V1_PackageableElement {

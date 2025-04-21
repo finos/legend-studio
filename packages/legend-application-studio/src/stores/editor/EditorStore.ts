@@ -1161,6 +1161,7 @@ export class EditorStore implements CommandRegistrar {
             PACKAGEABLE_ELEMENT_TYPE.RUNTIME,
             PACKAGEABLE_ELEMENT_TYPE.MAPPING,
             PACKAGEABLE_ELEMENT_TYPE.SERVICE,
+            PACKAGEABLE_ELEMENT_TYPE._DATA_PRODUCT,
             this.applicationStore.config.options
               .TEMPORARY__enableLocalConnectionBuilder
               ? PACKAGEABLE_ELEMENT_TYPE.TEMPORARY__LOCAL_CONNECTION
