@@ -38,6 +38,7 @@ import {
 import { useRef, useState, useEffect } from 'react';
 import { filterByType } from '@finos/legend-shared';
 import { InlineLambdaEditor } from '@finos/legend-query-builder';
+import { flowResult } from 'mobx';
 
 const NewAccessPointAccessPOint = observer(
   (props: { dataProductEditorState: DataProductEditorState }) => {
@@ -170,7 +171,10 @@ export const LakehouseDataProductAcccessPointEditor = observer(
               <div className="access-point-editor__entry">
                 <InlineLambdaEditor
                   className={'access-point-editor__lambda-editor'}
-                  disabled={false}
+                  disabled={
+                    lambdaEditorState.val.state
+                      .isConvertingTransformLambdaObjects
+                  }
                   lambdaEditorState={lambdaEditorState}
                   forceBackdrop={Boolean(lambdaEditorState.parserError)}
                 />
@@ -238,6 +242,13 @@ export const DataProductEditor = observer(() => {
   const openNewModal = () => {
     dataProductEditorState.setAccessPointModal(true);
   };
+
+  useEffect(() => {
+    flowResult(dataProductEditorState.convertAccessPointsFuncObjects()).catch(
+      dataProductEditorState.editorStore.applicationStore.alertUnhandledError,
+    );
+  }, [dataProductEditorState]);
+
   return (
     <div className="data-product-editor">
       <div className="panel">
@@ -269,16 +280,15 @@ export const DataProductEditor = observer(() => {
             </PanelHeaderActions>
           </PanelHeader>
           <PanelContent>
-            {!isReadOnly &&
-              accessPointStates
-                .filter(filterByType(LakehouseAccessPointState))
-                .map((apState) => (
-                  <LakehouseDataProductAcccessPointEditor
-                    key={apState.accessPoint.id}
-                    isReadOnly={isReadOnly}
-                    accessPointState={apState}
-                  />
-                ))}
+            {accessPointStates
+              .filter(filterByType(LakehouseAccessPointState))
+              .map((apState) => (
+                <LakehouseDataProductAcccessPointEditor
+                  key={apState.accessPoint.id}
+                  isReadOnly={isReadOnly}
+                  accessPointState={apState}
+                />
+              ))}
             {!accessPointStates.length && (
               <DataProductEditorSplashScreen
                 dataProductEditorState={dataProductEditorState}

@@ -29,7 +29,7 @@ import {
 } from '@finos/legend-graph';
 import type { EditorStore } from '../../../EditorStore.js';
 import { ElementEditorState } from '../ElementEditorState.js';
-import { action, computed, makeObservable, observable } from 'mobx';
+import { action, computed, flow, makeObservable, observable } from 'mobx';
 import {
   guaranteeType,
   addUniqueEntry,
@@ -37,6 +37,7 @@ import {
   assertErrorThrown,
   LogEvent,
   deleteEntry,
+  filterByType,
 } from '@finos/legend-shared';
 import {
   dataProduct_addAccessPoint,
@@ -99,7 +100,10 @@ export class AccessPointLambdaEditorState extends LambdaEditorState {
     pretty?: boolean | undefined;
     preserveCompilationError?: boolean | undefined;
   }): GeneratorFn<void> {
-    if (!isStubbed_RawLambda(this.val.accessPoint.func)) {
+    if (
+      !isStubbed_RawLambda(this.val.accessPoint.func) &&
+      !this.val.state.isConvertingTransformLambdaObjects
+    ) {
       try {
         const lambdas = new Map<string, RawLambda>();
         lambdas.set(this.lambdaId, this.val.accessPoint.func);
@@ -147,6 +151,7 @@ export class LakehouseAccessPointState extends AccessPointState {
 export class DataProductEditorState extends ElementEditorState {
   accessPointModal = false;
   accessPointStates: AccessPointState[] = [];
+  isConvertingTransformLambdaObjects = false;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
@@ -156,12 +161,51 @@ export class DataProductEditorState extends ElementEditorState {
       accessPointModal: observable,
       accessPointStates: observable,
       deleteAccessPoint: observable,
+      isConvertingTransformLambdaObjects: observable,
       setAccessPointModal: action,
       addAccessPoint: action,
+      convertAccessPointsFuncObjects: flow,
     });
     this.accessPointStates = this.product.accessPoints.map((e) =>
       this.buildAccessPointState(e),
     );
+  }
+
+  *convertAccessPointsFuncObjects(): GeneratorFn<void> {
+    const lambdas = new Map<string, RawLambda>();
+    const index = new Map<string, LakehouseAccessPointState>();
+    const states = this.accessPointStates.filter(
+      filterByType(LakehouseAccessPointState),
+    );
+    states.forEach((pm) => {
+      if (!isStubbed_RawLambda(pm.accessPoint.func)) {
+        lambdas.set(pm.lambdaState.lambdaId, pm.accessPoint.func);
+        index.set(pm.lambdaState.lambdaId, pm);
+      }
+    });
+    if (lambdas.size) {
+      this.isConvertingTransformLambdaObjects = true;
+      try {
+        const isolatedLambdas =
+          (yield this.editorStore.graphManagerState.graphManager.lambdasToPureCode(
+            lambdas,
+          )) as Map<string, string>;
+        isolatedLambdas.forEach((grammarText, key) => {
+          const purePropertyMapping = index.get(key);
+          purePropertyMapping?.lambdaState.setLambdaString(
+            purePropertyMapping.lambdaState.extractLambdaString(grammarText),
+          );
+        });
+      } catch (error) {
+        assertErrorThrown(error);
+        this.editorStore.applicationStore.logService.error(
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
+          error,
+        );
+      } finally {
+        this.isConvertingTransformLambdaObjects = false;
+      }
+    }
   }
 
   buildAccessPointState(val: AccessPoint): AccessPointState {

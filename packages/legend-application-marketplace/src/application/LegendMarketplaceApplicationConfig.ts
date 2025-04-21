@@ -49,7 +49,9 @@ export interface LegendMarketplaceApplicationConfigurationData
     url: string;
   };
   lakehouse?: {
-    // can expand this if more than one server is required
+    url: string;
+  };
+  studio?: {
     url: string;
   };
 }
@@ -61,6 +63,7 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
   readonly engineServerUrl: string;
   readonly depotServerUrl: string;
   readonly lakehouseServerUrl?: string;
+  readonly studioServerUrl?: string;
 
   constructor(
     input: LegendApplicationConfigurationInput<LegendMarketplaceApplicationConfigurationData>,
@@ -110,6 +113,15 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
         guaranteeNonEmptyString(
           input.configData.depot.url,
           `Can't configure application: 'lakehouse.url' field is missing or empty`,
+        ),
+      );
+    }
+    // studio
+    if (input.configData.studio) {
+      this.studioServerUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+        guaranteeNonEmptyString(
+          input.configData.studio.url,
+          `Can't configure application: 'studio.url' field is missing or empty`,
         ),
       );
     }
