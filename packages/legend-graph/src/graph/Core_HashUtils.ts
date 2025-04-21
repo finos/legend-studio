@@ -367,6 +367,13 @@ export enum CORE_HASH_STRUCTURE {
   // ---------------------------------- Relation --------------------------------------
   RELATION_TYPE = 'RELATION_TYPE',
   RELATION_COLUMN = 'RELATION_COLUMN',
+
+  // ---------------------------------- Data Product --------------------------------------
+
+  DATA_PRODUCT = 'DATA_PRODUCT',
+  DATA_PRODUCT_ACCESS_POINT = 'DATA_PRODUCT_ACCESS_POINT',
+  LAKEHOUSE_ACCESS_POINT = 'LAKEHOUSE_ACCESS_POINT',
+  UNKNOWN_ACCESS_POINT = 'UNKNOWN_ACCESS_POINT',
 }
 
 export const hashObjectWithoutSourceInformation = (val: object): string =>

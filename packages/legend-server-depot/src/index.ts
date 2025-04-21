@@ -17,7 +17,7 @@
 export { StoreProjectData } from './models/StoreProjectData.js';
 export { VersionedProjectData } from './models/VersionedProjectData.js';
 export * from './models/ProjectVersionEntities.js';
-export { StoredEntity } from './models/StoredEntity.js';
+export { StoredEntity, StoredSummaryEntity } from './models/StoredEntity.js';
 export { DepotScope } from './models/DepotScope.js';
 export * from './models/ProjectDependencyGraph.js';
 export * from './models/RawProjectDependencyReport.js';

@@ -31,6 +31,7 @@ import {
 } from './LegendMarketplaceFrameworkProvider.js';
 import { LEGEND_MARKETPLACE_ROUTE_PATTERN } from '../__lib__/LegendMarketplaceNavigation.js';
 import { LegendMarketplaceHome } from '../pages/home/LegendMarketplaceHome.js';
+import { LakehouseMarketplace } from '../components/Lakehouse/LakehouseMarketplace.js';
 
 const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();
@@ -90,6 +91,10 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
       {baseStore.initState.hasCompleted && (
         <>
           <Routes>
+            <Route
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE}
+              element={<LakehouseMarketplace />}
+            />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.DEFAULT}
               element={<LegendMarketplaceHome />}

@@ -121,6 +121,11 @@ import { V1_INTERNAL__UnknownStore } from '../../model/packageableElements/store
 import type { V1_SnowflakeApp } from '../../model/packageableElements/function/V1_SnowflakeApp.js';
 import { V1_INTERNAL__UnknownElement } from '../../model/packageableElements/V1_INTERNAL__UnknownElement.js';
 import type { V1_HostedService } from '../../model/packageableElements/function/V1_HostedService.js';
+import {
+  V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE,
+  type V1_DataProduct,
+} from '../../model/packageableElements/dataProduct/V1_DataProduct.js';
+import { V1_dataProductModelSchema } from './serializationHelpers/V1_DataProductSerializationHelper.js';
 
 class V1_PackageableElementSerializer
   implements V1_PackageableElementVisitor<PlainObject<V1_PackageableElement>>
@@ -221,6 +226,12 @@ class V1_PackageableElementSerializer
 
   visit_Database(element: V1_Database): PlainObject<V1_PackageableElement> {
     return serialize(V1_databaseModelSchema, element);
+  }
+
+  visit_DataProduct(
+    element: V1_DataProduct,
+  ): PlainObject<V1_PackageableElement> {
+    return serialize(V1_dataProductModelSchema, element);
   }
 
   visit_Mapping(element: V1_Mapping): PlainObject<V1_PackageableElement> {
@@ -352,6 +363,8 @@ export const V1_deserializePackageableElement = (
         return deserialize(V1_snowflakeAppModelSchema, json);
       case V1_HOSTED_SERVICE_TYPE:
         return deserialize(V1_HostedServiceModelSchema, json);
+      case V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE:
+        return deserialize(V1_dataProductModelSchema, json);
       default: {
         for (const deserializer of extraElementProtocolDeserializers) {
           const protocol = deserializer(json, plugins);

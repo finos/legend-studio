@@ -83,6 +83,8 @@ import { HostedService } from '../../../../../../../graph/metamodel/pure/package
 import { V1_buildFunctionActivatorActions } from './helpers/V1_LegendLambdaHelper.js';
 import { GenericTypeImplicitReference } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/GenericTypeReference.js';
 import { GenericType } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/GenericType.js';
+import type { V1_DataProduct } from '../../../model/packageableElements/dataProduct/V1_DataProduct.js';
+import { DataProduct } from '../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 
 export class V1_ElementFirstPassBuilder
   implements V1_PackageableElementVisitor<PackageableElement>
@@ -710,5 +712,29 @@ export class V1_ElementFirstPassBuilder
     );
     this.context.currentSubGraph.setOwnExecutionEnvironment(path, exEnvir);
     return exEnvir;
+  }
+
+  visit_DataProduct(element: V1_DataProduct): PackageableElement {
+    assertNonEmptyString(
+      element.package,
+      `Data Product 'package' field is missing or empty`,
+    );
+    assertNonEmptyString(
+      element.name,
+      `Data Product 'name' field is missing or empty`,
+    );
+    const product = new DataProduct(element.name);
+    const path = V1_buildFullPath(element.package, element.name);
+    V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
+    addElementToPackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
+        element.package,
+        this.packageCache,
+      ),
+      product,
+    );
+    this.context.currentSubGraph.setOwnDataProduct(path, product);
+    return product;
   }
 }

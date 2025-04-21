@@ -639,3 +639,9 @@ export const WorkflowIcon = FcWorkflow;
 import { ImTerminal } from 'react-icons/im';
 
 export const Code_TerminalIcon = ImTerminal;
+
+//======================================================= LU =======================================================
+
+import { LuRadioTower } from 'react-icons/lu';
+
+export const AccessPointIcon = LuRadioTower;

@@ -77,6 +77,8 @@ import type { INTERNAL__UnknownStore } from '../../../graph/metamodel/pure/packa
 import type { SnowflakeApp } from '../../../graph/metamodel/pure/packageableElements/function/SnowflakeApp.js';
 import type { INTERNAL__UnknownElement } from '../../../graph/metamodel/pure/packageableElements/INTERNAL__UnknownElement.js';
 import type { HostedService } from '../../../graph/metamodel/pure/packageableElements/function/HostedService.js';
+import type { DataProduct } from '../../../graph/metamodel/pure/dataProduct/DataProduct.js';
+import { observe_DataProduct } from './DataProductObserveHelper.js';
 
 class PackageableElementObserver implements PackageableElementVisitor<void> {
   observerContext: ObserverContext;
@@ -167,6 +169,10 @@ class PackageableElementObserver implements PackageableElementVisitor<void> {
 
   visit_Database(element: Database): void {
     observe_Database(element, this.observerContext);
+  }
+
+  visit_DataProduct(element: DataProduct): void {
+    observe_DataProduct(element);
   }
 
   visit_Mapping(element: Mapping): void {

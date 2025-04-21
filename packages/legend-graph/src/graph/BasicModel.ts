@@ -75,6 +75,7 @@ import { INTERNAL__UnknownFunctionActivator } from './metamodel/pure/packageable
 import { INTERNAL__UnknownStore } from './metamodel/pure/packageableElements/store/INTERNAL__UnknownStore.js';
 import type { PureGraphPlugin } from './PureGraphPlugin.js';
 import { INTERNAL__UnknownElement } from './metamodel/pure/packageableElements/INTERNAL__UnknownElement.js';
+import { DataProduct } from './metamodel/pure/dataProduct/DataProduct.js';
 
 const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
   PackageableElement,
@@ -150,6 +151,8 @@ export abstract class BasicModel {
     string,
     FileGenerationSpecification
   >();
+
+  private readonly productsIndex = new Map<string, DataProduct>();
   private readonly dataElementsIndex = new Map<string, DataElement>();
   private readonly executionEnvironmentsIndex = new Map<
     string,
@@ -242,6 +245,9 @@ export abstract class BasicModel {
   }
   get ownFileGenerations(): FileGenerationSpecification[] {
     return Array.from(this.fileGenerationsIndex.values());
+  }
+  get ownProducts(): DataProduct[] {
+    return Array.from(this.productsIndex.values());
   }
   get ownDataElements(): DataElement[] {
     return Array.from(this.dataElementsIndex.values());
@@ -363,6 +369,8 @@ export abstract class BasicModel {
     path: string,
   ): ExecutionEnvironmentInstance | undefined =>
     this.executionEnvironmentsIndex.get(path);
+  getOwnNullableProduct = (path: string): DataProduct | undefined =>
+    this.productsIndex.get(path);
   getOwnSectionIndex = (path: string): SectionIndex =>
     guaranteeNonNullable(
       this.getOwnNullableSectionIndex(path),
@@ -465,6 +473,11 @@ export abstract class BasicModel {
       this.getOwnNullableExecutionEnviornment(path),
       `Can't find execution environment element '${path}'`,
     );
+  getOwnDataProduct = (path: string): DataProduct =>
+    guaranteeNonNullable(
+      this.getOwnNullableProduct(path),
+      `Can't find data product element '${path}'`,
+    );
 
   getOwnNullableExtensionElement<T extends PackageableElement>(
     path: string,
@@ -528,6 +541,9 @@ export abstract class BasicModel {
   ): void {
     this.executionEnvironmentsIndex.set(path, val);
   }
+  setOwnDataProduct(path: string, val: DataProduct): void {
+    this.productsIndex.set(path, val);
+  }
   INTERNAL__setOwnUnknown(path: string, val: INTERNAL__UnknownElement): void {
     this.INTERNAL__unknownIndex.set(path, val);
   }
@@ -564,6 +580,7 @@ export abstract class BasicModel {
       ...this.ownConnections,
       ...this.ownGenerationSpecifications,
       ...this.ownFileGenerations,
+      ...this.ownProducts,
       ...this.ownDataElements,
       ...this.ownExecutionEnvironments,
       ...Array.from(this.INTERNAL__unknownElementsIndex.values()),
@@ -621,6 +638,7 @@ export abstract class BasicModel {
       this.runtimesIndex.get(path) ??
       this.connectionsIndex.get(path) ??
       this.fileGenerationsIndex.get(path) ??
+      this.productsIndex.get(path) ??
       this.dataElementsIndex.get(path) ??
       this.executionEnvironmentsIndex.get(path) ??
       this.generationSpecificationsIndex.get(path);
@@ -677,6 +695,8 @@ export abstract class BasicModel {
       this.setOwnDataElement(element.path, element);
     } else if (element instanceof ExecutionEnvironmentInstance) {
       this.setOwnExecutionEnvironment(element.path, element);
+    } else if (element instanceof DataProduct) {
+      this.setOwnDataProduct(element.path, element);
     } else if (element instanceof Package) {
       // do nothing
     } else {
@@ -731,6 +751,8 @@ export abstract class BasicModel {
       this.dataElementsIndex.delete(element.path);
     } else if (element instanceof ExecutionEnvironmentInstance) {
       this.executionEnvironmentsIndex.delete(element.path);
+    } else if (element instanceof DataProduct) {
+      this.productsIndex.delete(element.path);
     } else if (element instanceof Package) {
       element.children.forEach((child) => this.deleteOwnElement(child));
     } else {

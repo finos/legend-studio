@@ -33,3 +33,21 @@ export class StoredEntity {
     }),
   );
 }
+
+export class StoredSummaryEntity {
+  groupId!: string;
+  artifactId!: string;
+  versionId!: string;
+  path!: string;
+  classifierPath!: string;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(StoredSummaryEntity, {
+      artifactId: primitive(),
+      groupId: primitive(),
+      path: primitive(),
+      versionId: primitive(),
+      classifierPath: primitive(),
+    }),
+  );
+}

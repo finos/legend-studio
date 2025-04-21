@@ -28,16 +28,9 @@ const TEST_DATA__appConfig: LegendMarketplaceApplicationConfigurationData = {
   },
   engine: {
     url: 'https://testEngineUrl',
-    queryUrl: 'https://testEngineQueryUrl',
   },
   depot: {
     url: 'https://testMetadataUrl',
-  },
-  studio: {
-    url: 'https://testStudioUrl',
-  },
-  query: {
-    url: 'https://testQueryUrl',
   },
 };
 

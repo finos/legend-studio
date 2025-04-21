@@ -84,6 +84,7 @@ import {
   RuntimePointer,
   GenericTypeExplicitReference,
   GenericType,
+  DataProduct,
 } from '@finos/legend-graph';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import {
@@ -998,6 +999,9 @@ export class NewElementState {
         break;
       case PACKAGEABLE_ELEMENT_TYPE.GENERATION_SPECIFICATION:
         element = new GenerationSpecification(name);
+        break;
+      case PACKAGEABLE_ELEMENT_TYPE._DATA_PRODUCT:
+        element = new DataProduct(name);
         break;
       default: {
         const extraNewElementFromStateCreators = this.editorStore.pluginManager

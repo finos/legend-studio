@@ -88,6 +88,8 @@ export const getElementTypeLabel = (
       return 'data';
     case PACKAGEABLE_ELEMENT_TYPE.TEMPORARY__LOCAL_CONNECTION:
       return 'local connection';
+    case PACKAGEABLE_ELEMENT_TYPE._DATA_PRODUCT:
+      return 'lakehouse data product';
     default: {
       if (type) {
         const extraElementTypeLabelGetters = editorStore.pluginManager
