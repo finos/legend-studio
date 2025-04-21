@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.1.19
+
+### Patch Changes
+
+- [#4013](https://github.com/finos/legend-studio/pull/4013) [`b11c369`](https://github.com/finos/legend-studio/commit/b11c3698da37d0af502556365f13aec5c62d4729) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add new data product models
+
 ## 32.1.18
 
 ### Patch Changes

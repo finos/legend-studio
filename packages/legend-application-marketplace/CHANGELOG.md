@@ -1,5 +1,15 @@
 # @finos/legend-application-marketplace
 
+## 0.0.12
+
+### Patch Changes
+
+- [#4010](https://github.com/finos/legend-studio/pull/4010) [`f0111cf`](https://github.com/finos/legend-studio/commit/f0111cf28045129a7bc27e06d3c0b285b0d8ffb0) ([@travisstebbins](https://github.com/travisstebbins)) - Marketplace Search Results page
+
+- [#4013](https://github.com/finos/legend-studio/pull/4013) [`b11c369`](https://github.com/finos/legend-studio/commit/b11c3698da37d0af502556365f13aec5c62d4729) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Basic view of all data products
+
+- [#4006](https://github.com/finos/legend-studio/pull/4006) [`aa70eff`](https://github.com/finos/legend-studio/commit/aa70eff09347e043ca3af66767e4ad94d6f09a90) ([@travisstebbins](https://github.com/travisstebbins)) - Create Legend Marketplace home page
+
 ## 0.0.11
 
 ### Patch Changes

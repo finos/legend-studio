@@ -1,5 +1,11 @@
 # @finos/legend-shared
 
+## 11.0.11
+
+### Patch Changes
+
+- [#4006](https://github.com/finos/legend-studio/pull/4006) [`aa70eff`](https://github.com/finos/legend-studio/commit/aa70eff09347e043ca3af66767e4ad94d6f09a90) ([@travisstebbins](https://github.com/travisstebbins)) - Export lodash shuffle function
+
 ## 11.0.10
 
 ## 11.0.9

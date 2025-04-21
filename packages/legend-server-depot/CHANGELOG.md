@@ -1,5 +1,11 @@
 # @finos/legend-server-depot
 
+## 6.0.88
+
+### Patch Changes
+
+- [#4013](https://github.com/finos/legend-studio/pull/4013) [`b11c369`](https://github.com/finos/legend-studio/commit/b11c3698da37d0af502556365f13aec5c62d4729) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `StoredSummaryEntity` for entitis fetched by classifier path
+
 ## 6.0.87
 
 ## 6.0.86
