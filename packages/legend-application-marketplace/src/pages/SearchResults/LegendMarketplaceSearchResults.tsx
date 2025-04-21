@@ -73,7 +73,8 @@ export const LegendMarketplaceSearchResults = observer(() => {
         setIsLoading(false);
       }
     };
-    fetchResults();
+    // eslint-disable-next-line no-void
+    void fetchResults();
   }, [marketplaceServerClient, params.query, params.vendorName]);
 
   const onSearch = (
@@ -110,7 +111,7 @@ export const LegendMarketplaceSearchResults = observer(() => {
                   columns={{ xs: 1, sm: 2, lg: 3, xxl: 4, xxxl: 5, xxxxl: 6 }}
                   className="legend-marketplace-search-results__results__cards"
                 >
-                  {results?.map((result) => (
+                  {results.map((result) => (
                     <Grid
                       key={`${result.vendor_name}-${result.data_product_name}`}
                       size={1}

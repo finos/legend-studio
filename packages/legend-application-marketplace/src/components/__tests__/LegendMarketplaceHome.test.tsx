@@ -48,8 +48,9 @@ test(
       await TEST__provideMockedLegendMarketplaceBaseStore();
     await TEST__setUpMarketplace(mockedLegendDataCubeBuilderStore);
     // Mock navigation service
+    const mockGoToLocation = jest.fn();
     mockedLegendDataCubeBuilderStore.applicationStore.navigationService.navigator.goToLocation =
-      jest.fn();
+      mockGoToLocation;
 
     await screen.findByText(/^Legend Marketplace$/);
 
@@ -57,9 +58,6 @@ test(
     fireEvent.change(searchBox, { target: { value: 'test' } });
     fireEvent.click(screen.getByRole('button', { name: 'Go' }));
 
-    expect(
-      mockedLegendDataCubeBuilderStore.applicationStore.navigationService
-        .navigator.goToLocation,
-    ).toHaveBeenCalledWith('/results?query=test');
+    expect(mockGoToLocation).toHaveBeenCalledWith('/results?query=test');
   },
 );

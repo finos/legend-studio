@@ -108,8 +108,9 @@ test(
       LEGEND_MARKETPLACE_ROUTE_PATTERN.SEARCH_RESULTS,
     );
     // Mock navigation service
+    const mockVisitAddress = jest.fn();
     mockedLegendDataCubeBuilderStore.applicationStore.navigationService.navigator.visitAddress =
-      jest.fn();
+      mockVisitAddress;
 
     await screen.findByText(/^Legend Marketplace$/);
     const dataProductCard = guaranteeNonNullable(
@@ -120,9 +121,8 @@ test(
     });
     fireEvent.click(previewButton);
 
-    expect(
-      mockedLegendDataCubeBuilderStore.applicationStore.navigationService
-        .navigator.visitAddress,
-    ).toHaveBeenCalledWith('https://example.com/products/dp-4');
+    expect(mockVisitAddress).toHaveBeenCalledWith(
+      'https://example.com/products/dp-4',
+    );
   },
 );
