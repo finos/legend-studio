@@ -224,34 +224,34 @@ export const V1_snowflakeAppModelSchema = (
     ),
   });
 
-  export const V1_HostedServiceModelSchema = (
-    plugins: PureProtocolProcessorPlugin[],
-  ): ModelSchema<V1_HostedService> =>
-    createModelSchema(V1_HostedService, {
-      _type: usingConstantValueSchema(V1_HOSTED_SERVICE_TYPE),
-      documentation: optional(primitive()),
-      pattern: primitive(),
-      autoActivateUpdates: primitive(),
-      storeModel: primitive(),
-      generateLineage: primitive(),
-      function: usingModelSchema(V1_packageableElementPointerModelSchema),
-      name: primitive(),
-      package: primitive(),
-      stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
-        INTERNAL__forceReturnEmptyInTest: true,
-      }),
-      taggedValues: customListWithSchema(V1_taggedValueModelSchema, {
-        INTERNAL__forceReturnEmptyInTest: true,
-      }),
-      ownership: optionalCustom(
-        (val) => V1_serializeOwnership(val),
-        (val) => V1_deserializeOwnership(val),
-      ),
-      actions: list(usingModelSchema(V1_PostDeploymentActionSchema(plugins))),
-      activationConfiguration: optional(
-        usingModelSchema(V1_HostedServiceDeploymentConfigurationAppModelSchema),
-      ),
-    });
+export const V1_HostedServiceModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_HostedService> =>
+  createModelSchema(V1_HostedService, {
+    _type: usingConstantValueSchema(V1_HOSTED_SERVICE_TYPE),
+    documentation: optional(primitive()),
+    pattern: primitive(),
+    autoActivateUpdates: primitive(),
+    storeModel: primitive(),
+    generateLineage: primitive(),
+    function: usingModelSchema(V1_packageableElementPointerModelSchema),
+    name: primitive(),
+    package: primitive(),
+    stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
+      INTERNAL__forceReturnEmptyInTest: true,
+    }),
+    taggedValues: customListWithSchema(V1_taggedValueModelSchema, {
+      INTERNAL__forceReturnEmptyInTest: true,
+    }),
+    ownership: optionalCustom(
+      (val) => V1_serializeOwnership(val),
+      (val) => V1_deserializeOwnership(val),
+    ),
+    actions: list(usingModelSchema(V1_PostDeploymentActionSchema(plugins))),
+    activationConfiguration: optional(
+      usingModelSchema(V1_HostedServiceDeploymentConfigurationAppModelSchema),
+    ),
+  });
 
 // ------------------------------------- Class -------------------------------------
 
