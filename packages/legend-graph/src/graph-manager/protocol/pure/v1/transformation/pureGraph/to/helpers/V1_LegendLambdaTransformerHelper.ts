@@ -14,46 +14,56 @@
  * limitations under the License.
  */
 
-import type { PostDeploymentAction } from '../../../../../../../../graph/metamodel/pure/functionActivator/PostDeploymentAction.js';
+import { PostDeploymentAction } from '../../../../../../../graph/metamodel/pure/functionActivator/PostDeploymentAction.js';
 import {
-  INTERNAL__UnknownPostDeploymentProperties,
   type PostDeploymentProperties,
-} from '../../../../../../../../graph/metamodel/pure/functionActivator/PostDeploymentProperties.js';
-import type { FunctionActivator } from '../../../../../../../../graph/metamodel/pure/packageableElements/function/FunctionActivator.js';
-import { V1_PostDeploymentAction } from '../../../../engine/functionActivator/V1_PostDeploymentAction.js';
+  INTERNAL__UnknownPostDeploymentProperties,
+} from '../../../../../../../graph/metamodel/pure/functionActivator/PostDeploymentProperties.js';
+import type { FunctionActivator } from '../../../../../../../graph/metamodel/pure/packageableElements/function/FunctionActivator.js';
+import type { DSL_FunctionActivator_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/DSL_FunctionActivator_PureProtocolProcessorPlugin_Extension.js';
 import {
+  type V1_PostDeploymentProperties,
   V1_INTERNAL__UnknownPostDeploymentProperties,
-  V1_PostDeploymentProperties,
-} from '../../../../engine/functionActivator/V1_PostDeploymentProperties.js';
-import type { V1_FunctionActivator } from '../../../../model/packageableElements/function/V1_FunctionActivator.js';
+} from '../../../engine/functionActivator/V1_PostDeploymentProperties.js';
+import type { V1_FunctionActivator } from '../../../model/packageableElements/function/V1_FunctionActivator.js';
+import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
 
 export const V1_transformPostDeploymentProperties = (
-  protocol: PostDeploymentProperties,
+  metamodel: PostDeploymentProperties,
+  context: V1_GraphTransformerContext,
 ): V1_PostDeploymentProperties => {
-  if (protocol instanceof INTERNAL__UnknownPostDeploymentProperties) {
-    const metamodel = new V1_INTERNAL__UnknownPostDeploymentProperties();
-    metamodel.content = protocol.content;
-    return metamodel;
+  if (metamodel instanceof INTERNAL__UnknownPostDeploymentProperties) {
+    const protocol = new V1_INTERNAL__UnknownPostDeploymentProperties();
+    protocol.content = metamodel.content;
+    return protocol;
   }
-  return new V1_PostDeploymentProperties();
-};
-
-export const V1_tansformPostDeploymentActions = (
-  metamodel: PostDeploymentAction,
-): V1_PostDeploymentAction => {
-  const protocol = new V1_PostDeploymentAction();
-  protocol.automated = metamodel.automated;
-  if (metamodel.properties) {
-    protocol.properties = V1_transformPostDeploymentProperties(
-      metamodel.properties,
-    );
+  const extraPostDeploymentActionTransformers = context.plugins.flatMap(
+    (plugin: DSL_FunctionActivator_PureProtocolProcessorPlugin_Extension) =>
+      plugin.V1_getExtraPostDeploymentPropertiesTransformers?.() ?? [],
+  );
+  for (const transformer of extraPostDeploymentActionTransformers) {
+    const protocol = transformer(metamodel, context);
+    if (protocol) {
+      return protocol;
+    }
   }
-  return protocol;
+  return new V1_INTERNAL__UnknownPostDeploymentProperties();
 };
 
 export const V1_transformFunctionActivatorActions = (
   protocol: V1_FunctionActivator,
   metamodel: FunctionActivator,
+  context: V1_GraphTransformerContext,
 ): void => {
-  protocol.actions = metamodel.actions.map(V1_tansformPostDeploymentActions);
+  metamodel.actions = protocol.actions.map((value) => {
+    const val = new PostDeploymentAction();
+    val.automated = value.automated;
+    if (value.properties) {
+      val.properties = V1_transformPostDeploymentProperties(
+        value.properties,
+        context,
+      );
+    }
+    return val;
+  });
 };

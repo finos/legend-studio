@@ -203,7 +203,7 @@ export class V1_ElementFirstPassBuilder
     }
 
     metamodel.description = element.description;
-    V1_buildFunctionActivatorActions(element, metamodel);
+    V1_buildFunctionActivatorActions(element, metamodel, this.context);
     return metamodel;
   }
 
@@ -233,7 +233,7 @@ export class V1_ElementFirstPassBuilder
     metamodel.autoActivateUpdates = element.autoActivateUpdates;
     metamodel.storeModel = element.storeModel;
     metamodel.generateLineage = element.generateLineage;
-    V1_buildFunctionActivatorActions(element, metamodel);
+    V1_buildFunctionActivatorActions(element, metamodel, this.context);
     return metamodel;
   }
 

@@ -20,38 +20,52 @@ import {
   type PostDeploymentProperties,
 } from '../../../../../../../../graph/metamodel/pure/functionActivator/PostDeploymentProperties.js';
 import type { FunctionActivator } from '../../../../../../../../graph/metamodel/pure/packageableElements/function/FunctionActivator.js';
-import type { V1_PostDeploymentAction } from '../../../../engine/functionActivator/V1_PostDeploymentAction.js';
 import {
   V1_INTERNAL__UnknownPostDeploymentProperties,
-  V1_PostDeploymentProperties,
+  type V1_PostDeploymentProperties,
 } from '../../../../engine/functionActivator/V1_PostDeploymentProperties.js';
+import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
 import type { V1_FunctionActivator } from '../../../../model/packageableElements/function/V1_FunctionActivator.js';
+import type { DSL_FunctionActivator_PureProtocolProcessorPlugin_Extension } from '../../../../../extensions/DSL_FunctionActivator_PureProtocolProcessorPlugin_Extension.js';
 
 export const V1_buildPostDeploymentProperties = (
   protocol: V1_PostDeploymentProperties,
+  context: V1_GraphBuilderContext,
 ): PostDeploymentProperties => {
   if (protocol instanceof V1_INTERNAL__UnknownPostDeploymentProperties) {
     const metamodel = new INTERNAL__UnknownPostDeploymentProperties();
     metamodel.content = protocol.content;
     return metamodel;
   }
-  return new V1_PostDeploymentProperties();
-};
-
-export const V1_buildPostDeploymentActions = (
-  protocol: V1_PostDeploymentAction,
-): PostDeploymentAction => {
-  const val = new PostDeploymentAction();
-  val.automated = protocol.automated;
-  if (protocol.properties) {
-    val.properties = V1_buildPostDeploymentProperties(protocol.properties);
+  const extraPostProcessorBuilders = context.extensions.plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSL_FunctionActivator_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraPostDeploymentPropertiesBuilders?.() ?? [],
+  );
+  for (const builder of extraPostProcessorBuilders) {
+    const metamodel = builder(protocol, context);
+    if (metamodel) {
+      return metamodel;
+    }
   }
-  return val;
+  return new V1_INTERNAL__UnknownPostDeploymentProperties();
 };
 
 export const V1_buildFunctionActivatorActions = (
-  protocl: V1_FunctionActivator,
+  protocol: V1_FunctionActivator,
   metamodel: FunctionActivator,
+  context: V1_GraphBuilderContext,
 ): void => {
-  metamodel.actions = protocl.actions.map(V1_buildPostDeploymentActions);
+  metamodel.actions = protocol.actions.map((value) => {
+    const val = new PostDeploymentAction();
+    val.automated = value.automated;
+    if (value.properties) {
+      val.properties = V1_buildPostDeploymentProperties(
+        value.properties,
+        context,
+      );
+    }
+    return val;
+  });
 };

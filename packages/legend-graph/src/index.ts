@@ -95,6 +95,20 @@ export {
   DEFAULT_HOSTED_SERVICE_PATTERN,
 } from './graph/metamodel/pure/packageableElements/function/HostedService.js';
 export { HostedServiceDeploymentConfiguration } from './graph/metamodel/pure/functionActivator/HostedServiceDeploymentConfiguration.js';
+export { PostDeploymentAction } from './graph/metamodel/pure/functionActivator/PostDeploymentAction.js';
+export {
+  PostDeploymentProperties,
+  INTERNAL__UnknownPostDeploymentProperties,
+} from './graph/metamodel/pure/functionActivator/PostDeploymentProperties.js';
+export {
+  V1_PostDeploymentProperties,
+  V1_INTERNAL__UnknownPostDeploymentProperties,
+} from './graph-manager/protocol/pure/v1/engine/functionActivator/V1_PostDeploymentProperties.js';
+export {
+  type V1_PostDeploymentPropertiesTransformer,
+  type V1_PostDeploymentPropertiesDeserializer,
+  type V1_PostDeploymentPropertiesSerializer,
+} from './graph-manager/protocol/pure/extensions/DSL_FunctionActivator_PureProtocolProcessorPlugin_Extension.js';
 
 // --------------------------------------------- VALUE SPECIFICATION --------------------------------------------------
 
@@ -840,6 +854,7 @@ export { V1_FunctionActivatorInfo } from './graph-manager/protocol/pure/v1/engin
 export { V1_FunctionActivatorInput } from './graph-manager/protocol/pure/v1/engine/functionActivator/V1_FunctionActivatorInput.js';
 export { V1_DatabaseToModelGenerationInput } from './graph-manager/protocol/pure/v1/engine/relational/V1_DatabaseToModelGenerationInput.js';
 export { V1_RelationalConnectionBuilder } from './graph-manager/protocol/pure/v1/engine/relational/V1_RelationalConnectionBuilder.js';
+export * from './graph-manager/protocol/pure/extensions/DSL_FunctionActivator_PureProtocolProcessorPlugin_Extension.js';
 
 // ------------------------------------- TO BE MODULARIZED --------------------------------------------
 /**

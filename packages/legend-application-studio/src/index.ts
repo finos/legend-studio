@@ -119,3 +119,4 @@ export type { EmbeddedDataTypeOption } from './stores/editor/editor-state/elemen
 
 export { SnowflakeAppFunctionActivatorEdtiorState } from './stores/editor/editor-state/element-editor-state/function-activator/SnowflakeAppFunctionActivatorEditorState.js';
 export { SnowflakeAppFunctionActivatorEditor } from './components/editor/editor-group/function-activator/SnowflakeAppFunctionActivatorEditor.js';
+export { HostedServiceFunctionActivatorEditorState } from './stores/editor/editor-state/element-editor-state/function-activator/HostedServiceFunctionActivatorEditorState.js';

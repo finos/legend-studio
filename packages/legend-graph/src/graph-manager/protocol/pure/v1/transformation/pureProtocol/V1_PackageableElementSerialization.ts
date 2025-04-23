@@ -175,13 +175,13 @@ class V1_PackageableElementSerializer
   visit_SnowflakeApp(
     element: V1_SnowflakeApp,
   ): PlainObject<V1_PackageableElement> {
-    return serialize(V1_snowflakeAppModelSchema, element);
+    return serialize(V1_snowflakeAppModelSchema(this.plugins), element);
   }
 
   visit_HostedService(
     element: V1_HostedService,
   ): PlainObject<V1_PackageableElement> {
-    return serialize(V1_HostedServiceModelSchema, element);
+    return serialize(V1_HostedServiceModelSchema(this.plugins), element);
   }
 
   visit_INTERNAL__UnknownStore(
@@ -360,9 +360,9 @@ export const V1_deserializePackageableElement = (
       case V1_DATA_ELEMENT_PROTOCOL_TYPE:
         return deserialize(V1_dataElementModelSchema(plugins), json);
       case V1_SNOWFLAKE_APP_TYPE:
-        return deserialize(V1_snowflakeAppModelSchema, json);
+        return deserialize(V1_snowflakeAppModelSchema(plugins), json);
       case V1_HOSTED_SERVICE_TYPE:
-        return deserialize(V1_HostedServiceModelSchema, json);
+        return deserialize(V1_HostedServiceModelSchema(plugins), json);
       case V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE:
         return deserialize(V1_dataProductModelSchema, json);
       default: {

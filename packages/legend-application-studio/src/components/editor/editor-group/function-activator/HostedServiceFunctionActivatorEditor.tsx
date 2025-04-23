@@ -15,20 +15,33 @@
  */
 
 import {
-  Panel,
-  PanelHeader,
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizablePanelSplitter,
+  PlusIcon,
+  ContextMenu,
+  MenuContent,
+  MenuContentItem,
+  PanelListSelectorItem,
+  ControlledDropdownMenu,
+  ResizablePanelSplitterLine,
   PanelContent,
+  Panel,
+  Badge,
+  PanelListSelectorItemLabel,
+  PanelFormBooleanField,
+  PanelHeaderActions,
   PanelForm,
   PURE_FunctionIcon,
   LongArrowRightIcon,
   PanelLoadingIndicator,
-  PanelFormBooleanField,
   PanelFormValidatedTextField,
   TimesIcon,
   clsx,
-  PlusIcon,
+  PanelHeader,
 } from '@finos/legend-art';
 import {
+  type PostDeploymentAction,
   Profile,
   StereotypeExplicitReference,
   type StereotypeReference,
@@ -53,6 +66,7 @@ import {
   hostedService_setPattern,
   hostedService_removePatternParameter,
   hostedService_setStoreModel,
+  hostedServices_deleteAction,
 } from '../../../../stores/graph-modifier/DSL_FunctionActivator_GraphModifierHelper.js';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { prettyCONSTName } from '@finos/legend-shared';
@@ -78,6 +92,211 @@ import {
   StereotypeDragPreviewLayer,
   StereotypeSelector,
 } from '../uml-editor/StereotypeSelector.js';
+import type { DSL_Service_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/DSL_Service_LegendStudioApplicationPlugin_Extension.js';
+import { UnsupportedEditorPanel } from '../UnsupportedElementEditor.js';
+import type { LegendStudioApplicationPlugin } from '../../../../stores/LegendStudioApplicationPlugin.js';
+
+const renderEditorPostAction = (
+  postDeploymentAction: PostDeploymentAction,
+  isReadOnly: boolean,
+  plugins: LegendStudioApplicationPlugin[],
+  activatorState: HostedServiceFunctionActivatorEditorState,
+): React.ReactNode => {
+  const extraPostDeploymentActionEditorRenderers = plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSL_Service_LegendStudioApplicationPlugin_Extension
+      ).getExtraActionEditorRenderers?.() ?? [],
+  );
+  for (const editorRenderer of extraPostDeploymentActionEditorRenderers) {
+    if (postDeploymentAction.properties) {
+      const editor = editorRenderer(
+        postDeploymentAction.properties,
+        activatorState,
+        isReadOnly,
+        postDeploymentAction,
+      );
+      if (editor) {
+        return editor;
+      }
+    }
+  }
+  return (
+    <UnsupportedEditorPanel
+      isReadOnly={true}
+      text="Can't display action in form mode"
+    />
+  );
+};
+const HostedServicesActionEditor = observer(
+  (props: {
+    activatorState: HostedServiceFunctionActivatorEditorState;
+    isReadOnly: boolean;
+  }) => {
+    const { activatorState, isReadOnly } = props;
+    const editorStore = useEditorStore();
+    const plugins = editorStore.pluginManager.getApplicationPlugins();
+    const editorState = editorStore.tabManagerState.getCurrentEditorState(
+      HostedServiceFunctionActivatorEditorState,
+    );
+    const deleteAction =
+      (action: PostDeploymentAction, index: number): (() => void) =>
+      (): void => {
+        hostedServices_deleteAction(editorState.activator, index);
+      };
+    const postDeploymentActionOptions = plugins
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as DSL_Service_LegendStudioApplicationPlugin_Extension
+          ).getExtraPostDeploymentTypes?.() ?? [],
+      )
+      .map((type) => ({
+        value: type,
+        label: type,
+      }));
+
+    const addAction =
+      (actionType: string): (() => void) =>
+      (): void => {
+        const extraActions = plugins.flatMap(
+          (plugin) =>
+            (
+              plugin as DSL_Service_LegendStudioApplicationPlugin_Extension
+            ).getExtraActionCreators?.() ?? [],
+        );
+        for (const creator of extraActions) {
+          creator(
+            actionType,
+            activatorState.activator,
+            editorStore.changeDetectionState.observerContext,
+          );
+        }
+      };
+    const selectAction = (postDeploymentAction: PostDeploymentAction): void => {
+      editorState.setSelectedAction(postDeploymentAction);
+    };
+
+    const getPostDeploymentActionLabel = (
+      postDeploymentAction: PostDeploymentAction,
+    ): string => {
+      const extraPostDeploymentActionClassifier = plugins.flatMap(
+        (plugin) =>
+          (
+            plugin as DSL_Service_LegendStudioApplicationPlugin_Extension
+          ).getExtraPostDeploymentActionClassifierGetters?.() ?? [],
+      );
+      for (const classify of extraPostDeploymentActionClassifier) {
+        if (postDeploymentAction.properties) {
+          const label = classify(postDeploymentAction.properties);
+          if (label) {
+            return label;
+          }
+        }
+      }
+      return 'unknown type';
+    };
+
+    return (
+      <div className="action-editor">
+        <ResizablePanelGroup orientation="horizontal">
+          <ResizablePanelSplitter>
+            <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+          </ResizablePanelSplitter>
+          <ResizablePanel>
+            <div className="action-editor__content">
+              <ResizablePanelGroup orientation="vertical">
+                <ResizablePanel size={200} minSize={100}>
+                  <Panel>
+                    <PanelHeader title="actions">
+                      <PanelHeaderActions>
+                        <ControlledDropdownMenu
+                          title="Create action"
+                          className="panel__header__action"
+                          disabled={isReadOnly}
+                          content={postDeploymentActionOptions.map(
+                            (postDeploymentActionType) => (
+                              <MenuContentItem
+                                key={postDeploymentActionType.value}
+                                onClick={addAction(
+                                  postDeploymentActionType.value,
+                                )}
+                              >
+                                New {postDeploymentActionType.label} Action
+                              </MenuContentItem>
+                            ),
+                          )}
+                          menuProps={{
+                            anchorOrigin: {
+                              vertical: 'bottom',
+                              horizontal: 'right',
+                            },
+                            transformOrigin: {
+                              vertical: 'top',
+                              horizontal: 'right',
+                            },
+                            elevation: 7,
+                          }}
+                        >
+                          <PlusIcon />
+                        </ControlledDropdownMenu>
+                      </PanelHeaderActions>
+                    </PanelHeader>
+                    <PanelContent>
+                      {editorState.activator.actions.map((actionItem, idx) => (
+                        <ContextMenu
+                          key={actionItem.hashCode}
+                          disabled={isReadOnly}
+                          content={
+                            <MenuContent>
+                              <MenuContentItem
+                                onClick={deleteAction(actionItem, idx)}
+                              >
+                                Delete
+                              </MenuContentItem>
+                            </MenuContent>
+                          }
+                          menuProps={{ elevation: 7 }}
+                        >
+                          <PanelListSelectorItem
+                            onSelect={() => selectAction(actionItem)}
+                            isSelected={
+                              actionItem === editorState.selectedAction
+                            }
+                          >
+                            <PanelListSelectorItemLabel
+                              title={`Action ${idx + 1}`}
+                            />
+                            <Badge
+                              className="badge--right"
+                              title={getPostDeploymentActionLabel(actionItem)}
+                            />
+                          </PanelListSelectorItem>
+                        </ContextMenu>
+                      ))}
+                    </PanelContent>
+                  </Panel>
+                </ResizablePanel>
+                <ResizablePanelSplitter>
+                  <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+                </ResizablePanelSplitter>
+                <ResizablePanel>
+                  {editorState.selectedAction &&
+                    renderEditorPostAction(
+                      editorState.selectedAction,
+                      isReadOnly,
+                      plugins,
+                      editorState,
+                    )}
+                </ResizablePanel>
+              </ResizablePanelGroup>
+            </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </div>
+    );
+  },
+);
 
 export const HostedServiceFunctionActivatorEditor = observer(() => {
   const editorStore = useEditorStore();
@@ -88,6 +307,7 @@ export const HostedServiceFunctionActivatorEditor = observer(() => {
   const activatorElement = editorState.element;
   const isReadOnly = editorState.isReadOnly;
   const selectedTab = editorState.selectedTab;
+  const activator = editorState.activator;
   let addButtonTitle = '';
   switch (selectedTab) {
     case ACTIVATOR_EDITOR_TAB.TAGGED_VALUES:
@@ -188,7 +408,6 @@ export const HostedServiceFunctionActivatorEditor = observer(() => {
     (): void =>
       editorState.setSelectedTab(tab);
 
-  const activator = editorState.activator;
   const visitFunction = (): void =>
     editorState.editorStore.graphEditorMode.openElement(
       activator.function.value,
@@ -496,6 +715,14 @@ export const HostedServiceFunctionActivatorEditor = observer(() => {
                   darkTheme={true}
                 />
               ))}
+            </div>
+          )}
+          {selectedTab === ACTIVATOR_EDITOR_TAB.ACTIONS && (
+            <div className={clsx('panel__content__lists')}>
+              <HostedServicesActionEditor
+                activatorState={editorState}
+                isReadOnly={isReadOnly}
+              />
             </div>
           )}
         </PanelContent>

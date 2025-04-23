@@ -94,3 +94,9 @@ export const activator_deleteValueFromUserOwnership = action(
     userList.users.splice(index, 1);
   },
 );
+
+export const hostedServices_deleteAction = action(
+  (hostedService: HostedService, index: number): void => {
+    hostedService.actions.splice(index, 1);
+  },
+);

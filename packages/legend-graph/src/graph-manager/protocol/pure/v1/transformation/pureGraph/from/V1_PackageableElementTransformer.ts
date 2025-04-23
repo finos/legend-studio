@@ -189,7 +189,7 @@ class V1_PackageableElementTransformer
       );
     protocol.stereotypes = element.stereotypes.map(V1_transformStereotype);
     protocol.taggedValues = element.taggedValues.map(V1_transformTaggedValue);
-    V1_transformFunctionActivatorActions(protocol, element);
+    V1_transformFunctionActivatorActions(protocol, element, this.context);
     return protocol;
   }
 
@@ -218,7 +218,7 @@ class V1_PackageableElementTransformer
     }
     protocol.taggedValues = element.taggedValues.map(V1_transformTaggedValue);
     protocol.stereotypes = element.stereotypes.map(V1_transformStereotype);
-    V1_transformFunctionActivatorActions(protocol, element);
+    V1_transformFunctionActivatorActions(protocol, element, this.context);
     return protocol;
   }
 

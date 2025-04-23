@@ -20,6 +20,7 @@ import {
   observe_HostedService,
   DeploymentOwner,
   UserList,
+  type PostDeploymentAction,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -58,6 +59,7 @@ export enum ACTIVATOR_EDITOR_TAB {
   DEFINITION = 'DEFINITION',
   TAGGED_VALUES = 'TAGGED_VALUES',
   STEREOTYPES = 'STEREOTYPES',
+  ACTIONS = 'ACTIONS',
 }
 
 export type HostedServiceOwnerOption = {
@@ -70,6 +72,7 @@ export class HostedServiceFunctionActivatorEditorState extends ElementEditorStat
   readonly deployState = ActionState.create();
 
   selectedTab: ACTIVATOR_EDITOR_TAB;
+  selectedAction: PostDeploymentAction | undefined;
 
   constructor(editorStore: EditorStore, element: HostedService) {
     super(editorStore, element);
@@ -86,10 +89,13 @@ export class HostedServiceFunctionActivatorEditorState extends ElementEditorStat
       deployToSandbox: flow,
       searchUsers: flow,
       selectedTab: observable,
+      selectedAction: observable,
       setSelectedTab: action,
+      setSelectedAction: action,
     });
 
     this.selectedTab = ACTIVATOR_EDITOR_TAB.DEFINITION;
+    this.selectedAction = undefined;
   }
 
   setSelectedTab(tab: ACTIVATOR_EDITOR_TAB): void {
@@ -103,6 +109,7 @@ export class HostedServiceFunctionActivatorEditorState extends ElementEditorStat
         HostedService,
         'Element inside hosted service state must be a HostedService',
       ),
+      this.editorStore.changeDetectionState.observerContext,
     );
   }
 
@@ -116,6 +123,10 @@ export class HostedServiceFunctionActivatorEditorState extends ElementEditorStat
 
   storeModel(val: boolean): void {
     this.activator.storeModel = val;
+  }
+
+  setSelectedAction(postDeploymentAction: PostDeploymentAction): void {
+    this.selectedAction = postDeploymentAction;
   }
 
   get selectedOwnership(): HostedServiceOwnerOption | undefined {

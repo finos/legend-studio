@@ -29,6 +29,7 @@ import {
   optional,
   primitive,
   serialize,
+  type ModelSchema,
 } from 'serializr';
 import { V1_connectionPointerModelSchema } from './V1_ConnectionSerializationHelper.js';
 import {
@@ -39,9 +40,11 @@ import {
 import { V1_HostedServiceDeploymentConfiguration } from '../../../engine/functionActivator/V1_HostedServiceDeploymentConfiguration.js';
 import { V1_PostDeploymentAction } from '../../../engine/functionActivator/V1_PostDeploymentAction.js';
 import {
+  type V1_PostDeploymentProperties,
   V1_INTERNAL__UnknownPostDeploymentProperties,
-  V1_PostDeploymentProperties,
 } from '../../../engine/functionActivator/V1_PostDeploymentProperties.js';
+import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
+import type { DSL_FunctionActivator_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/DSL_FunctionActivator_PureProtocolProcessorPlugin_Extension.js';
 
 const V1_SNOWFLAKE_APP_DEPLOYMENT_CONFIGURATION_APP_TYPE =
   'snowflakeDeploymentConfiguration';
@@ -118,41 +121,67 @@ export const V1_deserializeOwnership = (
       );
   }
 };
-
 export const V1_deserializePostDeploymentProperties = (
   json: PlainObject<V1_PostDeploymentProperties>,
+  plugins: PureProtocolProcessorPlugin[],
 ): V1_PostDeploymentProperties => {
   switch (json._type) {
-    // we can add known post actions here
-    default:
+    default: {
+      const extraConnectionDatasourceSpecificationProtocolDeserializers =
+        plugins.flatMap(
+          (plugin) =>
+            (
+              plugin as DSL_FunctionActivator_PureProtocolProcessorPlugin_Extension
+            ).V1_getPostDeploymentPropertiesDeserializers?.() ?? [],
+        );
+      for (const deserializer of extraConnectionDatasourceSpecificationProtocolDeserializers) {
+        const protocol = deserializer(json);
+        if (protocol) {
+          return protocol;
+        }
+      }
       // Fall back to unknown
       const protocol = new V1_INTERNAL__UnknownPostDeploymentProperties();
       protocol.content = json;
       return protocol;
+    }
   }
 };
 
 export const V1_PostDeploymentPropertiesSchema = createModelSchema(
-  V1_PostDeploymentProperties,
+  V1_INTERNAL__UnknownPostDeploymentProperties,
   {},
 );
 
 export const V1_serializePostDeploymentProperties = (
   protocol: V1_PostDeploymentProperties,
+  plugins: PureProtocolProcessorPlugin[],
 ): PlainObject<V1_PostDeploymentProperties> => {
   if (protocol instanceof V1_INTERNAL__UnknownPostDeploymentProperties) {
     return protocol.content;
   }
+  const extraPostDeploymentPropertiesSerializers = plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSL_FunctionActivator_PureProtocolProcessorPlugin_Extension
+      ).V1_getPostDeploymentPropertiesSerializers?.() ?? [],
+  );
+  for (const serializer of extraPostDeploymentPropertiesSerializers) {
+    const json = serializer(protocol);
+    if (json) {
+      return json;
+    }
+  }
   return serialize(V1_PostDeploymentPropertiesSchema, undefined);
 };
 
-export const V1_PostDeploymentActionSchema = createModelSchema(
-  V1_PostDeploymentAction,
-  {
+export const V1_PostDeploymentActionSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_PostDeploymentAction> =>
+  createModelSchema(V1_PostDeploymentAction, {
     automated: optional(primitive()),
     properties: optionalCustom(
-      (val) => V1_serializePostDeploymentProperties(val),
-      (val) => V1_deserializePostDeploymentProperties(val),
+      (val) => V1_serializePostDeploymentProperties(val, plugins),
+      (val) => V1_deserializePostDeploymentProperties(val, plugins),
     ),
-  },
-);
+  });

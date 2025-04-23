@@ -14,26 +14,20 @@
  * limitations under the License.
  */
 
-import {
-  hashArray,
-  type Hashable,
-  type PlainObject,
-} from '@finos/legend-shared';
-import {
-  CORE_HASH_STRUCTURE,
-  hashObjectWithoutSourceInformation,
-} from '../../../Core_HashUtils.js';
+import type { PostDeploymentAction } from '@finos/legend-graph';
+import { makeObservable, observable } from 'mobx';
 
-export abstract class PostDeploymentProperties implements Hashable {
-  abstract get hashCode(): string;
-}
+export abstract class PostDeploymentActionEditorState {
+  postDeploymentAction: PostDeploymentAction | undefined;
 
-export class INTERNAL__UnknownPostDeploymentProperties extends PostDeploymentProperties {
-  content!: PlainObject;
-  override get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.FUNCTION_ACTIVATOR_POST_DEPLOYMENT_PROPERTIES,
-      hashObjectWithoutSourceInformation(this.content),
-    ]);
+  constructor(postDeploymentAction: PostDeploymentAction | undefined) {
+    makeObservable(this, {
+      postDeploymentAction: observable,
+    });
+    this.postDeploymentAction = postDeploymentAction;
   }
+
+  abstract setDeploymentActionState(
+    val: PostDeploymentAction | undefined,
+  ): void;
 }

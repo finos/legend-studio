@@ -14,8 +14,16 @@
  * limitations under the License.
  */
 
+import type { HostedServiceFunctionActivatorEditorState } from '../editor/editor-state/element-editor-state/function-activator/HostedServiceFunctionActivatorEditorState.js';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../LegendStudioApplicationPlugin.js';
-import type { Connection, Runtime } from '@finos/legend-graph';
+import type {
+  Connection,
+  Runtime,
+  PostDeploymentAction,
+  ObserverContext,
+  PostDeploymentProperties,
+  HostedService,
+} from '@finos/legend-graph';
 
 export type ServiceTestRuntimeConnectionBuilder = (
   sourceConnection: Connection,
@@ -23,10 +31,43 @@ export type ServiceTestRuntimeConnectionBuilder = (
   testData: string,
 ) => Connection | undefined;
 
+export type PostDeploymentActionCreator = (
+  type: string,
+  hostedService: HostedService,
+  observerContext: ObserverContext,
+) => PostDeploymentAction | undefined;
+
+export type PostDeploymentActionEditorRenderer = (
+  postDeploymentContent: PostDeploymentProperties,
+  activatorState: HostedServiceFunctionActivatorEditorState,
+  isReadOnly: boolean,
+  postDeploymentAction: PostDeploymentAction,
+) => React.ReactNode | undefined;
+
+export type PostDeploymentActionTypeGetter = (
+  metamodel: PostDeploymentProperties,
+) => string | undefined;
+
 export interface DSL_Service_LegendStudioApplicationPlugin_Extension
   extends DSL_LegendStudioApplicationPlugin_Extension {
   /**
    * Get the list of service test runtime connection builder for a provided connection and test data.
    */
   getExtraServiceTestRuntimeConnectionBuilders?(): ServiceTestRuntimeConnectionBuilder[];
+  /**
+   * Get the list of renderers for the actions tab on Hosted Services.
+   */
+  getExtraActionEditorRenderers?(): PostDeploymentActionEditorRenderer[];
+  /**
+   * Get the list of renderers for the actions creators Hosted Services.
+   */
+  getExtraActionCreators?(): PostDeploymentActionCreator[];
+  /**
+   * Get the list of Post Deployment Types.
+   */
+  getExtraPostDeploymentTypes?(): string[];
+  /**
+   * Get the list of the Classifiers for Post Deployment Actions.
+   */
+  getExtraPostDeploymentActionClassifierGetters?(): PostDeploymentActionTypeGetter[];
 }
