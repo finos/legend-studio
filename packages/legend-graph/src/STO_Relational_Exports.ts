@@ -21,6 +21,7 @@ export { INTERNAL__UnknownPostProcessor } from './graph/metamodel/pure/packageab
 
 export { Database } from './graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
 export { Table } from './graph/metamodel/pure/packageableElements/store/relational/model/Table.js';
+export { TabularFunction } from './graph/metamodel/pure/packageableElements/store/relational/model/TabularFunction.js';
 export { Column } from './graph/metamodel/pure/packageableElements/store/relational/model/Column.js';
 export { Schema } from './graph/metamodel/pure/packageableElements/store/relational/model/Schema.js';
 export { View } from './graph/metamodel/pure/packageableElements/store/relational/model/View.js';

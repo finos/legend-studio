@@ -384,6 +384,8 @@ import {
   FaCube,
 } from 'react-icons/fa';
 
+import { PiFunctionBold } from 'react-icons/pi';
+
 export const HistoryIcon = FaHistory;
 export const CrosshairsIcon = FaCrosshairs;
 export const LayerGroupIcon = FaLayerGroup;
@@ -470,6 +472,7 @@ export const TruckLoadingIcon = FaTruckLoading;
 export const FolderOpenIcon = FaFolderOpen;
 export const FolderIcon = FaFolder;
 export const FileCodeIcon = FaFileCode;
+export const PiFunctionBoldIcon = PiFunctionBold;
 export const CodeBranchIcon = FaCodeBranch;
 export const ArrowCircleUpIcon = FaArrowAltCircleUp;
 export const ArrowCircleLeftIcon = FaArrowAltCircleLeft;

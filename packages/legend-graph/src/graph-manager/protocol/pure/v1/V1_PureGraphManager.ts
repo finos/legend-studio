@@ -3627,6 +3627,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     const config = new V1_DatabaseBuilderConfig();
     config.maxTables = input.config.maxTables;
     config.enrichTables = input.config.enrichTables;
+    config.enrichTableFunctions = input.config.enrichTableFunctions;
     config.enrichPrimaryKeys = input.config.enrichPrimaryKeys;
     config.enrichColumns = input.config.enrichColumns;
     config.patterns = input.config.patterns.map(
@@ -3634,8 +3635,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         const pattern = new V1_DatabasePattern();
         pattern.schemaPattern = storePattern.schemaPattern;
         pattern.tablePattern = storePattern.tablePattern;
+        pattern.functionPattern = storePattern.functionPattern;
         pattern.escapeSchemaPattern = storePattern.escapeSchemaPattern;
         pattern.escapeTablePattern = storePattern.escapeTablePattern;
+        pattern.escapeFunctionPattern = storePattern.escapeFunctionPattern;
         return pattern;
       },
     );

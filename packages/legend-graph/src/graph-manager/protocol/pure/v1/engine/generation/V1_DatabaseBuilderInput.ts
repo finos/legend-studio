@@ -38,15 +38,19 @@ import type { PureProtocolProcessorPlugin } from '../../../PureProtocolProcessor
 export class V1_DatabasePattern {
   schemaPattern!: string;
   tablePattern!: string;
+  functionPattern!: string;
   escapeSchemaPattern?: boolean | undefined;
   escapeTablePattern?: boolean | undefined;
+  escapeFunctionPattern?: boolean | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_DatabasePattern, {
       schemaPattern: primitive(),
       tablePattern: primitive(),
+      functionPattern: primitive(),
       escapeSchemaPattern: optional(primitive()),
       escapeTablePattern: optional(primitive()),
+      escapeFunctionPattern: optional(primitive()),
     }),
   );
 }
@@ -54,6 +58,7 @@ export class V1_DatabasePattern {
 export class V1_DatabaseBuilderConfig {
   maxTables?: number | undefined;
   enrichTables?: boolean | undefined;
+  enrichTableFunctions?: boolean | undefined;
   enrichPrimaryKeys?: boolean | undefined;
   enrichColumns?: boolean | undefined;
   patterns: V1_DatabasePattern[] = [];
@@ -62,6 +67,7 @@ export class V1_DatabaseBuilderConfig {
     createModelSchema(V1_DatabaseBuilderConfig, {
       maxTables: primitive(),
       enrichTables: primitive(),
+      enrichTableFunctions: primitive(),
       enrichPrimaryKeys: primitive(),
       enrichColumns: primitive(),
       patterns: list(usingModelSchema(V1_DatabasePattern.serialization.schema)),

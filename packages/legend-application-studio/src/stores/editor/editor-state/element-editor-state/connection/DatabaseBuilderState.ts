@@ -54,6 +54,7 @@ import {
   TDSRow,
   type Schema,
   Table,
+  type TabularFunction,
   RelationalDatabaseConnection,
   DatabaseBuilderInput,
   DatabasePattern,
@@ -286,12 +287,35 @@ export class DatabaseSchemaExplorerTreeTableNodeData extends DatabaseSchemaExplo
   }
 }
 
+export class DatabaseSchemaExplorerTreeTabularFunctionNodeData extends DatabaseSchemaExplorerTreeNodeData {
+  override parentId: string;
+  owner: Schema;
+  tabularFunction: TabularFunction;
+
+  constructor(
+    id: string,
+    parentId: string,
+    owner: Schema,
+    tabularFunction: TabularFunction,
+  ) {
+    super(id, tabularFunction.name, parentId);
+    this.parentId = parentId;
+    this.owner = owner;
+    this.tabularFunction = tabularFunction;
+  }
+}
+
 export class DatabaseSchemaExplorerTreeColumnNodeData extends DatabaseSchemaExplorerTreeNodeData {
   override parentId: string;
-  owner: Table;
+  owner: Table | TabularFunction;
   column: Column;
 
-  constructor(id: string, parentId: string, owner: Table, column: Column) {
+  constructor(
+    id: string,
+    parentId: string,
+    owner: Table | TabularFunction,
+    column: Column,
+  ) {
     super(id, column.name, parentId);
     this.parentId = parentId;
     this.owner = owner;
@@ -341,6 +365,7 @@ export class DatabaseSchemaExplorerState {
       fetchDatabaseMetadata: flow,
       fetchSchemaMetadata: flow,
       fetchTableMetadata: flow,
+      fetchTabularFunctionMetadata: flow,
       generateDatabase: flow,
       updateDatabase: flow,
       updateDatabaseAndGraph: flow,
@@ -401,6 +426,11 @@ export class DatabaseSchemaExplorerState {
       !node.childrenIds
     ) {
       yield flowResult(this.fetchTableMetadata(node, treeData));
+    } else if (
+      node instanceof DatabaseSchemaExplorerTreeTabularFunctionNodeData &&
+      !node.childrenIds
+    ) {
+      yield flowResult(this.fetchTabularFunctionMetadata(node, treeData));
     }
     node.isOpen = !node.isOpen;
     this.setTreeData({ ...treeData });
@@ -424,7 +454,10 @@ export class DatabaseSchemaExplorerState {
       this.getChildNodes(node, treeData)?.forEach((childNode) => {
         childNode.setChecked(node.isChecked);
       });
-    } else if (node instanceof DatabaseSchemaExplorerTreeTableNodeData) {
+    } else if (
+      node instanceof DatabaseSchemaExplorerTreeTableNodeData ||
+      node instanceof DatabaseSchemaExplorerTreeTabularFunctionNodeData
+    ) {
       if (node.parentId) {
         const parent = treeData.nodes.get(node.parentId);
         if (
@@ -453,8 +486,9 @@ export class DatabaseSchemaExplorerState {
       );
       databaseBuilderInput.config.maxTables = undefined;
       databaseBuilderInput.config.enrichTables = false;
+      databaseBuilderInput.config.enrichTableFunctions = false;
       databaseBuilderInput.config.patterns = [
-        new DatabasePattern(undefined, undefined),
+        new DatabasePattern(undefined, undefined, undefined),
       ];
       const database = (yield this.buildIntermediateDatabase(
         databaseBuilderInput,
@@ -513,16 +547,22 @@ export class DatabaseSchemaExplorerState {
       );
       databaseBuilderInput.config.maxTables = undefined;
       databaseBuilderInput.config.enrichTables = true;
+      databaseBuilderInput.config.enrichTableFunctions = true;
       databaseBuilderInput.config.patterns = [
-        new DatabasePattern(schema.name, undefined),
+        new DatabasePattern(schema.name, undefined, undefined),
       ];
       const database = (yield this.buildIntermediateDatabase(
         databaseBuilderInput,
       )) as Database;
 
       const tables = getSchema(database, schema.name).tables;
+      const tabularFunctions = getSchema(
+        database,
+        schema.name,
+      ).tabularFunctions;
       const childrenIds = schemaNode.childrenIds ?? [];
       schema.tables = tables;
+      schema.tabularFunctions = tabularFunctions;
       tables
         .toSorted((tableA, tableB) => tableA.name.localeCompare(tableB.name))
         .forEach((table) => {
@@ -542,6 +582,32 @@ export class DatabaseSchemaExplorerState {
             Boolean(
               matchingSchema
                 ? getNullableTable(matchingSchema, table.name)
+                : undefined,
+            ),
+          );
+        });
+      tabularFunctions
+        .toSorted((tabularFunctionA, tabularFunctionB) =>
+          tabularFunctionA.name.localeCompare(tabularFunctionB.name),
+        )
+        .forEach((tabularFunction) => {
+          tabularFunction.schema = schema;
+          const tabularFunctionId = `${schema.name}.${tabularFunction.name}`;
+          const tabularFunctionNode =
+            new DatabaseSchemaExplorerTreeTabularFunctionNodeData(
+              tabularFunctionId,
+              schemaNode.id,
+              schema,
+              tabularFunction,
+            );
+          treeData.nodes.set(tabularFunctionId, tabularFunctionNode);
+          addUniqueEntry(childrenIds, tabularFunctionId);
+
+          const matchingSchema = getNullableSchema(this.database, schema.name);
+          tabularFunctionNode.setChecked(
+            Boolean(
+              matchingSchema
+                ? getNullableTable(matchingSchema, tabularFunction.name)
                 : undefined,
             ),
           );
@@ -577,9 +643,12 @@ export class DatabaseSchemaExplorerState {
       const config = databaseBuilderInput.config;
       config.maxTables = undefined;
       config.enrichTables = true;
+      config.enrichTableFunctions = true;
       config.enrichColumns = true;
       config.enrichPrimaryKeys = true;
-      config.patterns = [new DatabasePattern(table.schema.name, table.name)];
+      config.patterns = [
+        new DatabasePattern(table.schema.name, table.name, undefined),
+      ];
       const database = (yield this.buildIntermediateDatabase(
         databaseBuilderInput,
       )) as Database;
@@ -625,6 +694,79 @@ export class DatabaseSchemaExplorerState {
     }
   }
 
+  *fetchTabularFunctionMetadata(
+    tabularFunctionNode: DatabaseSchemaExplorerTreeTabularFunctionNodeData,
+    treeData: DatabaseExplorerTreeData,
+  ): GeneratorFn<void> {
+    try {
+      this.isGeneratingDatabase = true;
+
+      const databaseBuilderInput = new DatabaseBuilderInput(this.connection);
+      const [packagePath, name] = this.resolveDatabasePackageAndName;
+      databaseBuilderInput.targetDatabase = new TargetDatabase(
+        packagePath,
+        name,
+      );
+      const tabularFunction = tabularFunctionNode.tabularFunction;
+      const config = databaseBuilderInput.config;
+      config.maxTables = undefined;
+      config.enrichTables = false;
+      config.enrichTableFunctions = true;
+      config.enrichColumns = true;
+      config.enrichPrimaryKeys = true;
+      config.patterns = [
+        new DatabasePattern(
+          tabularFunction.schema.name,
+          undefined,
+          tabularFunction.name,
+        ),
+      ];
+      const database = (yield this.buildIntermediateDatabase(
+        databaseBuilderInput,
+      )) as Database;
+
+      const enrichedTabularFunction = database.schemas
+        .find((s) => tabularFunction.schema.name === s.name)
+        ?.tabularFunctions.find((t) => t.name === tabularFunction.name);
+      if (enrichedTabularFunction) {
+        const columns = enrichedTabularFunction.columns.filter(
+          filterByType(Column),
+        );
+        tabularFunctionNode.tabularFunction.columns = columns;
+        tabularFunctionNode.childrenIds?.forEach((childId) =>
+          treeData.nodes.delete(childId),
+        );
+        tabularFunctionNode.childrenIds = undefined;
+        const childrenIds: string[] = [];
+        const tabularFunctionId = tabularFunctionNode.id;
+        columns
+          .toSorted((colA, colB) => colA.name.localeCompare(colB.name))
+          .forEach((column) => {
+            const columnId = `${tabularFunctionId}.${column.name}`;
+            const columnNode = new DatabaseSchemaExplorerTreeColumnNodeData(
+              columnId,
+              tabularFunctionId,
+              tabularFunction,
+              column,
+            );
+            column.owner = tabularFunctionNode.tabularFunction;
+            treeData.nodes.set(columnId, columnNode);
+            addUniqueEntry(childrenIds, columnId);
+          });
+        tabularFunctionNode.childrenIds = childrenIds;
+      }
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.logService.error(
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.DATABASE_BUILDER_FAILURE),
+        error,
+      );
+      this.editorStore.applicationStore.notificationService.notifyError(error);
+    } finally {
+      this.isGeneratingDatabase = false;
+    }
+  }
+
   private async buildIntermediateDatabase(
     databaseBuilderInput: DatabaseBuilderInput,
   ): Promise<Database> {
@@ -650,19 +792,23 @@ export class DatabaseSchemaExplorerState {
       this.previewer = undefined;
       this.previewDataState.inProgress();
       let column: Column | undefined;
-      let table: Table | undefined;
+      let nodeInstance: Table | TabularFunction | undefined;
       if (node instanceof DatabaseSchemaExplorerTreeTableNodeData) {
-        table = node.table;
+        nodeInstance = node.table;
+      } else if (
+        node instanceof DatabaseSchemaExplorerTreeTabularFunctionNodeData
+      ) {
+        nodeInstance = node.tabularFunction;
       } else if (node instanceof DatabaseSchemaExplorerTreeColumnNodeData) {
-        table = guaranteeType(node.column.owner, Table);
+        nodeInstance = guaranteeType(node.column.owner, Table);
         column = node.column;
       } else {
         throw new UnsupportedOperationError(
-          'Preview data only supported for column and table',
+          'Preview data only supported for column, table and tabular function',
         );
       }
-      const schemaName = table.schema.name;
-      const tableName = table.name;
+      const schemaName = nodeInstance.schema.name;
+      const tableName = nodeInstance.name;
       const dummyPackage = 'generation';
       const dummyName = 'myDB';
       const dummyDbPath = `${dummyPackage}::${dummyName}`;
@@ -673,10 +819,23 @@ export class DatabaseSchemaExplorerState {
       );
       const config = databaseBuilderInput.config;
       config.maxTables = undefined;
-      config.enrichTables = true;
       config.enrichColumns = true;
       config.enrichPrimaryKeys = true;
-      config.patterns.push(new DatabasePattern(table.schema.name, table.name));
+      if (node instanceof DatabaseSchemaExplorerTreeTableNodeData) {
+        config.enrichTables = true;
+        config.enrichTableFunctions = false;
+        config.patterns.push(
+          new DatabasePattern(schemaName, node.table.name, undefined),
+        );
+      } else if (
+        node instanceof DatabaseSchemaExplorerTreeTabularFunctionNodeData
+      ) {
+        config.enrichTables = false;
+        config.enrichTableFunctions = true;
+        config.patterns.push(
+          new DatabasePattern(schemaName, undefined, node.tabularFunction.name),
+        );
+      }
       const entities =
         (yield this.editorStore.graphManagerState.graphManager.buildDatabase(
           databaseBuilderInput,
@@ -766,31 +925,56 @@ export class DatabaseSchemaExplorerState {
       );
       const config = databaseBuilderInput.config;
       config.maxTables = undefined;
-      config.enrichTables = true;
       config.enrichColumns = true;
       config.enrichPrimaryKeys = true;
+      config.enrichTables = false;
+      config.enrichTableFunctions = false;
       treeData.rootIds
         .map((e) => treeData.nodes.get(e))
         .filter(isNonNullable)
         .forEach((schemaNode) => {
           if (schemaNode instanceof DatabaseSchemaExplorerTreeSchemaNodeData) {
-            const tableNodes = this.getChildNodes(schemaNode, treeData);
-            const allChecked = tableNodes?.every((t) => t.isChecked === true);
+            const nodes = this.getChildNodes(schemaNode, treeData);
+            const allChecked = nodes?.every((t) => t.isChecked === true);
             if (
               allChecked ||
               (schemaNode.isChecked && !schemaNode.childrenIds)
             ) {
+              config.enrichTables = true;
+              config.enrichTableFunctions = true;
               config.patterns.push(
-                new DatabasePattern(schemaNode.schema.name, undefined),
+                new DatabasePattern(
+                  schemaNode.schema.name,
+                  undefined,
+                  undefined,
+                ),
               );
             } else {
-              tableNodes?.forEach((t) => {
+              nodes?.forEach((t) => {
                 if (
                   t instanceof DatabaseSchemaExplorerTreeTableNodeData &&
                   t.isChecked
                 ) {
+                  config.enrichTables = true;
                   config.patterns.push(
-                    new DatabasePattern(schemaNode.schema.name, t.table.name),
+                    new DatabasePattern(
+                      schemaNode.schema.name,
+                      t.table.name,
+                      undefined,
+                    ),
+                  );
+                } else if (
+                  t instanceof
+                    DatabaseSchemaExplorerTreeTabularFunctionNodeData &&
+                  t.isChecked
+                ) {
+                  config.enrichTableFunctions = true;
+                  config.patterns.push(
+                    new DatabasePattern(
+                      schemaNode.schema.name,
+                      undefined,
+                      t.tabularFunction.name,
+                    ),
                   );
                 }
               });
