@@ -26,6 +26,7 @@ import {
   DataSpaceDataQualityExecutionContext,
   MappingAndRuntimeDataQualityExecutionContext,
   DataQualityRelationQueryLambda,
+  DataQualityRelationValidation,
 } from '../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
 import { action, computed, makeObservable, observable } from 'mobx';
 import {
@@ -41,6 +42,7 @@ import {
   getMappingCompatibleRuntimes,
   PackageableElementExplicitReference,
   getMappingCompatibleClasses,
+  RawLambda,
 } from '@finos/legend-graph';
 import {
   type PackageableElementOption,
@@ -126,6 +128,24 @@ export class DataQuality_ElementDriver extends NewElementDriver<DataQualityValid
     );
   }
 
+  get isValid(): boolean {
+    if (
+      this.dqValidationElementType ===
+        DQ_VALIDATION_ELEMENT_TYPE.RELATION_VALIDATION ||
+      this.dqValidationElementType ===
+        DQ_VALIDATION_ELEMENT_TYPE.SERVICE_VALIDATION
+    ) {
+      return true;
+    }
+    if (
+      this.dqClassElementCreationBasis ===
+      CLASS_ELEMENT_CREATION_BASIS.DATASPACE_BASED
+    ) {
+      return Boolean(this.dataSpaceSelected);
+    }
+    return Boolean(this.mappingSelected && this.runtimeSelected);
+  }
+
   setDataSpaceSelected(
     dataSpace: PackageableElementOption<DataSpace> | undefined,
   ): void {
@@ -154,22 +174,22 @@ export class DataQuality_ElementDriver extends NewElementDriver<DataQualityValid
     this.dqValidationElementType = dqValidationElementType;
   }
 
-  get isValid(): boolean {
-    if (
-      this.dqValidationElementType ===
-        DQ_VALIDATION_ELEMENT_TYPE.RELATION_VALIDATION ||
-      this.dqValidationElementType ===
-        DQ_VALIDATION_ELEMENT_TYPE.SERVICE_VALIDATION
-    ) {
-      return true;
-    }
-    if (
-      this.dqClassElementCreationBasis ===
-      CLASS_ELEMENT_CREATION_BASIS.DATASPACE_BASED
-    ) {
-      return Boolean(this.dataSpaceSelected);
-    }
-    return Boolean(this.mappingSelected && this.runtimeSelected);
+  createDefaultValidation(): DataQualityRelationValidation[] {
+    const body = [
+      {
+        _type: 'boolean',
+        value: true,
+      },
+    ];
+    const parameters = [
+      {
+        _type: 'var',
+        name: 'row',
+      },
+    ];
+    const assertion = new RawLambda(parameters, body);
+    const defaultValidation = new DataQualityRelationValidation('', assertion);
+    return [defaultValidation];
   }
 
   createRelationValidationElement(
@@ -182,6 +202,8 @@ export class DataQuality_ElementDriver extends NewElementDriver<DataQualityValid
     relationValidationConfiguration.query.body =
       this.editorStore.graphManagerState.graphManager.createDefaultBasicRawLambda().body;
     this.editorStore.graphManagerState.graphManager.createDefaultBasicRawLambda();
+    relationValidationConfiguration.validations =
+      this.createDefaultValidation();
     return relationValidationConfiguration;
   }
 

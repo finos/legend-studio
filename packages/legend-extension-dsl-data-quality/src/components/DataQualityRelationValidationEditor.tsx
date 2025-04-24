@@ -25,6 +25,7 @@ import {
   RocketIcon,
   TimesIcon,
   useDragPreviewLayer,
+  clsx,
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import { PrimitiveType } from '@finos/legend-graph';
@@ -185,7 +186,11 @@ export const DataQualityRelationValidationEditor = observer(
         className="relation-validation__container"
         showPlaceholder={isBeingDragged}
       >
-        <div>
+        <div
+          className={clsx('relation-validation', {
+            backdrop__element: validationState.parserError,
+          })}
+        >
           <div className="relation-validation__content">
             <PanelEntryDragHandle
               dragSourceConnector={handleRef}
