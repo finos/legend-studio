@@ -457,7 +457,7 @@ export const V1_functionModelSchema = (
 
 export const V1_INTERNAL__UnknownFunctionActivatorModelSchema =
   createModelSchema(V1_INTERNAL__UnknownFunctionActivator, {
-    function: primitive(),
+    function: usingModelSchema(V1_packageableElementPointerModelSchema),
     name: primitive(),
     package: primitive(),
   });
