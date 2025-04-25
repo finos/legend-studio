@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-import { PostDeploymentAction } from '../../../../../../../graph/metamodel/pure/functionActivator/PostDeploymentAction.js';
+import { PostDeploymentAction } from '../../../../../../../../graph/metamodel/pure/functionActivator/PostDeploymentAction.js';
 import {
   type PostDeploymentProperties,
   INTERNAL__UnknownPostDeploymentProperties,
-} from '../../../../../../../graph/metamodel/pure/functionActivator/PostDeploymentProperties.js';
-import type { FunctionActivator } from '../../../../../../../graph/metamodel/pure/packageableElements/function/FunctionActivator.js';
-import type { DSL_FunctionActivator_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/DSL_FunctionActivator_PureProtocolProcessorPlugin_Extension.js';
+} from '../../../../../../../../graph/metamodel/pure/functionActivator/PostDeploymentProperties.js';
+import type { FunctionActivator } from '../../../../../../../../graph/metamodel/pure/packageableElements/function/FunctionActivator.js';
+import type { DSL_FunctionActivator_PureProtocolProcessorPlugin_Extension } from '../../../../../extensions/DSL_FunctionActivator_PureProtocolProcessorPlugin_Extension.js';
 import {
   type V1_PostDeploymentProperties,
   V1_INTERNAL__UnknownPostDeploymentProperties,
-} from '../../../engine/functionActivator/V1_PostDeploymentProperties.js';
-import type { V1_FunctionActivator } from '../../../model/packageableElements/function/V1_FunctionActivator.js';
-import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
+} from '../../../../engine/functionActivator/V1_PostDeploymentProperties.js';
+import type { V1_FunctionActivator } from '../../../../model/packageableElements/function/V1_FunctionActivator.js';
+import type { V1_GraphTransformerContext } from '../../from/V1_GraphTransformerContext.js';
 
 export const V1_transformPostDeploymentProperties = (
   metamodel: PostDeploymentProperties,
