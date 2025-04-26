@@ -1,5 +1,13 @@
 # @finos/legend-graph
 
+## 32.1.21
+
+### Patch Changes
+
+- [#4023](https://github.com/finos/legend-studio/pull/4023) [`d3bfdc8`](https://github.com/finos/legend-studio/commit/d3bfdc854db648198ce5daed6cd510fa4fd53f21) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add AccessPointGroup to DataProduct
+
+- [#4021](https://github.com/finos/legend-studio/pull/4021) [`33ff45c`](https://github.com/finos/legend-studio/commit/33ff45c3644c9652d07132ceb24fcd3d6e6ff5ba) ([@kelly-thai](https://github.com/kelly-thai)) - Fixed model schema for Unknown Function Activators
+
 ## 32.1.20
 
 ## 32.1.19

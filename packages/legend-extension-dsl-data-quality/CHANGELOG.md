@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-quality
 
+## 2.0.62
+
+### Patch Changes
+
+- [#4020](https://github.com/finos/legend-studio/pull/4020) [`20fe447`](https://github.com/finos/legend-studio/commit/20fe447c42d95187610c9582d99e2c732163475f) ([@keenkeystrokes](https://github.com/keenkeystrokes)) - validation editor bug fix for data quality tds validation
+
 ## 2.0.61
 
 ## 2.0.60
