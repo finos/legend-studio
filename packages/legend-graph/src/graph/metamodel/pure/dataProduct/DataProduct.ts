@@ -31,13 +31,18 @@ import {
 
 export abstract class AccessPoint implements Hashable {
   id: string;
+  description: string | undefined;
 
   constructor(id: string) {
     this.id = id;
   }
 
   get hashCode(): string {
-    return hashArray([CORE_HASH_STRUCTURE.DATA_PRODUCT_ACCESS_POINT, this.id]);
+    return hashArray([
+      CORE_HASH_STRUCTURE.DATA_PRODUCT_ACCESS_POINT,
+      this.id,
+      this.description ?? '',
+    ]);
   }
 }
 
@@ -48,6 +53,7 @@ export enum LakehouseTargetEnv {
 export class LakehouseAccessPoint extends AccessPoint {
   targetEnvironment: string;
   func: RawLambda;
+  reproducible: boolean | undefined;
 
   constructor(id: string, targetEnv: string, func: RawLambda) {
     super(id);
@@ -61,6 +67,7 @@ export class LakehouseAccessPoint extends AccessPoint {
       CORE_HASH_STRUCTURE.LAKEHOUSE_ACCESS_POINT,
       this.targetEnvironment,
       this.func,
+      this.reproducible ?? '',
     ]);
   }
 }
@@ -76,8 +83,25 @@ export class UnknownAccessPoint extends AccessPoint {
   }
 }
 
-export class DataProduct extends PackageableElement {
+export class AccessPointGroup implements Hashable {
+  id!: string;
+  description: string | undefined;
   accessPoints: AccessPoint[] = [];
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.DATA_PRODUCT_ACCESS_POINT_GROUP,
+      this.id,
+      this.description ?? '',
+      hashArray(this.accessPoints),
+    ]);
+  }
+}
+
+export class DataProduct extends PackageableElement {
+  title: string | undefined;
+  description: string | undefined;
+  accessPointGroups: AccessPointGroup[] = [];
 
   override accept_PackageableElementVisitor<T>(
     visitor: PackageableElementVisitor<T>,
@@ -88,7 +112,9 @@ export class DataProduct extends PackageableElement {
   protected override get _elementHashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.DATA_PRODUCT,
-      hashArray(this.accessPoints),
+      hashArray(this.accessPointGroups),
+      this.title ?? '',
+      this.description ?? '',
     ]);
   }
 }

@@ -34,6 +34,7 @@ import {
   CORE_PURE_PATH,
   V1_dataProductModelSchema,
   V1_LakehouseAccessPoint,
+  type V1_AccessPoint,
   type V1_DataProduct,
 } from '@finos/legend-graph';
 import { deserialize } from 'serializr';
@@ -67,9 +68,13 @@ export class DataProductState {
     return this.productEntity.product;
   }
 
+  get accessPoints(): V1_AccessPoint[] {
+    return this.product.accessPointGroups.map((e) => e.accessPoints).flat();
+  }
+
   get accessTypes(): DataProductType {
-    if (this.product.accessPoints.length) {
-      const lake = this.product.accessPoints.every(
+    if (this.accessPoints.length) {
+      const lake = this.accessPoints.every(
         (e) => e instanceof V1_LakehouseAccessPoint,
       );
       if (lake) {

@@ -162,6 +162,7 @@ export {
   V1_DataProduct,
   V1_LakehouseAccessPoint,
   V1_AccessPoint,
+  V1_AccessPointGroup,
 } from './graph-manager/protocol/pure/v1/model/packageableElements/dataProduct/V1_DataProduct.js';
 export {
   V1_ExecuteInput,
@@ -565,6 +566,7 @@ export {
   DataProduct,
   LakehouseAccessPoint,
   LakehouseTargetEnv,
+  AccessPointGroup,
   AccessPoint,
 } from './graph/metamodel/pure/dataProduct/DataProduct.js';
 export * from './graph-manager/action/changeDetection/DataProductObserveHelper.js';

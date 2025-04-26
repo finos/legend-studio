@@ -112,16 +112,9 @@ import {
 } from './helpers/V1_FunctionActivatorBuilderHelper.js';
 import type { V1_INTERNAL__UnknownElement } from '../../../model/packageableElements/V1_INTERNAL__UnknownElement.js';
 import type { V1_HostedService } from '../../../model/packageableElements/function/V1_HostedService.js';
-import {
-  V1_LakehouseAccessPoint,
-  V1_UnknownAccessPoint,
-  type V1_DataProduct,
-} from '../../../model/packageableElements/dataProduct/V1_DataProduct.js';
-import {
-  LakehouseAccessPoint,
-  UnknownAccessPoint,
-} from '../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
-import { V1_buildRawLambdaWithResolvedPaths } from './helpers/V1_ValueSpecificationPathResolver.js';
+import { type V1_DataProduct } from '../../../model/packageableElements/dataProduct/V1_DataProduct.js';
+import { AccessPointGroup } from '../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
+import { V1_buildAccessPoint } from './helpers/V1_DataProductBuilder.js';
 
 export class V1_ElementSecondPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -612,28 +605,21 @@ export class V1_ElementSecondPassBuilder
   }
 
   visit_DataProduct(element: V1_DataProduct): void {
-    const execEnv = this.context.currentSubGraph.getOwnDataProduct(
+    const dataProduct = this.context.currentSubGraph.getOwnDataProduct(
       V1_buildFullPath(element.package, element.name),
     );
-    execEnv.accessPoints = element.accessPoints.map((ap) => {
-      if (ap instanceof V1_LakehouseAccessPoint) {
-        return new LakehouseAccessPoint(
-          ap.id,
-          ap.targetEnvironment,
-          V1_buildRawLambdaWithResolvedPaths(
-            ap.func.parameters,
-            ap.func.body,
-            this.context,
-          ),
+    dataProduct.title = element.title;
+    dataProduct.description = element.description;
+    dataProduct.accessPointGroups = element.accessPointGroups.map(
+      (elementGroup) => {
+        const group = new AccessPointGroup();
+        group.id = elementGroup.id;
+        group.description = elementGroup.description;
+        group.accessPoints = elementGroup.accessPoints.map((ep) =>
+          V1_buildAccessPoint(ep, this.context),
         );
-      } else if (ap instanceof V1_UnknownAccessPoint) {
-        const unkown = new UnknownAccessPoint(ap.id);
-        unkown.content = ap.content;
-        return unkown;
-      }
-      throw new UnsupportedOperationError(
-        `Unsupported data product access type ${ap}`,
-      );
-    });
+        return group;
+      },
+    );
   }
 }

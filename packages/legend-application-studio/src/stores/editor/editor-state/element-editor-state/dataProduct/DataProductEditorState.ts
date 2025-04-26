@@ -26,6 +26,7 @@ import {
   ParserError,
   GRAPH_MANAGER_EVENT,
   isStubbed_RawLambda,
+  AccessPointGroup,
 } from '@finos/legend-graph';
 import type { EditorStore } from '../../../EditorStore.js';
 import { ElementEditorState } from '../ElementEditorState.js';
@@ -41,6 +42,7 @@ import {
 } from '@finos/legend-shared';
 import {
   dataProduct_addAccessPoint,
+  dataProduct_addAccessPointGroup,
   dataProduct_deleteAccessPoint,
 } from '../../../../graph-modifier/DSL_DataProduct_GraphModifierHelper.js';
 import { LambdaEditorState } from '@finos/legend-query-builder';
@@ -166,9 +168,10 @@ export class DataProductEditorState extends ElementEditorState {
       addAccessPoint: action,
       convertAccessPointsFuncObjects: flow,
     });
-    this.accessPointStates = this.product.accessPoints.map((e) =>
-      this.buildAccessPointState(e),
-    );
+    this.accessPointStates = this.product.accessPointGroups
+      .map((e) => e.accessPoints)
+      .flat()
+      .map((e) => this.buildAccessPointState(e));
   }
 
   *convertAccessPointsFuncObjects(): GeneratorFn<void> {
@@ -221,8 +224,14 @@ export class DataProductEditorState extends ElementEditorState {
 
   deleteAccessPoint(val: AccessPointState): void {
     const ap = val.accessPoint;
-    dataProduct_deleteAccessPoint(this.product, ap);
-    deleteEntry(this.accessPointStates, val);
+    // find group
+    const group = this.product.accessPointGroups.find((g) =>
+      Boolean(g.accessPoints.find((v) => v === ap)),
+    );
+    if (group) {
+      dataProduct_deleteAccessPoint(group, ap);
+      deleteEntry(this.accessPointStates, val);
+    }
   }
 
   addAccessPoint(id: string): void {
@@ -231,11 +240,21 @@ export class DataProductEditorState extends ElementEditorState {
       LakehouseTargetEnv.Snowflake,
       stub_RawLambda(),
     );
-    dataProduct_addAccessPoint(this.product, accesspoint);
+
+    const group =
+      this.product.accessPointGroups[0] ?? this.createBareGroupAndAdd();
+    dataProduct_addAccessPoint(group, accesspoint);
     addUniqueEntry(
       this.accessPointStates,
       this.buildAccessPointState(accesspoint),
     );
+  }
+
+  createBareGroupAndAdd(): AccessPointGroup {
+    const group = new AccessPointGroup();
+    group.id = 'default';
+    dataProduct_addAccessPointGroup(this.product, group);
+    return group;
   }
 
   get product(): DataProduct {
@@ -247,7 +266,7 @@ export class DataProductEditorState extends ElementEditorState {
   }
 
   get accessPoints(): AccessPoint[] {
-    return this.product.accessPoints;
+    return this.product.accessPointGroups.map((e) => e.accessPoints).flat();
   }
 
   override reprocess(

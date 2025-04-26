@@ -17,11 +17,13 @@
 import {
   createModelSchema,
   deserialize,
+  optional,
   primitive,
   serialize,
 } from 'serializr';
 import {
   type V1_AccessPoint,
+  V1_AccessPointGroup,
   V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE,
   V1_DataProduct,
   V1_LakehouseAccessPoint,
@@ -33,6 +35,7 @@ import {
   usingModelSchema,
   customList,
   type PlainObject,
+  customListWithSchema,
 } from '@finos/legend-shared';
 import { V1_rawLambdaModelSchema } from './V1_RawValueSpecificationSerializationHelper.js';
 
@@ -47,6 +50,7 @@ export const V1_lakehouseAccessPointModelSchema = createModelSchema(
   {
     _type: usingConstantValueSchema(V1_AccessPointType.LAKEHOUSE),
     id: primitive(),
+    description: optional(primitive()),
     targetEnvironment: primitive(),
     func: usingModelSchema(V1_rawLambdaModelSchema),
   },
@@ -81,9 +85,23 @@ const V1_deserializeAccessPoint = (
   }
 };
 
+export const V1_AccessPointGroupModelSchema = createModelSchema(
+  V1_AccessPointGroup,
+  {
+    id: primitive(),
+    description: optional(primitive()),
+    accessPoints: customList(
+      V1_serializeAccessPoint,
+      V1_deserializeAccessPoint,
+    ),
+  },
+);
+
 export const V1_dataProductModelSchema = createModelSchema(V1_DataProduct, {
   _type: usingConstantValueSchema(V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE),
   name: primitive(),
   package: primitive(),
-  accessPoints: customList(V1_serializeAccessPoint, V1_deserializeAccessPoint),
+  title: optional(primitive()),
+  description: optional(primitive()),
+  accessPointGroups: customListWithSchema(V1_AccessPointGroupModelSchema),
 });
