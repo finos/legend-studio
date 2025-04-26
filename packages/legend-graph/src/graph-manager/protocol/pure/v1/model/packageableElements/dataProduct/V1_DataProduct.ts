@@ -33,9 +33,14 @@ export const V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE = 'dataProduct';
 
 export abstract class V1_AccessPoint implements Hashable {
   id!: string;
+  description: string | undefined;
 
   get hashCode(): string {
-    return hashArray([CORE_HASH_STRUCTURE.DATA_PRODUCT_ACCESS_POINT, this.id]);
+    return hashArray([
+      CORE_HASH_STRUCTURE.DATA_PRODUCT_ACCESS_POINT,
+      this.id,
+      this.description ?? '',
+    ]);
   }
 }
 
@@ -45,6 +50,7 @@ export class V1_LakehouseAccessPoint
 {
   targetEnvironment!: string;
   func!: V1_RawLambda;
+  reproducible: boolean | undefined;
 
   override get hashCode(): string {
     return hashArray([
@@ -52,6 +58,7 @@ export class V1_LakehouseAccessPoint
       CORE_HASH_STRUCTURE.LAKEHOUSE_ACCESS_POINT,
       this.targetEnvironment,
       this.func,
+      this.reproducible ?? '',
     ]);
   }
 }
@@ -68,13 +75,32 @@ export class V1_UnknownAccessPoint extends V1_AccessPoint implements Hashable {
   }
 }
 
-export class V1_DataProduct extends V1_PackageableElement implements Hashable {
+export class V1_AccessPointGroup implements Hashable {
+  id!: string;
+  description: string | undefined;
   accessPoints: V1_AccessPoint[] = [];
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.DATA_PRODUCT_ACCESS_POINT_GROUP,
+      this.id,
+      this.description ?? '',
+      hashArray(this.accessPoints),
+    ]);
+  }
+}
+
+export class V1_DataProduct extends V1_PackageableElement implements Hashable {
+  title: string | undefined;
+  description: string | undefined;
+  accessPointGroups: V1_AccessPointGroup[] = [];
 
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.DATA_PRODUCT,
-      hashArray(this.accessPoints),
+      hashArray(this.accessPointGroups),
+      this.title ?? '',
+      this.description ?? '',
     ]);
   }
 

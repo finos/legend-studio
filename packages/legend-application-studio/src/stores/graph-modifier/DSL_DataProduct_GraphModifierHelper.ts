@@ -16,21 +16,38 @@
 
 import {
   type AccessPoint,
+  type AccessPointGroup,
   type DataProduct,
   observe_AccessPoint,
+  observe_AccessPointGroup,
 } from '@finos/legend-graph';
 import { addUniqueEntry, deleteEntry } from '@finos/legend-shared';
 
 import { action } from 'mobx';
 
 export const dataProduct_deleteAccessPoint = action(
-  (product: DataProduct, accessPoint: AccessPoint) => {
-    deleteEntry(product.accessPoints, accessPoint);
+  (group: AccessPointGroup, accessPoint: AccessPoint) => {
+    deleteEntry(group.accessPoints, accessPoint);
   },
 );
 
 export const dataProduct_addAccessPoint = action(
-  (product: DataProduct, accessPoint: AccessPoint) => {
+  (product: AccessPointGroup, accessPoint: AccessPoint) => {
     addUniqueEntry(product.accessPoints, observe_AccessPoint(accessPoint));
+  },
+);
+
+export const dataProduct_addAccessPointGroup = action(
+  (product: DataProduct, accessPointGroup: AccessPointGroup) => {
+    addUniqueEntry(
+      product.accessPointGroups,
+      observe_AccessPointGroup(accessPointGroup),
+    );
+  },
+);
+
+export const dataProduct_deleteAccessPointGroup = action(
+  (product: DataProduct, accessPointGroup: AccessPointGroup) => {
+    deleteEntry(product.accessPointGroups, accessPointGroup);
   },
 );

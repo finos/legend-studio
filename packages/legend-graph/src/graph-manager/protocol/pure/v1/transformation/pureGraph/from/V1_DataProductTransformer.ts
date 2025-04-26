@@ -16,11 +16,14 @@
 
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import {
+  type AccessPoint,
   LakehouseAccessPoint,
   UnknownAccessPoint,
   type DataProduct,
 } from '../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import {
+  type V1_AccessPoint,
+  V1_AccessPointGroup,
   V1_DataProduct,
   V1_LakehouseAccessPoint,
   V1_UnknownAccessPoint,
@@ -29,29 +32,46 @@ import { V1_initPackageableElement } from './V1_CoreTransformerHelper.js';
 import { V1_transformRawLambda } from './V1_RawValueSpecificationTransformer.js';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
 
+const transformAccessPoint = (
+  ap: AccessPoint,
+  context: V1_GraphTransformerContext,
+): V1_AccessPoint => {
+  if (ap instanceof LakehouseAccessPoint) {
+    const lake = new V1_LakehouseAccessPoint();
+    lake.id = ap.id;
+    lake.func = V1_transformRawLambda(ap.func, context);
+    lake.targetEnvironment = ap.targetEnvironment;
+    return lake;
+  } else if (ap instanceof UnknownAccessPoint) {
+    const un = new V1_UnknownAccessPoint();
+    un.content = ap.content;
+    un.id = ap.id;
+    return un;
+  }
+  throw new UnsupportedOperationError(
+    `Unable to transform data product access point`,
+  );
+};
+
 export const V1_transformDataProduct = (
   element: DataProduct,
   context: V1_GraphTransformerContext,
 ): V1_DataProduct => {
   const product = new V1_DataProduct();
   V1_initPackageableElement(product, element);
-  product.accessPoints = element.accessPoints.map((ap) => {
-    if (ap instanceof LakehouseAccessPoint) {
-      const lake = new V1_LakehouseAccessPoint();
-      lake.id = ap.id;
-      lake.func = V1_transformRawLambda(ap.func, context);
-      lake.targetEnvironment = ap.targetEnvironment;
-      return lake;
-    } else if (ap instanceof UnknownAccessPoint) {
-      const un = new V1_UnknownAccessPoint();
-      un.content = ap.content;
-      un.id = ap.id;
-      return un;
-    }
-    throw new UnsupportedOperationError(
-      `Unable to transform data product access point`,
-    );
-  });
+  product.description = element.description;
+  product.title = element.title;
+  product.accessPointGroups = element.accessPointGroups.map(
+    (metamodelGroup) => {
+      const group = new V1_AccessPointGroup();
+      group.id = metamodelGroup.id;
+      group.description = metamodelGroup.description;
+      group.accessPoints = metamodelGroup.accessPoints.map((ap) =>
+        transformAccessPoint(ap, context),
+      );
+      return group;
+    },
+  );
 
   return product;
 };

@@ -18,6 +18,7 @@ import { makeObservable, observable, override } from 'mobx';
 import {
   LakehouseAccessPoint,
   type AccessPoint,
+  type AccessPointGroup,
   type DataProduct,
 } from '../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import {
@@ -39,16 +40,30 @@ export const observe_AccessPoint = skipObserved(
   },
 );
 
+export const observe_AccessPointGroup = skipObserved(
+  (metamodel: AccessPointGroup): AccessPointGroup => {
+    makeObservable(metamodel, {
+      id: observable,
+      description: observable,
+      accessPoints: observable,
+    });
+    metamodel.accessPoints.forEach(observe_AccessPoint);
+    return metamodel;
+  },
+);
+
 export const observe_DataProduct = skipObserved(
   (metamodel: DataProduct): DataProduct => {
     observe_Abstract_PackageableElement(metamodel);
 
     makeObservable<DataProduct, '_elementHashCode'>(metamodel, {
-      accessPoints: observable,
+      accessPointGroups: observable,
       _elementHashCode: override,
+      title: observable,
+      description: observable,
     });
 
-    metamodel.accessPoints.forEach(observe_AccessPoint);
+    metamodel.accessPointGroups.forEach(observe_AccessPointGroup);
     return metamodel;
   },
 );
