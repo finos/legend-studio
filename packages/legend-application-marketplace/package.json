@@ -62,9 +62,11 @@
     "mobx-react-lite": "4.1.0",
     "mobx-utils": "6.1.0",
     "node-diff3": "3.1.2",
+    "oidc-client-ts": "^3.2.0",
     "react": "19.0.0",
     "react-dnd": "16.0.1",
     "react-dom": "19.0.0",
+    "react-oidc-context": "^3.3.0",
     "serializr": "3.0.3",
     "yaml": "2.7.0"
   },

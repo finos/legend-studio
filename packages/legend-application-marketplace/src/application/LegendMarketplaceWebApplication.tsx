@@ -33,6 +33,11 @@ import { LEGEND_MARKETPLACE_ROUTE_PATTERN } from '../__lib__/LegendMarketplaceNa
 import { LakehouseMarketplace } from '../components/Lakehouse/LakehouseMarketplace.js';
 import { LegendMarketplaceHome } from '../pages/Home/LegendMarketplaceHome.js';
 import { LegendMarketplaceSearchResults } from '../pages/SearchResults/LegendMarketplaceSearchResults.js';
+import {
+  AuthProvider,
+  withAuthenticationRequired,
+  type AuthProviderProps,
+} from 'react-oidc-context';
 
 const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();
@@ -87,6 +92,10 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
       applicationStore.alertUnhandledError,
     );
   }, [applicationStore, baseStore]);
+
+  const ProtectedLakehouseMarketplace =
+    withAuthenticationRequired(LakehouseMarketplace);
+
   return (
     <div className="app">
       {baseStore.initState.hasCompleted && (
@@ -94,7 +103,7 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
           <Routes>
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE}
-              element={<LakehouseMarketplace />}
+              element={<ProtectedLakehouseMarketplace />}
             />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.DEFAULT}
@@ -113,15 +122,17 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
 });
 
 export const LegendMarketplaceWebApplication = observer(
-  (props: { baseUrl: string }) => {
-    const { baseUrl } = props;
+  (props: { baseUrl: string; oidcConfig?: AuthProviderProps | undefined }) => {
+    const { baseUrl, oidcConfig } = props;
 
     return (
-      <BrowserEnvironmentProvider baseUrl={baseUrl}>
-        <LegendMarketplaceFrameworkProvider>
-          <LegendMarketplaceWebApplicationRouter />
-        </LegendMarketplaceFrameworkProvider>
-      </BrowserEnvironmentProvider>
+      <AuthProvider {...oidcConfig}>
+        <BrowserEnvironmentProvider baseUrl={baseUrl}>
+          <LegendMarketplaceFrameworkProvider>
+            <LegendMarketplaceWebApplicationRouter />
+          </LegendMarketplaceFrameworkProvider>
+        </BrowserEnvironmentProvider>
+      </AuthProvider>
     );
   },
 );

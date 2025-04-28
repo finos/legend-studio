@@ -58,7 +58,10 @@ export class LegendMarketplace extends LegendApplication {
   ): Promise<void> {
     createRoot(getApplicationRootElement()).render(
       <ApplicationStoreProvider store={applicationStore}>
-        <LegendMarketplaceWebApplication baseUrl={this.baseAddress} />
+        <LegendMarketplaceWebApplication
+          baseUrl={this.baseAddress}
+          oidcConfig={this.config.marketplaceOidcConfig}
+        />
       </ApplicationStoreProvider>,
     );
   }
