@@ -38,6 +38,7 @@ import {
   withAuthenticationRequired,
   type AuthProviderProps,
 } from 'react-oidc-context';
+import type { User } from 'oidc-client-ts';
 
 const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();
@@ -125,8 +126,21 @@ export const LegendMarketplaceWebApplication = observer(
   (props: { baseUrl: string; oidcConfig?: AuthProviderProps | undefined }) => {
     const { baseUrl, oidcConfig } = props;
 
+    const mergedOIDCConfig: AuthProviderProps | undefined = oidcConfig
+      ? {
+          ...oidcConfig,
+          onSigninCallback: (_user: User | undefined) => {
+            window.history.replaceState(
+              {},
+              document.title,
+              _user?.state ? (_user.state as string) : '/',
+            );
+          },
+        }
+      : undefined;
+
     return (
-      <AuthProvider {...oidcConfig}>
+      <AuthProvider {...mergedOIDCConfig}>
         <BrowserEnvironmentProvider baseUrl={baseUrl}>
           <LegendMarketplaceFrameworkProvider>
             <LegendMarketplaceWebApplicationRouter />
