@@ -40,7 +40,6 @@ import { LegendMarketplaceSearchResults } from '../pages/SearchResults/LegendMar
 import {
   type AuthProviderProps,
   AuthProvider,
-  useAuth,
   withAuthenticationRequired,
 } from 'react-oidc-context';
 import type { User } from 'oidc-client-ts';
@@ -93,43 +92,12 @@ const NotFoundPage = observer(() => {
 export const LegendMarketplaceWebApplicationRouter = observer(() => {
   const baseStore = useLegendMarketplaceBaseStore();
   const applicationStore = useLegendMarketplaceApplicationStore();
-  const auth = useAuth();
 
   useEffect(() => {
     flowResult(baseStore.initialize()).catch(
       applicationStore.alertUnhandledError,
     );
   }, [applicationStore, baseStore]);
-
-  // switch (auth.activeNavigator) {
-  //   case 'signinSilent':
-  //     return <div>Signing in...</div>;
-  //   case 'signoutRedirect':
-  //     return <div>Signing out...</div>;
-  //   default:
-  //     break;
-  // }
-
-  // if (auth.isLoading) {
-  //   return (
-  //     <CubesLoadingIndicator isLoading={true}>
-  //       <CubesLoadingIndicatorIcon />
-  //     </CubesLoadingIndicator>
-  //   );
-  // }
-
-  // if (auth.error) {
-  //   return (
-  //     <div>
-  //       Error authenticating: ${auth.error.name} caused ${auth.error.message}
-  //     </div>
-  //   );
-  // }
-
-  // if (!auth.isAuthenticated) {
-  //   auth.signinRedirect({ state: window.location.pathname });
-  //   return <div>Redirecting to login...</div>;
-  // }
 
   const ProtectedLakehouseMarketplace = withAuthenticationRequired(
     LakehouseMarketplace,
@@ -139,6 +107,9 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
           <CubesLoadingIndicatorIcon />
         </CubesLoadingIndicator>
       ),
+      signinRedirectArgs: {
+        state: window.location.pathname,
+      },
     },
   );
 
