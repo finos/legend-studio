@@ -42,9 +42,18 @@ class LegendMarketplaceApplicationCoreOptions {
   }
 }
 
+export interface LegendMarketplaceOidcConfig {
+  redirectPath: string;
+  silentRedirectPath: string;
+  authProviderProps: AuthProviderProps;
+}
+
 export interface LegendMarketplaceApplicationConfigurationData
   extends LegendApplicationConfigurationData {
-  marketplace: { url: string; oidcConfig?: AuthProviderProps | undefined };
+  marketplace: {
+    url: string;
+    oidcConfig?: LegendMarketplaceOidcConfig | undefined;
+  };
   depot: { url: string };
   engine: {
     url: string;
@@ -61,7 +70,7 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
   readonly options = new LegendMarketplaceApplicationCoreOptions();
 
   readonly marketplaceServerUrl: string;
-  readonly marketplaceOidcConfig?: AuthProviderProps | undefined;
+  readonly marketplaceOidcConfig?: LegendMarketplaceOidcConfig | undefined;
   readonly engineServerUrl: string;
   readonly depotServerUrl: string;
   readonly lakehouseServerUrl?: string;

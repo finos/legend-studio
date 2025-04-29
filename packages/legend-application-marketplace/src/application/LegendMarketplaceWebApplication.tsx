@@ -16,7 +16,11 @@
 
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { GhostIcon } from '@finos/legend-art';
+import {
+  CubesLoadingIndicator,
+  CubesLoadingIndicatorIcon,
+  GhostIcon,
+} from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import { useApplicationStore } from '@finos/legend-application';
 import {
@@ -34,11 +38,12 @@ import { LakehouseMarketplace } from '../components/Lakehouse/LakehouseMarketpla
 import { LegendMarketplaceHome } from '../pages/Home/LegendMarketplaceHome.js';
 import { LegendMarketplaceSearchResults } from '../pages/SearchResults/LegendMarketplaceSearchResults.js';
 import {
-  AuthProvider,
-  withAuthenticationRequired,
   type AuthProviderProps,
+  AuthProvider,
+  useAuth,
 } from 'react-oidc-context';
 import type { User } from 'oidc-client-ts';
+import type { LegendMarketplaceOidcConfig } from './LegendMarketplaceApplicationConfig.js';
 
 const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();
@@ -87,6 +92,7 @@ const NotFoundPage = observer(() => {
 export const LegendMarketplaceWebApplicationRouter = observer(() => {
   const baseStore = useLegendMarketplaceBaseStore();
   const applicationStore = useLegendMarketplaceApplicationStore();
+  const auth = useAuth();
 
   useEffect(() => {
     flowResult(baseStore.initialize()).catch(
@@ -94,8 +100,35 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
     );
   }, [applicationStore, baseStore]);
 
-  const ProtectedLakehouseMarketplace =
-    withAuthenticationRequired(LakehouseMarketplace);
+  switch (auth.activeNavigator) {
+    case 'signinSilent':
+      return <div>Signing in...</div>;
+    case 'signoutRedirect':
+      return <div>Signing out...</div>;
+    default:
+      break;
+  }
+
+  if (auth.isLoading) {
+    return (
+      <CubesLoadingIndicator isLoading={true}>
+        <CubesLoadingIndicatorIcon />
+      </CubesLoadingIndicator>
+    );
+  }
+
+  if (auth.error) {
+    return (
+      <div>
+        Error authenticating: ${auth.error.name} caused ${auth.error.message}
+      </div>
+    );
+  }
+
+  if (!auth.isAuthenticated) {
+    auth.signinRedirect({ state: window.location.pathname });
+    return <div>Redirecting to login...</div>;
+  }
 
   return (
     <div className="app">
@@ -104,7 +137,7 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
           <Routes>
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE}
-              element={<ProtectedLakehouseMarketplace />}
+              element={<LakehouseMarketplace />}
             />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.DEFAULT}
@@ -123,19 +156,26 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
 });
 
 export const LegendMarketplaceWebApplication = observer(
-  (props: { baseUrl: string; oidcConfig?: AuthProviderProps | undefined }) => {
+  (props: {
+    baseUrl: string;
+    oidcConfig?: LegendMarketplaceOidcConfig | undefined;
+  }) => {
     const { baseUrl, oidcConfig } = props;
+
+    const onSigninCallback = (_user: User | undefined) => {
+      window.history.replaceState(
+        {},
+        document.title,
+        _user?.state ? (_user.state as string) : '/',
+      );
+    };
 
     const mergedOIDCConfig: AuthProviderProps | undefined = oidcConfig
       ? {
-          ...oidcConfig,
-          onSigninCallback: (_user: User | undefined) => {
-            window.history.replaceState(
-              {},
-              document.title,
-              _user?.state ? (_user.state as string) : '/',
-            );
-          },
+          ...oidcConfig.authProviderProps,
+          redirect_uri: `${window.location.origin}${oidcConfig.redirectPath}`,
+          silent_redirect_uri: `${window.location.origin}${oidcConfig.silentRedirectPath}`,
+          onSigninCallback,
         }
       : undefined;
 
