@@ -35,7 +35,7 @@ import { HostedServiceDeploymentConfiguration } from '../../../../../../../../gr
 import type { V1_HostedServiceDeploymentConfiguration } from '../../../../engine/functionActivator/V1_HostedServiceDeploymentConfiguration.js';
 import { PostDeploymentAction } from '../../../../../../../../graph/metamodel/pure/functionActivator/PostDeploymentAction.js';
 import type { DSL_FunctionActivator_PureProtocolProcessorPlugin_Extension } from '../../../../../extensions/DSL_FunctionActivator_PureProtocolProcessorPlugin_Extension.js';
-import { V1_PostDeploymentAction } from '../../../../engine/functionActivator/V1_PostDeploymentAction.js';
+import type { V1_PostDeploymentAction } from '../../../../engine/functionActivator/V1_PostDeploymentAction.js';
 
 export const V1_buildSnowflakeAppDeploymentConfiguration = (
   element: V1_SnowflakeAppDeploymentConfiguration,
@@ -102,9 +102,7 @@ export const V1_buildHostedServiceActions = (
     if (element.properties) {
       metamodel.properties = builder(element.properties, context);
     }
-    if (metamodel) {
-      return metamodel;
-    }
+    return metamodel;
   }
   throw new UnsupportedOperationError(
     `Can't build Hosted Service Action`,

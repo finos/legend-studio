@@ -30,10 +30,10 @@ import {
 import { V1_transformConnectionPointer } from './V1_ConnectionTransformer.js';
 import { V1_HostedServiceDeploymentConfiguration } from '../../../engine/functionActivator/V1_HostedServiceDeploymentConfiguration.js';
 import type { HostedServiceDeploymentConfiguration } from '../../../../../../../graph/metamodel/pure/functionActivator/HostedServiceDeploymentConfiguration.js';
-import { PostDeploymentAction } from '../../../../../../../graph/metamodel/pure/functionActivator/PostDeploymentAction.js';
+import type { PostDeploymentAction } from '../../../../../../../graph/metamodel/pure/functionActivator/PostDeploymentAction.js';
 import type { DSL_FunctionActivator_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/DSL_FunctionActivator_PureProtocolProcessorPlugin_Extension.js';
-import { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
-import { V1_PostDeploymentAction } from '../../../engine/functionActivator/V1_PostDeploymentAction.js';
+import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
+import type { V1_PostDeploymentAction } from '../../../engine/functionActivator/V1_PostDeploymentAction.js';
 export const V1_transformSnowflakeAppDeploymentConfiguration = (
   element: SnowflakeAppDeploymentConfiguration,
 ): V1_SnowflakeAppDeploymentConfiguration => {
