@@ -109,6 +109,7 @@ import {
   V1_buildSnowflakeAppDeploymentConfiguration,
   V1_buildDeploymentOwnership,
   V1_builHostedServiceOwnership,
+  V1_buildHostedServiceActions,
 } from './helpers/V1_FunctionActivatorBuilderHelper.js';
 import type { V1_INTERNAL__UnknownElement } from '../../../model/packageableElements/V1_INTERNAL__UnknownElement.js';
 import type { V1_HostedService } from '../../../model/packageableElements/function/V1_HostedService.js';
@@ -228,6 +229,9 @@ export class V1_ElementSecondPassBuilder
       .filter(isNonNullable);
     metamodel.taggedValues = element.taggedValues
       .map((taggedValue) => V1_buildTaggedValue(taggedValue, this.context))
+      .filter(isNonNullable);
+    metamodel.actions = element.actions
+      .map((action) => V1_buildHostedServiceActions(action, this.context))
       .filter(isNonNullable);
   }
 

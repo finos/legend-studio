@@ -88,6 +88,7 @@ import {
   V1_transformHostedServiceDeploymentConfiguration,
   V1_transformOwnership,
   V1_transformSnowflakeAppDeploymentConfiguration,
+  V1_transformActions,
 } from './V1_FunctionActivatorTransformer.js';
 import { PackageableElementPointerType } from '../../../../../../../graph/MetaModelConst.js';
 import type { INTERNAL__UnknownElement } from '../../../../../../../graph/metamodel/pure/packageableElements/INTERNAL__UnknownElement.js';
@@ -210,6 +211,7 @@ class V1_PackageableElementTransformer
     protocol.storeModel = element.storeModel;
     protocol.generateLineage = element.generateLineage;
     protocol.ownership = V1_transformOwnership(element.ownership);
+    protocol.actions = V1_transformActions(element.actions, this.context);
     if (element.activationConfiguration) {
       protocol.activationConfiguration =
         V1_transformHostedServiceDeploymentConfiguration(
@@ -218,7 +220,6 @@ class V1_PackageableElementTransformer
     }
     protocol.taggedValues = element.taggedValues.map(V1_transformTaggedValue);
     protocol.stereotypes = element.stereotypes.map(V1_transformStereotype);
-    V1_transformFunctionActivatorActions(protocol, element, this.context);
     return protocol;
   }
 

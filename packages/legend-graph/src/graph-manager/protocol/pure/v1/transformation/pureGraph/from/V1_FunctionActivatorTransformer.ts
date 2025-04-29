@@ -30,7 +30,10 @@ import {
 import { V1_transformConnectionPointer } from './V1_ConnectionTransformer.js';
 import { V1_HostedServiceDeploymentConfiguration } from '../../../engine/functionActivator/V1_HostedServiceDeploymentConfiguration.js';
 import type { HostedServiceDeploymentConfiguration } from '../../../../../../../graph/metamodel/pure/functionActivator/HostedServiceDeploymentConfiguration.js';
-
+import { PostDeploymentAction } from '../../../../../../../graph/metamodel/pure/functionActivator/PostDeploymentAction.js';
+import type { DSL_FunctionActivator_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/DSL_FunctionActivator_PureProtocolProcessorPlugin_Extension.js';
+import { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
+import { V1_PostDeploymentAction } from '../../../engine/functionActivator/V1_PostDeploymentAction.js';
 export const V1_transformSnowflakeAppDeploymentConfiguration = (
   element: SnowflakeAppDeploymentConfiguration,
 ): V1_SnowflakeAppDeploymentConfiguration => {
@@ -67,6 +70,34 @@ export const V1_transformOwnership = (metamodel: Ownership): V1_Ownership => {
   }
   throw new UnsupportedOperationError(
     "Can't transform function activator ownership",
+    metamodel,
+  );
+};
+
+export const V1_transformActions = (
+  metamodel: PostDeploymentAction[],
+  context: V1_GraphTransformerContext,
+): V1_PostDeploymentAction[] => {
+  const extraFunctionActivatorTransformers = context.plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSL_FunctionActivator_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraPostDeploymentPropertiesTransformers?.() ?? [],
+  );
+  for (const transformer of extraFunctionActivatorTransformers) {
+    const protocol: V1_PostDeploymentAction[] = [];
+    for (const action of metamodel) {
+      const actionProtocol = new V1_PostDeploymentAction();
+      actionProtocol.automated = action.automated;
+      if (action.properties) {
+        actionProtocol.properties = transformer(action.properties, context);
+      }
+      protocol.push(actionProtocol);
+    }
+    return protocol;
+  }
+  throw new UnsupportedOperationError(
+    "Can't transform function activator actions",
     metamodel,
   );
 };

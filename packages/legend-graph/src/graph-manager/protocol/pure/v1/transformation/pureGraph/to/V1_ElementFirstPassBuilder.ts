@@ -233,6 +233,7 @@ export class V1_ElementFirstPassBuilder
     metamodel.autoActivateUpdates = element.autoActivateUpdates;
     metamodel.storeModel = element.storeModel;
     metamodel.generateLineage = element.generateLineage;
+    metamodel.actions = element.actions;
     V1_buildFunctionActivatorActions(element, metamodel, this.context);
     return metamodel;
   }

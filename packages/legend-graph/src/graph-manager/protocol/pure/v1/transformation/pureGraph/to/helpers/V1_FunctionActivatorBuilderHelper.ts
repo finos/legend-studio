@@ -33,6 +33,9 @@ import {
 import type { FunctionActivator } from '../../../../../../../../graph/metamodel/pure/packageableElements/function/FunctionActivator.js';
 import { HostedServiceDeploymentConfiguration } from '../../../../../../../../graph/metamodel/pure/functionActivator/HostedServiceDeploymentConfiguration.js';
 import type { V1_HostedServiceDeploymentConfiguration } from '../../../../engine/functionActivator/V1_HostedServiceDeploymentConfiguration.js';
+import { PostDeploymentAction } from '../../../../../../../../graph/metamodel/pure/functionActivator/PostDeploymentAction.js';
+import type { DSL_FunctionActivator_PureProtocolProcessorPlugin_Extension } from '../../../../../extensions/DSL_FunctionActivator_PureProtocolProcessorPlugin_Extension.js';
+import { V1_PostDeploymentAction } from '../../../../engine/functionActivator/V1_PostDeploymentAction.js';
 
 export const V1_buildSnowflakeAppDeploymentConfiguration = (
   element: V1_SnowflakeAppDeploymentConfiguration,
@@ -81,4 +84,30 @@ export const V1_buildHostedServiceDeploymentConfiguration = (
   metamodel.port = element.port;
   metamodel.path = element.path;
   return metamodel;
+};
+
+export const V1_buildHostedServiceActions = (
+  element: V1_PostDeploymentAction,
+  context: V1_GraphBuilderContext,
+): PostDeploymentAction => {
+  const extraPostDeploymentActionBuilders = context.extensions.plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSL_FunctionActivator_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraPostDeploymentPropertiesBuilders?.() ?? [],
+  );
+  for (const builder of extraPostDeploymentActionBuilders) {
+    const metamodel = new PostDeploymentAction();
+    metamodel.automated = element.automated;
+    if (element.properties) {
+      metamodel.properties = builder(element.properties, context);
+    }
+    if (metamodel) {
+      return metamodel;
+    }
+  }
+  throw new UnsupportedOperationError(
+    `Can't build Hosted Service Action`,
+    element,
+  );
 };

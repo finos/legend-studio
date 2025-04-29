@@ -608,9 +608,11 @@ export const observe_HostedService = skipObservedWithContext(
         metamodel.activationConfiguration,
       );
     }
-    metamodel.actions.forEach((action) =>
-      observe_HostedServicePostDeploymentAction(action, context),
-    );
+    if (metamodel.actions) {
+      metamodel.actions.forEach((action) =>
+        observe_HostedServicePostDeploymentAction(action, context),
+      );
+    }
     return metamodel;
   },
 );
