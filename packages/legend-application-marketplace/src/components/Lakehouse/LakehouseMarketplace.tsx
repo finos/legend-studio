@@ -49,7 +49,8 @@ export const LakehouseMarketplace = withMarketplaceLakehouseStore(
     }, [marketPlaceStore]);
 
     useEffect(() => {
-      marketPlaceStore.lakehouseServerClient.getDataProducts(
+      // eslint-disable-next-line no-void
+      void marketPlaceStore.lakehouseServerClient.getDataProducts(
         auth.user?.access_token,
       );
     }, [auth.user?.access_token, marketPlaceStore.lakehouseServerClient]);
