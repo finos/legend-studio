@@ -41,6 +41,7 @@ import {
   type AuthProviderProps,
   AuthProvider,
   useAuth,
+  withAuthenticationRequired,
 } from 'react-oidc-context';
 import type { User } from 'oidc-client-ts';
 import type { LegendMarketplaceOidcConfig } from './LegendMarketplaceApplicationConfig.js';
@@ -100,35 +101,46 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
     );
   }, [applicationStore, baseStore]);
 
-  switch (auth.activeNavigator) {
-    case 'signinSilent':
-      return <div>Signing in...</div>;
-    case 'signoutRedirect':
-      return <div>Signing out...</div>;
-    default:
-      break;
-  }
+  // switch (auth.activeNavigator) {
+  //   case 'signinSilent':
+  //     return <div>Signing in...</div>;
+  //   case 'signoutRedirect':
+  //     return <div>Signing out...</div>;
+  //   default:
+  //     break;
+  // }
 
-  if (auth.isLoading) {
-    return (
-      <CubesLoadingIndicator isLoading={true}>
-        <CubesLoadingIndicatorIcon />
-      </CubesLoadingIndicator>
-    );
-  }
+  // if (auth.isLoading) {
+  //   return (
+  //     <CubesLoadingIndicator isLoading={true}>
+  //       <CubesLoadingIndicatorIcon />
+  //     </CubesLoadingIndicator>
+  //   );
+  // }
 
-  if (auth.error) {
-    return (
-      <div>
-        Error authenticating: ${auth.error.name} caused ${auth.error.message}
-      </div>
-    );
-  }
+  // if (auth.error) {
+  //   return (
+  //     <div>
+  //       Error authenticating: ${auth.error.name} caused ${auth.error.message}
+  //     </div>
+  //   );
+  // }
 
-  if (!auth.isAuthenticated) {
-    auth.signinRedirect({ state: window.location.pathname });
-    return <div>Redirecting to login...</div>;
-  }
+  // if (!auth.isAuthenticated) {
+  //   auth.signinRedirect({ state: window.location.pathname });
+  //   return <div>Redirecting to login...</div>;
+  // }
+
+  const ProtectedLakehouseMarketplace = withAuthenticationRequired(
+    LakehouseMarketplace,
+    {
+      OnRedirecting: () => (
+        <CubesLoadingIndicator isLoading={true}>
+          <CubesLoadingIndicatorIcon />
+        </CubesLoadingIndicator>
+      ),
+    },
+  );
 
   return (
     <div className="app">
@@ -137,7 +149,7 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
           <Routes>
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE}
-              element={<LakehouseMarketplace />}
+              element={<ProtectedLakehouseMarketplace />}
             />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.DEFAULT}
