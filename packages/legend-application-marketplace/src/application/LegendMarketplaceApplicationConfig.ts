@@ -123,7 +123,7 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
     if (input.configData.lakehouse) {
       this.lakehouseServerUrl = LegendApplicationConfig.resolveAbsoluteUrl(
         guaranteeNonEmptyString(
-          input.configData.depot.url,
+          input.configData.lakehouse.url,
           `Can't configure application: 'lakehouse.url' field is missing or empty`,
         ),
       );
