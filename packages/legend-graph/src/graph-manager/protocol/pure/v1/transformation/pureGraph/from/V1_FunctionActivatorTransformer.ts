@@ -33,7 +33,7 @@ import type { HostedServiceDeploymentConfiguration } from '../../../../../../../
 import type { PostDeploymentAction } from '../../../../../../../graph/metamodel/pure/functionActivator/PostDeploymentAction.js';
 import type { DSL_FunctionActivator_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/DSL_FunctionActivator_PureProtocolProcessorPlugin_Extension.js';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
-import type { V1_PostDeploymentAction } from '../../../engine/functionActivator/V1_PostDeploymentAction.js';
+import V1_PostDeploymentAction from '../../../engine/functionActivator/V1_PostDeploymentAction.js';
 export const V1_transformSnowflakeAppDeploymentConfiguration = (
   element: SnowflakeAppDeploymentConfiguration,
 ): V1_SnowflakeAppDeploymentConfiguration => {
