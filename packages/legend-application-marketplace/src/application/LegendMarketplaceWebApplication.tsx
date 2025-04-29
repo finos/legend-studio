@@ -163,11 +163,7 @@ export const LegendMarketplaceWebApplication = observer(
     const { baseUrl, oidcConfig } = props;
 
     const onSigninCallback = (_user: User | undefined) => {
-      window.history.replaceState(
-        {},
-        document.title,
-        _user?.state ? (_user.state as string) : '/',
-      );
+      window.location.href = (_user?.state as string) ?? '/';
     };
 
     const mergedOIDCConfig: AuthProviderProps | undefined = oidcConfig

@@ -71,11 +71,15 @@ export class LegendMarketplaceBaseStore {
     this.depotServerClient.setTracerService(
       this.applicationStore.tracerService,
     );
+
     if (this.applicationStore.config.lakehouseServerUrl) {
       // lakehouse server
       this.lakehouseServerClient = new MarketplaceLakehouseServerClient({
         baseUrl: this.applicationStore.config.lakehouseServerUrl,
       });
+      this.lakehouseServerClient.setTracerService(
+        this.applicationStore.tracerService,
+      );
     }
   }
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { AbstractServerClient } from '@finos/legend-shared';
+import { AbstractServerClient, type PlainObject } from '@finos/legend-shared';
 
 export interface MarketplaceLakehouseServerClientConfig {
   baseUrl: string;
@@ -26,4 +26,15 @@ export class MarketplaceLakehouseServerClient extends AbstractServerClient {
       baseUrl: config.baseUrl,
     });
   }
+
+  // --------------------------------------- Contracts ---------------------------------------
+
+  private _contracts = (): string => `${this.baseUrl}/v1/contracts`;
+
+  getDataProducts = (token?: string | undefined): Promise<PlainObject[]> =>
+    this.get(
+      `${this._contracts()}/dataProducts`,
+      {},
+      { Authorization: `Bearer ${token}` },
+    );
 }
