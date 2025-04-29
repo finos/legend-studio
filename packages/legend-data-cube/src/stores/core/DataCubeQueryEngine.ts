@@ -273,6 +273,11 @@ export enum DataCubeGridMode {
   MULTIDIMENSIONAL = 'Multidimensional',
 }
 
+export enum DataCubeClientModelOption {
+  ROW_DATA = 'rowData',
+  COLUMN_DEFS = 'columnDefs',
+}
+
 export enum DataCubeTitleBarMenuItems {
   VIEW_SOURCE = 'View Source',
   RESET_TO_LATEST_SAVE = 'Reset to Latest Save',
@@ -407,6 +412,10 @@ export function ofDataType(
   dataTypes: DataCubeColumnDataType[],
 ): boolean {
   return dataTypes.includes(getDataType(type));
+}
+
+export function isDimensionalGridMode(gridMode: DataCubeGridMode) {
+  return gridMode === DataCubeGridMode.MULTIDIMENSIONAL;
 }
 
 export function isPrimitiveType(type: string) {

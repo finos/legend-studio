@@ -81,6 +81,7 @@ import {
   isPivotResultColumnName,
   getPivotResultColumnBaseColumnName,
   DEFAULT_ROOT_AGGREGATION_COLUMN_VALUE,
+  DataCubeQueryFilterOperator,
 } from './DataCubeQueryEngine.js';
 import type { DataCubeQueryFilterOperation } from './filter/DataCubeQueryFilterOperation.js';
 import type { DataCubeQueryAggregateOperation } from './aggregation/DataCubeQueryAggregateOperation.js';
@@ -88,6 +89,7 @@ import {
   DataCubeColumnConfiguration,
   type DataCubeConfiguration,
 } from './model/DataCubeConfiguration.js';
+import type { DataCubeDimensionalGroupByNode } from '../view/grid/DataCubeGridDimensionalTree.js';
 
 // --------------------------------- UTILITIES ---------------------------------
 
@@ -644,4 +646,24 @@ export function _filter(
     }
     return filterCondition.not ? _not(condition) : condition;
   }
+}
+
+export function _flattenFilterSnapshot(
+  groupByNodes: DataCubeDimensionalGroupByNode[],
+): DataCubeSnapshotFilter {
+  const filterConditions = groupByNodes.map((node) => {
+    return {
+      name: node.column,
+      type: 'String', // Assuming all filters are strings — update if needed
+      operator: DataCubeQueryFilterOperator.EQUAL,
+      value: {
+        type: 'String',
+        value: node.filter,
+      } satisfies DataCubeOperationValue,
+    } satisfies DataCubeSnapshotFilterCondition;
+  });
+  return {
+    groupOperator: DataCubeQueryFilterGroupOperator.AND,
+    conditions: filterConditions,
+  } satisfies DataCubeSnapshotFilter;
 }

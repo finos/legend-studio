@@ -21,7 +21,7 @@ import {
   type DebouncedFunc,
 } from '@finos/legend-shared';
 import { action, makeObservable, observable, runInAction } from 'mobx';
-import type { GridApi } from 'ag-grid-community';
+import type { CellDoubleClickedEvent, GridApi } from 'ag-grid-community';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
 import {
   DataCubeGridClientServerSideDataSource,
@@ -31,6 +31,7 @@ import {
   INTERNAL__GRID_CLIENT_DEFAULT_ENABLE_PAGINATION,
   computeHashCodeForDataFetchManualTrigger,
   INTERNAL__GRID_CLIENT_DEFAULT_ENABLE_CACHING,
+  fetchDimensionalQueryRows,
 } from './DataCubeGridClientEngine.js';
 import { DataCubeSnapshotController } from '../../services/DataCubeSnapshotService.js';
 import type { DataCubeSnapshot } from '../../core/DataCubeSnapshot.js';
@@ -41,8 +42,13 @@ import { DataCubeGridClientExportEngine } from './DataCubeGridClientExportEngine
 import { DataCubeSettingKey } from '../../../__lib__/DataCubeSetting.js';
 import { DEFAULT_ALERT_WINDOW_CONFIG } from '../../services/DataCubeLayoutService.js';
 import { AlertType } from '../../services/DataCubeAlertService.js';
-import { DataCubeGridMode } from '../../core/DataCubeQueryEngine.js';
+import {
+  DataCubeClientModelOption,
+  DataCubeGridMode,
+} from '../../core/DataCubeQueryEngine.js';
 import { DataCubeEvent } from '../../../__lib__/DataCubeEvent.js';
+import { hydrateDataCubeDimensionalTree } from './DataCubeGridDimensionalTree.js';
+
 /**
  * This query editor state is responsible for syncing the internal state of ag-grid
  * server-side row model data source with the data cube query state. When new snapshot
@@ -269,6 +275,50 @@ export class DataCubeGridState extends DataCubeSnapshotController {
     if (latestSnapshot) {
       await this.applySnapshot(latestSnapshot, undefined);
     }
+  }
+
+  async configureDimensionGridClient(val: GridApi | undefined) {
+    this._client = val;
+    this.debouncedAutoResizeColumns = debounce(
+      () => val?.autoSizeAllColumns(),
+      100,
+    );
+    const latestSnapshot = this.getLatestSnapshot();
+
+    if (latestSnapshot) {
+      latestSnapshot.data.tree = hydrateDataCubeDimensionalTree(
+        DataCubeConfiguration.serialization.fromJson(
+          latestSnapshot.data.configuration,
+        ),
+      );
+      await this._applyDimensionalSnapshot(latestSnapshot);
+    }
+  }
+
+  async retrieveDrilldownData(data: CellDoubleClickedEvent) {
+    const latestSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
+    latestSnapshot.data.tree = hydrateDataCubeDimensionalTree(
+      DataCubeConfiguration.serialization.fromJson(
+        latestSnapshot.data.configuration,
+      ),
+      data,
+      latestSnapshot.data.tree,
+    );
+    await this._applyDimensionalSnapshot(latestSnapshot);
+  }
+
+  private async _applyDimensionalSnapshot(snapshot: DataCubeSnapshot) {
+    //TODO: only trigger when there is an actual change in tree
+    const result = await fetchDimensionalQueryRows(snapshot, this._view);
+    this._client?.setGridOption(
+      DataCubeClientModelOption.ROW_DATA,
+      result.rowData,
+    );
+    this._client?.setGridOption(
+      DataCubeClientModelOption.COLUMN_DEFS,
+      result.columnDefs,
+    );
+    this.publishSnapshot(snapshot);
   }
 
   override getSnapshotSubscriberName() {
