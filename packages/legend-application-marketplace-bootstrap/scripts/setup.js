@@ -43,6 +43,14 @@ export const setup = (outputDir) => {
         env: 'local',
         marketplace: {
           url: 'http://localhost:6400/api',
+          oidcConfig: {
+            redirectPath: '/callback',
+            silentRedirectPath: '/callback?silent=true',
+            authProviderProps: {
+              authority: 'http://localhost:8080/auth',
+              client_id: 'test-client-id',
+            },
+          },
         },
         lakehouse: {
           url: 'http://localhost:6400/api',
