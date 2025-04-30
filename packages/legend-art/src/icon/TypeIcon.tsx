@@ -31,6 +31,7 @@ import {
   Snowflake_BrandIcon,
   TableIcon,
   TabulatedDataFileIcon,
+  PiFunctionBoldIcon,
 } from './Icon.js';
 
 export const PURE_PrimitiveTypeIcon: React.FC = () => (
@@ -98,6 +99,12 @@ export const PURE_DatabaseSchemaIcon: React.FC = () => (
 export const PURE_DatabaseTableIcon: React.FC = () => (
   <div className="icon icon--table color--table">
     <TableIcon />
+  </div>
+);
+
+export const PURE_DatabaseTabularFunctionIcon: React.FC = () => (
+  <div className="icon icon--tabular-function color--table">
+    <PiFunctionBoldIcon />
   </div>
 );
 

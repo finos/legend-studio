@@ -17,25 +17,32 @@
 import type { RelationalDatabaseConnection } from '../../../graph/metamodel/pure/packageableElements/store/relational/connection/RelationalDatabaseConnection.js';
 
 const DATABASE_BUILDER_WILDCARD_PATTERN = '%';
+const DATABASE_BUILDER_FUNCTION_WILDCARD_PATTERN = '_%';
 
 export class DatabasePattern {
   schemaPattern = '';
   tablePattern = '';
+  functionPattern = '';
   escapeSchemaPattern?: boolean | undefined;
   escapeTablePattern?: boolean | undefined;
+  escapeFunctionPattern?: boolean | undefined;
 
   constructor(
     schemaPattern: string | undefined,
     tablePattern: string | undefined,
+    functionPattern: string | undefined,
   ) {
     this.schemaPattern = schemaPattern ?? DATABASE_BUILDER_WILDCARD_PATTERN;
     this.tablePattern = tablePattern ?? DATABASE_BUILDER_WILDCARD_PATTERN;
+    this.functionPattern =
+      functionPattern ?? DATABASE_BUILDER_FUNCTION_WILDCARD_PATTERN;
   }
 }
 
 export class DatabaseBuilderConfig {
   maxTables?: number | undefined = 100000;
   enrichTables = false;
+  enrichTableFunctions = false;
   enrichPrimaryKeys = false;
   enrichColumns = false;
   patterns: DatabasePattern[] = [];

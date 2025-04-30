@@ -20,6 +20,7 @@ import {
   TreeView,
   PURE_DatabaseSchemaIcon,
   PURE_DatabaseTableIcon,
+  PURE_DatabaseTabularFunctionIcon,
   CircleIcon,
   ChevronDownIcon,
   ChevronRightIcon,
@@ -35,12 +36,13 @@ import {
   DatabaseSchemaExplorerTreeColumnNodeData,
   DatabaseSchemaExplorerTreeSchemaNodeData,
   DatabaseSchemaExplorerTreeTableNodeData,
+  DatabaseSchemaExplorerTreeTabularFunctionNodeData,
   type DatabaseSchemaExplorerState,
 } from '../../../../stores/editor/editor-state/element-editor-state/connection/DatabaseBuilderState.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { renderColumnTypeIcon } from './DatabaseEditorHelper.js';
 import { flowResult } from 'mobx';
-import { stringifyDataType } from '@finos/legend-graph';
+import { stringifyDataType, Table } from '@finos/legend-graph';
 import { forwardRef } from 'react';
 
 const getDatabaseSchemaNodeIcon = (
@@ -56,6 +58,14 @@ const getDatabaseSchemaNodeIcon = (
     return (
       <div className="database-schema-explorer__icon--table">
         <PURE_DatabaseTableIcon />
+      </div>
+    );
+  } else if (
+    node instanceof DatabaseSchemaExplorerTreeTabularFunctionNodeData
+  ) {
+    return (
+      <div className="database-schema-explorer__icon--tabularFunction">
+        <PURE_DatabaseTabularFunctionIcon />
       </div>
     );
   } else if (node instanceof DatabaseSchemaExplorerTreeColumnNodeData) {
@@ -110,6 +120,7 @@ export const DatabaseSchemaExplorerTreeNodeContainer = observer(
       };
       const isPrimaryKeyColumn =
         node instanceof DatabaseSchemaExplorerTreeColumnNodeData &&
+        node.owner instanceof Table &&
         node.owner.primaryKey.includes(node.column);
 
       const renderCheckedIcon = (
@@ -240,7 +251,8 @@ export const DatabaseSchemaExplorer = observer(
     ): boolean =>
       !(
         node instanceof DatabaseSchemaExplorerTreeTableNodeData ||
-        node instanceof DatabaseSchemaExplorerTreeColumnNodeData
+        node instanceof DatabaseSchemaExplorerTreeColumnNodeData ||
+        node instanceof DatabaseSchemaExplorerTreeTabularFunctionNodeData
       );
 
     return (
