@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace-bootstrap
 
+## 13.50.0
+
+### Patch Changes
+
+- [#4024](https://github.com/finos/legend-studio/pull/4024) [`4545656`](https://github.com/finos/legend-studio/commit/4545656bb3887ccd9a1a11250c6bcc514c169978) ([@travisstebbins](https://github.com/travisstebbins)) - Add OAuth support to Marketplace app
+
 ## 13.49.0
 
 ## 13.48.0
