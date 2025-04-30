@@ -26,6 +26,7 @@ import {
   type LegendApplicationConfigurationInput,
   LegendApplicationConfig,
 } from '@finos/legend-application';
+import type { AuthProviderProps } from 'react-oidc-context';
 
 class LegendMarketplaceApplicationCoreOptions {
   private static readonly serialization = new SerializationFactory(
@@ -41,9 +42,18 @@ class LegendMarketplaceApplicationCoreOptions {
   }
 }
 
+export interface LegendMarketplaceOidcConfig {
+  redirectPath: string;
+  silentRedirectPath: string;
+  authProviderProps: AuthProviderProps;
+}
+
 export interface LegendMarketplaceApplicationConfigurationData
   extends LegendApplicationConfigurationData {
-  marketplace: { url: string };
+  marketplace: {
+    url: string;
+    oidcConfig?: LegendMarketplaceOidcConfig | undefined;
+  };
   depot: { url: string };
   engine: {
     url: string;
@@ -60,6 +70,7 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
   readonly options = new LegendMarketplaceApplicationCoreOptions();
 
   readonly marketplaceServerUrl: string;
+  readonly marketplaceOidcConfig?: LegendMarketplaceOidcConfig | undefined;
   readonly engineServerUrl: string;
   readonly depotServerUrl: string;
   readonly lakehouseServerUrl?: string;
@@ -81,6 +92,7 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
         `Can't configure application: 'marketplace.url' field is missing or empty`,
       ),
     );
+    this.marketplaceOidcConfig = input.configData.marketplace.oidcConfig;
 
     // engine
     assertNonNullable(
@@ -111,7 +123,7 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
     if (input.configData.lakehouse) {
       this.lakehouseServerUrl = LegendApplicationConfig.resolveAbsoluteUrl(
         guaranteeNonEmptyString(
-          input.configData.depot.url,
+          input.configData.lakehouse.url,
           `Can't configure application: 'lakehouse.url' field is missing or empty`,
         ),
       );

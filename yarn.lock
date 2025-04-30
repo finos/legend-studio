@@ -2438,9 +2438,11 @@ __metadata:
     mobx-utils: "npm:6.1.0"
     node-diff3: "npm:3.1.2"
     npm-run-all: "npm:4.1.5"
+    oidc-client-ts: "npm:^3.2.0"
     react: "npm:19.0.0"
     react-dnd: "npm:16.0.1"
     react-dom: "npm:19.0.0"
+    react-oidc-context: "npm:^3.3.0"
     rimraf: "npm:6.0.1"
     sass: "npm:1.85.0"
     serializr: "npm:3.0.3"
@@ -13523,6 +13525,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"jwt-decode@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "jwt-decode@npm:4.0.0"
+  checksum: 10/87b569e4a9a0067fb0d592bcf3b2ac3e638e49beee28620eeb07bef1b4470f4077dea68c15d191dd68e076846c3af8394be3bcaecffedc6e97433b221fdbbcf3
+  languageName: node
+  linkType: hard
+
 "katex@npm:^0.16.9":
   version: 0.16.21
   resolution: "katex@npm:0.16.21"
@@ -15515,6 +15524,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"oidc-client-ts@npm:^3.2.0":
+  version: 3.2.0
+  resolution: "oidc-client-ts@npm:3.2.0"
+  dependencies:
+    jwt-decode: "npm:^4.0.0"
+  checksum: 10/26bb3c7a050f15781e0c5ff8efecfd769bd9723fe2332c50b4c89213577a3ec67ae65be9a177f8cbb92c29d9c55ff725e6a699d76a44900ab65cc7ab1c0ac21a
+  languageName: node
+  linkType: hard
+
 "on-exit-leak-free@npm:^2.1.0":
   version: 2.1.2
   resolution: "on-exit-leak-free@npm:2.1.2"
@@ -17477,6 +17495,16 @@ __metadata:
     react: ">0.13.0"
     react-dom: ">0.13.0"
   checksum: 10/0d409e6bb2b756f78a0dfdc1216c068338bf4daf4f904775465544141df52dce3d155b24db202d351c1bb23e82db6dedb02af98f36efc88dd5496c2ba3f46b15
+  languageName: node
+  linkType: hard
+
+"react-oidc-context@npm:^3.3.0":
+  version: 3.3.0
+  resolution: "react-oidc-context@npm:3.3.0"
+  peerDependencies:
+    oidc-client-ts: ^3.1.0
+    react: ">=16.14.0"
+  checksum: 10/85b53d3f5ab13793a2597e8221017293978e7caa04c51c4a09b91a50869cbef86cd78784ce38609700980d888b088d80fc600bf3a6fccf88231d032e55221e65
   languageName: node
   linkType: hard
 

@@ -37,14 +37,23 @@ import {
 import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
 import { EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl } from '../../__lib__/LegendMarketplaceNavigation.js';
 import { flowResult } from 'mobx';
+import { useAuth } from 'react-oidc-context';
 
 export const LakehouseMarketplace = withMarketplaceLakehouseStore(
   observer(() => {
     const marketPlaceStore = useMarketplaceLakehouseStore();
+    const auth = useAuth();
 
     useEffect(() => {
       marketPlaceStore.init();
     }, [marketPlaceStore]);
+
+    useEffect(() => {
+      // eslint-disable-next-line no-void
+      void marketPlaceStore.lakehouseServerClient.getDataProducts(
+        auth.user?.access_token,
+      );
+    }, [auth.user?.access_token, marketPlaceStore.lakehouseServerClient]);
 
     const openDataProduct = async (state: DataProductState): Promise<void> => {
       const path = `${state.product.package}::${state.product.name}`;

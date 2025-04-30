@@ -16,7 +16,11 @@
 
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { GhostIcon } from '@finos/legend-art';
+import {
+  CubesLoadingIndicator,
+  CubesLoadingIndicatorIcon,
+  GhostIcon,
+} from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import { useApplicationStore } from '@finos/legend-application';
 import {
@@ -33,6 +37,13 @@ import { LEGEND_MARKETPLACE_ROUTE_PATTERN } from '../__lib__/LegendMarketplaceNa
 import { LakehouseMarketplace } from '../components/Lakehouse/LakehouseMarketplace.js';
 import { LegendMarketplaceHome } from '../pages/Home/LegendMarketplaceHome.js';
 import { LegendMarketplaceSearchResults } from '../pages/SearchResults/LegendMarketplaceSearchResults.js';
+import {
+  type AuthProviderProps,
+  AuthProvider,
+  withAuthenticationRequired,
+} from 'react-oidc-context';
+import type { User } from 'oidc-client-ts';
+import type { LegendMarketplaceOidcConfig } from './LegendMarketplaceApplicationConfig.js';
 
 const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();
@@ -87,6 +98,21 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
       applicationStore.alertUnhandledError,
     );
   }, [applicationStore, baseStore]);
+
+  const ProtectedLakehouseMarketplace = withAuthenticationRequired(
+    LakehouseMarketplace,
+    {
+      OnRedirecting: () => (
+        <CubesLoadingIndicator isLoading={true}>
+          <CubesLoadingIndicatorIcon />
+        </CubesLoadingIndicator>
+      ),
+      signinRedirectArgs: {
+        state: window.location.pathname,
+      },
+    },
+  );
+
   return (
     <div className="app">
       {baseStore.initState.hasCompleted && (
@@ -94,7 +120,7 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
           <Routes>
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE}
-              element={<LakehouseMarketplace />}
+              element={<ProtectedLakehouseMarketplace />}
             />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.DEFAULT}
@@ -113,15 +139,33 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
 });
 
 export const LegendMarketplaceWebApplication = observer(
-  (props: { baseUrl: string }) => {
-    const { baseUrl } = props;
+  (props: {
+    baseUrl: string;
+    oidcConfig?: LegendMarketplaceOidcConfig | undefined;
+  }) => {
+    const { baseUrl, oidcConfig } = props;
+
+    const onSigninCallback = (_user: User | undefined) => {
+      window.location.href = (_user?.state as string | undefined) ?? '/';
+    };
+
+    const mergedOIDCConfig: AuthProviderProps | undefined = oidcConfig
+      ? {
+          ...oidcConfig.authProviderProps,
+          redirect_uri: `${window.location.origin}${oidcConfig.redirectPath}`,
+          silent_redirect_uri: `${window.location.origin}${oidcConfig.silentRedirectPath}`,
+          onSigninCallback,
+        }
+      : undefined;
 
     return (
-      <BrowserEnvironmentProvider baseUrl={baseUrl}>
-        <LegendMarketplaceFrameworkProvider>
-          <LegendMarketplaceWebApplicationRouter />
-        </LegendMarketplaceFrameworkProvider>
-      </BrowserEnvironmentProvider>
+      <AuthProvider {...mergedOIDCConfig}>
+        <BrowserEnvironmentProvider baseUrl={baseUrl}>
+          <LegendMarketplaceFrameworkProvider>
+            <LegendMarketplaceWebApplicationRouter />
+          </LegendMarketplaceFrameworkProvider>
+        </BrowserEnvironmentProvider>
+      </AuthProvider>
     );
   },
 );
