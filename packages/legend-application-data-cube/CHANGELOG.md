@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.3.21
+
+### Patch Changes
+
+- [#4024](https://github.com/finos/legend-studio/pull/4024) [`4545656`](https://github.com/finos/legend-studio/commit/4545656bb3887ccd9a1a11250c6bcc514c169978) ([@travisstebbins](https://github.com/travisstebbins)) - Increase timeout on test assertion
+
 ## 0.3.20
 
 ## 0.3.19
