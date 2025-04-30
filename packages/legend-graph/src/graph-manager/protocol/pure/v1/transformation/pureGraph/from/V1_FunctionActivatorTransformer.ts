@@ -96,10 +96,7 @@ export const V1_transformActions = (
     }
     return protocol;
   }
-  throw new UnsupportedOperationError(
-    "Can't transform function activator actions",
-    metamodel,
-  );
+  return [];
 };
 
 export const V1_transformHostedServiceDeploymentConfiguration = (
