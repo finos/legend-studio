@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.18.117
+
+### Patch Changes
+
+- [#4025](https://github.com/finos/legend-studio/pull/4025) [`6f389ae`](https://github.com/finos/legend-studio/commit/6f389ae9e10d5a5773ed0ccb8d645cbf3d1a6ae6) ([@janeenyamak1](https://github.com/janeenyamak1)) - Support for tabular functions
+
 ## 28.18.116
 
 ## 28.18.115

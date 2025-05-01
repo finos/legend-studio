@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.94
+
+### Patch Changes
+
+- [#4025](https://github.com/finos/legend-studio/pull/4025) [`6f389ae`](https://github.com/finos/legend-studio/commit/6f389ae9e10d5a5773ed0ccb8d645cbf3d1a6ae6) ([@janeenyamak1](https://github.com/janeenyamak1)) - Support for tabular functions and Add PiFunctionBoldIcon and TableFunction Type Icon
+
 ## 7.1.93
 
 ### Patch Changes
