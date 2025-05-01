@@ -71,6 +71,7 @@ import {
   observe_HostedServiceDeploymentConfiguration,
   observe_FunctionActivatorOwnership,
   observe_SnowflakeAppDeploymentConfiguration,
+  observe_HostedServicePostDeploymentAction,
 } from './DSL_FunctionActivatorObserverHelper.js';
 import type {
   FunctionParameterValue,
@@ -583,8 +584,8 @@ export const observe_SnowflakeApp = skipObserved(
   },
 );
 
-export const observe_HostedService = skipObserved(
-  (metamodel: HostedService): HostedService => {
+export const observe_HostedService = skipObservedWithContext(
+  (metamodel: HostedService, context: ObserverContext): HostedService => {
     observe_Abstract_PackageableElement(metamodel);
     makeObservable<HostedService, '_elementHashCode'>(metamodel, {
       documentation: observable,
@@ -597,6 +598,7 @@ export const observe_HostedService = skipObserved(
       _elementHashCode: override,
       stereotypes: observable,
       taggedValues: observable,
+      actions: observable,
     });
     metamodel.stereotypes.forEach(observe_StereotypeReference);
     metamodel.taggedValues.forEach(observe_TaggedValue);
@@ -606,6 +608,9 @@ export const observe_HostedService = skipObserved(
         metamodel.activationConfiguration,
       );
     }
+    metamodel.actions.forEach((action) =>
+      observe_HostedServicePostDeploymentAction(action, context),
+    );
     return metamodel;
   },
 );

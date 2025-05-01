@@ -120,7 +120,7 @@ class PackageableElementObserver implements PackageableElementVisitor<void> {
   }
 
   visit_HostedService(element: HostedService): void {
-    observe_HostedService(element);
+    observe_HostedService(element, this.observerContext);
   }
 
   visit_INTERNAL__UnknownStore(element: INTERNAL__UnknownStore): void {

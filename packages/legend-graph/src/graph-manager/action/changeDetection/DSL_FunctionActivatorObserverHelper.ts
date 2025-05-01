@@ -16,7 +16,7 @@
 
 import { computed, makeObservable, observable } from 'mobx';
 import type { SnowflakeAppDeploymentConfiguration } from '../../../graph/metamodel/pure/functionActivator/SnowflakeAppDeploymentConfiguration.js';
-import { skipObserved } from './CoreObserverHelper.js';
+import { type ObserverContext, skipObserved } from './CoreObserverHelper.js';
 import { observe_ConnectionPointer } from './DSL_Mapping_ObserverHelper.js';
 import {
   DeploymentOwner,
@@ -24,6 +24,8 @@ import {
   type Ownership,
 } from '../../../graph/metamodel/pure/packageableElements/function/Ownership.js';
 import type { HostedServiceDeploymentConfiguration } from '../../../graph/metamodel/pure/functionActivator/HostedServiceDeploymentConfiguration.js';
+import type { PostDeploymentAction } from '../../../graph/metamodel/pure/functionActivator/PostDeploymentAction.js';
+import type { DSL_FunctionActivator_PureGraphManager_Extension } from '../../extensions/DSL_FunctionActivator_PureGraphManager_Extension.js';
 
 export const observe_SnowflakeAppDeploymentConfiguration = skipObserved(
   (
@@ -86,3 +88,25 @@ export const observe_HostedServiceDeploymentConfiguration = skipObserved(
     return metamodel;
   },
 );
+
+export const observe_HostedServicePostDeploymentAction = (
+  metamodel: PostDeploymentAction,
+  context: ObserverContext,
+): PostDeploymentAction => {
+  makeObservable(metamodel, {
+    properties: observable,
+    automated: observable,
+  });
+  const extraObservers = context.plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSL_FunctionActivator_PureGraphManager_Extension
+      ).getExtraFunctionActivatorPostDeploymentPropertiesObservers?.() ?? [],
+  );
+  for (const observer of extraObservers) {
+    if (metamodel.properties) {
+      observer(metamodel.properties);
+    }
+  }
+  return metamodel;
+};

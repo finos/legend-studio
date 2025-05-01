@@ -36,3 +36,4 @@ export {
   V1_PureMultiExecution,
   V1_PureSingleExecution,
 } from './graph-manager/protocol/pure/v1/model/packageableElements/service/V1_ServiceExecution.js';
+export * from './graph-manager/extensions/DSL_FunctionActivator_PureGraphManager_Extension.js';
