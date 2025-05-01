@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.1.23
+
+### Patch Changes
+
+- [#4032](https://github.com/finos/legend-studio/pull/4032) [`65734e9`](https://github.com/finos/legend-studio/commit/65734e9e8397a00f0ed50a86042d7c024fe36f61) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add entitlements v1 models.
+
 ## 32.1.22
 
 ### Patch Changes

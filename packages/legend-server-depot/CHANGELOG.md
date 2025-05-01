@@ -1,5 +1,11 @@
 # @finos/legend-server-depot
 
+## 6.0.89
+
+### Patch Changes
+
+- [#4032](https://github.com/finos/legend-studio/pull/4032) [`65734e9`](https://github.com/finos/legend-studio/commit/65734e9e8397a00f0ed50a86042d7c024fe36f61) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - add `projectIdHandlerFunc ` to handle call to get projectId as well as clean up `VersionProjectData`
+
 ## 6.0.88
 
 ### Patch Changes
