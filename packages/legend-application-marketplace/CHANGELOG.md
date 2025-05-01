@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.0.17
+
+### Patch Changes
+
+- [#4032](https://github.com/finos/legend-studio/pull/4032) [`65734e9`](https://github.com/finos/legend-studio/commit/65734e9e8397a00f0ed50a86042d7c024fe36f61) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Show data product page when clicked on (data access with access groups)
+
 ## 0.0.16
 
 ## 0.0.15
