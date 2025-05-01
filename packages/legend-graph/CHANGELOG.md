@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.1.24
+
+### Patch Changes
+
+- [#4026](https://github.com/finos/legend-studio/pull/4026) [`49641bc`](https://github.com/finos/legend-studio/commit/49641bc741f6f11912a88959001bec7990d5094b) ([@janeenyamak1](https://github.com/janeenyamak1)) - Support for Post Deployment Actions in Function Activators
+
 ## 32.1.23
 
 ### Patch Changes

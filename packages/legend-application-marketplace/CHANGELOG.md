@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.0.18
+
+### Patch Changes
+
+- [#4029](https://github.com/finos/legend-studio/pull/4029) [`1be1d4d`](https://github.com/finos/legend-studio/commit/1be1d4db04caa8bc1ae6576c83c229e97b65ec35) ([@kelly-thai](https://github.com/kelly-thai)) - Open source Vendor Data page for Marketplace
+
 ## 0.0.17
 
 ### Patch Changes
