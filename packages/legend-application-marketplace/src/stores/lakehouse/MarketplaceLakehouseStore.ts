@@ -17,35 +17,50 @@
 import type { CommandRegistrar } from '@finos/legend-application';
 import {
   DepotScope,
+  projectIdHandlerFunc,
+  resolveVersion,
   StoredSummaryEntity,
+  StoreProjectData,
+  VersionedProjectData,
   type DepotServerClient,
 } from '@finos/legend-server-depot';
-import type { MarketplaceLakehouseServerClient } from '../MarketplaceLakehouseServerClient.js';
+import type { LakehouseContractServerClient } from '../LakehouseContractServerClient.js';
 import { action, flow, makeObservable, observable } from 'mobx';
 import type { LegendMarketplaceApplicationStore } from '../LegendMarketplaceBaseStore.js';
 import {
   ActionState,
   assertErrorThrown,
+  guaranteeNonNullable,
+  returnUndefOnError,
   uuid,
   type GeneratorFn,
   type PlainObject,
 } from '@finos/legend-shared';
 import {
   CORE_PURE_PATH,
+  GraphDataWithOrigin,
+  GraphManagerState,
+  LegendSDLC,
+  resolvePackagePathAndElementName,
   V1_dataProductModelSchema,
-  V1_LakehouseAccessPoint,
-  type V1_AccessPoint,
   type V1_DataProduct,
 } from '@finos/legend-graph';
 import { deserialize } from 'serializr';
-import { GAV_DELIMITER, type Entity } from '@finos/legend-storage';
-import type { DataAsset } from '@finos/legend-server-marketplace';
+import {
+  parseGAVCoordinates,
+  type Entity,
+  type StoredFileGeneration,
+} from '@finos/legend-storage';
+import { DataProductViewerState } from './DataProductViewerState.js';
+import { EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl } from '../../__lib__/LegendMarketplaceNavigation.js';
 
+const ARTIFACT_GENERATION_DAT_PRODUCT_KEY = 'dataProduct';
 interface DataProductEntity {
-  product: V1_DataProduct;
+  product: V1_DataProduct | undefined;
   groupId: string;
   artifactId: string;
   versionId: string;
+  path: string;
 }
 
 export enum DataProductType {
@@ -64,46 +79,31 @@ export class DataProductState {
     this.state = state;
   }
 
-  get product(): V1_DataProduct {
-    return this.productEntity.product;
-  }
-
-  get accessPoints(): V1_AccessPoint[] {
-    return this.product.accessPointGroups.map((e) => e.accessPoints).flat();
+  get packageAndName(): [string | undefined, string] {
+    const val = returnUndefOnError(() =>
+      resolvePackagePathAndElementName(this.productEntity.path),
+    );
+    return val ?? [undefined, this.productEntity.path];
   }
 
   get accessTypes(): DataProductType {
-    if (this.accessPoints.length) {
-      const lake = this.accessPoints.every(
-        (e) => e instanceof V1_LakehouseAccessPoint,
-      );
-      if (lake) {
-        return DataProductType.LAKEHOUSE;
-      }
-    }
-    return DataProductType.UNKNOWN;
-  }
-
-  get dataSet(): DataAsset {
-    return {
-      description: `${this.productEntity.groupId}${GAV_DELIMITER}${this.productEntity.artifactId}`,
-      provider: this.product.name,
-      type: 'curated',
-      moreInfo: this.accessTypes,
-    };
+    return DataProductType.LAKEHOUSE;
   }
 }
 
 export class MarketplaceLakehouseStore implements CommandRegistrar {
   readonly applicationStore: LegendMarketplaceApplicationStore;
   readonly depotServerClient: DepotServerClient;
-  readonly lakehouseServerClient: MarketplaceLakehouseServerClient;
+  readonly lakehouseServerClient: LakehouseContractServerClient;
   productStates: DataProductState[] | undefined;
   loadingProductsState = ActionState.create();
 
+  //
+  dataProductViewer: DataProductViewerState | undefined;
+
   constructor(
     applicationStore: LegendMarketplaceApplicationStore,
-    lakehouseServerClient: MarketplaceLakehouseServerClient,
+    lakehouseServerClient: LakehouseContractServerClient,
     depotServerClient: DepotServerClient,
   ) {
     this.applicationStore = applicationStore;
@@ -111,8 +111,11 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     this.depotServerClient = depotServerClient;
     makeObservable(this, {
       init: flow,
+      initWithProduct: flow,
       productStates: observable,
       setProducts: action,
+      dataProductViewer: observable,
+      setDataProductViewerState: action,
     });
   }
 
@@ -120,42 +123,139 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     this.productStates = data;
   }
 
+  setDataProductViewerState(val: DataProductViewerState | undefined): void {
+    this.dataProductViewer = val;
+  }
+
   *init(): GeneratorFn<void> {
     try {
       this.loadingProductsState.inProgress();
-      const summaryP = (
-        (yield this.depotServerClient.getEntitiesSummaryByClassifier(
+      // we will show both released and snapshot versions for now to support deployment via workspaces
+      const allDps = (yield Promise.all([
+        this.depotServerClient.getEntitiesSummaryByClassifier(
           CORE_PURE_PATH.DATA_PRODUCT,
           {
             scope: DepotScope.RELEASES,
             summary: true,
           },
-        )) as PlainObject<StoredSummaryEntity>[]
-      ).map((p) => StoredSummaryEntity.serialization.fromJson(p));
-      // for now we will do 2 calls;
-      const allProducts = (
-        (yield Promise.all(
-          summaryP.map((p) =>
-            this.depotServerClient
-              .getVersionEntity(p.groupId, p.artifactId, p.versionId, p.path)
-              .then((entity) => ({
-                product: deserialize(
-                  V1_dataProductModelSchema,
-                  (entity as unknown as Entity).content,
-                ),
-                groupId: p.groupId,
-                artifactId: p.artifactId,
-                versionId: p.versionId,
-              })),
+        ),
+        this.depotServerClient.getEntitiesSummaryByClassifier(
+          CORE_PURE_PATH.DATA_PRODUCT,
+          {
+            scope: DepotScope.SNAPSHOT,
+            summary: true,
+          },
+        ),
+      ])) as PlainObject<StoredSummaryEntity>[][];
+      const allProducts = allDps
+        .flat()
+        .map((p) => StoredSummaryEntity.serialization.fromJson(p))
+        .sort((a, b) =>
+          (a.groupId + a.artifactId + a.versionId + a.path).localeCompare(
+            b.groupId + b.artifactId + b.versionId + b.path,
           ),
-        )) as DataProductEntity[]
-      )
+        )
+        .map((p) => ({
+          groupId: p.groupId,
+          artifactId: p.artifactId,
+          versionId: p.versionId,
+          path: p.path,
+          product: undefined,
+        }))
         .map((e) => new DataProductState(e, this))
-        .sort((a, b) => a.product.name.localeCompare(b.product.name));
+        .sort((a, b) =>
+          a.productEntity.path.localeCompare(b.productEntity.path),
+        );
+
       this.setProducts(allProducts);
       this.loadingProductsState.complete();
     } catch (error) {
       assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(
+        `Unable to load products: ${error.message}`,
+      );
+      this.loadingProductsState.fail();
+    }
+  }
+
+  *initWithProduct(gav: string, path: string): GeneratorFn<void> {
+    try {
+      this.loadingProductsState.inProgress();
+      const projectData = VersionedProjectData.serialization.fromJson(
+        parseGAVCoordinates(gav) as unknown as PlainObject,
+      );
+      const storeProject = new StoreProjectData();
+      storeProject.groupId = projectData.groupId;
+      storeProject.artifactId = projectData.artifactId;
+      const v1DataProduct = deserialize(
+        V1_dataProductModelSchema,
+        (
+          (yield this.depotServerClient.getVersionEntity(
+            projectData.groupId,
+            projectData.artifactId,
+            resolveVersion(projectData.versionId),
+            path,
+          )) as Entity
+        ).content,
+      );
+      const files = (yield this.depotServerClient.getGenerationFilesByType(
+        storeProject,
+        resolveVersion(projectData.versionId),
+        ARTIFACT_GENERATION_DAT_PRODUCT_KEY,
+      )) as StoredFileGeneration[];
+      const generation = files.filter((e) => e.path === v1DataProduct.path)[0]
+        ?.file.content;
+      const stateViewer = new DataProductViewerState(
+        this.applicationStore,
+        new GraphManagerState(
+          this.applicationStore.pluginManager,
+          this.applicationStore.logService,
+        ),
+        projectData,
+        v1DataProduct,
+        generation,
+        {
+          retrieveGraphData: () => {
+            const sdlc = new LegendSDLC(
+              projectData.groupId,
+              projectData.artifactId,
+              projectData.versionId,
+            );
+            return new GraphDataWithOrigin(sdlc);
+          },
+
+          viewSDLCProject: () => {
+            return projectIdHandlerFunc(
+              projectData.groupId,
+              projectData.artifactId,
+              projectData.versionId,
+              this.depotServerClient,
+              (projectId: string, resolvedId: string) => {
+                const studioUrl = guaranteeNonNullable(
+                  this.applicationStore.config.studioServerUrl,
+                  'studio url required',
+                );
+                this.applicationStore.navigationService.navigator.visitAddress(
+                  EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl(
+                    studioUrl,
+                    projectId,
+                    resolvedId,
+                    path,
+                  ),
+                );
+              },
+            );
+          },
+          onZoneChange: undefined,
+        },
+      );
+      this.setDataProductViewerState(stateViewer);
+      this.loadingProductsState.complete();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(
+        `Unable to load product ${path}: ${error.message}`,
+      );
       this.loadingProductsState.fail();
     }
   }

@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-import type { StoreProjectData } from './models/StoreProjectData.js';
+import { StoreProjectData } from './models/StoreProjectData.js';
 import type { EntitiesWithOrigin, Entity } from '@finos/legend-storage';
 import type { DepotServerClient } from './DepotServerClient.js';
 import type { PlainObject } from '@finos/legend-shared';
 import type { ProjectVersionEntities } from './models/ProjectVersionEntities.js';
+import { LATEST_VERSION_ALIAS } from './DepotVersionAliases.js';
+import { VersionedProjectData } from './models/VersionedProjectData.js';
 
 export const retrieveProjectEntitiesWithDependencies = async (
   project: StoreProjectData,
@@ -63,4 +65,23 @@ export const retrieveProjectEntitiesWithClassifier = async (
     entities,
     dependencyEntities.map((e) => e.entities).flat() as PlainObject<Entity>[],
   ];
+};
+
+export const projectIdHandlerFunc = async (
+  groupId: string,
+  artifactId: string,
+  _versionId: string,
+  depotServerClient: DepotServerClient,
+  projectHandler: (projectId: string, resolvedVersion: string) => void,
+): Promise<void> => {
+  const project = StoreProjectData.serialization.fromJson(
+    await depotServerClient.getProject(groupId, artifactId),
+  );
+  const versionId =
+    _versionId === LATEST_VERSION_ALIAS
+      ? VersionedProjectData.serialization.fromJson(
+          await depotServerClient.getLatestVersion(groupId, artifactId),
+        ).versionId
+      : _versionId;
+  projectHandler(project.projectId, versionId);
 };

@@ -16,10 +16,48 @@
 
 import { LegendApplicationPluginManager } from '@finos/legend-application';
 import type { LegendMarketplaceApplicationPlugin } from '../stores/LegendMarketplaceApplicationPlugin.js';
+import type {
+  GraphManagerPluginManager,
+  PureGraphManagerPlugin,
+  PureGraphPlugin,
+  PureProtocolProcessorPlugin,
+} from '@finos/legend-graph';
 
-export class LegendMarketplacePluginManager extends LegendApplicationPluginManager<LegendMarketplaceApplicationPlugin> {
+export class LegendMarketplacePluginManager
+  extends LegendApplicationPluginManager<LegendMarketplaceApplicationPlugin>
+  implements GraphManagerPluginManager
+{
+  private pureProtocolProcessorPlugins: PureProtocolProcessorPlugin[] = [];
+  private pureGraphManagerPlugins: PureGraphManagerPlugin[] = [];
+  private pureGraphPlugins: PureGraphPlugin[] = [];
+
   private constructor() {
     super();
+  }
+  registerPureProtocolProcessorPlugin(
+    plugin: PureProtocolProcessorPlugin,
+  ): void {
+    this.pureProtocolProcessorPlugins.push(plugin);
+  }
+
+  registerPureGraphManagerPlugin(plugin: PureGraphManagerPlugin): void {
+    this.pureGraphManagerPlugins.push(plugin);
+  }
+
+  registerPureGraphPlugin(plugin: PureGraphPlugin): void {
+    this.pureGraphPlugins.push(plugin);
+  }
+
+  getPureGraphManagerPlugins(): PureGraphManagerPlugin[] {
+    return [...this.pureGraphManagerPlugins];
+  }
+
+  getPureProtocolProcessorPlugins(): PureProtocolProcessorPlugin[] {
+    return [...this.pureProtocolProcessorPlugins];
+  }
+
+  getPureGraphPlugins(): PureGraphPlugin[] {
+    return [...this.pureGraphPlugins];
   }
 
   static create(): LegendMarketplacePluginManager {

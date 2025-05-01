@@ -48,6 +48,7 @@
     "@finos/legend-application": "workspace:*",
     "@finos/legend-art": "workspace:*",
     "@finos/legend-graph": "workspace:*",
+    "@finos/legend-lego": "workspace:*",
     "@finos/legend-server-depot": "workspace:*",
     "@finos/legend-server-marketplace": "workspace:*",
     "@finos/legend-shared": "workspace:*",

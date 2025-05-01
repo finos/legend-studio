@@ -19,6 +19,7 @@ import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useLocalObservable } from 'mobx-react-lite';
 import {
   ApplicationFrameworkProvider,
+  BlockingAlert,
   useApplicationStore,
 } from '@finos/legend-application';
 import {
@@ -63,6 +64,7 @@ export const LegendMarketplaceFrameworkProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => (
   <ApplicationFrameworkProvider simple={true} enableTransitions={true}>
+    <BlockingAlert />
     <LegendMarketplaceBaseStoreProvider>
       {children}
     </LegendMarketplaceBaseStoreProvider>
