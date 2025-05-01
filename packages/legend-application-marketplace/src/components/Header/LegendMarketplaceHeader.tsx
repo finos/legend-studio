@@ -57,6 +57,33 @@ const LegendMarketplaceHeaderMenu = observer(() => {
   );
 });
 
+const LegendMarketPlaceHeaderTabs = observer(() => {
+  const applicationStore = useApplicationStore();
+  const pageTabs = [
+    {
+      title: 'Vendor Data',
+      urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.VENDOR_DATA,
+    },
+  ];
+  const navigateToPage = (route: string): void => {
+    applicationStore.navigationService.navigator.goToLocation(route);
+  };
+
+  return (
+    <div className="legend-marketplace-header__container">
+      {pageTabs.map((tab) => (
+        <div
+          key={tab.title}
+          className="legend-marketplace-header__tab"
+          onClick={() => navigateToPage(tab.urlRoute)}
+        >
+          {tab.title}
+        </div>
+      ))}
+    </div>
+  );
+});
+
 export const LegendMarketplaceHeader = observer(() => {
   const applicationStore = useApplicationStore();
 
@@ -78,6 +105,7 @@ export const LegendMarketplaceHeader = observer(() => {
       >
         Legend Marketplace
       </div>
+      <LegendMarketPlaceHeaderTabs />
     </div>
   );
 });

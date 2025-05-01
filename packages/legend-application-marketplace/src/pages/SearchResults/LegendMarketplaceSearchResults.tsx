@@ -19,17 +19,17 @@ import { LegendMarketplaceSearchBar } from '../../components/SearchBar/LegendMar
 import { LegendMarketplaceHeader } from '../../components/Header/LegendMarketplaceHeader.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { generateSearchResultsRoute } from '../../__lib__/LegendMarketplaceNavigation.js';
-import { ProductSearchResult } from '@finos/legend-server-marketplace';
+import { DataProductSearchResult } from '@finos/legend-server-marketplace';
 import { useEffect, useState } from 'react';
 import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
 } from '@finos/legend-art';
 import { useLegendMarketplaceBaseStore } from '../../application/LegendMarketplaceFrameworkProvider.js';
-import { LegendMarketplaceProductSearchCard } from '../../components/ProductSearchResultCard/LegendMarketplaceProductSearchCard.js';
 import { assertErrorThrown } from '@finos/legend-shared';
 import { LegendMarketplaceSearchResultDrawerContent } from './LegendMarketplaceSearchResultDrawerContent.js';
 import { Drawer, Grid2 as Grid } from '@mui/material';
+import { LegendMarketplaceProductSearchCard } from '../../components/DataProductCard/LegendMarketplaceDataProductSearchCard.js';
 
 export const LegendMarketplaceSearchResults = observer(() => {
   const applicationStore = useApplicationStore();
@@ -42,12 +42,12 @@ export const LegendMarketplaceSearchResults = observer(() => {
       query: string | undefined;
     }>();
 
-  const [results, setResults] = useState<ProductSearchResult[]>([]);
+  const [results, setResults] = useState<DataProductSearchResult[]>([]);
   const [isError, setIsError] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const [selectedPreviewResult, setSelectedPreviewResult] =
-    useState<ProductSearchResult>();
+    useState<DataProductSearchResult>();
 
   useEffect(() => {
     const fetchResults = async () => {
@@ -63,7 +63,7 @@ export const LegendMarketplaceSearchResults = observer(() => {
         );
         setResults(
           _results.map((result) =>
-            ProductSearchResult.serialization.fromJson(result),
+            DataProductSearchResult.serialization.fromJson(result),
           ),
         );
       } catch (error) {

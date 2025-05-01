@@ -17,13 +17,20 @@
 import { SerializationFactory } from '@finos/legend-shared';
 import { createModelSchema, list, object, primitive } from 'serializr';
 
-export class ProductSearchResultTableField {
+export interface LightDataProduct {
+  description: string;
+  provider: string;
+  type: 'vendor' | 'curated';
+  moreInfo: string;
+}
+
+export class DataProductSearchResultTableField {
   field_description!: string;
   field_name!: string;
   similarity!: number;
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(ProductSearchResultTableField, {
+    createModelSchema(DataProductSearchResultTableField, {
       field_description: primitive(),
       field_name: primitive(),
       similarity: primitive(),
@@ -31,37 +38,37 @@ export class ProductSearchResultTableField {
   );
 }
 
-export class ProductSearchResultTable {
+export class DataProductSearchResultTable {
   dataset_score!: number;
   table_description!: string;
-  table_fields!: ProductSearchResultTableField[];
+  table_fields!: DataProductSearchResultTableField[];
   table_name!: string;
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(ProductSearchResultTable, {
+    createModelSchema(DataProductSearchResultTable, {
       dataset_score: primitive(),
       table_description: primitive(),
-      table_fields: list(object(ProductSearchResultTableField)),
+      table_fields: list(object(DataProductSearchResultTableField)),
       table_name: primitive(),
     }),
   );
 }
 
-export class ProductSearchResult {
+export class DataProductSearchResult {
   data_product_description!: string;
   data_product_link!: string;
   data_product_name!: string;
   product_score!: number;
-  tables!: ProductSearchResultTable[];
+  tables!: DataProductSearchResultTable[];
   vendor_name!: string;
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(ProductSearchResult, {
+    createModelSchema(DataProductSearchResult, {
       data_product_description: primitive(),
       data_product_link: primitive(),
       data_product_name: primitive(),
       product_score: primitive(),
-      tables: list(object(ProductSearchResultTable)),
+      tables: list(object(DataProductSearchResultTable)),
       vendor_name: primitive(),
     }),
   );

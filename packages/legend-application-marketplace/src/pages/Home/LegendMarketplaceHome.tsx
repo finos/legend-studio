@@ -22,14 +22,14 @@ import {
   generateSearchResultsRoute,
   generateVendorDetailsRoute,
 } from '../../__lib__/LegendMarketplaceNavigation.js';
-import type { DataAsset } from '@finos/legend-server-marketplace';
+import type { LightDataProduct } from '@finos/legend-server-marketplace';
 import { shuffle } from '@finos/legend-shared';
-import { LegendMarketplaceVendorCard } from '../../components/VendorCard/LegendMarketplaceVendorCard.js';
+import { LegendMarketplaceLightDataProductCard } from '../../components/DataProductCard/LegendMarketplaceLightDataProductCard.js';
 import { Grid2 as Grid } from '@mui/material';
 
 // Temporary placeholder data for assets
 
-const dataAssets: DataAsset[] = [
+const dataAssets: LightDataProduct[] = [
   {
     description: 'This is a test data asset',
     provider: 'Vendor 1',
@@ -117,9 +117,9 @@ export const LegendMarketplaceHome = observer(() => {
                     key={`${asset.provider}.${asset.type}.${asset.description}`}
                     size={1}
                   >
-                    <LegendMarketplaceVendorCard
+                    <LegendMarketplaceLightDataProductCard
                       dataAsset={asset}
-                      onClick={(dataAsset: DataAsset) => {
+                      onClick={(dataAsset: LightDataProduct) => {
                         applicationStore.navigationService.navigator.goToLocation(
                           generateVendorDetailsRoute(dataAsset.provider),
                         );

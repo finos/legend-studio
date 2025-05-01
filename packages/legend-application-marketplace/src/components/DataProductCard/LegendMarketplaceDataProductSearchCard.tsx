@@ -16,15 +16,15 @@
 
 import { type JSX } from 'react';
 import { Button, Card, CardActions, CardContent } from '@mui/material';
-import type { ProductSearchResult } from '@finos/legend-server-marketplace';
+import type { DataProductSearchResult } from '@finos/legend-server-marketplace';
 import DOMPurify from 'dompurify';
 
 const MAX_DESCRIPTION_LENGTH = 250;
 
 export const LegendMarketplaceProductSearchCard = (props: {
-  productSearchResult: ProductSearchResult;
-  onPreviewClick: (productSearchResult: ProductSearchResult) => void;
-  onLearnMoreClick: (productSearchResult: ProductSearchResult) => void;
+  productSearchResult: DataProductSearchResult;
+  onPreviewClick: (productSearchResult: DataProductSearchResult) => void;
+  onLearnMoreClick: (productSearchResult: DataProductSearchResult) => void;
 }): JSX.Element => {
   const { productSearchResult, onPreviewClick, onLearnMoreClick } = props;
 

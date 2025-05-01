@@ -382,6 +382,7 @@ import {
   FaRedo,
   FaUndo,
   FaCube,
+  FaShoppingCart,
 } from 'react-icons/fa';
 
 import { PiFunctionBold } from 'react-icons/pi';
@@ -521,6 +522,7 @@ export const ReadMeIcon = FaReadme;
 export const UndoIcon = FaUndo;
 export const RedoIcon = FaRedo;
 export const CubeIcon = FaCube;
+export const ShoppingCartIcon = FaShoppingCart;
 //======================================================= GI =======================================================
 import {
   GiWaterDrop,
