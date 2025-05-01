@@ -19,25 +19,56 @@ import {
   useMarketplaceLakehouseStore,
   withMarketplaceLakehouseStore,
 } from './MarketLakehouseStoreProvider.js';
-import { useEffect } from 'react';
+import { useEffect, type JSX } from 'react';
 import {
+  clsx,
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
 } from '@finos/legend-art';
 import { LegendMarketplaceHeader } from '../Header/LegendMarketplaceHeader.js';
-import { Grid2 as Grid } from '@mui/material';
-import { LegendMarketplaceVendorCard } from '../VendorCard/LegendMarketplaceVendorCard.js';
-import type { DataAsset } from '@finos/legend-server-marketplace';
-import type { DataProductState } from '../../stores/lakehouse/MarketplaceLakehouseStore.js';
 import {
-  LATEST_VERSION_ALIAS,
-  StoreProjectData,
-  VersionedProjectData,
-} from '@finos/legend-server-depot';
-import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
-import { EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl } from '../../__lib__/LegendMarketplaceNavigation.js';
-import { flowResult } from 'mobx';
+  Card,
+  CardActionArea,
+  CardContent,
+  Chip,
+  Grid2 as Grid,
+} from '@mui/material';
+import type { DataProductState } from '../../stores/lakehouse/MarketplaceLakehouseStore.js';
+import { generateLakehouseDataProduct } from '../../__lib__/LegendMarketplaceNavigation.js';
 import { useAuth } from 'react-oidc-context';
+import { generateGAVCoordinates } from '@finos/legend-storage';
+
+export const LegendDataProductVendorCard = (props: {
+  dataAsset: DataProductState;
+  onClick: (dataAsset: DataProductState) => void;
+}): JSX.Element => {
+  const { dataAsset, onClick } = props;
+  return (
+    <Card variant="outlined" className="legend-marketplace-vendor-card">
+      <CardActionArea
+        onClick={() => onClick(dataAsset)}
+        sx={{ height: '100%' }}
+      >
+        <CardContent className="legend-marketplace-vendor-card__content">
+          <Chip
+            label={dataAsset.productEntity.versionId}
+            className={clsx('legend-marketplace-vendor-card__type')}
+          />
+          <div className="legend-marketplace-vendor-card__name">
+            {dataAsset.productEntity.path}
+          </div>
+          <div className="legend-marketplace-vendor-card__description">
+            {`${dataAsset.productEntity.groupId}:${dataAsset.productEntity.artifactId}`}
+          </div>
+        </CardContent>
+
+        <CardContent className="legend-marketplace-vendor-card__more-info">
+          <div>{dataAsset.productEntity.path}</div>
+        </CardContent>
+      </CardActionArea>
+    </Card>
+  );
+};
 
 export const LakehouseMarketplace = withMarketplaceLakehouseStore(
   observer(() => {
@@ -54,47 +85,6 @@ export const LakehouseMarketplace = withMarketplaceLakehouseStore(
         auth.user?.access_token,
       );
     }, [auth.user?.access_token, marketPlaceStore.lakehouseServerClient]);
-
-    const openDataProduct = async (state: DataProductState): Promise<void> => {
-      const path = `${state.product.package}::${state.product.name}`;
-      try {
-        const studioUrl = guaranteeNonNullable(
-          marketPlaceStore.applicationStore.config.studioServerUrl,
-          'studio url required',
-        );
-        const project = StoreProjectData.serialization.fromJson(
-          await marketPlaceStore.depotServerClient.getProject(
-            state.productEntity.groupId,
-            state.productEntity.artifactId,
-          ),
-        );
-        const versionId =
-          state.productEntity.versionId === LATEST_VERSION_ALIAS
-            ? VersionedProjectData.serialization.fromJson(
-                await marketPlaceStore.depotServerClient.getLatestVersion(
-                  state.productEntity.groupId,
-                  state.productEntity.artifactId,
-                ),
-              ).versionId
-            : state.productEntity.versionId;
-
-        marketPlaceStore.applicationStore.navigationService.navigator.visitAddress(
-          EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl(
-            studioUrl,
-            project.projectId,
-            versionId,
-            path,
-          ),
-        );
-      } catch (error) {
-        assertErrorThrown(error);
-        marketPlaceStore.applicationStore.notificationService.notifyError(
-          path
-            ? `Can't visit element of path: '${path}'`
-            : `Can't visit project`,
-        );
-      }
-    };
 
     return (
       <div className="app__page">
@@ -116,15 +106,21 @@ export const LakehouseMarketplace = withMarketplaceLakehouseStore(
                     sx={{ justifyContent: 'center' }}
                   >
                     {marketPlaceStore.productStates?.map((dpState) => (
-                      <Grid
-                        key={`${dpState.dataSet.provider}.${dpState.dataSet.type}.${dpState.dataSet.description}`}
-                        size={1}
-                      >
-                        <LegendMarketplaceVendorCard
-                          dataAsset={dpState.dataSet}
-                          onClick={(dataAsset: DataAsset) => {
+                      <Grid key={dpState.id} size={1}>
+                        <LegendDataProductVendorCard
+                          dataAsset={dpState}
+                          onClick={(dataAsset: DataProductState) => {
                             {
-                              flowResult(openDataProduct(dpState));
+                              marketPlaceStore.applicationStore.navigationService.navigator.goToLocation(
+                                generateLakehouseDataProduct(
+                                  generateGAVCoordinates(
+                                    dpState.productEntity.groupId,
+                                    dpState.productEntity.artifactId,
+                                    dpState.productEntity.versionId,
+                                  ),
+                                  dpState.productEntity.path,
+                                ),
+                              );
                             }
                           }}
                         />

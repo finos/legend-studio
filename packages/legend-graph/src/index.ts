@@ -244,7 +244,12 @@ export { V1_DuckDBDatasourceSpecification } from './graph-manager/protocol/pure/
 export { V1_TestAuthenticationStrategy } from './graph-manager/protocol/pure/v1/model/packageableElements/store/relational/connection/V1_AuthenticationStrategy.js';
 export { V1_RelationStoreAccessor } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/classInstance/relation/V1_RelationStoreAccessor.js';
 export { V1_PackageableConnection } from './graph-manager/protocol/pure/v1/model/packageableElements/connection/V1_PackageableConnection.js';
-
+export {
+  V1_DataContract,
+  V1_DataContractsRecord,
+  V1_TaskStatus,
+  V1_ContractCreate_LegendDataProduct,
+} from './graph-manager/protocol/pure/v1/entitlements/V1_ConsumerEntitlements.js';
 // --------------------------------------------- EXECUTION PLAN --------------------------------------------------
 
 export { INTERNAL__UnknownExecutionResult } from './graph-manager/action/execution/INTERNAL__UnknownExecutionResult.js';

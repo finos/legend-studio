@@ -14,19 +14,15 @@
  * limitations under the License.
  */
 
-import { createModelSchema, primitive } from 'serializr';
-import { SerializationFactory } from '@finos/legend-shared';
+/// task
 
-export class VersionedProjectData {
-  groupId!: string;
-  artifactId!: string;
-  versionId!: string;
+export class V1_PendingTaskWithAssignees {
+  taskId!: string;
+  assignee: string[] = [];
+}
 
-  static readonly serialization = new SerializationFactory(
-    createModelSchema(VersionedProjectData, {
-      artifactId: primitive(),
-      groupId: primitive(),
-      versionId: primitive(),
-    }),
-  );
+export class V1_UserPendingContractsRecord {
+  contractId!: string;
+  contractDescription!: string;
+  pendingTaskWithAssignees!: V1_PendingTaskWithAssignees;
 }

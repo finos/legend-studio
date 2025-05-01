@@ -44,6 +44,7 @@ import {
 } from 'react-oidc-context';
 import type { User } from 'oidc-client-ts';
 import type { LegendMarketplaceOidcConfig } from './LegendMarketplaceApplicationConfig.js';
+import { LakehouseDataProduct } from '../components/Lakehouse/LakehouseDataProduct.js';
 
 const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();
@@ -118,6 +119,10 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
       {baseStore.initState.hasCompleted && (
         <>
           <Routes>
+            <Route
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_PRODUCT}
+              element={<LakehouseDataProduct />}
+            />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE}
               element={<ProtectedLakehouseMarketplace />}
