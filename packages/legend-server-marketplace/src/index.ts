@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-export * from './models/DataAsset.js';
-export * from './models/ProductSearchResult.js';
-export * from './models/Vendor.js';
+export * from './models/DataProduct.js';
+export * from './models/Provider.js';
 
 export { MarketplaceServerClient } from './MarketplaceServerClient.js';

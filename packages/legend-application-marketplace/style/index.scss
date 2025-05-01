@@ -23,10 +23,13 @@
 @forward 'components/product-search-card';
 @forward 'components/search-bar';
 @forward 'components/vendor-card';
+@forward 'components/radio-selector';
+@forward 'components/data-products';
 
 @forward 'pages/home';
 @forward 'pages/not-found-screen';
 @forward 'pages/search-results';
+@forward 'pages/vendor-data';
 
 :root {
   --color-legacylight-light-grey-100: #edf0f1;

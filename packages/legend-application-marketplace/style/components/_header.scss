@@ -23,6 +23,7 @@
   height: 6rem;
   position: sticky;
   top: 0;
+  z-index: 1000;
 
   &__menu {
     height: 3.4rem;
@@ -48,6 +49,21 @@
     font-weight: 700;
     margin: 1rem;
     cursor: pointer;
+  }
+
+  &__tab {
+    color: var(--color-white);
+    font-size: 16px;
+    margin: 1rem;
+    cursor: pointer;
+  }
+
+  &__container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
   }
 }
 

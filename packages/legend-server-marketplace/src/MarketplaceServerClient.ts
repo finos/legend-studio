@@ -15,8 +15,8 @@
  */
 
 import { type PlainObject, AbstractServerClient } from '@finos/legend-shared';
-import type { Vendor } from './models/Vendor.js';
-import type { ProductSearchResult } from './models/ProductSearchResult.js';
+import type { LightProvider, ProviderResult } from './models/Provider.js';
+import type { DataProductSearchResult } from './models/DataProduct.js';
 
 export interface MarketplaceServerClientConfig {
   serverUrl: string;
@@ -45,7 +45,18 @@ export class MarketplaceServerClient extends AbstractServerClient {
 
   private _vendors = (): string => `${this.baseUrl}/v1/vendors`;
 
-  getVendors = (): Promise<PlainObject<Vendor>[]> => this.get(this._vendors());
+  getVendors = (): Promise<PlainObject<LightProvider>[]> =>
+    this.get(this._vendors());
+
+  getVendorsByCategory = async (
+    category: string,
+    limit: number,
+  ): Promise<PlainObject<ProviderResult>[]> =>
+    (
+      await this.get<MarketplaceServerResponse<PlainObject<ProviderResult>[]>>(
+        `${this.baseUrl}/v1/vendor/category?category=${category}&limit=${limit}`,
+      )
+    ).results;
 
   // ------------------------------------------- Search- -------------------------------------------
 
@@ -55,10 +66,10 @@ export class MarketplaceServerClient extends AbstractServerClient {
     query: string,
     vendorName: string,
     limit: number,
-  ): Promise<PlainObject<ProductSearchResult>[]> =>
+  ): Promise<PlainObject<DataProductSearchResult>[]> =>
     (
       await this.get<
-        MarketplaceServerResponse<PlainObject<ProductSearchResult>[]>
+        MarketplaceServerResponse<PlainObject<DataProductSearchResult>[]>
       >(
         `${this._search()}/semantic/catalog?query=${query}&vendor_name=${vendorName}&limit=${limit}`,
       )

@@ -14,8 +14,33 @@
  * limitations under the License.
  */
 
-export interface Vendor {
+import { SerializationFactory } from '@finos/legend-shared';
+import { createModelSchema, optional, primitive } from 'serializr';
+
+export interface LightProvider {
   description: string;
   provider: string;
   type: string;
+}
+
+export class ProviderResult {
+  id!: number;
+  category!: string;
+  providerName!: string;
+  productName!: string;
+  description!: string;
+  price!: number;
+  isOwned?: boolean;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(ProviderResult, {
+      id: primitive(),
+      category: primitive(),
+      providerName: primitive(),
+      productName: primitive(),
+      description: primitive(),
+      price: primitive(),
+      isOwned: optional(primitive()),
+    }),
+  );
 }

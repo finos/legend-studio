@@ -33,6 +33,7 @@ import type { LegendMarketplaceApplicationConfig } from '../application/LegendMa
 import type { LegendMarketplacePluginManager } from '../application/LegendMarketplacePluginManager.js';
 import { LegendMarketplaceEventHelper } from '../__lib__/LegendMarketplaceEventHelper.js';
 import { LakehouseContractServerClient } from './LakehouseContractServerClient.js';
+import { LegendMarketPlaceVendorDataState } from './LegendMarketPlaceVendorDataState.js';
 
 export type LegendMarketplaceApplicationStore = ApplicationStore<
   LegendMarketplaceApplicationConfig,
@@ -47,6 +48,8 @@ export class LegendMarketplaceBaseStore {
   readonly pluginManager: LegendMarketplacePluginManager;
 
   readonly initState = ActionState.create();
+
+  marketplaceVendorDataState: LegendMarketPlaceVendorDataState;
 
   constructor(applicationStore: LegendMarketplaceApplicationStore) {
     makeObservable<LegendMarketplaceBaseStore>(this, {
@@ -81,6 +84,11 @@ export class LegendMarketplaceBaseStore {
         this.applicationStore.tracerService,
       );
     }
+
+    this.marketplaceVendorDataState = new LegendMarketPlaceVendorDataState(
+      this.applicationStore,
+      this,
+    );
   }
 
   *initialize(): GeneratorFn<void> {
