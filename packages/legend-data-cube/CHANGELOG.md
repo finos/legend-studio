@@ -1,5 +1,7 @@
 # @finos/legend-data-cube
 
+## 0.1.29
+
 ## 0.1.28
 
 ## 0.1.27
