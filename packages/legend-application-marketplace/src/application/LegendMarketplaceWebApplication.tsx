@@ -49,12 +49,13 @@ import {
 import type { User } from 'oidc-client-ts';
 import type { LegendMarketplaceOidcConfig } from './LegendMarketplaceApplicationConfig.js';
 import { LakehouseDataProduct } from '../pages/Lakehouse/LakehouseDataProduct.js';
-import { LegendMarketPlaceVendorData } from '../pages/VendorData/LegendMarketplaceVendorData.js';
+import { LegendMarketplaceVendorData } from '../pages/VendorData/LegendMarketplaceVendorData.js';
 import { LakehouseEntitlements } from '../pages/Lakehouse/entitlements/LakehouseEntitlements.js';
 import { LakehouseSubscriptions } from '../pages/Lakehouse/subscriptions/LakehouseSubscriptions.js';
 import { LegendMarketplaceHeader } from '../components/Header/LegendMarketplaceHeader.js';
 import { MarketplaceLakehouseHeader } from '../components/Header/MarketplaceLakehouseHeader.js';
 import { LegendMarketplacePage } from '../pages/LegendMarketplacePage.js';
+import { LegendMarketplaceVendorDetails } from '../pages/VendorDetails/LegendMarketplaceVendorDetails.js';
 
 const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();
@@ -218,7 +219,11 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
             />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.VENDOR_DATA}
-              element={<LegendMarketPlaceVendorData />}
+              element={<LegendMarketplaceVendorData />}
+            />
+            <Route
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.VENDOR_DETAILS}
+              element={<LegendMarketplaceVendorDetails />}
             />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SUBSCRIPTIONS}

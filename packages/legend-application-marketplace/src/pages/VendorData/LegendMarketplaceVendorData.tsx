@@ -151,7 +151,7 @@ export const VendorDataMainContent = observer(
   },
 );
 
-export const LegendMarketPlaceVendorData = observer(() => {
+export const LegendMarketplaceVendorData = observer(() => {
   const applicationStore = useApplicationStore();
   const baseStore = useLegendMarketplaceBaseStore();
   const marketPlaceVendorDataState = baseStore.marketplaceVendorDataState;
