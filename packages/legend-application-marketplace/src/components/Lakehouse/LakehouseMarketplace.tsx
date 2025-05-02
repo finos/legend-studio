@@ -30,13 +30,17 @@ import {
   Card,
   CardActionArea,
   CardContent,
+  Checkbox,
   Chip,
+  FormControlLabel,
+  FormGroup,
   Grid2 as Grid,
 } from '@mui/material';
 import type { DataProductState } from '../../stores/lakehouse/MarketplaceLakehouseStore.js';
 import { generateLakehouseDataProduct } from '../../__lib__/LegendMarketplaceNavigation.js';
 import { useAuth } from 'react-oidc-context';
 import { generateGAVCoordinates } from '@finos/legend-storage';
+import { LegendMarketplaceSearchBar } from '../SearchBar/LegendMarketplaceSearchBar.js';
 
 export const LegendDataProductVendorCard = (props: {
   dataAsset: DataProductState;
@@ -75,6 +79,13 @@ export const LakehouseMarketplace = withMarketplaceLakehouseStore(
     const marketPlaceStore = useMarketplaceLakehouseStore();
     const auth = useAuth();
 
+    const onSearch = (
+      provider: string | undefined,
+      query: string | undefined,
+    ) => {
+      // Handle search logic here
+    };
+
     useEffect(() => {
       marketPlaceStore.init();
     }, [marketPlaceStore]);
@@ -98,6 +109,23 @@ export const LakehouseMarketplace = withMarketplaceLakehouseStore(
                 >
                   <CubesLoadingIndicatorIcon />
                 </CubesLoadingIndicator>
+                <div className="legend-marketplace-data-product-search__container">
+                  <LegendMarketplaceSearchBar onSearch={onSearch} />
+
+                  <div className="legend-marketplace-data-product-search__filters">
+                    <FormGroup>
+                      <FormControlLabel
+                        control={<Checkbox />}
+                        label="Releases"
+                      />
+                      <FormControlLabel
+                        control={<Checkbox />}
+                        label="Snapshots"
+                      />
+                    </FormGroup>
+                  </div>
+                </div>
+
                 <div className="legend-marketplace-home__vendors-cards">
                   <Grid
                     container={true}
