@@ -99,3 +99,19 @@
       box-shadow 0.3s ease;
   }
 }
+
+.legend-marketplace-data-product-search {
+  &__container {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  &__filters {
+    display: flex;
+    flex-direction: row;
+    padding: unset;
+  }
+}

@@ -25,28 +25,28 @@ export const LegendMarketplaceProviderCard = (props: {
 }): JSX.Element => {
   const { providerResult, onAddToCartClick } = props;
   return (
-    <Card variant="outlined" className="legend-marketplace-vendor-card">
-      <CardContent className="legend-marketplace-vendor-card__body">
-        <div className="legend-marketplace-vendor-card__vendor-name">
+    <Card variant="outlined" className="legend-marketplace-vendor-data-card">
+      <CardContent className="legend-marketplace-vendor-data-card__body">
+        <div className="legend-marketplace-vendor-data-card__vendor-name">
           {providerResult.providerName}
         </div>
-        <div className="legend-marketplace-vendor-card__product-name">
+        <div className="legend-marketplace-vendor-data-card__product-name">
           {providerResult.productName || 'N/A'}
         </div>
-        <div className="legend-marketplace-vendor-card__vendor-name__description">
+        <div className="legend-marketplace-vendor-data-card__vendor-name__description">
           {providerResult.description}
         </div>
       </CardContent>
-      <CardActions className="legend-marketplace-vendor-card-button-group">
+      <CardActions className="legend-marketplace-vendor-data-card-button-group">
         {providerResult.isOwned ? (
-          <div className="legend-marketplace-vendor-card__vendor-name__owned">
+          <div className="legend-marketplace-vendor-data-card__vendor-name__owned">
             Already have access &nbsp; <CheckCircleIcon />
           </div>
         ) : (
           <>
             <Button
               variant="outlined"
-              className="vendor-card-add-to-cart-button"
+              className="vendor-data-card-add-to-cart-button"
               onClick={() => onAddToCartClick(providerResult)}
             >
               Add to cart &nbsp;
@@ -55,7 +55,7 @@ export const LegendMarketplaceProviderCard = (props: {
             {typeof providerResult.price === 'number' && (
               <Chip
                 label={`$${providerResult.price.toFixed(2)} per month`}
-                className="legend-marketplace-vendor-card-button-group__price"
+                className="legend-marketplace-vendor-data-card-button-group__price"
                 sx={{ color: 'white', backgroundColor: '#077d55' }}
               />
             )}
