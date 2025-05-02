@@ -45,7 +45,8 @@ import {
 import type { User } from 'oidc-client-ts';
 import type { LegendMarketplaceOidcConfig } from './LegendMarketplaceApplicationConfig.js';
 import { LakehouseDataProduct } from '../components/Lakehouse/LakehouseDataProduct.js';
-import { LegendMarketPlaceVendorData } from '../pages/VendorData/LegendMarketplaceVendorData.js';
+import { LegendMarketplaceVendorData } from '../pages/VendorData/LegendMarketplaceVendorData.js';
+import { LegendMarketplaceVendorDetails } from '../pages/VendorDetails/LegendMarketplaceVendorDetails.js';
 
 const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();
@@ -138,7 +139,11 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
             />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.VENDOR_DATA}
-              element={<LegendMarketPlaceVendorData />}
+              element={<LegendMarketplaceVendorData />}
+            />
+            <Route
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.VENDOR_DETAILS}
+              element={<LegendMarketplaceVendorDetails />}
             />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
