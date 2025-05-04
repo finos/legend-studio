@@ -1,0 +1,188 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import {
+  customListWithSchema,
+  UnsupportedOperationError,
+  usingModelSchema,
+  type PlainObject,
+} from '@finos/legend-shared';
+import {
+  type V1_ConsumerEntitlementResource,
+  V1_AccessPoint_Entitlements,
+  V1_AccessPointGroupReference,
+  V1_ContractUserEventRecord,
+  V1_DataContract,
+  V1_DataContractRecord,
+  V1_DataContractsRecord,
+  V1_DataProduct_Entitlements,
+  V1_PendingTasksRespond,
+  V1_TaskStatusChangeResponse,
+} from '../../../entitlements/V1_ConsumerEntitlements.js';
+import {
+  createModelSchema,
+  custom,
+  deserialize,
+  list,
+  primitive,
+  serialize,
+  SKIP,
+} from 'serializr';
+import {
+  V1_AdhocTeam,
+  V1_AppDirNode,
+  V1_User,
+  type V1_OrganizationalScope,
+} from '../../../entitlements/V1_CoreEntitlements.js';
+
+enum V1_OrganizationalScopeType {
+  AdHocTeam = 'AdHocTeam',
+}
+
+enum V1_AccessPointGroupReferenceType {
+  AccessPointGroupReference = 'AccessPointGroupReference',
+}
+
+export const V1_UserModelSchema = createModelSchema(V1_User, {
+  name: primitive(),
+  userType: primitive(),
+});
+
+export const V1_AccessPoint_EntitlementsModelSchema = createModelSchema(
+  V1_AccessPoint_Entitlements,
+  {
+    name: primitive(),
+    guid: primitive(),
+    groups: list(primitive()),
+  },
+);
+
+export const V1_AppDirNodeModelSchema = createModelSchema(V1_AppDirNode, {
+  appDirId: primitive(),
+  level: primitive(),
+});
+
+export const V1_DataProduct_EntitlementsModelSchema = createModelSchema(
+  V1_DataProduct_Entitlements,
+  {
+    name: primitive(),
+    guid: primitive(),
+    accessPoints: customListWithSchema(V1_AccessPoint_EntitlementsModelSchema),
+    owner: usingModelSchema(V1_AppDirNodeModelSchema),
+  },
+);
+
+export const V1_AccessPointGroupReferenceModelSchema = createModelSchema(
+  V1_AccessPointGroupReference,
+  {
+    dataProduct: usingModelSchema(V1_DataProduct_EntitlementsModelSchema),
+    accessPointGroup: primitive(),
+  },
+);
+
+export const V1_AdhocTeamModelSchema = createModelSchema(V1_AdhocTeam, {
+  users: customListWithSchema(V1_UserModelSchema),
+});
+
+const V1_deseralizeOrganizationalScope = (
+  json: PlainObject<V1_OrganizationalScope>,
+): V1_OrganizationalScope => {
+  switch (json._type) {
+    case V1_OrganizationalScopeType.AdHocTeam:
+      return deserialize(V1_AdhocTeamModelSchema, json);
+    default:
+      throw new UnsupportedOperationError();
+  }
+};
+
+const V1_seralizeOrganizationalScope = (
+  json: V1_OrganizationalScope,
+): PlainObject<V1_OrganizationalScope> => {
+  if (json instanceof V1_AdhocTeam) {
+    return serialize(V1_AdhocTeamModelSchema, json);
+  }
+  throw new UnsupportedOperationError();
+};
+
+const V1_deseralizeV1_ConsumerEntitlementResource = (
+  json: PlainObject<V1_ConsumerEntitlementResource>,
+): V1_ConsumerEntitlementResource => {
+  switch (json._type) {
+    case V1_AccessPointGroupReferenceType.AccessPointGroupReference:
+      return deserialize(V1_AccessPointGroupReferenceModelSchema, json);
+    default:
+      throw new UnsupportedOperationError();
+  }
+};
+
+export const V1_dataContractModelSchema = createModelSchema(V1_DataContract, {
+  description: primitive(),
+  guid: primitive(),
+  version: primitive(),
+  state: primitive(),
+  resource: custom(() => SKIP, V1_deseralizeV1_ConsumerEntitlementResource),
+  // members: V1_ContractUserMembership[] = [];
+  consumer: custom(
+    V1_seralizeOrganizationalScope,
+    V1_deseralizeOrganizationalScope,
+  ),
+  createdBy: primitive(),
+});
+
+export const V1_schemaSetModelSchema = createModelSchema(
+  V1_DataContractRecord,
+  {
+    dataContract: usingModelSchema(V1_dataContractModelSchema),
+  },
+);
+
+export const V1_DataContractsRecordModelSchema = createModelSchema(
+  V1_DataContractsRecord,
+  {
+    dataContracts: customListWithSchema(V1_schemaSetModelSchema),
+  },
+);
+
+export const V1_contractUserEventRecordModelSchema = createModelSchema(
+  V1_ContractUserEventRecord,
+  {
+    taskId: primitive(),
+    dataContractId: primitive(),
+    status: primitive(),
+    consumer: primitive(),
+    eventPayload: primitive(),
+    type: primitive(),
+  },
+);
+
+export const V1_pendingTasksRespondModelSchema = createModelSchema(
+  V1_PendingTasksRespond,
+  {
+    privilegeManager: customListWithSchema(
+      V1_contractUserEventRecordModelSchema,
+    ),
+    dataOwner: customListWithSchema(V1_contractUserEventRecordModelSchema),
+  },
+);
+
+export const V1_TaskStatusChangeResponseModelSchema = createModelSchema(
+  V1_TaskStatusChangeResponse,
+  {
+    status: primitive(),
+    errorType: primitive(),
+    errorMessage: primitive(),
+  },
+);

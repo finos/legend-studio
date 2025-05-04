@@ -17,6 +17,7 @@
 import type { CommandRegistrar } from '@finos/legend-application';
 import {
   DepotScope,
+  isSnapshotVersion,
   projectIdHandlerFunc,
   resolveVersion,
   StoredSummaryEntity,
@@ -25,7 +26,7 @@ import {
   type DepotServerClient,
 } from '@finos/legend-server-depot';
 import type { LakehouseContractServerClient } from '../LakehouseContractServerClient.js';
-import { action, flow, makeObservable, observable } from 'mobx';
+import { action, computed, flow, makeObservable, observable } from 'mobx';
 import type { LegendMarketplaceApplicationStore } from '../LegendMarketplaceBaseStore.js';
 import {
   ActionState,
@@ -38,6 +39,7 @@ import {
 } from '@finos/legend-shared';
 import {
   CORE_PURE_PATH,
+  DataProductArtifactGeneration,
   GraphDataWithOrigin,
   GraphManagerState,
   LegendSDLC,
@@ -53,6 +55,7 @@ import {
 } from '@finos/legend-storage';
 import { DataProductViewerState } from './DataProductViewerState.js';
 import { EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl } from '../../__lib__/LegendMarketplaceNavigation.js';
+import type { AuthContextProps } from 'react-oidc-context';
 
 const ARTIFACT_GENERATION_DAT_PRODUCT_KEY = 'dataProduct';
 interface DataProductEntity {
@@ -91,12 +94,38 @@ export class DataProductState {
   }
 }
 
+class DataProductFilters {
+  releaseFilter;
+  snapshotFilter;
+  search?: string | undefined;
+
+  constructor(
+    releaseFilter: boolean,
+    snapshotFilter: boolean,
+    search?: string | undefined,
+  ) {
+    makeObservable(this, {
+      releaseFilter: observable,
+      snapshotFilter: observable,
+      search: observable,
+    });
+    this.releaseFilter = releaseFilter;
+    this.snapshotFilter = snapshotFilter;
+    this.search = search;
+  }
+
+  static default(): DataProductFilters {
+    return new DataProductFilters(true, true, undefined);
+  }
+}
+
 export class MarketplaceLakehouseStore implements CommandRegistrar {
   readonly applicationStore: LegendMarketplaceApplicationStore;
   readonly depotServerClient: DepotServerClient;
   readonly lakehouseServerClient: LakehouseContractServerClient;
   productStates: DataProductState[] | undefined;
   loadingProductsState = ActionState.create();
+  filter: DataProductFilters = DataProductFilters.default();
 
   //
   dataProductViewer: DataProductViewerState | undefined;
@@ -115,7 +144,31 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       productStates: observable,
       setProducts: action,
       dataProductViewer: observable,
+      handleFilterChange: observable,
+      handleSearch: action,
+      filterProducts: computed,
       setDataProductViewerState: action,
+      filter: observable,
+    });
+  }
+
+  get filterProducts(): DataProductState[] | undefined {
+    return this.productStates?.filter((p) => {
+      const isSnapshot = isSnapshotVersion(p.productEntity.versionId);
+      const depotFilter =
+        (isSnapshot && this.filter.snapshotFilter) ||
+        (!isSnapshot && this.filter.releaseFilter);
+      if (!this.filter.search || !depotFilter) {
+        return depotFilter;
+      }
+      const [packageName, name] = p.packageAndName;
+      if (packageName?.startsWith(this.filter.search)) {
+        return true;
+      }
+      if (name.startsWith(this.filter.search)) {
+        return true;
+      }
+      return false;
     });
   }
 
@@ -125,6 +178,18 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
 
   setDataProductViewerState(val: DataProductViewerState | undefined): void {
     this.dataProductViewer = val;
+  }
+
+  handleFilterChange(val: DepotScope | undefined): void {
+    if (val === DepotScope.RELEASES) {
+      this.filter.releaseFilter = !this.filter.releaseFilter;
+    } else if (val === DepotScope.SNAPSHOT) {
+      this.filter.snapshotFilter = !this.filter.snapshotFilter;
+    }
+  }
+
+  handleSearch(query: string | undefined) {
+    this.filter.search = query;
   }
 
   *init(): GeneratorFn<void> {
@@ -178,7 +243,11 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     }
   }
 
-  *initWithProduct(gav: string, path: string): GeneratorFn<void> {
+  *initWithProduct(
+    gav: string,
+    path: string,
+    auth: AuthContextProps,
+  ): GeneratorFn<void> {
     try {
       this.loadingProductsState.inProgress();
       const projectData = VersionedProjectData.serialization.fromJson(
@@ -205,15 +274,21 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       )) as StoredFileGeneration[];
       const generation = files.filter((e) => e.path === v1DataProduct.path)[0]
         ?.file.content;
+      const parsed = generation
+        ? DataProductArtifactGeneration.serialization.fromJson(
+            JSON.parse(generation),
+          )
+        : undefined;
       const stateViewer = new DataProductViewerState(
         this.applicationStore,
         new GraphManagerState(
           this.applicationStore.pluginManager,
           this.applicationStore.logService,
         ),
+        this.lakehouseServerClient,
         projectData,
         v1DataProduct,
-        generation,
+        parsed,
         {
           retrieveGraphData: () => {
             const sdlc = new LegendSDLC(

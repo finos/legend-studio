@@ -262,8 +262,24 @@ export {
   V1_DataContract,
   V1_DataContractsRecord,
   V1_TaskStatus,
+  V1_AccessPointGroupReference,
   V1_ContractCreate_LegendDataProduct,
+  V1_ContractUserEventRecord,
+  V1_TaskStatusChangeResponse,
+  V1_PendingTasksRespond,
 } from './graph-manager/protocol/pure/v1/entitlements/V1_ConsumerEntitlements.js';
+export {
+  V1_AppDirLevel,
+  V1_AppDirNode,
+  V1_AppDirOrganizationalScope,
+} from './graph-manager/protocol/pure/v1/entitlements/V1_CoreEntitlements.js';
+export {
+  V1_DataContractsRecordModelSchema,
+  V1_AppDirNodeModelSchema,
+  V1_pendingTasksRespondModelSchema,
+  V1_TaskStatusChangeResponseModelSchema,
+} from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_EntitlementSerializationHelper.js';
+
 // --------------------------------------------- EXECUTION PLAN --------------------------------------------------
 
 export { INTERNAL__UnknownExecutionResult } from './graph-manager/action/execution/INTERNAL__UnknownExecutionResult.js';
@@ -387,6 +403,8 @@ export {
 export { ExecutionError } from './graph-manager/action/ExecutionError.js';
 export { ExternalFormatDescription } from './graph-manager/action/externalFormat/ExternalFormatDescription.js';
 export * from './graph-manager/action/generation/ArtifactGenerationExtensionResult.js';
+export * from './graph-manager/action/generation/dataProduct/DataProductArtifactGeneration.js';
+
 export * from './graph-manager/action/execution/ExecutionResultHelper.js';
 export * from './graph-manager/PureGraphManagerPlugin.js';
 export * from './graph-manager/action/query/Query.js';

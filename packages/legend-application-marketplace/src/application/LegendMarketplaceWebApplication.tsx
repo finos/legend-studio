@@ -46,6 +46,7 @@ import type { User } from 'oidc-client-ts';
 import type { LegendMarketplaceOidcConfig } from './LegendMarketplaceApplicationConfig.js';
 import { LakehouseDataProduct } from '../components/Lakehouse/LakehouseDataProduct.js';
 import { LegendMarketPlaceVendorData } from '../pages/VendorData/LegendMarketplaceVendorData.js';
+import { LakehouseEntitlements } from '../components/Lakehouse/entitlements/LakehouseEntitlements.js';
 
 const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();
@@ -115,6 +116,34 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
     },
   );
 
+  const ProtectedLakehouseDataProduct = withAuthenticationRequired(
+    LakehouseDataProduct,
+    {
+      OnRedirecting: () => (
+        <CubesLoadingIndicator isLoading={true}>
+          <CubesLoadingIndicatorIcon />
+        </CubesLoadingIndicator>
+      ),
+      signinRedirectArgs: {
+        state: window.location.pathname,
+      },
+    },
+  );
+
+  const ProtectedLakehouseEntitlements = withAuthenticationRequired(
+    LakehouseEntitlements,
+    {
+      OnRedirecting: () => (
+        <CubesLoadingIndicator isLoading={true}>
+          <CubesLoadingIndicatorIcon />
+        </CubesLoadingIndicator>
+      ),
+      signinRedirectArgs: {
+        state: window.location.pathname,
+      },
+    },
+  );
+
   return (
     <div className="app">
       {baseStore.initState.hasCompleted && (
@@ -122,8 +151,25 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
           <Routes>
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_PRODUCT}
-              element={<LakehouseDataProduct />}
+              element={<ProtectedLakehouseDataProduct />}
             />
+            <Route
+              path={
+                LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS_TASKS
+              }
+              element={<ProtectedLakehouseEntitlements />}
+            />
+            <Route
+              path={
+                LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS_CONTRACTS
+              }
+              element={<ProtectedLakehouseEntitlements />}
+            />
+            <Route
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS}
+              element={<ProtectedLakehouseEntitlements />}
+            />
+
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE}
               element={<ProtectedLakehouseMarketplace />}

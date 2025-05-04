@@ -24,7 +24,6 @@ import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
 } from '@finos/legend-art';
-import { LegendMarketplaceHeader } from '../Header/LegendMarketplaceHeader.js';
 import {
   LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN,
   type LakehouseDataProductPathParams,
@@ -33,12 +32,15 @@ import { useParams } from '@finos/legend-application/browser';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { DataProductViewer } from './DataProductViewer.js';
 import { LEGEND_APPLICATION_COLOR_THEME } from '@finos/legend-application';
+import { useAuth } from 'react-oidc-context';
+import { LakehouseMarketplaceHeader } from './LakehouseHeader.js';
 
 export const LakehouseDataProduct = withMarketplaceLakehouseStore(
   observer(() => {
     const marketPlaceStore = useMarketplaceLakehouseStore();
     const applicationStore = marketPlaceStore.applicationStore;
     const params = useParams<LakehouseDataProductPathParams>();
+    const auth = useAuth();
     const gav = guaranteeNonNullable(
       params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.GAV],
     );
@@ -47,8 +49,8 @@ export const LakehouseDataProduct = withMarketplaceLakehouseStore(
     );
 
     useEffect(() => {
-      marketPlaceStore.initWithProduct(gav, product);
-    }, [gav, marketPlaceStore, product]);
+      marketPlaceStore.initWithProduct(gav, product, auth);
+    }, [auth, gav, marketPlaceStore, product]);
 
     useEffect(() => {
       applicationStore.layoutService.setColorTheme(
@@ -63,7 +65,7 @@ export const LakehouseDataProduct = withMarketplaceLakehouseStore(
       <div className="app__page">
         <div className="legend-marketplace-home">
           <div className="legend-marketplace-data-product-home__body">
-            <LegendMarketplaceHeader />
+            <LakehouseMarketplaceHeader />
             <div className="legend-marketplace-home__content">
               <div className="legend-marketplace-data-product__content">
                 <CubesLoadingIndicator

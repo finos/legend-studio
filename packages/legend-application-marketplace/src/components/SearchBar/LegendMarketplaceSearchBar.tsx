@@ -27,8 +27,9 @@ export interface Vendor {
 export const LegendMarketplaceSearchBar = (props: {
   onSearch: (provider: string | undefined, query: string | undefined) => void;
   initialValue?: string;
+  onChange?: (query: string) => void;
 }): JSX.Element => {
-  const { onSearch, initialValue } = props;
+  const { onSearch, initialValue, onChange } = props;
 
   const [searchQuery, setSearchQuery] = useState<string>(initialValue ?? '');
 
@@ -47,6 +48,7 @@ export const LegendMarketplaceSearchBar = (props: {
         value={searchQuery}
         onChange={(event) => {
           setSearchQuery(event.target.value);
+          onChange?.(event.target.value);
         }}
         slotProps={{
           input: {
