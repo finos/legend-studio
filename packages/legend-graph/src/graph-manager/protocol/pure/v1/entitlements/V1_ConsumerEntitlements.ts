@@ -78,7 +78,7 @@ export class V1_DataSubscription {
   createdBy!: string;
 }
 
-export class V1_DataSubscriptionTarget {}
+export abstract class V1_DataSubscriptionTarget {}
 
 export class V1_SnowflakeTarget extends V1_DataSubscriptionTarget {
   snowflakeAccountId!: string;

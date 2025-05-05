@@ -271,6 +271,9 @@ export {
   V1_PendingTasksRespond,
   V1_ContractState,
   type V1_DataContractsCreation,
+  V1_DataSubscription,
+  V1_DataSubscriptionTarget,
+  V1_SnowflakeTarget,
 } from './graph-manager/protocol/pure/v1/entitlements/V1_ConsumerEntitlements.js';
 export {
   V1_AppDirLevel,
@@ -287,6 +290,7 @@ export {
   V1_TaskStatusChangeResponseModelSchema,
   V1_AdhocTeamModelSchema,
   V1_DataContractsRecordModelSchemaToContracts,
+  V1_dataSubscriptionModelSchema,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_EntitlementSerializationHelper.js';
 
 // --------------------------------------------- EXECUTION PLAN --------------------------------------------------
