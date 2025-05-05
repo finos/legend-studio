@@ -15,14 +15,15 @@
  */
 
 import {
+  type V1_DataContract,
   V1_AccessPointGroupReference,
   V1_AppDirOrganizationalScope,
-  type V1_DataContract,
 } from '@finos/legend-graph';
-import type {
-  GridItemDetail,
-  LakehouseEntitlementsStore,
+import {
+  type LakehouseEntitlementsStore,
+  type GridItemDetail,
 } from './LakehouseEntitlementsStore.js';
+import { LakehouseViewerState } from './LakehouseViewerState.js';
 
 export const buildDataContractDetail = (
   dataContract: V1_DataContract,
@@ -114,15 +115,14 @@ export const buildDataContractDetail = (
   return [...details, ...dataProductDetails, ...orgDetails, ...members];
 };
 
-export class DataContractState {
-  readonly state: LakehouseEntitlementsStore;
+export class DataContractState extends LakehouseViewerState {
   readonly value: V1_DataContract;
   canApprove: boolean | undefined;
   dataContract: V1_DataContract | undefined;
 
   constructor(value: V1_DataContract, state: LakehouseEntitlementsStore) {
+    super(state);
     this.value = value;
-    this.state = state;
   }
 
   get taskDetails(): GridItemDetail[] {
