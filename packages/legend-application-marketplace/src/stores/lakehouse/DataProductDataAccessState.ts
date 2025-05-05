@@ -132,18 +132,18 @@ export class DataProductGroupAccessState {
 
 export class DataProductDataAccessState {
   readonly viewerState: DataProductViewerState;
-  accessGroupState: DataProductGroupAccessState[];
+  accessGroupStates: DataProductGroupAccessState[];
   fetchingDataProductAccessState = ActionState.create();
 
   constructor(viewerState: DataProductViewerState) {
     makeObservable(this, {
-      accessGroupState: observable,
+      accessGroupStates: observable,
       fetchingDataProductAccessState: observable,
       fetchGroupState: flow,
     });
 
     this.viewerState = viewerState;
-    this.accessGroupState = this.product.accessPointGroups.map(
+    this.accessGroupStates = this.product.accessPointGroups.map(
       (e) => new DataProductGroupAccessState(e, this),
     );
   }
@@ -154,10 +154,10 @@ export class DataProductDataAccessState {
       this.fetchingDataProductAccessState.inProgress();
       yield generatePromise();
 
-      if (this.accessGroupState.length === 3) {
-        this.accessGroupState[0]?.setAccess(DataProductGroupAccess.NO_ACCESS);
-        this.accessGroupState[1]?.setAccess(DataProductGroupAccess.PENDING);
-        this.accessGroupState[2]?.setAccess(DataProductGroupAccess.COMPLETED);
+      if (this.accessGroupStates.length === 3) {
+        this.accessGroupStates[0]?.setAccess(DataProductGroupAccess.NO_ACCESS);
+        this.accessGroupStates[1]?.setAccess(DataProductGroupAccess.PENDING);
+        this.accessGroupStates[2]?.setAccess(DataProductGroupAccess.COMPLETED);
       }
     } catch (error) {
       assertErrorThrown(error);

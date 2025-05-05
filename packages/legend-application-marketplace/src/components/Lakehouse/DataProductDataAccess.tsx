@@ -282,7 +282,7 @@ export const DataProducteDataAccess = observer(
         </div>
         <div className="data-space__viewer__wiki__section__content">
           <div className="data-space__viewer__data-access">
-            {dataSpaceViewerState.accessState.accessGroupState.map(
+            {dataSpaceViewerState.accessState.accessGroupStates.map(
               (groupState) => (
                 <DataProductGroupAccessViewer
                   key={groupState.id}

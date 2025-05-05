@@ -24,6 +24,8 @@ export enum LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN {
   VENDOR_NAME = 'vendorName',
   GAV = 'gav',
   DATA_PRODUCT_PATH = 'path',
+  TASK_ID = 'taskId',
+  CONTRACT_ID = 'contractId',
 }
 
 export enum LEGEND_MARKETPLACE_SEARCH_RESULTS_QUERY_PARAM_TOKEN {
@@ -36,12 +38,20 @@ export type LakehouseDataProductPathParams = {
   [LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH]: string;
 };
 
+export type LakehouseEntitlementsTasksParam = {
+  [LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.TASK_ID]: string | undefined;
+  [LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.CONTRACT_ID]: string | undefined;
+};
+
 export const LEGEND_MARKETPLACE_ROUTE_PATTERN = Object.freeze({
   DEFAULT: '/',
   SEARCH_RESULTS: '/results',
   VENDOR_DATA: '/vendordata',
   VENDOR_DETAILS: `/vendor/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.VENDOR_NAME}`,
   LAKEHOUSE: '/lakehouse',
+  LAKEHOUSE_ENTITLEMENTS: '/lakehouse/entitlements',
+  LAKEHOUSE_ENTITLEMENTS_TASKS: `/lakehouse/entitlements/tasks/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.TASK_ID}`,
+  LAKEHOUSE_ENTITLEMENTS_CONTRACTS: `/lakehouse/entitlements/contracts/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.CONTRACT_ID}`,
   LAKEHOUSE_PRODUCT: `/lakehouse/dataProduct/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.GAV}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH}`,
 });
 
@@ -53,6 +63,19 @@ export const generateLakehouseDataProduct = (
     gav,
     path,
   });
+
+export const generateLakehouseTaskPath = (taskId: string): string =>
+  generatePath(LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS_TASKS, {
+    taskId,
+  });
+
+export const generateLakehouseContractPath = (contractId: string): string =>
+  generatePath(
+    LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS_CONTRACTS,
+    {
+      contractId,
+    },
+  );
 
 export const generateSearchResultsRoute = (
   provider: string | undefined,

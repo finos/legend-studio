@@ -14,17 +14,38 @@
  * limitations under the License.
  */
 
-/**
- * NOTE: `HEAD` alias does not exist in depot server
- * instead, it uses `master-SNAPSHOT` which to us is not generic enough.
- */
-export const SNAPSHOT_VERSION_ALIAS = 'HEAD';
-export const LATEST_VERSION_ALIAS = 'latest';
-export const MASTER_SNAPSHOT_ALIAS = 'master-SNAPSHOT';
-export const SNAPSHOT_ALIAS = 'SNAPSHOT';
+.entitlements-tasks {
+  height: 100%;
+  width: 100%;
+  position: relative;
+  background: var(--color-hclight-white);
+  color: var(--color-hclight-grey-90);
+  font-family: Roboto, sans-serif;
 
-export const resolveVersion = (versionId: string): string =>
-  versionId === SNAPSHOT_VERSION_ALIAS ? MASTER_SNAPSHOT_ALIAS : versionId;
+  &__grid {
+    height: 100%;
 
-export const isSnapshotVersion = (versionId: string): boolean =>
-  versionId.endsWith(SNAPSHOT_ALIAS);
+    &-taskid-cell {
+      color: blue;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+  }
+}
+
+.entitlements-task {
+  height: 100%;
+  width: 100%;
+  position: relative;
+  background: var(--color-hclight-white);
+  color: var(--color-hclight-grey-90);
+  font-family: Roboto, sans-serif;
+
+  &__action {
+    padding-bottom: 1rem;
+  }
+
+  &__details {
+    padding-top: 1rem;
+  }
+}

@@ -19,6 +19,7 @@ import type {
   V1_DataContract,
   V1_DataContractsRecord,
   V1_TaskStatus,
+  V1_PendingTasksRespond,
 } from '@finos/legend-graph';
 import { AbstractServerClient, type PlainObject } from '@finos/legend-shared';
 
@@ -33,37 +34,91 @@ export class LakehouseContractServerClient extends AbstractServerClient {
     });
   }
 
-  // ------------------------------------------- Data Contracts -------------------------------------------
-
-  private _dataContracts = (): string => `${this.baseUrl}/datacontracts`;
+  // auth
+  private _token = (token?: string) => ({
+    Authorization: `Bearer ${token}`,
+  });
 
   private _contracts = (): string => `${this.baseUrl}/contracts`;
 
   getDataProducts = (token?: string | undefined): Promise<PlainObject[]> =>
+    this.get(`${this._contracts()}/dataProducts`, {}, this._token(token));
+
+  // ------------------------------------------- Data Contracts -------------------------------------------
+
+  private _dataContracts = (): string => `${this.baseUrl}/datacontracts`;
+
+  getPendingContracts = (token?: string | undefined): Promise<PlainObject[]> =>
     this.get(
-      `${this._contracts()}/dataProducts`,
+      `${this._dataContracts()}/pendingContractsForUser`,
       {},
-      { Authorization: `Bearer ${token}` },
+      this._token(token),
     );
 
-  private _tasks = (): string => `${this.baseUrl}/datacontracts/tasks`;
-
-  getDataContracts = (): Promise<PlainObject<V1_DataContractsRecord>> =>
-    this.get(this._dataContracts());
+  getDataContracts = (
+    token: string | undefined,
+  ): Promise<PlainObject<V1_DataContractsRecord>> =>
+    this.get(this._dataContracts(), {}, this._token(token));
 
   getDataContract = (
     id: string,
+    token: string | undefined,
   ): Promise<PlainObject<V1_DataContractsRecord>> =>
-    this.get(`${this._dataContracts()}/${encodeURIComponent(id)}`);
+    this.get(
+      `${this._dataContracts()}/${encodeURIComponent(id)}`,
+      {},
+      this._token(token),
+    );
 
-  approveTask = (id: string): Promise<PlainObject<V1_TaskStatus>> =>
-    this.post(`${this._tasks()}/${encodeURIComponent(id)}/approve`);
-
-  denyTaskTask = (id: string): Promise<PlainObject<V1_TaskStatus>> =>
-    this.post(`${this._tasks()}/${encodeURIComponent(id)}/deny`);
+  getDataContractsFromDID = (
+    body: PlainObject<AppendMode>[],
+    token: string | undefined,
+  ): Promise<PlainObject<V1_DataContractsRecord>> => {
+    return this.post(
+      `${this._dataContracts()}/query/accessPointsOwnedByDeployments`,
+      body,
+      undefined,
+      this._token(token),
+    );
+  };
 
   createContract = (
     contractRequest: PlainObject<V1_ContractCreate_LegendDataProduct>,
   ): Promise<V1_DataContract> =>
     this.post(`${this._dataContracts()}/alloyDataProduct`, contractRequest);
+
+  // ------------------------------------------- Tasks -------------------------------------------
+
+  private _tasks = (): string => `${this.baseUrl}/datacontracts/tasks`;
+
+  getPendingTasks = (
+    user: string | undefined,
+    token: string | undefined,
+  ): Promise<PlainObject<V1_PendingTasksRespond>> => {
+    return this.get(`${this._tasks()}/pending`, {}, this._token(token), {
+      user,
+    });
+  };
+
+  approveTask = (
+    id: string,
+    token: string | undefined,
+  ): Promise<PlainObject<V1_TaskStatus>> =>
+    this.post(
+      `${this._tasks()}/${encodeURIComponent(id)}/approve`,
+      {},
+      {},
+      this._token(token),
+    );
+
+  denyTaskTask = (
+    id: string,
+    token: string | undefined,
+  ): Promise<PlainObject<V1_TaskStatus>> =>
+    this.post(
+      `${this._tasks()}/${encodeURIComponent(id)}/deny`,
+      {},
+      {},
+      this._token(token),
+    );
 }

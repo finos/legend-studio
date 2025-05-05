@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import type { V1_DataProduct } from '../model/packageableElements/dataProduct/V1_DataProduct.js';
 import {
   type V1_OrganizationalScope,
   V1_Resource,
@@ -24,8 +23,20 @@ import {
 
 export class V1_ConsumerEntitlementResource extends V1_Resource {}
 
+export class V1_AccessPoint_Entitlements {
+  name!: string;
+  guid!: string;
+  groups: string[] = [];
+}
+export class V1_DataProduct_Entitlements {
+  name!: string;
+  guid!: string;
+  accessPoints: V1_AccessPoint_Entitlements[] = [];
+  owner!: V1_AppDirNode;
+}
+
 export class V1_AccessPointGroupReference extends V1_ConsumerEntitlementResource {
-  dataProduct!: V1_DataProduct;
+  dataProduct!: V1_DataProduct_Entitlements;
   accessPointGroup!: string;
 }
 
@@ -101,6 +112,11 @@ export enum V1_ContractState {
   CLOSED,
 }
 
+export enum V1_ApprovalType {
+  DATA_OWNER_APPROVAL,
+  CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
+}
+
 export class V1_BigQueryTarget extends V1_DataSubscriptionTarget {
   gcpProjectId!: string;
 }
@@ -116,4 +132,24 @@ export class V1_ContractCreate_LegendDataProduct {
   product!: unknown;
   accessPointGroup!: string;
   consumer!: V1_OrganizationalScope;
+}
+
+export class V1_ContractUserEventRecord {
+  taskId!: string;
+  dataContractId!: string;
+  status!: V1_UserApprovalStatus;
+  consumer!: string;
+  eventPayload!: string;
+  type!: V1_ApprovalType;
+}
+
+export class V1_PendingTasksRespond {
+  privilegeManager: V1_ContractUserEventRecord[] = [];
+  dataOwner: V1_ContractUserEventRecord[] = [];
+}
+
+export class V1_TaskStatusChangeResponse {
+  status!: V1_UserApprovalStatus;
+  errorType: string | undefined;
+  errorMessage: string | undefined;
 }

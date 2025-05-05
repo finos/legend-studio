@@ -19,13 +19,22 @@ import {
   type GenericLegendApplicationStore,
   type NavigationZone,
 } from '@finos/legend-application';
+
 import {
+  type DataProductArtifactGeneration,
+  type V1_DataContract,
+  type V1_DataContractsRecord,
+  V1_AccessPointGroupReference,
+  V1_AppDirLevel,
+  V1_AppDirNode,
+  V1_AppDirNodeModelSchema,
+  V1_DataContractsRecordModelSchema,
   type GraphData,
   type GraphManagerState,
   type V1_DataProduct,
 } from '@finos/legend-graph';
 import type { VersionedProjectData } from '@finos/legend-server-depot';
-import { action, computed, makeObservable, observable } from 'mobx';
+import { action, computed, flow, makeObservable, observable } from 'mobx';
 import {
   DATA_PRODUCT_WIKI_PAGE_SECTIONS,
   DataProductLayoutState,
@@ -35,11 +44,20 @@ import {
   generateAnchorForActivity,
 } from './DataProductViewerNavigation.js';
 import { DataProductDataAccessState } from './DataProductDataAccessState.js';
+import {
+  assertErrorThrown,
+  guaranteeNonEmptyString,
+  type GeneratorFn,
+  type PlainObject,
+} from '@finos/legend-shared';
+import type { LakehouseContractServerClient } from '../LakehouseContractServerClient.js';
+import { deserialize, serialize } from 'serializr';
 
 export class DataProductViewerState {
   readonly applicationStore: GenericLegendApplicationStore;
   readonly graphManagerState: GraphManagerState;
   readonly layoutState: DataProductLayoutState;
+
   readonly product: V1_DataProduct;
   readonly project: VersionedProjectData;
   readonly retrieveGraphData: () => GraphData;
@@ -47,16 +65,21 @@ export class DataProductViewerState {
   readonly onZoneChange?:
     | ((zone: NavigationZone | undefined) => void)
     | undefined;
+
+  // we may want to move this out eventually
+  readonly lakeServerClient: LakehouseContractServerClient;
   currentActivity = DATA_PRODUCT_VIEWER_ACTIVITY_MODE.DESCRIPTION;
   accessState: DataProductDataAccessState;
-  generation: string | undefined;
+  generation: DataProductArtifactGeneration | undefined;
+  associatedContracts: V1_DataContract[] | undefined;
 
   constructor(
     applicationStore: GenericLegendApplicationStore,
     graphManagerState: GraphManagerState,
+    lakeServerClient: LakehouseContractServerClient,
     project: VersionedProjectData,
     product: V1_DataProduct,
-    generation: string | undefined,
+    generation: DataProductArtifactGeneration | undefined,
     actions: {
       retrieveGraphData: () => GraphData;
       viewSDLCProject: (path: string | undefined) => Promise<void>;
@@ -68,6 +91,9 @@ export class DataProductViewerState {
       setCurrentActivity: action,
       isVerified: computed,
       accessState: observable,
+      init: flow,
+      associatedContracts: observable,
+      setAssociatedContracts: action,
     });
 
     this.applicationStore = applicationStore;
@@ -81,6 +107,67 @@ export class DataProductViewerState {
     this.onZoneChange = actions.onZoneChange;
     this.layoutState = new DataProductLayoutState(this);
     this.accessState = new DataProductDataAccessState(this);
+    this.lakeServerClient = lakeServerClient;
+  }
+
+  setAssociatedContracts(val: V1_DataContract[] | undefined): void {
+    this.associatedContracts = val;
+  }
+
+  *init(token: string | undefined): GeneratorFn<void> {
+    try {
+      const did = guaranteeNonEmptyString(
+        this.generation?.dataProduct.deploymentId,
+        'did required to get contracts',
+      );
+
+      const didNode = new V1_AppDirNode();
+      didNode.appDirId = Number(did);
+      didNode.level = V1_AppDirLevel.DEPLOYMENT;
+      const _contracts = (yield this.lakeServerClient.getDataContractsFromDID(
+        serialize(V1_AppDirNodeModelSchema, didNode),
+        token,
+      )) as PlainObject<V1_DataContractsRecord>;
+
+      const dataProductContracts = deserialize(
+        V1_DataContractsRecordModelSchema,
+        _contracts,
+      )
+        .dataContracts.map((e) => e.dataContract)
+        .filter((_contract) => {
+          const _resource = _contract.resource;
+          if (
+            _resource instanceof V1_AccessPointGroupReference &&
+            this.deploymentId
+          ) {
+            const isDID =
+              Number(this.deploymentId) ===
+              _resource.dataProduct.owner.appDirId;
+            const isName = _resource.dataProduct.name === this.product.name;
+            const hasGroup = this.product.accessPointGroups
+              .map((e) => e.id)
+              .includes(_resource.accessPointGroup);
+            return isDID && isName && hasGroup;
+          }
+          return false;
+        });
+      this.setAssociatedContracts(dataProductContracts);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.accessState.viewerState.applicationStore.notificationService.notifyError(
+        `${error.message}`,
+      );
+    }
+  }
+
+  syncContracts(): void {
+    this.associatedContracts?.forEach((c) => {
+      const _resource = c.resource;
+      if (_resource instanceof V1_AccessPointGroupReference) {
+        const groupId = _resource.accessPointGroup;
+        this.accessState.accessGroupStates.find((e) => e.id === groupId);
+      }
+    });
   }
 
   setCurrentActivity(val: DATA_PRODUCT_VIEWER_ACTIVITY_MODE): void {
@@ -90,6 +177,10 @@ export class DataProductViewerState {
   get isVerified(): boolean {
     // TODO what does it mean if data product is vertified ?
     return true;
+  }
+
+  get deploymentId(): string | undefined {
+    return this.generation?.dataProduct.deploymentId;
   }
 
   changeZone(zone: NavigationZone, force = false): void {

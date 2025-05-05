@@ -41,6 +41,7 @@ import { generateLakehouseDataProduct } from '../../__lib__/LegendMarketplaceNav
 import { useAuth } from 'react-oidc-context';
 import { generateGAVCoordinates } from '@finos/legend-storage';
 import { LegendMarketplaceSearchBar } from '../SearchBar/LegendMarketplaceSearchBar.js';
+import { DepotScope } from '@finos/legend-server-depot';
 
 export const LegendDataProductVendorCard = (props: {
   dataAsset: DataProductState;
@@ -78,12 +79,18 @@ export const LakehouseMarketplace = withMarketplaceLakehouseStore(
   observer(() => {
     const marketPlaceStore = useMarketplaceLakehouseStore();
     const auth = useAuth();
-
     const onSearch = (
       provider: string | undefined,
       query: string | undefined,
     ) => {
-      // Handle search logic here
+      marketPlaceStore.handleSearch(query);
+    };
+
+    const onSearchChange = (query: string) => {
+      if (query === '') {
+        // use for clearing of search
+        marketPlaceStore.handleSearch(query);
+      }
     };
 
     useEffect(() => {
@@ -110,16 +117,36 @@ export const LakehouseMarketplace = withMarketplaceLakehouseStore(
                   <CubesLoadingIndicatorIcon />
                 </CubesLoadingIndicator>
                 <div className="legend-marketplace-data-product-search__container">
-                  <LegendMarketplaceSearchBar onSearch={onSearch} />
-
+                  <LegendMarketplaceSearchBar
+                    onSearch={onSearch}
+                    onChange={onSearchChange}
+                  />
                   <div className="legend-marketplace-data-product-search__filters">
                     <FormGroup>
                       <FormControlLabel
-                        control={<Checkbox />}
+                        control={
+                          <Checkbox
+                            checked={marketPlaceStore.filter.releaseFilter}
+                            onChange={() =>
+                              marketPlaceStore.handleFilterChange(
+                                DepotScope.RELEASES,
+                              )
+                            }
+                          />
+                        }
                         label="Releases"
                       />
                       <FormControlLabel
-                        control={<Checkbox />}
+                        control={
+                          <Checkbox
+                            checked={marketPlaceStore.filter.snapshotFilter}
+                            onChange={() =>
+                              marketPlaceStore.handleFilterChange(
+                                DepotScope.SNAPSHOT,
+                              )
+                            }
+                          />
+                        }
                         label="Snapshots"
                       />
                     </FormGroup>
@@ -133,7 +160,7 @@ export const LakehouseMarketplace = withMarketplaceLakehouseStore(
                     columns={{ xs: 1, sm: 2, md: 3, xl: 6 }}
                     sx={{ justifyContent: 'center' }}
                   >
-                    {marketPlaceStore.productStates?.map((dpState) => (
+                    {marketPlaceStore.filterProducts?.map((dpState) => (
                       <Grid key={dpState.id} size={1}>
                         <LegendDataProductVendorCard
                           dataAsset={dpState}
