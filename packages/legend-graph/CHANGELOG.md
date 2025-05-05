@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.1.25
+
+### Patch Changes
+
+- [#4041](https://github.com/finos/legend-studio/pull/4041) [`6f6dfe9`](https://github.com/finos/legend-studio/commit/6f6dfe9d1951c53909444a9f7337a058234ca808) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add Serilization methods for entitlements + DataProductGeneration
+
 ## 32.1.24
 
 ### Patch Changes
