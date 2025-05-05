@@ -1,5 +1,13 @@
 # @finos/legend-application-marketplace
 
+## 0.0.19
+
+### Patch Changes
+
+- [#4038](https://github.com/finos/legend-studio/pull/4038) [`ee923c7`](https://github.com/finos/legend-studio/commit/ee923c7ae2eb62c4cdef2733fead5e8e825ebaa8) ([@kelly-thai](https://github.com/kelly-thai)) - Fixed styling for Lakehouse page, added search bar and filter checkboxes
+
+- [#4041](https://github.com/finos/legend-studio/pull/4041) [`6f6dfe9`](https://github.com/finos/legend-studio/commit/6f6dfe9d1951c53909444a9f7337a058234ca808) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add entitlements page + taskId + contractId info page
+
 ## 0.0.18
 
 ### Patch Changes

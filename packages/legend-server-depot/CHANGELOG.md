@@ -1,5 +1,7 @@
 # @finos/legend-server-depot
 
+## 6.0.90
+
 ## 6.0.89
 
 ### Patch Changes
