@@ -99,7 +99,7 @@ export const LakehouseMarketplaceHeader = observer(() => {
         className="legend-marketplace-header__name"
         onClick={() => navigateToHome()}
       >
-        Legend Marketplace
+        Legend Lakehouse
       </div>
       <LakehousePlaceHeaderTabs />
     </div>

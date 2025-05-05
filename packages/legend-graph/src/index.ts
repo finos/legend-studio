@@ -266,6 +266,8 @@ export {
   V1_ContractCreate_LegendDataProduct,
   V1_ContractUserEventRecord,
   V1_TaskStatusChangeResponse,
+  type V1_UserPendingContractsRecord,
+  type V1_UserPendingContractsResponse,
   V1_PendingTasksRespond,
 } from './graph-manager/protocol/pure/v1/entitlements/V1_ConsumerEntitlements.js';
 export {

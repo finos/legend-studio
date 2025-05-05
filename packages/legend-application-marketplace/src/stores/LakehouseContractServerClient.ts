@@ -20,6 +20,7 @@ import type {
   V1_DataContractsRecord,
   V1_TaskStatus,
   V1_PendingTasksRespond,
+  V1_UserPendingContractsResponse,
 } from '@finos/legend-graph';
 import { AbstractServerClient, type PlainObject } from '@finos/legend-shared';
 
@@ -48,13 +49,6 @@ export class LakehouseContractServerClient extends AbstractServerClient {
 
   private _dataContracts = (): string => `${this.baseUrl}/datacontracts`;
 
-  getPendingContracts = (token?: string | undefined): Promise<PlainObject[]> =>
-    this.get(
-      `${this._dataContracts()}/pendingContractsForUser`,
-      {},
-      this._token(token),
-    );
-
   getDataContracts = (
     token: string | undefined,
   ): Promise<PlainObject<V1_DataContractsRecord>> =>
@@ -70,6 +64,16 @@ export class LakehouseContractServerClient extends AbstractServerClient {
       this._token(token),
     );
 
+  getApprovedUsersForDataContract = (
+    id: string,
+    token: string | undefined,
+  ): Promise<PlainObject<V1_DataContractsRecord>> =>
+    this.get(
+      `${this._dataContracts()}/${encodeURIComponent(id)}/approvedUsers`,
+      {},
+      this._token(token),
+    );
+
   getDataContractsFromDID = (
     body: PlainObject<AppendMode>[],
     token: string | undefined,
@@ -79,6 +83,18 @@ export class LakehouseContractServerClient extends AbstractServerClient {
       body,
       undefined,
       this._token(token),
+    );
+  };
+
+  getPendingContracts = (
+    user: string | undefined,
+    token: string | undefined,
+  ): Promise<PlainObject<V1_UserPendingContractsResponse>> => {
+    return this.get(
+      `${this._dataContracts()}/pendingContractsForUser`,
+      {},
+      this._token(token),
+      { user },
     );
   };
 
@@ -111,7 +127,7 @@ export class LakehouseContractServerClient extends AbstractServerClient {
       this._token(token),
     );
 
-  denyTaskTask = (
+  denyTask = (
     id: string,
     token: string | undefined,
   ): Promise<PlainObject<V1_TaskStatus>> =>
