@@ -272,6 +272,7 @@ export {
   V1_ContractState,
   type V1_DataContractsCreation,
   V1_DataSubscription,
+  V1_DataSubscriptionResponse,
   V1_DataSubscriptionTarget,
   V1_SnowflakeTarget,
 } from './graph-manager/protocol/pure/v1/entitlements/V1_ConsumerEntitlements.js';

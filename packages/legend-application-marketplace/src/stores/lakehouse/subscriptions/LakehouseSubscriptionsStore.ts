@@ -20,11 +20,11 @@ import {
   ActionState,
   assertErrorThrown,
   type GeneratorFn,
-  type PlainObject,
 } from '@finos/legend-shared';
 import { deserialize } from 'serializr';
 import {
   type V1_DataSubscription,
+  type V1_DataSubscriptionResponse,
   V1_dataSubscriptionModelSchema,
 } from '@finos/legend-graph';
 import { makeObservable, flow, action } from 'mobx';
@@ -53,11 +53,12 @@ export class LakehouseSubscriptionsStore {
       const rawSubscriptions =
         (yield this.lakehouseServerClient.getAllSubscriptions(
           token,
-        )) as PlainObject<V1_DataSubscription>[];
-      const subscriptions = rawSubscriptions.map((rawSubscription) =>
-        deserialize(V1_dataSubscriptionModelSchema, rawSubscription),
+        )) as V1_DataSubscriptionResponse;
+      const subscriptions = rawSubscriptions.subscriptions?.map(
+        (rawSubscription) =>
+          deserialize(V1_dataSubscriptionModelSchema, rawSubscription),
       );
-      this.setSubscriptions(subscriptions);
+      this.setSubscriptions(subscriptions ?? []);
     } catch (error) {
       assertErrorThrown(error);
       // TODO: show user error

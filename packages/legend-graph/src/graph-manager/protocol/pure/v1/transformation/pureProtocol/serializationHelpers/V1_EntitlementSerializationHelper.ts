@@ -225,7 +225,7 @@ const V1_deseralizeDataSubscriptionTarget = (
 ): V1_DataSubscriptionTarget => {
   switch (json._type) {
     case V1_DataSubscriptionTargetType.Snowflake:
-      return deserialize(V1_AdhocTeamModelSchema, json);
+      return deserialize(V1_SnowflakeTargetModelSchema, json);
     default:
       throw new UnsupportedOperationError();
   }
@@ -249,5 +249,6 @@ export const V1_dataSubscriptionModelSchema = createModelSchema(
       V1_seralizeDataSubscriptionTarget,
       V1_deseralizeDataSubscriptionTarget,
     ),
+    createdBy: primitive(),
   },
 );

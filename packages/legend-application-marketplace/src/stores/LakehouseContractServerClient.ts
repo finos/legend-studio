@@ -18,7 +18,7 @@ import type {
   V1_ContractCreate_LegendDataProduct,
   V1_DataContract,
   V1_DataContractsRecord,
-  V1_DataSubscription,
+  V1_DataSubscriptionResponse,
   V1_PendingTasksRespond,
   V1_TaskStatus,
   V1_UserPendingContractsResponse,
@@ -151,6 +151,6 @@ export class LakehouseContractServerClient extends AbstractServerClient {
 
   getAllSubscriptions = (
     token: string | undefined,
-  ): Promise<PlainObject<V1_DataSubscription>[]> =>
+  ): Promise<PlainObject<V1_DataSubscriptionResponse>[]> =>
     this.get(this._subscriptions(), {}, this._token(token));
 }

@@ -34,7 +34,7 @@ import {
   withLakehouseSubscriptionsStore,
 } from './LakehouseSubscriptionsStoreProvider.js';
 
-export const LakehouseEntitlementsMainView = withAuth(
+export const LakehouseSubscriptionsMainView = withAuth(
   observer((props: { subscriptions: V1_DataSubscription[] }) => {
     const { subscriptions } = props;
 
@@ -44,12 +44,9 @@ export const LakehouseEntitlementsMainView = withAuth(
           ALL SUBSCRIPTIONS
         </Typography>
         <div
-          className={clsx(
-            'entitlements-tasks__grid data-access-overview__grid',
-            {
-              'ag-theme-balham': true,
-            },
-          )}
+          className={clsx('subscriptions__grid', {
+            'ag-theme-balham': true,
+          })}
         >
           {subscriptions && (
             <DataGrid
@@ -160,7 +157,7 @@ export const LakehouseSubscriptions = withLakehouseSubscriptionsStore(
                 >
                   <CubesLoadingIndicatorIcon />
                 </CubesLoadingIndicator>
-                <LakehouseEntitlementsMainView
+                <LakehouseSubscriptionsMainView
                   subscriptions={subscriptionsStore.subscriptions}
                 />
               </div>

@@ -78,6 +78,10 @@ export class V1_DataSubscription {
   createdBy!: string;
 }
 
+export class V1_DataSubscriptionResponse {
+  subscriptions: V1_DataSubscription[] | undefined;
+}
+
 export abstract class V1_DataSubscriptionTarget {}
 
 export class V1_SnowflakeTarget extends V1_DataSubscriptionTarget {
