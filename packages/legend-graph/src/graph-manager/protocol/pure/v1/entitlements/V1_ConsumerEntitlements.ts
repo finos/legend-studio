@@ -153,3 +153,22 @@ export class V1_TaskStatusChangeResponse {
   errorType: string | undefined;
   errorMessage: string | undefined;
 }
+
+export class V1_ContractApprovedUsersResponse {
+  approvedUsers: V1_User[] = [];
+}
+
+export type V1_PendingTaskWithAssignees = {
+  taskId: string;
+  assignee: string[];
+};
+
+export type V1_UserPendingContractsRecord = {
+  contractId: string;
+  contractDescription: string;
+  pendingTaskWithAssignees: V1_PendingTaskWithAssignees;
+};
+
+export type V1_UserPendingContractsResponse = {
+  records: V1_UserPendingContractsRecord[] | undefined;
+};

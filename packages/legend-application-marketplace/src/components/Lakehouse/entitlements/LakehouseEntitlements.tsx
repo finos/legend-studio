@@ -38,23 +38,30 @@ import {
   type LakehouseEntitlementsTasksParam,
 } from '../../../__lib__/LegendMarketplaceNavigation.js';
 import { Box, Button, Divider, Grid2, Stack, Typography } from '@mui/material';
-import type { ContractUserEventState } from '../../../stores/lakehouse/entitlements/LakehouseEntitlementsStore.js';
 import { LakehouseMarketplaceHeader } from '../LakehouseHeader.js';
+import type {
+  V1_ContractUserEventRecord,
+  V1_UserPendingContractsRecord,
+} from '@finos/legend-graph';
+import { flowResult } from 'mobx';
+import { DataContractState } from '../../../stores/lakehouse/entitlements/DataContractState.js';
+import { LakehouseEntitlementsMainViewState } from '../../../stores/lakehouse/entitlements/LakehouseEntitlementsMainViewState.js';
+import { DataContractTaskState } from '../../../stores/lakehouse/entitlements/DataContractTaskState.js';
 
 const TDSColumnApprovalCellRenderer = (
-  params: DataGridCellRendererParams<ContractUserEventState>,
+  params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
+  handleApprove: (task: V1_ContractUserEventRecord) => void,
+  handleDeny: (task: V1_ContractUserEventRecord) => void,
 ): React.ReactNode => {
   const data = params.data;
   if (!data) {
     return null;
   }
   const onApprove = () => {
-    //
-    // data.approve();
+    handleApprove(data);
   };
   const onDeny = () => {
-    //
-    // data.deny();
+    handleDeny(data);
   };
   return (
     <Stack direction={'row'} spacing={1} justifyContent={'center'}>
@@ -73,175 +80,336 @@ const TDSColumnApprovalCellRenderer = (
   );
 };
 
-const TDSColumnClickableCellRenderer = (
-  params: DataGridCellRendererParams<ContractUserEventState>,
+const Task_IdColumnClickableCellRenderer = (
+  params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
+  onHandleClick: (id: string) => void,
 ): React.ReactNode => {
   const data = params.data;
   if (!data) {
     return null;
   }
   const handleClick = () => {
-    data.state.applicationStore.navigationService.navigator.updateCurrentLocation(
-      generateLakehouseTaskPath(data.value.taskId),
-    );
+    onHandleClick(data.taskId);
   };
   return (
     <span
       className="entitlements-tasks__grid-taskid-cell"
       onClick={handleClick}
     >
-      {data.value.taskId}
+      {data.taskId}
     </span>
   );
 };
 
-const TDSColumnContractClickableCellRenderer = (
-  params: DataGridCellRendererParams<ContractUserEventState>,
+const Task_ContractClickableCellRenderer = (
+  params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
+  onHandleClick: (id: string) => void,
 ): React.ReactNode => {
   const data = params.data;
   if (!data) {
     return null;
   }
   const handleClick = () => {
-    data.state.applicationStore.navigationService.navigator.updateCurrentLocation(
-      generateLakehouseContractPath(data.value.dataContractId),
-    );
+    onHandleClick(data.dataContractId);
   };
   return (
     <span
       className="entitlements-tasks__grid-taskid-cell"
       onClick={handleClick}
     >
-      {data.value.dataContractId}
+      {data.dataContractId}
     </span>
   );
 };
 
-export const LakehouseEntitlementsTasks = observer(() => {
-  const entitlementsStore = useLakehouseEntitlementsStore();
-  const tasks = entitlementsStore.tasks;
-  if (tasks === undefined) {
+const PendingContract_IdColumnClickableCellRenderer = (
+  params: DataGridCellRendererParams<V1_UserPendingContractsRecord>,
+  onHandleClick: (id: string) => void,
+): React.ReactNode => {
+  const data = params.data;
+  if (!data) {
     return null;
   }
-
+  const handleClick = () => {
+    onHandleClick(data.contractId);
+  };
   return (
-    <Box className="entitlements-tasks">
-      <Typography variant="h4" gutterBottom={true}>
-        PENDING TASKS
-      </Typography>
-      <div
-        className={clsx('entitlements-tasks__grid data-access-overview__grid', {
-          'ag-theme-balham': true,
-        })}
-      >
-        <DataGrid
-          rowData={tasks}
-          onRowDataUpdated={(params) => {
-            params.api.refreshCells({ force: true });
-          }}
-          suppressFieldDotNotation={true}
-          suppressContextMenu={false}
-          columnDefs={[
-            {
-              minWidth: 50,
-              sortable: true,
-              resizable: true,
-              headerName: 'Task Id',
-              cellRenderer: TDSColumnClickableCellRenderer,
-              flex: 1,
-            },
-            {
-              minWidth: 50,
-              sortable: true,
-              resizable: true,
-              headerName: 'Contract Id',
-              cellRenderer: TDSColumnContractClickableCellRenderer,
-              flex: 1,
-            },
-            {
-              minWidth: 50,
-              sortable: true,
-              resizable: true,
-              headerName: 'Consumer',
-              valueGetter: (p) => p.data?.value.consumer,
-              flex: 1,
-            },
-            {
-              minWidth: 50,
-              sortable: true,
-              resizable: true,
-              headerName: 'Status',
-              valueGetter: (p) => p.data?.value.status,
-              flex: 1,
-            },
-            {
-              minWidth: 50,
-              sortable: true,
-              resizable: true,
-              headerName: 'Approve/Deny',
-              flex: 1,
-              cellRenderer: TDSColumnApprovalCellRenderer,
-            },
-          ]}
-        />
+    <span
+      className="entitlements-tasks__grid-taskid-cell"
+      onClick={handleClick}
+    >
+      {data.contractId}
+    </span>
+  );
+};
+
+const PendingContract_TaskIdColumnClickableCellRenderer = (
+  params: DataGridCellRendererParams<V1_UserPendingContractsRecord>,
+  onHandleClick: (id: string) => void,
+): React.ReactNode => {
+  const data = params.data;
+  if (!data) {
+    return null;
+  }
+  const handleClick = () => {
+    onHandleClick(data.pendingTaskWithAssignees.taskId);
+  };
+  return (
+    <span
+      className="entitlements-tasks__grid-taskid-cell"
+      onClick={handleClick}
+    >
+      {data.pendingTaskWithAssignees.taskId}
+    </span>
+  );
+};
+
+type TaksProps = {
+  currentViewer: LakehouseEntitlementsMainViewState;
+};
+
+export const LakehouseEntitlementsMainView = withAuth(
+  observer((props: TaksProps) => {
+    const { currentViewer } = props;
+    const state = currentViewer.state;
+    const tasks = currentViewer.pendingTasks;
+    const pendingConctracts = currentViewer.pendingContracts;
+    const auth = (props as unknown as { auth: AuthContextProps }).auth;
+    const handleApprove = (task: V1_ContractUserEventRecord) => {
+      flowResult(currentViewer.approve(task, auth.user?.access_token)).catch(
+        state.applicationStore.alertUnhandledError,
+      );
+    };
+    const handleDeny = (task: V1_ContractUserEventRecord) => {
+      flowResult(currentViewer.deny(task, auth.user?.access_token)).catch(
+        state.applicationStore.alertUnhandledError,
+      );
+    };
+    return (
+      <>
+        <Box className="entitlements-tasks">
+          <Typography variant="h4" gutterBottom={true}>
+            PENDING TASKS
+          </Typography>
+          <div
+            className={clsx(
+              'entitlements-tasks__grid data-access-overview__grid',
+              {
+                'ag-theme-balham': true,
+              },
+            )}
+          >
+            {tasks && (
+              <DataGrid
+                rowData={tasks}
+                onRowDataUpdated={(params) => {
+                  params.api.refreshCells({ force: true });
+                }}
+                suppressFieldDotNotation={true}
+                suppressContextMenu={false}
+                columnDefs={[
+                  {
+                    minWidth: 50,
+                    sortable: true,
+                    resizable: true,
+                    headerName: 'Task Id',
+                    cellRenderer: (
+                      params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
+                    ) => {
+                      return Task_IdColumnClickableCellRenderer(
+                        params,
+                        (taskId) =>
+                          state.applicationStore.navigationService.navigator.updateCurrentLocation(
+                            generateLakehouseTaskPath(taskId),
+                          ),
+                      );
+                    },
+                    flex: 1,
+                  },
+                  {
+                    minWidth: 50,
+                    sortable: true,
+                    resizable: true,
+                    headerName: 'Contract Id',
+                    cellRenderer: (
+                      params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
+                    ) => {
+                      return Task_ContractClickableCellRenderer(
+                        params,
+                        (taskId) =>
+                          state.applicationStore.navigationService.navigator.updateCurrentLocation(
+                            generateLakehouseContractPath(taskId),
+                          ),
+                      );
+                    },
+                    flex: 1,
+                  },
+                  {
+                    minWidth: 50,
+                    sortable: true,
+                    resizable: true,
+                    headerName: 'Consumer',
+                    valueGetter: (p) => p.data?.consumer,
+                    flex: 1,
+                  },
+                  {
+                    minWidth: 50,
+                    sortable: true,
+                    resizable: true,
+                    headerName: 'Status',
+                    valueGetter: (p) => p.data?.status,
+                    flex: 1,
+                  },
+                  {
+                    minWidth: 50,
+                    sortable: true,
+                    resizable: true,
+                    headerName: 'Approve/Deny',
+                    flex: 1,
+                    cellRenderer: (
+                      params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
+                    ) => {
+                      return TDSColumnApprovalCellRenderer(
+                        params,
+                        handleApprove,
+                        handleDeny,
+                      );
+                    },
+                  },
+                ]}
+              />
+            )}
+          </div>
+        </Box>
+        <Box className="entitlements-tasks">
+          <Typography variant="h4" gutterBottom={true}>
+            PENDING CONTRACTS
+          </Typography>
+          <div
+            className={clsx(
+              'entitlements-tasks__grid data-access-overview__grid',
+              {
+                'ag-theme-balham': true,
+              },
+            )}
+          >
+            {pendingConctracts && (
+              <DataGrid
+                rowData={pendingConctracts}
+                onRowDataUpdated={(params) => {
+                  params.api.refreshCells({ force: true });
+                }}
+                suppressFieldDotNotation={true}
+                suppressContextMenu={false}
+                columnDefs={[
+                  {
+                    minWidth: 50,
+                    sortable: true,
+                    resizable: true,
+                    headerName: 'Contract Id',
+                    cellRenderer: (
+                      params: DataGridCellRendererParams<V1_UserPendingContractsRecord>,
+                    ) => {
+                      return PendingContract_IdColumnClickableCellRenderer(
+                        params,
+                        (taskId) =>
+                          state.applicationStore.navigationService.navigator.updateCurrentLocation(
+                            generateLakehouseContractPath(taskId),
+                          ),
+                      );
+                    },
+                    flex: 1,
+                  },
+
+                  {
+                    minWidth: 50,
+                    sortable: true,
+                    resizable: true,
+                    headerName: 'Contract Description',
+                    valueGetter: (p) => p.data?.contractDescription,
+                    flex: 1,
+                  },
+                  {
+                    minWidth: 50,
+                    sortable: true,
+                    resizable: true,
+                    headerName: 'Pending Task ID',
+                    cellRenderer: (
+                      params: DataGridCellRendererParams<V1_UserPendingContractsRecord>,
+                    ) => {
+                      return PendingContract_TaskIdColumnClickableCellRenderer(
+                        params,
+                        (taskId) =>
+                          state.applicationStore.navigationService.navigator.updateCurrentLocation(
+                            generateLakehouseTaskPath(taskId),
+                          ),
+                      );
+                    },
+                    flex: 1,
+                  },
+                  {
+                    minWidth: 50,
+                    sortable: true,
+                    resizable: true,
+                    headerName: 'Pending Task Assignes',
+                    valueGetter: (p) =>
+                      p.data?.pendingTaskWithAssignees.assignee.join(','),
+                    flex: 1,
+                  },
+                ]}
+              />
+            )}
+          </div>
+        </Box>
+      </>
+    );
+  }),
+);
+const LakehouseEntitlementsContract = observer(
+  (props: { currentViewer: DataContractState }) => {
+    const { currentViewer } = props;
+    return (
+      <div className="entitlements-tasks">
+        <Grid2
+          className="entitlements-task__details"
+          container={true}
+          spacing={1}
+        >
+          {currentViewer.taskDetails.map((v) => (
+            <>
+              <Grid2 container={false} size={4}>
+                <Typography variant="body2" fontWeight={'bold'}>
+                  {v.name}
+                </Typography>
+              </Grid2>
+              <Grid2 container={false} size={8}>
+                <Typography variant="body2" fontWeight={'bold'}>
+                  {v.value}
+                </Typography>
+              </Grid2>
+            </>
+          ))}
+        </Grid2>
       </div>
-    </Box>
-  );
-});
-
-const LakehouseEntitlementsContract = observer(() => {
-  const entitlementsStore = useLakehouseEntitlementsStore();
-  const currentDataContract = entitlementsStore.currentDataContract;
-  if (currentDataContract === undefined) {
-    return null;
-  }
-
-  return (
-    <div className="entitlements-tasks">
-      <Grid2
-        className="entitlements-task__details"
-        container={true}
-        spacing={1}
-      >
-        {currentDataContract.taskDetails.map((v) => (
-          <>
-            <Grid2 container={false} size={4}>
-              <Typography variant="body2" fontWeight={'bold'}>
-                {v.name}
-              </Typography>
-            </Grid2>
-            <Grid2 container={false} size={8}>
-              <Typography variant="body2" fontWeight={'bold'}>
-                {v.value}
-              </Typography>
-            </Grid2>
-          </>
-        ))}
-      </Grid2>
-    </div>
-  );
-});
+    );
+  },
+);
 
 export const LakehouseEntitlementsTask = withAuth(
-  observer((props) => {
-    const entitlementsStore = useLakehouseEntitlementsStore();
-    const currentTask = entitlementsStore.currentTask;
-    if (currentTask === undefined) {
-      return null;
-    }
-    const auth = (props as { auth: AuthContextProps }).auth;
-
+  observer((props: { currentViewer: DataContractTaskState }) => {
+    const auth = (props as unknown as { auth: AuthContextProps }).auth;
+    const { currentViewer } = props;
     const handleApprove = (): void => {
-      currentTask.approve(auth.user?.access_token);
+      currentViewer.approve(auth.user?.access_token);
     };
 
     const handleDeny = (): void => {
-      currentTask.deny(auth.user?.access_token);
+      currentViewer.deny(auth.user?.access_token);
     };
 
     return (
       <div className="entitlements-task">
-        {currentTask.canApprove && (
+        {currentViewer.canApprove && (
           <>
             <Stack
               className="entitlements-task__action"
@@ -273,7 +441,7 @@ export const LakehouseEntitlementsTask = withAuth(
           container={true}
           spacing={1}
         >
-          {currentTask.taskDetails.map((v) => (
+          {currentViewer.taskDetails.map((v) => (
             <>
               <Grid2 container={false} size={4}>
                 <Typography variant="body2" fontWeight={'bold'}>
@@ -307,6 +475,18 @@ export const LakehouseEntitlements = withLakehouseEntitlementsStore(
       );
     }, [auth.user?.access_token, entitlementsStore, params]);
 
+    const renderCurrentViewer = (): React.ReactNode => {
+      const currentViewer = entitlementsStore.currentViewer;
+      if (currentViewer instanceof LakehouseEntitlementsMainViewState) {
+        return <LakehouseEntitlementsMainView currentViewer={currentViewer} />;
+      } else if (currentViewer instanceof DataContractTaskState) {
+        return <LakehouseEntitlementsTask currentViewer={currentViewer} />;
+      } else if (currentViewer instanceof DataContractState) {
+        return <LakehouseEntitlementsContract currentViewer={currentViewer} />;
+      }
+
+      return null;
+    };
     return (
       <div className="app__page">
         <div className="legend-marketplace-home">
@@ -315,13 +495,15 @@ export const LakehouseEntitlements = withLakehouseEntitlementsStore(
             <div className="legend-marketplace-home__content">
               <div className="legend-marketplace-data-product__content">
                 <CubesLoadingIndicator
-                  isLoading={entitlementsStore.fetchingTasks.isInProgress}
+                  isLoading={Boolean(
+                    entitlementsStore.initializationState.isInProgress ||
+                      entitlementsStore.currentViewer?.initializationState
+                        .isInProgress,
+                  )}
                 >
                   <CubesLoadingIndicatorIcon />
                 </CubesLoadingIndicator>
-                <LakehouseEntitlementsTasks />
-                <LakehouseEntitlementsTask />
-                <LakehouseEntitlementsContract />
+                {renderCurrentViewer()}
               </div>
             </div>
           </div>

@@ -26,22 +26,18 @@ import {
 import { deserialize } from 'serializr';
 import {
   type V1_PendingTasksRespond,
-  type V1_ContractUserEventRecord,
-  type V1_DataContract,
   type V1_DataContractsRecord,
-  type V1_TaskStatusChangeResponse,
   V1_pendingTasksRespondModelSchema,
-  V1_TaskStatusChangeResponseModelSchema,
   V1_DataContractsRecordModelSchema,
-  type V1_TaskStatus,
 } from '@finos/legend-graph';
-import { makeObservable, flow, observable, action, flowResult } from 'mobx';
-import {
-  buildDataContractDetail,
-  DataContractState,
-} from './DataContractState.js';
+import { makeObservable, flow, observable, flowResult, action } from 'mobx';
+import { DataContractState } from './DataContractState.js';
+import { LakehouseEntitlementsMainViewState } from './LakehouseEntitlementsMainViewState.js';
+import { DataContractTaskState } from './DataContractTaskState.js';
+import type { LakehouseViewerState } from './LakehouseViewerState.js';
 
 export const TEST_USER = undefined;
+export const TEST_USER2 = undefined;
 
 export type GridItemDetail = {
   name: string;
@@ -49,163 +45,11 @@ export type GridItemDetail = {
   onClick?: () => void;
 };
 
-export class ContractUserEventState {
-  readonly state: LakehouseEntitlementsStore;
-  readonly value: V1_ContractUserEventRecord;
-  canApprove: boolean | undefined;
-  dataContract: V1_DataContract | undefined;
-
-  constructor(
-    value: V1_ContractUserEventRecord,
-    state: LakehouseEntitlementsStore,
-  ) {
-    this.value = value;
-    this.state = state;
-    makeObservable(this, {
-      value: observable,
-      canApprove: observable,
-      setCanApprove: observable,
-      approve: flow,
-      deny: flow,
-      init: flow,
-      calculateApprovalRights: flow,
-      fetchContract: flow,
-      dataContract: observable,
-    });
-    this.observeContract();
-  }
-
-  get id(): string {
-    return this.value.taskId;
-  }
-
-  *init(token: string | undefined): GeneratorFn<void> {
-    flowResult(this.calculateApprovalRights(token)).catch(
-      this.state.applicationStore.alertUnhandledError,
-    );
-    flowResult(this.fetchContract(token)).catch(
-      this.state.applicationStore.alertUnhandledError,
-    );
-  }
-
-  setCanApprove(val: boolean | undefined): void {
-    this.canApprove = val;
-  }
-
-  observeContract(): void {
-    makeObservable(this.value, {
-      status: observable,
-    });
-  }
-
-  *approve(token: string | undefined): GeneratorFn<void> {
-    try {
-      const response = (yield this.state.lakehouseServerClient.approveTask(
-        this.value.taskId,
-        token,
-      )) as PlainObject<V1_TaskStatusChangeResponse>;
-      const change = deserialize(
-        V1_TaskStatusChangeResponseModelSchema,
-        response,
-      );
-      if (change.errorMessage) {
-        throw new Error(
-          `Unable to approve task: ${this.value.taskId}: ${change.errorMessage}`,
-        );
-      }
-      this.value.status = change.status;
-      this.setCanApprove(false);
-    } catch (error) {
-      assertErrorThrown(error);
-    }
-  }
-
-  *deny(token: string | undefined): GeneratorFn<void> {
-    try {
-      const response = (yield this.state.lakehouseServerClient.denyTaskTask(
-        this.value.taskId,
-        token,
-      )) as PlainObject<V1_TaskStatus>;
-      const change = deserialize(
-        V1_TaskStatusChangeResponseModelSchema,
-        response,
-      );
-      if (change.errorMessage) {
-        throw new Error(
-          `Unable to deny task: ${this.value.taskId}: ${change.errorMessage}`,
-        );
-      }
-      this.value.status = change.status;
-      this.setCanApprove(false);
-    } catch (error) {
-      assertErrorThrown(error);
-    }
-  }
-
-  *calculateApprovalRights(token: string | undefined): GeneratorFn<void> {
-    this.canApprove = undefined;
-    try {
-      const rawTasks = (yield this.state.lakehouseServerClient.getPendingTasks(
-        TEST_USER,
-        token,
-      )) as PlainObject<V1_PendingTasksRespond>;
-      const tasks = deserialize(V1_pendingTasksRespondModelSchema, rawTasks);
-      const allTasks = [...tasks.dataOwner, ...tasks.privilegeManager];
-      const canApprove = Boolean(
-        allTasks.find((e) => e.taskId === this.value.taskId),
-      );
-      this.setCanApprove(canApprove);
-    } catch (error) {
-      assertErrorThrown(error);
-    }
-  }
-
-  *fetchContract(token: string | undefined): GeneratorFn<void> {
-    try {
-      const contractId = this.value.dataContractId;
-      const dataContracts =
-        (yield this.state.lakehouseServerClient.getDataContract(
-          contractId,
-          token,
-        )) as PlainObject<V1_DataContractsRecord>;
-
-      const dataContract = deserialize(
-        V1_DataContractsRecordModelSchema,
-        dataContracts,
-      ).dataContracts[0]?.dataContract;
-      this.dataContract = dataContract;
-    } catch (error) {
-      assertErrorThrown(error);
-    }
-  }
-
-  get taskDetails(): GridItemDetail[] {
-    return [
-      {
-        name: 'Task ID',
-        value: this.value.taskId,
-      },
-      {
-        name: 'Task Status',
-        value: this.value.status.toString(),
-      },
-      {
-        name: 'Task Consumer',
-        value: this.value.consumer,
-      },
-      ...(this.dataContract ? buildDataContractDetail(this.dataContract) : []),
-    ];
-  }
-}
-
 export class LakehouseEntitlementsStore {
   readonly applicationStore: LegendMarketplaceApplicationStore;
   readonly lakehouseServerClient: LakehouseContractServerClient;
-  tasks: ContractUserEventState[] | undefined;
-  fetchingTasks = ActionState.create();
-  // TODO: make current rendering more robust
-  currentTask: ContractUserEventState | undefined;
-  currentDataContract: DataContractState | undefined;
+  initializationState = ActionState.create();
+  currentViewer: LakehouseViewerState | undefined;
 
   constructor(
     applicationStore: LegendMarketplaceApplicationStore,
@@ -215,34 +59,15 @@ export class LakehouseEntitlementsStore {
     this.lakehouseServerClient = lakehouseServerClient;
     makeObservable(this, {
       init: flow,
-      initWithId: flow,
+      initWithTaskId: flow,
       initWithContract: flow,
-      currentTask: observable,
-      fetchingTasks: observable,
-      currentDataContract: observable,
-      tasks: observable,
-      setTasks: action,
-      setDataContract: action,
-      clear: action,
+      currentViewer: observable,
+      setCurrentViewer: action,
     });
   }
 
-  setTasks(val: ContractUserEventState[] | undefined): void {
-    this.tasks = val;
-  }
-
-  setCurrentTask(val: ContractUserEventState | undefined): void {
-    this.currentTask = val;
-  }
-
-  setDataContract(val: DataContractState | undefined): void {
-    this.currentDataContract = val;
-  }
-
-  clear(): void {
-    this.setCurrentTask(undefined);
-    this.setTasks(undefined);
-    this.setDataContract(undefined);
+  setCurrentViewer(val: LakehouseViewerState | undefined): void {
+    this.currentViewer = val;
   }
 
   *init(
@@ -250,9 +75,8 @@ export class LakehouseEntitlementsStore {
     contractId: string | undefined,
     token: string | undefined,
   ): GeneratorFn<void> {
-    this.clear();
     if (taskId) {
-      flowResult(this.initWithId(taskId, token)).catch(
+      flowResult(this.initWithTaskId(taskId, token)).catch(
         this.applicationStore.alertUnhandledError,
       );
       return;
@@ -262,29 +86,18 @@ export class LakehouseEntitlementsStore {
       );
       return;
     }
-    try {
-      this.fetchingTasks.inProgress();
-      const rawTasks = (yield this.lakehouseServerClient.getPendingTasks(
-        TEST_USER,
-        token,
-      )) as PlainObject<V1_PendingTasksRespond>;
-      const tasks = deserialize(V1_pendingTasksRespondModelSchema, rawTasks);
-      this.setTasks(
-        [...tasks.dataOwner, ...tasks.privilegeManager].map(
-          (_contract) => new ContractUserEventState(_contract, this),
-        ),
-      );
-    } catch (error) {
-      assertErrorThrown(error);
-    } finally {
-      this.fetchingTasks.complete();
-    }
+    // TODO: similiar logic should be used above ^
+    const currentViewer = new LakehouseEntitlementsMainViewState(this);
+    this.setCurrentViewer(currentViewer);
+    currentViewer.init(token);
   }
 
-  *initWithId(taskId: string, token: string | undefined): GeneratorFn<void> {
-    this.setTasks(undefined);
+  *initWithTaskId(
+    taskId: string,
+    token: string | undefined,
+  ): GeneratorFn<void> {
     try {
-      this.fetchingTasks.inProgress();
+      this.initializationState.inProgress();
       // TEMP: for now we will assume task id is in pending user.
       // Once 'getTaskId` is added in server we will use that to query task
       const rawTasks = (yield this.lakehouseServerClient.getPendingTasks(
@@ -296,8 +109,8 @@ export class LakehouseEntitlementsStore {
       const task = guaranteeNonNullable(
         allTasks.find((e) => e.taskId === taskId),
       );
-      const currentTask = new ContractUserEventState(task, this);
-      this.setCurrentTask(currentTask);
+      const currentTask = new DataContractTaskState(task, this);
+      this.setCurrentViewer(currentTask);
       flowResult(currentTask.init(token)).catch(
         this.applicationStore.alertUnhandledError,
       );
@@ -305,7 +118,7 @@ export class LakehouseEntitlementsStore {
       assertErrorThrown(error);
       // TODO: show user error
     } finally {
-      this.fetchingTasks.complete();
+      this.initializationState.complete();
     }
   }
 
@@ -324,7 +137,7 @@ export class LakehouseEntitlementsStore {
         dataContract,
         'Data Contract not found',
       );
-      this.currentDataContract = new DataContractState(contract, this);
+      this.setCurrentViewer(new DataContractState(contract, this));
     } catch (error) {
       assertErrorThrown(error);
     }

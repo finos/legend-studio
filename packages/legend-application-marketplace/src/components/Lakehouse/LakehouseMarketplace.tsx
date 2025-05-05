@@ -25,7 +25,6 @@ import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
 } from '@finos/legend-art';
-import { LegendMarketplaceHeader } from '../Header/LegendMarketplaceHeader.js';
 import {
   Card,
   CardActionArea,
@@ -42,6 +41,7 @@ import { useAuth } from 'react-oidc-context';
 import { generateGAVCoordinates } from '@finos/legend-storage';
 import { LegendMarketplaceSearchBar } from '../SearchBar/LegendMarketplaceSearchBar.js';
 import { DepotScope } from '@finos/legend-server-depot';
+import { LakehouseMarketplaceHeader } from './LakehouseHeader.js';
 
 export const LegendDataProductVendorCard = (props: {
   dataAsset: DataProductState;
@@ -108,7 +108,7 @@ export const LakehouseMarketplace = withMarketplaceLakehouseStore(
       <div className="app__page">
         <div className="legend-marketplace-home">
           <div className="legend-marketplace-home__body">
-            <LegendMarketplaceHeader />
+            <LakehouseMarketplaceHeader />
             <div className="legend-marketplace-home__content">
               <div className="legend-marketplace-data-products__content">
                 <CubesLoadingIndicator
