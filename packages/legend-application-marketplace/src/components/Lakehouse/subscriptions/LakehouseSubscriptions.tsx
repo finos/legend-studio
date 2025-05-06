@@ -53,15 +53,20 @@ import {
 } from './LakehouseSubscriptionsStoreProvider.js';
 
 export const LakehouseSubscriptionsMainView = observer(
-  (props: { subscriptions: V1_DataSubscription[] }) => {
-    const { subscriptions } = props;
+  (props: {
+    subscriptions: V1_DataSubscription[];
+    handleCreateNewSubscriptionClick: () => void;
+  }) => {
+    const { subscriptions, handleCreateNewSubscriptionClick } = props;
 
     return (
       <Box className="subscriptions">
         <Typography variant="h4" gutterBottom={true}>
           ALL SUBSCRIPTIONS
         </Typography>
-        <Button variant="contained">Create New Subscription</Button>
+        <Button onClick={handleCreateNewSubscriptionClick} variant="contained">
+          Create New Subscription
+        </Button>
         <div
           className={clsx('subscriptions__grid', {
             'ag-theme-balham': true,
@@ -311,6 +316,9 @@ export const LakehouseSubscriptions = withLakehouseSubscriptionsStore(
                 </CubesLoadingIndicator>
                 <LakehouseSubscriptionsMainView
                   subscriptions={subscriptionsStore.subscriptions}
+                  handleCreateNewSubscriptionClick={() =>
+                    setIsCreateDialogOpen(true)
+                  }
                 />
                 <LakehouseSubscriptionsCreateDialog
                   open={isCreateDialogOpen}
