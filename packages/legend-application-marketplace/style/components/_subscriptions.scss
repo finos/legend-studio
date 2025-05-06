@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@use 'mixins' as *;
+
 .subscriptions {
   height: 100%;
   width: 100%;
@@ -21,6 +23,13 @@
   background: var(--color-hclight-white);
   color: var(--color-hclight-grey-90);
   font-family: Roboto, sans-serif;
+
+  &__header {
+    @include flexVCenter;
+
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
 
   &__grid {
     height: 100%;

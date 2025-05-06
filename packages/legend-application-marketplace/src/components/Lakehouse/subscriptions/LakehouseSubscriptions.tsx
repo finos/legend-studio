@@ -226,15 +226,15 @@ export const LakehouseSubscriptionsMainView = observer(
     return (
       <>
         <Box className="subscriptions">
-          <Typography variant="h4" gutterBottom={true}>
-            ALL SUBSCRIPTIONS
-          </Typography>
-          <Button
-            onClick={() => setIsCreateDialogOpen(true)}
-            variant="contained"
-          >
-            Create New Subscription
-          </Button>
+          <Box className="subscriptions__header">
+            <Typography variant="h4">ALL SUBSCRIPTIONS</Typography>
+            <Button
+              onClick={() => setIsCreateDialogOpen(true)}
+              variant="contained"
+            >
+              Create New Subscription
+            </Button>
+          </Box>
           <div
             className={clsx('subscriptions__grid', {
               'ag-theme-balham': true,
