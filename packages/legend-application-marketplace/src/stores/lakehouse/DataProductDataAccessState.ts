@@ -14,26 +14,32 @@
  * limitations under the License.
  */
 
-import {
-  type V1_AccessPointGroup,
-  type V1_DataProduct,
+import type {
+  V1_DataContract,
+  V1_AccessPointGroup,
+  V1_DataProduct,
 } from '@finos/legend-graph';
 import type { DataProductViewerState } from './DataProductViewerState.js';
 import {
   ActionState,
   assertErrorThrown,
-  assertTrue,
   uuid,
   type GeneratorFn,
 } from '@finos/legend-shared';
 import {
   action,
   flow,
-  flowResult,
   makeAutoObservable,
   makeObservable,
   observable,
 } from 'mobx';
+import {
+  dataContractContainsAccessGroup,
+  isContractCompleted,
+  isContractPending,
+  isMemberOfContract,
+} from './LakehouseUtils.js';
+import { generateLakehouseContractPath } from '../../__lib__/LegendMarketplaceNavigation.js';
 
 export enum DataProductGroupAccess {
   // can be used to indicate fetching or resyncing of group access
@@ -48,14 +54,30 @@ const generatePromise = (time?: number | undefined) => {
   return new Promise((resolve) => setTimeout(resolve, time ?? 5000));
 };
 
+const getDataProductGroupAccessFromContract = (
+  val: V1_DataContract,
+): DataProductGroupAccess => {
+  if (isContractCompleted(val)) {
+    return DataProductGroupAccess.COMPLETED;
+  }
+
+  if (isContractPending(val)) {
+    return DataProductGroupAccess.PENDING;
+  }
+  return DataProductGroupAccess.UNKNOWN;
+};
+
 export class DataProductGroupAccessState {
   readonly accessState: DataProductDataAccessState;
   readonly group: V1_AccessPointGroup;
   id = uuid();
 
-  access = DataProductGroupAccess.UNKNOWN;
   fetchingAccessState = ActionState.create();
   requestingAccessState = ActionState.create();
+
+  // ASSUMPTION: one contract per user per group;
+  // false here mentions contracts have not been fetched
+  associatedContract: V1_DataContract | undefined | false = false;
 
   constructor(
     group: V1_AccessPointGroup,
@@ -64,68 +86,56 @@ export class DataProductGroupAccessState {
     this.group = group;
     this.accessState = accessState;
     makeAutoObservable(this, {
-      access: observable,
-      setAccess: action,
-      requestAccess: flow,
-      handleClick: flow,
-      goToEtask: flow,
+      handleClick: action,
+      handleDataProductContracts: action,
       requestingAccessState: observable,
+      associatedContract: observable,
+      setAssociatedContract: action,
     });
   }
 
-  setAccess(val: DataProductGroupAccess): void {
-    this.access = val;
+  get access(): DataProductGroupAccess {
+    if (this.associatedContract === false) {
+      return DataProductGroupAccess.UNKNOWN;
+    }
+    if (this.associatedContract) {
+      return getDataProductGroupAccessFromContract(this.associatedContract);
+    } else {
+      return DataProductGroupAccess.NO_ACCESS;
+    }
   }
 
-  fetchGroupAccess(): void {}
+  setAssociatedContract(val: V1_DataContract | undefined): void {
+    this.associatedContract = val;
+  }
 
-  *handleClick(): GeneratorFn<void> {
+  handleDataProductContracts(contracts: V1_DataContract[]): void {
+    const groupContracts = contracts
+      .filter((_contract) =>
+        dataContractContainsAccessGroup(this.group, _contract),
+      )
+      .filter((_contract) =>
+        isMemberOfContract(
+          this.accessState.viewerState.applicationStore.identityService
+            .currentUser,
+          _contract,
+        ),
+      );
+    // ASSUMPTION: one contract per user per group
+    const userContract = groupContracts[0];
+    this.setAssociatedContract(userContract);
+  }
+
+  handleClick(): void {
     if (this.access === DataProductGroupAccess.NO_ACCESS) {
-      flowResult(this.requestAccess()).catch(
-        this.accessState.viewerState.applicationStore.alertUnhandledError,
-      );
+      this.accessState.viewerState.setDataContractAccessPointGroup(this.group);
     } else if (this.access === DataProductGroupAccess.PENDING) {
-      flowResult(this.goToEtask()).catch(
-        this.accessState.viewerState.applicationStore.alertUnhandledError,
-      );
-    }
-  }
-
-  *requestAccess(): GeneratorFn<void> {
-    try {
-      this.requestingAccessState.inProgress();
-      this.accessState.viewerState.applicationStore.alertService.setBlockingAlert(
-        {
-          message: 'Requesting Access...',
-          showLoading: true,
-        },
-      );
-      assertTrue(
-        this.access === DataProductGroupAccess.NO_ACCESS,
-        `Access Group must be in no access state to request access`,
-      );
-      yield generatePromise();
-      this.setAccess(DataProductGroupAccess.PENDING);
-    } catch (error) {
-      assertErrorThrown(error);
-      this.requestingAccessState.complete();
-    } finally {
-      this.accessState.viewerState.applicationStore.alertService.setBlockingAlert(
-        undefined,
-      );
-    }
-  }
-
-  *goToEtask(): GeneratorFn<void> {
-    try {
-      assertTrue(
-        this.access === DataProductGroupAccess.PENDING,
-        `Access Group must be in no access state to request access`,
-      );
-      yield generatePromise();
-      this.setAccess(DataProductGroupAccess.PENDING);
-    } catch (error) {
-      assertErrorThrown(error);
+      const associatedContract = this.associatedContract;
+      if (associatedContract) {
+        this.accessState.viewerState.applicationStore.navigationService.navigator.updateCurrentLocation(
+          generateLakehouseContractPath(associatedContract.guid),
+        );
+      }
     }
   }
 }
@@ -153,12 +163,6 @@ export class DataProductDataAccessState {
       // dummy fetch to get access
       this.fetchingDataProductAccessState.inProgress();
       yield generatePromise();
-
-      if (this.accessGroupStates.length === 3) {
-        this.accessGroupStates[0]?.setAccess(DataProductGroupAccess.NO_ACCESS);
-        this.accessGroupStates[1]?.setAccess(DataProductGroupAccess.PENDING);
-        this.accessGroupStates[2]?.setAccess(DataProductGroupAccess.COMPLETED);
-      }
     } catch (error) {
       assertErrorThrown(error);
     } finally {

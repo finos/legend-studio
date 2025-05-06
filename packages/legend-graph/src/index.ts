@@ -269,17 +269,24 @@ export {
   type V1_UserPendingContractsRecord,
   type V1_UserPendingContractsResponse,
   V1_PendingTasksRespond,
+  V1_ContractState,
+  type V1_DataContractsCreation,
 } from './graph-manager/protocol/pure/v1/entitlements/V1_ConsumerEntitlements.js';
 export {
   V1_AppDirLevel,
   V1_AppDirNode,
   V1_AppDirOrganizationalScope,
+  V1_UserType,
+  V1_User,
+  V1_AdhocTeam,
 } from './graph-manager/protocol/pure/v1/entitlements/V1_CoreEntitlements.js';
 export {
   V1_DataContractsRecordModelSchema,
   V1_AppDirNodeModelSchema,
   V1_pendingTasksRespondModelSchema,
   V1_TaskStatusChangeResponseModelSchema,
+  V1_AdhocTeamModelSchema,
+  V1_DataContractsRecordModelSchemaToContracts,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_EntitlementSerializationHelper.js';
 
 // --------------------------------------------- EXECUTION PLAN --------------------------------------------------

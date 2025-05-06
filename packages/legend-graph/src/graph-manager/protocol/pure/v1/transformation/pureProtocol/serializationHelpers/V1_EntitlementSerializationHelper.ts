@@ -17,6 +17,7 @@
 import {
   customListWithSchema,
   UnsupportedOperationError,
+  usingConstantValueSchema,
   usingModelSchema,
   type PlainObject,
 } from '@finos/legend-shared';
@@ -25,6 +26,7 @@ import {
   V1_AccessPoint_Entitlements,
   V1_AccessPointGroupReference,
   V1_ContractUserEventRecord,
+  V1_DataBundle,
   V1_DataContract,
   V1_DataContractRecord,
   V1_DataContractsRecord,
@@ -44,6 +46,7 @@ import {
 import {
   V1_AdhocTeam,
   V1_AppDirNode,
+  V1_UnknownOrganizationalScopeType,
   V1_User,
   type V1_OrganizationalScope,
 } from '../../../entitlements/V1_CoreEntitlements.js';
@@ -94,6 +97,7 @@ export const V1_AccessPointGroupReferenceModelSchema = createModelSchema(
 );
 
 export const V1_AdhocTeamModelSchema = createModelSchema(V1_AdhocTeam, {
+  _type: usingConstantValueSchema(V1_OrganizationalScopeType.AdHocTeam),
   users: customListWithSchema(V1_UserModelSchema),
 });
 
@@ -104,7 +108,9 @@ const V1_deseralizeOrganizationalScope = (
     case V1_OrganizationalScopeType.AdHocTeam:
       return deserialize(V1_AdhocTeamModelSchema, json);
     default:
-      throw new UnsupportedOperationError();
+      const org = new V1_UnknownOrganizationalScopeType();
+      org.content = json;
+      return org;
   }
 };
 
@@ -124,7 +130,9 @@ const V1_deseralizeV1_ConsumerEntitlementResource = (
     case V1_AccessPointGroupReferenceType.AccessPointGroupReference:
       return deserialize(V1_AccessPointGroupReferenceModelSchema, json);
     default:
-      throw new UnsupportedOperationError();
+      const bundle = new V1_DataBundle();
+      bundle.content = json;
+      return bundle;
   }
 };
 
@@ -186,3 +194,10 @@ export const V1_TaskStatusChangeResponseModelSchema = createModelSchema(
     errorMessage: primitive(),
   },
 );
+
+export const V1_DataContractsRecordModelSchemaToContracts = (
+  json: PlainObject<V1_DataContractsRecord>,
+): V1_DataContract[] => {
+  const contracts = deserialize(V1_DataContractsRecordModelSchema, json);
+  return contracts.dataContracts.map((e) => e.dataContract);
+};

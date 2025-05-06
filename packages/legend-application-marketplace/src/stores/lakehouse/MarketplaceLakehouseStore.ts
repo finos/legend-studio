@@ -272,13 +272,16 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         resolveVersion(projectData.versionId),
         ARTIFACT_GENERATION_DAT_PRODUCT_KEY,
       )) as StoredFileGeneration[];
-      const generation = files.filter((e) => e.path === v1DataProduct.path)[0]
+      const fileGen = files.filter((e) => e.path === v1DataProduct.path)[0]
         ?.file.content;
-      const parsed = generation
-        ? DataProductArtifactGeneration.serialization.fromJson(
-            JSON.parse(generation),
-          )
-        : undefined;
+      let parsed: DataProductArtifactGeneration | undefined = undefined;
+      if (fileGen) {
+        const content: PlainObject = JSON.parse(fileGen) as PlainObject;
+        const gen =
+          DataProductArtifactGeneration.serialization.fromJson(content);
+        gen.content = content;
+        parsed = gen;
+      }
       const stateViewer = new DataProductViewerState(
         this.applicationStore,
         new GraphManagerState(
@@ -325,6 +328,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         },
       );
       this.setDataProductViewerState(stateViewer);
+      stateViewer.fetchContracts(auth.user?.access_token);
       this.loadingProductsState.complete();
     } catch (error) {
       assertErrorThrown(error);

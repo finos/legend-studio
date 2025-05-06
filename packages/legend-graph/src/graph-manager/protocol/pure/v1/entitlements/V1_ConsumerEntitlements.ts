@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
+import type { PlainObject } from '@finos/legend-shared';
 import {
   type V1_OrganizationalScope,
   V1_Resource,
   type V1_User,
   type V1_AppDirNode,
+  type V1_AdhocTeam,
 } from './V1_CoreEntitlements.js';
 
 export class V1_ConsumerEntitlementResource extends V1_Resource {}
@@ -41,10 +43,7 @@ export class V1_AccessPointGroupReference extends V1_ConsumerEntitlementResource
 }
 
 export class V1_DataBundle extends V1_ConsumerEntitlementResource {
-  name!: string;
-  guid!: string;
-  accessPointGroupReferences: V1_AccessPointGroupReference[] = [];
-  owner!: V1_AppDirNode;
+  content!: PlainObject;
 }
 
 export class V1_DataContract {
@@ -104,12 +103,12 @@ export enum V1_UserApprovalStatus {
 }
 
 export enum V1_ContractState {
-  DRAFT,
-  PENDING_DATA_OWNER_APPROVAL,
-  OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL,
-  COMPLETED,
-  REJECTED,
-  CLOSED,
+  DRAFT = 'DRAFT',
+  PENDING_DATA_OWNER_APPROVAL = 'PENDING_DATA_OWNER_APPROVAL',
+  OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL = 'OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL',
+  COMPLETED = 'COMPLETED',
+  REJECTED = 'REJECTED',
+  CLOSED = 'CLOSED',
 }
 
 export enum V1_ApprovalType {
@@ -171,4 +170,11 @@ export type V1_UserPendingContractsRecord = {
 
 export type V1_UserPendingContractsResponse = {
   records: V1_UserPendingContractsRecord[] | undefined;
+};
+
+export type V1_DataContractsCreation = {
+  description: string;
+  product: PlainObject;
+  accessPointGroup: string;
+  consumer: PlainObject<V1_AdhocTeam>;
 };

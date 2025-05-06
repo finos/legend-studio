@@ -21,6 +21,7 @@ import {
   ApplicationFrameworkProvider,
   BlockingAlert,
   useApplicationStore,
+  NotificationManager,
 } from '@finos/legend-application';
 import {
   type LegendMarketplaceApplicationStore,
@@ -65,6 +66,7 @@ export const LegendMarketplaceFrameworkProvider: React.FC<{
 }> = ({ children }) => (
   <ApplicationFrameworkProvider simple={true} enableTransitions={true}>
     <BlockingAlert />
+    <NotificationManager />
     <LegendMarketplaceBaseStoreProvider>
       {children}
     </LegendMarketplaceBaseStoreProvider>

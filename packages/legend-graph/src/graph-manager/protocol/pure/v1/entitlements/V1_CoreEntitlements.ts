@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import type { PlainObject } from '@finos/legend-shared';
+
 export class V1_OrganizationalScope {}
 
 export class V1_AppDirNode {
@@ -22,11 +24,11 @@ export class V1_AppDirNode {
 }
 
 export enum V1_AppDirLevel {
-  BUSINESS_UNIT,
-  SUB_BUSINESS_UNIT,
-  FAMILY,
-  APPLICATION,
-  DEPLOYMENT,
+  BUSINESS_UNIT = 'BUSINESS_UNIT',
+  SUB_BUSINESS_UNIT = 'SUB_BUSINESS_UNIT',
+  FAMILY = 'FAMILY',
+  APPLICATION = 'APPLICATION',
+  DEPLOYMENT = 'DEPLOYMENT',
 }
 
 export class V1_AppDirOrganizationalScope extends V1_OrganizationalScope {
@@ -37,6 +39,9 @@ export class V1_AdhocTeam extends V1_OrganizationalScope {
   users: V1_User[] = [];
 }
 
+export class V1_UnknownOrganizationalScopeType extends V1_OrganizationalScope {
+  content!: PlainObject;
+}
 export class V1_LogicalEntitlements {
   roleUniverse: V1_Role[] = [];
   roleMemberships: V1_RoleMembership[] = [];
@@ -58,8 +63,8 @@ export class V1_User {
 }
 
 export enum V1_UserType {
-  WORKFORCE_USER,
-  SYSTEM_ACCOUNT,
+  WORKFORCE_USER = 'WORKFORCE_USER',
+  SYSTEM_ACCOUNT = 'SYSTEM_ACCOUNT',
 }
 
 export class V1_Privilege {
