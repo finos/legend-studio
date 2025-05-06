@@ -400,8 +400,6 @@ export const LakehouseEntitlementsMainView = withAuth(
             </div>
           </Box>
         )}
-
-        {/* </Box> */}
       </>
     );
   }),
@@ -412,19 +410,50 @@ const LakehouseEntitlementsContract = observer(
     return (
       <div className="entitlements-tasks">
         <Grid2
-          className="entitlements-task__details"
           container={true}
-          spacing={1}
+          spacing={0}
+          sx={{
+            '--Grid-borderWidth': '1px',
+            borderTop: 'var(--Grid-borderWidth) solid',
+            borderLeft: 'var(--Grid-borderWidth) solid',
+            borderColor: 'divider',
+            '& > div': {
+              borderRight: 'var(--Grid-borderWidth) solid',
+              borderBottom: 'var(--Grid-borderWidth) solid',
+              borderColor: 'divider',
+            },
+          }}
         >
-          {currentViewer.taskDetails.map((v) => (
+          {currentViewer.taskDetails.map((v, index) => (
             <>
-              <Grid2 container={false} size={4}>
-                <Typography variant="body2" fontWeight={'bold'}>
+              <Grid2
+                container={false}
+                size={4}
+                sx={{
+                  alignContent: 'center',
+                  backgroundColor: index % 2 === 0 ? '#f5f5f5' : 'white',
+                }}
+              >
+                <Typography
+                  variant="button"
+                  fontWeight={'bold'}
+                  sx={{ fontSize: '14px', padding: '6px' }}
+                >
                   {v.name}
                 </Typography>
               </Grid2>
-              <Grid2 container={false} size={8}>
-                <Typography variant="body2" fontWeight={'bold'}>
+              <Grid2
+                container={false}
+                size={8}
+                sx={{
+                  alignContent: 'center',
+                  backgroundColor: index % 2 === 0 ? '#f5f5f5' : 'white',
+                }}
+              >
+                <Typography
+                  variant="subtitle1"
+                  sx={{ fontSize: '14px', padding: '6px' }}
+                >
                   {v.value}
                 </Typography>
               </Grid2>
@@ -462,6 +491,7 @@ export const LakehouseEntitlementsTask = withAuth(
                 size="small"
                 onClick={handleApprove}
                 color="success"
+                sx={{ fontSize: '10px' }}
               >
                 Approve
               </Button>
@@ -470,6 +500,7 @@ export const LakehouseEntitlementsTask = withAuth(
                 variant="contained"
                 size="small"
                 onClick={handleDeny}
+                sx={{ fontSize: '10px' }}
               >
                 Deny
               </Button>
@@ -478,19 +509,50 @@ export const LakehouseEntitlementsTask = withAuth(
           </>
         )}
         <Grid2
-          className="entitlements-task__details"
           container={true}
-          spacing={1}
+          spacing={0}
+          sx={{
+            '--Grid-borderWidth': '1px',
+            borderTop: 'var(--Grid-borderWidth) solid',
+            borderLeft: 'var(--Grid-borderWidth) solid',
+            borderColor: 'divider',
+            '& > div': {
+              borderRight: 'var(--Grid-borderWidth) solid',
+              borderBottom: 'var(--Grid-borderWidth) solid',
+              borderColor: 'divider',
+            },
+          }}
         >
-          {currentViewer.taskDetails.map((v) => (
+          {currentViewer.taskDetails.map((v, index) => (
             <>
-              <Grid2 container={false} size={4}>
-                <Typography variant="body2" fontWeight={'bold'}>
+              <Grid2
+                container={false}
+                size={4}
+                sx={{
+                  alignContent: 'center',
+                  backgroundColor: index % 2 === 0 ? '#f5f5f5' : 'white',
+                }}
+              >
+                <Typography
+                  variant="button"
+                  fontWeight={'bold'}
+                  sx={{ fontSize: '14px', padding: '6px' }}
+                >
                   {v.name}
                 </Typography>
               </Grid2>
-              <Grid2 container={false} size={8}>
-                <Typography variant="body2" fontWeight={'bold'}>
+              <Grid2
+                container={false}
+                size={8}
+                sx={{
+                  alignContent: 'center',
+                  backgroundColor: index % 2 === 0 ? '#f5f5f5' : 'white',
+                }}
+              >
+                <Typography
+                  variant="subtitle1"
+                  sx={{ fontSize: '14px', padding: '6px' }}
+                >
                   {v.value}
                 </Typography>
               </Grid2>
