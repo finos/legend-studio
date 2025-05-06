@@ -51,7 +51,7 @@ import {
   useLakehouseSubscriptionsStore,
   withLakehouseSubscriptionsStore,
 } from './LakehouseSubscriptionsStoreProvider.js';
-import { flowResult } from 'mobx';
+import { assertErrorThrown } from '@finos/legend-shared';
 
 export const LakehouseSubscriptionsMainView = observer(
   (props: {
@@ -312,17 +312,23 @@ export const LakehouseSubscriptions = withLakehouseSubscriptionsStore(
       subscriptionsStore.init(auth.user?.access_token);
     }, [auth.user?.access_token, subscriptionsStore]);
 
-    const createDialogHandleSubmit = (
+    const createDialogHandleSubmit = async (
       contractId: string,
       target: V1_DataSubscriptionTarget,
-    ): void => {
-      flowResult(
-        subscriptionsStore.createSubscription(
+    ): Promise<void> => {
+      try {
+        const createdSubscription = await subscriptionsStore.createSubscription(
           contractId,
           target,
           auth.user?.access_token,
-        ),
-      ).catch(subscriptionsStore.applicationStore.alertUnhandledError);
+        );
+        subscriptionsStore.applicationStore.notificationService.notifySuccess(
+          `Created subscription ${createdSubscription.guid}`,
+        );
+      } catch (error) {
+        assertErrorThrown(error);
+        subscriptionsStore.applicationStore.alertUnhandledError(error);
+      }
     };
 
     return (

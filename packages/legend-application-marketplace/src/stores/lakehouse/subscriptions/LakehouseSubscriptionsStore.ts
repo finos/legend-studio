@@ -18,8 +18,10 @@ import type { LakehouseContractServerClient } from '../../LakehouseContractServe
 import type { LegendMarketplaceApplicationStore } from '../../LegendMarketplaceBaseStore.js';
 import {
   type GeneratorFn,
+  type PlainObject,
   ActionState,
   assertErrorThrown,
+  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import { deserialize, serialize } from 'serializr';
 import {
@@ -29,6 +31,7 @@ import {
   V1_CreateSubscriptionInput,
   V1_CreateSubscriptionInputModelSchema,
   V1_dataSubscriptionModelSchema,
+  V1_DataSubscriptionResponseModelSchema,
 } from '@finos/legend-graph';
 import { makeObservable, flow, action } from 'mobx';
 
@@ -47,7 +50,7 @@ export class LakehouseSubscriptionsStore {
     makeObservable(this, {
       init: flow,
       setSubscriptions: action,
-      createSubscription: flow,
+      createSubscription: action,
     });
   }
 
@@ -75,28 +78,23 @@ export class LakehouseSubscriptionsStore {
     this.subscriptions = val;
   }
 
-  *createSubscription(
+  async createSubscription(
     contractId: string,
     target: V1_DataSubscriptionTarget,
     token: string | undefined,
-  ): GeneratorFn<void> {
-    try {
-      const input = new V1_CreateSubscriptionInput();
-      input.contractId = contractId;
-      input.target = target;
-      const response = (yield this.lakehouseServerClient.createSubscription(
-        serialize(V1_CreateSubscriptionInputModelSchema, input),
-        token,
-      )) as V1_DataSubscriptionResponse;
-      const subscription = deserialize(
-        V1_dataSubscriptionModelSchema,
-        response.subscriptions![0],
-      );
-      this.applicationStore.notificationService.notifySuccess(
-        `Successfully created subscription ${subscription.guid}`,
-      );
-    } catch (error) {
-      assertErrorThrown(error);
-    }
+  ): Promise<V1_DataSubscription> {
+    const input = new V1_CreateSubscriptionInput();
+    input.contractId = contractId;
+    input.target = target;
+    const response = (await this.lakehouseServerClient.createSubscription(
+      serialize(V1_CreateSubscriptionInputModelSchema, input),
+      token,
+    )) as PlainObject<V1_DataSubscriptionResponse>;
+    const subscription = guaranteeNonNullable(
+      deserialize(V1_DataSubscriptionResponseModelSchema, response)
+        .subscriptions?.[0],
+      'No subsription returned from server',
+    );
+    return subscription;
   }
 }

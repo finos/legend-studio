@@ -301,6 +301,7 @@ export {
 export {
   V1_CreateSubscriptionInputModelSchema,
   V1_dataSubscriptionModelSchema,
+  V1_DataSubscriptionResponseModelSchema,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_SubscriptionSerializationHelper.js';
 
 // --------------------------------------------- EXECUTION PLAN --------------------------------------------------

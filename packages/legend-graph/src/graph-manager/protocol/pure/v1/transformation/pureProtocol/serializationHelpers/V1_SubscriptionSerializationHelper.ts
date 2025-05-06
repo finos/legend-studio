@@ -18,6 +18,7 @@ import {
   type PlainObject,
   UnsupportedOperationError,
   usingConstantValueSchema,
+  usingModelSchema,
 } from '@finos/legend-shared';
 import {
   createModelSchema,
@@ -30,6 +31,7 @@ import {
   type V1_DataSubscriptionTarget,
   V1_CreateSubscriptionInput,
   V1_DataSubscription,
+  V1_DataSubscriptionResponse,
   V1_DataSubscriptionTargetType,
   V1_SnowflakeTarget,
 } from '../../../subscriptions/V1_ConsumerSubscriptions.js';
@@ -74,6 +76,13 @@ export const V1_dataSubscriptionModelSchema = createModelSchema(
       V1_deseralizeDataSubscriptionTarget,
     ),
     createdBy: primitive(),
+  },
+);
+
+export const V1_DataSubscriptionResponseModelSchema = createModelSchema(
+  V1_DataSubscriptionResponse,
+  {
+    subscriptions: usingModelSchema(V1_dataSubscriptionModelSchema),
   },
 );
 
