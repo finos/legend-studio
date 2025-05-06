@@ -33,7 +33,6 @@ export * from './components/NotificationManager.js';
 export * from './components/useCommands.js';
 export * from './components/ReleaseNotesManager.js';
 export * from './components/BlockingAlert.js';
-export * from './components/NotificationManager.js';
 export {
   forceDispatchKeyboardEvent,
   BackdropContainer,
