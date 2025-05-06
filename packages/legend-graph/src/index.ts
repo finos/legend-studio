@@ -259,22 +259,18 @@ export { V1_TestAuthenticationStrategy } from './graph-manager/protocol/pure/v1/
 export { V1_RelationStoreAccessor } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/classInstance/relation/V1_RelationStoreAccessor.js';
 export { V1_PackageableConnection } from './graph-manager/protocol/pure/v1/model/packageableElements/connection/V1_PackageableConnection.js';
 export {
-  V1_DataContract,
-  V1_DataContractsRecord,
-  V1_TaskStatus,
+  type V1_UserPendingContractsRecord,
+  type V1_UserPendingContractsResponse,
   V1_AccessPointGroupReference,
   V1_ContractCreate_LegendDataProduct,
   V1_ContractUserEventRecord,
-  V1_TaskStatusChangeResponse,
-  type V1_UserPendingContractsRecord,
-  type V1_UserPendingContractsResponse,
+  V1_DataContract,
+  V1_DataContractsRecord,
   V1_PendingTasksRespond,
   V1_ContractState,
   type V1_DataContractsCreation,
-  V1_DataSubscription,
-  V1_DataSubscriptionResponse,
-  V1_DataSubscriptionTarget,
-  V1_SnowflakeTarget,
+  V1_TaskStatus,
+  V1_TaskStatusChangeResponse,
 } from './graph-manager/protocol/pure/v1/entitlements/V1_ConsumerEntitlements.js';
 export {
   V1_AppDirLevel,
@@ -285,14 +281,27 @@ export {
   V1_AdhocTeam,
 } from './graph-manager/protocol/pure/v1/entitlements/V1_CoreEntitlements.js';
 export {
-  V1_DataContractsRecordModelSchema,
   V1_AppDirNodeModelSchema,
+  V1_DataContractsRecordModelSchema,
   V1_pendingTasksRespondModelSchema,
   V1_TaskStatusChangeResponseModelSchema,
   V1_AdhocTeamModelSchema,
   V1_DataContractsRecordModelSchemaToContracts,
-  V1_dataSubscriptionModelSchema,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_EntitlementSerializationHelper.js';
+export {
+  V1_CreateSubscriptionInput,
+  V1_DataSubscription,
+  V1_DataSubscriptionResponse,
+  V1_DataSubscriptionTarget,
+  V1_DataSubscriptionTargetType,
+  V1_SnowflakeNetwork,
+  V1_SnowflakeRegion,
+  V1_SnowflakeTarget,
+} from './graph-manager/protocol/pure/v1/subscriptions/V1_ConsumerSubscriptions.js';
+export {
+  V1_CreateSubscriptionInputModelSchema,
+  V1_dataSubscriptionModelSchema,
+} from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_SubscriptionSerializationHelper.js';
 
 // --------------------------------------------- EXECUTION PLAN --------------------------------------------------
 

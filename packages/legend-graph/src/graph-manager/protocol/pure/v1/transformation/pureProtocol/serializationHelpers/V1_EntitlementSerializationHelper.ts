@@ -23,7 +23,6 @@ import {
 } from '@finos/legend-shared';
 import {
   type V1_ConsumerEntitlementResource,
-  type V1_DataSubscriptionTarget,
   V1_AccessPoint_Entitlements,
   V1_AccessPointGroupReference,
   V1_ContractUserEventRecord,
@@ -32,9 +31,7 @@ import {
   V1_DataContractRecord,
   V1_DataContractsRecord,
   V1_DataProduct_Entitlements,
-  V1_DataSubscription,
   V1_PendingTasksRespond,
-  V1_SnowflakeTarget,
   V1_TaskStatusChangeResponse,
 } from '../../../entitlements/V1_ConsumerEntitlements.js';
 import {
@@ -60,11 +57,6 @@ enum V1_OrganizationalScopeType {
 
 enum V1_AccessPointGroupReferenceType {
   AccessPointGroupReference = 'AccessPointGroupReference',
-}
-
-enum V1_DataSubscriptionTargetType {
-  BigQuery = 'BigQuery',
-  Snowflake = 'Snowflake',
 }
 
 export const V1_UserModelSchema = createModelSchema(V1_User, {
@@ -209,46 +201,3 @@ export const V1_DataContractsRecordModelSchemaToContracts = (
   const contracts = deserialize(V1_DataContractsRecordModelSchema, json);
   return contracts.dataContracts.map((e) => e.dataContract);
 };
-
-export const V1_SnowflakeTargetModelSchema = createModelSchema(
-  V1_SnowflakeTarget,
-  {
-    _type: usingConstantValueSchema(V1_DataSubscriptionTargetType.Snowflake),
-    snowflakeAccountId: primitive(),
-    snowflakeRegion: primitive(),
-    snowflakeNetwork: primitive(),
-  },
-);
-
-const V1_deseralizeDataSubscriptionTarget = (
-  json: PlainObject<V1_DataSubscriptionTarget>,
-): V1_DataSubscriptionTarget => {
-  switch (json._type) {
-    case V1_DataSubscriptionTargetType.Snowflake:
-      return deserialize(V1_SnowflakeTargetModelSchema, json);
-    default:
-      throw new UnsupportedOperationError();
-  }
-};
-
-const V1_seralizeDataSubscriptionTarget = (
-  json: V1_DataSubscriptionTarget,
-): PlainObject<V1_DataSubscriptionTarget> => {
-  if (json instanceof V1_SnowflakeTarget) {
-    return serialize(V1_SnowflakeTargetModelSchema, json);
-  }
-  throw new UnsupportedOperationError();
-};
-
-export const V1_dataSubscriptionModelSchema = createModelSchema(
-  V1_DataSubscription,
-  {
-    guid: primitive(),
-    dataContractId: primitive(),
-    target: custom(
-      V1_seralizeDataSubscriptionTarget,
-      V1_deseralizeDataSubscriptionTarget,
-    ),
-    createdBy: primitive(),
-  },
-);

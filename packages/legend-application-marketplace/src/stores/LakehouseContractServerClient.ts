@@ -16,6 +16,7 @@
 
 import type {
   V1_ContractCreate_LegendDataProduct,
+  V1_CreateSubscriptionInput,
   V1_DataContract,
   V1_DataContractsRecord,
   V1_DataSubscriptionResponse,
@@ -153,4 +154,10 @@ export class LakehouseContractServerClient extends AbstractServerClient {
     token: string | undefined,
   ): Promise<PlainObject<V1_DataSubscriptionResponse>[]> =>
     this.get(this._subscriptions(), {}, this._token(token));
+
+  createSubscription = (
+    input: PlainObject<V1_CreateSubscriptionInput>,
+    token: string | undefined,
+  ): Promise<PlainObject<V1_DataSubscriptionResponse>> =>
+    this.post(`${this._subscriptions()}`, input, {}, this._token(token));
 }

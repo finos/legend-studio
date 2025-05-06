@@ -17,14 +17,17 @@
 import type { LakehouseContractServerClient } from '../../LakehouseContractServerClient.js';
 import type { LegendMarketplaceApplicationStore } from '../../LegendMarketplaceBaseStore.js';
 import {
+  type GeneratorFn,
   ActionState,
   assertErrorThrown,
-  type GeneratorFn,
 } from '@finos/legend-shared';
-import { deserialize } from 'serializr';
+import { deserialize, serialize } from 'serializr';
 import {
   type V1_DataSubscription,
   type V1_DataSubscriptionResponse,
+  type V1_DataSubscriptionTarget,
+  V1_CreateSubscriptionInput,
+  V1_CreateSubscriptionInputModelSchema,
   V1_dataSubscriptionModelSchema,
 } from '@finos/legend-graph';
 import { makeObservable, flow, action } from 'mobx';
@@ -69,5 +72,30 @@ export class LakehouseSubscriptionsStore {
 
   setSubscriptions(val: V1_DataSubscription[]): void {
     this.subscriptions = val;
+  }
+
+  *createSubscription(
+    contractId: string,
+    target: V1_DataSubscriptionTarget,
+    token: string | undefined,
+  ): GeneratorFn<void> {
+    try {
+      const input = new V1_CreateSubscriptionInput();
+      input.contractId = contractId;
+      input.target = target;
+      const response = (yield this.lakehouseServerClient.createSubscription(
+        serialize(V1_CreateSubscriptionInputModelSchema, input),
+        token,
+      )) as V1_DataSubscriptionResponse;
+      const subscription = deserialize(
+        V1_dataSubscriptionModelSchema,
+        response.subscriptions![0],
+      );
+      this.applicationStore.notificationService.notifySuccess(
+        `Successfully created subscription ${subscription.guid}`,
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+    }
   }
 }

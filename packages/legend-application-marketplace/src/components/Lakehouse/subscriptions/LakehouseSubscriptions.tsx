@@ -16,17 +16,35 @@
 
 import { observer } from 'mobx-react-lite';
 import { useAuth, withAuth } from 'react-oidc-context';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   clsx,
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
 } from '@finos/legend-art';
 import { DataGrid } from '@finos/legend-lego/data-grid';
-import { Box, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+  Typography,
+  type SelectChangeEvent,
+} from '@mui/material';
 import { LakehouseMarketplaceHeader } from '../LakehouseHeader.js';
 import {
   type V1_DataSubscription,
+  type V1_DataSubscriptionTarget,
+  V1_DataSubscriptionTargetType,
+  V1_SnowflakeNetwork,
+  V1_SnowflakeRegion,
   V1_SnowflakeTarget,
 } from '@finos/legend-graph';
 import {
@@ -34,8 +52,8 @@ import {
   withLakehouseSubscriptionsStore,
 } from './LakehouseSubscriptionsStoreProvider.js';
 
-export const LakehouseSubscriptionsMainView = withAuth(
-  observer((props: { subscriptions: V1_DataSubscription[] }) => {
+export const LakehouseSubscriptionsMainView = observer(
+  (props: { subscriptions: V1_DataSubscription[] }) => {
     const { subscriptions } = props;
 
     return (
@@ -43,6 +61,7 @@ export const LakehouseSubscriptionsMainView = withAuth(
         <Typography variant="h4" gutterBottom={true}>
           ALL SUBSCRIPTIONS
         </Typography>
+        <Button variant="contained">Create New Subscription</Button>
         <div
           className={clsx('subscriptions__grid', {
             'ag-theme-balham': true,
@@ -131,7 +150,126 @@ export const LakehouseSubscriptionsMainView = withAuth(
         </div>
       </Box>
     );
-  }),
+  },
+);
+
+export const LakehouseSubscriptionsCreateDialog = withAuth(
+  (props: {
+    open: boolean;
+    onClose: () => void;
+    onSubmit: (contractId: string, target: V1_DataSubscriptionTarget) => void;
+  }) => {
+    const { open, onClose, onSubmit } = props;
+
+    const [contractId, setContractId] = useState<string>('');
+    const [targetType] = useState<V1_DataSubscriptionTargetType>(
+      V1_DataSubscriptionTargetType.Snowflake,
+    );
+    const [snowflakeAccountId, setSnowflakeAccountId] = useState<string>('');
+    const [snowflakeRegion, setSnowflakeRegion] = useState<V1_SnowflakeRegion>(
+      V1_SnowflakeRegion.AWS_US_EAST_1,
+    );
+    const [snowflakeNetwork] = useState<V1_SnowflakeNetwork>(
+      V1_SnowflakeNetwork.GOLDMAN,
+    );
+
+    return (
+      <Dialog
+        open={open}
+        onClose={onClose}
+        slotProps={{
+          paper: {
+            component: 'form',
+            onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
+              event.preventDefault();
+              if (targetType === V1_DataSubscriptionTargetType.Snowflake) {
+                const snowflakeTarget = new V1_SnowflakeTarget();
+                snowflakeTarget.snowflakeAccountId = snowflakeAccountId;
+                snowflakeTarget.snowflakeRegion = snowflakeRegion;
+                snowflakeTarget.snowflakeNetwork = snowflakeNetwork;
+                onSubmit(contractId, snowflakeTarget);
+                onClose();
+              } else {
+                onClose();
+                throw new Error(`Unsupported target type: ${targetType}`);
+              }
+            },
+          },
+        }}
+      >
+        <DialogTitle>Create New Subscription</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus={true}
+            required={true}
+            margin="dense"
+            id="contractId"
+            name="contractId"
+            label="Contract ID"
+            fullWidth={true}
+            variant="standard"
+            value={contractId}
+            onChange={(event) => setContractId(event.target.value)}
+          />
+          <FormControl fullWidth={true}>
+            <InputLabel id="target-type-select-label">Target Type</InputLabel>
+            <Select
+              labelId="target-type-select-label"
+              id="target-type-select"
+              value={targetType}
+              label="Target Type"
+            />
+          </FormControl>
+          <TextField
+            required={true}
+            margin="dense"
+            id="snowflakeAccountId"
+            name="snowflakeAccountId"
+            label="Snowflake Account ID"
+            fullWidth={true}
+            variant="standard"
+            value={snowflakeAccountId}
+            onChange={(event) => setSnowflakeAccountId(event.target.value)}
+          />
+          <FormControl fullWidth={true}>
+            <InputLabel id="snowflake-region-select-label">
+              Snowflake Region
+            </InputLabel>
+            <Select
+              labelId="snowflake-region-select-label"
+              id="snowflake-region-select"
+              value={snowflakeRegion}
+              label="Snowflake Region"
+              onChange={(event: SelectChangeEvent<V1_SnowflakeRegion>) => {
+                setSnowflakeRegion(event.target.value as V1_SnowflakeRegion);
+              }}
+            >
+              {Object.values(V1_SnowflakeRegion).map((region) => (
+                <MenuItem key={region} value={region}>
+                  {region}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth={true}>
+            <InputLabel id="snowflake-network-select-label">
+              Snowflake Network
+            </InputLabel>
+            <Select
+              labelId="snowflake-network-select-label"
+              id="snowflake-network-select"
+              value={snowflakeNetwork}
+              label="Snowflake Network"
+            />
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={onClose}>Cancel</Button>
+          <Button type="submit">Subscribe</Button>
+        </DialogActions>
+      </Dialog>
+    );
+  },
 );
 
 export const LakehouseSubscriptions = withLakehouseSubscriptionsStore(
@@ -139,9 +277,23 @@ export const LakehouseSubscriptions = withLakehouseSubscriptionsStore(
     const subscriptionsStore = useLakehouseSubscriptionsStore();
     const auth = useAuth();
 
+    const [isCreateDialogOpen, setIsCreateDialogOpen] =
+      useState<boolean>(false);
+
     useEffect(() => {
       subscriptionsStore.init(auth.user?.access_token);
     }, [auth.user?.access_token, subscriptionsStore]);
+
+    const createDialogHandleSubmit = (
+      contractId: string,
+      target: V1_DataSubscriptionTarget,
+    ): void => {
+      subscriptionsStore.createSubscription(
+        contractId,
+        target,
+        auth.user?.access_token,
+      );
+    };
 
     return (
       <div className="app__page">
@@ -159,6 +311,11 @@ export const LakehouseSubscriptions = withLakehouseSubscriptionsStore(
                 </CubesLoadingIndicator>
                 <LakehouseSubscriptionsMainView
                   subscriptions={subscriptionsStore.subscriptions}
+                />
+                <LakehouseSubscriptionsCreateDialog
+                  open={isCreateDialogOpen}
+                  onClose={() => setIsCreateDialogOpen(false)}
+                  onSubmit={createDialogHandleSubmit}
                 />
               </div>
             </div>
