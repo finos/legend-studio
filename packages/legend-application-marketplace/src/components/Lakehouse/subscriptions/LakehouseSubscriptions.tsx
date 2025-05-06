@@ -205,20 +205,20 @@ export const LakehouseSubscriptionsCreateDialog = withAuth(
         <DialogTitle>Create New Subscription</DialogTitle>
         <DialogContent>
           <TextField
-            autoFocus={true}
             required={true}
             margin="dense"
             id="contractId"
             name="contractId"
             label="Contract ID"
             fullWidth={true}
-            variant="standard"
+            variant="outlined"
             value={contractId}
             onChange={(event) => setContractId(event.target.value)}
           />
-          <FormControl fullWidth={true}>
+          <FormControl fullWidth={true} margin="dense">
             <InputLabel id="target-type-select-label">Target Type</InputLabel>
             <Select
+              required={true}
               labelId="target-type-select-label"
               id="target-type-select"
               value={targetType}
@@ -232,15 +232,16 @@ export const LakehouseSubscriptionsCreateDialog = withAuth(
             name="snowflakeAccountId"
             label="Snowflake Account ID"
             fullWidth={true}
-            variant="standard"
+            variant="outlined"
             value={snowflakeAccountId}
             onChange={(event) => setSnowflakeAccountId(event.target.value)}
           />
-          <FormControl fullWidth={true}>
+          <FormControl fullWidth={true} margin="dense">
             <InputLabel id="snowflake-region-select-label">
               Snowflake Region
             </InputLabel>
             <Select
+              required={true}
               labelId="snowflake-region-select-label"
               id="snowflake-region-select"
               value={snowflakeRegion}
@@ -256,11 +257,12 @@ export const LakehouseSubscriptionsCreateDialog = withAuth(
               ))}
             </Select>
           </FormControl>
-          <FormControl fullWidth={true}>
+          <FormControl fullWidth={true} margin="dense">
             <InputLabel id="snowflake-network-select-label">
               Snowflake Network
             </InputLabel>
             <Select
+              required={true}
               labelId="snowflake-network-select-label"
               id="snowflake-network-select"
               value={snowflakeNetwork}
@@ -269,8 +271,12 @@ export const LakehouseSubscriptionsCreateDialog = withAuth(
           </FormControl>
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose}>Cancel</Button>
-          <Button type="submit">Subscribe</Button>
+          <Button onClick={onClose} variant="outlined">
+            Cancel
+          </Button>
+          <Button type="submit" variant="contained">
+            Create Subsciption
+          </Button>
         </DialogActions>
       </Dialog>
     );
