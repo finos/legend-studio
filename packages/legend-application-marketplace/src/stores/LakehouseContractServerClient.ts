@@ -100,8 +100,14 @@ export class LakehouseContractServerClient extends AbstractServerClient {
 
   createContract = (
     contractRequest: PlainObject<V1_ContractCreate_LegendDataProduct>,
+    token: string | undefined,
   ): Promise<V1_DataContract> =>
-    this.post(`${this._dataContracts()}/alloyDataProduct`, contractRequest);
+    this.post(
+      `${this._dataContracts()}/alloyDataProduct`,
+      contractRequest,
+      undefined,
+      this._token(token),
+    );
 
   // ------------------------------------------- Tasks -------------------------------------------
 

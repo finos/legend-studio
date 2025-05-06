@@ -39,7 +39,7 @@ import {
   type DataGridCellRendererParams,
 } from '@finos/legend-lego/data-grid';
 import type { V1_LakehouseAccessPoint } from '@finos/legend-graph';
-import { flowResult } from 'mobx';
+import { DataContractCreator } from './entitlements/DataContractCreator.js';
 
 export const DataProductMarkdownTextViewer: React.FC<{ value: string }> = (
   props,
@@ -96,10 +96,7 @@ export const DataProductGroupAccessViewer = observer(
     const accessPoints = accessGroupState.group.accessPoints;
 
     const handleClick = (): void => {
-      flowResult(accessGroupState.handleClick()).catch(
-        accessGroupState.accessState.viewerState.applicationStore
-          .alertUnhandledError,
-      );
+      accessGroupState.handleClick();
     };
 
     const renderAccess = (val: DataProductGroupAccess): React.ReactNode => {
@@ -235,7 +232,6 @@ export const DataProducteDataAccess = observer(
     const anchor = generateAnchorForActivity(
       DATA_PRODUCT_VIEWER_ACTIVITY_MODE.DATA_ACCESS,
     );
-
     useEffect(() => {
       if (sectionRef.current) {
         dataSpaceViewerState.layoutState.setWikiPageAnchor(
@@ -290,6 +286,19 @@ export const DataProducteDataAccess = observer(
                   dataViewer={dataSpaceViewerState}
                 />
               ),
+            )}
+            {dataSpaceViewerState.dataContractAccessPointGroup && (
+              <DataContractCreator
+                onClose={() =>
+                  dataSpaceViewerState.setDataContractAccessPointGroup(
+                    undefined,
+                  )
+                }
+                accessGroupPoint={
+                  dataSpaceViewerState.dataContractAccessPointGroup
+                }
+                viewerState={dataSpaceViewerState}
+              />
             )}
           </div>
         </div>

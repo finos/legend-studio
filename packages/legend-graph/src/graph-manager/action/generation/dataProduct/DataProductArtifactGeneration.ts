@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
+import {
+  SerializationFactory,
+  usingModelSchema,
+  type PlainObject,
+} from '@finos/legend-shared';
 import { createModelSchema, primitive } from 'serializr';
 
 export class DataProductInfo {
@@ -31,6 +35,7 @@ export class DataProductInfo {
 
 export class DataProductArtifactGeneration {
   dataProduct!: DataProductInfo;
+  content!: PlainObject;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(DataProductArtifactGeneration, {
@@ -38,3 +43,11 @@ export class DataProductArtifactGeneration {
     }),
   );
 }
+
+export const buildDataProductArtifactGeneration = (
+  json: PlainObject,
+): DataProductArtifactGeneration => {
+  const artifact = DataProductArtifactGeneration.serialization.fromJson(json);
+  artifact.content = json.content as PlainObject;
+  return artifact;
+};

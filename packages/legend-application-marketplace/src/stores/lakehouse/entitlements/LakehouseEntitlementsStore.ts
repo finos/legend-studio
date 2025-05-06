@@ -75,6 +75,7 @@ export class LakehouseEntitlementsStore {
     contractId: string | undefined,
     token: string | undefined,
   ): GeneratorFn<void> {
+    this.setCurrentViewer(undefined);
     if (taskId) {
       flowResult(this.initWithTaskId(taskId, token)).catch(
         this.applicationStore.alertUnhandledError,
@@ -108,6 +109,7 @@ export class LakehouseEntitlementsStore {
       const allTasks = [...tasks.dataOwner, ...tasks.privilegeManager];
       const task = guaranteeNonNullable(
         allTasks.find((e) => e.taskId === taskId),
+        `Task with id '${taskId}' not found. Temprorary only have access to pending tasks you can approve. `,
       );
       const currentTask = new DataContractTaskState(task, this);
       this.setCurrentViewer(currentTask);
@@ -116,7 +118,9 @@ export class LakehouseEntitlementsStore {
       );
     } catch (error) {
       assertErrorThrown(error);
-      // TODO: show user error
+      this.applicationStore.notificationService.notifyError(
+        `Unable to render task page: ${error.message}`,
+      );
     } finally {
       this.initializationState.complete();
     }

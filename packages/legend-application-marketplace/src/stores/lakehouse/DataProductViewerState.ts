@@ -19,7 +19,6 @@ import {
   type GenericLegendApplicationStore,
   type NavigationZone,
 } from '@finos/legend-application';
-
 import {
   type DataProductArtifactGeneration,
   type V1_DataContract,
@@ -28,10 +27,15 @@ import {
   V1_AppDirLevel,
   V1_AppDirNode,
   V1_AppDirNodeModelSchema,
-  V1_DataContractsRecordModelSchema,
   type GraphData,
   type GraphManagerState,
   type V1_DataProduct,
+  type V1_AccessPointGroup,
+  V1_User,
+  V1_UserType,
+  V1_AdhocTeam,
+  V1_AdhocTeamModelSchema,
+  V1_DataContractsRecordModelSchemaToContracts,
 } from '@finos/legend-graph';
 import type { VersionedProjectData } from '@finos/legend-server-depot';
 import { action, computed, flow, makeObservable, observable } from 'mobx';
@@ -45,13 +49,25 @@ import {
 } from './DataProductViewerNavigation.js';
 import { DataProductDataAccessState } from './DataProductDataAccessState.js';
 import {
+  ActionState,
   assertErrorThrown,
   guaranteeNonEmptyString,
+  guaranteeNonNullable,
   type GeneratorFn,
   type PlainObject,
 } from '@finos/legend-shared';
 import type { LakehouseContractServerClient } from '../LakehouseContractServerClient.js';
-import { deserialize, serialize } from 'serializr';
+import { serialize } from 'serializr';
+import { dataContractContainsDataProduct } from './LakehouseUtils.js';
+
+const buildAdhocUser = (user: string): V1_AdhocTeam => {
+  const _user = new V1_User();
+  _user.name = user;
+  _user.userType = V1_UserType.WORKFORCE_USER;
+  const _adhocTeam = new V1_AdhocTeam();
+  _adhocTeam.users = [_user];
+  return _adhocTeam;
+};
 
 export class DataProductViewerState {
   readonly applicationStore: GenericLegendApplicationStore;
@@ -72,6 +88,10 @@ export class DataProductViewerState {
   accessState: DataProductDataAccessState;
   generation: DataProductArtifactGeneration | undefined;
   associatedContracts: V1_DataContract[] | undefined;
+  dataContractAccessPointGroup: V1_AccessPointGroup | undefined;
+  // actions
+
+  creatingContractState = ActionState.create();
 
   constructor(
     applicationStore: GenericLegendApplicationStore,
@@ -91,9 +111,13 @@ export class DataProductViewerState {
       setCurrentActivity: action,
       isVerified: computed,
       accessState: observable,
-      init: flow,
+      fetchContracts: flow,
       associatedContracts: observable,
+      dataContractAccessPointGroup: observable,
+      setDataContractAccessPointGroup: action,
       setAssociatedContracts: action,
+      create: flow,
+      creatingContractState: observable,
     });
 
     this.applicationStore = applicationStore;
@@ -114,49 +138,82 @@ export class DataProductViewerState {
     this.associatedContracts = val;
   }
 
-  *init(token: string | undefined): GeneratorFn<void> {
+  setDataContractAccessPointGroup(val: V1_AccessPointGroup | undefined) {
+    this.dataContractAccessPointGroup = val;
+  }
+
+  *fetchContracts(token: string | undefined): GeneratorFn<void> {
     try {
       const did = guaranteeNonEmptyString(
         this.generation?.dataProduct.deploymentId,
         'did required to get contracts',
       );
-
       const didNode = new V1_AppDirNode();
       didNode.appDirId = Number(did);
       didNode.level = V1_AppDirLevel.DEPLOYMENT;
       const _contracts = (yield this.lakeServerClient.getDataContractsFromDID(
-        serialize(V1_AppDirNodeModelSchema, didNode),
+        [serialize(V1_AppDirNodeModelSchema, didNode)],
         token,
       )) as PlainObject<V1_DataContractsRecord>;
-
-      const dataProductContracts = deserialize(
-        V1_DataContractsRecordModelSchema,
+      const dataProductContracts = V1_DataContractsRecordModelSchemaToContracts(
         _contracts,
-      )
-        .dataContracts.map((e) => e.dataContract)
-        .filter((_contract) => {
-          const _resource = _contract.resource;
-          if (
-            _resource instanceof V1_AccessPointGroupReference &&
-            this.deploymentId
-          ) {
-            const isDID =
-              Number(this.deploymentId) ===
-              _resource.dataProduct.owner.appDirId;
-            const isName = _resource.dataProduct.name === this.product.name;
-            const hasGroup = this.product.accessPointGroups
-              .map((e) => e.id)
-              .includes(_resource.accessPointGroup);
-            return isDID && isName && hasGroup;
-          }
-          return false;
-        });
+      ).filter((_contract) =>
+        dataContractContainsDataProduct(
+          this.product,
+          this.deploymentId,
+          _contract,
+        ),
+      );
       this.setAssociatedContracts(dataProductContracts);
+      this.accessState.accessGroupStates.forEach((e) =>
+        e.handleDataProductContracts(dataProductContracts),
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.accessState.viewerState.applicationStore.notificationService.notifyError(
         `${error.message}`,
       );
+    }
+  }
+
+  *create(
+    description: string,
+    group: V1_AccessPointGroup,
+    token: string | undefined,
+  ): GeneratorFn<void> {
+    try {
+      this.creatingContractState.inProgress();
+      const request: PlainObject<V1_DataContractsRecord> = {
+        description,
+        product: guaranteeNonNullable(this.generation?.content),
+        accessPointGroup: group.id,
+        consumer: serialize(
+          V1_AdhocTeamModelSchema,
+          buildAdhocUser(this.applicationStore.identityService.currentUser),
+        ),
+      };
+      const contracts = V1_DataContractsRecordModelSchemaToContracts(
+        (yield this.lakeServerClient.createContract(
+          request,
+          token,
+        )) as unknown as PlainObject<V1_DataContractsRecord>,
+      );
+      const associatedContracts = contracts[0];
+      const findGroup = this.accessState.accessGroupStates.find(
+        (e) => e.group === group,
+      );
+      findGroup?.setAssociatedContract(associatedContracts);
+      this.setDataContractAccessPointGroup(undefined);
+      this.applicationStore.notificationService.notifySuccess(
+        `Contract created, please go to contract view for pending tasks`,
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      this.accessState.viewerState.applicationStore.notificationService.notifyError(
+        `${error.message}`,
+      );
+    } finally {
+      this.creatingContractState.complete();
     }
   }
 

@@ -37,7 +37,6 @@ import {
 } from '@mui/material';
 import type { DataProductState } from '../../stores/lakehouse/MarketplaceLakehouseStore.js';
 import { generateLakehouseDataProduct } from '../../__lib__/LegendMarketplaceNavigation.js';
-import { useAuth } from 'react-oidc-context';
 import { generateGAVCoordinates } from '@finos/legend-storage';
 import { LegendMarketplaceSearchBar } from '../SearchBar/LegendMarketplaceSearchBar.js';
 import { DepotScope } from '@finos/legend-server-depot';
@@ -78,7 +77,6 @@ export const LegendDataProductVendorCard = (props: {
 export const LakehouseMarketplace = withMarketplaceLakehouseStore(
   observer(() => {
     const marketPlaceStore = useMarketplaceLakehouseStore();
-    const auth = useAuth();
     const onSearch = (
       provider: string | undefined,
       query: string | undefined,
@@ -96,13 +94,6 @@ export const LakehouseMarketplace = withMarketplaceLakehouseStore(
     useEffect(() => {
       marketPlaceStore.init();
     }, [marketPlaceStore]);
-
-    useEffect(() => {
-      // eslint-disable-next-line no-void
-      void marketPlaceStore.lakehouseServerClient.getDataProducts(
-        auth.user?.access_token,
-      );
-    }, [auth.user?.access_token, marketPlaceStore.lakehouseServerClient]);
 
     return (
       <div className="app__page">

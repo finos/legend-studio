@@ -17,6 +17,7 @@
 import {
   type V1_DataContract,
   V1_AccessPointGroupReference,
+  V1_AdhocTeam,
   V1_AppDirOrganizationalScope,
 } from '@finos/legend-graph';
 import {
@@ -24,6 +25,7 @@ import {
   type GridItemDetail,
 } from './LakehouseEntitlementsStore.js';
 import { LakehouseViewerState } from './LakehouseViewerState.js';
+import { prettyCONSTName } from '@finos/legend-shared';
 
 export const buildDataContractDetail = (
   dataContract: V1_DataContract,
@@ -43,7 +45,7 @@ export const buildDataContractDetail = (
     },
     {
       name: 'Contract State',
-      value: dataContract.state,
+      value: prettyCONSTName(dataContract.state),
     },
   ];
   const accessPointGroupRef = dataContract.resource;
@@ -80,12 +82,21 @@ export const buildDataContractDetail = (
     orgDetails = org.appDirNode
       .map((value, idx) => [
         {
-          name: `App Dir DID (${idx})`,
+          name: `App Dir DID (${idx + 1})`,
           value: value.appDirId.toString(),
         },
         {
-          name: `App Dir Level (${idx})`,
+          name: `App Dir Level (${idx + 1})`,
           value: value.level.toString(),
+        },
+      ])
+      .flat();
+  } else if (org instanceof V1_AdhocTeam) {
+    orgDetails = org.users
+      .map((user, idx) => [
+        {
+          name: `Contract Consumer Name (${idx + 1})`,
+          value: user.name,
         },
       ])
       .flat();
