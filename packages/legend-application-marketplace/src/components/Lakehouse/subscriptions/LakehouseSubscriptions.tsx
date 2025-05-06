@@ -52,6 +52,7 @@ import {
   withLakehouseSubscriptionsStore,
 } from './LakehouseSubscriptionsStoreProvider.js';
 import { assertErrorThrown } from '@finos/legend-shared';
+import { flowResult } from 'mobx';
 
 export const LakehouseSubscriptionsMainView = observer(
   (props: {
@@ -324,6 +325,9 @@ export const LakehouseSubscriptions = withLakehouseSubscriptionsStore(
         );
         subscriptionsStore.applicationStore.notificationService.notifySuccess(
           `Created subscription ${createdSubscription.guid}`,
+        );
+        flowResult(subscriptionsStore.init(auth.user?.access_token)).catch(
+          subscriptionsStore.applicationStore.alertUnhandledError,
         );
       } catch (error) {
         assertErrorThrown(error);
