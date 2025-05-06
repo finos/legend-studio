@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.1.26
+
+### Patch Changes
+
+- [#4050](https://github.com/finos/legend-studio/pull/4050) [`10b3b7f`](https://github.com/finos/legend-studio/commit/10b3b7f20370bdbf396a26186d8d02dd18bd19e5) ([@travisstebbins](https://github.com/travisstebbins)) - Add Lakehouse subscriptions page
+
 ## 32.1.25
 
 ### Patch Changes
