@@ -16,10 +16,12 @@
 
 import type {
   V1_ContractCreate_LegendDataProduct,
+  V1_CreateSubscriptionInput,
   V1_DataContract,
   V1_DataContractsRecord,
-  V1_TaskStatus,
+  V1_DataSubscriptionResponse,
   V1_PendingTasksRespond,
+  V1_TaskStatus,
   V1_UserPendingContractsResponse,
 } from '@finos/legend-graph';
 import { AbstractServerClient, type PlainObject } from '@finos/legend-shared';
@@ -143,4 +145,19 @@ export class LakehouseContractServerClient extends AbstractServerClient {
       {},
       this._token(token),
     );
+
+  // --------------------------------------- Subscriptions ---------------------------------------
+
+  private _subscriptions = (): string => `${this.baseUrl}/subscriptions`;
+
+  getAllSubscriptions = (
+    token: string | undefined,
+  ): Promise<PlainObject<V1_DataSubscriptionResponse>[]> =>
+    this.get(this._subscriptions(), {}, this._token(token));
+
+  createSubscription = (
+    input: PlainObject<V1_CreateSubscriptionInput>,
+    token: string | undefined,
+  ): Promise<PlainObject<V1_DataSubscriptionResponse>> =>
+    this.post(`${this._subscriptions()}`, input, {}, this._token(token));
 }

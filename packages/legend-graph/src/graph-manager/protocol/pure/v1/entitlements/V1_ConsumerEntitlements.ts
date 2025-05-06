@@ -71,31 +71,6 @@ export class V1_ContractUserMembership {
   status!: V1_UserApprovalStatus;
 }
 
-export class V1_DataSubscription {
-  guid!: string;
-  dataContractId!: string;
-  target!: V1_DataSubscriptionTarget;
-  createdBy!: string;
-}
-
-export class V1_DataSubscriptionTarget {}
-
-export class V1_SnowflakeTarget extends V1_DataSubscriptionTarget {
-  snowflakeAccountId!: string;
-  snowflakeRegion!: V1_SnowflakeRegion;
-  snowflakeNetwork!: V1_SnowflakeNetwork;
-}
-
-export enum V1_SnowflakeRegion {
-  AWS_US_EAST_1,
-  AWS_US_WEST_1,
-}
-
-export enum V1_SnowflakeNetwork {
-  PUBLIC,
-  GOLDMAN,
-}
-
 export enum V1_UserApprovalStatus {
   PENDING,
   APPROVED,
@@ -114,10 +89,6 @@ export enum V1_ContractState {
 export enum V1_ApprovalType {
   DATA_OWNER_APPROVAL,
   CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
-}
-
-export class V1_BigQueryTarget extends V1_DataSubscriptionTarget {
-  gcpProjectId!: string;
 }
 
 export class V1_TaskStatus {

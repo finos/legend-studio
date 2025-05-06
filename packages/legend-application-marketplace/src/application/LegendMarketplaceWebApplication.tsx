@@ -47,6 +47,7 @@ import type { LegendMarketplaceOidcConfig } from './LegendMarketplaceApplication
 import { LakehouseDataProduct } from '../components/Lakehouse/LakehouseDataProduct.js';
 import { LegendMarketPlaceVendorData } from '../pages/VendorData/LegendMarketplaceVendorData.js';
 import { LakehouseEntitlements } from '../components/Lakehouse/entitlements/LakehouseEntitlements.js';
+import { LakehouseSubscriptions } from '../components/Lakehouse/subscriptions/LakehouseSubscriptions.js';
 
 const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();
@@ -144,6 +145,20 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
     },
   );
 
+  const ProtectedLakehouseSubscriptions = withAuthenticationRequired(
+    LakehouseSubscriptions,
+    {
+      OnRedirecting: () => (
+        <CubesLoadingIndicator isLoading={true}>
+          <CubesLoadingIndicatorIcon />
+        </CubesLoadingIndicator>
+      ),
+      signinRedirectArgs: {
+        state: window.location.pathname,
+      },
+    },
+  );
+
   return (
     <div className="app">
       {baseStore.initState.hasCompleted && (
@@ -185,6 +200,10 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.VENDOR_DATA}
               element={<LegendMarketPlaceVendorData />}
+            />
+            <Route
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SUBSCRIPTIONS}
+              element={<ProtectedLakehouseSubscriptions />}
             />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
