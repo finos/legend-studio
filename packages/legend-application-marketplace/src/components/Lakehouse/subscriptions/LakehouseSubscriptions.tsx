@@ -51,6 +51,7 @@ import {
   useLakehouseSubscriptionsStore,
   withLakehouseSubscriptionsStore,
 } from './LakehouseSubscriptionsStoreProvider.js';
+import { flowResult } from 'mobx';
 
 export const LakehouseSubscriptionsMainView = observer(
   (props: {
@@ -315,11 +316,13 @@ export const LakehouseSubscriptions = withLakehouseSubscriptionsStore(
       contractId: string,
       target: V1_DataSubscriptionTarget,
     ): void => {
-      subscriptionsStore.createSubscription(
-        contractId,
-        target,
-        auth.user?.access_token,
-      );
+      flowResult(
+        subscriptionsStore.createSubscription(
+          contractId,
+          target,
+          auth.user?.access_token,
+        ),
+      ).catch(subscriptionsStore.applicationStore.alertUnhandledError);
     };
 
     return (

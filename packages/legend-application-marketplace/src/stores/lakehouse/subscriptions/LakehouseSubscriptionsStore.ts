@@ -47,6 +47,7 @@ export class LakehouseSubscriptionsStore {
     makeObservable(this, {
       init: flow,
       setSubscriptions: action,
+      createSubscription: flow,
     });
   }
 
