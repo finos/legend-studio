@@ -33,7 +33,7 @@ import {
   V1_dataSubscriptionModelSchema,
   V1_DataSubscriptionResponseModelSchema,
 } from '@finos/legend-graph';
-import { makeObservable, flow, action } from 'mobx';
+import { makeObservable, flow, action, observable } from 'mobx';
 
 export class LakehouseSubscriptionsStore {
   readonly applicationStore: LegendMarketplaceApplicationStore;
@@ -48,6 +48,7 @@ export class LakehouseSubscriptionsStore {
     this.applicationStore = applicationStore;
     this.lakehouseServerClient = lakehouseServerClient;
     makeObservable(this, {
+      subscriptions: observable,
       init: flow,
       setSubscriptions: action,
       createSubscription: action,
