@@ -44,8 +44,8 @@ export enum V1_SnowflakeRegion {
 }
 
 export enum V1_SnowflakeNetwork {
-  PUBLIC,
-  GOLDMAN,
+  PUBLIC = 'PUBLIC',
+  GOLDMAN = 'GOLDMAN',
 }
 
 export class V1_BigQueryTarget extends V1_DataSubscriptionTarget {
