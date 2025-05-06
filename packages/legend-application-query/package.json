@@ -22,7 +22,8 @@
   "type": "module",
   "exports": {
     ".": "./lib/index.js",
-    "./lib/index.css": "./lib/index.css"
+    "./lib/index.css": "./lib/index.css",
+    "./lib/light-mode.css": "./lib/light-mode.css"
   },
   "module": "lib/index.js",
   "types": "lib/index.d.ts",
