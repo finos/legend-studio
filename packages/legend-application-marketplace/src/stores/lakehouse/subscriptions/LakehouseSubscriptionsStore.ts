@@ -18,7 +18,6 @@ import type { LakehouseContractServerClient } from '../../LakehouseContractServe
 import type { LegendMarketplaceApplicationStore } from '../../LegendMarketplaceBaseStore.js';
 import {
   type GeneratorFn,
-  type PlainObject,
   ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
@@ -87,10 +86,10 @@ export class LakehouseSubscriptionsStore {
     const input = new V1_CreateSubscriptionInput();
     input.contractId = contractId;
     input.target = target;
-    const response = (await this.lakehouseServerClient.createSubscription(
+    const response = await this.lakehouseServerClient.createSubscription(
       serialize(V1_CreateSubscriptionInputModelSchema, input),
       token,
-    )) as PlainObject<V1_DataSubscriptionResponse>;
+    );
     const subscription = guaranteeNonNullable(
       deserialize(V1_DataSubscriptionResponseModelSchema, response)
         .subscriptions?.[0],

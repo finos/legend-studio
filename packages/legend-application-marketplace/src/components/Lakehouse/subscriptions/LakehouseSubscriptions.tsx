@@ -57,7 +57,10 @@ import type { LakehouseSubscriptionsStore } from '../../../stores/lakehouse/subs
 export const LakehouseSubscriptionsCreateDialog = (props: {
   open: boolean;
   onClose: () => void;
-  onSubmit: (contractId: string, target: V1_DataSubscriptionTarget) => void;
+  onSubmit: (
+    contractId: string,
+    target: V1_DataSubscriptionTarget,
+  ) => Promise<void>;
 }) => {
   const { open, onClose, onSubmit } = props;
 
@@ -80,14 +83,14 @@ export const LakehouseSubscriptionsCreateDialog = (props: {
       slotProps={{
         paper: {
           component: 'form',
-          onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
+          onSubmit: async (event: React.FormEvent<HTMLFormElement>) => {
             event.preventDefault();
             if (targetType === V1_DataSubscriptionTargetType.Snowflake) {
               const snowflakeTarget = new V1_SnowflakeTarget();
               snowflakeTarget.snowflakeAccountId = snowflakeAccountId;
               snowflakeTarget.snowflakeRegion = snowflakeRegion;
               snowflakeTarget.snowflakeNetwork = snowflakeNetwork;
-              onSubmit(contractId, snowflakeTarget);
+              await onSubmit(contractId, snowflakeTarget);
               onClose();
             } else {
               onClose();
@@ -240,86 +243,84 @@ export const LakehouseSubscriptionsMainView = observer(
               'ag-theme-balham': true,
             })}
           >
-            {subscriptions && (
-              <DataGrid
-                rowData={subscriptions}
-                onRowDataUpdated={(params) => {
-                  params.api.refreshCells({ force: true });
-                }}
-                suppressFieldDotNotation={true}
-                suppressContextMenu={false}
-                columnDefs={[
-                  {
-                    minWidth: 50,
-                    sortable: true,
-                    resizable: true,
-                    headerName: 'Subscription Id',
-                    valueGetter: (p) => p.data?.guid,
-                    flex: 1,
-                  },
-                  {
-                    minWidth: 50,
-                    sortable: true,
-                    resizable: true,
-                    headerName: 'Contract ID',
-                    valueGetter: (p) => p.data?.dataContractId,
-                    flex: 1,
-                  },
-                  {
-                    minWidth: 50,
-                    sortable: true,
-                    resizable: true,
-                    headerName: 'Target Type',
-                    valueGetter: (p) =>
-                      p.data?.target instanceof V1_SnowflakeTarget
-                        ? 'Snowflake'
-                        : 'Unknown',
-                    flex: 1,
-                  },
-                  {
-                    minWidth: 50,
-                    sortable: true,
-                    resizable: true,
-                    headerName: 'Snowflake Account ID',
-                    valueGetter: (p) =>
-                      p.data?.target instanceof V1_SnowflakeTarget
-                        ? p.data.target.snowflakeAccountId
-                        : 'Unknown',
-                    flex: 1,
-                  },
-                  {
-                    minWidth: 50,
-                    sortable: true,
-                    resizable: true,
-                    headerName: 'Snowflake Region',
-                    valueGetter: (p) =>
-                      p.data?.target instanceof V1_SnowflakeTarget
-                        ? p.data.target.snowflakeRegion
-                        : 'Unknown',
-                    flex: 1,
-                  },
-                  {
-                    minWidth: 50,
-                    sortable: true,
-                    resizable: true,
-                    headerName: 'Snowflake Network',
-                    valueGetter: (p) =>
-                      p.data?.target instanceof V1_SnowflakeTarget
-                        ? p.data.target.snowflakeNetwork
-                        : 'Unknown',
-                    flex: 1,
-                  },
-                  {
-                    minWidth: 50,
-                    sortable: true,
-                    resizable: true,
-                    headerName: 'Created By',
-                    valueGetter: (p) => p.data?.createdBy,
-                    flex: 1,
-                  },
-                ]}
-              />
-            )}
+            <DataGrid
+              rowData={subscriptions}
+              onRowDataUpdated={(params) => {
+                params.api.refreshCells({ force: true });
+              }}
+              suppressFieldDotNotation={true}
+              suppressContextMenu={false}
+              columnDefs={[
+                {
+                  minWidth: 50,
+                  sortable: true,
+                  resizable: true,
+                  headerName: 'Subscription Id',
+                  valueGetter: (p) => p.data?.guid,
+                  flex: 1,
+                },
+                {
+                  minWidth: 50,
+                  sortable: true,
+                  resizable: true,
+                  headerName: 'Contract ID',
+                  valueGetter: (p) => p.data?.dataContractId,
+                  flex: 1,
+                },
+                {
+                  minWidth: 50,
+                  sortable: true,
+                  resizable: true,
+                  headerName: 'Target Type',
+                  valueGetter: (p) =>
+                    p.data?.target instanceof V1_SnowflakeTarget
+                      ? 'Snowflake'
+                      : 'Unknown',
+                  flex: 1,
+                },
+                {
+                  minWidth: 50,
+                  sortable: true,
+                  resizable: true,
+                  headerName: 'Snowflake Account ID',
+                  valueGetter: (p) =>
+                    p.data?.target instanceof V1_SnowflakeTarget
+                      ? p.data.target.snowflakeAccountId
+                      : 'Unknown',
+                  flex: 1,
+                },
+                {
+                  minWidth: 50,
+                  sortable: true,
+                  resizable: true,
+                  headerName: 'Snowflake Region',
+                  valueGetter: (p) =>
+                    p.data?.target instanceof V1_SnowflakeTarget
+                      ? p.data.target.snowflakeRegion
+                      : 'Unknown',
+                  flex: 1,
+                },
+                {
+                  minWidth: 50,
+                  sortable: true,
+                  resizable: true,
+                  headerName: 'Snowflake Network',
+                  valueGetter: (p) =>
+                    p.data?.target instanceof V1_SnowflakeTarget
+                      ? p.data.target.snowflakeNetwork
+                      : 'Unknown',
+                  flex: 1,
+                },
+                {
+                  minWidth: 50,
+                  sortable: true,
+                  resizable: true,
+                  headerName: 'Created By',
+                  valueGetter: (p) => p.data?.createdBy,
+                  flex: 1,
+                },
+              ]}
+            />
           </div>
         </Box>
         <LakehouseSubscriptionsCreateDialog
