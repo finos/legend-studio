@@ -60,7 +60,7 @@ export const LegendDataProductVendorCard = (props: {
             className={clsx('legend-marketplace-vendor-card__type')}
           />
           <div className="legend-marketplace-vendor-card__name">
-            {dataAsset.productEntity.path}
+            {dataAsset.productEntity.path.split('::').pop()}
           </div>
           <div className="legend-marketplace-vendor-card__description">
             {`${dataAsset.productEntity.groupId}:${dataAsset.productEntity.artifactId}`}
