@@ -39,8 +39,8 @@ export class V1_SnowflakeTarget extends V1_DataSubscriptionTarget {
 }
 
 export enum V1_SnowflakeRegion {
-  AWS_US_EAST_1,
-  AWS_US_WEST_1,
+  AWS_US_EAST_1 = 'AWS_US_EAST_1',
+  AWS_US_WEST_1 = 'AWS_US_WEST_1',
 }
 
 export enum V1_SnowflakeNetwork {

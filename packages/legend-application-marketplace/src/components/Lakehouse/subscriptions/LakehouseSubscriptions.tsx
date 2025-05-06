@@ -223,7 +223,16 @@ export const LakehouseSubscriptionsCreateDialog = withAuth(
               id="target-type-select"
               value={targetType}
               label="Target Type"
-            />
+              disabled={true}
+            >
+              {Object.values(V1_DataSubscriptionTargetType).map(
+                (_targetType) => (
+                  <MenuItem key={_targetType} value={_targetType}>
+                    {_targetType}
+                  </MenuItem>
+                ),
+              )}
+            </Select>
           </FormControl>
           <TextField
             required={true}
@@ -267,7 +276,14 @@ export const LakehouseSubscriptionsCreateDialog = withAuth(
               id="snowflake-network-select"
               value={snowflakeNetwork}
               label="Snowflake Network"
-            />
+              disabled={true}
+            >
+              {Object.values(V1_SnowflakeNetwork).map((_snowflakeNetwork) => (
+                <MenuItem key={_snowflakeNetwork} value={_snowflakeNetwork}>
+                  {_snowflakeNetwork}
+                </MenuItem>
+              ))}
+            </Select>
           </FormControl>
         </DialogContent>
         <DialogActions>
