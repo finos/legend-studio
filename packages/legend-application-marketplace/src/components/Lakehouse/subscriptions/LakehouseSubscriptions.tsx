@@ -83,14 +83,15 @@ export const LakehouseSubscriptionsCreateDialog = (props: {
       slotProps={{
         paper: {
           component: 'form',
-          onSubmit: async (event: React.FormEvent<HTMLFormElement>) => {
+          onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
             event.preventDefault();
             if (targetType === V1_DataSubscriptionTargetType.Snowflake) {
               const snowflakeTarget = new V1_SnowflakeTarget();
               snowflakeTarget.snowflakeAccountId = snowflakeAccountId;
               snowflakeTarget.snowflakeRegion = snowflakeRegion;
               snowflakeTarget.snowflakeNetwork = snowflakeNetwork;
-              await onSubmit(contractId, snowflakeTarget);
+              // eslint-disable-next-line no-void
+              void onSubmit(contractId, snowflakeTarget);
               onClose();
             } else {
               onClose();
