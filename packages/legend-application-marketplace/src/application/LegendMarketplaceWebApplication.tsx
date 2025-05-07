@@ -34,7 +34,7 @@ import {
   useLegendMarketplaceBaseStore,
 } from './LegendMarketplaceFrameworkProvider.js';
 import { LEGEND_MARKETPLACE_ROUTE_PATTERN } from '../__lib__/LegendMarketplaceNavigation.js';
-import { LakehouseMarketplace } from '../components/Lakehouse/LakehouseMarketplace.js';
+import { LakehouseMarketplace } from '../pages/Lakehouse/LakehouseMarketplace.js';
 import { LegendMarketplaceHome } from '../pages/Home/LegendMarketplaceHome.js';
 import { LegendMarketplaceSearchResults } from '../pages/SearchResults/LegendMarketplaceSearchResults.js';
 import {
@@ -44,10 +44,10 @@ import {
 } from 'react-oidc-context';
 import type { User } from 'oidc-client-ts';
 import type { LegendMarketplaceOidcConfig } from './LegendMarketplaceApplicationConfig.js';
-import { LakehouseDataProduct } from '../components/Lakehouse/LakehouseDataProduct.js';
+import { LakehouseDataProduct } from '../pages/Lakehouse/LakehouseDataProduct.js';
 import { LegendMarketPlaceVendorData } from '../pages/VendorData/LegendMarketplaceVendorData.js';
-import { LakehouseEntitlements } from '../components/Lakehouse/entitlements/LakehouseEntitlements.js';
-import { LakehouseSubscriptions } from '../components/Lakehouse/subscriptions/LakehouseSubscriptions.js';
+import { LakehouseEntitlements } from '../pages/Lakehouse/entitlements/LakehouseEntitlements.js';
+import { LakehouseSubscriptions } from '../pages/Lakehouse/subscriptions/LakehouseSubscriptions.js';
 
 const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();

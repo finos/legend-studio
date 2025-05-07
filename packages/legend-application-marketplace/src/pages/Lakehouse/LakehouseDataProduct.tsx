@@ -33,7 +33,7 @@ import { guaranteeNonNullable } from '@finos/legend-shared';
 import { DataProductViewer } from './DataProductViewer.js';
 import { LEGEND_APPLICATION_COLOR_THEME } from '@finos/legend-application';
 import { useAuth } from 'react-oidc-context';
-import { LakehouseMarketplaceHeader } from './LakehouseHeader.js';
+import { LakehouseMarketplaceHeader } from '../../components/Header/LakehouseHeader.js';
 
 export const LakehouseDataProduct = withMarketplaceLakehouseStore(
   observer(() => {

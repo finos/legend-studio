@@ -38,9 +38,9 @@ import {
 import type { DataProductState } from '../../stores/lakehouse/MarketplaceLakehouseStore.js';
 import { generateLakehouseDataProduct } from '../../__lib__/LegendMarketplaceNavigation.js';
 import { generateGAVCoordinates } from '@finos/legend-storage';
-import { LegendMarketplaceSearchBar } from '../SearchBar/LegendMarketplaceSearchBar.js';
+import { LegendMarketplaceSearchBar } from '../../components/SearchBar/LegendMarketplaceSearchBar.js';
 import { DepotScope } from '@finos/legend-server-depot';
-import { LakehouseMarketplaceHeader } from './LakehouseHeader.js';
+import { LakehouseMarketplaceHeader } from '../../components/Header/LakehouseHeader.js';
 
 export const LegendDataProductVendorCard = (props: {
   dataAsset: DataProductState;

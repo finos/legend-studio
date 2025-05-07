@@ -37,7 +37,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { LakehouseMarketplaceHeader } from '../LakehouseHeader.js';
+import { LakehouseMarketplaceHeader } from '../../../components/Header/LakehouseHeader.js';
 import {
   type V1_DataSubscriptionTarget,
   V1_DataSubscriptionTargetType,

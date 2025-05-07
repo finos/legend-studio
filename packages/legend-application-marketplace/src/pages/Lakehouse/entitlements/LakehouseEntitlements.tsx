@@ -47,7 +47,7 @@ import {
   Tabs,
   Typography,
 } from '@mui/material';
-import { LakehouseMarketplaceHeader } from '../LakehouseHeader.js';
+import { LakehouseMarketplaceHeader } from '../../../components/Header/LakehouseHeader.js';
 import type {
   V1_ContractUserEventRecord,
   V1_UserPendingContractsRecord,
