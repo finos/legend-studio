@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 16.0.40
+
+### Patch Changes
+
+- [#4050](https://github.com/finos/legend-studio/pull/4050) [`10b3b7f`](https://github.com/finos/legend-studio/commit/10b3b7f20370bdbf396a26186d8d02dd18bd19e5) ([@travisstebbins](https://github.com/travisstebbins)) - Export NotificationManager
+
 ## 16.0.39
 
 ## 16.0.38

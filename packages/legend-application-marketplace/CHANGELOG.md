@@ -1,5 +1,17 @@
 # @finos/legend-application-marketplace
 
+## 0.0.20
+
+### Patch Changes
+
+- [#4048](https://github.com/finos/legend-studio/pull/4048) [`3f6b197`](https://github.com/finos/legend-studio/commit/3f6b1972c86f5bfcacc8f682b6c8a11fd38db360) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Wire up create contract from data product
+
+- [#4049](https://github.com/finos/legend-studio/pull/4049) [`5ba2db2`](https://github.com/finos/legend-studio/commit/5ba2db24c42a89427576b52621a72b6fbcc96299) ([@kelly-thai](https://github.com/kelly-thai)) - Updated contract and task page styling
+
+- [#4046](https://github.com/finos/legend-studio/pull/4046) [`bf7a818`](https://github.com/finos/legend-studio/commit/bf7a81898ac25238441b5e414ce309df0278857d) ([@kelly-thai](https://github.com/kelly-thai)) - Added tabs to entitlement page, and fixed formatting of vendor card titles
+
+- [#4050](https://github.com/finos/legend-studio/pull/4050) [`10b3b7f`](https://github.com/finos/legend-studio/commit/10b3b7f20370bdbf396a26186d8d02dd18bd19e5) ([@travisstebbins](https://github.com/travisstebbins)) - Add Lakehouse subscriptions page
+
 ## 0.0.19
 
 ### Patch Changes
