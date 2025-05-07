@@ -25,6 +25,7 @@ import {
   Checkbox,
   FormControlLabel,
   FormGroup,
+  Grid2 as Grid,
   Typography,
 } from '@mui/material';
 import { flowResult } from 'mobx';
@@ -79,15 +80,21 @@ const SearchResultsRenderer = observer(
             <strong>See All&gt;</strong>
           </a>
         </div>
-        <div className="legend-marketplace-vendordata-main-search-results__card-group">
+        <Grid
+          container={true}
+          spacing={{ xs: 4 }}
+          columns={{ xs: 1, sm: 2, lg: 3, xxl: 4, xxxl: 5, xxxxl: 6 }}
+          className="legend-marketplace-vendordata-main-search-results__card-group"
+        >
           {providerResults.map((provider) => (
-            <LegendMarketplaceProviderCard
-              key={provider.id}
-              providerResult={provider}
-              onAddToCartClick={() => onAddToCartClick(provider)}
-            />
+            <Grid key={provider.id} size={1}>
+              <LegendMarketplaceProviderCard
+                providerResult={provider}
+                onAddToCartClick={() => onAddToCartClick(provider)}
+              />
+            </Grid>
           ))}
-        </div>
+        </Grid>
       </div>
     );
   },

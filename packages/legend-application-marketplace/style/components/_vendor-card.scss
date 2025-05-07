@@ -17,24 +17,14 @@
 @use 'mixins' as *;
 
 .legend-marketplace-vendor-data-card {
-  width: 450px;
-  height: 300px;
-  margin: 5px;
-  border-radius: 20px;
-  border-color: #fff;
-  display: flex;
-  flex-direction: column;
-  background-color: #fff;
-  padding: 15px;
-  box-shadow:
-    0 4px 6px rgb(0 0 0 / 10%),
-    0 1px 3px rgb(0 0 0 / 8%);
+  .legend-marketplace-card__content {
+    justify-content: start;
+    align-items: start;
+    overflow: auto;
+  }
 
-  &__body {
-    height: 100%;
-    justify-content: unset;
-    margin: 0;
-    padding: inherit;
+  .legend-marketplace-card__actions {
+    justify-content: space-between;
   }
 
   &__vendor-name {
@@ -58,10 +48,6 @@
 }
 
 .legend-marketplace-vendor-data-card-button-group {
-  bottom: 10px;
-  justify-content: space-between;
-  margin: 0 !important;
-
   .vendor-data-card-add-to-cart-button {
     border-radius: 999px;
     color: #186ade;
