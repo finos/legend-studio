@@ -36,7 +36,6 @@ import {
   Select,
   TextField,
   Typography,
-  type SelectChangeEvent,
 } from '@mui/material';
 import { LakehouseMarketplaceHeader } from '../LakehouseHeader.js';
 import {
@@ -69,7 +68,7 @@ export const LakehouseSubscriptionsCreateDialog = (props: {
     V1_DataSubscriptionTargetType.Snowflake,
   );
   const [snowflakeAccountId, setSnowflakeAccountId] = useState<string>('');
-  const [snowflakeRegion, setSnowflakeRegion] = useState<V1_SnowflakeRegion>(
+  const [snowflakeRegion] = useState<V1_SnowflakeRegion>(
     V1_SnowflakeRegion.AWS_US_EAST_1,
   );
   const [snowflakeNetwork] = useState<V1_SnowflakeNetwork>(
@@ -152,9 +151,7 @@ export const LakehouseSubscriptionsCreateDialog = (props: {
             id="snowflake-region-select"
             value={snowflakeRegion}
             label="Snowflake Region"
-            onChange={(event: SelectChangeEvent<V1_SnowflakeRegion>) => {
-              setSnowflakeRegion(event.target.value as V1_SnowflakeRegion);
-            }}
+            disabled={true}
           >
             {Object.values(V1_SnowflakeRegion).map((region) => (
               <MenuItem key={region} value={region}>
