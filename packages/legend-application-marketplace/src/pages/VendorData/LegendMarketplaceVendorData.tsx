@@ -15,7 +15,6 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { LegendMarketplaceHeader } from '../../components/Header/LegendMarketplaceHeader.js';
 import { useEffect, useState } from 'react';
 import { LegendMarketplaceSearchBar } from '../../components/SearchBar/LegendMarketplaceSearchBar.js';
 import {
@@ -34,6 +33,7 @@ import type { ProviderResult } from '@finos/legend-server-marketplace';
 import { LegendMarketplaceProviderCard } from '../../components/ProviderCard/LegendMarketplaceProviderCard.js';
 import type { LegendMarketPlaceVendorDataState } from '../../stores/LegendMarketPlaceVendorDataState.js';
 import { useLegendMarketplaceBaseStore } from '../../application/LegendMarketplaceFrameworkProvider.js';
+import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
 
 export const RefinedVendorRadioSelector = observer(() => {
   const radioOptions = ['All', 'Datafeeds', 'Terminal License', 'Add-Ons'];
@@ -170,41 +170,36 @@ export const LegendMarketPlaceVendorData = observer(() => {
   }, [marketPlaceVendorDataState, applicationStore]);
 
   return (
-    <div className="app__page">
-      <div className="legend-marketplace-vendor-data">
-        <LegendMarketplaceHeader />
-        <div className="legend-marketplace-vendor-data__content">
-          <div className="legend-marketplace-banner">
-            <div className="legend-marketplace-banner__title">Vendor Data</div>
-            <div className="legend-marketplace-banner__subtitle">
-              <p>Discover high quality data</p>
-            </div>
-          </div>
-          <div className="legend-marketplace-new-datasets">
-            <h3>Recently Onboarded</h3>
-            <div className="legend-marketplace-new-datasets__buttons">
-              {marketPlaceVendorDataState.dataFeedProviders
-                .slice(0, 10)
-                .map((vendor) => (
-                  <Badge
-                    className="legend-marketplace-new-datasets__providers"
-                    title={vendor.productName}
-                    key={vendor.id}
-                  >
-                    {vendor.productName}
-                  </Badge>
-                ))}
-            </div>
-          </div>
-          <div className="legend-marketplace-body__content">
-            <RefinedVendorRadioSelector />
-            <LegendMarketplaceSearchBar onSearch={onChange} />
-            <VendorDataMainContent
-              marketPlaceVendorDataState={marketPlaceVendorDataState}
-            />
-          </div>
+    <LegendMarketplacePage className="legend-marketplace-vendor-data">
+      <div className="legend-marketplace-banner">
+        <div className="legend-marketplace-banner__title">Vendor Data</div>
+        <div className="legend-marketplace-banner__subtitle">
+          <p>Discover high quality data</p>
         </div>
       </div>
-    </div>
+      <div className="legend-marketplace-new-datasets">
+        <h3>Recently Onboarded</h3>
+        <div className="legend-marketplace-new-datasets__buttons">
+          {marketPlaceVendorDataState.dataFeedProviders
+            .slice(0, 10)
+            .map((vendor) => (
+              <Badge
+                className="legend-marketplace-new-datasets__providers"
+                title={vendor.productName}
+                key={vendor.id}
+              >
+                {vendor.productName}
+              </Badge>
+            ))}
+        </div>
+      </div>
+      <div className="legend-marketplace-body__content">
+        <RefinedVendorRadioSelector />
+        <LegendMarketplaceSearchBar onSearch={onChange} />
+        <VendorDataMainContent
+          marketPlaceVendorDataState={marketPlaceVendorDataState}
+        />
+      </div>
+    </LegendMarketplacePage>
   );
 });

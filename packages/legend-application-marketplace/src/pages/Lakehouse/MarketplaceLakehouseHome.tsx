@@ -37,8 +37,8 @@ import { generateLakehouseDataProduct } from '../../__lib__/LegendMarketplaceNav
 import { generateGAVCoordinates } from '@finos/legend-storage';
 import { LegendMarketplaceSearchBar } from '../../components/SearchBar/LegendMarketplaceSearchBar.js';
 import { DepotScope } from '@finos/legend-server-depot';
-import { LakehouseMarketplaceHeader } from '../../components/Header/LakehouseHeader.js';
 import { LegendMarketplaceCard } from '../../components/MarketplaceCard/LegendMarketplaceCard.js';
+import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
 
 export const LegendDataProductVendorCard = (props: {
   dataAsset: DataProductState;
@@ -95,87 +95,73 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
     }, [marketPlaceStore]);
 
     return (
-      <div className="app__page">
-        <div className="legend-marketplace-home">
-          <div className="legend-marketplace-home__body">
-            <LakehouseMarketplaceHeader />
-            <div className="legend-marketplace-home__content">
-              <div className="legend-marketplace-data-products__content">
-                <CubesLoadingIndicator
-                  isLoading={marketPlaceStore.loadingProductsState.isInProgress}
-                >
-                  <CubesLoadingIndicatorIcon />
-                </CubesLoadingIndicator>
-                <div className="legend-marketplace-data-product-search__container">
-                  <LegendMarketplaceSearchBar
-                    onSearch={onSearch}
-                    onChange={onSearchChange}
-                  />
-                  <FormGroup row={true}>
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={marketPlaceStore.filter.releaseFilter}
-                          onChange={() =>
-                            marketPlaceStore.handleFilterChange(
-                              DepotScope.RELEASES,
-                            )
-                          }
-                        />
-                      }
-                      label="Releases"
-                    />
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={marketPlaceStore.filter.snapshotFilter}
-                          onChange={() =>
-                            marketPlaceStore.handleFilterChange(
-                              DepotScope.SNAPSHOT,
-                            )
-                          }
-                        />
-                      }
-                      label="Snapshots"
-                    />
-                  </FormGroup>
-                </div>
-
-                <div className="legend-marketplace-home__vendors-cards">
-                  <Grid
-                    container={true}
-                    spacing={{ xs: 2, md: 3, xl: 4 }}
-                    columns={{ xs: 1, sm: 2, xl: 3, xxl: 4, xxxl: 5, xxxxl: 6 }}
-                    sx={{ justifyContent: 'center' }}
-                  >
-                    {marketPlaceStore.filterProducts?.map((dpState) => (
-                      <Grid key={dpState.id} size={1}>
-                        <LegendDataProductVendorCard
-                          dataAsset={dpState}
-                          onClick={(dataAsset: DataProductState) => {
-                            {
-                              marketPlaceStore.applicationStore.navigationService.navigator.goToLocation(
-                                generateLakehouseDataProduct(
-                                  generateGAVCoordinates(
-                                    dpState.productEntity.groupId,
-                                    dpState.productEntity.artifactId,
-                                    dpState.productEntity.versionId,
-                                  ),
-                                  dpState.productEntity.path,
-                                ),
-                              );
-                            }
-                          }}
-                        />
-                      </Grid>
-                    ))}
-                  </Grid>
-                </div>
-              </div>
-            </div>
-          </div>
+      <LegendMarketplacePage className="legend-marketplace-lakehouse-home">
+        <CubesLoadingIndicator
+          isLoading={marketPlaceStore.loadingProductsState.isInProgress}
+        >
+          <CubesLoadingIndicatorIcon />
+        </CubesLoadingIndicator>
+        <div className="legend-marketplace-data-product-search__container">
+          <LegendMarketplaceSearchBar
+            onSearch={onSearch}
+            onChange={onSearchChange}
+          />
+          <FormGroup row={true}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={marketPlaceStore.filter.releaseFilter}
+                  onChange={() =>
+                    marketPlaceStore.handleFilterChange(DepotScope.RELEASES)
+                  }
+                />
+              }
+              label="Releases"
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={marketPlaceStore.filter.snapshotFilter}
+                  onChange={() =>
+                    marketPlaceStore.handleFilterChange(DepotScope.SNAPSHOT)
+                  }
+                />
+              }
+              label="Snapshots"
+            />
+          </FormGroup>
         </div>
-      </div>
+        <div className="legend-marketplace-home__vendors-cards">
+          <Grid
+            container={true}
+            spacing={{ xs: 2, md: 3, xl: 4 }}
+            columns={{ xs: 1, sm: 2, xl: 3, xxl: 4, xxxl: 5, xxxxl: 6 }}
+            sx={{ justifyContent: 'center' }}
+          >
+            {marketPlaceStore.filterProducts?.map((dpState) => (
+              <Grid key={dpState.id} size={1}>
+                <LegendDataProductVendorCard
+                  dataAsset={dpState}
+                  onClick={(dataAsset: DataProductState) => {
+                    {
+                      marketPlaceStore.applicationStore.navigationService.navigator.goToLocation(
+                        generateLakehouseDataProduct(
+                          generateGAVCoordinates(
+                            dpState.productEntity.groupId,
+                            dpState.productEntity.artifactId,
+                            dpState.productEntity.versionId,
+                          ),
+                          dpState.productEntity.path,
+                        ),
+                      );
+                    }
+                  }}
+                />
+              </Grid>
+            ))}
+          </Grid>
+        </div>
+      </LegendMarketplacePage>
     );
   }),
 );

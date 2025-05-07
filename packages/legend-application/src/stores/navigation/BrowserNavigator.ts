@@ -33,6 +33,7 @@ import {
   NAVIGATION_ZONE_PREFIX,
 } from './NavigationService.js';
 import {
+  Outlet,
   Route,
   Routes,
   matchRoutes,
@@ -43,7 +44,7 @@ import {
 } from 'react-router';
 
 export { BrowserRouter } from 'react-router-dom';
-export { Route, Routes, useParams, matchRoutes, generatePath };
+export { Outlet, Route, Routes, useParams, matchRoutes, generatePath };
 export const useNavigationZone = (): NavigationZone => {
   const location = useLocation();
   return location.hash.substring(NAVIGATION_ZONE_PREFIX.length);

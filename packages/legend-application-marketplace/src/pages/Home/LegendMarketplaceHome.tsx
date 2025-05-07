@@ -16,7 +16,6 @@
 
 import { observer } from 'mobx-react-lite';
 import { LegendMarketplaceSearchBar } from '../../components/SearchBar/LegendMarketplaceSearchBar.js';
-import { LegendMarketplaceHeader } from '../../components/Header/LegendMarketplaceHeader.js';
 import { useApplicationStore } from '@finos/legend-application';
 import {
   generateSearchResultsRoute,
@@ -26,6 +25,7 @@ import type { LightDataProduct } from '@finos/legend-server-marketplace';
 import { shuffle } from '@finos/legend-shared';
 import { LegendMarketplaceLightDataProductCard } from '../../components/DataProductCard/LegendMarketplaceLightDataProductCard.js';
 import { Grid2 as Grid } from '@mui/material';
+import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
 
 // Temporary placeholder data for assets
 
@@ -81,57 +81,48 @@ export const LegendMarketplaceHome = observer(() => {
   };
 
   return (
-    <div className="app__page">
-      <div className="legend-marketplace-home">
-        <div className="legend-marketplace-home__body">
-          <LegendMarketplaceHeader />
-          <div className="legend-marketplace-home__content">
-            <div className="legend-marketplace-home__landing">
-              <div className="legend-marketplace-home__landing__title">
-                <h1>
-                  <span style={{ color: '#76A1E3' }}>All data in </span>
-                  <span style={{ color: 'white' }}>One Place</span>
-                </h1>
-              </div>
-              <div className="legend-marketplace-home__landing__description">
-                <h3>
-                  Discover the right data and accelerate analytic productivity.
-                </h3>
-              </div>
-              <div className="legend-marketplace-home__landing__search-bar">
-                <LegendMarketplaceSearchBar onSearch={onSearch} />
-              </div>
-            </div>
-            <div className="legend-marketplace-home__vendors-title">
-              <h3>Explore our Data</h3>
-            </div>
-            <div className="legend-marketplace-home__vendors-cards">
-              <Grid
-                container={true}
-                spacing={{ xs: 2, md: 3, xl: 4 }}
-                columns={{ xs: 1, sm: 2, md: 3, xl: 6 }}
-                sx={{ justifyContent: 'center' }}
-              >
-                {shuffle(dataAssets).map((asset) => (
-                  <Grid
-                    key={`${asset.provider}.${asset.type}.${asset.description}`}
-                    size={1}
-                  >
-                    <LegendMarketplaceLightDataProductCard
-                      dataAsset={asset}
-                      onClick={(dataAsset: LightDataProduct) => {
-                        applicationStore.navigationService.navigator.goToLocation(
-                          generateVendorDetailsRoute(dataAsset.provider),
-                        );
-                      }}
-                    />
-                  </Grid>
-                ))}
-              </Grid>
-            </div>
-          </div>
+    <LegendMarketplacePage className="legend-marketplace-home">
+      <div className="legend-marketplace-home__landing">
+        <div className="legend-marketplace-home__landing__title">
+          <h1>
+            <span style={{ color: '#76A1E3' }}>All data in </span>
+            <span style={{ color: 'white' }}>One Place</span>
+          </h1>
+        </div>
+        <div className="legend-marketplace-home__landing__description">
+          <h3>Discover the right data and accelerate analytic productivity.</h3>
+        </div>
+        <div className="legend-marketplace-home__landing__search-bar">
+          <LegendMarketplaceSearchBar onSearch={onSearch} />
         </div>
       </div>
-    </div>
+      <div className="legend-marketplace-home__vendors-title">
+        <h3>Explore our Data</h3>
+      </div>
+      <div className="legend-marketplace-home__vendors-cards">
+        <Grid
+          container={true}
+          spacing={{ xs: 2, md: 3, xl: 4 }}
+          columns={{ xs: 1, sm: 2, md: 3, xl: 6 }}
+          sx={{ justifyContent: 'center' }}
+        >
+          {shuffle(dataAssets).map((asset) => (
+            <Grid
+              key={`${asset.provider}.${asset.type}.${asset.description}`}
+              size={1}
+            >
+              <LegendMarketplaceLightDataProductCard
+                dataAsset={asset}
+                onClick={(dataAsset: LightDataProduct) => {
+                  applicationStore.navigationService.navigator.goToLocation(
+                    generateVendorDetailsRoute(dataAsset.provider),
+                  );
+                }}
+              />
+            </Grid>
+          ))}
+        </Grid>
+      </div>
+    </LegendMarketplacePage>
   );
 });

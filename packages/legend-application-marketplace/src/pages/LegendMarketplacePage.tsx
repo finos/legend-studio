@@ -14,20 +14,13 @@
  * limitations under the License.
  */
 
-@use 'mixins' as *;
+import { clsx } from '@finos/legend-art';
+import { observer } from 'mobx-react-lite';
+import type React from 'react';
 
-.app {
-  width: 100%;
-  height: 100%;
-  background: var(--color-white);
-
-  &__page {
-    @include flexVCenter;
-
-    flex-direction: column;
-    width: 100%;
-    height: calc(100% - 6rem);
-    background: var(--color-white);
-    overflow: auto;
-  }
-}
+export const LegendMarketplacePage = observer(
+  (props: { className?: string; children: React.ReactNode }) => {
+    const { className, children } = props;
+    return <div className={clsx('app__page', className)}>{children}</div>;
+  },
+);
