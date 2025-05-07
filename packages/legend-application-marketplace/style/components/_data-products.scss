@@ -18,6 +18,9 @@
 
 .legend-marketplace-data-products {
   &__content {
+    @include flexVCenter;
+
+    flex-direction: column;
     height: 100%;
     width: 100%;
     color: var(--color-dark-grey-500);
@@ -60,6 +63,12 @@
     width: 100%;
     align-items: center;
     gap: 2rem;
+    max-width: 100rem;
+
+    .legend-marketplace__search-bar {
+      width: unset;
+      flex: 1;
+    }
   }
 
   &__filters {

@@ -111,43 +111,41 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
                     onSearch={onSearch}
                     onChange={onSearchChange}
                   />
-                  <div className="legend-marketplace-data-product-search__filters">
-                    <FormGroup>
-                      <FormControlLabel
-                        control={
-                          <Checkbox
-                            checked={marketPlaceStore.filter.releaseFilter}
-                            onChange={() =>
-                              marketPlaceStore.handleFilterChange(
-                                DepotScope.RELEASES,
-                              )
-                            }
-                          />
-                        }
-                        label="Releases"
-                      />
-                      <FormControlLabel
-                        control={
-                          <Checkbox
-                            checked={marketPlaceStore.filter.snapshotFilter}
-                            onChange={() =>
-                              marketPlaceStore.handleFilterChange(
-                                DepotScope.SNAPSHOT,
-                              )
-                            }
-                          />
-                        }
-                        label="Snapshots"
-                      />
-                    </FormGroup>
-                  </div>
+                  <FormGroup row={true}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={marketPlaceStore.filter.releaseFilter}
+                          onChange={() =>
+                            marketPlaceStore.handleFilterChange(
+                              DepotScope.RELEASES,
+                            )
+                          }
+                        />
+                      }
+                      label="Releases"
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={marketPlaceStore.filter.snapshotFilter}
+                          onChange={() =>
+                            marketPlaceStore.handleFilterChange(
+                              DepotScope.SNAPSHOT,
+                            )
+                          }
+                        />
+                      }
+                      label="Snapshots"
+                    />
+                  </FormGroup>
                 </div>
 
                 <div className="legend-marketplace-home__vendors-cards">
                   <Grid
                     container={true}
                     spacing={{ xs: 2, md: 3, xl: 4 }}
-                    columns={{ xs: 1, sm: 2, md: 3, xl: 6 }}
+                    columns={{ xs: 1, sm: 2, xl: 3, xxl: 4, xxxl: 5, xxxxl: 6 }}
                     sx={{ justifyContent: 'center' }}
                   >
                     {marketPlaceStore.filterProducts?.map((dpState) => (
