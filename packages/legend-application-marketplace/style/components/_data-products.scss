@@ -26,33 +26,6 @@
 }
 
 .legend-marketplace-light-data-product-card {
-  width: 100%;
-  height: 100%;
-  background: var(--color-light-grey-0);
-  border-radius: 3rem;
-  box-shadow: 5px 5px 5px rgb(0 0 0 / 10%);
-  overflow: hidden;
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
-
-  &:hover {
-    transform: scale(1.05);
-    box-shadow: 5px 5px 5px rgb(0 0 0 / 30%);
-
-    .legend-marketplace-light-data-product-card__more-info {
-      transform: translateY(0);
-    }
-  }
-
-  &__content {
-    @include flexCenter;
-
-    height: 100%;
-    padding: 2rem;
-    margin-left: 0;
-  }
-
   &__type {
     width: fit-content;
     font-size: 2rem;
@@ -77,26 +50,6 @@
   &__description {
     font-size: 2rem;
     font-weight: 200;
-  }
-
-  &__more-info {
-    @include flexCenter;
-
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    margin-left: 0;
-    padding: 2rem;
-    font-size: 2rem;
-    text-align: center;
-    background: var(--color-light-grey-0);
-    box-shadow: inset 0 0 10px rgb(0 0 0 / 10%);
-    transform: translateY(100%);
-    transition:
-      transform 0.3s cubic-bezier(0.25, 1, 0.5, 1),
-      box-shadow 0.3s ease;
   }
 }
 

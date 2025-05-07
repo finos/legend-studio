@@ -46,7 +46,9 @@ export const LegendMarketplaceLightDataProductCard = (props: {
     </>
   );
 
-  const moreInfo = <div>{dataAsset.moreInfo}</div>;
+  const moreInfo = dataAsset.moreInfo ? (
+    <div>{dataAsset.moreInfo}</div>
+  ) : undefined;
 
   return (
     <LegendMarketplaceCard

@@ -14,8 +14,14 @@
  * limitations under the License.
  */
 
-import { type JSX } from 'react';
-import { Card, CardActionArea, CardActions, CardContent } from '@mui/material';
+import { useRef, useState, type JSX } from 'react';
+import {
+  Card,
+  CardActionArea,
+  CardActions,
+  CardContent,
+  Slide,
+} from '@mui/material';
 import { clsx } from '@finos/legend-art';
 
 export const LegendMarketplaceCard = (props: {
@@ -23,25 +29,35 @@ export const LegendMarketplaceCard = (props: {
   size: 'small' | 'large';
   actions?: JSX.Element;
   onClick?: () => void;
-  moreInfo?: JSX.Element;
+  moreInfo?: JSX.Element | undefined;
   className?: string;
 }): JSX.Element => {
   const { content, size, actions, onClick, moreInfo, className } = props;
 
+  const [isMouseOver, setIsMouseOver] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
   const CardContentComponent = (
     <>
-      <CardContent className="legend-marketplace-card__content">
+      <CardContent
+        className={clsx('legend-marketplace-card__content', {
+          'legend-marketplace-card__content--with-actions':
+            actions !== undefined,
+        })}
+      >
         {content}
       </CardContent>
-      {moreInfo && (
-        <CardContent className="legend-marketplace-card__more-info">
-          {moreInfo}
-        </CardContent>
-      )}
       {actions && (
         <CardActions className="legend-marketplace-card__actions">
           {actions}
         </CardActions>
+      )}
+      {moreInfo && (
+        <Slide direction="up" in={isMouseOver} container={containerRef.current}>
+          <CardContent className="legend-marketplace-card__more-info">
+            {moreInfo}
+          </CardContent>
+        </Slide>
       )}
     </>
   );
@@ -57,13 +73,25 @@ export const LegendMarketplaceCard = (props: {
         },
         className,
       )}
+      ref={containerRef}
     >
       {onClick ? (
-        <CardActionArea onClick={onClick} sx={{ height: '100%' }}>
+        <CardActionArea
+          onClick={onClick}
+          onMouseEnter={() => setIsMouseOver(true)}
+          onMouseLeave={() => setIsMouseOver(false)}
+          className="legend-marketplace-card__content-container"
+        >
           {CardContentComponent}
         </CardActionArea>
       ) : (
-        CardContentComponent
+        <div
+          onMouseEnter={() => setIsMouseOver(true)}
+          onMouseLeave={() => setIsMouseOver(false)}
+          className="legend-marketplace-card__content-container"
+        >
+          {CardContentComponent}
+        </div>
       )}
     </Card>
   );

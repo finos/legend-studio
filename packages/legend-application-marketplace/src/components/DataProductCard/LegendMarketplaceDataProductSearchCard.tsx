@@ -79,6 +79,11 @@ export const LegendMarketplaceProductSearchCard = (props: {
   );
 
   return (
-    <LegendMarketplaceCard size="large" content={content} actions={actions} />
+    <LegendMarketplaceCard
+      size="large"
+      content={content}
+      actions={actions}
+      className="legend-marketplace-product-search-result-card"
+    />
   );
 };
