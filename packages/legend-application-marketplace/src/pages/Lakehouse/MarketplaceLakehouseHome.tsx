@@ -26,9 +26,6 @@ import {
   CubesLoadingIndicatorIcon,
 } from '@finos/legend-art';
 import {
-  Card,
-  CardActionArea,
-  CardContent,
   Checkbox,
   Chip,
   FormControlLabel,
@@ -41,36 +38,38 @@ import { generateGAVCoordinates } from '@finos/legend-storage';
 import { LegendMarketplaceSearchBar } from '../../components/SearchBar/LegendMarketplaceSearchBar.js';
 import { DepotScope } from '@finos/legend-server-depot';
 import { LakehouseMarketplaceHeader } from '../../components/Header/LakehouseHeader.js';
+import { LegendMarketplaceCard } from '../../components/MarketplaceCard/LegendMarketplaceCard.js';
 
 export const LegendDataProductVendorCard = (props: {
   dataAsset: DataProductState;
   onClick: (dataAsset: DataProductState) => void;
 }): JSX.Element => {
   const { dataAsset, onClick } = props;
-  return (
-    <Card variant="outlined" className="legend-marketplace-vendor-card">
-      <CardActionArea
-        onClick={() => onClick(dataAsset)}
-        sx={{ height: '100%' }}
-      >
-        <CardContent className="legend-marketplace-vendor-card__content">
-          <Chip
-            label={dataAsset.productEntity.versionId}
-            className={clsx('legend-marketplace-vendor-card__type')}
-          />
-          <div className="legend-marketplace-vendor-card__name">
-            {dataAsset.productEntity.path.split('::').pop()}
-          </div>
-          <div className="legend-marketplace-vendor-card__description">
-            {`${dataAsset.productEntity.groupId}:${dataAsset.productEntity.artifactId}`}
-          </div>
-        </CardContent>
 
-        <CardContent className="legend-marketplace-vendor-card__more-info">
-          <div>{dataAsset.productEntity.path}</div>
-        </CardContent>
-      </CardActionArea>
-    </Card>
+  const content = (
+    <>
+      <Chip
+        label={dataAsset.productEntity.versionId}
+        className={clsx('legend-marketplace-vendor-card__type')}
+      />
+      <div className="legend-marketplace-vendor-card__name">
+        {dataAsset.productEntity.path.split('::').pop()}
+      </div>
+      <div className="legend-marketplace-vendor-card__description">
+        {`${dataAsset.productEntity.groupId}:${dataAsset.productEntity.artifactId}`}
+      </div>
+    </>
+  );
+
+  const moreInfo = <div>{dataAsset.productEntity.path}</div>;
+
+  return (
+    <LegendMarketplaceCard
+      size="large"
+      content={content}
+      onClick={() => onClick(dataAsset)}
+      moreInfo={moreInfo}
+    />
   );
 };
 
