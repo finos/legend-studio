@@ -415,6 +415,7 @@ export async function validateAndBuildSnapshot(
       funcMap.leafExtend,
       Array.from(colsMap.values()),
       engine,
+      source,
     );
 
     // validate
@@ -548,6 +549,7 @@ export async function validateAndBuildSnapshot(
       funcMap.groupExtend,
       Array.from(colsMap.values()),
       engine,
+      source,
     );
 
     // validate

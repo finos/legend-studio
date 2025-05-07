@@ -81,7 +81,10 @@ import {
   _lambda,
   _synthesizeMinimalSourceQuery,
 } from './DataCubeQueryBuilderUtils.js';
-import { INTERNAL__DataCubeSource } from './model/DataCubeSource.js';
+import {
+  INTERNAL__DataCubeSource,
+  type DataCubeSource,
+} from './model/DataCubeSource.js';
 import type { DataCubeQueryAggregateOperation } from './aggregation/DataCubeQueryAggregateOperation.js';
 
 // --------------------------------- UTILITIES ---------------------------------
@@ -305,6 +308,7 @@ export async function _extractExtendedColumns(
   funcs: V1_AppliedFunction[],
   currentColumns: DataCubeColumn[],
   engine: DataCubeEngine,
+  source?: DataCubeSource,
 ) {
   const colSpecs = funcs.map((extendFunc) => {
     // TODO: support extend() with window (OLAP), this assertion will no longer work
@@ -343,7 +347,7 @@ export async function _extractExtendedColumns(
     columns = (
       await engine.getQueryRelationReturnType(
         _lambda([], [query]),
-        new INTERNAL__DataCubeSource(),
+        source ? source : new INTERNAL__DataCubeSource(),
       )
     ).columns;
   } catch (error) {
