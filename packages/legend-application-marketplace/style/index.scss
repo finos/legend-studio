@@ -16,18 +16,18 @@
 
 @forward 'app';
 
-@forward 'components/header';
 @forward 'components/data-product-viewer';
+@forward 'components/data-products';
+@forward 'components/data-products';
 @forward 'components/dataContract-creator';
-@forward 'components/data-products';
 @forward 'components/entitlements-tasks';
-@forward 'components/subscriptions';
-
+@forward 'components/header';
+@forward 'components/legend-marketplace-card';
 @forward 'components/product-search-card';
-@forward 'components/search-bar';
-@forward 'components/vendor-card';
 @forward 'components/radio-selector';
-@forward 'components/data-products';
+@forward 'components/search-bar';
+@forward 'components/subscriptions';
+@forward 'components/vendor-card';
 
 @forward 'pages/home';
 @forward 'pages/not-found-screen';
