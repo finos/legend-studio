@@ -18,7 +18,7 @@ import { observer } from 'mobx-react-lite';
 import {
   useMarketplaceLakehouseStore,
   withMarketplaceLakehouseStore,
-} from './MarketLakehouseStoreProvider.js';
+} from './MarketplaceLakehouseStoreProvider.js';
 import { useEffect, type JSX } from 'react';
 import {
   clsx,
@@ -74,7 +74,7 @@ export const LegendDataProductVendorCard = (props: {
   );
 };
 
-export const LakehouseMarketplace = withMarketplaceLakehouseStore(
+export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
   observer(() => {
     const marketPlaceStore = useMarketplaceLakehouseStore();
     const onSearch = (

@@ -34,7 +34,7 @@ import {
   useLegendMarketplaceBaseStore,
 } from './LegendMarketplaceFrameworkProvider.js';
 import { LEGEND_MARKETPLACE_ROUTE_PATTERN } from '../__lib__/LegendMarketplaceNavigation.js';
-import { LakehouseMarketplace } from '../pages/Lakehouse/LakehouseMarketplace.js';
+import { MarketplaceLakehouseHome } from '../pages/Lakehouse/MarketplaceLakehouseHome.js';
 import { LegendMarketplaceHome } from '../pages/Home/LegendMarketplaceHome.js';
 import { LegendMarketplaceSearchResults } from '../pages/SearchResults/LegendMarketplaceSearchResults.js';
 import {
@@ -104,7 +104,7 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
   }, [applicationStore, baseStore]);
 
   const ProtectedLakehouseMarketplace = withAuthenticationRequired(
-    LakehouseMarketplace,
+    MarketplaceLakehouseHome,
     {
       OnRedirecting: () => (
         <CubesLoadingIndicator isLoading={true}>

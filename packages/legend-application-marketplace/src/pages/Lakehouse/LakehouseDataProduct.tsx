@@ -18,7 +18,7 @@ import { observer } from 'mobx-react-lite';
 import {
   useMarketplaceLakehouseStore,
   withMarketplaceLakehouseStore,
-} from './MarketLakehouseStoreProvider.js';
+} from './MarketplaceLakehouseStoreProvider.js';
 import { useEffect } from 'react';
 import {
   CubesLoadingIndicator,
