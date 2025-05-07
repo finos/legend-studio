@@ -15,9 +15,10 @@
  */
 
 import { type JSX } from 'react';
-import { Button, Card, CardActions, CardContent } from '@mui/material';
+import { Button } from '@mui/material';
 import type { DataProductSearchResult } from '@finos/legend-server-marketplace';
 import DOMPurify from 'dompurify';
+import { LegendMarketplaceCard } from '../MarketplaceCard/LegendMarketplaceCard.js';
 
 const MAX_DESCRIPTION_LENGTH = 250;
 
@@ -42,40 +43,42 @@ export const LegendMarketplaceProductSearchCard = (props: {
         : DOMPurify.sanitize(productSearchResult.data_product_description),
   };
 
-  return (
-    <Card
-      variant="outlined"
-      className="legend-marketplace-product-search-result-card"
-    >
-      <CardContent className="legend-marketplace-product-search-result-card__content">
-        <div className="legend-marketplace-product-search-result-card__vendor-name">
-          {productSearchResult.vendor_name}
-        </div>
-        <div className="legend-marketplace-product-search-result-card__data-product-name">
-          {productSearchResult.data_product_name}
-        </div>
-        <div className="legend-marketplace-product-search-result-card__data-product-description">
-          {productSearchResult.data_product_description.length > 0 && (
-            <div dangerouslySetInnerHTML={descriptionHTML} />
-          )}
-        </div>
-      </CardContent>
-      <CardActions className="legend-marketplace-product-search-result-card__actions">
-        <Button
-          variant="outlined"
-          onClick={() => onPreviewClick(productSearchResult)}
-        >
-          Preview
-        </Button>
-        {productSearchResult.data_product_link && (
-          <Button
-            variant="contained"
-            onClick={() => onLearnMoreClick(productSearchResult)}
-          >
-            Learn More
-          </Button>
+  const content = (
+    <>
+      <div className="legend-marketplace-product-search-result-card__vendor-name">
+        {productSearchResult.vendor_name}
+      </div>
+      <div className="legend-marketplace-product-search-result-card__data-product-name">
+        {productSearchResult.data_product_name}
+      </div>
+      <div className="legend-marketplace-product-search-result-card__data-product-description">
+        {productSearchResult.data_product_description.length > 0 && (
+          <div dangerouslySetInnerHTML={descriptionHTML} />
         )}
-      </CardActions>
-    </Card>
+      </div>
+    </>
+  );
+
+  const actions = (
+    <>
+      <Button
+        variant="outlined"
+        onClick={() => onPreviewClick(productSearchResult)}
+      >
+        Preview
+      </Button>
+      {productSearchResult.data_product_link && (
+        <Button
+          variant="contained"
+          onClick={() => onLearnMoreClick(productSearchResult)}
+        >
+          Learn More
+        </Button>
+      )}
+    </>
+  );
+
+  return (
+    <LegendMarketplaceCard size="large" content={content} actions={actions} />
   );
 };
