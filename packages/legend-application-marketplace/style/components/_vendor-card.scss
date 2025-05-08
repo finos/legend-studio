@@ -17,24 +17,14 @@
 @use 'mixins' as *;
 
 .legend-marketplace-vendor-data-card {
-  width: 450px;
-  height: 300px;
-  margin: 5px;
-  border-radius: 20px;
-  border-color: #fff;
-  display: flex;
-  flex-direction: column;
-  background-color: #fff;
-  padding: 15px;
-  box-shadow:
-    0 4px 6px rgb(0 0 0 / 10%),
-    0 1px 3px rgb(0 0 0 / 8%);
+  .legend-marketplace-card__content {
+    justify-content: start;
+    align-items: start;
+    overflow: auto;
+  }
 
-  &__body {
-    height: 100%;
-    justify-content: unset;
-    margin: 0;
-    padding: inherit;
+  .legend-marketplace-card__actions {
+    justify-content: space-between;
   }
 
   &__vendor-name {
@@ -55,14 +45,8 @@
     color: #186ade;
     font-weight: bold;
   }
-}
 
-.legend-marketplace-vendor-data-card-button-group {
-  bottom: 10px;
-  justify-content: space-between;
-  margin: 0 !important;
-
-  .vendor-data-card-add-to-cart-button {
+  &__add-to-cart-button {
     border-radius: 999px;
     color: #186ade;
     font-size: 12px;
@@ -76,33 +60,6 @@
 }
 
 .legend-marketplace-vendor-card {
-  width: 100%;
-  height: 100%;
-  background: var(--color-light-grey-0);
-  border-radius: 3rem;
-  box-shadow: 5px 5px 5px rgb(0 0 0 / 10%);
-  overflow: hidden;
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
-
-  &:hover {
-    transform: scale(1.05);
-    box-shadow: 5px 5px 5px rgb(0 0 0 / 30%);
-
-    .legend-marketplace-vendor-card__more-info {
-      transform: translateY(0);
-    }
-  }
-
-  &__content {
-    @include flexCenter;
-
-    height: 100%;
-    padding: 2rem;
-    margin-left: 0;
-  }
-
   &__type {
     width: fit-content;
     font-size: 2rem;
@@ -130,25 +87,5 @@
   &__description {
     font-size: 2rem;
     font-weight: 200;
-  }
-
-  &__more-info {
-    @include flexCenter;
-
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    margin-left: 0;
-    padding: 2rem;
-    font-size: 2rem;
-    text-align: center;
-    background: var(--color-light-grey-0);
-    box-shadow: inset 0 0 10px rgb(0 0 0 / 10%);
-    transform: translateY(100%);
-    transition:
-      transform 0.3s cubic-bezier(0.25, 1, 0.5, 1),
-      box-shadow 0.3s ease;
   }
 }

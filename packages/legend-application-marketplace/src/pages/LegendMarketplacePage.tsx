@@ -14,8 +14,13 @@
  * limitations under the License.
  */
 
-@import url('@finos/legend-art/lib/normalize.css');
-@import url('@finos/legend-art/lib/index.css');
-@import url('@finos/legend-lego/lib/index.css');
-@import url('@finos/legend-application-marketplace/lib/index.css');
-@import url('@finos/legend-application-query/lib/light-mode.css');
+import { clsx } from '@finos/legend-art';
+import { observer } from 'mobx-react-lite';
+import type React from 'react';
+
+export const LegendMarketplacePage = observer(
+  (props: { className?: string; children: React.ReactNode }) => {
+    const { className, children } = props;
+    return <div className={clsx('app__page', className)}>{children}</div>;
+  },
+);

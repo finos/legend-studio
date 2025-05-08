@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { generatePath } from '@finos/legend-application/browser';
+import { generatePath, matchPath } from '@finos/legend-application/browser';
 import {
   addQueryParametersToUrl,
   stringifyQueryParams,
@@ -55,6 +55,20 @@ export const LEGEND_MARKETPLACE_ROUTE_PATTERN = Object.freeze({
   LAKEHOUSE_PRODUCT: `/lakehouse/dataProduct/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.GAV}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH}`,
   LAKEHOUSE_SUBSCRIPTIONS: '/lakehouse/subscriptions',
 });
+
+export const LAKEHOUSE_ROUTES = Object.freeze([
+  LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE,
+  LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS,
+  LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS_TASKS,
+  LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS_CONTRACTS,
+  LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_PRODUCT,
+  LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SUBSCRIPTIONS,
+]);
+
+export const isLakehouseRoute = (pathName: string): boolean =>
+  LAKEHOUSE_ROUTES.some(
+    (route) => matchPath(route as string, pathName) !== null,
+  );
 
 export const generateLakehouseDataProduct = (
   gav: string,

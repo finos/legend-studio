@@ -47,7 +47,6 @@ import {
   Tabs,
   Typography,
 } from '@mui/material';
-import { LakehouseMarketplaceHeader } from '../LakehouseHeader.js';
 import type {
   V1_ContractUserEventRecord,
   V1_UserPendingContractsRecord,
@@ -56,6 +55,7 @@ import { flowResult } from 'mobx';
 import { DataContractState } from '../../../stores/lakehouse/entitlements/DataContractState.js';
 import { LakehouseEntitlementsMainViewState } from '../../../stores/lakehouse/entitlements/LakehouseEntitlementsMainViewState.js';
 import { DataContractTaskState } from '../../../stores/lakehouse/entitlements/DataContractTaskState.js';
+import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
 
 const TDSColumnApprovalCellRenderer = (
   params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
@@ -591,27 +591,17 @@ export const LakehouseEntitlements = withLakehouseEntitlementsStore(
       return null;
     };
     return (
-      <div className="app__page">
-        <div className="legend-marketplace-home">
-          <div className="legend-marketplace-data-product-home__body">
-            <LakehouseMarketplaceHeader />
-            <div className="legend-marketplace-home__content">
-              <div className="legend-marketplace-data-product__content">
-                <CubesLoadingIndicator
-                  isLoading={Boolean(
-                    entitlementsStore.initializationState.isInProgress ||
-                      entitlementsStore.currentViewer?.initializationState
-                        .isInProgress,
-                  )}
-                >
-                  <CubesLoadingIndicatorIcon />
-                </CubesLoadingIndicator>
-                {renderCurrentViewer()}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <LegendMarketplacePage className="legend-marketplace-lakehouse-entitlements">
+        <CubesLoadingIndicator
+          isLoading={Boolean(
+            entitlementsStore.initializationState.isInProgress ||
+              entitlementsStore.currentViewer?.initializationState.isInProgress,
+          )}
+        >
+          <CubesLoadingIndicatorIcon />
+        </CubesLoadingIndicator>
+        {renderCurrentViewer()}
+      </LegendMarketplacePage>
     );
   }),
 );

@@ -23,7 +23,7 @@ import {
   MenuContentItem,
   MenuIcon,
 } from '@finos/legend-art';
-import { LegendMarketplaceAppInfo } from '../Header/LegendMarketplaceAppInfo.js';
+import { LegendMarketplaceAppInfo } from '../../components/Header/LegendMarketplaceAppInfo.js';
 import { useState } from 'react';
 
 const LakehouseHeaderMenu = observer(() => {
@@ -87,7 +87,7 @@ const LakehousePlaceHeaderTabs = observer(() => {
   );
 });
 
-export const LakehouseMarketplaceHeader = observer(() => {
+export const MarketplaceLakehouseHeader = observer(() => {
   const applicationStore = useApplicationStore();
 
   const navigateToHome = (): void => {

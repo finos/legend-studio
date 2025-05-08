@@ -16,7 +16,6 @@
 
 import { observer } from 'mobx-react-lite';
 import { LegendMarketplaceSearchBar } from '../../components/SearchBar/LegendMarketplaceSearchBar.js';
-import { LegendMarketplaceHeader } from '../../components/Header/LegendMarketplaceHeader.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { generateSearchResultsRoute } from '../../__lib__/LegendMarketplaceNavigation.js';
 import { DataProductSearchResult } from '@finos/legend-server-marketplace';
@@ -30,6 +29,7 @@ import { assertErrorThrown } from '@finos/legend-shared';
 import { LegendMarketplaceSearchResultDrawerContent } from './LegendMarketplaceSearchResultDrawerContent.js';
 import { Drawer, Grid2 as Grid } from '@mui/material';
 import { LegendMarketplaceProductSearchCard } from '../../components/DataProductCard/LegendMarketplaceDataProductSearchCard.js';
+import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
 
 export const LegendMarketplaceSearchResults = observer(() => {
   const applicationStore = useApplicationStore();
@@ -87,71 +87,64 @@ export const LegendMarketplaceSearchResults = observer(() => {
   };
 
   return (
-    <div className="app__page">
-      <div className="legend-marketplace-search-results">
-        <div className="legend-marketplace-search-results__body">
-          <LegendMarketplaceHeader />
-          <div className="legend-marketplace-search-results__content">
-            <div className="legend-marketplace-search-results__search-bar">
-              <LegendMarketplaceSearchBar
-                onSearch={onSearch}
-                initialValue={params.query?.trim() ?? ''}
-              />
-            </div>
-            <div className="legend-marketplace-search-results__results">
-              <CubesLoadingIndicator isLoading={isLoading}>
-                <CubesLoadingIndicatorIcon />
-              </CubesLoadingIndicator>
-              {isError ? (
-                <div>Error loading results</div>
-              ) : (
-                <Grid
-                  container={true}
-                  spacing={{ xs: 2, lg: 3, xl: 4 }}
-                  columns={{ xs: 1, sm: 2, lg: 3, xxl: 4, xxxl: 5, xxxxl: 6 }}
-                  className="legend-marketplace-search-results__results__cards"
-                >
-                  {results.map((result) => (
-                    <Grid
-                      key={`${result.vendor_name}-${result.data_product_name}`}
-                      size={1}
-                    >
-                      <LegendMarketplaceProductSearchCard
-                        productSearchResult={result}
-                        onPreviewClick={() => {
-                          setSelectedPreviewResult(result);
-                        }}
-                        onLearnMoreClick={() => {
-                          applicationStore.navigationService.navigator.visitAddress(
-                            result.data_product_link,
-                          );
-                        }}
-                      />
-                    </Grid>
-                  ))}
-                </Grid>
-              )}
-            </div>
-          </div>
-          <Drawer
-            anchor="right"
-            open={selectedPreviewResult !== undefined}
-            onClose={() => setSelectedPreviewResult(undefined)}
-            slotProps={{
-              paper: {
-                sx: {
-                  width: '40%',
-                  maxWidth: '100rem',
-                },
-              },
-            }}
-          >
-            <LegendMarketplaceSearchResultDrawerContent
-              productSearchResult={selectedPreviewResult}
-            />
-          </Drawer>
-        </div>
+    <LegendMarketplacePage className="legend-marketplace-search-results">
+      <div className="legend-marketplace-search-results__search-bar">
+        <LegendMarketplaceSearchBar
+          onSearch={onSearch}
+          initialValue={params.query?.trim() ?? ''}
+        />
       </div>
-    </div>
+      <div className="legend-marketplace-search-results__results">
+        <CubesLoadingIndicator isLoading={isLoading}>
+          <CubesLoadingIndicatorIcon />
+        </CubesLoadingIndicator>
+        {isError ? (
+          <div>Error loading results</div>
+        ) : (
+          <Grid
+            container={true}
+            spacing={{ xs: 4 }}
+            columns={{ xs: 1, sm: 2, lg: 3, xxl: 4, xxxl: 5, xxxxl: 6 }}
+            className="legend-marketplace-search-results__results__cards"
+          >
+            {results.map((result) => (
+              <Grid
+                key={`${result.vendor_name}-${result.data_product_name}`}
+                size={1}
+              >
+                <LegendMarketplaceProductSearchCard
+                  productSearchResult={result}
+                  onPreviewClick={() => {
+                    setSelectedPreviewResult(result);
+                  }}
+                  onLearnMoreClick={() => {
+                    applicationStore.navigationService.navigator.visitAddress(
+                      result.data_product_link,
+                    );
+                  }}
+                />
+              </Grid>
+            ))}
+          </Grid>
+        )}
+      </div>
+      <Drawer
+        anchor="right"
+        open={selectedPreviewResult !== undefined}
+        onClose={() => setSelectedPreviewResult(undefined)}
+        slotProps={{
+          paper: {
+            sx: {
+              width: '40%',
+              maxWidth: '100rem',
+            },
+          },
+        }}
+      >
+        <LegendMarketplaceSearchResultDrawerContent
+          productSearchResult={selectedPreviewResult}
+        />
+      </Drawer>
+    </LegendMarketplacePage>
   );
 });

@@ -15,53 +15,61 @@
  */
 
 import { type JSX } from 'react';
-import { Button, Card, CardActions, CardContent, Chip } from '@mui/material';
+import { Button, Chip } from '@mui/material';
 import type { ProviderResult } from '@finos/legend-server-marketplace';
 import { CheckCircleIcon, ShoppingCartIcon } from '@finos/legend-art';
+import { LegendMarketplaceCard } from '../MarketplaceCard/LegendMarketplaceCard.js';
 
 export const LegendMarketplaceProviderCard = (props: {
   providerResult: ProviderResult;
   onAddToCartClick: (providerResult: ProviderResult) => void;
 }): JSX.Element => {
   const { providerResult, onAddToCartClick } = props;
+
+  const content = (
+    <>
+      <div className="legend-marketplace-vendor-data-card__vendor-name">
+        {providerResult.providerName}
+      </div>
+      <div className="legend-marketplace-vendor-data-card__product-name">
+        {providerResult.productName || 'N/A'}
+      </div>
+      <div className="legend-marketplace-vendor-data-card__vendor-name__description">
+        {providerResult.description}
+      </div>
+    </>
+  );
+
+  const actions = providerResult.isOwned ? (
+    <div className="legend-marketplace-vendor-data-card__vendor-name__owned">
+      Already have access &nbsp; <CheckCircleIcon />
+    </div>
+  ) : (
+    <>
+      <Button
+        variant="outlined"
+        className="legend-marketplace-vendor-data-card__add-to-cart-button"
+        onClick={() => onAddToCartClick(providerResult)}
+      >
+        Add to cart &nbsp;
+        <ShoppingCartIcon />
+      </Button>
+      {typeof providerResult.price === 'number' && (
+        <Chip
+          label={`$${providerResult.price.toFixed(2)} per month`}
+          className="legend-marketplace-vendor-data-card__price"
+          sx={{ color: 'white', backgroundColor: '#077d55' }}
+        />
+      )}
+    </>
+  );
+
   return (
-    <Card variant="outlined" className="legend-marketplace-vendor-data-card">
-      <CardContent className="legend-marketplace-vendor-data-card__body">
-        <div className="legend-marketplace-vendor-data-card__vendor-name">
-          {providerResult.providerName}
-        </div>
-        <div className="legend-marketplace-vendor-data-card__product-name">
-          {providerResult.productName || 'N/A'}
-        </div>
-        <div className="legend-marketplace-vendor-data-card__vendor-name__description">
-          {providerResult.description}
-        </div>
-      </CardContent>
-      <CardActions className="legend-marketplace-vendor-data-card-button-group">
-        {providerResult.isOwned ? (
-          <div className="legend-marketplace-vendor-data-card__vendor-name__owned">
-            Already have access &nbsp; <CheckCircleIcon />
-          </div>
-        ) : (
-          <>
-            <Button
-              variant="outlined"
-              className="vendor-data-card-add-to-cart-button"
-              onClick={() => onAddToCartClick(providerResult)}
-            >
-              Add to cart &nbsp;
-              <ShoppingCartIcon />
-            </Button>
-            {typeof providerResult.price === 'number' && (
-              <Chip
-                label={`$${providerResult.price.toFixed(2)} per month`}
-                className="legend-marketplace-vendor-data-card-button-group__price"
-                sx={{ color: 'white', backgroundColor: '#077d55' }}
-              />
-            )}
-          </>
-        )}
-      </CardActions>
-    </Card>
+    <LegendMarketplaceCard
+      size="large"
+      content={content}
+      actions={actions}
+      className="legend-marketplace-vendor-data-card"
+    />
   );
 };

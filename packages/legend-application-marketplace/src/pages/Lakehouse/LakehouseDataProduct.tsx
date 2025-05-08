@@ -18,7 +18,7 @@ import { observer } from 'mobx-react-lite';
 import {
   useMarketplaceLakehouseStore,
   withMarketplaceLakehouseStore,
-} from './MarketLakehouseStoreProvider.js';
+} from './MarketplaceLakehouseStoreProvider.js';
 import { useEffect } from 'react';
 import {
   CubesLoadingIndicator,
@@ -33,7 +33,7 @@ import { guaranteeNonNullable } from '@finos/legend-shared';
 import { DataProductViewer } from './DataProductViewer.js';
 import { LEGEND_APPLICATION_COLOR_THEME } from '@finos/legend-application';
 import { useAuth } from 'react-oidc-context';
-import { LakehouseMarketplaceHeader } from './LakehouseHeader.js';
+import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
 
 export const LakehouseDataProduct = withMarketplaceLakehouseStore(
   observer(() => {
@@ -62,27 +62,18 @@ export const LakehouseDataProduct = withMarketplaceLakehouseStore(
     }, [applicationStore]);
 
     return (
-      <div className="app__page">
-        <div className="legend-marketplace-home">
-          <div className="legend-marketplace-data-product-home__body">
-            <LakehouseMarketplaceHeader />
-            <div className="legend-marketplace-home__content">
-              <div className="legend-marketplace-data-product__content">
-                <CubesLoadingIndicator
-                  isLoading={marketPlaceStore.loadingProductsState.isInProgress}
-                >
-                  <CubesLoadingIndicatorIcon />
-                </CubesLoadingIndicator>
-                {marketPlaceStore.dataProductViewer && (
-                  <DataProductViewer
-                    dataSpaceViewerState={marketPlaceStore.dataProductViewer}
-                  />
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <LegendMarketplacePage className="legend-marketplace-lakehouse-data-product">
+        <CubesLoadingIndicator
+          isLoading={marketPlaceStore.loadingProductsState.isInProgress}
+        >
+          <CubesLoadingIndicatorIcon />
+        </CubesLoadingIndicator>
+        {marketPlaceStore.dataProductViewer && (
+          <DataProductViewer
+            dataSpaceViewerState={marketPlaceStore.dataProductViewer}
+          />
+        )}
+      </LegendMarketplacePage>
     );
   }),
 );

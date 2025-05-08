@@ -17,22 +17,9 @@
 @use 'mixins' as *;
 
 .legend-marketplace-product-search-result-card {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  width: 100%;
-  height: 32rem;
-  background: var(--color-light-grey-0);
-  border-radius: 2rem;
-  box-shadow: 5px 5px 5px rgb(0 0 0 / 10%);
-  overflow: hidden;
-
-  &__content {
-    display: flex;
+  .legend-marketplace-card__content {
     justify-content: start;
-    padding: 1.4rem;
-    margin-left: 0;
-    height: calc(100% - 6rem);
+    align-items: start;
     overflow: auto;
   }
 
@@ -46,16 +33,5 @@
 
   &__data-product-description {
     font-size: 1.6rem;
-  }
-
-  &__actions {
-    height: 6rem;
-    padding: 1.4rem;
-    margin-left: 0;
-
-    button {
-      font-size: 1.2rem;
-      padding: 0.5rem 1rem;
-    }
   }
 }

@@ -37,7 +37,6 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { LakehouseMarketplaceHeader } from '../LakehouseHeader.js';
 import {
   type V1_DataSubscriptionTarget,
   V1_DataSubscriptionTargetType,
@@ -52,6 +51,7 @@ import {
 import { assertErrorThrown } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import type { LakehouseSubscriptionsStore } from '../../../stores/lakehouse/subscriptions/LakehouseSubscriptionsStore.js';
+import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
 
 export const LakehouseSubscriptionsCreateDialog = (props: {
   open: boolean;
@@ -341,27 +341,18 @@ export const LakehouseSubscriptions = withLakehouseSubscriptionsStore(
     }, [auth.user?.access_token, subscriptionsStore]);
 
     return (
-      <div className="app__page">
-        <div className="legend-marketplace-home">
-          <div className="legend-marketplace-data-product-home__body">
-            <LakehouseMarketplaceHeader />
-            <div className="legend-marketplace-home__content">
-              <div className="legend-marketplace-data-product__content">
-                <CubesLoadingIndicator
-                  isLoading={Boolean(
-                    subscriptionsStore.initializationState.isInProgress,
-                  )}
-                >
-                  <CubesLoadingIndicatorIcon />
-                </CubesLoadingIndicator>
-                <LakehouseSubscriptionsMainView
-                  subscriptionsStore={subscriptionsStore}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <LegendMarketplacePage className="legend-marketplace-lakehouse-subscriptions">
+        <CubesLoadingIndicator
+          isLoading={Boolean(
+            subscriptionsStore.initializationState.isInProgress,
+          )}
+        >
+          <CubesLoadingIndicatorIcon />
+        </CubesLoadingIndicator>
+        <LakehouseSubscriptionsMainView
+          subscriptionsStore={subscriptionsStore}
+        />
+      </LegendMarketplacePage>
     );
   }),
 );

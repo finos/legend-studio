@@ -22,20 +22,17 @@ import {
   ApplicationStoreProvider,
 } from '@finos/legend-application';
 import { TEST__BrowserEnvironmentProvider } from '@finos/legend-application/test';
-import { Route, Routes } from '@finos/legend-application/browser';
 import {
   type LegendMarketplaceApplicationStore,
   LegendMarketplaceBaseStore,
 } from '../../stores/LegendMarketplaceBaseStore.js';
-import { LEGEND_MARKETPLACE_ROUTE_PATTERN } from '../../__lib__/LegendMarketplaceNavigation.js';
-import { LegendMarketplaceHome } from '../../pages/Home/LegendMarketplaceHome.js';
 import { LEGEND_MARKETPLACE_TEST_ID } from '../../__lib__/LegendMarketplaceTesting.js';
 import { LegendMarketplacePluginManager } from '../../application/LegendMarketplacePluginManager.js';
 import { Core_LegendMarketplaceApplicationPlugin } from '../../application/extensions/Core_LegendMarketplaceApplicationPlugin.js';
 import { TEST__getTestLegendMarketplaceApplicationConfig } from '../../application/__test-utils__/LegendMarketplaceApplicationTestUtils.js';
 import { LegendMarketplaceFrameworkProvider } from '../../application/LegendMarketplaceFrameworkProvider.js';
 import searchResults from './TEST_DATA__SearchResults.json' with { type: 'json' };
-import { LegendMarketplaceSearchResults } from '../../pages/SearchResults/LegendMarketplaceSearchResults.js';
+import { LegendMarketplaceWebApplicationRouter } from '../../application/LegendMarketplaceWebApplication.js';
 
 export const TEST__provideMockedLegendMarketplaceBaseStore =
   async (customization?: {
@@ -86,16 +83,7 @@ export const TEST__setUpMarketplace = async (
     <ApplicationStoreProvider store={MOCK__store.applicationStore}>
       <TEST__BrowserEnvironmentProvider initialEntries={[route ?? '/']}>
         <LegendMarketplaceFrameworkProvider>
-          <Routes>
-            <Route
-              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.DEFAULT}
-              element={<LegendMarketplaceHome />}
-            />
-            <Route
-              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.SEARCH_RESULTS}
-              element={<LegendMarketplaceSearchResults />}
-            />
-          </Routes>
+          <LegendMarketplaceWebApplicationRouter />
         </LegendMarketplaceFrameworkProvider>
       </TEST__BrowserEnvironmentProvider>
     </ApplicationStoreProvider>,

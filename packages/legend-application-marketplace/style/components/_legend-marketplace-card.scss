@@ -1,0 +1,92 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+.legend-marketplace-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: var(--color-light-grey-0);
+  box-shadow:
+    0 4px 6px rgb(0 0 0 / 10%),
+    0 1px 3px rgb(0 0 0 / 8%);
+  width: 100%;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &--small {
+    height: 24rem;
+    border-radius: 3rem;
+  }
+
+  &--large {
+    height: 32rem;
+    border-radius: 4rem;
+  }
+
+  &__content-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: space-between;
+  }
+
+  &__content {
+    @include flexCenter;
+
+    height: fit-content;
+    max-height: 100%;
+    padding: 2rem;
+    margin-left: 0;
+
+    &--with-actions {
+      max-height: calc(100% - 6em);
+    }
+  }
+
+  &__actions {
+    height: fit-content;
+    padding: 2rem;
+    margin-left: 0;
+
+    button {
+      font-size: 1.2rem;
+      padding: 0.5rem 1rem;
+    }
+  }
+
+  &__more-info {
+    @include flexCenter;
+
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    margin-left: 0;
+    padding: 2rem;
+    font-size: 2rem;
+    text-align: center;
+    background: var(--color-light-grey-0);
+  }
+
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 5px 5px 5px rgb(0 0 0 / 30%);
+  }
+}

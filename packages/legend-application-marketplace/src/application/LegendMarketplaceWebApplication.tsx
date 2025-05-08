@@ -25,6 +25,7 @@ import { flowResult } from 'mobx';
 import { useApplicationStore } from '@finos/legend-application';
 import {
   BrowserEnvironmentProvider,
+  Outlet,
   Route,
   Routes,
 } from '@finos/legend-application/browser';
@@ -33,8 +34,11 @@ import {
   useLegendMarketplaceApplicationStore,
   useLegendMarketplaceBaseStore,
 } from './LegendMarketplaceFrameworkProvider.js';
-import { LEGEND_MARKETPLACE_ROUTE_PATTERN } from '../__lib__/LegendMarketplaceNavigation.js';
-import { LakehouseMarketplace } from '../components/Lakehouse/LakehouseMarketplace.js';
+import {
+  isLakehouseRoute,
+  LEGEND_MARKETPLACE_ROUTE_PATTERN,
+} from '../__lib__/LegendMarketplaceNavigation.js';
+import { MarketplaceLakehouseHome } from '../pages/Lakehouse/MarketplaceLakehouseHome.js';
 import { LegendMarketplaceHome } from '../pages/Home/LegendMarketplaceHome.js';
 import { LegendMarketplaceSearchResults } from '../pages/SearchResults/LegendMarketplaceSearchResults.js';
 import {
@@ -44,10 +48,13 @@ import {
 } from 'react-oidc-context';
 import type { User } from 'oidc-client-ts';
 import type { LegendMarketplaceOidcConfig } from './LegendMarketplaceApplicationConfig.js';
-import { LakehouseDataProduct } from '../components/Lakehouse/LakehouseDataProduct.js';
+import { LakehouseDataProduct } from '../pages/Lakehouse/LakehouseDataProduct.js';
 import { LegendMarketPlaceVendorData } from '../pages/VendorData/LegendMarketplaceVendorData.js';
-import { LakehouseEntitlements } from '../components/Lakehouse/entitlements/LakehouseEntitlements.js';
-import { LakehouseSubscriptions } from '../components/Lakehouse/subscriptions/LakehouseSubscriptions.js';
+import { LakehouseEntitlements } from '../pages/Lakehouse/entitlements/LakehouseEntitlements.js';
+import { LakehouseSubscriptions } from '../pages/Lakehouse/subscriptions/LakehouseSubscriptions.js';
+import { LegendMarketplaceHeader } from '../components/Header/LegendMarketplaceHeader.js';
+import { MarketplaceLakehouseHeader } from '../components/Header/MarketplaceLakehouseHeader.js';
+import { LegendMarketplacePage } from '../pages/LegendMarketplacePage.js';
 
 const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();
@@ -56,7 +63,7 @@ const NotFoundPage = observer(() => {
     applicationStore.navigationService.navigator.getCurrentLocation();
 
   return (
-    <div className="app__page legend-marketplace__app__page">
+    <LegendMarketplacePage className="legend-marketplace__not-found">
       <div className="not-found-screen not-found-screen--no-documentation">
         <div className="not-found-screen__icon">
           <div className="not-found-screen__icon__ghost">
@@ -89,7 +96,7 @@ const NotFoundPage = observer(() => {
           </div>
         </div>
       </div>
-    </div>
+    </LegendMarketplacePage>
   );
 });
 
@@ -104,7 +111,7 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
   }, [applicationStore, baseStore]);
 
   const ProtectedLakehouseMarketplace = withAuthenticationRequired(
-    LakehouseMarketplace,
+    MarketplaceLakehouseHome,
     {
       OnRedirecting: () => (
         <CubesLoadingIndicator isLoading={true}>
@@ -162,8 +169,21 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
   return (
     <div className="app">
       {baseStore.initState.hasCompleted && (
-        <>
-          <Routes>
+        <Routes>
+          <Route
+            element={
+              <>
+                {isLakehouseRoute(
+                  baseStore.applicationStore.navigationService.navigator.getCurrentLocation(),
+                ) ? (
+                  <MarketplaceLakehouseHeader />
+                ) : (
+                  <LegendMarketplaceHeader />
+                )}
+                <Outlet />
+              </>
+            }
+          >
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_PRODUCT}
               element={<ProtectedLakehouseDataProduct />}
@@ -184,7 +204,6 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS}
               element={<ProtectedLakehouseEntitlements />}
             />
-
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE}
               element={<ProtectedLakehouseMarketplace />}
@@ -206,8 +225,8 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
               element={<ProtectedLakehouseSubscriptions />}
             />
             <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </>
+          </Route>
+        </Routes>
       )}
     </div>
   );

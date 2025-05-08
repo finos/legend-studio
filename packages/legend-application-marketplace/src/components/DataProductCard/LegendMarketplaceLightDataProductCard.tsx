@@ -15,50 +15,47 @@
  */
 
 import { type JSX } from 'react';
-import { Card, CardActionArea, CardContent, Chip } from '@mui/material';
+import { Chip } from '@mui/material';
 import { clsx } from '@finos/legend-art';
 import type { LightDataProduct } from '@finos/legend-server-marketplace';
+import { LegendMarketplaceCard } from '../MarketplaceCard/LegendMarketplaceCard.js';
 
 export const LegendMarketplaceLightDataProductCard = (props: {
   dataAsset: LightDataProduct;
   onClick: (dataAsset: LightDataProduct) => void;
 }): JSX.Element => {
   const { dataAsset, onClick } = props;
+
+  const content = (
+    <>
+      <Chip
+        label={dataAsset.type}
+        className={clsx('legend-marketplace-light-data-product-card__type', {
+          'legend-marketplace-light-data-product-card__type--vendor':
+            dataAsset.type === 'vendor',
+          'legend-marketplace-light-data-product-card__type--curated':
+            dataAsset.type === 'curated',
+        })}
+      />
+      <div className="legend-marketplace-light-data-product-card__name">
+        {dataAsset.provider}
+      </div>
+      <div className="legend-marketplace-light-data-product-card__description">
+        {dataAsset.description}
+      </div>
+    </>
+  );
+
+  const moreInfo = dataAsset.moreInfo ? (
+    <div>{dataAsset.moreInfo}</div>
+  ) : undefined;
+
   return (
-    <Card
-      variant="outlined"
-      className="legend-marketplace-light-data-product-card"
-    >
-      <CardActionArea
-        onClick={() => onClick(dataAsset)}
-        sx={{ height: '100%' }}
-      >
-        <CardContent className="legend-marketplace-light-data-product-card__content">
-          <Chip
-            label={dataAsset.type}
-            className={clsx(
-              'legend-marketplace-light-data-product-card__type',
-              {
-                'legend-marketplace-light-data-product-card__type--vendor':
-                  dataAsset.type === 'vendor',
-                'legend-marketplace-light-data-product-card__type--curated':
-                  dataAsset.type === 'curated',
-              },
-            )}
-          />
-          <div className="legend-marketplace-light-data-product-card__name">
-            {dataAsset.provider}
-          </div>
-          <div className="legend-marketplace-light-data-product-card__description">
-            {dataAsset.description}
-          </div>
-        </CardContent>
-        {dataAsset.moreInfo.length > 0 && (
-          <CardContent className="legend-marketplace-light-data-product-card__more-info">
-            <div>{dataAsset.moreInfo}</div>
-          </CardContent>
-        )}
-      </CardActionArea>
-    </Card>
+    <LegendMarketplaceCard
+      size="small"
+      content={content}
+      onClick={() => onClick(dataAsset)}
+      moreInfo={moreInfo}
+    />
   );
 };
