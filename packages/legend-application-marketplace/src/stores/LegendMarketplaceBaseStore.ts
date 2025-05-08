@@ -28,7 +28,11 @@ import {
 import { flow, makeObservable } from 'mobx';
 import { DepotServerClient } from '@finos/legend-server-depot';
 import { MarketplaceServerClient } from '@finos/legend-server-marketplace';
-import { getCurrentUserIDFromEngineServer } from '@finos/legend-graph';
+import {
+  getCurrentUserIDFromEngineServer,
+  type V1_EngineServerClient,
+  V1_RemoteEngine,
+} from '@finos/legend-graph';
 import type { LegendMarketplaceApplicationConfig } from '../application/LegendMarketplaceApplicationConfig.js';
 import type { LegendMarketplacePluginManager } from '../application/LegendMarketplacePluginManager.js';
 import { LegendMarketplaceEventHelper } from '../__lib__/LegendMarketplaceEventHelper.js';
@@ -46,6 +50,8 @@ export class LegendMarketplaceBaseStore {
   readonly depotServerClient: DepotServerClient;
   readonly lakehouseServerClient: LakehouseContractServerClient | undefined;
   readonly pluginManager: LegendMarketplacePluginManager;
+  readonly engineServerClient: V1_EngineServerClient;
+  readonly remoteEngine: V1_RemoteEngine;
 
   readonly initState = ActionState.create();
 
@@ -84,6 +90,15 @@ export class LegendMarketplaceBaseStore {
         this.applicationStore.tracerService,
       );
     }
+
+    this.remoteEngine = new V1_RemoteEngine(
+      {
+        baseUrl: this.applicationStore.config.engineServerUrl,
+      },
+      applicationStore.logService,
+    );
+    this.engineServerClient = this.remoteEngine.getEngineServerClient();
+    this.engineServerClient.setTracerService(applicationStore.tracerService);
 
     this.marketplaceVendorDataState = new LegendMarketPlaceVendorDataState(
       this.applicationStore,

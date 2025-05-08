@@ -16,6 +16,7 @@
     { "path": "../legend-server-depot" },
     { "path": "../legend-storage" },
     { "path": "../legend-server-marketplace" },
-    { "path": "../legend-shared" }
+    { "path": "../legend-shared" },
+    { "path": "../legend-code-editor" }
   ]
 }

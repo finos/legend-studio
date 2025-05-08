@@ -1473,15 +1473,19 @@
         color: var(--color-hclight-white);
         border-radius: 0.2rem;
         padding: 0 0.5rem;
+        width: 120px;
 
         &--no-access {
-          background: var(--color-hclight-red-50);
+          background: #f2c1c1;
+          color: #d63c3c;
+          outline: 1px solid #d63c3c;
           cursor: pointer;
         }
 
         &--pending {
           gap: 0.5rem;
-          background: var(--color-hclight-aqua-30);
+          background: #b3e5fc;
+          color: #129aec;
           cursor: pointer;
         }
 
@@ -1491,7 +1495,9 @@
         }
 
         &--entitled {
-          background: var(--color-hclight-lime-50);
+          background: #c1d9c2;
+          color: #539456;
+          outline: 1px solid #539456;
           cursor: default;
         }
       }
@@ -1988,5 +1994,13 @@
     // as this tooltip can contain long documentation, it's best we limit its dimension
     max-width: 50rem;
     white-space: pre-line; // properly preserve newline characters
+  }
+}
+
+.data-space__viewer__more-info {
+  &__container {
+    height: calc(100% - 3.8rem);
+    border: 0.1rem solid var(--color-dark-grey-200);
+    position: relative;
   }
 }

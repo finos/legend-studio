@@ -15,6 +15,7 @@
  */
 
 import {
+  ActionState,
   assertErrorThrown,
   type GeneratorFn,
   type PlainObject,
@@ -42,6 +43,7 @@ import { LakehouseViewerState } from './LakehouseViewerState.js';
 
 export class DataContractTaskState extends LakehouseViewerState {
   readonly value: V1_ContractUserEventRecord;
+  readonly approvalStatus = ActionState.create();
   canApprove: boolean | undefined;
   dataContract: V1_DataContract | undefined;
 
@@ -90,6 +92,7 @@ export class DataContractTaskState extends LakehouseViewerState {
 
   *approve(token: string | undefined): GeneratorFn<void> {
     try {
+      this.approvalStatus.inProgress();
       const response = (yield this.state.lakehouseServerClient.approveTask(
         this.value.taskId,
         token,
@@ -99,14 +102,26 @@ export class DataContractTaskState extends LakehouseViewerState {
         response,
       );
       if (change.errorMessage) {
+        this.approvalStatus.fail();
+        this.state.applicationStore.notificationService.notifyError(
+          `Approval failed: ${change.errorMessage}`,
+        );
         throw new Error(
           `Unable to approve task: ${this.value.taskId}: ${change.errorMessage}`,
         );
       }
       this.value.status = change.status;
       this.setCanApprove(false);
+      this.approvalStatus.pass();
+      this.state.applicationStore.notificationService.notifySuccess(
+        'Approval succeeded',
+      );
     } catch (error) {
+      this.approvalStatus.fail();
       assertErrorThrown(error);
+      this.state.applicationStore.notificationService.notifyError(
+        `Approval failed: ${error.message}`,
+      );
     }
   }
 
