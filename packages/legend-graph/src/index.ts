@@ -271,6 +271,9 @@ export {
   type V1_DataContractsCreation,
   V1_TaskStatus,
   V1_TaskStatusChangeResponse,
+  V1_TaskResponse,
+  V1_UserApprovalStatus,
+  V1_TaskMetadata,
 } from './graph-manager/protocol/pure/v1/entitlements/V1_ConsumerEntitlements.js';
 export {
   V1_AppDirLevel,
@@ -287,6 +290,7 @@ export {
   V1_TaskStatusChangeResponseModelSchema,
   V1_AdhocTeamModelSchema,
   V1_DataContractsRecordModelSchemaToContracts,
+  V1_deserializeTaskResponse,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_EntitlementSerializationHelper.js';
 export {
   V1_CreateSubscriptionInput,

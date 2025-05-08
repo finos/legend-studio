@@ -33,7 +33,8 @@
   }
 }
 
-.entitlements-task {
+.entitlements-grid-viewer {
+  padding: 1rem;
   height: 100%;
   width: 100%;
   position: relative;
@@ -41,11 +42,40 @@
   color: var(--color-hclight-grey-90);
   font-family: Roboto, sans-serif;
 
+  &__action-header {
+    padding-bottom: 1rem;
+  }
+
   &__action {
     padding-bottom: 1rem;
   }
 
   &__details {
     padding-top: 1rem;
+  }
+
+  &__item-clickable-text {
+    color: blue;
+    text-decoration: underline;
+    cursor: pointer;
+
+    &:hover {
+      color: darkblue;
+    }
+  }
+
+  &__status--success {
+    color: green;
+    font-weight: bold;
+  }
+
+  &__status--in-progress {
+    color: blue;
+    font-weight: bold;
+  }
+
+  &__status--error {
+    color: red;
+    font-weight: bold;
   }
 }

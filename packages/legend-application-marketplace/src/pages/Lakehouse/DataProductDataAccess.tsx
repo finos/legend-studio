@@ -42,7 +42,6 @@ import {
   V1_RenderStyle,
   type V1_LakehouseAccessPoint,
 } from '@finos/legend-graph';
-import { DataContractCreator } from './entitlements/DataContractCreator.js';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 import {
   CODE_EDITOR_LANGUAGE,
@@ -51,6 +50,7 @@ import {
 import { Tab, Tabs } from '@mui/material';
 import { useLegendMarketplaceBaseStore } from '../../application/LegendMarketplaceFrameworkProvider.js';
 import { type PlainObject } from '@finos/legend-shared';
+import { DataContractCreator } from './entitlements/EntitlementsDataContractCreator.js';
 
 export const DataProductMarkdownTextViewer: React.FC<{ value: string }> = (
   props,

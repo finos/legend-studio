@@ -72,9 +72,9 @@ export class V1_ContractUserMembership {
 }
 
 export enum V1_UserApprovalStatus {
-  PENDING,
-  APPROVED,
-  DENIED,
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  DENIED = 'DENIED',
 }
 
 export enum V1_ContractState {
@@ -149,3 +149,12 @@ export type V1_DataContractsCreation = {
   accessPointGroup: string;
   consumer: PlainObject<V1_AdhocTeam>;
 };
+
+export class V1_TaskMetadata {
+  rec!: V1_ContractUserEventRecord;
+  assignees: string[] = [];
+}
+
+export class V1_TaskResponse {
+  tasks: V1_TaskMetadata[] | undefined;
+}

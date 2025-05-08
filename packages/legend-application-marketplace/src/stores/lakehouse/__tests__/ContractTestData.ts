@@ -99,3 +99,21 @@ export const Data_Product = {
   package: 'model',
   title: 'Test DataProduct',
 };
+
+export const TASK_RESPONSE = {
+  tasks: [
+    {
+      rec: {
+        taskId: '1',
+        dataContractId: '1',
+        status: 'PENDING',
+        type: 'CONSUMER_PRIVILEGE_MANAGER_APPROVAL',
+        consumer: 'user1',
+        eventPayload: 'Submitted[]',
+        effectiveFrom: '2025-05-06T03:36:11.961936Z',
+        effectiveTo: '9999-12-31T23:59:59Z',
+      },
+      assignees: ['user2', 'user3'],
+    },
+  ],
+};

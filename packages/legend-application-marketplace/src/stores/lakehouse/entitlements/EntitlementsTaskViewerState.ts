@@ -31,31 +31,37 @@ import {
   type V1_DataContractsRecord,
   type V1_PendingTasksRespond,
   V1_pendingTasksRespondModelSchema,
+  type V1_UserPendingContractsRecord,
+  type V1_TaskMetadata,
 } from '@finos/legend-graph';
 import { makeObservable, flow, observable, flowResult, action } from 'mobx';
 import {
-  type GridItemDetail,
   type LakehouseEntitlementsStore,
   TEST_USER,
 } from './LakehouseEntitlementsStore.js';
-import { buildDataContractDetail } from './DataContractState.js';
 import { LakehouseViewerState } from './LakehouseViewerState.js';
+import {
+  buildTaskGridItemDetail,
+  type GridItemDetail,
+} from '../LakehouseUtils.js';
+import { generateLakehouseContractPath } from '../../../__lib__/LegendMarketplaceNavigation.js';
 
-export class DataContractTaskState extends LakehouseViewerState {
+export class EntitlementsTaskViewerState extends LakehouseViewerState {
   readonly value: V1_ContractUserEventRecord;
   readonly approvalStatus = ActionState.create();
   canApprove: boolean | undefined;
   dataContract: V1_DataContract | undefined;
-
-  constructor(
-    value: V1_ContractUserEventRecord,
-    state: LakehouseEntitlementsStore,
-  ) {
+  pendingAssociatedContractEvent: V1_UserPendingContractsRecord[] | undefined;
+  changingTaskState = ActionState.create();
+  taskAssignees: string[] | undefined;
+  constructor(value: V1_TaskMetadata, state: LakehouseEntitlementsStore) {
     super(state);
-    this.value = value;
+    this.value = value.rec;
+    this.taskAssignees = value.assignees;
     makeObservable(this, {
-      value: observable,
       canApprove: observable,
+      pendingAssociatedContractEvent: observable,
+      setPendingAssociatedContractEvent: action,
       setCanApprove: action,
       approve: flow,
       deny: flow,
@@ -63,12 +69,19 @@ export class DataContractTaskState extends LakehouseViewerState {
       calculateApprovalRights: flow,
       fetchContract: flow,
       dataContract: observable,
+      taskAssignees: observable,
     });
     this.observeContract();
   }
 
   get id(): string {
     return this.value.taskId;
+  }
+
+  setPendingAssociatedContractEvent(
+    pendingAssociatedContractEvent: V1_UserPendingContractsRecord[] | undefined,
+  ): void {
+    this.pendingAssociatedContractEvent = pendingAssociatedContractEvent;
   }
 
   *init(token: string | undefined): GeneratorFn<void> {
@@ -103,9 +116,6 @@ export class DataContractTaskState extends LakehouseViewerState {
       );
       if (change.errorMessage) {
         this.approvalStatus.fail();
-        this.state.applicationStore.notificationService.notifyError(
-          `Approval failed: ${change.errorMessage}`,
-        );
         throw new Error(
           `Unable to approve task: ${this.value.taskId}: ${change.errorMessage}`,
         );
@@ -120,13 +130,19 @@ export class DataContractTaskState extends LakehouseViewerState {
       this.approvalStatus.fail();
       assertErrorThrown(error);
       this.state.applicationStore.notificationService.notifyError(
-        `Approval failed: ${error.message}`,
+        `${error.message}`,
       );
     }
   }
 
   *deny(token: string | undefined): GeneratorFn<void> {
     try {
+      this.changingTaskState.inProgress();
+      this.state.applicationStore.alertService.setBlockingAlert({
+        message: 'Denying Task',
+        prompt: 'Denying task...',
+        showLoading: true,
+      });
       const response = (yield this.state.lakehouseServerClient.denyTask(
         this.value.taskId,
         token,
@@ -142,8 +158,18 @@ export class DataContractTaskState extends LakehouseViewerState {
       }
       this.value.status = change.status;
       this.setCanApprove(false);
+      this.state.applicationStore.notificationService.notifySuccess(
+        `Task has been denied`,
+      );
     } catch (error) {
       assertErrorThrown(error);
+      this.state.applicationStore.notificationService.notifyError(
+        `${error.message}`,
+      );
+    } finally {
+      this.changingTaskState.complete();
+      this.changingTaskState.setMessage(undefined);
+      this.state.applicationStore.alertService.setBlockingAlert(undefined);
     }
   }
 
@@ -185,20 +211,17 @@ export class DataContractTaskState extends LakehouseViewerState {
   }
 
   get taskDetails(): GridItemDetail[] {
-    return [
-      {
-        name: 'Task ID',
-        value: this.value.taskId,
+    return buildTaskGridItemDetail(
+      this.value,
+      this.taskAssignees,
+      this.dataContract,
+      (id: string): void => {
+        this.state.applicationStore.navigationService.navigator.updateCurrentLocation(
+          generateLakehouseContractPath(id),
+        );
       },
-      {
-        name: 'Task Status',
-        value: this.value.status.toString(),
-      },
-      {
-        name: 'Task Consumer',
-        value: this.value.consumer,
-      },
-      ...(this.dataContract ? buildDataContractDetail(this.dataContract) : []),
-    ];
+      this.state.directoryCallBack,
+      this.state.applicationCallBack,
+    );
   }
 }

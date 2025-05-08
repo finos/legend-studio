@@ -39,7 +39,7 @@ import {
 } from './LakehouseEntitlementsStore.js';
 import { LakehouseViewerState } from './LakehouseViewerState.js';
 
-export class LakehouseEntitlementsMainViewState extends LakehouseViewerState {
+export class EntitlementsDashboardState extends LakehouseViewerState {
   pendingTasks: V1_ContractUserEventRecord[] | undefined;
   pendingContracts: V1_UserPendingContractsRecord[] | undefined;
   changingState = ActionState.create();
@@ -67,7 +67,6 @@ export class LakehouseEntitlementsMainViewState extends LakehouseViewerState {
         TEST_USER,
         token,
       )) as PlainObject<V1_PendingTasksRespond>;
-
       const pendingContracts =
         (yield this.state.lakehouseServerClient.getPendingContracts(
           TEST_USER2,
@@ -111,8 +110,14 @@ export class LakehouseEntitlementsMainViewState extends LakehouseViewerState {
       }
       task.status = change.status;
       this.setPendingTasks([...(this.pendingTasks ?? [])]);
+      this.state.applicationStore.notificationService.notifySuccess(
+        `Task has been Approved`,
+      );
     } catch (error) {
       assertErrorThrown(error);
+      this.state.applicationStore.notificationService.notifyError(
+        `${error.message}`,
+      );
     } finally {
       this.changingState.complete();
       this.changingState.setMessage(undefined);
@@ -125,7 +130,11 @@ export class LakehouseEntitlementsMainViewState extends LakehouseViewerState {
   ): GeneratorFn<void> {
     try {
       this.changingState.inProgress();
-      this.changingState.setMessage('Denying Task');
+      this.state.applicationStore.alertService.setBlockingAlert({
+        message: 'Denying Task',
+        prompt: 'Denying task...',
+        showLoading: true,
+      });
       const response = (yield this.state.lakehouseServerClient.denyTask(
         task.taskId,
         token,
@@ -141,11 +150,18 @@ export class LakehouseEntitlementsMainViewState extends LakehouseViewerState {
       }
       task.status = change.status;
       this.setPendingTasks([...(this.pendingTasks ?? [])]);
+      this.state.applicationStore.notificationService.notifySuccess(
+        `Task has been denied`,
+      );
     } catch (error) {
       assertErrorThrown(error);
+      this.state.applicationStore.notificationService.notifyError(
+        `${error.message}`,
+      );
     } finally {
       this.changingState.complete();
       this.changingState.setMessage(undefined);
+      this.state.applicationStore.alertService.setBlockingAlert(undefined);
     }
   }
 }
