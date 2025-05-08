@@ -87,7 +87,7 @@ describe('DataContract and DataProduct Association', () => {
 
     expect(valueSet.get('Task ID')).toBe('1');
     expect(valueSet.get('Task Status')).toBe('PENDING');
-    expect(valueSet.get('Task Assignee 1')).toBe('user2');
-    expect(valueSet.get('Task Assignee 2')).toBe('user3');
+    expect(valueSet.get('Task Assignee (1)')).toBe('user2');
+    expect(valueSet.get('Task Assignee (2)')).toBe('user3');
   });
 });
