@@ -48,7 +48,7 @@ export const LegendMarketplaceProviderCard = (props: {
     <>
       <Button
         variant="outlined"
-        className="vendor-data-card-add-to-cart-button"
+        className="legend-marketplace-vendor-data-card__add-to-cart-button"
         onClick={() => onAddToCartClick(providerResult)}
       >
         Add to cart &nbsp;
@@ -57,7 +57,7 @@ export const LegendMarketplaceProviderCard = (props: {
       {typeof providerResult.price === 'number' && (
         <Chip
           label={`$${providerResult.price.toFixed(2)} per month`}
-          className="legend-marketplace-vendor-data-card-button-group__price"
+          className="legend-marketplace-vendor-data-card__price"
           sx={{ color: 'white', backgroundColor: '#077d55' }}
         />
       )}
