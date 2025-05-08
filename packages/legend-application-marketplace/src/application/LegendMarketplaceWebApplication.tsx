@@ -53,7 +53,7 @@ import { LegendMarketPlaceVendorData } from '../pages/VendorData/LegendMarketpla
 import { LakehouseEntitlements } from '../pages/Lakehouse/entitlements/LakehouseEntitlements.js';
 import { LakehouseSubscriptions } from '../pages/Lakehouse/subscriptions/LakehouseSubscriptions.js';
 import { LegendMarketplaceHeader } from '../components/Header/LegendMarketplaceHeader.js';
-import { LakehouseMarketplaceHeader } from '../components/Header/LakehouseHeader.js';
+import { MarketplaceLakehouseHeader } from '../components/Header/MarketplaceLakehouseHeader.js';
 import { LegendMarketplacePage } from '../pages/LegendMarketplacePage.js';
 
 const NotFoundPage = observer(() => {
@@ -180,7 +180,7 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
                       .getCurrentLocation()
                       .toLowerCase(),
                 ) ? (
-                  <LakehouseMarketplaceHeader />
+                  <MarketplaceLakehouseHeader />
                 ) : (
                   <LegendMarketplaceHeader />
                 )}

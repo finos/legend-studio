@@ -87,7 +87,7 @@ const LakehousePlaceHeaderTabs = observer(() => {
   );
 });
 
-export const LakehouseMarketplaceHeader = observer(() => {
+export const MarketplaceLakehouseHeader = observer(() => {
   const applicationStore = useApplicationStore();
 
   const navigateToHome = (): void => {
