@@ -35,7 +35,7 @@ import {
   useLegendMarketplaceBaseStore,
 } from './LegendMarketplaceFrameworkProvider.js';
 import {
-  LAKEHOUSE_ROUTES,
+  isLakehouseRoute,
   LEGEND_MARKETPLACE_ROUTE_PATTERN,
 } from '../__lib__/LegendMarketplaceNavigation.js';
 import { MarketplaceLakehouseHome } from '../pages/Lakehouse/MarketplaceLakehouseHome.js';
@@ -173,12 +173,8 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
           <Route
             element={
               <>
-                {(LAKEHOUSE_ROUTES as string[]).some(
-                  (route) =>
-                    route.toLowerCase() ===
-                    baseStore.applicationStore.navigationService.navigator
-                      .getCurrentLocation()
-                      .toLowerCase(),
+                {isLakehouseRoute(
+                  baseStore.applicationStore.navigationService.navigator.getCurrentLocation(),
                 ) ? (
                   <MarketplaceLakehouseHeader />
                 ) : (
