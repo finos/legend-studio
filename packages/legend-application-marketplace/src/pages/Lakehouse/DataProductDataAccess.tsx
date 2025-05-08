@@ -16,7 +16,6 @@
 
 import {
   AnchorLinkIcon,
-  ChevronDownIcon,
   clsx,
   MarkdownTextViewer,
   QuestionCircleIcon,
@@ -27,7 +26,7 @@ import {
   DATA_PRODUCT_VIEWER_ACTIVITY_MODE,
   generateAnchorForActivity,
 } from '../../stores/lakehouse/DataProductViewerNavigation.js';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { DataProductViewerState } from '../../stores/lakehouse/DataProductViewerState.js';
 import { useApplicationStore } from '@finos/legend-application';
 import {
@@ -38,8 +37,20 @@ import {
   DataGrid,
   type DataGridCellRendererParams,
 } from '@finos/legend-lego/data-grid';
-import type { V1_LakehouseAccessPoint } from '@finos/legend-graph';
+import {
+  type V1_RawLambda,
+  V1_RenderStyle,
+  type V1_LakehouseAccessPoint,
+} from '@finos/legend-graph';
 import { DataContractCreator } from './entitlements/DataContractCreator.js';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
+import {
+  CODE_EDITOR_LANGUAGE,
+  CODE_EDITOR_THEME,
+} from '@finos/legend-code-editor';
+import { Tab, Tabs } from '@mui/material';
+import { useLegendMarketplaceBaseStore } from '../../application/LegendMarketplaceFrameworkProvider.js';
+import { type PlainObject } from '@finos/legend-shared';
 
 export const DataProductMarkdownTextViewer: React.FC<{ value: string }> = (
   props,
@@ -77,12 +88,68 @@ const TDSColumnMoreInfoCellRenderer = (
   params: DataGridCellRendererParams<V1_LakehouseAccessPoint>,
 ): React.ReactNode => {
   const data = params.data;
+  const store = useLegendMarketplaceBaseStore();
+  const enum MoreInfoTabs {
+    GRAMMAR = 'Grammar',
+  }
+  const [activeTab, setActiveTab] = useState(MoreInfoTabs.GRAMMAR);
+  const handleTabChange = (
+    event: React.SyntheticEvent,
+    newValue: MoreInfoTabs,
+  ) => {
+    setActiveTab(newValue);
+  };
+  const [accessPointGrammar, setAccessPointGrammar] =
+    useState<string>('Loading ...');
+
+  useEffect(() => {
+    if (!data) {
+      return;
+    }
+
+    const fetchGrammar = async () => {
+      try {
+        const grammar = await store.engineServerClient.JSONToGrammar_lambda(
+          data.func as unknown as PlainObject<V1_RawLambda>,
+          V1_RenderStyle.PRETTY,
+        );
+
+        setAccessPointGrammar(grammar);
+      } catch {
+        throw new Error('Error fetching access point grammar');
+      }
+    };
+
+    fetchGrammar().catch((error) => {
+      throw new Error(`Error fetching access point grammar: ${error.message}`);
+    });
+  }, [data, store]);
+
   if (!data) {
     return null;
   }
+
   return (
-    <div className="data-space__viewer__grid__empty-cell">
-      <ChevronDownIcon />
+    <div>
+      <Tabs value={activeTab} onChange={handleTabChange}>
+        <Tab label={MoreInfoTabs.GRAMMAR} value={MoreInfoTabs.GRAMMAR} />
+      </Tabs>
+
+      <div
+        className="data-space__viewer__more-info__container"
+        style={{ height: '200px', width: '100%' }}
+      >
+        <CodeEditor
+          inputValue={accessPointGrammar}
+          isReadOnly={true}
+          language={CODE_EDITOR_LANGUAGE.TEXT}
+          hideMinimap={true}
+          hideGutter={true}
+          hideActionBar={true}
+          lightTheme={CODE_EDITOR_THEME.GITHUB_LIGHT}
+          extraEditorOptions={{ scrollBeyondLastLine: false, wordWrap: 'on' }}
+        />
+      </div>
     </div>
   );
 };
@@ -206,7 +273,7 @@ export const DataProductGroupAccessViewer = observer(
                     sortable: false,
                     resizable: false,
                     headerClass: 'data-space__viewer__grid__last-column-header',
-                    cellRenderer: TDSColumnMoreInfoCellRenderer,
+                    cellRenderer: 'agGroupCellRenderer',
                     headerName: 'More Info',
                     flex: 1,
                   },
@@ -214,6 +281,9 @@ export const DataProductGroupAccessViewer = observer(
                 onRowDataUpdated={(params) => {
                   params.api.refreshCells({ force: true });
                 }}
+                masterDetail={true}
+                detailCellRenderer={TDSColumnMoreInfoCellRenderer}
+                detailRowHeight={200}
               />
             </div>
           </div>

@@ -1,0 +1,97 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+.notification {
+  &__position {
+    bottom: 3rem;
+    right: 1rem;
+  }
+
+  &__content {
+    background: var(--color-dark-grey-200);
+    color: var(--color-light-grey-150);
+    border-radius: 0.3rem;
+    align-items: flex-start;
+  }
+
+  &__message__content {
+    display: flex;
+    align-items: flex-start;
+    cursor: pointer;
+
+    &:active {
+      background: var(--color-dark-grey-100);
+    }
+  }
+
+  &__message__content__icon {
+    padding-top: 0.2rem;
+    padding-right: 1rem;
+  }
+
+  &__message__content__icon svg {
+    font-size: 1.6rem;
+  }
+
+  &__message__content__icon--info {
+    color: var(--color-light-grey-200);
+  }
+
+  &__message__content__icon--error {
+    color: var(--color-red-100);
+  }
+
+  &__message__content__icon--warning {
+    color: var(--color-yellow-200);
+  }
+
+  &__message__content__icon--success {
+    color: var(--color-green-100);
+  }
+
+  &__message__content__text {
+    @include ellipsisTextOverflow;
+
+    max-height: 20rem;
+    max-width: 60rem;
+
+    &--expanded {
+      overflow: auto;
+      // since the full message might contain newline characters
+      // we must use `pre-line`
+      // See https://developer.mozilla.org/en-US/docs/Web/CSS/white-space
+      white-space: pre-line;
+      width: 60rem;
+    }
+  }
+
+  &__actions {
+    padding: 0.8rem 0 0.8rem 1rem;
+  }
+
+  &__action {
+    @include flexCenter;
+
+    width: 2rem;
+    color: var(--color-dark-grey-400);
+  }
+
+  &__action:hover {
+    color: var(--color-light-grey-400);
+  }
+}

@@ -209,7 +209,6 @@ export const LakehouseEntitlementsMainView = withAuth(
     };
     return (
       <>
-        {/* <Box> */}
         <Tabs value={value} onChange={handleTabChange}>
           <Tab
             label={
