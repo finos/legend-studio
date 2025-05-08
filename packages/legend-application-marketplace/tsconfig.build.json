@@ -14,6 +14,7 @@
     { "path": "../legend-server-depot/tsconfig.build.json" },
     { "path": "../legend-storage/tsconfig.build.json" },
     { "path": "../legend-server-marketplace/tsconfig.build.json" },
-    { "path": "../legend-shared/tsconfig.build.json" }
+    { "path": "../legend-shared/tsconfig.build.json" },
+    { "path": "../legend-code-editor/tsconfig.build.json" }
   ]
 }
