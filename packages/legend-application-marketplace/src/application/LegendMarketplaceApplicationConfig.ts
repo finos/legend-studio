@@ -60,12 +60,24 @@ export interface LegendMarketplaceApplicationConfigurationData
   };
   lakehouse?: {
     url: string;
+    entitlements: {
+      applicationDirectoryUrl: string;
+      applicationIDUrl: string;
+    };
   };
   studio?: {
     url: string;
   };
 }
 
+export class LegendLakehouseEntitlementsConfig {
+  applicationDirectoryUrl: string;
+  applicationIDUrl: string;
+  constructor(applicationDirectoryUrl: string, applicationIDUrl: string) {
+    this.applicationDirectoryUrl = applicationDirectoryUrl;
+    this.applicationIDUrl = applicationIDUrl;
+  }
+}
 export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig {
   readonly options = new LegendMarketplaceApplicationCoreOptions();
 
@@ -74,6 +86,9 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
   readonly engineServerUrl: string;
   readonly depotServerUrl: string;
   readonly lakehouseServerUrl?: string;
+  readonly lakehouseEntitlementsConfig:
+    | LegendLakehouseEntitlementsConfig
+    | undefined;
   readonly studioServerUrl?: string;
 
   constructor(
@@ -125,6 +140,16 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
         guaranteeNonEmptyString(
           input.configData.lakehouse.url,
           `Can't configure application: 'lakehouse.url' field is missing or empty`,
+        ),
+      );
+      this.lakehouseEntitlementsConfig = new LegendLakehouseEntitlementsConfig(
+        guaranteeNonEmptyString(
+          input.configData.lakehouse.entitlements.applicationDirectoryUrl,
+          `Can't configure application: 'lakehouse.entitlements.applicationDirectoryUrl' field is missing or empty`,
+        ),
+        guaranteeNonEmptyString(
+          input.configData.lakehouse.entitlements.applicationIDUrl,
+          `Can't configure application: 'lakehouse.entitlements.applicationIDUrl' field is missing or empty`,
         ),
       );
     }

@@ -54,6 +54,10 @@ export const setup = (outputDir) => {
         },
         lakehouse: {
           url: 'http://localhost:6400/api',
+          entitlements: {
+            applicationDirectoryUrl: 'http://localhost:2000/api',
+            applicationIDUrl: 'http://localhost:2100/api',
+          },
         },
         engine: {
           url: 'http://localhost:6300/api',

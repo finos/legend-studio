@@ -114,6 +114,7 @@ export class LakehouseContractServerClient extends AbstractServerClient {
   // ------------------------------------------- Tasks -------------------------------------------
 
   private _tasks = (): string => `${this.baseUrl}/datacontracts/tasks`;
+  private _contract_tasks = (): string => `${this._tasks()}/query/contract`;
 
   getPendingTasks = (
     user: string | undefined,
@@ -122,6 +123,34 @@ export class LakehouseContractServerClient extends AbstractServerClient {
     return this.get(`${this._tasks()}/pending`, {}, this._token(token), {
       user,
     });
+  };
+
+  getTask = (
+    taskId: string,
+    token: string | undefined,
+  ): Promise<PlainObject<V1_PendingTasksRespond>> => {
+    return this.get(
+      `${this._tasks()}/${encodeURIComponent(taskId)}`,
+      {},
+      this._token(token),
+      {
+        user: taskId,
+      },
+    );
+  };
+
+  getContractTasks = (
+    contractId: string,
+    token: string | undefined,
+  ): Promise<PlainObject<V1_PendingTasksRespond>> => {
+    return this.get(
+      `${this._contract_tasks()}/${encodeURIComponent(contractId)}`,
+      {},
+      this._token(token),
+      {
+        user: contractId,
+      },
+    );
   };
 
   approveTask = (

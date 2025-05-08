@@ -32,6 +32,8 @@ import {
   V1_DataContractsRecord,
   V1_DataProduct_Entitlements,
   V1_PendingTasksRespond,
+  V1_TaskMetadata,
+  V1_TaskResponse,
   V1_TaskStatusChangeResponse,
 } from '../../../entitlements/V1_ConsumerEntitlements.js';
 import {
@@ -175,6 +177,14 @@ export const V1_contractUserEventRecordModelSchema = createModelSchema(
     type: primitive(),
   },
 );
+export const V1_taskMetadataModelSchema = createModelSchema(V1_TaskMetadata, {
+  rec: usingModelSchema(V1_contractUserEventRecordModelSchema),
+  assignees: list(primitive()),
+});
+
+export const V1_taskResponseModelSchema = createModelSchema(V1_TaskResponse, {
+  tasks: customListWithSchema(V1_taskMetadataModelSchema),
+});
 
 export const V1_pendingTasksRespondModelSchema = createModelSchema(
   V1_PendingTasksRespond,
@@ -200,4 +210,10 @@ export const V1_DataContractsRecordModelSchemaToContracts = (
 ): V1_DataContract[] => {
   const contracts = deserialize(V1_DataContractsRecordModelSchema, json);
   return contracts.dataContracts.map((e) => e.dataContract);
+};
+
+export const V1_deserializeTaskResponse = (
+  json: PlainObject<V1_TaskMetadata>,
+): V1_TaskMetadata[] => {
+  return deserialize(V1_taskResponseModelSchema, json).tasks ?? [];
 };

@@ -25,29 +25,27 @@ import {
 } from '@finos/legend-shared';
 import { deserialize } from 'serializr';
 import {
-  type V1_PendingTasksRespond,
+  type V1_TaskResponse,
   type V1_DataContractsRecord,
-  V1_pendingTasksRespondModelSchema,
+  V1_deserializeTaskResponse,
   V1_DataContractsRecordModelSchema,
 } from '@finos/legend-graph';
 import { makeObservable, flow, observable, flowResult, action } from 'mobx';
-import { DataContractState } from './DataContractState.js';
-import { LakehouseEntitlementsMainViewState } from './LakehouseEntitlementsMainViewState.js';
-import { DataContractTaskState } from './DataContractTaskState.js';
+import { EntitlementsDataContractViewerState } from './EntitlementsDataContractViewerState.js';
+import { EntitlementsDashboardState } from './EntitlementsDashboardState.js';
+import { EntitlementsTaskViewerState } from './EntitlementsTaskViewerState.js';
 import type { LakehouseViewerState } from './LakehouseViewerState.js';
 
 export const TEST_USER = undefined;
 export const TEST_USER2 = undefined;
 
-export type GridItemDetail = {
-  name: string;
-  value: string | number;
-  onClick?: () => void;
-};
-
 export class LakehouseEntitlementsStore {
   readonly applicationStore: LegendMarketplaceApplicationStore;
   readonly lakehouseServerClient: LakehouseContractServerClient;
+  readonly directoryUrl: string | undefined;
+  readonly applicationIdUrl: string | undefined;
+  readonly directoryCallBack: ((user: string) => void) | undefined;
+  readonly applicationCallBack: ((applicationId: string) => void) | undefined;
   initializationState = ActionState.create();
   currentViewer: LakehouseViewerState | undefined;
 
@@ -57,6 +55,25 @@ export class LakehouseEntitlementsStore {
   ) {
     this.applicationStore = applicationStore;
     this.lakehouseServerClient = lakehouseServerClient;
+    this.directoryUrl =
+      this.applicationStore.config.lakehouseEntitlementsConfig?.applicationDirectoryUrl;
+    this.applicationIdUrl =
+      this.applicationStore.config.lakehouseEntitlementsConfig?.applicationIDUrl;
+    this.directoryCallBack = this.directoryUrl
+      ? (user: string) => {
+          this.applicationStore.navigationService.navigator.visitAddress(
+            `${this.directoryUrl}/${user}`,
+          );
+        }
+      : undefined;
+    this.applicationCallBack = this.applicationIdUrl
+      ? (id: string) => {
+          this.applicationStore.navigationService.navigator.visitAddress(
+            `${this.applicationIdUrl}/${id}`,
+          );
+        }
+      : undefined;
+
     makeObservable(this, {
       init: flow,
       initWithTaskId: flow,
@@ -88,7 +105,7 @@ export class LakehouseEntitlementsStore {
       return;
     }
     // TODO: similiar logic should be used above ^
-    const currentViewer = new LakehouseEntitlementsMainViewState(this);
+    const currentViewer = new EntitlementsDashboardState(this);
     this.setCurrentViewer(currentViewer);
     currentViewer.init(token);
   }
@@ -99,19 +116,16 @@ export class LakehouseEntitlementsStore {
   ): GeneratorFn<void> {
     try {
       this.initializationState.inProgress();
-      // TEMP: for now we will assume task id is in pending user.
-      // Once 'getTaskId` is added in server we will use that to query task
-      const rawTasks = (yield this.lakehouseServerClient.getPendingTasks(
-        TEST_USER,
+      const rawTasks = (yield this.lakehouseServerClient.getTask(
+        taskId,
         token,
-      )) as PlainObject<V1_PendingTasksRespond>;
-      const tasks = deserialize(V1_pendingTasksRespondModelSchema, rawTasks);
-      const allTasks = [...tasks.dataOwner, ...tasks.privilegeManager];
+      )) as PlainObject<V1_TaskResponse>;
+      const tasks = V1_deserializeTaskResponse(rawTasks);
       const task = guaranteeNonNullable(
-        allTasks.find((e) => e.taskId === taskId),
-        `Task with id '${taskId}' not found. Temprorary only have access to pending tasks you can approve. `,
+        tasks[0],
+        `Task with id '${taskId}' not found`,
       );
-      const currentTask = new DataContractTaskState(task, this);
+      const currentTask = new EntitlementsTaskViewerState(task, this);
       this.setCurrentViewer(currentTask);
       flowResult(currentTask.init(token)).catch(
         this.applicationStore.alertUnhandledError,
@@ -141,7 +155,14 @@ export class LakehouseEntitlementsStore {
         dataContract,
         'Data Contract not found',
       );
-      this.setCurrentViewer(new DataContractState(contract, this));
+      const currentViewer = new EntitlementsDataContractViewerState(
+        contract,
+        this,
+      );
+      this.setCurrentViewer(currentViewer);
+      flowResult(currentViewer.init(token)).catch(
+        this.applicationStore.alertUnhandledError,
+      );
     } catch (error) {
       assertErrorThrown(error);
     }
