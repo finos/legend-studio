@@ -67,7 +67,7 @@ export const LAKEHOUSE_ROUTES = Object.freeze([
 
 export const isLakehouseRoute = (pathName: string): boolean =>
   LAKEHOUSE_ROUTES.some(
-    (route) => matchPath(pathName, route as string) !== null,
+    (route) => matchPath(route as string, pathName) !== null,
   );
 
 export const generateLakehouseDataProduct = (
