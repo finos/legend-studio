@@ -1,5 +1,11 @@
 # @finos/legend-data-cube
 
+## 0.1.32
+
+### Patch Changes
+
+- [#4056](https://github.com/finos/legend-studio/pull/4056) [`b325f0d`](https://github.com/finos/legend-studio/commit/b325f0d11ce0dc857d81acf96c8e1a366a2ef209) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: use source to get relation return type for extended columns
+
 ## 0.1.31
 
 ## 0.1.30
