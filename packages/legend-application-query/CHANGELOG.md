@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.7.77
+
+### Patch Changes
+
+- [#4055](https://github.com/finos/legend-studio/pull/4055) [`b2b969d`](https://github.com/finos/legend-studio/commit/b2b969d1edd26ffc151d32326af52c979c23ecd4) ([@travisstebbins](https://github.com/travisstebbins)) - Extract light mode styling
+
 ## 13.7.76
 
 ## 13.7.75

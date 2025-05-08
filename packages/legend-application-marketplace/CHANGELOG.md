@@ -1,5 +1,24 @@
 # @finos/legend-application-marketplace
 
+## 0.0.21
+
+### Patch Changes
+
+- [#4058](https://github.com/finos/legend-studio/pull/4058) [`d4f85fd`](https://github.com/finos/legend-studio/commit/d4f85fd4535822cb0cb54bcab4a63197bd7f92e1) ([@kelly-thai](https://github.com/kelly-thai)) - Updating build config to include legend-code-editor
+
+- [#4053](https://github.com/finos/legend-studio/pull/4053) [`39b52e6`](https://github.com/finos/legend-studio/commit/39b52e6f8d596969f4617cd30a4117f646ad2f06) ([@travisstebbins](https://github.com/travisstebbins)) - Don't allow changing snowflake region when creating new lakehouse subscription
+
+- [#4057](https://github.com/finos/legend-studio/pull/4057) [`ae6c4aa`](https://github.com/finos/legend-studio/commit/ae6c4aa11cd5308aa8bff2ea3442ba9ebf0e29be) ([@travisstebbins](https://github.com/travisstebbins)) - Refactor/unify marketplace components and styling
+
+- [#4059](https://github.com/finos/legend-studio/pull/4059) [`0276307`](https://github.com/finos/legend-studio/commit/0276307cd5dadc81af9e6ab0710c1137ae885a5b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - - clean up on components/states in entitlements viewers
+
+  - add open directory and application view to task and contract view
+  - Improve tests for grid details
+  - Use `getTasks` to show tasks even if task not pending review by current user
+  - Use `getContractTasks` to show pending tasks for contracts
+
+- [#4051](https://github.com/finos/legend-studio/pull/4051) [`22ec536`](https://github.com/finos/legend-studio/commit/22ec536547e0e7adf01738e70ca77f63fd0cb1ad) ([@kelly-thai](https://github.com/kelly-thai)) - Add notification styling for marketplace, fix button css for access points, and add more info dropdown with grammar
+
 ## 0.0.20
 
 ### Patch Changes

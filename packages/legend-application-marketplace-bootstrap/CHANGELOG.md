@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace-bootstrap
 
+## 13.56.0
+
+### Patch Changes
+
+- [#4057](https://github.com/finos/legend-studio/pull/4057) [`ae6c4aa`](https://github.com/finos/legend-studio/commit/ae6c4aa11cd5308aa8bff2ea3442ba9ebf0e29be) ([@travisstebbins](https://github.com/travisstebbins)) - Refactor/unify marketplace components and styling
+
 ## 13.55.0
 
 ## 13.54.0
