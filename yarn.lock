@@ -2417,7 +2417,7 @@ __metadata:
   dependencies:
     "@finos/legend-application": "workspace:*"
     "@finos/legend-art": "workspace:*"
-    "@finos/legend-code-editor": "workspace:^"
+    "@finos/legend-code-editor": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-lego": "workspace:*"
@@ -2841,7 +2841,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@finos/legend-code-editor@workspace:*, @finos/legend-code-editor@workspace:^, @finos/legend-code-editor@workspace:packages/legend-code-editor":
+"@finos/legend-code-editor@workspace:*, @finos/legend-code-editor@workspace:packages/legend-code-editor":
   version: 0.0.0-use.local
   resolution: "@finos/legend-code-editor@workspace:packages/legend-code-editor"
   dependencies:
