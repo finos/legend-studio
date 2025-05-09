@@ -1,5 +1,7 @@
 # @finos/legend-application-data-cube-deployment
 
+## 13.58.0
+
 ## 13.57.0
 
 ## 13.56.0
