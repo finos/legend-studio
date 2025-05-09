@@ -133,9 +133,7 @@ export class LakehouseContractServerClient extends AbstractServerClient {
       `${this._tasks()}/${encodeURIComponent(taskId)}`,
       {},
       this._token(token),
-      {
-        user: taskId,
-      },
+      undefined,
     );
   };
 

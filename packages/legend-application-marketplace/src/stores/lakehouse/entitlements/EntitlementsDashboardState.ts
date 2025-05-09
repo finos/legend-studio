@@ -31,7 +31,7 @@ import {
   type V1_TaskStatus,
   V1_pendingTasksRespondModelSchema,
 } from '@finos/legend-graph';
-import { makeObservable, flow, observable, action } from 'mobx';
+import { makeObservable, flow, observable, action, flowResult } from 'mobx';
 import {
   TEST_USER,
   TEST_USER2,
@@ -53,6 +53,8 @@ export class EntitlementsDashboardState extends LakehouseViewerState {
       pendingContracts: observable,
       initializationState: observable,
       approve: flow,
+      fetchPendingContracts: flow,
+      fetchPendingTasks: flow,
       setPendingContracts: action,
       init: flow,
       deny: flow,
@@ -60,23 +62,47 @@ export class EntitlementsDashboardState extends LakehouseViewerState {
   }
 
   *init(token: string | undefined): GeneratorFn<void> {
+    Promise.all([
+      flowResult(this.fetchPendingTasks(token)).catch(
+        this.state.applicationStore.alertUnhandledError,
+      ),
+      flowResult(this.fetchPendingContracts(token)).catch(
+        this.state.applicationStore.alertUnhandledError,
+      ),
+    ]).catch(this.state.applicationStore.alertUnhandledError);
+  }
+
+  *fetchPendingContracts(token: string | undefined): GeneratorFn<void> {
     try {
       this.setPendingContracts(undefined);
-      this.setPendingTasks(undefined);
-      const rawTasks = (yield this.state.lakehouseServerClient.getPendingTasks(
-        TEST_USER,
-        token,
-      )) as PlainObject<V1_PendingTasksRespond>;
       const pendingContracts =
         (yield this.state.lakehouseServerClient.getPendingContracts(
           TEST_USER2,
           token,
         )) as V1_UserPendingContractsResponse;
       this.setPendingContracts(pendingContracts.records ?? []);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.state.applicationStore.notificationService.notifyError(
+        `Error fetching pending contacts: ${error.message}`,
+      );
+    }
+  }
+
+  *fetchPendingTasks(token: string | undefined): GeneratorFn<void> {
+    try {
+      this.setPendingTasks(undefined);
+      const rawTasks = (yield this.state.lakehouseServerClient.getPendingTasks(
+        TEST_USER,
+        token,
+      )) as PlainObject<V1_PendingTasksRespond>;
       const tasks = deserialize(V1_pendingTasksRespondModelSchema, rawTasks);
       this.setPendingTasks([...tasks.dataOwner, ...tasks.privilegeManager]);
     } catch (error) {
       assertErrorThrown(error);
+      this.state.applicationStore.notificationService.notifyError(
+        `Error fetching pending tasks: ${error.message}`,
+      );
     }
   }
 
