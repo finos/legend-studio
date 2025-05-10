@@ -26,6 +26,7 @@ import { LEGEND_MARKETPLACE_TEST_ID } from '../../__lib__/LegendMarketplaceTesti
 import { LegendMarketplaceAppInfo } from './LegendMarketplaceAppInfo.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { LEGEND_MARKETPLACE_ROUTE_PATTERN } from '../../__lib__/LegendMarketplaceNavigation.js';
+import { LegendMarketplaceIconToolbar } from './LegendMarketplaceIconToolbar.js';
 
 const LegendMarketplaceHeaderMenu = observer(() => {
   // about modal
@@ -98,14 +99,19 @@ export const LegendMarketplaceHeader = observer(() => {
       className="legend-marketplace-header"
       data-testid={LEGEND_MARKETPLACE_TEST_ID.HEADER}
     >
-      <LegendMarketplaceHeaderMenu />
-      <div
-        className="legend-marketplace-header__name"
-        onClick={() => navigateToHome()}
-      >
-        Legend Marketplace
+      <div className="legend-marketplace-header__container">
+        <LegendMarketplaceHeaderMenu />
+        <div
+          className="legend-marketplace-header__name"
+          onClick={() => navigateToHome()}
+        >
+          Legend Marketplace
+        </div>
+
+        <LegendMarketPlaceHeaderTabs />
       </div>
-      <LegendMarketPlaceHeaderTabs />
+
+      <LegendMarketplaceIconToolbar />
     </div>
   );
 });

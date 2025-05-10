@@ -27,9 +27,10 @@ export interface Vendor {
 export const LegendMarketplaceSearchBar = (props: {
   onSearch: (provider: string | undefined, query: string | undefined) => void;
   initialValue?: string;
+  placeholder?: string;
   onChange?: (query: string) => void;
 }): JSX.Element => {
-  const { onSearch, initialValue, onChange } = props;
+  const { onSearch, initialValue, placeholder, onChange } = props;
 
   const [searchQuery, setSearchQuery] = useState<string>(initialValue ?? '');
 
@@ -43,7 +44,7 @@ export const LegendMarketplaceSearchBar = (props: {
     >
       <TextField
         type="search"
-        placeholder="Search"
+        placeholder={placeholder ?? 'Search'}
         fullWidth={true}
         value={searchQuery}
         onChange={(event) => {
