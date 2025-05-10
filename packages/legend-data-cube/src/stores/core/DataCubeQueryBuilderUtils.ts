@@ -48,8 +48,7 @@ import {
   V1_CStrictDate,
   V1_CStrictTime,
   V1_CString,
-  V1_Enumeration,
-  V1_EnumValue,
+  V1_CEnumValue,
   V1_GenericTypeInstance,
   V1_Lambda,
   V1_Multiplicity,
@@ -254,22 +253,11 @@ export function _primitiveValue(
   }
 }
 
-export function _enumValue(value: string): V1_EnumValue {
-  const enumValue = new V1_EnumValue();
+export function _enumValue(value: string, fullPath: string): V1_CEnumValue {
+  const enumValue = new V1_CEnumValue();
   enumValue.value = value;
+  enumValue.fullPath = fullPath;
   return enumValue;
-}
-
-export function _enumeration(
-  enumerationPackage: string,
-  enumerationName: string,
-  values: V1_EnumValue[],
-): V1_Enumeration {
-  const enumeration = new V1_Enumeration();
-  enumeration.package = enumerationPackage;
-  enumeration.name = enumerationName;
-  enumeration.values = values;
-  return enumeration;
 }
 
 export function _elementPtr(fullPath: string) {
