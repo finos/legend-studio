@@ -20,7 +20,10 @@ import type { DataCubeViewState } from '../stores/view/DataCubeViewState.js';
 import type { TaskManager } from '../stores/services/DataCubeTaskService.js';
 import { at } from '@finos/legend-shared';
 import { DataCubeEvent } from '../__lib__/DataCubeEvent.js';
-import { DataCubeOpenEditorSource } from '../stores/core/DataCubeQueryEngine.js';
+import {
+  DataCubeOpenEditorSource,
+  isDimensionalGridMode,
+} from '../stores/core/DataCubeQueryEngine.js';
 
 export const DataCubeStatusBar = observer(
   (props: {
@@ -71,7 +74,11 @@ export const DataCubeStatusBar = observer(
                 view?.filter.display.open();
                 logOpeningFilterEditor();
               }}
-              disabled={!view}
+              disabled={
+                !view ||
+                // TODO: add support for filtering in dimensional grid mode
+                isDimensionalGridMode(view.info.configuration.gridMode)
+              }
             >
               <DataCubeIcon.TableFilter className="text-lg" />
               <div className="pl-0.5 underline">Filter</div>

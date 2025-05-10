@@ -29,6 +29,7 @@ import type {
   DataCubeQuerySortDirection,
 } from './DataCubeQueryEngine.js';
 import type { DataCubeColumn } from './model/DataCubeColumn.js';
+import type { DataCubeDimensionalTree } from '../view/grid/DataCubeGridDimensionalTree.js';
 
 export type DataCubeSnapshotFilterCondition = DataCubeColumn & {
   value: DataCubeOperationValue;
@@ -85,6 +86,7 @@ export type DataCubeSnapshotData = {
   groupExtendedColumns: DataCubeSnapshotExtendedColumn[];
   sortColumns: DataCubeSnapshotSortColumn[];
   limit: number | undefined;
+  tree?: DataCubeDimensionalTree | undefined;
 };
 
 export class DataCubeSnapshot {

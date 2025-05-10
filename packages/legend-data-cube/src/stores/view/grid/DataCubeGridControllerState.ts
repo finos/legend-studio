@@ -38,6 +38,7 @@ import {
   DataCubeQuerySortDirection,
   isPivotResultColumnName,
   getPivotResultColumnBaseColumnName,
+  isDimensionalGridMode,
 } from '../../core/DataCubeQueryEngine.js';
 import type {
   DefaultMenuItem,
@@ -46,7 +47,10 @@ import type {
   MenuItemDef,
 } from 'ag-grid-community';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
-import { generateMenuBuilder } from './DataCubeGridMenuBuilder.js';
+import {
+  generateDimensionalMenuBuilder,
+  generateMenuBuilder,
+} from './DataCubeGridMenuBuilder.js';
 import {
   buildFilterEditorTree,
   buildFilterSnapshot,
@@ -427,7 +431,11 @@ export class DataCubeGridControllerState extends DataCubeSnapshotController {
 
     this.sortColumns = snapshot.data.sortColumns;
 
-    this.menuBuilder = generateMenuBuilder(this);
+    this.menuBuilder = isDimensionalGridMode(
+      this.view.info.configuration.gridMode,
+    )
+      ? generateDimensionalMenuBuilder(this)
+      : generateMenuBuilder(this);
   }
 
   private propagateChanges(baseSnapshot: DataCubeSnapshot) {

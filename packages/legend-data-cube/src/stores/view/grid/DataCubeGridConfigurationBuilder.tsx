@@ -69,10 +69,12 @@ import {
   isNumber,
   isValidUrl,
   assertTrue,
+  guaranteeNonNullable,
 } from '@finos/legend-shared';
-import type {
+import {
   DataCubeColumnConfiguration,
-  DataCubeConfiguration,
+  type DataCubeConfiguration,
+  type DataCubeDimensionConfiguration,
 } from '../../core/model/DataCubeConfiguration.js';
 import {
   DataCubeColumnDataType,
@@ -91,6 +93,7 @@ import {
 import type { CustomLoadingCellRendererProps } from 'ag-grid-react';
 import { DataCubeIcon } from '@finos/legend-art';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
+import type { DataCubeDimensionalMetadata } from './DataCubeGridDimensionalTree.js';
 
 // --------------------------------- UTILITIES ---------------------------------
 
@@ -156,6 +159,51 @@ function getCellRenderer(columnData: ColumnData) {
   const { column } = columnData;
   const dataType = getDataType(column.type);
   if (dataType === DataCubeColumnDataType.TEXT && column.displayAsLink) {
+    return function LinkRenderer(params: ICellRendererParams) {
+      const isUrl = isValidUrl(params.value);
+      if (!isUrl) {
+        return params.value;
+      }
+      const url = params.value as string;
+      const label = getQueryParameterValue(
+        column.linkLabelParameter ?? DEFAULT_URL_LABEL_QUERY_PARAM,
+        getQueryParameters(url, true),
+      );
+      return (
+        <a
+          href={url}
+          target="_blank"
+          rel="noreferrer"
+          className="text-blue-600 underline"
+        >
+          {label ?? url}
+        </a>
+      );
+    };
+  }
+  return null;
+}
+
+function getDimensionCellRenderer(
+  columnData: ColumnData,
+  dimensions: DataCubeDimensionConfiguration[],
+) {
+  const { column } = columnData;
+  const dataType = getDataType(column.type);
+  if (
+    dataType === DataCubeColumnDataType.TEXT &&
+    dimensions.filter((dim) => dim.name === column.name).length === 1
+  ) {
+    return function ValueRenderer(params: ICellRendererParams) {
+      const level = guaranteeNonNullable(
+        (params.data.metadata as Map<string, DataCubeDimensionalMetadata>).get(
+          column.name,
+        )?.level,
+      );
+      const indent = '\u00A0'.repeat((level + 1) * 2); // 4 non-breaking spaces per level
+      return `${indent}${params.value}`;
+    };
+  } else if (dataType === DataCubeColumnDataType.TEXT && column.displayAsLink) {
     return function LinkRenderer(params: ICellRendererParams) {
       const isUrl = isValidUrl(params.value);
       if (!isUrl) {
@@ -341,7 +389,13 @@ function _displaySpec(columnData: ColumnData) {
       params.value !== INTERNAL__GRID_CLIENT_MISSING_VALUE
         ? `Value = ${params.value === '' ? "''" : params.value === true ? 'TRUE' : params.value === false ? 'FALSE' : params.value}`
         : `Missing Value`,
-    cellRenderer: getCellRenderer(columnData),
+    cellRenderer:
+      configuration.dimensions.dimensions.length > 0
+        ? getDimensionCellRenderer(
+            columnData,
+            configuration.dimensions.dimensions,
+          )
+        : getCellRenderer(columnData),
   } satisfies ColDef;
 }
 
@@ -619,6 +673,121 @@ export function generateBaseGridOptions(view: DataCubeViewState): GridOptions {
           toolPanelParams: {
             suppressValues: true,
             suppressPivotMode: true,
+          },
+        },
+      ],
+      position: 'right',
+    },
+    allowDragFromColumnsToolPanel: true,
+    // -------------------------------------- PERFORMANCE --------------------------------------
+    animateRows: false, // improve performance
+    suppressColumnMoveAnimation: true, // improve performance
+  };
+}
+
+export function generateDimensionalBaseGridOptions(
+  view: DataCubeViewState,
+): GridOptions {
+  const grid = view.grid;
+
+  return {
+    // -------------------------------------- README --------------------------------------
+    // NOTE: we observe performance degradataion when configuring the grid via React component
+    // props when the options is non-static, i.e. changed when the query configuration changes.
+    // As such, we must ONLY ADD STATIC CONFIGURATION HERE, and dynamic configuration should be
+    // programatically updated when the query is modified.
+    //
+    //
+    // -------------------------------------- DISPLAY --------------------------------------
+    rowHeight: INTERNAL__GRID_CLIENT_ROW_HEIGHT,
+    headerHeight: INTERNAL__GRID_CLIENT_HEADER_HEIGHT,
+    noRowsOverlayComponent: () => (
+      <div className="flex items-center border-[1.5px] border-neutral-300 p-2 font-medium text-neutral-400">
+        <div>
+          <DataCubeIcon.WarningCircle className="mr-1 stroke-2 text-lg" />
+        </div>
+        0 rows
+      </div>
+    ),
+    loadingOverlayComponent: () => (
+      <div className="flex items-center border-[1.5px] border-neutral-300 p-2 font-medium text-neutral-400">
+        <div>
+          <DataCubeIcon.Loader className="mr-1 animate-spin stroke-2 text-lg" />
+        </div>
+        Loading...
+      </div>
+    ),
+    // Show cursor position when scrolling
+    onBodyScroll: (event) => {
+      const rowCount = event.api.getDisplayedRowCount();
+      const range = event.api.getVerticalPixelRange();
+      const start = Math.max(
+        1,
+        Math.ceil(range.top / INTERNAL__GRID_CLIENT_ROW_HEIGHT) + 1,
+      );
+      const end = Math.min(
+        rowCount,
+        Math.floor(range.bottom / INTERNAL__GRID_CLIENT_ROW_HEIGHT),
+      );
+      grid.setScrollHintText(`${start}-${end}/${rowCount}`);
+      event.api.hidePopupMenu(); // hide context-menu while scrolling
+    },
+    onBodyScrollEnd: () => grid.setScrollHintText(undefined),
+    // -------------------------------------- CONTEXT MENU --------------------------------------
+    // figure out the context menu
+    preventDefaultOnContextMenu: true, // prevent showing the browser's context menu
+    columnMenu: 'new', // ensure context menu works on header
+    // NOTE: dynamically generate the content of the context menu to make sure the items are not stale
+    getContextMenuItems: (params) =>
+      grid.controller.menuBuilder?.(params, false) ?? [],
+    getMainMenuItems: (params) =>
+      grid.controller.menuBuilder?.(params, true) ?? [],
+    // NOTE: when right-clicking empty space in the header, a menu will show up
+    // with 2 default options: 'Choose Columns` and `Reset Columns`, which is not
+    // a desired behavior, so we hide the popup menu immediately
+    onColumnMenuVisibleChanged: (event) => {
+      if (!event.column) {
+        const menuElement = document.querySelector(
+          `.${INTERNAL__GridClientUtilityCssClassName.ROOT} .ag-popup .ag-menu`,
+        ) as HTMLElement | undefined;
+        if (menuElement) {
+          menuElement.style.display = 'none';
+        }
+        event.api.hidePopupMenu();
+      }
+    },
+    // -------------------------------------- COLUMN SIZING --------------------------------------
+    autoSizePadding: INTERNAL__GRID_CLIENT_AUTO_RESIZE_PADDING,
+    autoSizeStrategy: {
+      type: 'fitCellContents',
+    },
+    defaultColDef: {
+      sortable: false,
+    },
+    // -------------------------------------- TOOLTIP --------------------------------------
+    tooltipShowDelay: INTERNAL__GRID_CLIENT_TOOLTIP_SHOW_DELAY,
+    // though this is a nice behavior to have enabled, ag-grid not dismissing tooltip
+    // when context-menu is triggered makes it an undesirable interaction.
+    tooltipInteraction: false,
+    // -------------------------------------- COLUMN MOVING --------------------------------------
+    suppressDragLeaveHidesColumns: true, // disable this since it's quite easy to accidentally hide columns while moving
+    // -------------------------------------- SELECTION --------------------------------------
+    cellSelection: true,
+    // -------------------------------------- SIDEBAR --------------------------------------
+    sideBar: {
+      toolPanels: [
+        {
+          id: 'columns',
+          labelDefault: 'Columns',
+          labelKey: 'columns',
+          iconKey: 'columns',
+          toolPanel: 'agColumnsToolPanel',
+          minWidth: INTERNAL__GRID_CLIENT_SIDE_BAR_WIDTH,
+          width: INTERNAL__GRID_CLIENT_SIDE_BAR_WIDTH,
+          toolPanelParams: {
+            suppressValues: true,
+            suppressPivotMode: true,
+            suppressRowGroups: true,
           },
         },
       ],
@@ -915,6 +1084,78 @@ export function generateColumnDefs(
         ..._sizeSpec(columnData),
         ..._sortSpec(columnData),
         ..._aggregationSpec(columnData),
+      } satisfies ColDef;
+    }),
+  ] satisfies (ColDef | ColGroupDef)[];
+
+  return columnDefs;
+}
+
+export function generateColumnDefsForDimensions(
+  snapshot: DataCubeSnapshot,
+  configuration: DataCubeConfiguration,
+) {
+  // NOTE: only show columns which are fetched in select() or are dimensions as we
+  // can't solely rely on column selection because of certain restrictions
+  // from ag-grid, e.g. in the case of row grouping tree column: the columns
+  // which are grouped must be present in the column definitions, so even
+  // when some of these might not be selected explicitly by the users, they
+  // must still be included in the column definitions, and made hidden instead.
+  const dimensionColNames = configuration.dimensions.dimensions.flatMap(
+    (col) => col.columns,
+  );
+  const dimCols = configuration.dimensions.dimensions.map(
+    (col) => new DataCubeColumnConfiguration(col.name, 'String'),
+  );
+
+  let columns = configuration.columns.filter(
+    (col) =>
+      _findCol(snapshot.data.selectColumns, col.name) ??
+      _findCol(snapshot.data.groupExtendedColumns, col.name),
+  );
+  columns = columns.filter((col) => !dimensionColNames.includes(col.name));
+  columns.unshift(...dimCols);
+
+  const columnDefs = [
+    ...(configuration.showRootAggregation
+      ? [
+          {
+            colId: INTERNAL__GRID_CLIENT_ROOT_AGGREGATION_COLUMN_ID,
+            headerName: 'Root',
+            field: INTERNAL__GRID_CLIENT_ROOT_AGGREGATION_COLUMN_ID,
+            hide: true,
+            enableValue: false, // disable GUI interactions to modify this column's aggregate function
+            allowedAggFuncs: [], // disable GUI for options of the agg functions
+            enablePivot: false,
+            enableRowGroup: false,
+
+            suppressColumnsToolPanel: true,
+            rowGroup: true,
+            rowGroupIndex: 0,
+          } satisfies ColDef,
+        ]
+      : []),
+    ...columns.map((column) => {
+      const columnData = {
+        name: column.name,
+        snapshot,
+        column,
+        configuration,
+      };
+      return {
+        headerName: column.displayName ?? column.name,
+        headerTooltip: `Column = ${
+          column.displayName
+            ? `${column.displayName} (${column.name})`
+            : column.name
+        }`,
+        suppressSpanHeaderHeight: true,
+        colId: column.name,
+        field: column.name,
+        menuTabs: [],
+
+        ..._displaySpec(columnData),
+        ..._sizeSpec(columnData),
       } satisfies ColDef;
     }),
   ] satisfies (ColDef | ColGroupDef)[];

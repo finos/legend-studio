@@ -1020,3 +1020,243 @@ export function generateMenuBuilder(
     ] satisfies (DefaultMenuItem | MenuItemDef)[];
   };
 }
+
+export function generateDimensionalMenuBuilder(
+  controller: DataCubeGridControllerState,
+): (
+  params: GetContextMenuItemsParams | GetMainMenuItemsParams,
+  fromHeader: boolean,
+) => (DefaultMenuItem | MenuItemDef)[] {
+  const view = controller.view;
+  const dataCube = view.dataCube;
+
+  return (
+    params: GetContextMenuItemsParams | GetMainMenuItemsParams,
+    fromHeader: boolean,
+  ) => {
+    const column = params.column ?? undefined;
+    const columnName = column?.getColId();
+    const columnConfiguration = controller.getColumnConfiguration(columnName);
+
+    //TODO: add more menu items like sort,filter...
+    return [
+      {
+        name: 'Export',
+        subMenu: [
+          {
+            name: 'HTML',
+            menuItem: WIP_GridMenuItem,
+            cssClasses: ['!opacity-100'],
+            disabled: true,
+          },
+          {
+            name: 'Plain Text',
+            menuItem: WIP_GridMenuItem,
+            cssClasses: ['!opacity-100'],
+            disabled: true,
+          },
+          {
+            name: 'PDF',
+            menuItem: WIP_GridMenuItem,
+            cssClasses: ['!opacity-100'],
+            disabled: true,
+          },
+          {
+            name: 'Excel',
+            action: () =>
+              view.grid.exportEngine.exportFile(
+                DataCubeGridClientExportFormat.EXCEL,
+              ),
+          },
+          {
+            name: 'CSV',
+            action: () =>
+              view.grid.exportEngine.exportFile(
+                DataCubeGridClientExportFormat.CSV,
+              ),
+          },
+          'separator',
+          {
+            name: 'DataCube Specification',
+            menuItem: WIP_GridMenuItem,
+            cssClasses: ['!opacity-100'],
+            disabled: true,
+          },
+        ],
+      },
+      {
+        name: 'Email',
+        subMenu: [
+          {
+            name: 'HTML',
+            menuItem: WIP_GridMenuItem,
+            cssClasses: ['!opacity-100'],
+            disabled: true,
+          },
+          {
+            name: 'Plain Text',
+            menuItem: WIP_GridMenuItem,
+            cssClasses: ['!opacity-100'],
+            disabled: true,
+          },
+          'separator',
+          {
+            name: 'HTML Attachment',
+            menuItem: WIP_GridMenuItem,
+            cssClasses: ['!opacity-100'],
+            disabled: true,
+          },
+          {
+            name: 'Plain Text Attachment',
+            menuItem: WIP_GridMenuItem,
+            cssClasses: ['!opacity-100'],
+            disabled: true,
+          },
+          {
+            name: 'PDF Attachment',
+            menuItem: WIP_GridMenuItem,
+            cssClasses: ['!opacity-100'],
+            disabled: true,
+          },
+          {
+            name: 'Excel Attachment',
+            action: () => {
+              view.grid.exportEngine
+                .exportEmail(DataCubeGridClientExportFormat.EXCEL)
+                .catch((error) =>
+                  dataCube.alertService.alertUnhandledError(error),
+                );
+            },
+          },
+          {
+            name: 'CSV Attachment',
+            action: () => {
+              view.grid.exportEngine
+                .exportEmail(DataCubeGridClientExportFormat.CSV)
+                .catch((error) =>
+                  dataCube.alertService.alertUnhandledError(error),
+                );
+            },
+          },
+          {
+            name: 'DataCube Specification Attachment',
+            menuItem: WIP_GridMenuItem,
+            cssClasses: ['!opacity-100'],
+            disabled: true,
+          },
+        ],
+      },
+      //TODO: add sort .extend, heatmap
+      'separator',
+      {
+        name: 'Resize',
+        subMenu: [
+          {
+            name: `Auto-size to Fit Content`,
+            disabled:
+              !column ||
+              !columnConfiguration ||
+              columnConfiguration.fixedWidth !== undefined,
+            action: () =>
+              params.api.autoSizeColumns(
+                [column?.getColId()].filter(isNonNullable),
+              ),
+          },
+          {
+            name: `Minimize Column`,
+            disabled:
+              !column ||
+              !columnConfiguration ||
+              columnConfiguration.fixedWidth !== undefined,
+            action: () => {
+              if (column && columnConfiguration) {
+                params.api.setColumnWidths([
+                  {
+                    key: columnConfiguration.name,
+                    newWidth:
+                      columnConfiguration.minWidth ?? DEFAULT_COLUMN_MIN_WIDTH,
+                  },
+                ]);
+              }
+            },
+          },
+          'separator',
+          {
+            name: `Auto-size All Columns`,
+            action: () =>
+              params.api.autoSizeColumns([
+                ...controller.configuration.columns
+                  .filter(
+                    (col) =>
+                      col.fixedWidth === undefined &&
+                      col.isSelected &&
+                      !col.hideFromView,
+                  )
+                  .map((col) => col.name),
+                ...controller.horizontalPivotCastColumns
+                  .map((col) => {
+                    if (isPivotResultColumnName(col.name)) {
+                      const colConf = _findCol(
+                        controller.configuration.columns,
+                        getPivotResultColumnBaseColumnName(col.name),
+                      );
+                      if (
+                        colConf &&
+                        colConf.fixedWidth === undefined &&
+                        colConf.isSelected &&
+                        !colConf.hideFromView
+                      ) {
+                        return col.name;
+                      }
+                    }
+                    return undefined;
+                  })
+                  .filter(isNonNullable),
+              ]),
+          },
+          {
+            name: `Minimize All Columns`,
+            action: () => {
+              params.api.setColumnWidths([
+                ...controller.configuration.columns
+                  .filter((col) => col.fixedWidth === undefined)
+                  .map((col) => ({
+                    key: col.name,
+                    newWidth:
+                      columnConfiguration?.minWidth ?? DEFAULT_COLUMN_MIN_WIDTH,
+                  })),
+                ...controller.horizontalPivotCastColumns
+                  .map((col) => {
+                    if (isPivotResultColumnName(col.name)) {
+                      const colConf = _findCol(
+                        controller.configuration.columns,
+                        getPivotResultColumnBaseColumnName(col.name),
+                      );
+                      if (
+                        colConf &&
+                        colConf.fixedWidth === undefined &&
+                        colConf.isSelected &&
+                        !colConf.hideFromView
+                      ) {
+                        return {
+                          key: col.name,
+                          newWidth:
+                            colConf.minWidth ?? DEFAULT_COLUMN_MIN_WIDTH,
+                        };
+                      }
+                    }
+                    return undefined;
+                  })
+                  .filter(isNonNullable),
+              ]);
+            },
+          },
+          {
+            name: `Size Grid to Fit Screen`,
+            action: () => params.api.sizeColumnsToFit(),
+          },
+        ],
+      },
+    ] satisfies (DefaultMenuItem | MenuItemDef)[];
+  };
+}

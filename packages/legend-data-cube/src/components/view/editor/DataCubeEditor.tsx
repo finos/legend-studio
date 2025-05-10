@@ -28,6 +28,7 @@ import { FormButton } from '../../core/DataCubeFormUtils.js';
 import { useDataCube } from '../../DataCubeProvider.js';
 import { DataCubeEditorDimensionsPanel } from './DataCubeEditorDimensionsPanel.js';
 import { DataCubeEvent } from '../../../__lib__/DataCubeEvent.js';
+import { isDimensionalGridMode } from '../../../stores/core/DataCubeQueryEngine.js';
 
 export const DataCubeEditor = observer((props: { view: DataCubeViewState }) => {
   const dataCube = useDataCube();
@@ -45,6 +46,8 @@ export const DataCubeEditor = observer((props: { view: DataCubeViewState }) => {
     DataCubeEditorTab.GENERAL_PROPERTIES,
     DataCubeEditorTab.COLUMN_PROPERTIES,
   ];
+  //TODO: Add support to make changes to other tabs for dimensional grid mode
+  const dimensionTabs = [DataCubeEditorTab.DIMENSIONS];
 
   const logApplyChangesFromPropertiesEditor = (): void => {
     view.dataCube.telemetryService.sendTelemetry(
@@ -61,8 +64,12 @@ export const DataCubeEditor = observer((props: { view: DataCubeViewState }) => {
             <button
               key={tab}
               onClick={() => editor.setCurrentTab(tab)}
+              disabled={
+                isDimensionalGridMode(view.info.configuration.gridMode) &&
+                !dimensionTabs.includes(tab)
+              }
               className={cn(
-                'relative flex h-6 items-center justify-center whitespace-nowrap border border-b-0 border-l-0 border-neutral-300 px-2 first:border-l focus:z-10',
+                'relative flex h-6 items-center justify-center whitespace-nowrap border border-b-0 border-l-0 border-neutral-300 px-2 first:border-l focus:z-10 disabled:text-neutral-400',
                 {
                   '-top-0.5 h-[27px] border-b-0 bg-white': tab === selectedTab,
                 },

@@ -226,13 +226,14 @@ export class DataCubeEditorDimensionsPanelState
         name: dimension.name,
         columns: dimension.columns.map((column) => column.name),
       }));
+      newSnapshot.data.configuration = {
+        ...newSnapshot.data.configuration,
+        dimensions: DataCubeDimensionsConfiguration.serialization.toJson(
+          dimensionsConfiguration,
+        ),
+      };
+    } else {
+      newSnapshot = baseSnapshot;
     }
-
-    newSnapshot.data.configuration = {
-      ...newSnapshot.data.configuration,
-      dimensions: DataCubeDimensionsConfiguration.serialization.toJson(
-        dimensionsConfiguration,
-      ),
-    };
   }
 }

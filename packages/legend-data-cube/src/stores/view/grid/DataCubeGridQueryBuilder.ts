@@ -62,9 +62,13 @@ import {
 } from './DataCubeGridClientEngine.js';
 import { DataCubeConfiguration } from '../../core/model/DataCubeConfiguration.js';
 import { _colSpecArrayParam } from '../../core/DataCubeSnapshotBuilderUtils.js';
-import { buildExecutableQuery } from '../../core/DataCubeQueryBuilder.js';
+import {
+  buildDimensionalExecutableQuery,
+  buildExecutableQuery,
+} from '../../core/DataCubeQueryBuilder.js';
 import type { DataCubeSource } from '../../core/model/DataCubeSource.js';
 import type { DataCubeEngine } from '../../core/DataCubeEngine.js';
+import type { DataCubeDimensionalNode } from './DataCubeGridDimensionalTree.js';
 
 /*****************************************************************************
  * [GRID]
@@ -186,6 +190,23 @@ export function buildGridDataFetchExecutableQuery(
           }
         : undefined,
   });
+}
+
+export function buildDimensionalGridDataFetchExecutableQuery(
+  snapshot: DataCubeSnapshot,
+  source: DataCubeSource,
+  engine: DataCubeEngine,
+  nodes: DataCubeDimensionalNode[],
+) {
+  //TODO: Try to remove this cloning
+  const processedSnapshot = snapshot.clone();
+  //TODO: check if we need to show root aggregation in this mode
+  return buildDimensionalExecutableQuery(
+    processedSnapshot,
+    source,
+    engine,
+    nodes,
+  );
 }
 
 function generateGridDataFetchExecutableQueryPostProcessor(
