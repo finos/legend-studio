@@ -74,6 +74,8 @@ import {
   MdKeyboardDoubleArrowLeft, //to be reviewed
   MdKeyboardDoubleArrowRight, //to be reviewed
   MdOutlinePushPin,
+  MdOutlineShoppingCart,
+  MdOutlineHelpOutline,
 } from 'react-icons/md';
 
 export const ManageSearchIcon = MdManageSearch; // to be reviewed
@@ -111,6 +113,8 @@ export const UnfoldIcon = MdUnfoldMore;
 export const DoubleArrowLeft = MdKeyboardDoubleArrowLeft; //to be reviewed
 export const DoubleArrowRight = MdKeyboardDoubleArrowRight; //to be reviewed
 export const PushPinIcon = MdOutlinePushPin;
+export const ShoppingCartOutlineIcon = MdOutlineShoppingCart;
+export const HelpOutlineIcon = MdOutlineHelpOutline;
 
 //======================================================= VSC =======================================================
 import {
@@ -383,6 +387,8 @@ import {
   FaUndo,
   FaCube,
   FaShoppingCart,
+  FaRegUserCircle,
+  FaRegBell,
 } from 'react-icons/fa';
 
 import { PiFunctionBold } from 'react-icons/pi';
@@ -523,6 +529,8 @@ export const UndoIcon = FaUndo;
 export const RedoIcon = FaRedo;
 export const CubeIcon = FaCube;
 export const ShoppingCartIcon = FaShoppingCart;
+export const UserCircleIcon = FaRegUserCircle;
+export const BellIcon = FaRegBell;
 //======================================================= GI =======================================================
 import {
   GiWaterDrop,
