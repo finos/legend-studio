@@ -52,6 +52,7 @@ export interface LegendMarketplaceApplicationConfigurationData
   extends LegendApplicationConfigurationData {
   marketplace: {
     url: string;
+    subscriptionUrl: string;
     oidcConfig?: LegendMarketplaceOidcConfig | undefined;
   };
   depot: { url: string };
@@ -82,6 +83,7 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
   readonly options = new LegendMarketplaceApplicationCoreOptions();
 
   readonly marketplaceServerUrl: string;
+  readonly marketplaceSubscriptionUrl: string;
   readonly marketplaceOidcConfig?: LegendMarketplaceOidcConfig | undefined;
   readonly engineServerUrl: string;
   readonly depotServerUrl: string;
@@ -107,6 +109,13 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
         `Can't configure application: 'marketplace.url' field is missing or empty`,
       ),
     );
+    this.marketplaceSubscriptionUrl =
+      LegendApplicationConfig.resolveAbsoluteUrl(
+        guaranteeNonEmptyString(
+          input.configData.marketplace.subscriptionUrl,
+          `Can't configure application: 'marketplace.marketplaceSubscriptionUrl' field is missing or empty`,
+        ),
+      );
     this.marketplaceOidcConfig = input.configData.marketplace.oidcConfig;
 
     // engine

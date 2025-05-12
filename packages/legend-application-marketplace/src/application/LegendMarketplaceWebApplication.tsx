@@ -56,6 +56,8 @@ import { LegendMarketplaceHeader } from '../components/Header/LegendMarketplaceH
 import { MarketplaceLakehouseHeader } from '../components/Header/MarketplaceLakehouseHeader.js';
 import { LegendMarketplacePage } from '../pages/LegendMarketplacePage.js';
 import { LegendMarketplaceVendorDetails } from '../pages/VendorDetails/LegendMarketplaceVendorDetails.js';
+import { LegendMarketplaceSubscriptions } from '../pages/Profile/LegendMarketplaceSubscriptions.js';
+import { LegendMarketplaceOrders } from '../pages/Profile/LegendMarketplaceOrders.js';
 
 const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();
@@ -228,6 +230,14 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SUBSCRIPTIONS}
               element={<ProtectedLakehouseSubscriptions />}
+            />
+            <Route
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.SUBSCRIPTIONS}
+              element={<LegendMarketplaceSubscriptions />}
+            />
+            <Route
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.ORDERS}
+              element={<LegendMarketplaceOrders />}
             />
             <Route path="*" element={<NotFoundPage />} />
           </Route>

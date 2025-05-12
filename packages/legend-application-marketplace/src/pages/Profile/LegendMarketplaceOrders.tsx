@@ -14,8 +14,13 @@
  * limitations under the License.
  */
 
-export * from './models/DataProduct.js';
-export * from './models/Provider.js';
-export * from './models/Subscription.js';
+import { observer } from 'mobx-react-lite';
+import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
 
-export { MarketplaceServerClient } from './MarketplaceServerClient.js';
+export const LegendMarketplaceOrders = observer(() => {
+  return (
+    <LegendMarketplacePage className="legend-marketplace-home">
+      Your orders work in progress
+    </LegendMarketplacePage>
+  );
+});

@@ -24,6 +24,7 @@
   position: sticky;
   top: 0;
   z-index: 1000;
+  justify-content: space-between;
 
   &__menu {
     height: 3.4rem;
@@ -62,8 +63,21 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: space-between;
     gap: 1rem;
+    width: auto;
+  }
+
+  .legend-marketplace-toolbar {
+    margin-left: auto;
+    display: flex;
+
+    &__icon {
+      @include flexCenter;
+
+      color: white;
+      width: 3rem;
+      font-size: 2rem;
+    }
   }
 }
 

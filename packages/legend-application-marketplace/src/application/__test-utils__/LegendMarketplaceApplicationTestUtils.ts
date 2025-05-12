@@ -25,6 +25,7 @@ const TEST_DATA__appConfig: LegendMarketplaceApplicationConfigurationData = {
   env: 'test-env',
   marketplace: {
     url: 'https://testMarketplaceUrl',
+    subscriptionUrl: 'https://testSubscriptionUrl',
   },
   engine: {
     url: 'https://testEngineUrl',

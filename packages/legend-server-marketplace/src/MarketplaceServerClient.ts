@@ -17,9 +17,11 @@
 import { type PlainObject, AbstractServerClient } from '@finos/legend-shared';
 import type { LightProvider, ProviderResult } from './models/Provider.js';
 import type { DataProductSearchResult } from './models/DataProduct.js';
+import type { Subscription } from './models/Subscription.js';
 
 export interface MarketplaceServerClientConfig {
   serverUrl: string;
+  subscriptionUrl: string;
 }
 
 interface MarketplaceServerResponse<T> {
@@ -29,6 +31,7 @@ interface MarketplaceServerResponse<T> {
 }
 
 export class MarketplaceServerClient extends AbstractServerClient {
+  subscriptionUrl: string;
   constructor(config: MarketplaceServerClientConfig) {
     super({
       baseUrl: config.serverUrl,
@@ -39,6 +42,8 @@ export class MarketplaceServerClient extends AbstractServerClient {
         credentials: 'omit',
       },
     });
+
+    this.subscriptionUrl = config.subscriptionUrl;
   }
 
   // ------------------------------------------- Vendors -------------------------------------------
@@ -74,4 +79,15 @@ export class MarketplaceServerClient extends AbstractServerClient {
         `${this._search()}/semantic/catalog?query=${query}&vendor_name=${vendorName}&limit=${limit}`,
       )
     ).results;
+
+  // ------------------------------------------- Subscriptions -----------------------------------------
+
+  getSubscriptions = async (
+    user: string,
+  ): Promise<PlainObject<Subscription>[]> =>
+    (
+      await this.get<{ subscription_feeds: PlainObject<Subscription>[] }>(
+        `${this.subscriptionUrl}/v1/service/subscription/${user}`,
+      )
+    ).subscription_feeds;
 }
