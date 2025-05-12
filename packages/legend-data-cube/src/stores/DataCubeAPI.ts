@@ -18,6 +18,7 @@ import type { DataCubeSpecification } from './core/model/DataCubeSpecification.j
 import type { DataCubeSource } from './core/model/DataCubeSource.js';
 import type { DataCubeState } from './DataCubeState.js';
 import type { DataCubeViewState } from './view/DataCubeViewState.js';
+import type { DataCubeGridMode } from './core/DataCubeQueryEngine.js';
 
 /**
  * This is the API exposed externally by DataCube to restrict access to certain
@@ -58,6 +59,10 @@ export interface DataCubeAPI {
    * Get the caching enabled state of the underlying grid.
    */
   isCachingEnabled(): boolean;
+  /**
+   * Get mode for grid
+   */
+  getGridMode(): DataCubeGridMode;
 }
 
 /**
@@ -111,5 +116,10 @@ export class INTERNAL__DataCubeAPI implements DataCubeAPI {
 
   isCachingEnabled() {
     return this._dataCube.view.grid.isCachingEnabled;
+  }
+
+  // TODO: remove this method once saving is enabled for dimensional mode
+  getGridMode() {
+    return this._dataCube.view.info.configuration.gridMode;
   }
 }

@@ -23,13 +23,21 @@
 
 import {
   PRIMITIVE_TYPE,
+  V1_AppliedProperty,
+  V1_CString,
   V1_Lambda,
+  V1_Variable,
   type V1_AppliedFunction,
 } from '@finos/legend-graph';
-import { type DataCubeSnapshot } from './DataCubeSnapshot.js';
+import {
+  type DataCubeSnapshot,
+  type DataCubeSnapshotExtendedColumn,
+  type DataCubeSnapshotGroupBy,
+} from './DataCubeSnapshot.js';
 import { at, guaranteeType } from '@finos/legend-shared';
 import {
   DataCubeFunction,
+  DataCubeQueryFilterGroupOperator,
   DataCubeQuerySortDirection,
   type DataCubeQueryFunctionMap,
 } from './DataCubeQueryEngine.js';
@@ -49,10 +57,15 @@ import {
   _var,
   _functionCompositionProcessor,
   _extendRootAggregation,
+  _flattenFilterSnapshot,
 } from './DataCubeQueryBuilderUtils.js';
 import type { DataCubeSource } from './model/DataCubeSource.js';
-import { _findCol } from './model/DataCubeColumn.js';
+import { _findCol, _toCol } from './model/DataCubeColumn.js';
 import type { DataCubeEngine } from './DataCubeEngine.js';
+import {
+  DIMENSIONAL_L0_COLUMN,
+  type DataCubeDimensionalNode,
+} from '../view/grid/DataCubeGridDimensionalTree.js';
 
 export function buildExecutableQuery(
   snapshot: DataCubeSnapshot,
@@ -290,6 +303,247 @@ export function buildExecutableQuery(
       ]),
     );
   }
+
+  // --------------------------------- FINALIZE ---------------------------------
+
+  if (!options?.skipExecutionContext) {
+    const executionContext = engine.buildExecutionContext(source);
+    if (executionContext) {
+      sequence.push(executionContext);
+    }
+  }
+
+  options?.postProcessor?.(snapshot, sequence, funcMap, configuration, engine);
+
+  if (sequence.length === 0) {
+    return source.query;
+  }
+  for (let i = 0; i < sequence.length; i++) {
+    at(sequence, i).parameters.unshift(
+      i === 0 ? source.query : at(sequence, i - 1),
+    );
+  }
+  return at(sequence, sequence.length - 1);
+}
+
+export function buildDimensionalExecutableQuery(
+  snapshot: DataCubeSnapshot,
+  source: DataCubeSource,
+  engine: DataCubeEngine,
+  nodes: DataCubeDimensionalNode[],
+  options?: {
+    postProcessor?: (
+      snapshot: DataCubeSnapshot,
+      sequence: V1_AppliedFunction[],
+      funcMap: DataCubeQueryFunctionMap,
+      configuration: DataCubeConfiguration,
+      engine: DataCubeEngine,
+    ) => void;
+    rootAggregation?:
+      | {
+          columnName: string;
+        }
+      | undefined;
+    pagination?:
+      | {
+          start: number;
+          end: number;
+        }
+      | undefined;
+    skipExecutionContext?: boolean;
+  },
+) {
+  const data = snapshot.data;
+  const configuration = DataCubeConfiguration.serialization.fromJson(
+    data.configuration,
+  );
+  const sequence: V1_AppliedFunction[] = [];
+  const funcMap: DataCubeQueryFunctionMap = {};
+  const _process = _functionCompositionProcessor(sequence, funcMap);
+
+  // ------------------------------ DIMENSIONS -------------------------------------
+
+  if (data.tree && nodes.length > 0) {
+    const dimensionColNames = configuration.dimensions.dimensions.flatMap(
+      (col) => col.columns,
+    );
+
+    // removing columns which have been added to represent diimensions
+    configuration.columns = configuration.columns.map((col) => {
+      if (dimensionColNames.includes(col.name)) {
+        col.isSelected = false;
+      }
+      return col;
+    });
+
+    // Adding dimensions to the extended column
+    nodes.forEach((node) => {
+      const lambda = new V1_Lambda();
+      const parameter = new V1_Variable();
+      parameter.name = 'temp';
+      if (node.column === DIMENSIONAL_L0_COLUMN) {
+        const defaultValue = new V1_CString();
+        defaultValue.value = node.column;
+        lambda.body = [defaultValue];
+      } else {
+        const defaultValue = new V1_AppliedProperty();
+        defaultValue.parameters = [parameter];
+        defaultValue.property = node.column;
+        lambda.body = [defaultValue];
+      }
+      lambda.parameters = [parameter];
+      data.leafExtendedColumns.unshift({
+        name: node.dimension,
+        type: PRIMITIVE_TYPE.STRING,
+        mapFn: engine.serializeValueSpecification(lambda),
+      } satisfies DataCubeSnapshotExtendedColumn);
+    });
+
+    // Adding dimensions to selected list
+    data.selectColumns = data.selectColumns.filter(
+      (col) => !dimensionColNames.includes(col.name),
+    );
+
+    const dimensionCols = nodes.map((col) =>
+      _toCol({ name: col.dimension, type: PRIMITIVE_TYPE.STRING }),
+    );
+    data.selectColumns.unshift(...dimensionCols);
+
+    // Adding filter based on group by nodes
+    const groupByNodes = nodes.flatMap((x) => x.groupByNodes);
+    if (groupByNodes.length > 0) {
+      const filter = [
+        _flattenFilterSnapshot(nodes.flatMap((x) => x.groupByNodes)),
+      ];
+      if (data.filter) {
+        filter.push(data.filter);
+        data.filter = {
+          groupOperator: DataCubeQueryFilterGroupOperator.AND,
+          conditions: filter,
+        };
+      } else {
+        data.filter = filter.at(0);
+      }
+    }
+
+    // Adding dimensions to groupby
+    if (data.groupBy) {
+      data.groupBy.columns.unshift(...dimensionCols);
+    } else {
+      data.groupBy = {
+        columns: dimensionCols,
+      } satisfies DataCubeSnapshotGroupBy;
+    }
+  }
+
+  // --------------------------------- LEAF-LEVEL EXTEND ---------------------------------
+
+  if (data.leafExtendedColumns.length) {
+    _process(
+      'leafExtend',
+      data.leafExtendedColumns.map((col) =>
+        _function(DataCubeFunction.EXTEND, [
+          _cols([
+            _colSpec(
+              col.name,
+              guaranteeType(
+                engine.deserializeValueSpecification(col.mapFn),
+                V1_Lambda,
+              ),
+              col.reduceFn
+                ? guaranteeType(
+                    engine.deserializeValueSpecification(col.reduceFn),
+                    V1_Lambda,
+                  )
+                : undefined,
+            ),
+          ]),
+        ]),
+      ),
+    );
+  }
+
+  // --------------------------------- FILTER ---------------------------------
+
+  if (data.filter) {
+    _process(
+      'filter',
+      _function(DataCubeFunction.FILTER, [
+        _lambda([_var()], [_filter(data.filter, engine.filterOperations)]),
+      ]),
+    );
+  }
+
+  // --------------------------------- SELECT ---------------------------------
+
+  if (data.selectColumns.length) {
+    _process(
+      'select',
+      _function(DataCubeFunction.SELECT, [
+        _cols(data.selectColumns.map((col) => _colSpec(col.name))),
+      ]),
+    );
+  }
+
+  // --------------------------------- PIVOT ---------------------------------
+
+  // TODO: rethink pivots for dimensional grid mode
+
+  // --------------------------------- GROUP BY ---------------------------------
+
+  if (data.groupBy) {
+    const groupBy = data.groupBy;
+    if (configuration.showRootAggregation && options?.rootAggregation) {
+      sequence.push(_extendRootAggregation(options.rootAggregation.columnName));
+    }
+    _process(
+      'groupBy',
+      _function(DataCubeFunction.GROUP_BY, [
+        _cols(groupBy.columns.map((col) => _colSpec(col.name))),
+        _cols(
+          _groupByAggCols(
+            groupBy.columns,
+            snapshot,
+            configuration,
+            engine.aggregateOperations,
+          ),
+        ),
+      ]),
+    );
+    _process(
+      'groupBySort',
+      _function(DataCubeFunction.SORT, [
+        _collection(
+          groupBy.columns.map((col) =>
+            _function(
+              configuration.treeColumnSortDirection ===
+                DataCubeQuerySortDirection.ASCENDING
+                ? DataCubeFunction.ASCENDING
+                : DataCubeFunction.DESCENDING,
+              [_col(col.name)],
+            ),
+          ),
+        ),
+      ]),
+    );
+  }
+
+  // --------------------------------- GROUP-LEVEL EXTEND ---------------------------------
+
+  // TODO: implement group level extends for dimensional grid mode
+
+  // --------------------------------- SORT ---------------------------------
+
+  // TODO: implement sort for dimensional grid mode
+
+  // --------------------------------- LIMIT ---------------------------------
+
+  // TODO: rethink limits for dimensional grid mode
+
+  // --------------------------------- SLICE ---------------------------------
+
+  // TODO: rethink slice for dimensional grid mode
+  // slice can lead to incorrect view of data for dimensionality
 
   // --------------------------------- FINALIZE ---------------------------------
 
