@@ -86,6 +86,7 @@ import {
   type V1_LambdaReturnTypeResult,
   V1_Variable,
   type QueryInfo,
+  V1_AppliedProperty,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
@@ -109,7 +110,7 @@ import {
   _primitiveValue,
   _defaultPrimitiveTypeValue,
   isPrimitiveType,
-  _property,
+  _enumValue,
 } from '@finos/legend-data-cube';
 import {
   isNonNullable,
@@ -1181,8 +1182,16 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
                 ? await this.parseValueSpecification(defaultValueString)
                 : isPrimitiveType(type)
                   ? _primitiveValue(type, _defaultPrimitiveTypeValue(type))
-                  : _property('', [_elementPtr(type)]);
-            return { variable: parameter, valueSpec: defaultValueSpec };
+                  : _enumValue('', type);
+            return {
+              variable: parameter,
+              // If the param valueSpec is a V1_AppliedProperty, we can assume that it is
+              // actually an enum value, so we will convert it to a V1_EnumValue.
+              valueSpec:
+                defaultValueSpec instanceof V1_AppliedProperty
+                  ? _enumValue(defaultValueSpec.property, type)
+                  : defaultValueSpec,
+            };
           }
           return undefined;
         }),

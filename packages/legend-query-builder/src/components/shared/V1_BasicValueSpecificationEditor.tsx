@@ -27,14 +27,13 @@ import {
   V1_CBoolean,
   V1_CDateTime,
   V1_CDecimal,
+  V1_CEnumValue,
   V1_CFloat,
   V1_CInteger,
   V1_CLatestDate,
   V1_Collection,
   V1_CStrictDate,
   V1_CString,
-  V1_EnumValue,
-  V1_observe_AppliedProperty,
   V1_observe_ValueSpecification,
   V1_PackageableType,
   V1_PrimitiveValueSpecification,
@@ -56,7 +55,6 @@ import {
   StringPrimitiveInstanceValueEditor,
 } from './BasicValueSpecificationEditor.js';
 import {
-  V1_AppliedProperty_setProperty,
   V1_Collection_setValues,
   V1_PrimitiveValue_setValue,
 } from '../../stores/shared/V1_ValueSpecificationModifierHelper.js';
@@ -70,9 +68,8 @@ import {
   DatePickerOption,
 } from './CustomDatePickerHelper.js';
 import {
-  _elementPtr,
+  _enumValue,
   _primitiveValue,
-  _property,
   isPrimitiveType,
 } from '@finos/legend-data-cube';
 import {
@@ -109,7 +106,7 @@ const V1_stringifyValue = (values: V1_ValueSpecification[]): string => {
           } else {
             return val;
           }
-        } else if (val instanceof V1_EnumValue) {
+        } else if (val instanceof V1_CEnumValue) {
           return val.value;
         } else if (val instanceof V1_AppliedProperty) {
           return val.property;
@@ -297,20 +294,17 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
         value: enumValue.value,
       }));
       return (
-        <EnumInstanceValueEditor<V1_AppliedProperty>
-          valueSpecification={guaranteeType(
-            valueSpecification,
-            V1_AppliedProperty,
-          )}
-          valueSelector={(val: V1_AppliedProperty) => val.property}
+        <EnumInstanceValueEditor<V1_CEnumValue>
+          valueSpecification={guaranteeType(valueSpecification, V1_CEnumValue)}
+          valueSelector={(val: V1_CEnumValue) => val.value}
           options={options}
           className={className}
           resetValue={resetValue}
           updateValueSpecification={(
-            _valueSpecification: V1_AppliedProperty,
+            _valueSpecification: V1_CEnumValue,
             value: string | null,
           ) => {
-            V1_AppliedProperty_setProperty(
+            V1_PrimitiveValue_setValue(
               _valueSpecification,
               guaranteeNonNullable(value),
             );
@@ -371,8 +365,8 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
         return V1_observe_ValueSpecification(primitiveVal);
       } else {
         // If not a primitive, assume it is an enum
-        const typeParam = _elementPtr(packageableType.fullPath);
-        return V1_observe_AppliedProperty(_property(text, [typeParam]));
+        const enumVal = _enumValue(text, packageableType.fullPath);
+        return V1_observe_ValueSpecification(enumVal);
       }
     };
     const enumOptions = enumeration?.values.map((enumValue) => ({
