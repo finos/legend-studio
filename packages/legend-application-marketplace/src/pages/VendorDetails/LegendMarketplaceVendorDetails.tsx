@@ -15,9 +15,9 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { LegendMarketplaceHeader } from '../../components/Header/LegendMarketplaceHeader.js';
 import { useParams } from '@finos/legend-application/browser';
 import { List, ListItem, Typography } from '@mui/material';
+import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
 
 export const LegendMarketplaceVendorDetails = observer(() => {
   const { vendorName } = useParams<Record<string, string | undefined>>();
@@ -25,25 +25,22 @@ export const LegendMarketplaceVendorDetails = observer(() => {
   const vendorDatasets = ['Dataset 1', 'Dataset 2', 'Dataset 3'];
 
   return (
-    <div className="app__page">
-      <div className="legend-marketplace-vendor-data">
-        <LegendMarketplaceHeader />
-        <div className="legend-marketplace-vendor-data__content">
-          <Typography variant="h3" fontWeight="bold">
-            {vendorName}
-          </Typography>
-          <List sx={{ listStyleType: 'disc', paddingLeft: '16px' }}>
-            {vendorDatasets.map((dataset) => (
-              <ListItem
-                key={dataset}
-                sx={{ display: 'list-item', padding: 'unset' }}
-              >
-                {dataset}
-              </ListItem>
-            ))}
-          </List>
-        </div>
+    <LegendMarketplacePage className="legend-marketplace-vendor-data">
+      <div className="legend-marketplace-vendor-data__content">
+        <Typography variant="h3" fontWeight="bold">
+          {vendorName}
+        </Typography>
+        <List sx={{ listStyleType: 'disc', paddingLeft: '16px' }}>
+          {vendorDatasets.map((dataset) => (
+            <ListItem
+              key={dataset}
+              sx={{ display: 'list-item', padding: 'unset' }}
+            >
+              {dataset}
+            </ListItem>
+          ))}
+        </List>
       </div>
-    </div>
+    </LegendMarketplacePage>
   );
 });

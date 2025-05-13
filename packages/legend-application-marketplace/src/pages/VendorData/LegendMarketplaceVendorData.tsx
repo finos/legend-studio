@@ -15,7 +15,6 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
 import { LegendMarketplaceSearchBar } from '../../components/SearchBar/LegendMarketplaceSearchBar.js';
 import {
   Badge,
@@ -25,43 +24,71 @@ import {
   FormControlLabel,
   FormGroup,
   Grid2 as Grid,
+  Tooltip,
   Typography,
 } from '@mui/material';
-import { flowResult } from 'mobx';
 import { useApplicationStore } from '@finos/legend-application';
 import type { ProviderResult } from '@finos/legend-server-marketplace';
 import { LegendMarketplaceProviderCard } from '../../components/ProviderCard/LegendMarketplaceProviderCard.js';
 import type { LegendMarketPlaceVendorDataState } from '../../stores/LegendMarketPlaceVendorDataState.js';
 import { useLegendMarketplaceBaseStore } from '../../application/LegendMarketplaceFrameworkProvider.js';
 import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
+import { InfoCircleIcon } from '@finos/legend-art';
 
-export const RefinedVendorRadioSelector = observer(() => {
-  const radioOptions = ['All', 'Datafeeds', 'Terminal License', 'Add-Ons'];
+export enum VendorDataProviderType {
+  ALL = 'All',
+  DATAFEEDS = 'Datafeeds',
+  TERMINAL_LICENSE = 'Terminal License',
+  ADD_ONS = 'Add-Ons',
+}
 
-  const [selected, setSelected] = useState<string>(radioOptions[0] ?? 'All');
+export const RefinedVendorRadioSelector = observer(
+  (props: { vendorDataState: LegendMarketPlaceVendorDataState }) => {
+    const { vendorDataState } = props;
+    const radioOptions = [
+      VendorDataProviderType.ALL,
+      VendorDataProviderType.DATAFEEDS,
+      VendorDataProviderType.TERMINAL_LICENSE,
+      VendorDataProviderType.ADD_ONS,
+    ];
 
-  return (
-    <ButtonGroup variant="outlined">
-      {radioOptions.map((option) => (
-        <Button
-          key={option}
-          onClick={() => setSelected(option)}
-          variant={selected === option ? 'contained' : 'outlined'}
-          sx={{
-            fontSize: '12px',
-            backgroundColor: selected === option ? 'primary' : 'white',
-          }}
-        >
-          {option}
-        </Button>
-      ))}
-    </ButtonGroup>
-  );
-});
+    return (
+      <ButtonGroup variant="outlined">
+        {radioOptions.map((option) => (
+          <Button
+            key={option}
+            onClick={() => vendorDataState.setProviderDisplayState(option)}
+            variant={
+              vendorDataState.providerDisplayState === option
+                ? 'contained'
+                : 'outlined'
+            }
+            sx={{
+              fontSize: '12px',
+              backgroundColor:
+                vendorDataState.providerDisplayState === option
+                  ? 'primary'
+                  : 'white',
+            }}
+          >
+            {option}
+          </Button>
+        ))}
+      </ButtonGroup>
+    );
+  },
+);
 
 const SearchResultsRenderer = observer(
-  (props: { providerResults: ProviderResult[]; sectionTitle: string }) => {
-    const { providerResults, sectionTitle } = props;
+  (props: {
+    vendorDataState: LegendMarketPlaceVendorDataState;
+    providerResults: ProviderResult[];
+    sectionTitle: VendorDataProviderType;
+    seeAll?: boolean;
+    tooltip?: string;
+  }) => {
+    const { vendorDataState, providerResults, sectionTitle, seeAll, tooltip } =
+      props;
     const applicationStore = useApplicationStore();
 
     const onAddToCartClick = (providerResult: ProviderResult) => {
@@ -76,9 +103,22 @@ const SearchResultsRenderer = observer(
           <div className="legend-marketplace-vendordata-main-sidebar__title">
             {sectionTitle}
           </div>
-          <a href="#" className="see-all">
-            <strong>See All&gt;</strong>
-          </a>
+          {tooltip && (
+            <Tooltip title={tooltip} placement={'right'} arrow={true}>
+              <InfoCircleIcon />
+            </Tooltip>
+          )}
+          {seeAll && (
+            <a
+              href="#"
+              className="see-all"
+              onClick={() => {
+                vendorDataState.setProviderDisplayState(sectionTitle);
+              }}
+            >
+              <strong>See All&gt;</strong>
+            </a>
+          )}
         </div>
         <Grid
           container={true}
@@ -103,6 +143,9 @@ const SearchResultsRenderer = observer(
 export const VendorDataMainContent = observer(
   (props: { marketPlaceVendorDataState: LegendMarketPlaceVendorDataState }) => {
     const { marketPlaceVendorDataState } = props;
+
+    const addOnsInfoMessage =
+      'Addons cannot be ordered standalone. You must order terminal license with them.';
 
     return (
       <div className="legend-marketplace-vendordata-main">
@@ -131,20 +174,60 @@ export const VendorDataMainContent = observer(
           </div>
         </div>
         <div className="legend-marketplace-vendordata-main-search-results">
-          <SearchResultsRenderer
-            providerResults={marketPlaceVendorDataState.dataFeedProviders}
-            sectionTitle="Data Feed"
-          />
-          <hr />
-          <SearchResultsRenderer
-            providerResults={marketPlaceVendorDataState.terminalProviders}
-            sectionTitle="Terminal License"
-          />
-          <hr />
-          <SearchResultsRenderer
-            providerResults={marketPlaceVendorDataState.addOnProviders}
-            sectionTitle="Add-Ons"
-          />
+          {marketPlaceVendorDataState.providerDisplayState ===
+            VendorDataProviderType.ALL && (
+            <>
+              <SearchResultsRenderer
+                vendorDataState={marketPlaceVendorDataState}
+                providerResults={marketPlaceVendorDataState.dataFeedProviders}
+                sectionTitle={VendorDataProviderType.DATAFEEDS}
+                seeAll={true}
+              />
+              <hr />
+              <SearchResultsRenderer
+                vendorDataState={marketPlaceVendorDataState}
+                providerResults={marketPlaceVendorDataState.terminalProviders}
+                sectionTitle={VendorDataProviderType.TERMINAL_LICENSE}
+                seeAll={true}
+              />
+              <hr />
+              <SearchResultsRenderer
+                vendorDataState={marketPlaceVendorDataState}
+                providerResults={marketPlaceVendorDataState.addOnProviders}
+                sectionTitle={VendorDataProviderType.ADD_ONS}
+                seeAll={true}
+                tooltip={addOnsInfoMessage}
+              />
+            </>
+          )}
+          {marketPlaceVendorDataState.providerDisplayState ===
+            VendorDataProviderType.DATAFEEDS && (
+            <SearchResultsRenderer
+              vendorDataState={marketPlaceVendorDataState}
+              providerResults={marketPlaceVendorDataState.dataFeedProviders}
+              sectionTitle={VendorDataProviderType.DATAFEEDS}
+              seeAll={false}
+            />
+          )}
+          {marketPlaceVendorDataState.providerDisplayState ===
+            VendorDataProviderType.TERMINAL_LICENSE && (
+            <SearchResultsRenderer
+              vendorDataState={marketPlaceVendorDataState}
+              providerResults={marketPlaceVendorDataState.terminalProviders}
+              sectionTitle={VendorDataProviderType.TERMINAL_LICENSE}
+              seeAll={false}
+            />
+          )}
+          {marketPlaceVendorDataState.providerDisplayState ===
+            VendorDataProviderType.ADD_ONS && (
+            <SearchResultsRenderer
+              vendorDataState={marketPlaceVendorDataState}
+              providerResults={marketPlaceVendorDataState.addOnProviders}
+              sectionTitle={VendorDataProviderType.ADD_ONS}
+              seeAll={false}
+              tooltip={addOnsInfoMessage}
+            />
+          )}
         </div>
       </div>
     );
@@ -152,7 +235,6 @@ export const VendorDataMainContent = observer(
 );
 
 export const LegendMarketplaceVendorData = observer(() => {
-  const applicationStore = useApplicationStore();
   const baseStore = useLegendMarketplaceBaseStore();
   const marketPlaceVendorDataState = baseStore.marketplaceVendorDataState;
 
@@ -162,12 +244,6 @@ export const LegendMarketplaceVendorData = observer(() => {
   ) => {
     // Handle search logic here
   };
-
-  useEffect(() => {
-    flowResult(marketPlaceVendorDataState.populateProviders()).catch(
-      applicationStore.alertUnhandledError,
-    );
-  }, [marketPlaceVendorDataState, applicationStore]);
 
   return (
     <LegendMarketplacePage className="legend-marketplace-vendor-data">
@@ -194,7 +270,9 @@ export const LegendMarketplaceVendorData = observer(() => {
         </div>
       </div>
       <div className="legend-marketplace-body__content">
-        <RefinedVendorRadioSelector />
+        <RefinedVendorRadioSelector
+          vendorDataState={marketPlaceVendorDataState}
+        />
         <LegendMarketplaceSearchBar onSearch={onChange} />
         <VendorDataMainContent
           marketPlaceVendorDataState={marketPlaceVendorDataState}
