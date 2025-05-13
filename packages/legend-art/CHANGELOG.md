@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.96
+
+### Patch Changes
+
+- [#4068](https://github.com/finos/legend-studio/pull/4068) [`519701f`](https://github.com/finos/legend-studio/commit/519701f97e7eb1d241553f4de86a4884a68d30c8) ([@kelly-thai](https://github.com/kelly-thai)) - Added icons for Marketplace header toolbar
+
 ## 7.1.95
 
 ### Patch Changes
