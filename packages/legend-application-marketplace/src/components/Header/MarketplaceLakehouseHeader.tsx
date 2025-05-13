@@ -98,14 +98,17 @@ export const MarketplaceLakehouseHeader = observer(() => {
 
   return (
     <div className="legend-marketplace-header">
-      <LakehouseHeaderMenu />
-      <div
-        className="legend-marketplace-header__name"
-        onClick={() => navigateToHome()}
-      >
-        Legend Lakehouse
+      <div className="legend-marketplace-header__container">
+        <LakehouseHeaderMenu />
+        <div
+          className="legend-marketplace-header__name"
+          onClick={() => navigateToHome()}
+        >
+          Legend Lakehouse
+        </div>
+
+        <LakehousePlaceHeaderTabs />
       </div>
-      <LakehousePlaceHeaderTabs />
     </div>
   );
 });
