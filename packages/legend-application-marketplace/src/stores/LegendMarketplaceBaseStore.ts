@@ -68,6 +68,7 @@ export class LegendMarketplaceBaseStore {
     // marketplace
     this.marketplaceServerClient = new MarketplaceServerClient({
       serverUrl: this.applicationStore.config.marketplaceServerUrl,
+      subscriptionUrl: this.applicationStore.config.marketplaceSubscriptionUrl,
     });
     this.marketplaceServerClient.setTracerService(
       this.applicationStore.tracerService,
