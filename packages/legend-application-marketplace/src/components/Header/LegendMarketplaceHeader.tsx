@@ -15,12 +15,13 @@
  */
 
 import {
+  clsx,
   ControlledDropdownMenu,
   MenuContent,
   MenuContentItem,
   MenuIcon,
 } from '@finos/legend-art';
-import { AppBar, Box, Container, Toolbar } from '@mui/material';
+import { AppBar, Box, Button, Container, Toolbar } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { LEGEND_MARKETPLACE_TEST_ID } from '../../__lib__/LegendMarketplaceTesting.js';
@@ -28,6 +29,7 @@ import { LegendMarketplaceAppInfo } from './LegendMarketplaceAppInfo.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { LEGEND_MARKETPLACE_ROUTE_PATTERN } from '../../__lib__/LegendMarketplaceNavigation.js';
 import { LegendMarketplaceIconToolbar } from './LegendMarketplaceIconToolbar.js';
+import { matchPath } from '@finos/legend-application/browser';
 
 const LegendMarketplaceHeaderMenu = observer(() => {
   // about modal
@@ -69,15 +71,25 @@ const LegendMarketPlaceHeaderTabs = observer(
 
     return (
       <Box className="legend-marketplace-header__tabs">
-        {pages.map((page) => (
-          <div
-            key={page.title}
-            className="legend-marketplace-header__tab"
-            onClick={() => navigateToPage(page.urlRoute)}
-          >
-            {page.title}
-          </div>
-        ))}
+        {pages.map((page) => {
+          const isSelectedTab =
+            matchPath(
+              page.urlRoute,
+              applicationStore.navigationService.navigator.getCurrentLocation(),
+            ) !== null;
+
+          return (
+            <Button
+              key={page.title}
+              className={clsx('legend-marketplace-header__tab', {
+                'legend-marketplace-header__tab--selected': isSelectedTab,
+              })}
+              onClick={() => navigateToPage(page.urlRoute)}
+            >
+              {page.title}
+            </Button>
+          );
+        })}
       </Box>
     );
   },

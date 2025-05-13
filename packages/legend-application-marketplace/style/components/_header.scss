@@ -36,13 +36,21 @@
   &__tabs {
     display: flex;
     flex-grow: 1;
+    align-self: stretch;
   }
 
   &__tab {
+    @include flexVCenter;
+
     color: var(--color-white);
     font-size: 16px;
-    margin: 1rem;
-    cursor: pointer;
+    padding: 1rem 2rem;
+    text-transform: unset;
+    border-radius: unset;
+
+    &--selected {
+      background: var(--color-blue-300);
+    }
   }
 
   &__icons {
