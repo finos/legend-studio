@@ -86,7 +86,7 @@ export type DataCubeSnapshotData = {
   groupExtendedColumns: DataCubeSnapshotExtendedColumn[];
   sortColumns: DataCubeSnapshotSortColumn[];
   limit: number | undefined;
-  tree?: DataCubeDimensionalTree | undefined;
+  dimensionalTree?: DataCubeDimensionalTree | undefined;
 };
 
 export class DataCubeSnapshot {

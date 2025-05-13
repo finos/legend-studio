@@ -147,6 +147,7 @@ export class DataCubeEditorState extends DataCubeSnapshotController {
     return 'editor';
   }
 
+  //TODO: for dimensional grid, we need to reload the grid when we apply changes
   async applyChanges(options?: { closeAfterApply?: boolean | undefined }) {
     this.finalizationState.inProgress();
 

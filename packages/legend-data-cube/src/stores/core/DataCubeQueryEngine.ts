@@ -276,6 +276,7 @@ export enum DataCubeGridMode {
 export enum DataCubeClientModelOption {
   ROW_DATA = 'rowData',
   COLUMN_DEFS = 'columnDefs',
+  LOADING = 'loading',
 }
 
 export enum DataCubeTitleBarMenuItems {

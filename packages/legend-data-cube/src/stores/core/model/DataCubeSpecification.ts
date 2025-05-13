@@ -21,6 +21,7 @@ import {
 } from '@finos/legend-shared';
 import { createModelSchema, optional, primitive, raw } from 'serializr';
 import { DataCubeConfiguration } from './DataCubeConfiguration.js';
+import { DataCubeDimensionalTree } from '../../view/grid/DataCubeGridDimensionalTree.js';
 
 export class DataCubeSpecificationOptions {
   autoEnableCache?: boolean | undefined;
@@ -37,6 +38,7 @@ export class DataCubeSpecification {
   configuration?: DataCubeConfiguration | undefined;
   source!: PlainObject;
   options?: DataCubeSpecificationOptions | undefined;
+  dimensionalTree?: DataCubeDimensionalTree | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(DataCubeSpecification, {
@@ -48,6 +50,9 @@ export class DataCubeSpecification {
       ),
       query: primitive(),
       source: raw(),
+      dimensionalTree: optional(
+        usingModelSchema(DataCubeDimensionalTree.serialization.schema),
+      ),
     }),
   );
 }
