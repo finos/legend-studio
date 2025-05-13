@@ -57,61 +57,103 @@ const LegendMarketplaceHeaderMenu = observer(() => {
   );
 });
 
-const LegendMarketPlaceHeaderTabs = observer(() => {
-  const applicationStore = useApplicationStore();
-  const pageTabs = [
-    {
-      title: 'Vendor Data',
-      urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.VENDOR_DATA,
-    },
-  ];
-  const navigateToPage = (route: string): void => {
-    applicationStore.navigationService.navigator.goToLocation(route);
-  };
+const LegendMarketPlaceHeaderTabs = observer(
+  (props: { pages: { title: string; urlRoute: string }[] }) => {
+    const { pages } = props;
 
+    const applicationStore = useApplicationStore();
+
+    const navigateToPage = (route: string): void => {
+      applicationStore.navigationService.navigator.goToLocation(route);
+    };
+
+    return (
+      <Box className="legend-marketplace-header__tabs">
+        {pages.map((page) => (
+          <div
+            key={page.title}
+            className="legend-marketplace-header__tab"
+            onClick={() => navigateToPage(page.urlRoute)}
+          >
+            {page.title}
+          </div>
+        ))}
+      </Box>
+    );
+  },
+);
+
+const LegendMarketplaceBaseHeader = observer(
+  (props: {
+    headerName: string;
+    homeUrl: string;
+    pages: { title: string; urlRoute: string }[];
+    showIcons?: boolean;
+  }) => {
+    const { headerName, homeUrl, pages, showIcons } = props;
+
+    const applicationStore = useApplicationStore();
+
+    const navigateToHome = (): void => {
+      applicationStore.navigationService.navigator.goToLocation(homeUrl);
+    };
+
+    return (
+      <AppBar
+        position="sticky"
+        className="legend-marketplace-header"
+        data-testid={LEGEND_MARKETPLACE_TEST_ID.HEADER}
+      >
+        <Container maxWidth="xxl">
+          <Toolbar disableGutters={true}>
+            <LegendMarketplaceHeaderMenu />
+            <div
+              className="legend-marketplace-header__name"
+              onClick={() => navigateToHome()}
+            >
+              {headerName}
+            </div>
+            <LegendMarketPlaceHeaderTabs pages={pages} />
+            {showIcons && <LegendMarketplaceIconToolbar />}
+          </Toolbar>
+        </Container>
+      </AppBar>
+    );
+  },
+);
+
+export const LegendMarketplaceHeader = observer(() => {
   return (
-    <Box className="legend-marketplace-header__tabs">
-      {pageTabs.map((tab) => (
-        <div
-          key={tab.title}
-          className="legend-marketplace-header__tab"
-          onClick={() => navigateToPage(tab.urlRoute)}
-        >
-          {tab.title}
-        </div>
-      ))}
-    </Box>
+    <LegendMarketplaceBaseHeader
+      headerName="Legend Marketplace"
+      homeUrl={LEGEND_MARKETPLACE_ROUTE_PATTERN.DEFAULT}
+      pages={[
+        {
+          title: 'Vendor Data',
+          urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.VENDOR_DATA,
+        },
+      ]}
+      showIcons={true}
+    />
   );
 });
 
-export const LegendMarketplaceHeader = observer(() => {
-  const applicationStore = useApplicationStore();
-
-  const navigateToHome = (): void => {
-    applicationStore.navigationService.navigator.goToLocation(
-      LEGEND_MARKETPLACE_ROUTE_PATTERN.DEFAULT,
-    );
-  };
-
+export const MarketplaceLakehouseHeader = observer(() => {
   return (
-    <AppBar
-      position="sticky"
-      className="legend-marketplace-header"
-      data-testid={LEGEND_MARKETPLACE_TEST_ID.HEADER}
-    >
-      <Container maxWidth="xxl">
-        <Toolbar disableGutters={true}>
-          <LegendMarketplaceHeaderMenu />
-          <div
-            className="legend-marketplace-header__name"
-            onClick={() => navigateToHome()}
-          >
-            Legend Marketplace
-          </div>
-          <LegendMarketPlaceHeaderTabs />
-          <LegendMarketplaceIconToolbar />
-        </Toolbar>
-      </Container>
-    </AppBar>
+    <LegendMarketplaceBaseHeader
+      headerName="Legend Lakehouse"
+      homeUrl={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE}
+      pages={[
+        {
+          title: 'Entitlements',
+          urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS,
+        },
+        {
+          title: 'Subscriptions',
+          urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SUBSCRIPTIONS,
+        },
+      ]}
+      showIcons={false}
+    />
   );
 });
