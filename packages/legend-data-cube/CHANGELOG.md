@@ -1,5 +1,11 @@
 # @finos/legend-data-cube
 
+## 0.2.0
+
+### Minor Changes
+
+- [#3988](https://github.com/finos/legend-studio/pull/3988) [`3b854bc`](https://github.com/finos/legend-studio/commit/3b854bc217f53b8f3c300e499e1bb058f144ed74) ([@gs-gunjan](https://github.com/gs-gunjan)) - Implementing multi-dimensional grid mode (essbase view) in DataCube
+
 ## 0.1.32
 
 ### Patch Changes

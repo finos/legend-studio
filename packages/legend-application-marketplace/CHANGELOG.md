@@ -1,5 +1,13 @@
 # @finos/legend-application-marketplace
 
+## 0.0.24
+
+### Patch Changes
+
+- [#4037](https://github.com/finos/legend-studio/pull/4037) [`23134c0`](https://github.com/finos/legend-studio/commit/23134c0d5d741576fb0121284c2f784144da7060) ([@kelly-thai](https://github.com/kelly-thai)) - Added Vendor Details page for Open-Sourced Marketplace
+
+- [#4068](https://github.com/finos/legend-studio/pull/4068) [`519701f`](https://github.com/finos/legend-studio/commit/519701f97e7eb1d241553f4de86a4884a68d30c8) ([@kelly-thai](https://github.com/kelly-thai)) - Added Subscriptions page for Open Sourced Marketplace
+
 ## 0.0.23
 
 ## 0.0.22
