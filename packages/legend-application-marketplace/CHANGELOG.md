@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.0.25
+
+### Patch Changes
+
+- [#4074](https://github.com/finos/legend-studio/pull/4074) [`d07da97`](https://github.com/finos/legend-studio/commit/d07da9724640c4e202e2a5726380716364877eac) ([@travisstebbins](https://github.com/travisstebbins)) - Simplify Marketplace header component and fix Lakehouse header styling
+
 ## 0.0.24
 
 ### Patch Changes
