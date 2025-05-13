@@ -15,11 +15,13 @@
  */
 
 import {
+  clsx,
   ControlledDropdownMenu,
   MenuContent,
   MenuContentItem,
   MenuIcon,
 } from '@finos/legend-art';
+import { AppBar, Box, Button, Container, Toolbar } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { LEGEND_MARKETPLACE_TEST_ID } from '../../__lib__/LegendMarketplaceTesting.js';
@@ -27,6 +29,7 @@ import { LegendMarketplaceAppInfo } from './LegendMarketplaceAppInfo.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { LEGEND_MARKETPLACE_ROUTE_PATTERN } from '../../__lib__/LegendMarketplaceNavigation.js';
 import { LegendMarketplaceIconToolbar } from './LegendMarketplaceIconToolbar.js';
+import { matchPath } from '@finos/legend-application/browser';
 
 const LegendMarketplaceHeaderMenu = observer(() => {
   // about modal
@@ -36,82 +39,133 @@ const LegendMarketplaceHeaderMenu = observer(() => {
 
   return (
     <>
-      <div className="legend-marketplace-header__menu">
-        <ControlledDropdownMenu
-          className="legend-marketplace-header__menu-item"
-          menuProps={{
-            anchorOrigin: { vertical: 'top', horizontal: 'right' },
-            transformOrigin: { vertical: 'top', horizontal: 'left' },
-            elevation: 7,
-          }}
-          content={
-            <MenuContent>
-              <MenuContentItem onClick={showAppInfo}>About</MenuContentItem>
-            </MenuContent>
-          }
-        >
-          <MenuIcon />
-        </ControlledDropdownMenu>
-      </div>
+      <ControlledDropdownMenu
+        className="legend-marketplace-header__menu"
+        menuProps={{
+          anchorOrigin: { vertical: 'top', horizontal: 'right' },
+          transformOrigin: { vertical: 'top', horizontal: 'left' },
+          elevation: 7,
+        }}
+        content={
+          <MenuContent>
+            <MenuContentItem onClick={showAppInfo}>About</MenuContentItem>
+          </MenuContent>
+        }
+      >
+        <MenuIcon />
+      </ControlledDropdownMenu>
       <LegendMarketplaceAppInfo open={openAppInfo} closeModal={hideAppInfo} />
     </>
   );
 });
 
-const LegendMarketPlaceHeaderTabs = observer(() => {
-  const applicationStore = useApplicationStore();
-  const pageTabs = [
-    {
-      title: 'Vendor Data',
-      urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.VENDOR_DATA,
-    },
-  ];
-  const navigateToPage = (route: string): void => {
-    applicationStore.navigationService.navigator.goToLocation(route);
-  };
+const LegendMarketPlaceHeaderTabs = observer(
+  (props: { pages: { title: string; urlRoute: string }[] }) => {
+    const { pages } = props;
 
+    const applicationStore = useApplicationStore();
+
+    const navigateToPage = (route: string): void => {
+      applicationStore.navigationService.navigator.goToLocation(route);
+    };
+
+    return (
+      <Box className="legend-marketplace-header__tabs">
+        {pages.map((page) => {
+          const isSelectedTab =
+            matchPath(
+              page.urlRoute,
+              applicationStore.navigationService.navigator.getCurrentLocation(),
+            ) !== null;
+
+          return (
+            <Button
+              key={page.title}
+              className={clsx('legend-marketplace-header__tab', {
+                'legend-marketplace-header__tab--selected': isSelectedTab,
+              })}
+              onClick={() => navigateToPage(page.urlRoute)}
+            >
+              {page.title}
+            </Button>
+          );
+        })}
+      </Box>
+    );
+  },
+);
+
+const LegendMarketplaceBaseHeader = observer(
+  (props: {
+    headerName: string;
+    homeUrl: string;
+    pages: { title: string; urlRoute: string }[];
+    showIcons?: boolean;
+  }) => {
+    const { headerName, homeUrl, pages, showIcons } = props;
+
+    const applicationStore = useApplicationStore();
+
+    const navigateToHome = (): void => {
+      applicationStore.navigationService.navigator.goToLocation(homeUrl);
+    };
+
+    return (
+      <AppBar
+        position="sticky"
+        className="legend-marketplace-header"
+        data-testid={LEGEND_MARKETPLACE_TEST_ID.HEADER}
+      >
+        <Container maxWidth="xxl">
+          <Toolbar disableGutters={true}>
+            <LegendMarketplaceHeaderMenu />
+            <div
+              className="legend-marketplace-header__name"
+              onClick={() => navigateToHome()}
+            >
+              {headerName}
+            </div>
+            <LegendMarketPlaceHeaderTabs pages={pages} />
+            {showIcons && <LegendMarketplaceIconToolbar />}
+          </Toolbar>
+        </Container>
+      </AppBar>
+    );
+  },
+);
+
+export const LegendMarketplaceHeader = observer(() => {
   return (
-    <div className="legend-marketplace-header__container">
-      {pageTabs.map((tab) => (
-        <div
-          key={tab.title}
-          className="legend-marketplace-header__tab"
-          onClick={() => navigateToPage(tab.urlRoute)}
-        >
-          {tab.title}
-        </div>
-      ))}
-    </div>
+    <LegendMarketplaceBaseHeader
+      headerName="Legend Marketplace"
+      homeUrl={LEGEND_MARKETPLACE_ROUTE_PATTERN.DEFAULT}
+      pages={[
+        {
+          title: 'Vendor Data',
+          urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.VENDOR_DATA,
+        },
+      ]}
+      showIcons={true}
+    />
   );
 });
 
-export const LegendMarketplaceHeader = observer(() => {
-  const applicationStore = useApplicationStore();
-
-  const navigateToHome = (): void => {
-    applicationStore.navigationService.navigator.goToLocation(
-      LEGEND_MARKETPLACE_ROUTE_PATTERN.DEFAULT,
-    );
-  };
-
+export const MarketplaceLakehouseHeader = observer(() => {
   return (
-    <div
-      className="legend-marketplace-header"
-      data-testid={LEGEND_MARKETPLACE_TEST_ID.HEADER}
-    >
-      <div className="legend-marketplace-header__container">
-        <LegendMarketplaceHeaderMenu />
-        <div
-          className="legend-marketplace-header__name"
-          onClick={() => navigateToHome()}
-        >
-          Legend Marketplace
-        </div>
-
-        <LegendMarketPlaceHeaderTabs />
-      </div>
-
-      <LegendMarketplaceIconToolbar />
-    </div>
+    <LegendMarketplaceBaseHeader
+      headerName="Legend Lakehouse"
+      homeUrl={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE}
+      pages={[
+        {
+          title: 'Entitlements',
+          urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS,
+        },
+        {
+          title: 'Subscriptions',
+          urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SUBSCRIPTIONS,
+        },
+      ]}
+      showIcons={false}
+    />
   );
 });

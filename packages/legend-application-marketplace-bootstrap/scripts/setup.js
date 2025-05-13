@@ -43,6 +43,7 @@ export const setup = (outputDir) => {
         env: 'local',
         marketplace: {
           url: 'http://localhost:6400/api',
+          subscriptionUrl: 'http://localhost:6400/subscriptions/api',
           oidcConfig: {
             redirectPath: '/callback',
             silentRedirectPath: '/callback?silent=true',

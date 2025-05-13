@@ -52,8 +52,10 @@ import { LakehouseDataProduct } from '../pages/Lakehouse/LakehouseDataProduct.js
 import { LegendMarketplaceVendorData } from '../pages/VendorData/LegendMarketplaceVendorData.js';
 import { LakehouseEntitlements } from '../pages/Lakehouse/entitlements/LakehouseEntitlements.js';
 import { LakehouseSubscriptions } from '../pages/Lakehouse/subscriptions/LakehouseSubscriptions.js';
-import { LegendMarketplaceHeader } from '../components/Header/LegendMarketplaceHeader.js';
-import { MarketplaceLakehouseHeader } from '../components/Header/MarketplaceLakehouseHeader.js';
+import {
+  LegendMarketplaceHeader,
+  MarketplaceLakehouseHeader,
+} from '../components/Header/LegendMarketplaceHeader.js';
 import { LegendMarketplacePage } from '../pages/LegendMarketplacePage.js';
 import { LegendMarketplaceVendorDetails } from '../pages/VendorDetails/LegendMarketplaceVendorDetails.js';
 import { LegendMarketplaceSubscriptions } from '../pages/Profile/LegendMarketplaceSubscriptions.js';

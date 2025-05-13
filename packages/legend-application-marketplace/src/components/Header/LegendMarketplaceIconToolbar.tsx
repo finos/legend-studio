@@ -27,6 +27,7 @@ import {
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { LEGEND_MARKETPLACE_ROUTE_PATTERN } from '../../__lib__/LegendMarketplaceNavigation.js';
+import { Box } from '@mui/material';
 
 export const LegendMarketplaceIconToolbar = observer(() => {
   const applicationStore = useApplicationStore();
@@ -105,12 +106,12 @@ export const LegendMarketplaceIconToolbar = observer(() => {
   ];
 
   return (
-    <div className="legend-marketplace-header__container">
+    <Box className="legend-marketplace-header__icons">
       {toolbarIcons.map((item) => (
-        <div key={item.title} className="legend-marketplace-toolbar__icon">
+        <div key={item.title} className="legend-marketplace-header__icon">
           {item.renderer()}
         </div>
       ))}
-    </div>
+    </Box>
   );
 });
