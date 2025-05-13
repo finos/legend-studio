@@ -20,36 +20,22 @@
   @include flexVCenter;
 
   background: var(--color-blue-500);
-  height: 6rem;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  justify-content: space-between;
 
-  &__menu {
-    height: 3.4rem;
-    width: 5rem;
-    background: var(--color-blue-500);
-  }
-
-  &__menu-item {
-    @include flexCenter;
-
-    height: 3.4rem;
-    width: 100%;
-    color: var(--color-white);
-
-    svg {
-      font-size: 2.3rem;
-    }
+  &__menu svg {
+    font-size: 2.3rem;
   }
 
   &__name {
     color: var(--color-white);
     font-size: 2rem;
     font-weight: 700;
-    margin: 1rem;
+    margin: 1rem 2rem;
     cursor: pointer;
+  }
+
+  &__tabs {
+    display: flex;
+    flex-grow: 1;
   }
 
   &__tab {
@@ -59,25 +45,17 @@
     cursor: pointer;
   }
 
-  &__container {
+  &__icons {
     display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 1rem;
-    width: auto;
+    flex-grow: 0;
   }
 
-  .legend-marketplace-toolbar {
-    margin-left: auto;
-    display: flex;
+  &__icon {
+    @include flexCenter;
 
-    &__icon {
-      @include flexCenter;
-
-      color: white;
-      width: 3rem;
-      font-size: 2rem;
-    }
+    color: white;
+    width: 3rem;
+    font-size: 2rem;
   }
 }
 
