@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace-bootstrap
 
+## 13.60.0
+
+### Patch Changes
+
+- [#4074](https://github.com/finos/legend-studio/pull/4074) [`d07da97`](https://github.com/finos/legend-studio/commit/d07da9724640c4e202e2a5726380716364877eac) ([@travisstebbins](https://github.com/travisstebbins)) - Add subscriptionUrl to marketplace setup script
+
 ## 13.59.0
 
 ## 13.58.0
