@@ -46,8 +46,7 @@ export class LakehouseEntitlementsStore {
   readonly applicationIdUrl: string | undefined;
   readonly directoryCallBack: ((user: string) => void) | undefined;
   readonly applicationCallBack: ((applicationId: string) => void) | undefined;
-  dashboardInitializationState = ActionState.create();
-  currentViewerInitializationState = ActionState.create();
+  currentViewerFetchStatus = ActionState.create();
   dashboardViewer: LakehouseViewerState | undefined;
   currentViewer: LakehouseViewerState | undefined;
 
@@ -97,12 +96,9 @@ export class LakehouseEntitlementsStore {
 
   *initDashboard(token: string | undefined): GeneratorFn<void> {
     this.setDashboardViewer(undefined);
-    this.dashboardInitializationState.inProgress();
     const dashboardViewer = new EntitlementsDashboardState(this);
     this.setDashboardViewer(dashboardViewer);
-    flowResult(dashboardViewer.init(token)).finally(() =>
-      this.dashboardInitializationState.complete(),
-    );
+    flowResult(dashboardViewer.init(token));
   }
 
   *initWithTaskId(
@@ -110,7 +106,7 @@ export class LakehouseEntitlementsStore {
     token: string | undefined,
   ): GeneratorFn<void> {
     try {
-      this.currentViewerInitializationState.inProgress();
+      this.currentViewerFetchStatus.inProgress();
       this.setCurrentViewer(undefined);
       const rawTasks = (yield this.lakehouseServerClient.getTask(
         taskId,
@@ -121,24 +117,25 @@ export class LakehouseEntitlementsStore {
         tasks[0],
         `Task with id '${taskId}' not found`,
       );
+      this.currentViewerFetchStatus.complete();
       const currentTask = new EntitlementsTaskViewerState(task, this);
       this.setCurrentViewer(currentTask);
-      flowResult(currentTask.init(token))
-        .catch(this.applicationStore.alertUnhandledError)
-        .finally(() => this.currentViewerInitializationState.complete());
+      flowResult(currentTask.init(token)).catch(
+        this.applicationStore.alertUnhandledError,
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(
         `Unable to render task page: ${error.message}`,
       );
     } finally {
-      this.currentViewerInitializationState.complete();
+      this.currentViewerFetchStatus.complete();
     }
   }
 
   *initWithContract(id: string, token: string | undefined): GeneratorFn<void> {
     try {
-      this.currentViewerInitializationState.inProgress();
+      this.currentViewerFetchStatus.inProgress();
       this.setCurrentViewer(undefined);
       const dataContracts = (yield this.lakehouseServerClient.getDataContract(
         id,
@@ -153,18 +150,19 @@ export class LakehouseEntitlementsStore {
         dataContract,
         'Data Contract not found',
       );
+      this.currentViewerFetchStatus.complete();
       const currentViewer = new EntitlementsDataContractViewerState(
         contract,
         this,
       );
       this.setCurrentViewer(currentViewer);
-      flowResult(currentViewer.init(token))
-        .catch(this.applicationStore.alertUnhandledError)
-        .finally(() => this.currentViewerInitializationState.complete());
+      flowResult(currentViewer.init(token)).catch(
+        this.applicationStore.alertUnhandledError,
+      );
     } catch (error) {
       assertErrorThrown(error);
     } finally {
-      this.currentViewerInitializationState.complete();
+      this.currentViewerFetchStatus.complete();
     }
   }
 }

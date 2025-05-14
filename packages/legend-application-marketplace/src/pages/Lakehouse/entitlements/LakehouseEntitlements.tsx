@@ -49,7 +49,9 @@ export const LakehouseEntitlements = withLakehouseEntitlementsStore(
     const params = useParams<LakehouseEntitlementsTasksParam>();
 
     useEffect(() => {
-      if (!entitlementsStore.dashboardInitializationState.hasCompleted) {
+      if (
+        !entitlementsStore.dashboardViewer?.initializationState.hasCompleted
+      ) {
         entitlementsStore.initDashboard(auth.user?.access_token);
       }
       if (params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.TASK_ID]) {
@@ -73,7 +75,7 @@ export const LakehouseEntitlements = withLakehouseEntitlementsStore(
       <LegendMarketplacePage className="legend-marketplace-lakehouse-entitlements">
         <CubesLoadingIndicator
           isLoading={Boolean(
-            entitlementsStore.dashboardInitializationState.isInProgress,
+            entitlementsStore.dashboardViewer?.initializationState.isInProgress,
           )}
         >
           <CubesLoadingIndicatorIcon />
@@ -104,7 +106,7 @@ export const LakehouseEntitlements = withLakehouseEntitlementsStore(
         >
           <CubesLoadingIndicator
             isLoading={Boolean(
-              entitlementsStore.currentViewerInitializationState.isInProgress ||
+              entitlementsStore.currentViewerFetchStatus.isInProgress ||
                 entitlementsStore.currentViewer?.initializationState
                   .isInProgress,
             )}

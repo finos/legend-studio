@@ -86,6 +86,7 @@ export class EntitlementsDataContractViewerState extends LakehouseViewerState {
 
   *init(token: string | undefined): GeneratorFn<void> {
     try {
+      this.initializationState.inProgress();
       this.setAssociatedTasks(undefined);
       const pendingContracts =
         (yield this.state.lakehouseServerClient.getContractTasks(
@@ -96,6 +97,8 @@ export class EntitlementsDataContractViewerState extends LakehouseViewerState {
       this.setAssociatedTasks(tasks.map((e) => e.rec));
     } catch (error) {
       assertErrorThrown(error);
+    } finally {
+      this.initializationState.complete();
     }
   }
 }

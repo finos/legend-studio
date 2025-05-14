@@ -85,12 +85,17 @@ export class EntitlementsTaskViewerState extends LakehouseViewerState {
   }
 
   *init(token: string | undefined): GeneratorFn<void> {
-    flowResult(this.calculateApprovalRights(token)).catch(
-      this.state.applicationStore.alertUnhandledError,
-    );
-    flowResult(this.fetchContract(token)).catch(
-      this.state.applicationStore.alertUnhandledError,
-    );
+    this.initializationState.inProgress();
+    Promise.all([
+      flowResult(this.calculateApprovalRights(token)).catch(
+        this.state.applicationStore.alertUnhandledError,
+      ),
+      flowResult(this.fetchContract(token)).catch(
+        this.state.applicationStore.alertUnhandledError,
+      ),
+    ])
+      .catch(this.state.applicationStore.alertUnhandledError)
+      .finally(() => this.initializationState.complete());
   }
 
   setCanApprove(val: boolean | undefined): void {

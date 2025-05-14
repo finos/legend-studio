@@ -62,6 +62,7 @@ export class EntitlementsDashboardState extends LakehouseViewerState {
   }
 
   *init(token: string | undefined): GeneratorFn<void> {
+    this.initializationState.inProgress();
     Promise.all([
       flowResult(this.fetchPendingTasks(token)).catch(
         this.state.applicationStore.alertUnhandledError,
@@ -69,7 +70,9 @@ export class EntitlementsDashboardState extends LakehouseViewerState {
       flowResult(this.fetchPendingContracts(token)).catch(
         this.state.applicationStore.alertUnhandledError,
       ),
-    ]).catch(this.state.applicationStore.alertUnhandledError);
+    ])
+      .catch(this.state.applicationStore.alertUnhandledError)
+      .finally(() => this.initializationState.complete());
   }
 
   *fetchPendingContracts(token: string | undefined): GeneratorFn<void> {
