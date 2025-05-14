@@ -123,21 +123,21 @@ export const LakehouseEntitlements = withLakehouseEntitlementsStore(
           >
             <CubesLoadingIndicatorIcon />
           </CubesLoadingIndicator>
-          {entitlementsStore.currentViewer instanceof
-            EntitlementsTaskViewerState &&
-          entitlementsStore.currentViewer.initializationState.hasCompleted ? (
-            <EntitlementsTaskViewer
-              currentViewer={entitlementsStore.currentViewer}
-            />
-          ) : entitlementsStore.currentViewer instanceof
-              EntitlementsDataContractViewerState &&
-            entitlementsStore.currentViewer.initializationState.hasCompleted ? (
-            <EntitlementsDataContractViewer
-              currentViewer={entitlementsStore.currentViewer}
-            />
-          ) : (
-            <p>Unable to display viewer</p>
-          )}
+          {entitlementsStore.currentViewer?.initializationState.hasCompleted ? (
+            entitlementsStore.currentViewer instanceof
+            EntitlementsTaskViewerState ? (
+              <EntitlementsTaskViewer
+                currentViewer={entitlementsStore.currentViewer}
+              />
+            ) : entitlementsStore.currentViewer instanceof
+              EntitlementsDataContractViewerState ? (
+              <EntitlementsDataContractViewer
+                currentViewer={entitlementsStore.currentViewer}
+              />
+            ) : (
+              <p>Cannot display item</p>
+            )
+          ) : null}
         </Drawer>
       </LegendMarketplacePage>
     );
