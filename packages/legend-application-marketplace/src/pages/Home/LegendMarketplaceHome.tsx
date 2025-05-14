@@ -26,6 +26,7 @@ import { shuffle } from '@finos/legend-shared';
 import { LegendMarketplaceLightDataProductCard } from '../../components/DataProductCard/LegendMarketplaceLightDataProductCard.js';
 import { Grid2 as Grid } from '@mui/material';
 import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
+import { useLegendMarketplaceBaseStore } from '../../application/LegendMarketplaceFrameworkProvider.js';
 
 // Temporary placeholder data for assets
 
@@ -70,6 +71,7 @@ const dataAssets: LightDataProduct[] = [
 
 export const LegendMarketplaceHome = observer(() => {
   const applicationStore = useApplicationStore();
+  const store = useLegendMarketplaceBaseStore();
 
   const onSearch = (
     provider: string | undefined,
@@ -121,6 +123,36 @@ export const LegendMarketplaceHome = observer(() => {
               />
             </Grid>
           ))}
+        </Grid>
+      </div>
+
+      <div className="legend-marketplace-home__vendors-title">
+        <h3>Explore our Solutions</h3>
+      </div>
+      <div className="legend-marketplace-home__vendors-cards">
+        <Grid
+          container={true}
+          spacing={{ xs: 2, md: 3, xl: 4 }}
+          columns={{ xs: 1, sm: 2, md: 3, xl: 6 }}
+          sx={{ justifyContent: 'center' }}
+        >
+          {store.marketplaceVendorDataState.terminalProvidersAsDataProducts.map(
+            (asset) => (
+              <Grid
+                key={`${asset.provider}.${asset.type}.${asset.description}`}
+                size={1}
+              >
+                <LegendMarketplaceLightDataProductCard
+                  dataAsset={asset}
+                  onClick={(dataAsset: LightDataProduct) => {
+                    applicationStore.navigationService.navigator.goToLocation(
+                      generateVendorDetailsRoute(dataAsset.provider),
+                    );
+                  }}
+                />
+              </Grid>
+            ),
+          )}
         </Grid>
       </div>
     </LegendMarketplacePage>

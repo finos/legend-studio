@@ -16,14 +16,16 @@
 
 import {
   ProviderResult,
+  type LightDataProduct,
   type MarketplaceServerClient,
 } from '@finos/legend-server-marketplace';
-import { makeObservable, observable } from 'mobx';
+import { flowResult, makeObservable, observable } from 'mobx';
 import type {
   LegendMarketplaceApplicationStore,
   LegendMarketplaceBaseStore,
 } from './LegendMarketplaceBaseStore.js';
 import type { PlainObject } from '@finos/legend-shared';
+import { VendorDataProviderType } from '../pages/VendorData/LegendMarketplaceVendorData.js';
 
 export class LegendMarketPlaceVendorDataState {
   readonly applicationStore: LegendMarketplaceApplicationStore;
@@ -34,7 +36,10 @@ export class LegendMarketPlaceVendorDataState {
 
   dataFeedProviders: ProviderResult[] = [];
   terminalProviders: ProviderResult[] = [];
+  terminalProvidersAsDataProducts: LightDataProduct[] = [];
   addOnProviders: ProviderResult[] = [];
+
+  providerDisplayState: VendorDataProviderType = VendorDataProviderType.ALL;
 
   constructor(
     applicationStore: LegendMarketplaceApplicationStore,
@@ -45,11 +50,39 @@ export class LegendMarketPlaceVendorDataState {
       terminalProviders: observable,
       addOnProviders: observable,
       populateProviders: observable,
+      providerDisplayState: observable,
+      setProviderDisplayState: observable,
+      terminalProvidersAsDataProducts: observable,
     });
 
     this.applicationStore = applicationStore;
     this.store = store;
     this.marketplaceServerClient = store.marketplaceServerClient;
+
+    this.init();
+  }
+
+  init(): void {
+    flowResult(this.populateProviders())
+      .then(() => {
+        this.terminalProvidersAsDataProducts = this.terminalProviders.map(
+          (provider) =>
+            ({
+              description: provider.description,
+              provider: provider.providerName,
+              type: 'vendor',
+            }) as LightDataProduct,
+        );
+      })
+      .catch((error) => {
+        this.applicationStore.notificationService.notifyError(
+          `Failed to initialize vendors: ${error}`,
+        );
+      });
+  }
+
+  setProviderDisplayState(value: VendorDataProviderType): void {
+    this.providerDisplayState = value;
   }
 
   *populateProviders() {
