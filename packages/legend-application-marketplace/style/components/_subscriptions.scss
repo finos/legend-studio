@@ -23,6 +23,7 @@
   background: var(--color-hclight-white);
   color: var(--color-hclight-grey-90);
   font-family: Roboto, sans-serif;
+  padding: 2rem;
 
   &__header {
     @include flexVCenter;
