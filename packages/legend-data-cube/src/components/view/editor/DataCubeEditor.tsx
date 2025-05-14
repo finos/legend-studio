@@ -29,6 +29,7 @@ import { useDataCube } from '../../DataCubeProvider.js';
 import { DataCubeEditorDimensionsPanel } from './DataCubeEditorDimensionsPanel.js';
 import { DataCubeEvent } from '../../../__lib__/DataCubeEvent.js';
 import { isDimensionalGridMode } from '../../../stores/core/DataCubeQueryEngine.js';
+import { useEffect } from 'react';
 
 export const DataCubeEditor = observer((props: { view: DataCubeViewState }) => {
   const dataCube = useDataCube();
@@ -55,6 +56,13 @@ export const DataCubeEditor = observer((props: { view: DataCubeViewState }) => {
       view.engine.getDataFromSource(view.getInitialSource()),
     );
   };
+
+  //TODO: remove this once we have more editors deisabled for
+  useEffect(() => {
+    if (isDimensionalGridMode(view.info.configuration.gridMode)) {
+      editor.setCurrentTab(DataCubeEditorTab.DIMENSIONS);
+    }
+  }, [view, editor]);
 
   return (
     <>

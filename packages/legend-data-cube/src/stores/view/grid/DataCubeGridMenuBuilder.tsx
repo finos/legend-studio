@@ -34,6 +34,7 @@ import {
 } from '../../core/DataCubeQueryEngine.js';
 import {
   guaranteeIsNumber,
+  guaranteeNonNullable,
   isNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
@@ -51,6 +52,7 @@ import { _findCol } from '../../core/model/DataCubeColumn.js';
 import { useGridMenuItem, type CustomMenuItemProps } from 'ag-grid-react';
 import { FormBadge_WIP } from '../../../components/core/DataCubeFormUtils.js';
 import { DataCubeEvent } from '../../../__lib__/DataCubeEvent.js';
+import type { DataCubeDimensionalMetadata } from './DataCubeGridDimensionalTree.js';
 
 export function WIP_GridMenuItem({
   name,
@@ -1040,6 +1042,21 @@ export function generateDimensionalMenuBuilder(
 
     //TODO: add more menu items like sort,filter...
     return [
+      {
+        name: 'Zoom Out',
+        action: (param) => {
+          const data = param.node?.data.metadata as Map<
+            string,
+            DataCubeDimensionalMetadata
+          >;
+          view.grid
+            .retrieveDrilloutData(
+              data,
+              guaranteeNonNullable(params.column?.getColId()),
+            )
+            .catch((error) => dataCube.alertService.alertUnhandledError(error));
+        },
+      },
       {
         name: 'Export',
         subMenu: [

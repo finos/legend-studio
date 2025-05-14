@@ -363,7 +363,7 @@ export function buildDimensionalExecutableQuery(
 
   // ------------------------------ DIMENSIONS -------------------------------------
 
-  if (data.tree && nodes.length > 0) {
+  if (data.dimensionalTree && nodes.length > 0) {
     const dimensionColNames = configuration.dimensions.dimensions.flatMap(
       (col) => col.columns,
     );

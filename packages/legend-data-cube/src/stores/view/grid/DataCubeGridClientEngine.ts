@@ -46,7 +46,10 @@ import {
 } from '../../core/model/DataCubeConfiguration.js';
 import { type DataCubeSnapshot } from '../../core/DataCubeSnapshot.js';
 import { _findCol, _sortByColName } from '../../core/model/DataCubeColumn.js';
-import { isPivotResultColumnName } from '../../core/DataCubeQueryEngine.js';
+import {
+  DataCubeClientModelOption,
+  isPivotResultColumnName,
+} from '../../core/DataCubeQueryEngine.js';
 import { buildSnapshotFromGridState } from './DataCubeGridSnapshotBuilder.js';
 import { AlertType } from '../../services/DataCubeAlertService.js';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
@@ -69,7 +72,9 @@ import {
   generateDimensionalPaths,
   type DataCubeDimensionalNode,
   type DataCubeDimensionalGroupByNode,
+  type DataCubeDimensionalTree,
   DIMENSIONAL_L0_COLUMN,
+  findExtraPaths,
 } from './DataCubeGridDimensionalTree.js';
 
 type DataCubeGridClientCellValue =
@@ -378,7 +383,7 @@ function _isParentRow(
       }
       return String(e) === String(n);
     });
-    return match && allCount >= 1 && allCount < dimensions.length;
+    return match && allCount >= 1 && allCount <= dimensions.length;
   }
 
   return dimensions.every((d) => {
@@ -455,6 +460,7 @@ async function getCastColumns(
 export async function fetchDimensionalQueryRows(
   snapshot: DataCubeSnapshot,
   view: DataCubeViewState,
+  previousTree?: DataCubeDimensionalTree,
 ) {
   const task = view.taskService.newTask('Fetching data...');
 
@@ -465,9 +471,19 @@ export async function fetchDimensionalQueryRows(
   );
 
   // upgrade here by not shooting extra sqls
-  const paths = generateDimensionalPaths(
-    guaranteeNonNullable(snapshot.data.tree),
+  let paths = generateDimensionalPaths(
+    guaranteeNonNullable(snapshot.data.dimensionalTree),
   );
+
+  if (previousTree) {
+    const oldPaths = generateDimensionalPaths(previousTree);
+    if (oldPaths.length <= paths.length) {
+      rowData = view.grid.client.getGridOption(
+        DataCubeClientModelOption.ROW_DATA,
+      ) as DataCubeGridClientRowData[];
+      paths = findExtraPaths(oldPaths, paths);
+    }
+  }
 
   for (const path of paths) {
     const executableQuery = buildDimensionalGridDataFetchExecutableQuery(
@@ -501,8 +517,6 @@ export async function fetchDimensionalQueryRows(
         rowData,
         configuration.dimensions.dimensions,
       );
-
-      view.taskService.endTask(task);
     } catch (error) {
       assertErrorThrown(error);
       if (error instanceof DataCubeExecutionError) {
@@ -543,6 +557,7 @@ export async function fetchDimensionalQueryRows(
     }
   }
 
+  view.taskService.endTask(task);
   return {
     rowData: rowData,
     columnDefs: generateColumnDefsForDimensions(snapshot, configuration),

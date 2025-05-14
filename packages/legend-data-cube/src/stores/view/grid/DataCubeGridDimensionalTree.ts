@@ -17,11 +17,23 @@
 import type { CellDoubleClickedEvent } from 'ag-grid-community';
 import type { DataCubeConfiguration } from '../../core/model/DataCubeConfiguration.js';
 import {
+  customList,
   guaranteeNonNullable,
   guaranteeType,
   hashArray,
+  SerializationFactory,
+  usingModelSchema,
   type Hashable,
+  type PlainObject,
+  type Writable,
 } from '@finos/legend-shared';
+import {
+  createModelSchema,
+  deserialize,
+  list,
+  primitive,
+  serialize,
+} from 'serializr';
 
 export const DIMENSIONAL_L0_COLUMN = 'ALL';
 
@@ -31,20 +43,33 @@ enum DimensionalNodeHashType {
   DIMENSIONAL_TREE = 'dimensionalTree',
 }
 
-export class DataCubeDimensionalTree implements Hashable {
-  rootNodes: DataCubeDimensionalNode[];
+export class DataCubeDimensionalGroupByNode implements Hashable {
+  column: string;
+  filter: string;
+  dimension: string;
 
-  constructor(rootNodes: DataCubeDimensionalNode[]) {
-    this.rootNodes = rootNodes;
+  constructor(column: string, filter: string, dimension: string) {
+    this.column = column;
+    this.filter = filter;
+    this.dimension = dimension;
   }
 
-  // TODO: improve hashing
   get hashCode(): string {
     return hashArray([
-      DimensionalNodeHashType.DIMENSIONAL_TREE,
-      hashArray(this.rootNodes),
+      DimensionalNodeHashType.GROUP_BY_NODE,
+      this.column,
+      this.filter,
+      this.dimension,
     ]);
   }
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(DataCubeDimensionalGroupByNode, {
+      column: primitive(),
+      filter: primitive(),
+      dimension: primitive(),
+    }),
+  );
 }
 
 export class DataCubeDimensionalNode implements Hashable {
@@ -72,27 +97,79 @@ export class DataCubeDimensionalNode implements Hashable {
       hashArray(this.groupByNodes),
     ]);
   }
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(DataCubeDimensionalNode, {
+      column: primitive(),
+      dimension: primitive(),
+      childNodes: customList(
+        serializeDataCubeDimensionalNode,
+        deSerializeDataCubeDimensionalNode,
+      ),
+      groupByNodes: list(
+        usingModelSchema(DataCubeDimensionalGroupByNode.serialization.schema),
+      ),
+    }),
+  );
 }
 
-export class DataCubeDimensionalGroupByNode implements Hashable {
-  column: string;
-  filter: string;
-  dimension: string;
+const dataCubeDimensionalNodeModelSchema = createModelSchema(
+  DataCubeDimensionalNode,
+  {
+    column: primitive(),
+    dimension: primitive(),
+    childNodes: customList(
+      serializeDataCubeDimensionalNode,
+      deSerializeDataCubeDimensionalNode,
+    ),
+    groupByNodes: list(
+      usingModelSchema(DataCubeDimensionalGroupByNode.serialization.schema),
+    ),
+  },
+);
 
-  constructor(column: string, filter: string, dimension: string) {
-    this.column = column;
-    this.filter = filter;
-    this.dimension = dimension;
+function serializeDataCubeDimensionalNode(
+  protocol: DataCubeDimensionalNode,
+): PlainObject<DataCubeDimensionalNode> {
+  return serialize(dataCubeDimensionalNodeModelSchema, protocol);
+}
+
+function deSerializeDataCubeDimensionalNode(
+  plainObject: PlainObject<DataCubeDimensionalNode>,
+): DataCubeDimensionalNode {
+  return deserialize(dataCubeDimensionalNodeModelSchema, plainObject);
+}
+
+export class DataCubeDimensionalTree implements Hashable {
+  rootNodes: DataCubeDimensionalNode[];
+
+  constructor(rootNodes: DataCubeDimensionalNode[]) {
+    this.rootNodes = rootNodes;
   }
 
+  // TODO: improve hashing
   get hashCode(): string {
     return hashArray([
-      DimensionalNodeHashType.GROUP_BY_NODE,
-      this.column,
-      this.filter,
-      this.dimension,
+      DimensionalNodeHashType.DIMENSIONAL_TREE,
+      hashArray(this.rootNodes),
     ]);
   }
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(DataCubeDimensionalTree, {
+      rootNodes: list(
+        usingModelSchema(DataCubeDimensionalNode.serialization.schema),
+      ),
+    }),
+  );
+}
+
+export function cloneDimensionalTree(tree: DataCubeDimensionalTree) {
+  let clone = new DataCubeDimensionalTree([]);
+  (clone as Writable<DataCubeDimensionalTree>) = JSON.parse(
+    JSON.stringify(tree),
+  ) as DataCubeDimensionalTree;
+  return clone;
 }
 
 export class DataCubeDimensionalMetadata {
@@ -241,6 +318,74 @@ export function hydrateDataCubeDimensionalTree(
   return safeTree;
 }
 
+export function removeSubtreeNode(
+  tree: DataCubeDimensionalTree,
+  targetDimension: string,
+  targetColumn: string,
+  targetGroupByNodes: DataCubeDimensionalGroupByNode[],
+): boolean {
+  // Iterate only the roots of the matching dimension
+  for (const root of tree.rootNodes) {
+    if (root.dimension !== targetDimension) {
+      continue;
+    }
+
+    const found = findNodeWithParent(
+      root,
+      targetColumn,
+      targetGroupByNodes,
+      null,
+    );
+    if (!found) {
+      continue;
+    }
+
+    const { parent, index } = found;
+    if (parent) {
+      // remove from its parent’s childNodes
+      parent.childNodes.splice(index, 1);
+    } else {
+      // remove a root‐level node
+      // TODO: do nothing
+    }
+    return true; // removed successfully
+  }
+
+  return false; // no matching node found
+}
+
+function findNodeWithParent(
+  current: DataCubeDimensionalNode,
+  targetColumn: string,
+  targetGroupByNodes: DataCubeDimensionalGroupByNode[],
+  parent: DataCubeDimensionalNode | null = null,
+): { parent: DataCubeDimensionalNode | null; index: number } | null {
+  if (
+    current.column === targetColumn &&
+    findNodeByColumnOrGroup(current, targetColumn, targetGroupByNodes)
+  ) {
+    if (parent) {
+      const idx = parent.childNodes.findIndex((c) => c === current);
+      return { parent, index: idx };
+    } else {
+      // matched a root node
+      return { parent: null, index: -1 };
+    }
+  }
+  for (const child of current.childNodes) {
+    const found = findNodeWithParent(
+      child,
+      targetColumn,
+      targetGroupByNodes,
+      current,
+    );
+    if (found) {
+      return found;
+    }
+  }
+  return null;
+}
+
 function findNodeByColumnOrGroup(
   node: DataCubeDimensionalNode,
   targetColumn: string,
@@ -265,4 +410,29 @@ function findNodeByColumnOrGroup(
   }
 
   return undefined;
+}
+
+function pathSignature(path: DataCubeDimensionalNode[]): string {
+  return path
+    .map((node) => {
+      const base = `${node.dimension}:${node.column}`;
+      if (node.groupByNodes.length > 0) {
+        const filters = node.groupByNodes
+          .map((g) => `${g.dimension}:${g.column}:${g.filter}`)
+          .join(',');
+        return `${base}->[${filters}]`;
+      } else {
+        return `${base}->[NO_FILTER]`;
+      }
+    })
+    .join('|');
+}
+
+//TODO: we can add oldPath signature directly in the snapshot
+export function findExtraPaths(
+  oldPaths: DataCubeDimensionalNode[][],
+  newPaths: DataCubeDimensionalNode[][],
+): DataCubeDimensionalNode[][] {
+  const oldSignatures = new Set(oldPaths.map(pathSignature));
+  return newPaths.filter((path) => !oldSignatures.has(pathSignature(path)));
 }

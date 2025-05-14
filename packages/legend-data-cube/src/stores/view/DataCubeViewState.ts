@@ -104,6 +104,7 @@ export class DataCubeViewState {
       snapshot.data.configuration,
     );
     query.query = await this.engine.getPartialQueryCode(snapshot);
+    query.dimensionalTree = snapshot.data.dimensionalTree;
     return query;
   }
 

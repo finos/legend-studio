@@ -26,7 +26,6 @@ import {
   DataCubeSpecification,
   DataCubeEvent,
   DataCubeTitleBarMenuItems,
-  isDimensionalGridMode,
 } from '@finos/legend-data-cube';
 import {
   useLegendDataCubeBuilderStore,
@@ -65,11 +64,7 @@ const LegendDataCubeBuilderHeader = observer(() => {
         <FormButton
           compact={true}
           className="ml-1.5 text-nowrap"
-          disabled={
-            !store.builder?.dataCube ||
-            // TODO: add support for saving dimensional grid mode
-            isDimensionalGridMode(store.builder.dataCube.getGridMode())
-          }
+          disabled={!store.builder?.dataCube}
           onClick={() => store.saverDisplay.open()}
         >
           Save DataCube

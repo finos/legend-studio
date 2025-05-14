@@ -611,7 +611,7 @@ export async function validateAndBuildSnapshot(
     engine,
   );
   data.configuration = configuration.serialize();
-
+  data.dimensionalTree = specification.dimensionalTree;
   return snapshot.finalize();
 }
 

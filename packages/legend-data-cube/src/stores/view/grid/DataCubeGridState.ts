@@ -47,7 +47,13 @@ import {
   DataCubeGridMode,
 } from '../../core/DataCubeQueryEngine.js';
 import { DataCubeEvent } from '../../../__lib__/DataCubeEvent.js';
-import { hydrateDataCubeDimensionalTree } from './DataCubeGridDimensionalTree.js';
+import {
+  cloneDimensionalTree,
+  hydrateDataCubeDimensionalTree,
+  removeSubtreeNode,
+  type DataCubeDimensionalTree,
+  type DataCubeDimensionalMetadata,
+} from './DataCubeGridDimensionalTree.js';
 
 /**
  * This query editor state is responsible for syncing the internal state of ag-grid
@@ -286,30 +292,60 @@ export class DataCubeGridState extends DataCubeSnapshotController {
     const latestSnapshot = this.getLatestSnapshot();
 
     if (latestSnapshot) {
-      latestSnapshot.data.tree = hydrateDataCubeDimensionalTree(
-        DataCubeConfiguration.serialization.fromJson(
-          latestSnapshot.data.configuration,
-        ),
-      );
+      if (!latestSnapshot.data.dimensionalTree) {
+        latestSnapshot.data.dimensionalTree = hydrateDataCubeDimensionalTree(
+          DataCubeConfiguration.serialization.fromJson(
+            latestSnapshot.data.configuration,
+          ),
+        );
+      }
       await this._applyDimensionalSnapshot(latestSnapshot);
     }
   }
 
-  async retrieveDrilldownData(data: CellDoubleClickedEvent) {
+  async retrieveDrilloutData(
+    metadata: Map<string, DataCubeDimensionalMetadata>,
+    dimension: string,
+  ) {
     const latestSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
-    latestSnapshot.data.tree = hydrateDataCubeDimensionalTree(
+    const previousTree = cloneDimensionalTree(
+      guaranteeNonNullable(latestSnapshot.data.dimensionalTree),
+    );
+    removeSubtreeNode(
+      guaranteeNonNullable(latestSnapshot.data.dimensionalTree),
+      dimension,
+      guaranteeNonNullable(metadata.get(dimension)?.column),
+      guaranteeNonNullable(metadata.get(dimension)?.groupByNodes),
+    );
+    await this._applyDimensionalSnapshot(latestSnapshot, previousTree);
+  }
+
+  async retrieveDrilldownData(data?: CellDoubleClickedEvent) {
+    const latestSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
+    const previousTree = cloneDimensionalTree(
+      guaranteeNonNullable(latestSnapshot.data.dimensionalTree),
+    );
+    latestSnapshot.data.dimensionalTree = hydrateDataCubeDimensionalTree(
       DataCubeConfiguration.serialization.fromJson(
         latestSnapshot.data.configuration,
       ),
       data,
-      latestSnapshot.data.tree,
+      latestSnapshot.data.dimensionalTree,
     );
-    await this._applyDimensionalSnapshot(latestSnapshot);
+    await this._applyDimensionalSnapshot(latestSnapshot, previousTree);
   }
 
-  private async _applyDimensionalSnapshot(snapshot: DataCubeSnapshot) {
-    //TODO: only trigger when there is an actual change in tree
-    const result = await fetchDimensionalQueryRows(snapshot, this._view);
+  private async _applyDimensionalSnapshot(
+    snapshot: DataCubeSnapshot,
+    previousTree?: DataCubeDimensionalTree,
+  ) {
+    this._client?.hideOverlay();
+    this._client?.setGridOption(DataCubeClientModelOption.LOADING, true);
+    const result = await fetchDimensionalQueryRows(
+      snapshot,
+      this._view,
+      previousTree,
+    );
     this._client?.setGridOption(
       DataCubeClientModelOption.ROW_DATA,
       result.rowData,
@@ -318,6 +354,10 @@ export class DataCubeGridState extends DataCubeSnapshotController {
       DataCubeClientModelOption.COLUMN_DEFS,
       result.columnDefs,
     );
+    if (result.rowData.length === 0) {
+      this._client?.showNoRowsOverlay();
+    }
+    this._client?.setGridOption(DataCubeClientModelOption.LOADING, false);
     this.publishSnapshot(snapshot);
   }
 

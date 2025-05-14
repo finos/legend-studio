@@ -213,6 +213,7 @@ export class DataCubeEditorDimensionsPanelState
         return _dimension;
       }),
     );
+    this.refreshDimensionsTreeData();
   }
 
   buildSnapshot(newSnapshot: DataCubeSnapshot, baseSnapshot: DataCubeSnapshot) {
