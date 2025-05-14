@@ -114,12 +114,14 @@ export const LakehouseEntitlements = withLakehouseEntitlementsStore(
             <CubesLoadingIndicatorIcon />
           </CubesLoadingIndicator>
           {entitlementsStore.currentViewer instanceof
-          EntitlementsTaskViewerState ? (
+            EntitlementsTaskViewerState &&
+          entitlementsStore.currentViewer.initializationState.hasCompleted ? (
             <EntitlementsTaskViewer
               currentViewer={entitlementsStore.currentViewer}
             />
           ) : entitlementsStore.currentViewer instanceof
-            EntitlementsDataContractViewerState ? (
+              EntitlementsDataContractViewerState &&
+            entitlementsStore.currentViewer.initializationState.hasCompleted ? (
             <EntitlementsDataContractViewer
               currentViewer={entitlementsStore.currentViewer}
             />
