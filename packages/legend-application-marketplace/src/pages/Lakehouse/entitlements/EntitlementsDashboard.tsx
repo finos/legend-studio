@@ -32,7 +32,15 @@ import {
   generateLakehouseContractPath,
   generateLakehouseTaskPath,
 } from '../../../__lib__/LegendMarketplaceNavigation.js';
-import { Box, Button, Stack, Tab, Tabs, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  Container,
+  Stack,
+  Tab,
+  Tabs,
+  Typography,
+} from '@mui/material';
 import { clsx } from '@finos/legend-art';
 
 const TDSColumnApprovalCellRenderer = (
@@ -193,7 +201,7 @@ export const EntitlementsDashboard = withAuth(
       );
     };
     return (
-      <>
+      <Container className="entitlements-dashboard" maxWidth="xxl">
         <Tabs value={value} onChange={handleTabChange}>
           <Tab
             label={
@@ -384,7 +392,7 @@ export const EntitlementsDashboard = withAuth(
             </div>
           </Box>
         )}
-      </>
+      </Container>
     );
   }),
 );

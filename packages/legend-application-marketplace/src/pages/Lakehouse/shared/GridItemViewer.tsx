@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { Fragment } from 'react';
 import { Grid2, Typography } from '@mui/material';
 import {
   GridTiemStatus,
@@ -52,10 +53,9 @@ export const GridItemsViewer = (props: {
         }}
       >
         {gridDetails.map((gridItem, index) => (
-          <>
+          <Fragment key={gridItem.name}>
             <Grid2
               container={false}
-              key={gridItem.name}
               size={4}
               sx={{
                 alignContent: 'center',
@@ -97,7 +97,7 @@ export const GridItemsViewer = (props: {
                 {gridItem.value}
               </Typography>
             </Grid2>
-          </>
+          </Fragment>
         ))}
       </Grid2>
     </>

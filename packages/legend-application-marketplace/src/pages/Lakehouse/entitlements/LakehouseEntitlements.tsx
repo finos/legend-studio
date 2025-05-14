@@ -28,6 +28,7 @@ import {
 import {} from '@finos/legend-lego/data-grid';
 import { useParams } from '@finos/legend-application/browser';
 import {
+  LEGEND_MARKETPLACE_ROUTE_PATTERN,
   LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN,
   type LakehouseEntitlementsTasksParam,
 } from '../../../__lib__/LegendMarketplaceNavigation.js';
@@ -38,6 +39,8 @@ import { EntitlementsDataContractViewer } from './EntitlementsDataContractViewer
 import { EntitlementsTaskViewer } from './EntitlementsTaskViewer.js';
 import { EntitlementsDashboard } from './EntitlementsDashboard.js';
 import { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
+import { flowResult } from 'mobx';
+import { Drawer } from '@mui/material';
 
 export const LakehouseEntitlements = withLakehouseEntitlementsStore(
   observer(() => {
@@ -46,36 +49,82 @@ export const LakehouseEntitlements = withLakehouseEntitlementsStore(
     const params = useParams<LakehouseEntitlementsTasksParam>();
 
     useEffect(() => {
-      entitlementsStore.init(
-        params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.TASK_ID],
-        params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.CONTRACT_ID],
-        auth.user?.access_token,
-      );
+      if (!entitlementsStore.dashboardInitializationState.hasCompleted) {
+        entitlementsStore.initDashboard(auth.user?.access_token);
+      }
+      if (params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.TASK_ID]) {
+        flowResult(
+          entitlementsStore.initWithTaskId(
+            params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.TASK_ID],
+            auth.user?.access_token,
+          ),
+        ).catch(entitlementsStore.applicationStore.alertUnhandledError);
+      } else if (params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.CONTRACT_ID]) {
+        flowResult(
+          entitlementsStore.initWithContract(
+            params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.CONTRACT_ID],
+            auth.user?.access_token,
+          ),
+        ).catch(entitlementsStore.applicationStore.alertUnhandledError);
+      }
     }, [auth.user?.access_token, entitlementsStore, params]);
 
-    const renderCurrentViewer = (): React.ReactNode => {
-      const currentViewer = entitlementsStore.currentViewer;
-      if (currentViewer instanceof EntitlementsDashboardState) {
-        return <EntitlementsDashboard currentViewer={currentViewer} />;
-      } else if (currentViewer instanceof EntitlementsTaskViewerState) {
-        return <EntitlementsTaskViewer currentViewer={currentViewer} />;
-      } else if (currentViewer instanceof EntitlementsDataContractViewerState) {
-        return <EntitlementsDataContractViewer currentViewer={currentViewer} />;
-      }
-
-      return null;
-    };
     return (
       <LegendMarketplacePage className="legend-marketplace-lakehouse-entitlements">
         <CubesLoadingIndicator
           isLoading={Boolean(
-            entitlementsStore.initializationState.isInProgress ||
-              entitlementsStore.currentViewer?.initializationState.isInProgress,
+            entitlementsStore.dashboardInitializationState.isInProgress,
           )}
         >
           <CubesLoadingIndicatorIcon />
         </CubesLoadingIndicator>
-        {renderCurrentViewer()}
+        {entitlementsStore.dashboardViewer instanceof
+          EntitlementsDashboardState && (
+          <EntitlementsDashboard
+            currentViewer={entitlementsStore.dashboardViewer}
+          />
+        )}
+        <Drawer
+          anchor="right"
+          open={entitlementsStore.currentViewer !== undefined}
+          onClose={() => {
+            entitlementsStore.applicationStore.navigationService.navigator.updateCurrentLocation(
+              LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS,
+            );
+            entitlementsStore.setCurrentViewer(undefined);
+          }}
+          slotProps={{
+            paper: {
+              sx: {
+                width: '50%',
+                maxWidth: '120rem',
+              },
+            },
+          }}
+        >
+          <CubesLoadingIndicator
+            isLoading={Boolean(
+              entitlementsStore.currentViewerInitializationState.isInProgress ||
+                entitlementsStore.currentViewer?.initializationState
+                  .isInProgress,
+            )}
+          >
+            <CubesLoadingIndicatorIcon />
+          </CubesLoadingIndicator>
+          {entitlementsStore.currentViewer instanceof
+          EntitlementsTaskViewerState ? (
+            <EntitlementsTaskViewer
+              currentViewer={entitlementsStore.currentViewer}
+            />
+          ) : entitlementsStore.currentViewer instanceof
+            EntitlementsDataContractViewerState ? (
+            <EntitlementsDataContractViewer
+              currentViewer={entitlementsStore.currentViewer}
+            />
+          ) : (
+            <p>Unable to display viewer</p>
+          )}
+        </Drawer>
       </LegendMarketplacePage>
     );
   }),

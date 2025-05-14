@@ -46,7 +46,9 @@ export class LakehouseEntitlementsStore {
   readonly applicationIdUrl: string | undefined;
   readonly directoryCallBack: ((user: string) => void) | undefined;
   readonly applicationCallBack: ((applicationId: string) => void) | undefined;
-  initializationState = ActionState.create();
+  dashboardInitializationState = ActionState.create();
+  currentViewerInitializationState = ActionState.create();
+  dashboardViewer: LakehouseViewerState | undefined;
   currentViewer: LakehouseViewerState | undefined;
 
   constructor(
@@ -75,39 +77,32 @@ export class LakehouseEntitlementsStore {
       : undefined;
 
     makeObservable(this, {
-      init: flow,
+      initDashboard: flow,
       initWithTaskId: flow,
       initWithContract: flow,
+      dashboardViewer: observable,
       currentViewer: observable,
+      setDashboardViewer: action,
       setCurrentViewer: action,
     });
+  }
+
+  setDashboardViewer(val: LakehouseViewerState | undefined): void {
+    this.dashboardViewer = val;
   }
 
   setCurrentViewer(val: LakehouseViewerState | undefined): void {
     this.currentViewer = val;
   }
 
-  *init(
-    taskId: string | undefined,
-    contractId: string | undefined,
-    token: string | undefined,
-  ): GeneratorFn<void> {
-    this.setCurrentViewer(undefined);
-    if (taskId) {
-      flowResult(this.initWithTaskId(taskId, token)).catch(
-        this.applicationStore.alertUnhandledError,
-      );
-      return;
-    } else if (contractId) {
-      flowResult(this.initWithContract(contractId, token)).catch(
-        this.applicationStore.alertUnhandledError,
-      );
-      return;
-    }
-    // TODO: similiar logic should be used above ^
-    const currentViewer = new EntitlementsDashboardState(this);
-    this.setCurrentViewer(currentViewer);
-    currentViewer.init(token);
+  *initDashboard(token: string | undefined): GeneratorFn<void> {
+    this.setDashboardViewer(undefined);
+    this.dashboardInitializationState.inProgress();
+    const dashboardViewer = new EntitlementsDashboardState(this);
+    this.setDashboardViewer(dashboardViewer);
+    flowResult(dashboardViewer.init(token)).finally(() =>
+      this.dashboardInitializationState.complete(),
+    );
   }
 
   *initWithTaskId(
@@ -115,7 +110,8 @@ export class LakehouseEntitlementsStore {
     token: string | undefined,
   ): GeneratorFn<void> {
     try {
-      this.initializationState.inProgress();
+      this.currentViewerInitializationState.inProgress();
+      this.setCurrentViewer(undefined);
       const rawTasks = (yield this.lakehouseServerClient.getTask(
         taskId,
         token,
@@ -127,21 +123,23 @@ export class LakehouseEntitlementsStore {
       );
       const currentTask = new EntitlementsTaskViewerState(task, this);
       this.setCurrentViewer(currentTask);
-      flowResult(currentTask.init(token)).catch(
-        this.applicationStore.alertUnhandledError,
-      );
+      flowResult(currentTask.init(token))
+        .catch(this.applicationStore.alertUnhandledError)
+        .finally(() => this.currentViewerInitializationState.complete());
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(
         `Unable to render task page: ${error.message}`,
       );
     } finally {
-      this.initializationState.complete();
+      this.currentViewerInitializationState.complete();
     }
   }
 
   *initWithContract(id: string, token: string | undefined): GeneratorFn<void> {
     try {
+      this.currentViewerInitializationState.inProgress();
+      this.setCurrentViewer(undefined);
       const dataContracts = (yield this.lakehouseServerClient.getDataContract(
         id,
         token,
@@ -160,11 +158,13 @@ export class LakehouseEntitlementsStore {
         this,
       );
       this.setCurrentViewer(currentViewer);
-      flowResult(currentViewer.init(token)).catch(
-        this.applicationStore.alertUnhandledError,
-      );
+      flowResult(currentViewer.init(token))
+        .catch(this.applicationStore.alertUnhandledError)
+        .finally(() => this.currentViewerInitializationState.complete());
     } catch (error) {
       assertErrorThrown(error);
+    } finally {
+      this.currentViewerInitializationState.complete();
     }
   }
 }
