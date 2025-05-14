@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.3.29
+
+### Patch Changes
+
+- [#4073](https://github.com/finos/legend-studio/pull/4073) [`36b847e`](https://github.com/finos/legend-studio/commit/36b847e74ec81a3d8d923127d893f183446fcb4e) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: saving dimensional grid and providing zoom out functionality
+
 ## 0.3.28
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.0.26
+
+### Patch Changes
+
+- [#4077](https://github.com/finos/legend-studio/pull/4077) [`daa2cda`](https://github.com/finos/legend-studio/commit/daa2cda80ae8ac7a5c4bd8ba9b91b11da90dd2d5) ([@kelly-thai](https://github.com/kelly-thai)) - Add terminal vendors to home page, make Vendor Data radio buttons functional, add tooltip to Add-On vendors, fix header for Vendor Details page
+
 ## 0.0.25
 
 ### Patch Changes
