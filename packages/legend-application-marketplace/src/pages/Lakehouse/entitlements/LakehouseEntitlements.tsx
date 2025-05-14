@@ -20,7 +20,7 @@ import {
   withLakehouseEntitlementsStore,
 } from './LakehouseEntitlementsStoreProvider.js';
 import { useAuth } from 'react-oidc-context';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
@@ -47,6 +47,7 @@ export const LakehouseEntitlements = withLakehouseEntitlementsStore(
     const entitlementsStore = useLakehouseEntitlementsStore();
     const auth = useAuth();
     const params = useParams<LakehouseEntitlementsTasksParam>();
+    const [showDrawer, setShowDrawer] = useState(false);
 
     useEffect(() => {
       if (
@@ -71,6 +72,12 @@ export const LakehouseEntitlements = withLakehouseEntitlementsStore(
       }
     }, [auth.user?.access_token, entitlementsStore, params]);
 
+    useEffect(() => {
+      if (entitlementsStore.currentViewer !== undefined) {
+        setShowDrawer(true);
+      }
+    }, [entitlementsStore.currentViewer]);
+
     return (
       <LegendMarketplacePage className="legend-marketplace-lakehouse-entitlements">
         <CubesLoadingIndicator
@@ -88,11 +95,14 @@ export const LakehouseEntitlements = withLakehouseEntitlementsStore(
         )}
         <Drawer
           anchor="right"
-          open={entitlementsStore.currentViewer !== undefined}
+          open={showDrawer}
           onClose={() => {
+            setShowDrawer(false);
             entitlementsStore.applicationStore.navigationService.navigator.updateCurrentLocation(
               LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS,
             );
+          }}
+          onAnimationEnd={() => {
             entitlementsStore.setCurrentViewer(undefined);
           }}
           slotProps={{
