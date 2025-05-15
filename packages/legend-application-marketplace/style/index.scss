@@ -20,7 +20,6 @@
 @forward 'components/data-products';
 @forward 'components/data-products';
 @forward 'components/dataContract-creator';
-@forward 'components/entitlements-tasks';
 @forward 'components/header';
 @forward 'components/legend-marketplace-card';
 @forward 'components/product-search-card';
@@ -35,6 +34,7 @@
 @forward 'pages/vendor-data';
 @forward 'pages/marketplace-subscriptions';
 
+@forward 'pages/lakehouse/lakehouse-entitlements-tasks';
 @forward 'pages/lakehouse/lakehouse-subscriptions';
 
 :root {

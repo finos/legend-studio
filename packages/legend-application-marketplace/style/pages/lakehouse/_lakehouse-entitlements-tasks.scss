@@ -16,7 +16,7 @@
 
 @use 'mixins' as *;
 
-.entitlements-dashboard {
+.marketplace-lakehouse-entitlements-dashboard {
   @include flexHCenter;
 
   flex: 1;
@@ -24,7 +24,7 @@
   padding: 1rem 2rem 2rem;
 }
 
-.entitlements-tasks {
+.marketplace-lakehouse-entitlements-tasks {
   height: 100%;
   width: 100%;
   position: relative;

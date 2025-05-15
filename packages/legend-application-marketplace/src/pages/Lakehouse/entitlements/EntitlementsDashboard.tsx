@@ -95,7 +95,7 @@ const Task_IdColumnClickableCellRenderer = (
   };
   return (
     <span
-      className="entitlements-tasks__grid-taskid-cell"
+      className="marketplace-lakehouse-entitlements-tasks__grid-taskid-cell"
       onClick={handleClick}
     >
       {data.taskId}
@@ -116,7 +116,7 @@ const Task_ContractClickableCellRenderer = (
   };
   return (
     <span
-      className="entitlements-tasks__grid-taskid-cell"
+      className="marketplace-lakehouse-entitlements-tasks__grid-taskid-cell"
       onClick={handleClick}
     >
       {data.dataContractId}
@@ -137,7 +137,7 @@ const PendingContract_IdColumnClickableCellRenderer = (
   };
   return (
     <span
-      className="entitlements-tasks__grid-taskid-cell"
+      className="marketplace-lakehouse-entitlements-tasks__grid-taskid-cell"
       onClick={handleClick}
     >
       {data.contractId}
@@ -158,7 +158,7 @@ const PendingContract_TaskIdColumnClickableCellRenderer = (
   };
   return (
     <span
-      className="entitlements-tasks__grid-taskid-cell"
+      className="marketplace-lakehouse-entitlements-tasks__grid-taskid-cell"
       onClick={handleClick}
     >
       {data.pendingTaskWithAssignees.taskId}
@@ -201,7 +201,10 @@ export const EntitlementsDashboard = withAuth(
       );
     };
     return (
-      <Container className="entitlements-dashboard" maxWidth="xxl">
+      <Container
+        className="marketplace-lakehouse-entitlements-dashboard"
+        maxWidth="xxl"
+      >
         <Tabs value={value} onChange={handleTabChange}>
           <Tab
             label={
@@ -221,10 +224,10 @@ export const EntitlementsDashboard = withAuth(
           />
         </Tabs>
         {value === EntitlementsTabs.PENDING_TASKS && (
-          <Box className="entitlements-tasks">
+          <Box className="marketplace-lakehouse-entitlements-tasks">
             <div
               className={clsx(
-                'entitlements-tasks__grid data-access-overview__grid',
+                'marketplace-lakehouse-entitlements-tasks__grid data-access-overview__grid',
                 {
                   'ag-theme-balham': true,
                 },
@@ -314,10 +317,10 @@ export const EntitlementsDashboard = withAuth(
           </Box>
         )}
         {value === EntitlementsTabs.PENDING_CONTRACTS && (
-          <Box className="entitlements-tasks">
+          <Box className="marketplace-lakehouse-entitlements-tasks">
             <div
               className={clsx(
-                'entitlements-tasks__grid data-access-overview__grid',
+                'marketplace-lakehouse-entitlements-tasks__grid data-access-overview__grid',
                 {
                   'ag-theme-balham': true,
                 },

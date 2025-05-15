@@ -79,7 +79,7 @@ export const LakehouseEntitlements = withLakehouseEntitlementsStore(
     }, [entitlementsStore.currentViewer]);
 
     return (
-      <LegendMarketplacePage className="legend-marketplace-lakehouse-entitlements">
+      <LegendMarketplacePage className="marketplace-lakehouse-entitlements">
         <CubesLoadingIndicator
           isLoading={Boolean(
             entitlementsStore.dashboardViewer?.initializationState.isInProgress,
