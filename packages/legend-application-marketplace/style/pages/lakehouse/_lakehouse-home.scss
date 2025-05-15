@@ -41,4 +41,14 @@
   &__description {
     font-size: 1.6rem;
   }
+
+  &__more-info-btn {
+    min-width: 3rem;
+    min-height: 3rem;
+
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+  }
 }

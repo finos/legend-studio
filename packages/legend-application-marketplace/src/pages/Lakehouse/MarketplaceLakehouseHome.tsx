@@ -72,25 +72,34 @@ export const LakehouseDataProductCard = (props: {
         {dataProductState.productEntity.product?.title ??
           dataProductState.productEntity.path.split('::').pop()}
       </div>
-      <div className="marketplace-data-product-card__description">
+      <div className="marketplace-lakehouse-data-product-card__description">
         {truncatedDescription}
       </div>
-      <div className="marketplace-data-product-card__more-info-btn">
-        <Button
-          aria-describedby={popoverId}
-          onClick={(event: MouseEvent<HTMLButtonElement>) => {
-            setPopoverAnchorEl(event.currentTarget);
-          }}
-        >
-          <InfoCircleIcon />
-        </Button>
-      </div>
+      <Button
+        aria-describedby={popoverId}
+        onClick={(event: MouseEvent<HTMLButtonElement>) => {
+          event.preventDefault();
+          event.stopPropagation();
+          setPopoverAnchorEl(event.currentTarget);
+        }}
+        className="marketplace-lakehouse-data-product-card__more-info-btn"
+      >
+        <InfoCircleIcon />
+      </Button>
       <Popover
         id={popoverId}
         open={popoverOpen}
         anchorEl={popoverAnchorEl}
         onClose={() => setPopoverAnchorEl(null)}
         className="marketplace-data-product-card__popover"
+        slotProps={{
+          backdrop: {
+            onClick: (event) => {
+              event.preventDefault();
+              event.stopPropagation();
+            },
+          },
+        }}
       >
         <div className="marketplace-data-product-card__popover__name">
           {dataProductState.productEntity.product?.title ??
