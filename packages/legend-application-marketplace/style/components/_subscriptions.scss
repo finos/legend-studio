@@ -17,6 +17,9 @@
 @use 'mixins' as *;
 
 .subscriptions {
+  @include flexHCenter;
+
+  flex-direction: column;
   height: 100%;
   width: 100%;
   position: relative;
@@ -33,6 +36,6 @@
   }
 
   &__grid {
-    height: 100%;
+    flex: 1;
   }
 }
