@@ -227,10 +227,10 @@ export const LakehouseSubscriptionsMainView = observer(
 
     return (
       <Container
-        className="legend-marketplace-lakehouse-subscriptions__container"
+        className="marketplace-lakehouse-subscriptions__container"
         maxWidth="xxl"
       >
-        <Box className="legend-marketplace-lakehouse-subscriptions__header">
+        <Box className="marketplace-lakehouse-subscriptions__header">
           <Typography variant="h4">ALL SUBSCRIPTIONS</Typography>
           <Button
             onClick={() => setIsCreateDialogOpen(true)}
@@ -240,7 +240,7 @@ export const LakehouseSubscriptionsMainView = observer(
           </Button>
         </Box>
         <Box
-          className={clsx('legend-marketplace-lakehouse-subscriptions__grid', {
+          className={clsx('marketplace-lakehouse-subscriptions__grid', {
             'ag-theme-balham': true,
           })}
         >
@@ -343,7 +343,7 @@ export const LakehouseSubscriptions = withLakehouseSubscriptionsStore(
     }, [auth.user?.access_token, subscriptionsStore]);
 
     return (
-      <LegendMarketplacePage className="legend-marketplace-lakehouse-subscriptions">
+      <LegendMarketplacePage className="marketplace-lakehouse-subscriptions">
         <CubesLoadingIndicator
           isLoading={Boolean(
             subscriptionsStore.initializationState.isInProgress,
