@@ -21,13 +21,11 @@ import {
 } from './MarketplaceLakehouseStoreProvider.js';
 import { useEffect, type JSX } from 'react';
 import {
-  clsx,
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
 } from '@finos/legend-art';
 import {
   Checkbox,
-  Chip,
   FormControlLabel,
   FormGroup,
   Grid2 as Grid,
@@ -40,35 +38,41 @@ import { DepotScope } from '@finos/legend-server-depot';
 import { LegendMarketplaceCard } from '../../components/MarketplaceCard/LegendMarketplaceCard.js';
 import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
 
+const MAX_DESCRIPTION_LENGTH = 250;
+
 export const LegendDataProductVendorCard = (props: {
-  dataAsset: DataProductState;
-  onClick: (dataAsset: DataProductState) => void;
+  dataProductState: DataProductState;
+  onClick: (dataProductState: DataProductState) => void;
 }): JSX.Element => {
-  const { dataAsset, onClick } = props;
+  const { dataProductState, onClick } = props;
+
+  const truncatedDescription =
+    dataProductState.productEntity.product?.description &&
+    dataProductState.productEntity.product.description.length >
+      MAX_DESCRIPTION_LENGTH
+      ? `${dataProductState.productEntity.product.description.substring(
+          0,
+          MAX_DESCRIPTION_LENGTH,
+        )}...`
+      : dataProductState.productEntity.product?.description;
 
   const content = (
     <>
-      <Chip
-        label={dataAsset.productEntity.versionId}
-        className={clsx('legend-marketplace-vendor-card__type')}
-      />
-      <div className="legend-marketplace-vendor-card__name">
-        {dataAsset.productEntity.path.split('::').pop()}
+      <div className="marketplace-lakehouse-data-product-card__name">
+        {dataProductState.productEntity.product?.title ??
+          dataProductState.productEntity.path.split('::').pop()}
       </div>
-      <div className="legend-marketplace-vendor-card__description">
-        {`${dataAsset.productEntity.groupId}:${dataAsset.productEntity.artifactId}`}
+      <div className="legend-marketplace-data-product-card__description">
+        {truncatedDescription}
       </div>
     </>
   );
-
-  const moreInfo = <div>{dataAsset.productEntity.path}</div>;
 
   return (
     <LegendMarketplaceCard
       size="large"
       content={content}
-      onClick={() => onClick(dataAsset)}
-      moreInfo={moreInfo}
+      onClick={() => onClick(dataProductState)}
     />
   );
 };
@@ -141,17 +145,17 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
             {marketPlaceStore.filterProducts?.map((dpState) => (
               <Grid key={dpState.id} size={1}>
                 <LegendDataProductVendorCard
-                  dataAsset={dpState}
-                  onClick={(dataAsset: DataProductState) => {
+                  dataProductState={dpState}
+                  onClick={(dataProductState: DataProductState) => {
                     {
                       marketPlaceStore.applicationStore.navigationService.navigator.goToLocation(
                         generateLakehouseDataProduct(
                           generateGAVCoordinates(
-                            dpState.productEntity.groupId,
-                            dpState.productEntity.artifactId,
-                            dpState.productEntity.versionId,
+                            dataProductState.productEntity.groupId,
+                            dataProductState.productEntity.artifactId,
+                            dataProductState.productEntity.versionId,
                           ),
-                          dpState.productEntity.path,
+                          dataProductState.productEntity.path,
                         ),
                       );
                     }
