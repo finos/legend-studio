@@ -32,6 +32,7 @@ import {
   ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
+  guaranteeType,
   returnUndefOnError,
   uuid,
   type GeneratorFn,
@@ -44,8 +45,9 @@ import {
   GraphManagerState,
   LegendSDLC,
   resolvePackagePathAndElementName,
+  V1_DataProduct,
   V1_dataProductModelSchema,
-  type V1_DataProduct,
+  V1_deserializePackageableElement,
 } from '@finos/legend-graph';
 import { deserialize } from 'serializr';
 import {
@@ -196,43 +198,63 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     try {
       this.loadingProductsState.inProgress();
       // we will show both released and snapshot versions for now to support deployment via workspaces
-      const allDps = (yield Promise.all([
-        this.depotServerClient.getEntitiesSummaryByClassifier(
-          CORE_PURE_PATH.DATA_PRODUCT,
-          {
-            scope: DepotScope.RELEASES,
-            summary: true,
-          },
-        ),
-        this.depotServerClient.getEntitiesSummaryByClassifier(
-          CORE_PURE_PATH.DATA_PRODUCT,
-          {
-            scope: DepotScope.SNAPSHOT,
-            summary: true,
-          },
-        ),
-      ])) as PlainObject<StoredSummaryEntity>[][];
-      const allProducts = allDps
-        .flat()
-        .map((p) => StoredSummaryEntity.serialization.fromJson(p))
-        .sort((a, b) =>
-          (a.groupId + a.artifactId + a.versionId + a.path).localeCompare(
-            b.groupId + b.artifactId + b.versionId + b.path,
+      const dataProductEntitySummaries: StoredSummaryEntity[] =
+        (yield Promise.all([
+          this.depotServerClient.getEntitiesSummaryByClassifier(
+            CORE_PURE_PATH.DATA_PRODUCT,
+            {
+              scope: DepotScope.RELEASES,
+              summary: true,
+            },
           ),
+          this.depotServerClient.getEntitiesSummaryByClassifier(
+            CORE_PURE_PATH.DATA_PRODUCT,
+            {
+              scope: DepotScope.SNAPSHOT,
+              summary: true,
+            },
+          ),
+        ]))
+          .flat()
+          .map((e: PlainObject<StoredSummaryEntity>) =>
+            StoredSummaryEntity.serialization.fromJson(e),
+          );
+      // TODO: explore a different way to get data product content to avoid overloading metadata server
+      // as the number of data products increases.
+      const dataProductEntities: DataProductEntity[] = yield Promise.all(
+        dataProductEntitySummaries.map(async (entitySummary) => {
+          const entity = await this.depotServerClient.getVersionEntity(
+            entitySummary.groupId,
+            entitySummary.artifactId,
+            entitySummary.versionId,
+            entitySummary.path,
+          );
+          const dataProduct = guaranteeType(
+            V1_deserializePackageableElement(
+              entity.content as PlainObject<V1_DataProduct>,
+              [],
+            ),
+            V1_DataProduct,
+          );
+          return {
+            groupId: entitySummary.groupId,
+            artifactId: entitySummary.artifactId,
+            versionId: entitySummary.versionId,
+            path: entitySummary.path,
+            product: dataProduct,
+          };
+        }),
+      );
+      const dataProductStates = dataProductEntities
+        .sort(
+          (a, b) =>
+            a.product?.title?.localeCompare(b.product?.title ?? '') ?? 0,
         )
-        .map((p) => ({
-          groupId: p.groupId,
-          artifactId: p.artifactId,
-          versionId: p.versionId,
-          path: p.path,
-          product: undefined,
-        }))
-        .map((e) => new DataProductState(e, this))
-        .sort((a, b) =>
-          a.productEntity.path.localeCompare(b.productEntity.path),
+        .map(
+          (dataProductEntity) => new DataProductState(dataProductEntity, this),
         );
 
-      this.setProducts(allProducts);
+      this.setProducts(dataProductStates);
       this.loadingProductsState.complete();
     } catch (error) {
       assertErrorThrown(error);
