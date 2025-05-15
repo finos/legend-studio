@@ -19,9 +19,10 @@ import type { EntitlementsDashboardState } from '../../../stores/lakehouse/entit
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import {
-  V1_UserApprovalStatus,
   type V1_ContractUserEventRecord,
+  type V1_DataContract,
   type V1_UserPendingContractsRecord,
+  V1_UserApprovalStatus,
 } from '@finos/legend-graph';
 import { flowResult } from 'mobx';
 import {
@@ -124,23 +125,22 @@ const Task_ContractClickableCellRenderer = (
   );
 };
 
-const PendingContract_IdColumnClickableCellRenderer = (
-  params: DataGridCellRendererParams<V1_UserPendingContractsRecord>,
+const Contract_IdColumnClickableCellRenderer = (
+  contractId: string | undefined,
   onHandleClick: (id: string) => void,
 ): React.ReactNode => {
-  const data = params.data;
-  if (!data) {
+  if (!contractId) {
     return null;
   }
   const handleClick = () => {
-    onHandleClick(data.contractId);
+    onHandleClick(contractId);
   };
   return (
     <span
       className="marketplace-lakehouse-entitlements-tasks__grid-taskid-cell"
       onClick={handleClick}
     >
-      {data.contractId}
+      {contractId}
     </span>
   );
 };
@@ -176,16 +176,18 @@ export const EntitlementsDashboard = withAuth(
     const state = currentViewer.state;
     const tasks = currentViewer.pendingTasks;
     const pendingConctracts = currentViewer.pendingContracts;
+    const allContracts = currentViewer.allContracts;
     const auth = (props as unknown as { auth: AuthContextProps }).auth;
     const enum EntitlementsTabs {
       PENDING_TASKS = 'pendingTasks',
       PENDING_CONTRACTS = 'pendingContracts',
+      ALL_CONTRACTS = 'allContracts',
     }
 
     const [value, setValue] = useState(EntitlementsTabs.PENDING_TASKS);
 
     const handleTabChange = (
-      event: React.SyntheticEvent,
+      _: React.SyntheticEvent,
       newValue: EntitlementsTabs,
     ) => {
       setValue(newValue);
@@ -221,6 +223,14 @@ export const EntitlementsDashboard = withAuth(
               </Typography>
             }
             value={EntitlementsTabs.PENDING_CONTRACTS}
+          />
+          <Tab
+            label={
+              <Typography variant="h4" gutterBottom={true}>
+                ALL CONTRACTS
+              </Typography>
+            }
+            value={EntitlementsTabs.ALL_CONTRACTS}
           />
         </Tabs>
         {value === EntitlementsTabs.PENDING_TASKS && (
@@ -343,8 +353,8 @@ export const EntitlementsDashboard = withAuth(
                       cellRenderer: (
                         params: DataGridCellRendererParams<V1_UserPendingContractsRecord>,
                       ) => {
-                        return PendingContract_IdColumnClickableCellRenderer(
-                          params,
+                        return Contract_IdColumnClickableCellRenderer(
+                          params.data?.contractId,
                           (taskId) =>
                             state.applicationStore.navigationService.navigator.updateCurrentLocation(
                               generateLakehouseContractPath(taskId),
@@ -387,6 +397,89 @@ export const EntitlementsDashboard = withAuth(
                       headerName: 'Pending Task Assignes',
                       valueGetter: (p) =>
                         p.data?.pendingTaskWithAssignees.assignee.join(','),
+                      flex: 1,
+                    },
+                  ]}
+                />
+              )}
+            </div>
+          </Box>
+        )}
+        {value === EntitlementsTabs.ALL_CONTRACTS && (
+          <Box className="marketplace-lakehouse-entitlements-tasks">
+            <div
+              className={clsx(
+                'marketplace-lakehouse-entitlements-tasks__grid data-access-overview__grid',
+                {
+                  'ag-theme-balham': true,
+                },
+              )}
+            >
+              {allContracts && (
+                <DataGrid
+                  rowData={allContracts}
+                  onRowDataUpdated={(params) => {
+                    params.api.refreshCells({ force: true });
+                  }}
+                  suppressFieldDotNotation={true}
+                  suppressContextMenu={false}
+                  columnDefs={[
+                    {
+                      minWidth: 50,
+                      sortable: true,
+                      resizable: true,
+                      headerName: 'Contract Id',
+                      cellRenderer: (
+                        params: DataGridCellRendererParams<V1_DataContract>,
+                      ) => {
+                        return Contract_IdColumnClickableCellRenderer(
+                          params.data?.guid,
+                          (taskId) =>
+                            state.applicationStore.navigationService.navigator.updateCurrentLocation(
+                              generateLakehouseContractPath(taskId),
+                            ),
+                        );
+                      },
+                      flex: 1,
+                    },
+                    {
+                      minWidth: 50,
+                      sortable: true,
+                      resizable: true,
+                      headerName: 'Contract Description',
+                      valueGetter: (p) => p.data?.description,
+                      flex: 1,
+                    },
+                    {
+                      minWidth: 10,
+                      sortable: true,
+                      resizable: true,
+                      headerName: 'Version',
+                      valueGetter: (p) => p.data?.version,
+                      flex: 1,
+                    },
+                    {
+                      minWidth: 50,
+                      sortable: true,
+                      resizable: true,
+                      headerName: 'State',
+                      valueGetter: (p) => p.data?.state,
+                      flex: 1,
+                    },
+                    {
+                      minWidth: 50,
+                      sortable: true,
+                      resizable: true,
+                      headerName: 'Members',
+                      valueGetter: (p) => p.data?.members.map((m) => m.user),
+                      flex: 1,
+                    },
+                    {
+                      minWidth: 50,
+                      sortable: true,
+                      resizable: true,
+                      headerName: 'Created By',
+                      valueGetter: (p) => p.data?.createdBy,
                       flex: 1,
                     },
                   ]}
