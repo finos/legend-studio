@@ -61,6 +61,7 @@ export class EntitlementsDashboardState extends LakehouseViewerState {
       approve: flow,
       fetchPendingContracts: flow,
       fetchPendingTasks: flow,
+      fetchAllContracts: flow,
       init: flow,
       deny: flow,
     });
@@ -124,8 +125,9 @@ export class EntitlementsDashboardState extends LakehouseViewerState {
         (yield this.state.lakehouseServerClient.getDataContracts(
           token,
         )) as PlainObject<V1_PendingTasksRespond>;
-      const tasks = V1_DataContractsRecordModelSchemaToContracts(rawContracts);
-      this.setAllContracts([...tasks]);
+      const contracts =
+        V1_DataContractsRecordModelSchemaToContracts(rawContracts);
+      this.setAllContracts([...contracts]);
     } catch (error) {
       assertErrorThrown(error);
       this.state.applicationStore.notificationService.notifyError(
