@@ -40,7 +40,7 @@ import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
 
 const MAX_DESCRIPTION_LENGTH = 250;
 
-export const LegendDataProductVendorCard = (props: {
+export const LakehouseDataProductCare = (props: {
   dataProductState: DataProductState;
   onClick: (dataProductState: DataProductState) => void;
 }): JSX.Element => {
@@ -144,7 +144,7 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
           >
             {marketPlaceStore.filterProducts?.map((dpState) => (
               <Grid key={dpState.id} size={1}>
-                <LegendDataProductVendorCard
+                <LakehouseDataProductCare
                   dataProductState={dpState}
                   onClick={(dataProductState: DataProductState) => {
                     {
