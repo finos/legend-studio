@@ -25,6 +25,7 @@ import {
   CubesLoadingIndicatorIcon,
 } from '@finos/legend-art';
 import {
+  Box,
   Checkbox,
   FormControlLabel,
   FormGroup,
@@ -40,7 +41,7 @@ import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
 
 const MAX_DESCRIPTION_LENGTH = 250;
 
-export const LakehouseDataProductCare = (props: {
+export const LakehouseDataProductCard = (props: {
   dataProductState: DataProductState;
   onClick: (dataProductState: DataProductState) => void;
 }): JSX.Element => {
@@ -73,6 +74,7 @@ export const LakehouseDataProductCare = (props: {
       size="large"
       content={content}
       onClick={() => onClick(dataProductState)}
+      className="marketplace-lakehouse-data-product-card"
     />
   );
 };
@@ -99,13 +101,16 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
     }, [marketPlaceStore]);
 
     return (
-      <LegendMarketplacePage className="legend-marketplace-lakehouse-home">
+      <LegendMarketplacePage
+        className="marketplace-lakehouse-home"
+        maxWidth="xxl"
+      >
         <CubesLoadingIndicator
           isLoading={marketPlaceStore.loadingProductsState.isInProgress}
         >
           <CubesLoadingIndicatorIcon />
         </CubesLoadingIndicator>
-        <div className="legend-marketplace-data-product-search__container">
+        <Box className="marketplace-lakehouse-home__search-bar">
           <LegendMarketplaceSearchBar
             onSearch={onSearch}
             onChange={onSearchChange}
@@ -134,8 +139,8 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
               label="Snapshots"
             />
           </FormGroup>
-        </div>
-        <div className="legend-marketplace-home__vendors-cards">
+        </Box>
+        <div className="marketplace-home__data-product-cards">
           <Grid
             container={true}
             spacing={{ xs: 2, md: 3, xl: 4 }}
@@ -144,7 +149,7 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
           >
             {marketPlaceStore.filterProducts?.map((dpState) => (
               <Grid key={dpState.id} size={1}>
-                <LakehouseDataProductCare
+                <LakehouseDataProductCard
                   dataProductState={dpState}
                   onClick={(dataProductState: DataProductState) => {
                     {

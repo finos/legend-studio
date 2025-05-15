@@ -16,18 +16,6 @@
 
 @use 'mixins' as *;
 
-.legend-marketplace-data-products {
-  &__content {
-    @include flexVCenter;
-
-    flex-direction: column;
-    height: 100%;
-    width: 100%;
-    color: var(--color-dark-grey-500);
-    padding: 1rem;
-  }
-}
-
 .legend-marketplace-light-data-product-card {
   &__type {
     width: fit-content;
@@ -53,28 +41,5 @@
   &__description {
     font-size: 2rem;
     font-weight: 200;
-  }
-}
-
-.legend-marketplace-data-product-search {
-  &__container {
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-    align-items: center;
-    gap: 2rem;
-    max-width: 100rem;
-    margin-top: 2rem;
-
-    .legend-marketplace__search-bar {
-      width: unset;
-      flex: 1;
-    }
-  }
-
-  &__filters {
-    display: flex;
-    flex-direction: row;
-    padding: unset;
   }
 }

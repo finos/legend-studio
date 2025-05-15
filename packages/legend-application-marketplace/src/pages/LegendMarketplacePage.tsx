@@ -15,12 +15,24 @@
  */
 
 import { clsx } from '@finos/legend-art';
+import { Container, type Breakpoint } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import type React from 'react';
 
 export const LegendMarketplacePage = observer(
-  (props: { className?: string; children: React.ReactNode }) => {
-    const { className, children } = props;
-    return <div className={clsx('app__page', className)}>{children}</div>;
+  (props: {
+    className?: string;
+    children: React.ReactNode;
+    maxWidth?: Breakpoint;
+  }) => {
+    const { className, children, maxWidth } = props;
+    return (
+      <Container
+        className={clsx('app__page', className)}
+        maxWidth={maxWidth ?? false}
+      >
+        {children}
+      </Container>
+    );
   },
 );
