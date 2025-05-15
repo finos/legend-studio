@@ -30,6 +30,7 @@ export class SnowflakeApp extends FunctionActivator {
   description: string | undefined;
   permissionScheme?: SnowflakePermissionScheme;
   usageRole?: string | undefined;
+  deploymentSchema?: string | undefined;
   declare ownership: DeploymentOwner;
   declare activationConfiguration: SnowflakeAppDeploymentConfiguration;
   accept_PackageableElementVisitor<T>(
@@ -45,6 +46,7 @@ export class SnowflakeApp extends FunctionActivator {
       this.description ?? '',
       this.permissionScheme ?? '',
       this.usageRole ?? '',
+      this.deploymentSchema ?? '',
       this.ownership,
       this.activationConfiguration,
       hashArray(this.taggedValues),

@@ -27,6 +27,7 @@ export class V1_SnowflakeApp extends V1_FunctionActivator {
   description: string | undefined;
   permissionScheme?: SnowflakePermissionScheme;
   usageRole?: string | undefined;
+  deploymentSchema?: string | undefined;
   declare ownership: V1_DeploymentOwner;
   declare activationConfiguration: V1_SnowflakeAppDeploymentConfiguration;
 
@@ -43,6 +44,7 @@ export class V1_SnowflakeApp extends V1_FunctionActivator {
       this.description ?? '',
       this.permissionScheme ?? '',
       this.usageRole ?? '',
+      this.deploymentSchema ?? '',
       this.ownership,
       this.activationConfiguration,
       hashArray(this.taggedValues),

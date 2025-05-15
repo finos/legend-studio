@@ -212,6 +212,7 @@ export const V1_snowflakeAppModelSchema = (
     permissionScheme: optional(primitive()),
     actions: list(usingModelSchema(V1_PostDeploymentActionSchema(plugins))),
     usageRole: optional(primitive()),
+    deploymentSchema: optional(primitive()),
     stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
       INTERNAL__forceReturnEmptyInTest: true,
     }),

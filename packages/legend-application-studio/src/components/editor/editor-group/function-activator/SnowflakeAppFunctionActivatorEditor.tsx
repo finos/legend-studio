@@ -303,6 +303,17 @@ export const SnowflakeAppFunctionActivatorEditor = observer(() => {
             />
           </PanelForm>
           <PanelForm>
+            <PanelFormTextField
+              value={activator.deploymentSchema}
+              isReadOnly={isReadOnly}
+              name="Deployment Schema"
+              placeholder="Specify the deployment schema (optional)"
+              update={(value: string | undefined): void =>
+                editorState.updateDeploymentSchema(value)
+              }
+            />
+          </PanelForm>
+          <PanelForm>
             <div className="panel__content__form__section">
               <div className="panel__content__form__section__header__label">
                 Description
