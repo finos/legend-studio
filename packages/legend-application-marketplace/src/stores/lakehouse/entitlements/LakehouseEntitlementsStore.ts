@@ -46,7 +46,8 @@ export class LakehouseEntitlementsStore {
   readonly applicationIdUrl: string | undefined;
   readonly directoryCallBack: ((user: string) => void) | undefined;
   readonly applicationCallBack: ((applicationId: string) => void) | undefined;
-  initializationState = ActionState.create();
+  currentViewerFetchStatus = ActionState.create();
+  dashboardViewer: LakehouseViewerState | undefined;
   currentViewer: LakehouseViewerState | undefined;
 
   constructor(
@@ -75,39 +76,29 @@ export class LakehouseEntitlementsStore {
       : undefined;
 
     makeObservable(this, {
-      init: flow,
+      initDashboard: flow,
       initWithTaskId: flow,
       initWithContract: flow,
+      dashboardViewer: observable,
       currentViewer: observable,
+      setDashboardViewer: action,
       setCurrentViewer: action,
     });
+  }
+
+  setDashboardViewer(val: LakehouseViewerState | undefined): void {
+    this.dashboardViewer = val;
   }
 
   setCurrentViewer(val: LakehouseViewerState | undefined): void {
     this.currentViewer = val;
   }
 
-  *init(
-    taskId: string | undefined,
-    contractId: string | undefined,
-    token: string | undefined,
-  ): GeneratorFn<void> {
-    this.setCurrentViewer(undefined);
-    if (taskId) {
-      flowResult(this.initWithTaskId(taskId, token)).catch(
-        this.applicationStore.alertUnhandledError,
-      );
-      return;
-    } else if (contractId) {
-      flowResult(this.initWithContract(contractId, token)).catch(
-        this.applicationStore.alertUnhandledError,
-      );
-      return;
-    }
-    // TODO: similiar logic should be used above ^
-    const currentViewer = new EntitlementsDashboardState(this);
-    this.setCurrentViewer(currentViewer);
-    currentViewer.init(token);
+  *initDashboard(token: string | undefined): GeneratorFn<void> {
+    this.setDashboardViewer(undefined);
+    const dashboardViewer = new EntitlementsDashboardState(this);
+    this.setDashboardViewer(dashboardViewer);
+    dashboardViewer.init(token);
   }
 
   *initWithTaskId(
@@ -115,7 +106,8 @@ export class LakehouseEntitlementsStore {
     token: string | undefined,
   ): GeneratorFn<void> {
     try {
-      this.initializationState.inProgress();
+      this.currentViewerFetchStatus.inProgress();
+      this.setCurrentViewer(undefined);
       const rawTasks = (yield this.lakehouseServerClient.getTask(
         taskId,
         token,
@@ -125,6 +117,7 @@ export class LakehouseEntitlementsStore {
         tasks[0],
         `Task with id '${taskId}' not found`,
       );
+      this.currentViewerFetchStatus.complete();
       const currentTask = new EntitlementsTaskViewerState(task, this);
       this.setCurrentViewer(currentTask);
       flowResult(currentTask.init(token)).catch(
@@ -136,12 +129,14 @@ export class LakehouseEntitlementsStore {
         `Unable to render task page: ${error.message}`,
       );
     } finally {
-      this.initializationState.complete();
+      this.currentViewerFetchStatus.complete();
     }
   }
 
   *initWithContract(id: string, token: string | undefined): GeneratorFn<void> {
     try {
+      this.currentViewerFetchStatus.inProgress();
+      this.setCurrentViewer(undefined);
       const dataContracts = (yield this.lakehouseServerClient.getDataContract(
         id,
         token,
@@ -155,6 +150,7 @@ export class LakehouseEntitlementsStore {
         dataContract,
         'Data Contract not found',
       );
+      this.currentViewerFetchStatus.complete();
       const currentViewer = new EntitlementsDataContractViewerState(
         contract,
         this,
@@ -165,6 +161,8 @@ export class LakehouseEntitlementsStore {
       );
     } catch (error) {
       assertErrorThrown(error);
+    } finally {
+      this.currentViewerFetchStatus.complete();
     }
   }
 }

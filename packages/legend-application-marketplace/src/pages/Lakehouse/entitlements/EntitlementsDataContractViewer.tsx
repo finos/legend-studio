@@ -22,7 +22,7 @@ export const EntitlementsDataContractViewer = observer(
   (props: { currentViewer: EntitlementsDataContractViewerState }) => {
     const { currentViewer } = props;
     return (
-      <div className="entitlements-grid-viewer">
+      <div className="marketplace-lakehouse-entitlements-grid-viewer">
         <GridItemsViewer
           details={currentViewer.contractDetails}
           title="Contract Metadata"

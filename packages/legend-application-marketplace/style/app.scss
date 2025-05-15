@@ -16,6 +16,10 @@
 
 @use 'mixins' as *;
 
+:root {
+  --legend-marketplace-header-height: 64px;
+}
+
 .app {
   width: 100%;
   height: 100%;
@@ -26,7 +30,7 @@
 
     flex-direction: column;
     width: 100%;
-    height: calc(100% - 6rem);
+    height: calc(100% - var(--legend-marketplace-header-height));
     background: var(--color-white);
     overflow: auto;
   }

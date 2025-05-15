@@ -19,9 +19,10 @@ import type { EntitlementsDashboardState } from '../../../stores/lakehouse/entit
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import {
-  V1_UserApprovalStatus,
   type V1_ContractUserEventRecord,
+  type V1_DataContract,
   type V1_UserPendingContractsRecord,
+  V1_UserApprovalStatus,
 } from '@finos/legend-graph';
 import { flowResult } from 'mobx';
 import {
@@ -32,7 +33,15 @@ import {
   generateLakehouseContractPath,
   generateLakehouseTaskPath,
 } from '../../../__lib__/LegendMarketplaceNavigation.js';
-import { Box, Button, Stack, Tab, Tabs, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  Container,
+  Stack,
+  Tab,
+  Tabs,
+  Typography,
+} from '@mui/material';
 import { clsx } from '@finos/legend-art';
 
 const TDSColumnApprovalCellRenderer = (
@@ -87,7 +96,7 @@ const Task_IdColumnClickableCellRenderer = (
   };
   return (
     <span
-      className="entitlements-tasks__grid-taskid-cell"
+      className="marketplace-lakehouse-entitlements-tasks__grid-taskid-cell"
       onClick={handleClick}
     >
       {data.taskId}
@@ -108,7 +117,7 @@ const Task_ContractClickableCellRenderer = (
   };
   return (
     <span
-      className="entitlements-tasks__grid-taskid-cell"
+      className="marketplace-lakehouse-entitlements-tasks__grid-taskid-cell"
       onClick={handleClick}
     >
       {data.dataContractId}
@@ -116,23 +125,22 @@ const Task_ContractClickableCellRenderer = (
   );
 };
 
-const PendingContract_IdColumnClickableCellRenderer = (
-  params: DataGridCellRendererParams<V1_UserPendingContractsRecord>,
+const Contract_IdColumnClickableCellRenderer = (
+  contractId: string | undefined,
   onHandleClick: (id: string) => void,
 ): React.ReactNode => {
-  const data = params.data;
-  if (!data) {
+  if (!contractId) {
     return null;
   }
   const handleClick = () => {
-    onHandleClick(data.contractId);
+    onHandleClick(contractId);
   };
   return (
     <span
-      className="entitlements-tasks__grid-taskid-cell"
+      className="marketplace-lakehouse-entitlements-tasks__grid-taskid-cell"
       onClick={handleClick}
     >
-      {data.contractId}
+      {contractId}
     </span>
   );
 };
@@ -150,7 +158,7 @@ const PendingContract_TaskIdColumnClickableCellRenderer = (
   };
   return (
     <span
-      className="entitlements-tasks__grid-taskid-cell"
+      className="marketplace-lakehouse-entitlements-tasks__grid-taskid-cell"
       onClick={handleClick}
     >
       {data.pendingTaskWithAssignees.taskId}
@@ -168,16 +176,18 @@ export const EntitlementsDashboard = withAuth(
     const state = currentViewer.state;
     const tasks = currentViewer.pendingTasks;
     const pendingConctracts = currentViewer.pendingContracts;
+    const allContracts = currentViewer.allContracts;
     const auth = (props as unknown as { auth: AuthContextProps }).auth;
     const enum EntitlementsTabs {
       PENDING_TASKS = 'pendingTasks',
       PENDING_CONTRACTS = 'pendingContracts',
+      ALL_CONTRACTS = 'allContracts',
     }
 
     const [value, setValue] = useState(EntitlementsTabs.PENDING_TASKS);
 
     const handleTabChange = (
-      event: React.SyntheticEvent,
+      _: React.SyntheticEvent,
       newValue: EntitlementsTabs,
     ) => {
       setValue(newValue);
@@ -193,7 +203,10 @@ export const EntitlementsDashboard = withAuth(
       );
     };
     return (
-      <>
+      <Container
+        className="marketplace-lakehouse-entitlements-dashboard"
+        maxWidth="xxl"
+      >
         <Tabs value={value} onChange={handleTabChange}>
           <Tab
             label={
@@ -211,12 +224,20 @@ export const EntitlementsDashboard = withAuth(
             }
             value={EntitlementsTabs.PENDING_CONTRACTS}
           />
+          <Tab
+            label={
+              <Typography variant="h4" gutterBottom={true}>
+                ALL CONTRACTS
+              </Typography>
+            }
+            value={EntitlementsTabs.ALL_CONTRACTS}
+          />
         </Tabs>
         {value === EntitlementsTabs.PENDING_TASKS && (
-          <Box className="entitlements-tasks">
+          <Box className="marketplace-lakehouse-entitlements-tasks">
             <div
               className={clsx(
-                'entitlements-tasks__grid data-access-overview__grid',
+                'marketplace-lakehouse-entitlements-tasks__grid data-access-overview__grid',
                 {
                   'ag-theme-balham': true,
                 },
@@ -306,10 +327,10 @@ export const EntitlementsDashboard = withAuth(
           </Box>
         )}
         {value === EntitlementsTabs.PENDING_CONTRACTS && (
-          <Box className="entitlements-tasks">
+          <Box className="marketplace-lakehouse-entitlements-tasks">
             <div
               className={clsx(
-                'entitlements-tasks__grid data-access-overview__grid',
+                'marketplace-lakehouse-entitlements-tasks__grid data-access-overview__grid',
                 {
                   'ag-theme-balham': true,
                 },
@@ -332,8 +353,8 @@ export const EntitlementsDashboard = withAuth(
                       cellRenderer: (
                         params: DataGridCellRendererParams<V1_UserPendingContractsRecord>,
                       ) => {
-                        return PendingContract_IdColumnClickableCellRenderer(
-                          params,
+                        return Contract_IdColumnClickableCellRenderer(
+                          params.data?.contractId,
                           (taskId) =>
                             state.applicationStore.navigationService.navigator.updateCurrentLocation(
                               generateLakehouseContractPath(taskId),
@@ -384,7 +405,90 @@ export const EntitlementsDashboard = withAuth(
             </div>
           </Box>
         )}
-      </>
+        {value === EntitlementsTabs.ALL_CONTRACTS && (
+          <Box className="marketplace-lakehouse-entitlements-tasks">
+            <div
+              className={clsx(
+                'marketplace-lakehouse-entitlements-tasks__grid data-access-overview__grid',
+                {
+                  'ag-theme-balham': true,
+                },
+              )}
+            >
+              {allContracts && (
+                <DataGrid
+                  rowData={allContracts}
+                  onRowDataUpdated={(params) => {
+                    params.api.refreshCells({ force: true });
+                  }}
+                  suppressFieldDotNotation={true}
+                  suppressContextMenu={false}
+                  columnDefs={[
+                    {
+                      minWidth: 50,
+                      sortable: true,
+                      resizable: true,
+                      headerName: 'Contract Id',
+                      cellRenderer: (
+                        params: DataGridCellRendererParams<V1_DataContract>,
+                      ) => {
+                        return Contract_IdColumnClickableCellRenderer(
+                          params.data?.guid,
+                          (taskId) =>
+                            state.applicationStore.navigationService.navigator.updateCurrentLocation(
+                              generateLakehouseContractPath(taskId),
+                            ),
+                        );
+                      },
+                      flex: 2,
+                    },
+                    {
+                      minWidth: 50,
+                      sortable: true,
+                      resizable: true,
+                      headerName: 'Contract Description',
+                      valueGetter: (p) => p.data?.description,
+                      flex: 2,
+                    },
+                    {
+                      minWidth: 10,
+                      sortable: true,
+                      resizable: true,
+                      headerName: 'Version',
+                      valueGetter: (p) => p.data?.version,
+                      flex: 1,
+                    },
+                    {
+                      minWidth: 50,
+                      sortable: true,
+                      resizable: true,
+                      headerName: 'State',
+                      valueGetter: (p) => p.data?.state,
+                      flex: 2,
+                    },
+                    {
+                      minWidth: 50,
+                      sortable: true,
+                      resizable: true,
+                      headerName: 'Members',
+                      valueGetter: (p) => p.data?.members.map((m) => m.user),
+                      flex: 1,
+                    },
+                    {
+                      minWidth: 50,
+                      sortable: true,
+                      resizable: true,
+                      headerName: 'Created By',
+                      valueGetter: (p) => p.data?.createdBy,
+                      flex: 1,
+                    },
+                  ]}
+                />
+              )}
+            </div>
+          </Box>
+        )}
+      </Container>
     );
   }),
 );

@@ -26,6 +26,7 @@ import { DataGrid } from '@finos/legend-lego/data-grid';
 import {
   Box,
   Button,
+  Container,
   Dialog,
   DialogActions,
   DialogContent,
@@ -225,108 +226,109 @@ export const LakehouseSubscriptionsMainView = observer(
     };
 
     return (
-      <>
-        <Box className="subscriptions">
-          <Box className="subscriptions__header">
-            <Typography variant="h4">ALL SUBSCRIPTIONS</Typography>
-            <Button
-              onClick={() => setIsCreateDialogOpen(true)}
-              variant="contained"
-            >
-              Create New Subscription
-            </Button>
-          </Box>
-          <div
-            className={clsx('subscriptions__grid', {
-              'ag-theme-balham': true,
-            })}
+      <Container
+        className="marketplace-lakehouse-subscriptions__container"
+        maxWidth="xxl"
+      >
+        <Box className="marketplace-lakehouse-subscriptions__header">
+          <Typography variant="h4">ALL SUBSCRIPTIONS</Typography>
+          <Button
+            onClick={() => setIsCreateDialogOpen(true)}
+            variant="contained"
           >
-            <DataGrid
-              rowData={subscriptions}
-              onRowDataUpdated={(params) => {
-                params.api.refreshCells({ force: true });
-              }}
-              suppressFieldDotNotation={true}
-              suppressContextMenu={false}
-              columnDefs={[
-                {
-                  minWidth: 50,
-                  sortable: true,
-                  resizable: true,
-                  headerName: 'Subscription Id',
-                  valueGetter: (p) => p.data?.guid,
-                  flex: 1,
-                },
-                {
-                  minWidth: 50,
-                  sortable: true,
-                  resizable: true,
-                  headerName: 'Contract ID',
-                  valueGetter: (p) => p.data?.dataContractId,
-                  flex: 1,
-                },
-                {
-                  minWidth: 50,
-                  sortable: true,
-                  resizable: true,
-                  headerName: 'Target Type',
-                  valueGetter: (p) =>
-                    p.data?.target instanceof V1_SnowflakeTarget
-                      ? 'Snowflake'
-                      : 'Unknown',
-                  flex: 1,
-                },
-                {
-                  minWidth: 50,
-                  sortable: true,
-                  resizable: true,
-                  headerName: 'Snowflake Account ID',
-                  valueGetter: (p) =>
-                    p.data?.target instanceof V1_SnowflakeTarget
-                      ? p.data.target.snowflakeAccountId
-                      : 'Unknown',
-                  flex: 1,
-                },
-                {
-                  minWidth: 50,
-                  sortable: true,
-                  resizable: true,
-                  headerName: 'Snowflake Region',
-                  valueGetter: (p) =>
-                    p.data?.target instanceof V1_SnowflakeTarget
-                      ? p.data.target.snowflakeRegion
-                      : 'Unknown',
-                  flex: 1,
-                },
-                {
-                  minWidth: 50,
-                  sortable: true,
-                  resizable: true,
-                  headerName: 'Snowflake Network',
-                  valueGetter: (p) =>
-                    p.data?.target instanceof V1_SnowflakeTarget
-                      ? p.data.target.snowflakeNetwork
-                      : 'Unknown',
-                  flex: 1,
-                },
-                {
-                  minWidth: 50,
-                  sortable: true,
-                  resizable: true,
-                  headerName: 'Created By',
-                  valueGetter: (p) => p.data?.createdBy,
-                  flex: 1,
-                },
-              ]}
-            />
-          </div>
+            Create New Subscription
+          </Button>
+        </Box>
+        <Box
+          className={clsx('marketplace-lakehouse-subscriptions__grid', {
+            'ag-theme-balham': true,
+          })}
+        >
+          <DataGrid
+            rowData={subscriptions}
+            onRowDataUpdated={(params) => {
+              params.api.refreshCells({ force: true });
+            }}
+            suppressFieldDotNotation={true}
+            suppressContextMenu={false}
+            columnDefs={[
+              {
+                minWidth: 50,
+                sortable: true,
+                resizable: true,
+                headerName: 'Subscription Id',
+                valueGetter: (p) => p.data?.guid,
+                flex: 1,
+              },
+              {
+                minWidth: 50,
+                sortable: true,
+                resizable: true,
+                headerName: 'Contract ID',
+                valueGetter: (p) => p.data?.dataContractId,
+                flex: 1,
+              },
+              {
+                minWidth: 50,
+                sortable: true,
+                resizable: true,
+                headerName: 'Target Type',
+                valueGetter: (p) =>
+                  p.data?.target instanceof V1_SnowflakeTarget
+                    ? 'Snowflake'
+                    : 'Unknown',
+                flex: 1,
+              },
+              {
+                minWidth: 50,
+                sortable: true,
+                resizable: true,
+                headerName: 'Snowflake Account ID',
+                valueGetter: (p) =>
+                  p.data?.target instanceof V1_SnowflakeTarget
+                    ? p.data.target.snowflakeAccountId
+                    : 'Unknown',
+                flex: 1,
+              },
+              {
+                minWidth: 50,
+                sortable: true,
+                resizable: true,
+                headerName: 'Snowflake Region',
+                valueGetter: (p) =>
+                  p.data?.target instanceof V1_SnowflakeTarget
+                    ? p.data.target.snowflakeRegion
+                    : 'Unknown',
+                flex: 1,
+              },
+              {
+                minWidth: 50,
+                sortable: true,
+                resizable: true,
+                headerName: 'Snowflake Network',
+                valueGetter: (p) =>
+                  p.data?.target instanceof V1_SnowflakeTarget
+                    ? p.data.target.snowflakeNetwork
+                    : 'Unknown',
+                flex: 1,
+              },
+              {
+                minWidth: 50,
+                sortable: true,
+                resizable: true,
+                headerName: 'Created By',
+                valueGetter: (p) => p.data?.createdBy,
+                flex: 1,
+              },
+            ]}
+          />
         </Box>
         <LakehouseSubscriptionsCreateDialog
           open={isCreateDialogOpen}
           onClose={() => setIsCreateDialogOpen(false)}
           onSubmit={createDialogHandleSubmit}
         />
-      </>
+      </Container>
     );
   },
 );
@@ -341,7 +343,7 @@ export const LakehouseSubscriptions = withLakehouseSubscriptionsStore(
     }, [auth.user?.access_token, subscriptionsStore]);
 
     return (
-      <LegendMarketplacePage className="legend-marketplace-lakehouse-subscriptions">
+      <LegendMarketplacePage className="marketplace-lakehouse-subscriptions">
         <CubesLoadingIndicator
           isLoading={Boolean(
             subscriptionsStore.initializationState.isInProgress,

@@ -14,7 +14,17 @@
  * limitations under the License.
  */
 
-.entitlements-tasks {
+@use 'mixins' as *;
+
+.marketplace-lakehouse-entitlements-dashboard {
+  @include flexHCenter;
+
+  flex: 1;
+  flex-direction: column;
+  padding: 1rem 2rem 2rem;
+}
+
+.marketplace-lakehouse-entitlements-tasks {
   height: 100%;
   width: 100%;
   position: relative;
@@ -33,7 +43,7 @@
   }
 }
 
-.entitlements-grid-viewer {
+.marketplace-lakehouse-entitlements-grid-viewer {
   padding: 1rem;
   height: 100%;
   width: 100%;

@@ -19,6 +19,7 @@
 .legend-marketplace-header {
   @include flexVCenter;
 
+  height: var(--legend-marketplace-header-height);
   background: var(--color-blue-500);
 
   &__menu svg {

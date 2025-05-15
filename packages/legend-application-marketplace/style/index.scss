@@ -20,13 +20,11 @@
 @forward 'components/data-products';
 @forward 'components/data-products';
 @forward 'components/dataContract-creator';
-@forward 'components/entitlements-tasks';
 @forward 'components/header';
 @forward 'components/legend-marketplace-card';
 @forward 'components/product-search-card';
 @forward 'components/radio-selector';
 @forward 'components/search-bar';
-@forward 'components/subscriptions';
 @forward 'components/vendor-card';
 @forward 'components/notification';
 
@@ -35,6 +33,9 @@
 @forward 'pages/search-results';
 @forward 'pages/vendor-data';
 @forward 'pages/marketplace-subscriptions';
+
+@forward 'pages/lakehouse/lakehouse-entitlements-tasks';
+@forward 'pages/lakehouse/lakehouse-subscriptions';
 
 :root {
   --color-legacylight-light-grey-100: #edf0f1;

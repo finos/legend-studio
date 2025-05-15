@@ -30,6 +30,8 @@ import {
   type V1_UserPendingContractsResponse,
   type V1_TaskStatus,
   V1_pendingTasksRespondModelSchema,
+  type V1_DataContract,
+  V1_DataContractsRecordModelSchemaToContracts,
 } from '@finos/legend-graph';
 import { makeObservable, flow, observable, action, flowResult } from 'mobx';
 import {
@@ -42,26 +44,31 @@ import { LakehouseViewerState } from './LakehouseViewerState.js';
 export class EntitlementsDashboardState extends LakehouseViewerState {
   pendingTasks: V1_ContractUserEventRecord[] | undefined;
   pendingContracts: V1_UserPendingContractsRecord[] | undefined;
+  allContracts: V1_DataContract[] | undefined;
   changingState = ActionState.create();
 
   constructor(state: LakehouseEntitlementsStore) {
     super(state);
     makeObservable(this, {
       pendingTasks: observable,
-      setPendingTasks: action,
-      changingState: observable,
       pendingContracts: observable,
+      allContracts: observable,
+      changingState: observable,
       initializationState: observable,
+      setPendingTasks: action,
+      setPendingContracts: action,
+      setAllContracts: action,
       approve: flow,
       fetchPendingContracts: flow,
       fetchPendingTasks: flow,
-      setPendingContracts: action,
+      fetchAllContracts: flow,
       init: flow,
       deny: flow,
     });
   }
 
   *init(token: string | undefined): GeneratorFn<void> {
+    this.initializationState.inProgress();
     Promise.all([
       flowResult(this.fetchPendingTasks(token)).catch(
         this.state.applicationStore.alertUnhandledError,
@@ -69,7 +76,12 @@ export class EntitlementsDashboardState extends LakehouseViewerState {
       flowResult(this.fetchPendingContracts(token)).catch(
         this.state.applicationStore.alertUnhandledError,
       ),
-    ]).catch(this.state.applicationStore.alertUnhandledError);
+      flowResult(this.fetchAllContracts(token)).catch(
+        this.state.applicationStore.alertUnhandledError,
+      ),
+    ])
+      .catch(this.state.applicationStore.alertUnhandledError)
+      .finally(() => this.initializationState.complete());
   }
 
   *fetchPendingContracts(token: string | undefined): GeneratorFn<void> {
@@ -106,12 +118,34 @@ export class EntitlementsDashboardState extends LakehouseViewerState {
     }
   }
 
+  *fetchAllContracts(token: string | undefined): GeneratorFn<void> {
+    try {
+      this.setAllContracts(undefined);
+      const rawContracts =
+        (yield this.state.lakehouseServerClient.getDataContracts(
+          token,
+        )) as PlainObject<V1_PendingTasksRespond>;
+      const contracts =
+        V1_DataContractsRecordModelSchemaToContracts(rawContracts);
+      this.setAllContracts([...contracts]);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.state.applicationStore.notificationService.notifyError(
+        `Error fetching all data contracts: ${error.message}`,
+      );
+    }
+  }
+
   setPendingTasks(val: V1_ContractUserEventRecord[] | undefined): void {
     this.pendingTasks = val;
   }
 
   setPendingContracts(val: V1_UserPendingContractsRecord[] | undefined): void {
     this.pendingContracts = val;
+  }
+
+  setAllContracts(val: V1_DataContract[] | undefined): void {
+    this.allContracts = val;
   }
 
   *approve(

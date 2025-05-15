@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { Fragment } from 'react';
 import { Grid2, Typography } from '@mui/material';
 import {
   GridTiemStatus,
@@ -30,7 +31,7 @@ export const GridItemsViewer = (props: {
   return (
     <>
       <Typography
-        className="entitlements-grid-viewer__header"
+        className="marketplace-lakehouse-entitlements-grid-viewer__header"
         variant="h6"
         sx={{ marginBottom: '0.5rem' }}
       >
@@ -52,10 +53,9 @@ export const GridItemsViewer = (props: {
         }}
       >
         {gridDetails.map((gridItem, index) => (
-          <>
+          <Fragment key={gridItem.name}>
             <Grid2
               container={false}
-              key={gridItem.name}
               size={4}
               sx={{
                 alignContent: 'center',
@@ -82,14 +82,13 @@ export const GridItemsViewer = (props: {
                 variant="subtitle1"
                 sx={{ fontSize: '14px', padding: '6px' }}
                 className={clsx({
-                  'entitlements-grid-viewer__item-clickable-text': Boolean(
-                    gridItem.onClick,
-                  ),
-                  'entitlements-grid-viewer__status--success':
+                  'marketplace-lakehouse-entitlements-grid-viewer__item-clickable-text':
+                    Boolean(gridItem.onClick),
+                  'marketplace-lakehouse-entitlements-grid-viewer__status--success':
                     gridItem.status === GridTiemStatus.SUCCESS,
-                  'entitlements-grid-viewer__status--error':
+                  'marketplace-lakehouse-entitlements-grid-viewer__status--error':
                     gridItem.status === GridTiemStatus.ERROR,
-                  'entitlements-grid-viewer__status--in-progress':
+                  'marketplace-lakehouse-entitlements-grid-viewer__status--in-progress':
                     gridItem.status === GridTiemStatus.INFO,
                 })}
                 onClick={() => gridItem.onClick?.()}
@@ -97,7 +96,7 @@ export const GridItemsViewer = (props: {
                 {gridItem.value}
               </Typography>
             </Grid2>
-          </>
+          </Fragment>
         ))}
       </Grid2>
     </>

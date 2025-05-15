@@ -76,8 +76,6 @@ export const DataContractCreator = withAuth(
                 <PanelFormValidatedTextField
                   ref={patternRef}
                   name="Description"
-                  className="service-editor__pattern__input"
-                  errorMessageClassName="service-editor__pattern__input"
                   prompt={'Description for the data contract'}
                   update={(value: string | undefined): void => {
                     setDescription(value ?? '');

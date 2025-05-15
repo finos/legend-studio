@@ -33,11 +33,11 @@ export const EntitlementsTaskViewer = withAuth(
     };
 
     return (
-      <div className="entitlements-grid-viewer">
+      <div className="marketplace-lakehouse-entitlements-grid-viewer">
         {currentViewer.canApprove && (
-          <div className="entitlements-grid-viewer__action-header">
+          <div className="marketplace-lakehouse-entitlements-grid-viewer__action-header">
             <Stack
-              className="entitlements-grid-viewer__action"
+              className="marketplace-lakehouse-entitlements-grid-viewer__action"
               direction={'row'}
               spacing={1}
             >
