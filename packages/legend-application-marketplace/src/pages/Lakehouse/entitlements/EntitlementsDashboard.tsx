@@ -440,7 +440,7 @@ export const EntitlementsDashboard = withAuth(
                             ),
                         );
                       },
-                      flex: 1,
+                      flex: 2,
                     },
                     {
                       minWidth: 50,
@@ -448,7 +448,7 @@ export const EntitlementsDashboard = withAuth(
                       resizable: true,
                       headerName: 'Contract Description',
                       valueGetter: (p) => p.data?.description,
-                      flex: 1,
+                      flex: 2,
                     },
                     {
                       minWidth: 10,
@@ -464,7 +464,7 @@ export const EntitlementsDashboard = withAuth(
                       resizable: true,
                       headerName: 'State',
                       valueGetter: (p) => p.data?.state,
-                      flex: 1,
+                      flex: 2,
                     },
                     {
                       minWidth: 50,
