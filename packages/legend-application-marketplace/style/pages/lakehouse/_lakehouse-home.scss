@@ -18,28 +18,14 @@
 
 .marketplace-lakehouse-home {
   &__search-bar {
-    width: unset;
-    flex: 1;
+    margin-top: 1rem;
+    width: 50rem;
   }
-  // &__container {
-  //   display: flex;
-  //   flex-direction: row;
-  //   width: 100%;
-  //   align-items: center;
-  //   gap: 2rem;
-  //   max-width: 100rem;
-  //   margin-top: 2rem;
-  // }
-
-  // &__filters {
-  //   display: flex;
-  //   flex-direction: row;
-  //   padding: unset;
-  // }
 }
 
 .marketplace-lakehouse-data-product-card {
   .legend-marketplace-card__content {
+    width: 100%;
     justify-content: start;
     align-items: start;
     overflow: auto;
@@ -48,7 +34,6 @@
   &__name {
     font-size: 2rem;
     font-weight: 500;
-    margin-top: 1rem;
     margin-bottom: 1rem;
     color: var(--color-blue-100);
   }
