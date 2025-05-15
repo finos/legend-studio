@@ -16,17 +16,19 @@
 
 @use 'mixins' as *;
 
-.subscriptions {
-  @include flexHCenter;
+.legend-marketplace-lakehouse-subscriptions {
+  &__container {
+    @include flexHCenter;
 
-  flex-direction: column;
-  height: 100%;
-  width: 100%;
-  position: relative;
-  background: var(--color-hclight-white);
-  color: var(--color-hclight-grey-90);
-  font-family: Roboto, sans-serif;
-  padding: 2rem;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    position: relative;
+    background: var(--color-hclight-white);
+    color: var(--color-hclight-grey-90);
+    font-family: Roboto, sans-serif;
+    padding: 2rem;
+  }
 
   &__header {
     @include flexVCenter;

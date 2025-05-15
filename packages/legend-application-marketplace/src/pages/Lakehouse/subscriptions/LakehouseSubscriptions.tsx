@@ -226,8 +226,11 @@ export const LakehouseSubscriptionsMainView = observer(
     };
 
     return (
-      <Container className="subscriptions" maxWidth="xxl">
-        <Box className="subscriptions__header">
+      <Container
+        className="legend-marketplace-lakehouse-subscriptions__container"
+        maxWidth="xxl"
+      >
+        <Box className="legend-marketplace-lakehouse-subscriptions__header">
           <Typography variant="h4">ALL SUBSCRIPTIONS</Typography>
           <Button
             onClick={() => setIsCreateDialogOpen(true)}
@@ -237,7 +240,7 @@ export const LakehouseSubscriptionsMainView = observer(
           </Button>
         </Box>
         <Box
-          className={clsx('subscriptions__grid', {
+          className={clsx('legend-marketplace-lakehouse-subscriptions__grid', {
             'ag-theme-balham': true,
           })}
         >
