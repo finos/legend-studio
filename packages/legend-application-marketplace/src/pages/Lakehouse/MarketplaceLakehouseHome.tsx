@@ -19,17 +19,20 @@ import {
   useMarketplaceLakehouseStore,
   withMarketplaceLakehouseStore,
 } from './MarketplaceLakehouseStoreProvider.js';
-import { useEffect, type JSX } from 'react';
+import { useEffect, useState, type JSX, type MouseEvent } from 'react';
 import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
+  InfoCircleIcon,
 } from '@finos/legend-art';
 import {
   Box,
+  Button,
   Checkbox,
   FormControlLabel,
   FormGroup,
   Grid2 as Grid,
+  Popover,
 } from '@mui/material';
 import type { DataProductState } from '../../stores/lakehouse/MarketplaceLakehouseStore.js';
 import { generateLakehouseDataProduct } from '../../__lib__/LegendMarketplaceNavigation.js';
@@ -47,6 +50,9 @@ export const LakehouseDataProductCard = (props: {
 }): JSX.Element => {
   const { dataProductState, onClick } = props;
 
+  const [popoverAnchorEl, setPopoverAnchorEl] =
+    useState<HTMLButtonElement | null>(null);
+
   const truncatedDescription =
     dataProductState.productEntity.product?.description &&
     dataProductState.productEntity.product.description.length >
@@ -57,15 +63,52 @@ export const LakehouseDataProductCard = (props: {
         )}...`
       : dataProductState.productEntity.product?.description;
 
+  const popoverOpen = Boolean(popoverAnchorEl);
+  const popoverId = popoverOpen ? 'popover' : undefined;
+
   const content = (
     <>
       <div className="marketplace-lakehouse-data-product-card__name">
         {dataProductState.productEntity.product?.title ??
           dataProductState.productEntity.path.split('::').pop()}
       </div>
-      <div className="legend-marketplace-data-product-card__description">
+      <div className="marketplace-data-product-card__description">
         {truncatedDescription}
       </div>
+      <div className="marketplace-data-product-card__more-info-btn">
+        <Button
+          aria-describedby={popoverId}
+          onClick={(event: MouseEvent<HTMLButtonElement>) => {
+            setPopoverAnchorEl(event.currentTarget);
+          }}
+        >
+          <InfoCircleIcon />
+        </Button>
+      </div>
+      <Popover
+        id={popoverId}
+        open={popoverOpen}
+        anchorEl={popoverAnchorEl}
+        onClose={() => setPopoverAnchorEl(null)}
+        className="marketplace-data-product-card__popover"
+      >
+        <div className="marketplace-data-product-card__popover__name">
+          {dataProductState.productEntity.product?.title ??
+            dataProductState.productEntity.path.split('::').pop()}
+        </div>
+        <div className="marketplace-data-product-card__popover__description">
+          {dataProductState.productEntity.product?.description}
+        </div>
+        <h2>Data Product Project</h2>
+        <b>Group: </b>
+        {dataProductState.productEntity.groupId}
+        <b>Artifact: </b>
+        {dataProductState.productEntity.artifactId}
+        <b>Version: </b>
+        {dataProductState.productEntity.versionId}
+        <b>Path: </b>
+        {dataProductState.productEntity.path}
+      </Popover>
     </>
   );
 
