@@ -98,7 +98,7 @@ export class LakehouseEntitlementsStore {
     this.setDashboardViewer(undefined);
     const dashboardViewer = new EntitlementsDashboardState(this);
     this.setDashboardViewer(dashboardViewer);
-    flowResult(dashboardViewer.init(token));
+    dashboardViewer.init(token);
   }
 
   *initWithTaskId(
