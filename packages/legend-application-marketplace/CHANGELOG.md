@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.0.27
+
+### Patch Changes
+
+- [#4082](https://github.com/finos/legend-studio/pull/4082) [`43033ff`](https://github.com/finos/legend-studio/commit/43033ff2eb955fa5e24a8d5c37449172a25be486) ([@travisstebbins](https://github.com/travisstebbins)) - Lakehouse unify styling and add "All Contracts" tab
+
 ## 0.0.26
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.97
+
+### Patch Changes
+
+- [#4084](https://github.com/finos/legend-studio/pull/4084) [`34835a0`](https://github.com/finos/legend-studio/commit/34835a0b8ea4996554755b385fd3b2efcb957274) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `PURE_IngestIcon` for ingestion element.
+
 ## 7.1.96
 
 ### Patch Changes
