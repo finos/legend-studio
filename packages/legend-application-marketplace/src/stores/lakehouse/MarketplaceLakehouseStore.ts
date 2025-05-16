@@ -164,11 +164,16 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         (this.filter.snapshotFilter && isSnapshot) ||
         (this.filter.releaseFilter && !isSnapshot);
       // Check if product title matches search filter
+      const dataProductTitle =
+        dataProductState.productEntity.product?.title ??
+        dataProductState.productEntity.path.split('::').pop() ??
+        '';
       const titleMatch =
         this.filter.search === undefined ||
         this.filter.search === '' ||
-        this.filter.search.toLowerCase() ===
-          dataProductState.productEntity.product?.title?.toLowerCase();
+        dataProductTitle
+          .toLowerCase()
+          .includes(this.filter.search?.toLowerCase());
       return versionMatch && titleMatch;
     });
   }
