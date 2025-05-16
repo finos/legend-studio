@@ -17,6 +17,10 @@
 @use 'mixins' as *;
 
 .marketplace-lakehouse-home {
+  &__container {
+    @include flexHCenter;
+  }
+
   &__search-bar {
     margin-top: 1rem;
     width: 50rem;

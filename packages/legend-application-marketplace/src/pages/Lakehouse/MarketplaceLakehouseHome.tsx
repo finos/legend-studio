@@ -155,7 +155,10 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
 
     return (
       <LegendMarketplacePage className="marketplace-lakehouse-home">
-        <Container maxWidth="xxl">
+        <Container
+          maxWidth="xxxl"
+          className="marketplace-lakehouse-home__container"
+        >
           <CubesLoadingIndicator
             isLoading={marketPlaceStore.loadingProductsState.isInProgress}
           >
