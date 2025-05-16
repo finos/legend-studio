@@ -155,22 +155,21 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   }
 
   get filterProducts(): DataProductState[] | undefined {
-    return this.productStates?.filter((p) => {
-      const isSnapshot = isSnapshotVersion(p.productEntity.versionId);
-      const depotFilter =
-        (isSnapshot && this.filter.snapshotFilter) ||
-        (!isSnapshot && this.filter.releaseFilter);
-      if (!this.filter.search || !depotFilter) {
-        return depotFilter;
-      }
-      const [packageName, name] = p.packageAndName;
-      if (packageName?.startsWith(this.filter.search)) {
-        return true;
-      }
-      if (name.startsWith(this.filter.search)) {
-        return true;
-      }
-      return false;
+    return this.productStates?.filter((dataProductState) => {
+      const isSnapshot = isSnapshotVersion(
+        dataProductState.productEntity.versionId,
+      );
+      // Check if product matches release/snapshot filter
+      const versionMatch =
+        (this.filter.snapshotFilter && isSnapshot) ||
+        (this.filter.releaseFilter && !isSnapshot);
+      // Check if product title matches search filter
+      const titleMatch =
+        this.filter.search === undefined ||
+        this.filter.search === '' ||
+        this.filter.search.toLowerCase() ===
+          dataProductState.productEntity.product?.title?.toLowerCase();
+      return versionMatch && titleMatch;
     });
   }
 

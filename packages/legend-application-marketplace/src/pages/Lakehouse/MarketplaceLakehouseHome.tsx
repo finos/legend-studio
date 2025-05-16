@@ -193,18 +193,9 @@ export const LakehouseDataProductCard = (props: {
 export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
   observer(() => {
     const marketPlaceStore = useMarketplaceLakehouseStore();
-    const onSearch = (
-      provider: string | undefined,
-      query: string | undefined,
-    ) => {
-      marketPlaceStore.handleSearch(query);
-    };
 
     const onSearchChange = (query: string) => {
-      if (query === '') {
-        // use for clearing of search
-        marketPlaceStore.handleSearch(query);
-      }
+      marketPlaceStore.handleSearch(query);
     };
 
     useEffect(() => {
@@ -223,10 +214,7 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
             <CubesLoadingIndicatorIcon />
           </CubesLoadingIndicator>
           <Box className="marketplace-lakehouse-home__search-bar">
-            <LegendMarketplaceSearchBar
-              onSearch={onSearch}
-              onChange={onSearchChange}
-            />
+            <LegendMarketplaceSearchBar onChange={onSearchChange} />
             <FormGroup row={true}>
               <FormControlLabel
                 control={
