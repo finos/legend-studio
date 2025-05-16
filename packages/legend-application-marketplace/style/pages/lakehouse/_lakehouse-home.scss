@@ -21,12 +21,13 @@
     @include flexVCenter;
 
     flex-direction: column;
+    padding: 2rem;
   }
 
   &__search-bar {
     @include flexVCenter;
 
-    margin: 2rem 0;
+    margin-bottom: 2rem;
     width: 80rem;
 
     .legend-marketplace__search-bar {
