@@ -117,7 +117,9 @@ export const LakehouseDataProductCard = (props: {
           {dataProductState.productEntity.product?.description}
         </div>
         <hr />
-        <h2>Data Product Project</h2>
+        <div className="marketplace-lakehouse-data-product-card__popover__project-table-header">
+          Data Product Project
+        </div>
         <TableContainer className="legend-marketplace-data-product-card__popover__project-table">
           <Table>
             <TableBody>
