@@ -126,6 +126,8 @@ import {
   type V1_DataProduct,
 } from '../../model/packageableElements/dataProduct/V1_DataProduct.js';
 import { V1_dataProductModelSchema } from './serializationHelpers/V1_DataProductSerializationHelper.js';
+import { V1_INGEST_DEFINITION_TYPE } from '../../model/packageableElements/ingest/V1_IngestDefinition.js';
+import { V1_createIngestDef } from './serializationHelpers/V1_IngestSerializationHelper.js';
 
 class V1_PackageableElementSerializer
   implements V1_PackageableElementVisitor<PlainObject<V1_PackageableElement>>
@@ -164,6 +166,12 @@ class V1_PackageableElementSerializer
     element: V1_INTERNAL__UnknownPackageableElement,
   ): PlainObject<V1_PackageableElement> {
     return element.content;
+  }
+
+  visit_IngestDefinition(
+    element: V1_INTERNAL__UnknownPackageableElement,
+  ): PlainObject<V1_PackageableElement> {
+    return this.visit_INTERNAL__UnknownPackageableElement(element);
   }
 
   visit_INTERNAL__UnknownFunctionActivator(
@@ -365,6 +373,8 @@ export const V1_deserializePackageableElement = (
         return deserialize(V1_HostedServiceModelSchema(plugins), json);
       case V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE:
         return deserialize(V1_dataProductModelSchema, json);
+      case V1_INGEST_DEFINITION_TYPE:
+        return V1_createIngestDef(name, packagePath, json);
       default: {
         for (const deserializer of extraElementProtocolDeserializers) {
           const protocol = deserializer(json, plugins);

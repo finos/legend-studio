@@ -35,6 +35,10 @@ import {
   type LegendApplicationConfigurationData,
 } from '@finos/legend-application';
 import { QueryBuilderConfig } from '@finos/legend-query-builder';
+import {
+  LegendIngestionConfiguration,
+  validateIngestionDeploymentConfiguration,
+} from './LegendIngestionConfiguration.js';
 
 export class ServiceRegistrationEnvironmentConfig {
   env!: string;
@@ -106,6 +110,8 @@ class LegendStudioApplicationCoreOptions {
    */
   queryBuilderConfig: QueryBuilderConfig | undefined;
 
+  ingestDeploymentConfig: LegendIngestionConfiguration | undefined;
+
   private static readonly serialization = new SerializationFactory(
     createModelSchema(LegendStudioApplicationCoreOptions, {
       enableGraphBuilderStrictMode: optional(primitive()),
@@ -119,6 +125,9 @@ class LegendStudioApplicationCoreOptions {
       ),
       queryBuilderConfig: optional(
         usingModelSchema(QueryBuilderConfig.serialization.schema),
+      ),
+      ingestDeploymentConfig: optional(
+        usingModelSchema(LegendIngestionConfiguration.serialization.schema),
       ),
     }),
   );
@@ -229,6 +238,12 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
     this.options = LegendStudioApplicationCoreOptions.create(
       input.configData.extensions?.core ?? {},
     );
+
+    if (this.options.ingestDeploymentConfig) {
+      validateIngestionDeploymentConfiguration(
+        this.options.ingestDeploymentConfig,
+      );
+    }
   }
 
   override getDefaultApplicationStorageKey(): string {

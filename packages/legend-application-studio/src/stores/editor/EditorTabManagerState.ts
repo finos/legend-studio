@@ -36,6 +36,7 @@ import {
   SnowflakeApp,
   HostedService,
   DataProduct,
+  IngestDefinition,
 } from '@finos/legend-graph';
 import {
   type Clazz,
@@ -66,6 +67,8 @@ import { SnowflakeAppFunctionActivatorEdtiorState } from './editor-state/element
 import { HostedServiceFunctionActivatorEditorState } from './editor-state/element-editor-state/function-activator/HostedServiceFunctionActivatorEditorState.js';
 import { ArtifactGenerationViewerState } from './editor-state/ArtifactGenerationViewerState.js';
 import { DataProductEditorState } from './editor-state/element-editor-state/dataProduct/DataProductEditorState.js';
+import { IngestDefinitionEditorState } from './editor-state/element-editor-state/ingest/IngestDefinitionEditorState.js';
+import type { EditorInitialConfiguration } from './editor-state/element-editor-state/ElementEditorInitialConfiguration.js';
 
 export class EditorTabManagerState extends TabManagerState {
   readonly editorStore: EditorStore;
@@ -146,6 +149,7 @@ export class EditorTabManagerState extends TabManagerState {
 
   createElementEditorState(
     element: PackageableElement,
+    config?: EditorInitialConfiguration,
   ): ElementEditorState | undefined {
     if (element instanceof PrimitiveType) {
       throw new UnsupportedOperationError(
@@ -173,6 +177,8 @@ export class EditorTabManagerState extends TabManagerState {
       return new PackageableConnectionEditorState(this.editorStore, element);
     } else if (element instanceof Mapping) {
       return new MappingEditorState(this.editorStore, element);
+    } else if (element instanceof IngestDefinition) {
+      return new IngestDefinitionEditorState(this.editorStore, element, config);
     } else if (element instanceof Service) {
       return new ServiceEditorState(this.editorStore, element);
     } else if (element instanceof DataProduct) {

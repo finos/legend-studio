@@ -98,6 +98,8 @@ import { V1_HostedService } from '../../../model/packageableElements/function/V1
 import { V1_transformFunctionActivatorActions } from '../to/helpers/V1_LegendLambdaTransformerHelper.js';
 import type { DataProduct } from '../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import { V1_transformDataProduct } from './V1_DataProductTransformer.js';
+import type { IngestDefinition } from '../../../../../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
+import { V1_IngestDefinition } from '../../../model/packageableElements/ingest/V1_IngestDefinition.js';
 
 class V1_PackageableElementTransformer
   implements PackageableElementVisitor<V1_PackageableElement>
@@ -144,6 +146,14 @@ class V1_PackageableElementTransformer
     const protocol = new V1_INTERNAL__UnknownPackageableElement();
     V1_initPackageableElement(protocol, element);
     protocol.content = element.content;
+    return protocol;
+  }
+
+  visit_IngestDefinition(element: IngestDefinition): V1_PackageableElement {
+    const protocol = new V1_IngestDefinition();
+    V1_initPackageableElement(protocol, element);
+    protocol.content = element.content;
+    // we don't take into account appDirDeployment here as it is still read only
     return protocol;
   }
 

@@ -94,6 +94,7 @@ export {
   HostedService,
   DEFAULT_HOSTED_SERVICE_PATTERN,
 } from './graph/metamodel/pure/packageableElements/function/HostedService.js';
+export * from './graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 export { HostedServiceDeploymentConfiguration } from './graph/metamodel/pure/functionActivator/HostedServiceDeploymentConfiguration.js';
 export { PostDeploymentAction } from './graph/metamodel/pure/functionActivator/PostDeploymentAction.js';
 export {

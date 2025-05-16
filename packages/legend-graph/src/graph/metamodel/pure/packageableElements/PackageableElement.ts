@@ -49,6 +49,7 @@ import type { SnowflakeApp } from './function/SnowflakeApp.js';
 import type { INTERNAL__UnknownElement } from './INTERNAL__UnknownElement.js';
 import type { HostedService } from './function/HostedService.js';
 import type { DataProduct } from '../dataProduct/DataProduct.js';
+import type { IngestDefinition } from './ingest/IngestDefinition.js';
 
 export interface PackageableElementVisitor<T> {
   visit_PackageableElement(element: PackageableElement): T;
@@ -84,6 +85,7 @@ export interface PackageableElementVisitor<T> {
   visit_SnowflakeApp(element: SnowflakeApp): T;
   visit_HostedService(element: HostedService): T;
   visit_DataProduct(element: DataProduct): T;
+  visit_IngestDefinition(element: IngestDefinition): T;
 }
 
 class ModelElement extends AnnotatedElement {

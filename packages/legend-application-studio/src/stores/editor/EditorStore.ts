@@ -56,6 +56,7 @@ import {
   AssertionError,
   guaranteeType,
   type Clazz,
+  returnUndefOnError,
 } from '@finos/legend-shared';
 import { EditorSDLCState } from './EditorSDLCState.js';
 import { ModelImporterState } from './editor-state/ModelImporterState.js';
@@ -69,6 +70,8 @@ import {
   generateEditorRoute,
   generateSetupRoute,
   generateViewProjectRoute,
+  LEGEND_STUDIO_QUERY_PARAMS,
+  type StudioQueryParams,
   type WorkspaceEditorPathParams,
 } from '../../__lib__/LegendStudioNavigation.js';
 import { PanelDisplayState } from '@finos/legend-art';
@@ -118,6 +121,8 @@ import {
   LazyTextEditorStore,
 } from '../lazy-text-editor/LazyTextEditorStore.js';
 import type { QueryBuilderDataCubeViewerState } from '@finos/legend-query-builder';
+import { IngestionManager } from '../ingestion/IngestionManager.js';
+import { EditorInitialConfiguration } from './editor-state/element-editor-state/ElementEditorInitialConfiguration.js';
 
 export abstract class EditorExtensionState {
   /**
@@ -133,6 +138,7 @@ export class EditorStore implements CommandRegistrar {
   readonly applicationStore: LegendStudioApplicationStore;
   readonly sdlcServerClient: SDLCServerClient;
   readonly depotServerClient: DepotServerClient;
+  readonly ingestionManager: IngestionManager | undefined;
   readonly pluginManager: LegendStudioPluginManager;
 
   /**
@@ -145,6 +151,7 @@ export class EditorStore implements CommandRegistrar {
   readonly initState = ActionState.create();
 
   initialEntityPath?: string | undefined;
+  editorConfig: EditorInitialConfiguration | undefined;
   editorMode: EditorMode;
   // NOTE: once we clear up the editor store to make modes more separated
   // we should remove these sets of functions. They are basically hacks to
@@ -303,6 +310,16 @@ export class EditorStore implements CommandRegistrar {
       this,
       this.sdlcState,
     );
+    // ingestion
+    const ingestionConifg =
+      applicationStore.config.options.ingestDeploymentConfig;
+    if (ingestionConifg) {
+      this.ingestionManager = new IngestionManager(
+        ingestionConifg,
+        this.applicationStore,
+      );
+    }
+
     // extensions
     this.extensionStates = this.pluginManager
       .getApplicationPlugins()
@@ -549,17 +566,35 @@ export class EditorStore implements CommandRegistrar {
     this.explorerTreeState = new ExplorerTreeState(this);
   }
 
-  internalizeEntityPath(params: Partial<WorkspaceEditorPathParams>): void {
+  internalizeEntityPath(
+    params: Partial<WorkspaceEditorPathParams>,
+    studioParams: Partial<StudioQueryParams> | undefined,
+  ): void {
     const { projectId, entityPath } = params;
     const workspaceType = params.groupWorkspaceId
       ? WorkspaceType.GROUP
       : WorkspaceType.USER;
+    const editorConfig =
+      studioParams?.[LEGEND_STUDIO_QUERY_PARAMS.EDITOR_CONFIG];
     const workspaceId = guaranteeNonNullable(
       params.groupWorkspaceId ?? params.workspaceId,
       `Workspace/group workspace ID is not provided`,
     );
     if (entityPath) {
       this.initialEntityPath = entityPath;
+      if (editorConfig) {
+        const _config = returnUndefOnError(() =>
+          EditorInitialConfiguration.serialization.fromJson(
+            JSON.parse(atob(editorConfig)),
+          ),
+        );
+        const config = guaranteeNonNullable(
+          _config,
+          `error reading and serializing config ${editorConfig}`,
+        );
+
+        this.editorConfig = config;
+      }
       this.applicationStore.navigationService.navigator.updateCurrentLocation(
         generateEditorRoute(
           guaranteeNonNullable(projectId),
@@ -1031,7 +1066,10 @@ export class EditorStore implements CommandRegistrar {
         try {
           this.graphEditorMode.openElement(
             this.graphManagerState.graph.getElement(this.initialEntityPath),
+            this.editorConfig,
           );
+          // we may not want to set as undefined if using it for other things
+          this.editorConfig = undefined;
         } catch {
           const elementPath = this.initialEntityPath;
           this.initialEntityPath = undefined;

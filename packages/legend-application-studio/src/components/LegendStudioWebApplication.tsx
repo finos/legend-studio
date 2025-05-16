@@ -42,6 +42,8 @@ import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../__lib__/LegendStudioDocument
 import { LazyTextEditor } from './lazy-text-editor/LazyTextEditor.js';
 import { PureCompatibilityTestManager } from './pct/PureCompatibilityTest.js';
 import { ShowcaseViewer } from './showcase/ShowcaseViewer.js';
+import { AuthProvider, type AuthProviderProps } from 'react-oidc-context';
+import type { User } from 'oidc-client-ts';
 
 const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();
@@ -286,6 +288,33 @@ export const LegendStudioWebApplicationRouter = observer(() => {
 export const LegendStudioWebApplication = observer(
   (props: { baseUrl: string }) => {
     const { baseUrl } = props;
+
+    const applicationStore = useLegendStudioApplicationStore();
+    const oidcConfig =
+      applicationStore.config.options.ingestDeploymentConfig?.deployment
+        .oidcConfig;
+    if (oidcConfig) {
+      const onSigninCallback = (_user: User | undefined) => {
+        window.location.href = (_user?.state as string | undefined) ?? '/';
+      };
+
+      const mergedOIDCConfig: AuthProviderProps = {
+        ...oidcConfig.authProviderProps,
+        redirect_uri: `${window.location.origin}${oidcConfig.redirectPath}`,
+        silent_redirect_uri: `${window.location.origin}${oidcConfig.silentRedirectPath}`,
+        onSigninCallback,
+      };
+
+      return (
+        <AuthProvider {...mergedOIDCConfig}>
+          <BrowserEnvironmentProvider baseUrl={baseUrl}>
+            <LegendStudioFrameworkProvider>
+              <LegendStudioWebApplicationRouter />
+            </LegendStudioFrameworkProvider>
+          </BrowserEnvironmentProvider>
+        </AuthProvider>
+      );
+    }
 
     return (
       <BrowserEnvironmentProvider baseUrl={baseUrl}>

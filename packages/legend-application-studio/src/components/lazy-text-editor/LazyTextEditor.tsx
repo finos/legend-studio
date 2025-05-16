@@ -365,7 +365,7 @@ export const LazyTextEditor = withEditorStore(
 
     // initialize
     useEffect(() => {
-      editorStore.internalizeEntityPath(params);
+      editorStore.internalizeEntityPath(params, undefined);
     }, [editorStore, params]);
 
     useEffect(() => {

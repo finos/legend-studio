@@ -55,6 +55,7 @@ import { ElementEditorState } from './editor-state/element-editor-state/ElementE
 import { LegendStudioTelemetryHelper } from '../../__lib__/LegendStudioTelemetryHelper.js';
 import { GraphEditorMode } from './GraphEditorMode.js';
 import { GlobalBulkServiceRegistrationState } from './sidebar-state/BulkServiceRegistrationState.js';
+import type { EditorInitialConfiguration } from './editor-state/element-editor-state/ElementEditorInitialConfiguration.js';
 
 export class GraphEditFormModeState extends GraphEditorMode {
   *initialize(): GeneratorFn<void> {
@@ -567,7 +568,10 @@ export class GraphEditFormModeState extends GraphEditorMode {
     return;
   }
 
-  openElement(element: PackageableElement): void {
+  openElement(
+    element: PackageableElement,
+    config?: EditorInitialConfiguration | undefined,
+  ): void {
     if (!(element instanceof Package)) {
       const existingElementState = this.editorStore.tabManagerState.tabs.find(
         (state) =>
@@ -575,7 +579,10 @@ export class GraphEditFormModeState extends GraphEditorMode {
       );
       const newTab =
         existingElementState ??
-        this.editorStore.tabManagerState.createElementEditorState(element);
+        this.editorStore.tabManagerState.createElementEditorState(
+          element,
+          config,
+        );
       if (newTab) {
         this.editorStore.tabManagerState.openTab(newTab);
       } else {

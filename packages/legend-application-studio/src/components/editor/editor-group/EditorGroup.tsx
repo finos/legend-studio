@@ -90,6 +90,8 @@ import { HostedServiceFunctionActivatorEditorState } from '../../../stores/edito
 import { HostedServiceFunctionActivatorEditor } from './function-activator/HostedServiceFunctionActivatorEditor.js';
 import { DataProductEditorState } from '../../../stores/editor/editor-state/element-editor-state/dataProduct/DataProductEditorState.js';
 import { DataProductEditor } from './dataProduct/DataPoductEditor.js';
+import { IngestDefinitionEditorState } from '../../../stores/editor/editor-state/element-editor-state/ingest/IngestDefinitionEditorState.js';
+import { IngestDefinitionEditor } from './ingest-editor/IngestDefinitionEditor.js';
 
 export const ViewerEditorGroupSplashScreen: React.FC = () => {
   const commandListWidth = 300;
@@ -238,7 +240,6 @@ export const EditorGroup = observer(() => {
         .map((e) => e.name.toLowerCase())
         .includes(file.key.toLowerCase()),
   );
-
   const renderActiveElementTab = (): React.ReactNode => {
     if (currentTabState instanceof ElementEditorState) {
       const generationViewState = currentTabState.generationModeState;
@@ -274,6 +275,8 @@ export const EditorGroup = observer(() => {
             return <FunctionEditor key={currentTabState.uuid} />;
           } else if (currentTabState instanceof MappingEditorState) {
             return <MappingEditor key={currentTabState.uuid} />;
+          } else if (currentTabState instanceof IngestDefinitionEditorState) {
+            return <IngestDefinitionEditor key={currentTabState.uuid} />;
           } else if (currentTabState instanceof ServiceEditorState) {
             return <ServiceEditor key={currentTabState.uuid} />;
           } else if (currentTabState instanceof DataProductEditorState) {

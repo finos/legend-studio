@@ -36,6 +36,7 @@ import {
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 import type { ElementFileGenerationState } from './ElementFileGenerationState.js';
 import type { ElementXTSchemaGenerationState } from './ElementExternalFormatGenerationState.js';
+import type { EditorInitialConfiguration } from './ElementEditorInitialConfiguration.js';
 
 const generateMultiLineCommentForError = (
   message: string,
@@ -104,7 +105,11 @@ export abstract class ElementEditorState extends EditorState {
   textContent = '';
   isReadOnly = false;
 
-  constructor(editorStore: EditorStore, element: PackageableElement) {
+  constructor(
+    editorStore: EditorStore,
+    element: PackageableElement,
+    config?: EditorInitialConfiguration | undefined,
+  ) {
     super(editorStore);
 
     makeObservable(this, {

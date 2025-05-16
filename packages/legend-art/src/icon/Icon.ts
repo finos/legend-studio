@@ -24,6 +24,7 @@ import {
   TbCalendarTime,
   TbClockEdit,
   TbSql,
+  TbDatabaseImport,
   TbBrandSnowflake,
 } from 'react-icons/tb';
 
@@ -36,6 +37,7 @@ export const CalendarClockIcon = TbCalendarTime;
 export const LastModifiedIcon = TbClockEdit;
 export const SQLIcon = TbSql;
 export const Snowflake_BrandIcon = TbBrandSnowflake;
+export const DatabaseImportIcon = TbDatabaseImport;
 
 //======================================================= MD =======================================================
 import {

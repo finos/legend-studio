@@ -116,6 +116,7 @@ import type { V1_HostedService } from '../../../model/packageableElements/functi
 import { type V1_DataProduct } from '../../../model/packageableElements/dataProduct/V1_DataProduct.js';
 import { AccessPointGroup } from '../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import { V1_buildAccessPoint } from './helpers/V1_DataProductBuilder.js';
+import type { V1_IngestDefinition } from '../../../model/packageableElements/ingest/V1_IngestDefinition.js';
 
 export class V1_ElementSecondPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -139,6 +140,10 @@ export class V1_ElementSecondPassBuilder
   visit_INTERNAL__UnknownPackageableElement(
     element: V1_INTERNAL__UnknownPackageableElement,
   ): void {
+    throw new UnsupportedOperationError();
+  }
+
+  visit_IngestDefinition(element: V1_IngestDefinition): void {
     throw new UnsupportedOperationError();
   }
 

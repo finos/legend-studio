@@ -45,6 +45,7 @@ import {
   LaunchIcon,
   LinkIcon,
   PURE_DataProductIcon,
+  PURE_IngestIcon,
 } from '@finos/legend-art';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../stores/editor/utils/ModelClassifierUtils.js';
 
@@ -105,6 +106,8 @@ export const getElementTypeIcon = (
       return <PURE_GenerationSpecificationIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.SNOWFLAKE_APP:
       return <PURE_SnowflakeAppIcon />;
+    case PACKAGEABLE_ELEMENT_TYPE.INGEST_DEFINITION:
+      return <PURE_IngestIcon />;
     default: {
       if (type) {
         const extraElementIconGetters = editorStore.pluginManager
