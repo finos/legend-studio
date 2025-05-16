@@ -92,8 +92,10 @@ export const LakehouseDataProductCard = (props: {
         open={popoverOpen}
         anchorEl={popoverAnchorEl}
         onClose={() => setPopoverAnchorEl(null)}
-        className="marketplace-data-product-card__popover"
         slotProps={{
+          paper: {
+            className: 'marketplace-lakehouse-data-product-card__popover',
+          },
           backdrop: {
             onClick: (event) => {
               event.preventDefault();
@@ -102,11 +104,11 @@ export const LakehouseDataProductCard = (props: {
           },
         }}
       >
-        <div className="marketplace-data-product-card__popover__name">
+        <div className="marketplace-lakehouse-data-product-card__popover__name">
           {dataProductState.productEntity.product?.title ??
             dataProductState.productEntity.path.split('::').pop()}
         </div>
-        <div className="marketplace-data-product-card__popover__description">
+        <div className="marketplace-lakehouse-data-product-card__popover__description">
           {dataProductState.productEntity.product?.description}
         </div>
         <h2>Data Product Project</h2>

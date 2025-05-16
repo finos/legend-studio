@@ -65,4 +65,20 @@
       height: 100%;
     }
   }
+
+  &__popover {
+    padding: 1rem;
+    border-radius: 1rem;
+
+    &__name {
+      font-size: 2rem;
+      font-weight: 500;
+      margin-bottom: 1rem;
+      color: var(--color-blue-100);
+    }
+
+    &__description {
+      font-size: 1.6rem;
+    }
+  }
 }
