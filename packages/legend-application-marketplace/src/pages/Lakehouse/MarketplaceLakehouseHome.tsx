@@ -254,7 +254,7 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
               />
             </FormGroup>
           </Box>
-          <div className="marketplace-home__data-product-cards">
+          <div className="marketplace-lakehouse-home__data-product-cards">
             <Grid
               container={true}
               spacing={{ xs: 2, md: 3, xl: 4 }}
