@@ -34,6 +34,11 @@ import {
   FormGroup,
   Grid2 as Grid,
   Popover,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableRow,
 } from '@mui/material';
 import type { DataProductState } from '../../stores/lakehouse/MarketplaceLakehouseStore.js';
 import { generateLakehouseDataProduct } from '../../__lib__/LegendMarketplaceNavigation.js';
@@ -111,15 +116,42 @@ export const LakehouseDataProductCard = (props: {
         <div className="marketplace-lakehouse-data-product-card__popover__description">
           {dataProductState.productEntity.product?.description}
         </div>
+        <hr />
         <h2>Data Product Project</h2>
-        <b>Group: </b>
-        {dataProductState.productEntity.groupId}
-        <b>Artifact: </b>
-        {dataProductState.productEntity.artifactId}
-        <b>Version: </b>
-        {dataProductState.productEntity.versionId}
-        <b>Path: </b>
-        {dataProductState.productEntity.path}
+        <TableContainer className="legend-marketplace-data-product-card__popover__project-table">
+          <Table>
+            <TableBody>
+              <TableRow>
+                <TableCell>
+                  <b>Group</b>
+                </TableCell>
+                <TableCell>{dataProductState.productEntity.groupId}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>
+                  <b>Artifact</b>
+                </TableCell>
+                <TableCell>
+                  {dataProductState.productEntity.artifactId}
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>
+                  <b>Version</b>
+                </TableCell>
+                <TableCell>
+                  {dataProductState.productEntity.versionId}
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>
+                  <b>Path</b>
+                </TableCell>
+                <TableCell>{dataProductState.productEntity.path}</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </TableContainer>
       </Popover>
     </>
   );
