@@ -1,5 +1,15 @@
 # @finos/legend-application-studio
 
+## 28.18.125
+
+### Patch Changes
+
+- [#4084](https://github.com/finos/legend-studio/pull/4084) [`34835a0`](https://github.com/finos/legend-studio/commit/34835a0b8ea4996554755b385fd3b2efcb957274) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `oidc-client-ts` and `react-oidc-context` for application-studio to make oAuth calls.
+
+- [#4084](https://github.com/finos/legend-studio/pull/4084) [`34835a0`](https://github.com/finos/legend-studio/commit/34835a0b8ea4996554755b385fd3b2efcb957274) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `editorConfig` for query params as encoded string param value to be able to open studio with preloaded configs
+
+- [#4084](https://github.com/finos/legend-studio/pull/4084) [`34835a0`](https://github.com/finos/legend-studio/commit/34835a0b8ea4996554755b385fd3b2efcb957274) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add basic `IngestDefinitionEditor` which renders the ingest config + deployment button to find ingest deploy server + validate using said server + deploy using said server
+
 ## 28.18.124
 
 ## 28.18.123

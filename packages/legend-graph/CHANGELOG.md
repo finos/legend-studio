@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.1.28
+
+### Patch Changes
+
+- [#4084](https://github.com/finos/legend-studio/pull/4084) [`34835a0`](https://github.com/finos/legend-studio/commit/34835a0b8ea4996554755b385fd3b2efcb957274) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `V1_IngestDefinition` as packagable element but using similar implementation as Unknown element to allow fast iteration on changes from engine side. expose application ID for deployment
+
 ## 32.1.27
 
 ## 32.1.26
