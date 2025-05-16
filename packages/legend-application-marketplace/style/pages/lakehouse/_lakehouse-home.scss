@@ -61,12 +61,12 @@
 
     &--snapshot {
       background: var(--tw-color-blue-100);
-      border-color: var(--tw-color-blue-600);
+      color: var(--tw-color-blue-600);
     }
 
     &--release {
       background: var(--tw-color-green-100);
-      border-color: var(--tw-color-green-600);
+      color: var(--tw-color-green-600);
     }
   }
 
