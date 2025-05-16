@@ -29,13 +29,13 @@ import {
 } from '@finos/legend-art';
 import {
   Box,
-  Button,
   Checkbox,
   Chip,
   Container,
   FormControlLabel,
   FormGroup,
   Grid2 as Grid,
+  IconButton,
   Popover,
   Table,
   TableBody,
@@ -100,7 +100,7 @@ export const LakehouseDataProductCard = (props: {
       <div className="marketplace-lakehouse-data-product-card__description">
         {truncatedDescription}
       </div>
-      <Button
+      <IconButton
         aria-describedby={popoverId}
         onClick={(event: MouseEvent<HTMLButtonElement>) => {
           event.preventDefault();
@@ -116,7 +116,7 @@ export const LakehouseDataProductCard = (props: {
         )}
       >
         <InfoCircleIcon />
-      </Button>
+      </IconButton>
       <Popover
         id={popoverId}
         open={popoverOpen}
@@ -159,7 +159,7 @@ export const LakehouseDataProductCard = (props: {
         <hr />
         <div className="marketplace-lakehouse-data-product-card__popover__project-table-header">
           Data Product Project
-          <Button
+          <IconButton
             onClick={() =>
               dataProductState.state.applicationStore.navigationService.navigator.visitAddress(
                 EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
@@ -174,7 +174,7 @@ export const LakehouseDataProductCard = (props: {
             }
           >
             <OpenIcon />
-          </Button>
+          </IconButton>
         </div>
         <TableContainer className="marketplace-lakehouse-data-product-card__popover__project-table">
           <Table>
