@@ -30,6 +30,7 @@ import {
   Box,
   Button,
   Checkbox,
+  Chip,
   Container,
   FormControlLabel,
   FormGroup,
@@ -45,7 +46,7 @@ import type { DataProductState } from '../../stores/lakehouse/MarketplaceLakehou
 import { generateLakehouseDataProduct } from '../../__lib__/LegendMarketplaceNavigation.js';
 import { generateGAVCoordinates } from '@finos/legend-storage';
 import { LegendMarketplaceSearchBar } from '../../components/SearchBar/LegendMarketplaceSearchBar.js';
-import { DepotScope } from '@finos/legend-server-depot';
+import { DepotScope, isSnapshotVersion } from '@finos/legend-server-depot';
 import { LegendMarketplaceCard } from '../../components/MarketplaceCard/LegendMarketplaceCard.js';
 import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
 
@@ -72,12 +73,24 @@ export const LakehouseDataProductCard = (props: {
 
   const popoverOpen = Boolean(popoverAnchorEl);
   const popoverId = popoverOpen ? 'popover' : undefined;
+  const isSnapshot = isSnapshotVersion(
+    dataProductState.productEntity.versionId,
+  );
 
   const content = (
     <>
       <div className="marketplace-lakehouse-data-product-card__name">
         {dataProductState.productEntity.product?.title ??
           dataProductState.productEntity.path.split('::').pop()}
+        <Chip
+          label={isSnapshot ? 'SNAPSHOT' : 'RELEASE'}
+          className={clsx('marketplace-lakehouse-data-product-card__version', {
+            'marketplace-lakehouse-data-product-card__version--snapshot':
+              isSnapshot,
+            'marketplace-lakehouse-data-product-card__version--release':
+              !isSnapshot,
+          })}
+        />
       </div>
       <div className="marketplace-lakehouse-data-product-card__description">
         {truncatedDescription}

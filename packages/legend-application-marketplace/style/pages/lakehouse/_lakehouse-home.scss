@@ -46,10 +46,25 @@
   }
 
   &__name {
+    @include flexVCenter;
+
+    justify-content: space-between;
     font-size: 2rem;
     font-weight: 500;
     margin-bottom: 1rem;
     color: var(--color-blue-100);
+  }
+
+  &__version {
+    font-size: 1rem;
+
+    &--snapshot {
+      background: var(--color-light-blue-20);
+    }
+
+    &--release {
+      background: var(--color-lime-50);
+    }
   }
 
   &__description {
