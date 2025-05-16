@@ -48,6 +48,7 @@
   &__name {
     @include flexVCenter;
 
+    width: 100%;
     justify-content: space-between;
     font-size: 2rem;
     font-weight: 500;
@@ -58,13 +59,15 @@
   &__version {
     font-size: 1rem;
 
-    &--snapshot {
-      background: var(--color-light-blue-20);
-    }
+    // &--snapshot {
+    //   color: var(--color-light-blue-20);
+    //   border-color: var(--color-light-blue-20);
+    // }
 
-    &--release {
-      background: var(--color-lime-50);
-    }
+    // &--release {
+    //   color: var(--color-lime-50);
+    //   border-color: var(--color-lime-50);
+    // }
   }
 
   &__description {
