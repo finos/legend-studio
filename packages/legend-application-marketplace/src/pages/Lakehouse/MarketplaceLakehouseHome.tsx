@@ -25,6 +25,7 @@ import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
   InfoCircleIcon,
+  OpenIcon,
 } from '@finos/legend-art';
 import {
   Box,
@@ -43,7 +44,10 @@ import {
   TableRow,
 } from '@mui/material';
 import type { DataProductState } from '../../stores/lakehouse/MarketplaceLakehouseStore.js';
-import { generateLakehouseDataProduct } from '../../__lib__/LegendMarketplaceNavigation.js';
+import {
+  EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl,
+  generateLakehouseDataProduct,
+} from '../../__lib__/LegendMarketplaceNavigation.js';
 import { generateGAVCoordinates } from '@finos/legend-storage';
 import { LegendMarketplaceSearchBar } from '../../components/SearchBar/LegendMarketplaceSearchBar.js';
 import { DepotScope, isSnapshotVersion } from '@finos/legend-server-depot';
@@ -155,6 +159,22 @@ export const LakehouseDataProductCard = (props: {
         <hr />
         <div className="marketplace-lakehouse-data-product-card__popover__project-table-header">
           Data Product Project
+          <Button
+            onClick={() =>
+              dataProductState.state.applicationStore.navigationService.navigator.visitAddress(
+                EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
+                  dataProductState.state.applicationStore.config
+                    .studioServerUrl,
+                  dataProductState.productEntity.groupId,
+                  dataProductState.productEntity.artifactId,
+                  dataProductState.productEntity.versionId,
+                  dataProductState.productEntity.path,
+                ),
+              )
+            }
+          >
+            <OpenIcon />
+          </Button>
         </div>
         <TableContainer className="marketplace-lakehouse-data-product-card__popover__project-table">
           <Table>

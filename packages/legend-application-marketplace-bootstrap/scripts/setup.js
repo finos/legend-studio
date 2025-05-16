@@ -66,6 +66,9 @@ export const setup = (outputDir) => {
         depot: {
           url: 'http://localhost:6200/depot/api',
         },
+        studio: {
+          url: 'http://localhost:9000',
+        },
         documentation: {
           url: 'https://legend.finos.org',
           registry: [],
