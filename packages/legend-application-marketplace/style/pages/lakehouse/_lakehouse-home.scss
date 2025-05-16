@@ -59,15 +59,15 @@
   &__version {
     font-size: 1rem;
 
-    // &--snapshot {
-    //   color: var(--color-light-blue-20);
-    //   border-color: var(--color-light-blue-20);
-    // }
+    &--snapshot {
+      background: var(--tw-color-blue-100);
+      border-color: var(--tw-color-blue-600);
+    }
 
-    // &--release {
-    //   color: var(--color-lime-50);
-    //   border-color: var(--color-lime-50);
-    // }
+    &--release {
+      background: var(--tw-color-green-100);
+      border-color: var(--tw-color-green-600);
+    }
   }
 
   &__description {

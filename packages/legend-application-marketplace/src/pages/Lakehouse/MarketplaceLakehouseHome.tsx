@@ -84,9 +84,7 @@ export const LakehouseDataProductCard = (props: {
           dataProductState.productEntity.path.split('::').pop()}
         <Chip
           label={isSnapshot ? 'SNAPSHOT' : 'RELEASE'}
-          variant="outlined"
           size="small"
-          color={isSnapshot ? 'primary' : 'success'}
           className={clsx('marketplace-lakehouse-data-product-card__version', {
             'marketplace-lakehouse-data-product-card__version--snapshot':
               isSnapshot,
