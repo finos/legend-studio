@@ -24,8 +24,16 @@
   }
 
   &__search-bar {
-    margin-top: 1rem;
-    width: 50rem;
+    @include flexVCenter;
+
+    margin: 2rem 0;
+    width: 80rem;
+
+    .legend-marketplace__search-bar {
+      flex: 1;
+      width: unset;
+      margin-right: 1rem;
+    }
   }
 }
 
