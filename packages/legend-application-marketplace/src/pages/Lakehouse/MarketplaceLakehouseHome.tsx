@@ -21,6 +21,7 @@ import {
 } from './MarketplaceLakehouseStoreProvider.js';
 import { useEffect, useState, type JSX, type MouseEvent } from 'react';
 import {
+  clsx,
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
   InfoCircleIcon,
@@ -88,7 +89,13 @@ export const LakehouseDataProductCard = (props: {
           event.stopPropagation();
           setPopoverAnchorEl(event.currentTarget);
         }}
-        className="marketplace-lakehouse-data-product-card__more-info-btn"
+        className={clsx(
+          'marketplace-lakehouse-data-product-card__more-info-btn',
+          {
+            'marketplace-lakehouse-data-product-card__more-info-btn--selected':
+              popoverOpen,
+          },
+        )}
       >
         <InfoCircleIcon />
       </Button>
@@ -96,10 +103,22 @@ export const LakehouseDataProductCard = (props: {
         id={popoverId}
         open={popoverOpen}
         anchorEl={popoverAnchorEl}
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'center',
+        }}
+        transformOrigin={{
+          vertical: 'bottom',
+          horizontal: 'center',
+        }}
         onClose={() => setPopoverAnchorEl(null)}
         slotProps={{
           paper: {
             className: 'marketplace-lakehouse-data-product-card__popover',
+            onClick: (event) => [
+              event.preventDefault(),
+              event.stopPropagation(),
+            ],
           },
           backdrop: {
             onClick: (event) => {
@@ -113,6 +132,9 @@ export const LakehouseDataProductCard = (props: {
           {dataProductState.productEntity.product?.title ??
             dataProductState.productEntity.path.split('::').pop()}
         </div>
+        <div className="marketplace-lakehouse-data-product-card__popover__description-label">
+          Description
+        </div>
         <div className="marketplace-lakehouse-data-product-card__popover__description">
           {dataProductState.productEntity.product?.description}
         </div>
@@ -120,7 +142,7 @@ export const LakehouseDataProductCard = (props: {
         <div className="marketplace-lakehouse-data-product-card__popover__project-table-header">
           Data Product Project
         </div>
-        <TableContainer className="legend-marketplace-data-product-card__popover__project-table">
+        <TableContainer className="marketplace-lakehouse-data-product-card__popover__project-table">
           <Table>
             <TableBody>
               <TableRow>
