@@ -18,7 +18,9 @@
 
 .marketplace-lakehouse-home {
   &__container {
-    @include flexHCenter;
+    @include flexVCenter;
+
+    flex-direction: column;
   }
 
   &__search-bar {
