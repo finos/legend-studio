@@ -35,7 +35,10 @@ import { GrammarTextEditor } from './editor-group/GrammarTextEditor.js';
 import { StatusBar } from './StatusBar.js';
 import { ActivityBar } from './ActivityBar.js';
 import { ShowcaseSideBar } from './ShowcaseSideBar.js';
-import type { WorkspaceEditorPathParams } from '../../__lib__/LegendStudioNavigation.js';
+import type {
+  StudioQueryParams,
+  WorkspaceEditorPathParams,
+} from '../../__lib__/LegendStudioNavigation.js';
 import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand.js';
 import { guaranteeNonNullable, isNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
@@ -70,6 +73,8 @@ export const Editor = withEditorStore(
       `Workspace/group workspace ID is not provided`,
     );
     const editorStore = useEditorStore();
+    const studioParams =
+      editorStore.applicationStore.navigationService.navigator.getCurrentLocationParameters<StudioQueryParams>();
     const applicationStore = useApplicationStore();
     const editable =
       editorStore.graphManagerState.graphBuildState.hasCompleted &&
@@ -146,8 +151,8 @@ export const Editor = withEditorStore(
 
     // initialize
     useEffect(() => {
-      editorStore.internalizeEntityPath(params);
-    }, [editorStore, params]);
+      editorStore.internalizeEntityPath(params, studioParams);
+    }, [editorStore, params, studioParams]);
 
     useEffect(() => {
       flowResult(

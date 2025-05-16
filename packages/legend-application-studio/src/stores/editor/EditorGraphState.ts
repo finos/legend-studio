@@ -91,6 +91,7 @@ import {
   GraphEntities,
   HostedService,
   DataProduct,
+  IngestDefinition,
 } from '@finos/legend-graph';
 import { CONFIGURATION_EDITOR_TAB } from './editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
 import { PACKAGEABLE_ELEMENT_TYPE } from './utils/ModelClassifierUtils.js';
@@ -857,6 +858,8 @@ export class EditorGraphState {
       return PACKAGEABLE_ELEMENT_TYPE.HOSTED_SERVICE;
     } else if (element instanceof DataProduct) {
       return PACKAGEABLE_ELEMENT_TYPE._DATA_PRODUCT;
+    } else if (element instanceof IngestDefinition) {
+      return PACKAGEABLE_ELEMENT_TYPE.INGEST_DEFINITION;
     }
     const extraElementTypeLabelGetters = this.editorStore.pluginManager
       .getApplicationPlugins()

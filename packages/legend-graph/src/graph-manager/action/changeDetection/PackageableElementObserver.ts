@@ -79,6 +79,7 @@ import type { INTERNAL__UnknownElement } from '../../../graph/metamodel/pure/pac
 import type { HostedService } from '../../../graph/metamodel/pure/packageableElements/function/HostedService.js';
 import type { DataProduct } from '../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import { observe_DataProduct } from './DataProductObserveHelper.js';
+import type { IngestDefinition } from '../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 
 class PackageableElementObserver implements PackageableElementVisitor<void> {
   observerContext: ObserverContext;
@@ -209,6 +210,10 @@ class PackageableElementObserver implements PackageableElementVisitor<void> {
 
   visit_DataElement(element: DataElement): void {
     observe_DataElement(element, this.observerContext);
+  }
+
+  visit_IngestDefinition(element: IngestDefinition): void {
+    return this.visit_INTERNAL__UnknownPackageableElement(element);
   }
 }
 

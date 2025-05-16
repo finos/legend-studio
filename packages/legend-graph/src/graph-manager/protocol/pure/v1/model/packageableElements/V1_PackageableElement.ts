@@ -41,6 +41,7 @@ import type { V1_SnowflakeApp } from './function/V1_SnowflakeApp.js';
 import type { V1_INTERNAL__UnknownElement } from './V1_INTERNAL__UnknownElement.js';
 import type { V1_HostedService } from './function/V1_HostedService.js';
 import type { V1_DataProduct } from './dataProduct/V1_DataProduct.js';
+import type { V1_IngestDefinition } from './ingest/V1_IngestDefinition.js';
 
 export interface V1_PackageableElementVisitor<T> {
   visit_PackageableElement(element: V1_PackageableElement): T;
@@ -48,6 +49,7 @@ export interface V1_PackageableElementVisitor<T> {
   visit_INTERNAL__UnknownPackageableElement(
     element: V1_INTERNAL__UnknownPackageableElement,
   ): T;
+
   visit_INTERNAL__UnknownFunctionActivator(
     element: V1_INTERNAL__UnknownFunctionActivator,
   ): T;
@@ -77,6 +79,7 @@ export interface V1_PackageableElementVisitor<T> {
   visit_HostedService(element: V1_HostedService): T;
 
   visit_DataProduct(element: V1_DataProduct): T;
+  visit_IngestDefinition(element: V1_IngestDefinition): T;
 }
 
 export abstract class V1_PackageableElement implements Hashable {

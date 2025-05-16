@@ -19,6 +19,10 @@ import { WorkspaceType } from '@finos/legend-server-sdlc';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { generatePath } from '@finos/legend-application/browser';
 
+export enum LEGEND_STUDIO_QUERY_PARAMS {
+  EDITOR_CONFIG = 'editorConfig',
+}
+
 export enum LEGEND_STUDIO_ROUTE_PATTERN_TOKEN {
   SHOWCASE_PATH = 'showcasePath',
   PROJECT_ID = 'projectId',
@@ -80,6 +84,10 @@ export type ProjectViewerPathParams = {
 
 export type ShowcaseViewerPathParams = {
   [LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.SHOWCASE_PATH]?: string;
+};
+
+export type StudioQueryParams = {
+  [LEGEND_STUDIO_QUERY_PARAMS.EDITOR_CONFIG]?: string;
 };
 
 export type WorkspaceEditorPathParams = {
@@ -349,3 +357,9 @@ export const generateShowcasePath = (showcasePath: string): string =>
   generatePath(LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.SHOWCASE, {
     showcasePath: encodeURIComponent(showcasePath),
   });
+
+export const EXTERNAL_APPLICATION_NAVIGATION__generateUrlWithEditorConfig = (
+  base: string,
+  editorConfig: string,
+): string =>
+  `${base}?${LEGEND_STUDIO_QUERY_PARAMS.EDITOR_CONFIG}=${encodeURIComponent(editorConfig)}`;

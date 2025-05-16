@@ -482,6 +482,7 @@ export const V1_indexPureModelContextData = (
       }
       isIndexedAsOtherElement = true;
     }
+    // we index everything else as native
     if (!isIndexedAsOtherElement) {
       index.nativeElements.push(el);
     }
@@ -1259,25 +1260,24 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       inputs.flatMap(async (input) => {
         // create the package cache
         const packageCache = new Map<string, Package>();
-
         await Promise.all(
-          input.data.nativeElements.map((element) =>
-            this.visitWithGraphBuilderErrorHandling(
+          input.data.nativeElements.map((element) => {
+            return this.visitWithGraphBuilderErrorHandling(
               element,
               new V1_ElementFirstPassBuilder(
                 this.getBuilderContext(graph, input.model, element, options),
                 packageCache,
                 elementPathCache,
               ),
-            ),
-          ),
+            );
+          }),
         );
         await Promise.all(
           this.graphBuilderExtensions.sortedExtraElementBuilders.flatMap(
             (builder) =>
               (input.data.otherElementsByBuilder.get(builder) ?? []).map(
-                (element) =>
-                  this.visitWithGraphBuilderErrorHandling(
+                (element) => {
+                  return this.visitWithGraphBuilderErrorHandling(
                     element,
                     new V1_ElementFirstPassBuilder(
                       this.getBuilderContext(
@@ -1289,7 +1289,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
                       packageCache,
                       elementPathCache,
                     ),
-                  ),
+                  );
+                },
               ),
           ),
         );

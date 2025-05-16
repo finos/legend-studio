@@ -22,6 +22,7 @@ import type { EditorStore } from './EditorStore.js';
 
 import type { GRAPH_EDITOR_MODE } from './EditorConfig.js';
 import type { Problem } from './EditorGraphState.js';
+import type { EditorInitialConfiguration } from './editor-state/element-editor-state/ElementEditorInitialConfiguration.js';
 
 export abstract class GraphEditorMode {
   readonly editorStore: EditorStore;
@@ -81,5 +82,8 @@ export abstract class GraphEditorMode {
     isGraphBuildFailure?: boolean;
   }): GeneratorFn<void>;
   abstract handleCleanupFailure(error: unknown): GeneratorFn<void>;
-  abstract openElement(element: PackageableElement): void;
+  abstract openElement(
+    element: PackageableElement,
+    config?: EditorInitialConfiguration | undefined,
+  ): void;
 }

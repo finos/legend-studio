@@ -85,6 +85,11 @@ import { GenericTypeImplicitReference } from '../../../../../../../graph/metamod
 import { GenericType } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/GenericType.js';
 import type { V1_DataProduct } from '../../../model/packageableElements/dataProduct/V1_DataProduct.js';
 import { DataProduct } from '../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
+import type { V1_IngestDefinition } from '../../../model/packageableElements/ingest/V1_IngestDefinition.js';
+import {
+  AppDirNode,
+  IngestDefinition,
+} from '../../../../../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 
 export class V1_ElementFirstPassBuilder
   implements V1_PackageableElementVisitor<PackageableElement>
@@ -154,6 +159,41 @@ export class V1_ElementFirstPassBuilder
       `Element 'name' field is missing or empty`,
     );
     const metamodel = new INTERNAL__UnknownPackageableElement(element.name);
+    const path = V1_buildFullPath(element.package, element.name);
+    V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
+    this.context.currentSubGraph.INTERNAL__setOwnUnknownElement(
+      path,
+      metamodel,
+    );
+    addElementToPackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
+        element.package,
+        this.packageCache,
+      ),
+      metamodel,
+    );
+    metamodel.content = element.content;
+    return metamodel;
+  }
+
+  visit_IngestDefinition(element: V1_IngestDefinition): PackageableElement {
+    assertNonEmptyString(
+      element.package,
+      `Element 'package' field is missing or empty`,
+    );
+    assertNonEmptyString(
+      element.name,
+      `Element 'name' field is missing or empty`,
+    );
+    const metamodel = new IngestDefinition(element.name);
+    const appDir = element.appDirDeployment;
+    if (appDir) {
+      const metamodelApp = new AppDirNode();
+      metamodelApp.appDirId = appDir.appDirId;
+      metamodelApp.level = appDir.level;
+      metamodel.appDirDeployment = metamodelApp;
+    }
     const path = V1_buildFullPath(element.package, element.name);
     V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
     this.context.currentSubGraph.INTERNAL__setOwnUnknownElement(

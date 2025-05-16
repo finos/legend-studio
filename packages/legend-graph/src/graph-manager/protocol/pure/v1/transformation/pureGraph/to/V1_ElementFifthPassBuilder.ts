@@ -52,6 +52,7 @@ import type { V1_SnowflakeApp } from '../../../model/packageableElements/functio
 import type { V1_INTERNAL__UnknownElement } from '../../../model/packageableElements/V1_INTERNAL__UnknownElement.js';
 import type { V1_HostedService } from '../../../model/packageableElements/function/V1_HostedService.js';
 import type { V1_DataProduct } from '../../../model/packageableElements/dataProduct/V1_DataProduct.js';
+import type { V1_IngestDefinition } from '../../../model/packageableElements/ingest/V1_IngestDefinition.js';
 
 export class V1_ElementFifthPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -97,6 +98,10 @@ export class V1_ElementFifthPassBuilder
   }
 
   visit_Measure(element: V1_Measure): void {
+    throw new UnsupportedOperationError();
+  }
+
+  visit_IngestDefinition(element: V1_IngestDefinition): void {
     throw new UnsupportedOperationError();
   }
 
