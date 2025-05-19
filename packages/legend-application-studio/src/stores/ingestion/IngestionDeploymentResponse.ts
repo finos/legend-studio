@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { SerializationFactory } from '@finos/legend-shared';
+import { SerializationFactory, type PlainObject } from '@finos/legend-shared';
 import { createModelSchema, primitive } from 'serializr';
 
 export enum IngestDefinitionValidationResponseStatus {
@@ -23,9 +23,13 @@ export enum IngestDefinitionValidationResponseStatus {
   FAILURE = 'FAILURE',
 }
 
-// TODO: include full response for user
+export class IngestDefinitionValidationOutput {
+  status!: IngestDefinitionValidationResponseStatus;
+}
+
 export class IngestDefinitionValidationResponse {
   status!: IngestDefinitionValidationResponseStatus;
+  content!: PlainObject;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(IngestDefinitionValidationResponse, {
@@ -33,6 +37,17 @@ export class IngestDefinitionValidationResponse {
     }),
   );
 }
+
+export const createIngestDefinitionValidationResponse = (
+  json: PlainObject<IngestDefinitionValidationResponse>,
+): IngestDefinitionValidationResponse => {
+  const ingestDefinitionValidationResponse =
+    new IngestDefinitionValidationResponse();
+  ingestDefinitionValidationResponse.status =
+    json.status as IngestDefinitionValidationResponseStatus;
+  ingestDefinitionValidationResponse.content = json;
+  return ingestDefinitionValidationResponse;
+};
 
 export class IngestDefinitionDeploymentResponse {
   ingestDefinitionUrn!: string;
@@ -42,4 +57,17 @@ export class IngestDefinitionDeploymentResponse {
       ingestDefinitionUrn: primitive(),
     }),
   );
+}
+
+export class ValidateAndDeploymentResponse {
+  validationResponse: IngestDefinitionValidationResponse;
+  deploymentResponse: IngestDefinitionDeploymentResponse | undefined;
+
+  constructor(
+    validationResponse: IngestDefinitionValidationResponse,
+    deploymentResponse: IngestDefinitionDeploymentResponse | undefined,
+  ) {
+    this.validationResponse = validationResponse;
+    this.deploymentResponse = deploymentResponse;
+  }
 }

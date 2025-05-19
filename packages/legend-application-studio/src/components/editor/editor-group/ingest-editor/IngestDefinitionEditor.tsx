@@ -20,6 +20,8 @@ import {
   Dialog,
   Modal,
   ModalBody,
+  ModalFooter,
+  ModalFooterButton,
   ModalHeader,
   ModalTitle,
   PanelContent,
@@ -41,7 +43,6 @@ const IngestDepoymentModal = observer(
   (props: { state: IngestDefinitionEditorState }) => {
     const { state } = props;
     const applicationStore = state.editorStore.applicationStore;
-
     return (
       <Dialog
         open={state.deploymentState.isInProgress}
@@ -59,6 +60,60 @@ const IngestDepoymentModal = observer(
           <ModalBody>
             <div>{state.deploymentState.message}</div>
           </ModalBody>
+        </Modal>
+      </Dialog>
+    );
+  },
+);
+
+const IngestValidationError = observer(
+  (props: { state: IngestDefinitionEditorState }) => {
+    const { state } = props;
+    const applicationStore = state.editorStore.applicationStore;
+    const validationError = state.validationError;
+    if (!validationError) {
+      return null;
+    }
+    const closeModal = (): void => state.setValError(undefined);
+    return (
+      <Dialog
+        open={Boolean(state.validationError)}
+        classes={{
+          root: 'editor-modal__root-container',
+          container: 'editor-modal__container',
+          paper: 'editor-modal__content',
+        }}
+        onClose={closeModal}
+      >
+        <Modal
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+          className="editor-modal"
+        >
+          <ModalHeader>
+            <ModalTitle title="Validation Error" />
+          </ModalHeader>
+          <ModalBody>
+            <PanelContent>
+              <CodeEditor
+                inputValue={JSON.stringify(
+                  state.validationError ?? {},
+                  null,
+                  2,
+                )}
+                isReadOnly={true}
+                language={CODE_EDITOR_LANGUAGE.JSON}
+              />
+            </PanelContent>
+          </ModalBody>
+          <ModalFooter>
+            <ModalFooterButton
+              onClick={closeModal}
+              text="Close"
+              type="secondary"
+            />
+          </ModalFooter>
         </Modal>
       </Dialog>
     );
@@ -149,6 +204,9 @@ export const IngestDefinitionEditor = observer(() => {
         </PanelContent>
         {ingestDefinitionEditorState.deploymentState.isInProgress && (
           <IngestDepoymentModal state={ingestDefinitionEditorState} />
+        )}
+        {ingestDefinitionEditorState.validationError && (
+          <IngestValidationError state={ingestDefinitionEditorState} />
         )}
       </PanelContent>
     </div>

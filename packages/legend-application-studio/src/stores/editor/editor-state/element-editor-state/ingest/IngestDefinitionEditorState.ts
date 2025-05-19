@@ -26,8 +26,11 @@ import {
   type GeneratorFn,
 } from '@finos/legend-shared';
 import type { IngestionManager } from '../../../../ingestion/IngestionManager.js';
-import { flow, flowResult, makeObservable, observable } from 'mobx';
-import type { IngestDefinitionDeploymentResponse } from '../../../../ingestion/IngestionDeploymentResponse.js';
+import { action, flow, flowResult, makeObservable, observable } from 'mobx';
+import type {
+  IngestDefinitionValidationResponse,
+  ValidateAndDeploymentResponse,
+} from '../../../../ingestion/IngestionDeploymentResponse.js';
 import {
   EditorInitialConfiguration,
   IngestElementEditorInitialConfiguration,
@@ -57,6 +60,7 @@ export const generateUrlToDeployOnOpen = (
   );
 };
 export class IngestDefinitionEditorState extends ElementEditorState {
+  validationError: IngestDefinitionValidationResponse | undefined;
   deploymentState = ActionState.create();
   deployOnOpen = false;
 
@@ -71,6 +75,8 @@ export class IngestDefinitionEditorState extends ElementEditorState {
       deploymentState: observable,
       deployOnOpen: observable,
       setDeployOnOpen: observable,
+      validationError: observable,
+      setValError: action,
       init_with_deploy: flow,
       deploy: flow,
     });
@@ -82,6 +88,10 @@ export class IngestDefinitionEditorState extends ElementEditorState {
 
   get ingestionManager(): IngestionManager | undefined {
     return this.editorStore.ingestionManager;
+  }
+
+  setValError(val: IngestDefinitionValidationResponse | undefined): void {
+    this.validationError = val;
   }
 
   setDeployOnOpen(value: boolean): void {
@@ -121,10 +131,15 @@ export class IngestDefinitionEditorState extends ElementEditorState {
         guaranteeNonNullable(this.ingest.appDirDeployment),
         this.deploymentState,
         token,
-      )) as unknown as IngestDefinitionDeploymentResponse;
-      this.editorStore.applicationStore.notificationService.notifySuccess(
-        `Ingest definition successfully deployed on ${response.ingestDefinitionUrn}`,
-      );
+      )) as unknown as ValidateAndDeploymentResponse;
+      const deploymentResponse = response.deploymentResponse;
+      if (deploymentResponse) {
+        this.editorStore.applicationStore.notificationService.notifySuccess(
+          `Ingest definition successfully deployed on ${deploymentResponse.ingestDefinitionUrn}`,
+        );
+      } else {
+        this.setValError(response.validationResponse);
+      }
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.notificationService.notifyError(

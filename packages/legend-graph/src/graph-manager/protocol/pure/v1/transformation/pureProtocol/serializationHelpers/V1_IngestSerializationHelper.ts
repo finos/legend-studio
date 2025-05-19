@@ -21,19 +21,29 @@ import type { V1_AppDirNode } from '../../../entitlements/V1_CoreEntitlements.js
 import { V1_AppDirNodeModelSchema } from './V1_EntitlementSerializationHelper.js';
 import { deserialize } from 'serializr';
 
+type IngestDefinitionInterface = {
+  appDirDeployment?: PlainObject<V1_AppDirNode> | undefined;
+  owner?: {
+    prodParallel?: PlainObject<V1_AppDirNode> | undefined;
+    production?: PlainObject<V1_AppDirNode> | undefined;
+  };
+};
+
 export const V1_createIngestDef = (
   name: string,
   packagePath: string,
   json: PlainObject<V1_PackageableElement>,
 ): V1_IngestDefinition => {
   const ingestDef = new V1_IngestDefinition();
-  const appDir = (
-    json as { appDirDeployment: PlainObject<V1_AppDirNode> | undefined }
-  ).appDirDeployment;
+  const jsonType = json as IngestDefinitionInterface;
+  const appDir =
+    jsonType.appDirDeployment ??
+    jsonType.owner?.prodParallel ??
+    jsonType.owner?.production;
+  ingestDef.name = name;
   ingestDef.appDirDeployment = appDir
     ? deserialize(V1_AppDirNodeModelSchema, appDir)
     : undefined;
-  ingestDef.name = name;
   ingestDef.package = packagePath;
   ingestDef.content = json;
   return ingestDef;
