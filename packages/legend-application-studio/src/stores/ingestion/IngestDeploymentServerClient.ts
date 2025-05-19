@@ -50,7 +50,7 @@ export class IngestDeploymentServerClient extends AbstractServerClient {
   });
 
   private _ingest = (): string =>
-    `${this.baseUrl}/ingest/sdlc/deploy/definitions`;
+    `${this.baseUrl}/api/ingest/sdlc/deploy/definitions`;
 
   changeServer(serverConfig: IngestDeploymentServerConfig): void {
     this.baseUrl = serverConfig.ingestServerUrl;
