@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.0.28
+
+### Patch Changes
+
+- [#4086](https://github.com/finos/legend-studio/pull/4086) [`b4ea16d`](https://github.com/finos/legend-studio/commit/b4ea16d18f9e8b87e043a70b024794a2ff22e816) ([@travisstebbins](https://github.com/travisstebbins)) - Improve Lakehouse Home UI/UX
+
 ## 0.0.27
 
 ### Patch Changes
