@@ -47,7 +47,7 @@ import {
   CODE_EDITOR_LANGUAGE,
   CODE_EDITOR_THEME,
 } from '@finos/legend-code-editor';
-import { Tab, Tabs } from '@mui/material';
+import { Button, Tab, Tabs } from '@mui/material';
 import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
 import { type PlainObject } from '@finos/legend-shared';
 import { DataContractCreator } from '../entitlements/EntitlementsDataContractCreator.js';
@@ -170,34 +170,28 @@ export const DataProductGroupAccessViewer = observer(
       switch (val) {
         case DataProductGroupAccess.UNKNOWN:
           return (
-            <button className="data-space__viewer__access-group__item__header-access-btn data-space__viewer__access-group__item__header-access-btn--unknown">
+            <Button variant="contained" color="info">
               UNKNOWN
-            </button>
+            </Button>
           );
         case DataProductGroupAccess.NO_ACCESS:
           return (
-            <button
-              onClick={handleClick}
-              className="data-space__viewer__access-group__item__header-access-btn data-space__viewer__access-group__item__header-access-btn--no-access"
-            >
+            <Button variant="contained" color="error" onClick={handleClick}>
               REQUEST ACCESS
-            </button>
+            </Button>
           );
         case DataProductGroupAccess.PENDING:
           return (
-            <button
-              onClick={handleClick}
-              className="data-space__viewer__access-group__item__header-access-btn data-space__viewer__access-group__item__header-access-btn--pending"
-            >
+            <Button variant="contained" color="primary" onClick={handleClick}>
               <ExternalLinkIcon />
               <div>PENDING</div>
-            </button>
+            </Button>
           );
         case DataProductGroupAccess.COMPLETED:
           return (
-            <button className="data-space__viewer__access-group__item__header-access-btn data-space__viewer__access-group__item__header-access-btn--entitled">
+            <Button variant="contained" color="success">
               ENTITLED
-            </button>
+            </Button>
           );
 
         default:

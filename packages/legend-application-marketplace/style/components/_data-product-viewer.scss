@@ -1461,47 +1461,6 @@
     &-main {
       @include flexVCenter;
     }
-
-    &-access {
-      &-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.2rem;
-        height: 2.2rem;
-        border-color: var(--color-blue-200);
-        color: var(--color-hclight-white);
-        border-radius: 0.2rem;
-        padding: 0 0.5rem;
-        width: 120px;
-
-        &--no-access {
-          background: #f2c1c1;
-          color: #d63c3c;
-          outline: 1px solid #d63c3c;
-          cursor: pointer;
-        }
-
-        &--pending {
-          gap: 0.5rem;
-          background: #b3e5fc;
-          color: #129aec;
-          cursor: pointer;
-        }
-
-        &--unknown {
-          background: var(--color-hclight-grey-80);
-          cursor: default;
-        }
-
-        &--entitled {
-          background: #c1d9c2;
-          color: #539456;
-          outline: 1px solid #539456;
-          cursor: default;
-        }
-      }
-    }
   }
 
   &__item__header__title {
