@@ -44,6 +44,7 @@ export const setup = (outputDir) => {
         marketplace: {
           url: 'http://localhost:6400/api',
           subscriptionUrl: 'http://localhost:6400/subscriptions/api',
+          userSearchUrl: 'http://localhost:6400/user-search/api',
           oidcConfig: {
             redirectPath: '/callback',
             silentRedirectPath: '/callback?silent=true',

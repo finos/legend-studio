@@ -15,7 +15,7 @@
  */
 
 import packageJson from '../../../package.json' with { type: 'json' };
-import { LegendMarketplaceApplicationPlugin } from '../../stores/LegendMarketplaceApplicationPlugin.js';
+import { LegendMarketplaceApplicationPlugin } from '../LegendMarketplaceApplicationPlugin.js';
 
 export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceApplicationPlugin {
   static NAME = packageJson.extensions.applicationMarketplacePlugin;

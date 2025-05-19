@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-export * from './models/DataProduct.js';
-export * from './models/LegendUser.js';
-export * from './models/Provider.js';
-export * from './models/Subscription.js';
+import type { AbstractPluginManager } from '@finos/legend-shared';
+import type { LegendUserPlugin } from './LegendUserPlugin.js';
 
-export { MarketplaceServerClient } from './MarketplaceServerClient.js';
+export interface LegendUserPluginManager extends AbstractPluginManager {
+  getUserPlugins(): LegendUserPlugin[];
+  registerUserPlugin(plugin: LegendUserPlugin): void;
+}
