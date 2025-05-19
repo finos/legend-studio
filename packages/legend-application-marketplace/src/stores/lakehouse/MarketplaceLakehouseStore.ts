@@ -173,7 +173,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         this.filter.search === '' ||
         dataProductTitle
           .toLowerCase()
-          .includes(this.filter.search?.toLowerCase());
+          .includes(this.filter.search.toLowerCase());
       return versionMatch && titleMatch;
     });
   }
@@ -202,30 +202,29 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     try {
       this.loadingProductsState.inProgress();
       // we will show both released and snapshot versions for now to support deployment via workspaces
-      const dataProductEntitySummaries: StoredSummaryEntity[] =
-        (yield Promise.all([
-          this.depotServerClient.getEntitiesSummaryByClassifier(
-            CORE_PURE_PATH.DATA_PRODUCT,
-            {
-              scope: DepotScope.RELEASES,
-              summary: true,
-            },
-          ),
-          this.depotServerClient.getEntitiesSummaryByClassifier(
-            CORE_PURE_PATH.DATA_PRODUCT,
-            {
-              scope: DepotScope.SNAPSHOT,
-              summary: true,
-            },
-          ),
-        ]))
-          .flat()
-          .map((e: PlainObject<StoredSummaryEntity>) =>
-            StoredSummaryEntity.serialization.fromJson(e),
-          );
+      const dataProductEntitySummaries = (yield Promise.all([
+        this.depotServerClient.getEntitiesSummaryByClassifier(
+          CORE_PURE_PATH.DATA_PRODUCT,
+          {
+            scope: DepotScope.RELEASES,
+            summary: true,
+          },
+        ),
+        this.depotServerClient.getEntitiesSummaryByClassifier(
+          CORE_PURE_PATH.DATA_PRODUCT,
+          {
+            scope: DepotScope.SNAPSHOT,
+            summary: true,
+          },
+        ),
+      ]))
+        .flat()
+        .map((e: PlainObject<StoredSummaryEntity>) =>
+          StoredSummaryEntity.serialization.fromJson(e),
+        ) as StoredSummaryEntity[];
       // TODO: explore a different way to get data product content to avoid overloading metadata server
       // as the number of data products increases.
-      const dataProductEntities: DataProductEntity[] = yield Promise.all(
+      const dataProductEntities = (yield Promise.all(
         dataProductEntitySummaries.map(async (entitySummary) => {
           const entity = await this.depotServerClient.getVersionEntity(
             entitySummary.groupId,
@@ -248,7 +247,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
             product: dataProduct,
           };
         }),
-      );
+      )) as DataProductEntity[];
       const dataProductStates = dataProductEntities
         .sort(
           (a, b) =>
