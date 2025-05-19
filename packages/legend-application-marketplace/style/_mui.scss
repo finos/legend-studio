@@ -18,6 +18,12 @@
 
 // MUI Overrides
 
+.MuiDialogTitle-root {
+  font-size: 2rem;
+}
+
+.MuiButton-root,
+.MuiFormLabel-root,
 .MuiSnackbarContent-root {
   font-size: 1.2rem;
 }

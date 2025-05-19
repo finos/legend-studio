@@ -89,3 +89,11 @@
     font-weight: bold;
   }
 }
+
+.marketplace-lakehouse-entitlements__data-contract-creator {
+  &__content {
+    @include flexVCenter;
+
+    flex-direction: column;
+  }
+}

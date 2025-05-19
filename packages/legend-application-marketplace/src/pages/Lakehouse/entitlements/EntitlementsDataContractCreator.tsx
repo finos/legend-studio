@@ -27,7 +27,6 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
-  Typography,
 } from '@mui/material';
 
 export const DataContractCreator = observer(
@@ -55,10 +54,10 @@ export const DataContractCreator = observer(
     };
 
     return (
-      <Dialog open={true} onClose={onClose} fullWidth={true} maxWidth="sm">
+      <Dialog open={true} onClose={onClose} fullWidth={true} maxWidth="md">
         <DialogTitle>Data Contract Request</DialogTitle>
-        <DialogContent>
-          <Typography variant="body1">
+        <DialogContent className="marketplace-lakehouse-entitlements__data-contract-creator__content">
+          <div>
             Submit access request for{' '}
             <span className="marketplace-lakehouse-text__emphasis">
               {accessPointGroup.id}
@@ -68,7 +67,7 @@ export const DataContractCreator = observer(
               {viewerState.product.title}
             </span>{' '}
             Data Product
-          </Typography>
+          </div>
           <TextField
             required={true}
             name="description"
