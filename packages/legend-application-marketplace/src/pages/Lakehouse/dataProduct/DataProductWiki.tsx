@@ -16,11 +16,11 @@
 
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef } from 'react';
-import type { DataProductViewerState } from '../../stores/lakehouse/DataProductViewerState.js';
+import type { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
 import {
   DATA_PRODUCT_VIEWER_ACTIVITY_MODE,
   generateAnchorForActivity,
-} from '../../stores/lakehouse/DataProductViewerNavigation.js';
+} from '../../../stores/lakehouse/DataProductViewerNavigation.js';
 import { AnchorLinkIcon } from '@finos/legend-art';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { DataProducteDataAccess } from './DataProductDataAccess.js';

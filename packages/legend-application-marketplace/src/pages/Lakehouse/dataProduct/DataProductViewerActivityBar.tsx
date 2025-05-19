@@ -34,11 +34,11 @@ import {
   SparkleIcon,
 } from '@finos/legend-art';
 import { type ActivityBarItemConfig } from '@finos/legend-lego/application';
-import type { DataProductViewerState } from '../../stores/lakehouse/DataProductViewerState.js';
+import type { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
 import {
   DATA_PRODUCT_VIEWER_ACTIVITY_MODE,
   generateAnchorForActivity,
-} from '../../stores/lakehouse/DataProductViewerNavigation.js';
+} from '../../../stores/lakehouse/DataProductViewerNavigation.js';
 
 const ActivityBarMenu = observer(
   (props: { dataSpaceViewerState: DataProductViewerState }) => {

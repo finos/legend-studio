@@ -25,14 +25,14 @@ import { observer } from 'mobx-react-lite';
 import {
   DATA_PRODUCT_VIEWER_ACTIVITY_MODE,
   generateAnchorForActivity,
-} from '../../stores/lakehouse/DataProductViewerNavigation.js';
+} from '../../../stores/lakehouse/DataProductViewerNavigation.js';
 import { useEffect, useRef, useState } from 'react';
-import type { DataProductViewerState } from '../../stores/lakehouse/DataProductViewerState.js';
+import type { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
 import { useApplicationStore } from '@finos/legend-application';
 import {
   DataProductGroupAccess,
   type DataProductGroupAccessState,
-} from '../../stores/lakehouse/DataProductDataAccessState.js';
+} from '../../../stores/lakehouse/DataProductDataAccessState.js';
 import {
   DataGrid,
   type DataGridCellRendererParams,
@@ -48,9 +48,9 @@ import {
   CODE_EDITOR_THEME,
 } from '@finos/legend-code-editor';
 import { Tab, Tabs } from '@mui/material';
-import { useLegendMarketplaceBaseStore } from '../../application/LegendMarketplaceFrameworkProvider.js';
+import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
 import { type PlainObject } from '@finos/legend-shared';
-import { DataContractCreator } from './entitlements/EntitlementsDataContractCreator.js';
+import { DataContractCreator } from '../entitlements/EntitlementsDataContractCreator.js';
 
 export const DataProductMarkdownTextViewer: React.FC<{ value: string }> = (
   props,
