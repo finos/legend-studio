@@ -81,28 +81,19 @@
 
   &__more-info-btn {
     position: absolute;
-    right: 15px;
-    bottom: 15px;
-    min-width: unset;
-    min-height: unset;
-    padding: 0;
+    right: 10px;
+    bottom: 10px;
+    opacity: 0.5;
 
-    &--selected svg {
-      opacity: 1 !important;
-
-      &:hover {
-        opacity: 1 !important;
-      }
+    &:hover,
+    &--selected {
+      opacity: 1;
     }
 
     svg {
-      opacity: 0.5;
       width: 20px;
       height: 20px;
-
-      &:hover {
-        opacity: 1;
-      }
+      color: var(--color-blue-100);
     }
   }
 
@@ -125,12 +116,19 @@
 
     &__description-label,
     &__project-table-header {
+      @include flexVCenter;
+
       font-style: italic;
       color: var(--color-dark-grey-400);
     }
 
     &__project-table td {
       font-size: 1.6rem;
+    }
+
+    &__project-link {
+      color: var(--color-blue-100);
+      margin-left: 0.5rem;
     }
   }
 

@@ -160,6 +160,7 @@ export const LakehouseDataProductCard = (props: {
         <div className="marketplace-lakehouse-data-product-card__popover__project-table-header">
           Data Product Project
           <IconButton
+            className="marketplace-lakehouse-data-product-card__popover__project-link"
             onClick={() =>
               dataProductState.state.applicationStore.navigationService.navigator.visitAddress(
                 EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
