@@ -14,84 +14,71 @@
  * limitations under the License.
  */
 
-import {
-  ModalBody,
-  ModalFooter,
-  ModalHeader,
-  Dialog,
-  Modal,
-  PanelForm,
-  PanelFormValidatedTextField,
-  ModalFooterButton,
-  PanelLoadingIndicator,
-} from '@finos/legend-art';
 import type { V1_AccessPointGroup } from '@finos/legend-graph';
 import { observer } from 'mobx-react-lite';
-import { useRef, useState } from 'react';
+import { useState, type ChangeEvent } from 'react';
 import type { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
-import { withAuth, type AuthContextProps } from 'react-oidc-context';
+import { useAuth } from 'react-oidc-context';
 import { flowResult } from 'mobx';
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+} from '@mui/material';
 
-export const DataContractCreator = withAuth(
-  observer(
-    (props: {
-      onClose: () => void;
-      accessGroupPoint: V1_AccessPointGroup;
-      viewerState: DataProductViewerState;
-    }) => {
-      const { onClose, viewerState, accessGroupPoint } = props;
-      const [description, setDescription] = useState<string | undefined>(
-        undefined,
-      );
-      const auth = (props as unknown as { auth: AuthContextProps }).auth;
-      const onCreate = (): void => {
-        if (description) {
-          flowResult(
-            props.viewerState.create(
-              description,
-              accessGroupPoint,
-              auth.user?.access_token,
-            ),
-          ).catch(viewerState.applicationStore.alertUnhandledError);
-        }
-      };
+export const DataContractCreator = observer(
+  (props: {
+    onClose: () => void;
+    accessGroupPoint: V1_AccessPointGroup;
+    viewerState: DataProductViewerState;
+  }) => {
+    const { onClose, viewerState, accessGroupPoint } = props;
+    const auth = useAuth();
+    const [description, setDescription] = useState<string | undefined>(
+      undefined,
+    );
 
-      const patternRef = useRef<HTMLInputElement>(null);
-      return (
-        <Dialog
-          open={true}
-          onClose={onClose}
-          classes={{ container: 'dataContract-creator-modal__container' }}
-          PaperProps={{
-            classes: { root: 'dataContract-creator-modal__inner-container' },
-          }}
-        >
-          <Modal>
-            <PanelLoadingIndicator
-              isLoading={viewerState.creatingContractState.isInProgress}
-            />
-            <ModalHeader>Create Data Contract</ModalHeader>
-            <ModalBody>
-              <PanelForm>
-                <PanelFormValidatedTextField
-                  ref={patternRef}
-                  name="Description"
-                  prompt={'Description for the data contract'}
-                  update={(value: string | undefined): void => {
-                    setDescription(value ?? '');
-                  }}
-                  validate={undefined}
-                  value={description}
-                />
-              </PanelForm>
-            </ModalBody>
+    const onCreate = (): void => {
+      if (description) {
+        flowResult(
+          props.viewerState.create(
+            description,
+            accessGroupPoint,
+            auth.user?.access_token,
+          ),
+        ).catch(viewerState.applicationStore.alertUnhandledError);
+      }
+    };
 
-            <ModalFooter>
-              <ModalFooterButton onClick={onCreate}>Create</ModalFooterButton>
-            </ModalFooter>
-          </Modal>
-        </Dialog>
-      );
-    },
-  ),
+    return (
+      <Dialog open={true} onClose={onClose} fullWidth={true} maxWidth="sm">
+        <DialogTitle>Data Contract Request</DialogTitle>
+        <DialogContent>
+          <TextField
+            required={true}
+            name="description"
+            label="Description"
+            variant="outlined"
+            margin="dense"
+            fullWidth={true}
+            value={description}
+            onChange={(event: ChangeEvent<HTMLInputElement>) => {
+              setDescription(event.target.value);
+            }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={onCreate} variant="contained">
+            Create
+          </Button>
+          <Button onClick={onClose} variant="outlined">
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
+    );
+  },
 );
