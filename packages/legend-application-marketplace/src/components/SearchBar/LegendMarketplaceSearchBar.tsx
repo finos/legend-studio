@@ -16,7 +16,7 @@
 
 import { type JSX, useState } from 'react';
 import { Button, InputAdornment, TextField } from '@mui/material';
-import { SearchIcon } from '@finos/legend-art';
+import { clsx, SearchIcon } from '@finos/legend-art';
 
 export interface Vendor {
   provider: string;
@@ -43,6 +43,10 @@ export const LegendMarketplaceSearchBar = (props: {
       }}
     >
       <TextField
+        className={clsx('legend-marketplace__search-bar__input', {
+          'legend-marketplace__search-bar__input--with-button':
+            onSearch !== undefined,
+        })}
         type="search"
         placeholder={placeholder ?? 'Search'}
         fullWidth={true}
@@ -58,14 +62,6 @@ export const LegendMarketplaceSearchBar = (props: {
                 <SearchIcon />
               </InputAdornment>
             ),
-          },
-        }}
-        sx={{
-          height: '100%',
-          '& .MuiOutlinedInput-root': {
-            height: '100%',
-            borderTopRightRadius: 0,
-            borderBottomRightRadius: 0,
           },
         }}
       />
