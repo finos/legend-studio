@@ -48,6 +48,7 @@ export class SnowflakeAppFunctionActivatorEdtiorState extends ElementEditorState
       reprocess: action,
       updateOwnership: action,
       updateUsageRole: action,
+      updateDeploymentSchema: action,
       updatePermissionScopte: action,
       updateAppDescription: action,
       updateApplicationName: action,
@@ -86,6 +87,10 @@ export class SnowflakeAppFunctionActivatorEdtiorState extends ElementEditorState
 
   updateUsageRole(val: string | undefined): void {
     this.activator.usageRole = val;
+  }
+
+  updateDeploymentSchema(val: string | undefined): void {
+    this.activator.deploymentSchema = val;
   }
 
   updatePermissionScopte(val: SnowflakePermissionScheme): void {

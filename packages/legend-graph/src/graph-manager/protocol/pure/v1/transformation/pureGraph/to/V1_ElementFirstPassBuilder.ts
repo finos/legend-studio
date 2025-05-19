@@ -238,6 +238,9 @@ export class V1_ElementFirstPassBuilder
     if (element.usageRole) {
       metamodel.usageRole = element.usageRole;
     }
+    if (element.deploymentSchema) {
+      metamodel.deploymentSchema = element.deploymentSchema;
+    }
     if (element.permissionScheme) {
       metamodel.permissionScheme = element.permissionScheme;
     }

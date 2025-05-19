@@ -573,6 +573,7 @@ export const observe_SnowflakeApp = skipObserved(
       ownership: observable,
       permissionScheme: observable,
       usageRole: observable,
+      deploymentSchema: observable,
       activationConfiguration: observable,
       _elementHashCode: override,
     });

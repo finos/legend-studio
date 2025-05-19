@@ -189,6 +189,9 @@ class V1_PackageableElementTransformer
     if (element.usageRole) {
       protocol.usageRole = element.usageRole;
     }
+    if (element.deploymentSchema) {
+      protocol.deploymentSchema = element.deploymentSchema;
+    }
     if (element.permissionScheme) {
       protocol.permissionScheme = element.permissionScheme;
     }
