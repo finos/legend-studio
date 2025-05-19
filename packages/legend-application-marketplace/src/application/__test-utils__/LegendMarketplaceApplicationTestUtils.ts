@@ -33,6 +33,9 @@ const TEST_DATA__appConfig: LegendMarketplaceApplicationConfigurationData = {
   depot: {
     url: 'https://testMetadataUrl',
   },
+  studio: {
+    url: 'https://testStudioUrl',
+  },
 };
 
 export const TEST__getTestLegendMarketplaceApplicationConfig = (

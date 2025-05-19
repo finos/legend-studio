@@ -19,56 +19,206 @@ import {
   useMarketplaceLakehouseStore,
   withMarketplaceLakehouseStore,
 } from './MarketplaceLakehouseStoreProvider.js';
-import { useEffect, type JSX } from 'react';
+import { useEffect, useState, type JSX, type MouseEvent } from 'react';
 import {
   clsx,
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
+  InfoCircleIcon,
+  OpenIcon,
 } from '@finos/legend-art';
 import {
+  Box,
   Checkbox,
   Chip,
+  Container,
   FormControlLabel,
   FormGroup,
   Grid2 as Grid,
+  IconButton,
+  Popover,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableRow,
 } from '@mui/material';
 import type { DataProductState } from '../../stores/lakehouse/MarketplaceLakehouseStore.js';
 import { generateLakehouseDataProduct } from '../../__lib__/LegendMarketplaceNavigation.js';
 import { generateGAVCoordinates } from '@finos/legend-storage';
 import { LegendMarketplaceSearchBar } from '../../components/SearchBar/LegendMarketplaceSearchBar.js';
-import { DepotScope } from '@finos/legend-server-depot';
+import { DepotScope, isSnapshotVersion } from '@finos/legend-server-depot';
 import { LegendMarketplaceCard } from '../../components/MarketplaceCard/LegendMarketplaceCard.js';
 import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
+import { EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl } from '@finos/legend-application';
 
-export const LegendDataProductVendorCard = (props: {
-  dataAsset: DataProductState;
-  onClick: (dataAsset: DataProductState) => void;
+const MAX_DESCRIPTION_LENGTH = 250;
+
+export const LakehouseDataProductCard = (props: {
+  dataProductState: DataProductState;
+  onClick: (dataProductState: DataProductState) => void;
 }): JSX.Element => {
-  const { dataAsset, onClick } = props;
+  const { dataProductState, onClick } = props;
+
+  const [popoverAnchorEl, setPopoverAnchorEl] =
+    useState<HTMLButtonElement | null>(null);
+
+  const truncatedDescription =
+    dataProductState.productEntity.product?.description &&
+    dataProductState.productEntity.product.description.length >
+      MAX_DESCRIPTION_LENGTH
+      ? `${dataProductState.productEntity.product.description.substring(
+          0,
+          MAX_DESCRIPTION_LENGTH,
+        )}...`
+      : dataProductState.productEntity.product?.description;
+
+  const popoverOpen = Boolean(popoverAnchorEl);
+  const popoverId = popoverOpen ? 'popover' : undefined;
+  const isSnapshot = isSnapshotVersion(
+    dataProductState.productEntity.versionId,
+  );
 
   const content = (
     <>
-      <Chip
-        label={dataAsset.productEntity.versionId}
-        className={clsx('legend-marketplace-vendor-card__type')}
-      />
-      <div className="legend-marketplace-vendor-card__name">
-        {dataAsset.productEntity.path.split('::').pop()}
+      <div className="marketplace-lakehouse-data-product-card__name">
+        {dataProductState.productEntity.product?.title ??
+          dataProductState.productEntity.path.split('::').pop()}
+        <Chip
+          label={isSnapshot ? 'SNAPSHOT' : 'RELEASE'}
+          size="small"
+          className={clsx('marketplace-lakehouse-data-product-card__version', {
+            'marketplace-lakehouse-data-product-card__version--snapshot':
+              isSnapshot,
+            'marketplace-lakehouse-data-product-card__version--release':
+              !isSnapshot,
+          })}
+        />
       </div>
-      <div className="legend-marketplace-vendor-card__description">
-        {`${dataAsset.productEntity.groupId}:${dataAsset.productEntity.artifactId}`}
+      <div className="marketplace-lakehouse-data-product-card__description">
+        {truncatedDescription}
       </div>
+      <IconButton
+        aria-describedby={popoverId}
+        onClick={(event: MouseEvent<HTMLButtonElement>) => {
+          event.preventDefault();
+          event.stopPropagation();
+          setPopoverAnchorEl(event.currentTarget);
+        }}
+        className={clsx(
+          'marketplace-lakehouse-data-product-card__more-info-btn',
+          {
+            'marketplace-lakehouse-data-product-card__more-info-btn--selected':
+              popoverOpen,
+          },
+        )}
+      >
+        <InfoCircleIcon />
+      </IconButton>
+      <Popover
+        id={popoverId}
+        open={popoverOpen}
+        anchorEl={popoverAnchorEl}
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'center',
+        }}
+        transformOrigin={{
+          vertical: 'bottom',
+          horizontal: 'center',
+        }}
+        onClose={() => setPopoverAnchorEl(null)}
+        slotProps={{
+          paper: {
+            className: 'marketplace-lakehouse-data-product-card__popover',
+            onClick: (event) => [
+              event.preventDefault(),
+              event.stopPropagation(),
+            ],
+          },
+          backdrop: {
+            onClick: (event) => {
+              event.preventDefault();
+              event.stopPropagation();
+            },
+          },
+        }}
+      >
+        <div className="marketplace-lakehouse-data-product-card__popover__name">
+          {dataProductState.productEntity.product?.title ??
+            dataProductState.productEntity.path.split('::').pop()}
+        </div>
+        <div className="marketplace-lakehouse-data-product-card__popover__description-label">
+          Description
+        </div>
+        <div className="marketplace-lakehouse-data-product-card__popover__description">
+          {dataProductState.productEntity.product?.description}
+        </div>
+        <hr />
+        <div className="marketplace-lakehouse-data-product-card__popover__project-table-header">
+          Data Product Project
+          <IconButton
+            className="marketplace-lakehouse-data-product-card__popover__project-link"
+            onClick={() =>
+              dataProductState.state.applicationStore.navigationService.navigator.visitAddress(
+                EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
+                  dataProductState.state.applicationStore.config
+                    .studioServerUrl,
+                  dataProductState.productEntity.groupId,
+                  dataProductState.productEntity.artifactId,
+                  dataProductState.productEntity.versionId,
+                  dataProductState.productEntity.path,
+                ),
+              )
+            }
+          >
+            <OpenIcon />
+          </IconButton>
+        </div>
+        <TableContainer className="marketplace-lakehouse-data-product-card__popover__project-table">
+          <Table>
+            <TableBody>
+              <TableRow>
+                <TableCell>
+                  <b>Group</b>
+                </TableCell>
+                <TableCell>{dataProductState.productEntity.groupId}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>
+                  <b>Artifact</b>
+                </TableCell>
+                <TableCell>
+                  {dataProductState.productEntity.artifactId}
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>
+                  <b>Version</b>
+                </TableCell>
+                <TableCell>
+                  {dataProductState.productEntity.versionId}
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>
+                  <b>Path</b>
+                </TableCell>
+                <TableCell>{dataProductState.productEntity.path}</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Popover>
     </>
   );
-
-  const moreInfo = <div>{dataAsset.productEntity.path}</div>;
 
   return (
     <LegendMarketplaceCard
       size="large"
       content={content}
-      onClick={() => onClick(dataAsset)}
-      moreInfo={moreInfo}
+      onClick={() => onClick(dataProductState)}
+      className="marketplace-lakehouse-data-product-card"
     />
   );
 };
@@ -76,18 +226,9 @@ export const LegendDataProductVendorCard = (props: {
 export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
   observer(() => {
     const marketPlaceStore = useMarketplaceLakehouseStore();
-    const onSearch = (
-      provider: string | undefined,
-      query: string | undefined,
-    ) => {
-      marketPlaceStore.handleSearch(query);
-    };
 
     const onSearchChange = (query: string) => {
-      if (query === '') {
-        // use for clearing of search
-        marketPlaceStore.handleSearch(query);
-      }
+      marketPlaceStore.handleSearch(query);
     };
 
     useEffect(() => {
@@ -95,72 +236,74 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
     }, [marketPlaceStore]);
 
     return (
-      <LegendMarketplacePage className="legend-marketplace-lakehouse-home">
-        <CubesLoadingIndicator
-          isLoading={marketPlaceStore.loadingProductsState.isInProgress}
+      <LegendMarketplacePage className="marketplace-lakehouse-home">
+        <Container
+          maxWidth="xxxl"
+          className="marketplace-lakehouse-home__container"
         >
-          <CubesLoadingIndicatorIcon />
-        </CubesLoadingIndicator>
-        <div className="legend-marketplace-data-product-search__container">
-          <LegendMarketplaceSearchBar
-            onSearch={onSearch}
-            onChange={onSearchChange}
-          />
-          <FormGroup row={true}>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={marketPlaceStore.filter.releaseFilter}
-                  onChange={() =>
-                    marketPlaceStore.handleFilterChange(DepotScope.RELEASES)
-                  }
-                />
-              }
-              label="Releases"
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={marketPlaceStore.filter.snapshotFilter}
-                  onChange={() =>
-                    marketPlaceStore.handleFilterChange(DepotScope.SNAPSHOT)
-                  }
-                />
-              }
-              label="Snapshots"
-            />
-          </FormGroup>
-        </div>
-        <div className="legend-marketplace-home__vendors-cards">
-          <Grid
-            container={true}
-            spacing={{ xs: 2, md: 3, xl: 4 }}
-            columns={{ xs: 1, sm: 2, xl: 3, xxl: 4, xxxl: 5, xxxxl: 6 }}
-            sx={{ justifyContent: 'center' }}
+          <CubesLoadingIndicator
+            isLoading={marketPlaceStore.loadingProductsState.isInProgress}
           >
-            {marketPlaceStore.filterProducts?.map((dpState) => (
-              <Grid key={dpState.id} size={1}>
-                <LegendDataProductVendorCard
-                  dataAsset={dpState}
-                  onClick={(dataAsset: DataProductState) => {
-                    {
-                      marketPlaceStore.applicationStore.navigationService.navigator.goToLocation(
-                        generateLakehouseDataProduct(
-                          generateGAVCoordinates(
-                            dpState.productEntity.groupId,
-                            dpState.productEntity.artifactId,
-                            dpState.productEntity.versionId,
-                          ),
-                          dpState.productEntity.path,
-                        ),
-                      );
+            <CubesLoadingIndicatorIcon />
+          </CubesLoadingIndicator>
+          <Box className="marketplace-lakehouse-home__search-bar">
+            <LegendMarketplaceSearchBar onChange={onSearchChange} />
+            <FormGroup row={true}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={marketPlaceStore.filter.releaseFilter}
+                    onChange={() =>
+                      marketPlaceStore.handleFilterChange(DepotScope.RELEASES)
                     }
-                  }}
-                />
-              </Grid>
-            ))}
-          </Grid>
-        </div>
+                  />
+                }
+                label="Releases"
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={marketPlaceStore.filter.snapshotFilter}
+                    onChange={() =>
+                      marketPlaceStore.handleFilterChange(DepotScope.SNAPSHOT)
+                    }
+                  />
+                }
+                label="Snapshots"
+              />
+            </FormGroup>
+          </Box>
+          <div className="marketplace-lakehouse-home__data-product-cards">
+            <Grid
+              container={true}
+              spacing={{ xs: 2, md: 3, xl: 4 }}
+              columns={{ xs: 1, sm: 2, xl: 3, xxl: 4, xxxl: 5, xxxxl: 6 }}
+              sx={{ justifyContent: 'center' }}
+            >
+              {marketPlaceStore.filterProducts?.map((dpState) => (
+                <Grid key={dpState.id} size={1}>
+                  <LakehouseDataProductCard
+                    dataProductState={dpState}
+                    onClick={(dataProductState: DataProductState) => {
+                      {
+                        marketPlaceStore.applicationStore.navigationService.navigator.goToLocation(
+                          generateLakehouseDataProduct(
+                            generateGAVCoordinates(
+                              dataProductState.productEntity.groupId,
+                              dataProductState.productEntity.artifactId,
+                              dataProductState.productEntity.versionId,
+                            ),
+                            dataProductState.productEntity.path,
+                          ),
+                        );
+                      }
+                    }}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          </div>
+        </Container>
       </LegendMarketplacePage>
     );
   }),

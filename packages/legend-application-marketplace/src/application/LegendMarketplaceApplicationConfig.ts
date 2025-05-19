@@ -66,7 +66,7 @@ export interface LegendMarketplaceApplicationConfigurationData
       applicationIDUrl: string;
     };
   };
-  studio?: {
+  studio: {
     url: string;
   };
 }
@@ -91,7 +91,7 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
   readonly lakehouseEntitlementsConfig:
     | LegendLakehouseEntitlementsConfig
     | undefined;
-  readonly studioServerUrl?: string;
+  readonly studioServerUrl: string;
 
   constructor(
     input: LegendApplicationConfigurationInput<LegendMarketplaceApplicationConfigurationData>,
@@ -143,7 +143,6 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
     );
 
     // lakehouse
-
     if (input.configData.lakehouse) {
       this.lakehouseServerUrl = LegendApplicationConfig.resolveAbsoluteUrl(
         guaranteeNonEmptyString(
@@ -163,14 +162,16 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
       );
     }
     // studio
-    if (input.configData.studio) {
-      this.studioServerUrl = LegendApplicationConfig.resolveAbsoluteUrl(
-        guaranteeNonEmptyString(
-          input.configData.studio.url,
-          `Can't configure application: 'studio.url' field is missing or empty`,
-        ),
-      );
-    }
+    assertNonNullable(
+      input.configData.studio,
+      `Can't configure application: 'studio' field is missing`,
+    );
+    this.studioServerUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+      guaranteeNonEmptyString(
+        input.configData.studio.url,
+        `Can't configure application: 'studio.url' field is missing or empty`,
+      ),
+    );
 
     // options
     this.options = LegendMarketplaceApplicationCoreOptions.create(

@@ -16,25 +16,25 @@
 
 @forward 'app';
 
+@forward 'components/data-product-card';
 @forward 'components/data-product-viewer';
-@forward 'components/data-products';
-@forward 'components/data-products';
 @forward 'components/dataContract-creator';
 @forward 'components/header';
 @forward 'components/legend-marketplace-card';
+@forward 'components/notification';
 @forward 'components/product-search-card';
 @forward 'components/radio-selector';
 @forward 'components/search-bar';
 @forward 'components/vendor-card';
-@forward 'components/notification';
 
 @forward 'pages/home';
+@forward 'pages/marketplace-subscriptions';
 @forward 'pages/not-found-screen';
 @forward 'pages/search-results';
 @forward 'pages/vendor-data';
-@forward 'pages/marketplace-subscriptions';
 
 @forward 'pages/lakehouse/lakehouse-entitlements-tasks';
+@forward 'pages/lakehouse/lakehouse-home';
 @forward 'pages/lakehouse/lakehouse-subscriptions';
 
 :root {

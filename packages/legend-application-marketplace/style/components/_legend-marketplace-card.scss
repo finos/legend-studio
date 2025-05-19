@@ -16,14 +16,19 @@
 
 @use 'mixins' as *;
 
+:root {
+  --legend-marketplace-card-shadow:
+    1px 4px 6px rgb(0 0 0 / 10%), -1px 4px 6px rgb(0 0 0 / 10%);
+  --legend-marketplace-card-shadow-hover:
+    2px 5px 8px rgb(0 0 0 / 20%), -2px 5px 8px rgb(0 0 0 / 20%);
+}
+
 .legend-marketplace-card {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   background: var(--color-light-grey-0);
-  box-shadow:
-    0 4px 6px rgb(0 0 0 / 10%),
-    0 1px 3px rgb(0 0 0 / 8%);
+  box-shadow: var(--legend-marketplace-card-shadow);
   width: 100%;
   transition:
     transform 0.2s ease,
@@ -87,6 +92,6 @@
 
   &:hover {
     transform: scale(1.05);
-    box-shadow: 5px 5px 5px rgb(0 0 0 / 30%);
+    box-shadow: var(--legend-marketplace-card-shadow-hover);
   }
 }

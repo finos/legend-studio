@@ -14,6 +14,24 @@
  * limitations under the License.
  */
 
+import { generateGAVCoordinates } from '@finos/legend-storage';
+
 export enum LEGEND_APPLICATION_PARAM_TOKEN {
   INITIAL_COLOR_THEME = 'initialColorTheme',
 }
+
+/**
+ * @external_application_navigation This depends on Legend Studio routing and is hardcoded so it's potentially brittle
+ */
+export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl = (
+  studioApplicationUrl: string,
+  groupId: string,
+  artifactId: string,
+  versionId: string,
+  entityPath: string | undefined,
+): string =>
+  `${studioApplicationUrl}/view/archive/${generateGAVCoordinates(
+    groupId,
+    artifactId,
+    versionId,
+  )}${entityPath ? `/entity/${entityPath}` : ''}`;

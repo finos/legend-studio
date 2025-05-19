@@ -1,0 +1,138 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+.marketplace-lakehouse-home {
+  &__container {
+    @include flexVCenter;
+
+    flex-direction: column;
+    padding: 2rem;
+  }
+
+  &__search-bar {
+    @include flexVCenter;
+
+    margin-bottom: 2rem;
+    width: 80rem;
+
+    .legend-marketplace__search-bar {
+      flex: 1;
+      width: unset;
+      margin-right: 1rem;
+    }
+  }
+
+  &__data-product-cards {
+    width: 100%;
+  }
+}
+
+.marketplace-lakehouse-data-product-card {
+  .legend-marketplace-card__content {
+    width: 100%;
+    justify-content: start;
+    align-items: start;
+    overflow: auto;
+  }
+
+  &__name {
+    @include flexVCenter;
+
+    width: 100%;
+    justify-content: space-between;
+    font-size: 2rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    color: var(--color-blue-100);
+  }
+
+  &__version {
+    font-size: 1rem;
+
+    &--snapshot {
+      background: var(--tw-color-blue-100);
+      color: var(--tw-color-blue-600);
+    }
+
+    &--release {
+      background: var(--tw-color-green-100);
+      color: var(--tw-color-green-600);
+    }
+  }
+
+  &__description {
+    font-size: 1.6rem;
+  }
+
+  &__more-info-btn {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    opacity: 0.5;
+
+    &:hover,
+    &--selected {
+      opacity: 1;
+    }
+
+    svg {
+      width: 20px;
+      height: 20px;
+      color: var(--color-blue-100);
+    }
+  }
+
+  &__popover {
+    padding: 1rem;
+    border-radius: 1rem;
+    font-size: 1.6rem;
+    min-width: 40rem;
+
+    &__name {
+      font-size: 2rem;
+      font-weight: 500;
+      margin-bottom: 1rem;
+      color: var(--color-blue-100);
+    }
+
+    hr {
+      margin: 1rem 0;
+    }
+
+    &__description-label,
+    &__project-table-header {
+      @include flexVCenter;
+
+      font-style: italic;
+      color: var(--color-dark-grey-400);
+    }
+
+    &__project-table td {
+      font-size: 1.6rem;
+    }
+
+    &__project-link {
+      color: var(--color-blue-100);
+      margin-left: 0.5rem;
+    }
+  }
+
+  &:hover {
+    transform: unset;
+  }
+}

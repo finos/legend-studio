@@ -18,10 +18,7 @@ import {
   StoreProjectData,
   type DepotServerClient,
 } from '@finos/legend-server-depot';
-import {
-  EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl,
-  EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl,
-} from '../../__lib__/LegendQueryNavigation.js';
+import { EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl } from '../../__lib__/LegendQueryNavigation.js';
 import type { LegendQueryApplicationStore } from '../LegendQueryBaseStore.js';
 import { parseProjectIdentifier } from '@finos/legend-storage';
 import type { QueryEditorStore } from '../QueryEditorStore.js';
@@ -29,6 +26,7 @@ import {
   DataSpacesDepotRepository,
   type DataSpaceInfo,
 } from '@finos/legend-extension-dsl-data-space/application';
+import { EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl } from '@finos/legend-application';
 
 export const createViewProjectHandler =
   (applicationStore: LegendQueryApplicationStore) =>

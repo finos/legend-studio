@@ -47,6 +47,7 @@
   "dependencies": {
     "@finos/legend-art": "workspace:*",
     "@finos/legend-shared": "workspace:*",
+    "@finos/legend-storage": "workspace:*",
     "@types/react": "19.0.10",
     "@types/react-dom": "19.0.4",
     "@types/react-router-dom": "5.3.3",

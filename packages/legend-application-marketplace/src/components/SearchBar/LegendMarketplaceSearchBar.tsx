@@ -16,7 +16,7 @@
 
 import { type JSX, useState } from 'react';
 import { Button, InputAdornment, TextField } from '@mui/material';
-import { SearchIcon } from '@finos/legend-art';
+import { clsx, SearchIcon } from '@finos/legend-art';
 
 export interface Vendor {
   provider: string;
@@ -25,7 +25,7 @@ export interface Vendor {
 }
 
 export const LegendMarketplaceSearchBar = (props: {
-  onSearch: (provider: string | undefined, query: string | undefined) => void;
+  onSearch?: (provider: string | undefined, query: string | undefined) => void;
   initialValue?: string;
   placeholder?: string;
   onChange?: (query: string) => void;
@@ -39,10 +39,14 @@ export const LegendMarketplaceSearchBar = (props: {
       className="legend-marketplace__search-bar"
       onSubmit={(event) => {
         event.preventDefault();
-        onSearch(undefined, searchQuery);
+        onSearch?.(undefined, searchQuery);
       }}
     >
       <TextField
+        className={clsx('legend-marketplace__search-bar__input', {
+          'legend-marketplace__search-bar__input--with-button':
+            onSearch !== undefined,
+        })}
         type="search"
         placeholder={placeholder ?? 'Search'}
         fullWidth={true}
@@ -60,18 +64,12 @@ export const LegendMarketplaceSearchBar = (props: {
             ),
           },
         }}
-        sx={{
-          height: '100%',
-          '& .MuiOutlinedInput-root': {
-            height: '100%',
-            borderTopRightRadius: 0,
-            borderBottomRightRadius: 0,
-          },
-        }}
       />
-      <Button type="submit" variant="contained" disabled={!searchQuery}>
-        Go
-      </Button>
+      {onSearch && (
+        <Button type="submit" variant="contained" disabled={!searchQuery}>
+          Go
+        </Button>
+      )}
     </form>
   );
 };
