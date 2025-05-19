@@ -358,7 +358,7 @@ export const DataProducteDataAccess = observer(
                     undefined,
                   )
                 }
-                accessGroupPoint={
+                accessPointGroup={
                   dataSpaceViewerState.dataContractAccessPointGroup
                 }
                 viewerState={dataSpaceViewerState}

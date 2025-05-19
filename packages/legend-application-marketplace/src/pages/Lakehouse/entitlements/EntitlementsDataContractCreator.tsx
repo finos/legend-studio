@@ -27,15 +27,16 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
+  Typography,
 } from '@mui/material';
 
 export const DataContractCreator = observer(
   (props: {
     onClose: () => void;
-    accessGroupPoint: V1_AccessPointGroup;
+    accessPointGroup: V1_AccessPointGroup;
     viewerState: DataProductViewerState;
   }) => {
-    const { onClose, viewerState, accessGroupPoint } = props;
+    const { onClose, viewerState, accessPointGroup } = props;
     const auth = useAuth();
     const [description, setDescription] = useState<string | undefined>(
       undefined,
@@ -46,7 +47,7 @@ export const DataContractCreator = observer(
         flowResult(
           props.viewerState.create(
             description,
-            accessGroupPoint,
+            accessPointGroup,
             auth.user?.access_token,
           ),
         ).catch(viewerState.applicationStore.alertUnhandledError);
@@ -57,6 +58,17 @@ export const DataContractCreator = observer(
       <Dialog open={true} onClose={onClose} fullWidth={true} maxWidth="sm">
         <DialogTitle>Data Contract Request</DialogTitle>
         <DialogContent>
+          <Typography variant="body1">
+            Submit access request for{' '}
+            <span className="marketplace-lakehouse-text__emphasis">
+              {accessPointGroup.id}
+            </span>{' '}
+            Access Point Group in{' '}
+            <span className="marketplace-lakehouse-text__emphasis">
+              {viewerState.product.title}
+            </span>{' '}
+            Data Product
+          </Typography>
           <TextField
             required={true}
             name="description"
