@@ -1,5 +1,14 @@
 # @finos/legend-graph
 
+## 32.1.29
+
+### Patch Changes
+
+- [#4085](https://github.com/finos/legend-studio/pull/4085) [`e76e33b`](https://github.com/finos/legend-studio/commit/e76e33b5d7dccbcb0a93ac2340871f6786e2b42e) ([@janeenyamak1](https://github.com/janeenyamak1)) - Add support for new SnowflakeApp property deploymentSchema
+
+- [#4090](https://github.com/finos/legend-studio/pull/4090) [`dc98546`](https://github.com/finos/legend-studio/commit/dc98546fa21764aab8f8db1e61793441da5c704c) ([@travisstebbins](https://github.com/travisstebbins)) - Support mutli application ID in deployment ingestion.
+  Show full validation error to users for ingestion deployment.
+
 ## 32.1.28
 
 ### Patch Changes

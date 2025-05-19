@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.98
+
+### Patch Changes
+
+- [#4089](https://github.com/finos/legend-studio/pull/4089) [`bd3f5e3`](https://github.com/finos/legend-studio/commit/bd3f5e38a14bf428e69cc7fe479ba8178774c6e8) ([@travisstebbins](https://github.com/travisstebbins)) - Extract mui style overrides into their own file
+
 ## 7.1.97
 
 ### Patch Changes

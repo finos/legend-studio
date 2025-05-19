@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 16.0.44
+
+### Patch Changes
+
+- [#4086](https://github.com/finos/legend-studio/pull/4086) [`b4ea16d`](https://github.com/finos/legend-studio/commit/b4ea16d18f9e8b87e043a70b024794a2ff22e816) ([@travisstebbins](https://github.com/travisstebbins)) - Move EXTERNAL_APPLICATION_NAVIGATION\_\_generateStudioProjectViewUrl function to @finos/legend-application
+
 ## 16.0.43
 
 ## 16.0.42
