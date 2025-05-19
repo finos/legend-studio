@@ -27,7 +27,8 @@
     "./markdown/test/MockedRemarkGFM.js": "./lib/markdown/__test-utils__/MockedRemarkGFM.js",
     "./lib/index.css": "./lib/index.css",
     "./lib/normalize.css": "./lib/normalize.css",
-    "./lib/fonts.css": "./lib/fonts.css"
+    "./lib/fonts.css": "./lib/fonts.css",
+    "./lib/muiOverrides.css": "./lib/reset/muiOverrides.css"
   },
   "module": "lib/index.js",
   "types": "lib/index.d.ts",
