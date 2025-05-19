@@ -19,7 +19,6 @@ import {
   addQueryParametersToUrl,
   stringifyQueryParams,
 } from '@finos/legend-shared';
-import { generateGAVCoordinates } from '@finos/legend-storage';
 
 export enum LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN {
   VENDOR_NAME = 'vendorName',
@@ -129,19 +128,3 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl =
     `${studioApplicationUrl}/view/${projectId}${
       versionId ? `/version/${versionId}` : ''
     }${entityPath ? `/entity/${entityPath}` : ''}`;
-
-/**
- * @external_application_navigation This depends on Legend Studio routing and is hardcoded so it's potentially brittle
- */
-export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl = (
-  studioApplicationUrl: string,
-  groupId: string,
-  artifactId: string,
-  versionId: string,
-  entityPath: string | undefined,
-): string =>
-  `${studioApplicationUrl}/view/archive/${generateGAVCoordinates(
-    groupId,
-    artifactId,
-    versionId,
-  )}${entityPath ? `/entity/${entityPath}` : ''}`;

@@ -44,15 +44,13 @@ import {
   TableRow,
 } from '@mui/material';
 import type { DataProductState } from '../../stores/lakehouse/MarketplaceLakehouseStore.js';
-import {
-  EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl,
-  generateLakehouseDataProduct,
-} from '../../__lib__/LegendMarketplaceNavigation.js';
+import { generateLakehouseDataProduct } from '../../__lib__/LegendMarketplaceNavigation.js';
 import { generateGAVCoordinates } from '@finos/legend-storage';
 import { LegendMarketplaceSearchBar } from '../../components/SearchBar/LegendMarketplaceSearchBar.js';
 import { DepotScope, isSnapshotVersion } from '@finos/legend-server-depot';
 import { LegendMarketplaceCard } from '../../components/MarketplaceCard/LegendMarketplaceCard.js';
 import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
+import { EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl } from '@finos/legend-application';
 
 const MAX_DESCRIPTION_LENGTH = 250;
 
