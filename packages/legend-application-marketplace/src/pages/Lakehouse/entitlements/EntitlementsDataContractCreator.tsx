@@ -22,12 +22,18 @@ import { useAuth } from 'react-oidc-context';
 import { flowResult } from 'mobx';
 import {
   Button,
+  ButtonGroup,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   TextField,
 } from '@mui/material';
+
+enum DataContractCreatorConsumerType {
+  USER = 'User',
+  SYSTEM_ACCOUNT = 'System Account',
+}
 
 export const DataContractCreator = observer(
   (props: {
@@ -40,6 +46,10 @@ export const DataContractCreator = observer(
     const [description, setDescription] = useState<string | undefined>(
       undefined,
     );
+    const [consumerType, setConsumerType] =
+      useState<DataContractCreatorConsumerType>(
+        DataContractCreatorConsumerType.USER,
+      );
 
     const onCreate = (): void => {
       if (description) {
@@ -68,6 +78,21 @@ export const DataContractCreator = observer(
             </span>{' '}
             Data Product
           </div>
+          <ButtonGroup variant="contained">
+            {Object.entries(DataContractCreatorConsumerType).map(
+              ([key, value]) => (
+                <Button
+                  key={key}
+                  variant={consumerType === value ? 'contained' : 'outlined'}
+                  onClick={(): void => {
+                    setConsumerType(value);
+                  }}
+                >
+                  {key}
+                </Button>
+              ),
+            )}
+          </ButtonGroup>
           <TextField
             required={true}
             name="description"
