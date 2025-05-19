@@ -20,9 +20,11 @@ import { IngestDiscoveryServerClient } from './IngestDiscoveryServerClient.js';
 import type { GenericLegendApplicationStore } from '@finos/legend-application';
 import { type ActionState, type PlainObject } from '@finos/legend-shared';
 import {
-  IngestDefinitionValidationResponse,
+  type IngestDefinitionValidationResponse,
   IngestDefinitionDeploymentResponse,
   IngestDefinitionValidationResponseStatus,
+  ValidateAndDeploymentResponse,
+  createIngestDefinitionValidationResponse,
 } from './IngestionDeploymentResponse.js';
 import {
   IngestDeploymentServerConfig,
@@ -72,7 +74,7 @@ export class IngestionManager {
     appDirNode: AppDirNode,
     actionState: ActionState | undefined,
     token: string | undefined,
-  ): Promise<IngestDefinitionDeploymentResponse> {
+  ): Promise<ValidateAndDeploymentResponse> {
     actionState?.setMessage(
       `Discovering associated ingest environment for DID ${appDirNode.appDirId}...`,
     );
@@ -85,16 +87,26 @@ export class IngestionManager {
       undefined,
       token,
     );
+    const fullResponse = new ValidateAndDeploymentResponse(
+      validateResonse,
+      undefined,
+    );
     if (
       validateResonse.status !==
       IngestDefinitionValidationResponseStatus.SUCCESS
     ) {
-      throw new Error('Failed to validate Ingest Definition');
+      return fullResponse;
     }
     actionState?.setMessage(
       `Validation Success. Deploying ingest with server ${this.ingestDeploymentServerClient.baseUrl ?? ''} for realm ${this.ingestDeploymentServerClient.environmentClassification}...`,
     );
-    return this._deploy(ingestDefinition, undefined, token);
+    const deployResponse = await this._deploy(
+      ingestDefinition,
+      undefined,
+      token,
+    );
+    fullResponse.deploymentResponse = deployResponse;
+    return fullResponse;
   }
 
   private async _validate(
@@ -110,7 +122,7 @@ export class IngestionManager {
       ingestDefinition,
       token,
     );
-    return IngestDefinitionValidationResponse.serialization.fromJson(response);
+    return createIngestDefinitionValidationResponse(response);
   }
 
   private async _deploy(
