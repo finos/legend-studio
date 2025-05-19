@@ -1,5 +1,7 @@
 # @finos/legend-application-query
 
+## 13.7.82
+
 ## 13.7.81
 
 ### Patch Changes
