@@ -143,7 +143,6 @@ export const DataContractCreator = observer(
             label={consumerType}
             required={true}
             variant="outlined"
-            margin="dense"
             fullWidth={true}
             initializing={loadingCurrentUser}
           />
@@ -153,7 +152,6 @@ export const DataContractCreator = observer(
             name="description"
             label="Description"
             variant="outlined"
-            margin="dense"
             fullWidth={true}
             value={description}
             onChange={(event: ChangeEvent<HTMLInputElement>) => {
