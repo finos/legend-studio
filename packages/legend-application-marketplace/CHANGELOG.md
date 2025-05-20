@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.0.29
+
+### Patch Changes
+
+- [#4097](https://github.com/finos/legend-studio/pull/4097) [`3925904`](https://github.com/finos/legend-studio/commit/39259043f783c1992b95744c1c6e04d19a0521b0) ([@travisstebbins](https://github.com/travisstebbins)) - Lakehouse entitlements consumer improvements
+
 ## 0.0.28
 
 ### Patch Changes
