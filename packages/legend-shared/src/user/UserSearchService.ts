@@ -14,9 +14,16 @@
  * limitations under the License.
  */
 
-import { AbstractPlugin, type PlainObject } from '@finos/legend-shared';
-import type { LegendUser } from '@finos/legend-server-marketplace';
-import type { LegendUserPluginManager } from './LegendUserPluginManager.js';
+import {
+  AbstractPlugin,
+  type AbstractPluginManager,
+} from '../application/AbstractPluginManager.js';
+import type { LegendUser } from './LegendUser.js';
+
+export interface LegendUserPluginManager extends AbstractPluginManager {
+  getUserPlugins(): LegendUserPlugin[];
+  registerUserPlugin(plugin: LegendUserPlugin): void;
+}
 
 export abstract class LegendUserPlugin extends AbstractPlugin {
   /**
@@ -24,10 +31,31 @@ export abstract class LegendUserPlugin extends AbstractPlugin {
    * See https://github.com/finos/legend-studio/blob/master/docs/technical/typescript-usage.md#understand-typescript-structual-type-system
    */
   private readonly _$nominalTypeBrand!: 'LegendUserPlugin';
+  private readonly baseUrl!: string;
+
+  constructor(name: string, version: string, baseUrl: string) {
+    super(name, version);
+    this.baseUrl = baseUrl;
+  }
 
   install(pluginManager: LegendUserPluginManager): void {
     pluginManager.registerUserPlugin(this);
   }
 
-  abstract mapLegendUserResponse(userResponse: PlainObject): LegendUser;
+  abstract executeSearch(searchTerm: string): Promise<LegendUser[]>;
+}
+
+export class UserSearchService {
+  private plugins: LegendUserPlugin[] = [];
+
+  registerPlugins(plugins: LegendUserPlugin[]): void {
+    this.plugins = plugins;
+  }
+
+  async executeSearch(searchTerm: string): Promise<LegendUser[]> {
+    const results = await Promise.all(
+      this.plugins.map(async (plugin) => plugin.executeSearch(searchTerm)),
+    );
+    return results.flat();
+  }
 }

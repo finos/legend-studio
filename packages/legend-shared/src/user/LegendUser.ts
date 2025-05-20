@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { SerializationFactory } from '@finos/legend-shared';
 import { createModelSchema, primitive } from 'serializr';
+import { SerializationFactory } from '../application/SerializationUtils.js';
 
 export class LegendUser {
   country!: string;
