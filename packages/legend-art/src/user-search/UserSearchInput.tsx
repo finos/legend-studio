@@ -20,13 +20,18 @@ import {
   type UserSearchService,
   debounce,
 } from '@finos/legend-shared';
-import { Autocomplete, TextField, type TextFieldProps } from '@mui/material';
+import {
+  Autocomplete,
+  CircularProgress,
+  TextField,
+  type TextFieldProps,
+} from '@mui/material';
 
 type UserSearchInputProps = TextFieldProps & {
   userValue: LegendUser;
   setUserValue: (user: LegendUser) => void;
   userSearchService?: UserSearchService | undefined;
-  loading?: boolean | undefined;
+  initializing?: boolean | undefined;
 };
 
 export const UserSearchInput = forwardRef<
@@ -38,7 +43,7 @@ export const UserSearchInput = forwardRef<
     userValue,
     setUserValue,
     userSearchService,
-    loading,
+    initializing,
     ...inputProps
   } = props;
 
@@ -89,7 +94,7 @@ export const UserSearchInput = forwardRef<
         onChange={handleChange}
         onInputChange={handleInputChange}
         options={userOptions}
-        loading={loading || loadingUsers}
+        loading={loadingUsers}
         filterOptions={(x) => x}
         renderInput={(params) => {
           return (
@@ -98,12 +103,24 @@ export const UserSearchInput = forwardRef<
               {...inputProps}
               label="User"
               placeholder="Search"
+              slotProps={{
+                input: {
+                  ...params.InputProps,
+                  startAdornment: (
+                    <>
+                      {initializing ? <CircularProgress size={20} /> : null}
+                      {params.InputProps.startAdornment}
+                    </>
+                  ),
+                },
+              }}
             />
           );
         }}
         isOptionEqualToValue={(option, _value) => option?.id === _value?.id}
         getOptionLabel={(option) => option?.displayName ?? ''}
         fullWidth={inputProps.fullWidth ?? false}
+        disabled={initializing ?? false}
         ref={ref}
       />
     );

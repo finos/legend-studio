@@ -143,7 +143,7 @@ export const DataContractCreator = observer(
             variant="outlined"
             margin="dense"
             fullWidth={true}
-            loading={loadingCurrentUser}
+            initializing={loadingCurrentUser}
           />
           <TextField
             required={true}
