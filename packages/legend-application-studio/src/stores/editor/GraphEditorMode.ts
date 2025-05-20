@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import type { PackageableElement } from '@finos/legend-graph';
+import type {
+  PackageableElement,
+  GraphTextInputOption,
+} from '@finos/legend-graph';
 import type { GeneratorFn } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-storage';
 import { makeObservable, flow, action } from 'mobx';
@@ -23,6 +26,7 @@ import type { EditorStore } from './EditorStore.js';
 import type { GRAPH_EDITOR_MODE } from './EditorConfig.js';
 import type { Problem } from './EditorGraphState.js';
 import type { EditorInitialConfiguration } from './editor-state/element-editor-state/ElementEditorInitialConfiguration.js';
+import type { FileSystem_File } from './utils/FileSystemTreeUtils.js';
 
 export abstract class GraphEditorMode {
   readonly editorStore: EditorStore;
@@ -39,6 +43,7 @@ export abstract class GraphEditorMode {
       cleanupBeforeEntering: flow,
       handleCleanupFailure: flow,
       openElement: action,
+      openFileSystem_File: action,
     });
     this.editorStore = editorStore;
   }
@@ -86,4 +91,10 @@ export abstract class GraphEditorMode {
     element: PackageableElement,
     config?: EditorInitialConfiguration | undefined,
   ): void;
+
+  getGraphTextInputOption(): GraphTextInputOption | undefined {
+    return undefined;
+  }
+
+  abstract openFileSystem_File(file: FileSystem_File): void;
 }

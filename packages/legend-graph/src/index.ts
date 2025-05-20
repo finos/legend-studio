@@ -390,6 +390,7 @@ export {
   SystemModel,
   GenerationModel,
   PureModel,
+  type GraphTextInputOption,
 } from './graph/PureModel.js';
 export * from './graph/GraphDataOrigin.js';
 export * from './graph/PureGraphExtension.js';

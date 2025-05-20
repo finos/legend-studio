@@ -56,6 +56,8 @@ import { LegendStudioTelemetryHelper } from '../../__lib__/LegendStudioTelemetry
 import { GraphEditorMode } from './GraphEditorMode.js';
 import { GlobalBulkServiceRegistrationState } from './sidebar-state/BulkServiceRegistrationState.js';
 import type { EditorInitialConfiguration } from './editor-state/element-editor-state/ElementEditorInitialConfiguration.js';
+import { ArtifactGenerationViewerState } from './editor-state/ArtifactGenerationViewerState.js';
+import type { FileSystem_File } from './utils/FileSystemTreeUtils.js';
 
 export class GraphEditFormModeState extends GraphEditorMode {
   *initialize(): GeneratorFn<void> {
@@ -566,6 +568,12 @@ export class GraphEditFormModeState extends GraphEditorMode {
 
   *handleCleanupFailure(error: unknown): GeneratorFn<void> {
     return;
+  }
+
+  override openFileSystem_File(fileNode: FileSystem_File): void {
+    this.editorStore.tabManagerState.openTab(
+      new ArtifactGenerationViewerState(this.editorStore, fileNode),
+    );
   }
 
   openElement(

@@ -186,6 +186,11 @@ export interface V1_GraphManagerEngine {
     options?: { onError?: () => void; getCompilationWarnings?: boolean },
   ) => Promise<V1_TextCompilationResult>;
 
+  combineTextAndPMCD: (
+    graphText: string,
+    compileContext: V1_PureModelContextData,
+  ) => Promise<V1_PureModelContextData>;
+
   getLambdaReturnType: (
     lambdaReturnInput: V1_LambdaReturnTypeInput,
   ) => Promise<string>;

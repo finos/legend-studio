@@ -28,6 +28,7 @@ import {
   GraphBuilderError,
   reportGraphAnalytics,
   INTERNAL__UnknownElement,
+  type GraphTextInputOption,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -37,9 +38,10 @@ import {
   StopWatch,
   assertNonNullable,
   filterByType,
+  assertTrue,
 } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-storage';
-import { makeObservable, flow, flowResult, observable } from 'mobx';
+import { makeObservable, flow, flowResult, observable, action } from 'mobx';
 import { GrammarTextEditorState } from './editor-state/GrammarTextEditorState.js';
 import type { EditorStore } from './EditorStore.js';
 import { ExplorerTreeState } from './ExplorerTreeState.js';
@@ -52,6 +54,7 @@ import { LegendStudioTelemetryHelper } from '../../__lib__/LegendStudioTelemetry
 import { GraphEditorMode } from './GraphEditorMode.js';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../__lib__/LegendStudioEvent.js';
+import type { FileSystem_File } from './utils/FileSystemTreeUtils.js';
 
 export enum GRAMMAR_MODE_EDITOR_ACTION {
   GO_TO_ELEMENT_DEFINITION = 'go-to-element-definition',
@@ -59,11 +62,14 @@ export enum GRAMMAR_MODE_EDITOR_ACTION {
 
 export class GraphEditGrammarModeState extends GraphEditorMode {
   grammarTextEditorState: GrammarTextEditorState;
+  generatedFile: FileSystem_File | undefined;
 
   constructor(editorStore: EditorStore) {
     super(editorStore);
     makeObservable(this, {
       grammarTextEditorState: observable,
+      generatedFile: observable,
+      setGeneratedFile: action,
       compileText: flow,
       goToElement: flow,
     });
@@ -72,6 +78,10 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
 
   get headerLabel(): string {
     return 'Text Mode';
+  }
+
+  setGeneratedFile(val: FileSystem_File | undefined): void {
+    this.generatedFile = val;
   }
 
   *initialize(isFallback?: {
@@ -225,6 +235,17 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
     newPath: string,
   ): GeneratorFn<void> {
     return;
+  }
+
+  override getGraphTextInputOption(): GraphTextInputOption | undefined {
+    assertTrue(
+      this.editorStore.graphState.mostRecentCompilationOutcome ===
+        GraphCompilationOutcome.SUCCEEDED,
+      'Please ensure compilation has succeeded before proceeding',
+    );
+    return {
+      graphGrammar: this.grammarTextEditorState.graphGrammarText,
+    };
   }
 
   get mode(): GRAPH_EDITOR_MODE {
@@ -594,6 +615,10 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
       );
     }
     this.editorStore.applicationStore.alertService.setBlockingAlert(undefined);
+  }
+
+  override openFileSystem_File(file: FileSystem_File): void {
+    this.setGeneratedFile(file);
   }
 
   openElement(element: PackageableElement): void {

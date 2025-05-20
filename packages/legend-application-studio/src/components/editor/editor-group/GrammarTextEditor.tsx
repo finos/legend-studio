@@ -34,6 +34,13 @@ import {
   MenuContentItemIcon,
   CheckIcon,
   MenuContentItemLabel,
+  Dialog,
+  ModalFooter,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalTitle,
+  ModalFooterButton,
 } from '@finos/legend-art';
 import {
   DEFAULT_TAB_SIZE,
@@ -125,6 +132,8 @@ import {
   GraphEditGrammarModeState,
 } from '../../../stores/editor/GraphEditGrammarModeState.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../__lib__/LegendStudioEvent.js';
+import { FileSystem_FileViewer } from './ArtifactGenerationViewer.js';
+import type { FileSystem_File } from '../../../stores/editor/utils/FileSystemTreeUtils.js';
 
 export const GrammarTextEditorHeaderTabContextMenu = observer(
   forwardRef<HTMLDivElement, { children?: React.ReactNode }>(
@@ -768,6 +777,55 @@ const goToElement = (
   }
 };
 
+const FileSystem_FileModal = observer(
+  (props: {
+    graphEditGrammarModeState: GraphEditGrammarModeState;
+    generatedFile: FileSystem_File;
+  }) => {
+    const { graphEditGrammarModeState, generatedFile } = props;
+    const applicationStore =
+      graphEditGrammarModeState.editorStore.applicationStore;
+    const closeModal = (): void =>
+      graphEditGrammarModeState.setGeneratedFile(undefined);
+    return (
+      <Dialog
+        open={true}
+        classes={{
+          root: 'editor-modal__root-container',
+          container: 'editor-modal__container',
+          paper: 'editor-modal__content',
+        }}
+        onClose={closeModal}
+      >
+        <Modal
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+          className="editor-modal"
+        >
+          <ModalHeader>
+            <ModalTitle title="Generated Artifact" />
+          </ModalHeader>
+          <ModalBody>
+            <FileSystem_FileViewer
+              generatedArtifact={generatedFile}
+              visitGenerator={undefined}
+              generator={undefined}
+            />
+          </ModalBody>
+          <ModalFooter>
+            <ModalFooterButton
+              onClick={closeModal}
+              text="Close"
+              type="secondary"
+            />
+          </ModalFooter>
+        </Modal>
+      </Dialog>
+    );
+  },
+);
+
 export const GrammarTextEditor = observer(() => {
   const [editor, setEditor] = useState<
     monacoEditorAPI.IStandaloneCodeEditor | undefined
@@ -1296,6 +1354,12 @@ export const GrammarTextEditor = observer(() => {
           <div className="code-editor__body" ref={ref} />
         </div>
       </PanelContent>
+      {grammarModeState.generatedFile && (
+        <FileSystem_FileModal
+          generatedFile={grammarModeState.generatedFile}
+          graphEditGrammarModeState={grammarModeState}
+        />
+      )}
     </div>
   );
 });
