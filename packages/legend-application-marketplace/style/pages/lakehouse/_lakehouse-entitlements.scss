@@ -96,4 +96,14 @@
 
     flex-direction: column;
   }
+
+  &__consumer-type-btn-group {
+    margin: 2rem 0;
+  }
+
+  &__user-input,
+  &__description-input {
+    max-width: 70rem;
+    margin: 1rem 0;
+  }
 }

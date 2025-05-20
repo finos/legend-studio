@@ -111,7 +111,10 @@ export const DataContractCreator = observer(
             </span>{' '}
             Data Product
           </div>
-          <ButtonGroup variant="contained">
+          <ButtonGroup
+            className="marketplace-lakehouse-entitlements__data-contract-creator__consumer-type-btn-group"
+            variant="contained"
+          >
             {Object.values(DataContractCreatorConsumerType).map((value) => (
               <Button
                 key={value}
@@ -128,6 +131,7 @@ export const DataContractCreator = observer(
             ))}
           </ButtonGroup>
           <UserSearchInput
+            className="marketplace-lakehouse-entitlements__data-contract-creator__user-input"
             key={consumerType}
             userValue={user}
             setUserValue={(_user: LegendUser): void => setUser(_user)}
@@ -144,6 +148,7 @@ export const DataContractCreator = observer(
             initializing={loadingCurrentUser}
           />
           <TextField
+            className="marketplace-lakehouse-entitlements__data-contract-creator__description-input"
             required={true}
             name="description"
             label="Description"
