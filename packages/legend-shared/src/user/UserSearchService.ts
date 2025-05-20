@@ -31,7 +31,7 @@ export abstract class LegendUserPlugin extends AbstractPlugin {
    * See https://github.com/finos/legend-studio/blob/master/docs/technical/typescript-usage.md#understand-typescript-structual-type-system
    */
   private readonly _$nominalTypeBrand!: 'LegendUserPlugin';
-  protected readonly baseUrl!: string;
+  protected baseUrl?: string | undefined;
 
   constructor(name: string, version: string, baseUrl: string) {
     super(name, version);
@@ -40,6 +40,10 @@ export abstract class LegendUserPlugin extends AbstractPlugin {
 
   install(pluginManager: LegendUserPluginManager): void {
     pluginManager.registerUserPlugin(this);
+  }
+
+  setup(baseUrl: string): void {
+    this.baseUrl = baseUrl;
   }
 
   abstract executeSearch(searchTerm: string): Promise<LegendUser[]>;

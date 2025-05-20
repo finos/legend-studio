@@ -110,6 +110,11 @@ export class LegendMarketplaceBaseStore {
 
     // User search
     if (this.pluginManager.getUserPlugins().length > 0) {
+      this.pluginManager
+        .getUserPlugins()
+        .forEach((plugin) =>
+          plugin.setup(this.applicationStore.config.marketplaceUserSearchUrl),
+        );
       this.userSearchService = new UserSearchService();
       this.userSearchService.registerPlugins(
         this.pluginManager.getUserPlugins(),
