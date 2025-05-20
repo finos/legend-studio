@@ -29,6 +29,9 @@ import {
   DialogTitle,
   TextField,
 } from '@mui/material';
+import { UserSearchInput } from '@finos/legend-art';
+import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
+import type { LegendUser } from '@finos/legend-shared';
 
 enum DataContractCreatorConsumerType {
   USER = 'User',
@@ -42,6 +45,7 @@ export const DataContractCreator = observer(
     viewerState: DataProductViewerState;
   }) => {
     const { onClose, viewerState, accessPointGroup } = props;
+    const legendMarketplaceStore = useLegendMarketplaceBaseStore();
     const auth = useAuth();
     const [description, setDescription] = useState<string | undefined>(
       undefined,
@@ -50,11 +54,13 @@ export const DataContractCreator = observer(
       useState<DataContractCreatorConsumerType>(
         DataContractCreatorConsumerType.USER,
       );
+    const [user, setUser] = useState<LegendUser | undefined>();
 
     const onCreate = (): void => {
-      if (description) {
+      if (user && description) {
         flowResult(
           props.viewerState.create(
+            user.id,
             description,
             accessPointGroup,
             auth.user?.access_token,
@@ -93,6 +99,16 @@ export const DataContractCreator = observer(
               ),
             )}
           </ButtonGroup>
+          <UserSearchInput
+            userSearchService={
+              consumerType === DataContractCreatorConsumerType.USER
+                ? legendMarketplaceStore.userSearchService
+                : undefined
+            }
+            onUserChange={(_user: LegendUser | undefined): void =>
+              setUser(_user)
+            }
+          />
           <TextField
             required={true}
             name="description"

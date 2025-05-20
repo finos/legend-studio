@@ -177,6 +177,7 @@ export class DataProductViewerState {
   }
 
   *create(
+    userId: string,
     description: string,
     group: V1_AccessPointGroup,
     token: string | undefined,
@@ -187,10 +188,7 @@ export class DataProductViewerState {
         description,
         product: guaranteeNonNullable(this.generation?.content),
         accessPointGroup: group.id,
-        consumer: serialize(
-          V1_AdhocTeamModelSchema,
-          buildAdhocUser(this.applicationStore.identityService.currentUser),
-        ),
+        consumer: serialize(V1_AdhocTeamModelSchema, buildAdhocUser(userId)),
       };
       const contracts = V1_DataContractsRecordModelSchemaToContracts(
         (yield this.lakeServerClient.createContract(

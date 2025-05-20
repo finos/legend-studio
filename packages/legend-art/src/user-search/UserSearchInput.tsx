@@ -14,9 +14,15 @@
  * limitations under the License.
  */
 
-import { forwardRef, useMemo, useState, type ChangeEvent } from 'react';
 import {
-  type LegendUser,
+  forwardRef,
+  useEffect,
+  useMemo,
+  useState,
+  type ChangeEvent,
+} from 'react';
+import {
+  LegendUser,
   type UserSearchService,
   debounce,
 } from '@finos/legend-shared';
@@ -24,18 +30,23 @@ import { Autocomplete, TextField, type TextFieldProps } from '@mui/material';
 
 type UserSearchInputProps = TextFieldProps & {
   userSearchService?: UserSearchService | undefined;
+  onUserChange?: (user: LegendUser | undefined) => void;
 };
 
 export const UserSearchInput = forwardRef<
   HTMLInputElement,
   UserSearchInputProps
 >(function InputWithInlineValidation(props, ref) {
-  const { className, userSearchService, ...inputProps } = props;
+  const { className, userSearchService, onUserChange, ...inputProps } = props;
 
   const [value, setValue] = useState<LegendUser | undefined>();
   const [inputValue, setInputValue] = useState<string>('');
   const [userOptions, setUserOptions] = useState<LegendUser[]>([]);
   const [loadingUsers, setIsLoadingUsers] = useState<boolean>(false);
+
+  useEffect(() => {
+    onUserChange?.(value);
+  }, [value, onUserChange]);
 
   const debouncedSearchUsers = useMemo(
     () =>
@@ -84,9 +95,7 @@ export const UserSearchInput = forwardRef<
           console.log('renderInput params:', params);
           return <TextField label="Search" />;
         }}
-        isOptionEqualToValue={(option, _value) =>
-          option?.kerberos === _value?.kerberos
-        }
+        isOptionEqualToValue={(option, _value) => option?.id === _value?.id}
         getOptionLabel={(option) => option?.displayName ?? ''}
         ref={ref}
       />
@@ -101,6 +110,9 @@ export const UserSearchInput = forwardRef<
         value={inputValue}
         onChange={(event: ChangeEvent<HTMLInputElement>) => {
           setInputValue(event.target.value);
+          setValue(
+            LegendUser.serialization.fromJson({ id: event.target.value }),
+          );
         }}
         ref={ref}
       />

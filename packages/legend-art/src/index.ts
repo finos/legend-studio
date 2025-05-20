@@ -83,3 +83,5 @@ export * from './markdown/MarkdownTextViewer.js';
 
 export * from './color/TailwindCSSPalette.js';
 export * from './color/ColorPicker.js';
+
+export * from './user-search/UserSearchInput.js';
