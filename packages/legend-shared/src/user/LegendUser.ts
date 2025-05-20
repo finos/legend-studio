@@ -14,31 +14,31 @@
  * limitations under the License.
  */
 
-import { createModelSchema, primitive } from 'serializr';
+import { createModelSchema, optional, primitive } from 'serializr';
 import { SerializationFactory } from '../application/SerializationUtils.js';
 
 export class LegendUser {
-  country!: string;
-  displayName!: string;
-  firstName!: string;
-  departmentName!: string;
-  divisionName!: string;
-  title!: string;
-  kerberos!: string;
-  city!: string;
+  country: string | undefined;
+  displayName: string | undefined;
+  firstName: string | undefined;
+  departmentName: string | undefined;
+  divisionName: string | undefined;
+  title: string | undefined;
+  id!: string;
+  city: string | undefined;
   lastName!: string;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(LegendUser, {
-      country: primitive(),
-      displayName: primitive(),
-      firstName: primitive(),
-      departmentName: primitive(),
-      divisionName: primitive(),
-      title: primitive(),
-      kerberos: primitive(),
-      city: primitive(),
-      lastName: primitive(),
+      country: optional(primitive()),
+      displayName: optional(primitive()),
+      firstName: optional(primitive()),
+      departmentName: optional(primitive()),
+      divisionName: optional(primitive()),
+      title: optional(primitive()),
+      id: primitive(),
+      city: optional(primitive()),
+      lastName: optional(primitive()),
     }),
   );
 }
