@@ -15,25 +15,31 @@
  */
 
 import { LegendApplicationPluginManager } from '@finos/legend-application';
-import type { LegendMarketplaceApplicationPlugin } from '../stores/LegendMarketplaceApplicationPlugin.js';
+import type { LegendMarketplaceApplicationPlugin } from './LegendMarketplaceApplicationPlugin.js';
 import type {
   GraphManagerPluginManager,
   PureGraphManagerPlugin,
   PureGraphPlugin,
   PureProtocolProcessorPlugin,
 } from '@finos/legend-graph';
+import type {
+  LegendUserPlugin,
+  LegendUserPluginManager,
+} from '@finos/legend-shared';
 
 export class LegendMarketplacePluginManager
   extends LegendApplicationPluginManager<LegendMarketplaceApplicationPlugin>
-  implements GraphManagerPluginManager
+  implements GraphManagerPluginManager, LegendUserPluginManager
 {
   private pureProtocolProcessorPlugins: PureProtocolProcessorPlugin[] = [];
   private pureGraphManagerPlugins: PureGraphManagerPlugin[] = [];
   private pureGraphPlugins: PureGraphPlugin[] = [];
+  private userPlugins: LegendUserPlugin[] = [];
 
   private constructor() {
     super();
   }
+
   registerPureProtocolProcessorPlugin(
     plugin: PureProtocolProcessorPlugin,
   ): void {
@@ -48,6 +54,10 @@ export class LegendMarketplacePluginManager
     this.pureGraphPlugins.push(plugin);
   }
 
+  registerUserPlugin(plugin: LegendUserPlugin): void {
+    this.userPlugins.push(plugin);
+  }
+
   getPureGraphManagerPlugins(): PureGraphManagerPlugin[] {
     return [...this.pureGraphManagerPlugins];
   }
@@ -58,6 +68,10 @@ export class LegendMarketplacePluginManager
 
   getPureGraphPlugins(): PureGraphPlugin[] {
     return [...this.pureGraphPlugins];
+  }
+
+  getUserPlugins(): LegendUserPlugin[] {
+    return [...this.userPlugins];
   }
 
   static create(): LegendMarketplacePluginManager {

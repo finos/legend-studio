@@ -25,14 +25,14 @@ import { observer } from 'mobx-react-lite';
 import {
   DATA_PRODUCT_VIEWER_ACTIVITY_MODE,
   generateAnchorForActivity,
-} from '../../stores/lakehouse/DataProductViewerNavigation.js';
+} from '../../../stores/lakehouse/DataProductViewerNavigation.js';
 import { useEffect, useRef, useState } from 'react';
-import type { DataProductViewerState } from '../../stores/lakehouse/DataProductViewerState.js';
+import type { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
 import { useApplicationStore } from '@finos/legend-application';
 import {
   DataProductGroupAccess,
   type DataProductGroupAccessState,
-} from '../../stores/lakehouse/DataProductDataAccessState.js';
+} from '../../../stores/lakehouse/DataProductDataAccessState.js';
 import {
   DataGrid,
   type DataGridCellRendererParams,
@@ -47,10 +47,10 @@ import {
   CODE_EDITOR_LANGUAGE,
   CODE_EDITOR_THEME,
 } from '@finos/legend-code-editor';
-import { Tab, Tabs } from '@mui/material';
-import { useLegendMarketplaceBaseStore } from '../../application/LegendMarketplaceFrameworkProvider.js';
+import { Button, Tab, Tabs } from '@mui/material';
+import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
 import { type PlainObject } from '@finos/legend-shared';
-import { DataContractCreator } from './entitlements/EntitlementsDataContractCreator.js';
+import { DataContractCreator } from '../entitlements/EntitlementsDataContractCreator.js';
 
 export const DataProductMarkdownTextViewer: React.FC<{ value: string }> = (
   props,
@@ -170,34 +170,46 @@ export const DataProductGroupAccessViewer = observer(
       switch (val) {
         case DataProductGroupAccess.UNKNOWN:
           return (
-            <button className="data-space__viewer__access-group__item__header-access-btn data-space__viewer__access-group__item__header-access-btn--unknown">
+            <Button
+              variant="contained"
+              color="info"
+              loading={accessGroupState.fetchingAccessState.isInProgress}
+            >
               UNKNOWN
-            </button>
+            </Button>
           );
         case DataProductGroupAccess.NO_ACCESS:
           return (
-            <button
+            <Button
+              variant="contained"
+              color="error"
               onClick={handleClick}
-              className="data-space__viewer__access-group__item__header-access-btn data-space__viewer__access-group__item__header-access-btn--no-access"
+              loading={accessGroupState.fetchingAccessState.isInProgress}
             >
               REQUEST ACCESS
-            </button>
+            </Button>
           );
         case DataProductGroupAccess.PENDING:
           return (
-            <button
+            <Button
+              variant="contained"
+              color="primary"
               onClick={handleClick}
-              className="data-space__viewer__access-group__item__header-access-btn data-space__viewer__access-group__item__header-access-btn--pending"
+              loading={accessGroupState.fetchingAccessState.isInProgress}
             >
               <ExternalLinkIcon />
               <div>PENDING</div>
-            </button>
+            </Button>
           );
         case DataProductGroupAccess.COMPLETED:
           return (
-            <button className="data-space__viewer__access-group__item__header-access-btn data-space__viewer__access-group__item__header-access-btn--entitled">
+            <Button
+              variant="contained"
+              color="success"
+              loading={accessGroupState.fetchingAccessState.isInProgress}
+            >
               ENTITLED
-            </button>
+            </Button>
           );
 
         default:
@@ -312,10 +324,6 @@ export const DataProducteDataAccess = observer(
       return () => dataSpaceViewerState.layoutState.unsetWikiPageAnchor(anchor);
     }, [dataSpaceViewerState, anchor]);
 
-    useEffect(() => {
-      dataSpaceViewerState.accessState.fetchGroupState();
-    }, [dataSpaceViewerState]);
-
     const seeDocumentation = (): void => {
       applicationStore.navigationService.navigator.visitAddress(
         documentationUrl,
@@ -364,7 +372,7 @@ export const DataProducteDataAccess = observer(
                     undefined,
                   )
                 }
-                accessGroupPoint={
+                accessPointGroup={
                   dataSpaceViewerState.dataContractAccessPointGroup
                 }
                 viewerState={dataSpaceViewerState}

@@ -15,9 +15,9 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import type { DataProductViewerState } from '../../stores/lakehouse/DataProductViewerState.js';
+import type { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
 import { useEffect, useRef, useState } from 'react';
-import { DATA_PRODUCT_WIKI_PAGE_SECTIONS } from '../../stores/lakehouse/DataProductLayoutState.js';
+import { DATA_PRODUCT_WIKI_PAGE_SECTIONS } from '../../../stores/lakehouse/DataProductLayoutState.js';
 import {
   CaretDownIcon,
   CaretUpIcon,
@@ -33,7 +33,7 @@ import {
 import {
   DATA_PRODUCT_VIEWER_ACTIVITY_MODE,
   generateAnchorForActivity,
-} from '../../stores/lakehouse/DataProductViewerNavigation.js';
+} from '../../../stores/lakehouse/DataProductViewerNavigation.js';
 import { DataProductPlaceholderPanel } from './DataProductHolder.js';
 import { DataProductViewerActivityBar } from './DataProductViewerActivityBar.js';
 import { useApplicationStore } from '@finos/legend-application';

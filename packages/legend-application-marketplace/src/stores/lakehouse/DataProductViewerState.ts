@@ -144,6 +144,9 @@ export class DataProductViewerState {
 
   *fetchContracts(token: string | undefined): GeneratorFn<void> {
     try {
+      this.accessState.accessGroupStates.forEach((e) =>
+        e.fetchingAccessState.inProgress(),
+      );
       const did = guaranteeNonEmptyString(
         this.generation?.dataProduct.deploymentId,
         'did required to get contracts',
@@ -173,10 +176,15 @@ export class DataProductViewerState {
       this.accessState.viewerState.applicationStore.notificationService.notifyError(
         `${error.message}`,
       );
+    } finally {
+      this.accessState.accessGroupStates.forEach((e) =>
+        e.fetchingAccessState.complete(),
+      );
     }
   }
 
   *create(
+    userId: string,
     description: string,
     group: V1_AccessPointGroup,
     token: string | undefined,
@@ -187,10 +195,7 @@ export class DataProductViewerState {
         description,
         product: guaranteeNonNullable(this.generation?.content),
         accessPointGroup: group.id,
-        consumer: serialize(
-          V1_AdhocTeamModelSchema,
-          buildAdhocUser(this.applicationStore.identityService.currentUser),
-        ),
+        consumer: serialize(V1_AdhocTeamModelSchema, buildAdhocUser(userId)),
       };
       const contracts = V1_DataContractsRecordModelSchemaToContracts(
         (yield this.lakeServerClient.createContract(

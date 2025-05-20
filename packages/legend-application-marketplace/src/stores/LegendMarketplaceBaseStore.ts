@@ -19,6 +19,7 @@ import {
   ActionState,
   LogEvent,
   assertErrorThrown,
+  UserSearchService,
 } from '@finos/legend-shared';
 import {
   type ApplicationStore,
@@ -52,6 +53,7 @@ export class LegendMarketplaceBaseStore {
   readonly pluginManager: LegendMarketplacePluginManager;
   readonly engineServerClient: V1_EngineServerClient;
   readonly remoteEngine: V1_RemoteEngine;
+  readonly userSearchService: UserSearchService | undefined;
 
   readonly initState = ActionState.create();
 
@@ -105,6 +107,19 @@ export class LegendMarketplaceBaseStore {
       this.applicationStore,
       this,
     );
+
+    // User search
+    if (this.pluginManager.getUserPlugins().length > 0) {
+      this.pluginManager
+        .getUserPlugins()
+        .forEach((plugin) =>
+          plugin.setup(this.applicationStore.config.marketplaceUserSearchUrl),
+        );
+      this.userSearchService = new UserSearchService();
+      this.userSearchService.registerPlugins(
+        this.pluginManager.getUserPlugins(),
+      );
+    }
   }
 
   *initialize(): GeneratorFn<void> {

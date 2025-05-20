@@ -14,13 +14,17 @@
  * limitations under the License.
  */
 
-import packageJson from '../../../package.json' with { type: 'json' };
-import { LegendMarketplaceApplicationPlugin } from '../LegendMarketplaceApplicationPlugin.js';
+@use 'mixins' as *;
 
-export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceApplicationPlugin {
-  static NAME = packageJson.extensions.applicationMarketplacePlugin;
+// MUI Overrides
 
-  constructor() {
-    super(Core_LegendMarketplaceApplicationPlugin.NAME, packageJson.version);
-  }
+.MuiDialogTitle-root {
+  font-size: 2rem;
+}
+
+.MuiButton-root,
+.MuiInputBase-root,
+.MuiFormLabel-root,
+.MuiSnackbarContent-root {
+  font-size: 1.2rem;
 }

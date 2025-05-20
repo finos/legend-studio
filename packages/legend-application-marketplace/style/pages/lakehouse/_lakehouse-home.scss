@@ -44,6 +44,7 @@
 
 .marketplace-lakehouse-data-product-card {
   .legend-marketplace-card__content {
+    flex-direction: column;
     width: 100%;
     justify-content: start;
     align-items: start;

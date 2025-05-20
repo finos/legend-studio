@@ -26,6 +26,7 @@ const TEST_DATA__appConfig: LegendMarketplaceApplicationConfigurationData = {
   marketplace: {
     url: 'https://testMarketplaceUrl',
     subscriptionUrl: 'https://testSubscriptionUrl',
+    userSearchUrl: 'https://testUserSearchUrl',
   },
   engine: {
     url: 'https://testEngineUrl',

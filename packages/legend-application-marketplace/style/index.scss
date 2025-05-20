@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+@forward 'mui';
 @forward 'app';
 
 @forward 'components/data-product-card';
@@ -33,7 +34,7 @@
 @forward 'pages/search-results';
 @forward 'pages/vendor-data';
 
-@forward 'pages/lakehouse/lakehouse-entitlements-tasks';
+@forward 'pages/lakehouse/lakehouse-entitlements';
 @forward 'pages/lakehouse/lakehouse-home';
 @forward 'pages/lakehouse/lakehouse-subscriptions';
 

@@ -15,13 +15,3 @@
  */
 
 @use 'mixins' as *;
-
-.dataContract-creator-modal {
-  &__container {
-    overflow-y: hidden !important;
-  }
-
-  &__inner-container {
-    overflow-y: initial !important;
-  }
-}
