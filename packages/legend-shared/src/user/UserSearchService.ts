@@ -33,11 +33,6 @@ export abstract class LegendUserPlugin extends AbstractPlugin {
   private readonly _$nominalTypeBrand!: 'LegendUserPlugin';
   protected baseUrl?: string | undefined;
 
-  constructor(name: string, version: string, baseUrl: string) {
-    super(name, version);
-    this.baseUrl = baseUrl;
-  }
-
   install(pluginManager: LegendUserPluginManager): void {
     pluginManager.registerUserPlugin(this);
   }
