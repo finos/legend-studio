@@ -31,7 +31,7 @@ import {
 } from '@mui/material';
 import { UserSearchInput } from '@finos/legend-art';
 import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
-import type { LegendUser } from '@finos/legend-shared';
+import { LegendUser } from '@finos/legend-shared';
 
 enum DataContractCreatorConsumerType {
   USER = 'User',
@@ -54,10 +54,10 @@ export const DataContractCreator = observer(
       useState<DataContractCreatorConsumerType>(
         DataContractCreatorConsumerType.USER,
       );
-    const [user, setUser] = useState<LegendUser | undefined>();
+    const [user, setUser] = useState<LegendUser>(new LegendUser());
 
     const onCreate = (): void => {
-      if (user && description) {
+      if (user.id && description) {
         flowResult(
           props.viewerState.create(
             user.id,
@@ -91,7 +91,10 @@ export const DataContractCreator = observer(
                   key={key}
                   variant={consumerType === value ? 'contained' : 'outlined'}
                   onClick={(): void => {
-                    setConsumerType(value);
+                    if (value !== consumerType) {
+                      setConsumerType(value);
+                      setUser(new LegendUser());
+                    }
                   }}
                 >
                   {key}
@@ -100,14 +103,19 @@ export const DataContractCreator = observer(
             )}
           </ButtonGroup>
           <UserSearchInput
+            key={consumerType}
+            userValue={user}
+            setUserValue={(_user: LegendUser): void => setUser(_user)}
             userSearchService={
               consumerType === DataContractCreatorConsumerType.USER
                 ? legendMarketplaceStore.userSearchService
                 : undefined
             }
-            onUserChange={(_user: LegendUser | undefined): void =>
-              setUser(_user)
-            }
+            label={consumerType}
+            required={true}
+            variant="outlined"
+            margin="dense"
+            fullWidth={true}
           />
           <TextField
             required={true}

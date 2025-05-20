@@ -18,27 +18,31 @@ import { createModelSchema, optional, primitive } from 'serializr';
 import { SerializationFactory } from '../application/SerializationUtils.js';
 
 export class LegendUser {
-  country: string | undefined;
-  displayName: string | undefined;
-  firstName: string | undefined;
-  departmentName: string | undefined;
-  divisionName: string | undefined;
-  title: string | undefined;
-  id!: string;
   city: string | undefined;
+  country: string | undefined;
+  departmentName: string | undefined;
+  displayName: string | undefined;
+  divisionName: string | undefined;
+  firstName: string | undefined;
+  id!: string;
   lastName!: string;
+  title: string | undefined;
+
+  constructor(id?: string | undefined) {
+    this.id = id ?? '';
+  }
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(LegendUser, {
-      country: optional(primitive()),
-      displayName: optional(primitive()),
-      firstName: optional(primitive()),
-      departmentName: optional(primitive()),
-      divisionName: optional(primitive()),
-      title: optional(primitive()),
-      id: primitive(),
       city: optional(primitive()),
+      country: optional(primitive()),
+      departmentName: optional(primitive()),
+      displayName: optional(primitive()),
+      divisionName: optional(primitive()),
+      firstName: optional(primitive()),
+      id: primitive(),
       lastName: optional(primitive()),
+      title: optional(primitive()),
     }),
   );
 }

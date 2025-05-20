@@ -14,13 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  forwardRef,
-  useEffect,
-  useMemo,
-  useState,
-  type ChangeEvent,
-} from 'react';
+import { forwardRef, useMemo, useState, type ChangeEvent } from 'react';
 import {
   LegendUser,
   type UserSearchService,
@@ -29,24 +23,28 @@ import {
 import { Autocomplete, TextField, type TextFieldProps } from '@mui/material';
 
 type UserSearchInputProps = TextFieldProps & {
+  userValue: LegendUser;
+  setUserValue: (user: LegendUser) => void;
   userSearchService?: UserSearchService | undefined;
-  onUserChange?: (user: LegendUser | undefined) => void;
 };
 
 export const UserSearchInput = forwardRef<
   HTMLInputElement,
   UserSearchInputProps
->(function InputWithInlineValidation(props, ref) {
-  const { className, userSearchService, onUserChange, ...inputProps } = props;
+>(function UserSearchInput(props, ref) {
+  const {
+    className,
+    userValue,
+    setUserValue,
+    userSearchService,
+    ...inputProps
+  } = props;
 
-  const [value, setValue] = useState<LegendUser | undefined>();
-  const [inputValue, setInputValue] = useState<string>('');
+  const [inputValue, setInputValue] = useState<string>(
+    userValue.displayName ?? '',
+  );
   const [userOptions, setUserOptions] = useState<LegendUser[]>([]);
   const [loadingUsers, setIsLoadingUsers] = useState<boolean>(false);
-
-  useEffect(() => {
-    onUserChange?.(value);
-  }, [value, onUserChange]);
 
   const debouncedSearchUsers = useMemo(
     () =>
@@ -63,7 +61,7 @@ export const UserSearchInput = forwardRef<
     _option: React.SyntheticEvent,
     newValue: LegendUser | null | undefined,
   ) => {
-    setValue(newValue ?? undefined);
+    setUserValue(newValue ?? new LegendUser());
   };
 
   const handleInputChange = (
@@ -84,7 +82,7 @@ export const UserSearchInput = forwardRef<
     return (
       <Autocomplete
         className={className ?? ''}
-        value={value}
+        value={userValue}
         inputValue={inputValue}
         onChange={handleChange}
         onInputChange={handleInputChange}
@@ -92,11 +90,18 @@ export const UserSearchInput = forwardRef<
         loading={loadingUsers}
         filterOptions={(x) => x}
         renderInput={(params) => {
-          console.log('renderInput params:', params);
-          return <TextField label="Search" />;
+          return (
+            <TextField
+              {...(params as TextFieldProps)}
+              {...inputProps}
+              label="User"
+              placeholder="Search"
+            />
+          );
         }}
         isOptionEqualToValue={(option, _value) => option?.id === _value?.id}
         getOptionLabel={(option) => option?.displayName ?? ''}
+        fullWidth={inputProps.fullWidth ?? false}
         ref={ref}
       />
     );
@@ -104,13 +109,10 @@ export const UserSearchInput = forwardRef<
     return (
       <TextField
         {...inputProps}
-        variant="outlined"
-        margin="dense"
-        fullWidth={true}
         value={inputValue}
         onChange={(event: ChangeEvent<HTMLInputElement>) => {
           setInputValue(event.target.value);
-          setValue(
+          setUserValue(
             LegendUser.serialization.fromJson({ id: event.target.value }),
           );
         }}
