@@ -128,6 +128,7 @@ export const UserSearchInput = forwardRef<
     return (
       <TextField
         {...inputProps}
+        className={className ?? ''}
         value={inputValue}
         onChange={(event: ChangeEvent<HTMLInputElement>) => {
           setInputValue(event.target.value);
