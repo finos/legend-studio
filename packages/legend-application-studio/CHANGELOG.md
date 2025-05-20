@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.18.128
+
+### Patch Changes
+
+- [#4098](https://github.com/finos/legend-studio/pull/4098) [`3d3a491`](https://github.com/finos/legend-studio/commit/3d3a4910de9652757b2bb48cda46a6e11ab3d890) ([@travisstebbins](https://github.com/travisstebbins)) - Enable generation flow in text mode
+
 ## 28.18.127
 
 ## 28.18.126

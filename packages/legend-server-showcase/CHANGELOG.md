@@ -1,5 +1,7 @@
 # @finos/legend-server-showcase
 
+## 0.2.53
+
 ## 0.2.52
 
 ## 0.2.51

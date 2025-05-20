@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.1.30
+
+### Patch Changes
+
+- [#4098](https://github.com/finos/legend-studio/pull/4098) [`3d3a491`](https://github.com/finos/legend-studio/commit/3d3a4910de9652757b2bb48cda46a6e11ab3d890) ([@travisstebbins](https://github.com/travisstebbins)) - Allow graphOptions in generation apis to give graph current input as text
+
 ## 32.1.29
 
 ### Patch Changes

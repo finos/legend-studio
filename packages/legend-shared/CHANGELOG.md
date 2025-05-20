@@ -1,5 +1,13 @@
 # @finos/legend-shared
 
+## 11.0.12
+
+### Patch Changes
+
+- [#4097](https://github.com/finos/legend-studio/pull/4097) [`3925904`](https://github.com/finos/legend-studio/commit/39259043f783c1992b95744c1c6e04d19a0521b0) ([@travisstebbins](https://github.com/travisstebbins)) - Add UserSearchService and LegendUserPlugin
+
+- [#4098](https://github.com/finos/legend-studio/pull/4098) [`3d3a491`](https://github.com/finos/legend-studio/commit/3d3a4910de9652757b2bb48cda46a6e11ab3d890) ([@travisstebbins](https://github.com/travisstebbins)) - Add `removePrefix` in StringUtils
+
 ## 11.0.11
 
 ### Patch Changes

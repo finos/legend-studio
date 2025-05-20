@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.99
+
+### Patch Changes
+
+- [#4097](https://github.com/finos/legend-studio/pull/4097) [`3925904`](https://github.com/finos/legend-studio/commit/39259043f783c1992b95744c1c6e04d19a0521b0) ([@travisstebbins](https://github.com/travisstebbins)) - Add UserSearchInput component
+
 ## 7.1.98
 
 ### Patch Changes
