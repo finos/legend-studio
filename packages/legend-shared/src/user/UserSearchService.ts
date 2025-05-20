@@ -31,7 +31,7 @@ export abstract class LegendUserPlugin extends AbstractPlugin {
    * See https://github.com/finos/legend-studio/blob/master/docs/technical/typescript-usage.md#understand-typescript-structual-type-system
    */
   private readonly _$nominalTypeBrand!: 'LegendUserPlugin';
-  private readonly baseUrl!: string;
+  protected readonly baseUrl!: string;
 
   constructor(name: string, version: string, baseUrl: string) {
     super(name, version);
