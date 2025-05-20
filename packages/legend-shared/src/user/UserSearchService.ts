@@ -37,7 +37,7 @@ export abstract class LegendUserPlugin extends AbstractPlugin {
     pluginManager.registerUserPlugin(this);
   }
 
-  setup(baseUrl: string): void {
+  setup(baseUrl: string | undefined): void {
     this.baseUrl = baseUrl;
   }
 
