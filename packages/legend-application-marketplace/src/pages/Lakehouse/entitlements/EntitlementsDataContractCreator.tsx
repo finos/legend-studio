@@ -112,22 +112,20 @@ export const DataContractCreator = observer(
             Data Product
           </div>
           <ButtonGroup variant="contained">
-            {Object.entries(DataContractCreatorConsumerType).map(
-              ([key, value]) => (
-                <Button
-                  key={key}
-                  variant={consumerType === value ? 'contained' : 'outlined'}
-                  onClick={(): void => {
-                    if (value !== consumerType) {
-                      setConsumerType(value);
-                      setUser(new LegendUser());
-                    }
-                  }}
-                >
-                  {key}
-                </Button>
-              ),
-            )}
+            {Object.values(DataContractCreatorConsumerType).map((value) => (
+              <Button
+                key={value}
+                variant={consumerType === value ? 'contained' : 'outlined'}
+                onClick={(): void => {
+                  if (value !== consumerType) {
+                    setConsumerType(value);
+                    setUser(new LegendUser());
+                  }
+                }}
+              >
+                {value}
+              </Button>
+            ))}
           </ButtonGroup>
           <UserSearchInput
             key={consumerType}
