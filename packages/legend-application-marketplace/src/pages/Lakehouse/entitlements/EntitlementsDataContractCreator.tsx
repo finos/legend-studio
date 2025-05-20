@@ -16,7 +16,7 @@
 
 import type { V1_AccessPointGroup } from '@finos/legend-graph';
 import { observer } from 'mobx-react-lite';
-import { useState, type ChangeEvent } from 'react';
+import { useEffect, useState, type ChangeEvent } from 'react';
 import type { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
 import { useAuth } from 'react-oidc-context';
 import { flowResult } from 'mobx';
@@ -55,6 +55,33 @@ export const DataContractCreator = observer(
         DataContractCreatorConsumerType.USER,
       );
     const [user, setUser] = useState<LegendUser>(new LegendUser());
+    const [loadingCurrentUser, setLoadingCurrentUser] = useState(false);
+
+    useEffect(() => {
+      const fetchCurrentUser = async () => {
+        setLoadingCurrentUser(true);
+        try {
+          const currentUser = (
+            await legendMarketplaceStore.userSearchService?.executeSearch(
+              viewerState.applicationStore.identityService.currentUser,
+            )
+          )?.filter(
+            (_user) =>
+              _user.id ===
+              viewerState.applicationStore.identityService.currentUser,
+          )?.[0];
+          if (currentUser) {
+            setUser(currentUser);
+          }
+        } finally {
+          setLoadingCurrentUser(false);
+        }
+      };
+      fetchCurrentUser();
+    }, [
+      legendMarketplaceStore.userSearchService,
+      viewerState.applicationStore.identityService.currentUser,
+    ]);
 
     const onCreate = (): void => {
       if (user.id && description) {
@@ -116,6 +143,7 @@ export const DataContractCreator = observer(
             variant="outlined"
             margin="dense"
             fullWidth={true}
+            loading={loadingCurrentUser}
           />
           <TextField
             required={true}

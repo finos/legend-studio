@@ -26,6 +26,7 @@ type UserSearchInputProps = TextFieldProps & {
   userValue: LegendUser;
   setUserValue: (user: LegendUser) => void;
   userSearchService?: UserSearchService | undefined;
+  loading?: boolean | undefined;
 };
 
 export const UserSearchInput = forwardRef<
@@ -37,6 +38,7 @@ export const UserSearchInput = forwardRef<
     userValue,
     setUserValue,
     userSearchService,
+    loading,
     ...inputProps
   } = props;
 
@@ -87,7 +89,7 @@ export const UserSearchInput = forwardRef<
         onChange={handleChange}
         onInputChange={handleInputChange}
         options={userOptions}
-        loading={loadingUsers}
+        loading={loading || loadingUsers}
         filterOptions={(x) => x}
         renderInput={(params) => {
           return (
