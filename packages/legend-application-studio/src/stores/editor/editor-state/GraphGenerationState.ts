@@ -178,6 +178,7 @@ export class DEPREACTED_GlobalFileGenerationState {
               fileGeneration.value,
               mode,
               this.editorStore.graphManagerState.graph,
+              this.editorStore.graphEditorMode.getGraphTextInputOption(),
             )) as GenerationOutput[];
         } catch (error) {
           assertErrorThrown(error);
@@ -348,6 +349,7 @@ export class GraphGenerationState {
             (yield this.editorStore.graphManagerState.graphManager.generateModel(
               node.generationElement.value,
               this.editorStore.graphManagerState.graph,
+              this.editorStore.graphEditorMode.getGraphTextInputOption(),
             )) as Entity[];
         } catch (error) {
           assertErrorThrown(error);
@@ -398,6 +400,7 @@ export class GraphGenerationState {
         artifacts =
           (yield this.editorStore.graphManagerState.graphManager.generateArtifacts(
             this.editorStore.graphManagerState.graph,
+            this.editorStore.graphEditorMode.getGraphTextInputOption(),
           )) as ArtifactGenerationExtensionResult;
       }
 
@@ -559,9 +562,7 @@ export class GraphGenerationState {
       }
     }
     if (!reprocess && node.fileNode instanceof FileSystem_File) {
-      this.editorStore.tabManagerState.openTab(
-        new ArtifactGenerationViewerState(this.editorStore, node.fileNode),
-      );
+      this.editorStore.graphEditorMode.openFileSystem_File(node.fileNode);
     }
     this.setSelectedNode(node);
     this.editorStore.graphState.editorStore.explorerTreeState.setArtifactsGenerationTreeData(

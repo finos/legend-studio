@@ -32,6 +32,7 @@ import {
   CoreModel,
   SystemModel,
   GenerationModel,
+  type GraphTextInputOption,
 } from '../graph/PureModel.js';
 import type { Mapping } from '../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
 import type { Runtime } from '../graph/metamodel/pure/packageableElements/runtime/Runtime.js';
@@ -470,15 +471,18 @@ export abstract class AbstractPureGraphManager {
   >;
   abstract generateArtifacts(
     graph: PureModel,
+    graphOptions?: GraphTextInputOption,
   ): Promise<ArtifactGenerationExtensionResult>;
   abstract generateFile(
     fileGeneration: FileGenerationSpecification,
     generationMode: GenerationMode,
     graph: PureModel,
+    graphOptions?: GraphTextInputOption,
   ): Promise<GenerationOutput[]>;
   abstract generateModel(
     generationElement: PackageableElement,
     graph: PureModel,
+    graphOptions?: GraphTextInputOption,
   ): Promise<Entity[]>;
 
   // --------------------------------------------- Test Data Generation ---------------------------------------------

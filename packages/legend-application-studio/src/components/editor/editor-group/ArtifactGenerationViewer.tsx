@@ -30,6 +30,77 @@ import {
   getTextContent,
 } from '../../../stores/editor/editor-state/ArtifactGenerationViewerState.js';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
+import type { FileSystem_File } from '../../../stores/editor/utils/FileSystemTreeUtils.js';
+
+export const FileSystem_FileViewer = observer(
+  (props: {
+    generatedArtifact: FileSystem_File;
+    visitGenerator: ((generator: PackageableElement) => void) | undefined;
+    generator: PackageableElement | undefined;
+  }) => {
+    const { generatedArtifact, visitGenerator, generator } = props;
+    return (
+      <div className="file-generation-viewer">
+        <Panel>
+          <div className="panel__header">
+            <div className="panel__header__title">
+              {
+                <div className="uml-element-editor__header__lock">
+                  <LockIcon />
+                </div>
+              }
+              <div className="panel__header__title__label">
+                generated-artifact
+              </div>
+              <div className="panel__header__title__content">
+                {generatedArtifact.name}
+              </div>
+            </div>
+          </div>
+          <div className="panel file-generation-viewer__content">
+            <div className="panel__header">
+              <div className="panel__header__title">
+                <div className="panel__header__title__label">
+                  {generator?.name}
+                </div>
+              </div>
+              <div className="panel__header__actions">
+                {generator && (
+                  <button
+                    className="uml-element-editor__header__generation-origin"
+                    onClick={(): void => visitGenerator?.(generator)}
+                    tabIndex={-1}
+                    title={`Visit generation parent '${generator.path}'`}
+                  >
+                    <div className="uml-element-editor__header__generation-origin__label">
+                      <FireIcon />
+                    </div>
+                    <div className="uml-element-editor__header__generation-origin__parent-name">
+                      {generator.name}
+                    </div>
+                    <div className="uml-element-editor__header__generation-origin__visit-btn">
+                      <StickArrowCircleRightIcon />
+                    </div>
+                  </button>
+                )}
+              </div>
+            </div>
+            <PanelContent>
+              <CodeEditor
+                inputValue={getTextContent(
+                  generatedArtifact.content,
+                  generatedArtifact.format,
+                )}
+                isReadOnly={true}
+                language={getEditorLanguageForFormat(generatedArtifact.format)}
+              />
+            </PanelContent>
+          </div>
+        </Panel>
+      </div>
+    );
+  },
+);
 
 export const ArtifactGenerationViewer = observer(() => {
   const editorStore = useEditorStore();
@@ -47,63 +118,10 @@ export const ArtifactGenerationViewer = observer(() => {
     editorStore.graphEditorMode.openElement(fg);
 
   return (
-    <div className="file-generation-viewer">
-      <Panel>
-        <div className="panel__header">
-          <div className="panel__header__title">
-            {
-              <div className="uml-element-editor__header__lock">
-                <LockIcon />
-              </div>
-            }
-            <div className="panel__header__title__label">
-              generated-artifact
-            </div>
-            <div className="panel__header__title__content">
-              {generatedArtifact.name}
-            </div>
-          </div>
-        </div>
-        <div className="panel file-generation-viewer__content">
-          <div className="panel__header">
-            <div className="panel__header__title">
-              <div className="panel__header__title__label">
-                {generator?.name}
-              </div>
-            </div>
-            <div className="panel__header__actions">
-              {generator && (
-                <button
-                  className="uml-element-editor__header__generation-origin"
-                  onClick={(): void => visitGenerator(generator)}
-                  tabIndex={-1}
-                  title={`Visit generation parent '${generator.path}'`}
-                >
-                  <div className="uml-element-editor__header__generation-origin__label">
-                    <FireIcon />
-                  </div>
-                  <div className="uml-element-editor__header__generation-origin__parent-name">
-                    {generator.name}
-                  </div>
-                  <div className="uml-element-editor__header__generation-origin__visit-btn">
-                    <StickArrowCircleRightIcon />
-                  </div>
-                </button>
-              )}
-            </div>
-          </div>
-          <PanelContent>
-            <CodeEditor
-              inputValue={getTextContent(
-                generatedArtifact.content,
-                generatedArtifact.format,
-              )}
-              isReadOnly={true}
-              language={getEditorLanguageForFormat(generatedArtifact.format)}
-            />
-          </PanelContent>
-        </div>
-      </Panel>
-    </div>
+    <FileSystem_FileViewer
+      generatedArtifact={generatedArtifact}
+      generator={generator}
+      visitGenerator={visitGenerator}
+    />
   );
 });

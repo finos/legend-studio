@@ -62,6 +62,10 @@ import type { PropertyOwner } from './metamodel/pure/packageableElements/domain/
 import type { ExecutionEnvironmentInstance } from './metamodel/pure/packageableElements/service/ExecutionEnvironmentInstance.js';
 import { FunctionActivator } from './metamodel/pure/packageableElements/function/FunctionActivator.js';
 
+export interface GraphTextInputOption {
+  graphGrammar: string | undefined;
+}
+
 /**
  * CoreModel holds meta models which are constant and basic building block of the graph. Since throughout the lifetime
  * of the application, we rebuild PureModel many times, we cannot have these basic building blocks as part of PureModel

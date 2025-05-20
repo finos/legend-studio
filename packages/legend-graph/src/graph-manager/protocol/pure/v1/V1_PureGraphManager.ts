@@ -58,6 +58,7 @@ import {
   type SystemModel,
   type CoreModel,
   PureModel,
+  type GraphTextInputOption,
 } from '../../../../graph/PureModel.js';
 import type { BasicModel } from '../../../../graph/BasicModel.js';
 import type { DependencyManager } from '../../../../graph/DependencyManager.js';
@@ -2226,10 +2227,23 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return this.engine.getAvailableGenerationConfigurationDescriptions();
   }
 
+  private async buildPMCDWithOptions(
+    graph: PureModel,
+    graphOptions?: GraphTextInputOption,
+  ): Promise<V1_PureModelContextData> {
+    const graphGrammar = graphOptions?.graphGrammar;
+    if (graphGrammar) {
+      const graphCompileContext = this.getGraphCompileContext(graph);
+      return this.engine.combineTextAndPMCD(graphGrammar, graphCompileContext);
+    }
+    return this.getFullGraphModelData(graph);
+  }
+
   async generateArtifacts(
     graph: PureModel,
+    graphOptions?: GraphTextInputOption,
   ): Promise<ArtifactGenerationExtensionResult> {
-    const model = this.getFullGraphModelData(graph);
+    const model = await this.buildPMCDWithOptions(graph, graphOptions);
     const input = new V1_ArtifactGenerationExtensionInput(
       model,
       // TODO provide plugin to filter out artifacts we don't want to show in the generation
@@ -2243,6 +2257,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     fileGeneration: FileGenerationSpecification,
     generationMode: GenerationMode,
     graph: PureModel,
+    graphOptions?: GraphTextInputOption,
   ): Promise<GenerationOutput[]> {
     const config: PlainObject = {};
     config.scopeElements = fileGeneration.scopeElements.map((element) =>
@@ -2253,12 +2268,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     fileGeneration.configurationProperties.forEach((property) => {
       config[property.name] = property.value as PlainObject;
     });
+    const model = await this.buildPMCDWithOptions(graph, graphOptions);
     return (
       await this.engine.generateFile(
         config,
         fileGeneration.type,
         generationMode,
-        this.getFullGraphModelData(graph),
+        model,
       )
     ).map(V1_buildGenerationOutput);
   }
@@ -2266,8 +2282,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   async generateModel(
     generationElement: PackageableElement,
     graph: PureModel,
+    graphOptions?: GraphTextInputOption,
   ): Promise<Entity[]> {
-    const model = this.getFullGraphModelData(graph);
+    const model = await this.buildPMCDWithOptions(graph, graphOptions);
     let generatedModel: V1_PureModelContextData | undefined = undefined;
     const extraModelGenerators = this.pluginManager
       .getPureProtocolProcessorPlugins()

@@ -23,6 +23,7 @@ import {
   assertTrue,
   guaranteeNonNullable,
   guaranteeType,
+  removePrefix,
   type GeneratorFn,
 } from '@finos/legend-shared';
 import type { IngestionManager } from '../../../../ingestion/IngestionManager.js';
@@ -59,6 +60,8 @@ export const generateUrlToDeployOnOpen = (
     ),
   );
 };
+
+const PARSER_SECTION = `###Lakehouse`;
 export class IngestDefinitionEditorState extends ElementEditorState {
   validationError: IngestDefinitionValidationResponse | undefined;
   deploymentState = ActionState.create();
@@ -127,7 +130,8 @@ export class IngestDefinitionEditorState extends ElementEditorState {
       const response = (yield guaranteeNonNullable(
         this.ingestionManager,
       ).deploy(
-        guaranteeNonNullable(this.textContent),
+        // remove parser prefix for now since api already expects it to be under lakehouse parser
+        guaranteeNonNullable(removePrefix(this.textContent, PARSER_SECTION)),
         guaranteeNonNullable(this.ingest.appDirDeployment),
         this.deploymentState,
         token,

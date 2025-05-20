@@ -687,6 +687,21 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
       throw error;
     }
   }
+  async combineTextAndPMCD(
+    graphText: string,
+    compileContext: V1_PureModelContextData,
+  ): Promise<V1_PureModelContextData> {
+    const mainGraph = await this.pureCodeToPureModelContextDataJSON(graphText, {
+      returnSourceInformation: false,
+    });
+    return V1_deserializePureModelContextData(
+      mergeObjects(
+        this.serializePureModelContext(compileContext),
+        mainGraph,
+        false,
+      ),
+    );
+  }
 
   async getLambdaReturnType(
     lambdaReturnInput: V1_LambdaReturnTypeInput,
