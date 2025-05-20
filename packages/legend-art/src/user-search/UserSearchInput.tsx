@@ -80,7 +80,8 @@ export const UserSearchInput = forwardRef<
       if (newInputValue === '') {
         setUserOptions([]);
       } else {
-        debouncedSearchUsers(newInputValue);
+        // eslint-disable-next-line no-void
+        void debouncedSearchUsers(newInputValue);
       }
     }
   };
@@ -117,8 +118,8 @@ export const UserSearchInput = forwardRef<
             />
           );
         }}
-        isOptionEqualToValue={(option, _value) => option?.id === _value?.id}
-        getOptionLabel={(option) => option?.displayName ?? ''}
+        isOptionEqualToValue={(option, _value) => option.id === _value.id}
+        getOptionLabel={(option) => option.displayName ?? ''}
         fullWidth={inputProps.fullWidth ?? false}
         disabled={initializing ?? false}
         ref={ref}

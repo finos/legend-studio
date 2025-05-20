@@ -69,7 +69,7 @@ export const DataContractCreator = observer(
             (_user) =>
               _user.id ===
               viewerState.applicationStore.identityService.currentUser,
-          )?.[0];
+          )[0];
           if (currentUser) {
             setUser(currentUser);
           }
@@ -77,7 +77,8 @@ export const DataContractCreator = observer(
           setLoadingCurrentUser(false);
         }
       };
-      fetchCurrentUser();
+      // eslint-disable-next-line no-void
+      void fetchCurrentUser();
     }, [
       legendMarketplaceStore.userSearchService,
       viewerState.applicationStore.identityService.currentUser,
