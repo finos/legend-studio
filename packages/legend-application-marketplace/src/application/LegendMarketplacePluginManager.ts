@@ -22,8 +22,10 @@ import type {
   PureGraphPlugin,
   PureProtocolProcessorPlugin,
 } from '@finos/legend-graph';
-import type { LegendUserPluginManager } from './LegendUserPluginManager.js';
-import type { LegendUserPlugin } from './LegendUserPlugin.js';
+import type {
+  LegendUserPlugin,
+  LegendUserPluginManager,
+} from '@finos/legend-shared';
 
 export class LegendMarketplacePluginManager
   extends LegendApplicationPluginManager<LegendMarketplaceApplicationPlugin>
