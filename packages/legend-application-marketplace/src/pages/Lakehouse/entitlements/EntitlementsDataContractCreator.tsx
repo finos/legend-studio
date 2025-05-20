@@ -148,10 +148,10 @@ export const DataContractCreator = observer(
             initializing={loadingCurrentUser}
           />
           <TextField
-            className="marketplace-lakehouse-entitlements__data-contract-creator__description-input"
+            className="marketplace-lakehouse-entitlements__data-contract-creator__business-justification-input"
             required={true}
-            name="description"
-            label="Description"
+            name="business-justification"
+            label="Business Justification"
             variant="outlined"
             fullWidth={true}
             value={description}
