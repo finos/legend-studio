@@ -170,26 +170,44 @@ export const DataProductGroupAccessViewer = observer(
       switch (val) {
         case DataProductGroupAccess.UNKNOWN:
           return (
-            <Button variant="contained" color="info">
+            <Button
+              variant="contained"
+              color="info"
+              loading={accessGroupState.fetchingAccessState.isInProgress}
+            >
               UNKNOWN
             </Button>
           );
         case DataProductGroupAccess.NO_ACCESS:
           return (
-            <Button variant="contained" color="error" onClick={handleClick}>
+            <Button
+              variant="contained"
+              color="error"
+              onClick={handleClick}
+              loading={accessGroupState.fetchingAccessState.isInProgress}
+            >
               REQUEST ACCESS
             </Button>
           );
         case DataProductGroupAccess.PENDING:
           return (
-            <Button variant="contained" color="primary" onClick={handleClick}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleClick}
+              loading={accessGroupState.fetchingAccessState.isInProgress}
+            >
               <ExternalLinkIcon />
               <div>PENDING</div>
             </Button>
           );
         case DataProductGroupAccess.COMPLETED:
           return (
-            <Button variant="contained" color="success">
+            <Button
+              variant="contained"
+              color="success"
+              loading={accessGroupState.fetchingAccessState.isInProgress}
+            >
               ENTITLED
             </Button>
           );
@@ -305,10 +323,6 @@ export const DataProducteDataAccess = observer(
       }
       return () => dataSpaceViewerState.layoutState.unsetWikiPageAnchor(anchor);
     }, [dataSpaceViewerState, anchor]);
-
-    useEffect(() => {
-      dataSpaceViewerState.accessState.fetchGroupState();
-    }, [dataSpaceViewerState]);
 
     const seeDocumentation = (): void => {
       applicationStore.navigationService.navigator.visitAddress(

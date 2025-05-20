@@ -20,19 +20,8 @@ import type {
   V1_DataProduct,
 } from '@finos/legend-graph';
 import type { DataProductViewerState } from './DataProductViewerState.js';
-import {
-  ActionState,
-  assertErrorThrown,
-  uuid,
-  type GeneratorFn,
-} from '@finos/legend-shared';
-import {
-  action,
-  flow,
-  makeAutoObservable,
-  makeObservable,
-  observable,
-} from 'mobx';
+import { ActionState, uuid } from '@finos/legend-shared';
+import { action, makeAutoObservable, makeObservable, observable } from 'mobx';
 import {
   dataContractContainsAccessGroup,
   isContractCompleted,
@@ -49,10 +38,6 @@ export enum DataProductGroupAccess {
   COMPLETED = 'COMPLETED',
   NO_ACCESS = 'NO_ACCESS',
 }
-
-const generatePromise = (time?: number | undefined) => {
-  return new Promise((resolve) => setTimeout(resolve, time ?? 5000));
-};
 
 const getDataProductGroupAccessFromContract = (
   val: V1_DataContract,
@@ -149,25 +134,12 @@ export class DataProductDataAccessState {
     makeObservable(this, {
       accessGroupStates: observable,
       fetchingDataProductAccessState: observable,
-      fetchGroupState: flow,
     });
 
     this.viewerState = viewerState;
     this.accessGroupStates = this.product.accessPointGroups.map(
       (e) => new DataProductGroupAccessState(e, this),
     );
-  }
-
-  *fetchGroupState(): GeneratorFn<void> {
-    try {
-      // dummy fetch to get access
-      this.fetchingDataProductAccessState.inProgress();
-      yield generatePromise();
-    } catch (error) {
-      assertErrorThrown(error);
-    } finally {
-      this.fetchingDataProductAccessState.complete();
-    }
   }
 
   get product(): V1_DataProduct {

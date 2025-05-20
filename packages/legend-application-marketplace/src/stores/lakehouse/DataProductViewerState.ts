@@ -144,6 +144,9 @@ export class DataProductViewerState {
 
   *fetchContracts(token: string | undefined): GeneratorFn<void> {
     try {
+      this.accessState.accessGroupStates.forEach((e) =>
+        e.fetchingAccessState.inProgress(),
+      );
       const did = guaranteeNonEmptyString(
         this.generation?.dataProduct.deploymentId,
         'did required to get contracts',
@@ -172,6 +175,10 @@ export class DataProductViewerState {
       assertErrorThrown(error);
       this.accessState.viewerState.applicationStore.notificationService.notifyError(
         `${error.message}`,
+      );
+    } finally {
+      this.accessState.accessGroupStates.forEach((e) =>
+        e.fetchingAccessState.complete(),
       );
     }
   }
