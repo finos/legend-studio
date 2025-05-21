@@ -54,7 +54,7 @@ import { useAuth } from 'react-oidc-context';
 import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
-  ExpandIcon,
+  ExpandMoreIcon,
   UserDisplay,
 } from '@finos/legend-art';
 
@@ -72,14 +72,11 @@ const AssigneesList = (props: {
       )}
     </span>
   ) : (
-    <Accordion
-      className="marketplace-lakehouse-entitlements__data-contract-viewer__user-list"
-      elevation={0}
-    >
-      <AccordionSummary expandIcon={<ExpandIcon />}>
+    <Accordion elevation={0}>
+      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
         Assignees:
       </AccordionSummary>
-      <AccordionDetails>
+      <AccordionDetails className="marketplace-lakehouse-entitlements__data-contract-viewer__user-list">
         {users.map((user) =>
           user instanceof LegendUser ? (
             <UserDisplay key={user.id} user={user} />
@@ -212,7 +209,8 @@ export const EntitlementsDataContractViewer = observer(
             ) : (
               <span>No tasks associated with contract</span>
             )
-          ) : currentState === V1_ContractState.COMPLETED ? (
+          ) : currentState === V1_ContractState.PENDING_DATA_OWNER_APPROVAL ||
+            currentState === V1_ContractState.COMPLETED ? (
             <>Approved</>
           ) : currentState === V1_ContractState.REJECTED ? (
             <>Rejected</>
