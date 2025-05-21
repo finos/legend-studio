@@ -22,11 +22,15 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
-  Step,
-  StepContent,
-  StepLabel,
-  Stepper,
 } from '@mui/material';
+import {
+  Timeline,
+  TimelineContent,
+  TimelineDot,
+  TimelineItem,
+  TimelineOppositeContent,
+  TimelineSeparator,
+} from '@mui/lab';
 import {
   V1_AccessPointGroupReference,
   V1_AdhocTeam,
@@ -37,6 +41,7 @@ import React, { useEffect, useState } from 'react';
 import { isNonNullable, type LegendUser } from '@finos/legend-shared';
 import {
   getUserById,
+  isContractStateComplete,
   stringifyOrganizationalScope,
 } from '../../../stores/lakehouse/LakehouseUtils.js';
 import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
@@ -141,12 +146,20 @@ export const EntitlementsDataContractViewer = observer(
     const steps: {
       key: string;
       label: React.ReactNode;
+      isCompleteOrActive: boolean;
       description?: React.ReactNode;
     }[] = [
-      { key: 'submitted', label: <>Submitted</> },
+      { key: 'submitted', isCompleteOrActive: true, label: <>Submitted</> },
       {
         key: 'privilege-manager-approval',
         label: <>Privilege Manager Approval</>,
+        isCompleteOrActive:
+          currentState ===
+            V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL ||
+          isContractStateComplete(
+            currentState,
+            V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL,
+          ),
         description:
           currentState ===
           V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL ? (
@@ -170,6 +183,12 @@ export const EntitlementsDataContractViewer = observer(
       {
         key: 'data-producer-approval',
         label: <>Data Producer Approval</>,
+        isCompleteOrActive:
+          currentState === V1_ContractState.PENDING_DATA_OWNER_APPROVAL ||
+          isContractStateComplete(
+            currentState,
+            V1_ContractState.PENDING_DATA_OWNER_APPROVAL,
+          ),
         description:
           currentState === V1_ContractState.PENDING_DATA_OWNER_APPROVAL ? (
             <span>
@@ -191,16 +210,14 @@ export const EntitlementsDataContractViewer = observer(
             <>Rejected By</>
           ) : undefined,
       },
-      { key: 'complete', label: <>Complete</> },
+      {
+        key: 'complete',
+        isCompleteOrActive:
+          currentState === V1_ContractState.COMPLETED ||
+          isContractStateComplete(currentState, V1_ContractState.COMPLETED),
+        label: <>Complete</>,
+      },
     ];
-    const activeStep =
-      currentState === V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL
-        ? 1
-        : currentState === V1_ContractState.PENDING_DATA_OWNER_APPROVAL
-          ? 2
-          : currentState === V1_ContractState.COMPLETED
-            ? 3
-            : 0;
 
     return (
       <Dialog open={true} onClose={onClose} fullWidth={true} maxWidth="md">
@@ -252,15 +269,25 @@ export const EntitlementsDataContractViewer = observer(
                   {currentViewer.value.description}
                 </div>
               </Box>
-              <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__steps">
-                <Stepper activeStep={activeStep} orientation="vertical">
+              <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__timeline">
+                <Timeline position="alternate">
                   {steps.map((step) => (
-                    <Step key={step.key}>
-                      <StepLabel>{step.label}</StepLabel>
-                      <StepContent>{step.description}</StepContent>
-                    </Step>
+                    <TimelineItem key={step.key}>
+                      <TimelineOppositeContent>
+                        {step.label}
+                      </TimelineOppositeContent>
+                      <TimelineSeparator>
+                        <TimelineDot
+                          color="primary"
+                          variant={
+                            step.isCompleteOrActive ? 'filled' : 'outlined'
+                          }
+                        />
+                      </TimelineSeparator>
+                      <TimelineContent>{step.description}</TimelineContent>
+                    </TimelineItem>
                   ))}
-                </Stepper>
+                </Timeline>
               </Box>
             </>
           )}
