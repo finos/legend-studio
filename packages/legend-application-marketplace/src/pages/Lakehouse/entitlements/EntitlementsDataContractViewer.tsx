@@ -22,10 +22,15 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
+  Step,
+  StepContent,
+  StepLabel,
+  Stepper,
 } from '@mui/material';
 import {
   V1_AccessPointGroupReference,
   V1_AdhocTeam,
+  V1_ContractState,
   V1_UserType,
 } from '@finos/legend-graph';
 import { useEffect, useState } from 'react';
@@ -137,6 +142,38 @@ export const EntitlementsDataContractViewer = observer(
 
     const dataProduct = currentViewer.value.resource.dataProduct;
     const accessPointGroup = currentViewer.value.resource.accessPointGroup;
+    const currentState = currentViewer.value.state;
+
+    const steps = [
+      { label: 'Submitted' },
+      {
+        label: 'Privilege Manager Approval',
+        description:
+          currentState === V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL
+            ? 'Asignee'
+            : 'Approved By',
+      },
+      {
+        label: 'Data Producer Approval',
+        description:
+          currentState === V1_ContractState.PENDING_DATA_OWNER_APPROVAL
+            ? 'Asignee'
+            : currentState === V1_ContractState.COMPLETED
+              ? 'Approved By'
+              : currentState === V1_ContractState.REJECTED
+                ? 'Rejected By'
+                : undefined,
+      },
+      { label: 'Complete' },
+    ];
+    const activeStep =
+      currentState === V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL
+        ? 1
+        : currentState === V1_ContractState.PENDING_DATA_OWNER_APPROVAL
+          ? 2
+          : currentState === V1_ContractState.COMPLETED
+            ? 3
+            : 0;
 
     return (
       <Dialog open={true} onClose={onClose} fullWidth={true} maxWidth="md">
@@ -182,6 +219,16 @@ export const EntitlementsDataContractViewer = observer(
                   <b>Business Justification: </b>
                   {currentViewer.value.description}
                 </div>
+              </Box>
+              <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__steps">
+                <Stepper activeStep={activeStep} orientation="vertical">
+                  {steps.map((step) => (
+                    <Step key={step.label}>
+                      <StepLabel>{step.label}</StepLabel>
+                      <StepContent>{step.description}</StepContent>
+                    </Step>
+                  ))}
+                </Stepper>
               </Box>
             </>
           )}
