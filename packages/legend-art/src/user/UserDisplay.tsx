@@ -28,9 +28,13 @@ export const UserDisplay = (props: {
   return (
     <Box className="legend-user-display" onClick={onClick}>
       {imgSrc ? (
-        <Avatar src={imgSrc} alt={user.displayName ?? ''} />
+        <Avatar
+          className="legend-user-display__avatar"
+          src={imgSrc}
+          alt={user.displayName ?? ''}
+        />
       ) : (
-        <Avatar>
+        <Avatar className="legend-user-display__avatar">
           {user.firstName || user.lastName
             ? `${user.firstName?.charAt(0)}${user.lastName?.charAt(0)}`
             : user.displayName?.charAt(0)}

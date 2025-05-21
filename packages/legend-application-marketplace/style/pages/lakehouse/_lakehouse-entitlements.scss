@@ -107,3 +107,17 @@
     margin: 2rem 0;
   }
 }
+
+.marketplace-lakehouse-entitlements__data-contract-viewer {
+  &__content {
+    @include flexVCenter;
+
+    flex-direction: column;
+  }
+
+  &__steps {
+    .MuiStepLabel-label {
+      font-size: 1.4rem;
+    }
+  }
+}

@@ -17,15 +17,21 @@
 @use 'mixins' as *;
 
 .legend-user-display {
+  @include flexVCenter;
+
+  &:not(:last-child) {
+    margin-bottom: 1rem;
+  }
+
+  &__avatar {
+    width: 30px;
+    height: 30px;
+  }
+
   &__name {
-    color: var(--color-blue-300);
-    // height: 1.6rem;
-    // line-height: 1.6rem;
-    // background: var(--color-dark-grey-400);
-    // border-radius: 0.2rem;
-    font-size: 1.2rem;
+    margin-left: 1rem;
+    color: var(--color-hclight-blue-60);
+    font-size: 1.4rem;
     font-weight: 500;
-    // padding: 0 0.5rem;
-    // white-space: nowrap;
   }
 }
