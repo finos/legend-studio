@@ -33,6 +33,7 @@
 @forward 'components/tree-view';
 @forward 'components/markdown-viewer';
 @forward 'components/cubes-loading-indicator';
+@forward 'components/user-display';
 
 // Reset (override library styles)
 @forward 'reset/react-reflex';

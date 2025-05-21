@@ -33,8 +33,8 @@ import {
   V1_ContractState,
   V1_UserType,
 } from '@finos/legend-graph';
-import { useEffect, useState } from 'react';
-import { LegendUser } from '@finos/legend-shared';
+import React, { useEffect, useState } from 'react';
+import { isNonNullable, type LegendUser } from '@finos/legend-shared';
 import {
   getUserById,
   stringifyOrganizationalScope,
@@ -45,6 +45,7 @@ import { useAuth } from 'react-oidc-context';
 import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
+  UserDisplay,
 } from '@finos/legend-art';
 
 export const EntitlementsDataContractViewer = observer(
@@ -55,21 +56,17 @@ export const EntitlementsDataContractViewer = observer(
     const { currentViewer, onClose } = props;
     const auth = useAuth();
     const legendMarketplaceStore = useLegendMarketplaceBaseStore();
-    const [orderedByUser, setOrderedByUser] = useState<
-      LegendUser | undefined
-    >();
-    const [orderedForUsers, setOrderedForUsers] = useState<
-      LegendUser[] | undefined
-    >();
-    const [loading, setLoading] = useState(false);
-    const [loadingOrderedByUser, setLoadingOrderedByUser] = useState(false);
-    const [loadingOrderedForUsers, setLoadingOrderedForUsers] = useState(false);
+    const [userData, setUserData] = useState<Map<string, LegendUser>>(
+      new Map<string, LegendUser>(),
+    );
+    const [isLoadingUserData, setIsLoadingUserData] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
-      setLoading(true);
+      setIsLoading(true);
       flowResult(currentViewer.init(auth.user?.access_token))
         .catch(legendMarketplaceStore.applicationStore.alertUnhandledError)
-        .finally(() => setLoading(false));
+        .finally(() => setIsLoading(false));
     }, [
       currentViewer,
       auth.user?.access_token,
@@ -77,54 +74,51 @@ export const EntitlementsDataContractViewer = observer(
     ]);
 
     useEffect(() => {
-      const fetchOrderedByUser = async (): Promise<void> => {
+      const fetchUserData = async (userIds: string[]): Promise<void> => {
         if (legendMarketplaceStore.userSearchService) {
-          setLoadingOrderedByUser(true);
+          setIsLoadingUserData(true);
           try {
-            const user = await getUserById(
-              currentViewer.value.createdBy,
-              legendMarketplaceStore.userSearchService,
-            );
-            setOrderedByUser(user);
+            const users = (
+              await Promise.all(
+                userIds.map(async (userId) =>
+                  getUserById(
+                    userId,
+                    legendMarketplaceStore.userSearchService!,
+                  ),
+                ),
+              )
+            ).filter(isNonNullable);
+            const userMap = new Map<string, LegendUser>();
+            users.forEach((user) => {
+              userMap.set(user.id, user);
+            });
+            setUserData(userMap);
           } finally {
-            setLoadingOrderedByUser(false);
+            setIsLoadingUserData(false);
           }
         }
       };
-      fetchOrderedByUser();
-    }, [
-      currentViewer.value.createdBy,
-      legendMarketplaceStore.userSearchService,
-    ]);
-
-    useEffect(() => {
-      const fetchOrderedForUsers = async (): Promise<void> => {
-        if (
-          legendMarketplaceStore.userSearchService &&
-          currentViewer.value.consumer instanceof V1_AdhocTeam
-        ) {
-          setLoadingOrderedForUsers(true);
-          try {
-            const users = await Promise.all(
-              currentViewer.value.consumer.users.map(async (user) =>
+      const userIds: string[] = [
+        currentViewer.value.createdBy,
+        ...(currentViewer.value.consumer instanceof V1_AdhocTeam
+          ? currentViewer.value.consumer.users
+              .map((user) =>
                 user.userType === V1_UserType.WORKFORCE_USER
-                  ? ((await getUserById(
-                      user.name,
-                      legendMarketplaceStore.userSearchService!,
-                    )) ?? new LegendUser(user.name, user.name))
-                  : new LegendUser(user.name, user.name),
-              ),
-            );
-            setOrderedForUsers(users);
-          } finally {
-            setLoadingOrderedForUsers(false);
-          }
-        }
-      };
-      fetchOrderedForUsers();
+                  ? user.name
+                  : undefined,
+              )
+              .filter(isNonNullable)
+          : []),
+        ...(currentViewer.associatedTasks
+          ?.map((task) => task.assignees)
+          .flat() ?? []),
+      ];
+      fetchUserData(userIds);
     }, [
-      currentViewer.value.consumer,
       legendMarketplaceStore.userSearchService,
+      currentViewer.associatedTasks,
+      currentViewer.value.consumer,
+      currentViewer.value.createdBy,
     ]);
 
     if (
@@ -144,27 +138,60 @@ export const EntitlementsDataContractViewer = observer(
     const accessPointGroup = currentViewer.value.resource.accessPointGroup;
     const currentState = currentViewer.value.state;
 
-    const steps = [
-      { label: 'Submitted' },
+    const steps: {
+      key: string;
+      label: React.ReactNode;
+      description?: React.ReactNode;
+    }[] = [
+      { key: 'submitted', label: <>Submitted</> },
       {
-        label: 'Privilege Manager Approval',
+        key: 'privilege-manager-approval',
+        label: <>Privilege Manager Approval</>,
         description:
-          currentState === V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL
-            ? 'Asignee'
-            : 'Approved By',
+          currentState ===
+          V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL ? (
+            <span>
+              Asignees:{' '}
+              {currentViewer.associatedTasks
+                ?.map((task) => task.assignees)
+                .flat()
+                .map((asignee) =>
+                  userData.get(asignee) ? (
+                    <UserDisplay key={asignee} user={userData.get(asignee)!} />
+                  ) : (
+                    asignee
+                  ),
+                )}
+            </span>
+          ) : (
+            <>Approved By</>
+          ),
       },
       {
-        label: 'Data Producer Approval',
+        key: 'data-producer-approval',
+        label: <>Data Producer Approval</>,
         description:
-          currentState === V1_ContractState.PENDING_DATA_OWNER_APPROVAL
-            ? 'Asignee'
-            : currentState === V1_ContractState.COMPLETED
-              ? 'Approved By'
-              : currentState === V1_ContractState.REJECTED
-                ? 'Rejected By'
-                : undefined,
+          currentState === V1_ContractState.PENDING_DATA_OWNER_APPROVAL ? (
+            <span>
+              Asignees:{' '}
+              {currentViewer.associatedTasks
+                ?.map((task) => task.assignees)
+                .flat()
+                .map((asignee) =>
+                  userData.get(asignee) ? (
+                    <UserDisplay key={asignee} user={userData.get(asignee)!} />
+                  ) : (
+                    asignee
+                  ),
+                )}
+            </span>
+          ) : currentState === V1_ContractState.COMPLETED ? (
+            <>Approved By</>
+          ) : currentState === V1_ContractState.REJECTED ? (
+            <>Rejected By</>
+          ) : undefined,
       },
-      { label: 'Complete' },
+      { key: 'complete', label: <>Complete</> },
     ];
     const activeStep =
       currentState === V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL
@@ -179,10 +206,10 @@ export const EntitlementsDataContractViewer = observer(
       <Dialog open={true} onClose={onClose} fullWidth={true} maxWidth="md">
         <DialogTitle>Pending Data Contract Request</DialogTitle>
         <DialogContent className="marketplace-lakehouse-entitlements__data-contract-viewer__content">
-          <CubesLoadingIndicator isLoading={loading}>
+          <CubesLoadingIndicator isLoading={isLoading}>
             <CubesLoadingIndicatorIcon />
           </CubesLoadingIndicator>
-          {!loading && (
+          {!isLoading && (
             <>
               <div>
                 Access request for{' '}
@@ -198,19 +225,24 @@ export const EntitlementsDataContractViewer = observer(
               <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata">
                 <div>
                   <b>Ordered By: </b>
-                  {loadingOrderedByUser ? (
+                  {isLoadingUserData ? (
                     <CircularProgress size={20} />
                   ) : (
-                    (orderedByUser?.displayName ??
+                    (userData.get(currentViewer.value.createdBy)?.displayName ??
                     currentViewer.value.createdBy)
                   )}
                 </div>
                 <div>
                   <b>Ordered For: </b>
-                  {loadingOrderedForUsers ? (
+                  {isLoadingUserData ? (
                     <CircularProgress size={20} />
-                  ) : orderedForUsers !== undefined ? (
-                    orderedForUsers.map((user) => user.displayName).join(', ')
+                  ) : currentViewer.value.consumer instanceof V1_AdhocTeam ? (
+                    currentViewer.value.consumer.users
+                      .map(
+                        (user) =>
+                          userData.get(user.name)?.displayName ?? user.name,
+                      )
+                      .join(', ')
                   ) : (
                     stringifyOrganizationalScope(currentViewer.value.consumer)
                   )}
@@ -223,7 +255,7 @@ export const EntitlementsDataContractViewer = observer(
               <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__steps">
                 <Stepper activeStep={activeStep} orientation="vertical">
                   {steps.map((step) => (
-                    <Step key={step.label}>
+                    <Step key={step.key}>
                       <StepLabel>{step.label}</StepLabel>
                       <StepContent>{step.description}</StepContent>
                     </Step>

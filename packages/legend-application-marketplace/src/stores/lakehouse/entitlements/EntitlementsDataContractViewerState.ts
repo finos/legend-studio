@@ -15,9 +15,9 @@
  */
 
 import {
-  type V1_ContractUserEventRecord,
   type V1_PendingTasksRespond,
   type V1_DataContract,
+  type V1_TaskMetadata,
   V1_deserializeTaskResponse,
 } from '@finos/legend-graph';
 import {
@@ -32,7 +32,7 @@ import type { LakehouseContractServerClient } from '../../LakehouseContractServe
 export class EntitlementsDataContractViewerState {
   readonly value: V1_DataContract;
   readonly lakeServerClient: LakehouseContractServerClient;
-  associatedTasks: V1_ContractUserEventRecord[] | undefined;
+  associatedTasks: V1_TaskMetadata[] | undefined;
   initializationState = ActionState.create();
 
   constructor(
@@ -48,9 +48,7 @@ export class EntitlementsDataContractViewerState {
     });
   }
 
-  setAssociatedTasks(
-    associatedTasks: V1_ContractUserEventRecord[] | undefined,
-  ): void {
+  setAssociatedTasks(associatedTasks: V1_TaskMetadata[] | undefined): void {
     this.associatedTasks = associatedTasks;
   }
 
@@ -63,7 +61,7 @@ export class EntitlementsDataContractViewerState {
         token,
       )) as PlainObject<V1_PendingTasksRespond>;
       const tasks = V1_deserializeTaskResponse(pendingTasks);
-      this.setAssociatedTasks(tasks.map((e) => e.rec));
+      this.setAssociatedTasks(tasks);
     } catch (error) {
       assertErrorThrown(error);
     } finally {
