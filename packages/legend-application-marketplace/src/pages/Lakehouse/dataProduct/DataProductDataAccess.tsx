@@ -19,7 +19,6 @@ import {
   clsx,
   MarkdownTextViewer,
   QuestionCircleIcon,
-  ExternalLinkIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import {
@@ -198,7 +197,6 @@ export const DataProductGroupAccessViewer = observer(
               onClick={handleClick}
               loading={accessGroupState.fetchingAccessState.isInProgress}
             >
-              <ExternalLinkIcon />
               <div>
                 {val === DataProductGroupAccess.PENDING_MANAGER_APPROVAL
                   ? 'PENDING MANAGER APPROVAL'
