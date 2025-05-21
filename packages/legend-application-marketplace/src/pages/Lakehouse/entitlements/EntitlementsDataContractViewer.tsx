@@ -178,7 +178,7 @@ export const EntitlementsDataContractViewer = observer(
                 )}
             </span>
           ) : (
-            <>Approved By</>
+            <>Approved</>
           ),
       },
       {
@@ -206,9 +206,9 @@ export const EntitlementsDataContractViewer = observer(
                 )}
             </span>
           ) : currentState === V1_ContractState.COMPLETED ? (
-            <>Approved By</>
+            <>Approved</>
           ) : currentState === V1_ContractState.REJECTED ? (
-            <>Rejected By</>
+            <>Rejected</>
           ) : undefined,
       },
       {
