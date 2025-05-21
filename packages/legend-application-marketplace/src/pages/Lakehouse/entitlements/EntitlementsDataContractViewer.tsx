@@ -25,6 +25,7 @@ import {
 } from '@mui/material';
 import {
   Timeline,
+  TimelineConnector,
   TimelineContent,
   TimelineDot,
   TimelineItem,
@@ -283,6 +284,7 @@ export const EntitlementsDataContractViewer = observer(
                             step.isCompleteOrActive ? 'filled' : 'outlined'
                           }
                         />
+                        <TimelineConnector />
                       </TimelineSeparator>
                       <TimelineContent>{step.description}</TimelineContent>
                     </TimelineItem>
