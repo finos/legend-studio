@@ -133,6 +133,12 @@ export const LakehouseEntitlements = withLakehouseEntitlementsStore(
               EntitlementsDataContractViewerState ? (
               <EntitlementsDataContractViewer
                 currentViewer={entitlementsStore.currentViewer}
+                onClose={() => {
+                  setShowDrawer(false);
+                  entitlementsStore.applicationStore.navigationService.navigator.updateCurrentLocation(
+                    LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS,
+                  );
+                }}
               />
             ) : (
               <p>Cannot display item</p>
