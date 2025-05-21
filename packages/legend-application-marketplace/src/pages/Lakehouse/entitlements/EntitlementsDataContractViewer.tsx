@@ -271,7 +271,7 @@ export const EntitlementsDataContractViewer = observer(
                 </div>
               </Box>
               <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__timeline">
-                <Timeline position="alternate">
+                <Timeline>
                   {steps.map((step, index) => (
                     <TimelineItem key={step.key}>
                       <TimelineOppositeContent>
