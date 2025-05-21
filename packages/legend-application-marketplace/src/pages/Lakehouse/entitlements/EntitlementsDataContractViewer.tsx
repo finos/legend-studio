@@ -25,6 +25,7 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
+  Link,
 } from '@mui/material';
 import {
   Timeline,
@@ -57,6 +58,7 @@ import {
   ExpandMoreIcon,
   UserDisplay,
 } from '@finos/legend-art';
+import { generateLakehouseTaskPath } from '../../../__lib__/LegendMarketplaceNavigation.js';
 
 const AssigneesList = (props: {
   users: (LegendUser | string)[];
@@ -179,6 +181,8 @@ export const EntitlementsDataContractViewer = observer(
     const accessPointGroup = currentViewer.value.resource.accessPointGroup;
     const currentState = currentViewer.value.state;
 
+    console.log('currentViewer:', currentViewer);
+
     const steps: {
       key: string;
       label: React.ReactNode;
@@ -218,7 +222,19 @@ export const EntitlementsDataContractViewer = observer(
       },
       {
         key: 'data-producer-approval',
-        label: <>Data Producer Approval</>,
+        label:
+          currentState === V1_ContractState.PENDING_DATA_OWNER_APPROVAL &&
+          currentViewer.associatedTasks?.[0]?.rec.taskId ? (
+            <Link
+              href={generateLakehouseTaskPath(
+                currentViewer.associatedTasks?.[0]?.rec.taskId,
+              )}
+            >
+              Data Producer Approval
+            </Link>
+          ) : (
+            <>Data Producer Approval</>
+          ),
         isCompleteOrActive:
           currentState === V1_ContractState.PENDING_DATA_OWNER_APPROVAL ||
           isContractStateComplete(
