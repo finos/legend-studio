@@ -28,8 +28,9 @@ export class LegendUser {
   lastName!: string;
   title: string | undefined;
 
-  constructor(id?: string | undefined) {
+  constructor(id?: string | undefined, displayName?: string | undefined) {
     this.id = id ?? '';
+    this.displayName = displayName ?? '';
   }
 
   static readonly serialization = new SerializationFactory(
