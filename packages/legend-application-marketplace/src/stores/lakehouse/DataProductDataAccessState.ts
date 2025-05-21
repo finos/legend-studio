@@ -28,7 +28,6 @@ import {
   isContractCompleted,
   isMemberOfContract,
 } from './LakehouseUtils.js';
-import { generateLakehouseContractPath } from '../../__lib__/LegendMarketplaceNavigation.js';
 
 export enum DataProductGroupAccess {
   // can be used to indicate fetching or resyncing of group access
@@ -123,9 +122,7 @@ export class DataProductGroupAccessState {
     ) {
       const associatedContract = this.associatedContract;
       if (associatedContract) {
-        this.accessState.viewerState.applicationStore.navigationService.navigator.updateCurrentLocation(
-          generateLakehouseContractPath(associatedContract.guid),
-        );
+        this.accessState.viewerState.setDataContract(associatedContract);
       }
     }
   }

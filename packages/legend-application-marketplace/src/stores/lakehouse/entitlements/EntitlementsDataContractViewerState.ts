@@ -20,22 +20,27 @@ import {
   type V1_DataContract,
   V1_deserializeTaskResponse,
 } from '@finos/legend-graph';
-import { type LakehouseEntitlementsStore } from './LakehouseEntitlementsStore.js';
-import { LakehouseViewerState } from './LakehouseViewerState.js';
 import {
+  ActionState,
   assertErrorThrown,
   type GeneratorFn,
   type PlainObject,
 } from '@finos/legend-shared';
 import { action, flow, makeObservable, observable } from 'mobx';
+import type { LakehouseContractServerClient } from '../../LakehouseContractServerClient.js';
 
-export class EntitlementsDataContractViewerState extends LakehouseViewerState {
+export class EntitlementsDataContractViewerState {
   readonly value: V1_DataContract;
+  readonly lakeServerClient: LakehouseContractServerClient;
   associatedTasks: V1_ContractUserEventRecord[] | undefined;
+  initializationState = ActionState.create();
 
-  constructor(value: V1_DataContract, state: LakehouseEntitlementsStore) {
-    super(state);
+  constructor(
+    value: V1_DataContract,
+    lakeServerClient: LakehouseContractServerClient,
+  ) {
     this.value = value;
+    this.lakeServerClient = lakeServerClient;
     makeObservable(this, {
       associatedTasks: observable,
       setAssociatedTasks: action,
@@ -53,11 +58,10 @@ export class EntitlementsDataContractViewerState extends LakehouseViewerState {
     try {
       this.initializationState.inProgress();
       this.setAssociatedTasks(undefined);
-      const pendingTasks =
-        (yield this.state.lakehouseServerClient.getContractTasks(
-          this.value.guid,
-          token,
-        )) as PlainObject<V1_PendingTasksRespond>;
+      const pendingTasks = (yield this.lakeServerClient.getContractTasks(
+        this.value.guid,
+        token,
+      )) as PlainObject<V1_PendingTasksRespond>;
       const tasks = V1_deserializeTaskResponse(pendingTasks);
       this.setAssociatedTasks(tasks.map((e) => e.rec));
     } catch (error) {

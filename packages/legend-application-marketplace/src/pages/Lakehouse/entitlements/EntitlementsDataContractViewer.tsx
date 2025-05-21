@@ -35,6 +35,12 @@ import {
   stringifyOrganizationalScope,
 } from '../../../stores/lakehouse/LakehouseUtils.js';
 import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
+import { flowResult } from 'mobx';
+import { useAuth } from 'react-oidc-context';
+import {
+  CubesLoadingIndicator,
+  CubesLoadingIndicatorIcon,
+} from '@finos/legend-art';
 
 export const EntitlementsDataContractViewer = observer(
   (props: {
@@ -42,6 +48,7 @@ export const EntitlementsDataContractViewer = observer(
     onClose: () => void;
   }) => {
     const { currentViewer, onClose } = props;
+    const auth = useAuth();
     const legendMarketplaceStore = useLegendMarketplaceBaseStore();
     const [orderedByUser, setOrderedByUser] = useState<
       LegendUser | undefined
@@ -49,8 +56,20 @@ export const EntitlementsDataContractViewer = observer(
     const [orderedForUsers, setOrderedForUsers] = useState<
       LegendUser[] | undefined
     >();
+    const [loading, setLoading] = useState(false);
     const [loadingOrderedByUser, setLoadingOrderedByUser] = useState(false);
     const [loadingOrderedForUsers, setLoadingOrderedForUsers] = useState(false);
+
+    useEffect(() => {
+      setLoading(true);
+      flowResult(currentViewer.init(auth.user?.access_token))
+        .catch(legendMarketplaceStore.applicationStore.alertUnhandledError)
+        .finally(() => setLoading(false));
+    }, [
+      currentViewer,
+      auth.user?.access_token,
+      legendMarketplaceStore.applicationStore.alertUnhandledError,
+    ]);
 
     useEffect(() => {
       const fetchOrderedByUser = async (): Promise<void> => {
@@ -123,41 +142,49 @@ export const EntitlementsDataContractViewer = observer(
       <Dialog open={true} onClose={onClose} fullWidth={true} maxWidth="md">
         <DialogTitle>Pending Data Contract Request</DialogTitle>
         <DialogContent className="marketplace-lakehouse-entitlements__data-contract-viewer__content">
-          <div>
-            Access request for{' '}
-            <span className="marketplace-lakehouse-text__emphasis">
-              {accessPointGroup}
-            </span>{' '}
-            Access Point Group in{' '}
-            <span className="marketplace-lakehouse-text__emphasis">
-              {dataProduct.name}
-            </span>{' '}
-            Data Product
-          </div>
-          <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata">
-            <div>
-              <b>Ordered By: </b>
-              {loadingOrderedByUser ? (
-                <CircularProgress size={20} />
-              ) : (
-                (orderedByUser?.displayName ?? currentViewer.value.createdBy)
-              )}
-            </div>
-            <div>
-              <b>Ordered For: </b>
-              {loadingOrderedForUsers ? (
-                <CircularProgress size={20} />
-              ) : orderedForUsers !== undefined ? (
-                orderedForUsers.map((user) => user.displayName).join(', ')
-              ) : (
-                stringifyOrganizationalScope(currentViewer.value.consumer)
-              )}
-            </div>
-            <div>
-              <b>Business Justification: </b>
-              {currentViewer.value.description}
-            </div>
-          </Box>
+          <CubesLoadingIndicator isLoading={loading}>
+            <CubesLoadingIndicatorIcon />
+          </CubesLoadingIndicator>
+          {!loading && (
+            <>
+              <div>
+                Access request for{' '}
+                <span className="marketplace-lakehouse-text__emphasis">
+                  {accessPointGroup}
+                </span>{' '}
+                Access Point Group in{' '}
+                <span className="marketplace-lakehouse-text__emphasis">
+                  {dataProduct.name}
+                </span>{' '}
+                Data Product
+              </div>
+              <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata">
+                <div>
+                  <b>Ordered By: </b>
+                  {loadingOrderedByUser ? (
+                    <CircularProgress size={20} />
+                  ) : (
+                    (orderedByUser?.displayName ??
+                    currentViewer.value.createdBy)
+                  )}
+                </div>
+                <div>
+                  <b>Ordered For: </b>
+                  {loadingOrderedForUsers ? (
+                    <CircularProgress size={20} />
+                  ) : orderedForUsers !== undefined ? (
+                    orderedForUsers.map((user) => user.displayName).join(', ')
+                  ) : (
+                    stringifyOrganizationalScope(currentViewer.value.consumer)
+                  )}
+                </div>
+                <div>
+                  <b>Business Justification: </b>
+                  {currentViewer.value.description}
+                </div>
+              </Box>
+            </>
+          )}
         </DialogContent>
       </Dialog>
     );

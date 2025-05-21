@@ -50,6 +50,8 @@ import { Button, Tab, Tabs } from '@mui/material';
 import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
 import { type PlainObject } from '@finos/legend-shared';
 import { DataContractCreator } from '../entitlements/EntitlementsDataContractCreator.js';
+import { EntitlementsDataContractViewer } from '../entitlements/EntitlementsDataContractViewer.js';
+import { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
 
 export const DataProductMarkdownTextViewer: React.FC<{ value: string }> = (
   props,
@@ -378,6 +380,17 @@ export const DataProducteDataAccess = observer(
                   dataSpaceViewerState.dataContractAccessPointGroup
                 }
                 viewerState={dataSpaceViewerState}
+              />
+            )}
+            {dataSpaceViewerState.dataContract && (
+              <EntitlementsDataContractViewer
+                currentViewer={
+                  new EntitlementsDataContractViewerState(
+                    dataSpaceViewerState.dataContract,
+                    dataSpaceViewerState.lakeServerClient,
+                  )
+                }
+                onClose={() => dataSpaceViewerState.setDataContract(undefined)}
               />
             )}
           </div>
