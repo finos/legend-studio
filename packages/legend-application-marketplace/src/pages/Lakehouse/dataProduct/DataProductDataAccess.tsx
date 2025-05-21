@@ -189,7 +189,8 @@ export const DataProductGroupAccessViewer = observer(
               REQUEST ACCESS
             </Button>
           );
-        case DataProductGroupAccess.PENDING:
+        case DataProductGroupAccess.PENDING_MANAGER_APPROVAL:
+        case DataProductGroupAccess.PENDING_DATA_OWNER_APPROVAL:
           return (
             <Button
               variant="contained"
@@ -198,7 +199,11 @@ export const DataProductGroupAccessViewer = observer(
               loading={accessGroupState.fetchingAccessState.isInProgress}
             >
               <ExternalLinkIcon />
-              <div>PENDING</div>
+              <div>
+                {val === DataProductGroupAccess.PENDING_MANAGER_APPROVAL
+                  ? 'PENDING MANAGER APPROVAL'
+                  : 'PENDING DATA OWNER APPROVAL'}
+              </div>
             </Button>
           );
         case DataProductGroupAccess.COMPLETED:
@@ -211,7 +216,6 @@ export const DataProductGroupAccessViewer = observer(
               ENTITLED
             </Button>
           );
-
         default:
           return null;
       }

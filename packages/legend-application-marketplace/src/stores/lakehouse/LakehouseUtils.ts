@@ -45,11 +45,6 @@ const inValidContractState = [
   V1_ContractState.CLOSED,
 ];
 
-const inProgressContractState = [
-  V1_ContractState.PENDING_DATA_OWNER_APPROVAL,
-  V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL,
-];
-
 const idxLabel = (idx: number): string => {
   return ` (${idx + 1})`;
 };
@@ -119,10 +114,6 @@ export const isMemberOfContract = (
 
 export const isContractCompleted = (contract: V1_DataContract): boolean => {
   return contract.state === V1_ContractState.COMPLETED;
-};
-
-export const isContractPending = (contract: V1_DataContract): boolean => {
-  return inProgressContractState.includes(contract.state);
 };
 
 type ContractDetailOptions = {

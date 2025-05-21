@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-import type {
-  V1_DataContract,
-  V1_AccessPointGroup,
-  V1_DataProduct,
+import {
+  type V1_DataContract,
+  type V1_AccessPointGroup,
+  type V1_DataProduct,
+  V1_ContractState,
 } from '@finos/legend-graph';
 import type { DataProductViewerState } from './DataProductViewerState.js';
 import { ActionState, uuid } from '@finos/legend-shared';
@@ -25,7 +26,6 @@ import { action, makeAutoObservable, makeObservable, observable } from 'mobx';
 import {
   dataContractContainsAccessGroup,
   isContractCompleted,
-  isContractPending,
   isMemberOfContract,
 } from './LakehouseUtils.js';
 import { generateLakehouseContractPath } from '../../__lib__/LegendMarketplaceNavigation.js';
@@ -34,7 +34,8 @@ export enum DataProductGroupAccess {
   // can be used to indicate fetching or resyncing of group access
   UNKNOWN = 'UNKNOWN',
 
-  PENDING = 'PENDING',
+  PENDING_MANAGER_APPROVAL = 'PENDING_MANAGER_APPROVAL',
+  PENDING_DATA_OWNER_APPROVAL = 'PENDING_DATA_OWNER_APPROVAL',
   COMPLETED = 'COMPLETED',
   NO_ACCESS = 'NO_ACCESS',
 }
@@ -44,10 +45,12 @@ const getDataProductGroupAccessFromContract = (
 ): DataProductGroupAccess => {
   if (isContractCompleted(val)) {
     return DataProductGroupAccess.COMPLETED;
-  }
-
-  if (isContractPending(val)) {
-    return DataProductGroupAccess.PENDING;
+  } else if (
+    val.state === V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL
+  ) {
+    return DataProductGroupAccess.PENDING_MANAGER_APPROVAL;
+  } else if (val.state === V1_ContractState.PENDING_DATA_OWNER_APPROVAL) {
+    return DataProductGroupAccess.PENDING_DATA_OWNER_APPROVAL;
   }
   return DataProductGroupAccess.UNKNOWN;
 };
@@ -114,7 +117,10 @@ export class DataProductGroupAccessState {
   handleClick(): void {
     if (this.access === DataProductGroupAccess.NO_ACCESS) {
       this.accessState.viewerState.setDataContractAccessPointGroup(this.group);
-    } else if (this.access === DataProductGroupAccess.PENDING) {
+    } else if (
+      this.access === DataProductGroupAccess.PENDING_MANAGER_APPROVAL ||
+      this.access === DataProductGroupAccess.PENDING_DATA_OWNER_APPROVAL
+    ) {
       const associatedContract = this.associatedContract;
       if (associatedContract) {
         this.accessState.viewerState.applicationStore.navigationService.navigator.updateCurrentLocation(
