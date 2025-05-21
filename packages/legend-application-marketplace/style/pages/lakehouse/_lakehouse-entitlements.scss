@@ -115,9 +115,17 @@
     flex-direction: column;
   }
 
+  &__metadata {
+    width: 100%;
+    background: var(--color-light-grey-300);
+    padding: 1rem;
+    margin: 1rem 0 3rem;
+  }
+
   &__steps {
     .MuiStepLabel-label {
       font-size: 1.4rem;
+      line-height: 2rem;
     }
   }
 }
