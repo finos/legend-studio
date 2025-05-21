@@ -32,6 +32,7 @@ import {
 import { UserSearchInput } from '@finos/legend-art';
 import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
 import { LegendUser } from '@finos/legend-shared';
+import { getUserById } from '../../../stores/lakehouse/LakehouseUtils.js';
 
 enum DataContractCreatorConsumerType {
   USER = 'User',
@@ -59,22 +60,19 @@ export const DataContractCreator = observer(
 
     useEffect(() => {
       const fetchCurrentUser = async () => {
-        setLoadingCurrentUser(true);
-        try {
-          const currentUser = (
-            await legendMarketplaceStore.userSearchService?.executeSearch(
+        if (legendMarketplaceStore.userSearchService) {
+          setLoadingCurrentUser(true);
+          try {
+            const currentUser = await getUserById(
               viewerState.applicationStore.identityService.currentUser,
-            )
-          )?.filter(
-            (_user) =>
-              _user.id ===
-              viewerState.applicationStore.identityService.currentUser,
-          )[0];
-          if (currentUser) {
-            setUser(currentUser);
+              legendMarketplaceStore.userSearchService,
+            );
+            if (currentUser) {
+              setUser(currentUser);
+            }
+          } finally {
+            setLoadingCurrentUser(false);
           }
-        } finally {
-          setLoadingCurrentUser(false);
         }
       };
       // eslint-disable-next-line no-void

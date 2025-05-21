@@ -16,16 +16,22 @@
 
 import {
   type V1_AccessPointGroup,
+  type V1_ContractUserEventRecord,
+  type V1_DataContract,
+  type V1_DataProduct,
+  type V1_OrganizationalScope,
   V1_AccessPointGroupReference,
   V1_AdhocTeam,
   V1_AppDirOrganizationalScope,
   V1_ContractState,
-  type V1_ContractUserEventRecord,
-  type V1_DataContract,
-  type V1_DataProduct,
+  V1_UnknownOrganizationalScopeType,
   V1_UserApprovalStatus,
 } from '@finos/legend-graph';
-import { prettyCONSTName } from '@finos/legend-shared';
+import {
+  type LegendUser,
+  type UserSearchService,
+  prettyCONSTName,
+} from '@finos/legend-shared';
 
 export enum GridTiemStatus {
   SUCCESS = 'success',
@@ -333,4 +339,27 @@ export const buildTaskGridItemDetail = (
         })
       : []),
   ];
+};
+
+export const getUserById = async (
+  userId: string,
+  userSearchService: UserSearchService,
+): Promise<LegendUser | undefined> =>
+  (await userSearchService?.executeSearch(userId))?.filter(
+    (_user) => _user.id === userId,
+  )[0];
+
+export const stringifyOrganizationalScope = (
+  scope: V1_OrganizationalScope,
+): string => {
+  if (scope instanceof V1_AppDirOrganizationalScope) {
+    return scope.appDirNode
+      .map((node) => `${node.level}: ${node.appDirId}`)
+      .join(', ');
+  } else if (scope instanceof V1_AdhocTeam) {
+    return scope.users.map((user) => user.name).join(', ');
+  } else if (scope instanceof V1_UnknownOrganizationalScopeType) {
+    return JSON.stringify(scope.content);
+  }
+  return '';
 };
