@@ -17,6 +17,9 @@
 import { observer } from 'mobx-react-lite';
 import type { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Box,
   CircularProgress,
   Dialog,
@@ -39,7 +42,7 @@ import {
   V1_UserType,
 } from '@finos/legend-graph';
 import React, { useEffect, useState } from 'react';
-import { isNonNullable, type LegendUser } from '@finos/legend-shared';
+import { isNonNullable, LegendUser } from '@finos/legend-shared';
 import {
   getUserById,
   isContractStateComplete,
@@ -53,6 +56,35 @@ import {
   CubesLoadingIndicatorIcon,
   UserDisplay,
 } from '@finos/legend-art';
+
+const AssigneesList = (props: {
+  users: (LegendUser | string)[];
+}): React.ReactNode => {
+  const { users } = props;
+  return users.length === 1 ? (
+    <span>
+      Assignee:{' '}
+      {users[0] instanceof LegendUser ? (
+        <UserDisplay user={users[0]} />
+      ) : (
+        <div>{users[0]}</div>
+      )}
+    </span>
+  ) : (
+    <Accordion className="marketplace-lakehouse-entitlements__data-contract-viewer__user-list">
+      <AccordionSummary>Assignees:</AccordionSummary>
+      <AccordionDetails>
+        {users.map((user) =>
+          user instanceof LegendUser ? (
+            <UserDisplay key={user.id} user={user} />
+          ) : (
+            <div key={user}>{user}</div>
+          ),
+        )}
+      </AccordionDetails>
+    </Accordion>
+  );
+};
 
 export const EntitlementsDataContractViewer = observer(
   (props: {
@@ -164,22 +196,21 @@ export const EntitlementsDataContractViewer = observer(
         description:
           currentState ===
           V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL ? (
-            <span>
-              Asignees:{' '}
-              {currentViewer.associatedTasks
-                ?.map((task) => task.assignees)
-                .flat()
-                .map((asignee) =>
-                  userData.get(asignee) ? (
-                    <UserDisplay key={asignee} user={userData.get(asignee)!} />
-                  ) : (
-                    asignee
-                  ),
-                )}
-            </span>
-          ) : (
+            currentViewer.associatedTasks ? (
+              <AssigneesList
+                users={currentViewer.associatedTasks
+                  .map((task) => task.assignees)
+                  .flat()
+                  .map((asignee) => userData.get(asignee) ?? asignee)}
+              />
+            ) : (
+              <span>No tasks associated with contract</span>
+            )
+          ) : currentState === V1_ContractState.COMPLETED ? (
             <>Approved</>
-          ),
+          ) : currentState === V1_ContractState.REJECTED ? (
+            <>Rejected</>
+          ) : undefined,
       },
       {
         key: 'data-producer-approval',
@@ -192,19 +223,16 @@ export const EntitlementsDataContractViewer = observer(
           ),
         description:
           currentState === V1_ContractState.PENDING_DATA_OWNER_APPROVAL ? (
-            <span>
-              Asignees:{' '}
-              {currentViewer.associatedTasks
-                ?.map((task) => task.assignees)
-                .flat()
-                .map((asignee) =>
-                  userData.get(asignee) ? (
-                    <UserDisplay key={asignee} user={userData.get(asignee)!} />
-                  ) : (
-                    asignee
-                  ),
-                )}
-            </span>
+            currentViewer.associatedTasks ? (
+              <AssigneesList
+                users={currentViewer.associatedTasks
+                  .map((task) => task.assignees)
+                  .flat()
+                  .map((asignee) => userData.get(asignee) ?? asignee)}
+              />
+            ) : (
+              <span>No tasks associated with contract</span>
+            )
           ) : currentState === V1_ContractState.COMPLETED ? (
             <>Approved</>
           ) : currentState === V1_ContractState.REJECTED ? (
