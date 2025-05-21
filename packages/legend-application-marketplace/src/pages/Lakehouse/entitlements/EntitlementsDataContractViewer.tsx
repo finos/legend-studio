@@ -54,6 +54,7 @@ import { useAuth } from 'react-oidc-context';
 import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
+  ExpandIcon,
   UserDisplay,
 } from '@finos/legend-art';
 
@@ -71,8 +72,13 @@ const AssigneesList = (props: {
       )}
     </span>
   ) : (
-    <Accordion className="marketplace-lakehouse-entitlements__data-contract-viewer__user-list">
-      <AccordionSummary>Assignees:</AccordionSummary>
+    <Accordion
+      className="marketplace-lakehouse-entitlements__data-contract-viewer__user-list"
+      elevation={0}
+    >
+      <AccordionSummary expandIcon={<ExpandIcon />}>
+        Assignees:
+      </AccordionSummary>
       <AccordionDetails>
         {users.map((user) =>
           user instanceof LegendUser ? (
