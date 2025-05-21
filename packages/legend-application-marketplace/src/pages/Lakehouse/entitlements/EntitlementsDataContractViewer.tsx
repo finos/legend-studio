@@ -15,19 +15,151 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { GridItemsViewer } from '../shared/GridItemViewer.js';
 import type { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
+import {
+  Box,
+  CircularProgress,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from '@mui/material';
+import {
+  V1_AccessPointGroupReference,
+  V1_AdhocTeam,
+  V1_UserType,
+} from '@finos/legend-graph';
+import { useEffect, useState } from 'react';
+import { LegendUser } from '@finos/legend-shared';
+import {
+  getUserById,
+  stringifyOrganizationalScope,
+} from '../../../stores/lakehouse/LakehouseUtils.js';
+import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
 
 export const EntitlementsDataContractViewer = observer(
-  (props: { currentViewer: EntitlementsDataContractViewerState }) => {
-    const { currentViewer } = props;
+  (props: {
+    currentViewer: EntitlementsDataContractViewerState;
+    onClose: () => void;
+  }) => {
+    const { currentViewer, onClose } = props;
+    const legendMarketplaceStore = useLegendMarketplaceBaseStore();
+    const [orderedByUser, setOrderedByUser] = useState<
+      LegendUser | undefined
+    >();
+    const [orderedForUsers, setOrderedForUsers] = useState<
+      LegendUser[] | undefined
+    >();
+    const [loadingOrderedByUser, setLoadingOrderedByUser] = useState(false);
+    const [loadingOrderedForUsers, setLoadingOrderedForUsers] = useState(false);
+
+    useEffect(() => {
+      const fetchOrderedByUser = async (): Promise<void> => {
+        if (legendMarketplaceStore.userSearchService) {
+          setLoadingOrderedByUser(true);
+          try {
+            const user = await getUserById(
+              currentViewer.value.createdBy,
+              legendMarketplaceStore.userSearchService,
+            );
+            setOrderedByUser(user);
+          } finally {
+            setLoadingOrderedByUser(false);
+          }
+        }
+      };
+      fetchOrderedByUser();
+    }, [
+      currentViewer.value.createdBy,
+      legendMarketplaceStore.userSearchService,
+    ]);
+
+    useEffect(() => {
+      const fetchOrderedForUsers = async (): Promise<void> => {
+        if (
+          legendMarketplaceStore.userSearchService &&
+          currentViewer.value.consumer instanceof V1_AdhocTeam
+        ) {
+          setLoadingOrderedForUsers(true);
+          try {
+            const users = await Promise.all(
+              currentViewer.value.consumer.users.map(async (user) =>
+                user.userType === V1_UserType.WORKFORCE_USER
+                  ? ((await getUserById(
+                      user.name,
+                      legendMarketplaceStore.userSearchService!,
+                    )) ?? new LegendUser(user.name, user.name))
+                  : new LegendUser(user.name, user.name),
+              ),
+            );
+            setOrderedForUsers(users);
+          } finally {
+            setLoadingOrderedForUsers(false);
+          }
+        }
+      };
+      fetchOrderedForUsers();
+    }, [
+      currentViewer.value.consumer,
+      legendMarketplaceStore.userSearchService,
+    ]);
+
+    if (
+      !(currentViewer.value.resource instanceof V1_AccessPointGroupReference)
+    ) {
+      return (
+        <Dialog open={true} onClose={onClose} fullWidth={true} maxWidth="md">
+          <DialogTitle>Pending Data Contract Request</DialogTitle>
+          <DialogContent className="marketplace-lakehouse-entitlements__data-contract-viewer__content">
+            Unable to display data contract request details for this resource.
+          </DialogContent>
+        </Dialog>
+      );
+    }
+
+    const dataProduct = currentViewer.value.resource.dataProduct;
+    const accessPointGroup = currentViewer.value.resource.accessPointGroup;
+
     return (
-      <div className="marketplace-lakehouse-entitlements-grid-viewer">
-        <GridItemsViewer
-          details={currentViewer.contractDetails}
-          title="Contract Metadata"
-        />
-      </div>
+      <Dialog open={true} onClose={onClose} fullWidth={true} maxWidth="md">
+        <DialogTitle>Pending Data Contract Request</DialogTitle>
+        <DialogContent className="marketplace-lakehouse-entitlements__data-contract-viewer__content">
+          <div>
+            Access request for{' '}
+            <span className="marketplace-lakehouse-text__emphasis">
+              {accessPointGroup}
+            </span>{' '}
+            Access Point Group in{' '}
+            <span className="marketplace-lakehouse-text__emphasis">
+              {dataProduct.name}
+            </span>{' '}
+            Data Product
+          </div>
+          <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata">
+            <div>
+              <b>Ordered By: </b>
+              {loadingOrderedByUser ? (
+                <CircularProgress size={20} />
+              ) : (
+                (orderedByUser?.displayName ?? currentViewer.value.createdBy)
+              )}
+            </div>
+            <div>
+              <b>Ordered For: </b>
+              {loadingOrderedForUsers ? (
+                <CircularProgress size={20} />
+              ) : orderedForUsers !== undefined ? (
+                orderedForUsers.map((user) => user.displayName).join(', ')
+              ) : (
+                stringifyOrganizationalScope(currentViewer.value.consumer)
+              )}
+            </div>
+            <div>
+              <b>Business Justification: </b>
+              {currentViewer.value.description}
+            </div>
+          </Box>
+        </DialogContent>
+      </Dialog>
     );
   },
 );

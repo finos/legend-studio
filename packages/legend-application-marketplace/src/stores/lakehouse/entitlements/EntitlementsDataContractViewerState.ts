@@ -27,13 +27,7 @@ import {
   type GeneratorFn,
   type PlainObject,
 } from '@finos/legend-shared';
-import { action, computed, flow, makeObservable, observable } from 'mobx';
-import {
-  buildDataContractDetail,
-  buildTaskGridItemDetail,
-  convertMutilGridItemDetail,
-  type GridItemDetail,
-} from '../LakehouseUtils.js';
+import { action, flow, makeObservable, observable } from 'mobx';
 
 export class EntitlementsDataContractViewerState extends LakehouseViewerState {
   readonly value: V1_DataContract;
@@ -46,35 +40,6 @@ export class EntitlementsDataContractViewerState extends LakehouseViewerState {
       associatedTasks: observable,
       setAssociatedTasks: action,
       init: flow,
-      tasksDetails: computed,
-    });
-  }
-
-  get contractDetails(): GridItemDetail[] {
-    return [
-      ...buildDataContractDetail(this.value, {
-        openDirectoryHandler: this.state.directoryCallBack,
-        openApplicationIdHandler: this.state.applicationCallBack,
-      }),
-      ...this.tasksDetails,
-    ];
-  }
-
-  get tasksDetails(): GridItemDetail[] {
-    return convertMutilGridItemDetail(
-      this.associatedTasks?.map((task) =>
-        buildTaskGridItemDetail(
-          task,
-          [],
-          undefined,
-          undefined,
-          this.state.directoryCallBack,
-          this.state.applicationCallBack,
-        ),
-      ) ?? [],
-    ).map((e) => {
-      e.name = `Contract ${e.name}`;
-      return e;
     });
   }
 
@@ -88,12 +53,12 @@ export class EntitlementsDataContractViewerState extends LakehouseViewerState {
     try {
       this.initializationState.inProgress();
       this.setAssociatedTasks(undefined);
-      const pendingContracts =
+      const pendingTasks =
         (yield this.state.lakehouseServerClient.getContractTasks(
           this.value.guid,
           token,
         )) as PlainObject<V1_PendingTasksRespond>;
-      const tasks = V1_deserializeTaskResponse(pendingContracts);
+      const tasks = V1_deserializeTaskResponse(pendingTasks);
       this.setAssociatedTasks(tasks.map((e) => e.rec));
     } catch (error) {
       assertErrorThrown(error);

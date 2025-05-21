@@ -277,12 +277,14 @@ export {
   V1_TaskMetadata,
 } from './graph-manager/protocol/pure/v1/entitlements/V1_ConsumerEntitlements.js';
 export {
+  V1_AdhocTeam,
   V1_AppDirLevel,
   V1_AppDirNode,
   V1_AppDirOrganizationalScope,
-  V1_UserType,
+  V1_OrganizationalScope,
+  V1_UnknownOrganizationalScopeType,
   V1_User,
-  V1_AdhocTeam,
+  V1_UserType,
 } from './graph-manager/protocol/pure/v1/entitlements/V1_CoreEntitlements.js';
 export {
   V1_AppDirNodeModelSchema,
