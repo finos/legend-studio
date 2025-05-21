@@ -25,6 +25,7 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
+  IconButton,
   Link,
 } from '@mui/material';
 import {
@@ -39,6 +40,7 @@ import {
 import {
   V1_AccessPointGroupReference,
   V1_AdhocTeam,
+  V1_ApprovalType,
   V1_ContractState,
   V1_UserType,
 } from '@finos/legend-graph';
@@ -53,6 +55,7 @@ import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarket
 import { flowResult } from 'mobx';
 import { useAuth } from 'react-oidc-context';
 import {
+  CopyIcon,
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
   ExpandMoreIcon,
@@ -180,8 +183,31 @@ export const EntitlementsDataContractViewer = observer(
     const dataProduct = currentViewer.value.resource.dataProduct;
     const accessPointGroup = currentViewer.value.resource.accessPointGroup;
     const currentState = currentViewer.value.state;
+    const currentTask =
+      currentState === V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL
+        ? currentViewer.associatedTasks?.find(
+            (task) =>
+              task.rec.type ===
+              V1_ApprovalType.CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
+          )
+        : currentState === V1_ContractState.PENDING_DATA_OWNER_APPROVAL
+          ? currentViewer.associatedTasks?.find(
+              (task) => task.rec.type === V1_ApprovalType.DATA_OWNER_APPROVAL,
+            )
+          : undefined;
 
-    console.log('currentViewer:', currentViewer);
+    const copyTaskLink = (text: string): void => {
+      legendMarketplaceStore.applicationStore.clipboardService
+        .copyTextToClipboard(text)
+        .then(() =>
+          legendMarketplaceStore.applicationStore.notificationService.notifySuccess(
+            'Task Link Copied to Clipboard',
+            undefined,
+            2500,
+          ),
+        )
+        .catch(legendMarketplaceStore.applicationStore.alertUnhandledError);
+    };
 
     const steps: {
       key: string;
@@ -192,7 +218,27 @@ export const EntitlementsDataContractViewer = observer(
       { key: 'submitted', isCompleteOrActive: true, label: <>Submitted</> },
       {
         key: 'privilege-manager-approval',
-        label: <>Privilege Manager Approval</>,
+        label:
+          currentState ===
+            V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL &&
+          currentTask ? (
+            <>
+              <Link href={generateLakehouseTaskPath(currentTask.rec.taskId)}>
+                Privilege Manager Approval
+              </Link>
+              <IconButton
+                onClick={() =>
+                  copyTaskLink(
+                    generateLakehouseTaskPath(currentTask.rec.taskId),
+                  )
+                }
+              >
+                <CopyIcon />
+              </IconButton>
+            </>
+          ) : (
+            <>Privilege Manager Approval</>
+          ),
         isCompleteOrActive:
           currentState ===
             V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL ||
@@ -224,14 +270,21 @@ export const EntitlementsDataContractViewer = observer(
         key: 'data-producer-approval',
         label:
           currentState === V1_ContractState.PENDING_DATA_OWNER_APPROVAL &&
-          currentViewer.associatedTasks?.[0]?.rec.taskId ? (
-            <Link
-              href={generateLakehouseTaskPath(
-                currentViewer.associatedTasks?.[0]?.rec.taskId,
-              )}
-            >
-              Data Producer Approval
-            </Link>
+          currentTask ? (
+            <>
+              <Link href={generateLakehouseTaskPath(currentTask.rec.taskId)}>
+                Data Producer Approval
+              </Link>
+              <IconButton
+                onClick={() =>
+                  copyTaskLink(
+                    generateLakehouseTaskPath(currentTask.rec.taskId),
+                  )
+                }
+              >
+                <CopyIcon />
+              </IconButton>
+            </>
           ) : (
             <>Data Producer Approval</>
           ),
