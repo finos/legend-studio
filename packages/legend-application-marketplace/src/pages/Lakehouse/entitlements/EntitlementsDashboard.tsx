@@ -185,20 +185,18 @@ export const EntitlementsDashboard = withAuth(
     const [userDataMap, setUserDataMap] = useState(
       new Map<string, LegendUser | string>(),
     );
-    const [selectedTasksSet, setSelectedTasksSet] = useState(
-      new Set<V1_ContractUserEventRecord>(
-        tasks?.filter((task) =>
-          searchParams.get('selectedTasks')?.includes(task.taskId),
-        ) ?? [],
-      ),
+    const [selectedTaskIdsSet, setSelectedTaskIdsSet] = useState(
+      new Set<string>(searchParams.get('selectedTasks') ?? []),
     );
-    const [value, setValue] = useState(EntitlementsTabs.PENDING_TASKS);
+    const [selectedTab, setSelectedTab] = useState(
+      EntitlementsTabs.PENDING_TASKS,
+    );
 
     const handleTabChange = (
       _: React.SyntheticEvent,
       newValue: EntitlementsTabs,
     ) => {
-      setValue(newValue);
+      setSelectedTab(newValue);
     };
 
     const handleApprove = (task: V1_ContractUserEventRecord) => {
@@ -218,22 +216,22 @@ export const EntitlementsDashboard = withAuth(
     ) => {
       const selectedTask = event.data;
       if (selectedTask) {
-        const newSet = new Set<V1_ContractUserEventRecord>(selectedTasksSet);
+        const newSet = new Set<string>(selectedTaskIdsSet);
         if (event.node.isSelected()) {
-          newSet.add(selectedTask);
+          newSet.add(selectedTask.taskId);
         } else {
-          newSet.delete(selectedTask);
+          newSet.delete(selectedTask.taskId);
         }
-        setSelectedTasksSet(newSet);
+        setSelectedTaskIdsSet(newSet);
         setSearchParams((params) => {
-          params.set(
-            'selectedTasks',
-            newSet.size === 0
-              ? ''
-              : Array.from(newSet.values())
-                  .map((task) => task.taskId)
-                  .join(','),
-          );
+          if (newSet.size === 0) {
+            params.delete('selectedTasks');
+          } else {
+            params.set(
+              'selectedTasks',
+              newSet.size === 0 ? '' : Array.from(newSet.values()).join(','),
+            );
+          }
           return params;
         });
       }
@@ -247,7 +245,7 @@ export const EntitlementsDashboard = withAuth(
     ) => {
       const nodesToSelect: DataGridIRowNode<V1_ContractUserEventRecord>[] = [];
       event.api.forEachNode((node) => {
-        if (node.data && selectedTasksSet.has(node.data)) {
+        if (node.data && selectedTaskIdsSet.has(node.data?.taskId)) {
           nodesToSelect.push(node);
         }
       });
@@ -263,7 +261,7 @@ export const EntitlementsDashboard = withAuth(
         className="marketplace-lakehouse-entitlements-dashboard"
         maxWidth="xxl"
       >
-        <Tabs value={value} onChange={handleTabChange}>
+        <Tabs value={selectedTab} onChange={handleTabChange}>
           <Tab
             label={
               <Typography variant="h4" gutterBottom={true}>
@@ -289,7 +287,7 @@ export const EntitlementsDashboard = withAuth(
             value={EntitlementsTabs.ALL_CONTRACTS}
           />
         </Tabs>
-        {value === EntitlementsTabs.PENDING_TASKS && (
+        {selectedTab === EntitlementsTabs.PENDING_TASKS && (
           <Box className="marketplace-lakehouse-entitlements__pending-tasks">
             <div
               className={clsx(
@@ -304,16 +302,16 @@ export const EntitlementsDashboard = withAuth(
                   <Button
                     variant="contained"
                     color="success"
-                    disabled={!selectedTasksSet.size}
+                    disabled={!selectedTaskIdsSet.size}
                   >
-                    Approve {selectedTasksSet.size} tasks
+                    Approve {selectedTaskIdsSet.size} tasks
                   </Button>
                   <Button
                     variant="contained"
                     color="error"
-                    disabled={!selectedTasksSet.size}
+                    disabled={!selectedTaskIdsSet.size}
                   >
-                    Reject {selectedTasksSet.size} tasks
+                    Reject {selectedTaskIdsSet.size} tasks
                   </Button>
                   <DataGrid
                     rowData={tasks}
@@ -479,7 +477,7 @@ export const EntitlementsDashboard = withAuth(
             </div>
           </Box>
         )}
-        {value === EntitlementsTabs.PENDING_CONTRACTS && (
+        {selectedTab === EntitlementsTabs.PENDING_CONTRACTS && (
           <Box className="marketplace-lakehouse-entitlements__pending-contracts">
             <div
               className={clsx(
@@ -558,7 +556,7 @@ export const EntitlementsDashboard = withAuth(
             </div>
           </Box>
         )}
-        {value === EntitlementsTabs.ALL_CONTRACTS && (
+        {selectedTab === EntitlementsTabs.ALL_CONTRACTS && (
           <Box className="marketplace-lakehouse-entitlements__all-contracts">
             <div
               className={clsx(
