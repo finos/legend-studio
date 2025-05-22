@@ -17,6 +17,7 @@
 import type { LegendUser } from '@finos/legend-shared';
 import { Avatar } from '@mui/material';
 import { Box } from '@mui/system';
+import clsx from 'clsx';
 
 export const UserDisplay = (props: {
   user: LegendUser;
@@ -26,7 +27,12 @@ export const UserDisplay = (props: {
   const { user, imgSrc, onClick } = props;
 
   return (
-    <Box className="legend-user-display" onClick={onClick}>
+    <Box
+      className={clsx('legend-user-display', {
+        'legend-user-display--clickable': onClick !== undefined,
+      })}
+      onClick={onClick}
+    >
       {imgSrc ? (
         <Avatar
           className="legend-user-display__avatar legend-user-display__avatar--image"
