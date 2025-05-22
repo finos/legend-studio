@@ -322,7 +322,9 @@ const EntitlementsDashboardActionModal = (props: {
                     </span>
                     :
                   </div>
-                  <div>{errorMessage}</div>
+                  <div>
+                    <code>{errorMessage}</code>
+                  </div>
                 </Box>
               );
             })}
