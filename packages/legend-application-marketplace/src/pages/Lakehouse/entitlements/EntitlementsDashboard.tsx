@@ -186,9 +186,23 @@ const EntitlementsDashboardActionModal = (props: {
   onClose: () => void;
   action: 'approve' | 'deny' | undefined;
   allContracts: V1_DataContract[];
+  userDataMap: Map<string, LegendUser | string>;
+  navigationService: NavigationService;
+  userProfileImageUrl?: string | undefined;
+  applicationDirectoryUrl?: string | undefined;
 }) => {
-  const { open, selectedTasks, dashboardState, onClose, action, allContracts } =
-    props;
+  const {
+    open,
+    selectedTasks,
+    dashboardState,
+    onClose,
+    action,
+    allContracts,
+    userDataMap,
+    navigationService,
+    userProfileImageUrl,
+    applicationDirectoryUrl,
+  } = props;
 
   const auth = useAuth();
   const [isLoading, setIsLoading] = useState(false);
@@ -270,13 +284,31 @@ const EntitlementsDashboardActionModal = (props: {
                 resource instanceof V1_AccessPointGroupReference
                   ? resource.accessPointGroup
                   : 'unknown';
+              const userData = userDataMap.get(task.consumer);
+              const userComponent =
+                userData instanceof LegendUser ? (
+                  <UserDisplay
+                    user={userData}
+                    imgSrc={userProfileImageUrl?.replace(
+                      '{userId}',
+                      userData?.id ?? '',
+                    )}
+                    onClick={() =>
+                      navigationService.navigator.visitAddress(
+                        `${applicationDirectoryUrl}/${userData.id}`,
+                      )
+                    }
+                  />
+                ) : (
+                  <>{task.consumer}</>
+                );
               return (
                 <Box key={task.taskId}>
                   <div>
                     Encountered an error{' '}
-                    {action === 'approve' ? 'approving' : 'denying'}{' '}
-                    {task.consumer} request for Access Point Group{' '}
-                    {accessPointGroup} on Data Product {dataProduct}:
+                    {action === 'approve' ? 'approving' : 'denying'} request for{' '}
+                    {userComponent} for Access Point Group {accessPointGroup} on
+                    Data Product {dataProduct}:
                   </div>
                   <div>{errorMessage}</div>
                 </Box>
@@ -617,6 +649,18 @@ export const EntitlementsDashboard = withAuth(
               onClose={() => setSelectedAction(undefined)}
               action={selectedAction}
               allContracts={allContracts ?? []}
+              userDataMap={userDataMap}
+              navigationService={
+                lakehouseEntitlementsStore.applicationStore.navigationService
+              }
+              userProfileImageUrl={
+                marketplaceBaseStore.applicationStore.config
+                  .marketplaceUserProfileImageUrl
+              }
+              applicationDirectoryUrl={
+                marketplaceBaseStore.applicationStore.config
+                  .lakehouseEntitlementsConfig?.applicationDirectoryUrl
+              }
             />
           </>
         )}
