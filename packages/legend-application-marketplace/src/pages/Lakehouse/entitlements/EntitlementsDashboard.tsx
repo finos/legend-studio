@@ -49,6 +49,7 @@ import { LegendUser, type UserSearchService } from '@finos/legend-shared';
 import type { NavigationService } from '@finos/legend-application';
 import { getUserById } from '../../../stores/lakehouse/LakehouseUtils.js';
 import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
+import { useSearchParams } from 'react-router';
 
 const Contract_IdColumnClickableCellRenderer = (
   contractId: string | undefined,
@@ -161,27 +162,30 @@ const UserCellRenderer = (props: {
   }
 };
 
+const enum EntitlementsTabs {
+  PENDING_TASKS = 'pendingTasks',
+  PENDING_CONTRACTS = 'pendingContracts',
+  ALL_CONTRACTS = 'allContracts',
+}
+
 export const EntitlementsDashboard = withAuth(
   observer((props: { dashboardState: EntitlementsDashboardState }) => {
     const { dashboardState } = props;
     const marketplaceBaseStore = useLegendMarketplaceBaseStore();
+    const [searchParams, setSearchParams] = useSearchParams();
+
     const lakehouseEntitlementsStore = dashboardState.state;
     const tasks = dashboardState.pendingTasks;
     const pendingConctracts = dashboardState.pendingContracts;
     const allContracts = dashboardState.allContracts;
     const auth = (props as unknown as { auth: AuthContextProps }).auth;
+
     const [userDataMap, setUserDataMap] = useState(
       new Map<string, LegendUser | string>(),
     );
     const [selectedTasksSet, setSelectedTasksSet] = useState(
       new Set<V1_ContractUserEventRecord>(),
     );
-    const enum EntitlementsTabs {
-      PENDING_TASKS = 'pendingTasks',
-      PENDING_CONTRACTS = 'pendingContracts',
-      ALL_CONTRACTS = 'allContracts',
-    }
-
     const [value, setValue] = useState(EntitlementsTabs.PENDING_TASKS);
 
     const handleTabChange = (
@@ -201,6 +205,26 @@ export const EntitlementsDashboard = withAuth(
       flowResult(dashboardState.deny(task, auth.user?.access_token)).catch(
         lakehouseEntitlementsStore.applicationStore.alertUnhandledError,
       );
+    };
+
+    const handleRowSelected = (
+      event: DataGridRowSelectedEvent<V1_ContractUserEventRecord>,
+    ) => {
+      const selectedTask = event.data;
+      if (selectedTask) {
+        const newSet = new Set<V1_ContractUserEventRecord>(selectedTasksSet);
+        if (event.node.isSelected()) {
+          newSet.add(selectedTask);
+        } else {
+          newSet.delete(selectedTask);
+        }
+        setSelectedTasksSet(newSet);
+        setSearchParams(
+          `selectedTasks=${Array.from(newSet.values())
+            .map((task) => task.taskId)
+            .join(',')}`,
+        );
+      }
     };
 
     const rowSelection = useMemo<
@@ -250,8 +274,20 @@ export const EntitlementsDashboard = withAuth(
             >
               {tasks && (
                 <>
-                  <Button>Approve {selectedTasksSet.size} tasks</Button>
-                  <Button>Reject {selectedTasksSet.size} tasks</Button>
+                  <Button
+                    variant="contained"
+                    color="success"
+                    disabled={!selectedTasksSet.size}
+                  >
+                    Approve {selectedTasksSet.size} tasks
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    disabled={!selectedTasksSet.size}
+                  >
+                    Reject {selectedTasksSet.size} tasks
+                  </Button>
                   <DataGrid
                     rowData={tasks}
                     onRowDataUpdated={(params) => {
@@ -261,30 +297,7 @@ export const EntitlementsDashboard = withAuth(
                     suppressContextMenu={false}
                     rowHeight={45}
                     rowSelection={rowSelection}
-                    onRowSelected={(
-                      event: DataGridRowSelectedEvent<V1_ContractUserEventRecord>,
-                    ) => {
-                      const selectedTask = event.data;
-                      if (selectedTask) {
-                        if (event.node.isSelected()) {
-                          setSelectedTasksSet((prev) => {
-                            const newSet = new Set<V1_ContractUserEventRecord>(
-                              prev,
-                            );
-                            newSet.add(selectedTask);
-                            return newSet;
-                          });
-                        } else {
-                          setSelectedTasksSet((prev) => {
-                            const newSet = new Set<V1_ContractUserEventRecord>(
-                              prev,
-                            );
-                            newSet.delete(selectedTask);
-                            return newSet;
-                          });
-                        }
-                      }
-                    }}
+                    onRowSelected={handleRowSelected}
                     columnDefs={[
                       {
                         minWidth: 50,
