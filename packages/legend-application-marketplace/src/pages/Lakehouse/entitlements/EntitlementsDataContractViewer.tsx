@@ -62,7 +62,6 @@ import {
   UserDisplay,
 } from '@finos/legend-art';
 import { generateLakehouseTaskPath } from '../../../__lib__/LegendMarketplaceNavigation.js';
-import { generatePath } from '@finos/legend-application/browser';
 
 const AssigneesList = (props: {
   users: (LegendUser | string)[];
@@ -75,11 +74,7 @@ const AssigneesList = (props: {
       {users[0] instanceof LegendUser ? (
         <UserDisplay
           user={users[0]}
-          imgSrc={
-            userProfileImageUrl
-              ? generatePath(userProfileImageUrl, { userId: users[0].id })
-              : undefined
-          }
+          imgSrc={userProfileImageUrl?.replace('{userId}', users[0].id)}
         />
       ) : (
         <div>{users[0]}</div>
@@ -100,11 +95,7 @@ const AssigneesList = (props: {
             <UserDisplay
               key={user.id}
               user={user}
-              imgSrc={
-                userProfileImageUrl
-                  ? generatePath(userProfileImageUrl, { userId: user.id })
-                  : undefined
-              }
+              imgSrc={userProfileImageUrl?.replace('{userId}', user.id)}
             />
           ) : (
             <div key={user}>{user}</div>
