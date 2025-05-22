@@ -25,6 +25,7 @@ import {
   type V1_ConsumerEntitlementResource,
   V1_AccessPoint_Entitlements,
   V1_AccessPointGroupReference,
+  V1_ContractUserEventPayload,
   V1_ContractUserEventRecord,
   V1_DataBundle,
   V1_DataContract,
@@ -167,7 +168,7 @@ export const V1_DataContractsRecordModelSchema = createModelSchema(
 );
 
 export const V1_contractUserEventPayloadModelSchema = createModelSchema(
-  V1_ContractUserEventRecord,
+  V1_ContractUserEventPayload,
   {
     type: primitive(),
     managerIdentity: primitive(),
