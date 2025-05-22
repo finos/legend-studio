@@ -175,3 +175,19 @@
     color: var(--color-light-grey-300);
   }
 }
+
+.marketplace-lakehouse-entitlements__data-contract-approval {
+  &__success,
+  &__error {
+    padding: 1rem;
+    margin: 1rem;
+  }
+
+  &__success {
+    background: var(--tw-color-green-200);
+  }
+
+  &__error {
+    background: var(--tw-color-red-300);
+  }
+}
