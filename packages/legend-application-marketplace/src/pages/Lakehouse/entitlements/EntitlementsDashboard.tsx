@@ -28,6 +28,7 @@ import { flowResult } from 'mobx';
 import {
   DataGrid,
   type DataGridCellRendererParams,
+  type DataGridCustomHeaderProps,
   type DataGridFirstDataRenderedEvent,
   type DataGridIRowNode,
   type DataGridRowSelectedEvent,
@@ -434,7 +435,10 @@ export const EntitlementsDashboard = withAuth(
 
     const rowSelection = useMemo<
       DataGridRowSelectionOptions | 'single' | 'multiple'
-    >(() => ({ mode: 'multiRow' }), []);
+    >(
+      () => ({ mode: 'multiRow', checkboxes: false, headerCheckbox: false }),
+      [],
+    );
 
     const CustomSelectionRenderer = (
       params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
@@ -448,6 +452,28 @@ export const EntitlementsDashboard = withAuth(
           <input
             type="checkbox"
             checked={params.node.isSelected()}
+            onChange={handleChange}
+          />
+        </div>
+      );
+    };
+
+    const CustomSelectionHeaderRenderer = (
+      params: DataGridCustomHeaderProps<V1_ContractUserEventRecord>,
+    ) => {
+      const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+        if (e.target.checked) {
+          params.api.selectAll();
+        } else {
+          params.api.deselectAll();
+        }
+      };
+
+      return (
+        <div>
+          <input
+            type="checkbox"
+            checked={params.api.getSelectedRows().length === tasks?.length}
             onChange={handleChange}
           />
         </div>
@@ -519,11 +545,17 @@ export const EntitlementsDashboard = withAuth(
                     rowSelection={rowSelection}
                     onRowSelected={handleRowSelected}
                     onFirstDataRendered={handleFirstDataRendered}
-                    selectionColumnDef={{
-                      cellRenderer: CustomSelectionRenderer,
-                      width: 80,
-                    }}
                     columnDefs={[
+                      {
+                        headerName: '',
+                        field: 'selection',
+                        width: 50,
+                        cellRenderer: CustomSelectionRenderer,
+                        headerComponent: CustomSelectionHeaderRenderer,
+                        // headerCheckboxSelection: true,
+                        // checkboxSelection: false,
+                        pinned: 'left',
+                      },
                       {
                         minWidth: 50,
                         sortable: true,
