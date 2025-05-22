@@ -95,6 +95,7 @@
     @include flexVCenter;
 
     flex-direction: column;
+    min-height: 400px;
   }
 
   &__consumer-type-btn-group {
