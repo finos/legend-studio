@@ -90,7 +90,7 @@ export const LakehouseEntitlements = withLakehouseEntitlementsStore(
         {entitlementsStore.dashboardViewer instanceof
           EntitlementsDashboardState && (
           <EntitlementsDashboard
-            currentViewer={entitlementsStore.dashboardViewer}
+            dashboardState={entitlementsStore.dashboardViewer}
           />
         )}
         <Drawer

@@ -17,12 +17,12 @@
 import { withAuth, type AuthContextProps } from 'react-oidc-context';
 import type { EntitlementsDashboardState } from '../../../stores/lakehouse/entitlements/EntitlementsDashboardState.js';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   type V1_ContractUserEventRecord,
   type V1_DataContract,
   type V1_UserPendingContractsRecord,
-  V1_UserApprovalStatus,
+  V1_AccessPointGroupReference,
 } from '@finos/legend-graph';
 import { flowResult } from 'mobx';
 import {
@@ -35,95 +35,17 @@ import {
 } from '../../../__lib__/LegendMarketplaceNavigation.js';
 import {
   Box,
-  Button,
+  CircularProgress,
   Container,
-  Stack,
   Tab,
   Tabs,
   Typography,
 } from '@mui/material';
-import { clsx } from '@finos/legend-art';
-
-const TDSColumnApprovalCellRenderer = (
-  params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
-  handleApprove: (task: V1_ContractUserEventRecord) => void,
-  handleDeny: (task: V1_ContractUserEventRecord) => void,
-): React.ReactNode => {
-  const data = params.data;
-  if (!data) {
-    return null;
-  }
-  const onApprove = () => {
-    handleApprove(data);
-  };
-  const onDeny = () => {
-    handleDeny(data);
-  };
-  return (
-    <Stack direction={'row'} spacing={1} justifyContent={'center'}>
-      <Button
-        variant="contained"
-        size="small"
-        onClick={onApprove}
-        disabled={data.status !== V1_UserApprovalStatus.PENDING}
-        color="success"
-      >
-        Approve
-      </Button>
-      <Button
-        disabled={data.status !== V1_UserApprovalStatus.PENDING}
-        color="error"
-        variant="contained"
-        size="small"
-        onClick={onDeny}
-      >
-        Deny
-      </Button>
-    </Stack>
-  );
-};
-
-const Task_IdColumnClickableCellRenderer = (
-  params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
-  onHandleClick: (id: string) => void,
-): React.ReactNode => {
-  const data = params.data;
-  if (!data) {
-    return null;
-  }
-  const handleClick = () => {
-    onHandleClick(data.taskId);
-  };
-  return (
-    <span
-      className="marketplace-lakehouse-entitlements-tasks__grid-taskid-cell"
-      onClick={handleClick}
-    >
-      {data.taskId}
-    </span>
-  );
-};
-
-const Task_ContractClickableCellRenderer = (
-  params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
-  onHandleClick: (id: string) => void,
-): React.ReactNode => {
-  const data = params.data;
-  if (!data) {
-    return null;
-  }
-  const handleClick = () => {
-    onHandleClick(data.dataContractId);
-  };
-  return (
-    <span
-      className="marketplace-lakehouse-entitlements-tasks__grid-taskid-cell"
-      onClick={handleClick}
-    >
-      {data.dataContractId}
-    </span>
-  );
-};
+import { clsx, UserDisplay } from '@finos/legend-art';
+import { LegendUser, type UserSearchService } from '@finos/legend-shared';
+import type { NavigationService } from '@finos/legend-application';
+import { getUserById } from '../../../stores/lakehouse/LakehouseUtils.js';
+import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
 
 const Contract_IdColumnClickableCellRenderer = (
   contractId: string | undefined,
@@ -166,18 +88,87 @@ const PendingContract_TaskIdColumnClickableCellRenderer = (
   );
 };
 
-type TaksProps = {
-  currentViewer: EntitlementsDashboardState;
+const UserCellRenderer = (props: {
+  userId: string | undefined;
+  userDataMap: Map<string, LegendUser | string>;
+  setUserDataMap: React.Dispatch<
+    React.SetStateAction<Map<string, string | LegendUser>>
+  >;
+  navigationService: NavigationService;
+  userSearchService?: UserSearchService | undefined;
+  userProfileImageUrl?: string | undefined;
+  applicationDirectoryUrl?: string | undefined;
+}): React.ReactNode => {
+  const {
+    userId,
+    userDataMap,
+    setUserDataMap,
+    navigationService,
+    userSearchService,
+    userProfileImageUrl,
+    applicationDirectoryUrl,
+  } = props;
+  const [isLoading, setIsLoading] = useState(false);
+
+  const userData = userId ? userDataMap.get(userId) : undefined;
+
+  useEffect(() => {
+    const fetchUserData = async (_userId: string) => {
+      setIsLoading(true);
+      try {
+        const fetchedUserData: LegendUser | string = userSearchService
+          ? ((await getUserById(_userId, userSearchService)) ?? _userId)
+          : _userId;
+        setUserDataMap((prev: Map<string, LegendUser | string>) => {
+          const newMap = new Map<string, LegendUser | string>(prev);
+          newMap.set(_userId, fetchedUserData);
+          return newMap;
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    if (userId && userData === undefined) {
+      // eslint-disable-next-line no-void
+      void fetchUserData(userId);
+    }
+  }, [setUserDataMap, userData, userId, userSearchService]);
+
+  if (isLoading) {
+    return <CircularProgress size={20} />;
+  } else if (userData instanceof LegendUser) {
+    const imgSrc = userProfileImageUrl?.replace('{userId}', userData.id);
+    const openUserDirectoryLink = (): void =>
+      navigationService.navigator.visitAddress(
+        `${applicationDirectoryUrl}/${userId}`,
+      );
+
+    return (
+      <UserDisplay
+        user={userData}
+        imgSrc={imgSrc}
+        onClick={() => openUserDirectoryLink()}
+      />
+    );
+  } else if (userData) {
+    return <>{userData}</>;
+  } else {
+    return <>{userId}</>;
+  }
 };
 
 export const EntitlementsDashboard = withAuth(
-  observer((props: TaksProps) => {
-    const { currentViewer } = props;
-    const state = currentViewer.state;
-    const tasks = currentViewer.pendingTasks;
-    const pendingConctracts = currentViewer.pendingContracts;
-    const allContracts = currentViewer.allContracts;
+  observer((props: { dashboardState: EntitlementsDashboardState }) => {
+    const { dashboardState } = props;
+    const marketplaceBaseStore = useLegendMarketplaceBaseStore();
+    const lakehouseEntitlementsStore = dashboardState.state;
+    const tasks = dashboardState.pendingTasks;
+    const pendingConctracts = dashboardState.pendingContracts;
+    const allContracts = dashboardState.allContracts;
     const auth = (props as unknown as { auth: AuthContextProps }).auth;
+    const [userDataMap, setUserDataMap] = useState(
+      new Map<string, LegendUser | string>(),
+    );
     const enum EntitlementsTabs {
       PENDING_TASKS = 'pendingTasks',
       PENDING_CONTRACTS = 'pendingContracts',
@@ -193,13 +184,13 @@ export const EntitlementsDashboard = withAuth(
       setValue(newValue);
     };
     const handleApprove = (task: V1_ContractUserEventRecord) => {
-      flowResult(currentViewer.approve(task, auth.user?.access_token)).catch(
-        state.applicationStore.alertUnhandledError,
+      flowResult(dashboardState.approve(task, auth.user?.access_token)).catch(
+        lakehouseEntitlementsStore.applicationStore.alertUnhandledError,
       );
     };
     const handleDeny = (task: V1_ContractUserEventRecord) => {
-      flowResult(currentViewer.deny(task, auth.user?.access_token)).catch(
-        state.applicationStore.alertUnhandledError,
+      flowResult(dashboardState.deny(task, auth.user?.access_token)).catch(
+        lakehouseEntitlementsStore.applicationStore.alertUnhandledError,
       );
     };
     return (
@@ -256,68 +247,143 @@ export const EntitlementsDashboard = withAuth(
                       minWidth: 50,
                       sortable: true,
                       resizable: true,
-                      headerName: 'Task Id',
+                      headerName: 'Target User',
+                      flex: 1,
                       cellRenderer: (
                         params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
                       ) => {
-                        return Task_IdColumnClickableCellRenderer(
-                          params,
-                          (taskId) =>
-                            state.applicationStore.navigationService.navigator.updateCurrentLocation(
-                              generateLakehouseTaskPath(taskId),
-                            ),
+                        return (
+                          <UserCellRenderer
+                            userId={params.data?.consumer}
+                            userDataMap={userDataMap}
+                            setUserDataMap={setUserDataMap}
+                            navigationService={
+                              lakehouseEntitlementsStore.applicationStore
+                                .navigationService
+                            }
+                            userSearchService={
+                              marketplaceBaseStore.userSearchService
+                            }
+                            userProfileImageUrl={
+                              marketplaceBaseStore.applicationStore.config
+                                .marketplaceUserProfileImageUrl
+                            }
+                            applicationDirectoryUrl={
+                              marketplaceBaseStore.applicationStore.config
+                                .lakehouseEntitlementsConfig
+                                ?.applicationDirectoryUrl
+                            }
+                          />
                         );
                       },
-                      flex: 1,
                     },
                     {
                       minWidth: 50,
                       sortable: true,
                       resizable: true,
-                      headerName: 'Contract Id',
+                      headerName: 'Requester',
+                      flex: 1,
                       cellRenderer: (
                         params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
                       ) => {
-                        return Task_ContractClickableCellRenderer(
-                          params,
-                          (taskId) =>
-                            state.applicationStore.navigationService.navigator.updateCurrentLocation(
-                              generateLakehouseContractPath(taskId),
-                            ),
+                        const contractId = params.data?.dataContractId;
+                        const requester = allContracts?.find(
+                          (contract) => contract.guid === contractId,
+                        )?.createdBy;
+                        return requester ? (
+                          <UserCellRenderer
+                            userId={requester}
+                            userDataMap={userDataMap}
+                            setUserDataMap={setUserDataMap}
+                            navigationService={
+                              lakehouseEntitlementsStore.applicationStore
+                                .navigationService
+                            }
+                            userSearchService={
+                              marketplaceBaseStore.userSearchService
+                            }
+                            userProfileImageUrl={
+                              marketplaceBaseStore.applicationStore.config
+                                .marketplaceUserProfileImageUrl
+                            }
+                            applicationDirectoryUrl={
+                              marketplaceBaseStore.applicationStore.config
+                                .lakehouseEntitlementsConfig
+                                ?.applicationDirectoryUrl
+                            }
+                          />
+                        ) : (
+                          <>Unknown</>
                         );
                       },
-                      flex: 1,
                     },
                     {
                       minWidth: 50,
                       sortable: true,
                       resizable: true,
-                      headerName: 'Consumer',
-                      valueGetter: (p) => p.data?.consumer,
-                      flex: 1,
-                    },
-                    {
-                      minWidth: 50,
-                      sortable: true,
-                      resizable: true,
-                      headerName: 'Status',
-                      valueGetter: (p) => p.data?.status,
-                      flex: 1,
-                    },
-                    {
-                      minWidth: 50,
-                      sortable: true,
-                      resizable: true,
-                      headerName: 'Approve/Deny',
+                      headerName: 'Target Data Product',
                       flex: 1,
                       cellRenderer: (
                         params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
                       ) => {
-                        return TDSColumnApprovalCellRenderer(
-                          params,
-                          handleApprove,
-                          handleDeny,
-                        );
+                        const contractId = params.data?.dataContractId;
+                        const resource = allContracts?.find(
+                          (contract) => contract.guid === contractId,
+                        )?.resource;
+                        const dataProduct =
+                          resource instanceof V1_AccessPointGroupReference
+                            ? resource.dataProduct
+                            : undefined;
+                        return <>{dataProduct?.name ?? 'Unknown'}</>;
+                      },
+                    },
+                    {
+                      minWidth: 50,
+                      sortable: true,
+                      resizable: true,
+                      headerName: 'Target Access Point Group',
+                      flex: 1,
+                      cellRenderer: (
+                        params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
+                      ) => {
+                        const contractId = params.data?.dataContractId;
+                        const resource = allContracts?.find(
+                          (contract) => contract.guid === contractId,
+                        )?.resource;
+                        const accessPointGroup =
+                          resource instanceof V1_AccessPointGroupReference
+                            ? resource.accessPointGroup
+                            : undefined;
+                        return <>{accessPointGroup ?? 'Unknown'}</>;
+                      },
+                    },
+                    {
+                      minWidth: 50,
+                      sortable: true,
+                      resizable: true,
+                      headerName: 'Business Justification',
+                      flex: 2,
+                      cellRenderer: (
+                        params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
+                      ) => {
+                        const contractId = params.data?.dataContractId;
+                        const businessJustification = allContracts?.find(
+                          (contract) => contract.guid === contractId,
+                        )?.description;
+                        return <>{businessJustification ?? 'Unknown'}</>;
+                      },
+                    },
+                    {
+                      minWidth: 50,
+                      sortable: true,
+                      resizable: true,
+                      hide: true,
+                      headerName: 'Contract ID',
+                      flex: 2,
+                      cellRenderer: (
+                        params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
+                      ) => {
+                        return <>{params.data?.dataContractId ?? 'Unknown'}</>;
                       },
                     },
                   ]}
@@ -356,7 +422,7 @@ export const EntitlementsDashboard = withAuth(
                         return Contract_IdColumnClickableCellRenderer(
                           params.data?.contractId,
                           (taskId) =>
-                            state.applicationStore.navigationService.navigator.updateCurrentLocation(
+                            lakehouseEntitlementsStore.applicationStore.navigationService.navigator.updateCurrentLocation(
                               generateLakehouseContractPath(taskId),
                             ),
                         );
@@ -383,7 +449,7 @@ export const EntitlementsDashboard = withAuth(
                         return PendingContract_TaskIdColumnClickableCellRenderer(
                           params,
                           (taskId) =>
-                            state.applicationStore.navigationService.navigator.updateCurrentLocation(
+                            lakehouseEntitlementsStore.applicationStore.navigationService.navigator.updateCurrentLocation(
                               generateLakehouseTaskPath(taskId),
                             ),
                         );
@@ -435,7 +501,7 @@ export const EntitlementsDashboard = withAuth(
                         return Contract_IdColumnClickableCellRenderer(
                           params.data?.guid,
                           (taskId) =>
-                            state.applicationStore.navigationService.navigator.updateCurrentLocation(
+                            lakehouseEntitlementsStore.applicationStore.navigationService.navigator.updateCurrentLocation(
                               generateLakehouseContractPath(taskId),
                             ),
                         );
