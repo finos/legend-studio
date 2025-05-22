@@ -17,7 +17,7 @@
 import { useAuth, withAuth } from 'react-oidc-context';
 import type { EntitlementsDashboardState } from '../../../stores/lakehouse/entitlements/EntitlementsDashboardState.js';
 import { observer } from 'mobx-react-lite';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, type ChangeEvent } from 'react';
 import {
   type V1_ContractUserEventRecord,
   type V1_DataContract,
@@ -436,6 +436,24 @@ export const EntitlementsDashboard = withAuth(
       DataGridRowSelectionOptions | 'single' | 'multiple'
     >(() => ({ mode: 'multiRow' }), []);
 
+    const CustomSelectionRenderer = (
+      params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
+    ) => {
+      const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+        params.node.setSelected(e.target.checked);
+      };
+
+      return (
+        <div>
+          <input
+            type="checkbox"
+            checked={params.node.isSelected()}
+            onChange={handleChange}
+          />
+        </div>
+      );
+    };
+
     return (
       <Container
         className="marketplace-lakehouse-entitlements-dashboard"
@@ -488,14 +506,7 @@ export const EntitlementsDashboard = withAuth(
                   Deny {selectedTaskIdsSet.size} tasks
                 </Button>
               </Box>
-              <div
-                className={clsx(
-                  'marketplace-lakehouse-entitlements__grid data-access-overview__grid',
-                  {
-                    'ag-theme-balham': true,
-                  },
-                )}
-              >
+              <div className="marketplace-lakehouse-entitlements__grid data-access-overview__grid ag-theme-balham">
                 {tasks && (
                   <DataGrid
                     rowData={tasks}
@@ -508,6 +519,10 @@ export const EntitlementsDashboard = withAuth(
                     rowSelection={rowSelection}
                     onRowSelected={handleRowSelected}
                     onFirstDataRendered={handleFirstDataRendered}
+                    selectionColumnDef={{
+                      cellRenderer: CustomSelectionRenderer,
+                      width: 80,
+                    }}
                     columnDefs={[
                       {
                         minWidth: 50,
