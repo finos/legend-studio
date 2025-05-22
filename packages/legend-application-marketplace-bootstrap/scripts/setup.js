@@ -45,6 +45,7 @@ export const setup = (outputDir) => {
           url: 'http://localhost:6400/api',
           subscriptionUrl: 'http://localhost:6400/subscriptions/api',
           userSearchUrl: 'http://localhost:6400/user-search/api',
+          userProfileImageUrl: 'http://localhost:6400/user-profile-image/api',
           oidcConfig: {
             redirectPath: '/callback',
             silentRedirectPath: '/callback?silent=true',

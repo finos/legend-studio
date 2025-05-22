@@ -62,16 +62,25 @@ import {
   UserDisplay,
 } from '@finos/legend-art';
 import { generateLakehouseTaskPath } from '../../../__lib__/LegendMarketplaceNavigation.js';
+import { generatePath } from '@finos/legend-application/browser';
 
 const AssigneesList = (props: {
   users: (LegendUser | string)[];
+  userProfileImageUrl?: string | undefined;
 }): React.ReactNode => {
-  const { users } = props;
+  const { users, userProfileImageUrl } = props;
   return users.length === 1 ? (
     <span>
       Assignee:{' '}
       {users[0] instanceof LegendUser ? (
-        <UserDisplay user={users[0]} />
+        <UserDisplay
+          user={users[0]}
+          imgSrc={
+            userProfileImageUrl
+              ? generatePath(userProfileImageUrl, { userId: users[0].id })
+              : undefined
+          }
+        />
       ) : (
         <div>{users[0]}</div>
       )}
@@ -88,7 +97,15 @@ const AssigneesList = (props: {
       <AccordionDetails className="marketplace-lakehouse-entitlements__data-contract-viewer__user-list">
         {users.map((user) =>
           user instanceof LegendUser ? (
-            <UserDisplay key={user.id} user={user} />
+            <UserDisplay
+              key={user.id}
+              user={user}
+              imgSrc={
+                userProfileImageUrl
+                  ? generatePath(userProfileImageUrl, { userId: user.id })
+                  : undefined
+              }
+            />
           ) : (
             <div key={user}>{user}</div>
           ),
@@ -269,6 +286,10 @@ export const EntitlementsDataContractViewer = observer(
                   .map((task) => task.assignees)
                   .flat()
                   .map((asignee) => userData.get(asignee) ?? asignee)}
+                userProfileImageUrl={
+                  legendMarketplaceStore.applicationStore.config
+                    .marketplaceUserProfileImageUrl
+                }
               />
             ) : (
               <span>No tasks associated with contract</span>
@@ -324,6 +345,10 @@ export const EntitlementsDataContractViewer = observer(
                   .map((task) => task.assignees)
                   .flat()
                   .map((asignee) => userData.get(asignee) ?? asignee)}
+                userProfileImageUrl={
+                  legendMarketplaceStore.applicationStore.config
+                    .marketplaceUserProfileImageUrl
+                }
               />
             ) : (
               <span>No tasks associated with contract</span>
