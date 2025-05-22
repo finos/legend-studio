@@ -23,14 +23,19 @@ export const UserDisplay = (props: {
   user: LegendUser;
   imgSrc?: string | undefined;
   onClick?: () => void;
+  className?: string | undefined;
 }) => {
-  const { user, imgSrc, onClick } = props;
+  const { user, imgSrc, onClick, className } = props;
 
   return (
     <Box
-      className={clsx('legend-user-display', {
-        'legend-user-display--clickable': onClick !== undefined,
-      })}
+      className={clsx(
+        'legend-user-display',
+        {
+          'legend-user-display--clickable': onClick !== undefined,
+        },
+        className,
+      )}
       onClick={onClick}
     >
       {imgSrc ? (

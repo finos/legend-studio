@@ -24,21 +24,29 @@
   padding: 1rem 2rem 2rem;
 }
 
-.marketplace-lakehouse-entitlements-tasks {
-  height: 100%;
-  width: 100%;
-  position: relative;
-  background: var(--color-hclight-white);
-  color: var(--color-hclight-grey-90);
-  font-family: Roboto, sans-serif;
+.marketplace-lakehouse-entitlements {
+  &__pending-tasks,
+  &__pending-contracts,
+  &__all-contracts {
+    height: 100%;
+    width: 100%;
+    position: relative;
+    background: var(--color-hclight-white);
+    color: var(--color-hclight-grey-90);
+    font-family: Roboto, sans-serif;
+  }
 
   &__grid {
     height: 100%;
 
-    &-taskid-cell {
+    &__taskid-cell {
       color: blue;
       text-decoration: underline;
       cursor: pointer;
+    }
+
+    &__user-display {
+      height: 100%;
     }
   }
 }
