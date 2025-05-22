@@ -192,6 +192,20 @@ export const EntitlementsDashboard = withAuth(
       EntitlementsTabs.PENDING_TASKS,
     );
 
+    useEffect(() => {
+      setSearchParams((params) => {
+        if (selectedTaskIdsSet.size === 0) {
+          params.delete('selectedTasks');
+        } else {
+          params.set(
+            'selectedTasks',
+            Array.from(selectedTaskIdsSet.values()).join(','),
+          );
+        }
+        return params;
+      });
+    }, [selectedTaskIdsSet, setSearchParams]);
+
     const handleTabChange = (
       _: React.SyntheticEvent,
       newValue: EntitlementsTabs,
@@ -216,23 +230,14 @@ export const EntitlementsDashboard = withAuth(
     ) => {
       const selectedTask = event.data;
       if (selectedTask) {
-        const newSet = new Set<string>(selectedTaskIdsSet);
-        if (event.node.isSelected()) {
-          newSet.add(selectedTask.taskId);
-        } else {
-          newSet.delete(selectedTask.taskId);
-        }
-        setSelectedTaskIdsSet(newSet);
-        setSearchParams((params) => {
-          if (newSet.size === 0) {
-            params.delete('selectedTasks');
+        setSelectedTaskIdsSet((prev) => {
+          const newSet = new Set<string>(prev);
+          if (event.node.isSelected()) {
+            newSet.add(selectedTask.taskId);
           } else {
-            params.set(
-              'selectedTasks',
-              newSet.size === 0 ? '' : Array.from(newSet.values()).join(','),
-            );
+            newSet.delete(selectedTask.taskId);
           }
-          return params;
+          return newSet;
         });
       }
     };
