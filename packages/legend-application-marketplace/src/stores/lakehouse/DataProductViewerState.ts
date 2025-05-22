@@ -210,12 +210,13 @@ export class DataProductViewerState {
           token,
         )) as unknown as PlainObject<V1_DataContractsRecord>,
       );
-      const associatedContracts = contracts[0];
+      const associatedContract = contracts[0];
       const findGroup = this.accessState.accessGroupStates.find(
         (e) => e.group === group,
       );
-      findGroup?.setAssociatedContract(associatedContracts);
+      findGroup?.setAssociatedContract(associatedContract);
       this.setDataContractAccessPointGroup(undefined);
+      this.setDataContract(associatedContract);
       this.applicationStore.notificationService.notifySuccess(
         `Contract created, please go to contract view for pending tasks`,
       );
