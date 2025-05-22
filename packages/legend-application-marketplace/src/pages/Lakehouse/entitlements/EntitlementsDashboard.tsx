@@ -37,6 +37,7 @@ import {
 } from '../../../__lib__/LegendMarketplaceNavigation.js';
 import {
   Box,
+  Button,
   CircularProgress,
   Container,
   Tab,
@@ -172,6 +173,9 @@ export const EntitlementsDashboard = withAuth(
     const [userDataMap, setUserDataMap] = useState(
       new Map<string, LegendUser | string>(),
     );
+    const [selectedTasksSet, setSelectedTasksSet] = useState(
+      new Set<V1_ContractUserEventRecord>(),
+    );
     const enum EntitlementsTabs {
       PENDING_TASKS = 'pendingTasks',
       PENDING_CONTRACTS = 'pendingContracts',
@@ -245,166 +249,191 @@ export const EntitlementsDashboard = withAuth(
               )}
             >
               {tasks && (
-                <DataGrid
-                  rowData={tasks}
-                  onRowDataUpdated={(params) => {
-                    params.api.refreshCells({ force: true });
-                  }}
-                  suppressFieldDotNotation={true}
-                  suppressContextMenu={false}
-                  rowHeight={45}
-                  rowSelection={rowSelection}
-                  onRowSelected={(
-                    event: DataGridRowSelectedEvent<V1_ContractUserEventRecord>,
-                  ) => {
-                    console.log('onRowSelected event:', event);
-                  }}
-                  columnDefs={[
-                    {
-                      minWidth: 50,
-                      sortable: true,
-                      resizable: true,
-                      headerName: 'Target User',
-                      flex: 1,
-                      cellRenderer: (
-                        params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
-                      ) => {
-                        return (
-                          <UserCellRenderer
-                            userId={params.data?.consumer}
-                            userDataMap={userDataMap}
-                            setUserDataMap={setUserDataMap}
-                            navigationService={
-                              lakehouseEntitlementsStore.applicationStore
-                                .navigationService
-                            }
-                            userSearchService={
-                              marketplaceBaseStore.userSearchService
-                            }
-                            userProfileImageUrl={
-                              marketplaceBaseStore.applicationStore.config
-                                .marketplaceUserProfileImageUrl
-                            }
-                            applicationDirectoryUrl={
-                              marketplaceBaseStore.applicationStore.config
-                                .lakehouseEntitlementsConfig
-                                ?.applicationDirectoryUrl
-                            }
-                          />
-                        );
+                <>
+                  <Button>Approve {selectedTasksSet.size} tasks</Button>
+                  <Button>Reject {selectedTasksSet.size} tasks</Button>
+                  <DataGrid
+                    rowData={tasks}
+                    onRowDataUpdated={(params) => {
+                      params.api.refreshCells({ force: true });
+                    }}
+                    suppressFieldDotNotation={true}
+                    suppressContextMenu={false}
+                    rowHeight={45}
+                    rowSelection={rowSelection}
+                    onRowSelected={(
+                      event: DataGridRowSelectedEvent<V1_ContractUserEventRecord>,
+                    ) => {
+                      const selectedTask = event.data;
+                      if (selectedTask) {
+                        if (event.node.isSelected()) {
+                          setSelectedTasksSet((prev) => {
+                            const newSet = new Set<V1_ContractUserEventRecord>(
+                              prev,
+                            );
+                            newSet.add(selectedTask);
+                            return newSet;
+                          });
+                        } else {
+                          setSelectedTasksSet((prev) => {
+                            const newSet = new Set<V1_ContractUserEventRecord>(
+                              prev,
+                            );
+                            newSet.delete(selectedTask);
+                            return newSet;
+                          });
+                        }
+                      }
+                    }}
+                    columnDefs={[
+                      {
+                        minWidth: 50,
+                        sortable: true,
+                        resizable: true,
+                        headerName: 'Target User',
+                        flex: 1,
+                        cellRenderer: (
+                          params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
+                        ) => {
+                          return (
+                            <UserCellRenderer
+                              userId={params.data?.consumer}
+                              userDataMap={userDataMap}
+                              setUserDataMap={setUserDataMap}
+                              navigationService={
+                                lakehouseEntitlementsStore.applicationStore
+                                  .navigationService
+                              }
+                              userSearchService={
+                                marketplaceBaseStore.userSearchService
+                              }
+                              userProfileImageUrl={
+                                marketplaceBaseStore.applicationStore.config
+                                  .marketplaceUserProfileImageUrl
+                              }
+                              applicationDirectoryUrl={
+                                marketplaceBaseStore.applicationStore.config
+                                  .lakehouseEntitlementsConfig
+                                  ?.applicationDirectoryUrl
+                              }
+                            />
+                          );
+                        },
                       },
-                    },
-                    {
-                      minWidth: 50,
-                      sortable: true,
-                      resizable: true,
-                      headerName: 'Requester',
-                      flex: 1,
-                      cellRenderer: (
-                        params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
-                      ) => {
-                        const contractId = params.data?.dataContractId;
-                        const requester = allContracts?.find(
-                          (contract) => contract.guid === contractId,
-                        )?.createdBy;
-                        return requester ? (
-                          <UserCellRenderer
-                            userId={requester}
-                            userDataMap={userDataMap}
-                            setUserDataMap={setUserDataMap}
-                            navigationService={
-                              lakehouseEntitlementsStore.applicationStore
-                                .navigationService
-                            }
-                            userSearchService={
-                              marketplaceBaseStore.userSearchService
-                            }
-                            userProfileImageUrl={
-                              marketplaceBaseStore.applicationStore.config
-                                .marketplaceUserProfileImageUrl
-                            }
-                            applicationDirectoryUrl={
-                              marketplaceBaseStore.applicationStore.config
-                                .lakehouseEntitlementsConfig
-                                ?.applicationDirectoryUrl
-                            }
-                          />
-                        ) : (
-                          <>Unknown</>
-                        );
+                      {
+                        minWidth: 50,
+                        sortable: true,
+                        resizable: true,
+                        headerName: 'Requester',
+                        flex: 1,
+                        cellRenderer: (
+                          params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
+                        ) => {
+                          const contractId = params.data?.dataContractId;
+                          const requester = allContracts?.find(
+                            (contract) => contract.guid === contractId,
+                          )?.createdBy;
+                          return requester ? (
+                            <UserCellRenderer
+                              userId={requester}
+                              userDataMap={userDataMap}
+                              setUserDataMap={setUserDataMap}
+                              navigationService={
+                                lakehouseEntitlementsStore.applicationStore
+                                  .navigationService
+                              }
+                              userSearchService={
+                                marketplaceBaseStore.userSearchService
+                              }
+                              userProfileImageUrl={
+                                marketplaceBaseStore.applicationStore.config
+                                  .marketplaceUserProfileImageUrl
+                              }
+                              applicationDirectoryUrl={
+                                marketplaceBaseStore.applicationStore.config
+                                  .lakehouseEntitlementsConfig
+                                  ?.applicationDirectoryUrl
+                              }
+                            />
+                          ) : (
+                            <>Unknown</>
+                          );
+                        },
                       },
-                    },
-                    {
-                      minWidth: 50,
-                      sortable: true,
-                      resizable: true,
-                      headerName: 'Target Data Product',
-                      flex: 1,
-                      cellRenderer: (
-                        params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
-                      ) => {
-                        const contractId = params.data?.dataContractId;
-                        const resource = allContracts?.find(
-                          (contract) => contract.guid === contractId,
-                        )?.resource;
-                        const dataProduct =
-                          resource instanceof V1_AccessPointGroupReference
-                            ? resource.dataProduct
-                            : undefined;
-                        return <>{dataProduct?.name ?? 'Unknown'}</>;
+                      {
+                        minWidth: 50,
+                        sortable: true,
+                        resizable: true,
+                        headerName: 'Target Data Product',
+                        flex: 1,
+                        cellRenderer: (
+                          params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
+                        ) => {
+                          const contractId = params.data?.dataContractId;
+                          const resource = allContracts?.find(
+                            (contract) => contract.guid === contractId,
+                          )?.resource;
+                          const dataProduct =
+                            resource instanceof V1_AccessPointGroupReference
+                              ? resource.dataProduct
+                              : undefined;
+                          return <>{dataProduct?.name ?? 'Unknown'}</>;
+                        },
                       },
-                    },
-                    {
-                      minWidth: 50,
-                      sortable: true,
-                      resizable: true,
-                      headerName: 'Target Access Point Group',
-                      flex: 1,
-                      cellRenderer: (
-                        params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
-                      ) => {
-                        const contractId = params.data?.dataContractId;
-                        const resource = allContracts?.find(
-                          (contract) => contract.guid === contractId,
-                        )?.resource;
-                        const accessPointGroup =
-                          resource instanceof V1_AccessPointGroupReference
-                            ? resource.accessPointGroup
-                            : undefined;
-                        return <>{accessPointGroup ?? 'Unknown'}</>;
+                      {
+                        minWidth: 50,
+                        sortable: true,
+                        resizable: true,
+                        headerName: 'Target Access Point Group',
+                        flex: 1,
+                        cellRenderer: (
+                          params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
+                        ) => {
+                          const contractId = params.data?.dataContractId;
+                          const resource = allContracts?.find(
+                            (contract) => contract.guid === contractId,
+                          )?.resource;
+                          const accessPointGroup =
+                            resource instanceof V1_AccessPointGroupReference
+                              ? resource.accessPointGroup
+                              : undefined;
+                          return <>{accessPointGroup ?? 'Unknown'}</>;
+                        },
                       },
-                    },
-                    {
-                      minWidth: 50,
-                      sortable: true,
-                      resizable: true,
-                      headerName: 'Business Justification',
-                      flex: 2,
-                      cellRenderer: (
-                        params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
-                      ) => {
-                        const contractId = params.data?.dataContractId;
-                        const businessJustification = allContracts?.find(
-                          (contract) => contract.guid === contractId,
-                        )?.description;
-                        return <>{businessJustification ?? 'Unknown'}</>;
+                      {
+                        minWidth: 50,
+                        sortable: true,
+                        resizable: true,
+                        headerName: 'Business Justification',
+                        flex: 2,
+                        cellRenderer: (
+                          params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
+                        ) => {
+                          const contractId = params.data?.dataContractId;
+                          const businessJustification = allContracts?.find(
+                            (contract) => contract.guid === contractId,
+                          )?.description;
+                          return <>{businessJustification ?? 'Unknown'}</>;
+                        },
                       },
-                    },
-                    {
-                      minWidth: 50,
-                      sortable: true,
-                      resizable: true,
-                      hide: true,
-                      headerName: 'Contract ID',
-                      flex: 2,
-                      cellRenderer: (
-                        params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
-                      ) => {
-                        return <>{params.data?.dataContractId ?? 'Unknown'}</>;
+                      {
+                        minWidth: 50,
+                        sortable: true,
+                        resizable: true,
+                        hide: true,
+                        headerName: 'Contract ID',
+                        flex: 2,
+                        cellRenderer: (
+                          params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
+                        ) => {
+                          return (
+                            <>{params.data?.dataContractId ?? 'Unknown'}</>
+                          );
+                        },
                       },
-                    },
-                  ]}
-                />
+                    ]}
+                  />
+                </>
               )}
             </div>
           </Box>
