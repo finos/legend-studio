@@ -28,6 +28,7 @@ import { flowResult } from 'mobx';
 import {
   DataGrid,
   type DataGridCellRendererParams,
+  type DataGridRowSelectedEvent,
 } from '@finos/legend-lego/data-grid';
 import {
   generateLakehouseContractPath,
@@ -244,6 +245,12 @@ export const EntitlementsDashboard = withAuth(
                   suppressFieldDotNotation={true}
                   suppressContextMenu={false}
                   rowHeight={45}
+                  rowSelection="multiple"
+                  onRowSelected={(
+                    event: DataGridRowSelectedEvent<V1_ContractUserEventRecord>,
+                  ) => {
+                    console.log('onRowSelected event:', event);
+                  }}
                   columnDefs={[
                     {
                       minWidth: 50,

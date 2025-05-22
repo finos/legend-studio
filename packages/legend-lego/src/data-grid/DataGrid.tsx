@@ -15,20 +15,21 @@
  */
 
 import {
+  type CellMouseOverEvent,
   type CellRange,
   type CellSelectionChangedEvent,
-  type CellMouseOverEvent,
-  type ICellRendererParams,
-  type GridOptions,
   type ColDef,
   type ColumnState,
-  type GridApi,
-  type IRowNode,
-  type GetContextMenuItemsParams,
-  type MenuItemDef,
-  type IAggFuncParams,
   type DefaultMenuItem,
+  type GetContextMenuItemsParams,
+  type GridApi,
+  type GridOptions,
+  type IAggFuncParams,
+  type ICellRendererParams,
+  type IRowNode,
+  type MenuItemDef,
   type Module,
+  type RowSelectedEvent,
   AllCommunityModule,
 } from 'ag-grid-community';
 import { LicenseManager, AllEnterpriseModule } from 'ag-grid-enterprise';
@@ -63,18 +64,19 @@ export function DataGrid<TData = unknown>(
 }
 
 export type {
-  CellRange as DataGridCellRange,
   CellMouseOverEvent as DataGridCellMouseOverEvent,
+  CellRange as DataGridCellRange,
   CellSelectionChangedEvent as DataGridCellSelectionChangedEvent,
-  ICellRendererParams as DataGridCellRendererParams,
-  GridOptions as DataGridOptions,
   ColDef as DataGridColumnDefinition,
   ColumnState as DataGridColumnState,
-  GridApi as DataGridApi,
-  IRowNode as DataGridIRowNode,
-  GetContextMenuItemsParams as DataGridGetContextMenuItemsParams,
-  MenuItemDef as DataGridMenuItemDef,
-  IAggFuncParams as DataGridIAggFuncParams,
   CustomHeaderProps as DataGridCustomHeaderProps,
   DefaultMenuItem as DataGridDefaultMenuItem,
+  GetContextMenuItemsParams as DataGridGetContextMenuItemsParams,
+  GridApi as DataGridApi,
+  GridOptions as DataGridOptions,
+  IAggFuncParams as DataGridIAggFuncParams,
+  ICellRendererParams as DataGridCellRendererParams,
+  IRowNode as DataGridIRowNode,
+  MenuItemDef as DataGridMenuItemDef,
+  RowSelectedEvent as DataGridRowSelectedEvent,
 };
