@@ -478,6 +478,7 @@ export const EntitlementsDashboard = withAuth(
           checked={checked}
           indeterminate={indeterminate}
           onChange={handleChange}
+          sx={{ padding: 0 }}
         />
       );
     };
