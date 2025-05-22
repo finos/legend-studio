@@ -80,7 +80,7 @@ const PendingContract_TaskIdColumnClickableCellRenderer = (
   };
   return (
     <span
-      className="marketplace-lakehouse-entitlements-tasks__grid-taskid-cell"
+      className="marketplace-lakehouse-entitlements__grid__taskid-cell"
       onClick={handleClick}
     >
       {data.pendingTaskWithAssignees.taskId}
