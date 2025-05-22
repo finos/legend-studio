@@ -251,7 +251,7 @@ const EntitlementsDashboardActionModal = (props: {
   }
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="md">
+    <Dialog open={open} onClose={handleClose} fullWidth={true} maxWidth="md">
       <DialogTitle>
         {action === 'approve' ? 'Approve' : 'Deny'} Contract Requests
       </DialogTitle>
@@ -331,14 +331,17 @@ const EntitlementsDashboardActionModal = (props: {
       </DialogContent>
       <DialogActions>
         <Button
-          onClick={() => handleAction()}
+          onClick={() => {
+            // eslint-disable-next-line no-void
+            void handleAction();
+          }}
           variant="contained"
           disabled={isLoading || errorMessages.length > 0}
           color={action === 'approve' ? 'success' : 'error'}
         >
           {action === 'approve' ? 'Approve' : 'Deny'} Selected Contracts
         </Button>
-        <Button onClick={onClose} variant="outlined" disabled={isLoading}>
+        <Button onClick={handleClose} variant="outlined" disabled={isLoading}>
           Cancel
         </Button>
       </DialogActions>
