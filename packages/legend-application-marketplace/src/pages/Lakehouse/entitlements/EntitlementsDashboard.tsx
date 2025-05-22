@@ -219,7 +219,9 @@ const EntitlementsDashboardActionModal = (props: {
   };
 
   const actionFunction =
-    action === 'approve' ? dashboardState.approve : dashboardState.deny;
+    action === 'approve'
+      ? dashboardState.approve.bind(dashboardState)
+      : dashboardState.deny.bind(dashboardState);
 
   const handleAction = async () => {
     setIsLoading(true);
