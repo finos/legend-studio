@@ -445,6 +445,7 @@ export const EntitlementsDashboard = withAuth(
                       variant="contained"
                       color="success"
                       disabled={!selectedTaskIdsSet.size}
+                      onClick={() => setSelectedAction('approve')}
                     >
                       Approve {selectedTaskIdsSet.size} tasks
                     </Button>
@@ -452,8 +453,9 @@ export const EntitlementsDashboard = withAuth(
                       variant="contained"
                       color="error"
                       disabled={!selectedTaskIdsSet.size}
+                      onClick={() => setSelectedAction('deny')}
                     >
-                      Reject {selectedTaskIdsSet.size} tasks
+                      Deny {selectedTaskIdsSet.size} tasks
                     </Button>
                     <DataGrid
                       rowData={tasks}
