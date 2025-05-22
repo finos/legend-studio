@@ -67,8 +67,9 @@ import { generateLakehouseTaskPath } from '../../../__lib__/LegendMarketplaceNav
 const AssigneesList = (props: {
   users: (LegendUser | string)[];
   userProfileImageUrl?: string | undefined;
+  onUserClick?: (userId: string) => void;
 }): React.ReactNode => {
-  const { users, userProfileImageUrl } = props;
+  const { users, userProfileImageUrl, onUserClick } = props;
   return users.length === 1 ? (
     <span>
       Assignee:{' '}
@@ -76,6 +77,7 @@ const AssigneesList = (props: {
         <UserDisplay
           user={users[0]}
           imgSrc={userProfileImageUrl?.replace('{userId}', users[0].id)}
+          onClick={() => onUserClick?.((users[0] as LegendUser).id)}
         />
       ) : (
         <div>{users[0]}</div>
@@ -97,6 +99,7 @@ const AssigneesList = (props: {
               key={user.id}
               user={user}
               imgSrc={userProfileImageUrl?.replace('{userId}', user.id)}
+              onClick={() => onUserClick?.(user.id)}
             />
           ) : (
             <div key={user}>{user}</div>
@@ -230,6 +233,11 @@ export const EntitlementsDataContractViewer = observer(
         .catch(legendMarketplaceStore.applicationStore.alertUnhandledError);
     };
 
+    const openUserDirectoryLink = (userId: string): void =>
+      legendMarketplaceStore.applicationStore.navigationService.navigator.visitAddress(
+        `${legendMarketplaceStore.applicationStore.config.lakehouseEntitlementsConfig?.applicationDirectoryUrl}/${userId}`,
+      );
+
     const steps: {
       key: string;
       label: React.ReactNode;
@@ -288,6 +296,7 @@ export const EntitlementsDataContractViewer = observer(
                   legendMarketplaceStore.applicationStore.config
                     .marketplaceUserProfileImageUrl
                 }
+                onUserClick={openUserDirectoryLink}
               />
             ) : (
               <span>No tasks associated with contract</span>
@@ -347,6 +356,7 @@ export const EntitlementsDataContractViewer = observer(
                   legendMarketplaceStore.applicationStore.config
                     .marketplaceUserProfileImageUrl
                 }
+                onUserClick={openUserDirectoryLink}
               />
             ) : (
               <span>No tasks associated with contract</span>
@@ -404,6 +414,11 @@ export const EntitlementsDataContractViewer = observer(
                         '{userId}',
                         userData.get(currentViewer.value.createdBy)?.id ?? '',
                       )}
+                      onClick={() =>
+                        openUserDirectoryLink(
+                          userData.get(currentViewer.value.createdBy)!.id,
+                        )
+                      }
                     />
                   ) : (
                     currentViewer.value.createdBy
@@ -423,6 +438,9 @@ export const EntitlementsDataContractViewer = observer(
                             '{userId}',
                             userData.get(user.name)?.id ?? '',
                           )}
+                          onClick={() =>
+                            openUserDirectoryLink(userData.get(user.name)!.id)
+                          }
                         />
                       ) : (
                         `${user.name}${index < (currentViewer.value.consumer as V1_AdhocTeam).users.length - 1 ? ', ' : ''}`
