@@ -77,7 +77,10 @@ const AssigneesList = (props: {
       )}
     </span>
   ) : (
-    <Accordion elevation={0}>
+    <Accordion
+      className="marketplace-lakehouse-entitlements__data-contract-viewer__user-list__container"
+      elevation={0}
+    >
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
         Assignees:
       </AccordionSummary>
