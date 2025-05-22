@@ -133,7 +133,8 @@
   }
 
   &__footer {
-    justify-self: end;
+    align-self: start;
+    margin-top: auto;
     color: var(--color-light-grey-300);
   }
 }
