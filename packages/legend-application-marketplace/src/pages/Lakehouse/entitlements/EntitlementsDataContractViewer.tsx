@@ -384,9 +384,16 @@ export const EntitlementsDataContractViewer = observer(
                   <b>Ordered By: </b>
                   {isLoadingUserData ? (
                     <CircularProgress size={20} />
+                  ) : userData.get(currentViewer.value.createdBy) ? (
+                    <UserDisplay
+                      user={userData.get(currentViewer.value.createdBy)!}
+                      imgSrc={legendMarketplaceStore.applicationStore.config.marketplaceUserProfileImageUrl?.replace(
+                        '{userId}',
+                        userData.get(currentViewer.value.createdBy)?.id ?? '',
+                      )}
+                    />
                   ) : (
-                    (userData.get(currentViewer.value.createdBy)?.displayName ??
-                    currentViewer.value.createdBy)
+                    currentViewer.value.createdBy
                   )}
                 </div>
                 <div>
@@ -395,9 +402,19 @@ export const EntitlementsDataContractViewer = observer(
                     <CircularProgress size={20} />
                   ) : currentViewer.value.consumer instanceof V1_AdhocTeam ? (
                     currentViewer.value.consumer.users
-                      .map(
-                        (user) =>
-                          userData.get(user.name)?.displayName ?? user.name,
+                      .map((user) =>
+                        userData.get(user.name) ? (
+                          <UserDisplay
+                            key={user.name}
+                            user={userData.get(user.name)!}
+                            imgSrc={legendMarketplaceStore.applicationStore.config.marketplaceUserProfileImageUrl?.replace(
+                              '{userId}',
+                              userData.get(user.name)?.id ?? '',
+                            )}
+                          />
+                        ) : (
+                          user.name
+                        ),
                       )
                       .join(', ')
                   ) : (
