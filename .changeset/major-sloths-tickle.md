@@ -1,5 +1,5 @@
 ---
-'@finos/legend-graph'
+'@finos/legend-graph': patch
 ---
 
 Fix contract task deserialization
