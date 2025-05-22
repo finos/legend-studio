@@ -88,13 +88,15 @@ export class EntitlementsTaskViewerState extends LakehouseViewerState {
     this.initializationState.inProgress();
     Promise.all([
       flowResult(this.calculateApprovalRights(token)).catch(
-        this.state.applicationStore.alertUnhandledError,
+        this.lakehouseEntitlementsStore.applicationStore.alertUnhandledError,
       ),
       flowResult(this.fetchContract(token)).catch(
-        this.state.applicationStore.alertUnhandledError,
+        this.lakehouseEntitlementsStore.applicationStore.alertUnhandledError,
       ),
     ])
-      .catch(this.state.applicationStore.alertUnhandledError)
+      .catch(
+        this.lakehouseEntitlementsStore.applicationStore.alertUnhandledError,
+      )
       .finally(() => this.initializationState.complete());
   }
 
@@ -111,10 +113,11 @@ export class EntitlementsTaskViewerState extends LakehouseViewerState {
   *approve(token: string | undefined): GeneratorFn<void> {
     try {
       this.approvalStatus.inProgress();
-      const response = (yield this.state.lakehouseServerClient.approveTask(
-        this.value.taskId,
-        token,
-      )) as PlainObject<V1_TaskStatusChangeResponse>;
+      const response =
+        (yield this.lakehouseEntitlementsStore.lakehouseServerClient.approveTask(
+          this.value.taskId,
+          token,
+        )) as PlainObject<V1_TaskStatusChangeResponse>;
       const change = deserialize(
         V1_TaskStatusChangeResponseModelSchema,
         response,
@@ -128,13 +131,13 @@ export class EntitlementsTaskViewerState extends LakehouseViewerState {
       this.value.status = change.status;
       this.setCanApprove(false);
       this.approvalStatus.pass();
-      this.state.applicationStore.notificationService.notifySuccess(
+      this.lakehouseEntitlementsStore.applicationStore.notificationService.notifySuccess(
         'Approval succeeded',
       );
     } catch (error) {
       this.approvalStatus.fail();
       assertErrorThrown(error);
-      this.state.applicationStore.notificationService.notifyError(
+      this.lakehouseEntitlementsStore.applicationStore.notificationService.notifyError(
         `${error.message}`,
       );
     }
@@ -143,15 +146,18 @@ export class EntitlementsTaskViewerState extends LakehouseViewerState {
   *deny(token: string | undefined): GeneratorFn<void> {
     try {
       this.changingTaskState.inProgress();
-      this.state.applicationStore.alertService.setBlockingAlert({
-        message: 'Denying Task',
-        prompt: 'Denying task...',
-        showLoading: true,
-      });
-      const response = (yield this.state.lakehouseServerClient.denyTask(
-        this.value.taskId,
-        token,
-      )) as PlainObject<V1_TaskStatus>;
+      this.lakehouseEntitlementsStore.applicationStore.alertService.setBlockingAlert(
+        {
+          message: 'Denying Task',
+          prompt: 'Denying task...',
+          showLoading: true,
+        },
+      );
+      const response =
+        (yield this.lakehouseEntitlementsStore.lakehouseServerClient.denyTask(
+          this.value.taskId,
+          token,
+        )) as PlainObject<V1_TaskStatus>;
       const change = deserialize(
         V1_TaskStatusChangeResponseModelSchema,
         response,
@@ -163,28 +169,31 @@ export class EntitlementsTaskViewerState extends LakehouseViewerState {
       }
       this.value.status = change.status;
       this.setCanApprove(false);
-      this.state.applicationStore.notificationService.notifySuccess(
+      this.lakehouseEntitlementsStore.applicationStore.notificationService.notifySuccess(
         `Task has been denied`,
       );
     } catch (error) {
       assertErrorThrown(error);
-      this.state.applicationStore.notificationService.notifyError(
+      this.lakehouseEntitlementsStore.applicationStore.notificationService.notifyError(
         `${error.message}`,
       );
     } finally {
       this.changingTaskState.complete();
       this.changingTaskState.setMessage(undefined);
-      this.state.applicationStore.alertService.setBlockingAlert(undefined);
+      this.lakehouseEntitlementsStore.applicationStore.alertService.setBlockingAlert(
+        undefined,
+      );
     }
   }
 
   *calculateApprovalRights(token: string | undefined): GeneratorFn<void> {
     this.canApprove = undefined;
     try {
-      const rawTasks = (yield this.state.lakehouseServerClient.getPendingTasks(
-        TEST_USER,
-        token,
-      )) as PlainObject<V1_PendingTasksRespond>;
+      const rawTasks =
+        (yield this.lakehouseEntitlementsStore.lakehouseServerClient.getPendingTasks(
+          TEST_USER,
+          token,
+        )) as PlainObject<V1_PendingTasksRespond>;
       const tasks = deserialize(V1_pendingTasksRespondModelSchema, rawTasks);
       const allTasks = [...tasks.dataOwner, ...tasks.privilegeManager];
       const canApprove = Boolean(
@@ -200,7 +209,7 @@ export class EntitlementsTaskViewerState extends LakehouseViewerState {
     try {
       const contractId = this.value.dataContractId;
       const dataContracts =
-        (yield this.state.lakehouseServerClient.getDataContract(
+        (yield this.lakehouseEntitlementsStore.lakehouseServerClient.getDataContract(
           contractId,
           token,
         )) as PlainObject<V1_DataContractsRecord>;
@@ -221,12 +230,12 @@ export class EntitlementsTaskViewerState extends LakehouseViewerState {
       this.taskAssignees,
       this.dataContract,
       (id: string): void => {
-        this.state.applicationStore.navigationService.navigator.updateCurrentLocation(
+        this.lakehouseEntitlementsStore.applicationStore.navigationService.navigator.updateCurrentLocation(
           generateLakehouseContractPath(id),
         );
       },
-      this.state.directoryCallBack,
-      this.state.applicationCallBack,
+      this.lakehouseEntitlementsStore.directoryCallBack,
+      this.lakehouseEntitlementsStore.applicationCallBack,
     );
   }
 }

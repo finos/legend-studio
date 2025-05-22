@@ -18,10 +18,10 @@ import { ActionState } from '@finos/legend-shared';
 import type { LakehouseEntitlementsStore } from './LakehouseEntitlementsStore.js';
 
 export abstract class LakehouseViewerState {
-  readonly state: LakehouseEntitlementsStore;
+  readonly lakehouseEntitlementsStore: LakehouseEntitlementsStore;
   initializationState = ActionState.create();
 
   constructor(state: LakehouseEntitlementsStore) {
-    this.state = state;
+    this.lakehouseEntitlementsStore = state;
   }
 }
