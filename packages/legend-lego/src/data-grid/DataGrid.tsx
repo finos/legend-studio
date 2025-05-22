@@ -30,6 +30,7 @@ import {
   type MenuItemDef,
   type Module,
   type RowSelectedEvent,
+  type RowSelectionOptions,
   AllCommunityModule,
 } from 'ag-grid-community';
 import { LicenseManager, AllEnterpriseModule } from 'ag-grid-enterprise';
@@ -79,4 +80,5 @@ export type {
   IRowNode as DataGridIRowNode,
   MenuItemDef as DataGridMenuItemDef,
   RowSelectedEvent as DataGridRowSelectedEvent,
+  RowSelectionOptions as DataGridRowSelectionOptions,
 };

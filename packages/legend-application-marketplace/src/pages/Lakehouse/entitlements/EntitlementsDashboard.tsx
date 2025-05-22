@@ -17,7 +17,7 @@
 import { withAuth, type AuthContextProps } from 'react-oidc-context';
 import type { EntitlementsDashboardState } from '../../../stores/lakehouse/entitlements/EntitlementsDashboardState.js';
 import { observer } from 'mobx-react-lite';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   type V1_ContractUserEventRecord,
   type V1_DataContract,
@@ -29,6 +29,7 @@ import {
   DataGrid,
   type DataGridCellRendererParams,
   type DataGridRowSelectedEvent,
+  type DataGridRowSelectionOptions,
 } from '@finos/legend-lego/data-grid';
 import {
   generateLakehouseContractPath,
@@ -185,16 +186,23 @@ export const EntitlementsDashboard = withAuth(
     ) => {
       setValue(newValue);
     };
+
     const handleApprove = (task: V1_ContractUserEventRecord) => {
       flowResult(dashboardState.approve(task, auth.user?.access_token)).catch(
         lakehouseEntitlementsStore.applicationStore.alertUnhandledError,
       );
     };
+
     const handleDeny = (task: V1_ContractUserEventRecord) => {
       flowResult(dashboardState.deny(task, auth.user?.access_token)).catch(
         lakehouseEntitlementsStore.applicationStore.alertUnhandledError,
       );
     };
+
+    const rowSelection = useMemo<
+      DataGridRowSelectionOptions | 'single' | 'multiple'
+    >(() => ({ mode: 'multiRow' }), []);
+
     return (
       <Container
         className="marketplace-lakehouse-entitlements-dashboard"
@@ -245,7 +253,7 @@ export const EntitlementsDashboard = withAuth(
                   suppressFieldDotNotation={true}
                   suppressContextMenu={false}
                   rowHeight={45}
-                  rowSelection="multiple"
+                  rowSelection={rowSelection}
                   onRowSelected={(
                     event: DataGridRowSelectedEvent<V1_ContractUserEventRecord>,
                   ) => {
