@@ -177,11 +177,6 @@ export class EntitlementsDashboardState extends LakehouseViewerState {
       this.lakehouseEntitlementsStore.applicationStore.notificationService.notifySuccess(
         `Task has been Approved`,
       );
-    } catch (error) {
-      assertErrorThrown(error);
-      this.lakehouseEntitlementsStore.applicationStore.notificationService.notifyError(
-        `${error.message}`,
-      );
     } finally {
       this.changingState.complete();
       this.changingState.setMessage(undefined);
@@ -219,11 +214,6 @@ export class EntitlementsDashboardState extends LakehouseViewerState {
       this.setPendingTasks([...(this.pendingTasks ?? [])]);
       this.lakehouseEntitlementsStore.applicationStore.notificationService.notifySuccess(
         `Task has been denied`,
-      );
-    } catch (error) {
-      assertErrorThrown(error);
-      this.lakehouseEntitlementsStore.applicationStore.notificationService.notifyError(
-        `${error.message}`,
       );
     } finally {
       this.changingState.complete();
