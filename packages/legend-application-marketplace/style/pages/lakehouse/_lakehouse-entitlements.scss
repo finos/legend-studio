@@ -121,9 +121,17 @@
     padding: 1rem;
     margin: 1rem 0 3rem;
 
+    > div {
+      margin: 1rem 0;
+    }
+
     &__ordered-by,
     &__ordered-for {
       @include flexVCenter;
+    }
+
+    .legend-user-display {
+      margin-left: 1rem;
     }
   }
 
