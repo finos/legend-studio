@@ -345,7 +345,7 @@ export const getUserById = async (
   userId: string,
   userSearchService: UserSearchService,
 ): Promise<LegendUser | undefined> =>
-  (await userSearchService?.executeSearch(userId))?.filter(
+  (await userSearchService.executeSearch(userId)).filter(
     (_user) => _user.id === userId,
   )[0];
 

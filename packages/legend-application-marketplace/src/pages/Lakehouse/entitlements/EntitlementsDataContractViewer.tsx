@@ -45,7 +45,11 @@ import {
   V1_UserType,
 } from '@finos/legend-graph';
 import React, { useEffect, useState } from 'react';
-import { isNonNullable, LegendUser } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  isNonNullable,
+  LegendUser,
+} from '@finos/legend-shared';
 import {
   getUserById,
   isContractStateComplete,
@@ -118,7 +122,7 @@ export const EntitlementsDataContractViewer = observer(
     const { currentViewer, onClose } = props;
     const auth = useAuth();
     const legendMarketplaceStore = useLegendMarketplaceBaseStore();
-    const [userData, setUserData] = useState<Map<string, LegendUser>>(
+    const [userDataMap, setUserDataMap] = useState<Map<string, LegendUser>>(
       new Map<string, LegendUser>(),
     );
     const [isLoadingUserData, setIsLoadingUserData] = useState(false);
@@ -139,16 +143,14 @@ export const EntitlementsDataContractViewer = observer(
 
     useEffect(() => {
       const fetchUserData = async (userIds: string[]): Promise<void> => {
-        if (legendMarketplaceStore.userSearchService) {
+        const userSearchService = legendMarketplaceStore.userSearchService;
+        if (userSearchService) {
           setIsLoadingUserData(true);
           try {
             const users = (
               await Promise.all(
                 userIds.map(async (userId) =>
-                  getUserById(
-                    userId,
-                    legendMarketplaceStore.userSearchService!,
-                  ),
+                  getUserById(userId, userSearchService),
                 ),
               )
             ).filter(isNonNullable);
@@ -156,7 +158,7 @@ export const EntitlementsDataContractViewer = observer(
             users.forEach((user) => {
               userMap.set(user.id, user);
             });
-            setUserData(userMap);
+            setUserDataMap(userMap);
           } finally {
             setIsLoadingUserData(false);
           }
@@ -177,7 +179,8 @@ export const EntitlementsDataContractViewer = observer(
           ?.map((task) => task.assignees)
           .flat() ?? []),
       ];
-      fetchUserData(userIds);
+      // eslint-disable-next-line no-void
+      void fetchUserData(userIds);
     }, [
       legendMarketplaceStore.userSearchService,
       currentViewer.associatedTasks,
@@ -291,7 +294,7 @@ export const EntitlementsDataContractViewer = observer(
                 users={currentViewer.associatedTasks
                   .map((task) => task.assignees)
                   .flat()
-                  .map((asignee) => userData.get(asignee) ?? asignee)}
+                  .map((asignee) => userDataMap.get(asignee) ?? asignee)}
                 userProfileImageUrl={
                   legendMarketplaceStore.applicationStore.config
                     .marketplaceUserProfileImageUrl
@@ -351,7 +354,7 @@ export const EntitlementsDataContractViewer = observer(
                 users={currentViewer.associatedTasks
                   .map((task) => task.assignees)
                   .flat()
-                  .map((asignee) => userData.get(asignee) ?? asignee)}
+                  .map((asignee) => userDataMap.get(asignee) ?? asignee)}
                 userProfileImageUrl={
                   legendMarketplaceStore.applicationStore.config
                     .marketplaceUserProfileImageUrl
@@ -407,16 +410,21 @@ export const EntitlementsDataContractViewer = observer(
                   <b>Ordered By: </b>
                   {isLoadingUserData ? (
                     <CircularProgress size={20} />
-                  ) : userData.get(currentViewer.value.createdBy) ? (
+                  ) : userDataMap.get(currentViewer.value.createdBy) ? (
                     <UserDisplay
-                      user={userData.get(currentViewer.value.createdBy)!}
+                      user={guaranteeNonNullable(
+                        userDataMap.get(currentViewer.value.createdBy),
+                      )}
                       imgSrc={legendMarketplaceStore.applicationStore.config.marketplaceUserProfileImageUrl?.replace(
                         '{userId}',
-                        userData.get(currentViewer.value.createdBy)?.id ?? '',
+                        userDataMap.get(currentViewer.value.createdBy)?.id ??
+                          '',
                       )}
                       onClick={() =>
                         openUserDirectoryLink(
-                          userData.get(currentViewer.value.createdBy)!.id,
+                          guaranteeNonNullable(
+                            userDataMap.get(currentViewer.value.createdBy),
+                          ).id,
                         )
                       }
                     />
@@ -429,23 +437,24 @@ export const EntitlementsDataContractViewer = observer(
                   {isLoadingUserData ? (
                     <CircularProgress size={20} />
                   ) : currentViewer.value.consumer instanceof V1_AdhocTeam ? (
-                    currentViewer.value.consumer.users.map((user, index) =>
-                      userData.get(user.name) ? (
-                        <UserDisplay
-                          key={user.name}
-                          user={userData.get(user.name)!}
-                          imgSrc={legendMarketplaceStore.applicationStore.config.marketplaceUserProfileImageUrl?.replace(
-                            '{userId}',
-                            userData.get(user.name)?.id ?? '',
-                          )}
-                          onClick={() =>
-                            openUserDirectoryLink(userData.get(user.name)!.id)
-                          }
-                        />
-                      ) : (
-                        `${user.name}${index < (currentViewer.value.consumer as V1_AdhocTeam).users.length - 1 ? ', ' : ''}`
-                      ),
-                    )
+                    currentViewer.value.consumer.users.map((user, index) => {
+                      const userData = userDataMap.get(user.name);
+                      if (userData) {
+                        return (
+                          <UserDisplay
+                            key={user.name}
+                            user={userData}
+                            imgSrc={legendMarketplaceStore.applicationStore.config.marketplaceUserProfileImageUrl?.replace(
+                              '{userId}',
+                              userDataMap.get(user.name)?.id ?? '',
+                            )}
+                            onClick={() => openUserDirectoryLink(userData.id)}
+                          />
+                        );
+                      } else {
+                        return `${user.name}${index < (currentViewer.value.consumer as V1_AdhocTeam).users.length - 1 ? ', ' : ''}`;
+                      }
+                    })
                   ) : (
                     stringifyOrganizationalScope(currentViewer.value.consumer)
                   )}

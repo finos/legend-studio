@@ -25,7 +25,7 @@ export class LegendUser {
   divisionName: string | undefined;
   firstName: string | undefined;
   id!: string;
-  lastName!: string;
+  lastName!: string | undefined;
   title: string | undefined;
 
   constructor(id?: string | undefined, displayName?: string | undefined) {
