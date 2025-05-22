@@ -80,6 +80,7 @@ const AssigneesList = (props: {
     <Accordion
       className="marketplace-lakehouse-entitlements__data-contract-viewer__user-list__container"
       elevation={0}
+      disableGutters={true}
     >
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
         Assignees:
