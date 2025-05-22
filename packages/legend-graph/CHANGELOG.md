@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.1.31
+
+### Patch Changes
+
+- [#4102](https://github.com/finos/legend-studio/pull/4102) [`2f5db54`](https://github.com/finos/legend-studio/commit/2f5db54c7cba38503f0f05d771bb4e1015b300b8) ([@travisstebbins](https://github.com/travisstebbins)) - Lakehouse pending entitlements contract flow improvements (consumer perspective)
+
 ## 32.1.30
 
 ### Patch Changes
