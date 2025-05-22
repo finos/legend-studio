@@ -41,6 +41,7 @@ import {
 import {
   Box,
   Button,
+  Checkbox,
   CircularProgress,
   Container,
   Dialog,
@@ -448,21 +449,23 @@ export const EntitlementsDashboard = withAuth(
       };
 
       return (
-        <div>
-          <input
-            type="checkbox"
-            checked={params.node.isSelected()}
-            onChange={handleChange}
-          />
-        </div>
+        <Checkbox
+          size="large"
+          checked={params.node.isSelected()}
+          onChange={handleChange}
+          sx={{ padding: 0 }}
+        />
       );
     };
 
     const CustomSelectionHeaderRenderer = (
       params: DataGridCustomHeaderProps<V1_ContractUserEventRecord>,
     ) => {
+      const checked = params.api.getSelectedRows().length === tasks?.length;
+      const indeterminate = params.api.getSelectedRows().length > 0 && !checked;
+
       const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-        if (e.target.checked) {
+        if (!checked || indeterminate) {
           params.api.selectAll();
         } else {
           params.api.deselectAll();
@@ -470,13 +473,12 @@ export const EntitlementsDashboard = withAuth(
       };
 
       return (
-        <div>
-          <input
-            type="checkbox"
-            checked={params.api.getSelectedRows().length === tasks?.length}
-            onChange={handleChange}
-          />
-        </div>
+        <Checkbox
+          size="large"
+          checked={checked}
+          indeterminate={indeterminate}
+          onChange={handleChange}
+        />
       );
     };
 
