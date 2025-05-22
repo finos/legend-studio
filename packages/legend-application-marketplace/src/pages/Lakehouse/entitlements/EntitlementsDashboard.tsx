@@ -197,47 +197,36 @@ const EntitlementsDashboardActionModal = (props: {
   >([]);
   const [successCount, setSuccessCount] = useState(0);
 
-  const handleApprove = async () => {
-    setIsLoading(true);
-    await Promise.all(
-      Array.from(selectedTasks).map(async (task) => {
-        return flowResult(dashboardState.approve(task, auth.user?.access_token))
-          .then(() => setSuccessCount((prev) => prev++))
-          .catch((error) =>
-            setErrorMessages((prev) => [...prev, [task, error.message]]),
-          );
-      }),
-    );
+  const handleClose = () => {
     setIsLoading(false);
-    if (errorMessages.length === 0) {
-      dashboardState.lakehouseEntitlementsStore.applicationStore.notificationService.notifySuccess(
-        `${selectedTasks.length} selected contract requests have been approved successfully.`,
-      );
-      setErrorMessages([]);
-      setSuccessCount(0);
-      onClose();
-    }
+    setErrorMessages([]);
+    setSuccessCount(0);
+    onClose();
   };
 
-  const handleDeny = async () => {
+  const actionFunction =
+    action === 'approve' ? dashboardState.approve : dashboardState.deny;
+
+  const handleAction = async () => {
     setIsLoading(true);
+    const currentErrorMessages: typeof errorMessages = [];
     await Promise.all(
       Array.from(selectedTasks).map(async (task) => {
-        return flowResult(dashboardState.deny(task, auth.user?.access_token))
+        return flowResult(actionFunction(task, auth.user?.access_token))
           .then(() => setSuccessCount((prev) => prev++))
-          .catch((error) =>
-            setErrorMessages((prev) => [...prev, [task, error.message]]),
-          );
+          .catch((error) => currentErrorMessages.push([task, error.message]));
       }),
     );
     setIsLoading(false);
+    // If everything was successful, show a success message and close the modal.
     if (errorMessages.length === 0) {
       dashboardState.lakehouseEntitlementsStore.applicationStore.notificationService.notifySuccess(
-        `${selectedTasks.length} selected contract requests have been denied successfully.`,
+        `${selectedTasks.length} selected contract requests have been ${action === 'approve' ? 'approved' : 'denied'} successfully.`,
       );
-      setErrorMessages([]);
-      setSuccessCount(0);
-      onClose();
+      handleClose();
+    } else {
+      // If there were errors, we won't close the modal and will show the errors in the modal.
+      setErrorMessages(currentErrorMessages);
     }
   };
 
@@ -298,9 +287,7 @@ const EntitlementsDashboardActionModal = (props: {
       </DialogContent>
       <DialogActions>
         <Button
-          onClick={
-            action === 'approve' ? () => handleApprove() : () => handleDeny()
-          }
+          onClick={() => handleAction()}
           variant="contained"
           disabled={isLoading || errorMessages.length > 0}
           color={action === 'approve' ? 'success' : 'error'}
