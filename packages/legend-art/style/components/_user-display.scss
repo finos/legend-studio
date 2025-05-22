@@ -23,6 +23,10 @@
     margin-bottom: 1rem;
   }
 
+  &--clickable {
+    cursor: pointer;
+  }
+
   &__avatar {
     width: 30px;
     height: 30px;
