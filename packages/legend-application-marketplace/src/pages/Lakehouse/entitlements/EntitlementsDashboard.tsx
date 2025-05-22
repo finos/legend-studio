@@ -59,10 +59,10 @@ import {
   UserDisplay,
 } from '@finos/legend-art';
 import { LegendUser, type UserSearchService } from '@finos/legend-shared';
-import type { NavigationService } from '@finos/legend-application';
+import { type NavigationService } from '@finos/legend-application';
+import { useSearchParams } from '@finos/legend-application/browser';
 import { getUserById } from '../../../stores/lakehouse/LakehouseUtils.js';
 import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
-import { useSearchParams } from 'react-router';
 
 const Contract_IdColumnClickableCellRenderer = (
   contractId: string | undefined,
@@ -277,7 +277,7 @@ const EntitlementsDashboardActionModal = (props: {
             )}
             {errorMessages.map(([task, errorMessage]) => {
               const contractId = task.dataContractId;
-              const resource = allContracts?.find(
+              const resource = allContracts.find(
                 (contract) => contract.guid === contractId,
               )?.resource;
               const dataProduct =
@@ -295,7 +295,7 @@ const EntitlementsDashboardActionModal = (props: {
                     user={userData}
                     imgSrc={userProfileImageUrl?.replace(
                       '{userId}',
-                      userData?.id ?? '',
+                      userData.id,
                     )}
                     onClick={() =>
                       navigationService.navigator.visitAddress(
@@ -427,7 +427,7 @@ export const EntitlementsDashboard = withAuth(
     ) => {
       const nodesToSelect: DataGridIRowNode<V1_ContractUserEventRecord>[] = [];
       event.api.forEachNode((node) => {
-        if (node.data && selectedTaskIdsSet.has(node.data?.taskId)) {
+        if (node.data && selectedTaskIdsSet.has(node.data.taskId)) {
           nodesToSelect.push(node);
         }
       });
