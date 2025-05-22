@@ -91,6 +91,16 @@ export enum V1_ApprovalType {
   CONSUMER_PRIVILEGE_MANAGER_APPROVAL = 'CONSUMER_PRIVILEGE_MANAGER_APPROVAL',
 }
 
+export enum V1_ContractEventPayloadType {
+  CLOSED = 'Closed',
+  DATA_PRODUCER_APPROVED = 'DataProducerApproved',
+  DATA_PRODUCER_REJECTED = 'DataProducerRejected',
+  PRIVILEGE_MANAGER_APPROVED = 'PrivilegeManagerApproved',
+  PRIVILEGE_MANAGER_REJECTED = 'PrivilegeManagerRejected',
+  SUBMITTED = 'Submitted',
+  SUBMITTED_FOR_AUTO_APPROVAL = 'SubmittedForAutoApproval',
+}
+
 export class V1_TaskStatus {
   status!: V1_UserApprovalStatus;
   errorType: string | undefined;
@@ -104,12 +114,20 @@ export class V1_ContractCreate_LegendDataProduct {
   consumer!: V1_OrganizationalScope;
 }
 
+export class V1_ContractUserEventPayload {
+  type!: V1_ContractEventPayloadType;
+  managerIdentity!: string;
+  candidateIdentity!: string;
+  taskId!: string;
+  eventTimestamp!: string;
+}
+
 export class V1_ContractUserEventRecord {
   taskId!: string;
   dataContractId!: string;
   status!: V1_UserApprovalStatus;
   consumer!: string;
-  eventPayload!: string;
+  eventPayload!: V1_ContractUserEventPayload;
   type!: V1_ApprovalType;
 }
 
