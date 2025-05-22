@@ -113,10 +113,12 @@ export const EntitlementsDataContractViewer = observer(
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
-      setIsLoading(true);
-      flowResult(currentViewer.init(auth.user?.access_token))
-        .catch(legendMarketplaceStore.applicationStore.alertUnhandledError)
-        .finally(() => setIsLoading(false));
+      if (!currentViewer.initializationState.hasCompleted) {
+        setIsLoading(true);
+        flowResult(currentViewer.init(auth.user?.access_token))
+          .catch(legendMarketplaceStore.applicationStore.alertUnhandledError)
+          .finally(() => setIsLoading(false));
+      }
     }, [
       currentViewer,
       auth.user?.access_token,
