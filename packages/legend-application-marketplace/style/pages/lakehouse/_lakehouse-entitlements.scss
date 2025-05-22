@@ -115,6 +115,12 @@
     flex-direction: column;
   }
 
+  &__close {
+    position: absolute;
+    right: 8px;
+    top: 8px;
+  }
+
   &__metadata {
     width: 100%;
     background: var(--color-light-grey-300);

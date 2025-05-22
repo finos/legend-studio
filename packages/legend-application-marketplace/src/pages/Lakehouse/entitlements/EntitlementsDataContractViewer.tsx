@@ -55,6 +55,7 @@ import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarket
 import { flowResult } from 'mobx';
 import { useAuth } from 'react-oidc-context';
 import {
+  CloseIcon,
   CopyIcon,
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
@@ -187,6 +188,12 @@ export const EntitlementsDataContractViewer = observer(
       return (
         <Dialog open={true} onClose={onClose} fullWidth={true} maxWidth="md">
           <DialogTitle>Pending Data Contract Request</DialogTitle>
+          <IconButton
+            onClick={onClose}
+            className="marketplace-lakehouse-entitlements__data-contract-viewer__close"
+          >
+            <CloseIcon />
+          </IconButton>
           <DialogContent className="marketplace-lakehouse-entitlements__data-contract-viewer__content">
             Unable to display data contract request details for this resource.
           </DialogContent>
