@@ -89,6 +89,7 @@ export class DataProductViewerState {
   generation: DataProductArtifactGeneration | undefined;
   associatedContracts: V1_DataContract[] | undefined;
   dataContractAccessPointGroup: V1_AccessPointGroup | undefined;
+  dataContract: V1_DataContract | undefined;
   // actions
 
   creatingContractState = ActionState.create();
@@ -115,6 +116,8 @@ export class DataProductViewerState {
       associatedContracts: observable,
       dataContractAccessPointGroup: observable,
       setDataContractAccessPointGroup: action,
+      dataContract: observable,
+      setDataContract: action,
       setAssociatedContracts: action,
       create: flow,
       creatingContractState: observable,
@@ -140,6 +143,10 @@ export class DataProductViewerState {
 
   setDataContractAccessPointGroup(val: V1_AccessPointGroup | undefined) {
     this.dataContractAccessPointGroup = val;
+  }
+
+  setDataContract(val: V1_DataContract | undefined) {
+    this.dataContract = val;
   }
 
   *fetchContracts(token: string | undefined): GeneratorFn<void> {
@@ -203,12 +210,13 @@ export class DataProductViewerState {
           token,
         )) as unknown as PlainObject<V1_DataContractsRecord>,
       );
-      const associatedContracts = contracts[0];
+      const associatedContract = contracts[0];
       const findGroup = this.accessState.accessGroupStates.find(
         (e) => e.group === group,
       );
-      findGroup?.setAssociatedContract(associatedContracts);
+      findGroup?.setAssociatedContract(associatedContract);
       this.setDataContractAccessPointGroup(undefined);
+      this.setDataContract(associatedContract);
       this.applicationStore.notificationService.notifySuccess(
         `Contract created, please go to contract view for pending tasks`,
       );

@@ -56,6 +56,7 @@ import {
   MdPlaylistAddCheck,
   MdAdd, // to be reviewed
   MdEdit, // to be reviewed
+  MdExpandMore,
   MdSubject,
   MdViewHeadline,
   MdAssistant,
@@ -117,6 +118,7 @@ export const DoubleArrowRight = MdKeyboardDoubleArrowRight; //to be reviewed
 export const PushPinIcon = MdOutlinePushPin;
 export const ShoppingCartOutlineIcon = MdOutlineShoppingCart;
 export const HelpOutlineIcon = MdOutlineHelpOutline;
+export const ExpandMoreIcon = MdExpandMore;
 
 //======================================================= VSC =======================================================
 import {

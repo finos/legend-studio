@@ -260,29 +260,32 @@ export { V1_TestAuthenticationStrategy } from './graph-manager/protocol/pure/v1/
 export { V1_RelationStoreAccessor } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/classInstance/relation/V1_RelationStoreAccessor.js';
 export { V1_PackageableConnection } from './graph-manager/protocol/pure/v1/model/packageableElements/connection/V1_PackageableConnection.js';
 export {
+  type V1_DataContractsCreation,
   type V1_UserPendingContractsRecord,
   type V1_UserPendingContractsResponse,
   V1_AccessPointGroupReference,
+  V1_ApprovalType,
   V1_ContractCreate_LegendDataProduct,
+  V1_ContractState,
   V1_ContractUserEventRecord,
   V1_DataContract,
   V1_DataContractsRecord,
   V1_PendingTasksRespond,
-  V1_ContractState,
-  type V1_DataContractsCreation,
+  V1_TaskMetadata,
+  V1_TaskResponse,
   V1_TaskStatus,
   V1_TaskStatusChangeResponse,
-  V1_TaskResponse,
   V1_UserApprovalStatus,
-  V1_TaskMetadata,
 } from './graph-manager/protocol/pure/v1/entitlements/V1_ConsumerEntitlements.js';
 export {
+  V1_AdhocTeam,
   V1_AppDirLevel,
   V1_AppDirNode,
   V1_AppDirOrganizationalScope,
-  V1_UserType,
+  V1_OrganizationalScope,
+  V1_UnknownOrganizationalScopeType,
   V1_User,
-  V1_AdhocTeam,
+  V1_UserType,
 } from './graph-manager/protocol/pure/v1/entitlements/V1_CoreEntitlements.js';
 export {
   V1_AppDirNodeModelSchema,

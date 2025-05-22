@@ -48,7 +48,10 @@ export class LakehouseEntitlementsStore {
   readonly applicationCallBack: ((applicationId: string) => void) | undefined;
   currentViewerFetchStatus = ActionState.create();
   dashboardViewer: LakehouseViewerState | undefined;
-  currentViewer: LakehouseViewerState | undefined;
+  currentViewer:
+    | LakehouseViewerState
+    | EntitlementsDataContractViewerState
+    | undefined;
 
   constructor(
     applicationStore: LegendMarketplaceApplicationStore,
@@ -90,7 +93,9 @@ export class LakehouseEntitlementsStore {
     this.dashboardViewer = val;
   }
 
-  setCurrentViewer(val: LakehouseViewerState | undefined): void {
+  setCurrentViewer(
+    val: LakehouseViewerState | EntitlementsDataContractViewerState | undefined,
+  ): void {
     this.currentViewer = val;
   }
 
@@ -153,7 +158,7 @@ export class LakehouseEntitlementsStore {
       this.currentViewerFetchStatus.complete();
       const currentViewer = new EntitlementsDataContractViewerState(
         contract,
-        this,
+        this.lakehouseServerClient,
       );
       this.setCurrentViewer(currentViewer);
       flowResult(currentViewer.init(token)).catch(

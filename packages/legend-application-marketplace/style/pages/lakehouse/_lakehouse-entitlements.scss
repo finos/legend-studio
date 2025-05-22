@@ -95,6 +95,7 @@
     @include flexVCenter;
 
     flex-direction: column;
+    min-height: 400px;
   }
 
   &__consumer-type-btn-group {
@@ -105,5 +106,64 @@
   &__business-justification-input {
     max-width: 70rem;
     margin: 2rem 0;
+  }
+}
+
+.marketplace-lakehouse-entitlements__data-contract-viewer {
+  &__content {
+    @include flexVCenter;
+
+    flex-direction: column;
+  }
+
+  &__close {
+    position: absolute;
+    right: 8px;
+    top: 8px;
+  }
+
+  &__metadata {
+    width: 100%;
+    background: var(--color-light-grey-300);
+    padding: 1rem;
+    margin: 1rem 0 3rem;
+
+    > div {
+      margin: 1rem 0;
+    }
+
+    &__ordered-by,
+    &__ordered-for {
+      @include flexVCenter;
+    }
+
+    .legend-user-display {
+      margin-left: 1rem;
+    }
+  }
+
+  &__timeline {
+    width: 100%;
+
+    &__content {
+      font-size: 1.4rem;
+    }
+  }
+
+  &__user-list {
+    max-height: 20rem;
+    overflow: auto;
+    background: var(--color-light-grey-300);
+
+    &__container {
+      margin-top: -12px !important;
+      background: var(--color-light-grey-150);
+    }
+  }
+
+  &__footer {
+    align-self: start;
+    margin-top: auto;
+    color: var(--color-light-grey-300);
   }
 }

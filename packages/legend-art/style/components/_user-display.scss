@@ -16,16 +16,26 @@
 
 @use 'mixins' as *;
 
-// MUI Overrides
+.legend-user-display {
+  @include flexVCenter;
 
-.MuiDialogTitle-root {
-  font-size: 2rem;
-}
+  &:not(:last-child) {
+    margin-bottom: 1rem;
+  }
 
-.MuiButton-root,
-.MuiInputBase-root,
-.MuiFormLabel-root,
-.MuiSnackbarContent-root,
-.MuiStepLabel-label {
-  font-size: 1.2rem;
+  &--clickable {
+    cursor: pointer;
+  }
+
+  &__avatar {
+    width: 30px;
+    height: 30px;
+  }
+
+  &__name {
+    margin-left: 1rem;
+    color: var(--color-hclight-blue-60);
+    font-size: 1.4rem;
+    font-weight: 500;
+  }
 }

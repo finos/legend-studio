@@ -15,72 +15,40 @@
  */
 
 import {
-  type V1_ContractUserEventRecord,
   type V1_PendingTasksRespond,
   type V1_DataContract,
+  type V1_TaskMetadata,
   V1_deserializeTaskResponse,
 } from '@finos/legend-graph';
-import { type LakehouseEntitlementsStore } from './LakehouseEntitlementsStore.js';
-import { LakehouseViewerState } from './LakehouseViewerState.js';
 import {
+  ActionState,
   assertErrorThrown,
   type GeneratorFn,
   type PlainObject,
 } from '@finos/legend-shared';
-import { action, computed, flow, makeObservable, observable } from 'mobx';
-import {
-  buildDataContractDetail,
-  buildTaskGridItemDetail,
-  convertMutilGridItemDetail,
-  type GridItemDetail,
-} from '../LakehouseUtils.js';
+import { action, flow, makeObservable, observable } from 'mobx';
+import type { LakehouseContractServerClient } from '../../LakehouseContractServerClient.js';
 
-export class EntitlementsDataContractViewerState extends LakehouseViewerState {
+export class EntitlementsDataContractViewerState {
   readonly value: V1_DataContract;
-  associatedTasks: V1_ContractUserEventRecord[] | undefined;
+  readonly lakeServerClient: LakehouseContractServerClient;
+  associatedTasks: V1_TaskMetadata[] | undefined;
+  initializationState = ActionState.create();
 
-  constructor(value: V1_DataContract, state: LakehouseEntitlementsStore) {
-    super(state);
+  constructor(
+    value: V1_DataContract,
+    lakeServerClient: LakehouseContractServerClient,
+  ) {
     this.value = value;
+    this.lakeServerClient = lakeServerClient;
     makeObservable(this, {
       associatedTasks: observable,
       setAssociatedTasks: action,
       init: flow,
-      tasksDetails: computed,
     });
   }
 
-  get contractDetails(): GridItemDetail[] {
-    return [
-      ...buildDataContractDetail(this.value, {
-        openDirectoryHandler: this.state.directoryCallBack,
-        openApplicationIdHandler: this.state.applicationCallBack,
-      }),
-      ...this.tasksDetails,
-    ];
-  }
-
-  get tasksDetails(): GridItemDetail[] {
-    return convertMutilGridItemDetail(
-      this.associatedTasks?.map((task) =>
-        buildTaskGridItemDetail(
-          task,
-          [],
-          undefined,
-          undefined,
-          this.state.directoryCallBack,
-          this.state.applicationCallBack,
-        ),
-      ) ?? [],
-    ).map((e) => {
-      e.name = `Contract ${e.name}`;
-      return e;
-    });
-  }
-
-  setAssociatedTasks(
-    associatedTasks: V1_ContractUserEventRecord[] | undefined,
-  ): void {
+  setAssociatedTasks(associatedTasks: V1_TaskMetadata[] | undefined): void {
     this.associatedTasks = associatedTasks;
   }
 
@@ -88,13 +56,12 @@ export class EntitlementsDataContractViewerState extends LakehouseViewerState {
     try {
       this.initializationState.inProgress();
       this.setAssociatedTasks(undefined);
-      const pendingContracts =
-        (yield this.state.lakehouseServerClient.getContractTasks(
-          this.value.guid,
-          token,
-        )) as PlainObject<V1_PendingTasksRespond>;
-      const tasks = V1_deserializeTaskResponse(pendingContracts);
-      this.setAssociatedTasks(tasks.map((e) => e.rec));
+      const pendingTasks = (yield this.lakeServerClient.getContractTasks(
+        this.value.guid,
+        token,
+      )) as PlainObject<V1_PendingTasksRespond>;
+      const tasks = V1_deserializeTaskResponse(pendingTasks);
+      this.setAssociatedTasks(tasks);
     } catch (error) {
       assertErrorThrown(error);
     } finally {

@@ -29,9 +29,14 @@ import {
   DialogTitle,
   TextField,
 } from '@mui/material';
-import { UserSearchInput } from '@finos/legend-art';
+import {
+  CubesLoadingIndicator,
+  CubesLoadingIndicatorIcon,
+  UserSearchInput,
+} from '@finos/legend-art';
 import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
 import { LegendUser } from '@finos/legend-shared';
+import { getUserById } from '../../../stores/lakehouse/LakehouseUtils.js';
 
 enum DataContractCreatorConsumerType {
   USER = 'User',
@@ -59,22 +64,19 @@ export const DataContractCreator = observer(
 
     useEffect(() => {
       const fetchCurrentUser = async () => {
-        setLoadingCurrentUser(true);
-        try {
-          const currentUser = (
-            await legendMarketplaceStore.userSearchService?.executeSearch(
+        if (legendMarketplaceStore.userSearchService) {
+          setLoadingCurrentUser(true);
+          try {
+            const currentUser = await getUserById(
               viewerState.applicationStore.identityService.currentUser,
-            )
-          )?.filter(
-            (_user) =>
-              _user.id ===
-              viewerState.applicationStore.identityService.currentUser,
-          )[0];
-          if (currentUser) {
-            setUser(currentUser);
+              legendMarketplaceStore.userSearchService,
+            );
+            if (currentUser) {
+              setUser(currentUser);
+            }
+          } finally {
+            setLoadingCurrentUser(false);
           }
-        } finally {
-          setLoadingCurrentUser(false);
         }
       };
       // eslint-disable-next-line no-void
@@ -87,7 +89,7 @@ export const DataContractCreator = observer(
     const onCreate = (): void => {
       if (user.id && description) {
         flowResult(
-          props.viewerState.create(
+          viewerState.create(
             user.id,
             description,
             accessPointGroup,
@@ -101,70 +103,87 @@ export const DataContractCreator = observer(
       <Dialog open={true} onClose={onClose} fullWidth={true} maxWidth="md">
         <DialogTitle>Data Contract Request</DialogTitle>
         <DialogContent className="marketplace-lakehouse-entitlements__data-contract-creator__content">
-          <div>
-            Submit access request for{' '}
-            <span className="marketplace-lakehouse-text__emphasis">
-              {accessPointGroup.id}
-            </span>{' '}
-            Access Point Group in{' '}
-            <span className="marketplace-lakehouse-text__emphasis">
-              {viewerState.product.title}
-            </span>{' '}
-            Data Product
-          </div>
-          <ButtonGroup
-            className="marketplace-lakehouse-entitlements__data-contract-creator__consumer-type-btn-group"
-            variant="contained"
+          <CubesLoadingIndicator
+            isLoading={viewerState.creatingContractState.isInProgress}
           >
-            {Object.values(DataContractCreatorConsumerType).map((value) => (
-              <Button
-                key={value}
-                variant={consumerType === value ? 'contained' : 'outlined'}
-                onClick={(): void => {
-                  if (value !== consumerType) {
-                    setConsumerType(value);
-                    setUser(new LegendUser());
-                  }
-                }}
+            <CubesLoadingIndicatorIcon />
+          </CubesLoadingIndicator>
+          {!viewerState.creatingContractState.isInProgress && (
+            <>
+              <div>
+                Submit access request for{' '}
+                <span className="marketplace-lakehouse-text__emphasis">
+                  {accessPointGroup.id}
+                </span>{' '}
+                Access Point Group in{' '}
+                <span className="marketplace-lakehouse-text__emphasis">
+                  {viewerState.product.title}
+                </span>{' '}
+                Data Product
+              </div>
+              <ButtonGroup
+                className="marketplace-lakehouse-entitlements__data-contract-creator__consumer-type-btn-group"
+                variant="contained"
               >
-                {value}
-              </Button>
-            ))}
-          </ButtonGroup>
-          <UserSearchInput
-            className="marketplace-lakehouse-entitlements__data-contract-creator__user-input"
-            key={consumerType}
-            userValue={user}
-            setUserValue={(_user: LegendUser): void => setUser(_user)}
-            userSearchService={
-              consumerType === DataContractCreatorConsumerType.USER
-                ? legendMarketplaceStore.userSearchService
-                : undefined
-            }
-            label={consumerType}
-            required={true}
-            variant="outlined"
-            fullWidth={true}
-            initializing={loadingCurrentUser}
-          />
-          <TextField
-            className="marketplace-lakehouse-entitlements__data-contract-creator__business-justification-input"
-            required={true}
-            name="business-justification"
-            label="Business Justification"
-            variant="outlined"
-            fullWidth={true}
-            value={description}
-            onChange={(event: ChangeEvent<HTMLInputElement>) => {
-              setDescription(event.target.value);
-            }}
-          />
+                {Object.values(DataContractCreatorConsumerType).map((value) => (
+                  <Button
+                    key={value}
+                    variant={consumerType === value ? 'contained' : 'outlined'}
+                    onClick={(): void => {
+                      if (value !== consumerType) {
+                        setConsumerType(value);
+                        setUser(new LegendUser());
+                      }
+                    }}
+                  >
+                    {value}
+                  </Button>
+                ))}
+              </ButtonGroup>
+              <UserSearchInput
+                className="marketplace-lakehouse-entitlements__data-contract-creator__user-input"
+                key={consumerType}
+                userValue={user}
+                setUserValue={(_user: LegendUser): void => setUser(_user)}
+                userSearchService={
+                  consumerType === DataContractCreatorConsumerType.USER
+                    ? legendMarketplaceStore.userSearchService
+                    : undefined
+                }
+                label={consumerType}
+                required={true}
+                variant="outlined"
+                fullWidth={true}
+                initializing={loadingCurrentUser}
+              />
+              <TextField
+                className="marketplace-lakehouse-entitlements__data-contract-creator__business-justification-input"
+                required={true}
+                name="business-justification"
+                label="Business Justification"
+                variant="outlined"
+                fullWidth={true}
+                value={description}
+                onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                  setDescription(event.target.value);
+                }}
+              />
+            </>
+          )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={onCreate} variant="contained">
+          <Button
+            onClick={onCreate}
+            variant="contained"
+            disabled={viewerState.creatingContractState.isInProgress}
+          >
             Create
           </Button>
-          <Button onClick={onClose} variant="outlined">
+          <Button
+            onClick={onClose}
+            variant="outlined"
+            disabled={viewerState.creatingContractState.isInProgress}
+          >
             Cancel
           </Button>
         </DialogActions>

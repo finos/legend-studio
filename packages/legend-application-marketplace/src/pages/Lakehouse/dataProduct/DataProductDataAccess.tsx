@@ -19,7 +19,6 @@ import {
   clsx,
   MarkdownTextViewer,
   QuestionCircleIcon,
-  ExternalLinkIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import {
@@ -51,6 +50,8 @@ import { Button, Tab, Tabs } from '@mui/material';
 import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
 import { type PlainObject } from '@finos/legend-shared';
 import { DataContractCreator } from '../entitlements/EntitlementsDataContractCreator.js';
+import { EntitlementsDataContractViewer } from '../entitlements/EntitlementsDataContractViewer.js';
+import { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
 
 export const DataProductMarkdownTextViewer: React.FC<{ value: string }> = (
   props,
@@ -189,7 +190,8 @@ export const DataProductGroupAccessViewer = observer(
               REQUEST ACCESS
             </Button>
           );
-        case DataProductGroupAccess.PENDING:
+        case DataProductGroupAccess.PENDING_MANAGER_APPROVAL:
+        case DataProductGroupAccess.PENDING_DATA_OWNER_APPROVAL:
           return (
             <Button
               variant="contained"
@@ -197,8 +199,11 @@ export const DataProductGroupAccessViewer = observer(
               onClick={handleClick}
               loading={accessGroupState.fetchingAccessState.isInProgress}
             >
-              <ExternalLinkIcon />
-              <div>PENDING</div>
+              <div>
+                {val === DataProductGroupAccess.PENDING_MANAGER_APPROVAL
+                  ? 'PENDING MANAGER APPROVAL'
+                  : 'PENDING DATA OWNER APPROVAL'}
+              </div>
             </Button>
           );
         case DataProductGroupAccess.COMPLETED:
@@ -211,7 +216,6 @@ export const DataProductGroupAccessViewer = observer(
               ENTITLED
             </Button>
           );
-
         default:
           return null;
       }
@@ -376,6 +380,17 @@ export const DataProducteDataAccess = observer(
                   dataSpaceViewerState.dataContractAccessPointGroup
                 }
                 viewerState={dataSpaceViewerState}
+              />
+            )}
+            {dataSpaceViewerState.dataContract && (
+              <EntitlementsDataContractViewer
+                currentViewer={
+                  new EntitlementsDataContractViewerState(
+                    dataSpaceViewerState.dataContract,
+                    dataSpaceViewerState.lakeServerClient,
+                  )
+                }
+                onClose={() => dataSpaceViewerState.setDataContract(undefined)}
               />
             )}
           </div>

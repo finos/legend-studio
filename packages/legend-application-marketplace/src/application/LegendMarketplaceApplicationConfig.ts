@@ -54,6 +54,7 @@ export interface LegendMarketplaceApplicationConfigurationData
     url: string;
     subscriptionUrl: string;
     userSearchUrl?: string | undefined;
+    userProfileImageUrl?: string | undefined;
     oidcConfig?: LegendMarketplaceOidcConfig | undefined;
   };
   depot: { url: string };
@@ -86,6 +87,7 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
   readonly marketplaceServerUrl: string;
   readonly marketplaceSubscriptionUrl: string;
   readonly marketplaceUserSearchUrl?: string | undefined;
+  readonly marketplaceUserProfileImageUrl?: string | undefined;
   readonly marketplaceOidcConfig?: LegendMarketplaceOidcConfig | undefined;
   readonly engineServerUrl: string;
   readonly depotServerUrl: string;
@@ -124,6 +126,15 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
           guaranteeNonEmptyString(
             input.configData.marketplace.userSearchUrl,
             `Can't configure application: 'marketplace.userSearchUrl' field is missing or empty`,
+          ),
+        );
+    }
+    if (input.configData.marketplace.userProfileImageUrl) {
+      this.marketplaceUserProfileImageUrl =
+        LegendApplicationConfig.resolveAbsoluteUrl(
+          guaranteeNonEmptyString(
+            input.configData.marketplace.userProfileImageUrl,
+            `Can't configure application: 'marketplace.userProfileImageUrl' field is missing or empty`,
           ),
         );
     }

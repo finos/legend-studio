@@ -16,16 +16,22 @@
 
 import {
   type V1_AccessPointGroup,
+  type V1_ContractUserEventRecord,
+  type V1_DataContract,
+  type V1_DataProduct,
+  type V1_OrganizationalScope,
   V1_AccessPointGroupReference,
   V1_AdhocTeam,
   V1_AppDirOrganizationalScope,
   V1_ContractState,
-  type V1_ContractUserEventRecord,
-  type V1_DataContract,
-  type V1_DataProduct,
+  V1_UnknownOrganizationalScopeType,
   V1_UserApprovalStatus,
 } from '@finos/legend-graph';
-import { prettyCONSTName } from '@finos/legend-shared';
+import {
+  type LegendUser,
+  type UserSearchService,
+  prettyCONSTName,
+} from '@finos/legend-shared';
 
 export enum GridTiemStatus {
   SUCCESS = 'success',
@@ -43,11 +49,6 @@ const inValidContractState = [
   V1_ContractState.DRAFT,
   V1_ContractState.REJECTED,
   V1_ContractState.CLOSED,
-];
-
-const inProgressContractState = [
-  V1_ContractState.PENDING_DATA_OWNER_APPROVAL,
-  V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL,
 ];
 
 const idxLabel = (idx: number): string => {
@@ -119,10 +120,6 @@ export const isMemberOfContract = (
 
 export const isContractCompleted = (contract: V1_DataContract): boolean => {
   return contract.state === V1_ContractState.COMPLETED;
-};
-
-export const isContractPending = (contract: V1_DataContract): boolean => {
-  return inProgressContractState.includes(contract.state);
 };
 
 type ContractDetailOptions = {
@@ -342,4 +339,64 @@ export const buildTaskGridItemDetail = (
         })
       : []),
   ];
+};
+
+export const getUserById = async (
+  userId: string,
+  userSearchService: UserSearchService,
+): Promise<LegendUser | undefined> =>
+  (await userSearchService.executeSearch(userId)).filter(
+    (_user) => _user.id === userId,
+  )[0];
+
+export const stringifyOrganizationalScope = (
+  scope: V1_OrganizationalScope,
+): string => {
+  if (scope instanceof V1_AppDirOrganizationalScope) {
+    return scope.appDirNode
+      .map((node) => `${node.level}: ${node.appDirId}`)
+      .join(', ');
+  } else if (scope instanceof V1_AdhocTeam) {
+    return scope.users.map((user) => user.name).join(', ');
+  } else if (scope instanceof V1_UnknownOrganizationalScopeType) {
+    return JSON.stringify(scope.content);
+  }
+  return '';
+};
+
+export const isContractStateComplete = (
+  currentContractState: V1_ContractState,
+  stateToCheck: V1_ContractState,
+): boolean => {
+  switch (stateToCheck) {
+    case V1_ContractState.DRAFT:
+      return [
+        V1_ContractState.CLOSED,
+        V1_ContractState.COMPLETED,
+        V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL,
+        V1_ContractState.PENDING_DATA_OWNER_APPROVAL,
+        V1_ContractState.REJECTED,
+      ].includes(currentContractState);
+    case V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL:
+      return [
+        V1_ContractState.CLOSED,
+        V1_ContractState.COMPLETED,
+        V1_ContractState.PENDING_DATA_OWNER_APPROVAL,
+        V1_ContractState.REJECTED,
+      ].includes(currentContractState);
+    case V1_ContractState.PENDING_DATA_OWNER_APPROVAL:
+      return [
+        V1_ContractState.CLOSED,
+        V1_ContractState.COMPLETED,
+        V1_ContractState.REJECTED,
+      ].includes(currentContractState);
+    case V1_ContractState.CLOSED:
+      return [V1_ContractState.CLOSED].includes(currentContractState);
+    case V1_ContractState.COMPLETED:
+      return [V1_ContractState.COMPLETED].includes(currentContractState);
+    case V1_ContractState.REJECTED:
+      return [V1_ContractState.REJECTED].includes(currentContractState);
+    default:
+      return false;
+  }
 };

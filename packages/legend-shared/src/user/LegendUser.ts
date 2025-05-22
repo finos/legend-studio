@@ -25,11 +25,12 @@ export class LegendUser {
   divisionName: string | undefined;
   firstName: string | undefined;
   id!: string;
-  lastName!: string;
+  lastName!: string | undefined;
   title: string | undefined;
 
-  constructor(id?: string | undefined) {
+  constructor(id?: string | undefined, displayName?: string | undefined) {
     this.id = id ?? '';
+    this.displayName = displayName ?? '';
   }
 
   static readonly serialization = new SerializationFactory(
