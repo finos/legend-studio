@@ -131,4 +131,9 @@
     overflow: auto;
     background: var(--color-light-grey-300);
   }
+
+  &__footer {
+    justify-self: end;
+    color: var(--color-light-grey-300);
+  }
 }

@@ -410,6 +410,9 @@ export const EntitlementsDataContractViewer = observer(
               </Box>
             </>
           )}
+          <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__footer">
+            Contract ID: {currentViewer.value.guid}
+          </Box>
         </DialogContent>
       </Dialog>
     );
