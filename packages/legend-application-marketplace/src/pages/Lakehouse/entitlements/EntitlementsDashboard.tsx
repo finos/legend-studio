@@ -186,7 +186,7 @@ export const EntitlementsDashboard = withAuth(
       new Map<string, LegendUser | string>(),
     );
     const [selectedTaskIdsSet, setSelectedTaskIdsSet] = useState(
-      new Set<string>(searchParams.get('selectedTasks') ?? []),
+      new Set<string>(searchParams.get('selectedTasks')?.split(',') ?? []),
     );
     const [selectedTab, setSelectedTab] = useState(
       EntitlementsTabs.PENDING_TASKS,
