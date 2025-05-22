@@ -223,13 +223,21 @@ export const EntitlementsDataContractViewer = observer(
             V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL &&
           currentTask ? (
             <>
-              <Link href={generateLakehouseTaskPath(currentTask.rec.taskId)}>
+              <Link
+                href={legendMarketplaceStore.applicationStore.navigationService.navigator.generateAddress(
+                  generateLakehouseTaskPath(currentTask.rec.taskId),
+                )}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 Privilege Manager Approval
               </Link>
               <IconButton
                 onClick={() =>
                   copyTaskLink(
-                    generateLakehouseTaskPath(currentTask.rec.taskId),
+                    legendMarketplaceStore.applicationStore.navigationService.navigator.generateAddress(
+                      generateLakehouseTaskPath(currentTask.rec.taskId),
+                    ),
                   )
                 }
               >
@@ -272,13 +280,21 @@ export const EntitlementsDataContractViewer = observer(
           currentState === V1_ContractState.PENDING_DATA_OWNER_APPROVAL &&
           currentTask ? (
             <>
-              <Link href={generateLakehouseTaskPath(currentTask.rec.taskId)}>
+              <Link
+                href={legendMarketplaceStore.applicationStore.navigationService.navigator.generateAddress(
+                  generateLakehouseTaskPath(currentTask.rec.taskId),
+                )}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 Data Producer Approval
               </Link>
               <IconButton
                 onClick={() =>
                   copyTaskLink(
-                    generateLakehouseTaskPath(currentTask.rec.taskId),
+                    legendMarketplaceStore.applicationStore.navigationService.navigator.generateAddress(
+                      generateLakehouseTaskPath(currentTask.rec.taskId),
+                    ),
                   )
                 }
               >
