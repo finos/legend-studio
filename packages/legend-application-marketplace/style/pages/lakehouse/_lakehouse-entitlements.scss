@@ -124,12 +124,20 @@
 
   &__timeline {
     width: 100%;
+
+    &__content {
+      font-size: 1.4rem;
+    }
   }
 
   &__user-list {
     max-height: 20rem;
     overflow: auto;
     background: var(--color-light-grey-300);
+
+    &__container {
+      background: var(--color-light-grey-150);
+    }
   }
 
   &__footer {

@@ -391,7 +391,7 @@ export const EntitlementsDataContractViewer = observer(
                 <Timeline>
                   {steps.map((step, index) => (
                     <TimelineItem key={step.key}>
-                      <TimelineOppositeContent>
+                      <TimelineOppositeContent className="marketplace-lakehouse-entitlements__data-contract-viewer__timeline__content">
                         {step.label}
                       </TimelineOppositeContent>
                       <TimelineSeparator>
@@ -403,7 +403,9 @@ export const EntitlementsDataContractViewer = observer(
                         />
                         {index < steps.length - 1 && <TimelineConnector />}
                       </TimelineSeparator>
-                      <TimelineContent>{step.description}</TimelineContent>
+                      <TimelineContent className="marketplace-lakehouse-entitlements__data-contract-viewer__timeline__content">
+                        {step.description}
+                      </TimelineContent>
                     </TimelineItem>
                   ))}
                 </Timeline>
