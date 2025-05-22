@@ -166,6 +166,17 @@ export const V1_DataContractsRecordModelSchema = createModelSchema(
   },
 );
 
+export const V1_contractUserEventPayloadModelSchema = createModelSchema(
+  V1_ContractUserEventRecord,
+  {
+    type: primitive(),
+    managerIdentity: primitive(),
+    candidateIdentity: primitive(),
+    taskId: primitive(),
+    eventTimestamp: primitive(),
+  },
+);
+
 export const V1_contractUserEventRecordModelSchema = createModelSchema(
   V1_ContractUserEventRecord,
   {
@@ -173,7 +184,7 @@ export const V1_contractUserEventRecordModelSchema = createModelSchema(
     dataContractId: primitive(),
     status: primitive(),
     consumer: primitive(),
-    eventPayload: primitive(),
+    eventPayload: usingModelSchema(V1_contractUserEventPayloadModelSchema),
     type: primitive(),
   },
 );
