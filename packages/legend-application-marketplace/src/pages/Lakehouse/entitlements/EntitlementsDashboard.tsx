@@ -28,6 +28,8 @@ import { flowResult } from 'mobx';
 import {
   DataGrid,
   type DataGridCellRendererParams,
+  type DataGridFirstDataRenderedEvent,
+  type DataGridIRowNode,
   type DataGridRowSelectedEvent,
   type DataGridRowSelectionOptions,
 } from '@finos/legend-lego/data-grid';
@@ -184,7 +186,11 @@ export const EntitlementsDashboard = withAuth(
       new Map<string, LegendUser | string>(),
     );
     const [selectedTasksSet, setSelectedTasksSet] = useState(
-      new Set<V1_ContractUserEventRecord>(),
+      new Set<V1_ContractUserEventRecord>(
+        tasks?.filter((task) =>
+          searchParams.get('selectedTasks')?.includes(task.taskId),
+        ) ?? [],
+      ),
     );
     const [value, setValue] = useState(EntitlementsTabs.PENDING_TASKS);
 
@@ -219,12 +225,33 @@ export const EntitlementsDashboard = withAuth(
           newSet.delete(selectedTask);
         }
         setSelectedTasksSet(newSet);
-        setSearchParams(
-          `selectedTasks=${Array.from(newSet.values())
-            .map((task) => task.taskId)
-            .join(',')}`,
-        );
+        setSearchParams((params) => {
+          params.set(
+            'selectedTasks',
+            newSet.size === 0
+              ? ''
+              : Array.from(newSet.values())
+                  .map((task) => task.taskId)
+                  .join(','),
+          );
+          return params;
+        });
       }
+    };
+
+    const handleFirstDataRendered = (
+      event: DataGridFirstDataRenderedEvent<
+        V1_ContractUserEventRecord,
+        unknown
+      >,
+    ) => {
+      const nodesToSelect: DataGridIRowNode<V1_ContractUserEventRecord>[] = [];
+      event.api.forEachNode((node) => {
+        if (node.data && selectedTasksSet.has(node.data)) {
+          nodesToSelect.push(node);
+        }
+      });
+      event.api.setNodesSelected({ nodes: nodesToSelect, newValue: true });
     };
 
     const rowSelection = useMemo<
@@ -298,6 +325,7 @@ export const EntitlementsDashboard = withAuth(
                     rowHeight={45}
                     rowSelection={rowSelection}
                     onRowSelected={handleRowSelected}
+                    onFirstDataRendered={handleFirstDataRendered}
                     columnDefs={[
                       {
                         minWidth: 50,
