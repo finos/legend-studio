@@ -199,5 +199,17 @@
 
   &__error {
     background: var(--tw-color-red-300);
+
+    &__content {
+      line-height: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    &__user {
+      width: fit-content;
+      display: inline-block;
+      position: relative;
+      bottom: -10px;
+    }
   }
 }

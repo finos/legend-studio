@@ -309,10 +309,13 @@ const EntitlementsDashboardActionModal = (props: {
                   key={task.taskId}
                   className="marketplace-lakehouse-entitlements__data-contract-approval__error"
                 >
-                  <div>
+                  <div className="marketplace-lakehouse-entitlements__data-contract-approval__error__content">
                     Encountered an error{' '}
                     {action === 'approve' ? 'approving' : 'denying'} request for{' '}
-                    {userComponent} for Access Point Group{' '}
+                    <div className="marketplace-lakehouse-entitlements__data-contract-approval__error__user">
+                      {userComponent}
+                    </div>{' '}
+                    for Access Point Group{' '}
                     <span className="marketplace-lakehouse-text__emphasis">
                       {accessPointGroup}
                     </span>{' '}
