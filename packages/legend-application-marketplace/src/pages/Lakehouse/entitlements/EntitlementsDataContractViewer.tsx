@@ -380,7 +380,7 @@ export const EntitlementsDataContractViewer = observer(
                 Data Product
               </div>
               <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata">
-                <div>
+                <div className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-by">
                   <b>Ordered By: </b>
                   {isLoadingUserData ? (
                     <CircularProgress size={20} />
@@ -396,27 +396,25 @@ export const EntitlementsDataContractViewer = observer(
                     currentViewer.value.createdBy
                   )}
                 </div>
-                <div>
+                <div className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-for">
                   <b>Ordered For: </b>
                   {isLoadingUserData ? (
                     <CircularProgress size={20} />
                   ) : currentViewer.value.consumer instanceof V1_AdhocTeam ? (
-                    currentViewer.value.consumer.users
-                      .map((user) =>
-                        userData.get(user.name) ? (
-                          <UserDisplay
-                            key={user.name}
-                            user={userData.get(user.name)!}
-                            imgSrc={legendMarketplaceStore.applicationStore.config.marketplaceUserProfileImageUrl?.replace(
-                              '{userId}',
-                              userData.get(user.name)?.id ?? '',
-                            )}
-                          />
-                        ) : (
-                          user.name
-                        ),
-                      )
-                      .join(', ')
+                    currentViewer.value.consumer.users.map((user, index) =>
+                      userData.get(user.name) ? (
+                        <UserDisplay
+                          key={user.name}
+                          user={userData.get(user.name)!}
+                          imgSrc={legendMarketplaceStore.applicationStore.config.marketplaceUserProfileImageUrl?.replace(
+                            '{userId}',
+                            userData.get(user.name)?.id ?? '',
+                          )}
+                        />
+                      ) : (
+                        `${user.name}${index < (currentViewer.value.consumer as V1_AdhocTeam).users.length - 1 ? ', ' : ''}`
+                      ),
+                    )
                   ) : (
                     stringifyOrganizationalScope(currentViewer.value.consumer)
                   )}

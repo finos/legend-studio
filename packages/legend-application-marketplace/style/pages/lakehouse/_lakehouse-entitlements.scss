@@ -120,6 +120,11 @@
     background: var(--color-light-grey-300);
     padding: 1rem;
     margin: 1rem 0 3rem;
+
+    &__ordered-by,
+    &__ordered-for {
+      @include flexVCenter;
+    }
   }
 
   &__timeline {
