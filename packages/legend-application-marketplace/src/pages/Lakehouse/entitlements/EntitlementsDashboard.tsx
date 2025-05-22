@@ -233,7 +233,7 @@ const EntitlementsDashboardActionModal = (props: {
     );
     setIsLoading(false);
     // If everything was successful, show a success message and close the modal.
-    if (errorMessages.length === 0) {
+    if (currentErrorMessages.length === 0) {
       dashboardState.lakehouseEntitlementsStore.applicationStore.notificationService.notifySuccess(
         `${selectedTasks.length} selected contract requests have been ${action === 'approve' ? 'approved' : 'denied'} successfully.`,
       );
