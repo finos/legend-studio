@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.101
+
+### Patch Changes
+
+- [#4105](https://github.com/finos/legend-studio/pull/4105) [`c034855`](https://github.com/finos/legend-studio/commit/c03485552bf7fe0382f88bf99547e4421e075bf0) ([@travisstebbins](https://github.com/travisstebbins)) - Lakehouse entitlements improve approver flow
+
 ## 7.1.100
 
 ### Patch Changes

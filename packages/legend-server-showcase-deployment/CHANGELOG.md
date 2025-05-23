@@ -1,5 +1,7 @@
 # @finos/legend-server-showcase-deployment
 
+## 13.67.0
+
 ## 13.66.0
 
 ## 13.65.0

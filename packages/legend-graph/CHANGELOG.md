@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.1.32
+
+### Patch Changes
+
+- [#4103](https://github.com/finos/legend-studio/pull/4103) [`da90ba5`](https://github.com/finos/legend-studio/commit/da90ba5032e0287116f2caceeeefc36ac3a27bda) ([@travisstebbins](https://github.com/travisstebbins)) - Fix contract task deserialization
+
 ## 32.1.31
 
 ### Patch Changes
