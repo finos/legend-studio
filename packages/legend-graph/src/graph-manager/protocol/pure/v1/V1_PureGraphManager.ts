@@ -2110,16 +2110,24 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     codeBlock: string,
     graph: PureModel,
     offset: number | undefined,
+    options?: {
+      ignoreElements: string[] | undefined;
+    },
   ): Promise<CodeCompletionResult> {
+    const pureModelContext = this.getFullGraphModelContext(
+      graph,
+      V1_PureGraphManager.DEV_PROTOCOL_VERSION,
+    );
+    if (
+      pureModelContext instanceof V1_PureModelContextData &&
+      options?.ignoreElements
+    ) {
+      pureModelContext.elements = pureModelContext.elements.filter(
+        (element) => !options.ignoreElements?.includes(element.path),
+      );
+    }
     return this.engine.getCodeCompletion(
-      new V1_CompleteCodeInput(
-        codeBlock,
-        this.getFullGraphModelContext(
-          graph,
-          V1_PureGraphManager.DEV_PROTOCOL_VERSION,
-        ),
-        -1,
-      ),
+      new V1_CompleteCodeInput(codeBlock, pureModelContext, -1),
     );
   }
 

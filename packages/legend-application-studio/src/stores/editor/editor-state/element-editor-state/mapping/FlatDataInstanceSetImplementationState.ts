@@ -50,6 +50,7 @@ import {
   stub_RawLambda,
   isStubbed_RawLambda,
   SetImplementationExplicitReference,
+  type CodeCompletionResult,
 } from '@finos/legend-graph';
 import { MAPPING_ELEMENT_TYPE } from './MappingEditorState.js';
 
@@ -296,6 +297,14 @@ export class EmbeddedFlatDataInstanceSetImplementationState
     this.propertyMappingStates = this.getPropertyMappingStates(
       setImplementation.propertyMappings,
     );
+  }
+  typeAheadEnabled = false;
+  getCodeComplete(input: string): Promise<CodeCompletionResult> {
+    throw new Error('Method not implemented.');
+  }
+
+  setTypeAhead(val: boolean): void {
+    this.typeAheadEnabled = val;
   }
 
   get lambdaId(): string {

@@ -109,6 +109,7 @@ import {
 } from '@finos/legend-lego/graph-editor';
 import { EmbeddedDataType } from './editor-state/ExternalFormatState.js';
 import { createEmbeddedData } from './editor-state/element-editor-state/data/EmbeddedDataState.js';
+import { dataProduct_setTitle } from '../graph-modifier/DSL_DataProduct_GraphModifierHelper.js';
 
 export const CUSTOM_LABEL = '(custom)';
 
@@ -481,6 +482,33 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
   }
 }
 
+export class NewLakehouseDataProductDriver extends NewElementDriver<DataProduct> {
+  title: string;
+
+  constructor(editorStore: EditorStore) {
+    super(editorStore);
+    this.title = '';
+    makeObservable(this, {
+      title: observable,
+      setTitle: action,
+      isValid: computed,
+    });
+  }
+
+  override get isValid(): boolean {
+    return Boolean(this.title);
+  }
+
+  setTitle(val: string) {
+    this.title = val;
+  }
+  override createElement(name: string): DataProduct {
+    const dataProduct = new DataProduct(name);
+    dataProduct_setTitle(dataProduct, this.title);
+    return dataProduct;
+  }
+}
+
 export class NewServiceDriver extends NewElementDriver<Service> {
   mappingOption?: PackageableElementOption<Mapping> | undefined;
   runtimeOption: RuntimeOption;
@@ -767,6 +795,9 @@ export class NewElementState {
         case PACKAGEABLE_ELEMENT_TYPE.SERVICE:
           driver = new NewServiceDriver(this.editorStore);
           break;
+        case PACKAGEABLE_ELEMENT_TYPE._DATA_PRODUCT:
+          driver = new NewLakehouseDataProductDriver(this.editorStore);
+          break;
         default: {
           const extraNewElementDriverCreators = this.editorStore.pluginManager
             .getApplicationPlugins()
@@ -1001,7 +1032,9 @@ export class NewElementState {
         element = new GenerationSpecification(name);
         break;
       case PACKAGEABLE_ELEMENT_TYPE._DATA_PRODUCT:
-        element = new DataProduct(name);
+        element = this.getNewElementDriver(
+          NewLakehouseDataProductDriver,
+        ).createElement(name);
         break;
       default: {
         const extraNewElementFromStateCreators = this.editorStore.pluginManager

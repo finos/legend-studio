@@ -48,12 +48,18 @@ const NewAccessPointAccessPOint = observer(
     const handleIdChange: React.ChangeEventHandler<HTMLInputElement> = (
       event,
     ) => setId(event.target.value);
+    const [description, setDescription] = useState<string | undefined>(
+      undefined,
+    );
+    const handleDescriptionChange: React.ChangeEventHandler<
+      HTMLInputElement
+    > = (event) => setDescription(event.target.value);
     const handleClose = () => {
       dataProductEditorState.setAccessPointModal(false);
     };
     const handleSubmit = () => {
       if (id) {
-        dataProductEditorState.addAccessPoint(id);
+        dataProductEditorState.addAccessPoint(id, description, 'default');
         handleClose();
       }
     };
@@ -63,14 +69,12 @@ const NewAccessPointAccessPOint = observer(
     const disableCreateButton =
       id === '' ||
       id === undefined ||
-      dataProductEditorState.accessPointStates
-        .map((e) => e.accessPoint.id)
-        .includes(id);
+      dataProductEditorState.accessPoints.map((e) => e.id).includes(id);
     const errors =
       id === ''
         ? `ID is empty`
-        : dataProductEditorState.accessPointStates
-              .map((e) => e.accessPoint.id)
+        : dataProductEditorState.accessPoints
+              .map((e) => e.id)
               .includes(id ?? '')
           ? `ID already exists`
           : undefined;
@@ -101,6 +105,9 @@ const NewAccessPointAccessPOint = observer(
         >
           <div className="modal__title">New Access Point</div>
           <div>
+            <div className="panel__content__form__section__header__label">
+              ID
+            </div>
             <InputWithInlineValidation
               className={clsx('input new-access-point-modal__id-input', {
                 'input--dark': true,
@@ -110,6 +117,21 @@ const NewAccessPointAccessPOint = observer(
               value={id}
               onChange={handleIdChange}
               placeholder="Access Point ID"
+              error={errors}
+            />
+          </div>
+          <div>
+            <div className="panel__content__form__section__header__label">
+              Description
+            </div>
+            <InputWithInlineValidation
+              className={clsx('input new-access-point-modal__id-input', {
+                'input--dark': true,
+              })}
+              spellCheck={false}
+              value={description}
+              onChange={handleDescriptionChange}
+              placeholder="Access Point Description"
               error={errors}
             />
           </div>
@@ -172,7 +194,7 @@ export const LakehouseDataProductAcccessPointEditor = observer(
                 <InlineLambdaEditor
                   className={'access-point-editor__lambda-editor'}
                   disabled={
-                    lambdaEditorState.val.state
+                    lambdaEditorState.val.state.state
                       .isConvertingTransformLambdaObjects
                   }
                   lambdaEditorState={lambdaEditorState}
@@ -237,7 +259,9 @@ export const DataProductEditor = observer(() => {
   const dataProductEditorState =
     editorStore.tabManagerState.getCurrentEditorState(DataProductEditorState);
   const product = dataProductEditorState.product;
-  const accessPointStates = dataProductEditorState.accessPointStates;
+  const accessPointStates = dataProductEditorState.accessPointGroupStates
+    .map((e) => e.accessPointStates)
+    .flat();
   const isReadOnly = dataProductEditorState.isReadOnly;
   const openNewModal = () => {
     dataProductEditorState.setAccessPointModal(true);

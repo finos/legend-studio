@@ -88,6 +88,7 @@ export {
 export { QueryBuilderResultValues } from './components/result/QueryBuilderResultPanel.js';
 export { getTDSColumnCustomizations } from './components/result/tds/QueryBuilderTDSSimpleGridResult.js';
 export { getFilterTDSColumnCustomizations } from './components/result/tds/QueryBuilderTDSGridResult.js';
+export { getRowDataFromExecutionResult } from './components/result/tds/QueryBuilderTDSResultShared.js';
 export {
   QueryBuilderTaggedValueInfoTooltip,
   QueryBuilderPropertyInfoTooltip,

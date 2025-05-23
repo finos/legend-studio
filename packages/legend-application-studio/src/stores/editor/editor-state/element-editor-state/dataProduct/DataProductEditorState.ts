@@ -27,6 +27,7 @@ import {
   GRAPH_MANAGER_EVENT,
   isStubbed_RawLambda,
   AccessPointGroup,
+  CodeCompletionResult,
 } from '@finos/legend-graph';
 import type { EditorStore } from '../../../EditorStore.js';
 import { ElementEditorState } from '../ElementEditorState.js';
@@ -48,10 +49,10 @@ import {
 import { LambdaEditorState } from '@finos/legend-query-builder';
 
 export class AccessPointState {
-  readonly state: DataProductEditorState;
+  readonly state: AccessPointGroupState;
   accessPoint: AccessPoint;
 
-  constructor(val: AccessPoint, editorState: DataProductEditorState) {
+  constructor(val: AccessPoint, editorState: AccessPointGroupState) {
     this.accessPoint = val;
     this.state = editorState;
   }
@@ -62,9 +63,11 @@ export class AccessPointLambdaEditorState extends LambdaEditorState {
   readonly val: LakehouseAccessPointState;
 
   constructor(val: LakehouseAccessPointState) {
-    super('', LAMBDA_PIPE);
+    super('', LAMBDA_PIPE, {
+      typeAheadEnabled: true,
+    });
     this.val = val;
-    this.editorStore = val.state.editorStore;
+    this.editorStore = val.state.state.editorStore;
   }
 
   override get lambdaId(): string {
@@ -104,7 +107,7 @@ export class AccessPointLambdaEditorState extends LambdaEditorState {
   }): GeneratorFn<void> {
     if (
       !isStubbed_RawLambda(this.val.accessPoint.func) &&
-      !this.val.state.isConvertingTransformLambdaObjects
+      !this.val.state.state.isConvertingTransformLambdaObjects
     ) {
       try {
         const lambdas = new Map<string, RawLambda>();
@@ -135,12 +138,33 @@ export class AccessPointLambdaEditorState extends LambdaEditorState {
       this.setLambdaString('');
     }
   }
+
+  override async getCodeComplete(input: string): Promise<CodeCompletionResult> {
+    try {
+      return (await this.editorStore.graphManagerState.graphManager.getCodeComplete(
+        input,
+        this.editorStore.graphManagerState.graph,
+        undefined,
+        {
+          ignoreElements: [this.val.state.state.product.path],
+        },
+      )) as unknown as CodeCompletionResult;
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.logService.error(
+        LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
+        error,
+      );
+      return new CodeCompletionResult();
+    }
+  }
 }
+
 export class LakehouseAccessPointState extends AccessPointState {
   declare accessPoint: LakehouseAccessPoint;
   lambdaState: AccessPointLambdaEditorState;
 
-  constructor(val: LakehouseAccessPoint, editorState: DataProductEditorState) {
+  constructor(val: LakehouseAccessPoint, editorState: AccessPointGroupState) {
     super(val, editorState);
     makeObservable(this, {
       lambdaState: observable,
@@ -150,9 +174,48 @@ export class LakehouseAccessPointState extends AccessPointState {
   }
 }
 
+export class AccessPointGroupState {
+  readonly state: DataProductEditorState;
+  value: AccessPointGroup;
+  accessPointStates: AccessPointState[] = [];
+
+  constructor(val: AccessPointGroup, editorState: DataProductEditorState) {
+    this.value = val;
+    this.accessPointStates = val.accessPoints.map((e) =>
+      this.buildAccessPointState(e),
+    );
+    this.state = editorState;
+    makeObservable(this, {
+      value: observable,
+      accessPointStates: observable,
+      addAccessPoint: action,
+      deleteAccessPoint: action,
+    });
+  }
+
+  deleteAccessPoint(val: AccessPointState): void {
+    const state = this.accessPointStates.find((a) => a === val);
+    deleteEntry(this.accessPointStates, state);
+    dataProduct_deleteAccessPoint(this.value, val.accessPoint);
+  }
+
+  addAccessPoint(point: AccessPoint): void {
+    const accessPointState = this.buildAccessPointState(point);
+    addUniqueEntry(this.accessPointStates, accessPointState);
+    dataProduct_addAccessPoint(this.value, point);
+  }
+
+  buildAccessPointState(val: AccessPoint): AccessPointState {
+    if (val instanceof LakehouseAccessPoint) {
+      return new LakehouseAccessPointState(val, this);
+    }
+    return new AccessPointState(val, this);
+  }
+}
+
 export class DataProductEditorState extends ElementEditorState {
   accessPointModal = false;
-  accessPointStates: AccessPointState[] = [];
+  accessPointGroupStates: AccessPointGroupState[] = [];
   isConvertingTransformLambdaObjects = false;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
@@ -161,25 +224,24 @@ export class DataProductEditorState extends ElementEditorState {
     makeObservable(this, {
       product: computed,
       accessPointModal: observable,
-      accessPointStates: observable,
-      deleteAccessPoint: observable,
+      accessPointGroupStates: observable,
       isConvertingTransformLambdaObjects: observable,
       setAccessPointModal: action,
       addAccessPoint: action,
       convertAccessPointsFuncObjects: flow,
     });
-    this.accessPointStates = this.product.accessPointGroups
-      .map((e) => e.accessPoints)
-      .flat()
-      .map((e) => this.buildAccessPointState(e));
+    this.accessPointGroupStates = this.product.accessPointGroups.map(
+      (e) => new AccessPointGroupState(e, this),
+    );
   }
 
   *convertAccessPointsFuncObjects(): GeneratorFn<void> {
     const lambdas = new Map<string, RawLambda>();
     const index = new Map<string, LakehouseAccessPointState>();
-    const states = this.accessPointStates.filter(
-      filterByType(LakehouseAccessPointState),
-    );
+    const states = this.accessPointGroupStates
+      .map((e) => e.accessPointStates)
+      .flat()
+      .filter(filterByType(LakehouseAccessPointState));
     states.forEach((pm) => {
       if (!isStubbed_RawLambda(pm.accessPoint.func)) {
         lambdas.set(pm.lambdaState.lambdaId, pm.accessPoint.func);
@@ -211,50 +273,33 @@ export class DataProductEditorState extends ElementEditorState {
     }
   }
 
-  buildAccessPointState(val: AccessPoint): AccessPointState {
-    if (val instanceof LakehouseAccessPoint) {
-      return new LakehouseAccessPointState(val, this);
-    }
-    return new AccessPointState(val, this);
-  }
-
   setAccessPointModal(val: boolean): void {
     this.accessPointModal = val;
   }
 
-  deleteAccessPoint(val: AccessPointState): void {
-    const ap = val.accessPoint;
-    // find group
-    const group = this.product.accessPointGroups.find((g) =>
-      Boolean(g.accessPoints.find((v) => v === ap)),
-    );
-    if (group) {
-      dataProduct_deleteAccessPoint(group, ap);
-      deleteEntry(this.accessPointStates, val);
-    }
-  }
-
-  addAccessPoint(id: string): void {
+  addAccessPoint(
+    id: string,
+    description: string | undefined,
+    accessPointGroup: AccessPointGroupState | string,
+  ): void {
     const accesspoint = new LakehouseAccessPoint(
       id,
       LakehouseTargetEnv.Snowflake,
       stub_RawLambda(),
     );
-
-    const group =
-      this.product.accessPointGroups[0] ?? this.createBareGroupAndAdd();
-    dataProduct_addAccessPoint(group, accesspoint);
-    addUniqueEntry(
-      this.accessPointStates,
-      this.buildAccessPointState(accesspoint),
-    );
+    accesspoint.description = description;
+    const groupState =
+      accessPointGroup instanceof AccessPointGroupState
+        ? accessPointGroup
+        : this.createBareGroupAndAdd(accessPointGroup);
+    groupState.addAccessPoint(accesspoint);
   }
 
-  createBareGroupAndAdd(): AccessPointGroup {
+  createBareGroupAndAdd(id: string): AccessPointGroupState {
     const group = new AccessPointGroup();
-    group.id = 'default';
+    group.id = 'id';
     dataProduct_addAccessPointGroup(this.product, group);
-    return group;
+    return new AccessPointGroupState(group, this);
   }
 
   get product(): DataProduct {

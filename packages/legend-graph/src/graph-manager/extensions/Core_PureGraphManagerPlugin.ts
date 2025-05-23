@@ -31,6 +31,7 @@ export class Core_PureGraphManagerPlugin extends PureGraphManagerPlugin {
       CORE_PURE_PATH.PROFILE_TEMPORAL,
       CORE_PURE_PATH.MAPPING,
       CORE_PURE_PATH.RUNTIME,
+      CORE_PURE_PATH.RELATION,
     ];
   }
 }

@@ -149,6 +149,11 @@
     &__item {
       padding-top: 1rem;
 
+      &__header-wrapper {
+        @include flexVCenter;
+        @include flexHSpaceBetween;
+      }
+
       &__header {
         padding-left: 1rem;
         padding-right: 1rem;
@@ -193,6 +198,57 @@
         font-weight: 500;
         user-select: none;
         border: 0.2rem dashed var(--color-dark-grey-200);
+      }
+    }
+
+    &__typeAhead {
+      @include flexVCenter;
+
+      height: 100%;
+      padding: 0.5rem;
+
+      &__label {
+        @include flexCenter;
+
+        background: var(--color-dark-grey-200);
+        padding: 0 1rem;
+        height: 2.8rem;
+        border-radius: 0.2rem 0 0 0.2rem;
+        font-size: 1.4rem;
+        user-select: none;
+        color: var(--color-light-grey-100);
+      }
+
+      &__toggler__btn {
+        @include flexVCenter;
+
+        background: var(--color-dark-grey-200);
+        padding: 0 0.5rem 0 0;
+        height: 2.8rem;
+
+        svg {
+          font-size: 2.2rem;
+          color: var(--color-dark-grey-100);
+        }
+
+        &[disabled] svg,
+        &[disabled]:hover svg {
+          cursor: not-allowed;
+          color: var(--color-dark-grey-180);
+        }
+      }
+
+      &__toggler__btn--toggled {
+        svg {
+          font-size: 2rem;
+          color: var(--color-blue-150);
+        }
+
+        &[disabled] svg,
+        &[disabled]:hover svg {
+          cursor: not-allowed;
+          color: var(--color-dark-grey-100);
+        }
       }
     }
 

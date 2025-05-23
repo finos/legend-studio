@@ -78,7 +78,7 @@ export class IngestionManager {
     actionState?.setMessage(
       `Discovering associated ingest environment for DID ${appDirNode.appDirId}...`,
     );
-    await this.identifyIngestDeploymentServer(appDirNode, token);
+    // await this.identifyIngestDeploymentServer(appDirNode, token);
     actionState?.setMessage(
       `Validating ingest with server ${this.ingestDeploymentServerClient.baseUrl ?? ''} for realm ${this.ingestDeploymentServerClient.environmentClassification}...`,
     );

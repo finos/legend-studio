@@ -23,7 +23,9 @@
  * right layer
  */
 
+import type { PackageableElement } from './metamodel/pure/packageableElements/PackageableElement.js';
 import {
+  CORE_PURE_PATH,
   ELEMENT_PATH_DELIMITER,
   SOURCE_INFORMATION_PROPERTY_KEY_SUFFIX,
 } from './MetaModelConst.js';
@@ -125,3 +127,9 @@ export const pruneSourceInformation = <T extends object>(object: T): T =>
         .toLowerCase()
         .endsWith(SOURCE_INFORMATION_PROPERTY_KEY_SUFFIX.toLowerCase()),
   );
+
+export const TYPE_ARGUMENTS_TYPES: string[] = [CORE_PURE_PATH.RELATION];
+
+export const requireTypeArugments = (type: PackageableElement): boolean => {
+  return TYPE_ARGUMENTS_TYPES.includes(type.path);
+};

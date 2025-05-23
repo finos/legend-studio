@@ -66,6 +66,8 @@ import {
   Snowflake_BrandIcon,
   InputWithInlineValidation,
   LongArrowRightIcon,
+  CheckSquareIcon,
+  SquareIcon,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import {
@@ -105,6 +107,10 @@ import {
   RelationalDatabaseConnection,
   type FunctionActivator,
   GenericType,
+  requireTypeArugments,
+  GenericTypeExplicitReference,
+  CORE_PURE_PATH,
+  TDSExecutionResult,
 } from '@finos/legend-graph';
 import {
   type ApplicationStore,
@@ -141,9 +147,12 @@ import {
   type QueryBuilderState,
   ExecutionPlanViewer,
   FunctionQueryBuilderState,
+  getTDSColumnCustomizations,
   LambdaEditor,
   LambdaParameterValuesEditor,
+  QUERY_BUILDER_TEST_ID,
   QueryBuilderAdvancedWorkflowState,
+  getRowDataFromExecutionResult,
 } from '@finos/legend-query-builder';
 import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
 import { graph_renameElement } from '../../../../stores/graph-modifier/GraphModifierHelper.js';
@@ -155,6 +164,10 @@ import { FunctionTestableEditor } from './testable/FunctionTestableEditor.js';
 import { DocumentationLink } from '@finos/legend-lego/application';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../__lib__/LegendStudioDocumentation.js';
 import { openDataCube } from '../../../../stores/editor/data-cube/LegendStudioDataCubeHelper.js';
+import {
+  DataGrid,
+  type DataGridColumnDefinition,
+} from '@finos/legend-lego/data-grid';
 
 enum FUNCTION_PARAMETER_TYPE {
   CLASS = 'CLASS',
@@ -515,10 +528,18 @@ const ReturnTypeEditor = observer(
       label: returnType.value.rawType.name,
     };
     const changeType = (val: PackageableElementOption<Type>): void => {
-      function_setReturnGenericType(
-        functionElement,
-        new GenericType(val.value),
-      );
+      const value = val.value;
+      const genericType = new GenericType(value);
+      if (requireTypeArugments(value)) {
+        genericType.typeArguments = [
+          GenericTypeExplicitReference.create(
+            new GenericType(
+              editorStore.graphManagerState.graph.getType(CORE_PURE_PATH.ANY),
+            ),
+          ),
+        ];
+      }
+      function_setReturnGenericType(functionElement, genericType);
       setIsEditingType(false);
       updateFunctionName(editorStore, applicationStore, functionElement);
     };
@@ -959,6 +980,53 @@ const FunctionDefinitionEditor = observer(
             isReadOnly={true}
           />
         );
+      } else if (execResult instanceof TDSExecutionResult) {
+        const colDefs = execResult.result.columns.map(
+          (colName) =>
+            ({
+              minWidth: 50,
+              sortable: true,
+              resizable: true,
+              field: colName,
+              flex: 1,
+              headerName: colName,
+              ...getTDSColumnCustomizations(execResult, colName),
+            }) as DataGridColumnDefinition,
+        );
+        return (
+          <div
+            data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_VALUES_TDS}
+            className="query-builder__result__values__table"
+          >
+            <div
+              className={clsx('query-builder__result__tds-grid', {
+                'ag-theme-balham': true,
+                'ag-theme-balham-dark': true,
+              })}
+            >
+              <DataGrid
+                rowData={getRowDataFromExecutionResult(execResult)}
+                gridOptions={{
+                  suppressScrollOnNewData: true,
+                  getRowId: (data) => `${data.data.rowNumber}`,
+                  rowSelection: {
+                    mode: 'multiRow',
+                    checkboxes: false,
+                    headerCheckbox: false,
+                  },
+                }}
+                // NOTE: when column definition changed, we need to force refresh the cell to make sure the cell renderer is updated
+                // See https://stackoverflow.com/questions/56341073/how-to-refresh-an-ag-grid-when-a-change-occurs-inside-a-custom-cell-renderer-com
+                onRowDataUpdated={(params) => {
+                  params.api.refreshCells({ force: true });
+                }}
+                suppressFieldDotNotation={true}
+                suppressContextMenu={false}
+                columnDefs={colDefs}
+              />
+            </div>
+          </div>
+        );
       } else if (execResult !== undefined) {
         const json =
           returnUndefOnError(() =>
@@ -1034,8 +1102,42 @@ const FunctionDefinitionEditor = observer(
           </div>
           <div className="function-editor__definition__item">
             <div className="function-editor__definition__item__header">
-              <div className="function-editor__definition__item__header__title">
-                LAMBDA
+              <div className="function-editor__definition__item__header-wrapper">
+                <div className="function-editor__definition__item__header__title">
+                  LAMBDA
+                </div>
+                <div className="function-editor__definition__typeAhead">
+                  <div className="function-editor__definition__typeAhead__label">
+                    (BETA) TypeAhead
+                    <DocumentationLink
+                      title="Enable TypeAhead for when typing your function. Caution when using against bigger projects as requires compilation to work"
+                      documentationKey={
+                        LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_ENABLE_TYPEAHEAD
+                      }
+                    />
+                  </div>
+                  <button
+                    className={clsx(
+                      'function-editor__definition__typeAhead__toggler__btn',
+                      {
+                        'function-editor__definition__typeAhead__toggler__btn--toggled':
+                          lambdaEditorState.typeAheadEnabled,
+                      },
+                    )}
+                    onClick={() =>
+                      lambdaEditorState.setTypeAhead(
+                        !lambdaEditorState.typeAheadEnabled,
+                      )
+                    }
+                    tabIndex={-1}
+                  >
+                    {lambdaEditorState.typeAheadEnabled ? (
+                      <CheckSquareIcon />
+                    ) : (
+                      <SquareIcon />
+                    )}
+                  </button>
+                </div>
               </div>
               <div>
                 <ReturnTypeEditor

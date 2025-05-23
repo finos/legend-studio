@@ -401,6 +401,10 @@ export abstract class AbstractPureGraphManager {
     codeBlock: string,
     graph: PureModel,
     offset: number | undefined,
+    // used to ignore the current element where you are writing your code complete (can cause issues with current compile)
+    options?: {
+      ignoreElements: string[] | undefined;
+    },
   ): Promise<CodeCompletionResult>;
 
   abstract getLambdasReturnType(

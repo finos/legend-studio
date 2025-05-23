@@ -43,6 +43,7 @@ import {
   buildSourceInformationSourceId,
   isStubbed_RawRelationalOperationElement,
   stub_RawRelationalOperationElement,
+  type CodeCompletionResult,
 } from '@finos/legend-graph';
 
 export class RelationalPropertyMappingState extends PropertyMappingState {
@@ -158,6 +159,7 @@ export class EmbeddedRelationalInstanceSetImplementationState
   declare instanceSetImplementationState: RelationalInstanceSetImplementationState;
   declare mappingElement: EmbeddedRelationalInstanceSetImplementation;
   declare propertyMapping: EmbeddedRelationalInstanceSetImplementation;
+  typeAheadEnabled = false;
 
   constructor(
     editorStore: EditorStore,
@@ -171,6 +173,10 @@ export class EmbeddedRelationalInstanceSetImplementationState
     this.propertyMappingStates = this.getPropertyMappingStates(
       setImplementation.propertyMappings,
     );
+  }
+
+  setTypeAhead(val: boolean): void {
+    this.typeAheadEnabled = val;
   }
 
   get lambdaId(): string {
@@ -233,6 +239,10 @@ export class EmbeddedRelationalInstanceSetImplementationState
     preserveCompilationError?: boolean | undefined;
   }): GeneratorFn<void> {
     throw new UnsupportedOperationError();
+  }
+
+  getCodeComplete(input: string): Promise<CodeCompletionResult> {
+    throw new Error('Method not implemented.');
   }
 }
 

@@ -20,6 +20,7 @@ import {
   type ParserError,
   type CompilationError,
   SourceInformation,
+  CodeCompletionResult,
 } from '@finos/legend-graph';
 
 /**
@@ -33,15 +34,22 @@ export abstract class LambdaEditorState {
   lambdaString: string; // value shown in lambda editor which can be edited
   parserError?: ParserError | undefined;
   compilationError?: CompilationError | undefined;
+  typeAheadEnabled = false;
 
-  constructor(lambdaString: string, lambdaPrefix: string) {
+  constructor(
+    lambdaString: string,
+    lambdaPrefix: string,
+    options?: { typeAheadEnabled?: boolean | undefined },
+  ) {
     makeObservable(this, {
       lambdaString: observable,
       parserError: observable,
       compilationError: observable,
+      typeAheadEnabled: observable,
       lambdaId: computed,
       fullLambdaString: computed,
       setLambdaString: action,
+      setTypeAhead: action,
       clearErrors: action,
       setCompilationError: action,
       setParserError: action,
@@ -51,6 +59,7 @@ export abstract class LambdaEditorState {
 
     this.lambdaString = lambdaString;
     this.lambdaPrefix = lambdaPrefix;
+    this.typeAheadEnabled = options?.typeAheadEnabled ?? false;
   }
 
   abstract get lambdaId(): string;
@@ -62,6 +71,10 @@ export abstract class LambdaEditorState {
 
   setLambdaString(val: string): void {
     this.lambdaString = val;
+  }
+
+  setTypeAhead(val: boolean): void {
+    this.typeAheadEnabled = val;
   }
 
   clearErrors(options?: {
@@ -123,4 +136,8 @@ export abstract class LambdaEditorState {
     pretty?: boolean | undefined;
     preserveCompilationError?: boolean | undefined;
   }): GeneratorFn<void>;
+
+  async getCodeComplete(input: string): Promise<CodeCompletionResult> {
+    return Promise.resolve(new CodeCompletionResult());
+  }
 }

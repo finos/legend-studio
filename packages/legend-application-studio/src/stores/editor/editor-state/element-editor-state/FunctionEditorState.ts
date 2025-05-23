@@ -55,6 +55,7 @@ import {
   generateFunctionPrettyName,
   RawVariableExpression,
   type FunctionActivator,
+  CodeCompletionResult,
 } from '@finos/legend-graph';
 import {
   ExecutionPlanState,
@@ -88,13 +89,15 @@ export class FunctionDefinitionEditorState extends LambdaEditorState {
     functionElement: ConcreteFunctionDefinition,
     editorStore: EditorStore,
   ) {
-    super('', LAMBDA_PIPE);
+    super('', LAMBDA_PIPE, {
+      typeAheadEnabled:
+        editorStore.applicationStore.config.options.typeAheadEnabled,
+    });
 
     makeObservable(this, {
       functionElement: observable,
       isConvertingFunctionBodyToString: observable,
     });
-
     this.functionElement = functionElement;
     this.editorStore = editorStore;
   }
@@ -187,6 +190,26 @@ export class FunctionDefinitionEditorState extends LambdaEditorState {
     } else {
       this.clearErrors();
       this.setLambdaString('');
+    }
+  }
+
+  override async getCodeComplete(input: string): Promise<CodeCompletionResult> {
+    try {
+      return (await this.editorStore.graphManagerState.graphManager.getCodeComplete(
+        input,
+        this.editorStore.graphManagerState.graph,
+        undefined,
+        {
+          ignoreElements: [this.functionElement.path],
+        },
+      )) as unknown as CodeCompletionResult;
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.logService.error(
+        LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
+        error,
+      );
+      return new CodeCompletionResult();
     }
   }
 }
