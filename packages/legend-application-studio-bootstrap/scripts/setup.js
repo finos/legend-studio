@@ -99,6 +99,7 @@ export const setup = (outputDir) => {
             //     modes: ['PROD'],
             //   },
             // ],
+            typeAheadEnabled: true,
             TEMPORARY__enableLocalConnectionBuilder: false,
             NonProductionFeatureFlag: true,
             queryBuilderConfig: {

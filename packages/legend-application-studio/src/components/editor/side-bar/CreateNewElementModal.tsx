@@ -27,6 +27,7 @@ import {
   NewServiceDriver,
   CONNECTION_TYPE,
   type RuntimeOption,
+  NewLakehouseDataProductDriver,
 } from '../../../stores/editor/NewElementState.js';
 import { Dialog, compareLabelFn, CustomSelectorInput } from '@finos/legend-art';
 import type { EditorStore } from '../../../stores/editor/EditorStore.js';
@@ -439,6 +440,30 @@ const NewServiceDriverEditor = observer(() => {
   );
 });
 
+const NewLakehouseDataProductEditor = observer(() => {
+  const editorStore = useEditorStore();
+  const newProductDriver = editorStore.newElementState.getNewElementDriver(
+    NewLakehouseDataProductDriver,
+  );
+  const handleTitleChangee: React.ChangeEventHandler<HTMLInputElement> = (
+    event,
+  ) => newProductDriver.setTitle(event.target.value);
+  return (
+    <>
+      <div className="panel__content__form__section__header__label">Title</div>
+      <div className="explorer__new-element-modal__driver">
+        <input
+          className="input--dark explorer__new-element-modal__name-input"
+          spellCheck={false}
+          value={newProductDriver.title}
+          onChange={handleTitleChangee}
+          placeholder={`Data Product Title`}
+        />
+      </div>
+    </>
+  );
+});
+
 const NewFileGenerationDriverEditor = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = editorStore.applicationStore;
@@ -485,6 +510,10 @@ const renderNewElementDriver = (
       return <NewDataElementDriverEditor />;
     case PACKAGEABLE_ELEMENT_TYPE.SERVICE:
       return <NewServiceDriverEditor />;
+    case PACKAGEABLE_ELEMENT_TYPE.SERVICE:
+      return <NewServiceDriverEditor />;
+    case PACKAGEABLE_ELEMENT_TYPE._DATA_PRODUCT:
+      return <NewLakehouseDataProductEditor />;
     default: {
       const extraNewElementDriverEditorCreators = editorStore.pluginManager
         .getApplicationPlugins()

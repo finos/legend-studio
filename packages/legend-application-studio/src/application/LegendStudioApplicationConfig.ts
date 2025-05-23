@@ -63,6 +63,13 @@ class LegendStudioApplicationCoreOptions {
    * Default to `false`
    */
   enableGraphBuilderStrictMode = false;
+  /**
+   * Indicates whether we enable type ahead in all editors.
+   *
+   * Default to `false` because of performance reasons for large models.
+   */
+  typeAheadEnabled = false;
+
   projectCreationGroupIdSuggestion = 'org.finos.legend.*';
 
   /**
@@ -115,6 +122,7 @@ class LegendStudioApplicationCoreOptions {
   private static readonly serialization = new SerializationFactory(
     createModelSchema(LegendStudioApplicationCoreOptions, {
       enableGraphBuilderStrictMode: optional(primitive()),
+      typeAheadEnabled: optional(primitive()),
       projectCreationGroupIdSuggestion: optional(primitive()),
       TEMPORARY__preserveSectionIndex: optional(primitive()),
       TEMPORARY__enableCreationOfSandboxProjects: optional(primitive()),
@@ -238,7 +246,6 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
     this.options = LegendStudioApplicationCoreOptions.create(
       input.configData.extensions?.core ?? {},
     );
-
     if (this.options.ingestDeploymentConfig) {
       validateIngestionDeploymentConfiguration(
         this.options.ingestDeploymentConfig,

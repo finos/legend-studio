@@ -239,3 +239,8 @@ export enum CODE_EDITOR_LANGUAGE {
   YAML = 'yaml',
   GRAPHQL = 'graphql',
 }
+
+export type CompletionItem = {
+  completion: string;
+  display: string;
+};

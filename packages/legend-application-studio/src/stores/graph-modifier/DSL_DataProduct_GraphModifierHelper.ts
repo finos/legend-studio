@@ -51,3 +51,9 @@ export const dataProduct_deleteAccessPointGroup = action(
     deleteEntry(product.accessPointGroups, accessPointGroup);
   },
 );
+
+export const dataProduct_setTitle = action(
+  (product: DataProduct, title: string) => {
+    product.title = title;
+  },
+);
