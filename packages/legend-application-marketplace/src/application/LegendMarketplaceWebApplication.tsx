@@ -124,7 +124,7 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
         </CubesLoadingIndicator>
       ),
       signinRedirectArgs: {
-        state: window.location.pathname,
+        state: `${window.location.pathname}${window.location.search}`,
       },
     },
   );
@@ -138,7 +138,7 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
         </CubesLoadingIndicator>
       ),
       signinRedirectArgs: {
-        state: window.location.pathname,
+        state: `${window.location.pathname}${window.location.search}`,
       },
     },
   );
@@ -152,7 +152,7 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
         </CubesLoadingIndicator>
       ),
       signinRedirectArgs: {
-        state: window.location.pathname,
+        state: `${window.location.pathname}${window.location.search}`,
       },
     },
   );
@@ -166,7 +166,7 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
         </CubesLoadingIndicator>
       ),
       signinRedirectArgs: {
-        state: window.location.pathname,
+        state: `${window.location.pathname}${window.location.search}`,
       },
     },
   );
@@ -192,12 +192,6 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_PRODUCT}
               element={<ProtectedLakehouseDataProduct />}
-            />
-            <Route
-              path={
-                LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS_TASKS
-              }
-              element={<ProtectedLakehouseEntitlements />}
             />
             <Route
               path={

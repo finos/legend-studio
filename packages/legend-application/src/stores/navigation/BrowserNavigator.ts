@@ -41,6 +41,7 @@ import {
   generatePath,
   useParams,
   useLocation,
+  useSearchParams,
   type NavigateFunction,
 } from 'react-router';
 
@@ -50,6 +51,7 @@ export {
   Route,
   Routes,
   useParams,
+  useSearchParams,
   matchPath,
   matchRoutes,
   generatePath,

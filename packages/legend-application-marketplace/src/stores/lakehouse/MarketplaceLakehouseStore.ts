@@ -128,8 +128,6 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   productStates: DataProductState[] | undefined;
   loadingProductsState = ActionState.create();
   filter: DataProductFilters = DataProductFilters.default();
-
-  //
   dataProductViewer: DataProductViewerState | undefined;
 
   constructor(

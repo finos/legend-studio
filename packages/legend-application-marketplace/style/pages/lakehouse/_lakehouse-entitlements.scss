@@ -24,21 +24,39 @@
   padding: 1rem 2rem 2rem;
 }
 
-.marketplace-lakehouse-entitlements-tasks {
-  height: 100%;
-  width: 100%;
-  position: relative;
-  background: var(--color-hclight-white);
-  color: var(--color-hclight-grey-90);
-  font-family: Roboto, sans-serif;
+.marketplace-lakehouse-entitlements {
+  &__pending-tasks,
+  &__pending-contracts,
+  &__all-contracts {
+    height: 100%;
+    width: 100%;
+    position: relative;
+    background: var(--color-hclight-white);
+    color: var(--color-hclight-grey-90);
+    font-family: Roboto, sans-serif;
+  }
+
+  &__pending-tasks__action-btns {
+    display: flex;
+    justify-content: end;
+    margin: 1rem;
+
+    button {
+      margin-left: 1rem;
+    }
+  }
 
   &__grid {
     height: 100%;
 
-    &-taskid-cell {
+    &__taskid-cell {
       color: blue;
       text-decoration: underline;
       cursor: pointer;
+    }
+
+    &__user-display {
+      height: 100%;
     }
   }
 }
@@ -165,5 +183,33 @@
     align-self: start;
     margin-top: auto;
     color: var(--color-light-grey-300);
+  }
+}
+
+.marketplace-lakehouse-entitlements__data-contract-approval {
+  &__success,
+  &__error {
+    padding: 1rem;
+    margin: 1rem;
+  }
+
+  &__success {
+    background: var(--tw-color-green-200);
+  }
+
+  &__error {
+    background: var(--tw-color-red-300);
+
+    &__content {
+      line-height: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    &__user {
+      width: fit-content;
+      display: inline-block;
+      position: relative;
+      bottom: -10px;
+    }
   }
 }
