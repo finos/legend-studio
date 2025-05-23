@@ -293,6 +293,7 @@ export class DataProductEditorState extends ElementEditorState {
         ? accessPointGroup
         : this.createBareGroupAndAdd(accessPointGroup);
     groupState.addAccessPoint(accesspoint);
+    addUniqueEntry(this.accessPointGroupStates, groupState);
   }
 
   createBareGroupAndAdd(id: string): AccessPointGroupState {
