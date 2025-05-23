@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.16.41
+
+### Patch Changes
+
+- [#4107](https://github.com/finos/legend-studio/pull/4107) [`0a1e923`](https://github.com/finos/legend-studio/commit/0a1e9236da2428648cead56019d4272a1f282cb7) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Enable type ahead (suggestions) in lambda editor.
+
 ## 4.16.40
 
 ## 4.16.39
