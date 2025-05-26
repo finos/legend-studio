@@ -1,5 +1,14 @@
 # @finos/legend-application-studio
 
+## 28.18.131
+
+### Patch Changes
+
+- [#4107](https://github.com/finos/legend-studio/pull/4107) [`0a1e923`](https://github.com/finos/legend-studio/commit/0a1e9236da2428648cead56019d4272a1f282cb7) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Enable type ahead in function editor as well as data product editor.
+  Add TypeAheadEnable option for global setting of type ahead.
+
+  Improve data product editor by asking for title in creation.
+
 ## 28.18.130
 
 ## 28.18.129
