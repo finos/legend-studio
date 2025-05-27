@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.18.132
+
+### Patch Changes
+
+- [#4113](https://github.com/finos/legend-studio/pull/4113) [`33544d8`](https://github.com/finos/legend-studio/commit/33544d87e6d5a5e1ab119ee8e46fadcc14d93c51) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Enable adhoc deployment of data products
+
 ## 28.18.131
 
 ### Patch Changes
