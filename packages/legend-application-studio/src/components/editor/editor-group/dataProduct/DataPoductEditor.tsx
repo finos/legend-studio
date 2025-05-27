@@ -18,6 +18,7 @@ import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   DataProductEditorState,
+  generateUrlToDeployOnOpen,
   LakehouseAccessPointState,
 } from '../../../../stores/editor/editor-state/element-editor-state/dataProduct/DataProductEditorState.js';
 import {
@@ -34,11 +35,21 @@ import {
   TimesIcon,
   PlusIcon,
   PanelHeaderActionItem,
+  RocketIcon,
+  Modal,
+  ModalHeader,
+  ModalTitle,
+  ModalBody,
+  ModalFooter,
+  ModalFooterButton,
 } from '@finos/legend-art';
 import { useRef, useState, useEffect } from 'react';
 import { filterByType } from '@finos/legend-shared';
 import { InlineLambdaEditor } from '@finos/legend-query-builder';
 import { flowResult } from 'mobx';
+import { useAuth } from 'react-oidc-context';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 
 const NewAccessPointAccessPOint = observer(
   (props: { dataProductEditorState: DataProductEditorState }) => {
@@ -254,6 +265,83 @@ const DataProductEditorSplashScreen = observer(
   },
 );
 
+const DataproductDeploymenetModal = observer(
+  (props: { state: DataProductEditorState }) => {
+    const { state } = props;
+    const applicationStore = state.editorStore.applicationStore;
+    return (
+      <Dialog
+        open={state.deploymentState.isInProgress}
+        classes={{ container: 'search-modal__container' }}
+      >
+        <Modal
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+          className="database-builder"
+        >
+          <ModalHeader>
+            <ModalTitle title="Deploy Data Product" />
+          </ModalHeader>
+          <ModalBody>
+            <div>{state.deploymentState.message}</div>
+          </ModalBody>
+        </Modal>
+      </Dialog>
+    );
+  },
+);
+
+const DataProductDeploymentResponseModal = observer(
+  (props: { state: DataProductEditorState }) => {
+    const { state } = props;
+    const applicationStore = state.editorStore.applicationStore;
+    const closeModal = (): void => state.setDeployResponse(undefined);
+    return (
+      <Dialog
+        open={Boolean(state.deployResponse)}
+        classes={{
+          root: 'editor-modal__root-container',
+          container: 'editor-modal__container',
+          paper: 'editor-modal__content',
+        }}
+        onClose={closeModal}
+      >
+        <Modal
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+          className="editor-modal"
+        >
+          <ModalHeader>
+            <ModalTitle title="Validation Error" />
+          </ModalHeader>
+          <ModalBody>
+            <PanelContent>
+              <CodeEditor
+                inputValue={JSON.stringify(
+                  state.deployResponse?.content ?? {},
+                  null,
+                  2,
+                )}
+                isReadOnly={true}
+                language={CODE_EDITOR_LANGUAGE.JSON}
+              />
+            </PanelContent>
+          </ModalBody>
+          <ModalFooter>
+            <ModalFooterButton
+              onClick={closeModal}
+              text="Close"
+              type="secondary"
+            />
+          </ModalFooter>
+        </Modal>
+      </Dialog>
+    );
+  },
+);
+
 export const DataProductEditor = observer(() => {
   const editorStore = useEditorStore();
   const dataProductEditorState =
@@ -266,12 +354,48 @@ export const DataProductEditor = observer(() => {
   const openNewModal = () => {
     dataProductEditorState.setAccessPointModal(true);
   };
+  const auth = useAuth();
+  const deployDataProduct = (): void => {
+    // Trigger OAuth flow if not authenticated
+    if (!auth.isAuthenticated) {
+      // remove this redirect if we move to do oauth at the beginning of opening studio
+      auth
+        .signinRedirect({
+          state: generateUrlToDeployOnOpen(dataProductEditorState),
+        })
+        .catch(editorStore.applicationStore.alertUnhandledError);
+      return;
+    }
+    // Use the token for deployment
+    const token = auth.user?.access_token;
+    if (token) {
+      flowResult(dataProductEditorState.deploy(token)).catch(
+        editorStore.applicationStore.alertUnhandledError,
+      );
+    } else {
+      editorStore.applicationStore.notificationService.notifyError(
+        'Authentication failed. No token available.',
+      );
+    }
+  };
 
   useEffect(() => {
     flowResult(dataProductEditorState.convertAccessPointsFuncObjects()).catch(
       dataProductEditorState.editorStore.applicationStore.alertUnhandledError,
     );
   }, [dataProductEditorState]);
+
+  useEffect(() => {
+    if (dataProductEditorState.deployOnOpen) {
+      flowResult(dataProductEditorState.deploy(auth.user?.access_token)).catch(
+        editorStore.applicationStore.alertUnhandledError,
+      );
+    }
+  }, [
+    auth,
+    editorStore.applicationStore.alertUnhandledError,
+    dataProductEditorState,
+  ]);
 
   return (
     <div className="data-product-editor">
@@ -286,6 +410,20 @@ export const DataProductEditor = observer(() => {
             <div className="panel__header__title__label">data product</div>
             <div className="panel__header__title__content">{product.name}</div>
           </div>
+          <PanelHeaderActions>
+            <div className="btn__dropdown-combo btn__dropdown-combo--primary">
+              <button
+                className="btn__dropdown-combo__label"
+                onClick={deployDataProduct}
+                title={dataProductEditorState.deployValidationMessage}
+                tabIndex={-1}
+                disabled={!dataProductEditorState.deployValidationMessage}
+              >
+                <RocketIcon className="btn__dropdown-combo__label__icon" />
+                <div className="btn__dropdown-combo__label__title">Deploy</div>
+              </button>
+            </div>
+          </PanelHeaderActions>
         </div>
         <div className="panel">
           <PanelHeader>
@@ -322,6 +460,14 @@ export const DataProductEditor = observer(() => {
           {dataProductEditorState.accessPointModal && (
             <NewAccessPointAccessPOint
               dataProductEditorState={dataProductEditorState}
+            />
+          )}
+          {dataProductEditorState.deploymentState.isInProgress && (
+            <DataproductDeploymenetModal state={dataProductEditorState} />
+          )}
+          {dataProductEditorState.deployResponse && (
+            <DataProductDeploymentResponseModal
+              state={dataProductEditorState}
             />
           )}
         </div>

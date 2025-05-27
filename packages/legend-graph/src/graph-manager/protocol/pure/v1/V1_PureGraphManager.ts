@@ -4224,6 +4224,23 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return entity;
   };
 
+  override async elementsToPureCode(
+    elements: PackageableElement[],
+    options?: { pruneSourceInformation?: boolean; pretty?: boolean },
+  ): Promise<string> {
+    const graphData = new V1_PureModelContextData();
+    graphData.elements = elements.map((element) =>
+      this.elementToProtocol(element, {
+        keepSourceInformation: !options?.pruneSourceInformation,
+      }),
+    );
+    const jsonToGrammar = await this.engine.transformPureModelContextDataToCode(
+      graphData,
+      Boolean(options?.pretty),
+    );
+    return jsonToGrammar;
+  }
+
   private prunePureModelContextData = (
     data: V1_PureModelContextData,
     elementFilter?: (val: V1_PackageableElement) => boolean,

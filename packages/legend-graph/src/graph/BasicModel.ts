@@ -76,6 +76,7 @@ import { INTERNAL__UnknownStore } from './metamodel/pure/packageableElements/sto
 import type { PureGraphPlugin } from './PureGraphPlugin.js';
 import { INTERNAL__UnknownElement } from './metamodel/pure/packageableElements/INTERNAL__UnknownElement.js';
 import { DataProduct } from './metamodel/pure/dataProduct/DataProduct.js';
+import { IngestDefinition } from './metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 
 const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
   PackageableElement,
@@ -255,6 +256,12 @@ export abstract class BasicModel {
   get ownExecutionEnvironments(): ExecutionEnvironmentInstance[] {
     return Array.from(this.executionEnvironmentsIndex.values());
   }
+  get ownIngests(): IngestDefinition[] {
+    return Array.from(this.INTERNAL__unknownElementsIndex.values()).filter(
+      filterByType(IngestDefinition),
+    );
+  }
+
   get ownGenerationSpecifications(): GenerationSpecification[] {
     return Array.from(this.generationSpecificationsIndex.values());
   }

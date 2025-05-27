@@ -30,6 +30,10 @@ import {
   IngestDeploymentServerConfig,
   type LegendIngestionConfiguration,
 } from '../../application/LegendIngestionConfiguration.js';
+import {
+  createAdhocDataProductDeployResponse,
+  type AdhocDataProductDeployResponse,
+} from './AdhocDataProductDeployResponse.js';
 
 export class IngestionManager {
   private ingestDiscoveryServerClient: IngestDiscoveryServerClient;
@@ -78,7 +82,7 @@ export class IngestionManager {
     actionState?.setMessage(
       `Discovering associated ingest environment for DID ${appDirNode.appDirId}...`,
     );
-    // await this.identifyIngestDeploymentServer(appDirNode, token);
+    await this.identifyIngestDeploymentServer(appDirNode, token);
     actionState?.setMessage(
       `Validating ingest with server ${this.ingestDeploymentServerClient.baseUrl ?? ''} for realm ${this.ingestDeploymentServerClient.environmentClassification}...`,
     );
@@ -107,6 +111,27 @@ export class IngestionManager {
     );
     fullResponse.deploymentResponse = deployResponse;
     return fullResponse;
+  }
+
+  async deployDataProduct(
+    grammarText: string,
+    appDirNode: AppDirNode,
+    actionState: ActionState | undefined,
+    token: string | undefined,
+  ): Promise<AdhocDataProductDeployResponse> {
+    actionState?.setMessage(
+      `Discovering associated data product environment for DID ${appDirNode.appDirId}...`,
+    );
+    await this.identifyIngestDeploymentServer(appDirNode, token);
+    actionState?.setMessage(
+      `Deploying data product with server ${this.ingestDeploymentServerClient.baseUrl ?? ''} for realm ${this.ingestDeploymentServerClient.environmentClassification}...`,
+    );
+    const deployResponse =
+      await this.ingestDeploymentServerClient.deployDataProduct(
+        grammarText,
+        token,
+      );
+    return createAdhocDataProductDeployResponse(deployResponse);
   }
 
   private async _validate(

@@ -26,9 +26,12 @@ import type {
   IngestDefinitionValidationResponse,
 } from './IngestionDeploymentResponse.js';
 import type { IngestDeploymentServerConfig } from '../../application/LegendIngestionConfiguration.js';
+import type { AdhocDataProductDeployResponse } from './AdhocDataProductDeployResponse.js';
 
 export class IngestDeploymentServerClient extends AbstractServerClient {
   environmentClassification: string;
+
+  private DATA_PRODUCT_URL = 'data-product';
   constructor(config: IngestDeploymentServerConfig) {
     super({
       baseUrl: config.ingestServerUrl,
@@ -48,6 +51,9 @@ export class IngestDeploymentServerClient extends AbstractServerClient {
     [HttpHeader.CONTENT_TYPE]: ContentType.TEXT_PLAIN,
     Authorization: `Bearer ${token}`,
   });
+
+  private _dataProduct = (): string =>
+    `${this.baseUrl}/${this.DATA_PRODUCT_URL}/api/entitlements/sdlc/deploy/definitions`;
 
   private _ingest = (): string =>
     `${this.baseUrl}/api/ingest/sdlc/deploy/definitions`;
@@ -76,6 +82,18 @@ export class IngestDeploymentServerClient extends AbstractServerClient {
     return this.post(
       `${this._ingest()}`,
       deployGrammar,
+      undefined,
+      this._tokenWithTextPlain(token),
+    );
+  }
+
+  deployDataProduct(
+    fullGrammar: string,
+    token: string | undefined,
+  ): Promise<PlainObject<AdhocDataProductDeployResponse>> {
+    return this.post(
+      `${this._dataProduct()}`,
+      fullGrammar,
       undefined,
       this._tokenWithTextPlain(token),
     );
