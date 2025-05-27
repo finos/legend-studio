@@ -48,12 +48,29 @@ export class IngestElementEditorInitialConfiguration extends ElementEditorInitia
   );
 }
 
+export class DataProductElementEditorInitialConfiguration extends ElementEditorInitialConfiguration {
+  deployOnOpen?: boolean;
+  type = PACKAGEABLE_ELEMENT_TYPE._DATA_PRODUCT;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(DataProductElementEditorInitialConfiguration, {
+      _type: usingConstantValueSchema(PACKAGEABLE_ELEMENT_TYPE._DATA_PRODUCT),
+      deployOnOpen: optional(primitive()),
+    }),
+  );
+}
+
 const serializeElementEditorInitialConfiguration = (
   protocol: ElementEditorInitialConfiguration,
 ): PlainObject<ElementEditorInitialConfiguration> => {
   if (protocol instanceof IngestElementEditorInitialConfiguration) {
     return serialize(
       IngestElementEditorInitialConfiguration.serialization.schema,
+      protocol,
+    );
+  } else if (protocol instanceof DataProductElementEditorInitialConfiguration) {
+    return serialize(
+      DataProductElementEditorInitialConfiguration.serialization.schema,
       protocol,
     );
   }
@@ -70,6 +87,11 @@ const deseralizeElementEditorInitialConfiguration = (
     case PACKAGEABLE_ELEMENT_TYPE.INGEST_DEFINITION:
       return deserialize(
         IngestElementEditorInitialConfiguration.serialization.schema,
+        json,
+      );
+    case PACKAGEABLE_ELEMENT_TYPE._DATA_PRODUCT:
+      return deserialize(
+        DataProductElementEditorInitialConfiguration.serialization.schema,
         json,
       );
     default: {

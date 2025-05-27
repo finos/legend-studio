@@ -46,6 +46,7 @@ import { LegendSDLC, type GraphDataOrigin } from './GraphDataOrigin.js';
 import type { FunctionActivator } from './metamodel/pure/packageableElements/function/FunctionActivator.js';
 import type { PureGraphPlugin } from './PureGraphPlugin.js';
 import type { Testable } from './metamodel/pure/test/Testable.js';
+import type { IngestDefinition } from './metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 
 export const DEPENDENCY_ROOT_PACKAGE_PREFIX = '@dependency__';
 export const generateDependencyRootPackageName = (
@@ -305,6 +306,9 @@ export class DependencyManager {
   }
   get executionEnvironments(): ExecutionEnvironmentInstance[] {
     return this.dependencyGraphs.flatMap((dep) => dep.ownExecutionEnvironments);
+  }
+  get ingests(): IngestDefinition[] {
+    return this.dependencyGraphs.flatMap((dep) => dep.ownIngests);
   }
 
   getExtensionElements<T extends PackageableElement>(

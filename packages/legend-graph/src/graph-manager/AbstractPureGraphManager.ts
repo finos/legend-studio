@@ -794,6 +794,13 @@ export abstract class AbstractPureGraphManager {
     },
   ): Entity;
 
+  abstract elementsToPureCode(
+    elements: PackageableElement[],
+    options?: {
+      pruneSourceInformation?: boolean;
+    },
+  ): Promise<string>;
+
   async createBasicGraph(options?: {
     initializeSystem?: boolean;
   }): Promise<PureModel> {

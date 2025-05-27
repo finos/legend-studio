@@ -61,6 +61,7 @@ import type { SectionIndex } from '../graph/metamodel/pure/packageableElements/s
 import type { PropertyOwner } from './metamodel/pure/packageableElements/domain/AbstractProperty.js';
 import type { ExecutionEnvironmentInstance } from './metamodel/pure/packageableElements/service/ExecutionEnvironmentInstance.js';
 import { FunctionActivator } from './metamodel/pure/packageableElements/function/FunctionActivator.js';
+import type { IngestDefinition } from './metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 
 export interface GraphTextInputOption {
   graphGrammar: string | undefined;
@@ -350,6 +351,16 @@ export class PureModel extends BasicModel {
       ...this.dependencyManager.fileGenerations,
       ...this.ownFileGenerations,
       ...this.generationModel.ownFileGenerations,
+    ];
+  }
+
+  get ingests(): IngestDefinition[] {
+    return [
+      ...this.coreModel.ownIngests,
+      ...this.systemModel.ownIngests,
+      ...this.dependencyManager.ingests,
+      ...this.ownIngests,
+      ...this.generationModel.ownIngests,
     ];
   }
 

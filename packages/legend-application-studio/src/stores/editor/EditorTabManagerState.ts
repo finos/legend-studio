@@ -182,7 +182,7 @@ export class EditorTabManagerState extends TabManagerState {
     } else if (element instanceof Service) {
       return new ServiceEditorState(this.editorStore, element);
     } else if (element instanceof DataProduct) {
-      return new DataProductEditorState(this.editorStore, element);
+      return new DataProductEditorState(this.editorStore, element, config);
     } else if (element instanceof GenerationSpecification) {
       return new GenerationSpecificationEditorState(this.editorStore, element);
     } else if (element instanceof FileGenerationSpecification) {

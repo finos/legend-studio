@@ -18,6 +18,7 @@ import {
   DataProduct,
   LakehouseAccessPoint,
   type PackageableElement,
+  type IngestDefinition,
   type AccessPoint,
   stub_RawLambda,
   LakehouseTargetEnv,
@@ -40,6 +41,9 @@ import {
   LogEvent,
   deleteEntry,
   filterByType,
+  ActionState,
+  guaranteeNonNullable,
+  assertTrue,
 } from '@finos/legend-shared';
 import {
   dataProduct_addAccessPoint,
@@ -47,6 +51,13 @@ import {
   dataProduct_deleteAccessPoint,
 } from '../../../../graph-modifier/DSL_DataProduct_GraphModifierHelper.js';
 import { LambdaEditorState } from '@finos/legend-query-builder';
+import type { IngestionManager } from '../../../../ingestion/IngestionManager.js';
+import {
+  DataProductElementEditorInitialConfiguration,
+  EditorInitialConfiguration,
+} from '../ElementEditorInitialConfiguration.js';
+import { EXTERNAL_APPLICATION_NAVIGATION__generateUrlWithEditorConfig } from '../../../../../__lib__/LegendStudioNavigation.js';
+import type { AdhocDataProductDeployResponse } from '../../../../ingestion/AdhocDataProductDeployResponse.js';
 
 export class AccessPointState {
   readonly state: AccessPointGroupState;
@@ -181,10 +192,10 @@ export class AccessPointGroupState {
 
   constructor(val: AccessPointGroup, editorState: DataProductEditorState) {
     this.value = val;
+    this.state = editorState;
     this.accessPointStates = val.accessPoints.map((e) =>
       this.buildAccessPointState(e),
     );
-    this.state = editorState;
     makeObservable(this, {
       value: observable,
       accessPointStates: observable,
@@ -213,12 +224,41 @@ export class AccessPointGroupState {
   }
 }
 
+const createEditorInitialConfiguration = (): EditorInitialConfiguration => {
+  const config = new EditorInitialConfiguration();
+  const ingest = new DataProductElementEditorInitialConfiguration();
+  ingest.deployOnOpen = true;
+  config.elementEditorConfiguration = ingest;
+  return config;
+};
+
+const editorInitialConfigToBase64 = (val: EditorInitialConfiguration): string =>
+  btoa(JSON.stringify(EditorInitialConfiguration.serialization.toJson(val)));
+
+export const generateUrlToDeployOnOpen = (
+  val: DataProductEditorState,
+): string => {
+  return val.editorStore.applicationStore.navigationService.navigator.generateAddress(
+    EXTERNAL_APPLICATION_NAVIGATION__generateUrlWithEditorConfig(
+      val.editorStore.editorMode.generateElementLink(val.product.path),
+      editorInitialConfigToBase64(createEditorInitialConfiguration()),
+    ),
+  );
+};
+
 export class DataProductEditorState extends ElementEditorState {
   accessPointModal = false;
+  deploymentState = ActionState.create();
   accessPointGroupStates: AccessPointGroupState[] = [];
   isConvertingTransformLambdaObjects = false;
+  deployOnOpen = false;
+  deployResponse: AdhocDataProductDeployResponse | undefined;
 
-  constructor(editorStore: EditorStore, element: PackageableElement) {
+  constructor(
+    editorStore: EditorStore,
+    element: PackageableElement,
+    config?: EditorInitialConfiguration,
+  ) {
     super(editorStore, element);
 
     makeObservable(this, {
@@ -226,6 +266,11 @@ export class DataProductEditorState extends ElementEditorState {
       accessPointModal: observable,
       accessPointGroupStates: observable,
       isConvertingTransformLambdaObjects: observable,
+      deploy: flow,
+      deployOnOpen: observable,
+      deployResponse: observable,
+      setDeployOnOpen: action,
+      setDeployResponse: action,
       setAccessPointModal: action,
       addAccessPoint: action,
       convertAccessPointsFuncObjects: flow,
@@ -233,6 +278,20 @@ export class DataProductEditorState extends ElementEditorState {
     this.accessPointGroupStates = this.product.accessPointGroups.map(
       (e) => new AccessPointGroupState(e, this),
     );
+    const elementConfig = config?.elementEditorConfiguration;
+    if (elementConfig instanceof DataProductElementEditorInitialConfiguration) {
+      this.deployOnOpen = elementConfig.deployOnOpen ?? false;
+    }
+  }
+
+  setDeployOnOpen(value: boolean): void {
+    this.deployOnOpen = value;
+  }
+
+  setDeployResponse(
+    response: AdhocDataProductDeployResponse | undefined,
+  ): void {
+    this.deployResponse = response;
   }
 
   *convertAccessPointsFuncObjects(): GeneratorFn<void> {
@@ -303,6 +362,38 @@ export class DataProductEditorState extends ElementEditorState {
     return new AccessPointGroupState(group, this);
   }
 
+  *deploy(token: string | undefined): GeneratorFn<void> {
+    try {
+      assertTrue(
+        this.validForDeployment,
+        'Data product definition is not valid for deployment',
+      );
+      this.deploymentState.inProgress();
+      // The grammar we provide will be for the current data product + all ingests (used for compilation)
+      const grammar =
+        (yield this.editorStore.graphManagerState.graphManager.elementsToPureCode(
+          [...this.editorStore.graphManagerState.graph.ingests, this.product],
+        )) as unknown as string;
+
+      const response = (yield guaranteeNonNullable(
+        this.ingestionManager,
+      ).deployDataProduct(
+        grammar,
+        guaranteeNonNullable(this.associatedIngest?.appDirDeployment),
+        this.deploymentState,
+        token,
+      )) as unknown as AdhocDataProductDeployResponse;
+      this.setDeployResponse(response);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notificationService.notifyError(
+        `Ingest definition failed to deploy: ${error.message}`,
+      );
+    } finally {
+      this.deploymentState.complete();
+    }
+  }
+
   get product(): DataProduct {
     return guaranteeType(
       this.element,
@@ -311,8 +402,35 @@ export class DataProductEditorState extends ElementEditorState {
     );
   }
 
+  get validForDeployment(): boolean {
+    return Boolean(
+      this.associatedIngest?.appDirDeployment && this.ingestionManager,
+    );
+  }
+
   get accessPoints(): AccessPoint[] {
     return this.product.accessPointGroups.map((e) => e.accessPoints).flat();
+  }
+
+  get ingestionManager(): IngestionManager | undefined {
+    return this.editorStore.ingestionManager;
+  }
+
+  get deployValidationMessage(): string {
+    if (!this.associatedIngest?.appDirDeployment) {
+      return 'No app dir deployment found';
+    } else if (!this.ingestionManager) {
+      return 'No ingestion manager found';
+    }
+    return 'Deploy';
+  }
+
+  // We need to get the associated Ingest to get the app dir deployment
+  // We could do a more in depth check on the access point lambdas to check which ingest it uses but for now
+  // we will assume all ingests have the same DID
+  // we get the last one, to prioritize the ones in the current project followed by dependency ones
+  get associatedIngest(): IngestDefinition | undefined {
+    return this.editorStore.graphManagerState.graph.ingests.slice(-1)[0];
   }
 
   override reprocess(
