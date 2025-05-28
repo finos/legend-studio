@@ -64,325 +64,327 @@ import { useAuth } from 'react-oidc-context';
 
 const MAX_DESCRIPTION_LENGTH = 250;
 
-export const LakehouseDataProductCard = (props: {
-  dataProductState: DataProductState;
-  onClick: (dataProductEntity: DataProductEntity) => void;
-}): React.ReactNode => {
-  const { dataProductState, onClick } = props;
+export const LakehouseDataProductCard = observer(
+  (props: {
+    dataProductState: DataProductState;
+    onClick: (dataProductEntity: DataProductEntity) => void;
+  }): React.ReactNode => {
+    const { dataProductState, onClick } = props;
 
-  const currentDataProductEntity = dataProductState.currentProductEntity;
+    const currentDataProductEntity = dataProductState.currentProductEntity;
 
-  const [popoverAnchorEl, setPopoverAnchorEl] =
-    useState<HTMLButtonElement | null>(null);
-  const [versionMenuAnchorEl, setVersionMenuAnchorEl] =
-    useState<HTMLElement | null>(null);
-  const isVersionMenuOpen = Boolean(versionMenuAnchorEl);
+    const [popoverAnchorEl, setPopoverAnchorEl] =
+      useState<HTMLButtonElement | null>(null);
+    const [versionMenuAnchorEl, setVersionMenuAnchorEl] =
+      useState<HTMLElement | null>(null);
+    const isVersionMenuOpen = Boolean(versionMenuAnchorEl);
 
-  if (currentDataProductEntity === undefined) {
-    return null;
-  }
+    if (currentDataProductEntity === undefined) {
+      return null;
+    }
 
-  const truncatedDescription =
-    currentDataProductEntity.product?.description &&
-    currentDataProductEntity.product.description.length > MAX_DESCRIPTION_LENGTH
-      ? `${currentDataProductEntity.product.description.substring(
-          0,
-          MAX_DESCRIPTION_LENGTH,
-        )}...`
-      : currentDataProductEntity.product?.description;
+    const truncatedDescription =
+      currentDataProductEntity.product?.description &&
+      currentDataProductEntity.product.description.length >
+        MAX_DESCRIPTION_LENGTH
+        ? `${currentDataProductEntity.product.description.substring(
+            0,
+            MAX_DESCRIPTION_LENGTH,
+          )}...`
+        : currentDataProductEntity.product?.description;
 
-  const popoverOpen = Boolean(popoverAnchorEl);
-  const popoverId = popoverOpen ? 'popover' : undefined;
-  const isSnapshot = isSnapshotVersion(currentDataProductEntity.versionId);
-  const isLoading = dataProductState.isLoading;
+    const popoverOpen = Boolean(popoverAnchorEl);
+    const popoverId = popoverOpen ? 'popover' : undefined;
+    const isSnapshot = isSnapshotVersion(currentDataProductEntity.versionId);
+    const isLoading = dataProductState.isLoading;
 
-  const content = isLoading ? (
-    <CubesLoadingIndicator isLoading={isLoading}>
-      <CubesLoadingIndicatorIcon />
-    </CubesLoadingIndicator>
-  ) : (
-    <>
-      <Box className="marketplace-lakehouse-data-product-card__container">
-        <Box className="marketplace-lakehouse-data-product-card__icon">
-          {deserializeIcon(currentDataProductEntity.product?.icon)}
-        </Box>
-        <Box className="marketplace-lakehouse-data-product-card__content">
-          <Button
-            size="small"
-            onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
+    const content = isLoading ? (
+      <CubesLoadingIndicator isLoading={isLoading}>
+        <CubesLoadingIndicatorIcon />
+      </CubesLoadingIndicator>
+    ) : (
+      <>
+        <Box className="marketplace-lakehouse-data-product-card__container">
+          <Box className="marketplace-lakehouse-data-product-card__icon">
+            {deserializeIcon(currentDataProductEntity.product?.icon)}
+          </Box>
+          <Box className="marketplace-lakehouse-data-product-card__content">
+            <Button
+              size="small"
+              onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
+                event.preventDefault();
+                event.stopPropagation();
+                setVersionMenuAnchorEl(event.currentTarget);
+              }}
+              className={clsx(
+                'marketplace-lakehouse-data-product-card__version',
+                {
+                  'marketplace-lakehouse-data-product-card__version--snapshot':
+                    isSnapshot,
+                  'marketplace-lakehouse-data-product-card__version--release':
+                    !isSnapshot,
+                },
+              )}
+            >
+              {currentDataProductEntity.versionId}
+              <ExpandMoreIcon />
+            </Button>
+            <Menu
+              anchorEl={versionMenuAnchorEl}
+              open={isVersionMenuOpen}
+              onClose={() => setVersionMenuAnchorEl(null)}
+              slotProps={{
+                backdrop: {
+                  onClick: (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                  },
+                },
+              }}
+              anchorOrigin={{
+                horizontal: 'right',
+                vertical: 'bottom',
+              }}
+              transformOrigin={{
+                horizontal: 'right',
+                vertical: 'top',
+              }}
+            >
+              {Array.from(
+                dataProductState.productEntityMap
+                  .values()
+                  .map((dataProductEntity) => {
+                    return (
+                      <MenuItem
+                        key={dataProductEntity.versionId}
+                        onClick={(event: React.MouseEvent<HTMLLIElement>) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          dataProductState.setCurrentProductEntity(
+                            dataProductEntity,
+                          );
+                          setVersionMenuAnchorEl(null);
+                        }}
+                      >
+                        {dataProductEntity.versionId}
+                      </MenuItem>
+                    );
+                  }),
+              )}
+            </Menu>
+            <Box className="marketplace-lakehouse-data-product-card__name">
+              {currentDataProductEntity.product?.title ??
+                currentDataProductEntity.path.split('::').pop()}
+            </Box>
+            <Box className="marketplace-lakehouse-data-product-card__description">
+              {truncatedDescription}
+            </Box>
+          </Box>
+          <IconButton
+            aria-describedby={popoverId}
+            onClick={(event: MouseEvent<HTMLButtonElement>) => {
               event.preventDefault();
               event.stopPropagation();
-              setVersionMenuAnchorEl(event.currentTarget);
+              setPopoverAnchorEl(event.currentTarget);
             }}
             className={clsx(
-              'marketplace-lakehouse-data-product-card__version',
+              'marketplace-lakehouse-data-product-card__more-info-btn',
               {
-                'marketplace-lakehouse-data-product-card__version--snapshot':
-                  isSnapshot,
-                'marketplace-lakehouse-data-product-card__version--release':
-                  !isSnapshot,
+                'marketplace-lakehouse-data-product-card__more-info-btn--selected':
+                  popoverOpen,
               },
             )}
           >
-            {currentDataProductEntity.versionId}
-            <ExpandMoreIcon />
-          </Button>
-          <Menu
-            anchorEl={versionMenuAnchorEl}
-            open={isVersionMenuOpen}
-            onClose={() => setVersionMenuAnchorEl(null)}
-            slotProps={{
-              backdrop: {
-                onClick: (event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                },
+            <InfoCircleIcon />
+          </IconButton>
+        </Box>
+        <Popover
+          id={popoverId}
+          open={popoverOpen}
+          anchorEl={popoverAnchorEl}
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'center',
+          }}
+          transformOrigin={{
+            vertical: 'bottom',
+            horizontal: 'center',
+          }}
+          onClose={() => setPopoverAnchorEl(null)}
+          slotProps={{
+            paper: {
+              className: 'marketplace-lakehouse-data-product-card__popover',
+              onClick: (event) => [
+                event.preventDefault(),
+                event.stopPropagation(),
+              ],
+            },
+            backdrop: {
+              onClick: (event) => {
+                event.preventDefault();
+                event.stopPropagation();
               },
-            }}
-            anchorOrigin={{
-              horizontal: 'right',
-              vertical: 'bottom',
-            }}
-            transformOrigin={{
-              horizontal: 'right',
-              vertical: 'top',
-            }}
-          >
-            {Array.from(
-              dataProductState.productEntityMap
-                .values()
-                .map((dataProductEntity) => {
-                  return (
-                    <MenuItem
-                      key={dataProductEntity.versionId}
-                      onClick={(event: React.MouseEvent<HTMLLIElement>) => {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        dataProductState.setCurrentProductEntity(
-                          dataProductEntity,
-                        );
-                        setVersionMenuAnchorEl(null);
-                      }}
-                    >
-                      {dataProductEntity.versionId}
-                    </MenuItem>
-                  );
-                }),
-            )}
-          </Menu>
-          <Box className="marketplace-lakehouse-data-product-card__name">
+            },
+          }}
+        >
+          <div className="marketplace-lakehouse-data-product-card__popover__name">
             {currentDataProductEntity.product?.title ??
               currentDataProductEntity.path.split('::').pop()}
-          </Box>
-          <Box className="marketplace-lakehouse-data-product-card__description">
-            {truncatedDescription}
+          </div>
+          <div className="marketplace-lakehouse-data-product-card__popover__description-label">
+            Description
+          </div>
+          <div className="marketplace-lakehouse-data-product-card__popover__description">
+            {currentDataProductEntity.product?.description}
+          </div>
+          <hr />
+          <div className="marketplace-lakehouse-data-product-card__popover__project-table-header">
+            Data Product Project
+            <IconButton
+              className="marketplace-lakehouse-data-product-card__popover__project-link"
+              onClick={() =>
+                dataProductState.state.applicationStore.navigationService.navigator.visitAddress(
+                  EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
+                    dataProductState.state.applicationStore.config
+                      .studioServerUrl,
+                    currentDataProductEntity.groupId,
+                    currentDataProductEntity.artifactId,
+                    currentDataProductEntity.versionId,
+                    currentDataProductEntity.path,
+                  ),
+                )
+              }
+            >
+              <OpenIcon />
+            </IconButton>
+          </div>
+          <TableContainer className="marketplace-lakehouse-data-product-card__popover__project-table">
+            <Table>
+              <TableBody>
+                <TableRow>
+                  <TableCell>
+                    <b>Group</b>
+                  </TableCell>
+                  <TableCell>{currentDataProductEntity.groupId}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>
+                    <b>Artifact</b>
+                  </TableCell>
+                  <TableCell>{currentDataProductEntity.artifactId}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>
+                    <b>Version</b>
+                  </TableCell>
+                  <TableCell>{currentDataProductEntity.versionId}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>
+                    <b>Path</b>
+                  </TableCell>
+                  <TableCell>{currentDataProductEntity.path}</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Popover>
+      </>
+    );
+
+    return (
+      <LegendMarketplaceCard
+        size="large"
+        content={content}
+        onClick={() => onClick(currentDataProductEntity)}
+        className="marketplace-lakehouse-data-product-card"
+      />
+    );
+  },
+);
+
+const MarketplaceLakehouseHomeSortFilterPanel = observer(
+  (props: { marketPlaceStore: MarketplaceLakehouseStore }) => {
+    const { marketPlaceStore } = props;
+
+    const [sortMenuAnchorEl, setSortMenuAnchorEl] =
+      useState<HTMLElement | null>(null);
+    const isSortMenuOpen = Boolean(sortMenuAnchorEl);
+
+    return (
+      <Box className="marketplace-lakehouse-home__sort-filters">
+        <Box className="marketplace-lakehouse-home__sort-filters__sort">
+          Sort By
+          <Box>
+            <Button
+              onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
+                setSortMenuAnchorEl(event.currentTarget);
+              }}
+              className="marketplace-lakehouse-home__sort-filters__sort__btn"
+            >
+              {marketPlaceStore.sort}
+              <ExpandMoreIcon />
+            </Button>
+            <Menu
+              anchorEl={sortMenuAnchorEl}
+              open={isSortMenuOpen}
+              onClose={() => setSortMenuAnchorEl(null)}
+              anchorOrigin={{
+                horizontal: 'left',
+                vertical: 'bottom',
+              }}
+              transformOrigin={{
+                horizontal: 'left',
+                vertical: 'top',
+              }}
+            >
+              {Object.values(DataProductSort).map((sortValue) => {
+                return (
+                  <MenuItem
+                    key={sortValue}
+                    onClick={(event: React.MouseEvent<HTMLLIElement>) => {
+                      marketPlaceStore.setSort(sortValue);
+                      setSortMenuAnchorEl(null);
+                    }}
+                  >
+                    {sortValue}
+                  </MenuItem>
+                );
+              })}
+            </Menu>
           </Box>
         </Box>
-        <IconButton
-          aria-describedby={popoverId}
-          onClick={(event: MouseEvent<HTMLButtonElement>) => {
-            event.preventDefault();
-            event.stopPropagation();
-            setPopoverAnchorEl(event.currentTarget);
-          }}
-          className={clsx(
-            'marketplace-lakehouse-data-product-card__more-info-btn',
-            {
-              'marketplace-lakehouse-data-product-card__more-info-btn--selected':
-                popoverOpen,
-            },
-          )}
-        >
-          <InfoCircleIcon />
-        </IconButton>
-      </Box>
-      <Popover
-        id={popoverId}
-        open={popoverOpen}
-        anchorEl={popoverAnchorEl}
-        anchorOrigin={{
-          vertical: 'top',
-          horizontal: 'center',
-        }}
-        transformOrigin={{
-          vertical: 'bottom',
-          horizontal: 'center',
-        }}
-        onClose={() => setPopoverAnchorEl(null)}
-        slotProps={{
-          paper: {
-            className: 'marketplace-lakehouse-data-product-card__popover',
-            onClick: (event) => [
-              event.preventDefault(),
-              event.stopPropagation(),
-            ],
-          },
-          backdrop: {
-            onClick: (event) => {
-              event.preventDefault();
-              event.stopPropagation();
-            },
-          },
-        }}
-      >
-        <div className="marketplace-lakehouse-data-product-card__popover__name">
-          {currentDataProductEntity.product?.title ??
-            currentDataProductEntity.path.split('::').pop()}
-        </div>
-        <div className="marketplace-lakehouse-data-product-card__popover__description-label">
-          Description
-        </div>
-        <div className="marketplace-lakehouse-data-product-card__popover__description">
-          {currentDataProductEntity.product?.description}
-        </div>
-        <hr />
-        <div className="marketplace-lakehouse-data-product-card__popover__project-table-header">
-          Data Product Project
-          <IconButton
-            className="marketplace-lakehouse-data-product-card__popover__project-link"
-            onClick={() =>
-              dataProductState.state.applicationStore.navigationService.navigator.visitAddress(
-                EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
-                  dataProductState.state.applicationStore.config
-                    .studioServerUrl,
-                  currentDataProductEntity.groupId,
-                  currentDataProductEntity.artifactId,
-                  currentDataProductEntity.versionId,
-                  currentDataProductEntity.path,
-                ),
-              )
-            }
-          >
-            <OpenIcon />
-          </IconButton>
-        </div>
-        <TableContainer className="marketplace-lakehouse-data-product-card__popover__project-table">
-          <Table>
-            <TableBody>
-              <TableRow>
-                <TableCell>
-                  <b>Group</b>
-                </TableCell>
-                <TableCell>{currentDataProductEntity.groupId}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>
-                  <b>Artifact</b>
-                </TableCell>
-                <TableCell>{currentDataProductEntity.artifactId}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>
-                  <b>Version</b>
-                </TableCell>
-                <TableCell>{currentDataProductEntity.versionId}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>
-                  <b>Path</b>
-                </TableCell>
-                <TableCell>{currentDataProductEntity.path}</TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Popover>
-    </>
-  );
-
-  return (
-    <LegendMarketplaceCard
-      size="large"
-      content={content}
-      onClick={() => onClick(currentDataProductEntity)}
-      className="marketplace-lakehouse-data-product-card"
-    />
-  );
-};
-
-const MarketplaceLakehouseHomeSortFilterPanel = (props: {
-  marketPlaceStore: MarketplaceLakehouseStore;
-}) => {
-  const { marketPlaceStore } = props;
-
-  const [sortMenuAnchorEl, setSortMenuAnchorEl] = useState<HTMLElement | null>(
-    null,
-  );
-  const isSortMenuOpen = Boolean(sortMenuAnchorEl);
-
-  return (
-    <Box className="marketplace-lakehouse-home__sort-filters">
-      <Box className="marketplace-lakehouse-home__sort-filters__sort">
-        Sort By
-        <Box>
-          <Button
-            onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
-              setSortMenuAnchorEl(event.currentTarget);
-            }}
-            className="marketplace-lakehouse-home__sort-filters__sort__btn"
-          >
-            {marketPlaceStore.sort}
-            <ExpandMoreIcon />
-          </Button>
-          <Menu
-            anchorEl={sortMenuAnchorEl}
-            open={isSortMenuOpen}
-            onClose={() => setSortMenuAnchorEl(null)}
-            anchorOrigin={{
-              horizontal: 'left',
-              vertical: 'bottom',
-            }}
-            transformOrigin={{
-              horizontal: 'left',
-              vertical: 'top',
-            }}
-          >
-            {Object.values(DataProductSort).map((sortValue) => {
-              return (
-                <MenuItem
-                  key={sortValue}
-                  onClick={(event: React.MouseEvent<HTMLLIElement>) => {
-                    marketPlaceStore.setSort(sortValue);
-                    setSortMenuAnchorEl(null);
-                  }}
-                >
-                  {sortValue}
-                </MenuItem>
-              );
-            })}
-          </Menu>
+        <Box className="marketplace-lakehouse-home__sort-filters__filter">
+          Filter By
+          <FormGroup>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={marketPlaceStore.filter.releaseFilter}
+                  onChange={() =>
+                    marketPlaceStore.handleFilterChange(DepotScope.RELEASES)
+                  }
+                />
+              }
+              label="Releases"
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={marketPlaceStore.filter.snapshotFilter}
+                  onChange={() =>
+                    marketPlaceStore.handleFilterChange(DepotScope.SNAPSHOT)
+                  }
+                />
+              }
+              label="Snapshots"
+            />
+          </FormGroup>
         </Box>
       </Box>
-      <Box className="marketplace-lakehouse-home__sort-filters__filter">
-        Filter By
-        <FormGroup>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={marketPlaceStore.filter.releaseFilter}
-                onChange={() =>
-                  marketPlaceStore.handleFilterChange(DepotScope.RELEASES)
-                }
-              />
-            }
-            label="Releases"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={marketPlaceStore.filter.snapshotFilter}
-                onChange={() =>
-                  marketPlaceStore.handleFilterChange(DepotScope.SNAPSHOT)
-                }
-              />
-            }
-            label="Snapshots"
-          />
-        </FormGroup>
-      </Box>
-    </Box>
-  );
-};
+    );
+  },
+);
 
 export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
   observer(() => {
