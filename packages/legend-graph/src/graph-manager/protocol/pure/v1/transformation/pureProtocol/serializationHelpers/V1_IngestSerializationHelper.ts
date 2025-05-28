@@ -17,7 +17,7 @@
 import type { PlainObject } from '@finos/legend-shared';
 import { V1_IngestDefinition } from '../../../model/packageableElements/ingest/V1_IngestDefinition.js';
 import type { V1_PackageableElement } from '../../../model/packageableElements/V1_PackageableElement.js';
-import type { V1_AppDirNode } from '../../../entitlements/V1_CoreEntitlements.js';
+import type { V1_AppDirNode } from '../../../lakehouse/entitlements/V1_CoreEntitlements.js';
 import { V1_AppDirNodeModelSchema } from './V1_EntitlementSerializationHelper.js';
 import { deserialize } from 'serializr';
 

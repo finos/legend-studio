@@ -44,10 +44,8 @@ import {
   LegendSDLC,
   V1_DataProduct,
   V1_dataProductModelSchema,
-  V1_deserializeIngestEnvironment,
   V1_deserializePackageableElement,
   V1_LakehouseDiscoveryEnvironmentResponse,
-  type V1_IngestEnvironment,
 } from '@finos/legend-graph';
 import { deserialize } from 'serializr';
 import {
@@ -157,7 +155,8 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   // To consolidate all versions of a data product, we use a map from group:artifact:path to a DataProductState object, which contains
   // a map of all the verions of the data product.
   productStatesMap: Map<string, DataProductState>;
-  lakehouseEnvironments: V1_IngestEnvironment[] = [];
+  lakehouseIngestEnvironmentSummaries: V1_LakehouseDiscoveryEnvironmentResponse[] =
+    [];
   loadingProductsState = ActionState.create();
   loadingLakehouseEnvironmentsState = ActionState.create();
   filter: DataProductFilters = DataProductFilters.default();
@@ -181,11 +180,13 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       init: flow,
       initWithProduct: flow,
       productStatesMap: observable,
+      lakehouseIngestEnvironmentSummaries: observable,
       dataProductViewer: observable,
       handleFilterChange: observable,
       handleSearch: action,
       filterProducts: computed,
       setDataProductViewerState: action,
+      setLakehouseIngestEnvironmentSummaries: action,
       filter: observable,
     });
   }
@@ -219,8 +220,10 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     );
   }
 
-  setLakehouseEnvironments(environments: V1_IngestEnvironment[]): void {
-    this.lakehouseEnvironments = environments;
+  setLakehouseIngestEnvironmentSummaries(
+    summaries: V1_LakehouseDiscoveryEnvironmentResponse[],
+  ): void {
+    this.lakehouseIngestEnvironmentSummaries = summaries;
   }
 
   setDataProductViewerState(val: DataProductViewerState | undefined): void {
@@ -358,17 +361,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       ).map((e: PlainObject<V1_LakehouseDiscoveryEnvironmentResponse>) =>
         V1_LakehouseDiscoveryEnvironmentResponse.serialization.fromJson(e),
       ) as V1_LakehouseDiscoveryEnvironmentResponse[];
-      const ingestEnvironments: V1_IngestEnvironment[] = await Promise.all(
-        discoveryEnvironments.map(async (discoveryEnv) => {
-          const env =
-            (await this.lakehouseIngestServerClient.getIngestEnvironment(
-              discoveryEnv.ingestServerUrl,
-              token,
-            )) as PlainObject<V1_IngestEnvironment>;
-          return V1_deserializeIngestEnvironment(env);
-        }),
-      );
-      this.setLakehouseEnvironments(ingestEnvironments);
+      this.setLakehouseIngestEnvironmentSummaries(discoveryEnvironments);
       this.loadingLakehouseEnvironmentsState.complete();
     } catch (error) {
       assertErrorThrown(error);

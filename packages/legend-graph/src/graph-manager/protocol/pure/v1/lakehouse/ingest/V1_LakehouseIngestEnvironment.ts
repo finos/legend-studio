@@ -14,15 +14,8 @@
  * limitations under the License.
  */
 
-import { AbstractServerClient, type PlainObject } from '@finos/legend-shared';
-
-export class LakehouseIngestServerClient extends AbstractServerClient {
-  constructor() {
-    super({});
-  }
-
-  // auth
-  private _token = (token?: string) => ({
-    Authorization: `Bearer ${token}`,
-  });
+export enum V1_IngestEnvironmentClassification {
+  PROD = 'prod',
+  PROD_PARALLEL = 'prod-parallel',
+  DEV = 'dev',
 }
