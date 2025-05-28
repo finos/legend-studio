@@ -33,7 +33,6 @@ import {
   assertErrorThrown,
   guaranteeNonNullable,
   guaranteeType,
-  returnUndefOnError,
   uuid,
   type GeneratorFn,
   type PlainObject,
@@ -44,13 +43,14 @@ import {
   GraphDataWithOrigin,
   GraphManagerState,
   LegendSDLC,
-  resolvePackagePathAndElementName,
   V1_DataProduct,
   V1_dataProductModelSchema,
   V1_deserializePackageableElement,
 } from '@finos/legend-graph';
 import { deserialize } from 'serializr';
 import {
+  GAV_DELIMITER,
+  generateGAVCoordinates,
   parseGAVCoordinates,
   type Entity,
   type StoredFileGeneration,
@@ -60,7 +60,7 @@ import { EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl } fro
 import type { AuthContextProps } from 'react-oidc-context';
 
 const ARTIFACT_GENERATION_DAT_PRODUCT_KEY = 'dataProduct';
-interface DataProductEntity {
+export interface DataProductEntity {
   product: V1_DataProduct | undefined;
   groupId: string;
   artifactId: string;
@@ -76,23 +76,43 @@ export enum DataProductType {
 export class DataProductState {
   readonly state: MarketplaceLakehouseStore;
   id: string;
-  productEntity: DataProductEntity;
+  productEntityMap: Map<string, DataProductEntity>;
+  currentProductEntity: DataProductEntity | undefined;
+  loadingProductState = ActionState.create();
 
-  constructor(product: DataProductEntity, state: MarketplaceLakehouseStore) {
+  constructor(state: MarketplaceLakehouseStore) {
     this.id = uuid();
-    this.productEntity = product;
     this.state = state;
-  }
+    this.productEntityMap = new Map<string, DataProductEntity>();
 
-  get packageAndName(): [string | undefined, string] {
-    const val = returnUndefOnError(() =>
-      resolvePackagePathAndElementName(this.productEntity.path),
-    );
-    return val ?? [undefined, this.productEntity.path];
+    makeObservable(this, {
+      id: observable,
+      productEntityMap: observable,
+      loadingProductState: observable,
+      accessTypes: computed,
+      setCurrentProductEntity: action,
+      setProductEntity: action,
+      setProduct: action,
+    });
   }
 
   get accessTypes(): DataProductType {
     return DataProductType.LAKEHOUSE;
+  }
+
+  setCurrentProductEntity(productEntity: DataProductEntity | undefined): void {
+    this.currentProductEntity = productEntity;
+  }
+
+  setProductEntity(versionId: string, productEntity: DataProductEntity): void {
+    this.productEntityMap.set(versionId, productEntity);
+  }
+
+  setProduct(versionId: string, product: V1_DataProduct | undefined): void {
+    if (this.productEntityMap.has(versionId)) {
+      guaranteeNonNullable(this.productEntityMap.get(versionId)).product =
+        product;
+    }
   }
 }
 
@@ -125,7 +145,9 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   readonly applicationStore: LegendMarketplaceApplicationStore;
   readonly depotServerClient: DepotServerClient;
   readonly lakehouseServerClient: LakehouseContractServerClient;
-  productStates: DataProductState[] | undefined;
+  // To consolidate all versions of a data product, we use a map from group:artifact:path to a DataProductState object, which contains
+  // a map of all the verions of the data product.
+  productStatesMap: Map<string, DataProductState>;
   loadingProductsState = ActionState.create();
   filter: DataProductFilters = DataProductFilters.default();
   dataProductViewer: DataProductViewerState | undefined;
@@ -138,11 +160,11 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     this.applicationStore = applicationStore;
     this.lakehouseServerClient = lakehouseServerClient;
     this.depotServerClient = depotServerClient;
+    this.productStatesMap = new Map<string, DataProductState>();
     makeObservable(this, {
       init: flow,
       initWithProduct: flow,
-      productStates: observable,
-      setProducts: action,
+      productStatesMap: observable,
       dataProductViewer: observable,
       handleFilterChange: observable,
       handleSearch: action,
@@ -153,31 +175,32 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   }
 
   get filterProducts(): DataProductState[] | undefined {
-    return this.productStates?.filter((dataProductState) => {
-      const isSnapshot = isSnapshotVersion(
-        dataProductState.productEntity.versionId,
-      );
-      // Check if product matches release/snapshot filter
-      const versionMatch =
-        (this.filter.snapshotFilter && isSnapshot) ||
-        (this.filter.releaseFilter && !isSnapshot);
-      // Check if product title matches search filter
-      const dataProductTitle =
-        dataProductState.productEntity.product?.title ??
-        dataProductState.productEntity.path.split('::').pop() ??
-        '';
-      const titleMatch =
-        this.filter.search === undefined ||
-        this.filter.search === '' ||
-        dataProductTitle
-          .toLowerCase()
-          .includes(this.filter.search.toLowerCase());
-      return versionMatch && titleMatch;
-    });
-  }
-
-  setProducts(data: DataProductState[] | undefined): void {
-    this.productStates = data;
+    return Array.from(
+      this.productStatesMap.values().filter((dataProductState) => {
+        if (dataProductState.currentProductEntity === undefined) {
+          return false; // Skip if no current product entity
+        }
+        const isSnapshot = isSnapshotVersion(
+          dataProductState.currentProductEntity.versionId,
+        );
+        // Check if product matches release/snapshot filter
+        const versionMatch =
+          (this.filter.snapshotFilter && isSnapshot) ||
+          (this.filter.releaseFilter && !isSnapshot);
+        // Check if product title matches search filter
+        const dataProductTitle =
+          dataProductState.currentProductEntity.product?.title ??
+          dataProductState.currentProductEntity.path.split('::').pop() ??
+          '';
+        const titleMatch =
+          this.filter.search === undefined ||
+          this.filter.search === '' ||
+          dataProductTitle
+            .toLowerCase()
+            .includes(this.filter.search.toLowerCase());
+        return versionMatch && titleMatch;
+      }),
+    );
   }
 
   setDataProductViewerState(val: DataProductViewerState | undefined): void {
@@ -220,43 +243,82 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         .map((e: PlainObject<StoredSummaryEntity>) =>
           StoredSummaryEntity.serialization.fromJson(e),
         ) as StoredSummaryEntity[];
-      // TODO: explore a different way to get data product content to avoid overloading metadata server
-      // as the number of data products increases.
-      const dataProductEntities = (yield Promise.all(
-        dataProductEntitySummaries.map(async (entitySummary) => {
-          const entity = await this.depotServerClient.getVersionEntity(
+      // Store summary information in the product state map
+      dataProductEntitySummaries.forEach((entitySummary) => {
+        const key =
+          generateGAVCoordinates(
             entitySummary.groupId,
             entitySummary.artifactId,
-            entitySummary.versionId,
-            entitySummary.path,
-          );
-          const dataProduct = guaranteeType(
-            V1_deserializePackageableElement(
-              entity.content as PlainObject<V1_DataProduct>,
-              [],
-            ),
-            V1_DataProduct,
-          );
-          return {
-            groupId: entitySummary.groupId,
-            artifactId: entitySummary.artifactId,
-            versionId: entitySummary.versionId,
-            path: entitySummary.path,
-            product: dataProduct,
-          };
-        }),
-      )) as DataProductEntity[];
-      const dataProductStates = dataProductEntities
-        .sort(
-          (a, b) =>
-            a.product?.title?.localeCompare(b.product?.title ?? '') ?? 0,
-        )
-        .map(
-          (dataProductEntity) => new DataProductState(dataProductEntity, this),
+            undefined,
+          ) +
+          GAV_DELIMITER +
+          entitySummary.path;
+        if (!this.productStatesMap.has(key)) {
+          this.productStatesMap.set(key, new DataProductState(this));
+        }
+        const productState = guaranteeNonNullable(
+          this.productStatesMap.get(key),
         );
-
-      this.setProducts(dataProductStates);
+        productState.setProductEntity(entitySummary.versionId, {
+          groupId: entitySummary.groupId,
+          artifactId: entitySummary.artifactId,
+          versionId: entitySummary.versionId,
+          path: entitySummary.path,
+          product: undefined,
+        });
+      });
+      // Set the currentProductEntity for each product state to the latest version (or if no released versions, just pick the first snapshot version)
+      this.productStatesMap.forEach((dataProductState) => {
+        const productEntities = Array.from(
+          dataProductState.productEntityMap.values(),
+        );
+        const latestReleasedEntity = productEntities
+          .filter((entity) => !isSnapshotVersion(entity.versionId))
+          .sort((a, b) => b.versionId.localeCompare(a.versionId))[0];
+        if (latestReleasedEntity) {
+          dataProductState.setCurrentProductEntity(latestReleasedEntity);
+        } else {
+          dataProductState.setCurrentProductEntity(productEntities[0]);
+        }
+      });
       this.loadingProductsState.complete();
+      // Asynchronously fetch the data product content for each entity summary and update the product state map.
+      Promise.all(
+        // TODO: explore a different way to get data product content to avoid overloading metadata server
+        // as the number of data products increases.
+        dataProductEntitySummaries.map(async (entitySummary) => {
+          const key =
+            generateGAVCoordinates(
+              entitySummary.groupId,
+              entitySummary.artifactId,
+              undefined,
+            ) +
+            GAV_DELIMITER +
+            entitySummary.path;
+          const dataProductState = this.productStatesMap.get(key);
+          if (dataProductState) {
+            dataProductState.loadingProductState.inProgress();
+            try {
+              const entity = await this.depotServerClient.getVersionEntity(
+                entitySummary.groupId,
+                entitySummary.artifactId,
+                entitySummary.versionId,
+                entitySummary.path,
+              );
+              const dataProduct = guaranteeType(
+                V1_deserializePackageableElement(
+                  entity.content as PlainObject<V1_DataProduct>,
+                  [],
+                ),
+                V1_DataProduct,
+              );
+              dataProductState.setProduct(entitySummary.versionId, dataProduct);
+            } finally {
+              dataProductState.loadingProductState.complete();
+            }
+          }
+        }),
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(

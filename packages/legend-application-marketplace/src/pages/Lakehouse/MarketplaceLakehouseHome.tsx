@@ -19,7 +19,7 @@ import {
   useMarketplaceLakehouseStore,
   withMarketplaceLakehouseStore,
 } from './MarketplaceLakehouseStoreProvider.js';
-import { useEffect, useState, type JSX, type MouseEvent } from 'react';
+import React, { useEffect, useState, type MouseEvent } from 'react';
 import {
   clsx,
   CubesLoadingIndicator,
@@ -43,7 +43,10 @@ import {
   TableContainer,
   TableRow,
 } from '@mui/material';
-import type { DataProductState } from '../../stores/lakehouse/MarketplaceLakehouseStore.js';
+import type {
+  DataProductEntity,
+  DataProductState,
+} from '../../stores/lakehouse/MarketplaceLakehouseStore.js';
 import { generateLakehouseDataProduct } from '../../__lib__/LegendMarketplaceNavigation.js';
 import { generateGAVCoordinates } from '@finos/legend-storage';
 import { LegendMarketplaceSearchBar } from '../../components/SearchBar/LegendMarketplaceSearchBar.js';
@@ -56,34 +59,42 @@ const MAX_DESCRIPTION_LENGTH = 250;
 
 export const LakehouseDataProductCard = (props: {
   dataProductState: DataProductState;
-  onClick: (dataProductState: DataProductState) => void;
-}): JSX.Element => {
+  onClick: (dataProductEntity: DataProductEntity) => void;
+}): React.ReactNode => {
   const { dataProductState, onClick } = props;
+
+  const currentDataProductEntity = dataProductState.currentProductEntity;
 
   const [popoverAnchorEl, setPopoverAnchorEl] =
     useState<HTMLButtonElement | null>(null);
 
+  if (currentDataProductEntity === undefined) {
+    return null;
+  }
+
   const truncatedDescription =
-    dataProductState.productEntity.product?.description &&
-    dataProductState.productEntity.product.description.length >
-      MAX_DESCRIPTION_LENGTH
-      ? `${dataProductState.productEntity.product.description.substring(
+    currentDataProductEntity.product?.description &&
+    currentDataProductEntity.product.description.length > MAX_DESCRIPTION_LENGTH
+      ? `${currentDataProductEntity.product.description.substring(
           0,
           MAX_DESCRIPTION_LENGTH,
         )}...`
-      : dataProductState.productEntity.product?.description;
+      : currentDataProductEntity.product?.description;
 
   const popoverOpen = Boolean(popoverAnchorEl);
   const popoverId = popoverOpen ? 'popover' : undefined;
-  const isSnapshot = isSnapshotVersion(
-    dataProductState.productEntity.versionId,
-  );
+  const isSnapshot = isSnapshotVersion(currentDataProductEntity.versionId);
+  const isLoading = dataProductState.loadingProductState.isInProgress;
 
-  const content = (
+  const content = isLoading ? (
+    <CubesLoadingIndicator isLoading={isLoading}>
+      <CubesLoadingIndicatorIcon />
+    </CubesLoadingIndicator>
+  ) : (
     <>
       <div className="marketplace-lakehouse-data-product-card__name">
-        {dataProductState.productEntity.product?.title ??
-          dataProductState.productEntity.path.split('::').pop()}
+        {currentDataProductEntity.product?.title ??
+          currentDataProductEntity.path.split('::').pop()}
         <Chip
           label={isSnapshot ? 'SNAPSHOT' : 'RELEASE'}
           size="small"
@@ -145,14 +156,14 @@ export const LakehouseDataProductCard = (props: {
         }}
       >
         <div className="marketplace-lakehouse-data-product-card__popover__name">
-          {dataProductState.productEntity.product?.title ??
-            dataProductState.productEntity.path.split('::').pop()}
+          {currentDataProductEntity.product?.title ??
+            currentDataProductEntity.path.split('::').pop()}
         </div>
         <div className="marketplace-lakehouse-data-product-card__popover__description-label">
           Description
         </div>
         <div className="marketplace-lakehouse-data-product-card__popover__description">
-          {dataProductState.productEntity.product?.description}
+          {currentDataProductEntity.product?.description}
         </div>
         <hr />
         <div className="marketplace-lakehouse-data-product-card__popover__project-table-header">
@@ -164,10 +175,10 @@ export const LakehouseDataProductCard = (props: {
                 EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
                   dataProductState.state.applicationStore.config
                     .studioServerUrl,
-                  dataProductState.productEntity.groupId,
-                  dataProductState.productEntity.artifactId,
-                  dataProductState.productEntity.versionId,
-                  dataProductState.productEntity.path,
+                  currentDataProductEntity.groupId,
+                  currentDataProductEntity.artifactId,
+                  currentDataProductEntity.versionId,
+                  currentDataProductEntity.path,
                 ),
               )
             }
@@ -182,29 +193,25 @@ export const LakehouseDataProductCard = (props: {
                 <TableCell>
                   <b>Group</b>
                 </TableCell>
-                <TableCell>{dataProductState.productEntity.groupId}</TableCell>
+                <TableCell>{currentDataProductEntity.groupId}</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>
                   <b>Artifact</b>
                 </TableCell>
-                <TableCell>
-                  {dataProductState.productEntity.artifactId}
-                </TableCell>
+                <TableCell>{currentDataProductEntity.artifactId}</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>
                   <b>Version</b>
                 </TableCell>
-                <TableCell>
-                  {dataProductState.productEntity.versionId}
-                </TableCell>
+                <TableCell>{currentDataProductEntity.versionId}</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>
                   <b>Path</b>
                 </TableCell>
-                <TableCell>{dataProductState.productEntity.path}</TableCell>
+                <TableCell>{currentDataProductEntity.path}</TableCell>
               </TableRow>
             </TableBody>
           </Table>
@@ -217,7 +224,7 @@ export const LakehouseDataProductCard = (props: {
     <LegendMarketplaceCard
       size="large"
       content={content}
-      onClick={() => onClick(dataProductState)}
+      onClick={() => onClick(currentDataProductEntity)}
       className="marketplace-lakehouse-data-product-card"
     />
   );
@@ -284,16 +291,16 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
                 <Grid key={dpState.id} size={1}>
                   <LakehouseDataProductCard
                     dataProductState={dpState}
-                    onClick={(dataProductState: DataProductState) => {
+                    onClick={(dataProductEntity: DataProductEntity) => {
                       {
                         marketPlaceStore.applicationStore.navigationService.navigator.goToLocation(
                           generateLakehouseDataProduct(
                             generateGAVCoordinates(
-                              dataProductState.productEntity.groupId,
-                              dataProductState.productEntity.artifactId,
-                              dataProductState.productEntity.versionId,
+                              dataProductEntity.groupId,
+                              dataProductEntity.artifactId,
+                              dataProductEntity.versionId,
                             ),
-                            dataProductState.productEntity.path,
+                            dataProductEntity.path,
                           ),
                         );
                       }
