@@ -137,6 +137,14 @@ export const LakehouseDataProductCard = (props: {
                 },
               },
             }}
+            anchorOrigin={{
+              horizontal: 'right',
+              vertical: 'bottom',
+            }}
+            transformOrigin={{
+              horizontal: 'right',
+              vertical: 'top',
+            }}
           >
             {Array.from(
               dataProductState.productEntityMap
