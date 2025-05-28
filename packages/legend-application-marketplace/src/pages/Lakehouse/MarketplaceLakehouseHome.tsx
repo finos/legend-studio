@@ -24,6 +24,7 @@ import {
   clsx,
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
+  deserializeIcon,
   InfoCircleIcon,
   OpenIcon,
 } from '@finos/legend-art';
@@ -93,7 +94,13 @@ export const LakehouseDataProductCard = (props: {
     </CubesLoadingIndicator>
   ) : (
     <>
-      <div className="marketplace-lakehouse-data-product-card__name">
+      <Box className="marketplace-lakehouse-data-product-card__header">
+        {deserializeIcon(currentDataProductEntity.product?.icon) !==
+          undefined && (
+          <Box className="marketplace-lakehouse-data-product-card__icon">
+            {deserializeIcon(currentDataProductEntity.product?.icon)}
+          </Box>
+        )}
         {currentDataProductEntity.product?.title ??
           currentDataProductEntity.path.split('::').pop()}
         <Chip
@@ -106,10 +113,10 @@ export const LakehouseDataProductCard = (props: {
               !isSnapshot,
           })}
         />
-      </div>
-      <div className="marketplace-lakehouse-data-product-card__description">
+      </Box>
+      <Box className="marketplace-lakehouse-data-product-card__description">
         {truncatedDescription}
-      </div>
+      </Box>
       <IconButton
         aria-describedby={popoverId}
         onClick={(event: MouseEvent<HTMLButtonElement>) => {

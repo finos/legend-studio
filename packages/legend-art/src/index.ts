@@ -15,6 +15,7 @@
  */
 
 export * from './icon/Icon.js';
+export * from './icon/IconSerialization.js';
 export * from './icon/TypeIcon.js';
 export * from './icon/LegendLogo.js';
 export * from './icon/SVGIcon.js';
