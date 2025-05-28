@@ -414,16 +414,16 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
 
   *init(auth: AuthContextProps): GeneratorFn<void> {
     yield Promise.all([
-      () => {
+      (() => {
         if (!this.loadingProductsState.hasCompleted) {
           this.fetchDataProducts();
         }
-      },
-      () => {
+      })(),
+      (() => {
         if (!this.loadingLakehouseEnvironmentsState.hasCompleted) {
           this.fetchLakehouseEnvironments(auth.user?.access_token);
         }
-      },
+      })(),
     ]);
   }
 
