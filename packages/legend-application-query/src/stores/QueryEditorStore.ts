@@ -1324,6 +1324,11 @@ const processQueryParams = (
       const cP = compiledParams?.find((e) => e.name === key);
       if (cP?.genericType?.value.rawType === PrimitiveType.STRING) {
         resolvedStringParams.set(key, `'${value}'`);
+      } else if (
+        cP?.genericType?.value.rawType === PrimitiveType.DATE ||
+        cP?.genericType?.value.rawType === PrimitiveType.DATETIME
+      ) {
+        resolvedStringParams.set(key, `%${value}`);
       } else {
         resolvedStringParams.set(key, value);
       }
