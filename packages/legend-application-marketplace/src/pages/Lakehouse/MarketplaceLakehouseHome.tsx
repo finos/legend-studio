@@ -94,46 +94,50 @@ export const LakehouseDataProductCard = (props: {
     </CubesLoadingIndicator>
   ) : (
     <>
-      <Box className="marketplace-lakehouse-data-product-card__header">
-        {deserializeIcon(currentDataProductEntity.product?.icon) !==
-          undefined && (
-          <Box className="marketplace-lakehouse-data-product-card__icon">
-            {deserializeIcon(currentDataProductEntity.product?.icon)}
+      <Box className="marketplace-lakehouse-data-product-card__container">
+        <Box className="marketplace-lakehouse-data-product-card__icon">
+          {deserializeIcon(currentDataProductEntity.product?.icon)}
+        </Box>
+        <Box className="marketplace-lakehouse-data-product-card__content">
+          <Box className="marketplace-lakehouse-data-product-card__name">
+            {currentDataProductEntity.product?.title ??
+              currentDataProductEntity.path.split('::').pop()}
+            <Chip
+              label={isSnapshot ? 'SNAPSHOT' : 'RELEASE'}
+              size="small"
+              className={clsx(
+                'marketplace-lakehouse-data-product-card__version',
+                {
+                  'marketplace-lakehouse-data-product-card__version--snapshot':
+                    isSnapshot,
+                  'marketplace-lakehouse-data-product-card__version--release':
+                    !isSnapshot,
+                },
+              )}
+            />
           </Box>
-        )}
-        {currentDataProductEntity.product?.title ??
-          currentDataProductEntity.path.split('::').pop()}
-        <Chip
-          label={isSnapshot ? 'SNAPSHOT' : 'RELEASE'}
-          size="small"
-          className={clsx('marketplace-lakehouse-data-product-card__version', {
-            'marketplace-lakehouse-data-product-card__version--snapshot':
-              isSnapshot,
-            'marketplace-lakehouse-data-product-card__version--release':
-              !isSnapshot,
-          })}
-        />
+          <Box className="marketplace-lakehouse-data-product-card__description">
+            {truncatedDescription}
+          </Box>
+        </Box>
+        <IconButton
+          aria-describedby={popoverId}
+          onClick={(event: MouseEvent<HTMLButtonElement>) => {
+            event.preventDefault();
+            event.stopPropagation();
+            setPopoverAnchorEl(event.currentTarget);
+          }}
+          className={clsx(
+            'marketplace-lakehouse-data-product-card__more-info-btn',
+            {
+              'marketplace-lakehouse-data-product-card__more-info-btn--selected':
+                popoverOpen,
+            },
+          )}
+        >
+          <InfoCircleIcon />
+        </IconButton>
       </Box>
-      <Box className="marketplace-lakehouse-data-product-card__description">
-        {truncatedDescription}
-      </Box>
-      <IconButton
-        aria-describedby={popoverId}
-        onClick={(event: MouseEvent<HTMLButtonElement>) => {
-          event.preventDefault();
-          event.stopPropagation();
-          setPopoverAnchorEl(event.currentTarget);
-        }}
-        className={clsx(
-          'marketplace-lakehouse-data-product-card__more-info-btn',
-          {
-            'marketplace-lakehouse-data-product-card__more-info-btn--selected':
-              popoverOpen,
-          },
-        )}
-      >
-        <InfoCircleIcon />
-      </IconButton>
       <Popover
         id={popoverId}
         open={popoverOpen}

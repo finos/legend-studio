@@ -51,12 +51,26 @@
     overflow: auto;
   }
 
-  &__header {
+  &__container {
+    @include flexVCenter;
+  }
+
+  &__icon {
+    @include flexCenter;
+  }
+
+  &__content {
+    @include flexVCenter;
+
+    flex-direction: column;
+  }
+
+  &__name {
     @include flexVCenter;
 
     width: 100%;
     justify-content: space-between;
-    font-size: 2rem;
+    font-size: 3rem;
     font-weight: 500;
     margin-bottom: 1rem;
     color: var(--color-blue-100);
