@@ -25,18 +25,21 @@ import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
   deserializeIcon,
+  ExpandIcon,
   InfoCircleIcon,
   OpenIcon,
 } from '@finos/legend-art';
 import {
   Box,
+  Button,
   Checkbox,
-  Chip,
   Container,
   FormControlLabel,
   FormGroup,
   Grid2 as Grid,
   IconButton,
+  Menu,
+  MenuItem,
   Popover,
   Table,
   TableBody,
@@ -69,6 +72,9 @@ export const LakehouseDataProductCard = (props: {
 
   const [popoverAnchorEl, setPopoverAnchorEl] =
     useState<HTMLButtonElement | null>(null);
+  const [versionMenuAnchorEl, setVersionMenuAnchorEl] =
+    useState<HTMLElement | null>(null);
+  const isVersionMenuOpen = Boolean(versionMenuAnchorEl);
 
   if (currentDataProductEntity === undefined) {
     return null;
@@ -99,9 +105,11 @@ export const LakehouseDataProductCard = (props: {
           {deserializeIcon(currentDataProductEntity.product?.icon)}
         </Box>
         <Box className="marketplace-lakehouse-data-product-card__content">
-          <Chip
-            label={isSnapshot ? 'SNAPSHOT' : 'RELEASE'}
+          <Button
             size="small"
+            onClick={(event: React.MouseEvent<HTMLButtonElement>) =>
+              setVersionMenuAnchorEl(event.currentTarget)
+            }
             className={clsx(
               'marketplace-lakehouse-data-product-card__version',
               {
@@ -111,7 +119,32 @@ export const LakehouseDataProductCard = (props: {
                   !isSnapshot,
               },
             )}
-          />
+          >
+            {currentDataProductEntity.versionId}
+            <ExpandIcon />
+          </Button>
+          <Menu
+            anchorEl={versionMenuAnchorEl}
+            open={isVersionMenuOpen}
+            onClose={() => setVersionMenuAnchorEl(null)}
+          >
+            {dataProductState.productEntityMap
+              .values()
+              .map((dataProductEntity) => {
+                return (
+                  <MenuItem
+                    key={dataProductEntity.versionId}
+                    onClick={() =>
+                      dataProductState.setCurrentProductEntity(
+                        dataProductEntity,
+                      )
+                    }
+                  >
+                    {dataProductEntity.versionId}
+                  </MenuItem>
+                );
+              })}
+          </Menu>
           <Box className="marketplace-lakehouse-data-product-card__name">
             {currentDataProductEntity.product?.title ??
               currentDataProductEntity.path.split('::').pop()}
