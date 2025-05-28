@@ -58,6 +58,24 @@
     gap: 2rem;
   }
 
+  &__sort-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    font-size: 1.8rem;
+    min-width: 20rem;
+
+    &__filter {
+      .MuiSvgIcon-root {
+        font-size: 2rem;
+      }
+
+      .MuiTypography-root {
+        font-size: 1.2rem;
+      }
+    }
+  }
+
   &__data-product-cards {
     width: 100%;
     justify-content: start;

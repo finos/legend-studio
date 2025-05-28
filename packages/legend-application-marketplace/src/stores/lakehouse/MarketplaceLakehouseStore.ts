@@ -226,6 +226,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       setDataProductViewerState: action,
       setLakehouseIngestEnvironmentSummaries: action,
       filter: observable,
+      sort: observable,
       setSort: action,
     });
   }

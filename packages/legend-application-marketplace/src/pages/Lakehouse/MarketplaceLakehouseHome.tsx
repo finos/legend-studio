@@ -314,42 +314,44 @@ const MarketplaceLakehouseHomeSortFilterPanel = (props: {
     <Box className="marketplace-lakehouse-home__sort-filters">
       <Box className="marketplace-lakehouse-home__sort-filters__sort">
         Sort By
-        <Button
-          onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
-            setSortMenuAnchorEl(event.currentTarget);
-          }}
-          className="marketplace-lakehouse-home__sort-filters__sort__btn"
-        >
-          {marketPlaceStore.sort}
-          <ExpandMoreIcon />
-        </Button>
-        <Menu
-          anchorEl={sortMenuAnchorEl}
-          open={isSortMenuOpen}
-          onClose={() => setSortMenuAnchorEl(null)}
-          anchorOrigin={{
-            horizontal: 'left',
-            vertical: 'bottom',
-          }}
-          transformOrigin={{
-            horizontal: 'left',
-            vertical: 'top',
-          }}
-        >
-          {Object.values(DataProductSort).map((sortValue) => {
-            return (
-              <MenuItem
-                key={sortValue}
-                onClick={(event: React.MouseEvent<HTMLLIElement>) => {
-                  marketPlaceStore.setSort(sortValue);
-                  setSortMenuAnchorEl(null);
-                }}
-              >
-                {sortValue}
-              </MenuItem>
-            );
-          })}
-        </Menu>
+        <Box>
+          <Button
+            onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
+              setSortMenuAnchorEl(event.currentTarget);
+            }}
+            className="marketplace-lakehouse-home__sort-filters__sort__btn"
+          >
+            {marketPlaceStore.sort}
+            <ExpandMoreIcon />
+          </Button>
+          <Menu
+            anchorEl={sortMenuAnchorEl}
+            open={isSortMenuOpen}
+            onClose={() => setSortMenuAnchorEl(null)}
+            anchorOrigin={{
+              horizontal: 'left',
+              vertical: 'bottom',
+            }}
+            transformOrigin={{
+              horizontal: 'left',
+              vertical: 'top',
+            }}
+          >
+            {Object.values(DataProductSort).map((sortValue) => {
+              return (
+                <MenuItem
+                  key={sortValue}
+                  onClick={(event: React.MouseEvent<HTMLLIElement>) => {
+                    marketPlaceStore.setSort(sortValue);
+                    setSortMenuAnchorEl(null);
+                  }}
+                >
+                  {sortValue}
+                </MenuItem>
+              );
+            })}
+          </Menu>
+        </Box>
       </Box>
       <Box className="marketplace-lakehouse-home__sort-filters__filter">
         Filter By
