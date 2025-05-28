@@ -99,9 +99,7 @@ export const LakehouseDataProductCard = (props: {
           {deserializeIcon(currentDataProductEntity.product?.icon)}
         </Box>
         <Box className="marketplace-lakehouse-data-product-card__content">
-          <Box className="marketplace-lakehouse-data-product-card__name">
-            {currentDataProductEntity.product?.title ??
-              currentDataProductEntity.path.split('::').pop()}
+          <Box className="marketplace-lakehouse-data-product-card__version">
             <Chip
               label={isSnapshot ? 'SNAPSHOT' : 'RELEASE'}
               size="small"
@@ -115,6 +113,10 @@ export const LakehouseDataProductCard = (props: {
                 },
               )}
             />
+          </Box>
+          <Box className="marketplace-lakehouse-data-product-card__name">
+            {currentDataProductEntity.product?.title ??
+              currentDataProductEntity.path.split('::').pop()}
           </Box>
           <Box className="marketplace-lakehouse-data-product-card__description">
             {truncatedDescription}
