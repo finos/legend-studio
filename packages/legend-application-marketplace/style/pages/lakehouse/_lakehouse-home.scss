@@ -114,6 +114,7 @@
     flex-direction: column;
     height: 100%;
     flex: 1;
+    gap: 1rem;
   }
 
   &__name {
@@ -123,7 +124,6 @@
     justify-content: space-between;
     font-size: 2.4rem;
     font-weight: 500;
-    margin-bottom: 1rem;
     color: var(--color-blue-100);
     overflow-wrap: anywhere;
   }
