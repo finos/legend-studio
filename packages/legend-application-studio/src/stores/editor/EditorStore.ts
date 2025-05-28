@@ -566,6 +566,34 @@ export class EditorStore implements CommandRegistrar {
     this.explorerTreeState = new ExplorerTreeState(this);
   }
 
+  deCodeStudioQueryParams(
+    studioParams: Partial<StudioQueryParams> | undefined,
+  ): void {
+    if (this.editorConfig) {
+      // If editor config is already set, we do not decode again
+      return;
+    }
+    if (!studioParams) {
+      // If studio params are not provided, we do not decode
+      return;
+    }
+    const editorConfig = studioParams[LEGEND_STUDIO_QUERY_PARAMS.EDITOR_CONFIG];
+    if (!editorConfig) {
+      return;
+    }
+    const _config = returnUndefOnError(() =>
+      EditorInitialConfiguration.serialization.fromJson(
+        JSON.parse(atob(editorConfig)),
+      ),
+    );
+    const config = guaranteeNonNullable(
+      _config,
+      `error reading and serializing config ${editorConfig}`,
+    );
+
+    this.editorConfig = config;
+  }
+
   internalizeEntityPath(
     params: Partial<WorkspaceEditorPathParams>,
     studioParams: Partial<StudioQueryParams> | undefined,
@@ -574,27 +602,14 @@ export class EditorStore implements CommandRegistrar {
     const workspaceType = params.groupWorkspaceId
       ? WorkspaceType.GROUP
       : WorkspaceType.USER;
-    const editorConfig =
-      studioParams?.[LEGEND_STUDIO_QUERY_PARAMS.EDITOR_CONFIG];
+
     const workspaceId = guaranteeNonNullable(
       params.groupWorkspaceId ?? params.workspaceId,
       `Workspace/group workspace ID is not provided`,
     );
     if (entityPath) {
       this.initialEntityPath = entityPath;
-      if (editorConfig) {
-        const _config = returnUndefOnError(() =>
-          EditorInitialConfiguration.serialization.fromJson(
-            JSON.parse(atob(editorConfig)),
-          ),
-        );
-        const config = guaranteeNonNullable(
-          _config,
-          `error reading and serializing config ${editorConfig}`,
-        );
-
-        this.editorConfig = config;
-      }
+      this.deCodeStudioQueryParams(studioParams);
       this.applicationStore.navigationService.navigator.updateCurrentLocation(
         generateEditorRoute(
           guaranteeNonNullable(projectId),
@@ -616,6 +631,7 @@ export class EditorStore implements CommandRegistrar {
     patchReleaseVersionId: string | undefined,
     workspaceId: string,
     workspaceType: WorkspaceType,
+    studioParams: Partial<StudioQueryParams> | undefined,
   ): GeneratorFn<void> {
     if (!this.initState.isInInitialState) {
       /**
@@ -647,7 +663,7 @@ export class EditorStore implements CommandRegistrar {
       return;
     }
     this.initState.inProgress();
-
+    this.deCodeStudioQueryParams(studioParams);
     // TODO: when we genericize the way to initialize an application page
     this.applicationStore.assistantService.setIsHidden(false);
 
@@ -792,8 +808,12 @@ export class EditorStore implements CommandRegistrar {
           env: this.applicationStore.config.env,
           tabSize: DEFAULT_TAB_SIZE,
           clientConfig: {
-            baseUrl: this.applicationStore.config.engineServerUrl,
-            queryBaseUrl: this.applicationStore.config.engineQueryServerUrl,
+            baseUrl:
+              this.editorConfig?.engineServerUrl ??
+              this.applicationStore.config.engineServerUrl,
+            queryBaseUrl:
+              this.editorConfig?.engineQueryServerUrl ??
+              this.applicationStore.config.engineQueryServerUrl,
             enableCompression: true,
             payloadDebugger,
           },
@@ -1068,8 +1088,6 @@ export class EditorStore implements CommandRegistrar {
             this.graphManagerState.graph.getElement(this.initialEntityPath),
             this.editorConfig,
           );
-          // we may not want to set as undefined if using it for other things
-          this.editorConfig = undefined;
         } catch {
           const elementPath = this.initialEntityPath;
           this.initialEntityPath = undefined;

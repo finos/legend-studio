@@ -18,7 +18,12 @@ import type { AppDirNode } from '@finos/legend-graph';
 import { IngestDeploymentServerClient } from './IngestDeploymentServerClient.js';
 import { IngestDiscoveryServerClient } from './IngestDiscoveryServerClient.js';
 import type { GenericLegendApplicationStore } from '@finos/legend-application';
-import { type ActionState, type PlainObject } from '@finos/legend-shared';
+import {
+  NetworkClientError,
+  type ActionState,
+  type PlainObject,
+  assertErrorThrown,
+} from '@finos/legend-shared';
 import {
   type IngestDefinitionValidationResponse,
   IngestDefinitionDeploymentResponse,
@@ -36,11 +41,12 @@ import {
 } from './AdhocDataProductDeployResponse.js';
 
 export class IngestionManager {
+  private readonly applicationStore: GenericLegendApplicationStore;
   private ingestDiscoveryServerClient: IngestDiscoveryServerClient;
   private ingestDeploymentServerClient: IngestDeploymentServerClient;
   private _currentAppID: number | undefined;
   private _currentLevel: string | undefined;
-  private readonly applicationStore: GenericLegendApplicationStore;
+  private useDefaultServer = false;
 
   constructor(
     config: LegendIngestionConfiguration,
@@ -58,6 +64,7 @@ export class IngestionManager {
     this.ingestDeploymentServerClient.setTracerService(
       applicationStore.tracerService,
     );
+    this.useDefaultServer = Boolean(config.deployment.useDefaultServer);
     this.applicationStore = applicationStore;
   }
 
@@ -142,12 +149,21 @@ export class IngestionManager {
     if (appDirNode) {
       await this.identifyIngestDeploymentServer(appDirNode, token);
     }
-    // validate
-    const response = await this.ingestDeploymentServerClient.validate(
-      ingestDefinition,
-      token,
-    );
-    return createIngestDefinitionValidationResponse(response);
+    try {
+      const response = await this.ingestDeploymentServerClient.validate(
+        ingestDefinition,
+        token,
+      );
+      return createIngestDefinitionValidationResponse(response);
+    } catch (error) {
+      assertErrorThrown(error);
+      if (error instanceof NetworkClientError) {
+        return createIngestDefinitionValidationResponse(
+          error.payload as PlainObject<IngestDefinitionValidationResponse>,
+        );
+      }
+      throw error;
+    }
   }
 
   private async _deploy(
@@ -171,7 +187,7 @@ export class IngestionManager {
     token: string | undefined,
   ): Promise<void> {
     // we do not change if current appDirNode is the same as the one we are trying to set
-    if (this.isCurrentAppDirNode(appDirNode)) {
+    if (this.useDefaultServer || this.isCurrentAppDirNode(appDirNode)) {
       return;
     }
     const serverConfig = IngestDeploymentServerConfig.serialization.fromJson(
@@ -181,7 +197,6 @@ export class IngestionManager {
         token,
       ),
     );
-
     this.ingestDeploymentServerClient.changeServer(serverConfig);
     this.setCurrentAppDirNode(appDirNode);
   }

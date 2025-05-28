@@ -173,6 +173,7 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
           undefined,
           serviceInfo.groupWorkspaceId,
           WorkspaceType.GROUP,
+          undefined,
         ),
       );
 
