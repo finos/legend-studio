@@ -25,7 +25,7 @@ import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
   deserializeIcon,
-  ExpandIcon,
+  ExpandMoreIcon,
   InfoCircleIcon,
   OpenIcon,
 } from '@finos/legend-art';
@@ -107,9 +107,11 @@ export const LakehouseDataProductCard = (props: {
         <Box className="marketplace-lakehouse-data-product-card__content">
           <Button
             size="small"
-            onClick={(event: React.MouseEvent<HTMLButtonElement>) =>
-              setVersionMenuAnchorEl(event.currentTarget)
-            }
+            onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
+              event.preventDefault();
+              event.stopPropagation();
+              setVersionMenuAnchorEl(event.currentTarget);
+            }}
             className={clsx(
               'marketplace-lakehouse-data-product-card__version',
               {
@@ -121,12 +123,20 @@ export const LakehouseDataProductCard = (props: {
             )}
           >
             {currentDataProductEntity.versionId}
-            <ExpandIcon />
+            <ExpandMoreIcon />
           </Button>
           <Menu
             anchorEl={versionMenuAnchorEl}
             open={isVersionMenuOpen}
             onClose={() => setVersionMenuAnchorEl(null)}
+            slotProps={{
+              backdrop: {
+                onClick: (event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                },
+              },
+            }}
           >
             {dataProductState.productEntityMap
               .values()
