@@ -110,3 +110,33 @@ export class V1_DataProduct extends V1_PackageableElement implements Hashable {
     return visitor.visit_DataProduct(this);
   }
 }
+
+export class V1_DataProductArtifactDataProduct {
+  path!: string;
+  deploymentId!: string;
+  description: string | undefined;
+  title: string | undefined;
+}
+
+export class V1_DataProductArtifactResourceBuilder {
+  reproducible!: boolean;
+  targetEnvironment!: string;
+  script!: string;
+}
+
+export class V1_DataProductArtifactAccessPointImplementation {
+  id!: string;
+  resourceBuilder!: V1_DataProductArtifactResourceBuilder;
+}
+
+export class V1_DataProductArtifactAccessPointGroup {
+  id!: string;
+  description: string | undefined;
+  accessPointImplementations: V1_DataProductArtifactAccessPointImplementation[] =
+    [];
+}
+
+export class V1_DataProductArtifactGeneration {
+  dataProduct!: V1_DataProductArtifactDataProduct;
+  accessPointGroups: V1_DataProductArtifactAccessPointGroup[] = [];
+}
