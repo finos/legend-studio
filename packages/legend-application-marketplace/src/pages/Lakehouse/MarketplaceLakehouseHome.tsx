@@ -138,22 +138,26 @@ export const LakehouseDataProductCard = (props: {
               },
             }}
           >
-            {dataProductState.productEntityMap
-              .values()
-              .map((dataProductEntity) => {
-                return (
-                  <MenuItem
-                    key={dataProductEntity.versionId}
-                    onClick={() =>
-                      dataProductState.setCurrentProductEntity(
-                        dataProductEntity,
-                      )
-                    }
-                  >
-                    {dataProductEntity.versionId}
-                  </MenuItem>
-                );
-              })}
+            {Array.from(
+              dataProductState.productEntityMap
+                .values()
+                .map((dataProductEntity) => {
+                  return (
+                    <MenuItem
+                      key={dataProductEntity.versionId}
+                      onClick={(event: React.MouseEvent<HTMLLIElement>) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        dataProductState.setCurrentProductEntity(
+                          dataProductEntity,
+                        );
+                      }}
+                    >
+                      {dataProductEntity.versionId}
+                    </MenuItem>
+                  );
+                }),
+            )}
           </Menu>
           <Box className="marketplace-lakehouse-data-product-card__name">
             {currentDataProductEntity.product?.title ??
