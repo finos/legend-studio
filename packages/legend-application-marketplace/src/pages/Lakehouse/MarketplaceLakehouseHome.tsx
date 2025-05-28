@@ -160,6 +160,7 @@ export const LakehouseDataProductCard = (props: {
                         dataProductState.setCurrentProductEntity(
                           dataProductEntity,
                         );
+                        setVersionMenuAnchorEl(null);
                       }}
                     >
                       {dataProductEntity.versionId}
@@ -363,40 +364,41 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
             className="marketplace-lakehouse-home__search-bar"
           />
         </Container>
-        <Container maxWidth="xxxl">
+        <Container
+          maxWidth="xxxl"
+          className="marketplace-lakehouse-home__results-container"
+        >
           <MarketplaceLakehouseHomeSortFilterPanel
             marketPlaceStore={marketPlaceStore}
           />
-          <Box className="marketplace-lakehouse-home__data-product-cards">
-            <Grid
-              container={true}
-              spacing={{ xs: 2, md: 3, xl: 4 }}
-              columns={{ xs: 1, sm: 2, xl: 3, xxl: 4, xxxl: 5, xxxxl: 6 }}
-              sx={{ justifyContent: 'center' }}
-            >
-              {marketPlaceStore.filterProducts?.map((dpState) => (
-                <Grid key={dpState.id} size={1}>
-                  <LakehouseDataProductCard
-                    dataProductState={dpState}
-                    onClick={(dataProductEntity: DataProductEntity) => {
-                      {
-                        marketPlaceStore.applicationStore.navigationService.navigator.goToLocation(
-                          generateLakehouseDataProduct(
-                            generateGAVCoordinates(
-                              dataProductEntity.groupId,
-                              dataProductEntity.artifactId,
-                              dataProductEntity.versionId,
-                            ),
-                            dataProductEntity.path,
+          <Grid
+            container={true}
+            spacing={{ xs: 2, sm: 3, xxl: 4 }}
+            columns={{ xs: 1, sm: 2, xxl: 3 }}
+            className="marketplace-lakehouse-home__data-product-cards"
+          >
+            {marketPlaceStore.filterProducts?.map((dpState) => (
+              <Grid key={dpState.id} size={1}>
+                <LakehouseDataProductCard
+                  dataProductState={dpState}
+                  onClick={(dataProductEntity: DataProductEntity) => {
+                    {
+                      marketPlaceStore.applicationStore.navigationService.navigator.goToLocation(
+                        generateLakehouseDataProduct(
+                          generateGAVCoordinates(
+                            dataProductEntity.groupId,
+                            dataProductEntity.artifactId,
+                            dataProductEntity.versionId,
                           ),
-                        );
-                      }
-                    }}
-                  />
-                </Grid>
-              ))}
-            </Grid>
-          </Box>
+                          dataProductEntity.path,
+                        ),
+                      );
+                    }
+                  }}
+                />
+              </Grid>
+            ))}
+          </Grid>
         </Container>
       </LegendMarketplacePage>
     );

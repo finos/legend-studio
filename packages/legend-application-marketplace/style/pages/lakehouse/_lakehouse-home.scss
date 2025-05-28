@@ -18,14 +18,25 @@
 
 .marketplace-lakehouse-home {
   &__search-container {
-    height: 40rem;
+    @include flexCenter;
+
+    flex-direction: column;
+    min-height: 30rem;
+    max-width: 100%;
+    width: 100%;
+    gap: 3rem;
     background: var(--color-blue-300);
     background: linear-gradient(
       90deg,
-      var(--color-blue-100) 0%,
+      var(--color-blue-500) 0%,
       var(--color-blue-300) 50%,
-      var(--color-blue-100) 100%
+      var(--color-blue-500) 100%
     );
+
+    &__title {
+      color: var(--color-white);
+      font-size: 4rem;
+    }
   }
 
   &__search-bar {
@@ -41,8 +52,15 @@
     }
   }
 
+  &__results-container {
+    display: flex;
+    padding: 2rem;
+    gap: 2rem;
+  }
+
   &__data-product-cards {
     width: 100%;
+    justify-content: start;
   }
 }
 
@@ -58,6 +76,7 @@
 
     height: 100%;
     overflow: auto;
+    gap: 2rem;
   }
 
   &__icon {
@@ -88,20 +107,30 @@
     font-weight: 500;
     margin-bottom: 1rem;
     color: var(--color-blue-100);
+    overflow-wrap: anywhere;
   }
 
   &__version {
     align-self: end;
     font-size: 1rem;
+    text-transform: none;
 
     &--snapshot {
       background: var(--tw-color-blue-100);
       color: var(--tw-color-blue-600);
+
+      &:hover {
+        background: var(--tw-color-blue-200);
+      }
     }
 
     &--release {
       background: var(--tw-color-green-100);
       color: var(--tw-color-green-600);
+
+      &:hover {
+        background: var(--tw-color-green-200);
+      }
     }
   }
 
