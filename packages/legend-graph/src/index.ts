@@ -178,11 +178,6 @@ export {
   V1_LakehouseAccessPoint,
   V1_AccessPoint,
   V1_AccessPointGroup,
-  V1_DataProductArtifactDataProduct,
-  V1_DataProductArtifactResourceBuilder,
-  V1_DataProductArtifactAccessPointImplementation,
-  V1_DataProductArtifactAccessPointGroup,
-  V1_DataProductArtifactGeneration,
 } from './graph-manager/protocol/pure/v1/model/packageableElements/dataProduct/V1_DataProduct.js';
 export {
   V1_ExecuteInput,
@@ -313,6 +308,14 @@ export {
 } from './graph-manager/protocol/pure/v1/lakehouse/subscriptions/V1_ConsumerSubscriptions.js';
 export { V1_LakehouseDiscoveryEnvironmentResponse } from './graph-manager/protocol/pure/v1/lakehouse/platform/V1_LakehouseDiscovery.js';
 export { V1_IngestEnvironmentClassification } from './graph-manager/protocol/pure/v1/lakehouse/ingest/V1_LakehouseIngestEnvironment.js';
+export {
+  V1_DataProductArtifactAccessPointGroup,
+  V1_DataProductArtifactAccessPointImplementation,
+  V1_DataProductArtifactDataProduct,
+  V1_DataProductArtifactGeneration,
+  V1_DataProductArtifactResourceBuilder,
+  V1_DataProductDefinitionAndArtifact,
+} from './graph-manager/protocol/pure/v1/lakehouse/deploy/V1_DataProductArtifact.js';
 export {
   V1_CreateSubscriptionInputModelSchema,
   V1_dataSubscriptionModelSchema,

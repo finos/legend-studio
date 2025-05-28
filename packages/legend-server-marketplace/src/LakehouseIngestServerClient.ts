@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { V1_DataProductDefinitionAndArtifact } from '@finos/legend-graph';
 import { AbstractServerClient, type PlainObject } from '@finos/legend-shared';
 
 export class LakehouseIngestServerClient extends AbstractServerClient {
@@ -25,4 +26,18 @@ export class LakehouseIngestServerClient extends AbstractServerClient {
   private _token = (token?: string) => ({
     Authorization: `Bearer ${token}`,
   });
+
+  // ------------------------------------------- Deploy -------------------------------------------
+
+  private _deploy = (): string => `data-product/api/entitlements/sdlc`;
+
+  getDeployedIngestDefinitions = (
+    ingestServerUrl: string,
+    token: string | undefined,
+  ): Promise<PlainObject<V1_DataProductDefinitionAndArtifact>[]> =>
+    this.get(
+      `${ingestServerUrl}/${this._deploy()}/deploy/definitions`,
+      {},
+      this._token(token),
+    );
 }

@@ -362,6 +362,15 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         V1_LakehouseDiscoveryEnvironmentResponse.serialization.fromJson(e),
       ) as V1_LakehouseDiscoveryEnvironmentResponse[];
       this.setLakehouseIngestEnvironmentSummaries(discoveryEnvironments);
+      const ingestDefinitions = await Promise.all(
+        discoveryEnvironments.map(async (env) =>
+          this.lakehouseIngestServerClient.getDeployedIngestDefinitions(
+            env.ingestServerUrl,
+            token,
+          ),
+        ),
+      );
+      console.log('ingestDefinitions', ingestDefinitions);
       this.loadingLakehouseEnvironmentsState.complete();
     } catch (error) {
       assertErrorThrown(error);
