@@ -94,11 +94,16 @@ export class DataProductEntity {
       product: observable,
       loadingEntityState: observable,
       setProduct: action,
+      title: computed,
     });
   }
 
   setProduct(product: V1_DataProduct | undefined): void {
     this.product = product;
+  }
+
+  get title(): string {
+    return this.product?.title ?? this.path.split('::').pop() ?? '';
   }
 }
 
@@ -173,6 +178,11 @@ class DataProductFilters {
   }
 }
 
+export enum DataProductSort {
+  NAME_ALPHABETICAL = 'Name A-Z',
+  NAME_REVERSE_ALPHABETICAL = 'Name Z-A',
+}
+
 export class MarketplaceLakehouseStore implements CommandRegistrar {
   readonly applicationStore: LegendMarketplaceApplicationStore;
   readonly depotServerClient: DepotServerClient;
@@ -187,6 +197,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   loadingProductsState = ActionState.create();
   loadingLakehouseEnvironmentsState = ActionState.create();
   filter: DataProductFilters = DataProductFilters.default();
+  sort: DataProductSort = DataProductSort.NAME_ALPHABETICAL;
   dataProductViewer: DataProductViewerState | undefined;
 
   constructor(
@@ -209,16 +220,17 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       productStatesMap: observable,
       lakehouseIngestEnvironmentSummaries: observable,
       dataProductViewer: observable,
-      handleFilterChange: observable,
+      handleFilterChange: action,
       handleSearch: action,
-      filterProducts: computed,
+      filterSortProducts: computed,
       setDataProductViewerState: action,
       setLakehouseIngestEnvironmentSummaries: action,
       filter: observable,
+      setSort: action,
     });
   }
 
-  get filterProducts(): DataProductState[] | undefined {
+  get filterSortProducts(): DataProductState[] | undefined {
     return Array.from(
       this.productStatesMap.values().filter((dataProductState) => {
         if (dataProductState.currentProductEntity === undefined) {
@@ -232,10 +244,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
           (this.filter.snapshotFilter && isSnapshot) ||
           (this.filter.releaseFilter && !isSnapshot);
         // Check if product title matches search filter
-        const dataProductTitle =
-          dataProductState.currentProductEntity.product?.title ??
-          dataProductState.currentProductEntity.path.split('::').pop() ??
-          '';
+        const dataProductTitle = dataProductState.currentProductEntity.title;
         const titleMatch =
           this.filter.search === undefined ||
           this.filter.search === '' ||
@@ -244,7 +253,21 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
             .includes(this.filter.search.toLowerCase());
         return versionMatch && titleMatch;
       }),
-    );
+    ).sort((a, b) => {
+      if (this.sort === DataProductSort.NAME_ALPHABETICAL) {
+        return (
+          a.currentProductEntity?.title.localeCompare(
+            b.currentProductEntity?.title ?? '',
+          ) ?? 0
+        );
+      } else {
+        return (
+          b.currentProductEntity?.title.localeCompare(
+            a.currentProductEntity?.title ?? '',
+          ) ?? 0
+        );
+      }
+    });
   }
 
   setLakehouseIngestEnvironmentSummaries(
@@ -267,6 +290,10 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
 
   handleSearch(query: string | undefined) {
     this.filter.search = query;
+  }
+
+  setSort(sort: DataProductSort): void {
+    this.sort = sort;
   }
 
   async fetchDataProducts(): Promise<void> {

@@ -47,10 +47,11 @@ import {
   TableContainer,
   TableRow,
 } from '@mui/material';
-import type {
-  DataProductEntity,
-  DataProductState,
-  MarketplaceLakehouseStore,
+import {
+  DataProductSort,
+  type DataProductEntity,
+  type DataProductState,
+  type MarketplaceLakehouseStore,
 } from '../../stores/lakehouse/MarketplaceLakehouseStore.js';
 import { generateLakehouseDataProduct } from '../../__lib__/LegendMarketplaceNavigation.js';
 import { generateGAVCoordinates } from '@finos/legend-storage';
@@ -303,10 +304,52 @@ const MarketplaceLakehouseHomeSortFilterPanel = (props: {
   marketPlaceStore: MarketplaceLakehouseStore;
 }) => {
   const { marketPlaceStore } = props;
+
+  const [sortMenuAnchorEl, setSortMenuAnchorEl] = useState<HTMLElement | null>(
+    null,
+  );
+  const isSortMenuOpen = Boolean(sortMenuAnchorEl);
+
   return (
     <Box className="marketplace-lakehouse-home__sort-filters">
       <Box className="marketplace-lakehouse-home__sort-filters__sort">
         Sort By
+        <Button
+          onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
+            setSortMenuAnchorEl(event.currentTarget);
+          }}
+          className="marketplace-lakehouse-home__sort-filters__sort__btn"
+        >
+          {marketPlaceStore.sort}
+          <ExpandMoreIcon />
+        </Button>
+        <Menu
+          anchorEl={sortMenuAnchorEl}
+          open={isSortMenuOpen}
+          onClose={() => setSortMenuAnchorEl(null)}
+          anchorOrigin={{
+            horizontal: 'left',
+            vertical: 'bottom',
+          }}
+          transformOrigin={{
+            horizontal: 'left',
+            vertical: 'top',
+          }}
+        >
+          {Object.values(DataProductSort).map((sortValue) => {
+            return (
+              <MenuItem
+                key={sortValue}
+                onClick={(event: React.MouseEvent<HTMLLIElement>) => {
+                  marketPlaceStore.setSort(sortValue);
+                  setSortMenuAnchorEl(null);
+                }}
+              >
+                {sortValue}
+              </MenuItem>
+            );
+          })}
+        </Menu>
       </Box>
       <Box className="marketplace-lakehouse-home__sort-filters__filter">
         Filter By
@@ -377,7 +420,7 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
             columns={{ xs: 1, sm: 2, xxl: 3 }}
             className="marketplace-lakehouse-home__data-product-cards"
           >
-            {marketPlaceStore.filterProducts?.map((dpState) => (
+            {marketPlaceStore.filterSortProducts?.map((dpState) => (
               <Grid key={dpState.id} size={1}>
                 <LakehouseDataProductCard
                   dataProductState={dpState}
