@@ -36,11 +36,21 @@ export const MarketplaceLakehouseStoreProvider: React.FC<{
     baseStore.lakehouseServerClient,
     'lakehouse server client required to render',
   );
+  const lakehousePlatformServerClient = guaranteeNonNullable(
+    baseStore.lakehousePlatformServerClient,
+    'lakehouse platform server client required to render',
+  );
+  const lakehosueIngestServerClient = guaranteeNonNullable(
+    baseStore.lakehouseIngestServerClient,
+    'lakehouse ingest server client required to render',
+  );
   const store = useLocalObservable(
     () =>
       new MarketplaceLakehouseStore(
         applicationStore,
         lakehouseServerClient,
+        lakehousePlatformServerClient,
+        lakehosueIngestServerClient,
         baseStore.depotServerClient,
       ),
   );

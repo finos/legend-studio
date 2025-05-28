@@ -54,6 +54,7 @@ import { DepotScope, isSnapshotVersion } from '@finos/legend-server-depot';
 import { LegendMarketplaceCard } from '../../components/MarketplaceCard/LegendMarketplaceCard.js';
 import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
 import { EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl } from '@finos/legend-application';
+import { useAuth } from 'react-oidc-context';
 
 const MAX_DESCRIPTION_LENGTH = 250;
 
@@ -233,14 +234,15 @@ export const LakehouseDataProductCard = (props: {
 export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
   observer(() => {
     const marketPlaceStore = useMarketplaceLakehouseStore();
+    const auth = useAuth();
 
     const onSearchChange = (query: string) => {
       marketPlaceStore.handleSearch(query);
     };
 
     useEffect(() => {
-      marketPlaceStore.init();
-    }, [marketPlaceStore]);
+      marketPlaceStore.init(auth);
+    }, [marketPlaceStore, auth]);
 
     return (
       <LegendMarketplacePage className="marketplace-lakehouse-home">

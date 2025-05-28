@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { V1_AppDirNode } from '../../../entitlements/V1_CoreEntitlements.js';
+import type { V1_AppDirNode } from '../../../lakehouse/entitlements/V1_CoreEntitlements.js';
 import { V1_INTERNAL__UnknownPackageableElement } from '../V1_INTERNAL__UnknownPackageableElement.js';
 import type { V1_PackageableElementVisitor } from '../V1_PackageableElement.js';
 

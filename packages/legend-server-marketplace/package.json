@@ -38,6 +38,7 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
+    "@finos/legend-graph": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "serializr": "3.0.3"
   },

@@ -25,7 +25,6 @@ import {
   VersionedProjectData,
   type DepotServerClient,
 } from '@finos/legend-server-depot';
-import type { LakehouseContractServerClient } from '../LakehouseContractServerClient.js';
 import { action, computed, flow, makeObservable, observable } from 'mobx';
 import type { LegendMarketplaceApplicationStore } from '../LegendMarketplaceBaseStore.js';
 import {
@@ -45,7 +44,10 @@ import {
   LegendSDLC,
   V1_DataProduct,
   V1_dataProductModelSchema,
+  V1_deserializeIngestEnvironment,
   V1_deserializePackageableElement,
+  V1_LakehouseDiscoveryEnvironmentResponse,
+  type V1_IngestEnvironment,
 } from '@finos/legend-graph';
 import { deserialize } from 'serializr';
 import {
@@ -58,6 +60,11 @@ import {
 import { DataProductViewerState } from './DataProductViewerState.js';
 import { EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl } from '../../__lib__/LegendMarketplaceNavigation.js';
 import type { AuthContextProps } from 'react-oidc-context';
+import type {
+  LakehouseContractServerClient,
+  LakehouseIngestServerClient,
+  LakehousePlatformServerClient,
+} from '@finos/legend-server-marketplace';
 
 const ARTIFACT_GENERATION_DAT_PRODUCT_KEY = 'dataProduct';
 export interface DataProductEntity {
@@ -144,21 +151,30 @@ class DataProductFilters {
 export class MarketplaceLakehouseStore implements CommandRegistrar {
   readonly applicationStore: LegendMarketplaceApplicationStore;
   readonly depotServerClient: DepotServerClient;
-  readonly lakehouseServerClient: LakehouseContractServerClient;
+  readonly lakehouseContractServerClient: LakehouseContractServerClient;
+  readonly lakehousePlatformServerClient: LakehousePlatformServerClient;
+  readonly lakehouseIngestServerClient: LakehouseIngestServerClient;
   // To consolidate all versions of a data product, we use a map from group:artifact:path to a DataProductState object, which contains
   // a map of all the verions of the data product.
   productStatesMap: Map<string, DataProductState>;
+  lakehouseEnvironments: V1_IngestEnvironment[] = [];
   loadingProductsState = ActionState.create();
+  loadingLakehouseEnvironmentsState = ActionState.create();
   filter: DataProductFilters = DataProductFilters.default();
   dataProductViewer: DataProductViewerState | undefined;
 
   constructor(
     applicationStore: LegendMarketplaceApplicationStore,
     lakehouseServerClient: LakehouseContractServerClient,
+    lakehousePlatformServerClient: LakehousePlatformServerClient,
+    lakehouseIngestServerClient: LakehouseIngestServerClient,
     depotServerClient: DepotServerClient,
   ) {
     this.applicationStore = applicationStore;
-    this.lakehouseServerClient = lakehouseServerClient;
+    this.lakehouseContractServerClient = lakehouseServerClient;
+    this.lakehousePlatformServerClient = lakehousePlatformServerClient;
+    this.lakehouseIngestServerClient = lakehouseIngestServerClient;
+
     this.depotServerClient = depotServerClient;
     this.productStatesMap = new Map<string, DataProductState>();
     makeObservable(this, {
@@ -203,6 +219,10 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     );
   }
 
+  setLakehouseEnvironments(environments: V1_IngestEnvironment[]): void {
+    this.lakehouseEnvironments = environments;
+  }
+
   setDataProductViewerState(val: DataProductViewerState | undefined): void {
     this.dataProductViewer = val;
   }
@@ -219,26 +239,28 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     this.filter.search = query;
   }
 
-  *init(): GeneratorFn<void> {
+  async fetchDataProducts(): Promise<void> {
     try {
       this.loadingProductsState.inProgress();
       // we will show both released and snapshot versions for now to support deployment via workspaces
-      const dataProductEntitySummaries = (yield Promise.all([
-        this.depotServerClient.getEntitiesSummaryByClassifier(
-          CORE_PURE_PATH.DATA_PRODUCT,
-          {
-            scope: DepotScope.RELEASES,
-            summary: true,
-          },
-        ),
-        this.depotServerClient.getEntitiesSummaryByClassifier(
-          CORE_PURE_PATH.DATA_PRODUCT,
-          {
-            scope: DepotScope.SNAPSHOT,
-            summary: true,
-          },
-        ),
-      ]))
+      const dataProductEntitySummaries = (
+        await Promise.all([
+          this.depotServerClient.getEntitiesSummaryByClassifier(
+            CORE_PURE_PATH.DATA_PRODUCT,
+            {
+              scope: DepotScope.RELEASES,
+              summary: true,
+            },
+          ),
+          this.depotServerClient.getEntitiesSummaryByClassifier(
+            CORE_PURE_PATH.DATA_PRODUCT,
+            {
+              scope: DepotScope.SNAPSHOT,
+              summary: true,
+            },
+          ),
+        ])
+      )
         .flat()
         .map((e: PlainObject<StoredSummaryEntity>) =>
           StoredSummaryEntity.serialization.fromJson(e),
@@ -328,6 +350,42 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     }
   }
 
+  async fetchLakehouseEnvironments(token: string | undefined): Promise<void> {
+    try {
+      this.loadingLakehouseEnvironmentsState.inProgress();
+      const discoveryEnvironments = (
+        await this.lakehousePlatformServerClient.getIngestEnvironments(token)
+      ).map((e: PlainObject<V1_LakehouseDiscoveryEnvironmentResponse>) =>
+        V1_LakehouseDiscoveryEnvironmentResponse.serialization.fromJson(e),
+      ) as V1_LakehouseDiscoveryEnvironmentResponse[];
+      const ingestEnvironments: V1_IngestEnvironment[] = await Promise.all(
+        discoveryEnvironments.map(async (discoveryEnv) => {
+          const env =
+            (await this.lakehouseIngestServerClient.getIngestEnvironment(
+              discoveryEnv.ingestServerUrl,
+              token,
+            )) as PlainObject<V1_IngestEnvironment>;
+          return V1_deserializeIngestEnvironment(env);
+        }),
+      );
+      this.setLakehouseEnvironments(ingestEnvironments);
+      this.loadingLakehouseEnvironmentsState.complete();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(
+        `Unable to load lakehouse environments: ${error.message}`,
+      );
+      this.loadingProductsState.fail();
+    }
+  }
+
+  *init(auth: AuthContextProps): GeneratorFn<void> {
+    yield Promise.all([
+      this.fetchDataProducts(),
+      this.fetchLakehouseEnvironments(auth.user?.access_token),
+    ]);
+  }
+
   *initWithProduct(
     gav: string,
     path: string,
@@ -373,7 +431,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
           this.applicationStore.pluginManager,
           this.applicationStore.logService,
         ),
-        this.lakehouseServerClient,
+        this.lakehouseContractServerClient,
         projectData,
         v1DataProduct,
         parsed,

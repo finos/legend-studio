@@ -276,7 +276,7 @@ export {
   V1_TaskStatus,
   V1_TaskStatusChangeResponse,
   V1_UserApprovalStatus,
-} from './graph-manager/protocol/pure/v1/entitlements/V1_ConsumerEntitlements.js';
+} from './graph-manager/protocol/pure/v1/lakehouse/entitlements/V1_ConsumerEntitlements.js';
 export {
   V1_AdhocTeam,
   V1_AppDirLevel,
@@ -286,7 +286,7 @@ export {
   V1_UnknownOrganizationalScopeType,
   V1_User,
   V1_UserType,
-} from './graph-manager/protocol/pure/v1/entitlements/V1_CoreEntitlements.js';
+} from './graph-manager/protocol/pure/v1/lakehouse/entitlements/V1_CoreEntitlements.js';
 export {
   V1_AppDirNodeModelSchema,
   V1_DataContractsRecordModelSchema,
@@ -305,12 +305,20 @@ export {
   V1_SnowflakeNetwork,
   V1_SnowflakeRegion,
   V1_SnowflakeTarget,
-} from './graph-manager/protocol/pure/v1/subscriptions/V1_ConsumerSubscriptions.js';
+} from './graph-manager/protocol/pure/v1/lakehouse/subscriptions/V1_ConsumerSubscriptions.js';
+export { V1_LakehouseDiscoveryEnvironmentResponse } from './graph-manager/protocol/pure/v1/lakehouse/platform/V1_LakehouseDiscovery.js';
+export {
+  V1_IngestEnvironmentType,
+  V1_IngestEnvironmentClassification,
+  V1_IngestEnvironment,
+  V1_AWSSnowflakeIngestEnvironment,
+} from './graph-manager/protocol/pure/v1/lakehouse/ingest/V1_LakehouseIngestEnvironment.js';
 export {
   V1_CreateSubscriptionInputModelSchema,
   V1_dataSubscriptionModelSchema,
   V1_DataSubscriptionResponseModelSchema,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_SubscriptionSerializationHelper.js';
+export { V1_deserializeIngestEnvironment } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_IngestSerializationHelper.js';
 
 // --------------------------------------------- EXECUTION PLAN --------------------------------------------------
 

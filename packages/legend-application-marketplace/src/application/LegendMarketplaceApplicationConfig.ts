@@ -63,6 +63,7 @@ export interface LegendMarketplaceApplicationConfigurationData
   };
   lakehouse?: {
     url: string;
+    platformUrl: string;
     entitlements: {
       applicationDirectoryUrl: string;
       applicationIDUrl: string;
@@ -92,6 +93,7 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
   readonly engineServerUrl: string;
   readonly depotServerUrl: string;
   readonly lakehouseServerUrl?: string;
+  readonly lakehousePlatformUrl?: string;
   readonly lakehouseEntitlementsConfig:
     | LegendLakehouseEntitlementsConfig
     | undefined;
@@ -170,6 +172,12 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
         guaranteeNonEmptyString(
           input.configData.lakehouse.url,
           `Can't configure application: 'lakehouse.url' field is missing or empty`,
+        ),
+      );
+      this.lakehousePlatformUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+        guaranteeNonEmptyString(
+          input.configData.lakehouse.platformUrl,
+          `Can't configure application: 'lakehouse.platformUrl' field is missing or empty`,
         ),
       );
       this.lakehouseEntitlementsConfig = new LegendLakehouseEntitlementsConfig(

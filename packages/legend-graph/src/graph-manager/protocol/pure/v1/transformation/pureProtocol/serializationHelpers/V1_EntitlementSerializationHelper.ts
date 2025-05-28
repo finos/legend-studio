@@ -36,7 +36,7 @@ import {
   V1_TaskMetadata,
   V1_TaskResponse,
   V1_TaskStatusChangeResponse,
-} from '../../../entitlements/V1_ConsumerEntitlements.js';
+} from '../../../lakehouse/entitlements/V1_ConsumerEntitlements.js';
 import {
   createModelSchema,
   custom,
@@ -52,7 +52,7 @@ import {
   V1_UnknownOrganizationalScopeType,
   V1_User,
   type V1_OrganizationalScope,
-} from '../../../entitlements/V1_CoreEntitlements.js';
+} from '../../../lakehouse/entitlements/V1_CoreEntitlements.js';
 
 enum V1_OrganizationalScopeType {
   AdHocTeam = 'AdHocTeam',
