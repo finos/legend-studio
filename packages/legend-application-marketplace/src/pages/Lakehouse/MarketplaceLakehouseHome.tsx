@@ -50,6 +50,7 @@ import {
 import type {
   DataProductEntity,
   DataProductState,
+  MarketplaceLakehouseStore,
 } from '../../stores/lakehouse/MarketplaceLakehouseStore.js';
 import { generateLakehouseDataProduct } from '../../__lib__/LegendMarketplaceNavigation.js';
 import { generateGAVCoordinates } from '@finos/legend-storage';
@@ -297,6 +298,46 @@ export const LakehouseDataProductCard = (props: {
   );
 };
 
+const MarketplaceLakehouseHomeSortFilterPanel = (props: {
+  marketPlaceStore: MarketplaceLakehouseStore;
+}) => {
+  const { marketPlaceStore } = props;
+  return (
+    <Box className="marketplace-lakehouse-home__sort-filters">
+      <Box className="marketplace-lakehouse-home__sort-filters__sort">
+        Sort By
+      </Box>
+      <Box className="marketplace-lakehouse-home__sort-filters__filter">
+        Filter By
+        <FormGroup>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={marketPlaceStore.filter.releaseFilter}
+                onChange={() =>
+                  marketPlaceStore.handleFilterChange(DepotScope.RELEASES)
+                }
+              />
+            }
+            label="Releases"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={marketPlaceStore.filter.snapshotFilter}
+                onChange={() =>
+                  marketPlaceStore.handleFilterChange(DepotScope.SNAPSHOT)
+                }
+              />
+            }
+            label="Snapshots"
+          />
+        </FormGroup>
+      </Box>
+    </Box>
+  );
+};
+
 export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
   observer(() => {
     const marketPlaceStore = useMarketplaceLakehouseStore();
@@ -312,43 +353,21 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
 
     return (
       <LegendMarketplacePage className="marketplace-lakehouse-home">
-        <Container
-          maxWidth="xxxl"
-          className="marketplace-lakehouse-home__container"
-        >
-          <CubesLoadingIndicator
-            isLoading={marketPlaceStore.loadingProductsState.isInProgress}
-          >
-            <CubesLoadingIndicatorIcon />
-          </CubesLoadingIndicator>
-          <Box className="marketplace-lakehouse-home__search-bar">
-            <LegendMarketplaceSearchBar onChange={onSearchChange} />
-            <FormGroup row={true}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={marketPlaceStore.filter.releaseFilter}
-                    onChange={() =>
-                      marketPlaceStore.handleFilterChange(DepotScope.RELEASES)
-                    }
-                  />
-                }
-                label="Releases"
-              />
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={marketPlaceStore.filter.snapshotFilter}
-                    onChange={() =>
-                      marketPlaceStore.handleFilterChange(DepotScope.SNAPSHOT)
-                    }
-                  />
-                }
-                label="Snapshots"
-              />
-            </FormGroup>
+        <Container className="marketplace-lakehouse-home__search-container">
+          <Box className="marketplace-lakehouse-home__search-container__title">
+            Lakehouse Marketplace
           </Box>
-          <div className="marketplace-lakehouse-home__data-product-cards">
+          <LegendMarketplaceSearchBar
+            onChange={onSearchChange}
+            placeholder="Search Lakehouse Marketplace"
+            className="marketplace-lakehouse-home__search-bar"
+          />
+        </Container>
+        <Container maxWidth="xxxl">
+          <MarketplaceLakehouseHomeSortFilterPanel
+            marketPlaceStore={marketPlaceStore}
+          />
+          <Box className="marketplace-lakehouse-home__data-product-cards">
             <Grid
               container={true}
               spacing={{ xs: 2, md: 3, xl: 4 }}
@@ -377,7 +396,7 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
                 </Grid>
               ))}
             </Grid>
-          </div>
+          </Box>
         </Container>
       </LegendMarketplacePage>
     );

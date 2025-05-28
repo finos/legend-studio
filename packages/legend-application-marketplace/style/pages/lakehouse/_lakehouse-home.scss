@@ -17,11 +17,15 @@
 @use 'mixins' as *;
 
 .marketplace-lakehouse-home {
-  &__container {
-    @include flexVCenter;
-
-    flex-direction: column;
-    padding: 2rem;
+  &__search-container {
+    height: 40rem;
+    background: var(--color-blue-300);
+    background: linear-gradient(
+      90deg,
+      var(--color-blue-100) 0%,
+      var(--color-blue-300) 50%,
+      var(--color-blue-100) 100%
+    );
   }
 
   &__search-bar {

@@ -29,14 +29,15 @@ export const LegendMarketplaceSearchBar = (props: {
   initialValue?: string;
   placeholder?: string;
   onChange?: (query: string) => void;
+  className?: string | undefined;
 }): JSX.Element => {
-  const { onSearch, initialValue, placeholder, onChange } = props;
+  const { onSearch, initialValue, placeholder, onChange, className } = props;
 
   const [searchQuery, setSearchQuery] = useState<string>(initialValue ?? '');
 
   return (
     <form
-      className="legend-marketplace__search-bar"
+      className={clsx('legend-marketplace__search-bar', className)}
       onSubmit={(event) => {
         event.preventDefault();
         onSearch?.(undefined, searchQuery);
