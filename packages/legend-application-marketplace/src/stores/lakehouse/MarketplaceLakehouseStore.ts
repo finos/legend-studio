@@ -65,12 +65,41 @@ import type {
 } from '@finos/legend-server-marketplace';
 
 const ARTIFACT_GENERATION_DAT_PRODUCT_KEY = 'dataProduct';
-export interface DataProductEntity {
+
+export class DataProductEntity {
   product: V1_DataProduct | undefined;
-  groupId: string;
-  artifactId: string;
-  versionId: string;
-  path: string;
+  groupId!: string;
+  artifactId!: string;
+  versionId!: string;
+  path!: string;
+
+  loadingEntityState = ActionState.create();
+
+  constructor(
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    path: string,
+  ) {
+    this.groupId = groupId;
+    this.artifactId = artifactId;
+    this.versionId = versionId;
+    this.path = path;
+
+    makeObservable(this, {
+      groupId: observable,
+      artifactId: observable,
+      versionId: observable,
+      path: observable,
+      product: observable,
+      loadingEntityState: observable,
+      setProduct: action,
+    });
+  }
+
+  setProduct(product: V1_DataProduct | undefined): void {
+    this.product = product;
+  }
 }
 
 export enum DataProductType {
@@ -83,7 +112,6 @@ export class DataProductState {
   id: string;
   productEntityMap: Map<string, DataProductEntity>;
   currentProductEntity: DataProductEntity | undefined;
-  loadingProductState = ActionState.create();
 
   constructor(state: MarketplaceLakehouseStore) {
     this.id = uuid();
@@ -93,16 +121,22 @@ export class DataProductState {
     makeObservable(this, {
       id: observable,
       productEntityMap: observable,
-      loadingProductState: observable,
+      currentProductEntity: observable,
       accessTypes: computed,
       setCurrentProductEntity: action,
       setProductEntity: action,
-      setProduct: action,
+      isLoading: computed,
     });
   }
 
   get accessTypes(): DataProductType {
     return DataProductType.LAKEHOUSE;
+  }
+
+  get isLoading(): boolean {
+    return this.productEntityMap
+      .values()
+      .some((entity) => entity.loadingEntityState.isInProgress);
   }
 
   setCurrentProductEntity(productEntity: DataProductEntity | undefined): void {
@@ -111,13 +145,6 @@ export class DataProductState {
 
   setProductEntity(versionId: string, productEntity: DataProductEntity): void {
     this.productEntityMap.set(versionId, productEntity);
-  }
-
-  setProduct(versionId: string, product: V1_DataProduct | undefined): void {
-    if (this.productEntityMap.has(versionId)) {
-      guaranteeNonNullable(this.productEntityMap.get(versionId)).product =
-        product;
-    }
   }
 }
 
@@ -284,13 +311,15 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         const productState = guaranteeNonNullable(
           this.productStatesMap.get(key),
         );
-        productState.setProductEntity(entitySummary.versionId, {
-          groupId: entitySummary.groupId,
-          artifactId: entitySummary.artifactId,
-          versionId: entitySummary.versionId,
-          path: entitySummary.path,
-          product: undefined,
-        });
+        productState.setProductEntity(
+          entitySummary.versionId,
+          new DataProductEntity(
+            entitySummary.groupId,
+            entitySummary.artifactId,
+            entitySummary.versionId,
+            entitySummary.path,
+          ),
+        );
       });
       // Set the currentProductEntity for each product state to the latest version (or if no released versions, just pick the first snapshot version)
       this.productStatesMap.forEach((dataProductState) => {
@@ -320,9 +349,11 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
             ) +
             GAV_DELIMITER +
             entitySummary.path;
-          const dataProductState = this.productStatesMap.get(key);
-          if (dataProductState) {
-            dataProductState.loadingProductState.inProgress();
+          const dataProductEntity = this.productStatesMap
+            .get(key)
+            ?.productEntityMap?.get(entitySummary.versionId);
+          if (dataProductEntity) {
+            dataProductEntity.loadingEntityState.inProgress();
             try {
               const entity = await this.depotServerClient.getVersionEntity(
                 entitySummary.groupId,
@@ -337,9 +368,9 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
                 ),
                 V1_DataProduct,
               );
-              dataProductState.setProduct(entitySummary.versionId, dataProduct);
+              dataProductEntity.setProduct(dataProduct);
             } finally {
-              dataProductState.loadingProductState.complete();
+              dataProductEntity.loadingEntityState.complete();
             }
           }
         }),

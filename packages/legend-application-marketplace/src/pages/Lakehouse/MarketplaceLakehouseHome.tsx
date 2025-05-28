@@ -85,7 +85,7 @@ export const LakehouseDataProductCard = (props: {
   const popoverOpen = Boolean(popoverAnchorEl);
   const popoverId = popoverOpen ? 'popover' : undefined;
   const isSnapshot = isSnapshotVersion(currentDataProductEntity.versionId);
-  const isLoading = dataProductState.loadingProductState.isInProgress;
+  const isLoading = dataProductState.isLoading;
 
   const content = isLoading ? (
     <CubesLoadingIndicator isLoading={isLoading}>
