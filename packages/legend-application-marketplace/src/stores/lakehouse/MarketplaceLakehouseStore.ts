@@ -408,14 +408,22 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       this.applicationStore.notificationService.notifyError(
         `Unable to load lakehouse environments: ${error.message}`,
       );
-      this.loadingProductsState.fail();
+      this.loadingLakehouseEnvironmentsState.fail();
     }
   }
 
   *init(auth: AuthContextProps): GeneratorFn<void> {
     yield Promise.all([
-      this.fetchDataProducts(),
-      this.fetchLakehouseEnvironments(auth.user?.access_token),
+      () => {
+        if (!this.loadingProductsState.hasCompleted) {
+          this.fetchDataProducts();
+        }
+      },
+      () => {
+        if (!this.loadingLakehouseEnvironmentsState.hasCompleted) {
+          this.fetchLakehouseEnvironments(auth.user?.access_token);
+        }
+      },
     ]);
   }
 
