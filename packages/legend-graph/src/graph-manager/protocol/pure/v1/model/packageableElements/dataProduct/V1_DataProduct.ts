@@ -94,6 +94,7 @@ export class V1_DataProduct extends V1_PackageableElement implements Hashable {
   title: string | undefined;
   description: string | undefined;
   accessPointGroups: V1_AccessPointGroup[] = [];
+  icon: string | undefined;
 
   override get hashCode(): string {
     return hashArray([
