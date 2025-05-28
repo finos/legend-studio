@@ -372,7 +372,9 @@ export const V1_deserializePackageableElement = (
       case V1_HOSTED_SERVICE_TYPE:
         return deserialize(V1_HostedServiceModelSchema(plugins), json);
       case V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE:
-        return deserialize(V1_dataProductModelSchema, json);
+        // TODO: remove this once we have a proper icon for data product in the metamodel
+        const adjustedJson = { ...json, icon: '' };
+        return deserialize(V1_dataProductModelSchema, adjustedJson);
       case V1_INGEST_DEFINITION_TYPE:
         return V1_createIngestDef(name, packagePath, json);
       default: {

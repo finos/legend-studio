@@ -102,6 +102,7 @@ export class V1_DataProduct extends V1_PackageableElement implements Hashable {
       hashArray(this.accessPointGroups),
       this.title ?? '',
       this.description ?? '',
+      this.icon ?? '',
     ]);
   }
 
