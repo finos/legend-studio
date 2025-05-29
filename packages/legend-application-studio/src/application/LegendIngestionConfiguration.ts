@@ -20,7 +20,7 @@ import {
   usingModelSchema,
 } from '@finos/legend-shared';
 import type { AuthProviderProps } from 'react-oidc-context';
-import { createModelSchema, primitive, raw } from 'serializr';
+import { createModelSchema, optional, primitive, raw } from 'serializr';
 
 export class IngestDeploymentOIDC {
   redirectPath!: string;
@@ -51,6 +51,7 @@ export class IngestDeploymentServerConfig {
 export class IngestionDeploymentConfiguration {
   oidcConfig!: IngestDeploymentOIDC;
   defaultServer!: IngestDeploymentServerConfig;
+  useDefaultServer: boolean | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(IngestionDeploymentConfiguration, {
@@ -58,6 +59,7 @@ export class IngestionDeploymentConfiguration {
       defaultServer: usingModelSchema(
         IngestDeploymentServerConfig.serialization.schema,
       ),
+      useDefaultServer: optional(primitive()),
     }),
   );
 }

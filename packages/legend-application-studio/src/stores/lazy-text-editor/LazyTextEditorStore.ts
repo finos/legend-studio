@@ -49,6 +49,7 @@ export class LazyTextEditorStore {
         patchReleaseVersionId,
         workspaceId,
         workspaceType,
+        undefined,
       ),
     );
   }

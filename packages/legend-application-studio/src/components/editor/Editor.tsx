@@ -161,6 +161,7 @@ export const Editor = withEditorStore(
           patchReleaseVersionId,
           workspaceId,
           workspaceType,
+          studioParams,
         ),
       ).catch(applicationStore.alertUnhandledError);
     }, [
@@ -170,6 +171,7 @@ export const Editor = withEditorStore(
       projectId,
       workspaceId,
       workspaceType,
+      studioParams,
     ]);
 
     useEffect(() => {

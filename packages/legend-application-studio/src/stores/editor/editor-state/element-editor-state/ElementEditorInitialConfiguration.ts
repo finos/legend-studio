@@ -105,6 +105,8 @@ const deseralizeElementEditorInitialConfiguration = (
 
 export class EditorInitialConfiguration {
   elementEditorConfiguration?: ElementEditorInitialConfiguration;
+  engineServerUrl: string | undefined;
+  engineQueryServerUrl?: string | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(EditorInitialConfiguration, {
@@ -114,6 +116,8 @@ export class EditorInitialConfiguration {
           deseralizeElementEditorInitialConfiguration,
         ),
       ),
+      engineServerUrl: optional(primitive()),
+      engineQueryServerUrl: optional(primitive()),
     }),
   );
 }

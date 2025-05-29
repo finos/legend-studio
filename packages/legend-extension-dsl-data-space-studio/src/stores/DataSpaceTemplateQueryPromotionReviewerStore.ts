@@ -480,6 +480,7 @@ export class DataSpaceTemplateQueryPromotionReviewerStore {
               undefined,
               workspace.workspaceId,
               workspace.workspaceType,
+              undefined,
             ),
           );
           const workspaceReviewState = this.editorStore.workspaceReviewState;
