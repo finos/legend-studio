@@ -32,7 +32,6 @@ import {
   assertErrorThrown,
   guaranteeNonNullable,
   guaranteeType,
-  uuid,
   type GeneratorFn,
   type PlainObject,
 } from '@finos/legend-shared';
@@ -43,6 +42,7 @@ import {
   GraphManagerState,
   LegendSDLC,
   V1_DataProduct,
+  V1_DataProductDefinitionAndArtifact,
   V1_dataProductModelSchema,
   V1_deserializePackageableElement,
   V1_LakehouseDiscoveryEnvironmentResponse,
@@ -63,95 +63,14 @@ import type {
   LakehouseIngestServerClient,
   LakehousePlatformServerClient,
 } from '@finos/legend-server-marketplace';
+import {
+  DataProductEntity,
+  DataProductState,
+  SandboxDataProductState,
+  type BaseDataProductState,
+} from './dataProducts/DataProducts.js';
 
 const ARTIFACT_GENERATION_DAT_PRODUCT_KEY = 'dataProduct';
-
-export class DataProductEntity {
-  product: V1_DataProduct | undefined;
-  groupId!: string;
-  artifactId!: string;
-  versionId!: string;
-  path!: string;
-
-  loadingEntityState = ActionState.create();
-
-  constructor(
-    groupId: string,
-    artifactId: string,
-    versionId: string,
-    path: string,
-  ) {
-    this.groupId = groupId;
-    this.artifactId = artifactId;
-    this.versionId = versionId;
-    this.path = path;
-
-    makeObservable(this, {
-      groupId: observable,
-      artifactId: observable,
-      versionId: observable,
-      path: observable,
-      product: observable,
-      loadingEntityState: observable,
-      setProduct: action,
-      title: computed,
-    });
-  }
-
-  setProduct(product: V1_DataProduct | undefined): void {
-    this.product = product;
-  }
-
-  get title(): string {
-    return this.product?.title ?? this.path.split('::').pop() ?? '';
-  }
-}
-
-export enum DataProductType {
-  LAKEHOUSE = 'LAKEHOUSE',
-  UNKNOWN = 'UNKNOWN',
-}
-
-export class DataProductState {
-  readonly state: MarketplaceLakehouseStore;
-  id: string;
-  productEntityMap: Map<string, DataProductEntity>;
-  currentProductEntity: DataProductEntity | undefined;
-
-  constructor(state: MarketplaceLakehouseStore) {
-    this.id = uuid();
-    this.state = state;
-    this.productEntityMap = new Map<string, DataProductEntity>();
-
-    makeObservable(this, {
-      id: observable,
-      productEntityMap: observable,
-      currentProductEntity: observable,
-      accessTypes: computed,
-      setCurrentProductEntity: action,
-      setProductEntity: action,
-      isLoading: computed,
-    });
-  }
-
-  get accessTypes(): DataProductType {
-    return DataProductType.LAKEHOUSE;
-  }
-
-  get isLoading(): boolean {
-    return this.productEntityMap
-      .values()
-      .some((entity) => entity.loadingEntityState.isInProgress);
-  }
-
-  setCurrentProductEntity(productEntity: DataProductEntity | undefined): void {
-    this.currentProductEntity = productEntity;
-  }
-
-  setProductEntity(versionId: string, productEntity: DataProductEntity): void {
-    this.productEntityMap.set(versionId, productEntity);
-  }
-}
 
 class DataProductFilters {
   releaseFilter;
@@ -194,8 +113,10 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   productStatesMap: Map<string, DataProductState>;
   lakehouseIngestEnvironmentSummaries: V1_LakehouseDiscoveryEnvironmentResponse[] =
     [];
+  sandboxDataProductStates: SandboxDataProductState[] = [];
   loadingProductsState = ActionState.create();
   loadingLakehouseEnvironmentsState = ActionState.create();
+  loadingSandboxDataProductStates = ActionState.create();
   filter: DataProductFilters = DataProductFilters.default();
   sort: DataProductSort = DataProductSort.NAME_ALPHABETICAL;
   dataProductViewer: DataProductViewerState | undefined;
@@ -218,6 +139,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       init: flow,
       initWithProduct: flow,
       productStatesMap: observable,
+      sandboxDataProductStates: observable,
       lakehouseIngestEnvironmentSummaries: observable,
       dataProductViewer: observable,
       handleFilterChange: action,
@@ -225,27 +147,29 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       filterSortProducts: computed,
       setDataProductViewerState: action,
       setLakehouseIngestEnvironmentSummaries: action,
+      setSandboxDataProductStates: action,
       filter: observable,
       sort: observable,
       setSort: action,
     });
   }
 
-  get filterSortProducts(): DataProductState[] | undefined {
-    return Array.from(
-      this.productStatesMap.values().filter((dataProductState) => {
-        if (dataProductState.currentProductEntity === undefined) {
-          return false; // Skip if no current product entity
+  get filterSortProducts(): BaseDataProductState[] | undefined {
+    return (
+      Array.from(this.productStatesMap.values()) as BaseDataProductState[]
+    )
+      .concat(this.sandboxDataProductStates)
+      .filter((baseDataProductState) => {
+        if (!baseDataProductState.isInitialized) {
+          return false;
         }
-        const isSnapshot = isSnapshotVersion(
-          dataProductState.currentProductEntity.versionId,
-        );
+        const isSnapshot = isSnapshotVersion(baseDataProductState.versionId);
         // Check if product matches release/snapshot filter
         const versionMatch =
           (this.filter.snapshotFilter && isSnapshot) ||
           (this.filter.releaseFilter && !isSnapshot);
         // Check if product title matches search filter
-        const dataProductTitle = dataProductState.currentProductEntity.title;
+        const dataProductTitle = baseDataProductState.title;
         const titleMatch =
           this.filter.search === undefined ||
           this.filter.search === '' ||
@@ -253,28 +177,26 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
             .toLowerCase()
             .includes(this.filter.search.toLowerCase());
         return versionMatch && titleMatch;
-      }),
-    ).sort((a, b) => {
-      if (this.sort === DataProductSort.NAME_ALPHABETICAL) {
-        return (
-          a.currentProductEntity?.title.localeCompare(
-            b.currentProductEntity?.title ?? '',
-          ) ?? 0
-        );
-      } else {
-        return (
-          b.currentProductEntity?.title.localeCompare(
-            a.currentProductEntity?.title ?? '',
-          ) ?? 0
-        );
-      }
-    });
+      })
+      .sort((a, b) => {
+        if (this.sort === DataProductSort.NAME_ALPHABETICAL) {
+          return a.title.localeCompare(b.title ?? '') ?? 0;
+        } else {
+          return b.title.localeCompare(a.title ?? '') ?? 0;
+        }
+      });
   }
 
   setLakehouseIngestEnvironmentSummaries(
     summaries: V1_LakehouseDiscoveryEnvironmentResponse[],
   ): void {
     this.lakehouseIngestEnvironmentSummaries = summaries;
+  }
+
+  setSandboxDataProductStates(
+    sandboxDataProductStates: SandboxDataProductState[],
+  ): void {
+    this.sandboxDataProductStates = sandboxDataProductStates;
   }
 
   setDataProductViewerState(val: DataProductViewerState | undefined): void {
@@ -358,9 +280,9 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
           .filter((entity) => !isSnapshotVersion(entity.versionId))
           .sort((a, b) => b.versionId.localeCompare(a.versionId))[0];
         if (latestReleasedEntity) {
-          dataProductState.setCurrentProductEntity(latestReleasedEntity);
-        } else {
-          dataProductState.setCurrentProductEntity(productEntities[0]);
+          dataProductState.setSelectedVersion(latestReleasedEntity.versionId);
+        } else if (productEntities[0]) {
+          dataProductState.setSelectedVersion(productEntities[0].versionId);
         }
       });
       this.loadingProductsState.complete();
@@ -421,15 +343,6 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         V1_LakehouseDiscoveryEnvironmentResponse.serialization.fromJson(e),
       ) as V1_LakehouseDiscoveryEnvironmentResponse[];
       this.setLakehouseIngestEnvironmentSummaries(discoveryEnvironments);
-      const ingestDefinitions = await Promise.all(
-        discoveryEnvironments.map(async (env) =>
-          this.lakehouseIngestServerClient.getDeployedIngestDefinitions(
-            env.ingestServerUrl,
-            token,
-          ),
-        ),
-      );
-      console.log('ingestDefinitions', ingestDefinitions);
       this.loadingLakehouseEnvironmentsState.complete();
     } catch (error) {
       assertErrorThrown(error);
@@ -440,6 +353,37 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     }
   }
 
+  async fetchSandboxDataProducts(token: string | undefined): Promise<void> {
+    try {
+      this.loadingSandboxDataProductStates.inProgress();
+      const rawIngestDefinitions = (
+        await Promise.all(
+          this.lakehouseIngestEnvironmentSummaries.map(async (env) =>
+            this.lakehouseIngestServerClient.getDeployedIngestDefinitions(
+              env.ingestServerUrl,
+              token,
+            ),
+          ),
+        )
+      ).flat() as PlainObject<V1_DataProductDefinitionAndArtifact>[];
+      const ingestDefinitions = rawIngestDefinitions.map((definition) =>
+        V1_DataProductDefinitionAndArtifact.serialization.fromJson(definition),
+      );
+      const sandboxDataProductStates: SandboxDataProductState[] =
+        ingestDefinitions.map(
+          (definition) => new SandboxDataProductState(this, definition),
+        );
+      this.setSandboxDataProductStates(sandboxDataProductStates);
+      this.loadingSandboxDataProductStates.complete();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(
+        `Unable to load lakehouse environments: ${error.message}`,
+      );
+      this.loadingSandboxDataProductStates.fail();
+    }
+  }
+
   *init(auth: AuthContextProps): GeneratorFn<void> {
     yield Promise.all([
       (() => {
@@ -447,9 +391,10 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
           this.fetchDataProducts();
         }
       })(),
-      (() => {
+      (async () => {
         if (!this.loadingLakehouseEnvironmentsState.hasCompleted) {
-          this.fetchLakehouseEnvironments(auth.user?.access_token);
+          await this.fetchLakehouseEnvironments(auth.user?.access_token);
+          await Promise.all([]);
         }
       })(),
     ]);
