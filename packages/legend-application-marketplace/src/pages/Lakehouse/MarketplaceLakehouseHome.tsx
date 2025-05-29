@@ -482,9 +482,11 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
                     ) {
                       marketPlaceStore.applicationStore.navigationService.navigator.goToLocation(
                         generateLakehouseSandboxDataProductPath(
-                          dataProductState.ingestServerUrl,
-                          dataProductState.dataProductArtifact?.dataProduct
-                            .path ?? '',
+                          encodeURIComponent(dataProductState.ingestServerUrl),
+                          encodeURIComponent(
+                            dataProductState.dataProductArtifact?.dataProduct
+                              .path ?? '',
+                          ),
                         ),
                       );
                     }
