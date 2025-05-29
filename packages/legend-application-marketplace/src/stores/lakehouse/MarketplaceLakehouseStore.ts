@@ -606,7 +606,12 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
           versionId: '',
         }),
         v1_DataProduct,
-        undefined,
+        DataProductArtifactGeneration.serialization.fromJson({
+          dataProduct: {
+            path: sandboxDataProduct.artifact.dataProduct.path,
+            deploymentId: sandboxDataProduct.artifact.dataProduct.deploymentId,
+          },
+        }),
         {
           retrieveGraphData: () => {
             return new InMemoryGraphData(graphManagerState.graph);
