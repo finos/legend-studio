@@ -26,7 +26,10 @@ import {
   type DepotServerClient,
 } from '@finos/legend-server-depot';
 import { action, computed, flow, makeObservable, observable } from 'mobx';
-import type { LegendMarketplaceApplicationStore } from '../LegendMarketplaceBaseStore.js';
+import type {
+  LegendMarketplaceApplicationStore,
+  LegendMarketplaceBaseStore,
+} from '../LegendMarketplaceBaseStore.js';
 import {
   ActionState,
   assertErrorThrown,
@@ -106,6 +109,7 @@ export enum DataProductSort {
 }
 
 export class MarketplaceLakehouseStore implements CommandRegistrar {
+  readonly marketplaceBaseStore: LegendMarketplaceBaseStore;
   readonly applicationStore: LegendMarketplaceApplicationStore;
   readonly depotServerClient: DepotServerClient;
   readonly lakehouseContractServerClient: LakehouseContractServerClient;
@@ -125,13 +129,14 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   dataProductViewer: DataProductViewerState | undefined;
 
   constructor(
-    applicationStore: LegendMarketplaceApplicationStore,
+    marketplaceBaseStore: LegendMarketplaceBaseStore,
     lakehouseServerClient: LakehouseContractServerClient,
     lakehousePlatformServerClient: LakehousePlatformServerClient,
     lakehouseIngestServerClient: LakehouseIngestServerClient,
     depotServerClient: DepotServerClient,
   ) {
-    this.applicationStore = applicationStore;
+    this.marketplaceBaseStore = marketplaceBaseStore;
+    this.applicationStore = marketplaceBaseStore.applicationStore;
     this.lakehouseContractServerClient = lakehouseServerClient;
     this.lakehousePlatformServerClient = lakehousePlatformServerClient;
     this.lakehouseIngestServerClient = lakehouseIngestServerClient;
@@ -548,9 +553,15 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
           ),
         `Unable to find data product ${path} deployed at ${ingestServerUrl}`,
       );
+      const graphManager = new V1_PureGraphManager(
+        this.applicationStore.pluginManager,
+        this.applicationStore.logService,
+        this.marketplaceBaseStore.remoteEngine,
+      );
       const graphManagerState = new GraphManagerState(
         this.applicationStore.pluginManager,
         this.applicationStore.logService,
+        graphManager,
       );
       const entities: Entity[] =
         yield graphManagerState.graphManager.pureCodeToEntities(
@@ -560,10 +571,6 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         graphManagerState.createNewGraph(),
         entities,
         ActionState.create(),
-      );
-      const graphManager = guaranteeType(
-        graphManagerState.graphManager,
-        V1_PureGraphManager,
       );
       const v1_DataProduct = guaranteeType(
         guaranteeNonNullable(
