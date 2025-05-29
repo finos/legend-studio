@@ -1,5 +1,7 @@
 # @finos/legend-application-studio-deployment
 
+## 13.70.0
+
 ## 13.69.0
 
 ## 13.68.0

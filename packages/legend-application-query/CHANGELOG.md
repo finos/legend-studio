@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.7.88
+
+### Patch Changes
+
+- [#4116](https://github.com/finos/legend-studio/pull/4116) [`4d91e20`](https://github.com/finos/legend-studio/commit/4d91e208c8c8f6538c84a94bfdf6b8cd0d38f904) ([@gs-gunjan](https://github.com/gs-gunjan)) - query: fixing value preservation of date params while calling saved queries
+
 ## 13.7.87
 
 ## 13.7.86
