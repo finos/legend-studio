@@ -125,7 +125,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     [];
   sandboxDataProductStates: SandboxDataProductState[] = [];
   loadingProductsState = ActionState.create();
-  loadingLakehouseEnvironmentsState = ActionState.create();
+  loadingLakehouseEnvironmentSummariesState = ActionState.create();
   loadingSandboxDataProductStates = ActionState.create();
   filter: DataProductFilters = DataProductFilters.default();
   sort: DataProductSort = DataProductSort.NAME_ALPHABETICAL;
@@ -346,30 +346,61 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     }
   }
 
-  async fetchLakehouseEnvironments(token: string | undefined): Promise<void> {
+  async fetchLakehouseEnvironmentSummaries(
+    token: string | undefined,
+  ): Promise<void> {
     try {
-      this.loadingLakehouseEnvironmentsState.inProgress();
+      this.loadingLakehouseEnvironmentSummariesState.inProgress();
       const discoveryEnvironments = (
-        await this.lakehousePlatformServerClient.getIngestEnvironments(token)
+        await this.lakehousePlatformServerClient.getIngestEnvironmentSummaries(
+          token,
+        )
       ).map((e: PlainObject<V1_LakehouseDiscoveryEnvironmentResponse>) =>
         V1_LakehouseDiscoveryEnvironmentResponse.serialization.fromJson(e),
       ) as V1_LakehouseDiscoveryEnvironmentResponse[];
       this.setLakehouseIngestEnvironmentSummaries(discoveryEnvironments);
-      this.loadingLakehouseEnvironmentsState.complete();
+      this.loadingLakehouseEnvironmentSummariesState.complete();
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(
         `Unable to load lakehouse environments: ${error.message}`,
       );
-      this.loadingLakehouseEnvironmentsState.fail();
+      this.loadingLakehouseEnvironmentSummariesState.fail();
+    }
+  }
+
+  async fetchLakehouseEnvironmentSummary(
+    ingestEnvironmentUrn: string,
+    token: string | undefined,
+  ): Promise<V1_LakehouseDiscoveryEnvironmentResponse | undefined> {
+    try {
+      this.loadingLakehouseEnvironmentSummariesState.inProgress();
+      const rawResponse =
+        await this.lakehousePlatformServerClient.getIngestEnvironmentSummary(
+          ingestEnvironmentUrn,
+          token,
+        );
+      const response =
+        V1_LakehouseDiscoveryEnvironmentResponse.serialization.fromJson(
+          rawResponse,
+        );
+      this.loadingLakehouseEnvironmentSummariesState.complete();
+      return response;
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(
+        `Unable to load lakehouse environments: ${error.message}`,
+      );
+      this.loadingLakehouseEnvironmentSummariesState.fail();
+      return undefined;
     }
   }
 
   async fetchSandboxDataProducts(token: string | undefined): Promise<void> {
     try {
       this.loadingSandboxDataProductStates.inProgress();
-      const rawSandboxDataProducts: {
-        ingestServerUrl: string;
+      const ingestUrnsAndRawResponses: {
+        ingestEnvironmentUrn: string;
         response: PlainObject<V1_SandboxDataProductDeploymentResponse>;
       }[] = (
         await Promise.all(
@@ -380,7 +411,10 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
                   env.ingestServerUrl,
                   token,
                 );
-              return { ingestServerUrl: env.ingestServerUrl, response };
+              return {
+                ingestEnvironmentUrn: env.ingestEnvironmentUrn,
+                response,
+              };
             } catch {
               return undefined;
             }
@@ -389,25 +423,25 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       )
         .flat()
         .filter(isNonNullable) as {
-        ingestServerUrl: string;
+        ingestEnvironmentUrn: string;
         response: PlainObject<V1_SandboxDataProductDeploymentResponse>;
       }[];
-      const ingestUrlsAndDataProducts = rawSandboxDataProducts
-        .map((ingestUrlAndResponse) =>
+      const ingestUrnsAndDataProducts = ingestUrnsAndRawResponses
+        .map((ingestUrnAndResponse) =>
           V1_SandboxDataProductDeploymentResponse.serialization
-            .fromJson(ingestUrlAndResponse.response)
+            .fromJson(ingestUrnAndResponse.response)
             .deployedDataProducts.map((deployedDataProduct) => ({
-              ingestServerUrl: ingestUrlAndResponse.ingestServerUrl,
+              ingestEnvironmentUrn: ingestUrnAndResponse.ingestEnvironmentUrn,
               dataProduct: deployedDataProduct,
             })),
         )
         .flat();
       const sandboxDataProductStates: SandboxDataProductState[] =
-        ingestUrlsAndDataProducts.map(
+        ingestUrnsAndDataProducts.map(
           (ingestUrlAndDataProduct) =>
             new SandboxDataProductState(
               this,
-              ingestUrlAndDataProduct.ingestServerUrl,
+              ingestUrlAndDataProduct.ingestEnvironmentUrn,
               ingestUrlAndDataProduct.dataProduct,
             ),
         );
@@ -430,8 +464,10 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         }
       })(),
       (async () => {
-        if (!this.loadingLakehouseEnvironmentsState.hasCompleted) {
-          await this.fetchLakehouseEnvironments(auth.user?.access_token);
+        if (!this.loadingLakehouseEnvironmentSummariesState.hasCompleted) {
+          await this.fetchLakehouseEnvironmentSummaries(
+            auth.user?.access_token,
+          );
           await Promise.all([
             this.fetchSandboxDataProducts(auth.user?.access_token),
           ]);
@@ -537,12 +573,22 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   }
 
   *initWithSandboxProduct(
-    ingestServerUrl: string,
+    ingestEnvironmentUrn: string,
     path: string,
     auth: AuthContextProps,
   ): GeneratorFn<void> {
     try {
       this.loadingProductsState.inProgress();
+      const ingestServerUrl = guaranteeNonNullable(
+        this.lakehouseIngestEnvironmentSummaries.find(
+          (summary) => summary.ingestEnvironmentUrn === ingestEnvironmentUrn,
+        )?.ingestServerUrl ??
+          (yield this.fetchLakehouseEnvironmentSummary(
+            ingestEnvironmentUrn,
+            auth.user?.access_token,
+          ))?.ingestServerUrl,
+        `Unable to find ingest server URL for environment ${ingestEnvironmentUrn}`,
+      );
       const rawSandboxDataProductResponse: PlainObject<V1_SandboxDataProductDeploymentResponse> =
         (yield this.lakehouseIngestServerClient.getDeployedIngestDefinitions(
           ingestServerUrl,

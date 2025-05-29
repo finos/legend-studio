@@ -41,16 +41,20 @@ export const LakehouseSandboxDataProduct = withMarketplaceLakehouseStore(
     const applicationStore = marketPlaceStore.applicationStore;
     const params = useParams<LakehouseSandboxDataProductPathParams>();
     const auth = useAuth();
-    const ingestServerUrl = guaranteeNonNullable(
-      params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.INGEST_SERVER_URL],
+    const ingestEnvironmentUrn = guaranteeNonNullable(
+      params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.ingestEnvironmentUrn],
     );
     const product = guaranteeNonNullable(
       params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH],
     );
 
     useEffect(() => {
-      marketPlaceStore.initWithSandboxProduct(ingestServerUrl, product, auth);
-    }, [auth, ingestServerUrl, marketPlaceStore, product]);
+      marketPlaceStore.initWithSandboxProduct(
+        ingestEnvironmentUrn,
+        product,
+        auth,
+      );
+    }, [auth, ingestEnvironmentUrn, marketPlaceStore, product]);
 
     useEffect(() => {
       applicationStore.layoutService.setColorTheme(

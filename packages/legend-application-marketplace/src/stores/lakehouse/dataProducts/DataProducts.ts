@@ -161,17 +161,17 @@ export class DataProductState extends BaseDataProductState {
 }
 
 export class SandboxDataProductState extends BaseDataProductState {
-  ingestServerUrl: string;
+  ingestEnvironmentUrn: string;
   dataProductDefinition: string | undefined;
   dataProductArtifact: V1_DataProductArtifactGeneration | undefined;
 
   constructor(
     state: MarketplaceLakehouseStore,
-    ingestServerUrl: string,
+    ingestEnvironmentUrn: string,
     dataProductDefinitionAndArtifact: V1_DataProductDefinitionAndArtifact,
   ) {
     super(state);
-    this.ingestServerUrl = ingestServerUrl;
+    this.ingestEnvironmentUrn = ingestEnvironmentUrn;
     this.dataProductDefinition = dataProductDefinitionAndArtifact.definition;
     this.dataProductArtifact = dataProductDefinitionAndArtifact.artifact;
 

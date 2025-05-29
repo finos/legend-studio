@@ -37,8 +37,18 @@ export class LakehousePlatformServerClient extends AbstractServerClient {
 
   private _discovery = (): string => `${this.baseUrl}/ingest/discovery`;
 
-  getIngestEnvironments = (
+  getIngestEnvironmentSummaries = (
     token: string | undefined,
   ): Promise<PlainObject<V1_LakehouseDiscoveryEnvironmentResponse>[]> =>
     this.get(`${this._discovery()}/environments`, {}, this._token(token));
+
+  getIngestEnvironmentSummary = (
+    ingestEnvironmentUrn: string,
+    token: string | undefined,
+  ): Promise<PlainObject<V1_LakehouseDiscoveryEnvironmentResponse>> =>
+    this.get(
+      `${this._discovery()}/environments/${ingestEnvironmentUrn}`,
+      {},
+      this._token(token),
+    );
 }

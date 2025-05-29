@@ -26,7 +26,7 @@ export enum LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN {
   DATA_PRODUCT_PATH = 'path',
   TASK_ID = 'taskId',
   CONTRACT_ID = 'contractId',
-  INGEST_SERVER_URL = 'ingestServerUrl',
+  ingestEnvironmentUrn = 'ingestEnvironmentUrn',
 }
 
 export enum LEGEND_MARKETPLACE_SEARCH_RESULTS_QUERY_PARAM_TOKEN {
@@ -40,7 +40,7 @@ export type LakehouseDataProductPathParams = {
 };
 
 export type LakehouseSandboxDataProductPathParams = {
-  [LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.INGEST_SERVER_URL]: string;
+  [LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.ingestEnvironmentUrn]: string;
   [LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH]: string;
 };
 
@@ -58,7 +58,7 @@ export const LEGEND_MARKETPLACE_ROUTE_PATTERN = Object.freeze({
   LAKEHOUSE_ENTITLEMENTS: '/lakehouse/entitlements',
   LAKEHOUSE_ENTITLEMENTS_CONTRACTS: `/lakehouse/entitlements/contracts/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.CONTRACT_ID}`,
   LAKEHOUSE_PRODUCT: `/lakehouse/dataProduct/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.GAV}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH}`,
-  LAKEHOUSE_SANDBOX_PRODUCT: `/lakehouse/dataProduct/sandbox/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.INGEST_SERVER_URL}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH}`,
+  LAKEHOUSE_SANDBOX_PRODUCT: `/lakehouse/dataProduct/sandbox/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.ingestEnvironmentUrn}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH}`,
   SUBSCRIPTIONS: '/subscriptions',
   ORDERS: '/orders',
   LAKEHOUSE_SUBSCRIPTIONS: '/lakehouse/subscriptions',
@@ -88,11 +88,11 @@ export const generateLakehouseDataProductPath = (
   });
 
 export const generateLakehouseSandboxDataProductPath = (
-  ingestServerUrl: string,
+  ingestEnvironmentUrn: string,
   path: string,
 ): string =>
   generatePath(LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SANDBOX_PRODUCT, {
-    ingestServerUrl,
+    ingestEnvironmentUrn,
     path,
   });
 
