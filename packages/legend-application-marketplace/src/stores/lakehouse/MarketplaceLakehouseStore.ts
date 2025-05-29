@@ -360,31 +360,48 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   async fetchSandboxDataProducts(token: string | undefined): Promise<void> {
     try {
       this.loadingSandboxDataProductStates.inProgress();
-      const rawSandboxDataProducts: PlainObject<V1_SandboxDataProductDeploymentResponse>[] =
-        (
-          await Promise.all(
-            this.lakehouseIngestEnvironmentSummaries.map(async (env) =>
-              this.lakehouseIngestServerClient
-                .getDeployedIngestDefinitions(env.ingestServerUrl, token)
-                .catch(() => {}),
-            ),
-          )
+      const rawSandboxDataProducts: {
+        ingestServerUrl: string;
+        response: PlainObject<V1_SandboxDataProductDeploymentResponse>;
+      }[] = (
+        await Promise.all(
+          this.lakehouseIngestEnvironmentSummaries.map(async (env) => {
+            try {
+              const response =
+                await this.lakehouseIngestServerClient.getDeployedIngestDefinitions(
+                  env.ingestServerUrl,
+                  token,
+                );
+              return { ingestServerUrl: env.ingestServerUrl, response };
+            } catch {
+              return undefined;
+            }
+          }),
         )
-          .flat()
-          .filter(
-            isNonNullable,
-          ) as PlainObject<V1_SandboxDataProductDeploymentResponse>[];
-      const ingestDefinitions = rawSandboxDataProducts
-        .map(
-          (definition) =>
-            V1_SandboxDataProductDeploymentResponse.serialization.fromJson(
-              definition,
-            ).deployedDataProducts,
+      )
+        .flat()
+        .filter(isNonNullable) as {
+        ingestServerUrl: string;
+        response: PlainObject<V1_SandboxDataProductDeploymentResponse>;
+      }[];
+      const ingestUrlsAndDataProducts = rawSandboxDataProducts
+        .map((ingestUrlAndResponse) =>
+          V1_SandboxDataProductDeploymentResponse.serialization
+            .fromJson(ingestUrlAndResponse.response)
+            .deployedDataProducts.map((deployedDataProduct) => ({
+              ingestServerUrl: ingestUrlAndResponse.ingestServerUrl,
+              dataProduct: deployedDataProduct,
+            })),
         )
         .flat();
       const sandboxDataProductStates: SandboxDataProductState[] =
-        ingestDefinitions.map(
-          (definition) => new SandboxDataProductState(this, definition),
+        ingestUrlsAndDataProducts.map(
+          (ingestUrlAndDataProduct) =>
+            new SandboxDataProductState(
+              this,
+              ingestUrlAndDataProduct.ingestServerUrl,
+              ingestUrlAndDataProduct.dataProduct,
+            ),
         );
       this.setSandboxDataProductStates(sandboxDataProductStates);
       this.loadingSandboxDataProductStates.complete();

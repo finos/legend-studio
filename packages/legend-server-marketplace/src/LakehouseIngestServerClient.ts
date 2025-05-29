@@ -34,7 +34,7 @@ export class LakehouseIngestServerClient extends AbstractServerClient {
   getDeployedIngestDefinitions = (
     ingestServerUrl: string,
     token: string | undefined,
-  ): Promise<PlainObject<V1_SandboxDataProductDeploymentResponse>[]> =>
+  ): Promise<PlainObject<V1_SandboxDataProductDeploymentResponse>> =>
     this.get(
       `${ingestServerUrl}/${this._deploy()}/deploy/definitions`,
       {},

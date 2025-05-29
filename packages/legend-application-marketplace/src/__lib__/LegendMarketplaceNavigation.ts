@@ -77,12 +77,21 @@ export const isLakehouseRoute = (pathName: string): boolean =>
     (route) => matchPath(route as string, pathName) !== null,
   );
 
-export const generateLakehouseDataProduct = (
+export const generateLakehouseDataProductPath = (
   gav: string,
   path: string,
 ): string =>
   generatePath(LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_PRODUCT, {
     gav,
+    path,
+  });
+
+export const generateLakehouseSandboxDataProductPath = (
+  ingestServerUrl: string,
+  path: string,
+): string =>
+  generatePath(LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SANDBOX_DATAPRODUCT, {
+    ingestServerUrl,
     path,
   });
 

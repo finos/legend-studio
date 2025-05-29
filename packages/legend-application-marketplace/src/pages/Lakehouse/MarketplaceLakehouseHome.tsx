@@ -51,7 +51,10 @@ import {
   DataProductSort,
   type MarketplaceLakehouseStore,
 } from '../../stores/lakehouse/MarketplaceLakehouseStore.js';
-import { generateLakehouseDataProduct } from '../../__lib__/LegendMarketplaceNavigation.js';
+import {
+  generateLakehouseDataProductPath,
+  generateLakehouseSandboxDataProductPath,
+} from '../../__lib__/LegendMarketplaceNavigation.js';
 import { generateGAVCoordinates } from '@finos/legend-storage';
 import { LegendMarketplaceSearchBar } from '../../components/SearchBar/LegendMarketplaceSearchBar.js';
 import { DepotScope, isSnapshotVersion } from '@finos/legend-server-depot';
@@ -61,6 +64,7 @@ import { EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl } from '@
 import { useAuth } from 'react-oidc-context';
 import {
   DataProductState,
+  SandboxDataProductState,
   type BaseDataProductState,
   type DataProductEntity,
 } from '../../stores/lakehouse/dataProducts/DataProducts.js';
@@ -464,13 +468,23 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
                       dataProductState.currentProductEntity
                     ) {
                       marketPlaceStore.applicationStore.navigationService.navigator.goToLocation(
-                        generateLakehouseDataProduct(
+                        generateLakehouseDataProductPath(
                           generateGAVCoordinates(
                             dataProductState.currentProductEntity.groupId,
                             dataProductState.currentProductEntity.artifactId,
                             dataProductState.currentProductEntity.versionId,
                           ),
                           dataProductState.currentProductEntity.path,
+                        ),
+                      );
+                    } else if (
+                      dataProductState instanceof SandboxDataProductState
+                    ) {
+                      marketPlaceStore.applicationStore.navigationService.navigator.goToLocation(
+                        generateLakehouseSandboxDataProductPath(
+                          dataProductState.ingestServerUrl,
+                          dataProductState.dataProductArtifact?.dataProduct
+                            .path ?? '',
                         ),
                       );
                     }
