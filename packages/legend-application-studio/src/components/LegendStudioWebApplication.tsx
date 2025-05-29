@@ -42,8 +42,13 @@ import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../__lib__/LegendStudioDocument
 import { LazyTextEditor } from './lazy-text-editor/LazyTextEditor.js';
 import { PureCompatibilityTestManager } from './pct/PureCompatibilityTest.js';
 import { ShowcaseViewer } from './showcase/ShowcaseViewer.js';
-import { AuthProvider, type AuthProviderProps } from 'react-oidc-context';
+import {
+  AuthProvider,
+  useAuth,
+  type AuthProviderProps,
+} from 'react-oidc-context';
 import type { User } from 'oidc-client-ts';
+import { assertErrorThrown } from '@finos/legend-shared';
 
 const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();
@@ -285,6 +290,45 @@ export const LegendStudioWebApplicationRouter = observer(() => {
   );
 });
 
+const LegendStudioWebProvider: React.FC<{
+  baseUrl: string;
+}> = ({ baseUrl }) => {
+  const applicationStore = useLegendStudioApplicationStore();
+
+  const enableOauthFlow = applicationStore.config.options.enableOauthFlow;
+  const auth = useAuth();
+
+  useEffect(() => {
+    const tryLogin = async () => {
+      if (enableOauthFlow) {
+        try {
+          const user = auth.user;
+          if ((!user || user.expired) && !auth.isLoading) {
+            await auth.signinRedirect({
+              state: window.location.pathname + window.location.search,
+            });
+          }
+        } catch (error) {
+          assertErrorThrown(error);
+          applicationStore.logUnhandledError(error);
+        }
+      }
+    };
+
+    tryLogin().catch((error) => {
+      assertErrorThrown(error);
+    });
+  }, [enableOauthFlow, applicationStore, auth]);
+
+  return (
+    <BrowserEnvironmentProvider baseUrl={baseUrl}>
+      <LegendStudioFrameworkProvider>
+        <LegendStudioWebApplicationRouter />
+      </LegendStudioFrameworkProvider>
+    </BrowserEnvironmentProvider>
+  );
+};
+
 export const LegendStudioWebApplication = observer(
   (props: { baseUrl: string }) => {
     const { baseUrl } = props;
@@ -302,16 +346,13 @@ export const LegendStudioWebApplication = observer(
         ...oidcConfig.authProviderProps,
         redirect_uri: `${window.location.origin}${oidcConfig.redirectPath}`,
         silent_redirect_uri: `${window.location.origin}${oidcConfig.silentRedirectPath}`,
+        automaticSilentRenew: true,
         onSigninCallback,
       };
 
       return (
         <AuthProvider {...mergedOIDCConfig}>
-          <BrowserEnvironmentProvider baseUrl={baseUrl}>
-            <LegendStudioFrameworkProvider>
-              <LegendStudioWebApplicationRouter />
-            </LegendStudioFrameworkProvider>
-          </BrowserEnvironmentProvider>
+          <LegendStudioWebProvider baseUrl={baseUrl} />
         </AuthProvider>
       );
     }

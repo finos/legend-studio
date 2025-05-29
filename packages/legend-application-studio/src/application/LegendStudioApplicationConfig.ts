@@ -119,6 +119,13 @@ class LegendStudioApplicationCoreOptions {
 
   ingestDeploymentConfig: LegendIngestionConfiguration | undefined;
 
+  /**
+   * Indicates if we should enable oauth flow
+   *
+   * Default to `false`
+   */
+  enableOauthFlow = false;
+
   private static readonly serialization = new SerializationFactory(
     createModelSchema(LegendStudioApplicationCoreOptions, {
       enableGraphBuilderStrictMode: optional(primitive()),
@@ -137,6 +144,7 @@ class LegendStudioApplicationCoreOptions {
       ingestDeploymentConfig: optional(
         usingModelSchema(LegendIngestionConfiguration.serialization.schema),
       ),
+      enableOauthFlow: optional(primitive()),
     }),
   );
 
