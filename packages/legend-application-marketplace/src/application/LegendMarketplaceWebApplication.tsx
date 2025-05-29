@@ -209,9 +209,7 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
               element={<ProtectedLakehouseDataProduct />}
             />
             <Route
-              path={
-                LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SANDBOX_DATAPRODUCT
-              }
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SANDBOX_PRODUCT}
               element={<ProtectedLakehouseSandboxDataProduct />}
             />
             <Route
