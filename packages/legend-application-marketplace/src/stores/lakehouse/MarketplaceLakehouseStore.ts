@@ -83,28 +83,41 @@ import {
 
 const ARTIFACT_GENERATION_DAT_PRODUCT_KEY = 'dataProduct';
 
+export enum DataProductFilterType {
+  DEPOT_SCOPE = 'DEPOT_SCOPE',
+  DEPLOY_TYPE = 'DEPLOY_TYPE',
+}
+
 class DataProductFilters {
   releaseFilter;
   snapshotFilter;
+  sdlcDeployFilter;
+  sandboxDeployFilter;
   search?: string | undefined;
 
   constructor(
     releaseFilter: boolean,
     snapshotFilter: boolean,
+    sdlcDeployFilter: boolean,
+    sandboxDeployFilter: boolean,
     search?: string | undefined,
   ) {
     makeObservable(this, {
       releaseFilter: observable,
       snapshotFilter: observable,
+      sdlcDeployFilter: observable,
+      sandboxDeployFilter: observable,
       search: observable,
     });
     this.releaseFilter = releaseFilter;
     this.snapshotFilter = snapshotFilter;
+    this.sdlcDeployFilter = sdlcDeployFilter;
+    this.sandboxDeployFilter = sandboxDeployFilter;
     this.search = search;
   }
 
   static default(): DataProductFilters {
-    return new DataProductFilters(true, true, undefined);
+    return new DataProductFilters(true, true, false, true, undefined);
   }
 }
 
@@ -177,6 +190,12 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         if (!baseDataProductState.isInitialized) {
           return false;
         }
+        // Check if product matches deploy type filter
+        const deployMatch =
+          (this.filter.sdlcDeployFilter &&
+            baseDataProductState instanceof DataProductState) ||
+          (this.filter.sandboxDeployFilter &&
+            baseDataProductState instanceof SandboxDataProductState);
         const isSnapshot = isSnapshotVersion(baseDataProductState.versionId);
         // Check if product matches release/snapshot filter
         const versionMatch =
@@ -190,7 +209,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
           dataProductTitle
             .toLowerCase()
             .includes(this.filter.search.toLowerCase());
-        return versionMatch && titleMatch;
+        return deployMatch && versionMatch && titleMatch;
       })
       .sort((a, b) => {
         if (this.sort === DataProductSort.NAME_ALPHABETICAL) {
@@ -217,11 +236,22 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     this.dataProductViewer = val;
   }
 
-  handleFilterChange(val: DepotScope | undefined): void {
-    if (val === DepotScope.RELEASES) {
-      this.filter.releaseFilter = !this.filter.releaseFilter;
-    } else if (val === DepotScope.SNAPSHOT) {
-      this.filter.snapshotFilter = !this.filter.snapshotFilter;
+  handleFilterChange(
+    filterType: DataProductFilterType,
+    val: DepotScope | 'sdlc' | 'sandbox' | undefined,
+  ): void {
+    if (filterType === DataProductFilterType.DEPOT_SCOPE) {
+      if (val === DepotScope.RELEASES) {
+        this.filter.releaseFilter = !this.filter.releaseFilter;
+      } else if (val === DepotScope.SNAPSHOT) {
+        this.filter.snapshotFilter = !this.filter.snapshotFilter;
+      }
+    } else if (filterType === DataProductFilterType.DEPLOY_TYPE) {
+      if (val === 'sdlc') {
+        this.filter.sdlcDeployFilter = !this.filter.sdlcDeployFilter;
+      } else if (val === 'sandbox') {
+        this.filter.sandboxDeployFilter = !this.filter.sandboxDeployFilter;
+      }
     }
   }
 
