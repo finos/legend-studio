@@ -43,6 +43,7 @@ import {
   type PlainObject,
 } from '@finos/legend-shared';
 import {
+  buildDataProductArtifactGeneration,
   CORE_PURE_PATH,
   DataProductArtifactGeneration,
   GraphDataWithOrigin,
@@ -50,6 +51,7 @@ import {
   InMemoryGraphData,
   LegendSDLC,
   V1_DataProduct,
+  V1_DataProductArtifactGeneration,
   V1_dataProductModelSchema,
   V1_deserializePackageableElement,
   V1_LakehouseDiscoveryEnvironmentResponse,
@@ -652,11 +654,13 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
           versionId: '',
         }),
         v1_DataProduct,
-        DataProductArtifactGeneration.serialization.fromJson({
-          dataProduct: {
-            path: sandboxDataProduct.artifact.dataProduct.path,
-            deploymentId: sandboxDataProduct.artifact.dataProduct.deploymentId,
-          },
+        buildDataProductArtifactGeneration({
+          ...V1_DataProductArtifactGeneration.serialization.toJson(
+            sandboxDataProduct.artifact,
+          ),
+          content: V1_DataProductArtifactGeneration.serialization.toJson(
+            sandboxDataProduct.artifact,
+          ),
         }),
         {
           retrieveGraphData: () => {
