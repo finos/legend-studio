@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.18.134
+
+### Patch Changes
+
+- [#4121](https://github.com/finos/legend-studio/pull/4121) [`de02189`](https://github.com/finos/legend-studio/commit/de02189a3a45b9c7d09bd82ab8d0410029a23a92) ([@gs-gunjan](https://github.com/gs-gunjan)) - studio: setting oauth token at the beginning of studio session
+
 ## 28.18.133
 
 ## 28.18.132
