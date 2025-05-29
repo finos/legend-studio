@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import type { CommandRegistrar } from '@finos/legend-application';
+import {
+  DEFAULT_TAB_SIZE,
+  type CommandRegistrar,
+} from '@finos/legend-application';
 import {
   DepotScope,
   isSnapshotVersion,
@@ -558,17 +561,25 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         this.applicationStore.logService,
         this.marketplaceBaseStore.remoteEngine,
       );
+      yield graphManager.initialize(
+        {
+          env: this.applicationStore.config.env,
+          tabSize: DEFAULT_TAB_SIZE,
+          clientConfig: {
+            baseUrl: this.applicationStore.config.engineServerUrl,
+          },
+        },
+        { engine: this.marketplaceBaseStore.remoteEngine },
+      );
       const graphManagerState = new GraphManagerState(
         this.applicationStore.pluginManager,
         this.applicationStore.logService,
-        graphManager,
       );
-      const entities: Entity[] =
-        yield graphManagerState.graphManager.pureCodeToEntities(
-          sandboxDataProduct.definition,
-        );
-      yield graphManagerState.graphManager.buildGraph(
-        graphManagerState.createNewGraph(),
+      const entities: Entity[] = yield graphManager.pureCodeToEntities(
+        sandboxDataProduct.definition,
+      );
+      yield graphManager.buildGraph(
+        graphManagerState.graph,
         entities,
         ActionState.create(),
       );
