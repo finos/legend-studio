@@ -213,9 +213,9 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       })
       .sort((a, b) => {
         if (this.sort === DataProductSort.NAME_ALPHABETICAL) {
-          return a.title.localeCompare(b.title ?? '') ?? 0;
+          return a.title.localeCompare(b.title);
         } else {
-          return b.title.localeCompare(a.title ?? '') ?? 0;
+          return b.title.localeCompare(a.title);
         }
       });
   }
@@ -246,7 +246,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       } else if (val === DepotScope.SNAPSHOT) {
         this.filter.snapshotFilter = !this.filter.snapshotFilter;
       }
-    } else if (filterType === DataProductFilterType.DEPLOY_TYPE) {
+    } else {
       if (val === 'sdlc') {
         this.filter.sdlcDeployFilter = !this.filter.sdlcDeployFilter;
       } else if (val === 'sandbox') {
@@ -288,7 +288,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         .flat()
         .map((e: PlainObject<StoredSummaryEntity>) =>
           StoredSummaryEntity.serialization.fromJson(e),
-        ) as StoredSummaryEntity[];
+        );
       // Store summary information in the product state map
       dataProductEntitySummaries.forEach((entitySummary) => {
         const key =
@@ -330,8 +330,8 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         }
       });
       this.loadingProductsState.complete();
-      // Asynchronously fetch the data product content for each entity summary and update the product state map.
-      Promise.all(
+      // Fetch the data product content for each entity summary and update the product state map.
+      await Promise.all(
         // TODO: explore a different way to get data product content to avoid overloading metadata server
         // as the number of data products increases.
         dataProductEntitySummaries.map(async (entitySummary) => {
@@ -345,7 +345,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
             entitySummary.path;
           const dataProductEntity = this.productStatesMap
             .get(key)
-            ?.productEntityMap?.get(entitySummary.versionId);
+            ?.productEntityMap.get(entitySummary.versionId);
           if (dataProductEntity) {
             dataProductEntity.loadingEntityState.inProgress();
             try {
@@ -389,7 +389,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         )
       ).map((e: PlainObject<V1_LakehouseDiscoveryEnvironmentResponse>) =>
         V1_LakehouseDiscoveryEnvironmentResponse.serialization.fromJson(e),
-      ) as V1_LakehouseDiscoveryEnvironmentResponse[];
+      );
       this.setLakehouseIngestEnvironmentSummaries(discoveryEnvironments);
       this.loadingLakehouseEnvironmentSummariesState.complete();
     } catch (error) {
@@ -490,9 +490,9 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
 
   *init(auth: AuthContextProps): GeneratorFn<void> {
     yield Promise.all([
-      (() => {
+      (async () => {
         if (!this.loadingProductsState.hasCompleted) {
-          this.fetchDataProducts();
+          await this.fetchDataProducts();
         }
       })(),
       (async () => {
@@ -611,14 +611,14 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   ): GeneratorFn<void> {
     try {
       this.loadingProductsState.inProgress();
-      const ingestServerUrl = guaranteeNonNullable(
+      const ingestServerUrl: string = guaranteeNonNullable(
         this.lakehouseIngestEnvironmentSummaries.find(
           (summary) => summary.ingestEnvironmentUrn === ingestEnvironmentUrn,
         )?.ingestServerUrl ??
-          (yield this.fetchLakehouseEnvironmentSummary(
+          ((yield this.fetchLakehouseEnvironmentSummary(
             ingestEnvironmentUrn,
             auth.user?.access_token,
-          ))?.ingestServerUrl,
+          ))?.ingestServerUrl as string),
         `Unable to find ingest server URL for environment ${ingestEnvironmentUrn}`,
       );
       const rawSandboxDataProductResponse: PlainObject<V1_SandboxDataProductDeploymentResponse> =
@@ -653,9 +653,9 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         this.applicationStore.pluginManager,
         this.applicationStore.logService,
       );
-      const entities: Entity[] = yield graphManager.pureCodeToEntities(
+      const entities: Entity[] = (yield graphManager.pureCodeToEntities(
         sandboxDataProduct.definition,
-      );
+      )) as Entity[];
       yield graphManager.buildGraph(
         graphManagerState.graph,
         entities,

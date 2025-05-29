@@ -71,6 +71,7 @@ import {
   type DataProductEntity,
 } from '../../stores/lakehouse/dataProducts/DataProducts.js';
 import type { LegendMarketplaceApplicationStore } from '../../stores/LegendMarketplaceBaseStore.js';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
 const MAX_DESCRIPTION_LENGTH = 250;
 
@@ -317,7 +318,9 @@ export const LakehouseDataProductCard = observer(
                 <InfoCircleIcon />
               </IconButton>
               <LakehouseDataProductCardInfoPopover
-                dataProductEntity={dataProductState.currentProductEntity!}
+                dataProductEntity={guaranteeNonNullable(
+                  dataProductState.currentProductEntity,
+                )}
                 popoverAnchorEl={popoverAnchorEl}
                 setPopoverAnchorEl={setPopoverAnchorEl}
                 applicationStore={dataProductState.state.applicationStore}

@@ -62,7 +62,7 @@ export class V1_DataContractRecord {
 }
 
 export class V1_DataContractsRecord {
-  dataContracts!: V1_DataContractRecord[];
+  dataContracts?: V1_DataContractRecord[];
 }
 
 export class V1_ContractUserMembership {

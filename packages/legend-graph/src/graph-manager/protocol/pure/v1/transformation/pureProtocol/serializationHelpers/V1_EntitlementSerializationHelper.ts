@@ -42,6 +42,7 @@ import {
   custom,
   deserialize,
   list,
+  optional,
   primitive,
   serialize,
   SKIP,
@@ -163,7 +164,7 @@ export const V1_schemaSetModelSchema = createModelSchema(
 export const V1_DataContractsRecordModelSchema = createModelSchema(
   V1_DataContractsRecord,
   {
-    dataContracts: customListWithSchema(V1_schemaSetModelSchema),
+    dataContracts: optional(customListWithSchema(V1_schemaSetModelSchema)),
   },
 );
 

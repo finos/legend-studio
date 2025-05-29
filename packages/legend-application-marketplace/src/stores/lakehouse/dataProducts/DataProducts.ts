@@ -191,8 +191,8 @@ export class SandboxDataProductState extends BaseDataProductState {
 
   get title(): string {
     return (
-      this.dataProductArtifact?.dataProduct?.title ??
-      this.dataProductArtifact?.dataProduct?.path.split('::').pop() ??
+      this.dataProductArtifact?.dataProduct.title ??
+      this.dataProductArtifact?.dataProduct.path.split('::').pop() ??
       ''
     );
   }
