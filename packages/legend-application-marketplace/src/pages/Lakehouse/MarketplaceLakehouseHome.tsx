@@ -392,69 +392,73 @@ const MarketplaceLakehouseHomeSortFilterPanel = observer(
         </Box>
         <Box className="marketplace-lakehouse-home__sort-filters__filter">
           Filter By
-          <FormLabel>Release Type</FormLabel>
-          <FormGroup>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={marketPlaceStore.filter.releaseFilter}
-                  onChange={() =>
-                    marketPlaceStore.handleFilterChange(
-                      DataProductFilterType.DEPOT_SCOPE,
-                      DepotScope.RELEASES,
-                    )
-                  }
-                />
-              }
-              label="Releases"
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={marketPlaceStore.filter.snapshotFilter}
-                  onChange={() =>
-                    marketPlaceStore.handleFilterChange(
-                      DataProductFilterType.DEPOT_SCOPE,
-                      DepotScope.SNAPSHOT,
-                    )
-                  }
-                />
-              }
-              label="Snapshots"
-            />
-          </FormGroup>
+          <Box>
+            <FormLabel>Release Type</FormLabel>
+            <FormGroup>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={marketPlaceStore.filter.releaseFilter}
+                    onChange={() =>
+                      marketPlaceStore.handleFilterChange(
+                        DataProductFilterType.DEPOT_SCOPE,
+                        DepotScope.RELEASES,
+                      )
+                    }
+                  />
+                }
+                label="Releases"
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={marketPlaceStore.filter.snapshotFilter}
+                    onChange={() =>
+                      marketPlaceStore.handleFilterChange(
+                        DataProductFilterType.DEPOT_SCOPE,
+                        DepotScope.SNAPSHOT,
+                      )
+                    }
+                  />
+                }
+                label="Snapshots"
+              />
+            </FormGroup>
+          </Box>
           <hr />
-          <FormLabel>Deploy Type</FormLabel>
-          <FormGroup>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={marketPlaceStore.filter.sdlcDeployFilter}
-                  onChange={() =>
-                    marketPlaceStore.handleFilterChange(
-                      DataProductFilterType.DEPLOY_TYPE,
-                      'sdlc',
-                    )
-                  }
-                />
-              }
-              label="SDLC Deployed"
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={marketPlaceStore.filter.sandboxDeployFilter}
-                  onChange={() =>
-                    marketPlaceStore.handleFilterChange(
-                      DataProductFilterType.DEPLOY_TYPE,
-                      'sandbox',
-                    )
-                  }
-                />
-              }
-              label="Sandbox Deployed"
-            />
-          </FormGroup>
+          <Box>
+            <FormLabel>Deploy Type</FormLabel>
+            <FormGroup>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={marketPlaceStore.filter.sdlcDeployFilter}
+                    onChange={() =>
+                      marketPlaceStore.handleFilterChange(
+                        DataProductFilterType.DEPLOY_TYPE,
+                        'sdlc',
+                      )
+                    }
+                  />
+                }
+                label="SDLC Deployed"
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={marketPlaceStore.filter.sandboxDeployFilter}
+                    onChange={() =>
+                      marketPlaceStore.handleFilterChange(
+                        DataProductFilterType.DEPLOY_TYPE,
+                        'sandbox',
+                      )
+                    }
+                  />
+                }
+                label="Sandbox Deployed"
+              />
+            </FormGroup>
+          </Box>
         </Box>
       </Box>
     );
