@@ -217,7 +217,7 @@ export class EntitlementsTaskViewerState extends LakehouseViewerState {
       const dataContract = deserialize(
         V1_DataContractsRecordModelSchema,
         dataContracts,
-      ).dataContracts[0]?.dataContract;
+      ).dataContracts?.[0]?.dataContract;
       this.dataContract = dataContract;
     } catch (error) {
       assertErrorThrown(error);

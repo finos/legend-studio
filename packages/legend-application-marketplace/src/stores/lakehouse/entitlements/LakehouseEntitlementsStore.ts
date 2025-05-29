@@ -150,7 +150,7 @@ export class LakehouseEntitlementsStore {
       const dataContract = deserialize(
         V1_DataContractsRecordModelSchema,
         dataContracts,
-      ).dataContracts[0]?.dataContract;
+      ).dataContracts?.[0]?.dataContract;
       const contract = guaranteeNonNullable(
         dataContract,
         'Data Contract not found',
