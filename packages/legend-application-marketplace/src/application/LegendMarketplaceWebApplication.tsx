@@ -60,6 +60,7 @@ import { LegendMarketplacePage } from '../pages/LegendMarketplacePage.js';
 import { LegendMarketplaceVendorDetails } from '../pages/VendorDetails/LegendMarketplaceVendorDetails.js';
 import { LegendMarketplaceSubscriptions } from '../pages/Profile/LegendMarketplaceSubscriptions.js';
 import { LegendMarketplaceOrders } from '../pages/Profile/LegendMarketplaceOrders.js';
+import { LakehouseSandboxDataProduct } from '../pages/Lakehouse/dataProduct/LakehouseSandboxDataProduct.js';
 
 const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();
@@ -143,6 +144,20 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
     },
   );
 
+  const ProtectedLakehouseSandboxDataProduct = withAuthenticationRequired(
+    LakehouseSandboxDataProduct,
+    {
+      OnRedirecting: () => (
+        <CubesLoadingIndicator isLoading={true}>
+          <CubesLoadingIndicatorIcon />
+        </CubesLoadingIndicator>
+      ),
+      signinRedirectArgs: {
+        state: `${window.location.pathname}${window.location.search}`,
+      },
+    },
+  );
+
   const ProtectedLakehouseEntitlements = withAuthenticationRequired(
     LakehouseEntitlements,
     {
@@ -192,6 +207,12 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_PRODUCT}
               element={<ProtectedLakehouseDataProduct />}
+            />
+            <Route
+              path={
+                LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SANDBOX_DATAPRODUCT
+              }
+              element={<ProtectedLakehouseSandboxDataProduct />}
             />
             <Route
               path={

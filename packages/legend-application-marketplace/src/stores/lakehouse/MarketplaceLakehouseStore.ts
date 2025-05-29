@@ -41,11 +41,13 @@ import {
   DataProductArtifactGeneration,
   GraphDataWithOrigin,
   GraphManagerState,
+  InMemoryGraphData,
   LegendSDLC,
   V1_DataProduct,
   V1_dataProductModelSchema,
   V1_deserializePackageableElement,
   V1_LakehouseDiscoveryEnvironmentResponse,
+  V1_PureGraphManager,
   V1_SandboxDataProductDeploymentResponse,
 } from '@finos/legend-graph';
 import { deserialize } from 'serializr';
@@ -139,6 +141,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     makeObservable(this, {
       init: flow,
       initWithProduct: flow,
+      initWithSandboxProduct: flow,
       productStatesMap: observable,
       sandboxDataProductStates: observable,
       lakehouseIngestEnvironmentSummaries: observable,
@@ -494,6 +497,88 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
             );
           },
           onZoneChange: undefined,
+        },
+      );
+      this.setDataProductViewerState(stateViewer);
+      stateViewer.fetchContracts(auth.user?.access_token);
+      this.loadingProductsState.complete();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(
+        `Unable to load product ${path}: ${error.message}`,
+      );
+      this.loadingProductsState.fail();
+    }
+  }
+
+  *initWithSandboxProduct(
+    ingestServerUrl: string,
+    path: string,
+    auth: AuthContextProps,
+  ): GeneratorFn<void> {
+    try {
+      this.loadingProductsState.inProgress();
+      const rawSandboxDataProductResponse: PlainObject<V1_SandboxDataProductDeploymentResponse> =
+        (yield this.lakehouseIngestServerClient.getDeployedIngestDefinitions(
+          ingestServerUrl,
+          auth.user?.access_token,
+        )) as PlainObject<V1_SandboxDataProductDeploymentResponse>;
+      const sandboxDataProduct = guaranteeNonNullable(
+        V1_SandboxDataProductDeploymentResponse.serialization
+          .fromJson(rawSandboxDataProductResponse)
+          .deployedDataProducts.find(
+            (dataProduct) => dataProduct.artifact.dataProduct.path === path,
+          ),
+        `Unable to find data product ${path} deployed at ${ingestServerUrl}`,
+      );
+      const graphManagerState = new GraphManagerState(
+        this.applicationStore.pluginManager,
+        this.applicationStore.logService,
+      );
+      const entities: Entity[] =
+        yield graphManagerState.graphManager.pureCodeToEntities(
+          sandboxDataProduct.definition,
+        );
+      yield graphManagerState.graphManager.buildGraph(
+        graphManagerState.createNewGraph(),
+        entities,
+        ActionState.create(),
+      );
+      const graphManager = guaranteeType(
+        graphManagerState.graphManager,
+        V1_PureGraphManager,
+      );
+      const v1_DataProduct = guaranteeType(
+        guaranteeNonNullable(
+          graphManager.elementToProtocol(
+            graphManagerState.graph.getElement(
+              sandboxDataProduct.artifact.dataProduct.path,
+            ),
+          ),
+          `Unable to find ${sandboxDataProduct.artifact.dataProduct.path} in deployed definition`,
+        ),
+        V1_DataProduct,
+        `${sandboxDataProduct.artifact.dataProduct.path} is not a data product`,
+      );
+
+      const stateViewer = new DataProductViewerState(
+        this.applicationStore,
+        graphManagerState,
+        this.lakehouseContractServerClient,
+        VersionedProjectData.serialization.fromJson({
+          groupId: '',
+          artifactId: '',
+          versionId: '',
+        }),
+        v1_DataProduct,
+        undefined,
+        {
+          retrieveGraphData: () => {
+            return new InMemoryGraphData(graphManagerState.graph);
+          },
+          viewSDLCProject: () => {
+            throw new Error('Project does not exist in SDLC');
+          },
         },
       );
       this.setDataProductViewerState(stateViewer);
