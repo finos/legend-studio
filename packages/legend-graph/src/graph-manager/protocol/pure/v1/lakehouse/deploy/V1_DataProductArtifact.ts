@@ -111,3 +111,17 @@ export class V1_DataProductDefinitionAndArtifact {
     }),
   );
 }
+
+export class V1_SandboxDataProductDeploymentResponse {
+  deployedDataProducts: V1_DataProductDefinitionAndArtifact[] = [];
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_SandboxDataProductDeploymentResponse, {
+      deployedDataProducts: list(
+        usingModelSchema(
+          V1_DataProductDefinitionAndArtifact.serialization.schema,
+        ),
+      ),
+    }),
+  );
+}

@@ -315,6 +315,7 @@ export {
   V1_DataProductArtifactGeneration,
   V1_DataProductArtifactResourceBuilder,
   V1_DataProductDefinitionAndArtifact,
+  V1_SandboxDataProductDeploymentResponse,
 } from './graph-manager/protocol/pure/v1/lakehouse/deploy/V1_DataProductArtifact.js';
 export {
   V1_CreateSubscriptionInputModelSchema,

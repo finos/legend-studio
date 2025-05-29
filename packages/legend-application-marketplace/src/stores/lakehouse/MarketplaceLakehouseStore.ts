@@ -32,6 +32,7 @@ import {
   assertErrorThrown,
   guaranteeNonNullable,
   guaranteeType,
+  isNonNullable,
   type GeneratorFn,
   type PlainObject,
 } from '@finos/legend-shared';
@@ -42,10 +43,10 @@ import {
   GraphManagerState,
   LegendSDLC,
   V1_DataProduct,
-  V1_DataProductDefinitionAndArtifact,
   V1_dataProductModelSchema,
   V1_deserializePackageableElement,
   V1_LakehouseDiscoveryEnvironmentResponse,
+  V1_SandboxDataProductDeploymentResponse,
 } from '@finos/legend-graph';
 import { deserialize } from 'serializr';
 import {
@@ -356,19 +357,28 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   async fetchSandboxDataProducts(token: string | undefined): Promise<void> {
     try {
       this.loadingSandboxDataProductStates.inProgress();
-      const rawIngestDefinitions = (
-        await Promise.all(
-          this.lakehouseIngestEnvironmentSummaries.map(async (env) =>
-            this.lakehouseIngestServerClient.getDeployedIngestDefinitions(
-              env.ingestServerUrl,
-              token,
+      const rawSandboxDataProducts: PlainObject<V1_SandboxDataProductDeploymentResponse>[] =
+        (
+          await Promise.all(
+            this.lakehouseIngestEnvironmentSummaries.map(async (env) =>
+              this.lakehouseIngestServerClient
+                .getDeployedIngestDefinitions(env.ingestServerUrl, token)
+                .catch(() => {}),
             ),
-          ),
+          )
         )
-      ).flat() as PlainObject<V1_DataProductDefinitionAndArtifact>[];
-      const ingestDefinitions = rawIngestDefinitions.map((definition) =>
-        V1_DataProductDefinitionAndArtifact.serialization.fromJson(definition),
-      );
+          .flat()
+          .filter(
+            isNonNullable,
+          ) as PlainObject<V1_SandboxDataProductDeploymentResponse>[];
+      const ingestDefinitions = rawSandboxDataProducts
+        .map(
+          (definition) =>
+            V1_SandboxDataProductDeploymentResponse.serialization.fromJson(
+              definition,
+            ).deployedDataProducts,
+        )
+        .flat();
       const sandboxDataProductStates: SandboxDataProductState[] =
         ingestDefinitions.map(
           (definition) => new SandboxDataProductState(this, definition),
@@ -378,7 +388,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(
-        `Unable to load lakehouse environments: ${error.message}`,
+        `Unable to fetch sandbox data products: ${error.message}`,
       );
       this.loadingSandboxDataProductStates.fail();
     }
@@ -394,7 +404,9 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       (async () => {
         if (!this.loadingLakehouseEnvironmentsState.hasCompleted) {
           await this.fetchLakehouseEnvironments(auth.user?.access_token);
-          await Promise.all([]);
+          await Promise.all([
+            this.fetchSandboxDataProducts(auth.user?.access_token),
+          ]);
         }
       })(),
     ]);
