@@ -95,7 +95,7 @@ export class IngestDeploymentServerClient extends AbstractServerClient {
       `${this._dataProduct()}`,
       fullGrammar,
       undefined,
-      this._tokenWithTextPlain(token),
+      this._token(token),
     );
   }
 }

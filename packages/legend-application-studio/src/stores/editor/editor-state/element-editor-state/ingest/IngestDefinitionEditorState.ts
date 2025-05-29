@@ -133,7 +133,11 @@ export class IngestDefinitionEditorState extends ElementEditorState {
         // remove parser prefix for now since api already expects it to be under lakehouse parser
         guaranteeNonNullable(removePrefix(this.textContent, PARSER_SECTION)),
         guaranteeNonNullable(this.ingest.appDirDeployment),
-        this.deploymentState,
+        (val: string) =>
+          this.editorStore.applicationStore.alertService.setBlockingAlert({
+            message: val,
+            showLoading: true,
+          }),
         token,
       )) as unknown as ValidateAndDeploymentResponse;
       const deploymentResponse = response.deploymentResponse;
@@ -151,6 +155,9 @@ export class IngestDefinitionEditorState extends ElementEditorState {
       );
     } finally {
       this.deploymentState.complete();
+      this.editorStore.applicationStore.alertService.setBlockingAlert(
+        undefined,
+      );
     }
   }
 

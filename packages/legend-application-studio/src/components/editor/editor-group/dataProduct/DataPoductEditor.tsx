@@ -265,33 +265,6 @@ const DataProductEditorSplashScreen = observer(
   },
 );
 
-const DataproductDeploymenetModal = observer(
-  (props: { state: DataProductEditorState }) => {
-    const { state } = props;
-    const applicationStore = state.editorStore.applicationStore;
-    return (
-      <Dialog
-        open={state.deploymentState.isInProgress}
-        classes={{ container: 'search-modal__container' }}
-      >
-        <Modal
-          darkMode={
-            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
-          }
-          className="database-builder"
-        >
-          <ModalHeader>
-            <ModalTitle title="Deploy Data Product" />
-          </ModalHeader>
-          <ModalBody>
-            <div>{state.deploymentState.message}</div>
-          </ModalBody>
-        </Modal>
-      </Dialog>
-    );
-  },
-);
-
 const DataProductDeploymentResponseModal = observer(
   (props: { state: DataProductEditorState }) => {
     const { state } = props;
@@ -461,9 +434,6 @@ export const DataProductEditor = observer(() => {
             <NewAccessPointAccessPOint
               dataProductEditorState={dataProductEditorState}
             />
-          )}
-          {dataProductEditorState.deploymentState.isInProgress && (
-            <DataproductDeploymenetModal state={dataProductEditorState} />
           )}
           {dataProductEditorState.deployResponse && (
             <DataProductDeploymentResponseModal

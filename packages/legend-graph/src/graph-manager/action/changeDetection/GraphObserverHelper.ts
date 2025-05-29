@@ -40,6 +40,7 @@ const observe_Abstract_BasicModel = (metamodel: BasicModel): void => {
     | 'sectionIndicesIndex'
     | 'profilesIndex'
     | 'typesIndex'
+    | 'productsIndex'
     | 'associationsIndex'
     | 'functionsIndex'
     | 'functionActivatorsIndex'
@@ -70,6 +71,7 @@ const observe_Abstract_BasicModel = (metamodel: BasicModel): void => {
     servicesIndex: observable,
     generationSpecificationsIndex: observable,
     fileGenerationsIndex: observable,
+    productsIndex: observable,
     dataElementsIndex: observable,
     executionEnvironmentsIndex: observable,
     INTERNAL__unknownElementsIndex: observable,
@@ -84,6 +86,8 @@ const observe_Abstract_BasicModel = (metamodel: BasicModel): void => {
     ownFunctions: computed,
     ownFunctionActivators: computed,
     ownStores: computed,
+    ownProducts: computed,
+    ownIngests: computed,
     ownFlatDatas: computed,
     ownDatabases: computed,
     ownMappings: computed,
