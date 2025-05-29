@@ -107,16 +107,26 @@ export async function getCodeSuggestions(
   const currentWord = model.getWordAtPosition(position);
 
   let suggestions: CompletionItem[] = [];
-
+  const SPECIAL_CHAR = '>';
   try {
     suggestions = (await lambdaEditorState.getCodeComplete(textUntilPosition))
       .completions;
     suggestions.forEach((suggestion) => {
       if (textUntilPosition.length) {
-        suggestion.completion = removePrefix(
-          suggestion.completion,
-          guaranteeNonNullable(textUntilPosition.slice(-1)),
-        );
+        // HACK for special char '>' behaving weirdly
+        const lastCharInContext = textUntilPosition.slice(-1);
+        const firstCharInSuggestion = suggestion.completion[0];
+        if (
+          lastCharInContext === SPECIAL_CHAR &&
+          firstCharInSuggestion === SPECIAL_CHAR
+        ) {
+          {
+            suggestion.completion = removePrefix(
+              suggestion.completion,
+              guaranteeNonNullable(textUntilPosition.slice(-1)),
+            );
+          }
+        }
       }
     });
   } catch {

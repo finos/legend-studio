@@ -380,7 +380,11 @@ export class DataProductEditorState extends ElementEditorState {
       ).deployDataProduct(
         grammar,
         guaranteeNonNullable(this.associatedIngest?.appDirDeployment),
-        this.deploymentState,
+        (val: string) =>
+          this.editorStore.applicationStore.alertService.setBlockingAlert({
+            message: val,
+            showLoading: true,
+          }),
         token,
       )) as unknown as AdhocDataProductDeployResponse;
       this.setDeployResponse(response);
@@ -391,6 +395,9 @@ export class DataProductEditorState extends ElementEditorState {
       );
     } finally {
       this.deploymentState.complete();
+      this.editorStore.applicationStore.alertService.setBlockingAlert(
+        undefined,
+      );
     }
   }
 

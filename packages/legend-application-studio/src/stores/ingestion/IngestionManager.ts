@@ -20,7 +20,6 @@ import { IngestDiscoveryServerClient } from './IngestDiscoveryServerClient.js';
 import type { GenericLegendApplicationStore } from '@finos/legend-application';
 import {
   NetworkClientError,
-  type ActionState,
   type PlainObject,
   assertErrorThrown,
 } from '@finos/legend-shared';
@@ -83,14 +82,14 @@ export class IngestionManager {
   async deploy(
     ingestDefinition: string,
     appDirNode: AppDirNode,
-    actionState: ActionState | undefined,
+    messageCallBack: (message: string) => void,
     token: string | undefined,
   ): Promise<ValidateAndDeploymentResponse> {
-    actionState?.setMessage(
+    messageCallBack(
       `Discovering associated ingest environment for DID ${appDirNode.appDirId}...`,
     );
     await this.identifyIngestDeploymentServer(appDirNode, token);
-    actionState?.setMessage(
+    messageCallBack(
       `Validating ingest with server ${this.ingestDeploymentServerClient.baseUrl ?? ''} for realm ${this.ingestDeploymentServerClient.environmentClassification}...`,
     );
     const validateResonse = await this._validate(
@@ -108,7 +107,7 @@ export class IngestionManager {
     ) {
       return fullResponse;
     }
-    actionState?.setMessage(
+    messageCallBack(
       `Validation Success. Deploying ingest with server ${this.ingestDeploymentServerClient.baseUrl ?? ''} for realm ${this.ingestDeploymentServerClient.environmentClassification}...`,
     );
     const deployResponse = await this._deploy(
@@ -123,14 +122,14 @@ export class IngestionManager {
   async deployDataProduct(
     grammarText: string,
     appDirNode: AppDirNode,
-    actionState: ActionState | undefined,
+    messageCallBack: (message: string) => void,
     token: string | undefined,
   ): Promise<AdhocDataProductDeployResponse> {
-    actionState?.setMessage(
+    messageCallBack(
       `Discovering associated data product environment for DID ${appDirNode.appDirId}...`,
     );
     await this.identifyIngestDeploymentServer(appDirNode, token);
-    actionState?.setMessage(
+    messageCallBack(
       `Deploying data product with server ${this.ingestDeploymentServerClient.baseUrl ?? ''} for realm ${this.ingestDeploymentServerClient.environmentClassification}...`,
     );
     const deployResponse =
