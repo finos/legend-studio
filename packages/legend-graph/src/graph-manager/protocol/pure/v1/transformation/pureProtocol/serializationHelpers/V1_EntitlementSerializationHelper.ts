@@ -221,7 +221,7 @@ export const V1_DataContractsRecordModelSchemaToContracts = (
   json: PlainObject<V1_DataContractsRecord>,
 ): V1_DataContract[] => {
   const contracts = deserialize(V1_DataContractsRecordModelSchema, json);
-  return contracts.dataContracts.map((e) => e.dataContract);
+  return contracts.dataContracts?.map((e) => e.dataContract) ?? [];
 };
 
 export const V1_deserializeTaskResponse = (
