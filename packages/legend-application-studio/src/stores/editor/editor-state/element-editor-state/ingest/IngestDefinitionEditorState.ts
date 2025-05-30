@@ -23,12 +23,21 @@ import {
   assertTrue,
   guaranteeNonNullable,
   guaranteeType,
+  LogEvent,
   removePrefix,
   type GeneratorFn,
 } from '@finos/legend-shared';
 import type { IngestionManager } from '../../../../ingestion/IngestionManager.js';
-import { action, flow, flowResult, makeObservable, observable } from 'mobx';
+import {
+  action,
+  computed,
+  flow,
+  flowResult,
+  makeObservable,
+  observable,
+} from 'mobx';
 import type {
+  IngestDefinitionDeploymentResponse,
   IngestDefinitionValidationResponse,
   ValidateAndDeploymentResponse,
 } from '../../../../ingestion/IngestionDeploymentResponse.js';
@@ -38,6 +47,11 @@ import {
 } from '../ElementEditorInitialConfiguration.js';
 import type { AuthContextProps } from 'react-oidc-context';
 import { EXTERNAL_APPLICATION_NAVIGATION__generateUrlWithEditorConfig } from '../../../../../__lib__/LegendStudioNavigation.js';
+import {
+  ActionAlertActionType,
+  ActionAlertType,
+} from '@finos/legend-application';
+import { LEGEND_STUDIO_APP_EVENT } from '../../../../../__lib__/LegendStudioEvent.js';
 
 const createEditorInitialConfiguration = (): EditorInitialConfiguration => {
   const config = new EditorInitialConfiguration();
@@ -63,7 +77,7 @@ export const generateUrlToDeployOnOpen = (
 
 const PARSER_SECTION = `###Lakehouse`;
 export class IngestDefinitionEditorState extends ElementEditorState {
-  validationError: IngestDefinitionValidationResponse | undefined;
+  validateAndDeployResponse: ValidateAndDeploymentResponse | undefined;
   deploymentState = ActionState.create();
   deployOnOpen = false;
 
@@ -78,8 +92,9 @@ export class IngestDefinitionEditorState extends ElementEditorState {
       deploymentState: observable,
       deployOnOpen: observable,
       setDeployOnOpen: observable,
-      validationError: observable,
-      setValError: action,
+      validateAndDeployResponse: observable,
+      deploymentResponse: computed,
+      setValidateAndDeployResponse: action,
       init_with_deploy: flow,
       deploy: flow,
     });
@@ -89,12 +104,24 @@ export class IngestDefinitionEditorState extends ElementEditorState {
     }
   }
 
+  get deploymentResponse():
+    | IngestDefinitionDeploymentResponse
+    | IngestDefinitionValidationResponse
+    | undefined {
+    return (
+      this.validateAndDeployResponse?.deploymentResponse ??
+      this.validateAndDeployResponse?.validationResponse
+    );
+  }
+
   get ingestionManager(): IngestionManager | undefined {
     return this.editorStore.ingestionManager;
   }
 
-  setValError(val: IngestDefinitionValidationResponse | undefined): void {
-    this.validationError = val;
+  setValidateAndDeployResponse(
+    val: ValidateAndDeploymentResponse | undefined,
+  ): void {
+    this.validateAndDeployResponse = val;
   }
 
   setDeployOnOpen(value: boolean): void {
@@ -140,24 +167,57 @@ export class IngestDefinitionEditorState extends ElementEditorState {
           }),
         token,
       )) as unknown as ValidateAndDeploymentResponse;
+      this.editorStore.applicationStore.alertService.setBlockingAlert(
+        undefined,
+      );
       const deploymentResponse = response.deploymentResponse;
       if (deploymentResponse) {
-        this.editorStore.applicationStore.notificationService.notifySuccess(
-          `Ingest definition successfully deployed on ${deploymentResponse.ingestDefinitionUrn}`,
+        this.editorStore.applicationStore.logService.info(
+          LogEvent.create(LEGEND_STUDIO_APP_EVENT.INGESTION_DEPLOY_SUCCESS_URN),
+          deploymentResponse.ingestDefinitionUrn,
         );
+        this.editorStore.applicationStore.alertService.setActionAlertInfo({
+          title: `Ingest Definition Deployment`,
+          message: `Ingest definition deployed successfully. You may use URN for ingestion of Data`,
+          prompt: `${deploymentResponse.ingestDefinitionUrn}`,
+          type: ActionAlertType.STANDARD,
+          actions: [
+            {
+              label: 'Copy URN',
+              type: ActionAlertActionType.PROCEED,
+              handler: (): void => {
+                this.editorStore.applicationStore.clipboardService
+                  .copyTextToClipboard(deploymentResponse.ingestDefinitionUrn)
+                  .then(() =>
+                    this.editorStore.applicationStore.notificationService.notifySuccess(
+                      'Ingest URN copied to clipboard',
+                      undefined,
+                      2500,
+                    ),
+                  )
+                  .catch(this.editorStore.applicationStore.alertUnhandledError);
+              },
+              default: true,
+            },
+            {
+              label: 'Close',
+              type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            },
+          ],
+        });
       } else {
-        this.setValError(response.validationResponse);
+        this.setValidateAndDeployResponse(response);
       }
     } catch (error) {
+      this.editorStore.applicationStore.alertService.setBlockingAlert(
+        undefined,
+      );
       assertErrorThrown(error);
       this.editorStore.applicationStore.notificationService.notifyError(
         `Ingest definition failed to deploy: ${error.message}`,
       );
     } finally {
       this.deploymentState.complete();
-      this.editorStore.applicationStore.alertService.setBlockingAlert(
-        undefined,
-      );
     }
   }
 
