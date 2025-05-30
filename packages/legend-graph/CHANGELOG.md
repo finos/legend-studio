@@ -1,5 +1,13 @@
 # @finos/legend-graph
 
+## 32.1.37
+
+### Patch Changes
+
+- [#4118](https://github.com/finos/legend-studio/pull/4118) [`eb16c88`](https://github.com/finos/legend-studio/commit/eb16c885808b782ffb397fc7c95a15e6cf1499b2) ([@travisstebbins](https://github.com/travisstebbins)) - Lakehouse improve subscriptions flow
+
+- [#4120](https://github.com/finos/legend-studio/pull/4120) [`2d74694`](https://github.com/finos/legend-studio/commit/2d74694b8f23a6ec585dc63c9c1208857c19f7a0) ([@kelly-thai](https://github.com/kelly-thai)) - Make Lakehouse Access Points descriptions observable
+
 ## 32.1.36
 
 ### Patch Changes

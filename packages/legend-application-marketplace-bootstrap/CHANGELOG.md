@@ -1,5 +1,7 @@
 # @finos/legend-application-marketplace-bootstrap
 
+## 13.74.0
+
 ## 13.73.0
 
 ### Patch Changes

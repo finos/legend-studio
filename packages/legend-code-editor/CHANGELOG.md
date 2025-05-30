@@ -1,5 +1,7 @@
 # @finos/legend-code-editor
 
+## 2.0.79
+
 ## 2.0.78
 
 ## 2.0.77
