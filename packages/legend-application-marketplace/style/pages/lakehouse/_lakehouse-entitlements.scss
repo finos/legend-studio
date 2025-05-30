@@ -184,6 +184,17 @@
     }
   }
 
+  &__task-approval-view {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: var(--color-light-grey-150);
+
+    &__timestamp {
+      color: var(--color-dark-grey-300);
+      font-style: italic;
+    }
+  }
+
   &__footer {
     align-self: start;
     margin-top: auto;

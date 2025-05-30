@@ -48,6 +48,7 @@ import {
 } from '@finos/legend-graph';
 import React, { useEffect, useState } from 'react';
 import {
+  formatDate,
   guaranteeNonNullable,
   isNonNullable,
   LegendUser,
@@ -71,6 +72,7 @@ import {
 } from '@finos/legend-art';
 import { generateLakehouseTaskPath } from '../../../__lib__/LegendMarketplaceNavigation.js';
 import type { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
+import { DEFAULT_DATE_TIME_FORMAT } from '@finos/legend-application';
 
 const AssigneesList = (props: {
   users: (LegendUser | string)[];
@@ -138,7 +140,7 @@ const TaskApprovalView = (props: {
   ) {
     if (task) {
       return (
-        <Box>
+        <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__task-approval-view">
           <Box>
             Approved by{' '}
             {legendUser ? (
@@ -151,7 +153,12 @@ const TaskApprovalView = (props: {
               task.rec.eventPayload.managerIdentity
             )}
           </Box>
-          <Box>{task.rec.eventPayload.eventTimestamp}</Box>
+          <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__task-approval-view__timestamp">
+            {formatDate(
+              new Date(task.rec.eventPayload.eventTimestamp),
+              DEFAULT_DATE_TIME_FORMAT,
+            )}
+          </Box>
         </Box>
       );
     } else {
@@ -160,7 +167,7 @@ const TaskApprovalView = (props: {
   } else if (contractState === V1_ContractState.REJECTED) {
     if (task) {
       return (
-        <Box>
+        <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__task-approval-view">
           <Box>
             Rejected by{' '}
             {legendUser ? (
@@ -173,7 +180,12 @@ const TaskApprovalView = (props: {
               task.rec.eventPayload.managerIdentity
             )}
           </Box>
-          <Box>{task.rec.eventPayload.eventTimestamp}</Box>
+          <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__task-approval-view__timestamp">
+            {formatDate(
+              new Date(task.rec.eventPayload.eventTimestamp),
+              DEFAULT_DATE_TIME_FORMAT,
+            )}
+          </Box>
         </Box>
       );
     } else {
