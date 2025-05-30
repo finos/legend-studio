@@ -54,6 +54,7 @@ import type { DataGridColumnState } from '@finos/legend-lego/data-grid';
 import { downloadStream } from '@finos/legend-application';
 import { QueryBuilderDataGridCustomAggregationFunction } from '../components/result/tds/QueryBuilderTDSGridResult.js';
 import { QueryBuilderTDSState } from './fetch-structure/tds/QueryBuilderTDSState.js';
+import { QueryBuilderEmbeddedFromExecutionContextState } from './QueryBuilderExecutionContextState.js';
 
 export const DEFAULT_LIMIT = 1000;
 
@@ -499,11 +500,15 @@ export class QueryBuilderResultState {
       const report = reportGraphAnalytics(
         this.queryBuilderState.graphManagerState.graph,
       );
-
+      const contextstate = this.queryBuilderState.executionContextState;
       promise = this.queryBuilderState.graphManagerState.graphManager.runQuery(
         query,
-        mapping,
-        runtime,
+        contextstate instanceof QueryBuilderEmbeddedFromExecutionContextState
+          ? undefined
+          : mapping,
+        contextstate instanceof QueryBuilderEmbeddedFromExecutionContextState
+          ? undefined
+          : runtime,
         this.queryBuilderState.graphManagerState.graph,
         {
           parameterValues,
@@ -594,7 +599,15 @@ export class QueryBuilderResultState {
       const report = reportGraphAnalytics(
         this.queryBuilderState.graphManagerState.graph,
       );
-
+      const contextstate = this.queryBuilderState.executionContextState;
+      const _mapping =
+        contextstate instanceof QueryBuilderEmbeddedFromExecutionContextState
+          ? undefined
+          : mapping;
+      const _runtime =
+        contextstate instanceof QueryBuilderEmbeddedFromExecutionContextState
+          ? undefined
+          : runtime;
       if (debug) {
         QueryBuilderTelemetryHelper.logEvent_ExecutionPlanDebugLaunched(
           this.queryBuilderState.applicationStore.telemetryService,
@@ -602,8 +615,8 @@ export class QueryBuilderResultState {
         const debugResult =
           (yield this.queryBuilderState.graphManagerState.graphManager.debugExecutionPlanGeneration(
             query,
-            mapping,
-            runtime,
+            _mapping,
+            _runtime,
             this.queryBuilderState.graphManagerState.graph,
             report,
           )) as { plan: RawExecutionPlan; debug: string };
@@ -616,8 +629,8 @@ export class QueryBuilderResultState {
         rawPlan =
           (yield this.queryBuilderState.graphManagerState.graphManager.generateExecutionPlan(
             query,
-            mapping,
-            runtime,
+            _mapping,
+            _runtime,
             this.queryBuilderState.graphManagerState.graph,
             report,
           )) as object;

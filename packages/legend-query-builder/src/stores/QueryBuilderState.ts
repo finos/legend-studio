@@ -102,6 +102,7 @@ import {
 } from '../graph/QueryBuilderMetaModelConst.js';
 import type { QueryBuilderInternalizeState } from './QueryBuilderInternalizeState.js';
 import {
+  QueryBuilderEmbeddedFromExecutionContextState,
   QueryBuilderExternalExecutionContextState,
   type QueryBuilderExecutionContextState,
 } from './QueryBuilderExecutionContextState.js';
@@ -258,9 +259,14 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
     this.applicationStore = applicationStore;
     this.graphManagerState = graphManagerState;
-    this.executionContextState = new QueryBuilderExternalExecutionContextState(
-      this,
-    );
+    this.executionContextState = config?.enableTypedTDS
+      ? new QueryBuilderEmbeddedFromExecutionContextState(this)
+      : new QueryBuilderExternalExecutionContextState(this);
+    if (config?.enableTypedTDS) {
+      this.setLambdaWriteMode(
+        QUERY_BUILDER_LAMBDA_WRITER_MODE.TYPED_FETCH_STRUCTURE,
+      );
+    }
     this.milestoningState = new QueryBuilderMilestoningState(this);
     this.explorerState = new QueryBuilderExplorerState(this);
     this.parametersState = new QueryBuilderParametersState(this);
@@ -674,9 +680,14 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     if (
       this.fetchStructureState.implementation instanceof QueryBuilderTDSState
     ) {
-      return this.graphManagerState.graph.getClass(
-        QUERY_BUILDER_PURE_PATH.TDS_TABULAR_DATASET,
-      );
+      const lambdaWriteMode = this.lambdaWriteMode;
+      return lambdaWriteMode === QUERY_BUILDER_LAMBDA_WRITER_MODE.STANDARD
+        ? this.graphManagerState.graph.getClass(
+            QUERY_BUILDER_PURE_PATH.TDS_TABULAR_DATASET,
+          )
+        : this.graphManagerState.graph.getType(
+            QUERY_BUILDER_PURE_PATH.RELATION,
+          );
     }
     return PrimitiveType.STRING;
   }
