@@ -17,7 +17,7 @@
 import {
   UnsupportedOperationError,
   guaranteeNonNullable,
-  guaranteeType,
+  isNonNullable,
 } from '@finos/legend-shared';
 import {
   type Class,
@@ -114,27 +114,26 @@ const buildExecutionContextState = (
       extractElementNameFromPath(SUPPORTED_FUNCTIONS.FROM),
     );
     // 1st param
-    const mapping = guaranteeNonNullable(
-      executionState.mapping,
-      'Mapping required for building from() expression',
-    );
-    const mappingInstance = new InstanceValue(Multiplicity.ONE, undefined);
-    mappingInstance.values = [
-      PackageableElementExplicitReference.create(mapping),
-    ];
+    const mapping = executionState.mapping;
+    let mappingInstance: InstanceValue | undefined;
+    if (mapping) {
+      mappingInstance = new InstanceValue(Multiplicity.ONE, undefined);
+      mappingInstance.values = [
+        PackageableElementExplicitReference.create(mapping),
+      ];
+    }
     // 2nd parameter
-    const runtime = guaranteeType(
-      executionState.runtimeValue,
-      RuntimePointer,
-      'Runtime Pointer required for building from() expression',
-    );
-    const runtimeInstance = new InstanceValue(Multiplicity.ONE, undefined);
-    runtimeInstance.values = [runtime.packageableRuntime];
+    const runtime = executionState.runtimeValue;
+    let runtimeInstance: InstanceValue | undefined;
+    if (runtime instanceof RuntimePointer) {
+      runtimeInstance = new InstanceValue(Multiplicity.ONE, undefined);
+      runtimeInstance.values = [runtime.packageableRuntime];
+    }
     fromFunc.parametersValues = [
       precedingExpression,
       mappingInstance,
       runtimeInstance,
-    ];
+    ].filter(isNonNullable);
     lambdaFunction.expressionSequence[0] = fromFunc;
   }
   return lambdaFunction;

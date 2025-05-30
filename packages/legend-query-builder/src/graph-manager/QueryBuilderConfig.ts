@@ -43,6 +43,11 @@ export class QueryBuilderConfig {
    */
   zipkinTraceBaseURL = '';
 
+  /**
+   * This is the URL of the zipkin trace
+   */
+  enableTypedTDS = false;
+
   static readonly serialization = new SerializationFactory(
     createModelSchema(QueryBuilderConfig, {
       TEMPORARY__disableQueryBuilderChat: optional(primitive()),
@@ -50,6 +55,7 @@ export class QueryBuilderConfig {
       TEMPORARY__enableGridEnterpriseMode: optional(primitive()),
       legendAIServiceURL: optional(primitive()),
       zipkinTraceBaseURL: optional(primitive()),
+      enableTypedTDS: optional(primitive()),
     }),
   );
 }

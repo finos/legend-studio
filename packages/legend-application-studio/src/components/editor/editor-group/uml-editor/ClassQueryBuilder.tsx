@@ -27,11 +27,15 @@ import {
   getFunctionSignature,
   GenericTypeExplicitReference,
   GenericType,
+  type RawLambda,
+  CORE_PURE_PATH,
+  requireTypeArugments,
 } from '@finos/legend-graph';
 import {
   type QueryBuilderState,
   ClassQueryBuilderState,
   QueryBuilderAdvancedWorkflowState,
+  QueryBuilderEmbeddedFromExecutionContextState,
 } from '@finos/legend-query-builder';
 import {
   assertErrorThrown,
@@ -116,11 +120,29 @@ export const promoteQueryToFunction = async (
   const editorStore = embeddedQueryBuilderState.editorStore;
   const applicationStore = editorStore.applicationStore;
   try {
-    const query = queryBuilderState.buildFromQuery();
+    let query: RawLambda;
+    if (
+      queryBuilderState.executionContextState instanceof
+      QueryBuilderEmbeddedFromExecutionContextState
+    ) {
+      query = queryBuilderState.buildQuery();
+    } else {
+      query = queryBuilderState.buildFromQuery();
+    }
     const returnType = queryBuilderState.getQueryReturnType();
+    const _genericType = new GenericType(returnType);
+    if (requireTypeArugments(returnType)) {
+      _genericType.typeArguments = [
+        GenericTypeExplicitReference.create(
+          new GenericType(
+            editorStore.graphManagerState.graph.getType(CORE_PURE_PATH.ANY),
+          ),
+        ),
+      ];
+    }
     const _function = new ConcreteFunctionDefinition(
       functionName, // use functionName for now and it will be reset after composing _function.parameters and _function.returnType
-      GenericTypeExplicitReference.create(new GenericType(returnType)),
+      GenericTypeExplicitReference.create(_genericType),
       Multiplicity.ONE,
     );
     // we will copy the body of the query to the body of the function and extract the parameters out

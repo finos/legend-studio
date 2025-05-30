@@ -40,6 +40,10 @@ export {
   QUERY_BUILDER_LAMBDA_WRITER_MODE,
   INTERNAL__BasicQueryBuilderState,
 } from './stores/QueryBuilderState.js';
+export {
+  QueryBuilderExecutionContextState,
+  QueryBuilderEmbeddedFromExecutionContextState,
+} from './stores/QueryBuilderExecutionContextState.js';
 export { QueryChatState } from './stores/QueryChatState.js';
 export {
   getTDSColumnDerivedProperyFromType,
