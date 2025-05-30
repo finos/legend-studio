@@ -535,7 +535,7 @@ export const DataProductEditor = observer(() => {
             </div>
           </PanelHeaderActions>
         </div>
-        <div className="panel" style={{ padding: '1rem' }}>
+        <div className="panel" style={{ padding: '1rem', flex: 0 }}>
           <PanelFormTextField
             name="Title"
             value={product.name}
@@ -551,7 +551,7 @@ export const DataProductEditor = observer(() => {
             placeholder="Enter description"
           />
         </div>
-        <div className="panel">
+        <div className="panel" style={{ overflow: 'auto' }}>
           <PanelHeader>
             <div className="panel__header__title">
               <div className="panel__header__title__label">access points</div>
