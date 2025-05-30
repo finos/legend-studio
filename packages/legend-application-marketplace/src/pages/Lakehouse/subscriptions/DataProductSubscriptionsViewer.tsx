@@ -151,11 +151,7 @@ const LakehouseSubscriptionsCreateDialog = observer(
           .filter((details) =>
             isType(details, V1_AWSSnowflakeIngestEnvironment),
           )
-          .filter(
-            (details) =>
-              ingestEnvironmentUrn === undefined ||
-              details.urn === ingestEnvironmentUrn,
-          )
+          .filter((details) => details.urn === ingestEnvironmentUrn)
           .map(
             (ingestEnvironmentDetails) =>
               ingestEnvironmentDetails.snowflakeAccount,
