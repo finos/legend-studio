@@ -77,4 +77,7 @@ export enum LEGEND_STUDIO_APP_EVENT {
   TEXT_MODE_ACTION_KEYBOARD_SHORTCUT_GO_TO_DEFINITION__LAUNCH = 'editor.text-mode.action.keyboard.shortcut.go-to-element.launch',
   TEXT_MODE_ACTION_KEYBOARD_SHORTCUT_GO_TO_DEFINITION__ERROR = 'editor.text-mode.action.keyboard.shortcut.go-to-element.error',
   TEXT_MODE_ACTION_KEYBOARD_SHORTCUT_GO_TO_DEFINITION__SUCCESS = 'editor.text-mode.action.keyboard.shortcut.go-to-element.success',
+
+  // Ingestion
+  INGESTION_DEPLOY_SUCCESS_URN = 'editor.ingestion.deployment.success.urn',
 }

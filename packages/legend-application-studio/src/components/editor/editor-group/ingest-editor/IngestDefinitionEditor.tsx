@@ -17,6 +17,8 @@
 import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
+  CheckCircleIcon,
+  CopyIcon,
   Dialog,
   Modal,
   ModalBody,
@@ -34,50 +36,27 @@ import {
   IngestDefinitionEditorState,
 } from '../../../../stores/editor/editor-state/element-editor-state/ingest/IngestDefinitionEditorState.js';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { flowResult } from 'mobx';
 import { useAuth } from 'react-oidc-context';
-
-const IngestDepoymentModal = observer(
-  (props: { state: IngestDefinitionEditorState }) => {
-    const { state } = props;
-    const applicationStore = state.editorStore.applicationStore;
-    return (
-      <Dialog
-        open={state.deploymentState.isInProgress}
-        classes={{ container: 'search-modal__container' }}
-      >
-        <Modal
-          darkMode={
-            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
-          }
-          className="database-builder"
-        >
-          <ModalHeader>
-            <ModalTitle title="Deploy Ingestion" />
-          </ModalHeader>
-          <ModalBody>
-            <div>{state.deploymentState.message}</div>
-          </ModalBody>
-        </Modal>
-      </Dialog>
-    );
-  },
-);
+import {
+  type IngestDefinitionDeploymentResponse,
+  IngestDefinitionValidationResponse,
+} from '../../../../stores/ingestion/IngestionDeploymentResponse.js';
 
 const IngestValidationError = observer(
-  (props: { state: IngestDefinitionEditorState }) => {
-    const { state } = props;
+  (props: {
+    state: IngestDefinitionEditorState;
+    validateResponse: IngestDefinitionValidationResponse;
+  }) => {
+    const { state, validateResponse } = props;
     const applicationStore = state.editorStore.applicationStore;
-    const validationError = state.validationError;
-    if (!validationError) {
-      return null;
-    }
-    const closeModal = (): void => state.setValError(undefined);
+    const closeModal = (): void =>
+      state.setValidateAndDeployResponse(undefined);
     return (
       <Dialog
-        open={Boolean(state.validationError)}
+        open={true}
         classes={{
           root: 'editor-modal__root-container',
           container: 'editor-modal__container',
@@ -92,19 +71,98 @@ const IngestValidationError = observer(
           className="editor-modal"
         >
           <ModalHeader>
-            <ModalTitle title="Validation Error" />
+            <ModalTitle title={'Validation Error'} />
           </ModalHeader>
           <ModalBody>
             <PanelContent>
               <CodeEditor
-                inputValue={JSON.stringify(
-                  state.validationError ?? {},
-                  null,
-                  2,
-                )}
+                inputValue={JSON.stringify(validateResponse, null, 2)}
                 isReadOnly={true}
                 language={CODE_EDITOR_LANGUAGE.JSON}
               />
+            </PanelContent>
+          </ModalBody>
+          <ModalFooter>
+            <ModalFooterButton
+              onClick={closeModal}
+              text="Close"
+              type="secondary"
+            />
+          </ModalFooter>
+        </Modal>
+      </Dialog>
+    );
+  },
+);
+
+// TODO: show full report i.e write envs etc
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const IngestDeploymentResponseModal = observer(
+  (props: {
+    state: IngestDefinitionEditorState;
+    deploymentResponse: IngestDefinitionDeploymentResponse;
+  }) => {
+    const { state, deploymentResponse } = props;
+    const applicationStore = state.editorStore.applicationStore;
+    const closeModal = (): void =>
+      state.setValidateAndDeployResponse(undefined);
+    const copyURN = (text: string): void => {
+      state.editorStore.applicationStore.clipboardService
+        .copyTextToClipboard(text)
+        .then(() =>
+          state.editorStore.applicationStore.notificationService.notifySuccess(
+            'Ingest URN copied to clipboard',
+            undefined,
+            2500,
+          ),
+        )
+        .catch(state.editorStore.applicationStore.alertUnhandledError);
+    };
+    return (
+      <Dialog
+        open={true}
+        classes={{
+          root: 'editor-modal__root-container',
+          container: 'editor-modal__container',
+          paper: 'editor-modal__content',
+        }}
+        onClose={closeModal}
+      >
+        <Modal
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+          className="editor-modal"
+        >
+          <ModalHeader>
+            <ModalTitle
+              icon={<CheckCircleIcon />}
+              title="Deployment URN"
+            ></ModalTitle>
+          </ModalHeader>
+          <ModalBody>
+            <PanelContent>
+              <div>
+                <div>Ingestion URN</div>
+                <div>{deploymentResponse.ingestDefinitionUrn}</div>
+
+                <div className="data-space__viewer__quickstart__tds__query-text__actions">
+                  <button
+                    className="data-space__viewer__quickstart__tds__query-text__action"
+                    tabIndex={-1}
+                    title="Copy"
+                    onClick={() => {
+                      copyURN(deploymentResponse.ingestDefinitionUrn);
+                    }}
+                  >
+                    <CopyIcon />
+                  </button>
+                  <button
+                    className="data-space__viewer__quickstart__tds__query-text__action"
+                    tabIndex={-1}
+                  ></button>
+                </div>
+              </div>
             </PanelContent>
           </ModalBody>
           <ModalFooter>
@@ -151,6 +209,20 @@ export const IngestDefinitionEditor = observer(() => {
         'Authentication failed. No token available.',
       );
     }
+  };
+
+  const renderDeploymentResponse = (): React.ReactNode => {
+    const response = ingestDefinitionEditorState.deploymentResponse;
+    if (response instanceof IngestDefinitionValidationResponse) {
+      return (
+        <IngestValidationError
+          state={ingestDefinitionEditorState}
+          validateResponse={response}
+        />
+      );
+    }
+
+    return null;
   };
 
   const isValid = ingestDefinitionEditorState.validForDeployment;
@@ -202,12 +274,7 @@ export const IngestDefinitionEditor = observer(() => {
             language={CODE_EDITOR_LANGUAGE.PURE}
           />
         </PanelContent>
-        {ingestDefinitionEditorState.deploymentState.isInProgress && (
-          <IngestDepoymentModal state={ingestDefinitionEditorState} />
-        )}
-        {ingestDefinitionEditorState.validationError && (
-          <IngestValidationError state={ingestDefinitionEditorState} />
-        )}
+        {renderDeploymentResponse()}
       </PanelContent>
     </div>
   );

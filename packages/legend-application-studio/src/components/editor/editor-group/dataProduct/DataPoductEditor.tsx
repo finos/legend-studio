@@ -365,7 +365,7 @@ const DataProductDeploymentResponseModal = observer(
           className="editor-modal"
         >
           <ModalHeader>
-            <ModalTitle title="Validation Error" />
+            <ModalTitle title="Data Product Deployment Response" />
           </ModalHeader>
           <ModalBody>
             <PanelContent>
