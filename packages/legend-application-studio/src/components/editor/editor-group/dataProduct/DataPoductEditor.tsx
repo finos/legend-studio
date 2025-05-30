@@ -44,6 +44,10 @@ import {
   ModalFooterButton,
   PencilEditIcon,
   PanelFormTextField,
+  ControlledDropdownMenu,
+  MenuContent,
+  MenuContentItem,
+  CaretDownIcon,
 } from '@finos/legend-art';
 import React, { useRef, useState, useEffect } from 'react';
 import { filterByType } from '@finos/legend-shared';
@@ -52,7 +56,10 @@ import { action, flowResult } from 'mobx';
 import { useAuth } from 'react-oidc-context';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
-import type { LakehouseAccessPoint } from '@finos/legend-graph';
+import {
+  LakehouseTargetEnv,
+  type LakehouseAccessPoint,
+} from '@finos/legend-graph';
 
 const NewAccessPointAccessPOint = observer(
   (props: { dataProductEditorState: DataProductEditorState }) => {
@@ -226,6 +233,12 @@ export const LakehouseDataProductAcccessPointEditor = observer(
       action((accessPoint.description = event.target.value));
     };
 
+    const updateAccessPointTargetEnvironment = action(
+      (targetEnvironment: LakehouseTargetEnv) => {
+        accessPoint.targetEnvironment = targetEnvironment;
+      },
+    );
+
     return (
       <div
         className={clsx('access-point-editor', {
@@ -269,10 +282,43 @@ export const LakehouseDataProductAcccessPointEditor = observer(
           <div className="access-point-editor__info">
             <div
               className={clsx('access-point-editor__type')}
-              title={accessPoint.targetEnvironment}
+              title={'Change target environment'}
             >
               <div className="access-point-editor__type__label">
                 {accessPoint.targetEnvironment}
+              </div>
+              <div
+                style={{
+                  background: 'transparent',
+                  height: '100%',
+                  alignItems: 'center',
+                  display: 'flex',
+                }}
+              >
+                <ControlledDropdownMenu
+                  className="access-point-editor__dropdown"
+                  content={
+                    <MenuContent>
+                      {Object.values(LakehouseTargetEnv).map((environment) => (
+                        <MenuContentItem
+                          key={environment}
+                          className="btn__dropdown-combo__option"
+                          onClick={() =>
+                            updateAccessPointTargetEnvironment(environment)
+                          }
+                        >
+                          {environment}
+                        </MenuContentItem>
+                      ))}
+                    </MenuContent>
+                  }
+                  menuProps={{
+                    anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                    transformOrigin: { vertical: 'top', horizontal: 'right' },
+                  }}
+                >
+                  <CaretDownIcon />
+                </ControlledDropdownMenu>
               </div>
             </div>
           </div>

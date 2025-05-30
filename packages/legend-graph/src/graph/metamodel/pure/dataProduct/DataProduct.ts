@@ -48,6 +48,9 @@ export abstract class AccessPoint implements Hashable {
 
 export enum LakehouseTargetEnv {
   Snowflake = 'Snowflake',
+  Databricks = 'Databricks',
+  BigQuery = 'BigQuery',
+  DuckDb = 'DuckDb',
 }
 
 export class LakehouseAccessPoint extends AccessPoint {
