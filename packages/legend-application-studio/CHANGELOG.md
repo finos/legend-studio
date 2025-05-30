@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 28.18.137
+
+### Patch Changes
+
+- [#4120](https://github.com/finos/legend-studio/pull/4120) [`2d74694`](https://github.com/finos/legend-studio/commit/2d74694b8f23a6ec585dc63c9c1208857c19f7a0) ([@kelly-thai](https://github.com/kelly-thai)) - Add descriptions to Access points in Data Product editor
+
+- [#4135](https://github.com/finos/legend-studio/pull/4135) [`edd3639`](https://github.com/finos/legend-studio/commit/edd36393b11c8c9434e3b66260f5429638b2d510) ([@gs-gunjan](https://github.com/gs-gunjan)) - studio: adding loader component for oidc redirect
+
 ## 28.18.136
 
 ## 28.18.135

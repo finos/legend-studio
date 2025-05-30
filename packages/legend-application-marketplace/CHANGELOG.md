@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.0.36
+
+### Patch Changes
+
+- [#4118](https://github.com/finos/legend-studio/pull/4118) [`eb16c88`](https://github.com/finos/legend-studio/commit/eb16c885808b782ffb397fc7c95a15e6cf1499b2) ([@travisstebbins](https://github.com/travisstebbins)) - Lakehouse improve subscriptions flow
+
 ## 0.0.35
 
 ### Patch Changes
