@@ -305,7 +305,7 @@ export const DataProductSubscriptionViewer = observer(
           }
         }
       };
-      const userIds: string[] = accessGroupState.subscriptions?.map(
+      const userIds: string[] = accessGroupState.subscriptions.map(
         (subscription) => subscription.createdBy,
       );
       // eslint-disable-next-line no-void
@@ -350,7 +350,7 @@ export const DataProductSubscriptionViewer = observer(
     const createDialogHandleSubmit = async (
       target: V1_DataSubscriptionTarget,
     ): Promise<void> => {
-      flowResult(
+      await flowResult(
         accessGroupState.createSubscription(
           contract.guid,
           target,

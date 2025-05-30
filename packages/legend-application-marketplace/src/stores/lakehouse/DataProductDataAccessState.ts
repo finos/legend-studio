@@ -34,6 +34,7 @@ import {
   guaranteeNonNullable,
   uuid,
   type GeneratorFn,
+  type PlainObject,
 } from '@finos/legend-shared';
 import {
   action,
@@ -197,10 +198,10 @@ export class DataProductGroupAccessState {
       input.contractId = contractId;
       input.target = target;
       const response =
-        yield this.accessState.viewerState.lakeServerClient.createSubscription(
+        (yield this.accessState.viewerState.lakeServerClient.createSubscription(
           serialize(V1_CreateSubscriptionInputModelSchema, input),
           token,
-        );
+        )) as PlainObject<V1_DataSubscriptionResponse>;
       guaranteeNonNullable(
         deserialize(V1_DataSubscriptionResponseModelSchema, response)
           .subscriptions?.[0],

@@ -24,7 +24,7 @@ import type {
   LegendMarketplaceApplicationStore,
   LegendMarketplaceBaseStore,
 } from './LegendMarketplaceBaseStore.js';
-import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
 import { VendorDataProviderType } from '../pages/VendorData/LegendMarketplaceVendorData.js';
 
 export class LegendMarketPlaceVendorDataState {
@@ -86,24 +86,24 @@ export class LegendMarketPlaceVendorDataState {
   async populateProviders(): Promise<void> {
     try {
       this.dataFeedProviders = (
-        (await this.marketplaceServerClient.getVendorsByCategory(
+        await this.marketplaceServerClient.getVendorsByCategory(
           encodeURIComponent('Periodic Datafeed'),
           this.responseLimit,
-        )) as PlainObject<ProviderResult>[]
+        )
       ).map((json) => ProviderResult.serialization.fromJson(json));
 
       this.terminalProviders = (
-        (await this.marketplaceServerClient.getVendorsByCategory(
+        await this.marketplaceServerClient.getVendorsByCategory(
           encodeURIComponent('Desktop'),
           this.responseLimit,
-        )) as PlainObject<ProviderResult>[]
+        )
       ).map((json) => ProviderResult.serialization.fromJson(json));
 
       this.addOnProviders = (
-        (await this.marketplaceServerClient.getVendorsByCategory(
+        await this.marketplaceServerClient.getVendorsByCategory(
           encodeURIComponent('Add-on'),
           this.responseLimit,
-        )) as PlainObject<ProviderResult>[]
+        )
       ).map((json) => ProviderResult.serialization.fromJson(json));
     } catch (error) {
       this.applicationStore.notificationService.notifyError(

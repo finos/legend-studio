@@ -445,10 +445,10 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       const ingestEnvironments: V1_IngestEnvironment[] = await Promise.all(
         this.lakehouseIngestEnvironmentSummaries.map(async (discoveryEnv) => {
           const env =
-            (await this.lakehouseIngestServerClient.getIngestEnvironment(
+            await this.lakehouseIngestServerClient.getIngestEnvironment(
               discoveryEnv.ingestServerUrl,
               token,
-            )) as PlainObject<V1_IngestEnvironment>;
+            );
           return V1_deserializeIngestEnvironment(env);
         }),
       );
