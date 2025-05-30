@@ -577,7 +577,10 @@ export const EntitlementsDataContractViewer = observer(
                       size="small"
                       variant="outlined"
                       startIcon={<RefreshIcon />}
-                      onClick={refresh}
+                      onClick={() => {
+                        // eslint-disable-next-line no-void
+                        void refresh();
+                      }}
                     >
                       Refresh
                     </Button>
