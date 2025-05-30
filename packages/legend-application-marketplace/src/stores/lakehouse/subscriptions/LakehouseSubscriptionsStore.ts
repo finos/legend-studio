@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import type { LakehouseContractServerClient } from '../../LakehouseContractServerClient.js';
 import type { LegendMarketplaceApplicationStore } from '../../LegendMarketplaceBaseStore.js';
 import {
   type GeneratorFn,
@@ -33,6 +32,7 @@ import {
   V1_DataSubscriptionResponseModelSchema,
 } from '@finos/legend-graph';
 import { makeObservable, flow, action, observable } from 'mobx';
+import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
 
 export class LakehouseSubscriptionsStore {
   readonly applicationStore: LegendMarketplaceApplicationStore;

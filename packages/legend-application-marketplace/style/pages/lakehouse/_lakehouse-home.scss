@@ -17,11 +17,26 @@
 @use 'mixins' as *;
 
 .marketplace-lakehouse-home {
-  &__container {
-    @include flexVCenter;
+  &__search-container {
+    @include flexCenter;
 
     flex-direction: column;
-    padding: 2rem;
+    min-height: 30rem;
+    max-width: 100%;
+    width: 100%;
+    gap: 3rem;
+    background: var(--color-blue-300);
+    background: linear-gradient(
+      90deg,
+      var(--color-blue-500) 0%,
+      var(--color-blue-300) 50%,
+      var(--color-blue-500) 100%
+    );
+
+    &__title {
+      color: var(--color-white);
+      font-size: 4rem;
+    }
   }
 
   &__search-bar {
@@ -37,18 +52,69 @@
     }
   }
 
+  &__results-container {
+    display: flex;
+    padding: 2rem;
+    gap: 2rem;
+  }
+
+  &__sort-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    font-size: 1.8rem;
+    min-width: 20rem;
+
+    &__filter {
+      .MuiSvgIcon-root {
+        font-size: 2rem;
+      }
+
+      .MuiTypography-root {
+        font-size: 1.2rem;
+      }
+    }
+  }
+
   &__data-product-cards {
     width: 100%;
+    justify-content: start;
   }
 }
 
 .marketplace-lakehouse-data-product-card {
   .legend-marketplace-card__content {
-    flex-direction: column;
+    display: unset;
     width: 100%;
-    justify-content: start;
-    align-items: start;
+    height: 100%;
+  }
+
+  &__container {
+    @include flexVCenter;
+
+    height: 100%;
     overflow: auto;
+    gap: 2rem;
+  }
+
+  &__icon {
+    @include flexCenter;
+
+    width: 6rem;
+
+    svg {
+      font-size: 5rem;
+      color: var(--color-blue-300);
+    }
+  }
+
+  &__content {
+    @include flexVCenter;
+
+    flex-direction: column;
+    height: 100%;
+    flex: 1;
+    gap: 1rem;
   }
 
   &__name {
@@ -56,28 +122,40 @@
 
     width: 100%;
     justify-content: space-between;
-    font-size: 2rem;
+    font-size: 2.4rem;
     font-weight: 500;
-    margin-bottom: 1rem;
     color: var(--color-blue-100);
+    overflow-wrap: anywhere;
   }
 
   &__version {
+    align-self: end;
     font-size: 1rem;
+    text-transform: none;
 
     &--snapshot {
       background: var(--tw-color-blue-100);
       color: var(--tw-color-blue-600);
+
+      &:hover {
+        background: var(--tw-color-blue-200);
+      }
     }
 
     &--release {
       background: var(--tw-color-green-100);
       color: var(--tw-color-green-600);
+
+      &:hover {
+        background: var(--tw-color-green-200);
+      }
     }
   }
 
   &__description {
     font-size: 1.6rem;
+    flex: 1;
+    width: 100%;
   }
 
   &__more-info-btn {

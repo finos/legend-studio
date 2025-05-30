@@ -182,9 +182,19 @@ export class LakehouseContractServerClient extends AbstractServerClient {
   ): Promise<PlainObject<V1_DataSubscriptionResponse>[]> =>
     this.get(this._subscriptions(), {}, this._token(token));
 
+  getSubscriptionsForContract = (
+    contractId: string,
+    token: string | undefined,
+  ): Promise<PlainObject<V1_DataSubscriptionResponse>[]> =>
+    this.get(
+      `${this._subscriptions()}/query/contract/${contractId}`,
+      {},
+      this._token(token),
+    );
+
   createSubscription = (
     input: PlainObject<V1_CreateSubscriptionInput>,
     token: string | undefined,
   ): Promise<PlainObject<V1_DataSubscriptionResponse>> =>
-    this.post(`${this._subscriptions()}`, input, {}, this._token(token));
+    this.post(this._subscriptions(), input, {}, this._token(token));
 }

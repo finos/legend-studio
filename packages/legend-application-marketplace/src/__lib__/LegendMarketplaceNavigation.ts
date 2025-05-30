@@ -26,6 +26,7 @@ export enum LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN {
   DATA_PRODUCT_PATH = 'path',
   TASK_ID = 'taskId',
   CONTRACT_ID = 'contractId',
+  ingestEnvironmentUrn = 'ingestEnvironmentUrn',
 }
 
 export enum LEGEND_MARKETPLACE_SEARCH_RESULTS_QUERY_PARAM_TOKEN {
@@ -35,6 +36,11 @@ export enum LEGEND_MARKETPLACE_SEARCH_RESULTS_QUERY_PARAM_TOKEN {
 
 export type LakehouseDataProductPathParams = {
   [LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.GAV]: string;
+  [LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH]: string;
+};
+
+export type LakehouseSandboxDataProductPathParams = {
+  [LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.ingestEnvironmentUrn]: string;
   [LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH]: string;
 };
 
@@ -52,6 +58,7 @@ export const LEGEND_MARKETPLACE_ROUTE_PATTERN = Object.freeze({
   LAKEHOUSE_ENTITLEMENTS: '/lakehouse/entitlements',
   LAKEHOUSE_ENTITLEMENTS_CONTRACTS: `/lakehouse/entitlements/contracts/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.CONTRACT_ID}`,
   LAKEHOUSE_PRODUCT: `/lakehouse/dataProduct/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.GAV}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH}`,
+  LAKEHOUSE_SANDBOX_PRODUCT: `/lakehouse/dataProduct/sandbox/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.ingestEnvironmentUrn}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH}`,
   SUBSCRIPTIONS: '/subscriptions',
   ORDERS: '/orders',
   LAKEHOUSE_SUBSCRIPTIONS: '/lakehouse/subscriptions',
@@ -62,6 +69,7 @@ export const LAKEHOUSE_ROUTES = Object.freeze([
   LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS,
   LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS_CONTRACTS,
   LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_PRODUCT,
+  LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SANDBOX_PRODUCT,
   LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SUBSCRIPTIONS,
 ]);
 
@@ -70,12 +78,21 @@ export const isLakehouseRoute = (pathName: string): boolean =>
     (route) => matchPath(route as string, pathName) !== null,
   );
 
-export const generateLakehouseDataProduct = (
+export const generateLakehouseDataProductPath = (
   gav: string,
   path: string,
 ): string =>
   generatePath(LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_PRODUCT, {
     gav,
+    path,
+  });
+
+export const generateLakehouseSandboxDataProductPath = (
+  ingestEnvironmentUrn: string,
+  path: string,
+): string =>
+  generatePath(LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SANDBOX_PRODUCT, {
+    ingestEnvironmentUrn,
     path,
   });
 

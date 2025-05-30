@@ -28,7 +28,12 @@ import {
 } from '@finos/legend-application';
 import { flow, makeObservable } from 'mobx';
 import { DepotServerClient } from '@finos/legend-server-depot';
-import { MarketplaceServerClient } from '@finos/legend-server-marketplace';
+import {
+  LakehouseContractServerClient,
+  LakehouseIngestServerClient,
+  LakehousePlatformServerClient,
+  MarketplaceServerClient,
+} from '@finos/legend-server-marketplace';
 import {
   getCurrentUserIDFromEngineServer,
   type V1_EngineServerClient,
@@ -37,7 +42,6 @@ import {
 import type { LegendMarketplaceApplicationConfig } from '../application/LegendMarketplaceApplicationConfig.js';
 import type { LegendMarketplacePluginManager } from '../application/LegendMarketplacePluginManager.js';
 import { LegendMarketplaceEventHelper } from '../__lib__/LegendMarketplaceEventHelper.js';
-import { LakehouseContractServerClient } from './LakehouseContractServerClient.js';
 import { LegendMarketPlaceVendorDataState } from './LegendMarketPlaceVendorDataState.js';
 
 export type LegendMarketplaceApplicationStore = ApplicationStore<
@@ -50,6 +54,10 @@ export class LegendMarketplaceBaseStore {
   readonly marketplaceServerClient: MarketplaceServerClient;
   readonly depotServerClient: DepotServerClient;
   readonly lakehouseServerClient: LakehouseContractServerClient | undefined;
+  readonly lakehousePlatformServerClient:
+    | LakehousePlatformServerClient
+    | undefined;
+  readonly lakehouseIngestServerClient: LakehouseIngestServerClient;
   readonly pluginManager: LegendMarketplacePluginManager;
   readonly engineServerClient: V1_EngineServerClient;
   readonly remoteEngine: V1_RemoteEngine;
@@ -85,7 +93,7 @@ export class LegendMarketplaceBaseStore {
     );
 
     if (this.applicationStore.config.lakehouseServerUrl) {
-      // lakehouse server
+      // lakehouse contract
       this.lakehouseServerClient = new LakehouseContractServerClient({
         baseUrl: this.applicationStore.config.lakehouseServerUrl,
       });
@@ -93,6 +101,22 @@ export class LegendMarketplaceBaseStore {
         this.applicationStore.tracerService,
       );
     }
+
+    if (this.applicationStore.config.lakehousePlatformUrl) {
+      // lakehouse platform
+      this.lakehousePlatformServerClient = new LakehousePlatformServerClient({
+        baseUrl: this.applicationStore.config.lakehousePlatformUrl,
+      });
+      this.lakehousePlatformServerClient.setTracerService(
+        this.applicationStore.tracerService,
+      );
+    }
+
+    // lakehouse ingest
+    this.lakehouseIngestServerClient = new LakehouseIngestServerClient();
+    this.lakehouseIngestServerClient.setTracerService(
+      this.applicationStore.tracerService,
+    );
 
     this.remoteEngine = new V1_RemoteEngine(
       {

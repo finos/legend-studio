@@ -14,11 +14,30 @@
  * limitations under the License.
  */
 
-export * from './models/DataProduct.js';
-export * from './models/Provider.js';
-export * from './models/Subscription.js';
+import {
+  UserIcon,
+  HackerIcon,
+  DollarIcon,
+  ShoppingCartIcon,
+  ServerIcon,
+  FileUnknownIcon,
+} from './Icon.js';
 
-export { LakehouseContractServerClient } from './LakehouseContractServerClient.js';
-export { LakehouseIngestServerClient } from './LakehouseIngestServerClient.js';
-export { LakehousePlatformServerClient } from './LakehousePlatformServerClient.js';
-export { MarketplaceServerClient } from './MarketplaceServerClient.js';
+export const deserializeIcon = (
+  iconId: string | undefined,
+): React.ReactNode | undefined => {
+  switch (iconId) {
+    case 'FaUser':
+      return <UserIcon />;
+    case 'FaUserSecret':
+      return <HackerIcon />;
+    case 'FaDollarSign':
+      return <DollarIcon />;
+    case 'FaShoppingCart':
+      return <ShoppingCartIcon />;
+    case 'FaServer':
+      return <ServerIcon />;
+    default:
+      return <FileUnknownIcon />;
+  }
+};

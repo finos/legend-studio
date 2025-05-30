@@ -20,6 +20,7 @@ import {
   type V1_TaskMetadata,
   V1_deserializeTaskResponse,
 } from '@finos/legend-graph';
+import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
 import {
   ActionState,
   assertErrorThrown,
@@ -27,7 +28,6 @@ import {
   type PlainObject,
 } from '@finos/legend-shared';
 import { action, flow, makeObservable, observable } from 'mobx';
-import type { LakehouseContractServerClient } from '../../LakehouseContractServerClient.js';
 
 export class EntitlementsDataContractViewerState {
   readonly value: V1_DataContract;

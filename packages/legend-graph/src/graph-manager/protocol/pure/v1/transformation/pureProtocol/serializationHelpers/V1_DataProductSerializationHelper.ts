@@ -16,6 +16,7 @@
 
 import {
   createModelSchema,
+  custom,
   deserialize,
   optional,
   primitive,
@@ -104,4 +105,25 @@ export const V1_dataProductModelSchema = createModelSchema(V1_DataProduct, {
   title: optional(primitive()),
   description: optional(primitive()),
   accessPointGroups: customListWithSchema(V1_AccessPointGroupModelSchema),
+  // TODO: replace custom deserializer with optional(primitive())
+  icon: custom(
+    () => undefined,
+    () => {
+      const randomIndex = Math.floor(Math.random() * 6);
+      switch (randomIndex) {
+        case 0:
+          return 'FaUser';
+        case 1:
+          return 'FaUserSecret';
+        case 2:
+          return 'FaDollarSign';
+        case 3:
+          return 'FaShoppingCart';
+        case 4:
+          return 'FaServer';
+        default:
+          return undefined;
+      }
+    },
+  ),
 });

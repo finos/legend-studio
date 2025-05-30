@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import type { LakehouseContractServerClient } from '../../LakehouseContractServerClient.js';
 import type { LegendMarketplaceApplicationStore } from '../../LegendMarketplaceBaseStore.js';
 import {
   ActionState,
@@ -35,6 +34,7 @@ import { EntitlementsDataContractViewerState } from './EntitlementsDataContractV
 import { EntitlementsDashboardState } from './EntitlementsDashboardState.js';
 import { EntitlementsTaskViewerState } from './EntitlementsTaskViewerState.js';
 import type { LakehouseViewerState } from './LakehouseViewerState.js';
+import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
 
 export const TEST_USER = undefined;
 export const TEST_USER2 = undefined;
@@ -150,7 +150,7 @@ export class LakehouseEntitlementsStore {
       const dataContract = deserialize(
         V1_DataContractsRecordModelSchema,
         dataContracts,
-      ).dataContracts[0]?.dataContract;
+      ).dataContracts?.[0]?.dataContract;
       const contract = guaranteeNonNullable(
         dataContract,
         'Data Contract not found',

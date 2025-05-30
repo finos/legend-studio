@@ -18,10 +18,7 @@ import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { MarketplaceLakehouseStore } from '../../stores/lakehouse/MarketplaceLakehouseStore.js';
-import {
-  useLegendMarketplaceApplicationStore,
-  useLegendMarketplaceBaseStore,
-} from '../../application/LegendMarketplaceFrameworkProvider.js';
+import { useLegendMarketplaceBaseStore } from '../../application/LegendMarketplaceFrameworkProvider.js';
 
 const MarketplaceLakehouseStoreContext = createContext<
   MarketplaceLakehouseStore | undefined
@@ -30,17 +27,26 @@ const MarketplaceLakehouseStoreContext = createContext<
 export const MarketplaceLakehouseStoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
-  const applicationStore = useLegendMarketplaceApplicationStore();
   const baseStore = useLegendMarketplaceBaseStore();
   const lakehouseServerClient = guaranteeNonNullable(
     baseStore.lakehouseServerClient,
     'lakehouse server client required to render',
   );
+  const lakehousePlatformServerClient = guaranteeNonNullable(
+    baseStore.lakehousePlatformServerClient,
+    'lakehouse platform server client required to render',
+  );
+  const lakehosueIngestServerClient = guaranteeNonNullable(
+    baseStore.lakehouseIngestServerClient,
+    'lakehouse ingest server client required to render',
+  );
   const store = useLocalObservable(
     () =>
       new MarketplaceLakehouseStore(
-        applicationStore,
+        baseStore,
         lakehouseServerClient,
+        lakehousePlatformServerClient,
+        lakehosueIngestServerClient,
         baseStore.depotServerClient,
       ),
   );

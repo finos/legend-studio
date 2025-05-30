@@ -99,6 +99,9 @@ export const DataContractCreator = observer(
       }
     };
 
+    const dataProductTitle =
+      viewerState.product.title ?? viewerState.product.path.split('::').pop();
+
     return (
       <Dialog open={true} onClose={onClose} fullWidth={true} maxWidth="md">
         <DialogTitle>Data Contract Request</DialogTitle>
@@ -117,7 +120,7 @@ export const DataContractCreator = observer(
                 </span>{' '}
                 Access Point Group in{' '}
                 <span className="marketplace-lakehouse-text__emphasis">
-                  {viewerState.product.title}
+                  {dataProductTitle}
                 </span>{' '}
                 Data Product
               </div>

@@ -3502,6 +3502,7 @@ __metadata:
   resolution: "@finos/legend-server-marketplace@workspace:packages/legend-server-marketplace"
   dependencies:
     "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-graph": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@jest/globals": "npm:29.7.0"
     cross-env: "npm:7.0.3"

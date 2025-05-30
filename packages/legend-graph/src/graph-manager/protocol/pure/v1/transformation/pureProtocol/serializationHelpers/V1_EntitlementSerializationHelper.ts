@@ -36,12 +36,13 @@ import {
   V1_TaskMetadata,
   V1_TaskResponse,
   V1_TaskStatusChangeResponse,
-} from '../../../entitlements/V1_ConsumerEntitlements.js';
+} from '../../../lakehouse/entitlements/V1_ConsumerEntitlements.js';
 import {
   createModelSchema,
   custom,
   deserialize,
   list,
+  optional,
   primitive,
   serialize,
   SKIP,
@@ -52,7 +53,7 @@ import {
   V1_UnknownOrganizationalScopeType,
   V1_User,
   type V1_OrganizationalScope,
-} from '../../../entitlements/V1_CoreEntitlements.js';
+} from '../../../lakehouse/entitlements/V1_CoreEntitlements.js';
 
 enum V1_OrganizationalScopeType {
   AdHocTeam = 'AdHocTeam',
@@ -163,7 +164,7 @@ export const V1_schemaSetModelSchema = createModelSchema(
 export const V1_DataContractsRecordModelSchema = createModelSchema(
   V1_DataContractsRecord,
   {
-    dataContracts: customListWithSchema(V1_schemaSetModelSchema),
+    dataContracts: optional(customListWithSchema(V1_schemaSetModelSchema)),
   },
 );
 
@@ -221,7 +222,7 @@ export const V1_DataContractsRecordModelSchemaToContracts = (
   json: PlainObject<V1_DataContractsRecord>,
 ): V1_DataContract[] => {
   const contracts = deserialize(V1_DataContractsRecordModelSchema, json);
-  return contracts.dataContracts.map((e) => e.dataContract);
+  return contracts.dataContracts?.map((e) => e.dataContract) ?? [];
 };
 
 export const V1_deserializeTaskResponse = (

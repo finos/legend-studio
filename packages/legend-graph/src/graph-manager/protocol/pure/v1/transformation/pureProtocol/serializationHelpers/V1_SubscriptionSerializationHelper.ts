@@ -34,7 +34,7 @@ import {
   V1_DataSubscriptionResponse,
   V1_DataSubscriptionTargetType,
   V1_SnowflakeTarget,
-} from '../../../subscriptions/V1_ConsumerSubscriptions.js';
+} from '../../../lakehouse/subscriptions/V1_ConsumerSubscriptions.js';
 
 export const V1_SnowflakeTargetModelSchema = createModelSchema(
   V1_SnowflakeTarget,

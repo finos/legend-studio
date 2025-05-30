@@ -26,6 +26,7 @@ import {
   TbSql,
   TbDatabaseImport,
   TbBrandSnowflake,
+  TbFileUnknown,
 } from 'react-icons/tb';
 
 export const ArrowsJoinIcon = TbArrowsJoin2;
@@ -38,6 +39,7 @@ export const LastModifiedIcon = TbClockEdit;
 export const SQLIcon = TbSql;
 export const Snowflake_BrandIcon = TbBrandSnowflake;
 export const DatabaseImportIcon = TbDatabaseImport;
+export const FileUnknownIcon = TbFileUnknown;
 
 //======================================================= MD =======================================================
 import {

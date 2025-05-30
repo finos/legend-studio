@@ -56,9 +56,9 @@ import {
   type GeneratorFn,
   type PlainObject,
 } from '@finos/legend-shared';
-import type { LakehouseContractServerClient } from '../LakehouseContractServerClient.js';
 import { serialize } from 'serializr';
 import { dataContractContainsDataProduct } from './LakehouseUtils.js';
+import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
 
 const buildAdhocUser = (user: string): V1_AdhocTeam => {
   const _user = new V1_User();
