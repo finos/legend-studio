@@ -413,6 +413,30 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     }
   }
 
+  async fetchLakehouseEnvironmentSummary(
+    ingestEnvironmentUrn: string,
+    token: string | undefined,
+  ): Promise<V1_LakehouseDiscoveryEnvironmentResponse | undefined> {
+    try {
+      const rawResponse =
+        await this.lakehousePlatformServerClient.getIngestEnvironmentSummary(
+          ingestEnvironmentUrn,
+          token,
+        );
+      const response =
+        V1_LakehouseDiscoveryEnvironmentResponse.serialization.fromJson(
+          rawResponse,
+        );
+      return response;
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(
+        `Unable to load lakehouse environments: ${error.message}`,
+      );
+      return undefined;
+    }
+  }
+
   async fetchLakehouseEnvironmentDetails(
     token: string | undefined,
   ): Promise<void> {
@@ -436,33 +460,6 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         `Unable to load lakehouse environments: ${error.message}`,
       );
       this.loadingLakehouseEnvironmentSummariesState.fail();
-    }
-  }
-
-  async fetchLakehouseEnvironmentSummary(
-    ingestEnvironmentUrn: string,
-    token: string | undefined,
-  ): Promise<V1_LakehouseDiscoveryEnvironmentResponse | undefined> {
-    try {
-      this.loadingLakehouseEnvironmentSummariesState.inProgress();
-      const rawResponse =
-        await this.lakehousePlatformServerClient.getIngestEnvironmentSummary(
-          ingestEnvironmentUrn,
-          token,
-        );
-      const response =
-        V1_LakehouseDiscoveryEnvironmentResponse.serialization.fromJson(
-          rawResponse,
-        );
-      this.loadingLakehouseEnvironmentSummariesState.complete();
-      return response;
-    } catch (error) {
-      assertErrorThrown(error);
-      this.applicationStore.notificationService.notifyError(
-        `Unable to load lakehouse environments: ${error.message}`,
-      );
-      this.loadingLakehouseEnvironmentSummariesState.fail();
-      return undefined;
     }
   }
 
@@ -634,6 +631,12 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       this.setDataProductViewerState(stateViewer);
       stateViewer.fetchContracts(auth.user?.access_token);
       this.loadingProductsState.complete();
+      if (!this.loadingLakehouseEnvironmentSummariesState.hasCompleted) {
+        yield this.fetchLakehouseEnvironmentSummaries(auth.user?.access_token);
+      }
+      if (!this.loadingLakehouseEnvironmentDetailsState.hasCompleted) {
+        yield this.fetchLakehouseEnvironmentDetails(auth.user?.access_token);
+      }
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(
@@ -743,6 +746,12 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       this.setDataProductViewerState(stateViewer);
       stateViewer.fetchContracts(auth.user?.access_token);
       this.loadingProductsState.complete();
+      if (!this.loadingLakehouseEnvironmentSummariesState.hasCompleted) {
+        yield this.fetchLakehouseEnvironmentSummaries(auth.user?.access_token);
+      }
+      if (!this.loadingLakehouseEnvironmentDetailsState.hasCompleted) {
+        yield this.fetchLakehouseEnvironmentDetails(auth.user?.access_token);
+      }
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(
