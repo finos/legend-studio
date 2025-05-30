@@ -42,14 +42,16 @@ import {
   ModalBody,
   ModalFooter,
   ModalFooterButton,
+  PencilEditIcon,
 } from '@finos/legend-art';
-import { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { filterByType } from '@finos/legend-shared';
 import { InlineLambdaEditor } from '@finos/legend-query-builder';
-import { flowResult } from 'mobx';
+import { action, flowResult } from 'mobx';
 import { useAuth } from 'react-oidc-context';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
+import type { LakehouseAccessPoint } from '@finos/legend-graph';
 
 const NewAccessPointAccessPOint = observer(
   (props: { dataProductEditorState: DataProductEditorState }) => {
@@ -163,6 +165,32 @@ const NewAccessPointAccessPOint = observer(
   },
 );
 
+interface DescriptionTextAreaProps {
+  accessPoint: LakehouseAccessPoint;
+  handleMouseOver: (event: React.MouseEvent<HTMLDivElement>) => void;
+  handleMouseOut: (event: React.MouseEvent<HTMLDivElement>) => void;
+}
+
+const DescriptionTextArea: React.FC<DescriptionTextAreaProps> = ({
+  accessPoint,
+  handleMouseOver,
+  handleMouseOut,
+}) => {
+  return (
+    <div onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
+      {accessPoint.description}
+    </div>
+  );
+};
+
+const hoverIcon = () => {
+  return (
+    <div>
+      <PencilEditIcon />
+    </div>
+  );
+};
+
 export const LakehouseDataProductAcccessPointEditor = observer(
   (props: {
     accessPointState: LakehouseAccessPointState;
@@ -175,6 +203,28 @@ export const LakehouseDataProductAcccessPointEditor = observer(
     const propertyHasParserError = productEditorState.accessPointStates
       .filter(filterByType(LakehouseAccessPointState))
       .find((pm) => pm.lambdaState.parserError);
+    const [editingDescription, setEditingDescription] = useState(false);
+    const [isHovering, setIsHovering] = useState(false);
+
+    const handleEdit = () => setEditingDescription(true);
+    const handleBlur = () => {
+      setEditingDescription(false);
+      setIsHovering(false);
+    };
+
+    const handleMouseOver: React.MouseEventHandler<HTMLDivElement> = () => {
+      setIsHovering(true);
+    };
+    const handleMouseOut: React.MouseEventHandler<HTMLDivElement> = () => {
+      setIsHovering(false);
+    };
+
+    const updateAccessPointDescription: React.ChangeEventHandler<
+      HTMLTextAreaElement
+    > = (event) => {
+      action((accessPoint.description = event.target.value));
+    };
+
     return (
       <div
         className={clsx('access-point-editor', {
@@ -187,6 +237,34 @@ export const LakehouseDataProductAcccessPointEditor = observer(
               {accessPoint.id}
             </div>
           </div>
+          {editingDescription ? (
+            <textarea
+              className="panel__content__form__section__input"
+              spellCheck={false}
+              value={accessPoint.description ?? ''}
+              onChange={updateAccessPointDescription}
+              placeholder="Access Point description"
+              onBlur={handleBlur}
+              style={{
+                overflow: 'hidden',
+                resize: 'none',
+                padding: '0.25rem',
+              }}
+            />
+          ) : (
+            <div
+              onClick={handleEdit}
+              title="Click to edit description"
+              className="access-point-editor__description-container"
+            >
+              <DescriptionTextArea
+                accessPoint={accessPoint}
+                handleMouseOver={handleMouseOver}
+                handleMouseOut={handleMouseOut}
+              />
+              {isHovering && hoverIcon()}
+            </div>
+          )}
           <div className="access-point-editor__info">
             <div
               className={clsx('access-point-editor__type')}
