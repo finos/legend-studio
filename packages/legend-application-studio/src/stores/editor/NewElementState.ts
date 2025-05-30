@@ -496,7 +496,7 @@ export class NewLakehouseDataProductDriver extends NewElementDriver<DataProduct>
   }
 
   override get isValid(): boolean {
-    return Boolean(this.title);
+    return true;
   }
 
   setTitle(val: string) {

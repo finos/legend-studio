@@ -43,6 +43,7 @@ import {
   ModalFooter,
   ModalFooterButton,
   PencilEditIcon,
+  PanelFormTextField,
 } from '@finos/legend-art';
 import React, { useRef, useState, useEffect } from 'react';
 import { filterByType } from '@finos/legend-shared';
@@ -430,6 +431,19 @@ export const DataProductEditor = observer(() => {
     }
   };
 
+  const updateDataProductTitle = action((val: string | undefined): void => {
+    if (val === undefined) {
+      return;
+    }
+    product.name = val;
+  });
+
+  const updateDataProductDescription = action(
+    (val: string | undefined): void => {
+      product.description = val;
+    },
+  );
+
   useEffect(() => {
     flowResult(dataProductEditorState.convertAccessPointsFuncObjects()).catch(
       dataProductEditorState.editorStore.applicationStore.alertUnhandledError,
@@ -459,7 +473,6 @@ export const DataProductEditor = observer(() => {
               </div>
             )}
             <div className="panel__header__title__label">data product</div>
-            <div className="panel__header__title__content">{product.name}</div>
           </div>
           <PanelHeaderActions>
             <div className="btn__dropdown-combo btn__dropdown-combo--primary">
@@ -476,10 +489,26 @@ export const DataProductEditor = observer(() => {
             </div>
           </PanelHeaderActions>
         </div>
+        <div className="panel" style={{ padding: '1rem' }}>
+          <PanelFormTextField
+            name="Title"
+            value={product.name}
+            prompt="Provide a title for this Lakehouse Data Product."
+            update={updateDataProductTitle}
+            placeholder="Enter title"
+          />
+          <PanelFormTextField
+            name="Description"
+            value={product.description}
+            prompt="Provide a description for this Lakehouse Data Product."
+            update={updateDataProductDescription}
+            placeholder="Enter description"
+          />
+        </div>
         <div className="panel">
           <PanelHeader>
             <div className="panel__header__title">
-              <div className="panel__header__title__content">ACCESS POINTS</div>
+              <div className="panel__header__title__label">access points</div>
             </div>
             <PanelHeaderActions>
               <PanelHeaderActionItem
@@ -492,22 +521,38 @@ export const DataProductEditor = observer(() => {
               </PanelHeaderActionItem>
             </PanelHeaderActions>
           </PanelHeader>
-          <PanelContent>
-            {accessPointStates
-              .filter(filterByType(LakehouseAccessPointState))
-              .map((apState) => (
-                <LakehouseDataProductAcccessPointEditor
-                  key={apState.accessPoint.id}
-                  isReadOnly={isReadOnly}
-                  accessPointState={apState}
+          <div style={{ overflow: 'auto' }}>
+            <PanelContent>
+              {dataProductEditorState.accessPointGroupStates.map(
+                (groupState) => (
+                  <div
+                    key={groupState.value.id}
+                    className="access-point-editor__group-container"
+                  >
+                    <div className="access-point-editor__group-container__title">
+                      <div className="panel__header__title__content">
+                        {groupState.value.id}
+                      </div>
+                    </div>
+                    {groupState.accessPointStates
+                      .filter(filterByType(LakehouseAccessPointState))
+                      .map((apState) => (
+                        <LakehouseDataProductAcccessPointEditor
+                          key={apState.accessPoint.id}
+                          isReadOnly={isReadOnly}
+                          accessPointState={apState}
+                        />
+                      ))}
+                  </div>
+                ),
+              )}
+              {!accessPointStates.length && (
+                <DataProductEditorSplashScreen
+                  dataProductEditorState={dataProductEditorState}
                 />
-              ))}
-            {!accessPointStates.length && (
-              <DataProductEditorSplashScreen
-                dataProductEditorState={dataProductEditorState}
-              />
-            )}
-          </PanelContent>
+              )}
+            </PanelContent>
+          </div>
           {dataProductEditorState.accessPointModal && (
             <NewAccessPointAccessPOint
               dataProductEditorState={dataProductEditorState}
