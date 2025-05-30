@@ -259,11 +259,12 @@ const LakehouseSubscriptionsCreateDialog = observer(
                   {snowflakeAccount}
                 </MenuItem>
               ))}
-              {otherSnowflakeAccounts.length > 0 && (
-                <ListSubheader className="marketplace-lakehouse-subscriptions__subscription-creator__select__subheader">
-                  Other Accounts
-                </ListSubheader>
-              )}
+              {suggestedSnowflakeAccounts.length > 0 &&
+                otherSnowflakeAccounts.length > 0 && (
+                  <ListSubheader className="marketplace-lakehouse-subscriptions__subscription-creator__select__subheader">
+                    Other Accounts
+                  </ListSubheader>
+                )}
               {otherSnowflakeAccounts.map((snowflakeAccount) => (
                 <MenuItem
                   key={snowflakeAccount}
