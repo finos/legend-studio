@@ -19,12 +19,12 @@ import {
   type LightDataProduct,
   type MarketplaceServerClient,
 } from '@finos/legend-server-marketplace';
-import { flowResult, makeObservable, observable } from 'mobx';
+import { flow, makeObservable, observable } from 'mobx';
 import type {
   LegendMarketplaceApplicationStore,
   LegendMarketplaceBaseStore,
 } from './LegendMarketplaceBaseStore.js';
-import type { PlainObject } from '@finos/legend-shared';
+import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import { VendorDataProviderType } from '../pages/VendorData/LegendMarketplaceVendorData.js';
 
 export class LegendMarketPlaceVendorDataState {
@@ -53,56 +53,54 @@ export class LegendMarketPlaceVendorDataState {
       providerDisplayState: observable,
       setProviderDisplayState: observable,
       terminalProvidersAsDataProducts: observable,
+      init: flow,
     });
 
     this.applicationStore = applicationStore;
     this.store = store;
     this.marketplaceServerClient = store.marketplaceServerClient;
-
-    this.init();
   }
 
-  init(): void {
-    flowResult(this.populateProviders())
-      .then(() => {
-        this.terminalProvidersAsDataProducts = this.terminalProviders.map(
-          (provider) =>
-            ({
-              description: provider.description,
-              provider: provider.providerName,
-              type: 'vendor',
-            }) as LightDataProduct,
-        );
-      })
-      .catch((error) => {
-        this.applicationStore.notificationService.notifyError(
-          `Failed to initialize vendors: ${error}`,
-        );
-      });
+  *init(): GeneratorFn<void> {
+    try {
+      yield this.populateProviders();
+      this.terminalProvidersAsDataProducts = this.terminalProviders.map(
+        (provider) =>
+          ({
+            description: provider.description,
+            provider: provider.providerName,
+            type: 'vendor',
+          }) as LightDataProduct,
+      );
+    } catch (error) {
+      this.applicationStore.notificationService.notifyError(
+        `Failed to initialize vendors: ${error}`,
+      );
+    }
   }
 
   setProviderDisplayState(value: VendorDataProviderType): void {
     this.providerDisplayState = value;
   }
 
-  *populateProviders() {
+  async populateProviders(): Promise<void> {
     try {
       this.dataFeedProviders = (
-        (yield this.marketplaceServerClient.getVendorsByCategory(
+        (await this.marketplaceServerClient.getVendorsByCategory(
           encodeURIComponent('Periodic Datafeed'),
           this.responseLimit,
         )) as PlainObject<ProviderResult>[]
       ).map((json) => ProviderResult.serialization.fromJson(json));
 
       this.terminalProviders = (
-        (yield this.marketplaceServerClient.getVendorsByCategory(
+        (await this.marketplaceServerClient.getVendorsByCategory(
           encodeURIComponent('Desktop'),
           this.responseLimit,
         )) as PlainObject<ProviderResult>[]
       ).map((json) => ProviderResult.serialization.fromJson(json));
 
       this.addOnProviders = (
-        (yield this.marketplaceServerClient.getVendorsByCategory(
+        (await this.marketplaceServerClient.getVendorsByCategory(
           encodeURIComponent('Add-on'),
           this.responseLimit,
         )) as PlainObject<ProviderResult>[]
