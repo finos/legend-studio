@@ -34,6 +34,7 @@ import type { LegendMarketPlaceVendorDataState } from '../../stores/LegendMarket
 import { useLegendMarketplaceBaseStore } from '../../application/LegendMarketplaceFrameworkProvider.js';
 import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
 import { InfoCircleIcon } from '@finos/legend-art';
+import { useEffect } from 'react';
 
 export enum VendorDataProviderType {
   ALL = 'All',
@@ -244,6 +245,10 @@ export const LegendMarketplaceVendorData = observer(() => {
   ) => {
     // Handle search logic here
   };
+
+  useEffect(() => {
+    marketPlaceVendorDataState.init();
+  }, [marketPlaceVendorDataState]);
 
   return (
     <LegendMarketplacePage className="legend-marketplace-vendor-data">

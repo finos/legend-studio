@@ -21,21 +21,21 @@ import {
 } from '@finos/legend-application';
 import {
   type DataProductArtifactGeneration,
+  type GraphData,
+  type GraphManagerState,
+  type V1_AccessPointGroup,
   type V1_DataContract,
   type V1_DataContractsRecord,
+  type V1_DataProduct,
   V1_AccessPointGroupReference,
+  V1_AdhocTeam,
+  V1_AdhocTeamModelSchema,
   V1_AppDirLevel,
   V1_AppDirNode,
   V1_AppDirNodeModelSchema,
-  type GraphData,
-  type GraphManagerState,
-  type V1_DataProduct,
-  type V1_AccessPointGroup,
+  V1_DataContractsRecordModelSchemaToContracts,
   V1_User,
   V1_UserType,
-  V1_AdhocTeam,
-  V1_AdhocTeamModelSchema,
-  V1_DataContractsRecordModelSchemaToContracts,
 } from '@finos/legend-graph';
 import type { VersionedProjectData } from '@finos/legend-server-depot';
 import { action, computed, flow, makeObservable, observable } from 'mobx';
@@ -59,6 +59,7 @@ import {
 import { serialize } from 'serializr';
 import { dataContractContainsDataProduct } from './LakehouseUtils.js';
 import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
+import type { MarketplaceLakehouseStore } from './MarketplaceLakehouseStore.js';
 
 const buildAdhocUser = (user: string): V1_AdhocTeam => {
   const _user = new V1_User();
@@ -71,6 +72,7 @@ const buildAdhocUser = (user: string): V1_AdhocTeam => {
 
 export class DataProductViewerState {
   readonly applicationStore: GenericLegendApplicationStore;
+  readonly lakehouseStore: MarketplaceLakehouseStore;
   readonly graphManagerState: GraphManagerState;
   readonly layoutState: DataProductLayoutState;
 
@@ -96,6 +98,7 @@ export class DataProductViewerState {
 
   constructor(
     applicationStore: GenericLegendApplicationStore,
+    lakehouseStore: MarketplaceLakehouseStore,
     graphManagerState: GraphManagerState,
     lakeServerClient: LakehouseContractServerClient,
     project: VersionedProjectData,
@@ -119,11 +122,12 @@ export class DataProductViewerState {
       dataContract: observable,
       setDataContract: action,
       setAssociatedContracts: action,
-      create: flow,
+      createContract: flow,
       creatingContractState: observable,
     });
 
     this.applicationStore = applicationStore;
+    this.lakehouseStore = lakehouseStore;
     this.graphManagerState = graphManagerState;
 
     this.project = project;
@@ -190,7 +194,7 @@ export class DataProductViewerState {
     }
   }
 
-  *create(
+  *createContract(
     userId: string,
     description: string,
     group: V1_AccessPointGroup,

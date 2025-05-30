@@ -89,7 +89,7 @@ export const DataContractCreator = observer(
     const onCreate = (): void => {
       if (user.id && description) {
         flowResult(
-          viewerState.create(
+          viewerState.createContract(
             user.id,
             description,
             accessPointGroup,

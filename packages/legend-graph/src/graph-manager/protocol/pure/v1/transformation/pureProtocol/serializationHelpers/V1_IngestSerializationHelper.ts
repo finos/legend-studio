@@ -14,12 +14,21 @@
  * limitations under the License.
  */
 
-import type { PlainObject } from '@finos/legend-shared';
+import {
+  usingConstantValueSchema,
+  usingModelSchema,
+  type PlainObject,
+} from '@finos/legend-shared';
 import { V1_IngestDefinition } from '../../../model/packageableElements/ingest/V1_IngestDefinition.js';
 import type { V1_PackageableElement } from '../../../model/packageableElements/V1_PackageableElement.js';
 import type { V1_AppDirNode } from '../../../lakehouse/entitlements/V1_CoreEntitlements.js';
 import { V1_AppDirNodeModelSchema } from './V1_EntitlementSerializationHelper.js';
-import { deserialize } from 'serializr';
+import { createModelSchema, deserialize, primitive } from 'serializr';
+import {
+  type V1_IngestEnvironment,
+  V1_AWSSnowflakeIngestEnvironment,
+  V1_IngestEnvironmentType,
+} from '../../../lakehouse/ingest/V1_LakehouseIngestEnvironment.js';
 
 type IngestDefinitionInterface = {
   appDirDeployment?: PlainObject<V1_AppDirNode> | undefined;
@@ -47,4 +56,34 @@ export const V1_createIngestDef = (
   ingestDef.package = packagePath;
   ingestDef.content = json;
   return ingestDef;
+};
+
+export const V1_AWSSnowflakeIngestEnvironmentModelSchema = createModelSchema(
+  V1_AWSSnowflakeIngestEnvironment,
+  {
+    _type: usingConstantValueSchema(V1_IngestEnvironmentType.AWSSnowflake),
+    version: primitive(),
+    environmentClassification: primitive(),
+    producers: usingModelSchema(V1_AppDirNodeModelSchema),
+    awsRegion: primitive(),
+    awsAccountId: primitive(),
+    ingestStepFunctionsAvtivityArn: primitive(),
+    ingestStateMachineArn: primitive(),
+    ingestSystemAccount: primitive(),
+    snowflakeAccount: primitive(),
+    snowflakeHost: primitive(),
+    s3StagingBucketName: primitive(),
+    storageIntegrationName: primitive(),
+  },
+);
+
+export const V1_deserializeIngestEnvironment = (
+  json: PlainObject<V1_IngestEnvironment>,
+): V1_IngestEnvironment => {
+  switch (json._type) {
+    case V1_IngestEnvironmentType.AWSSnowflake:
+      return deserialize(V1_AWSSnowflakeIngestEnvironmentModelSchema, json);
+    default:
+      throw new Error(`Unknown V1_IngestEnvironment type: ${json._type}`);
+  }
 };

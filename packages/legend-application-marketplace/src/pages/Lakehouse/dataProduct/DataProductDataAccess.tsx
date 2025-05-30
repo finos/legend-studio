@@ -46,12 +46,14 @@ import {
   CODE_EDITOR_LANGUAGE,
   CODE_EDITOR_THEME,
 } from '@finos/legend-code-editor';
-import { Button, Tab, Tabs } from '@mui/material';
+import { Box, Button, Tab, Tabs } from '@mui/material';
 import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
 import { type PlainObject } from '@finos/legend-shared';
 import { DataContractCreator } from '../entitlements/EntitlementsDataContractCreator.js';
 import { EntitlementsDataContractViewer } from '../entitlements/EntitlementsDataContractViewer.js';
 import { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
+import { useAuth } from 'react-oidc-context';
+import { DataProductSubscriptionViewer } from '../subscriptions/DataProductSubscriptionsViewer.js';
 
 export const DataProductMarkdownTextViewer: React.FC<{ value: string }> = (
   props,
@@ -155,16 +157,33 @@ const TDSColumnMoreInfoCellRenderer = (
   );
 };
 
-export const DataProductGroupAccessViewer = observer(
-  (props: {
-    dataViewer: DataProductViewerState;
-    accessGroupState: DataProductGroupAccessState;
-  }) => {
+export const DataProductAccessPointGroupViewer = observer(
+  (props: { accessGroupState: DataProductGroupAccessState }) => {
     const { accessGroupState } = props;
     const accessPoints = accessGroupState.group.accessPoints;
 
-    const handleClick = (): void => {
-      accessGroupState.handleClick();
+    const auth = useAuth();
+    const [showSubscriptionsModal, setShowSubscriptionsModal] = useState(false);
+
+    useEffect(() => {
+      if (
+        accessGroupState.access === DataProductGroupAccess.COMPLETED &&
+        accessGroupState.associatedContract &&
+        accessGroupState.fetchingSubscriptionsState.isInInitialState
+      ) {
+        accessGroupState.fetchSubscriptions(
+          accessGroupState.associatedContract.guid,
+          auth.user?.access_token,
+        );
+      }
+    });
+
+    const handleContractsClick = (): void => {
+      accessGroupState.handleContractClick();
+    };
+
+    const handleSubscriptionsClick = (): void => {
+      setShowSubscriptionsModal(true);
     };
 
     const renderAccess = (val: DataProductGroupAccess): React.ReactNode => {
@@ -184,7 +203,7 @@ export const DataProductGroupAccessViewer = observer(
             <Button
               variant="contained"
               color="error"
-              onClick={handleClick}
+              onClick={handleContractsClick}
               loading={accessGroupState.fetchingAccessState.isInProgress}
             >
               REQUEST ACCESS
@@ -196,7 +215,7 @@ export const DataProductGroupAccessViewer = observer(
             <Button
               variant="contained"
               color="primary"
-              onClick={handleClick}
+              onClick={handleContractsClick}
               loading={accessGroupState.fetchingAccessState.isInProgress}
             >
               <div>
@@ -212,6 +231,7 @@ export const DataProductGroupAccessViewer = observer(
               variant="contained"
               color="success"
               loading={accessGroupState.fetchingAccessState.isInProgress}
+              onClick={handleContractsClick}
             >
               ENTITLED
             </Button>
@@ -220,6 +240,7 @@ export const DataProductGroupAccessViewer = observer(
           return null;
       }
     };
+
     return (
       <div className="data-space__viewer__access-group__item">
         <div className="data-space__viewer__access-group__item__header">
@@ -233,14 +254,27 @@ export const DataProductGroupAccessViewer = observer(
             <button
               className="data-space__viewer__access-group__item__header__anchor"
               tabIndex={-1}
-              // onClick={() => dataSpaceViewerState.changeZone(anchor, true)}
             >
               <AnchorLinkIcon />
             </button>
           </div>
-          <div className="data-space__viewer__access-group__item__header-access">
-            {renderAccess(accessGroupState.access)}
-          </div>
+          <Box className="data-space__viewer__access-group__item__header__actions">
+            <Box className="data-space__viewer__access-group__item__header__data-contract">
+              {renderAccess(accessGroupState.access)}
+            </Box>
+            {accessGroupState.access === DataProductGroupAccess.COMPLETED && (
+              <Box className="data-space__viewer__access-group__item__header__subscription">
+                <Button
+                  variant="outlined"
+                  color="info"
+                  loading={accessGroupState.fetchingAccessState.isInProgress}
+                  onClick={handleSubscriptionsClick}
+                >
+                  SUBSCRIPTIONS
+                </Button>
+              </Box>
+            )}
+          </Box>
         </div>
         <div className="data-space__viewer__access-group__item__description">
           <DataProductMarkdownTextViewer
@@ -304,6 +338,11 @@ export const DataProductGroupAccessViewer = observer(
             </div>
           </div>
         </div>
+        <DataProductSubscriptionViewer
+          open={showSubscriptionsModal}
+          accessGroupState={accessGroupState}
+          onClose={() => setShowSubscriptionsModal(false)}
+        />
       </div>
     );
   },
@@ -362,10 +401,9 @@ export const DataProducteDataAccess = observer(
           <div className="data-space__viewer__data-access">
             {dataSpaceViewerState.accessState.accessGroupStates.map(
               (groupState) => (
-                <DataProductGroupAccessViewer
+                <DataProductAccessPointGroupViewer
                   key={groupState.id}
                   accessGroupState={groupState}
-                  dataViewer={dataSpaceViewerState}
                 />
               ),
             )}

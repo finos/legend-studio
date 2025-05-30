@@ -27,6 +27,7 @@ import { LegendMarketplaceLightDataProductCard } from '../../components/DataProd
 import { Grid2 as Grid } from '@mui/material';
 import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
 import { useLegendMarketplaceBaseStore } from '../../application/LegendMarketplaceFrameworkProvider.js';
+import { useEffect } from 'react';
 
 // Temporary placeholder data for assets
 
@@ -81,6 +82,10 @@ export const LegendMarketplaceHome = observer(() => {
       generateSearchResultsRoute(provider, query),
     );
   };
+
+  useEffect(() => {
+    store.marketplaceVendorDataState.init();
+  }, [store.marketplaceVendorDataState]);
 
   return (
     <LegendMarketplacePage className="legend-marketplace-home">

@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import type { V1_SandboxDataProductDeploymentResponse } from '@finos/legend-graph';
+import type {
+  V1_IngestEnvironment,
+  V1_SandboxDataProductDeploymentResponse,
+} from '@finos/legend-graph';
 import { AbstractServerClient, type PlainObject } from '@finos/legend-shared';
 
 export class LakehouseIngestServerClient extends AbstractServerClient {
@@ -37,6 +40,18 @@ export class LakehouseIngestServerClient extends AbstractServerClient {
   ): Promise<PlainObject<V1_SandboxDataProductDeploymentResponse>> =>
     this.get(
       `${ingestServerUrl}/${this._deploy()}/deploy/definitions`,
+      {},
+      this._token(token),
+    );
+
+  // ------------------------------------- Invest Environment ----p---------------------------------
+
+  getIngestEnvironment = (
+    ingestServerUrl: string,
+    token: string | undefined,
+  ): Promise<PlainObject<V1_IngestEnvironment>> =>
+    this.get(
+      `${ingestServerUrl}/api/ingest/catalog-state/environment`,
       {},
       this._token(token),
     );

@@ -1502,6 +1502,12 @@
     }
   }
 
+  &__item__header__actions {
+    @include flexVCenter;
+
+    gap: 1rem;
+  }
+
   &__item__header:hover &__item__header__anchor {
     display: inline-flex;
   }

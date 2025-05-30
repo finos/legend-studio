@@ -196,7 +196,7 @@ export const EntitlementsDataContractViewer = observer(
           <DialogTitle>Pending Data Contract Request</DialogTitle>
           <IconButton
             onClick={onClose}
-            className="marketplace-lakehouse-entitlements__data-contract-viewer__close"
+            className="marketplace-dialog-close-btn"
           >
             <CloseIcon />
           </IconButton>
@@ -382,10 +382,7 @@ export const EntitlementsDataContractViewer = observer(
     return (
       <Dialog open={true} onClose={onClose} fullWidth={true} maxWidth="md">
         <DialogTitle>Pending Data Contract Request</DialogTitle>
-        <IconButton
-          onClick={onClose}
-          className="marketplace-lakehouse-entitlements__data-contract-viewer__close"
-        >
+        <IconButton onClick={onClose} className="marketplace-dialog-close-btn">
           <CloseIcon />
         </IconButton>
         <DialogContent className="marketplace-lakehouse-entitlements__data-contract-viewer__content">
