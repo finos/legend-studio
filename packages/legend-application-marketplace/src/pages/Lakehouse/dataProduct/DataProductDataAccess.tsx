@@ -349,8 +349,8 @@ export const DataProductAccessPointGroupViewer = observer(
 );
 
 export const DataProducteDataAccess = observer(
-  (props: { dataSpaceViewerState: DataProductViewerState }) => {
-    const { dataSpaceViewerState } = props;
+  (props: { dataProductViewerState: DataProductViewerState }) => {
+    const { dataProductViewerState } = props;
     const applicationStore = useApplicationStore();
     const documentationUrl = 'todo.com';
     const sectionRef = useRef<HTMLDivElement>(null);
@@ -359,13 +359,14 @@ export const DataProducteDataAccess = observer(
     );
     useEffect(() => {
       if (sectionRef.current) {
-        dataSpaceViewerState.layoutState.setWikiPageAnchor(
+        dataProductViewerState.layoutState.setWikiPageAnchor(
           anchor,
           sectionRef.current,
         );
       }
-      return () => dataSpaceViewerState.layoutState.unsetWikiPageAnchor(anchor);
-    }, [dataSpaceViewerState, anchor]);
+      return () =>
+        dataProductViewerState.layoutState.unsetWikiPageAnchor(anchor);
+    }, [dataProductViewerState, anchor]);
 
     const seeDocumentation = (): void => {
       applicationStore.navigationService.navigator.visitAddress(
@@ -381,7 +382,7 @@ export const DataProducteDataAccess = observer(
             <button
               className="data-space__viewer__wiki__section__header__anchor"
               tabIndex={-1}
-              onClick={() => dataSpaceViewerState.changeZone(anchor, true)}
+              onClick={() => dataProductViewerState.changeZone(anchor, true)}
             >
               <AnchorLinkIcon />
             </button>
@@ -399,7 +400,7 @@ export const DataProducteDataAccess = observer(
         </div>
         <div className="data-space__viewer__wiki__section__content">
           <div className="data-space__viewer__data-access">
-            {dataSpaceViewerState.accessState.accessGroupStates.map(
+            {dataProductViewerState.accessState.accessGroupStates.map(
               (groupState) => (
                 <DataProductAccessPointGroupViewer
                   key={groupState.id}
@@ -407,28 +408,31 @@ export const DataProducteDataAccess = observer(
                 />
               ),
             )}
-            {dataSpaceViewerState.dataContractAccessPointGroup && (
+            {dataProductViewerState.dataContractAccessPointGroup && (
               <DataContractCreator
                 onClose={() =>
-                  dataSpaceViewerState.setDataContractAccessPointGroup(
+                  dataProductViewerState.setDataContractAccessPointGroup(
                     undefined,
                   )
                 }
                 accessPointGroup={
-                  dataSpaceViewerState.dataContractAccessPointGroup
+                  dataProductViewerState.dataContractAccessPointGroup
                 }
-                viewerState={dataSpaceViewerState}
+                viewerState={dataProductViewerState}
               />
             )}
-            {dataSpaceViewerState.dataContract && (
+            {dataProductViewerState.dataContract && (
               <EntitlementsDataContractViewer
                 currentViewer={
                   new EntitlementsDataContractViewerState(
-                    dataSpaceViewerState.dataContract,
-                    dataSpaceViewerState.lakeServerClient,
+                    dataProductViewerState.dataContract,
+                    dataProductViewerState.lakeServerClient,
                   )
                 }
-                onClose={() => dataSpaceViewerState.setDataContract(undefined)}
+                dataProductViewerState={dataProductViewerState}
+                onClose={() =>
+                  dataProductViewerState.setDataContract(undefined)
+                }
               />
             )}
           </div>

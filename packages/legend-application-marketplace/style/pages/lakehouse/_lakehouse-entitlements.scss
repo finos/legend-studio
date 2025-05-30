@@ -132,6 +132,7 @@
     @include flexVCenter;
 
     flex-direction: column;
+    min-height: 40rem;
   }
 
   &__close {
@@ -144,7 +145,7 @@
     width: 100%;
     background: var(--color-light-grey-300);
     padding: 1rem;
-    margin: 1rem 0 3rem;
+    margin: 1rem 0;
 
     > div {
       margin: 1rem 0;
@@ -158,6 +159,10 @@
     .legend-user-display {
       margin-left: 1rem;
     }
+  }
+
+  &__refresh-btn {
+    align-self: end;
   }
 
   &__timeline {
@@ -176,6 +181,21 @@
     &__container {
       margin-top: -12px !important;
       background: var(--color-light-grey-150);
+    }
+  }
+
+  &__task-approval-view {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: var(--color-light-grey-150);
+
+    .legend-user-display {
+      margin: 0.5rem 0;
+    }
+
+    &__timestamp {
+      color: var(--color-dark-grey-300);
+      font-style: italic;
     }
   }
 

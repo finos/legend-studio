@@ -27,7 +27,6 @@ import {
   type V1_DataContract,
   type V1_DataContractsRecord,
   type V1_DataProduct,
-  V1_AccessPointGroupReference,
   V1_AdhocTeam,
   V1_AdhocTeamModelSchema,
   V1_AppDirLevel,
@@ -232,16 +231,6 @@ export class DataProductViewerState {
     } finally {
       this.creatingContractState.complete();
     }
-  }
-
-  syncContracts(): void {
-    this.associatedContracts?.forEach((c) => {
-      const _resource = c.resource;
-      if (_resource instanceof V1_AccessPointGroupReference) {
-        const groupId = _resource.accessPointGroup;
-        this.accessState.accessGroupStates.find((e) => e.id === groupId);
-      }
-    });
   }
 
   setCurrentActivity(val: DATA_PRODUCT_VIEWER_ACTIVITY_MODE): void {

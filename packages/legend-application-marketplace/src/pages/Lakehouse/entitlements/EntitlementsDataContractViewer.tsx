@@ -21,6 +21,7 @@ import {
   AccordionDetails,
   AccordionSummary,
   Box,
+  Button,
   CircularProgress,
   Dialog,
   DialogContent,
@@ -38,6 +39,7 @@ import {
   TimelineSeparator,
 } from '@mui/lab';
 import {
+  type V1_TaskMetadata,
   V1_AccessPointGroupReference,
   V1_AdhocTeam,
   V1_ApprovalType,
@@ -46,6 +48,7 @@ import {
 } from '@finos/legend-graph';
 import React, { useEffect, useState } from 'react';
 import {
+  formatDate,
   guaranteeNonNullable,
   isNonNullable,
   LegendUser,
@@ -64,9 +67,12 @@ import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
   ExpandMoreIcon,
+  RefreshIcon,
   UserDisplay,
 } from '@finos/legend-art';
 import { generateLakehouseTaskPath } from '../../../__lib__/LegendMarketplaceNavigation.js';
+import type { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
+import { DEFAULT_DATE_TIME_FORMAT } from '@finos/legend-application';
 
 const AssigneesList = (props: {
   users: (LegendUser | string)[];
@@ -92,9 +98,10 @@ const AssigneesList = (props: {
       className="marketplace-lakehouse-entitlements__data-contract-viewer__user-list__container"
       elevation={0}
       disableGutters={true}
+      defaultExpanded={true}
     >
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-        Assignees:
+        Assignees ({users.length}):
       </AccordionSummary>
       <AccordionDetails className="marketplace-lakehouse-entitlements__data-contract-viewer__user-list">
         {users.map((user) =>
@@ -114,12 +121,88 @@ const AssigneesList = (props: {
   );
 };
 
+const TaskApprovalView = (props: {
+  contractState: V1_ContractState;
+  task: V1_TaskMetadata | undefined;
+  userDataMap: Map<string, LegendUser>;
+  userProfileImageUrl?: string | undefined;
+  onUserClick?: (userId: string) => void;
+}): React.ReactNode => {
+  const { contractState, task, userDataMap, userProfileImageUrl, onUserClick } =
+    props;
+  const legendUser = userDataMap.get(
+    task?.rec.eventPayload.managerIdentity ?? '',
+  );
+
+  if (
+    contractState === V1_ContractState.PENDING_DATA_OWNER_APPROVAL ||
+    contractState === V1_ContractState.COMPLETED
+  ) {
+    if (task) {
+      return (
+        <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__task-approval-view">
+          <Box>
+            Approved by{' '}
+            {legendUser ? (
+              <UserDisplay
+                user={legendUser}
+                imgSrc={userProfileImageUrl?.replace('{userId}', legendUser.id)}
+                onClick={() => onUserClick?.(legendUser.id)}
+              />
+            ) : (
+              task.rec.eventPayload.managerIdentity
+            )}
+          </Box>
+          <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__task-approval-view__timestamp">
+            {formatDate(
+              new Date(task.rec.eventPayload.eventTimestamp),
+              DEFAULT_DATE_TIME_FORMAT,
+            )}
+          </Box>
+        </Box>
+      );
+    } else {
+      return <Box>Approved</Box>;
+    }
+  } else if (contractState === V1_ContractState.REJECTED) {
+    if (task) {
+      return (
+        <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__task-approval-view">
+          <Box>
+            Rejected by{' '}
+            {legendUser ? (
+              <UserDisplay
+                user={legendUser}
+                imgSrc={userProfileImageUrl?.replace('{userId}', legendUser.id)}
+                onClick={() => onUserClick?.(legendUser.id)}
+              />
+            ) : (
+              task.rec.eventPayload.managerIdentity
+            )}
+          </Box>
+          <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__task-approval-view__timestamp">
+            {formatDate(
+              new Date(task.rec.eventPayload.eventTimestamp),
+              DEFAULT_DATE_TIME_FORMAT,
+            )}
+          </Box>
+        </Box>
+      );
+    } else {
+      return <Box>Rejected</Box>;
+    }
+  } else {
+    return undefined;
+  }
+};
+
 export const EntitlementsDataContractViewer = observer(
   (props: {
     currentViewer: EntitlementsDataContractViewerState;
+    dataProductViewerState?: DataProductViewerState | undefined;
     onClose: () => void;
   }) => {
-    const { currentViewer, onClose } = props;
+    const { currentViewer, dataProductViewerState, onClose } = props;
     const auth = useAuth();
     const legendMarketplaceStore = useLegendMarketplaceBaseStore();
     const [userDataMap, setUserDataMap] = useState<Map<string, LegendUser>>(
@@ -188,6 +271,16 @@ export const EntitlementsDataContractViewer = observer(
       currentViewer.value.createdBy,
     ]);
 
+    const refresh = async (): Promise<void> => {
+      setIsLoading(true);
+      await flowResult(
+        dataProductViewerState?.fetchContracts(auth.user?.access_token),
+      );
+      await flowResult(currentViewer.init(auth.user?.access_token))
+        .catch(legendMarketplaceStore.applicationStore.alertUnhandledError)
+        .finally(() => setIsLoading(false));
+    };
+
     if (
       !(currentViewer.value.resource instanceof V1_AccessPointGroupReference)
     ) {
@@ -210,17 +303,18 @@ export const EntitlementsDataContractViewer = observer(
     const dataProduct = currentViewer.value.resource.dataProduct;
     const accessPointGroup = currentViewer.value.resource.accessPointGroup;
     const currentState = currentViewer.value.state;
+    const privilegeManagerApprovalTask = currentViewer.associatedTasks?.find(
+      (task) =>
+        task.rec.type === V1_ApprovalType.CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
+    );
+    const dataOwnerApprovalTask = currentViewer.associatedTasks?.find(
+      (task) => task.rec.type === V1_ApprovalType.DATA_OWNER_APPROVAL,
+    );
     const currentTask =
       currentState === V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL
-        ? currentViewer.associatedTasks?.find(
-            (task) =>
-              task.rec.type ===
-              V1_ApprovalType.CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
-          )
+        ? privilegeManagerApprovalTask
         : currentState === V1_ContractState.PENDING_DATA_OWNER_APPROVAL
-          ? currentViewer.associatedTasks?.find(
-              (task) => task.rec.type === V1_ApprovalType.DATA_OWNER_APPROVAL,
-            )
+          ? dataOwnerApprovalTask
           : undefined;
 
     const copyTaskLink = (text: string): void => {
@@ -289,12 +383,11 @@ export const EntitlementsDataContractViewer = observer(
         description:
           currentState ===
           V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL ? (
-            currentViewer.associatedTasks ? (
+            currentTask ? (
               <AssigneesList
-                users={currentViewer.associatedTasks
-                  .map((task) => task.assignees)
-                  .flat()
-                  .map((asignee) => userDataMap.get(asignee) ?? asignee)}
+                users={currentTask.assignees.map(
+                  (asignee) => userDataMap.get(asignee) ?? asignee,
+                )}
                 userProfileImageUrl={
                   legendMarketplaceStore.applicationStore.config
                     .marketplaceUserProfileImageUrl
@@ -305,10 +398,18 @@ export const EntitlementsDataContractViewer = observer(
               <span>No tasks associated with contract</span>
             )
           ) : currentState === V1_ContractState.PENDING_DATA_OWNER_APPROVAL ||
-            currentState === V1_ContractState.COMPLETED ? (
-            <>Approved</>
-          ) : currentState === V1_ContractState.REJECTED ? (
-            <>Rejected</>
+            currentState === V1_ContractState.COMPLETED ||
+            currentState === V1_ContractState.REJECTED ? (
+            <TaskApprovalView
+              contractState={currentState}
+              task={privilegeManagerApprovalTask}
+              userDataMap={userDataMap}
+              userProfileImageUrl={
+                legendMarketplaceStore.applicationStore.config
+                  .marketplaceUserProfileImageUrl
+              }
+              onUserClick={openUserDirectoryLink}
+            />
           ) : undefined,
       },
       {
@@ -349,12 +450,11 @@ export const EntitlementsDataContractViewer = observer(
           ),
         description:
           currentState === V1_ContractState.PENDING_DATA_OWNER_APPROVAL ? (
-            currentViewer.associatedTasks ? (
+            currentTask ? (
               <AssigneesList
-                users={currentViewer.associatedTasks
-                  .map((task) => task.assignees)
-                  .flat()
-                  .map((asignee) => userDataMap.get(asignee) ?? asignee)}
+                users={currentTask.assignees.map(
+                  (asignee) => userDataMap.get(asignee) ?? asignee,
+                )}
                 userProfileImageUrl={
                   legendMarketplaceStore.applicationStore.config
                     .marketplaceUserProfileImageUrl
@@ -364,10 +464,18 @@ export const EntitlementsDataContractViewer = observer(
             ) : (
               <span>No tasks associated with contract</span>
             )
-          ) : currentState === V1_ContractState.COMPLETED ? (
-            <>Approved</>
-          ) : currentState === V1_ContractState.REJECTED ? (
-            <>Rejected</>
+          ) : currentState === V1_ContractState.COMPLETED ||
+            currentState === V1_ContractState.REJECTED ? (
+            <TaskApprovalView
+              contractState={currentState}
+              task={dataOwnerApprovalTask}
+              userDataMap={userDataMap}
+              userProfileImageUrl={
+                legendMarketplaceStore.applicationStore.config
+                  .marketplaceUserProfileImageUrl
+              }
+              onUserClick={openUserDirectoryLink}
+            />
           ) : undefined,
       },
       {
@@ -461,6 +569,23 @@ export const EntitlementsDataContractViewer = observer(
                   {currentViewer.value.description}
                 </div>
               </Box>
+              {currentState !== V1_ContractState.CLOSED &&
+                currentState !== V1_ContractState.REJECTED &&
+                currentState !== V1_ContractState.COMPLETED && (
+                  <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__refresh-btn">
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      startIcon={<RefreshIcon />}
+                      onClick={() => {
+                        // eslint-disable-next-line no-void
+                        void refresh();
+                      }}
+                    >
+                      Refresh
+                    </Button>
+                  </Box>
+                )}
               <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__timeline">
                 <Timeline>
                   {steps.map((step, index) => (

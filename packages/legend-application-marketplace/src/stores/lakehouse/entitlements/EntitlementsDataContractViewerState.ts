@@ -36,10 +36,10 @@ export class EntitlementsDataContractViewerState {
   initializationState = ActionState.create();
 
   constructor(
-    value: V1_DataContract,
+    dataContract: V1_DataContract,
     lakeServerClient: LakehouseContractServerClient,
   ) {
-    this.value = value;
+    this.value = dataContract;
     this.lakeServerClient = lakeServerClient;
     makeObservable(this, {
       associatedTasks: observable,
