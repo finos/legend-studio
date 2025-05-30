@@ -248,17 +248,15 @@ const LakehouseSubscriptionsCreateDialog = (props: {
             autoFocus={true}
           >
             {suggestedSnowflakeAccounts.length > 0 && (
-              <>
-                <ListSubheader>Suggested Accounts</ListSubheader>
-                {suggestedSnowflakeAccounts.map((snowflakeAccount) => (
-                  <MenuItem key={snowflakeAccount} value={snowflakeAccount}>
-                    {snowflakeAccount}
-                  </MenuItem>
-                ))}
-                {otherSnowflakeAccounts.length > 0 && (
-                  <ListSubheader>Other Accounts</ListSubheader>
-                )}
-              </>
+              <ListSubheader>Suggested Accounts</ListSubheader>
+            )}
+            {suggestedSnowflakeAccounts.map((snowflakeAccount) => (
+              <MenuItem key={snowflakeAccount} value={snowflakeAccount}>
+                {snowflakeAccount}
+              </MenuItem>
+            ))}
+            {otherSnowflakeAccounts.length > 0 && (
+              <ListSubheader>Other Accounts</ListSubheader>
             )}
             {otherSnowflakeAccounts.map((snowflakeAccount) => (
               <MenuItem key={snowflakeAccount} value={snowflakeAccount}>
