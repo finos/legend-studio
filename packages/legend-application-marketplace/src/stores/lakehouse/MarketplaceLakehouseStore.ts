@@ -82,6 +82,7 @@ import {
   SandboxDataProductState,
   type BaseDataProductState,
 } from './dataProducts/DataProducts.js';
+import { TMP__DummyDataProducts } from '../../pages/Lakehouse/TMP__Data/TMP__DummyDataProducts.js';
 
 const ARTIFACT_GENERATION_DAT_PRODUCT_KEY = 'dataProduct';
 
@@ -150,6 +151,23 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   sort: DataProductSort = DataProductSort.NAME_ALPHABETICAL;
   dataProductViewer: DataProductViewerState | undefined;
 
+  // Temporary state for dummy data products
+  dummyDataProductStates: DataProductState[] = TMP__DummyDataProducts.map(
+    (dataProduct) => {
+      const dataProductEntity = new DataProductEntity(
+        '',
+        '',
+        '1.0',
+        dataProduct.path,
+      );
+      dataProductEntity.setProduct(dataProduct);
+      const dataProductState = new DataProductState(this);
+      dataProductState.setProductEntity('1.0', dataProductEntity);
+      dataProductState.setSelectedVersion('1.0');
+      return dataProductState;
+    },
+  );
+
   constructor(
     marketplaceBaseStore: LegendMarketplaceBaseStore,
     lakehouseServerClient: LakehouseContractServerClient,
@@ -192,6 +210,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       Array.from(this.productStatesMap.values()) as BaseDataProductState[]
     )
       .concat(this.sandboxDataProductStates)
+      .concat(this.dummyDataProductStates)
       .filter((baseDataProductState) => {
         if (!baseDataProductState.isInitialized) {
           return false;
@@ -201,7 +220,10 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
           (this.filter.sdlcDeployFilter &&
             baseDataProductState instanceof DataProductState) ||
           (this.filter.sandboxDeployFilter &&
-            baseDataProductState instanceof SandboxDataProductState);
+            baseDataProductState instanceof SandboxDataProductState) ||
+          // TMP always include dummy data products
+          (baseDataProductState instanceof DataProductState &&
+            this.dummyDataProductStates.includes(baseDataProductState));
         const isSnapshot = isSnapshotVersion(baseDataProductState.versionId);
         // Check if product matches release/snapshot filter
         const versionMatch =

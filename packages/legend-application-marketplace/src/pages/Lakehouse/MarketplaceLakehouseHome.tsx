@@ -226,7 +226,11 @@ export const LakehouseDataProductCard = observer(
       <>
         <Box className="marketplace-lakehouse-data-product-card__container">
           <Box className="marketplace-lakehouse-data-product-card__icon">
-            {deserializeIcon(dataProductState.icon)}
+            {dataProductState.imageUrl ? (
+              <img src={dataProductState.imageUrl} />
+            ) : (
+              deserializeIcon(dataProductState.icon)
+            )}
           </Box>
           <Box className="marketplace-lakehouse-data-product-card__content">
             {dataProductState.versionId !== '' && (
