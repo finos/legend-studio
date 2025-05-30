@@ -111,17 +111,4 @@ export const TMP__DummyDataProducts: V1_DataProduct[] = [
     },
     [],
   ) as V1_DataProduct,
-  V1_deserializePackageableElement(
-    {
-      _type: 'dataProduct',
-      title: 'World Trade Organization Data',
-      description: 'World Trade Organization trade data and insights',
-      accessPointGroups: [],
-      icon: '',
-      imageUrl: '/assets/WorldTradeOrganizationDataLogo.png',
-      package: 'worldtradeorganizationdata',
-      name: 'WorldTradeOrganizationData',
-    },
-    [],
-  ) as V1_DataProduct,
 ];
