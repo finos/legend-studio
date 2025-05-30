@@ -123,6 +123,11 @@ const LakehouseSubscriptionsCreateDialog = (props: {
     V1_SnowflakeNetwork.GOLDMAN,
   );
 
+  const handleClose = (): void => {
+    setSnowflakeAccountId('');
+    onClose();
+  };
+
   return (
     <Dialog
       open={open}
@@ -139,9 +144,9 @@ const LakehouseSubscriptionsCreateDialog = (props: {
               snowflakeTarget.snowflakeNetwork = snowflakeNetwork;
               // eslint-disable-next-line no-void
               void onSubmit(snowflakeTarget);
-              onClose();
+              handleClose();
             } else {
-              onClose();
+              handleClose();
               throw new Error(`Unsupported target type: ${targetType}`);
             }
           },
@@ -251,7 +256,7 @@ const LakehouseSubscriptionsCreateDialog = (props: {
         </FormControl>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} variant="outlined">
+        <Button onClick={handleClose} variant="outlined">
           Cancel
         </Button>
         <Button type="submit" variant="contained">
