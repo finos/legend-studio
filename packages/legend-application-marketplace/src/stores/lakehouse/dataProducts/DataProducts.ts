@@ -77,6 +77,7 @@ export abstract class BaseDataProductState {
   abstract title: string;
   abstract description: string | undefined;
   abstract icon: string | undefined;
+  abstract imageUrl: string | undefined;
   abstract isInitialized: boolean;
   abstract versionId: string;
   abstract versionOptions: string[];
@@ -93,6 +94,7 @@ export abstract class BaseDataProductState {
       title: computed,
       description: computed,
       icon: computed,
+      imageUrl: computed,
       isInitialized: computed,
       versionId: computed,
       versionOptions: computed,
@@ -137,6 +139,10 @@ export class DataProductState extends BaseDataProductState {
 
   get icon(): string | undefined {
     return this.currentProductEntity?.product?.icon;
+  }
+
+  get imageUrl(): string | undefined {
+    return this.currentProductEntity?.product?.imageUrl;
   }
 
   get isInitialized(): boolean {
@@ -202,6 +208,10 @@ export class SandboxDataProductState extends BaseDataProductState {
   }
 
   get icon(): string | undefined {
+    return undefined;
+  }
+
+  get imageUrl(): string | undefined {
     return undefined;
   }
 
