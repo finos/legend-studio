@@ -326,6 +326,15 @@
       flex-direction: column;
     }
   }
+
+  &__dropdown {
+    @include flexCenter;
+
+    height: 2.2rem;
+    width: 2rem;
+    border-radius: 0 0.2rem 0.2rem 0;
+    border-left: 0.1rem solid var(--color-dark-shade-280);
+  }
 }
 
 .new-access-point-modal {
