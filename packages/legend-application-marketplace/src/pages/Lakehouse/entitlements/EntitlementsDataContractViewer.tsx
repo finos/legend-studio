@@ -95,9 +95,10 @@ const AssigneesList = (props: {
       className="marketplace-lakehouse-entitlements__data-contract-viewer__user-list__container"
       elevation={0}
       disableGutters={true}
+      defaultExpanded={true}
     >
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-        Assignees:
+        Assignees ({users.length}):
       </AccordionSummary>
       <AccordionDetails className="marketplace-lakehouse-entitlements__data-contract-viewer__user-list">
         {users.map((user) =>
