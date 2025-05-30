@@ -70,9 +70,12 @@
 
 .marketplace-lakehouse-subscriptions__subscription-creator {
   &__select {
-    &__subheader,
-    &__item {
+    &__subheader {
       font-size: 1.2rem;
+    }
+
+    &__item {
+      font-size: 1.4rem;
     }
   }
 }
