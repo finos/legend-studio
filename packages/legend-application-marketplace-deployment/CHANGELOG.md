@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace-deployment
 
+## 13.75.0
+
+### Patch Changes
+
+- [#4136](https://github.com/finos/legend-studio/pull/4136) [`e38a75f`](https://github.com/finos/legend-studio/commit/e38a75f52318a1d20f36b95b2dc0e11dc435fedb) ([@travisstebbins](https://github.com/travisstebbins)) - Add temporary dummy data products to Lakehouse home
+
 ## 13.74.0
 
 ## 13.73.0
