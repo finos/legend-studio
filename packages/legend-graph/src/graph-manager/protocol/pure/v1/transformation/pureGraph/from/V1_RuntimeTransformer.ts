@@ -22,6 +22,7 @@ import {
   type StoreConnections,
   type Runtime,
   SingleConnectionRuntime,
+  LakehouseRuntime,
 } from '../../../../../../../graph/metamodel/pure/packageableElements/runtime/Runtime.js';
 import {
   V1_initPackageableElement,
@@ -36,6 +37,7 @@ import {
   V1_RuntimePointer,
   V1_ConnectionStores,
   V1_SingleConnectionEngineRuntime,
+  V1_LakehouseRuntime,
 } from '../../../model/packageableElements/runtime/V1_Runtime.js';
 import {
   V1_transformConnection,
@@ -66,10 +68,18 @@ const transformEngineRuntime = (
   element: EngineRuntime,
   context: V1_GraphTransformerContext,
 ): V1_EngineRuntime => {
-  const runtime =
-    element instanceof SingleConnectionRuntime
-      ? new V1_SingleConnectionEngineRuntime()
-      : new V1_EngineRuntime();
+  let runtime: V1_EngineRuntime;
+  if (element instanceof SingleConnectionRuntime) {
+    runtime = new V1_SingleConnectionEngineRuntime();
+  } else if (element instanceof LakehouseRuntime) {
+    const lakehouseRuntime = new V1_LakehouseRuntime();
+    lakehouseRuntime.ingestEnv = element.ingestEnv;
+    lakehouseRuntime.warehouse = element.warehouse;
+    runtime = lakehouseRuntime;
+  } else {
+    runtime = new V1_EngineRuntime();
+  }
+
   runtime.connections = element.connections.map((connection) =>
     transformStoreConnections(connection, context),
   );

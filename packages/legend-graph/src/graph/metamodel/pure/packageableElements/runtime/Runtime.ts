@@ -146,6 +146,25 @@ export class SingleConnectionRuntime extends EngineRuntime {
     ]);
   }
 }
+
+export class LakehouseRuntime extends EngineRuntime implements Hashable {
+  ingestEnv: string;
+  warehouse: string;
+
+  constructor(ingestEnv: string, warehouse: string) {
+    super();
+    this.ingestEnv = ingestEnv;
+    this.warehouse = warehouse;
+  }
+
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.LAKEHOUSE_RUNTIME,
+      this.ingestEnv,
+      this.warehouse,
+    ]);
+  }
+}
 export class RuntimePointer extends Runtime implements Hashable {
   packageableRuntime: PackageableElementReference<PackageableRuntime>;
 
