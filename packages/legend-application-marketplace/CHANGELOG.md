@@ -1,5 +1,13 @@
 # @finos/legend-application-marketplace
 
+## 0.0.37
+
+### Patch Changes
+
+- [#4136](https://github.com/finos/legend-studio/pull/4136) [`e38a75f`](https://github.com/finos/legend-studio/commit/e38a75f52318a1d20f36b95b2dc0e11dc435fedb) ([@travisstebbins](https://github.com/travisstebbins)) - Add temporary dummy data products to Lakehouse home
+
+- [#4141](https://github.com/finos/legend-studio/pull/4141) [`9d38fe3`](https://github.com/finos/legend-studio/commit/9d38fe3706dd6c0df39115e44d79a4e57b57b4d9) ([@travisstebbins](https://github.com/travisstebbins)) - Lakehouse contract viewer improvements
+
 ## 0.0.36
 
 ### Patch Changes

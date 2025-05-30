@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.18.138
+
+### Patch Changes
+
+- [#4140](https://github.com/finos/legend-studio/pull/4140) [`60649ea`](https://github.com/finos/legend-studio/commit/60649ea582d307327a04d2617ac0d955836c075f) ([@kelly-thai](https://github.com/kelly-thai)) - Added Access Point groups, removed Title from Lakehouse Data Product element driver, and added Title and Description to Data Product form
+
 ## 28.18.137
 
 ### Patch Changes
