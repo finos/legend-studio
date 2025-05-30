@@ -189,6 +189,10 @@
     padding: 1rem;
     background: var(--color-light-grey-150);
 
+    .legend-user-display {
+      margin: 0.5rem 0;
+    }
+
     &__timestamp {
       color: var(--color-dark-grey-300);
       font-style: italic;
