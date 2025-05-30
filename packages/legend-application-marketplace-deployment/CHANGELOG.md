@@ -1,5 +1,7 @@
 # @finos/legend-application-marketplace-deployment
 
+## 13.76.0
+
 ## 13.75.0
 
 ### Patch Changes

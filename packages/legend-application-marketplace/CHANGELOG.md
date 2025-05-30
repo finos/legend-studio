@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.0.38
+
+### Patch Changes
+
+- [#4146](https://github.com/finos/legend-studio/pull/4146) [`2e317b1`](https://github.com/finos/legend-studio/commit/2e317b187ffa36f9b969a3e818ed8968913d3506) ([@travisstebbins](https://github.com/travisstebbins)) - Improve subscription snowflake account selector
+
 ## 0.0.37
 
 ### Patch Changes

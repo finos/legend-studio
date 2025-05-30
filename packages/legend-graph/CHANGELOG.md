@@ -1,5 +1,15 @@
 # @finos/legend-graph
 
+## 32.1.39
+
+### Patch Changes
+
+- [#4146](https://github.com/finos/legend-studio/pull/4146) [`2e317b1`](https://github.com/finos/legend-studio/commit/2e317b187ffa36f9b969a3e818ed8968913d3506) ([@travisstebbins](https://github.com/travisstebbins)) - Improve subscription snowflake account selector
+
+- [#4142](https://github.com/finos/legend-studio/pull/4142) [`9249c23`](https://github.com/finos/legend-studio/commit/9249c235bf029c3f23469158d3e8c67db078c590) ([@kelly-thai](https://github.com/kelly-thai)) - Update Lakehouse target environment enum
+
+- [#4145](https://github.com/finos/legend-studio/pull/4145) [`886bcfc`](https://github.com/finos/legend-studio/commit/886bcfc6869145edb7077f15c3611314d78a3344) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add LakeRuntime to EngineRuntime
+
 ## 32.1.38
 
 ### Patch Changes
