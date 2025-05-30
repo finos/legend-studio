@@ -27,6 +27,7 @@ import {
   FormControl,
   IconButton,
   InputLabel,
+  ListSubheader,
   MenuItem,
   Select,
   TextField,
@@ -59,6 +60,11 @@ import {
 } from '@finos/legend-lego/data-grid';
 import type { NavigationService } from '@finos/legend-application';
 import { flowResult } from 'mobx';
+import { useParams } from '@finos/legend-application/browser';
+import {
+  LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN,
+  type LakehouseSandboxDataProductPathParams,
+} from '../../../__lib__/LegendMarketplaceNavigation.js';
 
 const UserCellRenderer = (props: {
   userId: string | undefined;
@@ -103,169 +109,224 @@ const UserCellRenderer = (props: {
   }
 };
 
-const LakehouseSubscriptionsCreateDialog = (props: {
-  open: boolean;
-  onClose: () => void;
-  accessGroupState: DataProductGroupAccessState;
-  contractId: string;
-  onSubmit: (target: V1_DataSubscriptionTarget) => Promise<void>;
-}) => {
-  const { open, onClose, accessGroupState, contractId, onSubmit } = props;
+const LakehouseSubscriptionsCreateDialog = observer(
+  (props: {
+    open: boolean;
+    onClose: () => void;
+    accessGroupState: DataProductGroupAccessState;
+    contractId: string;
+    onSubmit: (target: V1_DataSubscriptionTarget) => Promise<void>;
+    ingestEnvironmentUrn?: string | undefined;
+  }) => {
+    const { open, onClose, accessGroupState, contractId, onSubmit } = props;
 
-  const [targetType] = useState<V1_DataSubscriptionTargetType>(
-    V1_DataSubscriptionTargetType.Snowflake,
-  );
-  const [snowflakeAccountId, setSnowflakeAccountId] = useState<string>('');
-  const [snowflakeRegion] = useState<V1_SnowflakeRegion>(
-    V1_SnowflakeRegion.AWS_US_EAST_1,
-  );
-  const [snowflakeNetwork] = useState<V1_SnowflakeNetwork>(
-    V1_SnowflakeNetwork.GOLDMAN,
-  );
+    const [targetType] = useState<V1_DataSubscriptionTargetType>(
+      V1_DataSubscriptionTargetType.Snowflake,
+    );
+    const [snowflakeAccountId, setSnowflakeAccountId] = useState<string>('');
+    const [snowflakeRegion] = useState<V1_SnowflakeRegion>(
+      V1_SnowflakeRegion.AWS_US_EAST_1,
+    );
+    const [snowflakeNetwork] = useState<V1_SnowflakeNetwork>(
+      V1_SnowflakeNetwork.GOLDMAN,
+    );
 
-  const handleClose = (): void => {
-    setSnowflakeAccountId('');
-    onClose();
-  };
+    const handleClose = (): void => {
+      setSnowflakeAccountId('');
+      onClose();
+    };
 
-  return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      slotProps={{
-        paper: {
-          component: 'form',
-          onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
-            event.preventDefault();
-            if (targetType === V1_DataSubscriptionTargetType.Snowflake) {
-              const snowflakeTarget = new V1_SnowflakeTarget();
-              snowflakeTarget.snowflakeAccountId = snowflakeAccountId;
-              snowflakeTarget.snowflakeRegion = snowflakeRegion;
-              snowflakeTarget.snowflakeNetwork = snowflakeNetwork;
-              // eslint-disable-next-line no-void
-              void onSubmit(snowflakeTarget);
-              handleClose();
-            } else {
-              handleClose();
-              throw new Error(`Unsupported target type: ${targetType}`);
-            }
+    // TODO: Figure out better way to get the preferred list of snowflake accounts instead
+    // of relying upon ingest environment URN in the URL
+    const params = useParams<LakehouseSandboxDataProductPathParams>();
+    const ingestEnvironmentUrn =
+      params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.ingestEnvironmentUrn];
+
+    const environmentDetails =
+      accessGroupState.accessState.viewerState.lakehouseStore
+        .lakehouseIngestEnvironmentDetails;
+    const suggestedSnowflakeAccounts = Array.from(
+      new Set(
+        environmentDetails
+          .filter((details) =>
+            isType(details, V1_AWSSnowflakeIngestEnvironment),
+          )
+          .filter((details) => details.urn === ingestEnvironmentUrn)
+          .map(
+            (ingestEnvironmentDetails) =>
+              ingestEnvironmentDetails.snowflakeAccount,
+          ),
+      ),
+    );
+    const otherSnowflakeAccounts = Array.from(
+      new Set(
+        environmentDetails
+          .filter((details) =>
+            isType(details, V1_AWSSnowflakeIngestEnvironment),
+          )
+          .map(
+            (ingestEnvironmentDetails) =>
+              ingestEnvironmentDetails.snowflakeAccount,
+          )
+          .filter((account) => !suggestedSnowflakeAccounts.includes(account)),
+      ),
+    );
+
+    return (
+      <Dialog
+        open={open}
+        onClose={onClose}
+        className="marketplace-lakehouse-subscriptions__subscription-creator"
+        slotProps={{
+          paper: {
+            component: 'form',
+            onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
+              event.preventDefault();
+              if (targetType === V1_DataSubscriptionTargetType.Snowflake) {
+                const snowflakeTarget = new V1_SnowflakeTarget();
+                snowflakeTarget.snowflakeAccountId = snowflakeAccountId;
+                snowflakeTarget.snowflakeRegion = snowflakeRegion;
+                snowflakeTarget.snowflakeNetwork = snowflakeNetwork;
+                // eslint-disable-next-line no-void
+                void onSubmit(snowflakeTarget);
+                handleClose();
+              } else {
+                handleClose();
+                throw new Error(`Unsupported target type: ${targetType}`);
+              }
+            },
           },
-        },
-      }}
-    >
-      <DialogTitle>Create New Subscription</DialogTitle>
-      <DialogContent>
-        <TextField
-          required={true}
-          margin="dense"
-          id="contractId"
-          name="contractId"
-          label="Contract ID"
-          fullWidth={true}
-          variant="outlined"
-          value={contractId}
-          disabled={true}
-        />
-        <FormControl fullWidth={true} margin="dense">
-          <InputLabel id="target-type-select-label">Target Type</InputLabel>
-          <Select
+        }}
+      >
+        <DialogTitle>Create New Subscription</DialogTitle>
+        <DialogContent>
+          <TextField
             required={true}
-            labelId="target-type-select-label"
-            id="target-type-select"
-            value={targetType}
-            label="Target Type"
+            margin="dense"
+            id="contractId"
+            name="contractId"
+            label="Contract ID"
+            fullWidth={true}
+            variant="outlined"
+            value={contractId}
             disabled={true}
-          >
-            {Object.values(V1_DataSubscriptionTargetType).map((_targetType) => (
-              <MenuItem key={_targetType} value={_targetType}>
-                {_targetType}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl fullWidth={true} margin="dense">
-          <InputLabel id="snowflake-account-id-select-label">
-            Snowflake Account ID
-          </InputLabel>
-          <Select
-            required={true}
-            labelId="snowflake-account-id-select-label"
-            id="snowflake-account-id-select"
-            value={snowflakeAccountId}
-            label="Snowflake Account ID"
-            onChange={(event: SelectChangeEvent<string>) => {
-              setSnowflakeAccountId(event.target.value);
-            }}
-            autoFocus={true}
-          >
-            {Array.from(
-              new Set(
-                accessGroupState.accessState.viewerState.lakehouseStore.lakehouseIngestEnvironmentDetails
-                  .filter((details) =>
-                    isType(details, V1_AWSSnowflakeIngestEnvironment),
-                  )
-                  .map(
-                    (ingestEnvironmentDetails) =>
-                      ingestEnvironmentDetails.snowflakeAccount,
-                  ),
-              ),
-            ).map((snowflakeAccount) => (
-              <MenuItem key={snowflakeAccount} value={snowflakeAccount}>
-                {snowflakeAccount}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl fullWidth={true} margin="dense">
-          <InputLabel id="snowflake-region-select-label">
-            Snowflake Region
-          </InputLabel>
-          <Select
-            required={true}
-            labelId="snowflake-region-select-label"
-            id="snowflake-region-select"
-            value={snowflakeRegion}
-            label="Snowflake Region"
-            disabled={true}
-          >
-            {Object.values(V1_SnowflakeRegion).map((region) => (
-              <MenuItem key={region} value={region}>
-                {region}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl fullWidth={true} margin="dense">
-          <InputLabel id="snowflake-network-select-label">
-            Snowflake Network
-          </InputLabel>
-          <Select
-            required={true}
-            labelId="snowflake-network-select-label"
-            id="snowflake-network-select"
-            value={snowflakeNetwork}
-            label="Snowflake Network"
-            disabled={true}
-          >
-            {Object.values(V1_SnowflakeNetwork).map((_snowflakeNetwork) => (
-              <MenuItem key={_snowflakeNetwork} value={_snowflakeNetwork}>
-                {_snowflakeNetwork}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={handleClose} variant="outlined">
-          Cancel
-        </Button>
-        <Button type="submit" variant="contained">
-          Create Subsciption
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
-};
+          />
+          <FormControl fullWidth={true} margin="dense">
+            <InputLabel id="target-type-select-label">Target Type</InputLabel>
+            <Select
+              required={true}
+              labelId="target-type-select-label"
+              id="target-type-select"
+              value={targetType}
+              label="Target Type"
+              disabled={true}
+            >
+              {Object.values(V1_DataSubscriptionTargetType).map(
+                (_targetType) => (
+                  <MenuItem key={_targetType} value={_targetType}>
+                    {_targetType}
+                  </MenuItem>
+                ),
+              )}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth={true} margin="dense">
+            <InputLabel id="snowflake-account-id-select-label">
+              Snowflake Account ID
+            </InputLabel>
+            <Select
+              required={true}
+              labelId="snowflake-account-id-select-label"
+              id="snowflake-account-id-select"
+              value={snowflakeAccountId}
+              label="Snowflake Account ID"
+              onChange={(event: SelectChangeEvent<string>) => {
+                setSnowflakeAccountId(event.target.value);
+              }}
+              autoFocus={true}
+            >
+              {suggestedSnowflakeAccounts.length > 0 && (
+                <ListSubheader className="marketplace-lakehouse-subscriptions__subscription-creator__select__subheader">
+                  Suggested Accounts
+                </ListSubheader>
+              )}
+              {suggestedSnowflakeAccounts.map((snowflakeAccount) => (
+                <MenuItem
+                  key={snowflakeAccount}
+                  value={snowflakeAccount}
+                  className="marketplace-lakehouse-subscriptions__subscription-creator__select__item"
+                >
+                  {snowflakeAccount}
+                </MenuItem>
+              ))}
+              {suggestedSnowflakeAccounts.length > 0 &&
+                otherSnowflakeAccounts.length > 0 && (
+                  <ListSubheader className="marketplace-lakehouse-subscriptions__subscription-creator__select__subheader">
+                    Other Accounts
+                  </ListSubheader>
+                )}
+              {otherSnowflakeAccounts.map((snowflakeAccount) => (
+                <MenuItem
+                  key={snowflakeAccount}
+                  value={snowflakeAccount}
+                  className="marketplace-lakehouse-subscriptions__subscription-creator__select__item"
+                >
+                  {snowflakeAccount}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth={true} margin="dense">
+            <InputLabel id="snowflake-region-select-label">
+              Snowflake Region
+            </InputLabel>
+            <Select
+              required={true}
+              labelId="snowflake-region-select-label"
+              id="snowflake-region-select"
+              value={snowflakeRegion}
+              label="Snowflake Region"
+              disabled={true}
+            >
+              {Object.values(V1_SnowflakeRegion).map((region) => (
+                <MenuItem key={region} value={region}>
+                  {region}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth={true} margin="dense">
+            <InputLabel id="snowflake-network-select-label">
+              Snowflake Network
+            </InputLabel>
+            <Select
+              required={true}
+              labelId="snowflake-network-select-label"
+              id="snowflake-network-select"
+              value={snowflakeNetwork}
+              label="Snowflake Network"
+              disabled={true}
+            >
+              {Object.values(V1_SnowflakeNetwork).map((_snowflakeNetwork) => (
+                <MenuItem key={_snowflakeNetwork} value={_snowflakeNetwork}>
+                  {_snowflakeNetwork}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose} variant="outlined">
+            Cancel
+          </Button>
+          <Button type="submit" variant="contained">
+            Create Subsciption
+          </Button>
+        </DialogActions>
+      </Dialog>
+    );
+  },
+);
 
 export const DataProductSubscriptionViewer = observer(
   (props: {

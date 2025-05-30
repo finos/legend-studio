@@ -62,6 +62,7 @@ export const V1_AWSSnowflakeIngestEnvironmentModelSchema = createModelSchema(
   V1_AWSSnowflakeIngestEnvironment,
   {
     _type: usingConstantValueSchema(V1_IngestEnvironmentType.AWSSnowflake),
+    urn: primitive(),
     version: primitive(),
     environmentClassification: primitive(),
     producers: usingModelSchema(V1_AppDirNodeModelSchema),
