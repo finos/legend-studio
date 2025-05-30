@@ -1,5 +1,11 @@
 # @finos/legend-server-marketplace
 
+## 0.0.7
+
+### Patch Changes
+
+- [#4130](https://github.com/finos/legend-studio/pull/4130) [`71bcb9c`](https://github.com/finos/legend-studio/commit/71bcb9cafbcdfe8cc19c5647c66bce7369d393c0) ([@travisstebbins](https://github.com/travisstebbins)) - Lakehouse Home UI/UX Improvements + Sandbox DataProduct viewer
+
 ## 0.0.6
 
 ## 0.0.5
