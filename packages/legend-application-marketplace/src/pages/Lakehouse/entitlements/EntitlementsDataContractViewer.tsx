@@ -69,6 +69,7 @@ import {
   UserDisplay,
 } from '@finos/legend-art';
 import { generateLakehouseTaskPath } from '../../../__lib__/LegendMarketplaceNavigation.js';
+import type { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
 
 const AssigneesList = (props: {
   users: (LegendUser | string)[];
@@ -119,9 +120,10 @@ const AssigneesList = (props: {
 export const EntitlementsDataContractViewer = observer(
   (props: {
     currentViewer: EntitlementsDataContractViewerState;
+    dataProductViewerState?: DataProductViewerState | undefined;
     onClose: () => void;
   }) => {
-    const { currentViewer, onClose } = props;
+    const { currentViewer, dataProductViewerState, onClose } = props;
     const auth = useAuth();
     const legendMarketplaceStore = useLegendMarketplaceBaseStore();
     const [userDataMap, setUserDataMap] = useState<Map<string, LegendUser>>(
@@ -193,9 +195,7 @@ export const EntitlementsDataContractViewer = observer(
     const refresh = async (): Promise<void> => {
       setIsLoading(true);
       await flowResult(
-        currentViewer.dataProductViewerState.fetchContracts(
-          auth.user?.access_token,
-        ),
+        dataProductViewerState?.fetchContracts(auth.user?.access_token),
       );
       await flowResult(currentViewer.init(auth.user?.access_token))
         .catch(legendMarketplaceStore.applicationStore.alertUnhandledError)

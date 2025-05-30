@@ -24,29 +24,22 @@ import type { LakehouseContractServerClient } from '@finos/legend-server-marketp
 import {
   ActionState,
   assertErrorThrown,
-  guaranteeNonNullable,
   type GeneratorFn,
   type PlainObject,
 } from '@finos/legend-shared';
 import { action, flow, makeObservable, observable } from 'mobx';
-import type { DataProductViewerState } from '../DataProductViewerState.js';
 
 export class EntitlementsDataContractViewerState {
-  readonly dataProductViewerState: DataProductViewerState;
   readonly value: V1_DataContract;
   readonly lakeServerClient: LakehouseContractServerClient;
   associatedTasks: V1_TaskMetadata[] | undefined;
   initializationState = ActionState.create();
 
   constructor(
-    dataProductViewerState: DataProductViewerState,
+    dataContract: V1_DataContract,
     lakeServerClient: LakehouseContractServerClient,
   ) {
-    this.dataProductViewerState = dataProductViewerState;
-    this.value = guaranteeNonNullable(
-      dataProductViewerState.dataContract,
-      'Unable to show data contract. No data contract selected',
-    );
+    this.value = dataContract;
     this.lakeServerClient = lakeServerClient;
     makeObservable(this, {
       associatedTasks: observable,

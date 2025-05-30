@@ -106,7 +106,9 @@ export const DataProductWiki = observer(
           mode={DATA_PRODUCT_VIEWER_ACTIVITY_MODE.DESCRIPTION}
           dataProductViewerState={dataProductViewerState}
         />
-        <DataProducteDataAccess dataSpaceViewerState={dataProductViewerState} />
+        <DataProducteDataAccess
+          dataProductViewerState={dataProductViewerState}
+        />
       </div>
     );
   },
