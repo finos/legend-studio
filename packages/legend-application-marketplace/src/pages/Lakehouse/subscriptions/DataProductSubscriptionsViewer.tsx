@@ -43,12 +43,7 @@ import {
   V1_SnowflakeTarget,
 } from '@finos/legend-graph';
 import React, { useEffect, useState } from 'react';
-import {
-  guaranteeNonNullable,
-  isNonNullable,
-  isType,
-  LegendUser,
-} from '@finos/legend-shared';
+import { isNonNullable, isType, LegendUser } from '@finos/legend-shared';
 import { getUserById } from '../../../stores/lakehouse/LakehouseUtils.js';
 import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
 import { useAuth } from 'react-oidc-context';
@@ -144,9 +139,8 @@ const LakehouseSubscriptionsCreateDialog = observer(
     // TODO: Figure out better way to get the preferred list of snowflake accounts instead
     // of relying upon ingest environment URN in the URL
     const params = useParams<LakehouseSandboxDataProductPathParams>();
-    const ingestEnvironmentUrn = guaranteeNonNullable(
-      params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.ingestEnvironmentUrn],
-    );
+    const ingestEnvironmentUrn =
+      params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.ingestEnvironmentUrn];
 
     const environmentDetails =
       accessGroupState.accessState.viewerState.lakehouseStore
