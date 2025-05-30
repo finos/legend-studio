@@ -307,7 +307,6 @@ export {
   V1_SnowflakeTarget,
 } from './graph-manager/protocol/pure/v1/lakehouse/subscriptions/V1_ConsumerSubscriptions.js';
 export { V1_LakehouseDiscoveryEnvironmentResponse } from './graph-manager/protocol/pure/v1/lakehouse/platform/V1_LakehouseDiscovery.js';
-export { V1_IngestEnvironmentClassification } from './graph-manager/protocol/pure/v1/lakehouse/ingest/V1_LakehouseIngestEnvironment.js';
 export {
   V1_DataProductArtifactAccessPointGroup,
   V1_DataProductArtifactAccessPointImplementation,
@@ -318,10 +317,17 @@ export {
   V1_SandboxDataProductDeploymentResponse,
 } from './graph-manager/protocol/pure/v1/lakehouse/deploy/V1_DataProductArtifact.js';
 export {
+  V1_IngestEnvironmentType,
+  V1_IngestEnvironmentClassification,
+  V1_IngestEnvironment,
+  V1_AWSSnowflakeIngestEnvironment,
+} from './graph-manager/protocol/pure/v1/lakehouse/ingest/V1_LakehouseIngestEnvironment.js';
+export {
   V1_CreateSubscriptionInputModelSchema,
   V1_dataSubscriptionModelSchema,
   V1_DataSubscriptionResponseModelSchema,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_SubscriptionSerializationHelper.js';
+export { V1_deserializeIngestEnvironment } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_IngestSerializationHelper.js';
 
 // --------------------------------------------- EXECUTION PLAN --------------------------------------------------
 

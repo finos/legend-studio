@@ -43,6 +43,7 @@ import {
   type PlainObject,
 } from '@finos/legend-shared';
 import {
+  type V1_IngestEnvironment,
   buildDataProductArtifactGeneration,
   CORE_PURE_PATH,
   DataProductArtifactGeneration,
@@ -53,6 +54,7 @@ import {
   V1_DataProduct,
   V1_DataProductArtifactGeneration,
   V1_dataProductModelSchema,
+  V1_deserializeIngestEnvironment,
   V1_deserializePackageableElement,
   V1_LakehouseDiscoveryEnvironmentResponse,
   V1_PureGraphManager,
@@ -138,9 +140,11 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   productStatesMap: Map<string, DataProductState>;
   lakehouseIngestEnvironmentSummaries: V1_LakehouseDiscoveryEnvironmentResponse[] =
     [];
+  lakehouseIngestEnvironmentDetails: V1_IngestEnvironment[] = [];
   sandboxDataProductStates: SandboxDataProductState[] = [];
   loadingProductsState = ActionState.create();
   loadingLakehouseEnvironmentSummariesState = ActionState.create();
+  loadingLakehouseEnvironmentDetailsState = ActionState.create();
   loadingSandboxDataProductStates = ActionState.create();
   filter: DataProductFilters = DataProductFilters.default();
   sort: DataProductSort = DataProductSort.NAME_ALPHABETICAL;
@@ -168,12 +172,14 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       productStatesMap: observable,
       sandboxDataProductStates: observable,
       lakehouseIngestEnvironmentSummaries: observable,
+      lakehouseIngestEnvironmentDetails: observable,
       dataProductViewer: observable,
       handleFilterChange: action,
       handleSearch: action,
       filterSortProducts: computed,
       setDataProductViewerState: action,
       setLakehouseIngestEnvironmentSummaries: action,
+      setLakehouseIngestEnvironmentDetails: action,
       setSandboxDataProductStates: action,
       filter: observable,
       sort: observable,
@@ -224,6 +230,12 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     summaries: V1_LakehouseDiscoveryEnvironmentResponse[],
   ): void {
     this.lakehouseIngestEnvironmentSummaries = summaries;
+  }
+
+  setLakehouseIngestEnvironmentDetails(
+    environmentDetails: V1_IngestEnvironment[],
+  ): void {
+    this.lakehouseIngestEnvironmentDetails = environmentDetails;
   }
 
   setSandboxDataProductStates(
@@ -392,6 +404,32 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       );
       this.setLakehouseIngestEnvironmentSummaries(discoveryEnvironments);
       this.loadingLakehouseEnvironmentSummariesState.complete();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(
+        `Unable to load lakehouse environments: ${error.message}`,
+      );
+      this.loadingLakehouseEnvironmentSummariesState.fail();
+    }
+  }
+
+  async fetchLakehouseEnvironmentDetails(
+    token: string | undefined,
+  ): Promise<void> {
+    try {
+      this.loadingLakehouseEnvironmentDetailsState.inProgress();
+      const ingestEnvironments: V1_IngestEnvironment[] = await Promise.all(
+        this.lakehouseIngestEnvironmentSummaries.map(async (discoveryEnv) => {
+          const env =
+            (await this.lakehouseIngestServerClient.getIngestEnvironment(
+              discoveryEnv.ingestServerUrl,
+              token,
+            )) as PlainObject<V1_IngestEnvironment>;
+          return V1_deserializeIngestEnvironment(env);
+        }),
+      );
+      this.setLakehouseIngestEnvironmentDetails(ingestEnvironments);
+      this.loadingLakehouseEnvironmentDetailsState.complete();
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(

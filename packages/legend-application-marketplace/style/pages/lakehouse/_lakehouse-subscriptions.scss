@@ -41,3 +41,29 @@
     flex: 1;
   }
 }
+
+.marketplace-lakehouse-subscriptions__subscriptions-viewer {
+  &__content {
+    @include flexCenter;
+
+    flex-direction: column;
+  }
+
+  &__description {
+    text-align: center;
+  }
+
+  &__create-btn {
+    align-self: end;
+    margin: 1rem 0;
+  }
+
+  &__grid {
+    height: 300px;
+    width: 100%;
+
+    &__user-display {
+      height: 100%;
+    }
+  }
+}

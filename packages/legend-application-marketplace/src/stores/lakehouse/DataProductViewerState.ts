@@ -21,21 +21,21 @@ import {
 } from '@finos/legend-application';
 import {
   type DataProductArtifactGeneration,
+  type GraphData,
+  type GraphManagerState,
+  type V1_AccessPointGroup,
   type V1_DataContract,
   type V1_DataContractsRecord,
+  type V1_DataProduct,
   V1_AccessPointGroupReference,
+  V1_AdhocTeam,
+  V1_AdhocTeamModelSchema,
   V1_AppDirLevel,
   V1_AppDirNode,
   V1_AppDirNodeModelSchema,
-  type GraphData,
-  type GraphManagerState,
-  type V1_DataProduct,
-  type V1_AccessPointGroup,
+  V1_DataContractsRecordModelSchemaToContracts,
   V1_User,
   V1_UserType,
-  V1_AdhocTeam,
-  V1_AdhocTeamModelSchema,
-  V1_DataContractsRecordModelSchemaToContracts,
 } from '@finos/legend-graph';
 import type { VersionedProjectData } from '@finos/legend-server-depot';
 import { action, computed, flow, makeObservable, observable } from 'mobx';
@@ -119,7 +119,7 @@ export class DataProductViewerState {
       dataContract: observable,
       setDataContract: action,
       setAssociatedContracts: action,
-      create: flow,
+      createContract: flow,
       creatingContractState: observable,
     });
 
@@ -190,7 +190,7 @@ export class DataProductViewerState {
     }
   }
 
-  *create(
+  *createContract(
     userId: string,
     description: string,
     group: V1_AccessPointGroup,

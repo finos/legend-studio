@@ -14,8 +14,32 @@
  * limitations under the License.
  */
 
+import type { AppDirNode } from '../../../../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
+
+export enum V1_IngestEnvironmentType {
+  AWSSnowflake = 'AWSSnowflake',
+}
+
 export enum V1_IngestEnvironmentClassification {
   PROD = 'prod',
   PROD_PARALLEL = 'prod-parallel',
   DEV = 'dev',
+}
+
+export abstract class V1_IngestEnvironment {}
+
+export class V1_AWSSnowflakeIngestEnvironment extends V1_IngestEnvironment {
+  urn!: string;
+  version!: string;
+  environmentClassification!: V1_IngestEnvironmentClassification;
+  producers: AppDirNode[] = [];
+  awsRegion!: string;
+  awsAccountId!: string;
+  ingestStepFunctionsAvtivityArn!: string;
+  ingestStateMachineArn!: string;
+  ingestSystemAccount!: string;
+  snowflakeAccount!: string;
+  snowflakeHost!: string;
+  s3StagingBucketName!: string;
+  storageIntegrationName!: string;
 }
