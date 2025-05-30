@@ -585,6 +585,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       }
       const stateViewer = new DataProductViewerState(
         this.applicationStore,
+        this,
         new GraphManagerState(
           this.applicationStore.pluginManager,
           this.applicationStore.logService,
@@ -718,6 +719,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
 
       const stateViewer = new DataProductViewerState(
         this.applicationStore,
+        this,
         graphManagerState,
         this.lakehouseContractServerClient,
         VersionedProjectData.serialization.fromJson({

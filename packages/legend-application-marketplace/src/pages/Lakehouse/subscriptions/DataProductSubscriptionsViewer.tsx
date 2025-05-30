@@ -16,6 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import {
+  type SelectChangeEvent,
   Box,
   Button,
   CircularProgress,
@@ -33,6 +34,7 @@ import {
 import {
   type V1_DataSubscription,
   type V1_DataSubscriptionTarget,
+  V1_AWSSnowflakeIngestEnvironment,
   V1_DataContract,
   V1_DataSubscriptionTargetType,
   V1_SnowflakeNetwork,
@@ -40,7 +42,7 @@ import {
   V1_SnowflakeTarget,
 } from '@finos/legend-graph';
 import React, { useEffect, useState } from 'react';
-import { isNonNullable, LegendUser } from '@finos/legend-shared';
+import { isNonNullable, isType, LegendUser } from '@finos/legend-shared';
 import { getUserById } from '../../../stores/lakehouse/LakehouseUtils.js';
 import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
 import { useAuth } from 'react-oidc-context';
@@ -104,10 +106,11 @@ const UserCellRenderer = (props: {
 const LakehouseSubscriptionsCreateDialog = (props: {
   open: boolean;
   onClose: () => void;
+  accessGroupState: DataProductGroupAccessState;
   contractId: string;
   onSubmit: (target: V1_DataSubscriptionTarget) => Promise<void>;
 }) => {
-  const { open, onClose, contractId, onSubmit } = props;
+  const { open, onClose, accessGroupState, contractId, onSubmit } = props;
 
   const [targetType] = useState<V1_DataSubscriptionTargetType>(
     V1_DataSubscriptionTargetType.Snowflake,
@@ -175,18 +178,39 @@ const LakehouseSubscriptionsCreateDialog = (props: {
             ))}
           </Select>
         </FormControl>
-        <TextField
-          required={true}
-          margin="dense"
-          id="snowflakeAccountId"
-          name="snowflakeAccountId"
-          label="Snowflake Account ID"
-          fullWidth={true}
-          variant="outlined"
-          value={snowflakeAccountId}
-          onChange={(event) => setSnowflakeAccountId(event.target.value)}
-          autoFocus={true}
-        />
+        <FormControl fullWidth={true} margin="dense">
+          <InputLabel id="snowflake-account-id-select-label">
+            Snowflake Account ID
+          </InputLabel>
+          <Select
+            required={true}
+            labelId="snowflake-account-id-select-label"
+            id="snowflake-account-id-select"
+            value={snowflakeAccountId}
+            label="Snowflake Account ID"
+            onChange={(event: SelectChangeEvent<string>) => {
+              setSnowflakeAccountId(event.target.value);
+            }}
+            autoFocus={true}
+          >
+            {Array.from(
+              new Set(
+                accessGroupState.accessState.viewerState.lakehouseStore.lakehouseIngestEnvironmentDetails
+                  .filter((details) =>
+                    isType(details, V1_AWSSnowflakeIngestEnvironment),
+                  )
+                  .map(
+                    (ingestEnvironmentDetails) =>
+                      ingestEnvironmentDetails.snowflakeAccount,
+                  ),
+              ),
+            ).map((snowflakeAccount) => (
+              <MenuItem key={snowflakeAccount} value={snowflakeAccount}>
+                {snowflakeAccount}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
         <FormControl fullWidth={true} margin="dense">
           <InputLabel id="snowflake-region-select-label">
             Snowflake Region
@@ -477,6 +501,7 @@ export const DataProductSubscriptionViewer = observer(
         <LakehouseSubscriptionsCreateDialog
           open={showCreateDialog}
           onClose={() => setShowCreateDialog(false)}
+          accessGroupState={accessGroupState}
           contractId={contract.guid}
           onSubmit={createDialogHandleSubmit}
         />

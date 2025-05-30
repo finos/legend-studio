@@ -59,6 +59,7 @@ import {
 import { serialize } from 'serializr';
 import { dataContractContainsDataProduct } from './LakehouseUtils.js';
 import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
+import type { MarketplaceLakehouseStore } from './MarketplaceLakehouseStore.js';
 
 const buildAdhocUser = (user: string): V1_AdhocTeam => {
   const _user = new V1_User();
@@ -71,6 +72,7 @@ const buildAdhocUser = (user: string): V1_AdhocTeam => {
 
 export class DataProductViewerState {
   readonly applicationStore: GenericLegendApplicationStore;
+  readonly lakehouseStore: MarketplaceLakehouseStore;
   readonly graphManagerState: GraphManagerState;
   readonly layoutState: DataProductLayoutState;
 
@@ -96,6 +98,7 @@ export class DataProductViewerState {
 
   constructor(
     applicationStore: GenericLegendApplicationStore,
+    lakehouseStore: MarketplaceLakehouseStore,
     graphManagerState: GraphManagerState,
     lakeServerClient: LakehouseContractServerClient,
     project: VersionedProjectData,
@@ -124,6 +127,7 @@ export class DataProductViewerState {
     });
 
     this.applicationStore = applicationStore;
+    this.lakehouseStore = lakehouseStore;
     this.graphManagerState = graphManagerState;
 
     this.project = project;
