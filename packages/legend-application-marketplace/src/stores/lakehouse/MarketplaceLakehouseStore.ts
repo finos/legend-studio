@@ -82,6 +82,7 @@ import {
   SandboxDataProductState,
   type BaseDataProductState,
 } from './dataProducts/DataProducts.js';
+import { TMP__DummyDataProducts } from '../../pages/Lakehouse/TMP__Data/TMP__DummyDataProducts.js';
 
 const ARTIFACT_GENERATION_DAT_PRODUCT_KEY = 'dataProduct';
 
@@ -150,6 +151,23 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   sort: DataProductSort = DataProductSort.NAME_ALPHABETICAL;
   dataProductViewer: DataProductViewerState | undefined;
 
+  // Temporary state for dummy data products
+  dummyDataProductStates: DataProductState[] = TMP__DummyDataProducts.map(
+    (dataProduct) => {
+      const dataProductEntity = new DataProductEntity(
+        '',
+        '',
+        '1.0',
+        dataProduct.path,
+      );
+      dataProductEntity.setProduct(dataProduct);
+      const dataProductState = new DataProductState(this);
+      dataProductState.setProductEntity('1.0', dataProductEntity);
+      dataProductState.setSelectedVersion('1.0');
+      return dataProductState;
+    },
+  );
+
   constructor(
     marketplaceBaseStore: LegendMarketplaceBaseStore,
     lakehouseServerClient: LakehouseContractServerClient,
@@ -192,6 +210,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       Array.from(this.productStatesMap.values()) as BaseDataProductState[]
     )
       .concat(this.sandboxDataProductStates)
+      .concat(this.dummyDataProductStates)
       .filter((baseDataProductState) => {
         if (!baseDataProductState.isInitialized) {
           return false;
