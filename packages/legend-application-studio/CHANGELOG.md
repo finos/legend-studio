@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.18.139
+
+### Patch Changes
+
+- [#4142](https://github.com/finos/legend-studio/pull/4142) [`9249c23`](https://github.com/finos/legend-studio/commit/9249c235bf029c3f23469158d3e8c67db078c590) ([@kelly-thai](https://github.com/kelly-thai)) - Add dropdown to change target environment for access points in Data Product editor
+
 ## 28.18.138
 
 ### Patch Changes
