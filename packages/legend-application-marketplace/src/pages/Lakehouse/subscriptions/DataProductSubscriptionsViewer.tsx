@@ -186,6 +186,7 @@ const LakehouseSubscriptionsCreateDialog = observer(
       <Dialog
         open={open}
         onClose={onClose}
+        className="marketplace-lakehouse-subscriptions__subscription-creator"
         slotProps={{
           paper: {
             component: 'form',
@@ -255,18 +256,30 @@ const LakehouseSubscriptionsCreateDialog = observer(
               autoFocus={true}
             >
               {suggestedSnowflakeAccounts.length > 0 && (
-                <ListSubheader>Suggested Accounts</ListSubheader>
+                <ListSubheader className="marketplace-lakehouse-subscriptions__subscription-creator__select__subheader">
+                  Suggested Accounts
+                </ListSubheader>
               )}
               {suggestedSnowflakeAccounts.map((snowflakeAccount) => (
-                <MenuItem key={snowflakeAccount} value={snowflakeAccount}>
+                <MenuItem
+                  key={snowflakeAccount}
+                  value={snowflakeAccount}
+                  className="marketplace-lakehouse-subscriptions__subscription-creator__select__item"
+                >
                   {snowflakeAccount}
                 </MenuItem>
               ))}
               {otherSnowflakeAccounts.length > 0 && (
-                <ListSubheader>Other Accounts</ListSubheader>
+                <ListSubheader className="marketplace-lakehouse-subscriptions__subscription-creator__select__subheader">
+                  Other Accounts
+                </ListSubheader>
               )}
               {otherSnowflakeAccounts.map((snowflakeAccount) => (
-                <MenuItem key={snowflakeAccount} value={snowflakeAccount}>
+                <MenuItem
+                  key={snowflakeAccount}
+                  value={snowflakeAccount}
+                  className="marketplace-lakehouse-subscriptions__subscription-creator__select__item"
+                >
                   {snowflakeAccount}
                 </MenuItem>
               ))}

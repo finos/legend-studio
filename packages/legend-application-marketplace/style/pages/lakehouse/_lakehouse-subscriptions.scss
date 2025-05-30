@@ -67,3 +67,12 @@
     }
   }
 }
+
+.marketplace-lakehouse-subscriptions__subscription-creator {
+  &__select {
+    &__subheader,
+    &__item {
+      font-size: 1.2rem;
+    }
+  }
+}
