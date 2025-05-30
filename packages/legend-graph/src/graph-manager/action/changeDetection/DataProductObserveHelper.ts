@@ -33,6 +33,7 @@ export const observe_AccessPoint = skipObserved(
         id: observable,
         targetEnvironment: observable,
         func: observable.ref,
+        description: observable,
       });
     }
     // TODO others
