@@ -126,4 +126,5 @@ export const V1_dataProductModelSchema = createModelSchema(V1_DataProduct, {
       }
     },
   ),
+  imageUrl: optional(primitive()),
 });
