@@ -27,6 +27,7 @@ import {
   FormControl,
   IconButton,
   InputLabel,
+  ListSubheader,
   MenuItem,
   Select,
   TextField,
@@ -42,7 +43,12 @@ import {
   V1_SnowflakeTarget,
 } from '@finos/legend-graph';
 import React, { useEffect, useState } from 'react';
-import { isNonNullable, isType, LegendUser } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  isNonNullable,
+  isType,
+  LegendUser,
+} from '@finos/legend-shared';
 import { getUserById } from '../../../stores/lakehouse/LakehouseUtils.js';
 import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
 import { useAuth } from 'react-oidc-context';
@@ -59,6 +65,11 @@ import {
 } from '@finos/legend-lego/data-grid';
 import type { NavigationService } from '@finos/legend-application';
 import { flowResult } from 'mobx';
+import { useParams } from '@finos/legend-application/browser';
+import {
+  LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN,
+  type LakehouseSandboxDataProductPathParams,
+} from '../../../__lib__/LegendMarketplaceNavigation.js';
 
 const UserCellRenderer = (props: {
   userId: string | undefined;
@@ -109,6 +120,7 @@ const LakehouseSubscriptionsCreateDialog = (props: {
   accessGroupState: DataProductGroupAccessState;
   contractId: string;
   onSubmit: (target: V1_DataSubscriptionTarget) => Promise<void>;
+  ingestEnvironmentUrn?: string | undefined;
 }) => {
   const { open, onClose, accessGroupState, contractId, onSubmit } = props;
 
@@ -127,6 +139,43 @@ const LakehouseSubscriptionsCreateDialog = (props: {
     setSnowflakeAccountId('');
     onClose();
   };
+
+  // TODO: Figure out better way to get the preferred list of snowflake accounts instead
+  // of relying upon ingest environment URN in the URL
+  const params = useParams<LakehouseSandboxDataProductPathParams>();
+  const ingestEnvironmentUrn = guaranteeNonNullable(
+    params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.ingestEnvironmentUrn],
+  );
+
+  const environmentDetails =
+    accessGroupState.accessState.viewerState.lakehouseStore
+      .lakehouseIngestEnvironmentDetails;
+  const suggestedSnowflakeAccounts = Array.from(
+    new Set(
+      environmentDetails
+        .filter((details) => isType(details, V1_AWSSnowflakeIngestEnvironment))
+        .filter(
+          (details) =>
+            ingestEnvironmentUrn === undefined ||
+            details.urn === ingestEnvironmentUrn,
+        )
+        .map(
+          (ingestEnvironmentDetails) =>
+            ingestEnvironmentDetails.snowflakeAccount,
+        ),
+    ),
+  );
+  const otherSnowflakeAccounts = Array.from(
+    new Set(
+      environmentDetails
+        .filter((details) => isType(details, V1_AWSSnowflakeIngestEnvironment))
+        .map(
+          (ingestEnvironmentDetails) =>
+            ingestEnvironmentDetails.snowflakeAccount,
+        )
+        .filter((account) => !suggestedSnowflakeAccounts.includes(account)),
+    ),
+  );
 
   return (
     <Dialog
@@ -198,18 +247,20 @@ const LakehouseSubscriptionsCreateDialog = (props: {
             }}
             autoFocus={true}
           >
-            {Array.from(
-              new Set(
-                accessGroupState.accessState.viewerState.lakehouseStore.lakehouseIngestEnvironmentDetails
-                  .filter((details) =>
-                    isType(details, V1_AWSSnowflakeIngestEnvironment),
-                  )
-                  .map(
-                    (ingestEnvironmentDetails) =>
-                      ingestEnvironmentDetails.snowflakeAccount,
-                  ),
-              ),
-            ).map((snowflakeAccount) => (
+            {suggestedSnowflakeAccounts.length > 0 && (
+              <>
+                <ListSubheader>Suggested Accounts</ListSubheader>
+                {suggestedSnowflakeAccounts.map((snowflakeAccount) => (
+                  <MenuItem key={snowflakeAccount} value={snowflakeAccount}>
+                    {snowflakeAccount}
+                  </MenuItem>
+                ))}
+                {otherSnowflakeAccounts.length > 0 && (
+                  <ListSubheader>Other Accounts</ListSubheader>
+                )}
+              </>
+            )}
+            {otherSnowflakeAccounts.map((snowflakeAccount) => (
               <MenuItem key={snowflakeAccount} value={snowflakeAccount}>
                 {snowflakeAccount}
               </MenuItem>
