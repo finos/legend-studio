@@ -216,6 +216,19 @@
     }
   }
 
+  &__group-container {
+    margin-bottom: 1.8rem;
+    margin-top: 1rem !important;
+    background-color: var(--color-dark-grey-50);
+    padding: 1rem;
+
+    &__title {
+      padding: 0 1rem;
+      color: white;
+      font-weight: bold;
+    }
+  }
+
   &__entry__container {
     width: 100%;
   }
