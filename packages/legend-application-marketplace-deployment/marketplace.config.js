@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-const path = require('path');
-
 export default {
   /**
    * `favicon` [string, optional]
@@ -40,7 +38,7 @@ export default {
     host: 'localhost',
     port: 9008,
     static: {
-      directory: path.join(__dirname, 'assets'),
+      directory: './assets',
       publicPath: '/assets',
     },
   },
