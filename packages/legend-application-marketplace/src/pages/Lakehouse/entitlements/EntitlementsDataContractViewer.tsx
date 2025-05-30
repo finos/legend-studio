@@ -21,6 +21,7 @@ import {
   AccordionDetails,
   AccordionSummary,
   Box,
+  Button,
   CircularProgress,
   Dialog,
   DialogContent,
@@ -64,6 +65,7 @@ import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
   ExpandMoreIcon,
+  RefreshIcon,
   UserDisplay,
 } from '@finos/legend-art';
 import { generateLakehouseTaskPath } from '../../../__lib__/LegendMarketplaceNavigation.js';
@@ -187,6 +189,18 @@ export const EntitlementsDataContractViewer = observer(
       currentViewer.value.consumer,
       currentViewer.value.createdBy,
     ]);
+
+    const refresh = async (): Promise<void> => {
+      setIsLoading(true);
+      await flowResult(
+        currentViewer.dataProductViewerState.fetchContracts(
+          auth.user?.access_token,
+        ),
+      );
+      await flowResult(currentViewer.init(auth.user?.access_token))
+        .catch(legendMarketplaceStore.applicationStore.alertUnhandledError)
+        .finally(() => setIsLoading(false));
+    };
 
     if (
       !(currentViewer.value.resource instanceof V1_AccessPointGroupReference)
@@ -460,6 +474,16 @@ export const EntitlementsDataContractViewer = observer(
                   <b>Business Justification: </b>
                   {currentViewer.value.description}
                 </div>
+              </Box>
+              <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__refresh-btn">
+                <Button
+                  size="small"
+                  variant="outlined"
+                  startIcon={<RefreshIcon />}
+                  onClick={refresh}
+                >
+                  Refresh
+                </Button>
               </Box>
               <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__timeline">
                 <Timeline>

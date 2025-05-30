@@ -424,7 +424,7 @@ export const DataProducteDataAccess = observer(
               <EntitlementsDataContractViewer
                 currentViewer={
                   new EntitlementsDataContractViewerState(
-                    dataSpaceViewerState.dataContract,
+                    dataSpaceViewerState,
                     dataSpaceViewerState.lakeServerClient,
                   )
                 }
