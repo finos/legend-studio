@@ -569,16 +569,20 @@ export const EntitlementsDataContractViewer = observer(
                   {currentViewer.value.description}
                 </div>
               </Box>
-              <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__refresh-btn">
-                <Button
-                  size="small"
-                  variant="outlined"
-                  startIcon={<RefreshIcon />}
-                  onClick={refresh}
-                >
-                  Refresh
-                </Button>
-              </Box>
+              {currentState !== V1_ContractState.CLOSED &&
+                currentState !== V1_ContractState.REJECTED &&
+                currentState !== V1_ContractState.COMPLETED && (
+                  <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__refresh-btn">
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      startIcon={<RefreshIcon />}
+                      onClick={refresh}
+                    >
+                      Refresh
+                    </Button>
+                  </Box>
+                )}
               <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__timeline">
                 <Timeline>
                   {steps.map((step, index) => (
