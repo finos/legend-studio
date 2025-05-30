@@ -43,6 +43,7 @@ export class LakehouseIngestServerClient extends AbstractServerClient {
       {},
       this._token(token),
     );
+
   // ------------------------------------- Invest Environment ----p---------------------------------
 
   getIngestEnvironment = (

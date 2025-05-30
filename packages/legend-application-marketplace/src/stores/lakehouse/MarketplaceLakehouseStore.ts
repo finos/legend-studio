@@ -540,6 +540,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
           );
           await Promise.all([
             this.fetchSandboxDataProducts(auth.user?.access_token),
+            this.fetchLakehouseEnvironmentDetails(auth.user?.access_token),
           ]);
         }
       })(),
