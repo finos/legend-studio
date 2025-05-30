@@ -20,7 +20,13 @@ import { Editor } from './editor/Editor.js';
 import { ProjectReviewer } from './project-reviewer/ProjectReviewer.js';
 import { ProjectViewer } from './project-view/ProjectViewer.js';
 import { observer } from 'mobx-react-lite';
-import { clsx, GhostIcon, MarkdownTextViewer } from '@finos/legend-art';
+import {
+  clsx,
+  CubesLoadingIndicator,
+  CubesLoadingIndicatorIcon,
+  GhostIcon,
+  MarkdownTextViewer,
+} from '@finos/legend-art';
 import {
   LEGEND_STUDIO_ROUTE_PATTERN,
   LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN,
@@ -44,11 +50,10 @@ import { PureCompatibilityTestManager } from './pct/PureCompatibilityTest.js';
 import { ShowcaseViewer } from './showcase/ShowcaseViewer.js';
 import {
   AuthProvider,
-  useAuth,
+  withAuthenticationRequired,
   type AuthProviderProps,
 } from 'react-oidc-context';
 import type { User } from 'oidc-client-ts';
-import { assertErrorThrown } from '@finos/legend-shared';
 
 const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();
@@ -293,33 +298,6 @@ export const LegendStudioWebApplicationRouter = observer(() => {
 const LegendStudioWebProvider: React.FC<{
   baseUrl: string;
 }> = ({ baseUrl }) => {
-  const applicationStore = useLegendStudioApplicationStore();
-
-  const enableOauthFlow = applicationStore.config.options.enableOauthFlow;
-  const auth = useAuth();
-
-  useEffect(() => {
-    const tryLogin = async () => {
-      if (enableOauthFlow) {
-        try {
-          const user = auth.user;
-          if ((!user || user.expired) && !auth.isLoading) {
-            await auth.signinRedirect({
-              state: window.location.pathname + window.location.search,
-            });
-          }
-        } catch (error) {
-          assertErrorThrown(error);
-          applicationStore.logUnhandledError(error);
-        }
-      }
-    };
-
-    tryLogin().catch((error) => {
-      assertErrorThrown(error);
-    });
-  }, [enableOauthFlow, applicationStore, auth]);
-
   return (
     <BrowserEnvironmentProvider baseUrl={baseUrl}>
       <LegendStudioFrameworkProvider>
@@ -329,6 +307,20 @@ const LegendStudioWebProvider: React.FC<{
   );
 };
 
+const AuthenticatedLegendStudioWebProvider = withAuthenticationRequired(
+  LegendStudioWebProvider,
+  {
+    OnRedirecting: () => (
+      <CubesLoadingIndicator isLoading={true}>
+        <CubesLoadingIndicatorIcon />
+      </CubesLoadingIndicator>
+    ),
+    signinRedirectArgs: {
+      state: `${window.location.pathname}${window.location.search}`,
+    },
+  },
+);
+
 export const LegendStudioWebApplication = observer(
   (props: { baseUrl: string }) => {
     const { baseUrl } = props;
@@ -337,6 +329,7 @@ export const LegendStudioWebApplication = observer(
     const oidcConfig =
       applicationStore.config.options.ingestDeploymentConfig?.deployment
         .oidcConfig;
+    const enableOauthFlow = applicationStore.config.options.enableOauthFlow;
     if (oidcConfig) {
       const onSigninCallback = (_user: User | undefined) => {
         window.location.href = (_user?.state as string | undefined) ?? '/';
@@ -346,10 +339,16 @@ export const LegendStudioWebApplication = observer(
         ...oidcConfig.authProviderProps,
         redirect_uri: `${window.location.origin}${oidcConfig.redirectPath}`,
         silent_redirect_uri: `${window.location.origin}${oidcConfig.silentRedirectPath}`,
-        automaticSilentRenew: true,
         onSigninCallback,
       };
 
+      if (enableOauthFlow) {
+        return (
+          <AuthProvider {...mergedOIDCConfig}>
+            <AuthenticatedLegendStudioWebProvider baseUrl={baseUrl} />
+          </AuthProvider>
+        );
+      }
       return (
         <AuthProvider {...mergedOIDCConfig}>
           <LegendStudioWebProvider baseUrl={baseUrl} />
@@ -357,12 +356,6 @@ export const LegendStudioWebApplication = observer(
       );
     }
 
-    return (
-      <BrowserEnvironmentProvider baseUrl={baseUrl}>
-        <LegendStudioFrameworkProvider>
-          <LegendStudioWebApplicationRouter />
-        </LegendStudioFrameworkProvider>
-      </BrowserEnvironmentProvider>
-    );
+    return <LegendStudioWebProvider baseUrl={baseUrl} />;
   },
 );
