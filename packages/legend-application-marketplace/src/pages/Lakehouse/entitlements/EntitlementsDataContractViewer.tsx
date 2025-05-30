@@ -304,12 +304,11 @@ export const EntitlementsDataContractViewer = observer(
         description:
           currentState ===
           V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL ? (
-            currentViewer.associatedTasks ? (
+            currentTask ? (
               <AssigneesList
-                users={currentViewer.associatedTasks
-                  .map((task) => task.assignees)
-                  .flat()
-                  .map((asignee) => userDataMap.get(asignee) ?? asignee)}
+                users={currentTask.assignees.map(
+                  (asignee) => userDataMap.get(asignee) ?? asignee,
+                )}
                 userProfileImageUrl={
                   legendMarketplaceStore.applicationStore.config
                     .marketplaceUserProfileImageUrl
@@ -364,12 +363,11 @@ export const EntitlementsDataContractViewer = observer(
           ),
         description:
           currentState === V1_ContractState.PENDING_DATA_OWNER_APPROVAL ? (
-            currentViewer.associatedTasks ? (
+            currentTask ? (
               <AssigneesList
-                users={currentViewer.associatedTasks
-                  .map((task) => task.assignees)
-                  .flat()
-                  .map((asignee) => userDataMap.get(asignee) ?? asignee)}
+                users={currentTask.assignees.map(
+                  (asignee) => userDataMap.get(asignee) ?? asignee,
+                )}
                 userProfileImageUrl={
                   legendMarketplaceStore.applicationStore.config
                     .marketplaceUserProfileImageUrl
