@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 28.18.140
+
+### Patch Changes
+
+- [#4150](https://github.com/finos/legend-studio/pull/4150) [`aec79bc`](https://github.com/finos/legend-studio/commit/aec79bc61d62fb9965f9feec1c7b922edec69348) ([@kelly-thai](https://github.com/kelly-thai)) - Update grouping bug fix
+
+- [#4148](https://github.com/finos/legend-studio/pull/4148) [`03ec59a`](https://github.com/finos/legend-studio/commit/03ec59a841155086d5ab6e9ea30bf6603cec1757) ([@kelly-thai](https://github.com/kelly-thai)) - Fix grouping bug so that access points are displayed by the correct gorup
+
 ## 28.18.139
 
 ### Patch Changes
