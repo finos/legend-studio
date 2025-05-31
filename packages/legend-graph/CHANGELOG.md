@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.1.40
+
+### Patch Changes
+
+- [#4151](https://github.com/finos/legend-studio/pull/4151) [`636eae6`](https://github.com/finos/legend-studio/commit/636eae6dd2dea5bdd7a654febd9529e4e1269aaa) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Include `LakehouseRuntime` in compatible runtimes for selection of compatibles runtimes
+
 ## 32.1.39
 
 ### Patch Changes
