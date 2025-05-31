@@ -253,7 +253,6 @@ export class DataProductEditorState extends ElementEditorState {
   isConvertingTransformLambdaObjects = false;
   deployOnOpen = false;
   deployResponse: AdhocDataProductDeployResponse | undefined;
-  defaultGroupState: AccessPointGroupState | undefined;
 
   constructor(
     editorStore: EditorStore,
@@ -348,24 +347,24 @@ export class DataProductEditorState extends ElementEditorState {
       stub_RawLambda(),
     );
     accesspoint.description = description;
-    let groupState: AccessPointGroupState;
-    if (typeof accessPointGroup === 'string') {
-      if (!this.defaultGroupState) {
-        this.defaultGroupState = this.createBareGroupAndAdd(accessPointGroup);
-      }
-      groupState = this.defaultGroupState;
-    } else if (accessPointGroup instanceof AccessPointGroupState) {
-      groupState = accessPointGroup;
-    } else {
-      groupState = this.createBareGroupAndAdd(accessPointGroup);
-    }
+    const groupState =
+      accessPointGroup instanceof AccessPointGroupState
+        ? accessPointGroup
+        : this.createBareGroupAndAdd(accessPointGroup);
     groupState.addAccessPoint(accesspoint);
     addUniqueEntry(this.accessPointGroupStates, groupState);
   }
 
   createBareGroupAndAdd(id: string): AccessPointGroupState {
+    const existingGroupState = this.accessPointGroupStates.find(
+      (groupState) => groupState.value.id === id,
+    );
+
+    if (existingGroupState) {
+      return existingGroupState;
+    }
     const group = new AccessPointGroup();
-    group.id = 'id';
+    group.id = id;
     dataProduct_addAccessPointGroup(this.product, group);
     return new AccessPointGroupState(group, this);
   }
