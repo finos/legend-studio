@@ -32,9 +32,10 @@ import { AggregationAwareSetImplementation } from '../metamodel/pure/packageable
 import { RootRelationalInstanceSetImplementation } from '../metamodel/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation.js';
 import type { PropertyMapping } from '../metamodel/pure/packageableElements/mapping/PropertyMapping.js';
 import { InstanceSetImplementation } from '../metamodel/pure/packageableElements/mapping/InstanceSetImplementation.js';
-import type {
-  EngineRuntime,
-  IdentifiedConnection,
+import {
+  LakehouseRuntime,
+  type EngineRuntime,
+  type IdentifiedConnection,
 } from '../metamodel/pure/packageableElements/runtime/Runtime.js';
 import { OperationSetImplementation } from '../metamodel/pure/packageableElements/mapping/OperationSetImplementation.js';
 import type { PackageableRuntime } from '../metamodel/pure/packageableElements/runtime/PackageableRuntime.js';
@@ -349,17 +350,25 @@ export const generateIdentifiedConnectionId = (
   return generatedId;
 };
 
+const isLakehouseRuntime = (runtimeValue: EngineRuntime): boolean => {
+  return runtimeValue instanceof LakehouseRuntime;
+};
+
 export const getMappingCompatibleRuntimes = (
   mapping: Mapping,
   runtimes: PackageableRuntime[],
 ): PackageableRuntime[] =>
   // If the runtime claims to cover some mappings which include the specified mapping,
   // then we deem the runtime to be compatible with the such mapping
-  runtimes.filter((runtime) =>
-    runtime.runtimeValue.mappings
-      .flatMap((mappingReference) => [
-        mappingReference.value,
-        ...getAllIncludedMappings(mappingReference.value),
-      ])
-      .includes(mapping),
+  runtimes.filter(
+    (runtime) =>
+      runtime.runtimeValue.mappings
+        .flatMap((mappingReference) => [
+          mappingReference.value,
+          ...getAllIncludedMappings(mappingReference.value),
+        ])
+        .includes(mapping) ||
+      // TODO: remove once mappings are added to the protocol
+      // include lakehouse runtime as for now they have no reference to mappings within their protocol
+      isLakehouseRuntime(runtime.runtimeValue),
   );
