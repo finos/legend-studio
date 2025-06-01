@@ -341,10 +341,7 @@ export const DataProductAccessPointGroupViewer = observer(
         {accessGroupState.accessState.viewerState
           .dataContractAccessPointGroup !== undefined && (
           <DataContractCreator
-            open={
-              accessGroupState.accessState.viewerState
-                .dataContractAccessPointGroup !== undefined
-            }
+            open={true}
             onClose={() =>
               accessGroupState.accessState.viewerState.setDataContractAccessPointGroup(
                 undefined,
@@ -359,10 +356,7 @@ export const DataProductAccessPointGroupViewer = observer(
         )}
         {accessGroupState.accessState.viewerState.dataContract && (
           <EntitlementsDataContractViewer
-            open={
-              accessGroupState.accessState.viewerState.dataContract !==
-              undefined
-            }
+            open={true}
             currentViewer={
               new EntitlementsDataContractViewerState(
                 accessGroupState.accessState.viewerState.dataContract,
