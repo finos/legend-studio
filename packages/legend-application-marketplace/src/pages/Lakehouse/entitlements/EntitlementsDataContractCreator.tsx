@@ -45,11 +45,12 @@ enum DataContractCreatorConsumerType {
 
 export const DataContractCreator = observer(
   (props: {
+    open: boolean;
     onClose: () => void;
     accessPointGroup: V1_AccessPointGroup;
     viewerState: DataProductViewerState;
   }) => {
-    const { onClose, viewerState, accessPointGroup } = props;
+    const { open, onClose, viewerState, accessPointGroup } = props;
     const legendMarketplaceStore = useLegendMarketplaceBaseStore();
     const auth = useAuth();
     const [description, setDescription] = useState<string | undefined>(
@@ -103,7 +104,7 @@ export const DataContractCreator = observer(
       viewerState.product.title ?? viewerState.product.path.split('::').pop();
 
     return (
-      <Dialog open={true} onClose={onClose} fullWidth={true} maxWidth="md">
+      <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="md">
         <DialogTitle>Data Contract Request</DialogTitle>
         <DialogContent className="marketplace-lakehouse-entitlements__data-contract-creator__content">
           <CubesLoadingIndicator

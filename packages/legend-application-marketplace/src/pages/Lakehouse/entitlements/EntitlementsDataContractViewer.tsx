@@ -73,6 +73,7 @@ import {
 import { generateLakehouseTaskPath } from '../../../__lib__/LegendMarketplaceNavigation.js';
 import type { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
 import { DEFAULT_DATE_TIME_FORMAT } from '@finos/legend-application';
+import type { DataProductGroupAccessState } from '../../../stores/lakehouse/DataProductDataAccessState.js';
 
 const AssigneesList = (props: {
   users: (LegendUser | string)[];
@@ -198,11 +199,19 @@ const TaskApprovalView = (props: {
 
 export const EntitlementsDataContractViewer = observer(
   (props: {
+    open: boolean;
     currentViewer: EntitlementsDataContractViewerState;
+    dataProductGroupAccessState: DataProductGroupAccessState;
     dataProductViewerState?: DataProductViewerState | undefined;
     onClose: () => void;
   }) => {
-    const { currentViewer, dataProductViewerState, onClose } = props;
+    const {
+      open,
+      currentViewer,
+      dataProductGroupAccessState,
+      dataProductViewerState,
+      onClose,
+    } = props;
     const auth = useAuth();
     const legendMarketplaceStore = useLegendMarketplaceBaseStore();
     const [userDataMap, setUserDataMap] = useState<Map<string, LegendUser>>(
@@ -276,6 +285,11 @@ export const EntitlementsDataContractViewer = observer(
       await flowResult(
         dataProductViewerState?.fetchContracts(auth.user?.access_token),
       );
+      if (dataProductGroupAccessState.associatedContract) {
+        dataProductViewerState?.setDataContract(
+          dataProductGroupAccessState.associatedContract,
+        );
+      }
       await flowResult(currentViewer.init(auth.user?.access_token))
         .catch(legendMarketplaceStore.applicationStore.alertUnhandledError)
         .finally(() => setIsLoading(false));
@@ -488,7 +502,7 @@ export const EntitlementsDataContractViewer = observer(
     ];
 
     return (
-      <Dialog open={true} onClose={onClose} fullWidth={true} maxWidth="md">
+      <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="md">
         <DialogTitle>Pending Data Contract Request</DialogTitle>
         <IconButton onClick={onClose} className="marketplace-dialog-close-btn">
           <CloseIcon />
