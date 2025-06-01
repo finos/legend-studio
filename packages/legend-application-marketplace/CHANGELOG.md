@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.0.40
+
+### Patch Changes
+
+- [#4152](https://github.com/finos/legend-studio/pull/4152) [`f52f1a5`](https://github.com/finos/legend-studio/commit/f52f1a5deaac02043d283f724be85debd88b55f4) ([@travisstebbins](https://github.com/travisstebbins)) - Fix bug with refreshing data contract
+
 ## 0.0.39
 
 ## 0.0.38
