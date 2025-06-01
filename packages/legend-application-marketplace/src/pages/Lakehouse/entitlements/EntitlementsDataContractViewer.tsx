@@ -201,7 +201,7 @@ export const EntitlementsDataContractViewer = observer(
   (props: {
     open: boolean;
     currentViewer: EntitlementsDataContractViewerState;
-    dataProductGroupAccessState: DataProductGroupAccessState;
+    dataProductGroupAccessState: DataProductGroupAccessState | undefined;
     dataProductViewerState?: DataProductViewerState | undefined;
     onClose: () => void;
   }) => {
@@ -285,7 +285,7 @@ export const EntitlementsDataContractViewer = observer(
       await flowResult(
         dataProductViewerState?.fetchContracts(auth.user?.access_token),
       );
-      if (dataProductGroupAccessState.associatedContract) {
+      if (dataProductGroupAccessState?.associatedContract) {
         dataProductViewerState?.setDataContract(
           dataProductGroupAccessState.associatedContract,
         );
