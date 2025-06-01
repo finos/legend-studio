@@ -132,7 +132,9 @@ export const LakehouseEntitlements = withLakehouseEntitlementsStore(
             ) : entitlementsStore.currentViewer instanceof
               EntitlementsDataContractViewerState ? (
               <EntitlementsDataContractViewer
+                open={true}
                 currentViewer={entitlementsStore.currentViewer}
+                dataProductGroupAccessState={undefined}
                 onClose={() => {
                   setShowDrawer(false);
                   entitlementsStore.applicationStore.navigationService.navigator.updateCurrentLocation(

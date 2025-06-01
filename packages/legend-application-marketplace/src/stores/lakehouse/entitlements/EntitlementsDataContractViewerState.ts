@@ -19,6 +19,7 @@ import {
   type V1_DataContract,
   type V1_TaskMetadata,
   V1_deserializeTaskResponse,
+  V1_observe_DataContract,
 } from '@finos/legend-graph';
 import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
 import {
@@ -39,9 +40,10 @@ export class EntitlementsDataContractViewerState {
     dataContract: V1_DataContract,
     lakeServerClient: LakehouseContractServerClient,
   ) {
-    this.value = dataContract;
+    this.value = V1_observe_DataContract(dataContract);
     this.lakeServerClient = lakeServerClient;
     makeObservable(this, {
+      value: observable,
       associatedTasks: observable,
       setAssociatedTasks: action,
       init: flow,

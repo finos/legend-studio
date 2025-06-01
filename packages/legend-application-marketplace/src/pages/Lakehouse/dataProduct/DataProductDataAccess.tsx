@@ -338,6 +338,40 @@ export const DataProductAccessPointGroupViewer = observer(
             </div>
           </div>
         </div>
+        {accessGroupState.accessState.viewerState
+          .dataContractAccessPointGroup !== undefined && (
+          <DataContractCreator
+            open={true}
+            onClose={() =>
+              accessGroupState.accessState.viewerState.setDataContractAccessPointGroup(
+                undefined,
+              )
+            }
+            accessPointGroup={
+              accessGroupState.accessState.viewerState
+                .dataContractAccessPointGroup
+            }
+            viewerState={accessGroupState.accessState.viewerState}
+          />
+        )}
+        {accessGroupState.accessState.viewerState.dataContract && (
+          <EntitlementsDataContractViewer
+            open={true}
+            currentViewer={
+              new EntitlementsDataContractViewerState(
+                accessGroupState.accessState.viewerState.dataContract,
+                accessGroupState.accessState.viewerState.lakeServerClient,
+              )
+            }
+            dataProductGroupAccessState={accessGroupState}
+            dataProductViewerState={accessGroupState.accessState.viewerState}
+            onClose={() =>
+              accessGroupState.accessState.viewerState.setDataContract(
+                undefined,
+              )
+            }
+          />
+        )}
         <DataProductSubscriptionViewer
           open={showSubscriptionsModal}
           accessGroupState={accessGroupState}
@@ -407,33 +441,6 @@ export const DataProducteDataAccess = observer(
                   accessGroupState={groupState}
                 />
               ),
-            )}
-            {dataProductViewerState.dataContractAccessPointGroup && (
-              <DataContractCreator
-                onClose={() =>
-                  dataProductViewerState.setDataContractAccessPointGroup(
-                    undefined,
-                  )
-                }
-                accessPointGroup={
-                  dataProductViewerState.dataContractAccessPointGroup
-                }
-                viewerState={dataProductViewerState}
-              />
-            )}
-            {dataProductViewerState.dataContract && (
-              <EntitlementsDataContractViewer
-                currentViewer={
-                  new EntitlementsDataContractViewerState(
-                    dataProductViewerState.dataContract,
-                    dataProductViewerState.lakeServerClient,
-                  )
-                }
-                dataProductViewerState={dataProductViewerState}
-                onClose={() =>
-                  dataProductViewerState.setDataContract(undefined)
-                }
-              />
             )}
           </div>
         </div>

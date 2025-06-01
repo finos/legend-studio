@@ -322,6 +322,7 @@ export {
   V1_IngestEnvironment,
   V1_AWSSnowflakeIngestEnvironment,
 } from './graph-manager/protocol/pure/v1/lakehouse/ingest/V1_LakehouseIngestEnvironment.js';
+export { V1_observe_DataContract } from './graph-manager/protocol/pure/v1/lakehouse/helpers/V1_ConsumerEntitlementsObserver.js';
 export {
   V1_CreateSubscriptionInputModelSchema,
   V1_dataSubscriptionModelSchema,
