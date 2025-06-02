@@ -137,7 +137,7 @@ export async function getCodeSuggestions(
       ({
         label: suggestion.display,
         kind: monacoLanguagesAPI.CompletionItemKind.Text, // TODO?: the engine should provide this information
-        filterText: suggestion.display,
+        filterText: suggestion.completion,
         insertTextRules:
           monacoLanguagesAPI.CompletionItemInsertTextRule.InsertAsSnippet,
         insertText: suggestion.completion,
