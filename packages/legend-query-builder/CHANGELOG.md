@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.16.52
+
+### Patch Changes
+
+- [#4167](https://github.com/finos/legend-studio/pull/4167) [`57c8703`](https://github.com/finos/legend-studio/commit/57c870347ef1ad3394d6cc93e47fddc820a14223) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Handle suggestions when multi lambda editors are displyed.
+
 ## 4.16.51
 
 ## 4.16.50
