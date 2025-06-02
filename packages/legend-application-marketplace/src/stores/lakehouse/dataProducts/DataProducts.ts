@@ -206,11 +206,11 @@ export class SandboxDataProductState extends BaseDataProductState {
   }
 
   get icon(): string | undefined {
-    return 'FaDatabase';
+    return undefined;
   }
 
   get imageUrl(): string | undefined {
-    return undefined;
+    return '/assets/UnknownTypeLogo.png';
   }
 
   get isInitialized(): boolean {
