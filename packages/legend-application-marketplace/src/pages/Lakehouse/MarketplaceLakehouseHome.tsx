@@ -553,12 +553,14 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
               </Grid>
             ))}
             {isLoadingDataProducts && (
-              <CubesLoadingIndicator
-                isLoading={true}
-                className="marketplace-lakehouse-home__loading-data-products-indicator"
-              >
-                <CubesLoadingIndicatorIcon />
-              </CubesLoadingIndicator>
+              <Grid size={1}>
+                <CubesLoadingIndicator
+                  isLoading={true}
+                  className="marketplace-lakehouse-home__loading-data-products-indicator"
+                >
+                  <CubesLoadingIndicatorIcon />
+                </CubesLoadingIndicator>
+              </Grid>
             )}
           </Grid>
         </Container>
