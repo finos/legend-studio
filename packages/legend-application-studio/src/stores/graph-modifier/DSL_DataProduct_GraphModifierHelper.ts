@@ -57,3 +57,9 @@ export const dataProduct_setTitle = action(
     product.title = title;
   },
 );
+
+export const dataProduct_setDescription = action(
+  (product: DataProduct, description: string) => {
+    product.description = description;
+  },
+);

@@ -60,6 +60,10 @@ import {
   LakehouseTargetEnv,
   type LakehouseAccessPoint,
 } from '@finos/legend-graph';
+import {
+  dataProduct_setDescription,
+  dataProduct_setTitle,
+} from '../../../../stores/graph-modifier/DSL_DataProduct_GraphModifierHelper.js';
 
 const NewAccessPointAccessPOint = observer(
   (props: { dataProductEditorState: DataProductEditorState }) => {
@@ -477,18 +481,12 @@ export const DataProductEditor = observer(() => {
     }
   };
 
-  const updateDataProductTitle = action((val: string | undefined): void => {
-    if (val === undefined) {
-      return;
-    }
-    product.name = val;
-  });
-
-  const updateDataProductDescription = action(
-    (val: string | undefined): void => {
-      product.description = val;
-    },
-  );
+  const updateDataProductTitle = (val: string | undefined): void => {
+    dataProduct_setTitle(product, val ?? '');
+  };
+  const updateDataProductDescription = (val: string | undefined): void => {
+    dataProduct_setDescription(product, val ?? '');
+  };
 
   useEffect(() => {
     flowResult(dataProductEditorState.convertAccessPointsFuncObjects()).catch(
@@ -538,7 +536,7 @@ export const DataProductEditor = observer(() => {
         <div className="panel" style={{ padding: '1rem', flex: 0 }}>
           <PanelFormTextField
             name="Title"
-            value={product.name}
+            value={product.title}
             prompt="Provide a title for this Lakehouse Data Product."
             update={updateDataProductTitle}
             placeholder="Enter title"
