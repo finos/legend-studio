@@ -210,6 +210,9 @@ const LambdaEditor_Inner = observer(
     const onDidBlurEditorTextDisposer = useRef<IDisposable | undefined>(
       undefined,
     );
+    const onDidFocusEditorTextDisposer = useRef<IDisposable | undefined>(
+      undefined,
+    );
     const suggestionsProvider = useRef<IDisposable | undefined>(undefined);
     const value = normalizeLineEnding(lambdaEditorState.lambdaString);
     const parserError = lambdaEditorState.parserError;
@@ -319,39 +322,6 @@ const LambdaEditor_Inner = observer(
       applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled,
     ]);
 
-    // set styling when theme changes
-    useEffect(() => {
-      if (editor) {
-        // NOTE: since engine suggestions are computed based on the current text content
-        // we put it in this block to simplify the flow and really to "bend" monaco-editor
-        // suggestion provider to our needs. But we also need to make sure this suggestion
-        // provider is scoped to the current editor only by checking the editor model
-        suggestionsProvider.current?.dispose();
-        if (lambdaEditorState.typeAheadEnabled) {
-          suggestionsProvider.current =
-            monacoLanguagesAPI.registerCompletionItemProvider(
-              CODE_EDITOR_LANGUAGE.PURE,
-              {
-                // NOTE: this is a hack to fetch suggestions from engine for every keystroke
-                triggerCharacters: [...PURE_CODE_EDITOR_WORD_SEPARATORS, '$'],
-                provideCompletionItems: async (model, position) => {
-                  let suggestions: monacoLanguagesAPI.CompletionItem[] = [];
-                  suggestions = suggestions.concat(
-                    await getCodeSuggestions(
-                      position,
-                      model,
-                      lambdaEditorState,
-                    ),
-                  );
-
-                  return { suggestions };
-                },
-              },
-            );
-        }
-      }
-    }, [editor, lambdaEditorState, lambdaEditorState.typeAheadEnabled]);
-
     // set backdrop to force user to fix parser error when it happens
     useEffect(() => {
       if (parserError) {
@@ -420,11 +390,40 @@ const LambdaEditor_Inner = observer(
           onEditorFocus?.();
         },
       );
-      if (onEditorBlur) {
-        onDidBlurEditorTextDisposer.current = editor.onDidBlurEditorText(() => {
+      onDidBlurEditorTextDisposer.current = editor.onDidBlurEditorText(() => {
+        if (onEditorBlur) {
           transformStringToLambda?.cancel();
           onEditorBlur();
-        });
+        }
+        if (lambdaEditorState.typeAheadEnabled) {
+          suggestionsProvider.current?.dispose();
+          suggestionsProvider.current = undefined;
+        }
+      });
+
+      if (lambdaEditorState.typeAheadEnabled) {
+        onDidFocusEditorTextDisposer.current = editor.onDidFocusEditorText(
+          () => {
+            suggestionsProvider.current?.dispose();
+            suggestionsProvider.current =
+              monacoLanguagesAPI.registerCompletionItemProvider(
+                CODE_EDITOR_LANGUAGE.PURE,
+                {
+                  // NOTE: this is a hack to fetch suggestions from engine for every keystroke
+                  triggerCharacters: [...PURE_CODE_EDITOR_WORD_SEPARATORS, '$'],
+                  provideCompletionItems: async (model, position) => {
+                    const suggestions: monacoLanguagesAPI.CompletionItem[] =
+                      await getCodeSuggestions(
+                        position,
+                        model,
+                        lambdaEditorState,
+                      );
+                    return { suggestions };
+                  },
+                },
+              );
+          },
+        );
       }
       // Set the text value
       const currentValue = getCodeEditorValue(editor);
@@ -474,6 +473,8 @@ const LambdaEditor_Inner = observer(
 
           onDidChangeModelContentEventDisposer.current?.dispose();
           onDidFocusEditorWidgetDisposer.current?.dispose();
+          onDidFocusEditorTextDisposer.current?.dispose();
+          onDidBlurEditorTextDisposer.current?.dispose();
           suggestionsProvider.current?.dispose();
         }
       },
