@@ -23,6 +23,7 @@ import {
   type V1_DataContract,
   type V1_UserPendingContractsRecord,
   V1_AccessPointGroupReference,
+  V1_ApprovalType,
 } from '@finos/legend-graph';
 import { flowResult } from 'mobx';
 import {
@@ -555,8 +556,6 @@ export const EntitlementsDashboard = withAuth(
                         width: 50,
                         cellRenderer: CustomSelectionRenderer,
                         headerComponent: CustomSelectionHeaderRenderer,
-                        // headerCheckboxSelection: true,
-                        // checkboxSelection: false,
                         pinned: 'left',
                       },
                       {
@@ -687,6 +686,26 @@ export const EntitlementsDashboard = withAuth(
                             (contract) => contract.guid === contractId,
                           )?.description;
                           return <>{businessJustification ?? 'Unknown'}</>;
+                        },
+                      },
+                      {
+                        minWidth: 50,
+                        sortable: true,
+                        resizable: true,
+                        headerName: 'My Role',
+                        flex: 2,
+                        cellRenderer: (
+                          params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
+                        ) => {
+                          const taskType = params.data?.type;
+                          return (
+                            <>
+                              {taskType ===
+                              V1_ApprovalType.CONSUMER_PRIVILEGE_MANAGER_APPROVAL
+                                ? 'Privilege Manager'
+                                : 'Data Owner'}
+                            </>
+                          );
                         },
                       },
                       {
