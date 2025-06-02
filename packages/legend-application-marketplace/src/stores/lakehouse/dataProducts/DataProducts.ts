@@ -15,7 +15,7 @@
  */
 
 import { action, computed, makeObservable, observable } from 'mobx';
-import { ActionState, uuid } from '@finos/legend-shared';
+import { ActionState, isNonEmptyString, uuid } from '@finos/legend-shared';
 import type {
   V1_DataProduct,
   V1_DataProductArtifactGeneration,
@@ -196,19 +196,17 @@ export class SandboxDataProductState extends BaseDataProductState {
   }
 
   get title(): string {
-    return (
-      this.dataProductArtifact?.dataProduct.title ??
-      this.dataProductArtifact?.dataProduct.path.split('::').pop() ??
-      ''
-    );
+    return isNonEmptyString(this.dataProductArtifact?.dataProduct.title)
+      ? this.dataProductArtifact.dataProduct.title
+      : (this.dataProductArtifact?.dataProduct.path.split('::').pop() ?? '');
   }
 
   get description(): string | undefined {
-    return undefined;
+    return this.dataProductArtifact?.dataProduct.description;
   }
 
   get icon(): string | undefined {
-    return undefined;
+    return 'FaDatabase';
   }
 
   get imageUrl(): string | undefined {
