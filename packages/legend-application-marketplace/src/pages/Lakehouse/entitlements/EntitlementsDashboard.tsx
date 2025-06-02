@@ -700,7 +700,7 @@ export const EntitlementsDashboard = withAuth(
                         sortable: true,
                         resizable: true,
                         headerName: 'My Role',
-                        flex: 2,
+                        flex: 1,
                         cellRenderer: (
                           params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
                         ) => {
