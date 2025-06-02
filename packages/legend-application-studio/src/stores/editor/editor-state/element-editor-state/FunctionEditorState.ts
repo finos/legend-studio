@@ -33,6 +33,7 @@ import {
   StopWatch,
   filterByType,
   assertTrue,
+  ActionState,
 } from '@finos/legend-shared';
 import { ElementEditorState } from './ElementEditorState.js';
 import {
@@ -82,6 +83,7 @@ export enum FUNCTION_EDITOR_TAB {
 export class FunctionDefinitionEditorState extends LambdaEditorState {
   readonly editorStore: EditorStore;
   readonly functionElement: ConcreteFunctionDefinition;
+  convertingGrammarToProtocolAction = ActionState.create();
 
   isConvertingFunctionBodyToString = false;
 
@@ -97,6 +99,7 @@ export class FunctionDefinitionEditorState extends LambdaEditorState {
     makeObservable(this, {
       functionElement: observable,
       isConvertingFunctionBodyToString: observable,
+      convertingGrammarToProtocolAction: observable,
     });
     this.functionElement = functionElement;
     this.editorStore = editorStore;
@@ -109,6 +112,7 @@ export class FunctionDefinitionEditorState extends LambdaEditorState {
   *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
     if (this.lambdaString) {
       try {
+        this.convertingGrammarToProtocolAction.inProgress();
         const lambda =
           (yield this.editorStore.graphManagerState.graphManager.pureCodeToLambda(
             this.fullLambdaString,
@@ -125,6 +129,8 @@ export class FunctionDefinitionEditorState extends LambdaEditorState {
           LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
+      } finally {
+        this.convertingGrammarToProtocolAction.complete();
       }
     } else {
       this.clearErrors();
@@ -546,7 +552,16 @@ export class FunctionEditorState extends ElementEditorState {
     QueryBuilderTelemetryHelper.logEvent_QueryRunLaunched(
       this.editorStore.applicationStore.telemetryService,
     );
-
+    // assure that you are using the latest protocol
+    try {
+      yield flowResult(
+        this.functionDefinitionEditorState.convertLambdaGrammarStringToObject(),
+      ).catch(this.editorStore.applicationStore.alertUnhandledError);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
+      return;
+    }
     let promise;
     try {
       this.isRunningFunc = true;
