@@ -26,6 +26,7 @@ import {
 import type { HostedServiceDeploymentConfiguration } from '../../../graph/metamodel/pure/functionActivator/HostedServiceDeploymentConfiguration.js';
 import type { PostDeploymentAction } from '../../../graph/metamodel/pure/functionActivator/PostDeploymentAction.js';
 import type { DSL_FunctionActivator_PureGraphManager_Extension } from '../../extensions/DSL_FunctionActivator_PureGraphManager_Extension.js';
+import type { MemSQLDeploymentConfiguration } from '../../../graph/metamodel/pure/functionActivator/MemSQLDeploymentConfiguration.js';
 
 export const observe_SnowflakeAppDeploymentConfiguration = skipObserved(
   (
@@ -110,3 +111,17 @@ export const observe_HostedServicePostDeploymentAction = (
   }
   return metamodel;
 };
+
+export const observe_MemSQLFunctionDeploymentConfiguration = skipObserved(
+  (metamodel: MemSQLDeploymentConfiguration): MemSQLDeploymentConfiguration => {
+    makeObservable(metamodel, {
+      activationConnection: observable,
+    });
+
+    if (metamodel.activationConnection) {
+      observe_ConnectionPointer(metamodel.activationConnection);
+    }
+
+    return metamodel;
+  },
+);

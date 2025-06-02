@@ -67,9 +67,12 @@ import {
 } from './V1_RawValueSpecificationSerializationHelper.js';
 import { V1_INTERNAL__UnknownFunctionActivator } from '../../../model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
 import { V1_SnowflakeApp } from '../../../model/packageableElements/function/V1_SnowflakeApp.js';
+import { V1_MemSQLFunction } from '../../../model/packageableElements/function/V1_MemSQLFunction.js';
+
 import {
   V1_HostedServiceDeploymentConfigurationAppModelSchema,
   V1_SnowflakeAppDeploymentConfigurationAppModelSchema,
+  V1_MemSQLDeploymentConfigurationAppModelSchema,
   V1_deserializeDeploymentOwnership,
   V1_serializeDeploymentOwership,
   V1_serializeOwnership,
@@ -103,6 +106,7 @@ export const V1_ASSOCIATION_ELEMENT_PROTOCOL_TYPE = 'association';
 export const V1_FUNCTION_ELEMENT_PROTOCOL_TYPE = 'function';
 export const V1_SNOWFLAKE_APP_TYPE = 'snowflakeApp';
 export const V1_HOSTED_SERVICE_TYPE = 'hostedService';
+export const V1_MEM_SQL_TYPE = 'memSqlFunction';
 
 export const V1_propertyPointerModelSchema = createModelSchema(
   V1_PropertyPointer,
@@ -221,6 +225,32 @@ export const V1_snowflakeAppModelSchema = (
     }),
     activationConfiguration: usingModelSchema(
       V1_SnowflakeAppDeploymentConfigurationAppModelSchema,
+    ),
+    ownership: optionalCustom(
+      (val) => V1_serializeDeploymentOwership(val),
+      (val) => V1_deserializeDeploymentOwnership(val),
+    ),
+  });
+
+export const V1_MemSQLModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_MemSQLFunction> =>
+  createModelSchema(V1_MemSQLFunction, {
+    _type: usingConstantValueSchema(V1_MEM_SQL_TYPE),
+    description: optional(primitive()),
+    functionName: primitive(),
+    function: usingModelSchema(V1_packageableElementPointerModelSchema),
+    name: primitive(),
+    package: primitive(),
+    actions: list(usingModelSchema(V1_PostDeploymentActionSchema(plugins))),
+    stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
+      INTERNAL__forceReturnEmptyInTest: true,
+    }),
+    taggedValues: customListWithSchema(V1_taggedValueModelSchema, {
+      INTERNAL__forceReturnEmptyInTest: true,
+    }),
+    activationConfiguration: usingModelSchema(
+      V1_MemSQLDeploymentConfigurationAppModelSchema,
     ),
     ownership: optionalCustom(
       (val) => V1_serializeDeploymentOwership(val),

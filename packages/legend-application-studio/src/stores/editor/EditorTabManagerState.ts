@@ -37,6 +37,7 @@ import {
   HostedService,
   DataProduct,
   IngestDefinition,
+  MemSQLFunction,
 } from '@finos/legend-graph';
 import {
   type Clazz,
@@ -65,6 +66,7 @@ import { TabManagerState, type TabState } from '@finos/legend-lego/application';
 import { INTERNAL__UnknownFunctionActivatorEdtiorState } from './editor-state/element-editor-state/function-activator/INTERNAL__UnknownFunctionActivatorEditorState.js';
 import { SnowflakeAppFunctionActivatorEdtiorState } from './editor-state/element-editor-state/function-activator/SnowflakeAppFunctionActivatorEditorState.js';
 import { HostedServiceFunctionActivatorEditorState } from './editor-state/element-editor-state/function-activator/HostedServiceFunctionActivatorEditorState.js';
+import { MemSQLFunctionActivatorEditorState } from './editor-state/element-editor-state/function-activator/MemSQLFunctionActivatorEditorState.js';
 import { ArtifactGenerationViewerState } from './editor-state/ArtifactGenerationViewerState.js';
 import { DataProductEditorState } from './editor-state/element-editor-state/dataProduct/DataProductEditorState.js';
 import { IngestDefinitionEditorState } from './editor-state/element-editor-state/ingest/IngestDefinitionEditorState.js';
@@ -199,6 +201,8 @@ export class EditorTabManagerState extends TabManagerState {
         this.editorStore,
         element,
       );
+    } else if (element instanceof MemSQLFunction) {
+      return new MemSQLFunctionActivatorEditorState(this.editorStore, element);
     } else if (element instanceof INTERNAL__UnknownFunctionActivator) {
       return new INTERNAL__UnknownFunctionActivatorEdtiorState(
         this.editorStore,

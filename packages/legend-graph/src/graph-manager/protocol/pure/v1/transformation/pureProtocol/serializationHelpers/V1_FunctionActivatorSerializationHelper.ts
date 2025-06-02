@@ -45,11 +45,13 @@ import {
 } from '../../../engine/functionActivator/V1_PostDeploymentProperties.js';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
 import type { DSL_FunctionActivator_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/DSL_FunctionActivator_PureProtocolProcessorPlugin_Extension.js';
+import { V1_MemSQLDeploymentConfiguration } from '../../../engine/functionActivator/V1_MemSQLDeploymentConfiguration.js';
 
 const V1_SNOWFLAKE_APP_DEPLOYMENT_CONFIGURATION_APP_TYPE =
   'snowflakeDeploymentConfiguration';
 const V1_HOSTED_SERVICE_DEPLOYMENT_CONFIGURATION_APP_TYPE =
   'hostedServiceDeploymentConfiguration';
+const V1_MEM_SQL_DEPLOYMENT_CONFIGURATION_APP_TYPE = 'memSqlFunctionConfig';
 
 export const V1_SnowflakeAppDeploymentConfigurationAppModelSchema =
   createModelSchema(V1_SnowflakeAppDeploymentConfiguration, {
@@ -68,6 +70,16 @@ export const V1_HostedServiceDeploymentConfigurationAppModelSchema =
     port: primitive(),
     path: primitive(),
   });
+
+export const V1_MemSQLDeploymentConfigurationAppModelSchema = createModelSchema(
+  V1_MemSQLDeploymentConfiguration,
+  {
+    _type: usingConstantValueSchema(
+      V1_MEM_SQL_DEPLOYMENT_CONFIGURATION_APP_TYPE,
+    ),
+    activationConnection: usingModelSchema(V1_connectionPointerModelSchema),
+  },
+);
 
 enum V1_OwnershipType {
   DEPLOYMENT_OWNERSHIP = 'DeploymentOwner',

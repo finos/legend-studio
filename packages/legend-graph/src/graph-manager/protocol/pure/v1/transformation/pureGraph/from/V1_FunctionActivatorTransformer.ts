@@ -29,16 +29,32 @@ import {
 } from '../../../model/packageableElements/function/V1_Ownership.js';
 import { V1_transformConnectionPointer } from './V1_ConnectionTransformer.js';
 import { V1_HostedServiceDeploymentConfiguration } from '../../../engine/functionActivator/V1_HostedServiceDeploymentConfiguration.js';
+import { V1_MemSQLDeploymentConfiguration } from '../../../engine/functionActivator/V1_MemSQLDeploymentConfiguration.js';
 import type { HostedServiceDeploymentConfiguration } from '../../../../../../../graph/metamodel/pure/functionActivator/HostedServiceDeploymentConfiguration.js';
 import type { PostDeploymentAction } from '../../../../../../../graph/metamodel/pure/functionActivator/PostDeploymentAction.js';
 import type { DSL_FunctionActivator_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/DSL_FunctionActivator_PureProtocolProcessorPlugin_Extension.js';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
 import { V1_PostDeploymentAction } from '../../../engine/functionActivator/V1_PostDeploymentAction.js';
+import type { MemSQLDeploymentConfiguration } from '../../../../../../../graph/metamodel/pure/functionActivator/MemSQLDeploymentConfiguration.js';
 
 export const V1_transformSnowflakeAppDeploymentConfiguration = (
   element: SnowflakeAppDeploymentConfiguration,
 ): V1_SnowflakeAppDeploymentConfiguration => {
   const protocol = new V1_SnowflakeAppDeploymentConfiguration();
+
+  if (element.activationConnection) {
+    protocol.activationConnection = V1_transformConnectionPointer(
+      element.activationConnection,
+    );
+  }
+
+  return protocol;
+};
+
+export const V1_transformMemSQLDeploymentConfiguration = (
+  element: MemSQLDeploymentConfiguration,
+): V1_MemSQLDeploymentConfiguration => {
+  const protocol = new V1_MemSQLDeploymentConfiguration();
 
   if (element.activationConnection) {
     protocol.activationConnection = V1_transformConnectionPointer(

@@ -16,7 +16,9 @@
 
 import { ConnectionPointer } from '../../../../../../../../graph/metamodel/pure/packageableElements/connection/Connection.js';
 import { SnowflakeAppDeploymentConfiguration } from '../../../../../../../../graph/metamodel/pure/functionActivator/SnowflakeAppDeploymentConfiguration.js';
+import { MemSQLDeploymentConfiguration } from '../../../../../../../../graph/metamodel/pure/functionActivator/MemSQLDeploymentConfiguration.js';
 import type { V1_SnowflakeAppDeploymentConfiguration } from '../../../../engine/functionActivator/V1_SnowflakeAppDeploymentConfiguration.js';
+import type { V1_MemSQLDeploymentConfiguration } from '../../../../engine/functionActivator/V1_MemSQLDeploymentConfiguration.js';
 import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
 import { V1_buildConnection } from './V1_ConnectionBuilderHelper.js';
 import { UnsupportedOperationError, guaranteeType } from '@finos/legend-shared';
@@ -42,6 +44,23 @@ export const V1_buildSnowflakeAppDeploymentConfiguration = (
   context: V1_GraphBuilderContext,
 ): SnowflakeAppDeploymentConfiguration => {
   const metamodel = new SnowflakeAppDeploymentConfiguration();
+
+  if (element.activationConnection) {
+    const activationConnection = guaranteeType(
+      V1_buildConnection(element.activationConnection, context),
+      ConnectionPointer,
+    );
+
+    metamodel.activationConnection = activationConnection;
+  }
+  return metamodel;
+};
+
+export const V1_buildMemSQLDeploymentConfiguration = (
+  element: V1_MemSQLDeploymentConfiguration,
+  context: V1_GraphBuilderContext,
+): MemSQLDeploymentConfiguration => {
+  const metamodel = new MemSQLDeploymentConfiguration();
 
   if (element.activationConnection) {
     const activationConnection = guaranteeType(

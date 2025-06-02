@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020-present, Goldman Sachs
+ * Copyright (c) 2025-present, Goldman Sachs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-@use 'mixins' as *;
+import { hashArray } from '@finos/legend-shared';
+import type { ConnectionPointer } from '../packageableElements/connection/Connection.js';
+import { DeploymentConfiguration } from './DeploymentConfiguration.js';
 
-.icon__snowflake-app {
-  color: var(--color-light-blue-20);
-  font-size: 1.7rem;
-}
+export class MemSQLDeploymentConfiguration extends DeploymentConfiguration {
+  activationConnection: ConnectionPointer | undefined;
 
-.icon__mem-sql-function {
-  color: var(----color-purple-700);
-  font-size: 1.7rem;
+  override get hashCode(): string {
+    return hashArray([this.activationConnection ?? '']);
+  }
 }

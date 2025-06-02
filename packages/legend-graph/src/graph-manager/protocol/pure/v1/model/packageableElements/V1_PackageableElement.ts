@@ -42,6 +42,7 @@ import type { V1_INTERNAL__UnknownElement } from './V1_INTERNAL__UnknownElement.
 import type { V1_HostedService } from './function/V1_HostedService.js';
 import type { V1_DataProduct } from './dataProduct/V1_DataProduct.js';
 import type { V1_IngestDefinition } from './ingest/V1_IngestDefinition.js';
+import type { V1_MemSQLFunction } from './function/V1_MemSQLFunction.js';
 
 export interface V1_PackageableElementVisitor<T> {
   visit_PackageableElement(element: V1_PackageableElement): T;
@@ -77,6 +78,7 @@ export interface V1_PackageableElementVisitor<T> {
   ): T;
   visit_SnowflakeApp(element: V1_SnowflakeApp): T;
   visit_HostedService(element: V1_HostedService): T;
+  visit_MemSQLFunction(element: V1_MemSQLFunction): T;
 
   visit_DataProduct(element: V1_DataProduct): T;
   visit_IngestDefinition(element: V1_IngestDefinition): T;
