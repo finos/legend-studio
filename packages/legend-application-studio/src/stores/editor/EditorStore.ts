@@ -651,7 +651,9 @@ export class EditorStore implements CommandRegistrar {
       }
       // eslint-disable-next-line no-process-env
       if (process.env.NODE_ENV === 'production') {
-        this.applicationStore.notificationService.notifyIllegalState(
+        // TEMPORARY suppress until we investigate
+        this.applicationStore.logService.debug(
+          LogEvent.create(APPLICATION_EVENT.DEBUG),
           'Editor store is re-initialized',
         );
       } else {
