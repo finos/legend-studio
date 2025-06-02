@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.16.50
+
+### Patch Changes
+
+- [#4157](https://github.com/finos/legend-studio/pull/4157) [`d96d1e2`](https://github.com/finos/legend-studio/commit/d96d1e25af9558240ea4a23056e97ec99f81b70b) ([@gs-gunjan](https://github.com/gs-gunjan)) - fixing auto complete suggestion filtering for lambda editor
+
 ## 4.16.49
 
 ## 4.16.48
