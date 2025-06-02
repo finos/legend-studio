@@ -493,7 +493,7 @@ export const EntitlementsDashboard = withAuth(
           <Tab
             label={
               <Typography variant="h4" gutterBottom={true}>
-                PENDING TASKS
+                MY APPROVALS
               </Typography>
             }
             value={EntitlementsTabs.PENDING_TASKS}
@@ -501,7 +501,7 @@ export const EntitlementsDashboard = withAuth(
           <Tab
             label={
               <Typography variant="h4" gutterBottom={true}>
-                PENDING CONTRACTS
+                MY PENDING CONTRACTS
               </Typography>
             }
             value={EntitlementsTabs.PENDING_CONTRACTS}
