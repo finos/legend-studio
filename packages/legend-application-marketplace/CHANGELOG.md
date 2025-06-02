@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.0.42
+
+### Patch Changes
+
+- [#4163](https://github.com/finos/legend-studio/pull/4163) [`ba8bc32`](https://github.com/finos/legend-studio/commit/ba8bc32f12c58e41e94381362ef7da272ff37480) ([@travisstebbins](https://github.com/travisstebbins)) - Add lakehouse unknown type logo
+
 ## 0.0.41
 
 ### Patch Changes
