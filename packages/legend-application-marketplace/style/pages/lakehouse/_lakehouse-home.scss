@@ -80,6 +80,11 @@
     width: 100%;
     justify-content: start;
   }
+
+  &__loading-data-products-indicator {
+    position: relative;
+    height: 32rem;
+  }
 }
 
 .marketplace-lakehouse-data-product-card {

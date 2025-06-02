@@ -46,10 +46,13 @@ export const CubesLoadingIndicator: React.FC<CubesLoadingIndicatorProps> = (
 
   return (
     <div
-      className={clsx('cubes-loading-indicator', {
-        'cubes-loading-indicator--loading': isLoading,
+      className={clsx(
+        'cubes-loading-indicator',
+        {
+          'cubes-loading-indicator--loading': isLoading,
+        },
         className,
-      })}
+      )}
       {...rest}
     >
       {children}
