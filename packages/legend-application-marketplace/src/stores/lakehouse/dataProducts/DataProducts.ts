@@ -206,7 +206,7 @@ export class SandboxDataProductState extends BaseDataProductState {
   }
 
   get icon(): string | undefined {
-    return undefined;
+    return 'FaDatabase';
   }
 
   get imageUrl(): string | undefined {

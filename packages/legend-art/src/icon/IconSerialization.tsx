@@ -21,6 +21,7 @@ import {
   ShoppingCartIcon,
   ServerIcon,
   FileUnknownIcon,
+  DatabaseIcon,
 } from './Icon.js';
 
 export const deserializeIcon = (
@@ -37,6 +38,8 @@ export const deserializeIcon = (
       return <ShoppingCartIcon />;
     case 'FaServer':
       return <ServerIcon />;
+    case 'FaDatabase':
+      return <DatabaseIcon />;
     default:
       return <FileUnknownIcon />;
   }
