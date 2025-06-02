@@ -485,6 +485,10 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
       marketPlaceStore.init(auth);
     }, [marketPlaceStore, auth]);
 
+    const isLoadingDataProducts =
+      marketPlaceStore.loadingProductsState.isInProgress ||
+      marketPlaceStore.loadingSandboxDataProductStates.isInProgress;
+
     return (
       <LegendMarketplacePage className="marketplace-lakehouse-home">
         <Container className="marketplace-lakehouse-home__search-container">
@@ -548,6 +552,14 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
                 />
               </Grid>
             ))}
+            {isLoadingDataProducts && (
+              <CubesLoadingIndicator
+                isLoading={true}
+                className="marketplace-lakehouse-home__loading-data-products-indicator"
+              >
+                <CubesLoadingIndicatorIcon />
+              </CubesLoadingIndicator>
+            )}
           </Grid>
         </Container>
       </LegendMarketplacePage>
