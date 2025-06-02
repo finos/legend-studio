@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.0.41
+
+### Patch Changes
+
+- [#4158](https://github.com/finos/legend-studio/pull/4158) [`540acc7`](https://github.com/finos/legend-studio/commit/540acc7f3a672c06621637d434d595b3f82f152d) ([@travisstebbins](https://github.com/travisstebbins)) - Fix bug with sandbox data products not showing title or description
+
 ## 0.0.40
 
 ### Patch Changes
