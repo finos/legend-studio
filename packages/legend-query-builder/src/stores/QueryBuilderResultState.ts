@@ -409,8 +409,8 @@ export class QueryBuilderResultState {
       const result =
         (yield this.queryBuilderState.graphManagerState.graphManager.exportData(
           query,
-          this.queryBuilderState.executionContextState.mapping,
-          this.queryBuilderState.executionContextState.runtimeValue,
+          this.queryBuilderState.executionContextState.explicitMappingValue,
+          this.queryBuilderState.executionContextState.explicitRuntimeValue,
           this.queryBuilderState.graphManagerState.graph,
           {
             serializationFormat,
@@ -476,11 +476,11 @@ export class QueryBuilderResultState {
     try {
       this.setIsRunningQuery(true);
       const currentHashCode = this.queryBuilderState.hashCode;
-      const mapping = guaranteeNonNullable(
+      guaranteeNonNullable(
         this.queryBuilderState.executionContextState.mapping,
         'Mapping is required to execute query',
       );
-      const runtime = guaranteeNonNullable(
+      guaranteeNonNullable(
         this.queryBuilderState.executionContextState.runtimeValue,
         `Runtime is required to execute query`,
       );
@@ -503,12 +503,8 @@ export class QueryBuilderResultState {
       const contextstate = this.queryBuilderState.executionContextState;
       promise = this.queryBuilderState.graphManagerState.graphManager.runQuery(
         query,
-        contextstate instanceof QueryBuilderEmbeddedFromExecutionContextState
-          ? undefined
-          : mapping,
-        contextstate instanceof QueryBuilderEmbeddedFromExecutionContextState
-          ? undefined
-          : runtime,
+        contextstate.explicitMappingValue,
+        contextstate.explicitRuntimeValue,
         this.queryBuilderState.graphManagerState.graph,
         {
           parameterValues,
@@ -584,11 +580,11 @@ export class QueryBuilderResultState {
   *generatePlan(debug: boolean): GeneratorFn<void> {
     try {
       this.isGeneratingPlan = true;
-      const mapping = guaranteeNonNullable(
+      guaranteeNonNullable(
         this.queryBuilderState.executionContextState.mapping,
         'Mapping is required to execute query',
       );
-      const runtime = guaranteeNonNullable(
+      guaranteeNonNullable(
         this.queryBuilderState.executionContextState.runtimeValue,
         `Runtime is required to execute query`,
       );
@@ -600,14 +596,6 @@ export class QueryBuilderResultState {
         this.queryBuilderState.graphManagerState.graph,
       );
       const contextstate = this.queryBuilderState.executionContextState;
-      const _mapping =
-        contextstate instanceof QueryBuilderEmbeddedFromExecutionContextState
-          ? undefined
-          : mapping;
-      const _runtime =
-        contextstate instanceof QueryBuilderEmbeddedFromExecutionContextState
-          ? undefined
-          : runtime;
       if (debug) {
         QueryBuilderTelemetryHelper.logEvent_ExecutionPlanDebugLaunched(
           this.queryBuilderState.applicationStore.telemetryService,
@@ -615,8 +603,8 @@ export class QueryBuilderResultState {
         const debugResult =
           (yield this.queryBuilderState.graphManagerState.graphManager.debugExecutionPlanGeneration(
             query,
-            _mapping,
-            _runtime,
+            contextstate.explicitMappingValue,
+            contextstate.explicitRuntimeValue,
             this.queryBuilderState.graphManagerState.graph,
             report,
           )) as { plan: RawExecutionPlan; debug: string };
@@ -629,8 +617,8 @@ export class QueryBuilderResultState {
         rawPlan =
           (yield this.queryBuilderState.graphManagerState.graphManager.generateExecutionPlan(
             query,
-            _mapping,
-            _runtime,
+            contextstate.explicitMappingValue,
+            contextstate.explicitRuntimeValue,
             this.queryBuilderState.graphManagerState.graph,
             report,
           )) as object;
