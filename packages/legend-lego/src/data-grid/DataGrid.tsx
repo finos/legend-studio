@@ -30,6 +30,7 @@ import {
   type IRowNode,
   type MenuItemDef,
   type Module,
+  type RowClickedEvent,
   type RowSelectedEvent,
   type RowSelectionOptions,
   AllCommunityModule,
@@ -81,6 +82,7 @@ export type {
   ICellRendererParams as DataGridCellRendererParams,
   IRowNode as DataGridIRowNode,
   MenuItemDef as DataGridMenuItemDef,
+  RowClickedEvent as DataGridRowClickedEvent,
   RowSelectedEvent as DataGridRowSelectedEvent,
   RowSelectionOptions as DataGridRowSelectionOptions,
 };

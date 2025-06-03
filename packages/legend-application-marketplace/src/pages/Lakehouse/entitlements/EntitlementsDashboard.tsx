@@ -32,6 +32,7 @@ import {
   type DataGridCustomHeaderProps,
   type DataGridFirstDataRenderedEvent,
   type DataGridIRowNode,
+  type DataGridRowClickedEvent,
   type DataGridRowSelectedEvent,
   type DataGridRowSelectionOptions,
 } from '@finos/legend-lego/data-grid';
@@ -442,6 +443,12 @@ export const EntitlementsDashboard = withAuth(
       event.api.setNodesSelected({ nodes: nodesToSelect, newValue: true });
     };
 
+    const handleRowClicked = (
+      event: DataGridRowClickedEvent<V1_ContractUserEventRecord, unknown>,
+    ) => {
+      console.log('event:', event);
+    };
+
     const rowSelection = useMemo<
       DataGridRowSelectionOptions | 'single' | 'multiple'
     >(
@@ -556,6 +563,7 @@ export const EntitlementsDashboard = withAuth(
                     rowSelection={rowSelection}
                     onRowSelected={handleRowSelected}
                     onFirstDataRendered={handleFirstDataRendered}
+                    onRowClicked={handleRowClicked}
                     columnDefs={[
                       {
                         headerName: '',
