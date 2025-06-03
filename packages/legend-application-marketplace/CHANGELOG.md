@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.0.43
+
+### Patch Changes
+
+- [#4172](https://github.com/finos/legend-studio/pull/4172) [`42c8423`](https://github.com/finos/legend-studio/commit/42c8423300e852b237f938c4ccf7227a82a38d15) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - add product tile/description to product viewer
+
 ## 0.0.42
 
 ### Patch Changes
