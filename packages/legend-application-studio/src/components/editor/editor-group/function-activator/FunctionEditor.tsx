@@ -1056,7 +1056,7 @@ const FunctionDefinitionEditor = observer(
           }
         />
         <div className="function-editor__definition">
-          <div className="function-editor__definition__item">
+          <div className="function-editor__definition__item function-editor__definition__item-params">
             <div className="function-editor__definition__item__header">
               <div className="function-editor__definition__item__header__title">
                 PARAMETERS
@@ -1100,7 +1100,7 @@ const FunctionDefinitionEditor = observer(
               )}
             </div>
           </div>
-          <div className="function-editor__definition__item">
+          <div className="function-editor__definition__item function-editor__definition__item-lambda">
             <div className="function-editor__definition__item__header">
               <div className="function-editor__definition__item__header-wrapper">
                 <div className="function-editor__definition__item__header__title">
@@ -1165,7 +1165,7 @@ const FunctionDefinitionEditor = observer(
               />
             </div>
           </div>
-          <div className="function-editor__definition__item">
+          <div className="function-editor__definition__item function-editor__definition__item-result function-editor__definition__result">
             <div className="function-editor__definition__item__header">
               <div className="function-editor__definition__item__header__title">
                 RESULT

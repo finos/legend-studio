@@ -21,7 +21,7 @@ import {
   DATA_PRODUCT_VIEWER_ACTIVITY_MODE,
   generateAnchorForActivity,
 } from '../../../stores/lakehouse/DataProductViewerNavigation.js';
-import { AnchorLinkIcon } from '@finos/legend-art';
+import { AnchorLinkIcon, MarkdownTextViewer } from '@finos/legend-art';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { DataProducteDataAccess } from './DataProductDataAccess.js';
 
@@ -72,6 +72,64 @@ export const DataProductWikiPlaceHolder = observer(
   },
 );
 
+export const DataProductDescription = observer(
+  (props: { dataProductViewerState: DataProductViewerState }) => {
+    const { dataProductViewerState } = props;
+    const sectionRef = useRef<HTMLDivElement>(null);
+    const anchor = generateAnchorForActivity(
+      DATA_PRODUCT_VIEWER_ACTIVITY_MODE.DESCRIPTION,
+    );
+    useEffect(() => {
+      if (sectionRef.current) {
+        dataProductViewerState.layoutState.setWikiPageAnchor(
+          anchor,
+          sectionRef.current,
+        );
+      }
+      return () =>
+        dataProductViewerState.layoutState.unsetWikiPageAnchor(anchor);
+    }, [dataProductViewerState, anchor]);
+
+    return (
+      <div ref={sectionRef} className="data-space__viewer__wiki__section">
+        <div className="data-space__viewer__wiki__section__header">
+          <div className="data-space__viewer__wiki__section__header__label">
+            {prettyCONSTName(DATA_PRODUCT_VIEWER_ACTIVITY_MODE.DESCRIPTION)}
+            <button
+              className="data-space__viewer__wiki__section__header__anchor"
+              tabIndex={-1}
+              onClick={() => dataProductViewerState.changeZone(anchor, true)}
+            >
+              <AnchorLinkIcon />
+            </button>
+          </div>
+        </div>
+        <div className="data-space__viewer__wiki__section__content">
+          {dataProductViewerState.product.description !== undefined ? (
+            <div className="data-space__viewer__description">
+              <div className="data-space__viewer__description__content">
+                <MarkdownTextViewer
+                  className="data-space__viewer__markdown-text-viewer"
+                  value={{
+                    value: dataProductViewerState.product.description,
+                  }}
+                  components={{
+                    h1: 'h2',
+                    h2: 'h3',
+                    h3: 'h4',
+                  }}
+                />
+              </div>
+            </div>
+          ) : (
+            <DataproducteWikiPlaceholder message="(not specified)" />
+          )}
+        </div>
+      </div>
+    );
+  },
+);
+
 export const DataProductWiki = observer(
   (props: { dataProductViewerState: DataProductViewerState }) => {
     const { dataProductViewerState } = props;
@@ -102,8 +160,7 @@ export const DataProductWiki = observer(
 
     return (
       <div className="data-space__viewer__wiki">
-        <DataProductWikiPlaceHolder
-          mode={DATA_PRODUCT_VIEWER_ACTIVITY_MODE.DESCRIPTION}
+        <DataProductDescription
           dataProductViewerState={dataProductViewerState}
         />
         <DataProducteDataAccess

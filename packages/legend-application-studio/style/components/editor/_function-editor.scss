@@ -143,11 +143,28 @@
   &__definition {
     height: 100%;
     width: 100%;
-    padding: 1rem;
-    overflow: auto;
+    display: flex;
+    flex-direction: column;
 
     &__item {
+      flex-shrink: 0;
+      overflow: auto;
       padding-top: 1rem;
+
+      &-params {
+        flex-basis: 15%;
+        flex-grow: 1;
+      }
+
+      &-lambda {
+        flex-basis: 42.5%;
+        flex-grow: 4;
+      }
+
+      &-result {
+        flex-basis: 42.5%;
+        flex-grow: 1;
+      }
 
       &__header-wrapper {
         @include flexVCenter;
@@ -157,6 +174,7 @@
       &__header {
         padding-left: 1rem;
         padding-right: 1rem;
+        height: 3rem;
 
         @include flexVCenter;
         @include flexHSpaceBetween;
@@ -184,15 +202,17 @@
 
       &__content {
         width: 100%;
-        padding: 1rem;
-        padding-top: 0.5rem;
+        padding-left: 1rem;
+        padding-top: 1rem;
+        padding-right: 1rem;
+        height: calc(100% - 3.4rem);
       }
 
       &__content--empty {
         @include flexCenter;
 
         margin-top: 0.5rem;
-        height: 4rem;
+        height: 100%;
         width: 100%;
         color: var(--color-dark-grey-300);
         font-weight: 500;
@@ -253,11 +273,11 @@
     }
 
     &__lambda-editor {
-      height: 35rem !important;
+      height: 100% !important;
     }
 
     &__result-viewer {
-      height: 35rem !important;
+      height: 100%;
       border: 0.1rem solid var(--color-dark-grey-280);
     }
   }
