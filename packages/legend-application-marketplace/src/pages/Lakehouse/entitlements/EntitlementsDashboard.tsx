@@ -569,6 +569,25 @@ export const EntitlementsDashboard = withAuth(
                         minWidth: 50,
                         sortable: true,
                         resizable: true,
+                        headerName: 'Action Date',
+                        flex: 1,
+                        cellRenderer: (
+                          params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
+                        ) => {
+                          const taskType = params.data?.eventPayload.type;
+                          const timestamp =
+                            params.data?.eventPayload.eventTimestamp;
+                          return (
+                            <>
+                              {taskType}: {timestamp}
+                            </>
+                          );
+                        },
+                      },
+                      {
+                        minWidth: 50,
+                        sortable: true,
+                        resizable: true,
                         headerName: 'Target User',
                         flex: 1,
                         cellRenderer: (
