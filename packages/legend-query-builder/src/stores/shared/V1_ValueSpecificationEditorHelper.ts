@@ -23,15 +23,15 @@ import {
   V1_CDate,
   V1_CDateTime,
   V1_CDecimal,
+  V1_CEnumValue,
   V1_CFloat,
   V1_CInteger,
   V1_Collection,
   V1_CStrictDate,
   V1_CStrictTime,
   V1_CString,
-  V1_EnumValue,
+  V1_DataTypeValueSpecification,
   V1_Multiplicity,
-  V1_PrimitiveValueSpecification,
 } from '@finos/legend-graph';
 import { buildDatePickerOption } from '../../components/shared/CustomDatePickerHelper.js';
 import type {
@@ -65,9 +65,9 @@ export const getV1_ValueSpecificationStringValue = (
     valueSpecification instanceof V1_CBoolean ||
     valueSpecification instanceof V1_CByteArray ||
     valueSpecification instanceof V1_CDecimal ||
+    valueSpecification instanceof V1_CEnumValue ||
     valueSpecification instanceof V1_CFloat ||
-    valueSpecification instanceof V1_CInteger ||
-    valueSpecification instanceof V1_EnumValue
+    valueSpecification instanceof V1_CInteger
   ) {
     return valueSpecification.value.toString();
   } else if (valueSpecification instanceof V1_AppliedProperty) {
@@ -93,10 +93,13 @@ export const isValidV1_ValueSpecification = (
   multiplicity: V1_Multiplicity,
 ): boolean => {
   const isRequired = multiplicity.lowerBound >= 1;
-  if (valueSpecification instanceof V1_PrimitiveValueSpecification) {
+  if (valueSpecification instanceof V1_DataTypeValueSpecification) {
     // required and no values provided. LatestDate doesn't have any values so we skip that check for it.
     if (isRequired) {
-      if (valueSpecification instanceof V1_CString) {
+      if (
+        valueSpecification instanceof V1_CString ||
+        valueSpecification instanceof V1_CEnumValue
+      ) {
         return valueSpecification.value.length > 0;
       } else if (
         valueSpecification instanceof V1_CBoolean ||

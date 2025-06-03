@@ -27,7 +27,6 @@ import { cn, DataCubeIcon, useDropdownMenu } from '@finos/legend-art';
 import {
   debounce,
   formatDistanceToNow,
-  guaranteeIsString,
   guaranteeType,
   quantifyList,
 } from '@finos/legend-shared';
@@ -35,9 +34,8 @@ import { flowResult } from 'mobx';
 import { useRef, useState, useMemo, useEffect } from 'react';
 import {
   _defaultPrimitiveTypeValue,
-  _elementPtr,
+  _enumValue,
   _primitiveValue,
-  _property,
   FormButton,
   FormCheckbox,
   FormCodeEditor,
@@ -360,13 +358,11 @@ export const LegendQueryDataCubeSourceBuilder = observer(
                         );
                       } else {
                         // If not a primitive, assume it is an enum
-                        const typeParam = _elementPtr(
-                          guaranteeIsString(packageableType.fullPath),
-                        );
-                        const enumValueSpec = _property('', [typeParam]);
                         sourceBuilder.setQueryParameterValue(
                           name,
-                          V1_observe_ValueSpecification(enumValueSpec),
+                          V1_observe_ValueSpecification(
+                            _enumValue('', packageableType.fullPath),
+                          ),
                         );
                       }
                     };
