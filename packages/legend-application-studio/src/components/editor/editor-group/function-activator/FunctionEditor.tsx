@@ -1046,7 +1046,6 @@ const FunctionDefinitionEditor = observer(
       }
       return <BlankPanelContent>Function Did Not Run</BlankPanelContent>;
     };
-
     return (
       <>
         <PanelLoadingIndicator
@@ -1154,7 +1153,15 @@ const FunctionDefinitionEditor = observer(
               })}
             >
               <LambdaEditor
-                className="function-editor__definition__lambda-editor lambda-editor--dark"
+                className={clsx(
+                  'function-editor__definition__lambda-editor lambda-editor--dark',
+                  {
+                    'function-editor__definition__lambda-editor-error': Boolean(
+                      lambdaEditorState.parserError ??
+                        lambdaEditorState.compilationError,
+                    ),
+                  },
+                )}
                 disabled={
                   lambdaEditorState.isConvertingFunctionBodyToString ||
                   isReadOnly

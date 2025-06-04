@@ -276,6 +276,10 @@
       height: 100% !important;
     }
 
+    &__lambda-editor-error {
+      height: calc(100% - 5.8rem) !important;
+    }
+
     &__result-viewer {
       height: 100%;
       border: 0.1rem solid var(--color-dark-grey-280);
