@@ -199,7 +199,6 @@
     @include flexVCenter;
 
     justify-content: flex-start;
-    height: 2.8rem;
     margin-top: 0.5rem;
 
     &__remove-btn {
@@ -226,6 +225,24 @@
       padding: 0 1rem;
       color: white;
       font-weight: bold;
+      font-size: 16px;
+    }
+
+    &__description-editor {
+      resize: none;
+      margin: 0 1rem;
+    }
+
+    &__description {
+      color: var(--color-dark-grey-500);
+      font-size: 14px;
+    }
+
+    &__description--warning {
+      color: goldenrod;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
   }
 
@@ -238,7 +255,6 @@
     width: 50%;
     overflow: hidden;
     color: var(--color-dark-grey-500);
-    padding: 0.5rem;
     flex-direction: row;
     display: flex;
     align-items: center;

@@ -37,6 +37,12 @@ export const dataProduct_addAccessPoint = action(
   },
 );
 
+export const accessPointGroup_setDescription = action(
+  (product: AccessPointGroup, description: string) => {
+    product.description = description;
+  },
+);
+
 export const dataProduct_addAccessPointGroup = action(
   (product: DataProduct, accessPointGroup: AccessPointGroup) => {
     addUniqueEntry(
