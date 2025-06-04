@@ -47,10 +47,6 @@ import {
 } from '../ElementEditorInitialConfiguration.js';
 import type { AuthContextProps } from 'react-oidc-context';
 import { EXTERNAL_APPLICATION_NAVIGATION__generateUrlWithEditorConfig } from '../../../../../__lib__/LegendStudioNavigation.js';
-import {
-  ActionAlertActionType,
-  ActionAlertType,
-} from '@finos/legend-application';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../../__lib__/LegendStudioEvent.js';
 
 const createEditorInitialConfiguration = (): EditorInitialConfiguration => {
@@ -98,9 +94,12 @@ export class IngestDefinitionEditorState extends ElementEditorState {
       init_with_deploy: flow,
       deploy: flow,
     });
-    const elementConfig = config?.elementEditorConfiguration;
-    if (elementConfig instanceof IngestElementEditorInitialConfiguration) {
-      this.deployOnOpen = elementConfig.deployOnOpen ?? false;
+    if (
+      config?.elementEditorConfiguration instanceof
+      IngestElementEditorInitialConfiguration
+    ) {
+      this.deployOnOpen =
+        config.elementEditorConfiguration.deployOnOpen ?? false;
     }
   }
 
@@ -170,44 +169,13 @@ export class IngestDefinitionEditorState extends ElementEditorState {
       this.editorStore.applicationStore.alertService.setBlockingAlert(
         undefined,
       );
-      const deploymentResponse = response.deploymentResponse;
-      if (deploymentResponse) {
+      if (response.deploymentResponse) {
         this.editorStore.applicationStore.logService.info(
           LogEvent.create(LEGEND_STUDIO_APP_EVENT.INGESTION_DEPLOY_SUCCESS_URN),
-          deploymentResponse.ingestDefinitionUrn,
+          response.deploymentResponse.ingestDefinitionUrn,
         );
-        this.editorStore.applicationStore.alertService.setActionAlertInfo({
-          title: `Ingest Definition Deployment`,
-          message: `Ingest definition deployed successfully. You may use URN for ingestion of Data`,
-          prompt: `${deploymentResponse.ingestDefinitionUrn}`,
-          type: ActionAlertType.STANDARD,
-          actions: [
-            {
-              label: 'Copy URN',
-              type: ActionAlertActionType.PROCEED,
-              handler: (): void => {
-                this.editorStore.applicationStore.clipboardService
-                  .copyTextToClipboard(deploymentResponse.ingestDefinitionUrn)
-                  .then(() =>
-                    this.editorStore.applicationStore.notificationService.notifySuccess(
-                      'Ingest URN copied to clipboard',
-                      undefined,
-                      2500,
-                    ),
-                  )
-                  .catch(this.editorStore.applicationStore.alertUnhandledError);
-              },
-              default: true,
-            },
-            {
-              label: 'Close',
-              type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-            },
-          ],
-        });
-      } else {
-        this.setValidateAndDeployResponse(response);
       }
+      this.setValidateAndDeployResponse(response);
     } catch (error) {
       this.editorStore.applicationStore.alertService.setBlockingAlert(
         undefined,

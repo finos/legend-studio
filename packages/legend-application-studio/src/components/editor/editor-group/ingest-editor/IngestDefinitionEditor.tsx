@@ -41,7 +41,7 @@ import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { flowResult } from 'mobx';
 import { useAuth } from 'react-oidc-context';
 import {
-  type IngestDefinitionDeploymentResponse,
+  IngestDefinitionDeploymentResponse,
   IngestDefinitionValidationResponse,
 } from '../../../../stores/ingestion/IngestionDeploymentResponse.js';
 
@@ -95,75 +95,81 @@ const IngestValidationError = observer(
   },
 );
 
-// TODO: show full report i.e write envs etc
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const IngestDeploymentResponseModal = observer(
   (props: {
-    state: IngestDefinitionEditorState;
+    closeModal: () => void;
     deploymentResponse: IngestDefinitionDeploymentResponse;
+    copyHandler: (text: string, successMessage: string) => void;
   }) => {
-    const { state, deploymentResponse } = props;
-    const applicationStore = state.editorStore.applicationStore;
-    const closeModal = (): void =>
-      state.setValidateAndDeployResponse(undefined);
+    const { closeModal, deploymentResponse, copyHandler } = props;
     const copyURN = (text: string): void => {
-      state.editorStore.applicationStore.clipboardService
-        .copyTextToClipboard(text)
-        .then(() =>
-          state.editorStore.applicationStore.notificationService.notifySuccess(
-            'Ingest URN copied to clipboard',
-            undefined,
-            2500,
-          ),
-        )
-        .catch(state.editorStore.applicationStore.alertUnhandledError);
+      copyHandler(text, 'Ingest URN copied to clipboard');
     };
     return (
       <Dialog
         open={true}
         classes={{
-          root: 'editor-modal__root-container',
-          container: 'editor-modal__container',
-          paper: 'editor-modal__content',
+          root: 'ingestion-modal__root-container',
+          container: 'ingestion-modal__container',
+          paper: 'ingestion-modal__content',
         }}
-        onClose={closeModal}
       >
-        <Modal
-          darkMode={
-            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
-          }
-          className="editor-modal"
-        >
+        <Modal darkMode={true} className="ingestion-modal">
           <ModalHeader>
             <ModalTitle
-              icon={<CheckCircleIcon />}
-              title="Deployment URN"
+              icon={<CheckCircleIcon className="ingestion-modal--success" />}
+              title="Deployment Response"
             ></ModalTitle>
           </ModalHeader>
           <ModalBody>
-            <PanelContent>
-              <div>
-                <div>Ingestion URN</div>
-                <div>{deploymentResponse.ingestDefinitionUrn}</div>
-
-                <div className="data-space__viewer__quickstart__tds__query-text__actions">
-                  <button
-                    className="data-space__viewer__quickstart__tds__query-text__action"
-                    tabIndex={-1}
-                    title="Copy"
-                    onClick={() => {
-                      copyURN(deploymentResponse.ingestDefinitionUrn);
-                    }}
-                  >
-                    <CopyIcon />
-                  </button>
-                  <button
-                    className="data-space__viewer__quickstart__tds__query-text__action"
-                    tabIndex={-1}
-                  ></button>
+            <div className="ingestion-modal__urn">
+              <div className="ingestion-modal__urn__info">
+                <div className="panel__content__form__section__header__label">
+                  Deployment URN
+                </div>
+                <div className="ingestion-modal__urn__value">
+                  {deploymentResponse.ingestDefinitionUrn}
                 </div>
               </div>
-            </PanelContent>
+              <div className="ingestion-modal__urn__copy">
+                <button
+                  className="ingestion-modal__urn__copy--btn"
+                  tabIndex={-1}
+                  title="Copy"
+                  onClick={() => {
+                    copyURN(deploymentResponse.ingestDefinitionUrn);
+                  }}
+                >
+                  <CopyIcon />
+                </button>
+              </div>
+            </div>
+            <div className="ingestion-modal__write">
+              <div className="ingestion-modal__write__label">
+                Write Location
+              </div>
+              <div className="ingestion-modal__write--value">
+                {deploymentResponse.write_location ? (
+                  <CodeEditor
+                    inputValue={JSON.stringify(
+                      deploymentResponse.write_location,
+                      null,
+                      2,
+                    )}
+                    isReadOnly={true}
+                    language={CODE_EDITOR_LANGUAGE.JSON}
+                    extraEditorOptions={{
+                      wordWrap: 'on',
+                    }}
+                    hideActionBar={true}
+                  />
+                ) : (
+                  <div className="ingestion-modal__write--no-value">
+                    No write location provided
+                  </div>
+                )}
+              </div>
+            </div>
           </ModalBody>
           <ModalFooter>
             <ModalFooterButton
@@ -186,7 +192,6 @@ export const IngestDefinitionEditor = observer(() => {
     );
   const ingestDef = ingestDefinitionEditorState.ingest;
   const auth = useAuth();
-
   const deployIngest = (): void => {
     // Trigger OAuth flow if not authenticated
     if (!auth.isAuthenticated) {
@@ -220,8 +225,32 @@ export const IngestDefinitionEditor = observer(() => {
           validateResponse={response}
         />
       );
+    } else if (response instanceof IngestDefinitionDeploymentResponse) {
+      const copyHanlder = (text: string, successMessage: string): void => {
+        ingestDefinitionEditorState.editorStore.applicationStore.clipboardService
+          .copyTextToClipboard(text)
+          .then(() =>
+            ingestDefinitionEditorState.editorStore.applicationStore.notificationService.notifySuccess(
+              successMessage,
+              undefined,
+              2500,
+            ),
+          )
+          .catch(
+            ingestDefinitionEditorState.editorStore.applicationStore
+              .alertUnhandledError,
+          );
+      };
+      return (
+        <IngestDeploymentResponseModal
+          closeModal={() =>
+            ingestDefinitionEditorState.setValidateAndDeployResponse(undefined)
+          }
+          deploymentResponse={response}
+          copyHandler={copyHanlder}
+        />
+      );
     }
-
     return null;
   };
 

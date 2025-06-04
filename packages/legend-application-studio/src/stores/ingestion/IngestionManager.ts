@@ -115,7 +115,13 @@ export class IngestionManager {
       undefined,
       token,
     );
-    fullResponse.deploymentResponse = deployResponse;
+    try {
+      messageCallBack(`Deployment Success. Fetching write location...`);
+      await this._fetchDeployLocations(deployResponse, token);
+    } catch (error) {
+      assertErrorThrown(error);
+    }
+
     return fullResponse;
   }
 
@@ -179,6 +185,17 @@ export class IngestionManager {
       token,
     )) as unknown as PlainObject<IngestDefinitionDeploymentResponse>;
     return IngestDefinitionDeploymentResponse.serialization.fromJson(response);
+  }
+
+  private async _fetchDeployLocations(
+    depploymentResponse: IngestDefinitionDeploymentResponse,
+    token: string | undefined,
+  ): Promise<void> {
+    const response = (await this.ingestDeploymentServerClient.write_location(
+      depploymentResponse.ingestDefinitionUrn,
+      token,
+    )) as unknown as PlainObject;
+    depploymentResponse.write_location = response;
   }
 
   private async identifyIngestDeploymentServer(

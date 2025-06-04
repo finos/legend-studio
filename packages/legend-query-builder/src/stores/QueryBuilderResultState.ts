@@ -54,7 +54,6 @@ import type { DataGridColumnState } from '@finos/legend-lego/data-grid';
 import { downloadStream } from '@finos/legend-application';
 import { QueryBuilderDataGridCustomAggregationFunction } from '../components/result/tds/QueryBuilderTDSGridResult.js';
 import { QueryBuilderTDSState } from './fetch-structure/tds/QueryBuilderTDSState.js';
-import { QueryBuilderEmbeddedFromExecutionContextState } from './QueryBuilderExecutionContextState.js';
 
 export const DEFAULT_LIMIT = 1000;
 

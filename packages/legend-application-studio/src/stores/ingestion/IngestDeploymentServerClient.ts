@@ -55,8 +55,10 @@ export class IngestDeploymentServerClient extends AbstractServerClient {
   private _dataProduct = (): string =>
     `${this.baseUrl}/${this.DATA_PRODUCT_URL}/api/entitlements/sdlc/deploy/definitions`;
 
-  private _ingest = (): string =>
+  private _ingestDefinitions = (): string =>
     `${this.baseUrl}/api/ingest/sdlc/deploy/definitions`;
+
+  private _ingest = (): string => `${this.baseUrl}/api/ingest`;
 
   changeServer(serverConfig: IngestDeploymentServerConfig): void {
     this.baseUrl = serverConfig.ingestServerUrl;
@@ -68,7 +70,7 @@ export class IngestDeploymentServerClient extends AbstractServerClient {
     token: string | undefined,
   ): Promise<PlainObject<IngestDefinitionValidationResponse>> {
     return this.post(
-      `${this._ingest()}/validate`,
+      `${this._ingestDefinitions()}/validate`,
       validateGrammar,
       undefined,
       this._tokenWithTextPlain(token),
@@ -80,10 +82,19 @@ export class IngestDeploymentServerClient extends AbstractServerClient {
     token: string | undefined,
   ): Promise<IngestDefinitionDeploymentResponse> {
     return this.post(
-      `${this._ingest()}`,
+      `${this._ingestDefinitions()}`,
       deployGrammar,
       undefined,
       this._tokenWithTextPlain(token),
+    );
+  }
+
+  write_location(urn: string, token: string | undefined): Promise<PlainObject> {
+    return this.post(
+      `${this._ingest()}/${encodeURIComponent(urn)}/write-location`,
+      undefined,
+      undefined,
+      this._token(token),
     );
   }
 
