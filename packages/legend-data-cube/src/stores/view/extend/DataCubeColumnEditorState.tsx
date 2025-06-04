@@ -23,6 +23,7 @@ import {
   ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
+  hasWhiteSpace,
   uuid,
   type PlainObject,
 } from '@finos/legend-shared';
@@ -302,7 +303,9 @@ export class DataCubeNewColumnState extends DataCubeColumnBaseEditorState {
     );
 
     this.initialCode = referenceColumn
-      ? `${DEFAULT_LAMBDA_VARIABLE_NAME}|$${DEFAULT_LAMBDA_VARIABLE_NAME}.${referenceColumn.name}`
+      ? hasWhiteSpace(referenceColumn.name)
+        ? `${DEFAULT_LAMBDA_VARIABLE_NAME}|$${DEFAULT_LAMBDA_VARIABLE_NAME}.'${referenceColumn.name}'`
+        : `${DEFAULT_LAMBDA_VARIABLE_NAME}|$${DEFAULT_LAMBDA_VARIABLE_NAME}.${referenceColumn.name}`
       : `${DEFAULT_LAMBDA_VARIABLE_NAME}|`;
   }
 
