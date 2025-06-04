@@ -7,6 +7,12 @@
       "tags": ["taxonomyNodes"]
     },
     {
+      "package": "meta::external::powerbi::profiles",
+      "_type": "profile",
+      "name": "PowerBIArtifactGeneration",
+      "stereotypes": ["DirectQuery", "Import"]
+    },
+    {
       "_type": "profile",
       "name": "DataSpaceInfo",
       "package": "meta::pure::metamodel::dataSpace::profiles",
