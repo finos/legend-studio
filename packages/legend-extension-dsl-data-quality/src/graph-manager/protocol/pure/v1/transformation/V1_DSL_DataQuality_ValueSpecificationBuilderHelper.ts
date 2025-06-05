@@ -174,7 +174,9 @@ export function V1_buildDataQualityRelationValidation(
     ),
   );
   _validation.description = validation.description;
-  _validation.type = validation.type;
+  if (validation.type) {
+    _validation.type = validation.type;
+  }
   return _validation;
 }
 

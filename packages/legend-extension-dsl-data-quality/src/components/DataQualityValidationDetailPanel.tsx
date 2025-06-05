@@ -15,9 +15,7 @@
  */
 
 import {
-  type SelectOption,
   clsx,
-  CustomSelectorInput,
   Dialog,
   Modal,
   ModalBody,
@@ -30,7 +28,6 @@ import { PrimitiveType } from '@finos/legend-graph';
 import type { DataQualityRelationValidationConfigurationState } from './states/DataQualityRelationValidationConfigurationState.js';
 import type { DataQualityRelationValidationState } from './states/DataQualityRelationValidationState.js';
 import { InlineLambdaEditor } from '@finos/legend-query-builder';
-import type { RelationValidationType } from '../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
 
 export const DataQualityValidationDetailPanel = observer(
   (props: {
@@ -40,11 +37,6 @@ export const DataQualityValidationDetailPanel = observer(
     changeName: React.ChangeEventHandler<HTMLInputElement>;
     changeDescription: React.ChangeEventHandler<HTMLInputElement>;
     onLambdaEditorFocus: (isAssertion: boolean) => void;
-    onValidationTypeChange: (val: SelectOption) => void;
-    selectedValidationType: {
-      label: RelationValidationType;
-      value: RelationValidationType;
-    };
     forceBackdrop: boolean;
   }) => {
     const {
@@ -54,8 +46,6 @@ export const DataQualityValidationDetailPanel = observer(
       changeName,
       onLambdaEditorFocus,
       forceBackdrop,
-      onValidationTypeChange,
-      selectedValidationType,
       changeDescription,
     } = props;
     const {
@@ -98,24 +88,6 @@ export const DataQualityValidationDetailPanel = observer(
                   onChange={changeName}
                   placeholder="Validation name"
                 />
-              </div>
-              <div className="relation-validation-editor__content">
-                <div className="relation-validation-editor__label">Type</div>
-                <div className="relation-validation-editor__content__select">
-                  <CustomSelectorInput
-                    className="relation-validation-editor__select"
-                    options={
-                      dataQualityRelationValidationState.relationValidationOptions
-                    }
-                    onChange={onValidationTypeChange}
-                    value={selectedValidationType}
-                    darkMode={
-                      !applicationStore.layoutService
-                        .TEMPORARY__isLightColorThemeEnabled
-                    }
-                    placeholder={'Type of validation to be added'}
-                  />
-                </div>
               </div>
               <div className="relation-validation-editor__content">
                 <div className="relation-validation-editor__label">

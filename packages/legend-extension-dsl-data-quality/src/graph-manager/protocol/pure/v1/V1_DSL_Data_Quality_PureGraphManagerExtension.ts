@@ -75,7 +75,7 @@ export class V1_DQExecuteInput {
   model!: V1_PureModelContext;
   lambdaParameterValues: V1_ParameterValue[] = [];
   packagePath!: string;
-  queryLimit: number | undefined;
+  defectsLimit: number | undefined;
   validationName: string | undefined;
   runQuery: boolean | undefined;
 
@@ -85,7 +85,7 @@ export class V1_DQExecuteInput {
       model: V1_pureModelContextPropSchema,
       lambdaParameterValues: customListWithSchema(V1_parameterValueModelSchema),
       packagePath: primitive(),
-      queryLimit: optional(primitive()),
+      defectsLimit: optional(primitive()),
       validationName: optional(primitive()),
       runQuery: optional(primitive()),
     }),
@@ -210,7 +210,7 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
       ? options.lambdaParameterValues.map(V1_transformParameterValue)
       : [];
     dqExecuteInput.packagePath = packagePath;
-    dqExecuteInput.queryLimit = options.previewLimit;
+    dqExecuteInput.defectsLimit = options.previewLimit;
     dqExecuteInput.validationName = options.validationName;
     dqExecuteInput.runQuery = options.runQuery;
     return dqExecuteInput;
