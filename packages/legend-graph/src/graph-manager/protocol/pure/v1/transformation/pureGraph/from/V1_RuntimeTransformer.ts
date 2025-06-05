@@ -73,8 +73,11 @@ const transformEngineRuntime = (
     runtime = new V1_SingleConnectionEngineRuntime();
   } else if (element instanceof LakehouseRuntime) {
     const lakehouseRuntime = new V1_LakehouseRuntime();
-    lakehouseRuntime.ingestEnv = element.ingestEnv;
+    lakehouseRuntime.environment = element.environment;
     lakehouseRuntime.warehouse = element.warehouse;
+    lakehouseRuntime.connectionPointer = element.connectionPointer
+      ? V1_transformConnectionPointer(element.connectionPointer)
+      : undefined;
     runtime = lakehouseRuntime;
   } else {
     runtime = new V1_EngineRuntime();

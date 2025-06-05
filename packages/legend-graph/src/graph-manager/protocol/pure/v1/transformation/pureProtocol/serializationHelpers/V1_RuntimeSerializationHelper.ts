@@ -22,6 +22,7 @@ import {
   serialize,
   deserialize,
   object,
+  optional,
 } from 'serializr';
 import {
   type PlainObject,
@@ -56,7 +57,7 @@ export enum V1_RuntimeType {
   LEGACY_RUNTIME = 'legacyRuntime',
   ENGINE_RUNTIME = 'engineRuntime',
   SINGLE_ENGINE_RUNTIME = 'localEngineRuntime',
-  LAKEHOUSE_RUNTIME = 'LakeRuntime',
+  LAKEHOUSE_RUNTIME = 'LakehouseRuntime',
 }
 
 export const V1_runtimePointerModelSchema = createModelSchema(
@@ -119,8 +120,11 @@ export const V1_setupEngineRuntimeSerialization = (
     connectionStores: list(object(V1_ConnectionStores)),
     connections: list(object(V1_StoreConnections)),
     mappings: list(usingModelSchema(V1_packageableElementPointerModelSchema)),
-    ingestEnv: primitive(),
-    warehouse: primitive(),
+    environment: optional(primitive()),
+    warehouse: optional(primitive()),
+    connectionPointer: optional(
+      usingModelSchema(V1_connectionPointerModelSchema),
+    ),
   });
 };
 
