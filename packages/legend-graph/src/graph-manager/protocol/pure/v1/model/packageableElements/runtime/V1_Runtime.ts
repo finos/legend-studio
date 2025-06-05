@@ -90,16 +90,19 @@ export class V1_SingleConnectionEngineRuntime extends V1_EngineRuntime {
 }
 
 export class V1_LakehouseRuntime extends V1_EngineRuntime implements Hashable {
-  ingestEnv!: string;
-  warehouse!: string;
+  environment?: string | undefined;
+  warehouse?: string | undefined;
+  connectionPointer?: V1_ConnectionPointer | undefined;
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.LAKEHOUSE_RUNTIME,
-      this.ingestEnv,
-      this.warehouse,
+      this.environment ?? '',
+      this.warehouse ?? '',
+      this.connectionPointer ?? '',
     ]);
   }
 }
+
 export class V1_LegacyRuntime extends V1_Runtime implements Hashable {
   mappings: V1_PackageableElementPointer[] = [];
   connections: V1_Connection[] = [];
