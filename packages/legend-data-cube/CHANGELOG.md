@@ -1,5 +1,11 @@
 # @finos/legend-data-cube
 
+## 0.2.17
+
+### Patch Changes
+
+- [#4176](https://github.com/finos/legend-studio/pull/4176) [`f7402ae`](https://github.com/finos/legend-studio/commit/f7402ae0e4a56b2213f4ce09b2effe3fe471622e) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: fix intial code for extended columns editor
+
 ## 0.2.16
 
 ## 0.2.15

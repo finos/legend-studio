@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.18.147
+
+### Patch Changes
+
+- [#4178](https://github.com/finos/legend-studio/pull/4178) [`7317402`](https://github.com/finos/legend-studio/commit/7317402f1f96dab73909e8122d5a938bcf477d70) ([@kelly-thai](https://github.com/kelly-thai)) - Add improvements to the Lakehouse Data Product form editor; fixed splash screen, added group descriptions to form, and fixed CSS for expanded lambda editors
+
 ## 28.18.146
 
 ## 28.18.145
