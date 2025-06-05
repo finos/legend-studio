@@ -45,7 +45,24 @@ export const V1_buildEngineRuntime = (
   if (runtime instanceof V1_SingleConnectionEngineRuntime) {
     runtimeValue = new SingleConnectionRuntime();
   } else if (runtime instanceof V1_LakehouseRuntime) {
-    runtimeValue = new LakehouseRuntime(runtime.ingestEnv, runtime.warehouse);
+    let conPointer: ConnectionPointer | undefined;
+    if (runtime.connectionPointer) {
+      const connectiontmp = V1_buildConnection(
+        runtime.connectionPointer,
+        context,
+        undefined,
+      );
+      conPointer = guaranteeType(
+        connectiontmp,
+        ConnectionPointer,
+        `Connection in Connection store expected to be connection pointer`,
+      );
+    }
+    runtimeValue = new LakehouseRuntime(
+      runtime.environment,
+      runtime.warehouse,
+      conPointer,
+    );
   } else {
     runtimeValue = new EngineRuntime();
   }

@@ -148,23 +148,31 @@ export class SingleConnectionRuntime extends EngineRuntime {
 }
 
 export class LakehouseRuntime extends EngineRuntime implements Hashable {
-  ingestEnv: string;
-  warehouse: string;
+  environment?: string | undefined;
+  warehouse?: string | undefined;
+  connectionPointer?: ConnectionPointer | undefined;
 
-  constructor(ingestEnv: string, warehouse: string) {
+  constructor(
+    environment?: string,
+    warehouse?: string,
+    connectionPointer?: ConnectionPointer,
+  ) {
     super();
-    this.ingestEnv = ingestEnv;
+    this.environment = environment;
     this.warehouse = warehouse;
+    this.connectionPointer = connectionPointer;
   }
 
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.LAKEHOUSE_RUNTIME,
-      this.ingestEnv,
-      this.warehouse,
+      this.environment ?? '',
+      this.warehouse ?? '',
+      this.connectionPointer ?? '',
     ]);
   }
 }
+
 export class RuntimePointer extends Runtime implements Hashable {
   packageableRuntime: PackageableElementReference<PackageableRuntime>;
 
