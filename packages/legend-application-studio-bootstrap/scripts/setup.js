@@ -100,6 +100,7 @@ export const setup = (outputDir) => {
             //   },
             // ],
             typeAheadEnabled: true,
+            enableOauthFlow: false,
             TEMPORARY__enableLocalConnectionBuilder: false,
             NonProductionFeatureFlag: true,
             queryBuilderConfig: {

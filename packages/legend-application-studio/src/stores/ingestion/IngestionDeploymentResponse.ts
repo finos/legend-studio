@@ -51,6 +51,7 @@ export const createIngestDefinitionValidationResponse = (
 
 export class IngestDefinitionDeploymentResponse {
   ingestDefinitionUrn!: string;
+  write_location: PlainObject | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(IngestDefinitionDeploymentResponse, {

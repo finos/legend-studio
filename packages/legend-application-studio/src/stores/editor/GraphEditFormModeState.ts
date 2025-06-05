@@ -557,6 +557,7 @@ export class GraphEditFormModeState extends GraphEditorMode {
   *onLeave(): GeneratorFn<void> {
     this.editorStore.sqlPlaygroundState.setConnection(undefined);
     this.editorStore.tabManagerState.cacheAndClose();
+    this.editorStore.applicationStore.layoutService.setShowBackdrop(false);
   }
 
   *cleanupBeforeEntering(fallbackOptions?: {

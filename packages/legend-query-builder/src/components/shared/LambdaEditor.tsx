@@ -811,6 +811,7 @@ type LambdaEditorBaseProps = {
   autoFocus?: boolean | undefined;
   onEditorFocus?: (() => void) | undefined;
   onEditorBlur?: (() => void) | undefined;
+  hideErrorBar?: boolean;
 };
 
 export const InlineLambdaEditor = observer(
@@ -950,6 +951,7 @@ export const LambdaEditor = observer((props: LambdaEditorBaseProps) => {
     forceBackdrop,
     autoFocus,
     onEditorFocus,
+    hideErrorBar,
   } = props;
   const debouncedTransformStringToLambda = useMemo(
     () =>
@@ -974,7 +976,7 @@ export const LambdaEditor = observer((props: LambdaEditorBaseProps) => {
       disableExpansion={true}
       forceExpansion={true}
       disablePopUp={true}
-      hideErrorBar={true}
+      hideErrorBar={hideErrorBar}
     />
   );
 });

@@ -36,7 +36,15 @@ export abstract class QueryBuilderExecutionContextState {
   }
 
   get specifiedInQuery(): boolean {
-    return true;
+    return false;
+  }
+
+  get explicitMappingValue(): Mapping | undefined {
+    return this.mapping;
+  }
+
+  get explicitRuntimeValue(): Runtime | undefined {
+    return this.runtimeValue;
   }
 }
 
@@ -50,6 +58,18 @@ export class QueryBuilderEmbeddedFromExecutionContextState extends QueryBuilderE
       setRuntimeValue: action,
     });
   }
+
+  override get specifiedInQuery(): boolean {
+    return true;
+  }
+
+  override get explicitMappingValue(): Mapping | undefined {
+    return undefined;
+  }
+
+  override get explicitRuntimeValue(): Runtime | undefined {
+    return undefined;
+  }
 }
 
 export class QueryBuilderExternalExecutionContextState extends QueryBuilderExecutionContextState {
@@ -61,9 +81,5 @@ export class QueryBuilderExternalExecutionContextState extends QueryBuilderExecu
       setMapping: action,
       setRuntimeValue: action,
     });
-  }
-
-  override get specifiedInQuery(): boolean {
-    return false;
   }
 }

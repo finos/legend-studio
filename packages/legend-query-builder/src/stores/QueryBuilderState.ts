@@ -244,6 +244,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       setGetAllFunction: action,
       setLambdaWriteMode: action,
       setINTERNAL__enableInitializingDefaultSimpleExpressionValue: action,
+      TEMPORARY_initializeExecContext: action,
 
       resetQueryResult: action,
       resetQueryContent: action,
@@ -259,14 +260,9 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
     this.applicationStore = applicationStore;
     this.graphManagerState = graphManagerState;
-    this.executionContextState = config?.enableTypedTDS
-      ? new QueryBuilderEmbeddedFromExecutionContextState(this)
-      : new QueryBuilderExternalExecutionContextState(this);
-    if (config?.enableTypedTDS) {
-      this.setLambdaWriteMode(
-        QUERY_BUILDER_LAMBDA_WRITER_MODE.TYPED_FETCH_STRUCTURE,
-      );
-    }
+    this.executionContextState = this.TEMPORARY_initializeExecContext(
+      Boolean(config?.enableTypedTDS),
+    );
     this.milestoningState = new QueryBuilderMilestoningState(this);
     this.explorerState = new QueryBuilderExplorerState(this);
     this.parametersState = new QueryBuilderParametersState(this);
@@ -294,6 +290,19 @@ export abstract class QueryBuilderState implements CommandRegistrar {
           QUERY_BUILDER_SETTING_KEY.SHOW_QUERY_CHAT_PANEL,
         )) ??
       false;
+  }
+
+  TEMPORARY_initializeExecContext(
+    isTypedTDS: boolean,
+  ): QueryBuilderExecutionContextState {
+    if (isTypedTDS) {
+      const context = new QueryBuilderEmbeddedFromExecutionContextState(this);
+      this.setLambdaWriteMode(
+        QUERY_BUILDER_LAMBDA_WRITER_MODE.TYPED_FETCH_STRUCTURE,
+      );
+      return context;
+    }
+    return new QueryBuilderExternalExecutionContextState(this);
   }
 
   get isMappingReadOnly(): boolean {
