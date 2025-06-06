@@ -26,6 +26,8 @@ import {
   SnowflakeAppDeploymentConfiguration,
   DeploymentOwner,
   HostedService,
+  MemSQLFunction,
+  MemSQLDeploymentConfiguration,
 } from '@finos/legend-graph';
 import { uuid, type GeneratorFn } from '@finos/legend-shared';
 import { FUNCTION_ACTIVATE_TYPE } from '../../../../components/editor/editor-group/function-activator/FunctionEditor.js';
@@ -115,6 +117,19 @@ export class FunctionActivatorState {
         hostedService.function =
           PackageableElementExplicitReference.create(functionElement);
         return hostedService;
+      }
+      case FUNCTION_ACTIVATE_TYPE.MEM_SQL_FUNCTION: {
+        const activatorName = this.activatorPath.includes('::')
+          ? extractElementNameFromPath(this.activatorPath)
+          : this.activatorPath;
+        const memSQLFun = new MemSQLFunction(activatorName);
+        memSQLFun.functionName = '';
+        memSQLFun.description = '';
+        memSQLFun.ownership = new DeploymentOwner('', memSQLFun);
+        memSQLFun.function =
+          PackageableElementExplicitReference.create(functionElement);
+        memSQLFun.activationConfiguration = new MemSQLDeploymentConfiguration();
+        return memSQLFun;
       }
       default:
         return undefined;

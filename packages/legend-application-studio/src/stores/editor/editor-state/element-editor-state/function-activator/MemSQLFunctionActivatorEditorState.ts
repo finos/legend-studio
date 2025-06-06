@@ -16,13 +16,12 @@
 
 import {
   type PackageableConnection,
-  type SnowflakePermissionScheme,
-  SnowflakeApp,
+  MemSQLFunction,
   ConnectionPointer,
   InMemoryGraphData,
   PackageableElementExplicitReference,
-  observe_SnowflakeAppDeploymentConfiguration,
-  observe_SnowflakeApp,
+  observe_MemSQLFunctionDeploymentConfiguration,
+  observe_MemSQLFunction,
   DeploymentOwner,
   observe_DeploymentOwnership,
 } from '@finos/legend-graph';
@@ -35,25 +34,18 @@ import {
 import { makeObservable, action, flow, computed } from 'mobx';
 import type { EditorStore } from '../../../EditorStore.js';
 import { ElementEditorState } from '../ElementEditorState.js';
-import {
-  ActionAlertActionType,
-  ActionAlertType,
-} from '@finos/legend-application';
 
-export class SnowflakeAppFunctionActivatorEdtiorState extends ElementEditorState {
+export class MemSQLFunctionActivatorEditorState extends ElementEditorState {
   readonly validateState = ActionState.create();
   readonly deployState = ActionState.create();
 
-  constructor(editorStore: EditorStore, element: SnowflakeApp) {
+  constructor(editorStore: EditorStore, element: MemSQLFunction) {
     super(editorStore, element);
 
     makeObservable(this, {
       activator: computed,
       reprocess: action,
       updateOwnership: action,
-      updateUsageRole: action,
-      updateDeploymentSchema: action,
-      updatePermissionScopte: action,
       updateAppDescription: action,
       updateApplicationName: action,
       updateConnection: action,
@@ -62,12 +54,12 @@ export class SnowflakeAppFunctionActivatorEdtiorState extends ElementEditorState
     });
   }
 
-  get activator(): SnowflakeApp {
-    return observe_SnowflakeApp(
+  get activator(): MemSQLFunction {
+    return observe_MemSQLFunction(
       guaranteeType(
         this.element,
-        SnowflakeApp,
-        'Element inside snowflake app function editor state must be a SnowflakeApp',
+        MemSQLFunction,
+        'Element inside Mem SQL function editor state must be a MemSQLFunction',
       ),
     );
   }
@@ -75,7 +67,7 @@ export class SnowflakeAppFunctionActivatorEdtiorState extends ElementEditorState
   updateConnection(val: PackageableConnection): void {
     this.activator.activationConfiguration.activationConnection =
       new ConnectionPointer(PackageableElementExplicitReference.create(val));
-    observe_SnowflakeAppDeploymentConfiguration(
+    observe_MemSQLFunctionDeploymentConfiguration(
       this.activator.activationConfiguration,
     );
   }
@@ -86,19 +78,7 @@ export class SnowflakeAppFunctionActivatorEdtiorState extends ElementEditorState
   }
 
   updateApplicationName(val: string): void {
-    this.activator.applicationName = val;
-  }
-
-  updateUsageRole(val: string | undefined): void {
-    this.activator.usageRole = val;
-  }
-
-  updateDeploymentSchema(val: string | undefined): void {
-    this.activator.deploymentSchema = val;
-  }
-
-  updatePermissionScopte(val: SnowflakePermissionScheme): void {
-    this.activator.permissionScheme = val;
+    this.activator.functionName = val;
   }
 
   updateAppDescription(val: string): void {
@@ -126,40 +106,13 @@ export class SnowflakeAppFunctionActivatorEdtiorState extends ElementEditorState
   *deployToSandbox(): GeneratorFn<void> {
     this.deployState.inProgress();
     try {
-      yield this.editorStore.graphManagerState.graphManager
-        .publishFunctionActivatorToSandbox(
-          this.activator,
-          new InMemoryGraphData(this.editorStore.graphManagerState.graph),
-        )
-        .then((response) =>
-          this.editorStore.applicationStore.alertService.setActionAlertInfo({
-            message: `Snowflake UDTF has been deployed successfully`,
-            prompt: response.deploymentLocation
-              ? 'You can now call your UDTF on Snowflake'
-              : undefined,
-            type: ActionAlertType.STANDARD,
-            actions: [
-              ...(response.deploymentLocation !== undefined
-                ? [
-                    {
-                      label: 'Launch Snowflake UDTF',
-                      type: ActionAlertActionType.PROCEED,
-                      handler: (): void => {
-                        this.editorStore.applicationStore.navigationService.navigator.visitAddress(
-                          response.deploymentLocation ?? '',
-                        );
-                      },
-                      default: true,
-                    },
-                  ]
-                : []),
-              {
-                label: 'Close',
-                type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-              },
-            ],
-          }),
-        );
+      yield this.editorStore.graphManagerState.graphManager.publishFunctionActivatorToSandbox(
+        this.activator,
+        new InMemoryGraphData(this.editorStore.graphManagerState.graph),
+      );
+      this.editorStore.applicationStore.notificationService.notifySuccess(
+        'MemSQL Function Activator has been deployed successfully',
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.notificationService.notifyError(error);
@@ -169,12 +122,9 @@ export class SnowflakeAppFunctionActivatorEdtiorState extends ElementEditorState
   }
 
   reprocess(
-    newElement: SnowflakeApp,
+    newElement: MemSQLFunction,
     editorStore: EditorStore,
-  ): SnowflakeAppFunctionActivatorEdtiorState {
-    return new SnowflakeAppFunctionActivatorEdtiorState(
-      editorStore,
-      newElement,
-    );
+  ): MemSQLFunctionActivatorEditorState {
+    return new MemSQLFunctionActivatorEditorState(editorStore, newElement);
   }
 }

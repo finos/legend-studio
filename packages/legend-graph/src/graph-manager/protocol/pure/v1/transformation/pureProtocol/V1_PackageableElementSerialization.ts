@@ -95,6 +95,8 @@ import {
   V1_SNOWFLAKE_APP_TYPE,
   V1_HostedServiceModelSchema,
   V1_HOSTED_SERVICE_TYPE,
+  V1_MEM_SQL_TYPE,
+  V1_MemSQLModelSchema,
 } from './serializationHelpers/V1_DomainSerializationHelper.js';
 import type {
   PureProtocolProcessorPlugin,
@@ -128,6 +130,7 @@ import {
 import { V1_dataProductModelSchema } from './serializationHelpers/V1_DataProductSerializationHelper.js';
 import { V1_INGEST_DEFINITION_TYPE } from '../../model/packageableElements/ingest/V1_IngestDefinition.js';
 import { V1_createIngestDef } from './serializationHelpers/V1_IngestSerializationHelper.js';
+import type { V1_MemSQLFunction } from '../../model/packageableElements/function/V1_MemSQLFunction.js';
 
 class V1_PackageableElementSerializer
   implements V1_PackageableElementVisitor<PlainObject<V1_PackageableElement>>
@@ -190,6 +193,12 @@ class V1_PackageableElementSerializer
     element: V1_HostedService,
   ): PlainObject<V1_PackageableElement> {
     return serialize(V1_HostedServiceModelSchema(this.plugins), element);
+  }
+
+  visit_MemSQLFunction(
+    element: V1_MemSQLFunction,
+  ): PlainObject<V1_PackageableElement> {
+    return serialize(V1_MemSQLModelSchema(this.plugins), element);
   }
 
   visit_INTERNAL__UnknownStore(
@@ -371,6 +380,8 @@ export const V1_deserializePackageableElement = (
         return deserialize(V1_snowflakeAppModelSchema(plugins), json);
       case V1_HOSTED_SERVICE_TYPE:
         return deserialize(V1_HostedServiceModelSchema(plugins), json);
+      case V1_MEM_SQL_TYPE:
+        return deserialize(V1_MemSQLModelSchema(plugins), json);
       case V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE:
         // TODO: remove this once we have a proper icon for data product in the metamodel
         const adjustedJson = { ...json, icon: '' };

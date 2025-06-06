@@ -89,6 +89,7 @@ import {
   V1_transformOwnership,
   V1_transformSnowflakeAppDeploymentConfiguration,
   V1_transformActions,
+  V1_transformMemSQLDeploymentConfiguration,
 } from './V1_FunctionActivatorTransformer.js';
 import { PackageableElementPointerType } from '../../../../../../../graph/MetaModelConst.js';
 import type { INTERNAL__UnknownElement } from '../../../../../../../graph/metamodel/pure/packageableElements/INTERNAL__UnknownElement.js';
@@ -100,6 +101,8 @@ import type { DataProduct } from '../../../../../../../graph/metamodel/pure/data
 import { V1_transformDataProduct } from './V1_DataProductTransformer.js';
 import type { IngestDefinition } from '../../../../../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 import { V1_IngestDefinition } from '../../../model/packageableElements/ingest/V1_IngestDefinition.js';
+import { V1_MemSQLFunction } from '../../../model/packageableElements/function/V1_MemSQLFunction.js';
+import type { MemSQLFunction } from '../../../../../../../graph/metamodel/pure/packageableElements/function/MemSQLFunction.js';
 
 class V1_PackageableElementTransformer
   implements PackageableElementVisitor<V1_PackageableElement>
@@ -233,6 +236,30 @@ class V1_PackageableElementTransformer
     }
     protocol.taggedValues = element.taggedValues.map(V1_transformTaggedValue);
     protocol.stereotypes = element.stereotypes.map(V1_transformStereotype);
+    return protocol;
+  }
+
+  visit_MemSQLFunction(element: MemSQLFunction): V1_PackageableElement {
+    const protocol = new V1_MemSQLFunction();
+    V1_initPackageableElement(protocol, element);
+    protocol.function = new V1_PackageableElementPointer(
+      PackageableElementPointerType.FUNCTION,
+      generateFunctionPrettyName(element.function.value, {
+        fullPath: true,
+        spacing: false,
+        notIncludeParamName: true,
+      }),
+    );
+    protocol.functionName = element.functionName;
+    protocol.description = element.description;
+    protocol.ownership = V1_transformDeployment(element.ownership);
+    protocol.activationConfiguration =
+      V1_transformMemSQLDeploymentConfiguration(
+        element.activationConfiguration,
+      );
+    protocol.stereotypes = element.stereotypes.map(V1_transformStereotype);
+    protocol.taggedValues = element.taggedValues.map(V1_transformTaggedValue);
+    V1_transformFunctionActivatorActions(protocol, element, this.context);
     return protocol;
   }
 

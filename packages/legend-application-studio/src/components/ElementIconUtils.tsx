@@ -42,6 +42,7 @@ import {
   PURE_PackageIcon,
   PURE_DataIcon,
   PURE_SnowflakeAppIcon,
+  PURE_MemSQLFunctionIcon,
   LaunchIcon,
   LinkIcon,
   PURE_DataProductIcon,
@@ -108,6 +109,8 @@ export const getElementTypeIcon = (
       return <PURE_SnowflakeAppIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.INGEST_DEFINITION:
       return <PURE_IngestIcon />;
+    case PACKAGEABLE_ELEMENT_TYPE.MEM_SQL_FUNCTION:
+      return <PURE_MemSQLFunctionIcon />;
     default: {
       if (type) {
         const extraElementIconGetters = editorStore.pluginManager

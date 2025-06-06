@@ -362,6 +362,7 @@ import {
   V1_createGenericTypeWithElementPath,
 } from './helpers/V1_DomainHelper.js';
 import { V1_DataProduct } from './model/packageableElements/dataProduct/V1_DataProduct.js';
+import { V1_MemSQLFunction } from './model/packageableElements/function/V1_MemSQLFunction.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -4523,6 +4524,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       return CORE_PURE_PATH.HOSTED_SERVICE;
     } else if (protocol instanceof V1_DataProduct) {
       return CORE_PURE_PATH.DATA_PRODUCT;
+    } else if (protocol instanceof V1_MemSQLFunction) {
+      return CORE_PURE_PATH.MEM_SQL_FUNCTION;
     }
     const extraElementProtocolClassifierPathGetters = this.pluginManager
       .getPureProtocolProcessorPlugins()

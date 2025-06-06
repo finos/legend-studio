@@ -578,10 +578,11 @@ export const XIcon = GoX;
 export const PluginIcon = GoPlug;
 
 //======================================================= SI =======================================================
-import { SiSwagger, SiJupyter } from 'react-icons/si';
+import { SiSwagger, SiJupyter, SiSinglestore } from 'react-icons/si';
 
 export const SwaggerIcon = SiSwagger; // to be reviewed
 export const JupyterIcon = SiJupyter;
+export const SinglestoreIcon = SiSinglestore;
 
 //======================================================= BI =======================================================
 

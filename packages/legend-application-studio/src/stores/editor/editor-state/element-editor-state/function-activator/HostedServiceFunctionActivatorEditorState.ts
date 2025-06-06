@@ -201,19 +201,19 @@ export class HostedServiceFunctionActivatorEditorState extends ElementEditorStat
         .then((response) =>
           this.editorStore.applicationStore.alertService.setActionAlertInfo({
             message: `Hosted Service Function Activator has been deployed successfully`,
-            prompt: response.deploymentLocation
+            prompt: response.deployed
               ? 'You can now launch and monitor the operation of your function activator'
               : undefined,
             type: ActionAlertType.STANDARD,
             actions: [
-              ...(response.deploymentLocation !== undefined
+              ...(response.deployed !== undefined
                 ? [
                     {
                       label: 'Launch Service',
                       type: ActionAlertActionType.PROCEED,
                       handler: (): void => {
                         this.editorStore.applicationStore.navigationService.navigator.visitAddress(
-                          response.deploymentLocation ?? '',
+                          response.deployed ?? '',
                         );
                       },
                       default: true,

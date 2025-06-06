@@ -33,6 +33,7 @@ import {
   TabulatedDataFileIcon,
   PiFunctionBoldIcon,
   DatabaseImportIcon,
+  SinglestoreIcon,
 } from './Icon.js';
 
 export const PURE_PrimitiveTypeIcon: React.FC = () => (
@@ -180,5 +181,11 @@ export const PURE_UnknownElementTypeIcon: React.FC = () => (
 export const PURE_IngestIcon: React.FC = () => (
   <div className="icon color--data">
     <DatabaseImportIcon />
+  </div>
+);
+
+export const PURE_MemSQLFunctionIcon: React.FC = () => (
+  <div className="icon color--mem-sql-function">
+    <SinglestoreIcon />
   </div>
 );

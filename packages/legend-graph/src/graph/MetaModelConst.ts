@@ -149,6 +149,7 @@ export enum CORE_PURE_PATH {
   DATA_ELEMENT = 'meta::pure::data::DataElement',
   SNOWFLAKE_APP = 'meta::external::function::activator::snowflakeApp::SnowflakeApp',
   HOSTED_SERVICE = 'meta::external::function::activator::hostedService::HostedService',
+  MEM_SQL_FUNCTION = 'meta::external::function::activator::memSqlFunction::MemSqlFunction',
   TABULAR_RESULT = 'meta::pure::mapping::Result',
   DATA_PRODUCT = 'meta::external::catalog::dataProduct::specification::metamodel::DataProduct',
 }

@@ -47,6 +47,7 @@ import {
   observe_HostedService,
   observe_SectionIndex,
   observe_SnowflakeApp,
+  observe_MemSQLFunction,
 } from './DomainObserverHelper.js';
 import {
   type ObserverContext,
@@ -80,6 +81,7 @@ import type { HostedService } from '../../../graph/metamodel/pure/packageableEle
 import type { DataProduct } from '../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import { observe_DataProduct } from './DataProductObserveHelper.js';
 import type { IngestDefinition } from '../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
+import type { MemSQLFunction } from '../../../graph/metamodel/pure/packageableElements/function/MemSQLFunction.js';
 
 class PackageableElementObserver implements PackageableElementVisitor<void> {
   observerContext: ObserverContext;
@@ -122,6 +124,10 @@ class PackageableElementObserver implements PackageableElementVisitor<void> {
 
   visit_HostedService(element: HostedService): void {
     observe_HostedService(element, this.observerContext);
+  }
+
+  visit_MemSQLFunction(element: MemSQLFunction): void {
+    observe_MemSQLFunction(element);
   }
 
   visit_INTERNAL__UnknownStore(element: INTERNAL__UnknownStore): void {

@@ -364,6 +364,7 @@ export enum CORE_HASH_STRUCTURE {
   SNOWFLAKE_APP = 'SNOWFLAKE_APP',
   HOSTED_SERVICE = 'HOSTED_SERVICE',
   HOSTED_SERVICE_OWNER = 'HOSTED_SERVICE_OWNER',
+  MEM_SQL_FUNCTION = 'MEM_SQL_FUNCTION',
 
   // ---------------------------------- Relation --------------------------------------
   RELATION_TYPE = 'RELATION_TYPE',

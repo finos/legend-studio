@@ -68,6 +68,7 @@ import {
   LongArrowRightIcon,
   CheckSquareIcon,
   SquareIcon,
+  SinglestoreIcon,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import {
@@ -178,6 +179,7 @@ enum FUNCTION_PARAMETER_TYPE {
 export enum FUNCTION_ACTIVATE_TYPE {
   SNOWFLAKE_NATIVE_APP = 'Snowflake UDTF',
   HOSTED_SERVICE = 'REST Service',
+  MEM_SQL_FUNCTION = 'Mem SQL Function',
   SERVICE_JAR = 'Service JAR',
   REFINER = 'Refiner',
   BIG_QUERY_NATIVE_APP = 'BigQuery Native App',
@@ -756,6 +758,22 @@ const FunctionPromoteEditor = observer(
           }
           return false;
         }
+        case FUNCTION_ACTIVATE_TYPE.MEM_SQL_FUNCTION: {
+          const availableConnections =
+            activatorPromoteState.functionEditorState.editorStore.graphManagerState.usableConnections.filter(
+              (connection) =>
+                connection.connectionValue instanceof
+                  RelationalDatabaseConnection &&
+                connection.connectionValue.type === DatabaseType.MemSQL,
+            );
+          if (availableConnections.length > 0) {
+            return true;
+          } else {
+            validationMessage =
+              'There is no available connection of type MemSQL';
+          }
+          return false;
+        }
         default:
           return true;
       }
@@ -792,6 +810,24 @@ const FunctionPromoteEditor = observer(
               isActive={
                 activatorPromoteState.activateType ===
                 FUNCTION_ACTIVATE_TYPE.HOSTED_SERVICE
+              }
+              onClick={() => {
+                activatorPromoteState.setAcitvateType(type);
+              }}
+            />
+          );
+        case FUNCTION_ACTIVATE_TYPE.MEM_SQL_FUNCTION:
+          return (
+            <BaseCard
+              key={FUNCTION_ACTIVATE_TYPE.MEM_SQL_FUNCTION}
+              cardMedia={
+                <SinglestoreIcon className="function-promote-editor__type-icon" />
+              }
+              cardName={type}
+              cardContent="Deploy the function as a UDF (user-defined function) in Mem SQL"
+              isActive={
+                activatorPromoteState.activateType ===
+                FUNCTION_ACTIVATE_TYPE.MEM_SQL_FUNCTION
               }
               onClick={() => {
                 activatorPromoteState.setAcitvateType(type);

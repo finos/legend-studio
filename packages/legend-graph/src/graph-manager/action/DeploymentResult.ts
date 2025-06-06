@@ -21,6 +21,8 @@ export class DeploymentResult {
   activatorIdentifier!: string;
   successful!: boolean;
   errors: string[] = [];
+  actionResults: string[] = [];
+  deployed: string | undefined;
   deploymentLocation: string | undefined;
 
   static readonly serialization = new SerializationFactory(
@@ -28,6 +30,8 @@ export class DeploymentResult {
       activatorIdentifier: primitive(),
       successful: primitive(),
       errors: list(primitive()),
+      actionResults: list(primitive()),
+      deployed: optional(primitive()),
       deploymentLocation: optional(primitive()),
     }),
   );

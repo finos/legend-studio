@@ -90,6 +90,8 @@ import {
   AppDirNode,
   IngestDefinition,
 } from '../../../../../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
+import type { V1_MemSQLFunction } from '../../../model/packageableElements/function/V1_MemSQLFunction.js';
+import { MemSQLFunction } from '../../../../../../../graph/metamodel/pure/packageableElements/function/MemSQLFunction.js';
 
 export class V1_ElementFirstPassBuilder
   implements V1_PackageableElementVisitor<PackageableElement>
@@ -245,6 +247,32 @@ export class V1_ElementFirstPassBuilder
       metamodel.permissionScheme = element.permissionScheme;
     }
 
+    V1_buildFunctionActivatorActions(element, metamodel, this.context);
+    return metamodel;
+  }
+
+  visit_MemSQLFunction(element: V1_MemSQLFunction): PackageableElement {
+    assertNonEmptyString(
+      element.package,
+      `Function activator 'package' field is missing or empty`,
+    );
+    assertNonEmptyString(
+      element.name,
+      `Function activator 'name' field is missing or empty`,
+    );
+    const metamodel = new MemSQLFunction(element.name);
+    const path = V1_buildFullPath(element.package, element.name);
+    V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
+    this.context.currentSubGraph.setOwnFunctionActivator(path, metamodel);
+    addElementToPackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
+        element.package,
+        this.packageCache,
+      ),
+      metamodel,
+    );
+    metamodel.functionName = element.functionName;
     metamodel.description = element.description;
     V1_buildFunctionActivatorActions(element, metamodel, this.context);
     return metamodel;
