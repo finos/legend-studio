@@ -1158,11 +1158,11 @@ const RelationalConnectionStoreEditor = observer(
     const stores =
       connectionValueState.editorStore.graphManagerState.graph.ownStores;
     const options = stores.map(buildElementOption);
-    const store = connection.store.value;
+    const store = connection.store?.value;
 
     const selectedStore = {
       value: store,
-      label: isStoreEmpty ? noStoreLabel : store.path,
+      label: isStoreEmpty ? noStoreLabel : store?.path,
     } as PackageableElementOption<Store>;
     const onStoreChange = (
       val: PackageableElementOption<Store> | null,
@@ -1202,6 +1202,7 @@ const RelationalConnectionStoreEditor = observer(
             <button
               className="relational-connection-editor-btn btn--dark"
               onClick={openDatabaseBuilder}
+              disabled={Boolean(isStoreEmpty)}
             >
               Build Database
             </button>

@@ -350,7 +350,9 @@ export const V1_transformRelationalDatabaseConnection = (
   context: V1_GraphTransformerContext,
 ): V1_RelationalDatabaseConnection => {
   const connection = new V1_RelationalDatabaseConnection();
-  connection.store = metamodel.store.valueForSerialization ?? '';
+  if (metamodel.store) {
+    connection.store = metamodel.store.valueForSerialization;
+  }
   connection.authenticationStrategy = transformAuthenticationStrategy(
     metamodel.authenticationStrategy,
     context,

@@ -1,0 +1,342 @@
+###Relational
+Database store::db
+(
+)
+
+
+###Connection
+RelationalDatabaseConnection connection::relation::MySnowFlake
+{
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'test';
+    account: 'dummy';
+    warehouse: 'test';
+    region: 'EMEA';
+  };
+  auth: DefaultH2;
+}
+
+RelationalDatabaseConnection connection::relation::MySnowFlakeWithQuotedIdentifiersIgnoreCaseFlag
+{
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'test';
+    account: 'dummy';
+    warehouse: 'test';
+    region: 'EMEA';
+    quotedIdentifiersIgnoreCase: true;
+  };
+  auth: SnowflakePublic
+  {
+    publicUserName: 'userName';
+    privateKeyVaultReference: 'private';
+    passPhraseVaultReference: 'value';
+  };
+}
+
+RelationalDatabaseConnection model::MySnowflakePoxy
+{
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'test';
+    account: 'account';
+    warehouse: 'warehouseName';
+    region: 'us-east2';
+    cloudType: 'aws';
+    proxyHost: 'sampleHost';
+    proxyPort: 'samplePort';
+    nonProxyHosts: 'sample';
+    accountType: VPS;
+    organization: 'sampleOrganization';
+    role: 'sampleRole';
+  };
+  auth: SnowflakePublic
+  {
+    publicUserName: 'myName';
+    privateKeyVaultReference: 'privateKeyRef';
+    passPhraseVaultReference: 'passRef';
+  };
+}
+
+RelationalDatabaseConnection connection::relation::MySnowFlakeWithQuotedIdentifiersIgnoreCaseFlag2
+{
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'test';
+    account: 'dummy';
+    warehouse: 'test';
+    region: 'EMEA';
+    quotedIdentifiersIgnoreCase: false;
+  };
+  auth: SnowflakePublic
+  {
+    publicUserName: 'user';
+    privateKeyVaultReference: 'value';
+    passPhraseVaultReference: 'value';
+  };
+}
+
+RelationalDatabaseConnection connection::relation::MySnowFlakeWithEnableQueryTags
+{
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'test';
+    account: 'dummy';
+    warehouse: 'test';
+    region: 'EMEA';
+    enableQueryTags: false;
+  };
+  auth: SnowflakePublic
+  {
+    publicUserName: 'user';
+    privateKeyVaultReference: 'value';
+    passPhraseVaultReference: 'value';
+  };
+}
+
+RelationalDatabaseConnection connection::relation::MySnowFlakeWithEnableQueryTags2
+{
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'test';
+    account: 'dummy';
+    warehouse: 'test';
+    region: 'EMEA';
+    enableQueryTags: true;
+  };
+  auth: SnowflakePublic
+  {
+    publicUserName: 'user';
+    privateKeyVaultReference: 'value';
+    passPhraseVaultReference: 'value';
+  };
+}
+
+RelationalDatabaseConnection connection::relational::H2Connection
+{
+  type: H2;
+  specification: Static
+  {
+    name: 'myDb';
+    host: 'somehost';
+    port: 999;
+  };
+  auth: DefaultH2;
+}
+
+RelationalDatabaseConnection connection::relational::MiddleTierUsernamePasswordConnection
+{
+  type: H2;
+  specification: Static
+  {
+    name: 'myDb';
+    host: 'somehost';
+    port: 999;
+  };
+  auth: MiddleTierUserNamePassword
+  {
+    vaultReference: 'value';
+  };
+}
+
+RelationalDatabaseConnection connection::relational::H2ConnectionWithQuoteIdentifiers
+{
+  type: H2;
+  timezone: +3000;
+  quoteIdentifiers: true;
+  specification: Static
+  {
+    name: 'myDb';
+    host: 'somehost';
+    port: 999;
+  };
+  auth: DefaultH2;
+}
+
+RelationalDatabaseConnection connection::relational::H2ConnectionWithQuoteIdentifiers1
+{
+  type: H2;
+  timezone: +3000;
+  quoteIdentifiers: false;
+  specification: Static
+  {
+    name: 'myDb';
+    host: 'somehost';
+    port: 999;
+  };
+  auth: DefaultH2;
+}
+
+RelationalDatabaseConnection connection::relational::H2ConnectionWithQueryTimeOut
+{
+  type: H2;
+  timezone: +3000;
+  specification: Static
+  {
+    name: 'myDb';
+    host: 'somehost';
+    port: 999;
+  };
+  auth: DefaultH2;
+  queryTimeOutInSeconds: 2000;
+}
+
+RelationalDatabaseConnection connection::relational::H2ConnectionWithCsvData
+{
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupCSV: 'field1,field2';
+  };
+  auth: DefaultH2;
+}
+
+RelationalDatabaseConnection connection::relational::SnowflakeConnection
+{
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'dbName';
+    account: 'acct1';
+    warehouse: 'warehouse';
+    region: 'reg1';
+  };
+  auth: DefaultH2;
+}
+
+RelationalDatabaseConnection connection::relational::StaticWithUserName
+{
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'dbName';
+    account: 'acct1';
+    warehouse: 'warehouse';
+    region: 'reg1';
+  };
+  auth: UserNamePassword
+  {
+    baseVaultReference: 'user';
+    userNameVaultReference: 'value';
+    passwordVaultReference: 'value';
+  };
+}
+
+RelationalDatabaseConnection connection::relational::StaticWithUserNameNoBase
+{
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'dbName';
+    account: 'acct1';
+    warehouse: 'warehouse';
+    region: 'reg1';
+  };
+  auth: UserNamePassword
+  {
+    userNameVaultReference: 'value';
+    passwordVaultReference: 'value';
+  };
+}
+
+RelationalDatabaseConnection meta::mySimpleConnection
+{
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'test';
+    account: 'account';
+    warehouse: 'warehousename';
+    region: 'us-east-1';
+    quotedIdentifiersIgnoreCase: false;
+    enableQueryTags: true;
+    tempTableDb: 'temp_table_db';
+    tempTableSchema: 'temp_table_schema';
+  };
+  auth: SnowflakePublic
+  {
+    publicUserName: 'myName';
+    privateKeyVaultReference: 'privateKeyRef';
+    passPhraseVaultReference: 'passRef';
+  };
+}
+
+RelationalDatabaseConnection connection::relational::BQWithGCPWorkloadIdentityFederation
+{
+  type: BigQuery;
+  specification: BigQuery
+  {
+    projectId: 'projectId';
+    defaultDataset: 'defaultDataset';
+  };
+  auth: GCPWorkloadIdentityFederation
+  {
+    serviceAccountEmail: 'your@name.com';
+    additionalGcpScopes: [
+      'someScope'
+      ];
+  };
+}
+
+RelationalDatabaseConnection connection::relational::BigQueryWithoutProxy
+{
+  type: BigQuery;
+  specification: BigQuery
+  {
+    projectId: 'projectId';
+    defaultDataset: 'defaultDataset';
+  };
+  auth: GCPApplicationDefaultCredentials;
+}
+
+RelationalDatabaseConnection connection::relational::BigQueryWithProxy
+{
+  type: BigQuery;
+  specification: BigQuery
+  {
+    projectId: 'projectId';
+    defaultDataset: 'defaultDataset';
+    proxyHost: 'someProxyHost';
+    proxyPort: '0';
+  };
+  auth: GCPApplicationDefaultCredentials;
+}
+
+RelationalDatabaseConnection connection::relational::ConnectionWithQueryConfigs1
+{
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+  queryGenerationConfigs: [
+    GenerationFeaturesConfig
+    {
+      enabled: ['REMOVE_UNION_OR_JOINS'];
+      disabled: [];
+    }
+  ];
+}
+
+RelationalDatabaseConnection connection::relational::ConnectionWithQueryConfigs2
+{
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+  queryGenerationConfigs: [
+    GenerationFeaturesConfig
+    {
+      enabled: [];
+      disabled: ['REMOVE_UNION_OR_JOINS'];
+    }
+  ];
+}

@@ -373,12 +373,15 @@ export class DatabaseSchemaExplorerState {
     });
 
     this.connection = connection;
-    this.database = guaranteeType(connection.store.value, Database);
+    this.database = guaranteeType(connection.store?.value, Database);
     this.editorStore = editorStore;
     this.targetDatabasePath = DEFAULT_DATABASE_PATH;
   }
 
   get isCreatingNewDatabase(): boolean {
+    if (!this.connection.store) {
+      return false;
+    }
     return isStubbed_PackageableElement(this.connection.store.value);
   }
 
