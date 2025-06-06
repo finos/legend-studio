@@ -55,7 +55,7 @@ export enum DatabaseType {
 }
 
 export abstract class DatabaseConnection extends Connection {
-  declare store: PackageableElementReference<Database>;
+  declare store: PackageableElementReference<Database> | undefined;
 
   /**
    * For convenience, we use a Typescript enum instead of the native
@@ -70,7 +70,10 @@ export abstract class DatabaseConnection extends Connection {
   postProcessorWithParameter: unknown[] = [];
   queryGenerationConfigs: RelationalQueryGenerationConfig[] = [];
 
-  constructor(store: PackageableElementReference<Database>, type: string) {
+  constructor(
+    store: PackageableElementReference<Database> | undefined,
+    type: string,
+  ) {
     super(store);
     this.type = type;
   }
@@ -88,7 +91,7 @@ export class RelationalDatabaseConnection extends DatabaseConnection {
   localMode?: boolean | undefined;
 
   constructor(
-    store: PackageableElementReference<Database>,
+    store: PackageableElementReference<Database> | undefined,
     type: string,
     datasourceSpecification: DatasourceSpecification,
     authenticationStrategy: AuthenticationStrategy,
@@ -101,7 +104,7 @@ export class RelationalDatabaseConnection extends DatabaseConnection {
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.RELATIONAL_DATABASE_CONNECTION,
-      this.store.valueForSerialization ?? '',
+      this.store?.valueForSerialization ?? '',
       this.timeZone ?? '',
       this.quoteIdentifiers?.toString() ?? '',
       this.datasourceSpecification,

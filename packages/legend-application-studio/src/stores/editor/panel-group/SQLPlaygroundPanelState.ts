@@ -95,7 +95,7 @@ export class SQLPlaygroundPanelState implements CommandRegistrar {
     this.connection = val;
     if (val) {
       const connection = guaranteeRelationalDatabaseConnection(val);
-      this.database = connection.store.value;
+      this.database = connection.store?.value;
       this.schemaExplorerState = new DatabaseSchemaExplorerState(
         this.editorStore,
         connection,

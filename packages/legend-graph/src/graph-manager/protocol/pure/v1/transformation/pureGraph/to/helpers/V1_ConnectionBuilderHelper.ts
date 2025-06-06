@@ -244,12 +244,9 @@ class V1_ConnectionBuilder implements V1_ConnectionVisitor<Connection> {
     connection: V1_RelationalDatabaseConnection,
   ): Connection {
     const store = !this.embeddedConnectionStore
-      ? this.context.resolveDatabase(
-          guaranteeNonNullable(
-            connection.store,
-            `Relational database connection 'store' field is missing`,
-          ),
-        )
+      ? connection.store
+        ? this.context.resolveDatabase(connection.store)
+        : undefined
       : connection.store
         ? this.context.resolveDatabase(connection.store)
         : ((): PackageableElementReference<Database> => {

@@ -171,8 +171,9 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
   };
 
   get storeValidationResult(): ValidationIssue | undefined {
-    return isStubbed_PackageableElement(this.connection.store.value)
-      ? createValidationError(['Connection database cannot be empty'])
+    return !this.connection.store ||
+      isStubbed_PackageableElement(this.connection.store.value)
+      ? createValidationError(['Connection database is empty'])
       : undefined;
   }
 

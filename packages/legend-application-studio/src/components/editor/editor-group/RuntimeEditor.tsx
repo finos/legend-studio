@@ -128,7 +128,9 @@ const getConnectionTooltipText = (
   } else if (connectionValue instanceof FlatDataConnection) {
     return `Flat-data connection \u2022 Flat-data store ${connectionValue.store.value.path}`;
   } else if (connectionValue instanceof RelationalDatabaseConnection) {
-    return `Relational database connection \u2020 database store ${connectionValue.store.value.path}`;
+    return connectionValue.store
+      ? `Relational database connection \u2020 database store ${connectionValue.store.value.path}`
+      : `Relational database connection`;
   } else if (connectionValue instanceof ModelChainConnection) {
     return `Model chain connection \u2022`;
   }
