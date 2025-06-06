@@ -1,5 +1,13 @@
 # @finos/legend-graph
 
+## 32.1.42
+
+### Patch Changes
+
+- [#4187](https://github.com/finos/legend-studio/pull/4187) [`ce48a8c`](https://github.com/finos/legend-studio/commit/ce48a8c82f5010120ff5fc7cdf5977ac0dba0a90) ([@kelly-thai](https://github.com/kelly-thai)) - Update Unknown Function Activator builder to not include parameter names in functions
+
+- [#4183](https://github.com/finos/legend-studio/pull/4183) [`3c12967`](https://github.com/finos/legend-studio/commit/3c12967eb02872a01ca7d4977f2488fa355f252e) ([@mrudula-gs](https://github.com/mrudula-gs)) - Add connection to LakehouseRuntime
+
 ## 32.1.41
 
 ### Patch Changes
