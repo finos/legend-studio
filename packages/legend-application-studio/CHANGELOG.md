@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 28.18.148
+
+### Patch Changes
+
+- [#4189](https://github.com/finos/legend-studio/pull/4189) [`2a084cb`](https://github.com/finos/legend-studio/commit/2a084cbe72c50a0fde3e7cae5e35fe2dd87419aa) ([@kelly-thai](https://github.com/kelly-thai)) - Add title and description to Lakehouse Data Product create modal
+
+- [#4186](https://github.com/finos/legend-studio/pull/4186) [`3bc5403`](https://github.com/finos/legend-studio/commit/3bc5403793b05f515c34cd31a86c2eef5e9145b5) ([@kelly-thai](https://github.com/kelly-thai)) - Update editors to support undefined stores in RelationalDatabaseConnections
+
 ## 28.18.147
 
 ### Patch Changes

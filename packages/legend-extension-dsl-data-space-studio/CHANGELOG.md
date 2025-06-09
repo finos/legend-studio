@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space-studio
 
+## 0.1.189
+
+### Patch Changes
+
+- [#4189](https://github.com/finos/legend-studio/pull/4189) [`2a084cb`](https://github.com/finos/legend-studio/commit/2a084cbe72c50a0fde3e7cae5e35fe2dd87419aa) ([@kelly-thai](https://github.com/kelly-thai)) - Update styling for Data Product create modal for consistency
+
 ## 0.1.188
 
 ## 0.1.187
