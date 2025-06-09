@@ -631,7 +631,7 @@ export const EntitlementsPendingTasksDashbaord = observer(
             </Button>
           </Box>
           {privilegeManagerTasks.length > 0 && (
-            <Box className="marketplace-lakehouse-entitlements__grid ag-theme-balhame">
+            <Box className="marketplace-lakehouse-entitlements__grid ag-theme-balham">
               Privilege Manager Approvals
               <DataGrid
                 rowData={privilegeManagerTasks}
@@ -650,7 +650,7 @@ export const EntitlementsPendingTasksDashbaord = observer(
             </Box>
           )}
           {dataOwnerTasks.length > 0 && (
-            <Box className="marketplace-lakehouse-entitlements__grid ag-theme-balhame">
+            <Box className="marketplace-lakehouse-entitlements__grid ag-theme-balham">
               Data Owner Approvals
               <DataGrid
                 rowData={dataOwnerTasks}
@@ -668,8 +668,8 @@ export const EntitlementsPendingTasksDashbaord = observer(
               />
             </Box>
           )}
-          {privilegeManagerTasks.length > 0 && (
-            <Box className="marketplace-lakehouse-entitlements__grid ag-theme-balhame">
+          {otherTasks.length > 0 && (
+            <Box className="marketplace-lakehouse-entitlements__grid ag-theme-balham">
               Other Approvals
               <DataGrid
                 rowData={otherTasks}
