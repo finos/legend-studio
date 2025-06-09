@@ -515,7 +515,7 @@ export const EntitlementsDashboard = withAuth(
           <Tab
             label={
               <Typography variant="h4" gutterBottom={true}>
-                MY PENDING CONTRACTS
+                MY PENDING REQUESTS
               </Typography>
             }
             value={EntitlementsTabs.PENDING_CONTRACTS}
