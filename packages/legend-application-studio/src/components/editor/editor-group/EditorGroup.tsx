@@ -371,14 +371,25 @@ export const EditorGroup = observer(() => {
     } else if (
       currentTabState instanceof QueryConnectionEndToEndWorkflowEditorState
     ) {
-      return (
-        <QueryConnectionWorflowEditor
-          connectionToQueryWorkflowState={
-            editorStore.globalEndToEndWorkflowState
-              .queryToConnectionWorkflowEditorState
-          }
-        />
-      );
+      if (
+        editorStore.globalEndToEndWorkflowState
+          .queryToConnectionWorkflowEditorState.packageableConnection
+          ?.connectionValue.store
+      ) {
+        return (
+          <QueryConnectionWorflowEditor
+            connectionToQueryWorkflowState={
+              editorStore.globalEndToEndWorkflowState
+                .queryToConnectionWorkflowEditorState
+            }
+          />
+        );
+      } else {
+        editorStore.applicationStore.notificationService.notifyError(
+          `Cannot open query to connection workflow editor because the connection does not have a store`,
+        );
+        return null;
+      }
     }
     // TODO: create an editor for unsupported tab
     return null;

@@ -575,7 +575,7 @@ const V1_setupRelationalDatabaseConnectionModelSchema = (
       (val) => V1_deserializeDatasourceSpecification(val, plugins),
     ),
     localMode: optional(primitive()),
-    store: alias('element', primitive()),
+    store: optional(alias('element', primitive())),
     queryTimeOutInSeconds: optional(primitive()),
     quoteIdentifiers: optional(primitive()),
     timeZone: optional(primitive()),
