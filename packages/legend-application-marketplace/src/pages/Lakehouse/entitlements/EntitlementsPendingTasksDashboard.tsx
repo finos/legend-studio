@@ -293,6 +293,21 @@ export const EntitlementsPendingTasksDashbaord = observer(
     const { dashboardState } = props;
     const tasks = dashboardState.pendingTasks;
     const allContracts = dashboardState.allContracts;
+    const privilegeManagerTasks =
+      tasks?.filter(
+        (task) =>
+          task.type === V1_ApprovalType.CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
+      ) ?? [];
+    const dataOwnerTasks =
+      tasks?.filter(
+        (task) => task.type === V1_ApprovalType.DATA_OWNER_APPROVAL,
+      ) ?? [];
+    const otherTasks =
+      tasks?.filter(
+        (task) =>
+          !privilegeManagerTasks.includes(task) &&
+          !dataOwnerTasks.includes(task),
+      ) ?? [];
 
     const marketplaceBaseStore = useLegendMarketplaceBaseStore();
     const [searchParams, setSearchParams] = useSearchParams();
@@ -583,25 +598,6 @@ export const EntitlementsPendingTasksDashbaord = observer(
         minWidth: 50,
         sortable: true,
         resizable: true,
-        headerName: 'My Role',
-        flex: 1,
-        cellRenderer: (
-          params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
-        ) => {
-          const taskType = params.data?.type;
-          return (
-            <>
-              {taskType === V1_ApprovalType.CONSUMER_PRIVILEGE_MANAGER_APPROVAL
-                ? 'Privilege Manager'
-                : 'Data Owner'}
-            </>
-          );
-        },
-      },
-      {
-        minWidth: 50,
-        sortable: true,
-        resizable: true,
         hide: true,
         headerName: 'Contract ID',
         flex: 2,
@@ -634,10 +630,11 @@ export const EntitlementsPendingTasksDashbaord = observer(
               Deny {selectedTaskIdsSet.size} tasks
             </Button>
           </Box>
-          <div className="marketplace-lakehouse-entitlements__grid data-access-overview__grid ag-theme-balham">
-            {tasks && (
+          {privilegeManagerTasks.length > 0 && (
+            <Box className="marketplace-lakehouse-entitlements__grid ag-theme-balhame">
+              Privilege Manager Approvals
               <DataGrid
-                rowData={tasks}
+                rowData={privilegeManagerTasks}
                 onRowDataUpdated={(params) => {
                   params.api.refreshCells({ force: true });
                 }}
@@ -650,8 +647,46 @@ export const EntitlementsPendingTasksDashbaord = observer(
                 onCellClicked={handleCellClicked}
                 columnDefs={colDefs}
               />
-            )}
-          </div>
+            </Box>
+          )}
+          {dataOwnerTasks.length > 0 && (
+            <Box className="marketplace-lakehouse-entitlements__grid ag-theme-balhame">
+              Data Owner Approvals
+              <DataGrid
+                rowData={dataOwnerTasks}
+                onRowDataUpdated={(params) => {
+                  params.api.refreshCells({ force: true });
+                }}
+                suppressFieldDotNotation={true}
+                suppressContextMenu={false}
+                rowHeight={45}
+                rowSelection={rowSelection}
+                onRowSelected={handleRowSelected}
+                onFirstDataRendered={handleFirstDataRendered}
+                onCellClicked={handleCellClicked}
+                columnDefs={colDefs}
+              />
+            </Box>
+          )}
+          {privilegeManagerTasks.length > 0 && (
+            <Box className="marketplace-lakehouse-entitlements__grid ag-theme-balhame">
+              Other Approvals
+              <DataGrid
+                rowData={otherTasks}
+                onRowDataUpdated={(params) => {
+                  params.api.refreshCells({ force: true });
+                }}
+                suppressFieldDotNotation={true}
+                suppressContextMenu={false}
+                rowHeight={45}
+                rowSelection={rowSelection}
+                onRowSelected={handleRowSelected}
+                onFirstDataRendered={handleFirstDataRendered}
+                onCellClicked={handleCellClicked}
+                columnDefs={colDefs}
+              />
+            </Box>
+          )}
         </Box>
         <EntitlementsDashboardActionModal
           open={selectedAction !== undefined}
