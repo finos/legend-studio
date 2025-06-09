@@ -615,6 +615,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         this.lakehouseContractServerClient,
         projectData,
         v1DataProduct,
+        false,
         parsed,
         {
           retrieveGraphData: () => {
@@ -750,6 +751,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
           versionId: '',
         }),
         v1_DataProduct,
+        true,
         buildDataProductArtifactGeneration({
           ...V1_DataProductArtifactGeneration.serialization.toJson(
             sandboxDataProduct.artifact,

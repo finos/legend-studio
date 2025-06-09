@@ -76,6 +76,7 @@ export class DataProductViewerState {
   readonly layoutState: DataProductLayoutState;
 
   readonly product: V1_DataProduct;
+  readonly isSandboxProduct: boolean;
   readonly project: VersionedProjectData;
   readonly retrieveGraphData: () => GraphData;
   readonly viewSDLCProject: (path: string | undefined) => Promise<void>;
@@ -102,6 +103,7 @@ export class DataProductViewerState {
     lakeServerClient: LakehouseContractServerClient,
     project: VersionedProjectData,
     product: V1_DataProduct,
+    isSandboxProduct: boolean,
     generation: DataProductArtifactGeneration | undefined,
     actions: {
       retrieveGraphData: () => GraphData;
@@ -131,6 +133,7 @@ export class DataProductViewerState {
 
     this.project = project;
     this.product = product;
+    this.isSandboxProduct = isSandboxProduct;
     this.generation = generation;
     this.retrieveGraphData = actions.retrieveGraphData;
     this.viewSDLCProject = actions.viewSDLCProject;
