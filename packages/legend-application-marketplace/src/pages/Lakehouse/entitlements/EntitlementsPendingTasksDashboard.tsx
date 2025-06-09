@@ -412,14 +412,16 @@ export const EntitlementsPendingTasksDashbaord = observer(
     const CustomSelectionHeaderRenderer = (
       params: DataGridCustomHeaderProps<V1_ContractUserEventRecord>,
     ) => {
-      const checked = params.api.getSelectedRows().length === tasks?.length;
-      const indeterminate = params.api.getSelectedRows().length > 0 && !checked;
+      const checked = selectedTaskIdsSet.size === tasks?.length;
+      const indeterminate = selectedTaskIdsSet.size > 0 && !checked;
 
       const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         if (!checked || indeterminate) {
-          params.api.selectAll();
+          setSelectedTaskIdsSet(
+            new Set<string>(tasks?.map((task) => task.taskId) ?? []),
+          );
         } else {
-          params.api.deselectAll();
+          setSelectedTaskIdsSet(new Set<string>());
         }
       };
 
