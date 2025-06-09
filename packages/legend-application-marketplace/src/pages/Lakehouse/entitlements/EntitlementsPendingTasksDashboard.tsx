@@ -630,63 +630,77 @@ export const EntitlementsPendingTasksDashbaord = observer(
               Deny {selectedTaskIdsSet.size} tasks
             </Button>
           </Box>
-          {privilegeManagerTasks.length > 0 && (
-            <Box className="marketplace-lakehouse-entitlements__grid ag-theme-balham">
-              Privilege Manager Approvals
-              <DataGrid
-                rowData={privilegeManagerTasks}
-                onRowDataUpdated={(params) => {
-                  params.api.refreshCells({ force: true });
-                }}
-                suppressFieldDotNotation={true}
-                suppressContextMenu={false}
-                rowHeight={45}
-                rowSelection={rowSelection}
-                onRowSelected={handleRowSelected}
-                onFirstDataRendered={handleFirstDataRendered}
-                onCellClicked={handleCellClicked}
-                columnDefs={colDefs}
-              />
-            </Box>
-          )}
-          {dataOwnerTasks.length > 0 && (
-            <Box className="marketplace-lakehouse-entitlements__grid ag-theme-balham">
-              Data Owner Approvals
-              <DataGrid
-                rowData={dataOwnerTasks}
-                onRowDataUpdated={(params) => {
-                  params.api.refreshCells({ force: true });
-                }}
-                suppressFieldDotNotation={true}
-                suppressContextMenu={false}
-                rowHeight={45}
-                rowSelection={rowSelection}
-                onRowSelected={handleRowSelected}
-                onFirstDataRendered={handleFirstDataRendered}
-                onCellClicked={handleCellClicked}
-                columnDefs={colDefs}
-              />
-            </Box>
-          )}
-          {otherTasks.length > 0 && (
-            <Box className="marketplace-lakehouse-entitlements__grid ag-theme-balham">
-              Other Approvals
-              <DataGrid
-                rowData={otherTasks}
-                onRowDataUpdated={(params) => {
-                  params.api.refreshCells({ force: true });
-                }}
-                suppressFieldDotNotation={true}
-                suppressContextMenu={false}
-                rowHeight={45}
-                rowSelection={rowSelection}
-                onRowSelected={handleRowSelected}
-                onFirstDataRendered={handleFirstDataRendered}
-                onCellClicked={handleCellClicked}
-                columnDefs={colDefs}
-              />
-            </Box>
-          )}
+          <Box className="marketplace-lakehouse-entitlements__pending-tasks__grids">
+            {privilegeManagerTasks.length > 0 && (
+              <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid-container">
+                <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid__header">
+                  Privilege Manager Approvals
+                </Box>
+                <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid ag-theme-balham">
+                  <DataGrid
+                    rowData={privilegeManagerTasks}
+                    onRowDataUpdated={(params) => {
+                      params.api.refreshCells({ force: true });
+                    }}
+                    suppressFieldDotNotation={true}
+                    suppressContextMenu={false}
+                    rowHeight={45}
+                    rowSelection={rowSelection}
+                    onRowSelected={handleRowSelected}
+                    onFirstDataRendered={handleFirstDataRendered}
+                    onCellClicked={handleCellClicked}
+                    columnDefs={colDefs}
+                  />
+                </Box>
+              </Box>
+            )}
+            {dataOwnerTasks.length > 0 && (
+              <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid-container">
+                <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid__header">
+                  Data Owner Approvals
+                </Box>
+                <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid ag-theme-balham">
+                  <DataGrid
+                    rowData={dataOwnerTasks}
+                    onRowDataUpdated={(params) => {
+                      params.api.refreshCells({ force: true });
+                    }}
+                    suppressFieldDotNotation={true}
+                    suppressContextMenu={false}
+                    rowHeight={45}
+                    rowSelection={rowSelection}
+                    onRowSelected={handleRowSelected}
+                    onFirstDataRendered={handleFirstDataRendered}
+                    onCellClicked={handleCellClicked}
+                    columnDefs={colDefs}
+                  />
+                </Box>
+              </Box>
+            )}
+            {otherTasks.length > 0 && (
+              <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid-container">
+                <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid__header">
+                  Other Approvals
+                </Box>
+                <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid ag-theme-balham">
+                  <DataGrid
+                    rowData={otherTasks}
+                    onRowDataUpdated={(params) => {
+                      params.api.refreshCells({ force: true });
+                    }}
+                    suppressFieldDotNotation={true}
+                    suppressContextMenu={false}
+                    rowHeight={45}
+                    rowSelection={rowSelection}
+                    onRowSelected={handleRowSelected}
+                    onFirstDataRendered={handleFirstDataRendered}
+                    onCellClicked={handleCellClicked}
+                    columnDefs={colDefs}
+                  />
+                </Box>
+              </Box>
+            )}
+          </Box>
         </Box>
         <EntitlementsDashboardActionModal
           open={selectedAction !== undefined}

@@ -36,13 +36,39 @@
     font-family: Roboto, sans-serif;
   }
 
-  &__pending-tasks__action-btns {
+  &__pending-tasks {
     display: flex;
-    justify-content: end;
-    margin: 1rem;
+    flex-direction: column;
 
-    button {
-      margin-left: 1rem;
+    &__action-btns {
+      display: flex;
+      justify-content: end;
+      margin: 1rem;
+
+      button {
+        margin-left: 1rem;
+      }
+    }
+
+    &__grids {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      gap: 1rem;
+    }
+
+    &__grid-container {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    &__grid {
+      flex: 1;
+
+      &__header {
+        font-size: 1.8rem;
+      }
     }
   }
 
