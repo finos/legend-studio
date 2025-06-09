@@ -13,7 +13,6 @@ import {
   type DataGridCustomHeaderProps,
   type DataGridFirstDataRenderedEvent,
   type DataGridIRowNode,
-  type DataGridRowSelectedEvent,
   type DataGridRowSelectionOptions,
 } from '@finos/legend-lego/data-grid';
 import { LegendUser, type UserSearchService } from '@finos/legend-shared';
@@ -345,23 +344,6 @@ export const EntitlementsPendingTasksDashbaord = observer(
       });
     }, [selectedTaskIdsSet, setSearchParams]);
 
-    const handleRowSelected = (
-      event: DataGridRowSelectedEvent<V1_ContractUserEventRecord>,
-    ) => {
-      const selectedTask = event.data;
-      if (selectedTask) {
-        setSelectedTaskIdsSet((prev) => {
-          const newSet = new Set<string>(prev);
-          if (event.node.isSelected()) {
-            newSet.add(selectedTask.taskId);
-          } else {
-            newSet.delete(selectedTask.taskId);
-          }
-          return newSet;
-        });
-      }
-    };
-
     const handleFirstDataRendered = (
       event: DataGridFirstDataRenderedEvent<
         V1_ContractUserEventRecord,
@@ -402,14 +384,25 @@ export const EntitlementsPendingTasksDashbaord = observer(
     const CustomSelectionRenderer = (
       params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
     ) => {
-      const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-        params.node.setSelected(e.target.checked);
+      const handleChange = (_: ChangeEvent<HTMLInputElement>) => {
+        setSelectedTaskIdsSet((prev) => {
+          if (params.data) {
+            const newSet = new Set<string>(prev);
+            if (prev.has(params.data.taskId)) {
+              newSet.delete(params.data.taskId);
+            } else {
+              newSet.add(params.data.taskId);
+            }
+            return newSet;
+          }
+          return prev;
+        });
       };
 
       return (
         <Checkbox
           size="large"
-          checked={params.node.isSelected()}
+          checked={selectedTaskIdsSet.has(params.data?.taskId ?? '')}
           onChange={handleChange}
           sx={{ padding: 0 }}
         />
@@ -646,7 +639,6 @@ export const EntitlementsPendingTasksDashbaord = observer(
                     suppressContextMenu={false}
                     rowHeight={45}
                     rowSelection={rowSelection}
-                    onRowSelected={handleRowSelected}
                     onFirstDataRendered={handleFirstDataRendered}
                     onCellClicked={handleCellClicked}
                     columnDefs={colDefs}
@@ -669,7 +661,6 @@ export const EntitlementsPendingTasksDashbaord = observer(
                     suppressContextMenu={false}
                     rowHeight={45}
                     rowSelection={rowSelection}
-                    onRowSelected={handleRowSelected}
                     onFirstDataRendered={handleFirstDataRendered}
                     onCellClicked={handleCellClicked}
                     columnDefs={colDefs}
@@ -692,7 +683,6 @@ export const EntitlementsPendingTasksDashbaord = observer(
                     suppressContextMenu={false}
                     rowHeight={45}
                     rowSelection={rowSelection}
-                    onRowSelected={handleRowSelected}
                     onFirstDataRendered={handleFirstDataRendered}
                     onCellClicked={handleCellClicked}
                     columnDefs={colDefs}
