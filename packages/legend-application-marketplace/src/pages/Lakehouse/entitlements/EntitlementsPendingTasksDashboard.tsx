@@ -635,7 +635,16 @@ export const EntitlementsPendingTasksDashbaord = observer(
               <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid-container">
                 <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid__header">
                   Privilege Manager Approvals
-                  <Tooltip title="These are pending requests for which you are listed as a Privilege Manager.">
+                  <Tooltip
+                    className="marketplace-lakehouse-entitlements__pending-tasks__tooltip__icon"
+                    title="These are pending requests for which you are listed as a Privilege Manager."
+                    slotProps={{
+                      tooltip: {
+                        className:
+                          'marketplace-lakehouse-entitlements__pending-tasks__tooltip',
+                      },
+                    }}
+                  >
                     <InfoCircleIcon />
                   </Tooltip>
                 </Box>
@@ -677,7 +686,16 @@ export const EntitlementsPendingTasksDashbaord = observer(
               <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid-container">
                 <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid__header">
                   Data Owner Approvals
-                  <Tooltip title="These are pending requests for which you are listed as a Data Owner.">
+                  <Tooltip
+                    className="marketplace-lakehouse-entitlements__pending-tasks__tooltip__icon"
+                    title="These are pending requests for which you are listed as a Data Owner."
+                    slotProps={{
+                      tooltip: {
+                        className:
+                          'marketplace-lakehouse-entitlements__pending-tasks__tooltip',
+                      },
+                    }}
+                  >
                     <InfoCircleIcon />
                   </Tooltip>
                 </Box>

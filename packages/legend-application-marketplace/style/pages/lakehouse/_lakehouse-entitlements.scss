@@ -70,6 +70,21 @@
         font-size: 1.8rem;
       }
     }
+
+    &__tooltip {
+      font-size: 1.2rem;
+
+      &__icon {
+        display: inline-block;
+        margin-left: 0.5rem;
+        margin-top: 0.5rem;
+        color: var(--color-light-grey-400);
+
+        &:hover {
+          color: unset;
+        }
+      }
+    }
   }
 
   &__grid {
