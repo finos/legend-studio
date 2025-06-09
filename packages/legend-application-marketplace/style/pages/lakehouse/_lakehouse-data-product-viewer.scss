@@ -16,8 +16,12 @@
 
 .data-space__viewer {
   &__grid {
-    .ag-layout-auto-height-container {
-      min-height: unset;
+    &--auto-height {
+      &--non-empty {
+        .ag-center-cols-viewport {
+          min-height: unset;
+        }
+      }
     }
   }
 }

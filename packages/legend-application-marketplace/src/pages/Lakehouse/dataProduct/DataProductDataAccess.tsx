@@ -157,6 +157,8 @@ const TDSColumnMoreInfoCellRenderer = (
   );
 };
 
+const MAX_GRID_AUTO_HEIGHT_ROWS = 10; // Maximum number of rows to show before switching to normal height (scrollable grid)
+
 export const DataProductAccessPointGroupViewer = observer(
   (props: { accessGroupState: DataProductGroupAccessState }) => {
     const { accessGroupState } = props;
@@ -287,8 +289,13 @@ export const DataProductAccessPointGroupViewer = observer(
               className={clsx(
                 'data-space__viewer__access-group__tds__column-specs',
                 'data-space__viewer__grid',
+                'ag-theme-balham',
                 {
-                  'ag-theme-balham': true,
+                  'data-space__viewer__grid--auto-height':
+                    accessPoints.length <= MAX_GRID_AUTO_HEIGHT_ROWS,
+                  'data-space__viewer__grid--auto-height--non-empty':
+                    accessPoints.length > 0 &&
+                    accessPoints.length <= MAX_GRID_AUTO_HEIGHT_ROWS,
                 },
               )}
             >
@@ -299,7 +306,11 @@ export const DataProductAccessPointGroupViewer = observer(
                   getRowId: (rowData) => rowData.data.id,
                 }}
                 suppressFieldDotNotation={true}
-                domLayout={accessPoints.length > 10 ? 'normal' : 'autoHeight'}
+                domLayout={
+                  accessPoints.length > MAX_GRID_AUTO_HEIGHT_ROWS
+                    ? 'normal'
+                    : 'autoHeight'
+                }
                 columnDefs={[
                   {
                     minWidth: 50,
