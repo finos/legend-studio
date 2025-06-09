@@ -1,5 +1,11 @@
 # @finos/legend-data-cube
 
+## 0.2.18
+
+### Patch Changes
+
+- [#4174](https://github.com/finos/legend-studio/pull/4174) [`2ef8944`](https://github.com/finos/legend-studio/commit/2ef894442e5845ba39213ff39023cc95b12bcc56) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: adding test coverage for dimensional functions
+
 ## 0.2.17
 
 ### Patch Changes
