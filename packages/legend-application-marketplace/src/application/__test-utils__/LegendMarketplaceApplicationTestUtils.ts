@@ -27,6 +27,15 @@ const TEST_DATA__appConfig: LegendMarketplaceApplicationConfigurationData = {
     url: 'https://testMarketplaceUrl',
     subscriptionUrl: 'https://testSubscriptionUrl',
     userSearchUrl: 'https://testUserSearchUrl',
+    userProfileImageUrl: 'https://testUserProfileImageUrl',
+  },
+  lakehouse: {
+    url: 'https://testLakehouseUrl',
+    platformUrl: 'https://testLakehousePlatformUrl',
+    entitlements: {
+      applicationDirectoryUrl: 'https://testApplicationDirectoryUrl',
+      applicationIDUrl: 'https://testApplicationIDUrl',
+    },
   },
   engine: {
     url: 'https://testEngineUrl',
