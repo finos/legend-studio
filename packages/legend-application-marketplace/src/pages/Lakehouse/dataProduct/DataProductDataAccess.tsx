@@ -299,6 +299,7 @@ export const DataProductAccessPointGroupViewer = observer(
                   getRowId: (rowData) => rowData.data.id,
                 }}
                 suppressFieldDotNotation={true}
+                domLayout={accessPoints.length > 10 ? 'normal' : 'autoHeight'}
                 columnDefs={[
                   {
                     minWidth: 50,
