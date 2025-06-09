@@ -14,15 +14,25 @@
  * limitations under the License.
  */
 
-import { primitive, createModelSchema } from 'serializr';
+import { primitive, createModelSchema, list, object } from 'serializr';
 import { SerializationFactory } from '@finos/legend-shared';
 
-export class V1_FunctionActivatorError {
+class Message {
   message!: string;
+}
+
+createModelSchema(Message, {
+  message: primitive(),
+});
+
+export class V1_FunctionActivatorError {
+  errors: Message[] = [];
+  warnings: Message[] = [];
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_FunctionActivatorError, {
-      message: primitive(),
+      errors: list(object(Message)),
+      warnings: list(object(Message)),
     }),
   );
 }

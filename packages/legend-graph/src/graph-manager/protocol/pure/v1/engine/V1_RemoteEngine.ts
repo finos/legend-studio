@@ -1312,16 +1312,16 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
   async validateFunctionActivator(
     input: V1_FunctionActivatorInput,
   ): Promise<void> {
-    const errors = await this.engineServerClient.validateFunctionActivator(
-      V1_FunctionActivatorInput.serialization.toJson(input),
+    const response = V1_FunctionActivatorError.serialization.fromJson(
+      await this.engineServerClient.validateFunctionActivator(
+        V1_FunctionActivatorInput.serialization.toJson(input),
+      ),
     );
-    if (errors.length) {
+
+    if (response.errors.length) {
       throw new Error(
-        `Function activator validation failed:\n${errors
-          .map((error) =>
-            V1_FunctionActivatorError.serialization.fromJson(error),
-          )
-          .map((error) => `- ${error.message}`)
+        `Function activator validation failed:\n${response.errors
+          .map((error) => `\n ${error.message}`)
           .join('\n')}`,
       );
     }

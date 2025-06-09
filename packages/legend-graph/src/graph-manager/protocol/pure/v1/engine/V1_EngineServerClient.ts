@@ -1006,7 +1006,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
 
   validateFunctionActivator(
     input: PlainObject<V1_FunctionActivatorInput>,
-  ): Promise<PlainObject<V1_FunctionActivatorError>[]> {
+  ): Promise<PlainObject<V1_FunctionActivatorError>> {
     return this.postWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.VALIDATE_FUNCTION_ACTIVATOR),
       `${this._functionActivator()}/validate`,
