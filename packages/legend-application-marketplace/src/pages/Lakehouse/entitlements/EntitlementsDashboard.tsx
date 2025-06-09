@@ -28,11 +28,11 @@ import {
 import { flowResult } from 'mobx';
 import {
   DataGrid,
+  type DataGridCellClickedEvent,
   type DataGridCellRendererParams,
   type DataGridCustomHeaderProps,
   type DataGridFirstDataRenderedEvent,
   type DataGridIRowNode,
-  type DataGridRowClickedEvent,
   type DataGridRowSelectedEvent,
   type DataGridRowSelectionOptions,
 } from '@finos/legend-lego/data-grid';
@@ -448,13 +448,19 @@ export const EntitlementsDashboard = withAuth(
       event.api.setNodesSelected({ nodes: nodesToSelect, newValue: true });
     };
 
-    const handleRowClicked = (
-      event: DataGridRowClickedEvent<V1_ContractUserEventRecord, unknown>,
+    const handleCellClicked = (
+      event: DataGridCellClickedEvent<V1_ContractUserEventRecord, unknown>,
     ) => {
-      const contract = allContracts?.find(
-        (_contract) => _contract.guid === event.data?.dataContractId,
-      );
-      setSelectedContract(contract);
+      if (
+        (event.colDef.field as string) !== 'selection' &&
+        (event.colDef.field as string) !== 'targetUser' &&
+        (event.colDef.field as string) !== 'requester'
+      ) {
+        const contract = allContracts?.find(
+          (_contract) => _contract.guid === event.data?.dataContractId,
+        );
+        setSelectedContract(contract);
+      }
     };
 
     const rowSelection = useMemo<
@@ -571,7 +577,7 @@ export const EntitlementsDashboard = withAuth(
                     rowSelection={rowSelection}
                     onRowSelected={handleRowSelected}
                     onFirstDataRendered={handleFirstDataRendered}
-                    onRowClicked={handleRowClicked}
+                    onCellClicked={handleCellClicked}
                     columnDefs={[
                       {
                         headerName: '',
@@ -604,6 +610,7 @@ export const EntitlementsDashboard = withAuth(
                         minWidth: 50,
                         sortable: true,
                         resizable: true,
+                        field: 'targetUser',
                         headerName: 'Target User',
                         flex: 1,
                         cellRenderer: (
@@ -638,6 +645,7 @@ export const EntitlementsDashboard = withAuth(
                         minWidth: 50,
                         sortable: true,
                         resizable: true,
+                        field: 'requester',
                         headerName: 'Requester',
                         flex: 1,
                         cellRenderer: (

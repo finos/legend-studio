@@ -15,6 +15,7 @@
  */
 
 import {
+  type CellClickedEvent,
   type CellMouseOverEvent,
   type CellRange,
   type CellSelectionChangedEvent,
@@ -67,6 +68,7 @@ export function DataGrid<TData = unknown>(
 }
 
 export type {
+  CellClickedEvent as DataGridCellClickedEvent,
   CellMouseOverEvent as DataGridCellMouseOverEvent,
   CellRange as DataGridCellRange,
   CellSelectionChangedEvent as DataGridCellSelectionChangedEvent,
