@@ -87,6 +87,7 @@ export const EntitlementsDashboard = withAuth(
 
     const lakehouseEntitlementsStore =
       dashboardState.lakehouseEntitlementsStore;
+    const tasks = dashboardState.pendingTasks;
     const pendingConctracts = dashboardState.pendingContracts;
     const allContracts = dashboardState.allContracts;
 
@@ -132,9 +133,12 @@ export const EntitlementsDashboard = withAuth(
             value={EntitlementsTabs.ALL_CONTRACTS}
           />
         </Tabs>
-        {selectedTab === EntitlementsTabs.PENDING_TASKS && (
-          <EntitlementsPendingTasksDashbaord dashboardState={dashboardState} />
-        )}
+        {selectedTab === EntitlementsTabs.PENDING_TASKS &&
+          tasks !== undefined && (
+            <EntitlementsPendingTasksDashbaord
+              dashboardState={dashboardState}
+            />
+          )}
         {selectedTab === EntitlementsTabs.PENDING_CONTRACTS && (
           <Box className="marketplace-lakehouse-entitlements__pending-contracts">
             <div
