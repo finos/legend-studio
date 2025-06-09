@@ -122,6 +122,16 @@ export const isContractCompleted = (contract: V1_DataContract): boolean => {
   return contract.state === V1_ContractState.COMPLETED;
 };
 
+export const isContractInTerminalState = (
+  contract: V1_DataContract,
+): boolean => {
+  return [
+    V1_ContractState.CLOSED,
+    V1_ContractState.COMPLETED,
+    V1_ContractState.REJECTED,
+  ].includes(contract.state);
+};
+
 type ContractDetailOptions = {
   openApplicationIdHandler?: ((user: string) => void) | undefined;
   openDirectoryHandler?: ((id: string) => void) | undefined;

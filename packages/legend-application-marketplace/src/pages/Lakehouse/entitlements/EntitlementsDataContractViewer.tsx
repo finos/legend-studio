@@ -55,6 +55,7 @@ import {
 } from '@finos/legend-shared';
 import {
   getUserById,
+  isContractInTerminalState,
   isContractStateComplete,
   stringifyOrganizationalScope,
 } from '../../../stores/lakehouse/LakehouseUtils.js';
@@ -300,7 +301,7 @@ export const EntitlementsDataContractViewer = observer(
     ) {
       return (
         <Dialog open={true} onClose={onClose} fullWidth={true} maxWidth="md">
-          <DialogTitle>Pending Data Contract Request</DialogTitle>
+          <DialogTitle>Data Contract Request</DialogTitle>
           <IconButton
             onClick={onClose}
             className="marketplace-dialog-close-btn"
@@ -503,7 +504,10 @@ export const EntitlementsDataContractViewer = observer(
 
     return (
       <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="md">
-        <DialogTitle>Pending Data Contract Request</DialogTitle>
+        <DialogTitle>
+          {isContractInTerminalState(currentViewer.value) ? '' : 'Pending '}Data
+          Contract Request
+        </DialogTitle>
         <IconButton onClick={onClose} className="marketplace-dialog-close-btn">
           <CloseIcon />
         </IconButton>
