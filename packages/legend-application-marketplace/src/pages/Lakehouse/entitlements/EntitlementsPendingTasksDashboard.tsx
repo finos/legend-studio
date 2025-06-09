@@ -25,6 +25,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Tooltip,
 } from '@mui/material';
 import { useEffect, useMemo, useState, type ChangeEvent } from 'react';
 import type { EntitlementsDashboardState } from '../../../stores/lakehouse/entitlements/EntitlementsDashboardState.js';
@@ -35,6 +36,7 @@ import type { NavigationService } from '@finos/legend-application';
 import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
+  InfoCircleIcon,
   UserDisplay,
 } from '@finos/legend-art';
 import { getUserById } from '../../../stores/lakehouse/LakehouseUtils.js';
@@ -633,6 +635,9 @@ export const EntitlementsPendingTasksDashbaord = observer(
               <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid-container">
                 <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid__header">
                   Privilege Manager Approvals
+                  <Tooltip title="These are pending requests for which you are listed as a Privilege Manager.">
+                    <InfoCircleIcon />
+                  </Tooltip>
                 </Box>
                 <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid ag-theme-balham">
                   <DataGrid
@@ -672,6 +677,9 @@ export const EntitlementsPendingTasksDashbaord = observer(
               <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid-container">
                 <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid__header">
                   Data Owner Approvals
+                  <Tooltip title="These are pending requests for which you are listed as a Data Owner.">
+                    <InfoCircleIcon />
+                  </Tooltip>
                 </Box>
                 <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid ag-theme-balham">
                   <DataGrid
