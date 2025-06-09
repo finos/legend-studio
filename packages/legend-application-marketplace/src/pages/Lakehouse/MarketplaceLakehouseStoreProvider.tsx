@@ -29,7 +29,7 @@ export const MarketplaceLakehouseStoreProvider: React.FC<{
 }> = ({ children }) => {
   const baseStore = useLegendMarketplaceBaseStore();
   const lakehouseServerClient = guaranteeNonNullable(
-    baseStore.lakehouseServerClient,
+    baseStore.lakehouseContractServerClient,
     'lakehouse server client required to render',
   );
   const lakehousePlatformServerClient = guaranteeNonNullable(

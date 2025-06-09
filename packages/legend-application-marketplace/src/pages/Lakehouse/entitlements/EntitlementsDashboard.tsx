@@ -65,6 +65,8 @@ import { type NavigationService } from '@finos/legend-application';
 import { useSearchParams } from '@finos/legend-application/browser';
 import { getUserById } from '../../../stores/lakehouse/LakehouseUtils.js';
 import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
+import { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
+import { EntitlementsDataContractViewer } from './EntitlementsDataContractViewer.js';
 
 const Contract_IdColumnClickableCellRenderer = (
   contractId: string | undefined,
@@ -389,6 +391,9 @@ export const EntitlementsDashboard = withAuth(
     const [selectedAction, setSelectedAction] = useState<
       'approve' | 'deny' | undefined
     >();
+    const [selectedContract, setSelectedContract] = useState<
+      V1_DataContract | undefined
+    >();
 
     useEffect(() => {
       setSearchParams((params) => {
@@ -446,7 +451,10 @@ export const EntitlementsDashboard = withAuth(
     const handleRowClicked = (
       event: DataGridRowClickedEvent<V1_ContractUserEventRecord, unknown>,
     ) => {
-      console.log('event:', event);
+      const contract = allContracts?.find(
+        (_contract) => _contract.guid === event.data?.dataContractId,
+      );
+      setSelectedContract(contract);
     };
 
     const rowSelection = useMemo<
@@ -948,6 +956,18 @@ export const EntitlementsDashboard = withAuth(
               )}
             </div>
           </Box>
+        )}
+        {selectedContract !== undefined && (
+          <EntitlementsDataContractViewer
+            open={true}
+            currentViewer={
+              new EntitlementsDataContractViewerState(
+                selectedContract,
+                marketplaceBaseStore.lakehouseContractServerClient,
+              )
+            }
+            onClose={() => setSelectedContract(undefined)}
+          />
         )}
       </Container>
     );
