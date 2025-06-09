@@ -55,10 +55,8 @@ export class LegendMarketplaceBaseStore {
   readonly applicationStore: LegendMarketplaceApplicationStore;
   readonly marketplaceServerClient: MarketplaceServerClient;
   readonly depotServerClient: DepotServerClient;
-  readonly lakehouseServerClient: LakehouseContractServerClient | undefined;
-  readonly lakehousePlatformServerClient:
-    | LakehousePlatformServerClient
-    | undefined;
+  readonly lakehouseContractServerClient: LakehouseContractServerClient;
+  readonly lakehousePlatformServerClient: LakehousePlatformServerClient;
   readonly lakehouseIngestServerClient: LakehouseIngestServerClient;
   readonly pluginManager: LegendMarketplacePluginManager;
   readonly engineServerClient: V1_EngineServerClient;
@@ -94,25 +92,21 @@ export class LegendMarketplaceBaseStore {
       this.applicationStore.tracerService,
     );
 
-    if (this.applicationStore.config.lakehouseServerUrl) {
-      // lakehouse contract
-      this.lakehouseServerClient = new LakehouseContractServerClient({
-        baseUrl: this.applicationStore.config.lakehouseServerUrl,
-      });
-      this.lakehouseServerClient.setTracerService(
-        this.applicationStore.tracerService,
-      );
-    }
+    // lakehouse contract
+    this.lakehouseContractServerClient = new LakehouseContractServerClient({
+      baseUrl: this.applicationStore.config.lakehouseServerUrl,
+    });
+    this.lakehouseContractServerClient.setTracerService(
+      this.applicationStore.tracerService,
+    );
 
-    if (this.applicationStore.config.lakehousePlatformUrl) {
-      // lakehouse platform
-      this.lakehousePlatformServerClient = new LakehousePlatformServerClient(
-        this.applicationStore.config.lakehousePlatformUrl,
-      );
-      this.lakehousePlatformServerClient.setTracerService(
-        this.applicationStore.tracerService,
-      );
-    }
+    // lakehouse platform
+    this.lakehousePlatformServerClient = new LakehousePlatformServerClient(
+      this.applicationStore.config.lakehousePlatformUrl,
+    );
+    this.lakehousePlatformServerClient.setTracerService(
+      this.applicationStore.tracerService,
+    );
 
     // lakehouse ingest
     this.lakehouseIngestServerClient = new LakehouseIngestServerClient(
