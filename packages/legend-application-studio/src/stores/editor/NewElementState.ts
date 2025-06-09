@@ -109,7 +109,10 @@ import {
 } from '@finos/legend-lego/graph-editor';
 import { EmbeddedDataType } from './editor-state/ExternalFormatState.js';
 import { createEmbeddedData } from './editor-state/element-editor-state/data/EmbeddedDataState.js';
-import { dataProduct_setTitle } from '../graph-modifier/DSL_DataProduct_GraphModifierHelper.js';
+import {
+  dataProduct_setDescription,
+  dataProduct_setTitle,
+} from '../graph-modifier/DSL_DataProduct_GraphModifierHelper.js';
 
 export const CUSTOM_LABEL = '(custom)';
 
@@ -484,27 +487,35 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
 
 export class NewLakehouseDataProductDriver extends NewElementDriver<DataProduct> {
   title: string;
+  description: string;
 
   constructor(editorStore: EditorStore) {
     super(editorStore);
     this.title = '';
+    this.description = '';
     makeObservable(this, {
       title: observable,
+      description: observable,
       setTitle: action,
+      setDescription: action,
       isValid: computed,
     });
   }
 
   override get isValid(): boolean {
-    return true;
+    return Boolean(this.title && this.description);
   }
 
   setTitle(val: string) {
     this.title = val;
   }
+  setDescription(val: string) {
+    this.description = val;
+  }
   override createElement(name: string): DataProduct {
     const dataProduct = new DataProduct(name);
     dataProduct_setTitle(dataProduct, this.title);
+    dataProduct_setDescription(dataProduct, this.description);
     return dataProduct;
   }
 }

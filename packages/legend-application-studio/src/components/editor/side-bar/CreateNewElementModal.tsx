@@ -27,6 +27,7 @@ import {
   NewServiceDriver,
   CONNECTION_TYPE,
   type RuntimeOption,
+  NewLakehouseDataProductDriver,
 } from '../../../stores/editor/NewElementState.js';
 import { Dialog, compareLabelFn, CustomSelectorInput } from '@finos/legend-art';
 import type { EditorStore } from '../../../stores/editor/EditorStore.js';
@@ -89,7 +90,7 @@ export const getElementTypeLabel = (
     case PACKAGEABLE_ELEMENT_TYPE.TEMPORARY__LOCAL_CONNECTION:
       return 'local connection';
     case PACKAGEABLE_ELEMENT_TYPE._DATA_PRODUCT:
-      return 'lakehouse data product';
+      return 'Lakehouse Data Product';
     default: {
       if (type) {
         const extraElementTypeLabelGetters = editorStore.pluginManager
@@ -440,11 +441,42 @@ const NewServiceDriverEditor = observer(() => {
 });
 
 const NewLakehouseDataProductEditor = observer(() => {
-  // const editorStore = useEditorStore();
-  // const newProductDriver = editorStore.newElementState.getNewElementDriver(
-  //   NewLakehouseDataProductDriver,
-  // );
-  return null;
+  const editorStore = useEditorStore();
+  const newProductDriver = editorStore.newElementState.getNewElementDriver(
+    NewLakehouseDataProductDriver,
+  );
+  const handleTitleChange: React.ChangeEventHandler<HTMLInputElement> = (
+    event,
+  ) => newProductDriver.setTitle(event.target.value);
+  const handleDescriptionChange: React.ChangeEventHandler<HTMLInputElement> = (
+    event,
+  ) => newProductDriver.setDescription(event.target.value);
+  return (
+    <>
+      <div className="panel__content__form__section__header__label">Title</div>
+      <div className="explorer__new-element-modal__driver">
+        <input
+          className="input--dark explorer__new-element-modal__name-input"
+          spellCheck={false}
+          value={newProductDriver.title}
+          onChange={handleTitleChange}
+          placeholder={`Choose a title for this Data Product to display in Marketplace`}
+        />
+      </div>
+      <div className="panel__content__form__section__header__label">
+        Description
+      </div>
+      <div className="explorer__new-element-modal__driver">
+        <input
+          className="input--dark explorer__new-element-modal__name-input"
+          spellCheck={false}
+          value={newProductDriver.description}
+          onChange={handleDescriptionChange}
+          placeholder={`Provide a meaningful description for this Data Product`}
+        />
+      </div>
+    </>
+  );
 });
 
 const NewFileGenerationDriverEditor = observer(() => {

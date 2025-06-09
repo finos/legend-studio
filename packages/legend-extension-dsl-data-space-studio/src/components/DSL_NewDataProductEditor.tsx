@@ -15,7 +15,6 @@
  */
 
 import { useEditorStore } from '@finos/legend-application-studio';
-import { PanelFormTextField } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { NewDataProductDriver } from './DSL_DataProduct_ElementDriver.js';
 
@@ -25,33 +24,37 @@ export const NewDataProductDriverEditor = observer(() => {
   const dataProductDriver =
     editorStore.newElementState.getNewElementDriver(NewDataProductDriver);
 
-  const handleTitleChange = (value: string | undefined): void => {
-    dataProductDriver.setTitle(value);
-  };
-
-  const handleDescriptionChange = (value: string | undefined): void => {
-    dataProductDriver.setDescription(value);
-  };
+  const handleTitleChange: React.ChangeEventHandler<HTMLInputElement> = (
+    event,
+  ) => dataProductDriver.setTitle(event.target.value);
+  const handleDescriptionChange: React.ChangeEventHandler<HTMLInputElement> = (
+    event,
+  ) => dataProductDriver.setDescription(event.target.value);
 
   return (
-    <div>
-      <PanelFormTextField
-        name="Title"
-        value={dataProductDriver.title ?? ''}
-        prompt="Provide a title for this Data Product."
-        update={handleTitleChange}
-        placeholder="Enter title"
-        className="explorer__new-element-modal__driver__dropdown"
-      />
-
-      <PanelFormTextField
-        name="Description"
-        value={dataProductDriver.description ?? ''}
-        prompt="Provide a description for this Data Product."
-        update={handleDescriptionChange}
-        placeholder="Enter description"
-        className="explorer__new-element-modal__driver__dropdown"
-      />
-    </div>
+    <>
+      <div className="panel__content__form__section__header__label">Title</div>
+      <div className="explorer__new-element-modal__driver">
+        <input
+          className="input--dark explorer__new-element-modal__name-input"
+          spellCheck={false}
+          value={dataProductDriver.title}
+          onChange={handleTitleChange}
+          placeholder={`Choose a title for this Data Product to display to consumers`}
+        />
+      </div>
+      <div className="panel__content__form__section__header__label">
+        Description
+      </div>
+      <div className="explorer__new-element-modal__driver">
+        <input
+          className="input--dark explorer__new-element-modal__name-input"
+          spellCheck={false}
+          value={dataProductDriver.description}
+          onChange={handleDescriptionChange}
+          placeholder={`Provide a meaningful description for this Data Product`}
+        />
+      </div>
+    </>
   );
 });
