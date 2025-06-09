@@ -340,7 +340,7 @@ export const EntitlementsPendingTasksDashbaord = observer(
           .get('selectedTasks')
           ?.split(',')
           .filter((taskId) =>
-            tasks?.map((task) => task.taskId)?.includes(taskId),
+            tasks?.map((task) => task.taskId).includes(taskId),
           ) ?? [],
       ),
     );
