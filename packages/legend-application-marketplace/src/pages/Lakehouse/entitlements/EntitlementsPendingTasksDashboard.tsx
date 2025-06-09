@@ -409,19 +409,30 @@ export const EntitlementsPendingTasksDashbaord = observer(
       );
     };
 
-    const CustomSelectionHeaderRenderer = (
-      params: DataGridCustomHeaderProps<V1_ContractUserEventRecord>,
-    ) => {
-      const checked = selectedTaskIdsSet.size === tasks?.length;
-      const indeterminate = selectedTaskIdsSet.size > 0 && !checked;
+    const CustomSelectionHeaderRenderer = (_props: {
+      params: DataGridCustomHeaderProps<V1_ContractUserEventRecord>;
+      taskSet: V1_ContractUserEventRecord[];
+    }) => {
+      const { taskSet } = _props;
+      const checked = taskSet.every((task) =>
+        selectedTaskIdsSet.has(task.taskId),
+      );
+      const indeterminate =
+        !checked && taskSet.some((task) => selectedTaskIdsSet.has(task.taskId));
 
       const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         if (!checked || indeterminate) {
-          setSelectedTaskIdsSet(
-            new Set<string>(tasks?.map((task) => task.taskId) ?? []),
-          );
+          setSelectedTaskIdsSet((prev) => {
+            const newSet = new Set<string>(prev);
+            taskSet.forEach((task) => newSet.add(task.taskId));
+            return newSet;
+          });
         } else {
-          setSelectedTaskIdsSet(new Set<string>());
+          setSelectedTaskIdsSet((prev) => {
+            const newSet = new Set<string>(prev);
+            taskSet.forEach((task) => newSet.delete(task.taskId));
+            return newSet;
+          });
         }
       };
 
@@ -437,14 +448,6 @@ export const EntitlementsPendingTasksDashbaord = observer(
     };
 
     const colDefs: DataGridColumnDefinition<V1_ContractUserEventRecord>[] = [
-      {
-        headerName: '',
-        colId: 'selection',
-        width: 50,
-        cellRenderer: CustomSelectionRenderer,
-        headerComponent: CustomSelectionHeaderRenderer,
-        pinned: 'left',
-      },
       {
         minWidth: 50,
         sortable: true,
@@ -643,7 +646,24 @@ export const EntitlementsPendingTasksDashbaord = observer(
                     rowSelection={rowSelection}
                     onFirstDataRendered={handleFirstDataRendered}
                     onCellClicked={handleCellClicked}
-                    columnDefs={colDefs}
+                    columnDefs={[
+                      {
+                        headerName: '',
+                        colId: 'selection',
+                        width: 50,
+                        cellRenderer: CustomSelectionRenderer,
+                        headerComponent: (
+                          params: DataGridCustomHeaderProps<V1_ContractUserEventRecord>,
+                        ) => (
+                          <CustomSelectionHeaderRenderer
+                            params={params}
+                            taskSet={privilegeManagerTasks}
+                          />
+                        ),
+                        pinned: 'left',
+                      },
+                      ...colDefs,
+                    ]}
                   />
                 </Box>
               </Box>
@@ -665,7 +685,24 @@ export const EntitlementsPendingTasksDashbaord = observer(
                     rowSelection={rowSelection}
                     onFirstDataRendered={handleFirstDataRendered}
                     onCellClicked={handleCellClicked}
-                    columnDefs={colDefs}
+                    columnDefs={[
+                      {
+                        headerName: '',
+                        colId: 'selection',
+                        width: 50,
+                        cellRenderer: CustomSelectionRenderer,
+                        headerComponent: (
+                          params: DataGridCustomHeaderProps<V1_ContractUserEventRecord>,
+                        ) => (
+                          <CustomSelectionHeaderRenderer
+                            params={params}
+                            taskSet={dataOwnerTasks}
+                          />
+                        ),
+                        pinned: 'left',
+                      },
+                      ...colDefs,
+                    ]}
                   />
                 </Box>
               </Box>
@@ -687,7 +724,24 @@ export const EntitlementsPendingTasksDashbaord = observer(
                     rowSelection={rowSelection}
                     onFirstDataRendered={handleFirstDataRendered}
                     onCellClicked={handleCellClicked}
-                    columnDefs={colDefs}
+                    columnDefs={[
+                      {
+                        headerName: '',
+                        colId: 'selection',
+                        width: 50,
+                        cellRenderer: CustomSelectionRenderer,
+                        headerComponent: (
+                          params: DataGridCustomHeaderProps<V1_ContractUserEventRecord>,
+                        ) => (
+                          <CustomSelectionHeaderRenderer
+                            params={params}
+                            taskSet={otherTasks}
+                          />
+                        ),
+                        pinned: 'left',
+                      },
+                      ...colDefs,
+                    ]}
                   />
                 </Box>
               </Box>
