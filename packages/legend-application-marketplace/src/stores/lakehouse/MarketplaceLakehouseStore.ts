@@ -429,7 +429,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(
-        `Unable to load lakehouse environments: ${error.message}`,
+        `Unable to load lakehouse environment summaries: ${error.message}`,
       );
       this.loadingLakehouseEnvironmentSummariesState.fail();
     }
@@ -453,7 +453,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(
-        `Unable to load lakehouse environments: ${error.message}`,
+        `Unable to load lakehouse environment summary: ${error.message}`,
       );
       return undefined;
     }
@@ -479,7 +479,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(
-        `Unable to load lakehouse environments: ${error.message}`,
+        `Unable to load lakehouse environment details: ${error.message}`,
       );
       this.loadingLakehouseEnvironmentSummariesState.fail();
     }
