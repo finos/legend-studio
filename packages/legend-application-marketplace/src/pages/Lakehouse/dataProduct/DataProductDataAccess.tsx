@@ -42,6 +42,7 @@ import {
   type V1_RelationType,
   type V1_RelationTypeColumn,
   PureClientVersion,
+  V1_getGenericTypeFullPath,
   V1_LambdaReturnTypeInput,
   V1_LegendSDLC,
   V1_Protocol,
@@ -207,7 +208,10 @@ const TDSColumnMoreInfoCellRenderer = (props: {
       },
       {
         headerName: 'Column Type',
-        field: 'genericType',
+        valueGetter: (_params) =>
+          _params.data
+            ? V1_getGenericTypeFullPath(_params.data.genericType)
+            : '',
       },
     ];
 
