@@ -63,7 +63,6 @@ import {
   V1_PureModelContextPointer,
   V1_relationTypeModelSchema,
   V1_RenderStyle,
-  V1_serializePureModelContext,
   V1_serializeRawValueSpecification,
 } from '@finos/legend-graph';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
@@ -167,19 +166,17 @@ const TDSColumnMoreInfoCellRenderer = (props: {
             ).getFullGraphModelData(
               accessGroupState.accessState.viewerState.graphManagerState.graph,
             )
-          : V1_serializePureModelContext(
-              new V1_PureModelContextPointer(
-                // TODO: remove as backend should handle undefined protocol input
-                new V1_Protocol(
-                  V1_PureGraphManager.PURE_PROTOCOL_NAME,
-                  PureClientVersion.VX_X_X,
-                ),
-                new V1_LegendSDLC(
-                  accessGroupState.accessState.viewerState.project.groupId,
-                  accessGroupState.accessState.viewerState.project.artifactId,
-                  resolveVersion(
-                    accessGroupState.accessState.viewerState.project.versionId,
-                  ),
+          : new V1_PureModelContextPointer(
+              // TODO: remove as backend should handle undefined protocol input
+              new V1_Protocol(
+                V1_PureGraphManager.PURE_PROTOCOL_NAME,
+                PureClientVersion.VX_X_X,
+              ),
+              new V1_LegendSDLC(
+                accessGroupState.accessState.viewerState.project.groupId,
+                accessGroupState.accessState.viewerState.project.artifactId,
+                resolveVersion(
+                  accessGroupState.accessState.viewerState.project.versionId,
                 ),
               ),
             );
