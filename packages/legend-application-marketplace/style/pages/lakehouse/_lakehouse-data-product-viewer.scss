@@ -35,17 +35,21 @@
     }
 
     &__columns-grid {
-      height: fit-content;
+      height: 300px;
 
-      &--auto-height--non-empty {
-        .ag-center-cols-viewport {
-          min-height: unset;
+      &--auto-height {
+        height: fit-content;
+
+        &--non-empty {
+          .ag-center-cols-viewport {
+            min-height: unset;
+          }
         }
       }
     }
 
     &__grammar {
-      height: 200px;
+      height: 300px;
     }
   }
 }
