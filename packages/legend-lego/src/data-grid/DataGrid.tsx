@@ -15,6 +15,7 @@
  */
 
 import {
+  type CellClickedEvent,
   type CellMouseOverEvent,
   type CellRange,
   type CellSelectionChangedEvent,
@@ -30,6 +31,7 @@ import {
   type IRowNode,
   type MenuItemDef,
   type Module,
+  type RowClickedEvent,
   type RowSelectedEvent,
   type RowSelectionOptions,
   AllCommunityModule,
@@ -66,6 +68,7 @@ export function DataGrid<TData = unknown>(
 }
 
 export type {
+  CellClickedEvent as DataGridCellClickedEvent,
   CellMouseOverEvent as DataGridCellMouseOverEvent,
   CellRange as DataGridCellRange,
   CellSelectionChangedEvent as DataGridCellSelectionChangedEvent,
@@ -81,6 +84,7 @@ export type {
   ICellRendererParams as DataGridCellRendererParams,
   IRowNode as DataGridIRowNode,
   MenuItemDef as DataGridMenuItemDef,
+  RowClickedEvent as DataGridRowClickedEvent,
   RowSelectedEvent as DataGridRowSelectedEvent,
   RowSelectionOptions as DataGridRowSelectionOptions,
 };

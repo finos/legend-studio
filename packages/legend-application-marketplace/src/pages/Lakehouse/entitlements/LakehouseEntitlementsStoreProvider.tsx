@@ -33,7 +33,7 @@ export const LakehouseEntitlementsStoreProvider: React.FC<{
   const applicationStore = useLegendMarketplaceApplicationStore();
   const baseStore = useLegendMarketplaceBaseStore();
   const lakehouseServerClient = guaranteeNonNullable(
-    baseStore.lakehouseServerClient,
+    baseStore.lakehouseContractServerClient,
     'lakehouse server client required to render',
   );
   const store = useLocalObservable(

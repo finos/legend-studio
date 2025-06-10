@@ -92,8 +92,8 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
   readonly marketplaceOidcConfig?: LegendMarketplaceOidcConfig | undefined;
   readonly engineServerUrl: string;
   readonly depotServerUrl: string;
-  readonly lakehouseServerUrl?: string;
-  readonly lakehousePlatformUrl?: string;
+  readonly lakehouseServerUrl: string;
+  readonly lakehousePlatformUrl: string;
   readonly lakehouseEntitlementsConfig:
     | LegendLakehouseEntitlementsConfig
     | undefined;
@@ -167,30 +167,33 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
     );
 
     // lakehouse
-    if (input.configData.lakehouse) {
-      this.lakehouseServerUrl = LegendApplicationConfig.resolveAbsoluteUrl(
-        guaranteeNonEmptyString(
-          input.configData.lakehouse.url,
-          `Can't configure application: 'lakehouse.url' field is missing or empty`,
-        ),
-      );
-      this.lakehousePlatformUrl = LegendApplicationConfig.resolveAbsoluteUrl(
-        guaranteeNonEmptyString(
-          input.configData.lakehouse.platformUrl,
-          `Can't configure application: 'lakehouse.platformUrl' field is missing or empty`,
-        ),
-      );
-      this.lakehouseEntitlementsConfig = new LegendLakehouseEntitlementsConfig(
-        guaranteeNonEmptyString(
-          input.configData.lakehouse.entitlements.applicationDirectoryUrl,
-          `Can't configure application: 'lakehouse.entitlements.applicationDirectoryUrl' field is missing or empty`,
-        ),
-        guaranteeNonEmptyString(
-          input.configData.lakehouse.entitlements.applicationIDUrl,
-          `Can't configure application: 'lakehouse.entitlements.applicationIDUrl' field is missing or empty`,
-        ),
-      );
-    }
+    assertNonNullable(
+      input.configData.lakehouse,
+      `Can't configure application: 'lakehouse' field is missing`,
+    );
+    this.lakehouseServerUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+      guaranteeNonEmptyString(
+        input.configData.lakehouse.url,
+        `Can't configure application: 'lakehouse.url' field is missing or empty`,
+      ),
+    );
+    this.lakehousePlatformUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+      guaranteeNonEmptyString(
+        input.configData.lakehouse.platformUrl,
+        `Can't configure application: 'lakehouse.platformUrl' field is missing or empty`,
+      ),
+    );
+    this.lakehouseEntitlementsConfig = new LegendLakehouseEntitlementsConfig(
+      guaranteeNonEmptyString(
+        input.configData.lakehouse.entitlements.applicationDirectoryUrl,
+        `Can't configure application: 'lakehouse.entitlements.applicationDirectoryUrl' field is missing or empty`,
+      ),
+      guaranteeNonEmptyString(
+        input.configData.lakehouse.entitlements.applicationIDUrl,
+        `Can't configure application: 'lakehouse.entitlements.applicationIDUrl' field is missing or empty`,
+      ),
+    );
+
     // studio
     assertNonNullable(
       input.configData.studio,

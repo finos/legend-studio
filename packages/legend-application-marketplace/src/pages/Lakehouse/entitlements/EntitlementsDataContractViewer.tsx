@@ -55,6 +55,7 @@ import {
 } from '@finos/legend-shared';
 import {
   getUserById,
+  isContractInTerminalState,
   isContractStateComplete,
   stringifyOrganizationalScope,
 } from '../../../stores/lakehouse/LakehouseUtils.js';
@@ -201,7 +202,7 @@ export const EntitlementsDataContractViewer = observer(
   (props: {
     open: boolean;
     currentViewer: EntitlementsDataContractViewerState;
-    dataProductGroupAccessState: DataProductGroupAccessState | undefined;
+    dataProductGroupAccessState?: DataProductGroupAccessState | undefined;
     dataProductViewerState?: DataProductViewerState | undefined;
     onClose: () => void;
   }) => {
@@ -300,7 +301,7 @@ export const EntitlementsDataContractViewer = observer(
     ) {
       return (
         <Dialog open={true} onClose={onClose} fullWidth={true} maxWidth="md">
-          <DialogTitle>Pending Data Contract Request</DialogTitle>
+          <DialogTitle>Data Contract Request</DialogTitle>
           <IconButton
             onClick={onClose}
             className="marketplace-dialog-close-btn"
@@ -503,7 +504,10 @@ export const EntitlementsDataContractViewer = observer(
 
     return (
       <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="md">
-        <DialogTitle>Pending Data Contract Request</DialogTitle>
+        <DialogTitle>
+          {isContractInTerminalState(currentViewer.value) ? '' : 'Pending '}Data
+          Contract Request
+        </DialogTitle>
         <IconButton onClick={onClose} className="marketplace-dialog-close-btn">
           <CloseIcon />
         </IconButton>
@@ -583,23 +587,21 @@ export const EntitlementsDataContractViewer = observer(
                   {currentViewer.value.description}
                 </div>
               </Box>
-              {currentState !== V1_ContractState.CLOSED &&
-                currentState !== V1_ContractState.REJECTED &&
-                currentState !== V1_ContractState.COMPLETED && (
-                  <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__refresh-btn">
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      startIcon={<RefreshIcon />}
-                      onClick={() => {
-                        // eslint-disable-next-line no-void
-                        void refresh();
-                      }}
-                    >
-                      Refresh
-                    </Button>
-                  </Box>
-                )}
+              {!isContractInTerminalState(currentViewer.value) && (
+                <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__refresh-btn">
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    startIcon={<RefreshIcon />}
+                    onClick={() => {
+                      // eslint-disable-next-line no-void
+                      void refresh();
+                    }}
+                  >
+                    Refresh
+                  </Button>
+                </Box>
+              )}
               <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__timeline">
                 <Timeline>
                   {steps.map((step, index) => (
