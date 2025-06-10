@@ -41,7 +41,7 @@ import type {
   LegendApplicationPlugin,
 } from '@finos/legend-application';
 
-export const getV1_ValueSpecificationStringValue = (
+export const V1_stringifyValueSpecification = (
   valueSpecification: V1_ValueSpecification,
   applicationStore: ApplicationStore<
     LegendApplicationConfig,
@@ -77,11 +77,7 @@ export const getV1_ValueSpecificationStringValue = (
   } else if (valueSpecification instanceof V1_Collection) {
     return valueSpecification.values
       .map((valueSpec) =>
-        getV1_ValueSpecificationStringValue(
-          valueSpec,
-          applicationStore,
-          options,
-        ),
+        V1_stringifyValueSpecification(valueSpec, applicationStore, options),
       )
       .join(',');
   }
