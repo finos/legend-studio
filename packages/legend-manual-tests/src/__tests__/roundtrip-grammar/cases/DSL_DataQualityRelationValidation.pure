@@ -87,15 +87,3 @@ DataQualityRelationValidation model::relationValidation_separateRuntime
     }
    ];
 }
-
-DataQualityRelationValidation model::relationValidation_aggregate
-{
-   query: |#>{store::db.table1}#->select(~[property_1])->from(model::DummyRuntime);
-   validations: [
-   {
-     name: 'datasetNotEmpty';
-     assertion: rel|$rel->relationNotEmpty();
-     type: AGGREGATE;
-    }
-   ];
-}

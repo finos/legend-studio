@@ -17,8 +17,6 @@
 import { useCallback, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
-  type SelectOption,
-  CustomSelectorInput,
   FilledWindowMaximizeIcon,
   PanelDnDEntry,
   PanelEntryDragHandle,
@@ -166,15 +164,6 @@ export const DataQualityRelationValidationEditor = observer(
       }
     };
 
-    const onValidationTypeChange = (val: SelectOption): void => {
-      validationState.onValidationTypeChange(val);
-    };
-
-    const selectedValidationType = {
-      label: validation.type,
-      value: validation.type,
-    };
-
     const openValidationDialog = () => {
       validationState.setIsValidationDialogOpen(true);
     };
@@ -203,18 +192,6 @@ export const DataQualityRelationValidationEditor = observer(
               value={validation.name}
               onChange={changeName}
               placeholder="Validation name"
-            />
-            <CustomSelectorInput
-              options={
-                relationValidationConfigurationState.relationValidationOptions
-              }
-              onChange={onValidationTypeChange}
-              value={selectedValidationType}
-              darkMode={
-                !applicationStore.layoutService
-                  .TEMPORARY__isLightColorThemeEnabled
-              }
-              placeholder={'Type of validation to be added'}
             />
             {!isReadOnly && (
               <button
@@ -275,8 +252,6 @@ export const DataQualityRelationValidationEditor = observer(
             changeDescription={changeDescription}
             onLambdaEditorFocus={onLambdaEditorFocus}
             forceBackdrop={hasParserError}
-            onValidationTypeChange={onValidationTypeChange}
-            selectedValidationType={selectedValidationType}
           />
         )}
       </PanelDnDEntry>

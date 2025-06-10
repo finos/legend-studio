@@ -166,7 +166,9 @@ export function V1_transformDataQualityRelationValidation(
     value.assertion,
     context,
   );
-  relationConstraint.type = value.type;
+  if (value.type) {
+    relationConstraint.type = value.type;
+  }
   return relationConstraint;
 }
 

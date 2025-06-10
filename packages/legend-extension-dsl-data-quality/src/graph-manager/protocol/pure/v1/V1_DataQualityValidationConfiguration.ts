@@ -27,7 +27,7 @@ import {
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { DATA_QUALITY_HASH_STRUCTURE } from '../../../../graph/metamodel/DSL_DataQuality_HashUtils.js';
 import { type V1_DataQualityRootGraphFetchTree } from './model/graphFetch/V1_DataQualityRootGraphFetchTree.js';
-import { RelationValidationType } from '../../../../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
+import { type RelationValidationType } from '../../../../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
 
 export abstract class V1_DataQualityExecutionContext implements Hashable {
   abstract get hashCode(): string;
@@ -63,13 +63,13 @@ export class V1_DataQualityRelationValidation implements Hashable {
   name!: string;
   description: string | undefined;
   assertion!: V1_RawLambda;
-  type: RelationValidationType = RelationValidationType.ROW_LEVEL;
+  type?: RelationValidationType;
 
   get hashCode(): string {
     return hashArray([
       DATA_QUALITY_HASH_STRUCTURE.DATA_QUALITY_RELATION_VALIDATION,
       this.name,
-      this.type,
+      this.type ?? '',
       this.description ?? '',
       this.assertion,
     ]);
