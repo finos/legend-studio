@@ -218,9 +218,11 @@ const TDSColumnMoreInfoCellRenderer = (props: {
       {
         headerName: 'Column Name',
         field: 'name',
+        flex: 1,
       },
       {
         headerName: 'Column Type',
+        flex: 1,
         valueGetter: (_params) =>
           _params.data
             ? `${extractElementNameFromPath(
