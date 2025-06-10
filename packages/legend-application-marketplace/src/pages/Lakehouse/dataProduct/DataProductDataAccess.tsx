@@ -37,9 +37,9 @@ import {
   type DataGridCellRendererParams,
 } from '@finos/legend-lego/data-grid';
 import {
-  type V1_RawLambda,
   V1_RenderStyle,
   type V1_LakehouseAccessPoint,
+  V1_serializeRawValueSpecification,
 } from '@finos/legend-graph';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 import {
@@ -48,7 +48,6 @@ import {
 } from '@finos/legend-code-editor';
 import { Box, Button, Tab, Tabs } from '@mui/material';
 import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
-import { type PlainObject } from '@finos/legend-shared';
 import { DataContractCreator } from '../entitlements/EntitlementsDataContractCreator.js';
 import { EntitlementsDataContractViewer } from '../entitlements/EntitlementsDataContractViewer.js';
 import { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
@@ -113,7 +112,7 @@ const TDSColumnMoreInfoCellRenderer = (
     const fetchGrammar = async () => {
       try {
         const grammar = await store.engineServerClient.JSONToGrammar_lambda(
-          data.func as unknown as PlainObject<V1_RawLambda>,
+          V1_serializeRawValueSpecification(data.func),
           V1_RenderStyle.PRETTY,
         );
 
