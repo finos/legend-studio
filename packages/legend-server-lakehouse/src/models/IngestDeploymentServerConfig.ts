@@ -14,9 +14,17 @@
  * limitations under the License.
  */
 
-export * from './models/DataProduct.js';
-export * from './models/Provider.js';
-export * from './models/Subscription.js';
+import { SerializationFactory } from '@finos/legend-shared';
+import { createModelSchema, primitive } from 'serializr';
 
-export { LakehouseContractServerClient } from './LakehouseContractServerClient.js';
-export { MarketplaceServerClient } from './MarketplaceServerClient.js';
+export class IngestDeploymentServerConfig {
+  environmentClassification!: string;
+  ingestServerUrl!: string;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(IngestDeploymentServerConfig, {
+      environmentClassification: primitive(),
+      ingestServerUrl: primitive(),
+    }),
+  );
+}

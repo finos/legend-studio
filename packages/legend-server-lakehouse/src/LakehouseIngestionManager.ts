@@ -15,56 +15,53 @@
  */
 
 import type { AppDirNode } from '@finos/legend-graph';
-import { IngestDeploymentServerClient } from './IngestDeploymentServerClient.js';
-import { IngestDiscoveryServerClient } from './IngestDiscoveryServerClient.js';
-import type { GenericLegendApplicationStore } from '@finos/legend-application';
 import {
   NetworkClientError,
   type PlainObject,
+  type TracerService,
   assertErrorThrown,
 } from '@finos/legend-shared';
+import { IngestDeploymentServerConfig } from './models/IngestDeploymentServerConfig.js';
+import { LakehousePlatformServerClient } from './LakehousePlatformServerClient.js';
+import { LakehouseIngestServerClient } from './LakehouseIngestServerClient.js';
 import {
-  type IngestDefinitionValidationResponse,
+  createIngestDefinitionValidationResponse,
   IngestDefinitionDeploymentResponse,
+  type IngestDefinitionValidationResponse,
   IngestDefinitionValidationResponseStatus,
   ValidateAndDeploymentResponse,
-  createIngestDefinitionValidationResponse,
-} from './IngestionDeploymentResponse.js';
-import {
-  IngestDeploymentServerConfig,
-  type LegendIngestionConfiguration,
-} from '../../application/LegendIngestionConfiguration.js';
+} from './models/LakehouseIngestionDeploymentResponse.js';
 import {
   createAdhocDataProductDeployResponse,
   type AdhocDataProductDeployResponse,
-} from './AdhocDataProductDeployResponse.js';
+} from './models/AdhocDataProductDeployResponse.js';
 
-export class IngestionManager {
-  private readonly applicationStore: GenericLegendApplicationStore;
-  private ingestDiscoveryServerClient: IngestDiscoveryServerClient;
-  private ingestDeploymentServerClient: IngestDeploymentServerClient;
+export class LakehouseIngestionManager {
+  private ingestDiscoveryServerClient: LakehousePlatformServerClient;
+  private ingestDeploymentServerClient: LakehouseIngestServerClient;
   private _currentAppID: number | undefined;
   private _currentLevel: string | undefined;
   private useDefaultServer = false;
 
   constructor(
-    config: LegendIngestionConfiguration,
-    applicationStore: GenericLegendApplicationStore,
+    discoveryUrl: string,
+    defaultServer: IngestDeploymentServerConfig,
+    useDefaultServer: boolean | undefined,
+    tracerService: TracerService,
   ) {
-    this.ingestDiscoveryServerClient = new IngestDiscoveryServerClient(
-      config.discoveryUrl,
+    this.ingestDiscoveryServerClient = new LakehousePlatformServerClient(
+      discoveryUrl,
     );
-    this.ingestDiscoveryServerClient.setTracerService(
-      applicationStore.tracerService,
+    this.ingestDeploymentServerClient = new LakehouseIngestServerClient(
+      defaultServer,
     );
-    this.ingestDeploymentServerClient = new IngestDeploymentServerClient(
-      config.deployment.defaultServer,
-    );
-    this.ingestDeploymentServerClient.setTracerService(
-      applicationStore.tracerService,
-    );
-    this.useDefaultServer = Boolean(config.deployment.useDefaultServer);
-    this.applicationStore = applicationStore;
+    this.setTracerService(tracerService);
+    this.useDefaultServer = Boolean(useDefaultServer);
+  }
+
+  setTracerService(tracerService: TracerService): void {
+    this.ingestDiscoveryServerClient.setTracerService(tracerService);
+    this.ingestDeploymentServerClient.setTracerService(tracerService);
   }
 
   isCurrentAppDirNode(appDirNode: AppDirNode): boolean {

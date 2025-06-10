@@ -2422,6 +2422,7 @@ __metadata:
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-lego": "workspace:*"
     "@finos/legend-server-depot": "workspace:*"
+    "@finos/legend-server-lakehouse": "workspace:*"
     "@finos/legend-server-marketplace": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
@@ -2719,6 +2720,7 @@ __metadata:
     "@finos/legend-lego": "workspace:*"
     "@finos/legend-query-builder": "workspace:*"
     "@finos/legend-server-depot": "workspace:*"
+    "@finos/legend-server-lakehouse": "workspace:*"
     "@finos/legend-server-sdlc": "workspace:*"
     "@finos/legend-server-showcase": "workspace:*"
     "@finos/legend-shared": "workspace:*"
@@ -3486,6 +3488,24 @@ __metadata:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
+    "@jest/globals": "npm:29.7.0"
+    cross-env: "npm:7.0.3"
+    eslint: "npm:9.22.0"
+    jest: "npm:29.7.0"
+    npm-run-all: "npm:4.1.5"
+    rimraf: "npm:6.0.1"
+    serializr: "npm:3.0.3"
+    typescript: "npm:5.8.2"
+  languageName: unknown
+  linkType: soft
+
+"@finos/legend-server-lakehouse@workspace:*, @finos/legend-server-lakehouse@workspace:packages/legend-server-lakehouse":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-server-lakehouse@workspace:packages/legend-server-lakehouse"
+  dependencies:
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-graph": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
     "@jest/globals": "npm:29.7.0"
     cross-env: "npm:7.0.3"
     eslint: "npm:9.22.0"

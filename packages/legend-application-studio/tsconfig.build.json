@@ -10,6 +10,7 @@
     { "path": "../legend-shared/tsconfig.build.json" },
     { "path": "../legend-storage/tsconfig.build.json" },
     { "path": "../legend-server-depot/tsconfig.build.json" },
+    { "path": "../legend-server-lakehouse/tsconfig.build.json" },
     { "path": "../legend-server-sdlc/tsconfig.build.json" },
     { "path": "../legend-server-showcase/tsconfig.build.json" },
     { "path": "../legend-application/tsconfig.build.json" },

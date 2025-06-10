@@ -16,31 +16,42 @@
 
 import { type V1_LakehouseDiscoveryEnvironmentResponse } from '@finos/legend-graph';
 import { AbstractServerClient, type PlainObject } from '@finos/legend-shared';
-
-export interface LakehousePlatformServerClientConfig {
-  baseUrl: string;
-}
+import type { IngestDeploymentServerConfig } from './models/IngestDeploymentServerConfig.js';
 
 export class LakehousePlatformServerClient extends AbstractServerClient {
-  constructor(config: LakehousePlatformServerClientConfig) {
+  constructor(url: string) {
     super({
-      baseUrl: config.baseUrl,
+      baseUrl: url,
     });
   }
+  private _ingest = (): string =>
+    `${this.baseUrl}/ingest/discovery/environments/producers`;
 
-  // auth
+  private _discovery = (): string => `${this.baseUrl}/ingest/discovery`;
+
+  private _env = (): string => `${this._env()}/environments`;
+
   private _token = (token?: string) => ({
     Authorization: `Bearer ${token}`,
   });
 
-  // ------------------------------------------- Discovery -------------------------------------------
+  getIngestEnvironmentSummaries(
+    token?: string | undefined,
+  ): Promise<PlainObject<IngestDeploymentServerConfig>[]> {
+    return this.get(`${this._env()}`, {}, this._token(token));
+  }
 
-  private _discovery = (): string => `${this.baseUrl}/ingest/discovery`;
-
-  getIngestEnvironmentSummaries = (
-    token: string | undefined,
-  ): Promise<PlainObject<V1_LakehouseDiscoveryEnvironmentResponse>[]> =>
-    this.get(`${this._discovery()}/environments`, {}, this._token(token));
+  findProducerServer(
+    id: number,
+    level: string,
+    token?: string | undefined,
+  ): Promise<PlainObject<IngestDeploymentServerConfig>> {
+    return this.get(
+      `${this._ingest()}/${id}/${level}/search`,
+      {},
+      this._token(token),
+    );
+  }
 
   getIngestEnvironmentSummary = (
     ingestEnvironmentUrn: string,

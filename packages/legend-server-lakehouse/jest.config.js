@@ -14,9 +14,16 @@
  * limitations under the License.
  */
 
-export * from './models/DataProduct.js';
-export * from './models/Provider.js';
-export * from './models/Subscription.js';
+import { getBaseJestProjectConfig } from '../../scripts/test/jest.config.base.js';
+import { loadJSON } from '@finos/legend-dev-utils/DevUtils';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
-export { LakehouseContractServerClient } from './LakehouseContractServerClient.js';
-export { MarketplaceServerClient } from './MarketplaceServerClient.js';
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+const packageJson = loadJSON(resolve(__dirname, './package.json'));
+
+export default getBaseJestProjectConfig(
+  packageJson.name,
+  'packages/legend-server-lakehouse',
+);

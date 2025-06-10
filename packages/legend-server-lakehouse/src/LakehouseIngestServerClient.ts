@@ -20,27 +20,27 @@ import {
   HttpHeader,
   type PlainObject,
 } from '@finos/legend-shared';
-import { makeObservable, observable } from 'mobx';
 import type {
   IngestDefinitionDeploymentResponse,
   IngestDefinitionValidationResponse,
-} from './IngestionDeploymentResponse.js';
-import type { IngestDeploymentServerConfig } from '../../application/LegendIngestionConfiguration.js';
-import type { AdhocDataProductDeployResponse } from './AdhocDataProductDeployResponse.js';
+} from './models/LakehouseIngestionDeploymentResponse.js';
+import type { IngestDeploymentServerConfig } from './models/IngestDeploymentServerConfig.js';
+import type { AdhocDataProductDeployResponse } from './models/AdhocDataProductDeployResponse.js';
+import type {
+  V1_IngestEnvironment,
+  V1_SandboxDataProductDeploymentResponse,
+} from '@finos/legend-graph';
 
-export class IngestDeploymentServerClient extends AbstractServerClient {
-  environmentClassification: string;
+export class LakehouseIngestServerClient extends AbstractServerClient {
+  environmentClassification: string | undefined;
 
   private DATA_PRODUCT_URL = 'data-product';
-  constructor(config: IngestDeploymentServerConfig) {
-    super({
-      baseUrl: config.ingestServerUrl,
-    });
-    this.environmentClassification = config.environmentClassification;
-    makeObservable(this, {
-      environmentClassification: observable,
-      baseUrl: observable,
-    });
+  constructor(config: IngestDeploymentServerConfig | undefined) {
+    super({});
+    if (config) {
+      this.baseUrl = config.ingestServerUrl;
+      this.environmentClassification = config.environmentClassification;
+    }
   }
 
   private _token = (token?: string) => ({
@@ -52,13 +52,14 @@ export class IngestDeploymentServerClient extends AbstractServerClient {
     Authorization: `Bearer ${token}`,
   });
 
-  private _dataProduct = (): string =>
-    `${this.baseUrl}/${this.DATA_PRODUCT_URL}/api/entitlements/sdlc/deploy/definitions`;
+  private _dataProduct = (serverUrl?: string | undefined): string =>
+    `${serverUrl ?? this.baseUrl}/${this.DATA_PRODUCT_URL}/api/entitlements/sdlc/deploy/definitions`;
 
   private _ingestDefinitions = (): string =>
     `${this.baseUrl}/api/ingest/sdlc/deploy/definitions`;
 
-  private _ingest = (): string => `${this.baseUrl}/api/ingest`;
+  private _ingest = (serverUrl?: string | undefined): string =>
+    `${serverUrl ?? this.baseUrl}/api/ingest`;
 
   changeServer(serverConfig: IngestDeploymentServerConfig): void {
     this.baseUrl = serverConfig.ingestServerUrl;
@@ -109,4 +110,20 @@ export class IngestDeploymentServerClient extends AbstractServerClient {
       this._token(token),
     );
   }
+
+  getIngestEnvironment = (
+    ingestServerUrl: string | undefined,
+    token: string | undefined,
+  ): Promise<PlainObject<V1_IngestEnvironment>> =>
+    this.get(
+      `${this._ingest(ingestServerUrl)}/catalog-state/environment`,
+      {},
+      this._token(token),
+    );
+
+  getDeployedIngestDefinitions = (
+    ingestServerUrl: string | undefined,
+    token: string | undefined,
+  ): Promise<PlainObject<V1_SandboxDataProductDeploymentResponse>> =>
+    this.get(`${this._dataProduct(ingestServerUrl)}`, {}, this._token(token));
 }

@@ -71,11 +71,7 @@ import {
 import { DataProductViewerState } from './DataProductViewerState.js';
 import { EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl } from '../../__lib__/LegendMarketplaceNavigation.js';
 import type { AuthContextProps } from 'react-oidc-context';
-import type {
-  LakehouseContractServerClient,
-  LakehouseIngestServerClient,
-  LakehousePlatformServerClient,
-} from '@finos/legend-server-marketplace';
+import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
 import {
   DataProductEntity,
   DataProductState,
@@ -83,6 +79,10 @@ import {
   type BaseDataProductState,
 } from './dataProducts/DataProducts.js';
 import { TMP__DummyDataProducts } from '../../pages/Lakehouse/TMP__Data/TMP__DummyDataProducts.js';
+import type {
+  LakehousePlatformServerClient,
+  LakehouseIngestServerClient,
+} from '@finos/legend-server-lakehouse';
 
 const ARTIFACT_GENERATION_DAT_PRODUCT_KEY = 'dataProduct';
 

@@ -16,6 +16,8 @@
     { "path": "packages/legend-server-sdlc/tsconfig.build.json" },
     // depot
     { "path": "packages/legend-server-depot/tsconfig.build.json" },
+    // lakehouse
+    { "path": "packages/legend-server-lakehouse/tsconfig.build.json" },
     // showcase
     { "path": "packages/legend-server-showcase/tsconfig.build.json" },
     {
