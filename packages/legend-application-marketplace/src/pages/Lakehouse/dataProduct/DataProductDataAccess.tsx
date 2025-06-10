@@ -40,6 +40,13 @@ import {
   V1_RenderStyle,
   type V1_LakehouseAccessPoint,
   V1_serializeRawValueSpecification,
+  V1_LambdaReturnTypeInput,
+  V1_PureGraphManager,
+  V1_serializePureModelContext,
+  V1_PureModelContextPointer,
+  PureClientVersion,
+  V1_LegendSDLC,
+  V1_Protocol,
 } from '@finos/legend-graph';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 import {
@@ -53,6 +60,8 @@ import { EntitlementsDataContractViewer } from '../entitlements/EntitlementsData
 import { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
 import { useAuth } from 'react-oidc-context';
 import { DataProductSubscriptionViewer } from '../subscriptions/DataProductSubscriptionsViewer.js';
+import { guaranteeType } from '@finos/legend-shared';
+import { resolveVersion } from '@finos/legend-server-depot';
 
 export const DataProductMarkdownTextViewer: React.FC<{ value: string }> = (
   props,
@@ -86,9 +95,11 @@ const TDSColumnDocumentationCellRenderer = (
   );
 };
 
-const TDSColumnMoreInfoCellRenderer = (
-  params: DataGridCellRendererParams<V1_LakehouseAccessPoint>,
-): React.ReactNode => {
+const TDSColumnMoreInfoCellRenderer = (props: {
+  params: DataGridCellRendererParams<V1_LakehouseAccessPoint>;
+  accessGroupState: DataProductGroupAccessState;
+}): React.ReactNode => {
+  const { params, accessGroupState } = props;
   const data = params.data;
   const store = useLegendMarketplaceBaseStore();
   const enum MoreInfoTabs {
@@ -116,6 +127,39 @@ const TDSColumnMoreInfoCellRenderer = (
           V1_RenderStyle.PRETTY,
         );
 
+        const model = accessGroupState.accessState.viewerState.isSandboxProduct
+          ? guaranteeType(
+              accessGroupState.accessState.viewerState.graphManagerState
+                .graphManager,
+              V1_PureGraphManager,
+            ).getFullGraphModelData(
+              accessGroupState.accessState.viewerState.graphManagerState.graph,
+            )
+          : V1_serializePureModelContext(
+              new V1_PureModelContextPointer(
+                // TODO: remove as backend should handle undefined protocol input
+                new V1_Protocol(
+                  V1_PureGraphManager.PURE_PROTOCOL_NAME,
+                  PureClientVersion.VX_X_X,
+                ),
+                new V1_LegendSDLC(
+                  accessGroupState.accessState.viewerState.project.groupId,
+                  accessGroupState.accessState.viewerState.project.artifactId,
+                  resolveVersion(
+                    accessGroupState.accessState.viewerState.project.versionId,
+                  ),
+                ),
+              ),
+            );
+        const relationTypeInput = new V1_LambdaReturnTypeInput(
+          model,
+          data.func,
+        );
+        const relationType = await store.engineServerClient.lambdaRelationType(
+          V1_LambdaReturnTypeInput.serialization.toJson(relationTypeInput),
+        );
+        console.log('relationType:', relationType);
+
         setAccessPointGrammar(grammar);
       } catch {
         throw new Error('Error fetching access point grammar');
@@ -125,7 +169,7 @@ const TDSColumnMoreInfoCellRenderer = (
     fetchGrammar().catch((error) => {
       throw new Error(`Error fetching access point grammar: ${error.message}`);
     });
-  }, [data, store]);
+  }, [data, store, accessGroupState]);
 
   if (!data) {
     return null;
@@ -343,7 +387,14 @@ export const DataProductAccessPointGroupViewer = observer(
                   params.api.refreshCells({ force: true });
                 }}
                 masterDetail={true}
-                detailCellRenderer={TDSColumnMoreInfoCellRenderer}
+                detailCellRenderer={(
+                  params: DataGridCellRendererParams<V1_LakehouseAccessPoint>,
+                ) => (
+                  <TDSColumnMoreInfoCellRenderer
+                    params={params}
+                    accessGroupState={accessGroupState}
+                  />
+                )}
                 detailRowHeight={200}
               />
             </div>
