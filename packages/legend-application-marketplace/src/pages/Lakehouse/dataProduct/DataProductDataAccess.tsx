@@ -33,20 +33,24 @@ import {
   type DataProductGroupAccessState,
 } from '../../../stores/lakehouse/DataProductDataAccessState.js';
 import {
-  DataGrid,
   type DataGridCellRendererParams,
+  type DataGridColumnDefinition,
+  DataGrid,
 } from '@finos/legend-lego/data-grid';
 import {
-  V1_RenderStyle,
   type V1_LakehouseAccessPoint,
-  V1_serializeRawValueSpecification,
-  V1_LambdaReturnTypeInput,
-  V1_PureGraphManager,
-  V1_serializePureModelContext,
-  V1_PureModelContextPointer,
+  type V1_RelationType,
+  type V1_RelationTypeColumn,
   PureClientVersion,
+  V1_LambdaReturnTypeInput,
   V1_LegendSDLC,
   V1_Protocol,
+  V1_PureGraphManager,
+  V1_PureModelContextPointer,
+  V1_relationTypeModelSchema,
+  V1_RenderStyle,
+  V1_serializePureModelContext,
+  V1_serializeRawValueSpecification,
 } from '@finos/legend-graph';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 import {
@@ -62,6 +66,7 @@ import { useAuth } from 'react-oidc-context';
 import { DataProductSubscriptionViewer } from '../subscriptions/DataProductSubscriptionsViewer.js';
 import { guaranteeType } from '@finos/legend-shared';
 import { resolveVersion } from '@finos/legend-server-depot';
+import { deserialize } from 'serializr';
 
 export const DataProductMarkdownTextViewer: React.FC<{ value: string }> = (
   props,
@@ -103,30 +108,41 @@ const TDSColumnMoreInfoCellRenderer = (props: {
   const data = params.data;
   const store = useLegendMarketplaceBaseStore();
   const enum MoreInfoTabs {
+    COLUMNS = 'Columns',
     GRAMMAR = 'Grammar',
   }
-  const [activeTab, setActiveTab] = useState(MoreInfoTabs.GRAMMAR);
+  const [selectedTab, setSelectedTab] = useState(MoreInfoTabs.COLUMNS);
   const handleTabChange = (
     event: React.SyntheticEvent,
     newValue: MoreInfoTabs,
   ) => {
-    setActiveTab(newValue);
+    setSelectedTab(newValue);
   };
   const [accessPointGrammar, setAccessPointGrammar] =
     useState<string>('Loading ...');
+  const [accessPointRelationType, setAccessPointRelationType] = useState<
+    V1_RelationType | undefined
+  >();
 
   useEffect(() => {
     if (!data) {
       return;
     }
 
-    const fetchGrammar = async () => {
+    const fetchAccessPointGrammar = async () => {
       try {
         const grammar = await store.engineServerClient.JSONToGrammar_lambda(
           V1_serializeRawValueSpecification(data.func),
           V1_RenderStyle.PRETTY,
         );
+        setAccessPointGrammar(grammar);
+      } catch {
+        throw new Error('Error fetching access point grammar');
+      }
+    };
 
+    const fetchAccessPointRelationType = async () => {
+      try {
         const model = accessGroupState.accessState.viewerState.isSandboxProduct
           ? guaranteeType(
               accessGroupState.accessState.viewerState.graphManagerState
@@ -155,19 +171,27 @@ const TDSColumnMoreInfoCellRenderer = (props: {
           model,
           data.func,
         );
-        const relationType = await store.engineServerClient.lambdaRelationType(
-          V1_LambdaReturnTypeInput.serialization.toJson(relationTypeInput),
+        const relationType = deserialize(
+          V1_relationTypeModelSchema,
+          await store.engineServerClient.lambdaRelationType(
+            V1_LambdaReturnTypeInput.serialization.toJson(relationTypeInput),
+          ),
         );
-        console.log('relationType:', relationType);
-
-        setAccessPointGrammar(grammar);
+        setAccessPointRelationType(relationType);
       } catch {
-        throw new Error('Error fetching access point grammar');
+        throw new Error('Error fetching access point relation type');
       }
     };
 
-    fetchGrammar().catch((error) => {
-      throw new Error(`Error fetching access point grammar: ${error.message}`);
+    const fetchAccessPointDetails = async () => {
+      return Promise.all([
+        fetchAccessPointGrammar(),
+        fetchAccessPointRelationType(),
+      ]);
+    };
+
+    fetchAccessPointDetails().catch((error) => {
+      throw new Error(`Error fetching access point details: ${error.message}`);
     });
   }, [data, store, accessGroupState]);
 
@@ -175,27 +199,47 @@ const TDSColumnMoreInfoCellRenderer = (props: {
     return null;
   }
 
+  const relationColumnDefs: DataGridColumnDefinition<V1_RelationTypeColumn>[] =
+    [
+      {
+        headerName: 'Column Name',
+        field: 'name',
+      },
+      {
+        headerName: 'Column Type',
+        field: 'genericType',
+      },
+    ];
+
   return (
     <div>
-      <Tabs value={activeTab} onChange={handleTabChange}>
+      <Tabs value={selectedTab} onChange={handleTabChange}>
+        <Tab label={MoreInfoTabs.COLUMNS} value={MoreInfoTabs.COLUMNS} />
         <Tab label={MoreInfoTabs.GRAMMAR} value={MoreInfoTabs.GRAMMAR} />
       </Tabs>
-
-      <div
+      <Box
         className="data-space__viewer__more-info__container"
         style={{ height: '200px', width: '100%' }}
       >
-        <CodeEditor
-          inputValue={accessPointGrammar}
-          isReadOnly={true}
-          language={CODE_EDITOR_LANGUAGE.TEXT}
-          hideMinimap={true}
-          hideGutter={true}
-          hideActionBar={true}
-          lightTheme={CODE_EDITOR_THEME.GITHUB_LIGHT}
-          extraEditorOptions={{ scrollBeyondLastLine: false, wordWrap: 'on' }}
-        />
-      </div>
+        {selectedTab === MoreInfoTabs.COLUMNS && (
+          <DataGrid
+            rowData={accessPointRelationType?.columns ?? []}
+            columnDefs={relationColumnDefs}
+          />
+        )}
+        {selectedTab === MoreInfoTabs.GRAMMAR && (
+          <CodeEditor
+            inputValue={accessPointGrammar}
+            isReadOnly={true}
+            language={CODE_EDITOR_LANGUAGE.TEXT}
+            hideMinimap={true}
+            hideGutter={true}
+            hideActionBar={true}
+            lightTheme={CODE_EDITOR_THEME.GITHUB_LIGHT}
+            extraEditorOptions={{ scrollBeyondLastLine: false, wordWrap: 'on' }}
+          />
+        )}
+      </Box>
     </div>
   );
 };
