@@ -30,8 +30,6 @@ import { flow, makeObservable } from 'mobx';
 import { DepotServerClient } from '@finos/legend-server-depot';
 import {
   LakehouseContractServerClient,
-  LakehouseIngestServerClient,
-  LakehousePlatformServerClient,
   MarketplaceServerClient,
 } from '@finos/legend-server-marketplace';
 import {
@@ -43,6 +41,10 @@ import type { LegendMarketplaceApplicationConfig } from '../application/LegendMa
 import type { LegendMarketplacePluginManager } from '../application/LegendMarketplacePluginManager.js';
 import { LegendMarketplaceEventHelper } from '../__lib__/LegendMarketplaceEventHelper.js';
 import { LegendMarketPlaceVendorDataState } from './LegendMarketPlaceVendorDataState.js';
+import {
+  LakehousePlatformServerClient,
+  LakehouseIngestServerClient,
+} from '@finos/legend-server-lakehouse';
 
 export type LegendMarketplaceApplicationStore = ApplicationStore<
   LegendMarketplaceApplicationConfig,
@@ -104,16 +106,18 @@ export class LegendMarketplaceBaseStore {
 
     if (this.applicationStore.config.lakehousePlatformUrl) {
       // lakehouse platform
-      this.lakehousePlatformServerClient = new LakehousePlatformServerClient({
-        baseUrl: this.applicationStore.config.lakehousePlatformUrl,
-      });
+      this.lakehousePlatformServerClient = new LakehousePlatformServerClient(
+        this.applicationStore.config.lakehousePlatformUrl,
+      );
       this.lakehousePlatformServerClient.setTracerService(
         this.applicationStore.tracerService,
       );
     }
 
     // lakehouse ingest
-    this.lakehouseIngestServerClient = new LakehouseIngestServerClient();
+    this.lakehouseIngestServerClient = new LakehouseIngestServerClient(
+      undefined,
+    );
     this.lakehouseIngestServerClient.setTracerService(
       this.applicationStore.tracerService,
     );

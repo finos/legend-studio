@@ -121,8 +121,8 @@ import {
   LazyTextEditorStore,
 } from '../lazy-text-editor/LazyTextEditorStore.js';
 import type { QueryBuilderDataCubeViewerState } from '@finos/legend-query-builder';
-import { IngestionManager } from '../ingestion/IngestionManager.js';
 import { EditorInitialConfiguration } from './editor-state/element-editor-state/ElementEditorInitialConfiguration.js';
+import { LakehouseIngestionManager } from '@finos/legend-server-lakehouse';
 
 export abstract class EditorExtensionState {
   /**
@@ -138,7 +138,7 @@ export class EditorStore implements CommandRegistrar {
   readonly applicationStore: LegendStudioApplicationStore;
   readonly sdlcServerClient: SDLCServerClient;
   readonly depotServerClient: DepotServerClient;
-  readonly ingestionManager: IngestionManager | undefined;
+  readonly ingestionManager: LakehouseIngestionManager | undefined;
   readonly pluginManager: LegendStudioPluginManager;
 
   /**
@@ -314,9 +314,11 @@ export class EditorStore implements CommandRegistrar {
     const ingestionConifg =
       applicationStore.config.options.ingestDeploymentConfig;
     if (ingestionConifg) {
-      this.ingestionManager = new IngestionManager(
-        ingestionConifg,
-        this.applicationStore,
+      this.ingestionManager = new LakehouseIngestionManager(
+        ingestionConifg.discoveryUrl,
+        ingestionConifg.deployment.defaultServer,
+        ingestionConifg.deployment.useDefaultServer,
+        this.applicationStore.tracerService,
       );
     }
 

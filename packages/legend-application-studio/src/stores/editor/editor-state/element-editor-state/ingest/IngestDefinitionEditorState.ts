@@ -27,7 +27,6 @@ import {
   removePrefix,
   type GeneratorFn,
 } from '@finos/legend-shared';
-import type { IngestionManager } from '../../../../ingestion/IngestionManager.js';
 import {
   action,
   computed,
@@ -39,8 +38,9 @@ import {
 import type {
   IngestDefinitionDeploymentResponse,
   IngestDefinitionValidationResponse,
+  LakehouseIngestionManager,
   ValidateAndDeploymentResponse,
-} from '../../../../ingestion/IngestionDeploymentResponse.js';
+} from '@finos/legend-server-lakehouse';
 import {
   EditorInitialConfiguration,
   IngestElementEditorInitialConfiguration,
@@ -113,7 +113,7 @@ export class IngestDefinitionEditorState extends ElementEditorState {
     );
   }
 
-  get ingestionManager(): IngestionManager | undefined {
+  get ingestionManager(): LakehouseIngestionManager | undefined {
     return this.editorStore.ingestionManager;
   }
 

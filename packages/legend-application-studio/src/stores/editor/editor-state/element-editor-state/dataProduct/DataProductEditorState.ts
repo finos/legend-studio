@@ -51,13 +51,15 @@ import {
   dataProduct_deleteAccessPoint,
 } from '../../../../graph-modifier/DSL_DataProduct_GraphModifierHelper.js';
 import { LambdaEditorState } from '@finos/legend-query-builder';
-import type { IngestionManager } from '../../../../ingestion/IngestionManager.js';
 import {
   DataProductElementEditorInitialConfiguration,
   EditorInitialConfiguration,
 } from '../ElementEditorInitialConfiguration.js';
 import { EXTERNAL_APPLICATION_NAVIGATION__generateUrlWithEditorConfig } from '../../../../../__lib__/LegendStudioNavigation.js';
-import type { AdhocDataProductDeployResponse } from '../../../../ingestion/AdhocDataProductDeployResponse.js';
+import type {
+  AdhocDataProductDeployResponse,
+  LakehouseIngestionManager,
+} from '@finos/legend-server-lakehouse';
 
 export class AccessPointState {
   readonly state: AccessPointGroupState;
@@ -426,7 +428,7 @@ export class DataProductEditorState extends ElementEditorState {
     return this.product.accessPointGroups.map((e) => e.accessPoints).flat();
   }
 
-  get ingestionManager(): IngestionManager | undefined {
+  get ingestionManager(): LakehouseIngestionManager | undefined {
     return this.editorStore.ingestionManager;
   }
 

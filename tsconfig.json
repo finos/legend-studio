@@ -28,6 +28,8 @@
     { "path": "packages/legend-server-sdlc" },
     // depot
     { "path": "packages/legend-server-depot" },
+    // lakehouse
+    { "path": "packages/legend-server-lakehouse" },
     // showcase
     { "path": "packages/legend-server-showcase" },
     { "path": "packages/legend-server-showcase-deployment" },

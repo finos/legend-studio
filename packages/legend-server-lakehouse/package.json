@@ -1,0 +1,59 @@
+{
+  "name": "@finos/legend-server-lakehouse",
+  "version": "0.0.1",
+  "description": "Legend Lakehouse Server Client",
+  "keywords": [
+    "legend",
+    "legend-server",
+    "legend-server-lakehouse",
+    "storage",
+    "package-registry"
+  ],
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-server-lakehouse",
+  "bugs": {
+    "url": "https://github.com/finos/legend-studio/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/finos/legend-studio.git",
+    "directory": "packages/legend-server-lakehouse"
+  },
+  "license": "Apache-2.0",
+  "sideEffects": false,
+  "type": "module",
+  "exports": "./lib/index.js",
+  "module": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "build": "yarn clean && yarn build:ts",
+    "build:ts": "tsc --project ./tsconfig.build.json",
+    "clean": "npm-run-all clean:cache clean:lib",
+    "clean:cache": "rimraf \"build\"",
+    "clean:lib": "rimraf \"lib\"",
+    "dev": "yarn dev:ts",
+    "dev:ts": "tsc --watch --preserveWatchOutput",
+    "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",
+    "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
+    "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js",
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "dependencies": {
+    "@finos/legend-graph": "workspace:*",
+    "@finos/legend-shared": "workspace:*",
+    "serializr": "3.0.3"
+  },
+  "devDependencies": {
+    "@finos/legend-dev-utils": "workspace:*",
+    "@jest/globals": "29.7.0",
+    "cross-env": "7.0.3",
+    "eslint": "9.22.0",
+    "jest": "29.7.0",
+    "npm-run-all": "4.1.5",
+    "rimraf": "6.0.1",
+    "typescript": "5.8.2"
+  },
+  "publishConfig": {
+    "directory": "build/publishContent"
+  }
+}

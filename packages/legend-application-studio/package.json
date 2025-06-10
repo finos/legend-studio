@@ -53,6 +53,7 @@
     "@finos/legend-lego": "workspace:*",
     "@finos/legend-query-builder": "workspace:*",
     "@finos/legend-server-depot": "workspace:*",
+    "@finos/legend-server-lakehouse": "workspace:*",
     "@finos/legend-server-sdlc": "workspace:*",
     "@finos/legend-server-showcase": "workspace:*",
     "@finos/legend-shared": "workspace:*",

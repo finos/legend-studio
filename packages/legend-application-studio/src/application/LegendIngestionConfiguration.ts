@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { IngestDeploymentServerConfig } from '@finos/legend-server-lakehouse';
 import {
   assertNonEmptyString,
   SerializationFactory,
@@ -32,18 +33,6 @@ export class IngestDeploymentOIDC {
       redirectPath: primitive(),
       silentRedirectPath: primitive(),
       authProviderProps: raw(),
-    }),
-  );
-}
-
-export class IngestDeploymentServerConfig {
-  environmentClassification!: string;
-  ingestServerUrl!: string;
-
-  static readonly serialization = new SerializationFactory(
-    createModelSchema(IngestDeploymentServerConfig, {
-      environmentClassification: primitive(),
-      ingestServerUrl: primitive(),
     }),
   );
 }

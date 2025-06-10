@@ -43,7 +43,7 @@ import { useAuth } from 'react-oidc-context';
 import {
   IngestDefinitionDeploymentResponse,
   IngestDefinitionValidationResponse,
-} from '../../../../stores/ingestion/IngestionDeploymentResponse.js';
+} from '@finos/legend-server-lakehouse';
 
 const IngestValidationError = observer(
   (props: {
