@@ -183,8 +183,6 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
         `Can't configure application: 'lakehouse.platformUrl' field is missing or empty`,
       ),
     );
-
-    // lakehouse
     this.lakehouseEntitlementsConfig = new LegendLakehouseEntitlementsConfig(
       guaranteeNonEmptyString(
         input.configData.lakehouse.entitlements.applicationDirectoryUrl,
