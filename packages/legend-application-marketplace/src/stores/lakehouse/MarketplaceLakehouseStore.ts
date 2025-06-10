@@ -60,7 +60,7 @@ import {
   V1_PureGraphManager,
   V1_SandboxDataProductDeploymentResponse,
 } from '@finos/legend-graph';
-import { deserialize, serialize } from 'serializr';
+import { deserialize } from 'serializr';
 import {
   GAV_DELIMITER,
   generateGAVCoordinates,
@@ -727,19 +727,14 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         entities,
         ActionState.create(),
       );
-      const protocol = guaranteeNonNullable(
-        graphManager.elementToProtocol(
-          graphManagerState.graph.getElement(
-            sandboxDataProduct.artifact.dataProduct.path,
-          ),
-        ),
-        `Unable to find ${sandboxDataProduct.artifact.dataProduct.path} in deployed definition`,
-      );
-      // In order to ensure the protocol object has _type properties, we need to serialize and then deserialize it
       const v1_DataProduct = guaranteeType(
-        deserialize(
-          V1_dataProductModelSchema,
-          serialize(V1_dataProductModelSchema, protocol),
+        guaranteeNonNullable(
+          graphManager.elementToProtocol(
+            graphManagerState.graph.getElement(
+              sandboxDataProduct.artifact.dataProduct.path,
+            ),
+          ),
+          `Unable to find ${sandboxDataProduct.artifact.dataProduct.path} in deployed definition`,
         ),
         V1_DataProduct,
         `${sandboxDataProduct.artifact.dataProduct.path} is not a data product`,
