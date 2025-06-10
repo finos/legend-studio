@@ -82,6 +82,8 @@ import { guaranteeType } from '@finos/legend-shared';
 import { resolveVersion } from '@finos/legend-server-depot';
 import { deserialize } from 'serializr';
 
+const MAX_GRID_AUTO_HEIGHT_ROWS = 10; // Maximum number of rows to show before switching to normal height (scrollable grid)
+
 export const DataProductMarkdownTextViewer: React.FC<{ value: string }> = (
   props,
 ) => (
@@ -268,34 +270,52 @@ const TDSColumnMoreInfoCellRenderer = (props: {
         <Tab label={MoreInfoTabs.COLUMNS} value={MoreInfoTabs.COLUMNS} />
         <Tab label={MoreInfoTabs.GRAMMAR} value={MoreInfoTabs.GRAMMAR} />
       </Tabs>
-      <Box
-        className="data-space__viewer__more-info__container"
-        style={{ height: '200px', width: '100%' }}
-      >
+      <Box className="data-space__viewer__more-info__container">
         {selectedTab === MoreInfoTabs.COLUMNS && (
-          <DataGrid
-            rowData={accessPointRelationType?.columns ?? []}
-            columnDefs={relationColumnDefs}
-          />
+          <Box
+            className={clsx('data-space__viewer__more-info__columns-grid', {
+              'data-space__viewer__more-info__columns-grid--auto-height':
+                (accessPointRelationType?.columns.length ?? 0) <=
+                MAX_GRID_AUTO_HEIGHT_ROWS,
+              'data-space__viewer__more-info__columns-grid--auto-height--non-empty':
+                (accessPointRelationType?.columns.length ?? 0) > 0 &&
+                (accessPointRelationType?.columns.length ?? 0) <=
+                  MAX_GRID_AUTO_HEIGHT_ROWS,
+            })}
+          >
+            <DataGrid
+              rowData={accessPointRelationType?.columns ?? []}
+              columnDefs={relationColumnDefs}
+              domLayout={
+                (accessPointRelationType?.columns.length ?? 0) >
+                MAX_GRID_AUTO_HEIGHT_ROWS
+                  ? 'normal'
+                  : 'autoHeight'
+              }
+            />
+          </Box>
         )}
         {selectedTab === MoreInfoTabs.GRAMMAR && (
-          <CodeEditor
-            inputValue={accessPointGrammar}
-            isReadOnly={true}
-            language={CODE_EDITOR_LANGUAGE.TEXT}
-            hideMinimap={true}
-            hideGutter={true}
-            hideActionBar={true}
-            lightTheme={CODE_EDITOR_THEME.GITHUB_LIGHT}
-            extraEditorOptions={{ scrollBeyondLastLine: false, wordWrap: 'on' }}
-          />
+          <Box className="data-space__viewer__more-info__grammar">
+            <CodeEditor
+              inputValue={accessPointGrammar}
+              isReadOnly={true}
+              language={CODE_EDITOR_LANGUAGE.TEXT}
+              hideMinimap={true}
+              hideGutter={true}
+              hideActionBar={true}
+              lightTheme={CODE_EDITOR_THEME.GITHUB_LIGHT}
+              extraEditorOptions={{
+                scrollBeyondLastLine: false,
+                wordWrap: 'on',
+              }}
+            />
+          </Box>
         )}
       </Box>
     </div>
   );
 };
-
-const MAX_GRID_AUTO_HEIGHT_ROWS = 10; // Maximum number of rows to show before switching to normal height (scrollable grid)
 
 export const DataProductAccessPointGroupViewer = observer(
   (props: { accessGroupState: DataProductGroupAccessState }) => {
@@ -490,7 +510,7 @@ export const DataProductAccessPointGroupViewer = observer(
                     accessGroupState={accessGroupState}
                   />
                 )}
-                detailRowHeight={200}
+                detailRowAutoHeight={true}
               />
             </div>
           </div>

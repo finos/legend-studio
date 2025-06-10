@@ -28,4 +28,24 @@
       }
     }
   }
+
+  &__more-info {
+    &__container {
+      width: 100%;
+    }
+
+    &__columns-grid {
+      height: fit-content;
+
+      &--auto-height--non-empty {
+        .ag-center-cols-viewport {
+          min-height: unset;
+        }
+      }
+    }
+
+    &__grammar {
+      height: 200px;
+    }
+  }
 }
