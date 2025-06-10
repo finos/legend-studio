@@ -41,7 +41,20 @@ import {
   type V1_LakehouseAccessPoint,
   type V1_RelationType,
   type V1_RelationTypeColumn,
+  extractElementNameFromPath,
   PureClientVersion,
+  V1_AppliedFunction,
+  V1_AppliedProperty,
+  V1_CBoolean,
+  V1_CByteArray,
+  V1_CDateTime,
+  V1_CDecimal,
+  V1_CFloat,
+  V1_CInteger,
+  V1_CStrictDate,
+  V1_CStrictTime,
+  V1_CString,
+  V1_EnumValue,
   V1_getGenericTypeFullPath,
   V1_LambdaReturnTypeInput,
   V1_LegendSDLC,
@@ -210,7 +223,39 @@ const TDSColumnMoreInfoCellRenderer = (props: {
         headerName: 'Column Type',
         valueGetter: (_params) =>
           _params.data
-            ? V1_getGenericTypeFullPath(_params.data.genericType)
+            ? `${extractElementNameFromPath(
+                V1_getGenericTypeFullPath(_params.data.genericType),
+              )}${
+                _params.data.genericType.typeVariableValues.length > 0
+                  ? `(${_params.data.genericType.typeVariableValues
+                      .map((valueSpec) => {
+                        // TODO: Move V1_stringifyValueSpecification out of
+                        // @finos/legend-query-builder so it can be used in other packages
+                        if (
+                          valueSpec instanceof V1_CDateTime ||
+                          valueSpec instanceof V1_CStrictDate ||
+                          valueSpec instanceof V1_CStrictTime ||
+                          valueSpec instanceof V1_CString ||
+                          valueSpec instanceof V1_CBoolean ||
+                          valueSpec instanceof V1_CByteArray ||
+                          valueSpec instanceof V1_CDecimal ||
+                          valueSpec instanceof V1_CFloat ||
+                          valueSpec instanceof V1_CFloat ||
+                          valueSpec instanceof V1_CInteger ||
+                          valueSpec instanceof V1_EnumValue
+                        ) {
+                          return valueSpec.value.toString();
+                        } else if (valueSpec instanceof V1_AppliedProperty) {
+                          return valueSpec.property;
+                        } else if (valueSpec instanceof V1_AppliedFunction) {
+                          return valueSpec.function;
+                        } else {
+                          return '';
+                        }
+                      })
+                      .join(',')})`
+                  : ''
+              }`
             : '',
       },
     ];
