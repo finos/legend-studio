@@ -58,12 +58,6 @@
 
   &__grid {
     &--auto-height {
-      &--empty {
-        .ag-root-wrapper-body {
-          height: 10rem;
-        }
-      }
-
       &--non-empty {
         .ag-center-cols-viewport {
           min-height: unset;
@@ -86,6 +80,12 @@
 
       &--auto-height {
         height: fit-content;
+
+        &--empty {
+          .ag-root-wrapper-body {
+            height: 10rem;
+          }
+        }
 
         &--non-empty {
           .ag-center-cols-viewport {
