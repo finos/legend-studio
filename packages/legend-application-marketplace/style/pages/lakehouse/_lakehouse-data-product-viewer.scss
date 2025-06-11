@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@use 'mixins' as *;
+
 .data-space__viewer {
   &__access-group__item__content__tab__content {
     height: fit-content;
