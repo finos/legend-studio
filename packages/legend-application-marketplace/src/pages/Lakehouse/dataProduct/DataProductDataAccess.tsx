@@ -295,6 +295,8 @@ const TDSColumnMoreInfoCellRenderer = (props: {
                   'data-space__viewer__more-info__columns-grid--auto-height':
                     (accessPointRelationType?.columns.length ?? 0) <=
                     MAX_GRID_AUTO_HEIGHT_ROWS,
+                  'data-space__viewer__more-info__columns-grid--auto-height--empty':
+                    (accessPointRelationType?.columns.length ?? 0) === 0,
                   'data-space__viewer__more-info__columns-grid--auto-height--non-empty':
                     (accessPointRelationType?.columns.length ?? 0) > 0 &&
                     (accessPointRelationType?.columns.length ?? 0) <=
@@ -471,8 +473,6 @@ export const DataProductAccessPointGroupViewer = observer(
                 {
                   'data-space__viewer__grid--auto-height':
                     accessPoints.length <= MAX_GRID_AUTO_HEIGHT_ROWS,
-                  'data-space__viewer__grid--auto-height--empty':
-                    accessPoints.length === 0,
                   'data-space__viewer__grid--auto-height--non-empty':
                     accessPoints.length > 0 &&
                     accessPoints.length <= MAX_GRID_AUTO_HEIGHT_ROWS,
