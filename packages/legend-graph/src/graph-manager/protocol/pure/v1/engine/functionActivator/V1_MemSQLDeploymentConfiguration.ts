@@ -14,14 +14,17 @@
  * limitations under the License.
  */
 
-@use 'mixins' as *;
+import { hashArray, type Hashable } from '@finos/legend-shared';
+import { V1_DeploymentConfiguration } from './V1_DeploymentConfiguration.js';
+import type { V1_ConnectionPointer } from '../../model/packageableElements/connection/V1_ConnectionPointer.js';
 
-.icon__snowflake-app {
-  color: var(--color-light-blue-20);
-  font-size: 1.7rem;
-}
+export class V1_MemSQLDeploymentConfiguration
+  extends V1_DeploymentConfiguration
+  implements Hashable
+{
+  activationConnection: V1_ConnectionPointer | undefined;
 
-.icon__mem-sql-function {
-  color: var(----color-purple-700);
-  font-size: 1.7rem;
+  override get hashCode(): string {
+    return hashArray([this.activationConnection ?? '']);
+  }
 }

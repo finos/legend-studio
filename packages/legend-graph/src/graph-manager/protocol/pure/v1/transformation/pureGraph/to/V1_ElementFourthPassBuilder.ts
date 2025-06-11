@@ -61,6 +61,7 @@ import type { V1_INTERNAL__UnknownPackageableElement } from '../../../model/pack
 import type { V1_INTERNAL__UnknownFunctionActivator } from '../../../model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
 import type { V1_INTERNAL__UnknownStore } from '../../../model/packageableElements/store/V1_INTERNAL__UnknownStore.js';
 import type { V1_SnowflakeApp } from '../../../model/packageableElements/function/V1_SnowflakeApp.js';
+import type { V1_MemSQLFunction } from '../../../model/packageableElements/function/V1_MemSQLFunction.js';
 import type { V1_INTERNAL__UnknownElement } from '../../../model/packageableElements/V1_INTERNAL__UnknownElement.js';
 import type { V1_HostedService } from '../../../model/packageableElements/function/V1_HostedService.js';
 import type { V1_DataProduct } from '../../../model/packageableElements/dataProduct/V1_DataProduct.js';
@@ -98,6 +99,10 @@ export class V1_ElementFourthPassBuilder
   }
 
   visit_SnowflakeApp(element: V1_SnowflakeApp): void {
+    throw new UnsupportedOperationError();
+  }
+
+  visit_MemSQLFunction(element: V1_MemSQLFunction): void {
     throw new UnsupportedOperationError();
   }
 

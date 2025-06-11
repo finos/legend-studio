@@ -110,6 +110,8 @@ export {
   type V1_PostDeploymentPropertiesDeserializer,
   type V1_PostDeploymentPropertiesSerializer,
 } from './graph-manager/protocol/pure/extensions/DSL_FunctionActivator_PureProtocolProcessorPlugin_Extension.js';
+export { MemSQLFunction } from './graph/metamodel/pure/packageableElements/function/MemSQLFunction.js';
+export { MemSQLDeploymentConfiguration } from './graph/metamodel/pure/functionActivator/MemSQLDeploymentConfiguration.js';
 
 // --------------------------------------------- VALUE SPECIFICATION --------------------------------------------------
 

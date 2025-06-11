@@ -92,7 +92,13 @@ import { DataProductEditorState } from '../../../stores/editor/editor-state/elem
 import { DataProductEditor } from './dataProduct/DataPoductEditor.js';
 import { IngestDefinitionEditorState } from '../../../stores/editor/editor-state/element-editor-state/ingest/IngestDefinitionEditorState.js';
 import { IngestDefinitionEditor } from './ingest-editor/IngestDefinitionEditor.js';
+import {
+  MemSQLFunctionActivatorEditor,
+  MemSQLFunctionActivatorEdtiorState,
+} from './EditorGroup.js';
 
+export { MemSQLFunctionActivatorEditorState as MemSQLFunctionActivatorEdtiorState } from '../../../stores/editor/editor-state/element-editor-state/function-activator/MemSQLFunctionActivatorEditorState.js';
+export { MemSQLFunctionActivatorEditor } from './function-activator/MemSQLFunctionActivatorEditor.js';
 export const ViewerEditorGroupSplashScreen: React.FC = () => {
   const commandListWidth = 300;
   const commandListHeight = 50;
@@ -309,6 +315,10 @@ export const EditorGroup = observer(() => {
                 key={currentTabState.uuid}
               />
             );
+          } else if (
+            currentTabState instanceof MemSQLFunctionActivatorEdtiorState
+          ) {
+            return <MemSQLFunctionActivatorEditor key={currentTabState.uuid} />;
           } else if (currentTabState instanceof UnsupportedElementEditorState) {
             return <UnsupportedElementEditor key={currentTabState.uuid} />;
           } else if (

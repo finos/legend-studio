@@ -72,6 +72,7 @@ import {
   observe_FunctionActivatorOwnership,
   observe_SnowflakeAppDeploymentConfiguration,
   observe_HostedServicePostDeploymentAction,
+  observe_MemSQLFunctionDeploymentConfiguration,
 } from './DSL_FunctionActivatorObserverHelper.js';
 import type {
   FunctionParameterValue,
@@ -85,6 +86,7 @@ import {
 import type { FunctionStoreTestData } from '../../../graph/metamodel/pure/packageableElements/function/test/FunctionStoreTestData.js';
 import { observe_EmbeddedData } from './DSL_Data_ObserverHelper.js';
 import type { HostedService } from '../../../graph/metamodel/pure/packageableElements/function/HostedService.js';
+import type { MemSQLFunction } from '../../../graph/metamodel/pure/packageableElements/function/MemSQLFunction.js';
 
 const _observe_Abstract_Package = (metamodel: Package): void => {
   observe_Abstract_PackageableElement(metamodel);
@@ -579,6 +581,25 @@ export const observe_SnowflakeApp = skipObserved(
     });
 
     observe_SnowflakeAppDeploymentConfiguration(
+      metamodel.activationConfiguration,
+    );
+    return metamodel;
+  },
+);
+
+export const observe_MemSQLFunction = skipObserved(
+  (metamodel: MemSQLFunction): MemSQLFunction => {
+    observe_Abstract_PackageableElement(metamodel);
+
+    makeObservable<MemSQLFunction, '_elementHashCode'>(metamodel, {
+      functionName: observable,
+      description: observable,
+      ownership: observable,
+      activationConfiguration: observable,
+      _elementHashCode: override,
+    });
+
+    observe_MemSQLFunctionDeploymentConfiguration(
       metamodel.activationConfiguration,
     );
     return metamodel;
