@@ -281,9 +281,11 @@ const TDSColumnMoreInfoCellRenderer = (props: {
       </Tabs>
       <Box className="data-space__viewer__more-info__container">
         {loadingAccessPointDetails && (
-          <CubesLoadingIndicator isLoading={true}>
-            <CubesLoadingIndicatorIcon />
-          </CubesLoadingIndicator>
+          <Box className="data-space__viewer__more-info__loading-indicator">
+            <CubesLoadingIndicator isLoading={true}>
+              <CubesLoadingIndicatorIcon />
+            </CubesLoadingIndicator>
+          </Box>
         )}
         {!loadingAccessPointDetails && (
           <>
