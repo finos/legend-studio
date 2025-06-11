@@ -179,7 +179,7 @@ export class LakehouseContractServerClient extends AbstractServerClient {
 
   getAllSubscriptions = (
     token: string | undefined,
-  ): Promise<PlainObject<V1_DataSubscriptionResponse>[]> =>
+  ): Promise<PlainObject<V1_DataSubscriptionResponse>> =>
     this.get(this._subscriptions(), {}, this._token(token));
 
   getSubscriptionsForContract = (

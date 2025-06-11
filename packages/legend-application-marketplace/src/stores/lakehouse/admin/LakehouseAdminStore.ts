@@ -19,17 +19,13 @@ import {
   type GeneratorFn,
   ActionState,
   assertErrorThrown,
-  guaranteeNonNullable,
 } from '@finos/legend-shared';
-import { deserialize, serialize } from 'serializr';
+import { deserialize } from 'serializr';
 import {
   type V1_DataSubscription,
-  type V1_DataSubscriptionResponse,
-  type V1_DataSubscriptionTarget,
-  V1_CreateSubscriptionInput,
-  V1_CreateSubscriptionInputModelSchema,
-  V1_dataSubscriptionModelSchema,
+  type V1_DataContract,
   V1_DataSubscriptionResponseModelSchema,
+  V1_DataContractsRecordModelSchemaToContracts,
 } from '@finos/legend-graph';
 import { makeObservable, flow, action, observable } from 'mobx';
 import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
@@ -37,8 +33,10 @@ import type { LakehouseContractServerClient } from '@finos/legend-server-marketp
 export class LakehouseAdminStore {
   readonly applicationStore: LegendMarketplaceApplicationStore;
   readonly lakehouseServerClient: LakehouseContractServerClient;
-  initializationState = ActionState.create();
+  subscriptionsInitializationState = ActionState.create();
+  contractsInitializationState = ActionState.create();
   subscriptions: V1_DataSubscription[] = [];
+  contracts: V1_DataContract[] = [];
 
   constructor(
     applicationStore: LegendMarketplaceApplicationStore,
@@ -48,53 +46,60 @@ export class LakehouseAdminStore {
     this.lakehouseServerClient = lakehouseServerClient;
     makeObservable(this, {
       subscriptions: observable,
+      contracts: observable,
       init: flow,
       setSubscriptions: action,
-      createSubscription: action,
+      setContracts: action,
     });
   }
 
   *init(token: string | undefined): GeneratorFn<void> {
-    try {
-      this.initializationState.inProgress();
-      const rawSubscriptions =
-        (yield this.lakehouseServerClient.getAllSubscriptions(
-          token,
-        )) as V1_DataSubscriptionResponse;
-      const subscriptions = rawSubscriptions.subscriptions?.map(
-        (rawSubscription) =>
-          deserialize(V1_dataSubscriptionModelSchema, rawSubscription),
-      );
-      this.setSubscriptions(subscriptions ?? []);
-    } catch (error) {
-      assertErrorThrown(error);
-      // TODO: show user error
-    } finally {
-      this.initializationState.complete();
-    }
+    const fetchSubscriptions = async (): Promise<void> => {
+      try {
+        this.subscriptionsInitializationState.inProgress();
+        const rawSubscriptions =
+          await this.lakehouseServerClient.getAllSubscriptions(token);
+        const subscriptions = deserialize(
+          V1_DataSubscriptionResponseModelSchema,
+          rawSubscriptions,
+        ).subscriptions;
+        this.setSubscriptions(subscriptions ?? []);
+      } catch (error) {
+        assertErrorThrown(error);
+        this.applicationStore.notificationService.notifyError(
+          `Error fetching subscriptions: ${error.message}`,
+        );
+      } finally {
+        this.subscriptionsInitializationState.complete();
+      }
+    };
+
+    const fetchContracts = async (): Promise<void> => {
+      try {
+        this.contractsInitializationState.inProgress();
+        const rawContracts =
+          await this.lakehouseServerClient.getDataContracts(token);
+        const contracts =
+          V1_DataContractsRecordModelSchemaToContracts(rawContracts);
+        this.setContracts(contracts);
+      } catch (error) {
+        assertErrorThrown(error);
+        this.applicationStore.notificationService.notifyError(
+          `Error fetching data contracts: ${error.message}`,
+        );
+      } finally {
+        this.contractsInitializationState.complete();
+      }
+    };
+
+    yield Promise.all([fetchSubscriptions(), fetchContracts()]);
   }
 
   setSubscriptions(val: V1_DataSubscription[]): void {
     this.subscriptions = val;
   }
 
-  async createSubscription(
-    contractId: string,
-    target: V1_DataSubscriptionTarget,
-    token: string | undefined,
-  ): Promise<V1_DataSubscription> {
-    const input = new V1_CreateSubscriptionInput();
-    input.contractId = contractId;
-    input.target = target;
-    const response = await this.lakehouseServerClient.createSubscription(
-      serialize(V1_CreateSubscriptionInputModelSchema, input),
-      token,
-    );
-    const subscription = guaranteeNonNullable(
-      deserialize(V1_DataSubscriptionResponseModelSchema, response)
-        .subscriptions?.[0],
-      'No subsription returned from server',
-    );
-    return subscription;
+  setContracts(val: V1_DataContract[]): void {
+    this.contracts = val;
   }
 }

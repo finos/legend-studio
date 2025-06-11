@@ -16,37 +16,37 @@
 
 import { observer } from 'mobx-react-lite';
 import {
-  clsx,
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
 } from '@finos/legend-art';
-import { DataGrid } from '@finos/legend-lego/data-grid';
+import {
+  DataGrid,
+  type DataGridCellRendererParams,
+} from '@finos/legend-lego/data-grid';
 import { Box } from '@mui/material';
-import { V1_SnowflakeTarget } from '@finos/legend-graph';
+import { type V1_DataContract } from '@finos/legend-graph';
 import type { LakehouseAdminStore } from '../../../stores/lakehouse/admin/LakehouseAdminStore.js';
+import { generateLakehouseContractPath } from '../../../__lib__/LegendMarketplaceNavigation.js';
+import { Contract_IdColumnClickableCellRenderer } from '../entitlements/EntitlementsDashboard.js';
 
-export const LakehouseAdminSubscriptionsDashboard = observer(
+export const LakehouseAdminContractsDashboard = observer(
   (props: { adminStore: LakehouseAdminStore }) => {
     const { adminStore } = props;
 
-    const subscriptions = adminStore.subscriptions;
+    const contracts = adminStore.contracts;
 
     return (
       <>
         <CubesLoadingIndicator
           isLoading={Boolean(
-            adminStore.subscriptionsInitializationState.isInProgress,
+            adminStore.contractsInitializationState.isInProgress,
           )}
         >
           <CubesLoadingIndicatorIcon />
         </CubesLoadingIndicator>
-        <Box
-          className={clsx('marketplace-lakehouse-subscriptions__grid', {
-            'ag-theme-balham': true,
-          })}
-        >
+        <Box className="marketplace-lakehouse-admin-contracts__grid ag-theme-balham">
           <DataGrid
-            rowData={subscriptions}
+            rowData={contracts}
             onRowDataUpdated={(params) => {
               params.api.refreshCells({ force: true });
             }}
@@ -57,60 +57,50 @@ export const LakehouseAdminSubscriptionsDashboard = observer(
                 minWidth: 50,
                 sortable: true,
                 resizable: true,
-                headerName: 'Subscription Id',
-                valueGetter: (p) => p.data?.guid,
+                headerName: 'Contract Id',
+                cellRenderer: (
+                  params: DataGridCellRendererParams<V1_DataContract>,
+                ) => {
+                  return Contract_IdColumnClickableCellRenderer(
+                    params.data?.guid,
+                    (taskId) =>
+                      adminStore.applicationStore.navigationService.navigator.updateCurrentLocation(
+                        generateLakehouseContractPath(taskId),
+                      ),
+                  );
+                },
+                flex: 2,
+              },
+              {
+                minWidth: 50,
+                sortable: true,
+                resizable: true,
+                headerName: 'Contract Description',
+                valueGetter: (p) => p.data?.description,
+                flex: 2,
+              },
+              {
+                minWidth: 10,
+                sortable: true,
+                resizable: true,
+                headerName: 'Version',
+                valueGetter: (p) => p.data?.version,
                 flex: 1,
               },
               {
                 minWidth: 50,
                 sortable: true,
                 resizable: true,
-                headerName: 'Contract ID',
-                valueGetter: (p) => p.data?.dataContractId,
-                flex: 1,
+                headerName: 'State',
+                valueGetter: (p) => p.data?.state,
+                flex: 2,
               },
               {
                 minWidth: 50,
                 sortable: true,
                 resizable: true,
-                headerName: 'Target Type',
-                valueGetter: (p) =>
-                  p.data?.target instanceof V1_SnowflakeTarget
-                    ? 'Snowflake'
-                    : 'Unknown',
-                flex: 1,
-              },
-              {
-                minWidth: 50,
-                sortable: true,
-                resizable: true,
-                headerName: 'Snowflake Account ID',
-                valueGetter: (p) =>
-                  p.data?.target instanceof V1_SnowflakeTarget
-                    ? p.data.target.snowflakeAccountId
-                    : 'Unknown',
-                flex: 1,
-              },
-              {
-                minWidth: 50,
-                sortable: true,
-                resizable: true,
-                headerName: 'Snowflake Region',
-                valueGetter: (p) =>
-                  p.data?.target instanceof V1_SnowflakeTarget
-                    ? p.data.target.snowflakeRegion
-                    : 'Unknown',
-                flex: 1,
-              },
-              {
-                minWidth: 50,
-                sortable: true,
-                resizable: true,
-                headerName: 'Snowflake Network',
-                valueGetter: (p) =>
-                  p.data?.target instanceof V1_SnowflakeTarget
-                    ? p.data.target.snowflakeNetwork
-                    : 'Unknown',
+                headerName: 'Members',
+                valueGetter: (p) => p.data?.members.map((m) => m.user),
                 flex: 1,
               },
               {
