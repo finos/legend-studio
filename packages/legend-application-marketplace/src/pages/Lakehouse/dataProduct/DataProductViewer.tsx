@@ -24,7 +24,8 @@ import { DataProductPlaceholderPanel } from './DataProductHolder.js';
 import { DataProductViewerActivityBar } from './DataProductViewerActivityBar.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { DataProductWiki } from './DataProductWiki.js';
-import { Button, Chip } from '@mui/material';
+import { Button } from '@mui/material';
+import { isSnapshotVersion } from '@finos/legend-server-depot';
 
 const DataProductHeader = observer(
   (props: {
@@ -70,9 +71,18 @@ const DataProductHeader = observer(
               </div>
             )}
           </div>
-          <div className="data-space__viewer__header__actions">
+          <div className="data-space__viewer__header__type">
             {dataProductViewerState.isSandboxProduct ? (
-              <Chip label="Sandbox Data Product" />
+              <Button
+                onClick={() => {
+                  dataProductViewerState?.viewIngestEnvironment?.();
+                }}
+                title="View Ingest Environment"
+                className="data-space__viewer__header__type__sandbox"
+              >
+                Sandbox Data Product
+                <OpenIcon />
+              </Button>
             ) : (
               <Button
                 onClick={() => {
@@ -81,6 +91,14 @@ const DataProductHeader = observer(
                     .catch(applicationStore.alertUnhandledError);
                 }}
                 title="View SDLC Project"
+                className={clsx('data-space__viewer__header__type__version', {
+                  'data-space__viewer__header__type__version--snapshot':
+                    isSnapshotVersion(dataProductViewerState.project.versionId),
+                  'data-space__viewer__header__type__version--release':
+                    !isSnapshotVersion(
+                      dataProductViewerState.project.versionId,
+                    ),
+                })}
               >
                 {dataProductViewerState.project.versionId}
                 <OpenIcon />

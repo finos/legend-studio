@@ -141,3 +141,10 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl =
     `${studioApplicationUrl}/view/${projectId}${
       versionId ? `/version/${versionId}` : ''
     }${entityPath ? `/entity/${entityPath}` : ''}`;
+
+/**
+ * @external_application_navigation This depends on Ingest Environment swagger URL and is hardcoded so it's potentially brittle
+ */
+export const EXTERNAL_APPLICATION_NAVIGATION__generateIngestEnvironemntUrl = (
+  baseUrl: string,
+): string => `${baseUrl}/data-product/swagger-ui`;

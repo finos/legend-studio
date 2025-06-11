@@ -80,6 +80,7 @@ export class DataProductViewerState {
   readonly project: VersionedProjectData;
   readonly retrieveGraphData: () => GraphData;
   readonly viewSDLCProject: (path: string | undefined) => Promise<void>;
+  readonly viewIngestEnvironment?: (() => void) | undefined;
   readonly onZoneChange?:
     | ((zone: NavigationZone | undefined) => void)
     | undefined;
@@ -108,6 +109,7 @@ export class DataProductViewerState {
     actions: {
       retrieveGraphData: () => GraphData;
       viewSDLCProject: (path: string | undefined) => Promise<void>;
+      viewIngestEnvironment?: (() => void) | undefined;
       onZoneChange?: ((zone: NavigationZone | undefined) => void) | undefined;
     },
   ) {
@@ -137,6 +139,7 @@ export class DataProductViewerState {
     this.generation = generation;
     this.retrieveGraphData = actions.retrieveGraphData;
     this.viewSDLCProject = actions.viewSDLCProject;
+    this.viewIngestEnvironment = actions.viewIngestEnvironment;
     this.onZoneChange = actions.onZoneChange;
     this.layoutState = new DataProductLayoutState(this);
     this.accessState = new DataProductDataAccessState(this);

@@ -69,7 +69,10 @@ import {
   type StoredFileGeneration,
 } from '@finos/legend-storage';
 import { DataProductViewerState } from './DataProductViewerState.js';
-import { EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl } from '../../__lib__/LegendMarketplaceNavigation.js';
+import {
+  EXTERNAL_APPLICATION_NAVIGATION__generateIngestEnvironemntUrl,
+  EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl,
+} from '../../__lib__/LegendMarketplaceNavigation.js';
 import type { AuthContextProps } from 'react-oidc-context';
 import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
 import {
@@ -767,6 +770,12 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
           viewSDLCProject: () => {
             throw new Error('Project does not exist in SDLC');
           },
+          viewIngestEnvironment: () =>
+            this.applicationStore.navigationService.navigator.visitAddress(
+              EXTERNAL_APPLICATION_NAVIGATION__generateIngestEnvironemntUrl(
+                ingestServerUrl,
+              ),
+            ),
         },
       );
       this.setDataProductViewerState(stateViewer);
