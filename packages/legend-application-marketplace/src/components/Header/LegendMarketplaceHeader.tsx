@@ -153,7 +153,7 @@ export const LegendMarketplaceHeader = observer(() => {
 export const MarketplaceLakehouseHeader = observer(() => {
   return (
     <LegendMarketplaceBaseHeader
-      headerName="Legend Lakehouse"
+      headerName="Legend Marketplace"
       homeUrl={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE}
       pages={[
         {

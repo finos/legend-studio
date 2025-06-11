@@ -493,11 +493,11 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
       <LegendMarketplacePage className="marketplace-lakehouse-home">
         <Container className="marketplace-lakehouse-home__search-container">
           <Box className="marketplace-lakehouse-home__search-container__title">
-            Lakehouse Marketplace
+            Legend Marketplace
           </Box>
           <LegendMarketplaceSearchBar
             onChange={onSearchChange}
-            placeholder="Search Lakehouse Marketplace"
+            placeholder="Search Legend Marketplace"
             className="marketplace-lakehouse-home__search-bar"
           />
         </Container>
