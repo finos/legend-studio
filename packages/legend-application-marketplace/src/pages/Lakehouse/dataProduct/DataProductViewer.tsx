@@ -75,7 +75,7 @@ const DataProductHeader = observer(
             {dataProductViewerState.isSandboxProduct ? (
               <Button
                 onClick={() => {
-                  dataProductViewerState?.viewIngestEnvironment?.();
+                  dataProductViewerState.viewIngestEnvironment?.();
                 }}
                 title="View Ingest Environment"
                 className="data-space__viewer__header__type__sandbox"
