@@ -44,7 +44,7 @@ export const LakehouseAdminContractsDashboard = observer(
         >
           <CubesLoadingIndicatorIcon />
         </CubesLoadingIndicator>
-        <Box className="marketplace-lakehouse-admin-contracts__grid ag-theme-balham">
+        <Box className="marketplace-lakehouse-admin__contracts__grid ag-theme-balham">
           <DataGrid
             rowData={contracts}
             onRowDataUpdated={(params) => {

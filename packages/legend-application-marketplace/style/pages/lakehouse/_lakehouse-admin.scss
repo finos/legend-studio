@@ -16,40 +16,16 @@
 
 @use 'mixins' as *;
 
-.marketplace-lakehouse-subscriptions__subscriptions-viewer {
-  &__content {
-    @include flexCenter;
-
-    flex-direction: column;
+.marketplace-lakehouse-admin {
+  &-container {
+    height: 100%;
   }
 
-  &__description {
-    text-align: center;
-  }
-
-  &__create-btn {
-    align-self: end;
-    margin: 1rem 0;
-  }
-
-  &__grid {
-    height: 300px;
-    width: 100%;
-
-    &__user-display {
+  &__contracts,
+  &__subscriptions {
+    &__grid {
       height: 100%;
-    }
-  }
-}
-
-.marketplace-lakehouse-subscriptions__subscription-creator {
-  &__select {
-    &__subheader {
-      font-size: 1.2rem;
-    }
-
-    &__item {
-      font-size: 1.4rem;
+      width: 100%;
     }
   }
 }

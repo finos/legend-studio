@@ -41,7 +41,7 @@ export const LakehouseAdminSubscriptionsDashboard = observer(
           <CubesLoadingIndicatorIcon />
         </CubesLoadingIndicator>
         <Box
-          className={clsx('marketplace-lakehouse-subscriptions__grid', {
+          className={clsx('marketplace-lakehouse-admin__subscriptions__grid', {
             'ag-theme-balham': true,
           })}
         >
