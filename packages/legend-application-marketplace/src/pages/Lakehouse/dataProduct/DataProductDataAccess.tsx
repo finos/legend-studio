@@ -17,6 +17,8 @@
 import {
   AnchorLinkIcon,
   clsx,
+  CubesLoadingIndicator,
+  CubesLoadingIndicatorIcon,
   MarkdownTextViewer,
   QuestionCircleIcon,
 } from '@finos/legend-art';
@@ -138,6 +140,8 @@ const TDSColumnMoreInfoCellRenderer = (props: {
   const [accessPointRelationType, setAccessPointRelationType] = useState<
     V1_RelationType | undefined
   >();
+  const [loadingAccessPointDetails, setLoadingAccessPointDetails] =
+    useState<boolean>(false);
 
   useEffect(() => {
     if (!data) {
@@ -203,12 +207,17 @@ const TDSColumnMoreInfoCellRenderer = (props: {
       ]);
     };
 
-    fetchAccessPointDetails().catch((error) => {
-      assertErrorThrown(error);
-      accessGroupState.accessState.viewerState.applicationStore.notificationService.notifyError(
-        error,
-      );
-    });
+    setLoadingAccessPointDetails(true);
+    fetchAccessPointDetails()
+      .catch((error) => {
+        assertErrorThrown(error);
+        accessGroupState.accessState.viewerState.applicationStore.notificationService.notifyError(
+          error,
+        );
+      })
+      .finally(() => {
+        setLoadingAccessPointDetails(false);
+      });
   }, [data, store, accessGroupState]);
 
   if (!data) {
@@ -271,46 +280,55 @@ const TDSColumnMoreInfoCellRenderer = (props: {
         <Tab label={MoreInfoTabs.GRAMMAR} value={MoreInfoTabs.GRAMMAR} />
       </Tabs>
       <Box className="data-space__viewer__more-info__container">
-        {selectedTab === MoreInfoTabs.COLUMNS && (
-          <Box
-            className={clsx('data-space__viewer__more-info__columns-grid', {
-              'data-space__viewer__more-info__columns-grid--auto-height':
-                (accessPointRelationType?.columns.length ?? 0) <=
-                MAX_GRID_AUTO_HEIGHT_ROWS,
-              'data-space__viewer__more-info__columns-grid--auto-height--non-empty':
-                (accessPointRelationType?.columns.length ?? 0) > 0 &&
-                (accessPointRelationType?.columns.length ?? 0) <=
-                  MAX_GRID_AUTO_HEIGHT_ROWS,
-            })}
-          >
-            <DataGrid
-              rowData={accessPointRelationType?.columns ?? []}
-              columnDefs={relationColumnDefs}
-              domLayout={
-                (accessPointRelationType?.columns.length ?? 0) >
-                MAX_GRID_AUTO_HEIGHT_ROWS
-                  ? 'normal'
-                  : 'autoHeight'
-              }
-            />
-          </Box>
+        {loadingAccessPointDetails && (
+          <CubesLoadingIndicator isLoading={true}>
+            <CubesLoadingIndicatorIcon />
+          </CubesLoadingIndicator>
         )}
-        {selectedTab === MoreInfoTabs.GRAMMAR && (
-          <Box className="data-space__viewer__more-info__grammar">
-            <CodeEditor
-              inputValue={accessPointGrammar}
-              isReadOnly={true}
-              language={CODE_EDITOR_LANGUAGE.TEXT}
-              hideMinimap={true}
-              hideGutter={true}
-              hideActionBar={true}
-              lightTheme={CODE_EDITOR_THEME.GITHUB_LIGHT}
-              extraEditorOptions={{
-                scrollBeyondLastLine: false,
-                wordWrap: 'on',
-              }}
-            />
-          </Box>
+        {!loadingAccessPointDetails && (
+          <>
+            {selectedTab === MoreInfoTabs.COLUMNS && (
+              <Box
+                className={clsx('data-space__viewer__more-info__columns-grid', {
+                  'data-space__viewer__more-info__columns-grid--auto-height':
+                    (accessPointRelationType?.columns.length ?? 0) <=
+                    MAX_GRID_AUTO_HEIGHT_ROWS,
+                  'data-space__viewer__more-info__columns-grid--auto-height--non-empty':
+                    (accessPointRelationType?.columns.length ?? 0) > 0 &&
+                    (accessPointRelationType?.columns.length ?? 0) <=
+                      MAX_GRID_AUTO_HEIGHT_ROWS,
+                })}
+              >
+                <DataGrid
+                  rowData={accessPointRelationType?.columns ?? []}
+                  columnDefs={relationColumnDefs}
+                  domLayout={
+                    (accessPointRelationType?.columns.length ?? 0) >
+                    MAX_GRID_AUTO_HEIGHT_ROWS
+                      ? 'normal'
+                      : 'autoHeight'
+                  }
+                />
+              </Box>
+            )}
+            {selectedTab === MoreInfoTabs.GRAMMAR && (
+              <Box className="data-space__viewer__more-info__grammar">
+                <CodeEditor
+                  inputValue={accessPointGrammar}
+                  isReadOnly={true}
+                  language={CODE_EDITOR_LANGUAGE.TEXT}
+                  hideMinimap={true}
+                  hideGutter={true}
+                  hideActionBar={true}
+                  lightTheme={CODE_EDITOR_THEME.GITHUB_LIGHT}
+                  extraEditorOptions={{
+                    scrollBeyondLastLine: false,
+                    wordWrap: 'on',
+                  }}
+                />
+              </Box>
+            )}
+          </>
         )}
       </Box>
     </div>
