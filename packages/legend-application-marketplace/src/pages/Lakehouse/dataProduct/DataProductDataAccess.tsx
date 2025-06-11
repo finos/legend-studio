@@ -471,6 +471,8 @@ export const DataProductAccessPointGroupViewer = observer(
                 {
                   'data-space__viewer__grid--auto-height':
                     accessPoints.length <= MAX_GRID_AUTO_HEIGHT_ROWS,
+                  'data-space__viewer__grid--auto-height--empty':
+                    accessPoints.length <= MAX_GRID_AUTO_HEIGHT_ROWS,
                   'data-space__viewer__grid--auto-height--non-empty':
                     accessPoints.length > 0 &&
                     accessPoints.length <= MAX_GRID_AUTO_HEIGHT_ROWS,

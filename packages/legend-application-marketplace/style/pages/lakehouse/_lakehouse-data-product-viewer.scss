@@ -58,6 +58,12 @@
 
   &__grid {
     &--auto-height {
+      &--empty {
+        .ag-layout-auto-height {
+          height: 10rem;
+        }
+      }
+
       &--non-empty {
         .ag-center-cols-viewport {
           min-height: unset;
