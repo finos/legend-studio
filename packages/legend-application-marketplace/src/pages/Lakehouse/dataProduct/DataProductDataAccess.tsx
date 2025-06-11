@@ -77,7 +77,7 @@ import { EntitlementsDataContractViewer } from '../entitlements/EntitlementsData
 import { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
 import { useAuth } from 'react-oidc-context';
 import { DataProductSubscriptionViewer } from '../subscriptions/DataProductSubscriptionsViewer.js';
-import { guaranteeType } from '@finos/legend-shared';
+import { assertErrorThrown, guaranteeType } from '@finos/legend-shared';
 import { resolveVersion } from '@finos/legend-server-depot';
 import { deserialize } from 'serializr';
 
@@ -204,7 +204,10 @@ const TDSColumnMoreInfoCellRenderer = (props: {
     };
 
     fetchAccessPointDetails().catch((error) => {
-      throw new Error(`Error fetching access point details: ${error.message}`);
+      assertErrorThrown(error);
+      accessGroupState.accessState.viewerState.applicationStore.notificationService.notifyError(
+        error,
+      );
     });
   }, [data, store, accessGroupState]);
 
