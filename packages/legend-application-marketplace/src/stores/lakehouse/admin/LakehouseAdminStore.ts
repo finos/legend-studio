@@ -34,7 +34,7 @@ import {
 import { makeObservable, flow, action, observable } from 'mobx';
 import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
 
-export class LakehouseSubscriptionsStore {
+export class LakehouseAdminStore {
   readonly applicationStore: LegendMarketplaceApplicationStore;
   readonly lakehouseServerClient: LakehouseContractServerClient;
   initializationState = ActionState.create();
