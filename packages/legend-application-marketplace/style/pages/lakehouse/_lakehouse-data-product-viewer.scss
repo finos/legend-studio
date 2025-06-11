@@ -24,6 +24,15 @@
   &__header__type {
     @include flexVCenter;
 
+    button {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    &__sandbox {
+      background: var(--color-white);
+    }
+
     &__version {
       &--snapshot {
         background: var(--tw-color-blue-100);

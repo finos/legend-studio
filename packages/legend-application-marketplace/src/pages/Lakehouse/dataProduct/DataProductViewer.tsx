@@ -100,7 +100,7 @@ const DataProductHeader = observer(
                     ),
                 })}
               >
-                {dataProductViewerState.project.versionId}
+                Version: {dataProductViewerState.project.versionId}
                 <OpenIcon />
               </Button>
             )}
