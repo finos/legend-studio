@@ -14,21 +14,12 @@
  * limitations under the License.
  */
 
-import { Container, Typography } from '@mui/material';
-import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
+@use 'mixins' as *;
 
-export const LegendMarketplaceComingSoon = () => {
-  return (
-    <LegendMarketplacePage className="legend-marketplace-coming-soon">
-      <Container
-        maxWidth="xxl"
-        className="legend-marketplace-coming-soon__content"
-      >
-        <Typography variant="h1" gutterBottom={true}>
-          Legend Marketplace
-        </Typography>
-        <Typography variant="h3">Coming Soon</Typography>
-      </Container>
-    </LegendMarketplacePage>
-  );
-};
+.legend-marketplace-coming-soon {
+  &__content {
+    @include flexCenter;
+
+    height: 100%;
+  }
+}
