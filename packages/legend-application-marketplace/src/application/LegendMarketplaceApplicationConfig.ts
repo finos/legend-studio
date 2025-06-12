@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { createModelSchema } from 'serializr';
+import { createModelSchema, optional, primitive } from 'serializr';
 import {
   type PlainObject,
   assertNonNullable,
@@ -29,8 +29,18 @@ import {
 import type { AuthProviderProps } from 'react-oidc-context';
 
 class LegendMarketplaceApplicationCoreOptions {
+  /**
+   * Indicates whether we should enable the marketplace pages.
+   * If not, the home page will be the coming soon page.
+   *
+   * Default to `false`
+   */
+  enableMarketplacePages = false;
+
   private static readonly serialization = new SerializationFactory(
-    createModelSchema(LegendMarketplaceApplicationCoreOptions, {}),
+    createModelSchema(LegendMarketplaceApplicationCoreOptions, {
+      enableMarketplacePages: optional(primitive()),
+    }),
   );
 
   static create(

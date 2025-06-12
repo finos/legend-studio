@@ -77,6 +77,11 @@ export const setup = (outputDir) => {
           url: 'https://legend.finos.org',
           registry: [],
         },
+        extensions: {
+          core: {
+            enableMarketplacePages: true,
+          },
+        },
       },
       undefined,
       2,
