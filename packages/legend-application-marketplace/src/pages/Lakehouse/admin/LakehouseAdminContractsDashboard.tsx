@@ -58,6 +58,7 @@ export const LakehouseAdminContractsDashboard = observer(
                 sortable: true,
                 resizable: true,
                 headerName: 'Contract Id',
+                valueGetter: (p) => p.data?.guid,
                 cellRenderer: (
                   params: DataGridCellRendererParams<V1_DataContract>,
                 ) => {
