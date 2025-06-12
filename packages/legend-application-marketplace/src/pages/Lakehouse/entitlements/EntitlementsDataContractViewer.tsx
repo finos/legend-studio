@@ -44,6 +44,8 @@ import {
   V1_AdhocTeam,
   V1_ApprovalType,
   V1_ContractState,
+  V1_ContractUserEventDataProducerPayload,
+  V1_ContractUserEventPrivilegeManagerPayload,
   V1_UserType,
 } from '@finos/legend-graph';
 import React, { useEffect, useState } from 'react';
@@ -132,9 +134,15 @@ const TaskApprovalView = (props: {
 }): React.ReactNode => {
   const { contractState, task, userDataMap, userProfileImageUrl, onUserClick } =
     props;
-  const legendUser = userDataMap.get(
-    task?.rec.eventPayload.managerIdentity ?? '',
-  );
+  const approverId =
+    task?.rec.eventPayload instanceof
+    V1_ContractUserEventPrivilegeManagerPayload
+      ? task.rec.eventPayload.managerIdentity
+      : task?.rec.eventPayload instanceof
+          V1_ContractUserEventDataProducerPayload
+        ? task.rec.eventPayload.dataProducerIdentity
+        : undefined;
+  const legendUser = userDataMap.get(approverId ?? '');
 
   if (
     contractState === V1_ContractState.PENDING_DATA_OWNER_APPROVAL ||
@@ -152,7 +160,7 @@ const TaskApprovalView = (props: {
                 onClick={() => onUserClick?.(legendUser.id)}
               />
             ) : (
-              task.rec.eventPayload.managerIdentity
+              approverId
             )}
           </Box>
           <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__task-approval-view__timestamp">
@@ -179,7 +187,7 @@ const TaskApprovalView = (props: {
                 onClick={() => onUserClick?.(legendUser.id)}
               />
             ) : (
-              task.rec.eventPayload.managerIdentity
+              approverId
             )}
           </Box>
           <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__task-approval-view__timestamp">
