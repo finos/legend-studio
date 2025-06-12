@@ -69,7 +69,6 @@ export const LakehouseAdmin = withLakehouseAdminStore(
               value={AdminTabs.ALL_SUBSCRIPTIONS}
             />
           </Tabs>
-
           {selectedTab === AdminTabs.ALL_CONTRACTS && (
             <LakehouseAdminContractsDashboard adminStore={adminStore} />
           )}
