@@ -21,19 +21,30 @@ import {
 } from '@finos/legend-art';
 import {
   DataGrid,
-  type DataGridCellRendererParams,
+  type DataGridRowClickedEvent,
 } from '@finos/legend-lego/data-grid';
 import { Box } from '@mui/material';
 import { type V1_DataContract } from '@finos/legend-graph';
 import type { LakehouseAdminStore } from '../../../stores/lakehouse/admin/LakehouseAdminStore.js';
-import { generateLakehouseContractPath } from '../../../__lib__/LegendMarketplaceNavigation.js';
-import { Contract_IdColumnClickableCellRenderer } from '../entitlements/EntitlementsDashboard.js';
+import { useState } from 'react';
+import { EntitlementsDataContractViewer } from '../entitlements/EntitlementsDataContractViewer.js';
+import { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
 
 export const LakehouseAdminContractsDashboard = observer(
   (props: { adminStore: LakehouseAdminStore }) => {
     const { adminStore } = props;
 
     const contracts = adminStore.contracts;
+
+    const [selectedContract, setSelectedContract] = useState<
+      V1_DataContract | undefined
+    >();
+
+    const handleRowClicked = (
+      event: DataGridRowClickedEvent<V1_DataContract>,
+    ) => {
+      setSelectedContract(event.data);
+    };
 
     return (
       <>
@@ -52,6 +63,7 @@ export const LakehouseAdminContractsDashboard = observer(
             }}
             suppressFieldDotNotation={true}
             suppressContextMenu={false}
+            onRowClicked={handleRowClicked}
             columnDefs={[
               {
                 minWidth: 50,
@@ -59,17 +71,6 @@ export const LakehouseAdminContractsDashboard = observer(
                 resizable: true,
                 headerName: 'Contract Id',
                 valueGetter: (p) => p.data?.guid,
-                cellRenderer: (
-                  params: DataGridCellRendererParams<V1_DataContract>,
-                ) => {
-                  return Contract_IdColumnClickableCellRenderer(
-                    params.data?.guid,
-                    (taskId) =>
-                      adminStore.applicationStore.navigationService.navigator.updateCurrentLocation(
-                        generateLakehouseContractPath(taskId),
-                      ),
-                  );
-                },
                 flex: 2,
               },
               {
@@ -115,6 +116,18 @@ export const LakehouseAdminContractsDashboard = observer(
             ]}
           />
         </Box>
+        {selectedContract !== undefined && (
+          <EntitlementsDataContractViewer
+            open={true}
+            currentViewer={
+              new EntitlementsDataContractViewerState(
+                selectedContract,
+                adminStore.lakehouseServerClient,
+              )
+            }
+            onClose={() => setSelectedContract(undefined)}
+          />
+        )}
       </>
     );
   },

@@ -31,7 +31,7 @@ import { Box, Container, Tab, Tabs, Typography } from '@mui/material';
 import { clsx } from '@finos/legend-art';
 import { EntitlementsPendingTasksDashbaord } from './EntitlementsPendingTasksDashboard.js';
 
-export const Contract_IdColumnClickableCellRenderer = (
+const Contract_IdColumnClickableCellRenderer = (
   contractId: string | undefined,
   onHandleClick: (id: string) => void,
 ): React.ReactNode => {
