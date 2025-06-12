@@ -202,7 +202,9 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
                 ) ? (
                   <MarketplaceLakehouseHeader />
                 ) : (
-                  <LegendMarketplaceHeader />
+                  <LegendMarketplaceHeader
+                    enableMarketplacePages={enableMarketplacePages}
+                  />
                 )}
                 <Outlet />
               </>
