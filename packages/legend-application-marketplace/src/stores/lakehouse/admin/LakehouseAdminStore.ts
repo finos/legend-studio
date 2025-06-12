@@ -32,7 +32,7 @@ import type { LakehouseContractServerClient } from '@finos/legend-server-marketp
 
 export class LakehouseAdminStore {
   readonly applicationStore: LegendMarketplaceApplicationStore;
-  readonly lakehouseServerClient: LakehouseContractServerClient;
+  readonly lakehouseContractServerClient: LakehouseContractServerClient;
   subscriptionsInitializationState = ActionState.create();
   contractsInitializationState = ActionState.create();
   subscriptions: V1_DataSubscription[] = [];
@@ -40,10 +40,10 @@ export class LakehouseAdminStore {
 
   constructor(
     applicationStore: LegendMarketplaceApplicationStore,
-    lakehouseServerClient: LakehouseContractServerClient,
+    lakehouseContractServerClient: LakehouseContractServerClient,
   ) {
     this.applicationStore = applicationStore;
-    this.lakehouseServerClient = lakehouseServerClient;
+    this.lakehouseContractServerClient = lakehouseContractServerClient;
     makeObservable(this, {
       subscriptions: observable,
       contracts: observable,
@@ -58,7 +58,7 @@ export class LakehouseAdminStore {
       try {
         this.subscriptionsInitializationState.inProgress();
         const rawSubscriptions =
-          await this.lakehouseServerClient.getAllSubscriptions(token);
+          await this.lakehouseContractServerClient.getAllSubscriptions(token);
         const subscriptions = deserialize(
           V1_DataSubscriptionResponseModelSchema,
           rawSubscriptions,
@@ -78,7 +78,7 @@ export class LakehouseAdminStore {
       try {
         this.contractsInitializationState.inProgress();
         const rawContracts =
-          await this.lakehouseServerClient.getDataContracts(token);
+          await this.lakehouseContractServerClient.getDataContracts(token);
         const contracts =
           V1_DataContractsRecordModelSchemaToContracts(rawContracts);
         this.setContracts(contracts);

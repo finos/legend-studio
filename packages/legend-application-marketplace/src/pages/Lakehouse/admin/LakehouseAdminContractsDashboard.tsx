@@ -122,7 +122,7 @@ export const LakehouseAdminContractsDashboard = observer(
             currentViewer={
               new EntitlementsDataContractViewerState(
                 selectedContract,
-                adminStore.lakehouseServerClient,
+                adminStore.lakehouseContractServerClient,
               )
             }
             onClose={() => setSelectedContract(undefined)}
