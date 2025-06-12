@@ -75,7 +75,6 @@ import {
 } from '@finos/legend-art';
 import { generateLakehouseTaskPath } from '../../../__lib__/LegendMarketplaceNavigation.js';
 import type { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
-import { DEFAULT_DATE_TIME_FORMAT } from '@finos/legend-application';
 import type { DataProductGroupAccessState } from '../../../stores/lakehouse/DataProductDataAccessState.js';
 
 const AssigneesList = (props: {
@@ -166,7 +165,7 @@ const TaskApprovalView = (props: {
           <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__task-approval-view__timestamp">
             {formatDate(
               new Date(task.rec.eventPayload.eventTimestamp),
-              DEFAULT_DATE_TIME_FORMAT,
+              `MM/dd/yyyy HH:mm:ss`,
             )}
           </Box>
         </Box>
@@ -193,7 +192,7 @@ const TaskApprovalView = (props: {
           <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__task-approval-view__timestamp">
             {formatDate(
               new Date(task.rec.eventPayload.eventTimestamp),
-              DEFAULT_DATE_TIME_FORMAT,
+              `MM/dd/yyyy HH:mm:ss`,
             )}
           </Box>
         </Box>
