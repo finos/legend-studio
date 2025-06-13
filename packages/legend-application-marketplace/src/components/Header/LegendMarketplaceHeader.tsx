@@ -134,21 +134,29 @@ const LegendMarketplaceBaseHeader = observer(
   },
 );
 
-export const LegendMarketplaceHeader = observer(() => {
-  return (
-    <LegendMarketplaceBaseHeader
-      headerName="Legend Marketplace"
-      homeUrl={LEGEND_MARKETPLACE_ROUTE_PATTERN.DEFAULT}
-      pages={[
-        {
-          title: 'Vendor Data',
-          urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.VENDOR_DATA,
-        },
-      ]}
-      showIcons={true}
-    />
-  );
-});
+export const LegendMarketplaceHeader = observer(
+  (props: { enableMarketplacePages: boolean }) => {
+    const { enableMarketplacePages } = props;
+
+    return (
+      <LegendMarketplaceBaseHeader
+        headerName="Legend Marketplace"
+        homeUrl={LEGEND_MARKETPLACE_ROUTE_PATTERN.DEFAULT}
+        pages={
+          enableMarketplacePages
+            ? [
+                {
+                  title: 'Vendor Data',
+                  urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.VENDOR_DATA,
+                },
+              ]
+            : []
+        }
+        showIcons={enableMarketplacePages}
+      />
+    );
+  },
+);
 
 export const MarketplaceLakehouseHeader = observer(() => {
   return (

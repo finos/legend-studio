@@ -61,6 +61,7 @@ import { LegendMarketplaceVendorDetails } from '../pages/VendorDetails/LegendMar
 import { LegendMarketplaceSubscriptions } from '../pages/Profile/LegendMarketplaceSubscriptions.js';
 import { LegendMarketplaceOrders } from '../pages/Profile/LegendMarketplaceOrders.js';
 import { LakehouseSandboxDataProduct } from '../pages/Lakehouse/dataProduct/LakehouseSandboxDataProduct.js';
+import { LegendMarketplaceComingSoon } from '../pages/Home/LegendMarketplaceComingSoon.js';
 
 const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();
@@ -109,6 +110,9 @@ const NotFoundPage = observer(() => {
 export const LegendMarketplaceWebApplicationRouter = observer(() => {
   const baseStore = useLegendMarketplaceBaseStore();
   const applicationStore = useLegendMarketplaceApplicationStore();
+
+  const enableMarketplacePages =
+    applicationStore.config.options.enableMarketplacePages;
 
   useEffect(() => {
     flowResult(baseStore.initialize()).catch(
@@ -198,12 +202,51 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
                 ) ? (
                   <MarketplaceLakehouseHeader />
                 ) : (
-                  <LegendMarketplaceHeader />
+                  <LegendMarketplaceHeader
+                    enableMarketplacePages={enableMarketplacePages}
+                  />
                 )}
                 <Outlet />
               </>
             }
           >
+            {enableMarketplacePages ? (
+              <Route
+                path={LEGEND_MARKETPLACE_ROUTE_PATTERN.DEFAULT}
+                element={<LegendMarketplaceHome />}
+              />
+            ) : (
+              <Route
+                path={LEGEND_MARKETPLACE_ROUTE_PATTERN.DEFAULT}
+                element={<LegendMarketplaceComingSoon />}
+              />
+            )}
+            {/* Marketplace pages */}
+            {enableMarketplacePages && (
+              <>
+                <Route
+                  path={LEGEND_MARKETPLACE_ROUTE_PATTERN.SEARCH_RESULTS}
+                  element={<LegendMarketplaceSearchResults />}
+                />
+                <Route
+                  path={LEGEND_MARKETPLACE_ROUTE_PATTERN.VENDOR_DATA}
+                  element={<LegendMarketplaceVendorData />}
+                />
+                <Route
+                  path={LEGEND_MARKETPLACE_ROUTE_PATTERN.VENDOR_DETAILS}
+                  element={<LegendMarketplaceVendorDetails />}
+                />
+                <Route
+                  path={LEGEND_MARKETPLACE_ROUTE_PATTERN.SUBSCRIPTIONS}
+                  element={<LegendMarketplaceSubscriptions />}
+                />
+                <Route
+                  path={LEGEND_MARKETPLACE_ROUTE_PATTERN.ORDERS}
+                  element={<LegendMarketplaceOrders />}
+                />
+              </>
+            )}
+            {/* Lakehouse pages */}
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_PRODUCT}
               element={<ProtectedLakehouseDataProduct />}
@@ -227,32 +270,8 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
               element={<ProtectedLakehouseMarketplace />}
             />
             <Route
-              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.DEFAULT}
-              element={<LegendMarketplaceHome />}
-            />
-            <Route
-              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.SEARCH_RESULTS}
-              element={<LegendMarketplaceSearchResults />}
-            />
-            <Route
-              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.VENDOR_DATA}
-              element={<LegendMarketplaceVendorData />}
-            />
-            <Route
-              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.VENDOR_DETAILS}
-              element={<LegendMarketplaceVendorDetails />}
-            />
-            <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SUBSCRIPTIONS}
               element={<ProtectedLakehouseSubscriptions />}
-            />
-            <Route
-              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.SUBSCRIPTIONS}
-              element={<LegendMarketplaceSubscriptions />}
-            />
-            <Route
-              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.ORDERS}
-              element={<LegendMarketplaceOrders />}
             />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
