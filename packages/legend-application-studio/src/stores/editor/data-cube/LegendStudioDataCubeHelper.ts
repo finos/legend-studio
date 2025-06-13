@@ -24,6 +24,7 @@ import {
   RawLambda,
   RuntimePointer,
   Service,
+  type ParameterValue,
 } from '@finos/legend-graph';
 import type { EditorStore } from '../EditorStore.js';
 import {
@@ -46,6 +47,8 @@ export const isElementSupportedByDataCube = (
 export const openDataCube = async (
   element: PackageableElement,
   editorStore: EditorStore,
+  parameterValues?: ParameterValue[],
+  letFuncsRawLambda?: RawLambda,
 ): Promise<void> => {
   try {
     let specification: DataCubeSpecification;
@@ -54,12 +57,19 @@ export const openDataCube = async (
     if (element instanceof ConcreteFunctionDefinition) {
       const body = element.expressionSequence;
       const rawLambda = new RawLambda([], body);
+      rawLambda.parameters = element.parameters.map((parameter) =>
+        editorStore.graphManagerState.graphManager.serializeRawValueSpecification(
+          parameter,
+        ),
+      );
       engine = new QueryBuilderDataCubeEngine(
         rawLambda,
-        undefined,
+        parameterValues,
         undefined,
         undefined,
         editorStore.graphManagerState,
+        undefined,
+        letFuncsRawLambda,
       );
       specification = await engine.generateInitialSpecification();
     } else if (element instanceof Service) {
@@ -94,10 +104,12 @@ export const openDataCube = async (
       }
       engine = new QueryBuilderDataCubeEngine(
         exec.func,
-        undefined,
+        parameterValues,
         mapping?.path,
         runtime?.packageableRuntime.value.path,
         editorStore.graphManagerState,
+        undefined,
+        letFuncsRawLambda,
       );
       specification = await engine.generateInitialSpecification();
     } else {
