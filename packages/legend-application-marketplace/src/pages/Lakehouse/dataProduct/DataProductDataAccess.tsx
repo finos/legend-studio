@@ -448,11 +448,12 @@ export const DataProductAccessPointGroupViewer = observer(
                 onClose={() => setIsEntitledButtonGroupMenuOpen(false)}
               >
                 <MenuItem
-                  onClick={() =>
+                  onClick={() => {
                     accessGroupState.accessState.viewerState.setDataContractAccessPointGroup(
                       accessGroupState.group,
-                    )
-                  }
+                    );
+                    setIsEntitledButtonGroupMenuOpen(false);
+                  }}
                 >
                   Request Access for Others
                 </MenuItem>
