@@ -51,6 +51,7 @@ export type LakehouseEntitlementsTasksParam = {
 
 export const LEGEND_MARKETPLACE_ROUTE_PATTERN = Object.freeze({
   DEFAULT: '/',
+  OAUTH_CALLBACK: '/callback',
   SEARCH_RESULTS: '/results',
   VENDOR_DATA: '/vendordata',
   VENDOR_DETAILS: `/vendor/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.VENDOR_NAME}`,
