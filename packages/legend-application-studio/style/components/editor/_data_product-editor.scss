@@ -34,6 +34,19 @@
       border-bottom: 0.1rem solid var(--color-dark-grey-200);
     }
 
+    &__header--access-point {
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
+      padding-top: 0.5rem;
+      margin-top: 1rem;
+      color: var(--color-light-grey-300);
+      font-weight: bold;
+      background: var(--color-dark-grey-85);
+      border-top: 0.1rem solid var(--color-dark-grey-200);
+      border-bottom: none;
+      box-shadow: none;
+    }
+
     &__header__title__label {
       background: var(--color-dark-grey-250);
     }
@@ -118,7 +131,7 @@
 
 .access-point-editor {
   padding: 1rem;
-  background: var(--color-dark-grey-50);
+  background: var(--color-dark-grey-85);
   border-radius: 0.2rem;
 
   &__metadata {
@@ -138,7 +151,7 @@
     @include flexVCenter;
 
     height: 2.8rem;
-    background: var(--color-dark-grey-100);
+    background: var(--color-dark-grey-50);
     padding: 0 1rem;
     border-radius: 0.2rem;
 
@@ -213,19 +226,32 @@
       margin-left: 0.5rem;
       cursor: pointer;
     }
+
+    &__remove-btn--group {
+      @extend .access-point-editor__generic-entry__remove-btn;
+
+      background: none;
+    }
   }
 
   &__group-container {
     margin-bottom: 1.8rem;
     margin-top: 1rem !important;
-    background-color: var(--color-dark-grey-50);
+    background-color: var(--color-dark-grey-85);
     padding: 1rem;
 
     &__title {
-      padding: 0 1rem;
       color: white;
       font-weight: bold;
       font-size: 16px;
+      gap: 0.5rem;
+      display: flex;
+    }
+
+    &__title-editor {
+      padding-left: 1rem;
+      justify-content: space-between;
+      display: flex;
     }
 
     &__description-editor {
@@ -252,7 +278,6 @@
 
   &__description-container {
     height: 32px;
-    width: 50%;
     overflow: hidden;
     color: var(--color-dark-grey-500);
     flex-direction: row;
@@ -356,5 +381,14 @@
 .new-access-point-modal {
   &__id-input {
     width: 100%;
+  }
+}
+
+.new-access-point-group-modal {
+  background-color: var(--color-dark-grey-85);
+  padding: 0.75rem;
+
+  &__input {
+    margin-top: 0.5rem;
   }
 }

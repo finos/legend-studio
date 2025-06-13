@@ -58,13 +58,10 @@ import { action, flowResult } from 'mobx';
 import { useAuth } from 'react-oidc-context';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
-import {
-  type AccessPointGroup,
-  LakehouseTargetEnv,
-  type LakehouseAccessPoint,
-} from '@finos/legend-graph';
+import { LakehouseTargetEnv } from '@finos/legend-graph';
 import {
   accessPointGroup_setDescription,
+  accessPointGroup_setName,
   dataProduct_setDescription,
   dataProduct_setTitle,
 } from '../../../../stores/graph-modifier/DSL_DataProduct_GraphModifierHelper.js';
@@ -88,7 +85,13 @@ const NewAccessPointAccessPOint = observer(
     };
     const handleSubmit = () => {
       if (id) {
-        dataProductEditorState.addAccessPoint(id, description, 'default');
+        const accessPointGroup =
+          dataProductEditorState.editingGroupState ?? 'default';
+        dataProductEditorState.addAccessPoint(
+          id,
+          description,
+          accessPointGroup,
+        );
         handleClose();
       }
     };
@@ -98,15 +101,20 @@ const NewAccessPointAccessPOint = observer(
     const disableCreateButton =
       id === '' ||
       id === undefined ||
+      description === '' ||
+      description === undefined ||
       dataProductEditorState.accessPoints.map((e) => e.id).includes(id);
-    const errors =
+    const nameErrors =
       id === ''
-        ? `ID is empty`
+        ? `Name is empty`
         : dataProductEditorState.accessPoints
               .map((e) => e.id)
               .includes(id ?? '')
-          ? `ID already exists`
+          ? `Name already exists`
           : undefined;
+
+    const descriptionErrors =
+      description === '' ? `Description is empty` : undefined;
     return (
       <Dialog
         open={true}
@@ -131,11 +139,16 @@ const NewAccessPointAccessPOint = observer(
           className={clsx('modal search-modal', {
             'modal--dark': true,
           })}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '1rem',
+          }}
         >
           <div className="modal__title">New Access Point</div>
           <div>
             <div className="panel__content__form__section__header__label">
-              ID
+              Name
             </div>
             <InputWithInlineValidation
               className={clsx('input new-access-point-modal__id-input', {
@@ -146,7 +159,7 @@ const NewAccessPointAccessPOint = observer(
               value={id}
               onChange={handleIdChange}
               placeholder="Access Point ID"
-              error={errors}
+              error={nameErrors}
             />
           </div>
           <div>
@@ -161,8 +174,199 @@ const NewAccessPointAccessPOint = observer(
               value={description}
               onChange={handleDescriptionChange}
               placeholder="Access Point Description"
-              error={errors}
+              error={descriptionErrors}
             />
+          </div>
+          <div></div>
+          <PanelDivider />
+          <div className="search-modal__actions">
+            <button
+              className={clsx('btn btn--primary', {
+                'btn--dark': true,
+              })}
+              disabled={disableCreateButton}
+            >
+              Create
+            </button>
+          </div>
+        </form>
+      </Dialog>
+    );
+  },
+);
+
+const NewAccessPointGroupModal = observer(
+  (props: { dataProductEditorState: DataProductEditorState }) => {
+    const { dataProductEditorState: dataProductEditorState } = props;
+    const accessPointGroupInputRef = useRef<HTMLInputElement>(null);
+    const [groupName, setGroupName] = useState<string | undefined>(undefined);
+    const handleGroupNameChange: React.ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ) => setGroupName(event.target.value);
+    const [groupDescription, setGroupDescription] = useState<
+      string | undefined
+    >(undefined);
+    const handleGroupDescriptionChange: React.ChangeEventHandler<
+      HTMLInputElement
+    > = (event) => setGroupDescription(event.target.value);
+    const [apName, setApName] = useState<string | undefined>(undefined);
+    const handleApNameChange: React.ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ) => setApName(event.target.value);
+    const [apDescription, setApDescription] = useState<string | undefined>(
+      undefined,
+    );
+    const handleApDescriptionChange: React.ChangeEventHandler<
+      HTMLInputElement
+    > = (event) => setApDescription(event.target.value);
+    const handleClose = () => {
+      dataProductEditorState.setAccessPointGroupModal(false);
+    };
+    const handleEnter = (): void => {
+      accessPointGroupInputRef.current?.focus();
+    };
+
+    const groupNameErrors =
+      groupName === ''
+        ? `Group Name is empty`
+        : dataProductEditorState.accessPointGroupStates
+              .map((e) => e.value.id)
+              .includes(groupName ?? '')
+          ? `Group Name already exists`
+          : undefined;
+    const groupDescriptionErrors =
+      groupDescription === '' ? `Group Description is empty` : undefined;
+    const apNameErrors =
+      apName === ''
+        ? `Access Point Name is empty`
+        : dataProductEditorState.accessPoints
+              .map((e) => e.id)
+              .includes(apName ?? '')
+          ? `Access Point Name already exists`
+          : undefined;
+    const apDescriptionErrors =
+      apDescription === '' ? `Access Point Description is empty` : undefined;
+
+    const disableCreateButton =
+      !groupName ||
+      !groupDescription ||
+      !apName ||
+      !apDescription ||
+      Boolean(
+        groupNameErrors ??
+          groupDescriptionErrors ??
+          apNameErrors ??
+          apDescriptionErrors,
+      );
+    const handleSubmit = () => {
+      if (!disableCreateButton && apName) {
+        const createdGroup = dataProductEditorState.createGroupAndAdd(
+          groupName,
+          groupDescription,
+        );
+        dataProductEditorState.addAccessPoint(
+          apName,
+          apDescription,
+          createdGroup,
+        );
+        handleClose();
+      }
+    };
+
+    return (
+      <Dialog
+        open={true}
+        onClose={handleClose}
+        TransitionProps={{
+          onEnter: handleEnter,
+        }}
+        classes={{
+          container: 'search-modal__container',
+        }}
+        PaperProps={{
+          classes: {
+            root: 'search-modal__inner-container',
+          },
+        }}
+      >
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            handleSubmit();
+          }}
+          className={clsx('modal search-modal', {
+            'modal--dark': true,
+          })}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '1rem',
+          }}
+        >
+          <div className="modal__title">New Access Point Group</div>
+          <div>
+            <div className="panel__content__form__section__header__label">
+              Group Name
+            </div>
+            <InputWithInlineValidation
+              className={clsx('input new-access-point-modal__id-input', {
+                'input--dark': true,
+              })}
+              ref={accessPointGroupInputRef}
+              spellCheck={false}
+              value={groupName}
+              onChange={handleGroupNameChange}
+              placeholder="Access Point Group Name"
+              error={groupNameErrors}
+            />
+          </div>
+          <div>
+            <div className="panel__content__form__section__header__label">
+              Group Description
+            </div>
+            <InputWithInlineValidation
+              className={clsx('input new-access-point-modal__id-input', {
+                'input--dark': true,
+              })}
+              spellCheck={false}
+              value={groupDescription}
+              onChange={handleGroupDescriptionChange}
+              placeholder="Access Point Group Description"
+              error={groupDescriptionErrors}
+            />
+          </div>
+          <div>
+            <div className="panel__content__form__section__header__label">
+              Access Point
+            </div>
+            <div className="new-access-point-group-modal">
+              <div className="panel__content__form__section__header__label">
+                Name
+              </div>
+              <InputWithInlineValidation
+                className={clsx('input new-access-point-modal__id-input', {
+                  'input--dark': true,
+                })}
+                spellCheck={false}
+                value={apName}
+                onChange={handleApNameChange}
+                placeholder="Access Point Name"
+                error={apNameErrors}
+              />
+              <div className="panel__content__form__section__header__label">
+                Description
+              </div>
+              <InputWithInlineValidation
+                className={clsx('input new-access-point-modal__id-input', {
+                  'input--dark': true,
+                })}
+                spellCheck={false}
+                value={apDescription}
+                onChange={handleApDescriptionChange}
+                placeholder="Access Point Description"
+                error={apDescriptionErrors}
+              />
+            </div>
           </div>
           <PanelDivider />
           <div className="search-modal__actions">
@@ -181,15 +385,15 @@ const NewAccessPointAccessPOint = observer(
   },
 );
 
-interface DescriptionTextAreaProps {
-  accessPoint: LakehouseAccessPoint | AccessPointGroup;
+interface HoverTextAreaProps {
+  text: string;
   handleMouseOver: (event: React.MouseEvent<HTMLDivElement>) => void;
   handleMouseOut: (event: React.MouseEvent<HTMLDivElement>) => void;
   className?: string;
 }
 
-const DescriptionTextArea: React.FC<DescriptionTextAreaProps> = ({
-  accessPoint,
+const HoverTextArea: React.FC<HoverTextAreaProps> = ({
+  text: text,
   handleMouseOver,
   handleMouseOut,
   className,
@@ -200,7 +404,7 @@ const DescriptionTextArea: React.FC<DescriptionTextAreaProps> = ({
       onMouseOut={handleMouseOut}
       className={clsx(className)}
     >
-      {accessPoint.description}
+      {text}
     </div>
   );
 };
@@ -282,14 +486,26 @@ export const LakehouseDataProductAcccessPointEditor = observer(
           ) : (
             <div
               onClick={handleEdit}
-              title="Click to edit description"
+              title="Click to edit access point description"
               className="access-point-editor__description-container"
             >
-              <DescriptionTextArea
-                accessPoint={accessPoint}
-                handleMouseOver={handleMouseOver}
-                handleMouseOut={handleMouseOut}
-              />
+              {accessPoint.description ? (
+                <HoverTextArea
+                  text={accessPoint.description}
+                  handleMouseOver={handleMouseOver}
+                  handleMouseOut={handleMouseOut}
+                />
+              ) : (
+                <div
+                  className="access-point-editor__group-container__description--warning"
+                  onMouseOver={handleMouseOver}
+                  onMouseOut={handleMouseOut}
+                >
+                  <WarningIcon />
+                  Describe the data this access point produces
+                </div>
+              )}
+
               {isHovering && hoverIcon()}
             </div>
           )}
@@ -384,15 +600,15 @@ const DataProductEditorSplashScreen = observer(
     return (
       <div ref={ref} className="data-product-editor__splash-screen">
         <div
-          onClick={() => dataProductEditorState.setAccessPointModal(true)}
+          onClick={() => dataProductEditorState.setAccessPointGroupModal(true)}
           className="data-product-editor__splash-screen__label"
         >
-          Add Access Point
+          Add Access Point Group
         </div>
         <div className="data-product-editor__splash-screen__spacing"></div>
         <div
-          onClick={() => dataProductEditorState.setAccessPointModal(true)}
-          title="Add new Access Point"
+          onClick={() => dataProductEditorState.setAccessPointGroupModal(true)}
+          title="Add new Access Point Group"
           className={clsx('data-product-editor__splash-screen__logo', {
             'data-product-editor__splash-screen__logo--hidden': !showLogo,
           })}
@@ -457,31 +673,95 @@ const DataProductDeploymentResponseModal = observer(
 const AccessPointGroupSection = observer(
   (props: { groupState: AccessPointGroupState; isReadOnly: boolean }) => {
     const { groupState, isReadOnly } = props;
+    const productEditorState = groupState.state;
     const [editingDescription, setEditingDescription] = useState(false);
-    const [isHovering, setIsHovering] = useState(false);
+    const [isHoveringDescription, setIsHoveringDescription] = useState(false);
+    const [editingName, setEditingName] = useState(false);
+    const [isHoveringName, setIsHoveringName] = useState(false);
 
-    const handleEdit = () => setEditingDescription(true);
-    const handleBlur = () => {
+    const handleDescriptionEdit = () => setEditingDescription(true);
+    const handleDescriptionBlur = () => {
       setEditingDescription(false);
-      setIsHovering(false);
+      setIsHoveringDescription(false);
     };
-    const handleMouseOver: React.MouseEventHandler<HTMLDivElement> = () => {
-      setIsHovering(true);
+    const handleMouseOverDescription: React.MouseEventHandler<
+      HTMLDivElement
+    > = () => {
+      setIsHoveringDescription(true);
     };
-    const handleMouseOut: React.MouseEventHandler<HTMLDivElement> = () => {
-      setIsHovering(false);
+    const handleMouseOutDescription: React.MouseEventHandler<
+      HTMLDivElement
+    > = () => {
+      setIsHoveringDescription(false);
     };
-
     const updateGroupDescription = (val: string): void => {
       accessPointGroup_setDescription(groupState.value, val);
     };
+
+    const handleNameEdit = () => setEditingName(true);
+    const handleNameBlur = () => {
+      setEditingName(false);
+      setIsHoveringName(false);
+    };
+    const handleMouseOverName: React.MouseEventHandler<HTMLDivElement> = () => {
+      setIsHoveringName(true);
+    };
+    const handleMouseOutName: React.MouseEventHandler<HTMLDivElement> = () => {
+      setIsHoveringName(false);
+    };
+    const updateGroupName = (val: string): void => {
+      if (val) {
+        accessPointGroup_setName(groupState.value, val);
+      }
+    };
+
+    const openNewModal = () => {
+      productEditorState.setEditingGroupState(groupState);
+      productEditorState.setAccessPointModal(true);
+    };
     return (
-      <div
-        key={groupState.value.id}
-        className="access-point-editor__group-container"
-      >
-        <div className="access-point-editor__group-container__title">
-          {groupState.value.id}
+      <div className="access-point-editor__group-container">
+        <div className="access-point-editor__group-container__title-editor">
+          {editingName ? (
+            <textarea
+              className="panel__content__form__section__input"
+              spellCheck={false}
+              value={groupState.value.id}
+              onChange={(event) => updateGroupName(event.target.value)}
+              placeholder="Access Point Group Name"
+              onBlur={handleNameBlur}
+              style={{
+                overflow: 'hidden',
+                resize: 'none',
+                padding: '0.25rem',
+              }}
+            />
+          ) : (
+            <div
+              onClick={handleNameEdit}
+              title="Click to edit group name"
+              className="access-point-editor__group-container__title"
+            >
+              <HoverTextArea
+                text={groupState.value.id}
+                handleMouseOver={handleMouseOverName}
+                handleMouseOut={handleMouseOutName}
+                className="access-point-editor__group-container__title"
+              />
+
+              {isHoveringName && hoverIcon()}
+            </div>
+          )}
+          <button
+            className="access-point-editor__generic-entry__remove-btn--group"
+            onClick={() => {
+              productEditorState.deleteAccessPointGroup(groupState);
+            }}
+            tabIndex={-1}
+            title="Remove Access Point Group"
+          >
+            <TimesIcon />
+          </button>
         </div>
         <div className="access-point-editor__group-container__description-editor">
           {editingDescription ? (
@@ -491,7 +771,7 @@ const AccessPointGroupSection = observer(
               value={groupState.value.description ?? ''}
               onChange={(event) => updateGroupDescription(event.target.value)}
               placeholder="Provide a description for this Access Point Group"
-              onBlur={handleBlur}
+              onBlur={handleDescriptionBlur}
               style={{
                 overflow: 'hidden',
                 resize: 'none',
@@ -500,31 +780,46 @@ const AccessPointGroupSection = observer(
             />
           ) : (
             <div
-              onClick={handleEdit}
-              title="Click to edit description"
+              onClick={handleDescriptionEdit}
+              title="Click to edit group description"
               className="access-point-editor__description-container"
             >
               {groupState.value.description ? (
-                <DescriptionTextArea
-                  accessPoint={groupState.value}
-                  handleMouseOver={handleMouseOver}
-                  handleMouseOut={handleMouseOut}
+                <HoverTextArea
+                  text={groupState.value.description}
+                  handleMouseOver={handleMouseOverDescription}
+                  handleMouseOut={handleMouseOutDescription}
                   className="access-point-editor__group-container__description"
                 />
               ) : (
                 <div
                   className="access-point-editor__group-container__description--warning"
-                  onMouseOver={handleMouseOver}
-                  onMouseOut={handleMouseOut}
+                  onMouseOver={handleMouseOverDescription}
+                  onMouseOut={handleMouseOutDescription}
                 >
                   <WarningIcon />
-                  No description provided
+                  Describe this access point group to clarify what users are
+                  requesting access to. Entitlements are provisioned at the
+                  group level.
                 </div>
               )}
-              {isHovering && hoverIcon()}
+              {isHoveringDescription && hoverIcon()}
             </div>
           )}
         </div>
+        <PanelHeader className="panel__header--access-point">
+          <div className="panel__header__title">Access Points</div>
+          <PanelHeaderActions>
+            <PanelHeaderActionItem
+              className="panel__header__action"
+              onClick={openNewModal}
+              disabled={isReadOnly}
+              title="Create new access point"
+            >
+              <PlusIcon />
+            </PanelHeaderActionItem>
+          </PanelHeaderActions>
+        </PanelHeader>
         {groupState.accessPointStates
           .filter(filterByType(LakehouseAccessPointState))
           .map((apState) => (
@@ -534,6 +829,11 @@ const AccessPointGroupSection = observer(
               accessPointState={apState}
             />
           ))}
+        {productEditorState.accessPointModal && (
+          <NewAccessPointAccessPOint
+            dataProductEditorState={productEditorState}
+          />
+        )}
       </div>
     );
   },
@@ -549,7 +849,7 @@ export const DataProductEditor = observer(() => {
     .flat();
   const isReadOnly = dataProductEditorState.isReadOnly;
   const openNewModal = () => {
-    dataProductEditorState.setAccessPointModal(true);
+    dataProductEditorState.setAccessPointGroupModal(true);
   };
   const auth = useAuth();
   const deployDataProduct = (): void => {
@@ -647,29 +947,34 @@ export const DataProductEditor = observer(() => {
         <div className="panel" style={{ overflow: 'auto' }}>
           <PanelHeader>
             <div className="panel__header__title">
-              <div className="panel__header__title__label">access points</div>
+              <div className="panel__header__title__label">
+                access point groups
+              </div>
             </div>
             <PanelHeaderActions>
               <PanelHeaderActionItem
                 className="panel__header__action"
                 onClick={openNewModal}
                 disabled={isReadOnly}
-                title="Create new access point"
+                title="Create new access point group"
               >
                 <PlusIcon />
               </PanelHeaderActionItem>
             </PanelHeaderActions>
           </PanelHeader>
           <PanelContent>
-            <div style={{ overflow: 'auto' }}>
+            <div
+              style={{ overflow: 'auto', margin: '1rem', marginLeft: '1.5rem' }}
+            >
               {dataProductEditorState.accessPointGroupStates.map(
-                (groupState) => (
-                  <AccessPointGroupSection
-                    key={groupState.value.id}
-                    groupState={groupState}
-                    isReadOnly={isReadOnly}
-                  />
-                ),
+                (groupState) =>
+                  groupState.accessPointStates.length > 0 && (
+                    <AccessPointGroupSection
+                      key={groupState.uuid}
+                      groupState={groupState}
+                      isReadOnly={isReadOnly}
+                    />
+                  ),
               )}
             </div>
             {!accessPointStates.length && (
@@ -679,8 +984,13 @@ export const DataProductEditor = observer(() => {
             )}
           </PanelContent>
 
-          {dataProductEditorState.accessPointModal && (
+          {/* {dataProductEditorState.accessPointModal && (
             <NewAccessPointAccessPOint
+              dataProductEditorState={dataProductEditorState}
+            />
+          )} */}
+          {dataProductEditorState.accessPointGroupModal && (
+            <NewAccessPointGroupModal
               dataProductEditorState={dataProductEditorState}
             />
           )}
