@@ -18,10 +18,7 @@ import { withAuth } from 'react-oidc-context';
 import type { EntitlementsDashboardState } from '../../../stores/lakehouse/entitlements/EntitlementsDashboardState.js';
 import { observer } from 'mobx-react-lite';
 import React, { useState } from 'react';
-import {
-  type V1_DataContract,
-  type V1_UserPendingContractsRecord,
-} from '@finos/legend-graph';
+import { type V1_UserPendingContractsRecord } from '@finos/legend-graph';
 import {
   DataGrid,
   type DataGridCellRendererParams,
@@ -78,7 +75,6 @@ const PendingContract_TaskIdColumnClickableCellRenderer = (
 const enum EntitlementsTabs {
   PENDING_TASKS = 'pendingTasks',
   PENDING_CONTRACTS = 'pendingContracts',
-  ALL_CONTRACTS = 'allContracts',
 }
 
 export const EntitlementsDashboard = withAuth(
@@ -89,7 +85,6 @@ export const EntitlementsDashboard = withAuth(
       dashboardState.lakehouseEntitlementsStore;
     const tasks = dashboardState.pendingTasks;
     const pendingConctracts = dashboardState.pendingContracts;
-    const allContracts = dashboardState.allContracts;
 
     const [selectedTab, setSelectedTab] = useState(
       EntitlementsTabs.PENDING_TASKS,
@@ -123,14 +118,6 @@ export const EntitlementsDashboard = withAuth(
               </Typography>
             }
             value={EntitlementsTabs.PENDING_CONTRACTS}
-          />
-          <Tab
-            label={
-              <Typography variant="h4" gutterBottom={true}>
-                ALL CONTRACTS
-              </Typography>
-            }
-            value={EntitlementsTabs.ALL_CONTRACTS}
           />
         </Tabs>
         {selectedTab === EntitlementsTabs.PENDING_TASKS &&
@@ -210,89 +197,6 @@ export const EntitlementsDashboard = withAuth(
                       headerName: 'Pending Task Assignes',
                       valueGetter: (p) =>
                         p.data?.pendingTaskWithAssignees.assignee.join(','),
-                      flex: 1,
-                    },
-                  ]}
-                />
-              )}
-            </div>
-          </Box>
-        )}
-        {selectedTab === EntitlementsTabs.ALL_CONTRACTS && (
-          <Box className="marketplace-lakehouse-entitlements__all-contracts">
-            <div
-              className={clsx(
-                'marketplace-lakehouse-entitlements__grid data-access-overview__grid',
-                {
-                  'ag-theme-balham': true,
-                },
-              )}
-            >
-              {allContracts && (
-                <DataGrid
-                  rowData={allContracts}
-                  onRowDataUpdated={(params) => {
-                    params.api.refreshCells({ force: true });
-                  }}
-                  suppressFieldDotNotation={true}
-                  suppressContextMenu={false}
-                  columnDefs={[
-                    {
-                      minWidth: 50,
-                      sortable: true,
-                      resizable: true,
-                      headerName: 'Contract Id',
-                      cellRenderer: (
-                        params: DataGridCellRendererParams<V1_DataContract>,
-                      ) => {
-                        return Contract_IdColumnClickableCellRenderer(
-                          params.data?.guid,
-                          (taskId) =>
-                            lakehouseEntitlementsStore.applicationStore.navigationService.navigator.updateCurrentLocation(
-                              generateLakehouseContractPath(taskId),
-                            ),
-                        );
-                      },
-                      flex: 2,
-                    },
-                    {
-                      minWidth: 50,
-                      sortable: true,
-                      resizable: true,
-                      headerName: 'Contract Description',
-                      valueGetter: (p) => p.data?.description,
-                      flex: 2,
-                    },
-                    {
-                      minWidth: 10,
-                      sortable: true,
-                      resizable: true,
-                      headerName: 'Version',
-                      valueGetter: (p) => p.data?.version,
-                      flex: 1,
-                    },
-                    {
-                      minWidth: 50,
-                      sortable: true,
-                      resizable: true,
-                      headerName: 'State',
-                      valueGetter: (p) => p.data?.state,
-                      flex: 2,
-                    },
-                    {
-                      minWidth: 50,
-                      sortable: true,
-                      resizable: true,
-                      headerName: 'Members',
-                      valueGetter: (p) => p.data?.members.map((m) => m.user),
-                      flex: 1,
-                    },
-                    {
-                      minWidth: 50,
-                      sortable: true,
-                      resizable: true,
-                      headerName: 'Created By',
-                      valueGetter: (p) => p.data?.createdBy,
                       flex: 1,
                     },
                   ]}

@@ -114,12 +114,19 @@ export class V1_ContractCreate_LegendDataProduct {
   consumer!: V1_OrganizationalScope;
 }
 
-export class V1_ContractUserEventPayload {
+export abstract class V1_ContractUserEventPayload {
   type!: V1_ContractEventPayloadType;
-  managerIdentity!: string;
   candidateIdentity!: string;
   taskId!: string;
   eventTimestamp!: string;
+}
+
+export class V1_ContractUserEventPrivilegeManagerPayload extends V1_ContractUserEventPayload {
+  managerIdentity!: string;
+}
+
+export class V1_ContractUserEventDataProducerPayload extends V1_ContractUserEventPayload {
+  dataProducerIdentity!: string;
 }
 
 export class V1_ContractUserEventRecord {

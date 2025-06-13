@@ -21,13 +21,13 @@ import {
   useLegendMarketplaceApplicationStore,
   useLegendMarketplaceBaseStore,
 } from '../../../application/LegendMarketplaceFrameworkProvider.js';
-import { LakehouseSubscriptionsStore } from '../../../stores/lakehouse/subscriptions/LakehouseSubscriptionsStore.js';
+import { LakehouseAdminStore } from '../../../stores/lakehouse/admin/LakehouseAdminStore.js';
 
-const LakehouseSubscriptionsStoreContext = createContext<
-  LakehouseSubscriptionsStore | undefined
+const LakehouseAdminStoreContext = createContext<
+  LakehouseAdminStore | undefined
 >(undefined);
 
-export const LakehouseSubscriptionsStoreProvider: React.FC<{
+export const LakehouseAdminStoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
   const applicationStore = useLegendMarketplaceApplicationStore();
@@ -37,29 +37,26 @@ export const LakehouseSubscriptionsStoreProvider: React.FC<{
     'lakehouse server client required to render',
   );
   const store = useLocalObservable(
-    () =>
-      new LakehouseSubscriptionsStore(applicationStore, lakehouseServerClient),
+    () => new LakehouseAdminStore(applicationStore, lakehouseServerClient),
   );
   return (
-    <LakehouseSubscriptionsStoreContext.Provider value={store}>
+    <LakehouseAdminStoreContext.Provider value={store}>
       {children}
-    </LakehouseSubscriptionsStoreContext.Provider>
+    </LakehouseAdminStoreContext.Provider>
   );
 };
 
-export const useLakehouseSubscriptionsStore = (): LakehouseSubscriptionsStore =>
+export const useLakehouseAdminStore = (): LakehouseAdminStore =>
   guaranteeNonNullable(
-    useContext(LakehouseSubscriptionsStoreContext),
+    useContext(LakehouseAdminStoreContext),
     `Can't find lakehouse subscriptions store in context`,
   );
 
-export const withLakehouseSubscriptionsStore = (
-  WrappedComponent: React.FC,
-): React.FC =>
-  function WithLakehouseSubscriptionsStore() {
+export const withLakehouseAdminStore = (WrappedComponent: React.FC): React.FC =>
+  function WithLakehouseAdminStore() {
     return (
-      <LakehouseSubscriptionsStoreProvider>
+      <LakehouseAdminStoreProvider>
         <WrappedComponent />
-      </LakehouseSubscriptionsStoreProvider>
+      </LakehouseAdminStoreProvider>
     );
   };

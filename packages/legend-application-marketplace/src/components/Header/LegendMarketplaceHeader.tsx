@@ -168,10 +168,6 @@ export const MarketplaceLakehouseHeader = observer(() => {
           title: 'Entitlements',
           urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS,
         },
-        {
-          title: 'Subscriptions',
-          urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SUBSCRIPTIONS,
-        },
       ]}
       showIcons={false}
     />

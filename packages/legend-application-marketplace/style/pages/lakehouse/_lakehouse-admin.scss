@@ -16,40 +16,19 @@
 
 @use 'mixins' as *;
 
-.marketplace-lakehouse-subscriptions__subscriptions-viewer {
-  &__content {
-    @include flexCenter;
-
+.marketplace-lakehouse-admin {
+  &-container {
+    height: 100%;
+    display: flex;
     flex-direction: column;
+    padding: 1rem 2rem 2rem;
   }
 
-  &__description {
-    text-align: center;
-  }
-
-  &__create-btn {
-    align-self: end;
-    margin: 1rem 0;
-  }
-
-  &__grid {
-    height: 300px;
-    width: 100%;
-
-    &__user-display {
-      height: 100%;
-    }
-  }
-}
-
-.marketplace-lakehouse-subscriptions__subscription-creator {
-  &__select {
-    &__subheader {
-      font-size: 1.2rem;
-    }
-
-    &__item {
-      font-size: 1.4rem;
+  &__contracts,
+  &__subscriptions {
+    &__grid {
+      flex: 1;
+      width: 100%;
     }
   }
 }
