@@ -46,7 +46,7 @@ enum DataContractCreatorConsumerType {
   SYSTEM_ACCOUNT = 'System Account',
 }
 
-export const DataContractCreator = observer(
+export const EntitlementsDataContractCreator = observer(
   (props: {
     open: boolean;
     onClose: () => void;

@@ -83,7 +83,7 @@ import {
   Tabs,
 } from '@mui/material';
 import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
-import { DataContractCreator } from '../entitlements/EntitlementsDataContractCreator.js';
+import { EntitlementsDataContractCreator } from '../entitlements/EntitlementsDataContractCreator.js';
 import { EntitlementsDataContractViewer } from '../entitlements/EntitlementsDataContractViewer.js';
 import { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
 import { useAuth } from 'react-oidc-context';
@@ -580,7 +580,7 @@ export const DataProductAccessPointGroupViewer = observer(
         </div>
         {accessGroupState.accessState.viewerState
           .dataContractAccessPointGroup !== undefined && (
-          <DataContractCreator
+          <EntitlementsDataContractCreator
             open={true}
             onClose={() =>
               accessGroupState.accessState.viewerState.setDataContractAccessPointGroup(
