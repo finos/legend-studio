@@ -579,7 +579,7 @@ export const DataProductAccessPointGroupViewer = observer(
           </div>
         </div>
         {accessGroupState.accessState.viewerState
-          .dataContractAccessPointGroup !== undefined && (
+          .dataContractAccessPointGroup === accessGroupState.group && (
           <EntitlementsDataContractCreator
             open={true}
             onClose={() =>
