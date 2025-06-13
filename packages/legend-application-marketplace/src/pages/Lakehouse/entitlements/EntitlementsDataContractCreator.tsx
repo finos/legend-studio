@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import type { V1_AccessPointGroup } from '@finos/legend-graph';
+import {
+  ELEMENT_PATH_DELIMITER,
+  type V1_AccessPointGroup,
+} from '@finos/legend-graph';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState, type ChangeEvent } from 'react';
 import type { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
@@ -101,7 +104,8 @@ export const DataContractCreator = observer(
     };
 
     const dataProductTitle =
-      viewerState.product.title ?? viewerState.product.path.split('::').pop();
+      viewerState.product.title ??
+      viewerState.product.path.split(ELEMENT_PATH_DELIMITER).pop();
 
     return (
       <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="md">

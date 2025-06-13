@@ -18,26 +18,14 @@ import { observer } from 'mobx-react-lite';
 import type { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
 import { useEffect, useRef, useState } from 'react';
 import { DATA_PRODUCT_WIKI_PAGE_SECTIONS } from '../../../stores/lakehouse/DataProductLayoutState.js';
-import {
-  CaretDownIcon,
-  CaretUpIcon,
-  clsx,
-  ControlledDropdownMenu,
-  MenuContent,
-  MenuContentDivider,
-  MenuContentItem,
-  MoreVerticalIcon,
-  PlayIcon,
-  VerifiedIcon,
-} from '@finos/legend-art';
-import {
-  DATA_PRODUCT_VIEWER_ACTIVITY_MODE,
-  generateAnchorForActivity,
-} from '../../../stores/lakehouse/DataProductViewerNavigation.js';
+import { CaretUpIcon, clsx, OpenIcon, VerifiedIcon } from '@finos/legend-art';
+import { DATA_PRODUCT_VIEWER_ACTIVITY_MODE } from '../../../stores/lakehouse/DataProductViewerNavigation.js';
 import { DataProductPlaceholderPanel } from './DataProductHolder.js';
 import { DataProductViewerActivityBar } from './DataProductViewerActivityBar.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { DataProductWiki } from './DataProductWiki.js';
+import { Button } from '@mui/material';
+import { isSnapshotVersion } from '@finos/legend-server-depot';
 
 const DataProductHeader = observer(
   (props: {
@@ -83,75 +71,39 @@ const DataProductHeader = observer(
               </div>
             )}
           </div>
-          <div className="data-space__viewer__header__actions">
-            <ControlledDropdownMenu
-              className="data-space__viewer__header__execution-context-selector"
-              menuProps={{
-                anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
-                transformOrigin: { vertical: 'top', horizontal: 'right' },
-                elevation: 7,
-              }}
-              title={`Current Execution Context: ${dataProductViewerState.product.name}\nClick to switch`}
-              content={null}
-            >
-              <div className="data-space__viewer__header__execution-context-selector__trigger">
-                <div className="data-space__viewer__header__execution-context-selector__trigger__icon">
-                  <PlayIcon />
-                </div>
-                <div className="data-space__viewer__header__execution-context-selector__trigger__label">
-                  {dataProductViewerState.product.name}
-                </div>
-                <div className="data-space__viewer__header__execution-context-selector__trigger__dropdown-icon">
-                  <CaretDownIcon />
-                </div>
-              </div>
-            </ControlledDropdownMenu>
-            <ControlledDropdownMenu
-              className="data-space__viewer__header__actions-selector"
-              menuProps={{
-                anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
-                transformOrigin: { vertical: 'top', horizontal: 'right' },
-                elevation: 7,
-              }}
-              title="More Actions..."
-              content={
-                <MenuContent>
-                  <MenuContentItem
-                    onClick={() => {
-                      dataProductViewerState
-                        .viewSDLCProject(dataProudct.path)
-                        .catch(applicationStore.alertUnhandledError);
-                    }}
-                  >
-                    View SDLC Project
-                  </MenuContentItem>
-                  <MenuContentDivider />
-                  <MenuContentItem
-                    onClick={() => {
-                      const documentationUrl = 'TODO';
-                      applicationStore.navigationService.navigator.visitAddress(
-                        documentationUrl,
-                      );
-                    }}
-                  >
-                    Read Documentation
-                  </MenuContentItem>
-                  <MenuContentItem
-                    onClick={() =>
-                      dataProductViewerState.changeZone(
-                        generateAnchorForActivity(
-                          DATA_PRODUCT_VIEWER_ACTIVITY_MODE.SUPPORT,
-                        ),
-                      )
-                    }
-                  >
-                    Get Help
-                  </MenuContentItem>
-                </MenuContent>
-              }
-            >
-              <MoreVerticalIcon />
-            </ControlledDropdownMenu>
+          <div className="data-space__viewer__header__type">
+            {dataProductViewerState.isSandboxProduct ? (
+              <Button
+                onClick={() => {
+                  dataProductViewerState.viewIngestEnvironment?.();
+                }}
+                title="View Ingest Environment"
+                className="data-space__viewer__header__type__sandbox"
+              >
+                Sandbox Data Product
+                <OpenIcon />
+              </Button>
+            ) : (
+              <Button
+                onClick={() => {
+                  dataProductViewerState
+                    .viewSDLCProject(dataProudct.path)
+                    .catch(applicationStore.alertUnhandledError);
+                }}
+                title="View SDLC Project"
+                className={clsx('data-space__viewer__header__type__version', {
+                  'data-space__viewer__header__type__version--snapshot':
+                    isSnapshotVersion(dataProductViewerState.project.versionId),
+                  'data-space__viewer__header__type__version--release':
+                    !isSnapshotVersion(
+                      dataProductViewerState.project.versionId,
+                    ),
+                })}
+              >
+                Version: {dataProductViewerState.project.versionId}
+                <OpenIcon />
+              </Button>
+            )}
           </div>
         </div>
       </div>

@@ -76,7 +76,7 @@ import {
   isPrimitiveType,
 } from '@finos/legend-data-cube';
 import {
-  getV1_ValueSpecificationStringValue,
+  V1_stringifyValueSpecification,
   isValidV1_ValueSpecification,
 } from '../../stores/shared/V1_ValueSpecificationEditorHelper.js';
 import { useApplicationStore } from '@finos/legend-application';
@@ -348,7 +348,7 @@ export const V1_BasicValueSpecificationEditor = forwardRef<
     const convertValueSpecificationToText = (
       _valueSpecification: V1_ValueSpecification,
     ): string | undefined => {
-      return getV1_ValueSpecificationStringValue(
+      return V1_stringifyValueSpecification(
         _valueSpecification,
         applicationStore,
       );

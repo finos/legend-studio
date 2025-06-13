@@ -29,7 +29,7 @@ import type {
 } from '@finos/legend-application';
 import {
   buildDatePickerOption,
-  getV1_ValueSpecificationStringValue,
+  V1_stringifyValueSpecification,
 } from '@finos/legend-query-builder';
 
 const getNameOfV1ValueSpecification = (
@@ -48,7 +48,7 @@ const getNameOfV1ValueSpecification = (
       return possibleDateLabel;
     }
   }
-  return getV1_ValueSpecificationStringValue(value, applicationStore);
+  return V1_stringifyValueSpecification(value, applicationStore);
 };
 
 export class LegendQueryDataCubeSourceBuilder_DataCubeApplicationPlugin extends LegendDataCubeApplicationPlugin {

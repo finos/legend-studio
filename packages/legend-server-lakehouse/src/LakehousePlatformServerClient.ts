@@ -29,7 +29,7 @@ export class LakehousePlatformServerClient extends AbstractServerClient {
 
   private _discovery = (): string => `${this.baseUrl}/ingest/discovery`;
 
-  private _env = (): string => `${this._env()}/environments`;
+  private _env = (): string => `${this._discovery()}/environments`;
 
   private _token = (token?: string) => ({
     Authorization: `Bearer ${token}`,

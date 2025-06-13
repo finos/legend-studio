@@ -16,10 +16,11 @@
 
 import { action, computed, makeObservable, observable } from 'mobx';
 import { ActionState, isNonEmptyString, uuid } from '@finos/legend-shared';
-import type {
-  V1_DataProduct,
-  V1_DataProductArtifactGeneration,
-  V1_DataProductDefinitionAndArtifact,
+import {
+  ELEMENT_PATH_DELIMITER,
+  type V1_DataProduct,
+  type V1_DataProductArtifactGeneration,
+  type V1_DataProductDefinitionAndArtifact,
 } from '@finos/legend-graph';
 import type { MarketplaceLakehouseStore } from '../MarketplaceLakehouseStore.js';
 
@@ -60,7 +61,9 @@ export class DataProductEntity {
   }
 
   get title(): string {
-    return this.product?.title ?? this.path.split('::').pop() ?? '';
+    return (
+      this.product?.title ?? this.path.split(ELEMENT_PATH_DELIMITER).pop() ?? ''
+    );
   }
 }
 
@@ -198,7 +201,9 @@ export class SandboxDataProductState extends BaseDataProductState {
   get title(): string {
     return isNonEmptyString(this.dataProductArtifact?.dataProduct.title)
       ? this.dataProductArtifact.dataProduct.title
-      : (this.dataProductArtifact?.dataProduct.path.split('::').pop() ?? '');
+      : (this.dataProductArtifact?.dataProduct.path
+          .split(ELEMENT_PATH_DELIMITER)
+          .pop() ?? '');
   }
 
   get description(): string | undefined {

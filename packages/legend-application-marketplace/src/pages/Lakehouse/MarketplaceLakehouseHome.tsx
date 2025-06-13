@@ -72,6 +72,7 @@ import {
 } from '../../stores/lakehouse/dataProducts/DataProducts.js';
 import type { LegendMarketplaceApplicationStore } from '../../stores/LegendMarketplaceBaseStore.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
+import { ELEMENT_PATH_DELIMITER } from '@finos/legend-graph';
 
 const MAX_DESCRIPTION_LENGTH = 250;
 
@@ -126,7 +127,7 @@ const LakehouseDataProductCardInfoPopover = observer(
       >
         <div className="marketplace-lakehouse-data-product-card__popover__name">
           {dataProductEntity.product?.title ??
-            dataProductEntity.path.split('::').pop()}
+            dataProductEntity.path.split(ELEMENT_PATH_DELIMITER).pop()}
         </div>
         <div className="marketplace-lakehouse-data-product-card__popover__description-label">
           Description

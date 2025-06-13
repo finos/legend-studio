@@ -69,7 +69,10 @@ import {
   type StoredFileGeneration,
 } from '@finos/legend-storage';
 import { DataProductViewerState } from './DataProductViewerState.js';
-import { EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl } from '../../__lib__/LegendMarketplaceNavigation.js';
+import {
+  EXTERNAL_APPLICATION_NAVIGATION__generateIngestEnvironemntUrl,
+  EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl,
+} from '../../__lib__/LegendMarketplaceNavigation.js';
 import type { AuthContextProps } from 'react-oidc-context';
 import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
 import {
@@ -429,7 +432,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(
-        `Unable to load lakehouse environments: ${error.message}`,
+        `Unable to load lakehouse environment summaries: ${error.message}`,
       );
       this.loadingLakehouseEnvironmentSummariesState.fail();
     }
@@ -453,7 +456,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(
-        `Unable to load lakehouse environments: ${error.message}`,
+        `Unable to load lakehouse environment summary: ${error.message}`,
       );
       return undefined;
     }
@@ -479,7 +482,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(
-        `Unable to load lakehouse environments: ${error.message}`,
+        `Unable to load lakehouse environment details: ${error.message}`,
       );
       this.loadingLakehouseEnvironmentSummariesState.fail();
     }
@@ -615,6 +618,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         this.lakehouseContractServerClient,
         projectData,
         v1DataProduct,
+        false,
         parsed,
         {
           retrieveGraphData: () => {
@@ -750,6 +754,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
           versionId: '',
         }),
         v1_DataProduct,
+        true,
         buildDataProductArtifactGeneration({
           ...V1_DataProductArtifactGeneration.serialization.toJson(
             sandboxDataProduct.artifact,
@@ -765,6 +770,12 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
           viewSDLCProject: () => {
             throw new Error('Project does not exist in SDLC');
           },
+          viewIngestEnvironment: () =>
+            this.applicationStore.navigationService.navigator.visitAddress(
+              EXTERNAL_APPLICATION_NAVIGATION__generateIngestEnvironemntUrl(
+                ingestServerUrl,
+              ),
+            ),
         },
       );
       this.setDataProductViewerState(stateViewer);

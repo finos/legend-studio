@@ -17,6 +17,8 @@
 import {
   AnchorLinkIcon,
   clsx,
+  CubesLoadingIndicator,
+  CubesLoadingIndicatorIcon,
   MarkdownTextViewer,
   QuestionCircleIcon,
 } from '@finos/legend-art';
@@ -33,13 +35,37 @@ import {
   type DataProductGroupAccessState,
 } from '../../../stores/lakehouse/DataProductDataAccessState.js';
 import {
-  DataGrid,
   type DataGridCellRendererParams,
+  type DataGridColumnDefinition,
+  DataGrid,
 } from '@finos/legend-lego/data-grid';
 import {
-  type V1_RawLambda,
-  V1_RenderStyle,
   type V1_LakehouseAccessPoint,
+  type V1_RelationType,
+  type V1_RelationTypeColumn,
+  extractElementNameFromPath,
+  PureClientVersion,
+  V1_AppliedFunction,
+  V1_AppliedProperty,
+  V1_CBoolean,
+  V1_CByteArray,
+  V1_CDateTime,
+  V1_CDecimal,
+  V1_CFloat,
+  V1_CInteger,
+  V1_CStrictDate,
+  V1_CStrictTime,
+  V1_CString,
+  V1_EnumValue,
+  V1_getGenericTypeFullPath,
+  V1_LambdaReturnTypeInput,
+  V1_LegendSDLC,
+  V1_Protocol,
+  V1_PureGraphManager,
+  V1_PureModelContextPointer,
+  V1_relationTypeModelSchema,
+  V1_RenderStyle,
+  V1_serializeRawValueSpecification,
 } from '@finos/legend-graph';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 import {
@@ -48,12 +74,16 @@ import {
 } from '@finos/legend-code-editor';
 import { Box, Button, Tab, Tabs } from '@mui/material';
 import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
-import { type PlainObject } from '@finos/legend-shared';
 import { DataContractCreator } from '../entitlements/EntitlementsDataContractCreator.js';
 import { EntitlementsDataContractViewer } from '../entitlements/EntitlementsDataContractViewer.js';
 import { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
 import { useAuth } from 'react-oidc-context';
 import { DataProductSubscriptionViewer } from '../subscriptions/DataProductSubscriptionsViewer.js';
+import { assertErrorThrown, guaranteeType } from '@finos/legend-shared';
+import { resolveVersion } from '@finos/legend-server-depot';
+import { deserialize } from 'serializr';
+
+const MAX_GRID_AUTO_HEIGHT_ROWS = 10; // Maximum number of rows to show before switching to normal height (scrollable grid)
 
 export const DataProductMarkdownTextViewer: React.FC<{ value: string }> = (
   props,
@@ -87,72 +117,224 @@ const TDSColumnDocumentationCellRenderer = (
   );
 };
 
-const TDSColumnMoreInfoCellRenderer = (
-  params: DataGridCellRendererParams<V1_LakehouseAccessPoint>,
-): React.ReactNode => {
+const TDSColumnMoreInfoCellRenderer = (props: {
+  params: DataGridCellRendererParams<V1_LakehouseAccessPoint>;
+  accessGroupState: DataProductGroupAccessState;
+}): React.ReactNode => {
+  const { params, accessGroupState } = props;
   const data = params.data;
   const store = useLegendMarketplaceBaseStore();
   const enum MoreInfoTabs {
+    COLUMNS = 'Columns',
     GRAMMAR = 'Grammar',
   }
-  const [activeTab, setActiveTab] = useState(MoreInfoTabs.GRAMMAR);
+  const [selectedTab, setSelectedTab] = useState(MoreInfoTabs.COLUMNS);
   const handleTabChange = (
     event: React.SyntheticEvent,
     newValue: MoreInfoTabs,
   ) => {
-    setActiveTab(newValue);
+    setSelectedTab(newValue);
   };
   const [accessPointGrammar, setAccessPointGrammar] =
     useState<string>('Loading ...');
+  const [accessPointRelationType, setAccessPointRelationType] = useState<
+    V1_RelationType | undefined
+  >();
+  const [loadingAccessPointDetails, setLoadingAccessPointDetails] =
+    useState<boolean>(false);
 
   useEffect(() => {
     if (!data) {
       return;
     }
 
-    const fetchGrammar = async () => {
+    const fetchAccessPointGrammar = async () => {
       try {
         const grammar = await store.engineServerClient.JSONToGrammar_lambda(
-          data.func as unknown as PlainObject<V1_RawLambda>,
+          V1_serializeRawValueSpecification(data.func),
           V1_RenderStyle.PRETTY,
         );
-
         setAccessPointGrammar(grammar);
       } catch {
         throw new Error('Error fetching access point grammar');
       }
     };
 
-    fetchGrammar().catch((error) => {
-      throw new Error(`Error fetching access point grammar: ${error.message}`);
-    });
-  }, [data, store]);
+    const fetchAccessPointRelationType = async () => {
+      try {
+        const model = accessGroupState.accessState.viewerState.isSandboxProduct
+          ? guaranteeType(
+              accessGroupState.accessState.viewerState.graphManagerState
+                .graphManager,
+              V1_PureGraphManager,
+            ).getFullGraphModelData(
+              accessGroupState.accessState.viewerState.graphManagerState.graph,
+            )
+          : new V1_PureModelContextPointer(
+              // TODO: remove as backend should handle undefined protocol input
+              new V1_Protocol(
+                V1_PureGraphManager.PURE_PROTOCOL_NAME,
+                PureClientVersion.VX_X_X,
+              ),
+              new V1_LegendSDLC(
+                accessGroupState.accessState.viewerState.project.groupId,
+                accessGroupState.accessState.viewerState.project.artifactId,
+                resolveVersion(
+                  accessGroupState.accessState.viewerState.project.versionId,
+                ),
+              ),
+            );
+        const relationTypeInput = new V1_LambdaReturnTypeInput(
+          model,
+          data.func,
+        );
+        const relationType = deserialize(
+          V1_relationTypeModelSchema,
+          await store.engineServerClient.lambdaRelationType(
+            V1_LambdaReturnTypeInput.serialization.toJson(relationTypeInput),
+          ),
+        );
+        setAccessPointRelationType(relationType);
+      } catch {
+        throw new Error('Error fetching access point relation type');
+      }
+    };
+
+    const fetchAccessPointDetails = async () => {
+      return Promise.all([
+        fetchAccessPointGrammar(),
+        fetchAccessPointRelationType(),
+      ]);
+    };
+
+    setLoadingAccessPointDetails(true);
+    fetchAccessPointDetails()
+      .catch((error) => {
+        assertErrorThrown(error);
+        accessGroupState.accessState.viewerState.applicationStore.notificationService.notifyError(
+          error,
+        );
+      })
+      .finally(() => {
+        setLoadingAccessPointDetails(false);
+      });
+  }, [data, store, accessGroupState]);
 
   if (!data) {
     return null;
   }
 
+  const relationColumnDefs: DataGridColumnDefinition<V1_RelationTypeColumn>[] =
+    [
+      {
+        headerName: 'Column Name',
+        field: 'name',
+        flex: 1,
+      },
+      {
+        headerName: 'Column Type',
+        flex: 1,
+        valueGetter: (_params) =>
+          _params.data
+            ? `${extractElementNameFromPath(
+                V1_getGenericTypeFullPath(_params.data.genericType),
+              )}${
+                _params.data.genericType.typeVariableValues.length > 0
+                  ? `(${_params.data.genericType.typeVariableValues
+                      .map((valueSpec) => {
+                        // TODO: Move V1_stringifyValueSpecification out of
+                        // @finos/legend-query-builder so it can be used in other packages
+                        if (
+                          valueSpec instanceof V1_CDateTime ||
+                          valueSpec instanceof V1_CStrictDate ||
+                          valueSpec instanceof V1_CStrictTime ||
+                          valueSpec instanceof V1_CString ||
+                          valueSpec instanceof V1_CBoolean ||
+                          valueSpec instanceof V1_CByteArray ||
+                          valueSpec instanceof V1_CDecimal ||
+                          valueSpec instanceof V1_CFloat ||
+                          valueSpec instanceof V1_CFloat ||
+                          valueSpec instanceof V1_CInteger ||
+                          valueSpec instanceof V1_EnumValue
+                        ) {
+                          return valueSpec.value.toString();
+                        } else if (valueSpec instanceof V1_AppliedProperty) {
+                          return valueSpec.property;
+                        } else if (valueSpec instanceof V1_AppliedFunction) {
+                          return valueSpec.function;
+                        } else {
+                          return '';
+                        }
+                      })
+                      .join(',')})`
+                  : ''
+              }`
+            : '',
+      },
+    ];
+
   return (
     <div>
-      <Tabs value={activeTab} onChange={handleTabChange}>
+      <Tabs value={selectedTab} onChange={handleTabChange}>
+        <Tab label={MoreInfoTabs.COLUMNS} value={MoreInfoTabs.COLUMNS} />
         <Tab label={MoreInfoTabs.GRAMMAR} value={MoreInfoTabs.GRAMMAR} />
       </Tabs>
-
-      <div
-        className="data-space__viewer__more-info__container"
-        style={{ height: '200px', width: '100%' }}
-      >
-        <CodeEditor
-          inputValue={accessPointGrammar}
-          isReadOnly={true}
-          language={CODE_EDITOR_LANGUAGE.TEXT}
-          hideMinimap={true}
-          hideGutter={true}
-          hideActionBar={true}
-          lightTheme={CODE_EDITOR_THEME.GITHUB_LIGHT}
-          extraEditorOptions={{ scrollBeyondLastLine: false, wordWrap: 'on' }}
-        />
-      </div>
+      <Box className="data-space__viewer__more-info__container">
+        {loadingAccessPointDetails && (
+          <Box className="data-space__viewer__more-info__loading-indicator">
+            <CubesLoadingIndicator isLoading={true}>
+              <CubesLoadingIndicatorIcon />
+            </CubesLoadingIndicator>
+          </Box>
+        )}
+        {!loadingAccessPointDetails && (
+          <>
+            {selectedTab === MoreInfoTabs.COLUMNS && (
+              <Box
+                className={clsx('data-space__viewer__more-info__columns-grid', {
+                  'data-space__viewer__more-info__columns-grid--auto-height':
+                    (accessPointRelationType?.columns.length ?? 0) <=
+                    MAX_GRID_AUTO_HEIGHT_ROWS,
+                  'data-space__viewer__more-info__columns-grid--auto-height--empty':
+                    (accessPointRelationType?.columns.length ?? 0) === 0,
+                  'data-space__viewer__more-info__columns-grid--auto-height--non-empty':
+                    (accessPointRelationType?.columns.length ?? 0) > 0 &&
+                    (accessPointRelationType?.columns.length ?? 0) <=
+                      MAX_GRID_AUTO_HEIGHT_ROWS,
+                })}
+              >
+                <DataGrid
+                  rowData={accessPointRelationType?.columns ?? []}
+                  columnDefs={relationColumnDefs}
+                  domLayout={
+                    (accessPointRelationType?.columns.length ?? 0) >
+                    MAX_GRID_AUTO_HEIGHT_ROWS
+                      ? 'normal'
+                      : 'autoHeight'
+                  }
+                />
+              </Box>
+            )}
+            {selectedTab === MoreInfoTabs.GRAMMAR && (
+              <Box className="data-space__viewer__more-info__grammar">
+                <CodeEditor
+                  inputValue={accessPointGrammar}
+                  isReadOnly={true}
+                  language={CODE_EDITOR_LANGUAGE.TEXT}
+                  hideMinimap={true}
+                  hideGutter={true}
+                  hideActionBar={true}
+                  lightTheme={CODE_EDITOR_THEME.GITHUB_LIGHT}
+                  extraEditorOptions={{
+                    scrollBeyondLastLine: false,
+                    wordWrap: 'on',
+                  }}
+                />
+              </Box>
+            )}
+          </>
+        )}
+      </Box>
     </div>
   );
 };
@@ -287,8 +469,13 @@ export const DataProductAccessPointGroupViewer = observer(
               className={clsx(
                 'data-space__viewer__access-group__tds__column-specs',
                 'data-space__viewer__grid',
+                'ag-theme-balham',
                 {
-                  'ag-theme-balham': true,
+                  'data-space__viewer__grid--auto-height':
+                    accessPoints.length <= MAX_GRID_AUTO_HEIGHT_ROWS,
+                  'data-space__viewer__grid--auto-height--non-empty':
+                    accessPoints.length > 0 &&
+                    accessPoints.length <= MAX_GRID_AUTO_HEIGHT_ROWS,
                 },
               )}
             >
@@ -299,6 +486,11 @@ export const DataProductAccessPointGroupViewer = observer(
                   getRowId: (rowData) => rowData.data.id,
                 }}
                 suppressFieldDotNotation={true}
+                domLayout={
+                  accessPoints.length > MAX_GRID_AUTO_HEIGHT_ROWS
+                    ? 'normal'
+                    : 'autoHeight'
+                }
                 columnDefs={[
                   {
                     minWidth: 50,
@@ -332,8 +524,15 @@ export const DataProductAccessPointGroupViewer = observer(
                   params.api.refreshCells({ force: true });
                 }}
                 masterDetail={true}
-                detailCellRenderer={TDSColumnMoreInfoCellRenderer}
-                detailRowHeight={200}
+                detailCellRenderer={(
+                  params: DataGridCellRendererParams<V1_LakehouseAccessPoint>,
+                ) => (
+                  <TDSColumnMoreInfoCellRenderer
+                    params={params}
+                    accessGroupState={accessGroupState}
+                  />
+                )}
+                detailRowAutoHeight={true}
               />
             </div>
           </div>

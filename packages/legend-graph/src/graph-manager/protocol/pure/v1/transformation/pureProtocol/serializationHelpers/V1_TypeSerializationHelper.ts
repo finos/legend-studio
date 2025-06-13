@@ -21,7 +21,6 @@ import {
   list,
   primitive,
   serialize,
-  SKIP,
 } from 'serializr';
 import { V1_GenericType } from '../../../model/packageableElements/type/V1_GenericType.js';
 import { V1_PackageableType } from '../../../model/packageableElements/type/V1_PackageableType.js';
@@ -45,6 +44,11 @@ import {
   V1_RelationType,
   V1_RelationTypeColumn,
 } from '../../../model/packageableElements/type/V1_RelationType.js';
+import {
+  V1_deserializeValueSpecification,
+  V1_serializeValueSpecification,
+} from './V1_ValueSpecificationSerializer.js';
+import type { V1_ValueSpecification } from '../../../model/valueSpecification/V1_ValueSpecification.js';
 
 export enum V1_Type_Type {
   PACKAGEABLE_TYPE = 'packageableType',
@@ -73,9 +77,9 @@ export const V1_genericTypeModelSchema = createModelSchema(V1_GenericType, {
     },
   ),
   typeVariableValues: optionalCustomList(
-    // TODO
-    (value) => SKIP,
-    (value) => SKIP,
+    (value) =>
+      V1_serializeValueSpecification(value as V1_ValueSpecification, []),
+    (value) => V1_deserializeValueSpecification(value, []),
     {
       INTERNAL__forceReturnEmptyInTest: true,
     },
