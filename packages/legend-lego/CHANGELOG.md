@@ -1,5 +1,11 @@
 # @finos/legend-lego
 
+## 2.0.91
+
+### Patch Changes
+
+- [#4191](https://github.com/finos/legend-studio/pull/4191) [`5ae1770`](https://github.com/finos/legend-studio/commit/5ae1770e74638484fc405915876587122c80d3b9) ([@travisstebbins](https://github.com/travisstebbins)) - Improve Lakehouse Entitlements page
+
 ## 2.0.90
 
 ## 2.0.89

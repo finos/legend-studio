@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.104
+
+### Patch Changes
+
+- [#4175](https://github.com/finos/legend-studio/pull/4175) [`707dc46`](https://github.com/finos/legend-studio/commit/707dc465a9ac8442fa1ef670dc5e899dbcc6060e) ([@janeenyamak1](https://github.com/janeenyamak1)) - Add Single Store Icon for new Function Activator
+
 ## 7.1.103
 
 ### Patch Changes

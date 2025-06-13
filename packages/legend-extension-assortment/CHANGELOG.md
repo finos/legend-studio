@@ -1,5 +1,11 @@
 # @finos/legend-extension-assortment
 
+## 0.0.317
+
+### Patch Changes
+
+- [#4175](https://github.com/finos/legend-studio/pull/4175) [`707dc46`](https://github.com/finos/legend-studio/commit/707dc465a9ac8442fa1ef670dc5e899dbcc6060e) ([@janeenyamak1](https://github.com/janeenyamak1)) - Adding scss for mem sql function
+
 ## 0.0.316
 
 ## 0.0.315
