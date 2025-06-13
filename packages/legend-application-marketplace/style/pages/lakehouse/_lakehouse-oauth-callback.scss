@@ -23,4 +23,9 @@
     height: 100%;
     flex-direction: column;
   }
+
+  &__loading-indicator {
+    flex-direction: column;
+    gap: 1rem;
+  }
 }
