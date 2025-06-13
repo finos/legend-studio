@@ -16,7 +16,7 @@
 
 import {
   AnchorLinkIcon,
-  ArrowDownIcon,
+  CaretDownIcon,
   clsx,
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
@@ -439,7 +439,7 @@ export const DataProductAccessPointGroupViewer = observer(
                     setIsEntitledButtonGroupMenuOpen((prev) => !prev)
                   }
                 >
-                  <ArrowDownIcon />
+                  <CaretDownIcon />
                 </Button>
               </ButtonGroup>
               <Menu
