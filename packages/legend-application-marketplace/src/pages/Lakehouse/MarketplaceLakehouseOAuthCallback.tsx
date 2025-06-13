@@ -25,7 +25,10 @@ export const MarketplaceLakehouseOAuthCallback = () => {
   return (
     <LegendMarketplacePage className="legend-marketplace-oauth-callback">
       <Container maxWidth="xxl" className="legend-marketplace-oauth-callback">
-        <CubesLoadingIndicator isLoading={true}>
+        <CubesLoadingIndicator
+          isLoading={true}
+          className="legend-marketplace-oauth-callback__loading-indicator"
+        >
           <CubesLoadingIndicatorIcon />
           <div>Authenticating...</div>
         </CubesLoadingIndicator>
