@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-quality
 
+## 2.0.95
+
+### Patch Changes
+
+- [#4188](https://github.com/finos/legend-studio/pull/4188) [`8ce4474`](https://github.com/finos/legend-studio/commit/8ce44743da46b8ea4ffba310abdcdde519bb743f) ([@viju4076](https://github.com/viju4076)) - making type as optional in data quality relation validations
+
 ## 2.0.94
 
 ## 2.0.93
