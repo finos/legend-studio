@@ -65,6 +65,7 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
   readonly parameterValues: ParameterValue[] | undefined;
   readonly runtimePath: string | undefined;
   readonly parameters: object | undefined;
+  readonly letFuncsRawLambda: RawLambda | undefined;
 
   constructor(
     selectQuery: RawLambda,
@@ -73,6 +74,7 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     runtimePath: string | undefined,
     graphManagerState: GraphManagerState,
     queryBuilderState?: QueryBuilderState,
+    letFuncsRawLambda?: RawLambda | undefined,
   ) {
     super();
 
@@ -83,6 +85,7 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     this.runtimePath = runtimePath;
     this.parameterValues = parameterValues;
     this.parameters = selectQuery.parameters;
+    this.letFuncsRawLambda = letFuncsRawLambda;
   }
 
   override finalizeTimingRecord(
@@ -196,7 +199,20 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
   override async executeQuery(query: V1_Lambda, source: DataCubeSource) {
     const stopWatch = new StopWatch();
     const lambda = this.buildRawLambdaFromValueSpec(query);
-    lambda.parameters = this.parameters;
+    if (this.letFuncsRawLambda) {
+      if (
+        Array.isArray(lambda.body) &&
+        Array.isArray(this.letFuncsRawLambda.body)
+      ) {
+        lambda.body = [
+          ...(this.letFuncsRawLambda.body as object[]),
+          ...(lambda.body as object[]),
+        ];
+      }
+    }
+    lambda.parameters = this.letFuncsRawLambda
+      ? this.letFuncsRawLambda.parameters
+      : this.parameters;
     const [executionWithMetadata, queryString] = await Promise.all([
       this.graphState.graphManager.runQuery(
         lambda,

@@ -68,9 +68,11 @@ import {
   QueryBuilderTelemetryHelper,
   buildExecutionParameterValues,
   getExecutionQueryFromRawLambda,
+  getRawLambdaForLetFuncs,
 } from '@finos/legend-query-builder';
 import { FunctionActivatorState } from './FunctionActivatorState.js';
 import { FunctionTestableState } from './function-activator/testable/FunctionTestableState.js';
+import { openDataCube } from '../../data-cube/LegendStudioDataCubeHelper.js';
 
 export enum FUNCTION_EDITOR_TAB {
   DEFINITION = 'DEFINITION',
@@ -245,6 +247,24 @@ export class FunctionParametersState extends LambdaParametersState {
           this.functionEditorState.editorStore.applicationStore
             .alertUnhandledError,
         ),
+      PARAMETER_SUBMIT_ACTION.RUN,
+    );
+  }
+
+  openDataCubeModal(
+    query: RawLambda,
+    element: PackageableElement,
+    editorStore: EditorStore,
+  ): void {
+    this.parameterStates = this.build(query);
+    this.parameterValuesEditorState.open(
+      (): Promise<void> =>
+        this.functionEditorState
+          .openingDataCube(element, editorStore)
+          .catch(
+            this.functionEditorState.editorStore.applicationStore
+              .alertUnhandledError,
+          ),
       PARAMETER_SUBMIT_ACTION.RUN,
     );
   }
@@ -529,6 +549,36 @@ export class FunctionEditorState extends ElementEditorState {
     } finally {
       this.isGeneratingPlan = false;
     }
+  }
+
+  async handleOpeningDataCube(
+    element: PackageableElement,
+    editorStore: EditorStore,
+  ): Promise<void> {
+    const query = this.bodyExpressionSequence;
+    const parameters = (query.parameters ?? []) as object[];
+    if (parameters.length) {
+      this.parametersState.openDataCubeModal(query, element, editorStore);
+    } else {
+      await openDataCube(element, editorStore);
+    }
+  }
+
+  async openingDataCube(
+    element: PackageableElement,
+    editorStore: EditorStore,
+  ): Promise<void> {
+    const params = buildExecutionParameterValues(
+      this.parametersState.parameterStates,
+      this.editorStore.graphManagerState,
+    );
+
+    const letFuncsRawLambda = getRawLambdaForLetFuncs(
+      this.parametersState.parameterStates,
+      this.editorStore.graphManagerState,
+    );
+
+    await openDataCube(element, editorStore, params, letFuncsRawLambda);
   }
 
   *handleRunFunc(): GeneratorFn<void> {

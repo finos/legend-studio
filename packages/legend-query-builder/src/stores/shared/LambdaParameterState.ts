@@ -136,11 +136,10 @@ export const buildExecutionParameterValues = (
       return paramValue;
     });
 
-export const getExecutionQueryFromRawLambda = (
-  rawLambda: RawLambda,
+export const getRawLambdaForLetFuncs = (
   parameterStates: LambdaParameterState[],
   graphManagerState: GraphManagerState,
-): RawLambda => {
+): RawLambda | undefined => {
   const paramsWithLetStatements =
     getParameterStatesWithFunctionValues(parameterStates);
   if (paramsWithLetStatements.length > 0) {
@@ -152,17 +151,31 @@ export const getExecutionQueryFromRawLambda = (
     execuLambdaFunction.functionType.parameters = parameterStates
       .filter((ps) => !paramsWithLetStatements.includes(ps))
       .map((e) => e.parameter);
-    const execQuery = buildRawLambdaFromLambdaFunction(
+    return buildRawLambdaFromLambdaFunction(
       execuLambdaFunction,
       graphManagerState,
     );
+  }
+  return undefined;
+};
+
+export const getExecutionQueryFromRawLambda = (
+  rawLambda: RawLambda,
+  parameterStates: LambdaParameterState[],
+  graphManagerState: GraphManagerState,
+): RawLambda => {
+  const letFuncLambda = getRawLambdaForLetFuncs(
+    parameterStates,
+    graphManagerState,
+  );
+  if (letFuncLambda) {
     // reset paramaters
-    if (Array.isArray(rawLambda.body) && Array.isArray(execQuery.body)) {
-      execQuery.body = [
-        ...(execQuery.body as object[]),
+    if (Array.isArray(rawLambda.body) && Array.isArray(letFuncLambda.body)) {
+      letFuncLambda.body = [
+        ...(letFuncLambda.body as object[]),
         ...(rawLambda.body as object[]),
       ];
-      return execQuery;
+      return letFuncLambda;
     }
   }
   return rawLambda;
