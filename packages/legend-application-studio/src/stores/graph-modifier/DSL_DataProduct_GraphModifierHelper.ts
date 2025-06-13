@@ -32,14 +32,20 @@ export const dataProduct_deleteAccessPoint = action(
 );
 
 export const dataProduct_addAccessPoint = action(
-  (product: AccessPointGroup, accessPoint: AccessPoint) => {
-    addUniqueEntry(product.accessPoints, observe_AccessPoint(accessPoint));
+  (group: AccessPointGroup, accessPoint: AccessPoint) => {
+    addUniqueEntry(group.accessPoints, observe_AccessPoint(accessPoint));
   },
 );
 
 export const accessPointGroup_setDescription = action(
-  (product: AccessPointGroup, description: string) => {
-    product.description = description;
+  (group: AccessPointGroup, description: string) => {
+    group.description = description;
+  },
+);
+
+export const accessPointGroup_setName = action(
+  (group: AccessPointGroup, name: string) => {
+    group.id = name;
   },
 );
 
