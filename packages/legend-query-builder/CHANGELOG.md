@@ -1,5 +1,15 @@
 # @finos/legend-query-builder
 
+## 4.17.0
+
+### Minor Changes
+
+- [#4198](https://github.com/finos/legend-studio/pull/4198) [`c225f84`](https://github.com/finos/legend-studio/commit/c225f84d440760fc78e0745d586e6dd75d06e0be) ([@gs-gunjan](https://github.com/gs-gunjan)) - studio: support opening datacube from functions with parameters
+
+### Patch Changes
+
+- [#4196](https://github.com/finos/legend-studio/pull/4196) [`0e087a1`](https://github.com/finos/legend-studio/commit/0e087a1becf4288581554e4ac919327a9fc73fa4) ([@travisstebbins](https://github.com/travisstebbins)) - Rename getV1_ValueSpecificationStringValue to V1_stringifyValueSpecification
+
 ## 4.16.54
 
 ## 4.16.53

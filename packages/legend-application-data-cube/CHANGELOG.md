@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.3.49
+
+### Patch Changes
+
+- [#4196](https://github.com/finos/legend-studio/pull/4196) [`0e087a1`](https://github.com/finos/legend-studio/commit/0e087a1becf4288581554e4ac919327a9fc73fa4) ([@travisstebbins](https://github.com/travisstebbins)) - Rename getV1_ValueSpecificationStringValue to V1_stringifyValueSpecification
+
 ## 0.3.48
 
 ## 0.3.47

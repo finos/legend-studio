@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace-bootstrap
 
+## 13.87.0
+
+### Patch Changes
+
+- [#4200](https://github.com/finos/legend-studio/pull/4200) [`a21ffc0`](https://github.com/finos/legend-studio/commit/a21ffc0dc65764a0673871f923413c3b7a17403b) ([@travisstebbins](https://github.com/travisstebbins)) - Add flag to disable Marketplace pages
+
 ## 13.86.0
 
 ## 13.85.0

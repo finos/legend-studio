@@ -1,5 +1,11 @@
 # @finos/legend-application-studio-deployment
 
+## 13.87.0
+
+### Patch Changes
+
+- [#4175](https://github.com/finos/legend-studio/pull/4175) [`707dc46`](https://github.com/finos/legend-studio/commit/707dc465a9ac8442fa1ef670dc5e899dbcc6060e) ([@janeenyamak1](https://github.com/janeenyamak1)) - Add Mem SQL Function Activator and Editor
+
 ## 13.86.0
 
 ## 13.85.0
