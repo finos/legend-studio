@@ -578,7 +578,8 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
 
     const isLoadingDataProducts =
       marketPlaceStore.loadingProductsState.isInProgress ||
-      marketPlaceStore.loadingSandboxDataProductStates.isInProgress;
+      marketPlaceStore.loadingSandboxDataProductStates.isInProgress ||
+      marketPlaceStore.loadingLakehouseEnvironmentsByDIDState.isInProgress;
 
     return (
       <LegendMarketplacePage className="marketplace-lakehouse-home">
