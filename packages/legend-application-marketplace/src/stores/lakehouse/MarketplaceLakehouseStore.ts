@@ -570,8 +570,13 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         }),
       )) as [string, IngestDeploymentServerConfig][];
       const didToEnvironment = new Map<string, IngestDeploymentServerConfig>(
-        didsAndEnvironments,
+        this.lakehouseIngestEnvironmentsByDID,
       );
+      didsAndEnvironments.forEach(([did, environment]) => {
+        if (environment) {
+          didToEnvironment.set(did, environment);
+        }
+      });
       this.setLakehouseIngestEnvironmentsByDID(didToEnvironment);
       this.loadingLakehouseEnvironmentsByDIDState.complete();
     } catch (error) {
@@ -835,83 +840,91 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
           ),
         `Unable to find data product ${path} deployed at ${ingestServerUrl}`,
       );
-      const graphManager = new V1_PureGraphManager(
-        this.applicationStore.pluginManager,
-        this.applicationStore.logService,
-        this.marketplaceBaseStore.remoteEngine,
-      );
-      yield graphManager.initialize(
-        {
-          env: this.applicationStore.config.env,
-          tabSize: DEFAULT_TAB_SIZE,
-          clientConfig: {
-            baseUrl: this.applicationStore.config.engineServerUrl,
-          },
-        },
-        { engine: this.marketplaceBaseStore.remoteEngine },
-      );
-      const graphManagerState = new GraphManagerState(
-        this.applicationStore.pluginManager,
-        this.applicationStore.logService,
-      );
-      const entities: Entity[] = (yield graphManager.pureCodeToEntities(
-        sandboxDataProduct.definition,
-      )) as Entity[];
-      yield graphManager.buildGraph(
-        graphManagerState.graph,
-        entities,
-        ActionState.create(),
-      );
-      const v1_DataProduct = guaranteeType(
-        guaranteeNonNullable(
-          graphManager.elementToProtocol(
-            graphManagerState.graph.getElement(
-              sandboxDataProduct.artifact.dataProduct.path,
-            ),
-          ),
-          `Unable to find ${sandboxDataProduct.artifact.dataProduct.path} in deployed definition`,
-        ),
-        V1_DataProduct,
-        `${sandboxDataProduct.artifact.dataProduct.path} is not a data product`,
-      );
-
-      const stateViewer = new DataProductViewerState(
-        this.applicationStore,
-        this,
-        graphManagerState,
-        this.lakehouseContractServerClient,
-        VersionedProjectData.serialization.fromJson({
-          groupId: '',
-          artifactId: '',
-          versionId: '',
-        }),
-        v1_DataProduct,
-        true,
-        buildDataProductArtifactGeneration({
-          ...V1_DataProductArtifactGeneration.serialization.toJson(
-            sandboxDataProduct.artifact,
-          ),
-          content: V1_DataProductArtifactGeneration.serialization.toJson(
-            sandboxDataProduct.artifact,
-          ),
-        }),
-        {
-          retrieveGraphData: () => {
-            return new InMemoryGraphData(graphManagerState.graph);
-          },
-          viewSDLCProject: () => {
-            throw new Error('Project does not exist in SDLC');
-          },
-          viewIngestEnvironment: () =>
-            this.applicationStore.navigationService.navigator.visitAddress(
-              EXTERNAL_APPLICATION_NAVIGATION__generateIngestEnvironemntUrl(
-                ingestServerUrl,
+      yield Promise.all([
+        (async () => {
+          const graphManager = new V1_PureGraphManager(
+            this.applicationStore.pluginManager,
+            this.applicationStore.logService,
+            this.marketplaceBaseStore.remoteEngine,
+          );
+          await graphManager.initialize(
+            {
+              env: this.applicationStore.config.env,
+              tabSize: DEFAULT_TAB_SIZE,
+              clientConfig: {
+                baseUrl: this.applicationStore.config.engineServerUrl,
+              },
+            },
+            { engine: this.marketplaceBaseStore.remoteEngine },
+          );
+          const graphManagerState = new GraphManagerState(
+            this.applicationStore.pluginManager,
+            this.applicationStore.logService,
+          );
+          const entities: Entity[] = (await graphManager.pureCodeToEntities(
+            sandboxDataProduct.definition,
+          )) as Entity[];
+          await graphManager.buildGraph(
+            graphManagerState.graph,
+            entities,
+            ActionState.create(),
+          );
+          const v1_DataProduct = guaranteeType(
+            guaranteeNonNullable(
+              graphManager.elementToProtocol(
+                graphManagerState.graph.getElement(
+                  sandboxDataProduct.artifact.dataProduct.path,
+                ),
               ),
+              `Unable to find ${sandboxDataProduct.artifact.dataProduct.path} in deployed definition`,
             ),
-        },
-      );
-      this.setDataProductViewerState(stateViewer);
-      stateViewer.fetchContracts(auth.user?.access_token);
+            V1_DataProduct,
+            `${sandboxDataProduct.artifact.dataProduct.path} is not a data product`,
+          );
+
+          const stateViewer = new DataProductViewerState(
+            this.applicationStore,
+            this,
+            graphManagerState,
+            this.lakehouseContractServerClient,
+            VersionedProjectData.serialization.fromJson({
+              groupId: '',
+              artifactId: '',
+              versionId: '',
+            }),
+            v1_DataProduct,
+            true,
+            buildDataProductArtifactGeneration({
+              ...V1_DataProductArtifactGeneration.serialization.toJson(
+                sandboxDataProduct.artifact,
+              ),
+              content: V1_DataProductArtifactGeneration.serialization.toJson(
+                sandboxDataProduct.artifact,
+              ),
+            }),
+            {
+              retrieveGraphData: () => {
+                return new InMemoryGraphData(graphManagerState.graph);
+              },
+              viewSDLCProject: () => {
+                throw new Error('Project does not exist in SDLC');
+              },
+              viewIngestEnvironment: () =>
+                this.applicationStore.navigationService.navigator.visitAddress(
+                  EXTERNAL_APPLICATION_NAVIGATION__generateIngestEnvironemntUrl(
+                    ingestServerUrl,
+                  ),
+                ),
+            },
+          );
+          this.setDataProductViewerState(stateViewer);
+          stateViewer.fetchContracts(auth.user?.access_token);
+        })(),
+        this.fetchLakehouseEnvironmentsByDID(
+          [sandboxDataProduct.artifact.dataProduct.deploymentId],
+          auth.user?.access_token,
+        ),
+      ]);
       this.loadingProductsState.complete();
       if (!this.loadingLakehouseEnvironmentSummariesState.hasCompleted) {
         yield this.fetchLakehouseEnvironmentSummaries(auth.user?.access_token);
