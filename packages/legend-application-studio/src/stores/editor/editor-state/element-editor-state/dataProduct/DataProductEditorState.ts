@@ -44,11 +44,13 @@ import {
   ActionState,
   guaranteeNonNullable,
   assertTrue,
+  uuid,
 } from '@finos/legend-shared';
 import {
   dataProduct_addAccessPoint,
   dataProduct_addAccessPointGroup,
   dataProduct_deleteAccessPoint,
+  dataProduct_deleteAccessPointGroup,
 } from '../../../../graph-modifier/DSL_DataProduct_GraphModifierHelper.js';
 import { LambdaEditorState } from '@finos/legend-query-builder';
 import {
@@ -189,6 +191,7 @@ export class LakehouseAccessPointState extends AccessPointState {
 
 export class AccessPointGroupState {
   readonly state: DataProductEditorState;
+  readonly uuid = uuid();
   value: AccessPointGroup;
   accessPointStates: AccessPointState[] = [];
 
@@ -250,11 +253,13 @@ export const generateUrlToDeployOnOpen = (
 
 export class DataProductEditorState extends ElementEditorState {
   accessPointModal = false;
+  accessPointGroupModal = false;
   deploymentState = ActionState.create();
   accessPointGroupStates: AccessPointGroupState[] = [];
   isConvertingTransformLambdaObjects = false;
   deployOnOpen = false;
   deployResponse: AdhocDataProductDeployResponse | undefined;
+  editingGroupState: AccessPointGroupState | undefined;
 
   constructor(
     editorStore: EditorStore,
@@ -266,6 +271,7 @@ export class DataProductEditorState extends ElementEditorState {
     makeObservable(this, {
       product: computed,
       accessPointModal: observable,
+      accessPointGroupModal: observable,
       accessPointGroupStates: observable,
       isConvertingTransformLambdaObjects: observable,
       deploy: flow,
@@ -274,8 +280,11 @@ export class DataProductEditorState extends ElementEditorState {
       setDeployOnOpen: action,
       setDeployResponse: action,
       setAccessPointModal: action,
+      setAccessPointGroupModal: action,
       addAccessPoint: action,
       convertAccessPointsFuncObjects: flow,
+      editingGroupState: observable,
+      setEditingGroupState: action,
     });
     this.accessPointGroupStates = this.product.accessPointGroups.map(
       (e) => new AccessPointGroupState(e, this),
@@ -338,6 +347,14 @@ export class DataProductEditorState extends ElementEditorState {
     this.accessPointModal = val;
   }
 
+  setEditingGroupState(val: AccessPointGroupState | undefined): void {
+    this.editingGroupState = val;
+  }
+
+  setAccessPointGroupModal(val: boolean): void {
+    this.accessPointGroupModal = val;
+  }
+
   addAccessPoint(
     id: string,
     description: string | undefined,
@@ -352,12 +369,12 @@ export class DataProductEditorState extends ElementEditorState {
     const groupState =
       accessPointGroup instanceof AccessPointGroupState
         ? accessPointGroup
-        : this.createBareGroupAndAdd(accessPointGroup);
+        : this.createGroupAndAdd(accessPointGroup);
     groupState.addAccessPoint(accesspoint);
     addUniqueEntry(this.accessPointGroupStates, groupState);
   }
 
-  createBareGroupAndAdd(id: string): AccessPointGroupState {
+  createGroupAndAdd(id: string, description?: string): AccessPointGroupState {
     const existingGroupState = this.accessPointGroupStates.find(
       (groupState) => groupState.value.id === id,
     );
@@ -367,8 +384,15 @@ export class DataProductEditorState extends ElementEditorState {
     }
     const group = new AccessPointGroup();
     group.id = id;
+    group.description = description;
     dataProduct_addAccessPointGroup(this.product, group);
     return new AccessPointGroupState(group, this);
+  }
+
+  deleteAccessPointGroup(val: AccessPointGroupState): void {
+    const state = this.accessPointGroupStates.find((a) => a === val);
+    deleteEntry(this.accessPointGroupStates, state);
+    dataProduct_deleteAccessPointGroup(this.product, val.value);
   }
 
   *deploy(token: string | undefined): GeneratorFn<void> {
