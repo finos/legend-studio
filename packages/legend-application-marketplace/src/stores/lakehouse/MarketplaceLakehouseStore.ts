@@ -244,7 +244,11 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     return (
       Array.from(this.productStatesMap.values()) as BaseDataProductState[]
     )
-      .concat(this.sandboxDataProductStates)
+      .concat(
+        this.loadingLakehouseEnvironmentsByDIDState.isInProgress
+          ? []
+          : this.sandboxDataProductStates,
+      )
       .concat(this.dummyDataProductStates)
       .filter((baseDataProductState) => {
         if (!baseDataProductState.isInitialized) {
