@@ -46,6 +46,11 @@ const TEST_DATA__appConfig: LegendMarketplaceApplicationConfigurationData = {
   studio: {
     url: 'https://testStudioUrl',
   },
+  extensions: {
+    core: {
+      enableMarketplacePages: true,
+    },
+  },
 };
 
 export const TEST__getTestLegendMarketplaceApplicationConfig = (

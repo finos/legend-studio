@@ -51,7 +51,7 @@ import type { LegendMarketplaceOidcConfig } from './LegendMarketplaceApplication
 import { LakehouseDataProduct } from '../pages/Lakehouse/dataProduct/LakehouseDataProduct.js';
 import { LegendMarketplaceVendorData } from '../pages/VendorData/LegendMarketplaceVendorData.js';
 import { LakehouseEntitlements } from '../pages/Lakehouse/entitlements/LakehouseEntitlements.js';
-import { LakehouseSubscriptions } from '../pages/Lakehouse/subscriptions/LakehouseSubscriptions.js';
+import { LakehouseAdmin } from '../pages/Lakehouse/admin/LakehouseAdmin.js';
 import {
   LegendMarketplaceHeader,
   MarketplaceLakehouseHeader,
@@ -176,19 +176,16 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
     },
   );
 
-  const ProtectedLakehouseSubscriptions = withAuthenticationRequired(
-    LakehouseSubscriptions,
-    {
-      OnRedirecting: () => (
-        <CubesLoadingIndicator isLoading={true}>
-          <CubesLoadingIndicatorIcon />
-        </CubesLoadingIndicator>
-      ),
-      signinRedirectArgs: {
-        state: `${window.location.pathname}${window.location.search}`,
-      },
+  const ProtectedLakehouseAdmin = withAuthenticationRequired(LakehouseAdmin, {
+    OnRedirecting: () => (
+      <CubesLoadingIndicator isLoading={true}>
+        <CubesLoadingIndicatorIcon />
+      </CubesLoadingIndicator>
+    ),
+    signinRedirectArgs: {
+      state: `${window.location.pathname}${window.location.search}`,
     },
-  );
+  });
 
   return (
     <div className="app">
@@ -270,8 +267,8 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
               element={<ProtectedLakehouseMarketplace />}
             />
             <Route
-              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SUBSCRIPTIONS}
-              element={<ProtectedLakehouseSubscriptions />}
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ADMIN}
+              element={<ProtectedLakehouseAdmin />}
             />
             <Route path="*" element={<NotFoundPage />} />
           </Route>

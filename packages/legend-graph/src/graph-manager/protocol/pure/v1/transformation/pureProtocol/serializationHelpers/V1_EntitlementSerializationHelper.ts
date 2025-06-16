@@ -23,9 +23,12 @@ import {
 } from '@finos/legend-shared';
 import {
   type V1_ConsumerEntitlementResource,
+  type V1_ContractUserEventPayload,
   V1_AccessPoint_Entitlements,
   V1_AccessPointGroupReference,
-  V1_ContractUserEventPayload,
+  V1_ContractEventPayloadType,
+  V1_ContractUserEventDataProducerPayload,
+  V1_ContractUserEventPrivilegeManagerPayload,
   V1_ContractUserEventRecord,
   V1_DataBundle,
   V1_DataContract,
@@ -168,16 +171,60 @@ export const V1_DataContractsRecordModelSchema = createModelSchema(
   },
 );
 
-export const V1_contractUserEventPayloadModelSchema = createModelSchema(
-  V1_ContractUserEventPayload,
-  {
+export const V1_contractUserEventPrivilegeManagerPayloadModelSchema =
+  createModelSchema(V1_ContractUserEventPrivilegeManagerPayload, {
     type: primitive(),
     managerIdentity: primitive(),
     candidateIdentity: primitive(),
     taskId: primitive(),
     eventTimestamp: primitive(),
-  },
-);
+  });
+
+export const V1_contractUserEventDataProducerPayloadModelSchema =
+  createModelSchema(V1_ContractUserEventDataProducerPayload, {
+    type: primitive(),
+    dataProducerIdentity: primitive(),
+    candidateIdentity: primitive(),
+    taskId: primitive(),
+    eventTimestamp: primitive(),
+  });
+
+const V1_deserializeContractUserEventPayload = (
+  json: PlainObject<V1_ContractUserEventPayload>,
+): V1_ContractUserEventPayload => {
+  if (
+    [
+      V1_ContractEventPayloadType.DATA_PRODUCER_APPROVED,
+      V1_ContractEventPayloadType.DATA_PRODUCER_REJECTED,
+    ].includes((json as unknown as V1_ContractUserEventPayload).type)
+  ) {
+    return deserialize(
+      V1_contractUserEventDataProducerPayloadModelSchema,
+      json,
+    );
+  } else {
+    return deserialize(
+      V1_contractUserEventPrivilegeManagerPayloadModelSchema,
+      json,
+    );
+  }
+};
+
+const V1_serializeContractUserEventPayload = (
+  payload: V1_ContractUserEventPayload,
+): PlainObject<V1_ContractUserEventPayload> => {
+  if (payload instanceof V1_ContractUserEventDataProducerPayload) {
+    return serialize(
+      V1_contractUserEventDataProducerPayloadModelSchema,
+      payload,
+    );
+  } else {
+    return serialize(
+      V1_contractUserEventPrivilegeManagerPayloadModelSchema,
+      payload,
+    );
+  }
+};
 
 export const V1_contractUserEventRecordModelSchema = createModelSchema(
   V1_ContractUserEventRecord,
@@ -186,7 +233,10 @@ export const V1_contractUserEventRecordModelSchema = createModelSchema(
     dataContractId: primitive(),
     status: primitive(),
     consumer: primitive(),
-    eventPayload: usingModelSchema(V1_contractUserEventPayloadModelSchema),
+    eventPayload: custom(
+      V1_serializeContractUserEventPayload,
+      V1_deserializeContractUserEventPayload,
+    ),
     type: primitive(),
   },
 );
