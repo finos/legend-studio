@@ -24,7 +24,6 @@ import {
   type GraphData,
   type GraphManagerState,
   type V1_AccessPointGroup,
-  type V1_CreateContractWithResourcePayload,
   type V1_DataContract,
   type V1_DataContractsRecord,
   type V1_DataProduct,
@@ -34,7 +33,6 @@ import {
   V1_AppDirNode,
   V1_AppDirNodeModelSchema,
   V1_DataContractsRecordModelSchemaToContracts,
-  V1_ResourceType,
   V1_User,
   V1_UserType,
 } from '@finos/legend-graph';
@@ -209,14 +207,9 @@ export class DataProductViewerState {
   ): GeneratorFn<void> {
     try {
       this.creatingContractState.inProgress();
-      const request: PlainObject<V1_CreateContractWithResourcePayload> = {
+      const request: PlainObject<V1_DataContractsRecord> = {
         description,
-        resourceId: this.product.name,
-        resourceType: V1_ResourceType.ACCESS_POINT_GROUP,
-        deploymentId: guaranteeNonNullable(
-          this.generation?.dataProduct.deploymentId,
-          'Cannot create contract. Data product generation is missing deployment ID',
-        ),
+        product: guaranteeNonNullable(this.generation?.content),
         accessPointGroup: group.id,
         consumer: serialize(V1_AdhocTeamModelSchema, buildAdhocUser(userId)),
       };

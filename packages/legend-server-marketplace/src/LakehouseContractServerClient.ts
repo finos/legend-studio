@@ -15,7 +15,7 @@
  */
 
 import type {
-  V1_CreateContractWithResourcePayload,
+  V1_ContractCreate_LegendDataProduct,
   V1_CreateSubscriptionInput,
   V1_DataContract,
   V1_DataContractsRecord,
@@ -101,11 +101,11 @@ export class LakehouseContractServerClient extends AbstractServerClient {
   };
 
   createContract = (
-    contractRequest: PlainObject<V1_CreateContractWithResourcePayload>,
+    contractRequest: PlainObject<V1_ContractCreate_LegendDataProduct>,
     token: string | undefined,
   ): Promise<V1_DataContract> =>
     this.post(
-      `${this._dataContracts()}/contractWithResourceDetails`,
+      `${this._dataContracts()}/alloyDataProduct`,
       contractRequest,
       undefined,
       this._token(token),

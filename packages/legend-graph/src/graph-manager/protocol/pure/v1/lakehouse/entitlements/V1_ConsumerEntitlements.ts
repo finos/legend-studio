@@ -71,12 +71,6 @@ export class V1_ContractUserMembership {
   status!: V1_UserApprovalStatus;
 }
 
-export enum V1_ResourceType {
-  ACCESS_POINT_GROUP = 'ACCESS_POINT_GROUP',
-  DATA_PRODUCT = 'DATA_PRODUCT',
-  DATA_BUNDLE = 'DATA_BUNDLE',
-}
-
 export enum V1_UserApprovalStatus {
   PENDING = 'PENDING',
   APPROVED = 'APPROVED',
@@ -113,12 +107,10 @@ export class V1_TaskStatus {
   errorMessage: string | undefined;
 }
 
-export class V1_CreateContractWithResourcePayload {
-  description!: string;
-  resourceId!: string;
-  resourceType!: V1_ResourceType;
-  deploymentId!: number;
-  accessPointGroup?: string | undefined;
+export class V1_ContractCreate_LegendDataProduct {
+  description: string | undefined;
+  product!: unknown;
+  accessPointGroup!: string;
   consumer!: V1_OrganizationalScope;
 }
 
