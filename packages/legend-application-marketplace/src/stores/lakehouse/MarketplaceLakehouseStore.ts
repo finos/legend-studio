@@ -232,7 +232,10 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
           // TMP always include dummy data products
           (baseDataProductState instanceof DataProductState &&
             this.dummyDataProductStates.includes(baseDataProductState));
-        const isSnapshot = isSnapshotVersion(baseDataProductState.versionId);
+        const isSnapshot =
+          baseDataProductState instanceof DataProductState
+            ? isSnapshotVersion(baseDataProductState.versionId)
+            : true;
         // Check if product matches release/snapshot filter
         const versionMatch =
           (this.filter.snapshotFilter && isSnapshot) ||
