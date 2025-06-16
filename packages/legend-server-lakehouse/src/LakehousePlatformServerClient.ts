@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { type V1_LakehouseDiscoveryEnvironmentResponse } from '@finos/legend-graph';
+import { type V1_AppDirLevel } from '@finos/legend-graph';
 import { AbstractServerClient, type PlainObject } from '@finos/legend-shared';
 import type { IngestDeploymentServerConfig } from './models/IngestDeploymentServerConfig.js';
 
@@ -24,8 +24,6 @@ export class LakehousePlatformServerClient extends AbstractServerClient {
       baseUrl: url,
     });
   }
-  private _ingest = (): string =>
-    `${this.baseUrl}/ingest/discovery/environments/producers`;
 
   private _discovery = (): string => `${this.baseUrl}/ingest/discovery`;
 
@@ -43,11 +41,11 @@ export class LakehousePlatformServerClient extends AbstractServerClient {
 
   findProducerServer(
     id: number,
-    level: string,
+    level: V1_AppDirLevel,
     token?: string | undefined,
   ): Promise<PlainObject<IngestDeploymentServerConfig>> {
     return this.get(
-      `${this._ingest()}/${id}/${level}/search`,
+      `${this._env()}/producers/${id}/${level}/search`,
       {},
       this._token(token),
     );
@@ -56,10 +54,6 @@ export class LakehousePlatformServerClient extends AbstractServerClient {
   getIngestEnvironmentSummary = (
     ingestEnvironmentUrn: string,
     token: string | undefined,
-  ): Promise<PlainObject<V1_LakehouseDiscoveryEnvironmentResponse>> =>
-    this.get(
-      `${this._discovery()}/environments/${ingestEnvironmentUrn}`,
-      {},
-      this._token(token),
-    );
+  ): Promise<PlainObject<IngestDeploymentServerConfig>> =>
+    this.get(`${this._env()}/${ingestEnvironmentUrn}`, {}, this._token(token));
 }

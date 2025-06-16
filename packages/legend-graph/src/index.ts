@@ -311,7 +311,6 @@ export {
   V1_SnowflakeRegion,
   V1_SnowflakeTarget,
 } from './graph-manager/protocol/pure/v1/lakehouse/subscriptions/V1_ConsumerSubscriptions.js';
-export { V1_LakehouseDiscoveryEnvironmentResponse } from './graph-manager/protocol/pure/v1/lakehouse/platform/V1_LakehouseDiscovery.js';
 export {
   V1_DataProductArtifactAccessPointGroup,
   V1_DataProductArtifactAccessPointImplementation,

@@ -14,15 +14,18 @@
  * limitations under the License.
  */
 
+import type { V1_IngestEnvironmentClassification } from '@finos/legend-graph';
 import { SerializationFactory } from '@finos/legend-shared';
 import { createModelSchema, primitive } from 'serializr';
 
 export class IngestDeploymentServerConfig {
-  environmentClassification!: string;
+  ingestEnvironmentUrn!: string;
+  environmentClassification!: V1_IngestEnvironmentClassification;
   ingestServerUrl!: string;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(IngestDeploymentServerConfig, {
+      ingestEnvironmentUrn: primitive(),
       environmentClassification: primitive(),
       ingestServerUrl: primitive(),
     }),
