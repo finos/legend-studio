@@ -537,7 +537,7 @@ const MarketplaceLakehouseHomeSortFilterPanel = observer(
                     }
                   />
                 }
-                label="Prod Parallel"
+                label="Prod-Parallel"
               />
               <FormControlLabel
                 control={
