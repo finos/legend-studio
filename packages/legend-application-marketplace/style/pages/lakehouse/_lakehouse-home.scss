@@ -66,6 +66,10 @@
     min-width: 20rem;
 
     &__filter {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+
       .MuiSvgIcon-root {
         font-size: 2rem;
       }

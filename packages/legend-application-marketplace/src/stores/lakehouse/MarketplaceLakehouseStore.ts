@@ -57,6 +57,7 @@ import {
   V1_dataProductModelSchema,
   V1_deserializeIngestEnvironment,
   V1_deserializePackageableElement,
+  V1_IngestEnvironmentClassification,
   V1_PureGraphManager,
   V1_SandboxDataProductDeploymentResponse,
 } from '@finos/legend-graph';
@@ -93,20 +94,29 @@ const ARTIFACT_GENERATION_DAT_PRODUCT_KEY = 'dataProduct';
 export enum DataProductFilterType {
   DEPOT_SCOPE = 'DEPOT_SCOPE',
   DEPLOY_TYPE = 'DEPLOY_TYPE',
+  ENVIRONMENT_CLASSIFICATION = 'ENVIRONMENT_CLASSIFICATION',
 }
 
 class DataProductFilters {
-  releaseFilter;
-  snapshotFilter;
-  sdlcDeployFilter;
-  sandboxDeployFilter;
+  releaseFilter: boolean;
+  snapshotFilter: boolean;
+  sdlcDeployFilter: boolean;
+  sandboxDeployFilter: boolean;
+  devEnvironmentClassificationFilter: boolean;
+  prodParallelEnvironmentClassificationFilter: boolean;
+  prodEnvironmentClassificationFilter: boolean;
   search?: string | undefined;
 
   constructor(
-    releaseFilter: boolean,
-    snapshotFilter: boolean,
-    sdlcDeployFilter: boolean,
-    sandboxDeployFilter: boolean,
+    defaultBooleanFilters: {
+      releaseFilter: boolean;
+      snapshotFilter: boolean;
+      sdlcDeployFilter: boolean;
+      sandboxDeployFilter: boolean;
+      devEnvironmentClassificationFilter: boolean;
+      prodParallelEnvironmentClassificationFilter: boolean;
+      prodEnvironmentClassificationFilter: boolean;
+    },
     search?: string | undefined,
   ) {
     makeObservable(this, {
@@ -116,15 +126,32 @@ class DataProductFilters {
       sandboxDeployFilter: observable,
       search: observable,
     });
-    this.releaseFilter = releaseFilter;
-    this.snapshotFilter = snapshotFilter;
-    this.sdlcDeployFilter = sdlcDeployFilter;
-    this.sandboxDeployFilter = sandboxDeployFilter;
+    this.releaseFilter = defaultBooleanFilters.releaseFilter;
+    this.snapshotFilter = defaultBooleanFilters.snapshotFilter;
+    this.sdlcDeployFilter = defaultBooleanFilters.sdlcDeployFilter;
+    this.sandboxDeployFilter = defaultBooleanFilters.sandboxDeployFilter;
+    this.devEnvironmentClassificationFilter =
+      defaultBooleanFilters.devEnvironmentClassificationFilter;
+    this.prodParallelEnvironmentClassificationFilter =
+      defaultBooleanFilters.prodParallelEnvironmentClassificationFilter;
+    this.prodEnvironmentClassificationFilter =
+      defaultBooleanFilters.prodEnvironmentClassificationFilter;
     this.search = search;
   }
 
   static default(): DataProductFilters {
-    return new DataProductFilters(true, true, false, true, undefined);
+    return new DataProductFilters(
+      {
+        releaseFilter: true,
+        snapshotFilter: true,
+        sdlcDeployFilter: false,
+        sandboxDeployFilter: true,
+        devEnvironmentClassificationFilter: false,
+        prodParallelEnvironmentClassificationFilter: false,
+        prodEnvironmentClassificationFilter: true,
+      },
+      undefined,
+    );
   }
 }
 
@@ -240,6 +267,26 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         const versionMatch =
           (this.filter.snapshotFilter && isSnapshot) ||
           (this.filter.releaseFilter && !isSnapshot);
+        // Check if product matches environment classification filter
+        const environmentClassification =
+          baseDataProductState instanceof SandboxDataProductState &&
+          baseDataProductState.dataProductArtifact?.dataProduct.deploymentId
+            ? baseDataProductState.state.lakehouseIngestEnvironmentsByDID.get(
+                baseDataProductState.dataProductArtifact.dataProduct
+                  .deploymentId,
+              )?.environmentClassification
+            : undefined;
+        const environmentClassificationMatch =
+          environmentClassification === undefined ||
+          (this.filter.devEnvironmentClassificationFilter &&
+            environmentClassification ===
+              V1_IngestEnvironmentClassification.DEV) ||
+          (this.filter.prodParallelEnvironmentClassificationFilter &&
+            environmentClassification ===
+              V1_IngestEnvironmentClassification.PROD_PARALLEL) ||
+          (this.filter.prodEnvironmentClassificationFilter &&
+            environmentClassification ===
+              V1_IngestEnvironmentClassification.PROD);
         // Check if product title matches search filter
         const dataProductTitle = baseDataProductState.title;
         const titleMatch =
@@ -248,7 +295,12 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
           dataProductTitle
             .toLowerCase()
             .includes(this.filter.search.toLowerCase());
-        return deployMatch && versionMatch && titleMatch;
+        return (
+          deployMatch &&
+          versionMatch &&
+          environmentClassificationMatch &&
+          titleMatch
+        );
       })
       .sort((a, b) => {
         if (this.sort === DataProductSort.NAME_ALPHABETICAL) {
@@ -289,7 +341,12 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
 
   handleFilterChange(
     filterType: DataProductFilterType,
-    val: DepotScope | 'sdlc' | 'sandbox' | undefined,
+    val:
+      | DepotScope
+      | 'sdlc'
+      | 'sandbox'
+      | V1_IngestEnvironmentClassification
+      | undefined,
   ): void {
     if (filterType === DataProductFilterType.DEPOT_SCOPE) {
       if (val === DepotScope.RELEASES) {
@@ -297,11 +354,22 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       } else if (val === DepotScope.SNAPSHOT) {
         this.filter.snapshotFilter = !this.filter.snapshotFilter;
       }
-    } else {
+    } else if (filterType === DataProductFilterType.DEPLOY_TYPE) {
       if (val === 'sdlc') {
         this.filter.sdlcDeployFilter = !this.filter.sdlcDeployFilter;
       } else if (val === 'sandbox') {
         this.filter.sandboxDeployFilter = !this.filter.sandboxDeployFilter;
+      }
+    } else {
+      if (val === V1_IngestEnvironmentClassification.DEV) {
+        this.filter.devEnvironmentClassificationFilter =
+          !this.filter.devEnvironmentClassificationFilter;
+      } else if (val === V1_IngestEnvironmentClassification.PROD_PARALLEL) {
+        this.filter.prodParallelEnvironmentClassificationFilter =
+          !this.filter.prodParallelEnvironmentClassificationFilter;
+      } else if (val === V1_IngestEnvironmentClassification.PROD) {
+        this.filter.prodEnvironmentClassificationFilter =
+          !this.filter.prodEnvironmentClassificationFilter;
       }
     }
   }

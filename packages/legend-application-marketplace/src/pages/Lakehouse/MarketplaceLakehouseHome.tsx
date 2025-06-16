@@ -501,6 +501,62 @@ const MarketplaceLakehouseHomeSortFilterPanel = observer(
               />
             </FormGroup>
           </Box>
+          <hr />
+          <Box>
+            <FormLabel>Deploy Environment</FormLabel>
+            <FormGroup>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={
+                      marketPlaceStore.filter.devEnvironmentClassificationFilter
+                    }
+                    onChange={() =>
+                      marketPlaceStore.handleFilterChange(
+                        DataProductFilterType.ENVIRONMENT_CLASSIFICATION,
+                        V1_IngestEnvironmentClassification.DEV,
+                      )
+                    }
+                  />
+                }
+                label="Dev"
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={
+                      marketPlaceStore.filter
+                        .prodParallelEnvironmentClassificationFilter
+                    }
+                    onChange={() =>
+                      marketPlaceStore.handleFilterChange(
+                        DataProductFilterType.ENVIRONMENT_CLASSIFICATION,
+                        V1_IngestEnvironmentClassification.PROD_PARALLEL,
+                      )
+                    }
+                  />
+                }
+                label="Prod Parallel"
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={
+                      marketPlaceStore.filter
+                        .prodEnvironmentClassificationFilter
+                    }
+                    onChange={() =>
+                      marketPlaceStore.handleFilterChange(
+                        DataProductFilterType.ENVIRONMENT_CLASSIFICATION,
+                        V1_IngestEnvironmentClassification.PROD,
+                      )
+                    }
+                  />
+                }
+                label="Prod"
+              />
+            </FormGroup>
+          </Box>
         </Box>
       </Box>
     );
