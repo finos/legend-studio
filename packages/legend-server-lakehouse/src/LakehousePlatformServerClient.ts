@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { type V1_AppDirLevel } from '@finos/legend-graph';
 import { AbstractServerClient, type PlainObject } from '@finos/legend-shared';
 import type { IngestDeploymentServerConfig } from './models/IngestDeploymentServerConfig.js';
 
@@ -41,7 +40,7 @@ export class LakehousePlatformServerClient extends AbstractServerClient {
 
   findProducerServer(
     id: number,
-    level: V1_AppDirLevel,
+    level: string,
     token?: string | undefined,
   ): Promise<PlainObject<IngestDeploymentServerConfig>> {
     return this.get(
