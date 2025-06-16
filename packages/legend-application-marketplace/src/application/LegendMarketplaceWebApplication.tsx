@@ -62,6 +62,7 @@ import { LegendMarketplaceSubscriptions } from '../pages/Profile/LegendMarketpla
 import { LegendMarketplaceOrders } from '../pages/Profile/LegendMarketplaceOrders.js';
 import { LakehouseSandboxDataProduct } from '../pages/Lakehouse/dataProduct/LakehouseSandboxDataProduct.js';
 import { LegendMarketplaceComingSoon } from '../pages/Home/LegendMarketplaceComingSoon.js';
+import { MarketplaceLakehouseOAuthCallback } from '../pages/Lakehouse/MarketplaceLakehouseOAuthCallback.js';
 
 const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();
@@ -218,6 +219,10 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
                 element={<LegendMarketplaceComingSoon />}
               />
             )}
+            <Route
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.OAUTH_CALLBACK}
+              element={<MarketplaceLakehouseOAuthCallback />}
+            />
             {/* Marketplace pages */}
             {enableMarketplacePages && (
               <>
