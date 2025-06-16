@@ -33,6 +33,7 @@ import {
   Box,
   Button,
   Checkbox,
+  Chip,
   Container,
   FormControlLabel,
   FormGroup,
@@ -297,6 +298,21 @@ export const LakehouseDataProductCard = observer(
                 </Menu>
               </>
             )}
+            {dataProductState instanceof SandboxDataProductState &&
+              dataProductState.dataProductArtifact?.dataProduct.deploymentId &&
+              dataProductState.state.lakehouseIngestEnvironmentsByDID.has(
+                dataProductState.dataProductArtifact.dataProduct.deploymentId,
+              ) && (
+                <Chip
+                  className="marketplace-lakehouse-data-product-card__environment-classification"
+                  label={`${
+                    dataProductState.state.lakehouseIngestEnvironmentsByDID.get(
+                      dataProductState.dataProductArtifact.dataProduct
+                        .deploymentId,
+                    )?.environmentClassification
+                  }`}
+                />
+              )}
             <Box className="marketplace-lakehouse-data-product-card__name">
               {dataProductState.title}
             </Box>

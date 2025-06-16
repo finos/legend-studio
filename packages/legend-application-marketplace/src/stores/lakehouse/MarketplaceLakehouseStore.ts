@@ -144,8 +144,8 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   // a map of all the verions of the data product.
   productStatesMap: Map<string, DataProductState>;
   lakehouseIngestEnvironmentSummaries: IngestDeploymentServerConfig[] = [];
-  lakehouseIngestEnvironmentsByDID: Map<number, IngestDeploymentServerConfig> =
-    new Map<number, IngestDeploymentServerConfig>();
+  lakehouseIngestEnvironmentsByDID: Map<string, IngestDeploymentServerConfig> =
+    new Map<string, IngestDeploymentServerConfig>();
   lakehouseIngestEnvironmentDetails: V1_IngestEnvironment[] = [];
   sandboxDataProductStates: SandboxDataProductState[] = [];
   loadingProductsState = ActionState.create();
@@ -263,7 +263,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   }
 
   setLakehouseIngestEnvironmentsByDID(
-    environmentsByDID: Map<number, IngestDeploymentServerConfig>,
+    environmentsByDID: Map<string, IngestDeploymentServerConfig>,
   ): void {
     this.lakehouseIngestEnvironmentsByDID = environmentsByDID;
   }
@@ -472,7 +472,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   }
 
   async fetchLakehouseEnvironmentsByDID(
-    dids: number[],
+    dids: string[],
     token: string | undefined,
   ): Promise<void> {
     try {
@@ -483,15 +483,15 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
             did,
             IngestDeploymentServerConfig.serialization.fromJson(
               await this.lakehousePlatformServerClient.findProducerServer(
-                did,
+                parseInt(did),
                 V1_AppDirLevel.DEPLOYMENT,
                 token,
               ),
             ),
           ];
         }),
-      )) as [number, IngestDeploymentServerConfig][];
-      const didToEnvironment = new Map<number, IngestDeploymentServerConfig>(
+      )) as [string, IngestDeploymentServerConfig][];
+      const didToEnvironment = new Map<string, IngestDeploymentServerConfig>(
         didsAndEnvironments,
       );
       this.setLakehouseIngestEnvironmentsByDID(didToEnvironment);
@@ -612,8 +612,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
                     (state) =>
                       state.dataProductArtifact?.dataProduct.deploymentId,
                   )
-                  .filter(isNonNullable)
-                  .map((did) => parseInt(did)),
+                  .filter(isNonNullable),
                 auth.user?.access_token,
               );
             })(),
