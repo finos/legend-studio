@@ -73,7 +73,10 @@ import {
 } from '../../stores/lakehouse/dataProducts/DataProducts.js';
 import type { LegendMarketplaceApplicationStore } from '../../stores/LegendMarketplaceBaseStore.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { ELEMENT_PATH_DELIMITER } from '@finos/legend-graph';
+import {
+  ELEMENT_PATH_DELIMITER,
+  V1_IngestEnvironmentClassification,
+} from '@finos/legend-graph';
 
 const MAX_DESCRIPTION_LENGTH = 250;
 
@@ -217,7 +220,18 @@ export const LakehouseDataProductCard = observer(
           )}...`
         : dataProductState.description;
 
-    const isSnapshot = isSnapshotVersion(dataProductState.versionId);
+    const versionId =
+      dataProductState instanceof DataProductState
+        ? dataProductState.versionId
+        : undefined;
+    const isSnapshot = versionId ? isSnapshotVersion(versionId) : undefined;
+    const environmentClassification =
+      dataProductState instanceof SandboxDataProductState &&
+      dataProductState.dataProductArtifact?.dataProduct.deploymentId
+        ? dataProductState.state.lakehouseIngestEnvironmentsByDID.get(
+            dataProductState.dataProductArtifact.dataProduct.deploymentId,
+          )?.environmentClassification
+        : undefined;
     const isLoading = dataProductState.isLoading;
 
     const content = isLoading ? (
@@ -235,7 +249,7 @@ export const LakehouseDataProductCard = observer(
             )}
           </Box>
           <Box className="marketplace-lakehouse-data-product-card__content">
-            {dataProductState.versionId !== '' && (
+            {versionId !== undefined && versionId !== '' && (
               <>
                 <Button
                   size="small"
@@ -254,7 +268,7 @@ export const LakehouseDataProductCard = observer(
                     },
                   )}
                 >
-                  {dataProductState.versionId}
+                  {versionId}
                   <ExpandMoreIcon />
                 </Button>
                 <Menu
@@ -298,21 +312,25 @@ export const LakehouseDataProductCard = observer(
                 </Menu>
               </>
             )}
-            {dataProductState instanceof SandboxDataProductState &&
-              dataProductState.dataProductArtifact?.dataProduct.deploymentId &&
-              dataProductState.state.lakehouseIngestEnvironmentsByDID.has(
-                dataProductState.dataProductArtifact.dataProduct.deploymentId,
-              ) && (
-                <Chip
-                  className="marketplace-lakehouse-data-product-card__environment-classification"
-                  label={`${
-                    dataProductState.state.lakehouseIngestEnvironmentsByDID.get(
-                      dataProductState.dataProductArtifact.dataProduct
-                        .deploymentId,
-                    )?.environmentClassification
-                  }`}
-                />
-              )}
+            {environmentClassification !== undefined && (
+              <Chip
+                className={clsx(
+                  'marketplace-lakehouse-data-product-card__environment-classification',
+                  {
+                    'marketplace-lakehouse-data-product-card__environment-classification--dev':
+                      environmentClassification ===
+                      V1_IngestEnvironmentClassification.DEV,
+                    'marketplace-lakehouse-data-product-card__environment-classification--prod-parallel':
+                      environmentClassification ===
+                      V1_IngestEnvironmentClassification.PROD_PARALLEL,
+                    'marketplace-lakehouse-data-product-card__environment-classification--prod':
+                      environmentClassification ===
+                      V1_IngestEnvironmentClassification.PROD,
+                  },
+                )}
+                label={environmentClassification}
+              />
+            )}
             <Box className="marketplace-lakehouse-data-product-card__name">
               {dataProductState.title}
             </Box>

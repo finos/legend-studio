@@ -82,7 +82,6 @@ export abstract class BaseDataProductState {
   abstract icon: string | undefined;
   abstract imageUrl: string | undefined;
   abstract isInitialized: boolean;
-  abstract versionId: string;
   abstract versionOptions: string[];
   abstract setSelectedVersion(versionId: string): void;
 
@@ -99,7 +98,6 @@ export abstract class BaseDataProductState {
       icon: computed,
       imageUrl: computed,
       isInitialized: computed,
-      versionId: computed,
       versionOptions: computed,
       setSelectedVersion: action,
     });
@@ -220,10 +218,6 @@ export class SandboxDataProductState extends BaseDataProductState {
 
   get isInitialized(): boolean {
     return this.dataProductArtifact !== undefined;
-  }
-
-  get versionId(): string {
-    return '';
   }
 
   get versionOptions(): string[] {

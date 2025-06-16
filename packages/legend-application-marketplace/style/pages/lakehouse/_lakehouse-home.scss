@@ -157,6 +157,27 @@
     }
   }
 
+  &__environment-classification {
+    align-self: end;
+    font-size: 1rem;
+    text-transform: none;
+
+    &--dev {
+      background: var(--tw-color-amber-100);
+      color: var(--tw-color-amber-600);
+    }
+
+    &--prod-parallel {
+      background: var(--tw-color-blue-100);
+      color: var(--tw-color-blue-600);
+    }
+
+    &--prod {
+      background: var(--tw-color-green-100);
+      color: var(--tw-color-green-600);
+    }
+  }
+
   &__description {
     font-size: 1.8rem;
     flex: 1;
