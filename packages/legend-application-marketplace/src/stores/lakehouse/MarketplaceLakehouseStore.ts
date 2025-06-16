@@ -51,12 +51,12 @@ import {
   GraphManagerState,
   InMemoryGraphData,
   LegendSDLC,
+  V1_AppDirLevel,
   V1_DataProduct,
   V1_DataProductArtifactGeneration,
   V1_dataProductModelSchema,
   V1_deserializeIngestEnvironment,
   V1_deserializePackageableElement,
-  V1_LakehouseDiscoveryEnvironmentResponse,
   V1_PureGraphManager,
   V1_SandboxDataProductDeploymentResponse,
 } from '@finos/legend-graph';
@@ -82,9 +82,10 @@ import {
   type BaseDataProductState,
 } from './dataProducts/DataProducts.js';
 import { TMP__DummyDataProducts } from '../../pages/Lakehouse/TMP__Data/TMP__DummyDataProducts.js';
-import type {
-  LakehousePlatformServerClient,
-  LakehouseIngestServerClient,
+import {
+  type LakehousePlatformServerClient,
+  type LakehouseIngestServerClient,
+  IngestDeploymentServerConfig,
 } from '@finos/legend-server-lakehouse';
 
 const ARTIFACT_GENERATION_DAT_PRODUCT_KEY = 'dataProduct';
@@ -142,12 +143,14 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   // To consolidate all versions of a data product, we use a map from group:artifact:path to a DataProductState object, which contains
   // a map of all the verions of the data product.
   productStatesMap: Map<string, DataProductState>;
-  lakehouseIngestEnvironmentSummaries: V1_LakehouseDiscoveryEnvironmentResponse[] =
-    [];
+  lakehouseIngestEnvironmentSummaries: IngestDeploymentServerConfig[] = [];
+  lakehouseIngestEnvironmentsByDID: Map<number, IngestDeploymentServerConfig> =
+    new Map<number, IngestDeploymentServerConfig>();
   lakehouseIngestEnvironmentDetails: V1_IngestEnvironment[] = [];
   sandboxDataProductStates: SandboxDataProductState[] = [];
   loadingProductsState = ActionState.create();
   loadingLakehouseEnvironmentSummariesState = ActionState.create();
+  loadingLakehouseEnvironmentsByDIDState = ActionState.create();
   loadingLakehouseEnvironmentDetailsState = ActionState.create();
   loadingSandboxDataProductStates = ActionState.create();
   filter: DataProductFilters = DataProductFilters.default();
@@ -193,6 +196,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       productStatesMap: observable,
       sandboxDataProductStates: observable,
       lakehouseIngestEnvironmentSummaries: observable,
+      lakehouseIngestEnvironmentsByDID: observable,
       lakehouseIngestEnvironmentDetails: observable,
       dataProductViewer: observable,
       handleFilterChange: action,
@@ -200,6 +204,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       filterSortProducts: computed,
       setDataProductViewerState: action,
       setLakehouseIngestEnvironmentSummaries: action,
+      setLakehouseIngestEnvironmentsByDID: action,
       setLakehouseIngestEnvironmentDetails: action,
       setSandboxDataProductStates: action,
       filter: observable,
@@ -252,9 +257,15 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   }
 
   setLakehouseIngestEnvironmentSummaries(
-    summaries: V1_LakehouseDiscoveryEnvironmentResponse[],
+    summaries: IngestDeploymentServerConfig[],
   ): void {
     this.lakehouseIngestEnvironmentSummaries = summaries;
+  }
+
+  setLakehouseIngestEnvironmentsByDID(
+    environmentsByDID: Map<number, IngestDeploymentServerConfig>,
+  ): void {
+    this.lakehouseIngestEnvironmentsByDID = environmentsByDID;
   }
 
   setLakehouseIngestEnvironmentDetails(
@@ -424,8 +435,8 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         await this.lakehousePlatformServerClient.getIngestEnvironmentSummaries(
           token,
         )
-      ).map((e: PlainObject<V1_LakehouseDiscoveryEnvironmentResponse>) =>
-        V1_LakehouseDiscoveryEnvironmentResponse.serialization.fromJson(e),
+      ).map((e: PlainObject<IngestDeploymentServerConfig>) =>
+        IngestDeploymentServerConfig.serialization.fromJson(e),
       );
       this.setLakehouseIngestEnvironmentSummaries(discoveryEnvironments);
       this.loadingLakehouseEnvironmentSummariesState.complete();
@@ -441,7 +452,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   async fetchLakehouseEnvironmentSummary(
     ingestEnvironmentUrn: string,
     token: string | undefined,
-  ): Promise<V1_LakehouseDiscoveryEnvironmentResponse | undefined> {
+  ): Promise<IngestDeploymentServerConfig | undefined> {
     try {
       const rawResponse =
         await this.lakehousePlatformServerClient.getIngestEnvironmentSummary(
@@ -449,9 +460,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
           token,
         );
       const response =
-        V1_LakehouseDiscoveryEnvironmentResponse.serialization.fromJson(
-          rawResponse,
-        );
+        IngestDeploymentServerConfig.serialization.fromJson(rawResponse);
       return response;
     } catch (error) {
       assertErrorThrown(error);
@@ -459,6 +468,40 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         `Unable to load lakehouse environment summary: ${error.message}`,
       );
       return undefined;
+    }
+  }
+
+  async fetchLakehouseEnvironmentsByDID(
+    dids: number[],
+    token: string | undefined,
+  ): Promise<void> {
+    try {
+      this.loadingLakehouseEnvironmentsByDIDState.inProgress();
+      const didsAndEnvironments = (await Promise.all(
+        dids.map(async (did) => {
+          return [
+            did,
+            IngestDeploymentServerConfig.serialization.fromJson(
+              await this.lakehousePlatformServerClient.findProducerServer(
+                did,
+                V1_AppDirLevel.DEPLOYMENT,
+                token,
+              ),
+            ),
+          ];
+        }),
+      )) as [number, IngestDeploymentServerConfig][];
+      const didToEnvironment = new Map<number, IngestDeploymentServerConfig>(
+        didsAndEnvironments,
+      );
+      this.setLakehouseIngestEnvironmentsByDID(didToEnvironment);
+      this.loadingLakehouseEnvironmentsByDIDState.complete();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(
+        `Unable to load lakehouse environments by DID: ${error.message}`,
+      );
+      this.loadingLakehouseEnvironmentsByDIDState.fail();
     }
   }
 
@@ -561,7 +604,19 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
             auth.user?.access_token,
           );
           await Promise.all([
-            this.fetchSandboxDataProducts(auth.user?.access_token),
+            (async () => {
+              await this.fetchSandboxDataProducts(auth.user?.access_token);
+              await this.fetchLakehouseEnvironmentsByDID(
+                this.sandboxDataProductStates
+                  .map(
+                    (state) =>
+                      state.dataProductArtifact?.dataProduct.deploymentId,
+                  )
+                  .filter(isNonNullable)
+                  .map((did) => parseInt(did)),
+                auth.user?.access_token,
+              );
+            })(),
             this.fetchLakehouseEnvironmentDetails(auth.user?.access_token),
           ]);
         }
