@@ -314,6 +314,8 @@ export const LakehouseDataProductCard = observer(
             )}
             {environmentClassification !== undefined && (
               <Chip
+                label={environmentClassification}
+                size="small"
                 className={clsx(
                   'marketplace-lakehouse-data-product-card__environment-classification',
                   {
@@ -328,7 +330,6 @@ export const LakehouseDataProductCard = observer(
                       V1_IngestEnvironmentClassification.PROD,
                   },
                 )}
-                label={environmentClassification}
               />
             )}
             <Box className="marketplace-lakehouse-data-product-card__name">
