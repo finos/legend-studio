@@ -124,6 +124,9 @@ class DataProductFilters {
       snapshotFilter: observable,
       sdlcDeployFilter: observable,
       sandboxDeployFilter: observable,
+      devEnvironmentClassificationFilter: observable,
+      prodParallelEnvironmentClassificationFilter: observable,
+      prodEnvironmentClassificationFilter: observable,
       search: observable,
     });
     this.releaseFilter = defaultBooleanFilters.releaseFilter;
