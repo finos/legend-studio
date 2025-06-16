@@ -1,5 +1,17 @@
 # @finos/legend-graph
 
+## 32.1.43
+
+### Patch Changes
+
+- [#4196](https://github.com/finos/legend-studio/pull/4196) [`0e087a1`](https://github.com/finos/legend-studio/commit/0e087a1becf4288581554e4ac919327a9fc73fa4) ([@travisstebbins](https://github.com/travisstebbins)) - Improve Lakehouse data product viewer
+
+- [#4175](https://github.com/finos/legend-studio/pull/4175) [`707dc46`](https://github.com/finos/legend-studio/commit/707dc465a9ac8442fa1ef670dc5e899dbcc6060e) ([@janeenyamak1](https://github.com/janeenyamak1)) - Support Mem SQL Function Rountrip
+
+- [#4199](https://github.com/finos/legend-studio/pull/4199) [`485cad3`](https://github.com/finos/legend-studio/commit/485cad3c674ce7ce625a10bc0617c87f82e34743) ([@travisstebbins](https://github.com/travisstebbins)) - Fix deserializing V1_ContractUserEventPayload
+
+- [#4190](https://github.com/finos/legend-studio/pull/4190) [`76079e9`](https://github.com/finos/legend-studio/commit/76079e9fbde064f4c6245d93d2b4b0e776bacbae) ([@janeenyamak1](https://github.com/janeenyamak1)) - Update validation result structure
+
 ## 32.1.42
 
 ### Patch Changes

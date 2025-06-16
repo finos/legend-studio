@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 16.0.50
+
+### Patch Changes
+
+- [#4175](https://github.com/finos/legend-studio/pull/4175) [`707dc46`](https://github.com/finos/legend-studio/commit/707dc465a9ac8442fa1ef670dc5e899dbcc6060e) ([@janeenyamak1](https://github.com/janeenyamak1)) - Adding scss for mem sql function
+
 ## 16.0.49
 
 ## 16.0.48

@@ -1,5 +1,21 @@
 # @finos/legend-application-marketplace
 
+## 0.0.45
+
+### Patch Changes
+
+- [#4196](https://github.com/finos/legend-studio/pull/4196) [`0e087a1`](https://github.com/finos/legend-studio/commit/0e087a1becf4288581554e4ac919327a9fc73fa4) ([@travisstebbins](https://github.com/travisstebbins)) - Improve Lakehouse data product viewer
+
+- [#4197](https://github.com/finos/legend-studio/pull/4197) [`79a8c34`](https://github.com/finos/legend-studio/commit/79a8c34a589db169a3759907500f036b559e87b4) ([@travisstebbins](https://github.com/travisstebbins)) - Rename Legend Lakehouse/Lakehouse Marketplace to Legend Marketplace
+
+- [#4201](https://github.com/finos/legend-studio/pull/4201) [`2e0e9b1`](https://github.com/finos/legend-studio/commit/2e0e9b1e9cac94606437d7fcea29790cb87fbeec) ([@travisstebbins](https://github.com/travisstebbins)) - Add Lakehouse callback page
+
+- [#4200](https://github.com/finos/legend-studio/pull/4200) [`a21ffc0`](https://github.com/finos/legend-studio/commit/a21ffc0dc65764a0673871f923413c3b7a17403b) ([@travisstebbins](https://github.com/travisstebbins)) - Add flag to disable Marketplace pages
+
+- [#4199](https://github.com/finos/legend-studio/pull/4199) [`485cad3`](https://github.com/finos/legend-studio/commit/485cad3c674ce7ce625a10bc0617c87f82e34743) ([@travisstebbins](https://github.com/travisstebbins)) - Move All Contracts and Subscriptions pages to new Lakehouse admin page
+
+- [#4191](https://github.com/finos/legend-studio/pull/4191) [`5ae1770`](https://github.com/finos/legend-studio/commit/5ae1770e74638484fc405915876587122c80d3b9) ([@travisstebbins](https://github.com/travisstebbins)) - Improve Lakehouse Entitlements page
+
 ## 0.0.44
 
 ## 0.0.43

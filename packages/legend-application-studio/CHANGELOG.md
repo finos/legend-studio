@@ -1,5 +1,17 @@
 # @finos/legend-application-studio
 
+## 28.19.0
+
+### Minor Changes
+
+- [#4198](https://github.com/finos/legend-studio/pull/4198) [`c225f84`](https://github.com/finos/legend-studio/commit/c225f84d440760fc78e0745d586e6dd75d06e0be) ([@gs-gunjan](https://github.com/gs-gunjan)) - studio: support opening datacube from functions with parameters
+
+### Patch Changes
+
+- [#4175](https://github.com/finos/legend-studio/pull/4175) [`707dc46`](https://github.com/finos/legend-studio/commit/707dc465a9ac8442fa1ef670dc5e899dbcc6060e) ([@janeenyamak1](https://github.com/janeenyamak1)) - Enable Mem SQL Function Activator
+
+- [#4202](https://github.com/finos/legend-studio/pull/4202) [`1fdebe7`](https://github.com/finos/legend-studio/commit/1fdebe717eff274873f986387e8aeb0d4ad955e4) ([@kelly-thai](https://github.com/kelly-thai)) - Update Lakehouse Data Product form editor to allow for access point group editing
+
 ## 28.18.148
 
 ### Patch Changes

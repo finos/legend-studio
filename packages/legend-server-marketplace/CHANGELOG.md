@@ -1,5 +1,11 @@
 # @finos/legend-server-marketplace
 
+## 0.0.14
+
+### Patch Changes
+
+- [#4199](https://github.com/finos/legend-studio/pull/4199) [`485cad3`](https://github.com/finos/legend-studio/commit/485cad3c674ce7ce625a10bc0617c87f82e34743) ([@travisstebbins](https://github.com/travisstebbins)) - Move All Contracts and Subscriptions pages to new Lakehouse admin page
+
 ## 0.0.13
 
 ## 0.0.12
