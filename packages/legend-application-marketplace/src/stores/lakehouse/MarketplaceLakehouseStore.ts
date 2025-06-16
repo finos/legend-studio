@@ -555,7 +555,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   ): Promise<void> {
     try {
       this.loadingLakehouseEnvironmentsByDIDState.inProgress();
-      const didsAndEnvironments = (await Promise.all(
+      const didsAndEnvironments = await Promise.all(
         dids.map(async (did) => {
           return [
             did,
@@ -566,16 +566,14 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
                 token,
               ),
             ),
-          ];
+          ] as [string, IngestDeploymentServerConfig];
         }),
-      )) as [string, IngestDeploymentServerConfig][];
+      );
       const didToEnvironment = new Map<string, IngestDeploymentServerConfig>(
         this.lakehouseIngestEnvironmentsByDID,
       );
       didsAndEnvironments.forEach(([did, environment]) => {
-        if (environment) {
-          didToEnvironment.set(did, environment);
-        }
+        didToEnvironment.set(did, environment);
       });
       this.setLakehouseIngestEnvironmentsByDID(didToEnvironment);
       this.loadingLakehouseEnvironmentsByDIDState.complete();
@@ -861,9 +859,9 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
             this.applicationStore.pluginManager,
             this.applicationStore.logService,
           );
-          const entities: Entity[] = (await graphManager.pureCodeToEntities(
+          const entities: Entity[] = await graphManager.pureCodeToEntities(
             sandboxDataProduct.definition,
-          )) as Entity[];
+          );
           await graphManager.buildGraph(
             graphManagerState.graph,
             entities,
