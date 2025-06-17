@@ -209,20 +209,17 @@ export class DataProductViewerState {
   ): GeneratorFn<void> {
     try {
       this.creatingContractState.inProgress();
-      const request: PlainObject<V1_CreateContractPayload> = serialize(
-        V1_createContractPayloadModelSchema,
-        {
-          description,
-          resourceId: this.product.name,
-          resourceType: V1_ResourceType.ACCESS_POINT_GROUP,
-          deploymentId: guaranteeNonNullable(
-            this.generation?.dataProduct.deploymentId,
-            'Cannot create contract. Data product generation is missing deployment ID',
-          ),
-          accessPointGroup: group.id,
-          consumer: buildAdhocUser(userId),
-        } satisfies V1_CreateContractPayload,
-      );
+      const request = serialize(V1_createContractPayloadModelSchema, {
+        description,
+        resourceId: this.product.name,
+        resourceType: V1_ResourceType.ACCESS_POINT_GROUP,
+        deploymentId: guaranteeNonNullable(
+          this.generation?.dataProduct.deploymentId,
+          'Cannot create contract. Data product generation is missing deployment ID',
+        ),
+        accessPointGroup: group.id,
+        consumer: buildAdhocUser(userId),
+      } satisfies V1_CreateContractPayload) as PlainObject<V1_CreateContractPayload>;
       const contracts = V1_DataContractsRecordModelSchemaToContracts(
         (yield this.lakeServerClient.createContract(
           request,
