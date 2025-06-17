@@ -105,7 +105,7 @@ export class LakehouseContractServerClient extends AbstractServerClient {
     token: string | undefined,
   ): Promise<V1_DataContract> =>
     this.post(
-      `${this._dataContracts()}/contractWithResourceDetails`,
+      `${this._dataContracts()}`,
       contractRequest,
       undefined,
       this._token(token),
