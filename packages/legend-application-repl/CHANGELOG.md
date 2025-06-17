@@ -1,5 +1,7 @@
 # @finos/legend-application-repl
 
+## 1.1.53
+
 ## 1.1.52
 
 ## 1.1.51

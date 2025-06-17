@@ -1,5 +1,13 @@
 # @finos/legend-application-marketplace
 
+## 0.0.46
+
+### Patch Changes
+
+- [#4205](https://github.com/finos/legend-studio/pull/4205) [`ca74ba8`](https://github.com/finos/legend-studio/commit/ca74ba8c96a7cb4bf0b47cff520f68db09fd10ba) ([@travisstebbins](https://github.com/travisstebbins)) - Differentiate ingest environment classifications on Lakehouse home
+
+- [#4203](https://github.com/finos/legend-studio/pull/4203) [`1b03b68`](https://github.com/finos/legend-studio/commit/1b03b682e9fdf0571ba8c4532ed1c6de8d8ceb63) ([@travisstebbins](https://github.com/travisstebbins)) - Lakehouse allow entitled user to request entitlements for others
+
 ## 0.0.45
 
 ### Patch Changes
