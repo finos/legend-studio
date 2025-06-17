@@ -14,13 +14,9 @@
  * limitations under the License.
  */
 
-import {
-  ELEMENT_PATH_DELIMITER,
-  type V1_AccessPointGroup,
-} from '@finos/legend-graph';
+import { ELEMENT_PATH_DELIMITER } from '@finos/legend-graph';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState, type ChangeEvent } from 'react';
-import type { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
 import { useAuth } from 'react-oidc-context';
 import { flowResult } from 'mobx';
 import {
@@ -38,22 +34,30 @@ import {
   UserSearchInput,
 } from '@finos/legend-art';
 import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
-import { LegendUser } from '@finos/legend-shared';
+import { guaranteeNonNullable, LegendUser } from '@finos/legend-shared';
 import { getUserById } from '../../../stores/lakehouse/LakehouseUtils.js';
+import {
+  DataProductGroupAccess,
+  type DataProductGroupAccessState,
+} from '../../../stores/lakehouse/DataProductDataAccessState.js';
 
 enum DataContractCreatorConsumerType {
   USER = 'User',
   SYSTEM_ACCOUNT = 'System Account',
 }
 
-export const DataContractCreator = observer(
+export const EntitlementsDataContractCreator = observer(
   (props: {
     open: boolean;
     onClose: () => void;
-    accessPointGroup: V1_AccessPointGroup;
-    viewerState: DataProductViewerState;
+    accessGroupState: DataProductGroupAccessState;
   }) => {
-    const { open, onClose, viewerState, accessPointGroup } = props;
+    const { open, onClose, accessGroupState } = props;
+    const viewerState = accessGroupState.accessState.viewerState;
+    const accessPointGroup = guaranteeNonNullable(
+      viewerState.dataContractAccessPointGroup,
+      'Cannot show DataContractCreator. No access point group is selected.',
+    );
     const legendMarketplaceStore = useLegendMarketplaceBaseStore();
     const auth = useAuth();
     const [description, setDescription] = useState<string | undefined>(
@@ -83,11 +87,16 @@ export const DataContractCreator = observer(
           }
         }
       };
-      // eslint-disable-next-line no-void
-      void fetchCurrentUser();
+      // We should only fetch the current user if the current user is not already entitled.
+      // If the current user is already entitled, we can assume they are requesting access for another user or system account.
+      if (accessGroupState.access === DataProductGroupAccess.NO_ACCESS) {
+        // eslint-disable-next-line no-void
+        void fetchCurrentUser();
+      }
     }, [
       legendMarketplaceStore.userSearchService,
       viewerState.applicationStore.identityService.currentUser,
+      accessGroupState.access,
     ]);
 
     const onCreate = (): void => {

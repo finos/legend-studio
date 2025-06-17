@@ -220,10 +220,19 @@ export class DataProductViewerState {
         )) as unknown as PlainObject<V1_DataContractsRecord>,
       );
       const associatedContract = contracts[0];
-      const findGroup = this.accessState.accessGroupStates.find(
-        (e) => e.group === group,
-      );
-      findGroup?.setAssociatedContract(associatedContract);
+      // Only if the user has requested a contract for themself do we update the associated contract.
+      if (
+        associatedContract?.consumer instanceof V1_AdhocTeam &&
+        associatedContract.consumer.users.some(
+          (u) => u.name === this.applicationStore.identityService.currentUser,
+        )
+      ) {
+        const groupAccessState = this.accessState.accessGroupStates.find(
+          (e) => e.group === group,
+        );
+        groupAccessState?.setAssociatedContract(associatedContract);
+      }
+
       this.setDataContractAccessPointGroup(undefined);
       this.setDataContract(associatedContract);
       this.applicationStore.notificationService.notifySuccess(

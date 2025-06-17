@@ -16,6 +16,7 @@
 
 import {
   AnchorLinkIcon,
+  CaretDownIcon,
   clsx,
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
@@ -72,9 +73,17 @@ import {
   CODE_EDITOR_LANGUAGE,
   CODE_EDITOR_THEME,
 } from '@finos/legend-code-editor';
-import { Box, Button, Tab, Tabs } from '@mui/material';
+import {
+  Box,
+  Button,
+  ButtonGroup,
+  Menu,
+  MenuItem,
+  Tab,
+  Tabs,
+} from '@mui/material';
 import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
-import { DataContractCreator } from '../entitlements/EntitlementsDataContractCreator.js';
+import { EntitlementsDataContractCreator } from '../entitlements/EntitlementsDataContractCreator.js';
 import { EntitlementsDataContractViewer } from '../entitlements/EntitlementsDataContractViewer.js';
 import { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
 import { useAuth } from 'react-oidc-context';
@@ -346,6 +355,9 @@ export const DataProductAccessPointGroupViewer = observer(
 
     const auth = useAuth();
     const [showSubscriptionsModal, setShowSubscriptionsModal] = useState(false);
+    const [isEntitledButtonGroupMenuOpen, setIsEntitledButtonGroupMenuOpen] =
+      useState(false);
+    const entitledButtonGroupRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
       if (
@@ -409,14 +421,44 @@ export const DataProductAccessPointGroupViewer = observer(
           );
         case DataProductGroupAccess.COMPLETED:
           return (
-            <Button
-              variant="contained"
-              color="success"
-              loading={accessGroupState.fetchingAccessState.isInProgress}
-              onClick={handleContractsClick}
-            >
-              ENTITLED
-            </Button>
+            <>
+              <ButtonGroup
+                variant="contained"
+                color="success"
+                ref={entitledButtonGroupRef}
+              >
+                <Button
+                  onClick={handleContractsClick}
+                  loading={accessGroupState.fetchingAccessState.isInProgress}
+                >
+                  ENTITLED
+                </Button>
+                <Button
+                  size="small"
+                  onClick={() =>
+                    setIsEntitledButtonGroupMenuOpen((prev) => !prev)
+                  }
+                >
+                  <CaretDownIcon />
+                </Button>
+              </ButtonGroup>
+              <Menu
+                anchorEl={entitledButtonGroupRef.current}
+                open={isEntitledButtonGroupMenuOpen}
+                onClose={() => setIsEntitledButtonGroupMenuOpen(false)}
+              >
+                <MenuItem
+                  onClick={() => {
+                    accessGroupState.accessState.viewerState.setDataContractAccessPointGroup(
+                      accessGroupState.group,
+                    );
+                    setIsEntitledButtonGroupMenuOpen(false);
+                  }}
+                >
+                  Request Access for Others
+                </MenuItem>
+              </Menu>
+            </>
           );
         default:
           return null;
@@ -538,19 +580,15 @@ export const DataProductAccessPointGroupViewer = observer(
           </div>
         </div>
         {accessGroupState.accessState.viewerState
-          .dataContractAccessPointGroup !== undefined && (
-          <DataContractCreator
+          .dataContractAccessPointGroup === accessGroupState.group && (
+          <EntitlementsDataContractCreator
             open={true}
             onClose={() =>
               accessGroupState.accessState.viewerState.setDataContractAccessPointGroup(
                 undefined,
               )
             }
-            accessPointGroup={
-              accessGroupState.accessState.viewerState
-                .dataContractAccessPointGroup
-            }
-            viewerState={accessGroupState.accessState.viewerState}
+            accessGroupState={accessGroupState}
           />
         )}
         {accessGroupState.accessState.viewerState.dataContract && (
