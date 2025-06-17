@@ -1,5 +1,11 @@
 # @finos/legend-server-marketplace
 
+## 0.0.16
+
+### Patch Changes
+
+- [#4207](https://github.com/finos/legend-studio/pull/4207) [`439db8b`](https://github.com/finos/legend-studio/commit/439db8bb99e63c6c83f8a2738c776cfb1255ad6e) ([@travisstebbins](https://github.com/travisstebbins)) - Use new Lakehouse contract creation endpoint
+
 ## 0.0.15
 
 ## 0.0.14

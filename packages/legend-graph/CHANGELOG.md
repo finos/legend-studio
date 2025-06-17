@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.1.45
+
+### Patch Changes
+
+- [#4207](https://github.com/finos/legend-studio/pull/4207) [`439db8b`](https://github.com/finos/legend-studio/commit/439db8bb99e63c6c83f8a2738c776cfb1255ad6e) ([@travisstebbins](https://github.com/travisstebbins)) - Use new Lakehouse contract creation endpoint
+
 ## 32.1.44
 
 ### Patch Changes
