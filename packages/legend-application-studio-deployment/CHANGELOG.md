@@ -1,5 +1,7 @@
 # @finos/legend-application-studio-deployment
 
+## 13.88.0
+
 ## 13.87.0
 
 ### Patch Changes

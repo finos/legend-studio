@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.1.44
+
+### Patch Changes
+
+- [#4205](https://github.com/finos/legend-studio/pull/4205) [`ca74ba8`](https://github.com/finos/legend-studio/commit/ca74ba8c96a7cb4bf0b47cff520f68db09fd10ba) ([@travisstebbins](https://github.com/travisstebbins)) - Remove V1_LakehouseDiscoveryEnvironmentResponse class
+
 ## 32.1.43
 
 ### Patch Changes
