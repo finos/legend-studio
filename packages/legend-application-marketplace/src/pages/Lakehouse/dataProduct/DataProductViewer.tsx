@@ -35,7 +35,14 @@ const DataProductHeader = observer(
     const { dataProductViewerState, showFullHeader } = props;
     const applicationStore = useApplicationStore();
     const headerRef = useRef<HTMLDivElement>(null);
-    const dataProudct = dataProductViewerState.product;
+    const dataProduct = dataProductViewerState.product;
+    const environmentClassification = dataProductViewerState.generation
+      ?.dataProduct.deploymentId
+      ? dataProductViewerState.lakehouseStore.lakehouseIngestEnvironmentsByDID.get(
+          dataProductViewerState.generation.dataProduct.deploymentId,
+        )?.environmentClassification
+      : undefined;
+
     useEffect(() => {
       if (headerRef.current) {
         dataProductViewerState.layoutState.header = headerRef.current;
@@ -57,10 +64,10 @@ const DataProductHeader = observer(
         >
           <div
             className="data-space__viewer__header__title"
-            title={`${dataProudct.name} - ${dataProudct.path}`}
+            title={`${dataProduct.name} - ${dataProduct.path}`}
           >
             <div className="data-space__viewer__header__title__label">
-              {dataProudct.title ? dataProudct.title : dataProudct.name}
+              {dataProduct.title ? dataProduct.title : dataProduct.name}
             </div>
             {dataProductViewerState.isVerified && (
               <div
@@ -80,6 +87,9 @@ const DataProductHeader = observer(
                 title="View Ingest Environment"
                 className="data-space__viewer__header__type__sandbox"
               >
+                {environmentClassification
+                  ? `${environmentClassification} `
+                  : ''}
                 Sandbox Data Product
                 <OpenIcon />
               </Button>
@@ -87,7 +97,7 @@ const DataProductHeader = observer(
               <Button
                 onClick={() => {
                   dataProductViewerState
-                    .viewSDLCProject(dataProudct.path)
+                    .viewSDLCProject(dataProduct.path)
                     .catch(applicationStore.alertUnhandledError);
                 }}
                 title="View SDLC Project"

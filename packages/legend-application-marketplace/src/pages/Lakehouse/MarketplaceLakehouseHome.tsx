@@ -33,6 +33,7 @@ import {
   Box,
   Button,
   Checkbox,
+  Chip,
   Container,
   FormControlLabel,
   FormGroup,
@@ -72,7 +73,10 @@ import {
 } from '../../stores/lakehouse/dataProducts/DataProducts.js';
 import type { LegendMarketplaceApplicationStore } from '../../stores/LegendMarketplaceBaseStore.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { ELEMENT_PATH_DELIMITER } from '@finos/legend-graph';
+import {
+  ELEMENT_PATH_DELIMITER,
+  V1_IngestEnvironmentClassification,
+} from '@finos/legend-graph';
 
 const MAX_DESCRIPTION_LENGTH = 250;
 
@@ -216,7 +220,18 @@ export const LakehouseDataProductCard = observer(
           )}...`
         : dataProductState.description;
 
-    const isSnapshot = isSnapshotVersion(dataProductState.versionId);
+    const versionId =
+      dataProductState instanceof DataProductState
+        ? dataProductState.versionId
+        : undefined;
+    const isSnapshot = versionId ? isSnapshotVersion(versionId) : undefined;
+    const environmentClassification =
+      dataProductState instanceof SandboxDataProductState &&
+      dataProductState.dataProductArtifact?.dataProduct.deploymentId
+        ? dataProductState.state.lakehouseIngestEnvironmentsByDID.get(
+            dataProductState.dataProductArtifact.dataProduct.deploymentId,
+          )?.environmentClassification
+        : undefined;
     const isLoading = dataProductState.isLoading;
 
     const content = isLoading ? (
@@ -234,7 +249,7 @@ export const LakehouseDataProductCard = observer(
             )}
           </Box>
           <Box className="marketplace-lakehouse-data-product-card__content">
-            {dataProductState.versionId !== '' && (
+            {versionId !== undefined && versionId !== '' && (
               <>
                 <Button
                   size="small"
@@ -253,7 +268,7 @@ export const LakehouseDataProductCard = observer(
                     },
                   )}
                 >
-                  {dataProductState.versionId}
+                  {versionId}
                   <ExpandMoreIcon />
                 </Button>
                 <Menu
@@ -296,6 +311,26 @@ export const LakehouseDataProductCard = observer(
                   )}
                 </Menu>
               </>
+            )}
+            {environmentClassification !== undefined && (
+              <Chip
+                label={environmentClassification}
+                size="small"
+                className={clsx(
+                  'marketplace-lakehouse-data-product-card__environment-classification',
+                  {
+                    'marketplace-lakehouse-data-product-card__environment-classification--dev':
+                      environmentClassification ===
+                      V1_IngestEnvironmentClassification.DEV,
+                    'marketplace-lakehouse-data-product-card__environment-classification--prod-parallel':
+                      environmentClassification ===
+                      V1_IngestEnvironmentClassification.PROD_PARALLEL,
+                    'marketplace-lakehouse-data-product-card__environment-classification--prod':
+                      environmentClassification ===
+                      V1_IngestEnvironmentClassification.PROD,
+                  },
+                )}
+              />
             )}
             <Box className="marketplace-lakehouse-data-product-card__name">
               {dataProductState.title}
@@ -467,6 +502,62 @@ const MarketplaceLakehouseHomeSortFilterPanel = observer(
               />
             </FormGroup>
           </Box>
+          <hr />
+          <Box>
+            <FormLabel>Deploy Environment</FormLabel>
+            <FormGroup>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={
+                      marketPlaceStore.filter.devEnvironmentClassificationFilter
+                    }
+                    onChange={() =>
+                      marketPlaceStore.handleFilterChange(
+                        DataProductFilterType.ENVIRONMENT_CLASSIFICATION,
+                        V1_IngestEnvironmentClassification.DEV,
+                      )
+                    }
+                  />
+                }
+                label="Dev"
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={
+                      marketPlaceStore.filter
+                        .prodParallelEnvironmentClassificationFilter
+                    }
+                    onChange={() =>
+                      marketPlaceStore.handleFilterChange(
+                        DataProductFilterType.ENVIRONMENT_CLASSIFICATION,
+                        V1_IngestEnvironmentClassification.PROD_PARALLEL,
+                      )
+                    }
+                  />
+                }
+                label="Prod-Parallel"
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={
+                      marketPlaceStore.filter
+                        .prodEnvironmentClassificationFilter
+                    }
+                    onChange={() =>
+                      marketPlaceStore.handleFilterChange(
+                        DataProductFilterType.ENVIRONMENT_CLASSIFICATION,
+                        V1_IngestEnvironmentClassification.PROD,
+                      )
+                    }
+                  />
+                }
+                label="Prod"
+              />
+            </FormGroup>
+          </Box>
         </Box>
       </Box>
     );
@@ -488,7 +579,8 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
 
     const isLoadingDataProducts =
       marketPlaceStore.loadingProductsState.isInProgress ||
-      marketPlaceStore.loadingSandboxDataProductStates.isInProgress;
+      marketPlaceStore.loadingSandboxDataProductStates.isInProgress ||
+      marketPlaceStore.loadingLakehouseEnvironmentsByDIDState.isInProgress;
 
     return (
       <LegendMarketplacePage className="marketplace-lakehouse-home">
