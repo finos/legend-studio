@@ -57,7 +57,7 @@ import {
   type GeneratorFn,
   type PlainObject,
 } from '@finos/legend-shared';
-import { deserialize, serialize } from 'serializr';
+import { serialize } from 'serializr';
 import { dataContractContainsDataProduct } from './LakehouseUtils.js';
 import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
 import type { MarketplaceLakehouseStore } from './MarketplaceLakehouseStore.js';
@@ -211,7 +211,7 @@ export class DataProductViewerState {
       this.creatingContractState.inProgress();
       const request: PlainObject<V1_CreateContractPayload> = serialize(
         V1_createContractPayloadModelSchema,
-        deserialize(V1_createContractPayloadModelSchema, {
+        {
           description,
           resourceId: this.product.name,
           resourceType: V1_ResourceType.ACCESS_POINT_GROUP,
@@ -221,7 +221,7 @@ export class DataProductViewerState {
           ),
           accessPointGroup: group.id,
           consumer: buildAdhocUser(userId),
-        }),
+        } satisfies V1_CreateContractPayload,
       );
       const contracts = V1_DataContractsRecordModelSchemaToContracts(
         (yield this.lakeServerClient.createContract(
