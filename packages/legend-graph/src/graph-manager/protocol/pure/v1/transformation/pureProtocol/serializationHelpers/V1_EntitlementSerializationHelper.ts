@@ -30,6 +30,7 @@ import {
   V1_ContractUserEventDataProducerPayload,
   V1_ContractUserEventPrivilegeManagerPayload,
   V1_ContractUserEventRecord,
+  V1_CreateContractPayload,
   V1_DataBundle,
   V1_DataContract,
   V1_DataContractRecord,
@@ -280,3 +281,18 @@ export const V1_deserializeTaskResponse = (
 ): V1_TaskMetadata[] => {
   return deserialize(V1_taskResponseModelSchema, json).tasks ?? [];
 };
+
+export const V1_createContractPayloadModelSchema = createModelSchema(
+  V1_CreateContractPayload,
+  {
+    description: primitive(),
+    resourceId: primitive(),
+    resourceType: primitive(),
+    deploymentId: primitive(),
+    accessPointGroup: optional(primitive()),
+    consumer: custom(
+      V1_seralizeOrganizationalScope,
+      V1_deseralizeOrganizationalScope,
+    ),
+  },
+);
