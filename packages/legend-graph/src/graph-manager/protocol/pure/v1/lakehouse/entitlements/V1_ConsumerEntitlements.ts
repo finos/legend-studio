@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { PlainObject } from '@finos/legend-shared';
+import { type PlainObject } from '@finos/legend-shared';
 import {
   type V1_OrganizationalScope,
   V1_Resource,
@@ -113,11 +113,11 @@ export class V1_TaskStatus {
   errorMessage: string | undefined;
 }
 
-export class V1_CreateContractWithResourcePayload {
+export class V1_CreateContractPayload {
   description!: string;
   resourceId!: string;
   resourceType!: V1_ResourceType;
-  deploymentId!: number;
+  deploymentId!: string;
   accessPointGroup?: string | undefined;
   consumer!: V1_OrganizationalScope;
 }

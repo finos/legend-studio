@@ -272,7 +272,7 @@ export {
   V1_ContractUserEventPayload,
   V1_ContractUserEventPrivilegeManagerPayload,
   V1_ContractUserEventRecord,
-  V1_CreateContractWithResourcePayload,
+  V1_CreateContractPayload,
   V1_DataContract,
   V1_DataContractsRecord,
   V1_PendingTasksRespond,
@@ -295,6 +295,7 @@ export {
 } from './graph-manager/protocol/pure/v1/lakehouse/entitlements/V1_CoreEntitlements.js';
 export {
   V1_AppDirNodeModelSchema,
+  V1_createContractPayloadModelSchema,
   V1_DataContractsRecordModelSchema,
   V1_pendingTasksRespondModelSchema,
   V1_TaskStatusChangeResponseModelSchema,
