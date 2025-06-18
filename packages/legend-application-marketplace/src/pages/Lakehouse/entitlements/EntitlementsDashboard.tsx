@@ -20,7 +20,7 @@ import { observer } from 'mobx-react-lite';
 import React, { useState } from 'react';
 import { Container, Tab, Tabs, Typography } from '@mui/material';
 import { EntitlementsPendingTasksDashbaord } from './EntitlementsPendingTasksDashboard.js';
-import { EntitlementsPendingRequestsDashbaord } from './EntitlementsPendingRequestsDashboard.js';
+import { EntitlementsPendingContractsDashbaord } from './EntitlementsPendingContractsDashboard.js';
 
 const enum EntitlementsTabs {
   PENDING_TASKS = 'pendingTasks',
@@ -74,7 +74,7 @@ export const EntitlementsDashboard = withAuth(
             />
           )}
         {selectedTab === EntitlementsTabs.PENDING_CONTRACTS && (
-          <EntitlementsPendingRequestsDashbaord
+          <EntitlementsPendingContractsDashbaord
             dashboardState={dashboardState}
           />
         )}

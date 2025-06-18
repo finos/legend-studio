@@ -36,7 +36,7 @@ import { observer } from 'mobx-react-lite';
 import { UserRenderer } from '../../../components/UserRenderer/UserRenderer.js';
 import { stringifyOrganizationalScope } from '../../../stores/lakehouse/LakehouseUtils.js';
 
-export const EntitlementsPendingRequestsDashbaord = observer(
+export const EntitlementsPendingContractsDashbaord = observer(
   (props: { dashboardState: EntitlementsDashboardState }): React.ReactNode => {
     const { dashboardState } = props;
     const { pendingContracts, allContracts } = dashboardState;
