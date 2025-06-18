@@ -26,7 +26,7 @@ import {
   type DataGridCellRendererParams,
   type DataGridColumnDefinition,
 } from '@finos/legend-lego/data-grid';
-import { Box, Button, Popover } from '@mui/material';
+import { Box, Link, Popover } from '@mui/material';
 import { useState } from 'react';
 import type { EntitlementsDashboardState } from '../../../stores/lakehouse/entitlements/EntitlementsDashboardState.js';
 import { EntitlementsDataContractViewer } from './EntitlementsDataContractViewer.js';
@@ -42,7 +42,7 @@ const MultiUserCellRenderer = (props: {
   marketplaceStore: LegendMarketplaceBaseStore;
 }): React.ReactNode => {
   const { userIds, marketplaceStore } = props;
-  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
   if (userIds.length === 1) {
     return (
@@ -55,12 +55,9 @@ const MultiUserCellRenderer = (props: {
   } else {
     return (
       <>
-        <Button
-          variant="contained"
-          onClick={(event) => setAnchorEl(event.currentTarget)}
-        >
+        <Link onClick={(event) => setAnchorEl(event.currentTarget)}>
           {userIds.length} Users
-        </Button>
+        </Link>
         <Popover
           open={Boolean(anchorEl)}
           anchorEl={anchorEl}
