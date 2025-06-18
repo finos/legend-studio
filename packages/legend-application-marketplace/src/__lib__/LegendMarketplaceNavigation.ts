@@ -24,8 +24,6 @@ export enum LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN {
   VENDOR_NAME = 'vendorName',
   GAV = 'gav',
   DATA_PRODUCT_PATH = 'path',
-  TASK_ID = 'taskId',
-  CONTRACT_ID = 'contractId',
   ingestEnvironmentUrn = 'ingestEnvironmentUrn',
 }
 
@@ -44,11 +42,6 @@ export type LakehouseSandboxDataProductPathParams = {
   [LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH]: string;
 };
 
-export type LakehouseEntitlementsTasksParam = {
-  [LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.TASK_ID]: string | undefined;
-  [LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.CONTRACT_ID]: string | undefined;
-};
-
 export const LEGEND_MARKETPLACE_ROUTE_PATTERN = Object.freeze({
   DEFAULT: '/',
   OAUTH_CALLBACK: '/callback',
@@ -57,7 +50,6 @@ export const LEGEND_MARKETPLACE_ROUTE_PATTERN = Object.freeze({
   VENDOR_DETAILS: `/vendor/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.VENDOR_NAME}`,
   LAKEHOUSE: '/lakehouse',
   LAKEHOUSE_ENTITLEMENTS: '/lakehouse/entitlements',
-  LAKEHOUSE_ENTITLEMENTS_CONTRACTS: `/lakehouse/entitlements/contracts/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.CONTRACT_ID}`,
   LAKEHOUSE_PRODUCT: `/lakehouse/dataProduct/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.GAV}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH}`,
   LAKEHOUSE_SANDBOX_PRODUCT: `/lakehouse/dataProduct/sandbox/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.ingestEnvironmentUrn}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH}`,
   SUBSCRIPTIONS: '/subscriptions',
@@ -68,7 +60,6 @@ export const LEGEND_MARKETPLACE_ROUTE_PATTERN = Object.freeze({
 export const LAKEHOUSE_ROUTES = Object.freeze([
   LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE,
   LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS,
-  LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS_CONTRACTS,
   LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_PRODUCT,
   LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SANDBOX_PRODUCT,
   LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ADMIN,
@@ -99,14 +90,6 @@ export const generateLakehouseSandboxDataProductPath = (
 
 export const generateLakehouseTaskPath = (taskId: string): string =>
   `${LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS}?selectedTasks=${taskId}`;
-
-export const generateLakehouseContractPath = (contractId: string): string =>
-  generatePath(
-    LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS_CONTRACTS,
-    {
-      contractId,
-    },
-  );
 
 export const generateSearchResultsRoute = (
   provider: string | undefined,

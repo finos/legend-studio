@@ -26,60 +26,39 @@ import {
   CubesLoadingIndicatorIcon,
 } from '@finos/legend-art';
 import {} from '@finos/legend-lego/data-grid';
-import { useParams } from '@finos/legend-application/browser';
-import {
-  LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN,
-  type LakehouseEntitlementsTasksParam,
-} from '../../../__lib__/LegendMarketplaceNavigation.js';
 import { EntitlementsDashboardState } from '../../../stores/lakehouse/entitlements/EntitlementsDashboardState.js';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
 import { EntitlementsDashboard } from './EntitlementsDashboard.js';
-import { flowResult } from 'mobx';
 
 export const LakehouseEntitlements = withLakehouseEntitlementsStore(
   observer(() => {
     const entitlementsStore = useLakehouseEntitlementsStore();
     const auth = useAuth();
-    const params = useParams<LakehouseEntitlementsTasksParam>();
 
     useEffect(() => {
       if (
-        !entitlementsStore.dashboardViewer?.initializationState.hasCompleted
+        entitlementsStore.dashboardViewer?.initializationState.isInInitialState
       ) {
         entitlementsStore.initDashboard(auth.user?.access_token);
       }
-      if (params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.TASK_ID]) {
-        flowResult(
-          entitlementsStore.initWithTaskId(
-            params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.TASK_ID],
-            auth.user?.access_token,
-          ),
-        ).catch(entitlementsStore.applicationStore.alertUnhandledError);
-      } else if (params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.CONTRACT_ID]) {
-        flowResult(
-          entitlementsStore.initWithContract(
-            params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.CONTRACT_ID],
-            auth.user?.access_token,
-          ),
-        ).catch(entitlementsStore.applicationStore.alertUnhandledError);
-      }
-    }, [auth.user?.access_token, entitlementsStore, params]);
+    }, [auth.user?.access_token, entitlementsStore]);
+
+    const loading = Boolean(
+      entitlementsStore.dashboardViewer?.initializationState.isInProgress,
+    );
 
     return (
       <LegendMarketplacePage className="marketplace-lakehouse-entitlements">
-        <CubesLoadingIndicator
-          isLoading={Boolean(
-            entitlementsStore.dashboardViewer?.initializationState.isInProgress,
-          )}
-        >
+        <CubesLoadingIndicator isLoading={loading}>
           <CubesLoadingIndicatorIcon />
         </CubesLoadingIndicator>
-        {entitlementsStore.dashboardViewer instanceof
-          EntitlementsDashboardState && (
-          <EntitlementsDashboard
-            dashboardState={entitlementsStore.dashboardViewer}
-          />
-        )}
+        {!loading &&
+          entitlementsStore.dashboardViewer instanceof
+            EntitlementsDashboardState && (
+            <EntitlementsDashboard
+              dashboardState={entitlementsStore.dashboardViewer}
+            />
+          )}
       </LegendMarketplacePage>
     );
   }),

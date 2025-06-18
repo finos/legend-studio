@@ -15,24 +15,10 @@
  */
 
 import type { LegendMarketplaceApplicationStore } from '../../LegendMarketplaceBaseStore.js';
-import {
-  ActionState,
-  assertErrorThrown,
-  guaranteeNonNullable,
-  type GeneratorFn,
-  type PlainObject,
-} from '@finos/legend-shared';
-import { deserialize } from 'serializr';
-import {
-  type V1_TaskResponse,
-  type V1_DataContractsRecord,
-  V1_deserializeTaskResponse,
-  V1_DataContractsRecordModelSchema,
-} from '@finos/legend-graph';
-import { makeObservable, flow, observable, flowResult, action } from 'mobx';
-import { EntitlementsDataContractViewerState } from './EntitlementsDataContractViewerState.js';
+import { ActionState, type GeneratorFn } from '@finos/legend-shared';
+import { makeObservable, flow, observable, action } from 'mobx';
+import { type EntitlementsDataContractViewerState } from './EntitlementsDataContractViewerState.js';
 import { EntitlementsDashboardState } from './EntitlementsDashboardState.js';
-import { EntitlementsTaskViewerState } from './EntitlementsTaskViewerState.js';
 import type { LakehouseViewerState } from './LakehouseViewerState.js';
 import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
 
@@ -80,8 +66,6 @@ export class LakehouseEntitlementsStore {
 
     makeObservable(this, {
       initDashboard: flow,
-      initWithTaskId: flow,
-      initWithContract: flow,
       dashboardViewer: observable,
       currentViewer: observable,
       setDashboardViewer: action,
@@ -104,70 +88,5 @@ export class LakehouseEntitlementsStore {
     const dashboardViewer = new EntitlementsDashboardState(this);
     this.setDashboardViewer(dashboardViewer);
     dashboardViewer.init(token);
-  }
-
-  *initWithTaskId(
-    taskId: string,
-    token: string | undefined,
-  ): GeneratorFn<void> {
-    try {
-      this.currentViewerFetchStatus.inProgress();
-      this.setCurrentViewer(undefined);
-      const rawTasks = (yield this.lakehouseServerClient.getTask(
-        taskId,
-        token,
-      )) as PlainObject<V1_TaskResponse>;
-      const tasks = V1_deserializeTaskResponse(rawTasks);
-      const task = guaranteeNonNullable(
-        tasks[0],
-        `Task with id '${taskId}' not found`,
-      );
-      this.currentViewerFetchStatus.complete();
-      const currentTask = new EntitlementsTaskViewerState(task, this);
-      this.setCurrentViewer(currentTask);
-      flowResult(currentTask.init(token)).catch(
-        this.applicationStore.alertUnhandledError,
-      );
-    } catch (error) {
-      assertErrorThrown(error);
-      this.applicationStore.notificationService.notifyError(
-        `Unable to render task page: ${error.message}`,
-      );
-    } finally {
-      this.currentViewerFetchStatus.complete();
-    }
-  }
-
-  *initWithContract(id: string, token: string | undefined): GeneratorFn<void> {
-    try {
-      this.currentViewerFetchStatus.inProgress();
-      this.setCurrentViewer(undefined);
-      const dataContracts = (yield this.lakehouseServerClient.getDataContract(
-        id,
-        token,
-      )) as PlainObject<V1_DataContractsRecord>;
-
-      const dataContract = deserialize(
-        V1_DataContractsRecordModelSchema,
-        dataContracts,
-      ).dataContracts?.[0]?.dataContract;
-      const contract = guaranteeNonNullable(
-        dataContract,
-        'Data Contract not found',
-      );
-      this.currentViewerFetchStatus.complete();
-      const currentViewer = new EntitlementsDataContractViewerState(
-        contract,
-        this.lakehouseServerClient,
-      );
-      this.setCurrentViewer(currentViewer);
-      flowResult(currentViewer.init(token)).catch(
-        this.applicationStore.alertUnhandledError,
-      );
-    } catch (error) {
-      assertErrorThrown(error);
-    } finally {
-      this.currentViewerFetchStatus.complete();
-    }
   }
 }
