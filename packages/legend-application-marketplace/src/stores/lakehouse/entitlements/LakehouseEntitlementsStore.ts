@@ -17,9 +17,7 @@
 import type { LegendMarketplaceApplicationStore } from '../../LegendMarketplaceBaseStore.js';
 import { ActionState, type GeneratorFn } from '@finos/legend-shared';
 import { makeObservable, flow, observable, action } from 'mobx';
-import { type EntitlementsDataContractViewerState } from './EntitlementsDataContractViewerState.js';
 import { EntitlementsDashboardState } from './EntitlementsDashboardState.js';
-import type { LakehouseViewerState } from './LakehouseViewerState.js';
 import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
 
 export const TEST_USER = undefined;
@@ -33,11 +31,7 @@ export class LakehouseEntitlementsStore {
   readonly directoryCallBack: ((user: string) => void) | undefined;
   readonly applicationCallBack: ((applicationId: string) => void) | undefined;
   currentViewerFetchStatus = ActionState.create();
-  dashboardViewer: LakehouseViewerState | undefined;
-  currentViewer:
-    | LakehouseViewerState
-    | EntitlementsDataContractViewerState
-    | undefined;
+  dashboardViewer: EntitlementsDashboardState | undefined;
 
   constructor(
     applicationStore: LegendMarketplaceApplicationStore,
@@ -67,20 +61,12 @@ export class LakehouseEntitlementsStore {
     makeObservable(this, {
       initDashboard: flow,
       dashboardViewer: observable,
-      currentViewer: observable,
       setDashboardViewer: action,
-      setCurrentViewer: action,
     });
   }
 
-  setDashboardViewer(val: LakehouseViewerState | undefined): void {
+  setDashboardViewer(val: EntitlementsDashboardState | undefined): void {
     this.dashboardViewer = val;
-  }
-
-  setCurrentViewer(
-    val: LakehouseViewerState | EntitlementsDataContractViewerState | undefined,
-  ): void {
-    this.currentViewer = val;
   }
 
   *initDashboard(token: string | undefined): GeneratorFn<void> {

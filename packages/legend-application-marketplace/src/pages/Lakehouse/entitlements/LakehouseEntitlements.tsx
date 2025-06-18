@@ -26,7 +26,6 @@ import {
   CubesLoadingIndicatorIcon,
 } from '@finos/legend-art';
 import {} from '@finos/legend-lego/data-grid';
-import { EntitlementsDashboardState } from '../../../stores/lakehouse/entitlements/EntitlementsDashboardState.js';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
 import { EntitlementsDashboard } from './EntitlementsDashboard.js';
 
@@ -52,13 +51,11 @@ export const LakehouseEntitlements = withLakehouseEntitlementsStore(
         <CubesLoadingIndicator isLoading={loading}>
           <CubesLoadingIndicatorIcon />
         </CubesLoadingIndicator>
-        {!loading &&
-          entitlementsStore.dashboardViewer instanceof
-            EntitlementsDashboardState && (
-            <EntitlementsDashboard
-              dashboardState={entitlementsStore.dashboardViewer}
-            />
-          )}
+        {!loading && entitlementsStore.dashboardViewer !== undefined && (
+          <EntitlementsDashboard
+            dashboardState={entitlementsStore.dashboardViewer}
+          />
+        )}
       </LegendMarketplacePage>
     );
   }),

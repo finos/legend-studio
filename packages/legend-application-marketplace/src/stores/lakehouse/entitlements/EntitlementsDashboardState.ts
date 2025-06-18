@@ -39,16 +39,18 @@ import {
   TEST_USER2,
   type LakehouseEntitlementsStore,
 } from './LakehouseEntitlementsStore.js';
-import { LakehouseViewerState } from './LakehouseViewerState.js';
 
-export class EntitlementsDashboardState extends LakehouseViewerState {
+export class EntitlementsDashboardState {
+  readonly lakehouseEntitlementsStore: LakehouseEntitlementsStore;
   pendingTasks: V1_ContractUserEventRecord[] | undefined;
   pendingContracts: V1_UserPendingContractsRecord[] | undefined;
   allContracts: V1_DataContract[] | undefined;
+  initializationState = ActionState.create();
   changingState = ActionState.create();
 
   constructor(state: LakehouseEntitlementsStore) {
-    super(state);
+    this.lakehouseEntitlementsStore = state;
+
     makeObservable(this, {
       pendingTasks: observable,
       pendingContracts: observable,
