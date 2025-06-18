@@ -15,8 +15,7 @@
  */
 
 import type { LegendMarketplaceApplicationStore } from '../../LegendMarketplaceBaseStore.js';
-import { ActionState, type GeneratorFn } from '@finos/legend-shared';
-import { makeObservable, flow, observable, action } from 'mobx';
+import { ActionState } from '@finos/legend-shared';
 import { EntitlementsDashboardState } from './EntitlementsDashboardState.js';
 import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
 
@@ -31,7 +30,7 @@ export class LakehouseEntitlementsStore {
   readonly directoryCallBack: ((user: string) => void) | undefined;
   readonly applicationCallBack: ((applicationId: string) => void) | undefined;
   currentViewerFetchStatus = ActionState.create();
-  dashboardViewer: EntitlementsDashboardState | undefined;
+  dashboardViewer: EntitlementsDashboardState;
 
   constructor(
     applicationStore: LegendMarketplaceApplicationStore,
@@ -57,22 +56,6 @@ export class LakehouseEntitlementsStore {
           );
         }
       : undefined;
-
-    makeObservable(this, {
-      initDashboard: flow,
-      dashboardViewer: observable,
-      setDashboardViewer: action,
-    });
-  }
-
-  setDashboardViewer(val: EntitlementsDashboardState | undefined): void {
-    this.dashboardViewer = val;
-  }
-
-  *initDashboard(token: string | undefined): GeneratorFn<void> {
-    this.setDashboardViewer(undefined);
-    const dashboardViewer = new EntitlementsDashboardState(this);
-    this.setDashboardViewer(dashboardViewer);
-    dashboardViewer.init(token);
+    this.dashboardViewer = new EntitlementsDashboardState(this);
   }
 }

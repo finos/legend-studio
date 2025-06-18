@@ -28,6 +28,7 @@ import {
 import {} from '@finos/legend-lego/data-grid';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
 import { EntitlementsDashboard } from './EntitlementsDashboard.js';
+import { flowResult } from 'mobx';
 
 export const LakehouseEntitlements = withLakehouseEntitlementsStore(
   observer(() => {
@@ -36,9 +37,11 @@ export const LakehouseEntitlements = withLakehouseEntitlementsStore(
 
     useEffect(() => {
       if (
-        entitlementsStore.dashboardViewer?.initializationState.isInInitialState
+        entitlementsStore.dashboardViewer.initializationState.isInInitialState
       ) {
-        entitlementsStore.initDashboard(auth.user?.access_token);
+        flowResult(
+          entitlementsStore.dashboardViewer.init(auth.user?.access_token),
+        );
       }
     }, [auth.user?.access_token, entitlementsStore]);
 
