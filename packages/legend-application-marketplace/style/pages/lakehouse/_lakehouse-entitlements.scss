@@ -108,8 +108,14 @@
       height: 100%;
     }
 
-    &__multi-user-popover {
-      padding: 1rem;
+    &__multi-user {
+      &__link {
+        cursor: pointer;
+      }
+
+      &__popover {
+        padding: 1rem;
+      }
     }
   }
 }
