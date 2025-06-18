@@ -52,6 +52,7 @@ import {
 import {
   DataProductFilterType,
   DataProductSort,
+  DeployType,
   type MarketplaceLakehouseStore,
 } from '../../stores/lakehouse/MarketplaceLakehouseStore.js';
 import {
@@ -60,7 +61,7 @@ import {
 } from '../../__lib__/LegendMarketplaceNavigation.js';
 import { generateGAVCoordinates } from '@finos/legend-storage';
 import { LegendMarketplaceSearchBar } from '../../components/SearchBar/LegendMarketplaceSearchBar.js';
-import { DepotScope, isSnapshotVersion } from '@finos/legend-server-depot';
+import { isSnapshotVersion } from '@finos/legend-server-depot';
 import { LegendMarketplaceCard } from '../../components/MarketplaceCard/LegendMarketplaceCard.js';
 import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
 import { EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl } from '@finos/legend-application';
@@ -436,40 +437,6 @@ const MarketplaceLakehouseHomeSortFilterPanel = observer(
         <Box className="marketplace-lakehouse-home__sort-filters__filter">
           Filter By
           <Box>
-            <FormLabel>Release Type</FormLabel>
-            <FormGroup>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={marketPlaceStore.filter.releaseFilter}
-                    onChange={() =>
-                      marketPlaceStore.handleFilterChange(
-                        DataProductFilterType.DEPOT_SCOPE,
-                        DepotScope.RELEASES,
-                      )
-                    }
-                  />
-                }
-                label="Releases"
-              />
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={marketPlaceStore.filter.snapshotFilter}
-                    onChange={() =>
-                      marketPlaceStore.handleFilterChange(
-                        DataProductFilterType.DEPOT_SCOPE,
-                        DepotScope.SNAPSHOT,
-                      )
-                    }
-                  />
-                }
-                label="Snapshots"
-              />
-            </FormGroup>
-          </Box>
-          <hr />
-          <Box>
             <FormLabel>Deploy Type</FormLabel>
             <FormGroup>
               <FormControlLabel
@@ -479,7 +446,7 @@ const MarketplaceLakehouseHomeSortFilterPanel = observer(
                     onChange={() =>
                       marketPlaceStore.handleFilterChange(
                         DataProductFilterType.DEPLOY_TYPE,
-                        'sdlc',
+                        DeployType.SDLC,
                       )
                     }
                   />
@@ -493,7 +460,7 @@ const MarketplaceLakehouseHomeSortFilterPanel = observer(
                     onChange={() =>
                       marketPlaceStore.handleFilterChange(
                         DataProductFilterType.DEPLOY_TYPE,
-                        'sandbox',
+                        DeployType.SANDBOX,
                       )
                     }
                   />
