@@ -22,9 +22,9 @@ import {
 } from '@finos/legend-graph';
 import {
   DataGrid,
+  type DataGridCellClickedEvent,
   type DataGridCellRendererParams,
   type DataGridColumnDefinition,
-  type DataGridRowClickedEvent,
 } from '@finos/legend-lego/data-grid';
 import { Box, Button, Popover } from '@mui/material';
 import { useState } from 'react';
@@ -93,14 +93,19 @@ export const EntitlementsPendingContractsDashbaord = observer(
       V1_DataContract | undefined
     >();
 
-    const handleRowClicked = (
-      event: DataGridRowClickedEvent<V1_UserPendingContractsRecord>,
+    const handleCellClicked = (
+      event: DataGridCellClickedEvent<V1_UserPendingContractsRecord>,
     ) => {
-      setSelectedContract(
-        allContracts?.find(
-          (contract) => contract.guid === event.data?.contractId,
-        ),
-      );
+      if (
+        event.colDef.colId !== 'targetUser' &&
+        event.colDef.colId !== 'requester' &&
+        event.colDef.colId !== 'assignees'
+      ) {
+        const contract = allContracts?.find(
+          (_contract) => _contract.guid === event.data?.contractId,
+        );
+        setSelectedContract(contract);
+      }
     };
 
     const defaultColDef: DataGridColumnDefinition<V1_UserPendingContractsRecord> =
@@ -114,6 +119,7 @@ export const EntitlementsPendingContractsDashbaord = observer(
     const colDefs: DataGridColumnDefinition<V1_UserPendingContractsRecord>[] = [
       {
         headerName: 'Target User',
+        colId: 'targetUser',
         cellRenderer: (
           params: DataGridCellRendererParams<V1_UserPendingContractsRecord>,
         ) => {
@@ -137,6 +143,7 @@ export const EntitlementsPendingContractsDashbaord = observer(
       },
       {
         headerName: 'Requester',
+        colId: 'requester',
         cellRenderer: (
           params: DataGridCellRendererParams<V1_UserPendingContractsRecord>,
         ) => {
@@ -201,6 +208,7 @@ export const EntitlementsPendingContractsDashbaord = observer(
       },
       {
         headerName: 'Assignees',
+        colId: 'assignees',
         cellRenderer: (
           params: DataGridCellRendererParams<V1_UserPendingContractsRecord>,
         ) => {
@@ -239,7 +247,7 @@ export const EntitlementsPendingContractsDashbaord = observer(
               suppressFieldDotNotation={true}
               suppressContextMenu={false}
               columnDefs={colDefs}
-              onRowClicked={handleRowClicked}
+              onCellClicked={handleCellClicked}
               defaultColDef={defaultColDef}
               rowHeight={45}
             />
