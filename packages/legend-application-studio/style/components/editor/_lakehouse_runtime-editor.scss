@@ -1,0 +1,99 @@
+.lakehouse-runtime-editor {
+  height: 100%;
+  width: 100%;
+  background: var(--color-dark-grey-50);
+
+  .panel {
+    height: 100%;
+    width: 100%;
+
+    &__header {
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
+      color: var(--color-light-grey-300);
+      font-weight: bold;
+      background: var(--color-dark-grey-50);
+      border-bottom: 0.1rem solid var(--color-dark-grey-200);
+    }
+
+    &__header__title__label {
+      background: var(--color-dark-grey-250);
+    }
+
+    &__header__action {
+      color: var(--color-light-grey-400);
+
+      :hover {
+        color: var(--color-light-grey-200);
+      }
+    }
+
+    &__header__action[disabled] svg {
+      color: var(--color-dark-grey-300) !important;
+    }
+
+    &__content {
+      background: var(--color-dark-grey-50);
+    }
+
+    &__content > div:first-child {
+      margin-top: 0;
+    }
+
+    &__content__lists {
+      height: 100%;
+      width: 100%;
+      padding: 1rem;
+      overflow: auto;
+    }
+  }
+
+  &__splash-screen {
+    @include flexCenter;
+
+    height: 100%;
+    width: 100%;
+    user-select: none;
+    flex-direction: column;
+
+    &__label {
+      display: flex;
+      padding-bottom: 1rem;
+      font-weight: bold;
+      color: var(--color-dark-grey-300);
+      height: 3rem;
+      width: 100%;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 2rem;
+    }
+
+    &__label:hover {
+      color: var(--color-light-grey-100);
+    }
+
+    &__spacing {
+      height: 2rem;
+      min-height: 2rem;
+      width: 100%;
+    }
+
+    &__logo {
+      cursor: pointer;
+
+      :hover {
+        color: var(--color-light-grey-100);
+      }
+    }
+
+    &__logo svg {
+      font-size: 26rem;
+      color: var(--color-dark-grey-300);
+      cursor: pointer;
+    }
+
+    &__logo--hidden {
+      display: none;
+    }
+  }
+}

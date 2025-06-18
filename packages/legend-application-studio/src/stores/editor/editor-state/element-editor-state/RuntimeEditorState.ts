@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-import { computed, action, observable, makeObservable } from 'mobx';
+import { computed, action, observable, makeObservable, flow } from 'mobx';
 import type { EditorStore } from '../../EditorStore.js';
+import type { IngestDeploymentServerConfig } from '@finos/legend-server-lakehouse';
 import {
   guaranteeType,
   uuid,
@@ -25,6 +26,8 @@ import {
   addUniqueEntry,
   assertErrorThrown,
   filterByType,
+  type GeneratorFn,
+  removeSuffix,
 } from '@finos/legend-shared';
 import { ElementEditorState } from './ElementEditorState.js';
 import type { RuntimeExplorerTreeNodeData } from '../../utils/TreeUtils.js';
@@ -65,6 +68,7 @@ import {
   isStubbed_StoreConnections,
   getAllIdentifiedConnections,
   generateIdentifiedConnectionId,
+  LakehouseRuntime,
 } from '@finos/legend-graph';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import { packageableElementReference_setValue } from '../../../graph-modifier/DomainGraphModifierHelper.js';
@@ -76,6 +80,7 @@ import {
   runtime_deleteMapping,
 } from '../../../graph-modifier/DSL_Mapping_GraphModifierHelper.js';
 import { CUSTOM_LABEL } from '../../NewElementState.js';
+import { lakehouseRuntime_setConnection } from '../../../graph-modifier/DSL_LakehouseRuntime_GraphModifierHelper.js';
 
 export const getClassMappingStore = (
   setImplementation: SetImplementation,
@@ -341,11 +346,11 @@ export const getRuntimeExplorerTreeData = (
 export abstract class RuntimeEditorTabState {
   readonly uuid = uuid();
   editorStore: EditorStore;
-  runtimeEditorState: RuntimeEditorState;
+  runtimeEditorState: EngineRuntimeEditorState;
 
   constructor(
     editorStore: EditorStore,
-    runtimeEditorState: RuntimeEditorState,
+    runtimeEditorState: EngineRuntimeEditorState,
   ) {
     this.editorStore = editorStore;
     this.runtimeEditorState = runtimeEditorState;
@@ -375,7 +380,7 @@ export abstract class IdentifiedConnectionsEditorTabState extends RuntimeEditorT
 
   constructor(
     editorStore: EditorStore,
-    runtimeEditorState: RuntimeEditorState,
+    runtimeEditorState: EngineRuntimeEditorState,
   ) {
     super(editorStore, runtimeEditorState);
 
@@ -454,7 +459,7 @@ export class IdentifiedConnectionsPerStoreEditorTabState extends IdentifiedConne
 
   constructor(
     editorStore: EditorStore,
-    runtimeEditorState: RuntimeEditorState,
+    runtimeEditorState: EngineRuntimeEditorState,
     store: Store,
   ) {
     super(editorStore, runtimeEditorState);
@@ -557,7 +562,7 @@ export class IdentifiedConnectionsPerClassEditorTabState extends IdentifiedConne
 
   constructor(
     editorStore: EditorStore,
-    runtimeEditorState: RuntimeEditorState,
+    runtimeEditorState: EngineRuntimeEditorState,
     _class: Class,
   ) {
     super(editorStore, runtimeEditorState);
@@ -641,23 +646,17 @@ export class IdentifiedConnectionsPerClassEditorTabState extends IdentifiedConne
 
 export class RuntimeEditorRuntimeTabState extends RuntimeEditorTabState {}
 
-export class RuntimeEditorState {
-  /**
-   * NOTE: used to force component remount on state change
-   */
-  readonly uuid = uuid();
+export class EngineRuntimeEditorState {
   editorStore: EditorStore;
-  runtime: Runtime;
+  state: RuntimeEditorState;
   runtimeValue: EngineRuntime;
-  isEmbeddedRuntime: boolean;
   explorerTreeData: TreeData<RuntimeExplorerTreeNodeData>;
   currentTabState?: RuntimeEditorTabState | undefined;
 
-  constructor(
-    editorStore: EditorStore,
-    runtime: Runtime,
-    isEmbeddedRuntime: boolean,
-  ) {
+  constructor(state: RuntimeEditorState, value: EngineRuntime) {
+    this.editorStore = state.editorStore;
+    this.state = state;
+    this.runtimeValue = value;
     makeObservable(this, {
       explorerTreeData: observable.ref,
       currentTabState: observable,
@@ -672,17 +671,9 @@ export class RuntimeEditorState {
       reprocessRuntimeExplorerTree: action,
       reprocessCurrentTabState: action,
     });
-
-    this.editorStore = editorStore;
-    this.runtime = runtime;
-    this.isEmbeddedRuntime = isEmbeddedRuntime;
-    this.runtimeValue =
-      runtime instanceof RuntimePointer
-        ? runtime.packageableRuntime.value.runtimeValue
-        : guaranteeType(runtime, EngineRuntime);
     this.explorerTreeData = getRuntimeExplorerTreeData(
-      this.runtime,
-      this.editorStore,
+      this.runtimeValue,
+      this.state.editorStore,
     );
     this.openTabFor(this.runtimeValue); // open runtime tab on init
   }
@@ -855,7 +846,10 @@ export class RuntimeEditorState {
     const openedTreeNodeIds = Array.from(this.explorerTreeData.nodes.values())
       .filter((node) => node.isOpen)
       .map((node) => node.id);
-    const treeData = getRuntimeExplorerTreeData(this.runtime, this.editorStore);
+    const treeData = getRuntimeExplorerTreeData(
+      this.runtimeValue,
+      this.editorStore,
+    );
     openedTreeNodeIds.forEach((nodeId) => {
       const node = treeData.nodes.get(nodeId);
       if (node && !node.isOpen) {
@@ -894,6 +888,126 @@ export class RuntimeEditorState {
         }
       }
     }
+  }
+}
+
+export enum LakehouseRuntimeType {
+  ENVIRONMENT = 'ENVIRONMENT',
+  CONNECTION = 'CONNECTION',
+}
+
+export class LakehouseRuntimeEditorState extends EngineRuntimeEditorState {
+  declare runtimeValue: LakehouseRuntime;
+  availableEnvs: IngestDeploymentServerConfig[] | undefined;
+  lakehouseRuntimeType = LakehouseRuntimeType.ENVIRONMENT;
+
+  constructor(state: RuntimeEditorState, value: LakehouseRuntime) {
+    super(state, value);
+    makeObservable(this, {
+      availableEnvs: observable,
+      fetchLakehouseSummaries: flow,
+      setEnvSummaries: action,
+      lakehouseRuntimeType: observable,
+      setLakehouseRuntimeType: action,
+      envOptions: computed,
+    });
+    this.runtimeValue = value;
+    // fix when metamodel is more clear on this
+    if (value.connectionPointer) {
+      this.lakehouseRuntimeType = LakehouseRuntimeType.CONNECTION;
+    }
+  }
+
+  setLakehouseRuntimeType(val: LakehouseRuntimeType): void {
+    if (val !== this.lakehouseRuntimeType) {
+      this.lakehouseRuntimeType = val;
+      if (val === LakehouseRuntimeType.CONNECTION) {
+        this.runtimeValue.environment = undefined;
+        this.runtimeValue.warehouse = undefined;
+      } else {
+        this.setConnection(undefined);
+      }
+    }
+  }
+
+  setConnection(val: PackageableConnection | undefined): void {
+    lakehouseRuntime_setConnection(this.runtimeValue, val);
+  }
+
+  get envOptions(): { label: string; value: string }[] {
+    return this.availableEnvs?.map((e) => this.convertEnvToOption(e)) ?? [];
+  }
+
+  convertEnvToOption(val: IngestDeploymentServerConfig): {
+    label: string;
+    value: string;
+  } {
+    const discoveryUrlSuffix =
+      this.editorStore.applicationStore.config.options.ingestDeploymentConfig
+        ?.discoveryUrlSuffix;
+    const host = new URL(val.ingestServerUrl).host;
+    const value = discoveryUrlSuffix
+      ? removeSuffix(host, discoveryUrlSuffix)
+      : host;
+    return {
+      label: value,
+      value,
+    };
+  }
+
+  setEnvSummaries(val: IngestDeploymentServerConfig[] | undefined): void {
+    this.availableEnvs = val;
+  }
+
+  *fetchLakehouseSummaries(token?: string | undefined): GeneratorFn<void> {
+    try {
+      const ingestionManager = this.editorStore.ingestionManager;
+      this.setEnvSummaries(undefined);
+      if (ingestionManager) {
+        const res = (yield ingestionManager.fetchLakehouseEnvironmentSummaries(
+          token,
+        )) as unknown as IngestDeploymentServerConfig[] | undefined;
+        this.setEnvSummaries(res);
+        if (!this.runtimeValue.environment && this.envOptions.length) {
+          this.runtimeValue.environment = this.envOptions[0]?.value;
+        }
+      }
+    } catch (error) {
+      assertErrorThrown(error);
+    }
+  }
+}
+
+export class RuntimeEditorState {
+  /**
+   * NOTE: used to force component remount on state change
+   */
+  readonly uuid = uuid();
+  editorStore: EditorStore;
+  runtime: Runtime;
+  runtimeValueEditorState: EngineRuntimeEditorState;
+  isEmbeddedRuntime: boolean;
+
+  constructor(
+    editorStore: EditorStore,
+    runtime: Runtime,
+    isEmbeddedRuntime: boolean,
+  ) {
+    makeObservable(this, {
+      runtimeValueEditorState: observable,
+    });
+
+    this.editorStore = editorStore;
+    this.runtime = runtime;
+    this.isEmbeddedRuntime = isEmbeddedRuntime;
+    const runtimeValue =
+      runtime instanceof RuntimePointer
+        ? runtime.packageableRuntime.value.runtimeValue
+        : guaranteeType(runtime, EngineRuntime);
+    this.runtimeValueEditorState =
+      runtimeValue instanceof LakehouseRuntime
+        ? new LakehouseRuntimeEditorState(this, runtimeValue)
+        : new EngineRuntimeEditorState(this, runtimeValue);
   }
 }
 

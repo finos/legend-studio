@@ -18,11 +18,13 @@ import { useState, useEffect, useCallback, forwardRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   type RuntimeEditorState,
+  LakehouseRuntimeEditorState,
   PackageableRuntimeEditorState,
   RuntimeEditorRuntimeTabState,
   IdentifiedConnectionsEditorTabState,
   IdentifiedConnectionsPerClassEditorTabState,
   IdentifiedConnectionsPerStoreEditorTabState,
+  LakehouseRuntimeType,
 } from '../../../stores/editor/editor-state/element-editor-state/RuntimeEditorState.js';
 import type { EditorStore } from '../../../stores/editor/EditorStore.js';
 import {
@@ -64,6 +66,9 @@ import {
   Modal,
   PanelHeaderActions,
   PanelHeaderActionItem,
+  LockIcon,
+  PanelFormTextField,
+  PanelFormSection,
 } from '@finos/legend-art';
 import { getElementIcon } from '../../ElementIconUtils.js';
 import type { RuntimeExplorerTreeNodeData } from '../../../stores/editor/utils/TreeUtils.js';
@@ -74,7 +79,7 @@ import {
   ElementDragSource,
 } from '../../../stores/editor/utils/DnDUtils.js';
 import { useDrop } from 'react-dnd';
-import { assertErrorThrown } from '@finos/legend-shared';
+import { assertErrorThrown, prettyCONSTName } from '@finos/legend-shared';
 import type { ConnectionEditorState } from '../../../stores/editor/editor-state/element-editor-state/connection/ConnectionEditorState.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import {
@@ -112,6 +117,9 @@ import {
 } from '../../../stores/graph-modifier/DSL_Mapping_GraphModifierHelper.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../__lib__/LegendStudioApplicationNavigationContext.js';
 import { CUSTOM_LABEL } from '../../../stores/editor/NewElementState.js';
+import { lakehouseRuntime_setWarehouse } from '../../../stores/graph-modifier/DSL_LakehouseRuntime_GraphModifierHelper.js';
+import { useAuth } from 'react-oidc-context';
+import { flowResult } from 'mobx';
 
 const getConnectionTooltipText = (
   connection: Connection,
@@ -297,6 +305,7 @@ const RuntimeExplorerTreeNodeContainer = observer(
   ) => {
     const { node, level, stepPaddingInRem, onNodeSelect, innerProps } = props;
     const { runtimeEditorState, onNodeExpand } = innerProps;
+    const engineEditorState = runtimeEditorState.runtimeValueEditorState;
     const editorStore = useEditorStore();
     const isExpandable = Boolean(node.childrenIds?.length);
     const nodeExpandIcon = isExpandable ? (
@@ -311,7 +320,7 @@ const RuntimeExplorerTreeNodeContainer = observer(
     const selectNode = (): void => onNodeSelect?.(node);
     const onExpandIconClick = (): void => onNodeExpand(node);
     // Selection
-    const isActive = runtimeEditorState.isTreeNodeSelected(node);
+    const isActive = engineEditorState.isTreeNodeSelected(node);
 
     return (
       <div
@@ -349,9 +358,9 @@ const RuntimeExplorerTreeNodeContainer = observer(
               </div>
               {/* TODO: handle when there are multiple mappings */}
               <div className="runtime-explorer__item__label__runtime__mapping__text">
-                {runtimeEditorState.runtimeValue.mappings.length
+                {engineEditorState.runtimeValue.mappings.length
                   ? (
-                      runtimeEditorState.runtimeValue
+                      engineEditorState.runtimeValue
                         .mappings[0] as PackageableElementReference<Mapping>
                     ).value.name
                   : '(no mapping)'}
@@ -377,29 +386,30 @@ const RuntimeExplorerTreeNodeContainer = observer(
 const RuntimeExplorer = observer(
   (props: { runtimeEditorState: RuntimeEditorState; isReadOnly: boolean }) => {
     const { runtimeEditorState, isReadOnly } = props;
+    const engineEditorState = runtimeEditorState.runtimeValueEditorState;
     const runtime = runtimeEditorState.runtime;
-    const runtimeValue = runtimeEditorState.runtimeValue;
+    const runtimeValue = engineEditorState.runtimeValue;
     const runtimeName =
       runtime instanceof RuntimePointer
         ? runtime.packageableRuntime.value.name
         : CUSTOM_LABEL;
     // explorer tree data
-    const treeData = runtimeEditorState.explorerTreeData;
+    const treeData = engineEditorState.explorerTreeData;
     const onNodeSelect = (node: RuntimeExplorerTreeNodeData): void =>
-      runtimeEditorState.onExplorerTreeNodeSelect(node);
+      engineEditorState.onExplorerTreeNodeSelect(node);
     const onNodeExpand = (node: RuntimeExplorerTreeNodeData): void =>
-      runtimeEditorState.onExplorerTreeNodeExpand(node);
+      engineEditorState.onExplorerTreeNodeExpand(node);
     const getTreeChildNodes = (
       node: RuntimeExplorerTreeNodeData,
     ): RuntimeExplorerTreeNodeData[] =>
-      runtimeEditorState.getExplorerTreeChildNodes(node);
+      engineEditorState.getExplorerTreeChildNodes(node);
     // DnD
     const handleDropRuntimeSubElement = useCallback(
       (item: UMLEditorElementDropTarget): void => {
         const element = item.data.packageableElement;
         if (!isReadOnly) {
           if (element instanceof PackageableConnection) {
-            runtimeEditorState.addIdentifiedConnection(
+            engineEditorState.addIdentifiedConnection(
               new IdentifiedConnection(
                 generateIdentifiedConnectionId(runtimeValue),
                 new ConnectionPointer(
@@ -408,11 +418,11 @@ const RuntimeExplorer = observer(
               ),
             );
           } else if (element instanceof Mapping) {
-            runtimeEditorState.addMapping(element);
+            engineEditorState.addMapping(element);
           }
         }
       },
-      [isReadOnly, runtimeEditorState, runtimeValue],
+      [engineEditorState, isReadOnly, runtimeValue],
     );
     const [{ isRuntimeSubElementDragOver }, dropConnector] = useDrop<
       ElementDragSource,
@@ -433,11 +443,11 @@ const RuntimeExplorer = observer(
     );
 
     useEffect(() => {
-      runtimeEditorState.decorateRuntimeConnections();
-      runtimeEditorState.reprocessCurrentTabState();
-      runtimeEditorState.reprocessRuntimeExplorerTree();
-      return (): void => runtimeEditorState.cleanUpDecoration();
-    }, [runtimeEditorState]);
+      engineEditorState.decorateRuntimeConnections();
+      engineEditorState.reprocessCurrentTabState();
+      engineEditorState.reprocessRuntimeExplorerTree();
+      return (): void => engineEditorState.cleanUpDecoration();
+    }, [engineEditorState, runtimeEditorState]);
 
     return (
       <Panel className="runtime-explorer">
@@ -487,7 +497,8 @@ const IdentifiedConnectionEditor = observer(
       isReadOnly,
     } = props;
     const applicationStore = useApplicationStore();
-    const runtimeValue = runtimeEditorState.runtimeValue;
+    const engineEditorState = runtimeEditorState.runtimeValueEditorState;
+    const runtimeValue = engineEditorState.runtimeValue;
     // TODO: add runtime connection ID
     // connection pointer
     const isEmbeddedConnection = !(
@@ -819,9 +830,10 @@ const RuntimeMappingEditor = observer(
     isReadOnly: boolean;
   }) => {
     const { runtimeEditorState, mappingRef, isReadOnly } = props;
+    const engineEditorState = runtimeEditorState.runtimeValueEditorState;
     const editorStore = useEditorStore();
     const applicationStore = editorStore.applicationStore;
-    const runtimeValue = runtimeEditorState.runtimeValue;
+    const runtimeValue = engineEditorState.runtimeValue;
     const mappingOptions = editorStore.graphManagerState.graph.ownMappings
       .filter((m) => !runtimeValue.mappings.map((_m) => _m.value).includes(m))
       .map(buildElementOption);
@@ -837,9 +849,9 @@ const RuntimeMappingEditor = observer(
       label: mappingRef.value.name,
     };
     const changeMapping = (val: PackageableElementOption<Mapping>): void =>
-      runtimeEditorState.changeMapping(mappingRef, val.value);
+      engineEditorState.changeMapping(mappingRef, val.value);
     const deleteMapping = (): void =>
-      runtimeEditorState.deleteMapping(mappingRef);
+      engineEditorState.deleteMapping(mappingRef);
     const visitMapping = (): void =>
       editorStore.graphEditorMode.openElement(mappingRef.value);
 
@@ -888,9 +900,10 @@ const RuntimeGeneralEditor = observer(
     isReadOnly: boolean;
   }) => {
     const { runtimeEditorState, isReadOnly } = props;
+    const engineEditorState = runtimeEditorState.runtimeValueEditorState;
     const editorStore = useEditorStore();
     const runtime = runtimeEditorState.runtime;
-    const runtimeValue = runtimeEditorState.runtimeValue;
+    const runtimeValue = engineEditorState.runtimeValue;
     const isRuntimeEmbedded = !(runtime instanceof RuntimePointer);
     // mappings
     const mappings = editorStore.graphManagerState.graph.ownMappings.filter(
@@ -899,7 +912,7 @@ const RuntimeGeneralEditor = observer(
     const allowAddingMapping = !isReadOnly && Boolean(mappings.length);
     const addMapping = (): void => {
       if (allowAddingMapping) {
-        runtimeEditorState.addMapping(mappings[0] as Mapping);
+        engineEditorState.addMapping(mappings[0] as Mapping);
       }
     };
     const handleDropMapping = useCallback(
@@ -912,10 +925,10 @@ const RuntimeGeneralEditor = observer(
           // Must not be an already specified mapping
           !runtimeValue.mappings.map((m) => m.value).includes(element)
         ) {
-          runtimeEditorState.addMapping(element);
+          engineEditorState.addMapping(element);
         }
       },
-      [isReadOnly, runtimeEditorState, runtimeValue.mappings],
+      [engineEditorState, isReadOnly, runtimeValue.mappings],
     );
     const [{ isMappingDragOver }, dropConnector] = useDrop<
       ElementDragSource,
@@ -983,7 +996,8 @@ const RuntimeGeneralEditor = observer(
 const RuntimeEditorPanel = observer(
   (props: { runtimeEditorState: RuntimeEditorState; isReadOnly: boolean }) => {
     const { runtimeEditorState, isReadOnly } = props;
-    const currentRuntimeEditorTabState = runtimeEditorState.currentTabState;
+    const engineEditorState = runtimeEditorState.runtimeValueEditorState;
+    const currentRuntimeEditorTabState = engineEditorState.currentTabState;
     if (
       currentRuntimeEditorTabState instanceof
       IdentifiedConnectionsEditorTabState
@@ -1040,18 +1054,197 @@ export const RuntimeEditor = observer(
   },
 );
 
+export const LakehouseRuntimeEditor = observer(
+  (props: {
+    runtimeEditorState: RuntimeEditorState;
+    lakehouseRuntimeEditorState: LakehouseRuntimeEditorState;
+    isReadOnly: boolean;
+  }) => {
+    const { runtimeEditorState, lakehouseRuntimeEditorState, isReadOnly } =
+      props;
+    const editorStore = runtimeEditorState.editorStore;
+    const auth = useAuth();
+    const applicationStore = editorStore.applicationStore;
+    const lakehouseRuntime = lakehouseRuntimeEditorState.runtimeValue;
+    // type
+    const typeOptions = Object.values(LakehouseRuntimeType).map((type) => ({
+      label: prettyCONSTName(type),
+      value: type,
+    }));
+    const selectedType = {
+      label: prettyCONSTName(lakehouseRuntimeEditorState.lakehouseRuntimeType),
+      value: lakehouseRuntimeEditorState.lakehouseRuntimeType,
+    };
+    const onTypeChange = (val: {
+      label: string;
+      value: LakehouseRuntimeType;
+    }): void => {
+      if (val.value !== lakehouseRuntimeEditorState.lakehouseRuntimeType) {
+        lakehouseRuntimeEditorState.setLakehouseRuntimeType(val.value);
+      }
+    };
+    const environmentOptions = lakehouseRuntimeEditorState.envOptions;
+    const onEnvironmentSelectionChange = (
+      val: {
+        value: string;
+        label: string;
+      } | null,
+    ): void => {
+      if (!val) {
+        lakehouseRuntime.environment = undefined;
+        return;
+      }
+      if (val.value !== lakehouseRuntime.environment) {
+        lakehouseRuntime.environment = val.value;
+      }
+    };
+    const handleWarehouseChange = (val: string | undefined): void => {
+      lakehouseRuntime_setWarehouse(lakehouseRuntime, val);
+    };
+    const selectedEnvironmentOption = lakehouseRuntime.environment
+      ? {
+          label: lakehouseRuntime.environment,
+          value: lakehouseRuntime.environment,
+        }
+      : null;
+
+    const connection =
+      lakehouseRuntime.connectionPointer?.packageableConnection.value;
+    const connectionOptions =
+      editorStore.graphManagerState.usableConnections.map(buildElementOption);
+    const selectedConnectionOption = connection
+      ? { label: connection.path, value: connection }
+      : null;
+    const onConnectionSelectionChange = (
+      val: PackageableElementOption<PackageableConnection>,
+    ): void => {
+      if (val.value !== connection) {
+        lakehouseRuntime.connectionPointer = new ConnectionPointer(
+          PackageableElementExplicitReference.create(val.value),
+        );
+      }
+    };
+
+    useEffect(() => {
+      flowResult(
+        lakehouseRuntimeEditorState.fetchLakehouseSummaries(
+          auth.user?.access_token,
+        ),
+      ).catch(applicationStore.alertUnhandledError);
+    }, [
+      applicationStore.alertUnhandledError,
+      auth.user?.access_token,
+      lakehouseRuntimeEditorState,
+    ]);
+
+    return (
+      <>
+        <div className="data-product-editor">
+          <div className="panel">
+            <div className="panel__header">
+              <div className="panel__header__title">
+                {isReadOnly && (
+                  <div className="uml-element-editor__header__lock">
+                    <LockIcon />
+                  </div>
+                )}
+                <div className="panel__header__title__label">
+                  lakehouse runtime
+                </div>
+              </div>
+            </div>
+            <div className="panel" style={{ padding: '1rem', flex: 0 }}>
+              <PanelFormSection>
+                <div className="panel__content__form__section__header__label">
+                  Lakehouse Runtime Source
+                </div>
+                <div className="explorer__new-element-modal__driver">
+                  <CustomSelectorInput
+                    className="explorer__new-element-modal__driver__dropdown"
+                    options={typeOptions}
+                    onChange={onTypeChange}
+                    value={selectedType}
+                    darkMode={
+                      !applicationStore.layoutService
+                        .TEMPORARY__isLightColorThemeEnabled
+                    }
+                  />
+                </div>
+              </PanelFormSection>
+              {lakehouseRuntimeEditorState.lakehouseRuntimeType ===
+              LakehouseRuntimeType.ENVIRONMENT ? (
+                <>
+                  <PanelFormSection>
+                    <div className="panel__content__form__section__header__label">
+                      Environment
+                    </div>
+                    <div className="explorer__new-element-modal__driver">
+                      <CustomSelectorInput
+                        className="explorer__new-element-modal__driver__dropdown"
+                        options={environmentOptions}
+                        onChange={onEnvironmentSelectionChange}
+                        value={selectedEnvironmentOption}
+                        darkMode={
+                          !applicationStore.layoutService
+                            .TEMPORARY__isLightColorThemeEnabled
+                        }
+                      />
+                    </div>
+                  </PanelFormSection>
+                  <PanelFormTextField
+                    name="Warehouse"
+                    value={lakehouseRuntime.warehouse}
+                    prompt="Provide the warehouse"
+                    update={handleWarehouseChange}
+                    placeholder="Enter warehouse"
+                  />
+                </>
+              ) : (
+                <PanelFormSection>
+                  <div className="panel__content__form__section__header__label">
+                    Connection
+                  </div>
+                  <div className="explorer__new-element-modal__driver">
+                    <CustomSelectorInput
+                      className="explorer__new-element-modal__driver__dropdown"
+                      options={connectionOptions}
+                      onChange={onConnectionSelectionChange}
+                      value={selectedConnectionOption}
+                      darkMode={
+                        !applicationStore.layoutService
+                          .TEMPORARY__isLightColorThemeEnabled
+                      }
+                    />
+                  </div>
+                </PanelFormSection>
+              )}
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  },
+);
+
 export const PackageableRuntimeEditor = observer(() => {
   const editorStore = useEditorStore();
   const editorState = editorStore.tabManagerState.getCurrentEditorState(
     PackageableRuntimeEditorState,
   );
   const isReadOnly = editorState.isReadOnly;
-
+  const runtimeEditorState = editorState.runtimeEditorState;
+  const engineState = runtimeEditorState.runtimeValueEditorState;
   useApplicationNavigationContext(
     LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.RUNTIME_EDITOR,
   );
 
-  return (
+  return engineState instanceof LakehouseRuntimeEditorState ? (
+    <LakehouseRuntimeEditor
+      lakehouseRuntimeEditorState={engineState}
+      isReadOnly={isReadOnly}
+      runtimeEditorState={editorState.runtimeEditorState}
+    />
+  ) : (
     <RuntimeEditor
       runtimeEditorState={editorState.runtimeEditorState}
       isReadOnly={isReadOnly}

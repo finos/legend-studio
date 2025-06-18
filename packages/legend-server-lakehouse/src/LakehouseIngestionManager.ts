@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { AppDirNode } from '@finos/legend-graph';
+import { type AppDirNode } from '@finos/legend-graph';
 import {
   NetworkClientError,
   type PlainObject,
@@ -141,6 +141,19 @@ export class LakehouseIngestionManager {
         token,
       );
     return createAdhocDataProductDeployResponse(deployResponse);
+  }
+
+  async fetchLakehouseEnvironmentSummaries(
+    token: string | undefined,
+  ): Promise<IngestDeploymentServerConfig[]> {
+    const discoveryEnvironments = (
+      await this.ingestDiscoveryServerClient.getIngestEnvironmentSummaries(
+        token,
+      )
+    ).map((e: PlainObject<IngestDeploymentServerConfig>) =>
+      IngestDeploymentServerConfig.serialization.fromJson(e),
+    );
+    return discoveryEnvironments;
   }
 
   private async _validate(
