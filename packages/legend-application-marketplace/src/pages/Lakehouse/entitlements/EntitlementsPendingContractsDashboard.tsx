@@ -44,7 +44,10 @@ import { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/e
 import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
 import { observer } from 'mobx-react-lite';
 import { UserRenderer } from '../../../components/UserRenderer/UserRenderer.js';
-import { stringifyOrganizationalScope } from '../../../stores/lakehouse/LakehouseUtils.js';
+import {
+  isContractInTerminalState,
+  stringifyOrganizationalScope,
+} from '../../../stores/lakehouse/LakehouseUtils.js';
 import type { LegendMarketplaceBaseStore } from '../../../stores/LegendMarketplaceBaseStore.js';
 import { startCase } from '@finos/legend-shared';
 import { useAuth } from 'react-oidc-context';
@@ -188,6 +191,7 @@ export const EntitlementsPendingContractsDashbaord = observer(
           contract.createdBy ===
             dashboardState.lakehouseEntitlementsStore.applicationStore
               .identityService.currentUser &&
+          !isContractInTerminalState(contract) &&
           !pendingContracts?.includes(contract),
       ) ?? [];
 
