@@ -67,13 +67,15 @@ const MultiUserCellRenderer = (props: {
             horizontal: 'left',
           }}
         >
-          {userIds.map((userId) => (
-            <UserRenderer
-              key={userId}
-              userId={userId}
-              marketplaceStore={marketplaceStore}
-            />
-          ))}
+          <Box className="marketplace-lakehouse-entitlements__grid__multi-user-popover">
+            {userIds.map((userId) => (
+              <UserRenderer
+                key={userId}
+                userId={userId}
+                marketplaceStore={marketplaceStore}
+              />
+            ))}
+          </Box>
         </Popover>
       </>
     );
