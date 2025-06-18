@@ -55,7 +55,10 @@ const MultiUserCellRenderer = (props: {
   } else {
     return (
       <>
-        <Link onClick={(event) => setAnchorEl(event.currentTarget)}>
+        <Link
+          onClick={(event) => setAnchorEl(event.currentTarget)}
+          className="marketplace-lakehouse-entitlements__grid__multi-user__link"
+        >
           {userIds.length} Users
         </Link>
         <Popover
@@ -67,7 +70,7 @@ const MultiUserCellRenderer = (props: {
             horizontal: 'left',
           }}
         >
-          <Box className="marketplace-lakehouse-entitlements__grid__multi-user-popover">
+          <Box className="marketplace-lakehouse-entitlements__grid__multi-user__popover">
             {userIds.map((userId) => (
               <UserRenderer
                 key={userId}
