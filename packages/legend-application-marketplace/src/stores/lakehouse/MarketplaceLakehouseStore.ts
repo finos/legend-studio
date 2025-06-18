@@ -88,6 +88,7 @@ import {
   type LakehouseIngestServerClient,
   IngestDeploymentServerConfig,
 } from '@finos/legend-server-lakehouse';
+import { LegendMarketplaceUserDataHelper } from '../../__lib__/LegendMarketplaceUserDataHelper.js';
 
 const ARTIFACT_GENERATION_DAT_PRODUCT_KEY = 'dataProduct';
 
@@ -152,6 +153,19 @@ class DataProductFilters {
       undefined,
     );
   }
+
+  get currentFilterValues(): DataProductFilterConfig {
+    return {
+      sdlcDeployFilter: this.sdlcDeployFilter,
+      sandboxDeployFilter: this.sandboxDeployFilter,
+      devEnvironmentClassificationFilter:
+        this.devEnvironmentClassificationFilter,
+      prodParallelEnvironmentClassificationFilter:
+        this.prodParallelEnvironmentClassificationFilter,
+      prodEnvironmentClassificationFilter:
+        this.prodEnvironmentClassificationFilter,
+    };
+  }
 }
 
 export enum DataProductSort {
@@ -179,7 +193,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   loadingLakehouseEnvironmentsByDIDState = ActionState.create();
   loadingLakehouseEnvironmentDetailsState = ActionState.create();
   loadingSandboxDataProductStates = ActionState.create();
-  filter: DataProductFilters = DataProductFilters.default();
+  filter: DataProductFilters;
   sort: DataProductSort = DataProductSort.NAME_ALPHABETICAL;
   dataProductViewer: DataProductViewerState | undefined;
 
@@ -215,6 +229,15 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
 
     this.depotServerClient = depotServerClient;
     this.productStatesMap = new Map<string, DataProductState>();
+
+    const savedFilterConfig =
+      LegendMarketplaceUserDataHelper.getSavedDataProductFilterConfig(
+        this.applicationStore.userDataService,
+      );
+    this.filter = savedFilterConfig
+      ? new DataProductFilters(savedFilterConfig, undefined)
+      : DataProductFilters.default();
+
     makeObservable(this, {
       init: flow,
       initWithProduct: flow,
@@ -351,6 +374,10 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
           !this.filter.prodEnvironmentClassificationFilter;
       }
     }
+    LegendMarketplaceUserDataHelper.saveDataProductFilterConfig(
+      this.applicationStore.userDataService,
+      this.filter.currentFilterValues,
+    );
   }
 
   handleSearch(query: string | undefined) {
