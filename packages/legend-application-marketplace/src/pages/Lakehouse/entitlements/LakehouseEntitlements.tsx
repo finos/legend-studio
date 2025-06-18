@@ -20,7 +20,7 @@ import {
   withLakehouseEntitlementsStore,
 } from './LakehouseEntitlementsStoreProvider.js';
 import { useAuth } from 'react-oidc-context';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
@@ -28,26 +28,19 @@ import {
 import {} from '@finos/legend-lego/data-grid';
 import { useParams } from '@finos/legend-application/browser';
 import {
-  LEGEND_MARKETPLACE_ROUTE_PATTERN,
   LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN,
   type LakehouseEntitlementsTasksParam,
 } from '../../../__lib__/LegendMarketplaceNavigation.js';
 import { EntitlementsDashboardState } from '../../../stores/lakehouse/entitlements/EntitlementsDashboardState.js';
-import { EntitlementsTaskViewerState } from '../../../stores/lakehouse/entitlements/EntitlementsTaskViewerState.js';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
-import { EntitlementsDataContractViewer } from './EntitlementsDataContractViewer.js';
-import { EntitlementsTaskViewer } from './EntitlementsTaskViewer.js';
 import { EntitlementsDashboard } from './EntitlementsDashboard.js';
-import { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
 import { flowResult } from 'mobx';
-import { Drawer } from '@mui/material';
 
 export const LakehouseEntitlements = withLakehouseEntitlementsStore(
   observer(() => {
     const entitlementsStore = useLakehouseEntitlementsStore();
     const auth = useAuth();
     const params = useParams<LakehouseEntitlementsTasksParam>();
-    const [showDrawer, setShowDrawer] = useState(false);
 
     useEffect(() => {
       if (
@@ -72,12 +65,6 @@ export const LakehouseEntitlements = withLakehouseEntitlementsStore(
       }
     }, [auth.user?.access_token, entitlementsStore, params]);
 
-    useEffect(() => {
-      if (entitlementsStore.currentViewer !== undefined) {
-        setShowDrawer(true);
-      }
-    }, [entitlementsStore.currentViewer]);
-
     return (
       <LegendMarketplacePage className="marketplace-lakehouse-entitlements">
         <CubesLoadingIndicator
@@ -93,60 +80,6 @@ export const LakehouseEntitlements = withLakehouseEntitlementsStore(
             dashboardState={entitlementsStore.dashboardViewer}
           />
         )}
-        <Drawer
-          anchor="right"
-          open={showDrawer}
-          onClose={() => {
-            setShowDrawer(false);
-            entitlementsStore.applicationStore.navigationService.navigator.updateCurrentLocation(
-              LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS,
-            );
-          }}
-          onAnimationEnd={() => {
-            entitlementsStore.setCurrentViewer(undefined);
-          }}
-          slotProps={{
-            paper: {
-              sx: {
-                width: '50%',
-                maxWidth: '120rem',
-              },
-            },
-          }}
-        >
-          <CubesLoadingIndicator
-            isLoading={Boolean(
-              entitlementsStore.currentViewerFetchStatus.isInProgress ||
-                entitlementsStore.currentViewer?.initializationState
-                  .isInProgress,
-            )}
-          >
-            <CubesLoadingIndicatorIcon />
-          </CubesLoadingIndicator>
-          {entitlementsStore.currentViewer?.initializationState.hasCompleted ? (
-            entitlementsStore.currentViewer instanceof
-            EntitlementsTaskViewerState ? (
-              <EntitlementsTaskViewer
-                currentViewer={entitlementsStore.currentViewer}
-              />
-            ) : entitlementsStore.currentViewer instanceof
-              EntitlementsDataContractViewerState ? (
-              <EntitlementsDataContractViewer
-                open={true}
-                currentViewer={entitlementsStore.currentViewer}
-                dataProductGroupAccessState={undefined}
-                onClose={() => {
-                  setShowDrawer(false);
-                  entitlementsStore.applicationStore.navigationService.navigator.updateCurrentLocation(
-                    LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS,
-                  );
-                }}
-              />
-            ) : (
-              <p>Cannot display item</p>
-            )
-          ) : null}
-        </Drawer>
       </LegendMarketplacePage>
     );
   }),
