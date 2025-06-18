@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
+import { action, makeObservable, observable } from 'mobx';
 import {
   AbstractPlugin,
   type AbstractPluginManager,
 } from '../application/AbstractPluginManager.js';
 import type { LegendUser } from './LegendUser.js';
+import { isNonNullable } from '../error/AssertionUtils.js';
 
 export interface LegendUserPluginManager extends AbstractPluginManager {
   getUserPlugins(): LegendUserPlugin[];
@@ -46,9 +48,40 @@ export abstract class LegendUserPlugin extends AbstractPlugin {
 
 export class UserSearchService {
   private plugins: LegendUserPlugin[] = [];
+  readonly userMap: Map<string, LegendUser | string> = new Map<
+    string,
+    LegendUser | string
+  >();
+
+  constructor() {
+    makeObservable(this, {
+      userMap: observable,
+      setUser: action,
+    });
+  }
 
   registerPlugins(plugins: LegendUserPlugin[]): void {
     this.plugins = plugins;
+  }
+
+  async getOrFetchUser(
+    userId: string,
+  ): Promise<LegendUser | string | undefined> {
+    if (this.userMap.has(userId)) {
+      return this.userMap.get(userId)!;
+    }
+
+    const users = await this.executeSearch(userId);
+    if (users.length > 0 && isNonNullable(users[0])) {
+      this.userMap.set(userId, users[0]);
+      return users[0];
+    } else {
+      return undefined;
+    }
+  }
+
+  setUser(userId: string, user: LegendUser | string): void {
+    this.userMap.set(userId, user);
   }
 
   async executeSearch(searchTerm: string): Promise<LegendUser[]> {

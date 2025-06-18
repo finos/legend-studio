@@ -31,12 +31,10 @@ import {
   type DataGridIRowNode,
   type DataGridRowSelectionOptions,
 } from '@finos/legend-lego/data-grid';
-import { LegendUser, type UserSearchService } from '@finos/legend-shared';
 import {
   Box,
   Button,
   Checkbox,
-  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -48,87 +46,16 @@ import type { EntitlementsDashboardState } from '../../../stores/lakehouse/entit
 import { EntitlementsDataContractViewer } from './EntitlementsDataContractViewer.js';
 import { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
 import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
-import type { NavigationService } from '@finos/legend-application';
 import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
   InfoCircleIcon,
-  UserDisplay,
 } from '@finos/legend-art';
-import { getUserById } from '../../../stores/lakehouse/LakehouseUtils.js';
 import { flowResult } from 'mobx';
 import { useAuth } from 'react-oidc-context';
 import { observer } from 'mobx-react-lite';
-
-const UserCellRenderer = (props: {
-  userId: string | undefined;
-  userDataMap: Map<string, LegendUser | string>;
-  setUserDataMap: React.Dispatch<
-    React.SetStateAction<Map<string, string | LegendUser>>
-  >;
-  navigationService: NavigationService;
-  userSearchService?: UserSearchService | undefined;
-  userProfileImageUrl?: string | undefined;
-  applicationDirectoryUrl?: string | undefined;
-}): React.ReactNode => {
-  const {
-    userId,
-    userDataMap,
-    setUserDataMap,
-    navigationService,
-    userSearchService,
-    userProfileImageUrl,
-    applicationDirectoryUrl,
-  } = props;
-  const [isLoading, setIsLoading] = useState(false);
-
-  const userData = userId ? userDataMap.get(userId) : undefined;
-
-  useEffect(() => {
-    const fetchUserData = async (_userId: string) => {
-      setIsLoading(true);
-      try {
-        const fetchedUserData: LegendUser | string = userSearchService
-          ? ((await getUserById(_userId, userSearchService)) ?? _userId)
-          : _userId;
-        setUserDataMap((prev: Map<string, LegendUser | string>) => {
-          const newMap = new Map<string, LegendUser | string>(prev);
-          newMap.set(_userId, fetchedUserData);
-          return newMap;
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    if (userId && userData === undefined) {
-      // eslint-disable-next-line no-void
-      void fetchUserData(userId);
-    }
-  }, [setUserDataMap, userData, userId, userSearchService]);
-
-  if (isLoading) {
-    return <CircularProgress size={20} />;
-  } else if (userData instanceof LegendUser) {
-    const imgSrc = userProfileImageUrl?.replace('{userId}', userData.id);
-    const openUserDirectoryLink = (): void =>
-      navigationService.navigator.visitAddress(
-        `${applicationDirectoryUrl}/${userId}`,
-      );
-
-    return (
-      <UserDisplay
-        user={userData}
-        imgSrc={imgSrc}
-        onClick={() => openUserDirectoryLink()}
-        className="marketplace-lakehouse-entitlements__grid__user-display"
-      />
-    );
-  } else if (userData) {
-    return <>{userData}</>;
-  } else {
-    return <>{userId}</>;
-  }
-};
+import { UserRenderer } from '../../../components/UserRenderer/UserRenderer.js';
+import type { LegendMarketplaceBaseStore } from '../../../stores/LegendMarketplaceBaseStore.js';
 
 const EntitlementsDashboardActionModal = (props: {
   open: boolean;
@@ -137,10 +64,7 @@ const EntitlementsDashboardActionModal = (props: {
   onClose: () => void;
   action: 'approve' | 'deny' | undefined;
   allContracts: V1_DataContract[];
-  userDataMap: Map<string, LegendUser | string>;
-  navigationService: NavigationService;
-  userProfileImageUrl?: string | undefined;
-  applicationDirectoryUrl?: string | undefined;
+  marketplaceStore: LegendMarketplaceBaseStore;
 }) => {
   const {
     open,
@@ -149,10 +73,7 @@ const EntitlementsDashboardActionModal = (props: {
     onClose,
     action,
     allContracts,
-    userDataMap,
-    navigationService,
-    userProfileImageUrl,
-    applicationDirectoryUrl,
+    marketplaceStore,
   } = props;
 
   const auth = useAuth();
@@ -237,24 +158,6 @@ const EntitlementsDashboardActionModal = (props: {
                 resource instanceof V1_AccessPointGroupReference
                   ? resource.accessPointGroup
                   : 'unknown';
-              const userData = userDataMap.get(task.consumer);
-              const userComponent =
-                userData instanceof LegendUser ? (
-                  <UserDisplay
-                    user={userData}
-                    imgSrc={userProfileImageUrl?.replace(
-                      '{userId}',
-                      userData.id,
-                    )}
-                    onClick={() =>
-                      navigationService.navigator.visitAddress(
-                        `${applicationDirectoryUrl}/${userData.id}`,
-                      )
-                    }
-                  />
-                ) : (
-                  <>{task.consumer}</>
-                );
               return (
                 <Box
                   key={task.taskId}
@@ -264,7 +167,10 @@ const EntitlementsDashboardActionModal = (props: {
                     Encountered an error{' '}
                     {action === 'approve' ? 'approving' : 'denying'} request for{' '}
                     <div className="marketplace-lakehouse-entitlements__data-contract-approval__error__user">
-                      {userComponent}
+                      <UserRenderer
+                        userId={task.consumer}
+                        marketplaceStore={marketplaceStore}
+                      />
                     </div>{' '}
                     for Access Point Group{' '}
                     <span className="marketplace-lakehouse-text__emphasis">
@@ -331,9 +237,6 @@ export const EntitlementsPendingTasksDashbaord = observer(
     const [selectedAction, setSelectedAction] = useState<
       'approve' | 'deny' | undefined
     >();
-    const [userDataMap, setUserDataMap] = useState(
-      new Map<string, LegendUser | string>(),
-    );
     const [selectedTaskIdsSet, setSelectedTaskIdsSet] = useState(
       new Set<string>(
         searchParams
@@ -495,23 +398,10 @@ export const EntitlementsPendingTasksDashbaord = observer(
           params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
         ) => {
           return (
-            <UserCellRenderer
+            <UserRenderer
               userId={params.data?.consumer}
-              userDataMap={userDataMap}
-              setUserDataMap={setUserDataMap}
-              navigationService={
-                dashboardState.lakehouseEntitlementsStore.applicationStore
-                  .navigationService
-              }
-              userSearchService={marketplaceBaseStore.userSearchService}
-              userProfileImageUrl={
-                marketplaceBaseStore.applicationStore.config
-                  .marketplaceUserProfileImageUrl
-              }
-              applicationDirectoryUrl={
-                marketplaceBaseStore.applicationStore.config
-                  .lakehouseEntitlementsConfig?.applicationDirectoryUrl
-              }
+              marketplaceStore={marketplaceBaseStore}
+              className="marketplace-lakehouse-entitlements__grid__user-display"
             />
           );
         },
@@ -531,23 +421,10 @@ export const EntitlementsPendingTasksDashbaord = observer(
             (contract) => contract.guid === contractId,
           )?.createdBy;
           return requester ? (
-            <UserCellRenderer
-              userId={requester}
-              userDataMap={userDataMap}
-              setUserDataMap={setUserDataMap}
-              navigationService={
-                dashboardState.lakehouseEntitlementsStore.applicationStore
-                  .navigationService
-              }
-              userSearchService={marketplaceBaseStore.userSearchService}
-              userProfileImageUrl={
-                marketplaceBaseStore.applicationStore.config
-                  .marketplaceUserProfileImageUrl
-              }
-              applicationDirectoryUrl={
-                marketplaceBaseStore.applicationStore.config
-                  .lakehouseEntitlementsConfig?.applicationDirectoryUrl
-              }
+            <UserRenderer
+              userId={params.data?.consumer}
+              marketplaceStore={marketplaceBaseStore}
+              className="marketplace-lakehouse-entitlements__grid__user-display"
             />
           ) : (
             <>Unknown</>
@@ -799,19 +676,7 @@ export const EntitlementsPendingTasksDashbaord = observer(
           onClose={() => setSelectedAction(undefined)}
           action={selectedAction}
           allContracts={allContracts ?? []}
-          userDataMap={userDataMap}
-          navigationService={
-            dashboardState.lakehouseEntitlementsStore.applicationStore
-              .navigationService
-          }
-          userProfileImageUrl={
-            marketplaceBaseStore.applicationStore.config
-              .marketplaceUserProfileImageUrl
-          }
-          applicationDirectoryUrl={
-            marketplaceBaseStore.applicationStore.config
-              .lakehouseEntitlementsConfig?.applicationDirectoryUrl
-          }
+          marketplaceStore={marketplaceBaseStore}
         />
         {selectedContract !== undefined && (
           <EntitlementsDataContractViewer
