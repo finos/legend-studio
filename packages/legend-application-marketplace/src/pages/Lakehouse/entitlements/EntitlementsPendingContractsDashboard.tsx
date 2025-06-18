@@ -26,7 +26,7 @@ import {
   type DataGridColumnDefinition,
   type DataGridRowClickedEvent,
 } from '@finos/legend-lego/data-grid';
-import { Box } from '@mui/material';
+import { Box, Button, Popover } from '@mui/material';
 import { useState } from 'react';
 import type { EntitlementsDashboardState } from '../../../stores/lakehouse/entitlements/EntitlementsDashboardState.js';
 import { EntitlementsDataContractViewer } from './EntitlementsDataContractViewer.js';
@@ -35,6 +35,53 @@ import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarket
 import { observer } from 'mobx-react-lite';
 import { UserRenderer } from '../../../components/UserRenderer/UserRenderer.js';
 import { stringifyOrganizationalScope } from '../../../stores/lakehouse/LakehouseUtils.js';
+import type { LegendMarketplaceBaseStore } from '../../../stores/LegendMarketplaceBaseStore.js';
+
+const MultiUserCellRenderer = (props: {
+  userIds: string[];
+  marketplaceStore: LegendMarketplaceBaseStore;
+}): React.ReactNode => {
+  const { userIds, marketplaceStore } = props;
+  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+
+  if (userIds.length === 1) {
+    return (
+      <UserRenderer
+        userId={userIds[0]}
+        marketplaceStore={marketplaceStore}
+        className="marketplace-lakehouse-entitlements__grid__user-display"
+      />
+    );
+  } else {
+    return (
+      <>
+        <Button
+          variant="contained"
+          onClick={(event) => setAnchorEl(event.currentTarget)}
+        >
+          {userIds.length} Users
+        </Button>
+        <Popover
+          open={Boolean(anchorEl)}
+          anchorEl={anchorEl}
+          onClose={() => setAnchorEl(null)}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'left',
+          }}
+        >
+          {userIds.map((userId) => (
+            <UserRenderer
+              key={userId}
+              userId={userId}
+              marketplaceStore={marketplaceStore}
+            />
+          ))}
+        </Popover>
+      </>
+    );
+  }
+};
 
 export const EntitlementsPendingContractsDashbaord = observer(
   (props: { dashboardState: EntitlementsDashboardState }): React.ReactNode => {
@@ -73,15 +120,14 @@ export const EntitlementsPendingContractsDashbaord = observer(
           const consumer = allContracts?.find(
             (contract) => contract.guid === params.data?.contractId,
           )?.consumer;
+
           if (consumer instanceof V1_AdhocTeam) {
-            return consumer.users.map((user) => (
-              <UserRenderer
-                key={user.name}
-                userId={user.name}
+            return (
+              <MultiUserCellRenderer
+                userIds={consumer.users.map((user) => user.name)}
                 marketplaceStore={marketplaceBaseStore}
-                className="marketplace-lakehouse-entitlements__grid__user-display"
               />
-            ));
+            );
           } else if (consumer) {
             return <>{stringifyOrganizationalScope(consumer)}</>;
           } else {
@@ -160,14 +206,10 @@ export const EntitlementsPendingContractsDashbaord = observer(
         ) => {
           const assignees = params.data?.pendingTaskWithAssignees.assignee;
           return assignees ? (
-            assignees.map((assignee) => (
-              <UserRenderer
-                key={assignee}
-                userId={assignee}
-                marketplaceStore={marketplaceBaseStore}
-                className="marketplace-lakehouse-entitlements__grid__user-display"
-              />
-            ))
+            <MultiUserCellRenderer
+              userIds={assignees}
+              marketplaceStore={marketplaceBaseStore}
+            />
           ) : (
             <>Unknown</>
           );
