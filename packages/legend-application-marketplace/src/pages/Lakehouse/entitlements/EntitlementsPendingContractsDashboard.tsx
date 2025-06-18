@@ -19,6 +19,7 @@ import {
   type V1_DataContract,
   type V1_UserPendingContractsRecord,
   V1_AdhocTeam,
+  V1_ContractState,
 } from '@finos/legend-graph';
 import {
   DataGrid,
@@ -36,6 +37,7 @@ import { observer } from 'mobx-react-lite';
 import { UserRenderer } from '../../../components/UserRenderer/UserRenderer.js';
 import { stringifyOrganizationalScope } from '../../../stores/lakehouse/LakehouseUtils.js';
 import type { LegendMarketplaceBaseStore } from '../../../stores/LegendMarketplaceBaseStore.js';
+import { startCase } from '@finos/legend-shared';
 
 const MultiUserCellRenderer = (props: {
   userIds: string[];
@@ -201,7 +203,16 @@ export const EntitlementsPendingContractsDashbaord = observer(
           const contract = allContracts?.find(
             (_contract) => _contract.guid === params.data?.contractId,
           );
-          return <>{contract?.state ?? 'Unknown'}</>;
+          switch (contract?.state) {
+            case V1_ContractState.PENDING_DATA_OWNER_APPROVAL:
+              return <>Data Owner Approval</>;
+            case V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL:
+              return <>Privilege Manager Approval</>;
+            default:
+              return (
+                <>{contract?.state ? startCase(contract.state) : 'Unknown'}</>
+              );
+          }
         },
       },
       {

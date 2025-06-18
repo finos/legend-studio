@@ -29,6 +29,7 @@ import {
   type DebouncedFunc,
   isObject,
   shuffle,
+  startCase,
 } from 'lodash-es';
 import { diff as deepDiff } from 'deep-object-diff';
 import { UnsupportedOperationError } from './error/ErrorUtils.js';
@@ -51,6 +52,7 @@ export {
   throttle,
   type DebouncedFunc,
   shuffle,
+  startCase,
 };
 
 // NOTE: we can use the `rng` option in UUID V4 to control the random seed during testing
