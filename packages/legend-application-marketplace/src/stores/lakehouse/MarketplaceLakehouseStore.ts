@@ -101,6 +101,14 @@ export enum DeployType {
   SANDBOX = 'SANDBOX',
 }
 
+export interface DataProductFilterConfig {
+  sdlcDeployFilter: boolean;
+  sandboxDeployFilter: boolean;
+  devEnvironmentClassificationFilter: boolean;
+  prodParallelEnvironmentClassificationFilter: boolean;
+  prodEnvironmentClassificationFilter: boolean;
+}
+
 class DataProductFilters {
   sdlcDeployFilter: boolean;
   sandboxDeployFilter: boolean;
@@ -110,13 +118,7 @@ class DataProductFilters {
   search?: string | undefined;
 
   constructor(
-    defaultBooleanFilters: {
-      sdlcDeployFilter: boolean;
-      sandboxDeployFilter: boolean;
-      devEnvironmentClassificationFilter: boolean;
-      prodParallelEnvironmentClassificationFilter: boolean;
-      prodEnvironmentClassificationFilter: boolean;
-    },
+    defaultBooleanFilters: DataProductFilterConfig,
     search?: string | undefined,
   ) {
     makeObservable(this, {
@@ -141,7 +143,7 @@ class DataProductFilters {
   static default(): DataProductFilters {
     return new DataProductFilters(
       {
-        sdlcDeployFilter: false,
+        sdlcDeployFilter: true,
         sandboxDeployFilter: true,
         devEnvironmentClassificationFilter: false,
         prodParallelEnvironmentClassificationFilter: false,
