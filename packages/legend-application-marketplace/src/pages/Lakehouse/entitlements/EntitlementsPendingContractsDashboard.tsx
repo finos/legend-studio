@@ -175,8 +175,8 @@ export const EntitlementsPendingContractsDashbaord = observer(
     ];
 
     return (
-      <>
-        <Box className="marketplace-lakehouse-entitlements__pending-contracts">
+      <Box className="marketplace-lakehouse-entitlements__pending-contracts">
+        <Box className="marketplace-lakehouse-entitlements__pending-contracts__grid ag-theme-balham">
           {pendingContracts ? (
             <DataGrid
               rowData={pendingContracts}
@@ -205,7 +205,7 @@ export const EntitlementsPendingContractsDashbaord = observer(
             onClose={() => setSelectedContract(undefined)}
           />
         )}
-      </>
+      </Box>
     );
   },
 );
