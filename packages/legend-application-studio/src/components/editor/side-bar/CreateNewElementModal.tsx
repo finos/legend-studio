@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useRef } from 'react';
+import React, { useRef } from 'react';
 import { LEGEND_STUDIO_TEST_ID } from '../../../__lib__/LegendStudioTesting.js';
 import { observer } from 'mobx-react-lite';
 import {
@@ -28,6 +28,7 @@ import {
   CONNECTION_TYPE,
   type RuntimeOption,
   NewLakehouseDataProductDriver,
+  NewRuntimeType,
 } from '../../../stores/editor/NewElementState.js';
 import { Dialog, compareLabelFn, CustomSelectorInput } from '@finos/legend-art';
 import type { EditorStore } from '../../../stores/editor/EditorStore.js';
@@ -178,7 +179,23 @@ const NewRuntimeDriverEditor = observer(() => {
   const newRuntimeDriver = editorStore.newElementState.getNewElementDriver(
     NewPackageableRuntimeDriver,
   );
+  const type = newRuntimeDriver.type;
+  const typeOptions = Object.values(NewRuntimeType).map((typeOption) => ({
+    label: prettyCONSTName(typeOption),
+    value: typeOption,
+  }));
+  const typeOption = {
+    value: type,
+    label: prettyCONSTName(type),
+  };
+  const onTypeChange = (val: {
+    value: NewRuntimeType;
+    label: string;
+  }): void => {
+    newRuntimeDriver.setType(val.value);
+  };
   // mapping
+  const isStandard = type === NewRuntimeType.LEGACY;
   const mapping = newRuntimeDriver.mapping;
   const mappingOptions =
     editorStore.graphManagerState.usableMappings.map(buildElementOption);
@@ -193,22 +210,45 @@ const NewRuntimeDriverEditor = observer(() => {
     }
   };
 
-  if (!mapping) {
-    // TODO: show warning
-    return <div>no mapping found</div>;
-  }
   return (
-    <div className="explorer__new-element-modal__driver">
-      <CustomSelectorInput
-        className="explorer__new-element-modal__driver__dropdown"
-        options={mappingOptions}
-        onChange={onMappingSelectionChange}
-        value={selectedMappingOption}
-        darkMode={
-          !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
-        }
-      />
-    </div>
+    <>
+      <div className="panel__content__form__section__header__label">
+        Runtime Type
+      </div>
+      <div className="explorer__new-element-modal__driver">
+        <CustomSelectorInput
+          className="explorer__new-element-modal__driver__dropdown"
+          options={typeOptions}
+          onChange={onTypeChange}
+          value={typeOption}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+        />
+      </div>
+      {isStandard &&
+        (mapping ? (
+          <>
+            <div className="panel__content__form__section__header__label">
+              Mapping
+            </div>
+            <div className="explorer__new-element-modal__driver">
+              <CustomSelectorInput
+                className="explorer__new-element-modal__driver__dropdown"
+                options={mappingOptions}
+                onChange={onMappingSelectionChange}
+                value={selectedMappingOption}
+                darkMode={
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled
+                }
+              />
+            </div>
+          </>
+        ) : (
+          <div>no mapping found</div>
+        ))}
+    </>
   );
 });
 

@@ -39,7 +39,6 @@ import {
 } from './editor-state/GraphGenerationState.js';
 import {
   type PackageableElement,
-  type Runtime,
   type Store,
   ModelStore,
   type Connection,
@@ -85,6 +84,8 @@ import {
   GenericTypeExplicitReference,
   GenericType,
   DataProduct,
+  LakehouseRuntime,
+  type Runtime,
 } from '@finos/legend-graph';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import {
@@ -203,8 +204,14 @@ export abstract class NewElementDriver<T extends PackageableElement> {
   abstract createElement(name: string): T;
 }
 
+export enum NewRuntimeType {
+  LEGACY = 'LEGACY',
+  LAKEHOUSE = 'LAKEHOUSE',
+}
+
 export class NewPackageableRuntimeDriver extends NewElementDriver<PackageableRuntime> {
   mapping?: Mapping | undefined;
+  type = NewRuntimeType.LEGACY;
 
   constructor(editorStore: EditorStore) {
     super(editorStore);
@@ -213,12 +220,19 @@ export class NewPackageableRuntimeDriver extends NewElementDriver<PackageableRun
       mapping: observable,
       setMapping: action,
       isValid: computed,
+      type: observable,
+      setType: action,
     });
 
-    const mappings = this.editorStore.graphManagerState.graph.mappings;
-    if (mappings.length) {
-      this.mapping = mappings[0];
+    const firstMapping = this.editorStore.graphManagerState.graph.mappings[0];
+    this.mapping = firstMapping;
+    if (!firstMapping) {
+      this.type = NewRuntimeType.LAKEHOUSE;
     }
+  }
+
+  setType(val: NewRuntimeType): void {
+    this.type = val;
   }
 
   setMapping(mapping: Mapping): void {
@@ -226,11 +240,22 @@ export class NewPackageableRuntimeDriver extends NewElementDriver<PackageableRun
   }
 
   get isValid(): boolean {
-    return Boolean(this.mapping);
+    if (this.type === NewRuntimeType.LEGACY) {
+      return Boolean(this.mapping);
+    }
+    return true;
   }
 
   createElement(name: string): PackageableRuntime {
     const runtime = new PackageableRuntime(name);
+    if (this.type === NewRuntimeType.LAKEHOUSE) {
+      const lakehouseRuntime = new LakehouseRuntime();
+      lakehouseRuntime.environment = '';
+      lakehouseRuntime.warehouse = '';
+      lakehouseRuntime.connectionPointer = undefined;
+      runtime.runtimeValue = lakehouseRuntime;
+      return runtime;
+    }
     runtime.runtimeValue = new EngineRuntime();
     runtime_addMapping(
       runtime.runtimeValue,

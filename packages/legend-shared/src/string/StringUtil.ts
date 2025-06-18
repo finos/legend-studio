@@ -20,3 +20,10 @@ export const removePrefix = (text: string, prefix: string): string => {
   }
   return text; // Return the original string if it doesn't start with the prefix
 };
+
+export const removeSuffix = (str: string, suffix: string): string => {
+  if (str.endsWith(suffix)) {
+    return str.slice(0, -suffix.length); // Remove the suffix
+  }
+  return str; // Return the original string if no suffix is found
+};

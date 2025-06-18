@@ -65,6 +65,7 @@ import type { XStorePropertyMapping } from '../../../graph/metamodel/pure/packag
 import type { PackageableRuntime } from '../../../graph/metamodel/pure/packageableElements/runtime/PackageableRuntime.js';
 import {
   EngineRuntime,
+  LakehouseRuntime,
   RuntimePointer,
   type IdentifiedConnection,
   type Runtime,
@@ -1079,6 +1080,18 @@ export const observe_EngineRuntime = skipObservedWithContext(
     metamodel.connections.forEach((storeConnections) =>
       observe_StoreConnections(storeConnections, context),
     );
+
+    if (metamodel instanceof LakehouseRuntime) {
+      makeObservable(metamodel, {
+        environment: observable,
+        warehouse: observable,
+        connectionPointer: observable,
+      });
+
+      if (metamodel.connectionPointer) {
+        observe_ConnectionPointer(metamodel.connectionPointer);
+      }
+    }
 
     return metamodel;
   },

@@ -763,6 +763,7 @@ export { Mapping } from './graph/metamodel/pure/packageableElements/mapping/Mapp
 export {
   Runtime,
   EngineRuntime,
+  LakehouseRuntime,
   SingleConnectionRuntime,
   RuntimePointer,
   IdentifiedConnection,
