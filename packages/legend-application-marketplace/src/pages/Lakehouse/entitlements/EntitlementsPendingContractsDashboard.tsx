@@ -15,11 +15,13 @@
  */
 
 import {
-  V1_AccessPointGroupReference,
   type V1_DataContract,
   type V1_UserPendingContractsRecord,
+  V1_AccessPointGroupReference,
   V1_AdhocTeam,
+  V1_ApprovalType,
   V1_ContractState,
+  V1_deserializeTaskResponse,
 } from '@finos/legend-graph';
 import {
   DataGrid,
@@ -27,8 +29,15 @@ import {
   type DataGridCellRendererParams,
   type DataGridColumnDefinition,
 } from '@finos/legend-lego/data-grid';
-import { Box, Link, Popover } from '@mui/material';
-import { useState } from 'react';
+import {
+  Box,
+  CircularProgress,
+  FormControlLabel,
+  Link,
+  Popover,
+  Switch,
+} from '@mui/material';
+import { useEffect, useState } from 'react';
 import type { EntitlementsDashboardState } from '../../../stores/lakehouse/entitlements/EntitlementsDashboardState.js';
 import { EntitlementsDataContractViewer } from './EntitlementsDataContractViewer.js';
 import { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
@@ -38,6 +47,7 @@ import { UserRenderer } from '../../../components/UserRenderer/UserRenderer.js';
 import { stringifyOrganizationalScope } from '../../../stores/lakehouse/LakehouseUtils.js';
 import type { LegendMarketplaceBaseStore } from '../../../stores/LegendMarketplaceBaseStore.js';
 import { startCase } from '@finos/legend-shared';
+import { useAuth } from 'react-oidc-context';
 
 const MultiUserCellRenderer = (props: {
   userIds: string[];
@@ -87,49 +97,132 @@ const MultiUserCellRenderer = (props: {
   }
 };
 
+const AssigneesCellRenderer = (props: {
+  dataContract: V1_DataContract | undefined;
+  pendingContractRecords: V1_UserPendingContractsRecord[] | undefined;
+  marketplaceStore: LegendMarketplaceBaseStore;
+  token: string | undefined;
+}): React.ReactNode => {
+  const { dataContract, pendingContractRecords, marketplaceStore, token } =
+    props;
+  const [assignees, setAssignees] = useState<string[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    const fetchAssignees = async () => {
+      if (dataContract) {
+        setLoading(true);
+        try {
+          const rawTasks =
+            await marketplaceStore.lakehouseContractServerClient.getContractTasks(
+              dataContract.guid,
+              token,
+            );
+          const tasks = V1_deserializeTaskResponse(rawTasks);
+          const privilegeManagerApprovalTask = tasks?.find(
+            (task) =>
+              task.rec.type ===
+              V1_ApprovalType.CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
+          );
+          const dataOwnerApprovalTask = tasks?.find(
+            (task) => task.rec.type === V1_ApprovalType.DATA_OWNER_APPROVAL,
+          );
+          const currentTask =
+            dataContract.state ===
+            V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL
+              ? privilegeManagerApprovalTask
+              : dataContract.state ===
+                  V1_ContractState.PENDING_DATA_OWNER_APPROVAL
+                ? dataOwnerApprovalTask
+                : undefined;
+          setAssignees(currentTask?.assignees ?? []);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    const pendingContractRecord = pendingContractRecords?.find(
+      (record) => record.contractId === dataContract?.guid,
+    );
+
+    if (pendingContractRecord) {
+      setAssignees(pendingContractRecord.pendingTaskWithAssignees.assignee);
+    } else {
+      fetchAssignees();
+    }
+  }, [
+    dataContract,
+    marketplaceStore.lakehouseContractServerClient,
+    token,
+    pendingContractRecords,
+  ]);
+
+  return loading ? (
+    <CircularProgress size={20} />
+  ) : assignees ? (
+    <MultiUserCellRenderer
+      userIds={assignees}
+      marketplaceStore={marketplaceStore}
+    />
+  ) : (
+    <>Unknown</>
+  );
+};
+
 export const EntitlementsPendingContractsDashbaord = observer(
   (props: { dashboardState: EntitlementsDashboardState }): React.ReactNode => {
     const { dashboardState } = props;
-    const { pendingContracts, allContracts } = dashboardState;
+    const { pendingContracts: pendingContractRecords, allContracts } =
+      dashboardState;
+
+    const pendingContracts =
+      allContracts?.filter((contract) =>
+        pendingContractRecords?.some(
+          (pendingContract) => pendingContract.contractId === contract.guid,
+        ),
+      ) ?? [];
+    const pendingContractsForOthers =
+      allContracts?.filter(
+        (contract) =>
+          contract.createdBy ===
+            dashboardState.lakehouseEntitlementsStore.applicationStore
+              .identityService.currentUser &&
+          !pendingContracts?.includes(contract),
+      ) ?? [];
 
     const marketplaceBaseStore = useLegendMarketplaceBaseStore();
     const [selectedContract, setSelectedContract] = useState<
       V1_DataContract | undefined
     >();
+    const [showForOthers, setShowForOthers] = useState<boolean>(false);
+    const auth = useAuth();
 
     const handleCellClicked = (
-      event: DataGridCellClickedEvent<V1_UserPendingContractsRecord>,
+      event: DataGridCellClickedEvent<V1_DataContract>,
     ) => {
       if (
         event.colDef.colId !== 'targetUser' &&
         event.colDef.colId !== 'requester' &&
         event.colDef.colId !== 'assignees'
       ) {
-        const contract = allContracts?.find(
-          (_contract) => _contract.guid === event.data?.contractId,
-        );
-        setSelectedContract(contract);
+        setSelectedContract(event.data);
       }
     };
 
-    const defaultColDef: DataGridColumnDefinition<V1_UserPendingContractsRecord> =
-      {
-        minWidth: 50,
-        sortable: true,
-        resizable: true,
-        flex: 1,
-      };
+    const defaultColDef: DataGridColumnDefinition<V1_DataContract> = {
+      minWidth: 50,
+      sortable: true,
+      resizable: true,
+      flex: 1,
+    };
 
-    const colDefs: DataGridColumnDefinition<V1_UserPendingContractsRecord>[] = [
+    const colDefs: DataGridColumnDefinition<V1_DataContract>[] = [
       {
         headerName: 'Target User',
         colId: 'targetUser',
-        cellRenderer: (
-          params: DataGridCellRendererParams<V1_UserPendingContractsRecord>,
-        ) => {
-          const consumer = allContracts?.find(
-            (contract) => contract.guid === params.data?.contractId,
-          )?.consumer;
+        cellRenderer: (params: DataGridCellRendererParams<V1_DataContract>) => {
+          const consumer = params.data?.consumer;
 
           if (consumer instanceof V1_AdhocTeam) {
             return (
@@ -148,12 +241,8 @@ export const EntitlementsPendingContractsDashbaord = observer(
       {
         headerName: 'Requester',
         colId: 'requester',
-        cellRenderer: (
-          params: DataGridCellRendererParams<V1_UserPendingContractsRecord>,
-        ) => {
-          const requester = allContracts?.find(
-            (contract) => contract.guid === params.data?.contractId,
-          )?.createdBy;
+        cellRenderer: (params: DataGridCellRendererParams<V1_DataContract>) => {
+          const requester = params.data?.createdBy;
           return requester ? (
             <UserRenderer
               userId={requester}
@@ -167,12 +256,8 @@ export const EntitlementsPendingContractsDashbaord = observer(
       },
       {
         headerName: 'Target Data Product',
-        cellRenderer: (
-          params: DataGridCellRendererParams<V1_UserPendingContractsRecord>,
-        ) => {
-          const resource = allContracts?.find(
-            (contract) => contract.guid === params.data?.contractId,
-          )?.resource;
+        cellRenderer: (params: DataGridCellRendererParams<V1_DataContract>) => {
+          const resource = params.data?.resource;
           const dataProduct =
             resource instanceof V1_AccessPointGroupReference
               ? resource.dataProduct
@@ -182,12 +267,8 @@ export const EntitlementsPendingContractsDashbaord = observer(
       },
       {
         headerName: 'Target Access Point Group',
-        cellRenderer: (
-          params: DataGridCellRendererParams<V1_UserPendingContractsRecord>,
-        ) => {
-          const resource = allContracts?.find(
-            (contract) => contract.guid === params.data?.contractId,
-          )?.resource;
+        cellRenderer: (params: DataGridCellRendererParams<V1_DataContract>) => {
+          const resource = params.data?.resource;
           const accessPointGroup =
             resource instanceof V1_AccessPointGroupReference
               ? resource.accessPointGroup
@@ -197,63 +278,62 @@ export const EntitlementsPendingContractsDashbaord = observer(
       },
       {
         headerName: 'State',
-        cellRenderer: (
-          params: DataGridCellRendererParams<V1_UserPendingContractsRecord>,
-        ) => {
-          const contract = allContracts?.find(
-            (_contract) => _contract.guid === params.data?.contractId,
-          );
-          switch (contract?.state) {
+        cellRenderer: (params: DataGridCellRendererParams<V1_DataContract>) => {
+          const state = params.data?.state;
+          switch (state) {
             case V1_ContractState.PENDING_DATA_OWNER_APPROVAL:
               return <>Data Owner Approval</>;
             case V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL:
               return <>Privilege Manager Approval</>;
             default:
-              return (
-                <>{contract?.state ? startCase(contract.state) : 'Unknown'}</>
-              );
+              return <>{state ? startCase(state) : 'Unknown'}</>;
           }
         },
       },
       {
         headerName: 'Business Justification',
-        valueGetter: (p) => p.data?.contractDescription,
+        valueGetter: (p) => p.data?.description,
       },
       {
         headerName: 'Assignees',
         colId: 'assignees',
-        cellRenderer: (
-          params: DataGridCellRendererParams<V1_UserPendingContractsRecord>,
-        ) => {
-          const assignees = params.data?.pendingTaskWithAssignees.assignee;
-          return assignees ? (
-            <MultiUserCellRenderer
-              userIds={assignees}
-              marketplaceStore={marketplaceBaseStore}
-            />
-          ) : (
-            <>Unknown</>
-          );
-        },
+        cellRenderer: (params: DataGridCellRendererParams<V1_DataContract>) => (
+          <AssigneesCellRenderer
+            dataContract={params.data}
+            pendingContractRecords={pendingContractRecords}
+            marketplaceStore={marketplaceBaseStore}
+            token={auth.user?.access_token}
+          />
+        ),
       },
       {
         hide: true,
         headerName: 'Contract ID',
-        valueGetter: (p) => p.data?.contractId,
-      },
-      {
-        hide: true,
-        headerName: 'Pending Task ID',
-        valueGetter: (p) => p.data?.pendingTaskWithAssignees.taskId,
+        valueGetter: (p) => p.data?.guid,
       },
     ];
 
     return (
       <Box className="marketplace-lakehouse-entitlements__pending-contracts">
+        <Box className="marketplace-lakehosue-entitlements__pending-contracts__action-btns">
+          <FormControlLabel
+            control={
+              <Switch
+                checked={showForOthers}
+                onChange={(event) => setShowForOthers(event.target.checked)}
+              />
+            }
+            label="Show my requests for others"
+          />
+        </Box>
         <Box className="marketplace-lakehouse-entitlements__pending-contracts__grid ag-theme-balham">
           {pendingContracts ? (
             <DataGrid
-              rowData={pendingContracts}
+              rowData={
+                showForOthers
+                  ? [...pendingContracts, ...pendingContractsForOthers]
+                  : pendingContracts
+              }
               onRowDataUpdated={(params) => {
                 params.api.refreshCells({ force: true });
               }}
