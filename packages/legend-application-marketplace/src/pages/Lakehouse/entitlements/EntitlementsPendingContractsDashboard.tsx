@@ -139,11 +139,22 @@ export const EntitlementsPendingContractsDashbaord = observer(
         },
       },
       {
+        headerName: 'State',
+        cellRenderer: (
+          params: DataGridCellRendererParams<V1_UserPendingContractsRecord>,
+        ) => {
+          const contract = allContracts?.find(
+            (_contract) => _contract.guid === params.data?.contractId,
+          );
+          return <>{contract?.state ?? 'Unknown'}</>;
+        },
+      },
+      {
         headerName: 'Business Justification',
         valueGetter: (p) => p.data?.contractDescription,
       },
       {
-        headerName: 'Assignes',
+        headerName: 'Assignees',
         cellRenderer: (
           params: DataGridCellRendererParams<V1_UserPendingContractsRecord>,
         ) => {
@@ -188,6 +199,7 @@ export const EntitlementsPendingContractsDashbaord = observer(
               columnDefs={colDefs}
               onRowClicked={handleRowClicked}
               defaultColDef={defaultColDef}
+              rowHeight={45}
             />
           ) : (
             <>You have no pending contracts</>
