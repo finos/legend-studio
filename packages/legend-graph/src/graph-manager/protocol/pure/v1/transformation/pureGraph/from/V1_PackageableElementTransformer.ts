@@ -83,11 +83,14 @@ import { V1_INTERNAL__UnknownStore } from '../../../model/packageableElements/st
 import { generateFunctionPrettyName } from '../../../../../../../graph/helpers/PureLanguageHelper.js';
 import { V1_SnowflakeApp } from '../../../model/packageableElements/function/V1_SnowflakeApp.js';
 import type { SnowflakeApp } from '../../../../../../../graph/metamodel/pure/packageableElements/function/SnowflakeApp.js';
+import { V1_SnowflakeM2MUdf } from '../../../model/packageableElements/function/V1_SnowflakeM2MUdf.js';
+import type { SnowflakeM2MUdf } from '../../../../../../../graph/metamodel/pure/packageableElements/function/SnowflakeM2MUdf.js';
 import {
   V1_transformDeployment,
   V1_transformHostedServiceDeploymentConfiguration,
   V1_transformOwnership,
   V1_transformSnowflakeAppDeploymentConfiguration,
+  V1_transformSnowflakeM2MUdfDeploymentConfiguration,
   V1_transformActions,
   V1_transformMemSQLDeploymentConfiguration,
 } from './V1_FunctionActivatorTransformer.js';
@@ -202,6 +205,32 @@ class V1_PackageableElementTransformer
     protocol.ownership = V1_transformDeployment(element.ownership);
     protocol.activationConfiguration =
       V1_transformSnowflakeAppDeploymentConfiguration(
+        element.activationConfiguration,
+      );
+    protocol.stereotypes = element.stereotypes.map(V1_transformStereotype);
+    protocol.taggedValues = element.taggedValues.map(V1_transformTaggedValue);
+    V1_transformFunctionActivatorActions(protocol, element, this.context);
+    return protocol;
+  }
+
+  visit_SnowflakeM2MUdf(element: SnowflakeM2MUdf): V1_PackageableElement {
+    const protocol = new V1_SnowflakeM2MUdf();
+    V1_initPackageableElement(protocol, element);
+    protocol.function = new V1_PackageableElementPointer(
+      PackageableElementPointerType.FUNCTION,
+      generateFunctionPrettyName(element.function.value, {
+        fullPath: true,
+        spacing: false,
+        notIncludeParamName: true,
+      }),
+    );
+    protocol.udfName = element.udfName;
+    protocol.deploymentSchema = element.deploymentSchema;
+    protocol.deploymentStage = element.deploymentStage;
+    protocol.description = element.description;
+    protocol.ownership = V1_transformDeployment(element.ownership);
+    protocol.activationConfiguration =
+      V1_transformSnowflakeM2MUdfDeploymentConfiguration(
         element.activationConfiguration,
       );
     protocol.stereotypes = element.stereotypes.map(V1_transformStereotype);

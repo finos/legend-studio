@@ -92,7 +92,9 @@ import {
   V1_PROFILE_ELEMENT_PROTOCOL_TYPE,
   V1_INTERNAL__UnknownFunctionActivatorModelSchema,
   V1_snowflakeAppModelSchema,
+  V1_snowflakeM2MUdfModelSchema,
   V1_SNOWFLAKE_APP_TYPE,
+  V1_SNOWFLAKE_M2M_UDF_TYPE,
   V1_HostedServiceModelSchema,
   V1_HOSTED_SERVICE_TYPE,
   V1_MEM_SQL_TYPE,
@@ -121,6 +123,7 @@ import type {
 } from '../../../../../action/protocol/ProtocolInfo.js';
 import { V1_INTERNAL__UnknownStore } from '../../model/packageableElements/store/V1_INTERNAL__UnknownStore.js';
 import type { V1_SnowflakeApp } from '../../model/packageableElements/function/V1_SnowflakeApp.js';
+import type { V1_SnowflakeM2MUdf } from '../../model/packageableElements/function/V1_SnowflakeM2MUdf.js';
 import { V1_INTERNAL__UnknownElement } from '../../model/packageableElements/V1_INTERNAL__UnknownElement.js';
 import type { V1_HostedService } from '../../model/packageableElements/function/V1_HostedService.js';
 import {
@@ -187,6 +190,12 @@ class V1_PackageableElementSerializer
     element: V1_SnowflakeApp,
   ): PlainObject<V1_PackageableElement> {
     return serialize(V1_snowflakeAppModelSchema(this.plugins), element);
+  }
+
+  visit_SnowflakeM2MUdf(
+    element: V1_SnowflakeM2MUdf,
+  ): PlainObject<V1_PackageableElement> {
+    return serialize(V1_snowflakeM2MUdfModelSchema(this.plugins), element);
   }
 
   visit_HostedService(
@@ -378,6 +387,8 @@ export const V1_deserializePackageableElement = (
         return deserialize(V1_dataElementModelSchema(plugins), json);
       case V1_SNOWFLAKE_APP_TYPE:
         return deserialize(V1_snowflakeAppModelSchema(plugins), json);
+      case V1_SNOWFLAKE_M2M_UDF_TYPE:
+        return deserialize(V1_snowflakeM2MUdfModelSchema(plugins), json);
       case V1_HOSTED_SERVICE_TYPE:
         return deserialize(V1_HostedServiceModelSchema(plugins), json);
       case V1_MEM_SQL_TYPE:

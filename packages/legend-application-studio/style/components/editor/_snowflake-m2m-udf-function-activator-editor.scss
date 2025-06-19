@@ -1,0 +1,151 @@
+/**
+ * Copyright (c) 2025-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+.snowflake-m2m-udf-function-activator-editor {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  background: var(--color-dark-grey-50);
+
+  .panel {
+    height: 100%;
+    width: 100%;
+
+    &__header {
+      padding-left: 0.5rem;
+      color: var(--color-light-grey-300);
+      font-weight: bold;
+      background: var(--color-dark-grey-50);
+      border-bottom: 0.1rem solid var(--color-dark-grey-200);
+    }
+
+    &__header__title__label {
+      background: var(--color-dark-grey-250);
+    }
+
+    &__content {
+      height: calc(100% - 2.6rem);
+      background: var(--color-dark-grey-50);
+    }
+  }
+
+  &__content {
+    height: calc(100% - 5rem);
+    overflow: auto;
+  }
+
+  &__function-pointer {
+    @include flexVCenter;
+
+    &__visit-btn {
+      height: 2.8rem;
+      width: 2.8rem;
+      margin-left: 0.5rem;
+    }
+  }
+
+  &__config__connection-selector {
+    display: flex;
+    height: 2.8rem;
+
+    &__input {
+      width: 100%;
+    }
+  }
+
+  &__configuration__items {
+    height: 100%;
+    width: 100%;
+    padding: 1rem;
+  }
+
+  &__configuration__item__label {
+    @include flexCenter;
+
+    background: var(--color-dark-grey-100);
+    margin-right: 0.5rem;
+  }
+
+  &__configuration__item {
+    @include flexVCenter;
+
+    margin: 0 0 1rem;
+  }
+
+  &__configuration__item__dropdown {
+    max-width: none;
+  }
+
+  &__configuration__item .panel__content__form__section__dropdown {
+    width: 100%;
+  }
+
+  &__configuration__item__btn {
+    height: 2.8rem;
+    width: 2.8rem;
+    margin-left: 0.5rem;
+  }
+
+  &__header {
+    @include flexVCenter;
+
+    justify-content: space-between;
+    margin-top: 2rem;
+
+    &__label {
+      color: var(--color-light-grey-50);
+      font-size: 3rem;
+      font-weight: 600;
+      margin-left: 3rem;
+    }
+
+    &__actions {
+      @include flexVCenter;
+
+      &__action {
+        @include flexVCenter;
+
+        justify-content: center;
+        width: 13rem;
+        height: 3.6rem;
+        color: var(--color-light-grey-150);
+        background: var(--color-dark-grey-500);
+        margin-right: 0.5rem;
+
+        &__icon {
+          cursor: pointer;
+          margin-left: 0.5rem;
+        }
+
+        &__icon:hover {
+          color: var(--color-light-grey-0);
+        }
+      }
+
+      &__action--primary {
+        background: var(--color-blue-200);
+      }
+    }
+  }
+
+  &__permission-scope {
+    &__icon {
+      color: var(--color-association);
+    }
+  }
+}

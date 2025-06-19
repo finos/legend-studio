@@ -21,9 +21,11 @@ import {
   type FunctionActivator,
   PackageableElementExplicitReference,
   SnowflakeApp,
+  SnowflakeM2MUdf,
   extractElementNameFromPath,
   extractPackagePathFromPath,
   SnowflakeAppDeploymentConfiguration,
+  SnowflakeM2MUdfDeploymentConfiguration,
   DeploymentOwner,
   HostedService,
   MemSQLFunction,
@@ -89,6 +91,20 @@ export class FunctionActivatorState {
   ): FunctionActivator | undefined {
     const type = this.activateType;
     switch (type) {
+      case FUNCTION_ACTIVATE_TYPE.SNOWFLAKE_M2M_UDF: {
+        const activatorName = this.activatorPath.includes('::')
+          ? extractElementNameFromPath(this.activatorPath)
+          : this.activatorPath;
+        const snowflakeM2MUdf = new SnowflakeM2MUdf(activatorName);
+        snowflakeM2MUdf.udfName = '';
+        snowflakeM2MUdf.description = '';
+        snowflakeM2MUdf.ownership = new DeploymentOwner('', snowflakeM2MUdf);
+        snowflakeM2MUdf.function =
+          PackageableElementExplicitReference.create(functionElement);
+        snowflakeM2MUdf.activationConfiguration =
+          new SnowflakeM2MUdfDeploymentConfiguration();
+        return snowflakeM2MUdf;
+      }
       case FUNCTION_ACTIVATE_TYPE.SNOWFLAKE_NATIVE_APP: {
         const activatorName = this.activatorPath.includes('::')
           ? extractElementNameFromPath(this.activatorPath)

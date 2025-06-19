@@ -362,6 +362,7 @@ export enum CORE_HASH_STRUCTURE {
 
   // -------------------------------------- Function Activator --------------------------------------
   SNOWFLAKE_APP = 'SNOWFLAKE_APP',
+  SNOWFLAKE_M2M_UDF = 'SNOWFLAKE_M2M_UDF',
   HOSTED_SERVICE = 'HOSTED_SERVICE',
   HOSTED_SERVICE_OWNER = 'HOSTED_SERVICE_OWNER',
   MEM_SQL_FUNCTION = 'MEM_SQL_FUNCTION',
