@@ -148,6 +148,7 @@ export enum CORE_PURE_PATH {
   SECTION_INDEX = 'meta::pure::metamodel::section::SectionIndex',
   DATA_ELEMENT = 'meta::pure::data::DataElement',
   SNOWFLAKE_APP = 'meta::external::function::activator::snowflakeApp::SnowflakeApp',
+  SNOWFLAKE_M2M_UDF = 'meta::external::function::activator::snowflakeM2MUdf::SnowflakeM2MUdf',
   HOSTED_SERVICE = 'meta::external::function::activator::hostedService::HostedService',
   MEM_SQL_FUNCTION = 'meta::external::function::activator::memSqlFunction::MemSqlFunction',
   TABULAR_RESULT = 'meta::pure::mapping::Result',

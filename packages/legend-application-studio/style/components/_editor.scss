@@ -34,6 +34,7 @@
 @forward 'editor/project-configuration-editor';
 @forward 'editor/function-activator-editor';
 @forward 'editor/snowflake-app-function-activator-editor';
+@forward 'editor/snowflake-m2m-udf-function-activator-editor';
 @forward 'editor/hosted-service-function-activator-editor';
 @forward 'editor/mem-sql-function-activator-editor';
 @forward 'editor/entity-diff-view';

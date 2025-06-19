@@ -166,6 +166,12 @@ export const PURE_SnowflakeAppIcon: React.FC = () => (
   </div>
 );
 
+export const PURE_SnowflakeM2MUdfIcon: React.FC = () => (
+  <div className="icon color--snowflake-app">
+    <Snowflake_BrandIcon />
+  </div>
+);
+
 export const PURE_DataProductIcon: React.FC = () => (
   <div className="icon color--snowflake-app">
     <AccessPointIcon />

@@ -84,6 +84,8 @@ export {
   SnowflakeApp,
 } from './graph/metamodel/pure/packageableElements/function/SnowflakeApp.js';
 export { SnowflakeAppDeploymentConfiguration } from './graph/metamodel/pure/functionActivator/SnowflakeAppDeploymentConfiguration.js';
+export { SnowflakeM2MUdf } from './graph/metamodel/pure/packageableElements/function/SnowflakeM2MUdf.js';
+export { SnowflakeM2MUdfDeploymentConfiguration } from './graph/metamodel/pure/functionActivator/SnowflakeM2MUdfDeploymentConfiguration.js';
 export { INTERNAL__UnknownElement } from './graph/metamodel/pure/packageableElements/INTERNAL__UnknownElement.js';
 export {
   Ownership,
