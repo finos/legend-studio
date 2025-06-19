@@ -88,18 +88,29 @@ import {
   type LakehouseIngestServerClient,
   IngestDeploymentServerConfig,
 } from '@finos/legend-server-lakehouse';
+import { LegendMarketplaceUserDataHelper } from '../../__lib__/LegendMarketplaceUserDataHelper.js';
 
 const ARTIFACT_GENERATION_DAT_PRODUCT_KEY = 'dataProduct';
 
 export enum DataProductFilterType {
-  DEPOT_SCOPE = 'DEPOT_SCOPE',
   DEPLOY_TYPE = 'DEPLOY_TYPE',
   ENVIRONMENT_CLASSIFICATION = 'ENVIRONMENT_CLASSIFICATION',
 }
 
+export enum DeployType {
+  SDLC = 'SDLC',
+  SANDBOX = 'SANDBOX',
+}
+
+export interface DataProductFilterConfig {
+  sdlcDeployFilter: boolean;
+  sandboxDeployFilter: boolean;
+  devEnvironmentClassificationFilter: boolean;
+  prodParallelEnvironmentClassificationFilter: boolean;
+  prodEnvironmentClassificationFilter: boolean;
+}
+
 class DataProductFilters {
-  releaseFilter: boolean;
-  snapshotFilter: boolean;
   sdlcDeployFilter: boolean;
   sandboxDeployFilter: boolean;
   devEnvironmentClassificationFilter: boolean;
@@ -108,20 +119,10 @@ class DataProductFilters {
   search?: string | undefined;
 
   constructor(
-    defaultBooleanFilters: {
-      releaseFilter: boolean;
-      snapshotFilter: boolean;
-      sdlcDeployFilter: boolean;
-      sandboxDeployFilter: boolean;
-      devEnvironmentClassificationFilter: boolean;
-      prodParallelEnvironmentClassificationFilter: boolean;
-      prodEnvironmentClassificationFilter: boolean;
-    },
+    defaultBooleanFilters: DataProductFilterConfig,
     search?: string | undefined,
   ) {
     makeObservable(this, {
-      releaseFilter: observable,
-      snapshotFilter: observable,
       sdlcDeployFilter: observable,
       sandboxDeployFilter: observable,
       devEnvironmentClassificationFilter: observable,
@@ -129,8 +130,6 @@ class DataProductFilters {
       prodEnvironmentClassificationFilter: observable,
       search: observable,
     });
-    this.releaseFilter = defaultBooleanFilters.releaseFilter;
-    this.snapshotFilter = defaultBooleanFilters.snapshotFilter;
     this.sdlcDeployFilter = defaultBooleanFilters.sdlcDeployFilter;
     this.sandboxDeployFilter = defaultBooleanFilters.sandboxDeployFilter;
     this.devEnvironmentClassificationFilter =
@@ -145,9 +144,7 @@ class DataProductFilters {
   static default(): DataProductFilters {
     return new DataProductFilters(
       {
-        releaseFilter: true,
-        snapshotFilter: true,
-        sdlcDeployFilter: false,
+        sdlcDeployFilter: true,
         sandboxDeployFilter: true,
         devEnvironmentClassificationFilter: false,
         prodParallelEnvironmentClassificationFilter: false,
@@ -155,6 +152,19 @@ class DataProductFilters {
       },
       undefined,
     );
+  }
+
+  get currentFilterValues(): DataProductFilterConfig {
+    return {
+      sdlcDeployFilter: this.sdlcDeployFilter,
+      sandboxDeployFilter: this.sandboxDeployFilter,
+      devEnvironmentClassificationFilter:
+        this.devEnvironmentClassificationFilter,
+      prodParallelEnvironmentClassificationFilter:
+        this.prodParallelEnvironmentClassificationFilter,
+      prodEnvironmentClassificationFilter:
+        this.prodEnvironmentClassificationFilter,
+    };
   }
 }
 
@@ -183,7 +193,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   loadingLakehouseEnvironmentsByDIDState = ActionState.create();
   loadingLakehouseEnvironmentDetailsState = ActionState.create();
   loadingSandboxDataProductStates = ActionState.create();
-  filter: DataProductFilters = DataProductFilters.default();
+  filter: DataProductFilters;
   sort: DataProductSort = DataProductSort.NAME_ALPHABETICAL;
   dataProductViewer: DataProductViewerState | undefined;
 
@@ -219,6 +229,15 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
 
     this.depotServerClient = depotServerClient;
     this.productStatesMap = new Map<string, DataProductState>();
+
+    const savedFilterConfig =
+      LegendMarketplaceUserDataHelper.getSavedDataProductFilterConfig(
+        this.applicationStore.userDataService,
+      );
+    this.filter = savedFilterConfig
+      ? new DataProductFilters(savedFilterConfig, undefined)
+      : DataProductFilters.default();
+
     makeObservable(this, {
       init: flow,
       initWithProduct: flow,
@@ -266,14 +285,6 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
           // TMP always include dummy data products
           (baseDataProductState instanceof DataProductState &&
             this.dummyDataProductStates.includes(baseDataProductState));
-        const isSnapshot =
-          baseDataProductState instanceof DataProductState
-            ? isSnapshotVersion(baseDataProductState.versionId)
-            : true;
-        // Check if product matches release/snapshot filter
-        const versionMatch =
-          (this.filter.snapshotFilter && isSnapshot) ||
-          (this.filter.releaseFilter && !isSnapshot);
         // Check if product matches environment classification filter
         const environmentClassification =
           baseDataProductState instanceof SandboxDataProductState &&
@@ -302,12 +313,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
           dataProductTitle
             .toLowerCase()
             .includes(this.filter.search.toLowerCase());
-        return (
-          deployMatch &&
-          versionMatch &&
-          environmentClassificationMatch &&
-          titleMatch
-        );
+        return deployMatch && environmentClassificationMatch && titleMatch;
       })
       .sort((a, b) => {
         if (this.sort === DataProductSort.NAME_ALPHABETICAL) {
@@ -348,23 +354,12 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
 
   handleFilterChange(
     filterType: DataProductFilterType,
-    val:
-      | DepotScope
-      | 'sdlc'
-      | 'sandbox'
-      | V1_IngestEnvironmentClassification
-      | undefined,
+    val: DeployType | V1_IngestEnvironmentClassification | undefined,
   ): void {
-    if (filterType === DataProductFilterType.DEPOT_SCOPE) {
-      if (val === DepotScope.RELEASES) {
-        this.filter.releaseFilter = !this.filter.releaseFilter;
-      } else if (val === DepotScope.SNAPSHOT) {
-        this.filter.snapshotFilter = !this.filter.snapshotFilter;
-      }
-    } else if (filterType === DataProductFilterType.DEPLOY_TYPE) {
-      if (val === 'sdlc') {
+    if (filterType === DataProductFilterType.DEPLOY_TYPE) {
+      if (val === DeployType.SDLC) {
         this.filter.sdlcDeployFilter = !this.filter.sdlcDeployFilter;
-      } else if (val === 'sandbox') {
+      } else if (val === DeployType.SANDBOX) {
         this.filter.sandboxDeployFilter = !this.filter.sandboxDeployFilter;
       }
     } else {
@@ -379,6 +374,10 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
           !this.filter.prodEnvironmentClassificationFilter;
       }
     }
+    LegendMarketplaceUserDataHelper.saveDataProductFilterConfig(
+      this.applicationStore.userDataService,
+      this.filter.currentFilterValues,
+    );
   }
 
   handleSearch(query: string | undefined) {
