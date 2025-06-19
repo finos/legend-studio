@@ -55,11 +55,13 @@ export class IngestionDeploymentConfiguration {
 
 export class LegendIngestionConfiguration {
   discoveryUrl!: string;
+  discoveryUrlSuffix: string | undefined;
   deployment!: IngestionDeploymentConfiguration;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(LegendIngestionConfiguration, {
       discoveryUrl: primitive(),
+      discoveryUrlSuffix: optional(primitive()),
       deployment: usingModelSchema(
         IngestionDeploymentConfiguration.serialization.schema,
       ),
