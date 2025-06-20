@@ -67,10 +67,12 @@ import {
 } from './RawValueSpecificationObserver.js';
 import type { INTERNAL__UnknownFunctionActivator } from '../../../graph/metamodel/pure/packageableElements/function/INTERNAL__UnknownFunctionActivator.js';
 import type { SnowflakeApp } from '../../../graph/metamodel/pure/packageableElements/function/SnowflakeApp.js';
+import type { SnowflakeM2MUdf } from '../../../graph/metamodel/pure/packageableElements/function/SnowflakeM2MUdf.js';
 import {
   observe_HostedServiceDeploymentConfiguration,
   observe_FunctionActivatorOwnership,
   observe_SnowflakeAppDeploymentConfiguration,
+  observe_SnowflakeM2MUdfDeploymentConfiguration,
   observe_HostedServicePostDeploymentAction,
   observe_MemSQLFunctionDeploymentConfiguration,
 } from './DSL_FunctionActivatorObserverHelper.js';
@@ -581,6 +583,27 @@ export const observe_SnowflakeApp = skipObserved(
     });
 
     observe_SnowflakeAppDeploymentConfiguration(
+      metamodel.activationConfiguration,
+    );
+    return metamodel;
+  },
+);
+
+export const observe_SnowflakeM2MUdf = skipObserved(
+  (metamodel: SnowflakeM2MUdf): SnowflakeM2MUdf => {
+    observe_Abstract_PackageableElement(metamodel);
+
+    makeObservable<SnowflakeM2MUdf, '_elementHashCode'>(metamodel, {
+      udfName: observable,
+      description: observable,
+      ownership: observable,
+      deploymentSchema: observable,
+      deploymentStage: observable,
+      activationConfiguration: observable,
+      _elementHashCode: override,
+    });
+
+    observe_SnowflakeM2MUdfDeploymentConfiguration(
       metamodel.activationConfiguration,
     );
     return metamodel;

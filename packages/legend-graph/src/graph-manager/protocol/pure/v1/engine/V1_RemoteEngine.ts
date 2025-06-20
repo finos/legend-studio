@@ -297,7 +297,7 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
       // NOTE: this is temporary until we have this API functional and released
       // See https://github.com/finos/legend-engine/pull/1858
       return {
-        functionActivatorSubtypes: ['snowflakeApp'],
+        functionActivatorSubtypes: ['snowflakeM2MUdf', 'snowflakeApp'],
         storeSubtypes: [
           'MongoDatabase',
           'serviceStore',

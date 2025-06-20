@@ -34,6 +34,7 @@ import {
   Service,
   INTERNAL__UnknownFunctionActivator,
   SnowflakeApp,
+  SnowflakeM2MUdf,
   HostedService,
   DataProduct,
   IngestDefinition,
@@ -65,6 +66,7 @@ import type { DSL_LegendStudioApplicationPlugin_Extension } from '../LegendStudi
 import { TabManagerState, type TabState } from '@finos/legend-lego/application';
 import { INTERNAL__UnknownFunctionActivatorEdtiorState } from './editor-state/element-editor-state/function-activator/INTERNAL__UnknownFunctionActivatorEditorState.js';
 import { SnowflakeAppFunctionActivatorEdtiorState } from './editor-state/element-editor-state/function-activator/SnowflakeAppFunctionActivatorEditorState.js';
+import { SnowflakeM2MUdfFunctionActivatorEdtiorState } from './editor-state/element-editor-state/function-activator/SnowflakeM2MUdfFunctionActivatorEditorState.js';
 import { HostedServiceFunctionActivatorEditorState } from './editor-state/element-editor-state/function-activator/HostedServiceFunctionActivatorEditorState.js';
 import { MemSQLFunctionActivatorEditorState } from './editor-state/element-editor-state/function-activator/MemSQLFunctionActivatorEditorState.js';
 import { ArtifactGenerationViewerState } from './editor-state/ArtifactGenerationViewerState.js';
@@ -193,6 +195,11 @@ export class EditorTabManagerState extends TabManagerState {
       return new PackageableDataEditorState(this.editorStore, element);
     } else if (element instanceof SnowflakeApp) {
       return new SnowflakeAppFunctionActivatorEdtiorState(
+        this.editorStore,
+        element,
+      );
+    } else if (element instanceof SnowflakeM2MUdf) {
+      return new SnowflakeM2MUdfFunctionActivatorEdtiorState(
         this.editorStore,
         element,
       );

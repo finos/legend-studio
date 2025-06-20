@@ -42,6 +42,7 @@ import {
   PURE_PackageIcon,
   PURE_DataIcon,
   PURE_SnowflakeAppIcon,
+  PURE_SnowflakeM2MUdfIcon,
   PURE_MemSQLFunctionIcon,
   LaunchIcon,
   LinkIcon,
@@ -107,6 +108,8 @@ export const getElementTypeIcon = (
       return <PURE_GenerationSpecificationIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.SNOWFLAKE_APP:
       return <PURE_SnowflakeAppIcon />;
+    case PACKAGEABLE_ELEMENT_TYPE.SNOWFLAKE_M2M_UDF:
+      return <PURE_SnowflakeM2MUdfIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.INGEST_DEFINITION:
       return <PURE_IngestIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.MEM_SQL_FUNCTION:

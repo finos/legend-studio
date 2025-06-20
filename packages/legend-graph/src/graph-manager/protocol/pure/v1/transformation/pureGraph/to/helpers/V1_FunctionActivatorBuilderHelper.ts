@@ -16,8 +16,10 @@
 
 import { ConnectionPointer } from '../../../../../../../../graph/metamodel/pure/packageableElements/connection/Connection.js';
 import { SnowflakeAppDeploymentConfiguration } from '../../../../../../../../graph/metamodel/pure/functionActivator/SnowflakeAppDeploymentConfiguration.js';
+import { SnowflakeM2MUdfDeploymentConfiguration } from '../../../../../../../../graph/metamodel/pure/functionActivator/SnowflakeM2MUdfDeploymentConfiguration.js';
 import { MemSQLDeploymentConfiguration } from '../../../../../../../../graph/metamodel/pure/functionActivator/MemSQLDeploymentConfiguration.js';
 import type { V1_SnowflakeAppDeploymentConfiguration } from '../../../../engine/functionActivator/V1_SnowflakeAppDeploymentConfiguration.js';
+import type { V1_SnowflakeM2MUdfDeploymentConfiguration } from '../../../../engine/functionActivator/V1_SnowflakeM2MUdfDeploymentConfiguration.js';
 import type { V1_MemSQLDeploymentConfiguration } from '../../../../engine/functionActivator/V1_MemSQLDeploymentConfiguration.js';
 import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
 import { V1_buildConnection } from './V1_ConnectionBuilderHelper.js';
@@ -44,6 +46,23 @@ export const V1_buildSnowflakeAppDeploymentConfiguration = (
   context: V1_GraphBuilderContext,
 ): SnowflakeAppDeploymentConfiguration => {
   const metamodel = new SnowflakeAppDeploymentConfiguration();
+
+  if (element.activationConnection) {
+    const activationConnection = guaranteeType(
+      V1_buildConnection(element.activationConnection, context),
+      ConnectionPointer,
+    );
+
+    metamodel.activationConnection = activationConnection;
+  }
+  return metamodel;
+};
+
+export const V1_buildSnowflakeM2MUdfDeploymentConfiguration = (
+  element: V1_SnowflakeM2MUdfDeploymentConfiguration,
+  context: V1_GraphBuilderContext,
+): SnowflakeM2MUdfDeploymentConfiguration => {
+  const metamodel = new SnowflakeM2MUdfDeploymentConfiguration();
 
   if (element.activationConnection) {
     const activationConnection = guaranteeType(

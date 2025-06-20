@@ -104,10 +104,12 @@ import {
 import { V1_INTERNAL__UnknownMappingInclude } from '../../../model/packageableElements/mapping/V1_INTERNAL__UnknownMappingInclude.js';
 import type { V1_INTERNAL__UnknownStore } from '../../../model/packageableElements/store/V1_INTERNAL__UnknownStore.js';
 import type { V1_SnowflakeApp } from '../../../model/packageableElements/function/V1_SnowflakeApp.js';
+import type { V1_SnowflakeM2MUdf } from '../../../model/packageableElements/function/V1_SnowflakeM2MUdf.js';
 import type { V1_MemSQLFunction } from '../../../model/packageableElements/function/V1_MemSQLFunction.js';
 import {
   V1_buildHostedServiceDeploymentConfiguration,
   V1_buildSnowflakeAppDeploymentConfiguration,
+  V1_buildSnowflakeM2MUdfDeploymentConfiguration,
   V1_buildDeploymentOwnership,
   V1_builHostedServiceOwnership,
   V1_buildHostedServiceActions,
@@ -226,6 +228,39 @@ export class V1_ElementSecondPassBuilder
       element.activationConfiguration,
       this.context,
     );
+    metamodel.stereotypes = element.stereotypes
+      .map((stereotype) => this.context.resolveStereotype(stereotype))
+      .filter(isNonNullable);
+    metamodel.taggedValues = element.taggedValues
+      .map((taggedValue) => V1_buildTaggedValue(taggedValue, this.context))
+      .filter(isNonNullable);
+  }
+
+  visit_SnowflakeM2MUdf(element: V1_SnowflakeM2MUdf): void {
+    const metamodel = this.context.currentSubGraph.getOwnFunctionActivator(
+      V1_buildFullPath(element.package, element.name),
+    );
+    metamodel.function = PackageableElementExplicitReference.create(
+      guaranteeNonNullable(
+        this.context.graph.functions.find(
+          (fn) =>
+            generateFunctionPrettyName(fn, {
+              fullPath: true,
+              spacing: false,
+              notIncludeParamName: true,
+            }) === element.function.path.replaceAll(/\s*/gu, ''),
+        ),
+      ),
+    );
+    metamodel.ownership = V1_buildDeploymentOwnership(
+      element.ownership,
+      metamodel,
+    );
+    metamodel.activationConfiguration =
+      V1_buildSnowflakeM2MUdfDeploymentConfiguration(
+        element.activationConfiguration,
+        this.context,
+      );
     metamodel.stereotypes = element.stereotypes
       .map((stereotype) => this.context.resolveStereotype(stereotype))
       .filter(isNonNullable);

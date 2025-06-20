@@ -16,6 +16,7 @@
 
 import { computed, makeObservable, observable } from 'mobx';
 import type { SnowflakeAppDeploymentConfiguration } from '../../../graph/metamodel/pure/functionActivator/SnowflakeAppDeploymentConfiguration.js';
+import type { SnowflakeM2MUdfDeploymentConfiguration } from '../../../graph/metamodel/pure/functionActivator/SnowflakeM2MUdfDeploymentConfiguration.js';
 import { type ObserverContext, skipObserved } from './CoreObserverHelper.js';
 import { observe_ConnectionPointer } from './DSL_Mapping_ObserverHelper.js';
 import {
@@ -32,6 +33,22 @@ export const observe_SnowflakeAppDeploymentConfiguration = skipObserved(
   (
     metamodel: SnowflakeAppDeploymentConfiguration,
   ): SnowflakeAppDeploymentConfiguration => {
+    makeObservable(metamodel, {
+      activationConnection: observable,
+    });
+
+    if (metamodel.activationConnection) {
+      observe_ConnectionPointer(metamodel.activationConnection);
+    }
+
+    return metamodel;
+  },
+);
+
+export const observe_SnowflakeM2MUdfDeploymentConfiguration = skipObserved(
+  (
+    metamodel: SnowflakeM2MUdfDeploymentConfiguration,
+  ): SnowflakeM2MUdfDeploymentConfiguration => {
     makeObservable(metamodel, {
       activationConnection: observable,
     });

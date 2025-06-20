@@ -46,6 +46,7 @@ import type { INTERNAL__UnknownPackageableElement } from './INTERNAL__UnknownPac
 import type { INTERNAL__UnknownFunctionActivator } from './function/INTERNAL__UnknownFunctionActivator.js';
 import type { INTERNAL__UnknownStore } from './store/INTERNAL__UnknownStore.js';
 import type { SnowflakeApp } from './function/SnowflakeApp.js';
+import type { SnowflakeM2MUdf } from './function/SnowflakeM2MUdf.js';
 import type { INTERNAL__UnknownElement } from './INTERNAL__UnknownElement.js';
 import type { HostedService } from './function/HostedService.js';
 import type { DataProduct } from '../dataProduct/DataProduct.js';
@@ -84,6 +85,7 @@ export interface PackageableElementVisitor<T> {
   visit_DataElement(element: DataElement): T;
   visit_ExecutionEnvironmentInstance(element: ExecutionEnvironmentInstance): T;
   visit_SnowflakeApp(element: SnowflakeApp): T;
+  visit_SnowflakeM2MUdf(element: SnowflakeM2MUdf): T;
   visit_HostedService(element: HostedService): T;
   visit_DataProduct(element: DataProduct): T;
   visit_IngestDefinition(element: IngestDefinition): T;

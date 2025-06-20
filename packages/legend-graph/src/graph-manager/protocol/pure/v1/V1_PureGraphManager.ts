@@ -331,6 +331,7 @@ import {
 import { V1_transformTablePointer } from './transformation/pureGraph/from/V1_DatabaseTransformer.js';
 import { EngineError } from '../../../action/EngineError.js';
 import { V1_SnowflakeApp } from './model/packageableElements/function/V1_SnowflakeApp.js';
+import { V1_SnowflakeM2MUdf } from './model/packageableElements/function/V1_SnowflakeM2MUdf.js';
 import type {
   ExecutionResult,
   ExecutionResultWithMetadata,
@@ -4520,6 +4521,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       return CORE_PURE_PATH.GENERATION_SPECIFICATION;
     } else if (protocol instanceof V1_SnowflakeApp) {
       return CORE_PURE_PATH.SNOWFLAKE_APP;
+    } else if (protocol instanceof V1_SnowflakeM2MUdf) {
+      return CORE_PURE_PATH.SNOWFLAKE_M2M_UDF;
     } else if (protocol instanceof V1_HostedService) {
       return CORE_PURE_PATH.HOSTED_SERVICE;
     } else if (protocol instanceof V1_DataProduct) {

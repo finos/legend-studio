@@ -67,11 +67,13 @@ import {
 } from './V1_RawValueSpecificationSerializationHelper.js';
 import { V1_INTERNAL__UnknownFunctionActivator } from '../../../model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
 import { V1_SnowflakeApp } from '../../../model/packageableElements/function/V1_SnowflakeApp.js';
+import { V1_SnowflakeM2MUdf } from '../../../model/packageableElements/function/V1_SnowflakeM2MUdf.js';
 import { V1_MemSQLFunction } from '../../../model/packageableElements/function/V1_MemSQLFunction.js';
 
 import {
   V1_HostedServiceDeploymentConfigurationAppModelSchema,
   V1_SnowflakeAppDeploymentConfigurationAppModelSchema,
+  V1_SnowflakeM2MUdfDeploymentConfigurationAppModelSchema,
   V1_MemSQLDeploymentConfigurationAppModelSchema,
   V1_deserializeDeploymentOwnership,
   V1_serializeDeploymentOwership,
@@ -105,6 +107,7 @@ export const V1_UNIT_ELEMENT_PROTOCOL_TYPE = 'unit';
 export const V1_ASSOCIATION_ELEMENT_PROTOCOL_TYPE = 'association';
 export const V1_FUNCTION_ELEMENT_PROTOCOL_TYPE = 'function';
 export const V1_SNOWFLAKE_APP_TYPE = 'snowflakeApp';
+export const V1_SNOWFLAKE_M2M_UDF_TYPE = 'snowflakeM2MUdf';
 export const V1_HOSTED_SERVICE_TYPE = 'hostedService';
 export const V1_MEM_SQL_TYPE = 'memSqlFunction';
 
@@ -225,6 +228,34 @@ export const V1_snowflakeAppModelSchema = (
     }),
     activationConfiguration: usingModelSchema(
       V1_SnowflakeAppDeploymentConfigurationAppModelSchema,
+    ),
+    ownership: optionalCustom(
+      (val) => V1_serializeDeploymentOwership(val),
+      (val) => V1_deserializeDeploymentOwnership(val),
+    ),
+  });
+
+export const V1_snowflakeM2MUdfModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_SnowflakeM2MUdf> =>
+  createModelSchema(V1_SnowflakeM2MUdf, {
+    _type: usingConstantValueSchema(V1_SNOWFLAKE_M2M_UDF_TYPE),
+    description: optional(primitive()),
+    udfName: primitive(),
+    function: usingModelSchema(V1_packageableElementPointerModelSchema),
+    name: primitive(),
+    package: primitive(),
+    actions: list(usingModelSchema(V1_PostDeploymentActionSchema(plugins))),
+    deploymentSchema: primitive(),
+    deploymentStage: primitive(),
+    stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
+      INTERNAL__forceReturnEmptyInTest: true,
+    }),
+    taggedValues: customListWithSchema(V1_taggedValueModelSchema, {
+      INTERNAL__forceReturnEmptyInTest: true,
+    }),
+    activationConfiguration: usingModelSchema(
+      V1_SnowflakeM2MUdfDeploymentConfigurationAppModelSchema,
     ),
     ownership: optionalCustom(
       (val) => V1_serializeDeploymentOwership(val),

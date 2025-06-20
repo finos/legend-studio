@@ -38,6 +38,7 @@ import type { V1_INTERNAL__UnknownPackageableElement } from './V1_INTERNAL__Unkn
 import type { V1_INTERNAL__UnknownFunctionActivator } from './function/V1_INTERNAL__UnknownFunctionActivator.js';
 import type { V1_INTERNAL__UnknownStore } from './store/V1_INTERNAL__UnknownStore.js';
 import type { V1_SnowflakeApp } from './function/V1_SnowflakeApp.js';
+import type { V1_SnowflakeM2MUdf } from './function/V1_SnowflakeM2MUdf.js';
 import type { V1_INTERNAL__UnknownElement } from './V1_INTERNAL__UnknownElement.js';
 import type { V1_HostedService } from './function/V1_HostedService.js';
 import type { V1_DataProduct } from './dataProduct/V1_DataProduct.js';
@@ -77,6 +78,7 @@ export interface V1_PackageableElementVisitor<T> {
     element: V1_ExecutionEnvironmentInstance,
   ): T;
   visit_SnowflakeApp(element: V1_SnowflakeApp): T;
+  visit_SnowflakeM2MUdf(element: V1_SnowflakeM2MUdf): T;
   visit_HostedService(element: V1_HostedService): T;
   visit_MemSQLFunction(element: V1_MemSQLFunction): T;
 

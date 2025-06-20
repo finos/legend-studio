@@ -16,12 +16,14 @@
 
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import type { SnowflakeAppDeploymentConfiguration } from '../../../../../../../graph/metamodel/pure/functionActivator/SnowflakeAppDeploymentConfiguration.js';
+import type { SnowflakeM2MUdfDeploymentConfiguration } from '../../../../../../../graph/metamodel/pure/functionActivator/SnowflakeM2MUdfDeploymentConfiguration.js';
 import {
   DeploymentOwner,
   UserList,
   type Ownership,
 } from '../../../../../../../graph/metamodel/pure/packageableElements/function/Ownership.js';
 import { V1_SnowflakeAppDeploymentConfiguration } from '../../../engine/functionActivator/V1_SnowflakeAppDeploymentConfiguration.js';
+import { V1_SnowflakeM2MUdfDeploymentConfiguration } from '../../../engine/functionActivator/V1_SnowflakeM2MUdfDeploymentConfiguration.js';
 import {
   V1_DeploymentOwner,
   type V1_Ownership,
@@ -41,6 +43,20 @@ export const V1_transformSnowflakeAppDeploymentConfiguration = (
   element: SnowflakeAppDeploymentConfiguration,
 ): V1_SnowflakeAppDeploymentConfiguration => {
   const protocol = new V1_SnowflakeAppDeploymentConfiguration();
+
+  if (element.activationConnection) {
+    protocol.activationConnection = V1_transformConnectionPointer(
+      element.activationConnection,
+    );
+  }
+
+  return protocol;
+};
+
+export const V1_transformSnowflakeM2MUdfDeploymentConfiguration = (
+  element: SnowflakeM2MUdfDeploymentConfiguration,
+): V1_SnowflakeM2MUdfDeploymentConfiguration => {
+  const protocol = new V1_SnowflakeM2MUdfDeploymentConfiguration();
 
   if (element.activationConnection) {
     protocol.activationConnection = V1_transformConnectionPointer(

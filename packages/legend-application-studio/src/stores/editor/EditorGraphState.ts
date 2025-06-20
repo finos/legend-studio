@@ -88,6 +88,7 @@ import {
   createGraphBuilderReport,
   ExecutionEnvironmentInstance,
   SnowflakeApp,
+  SnowflakeM2MUdf,
   GraphEntities,
   HostedService,
   DataProduct,
@@ -855,6 +856,8 @@ export class EditorGraphState {
       return PACKAGEABLE_ELEMENT_TYPE.EXECUTION_ENVIRONMENT;
     } else if (element instanceof SnowflakeApp) {
       return PACKAGEABLE_ELEMENT_TYPE.SNOWFLAKE_APP;
+    } else if (element instanceof SnowflakeM2MUdf) {
+      return PACKAGEABLE_ELEMENT_TYPE.SNOWFLAKE_M2M_UDF;
     } else if (element instanceof HostedService) {
       return PACKAGEABLE_ELEMENT_TYPE.HOSTED_SERVICE;
     } else if (element instanceof DataProduct) {

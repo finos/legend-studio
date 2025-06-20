@@ -81,6 +81,8 @@ import { QueryConnectionWorflowEditor } from './end-to-end-flow-editor/Connectio
 import { QueryConnectionEndToEndWorkflowEditorState } from '../../../stores/editor/editor-state/end-to-end-workflow-state/QueryConnectionEndToEndWorkflowEditorState.js';
 import { SnowflakeAppFunctionActivatorEdtiorState } from '../../../stores/editor/editor-state/element-editor-state/function-activator/SnowflakeAppFunctionActivatorEditorState.js';
 import { SnowflakeAppFunctionActivatorEditor } from './function-activator/SnowflakeAppFunctionActivatorEditor.js';
+import { SnowflakeM2MUdfFunctionActivatorEdtiorState } from '../../../stores/editor/editor-state/element-editor-state/function-activator/SnowflakeM2MUdfFunctionActivatorEditorState.js';
+import { SnowflakeM2MUdfFunctionActivatorEditor } from './function-activator/SnowflakeM2MUdfFunctionActivatorEditor.js';
 import {
   ShowcaseCard,
   RuleEngagementCard,
@@ -306,6 +308,15 @@ export const EditorGroup = observer(() => {
           ) {
             return (
               <SnowflakeAppFunctionActivatorEditor key={currentTabState.uuid} />
+            );
+          } else if (
+            currentTabState instanceof
+            SnowflakeM2MUdfFunctionActivatorEdtiorState
+          ) {
+            return (
+              <SnowflakeM2MUdfFunctionActivatorEditor
+                key={currentTabState.uuid}
+              />
             );
           } else if (
             currentTabState instanceof HostedServiceFunctionActivatorEditorState
