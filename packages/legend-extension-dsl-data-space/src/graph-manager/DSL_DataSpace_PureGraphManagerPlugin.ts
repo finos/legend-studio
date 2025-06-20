@@ -31,6 +31,8 @@ export const PURE_ENTERPRISE_PROFILE_TAXONOMY_NODE_STEREOTYPE = 'taxonomyNodes';
 export const PURE_DATA_SPACE_INFO_PROFILE_PATH =
   'meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo';
 export const PURE_DATA_SPACE_INFO_PROFILE_VERIFIED_STEREOTYPE = 'Verified';
+export const PURE_POWERBI_ARTIFACT_GENERATION_PROFILE_PATH =
+  'meta::external::powerbi::profiles::PowerBIArtifactGeneration';
 
 export class DSL_DataSpace_PureGraphManagerPlugin extends PureGraphManagerPlugin {
   constructor() {
@@ -38,7 +40,11 @@ export class DSL_DataSpace_PureGraphManagerPlugin extends PureGraphManagerPlugin
   }
 
   override getExtraExposedSystemElementPath(): string[] {
-    return [PURE_ENTERPRISE_PROFILE_PATH, PURE_DATA_SPACE_INFO_PROFILE_PATH];
+    return [
+      PURE_ENTERPRISE_PROFILE_PATH,
+      PURE_DATA_SPACE_INFO_PROFILE_PATH,
+      PURE_POWERBI_ARTIFACT_GENERATION_PROFILE_PATH,
+    ];
   }
 
   override getExtraPureGraphManagerExtensionBuilders(): PureGraphManagerExtensionBuilder[] {
