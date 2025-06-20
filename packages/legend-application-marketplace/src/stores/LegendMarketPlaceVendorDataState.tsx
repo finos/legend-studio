@@ -15,11 +15,13 @@
  */
 
 import {
+  DataProduct,
   ProviderResult,
+  type Filter,
   type LightDataProduct,
   type MarketplaceServerClient,
 } from '@finos/legend-server-marketplace';
-import { flow, makeObservable, observable } from 'mobx';
+import { action, flow, makeObservable, observable } from 'mobx';
 import type {
   LegendMarketplaceApplicationStore,
   LegendMarketplaceBaseStore,
@@ -32,12 +34,15 @@ export class LegendMarketPlaceVendorDataState {
   readonly store: LegendMarketplaceBaseStore;
   marketplaceServerClient: MarketplaceServerClient;
 
-  responseLimit = 10;
+  responseLimit = 6;
 
   dataFeedProviders: ProviderResult[] = [];
   terminalProviders: ProviderResult[] = [];
   terminalProvidersAsDataProducts: LightDataProduct[] = [];
   addOnProviders: ProviderResult[] = [];
+  dataProducts: DataProduct[] = [];
+  homeDataProducts: LightDataProduct[] = [];
+  providersFilters: Filter[] = [];
 
   providerDisplayState: VendorDataProviderType = VendorDataProviderType.ALL;
 
@@ -49,11 +54,16 @@ export class LegendMarketPlaceVendorDataState {
       dataFeedProviders: observable,
       terminalProviders: observable,
       addOnProviders: observable,
-      populateProviders: observable,
+      populateProviders: action,
       providerDisplayState: observable,
-      setProviderDisplayState: observable,
+      setProviderDisplayState: action,
       terminalProvidersAsDataProducts: observable,
       init: flow,
+      dataProducts: observable,
+      homeDataProducts: observable,
+      populateDataProducts: action,
+      providersFilters: observable,
+      setProvidersFilters: action,
     });
 
     this.applicationStore = applicationStore;
@@ -77,17 +87,58 @@ export class LegendMarketPlaceVendorDataState {
         `Failed to initialize vendors: ${error}`,
       );
     }
+
+    try {
+      yield this.populateDataProducts();
+      this.homeDataProducts = this.dataProducts.map(
+        (product) =>
+          ({
+            description: product.description,
+            provider: product.productName,
+            type: product.provider,
+          }) as LightDataProduct,
+      );
+    } catch (error) {
+      this.applicationStore.notificationService.notifyError(
+        `Failed to initialize data products: ${error}`,
+      );
+    }
   }
 
   setProviderDisplayState(value: VendorDataProviderType): void {
     this.providerDisplayState = value;
   }
 
+  setProvidersFilters(value: Filter[]): void {
+    this.providersFilters = value;
+    this.populateData();
+  }
+
+  populateData(): void {
+    this.populateProviders()
+      .then(() =>
+        this.applicationStore.notificationService.notifySuccess(
+          'Data populated successfully.',
+        ),
+      )
+      .catch((error: Error) =>
+        this.applicationStore.notificationService.notifyError(
+          `Failed to populate Data: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        ),
+      );
+  }
+
   async populateProviders(): Promise<void> {
     try {
+      const filters: string = this.providersFilters
+        .map((filter) => `&${filter.label}=${encodeURIComponent(filter.value)}`)
+        .join('');
       this.dataFeedProviders = (
         await this.marketplaceServerClient.getVendorsByCategory(
           encodeURIComponent('Periodic Datafeed'),
+          filters,
           this.responseLimit,
         )
       ).map((json) => ProviderResult.serialization.fromJson(json));
@@ -95,6 +146,7 @@ export class LegendMarketPlaceVendorDataState {
       this.terminalProviders = (
         await this.marketplaceServerClient.getVendorsByCategory(
           encodeURIComponent('Desktop'),
+          filters,
           this.responseLimit,
         )
       ).map((json) => ProviderResult.serialization.fromJson(json));
@@ -102,12 +154,25 @@ export class LegendMarketPlaceVendorDataState {
       this.addOnProviders = (
         await this.marketplaceServerClient.getVendorsByCategory(
           encodeURIComponent('Add-on'),
+          filters,
           this.responseLimit,
         )
       ).map((json) => ProviderResult.serialization.fromJson(json));
     } catch (error) {
       this.applicationStore.notificationService.notifyError(
         `Failed to fetch vendors: ${error}`,
+      );
+    }
+  }
+
+  async populateDataProducts(): Promise<void> {
+    try {
+      this.dataProducts = (
+        await this.marketplaceServerClient.getDataProducts(this.responseLimit)
+      ).map((json) => DataProduct.serialization.fromJson(json));
+    } catch (error) {
+      this.applicationStore.notificationService.notifyError(
+        `Failed to fetch data products: ${error}`,
       );
     }
   }

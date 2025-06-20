@@ -20,8 +20,24 @@ import { createModelSchema, list, object, primitive } from 'serializr';
 export interface LightDataProduct {
   description: string;
   provider: string;
-  type: 'vendor' | 'curated';
+  type: string;
   moreInfo: string;
+}
+
+export class DataProduct {
+  provider!: string;
+  productName!: string;
+  description!: string;
+  dataProductLink!: string;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(DataProduct, {
+      provider: primitive(),
+      productName: primitive(),
+      description: primitive(),
+      dataProductLink: primitive(),
+    }),
+  );
 }
 
 export class DataProductSearchResultTableField {

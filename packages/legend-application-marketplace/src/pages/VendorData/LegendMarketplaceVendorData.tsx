@@ -28,7 +28,7 @@ import {
   Typography,
 } from '@mui/material';
 import { useApplicationStore } from '@finos/legend-application';
-import type { ProviderResult } from '@finos/legend-server-marketplace';
+import type { Filter, ProviderResult } from '@finos/legend-server-marketplace';
 import { LegendMarketplaceProviderCard } from '../../components/ProviderCard/LegendMarketplaceProviderCard.js';
 import type { LegendMarketPlaceVendorDataState } from '../../stores/LegendMarketPlaceVendorDataState.js';
 import { useLegendMarketplaceBaseStore } from '../../application/LegendMarketplaceFrameworkProvider.js';
@@ -243,7 +243,21 @@ export const LegendMarketplaceVendorData = observer(() => {
     provider: string | undefined,
     query: string | undefined,
   ) => {
-    // Handle search logic here
+    const filters: Filter[] = [];
+    if (provider) {
+      filters.push({
+        label: 'provider',
+        value: provider,
+      });
+    }
+
+    if (query) {
+      filters.push({
+        label: 'query',
+        value: query,
+      });
+    }
+    marketPlaceVendorDataState.setProvidersFilters(filters);
   };
 
   useEffect(() => {

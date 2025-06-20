@@ -27,7 +27,7 @@ export const LegendMarketplaceLightDataProductCard = (props: {
   const { dataAsset, onClick } = props;
 
   const content = (
-    <>
+    <div className="legend-marketplace-light-data-product-card__content">
       <Chip
         label={dataAsset.type}
         className={clsx('legend-marketplace-light-data-product-card__type', {
@@ -37,17 +37,20 @@ export const LegendMarketplaceLightDataProductCard = (props: {
             dataAsset.type === 'curated',
         })}
       />
-      <div className="legend-marketplace-light-data-product-card__name">
-        {dataAsset.provider}
+      <div className="legend-marketplace-light-data-product-card__name-container">
+        <div className="legend-marketplace-light-data-product-card__name">
+          {dataAsset.provider}
+        </div>
       </div>
-      <div className="legend-marketplace-light-data-product-card__description">
-        {dataAsset.description}
-      </div>
-    </>
+    </div>
   );
 
-  const moreInfo = dataAsset.moreInfo ? (
-    <div>{dataAsset.moreInfo}</div>
+  const moreInfo = dataAsset.description ? (
+    <div className="legend-marketplace-light-data-product-card__description">
+      {dataAsset.description.length > 200
+        ? `${dataAsset.description.slice(0, 200)}...`
+        : dataAsset.description}
+    </div>
   ) : undefined;
 
   return (
