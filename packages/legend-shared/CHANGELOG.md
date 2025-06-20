@@ -1,5 +1,7 @@
 # @finos/legend-shared
 
+## 11.0.14
+
 ## 11.0.13
 
 ### Patch Changes

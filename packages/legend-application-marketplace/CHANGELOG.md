@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.0.48
+
+### Patch Changes
+
+- [#4211](https://github.com/finos/legend-studio/pull/4211) [`6137ae8`](https://github.com/finos/legend-studio/commit/6137ae89e51c4ff0b2aff6642c5836b1579843e4) ([@travisstebbins](https://github.com/travisstebbins)) - Update Lakehouse filters and save to local storage
+
 ## 0.0.47
 
 ### Patch Changes

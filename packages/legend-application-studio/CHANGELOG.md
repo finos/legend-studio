@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.19.3
+
+### Patch Changes
+
+- [#4213](https://github.com/finos/legend-studio/pull/4213) [`9c07691`](https://github.com/finos/legend-studio/commit/9c076912666fc6c61b985e49976a91c6ec6e6965) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add workflow support for creating lakehouse runtime
+
 ## 28.19.2
 
 ## 28.19.1
