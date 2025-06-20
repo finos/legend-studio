@@ -65,34 +65,7 @@ Class test::model::Person
 
 function test::query::getFirmDetailsWithInput(input: String[1]): String[1]
 {
-  test::model::Firms.all()->graphFetch(
-    #{
-      test::model::Firms{
-        firms{
-          legalName,
-          employees{
-            firstName,
-            lastName
-          }
-        }
-      }
-    }#
-  )->serialize(
-    #{
-      test::model::Firms{
-        firms{
-          legalName,
-          employees{
-            firstName,
-            lastName
-          }
-        }
-      }
-    }#
-  )->from(
-    test::mapping::firmMapping,
-    test::runtime::testRuntimeWithInput
-  )
+  test::model::Firms.all()->graphFetch(#{test::model::Firms{firms{legalName,employees{firstName,lastName}}}}#)->serialize(#{test::model::Firms{firms{legalName,employees{firstName,lastName}}}}#)->from(test::mapping::firmMapping, test::runtime::testRuntimeWithInput)
 }
 
 
