@@ -22,6 +22,7 @@ import {
   optionalCustom,
 } from '@finos/legend-shared';
 import { V1_SnowflakeAppDeploymentConfiguration } from '../../../engine/functionActivator/V1_SnowflakeAppDeploymentConfiguration.js';
+import { V1_SnowflakeM2MUdfDeploymentConfiguration } from '../../../engine/functionActivator/V1_SnowflakeM2MUdfDeploymentConfiguration.js';
 import {
   createModelSchema,
   deserialize,
@@ -49,6 +50,8 @@ import { V1_MemSQLDeploymentConfiguration } from '../../../engine/functionActiva
 
 const V1_SNOWFLAKE_APP_DEPLOYMENT_CONFIGURATION_APP_TYPE =
   'snowflakeDeploymentConfiguration';
+const V1_SNOWFLAKE_M2M_UDF_DEPLOYMENT_CONFIGURATION_APP_TYPE =
+  'snowflakeM2MUdfDeploymentConfiguration';
 const V1_HOSTED_SERVICE_DEPLOYMENT_CONFIGURATION_APP_TYPE =
   'hostedServiceDeploymentConfiguration';
 const V1_MEM_SQL_DEPLOYMENT_CONFIGURATION_APP_TYPE = 'memSqlFunctionConfig';
@@ -57,6 +60,14 @@ export const V1_SnowflakeAppDeploymentConfigurationAppModelSchema =
   createModelSchema(V1_SnowflakeAppDeploymentConfiguration, {
     _type: usingConstantValueSchema(
       V1_SNOWFLAKE_APP_DEPLOYMENT_CONFIGURATION_APP_TYPE,
+    ),
+    activationConnection: usingModelSchema(V1_connectionPointerModelSchema),
+  });
+
+export const V1_SnowflakeM2MUdfDeploymentConfigurationAppModelSchema =
+  createModelSchema(V1_SnowflakeM2MUdfDeploymentConfiguration, {
+    _type: usingConstantValueSchema(
+      V1_SNOWFLAKE_M2M_UDF_DEPLOYMENT_CONFIGURATION_APP_TYPE,
     ),
     activationConnection: usingModelSchema(V1_connectionPointerModelSchema),
   });

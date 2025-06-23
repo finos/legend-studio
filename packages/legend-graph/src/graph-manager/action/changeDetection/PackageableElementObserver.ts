@@ -47,6 +47,7 @@ import {
   observe_HostedService,
   observe_SectionIndex,
   observe_SnowflakeApp,
+  observe_SnowflakeM2MUdf,
   observe_MemSQLFunction,
 } from './DomainObserverHelper.js';
 import {
@@ -76,6 +77,7 @@ import type { INTERNAL__UnknownPackageableElement } from '../../../graph/metamod
 import type { INTERNAL__UnknownFunctionActivator } from '../../../graph/metamodel/pure/packageableElements/function/INTERNAL__UnknownFunctionActivator.js';
 import type { INTERNAL__UnknownStore } from '../../../graph/metamodel/pure/packageableElements/store/INTERNAL__UnknownStore.js';
 import type { SnowflakeApp } from '../../../graph/metamodel/pure/packageableElements/function/SnowflakeApp.js';
+import type { SnowflakeM2MUdf } from '../../../graph/metamodel/pure/packageableElements/function/SnowflakeM2MUdf.js';
 import type { INTERNAL__UnknownElement } from '../../../graph/metamodel/pure/packageableElements/INTERNAL__UnknownElement.js';
 import type { HostedService } from '../../../graph/metamodel/pure/packageableElements/function/HostedService.js';
 import type { DataProduct } from '../../../graph/metamodel/pure/dataProduct/DataProduct.js';
@@ -120,6 +122,10 @@ class PackageableElementObserver implements PackageableElementVisitor<void> {
 
   visit_SnowflakeApp(element: SnowflakeApp): void {
     observe_SnowflakeApp(element);
+  }
+
+  visit_SnowflakeM2MUdf(element: SnowflakeM2MUdf): void {
+    observe_SnowflakeM2MUdf(element);
   }
 
   visit_HostedService(element: HostedService): void {

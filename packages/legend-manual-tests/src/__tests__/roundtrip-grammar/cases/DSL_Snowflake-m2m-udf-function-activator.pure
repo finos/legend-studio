@@ -1,0 +1,131 @@
+###Relational
+Database store::TestDB
+(
+  Table FirmTable
+  (
+    id INTEGER PRIMARY KEY,
+    legal_name VARCHAR(200)
+  )
+  Table PersonTable
+  (
+    id INTEGER PRIMARY KEY,
+    firm_id INTEGER,
+    firstName VARCHAR(200),
+    lastName VARCHAR(200)
+  )
+  Table HobbyTable
+  (
+    id INTEGER PRIMARY KEY,
+    name VARCHAR(200)
+  )
+  Table AddressTable
+  (
+    id INTEGER PRIMARY KEY,
+    firm_id INTEGER,
+    pincode INTEGER,
+    streetName VARCHAR(200)
+  )
+
+  Join FirmPerson(PersonTable.firm_id = FirmTable.id)
+  Join FirmAddress(AddressTable.firm_id = FirmTable.id)
+  Join HobbyPerson(PersonTable.id = HobbyTable.id)
+)
+
+
+###Snowflake
+SnowflakeM2MUdf test::udf::MyUDF
+{
+   udfName : 'M2MUDF';
+   function : test::query::getFirmDetailsWithInput(String[1]):String[1];
+   ownership : Deployment { identifier: '1234'};
+   deploymentSchema : 'PARTH_UDF_SCHEMA';
+   deploymentStage : 'PARTH_UDF_SCHEMA.PARTH_DEMO';
+   description : 'A super nice M2M Udf!';
+   activationConfiguration : FactsetTest::connections::factsetTestConnectionDev;
+}
+
+
+###Pure
+Class test::model::Firms
+{
+  firms: test::model::Firm[1..*];
+}
+
+Class test::model::Firm
+{
+  legalName: String[1];
+  employees: test::model::Person[*];
+}
+
+Class test::model::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+}
+
+function test::query::getFirmDetailsWithInput(input: String[1]): String[1]
+{
+  test::model::Firms.all()->graphFetch(#{test::model::Firms{firms{legalName,employees{firstName,lastName}}}}#)->serialize(#{test::model::Firms{firms{legalName,employees{firstName,lastName}}}}#)->from(test::mapping::firmMapping, test::runtime::testRuntimeWithInput)
+}
+
+
+###Mapping
+Mapping test::mapping::firmMapping
+(
+  *test::model::Firms: Pure
+  {
+    ~src test::model::Firms
+    firms: $src.firms
+  }
+  *test::model::Firm: Pure
+  {
+    ~src test::model::Firm
+    legalName: $src.legalName,
+    employees: $src.employees
+  }
+)
+
+
+###Connection
+JsonModelConnection test::connection::testConnectionWithInput
+{
+  class: test::model::Firms;
+  url: 'data:application/json,${input}';
+}
+
+RelationalDatabaseConnection FactsetTest::connections::factsetTestConnectionDev
+{
+  store: store::TestDB;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'test';
+    account: 'test';
+    warehouse: 'test';
+    region: 'test';
+    cloudType: 'test';
+  };
+  auth: SnowflakePublic
+  {
+    publicUserName: 'test';
+    privateKeyVaultReference: 'test';
+    passPhraseVaultReference: 'test';
+  };
+}
+
+
+###Runtime
+Runtime test::runtime::testRuntimeWithInput
+{
+  mappings:
+  [
+    test::mapping::firmMapping
+  ];
+  connections:
+  [
+    ModelStore:
+    [
+      connection_1: test::connection::testConnectionWithInput
+    ]
+  ];
+}
