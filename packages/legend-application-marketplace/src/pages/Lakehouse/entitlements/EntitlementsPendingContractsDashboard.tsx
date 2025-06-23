@@ -29,14 +29,7 @@ import {
   type DataGridCellRendererParams,
   type DataGridColumnDefinition,
 } from '@finos/legend-lego/data-grid';
-import {
-  Box,
-  CircularProgress,
-  FormControlLabel,
-  Link,
-  Popover,
-  Switch,
-} from '@mui/material';
+import { Box, CircularProgress, FormControlLabel, Switch } from '@mui/material';
 import { useEffect, useState } from 'react';
 import type { EntitlementsDashboardState } from '../../../stores/lakehouse/entitlements/EntitlementsDashboardState.js';
 import { EntitlementsDataContractViewer } from './EntitlementsDataContractViewer.js';
@@ -51,54 +44,7 @@ import {
 import type { LegendMarketplaceBaseStore } from '../../../stores/LegendMarketplaceBaseStore.js';
 import { startCase } from '@finos/legend-shared';
 import { useAuth } from 'react-oidc-context';
-
-const MultiUserCellRenderer = (props: {
-  userIds: string[];
-  marketplaceStore: LegendMarketplaceBaseStore;
-}): React.ReactNode => {
-  const { userIds, marketplaceStore } = props;
-  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-
-  if (userIds.length === 1) {
-    return (
-      <UserRenderer
-        userId={userIds[0]}
-        marketplaceStore={marketplaceStore}
-        className="marketplace-lakehouse-entitlements__grid__user-display"
-      />
-    );
-  } else {
-    return (
-      <>
-        <Link
-          onClick={(event) => setAnchorEl(event.currentTarget)}
-          className="marketplace-lakehouse-entitlements__grid__multi-user__link"
-        >
-          {userIds.length} Users
-        </Link>
-        <Popover
-          open={Boolean(anchorEl)}
-          anchorEl={anchorEl}
-          onClose={() => setAnchorEl(null)}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'left',
-          }}
-        >
-          <Box className="marketplace-lakehouse-entitlements__grid__multi-user__popover">
-            {userIds.map((userId) => (
-              <UserRenderer
-                key={userId}
-                userId={userId}
-                marketplaceStore={marketplaceStore}
-              />
-            ))}
-          </Box>
-        </Popover>
-      </>
-    );
-  }
-};
+import { MultiUserCellRenderer } from '../../../components/MultiUserCellRenderer/MultiUserCellRenderer.js';
 
 const AssigneesCellRenderer = (props: {
   dataContract: V1_DataContract | undefined;
@@ -199,7 +145,9 @@ export const EntitlementsPendingContractsDashbaord = observer(
     const [selectedContract, setSelectedContract] = useState<
       V1_DataContract | undefined
     >();
-    const [showForOthers, setShowForOthers] = useState<boolean>(false);
+    const [showForOthers, setShowForOthers] = useState<boolean>(
+      pendingContracts.length === 0 && pendingContractsForOthers.length > 0,
+    );
     const auth = useAuth();
 
     const handleCellClicked = (
@@ -331,7 +279,8 @@ export const EntitlementsPendingContractsDashbaord = observer(
           />
         </Box>
         <Box className="marketplace-lakehouse-entitlements__pending-contracts__grid ag-theme-balham">
-          {pendingContracts ? (
+          {pendingContracts.length > 0 ||
+          pendingContractsForOthers.length > 0 ? (
             <DataGrid
               rowData={
                 showForOthers
