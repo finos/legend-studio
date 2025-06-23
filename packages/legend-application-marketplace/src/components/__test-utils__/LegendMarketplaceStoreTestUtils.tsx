@@ -17,10 +17,41 @@
 import { type RenderResult, render, waitFor } from '@testing-library/react';
 import { type AbstractPlugin, type AbstractPreset } from '@finos/legend-shared';
 import { createMock, createSpy } from '@finos/legend-shared/test';
+import { jest } from '@jest/globals';
 import {
   ApplicationStore,
   ApplicationStoreProvider,
 } from '@finos/legend-application';
+
+jest.mock('@finos/legend-graph', () => {
+  const actual = jest.requireActual('@finos/legend-graph') as Record<
+    string,
+    unknown
+  >;
+  return {
+    ...actual,
+    getCurrentUserIDFromEngineServer: jest.fn(() =>
+      Promise.resolve('test-user-id'),
+    ),
+  };
+});
+
+jest.mock('../../pages/Lakehouse/MarketplaceLakehouseStoreProvider.js', () => {
+  const actual = jest.requireActual(
+    '../../pages/Lakehouse/MarketplaceLakehouseStoreProvider.js',
+  ) as Record<string, unknown>;
+  return {
+    ...actual,
+    useMarketplaceLakehouseStore: jest.fn(),
+    MarketplaceLakehouseStoreProvider: ({
+      children,
+    }: {
+      children: React.ReactNode;
+    }) => children,
+  };
+});
+
+import { MarketplaceLakehouseStore } from '../../stores/lakehouse/MarketplaceLakehouseStore.js';
 import { TEST__BrowserEnvironmentProvider } from '@finos/legend-application/test';
 import {
   type LegendMarketplaceApplicationStore,
@@ -33,6 +64,7 @@ import { TEST__getTestLegendMarketplaceApplicationConfig } from '../../applicati
 import { LegendMarketplaceFrameworkProvider } from '../../application/LegendMarketplaceFrameworkProvider.js';
 import searchResults from './TEST_DATA__SearchResults.json' with { type: 'json' };
 import { LegendMarketplaceWebApplicationRouter } from '../../application/LegendMarketplaceWebApplication.js';
+import { CORE_PURE_PATH } from '@finos/legend-graph';
 
 export const TEST__provideMockedLegendMarketplaceBaseStore =
   async (customization?: {
@@ -94,5 +126,204 @@ export const TEST__setUpMarketplace = async (
 
   return {
     renderResult,
+  };
+};
+
+const mockSDLCDataProductSummaries = [
+  {
+    groupId: 'com.example',
+    artifactId: 'test-data-product',
+    versionId: '1.0.0',
+    path: 'test::dataproduct::TestDataProduct',
+    classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
+  },
+  {
+    groupId: 'com.example',
+    artifactId: 'another-data-product',
+    versionId: '2.0.0',
+    path: 'test::dataproduct::AnotherDataProduct',
+    classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
+  },
+];
+
+const mockSDLCDataProduct = {
+  _type: 'dataProduct',
+  name: 'TestDataProduct',
+  package: 'test::dataproduct',
+  title: 'Test Data Product',
+  description: 'A test data product for testing purposes',
+  accessPointGroups: [],
+  icon: undefined,
+  imageUrl: undefined,
+};
+
+const mockSDLCDataProductWithoutTitle = {
+  _type: 'dataProduct',
+  name: 'AnotherDataProduct',
+  package: 'test::dataproduct',
+  title: undefined,
+  description: undefined,
+  accessPointGroups: [],
+  icon: undefined,
+  imageUrl: undefined,
+};
+
+const mockSandboxDataProductResponse = {
+  deployedDataProducts: [
+    {
+      definition: 'test definition',
+      artifact: {
+        dataProduct: {
+          title: 'Sandbox Data Product',
+          description: 'A sandbox data product',
+          path: 'sandbox::dataproduct::SandboxDataProduct',
+          deploymentId: '123',
+        },
+      },
+    },
+  ],
+};
+
+const mockIngestEnvironmentSummaryResponse = {
+  _type: 'AWSSnowflake',
+  urn: 'test-urn',
+  version: '1.0.0',
+  environmentClassification: 'dev',
+  producers: [],
+  awsRegion: 'us-east-1',
+  awsAccountId: '123456789',
+  ingestStepFunctionsAvtivityArn:
+    'arn:aws:states:us-east-1:123456789:activity:test',
+  ingestStateMachineArn: 'arn:aws:states:us-east-1:123456789:stateMachine:test',
+  ingestSystemAccount: 'test-system-account',
+  snowflakeAccount: 'test-snowflake-account',
+  snowflakeHost: 'test.snowflakecomputing.com',
+  s3StagingBucketName: 'test-staging-bucket',
+  storageIntegrationName: 'test-storage-integration',
+  ingestEnvironmentUrn: 'test-urn',
+  ingestServerUrl: 'https://test-ingest-server.com',
+};
+
+const mockIngestEnvironmentResponse = {
+  _type: 'AWSSnowflake',
+  urn: 'test-urn',
+  version: '1.0.0',
+  environmentClassification: 'dev',
+  producers: [],
+  awsRegion: 'us-east-1',
+  awsAccountId: '123456789',
+  ingestStepFunctionsAvtivityArn:
+    'arn:aws:states:us-east-1:123456789:activity:test',
+  ingestStateMachineArn: 'arn:aws:states:us-east-1:123456789:stateMachine:test',
+  ingestSystemAccount: 'test-system-account',
+  snowflakeAccount: 'test-snowflake-account',
+  snowflakeHost: 'test.snowflakecomputing.com',
+  s3StagingBucketName: 'test-staging-bucket',
+  storageIntegrationName: 'test-storage-integration',
+};
+
+export const TEST__setUpMarketplaceLakehouse = async (
+  MOCK__store: LegendMarketplaceBaseStore,
+  route?: string,
+) => {
+  createSpy(
+    MOCK__store.depotServerClient,
+    'getEntitiesSummaryByClassifier',
+  ).mockImplementation(async (classifier: string) => {
+    if (classifier === CORE_PURE_PATH.DATA_PRODUCT) {
+      return mockSDLCDataProductSummaries;
+    }
+    return [];
+  });
+
+  createSpy(
+    MOCK__store.depotServerClient,
+    'getVersionEntity',
+  ).mockImplementation(
+    async (
+      groupId: string,
+      artifactId: string,
+      versionId: string,
+      path: string,
+    ) => {
+      if (path === 'test::dataproduct::TestDataProduct') {
+        return { content: mockSDLCDataProduct };
+      } else if (path === 'test::dataproduct::AnotherDataProduct') {
+        return { content: mockSDLCDataProductWithoutTitle };
+      }
+      return { content: mockSDLCDataProduct };
+    },
+  );
+
+  createSpy(
+    MOCK__store.lakehousePlatformServerClient,
+    'getIngestEnvironmentSummaries',
+  ).mockResolvedValue([mockIngestEnvironmentSummaryResponse]);
+  createSpy(
+    MOCK__store.lakehousePlatformServerClient,
+    'findProducerServer',
+  ).mockResolvedValue(mockIngestEnvironmentSummaryResponse);
+  createSpy(
+    MOCK__store.lakehouseIngestServerClient,
+    'getDeployedIngestDefinitions',
+  ).mockResolvedValue(mockSandboxDataProductResponse);
+  createSpy(
+    MOCK__store.lakehouseIngestServerClient,
+    'getIngestEnvironment',
+  ).mockResolvedValue(mockIngestEnvironmentResponse);
+
+  const lakehouseStore = new MarketplaceLakehouseStore(
+    MOCK__store,
+    MOCK__store.lakehouseContractServerClient,
+    MOCK__store.lakehousePlatformServerClient,
+    MOCK__store.lakehouseIngestServerClient,
+    MOCK__store.depotServerClient,
+  );
+
+  const mockAuth = {
+    isLoading: false,
+    isAuthenticated: true,
+    user: {
+      profile: {
+        name: 'Test User',
+        sub: 'test-user-id',
+        email: 'test@example.com',
+      },
+      access_token: 'mock-access-token',
+    },
+    signinRedirect: jest.fn(),
+    signoutRedirect: jest.fn(),
+    removeUser: jest.fn(),
+    error: null,
+    activeNavigator: 'window',
+    settings: {},
+  } as any;
+
+  await lakehouseStore.init(mockAuth);
+
+  const {
+    useMarketplaceLakehouseStore,
+  } = require('../../pages/Lakehouse/MarketplaceLakehouseStoreProvider.js');
+  (useMarketplaceLakehouseStore as jest.Mock).mockReturnValue(lakehouseStore);
+
+  const renderResult = render(
+    <ApplicationStoreProvider store={MOCK__store.applicationStore}>
+      <TEST__BrowserEnvironmentProvider
+        initialEntries={[route ?? '/lakehouse']}
+      >
+        <LegendMarketplaceFrameworkProvider>
+          <LegendMarketplaceWebApplicationRouter />
+        </LegendMarketplaceFrameworkProvider>
+      </TEST__BrowserEnvironmentProvider>
+    </ApplicationStoreProvider>,
+  );
+
+  await waitFor(() =>
+    renderResult.getByTestId(LEGEND_MARKETPLACE_TEST_ID.HEADER),
+  );
+
+  return {
+    renderResult,
+    MOCK__store: { ...MOCK__store, lakehouseStore },
   };
 };
