@@ -20,6 +20,7 @@ import {
   type AbstractPluginManager,
 } from '../application/AbstractPluginManager.js';
 import type { LegendUser } from './LegendUser.js';
+import { guaranteeNonNullable } from '../error/AssertionUtils.js';
 
 export interface LegendUserPluginManager extends AbstractPluginManager {
   getUserPlugins(): LegendUserPlugin[];
@@ -68,14 +69,14 @@ export class UserSearchService {
     userId: string,
   ): Promise<LegendUser | string | undefined> {
     if (this.userMap.has(userId)) {
-      return this.userMap.get(userId)!;
+      return guaranteeNonNullable(this.userMap.get(userId));
     }
 
     if (!this.requestMap.has(userId)) {
       this.requestMap.set(userId, this.executeSearch(userId));
     }
 
-    const users = await this.requestMap.get(userId)!;
+    const users = guaranteeNonNullable(await this.requestMap.get(userId));
     this.requestMap.delete(userId);
     const user = users.find((_user) => _user.id === userId);
     if (user) {

@@ -39,22 +39,22 @@ export const LakehouseEntitlements = withLakehouseEntitlementsStore(
       if (
         entitlementsStore.dashboardViewer.initializationState.isInInitialState
       ) {
-        flowResult(
+        // eslint-disable-next-line no-void
+        void flowResult(
           entitlementsStore.dashboardViewer.init(auth.user?.access_token),
         );
       }
     }, [auth.user?.access_token, entitlementsStore]);
 
-    const loading = Boolean(
-      entitlementsStore.dashboardViewer?.initializationState.isInProgress,
-    );
+    const loading =
+      entitlementsStore.dashboardViewer.initializationState.isInProgress;
 
     return (
       <LegendMarketplacePage className="marketplace-lakehouse-entitlements">
         <CubesLoadingIndicator isLoading={loading}>
           <CubesLoadingIndicatorIcon />
         </CubesLoadingIndicator>
-        {!loading && entitlementsStore.dashboardViewer !== undefined && (
+        {!loading && (
           <EntitlementsDashboard
             dashboardState={entitlementsStore.dashboardViewer}
           />

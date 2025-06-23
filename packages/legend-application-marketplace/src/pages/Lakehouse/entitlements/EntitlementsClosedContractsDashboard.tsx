@@ -65,7 +65,7 @@ export const EntitlementsClosedContractsDashbaord = observer(
           contract.createdBy ===
             dashboardState.lakehouseEntitlementsStore.applicationStore
               .identityService.currentUser &&
-          !closedContracts?.includes(contract),
+          !closedContracts.includes(contract),
       ) ?? [];
 
     const marketplaceBaseStore = useLegendMarketplaceBaseStore();

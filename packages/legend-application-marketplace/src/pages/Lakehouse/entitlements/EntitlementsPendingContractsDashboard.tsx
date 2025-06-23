@@ -68,12 +68,12 @@ const AssigneesCellRenderer = (props: {
               token,
             );
           const tasks = V1_deserializeTaskResponse(rawTasks);
-          const privilegeManagerApprovalTask = tasks?.find(
+          const privilegeManagerApprovalTask = tasks.find(
             (task) =>
               task.rec.type ===
               V1_ApprovalType.CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
           );
-          const dataOwnerApprovalTask = tasks?.find(
+          const dataOwnerApprovalTask = tasks.find(
             (task) => task.rec.type === V1_ApprovalType.DATA_OWNER_APPROVAL,
           );
           const currentTask =
@@ -98,7 +98,8 @@ const AssigneesCellRenderer = (props: {
     if (pendingContractRecord) {
       setAssignees(pendingContractRecord.pendingTaskWithAssignees.assignee);
     } else {
-      fetchAssignees();
+      // eslint-disable-next-line no-void
+      void fetchAssignees();
     }
   }, [
     dataContract,
@@ -109,7 +110,7 @@ const AssigneesCellRenderer = (props: {
 
   return loading ? (
     <CircularProgress size={20} />
-  ) : assignees ? (
+  ) : assignees.length > 0 ? (
     <MultiUserCellRenderer
       userIds={assignees}
       marketplaceStore={marketplaceStore}
@@ -138,7 +139,7 @@ export const EntitlementsPendingContractsDashbaord = observer(
             dashboardState.lakehouseEntitlementsStore.applicationStore
               .identityService.currentUser &&
           !isContractInTerminalState(contract) &&
-          !pendingContracts?.includes(contract),
+          !pendingContracts.includes(contract),
       ) ?? [];
 
     const marketplaceBaseStore = useLegendMarketplaceBaseStore();

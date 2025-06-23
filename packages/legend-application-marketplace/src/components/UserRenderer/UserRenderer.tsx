@@ -43,7 +43,8 @@ export const UserRenderer = (props: {
         }
       }
     };
-    fetchUserData();
+    // eslint-disable-next-line no-void
+    void fetchUserData();
   }, [marketplaceStore.userSearchService, userId]);
 
   if (loading) {
