@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-import { ActionState } from '@finos/legend-shared';
-import type { LakehouseEntitlementsStore } from './LakehouseEntitlementsStore.js';
+.legend-marketplace-multi-user-cell-renderer {
+  &__link {
+    cursor: pointer;
+  }
 
-export abstract class LakehouseViewerState {
-  readonly lakehouseEntitlementsStore: LakehouseEntitlementsStore;
-  initializationState = ActionState.create();
-
-  constructor(state: LakehouseEntitlementsStore) {
-    this.lakehouseEntitlementsStore = state;
+  &__popover {
+    padding: 1rem;
   }
 }

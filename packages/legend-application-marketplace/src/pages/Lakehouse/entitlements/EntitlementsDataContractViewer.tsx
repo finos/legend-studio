@@ -22,7 +22,6 @@ import {
   AccordionSummary,
   Box,
   Button,
-  CircularProgress,
   Dialog,
   DialogContent,
   DialogTitle,
@@ -46,17 +45,10 @@ import {
   V1_ContractState,
   V1_ContractUserEventDataProducerPayload,
   V1_ContractUserEventPrivilegeManagerPayload,
-  V1_UserType,
 } from '@finos/legend-graph';
 import React, { useEffect, useState } from 'react';
+import { formatDate } from '@finos/legend-shared';
 import {
-  formatDate,
-  guaranteeNonNullable,
-  isNonNullable,
-  LegendUser,
-} from '@finos/legend-shared';
-import {
-  getUserById,
   isContractInTerminalState,
   isContractStateComplete,
   stringifyOrganizationalScope,
@@ -71,30 +63,22 @@ import {
   CubesLoadingIndicatorIcon,
   ExpandMoreIcon,
   RefreshIcon,
-  UserDisplay,
 } from '@finos/legend-art';
 import { generateLakehouseTaskPath } from '../../../__lib__/LegendMarketplaceNavigation.js';
 import type { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
 import type { DataProductGroupAccessState } from '../../../stores/lakehouse/DataProductDataAccessState.js';
+import { UserRenderer } from '../../../components/UserRenderer/UserRenderer.js';
+import type { LegendMarketplaceBaseStore } from '../../../stores/LegendMarketplaceBaseStore.js';
 
 const AssigneesList = (props: {
-  users: (LegendUser | string)[];
-  userProfileImageUrl?: string | undefined;
-  onUserClick?: (userId: string) => void;
+  userIds: string[];
+  marketplaceStore: LegendMarketplaceBaseStore;
 }): React.ReactNode => {
-  const { users, userProfileImageUrl, onUserClick } = props;
-  return users.length === 1 ? (
+  const { userIds, marketplaceStore } = props;
+  return userIds.length === 1 ? (
     <span>
       Assignee:{' '}
-      {users[0] instanceof LegendUser ? (
-        <UserDisplay
-          user={users[0]}
-          imgSrc={userProfileImageUrl?.replace('{userId}', users[0].id)}
-          onClick={() => onUserClick?.((users[0] as LegendUser).id)}
-        />
-      ) : (
-        <div>{users[0]}</div>
-      )}
+      <UserRenderer userId={userIds[0]} marketplaceStore={marketplaceStore} />
     </span>
   ) : (
     <Accordion
@@ -104,21 +88,16 @@ const AssigneesList = (props: {
       defaultExpanded={true}
     >
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-        Assignees ({users.length}):
+        Assignees ({userIds.length}):
       </AccordionSummary>
       <AccordionDetails className="marketplace-lakehouse-entitlements__data-contract-viewer__user-list">
-        {users.map((user) =>
-          user instanceof LegendUser ? (
-            <UserDisplay
-              key={user.id}
-              user={user}
-              imgSrc={userProfileImageUrl?.replace('{userId}', user.id)}
-              onClick={() => onUserClick?.(user.id)}
-            />
-          ) : (
-            <div key={user}>{user}</div>
-          ),
-        )}
+        {userIds.map((userId) => (
+          <UserRenderer
+            key={userId}
+            userId={userId}
+            marketplaceStore={marketplaceStore}
+          />
+        ))}
       </AccordionDetails>
     </Accordion>
   );
@@ -127,12 +106,9 @@ const AssigneesList = (props: {
 const TaskApprovalView = (props: {
   contractState: V1_ContractState;
   task: V1_TaskMetadata | undefined;
-  userDataMap: Map<string, LegendUser>;
-  userProfileImageUrl?: string | undefined;
-  onUserClick?: (userId: string) => void;
+  marketplaceStore: LegendMarketplaceBaseStore;
 }): React.ReactNode => {
-  const { contractState, task, userDataMap, userProfileImageUrl, onUserClick } =
-    props;
+  const { contractState, task, marketplaceStore } = props;
   const approverId =
     task?.rec.eventPayload instanceof
     V1_ContractUserEventPrivilegeManagerPayload
@@ -141,7 +117,6 @@ const TaskApprovalView = (props: {
           V1_ContractUserEventDataProducerPayload
         ? task.rec.eventPayload.dataProducerIdentity
         : undefined;
-  const legendUser = userDataMap.get(approverId ?? '');
 
   if (
     contractState === V1_ContractState.PENDING_DATA_OWNER_APPROVAL ||
@@ -152,15 +127,10 @@ const TaskApprovalView = (props: {
         <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__task-approval-view">
           <Box>
             Approved by{' '}
-            {legendUser ? (
-              <UserDisplay
-                user={legendUser}
-                imgSrc={userProfileImageUrl?.replace('{userId}', legendUser.id)}
-                onClick={() => onUserClick?.(legendUser.id)}
-              />
-            ) : (
-              approverId
-            )}
+            <UserRenderer
+              userId={approverId}
+              marketplaceStore={marketplaceStore}
+            />
           </Box>
           <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__task-approval-view__timestamp">
             {formatDate(
@@ -179,15 +149,10 @@ const TaskApprovalView = (props: {
         <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__task-approval-view">
           <Box>
             Rejected by{' '}
-            {legendUser ? (
-              <UserDisplay
-                user={legendUser}
-                imgSrc={userProfileImageUrl?.replace('{userId}', legendUser.id)}
-                onClick={() => onUserClick?.(legendUser.id)}
-              />
-            ) : (
-              approverId
-            )}
+            <UserRenderer
+              userId={approverId}
+              marketplaceStore={marketplaceStore}
+            />
           </Box>
           <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__task-approval-view__timestamp">
             {formatDate(
@@ -222,10 +187,6 @@ export const EntitlementsDataContractViewer = observer(
     } = props;
     const auth = useAuth();
     const legendMarketplaceStore = useLegendMarketplaceBaseStore();
-    const [userDataMap, setUserDataMap] = useState<Map<string, LegendUser>>(
-      new Map<string, LegendUser>(),
-    );
-    const [isLoadingUserData, setIsLoadingUserData] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
@@ -239,53 +200,6 @@ export const EntitlementsDataContractViewer = observer(
       currentViewer,
       auth.user?.access_token,
       legendMarketplaceStore.applicationStore.alertUnhandledError,
-    ]);
-
-    useEffect(() => {
-      const fetchUserData = async (userIds: string[]): Promise<void> => {
-        const userSearchService = legendMarketplaceStore.userSearchService;
-        if (userSearchService) {
-          setIsLoadingUserData(true);
-          try {
-            const users = (
-              await Promise.all(
-                userIds.map(async (userId) =>
-                  getUserById(userId, userSearchService),
-                ),
-              )
-            ).filter(isNonNullable);
-            const userMap = new Map<string, LegendUser>();
-            users.forEach((user) => {
-              userMap.set(user.id, user);
-            });
-            setUserDataMap(userMap);
-          } finally {
-            setIsLoadingUserData(false);
-          }
-        }
-      };
-      const userIds: string[] = [
-        currentViewer.value.createdBy,
-        ...(currentViewer.value.consumer instanceof V1_AdhocTeam
-          ? currentViewer.value.consumer.users
-              .map((user) =>
-                user.userType === V1_UserType.WORKFORCE_USER
-                  ? user.name
-                  : undefined,
-              )
-              .filter(isNonNullable)
-          : []),
-        ...(currentViewer.associatedTasks
-          ?.map((task) => task.assignees)
-          .flat() ?? []),
-      ];
-      // eslint-disable-next-line no-void
-      void fetchUserData(userIds);
-    }, [
-      legendMarketplaceStore.userSearchService,
-      currentViewer.associatedTasks,
-      currentViewer.value.consumer,
-      currentViewer.value.createdBy,
     ]);
 
     const refresh = async (): Promise<void> => {
@@ -352,11 +266,6 @@ export const EntitlementsDataContractViewer = observer(
         .catch(legendMarketplaceStore.applicationStore.alertUnhandledError);
     };
 
-    const openUserDirectoryLink = (userId: string): void =>
-      legendMarketplaceStore.applicationStore.navigationService.navigator.visitAddress(
-        `${legendMarketplaceStore.applicationStore.config.lakehouseEntitlementsConfig?.applicationDirectoryUrl}/${userId}`,
-      );
-
     const steps: {
       key: string;
       label: React.ReactNode;
@@ -407,14 +316,8 @@ export const EntitlementsDataContractViewer = observer(
           V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL ? (
             currentTask ? (
               <AssigneesList
-                users={currentTask.assignees.map(
-                  (asignee) => userDataMap.get(asignee) ?? asignee,
-                )}
-                userProfileImageUrl={
-                  legendMarketplaceStore.applicationStore.config
-                    .marketplaceUserProfileImageUrl
-                }
-                onUserClick={openUserDirectoryLink}
+                userIds={currentTask.assignees}
+                marketplaceStore={legendMarketplaceStore}
               />
             ) : (
               <span>No tasks associated with contract</span>
@@ -425,12 +328,7 @@ export const EntitlementsDataContractViewer = observer(
             <TaskApprovalView
               contractState={currentState}
               task={privilegeManagerApprovalTask}
-              userDataMap={userDataMap}
-              userProfileImageUrl={
-                legendMarketplaceStore.applicationStore.config
-                  .marketplaceUserProfileImageUrl
-              }
-              onUserClick={openUserDirectoryLink}
+              marketplaceStore={legendMarketplaceStore}
             />
           ) : undefined,
       },
@@ -474,14 +372,8 @@ export const EntitlementsDataContractViewer = observer(
           currentState === V1_ContractState.PENDING_DATA_OWNER_APPROVAL ? (
             currentTask ? (
               <AssigneesList
-                users={currentTask.assignees.map(
-                  (asignee) => userDataMap.get(asignee) ?? asignee,
-                )}
-                userProfileImageUrl={
-                  legendMarketplaceStore.applicationStore.config
-                    .marketplaceUserProfileImageUrl
-                }
-                onUserClick={openUserDirectoryLink}
+                userIds={currentTask.assignees}
+                marketplaceStore={legendMarketplaceStore}
               />
             ) : (
               <span>No tasks associated with contract</span>
@@ -491,12 +383,7 @@ export const EntitlementsDataContractViewer = observer(
             <TaskApprovalView
               contractState={currentState}
               task={dataOwnerApprovalTask}
-              userDataMap={userDataMap}
-              userProfileImageUrl={
-                legendMarketplaceStore.applicationStore.config
-                  .marketplaceUserProfileImageUrl
-              }
-              onUserClick={openUserDirectoryLink}
+              marketplaceStore={legendMarketplaceStore}
             />
           ) : undefined,
       },
@@ -538,56 +425,30 @@ export const EntitlementsDataContractViewer = observer(
               <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata">
                 <div className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-by">
                   <b>Ordered By: </b>
-                  {isLoadingUserData ? (
-                    <CircularProgress size={20} />
-                  ) : userDataMap.get(currentViewer.value.createdBy) ? (
-                    <UserDisplay
-                      user={guaranteeNonNullable(
-                        userDataMap.get(currentViewer.value.createdBy),
-                      )}
-                      imgSrc={legendMarketplaceStore.applicationStore.config.marketplaceUserProfileImageUrl?.replace(
-                        '{userId}',
-                        userDataMap.get(currentViewer.value.createdBy)?.id ??
-                          '',
-                      )}
-                      onClick={() =>
-                        openUserDirectoryLink(
-                          guaranteeNonNullable(
-                            userDataMap.get(currentViewer.value.createdBy),
-                          ).id,
-                        )
-                      }
-                    />
-                  ) : (
-                    currentViewer.value.createdBy
-                  )}
+                  <UserRenderer
+                    userId={currentViewer.value.createdBy}
+                    marketplaceStore={legendMarketplaceStore}
+                  />
                 </div>
                 <div className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-for">
                   <b>Ordered For: </b>
-                  {isLoadingUserData ? (
-                    <CircularProgress size={20} />
-                  ) : currentViewer.value.consumer instanceof V1_AdhocTeam ? (
-                    currentViewer.value.consumer.users.map((user, index) => {
-                      const userData = userDataMap.get(user.name);
-                      if (userData) {
-                        return (
-                          <UserDisplay
-                            key={user.name}
-                            user={userData}
-                            imgSrc={legendMarketplaceStore.applicationStore.config.marketplaceUserProfileImageUrl?.replace(
-                              '{userId}',
-                              userDataMap.get(user.name)?.id ?? '',
-                            )}
-                            onClick={() => openUserDirectoryLink(userData.id)}
-                          />
-                        );
-                      } else {
-                        return `${user.name}${index < (currentViewer.value.consumer as V1_AdhocTeam).users.length - 1 ? ', ' : ''}`;
-                      }
-                    })
-                  ) : (
-                    stringifyOrganizationalScope(currentViewer.value.consumer)
-                  )}
+                  {currentViewer.value.consumer instanceof V1_AdhocTeam
+                    ? currentViewer.value.consumer.users.map((user, index) => (
+                        <UserRenderer
+                          key={user.name}
+                          userId={user.name}
+                          marketplaceStore={legendMarketplaceStore}
+                          appendComma={
+                            index <
+                            (currentViewer.value.consumer as V1_AdhocTeam).users
+                              .length -
+                              1
+                          }
+                        />
+                      ))
+                    : stringifyOrganizationalScope(
+                        currentViewer.value.consumer,
+                      )}
                 </div>
                 <div>
                   <b>Business Justification: </b>

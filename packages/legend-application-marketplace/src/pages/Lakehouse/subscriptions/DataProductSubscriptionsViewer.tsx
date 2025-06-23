@@ -19,7 +19,6 @@ import {
   type SelectChangeEvent,
   Box,
   Button,
-  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -42,72 +41,27 @@ import {
   V1_SnowflakeRegion,
   V1_SnowflakeTarget,
 } from '@finos/legend-graph';
-import React, { useEffect, useState } from 'react';
-import { isNonNullable, isType, LegendUser } from '@finos/legend-shared';
-import { getUserById } from '../../../stores/lakehouse/LakehouseUtils.js';
+import React, { useState } from 'react';
+import { isType } from '@finos/legend-shared';
 import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
 import { useAuth } from 'react-oidc-context';
 import {
   CloseIcon,
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
-  UserDisplay,
 } from '@finos/legend-art';
 import type { DataProductGroupAccessState } from '../../../stores/lakehouse/DataProductDataAccessState.js';
 import {
   DataGrid,
   type DataGridCellRendererParams,
 } from '@finos/legend-lego/data-grid';
-import type { NavigationService } from '@finos/legend-application';
 import { flowResult } from 'mobx';
 import { useParams } from '@finos/legend-application/browser';
 import {
   LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN,
   type LakehouseSandboxDataProductPathParams,
 } from '../../../__lib__/LegendMarketplaceNavigation.js';
-
-const UserCellRenderer = (props: {
-  userId: string | undefined;
-  userDataMap: Map<string, LegendUser | string>;
-  navigationService: NavigationService;
-  isLoading: boolean;
-  userProfileImageUrl?: string | undefined;
-  applicationDirectoryUrl?: string | undefined;
-}): React.ReactNode => {
-  const {
-    userId,
-    userDataMap,
-    navigationService,
-    isLoading,
-    userProfileImageUrl,
-    applicationDirectoryUrl,
-  } = props;
-
-  const userData = userId ? userDataMap.get(userId) : undefined;
-
-  if (isLoading) {
-    return <CircularProgress size={20} />;
-  } else if (userData instanceof LegendUser) {
-    const imgSrc = userProfileImageUrl?.replace('{userId}', userData.id);
-    const openUserDirectoryLink = (): void =>
-      navigationService.navigator.visitAddress(
-        `${applicationDirectoryUrl}/${userId}`,
-      );
-
-    return (
-      <UserDisplay
-        user={userData}
-        imgSrc={imgSrc}
-        onClick={() => openUserDirectoryLink()}
-        className="marketplace-lakehouse-subscriptions__subscriptions-viewer__grid__user-display"
-      />
-    );
-  } else if (userData) {
-    return <>{userData}</>;
-  } else {
-    return <>{userId}</>;
-  }
-};
+import { UserRenderer } from '../../../components/UserRenderer/UserRenderer.js';
 
 const LakehouseSubscriptionsCreateDialog = observer(
   (props: {
@@ -337,44 +291,7 @@ export const DataProductSubscriptionViewer = observer(
     const { open, accessGroupState, onClose } = props;
     const auth = useAuth();
     const legendMarketplaceStore = useLegendMarketplaceBaseStore();
-    const [userDataMap, setUserDataMap] = useState<Map<string, LegendUser>>(
-      new Map<string, LegendUser>(),
-    );
-    const [isLoadingUserData, setIsLoadingUserData] = useState(false);
     const [showCreateDialog, setShowCreateDialog] = useState(false);
-
-    useEffect(() => {
-      const fetchUserData = async (userIds: string[]): Promise<void> => {
-        const userSearchService = legendMarketplaceStore.userSearchService;
-        if (userSearchService) {
-          setIsLoadingUserData(true);
-          try {
-            const users = (
-              await Promise.all(
-                userIds.map(async (userId) =>
-                  getUserById(userId, userSearchService),
-                ),
-              )
-            ).filter(isNonNullable);
-            const userMap = new Map<string, LegendUser>();
-            users.forEach((user) => {
-              userMap.set(user.id, user);
-            });
-            setUserDataMap(userMap);
-          } finally {
-            setIsLoadingUserData(false);
-          }
-        }
-      };
-      const userIds: string[] = accessGroupState.subscriptions.map(
-        (subscription) => subscription.createdBy,
-      );
-      // eslint-disable-next-line no-void
-      void fetchUserData(userIds);
-    }, [
-      accessGroupState.subscriptions,
-      legendMarketplaceStore.userSearchService,
-    ]);
 
     const contract = accessGroupState.associatedContract;
     const subscriptions = accessGroupState.subscriptions;
@@ -517,23 +434,9 @@ export const DataProductSubscriptionViewer = observer(
                           params: DataGridCellRendererParams<V1_DataSubscription>,
                         ) => {
                           return (
-                            <UserCellRenderer
+                            <UserRenderer
                               userId={params.data?.createdBy}
-                              userDataMap={userDataMap}
-                              navigationService={
-                                legendMarketplaceStore.applicationStore
-                                  .navigationService
-                              }
-                              isLoading={isLoadingUserData}
-                              userProfileImageUrl={
-                                legendMarketplaceStore.applicationStore.config
-                                  .marketplaceUserProfileImageUrl
-                              }
-                              applicationDirectoryUrl={
-                                legendMarketplaceStore.applicationStore.config
-                                  .lakehouseEntitlementsConfig
-                                  ?.applicationDirectoryUrl
-                              }
+                              marketplaceStore={legendMarketplaceStore}
                             />
                           );
                         },
