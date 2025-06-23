@@ -46,7 +46,7 @@ export const EntitlementsClosedContractsDashbaord = observer(
     const { dashboardState } = props;
     const { allContracts } = dashboardState;
 
-    const myClosedContracts =
+    const closedContracts =
       allContracts?.filter(
         (contract) =>
           isContractInTerminalState(contract) &&
@@ -65,7 +65,7 @@ export const EntitlementsClosedContractsDashbaord = observer(
           contract.createdBy ===
             dashboardState.lakehouseEntitlementsStore.applicationStore
               .identityService.currentUser &&
-          !myClosedContracts?.includes(contract),
+          !closedContracts?.includes(contract),
       ) ?? [];
 
     const marketplaceBaseStore = useLegendMarketplaceBaseStore();
@@ -73,7 +73,7 @@ export const EntitlementsClosedContractsDashbaord = observer(
       V1_DataContract | undefined
     >();
     const [showForOthers, setShowForOthers] = useState<boolean>(
-      myClosedContracts.length === 0 && closedContractsForOthers.length > 0,
+      closedContracts.length === 0 && closedContractsForOthers.length > 0,
     );
 
     const handleCellClicked = (
@@ -193,13 +193,12 @@ export const EntitlementsClosedContractsDashbaord = observer(
           />
         </Box>
         <Box className="marketplace-lakehouse-entitlements__completed-contracts__grid ag-theme-balham">
-          {myClosedContracts.length > 0 ||
-          closedContractsForOthers.length > 0 ? (
+          {closedContracts.length > 0 || closedContractsForOthers.length > 0 ? (
             <DataGrid
               rowData={
                 showForOthers
-                  ? [...myClosedContracts, ...closedContractsForOthers]
-                  : myClosedContracts
+                  ? [...closedContracts, ...closedContractsForOthers]
+                  : closedContracts
               }
               onRowDataUpdated={(params) => {
                 params.api.refreshCells({ force: true });

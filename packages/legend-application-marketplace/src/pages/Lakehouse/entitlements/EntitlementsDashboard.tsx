@@ -21,6 +21,7 @@ import React, { useState } from 'react';
 import { Container, Tab, Tabs, Typography } from '@mui/material';
 import { EntitlementsPendingTasksDashbaord } from './EntitlementsPendingTasksDashboard.js';
 import { EntitlementsPendingContractsDashbaord } from './EntitlementsPendingContractsDashboard.js';
+import { EntitlementsClosedContractsDashbaord } from './EntitlementsClosedContractsDashboard.js';
 
 const enum EntitlementsTabs {
   PENDING_TASKS = 'pendingTasks',
@@ -88,7 +89,7 @@ export const EntitlementsDashboard = withAuth(
           />
         )}
         {selectedTab === EntitlementsTabs.CLOSED_CONTRACTS && (
-          <EntitlementsPendingContractsDashbaord
+          <EntitlementsClosedContractsDashbaord
             dashboardState={dashboardState}
           />
         )}
