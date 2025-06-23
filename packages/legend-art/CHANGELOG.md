@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.106
+
+### Patch Changes
+
+- [#4217](https://github.com/finos/legend-studio/pull/4217) [`506cf8f`](https://github.com/finos/legend-studio/commit/506cf8f7a9945e6069e67ec206a8404f3379d3f5) ([@vijaylather](https://github.com/vijaylather)) - Modelling changes for SnowflakeM2MUdf Function Activator
+
 ## 7.1.105
 
 ## 7.1.104
