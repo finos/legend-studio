@@ -822,7 +822,7 @@ const FunctionPromoteEditor = observer(
                 <Snowflake_BrandIcon className="function-promote-editor__type-icon" />
               }
               cardName={type}
-              cardContent="Deploy the function as a UDTF(user-defined table function) in snowflake"
+              cardContent="Deploy the function as a UDF(user-defined function) in snowflake"
               isActive={
                 activatorPromoteState.activateType ===
                 FUNCTION_ACTIVATE_TYPE.SNOWFLAKE_M2M_UDF
