@@ -22,8 +22,9 @@ import { UserRenderer } from '../UserRenderer/UserRenderer.js';
 export const MultiUserCellRenderer = (props: {
   userIds: string[];
   marketplaceStore: LegendMarketplaceBaseStore;
+  singleUserClassName?: string;
 }): React.ReactNode => {
-  const { userIds, marketplaceStore } = props;
+  const { userIds, marketplaceStore, singleUserClassName } = props;
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
   if (userIds.length === 1) {
@@ -31,7 +32,7 @@ export const MultiUserCellRenderer = (props: {
       <UserRenderer
         userId={userIds[0]}
         marketplaceStore={marketplaceStore}
-        className="marketplace-lakehouse-entitlements__grid__user-display"
+        className={singleUserClassName}
       />
     );
   } else {
@@ -39,7 +40,7 @@ export const MultiUserCellRenderer = (props: {
       <>
         <Link
           onClick={(event) => setAnchorEl(event.currentTarget)}
-          className="marketplace-lakehouse-entitlements__grid__multi-user__link"
+          className="legend-marketplace-multi-user-cell-renderer__link"
         >
           {userIds.length} Users
         </Link>
@@ -52,7 +53,7 @@ export const MultiUserCellRenderer = (props: {
             horizontal: 'left',
           }}
         >
-          <Box className="marketplace-lakehouse-entitlements__grid__multi-user__popover">
+          <Box className="legend-marketplace-multi-user-cell-renderer__popover">
             {userIds.map((userId) => (
               <UserRenderer
                 key={userId}

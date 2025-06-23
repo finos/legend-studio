@@ -107,6 +107,7 @@ export const EntitlementsClosedContractsDashbaord = observer(
               <MultiUserCellRenderer
                 userIds={consumer.users.map((user) => user.name)}
                 marketplaceStore={marketplaceBaseStore}
+                singleUserClassName="marketplace-lakehouse-entitlements__grid__user-display"
               />
             );
           } else if (consumer) {

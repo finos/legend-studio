@@ -114,6 +114,7 @@ const AssigneesCellRenderer = (props: {
     <MultiUserCellRenderer
       userIds={assignees}
       marketplaceStore={marketplaceStore}
+      singleUserClassName="marketplace-lakehouse-entitlements__grid__user-display"
     />
   ) : (
     <>Unknown</>
@@ -182,6 +183,7 @@ export const EntitlementsPendingContractsDashbaord = observer(
               <MultiUserCellRenderer
                 userIds={consumer.users.map((user) => user.name)}
                 marketplaceStore={marketplaceBaseStore}
+                singleUserClassName="marketplace-lakehouse-entitlements__grid__user-display"
               />
             );
           } else if (consumer) {
