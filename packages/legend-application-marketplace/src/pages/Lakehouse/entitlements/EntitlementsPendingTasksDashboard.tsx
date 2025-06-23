@@ -335,11 +335,13 @@ export const EntitlementsPendingTasksDashbaord = observer(
       taskSet: V1_ContractUserEventRecord[];
     }) => {
       const { taskSet } = _props;
-      const checked = taskSet.every((task) =>
-        selectedTaskIdsSet.has(task.taskId),
-      );
+      const checked =
+        taskSet.length > 0 &&
+        taskSet.every((task) => selectedTaskIdsSet.has(task.taskId));
       const indeterminate =
-        !checked && taskSet.some((task) => selectedTaskIdsSet.has(task.taskId));
+        taskSet.length > 0 &&
+        !checked &&
+        taskSet.some((task) => selectedTaskIdsSet.has(task.taskId));
 
       const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         if (!checked || indeterminate) {
@@ -363,6 +365,7 @@ export const EntitlementsPendingTasksDashbaord = observer(
           checked={checked}
           indeterminate={indeterminate}
           onChange={handleChange}
+          disabled={taskSet.length === 0}
           sx={{ padding: 0 }}
         />
       );
