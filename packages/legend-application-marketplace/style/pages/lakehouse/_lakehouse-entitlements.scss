@@ -26,7 +26,8 @@
 
 .marketplace-lakehouse-entitlements {
   &__pending-tasks,
-  &__pending-contracts {
+  &__pending-contracts,
+  &__completed-contracts {
     height: 100%;
     width: 100%;
     position: relative;
@@ -86,7 +87,8 @@
     }
   }
 
-  &__pending-contracts {
+  &__pending-contracts,
+  &__completed-contracts {
     display: flex;
     flex-direction: column;
 

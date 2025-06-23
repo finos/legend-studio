@@ -25,6 +25,7 @@ import { EntitlementsPendingContractsDashbaord } from './EntitlementsPendingCont
 const enum EntitlementsTabs {
   PENDING_TASKS = 'pendingTasks',
   PENDING_CONTRACTS = 'pendingContracts',
+  CLOSED_CONTRACTS = 'closedContracts',
 }
 
 export const EntitlementsDashboard = withAuth(
@@ -66,6 +67,14 @@ export const EntitlementsDashboard = withAuth(
             }
             value={EntitlementsTabs.PENDING_CONTRACTS}
           />
+          <Tab
+            label={
+              <Typography variant="h4" gutterBottom={true}>
+                MY CLOSED REQUESTS
+              </Typography>
+            }
+            value={EntitlementsTabs.CLOSED_CONTRACTS}
+          />
         </Tabs>
         {selectedTab === EntitlementsTabs.PENDING_TASKS &&
           tasks !== undefined && (
@@ -74,6 +83,11 @@ export const EntitlementsDashboard = withAuth(
             />
           )}
         {selectedTab === EntitlementsTabs.PENDING_CONTRACTS && (
+          <EntitlementsPendingContractsDashbaord
+            dashboardState={dashboardState}
+          />
+        )}
+        {selectedTab === EntitlementsTabs.CLOSED_CONTRACTS && (
           <EntitlementsPendingContractsDashbaord
             dashboardState={dashboardState}
           />
