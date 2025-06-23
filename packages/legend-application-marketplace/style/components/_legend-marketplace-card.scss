@@ -30,6 +30,8 @@
   background: var(--color-light-grey-0);
   box-shadow: var(--legend-marketplace-card-shadow);
   width: 100%;
+  overflow: hidden;
+  position: relative;
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease;
@@ -47,8 +49,13 @@
   &__content-container {
     display: flex;
     flex-direction: column;
-    height: 100%;
+    position: relative;
     justify-content: space-between;
+    height: 100%;
+    width: 100%;
+    transition:
+      opacity 0.3s ease,
+      filter 0.3s ease;
   }
 
   &__content {
@@ -56,8 +63,9 @@
 
     height: fit-content;
     max-height: 100%;
-    padding: 2rem;
     margin-left: 0;
+    display: flex;
+    flex-direction: column;
 
     &--with-actions {
       max-height: calc(100% - 6em);
@@ -65,9 +73,9 @@
   }
 
   &__actions {
-    height: fit-content;
     padding: 2rem;
     margin-left: 0;
+    height: 100%;
 
     button {
       font-size: 1.2rem;
@@ -76,22 +84,28 @@
   }
 
   &__more-info {
-    @include flexCenter;
-
     position: absolute;
-    top: 0;
+    bottom: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    margin-left: 0;
-    padding: 2rem;
-    font-size: 2rem;
+    padding: 1rem;
+    font-size: 1.5rem;
     text-align: center;
-    background: var(--color-light-grey-0);
+    background: var(--color-light-grey-100);
+    box-shadow: 0 -4px 10px rgb(0 0 0 / 10%);
+    transform: translateY(100%);
+    transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+    z-index: 1;
+    overflow: hidden;
+  }
+
+  &__more-info--visible {
+    transform: translateY(0);
   }
 
   &:hover {
     transform: scale(1.05);
-    box-shadow: var(--legend-marketplace-card-shadow-hover);
+    box-shadow: 5px 5px 5px rgb(0 0 0 / 30%);
   }
 }
