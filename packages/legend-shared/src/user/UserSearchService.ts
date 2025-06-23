@@ -47,7 +47,7 @@ export abstract class LegendUserPlugin extends AbstractPlugin {
 
 export class UserSearchService {
   private plugins: LegendUserPlugin[] = [];
-  readonly requestQueue = new Map<string, Promise<LegendUser[]>>();
+  readonly requestMap = new Map<string, Promise<LegendUser[]>>();
   readonly userMap: Map<string, LegendUser | string> = new Map<
     string,
     LegendUser | string
@@ -71,12 +71,12 @@ export class UserSearchService {
       return this.userMap.get(userId)!;
     }
 
-    if (!this.requestQueue.has(userId)) {
-      this.requestQueue.set(userId, this.executeSearch(userId));
+    if (!this.requestMap.has(userId)) {
+      this.requestMap.set(userId, this.executeSearch(userId));
     }
 
-    const users = await this.requestQueue.get(userId)!;
-    this.requestQueue.delete(userId);
+    const users = await this.requestMap.get(userId)!;
+    this.requestMap.delete(userId);
     const user = users.find((_user) => _user.id === userId);
     if (user) {
       this.userMap.set(userId, user);
