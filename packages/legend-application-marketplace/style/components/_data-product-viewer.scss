@@ -73,7 +73,6 @@
       height: 5rem;
       border-radius: 0.5rem;
       padding: 0 3rem;
-      user-select: none;
       background: var(--color-blue-200);
       max-width: 50vw;
 
@@ -1469,7 +1468,6 @@
     color: var(--color-light-grey-400);
     font-size: 2rem;
     font-weight: 500;
-    user-select: none;
   }
 
   &__item__header__type {
