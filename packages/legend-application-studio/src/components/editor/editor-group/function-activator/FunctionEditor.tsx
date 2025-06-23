@@ -758,6 +758,22 @@ const FunctionPromoteEditor = observer(
           }
           return false;
         }
+        case FUNCTION_ACTIVATE_TYPE.SNOWFLAKE_M2M_UDF: {
+          const availableConnections =
+            activatorPromoteState.functionEditorState.editorStore.graphManagerState.usableConnections.filter(
+              (connection) =>
+                connection.connectionValue instanceof
+                  RelationalDatabaseConnection &&
+                connection.connectionValue.type === DatabaseType.Snowflake,
+            );
+          if (availableConnections.length > 0) {
+            return true;
+          } else {
+            validationMessage =
+              'There is no available connection of type Snowflake';
+          }
+          return false;
+        }
         case FUNCTION_ACTIVATE_TYPE.MEM_SQL_FUNCTION: {
           const availableConnections =
             activatorPromoteState.functionEditorState.editorStore.graphManagerState.usableConnections.filter(
@@ -792,6 +808,24 @@ const FunctionPromoteEditor = observer(
               isActive={
                 activatorPromoteState.activateType ===
                 FUNCTION_ACTIVATE_TYPE.SNOWFLAKE_NATIVE_APP
+              }
+              onClick={() => {
+                activatorPromoteState.setAcitvateType(type);
+              }}
+            />
+          );
+        case FUNCTION_ACTIVATE_TYPE.SNOWFLAKE_M2M_UDF:
+          return (
+            <BaseCard
+              key={FUNCTION_ACTIVATE_TYPE.SNOWFLAKE_M2M_UDF}
+              cardMedia={
+                <Snowflake_BrandIcon className="function-promote-editor__type-icon" />
+              }
+              cardName={type}
+              cardContent="Deploy the function as a UDTF(user-defined table function) in snowflake"
+              isActive={
+                activatorPromoteState.activateType ===
+                FUNCTION_ACTIVATE_TYPE.SNOWFLAKE_M2M_UDF
               }
               onClick={() => {
                 activatorPromoteState.setAcitvateType(type);
