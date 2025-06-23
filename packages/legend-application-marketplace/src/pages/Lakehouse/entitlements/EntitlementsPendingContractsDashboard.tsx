@@ -279,27 +279,23 @@ export const EntitlementsPendingContractsDashbaord = observer(
           />
         </Box>
         <Box className="marketplace-lakehouse-entitlements__pending-contracts__grid ag-theme-balham">
-          {pendingContracts.length > 0 ||
-          pendingContractsForOthers.length > 0 ? (
-            <DataGrid
-              rowData={
-                showForOthers
-                  ? [...pendingContracts, ...pendingContractsForOthers]
-                  : pendingContracts
-              }
-              onRowDataUpdated={(params) => {
-                params.api.refreshCells({ force: true });
-              }}
-              suppressFieldDotNotation={true}
-              suppressContextMenu={false}
-              columnDefs={colDefs}
-              onCellClicked={handleCellClicked}
-              defaultColDef={defaultColDef}
-              rowHeight={45}
-            />
-          ) : (
-            <>You have no pending contracts</>
-          )}
+          <DataGrid
+            rowData={
+              showForOthers
+                ? [...pendingContracts, ...pendingContractsForOthers]
+                : pendingContracts
+            }
+            onRowDataUpdated={(params) => {
+              params.api.refreshCells({ force: true });
+            }}
+            suppressFieldDotNotation={true}
+            suppressContextMenu={false}
+            columnDefs={colDefs}
+            onCellClicked={handleCellClicked}
+            defaultColDef={defaultColDef}
+            rowHeight={45}
+            overlayNoRowsTemplate="You have no pending contracts"
+          />
         </Box>
         {selectedContract !== undefined && (
           <EntitlementsDataContractViewer

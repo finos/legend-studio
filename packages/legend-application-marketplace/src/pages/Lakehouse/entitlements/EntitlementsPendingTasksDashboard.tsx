@@ -524,108 +524,106 @@ export const EntitlementsPendingTasksDashbaord = observer(
             </Button>
           </Box>
           <Box className="marketplace-lakehouse-entitlements__pending-tasks__grids">
-            {privilegeManagerTasks.length > 0 && (
-              <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid-container">
-                <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid__header">
-                  Privilege Manager Approvals
-                  <Tooltip
-                    className="marketplace-lakehouse-entitlements__pending-tasks__tooltip__icon"
-                    title="These are pending requests for which you are listed as a Privilege Manager."
-                    slotProps={{
-                      tooltip: {
-                        className:
-                          'marketplace-lakehouse-entitlements__pending-tasks__tooltip',
-                      },
-                    }}
-                  >
-                    <InfoCircleIcon />
-                  </Tooltip>
-                </Box>
-                <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid ag-theme-balham">
-                  <DataGrid
-                    rowData={privilegeManagerTasks}
-                    onRowDataUpdated={(params) => {
-                      params.api.refreshCells({ force: true });
-                    }}
-                    suppressFieldDotNotation={true}
-                    suppressContextMenu={false}
-                    rowHeight={45}
-                    rowSelection={rowSelection}
-                    onFirstDataRendered={handleFirstDataRendered}
-                    onCellClicked={handleCellClicked}
-                    columnDefs={[
-                      {
-                        headerName: '',
-                        colId: 'selection',
-                        width: 50,
-                        cellRenderer: CustomSelectionRenderer,
-                        headerComponent: (
-                          params: DataGridCustomHeaderProps<V1_ContractUserEventRecord>,
-                        ) => (
-                          <CustomSelectionHeaderRenderer
-                            params={params}
-                            taskSet={privilegeManagerTasks}
-                          />
-                        ),
-                        pinned: 'left',
-                      },
-                      ...colDefs,
-                    ]}
-                  />
-                </Box>
+            <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid-container">
+              <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid__header">
+                Privilege Manager Approvals
+                <Tooltip
+                  className="marketplace-lakehouse-entitlements__pending-tasks__tooltip__icon"
+                  title="These are pending requests for which you are listed as a Privilege Manager."
+                  slotProps={{
+                    tooltip: {
+                      className:
+                        'marketplace-lakehouse-entitlements__pending-tasks__tooltip',
+                    },
+                  }}
+                >
+                  <InfoCircleIcon />
+                </Tooltip>
               </Box>
-            )}
-            {dataOwnerTasks.length > 0 && (
-              <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid-container">
-                <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid__header">
-                  Data Owner Approvals
-                  <Tooltip
-                    className="marketplace-lakehouse-entitlements__pending-tasks__tooltip__icon"
-                    title="These are pending requests for which you are listed as a Data Owner."
-                    slotProps={{
-                      tooltip: {
-                        className:
-                          'marketplace-lakehouse-entitlements__pending-tasks__tooltip',
-                      },
-                    }}
-                  >
-                    <InfoCircleIcon />
-                  </Tooltip>
-                </Box>
-                <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid ag-theme-balham">
-                  <DataGrid
-                    rowData={dataOwnerTasks}
-                    onRowDataUpdated={(params) => {
-                      params.api.refreshCells({ force: true });
-                    }}
-                    suppressFieldDotNotation={true}
-                    suppressContextMenu={false}
-                    rowHeight={45}
-                    rowSelection={rowSelection}
-                    onFirstDataRendered={handleFirstDataRendered}
-                    onCellClicked={handleCellClicked}
-                    columnDefs={[
-                      {
-                        headerName: '',
-                        colId: 'selection',
-                        width: 50,
-                        cellRenderer: CustomSelectionRenderer,
-                        headerComponent: (
-                          params: DataGridCustomHeaderProps<V1_ContractUserEventRecord>,
-                        ) => (
-                          <CustomSelectionHeaderRenderer
-                            params={params}
-                            taskSet={dataOwnerTasks}
-                          />
-                        ),
-                        pinned: 'left',
-                      },
-                      ...colDefs,
-                    ]}
-                  />
-                </Box>
+              <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid ag-theme-balham">
+                <DataGrid
+                  rowData={privilegeManagerTasks}
+                  onRowDataUpdated={(params) => {
+                    params.api.refreshCells({ force: true });
+                  }}
+                  suppressFieldDotNotation={true}
+                  suppressContextMenu={false}
+                  rowHeight={45}
+                  rowSelection={rowSelection}
+                  onFirstDataRendered={handleFirstDataRendered}
+                  onCellClicked={handleCellClicked}
+                  columnDefs={[
+                    {
+                      headerName: '',
+                      colId: 'selection',
+                      width: 50,
+                      cellRenderer: CustomSelectionRenderer,
+                      headerComponent: (
+                        params: DataGridCustomHeaderProps<V1_ContractUserEventRecord>,
+                      ) => (
+                        <CustomSelectionHeaderRenderer
+                          params={params}
+                          taskSet={privilegeManagerTasks}
+                        />
+                      ),
+                      pinned: 'left',
+                    },
+                    ...colDefs,
+                  ]}
+                  overlayNoRowsTemplate="You have no contracts to approve as a Privilege Manager"
+                />
               </Box>
-            )}
+            </Box>
+            <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid-container">
+              <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid__header">
+                Data Owner Approvals
+                <Tooltip
+                  className="marketplace-lakehouse-entitlements__pending-tasks__tooltip__icon"
+                  title="These are pending requests for which you are listed as a Data Owner."
+                  slotProps={{
+                    tooltip: {
+                      className:
+                        'marketplace-lakehouse-entitlements__pending-tasks__tooltip',
+                    },
+                  }}
+                >
+                  <InfoCircleIcon />
+                </Tooltip>
+              </Box>
+              <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid ag-theme-balham">
+                <DataGrid
+                  rowData={dataOwnerTasks}
+                  onRowDataUpdated={(params) => {
+                    params.api.refreshCells({ force: true });
+                  }}
+                  suppressFieldDotNotation={true}
+                  suppressContextMenu={false}
+                  rowHeight={45}
+                  rowSelection={rowSelection}
+                  onFirstDataRendered={handleFirstDataRendered}
+                  onCellClicked={handleCellClicked}
+                  columnDefs={[
+                    {
+                      headerName: '',
+                      colId: 'selection',
+                      width: 50,
+                      cellRenderer: CustomSelectionRenderer,
+                      headerComponent: (
+                        params: DataGridCustomHeaderProps<V1_ContractUserEventRecord>,
+                      ) => (
+                        <CustomSelectionHeaderRenderer
+                          params={params}
+                          taskSet={dataOwnerTasks}
+                        />
+                      ),
+                      pinned: 'left',
+                    },
+                    ...colDefs,
+                  ]}
+                  overlayNoRowsTemplate="You have no contracts to approve as a Data Owner"
+                />
+              </Box>
+            </Box>
             {otherTasks.length > 0 && (
               <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid-container">
                 <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid__header">

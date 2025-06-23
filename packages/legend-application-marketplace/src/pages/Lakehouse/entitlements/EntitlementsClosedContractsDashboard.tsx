@@ -193,26 +193,23 @@ export const EntitlementsClosedContractsDashbaord = observer(
           />
         </Box>
         <Box className="marketplace-lakehouse-entitlements__completed-contracts__grid ag-theme-balham">
-          {closedContracts.length > 0 || closedContractsForOthers.length > 0 ? (
-            <DataGrid
-              rowData={
-                showForOthers
-                  ? [...closedContracts, ...closedContractsForOthers]
-                  : closedContracts
-              }
-              onRowDataUpdated={(params) => {
-                params.api.refreshCells({ force: true });
-              }}
-              suppressFieldDotNotation={true}
-              suppressContextMenu={false}
-              columnDefs={colDefs}
-              onCellClicked={handleCellClicked}
-              defaultColDef={defaultColDef}
-              rowHeight={45}
-            />
-          ) : (
-            <>You have no closed contracts</>
-          )}
+          <DataGrid
+            rowData={
+              showForOthers
+                ? [...closedContracts, ...closedContractsForOthers]
+                : closedContracts
+            }
+            onRowDataUpdated={(params) => {
+              params.api.refreshCells({ force: true });
+            }}
+            suppressFieldDotNotation={true}
+            suppressContextMenu={false}
+            columnDefs={colDefs}
+            onCellClicked={handleCellClicked}
+            defaultColDef={defaultColDef}
+            rowHeight={45}
+            overlayNoRowsTemplate="You have no closed contracts"
+          />
         </Box>
         {selectedContract !== undefined && (
           <EntitlementsDataContractViewer
