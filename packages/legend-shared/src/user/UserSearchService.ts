@@ -80,7 +80,7 @@ export class UserSearchService {
     this.requestMap.delete(userId);
     const user = users.find((_user) => _user.id === userId);
     if (user) {
-      this.userMap.set(userId, user);
+      this.setUser(userId, user);
       return user;
     } else {
       return undefined;
