@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.4.106
+
+### Patch Changes
+
+- [#4216](https://github.com/finos/legend-studio/pull/4216) [`339ce91`](https://github.com/finos/legend-studio/commit/339ce917b08ec048f5855bcd6ab78cc944f832f1) ([@arpithpotti-gs](https://github.com/arpithpotti-gs)) - New dataspace profile for Power BI artifact generation.
+
 ## 10.4.105
 
 ## 10.4.104
