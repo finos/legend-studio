@@ -16,7 +16,10 @@
 
 import { type PlainObject, AbstractServerClient } from '@finos/legend-shared';
 import type { LightProvider, ProviderResult } from './models/Provider.js';
-import type { DataProductSearchResult } from './models/DataProduct.js';
+import type {
+  DataProduct,
+  DataProductSearchResult,
+} from './models/DataProduct.js';
 import type { Subscription } from './models/Subscription.js';
 
 export interface MarketplaceServerClientConfig {
@@ -24,10 +27,21 @@ export interface MarketplaceServerClientConfig {
   subscriptionUrl: string;
 }
 
+interface ServerResult<T> {
+  data: T;
+  total_items: number;
+}
+
 interface MarketplaceServerResponse<T> {
   response_code: string;
   status: string;
   results: T;
+}
+
+interface MarketplaceServerVendorsResponse<T> {
+  response_code: string;
+  status: string;
+  results: ServerResult<T>;
 }
 
 export class MarketplaceServerClient extends AbstractServerClient {
@@ -55,13 +69,16 @@ export class MarketplaceServerClient extends AbstractServerClient {
 
   getVendorsByCategory = async (
     category: string,
+    filters: string,
     limit: number,
   ): Promise<PlainObject<ProviderResult>[]> =>
     (
-      await this.get<MarketplaceServerResponse<PlainObject<ProviderResult>[]>>(
-        `${this.baseUrl}/v1/vendor/category?category=${category}&limit=${limit}`,
+      await this.get<
+        MarketplaceServerVendorsResponse<PlainObject<ProviderResult>[]>
+      >(
+        `${this.baseUrl}/v1/vendor/category?category=${category}&page_size=${limit}${filters}`,
       )
-    ).results;
+    ).results.data;
 
   // ------------------------------------------- Search- -------------------------------------------
 
@@ -90,4 +107,17 @@ export class MarketplaceServerClient extends AbstractServerClient {
         `${this.subscriptionUrl}/v1/service/subscription/${user}`,
       )
     ).subscription_feeds;
+
+  // ------------------------------------------- Data Products -----------------------------------------
+
+  private _dataProducts = (): string => `${this.baseUrl}/v1/products`;
+
+  getDataProducts = async (
+    page_size: number,
+  ): Promise<PlainObject<DataProduct>[]> =>
+    (
+      await this.get<MarketplaceServerResponse<PlainObject<DataProduct>[]>>(
+        `${this._dataProducts()}/?page_size=${page_size}`,
+      )
+    ).results;
 }
