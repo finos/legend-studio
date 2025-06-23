@@ -267,7 +267,7 @@ export const EntitlementsPendingContractsDashbaord = observer(
 
     return (
       <Box className="marketplace-lakehouse-entitlements__pending-contracts">
-        <Box className="marketplace-lakehosue-entitlements__pending-contracts__action-btns">
+        <Box className="marketplace-lakehouse-entitlements__pending-contracts__action-btns">
           <FormControlLabel
             control={
               <Switch

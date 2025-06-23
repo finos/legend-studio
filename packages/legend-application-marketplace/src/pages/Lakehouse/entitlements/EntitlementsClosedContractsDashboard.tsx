@@ -181,7 +181,7 @@ export const EntitlementsClosedContractsDashbaord = observer(
 
     return (
       <Box className="marketplace-lakehouse-entitlements__completed-contracts">
-        <Box className="marketplace-lakehosue-entitlements__completed-contracts__action-btns">
+        <Box className="marketplace-lakehouse-entitlements__completed-contracts__action-btns">
           <FormControlLabel
             control={
               <Switch
