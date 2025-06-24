@@ -263,7 +263,7 @@ export const EntitlementsPendingTasksDashbaord = observer(
           );
         });
       }
-    }, [dashboardState.initializationState, tasks]);
+    }, [dashboardState.initializationState.hasCompleted, tasks]);
 
     useEffect(() => {
       setSearchParams((params) => {
