@@ -114,7 +114,6 @@ export const LakehouseEntitlements = withLakehouseEntitlementsStore(
             />
           )}
         </Container>
-        ={' '}
       </LegendMarketplacePage>
     );
   }),
