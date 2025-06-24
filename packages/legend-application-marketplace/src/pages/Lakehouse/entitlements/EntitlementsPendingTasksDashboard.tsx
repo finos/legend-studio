@@ -244,20 +244,26 @@ export const EntitlementsPendingTasksDashbaord = observer(
       'approve' | 'deny' | undefined
     >();
     const [selectedTaskIdsSet, setSelectedTaskIdsSet] = useState(
-      new Set<string>(
-        searchParams
-          .get('selectedTasks')
-          ?.split(',')
-          .filter((taskId) =>
-            tasks?.map((task) => task.taskId).includes(taskId),
-          ) ?? [],
-      ),
+      new Set<string>(searchParams.get('selectedTasks')?.split(',') ?? []),
     );
     const [selectedContract, setSelectedContract] = useState<
       V1_DataContract | undefined
     >();
 
     // Effects
+
+    useEffect(() => {
+      if (dashboardState.initializationState.hasCompleted) {
+        setSelectedTaskIdsSet((prev) => {
+          const selectedArray = Array.from(prev.values());
+          return new Set<string>(
+            selectedArray.filter((taskId) =>
+              tasks?.map((task) => task.taskId).includes(taskId),
+            ),
+          );
+        });
+      }
+    }, [dashboardState.initializationState, tasks]);
 
     useEffect(() => {
       setSearchParams((params) => {
