@@ -81,6 +81,7 @@ export const LegendMarketplaceCard = (props: {
           onMouseEnter={() => setIsMouseOver(true)}
           onMouseLeave={() => setIsMouseOver(false)}
           className="legend-marketplace-card__content-container"
+          component="div"
         >
           {CardContentComponent}
         </CardActionArea>
