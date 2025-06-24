@@ -50,7 +50,14 @@ const LegendMarketplaceHeaderMenu = observer(() => {
         <MenuIcon />
       </IconButton>
       <Menu anchorEl={anchorEl} open={open} onClose={() => setAnchorEl(null)}>
-        <MenuItem onClick={() => setOpenAppInfo(true)}>About</MenuItem>
+        <MenuItem
+          onClick={() => {
+            setOpenAppInfo(true);
+            setAnchorEl(null);
+          }}
+        >
+          About
+        </MenuItem>
         <MenuItem
           component="a"
           href={applicationStore.navigationService.navigator.generateAddress(
@@ -58,6 +65,7 @@ const LegendMarketplaceHeaderMenu = observer(() => {
           )}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => setAnchorEl(null)}
         >
           Admin
         </MenuItem>
