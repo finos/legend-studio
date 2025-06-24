@@ -477,17 +477,18 @@ const MarketplaceLakehouseHomeSortFilterPanel = observer(
                 control={
                   <Checkbox
                     checked={
-                      marketPlaceStore.filter.devEnvironmentClassificationFilter
+                      marketPlaceStore.filter
+                        .prodEnvironmentClassificationFilter
                     }
                     onChange={() =>
                       marketPlaceStore.handleFilterChange(
                         DataProductFilterType.ENVIRONMENT_CLASSIFICATION,
-                        V1_IngestEnvironmentClassification.DEV,
+                        V1_IngestEnvironmentClassification.PROD,
                       )
                     }
                   />
                 }
-                label="Dev"
+                label="Prod"
               />
               <FormControlLabel
                 control={
@@ -510,18 +511,17 @@ const MarketplaceLakehouseHomeSortFilterPanel = observer(
                 control={
                   <Checkbox
                     checked={
-                      marketPlaceStore.filter
-                        .prodEnvironmentClassificationFilter
+                      marketPlaceStore.filter.devEnvironmentClassificationFilter
                     }
                     onChange={() =>
                       marketPlaceStore.handleFilterChange(
                         DataProductFilterType.ENVIRONMENT_CLASSIFICATION,
-                        V1_IngestEnvironmentClassification.PROD,
+                        V1_IngestEnvironmentClassification.DEV,
                       )
                     }
                   />
                 }
-                label="Prod"
+                label="Dev"
               />
             </FormGroup>
           </Box>
