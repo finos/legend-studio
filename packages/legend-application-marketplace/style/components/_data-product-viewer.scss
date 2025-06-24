@@ -174,25 +174,6 @@
         color: var(--color-light-grey-400);
       }
     }
-
-    &__type {
-      &__sandbox {
-        &--dev {
-          background: var(--tw-color-amber-100);
-          color: var(--tw-color-amber-600);
-        }
-
-        &--prod-parallel {
-          background: var(--tw-color-blue-100);
-          color: var(--tw-color-blue-600);
-        }
-
-        &--prod {
-          background: var(--tw-color-green-100);
-          color: var(--tw-color-green-600);
-        }
-      }
-    }
   }
 
   &__body {
