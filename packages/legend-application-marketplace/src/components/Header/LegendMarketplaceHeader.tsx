@@ -14,14 +14,17 @@
  * limitations under the License.
  */
 
+import { clsx, MenuIcon } from '@finos/legend-art';
 import {
-  clsx,
-  ControlledDropdownMenu,
-  MenuContent,
-  MenuContentItem,
-  MenuIcon,
-} from '@finos/legend-art';
-import { AppBar, Box, Button, Container, Toolbar } from '@mui/material';
+  AppBar,
+  Box,
+  Button,
+  Container,
+  IconButton,
+  Menu,
+  MenuItem,
+  Toolbar,
+} from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { LEGEND_MARKETPLACE_TEST_ID } from '../../__lib__/LegendMarketplaceTesting.js';
@@ -32,29 +35,29 @@ import { LegendMarketplaceIconToolbar } from './LegendMarketplaceIconToolbar.js'
 import { matchPath } from '@finos/legend-application/browser';
 
 const LegendMarketplaceHeaderMenu = observer(() => {
-  // about modal
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [openAppInfo, setOpenAppInfo] = useState(false);
-  const showAppInfo = (): void => setOpenAppInfo(true);
-  const hideAppInfo = (): void => setOpenAppInfo(false);
+
+  const open = Boolean(anchorEl);
 
   return (
     <>
-      <ControlledDropdownMenu
-        className="legend-marketplace-header__menu"
-        menuProps={{
-          anchorOrigin: { vertical: 'top', horizontal: 'right' },
-          transformOrigin: { vertical: 'top', horizontal: 'left' },
-          elevation: 7,
-        }}
-        content={
-          <MenuContent>
-            <MenuContentItem onClick={showAppInfo}>About</MenuContentItem>
-          </MenuContent>
-        }
-      >
+      <IconButton onClick={(event) => setAnchorEl(event.currentTarget)}>
         <MenuIcon />
-      </ControlledDropdownMenu>
-      <LegendMarketplaceAppInfo open={openAppInfo} closeModal={hideAppInfo} />
+      </IconButton>
+      <Menu open={open}>
+        <MenuItem onClick={() => setOpenAppInfo(true)}>About</MenuItem>
+        <MenuItem
+          href={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ADMIN}
+          rel="noopener noreferrer"
+        >
+          Admin
+        </MenuItem>
+      </Menu>
+      <LegendMarketplaceAppInfo
+        open={openAppInfo}
+        closeModal={() => setOpenAppInfo(false)}
+      />
     </>
   );
 });
