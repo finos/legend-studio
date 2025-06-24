@@ -534,11 +534,29 @@
     @include flexVCenter;
     @include flexHSpaceBetween;
 
-    height: 2.2rem;
-    line-height: 2.2rem;
     padding-left: 0.3rem;
     color: var(--color-light-grey-400);
     font-size: 1.3rem;
+    gap: 1rem;
+
+    &__rows {
+      flex-direction: column;
+
+      .row {
+        display: flex;
+        align-items: center;
+        height: 2rem;
+        gap: 1rem;
+
+        .label {
+          width: 100px;
+        }
+
+        .textbox {
+          flex: 1;
+        }
+      }
+    }
   }
 
   &__section__list__item:hover {

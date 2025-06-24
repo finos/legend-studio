@@ -90,12 +90,41 @@ export class V1_AccessPointGroup implements Hashable {
   }
 }
 
+export class V1_Email implements Hashable {
+  title!: string;
+  address!: string;
+
+  get hashCode(): string {
+    return hashArray([CORE_HASH_STRUCTURE.EMAIL, this.title, this.address]);
+  }
+}
+
+export class V1_SupportInfo implements Hashable {
+  documentationUrl: string | undefined;
+  website: string | undefined;
+  faqUrl: string | undefined;
+  supportUrl: string | undefined;
+  emails: V1_Email[] = [];
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.SUPPORT_INFO,
+      this.documentationUrl ?? '',
+      this.website ?? '',
+      this.faqUrl ?? '',
+      this.supportUrl ?? '',
+      hashArray(this.emails),
+    ]);
+  }
+}
+
 export class V1_DataProduct extends V1_PackageableElement implements Hashable {
   title: string | undefined;
   description: string | undefined;
   accessPointGroups: V1_AccessPointGroup[] = [];
   icon: string | undefined;
   imageUrl: string | undefined;
+  supportInfo: V1_SupportInfo | undefined;
 
   override get hashCode(): string {
     return hashArray([
@@ -105,6 +134,7 @@ export class V1_DataProduct extends V1_PackageableElement implements Hashable {
       this.description ?? '',
       this.icon ?? '',
       this.imageUrl ?? '',
+      this.supportInfo ?? '',
     ]);
   }
 

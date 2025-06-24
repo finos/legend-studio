@@ -101,9 +101,43 @@ export class AccessPointGroup implements Hashable {
   }
 }
 
+export class Email implements Hashable {
+  title!: string;
+  address!: string;
+
+  constructor(address: string, title: string) {
+    this.address = address;
+    this.title = title;
+  }
+
+  get hashCode(): string {
+    return hashArray([CORE_HASH_STRUCTURE.EMAIL, this.title, this.address]);
+  }
+}
+
+export class SupportInfo implements Hashable {
+  documentationUrl: string | undefined;
+  website: string | undefined;
+  faqUrl: string | undefined;
+  supportUrl: string | undefined;
+  emails: Email[] = [];
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.SUPPORT_INFO,
+      this.documentationUrl ?? '',
+      this.website ?? '',
+      this.faqUrl ?? '',
+      this.supportUrl ?? '',
+      hashArray(this.emails),
+    ]);
+  }
+}
+
 export class DataProduct extends PackageableElement {
   title: string | undefined;
   description: string | undefined;
+  supportInfo: SupportInfo | undefined;
   accessPointGroups: AccessPointGroup[] = [];
 
   override accept_PackageableElementVisitor<T>(
@@ -118,6 +152,7 @@ export class DataProduct extends PackageableElement {
       hashArray(this.accessPointGroups),
       this.title ?? '',
       this.description ?? '',
+      this.supportInfo ?? '',
     ]);
   }
 }

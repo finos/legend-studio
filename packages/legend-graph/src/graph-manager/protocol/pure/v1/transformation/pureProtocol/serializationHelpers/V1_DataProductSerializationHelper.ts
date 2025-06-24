@@ -27,6 +27,8 @@ import {
   V1_AccessPointGroup,
   V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE,
   V1_DataProduct,
+  V1_Email,
+  V1_SupportInfo,
   V1_LakehouseAccessPoint,
   V1_UnknownAccessPoint,
 } from '../../../model/packageableElements/dataProduct/V1_DataProduct.js';
@@ -37,6 +39,7 @@ import {
   customList,
   type PlainObject,
   customListWithSchema,
+  optionalCustomUsingModelSchema,
 } from '@finos/legend-shared';
 import { V1_rawLambdaModelSchema } from './V1_RawValueSpecificationSerializationHelper.js';
 
@@ -98,6 +101,19 @@ export const V1_AccessPointGroupModelSchema = createModelSchema(
   },
 );
 
+export const V1_EmailModelSchema = createModelSchema(V1_Email, {
+  title: primitive(),
+  address: primitive(),
+});
+
+export const V1_SupportInfoModelSchema = createModelSchema(V1_SupportInfo, {
+  documentationUrl: optional(primitive()),
+  website: optional(primitive()),
+  faqUrl: optional(primitive()),
+  supportUrl: optional(primitive()),
+  emails: customListWithSchema(V1_EmailModelSchema),
+});
+
 export const V1_dataProductModelSchema = createModelSchema(V1_DataProduct, {
   _type: usingConstantValueSchema(V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE),
   name: primitive(),
@@ -127,4 +143,5 @@ export const V1_dataProductModelSchema = createModelSchema(V1_DataProduct, {
     },
   ),
   imageUrl: optional(primitive()),
+  supportInfo: optionalCustomUsingModelSchema(V1_SupportInfoModelSchema),
 });
