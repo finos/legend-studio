@@ -907,12 +907,12 @@ export class MappingEditorState extends ElementEditorState {
       );
       return;
     }
-    if (mappingElement instanceof RelationFunctionInstanceSetImplementation) {
-      this.editorStore.applicationStore.notificationService.notifyUnsupportedFeature(
-        'Relation Function mapping editor',
-      );
-      return;
-    }
+    // if (mappingElement instanceof RelationFunctionInstanceSetImplementation) {
+    //   this.editorStore.applicationStore.notificationService.notifyUnsupportedFeature(
+    //     'Relation Function mapping editor',
+    //   );
+    //   return;
+    // }
     // Open mapping element from included mapping in another mapping editor tab
     if (mappingElement._PARENT !== this.element) {
       this.editorStore.graphEditorMode.openElement(mappingElement._PARENT);
