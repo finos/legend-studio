@@ -59,7 +59,7 @@ export const LegendMarketplaceAppInfo: React.FC<{
   };
 
   return (
-    <Dialog onClose={closeModal} open={open}>
+    <Dialog onClose={closeModal} open={open} fullWidth={true} maxWidth="sm">
       <Modal
         darkMode={
           !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
