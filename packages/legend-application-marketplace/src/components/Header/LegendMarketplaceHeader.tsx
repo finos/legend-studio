@@ -42,7 +42,10 @@ const LegendMarketplaceHeaderMenu = observer(() => {
 
   return (
     <>
-      <IconButton onClick={(event) => setAnchorEl(event.currentTarget)}>
+      <IconButton
+        onClick={(event) => setAnchorEl(event.currentTarget)}
+        className="legend-marketplace-header__menu__icon"
+      >
         <MenuIcon />
       </IconButton>
       <Menu open={open}>
