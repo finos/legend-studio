@@ -532,20 +532,30 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   ): Promise<void> {
     try {
       this.loadingLakehouseEnvironmentsByDIDState.inProgress();
-      const didsAndEnvironments = await Promise.all(
-        dids.map(async (did) => {
-          return [
-            did,
-            IngestDeploymentServerConfig.serialization.fromJson(
-              await this.lakehousePlatformServerClient.findProducerServer(
-                parseInt(did),
-                V1_AppDirLevel.DEPLOYMENT,
-                token,
-              ),
-            ),
-          ] as [string, IngestDeploymentServerConfig];
-        }),
-      );
+      const didsAndEnvironments = (
+        await Promise.all(
+          dids.map(async (did) => {
+            try {
+              return [
+                did,
+                IngestDeploymentServerConfig.serialization.fromJson(
+                  await this.lakehousePlatformServerClient.findProducerServer(
+                    parseInt(did),
+                    V1_AppDirLevel.DEPLOYMENT,
+                    token,
+                  ),
+                ),
+              ] as [string, IngestDeploymentServerConfig];
+            } catch (error) {
+              assertErrorThrown(error);
+              this.applicationStore.notificationService.notifyError(
+                `Unable to load lakehouse environment for DID ${did}: ${error.message}`,
+              );
+              return undefined;
+            }
+          }),
+        )
+      ).filter(isNonNullable);
       const didToEnvironment = new Map<string, IngestDeploymentServerConfig>(
         this.lakehouseIngestEnvironmentsByDID,
       );
