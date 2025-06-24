@@ -37,6 +37,7 @@ import { matchPath } from '@finos/legend-application/browser';
 const LegendMarketplaceHeaderMenu = observer(() => {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [openAppInfo, setOpenAppInfo] = useState(false);
+  const applicationStore = useApplicationStore();
 
   const open = Boolean(anchorEl);
 
@@ -51,7 +52,11 @@ const LegendMarketplaceHeaderMenu = observer(() => {
       <Menu anchorEl={anchorEl} open={open} onClose={() => setAnchorEl(null)}>
         <MenuItem onClick={() => setOpenAppInfo(true)}>About</MenuItem>
         <MenuItem
-          href={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ADMIN}
+          component="a"
+          href={applicationStore.navigationService.navigator.generateAddress(
+            LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ADMIN,
+          )}
+          target="_blank"
           rel="noopener noreferrer"
         >
           Admin
