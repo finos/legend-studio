@@ -1,5 +1,11 @@
 # @finos/legend-shared
 
+## 11.0.15
+
+### Patch Changes
+
+- [#4221](https://github.com/finos/legend-studio/pull/4221) [`41b6d52`](https://github.com/finos/legend-studio/commit/41b6d52833e7736b8db631c98437090d781093ff) ([@travisstebbins](https://github.com/travisstebbins)) - Add cache to store user data in UserSearchService
+
 ## 11.0.14
 
 ## 11.0.13

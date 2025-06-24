@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace-deployment
 
+## 13.92.0
+
+### Patch Changes
+
+- [#4226](https://github.com/finos/legend-studio/pull/4226) [`b2bbb5f`](https://github.com/finos/legend-studio/commit/b2bbb5fdde631080dba344b5b77fadf8316af108) ([@travisstebbins](https://github.com/travisstebbins)) - Remove dummy data products
+
 ## 13.91.0
 
 ## 13.90.0
