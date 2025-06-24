@@ -1,5 +1,21 @@
 # @finos/legend-application-marketplace
 
+## 0.0.50
+
+### Patch Changes
+
+- [#4226](https://github.com/finos/legend-studio/pull/4226) [`b2bbb5f`](https://github.com/finos/legend-studio/commit/b2bbb5fdde631080dba344b5b77fadf8316af108) ([@travisstebbins](https://github.com/travisstebbins)) - Lakehouse small UI improvements
+
+- [#4222](https://github.com/finos/legend-studio/pull/4222) [`a05bd6e`](https://github.com/finos/legend-studio/commit/a05bd6e32590a254bb6d6a196a8433bd9e0e2800) ([@bojja-gs](https://github.com/bojja-gs)) - ### Major Changes:
+
+  - **Data Products Integration**: Added functionality to fetch data products from the backend API and display them in the application. This includes handling filters and populating providers dynamically.
+  - **Card Styles Update**: Enhanced the card component styles to support hover effects, including sliding up the description (`moreInfo`) and ensuring it spans the entire card. Fixed issues with overlapping content and improved responsiveness.
+  - **Vendor Data Page Search**: Implemented search functionality in the vendor data page, allowing users to filter and retrieve relevant data products based on their criteria. This includes integrating backend APIs and handling search filters efficiently.
+
+- [#4221](https://github.com/finos/legend-studio/pull/4221) [`41b6d52`](https://github.com/finos/legend-studio/commit/41b6d52833e7736b8db631c98437090d781093ff) ([@travisstebbins](https://github.com/travisstebbins)) - Enhance Lakehouse pending requests view
+
+- [#4227](https://github.com/finos/legend-studio/pull/4227) [`677f9b2`](https://github.com/finos/legend-studio/commit/677f9b23b5334eb53278d5de92f4ed985eed503e) ([@travisstebbins](https://github.com/travisstebbins)) - Remove erroneous text in LakehouseEntitlements
+
 ## 0.0.49
 
 ## 0.0.48

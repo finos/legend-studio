@@ -1,5 +1,11 @@
 # @finos/legend-server-marketplace
 
+## 0.0.19
+
+### Patch Changes
+
+- [#4222](https://github.com/finos/legend-studio/pull/4222) [`a05bd6e`](https://github.com/finos/legend-studio/commit/a05bd6e32590a254bb6d6a196a8433bd9e0e2800) ([@bojja-gs](https://github.com/bojja-gs)) - Added new API to fetch data products on the home page, enabling dynamic population of data products for improved user experience.
+
 ## 0.0.18
 
 ## 0.0.17
