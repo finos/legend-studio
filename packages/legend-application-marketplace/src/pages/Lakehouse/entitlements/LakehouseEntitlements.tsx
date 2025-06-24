@@ -50,7 +50,6 @@ export const LakehouseEntitlements = withLakehouseEntitlementsStore(
 
     const loading =
       entitlementsStore.dashboardViewer.initializationState.isInProgress;
-    const tasks = entitlementsStore.dashboardViewer.pendingTasks;
 
     // Effects
 
@@ -79,55 +78,53 @@ export const LakehouseEntitlements = withLakehouseEntitlementsStore(
         <CubesLoadingIndicator isLoading={loading}>
           <CubesLoadingIndicatorIcon />
         </CubesLoadingIndicator>
-        {!loading && (
-          <Container
-            className="marketplace-lakehouse-entitlements-dashboard"
-            maxWidth="xxl"
-          >
-            <Tabs value={selectedTab} onChange={handleTabChange}>
-              <Tab
-                label={
-                  <Typography variant="h4" gutterBottom={true}>
-                    MY APPROVALS
-                  </Typography>
-                }
-                value={EntitlementsTabs.PENDING_TASKS}
-              />
-              <Tab
-                label={
-                  <Typography variant="h4" gutterBottom={true}>
-                    MY PENDING REQUESTS
-                  </Typography>
-                }
-                value={EntitlementsTabs.PENDING_CONTRACTS}
-              />
-              <Tab
-                label={
-                  <Typography variant="h4" gutterBottom={true}>
-                    MY CLOSED REQUESTS
-                  </Typography>
-                }
-                value={EntitlementsTabs.CLOSED_CONTRACTS}
-              />
-            </Tabs>
-            {selectedTab === EntitlementsTabs.PENDING_TASKS &&
-              tasks !== undefined && (
-                <EntitlementsPendingTasksDashbaord
-                  dashboardState={entitlementsStore.dashboardViewer}
-                />
-              )}
-            {selectedTab === EntitlementsTabs.PENDING_CONTRACTS && (
-              <EntitlementsPendingContractsDashbaord
-                dashboardState={entitlementsStore.dashboardViewer}
-              />
-            )}
-            {selectedTab === EntitlementsTabs.CLOSED_CONTRACTS && (
-              <EntitlementsClosedContractsDashbaord
-                dashboardState={entitlementsStore.dashboardViewer}
-              />
-            )}
-          </Container>
-        )}
+        <Container
+          className="marketplace-lakehouse-entitlements-dashboard"
+          maxWidth="xxl"
+        >
+          <Tabs value={selectedTab} onChange={handleTabChange}>
+            <Tab
+              label={
+                <Typography variant="h4" gutterBottom={true}>
+                  MY APPROVALS
+                </Typography>
+              }
+              value={EntitlementsTabs.PENDING_TASKS}
+            />
+            <Tab
+              label={
+                <Typography variant="h4" gutterBottom={true}>
+                  MY PENDING REQUESTS
+                </Typography>
+              }
+              value={EntitlementsTabs.PENDING_CONTRACTS}
+            />
+            <Tab
+              label={
+                <Typography variant="h4" gutterBottom={true}>
+                  MY CLOSED REQUESTS
+                </Typography>
+              }
+              value={EntitlementsTabs.CLOSED_CONTRACTS}
+            />
+          </Tabs>
+          {selectedTab === EntitlementsTabs.PENDING_TASKS && (
+            <EntitlementsPendingTasksDashbaord
+              dashboardState={entitlementsStore.dashboardViewer}
+            />
+          )}
+          {selectedTab === EntitlementsTabs.PENDING_CONTRACTS && (
+            <EntitlementsPendingContractsDashbaord
+              dashboardState={entitlementsStore.dashboardViewer}
+            />
+          )}
+          {selectedTab === EntitlementsTabs.CLOSED_CONTRACTS && (
+            <EntitlementsClosedContractsDashbaord
+              dashboardState={entitlementsStore.dashboardViewer}
+            />
+          )}
+        </Container>
+        ={' '}
       </LegendMarketplacePage>
     );
   }),
