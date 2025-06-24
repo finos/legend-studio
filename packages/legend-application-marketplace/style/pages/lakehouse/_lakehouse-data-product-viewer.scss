@@ -33,6 +33,29 @@
       background: var(--color-white);
       color: var(--color-hclight-blue-60);
       border: 1px solid var(--color-hclight-blue-60);
+      opacity: 0.8;
+
+      &:hover {
+        opacity: 1;
+      }
+
+      &--dev {
+        background: var(--tw-color-amber-100);
+        color: var(--tw-color-amber-600);
+        border: none;
+      }
+
+      &--prod-parallel {
+        background: var(--tw-color-blue-100);
+        color: var(--tw-color-blue-600);
+        border: none;
+      }
+
+      &--prod {
+        background: var(--tw-color-green-100);
+        color: var(--tw-color-green-600);
+        border: none;
+      }
     }
 
     &__version {

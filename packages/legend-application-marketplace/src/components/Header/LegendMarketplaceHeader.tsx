@@ -14,14 +14,17 @@
  * limitations under the License.
  */
 
+import { clsx, MenuIcon } from '@finos/legend-art';
 import {
-  clsx,
-  ControlledDropdownMenu,
-  MenuContent,
-  MenuContentItem,
-  MenuIcon,
-} from '@finos/legend-art';
-import { AppBar, Box, Button, Container, Toolbar } from '@mui/material';
+  AppBar,
+  Box,
+  Button,
+  Container,
+  IconButton,
+  Menu,
+  MenuItem,
+  Toolbar,
+} from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { LEGEND_MARKETPLACE_TEST_ID } from '../../__lib__/LegendMarketplaceTesting.js';
@@ -32,29 +35,45 @@ import { LegendMarketplaceIconToolbar } from './LegendMarketplaceIconToolbar.js'
 import { matchPath } from '@finos/legend-application/browser';
 
 const LegendMarketplaceHeaderMenu = observer(() => {
-  // about modal
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [openAppInfo, setOpenAppInfo] = useState(false);
-  const showAppInfo = (): void => setOpenAppInfo(true);
-  const hideAppInfo = (): void => setOpenAppInfo(false);
+  const applicationStore = useApplicationStore();
+
+  const open = Boolean(anchorEl);
 
   return (
     <>
-      <ControlledDropdownMenu
-        className="legend-marketplace-header__menu"
-        menuProps={{
-          anchorOrigin: { vertical: 'top', horizontal: 'right' },
-          transformOrigin: { vertical: 'top', horizontal: 'left' },
-          elevation: 7,
-        }}
-        content={
-          <MenuContent>
-            <MenuContentItem onClick={showAppInfo}>About</MenuContentItem>
-          </MenuContent>
-        }
+      <IconButton
+        onClick={(event) => setAnchorEl(event.currentTarget)}
+        className="legend-marketplace-header__menu__icon"
       >
         <MenuIcon />
-      </ControlledDropdownMenu>
-      <LegendMarketplaceAppInfo open={openAppInfo} closeModal={hideAppInfo} />
+      </IconButton>
+      <Menu anchorEl={anchorEl} open={open} onClose={() => setAnchorEl(null)}>
+        <MenuItem
+          onClick={() => {
+            setOpenAppInfo(true);
+            setAnchorEl(null);
+          }}
+        >
+          About
+        </MenuItem>
+        <MenuItem
+          component="a"
+          href={applicationStore.navigationService.navigator.generateAddress(
+            LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ADMIN,
+          )}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => setAnchorEl(null)}
+        >
+          Admin
+        </MenuItem>
+      </Menu>
+      <LegendMarketplaceAppInfo
+        open={openAppInfo}
+        closeModal={() => setOpenAppInfo(false)}
+      />
     </>
   );
 });

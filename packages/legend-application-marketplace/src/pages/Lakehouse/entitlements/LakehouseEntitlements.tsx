@@ -20,20 +20,31 @@ import {
   withLakehouseEntitlementsStore,
 } from './LakehouseEntitlementsStoreProvider.js';
 import { useAuth } from 'react-oidc-context';
-import { useEffect } from 'react';
-import {
-  CubesLoadingIndicator,
-  CubesLoadingIndicatorIcon,
-} from '@finos/legend-art';
-import {} from '@finos/legend-lego/data-grid';
+import { useEffect, useState } from 'react';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
-import { EntitlementsDashboard } from './EntitlementsDashboard.js';
 import { flowResult } from 'mobx';
+import { Container, Tab, Tabs, Typography } from '@mui/material';
+import { EntitlementsClosedContractsDashbaord } from './EntitlementsClosedContractsDashboard.js';
+import { EntitlementsPendingContractsDashbaord } from './EntitlementsPendingContractsDashboard.js';
+import { EntitlementsPendingTasksDashbaord } from './EntitlementsPendingTasksDashboard.js';
+
+const enum EntitlementsTabs {
+  PENDING_TASKS = 'pendingTasks',
+  PENDING_CONTRACTS = 'pendingContracts',
+  CLOSED_CONTRACTS = 'closedContracts',
+}
 
 export const LakehouseEntitlements = withLakehouseEntitlementsStore(
   observer(() => {
+    // State and props
+
     const entitlementsStore = useLakehouseEntitlementsStore();
     const auth = useAuth();
+    const [selectedTab, setSelectedTab] = useState(
+      EntitlementsTabs.PENDING_TASKS,
+    );
+
+    // Effects
 
     useEffect(() => {
       if (
@@ -46,19 +57,64 @@ export const LakehouseEntitlements = withLakehouseEntitlementsStore(
       }
     }, [auth.user?.access_token, entitlementsStore]);
 
-    const loading =
-      entitlementsStore.dashboardViewer.initializationState.isInProgress;
+    // Callbacks
+
+    const handleTabChange = (
+      _: React.SyntheticEvent,
+      newValue: EntitlementsTabs,
+    ) => {
+      setSelectedTab(newValue);
+    };
 
     return (
       <LegendMarketplacePage className="marketplace-lakehouse-entitlements">
-        <CubesLoadingIndicator isLoading={loading}>
-          <CubesLoadingIndicatorIcon />
-        </CubesLoadingIndicator>
-        {!loading && (
-          <EntitlementsDashboard
-            dashboardState={entitlementsStore.dashboardViewer}
-          />
-        )}
+        <Container
+          className="marketplace-lakehouse-entitlements-dashboard"
+          maxWidth="xxl"
+        >
+          <Tabs value={selectedTab} onChange={handleTabChange}>
+            <Tab
+              label={
+                <Typography variant="h4" gutterBottom={true}>
+                  MY APPROVALS
+                </Typography>
+              }
+              value={EntitlementsTabs.PENDING_TASKS}
+            />
+            <Tab
+              label={
+                <Typography variant="h4" gutterBottom={true}>
+                  MY PENDING REQUESTS
+                </Typography>
+              }
+              value={EntitlementsTabs.PENDING_CONTRACTS}
+            />
+            <Tab
+              label={
+                <Typography variant="h4" gutterBottom={true}>
+                  MY CLOSED REQUESTS
+                </Typography>
+              }
+              value={EntitlementsTabs.CLOSED_CONTRACTS}
+            />
+          </Tabs>
+          {selectedTab === EntitlementsTabs.PENDING_TASKS && (
+            <EntitlementsPendingTasksDashbaord
+              dashboardState={entitlementsStore.dashboardViewer}
+            />
+          )}
+          {selectedTab === EntitlementsTabs.PENDING_CONTRACTS && (
+            <EntitlementsPendingContractsDashbaord
+              dashboardState={entitlementsStore.dashboardViewer}
+            />
+          )}
+          {selectedTab === EntitlementsTabs.CLOSED_CONTRACTS && (
+            <EntitlementsClosedContractsDashbaord
+              dashboardState={entitlementsStore.dashboardViewer}
+            />
+          )}
+        </Container>
+        ={' '}
       </LegendMarketplacePage>
     );
   }),

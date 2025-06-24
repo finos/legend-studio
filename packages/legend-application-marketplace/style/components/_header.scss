@@ -22,8 +22,12 @@
   height: var(--legend-marketplace-header-height);
   background: var(--color-blue-500);
 
-  &__menu svg {
-    font-size: 2.3rem;
+  &__menu__icon {
+    color: var(--color-white);
+
+    svg {
+      font-size: 2.3rem;
+    }
   }
 
   &__name {

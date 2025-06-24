@@ -26,6 +26,7 @@ import { useApplicationStore } from '@finos/legend-application';
 import { DataProductWiki } from './DataProductWiki.js';
 import { Button } from '@mui/material';
 import { isSnapshotVersion } from '@finos/legend-server-depot';
+import { V1_IngestEnvironmentClassification } from '@finos/legend-graph';
 
 const DataProductHeader = observer(
   (props: {
@@ -85,7 +86,17 @@ const DataProductHeader = observer(
                   dataProductViewerState.viewIngestEnvironment?.();
                 }}
                 title="View Ingest Environment"
-                className="data-space__viewer__header__type__sandbox"
+                className={clsx('data-space__viewer__header__type__sandbox', {
+                  'data-space__viewer__header__type__sandbox--dev':
+                    environmentClassification ===
+                    V1_IngestEnvironmentClassification.DEV,
+                  'data-space__viewer__header__type__sandbox--prod-parallel':
+                    environmentClassification ===
+                    V1_IngestEnvironmentClassification.PROD_PARALLEL,
+                  'data-space__viewer__header__type__sandbox--prod':
+                    environmentClassification ===
+                    V1_IngestEnvironmentClassification.PROD,
+                })}
               >
                 {environmentClassification
                   ? `${environmentClassification} `

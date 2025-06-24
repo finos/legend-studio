@@ -313,13 +313,16 @@ export const LakehouseDataProductCard = observer(
                 </Menu>
               </>
             )}
-            {environmentClassification !== undefined && (
+            {dataProductState instanceof SandboxDataProductState && (
               <Chip
-                label={environmentClassification}
+                label={environmentClassification ?? 'unknown'}
                 size="small"
+                title="Environment Classification"
                 className={clsx(
                   'marketplace-lakehouse-data-product-card__environment-classification',
                   {
+                    'marketplace-lakehouse-data-product-card__environment-classification--unknown':
+                      environmentClassification === undefined,
                     'marketplace-lakehouse-data-product-card__environment-classification--dev':
                       environmentClassification ===
                       V1_IngestEnvironmentClassification.DEV,
@@ -477,17 +480,18 @@ const MarketplaceLakehouseHomeSortFilterPanel = observer(
                 control={
                   <Checkbox
                     checked={
-                      marketPlaceStore.filter.devEnvironmentClassificationFilter
+                      marketPlaceStore.filter
+                        .prodEnvironmentClassificationFilter
                     }
                     onChange={() =>
                       marketPlaceStore.handleFilterChange(
                         DataProductFilterType.ENVIRONMENT_CLASSIFICATION,
-                        V1_IngestEnvironmentClassification.DEV,
+                        V1_IngestEnvironmentClassification.PROD,
                       )
                     }
                   />
                 }
-                label="Dev"
+                label="Prod"
               />
               <FormControlLabel
                 control={
@@ -510,18 +514,17 @@ const MarketplaceLakehouseHomeSortFilterPanel = observer(
                 control={
                   <Checkbox
                     checked={
-                      marketPlaceStore.filter
-                        .prodEnvironmentClassificationFilter
+                      marketPlaceStore.filter.devEnvironmentClassificationFilter
                     }
                     onChange={() =>
                       marketPlaceStore.handleFilterChange(
                         DataProductFilterType.ENVIRONMENT_CLASSIFICATION,
-                        V1_IngestEnvironmentClassification.PROD,
+                        V1_IngestEnvironmentClassification.DEV,
                       )
                     }
                   />
                 }
-                label="Prod"
+                label="Dev"
               />
             </FormGroup>
           </Box>

@@ -34,6 +34,38 @@
     background: var(--color-white);
     overflow: auto;
   }
+
+  &__info {
+    &__group {
+      margin-top: 1rem;
+      color: var(--color-legacylight-dark-grey-200);
+      background: var(--color-legacylight-light-grey-300);
+      padding: 1.5rem;
+      border-radius: 0.2rem;
+    }
+
+    &__entry {
+      display: flex;
+      cursor: default;
+      padding: 0.2rem 0;
+      font-family: 'Roboto Mono', monospace;
+
+      &__title {
+        margin-right: 0.5rem;
+        color: var(--color-legacylight-dark-grey-400);
+      }
+
+      &__value {
+        color: var(--color-legacylight-dark-grey-200);
+
+        a {
+          text-decoration: none;
+          font-weight: 700;
+          color: var(--color-blue-50);
+        }
+      }
+    }
+  }
 }
 
 .marketplace-lakehouse-text__emphasis {

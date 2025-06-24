@@ -82,7 +82,6 @@ import {
   SandboxDataProductState,
   type BaseDataProductState,
 } from './dataProducts/DataProducts.js';
-import { TMP__DummyDataProducts } from '../../pages/Lakehouse/TMP__Data/TMP__DummyDataProducts.js';
 import {
   type LakehousePlatformServerClient,
   type LakehouseIngestServerClient,
@@ -197,23 +196,6 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   sort: DataProductSort = DataProductSort.NAME_ALPHABETICAL;
   dataProductViewer: DataProductViewerState | undefined;
 
-  // Temporary state for dummy data products
-  dummyDataProductStates: DataProductState[] = TMP__DummyDataProducts.map(
-    (dataProduct) => {
-      const dataProductEntity = new DataProductEntity(
-        '',
-        '',
-        '1.0',
-        dataProduct.path,
-      );
-      dataProductEntity.setProduct(dataProduct);
-      const dataProductState = new DataProductState(this);
-      dataProductState.setProductEntity('1.0', dataProductEntity);
-      dataProductState.setSelectedVersion('1.0');
-      return dataProductState;
-    },
-  );
-
   constructor(
     marketplaceBaseStore: LegendMarketplaceBaseStore,
     lakehouseServerClient: LakehouseContractServerClient,
@@ -271,7 +253,6 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
           ? []
           : this.sandboxDataProductStates,
       )
-      .concat(this.dummyDataProductStates)
       .filter((baseDataProductState) => {
         if (!baseDataProductState.isInitialized) {
           return false;
@@ -281,10 +262,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
           (this.filter.sdlcDeployFilter &&
             baseDataProductState instanceof DataProductState) ||
           (this.filter.sandboxDeployFilter &&
-            baseDataProductState instanceof SandboxDataProductState) ||
-          // TMP always include dummy data products
-          (baseDataProductState instanceof DataProductState &&
-            this.dummyDataProductStates.includes(baseDataProductState));
+            baseDataProductState instanceof SandboxDataProductState);
         // Check if product matches environment classification filter
         const environmentClassification =
           baseDataProductState instanceof SandboxDataProductState &&
@@ -554,20 +532,30 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   ): Promise<void> {
     try {
       this.loadingLakehouseEnvironmentsByDIDState.inProgress();
-      const didsAndEnvironments = await Promise.all(
-        dids.map(async (did) => {
-          return [
-            did,
-            IngestDeploymentServerConfig.serialization.fromJson(
-              await this.lakehousePlatformServerClient.findProducerServer(
-                parseInt(did),
-                V1_AppDirLevel.DEPLOYMENT,
-                token,
-              ),
-            ),
-          ] as [string, IngestDeploymentServerConfig];
-        }),
-      );
+      const didsAndEnvironments = (
+        await Promise.all(
+          dids.map(async (did) => {
+            try {
+              return [
+                did,
+                IngestDeploymentServerConfig.serialization.fromJson(
+                  await this.lakehousePlatformServerClient.findProducerServer(
+                    parseInt(did),
+                    V1_AppDirLevel.DEPLOYMENT,
+                    token,
+                  ),
+                ),
+              ] as [string, IngestDeploymentServerConfig];
+            } catch (error) {
+              assertErrorThrown(error);
+              this.applicationStore.notificationService.notifyError(
+                `Unable to load lakehouse environment for DID ${did}: ${error.message}`,
+              );
+              return undefined;
+            }
+          }),
+        )
+      ).filter(isNonNullable);
       const didToEnvironment = new Map<string, IngestDeploymentServerConfig>(
         this.lakehouseIngestEnvironmentsByDID,
       );
