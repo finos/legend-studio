@@ -48,7 +48,7 @@ const LegendMarketplaceHeaderMenu = observer(() => {
       >
         <MenuIcon />
       </IconButton>
-      <Menu open={open}>
+      <Menu anchorEl={anchorEl} open={open} onClose={() => setAnchorEl(null)}>
         <MenuItem onClick={() => setOpenAppInfo(true)}>About</MenuItem>
         <MenuItem
           href={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ADMIN}
