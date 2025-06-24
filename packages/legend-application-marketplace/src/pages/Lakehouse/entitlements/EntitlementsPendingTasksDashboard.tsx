@@ -116,6 +116,9 @@ const EntitlementsDashboardActionModal = (props: {
       // If there were errors, we won't close the modal and will show the errors in the modal.
       setErrorMessages(currentErrorMessages);
     }
+
+    // Refresh pending tasks and contracts after taking action
+    await flowResult(dashboardState.init(auth.user?.access_token));
   };
 
   if (action === undefined) {
@@ -213,6 +216,8 @@ const EntitlementsDashboardActionModal = (props: {
 
 export const EntitlementsPendingTasksDashbaord = observer(
   (props: { dashboardState: EntitlementsDashboardState }): React.ReactNode => {
+    // State and props
+
     const { dashboardState } = props;
     const tasks = dashboardState.pendingTasks;
     const allContracts = dashboardState.allContracts;
@@ -251,6 +256,8 @@ export const EntitlementsPendingTasksDashbaord = observer(
       V1_DataContract | undefined
     >();
 
+    // Effects
+
     useEffect(() => {
       setSearchParams((params) => {
         if (selectedTaskIdsSet.size === 0) {
@@ -264,6 +271,8 @@ export const EntitlementsPendingTasksDashbaord = observer(
         return params;
       });
     }, [selectedTaskIdsSet, setSearchParams]);
+
+    // Callbacks
 
     const handleFirstDataRendered = (
       event: DataGridFirstDataRenderedEvent<
