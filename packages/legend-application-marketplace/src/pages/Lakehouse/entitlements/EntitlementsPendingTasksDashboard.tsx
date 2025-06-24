@@ -236,6 +236,7 @@ export const EntitlementsPendingTasksDashbaord = observer(
           !privilegeManagerTasks.includes(task) &&
           !dataOwnerTasks.includes(task),
       ) ?? [];
+    const loading = dashboardState.initializationState.isInProgress;
 
     const marketplaceBaseStore = useLegendMarketplaceBaseStore();
     const [searchParams, setSearchParams] = useSearchParams();
@@ -521,7 +522,7 @@ export const EntitlementsPendingTasksDashbaord = observer(
             <Button
               variant="contained"
               color="success"
-              disabled={!selectedTaskIdsSet.size}
+              disabled={!selectedTaskIdsSet.size || loading}
               onClick={() => setSelectedAction('approve')}
             >
               Approve {selectedTaskIdsSet.size} tasks
@@ -529,7 +530,7 @@ export const EntitlementsPendingTasksDashbaord = observer(
             <Button
               variant="contained"
               color="error"
-              disabled={!selectedTaskIdsSet.size}
+              disabled={!selectedTaskIdsSet.size || loading}
               onClick={() => setSelectedAction('deny')}
             >
               Deny {selectedTaskIdsSet.size} tasks
@@ -583,6 +584,7 @@ export const EntitlementsPendingTasksDashbaord = observer(
                     ...colDefs,
                   ]}
                   overlayNoRowsTemplate="You have no contracts to approve as a Privilege Manager"
+                  loading={loading}
                 />
               </Box>
             </Box>
@@ -633,6 +635,7 @@ export const EntitlementsPendingTasksDashbaord = observer(
                     ...colDefs,
                   ]}
                   overlayNoRowsTemplate="You have no contracts to approve as a Data Owner"
+                  loading={loading}
                 />
               </Box>
             </Box>
@@ -671,6 +674,7 @@ export const EntitlementsPendingTasksDashbaord = observer(
                       },
                       ...colDefs,
                     ]}
+                    loading={loading}
                   />
                 </Box>
               </Box>

@@ -21,10 +21,6 @@ import {
 } from './LakehouseEntitlementsStoreProvider.js';
 import { useAuth } from 'react-oidc-context';
 import { useEffect, useState } from 'react';
-import {
-  CubesLoadingIndicator,
-  CubesLoadingIndicatorIcon,
-} from '@finos/legend-art';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
 import { flowResult } from 'mobx';
 import { Container, Tab, Tabs, Typography } from '@mui/material';
@@ -47,9 +43,6 @@ export const LakehouseEntitlements = withLakehouseEntitlementsStore(
     const [selectedTab, setSelectedTab] = useState(
       EntitlementsTabs.PENDING_TASKS,
     );
-
-    const loading =
-      entitlementsStore.dashboardViewer.initializationState.isInProgress;
 
     // Effects
 
@@ -75,9 +68,6 @@ export const LakehouseEntitlements = withLakehouseEntitlementsStore(
 
     return (
       <LegendMarketplacePage className="marketplace-lakehouse-entitlements">
-        <CubesLoadingIndicator isLoading={loading}>
-          <CubesLoadingIndicatorIcon />
-        </CubesLoadingIndicator>
         <Container
           className="marketplace-lakehouse-entitlements-dashboard"
           maxWidth="xxl"
