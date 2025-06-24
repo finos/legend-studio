@@ -166,6 +166,11 @@
     font-size: 1rem;
     text-transform: none;
 
+    &--unknown {
+      background: var(--tw-color-gray-100);
+      color: var(--tw-color-gray-600);
+    }
+
     &--dev {
       background: var(--tw-color-amber-100);
       color: var(--tw-color-amber-600);

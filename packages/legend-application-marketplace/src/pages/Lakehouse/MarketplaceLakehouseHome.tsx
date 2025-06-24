@@ -313,13 +313,16 @@ export const LakehouseDataProductCard = observer(
                 </Menu>
               </>
             )}
-            {environmentClassification !== undefined && (
+            {dataProductState instanceof SandboxDataProductState && (
               <Chip
-                label={environmentClassification}
+                label={environmentClassification ?? 'unknown'}
                 size="small"
+                title="Environment Classification"
                 className={clsx(
                   'marketplace-lakehouse-data-product-card__environment-classification',
                   {
+                    'marketplace-lakehouse-data-product-card__environment-classification--unknown':
+                      environmentClassification === undefined,
                     'marketplace-lakehouse-data-product-card__environment-classification--dev':
                       environmentClassification ===
                       V1_IngestEnvironmentClassification.DEV,
