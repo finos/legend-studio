@@ -34,7 +34,7 @@ import {
   V1_AppDirNode,
   V1_AppDirNodeModelSchema,
   V1_createContractPayloadModelSchema,
-  V1_DataContractsRecordModelSchemaToContracts,
+  V1_dataContractsResponseModelSchemaToContracts,
   V1_ResourceType,
 } from '@finos/legend-graph';
 import type { VersionedProjectData } from '@finos/legend-server-depot';
@@ -166,16 +166,17 @@ export class DataProductViewerState {
         [serialize(V1_AppDirNodeModelSchema, didNode)],
         token,
       )) as PlainObject<V1_DataContractsResponse>;
-      const dataProductContracts = V1_DataContractsRecordModelSchemaToContracts(
-        _contracts,
-        this.lakehouseStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
-      ).filter((_contract) =>
-        dataContractContainsDataProduct(
-          this.product,
-          this.deploymentId,
-          _contract,
-        ),
-      );
+      const dataProductContracts =
+        V1_dataContractsResponseModelSchemaToContracts(
+          _contracts,
+          this.lakehouseStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
+        ).filter((_contract) =>
+          dataContractContainsDataProduct(
+            this.product,
+            this.deploymentId,
+            _contract,
+          ),
+        );
       const dataProductContractIds = dataProductContracts.map((e) => e.guid);
       const enrichedContracts = (yield Promise.all(
         dataProductContractIds.map(async (contractId) => {
@@ -183,8 +184,10 @@ export class DataProductViewerState {
             contractId,
             token,
           )) as PlainObject<V1_DataContractsResponse>;
-          const contract =
-            V1_DataContractsRecordModelSchemaToContracts(rawContracts);
+          const contract = V1_dataContractsResponseModelSchemaToContracts(
+            rawContracts,
+            this.lakehouseStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
+          );
           return contract;
         }),
       )).flat();
@@ -228,7 +231,7 @@ export class DataProductViewerState {
           consumer,
         } satisfies V1_CreateContractPayload,
       ) as PlainObject<V1_CreateContractPayload>;
-      const contracts = V1_DataContractsRecordModelSchemaToContracts(
+      const contracts = V1_dataContractsResponseModelSchemaToContracts(
         (yield this.lakeServerClient.createContract(
           request,
           token,
