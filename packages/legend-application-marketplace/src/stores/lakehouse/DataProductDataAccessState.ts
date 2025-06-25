@@ -50,7 +50,7 @@ import {
 } from './LakehouseUtils.js';
 import { deserialize, serialize } from 'serializr';
 
-export enum DataProductGroupAccess {
+export enum AccessPointGroupAccess {
   // can be used to indicate fetching or resyncing of group access
   UNKNOWN = 'UNKNOWN',
 
@@ -62,17 +62,17 @@ export enum DataProductGroupAccess {
 
 const getDataProductGroupAccessFromContract = (
   val: V1_DataContract,
-): DataProductGroupAccess => {
+): AccessPointGroupAccess => {
   if (isContractCompleted(val)) {
-    return DataProductGroupAccess.COMPLETED;
+    return AccessPointGroupAccess.COMPLETED;
   } else if (
     val.state === V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL
   ) {
-    return DataProductGroupAccess.PENDING_MANAGER_APPROVAL;
+    return AccessPointGroupAccess.PENDING_MANAGER_APPROVAL;
   } else if (val.state === V1_ContractState.PENDING_DATA_OWNER_APPROVAL) {
-    return DataProductGroupAccess.PENDING_DATA_OWNER_APPROVAL;
+    return AccessPointGroupAccess.PENDING_DATA_OWNER_APPROVAL;
   }
-  return DataProductGroupAccess.UNKNOWN;
+  return AccessPointGroupAccess.UNKNOWN;
 };
 
 export class DataProductGroupAccessState {
@@ -110,14 +110,14 @@ export class DataProductGroupAccessState {
     });
   }
 
-  get access(): DataProductGroupAccess {
+  get access(): AccessPointGroupAccess {
     if (this.associatedContract === false) {
-      return DataProductGroupAccess.UNKNOWN;
+      return AccessPointGroupAccess.UNKNOWN;
     }
     if (this.associatedContract) {
       return getDataProductGroupAccessFromContract(this.associatedContract);
     } else {
-      return DataProductGroupAccess.NO_ACCESS;
+      return AccessPointGroupAccess.NO_ACCESS;
     }
   }
 
@@ -147,12 +147,12 @@ export class DataProductGroupAccessState {
   }
 
   handleContractClick(): void {
-    if (this.access === DataProductGroupAccess.NO_ACCESS) {
+    if (this.access === AccessPointGroupAccess.NO_ACCESS) {
       this.accessState.viewerState.setDataContractAccessPointGroup(this.group);
     } else if (
-      this.access === DataProductGroupAccess.PENDING_MANAGER_APPROVAL ||
-      this.access === DataProductGroupAccess.PENDING_DATA_OWNER_APPROVAL ||
-      this.access === DataProductGroupAccess.COMPLETED
+      this.access === AccessPointGroupAccess.PENDING_MANAGER_APPROVAL ||
+      this.access === AccessPointGroupAccess.PENDING_DATA_OWNER_APPROVAL ||
+      this.access === AccessPointGroupAccess.COMPLETED
     ) {
       const associatedContract = this.associatedContract;
       if (associatedContract) {

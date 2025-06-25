@@ -32,7 +32,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
 import { useApplicationStore } from '@finos/legend-application';
 import {
-  DataProductGroupAccess,
+  AccessPointGroupAccess,
   type DataProductGroupAccessState,
 } from '../../../stores/lakehouse/DataProductDataAccessState.js';
 import {
@@ -361,7 +361,7 @@ export const DataProductAccessPointGroupViewer = observer(
 
     useEffect(() => {
       if (
-        accessGroupState.access === DataProductGroupAccess.COMPLETED &&
+        accessGroupState.access === AccessPointGroupAccess.COMPLETED &&
         accessGroupState.associatedContract &&
         accessGroupState.fetchingSubscriptionsState.isInInitialState
       ) {
@@ -380,9 +380,9 @@ export const DataProductAccessPointGroupViewer = observer(
       setShowSubscriptionsModal(true);
     };
 
-    const renderAccess = (val: DataProductGroupAccess): React.ReactNode => {
+    const renderAccess = (val: AccessPointGroupAccess): React.ReactNode => {
       switch (val) {
-        case DataProductGroupAccess.UNKNOWN:
+        case AccessPointGroupAccess.UNKNOWN:
           return (
             <Button
               variant="contained"
@@ -392,7 +392,7 @@ export const DataProductAccessPointGroupViewer = observer(
               UNKNOWN
             </Button>
           );
-        case DataProductGroupAccess.NO_ACCESS:
+        case AccessPointGroupAccess.NO_ACCESS:
           return (
             <Button
               variant="contained"
@@ -403,8 +403,8 @@ export const DataProductAccessPointGroupViewer = observer(
               REQUEST ACCESS
             </Button>
           );
-        case DataProductGroupAccess.PENDING_MANAGER_APPROVAL:
-        case DataProductGroupAccess.PENDING_DATA_OWNER_APPROVAL:
+        case AccessPointGroupAccess.PENDING_MANAGER_APPROVAL:
+        case AccessPointGroupAccess.PENDING_DATA_OWNER_APPROVAL:
           return (
             <Button
               variant="contained"
@@ -413,13 +413,13 @@ export const DataProductAccessPointGroupViewer = observer(
               loading={accessGroupState.fetchingAccessState.isInProgress}
             >
               <div>
-                {val === DataProductGroupAccess.PENDING_MANAGER_APPROVAL
+                {val === AccessPointGroupAccess.PENDING_MANAGER_APPROVAL
                   ? 'PENDING MANAGER APPROVAL'
                   : 'PENDING DATA OWNER APPROVAL'}
               </div>
             </Button>
           );
-        case DataProductGroupAccess.COMPLETED:
+        case AccessPointGroupAccess.COMPLETED:
           return (
             <>
               <ButtonGroup
@@ -486,7 +486,7 @@ export const DataProductAccessPointGroupViewer = observer(
             <Box className="data-space__viewer__access-group__item__header__data-contract">
               {renderAccess(accessGroupState.access)}
             </Box>
-            {accessGroupState.access === DataProductGroupAccess.COMPLETED && (
+            {accessGroupState.access === AccessPointGroupAccess.COMPLETED && (
               <Box className="data-space__viewer__access-group__item__header__subscription">
                 <Button
                   variant="outlined"
