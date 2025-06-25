@@ -25,7 +25,9 @@ import {
   type V1_AccessPoint,
   V1_AccessPointGroup,
   V1_DataProduct,
+  V1_Email,
   V1_LakehouseAccessPoint,
+  V1_SupportInfo,
   V1_UnknownAccessPoint,
 } from '../../../model/packageableElements/dataProduct/V1_DataProduct.js';
 import { V1_initPackageableElement } from './V1_CoreTransformerHelper.js';
@@ -61,6 +63,22 @@ export const V1_transformDataProduct = (
   V1_initPackageableElement(product, element);
   product.description = element.description;
   product.title = element.title;
+  if (!element.supportInfo) {
+    product.supportInfo = undefined;
+  } else {
+    const supportInfo = new V1_SupportInfo();
+    supportInfo.documentationUrl = element.supportInfo.documentationUrl;
+    supportInfo.website = element.supportInfo.website;
+    supportInfo.faqUrl = element.supportInfo.faqUrl;
+    supportInfo.supportUrl = element.supportInfo.supportUrl;
+    supportInfo.emails = element.supportInfo.emails.map((metamodelEmail) => {
+      const email = new V1_Email();
+      email.title = metamodelEmail.title;
+      email.address = metamodelEmail.address;
+      return email;
+    });
+    product.supportInfo = supportInfo;
+  }
   product.accessPointGroups = element.accessPointGroups.map(
     (metamodelGroup) => {
       const group = new V1_AccessPointGroup();

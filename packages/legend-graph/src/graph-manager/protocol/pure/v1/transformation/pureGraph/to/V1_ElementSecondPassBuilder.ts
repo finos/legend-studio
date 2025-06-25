@@ -118,7 +118,11 @@ import {
 import type { V1_INTERNAL__UnknownElement } from '../../../model/packageableElements/V1_INTERNAL__UnknownElement.js';
 import type { V1_HostedService } from '../../../model/packageableElements/function/V1_HostedService.js';
 import { type V1_DataProduct } from '../../../model/packageableElements/dataProduct/V1_DataProduct.js';
-import { AccessPointGroup } from '../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
+import {
+  AccessPointGroup,
+  Email,
+  SupportInfo,
+} from '../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import { V1_buildAccessPoint } from './helpers/V1_DataProductBuilder.js';
 import type { V1_IngestDefinition } from '../../../model/packageableElements/ingest/V1_IngestDefinition.js';
 
@@ -700,5 +704,19 @@ export class V1_ElementSecondPassBuilder
         return group;
       },
     );
+    if (!element.supportInfo) {
+      dataProduct.supportInfo = undefined;
+    } else {
+      const supportInfo = new SupportInfo();
+      supportInfo.documentationUrl = element.supportInfo.documentationUrl;
+      supportInfo.website = element.supportInfo.website;
+      supportInfo.faqUrl = element.supportInfo.faqUrl;
+      supportInfo.supportUrl = element.supportInfo.supportUrl;
+      supportInfo.emails = element.supportInfo.emails.map((elementEmail) => {
+        const email = new Email(elementEmail.address, elementEmail.title);
+        return email;
+      });
+      dataProduct.supportInfo = supportInfo;
+    }
   }
 }

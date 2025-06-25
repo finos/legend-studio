@@ -18,8 +18,12 @@ import {
   type AccessPoint,
   type AccessPointGroup,
   type DataProduct,
+  type Email,
   observe_AccessPoint,
   observe_AccessPointGroup,
+  observe_SupportInfo,
+  observe_Email,
+  SupportInfo,
 } from '@finos/legend-graph';
 import { addUniqueEntry, deleteEntry } from '@finos/legend-shared';
 
@@ -73,5 +77,52 @@ export const dataProduct_setTitle = action(
 export const dataProduct_setDescription = action(
   (product: DataProduct, description: string) => {
     product.description = description;
+  },
+);
+
+export const dataProduct_setSupportInfoIfAbsent = action(
+  (product: DataProduct) => {
+    if (!product.supportInfo) {
+      product.supportInfo = observe_SupportInfo(new SupportInfo());
+    }
+  },
+);
+
+export const supportInfo_setDocumentationUrl = action(
+  (supportInfo: SupportInfo, documentationUrl: string) => {
+    supportInfo.documentationUrl = documentationUrl;
+  },
+);
+
+export const supportInfo_setWebsite = action(
+  (supportInfo: SupportInfo, website: string) => {
+    supportInfo.website = website;
+  },
+);
+
+export const supportInfo_setFaqUrl = action(
+  (supportInfo: SupportInfo, faqUrl: string) => {
+    supportInfo.faqUrl = faqUrl;
+  },
+);
+
+export const supportInfo_setSupportUrl = action(
+  (supportInfo: SupportInfo, supportUrl: string) => {
+    supportInfo.supportUrl = supportUrl;
+  },
+);
+
+export const supportInfo_addEmail = action(
+  (supportInfo: SupportInfo, email: Email) => {
+    addUniqueEntry(supportInfo.emails, observe_Email(email));
+  },
+);
+
+export const supportInfo_deleteEmail = action(
+  (supportInfo: SupportInfo, email: Email): void => {
+    const index = supportInfo.emails.indexOf(email);
+    if (index !== -1) {
+      supportInfo.emails.splice(index, 1);
+    }
   },
 );

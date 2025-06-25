@@ -79,6 +79,15 @@
     }
   }
 
+  &__support-info {
+    &__new-email {
+      @include flexVCenter;
+
+      align-items: center;
+      margin-right: 0.5rem;
+    }
+  }
+
   &__splash-screen {
     @include flexCenter;
 

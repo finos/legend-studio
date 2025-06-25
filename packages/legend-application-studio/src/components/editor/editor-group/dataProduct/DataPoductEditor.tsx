@@ -37,6 +37,7 @@ import {
   PlusIcon,
   PanelHeaderActionItem,
   RocketIcon,
+  ListEditor,
   Modal,
   ModalHeader,
   ModalTitle,
@@ -50,6 +51,7 @@ import {
   MenuContentItem,
   CaretDownIcon,
   WarningIcon,
+  PanelFormSection,
 } from '@finos/legend-art';
 import React, { useRef, useState, useEffect } from 'react';
 import { filterByType } from '@finos/legend-shared';
@@ -58,12 +60,19 @@ import { action, flowResult } from 'mobx';
 import { useAuth } from 'react-oidc-context';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
-import { LakehouseTargetEnv } from '@finos/legend-graph';
+import { LakehouseTargetEnv, Email } from '@finos/legend-graph';
 import {
   accessPointGroup_setDescription,
   accessPointGroup_setName,
   dataProduct_setDescription,
+  dataProduct_setSupportInfoIfAbsent,
   dataProduct_setTitle,
+  supportInfo_setDocumentationUrl,
+  supportInfo_setWebsite,
+  supportInfo_setFaqUrl,
+  supportInfo_setSupportUrl,
+  supportInfo_addEmail,
+  supportInfo_deleteEmail,
 } from '../../../../stores/graph-modifier/DSL_DataProduct_GraphModifierHelper.js';
 
 const NewAccessPointAccessPOint = observer(
@@ -883,6 +892,34 @@ export const DataProductEditor = observer(() => {
     dataProduct_setDescription(product, val ?? '');
   };
 
+  const updateSupportInfoDocumentationUrl = (val: string | undefined): void => {
+    dataProduct_setSupportInfoIfAbsent(product);
+    if (product.supportInfo) {
+      supportInfo_setDocumentationUrl(product.supportInfo, val ?? '');
+    }
+  };
+
+  const updateSupportInfoWebsite = (val: string | undefined): void => {
+    dataProduct_setSupportInfoIfAbsent(product);
+    if (product.supportInfo) {
+      supportInfo_setWebsite(product.supportInfo, val ?? '');
+    }
+  };
+
+  const updateSupportInfoFaqUrl = (val: string | undefined): void => {
+    dataProduct_setSupportInfoIfAbsent(product);
+    if (product.supportInfo) {
+      supportInfo_setFaqUrl(product.supportInfo, val ?? '');
+    }
+  };
+
+  const updateSupportInfoSupportUrl = (val: string | undefined): void => {
+    dataProduct_setSupportInfoIfAbsent(product);
+    if (product.supportInfo) {
+      supportInfo_setSupportUrl(product.supportInfo, val ?? '');
+    }
+  };
+
   useEffect(() => {
     flowResult(dataProductEditorState.convertAccessPointsFuncObjects()).catch(
       dataProductEditorState.editorStore.applicationStore.alertUnhandledError,
@@ -900,6 +937,84 @@ export const DataProductEditor = observer(() => {
     editorStore.applicationStore.alertUnhandledError,
     dataProductEditorState,
   ]);
+
+  const handleSupportInfoEmailAdd = (address: string, title: string): void => {
+    dataProduct_setSupportInfoIfAbsent(product);
+    if (product.supportInfo) {
+      supportInfo_addEmail(product.supportInfo, new Email(address, title));
+    }
+  };
+
+  const handleSupportInfoEmailRemove = (email: Email): void => {
+    if (product.supportInfo) {
+      supportInfo_deleteEmail(product.supportInfo, email);
+    }
+  };
+
+  const SupportEmailComponent = observer(
+    (props: { item: Email }): React.ReactElement => {
+      const { item } = props;
+
+      return (
+        <div className="panel__content__form__section__list__item__rows">
+          <div className="row">
+            <label className="label">Address</label>
+            <div className="textbox">{item.address}</div>
+          </div>
+          <div className="row">
+            <label className="label">Title</label>
+            <div className="textbox">{item.title}</div>
+          </div>
+        </div>
+      );
+    },
+  );
+
+  const NewSupportEmailComponent = observer(
+    (props: { onFinishEditing: () => void }) => {
+      const { onFinishEditing } = props;
+      const [address, setAddress] = useState('');
+      const [title, setTitle] = useState('');
+
+      return (
+        <div className="data-product-editor__support-info__new-email">
+          <div className="panel__content__form__section__list__new-item__input">
+            <input
+              className="input input-group__input panel__content__form__section__input input--dark"
+              type="email"
+              placeholder="Enter email"
+              value={address}
+              onChange={(event) => {
+                setAddress(event.target.value);
+              }}
+            />
+          </div>
+          <div className="panel__content__form__section__list__new-item__input">
+            <input
+              className="input input-group__input panel__content__form__section__input input--dark"
+              type="title"
+              placeholder="Enter title"
+              value={title}
+              onChange={(event) => {
+                setTitle(event.target.value);
+              }}
+            />
+          </div>
+          <button
+            className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
+            onClick={() => {
+              handleSupportInfoEmailAdd(address, title);
+              setAddress('');
+              setTitle('');
+              onFinishEditing();
+            }}
+          >
+            Save
+          </button>
+        </div>
+      );
+    },
+  );
 
   return (
     <div className="data-product-editor">
@@ -943,6 +1058,48 @@ export const DataProductEditor = observer(() => {
             update={updateDataProductDescription}
             placeholder="Enter description"
           />
+          <PanelFormSection>
+            <div className="panel__content__form__section__header__label">
+              Support Information
+            </div>
+            <div className="panel__content__form__section__header__prompt">
+              Configure support information for this Lakehouse Data Product.
+            </div>
+            <PanelFormTextField
+              name="Documentation URL"
+              value={product.supportInfo?.documentationUrl ?? ''}
+              update={updateSupportInfoDocumentationUrl}
+              placeholder="Enter Documentation URL"
+            />
+            <PanelFormTextField
+              name="Website"
+              value={product.supportInfo?.website}
+              update={updateSupportInfoWebsite}
+              placeholder="Enter Website"
+            />
+            <PanelFormTextField
+              name="FAQ URL"
+              value={product.supportInfo?.faqUrl}
+              update={updateSupportInfoFaqUrl}
+              placeholder="Enter FAQ URL"
+            />
+            <PanelFormTextField
+              name="Support URL"
+              value={product.supportInfo?.supportUrl}
+              update={updateSupportInfoSupportUrl}
+              placeholder="Enter Support URL"
+            />
+            <ListEditor
+              title="Emails"
+              items={product.supportInfo?.emails}
+              keySelector={(email: Email) => email.address + email.title}
+              ItemComponent={SupportEmailComponent}
+              NewItemComponent={NewSupportEmailComponent}
+              handleRemoveItem={handleSupportInfoEmailRemove}
+              isReadOnly={isReadOnly}
+              emptyMessage="No emails specified"
+            />
+          </PanelFormSection>
         </div>
         <div className="panel" style={{ overflow: 'auto' }}>
           <PanelHeader>
