@@ -26,6 +26,7 @@ import {
   V1_CreateSubscriptionInputModelSchema,
   V1_dataSubscriptionModelSchema,
   V1_DataSubscriptionResponseModelSchema,
+  V1_UserApprovalStatus,
 } from '@finos/legend-graph';
 import type { DataProductViewerState } from './DataProductViewerState.js';
 import {
@@ -56,15 +57,30 @@ export enum AccessPointGroupAccess {
 
   PENDING_MANAGER_APPROVAL = 'PENDING_MANAGER_APPROVAL',
   PENDING_DATA_OWNER_APPROVAL = 'PENDING_DATA_OWNER_APPROVAL',
-  COMPLETED = 'COMPLETED',
+  APPROVED = 'APPROVED',
+  DENIED = 'DENIED',
   NO_ACCESS = 'NO_ACCESS',
 }
 
-const getDataProductGroupAccessFromContract = (
+const getAccessPointGroupAccessFromContract = (
   val: V1_DataContract,
+  user: string,
 ): AccessPointGroupAccess => {
   if (isContractCompleted(val)) {
-    return AccessPointGroupAccess.COMPLETED;
+    const contractMembership = guaranteeNonNullable(
+      val.members.find((m) => m.user.name === user),
+      `User ${user} not found in contract members`,
+    );
+    switch (contractMembership.status) {
+      case V1_UserApprovalStatus.APPROVED:
+        return AccessPointGroupAccess.APPROVED;
+      case V1_UserApprovalStatus.DENIED:
+      case V1_UserApprovalStatus.REVOKED:
+      case V1_UserApprovalStatus.CLOSED:
+        return AccessPointGroupAccess.DENIED;
+      default:
+        return AccessPointGroupAccess.UNKNOWN;
+    }
   } else if (
     val.state === V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL
   ) {
@@ -115,7 +131,11 @@ export class DataProductGroupAccessState {
       return AccessPointGroupAccess.UNKNOWN;
     }
     if (this.associatedContract) {
-      return getDataProductGroupAccessFromContract(this.associatedContract);
+      return getAccessPointGroupAccessFromContract(
+        this.associatedContract,
+        this.accessState.viewerState.applicationStore.identityService
+          .currentUser,
+      );
     } else {
       return AccessPointGroupAccess.NO_ACCESS;
     }
@@ -147,17 +167,22 @@ export class DataProductGroupAccessState {
   }
 
   handleContractClick(): void {
-    if (this.access === AccessPointGroupAccess.NO_ACCESS) {
-      this.accessState.viewerState.setDataContractAccessPointGroup(this.group);
-    } else if (
-      this.access === AccessPointGroupAccess.PENDING_MANAGER_APPROVAL ||
-      this.access === AccessPointGroupAccess.PENDING_DATA_OWNER_APPROVAL ||
-      this.access === AccessPointGroupAccess.COMPLETED
-    ) {
-      const associatedContract = this.associatedContract;
-      if (associatedContract) {
-        this.accessState.viewerState.setDataContract(associatedContract);
-      }
+    switch (this.access) {
+      case AccessPointGroupAccess.NO_ACCESS:
+      case AccessPointGroupAccess.DENIED:
+        this.accessState.viewerState.setDataContractAccessPointGroup(
+          this.group,
+        );
+        break;
+      case AccessPointGroupAccess.PENDING_MANAGER_APPROVAL:
+      case AccessPointGroupAccess.PENDING_DATA_OWNER_APPROVAL:
+      case AccessPointGroupAccess.APPROVED:
+        if (this.associatedContract) {
+          this.accessState.viewerState.setDataContract(this.associatedContract);
+        }
+        break;
+      default:
+        break;
     }
   }
 

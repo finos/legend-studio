@@ -361,7 +361,7 @@ export const DataProductAccessPointGroupViewer = observer(
 
     useEffect(() => {
       if (
-        accessGroupState.access === AccessPointGroupAccess.COMPLETED &&
+        accessGroupState.access === AccessPointGroupAccess.APPROVED &&
         accessGroupState.associatedContract &&
         accessGroupState.fetchingSubscriptionsState.isInInitialState
       ) {
@@ -393,6 +393,7 @@ export const DataProductAccessPointGroupViewer = observer(
             </Button>
           );
         case AccessPointGroupAccess.NO_ACCESS:
+        case AccessPointGroupAccess.DENIED:
           return (
             <Button
               variant="contained"
@@ -419,7 +420,7 @@ export const DataProductAccessPointGroupViewer = observer(
               </div>
             </Button>
           );
-        case AccessPointGroupAccess.COMPLETED:
+        case AccessPointGroupAccess.APPROVED:
           return (
             <>
               <ButtonGroup
@@ -486,7 +487,7 @@ export const DataProductAccessPointGroupViewer = observer(
             <Box className="data-space__viewer__access-group__item__header__data-contract">
               {renderAccess(accessGroupState.access)}
             </Box>
-            {accessGroupState.access === AccessPointGroupAccess.COMPLETED && (
+            {accessGroupState.access === AccessPointGroupAccess.APPROVED && (
               <Box className="data-space__viewer__access-group__item__header__subscription">
                 <Button
                   variant="outlined"
