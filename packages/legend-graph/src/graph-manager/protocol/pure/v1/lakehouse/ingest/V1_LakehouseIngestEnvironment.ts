@@ -26,20 +26,29 @@ export enum V1_IngestEnvironmentClassification {
   DEV = 'dev',
 }
 
-export abstract class V1_IngestEnvironment {}
-
-export class V1_AWSSnowflakeIngestEnvironment extends V1_IngestEnvironment {
+export abstract class V1_IngestEnvironment {
   urn!: string;
   version!: string;
   environmentClassification!: V1_IngestEnvironmentClassification;
+  cftServiceAccountDeploymentId!: number;
   producers: AppDirNode[] = [];
+}
+
+export abstract class V1_AWSIngestEnvironment extends V1_IngestEnvironment {
   awsRegion!: string;
   awsAccountId!: string;
   ingestStepFunctionsAvtivityArn!: string;
   ingestStateMachineArn!: string;
   ingestSystemAccount!: string;
+}
+
+export class V1_AWSSnowflakeIngestEnvironment extends V1_AWSIngestEnvironment {
   snowflakeAccount!: string;
   snowflakeHost!: string;
   s3StagingBucketName!: string;
   storageIntegrationName!: string;
+}
+
+export class V1_GCPIngestEnvironment extends V1_IngestEnvironment {
+  gcsStagingBucketName!: string;
 }

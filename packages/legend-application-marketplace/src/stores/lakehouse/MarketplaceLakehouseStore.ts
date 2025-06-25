@@ -578,16 +578,26 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   ): Promise<void> {
     try {
       this.loadingLakehouseEnvironmentDetailsState.inProgress();
-      const ingestEnvironments: V1_IngestEnvironment[] = await Promise.all(
-        this.lakehouseIngestEnvironmentSummaries.map(async (discoveryEnv) => {
-          const env =
-            await this.lakehouseIngestServerClient.getIngestEnvironment(
-              discoveryEnv.ingestServerUrl,
-              token,
-            );
-          return V1_deserializeIngestEnvironment(env);
-        }),
-      );
+      const ingestEnvironments: V1_IngestEnvironment[] = (
+        await Promise.all(
+          this.lakehouseIngestEnvironmentSummaries.map(async (discoveryEnv) => {
+            try {
+              const env =
+                await this.lakehouseIngestServerClient.getIngestEnvironment(
+                  discoveryEnv.ingestServerUrl,
+                  token,
+                );
+              return V1_deserializeIngestEnvironment(env);
+            } catch (error) {
+              assertErrorThrown(error);
+              this.applicationStore.notificationService.notifyError(
+                `Unable to load lakehouse environment details for ${discoveryEnv.ingestEnvironmentUrn}: ${error.message}`,
+              );
+              return undefined;
+            }
+          }),
+        )
+      ).filter(isNonNullable);
       this.setLakehouseIngestEnvironmentDetails(ingestEnvironments);
       this.loadingLakehouseEnvironmentDetailsState.complete();
     } catch (error) {
