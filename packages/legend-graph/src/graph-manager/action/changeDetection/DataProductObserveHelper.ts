@@ -17,6 +17,8 @@
 import { makeObservable, observable, override } from 'mobx';
 import {
   LakehouseAccessPoint,
+  type Email,
+  type SupportInfo,
   type AccessPoint,
   type AccessPointGroup,
   type DataProduct,
@@ -37,6 +39,28 @@ export const observe_AccessPoint = skipObserved(
       });
     }
     // TODO others
+    return metamodel;
+  },
+);
+
+export const observe_Email = skipObserved((metamodel: Email): Email => {
+  makeObservable(metamodel, {
+    title: observable,
+    address: observable,
+  });
+  return metamodel;
+});
+
+export const observe_SupportInfo = skipObserved(
+  (metamodel: SupportInfo): SupportInfo => {
+    makeObservable(metamodel, {
+      documentationUrl: observable,
+      website: observable,
+      faqUrl: observable,
+      supportUrl: observable,
+      emails: observable,
+    });
+    metamodel.emails.forEach(observe_Email);
     return metamodel;
   },
 );
@@ -62,8 +86,12 @@ export const observe_DataProduct = skipObserved(
       _elementHashCode: override,
       title: observable,
       description: observable,
+      supportInfo: observable,
     });
 
+    if (metamodel.supportInfo) {
+      observe_SupportInfo(metamodel.supportInfo);
+    }
     metamodel.accessPointGroups.forEach(observe_AccessPointGroup);
     return metamodel;
   },

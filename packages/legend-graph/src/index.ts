@@ -179,6 +179,8 @@ export { V1_ExternalFormatModelGenerationInput } from './graph-manager/protocol/
 export { V1_GenerateSchemaInput } from './graph-manager/protocol/pure/v1/engine/externalFormat/V1_GenerateSchemaInput.js';
 export {
   V1_DataProduct,
+  V1_SupportInfo,
+  V1_Email,
   V1_LakehouseAccessPoint,
   V1_AccessPoint,
   V1_AccessPointGroup,
@@ -660,6 +662,8 @@ export * from './graph-manager/action/changeDetection/DSL_FunctionActivatorObser
 
 export {
   DataProduct,
+  SupportInfo,
+  Email,
   LakehouseAccessPoint,
   LakehouseTargetEnv,
   AccessPointGroup,
