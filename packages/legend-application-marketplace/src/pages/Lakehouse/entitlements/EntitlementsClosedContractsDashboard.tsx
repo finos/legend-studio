@@ -16,9 +16,11 @@
 
 import {
   type V1_DataContract,
+  type V1_DataContractsResponse,
   V1_AccessPointGroupReference,
   V1_AdhocTeam,
   V1_ContractState,
+  V1_dataContractsResponseModelSchemaToContracts,
 } from '@finos/legend-graph';
 import {
   DataGrid,
@@ -38,13 +40,15 @@ import {
   isContractInTerminalState,
   stringifyOrganizationalScope,
 } from '../../../stores/lakehouse/LakehouseUtils.js';
-import { startCase } from '@finos/legend-shared';
+import { startCase, type PlainObject } from '@finos/legend-shared';
 import { MultiUserCellRenderer } from '../../../components/MultiUserCellRenderer/MultiUserCellRenderer.js';
+import { useAuth } from 'react-oidc-context';
 
 export const EntitlementsClosedContractsDashbaord = observer(
   (props: { dashboardState: EntitlementsDashboardState }): React.ReactNode => {
     const { dashboardState } = props;
     const { allContracts } = dashboardState;
+    const auth = useAuth();
 
     const closedContracts =
       allContracts?.filter(
@@ -76,7 +80,7 @@ export const EntitlementsClosedContractsDashbaord = observer(
       closedContracts.length === 0 && closedContractsForOthers.length > 0,
     );
 
-    const handleCellClicked = (
+    const handleCellClicked = async (
       event: DataGridCellClickedEvent<V1_DataContract>,
     ) => {
       if (
@@ -84,7 +88,20 @@ export const EntitlementsClosedContractsDashbaord = observer(
         event.colDef.colId !== 'requester' &&
         event.colDef.colId !== 'actioner'
       ) {
-        setSelectedContract(event.data);
+        if (event.data) {
+          const rawEnrichedContract =
+            (await dashboardState.lakehouseEntitlementsStore.lakehouseServerClient.getDataContract(
+              event.data?.guid,
+              auth.user?.access_token,
+            )) as PlainObject<V1_DataContractsResponse>;
+          const enrichedContract =
+            V1_dataContractsResponseModelSchemaToContracts(
+              rawEnrichedContract,
+            )[0];
+          if (enrichedContract) {
+            setSelectedContract(event.data);
+          }
+        }
       }
     };
 
