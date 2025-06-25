@@ -26,7 +26,7 @@ import {
   type V1_AccessPointGroup,
   type V1_CreateContractPayload,
   type V1_DataContract,
-  type V1_DataContractsRecord,
+  type V1_DataContractsResponse,
   type V1_DataProduct,
   type V1_OrganizationalScope,
   V1_AdhocTeam,
@@ -165,7 +165,7 @@ export class DataProductViewerState {
       const _contracts = (yield this.lakeServerClient.getDataContractsFromDID(
         [serialize(V1_AppDirNodeModelSchema, didNode)],
         token,
-      )) as PlainObject<V1_DataContractsRecord>;
+      )) as PlainObject<V1_DataContractsResponse>;
       const dataProductContracts = V1_DataContractsRecordModelSchemaToContracts(
         _contracts,
         this.lakehouseStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
@@ -220,7 +220,7 @@ export class DataProductViewerState {
         (yield this.lakeServerClient.createContract(
           request,
           token,
-        )) as unknown as PlainObject<V1_DataContractsRecord>,
+        )) as unknown as PlainObject<V1_DataContractsResponse>,
         this.lakehouseStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
       );
       const associatedContract = contracts[0];
