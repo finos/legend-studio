@@ -99,7 +99,7 @@ export const EntitlementsClosedContractsDashbaord = observer(
               rawEnrichedContract,
             )[0];
           if (enrichedContract) {
-            setSelectedContract(event.data);
+            setSelectedContract(enrichedContract);
           }
         }
       }
