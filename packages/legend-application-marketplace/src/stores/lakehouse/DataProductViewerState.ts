@@ -176,9 +176,21 @@ export class DataProductViewerState {
           _contract,
         ),
       );
-      this.setAssociatedContracts(dataProductContracts);
+      const dataProductContractIds = dataProductContracts.map((e) => e.guid);
+      const enrichedContracts = (yield Promise.all(
+        dataProductContractIds.map(async (contractId) => {
+          const rawContracts = (await this.lakeServerClient.getDataContract(
+            contractId,
+            token,
+          )) as PlainObject<V1_DataContractsResponse>;
+          const contract =
+            V1_DataContractsRecordModelSchemaToContracts(rawContracts);
+          return contract;
+        }),
+      )).flat();
+      this.setAssociatedContracts(enrichedContracts);
       this.accessState.accessGroupStates.forEach((e) =>
-        e.handleDataProductContracts(dataProductContracts),
+        e.handleDataProductContracts(enrichedContracts),
       );
     } catch (error) {
       assertErrorThrown(error);
