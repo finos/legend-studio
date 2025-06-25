@@ -62,7 +62,7 @@ export class LakehouseContractServerClient extends AbstractServerClient {
     token: string | undefined,
   ): Promise<PlainObject<V1_DataContractsResponse>> =>
     this.get(
-      `${this._dataContracts()}/${encodeURIComponent(id)}`,
+      `${this._dataContracts()}/${encodeURIComponent(id)}?withMembers=true`,
       {},
       this._token(token),
     );
