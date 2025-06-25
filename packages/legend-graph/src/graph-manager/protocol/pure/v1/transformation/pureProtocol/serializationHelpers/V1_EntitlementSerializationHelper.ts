@@ -33,8 +33,8 @@ import {
   V1_CreateContractPayload,
   V1_DataBundle,
   V1_DataContract,
-  V1_DataContractRecord,
-  V1_DataContractsRecord,
+  V1_DataContractSubscriptions,
+  V1_DataContractsResponse,
   V1_DataProduct_Entitlements,
   V1_PendingTasksRespond,
   V1_TaskMetadata,
@@ -192,19 +192,19 @@ export const V1_dataContractModelSchema = (
     createdBy: primitive(),
   });
 
-export const V1_DataContractRecordModelSchema = (
+export const V1_schemaSetModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ) =>
-  createModelSchema(V1_DataContractRecord, {
+  createModelSchema(V1_DataContractSubscriptions, {
     dataContract: usingModelSchema(V1_dataContractModelSchema(plugins)),
   });
 
 export const V1_DataContractsRecordModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ) =>
-  createModelSchema(V1_DataContractsRecord, {
+  createModelSchema(V1_DataContractsResponse, {
     dataContracts: optional(
-      customListWithSchema(V1_DataContractRecordModelSchema(plugins)),
+      customListWithSchema(V1_schemaSetModelSchema(plugins)),
     ),
   });
 
@@ -306,7 +306,7 @@ export const V1_TaskStatusChangeResponseModelSchema = createModelSchema(
 );
 
 export const V1_DataContractsRecordModelSchemaToContracts = (
-  json: PlainObject<V1_DataContractsRecord>,
+  json: PlainObject<V1_DataContractsResponse>,
   plugins: PureProtocolProcessorPlugin[],
 ): V1_DataContract[] => {
   const contracts = deserialize(

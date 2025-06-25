@@ -18,7 +18,8 @@ import type {
   V1_CreateContractPayload,
   V1_CreateSubscriptionInput,
   V1_DataContract,
-  V1_DataContractsRecord,
+  V1_DataContractApprovedUsersResponse,
+  V1_DataContractsResponse,
   V1_DataSubscriptionResponse,
   V1_PendingTasksRespond,
   V1_TaskStatus,
@@ -53,13 +54,13 @@ export class LakehouseContractServerClient extends AbstractServerClient {
 
   getDataContracts = (
     token: string | undefined,
-  ): Promise<PlainObject<V1_DataContractsRecord>> =>
+  ): Promise<PlainObject<V1_DataContractsResponse>> =>
     this.get(this._dataContracts(), {}, this._token(token));
 
   getDataContract = (
     id: string,
     token: string | undefined,
-  ): Promise<PlainObject<V1_DataContractsRecord>> =>
+  ): Promise<PlainObject<V1_DataContractsResponse>> =>
     this.get(
       `${this._dataContracts()}/${encodeURIComponent(id)}`,
       {},
@@ -69,7 +70,7 @@ export class LakehouseContractServerClient extends AbstractServerClient {
   getApprovedUsersForDataContract = (
     id: string,
     token: string | undefined,
-  ): Promise<PlainObject<V1_DataContractsRecord>> =>
+  ): Promise<PlainObject<V1_DataContractApprovedUsersResponse>> =>
     this.get(
       `${this._dataContracts()}/${encodeURIComponent(id)}/approvedUsers`,
       {},
@@ -79,7 +80,7 @@ export class LakehouseContractServerClient extends AbstractServerClient {
   getDataContractsFromDID = (
     body: PlainObject<AppendMode>[],
     token: string | undefined,
-  ): Promise<PlainObject<V1_DataContractsRecord>> => {
+  ): Promise<PlainObject<V1_DataContractsResponse>> => {
     return this.post(
       `${this._dataContracts()}/query/accessPointsOwnedByDeployments`,
       body,
