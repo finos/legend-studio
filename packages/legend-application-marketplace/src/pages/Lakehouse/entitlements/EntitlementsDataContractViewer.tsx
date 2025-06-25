@@ -38,6 +38,7 @@ import {
   TimelineSeparator,
 } from '@mui/lab';
 import {
+  type V1_DataContract,
   type V1_TaskMetadata,
   V1_AccessPointGroupReference,
   V1_AdhocTeam,
@@ -45,12 +46,16 @@ import {
   V1_ContractState,
   V1_ContractUserEventDataProducerPayload,
   V1_ContractUserEventPrivilegeManagerPayload,
+  V1_UserApprovalStatus,
 } from '@finos/legend-graph';
 import React, { useEffect, useState } from 'react';
-import { formatDate } from '@finos/legend-shared';
+import {
+  formatDate,
+  guaranteeNonNullable,
+  startCase,
+} from '@finos/legend-shared';
 import {
   isContractInTerminalState,
-  isContractStateComplete,
   stringifyOrganizationalScope,
 } from '../../../stores/lakehouse/LakehouseUtils.js';
 import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
@@ -104,11 +109,12 @@ const AssigneesList = (props: {
 };
 
 const TaskApprovalView = (props: {
-  contractState: V1_ContractState;
+  contract: V1_DataContract;
   task: V1_TaskMetadata | undefined;
   marketplaceStore: LegendMarketplaceBaseStore;
 }): React.ReactNode => {
-  const { contractState, task, marketplaceStore } = props;
+  const { contract, task, marketplaceStore } = props;
+  const contractState = contract.state;
   const approverId =
     task?.rec.eventPayload instanceof
     V1_ContractUserEventPrivilegeManagerPayload
@@ -122,11 +128,19 @@ const TaskApprovalView = (props: {
     contractState === V1_ContractState.PENDING_DATA_OWNER_APPROVAL ||
     contractState === V1_ContractState.COMPLETED
   ) {
+    const userStatus = guaranteeNonNullable(
+      contract.members.find(
+        (m) =>
+          m.user.name ===
+          marketplaceStore.applicationStore.identityService.currentUser,
+      ),
+      'Current user not found in contract members',
+    ).status;
     if (task) {
       return (
         <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__task-approval-view">
           <Box>
-            Approved by{' '}
+            {startCase(userStatus)} by{' '}
             <UserRenderer
               userId={approverId}
               marketplaceStore={marketplaceStore}
@@ -141,7 +155,7 @@ const TaskApprovalView = (props: {
         </Box>
       );
     } else {
-      return <Box>Approved</Box>;
+      return <Box>{startCase(userStatus)}</Box>;
     }
   } else if (contractState === V1_ContractState.REJECTED) {
     if (task) {
@@ -238,7 +252,14 @@ export const EntitlementsDataContractViewer = observer(
 
     const dataProduct = currentViewer.value.resource.dataProduct;
     const accessPointGroup = currentViewer.value.resource.accessPointGroup;
-    const currentState = currentViewer.value.state;
+    const contractUser = guaranteeNonNullable(
+      currentViewer.value.members.find(
+        (m) =>
+          m.user.name ===
+          legendMarketplaceStore.applicationStore.identityService.currentUser,
+      ),
+      'Current user not found in contract members',
+    );
     const privilegeManagerApprovalTask = currentViewer.associatedTasks?.find(
       (task) =>
         task.rec.type === V1_ApprovalType.CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
@@ -246,12 +267,6 @@ export const EntitlementsDataContractViewer = observer(
     const dataOwnerApprovalTask = currentViewer.associatedTasks?.find(
       (task) => task.rec.type === V1_ApprovalType.DATA_OWNER_APPROVAL,
     );
-    const currentTask =
-      currentState === V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL
-        ? privilegeManagerApprovalTask
-        : currentState === V1_ContractState.PENDING_DATA_OWNER_APPROVAL
-          ? dataOwnerApprovalTask
-          : undefined;
 
     const copyTaskLink = (text: string): void => {
       legendMarketplaceStore.applicationStore.clipboardService
@@ -276,13 +291,14 @@ export const EntitlementsDataContractViewer = observer(
       {
         key: 'privilege-manager-approval',
         label:
-          currentState ===
-            V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL &&
-          currentTask ? (
+          privilegeManagerApprovalTask?.rec.status ===
+          V1_UserApprovalStatus.PENDING ? (
             <>
               <Link
                 href={legendMarketplaceStore.applicationStore.navigationService.navigator.generateAddress(
-                  generateLakehouseTaskPath(currentTask.rec.taskId),
+                  generateLakehouseTaskPath(
+                    privilegeManagerApprovalTask.rec.taskId,
+                  ),
                 )}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -293,7 +309,9 @@ export const EntitlementsDataContractViewer = observer(
                 onClick={() =>
                   copyTaskLink(
                     legendMarketplaceStore.applicationStore.navigationService.navigator.generateAddress(
-                      generateLakehouseTaskPath(currentTask.rec.taskId),
+                      generateLakehouseTaskPath(
+                        privilegeManagerApprovalTask.rec.taskId,
+                      ),
                     ),
                   )
                 }
@@ -304,43 +322,31 @@ export const EntitlementsDataContractViewer = observer(
           ) : (
             <>Privilege Manager Approval</>
           ),
-        isCompleteOrActive:
-          currentState ===
-            V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL ||
-          isContractStateComplete(
-            currentState,
-            V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL,
-          ),
+        isCompleteOrActive: true,
         description:
-          currentState ===
-          V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL ? (
-            currentTask ? (
-              <AssigneesList
-                userIds={currentTask.assignees}
-                marketplaceStore={legendMarketplaceStore}
-              />
-            ) : (
-              <span>No tasks associated with contract</span>
-            )
-          ) : currentState === V1_ContractState.PENDING_DATA_OWNER_APPROVAL ||
-            currentState === V1_ContractState.COMPLETED ||
-            currentState === V1_ContractState.REJECTED ? (
+          privilegeManagerApprovalTask?.rec.status ===
+          V1_UserApprovalStatus.PENDING ? (
+            <AssigneesList
+              userIds={privilegeManagerApprovalTask.assignees}
+              marketplaceStore={legendMarketplaceStore}
+            />
+          ) : (
             <TaskApprovalView
-              contractState={currentState}
+              contract={currentViewer.value}
               task={privilegeManagerApprovalTask}
               marketplaceStore={legendMarketplaceStore}
             />
-          ) : undefined,
+          ),
       },
       {
         key: 'data-producer-approval',
         label:
-          currentState === V1_ContractState.PENDING_DATA_OWNER_APPROVAL &&
-          currentTask ? (
+          dataOwnerApprovalTask?.rec.status ===
+          V1_UserApprovalStatus.PENDING ? (
             <>
               <Link
                 href={legendMarketplaceStore.applicationStore.navigationService.navigator.generateAddress(
-                  generateLakehouseTaskPath(currentTask.rec.taskId),
+                  generateLakehouseTaskPath(dataOwnerApprovalTask.rec.taskId),
                 )}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -351,7 +357,9 @@ export const EntitlementsDataContractViewer = observer(
                 onClick={() =>
                   copyTaskLink(
                     legendMarketplaceStore.applicationStore.navigationService.navigator.generateAddress(
-                      generateLakehouseTaskPath(currentTask.rec.taskId),
+                      generateLakehouseTaskPath(
+                        dataOwnerApprovalTask.rec.taskId,
+                      ),
                     ),
                   )
                 }
@@ -362,26 +370,17 @@ export const EntitlementsDataContractViewer = observer(
           ) : (
             <>Data Producer Approval</>
           ),
-        isCompleteOrActive:
-          currentState === V1_ContractState.PENDING_DATA_OWNER_APPROVAL ||
-          isContractStateComplete(
-            currentState,
-            V1_ContractState.PENDING_DATA_OWNER_APPROVAL,
-          ),
+        isCompleteOrActive: dataOwnerApprovalTask !== undefined,
         description:
-          currentState === V1_ContractState.PENDING_DATA_OWNER_APPROVAL ? (
-            currentTask ? (
-              <AssigneesList
-                userIds={currentTask.assignees}
-                marketplaceStore={legendMarketplaceStore}
-              />
-            ) : (
-              <span>No tasks associated with contract</span>
-            )
-          ) : currentState === V1_ContractState.COMPLETED ||
-            currentState === V1_ContractState.REJECTED ? (
+          dataOwnerApprovalTask?.rec.status ===
+          V1_UserApprovalStatus.PENDING ? (
+            <AssigneesList
+              userIds={dataOwnerApprovalTask.assignees}
+              marketplaceStore={legendMarketplaceStore}
+            />
+          ) : dataOwnerApprovalTask !== undefined ? (
             <TaskApprovalView
-              contractState={currentState}
+              contract={currentViewer.value}
               task={dataOwnerApprovalTask}
               marketplaceStore={legendMarketplaceStore}
             />
@@ -390,8 +389,7 @@ export const EntitlementsDataContractViewer = observer(
       {
         key: 'complete',
         isCompleteOrActive:
-          currentState === V1_ContractState.COMPLETED ||
-          isContractStateComplete(currentState, V1_ContractState.COMPLETED),
+          contractUser.status === V1_UserApprovalStatus.APPROVED,
         label: <>Complete</>,
       },
     ];
