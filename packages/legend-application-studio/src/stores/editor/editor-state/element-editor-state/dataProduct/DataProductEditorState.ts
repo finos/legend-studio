@@ -32,7 +32,14 @@ import {
 } from '@finos/legend-graph';
 import type { EditorStore } from '../../../EditorStore.js';
 import { ElementEditorState } from '../ElementEditorState.js';
-import { action, computed, flow, makeObservable, observable } from 'mobx';
+import {
+  action,
+  computed,
+  flow,
+  makeObservable,
+  observable,
+  runInAction,
+} from 'mobx';
 import {
   guaranteeType,
   addUniqueEntry,
@@ -391,8 +398,10 @@ export class DataProductEditorState extends ElementEditorState {
 
   deleteAccessPointGroup(val: AccessPointGroupState): void {
     const state = this.accessPointGroupStates.find((a) => a === val);
-    deleteEntry(this.accessPointGroupStates, state);
-    dataProduct_deleteAccessPointGroup(this.product, val.value);
+    runInAction(() => {
+      deleteEntry(this.accessPointGroupStates, state);
+      dataProduct_deleteAccessPointGroup(this.product, val.value);
+    });
   }
 
   *deploy(token: string | undefined): GeneratorFn<void> {

@@ -74,6 +74,19 @@ import {
   supportInfo_addEmail,
   supportInfo_deleteEmail,
 } from '../../../../stores/graph-modifier/DSL_DataProduct_GraphModifierHelper.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
+
+export enum AP_GROUP_MODAL_ERRORS {
+  GROUP_NAME_EMPTY = 'Group Name is empty',
+  GROUP_NAME_EXISTS = 'Group Name already exists',
+  GROUP_DESCRIPTION_EMPTY = 'Group Description is empty',
+  AP_NAME_EMPTY = 'Access Point Name is empty',
+  AP_NAME_EXISTS = 'Access Point Name already exists',
+  AP_DESCRIPTION_EMPTY = 'Access Point Description is empty',
+}
+
+export const AP_EMPTY_DESC_WARNING =
+  'Describe the data this access point produces';
 
 const NewAccessPointAccessPOint = observer(
   (props: { dataProductEditorState: DataProductEditorState }) => {
@@ -115,15 +128,17 @@ const NewAccessPointAccessPOint = observer(
       dataProductEditorState.accessPoints.map((e) => e.id).includes(id);
     const nameErrors =
       id === ''
-        ? `Name is empty`
+        ? AP_GROUP_MODAL_ERRORS.AP_NAME_EMPTY
         : dataProductEditorState.accessPoints
               .map((e) => e.id)
               .includes(id ?? '')
-          ? `Name already exists`
+          ? AP_GROUP_MODAL_ERRORS.AP_NAME_EXISTS
           : undefined;
 
     const descriptionErrors =
-      description === '' ? `Description is empty` : undefined;
+      description === ''
+        ? AP_GROUP_MODAL_ERRORS.AP_DESCRIPTION_EMPTY
+        : undefined;
     return (
       <Dialog
         open={true}
@@ -165,9 +180,9 @@ const NewAccessPointAccessPOint = observer(
               })}
               ref={accessPointInputRef}
               spellCheck={false}
-              value={id}
+              value={id ?? ''}
               onChange={handleIdChange}
-              placeholder="Access Point ID"
+              placeholder="Access Point Name"
               error={nameErrors}
             />
           </div>
@@ -180,7 +195,7 @@ const NewAccessPointAccessPOint = observer(
                 'input--dark': true,
               })}
               spellCheck={false}
-              value={description}
+              value={description ?? ''}
               onChange={handleDescriptionChange}
               placeholder="Access Point Description"
               error={descriptionErrors}
@@ -237,24 +252,28 @@ const NewAccessPointGroupModal = observer(
 
     const groupNameErrors =
       groupName === ''
-        ? `Group Name is empty`
+        ? AP_GROUP_MODAL_ERRORS.GROUP_NAME_EMPTY
         : dataProductEditorState.accessPointGroupStates
               .map((e) => e.value.id)
               .includes(groupName ?? '')
-          ? `Group Name already exists`
+          ? AP_GROUP_MODAL_ERRORS.GROUP_NAME_EXISTS
           : undefined;
     const groupDescriptionErrors =
-      groupDescription === '' ? `Group Description is empty` : undefined;
+      groupDescription === ''
+        ? AP_GROUP_MODAL_ERRORS.GROUP_DESCRIPTION_EMPTY
+        : undefined;
     const apNameErrors =
       apName === ''
-        ? `Access Point Name is empty`
+        ? AP_GROUP_MODAL_ERRORS.AP_NAME_EMPTY
         : dataProductEditorState.accessPoints
               .map((e) => e.id)
               .includes(apName ?? '')
-          ? `Access Point Name already exists`
+          ? AP_GROUP_MODAL_ERRORS.AP_NAME_EXISTS
           : undefined;
     const apDescriptionErrors =
-      apDescription === '' ? `Access Point Description is empty` : undefined;
+      apDescription === ''
+        ? AP_GROUP_MODAL_ERRORS.AP_DESCRIPTION_EMPTY
+        : undefined;
 
     const disableCreateButton =
       !groupName ||
@@ -323,7 +342,7 @@ const NewAccessPointGroupModal = observer(
               })}
               ref={accessPointGroupInputRef}
               spellCheck={false}
-              value={groupName}
+              value={groupName ?? ''}
               onChange={handleGroupNameChange}
               placeholder="Access Point Group Name"
               error={groupNameErrors}
@@ -338,7 +357,7 @@ const NewAccessPointGroupModal = observer(
                 'input--dark': true,
               })}
               spellCheck={false}
-              value={groupDescription}
+              value={groupDescription ?? ''}
               onChange={handleGroupDescriptionChange}
               placeholder="Access Point Group Description"
               error={groupDescriptionErrors}
@@ -357,7 +376,7 @@ const NewAccessPointGroupModal = observer(
                   'input--dark': true,
                 })}
                 spellCheck={false}
-                value={apName}
+                value={apName ?? ''}
                 onChange={handleApNameChange}
                 placeholder="Access Point Name"
                 error={apNameErrors}
@@ -370,7 +389,7 @@ const NewAccessPointGroupModal = observer(
                   'input--dark': true,
                 })}
                 spellCheck={false}
-                value={apDescription}
+                value={apDescription ?? ''}
                 onChange={handleApDescriptionChange}
                 placeholder="Access Point Description"
                 error={apDescriptionErrors}
@@ -420,7 +439,7 @@ const HoverTextArea: React.FC<HoverTextAreaProps> = ({
 
 const hoverIcon = () => {
   return (
-    <div>
+    <div data-testid={LEGEND_STUDIO_TEST_ID.HOVER_EDIT_ICON}>
       <PencilEditIcon />
     </div>
   );
@@ -454,11 +473,10 @@ export const LakehouseDataProductAcccessPointEditor = observer(
       setIsHovering(false);
     };
 
-    const updateAccessPointDescription: React.ChangeEventHandler<
-      HTMLTextAreaElement
-    > = (event) => {
-      action((accessPoint.description = event.target.value));
-    };
+    const updateAccessPointDescription: React.ChangeEventHandler<HTMLTextAreaElement> =
+      action((event) => {
+        accessPoint.description = event.target.value;
+      });
 
     const updateAccessPointTargetEnvironment = action(
       (targetEnvironment: LakehouseTargetEnv) => {
@@ -511,7 +529,7 @@ export const LakehouseDataProductAcccessPointEditor = observer(
                   onMouseOut={handleMouseOut}
                 >
                   <WarningIcon />
-                  Describe the data this access point produces
+                  {AP_EMPTY_DESC_WARNING}
                 </div>
               )}
 
