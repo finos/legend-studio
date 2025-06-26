@@ -15,7 +15,11 @@
  */
 
 import { type RenderResult, render, waitFor } from '@testing-library/react';
-import { type AbstractPlugin, type AbstractPreset } from '@finos/legend-shared';
+import {
+  type AbstractPlugin,
+  type AbstractPreset,
+  type PlainObject,
+} from '@finos/legend-shared';
 import { createMock, createSpy } from '@finos/legend-shared/test';
 import { jest } from '@jest/globals';
 import {
@@ -23,6 +27,12 @@ import {
   ApplicationStoreProvider,
 } from '@finos/legend-application';
 import { AuthProvider } from 'react-oidc-context';
+import { type IngestDeploymentServerConfig } from '@finos/legend-server-lakehouse';
+import {
+  type V1_AWSSnowflakeIngestEnvironment,
+  type V1_SandboxDataProductDeploymentResponse,
+  CORE_PURE_PATH,
+} from '@finos/legend-graph';
 
 jest.mock('@finos/legend-graph', () => {
   const actual = jest.requireActual('@finos/legend-graph') as Record<
@@ -66,7 +76,6 @@ import { TEST__getTestLegendMarketplaceApplicationConfig } from '../../applicati
 import { LegendMarketplaceFrameworkProvider } from '../../application/LegendMarketplaceFrameworkProvider.js';
 import searchResults from './TEST_DATA__SearchResults.json' with { type: 'json' };
 import { LegendMarketplaceWebApplicationRouter } from '../../application/LegendMarketplaceWebApplication.js';
-import { CORE_PURE_PATH } from '@finos/legend-graph';
 
 export const TEST__provideMockedLegendMarketplaceBaseStore =
   async (customization?: {
@@ -170,59 +179,70 @@ const mockSDLCDataProductWithoutTitle = {
   imageUrl: undefined,
 };
 
-const mockSandboxDataProductResponse = {
-  deployedDataProducts: [
-    {
-      definition: 'test definition',
-      artifact: {
-        dataProduct: {
-          title: 'Sandbox Data Product',
-          description: 'A sandbox data product',
-          path: 'sandbox::dataproduct::SandboxDataProduct',
-          deploymentId: '123',
+const mockIngestEnvironmentSummaryResponse: PlainObject<IngestDeploymentServerConfig> =
+  {
+    ingestEnvironmentUrn: 'test-urn',
+    environmentClassification: 'dev',
+    ingestServerUrl: 'https://test-ingest-server.com',
+  };
+
+const mockSandboxDataProductResponse: PlainObject<V1_SandboxDataProductDeploymentResponse> =
+  {
+    deployedDataProducts: [
+      {
+        definition:
+          `###Lakehouse\n` +
+          `Ingest my::sandboxIngestDefinition owner=AppDir(production='123', prodParallel='456')[TESTTABLE(id: Double, name: Varchar(100))\npk=[id]]\n` +
+          `###DataProduct\n` +
+          `DataProduct sandbox::dataproduct::SandboxDataProduct\n` +
+          `{\naccessPoints: [group[testAccessPointGroup: LH(Snowflake, |#I{my::sandboxIngestDefinition.TESTTABLE}#->select(id, name))]]}`,
+        artifact: {
+          dataProduct: {
+            title: 'Sandbox Data Product',
+            description: 'A sandbox data product',
+            path: 'sandbox::dataproduct::SandboxDataProduct',
+            deploymentId: '123',
+          },
+          accessPointGroups: [
+            {
+              id: 'testAccessPointGroup',
+              accessPointImplementations: [
+                {
+                  id: 'testAccessPointImplementation',
+                  resourceBuilder: {
+                    _type: 'databaseDDL',
+                    targetEnvironment: 'Snowflake',
+                    reproducible: false,
+                    script: 'CREATE TABLE test_table (id INT, name STRING);',
+                  },
+                },
+              ],
+            },
+          ],
         },
       },
-    },
-  ],
-};
+    ],
+  };
 
-const mockIngestEnvironmentSummaryResponse = {
-  _type: 'AWSSnowflake',
-  urn: 'test-urn',
-  version: '1.0.0',
-  environmentClassification: 'dev',
-  producers: [],
-  awsRegion: 'us-east-1',
-  awsAccountId: '123456789',
-  ingestStepFunctionsAvtivityArn:
-    'arn:aws:states:us-east-1:123456789:activity:test',
-  ingestStateMachineArn: 'arn:aws:states:us-east-1:123456789:stateMachine:test',
-  ingestSystemAccount: 'test-system-account',
-  snowflakeAccount: 'test-snowflake-account',
-  snowflakeHost: 'test.snowflakecomputing.com',
-  s3StagingBucketName: 'test-staging-bucket',
-  storageIntegrationName: 'test-storage-integration',
-  ingestEnvironmentUrn: 'test-urn',
-  ingestServerUrl: 'https://test-ingest-server.com',
-};
-
-const mockIngestEnvironmentResponse = {
-  _type: 'AWSSnowflake',
-  urn: 'test-urn',
-  version: '1.0.0',
-  environmentClassification: 'dev',
-  producers: [],
-  awsRegion: 'us-east-1',
-  awsAccountId: '123456789',
-  ingestStepFunctionsAvtivityArn:
-    'arn:aws:states:us-east-1:123456789:activity:test',
-  ingestStateMachineArn: 'arn:aws:states:us-east-1:123456789:stateMachine:test',
-  ingestSystemAccount: 'test-system-account',
-  snowflakeAccount: 'test-snowflake-account',
-  snowflakeHost: 'test.snowflakecomputing.com',
-  s3StagingBucketName: 'test-staging-bucket',
-  storageIntegrationName: 'test-storage-integration',
-};
+const mockIngestEnvironmentResponse: PlainObject<V1_AWSSnowflakeIngestEnvironment> =
+  {
+    _type: 'AWSSnowflake',
+    urn: 'test-urn',
+    version: '1.0.0',
+    environmentClassification: 'dev',
+    producers: [],
+    awsRegion: 'us-east-1',
+    awsAccountId: '123456789',
+    ingestStepFunctionsAvtivityArn:
+      'arn:aws:states:us-east-1:123456789:activity:test',
+    ingestStateMachineArn:
+      'arn:aws:states:us-east-1:123456789:stateMachine:test',
+    ingestSystemAccount: 'test-system-account',
+    snowflakeAccount: 'test-snowflake-account',
+    snowflakeHost: 'test.snowflakecomputing.com',
+    s3StagingBucketName: 'test-staging-bucket',
+    storageIntegrationName: 'test-storage-integration',
+  };
 
 export const TEST__setUpMarketplaceLakehouse = async (
   MOCK__store: LegendMarketplaceBaseStore,

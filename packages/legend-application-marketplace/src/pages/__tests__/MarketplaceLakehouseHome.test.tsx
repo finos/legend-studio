@@ -37,7 +37,7 @@ const setupTestComponent = async () => {
   return { mockedStore: MOCK__store, renderResult };
 };
 
-test('renders header with Legend Marketplace title and Entitlemenfts button', async () => {
+test('renders header with Legend Marketplace title and Entitlements button and Marketplace landing title', async () => {
   await setupTestComponent();
 
   expect(await screen.findAllByText(/^Legend Marketplace$/)).toHaveLength(2);
@@ -45,32 +45,21 @@ test('renders header with Legend Marketplace title and Entitlemenfts button', as
   expect(screen.getByText('Entitlements')).toBeDefined();
 });
 
-// test('renders search box with correct placeholder and marketplace title', async () => {
-//   await setupTestComponent();
+test('renders search box with correct placeholder', async () => {
+  await setupTestComponent();
 
-//   await waitFor(() => {
-//     expect(screen.getByText('Legend Marketplace')).toBeDefined();
-//   });
+  expect(
+    screen.getByPlaceholderText('Search Legend Marketplace'),
+  ).toBeDefined();
+});
 
-//   expect(
-//     screen.getByPlaceholderText('Search Legend Marketplace'),
-//   ).toBeDefined();
-// });
+test('displays cards for both SDLC and sandbox data products', async () => {
+  await setupTestComponent();
 
-// test('displays cards for both SDLC and sandbox data products', async () => {
-//   await setupTestComponent();
-
-//   await waitFor(
-//     () => {
-//       expect(screen.getByText('TestDataProduct')).toBeDefined();
-//     },
-//     { timeout: 15000 },
-//   );
-
-//   expect(screen.getByText('TestDataProduct')).toBeDefined();
-//   expect(screen.getByText('Sandbox Data Product')).toBeDefined();
-//   expect(screen.getByText('1.0.0')).toBeDefined();
-// });
+  await screen.findByText('Test Data Product');
+  await screen.findByText('Sandbox Data Product');
+  await screen.findByText('1.0.0');
+});
 
 // test('shows info popper for SDLC data products with correct details', async () => {
 //   await setupTestComponent();
