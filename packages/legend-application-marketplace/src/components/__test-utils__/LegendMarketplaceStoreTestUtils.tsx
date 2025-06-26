@@ -22,6 +22,7 @@ import {
   ApplicationStore,
   ApplicationStoreProvider,
 } from '@finos/legend-application';
+import { AuthProvider } from 'react-oidc-context';
 
 jest.mock('@finos/legend-graph', () => {
   const actual = jest.requireActual('@finos/legend-graph') as Record<
@@ -57,6 +58,7 @@ import {
   type LegendMarketplaceApplicationStore,
   LegendMarketplaceBaseStore,
 } from '../../stores/LegendMarketplaceBaseStore.js';
+import { useMarketplaceLakehouseStore } from '../../pages/Lakehouse/MarketplaceLakehouseStoreProvider.js';
 import { LEGEND_MARKETPLACE_TEST_ID } from '../../__lib__/LegendMarketplaceTesting.js';
 import { LegendMarketplacePluginManager } from '../../application/LegendMarketplacePluginManager.js';
 import { Core_LegendMarketplaceApplicationPlugin } from '../../application/extensions/Core_LegendMarketplaceApplicationPlugin.js';
@@ -272,7 +274,7 @@ export const TEST__setUpMarketplaceLakehouse = async (
     'getIngestEnvironment',
   ).mockResolvedValue(mockIngestEnvironmentResponse);
 
-  const lakehouseStore = new MarketplaceLakehouseStore(
+  const MOCK__lakehouseStore = new MarketplaceLakehouseStore(
     MOCK__store,
     MOCK__store.lakehouseContractServerClient,
     MOCK__store.lakehousePlatformServerClient,
@@ -280,41 +282,41 @@ export const TEST__setUpMarketplaceLakehouse = async (
     MOCK__store.depotServerClient,
   );
 
-  const mockAuth = {
-    isLoading: false,
-    isAuthenticated: true,
-    user: {
-      profile: {
-        name: 'Test User',
-        sub: 'test-user-id',
-        email: 'test@example.com',
-      },
-      access_token: 'mock-access-token',
-    },
-    signinRedirect: jest.fn(),
-    signoutRedirect: jest.fn(),
-    removeUser: jest.fn(),
-    error: null,
-    activeNavigator: 'window',
-    settings: {},
-  } as any;
+  // const mockAuth = {
+  //   isLoading: false,
+  //   isAuthenticated: true,
+  //   user: {
+  //     profile: {
+  //       name: 'Test User',
+  //       sub: 'test-user-id',
+  //       email: 'test@example.com',
+  //     },
+  //     access_token: 'mock-access-token',
+  //   },
+  //   signinRedirect: jest.fn(),
+  //   signoutRedirect: jest.fn(),
+  //   removeUser: jest.fn(),
+  //   error: null,
+  //   activeNavigator: 'window',
+  //   settings: {},
+  // } as any;
 
-  await lakehouseStore.init(mockAuth);
-
-  const {
-    useMarketplaceLakehouseStore,
-  } = require('../../pages/Lakehouse/MarketplaceLakehouseStoreProvider.js');
-  (useMarketplaceLakehouseStore as jest.Mock).mockReturnValue(lakehouseStore);
+  (useMarketplaceLakehouseStore as jest.Mock).mockReturnValue(
+    MOCK__lakehouseStore,
+  );
 
   const renderResult = render(
     <ApplicationStoreProvider store={MOCK__store.applicationStore}>
-      <TEST__BrowserEnvironmentProvider
-        initialEntries={[route ?? '/lakehouse']}
-      >
-        <LegendMarketplaceFrameworkProvider>
-          <LegendMarketplaceWebApplicationRouter />
-        </LegendMarketplaceFrameworkProvider>
-      </TEST__BrowserEnvironmentProvider>
+      <AuthProvider>
+        <TEST__BrowserEnvironmentProvider
+          initialEntries={['/lakehouse']}
+          baseUrl="/lakehouse"
+        >
+          <LegendMarketplaceFrameworkProvider>
+            <LegendMarketplaceWebApplicationRouter />
+          </LegendMarketplaceFrameworkProvider>
+        </TEST__BrowserEnvironmentProvider>
+      </AuthProvider>
     </ApplicationStoreProvider>,
   );
 
@@ -324,6 +326,7 @@ export const TEST__setUpMarketplaceLakehouse = async (
 
   return {
     renderResult,
-    MOCK__store: { ...MOCK__store, lakehouseStore },
+    MOCK__store,
+    MOCK__lakehouseStore,
   };
 };
