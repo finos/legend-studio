@@ -880,6 +880,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
           );
           this.applicationStore.notificationService.notifyWarning(
             `Compilation failed: ${error.message}`,
+            error.trace,
           );
           const errorElementCoordinates = extractSourceInformationCoordinates(
             error.sourceInformation,

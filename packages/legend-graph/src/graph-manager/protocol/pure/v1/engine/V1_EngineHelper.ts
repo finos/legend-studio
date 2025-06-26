@@ -599,6 +599,7 @@ export const V1_buildCompilationError = (
   metamodel.sourceInformation = protocol.sourceInformation
     ? V1_buildSourceInformation(protocol.sourceInformation)
     : undefined;
+  metamodel.trace = protocol.trace;
   return metamodel;
 };
 
@@ -607,6 +608,7 @@ export const V1_buildParserError = (protocol: V1_ParserError): ParserError => {
   metamodel.sourceInformation = protocol.sourceInformation
     ? V1_buildSourceInformation(protocol.sourceInformation)
     : undefined;
+  metamodel.trace = protocol.trace;
   return metamodel;
 };
 

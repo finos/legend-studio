@@ -34,26 +34,21 @@ export enum NOTIFCATION_SEVERITY {
   INFO = 'INFO',
 }
 
-export interface NotificationAction {
-  icon: React.ReactNode;
-  action: () => void;
-}
-
 export class Notification {
   severity: NOTIFCATION_SEVERITY;
   message: string;
-  actions: NotificationAction[];
+  details?: string | undefined;
   autoHideDuration?: number | undefined;
 
   constructor(
     severity: NOTIFCATION_SEVERITY,
     message: string,
-    actions: NotificationAction[],
+    details: string | undefined,
     autoHideDuration: number | undefined,
   ) {
     this.severity = severity;
     this.message = message;
-    this.actions = actions;
+    this.details = details;
     this.autoHideDuration = autoHideDuration;
   }
 }
@@ -79,14 +74,14 @@ export class NotificationService {
 
   notify(
     message: string,
-    actions?: NotificationAction[],
+    details?: string | undefined,
     autoHideDuration?: number | null,
   ): void {
     this.setNotification(
       new Notification(
         NOTIFCATION_SEVERITY.INFO,
         message,
-        actions ?? [],
+        details,
         autoHideDuration === null
           ? undefined
           : (autoHideDuration ?? DEFAULT_NOTIFICATION_HIDE_TIME),
@@ -96,14 +91,14 @@ export class NotificationService {
 
   notifySuccess(
     message: string,
-    actions?: NotificationAction[],
+    details?: string | undefined,
     autoHideDuration?: number | null,
   ): void {
     this.setNotification(
       new Notification(
         NOTIFCATION_SEVERITY.SUCCESS,
         message,
-        actions ?? [],
+        details,
         autoHideDuration === null
           ? undefined
           : (autoHideDuration ?? DEFAULT_NOTIFICATION_HIDE_TIME),
@@ -113,14 +108,14 @@ export class NotificationService {
 
   notifyWarning(
     content: string | Error,
-    actions?: NotificationAction[],
+    details?: string | undefined,
     autoHideDuration?: number | null,
   ): void {
     this.setNotification(
       new Notification(
         NOTIFCATION_SEVERITY.WARNING,
         content instanceof Error ? content.message : content,
-        actions ?? [],
+        details,
         autoHideDuration === null
           ? undefined
           : (autoHideDuration ?? DEFAULT_NOTIFICATION_HIDE_TIME),
@@ -128,14 +123,14 @@ export class NotificationService {
     );
   }
 
-  notifyError(content: Error | string, actions?: NotificationAction[]): void {
+  notifyError(content: Error | string, details?: string | undefined): void {
     const message = this.getErrorMessage(content);
     if (message) {
       this.setNotification(
         new Notification(
           NOTIFCATION_SEVERITY.ERROR,
           message,
-          actions ?? [],
+          details,
           undefined,
         ),
       );
@@ -157,14 +152,14 @@ export class NotificationService {
 
   notifyIllegalState(
     message: string,
-    actions?: NotificationAction[],
+    details?: string | undefined,
     autoHideDuration?: number | null,
   ): void {
     this.setNotification(
       new Notification(
         NOTIFCATION_SEVERITY.ILEGAL_STATE,
         isString(message) ? `[PLEASE NOTIFY DEVELOPER] ${message}` : message,
-        actions ?? [],
+        details,
         autoHideDuration === null
           ? undefined
           : (autoHideDuration ?? DEFAULT_NOTIFICATION_HIDE_TIME),

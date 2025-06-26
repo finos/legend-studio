@@ -28,6 +28,7 @@ export class V1_EngineError {
   message = '';
   errorType?: V1_EngineErrorType | undefined;
   sourceInformation?: V1_SourceInformation | undefined;
+  trace?: string | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_EngineError, {
@@ -36,6 +37,7 @@ export class V1_EngineError {
       sourceInformation: usingModelSchema(
         V1_sourceInformationSerialization.schema,
       ),
+      trace: optional(primitive()),
     }),
   );
 }

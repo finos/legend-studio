@@ -449,6 +449,7 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
       this.editorStore.graphState.setMostRecentCompilationGraphHash(
         currentGraphHash,
       );
+      let detail: string | undefined = undefined;
       if (error instanceof EngineError) {
         this.editorStore.graphState.error = error;
         if (error.sourceInformation) {
@@ -457,6 +458,7 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
             column: error.sourceInformation.startColumn,
           });
         }
+        detail = error.trace;
       }
       if (
         !this.editorStore.applicationStore.notificationService.notification ||
@@ -464,6 +466,7 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
       ) {
         this.editorStore.applicationStore.notificationService.notifyWarning(
           `Compilation failed: ${error.message}`,
+          detail,
         );
       }
       this.editorStore.graphState.setMostRecentCompilationOutcome(
