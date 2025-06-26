@@ -69,4 +69,6 @@ export enum LEGEND_STUDIO_TEST_ID {
   PROJECT_OVERVIEW__ACTIVITY_BAR = 'project-overview__activity-bar', // TODO: revise
 
   SETUP__CONTENT = 'setup__content',
+
+  HOVER_EDIT_ICON = 'hover-edit-icon',
 }

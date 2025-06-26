@@ -1,0 +1,378 @@
+[
+  {
+    "path": "model::sampleDataProduct",
+    "content": {
+      "_type": "dataProduct",
+      "name": "sampleDataProduct",
+      "package": "model",
+      "title": "My Data Product",
+      "description": "sample for testing",
+      "accessPointGroups": [
+        {
+          "id": "group1",
+          "description": "my first access point group",
+          "accessPoints": [
+            {
+              "_type": "lakehouseAccessPoint",
+              "id": "ap1",
+              "targetEnvironment": "Snowflake",
+              "func": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "func",
+                    "function": "filter",
+                    "parameters": [
+                      {
+                        "_type": "classInstance",
+                        "type": "I",
+                        "value": {
+                          "metadata": false,
+                          "path": ["ingest::SAMPLEDATASET1", "SAMPLEDATASET"]
+                        }
+                      },
+                      {
+                        "_type": "lambda",
+                        "body": [
+                          {
+                            "_type": "func",
+                            "function": "equal",
+                            "parameters": [
+                              {
+                                "_type": "property",
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "x"
+                                  }
+                                ],
+                                "property": "firstName"
+                              },
+                              {
+                                "_type": "string",
+                                "value": "Joe"
+                              }
+                            ]
+                          }
+                        ],
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "x"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "parameters": []
+              }
+            }
+          ]
+        },
+        {
+          "id": "group2",
+          "description": "access point group 2",
+          "accessPoints": [
+            {
+              "_type": "lakehouseAccessPoint",
+              "id": "ap2",
+              "targetEnvironment": "Snowflake",
+              "func": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "func",
+                    "function": "filter",
+                    "parameters": [
+                      {
+                        "_type": "classInstance",
+                        "type": "I",
+                        "value": {
+                          "metadata": false,
+                          "path": ["ingest::SAMPLEDATASET1", "SAMPLEDATASET"]
+                        }
+                      },
+                      {
+                        "_type": "lambda",
+                        "body": [
+                          {
+                            "_type": "func",
+                            "function": "equal",
+                            "parameters": [
+                              {
+                                "_type": "property",
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "x"
+                                  }
+                                ],
+                                "property": "firstName"
+                              },
+                              {
+                                "_type": "string",
+                                "value": "Joe"
+                              }
+                            ]
+                          }
+                        ],
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "x"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "parameters": []
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "classifierPath": "meta::external::catalog::dataProduct::specification::metamodel::DataProduct"
+  },
+  {
+    "path": "ingest::SAMPLEDATASET1",
+    "content": {
+      "_type": "ingestDefinition",
+      "datasetGroup": "SAMPLEDATASTORE1",
+      "datasets": [
+        {
+          "ingestPartitionColumns": [],
+          "name": "SAMPLEDATASET",
+          "preprocessors": [],
+          "primaryKey": ["id"],
+          "privacyClassification": {
+            "sensitivity": "DP10"
+          },
+          "source": {
+            "_type": "serializedSource",
+            "format": {
+              "_type": "CSV",
+              "fieldDelimiter": ",",
+              "headerRowsToSkipCount": 0,
+              "recordDelimiter": "\n"
+            },
+            "schema": {
+              "_type": "relationType",
+              "columns": [
+                {
+                  "genericType": {
+                    "multiplicityArguments": [],
+                    "rawType": {
+                      "_type": "packageableType",
+                      "fullPath": "BigInt",
+                      "sourceInformation": {
+                        "endColumn": 16,
+                        "endLine": 5,
+                        "sourceId": "",
+                        "startColumn": 11,
+                        "startLine": 5
+                      }
+                    },
+                    "typeArguments": [],
+                    "typeVariableValues": []
+                  },
+                  "multiplicity": {
+                    "lowerBound": 1,
+                    "upperBound": 1
+                  },
+                  "name": "id",
+                  "sourceInformation": {
+                    "endColumn": 19,
+                    "endLine": 5,
+                    "sourceId": "",
+                    "startColumn": 7,
+                    "startLine": 5
+                  }
+                },
+                {
+                  "genericType": {
+                    "multiplicityArguments": [],
+                    "rawType": {
+                      "_type": "packageableType",
+                      "fullPath": "Varchar",
+                      "sourceInformation": {
+                        "endColumn": 28,
+                        "endLine": 6,
+                        "sourceId": "",
+                        "startColumn": 18,
+                        "startLine": 6
+                      }
+                    },
+                    "typeArguments": [],
+                    "typeVariableValues": [
+                      {
+                        "_type": "integer",
+                        "sourceInformation": {
+                          "endColumn": 27,
+                          "endLine": 6,
+                          "sourceId": "",
+                          "startColumn": 26,
+                          "startLine": 6
+                        },
+                        "value": 50
+                      }
+                    ]
+                  },
+                  "multiplicity": {
+                    "lowerBound": 0,
+                    "upperBound": 1
+                  },
+                  "name": "firstName",
+                  "sourceInformation": {
+                    "endColumn": 28,
+                    "endLine": 6,
+                    "sourceId": "",
+                    "startColumn": 7,
+                    "startLine": 6
+                  }
+                },
+                {
+                  "genericType": {
+                    "multiplicityArguments": [],
+                    "rawType": {
+                      "_type": "packageableType",
+                      "fullPath": "Varchar",
+                      "sourceInformation": {
+                        "endColumn": 27,
+                        "endLine": 7,
+                        "sourceId": "",
+                        "startColumn": 17,
+                        "startLine": 7
+                      }
+                    },
+                    "typeArguments": [],
+                    "typeVariableValues": [
+                      {
+                        "_type": "integer",
+                        "sourceInformation": {
+                          "endColumn": 26,
+                          "endLine": 7,
+                          "sourceId": "",
+                          "startColumn": 25,
+                          "startLine": 7
+                        },
+                        "value": 50
+                      }
+                    ]
+                  },
+                  "multiplicity": {
+                    "lowerBound": 0,
+                    "upperBound": 1
+                  },
+                  "name": "lastName",
+                  "sourceInformation": {
+                    "endColumn": 27,
+                    "endLine": 7,
+                    "sourceId": "",
+                    "startColumn": 7,
+                    "startLine": 7
+                  }
+                },
+                {
+                  "genericType": {
+                    "multiplicityArguments": [],
+                    "rawType": {
+                      "_type": "packageableType",
+                      "fullPath": "Varchar",
+                      "sourceInformation": {
+                        "endColumn": 25,
+                        "endLine": 8,
+                        "sourceId": "",
+                        "startColumn": 14,
+                        "startLine": 8
+                      }
+                    },
+                    "typeArguments": [],
+                    "typeVariableValues": [
+                      {
+                        "_type": "integer",
+                        "sourceInformation": {
+                          "endColumn": 24,
+                          "endLine": 8,
+                          "sourceId": "",
+                          "startColumn": 22,
+                          "startLine": 8
+                        },
+                        "value": 100
+                      }
+                    ]
+                  },
+                  "multiplicity": {
+                    "lowerBound": 0,
+                    "upperBound": 1
+                  },
+                  "name": "title",
+                  "sourceInformation": {
+                    "endColumn": 25,
+                    "endLine": 8,
+                    "sourceId": "",
+                    "startColumn": 7,
+                    "startLine": 8
+                  }
+                },
+                {
+                  "genericType": {
+                    "multiplicityArguments": [],
+                    "rawType": {
+                      "_type": "packageableType",
+                      "fullPath": "Date",
+                      "sourceInformation": {
+                        "endColumn": 15,
+                        "endLine": 9,
+                        "sourceId": "",
+                        "startColumn": 12,
+                        "startLine": 9
+                      }
+                    },
+                    "typeArguments": [],
+                    "typeVariableValues": []
+                  },
+                  "multiplicity": {
+                    "lowerBound": 0,
+                    "upperBound": 1
+                  },
+                  "name": "dob",
+                  "sourceInformation": {
+                    "endColumn": 15,
+                    "endLine": 9,
+                    "sourceId": "",
+                    "startColumn": 7,
+                    "startLine": 9
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "name": "SAMPLEDATASET1",
+      "owner": {
+        "_type": "appDir",
+        "production": {
+          "appDirId": 287440,
+          "level": "DEPLOYMENT"
+        }
+      },
+      "package": "ingest",
+      "readMode": {
+        "_type": "Snapshot"
+      },
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 14,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 2
+      },
+      "writeMode": "batch_milestoned"
+    },
+    "classifierPath": "meta::external::ingest::specification::metamodel::IngestDefinition"
+  }
+]
