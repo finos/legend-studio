@@ -376,17 +376,12 @@ export const LakehouseDataProductCard = observer(
     );
 
     return (
-      <div
+      <LegendMarketplaceCard
+        size="large"
+        content={content}
         onClick={() => onClick(dataProductState)}
         className="marketplace-lakehouse-data-product-card"
-        style={{ cursor: 'pointer' }}
-      >
-        <LegendMarketplaceCard
-          size="large"
-          content={content}
-          className="marketplace-lakehouse-data-product-card"
-        />
-      </div>
+      />
     );
   },
 );
