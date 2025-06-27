@@ -281,7 +281,7 @@ export const mockProdParallelIngestEnvironmentResponse: PlainObject<V1_AWSSnowfl
     storageIntegrationName: 'test-prod-parallel-storage-integration',
   };
 
-export const mocProdIngestEnvironmentResponse: PlainObject<V1_AWSSnowflakeIngestEnvironment> =
+export const mockProdIngestEnvironmentResponse: PlainObject<V1_AWSSnowflakeIngestEnvironment> =
   {
     _type: 'AWSSnowflake',
     urn: 'test-prod-urn',
