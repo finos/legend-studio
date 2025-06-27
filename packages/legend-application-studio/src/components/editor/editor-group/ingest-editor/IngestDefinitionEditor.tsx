@@ -44,6 +44,8 @@ import {
   IngestDefinitionDeploymentResponse,
   IngestDefinitionValidationResponse,
 } from '@finos/legend-server-lakehouse';
+import { useApplicationNavigationContext } from '@finos/legend-application';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
 
 const IngestValidationError = observer(
   (props: {
@@ -258,6 +260,10 @@ export const IngestDefinitionEditor = observer(() => {
   useEffect(() => {
     ingestDefinitionEditorState.generateElementGrammar();
   }, [ingestDefinitionEditorState]);
+
+  useApplicationNavigationContext(
+    LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.INGEST_DEFINITION_EDITOR,
+  );
 
   useEffect(() => {
     if (ingestDefinitionEditorState.deployOnOpen) {

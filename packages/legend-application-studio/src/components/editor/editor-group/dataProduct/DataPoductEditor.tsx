@@ -75,6 +75,8 @@ import {
   supportInfo_deleteEmail,
 } from '../../../../stores/graph-modifier/DSL_DataProduct_GraphModifierHelper.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
+import { useApplicationNavigationContext } from '@finos/legend-application';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
 
 export enum AP_GROUP_MODAL_ERRORS {
   GROUP_NAME_EMPTY = 'Group Name is empty',
@@ -937,6 +939,9 @@ export const DataProductEditor = observer(() => {
       supportInfo_setSupportUrl(product.supportInfo, val ?? '');
     }
   };
+  useApplicationNavigationContext(
+    LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.DATA_PRODUCT_EDITOR,
+  );
 
   useEffect(() => {
     flowResult(dataProductEditorState.convertAccessPointsFuncObjects()).catch(
