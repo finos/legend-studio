@@ -143,14 +143,21 @@ export const TEST__setUpMarketplace = async (
 const mockSDLCDataProductSummaries = [
   {
     groupId: 'com.example',
-    artifactId: 'test-data-product',
+    artifactId: 'test-sdlc-data-product',
     versionId: '1.0.0',
     path: 'test::dataproduct::TestDataProduct',
     classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
   },
   {
     groupId: 'com.example',
-    artifactId: 'another-data-product',
+    artifactId: 'test-sdlc-data-product',
+    versionId: 'master-SNAPSHOT',
+    path: 'test::dataproduct::TestDataProduct',
+    classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
+  },
+  {
+    groupId: 'com.example',
+    artifactId: 'another-sdlc-data-product',
     versionId: '2.0.0',
     path: 'test::dataproduct::AnotherDataProduct',
     classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
@@ -163,7 +170,34 @@ const mockSDLCDataProduct = {
   package: 'test::dataproduct',
   title: 'Test Data Product',
   description: 'A test data product for testing purposes',
-  accessPointGroups: [],
+  accessPointGroups: [
+    {
+      id: 'testSDLCAccessPointGroup',
+      description: 'A test access point group',
+      accessPoints: [
+        {
+          _type: 'lakehouseAccessPoint',
+          id: 'testSDLCAccessPoint',
+          targetEnvironment: 'Snowflake',
+          reproducible: false,
+          func: {
+            _type: 'lambda',
+            parameters: [],
+            body: [
+              {
+                _type: 'classInstance',
+                type: 'I',
+                value: {
+                  metadata: false,
+                  path: ['my::sandboxIngestDefinition', 'TESTTABLE'],
+                },
+              },
+            ],
+          },
+        },
+      ],
+    },
+  ],
   icon: undefined,
   imageUrl: undefined,
 };
@@ -179,14 +213,28 @@ const mockSDLCDataProductWithoutTitle = {
   imageUrl: undefined,
 };
 
-const mockIngestEnvironmentSummaryResponse: PlainObject<IngestDeploymentServerConfig> =
+const mockDevIngestEnvironmentSummaryResponse: PlainObject<IngestDeploymentServerConfig> =
   {
-    ingestEnvironmentUrn: 'test-urn',
+    ingestEnvironmentUrn: 'test-dev-urn',
     environmentClassification: 'dev',
-    ingestServerUrl: 'https://test-ingest-server.com',
+    ingestServerUrl: 'https://test-dev-ingest-server.com',
   };
 
-const mockSandboxDataProductResponse: PlainObject<V1_SandboxDataProductDeploymentResponse> =
+const mockProdParallelIngestEnvironmentSummaryResponse: PlainObject<IngestDeploymentServerConfig> =
+  {
+    ingestEnvironmentUrn: 'test-prod-parallel-urn',
+    environmentClassification: 'prod-parallel',
+    ingestServerUrl: 'https://test-prod-parallel-ingest-server.com',
+  };
+
+const mockProdIngestEnvironmentSummaryResponse: PlainObject<IngestDeploymentServerConfig> =
+  {
+    ingestEnvironmentUrn: 'test-prod-urn',
+    environmentClassification: 'prod',
+    ingestServerUrl: 'https://test-prod-ingest-server.com',
+  };
+
+const mockDevSandboxDataProductResponse: PlainObject<V1_SandboxDataProductDeploymentResponse> =
   {
     deployedDataProducts: [
       {
@@ -198,9 +246,9 @@ const mockSandboxDataProductResponse: PlainObject<V1_SandboxDataProductDeploymen
           `{\naccessPoints: [group[testAccessPointGroup: LH(Snowflake, |#I{my::sandboxIngestDefinition.TESTTABLE}#->select(id, name))]]}`,
         artifact: {
           dataProduct: {
-            title: 'Sandbox Data Product',
-            description: 'A sandbox data product',
-            path: 'sandbox::dataproduct::SandboxDataProduct',
+            title: 'Dev Sandbox Data Product',
+            description: 'A dev sandbox data product',
+            path: 'sandbox::dataproduct::DevSandboxDataProduct',
             deploymentId: '123',
           },
           accessPointGroups: [
@@ -224,24 +272,140 @@ const mockSandboxDataProductResponse: PlainObject<V1_SandboxDataProductDeploymen
     ],
   };
 
-const mockIngestEnvironmentResponse: PlainObject<V1_AWSSnowflakeIngestEnvironment> =
+const mockProdParallelSandboxDataProductResponse: PlainObject<V1_SandboxDataProductDeploymentResponse> =
+  {
+    deployedDataProducts: [
+      {
+        definition:
+          `###Lakehouse\n` +
+          `Ingest my::sandboxIngestDefinition owner=AppDir(production='123', prodParallel='456')[TESTTABLE(id: Double, name: Varchar(100))\npk=[id]]\n` +
+          `###DataProduct\n` +
+          `DataProduct sandbox::dataproduct::SandboxDataProduct\n` +
+          `{\naccessPoints: [group[testAccessPointGroup: LH(Snowflake, |#I{my::sandboxIngestDefinition.TESTTABLE}#->select(id, name))]]}`,
+        artifact: {
+          dataProduct: {
+            title: 'Prod-Parallel Sandbox Data Product',
+            description: 'A prod-parallel sandbox data product',
+            path: 'sandbox::dataproduct::ProdParallelSandboxDataProduct',
+            deploymentId: '456',
+          },
+          accessPointGroups: [
+            {
+              id: 'testAccessPointGroup',
+              accessPointImplementations: [
+                {
+                  id: 'testAccessPointImplementation',
+                  resourceBuilder: {
+                    _type: 'databaseDDL',
+                    targetEnvironment: 'Snowflake',
+                    reproducible: false,
+                    script: 'CREATE TABLE test_table (id INT, name STRING);',
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      },
+    ],
+  };
+
+const mockProdSandboxDataProductResponse: PlainObject<V1_SandboxDataProductDeploymentResponse> =
+  {
+    deployedDataProducts: [
+      {
+        definition:
+          `###Lakehouse\n` +
+          `Ingest my::sandboxIngestDefinition owner=AppDir(production='123', prodParallel='456')[TESTTABLE(id: Double, name: Varchar(100))\npk=[id]]\n` +
+          `###DataProduct\n` +
+          `DataProduct sandbox::dataproduct::SandboxDataProduct\n` +
+          `{\naccessPoints: [group[testAccessPointGroup: LH(Snowflake, |#I{my::sandboxIngestDefinition.TESTTABLE}#->select(id, name))]]}`,
+        artifact: {
+          dataProduct: {
+            title: 'Prod Sandbox Data Product',
+            description: 'A prod sandbox data product',
+            path: 'sandbox::dataproduct::ProdSandboxDataProduct',
+            deploymentId: '789',
+          },
+          accessPointGroups: [
+            {
+              id: 'testAccessPointGroup',
+              accessPointImplementations: [
+                {
+                  id: 'testAccessPointImplementation',
+                  resourceBuilder: {
+                    _type: 'databaseDDL',
+                    targetEnvironment: 'Snowflake',
+                    reproducible: false,
+                    script: 'CREATE TABLE test_table (id INT, name STRING);',
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      },
+    ],
+  };
+
+const mockDevIngestEnvironmentResponse: PlainObject<V1_AWSSnowflakeIngestEnvironment> =
   {
     _type: 'AWSSnowflake',
-    urn: 'test-urn',
+    urn: 'test-dev-urn',
     version: '1.0.0',
     environmentClassification: 'dev',
     producers: [],
     awsRegion: 'us-east-1',
-    awsAccountId: '123456789',
+    awsAccountId: 'test-dev-account-id',
     ingestStepFunctionsAvtivityArn:
       'arn:aws:states:us-east-1:123456789:activity:test',
     ingestStateMachineArn:
       'arn:aws:states:us-east-1:123456789:stateMachine:test',
-    ingestSystemAccount: 'test-system-account',
-    snowflakeAccount: 'test-snowflake-account',
-    snowflakeHost: 'test.snowflakecomputing.com',
-    s3StagingBucketName: 'test-staging-bucket',
-    storageIntegrationName: 'test-storage-integration',
+    ingestSystemAccount: 'test-dev-system-account',
+    snowflakeAccount: 'test-dev-snowflake-account',
+    snowflakeHost: 'test.dev.snowflakecomputing.com',
+    s3StagingBucketName: 'test-dev-staging-bucket',
+    storageIntegrationName: 'test-dev-storage-integration',
+  };
+
+const mockProdParallelIngestEnvironmentResponse: PlainObject<V1_AWSSnowflakeIngestEnvironment> =
+  {
+    _type: 'AWSSnowflake',
+    urn: 'test-prod-parallel-urn',
+    version: '1.0.0',
+    environmentClassification: 'prod-parallel',
+    producers: [],
+    awsRegion: 'us-east-1',
+    awsAccountId: 'test-prod-parallel-account-id',
+    ingestStepFunctionsAvtivityArn:
+      'arn:aws:states:us-east-1:123456789:activity:test',
+    ingestStateMachineArn:
+      'arn:aws:states:us-east-1:123456789:stateMachine:test',
+    ingestSystemAccount: 'test-prod-parallel-system-account',
+    snowflakeAccount: 'test-prod-parallel-snowflake-account',
+    snowflakeHost: 'test.prod-parallel.snowflakecomputing.com',
+    s3StagingBucketName: 'test-prod-parallel-staging-bucket',
+    storageIntegrationName: 'test-prod-parallel-storage-integration',
+  };
+
+const mocProdIngestEnvironmentResponse: PlainObject<V1_AWSSnowflakeIngestEnvironment> =
+  {
+    _type: 'AWSSnowflake',
+    urn: 'test-prod-urn',
+    version: '1.0.0',
+    environmentClassification: 'prod',
+    producers: [],
+    awsRegion: 'us-east-1',
+    awsAccountId: 'test-prod-account-id',
+    ingestStepFunctionsAvtivityArn:
+      'arn:aws:states:us-east-1:123456789:activity:test',
+    ingestStateMachineArn:
+      'arn:aws:states:us-east-1:123456789:stateMachine:test',
+    ingestSystemAccount: 'test-prod-system-account',
+    snowflakeAccount: 'test-prod-snowflake-account',
+    snowflakeHost: 'test.prod.snowflakecomputing.com',
+    s3StagingBucketName: 'test-prod-staging-bucket',
+    storageIntegrationName: 'test-prod-storage-integration',
   };
 
 export const TEST__setUpMarketplaceLakehouse = async (
@@ -269,9 +433,17 @@ export const TEST__setUpMarketplaceLakehouse = async (
       path: string,
     ) => {
       if (path === 'test::dataproduct::TestDataProduct') {
-        return { content: mockSDLCDataProduct };
+        return {
+          classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
+          content: mockSDLCDataProduct,
+          path: 'test::dataproduct::TestDataProduct',
+        };
       } else if (path === 'test::dataproduct::AnotherDataProduct') {
-        return { content: mockSDLCDataProductWithoutTitle };
+        return {
+          classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
+          content: mockSDLCDataProductWithoutTitle,
+          path: 'test::dataproduct::AnotherDataProduct',
+        };
       }
       return { content: mockSDLCDataProduct };
     },
@@ -280,19 +452,62 @@ export const TEST__setUpMarketplaceLakehouse = async (
   createSpy(
     MOCK__store.lakehousePlatformServerClient,
     'getIngestEnvironmentSummaries',
-  ).mockResolvedValue([mockIngestEnvironmentSummaryResponse]);
+  ).mockResolvedValue([mockDevIngestEnvironmentSummaryResponse]);
   createSpy(
     MOCK__store.lakehousePlatformServerClient,
     'findProducerServer',
-  ).mockResolvedValue(mockIngestEnvironmentSummaryResponse);
+  ).mockImplementation(
+    async (did: number, level: string, token?: string | undefined) => {
+      if (did === 123) {
+        return mockDevIngestEnvironmentSummaryResponse;
+      } else if (did === 456) {
+        return mockProdParallelIngestEnvironmentSummaryResponse;
+      } else if (did === 789) {
+        return mockProdIngestEnvironmentSummaryResponse;
+      }
+      throw new Error(`Unable to find environment with deployment ID: ${did}`);
+    },
+  );
   createSpy(
     MOCK__store.lakehouseIngestServerClient,
     'getDeployedIngestDefinitions',
-  ).mockResolvedValue(mockSandboxDataProductResponse);
+  ).mockImplementation(
+    async (ingestServerUrl: string | undefined, token: string | undefined) => {
+      if (ingestServerUrl === 'https://test-dev-ingest-server.com') {
+        return mockDevSandboxDataProductResponse;
+      } else if (
+        ingestServerUrl === 'https://test-prod-parallel-ingest-server.com'
+      ) {
+        return mockProdParallelSandboxDataProductResponse;
+      } else if (ingestServerUrl === 'https://test-prod-ingest-server.com') {
+        return mockProdSandboxDataProductResponse;
+      }
+
+      throw new Error(
+        `Unable to find deployed definitions for URL: ${ingestServerUrl}`,
+      );
+    },
+  );
   createSpy(
     MOCK__store.lakehouseIngestServerClient,
     'getIngestEnvironment',
-  ).mockResolvedValue(mockIngestEnvironmentResponse);
+  ).mockImplementation(
+    async (ingestServerUrl: string | undefined, token: string | undefined) => {
+      if (ingestServerUrl === 'https://test-dev-ingest-server.com') {
+        return mockDevIngestEnvironmentResponse;
+      } else if (
+        ingestServerUrl === 'https://test-prod-parallel-ingest-server.com'
+      ) {
+        return mockProdParallelIngestEnvironmentResponse;
+      } else if (ingestServerUrl === 'https://test-prod-ingest-server.com') {
+        return mocProdIngestEnvironmentResponse;
+      }
+
+      throw new Error(
+        `Unable to find deployed definitions for URL: ${ingestServerUrl}`,
+      );
+    },
+  );
 
   const MOCK__lakehouseStore = new MarketplaceLakehouseStore(
     MOCK__store,
