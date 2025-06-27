@@ -1,5 +1,15 @@
 # @finos/legend-graph
 
+## 32.1.49
+
+### Patch Changes
+
+- [#4235](https://github.com/finos/legend-studio/pull/4235) [`2e95657`](https://github.com/finos/legend-studio/commit/2e956570d49b8d577ebc77e4fba9dc08543bdbb3) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add trace to EngineError and include in compilation error notification.
+
+- [#4229](https://github.com/finos/legend-studio/pull/4229) [`9ac96d0`](https://github.com/finos/legend-studio/commit/9ac96d0bb4a531d97e4495a32d7a0ed8d1f4672c) ([@yash0024](https://github.com/yash0024)) - Add supportInfo to dataProduct
+
+- [#4230](https://github.com/finos/legend-studio/pull/4230) [`3c87bc2`](https://github.com/finos/legend-studio/commit/3c87bc20dc05c9e5ec5aba4f1db574d2d6773ca0) ([@travisstebbins](https://github.com/travisstebbins)) - Fix V1_IngestEnvironment inheritance and errors when fetching ingest environment details
+
 ## 32.1.48
 
 ## 32.1.47

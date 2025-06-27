@@ -1,5 +1,15 @@
 # @finos/legend-application-studio
 
+## 28.19.6
+
+### Patch Changes
+
+- [#4235](https://github.com/finos/legend-studio/pull/4235) [`2e95657`](https://github.com/finos/legend-studio/commit/2e956570d49b8d577ebc77e4fba9dc08543bdbb3) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add trace to EngineError and include in compilation error notification.
+
+- [#4232](https://github.com/finos/legend-studio/pull/4232) [`661d7b3`](https://github.com/finos/legend-studio/commit/661d7b370dc85e864189c04c52f28b4f3a1422eb) ([@kelly-thai](https://github.com/kelly-thai)) - Added UI Integration test for Lakehouse Data Product form editor
+
+- [#4229](https://github.com/finos/legend-studio/pull/4229) [`9ac96d0`](https://github.com/finos/legend-studio/commit/9ac96d0bb4a531d97e4495a32d7a0ed8d1f4672c) ([@yash0024](https://github.com/yash0024)) - Allow users to add dataProduct supportInfo in form mode
+
 ## 28.19.5
 
 ## 28.19.4

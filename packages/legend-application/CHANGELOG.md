@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 16.0.54
+
+### Patch Changes
+
+- [#4235](https://github.com/finos/legend-studio/pull/4235) [`2e95657`](https://github.com/finos/legend-studio/commit/2e956570d49b8d577ebc77e4fba9dc08543bdbb3) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add detail to Notification and copy icon.
+
 ## 16.0.53
 
 ## 16.0.52
