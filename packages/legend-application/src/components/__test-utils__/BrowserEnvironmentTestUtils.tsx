@@ -22,31 +22,53 @@ import { useApplicationStore } from '../ApplicationStoreProvider.js';
 import { createMock } from '@finos/legend-shared/test';
 import { MemoryRouter } from 'react-router';
 import { BrowserNavigator } from '../../browser.js';
+import { type NavigateFunction } from 'react-router-dom';
 
 const TEST__APPLICATION_BASE_URL = '/test';
 
 class TEST__BrowserNavigator extends BrowserNavigator {
+  mockBaseUrl?: string | undefined;
+
+  constructor(navigate: NavigateFunction, baseUrl: string) {
+    super(navigate, baseUrl);
+    this.mockBaseUrl = baseUrl;
+  }
+
   override getCurrentLocation(): string {
-    return TEST__APPLICATION_BASE_URL;
+    return this.mockBaseUrl ?? TEST__APPLICATION_BASE_URL;
   }
 }
 
 class TEST__BrowserPlatorm extends BrowserPlatform {
+  mockBaseUrl?: string | undefined;
+
+  constructor(
+    applicationStore: GenericLegendApplicationStore,
+    config: { navigate: NavigateFunction; baseUrl: string },
+  ) {
+    super(applicationStore, config);
+    this.mockBaseUrl = config.baseUrl;
+  }
+
   override getNavigator(): TEST__BrowserNavigator {
-    return new TEST__BrowserNavigator(() => {}, TEST__APPLICATION_BASE_URL);
+    return new TEST__BrowserNavigator(
+      () => {},
+      this.mockBaseUrl ?? TEST__APPLICATION_BASE_URL,
+    );
   }
 }
 
 export const TEST__BrowserEnvironmentProvider: React.FC<{
   children: React.ReactNode;
   initialEntries: string[];
-}> = ({ children, initialEntries }) => {
+  baseUrl?: string;
+}> = ({ children, initialEntries, baseUrl }) => {
   const applicationStore = useApplicationStore();
   const platform = useLocalObservable(
     () =>
       new TEST__BrowserPlatorm(applicationStore, {
         navigate: () => {},
-        baseUrl: TEST__APPLICATION_BASE_URL,
+        baseUrl: baseUrl ?? TEST__APPLICATION_BASE_URL,
       }),
   );
 

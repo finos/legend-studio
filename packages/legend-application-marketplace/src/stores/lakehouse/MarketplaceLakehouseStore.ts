@@ -28,7 +28,14 @@ import {
   VersionedProjectData,
   type DepotServerClient,
 } from '@finos/legend-server-depot';
-import { action, computed, flow, makeObservable, observable } from 'mobx';
+import {
+  action,
+  computed,
+  flow,
+  makeObservable,
+  observable,
+  runInAction,
+} from 'mobx';
 import type {
   LegendMarketplaceApplicationStore,
   LegendMarketplaceBaseStore,
@@ -403,7 +410,9 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
           GAV_DELIMITER +
           entitySummary.path;
         if (!this.productStatesMap.has(key)) {
-          this.productStatesMap.set(key, new DataProductState(this));
+          runInAction(() => {
+            this.productStatesMap.set(key, new DataProductState(this));
+          });
         }
         const productState = guaranteeNonNullable(
           this.productStatesMap.get(key),
