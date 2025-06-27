@@ -33,35 +33,6 @@ import {
   type V1_SandboxDataProductDeploymentResponse,
   CORE_PURE_PATH,
 } from '@finos/legend-graph';
-
-jest.mock('@finos/legend-graph', () => {
-  const actual = jest.requireActual('@finos/legend-graph') as Record<
-    string,
-    unknown
-  >;
-  return {
-    ...actual,
-    getCurrentUserIDFromEngineServer: jest.fn(() =>
-      Promise.resolve('test-user-id'),
-    ),
-  };
-});
-
-jest.mock('../../pages/Lakehouse/MarketplaceLakehouseStoreProvider.js', () => {
-  const actual = jest.requireActual(
-    '../../pages/Lakehouse/MarketplaceLakehouseStoreProvider.js',
-  ) as Record<string, unknown>;
-  return {
-    ...actual,
-    useMarketplaceLakehouseStore: jest.fn(),
-    MarketplaceLakehouseStoreProvider: ({
-      children,
-    }: {
-      children: React.ReactNode;
-    }) => children,
-  };
-});
-
 import { MarketplaceLakehouseStore } from '../../stores/lakehouse/MarketplaceLakehouseStore.js';
 import { TEST__BrowserEnvironmentProvider } from '@finos/legend-application/test';
 import {
@@ -76,6 +47,33 @@ import { TEST__getTestLegendMarketplaceApplicationConfig } from '../../applicati
 import { LegendMarketplaceFrameworkProvider } from '../../application/LegendMarketplaceFrameworkProvider.js';
 import searchResults from './TEST_DATA__SearchResults.json' with { type: 'json' };
 import { LegendMarketplaceWebApplicationRouter } from '../../application/LegendMarketplaceWebApplication.js';
+
+jest.mock('@finos/legend-graph', () => {
+  const actual: Record<string, unknown> = jest.requireActual(
+    '@finos/legend-graph',
+  );
+  return {
+    ...actual,
+    getCurrentUserIDFromEngineServer: jest.fn(() =>
+      Promise.resolve('test-user-id'),
+    ),
+  };
+});
+
+jest.mock('../../pages/Lakehouse/MarketplaceLakehouseStoreProvider.js', () => {
+  const actual: Record<string, unknown> = jest.requireActual(
+    '../../pages/Lakehouse/MarketplaceLakehouseStoreProvider.js',
+  );
+  return {
+    ...actual,
+    useMarketplaceLakehouseStore: jest.fn(),
+    MarketplaceLakehouseStoreProvider: ({
+      children,
+    }: {
+      children: React.ReactNode;
+    }) => children,
+  };
+});
 
 export const TEST__provideMockedLegendMarketplaceBaseStore =
   async (customization?: {
@@ -145,31 +143,31 @@ const mockSDLCDataProductSummaries = [
     groupId: 'com.example',
     artifactId: 'test-sdlc-data-product',
     versionId: '1.0.0',
-    path: 'test::dataproduct::TestDataProduct',
+    path: 'test::dataproduct::TestSDLCDataProduct',
     classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
   },
   {
     groupId: 'com.example',
     artifactId: 'test-sdlc-data-product',
     versionId: 'master-SNAPSHOT',
-    path: 'test::dataproduct::TestDataProduct',
+    path: 'test::dataproduct::TestSDLCDataProduct',
     classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
   },
   {
     groupId: 'com.example',
     artifactId: 'another-sdlc-data-product',
     versionId: '2.0.0',
-    path: 'test::dataproduct::AnotherDataProduct',
+    path: 'test::dataproduct::AnotherSDLCDataProduct',
     classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
   },
 ];
 
-const mockSDLCDataProduct = {
+const mockReleaseSDLCDataProduct = {
   _type: 'dataProduct',
-  name: 'TestDataProduct',
+  name: 'TestSDLCDataProduct',
   package: 'test::dataproduct',
-  title: 'Test Data Product',
-  description: 'A test data product for testing purposes',
+  title: 'Test SDLC Data Product',
+  description: 'A test SDLC data product for testing purposes',
   accessPointGroups: [
     {
       id: 'testSDLCAccessPointGroup',
@@ -202,9 +200,20 @@ const mockSDLCDataProduct = {
   imageUrl: undefined,
 };
 
+const mockSnapshotSDLCDataProduct = {
+  _type: 'dataProduct',
+  name: 'TestSDLCDataProduct',
+  package: 'test::dataproduct',
+  title: 'Test Snapshot SDLC Data Product',
+  description: 'A test snapshot SDLC data product for testing purposes',
+  accessPointGroups: [],
+  icon: undefined,
+  imageUrl: undefined,
+};
+
 const mockSDLCDataProductWithoutTitle = {
   _type: 'dataProduct',
-  name: 'AnotherDataProduct',
+  name: 'AnotherSDLCDataProduct',
   package: 'test::dataproduct',
   title: undefined,
   description: undefined,
@@ -432,27 +441,44 @@ export const TEST__setUpMarketplaceLakehouse = async (
       versionId: string,
       path: string,
     ) => {
-      if (path === 'test::dataproduct::TestDataProduct') {
-        return {
-          classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
-          content: mockSDLCDataProduct,
-          path: 'test::dataproduct::TestDataProduct',
-        };
-      } else if (path === 'test::dataproduct::AnotherDataProduct') {
+      if (path === 'test::dataproduct::TestSDLCDataProduct') {
+        if (versionId === '1.0.0') {
+          return {
+            classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
+            content: mockReleaseSDLCDataProduct,
+            path: 'test::dataproduct::TestSDLCDataProduct',
+          };
+        } else if (versionId === 'master-SNAPSHOT') {
+          return {
+            classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
+            content: mockSnapshotSDLCDataProduct,
+            path: 'test::dataproduct::TestSDLCDataProduct',
+          };
+        }
+        throw new Error(
+          `Unable to find SDLC data product: ${groupId}:${artifactId}:${versionId}:${path}`,
+        );
+      } else if (path === 'test::dataproduct::AnotherSDLCDataProduct') {
         return {
           classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
           content: mockSDLCDataProductWithoutTitle,
-          path: 'test::dataproduct::AnotherDataProduct',
+          path: 'test::dataproduct::AnotherSDLCDataProduct',
         };
       }
-      return { content: mockSDLCDataProduct };
+      throw new Error(
+        `Unable to find SDLC data product: ${groupId}:${artifactId}:${versionId}:${path}`,
+      );
     },
   );
 
   createSpy(
     MOCK__store.lakehousePlatformServerClient,
     'getIngestEnvironmentSummaries',
-  ).mockResolvedValue([mockDevIngestEnvironmentSummaryResponse]);
+  ).mockResolvedValue([
+    mockDevIngestEnvironmentSummaryResponse,
+    mockProdParallelIngestEnvironmentSummaryResponse,
+    mockProdIngestEnvironmentSummaryResponse,
+  ]);
   createSpy(
     MOCK__store.lakehousePlatformServerClient,
     'findProducerServer',
