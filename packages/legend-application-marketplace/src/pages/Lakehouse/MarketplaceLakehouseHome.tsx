@@ -358,6 +358,7 @@ export const LakehouseDataProductCard = observer(
                       Boolean(popoverAnchorEl),
                   },
                 )}
+                title="More Info"
               >
                 <InfoCircleIcon />
               </IconButton>
