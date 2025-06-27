@@ -543,25 +543,6 @@ export const TEST__setUpMarketplaceLakehouse = async (
     MOCK__store.depotServerClient,
   );
 
-  // const mockAuth = {
-  //   isLoading: false,
-  //   isAuthenticated: true,
-  //   user: {
-  //     profile: {
-  //       name: 'Test User',
-  //       sub: 'test-user-id',
-  //       email: 'test@example.com',
-  //     },
-  //     access_token: 'mock-access-token',
-  //   },
-  //   signinRedirect: jest.fn(),
-  //   signoutRedirect: jest.fn(),
-  //   removeUser: jest.fn(),
-  //   error: null,
-  //   activeNavigator: 'window',
-  //   settings: {},
-  // } as any;
-
   (useMarketplaceLakehouseStore as jest.Mock).mockReturnValue(
     MOCK__lakehouseStore,
   );
