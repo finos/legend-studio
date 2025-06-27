@@ -51,7 +51,7 @@ import {
   mockProdSandboxDataProductResponse,
   mockDevIngestEnvironmentResponse,
   mockProdParallelIngestEnvironmentResponse,
-  mocProdIngestEnvironmentResponse,
+  mockProdIngestEnvironmentResponse,
 } from './TEST_DATA__LakehouseData.js';
 
 jest.mock('@finos/legend-graph', () => {
@@ -253,7 +253,7 @@ export const TEST__setUpMarketplaceLakehouse = async (
       ) {
         return mockProdParallelIngestEnvironmentResponse;
       } else if (ingestServerUrl === 'https://test-prod-ingest-server.com') {
-        return mocProdIngestEnvironmentResponse;
+        return mockProdIngestEnvironmentResponse;
       }
 
       throw new Error(
