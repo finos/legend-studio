@@ -20,6 +20,7 @@ import { makeObservable, observable } from 'mobx';
 
 export class EngineError extends ApplicationError {
   sourceInformation?: SourceInformation | undefined;
+  trace?: string | undefined;
 }
 
 export class ParserError extends EngineError {}

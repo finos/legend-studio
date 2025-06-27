@@ -112,6 +112,7 @@ export class LakehouseIngestionManager {
       undefined,
       token,
     );
+    fullResponse.deploymentResponse = deployResponse;
     try {
       messageCallBack(`Deployment Success. Fetching write location...`);
       await this._fetchDeployLocations(deployResponse, token);

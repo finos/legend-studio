@@ -72,4 +72,8 @@ export enum LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY {
   SCHEMA_SET_EDITOR = 'dsl-external-format.studio.editor.schema-set-editor',
   SCHEMA_SET_MODEL_GENERATION = 'dsl-external-format.studio.editor.schema-set-model-generation',
   BINDING_EDITOR = 'dsl-external-format.studio.editor.binding-editor',
+
+  // Lakehouse
+  INGEST_DEFINITION_EDITOR = 'studio.editor.ingest-definition-editor',
+  DATA_PRODUCT_EDITOR = 'studio.editor.data-product-editor',
 }

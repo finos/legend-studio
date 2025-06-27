@@ -540,6 +540,7 @@ export class GraphEditFormModeState extends GraphEditorMode {
         this.editorStore.graphState.error = error;
         this.editorStore.applicationStore.notificationService.notifyWarning(
           `Compilation failed: ${error.message}`,
+          error.trace,
         );
         this.editorStore.graphState.setMostRecentCompilationOutcome(
           GraphCompilationOutcome.FAILED,

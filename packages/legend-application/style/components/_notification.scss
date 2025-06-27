@@ -80,6 +80,19 @@
     }
   }
 
+  &__copy__icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-left: 8px;
+    display: flex;
+    align-items: center;
+  }
+
+  &__copy__icon:hover {
+    color: var(--primary-color);
+  }
+
   &__actions {
     padding: 0.8rem 0 0.8rem 1rem;
   }

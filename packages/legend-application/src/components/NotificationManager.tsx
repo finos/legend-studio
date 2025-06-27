@@ -29,6 +29,7 @@ import {
   InfoCircleIcon,
   BugIcon,
   clsx,
+  CopyIcon,
 } from '@finos/legend-art';
 import { useState } from 'react';
 import {
@@ -41,6 +42,7 @@ export const NotificationManager = observer(() => {
   const notification = applicationStore.notificationService.notification;
   const isOpen = Boolean(notification);
   const message = notification?.message ?? '';
+  const detail = notification?.details;
   const severity = notification?.severity ?? NOTIFCATION_SEVERITY.INFO;
   const [isExpanded, setIsExpanded] = useState(false);
   let notificationIcon = (
@@ -84,9 +86,13 @@ export const NotificationManager = observer(() => {
     applicationStore.notificationService.setNotification(undefined);
     setIsExpanded(false);
   };
-  const handleCopy = applicationStore.guardUnhandledError(() =>
-    applicationStore.clipboardService.copyTextToClipboard(message),
-  );
+  const handleCopy = applicationStore.guardUnhandledError(() => {
+    let content = message;
+    if (isExpanded && detail) {
+      content = `${content}\n${detail}`;
+    }
+    return applicationStore.clipboardService.copyTextToClipboard(content);
+  });
   const toggleExpansion = (): void => setIsExpanded(!isExpanded);
 
   const onSnackbarAutoHideOrClickAway = (
@@ -145,7 +151,18 @@ export const NotificationManager = observer(() => {
               title="Click to Copy"
             >
               {message}
+              {isExpanded && notification?.details ? notification.details : ''}
             </div>
+            {Boolean(notification?.details) && (
+              <button
+                className="notification__copy__icon"
+                onClick={handleCopy}
+                title="Copy message and trace"
+                aria-label="Copy message and trace"
+              >
+                <CopyIcon />
+              </button>
+            )}
           </div>
         }
         action={[
