@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.17.6
+
+### Patch Changes
+
+- [#4235](https://github.com/finos/legend-studio/pull/4235) [`2e95657`](https://github.com/finos/legend-studio/commit/2e956570d49b8d577ebc77e4fba9dc08543bdbb3) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add trace to EngineError and include in compilation error notification.
+
 ## 4.17.5
 
 ## 4.17.4

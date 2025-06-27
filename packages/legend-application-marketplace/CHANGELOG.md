@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.0.51
+
+### Patch Changes
+
+- [#4230](https://github.com/finos/legend-studio/pull/4230) [`3c87bc2`](https://github.com/finos/legend-studio/commit/3c87bc20dc05c9e5ec5aba4f1db574d2d6773ca0) ([@travisstebbins](https://github.com/travisstebbins)) - Fix V1_IngestEnvironment inheritance and errors when fetching ingest environment details
+
 ## 0.0.50
 
 ### Patch Changes
