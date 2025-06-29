@@ -498,6 +498,7 @@ export * from './graph-manager/protocol/pure/PureProtocolProcessorPlugin.js';
 export * from './graph-manager/protocol/pure/extensions/DSL_ExternalFormat_PureProtocolProcessorPlugin.js';
 export * from './graph-manager/action/functionActivator/FunctionActivatorConfiguration.js';
 export * from './graph-manager/action/relational/RelationalDatabaseTypeConfiguration.js';
+export * from './graph/metamodel/pure/packageableElements/mapping/relationFunction/RelationFunctionPropertyMapping.js';
 export {
   RelationTypeColumnMetadata,
   RelationTypeMetadata,
