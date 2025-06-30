@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.0.52
+
+### Patch Changes
+
+- [#4240](https://github.com/finos/legend-studio/pull/4240) [`7b916e4`](https://github.com/finos/legend-studio/commit/7b916e44be2884573eae25919ed153c864f41ad7) ([@travisstebbins](https://github.com/travisstebbins)) - Fix Lakehouse APG table heights
+
 ## 0.0.51
 
 ### Patch Changes
