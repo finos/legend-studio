@@ -20,10 +20,33 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
+/**
+ * Process template text by replacing placeholders with actual values
+ * @param {string} template - Template text with {{PLACEHOLDER}} syntax
+ * @param {object} variables - Object containing variable values
+ * @returns {string} Processed text with placeholders replaced
+ */
+const processTemplate = (template, variables) => {
+  return template.replace(/\{\{(\w+)\}\}/g, (match, key) => {
+    return variables[key] !== undefined ? variables[key] : match;
+  });
+};
+
+// Read the template file
+const templateText = readFileSync(
+  resolve(__dirname, './COPYRIGHT_HEADER.template.txt'),
+  {
+    encoding: 'utf-8',
+  },
+);
+
+// Define template variables
+const templateVariables = {
+  YEAR: new Date().getFullYear(),
+};
+
 export default {
   extensions: ['js', 'ts', 'tsx', 'css', 'scss'],
   excludePatterns: [],
-  copyrightText: readFileSync(resolve(__dirname, './COPYRIGHT_HEADER.txt'), {
-    encoding: 'utf-8',
-  }),
+  copyrightText: processTemplate(templateText, templateVariables),
 };
