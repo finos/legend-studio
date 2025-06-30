@@ -80,7 +80,11 @@
   }
 
   &__grid {
+    height: 30rem;
+
     &--auto-height {
+      height: fit-content;
+
       &--non-empty {
         .ag-center-cols-viewport {
           min-height: unset;
