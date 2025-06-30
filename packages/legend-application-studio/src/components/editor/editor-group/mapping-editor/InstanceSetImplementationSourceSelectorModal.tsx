@@ -43,6 +43,7 @@ import {
   getAllRecordTypes,
   PackageableElement,
   FlatData,
+  ConcreteFunctionDefinition,
 } from '@finos/legend-graph';
 import { isNonNullable, UnsupportedOperationError } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
@@ -84,6 +85,8 @@ export const getSourceElementLabel = (srcElement: unknown): string => {
         ? ''
         : `${srcElement.relation.value.schema.name}.`
     }${srcElement.relation.value.name}`;
+  } else if (srcElement instanceof ConcreteFunctionDefinition) {
+    sourceLabel = srcElement.name;
   }
   return sourceLabel;
 };

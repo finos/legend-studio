@@ -37,6 +37,7 @@ import {
   OperationSetImplementation,
   OperationType,
   INTERNAL__UnknownSetImplementation,
+  RelationFunctionInstanceSetImplementation,
 } from '@finos/legend-graph';
 import {
   setImpl_nominateRoot,
@@ -87,6 +88,7 @@ export enum CLASS_MAPPING_SOURCE_TYPE {
   FLAT_DATA = 'FLAT DATA',
   OPERATION = 'OPERATION',
   RELATIONAL = 'DATABASE TABLE',
+  RELATION_FUNCTION = 'RELATION',
 }
 
 export const ClassMappingEditor = observer(
@@ -128,6 +130,11 @@ export const ClassMappingEditor = observer(
     ) {
       sourceType = CLASS_MAPPING_SOURCE_TYPE.RELATIONAL;
       sourceName = setImplementation.mainTableAlias?.relation.value.name;
+    } else if (
+      setImplementation instanceof RelationFunctionInstanceSetImplementation
+    ) {
+      sourceType = CLASS_MAPPING_SOURCE_TYPE.RELATION_FUNCTION;
+      sourceName = setImplementation.relationFunction?.name;
     } else if (setImplementation instanceof OperationSetImplementation) {
       sourceType = CLASS_MAPPING_SOURCE_TYPE.OPERATION;
     } else {
