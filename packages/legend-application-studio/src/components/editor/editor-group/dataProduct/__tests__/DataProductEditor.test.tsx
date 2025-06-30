@@ -134,6 +134,7 @@ test(integrationTest('Editing access point groups'), async () => {
       )[1],
     ),
   );
+  fireEvent.click(await screen.findByText('Proceed'));
   expect(screen.queryByText('group2')).toBeNull();
 });
 
