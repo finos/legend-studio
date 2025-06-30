@@ -968,7 +968,11 @@ export class LakehouseRuntimeEditorState extends EngineRuntimeEditorState {
           token,
         )) as unknown as IngestDeploymentServerConfig[] | undefined;
         this.setEnvSummaries(res);
-        if (!this.runtimeValue.environment && this.envOptions.length) {
+        if (
+          this.lakehouseRuntimeType === LakehouseRuntimeType.ENVIRONMENT &&
+          !this.runtimeValue.environment &&
+          this.envOptions.length
+        ) {
           this.runtimeValue.environment = this.envOptions[0]?.value;
         }
       }
