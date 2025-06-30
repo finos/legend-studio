@@ -16,35 +16,37 @@
 
 import { type PlainObject } from '@finos/legend-shared';
 import { type IngestDeploymentServerConfig } from '@finos/legend-server-lakehouse';
+import { type StoredSummaryEntity } from '@finos/legend-server-depot';
 import {
   type V1_AWSSnowflakeIngestEnvironment,
   type V1_SandboxDataProductDeploymentResponse,
   CORE_PURE_PATH,
 } from '@finos/legend-graph';
 
-export const mockSDLCDataProductSummaries = [
-  {
-    groupId: 'com.example',
-    artifactId: 'test-sdlc-data-product',
-    versionId: '1.0.0',
-    path: 'test::dataproduct::TestSDLCDataProduct',
-    classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
-  },
-  {
-    groupId: 'com.example',
-    artifactId: 'test-sdlc-data-product',
-    versionId: 'master-SNAPSHOT',
-    path: 'test::dataproduct::TestSDLCDataProduct',
-    classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
-  },
-  {
-    groupId: 'com.example',
-    artifactId: 'another-sdlc-data-product',
-    versionId: '2.0.0',
-    path: 'test::dataproduct::AnotherSDLCDataProduct',
-    classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
-  },
-];
+export const mockSDLCDataProductSummaries: PlainObject<StoredSummaryEntity>[] =
+  [
+    {
+      groupId: 'com.example',
+      artifactId: 'test-sdlc-data-product',
+      versionId: '1.0.0',
+      path: 'test::dataproduct::TestSDLCDataProduct',
+      classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
+    },
+    {
+      groupId: 'com.example',
+      artifactId: 'test-sdlc-data-product',
+      versionId: 'master-SNAPSHOT',
+      path: 'test::dataproduct::TestSDLCDataProduct',
+      classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
+    },
+    {
+      groupId: 'com.example',
+      artifactId: 'another-sdlc-data-product',
+      versionId: '2.0.0',
+      path: 'test::dataproduct::AnotherSDLCDataProduct',
+      classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
+    },
+  ];
 
 export const mockReleaseSDLCDataProduct = {
   _type: 'dataProduct',
