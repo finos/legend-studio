@@ -58,6 +58,8 @@ import {
   V1_User,
   type V1_OrganizationalScope,
 } from '../../../lakehouse/entitlements/V1_CoreEntitlements.js';
+import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
+import type { DSL_Lakehouse_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/DSL_Lakehouse_PureProtocolProcessorPlugin_Extension.js';
 
 enum V1_OrganizationalScopeType {
   AdHocTeam = 'AdHocTeam',
@@ -111,22 +113,51 @@ export const V1_AdhocTeamModelSchema = createModelSchema(V1_AdhocTeam, {
 
 const V1_deseralizeOrganizationalScope = (
   json: PlainObject<V1_OrganizationalScope>,
+  plugins: PureProtocolProcessorPlugin[],
 ): V1_OrganizationalScope => {
   switch (json._type) {
     case V1_OrganizationalScopeType.AdHocTeam:
       return deserialize(V1_AdhocTeamModelSchema, json);
-    default:
+    default: {
+      const extraOrganizationalScopeDeserializers = plugins.flatMap(
+        (plugin) =>
+          (
+            plugin as DSL_Lakehouse_PureProtocolProcessorPlugin_Extension
+          ).V1_getExtraOrganizationalScopeDeserializers?.() ?? [],
+      );
+      for (const deserializer of extraOrganizationalScopeDeserializers) {
+        const protocol = deserializer(json);
+        if (protocol) {
+          return protocol;
+        }
+      }
+
+      // Fall back to create unknown stub if not supported
       const org = new V1_UnknownOrganizationalScopeType();
       org.content = json;
       return org;
+    }
   }
 };
 
 const V1_seralizeOrganizationalScope = (
   json: V1_OrganizationalScope,
+  plugins: PureProtocolProcessorPlugin[],
 ): PlainObject<V1_OrganizationalScope> => {
   if (json instanceof V1_AdhocTeam) {
     return serialize(V1_AdhocTeamModelSchema, json);
+  }
+  const extraOrganizationalScopeSerializers = plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSL_Lakehouse_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraOrganizationalScopeSerializers?.() ?? [],
+  );
+  for (const serializer of extraOrganizationalScopeSerializers) {
+    const result = serializer(json);
+    if (result) {
+      return result;
+    }
   }
   throw new UnsupportedOperationError();
 };
@@ -144,33 +175,38 @@ const V1_deseralizeV1_ConsumerEntitlementResource = (
   }
 };
 
-export const V1_dataContractModelSchema = createModelSchema(V1_DataContract, {
-  description: primitive(),
-  guid: primitive(),
-  version: primitive(),
-  state: primitive(),
-  resource: custom(() => SKIP, V1_deseralizeV1_ConsumerEntitlementResource),
-  // members: V1_ContractUserMembership[] = [];
-  consumer: custom(
-    V1_seralizeOrganizationalScope,
-    V1_deseralizeOrganizationalScope,
-  ),
-  createdBy: primitive(),
-});
+export const V1_dataContractModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+) =>
+  createModelSchema(V1_DataContract, {
+    description: primitive(),
+    guid: primitive(),
+    version: primitive(),
+    state: primitive(),
+    resource: custom(() => SKIP, V1_deseralizeV1_ConsumerEntitlementResource),
+    // members: V1_ContractUserMembership[] = [];
+    consumer: custom(
+      (val) => V1_seralizeOrganizationalScope(val, plugins),
+      (val) => V1_deseralizeOrganizationalScope(val, plugins),
+    ),
+    createdBy: primitive(),
+  });
 
-export const V1_schemaSetModelSchema = createModelSchema(
-  V1_DataContractRecord,
-  {
-    dataContract: usingModelSchema(V1_dataContractModelSchema),
-  },
-);
+export const V1_DataContractRecordModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+) =>
+  createModelSchema(V1_DataContractRecord, {
+    dataContract: usingModelSchema(V1_dataContractModelSchema(plugins)),
+  });
 
-export const V1_DataContractsRecordModelSchema = createModelSchema(
-  V1_DataContractsRecord,
-  {
-    dataContracts: optional(customListWithSchema(V1_schemaSetModelSchema)),
-  },
-);
+export const V1_DataContractsRecordModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+) =>
+  createModelSchema(V1_DataContractsRecord, {
+    dataContracts: optional(
+      customListWithSchema(V1_DataContractRecordModelSchema(plugins)),
+    ),
+  });
 
 export const V1_contractUserEventPrivilegeManagerPayloadModelSchema =
   createModelSchema(V1_ContractUserEventPrivilegeManagerPayload, {
@@ -271,8 +307,12 @@ export const V1_TaskStatusChangeResponseModelSchema = createModelSchema(
 
 export const V1_DataContractsRecordModelSchemaToContracts = (
   json: PlainObject<V1_DataContractsRecord>,
+  plugins: PureProtocolProcessorPlugin[],
 ): V1_DataContract[] => {
-  const contracts = deserialize(V1_DataContractsRecordModelSchema, json);
+  const contracts = deserialize(
+    V1_DataContractsRecordModelSchema(plugins),
+    json,
+  );
   return contracts.dataContracts?.map((e) => e.dataContract) ?? [];
 };
 
@@ -282,17 +322,17 @@ export const V1_deserializeTaskResponse = (
   return deserialize(V1_taskResponseModelSchema, json).tasks ?? [];
 };
 
-export const V1_createContractPayloadModelSchema = createModelSchema(
-  V1_CreateContractPayload,
-  {
+export const V1_createContractPayloadModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+) =>
+  createModelSchema(V1_CreateContractPayload, {
     description: primitive(),
     resourceId: primitive(),
     resourceType: primitive(),
     deploymentId: primitive(),
     accessPointGroup: optional(primitive()),
     consumer: custom(
-      V1_seralizeOrganizationalScope,
-      V1_deseralizeOrganizationalScope,
+      (val) => V1_seralizeOrganizationalScope(val, plugins),
+      (val) => V1_deseralizeOrganizationalScope(val, plugins),
     ),
-  },
-);
+  });
