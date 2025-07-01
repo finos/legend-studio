@@ -16,12 +16,10 @@
 
 import {
   ELEMENT_PATH_DELIMITER,
-  V1_AdhocTeam,
-  V1_User,
-  V1_UserType,
+  type V1_OrganizationalScope,
 } from '@finos/legend-graph';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState, type ChangeEvent } from 'react';
+import { useState } from 'react';
 import { useAuth } from 'react-oidc-context';
 import { flowResult } from 'mobx';
 import {
@@ -31,34 +29,16 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  TextField,
 } from '@mui/material';
 import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
-  UserSearchInput,
 } from '@finos/legend-art';
 import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
-import { guaranteeNonNullable, LegendUser } from '@finos/legend-shared';
-import { getUserById } from '../../../stores/lakehouse/LakehouseUtils.js';
-import {
-  DataProductGroupAccess,
-  type DataProductGroupAccessState,
-} from '../../../stores/lakehouse/DataProductDataAccessState.js';
-
-enum DataContractCreatorConsumerType {
-  USER = 'User',
-  SYSTEM_ACCOUNT = 'System Account',
-}
-
-const buildAdhocUser = (user: string): V1_AdhocTeam => {
-  const _user = new V1_User();
-  _user.name = user;
-  _user.userType = V1_UserType.WORKFORCE_USER;
-  const _adhocTeam = new V1_AdhocTeam();
-  _adhocTeam.users = [_user];
-  return _adhocTeam;
-};
+import { guaranteeNonNullable, isNonNullable } from '@finos/legend-shared';
+import { type DataProductGroupAccessState } from '../../../stores/lakehouse/DataProductDataAccessState.js';
+import type { ContractConsumerTypeRendererConfig } from '../../../application/LegendMarketplaceApplicationPlugin.js';
+import { useMarketplaceLakehouseStore } from '../MarketplaceLakehouseStoreProvider.js';
 
 export const EntitlementsDataContractCreator = observer(
   (props: {
@@ -73,51 +53,28 @@ export const EntitlementsDataContractCreator = observer(
       'Cannot show DataContractCreator. No access point group is selected.',
     );
     const legendMarketplaceStore = useLegendMarketplaceBaseStore();
+    const marketplaceLakehouseStore = useMarketplaceLakehouseStore();
     const auth = useAuth();
-    const [description, setDescription] = useState<string | undefined>(
-      undefined,
+    const consumerTypeRendererConfigs: ContractConsumerTypeRendererConfig[] =
+      legendMarketplaceStore.pluginManager
+        .getApplicationPlugins()
+        .map((plugin) => plugin.getContractConsumerTypeRenderers?.())
+        .flat()
+        .filter(isNonNullable);
+    const [selectedConsumerType, setSelectedConsumerType] = useState<string>(
+      consumerTypeRendererConfigs?.[0]?.type ?? '',
     );
-    const [consumerType, setConsumerType] =
-      useState<DataContractCreatorConsumerType>(
-        DataContractCreatorConsumerType.USER,
-      );
-    const [user, setUser] = useState<LegendUser>(new LegendUser());
-    const [loadingCurrentUser, setLoadingCurrentUser] = useState(false);
-
-    useEffect(() => {
-      const fetchCurrentUser = async () => {
-        if (legendMarketplaceStore.userSearchService) {
-          setLoadingCurrentUser(true);
-          try {
-            const currentUser = await getUserById(
-              viewerState.applicationStore.identityService.currentUser,
-              legendMarketplaceStore.userSearchService,
-            );
-            if (currentUser) {
-              setUser(currentUser);
-            }
-          } finally {
-            setLoadingCurrentUser(false);
-          }
-        }
-      };
-      // We should only fetch the current user if the current user is not already entitled.
-      // If the current user is already entitled, we can assume they are requesting access for another user or system account.
-      if (accessGroupState.access === DataProductGroupAccess.NO_ACCESS) {
-        // eslint-disable-next-line no-void
-        void fetchCurrentUser();
-      }
-    }, [
-      legendMarketplaceStore.userSearchService,
-      viewerState.applicationStore.identityService.currentUser,
-      accessGroupState.access,
-    ]);
+    const [consumer, setConsumer] = useState<
+      V1_OrganizationalScope | undefined
+    >();
+    const [description, setDescription] = useState<string | undefined>();
+    const [isValid, setIsValid] = useState<boolean>(false);
 
     const onCreate = (): void => {
-      if (user.id && description) {
+      if (isValid && consumer && description) {
         flowResult(
           viewerState.createContract(
-            buildAdhocUser(user.id),
+            consumer,
             description,
             accessPointGroup,
             auth.user?.access_token,
@@ -156,49 +113,33 @@ export const EntitlementsDataContractCreator = observer(
                 className="marketplace-lakehouse-entitlements__data-contract-creator__consumer-type-btn-group"
                 variant="contained"
               >
-                {Object.values(DataContractCreatorConsumerType).map((value) => (
+                {consumerTypeRendererConfigs.map((config) => (
                   <Button
-                    key={value}
-                    variant={consumerType === value ? 'contained' : 'outlined'}
+                    key={config.type}
+                    variant={
+                      selectedConsumerType === config.type
+                        ? 'contained'
+                        : 'outlined'
+                    }
                     onClick={(): void => {
-                      if (value !== consumerType) {
-                        setConsumerType(value);
-                        setUser(new LegendUser());
+                      if (config.type !== selectedConsumerType) {
+                        setSelectedConsumerType(config.type);
                       }
                     }}
                   >
-                    {value}
+                    {config.type}
                   </Button>
                 ))}
               </ButtonGroup>
-              <UserSearchInput
-                className="marketplace-lakehouse-entitlements__data-contract-creator__user-input"
-                key={consumerType}
-                userValue={user}
-                setUserValue={(_user: LegendUser): void => setUser(_user)}
-                userSearchService={
-                  consumerType === DataContractCreatorConsumerType.USER
-                    ? legendMarketplaceStore.userSearchService
-                    : undefined
-                }
-                label={consumerType}
-                required={true}
-                variant="outlined"
-                fullWidth={true}
-                initializing={loadingCurrentUser}
-              />
-              <TextField
-                className="marketplace-lakehouse-entitlements__data-contract-creator__business-justification-input"
-                required={true}
-                name="business-justification"
-                label="Business Justification"
-                variant="outlined"
-                fullWidth={true}
-                value={description}
-                onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                  setDescription(event.target.value);
-                }}
-              />
+              {consumerTypeRendererConfigs
+                .find((config) => config.type === selectedConsumerType)
+                ?.renderer(
+                  marketplaceLakehouseStore,
+                  accessGroupState,
+                  setConsumer,
+                  setDescription,
+                  setIsValid,
+                )}
             </>
           )}
         </DialogContent>
@@ -206,7 +147,9 @@ export const EntitlementsDataContractCreator = observer(
           <Button
             onClick={onCreate}
             variant="contained"
-            disabled={viewerState.creatingContractState.isInProgress}
+            disabled={
+              viewerState.creatingContractState.isInProgress || !isValid
+            }
           >
             Create
           </Button>
