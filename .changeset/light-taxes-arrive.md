@@ -1,4 +1,5 @@
 ---
+'@finos/legend-application-studio': patch
 '@finos/legend-shared': patch
 ---
 
