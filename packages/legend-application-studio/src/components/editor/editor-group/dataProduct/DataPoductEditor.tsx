@@ -53,7 +53,12 @@ import {
   WarningIcon,
   PanelFormSection,
 } from '@finos/legend-art';
-import React, { useRef, useState, useEffect } from 'react';
+import React, {
+  useRef,
+  useState,
+  useEffect,
+  type ChangeEventHandler,
+} from 'react';
 import { filterByType } from '@finos/legend-shared';
 import { InlineLambdaEditor } from '@finos/legend-query-builder';
 import { action, flowResult } from 'mobx';
@@ -75,8 +80,12 @@ import {
   supportInfo_deleteEmail,
 } from '../../../../stores/graph-modifier/DSL_DataProduct_GraphModifierHelper.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
-import { useApplicationNavigationContext } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
+import {
+  ActionAlertActionType,
+  ActionAlertType,
+  useApplicationNavigationContext,
+} from '@finos/legend-application';
 
 export enum AP_GROUP_MODAL_ERRORS {
   GROUP_NAME_EMPTY = 'Group Name is empty',
@@ -702,6 +711,7 @@ const DataProductDeploymentResponseModal = observer(
 const AccessPointGroupSection = observer(
   (props: { groupState: AccessPointGroupState; isReadOnly: boolean }) => {
     const { groupState, isReadOnly } = props;
+    const editorStore = useEditorStore();
     const productEditorState = groupState.state;
     const [editingDescription, setEditingDescription] = useState(false);
     const [isHoveringDescription, setIsHoveringDescription] = useState(false);
@@ -744,6 +754,27 @@ const AccessPointGroupSection = observer(
       }
     };
 
+    const handleRemoveAccessPointGroup = (): void => {
+      editorStore.applicationStore.alertService.setActionAlertInfo({
+        message: `Deleting access point group ${groupState.value.id} will permanently remove it and all associated access points. Are you sure you want to proceed?`,
+        type: ActionAlertType.CAUTION,
+        actions: [
+          {
+            label: 'Cancel',
+            type: ActionAlertActionType.PROCEED,
+            default: true,
+          },
+          {
+            label: 'Proceed',
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            handler: (): void => {
+              productEditorState.deleteAccessPointGroup(groupState);
+            },
+          },
+        ],
+      });
+    };
+
     const openNewModal = () => {
       productEditorState.setEditingGroupState(groupState);
       productEditorState.setAccessPointModal(true);
@@ -784,7 +815,8 @@ const AccessPointGroupSection = observer(
           <button
             className="access-point-editor__generic-entry__remove-btn--group"
             onClick={() => {
-              productEditorState.deleteAccessPointGroup(groupState);
+              // productEditorState.deleteAccessPointGroup(groupState);
+              handleRemoveAccessPointGroup();
             }}
             tabIndex={-1}
             title="Remove Access Point Group"
@@ -908,8 +940,10 @@ export const DataProductEditor = observer(() => {
   const updateDataProductTitle = (val: string | undefined): void => {
     dataProduct_setTitle(product, val ?? '');
   };
-  const updateDataProductDescription = (val: string | undefined): void => {
-    dataProduct_setDescription(product, val ?? '');
+  const updateDataProductDescription: ChangeEventHandler<
+    HTMLTextAreaElement
+  > = (event) => {
+    dataProduct_setDescription(product, event.target.value);
   };
 
   const updateSupportInfoDocumentationUrl = (val: string | undefined): void => {
@@ -1074,13 +1108,27 @@ export const DataProductEditor = observer(() => {
             update={updateDataProductTitle}
             placeholder="Enter title"
           />
-          <PanelFormTextField
-            name="Description"
-            value={product.description}
-            prompt="Provide a description for this Lakehouse Data Product."
-            update={updateDataProductDescription}
-            placeholder="Enter description"
-          />
+          <div style={{ margin: '1rem' }}>
+            <div className="panel__content__form__section__header__label">
+              Description
+            </div>
+            <div className="panel__content__form__section__header__prompt">
+              Provide a description for this Lakehouse Data Product.
+            </div>
+            <textarea
+              className="panel__content__form__section__textarea"
+              spellCheck={false}
+              disabled={isReadOnly}
+              value={product.description}
+              onChange={updateDataProductDescription}
+              style={{
+                padding: '0.5rem',
+                width: '45rem',
+                maxWidth: '45rem !important',
+              }}
+            />
+          </div>
+
           <PanelFormSection>
             <div className="panel__content__form__section__header__label">
               Support Information
@@ -1163,12 +1211,6 @@ export const DataProductEditor = observer(() => {
               />
             )}
           </PanelContent>
-
-          {/* {dataProductEditorState.accessPointModal && (
-            <NewAccessPointAccessPOint
-              dataProductEditorState={dataProductEditorState}
-            />
-          )} */}
           {dataProductEditorState.accessPointGroupModal && (
             <NewAccessPointGroupModal
               dataProductEditorState={dataProductEditorState}
