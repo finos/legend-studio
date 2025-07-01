@@ -22,6 +22,7 @@ import {
   type V1_SandboxDataProductDeploymentResponse,
   CORE_PURE_PATH,
 } from '@finos/legend-graph';
+import type { Entity } from '@finos/legend-storage';
 
 export const mockSDLCDataProductSummaries: PlainObject<StoredSummaryEntity>[] =
   [
@@ -48,7 +49,7 @@ export const mockSDLCDataProductSummaries: PlainObject<StoredSummaryEntity>[] =
     },
   ];
 
-export const mockReleaseSDLCDataProduct = {
+export const mockReleaseSDLCDataProduct: PlainObject<Entity> = {
   _type: 'dataProduct',
   name: 'TestSDLCDataProduct',
   package: 'test::dataproduct',
@@ -86,7 +87,7 @@ export const mockReleaseSDLCDataProduct = {
   imageUrl: undefined,
 };
 
-export const mockSnapshotSDLCDataProduct = {
+export const mockSnapshotSDLCDataProduct: PlainObject<Entity> = {
   _type: 'dataProduct',
   name: 'TestSDLCDataProduct',
   package: 'test::dataproduct',
@@ -97,7 +98,7 @@ export const mockSnapshotSDLCDataProduct = {
   imageUrl: undefined,
 };
 
-export const mockSDLCDataProductWithoutTitle = {
+export const mockSDLCDataProductWithoutTitle: PlainObject<Entity> = {
   _type: 'dataProduct',
   name: 'AnotherSDLCDataProduct',
   package: 'test::dataproduct',
