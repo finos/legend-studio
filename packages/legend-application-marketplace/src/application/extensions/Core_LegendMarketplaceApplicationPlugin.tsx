@@ -118,11 +118,6 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
         marketplaceLakehouseStore.marketplaceBaseStore.userSearchService,
       ]);
 
-      // Reset the user when the type changes between User and System Account
-      useEffect(() => {
-        setUser(new LegendUser());
-      }, [label]);
-
       return (
         <>
           <UserSearchInput
@@ -177,6 +172,7 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
           handleIsValidChange: (isValid: boolean) => void,
         ) => (
           <CommonRenderer
+            key="user"
             label="User"
             marketplaceLakehouseStore={marketplaceLakehouseStore}
             accessGroupState={accessGroupState}
@@ -199,6 +195,7 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
           handleIsValidChange: (isValid: boolean) => void,
         ) => (
           <CommonRenderer
+            key="system-account"
             label="System Account"
             marketplaceLakehouseStore={marketplaceLakehouseStore}
             accessGroupState={accessGroupState}
