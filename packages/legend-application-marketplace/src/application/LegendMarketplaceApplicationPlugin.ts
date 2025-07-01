@@ -16,6 +16,7 @@
 
 import { LegendApplicationPlugin } from '@finos/legend-application';
 import type { LegendMarketplacePluginManager } from '../application/LegendMarketplacePluginManager.js';
+import type { V1_OrganizationalScope } from '@finos/legend-graph';
 
 export abstract class LegendMarketplaceApplicationPlugin extends LegendApplicationPlugin {
   /**
@@ -27,4 +28,12 @@ export abstract class LegendMarketplaceApplicationPlugin extends LegendApplicati
   install(pluginManager: LegendMarketplacePluginManager): void {
     pluginManager.registerApplicationPlugin(this);
   }
+
+  /**
+   * Custom renderer additional contract consumer types beyond the
+   * default types (USER and SYSTEM_ACCOUNT).
+   */
+  getExtraContractConsumerTypeRenderers?(
+    onCreate: (consumer: V1_OrganizationalScope, description: string) => void,
+  ): React.ReactNode | null;
 }

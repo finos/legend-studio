@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 
-import { ELEMENT_PATH_DELIMITER } from '@finos/legend-graph';
+import {
+  ELEMENT_PATH_DELIMITER,
+  V1_AdhocTeam,
+  V1_User,
+  V1_UserType,
+} from '@finos/legend-graph';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState, type ChangeEvent } from 'react';
 import { useAuth } from 'react-oidc-context';
@@ -45,6 +50,15 @@ enum DataContractCreatorConsumerType {
   USER = 'User',
   SYSTEM_ACCOUNT = 'System Account',
 }
+
+const buildAdhocUser = (user: string): V1_AdhocTeam => {
+  const _user = new V1_User();
+  _user.name = user;
+  _user.userType = V1_UserType.WORKFORCE_USER;
+  const _adhocTeam = new V1_AdhocTeam();
+  _adhocTeam.users = [_user];
+  return _adhocTeam;
+};
 
 export const EntitlementsDataContractCreator = observer(
   (props: {
@@ -103,7 +117,7 @@ export const EntitlementsDataContractCreator = observer(
       if (user.id && description) {
         flowResult(
           viewerState.createContract(
-            user.id,
+            buildAdhocUser(user.id),
             description,
             accessPointGroup,
             auth.user?.access_token,
