@@ -70,6 +70,16 @@ export const EntitlementsDataContractCreator = observer(
     const [description, setDescription] = useState<string | undefined>();
     const [isValid, setIsValid] = useState<boolean>(false);
 
+    const currentConsumerTypeComponent = consumerTypeRendererConfigs
+      .find((config) => config.type === selectedConsumerType)
+      ?.renderer(
+        marketplaceLakehouseStore,
+        accessGroupState,
+        setConsumer,
+        setDescription,
+        setIsValid,
+      );
+
     const onCreate = (): void => {
       if (isValid && consumer && description) {
         flowResult(
@@ -131,15 +141,7 @@ export const EntitlementsDataContractCreator = observer(
                   </Button>
                 ))}
               </ButtonGroup>
-              {consumerTypeRendererConfigs
-                .find((config) => config.type === selectedConsumerType)
-                ?.renderer(
-                  marketplaceLakehouseStore,
-                  accessGroupState,
-                  setConsumer,
-                  setDescription,
-                  setIsValid,
-                )}
+              {currentConsumerTypeComponent}
             </>
           )}
         </DialogContent>
