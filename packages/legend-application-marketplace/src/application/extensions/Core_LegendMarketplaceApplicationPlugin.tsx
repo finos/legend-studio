@@ -21,7 +21,6 @@ import {
   type V1_OrganizationalScope,
 } from '@finos/legend-graph';
 import packageJson from '../../../package.json' with { type: 'json' };
-import type { MarketplaceLakehouseStore } from '../../stores/lakehouse/MarketplaceLakehouseStore.js';
 import {
   LegendMarketplaceApplicationPlugin,
   type ContractConsumerTypeRendererConfig,
@@ -35,6 +34,7 @@ import {
   type DataProductGroupAccessState,
 } from '../../stores/lakehouse/DataProductDataAccessState.js';
 import { TextField } from '@mui/material';
+import type { LegendMarketplaceBaseStore } from '../../stores/LegendMarketplaceBaseStore.js';
 
 export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceApplicationPlugin {
   static NAME = packageJson.extensions.applicationMarketplacePlugin;
@@ -55,7 +55,7 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
 
     const CommonRenderer = (props: {
       label: string;
-      marketplaceLakehouseStore: MarketplaceLakehouseStore;
+      marketplaceBaseStore: LegendMarketplaceBaseStore;
       accessGroupState: DataProductGroupAccessState;
       handleOrganizationalScopeChange: (
         consumer: V1_OrganizationalScope,
@@ -66,7 +66,7 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
     }): React.ReactElement => {
       const {
         label,
-        marketplaceLakehouseStore,
+        marketplaceBaseStore,
         accessGroupState,
         handleOrganizationalScopeChange,
         handleDescriptionChange,
@@ -92,16 +92,13 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
 
       useEffect(() => {
         const fetchCurrentUser = async () => {
-          if (
-            marketplaceLakehouseStore.marketplaceBaseStore.userSearchService
-          ) {
+          if (marketplaceBaseStore.userSearchService) {
             setLoadingCurrentUser(true);
             try {
               const currentUser = await getUserById(
-                marketplaceLakehouseStore.applicationStore.identityService
+                marketplaceBaseStore.applicationStore.identityService
                   .currentUser,
-                marketplaceLakehouseStore.marketplaceBaseStore
-                  .userSearchService,
+                marketplaceBaseStore.userSearchService,
               );
               if (currentUser) {
                 setUser(currentUser);
@@ -119,8 +116,8 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
         }
       }, [
         accessGroupState.access,
-        marketplaceLakehouseStore.applicationStore.identityService.currentUser,
-        marketplaceLakehouseStore.marketplaceBaseStore.userSearchService,
+        marketplaceBaseStore.applicationStore.identityService.currentUser,
+        marketplaceBaseStore.userSearchService,
       ]);
 
       return (
@@ -132,8 +129,7 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
             setUserValue={(_user: LegendUser): void => setUser(_user)}
             userSearchService={
               enableUserSearch
-                ? marketplaceLakehouseStore.marketplaceBaseStore
-                    .userSearchService
+                ? marketplaceBaseStore.userSearchService
                 : undefined
             }
             label={label}
@@ -162,7 +158,7 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
       {
         type: 'User',
         renderer: (
-          marketplaceLakehouseStore: MarketplaceLakehouseStore,
+          marketplaceBaseStore: LegendMarketplaceBaseStore,
           accessGroupState: DataProductGroupAccessState,
           handleOrganizationalScopeChange: (
             consumer: V1_OrganizationalScope,
@@ -173,7 +169,7 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
           <CommonRenderer
             key="user"
             label="User"
-            marketplaceLakehouseStore={marketplaceLakehouseStore}
+            marketplaceBaseStore={marketplaceBaseStore}
             accessGroupState={accessGroupState}
             handleOrganizationalScopeChange={handleOrganizationalScopeChange}
             handleDescriptionChange={handleDescriptionChange}
@@ -185,7 +181,7 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
       {
         type: 'System Account',
         renderer: (
-          marketplaceLakehouseStore: MarketplaceLakehouseStore,
+          marketplaceBaseStore: LegendMarketplaceBaseStore,
           accessGroupState: DataProductGroupAccessState,
           handleOrganizationalScopeChange: (
             consumer: V1_OrganizationalScope,
@@ -196,7 +192,7 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
           <CommonRenderer
             key="system-account"
             label="System Account"
-            marketplaceLakehouseStore={marketplaceLakehouseStore}
+            marketplaceBaseStore={marketplaceBaseStore}
             accessGroupState={accessGroupState}
             handleOrganizationalScopeChange={handleOrganizationalScopeChange}
             handleDescriptionChange={handleDescriptionChange}

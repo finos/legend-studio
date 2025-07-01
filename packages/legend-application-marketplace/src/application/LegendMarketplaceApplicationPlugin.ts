@@ -16,14 +16,14 @@
 
 import { LegendApplicationPlugin } from '@finos/legend-application';
 import type { LegendMarketplacePluginManager } from '../application/LegendMarketplacePluginManager.js';
-import type { MarketplaceLakehouseStore } from '../stores/lakehouse/MarketplaceLakehouseStore.js';
 import type { DataProductGroupAccessState } from '../stores/lakehouse/DataProductDataAccessState.js';
 import type { V1_OrganizationalScope } from '@finos/legend-graph';
+import type { LegendMarketplaceBaseStore } from '../stores/LegendMarketplaceBaseStore.js';
 
 export type ContractConsumerTypeRendererConfig = {
   type: string;
   renderer: (
-    marketplaceLakehouseStore: MarketplaceLakehouseStore,
+    marketplaceBaseStore: LegendMarketplaceBaseStore,
     accessGroupState: DataProductGroupAccessState,
     handleOrganizationalScopeChange: (consumer: V1_OrganizationalScope) => void,
     handleDescriptionChange: (description: string | undefined) => void,

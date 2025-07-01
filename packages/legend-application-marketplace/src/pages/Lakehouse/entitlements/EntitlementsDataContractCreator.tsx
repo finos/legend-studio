@@ -38,7 +38,6 @@ import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarket
 import { guaranteeNonNullable, isNonNullable } from '@finos/legend-shared';
 import { type DataProductGroupAccessState } from '../../../stores/lakehouse/DataProductDataAccessState.js';
 import type { ContractConsumerTypeRendererConfig } from '../../../application/LegendMarketplaceApplicationPlugin.js';
-import { useMarketplaceLakehouseStore } from '../MarketplaceLakehouseStoreProvider.js';
 
 export const EntitlementsDataContractCreator = observer(
   (props: {
@@ -53,7 +52,6 @@ export const EntitlementsDataContractCreator = observer(
       'Cannot show DataContractCreator. No access point group is selected.',
     );
     const legendMarketplaceStore = useLegendMarketplaceBaseStore();
-    const marketplaceLakehouseStore = useMarketplaceLakehouseStore();
     const auth = useAuth();
     const consumerTypeRendererConfigs: ContractConsumerTypeRendererConfig[] =
       useMemo(
@@ -79,7 +77,7 @@ export const EntitlementsDataContractCreator = observer(
         consumerTypeRendererConfigs
           .find((config) => config.type === selectedConsumerType)
           ?.renderer(
-            marketplaceLakehouseStore,
+            legendMarketplaceStore,
             accessGroupState,
             setConsumer,
             setDescription,
@@ -88,7 +86,7 @@ export const EntitlementsDataContractCreator = observer(
       [
         accessGroupState,
         consumerTypeRendererConfigs,
-        marketplaceLakehouseStore,
+        legendMarketplaceStore,
         selectedConsumerType,
       ],
     );
