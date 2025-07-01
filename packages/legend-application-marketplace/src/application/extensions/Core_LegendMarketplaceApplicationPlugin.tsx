@@ -73,9 +73,7 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
         handleIsValidChange,
         enableUserSearch,
       } = props;
-      const [description, setDescription] = useState<string | undefined>(
-        undefined,
-      );
+      const [description, setDescription] = useState<string>('');
       const [user, setUser] = useState<LegendUser>(new LegendUser());
       const [loadingCurrentUser, setLoadingCurrentUser] = useState(false);
 
