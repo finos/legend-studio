@@ -53,15 +53,12 @@ pluginManager
   ])
   .install();
 
-jest.mock('react-oidc-context', () => ({
-  __esModule: true,
-  useAuth: jest.fn(() => ({
-    isAuthenticated: true,
-    user: { name: 'Test User', access_token: 'mock-access-token' },
-    login: jest.fn(),
-    logout: jest.fn(),
-  })),
-}));
+jest.mock('react-oidc-context', () => {
+  const { MOCK__reactOIDCContext } = jest.requireActual<{
+    MOCK__reactOIDCContext: unknown;
+  }>('@finos/legend-shared/test');
+  return MOCK__reactOIDCContext;
+});
 
 test(integrationTest('Editing access point groups'), async () => {
   const MOCK__editorStore = TEST__provideMockedEditorStore({ pluginManager });

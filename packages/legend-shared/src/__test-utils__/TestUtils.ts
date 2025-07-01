@@ -74,3 +74,38 @@ export const createMock = <T extends SuperGenericFunction>(
  * See https://github.com/jest-community/eslint-plugin-jest/issues/35#issuecomment-388386336
  */
 export const createSpy = jest.spyOn;
+
+// TODO: move this function to `dev-utils` when we add typings to that package
+export const MOCK__reactOIDCContext = {
+  __esModule: true,
+  withAuthenticationRequired: (component: React.ComponentType) => component,
+  withAuth: (component: React.ComponentType) => component,
+  useAuth: jest.fn(() => ({
+    isLoading: false,
+    isAuthenticated: true,
+    user: {
+      profile: {
+        name: 'Test User',
+        sub: 'test-user-id',
+        email: 'test@example.com',
+      },
+      access_token: 'mock-access-token',
+    },
+    signinRedirect: jest.fn(),
+    signoutRedirect: jest.fn(),
+    removeUser: jest.fn(),
+    error: null,
+    activeNavigator: 'window',
+    settings: {},
+  })),
+  AuthProvider: ({ children }: { children: React.ReactNode }) => children,
+  hasAuthParams: () => false,
+  useAuthUser: () => ({
+    profile: {
+      name: 'Test User',
+      sub: 'test-user-id',
+      email: 'test@example.com',
+    },
+    access_token: 'mock-access-token',
+  }),
+};

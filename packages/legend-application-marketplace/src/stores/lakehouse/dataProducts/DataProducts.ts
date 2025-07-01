@@ -125,9 +125,9 @@ export class DataProductState extends BaseDataProductState {
   }
 
   get isLoading(): boolean {
-    return this.productEntityMap
-      .values()
-      .some((entity) => entity.loadingEntityState.isInProgress);
+    return Array.from(this.productEntityMap.values()).some(
+      (entity) => entity.loadingEntityState.isInProgress,
+    );
   }
 
   get title(): string {
