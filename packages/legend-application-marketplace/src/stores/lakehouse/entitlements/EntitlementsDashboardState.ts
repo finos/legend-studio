@@ -130,8 +130,10 @@ export class EntitlementsDashboardState {
         (yield this.lakehouseEntitlementsStore.lakehouseServerClient.getDataContracts(
           token,
         )) as PlainObject<V1_PendingTasksRespond>;
-      const contracts =
-        V1_DataContractsRecordModelSchemaToContracts(rawContracts);
+      const contracts = V1_DataContractsRecordModelSchemaToContracts(
+        rawContracts,
+        this.lakehouseEntitlementsStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
+      );
       this.setAllContracts([...contracts]);
     } catch (error) {
       assertErrorThrown(error);

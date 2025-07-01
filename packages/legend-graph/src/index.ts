@@ -942,6 +942,7 @@ export { V1_FunctionActivatorInput } from './graph-manager/protocol/pure/v1/engi
 export { V1_DatabaseToModelGenerationInput } from './graph-manager/protocol/pure/v1/engine/relational/V1_DatabaseToModelGenerationInput.js';
 export { V1_RelationalConnectionBuilder } from './graph-manager/protocol/pure/v1/engine/relational/V1_RelationalConnectionBuilder.js';
 export * from './graph-manager/protocol/pure/extensions/DSL_FunctionActivator_PureProtocolProcessorPlugin_Extension.js';
+export * from './graph-manager/protocol/pure/extensions/DSL_Lakehouse_PureProtocolProcessorPlugin_Extension.js';
 
 // ------------------------------------- TO BE MODULARIZED --------------------------------------------
 /**

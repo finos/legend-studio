@@ -28,6 +28,7 @@ import {
   type V1_DataContract,
   type V1_DataContractsRecord,
   type V1_DataProduct,
+  type V1_OrganizationalScope,
   V1_AdhocTeam,
   V1_AppDirLevel,
   V1_AppDirNode,
@@ -35,8 +36,6 @@ import {
   V1_createContractPayloadModelSchema,
   V1_DataContractsRecordModelSchemaToContracts,
   V1_ResourceType,
-  V1_User,
-  V1_UserType,
 } from '@finos/legend-graph';
 import type { VersionedProjectData } from '@finos/legend-server-depot';
 import { action, computed, flow, makeObservable, observable } from 'mobx';
@@ -61,15 +60,6 @@ import { serialize } from 'serializr';
 import { dataContractContainsDataProduct } from './LakehouseUtils.js';
 import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
 import type { MarketplaceLakehouseStore } from './MarketplaceLakehouseStore.js';
-
-const buildAdhocUser = (user: string): V1_AdhocTeam => {
-  const _user = new V1_User();
-  _user.name = user;
-  _user.userType = V1_UserType.WORKFORCE_USER;
-  const _adhocTeam = new V1_AdhocTeam();
-  _adhocTeam.users = [_user];
-  return _adhocTeam;
-};
 
 export class DataProductViewerState {
   readonly applicationStore: GenericLegendApplicationStore;
@@ -178,6 +168,7 @@ export class DataProductViewerState {
       )) as PlainObject<V1_DataContractsRecord>;
       const dataProductContracts = V1_DataContractsRecordModelSchemaToContracts(
         _contracts,
+        this.lakehouseStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
       ).filter((_contract) =>
         dataContractContainsDataProduct(
           this.product,
@@ -202,29 +193,35 @@ export class DataProductViewerState {
   }
 
   *createContract(
-    userId: string,
+    consumer: V1_OrganizationalScope,
     description: string,
     group: V1_AccessPointGroup,
     token: string | undefined,
   ): GeneratorFn<void> {
     try {
       this.creatingContractState.inProgress();
-      const request = serialize(V1_createContractPayloadModelSchema, {
-        description,
-        resourceId: this.product.name,
-        resourceType: V1_ResourceType.ACCESS_POINT_GROUP,
-        deploymentId: guaranteeNonNullable(
-          this.generation?.dataProduct.deploymentId,
-          'Cannot create contract. Data product generation is missing deployment ID',
+      const request = serialize(
+        V1_createContractPayloadModelSchema(
+          this.lakehouseStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
         ),
-        accessPointGroup: group.id,
-        consumer: buildAdhocUser(userId),
-      } satisfies V1_CreateContractPayload) as PlainObject<V1_CreateContractPayload>;
+        {
+          description,
+          resourceId: this.product.name,
+          resourceType: V1_ResourceType.ACCESS_POINT_GROUP,
+          deploymentId: guaranteeNonNullable(
+            this.generation?.dataProduct.deploymentId,
+            'Cannot create contract. Data product generation is missing deployment ID',
+          ),
+          accessPointGroup: group.id,
+          consumer,
+        } satisfies V1_CreateContractPayload,
+      ) as PlainObject<V1_CreateContractPayload>;
       const contracts = V1_DataContractsRecordModelSchemaToContracts(
         (yield this.lakeServerClient.createContract(
           request,
           token,
         )) as unknown as PlainObject<V1_DataContractsRecord>,
+        this.lakehouseStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
       );
       const associatedContract = contracts[0];
       // Only if the user has requested a contract for themself do we update the associated contract.

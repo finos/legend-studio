@@ -37,6 +37,7 @@ describe('DataContract and DataProduct Association', () => {
   test('should correctly deserialize and check association', () => {
     const contracts = V1_DataContractsRecordModelSchemaToContracts(
       CREATE_CONTRACT_RESPONSE,
+      [],
     );
     expect(contracts.length).toBe(1);
     const dataContract = guaranteeNonNullable(contracts[0]);

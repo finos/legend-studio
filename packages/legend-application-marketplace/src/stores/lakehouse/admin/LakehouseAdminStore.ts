@@ -79,8 +79,10 @@ export class LakehouseAdminStore {
         this.contractsInitializationState.inProgress();
         const rawContracts =
           await this.lakehouseContractServerClient.getDataContracts(token);
-        const contracts =
-          V1_DataContractsRecordModelSchemaToContracts(rawContracts);
+        const contracts = V1_DataContractsRecordModelSchemaToContracts(
+          rawContracts,
+          this.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
+        );
         this.setContracts(contracts);
       } catch (error) {
         assertErrorThrown(error);

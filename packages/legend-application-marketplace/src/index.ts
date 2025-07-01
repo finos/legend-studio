@@ -22,5 +22,9 @@ export {
   useLegendMarketplaceApplicationStore,
   useLegendMarketplaceBaseStore,
 } from './application/LegendMarketplaceFrameworkProvider.js';
-export { type LegendMarketplaceApplicationStore } from './stores/LegendMarketplaceBaseStore.js';
+export {
+  type LegendMarketplaceApplicationStore,
+  type LegendMarketplaceBaseStore,
+} from './stores/LegendMarketplaceBaseStore.js';
 export * from './application/LegendMarketplaceApplicationPlugin.js';
+export { DataProductGroupAccessState } from './stores/lakehouse/DataProductDataAccessState.js';
