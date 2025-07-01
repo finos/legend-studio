@@ -111,7 +111,7 @@ export const V1_AdhocTeamModelSchema = createModelSchema(V1_AdhocTeam, {
   users: customListWithSchema(V1_UserModelSchema),
 });
 
-const V1_deseralizeOrganizationalScope = (
+const V1_deserializeOrganizationalScope = (
   json: PlainObject<V1_OrganizationalScope>,
   plugins: PureProtocolProcessorPlugin[],
 ): V1_OrganizationalScope => {
@@ -140,7 +140,7 @@ const V1_deseralizeOrganizationalScope = (
   }
 };
 
-const V1_seralizeOrganizationalScope = (
+const V1_serializeOrganizationalScope = (
   json: V1_OrganizationalScope,
   plugins: PureProtocolProcessorPlugin[],
 ): PlainObject<V1_OrganizationalScope> => {
@@ -186,8 +186,8 @@ export const V1_dataContractModelSchema = (
     resource: custom(() => SKIP, V1_deseralizeV1_ConsumerEntitlementResource),
     // members: V1_ContractUserMembership[] = [];
     consumer: custom(
-      (val) => V1_seralizeOrganizationalScope(val, plugins),
-      (val) => V1_deseralizeOrganizationalScope(val, plugins),
+      (val) => V1_serializeOrganizationalScope(val, plugins),
+      (val) => V1_deserializeOrganizationalScope(val, plugins),
     ),
     createdBy: primitive(),
   });
@@ -332,7 +332,7 @@ export const V1_createContractPayloadModelSchema = (
     deploymentId: primitive(),
     accessPointGroup: optional(primitive()),
     consumer: custom(
-      (val) => V1_seralizeOrganizationalScope(val, plugins),
-      (val) => V1_deseralizeOrganizationalScope(val, plugins),
+      (val) => V1_serializeOrganizationalScope(val, plugins),
+      (val) => V1_deserializeOrganizationalScope(val, plugins),
     ),
   });
