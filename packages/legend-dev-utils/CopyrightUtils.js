@@ -85,7 +85,20 @@ const needsCopyrightHeader = (copyrightText, file) => {
     pkg: {},
     onlyGenerateCommentContent: true,
   });
-  return fileContent.trim().length > 0 && !fileContent.includes(text);
+
+  // For checking existing files, we need to be year-agnostic
+  // Replace the specific year with a regex pattern that matches any 4-digit year
+  const yearAgnosticText = text.replace(
+    /Copyright \(c\) \d{4}/,
+    'Copyright (c) \\d{4}',
+  );
+  const yearAgnosticRegex = new RegExp(
+    yearAgnosticText
+      .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      .replace('\\\\d\\{4\\}', '\\d{4}'),
+  );
+
+  return fileContent.trim().length > 0 && !yearAgnosticRegex.test(fileContent);
 };
 
 const hasCopyrightHeader = (copyrightText, file) => {
@@ -98,7 +111,20 @@ const hasCopyrightHeader = (copyrightText, file) => {
     pkg: {},
     onlyGenerateCommentContent: true,
   });
-  return fileContent.trim().length > 0 && fileContent.includes(text);
+
+  // For checking existing files, we need to be year-agnostic
+  // Replace the specific year with a regex pattern that matches any 4-digit year
+  const yearAgnosticText = text.replace(
+    /Copyright \(c\) \d{4}/,
+    'Copyright (c) \\d{4}',
+  );
+  const yearAgnosticRegex = new RegExp(
+    yearAgnosticText
+      .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      .replace('\\\\d\\{4\\}', '\\d{4}'),
+  );
+
+  return fileContent.trim().length > 0 && yearAgnosticRegex.test(fileContent);
 };
 
 // Jest has a fairly sophisticated check for copyright license header that we used as reference
