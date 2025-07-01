@@ -77,9 +77,10 @@ export const createSpy = jest.spyOn;
 
 // TODO: move this function to `dev-utils` when we add typings to that package
 export const MOCK__reactOIDCContext = {
+  __esModule: true,
   withAuthenticationRequired: (component: React.ComponentType) => component,
   withAuth: (component: React.ComponentType) => component,
-  useAuth: () => ({
+  useAuth: jest.fn(() => ({
     isLoading: false,
     isAuthenticated: true,
     user: {
@@ -96,7 +97,7 @@ export const MOCK__reactOIDCContext = {
     error: null,
     activeNavigator: 'window',
     settings: {},
-  }),
+  })),
   AuthProvider: ({ children }: { children: React.ReactNode }) => children,
   hasAuthParams: () => false,
   useAuthUser: () => ({

@@ -23,10 +23,10 @@ import {
 import { guaranteeNonNullable } from '@finos/legend-shared';
 
 jest.mock('react-oidc-context', () => {
-  const mockedModule: { MOCK__reactOIDCContext: unknown } = jest.requireActual(
-    '@finos/legend-shared/test',
-  );
-  return mockedModule.MOCK__reactOIDCContext;
+  const { MOCK__reactOIDCContext } = jest.requireActual<{
+    MOCK__reactOIDCContext: unknown;
+  }>('@finos/legend-shared/test');
+  return MOCK__reactOIDCContext;
 });
 
 const setupTestComponent = async () => {
