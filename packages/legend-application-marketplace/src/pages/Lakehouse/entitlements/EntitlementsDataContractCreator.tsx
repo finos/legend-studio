@@ -66,7 +66,7 @@ export const EntitlementsDataContractCreator = observer(
         [legendMarketplaceStore.pluginManager],
       );
     const [selectedConsumerType, setSelectedConsumerType] = useState<string>(
-      consumerTypeRendererConfigs?.[0]?.type ?? '',
+      consumerTypeRendererConfigs[0]?.type ?? '',
     );
     const [consumer, setConsumer] = useState<
       V1_OrganizationalScope | undefined

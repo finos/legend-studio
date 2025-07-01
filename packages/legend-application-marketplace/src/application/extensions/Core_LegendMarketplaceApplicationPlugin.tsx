@@ -81,11 +81,7 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
       useEffect(() => {
         handleOrganizationalScopeChange(buildAdhocUser(user.id));
         handleDescriptionChange(description);
-        handleIsValidChange(
-          user !== undefined &&
-            description !== undefined &&
-            description.trim() !== '',
-        );
+        handleIsValidChange(user.id !== '' && description.trim() !== '');
       }, [
         user,
         description,
