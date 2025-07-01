@@ -19,7 +19,7 @@ import {
   type V1_OrganizationalScope,
 } from '@finos/legend-graph';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useAuth } from 'react-oidc-context';
 import { flowResult } from 'mobx';
 import {
@@ -56,11 +56,15 @@ export const EntitlementsDataContractCreator = observer(
     const marketplaceLakehouseStore = useMarketplaceLakehouseStore();
     const auth = useAuth();
     const consumerTypeRendererConfigs: ContractConsumerTypeRendererConfig[] =
-      legendMarketplaceStore.pluginManager
-        .getApplicationPlugins()
-        .map((plugin) => plugin.getContractConsumerTypeRenderers?.())
-        .flat()
-        .filter(isNonNullable);
+      useMemo(
+        () =>
+          legendMarketplaceStore.pluginManager
+            .getApplicationPlugins()
+            .map((plugin) => plugin.getContractConsumerTypeRenderers?.())
+            .flat()
+            .filter(isNonNullable),
+        [legendMarketplaceStore.pluginManager],
+      );
     const [selectedConsumerType, setSelectedConsumerType] = useState<string>(
       consumerTypeRendererConfigs?.[0]?.type ?? '',
     );
@@ -70,15 +74,24 @@ export const EntitlementsDataContractCreator = observer(
     const [description, setDescription] = useState<string | undefined>();
     const [isValid, setIsValid] = useState<boolean>(false);
 
-    const currentConsumerTypeComponent = consumerTypeRendererConfigs
-      .find((config) => config.type === selectedConsumerType)
-      ?.renderer(
-        marketplaceLakehouseStore,
+    const currentConsumerTypeComponent = useMemo(
+      () =>
+        consumerTypeRendererConfigs
+          .find((config) => config.type === selectedConsumerType)
+          ?.renderer(
+            marketplaceLakehouseStore,
+            accessGroupState,
+            setConsumer,
+            setDescription,
+            setIsValid,
+          ),
+      [
         accessGroupState,
-        setConsumer,
-        setDescription,
-        setIsValid,
-      );
+        consumerTypeRendererConfigs,
+        marketplaceLakehouseStore,
+        selectedConsumerType,
+      ],
+    );
 
     const onCreate = (): void => {
       if (isValid && consumer && description) {
