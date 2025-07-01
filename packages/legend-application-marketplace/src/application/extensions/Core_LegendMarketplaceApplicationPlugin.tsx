@@ -79,22 +79,13 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
       const [user, setUser] = useState<LegendUser>(new LegendUser());
       const [loadingCurrentUser, setLoadingCurrentUser] = useState(false);
 
-      // Update parent state whenever local state changes
-      useEffect(() => {
-        handleOrganizationalScopeChange(buildAdhocUser(user.id));
-        handleDescriptionChange(description);
-        handleIsValidChange(
-          user !== undefined &&
-            description?.trim() !== undefined &&
-            description?.trim() !== '',
-        );
-      }, [
-        user,
-        description,
-        handleOrganizationalScopeChange,
-        handleDescriptionChange,
-        handleIsValidChange,
-      ]);
+      const isValid = (
+        newUser: LegendUser,
+        newDescription: string | undefined,
+      ): boolean =>
+        newUser !== undefined &&
+        newDescription !== undefined &&
+        newDescription.trim() !== '';
 
       useEffect(() => {
         const fetchCurrentUser = async () => {
@@ -135,7 +126,11 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
             className="marketplace-lakehouse-entitlements__data-contract-creator__user-input"
             key={label}
             userValue={user}
-            setUserValue={(_user: LegendUser): void => setUser(_user)}
+            setUserValue={(_user: LegendUser): void => {
+              setUser(_user);
+              handleOrganizationalScopeChange(buildAdhocUser(_user.id));
+              handleIsValidChange(isValid(_user, description));
+            }}
             userSearchService={
               enableUserSearch
                 ? marketplaceLakehouseStore.marketplaceBaseStore
@@ -158,6 +153,8 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
             value={description}
             onChange={(event: ChangeEvent<HTMLInputElement>) => {
               setDescription(event.target.value);
+              handleDescriptionChange(event.target.value);
+              handleIsValidChange(isValid(user, event.target.value));
             }}
           />
         </>
