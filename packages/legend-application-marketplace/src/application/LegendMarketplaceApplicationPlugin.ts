@@ -46,5 +46,5 @@ export abstract class LegendMarketplaceApplicationPlugin extends LegendApplicati
    * Renderers for contract consumer types to be used in the
    * data contract creator dialog.
    */
-  getContractConsumerTypeRenderers?(): ContractConsumerTypeRendererConfig[];
+  getContractConsumerTypeRendererConfigs?(): ContractConsumerTypeRendererConfig[];
 }

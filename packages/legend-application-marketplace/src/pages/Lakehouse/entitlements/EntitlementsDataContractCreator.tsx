@@ -60,7 +60,7 @@ export const EntitlementsDataContractCreator = observer(
         () =>
           legendMarketplaceStore.pluginManager
             .getApplicationPlugins()
-            .map((plugin) => plugin.getContractConsumerTypeRenderers?.())
+            .map((plugin) => plugin.getContractConsumerTypeRendererConfigs?.())
             .flat()
             .filter(isNonNullable),
         [legendMarketplaceStore.pluginManager],

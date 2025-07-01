@@ -43,7 +43,7 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
     super(Core_LegendMarketplaceApplicationPlugin.NAME, packageJson.version);
   }
 
-  override getContractConsumerTypeRenderers(): ContractConsumerTypeRendererConfig[] {
+  override getContractConsumerTypeRendererConfigs(): ContractConsumerTypeRendererConfig[] {
     const buildAdhocUser = (user: string): V1_AdhocTeam => {
       const _user = new V1_User();
       _user.name = user;
