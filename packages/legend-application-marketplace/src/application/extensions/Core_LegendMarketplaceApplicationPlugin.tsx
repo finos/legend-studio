@@ -120,6 +120,11 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
         marketplaceLakehouseStore.marketplaceBaseStore.userSearchService,
       ]);
 
+      // Reset the user when the type changes between User and System Account
+      useEffect(() => {
+        setUser(new LegendUser());
+      }, [label]);
+
       return (
         <>
           <UserSearchInput
