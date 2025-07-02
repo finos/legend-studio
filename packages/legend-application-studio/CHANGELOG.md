@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.19.8
+
+### Patch Changes
+
+- [#4246](https://github.com/finos/legend-studio/pull/4246) [`c1b1a98`](https://github.com/finos/legend-studio/commit/c1b1a98d39908d47f5a05d17921e5ed4e3baebe2) ([@yash0024](https://github.com/yash0024)) - Minor fixes to DataProductEditor
+
 ## 28.19.7
 
 ### Patch Changes
