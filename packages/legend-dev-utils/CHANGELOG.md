@@ -1,5 +1,11 @@
 # @finos/legend-dev-utils
 
+## 2.2.5
+
+### Patch Changes
+
+- [#4239](https://github.com/finos/legend-studio/pull/4239) [`829ed85`](https://github.com/finos/legend-studio/commit/829ed85049e690c0f853b630f5d3f4c071a6f3d3) ([@aziemchawdhary-gs](https://github.com/aziemchawdhary-gs)) - Template copyright headers
+
 ## 2.2.4
 
 ## 2.2.3

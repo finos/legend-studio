@@ -1,5 +1,13 @@
 # @finos/legend-application-marketplace
 
+## 0.0.53
+
+### Patch Changes
+
+- [#4245](https://github.com/finos/legend-studio/pull/4245) [`2d5d042`](https://github.com/finos/legend-studio/commit/2d5d0429f910b385c4c3217fb939362981617c0b) ([@travisstebbins](https://github.com/travisstebbins)) - Handle Lakehouse proprietary organizational scopes with extensions
+
+- [#4238](https://github.com/finos/legend-studio/pull/4238) [`8144ada`](https://github.com/finos/legend-studio/commit/8144ada4de73c76fb6c99fdd82e16384b8e563bc) ([@travisstebbins](https://github.com/travisstebbins)) - Add tests for MarketplaceLakehouseHome
+
 ## 0.0.52
 
 ### Patch Changes

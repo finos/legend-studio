@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 28.19.7
+
+### Patch Changes
+
+- [#4244](https://github.com/finos/legend-studio/pull/4244) [`e21f370`](https://github.com/finos/legend-studio/commit/e21f370ef4caef69f34c8a7e35f3ad9165dd5a74) ([@kelly-thai](https://github.com/kelly-thai)) - Data Product form improvements: description box changed to multiline, added pop up confirmation for deleting access point groups
+
+- [#4238](https://github.com/finos/legend-studio/pull/4238) [`8144ada`](https://github.com/finos/legend-studio/commit/8144ada4de73c76fb6c99fdd82e16384b8e563bc) ([@travisstebbins](https://github.com/travisstebbins)) - Add MOCK\_\_reactOIDCContext object
+
 ## 28.19.6
 
 ### Patch Changes
