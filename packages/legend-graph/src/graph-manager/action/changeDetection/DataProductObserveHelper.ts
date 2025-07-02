@@ -27,6 +27,10 @@ import {
   observe_Abstract_PackageableElement,
   skipObserved,
 } from './CoreObserverHelper.js';
+import {
+  observe_StereotypeReference,
+  observe_TaggedValue,
+} from './DomainObserverHelper.js';
 
 export const observe_AccessPoint = skipObserved(
   (metamodel: AccessPoint): AccessPoint => {
@@ -34,6 +38,7 @@ export const observe_AccessPoint = skipObserved(
       makeObservable(metamodel, {
         id: observable,
         targetEnvironment: observable,
+        classification: observable,
         func: observable.ref,
         description: observable,
       });
@@ -71,7 +76,11 @@ export const observe_AccessPointGroup = skipObserved(
       id: observable,
       description: observable,
       accessPoints: observable,
+      stereotypes: observable,
+      taggedValues: observable,
     });
+    metamodel.stereotypes.forEach(observe_StereotypeReference);
+    metamodel.taggedValues.forEach(observe_TaggedValue);
     metamodel.accessPoints.forEach(observe_AccessPoint);
     return metamodel;
   },

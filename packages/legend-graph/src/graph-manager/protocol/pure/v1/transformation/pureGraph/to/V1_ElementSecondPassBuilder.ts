@@ -701,6 +701,9 @@ export class V1_ElementSecondPassBuilder
         group.accessPoints = elementGroup.accessPoints.map((ep) =>
           V1_buildAccessPoint(ep, this.context),
         );
+        group.stereotypes = elementGroup.stereotypes
+          .map((stereotype) => this.context.resolveStereotype(stereotype))
+          .filter(isNonNullable);
         return group;
       },
     );

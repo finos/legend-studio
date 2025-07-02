@@ -28,6 +28,7 @@ import {
   CORE_HASH_STRUCTURE,
   hashObjectWithoutSourceInformation,
 } from '../../../Core_HashUtils.js';
+import { AnnotatedElement } from '../packageableElements/domain/AnnotatedElement.js';
 
 export abstract class AccessPoint implements Hashable {
   id: string;
@@ -55,6 +56,7 @@ export enum LakehouseTargetEnv {
 
 export class LakehouseAccessPoint extends AccessPoint {
   targetEnvironment: string;
+  classification: string | undefined;
   func: RawLambda;
   reproducible: boolean | undefined;
 
@@ -69,6 +71,7 @@ export class LakehouseAccessPoint extends AccessPoint {
       super.hashCode,
       CORE_HASH_STRUCTURE.LAKEHOUSE_ACCESS_POINT,
       this.targetEnvironment,
+      this.classification ?? '',
       this.func,
       this.reproducible ?? '',
     ]);
@@ -86,7 +89,7 @@ export class UnknownAccessPoint extends AccessPoint {
   }
 }
 
-export class AccessPointGroup implements Hashable {
+export class AccessPointGroup extends AnnotatedElement implements Hashable {
   id!: string;
   description: string | undefined;
   accessPoints: AccessPoint[] = [];
@@ -96,6 +99,8 @@ export class AccessPointGroup implements Hashable {
       CORE_HASH_STRUCTURE.DATA_PRODUCT_ACCESS_POINT_GROUP,
       this.id,
       this.description ?? '',
+      hashArray(this.stereotypes.map((val) => val.pointerHashCode)),
+      hashArray(this.taggedValues.map((val) => val.hashCode)),
       hashArray(this.accessPoints),
     ]);
   }

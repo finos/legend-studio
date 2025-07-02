@@ -43,6 +43,7 @@ export const V1_buildAccessPoint = (
       ),
     );
     lakeAccessPoint.reproducible = ap.reproducible;
+    lakeAccessPoint.classification = ap.classification;
     lakeAccessPoint.description = ap.description;
     return lakeAccessPoint;
   } else if (ap instanceof V1_UnknownAccessPoint) {

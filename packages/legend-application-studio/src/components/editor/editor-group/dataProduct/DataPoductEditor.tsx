@@ -99,7 +99,7 @@ export enum AP_GROUP_MODAL_ERRORS {
 export const AP_EMPTY_DESC_WARNING =
   'Describe the data this access point produces';
 
-const NewAccessPointAccessPOint = observer(
+const NewAccessPointAccessPoint = observer(
   (props: { dataProductEditorState: DataProductEditorState }) => {
     const { dataProductEditorState: dataProductEditorState } = props;
     const accessPointInputRef = useRef<HTMLInputElement>(null);
@@ -891,7 +891,7 @@ const AccessPointGroupSection = observer(
             />
           ))}
         {productEditorState.accessPointModal && (
-          <NewAccessPointAccessPOint
+          <NewAccessPointAccessPoint
             dataProductEditorState={productEditorState}
           />
         )}

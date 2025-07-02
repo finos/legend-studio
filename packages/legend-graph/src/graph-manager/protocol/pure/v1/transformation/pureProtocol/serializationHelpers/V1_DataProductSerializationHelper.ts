@@ -42,6 +42,7 @@ import {
   optionalCustomUsingModelSchema,
 } from '@finos/legend-shared';
 import { V1_rawLambdaModelSchema } from './V1_RawValueSpecificationSerializationHelper.js';
+import { V1_stereotypePtrModelSchema } from './V1_CoreSerializationHelper.js';
 
 export enum V1_AccessPointType {
   LAKEHOUSE = 'lakehouseAccessPoint',
@@ -56,6 +57,7 @@ export const V1_lakehouseAccessPointModelSchema = createModelSchema(
     id: primitive(),
     description: optional(primitive()),
     targetEnvironment: primitive(),
+    classification: optional(primitive()),
     func: usingModelSchema(V1_rawLambdaModelSchema),
   },
 );
@@ -94,6 +96,9 @@ export const V1_AccessPointGroupModelSchema = createModelSchema(
   {
     id: primitive(),
     description: optional(primitive()),
+    stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
+      INTERNAL__forceReturnEmptyInTest: true,
+    }),
     accessPoints: customList(
       V1_serializeAccessPoint,
       V1_deserializeAccessPoint,
