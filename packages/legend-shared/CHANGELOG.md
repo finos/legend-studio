@@ -1,5 +1,11 @@
 # @finos/legend-shared
 
+## 11.0.16
+
+### Patch Changes
+
+- [#4238](https://github.com/finos/legend-studio/pull/4238) [`8144ada`](https://github.com/finos/legend-studio/commit/8144ada4de73c76fb6c99fdd82e16384b8e563bc) ([@travisstebbins](https://github.com/travisstebbins)) - Add MOCK\_\_reactOIDCContext object
+
 ## 11.0.15
 
 ### Patch Changes

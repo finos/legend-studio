@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.1.50
+
+### Patch Changes
+
+- [#4245](https://github.com/finos/legend-studio/pull/4245) [`2d5d042`](https://github.com/finos/legend-studio/commit/2d5d0429f910b385c4c3217fb939362981617c0b) ([@travisstebbins](https://github.com/travisstebbins)) - Handle Lakehouse proprietary organizational scopes with extensions
+
 ## 32.1.49
 
 ### Patch Changes
