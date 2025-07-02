@@ -33,6 +33,7 @@ import {
 import { V1_initPackageableElement } from './V1_CoreTransformerHelper.js';
 import { V1_transformRawLambda } from './V1_RawValueSpecificationTransformer.js';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
+import { V1_transformStereotype } from './V1_DomainTransformer.js';
 
 const transformAccessPoint = (
   ap: AccessPoint,
@@ -43,6 +44,7 @@ const transformAccessPoint = (
     lake.id = ap.id;
     lake.func = V1_transformRawLambda(ap.func, context);
     lake.targetEnvironment = ap.targetEnvironment;
+    lake.classification = ap.classification;
     return lake;
   } else if (ap instanceof UnknownAccessPoint) {
     const un = new V1_UnknownAccessPoint();
@@ -84,6 +86,9 @@ export const V1_transformDataProduct = (
       const group = new V1_AccessPointGroup();
       group.id = metamodelGroup.id;
       group.description = metamodelGroup.description;
+      group.stereotypes = metamodelGroup.stereotypes.map(
+        V1_transformStereotype,
+      );
       group.accessPoints = metamodelGroup.accessPoints.map((ap) =>
         transformAccessPoint(ap, context),
       );

@@ -28,6 +28,7 @@ import {
   CORE_HASH_STRUCTURE,
   hashObjectWithoutSourceInformation,
 } from '../../../../../../../graph/Core_HashUtils.js';
+import type { V1_StereotypePtr } from '../domain/V1_StereotypePtr.js';
 
 export const V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE = 'dataProduct';
 
@@ -49,6 +50,7 @@ export class V1_LakehouseAccessPoint
   implements Hashable
 {
   targetEnvironment!: string;
+  classification: string | undefined;
   func!: V1_RawLambda;
   reproducible: boolean | undefined;
 
@@ -57,6 +59,7 @@ export class V1_LakehouseAccessPoint
       super.hashCode,
       CORE_HASH_STRUCTURE.LAKEHOUSE_ACCESS_POINT,
       this.targetEnvironment,
+      this.classification ?? '',
       this.func,
       this.reproducible ?? '',
     ]);
@@ -78,6 +81,7 @@ export class V1_UnknownAccessPoint extends V1_AccessPoint implements Hashable {
 export class V1_AccessPointGroup implements Hashable {
   id!: string;
   description: string | undefined;
+  stereotypes: V1_StereotypePtr[] = [];
   accessPoints: V1_AccessPoint[] = [];
 
   get hashCode(): string {
@@ -86,6 +90,7 @@ export class V1_AccessPointGroup implements Hashable {
       this.id,
       this.description ?? '',
       hashArray(this.accessPoints),
+      hashArray(this.stereotypes),
     ]);
   }
 }
