@@ -45,6 +45,8 @@ import {
   BigInt,
   SemiStructured,
   Json,
+  PRECISE_PRIMITIVE_TYPE,
+  PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
 
 export const renderColumnTypeIcon = (
@@ -96,4 +98,45 @@ export const renderColumnTypeIcon = (
   return (
     <QuestionCircleIcon className="relation-source-tree__icon relation-source-tree__icon__unknown" />
   );
+};
+
+export const renderColumnTypeIconFromType = (type: string): React.ReactNode => {
+  switch (type) {
+    case PRECISE_PRIMITIVE_TYPE.STRING:
+      return (
+        <StringTypeIcon className="relation-source-tree__icon relation-source-tree__icon__string" />
+      );
+    case PRIMITIVE_TYPE.BINARY:
+      return (
+        <BinaryTypeIcon className="relation-source-tree__icon relation-source-tree__icon__binary" />
+      );
+    case PRIMITIVE_TYPE.BOOLEAN:
+      return (
+        <ToggleIcon className="relation-source-tree__icon relation-source-tree__icon__boolean" />
+      );
+    case PRECISE_PRIMITIVE_TYPE.INT:
+    case PRECISE_PRIMITIVE_TYPE.TINY_INT:
+    case PRECISE_PRIMITIVE_TYPE.U_TINY_INT:
+    case PRECISE_PRIMITIVE_TYPE.SMALL_INT:
+    case PRECISE_PRIMITIVE_TYPE.U_SMALL_INT:
+    case PRECISE_PRIMITIVE_TYPE.U_INT:
+    case PRECISE_PRIMITIVE_TYPE.BIG_INT:
+    case PRECISE_PRIMITIVE_TYPE.U_BIG_INT:
+    case PRECISE_PRIMITIVE_TYPE.FLOAT:
+    case PRECISE_PRIMITIVE_TYPE.DOUBLE:
+    case PRECISE_PRIMITIVE_TYPE.DECIMAL:
+      return (
+        <HashtagIcon className="relation-source-tree__icon relation-source-tree__icon__number" />
+      );
+    case PRECISE_PRIMITIVE_TYPE.STRICTDATE:
+    case PRECISE_PRIMITIVE_TYPE.DATETIME:
+    case PRECISE_PRIMITIVE_TYPE.STRICTTIME:
+      return (
+        <ClockIcon className="relation-source-tree__icon relation-source-tree__icon__time" />
+      );
+    default:
+      return (
+        <QuestionCircleIcon className="relation-source-tree__icon relation-source-tree__icon__unknown" />
+      );
+  }
 };

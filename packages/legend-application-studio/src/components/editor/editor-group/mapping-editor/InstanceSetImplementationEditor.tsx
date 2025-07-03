@@ -88,10 +88,12 @@ import {
   getAllRecordTypes,
   getAllClassProperties,
   PrimitiveType,
+  ConcreteFunctionDefinition,
 } from '@finos/legend-graph';
 import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import { InlineLambdaEditor } from '@finos/legend-query-builder';
+import { RelationTypeTree } from './RelationTypeTree.js';
 
 export const InstanceSetImplementationSourceExplorer = observer(
   (props: {
@@ -156,6 +158,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
       CORE_DND_TYPE.PROJECT_EXPLORER_CLASS,
       CORE_DND_TYPE.PROJECT_EXPLORER_FLAT_DATA,
       CORE_DND_TYPE.PROJECT_EXPLORER_DATABASE,
+      CORE_DND_TYPE.PROJECT_EXPLORER_FUNCTION,
     ];
     // smartly analyze the content of the source and automatically assign it or its sub-part
     // as class mapping source when possible
@@ -213,6 +216,15 @@ export const InstanceSetImplementationSourceExplorer = observer(
           } else {
             setSourceElementForSourceSelectorModal(mainTableAlias);
           }
+        } else if (
+          droppedPackagableElement instanceof ConcreteFunctionDefinition
+        ) {
+          flowResult(
+            mappingEditorState.changeClassMappingSourceDriver(
+              setImplementation,
+              droppedPackagableElement,
+            ),
+          ).catch(applicationStore.alertUnhandledError);
         }
       },
       [applicationStore, mappingEditorState, setImplementation],
@@ -357,6 +369,15 @@ export const InstanceSetImplementationSourceExplorer = observer(
                         selectedType={
                           instanceSetImplementationState.selectedType
                         }
+                      />
+                    )}
+                    {srcElement instanceof ConcreteFunctionDefinition && (
+                      <RelationTypeTree
+                        relation={srcElement}
+                        selectedType={
+                          instanceSetImplementationState.selectedType
+                        }
+                        editorStore={editorStore}
                       />
                     )}
                   </div>

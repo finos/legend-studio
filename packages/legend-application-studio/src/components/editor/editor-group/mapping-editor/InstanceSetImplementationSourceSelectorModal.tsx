@@ -43,6 +43,8 @@ import {
   getAllRecordTypes,
   PackageableElement,
   FlatData,
+  ConcreteFunctionDefinition,
+  CORE_PURE_PATH,
 } from '@finos/legend-graph';
 import { isNonNullable, UnsupportedOperationError } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
@@ -63,6 +65,8 @@ export const getMappingElementSourceFilterText = (
     return val._OWNER.name;
   } else if (val instanceof TableAlias) {
     return `${val.relation.ownerReference.value.path}.${val.relation.value.schema.name}.${val.relation.value.name}`;
+  } else if (val instanceof ConcreteFunctionDefinition) {
+    return `${val.functionName}`;
   }
   throw new UnsupportedOperationError();
 };
@@ -84,6 +88,8 @@ export const getSourceElementLabel = (srcElement: unknown): string => {
         ? ''
         : `${srcElement.relation.value.schema.name}.`
     }${srcElement.relation.value.name}`;
+  } else if (srcElement instanceof ConcreteFunctionDefinition) {
+    sourceLabel = srcElement.name;
   }
   return sourceLabel;
 };
@@ -106,6 +112,11 @@ export const buildMappingElementSourceOption = (
           ? ''
           : `${source.relation.value.schema.name}.`
       }${source.relation.value.name}`,
+      value: source,
+    };
+  } else if (source instanceof ConcreteFunctionDefinition) {
+    return {
+      label: `${source.functionName}`,
       value: source,
     };
   }
@@ -145,6 +156,12 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
             .concat(
               editorStore.graphManagerState.graph.ownFlatDatas.flatMap(
                 getAllRecordTypes,
+              ),
+            )
+            .concat(
+              editorStore.graphManagerState.usableFunctions.filter(
+                (def) =>
+                  def.returnType.value.rawType.path === CORE_PURE_PATH.RELATION,
               ),
             )
             .concat(

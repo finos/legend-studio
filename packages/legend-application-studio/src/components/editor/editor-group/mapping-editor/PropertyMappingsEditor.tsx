@@ -63,6 +63,7 @@ import {
   RootRelationalInstanceSetImplementation,
   MULTIPLICITY_INFINITE,
   type Multiplicity,
+  RelationFunctionInstanceSetImplementation,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import {
@@ -76,6 +77,11 @@ import {
 } from '../../../../stores/editor/utils/ModelClassifierUtils.js';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import { Fragment } from 'react';
+import { RelationFunctionPropertyMappingEditor } from './RelationFunctionPropertyMappingEditor.js';
+import type {
+  RelationFunctionInstanceSetImplementationState,
+  RelationFunctionPropertyMappingState,
+} from '../../../../stores/editor/editor-state/element-editor-state/mapping/RelationFunctionInstanceSetImplementationState.js';
 
 const MultiplicityBadge: React.FC<{
   multiplicity: Multiplicity;
@@ -316,6 +322,22 @@ export const PropertyMappingEditor = observer(
             }
             relationalPropertyMappingState={
               propertyMappingState as RelationalPropertyMappingState
+            }
+            setImplementationHasParserError={setImplementationHasParserError}
+          />
+        );
+      } else if (
+        instanceSetImplementation instanceof
+        RelationFunctionInstanceSetImplementation
+      ) {
+        return (
+          <RelationFunctionPropertyMappingEditor
+            isReadOnly={isReadOnly}
+            relationInstanceSetImplementationState={
+              instanceSetImplementationState as RelationFunctionInstanceSetImplementationState
+            }
+            relationPropertyMappingState={
+              propertyMappingState as RelationFunctionPropertyMappingState
             }
             setImplementationHasParserError={setImplementationHasParserError}
           />

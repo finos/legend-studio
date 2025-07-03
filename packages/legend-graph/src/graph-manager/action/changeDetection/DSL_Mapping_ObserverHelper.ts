@@ -97,8 +97,10 @@ import {
   skipObservedWithContext,
 } from './CoreObserverHelper.js';
 import {
+  observe_ConcreteFunctionDefinition,
   observe_EnumValueReference,
   observe_PropertyReference,
+  observe_Type,
 } from './DomainObserverHelper.js';
 import { observe_RawLambda } from './RawValueSpecificationObserver.js';
 import {
@@ -135,6 +137,7 @@ import type { INTERNAL__UnknownSetImplementation } from '../../../graph/metamode
 import type { INTERNAL__UnknownStore } from '../../../graph/metamodel/pure/packageableElements/store/INTERNAL__UnknownStore.js';
 import type { RelationFunctionInstanceSetImplementation } from '../../../graph/metamodel/pure/packageableElements/mapping/relationFunction/RelationFunctionInstanceSetImplementation.js';
 import type { RelationFunctionPropertyMapping } from '../../../graph/metamodel/pure/packageableElements/mapping/relationFunction/RelationFunctionPropertyMapping.js';
+import { type RelationColumn } from '../../../graph/metamodel/pure/packageableElements/relation/RelationType.js';
 
 // ------------------------------------- Store -------------------------------------
 
@@ -223,6 +226,20 @@ export const observe_EnumerationMappingReference = skipObserved(
   },
 );
 
+export const observe_RelationColumn = skipObserved(
+  (metamodel: RelationColumn): RelationColumn => {
+    makeObservable(metamodel, {
+      name: observable,
+      type: observable,
+      hashCode: computed,
+    });
+
+    observe_Type(metamodel.type);
+
+    return metamodel;
+  },
+);
+
 export const observe_SetImplementationReference = skipObserved(
   (metamodel: SetImplementationReference): SetImplementationReference => {
     makeObservable(metamodel, {
@@ -284,6 +301,24 @@ export const observe_PurePropertyMapping = skipObservedWithContext(
       observe_EnumerationMappingReference(metamodel.transformer);
     }
     observe_RawLambda(metamodel.transform);
+
+    return metamodel;
+  },
+);
+
+export const observe_RelationFunctionPropertyMapping = skipObservedWithContext(
+  (
+    metamodel: RelationFunctionPropertyMapping,
+    context,
+  ): RelationFunctionPropertyMapping => {
+    observe_Abstract_PropertyMapping(metamodel, context);
+
+    makeObservable(metamodel, {
+      column: observable,
+      hashCode: computed,
+    });
+
+    observe_RelationColumn(metamodel.column);
 
     return metamodel;
   },
@@ -403,7 +438,10 @@ class PropertyMappingObserver implements PropertyMappingVisitor<void> {
   visit_RelationFunctionPropertyMapping(
     propertyMapping: RelationFunctionPropertyMapping,
   ): void {
-    // TODO
+    observe_RelationFunctionPropertyMapping(
+      propertyMapping,
+      this.observerContext,
+    );
   }
 }
 
@@ -546,6 +584,27 @@ export const observe_PureInstanceSetImplementation = skipObservedWithContext(
   },
 );
 
+export const observe_RelationFunctionInstanceSetImplementation =
+  skipObservedWithContext(
+    (
+      metamodel: RelationFunctionInstanceSetImplementation,
+      context,
+    ): RelationFunctionInstanceSetImplementation => {
+      observe_Abstract_InstanceSetImplementation(metamodel, context);
+
+      makeObservable(metamodel, {
+        relationFunction: observable,
+        hashCode: computed,
+      });
+
+      if (metamodel.relationFunction) {
+        observe_ConcreteFunctionDefinition(metamodel.relationFunction, context);
+      }
+
+      return metamodel;
+    },
+  );
+
 const observe_INTERNAL__UnknownSetImplementation = skipObserved(
   (
     metamodel: INTERNAL__UnknownSetImplementation,
@@ -648,7 +707,10 @@ class SetImplementationObserver implements SetImplementationVisitor<void> {
   visit_RelationFunctionInstanceSetImplementation(
     setImplementation: RelationFunctionInstanceSetImplementation,
   ): void {
-    // TODO
+    observe_RelationFunctionInstanceSetImplementation(
+      setImplementation,
+      this.observerContext,
+    );
   }
 
   visit_AggregationAwareSetImplementation(

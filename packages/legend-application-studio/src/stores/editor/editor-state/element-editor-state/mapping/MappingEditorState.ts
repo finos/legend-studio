@@ -103,6 +103,7 @@ import {
   ModelStore,
   INTERNAL__UnknownSetImplementation,
   RelationFunctionInstanceSetImplementation,
+  ConcreteFunctionDefinition,
 } from '@finos/legend-graph';
 import type {
   DSL_Mapping_LegendStudioApplicationPlugin_Extension,
@@ -127,6 +128,8 @@ import { LambdaEditorState } from '@finos/legend-query-builder';
 import type { MappingEditorTabState } from './MappingTabManagerState.js';
 import { MappingTestableState } from './testable/MappingTestableState.js';
 import { MappingTestMigrationState } from './legacy/MappingTestMigrationState.js';
+import { relationFunction_setRelationFunction } from '../../../../graph-modifier/STO_RelationFunction_GraphModifierHelper.js';
+import { RelationFunctionInstanceSetImplementationState } from './RelationFunctionInstanceSetImplementationState.js';
 
 export interface MappingExplorerTreeNodeData extends TreeNodeData {
   mappingElement: MappingElement;
@@ -312,12 +315,10 @@ export const getMappingElementSource = (
       mappingElement.mainSetImplementation,
       plugins,
     );
-  }
-  // TODO: We could probably return the relation function used for the mapping here once we implement the form mode support for it
-  else if (
+  } else if (
     mappingElement instanceof RelationFunctionInstanceSetImplementation
   ) {
-    return undefined;
+    return mappingElement.relationFunction;
   }
   const extraMappingElementSourceExtractors = plugins.flatMap(
     (plugin) =>
@@ -907,12 +908,7 @@ export class MappingEditorState extends ElementEditorState {
       );
       return;
     }
-    if (mappingElement instanceof RelationFunctionInstanceSetImplementation) {
-      this.editorStore.applicationStore.notificationService.notifyUnsupportedFeature(
-        'Relation Function mapping editor',
-      );
-      return;
-    }
+
     // Open mapping element from included mapping in another mapping editor tab
     if (mappingElement._PARENT !== this.element) {
       this.editorStore.graphEditorMode.openElement(mappingElement._PARENT);
@@ -1005,6 +1001,16 @@ export class MappingEditorState extends ElementEditorState {
           rootRelationalSetImp_setMainTableAlias(setImplementation, newSource);
           sourceUpdated = true;
         }
+      } else if (
+        setImplementation instanceof RelationFunctionInstanceSetImplementation
+      ) {
+        if (
+          newSource instanceof ConcreteFunctionDefinition &&
+          !getEmbeddedSetImplementations(setImplementation).length
+        ) {
+          relationFunction_setRelationFunction(setImplementation, newSource);
+          sourceUpdated = true;
+        }
       } else {
         const extraInstanceSetImplementationSourceUpdaters =
           this.editorStore.pluginManager
@@ -1056,6 +1062,16 @@ export class MappingEditorState extends ElementEditorState {
             );
           newRootRelationalInstanceSetImplementation.mainTableAlias = newSource;
           newSetImp = newRootRelationalInstanceSetImplementation;
+        } else if (newSource instanceof ConcreteFunctionDefinition) {
+          const relationFunctionSetImpl =
+            new RelationFunctionInstanceSetImplementation(
+              setImplementation.id,
+              this.mapping,
+              setImplementation.class,
+              setImplementation.root,
+            );
+          relationFunctionSetImpl.relationFunction = newSource;
+          newSetImp = relationFunctionSetImpl;
         } else {
           throw new UnsupportedOperationError(
             `Can't use the specified class mapping source`,
@@ -1218,6 +1234,13 @@ export class MappingEditorState extends ElementEditorState {
       mappingElement instanceof AggregationAwareSetImplementation
     ) {
       return new UnsupportedInstanceSetImplementationState(
+        this.editorStore,
+        mappingElement,
+      );
+    } else if (
+      mappingElement instanceof RelationFunctionInstanceSetImplementation
+    ) {
+      return new RelationFunctionInstanceSetImplementationState(
         this.editorStore,
         mappingElement,
       );
