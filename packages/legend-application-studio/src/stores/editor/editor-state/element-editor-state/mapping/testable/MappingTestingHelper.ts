@@ -127,6 +127,7 @@ export const isRelationalMappingTestSuite = (
     .some((e) => isRelationalMappingTest(e));
 };
 
+//TODO: relation function support needs to be added
 export const generateStoreTestDataFromSetImpl = (
   setImpl: SetImplementation,
   editorStore: EditorStore,
