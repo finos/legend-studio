@@ -236,7 +236,7 @@ export const RelationTypeTree: React.FC<{
     fetchTypeTreeData()
       .then()
       .catch((error) => assertErrorThrown(error));
-  }, [relation,editorStore]);
+  }, [relation, editorStore]);
 
   if (loading) {
     return (
