@@ -28,8 +28,8 @@ import {
   type DataGridCellRendererParams,
   type DataGridColumnDefinition,
 } from '@finos/legend-lego/data-grid';
-import { Box, CircularProgress, FormControlLabel, Switch } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { Box, FormControlLabel, Switch } from '@mui/material';
+import { useEffect, useMemo, useState } from 'react';
 import type { EntitlementsDashboardState } from '../../../stores/lakehouse/entitlements/EntitlementsDashboardState.js';
 import { EntitlementsDataContractViewer } from './EntitlementsDataContractViewer.js';
 import { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
@@ -40,54 +40,9 @@ import {
   isContractInTerminalState,
   stringifyOrganizationalScope,
 } from '../../../stores/lakehouse/LakehouseUtils.js';
-import { startCase, type PlainObject } from '@finos/legend-shared';
+import { type PlainObject, lodashCapitalize } from '@finos/legend-shared';
 import { MultiUserCellRenderer } from '../../../components/MultiUserCellRenderer/MultiUserCellRenderer.js';
 import { useAuth } from 'react-oidc-context';
-
-const ContractStateCellRenderer = (props: {
-  contract: V1_DataContract;
-  dashboardState: EntitlementsDashboardState;
-}): React.ReactNode => {
-  const { contract, dashboardState } = props;
-  const auth = useAuth();
-  const [userStatus, setUserStatus] = useState<
-    V1_UserApprovalStatus | undefined
-  >(undefined);
-  const [loading, setLoading] = useState<boolean>(false);
-
-  useEffect(() => {
-    const fetchUserStatus = async (): Promise<void> => {
-      setLoading(true);
-      try {
-        const status =
-          await dashboardState.lakehouseEntitlementsStore.lakehouseServerClient.getContractUserStatus(
-            contract.guid,
-            dashboardState.lakehouseEntitlementsStore.applicationStore
-              .identityService.currentUser,
-            auth.user?.access_token,
-          );
-        setUserStatus(status);
-      } catch (error) {
-        dashboardState.lakehouseEntitlementsStore.applicationStore.notificationService.notifyError(
-          `Failed to fetch user status for contract ${contract.guid}: ${error}`,
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    // eslint-disable-next-line no-void
-    void fetchUserStatus();
-  }, [auth.user?.access_token, contract.guid, dashboardState]);
-
-  if (loading) {
-    return <CircularProgress size={20} />;
-  } else if (userStatus === undefined) {
-    return <>Unknown</>;
-  } else {
-    return <>{startCase(userStatus)}</>;
-  }
-};
 
 export const EntitlementsClosedContractsDashbaord = observer(
   (props: { dashboardState: EntitlementsDashboardState }): React.ReactNode => {
@@ -95,27 +50,37 @@ export const EntitlementsClosedContractsDashbaord = observer(
     const { allContracts } = dashboardState;
     const auth = useAuth();
 
-    const closedContracts =
-      allContracts?.filter(
-        (contract) =>
-          isContractInTerminalState(contract) &&
-          contract.consumer instanceof V1_AdhocTeam &&
-          contract.consumer.users.some(
-            (user) =>
-              user.name ===
+    const closedContracts = useMemo(
+      () =>
+        allContracts?.filter(
+          (contract) =>
+            isContractInTerminalState(contract) &&
+            contract.consumer instanceof V1_AdhocTeam &&
+            contract.consumer.users.some(
+              (user) =>
+                user.name ===
+                dashboardState.lakehouseEntitlementsStore.applicationStore
+                  .identityService.currentUser,
+            ),
+        ) ?? [],
+      [
+        allContracts,
+        dashboardState.lakehouseEntitlementsStore.applicationStore
+          .identityService.currentUser,
+      ],
+    );
+    const closedContractsForOthers = useMemo(
+      () =>
+        allContracts?.filter(
+          (contract) =>
+            isContractInTerminalState(contract) &&
+            contract.createdBy ===
               dashboardState.lakehouseEntitlementsStore.applicationStore
-                .identityService.currentUser,
-          ),
-      ) ?? [];
-    const closedContractsForOthers =
-      allContracts?.filter(
-        (contract) =>
-          isContractInTerminalState(contract) &&
-          contract.createdBy ===
-            dashboardState.lakehouseEntitlementsStore.applicationStore
-              .identityService.currentUser &&
-          !closedContracts.includes(contract),
-      ) ?? [];
+                .identityService.currentUser &&
+            !closedContracts.includes(contract),
+        ) ?? [],
+      [allContracts, closedContracts, dashboardState],
+    );
 
     const marketplaceBaseStore = useLegendMarketplaceBaseStore();
     const [selectedContract, setSelectedContract] = useState<
@@ -124,6 +89,37 @@ export const EntitlementsClosedContractsDashbaord = observer(
     const [showForOthers, setShowForOthers] = useState<boolean>(
       closedContracts.length === 0 && closedContractsForOthers.length > 0,
     );
+    const [contractUserStatus, setContractUserStatus] = useState<
+      Map<string, V1_UserApprovalStatus | undefined>
+    >(new Map<string, V1_UserApprovalStatus>());
+
+    useEffect(() => {
+      const fetchUserStatusesByContractId = async (): Promise<void> => {
+        const userStatusesByContractId: [
+          string,
+          V1_UserApprovalStatus | undefined,
+        ][] = await Promise.all(
+          closedContracts.map(async (contract) => {
+            const userStatus =
+              await dashboardState.lakehouseEntitlementsStore.lakehouseServerClient.getContractUserStatus(
+                contract.guid,
+                dashboardState.lakehouseEntitlementsStore.applicationStore
+                  .identityService.currentUser,
+                auth.user?.access_token,
+              );
+            return [contract.guid, userStatus];
+          }),
+        );
+        setContractUserStatus(
+          new Map<string, V1_UserApprovalStatus | undefined>(
+            userStatusesByContractId,
+          ),
+        );
+      };
+
+      // eslint-disable-next-line no-void
+      void fetchUserStatusesByContractId();
+    }, [auth.user?.access_token, closedContracts, dashboardState]);
 
     const handleCellClicked = async (
       event: DataGridCellClickedEvent<V1_DataContract>,
@@ -220,16 +216,12 @@ export const EntitlementsClosedContractsDashbaord = observer(
       },
       {
         headerName: 'State',
-        cellRenderer: (params: DataGridCellRendererParams<V1_DataContract>) => {
-          return params.data ? (
-            <ContractStateCellRenderer
-              contract={params.data}
-              dashboardState={dashboardState}
-            />
-          ) : (
-            <>Unknown</>
-          );
-        },
+        valueGetter: (p) =>
+          p.data?.guid
+            ? lodashCapitalize(
+                contractUserStatus.get(p.data.guid) ?? p.data.state,
+              )
+            : 'Unknown',
       },
       {
         headerName: 'Business Justification',
