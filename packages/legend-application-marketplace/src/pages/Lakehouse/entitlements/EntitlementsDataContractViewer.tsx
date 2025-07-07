@@ -38,22 +38,16 @@ import {
   TimelineSeparator,
 } from '@mui/lab';
 import {
-  type V1_DataContract,
   type V1_TaskMetadata,
   V1_AccessPointGroupReference,
   V1_AdhocTeam,
   V1_ApprovalType,
-  V1_ContractState,
   V1_ContractUserEventDataProducerPayload,
   V1_ContractUserEventPrivilegeManagerPayload,
   V1_UserApprovalStatus,
 } from '@finos/legend-graph';
 import React, { useEffect, useState } from 'react';
-import {
-  formatDate,
-  guaranteeNonNullable,
-  lodashCapitalize,
-} from '@finos/legend-shared';
+import { formatDate, lodashCapitalize } from '@finos/legend-shared';
 import {
   isContractInTerminalState,
   stringifyOrganizationalScope,
@@ -109,12 +103,10 @@ const AssigneesList = (props: {
 };
 
 const TaskApprovalView = (props: {
-  contract: V1_DataContract;
   task: V1_TaskMetadata | undefined;
   marketplaceStore: LegendMarketplaceBaseStore;
 }): React.ReactNode => {
-  const { contract, task, marketplaceStore } = props;
-  const contractState = contract.state;
+  const { task, marketplaceStore } = props;
   const approverId =
     task?.rec.eventPayload instanceof
     V1_ContractUserEventPrivilegeManagerPayload
@@ -124,61 +116,26 @@ const TaskApprovalView = (props: {
         ? task.rec.eventPayload.dataProducerIdentity
         : undefined;
 
-  if (
-    contractState === V1_ContractState.PENDING_DATA_OWNER_APPROVAL ||
-    contractState === V1_ContractState.COMPLETED
-  ) {
-    const userStatus = guaranteeNonNullable(
-      contract.members.find(
-        (m) =>
-          m.user.name ===
-          marketplaceStore.applicationStore.identityService.currentUser,
-      ),
-      'Current user not found in contract members',
-    ).status;
-    if (task) {
-      return (
-        <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__task-approval-view">
-          <Box>
-            {lodashCapitalize(userStatus)} by{' '}
-            <UserRenderer
-              userId={approverId}
-              marketplaceStore={marketplaceStore}
-            />
-          </Box>
-          <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__task-approval-view__timestamp">
-            {formatDate(
-              new Date(task.rec.eventPayload.eventTimestamp),
-              `MM/dd/yyyy HH:mm:ss`,
-            )}
-          </Box>
+  if (task) {
+    const taskStatus = task.rec.status;
+
+    return (
+      <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__task-approval-view">
+        <Box>
+          {lodashCapitalize(taskStatus)} by{' '}
+          <UserRenderer
+            userId={approverId}
+            marketplaceStore={marketplaceStore}
+          />
         </Box>
-      );
-    } else {
-      return <Box>{lodashCapitalize(userStatus)}</Box>;
-    }
-  } else if (contractState === V1_ContractState.REJECTED) {
-    if (task) {
-      return (
-        <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__task-approval-view">
-          <Box>
-            Rejected by{' '}
-            <UserRenderer
-              userId={approverId}
-              marketplaceStore={marketplaceStore}
-            />
-          </Box>
-          <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__task-approval-view__timestamp">
-            {formatDate(
-              new Date(task.rec.eventPayload.eventTimestamp),
-              `MM/dd/yyyy HH:mm:ss`,
-            )}
-          </Box>
+        <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__task-approval-view__timestamp">
+          {formatDate(
+            new Date(task.rec.eventPayload.eventTimestamp),
+            `MM/dd/yyyy HH:mm:ss`,
+          )}
         </Box>
-      );
-    } else {
-      return <Box>Rejected</Box>;
-    }
+      </Box>
+    );
   } else {
     return undefined;
   }
@@ -252,14 +209,6 @@ export const EntitlementsDataContractViewer = observer(
 
     const dataProduct = currentViewer.value.resource.dataProduct;
     const accessPointGroup = currentViewer.value.resource.accessPointGroup;
-    const contractUser = guaranteeNonNullable(
-      currentViewer.value.members.find(
-        (m) =>
-          m.user.name ===
-          legendMarketplaceStore.applicationStore.identityService.currentUser,
-      ),
-      'Current user not found in contract members',
-    );
     const privilegeManagerApprovalTask = currentViewer.associatedTasks?.find(
       (task) =>
         task.rec.type === V1_ApprovalType.CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
@@ -332,7 +281,6 @@ export const EntitlementsDataContractViewer = observer(
             />
           ) : (
             <TaskApprovalView
-              contract={currentViewer.value}
               task={privilegeManagerApprovalTask}
               marketplaceStore={legendMarketplaceStore}
             />
@@ -380,7 +328,6 @@ export const EntitlementsDataContractViewer = observer(
             />
           ) : dataOwnerApprovalTask !== undefined ? (
             <TaskApprovalView
-              contract={currentViewer.value}
               task={dataOwnerApprovalTask}
               marketplaceStore={legendMarketplaceStore}
             />
@@ -389,7 +336,9 @@ export const EntitlementsDataContractViewer = observer(
       {
         key: 'complete',
         isCompleteOrActive:
-          contractUser.status === V1_UserApprovalStatus.APPROVED,
+          privilegeManagerApprovalTask?.rec.status ===
+            V1_UserApprovalStatus.APPROVED &&
+          dataOwnerApprovalTask?.rec.status === V1_UserApprovalStatus.APPROVED,
         label: <>Complete</>,
       },
     ];
