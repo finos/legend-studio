@@ -387,7 +387,10 @@ export const DataProductAccessPointGroupViewer = observer(
             <Button
               variant="contained"
               color="info"
-              loading={accessGroupState.fetchingAccessState.isInProgress}
+              loading={
+                accessGroupState.fetchingAccessState.isInProgress ||
+                accessGroupState.fetchingUserAccessStatus.isInProgress
+              }
             >
               UNKNOWN
             </Button>
@@ -399,7 +402,10 @@ export const DataProductAccessPointGroupViewer = observer(
               variant="contained"
               color="error"
               onClick={handleContractsClick}
-              loading={accessGroupState.fetchingAccessState.isInProgress}
+              loading={
+                accessGroupState.fetchingAccessState.isInProgress ||
+                accessGroupState.fetchingUserAccessStatus.isInProgress
+              }
             >
               REQUEST ACCESS
             </Button>
@@ -411,7 +417,10 @@ export const DataProductAccessPointGroupViewer = observer(
               variant="contained"
               color="primary"
               onClick={handleContractsClick}
-              loading={accessGroupState.fetchingAccessState.isInProgress}
+              loading={
+                accessGroupState.fetchingAccessState.isInProgress ||
+                accessGroupState.fetchingUserAccessStatus.isInProgress
+              }
             >
               <div>
                 {val === AccessPointGroupAccess.PENDING_MANAGER_APPROVAL
@@ -430,7 +439,10 @@ export const DataProductAccessPointGroupViewer = observer(
               >
                 <Button
                   onClick={handleContractsClick}
-                  loading={accessGroupState.fetchingAccessState.isInProgress}
+                  loading={
+                    accessGroupState.fetchingAccessState.isInProgress ||
+                    accessGroupState.fetchingUserAccessStatus.isInProgress
+                  }
                 >
                   ENTITLED
                 </Button>

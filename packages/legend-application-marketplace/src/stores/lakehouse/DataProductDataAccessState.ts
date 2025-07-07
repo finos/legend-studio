@@ -46,7 +46,6 @@ import {
 } from 'mobx';
 import {
   dataContractContainsAccessGroup,
-  isContractCompleted,
   isMemberOfContract,
 } from './LakehouseUtils.js';
 import { deserialize, serialize } from 'serializr';
@@ -62,28 +61,10 @@ export enum AccessPointGroupAccess {
   NO_ACCESS = 'NO_ACCESS',
 }
 
-const getAccessPointGroupAccessFromContract = (
+const getPendingAccessPointGroupAccessFromContract = (
   val: V1_DataContract,
-  user: string,
 ): AccessPointGroupAccess => {
-  if (isContractCompleted(val)) {
-    const contractMembership = guaranteeNonNullable(
-      val.members.find((m) => m.user.name === user),
-      `User ${user} not found in contract members`,
-    );
-    switch (contractMembership.status) {
-      case V1_UserApprovalStatus.APPROVED:
-        return AccessPointGroupAccess.APPROVED;
-      case V1_UserApprovalStatus.DENIED:
-      case V1_UserApprovalStatus.REVOKED:
-      case V1_UserApprovalStatus.CLOSED:
-        return AccessPointGroupAccess.DENIED;
-      default:
-        return AccessPointGroupAccess.UNKNOWN;
-    }
-  } else if (
-    val.state === V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL
-  ) {
+  if (val.state === V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL) {
     return AccessPointGroupAccess.PENDING_MANAGER_APPROVAL;
   } else if (val.state === V1_ContractState.PENDING_DATA_OWNER_APPROVAL) {
     return AccessPointGroupAccess.PENDING_DATA_OWNER_APPROVAL;
@@ -99,12 +80,14 @@ export class DataProductGroupAccessState {
 
   fetchingAccessState = ActionState.create();
   requestingAccessState = ActionState.create();
+  fetchingUserAccessStatus = ActionState.create();
   fetchingSubscriptionsState = ActionState.create();
   creatingSubscriptionState = ActionState.create();
 
   // ASSUMPTION: one contract per user per group;
   // false here mentions contracts have not been fetched
   associatedContract: V1_DataContract | undefined | false = false;
+  userAccessStatus: V1_UserApprovalStatus | undefined = undefined;
 
   constructor(
     group: V1_AccessPointGroup,
@@ -117,39 +100,62 @@ export class DataProductGroupAccessState {
       handleDataProductContracts: action,
       requestingAccessState: observable,
       associatedContract: observable,
+      userAccessStatus: observable,
       setAssociatedContract: action,
       subscriptions: observable,
       fetchingSubscriptionsState: observable,
       creatingSubscriptionState: observable,
       createSubscription: flow,
       setSubscriptions: action,
+      fetchUserAccessStatus: flow,
+      setUserAccessStatus: action,
     });
   }
 
   get access(): AccessPointGroupAccess {
-    if (this.associatedContract === false) {
+    if (
+      this.associatedContract === false ||
+      this.fetchingUserAccessStatus.isInProgress ||
+      this.userAccessStatus === undefined
+    ) {
       return AccessPointGroupAccess.UNKNOWN;
-    }
-    if (this.associatedContract) {
-      return getAccessPointGroupAccessFromContract(
+    } else if (
+      this.userAccessStatus === V1_UserApprovalStatus.PENDING &&
+      this.associatedContract
+    ) {
+      return getPendingAccessPointGroupAccessFromContract(
         this.associatedContract,
-        this.accessState.viewerState.applicationStore.identityService
-          .currentUser,
       );
+    } else if (this.userAccessStatus === V1_UserApprovalStatus.APPROVED) {
+      return AccessPointGroupAccess.APPROVED;
     } else {
       return AccessPointGroupAccess.NO_ACCESS;
     }
   }
 
-  setAssociatedContract(val: V1_DataContract | undefined): void {
+  setAssociatedContract(
+    val: V1_DataContract | undefined,
+    token: string | undefined,
+  ): void {
     this.associatedContract = val;
+
+    if (this.associatedContract) {
+      this.fetchUserAccessStatus(this.associatedContract.guid, token);
+    }
+  }
+
+  setUserAccessStatus(val: V1_UserApprovalStatus | undefined): void {
+    this.userAccessStatus = val;
   }
 
   setSubscriptions(val: V1_DataSubscription[]): void {
     this.subscriptions = val;
   }
 
-  handleDataProductContracts(contracts: V1_DataContract[]): void {
+  handleDataProductContracts(
+    contracts: V1_DataContract[],
+    token: string | undefined,
+  ): void {
     const groupContracts = contracts
       .filter((_contract) =>
         dataContractContainsAccessGroup(this.group, _contract),
@@ -163,7 +169,7 @@ export class DataProductGroupAccessState {
       );
     // ASSUMPTION: one contract per user per group
     const userContract = groupContracts[0];
-    this.setAssociatedContract(userContract);
+    this.setAssociatedContract(userContract, token);
   }
 
   handleContractClick(): void {
@@ -183,6 +189,30 @@ export class DataProductGroupAccessState {
         break;
       default:
         break;
+    }
+  }
+
+  *fetchUserAccessStatus(
+    contractId: string,
+    token: string | undefined,
+  ): GeneratorFn<void> {
+    try {
+      this.fetchingUserAccessStatus.inProgress();
+      const userStatus =
+        (yield this.accessState.viewerState.lakeServerClient.getContractUserStatus(
+          contractId,
+          this.accessState.viewerState.applicationStore.identityService
+            .currentUser,
+          token,
+        )) as V1_UserApprovalStatus;
+      this.setUserAccessStatus(userStatus);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.accessState.viewerState.applicationStore.notificationService.notifyError(
+        `Error fetching user access status: ${error.message}`,
+      );
+    } finally {
+      this.fetchingUserAccessStatus.complete();
     }
   }
 

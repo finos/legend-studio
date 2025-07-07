@@ -193,7 +193,7 @@ export class DataProductViewerState {
       )).flat();
       this.setAssociatedContracts(enrichedContracts);
       this.accessState.accessGroupStates.forEach((e) =>
-        e.handleDataProductContracts(enrichedContracts),
+        e.handleDataProductContracts(enrichedContracts, token),
       );
     } catch (error) {
       assertErrorThrown(error);
@@ -249,7 +249,7 @@ export class DataProductViewerState {
         const groupAccessState = this.accessState.accessGroupStates.find(
           (e) => e.group === group,
         );
-        groupAccessState?.setAssociatedContract(associatedContract);
+        groupAccessState?.setAssociatedContract(associatedContract, token);
       }
 
       this.setDataContractAccessPointGroup(undefined);

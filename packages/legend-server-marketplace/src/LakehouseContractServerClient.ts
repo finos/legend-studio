@@ -23,6 +23,7 @@ import type {
   V1_DataSubscriptionResponse,
   V1_PendingTasksRespond,
   V1_TaskStatus,
+  V1_UserApprovalStatus,
   V1_UserPendingContractsResponse,
 } from '@finos/legend-graph';
 import { AbstractServerClient, type PlainObject } from '@finos/legend-shared';
@@ -62,7 +63,7 @@ export class LakehouseContractServerClient extends AbstractServerClient {
     token: string | undefined,
   ): Promise<PlainObject<V1_DataContractsResponse>> =>
     this.get(
-      `${this._dataContracts()}/${encodeURIComponent(id)}?withMembers=true`,
+      `${this._dataContracts()}/${encodeURIComponent(id)}`,
       {},
       this._token(token),
     );
@@ -73,6 +74,17 @@ export class LakehouseContractServerClient extends AbstractServerClient {
   ): Promise<PlainObject<V1_DataContractApprovedUsersResponse>> =>
     this.get(
       `${this._dataContracts()}/${encodeURIComponent(id)}/approvedUsers`,
+      {},
+      this._token(token),
+    );
+
+  getContractUserStatus = (
+    contractId: string,
+    userId: string,
+    token: string | undefined,
+  ): Promise<V1_UserApprovalStatus> =>
+    this.get(
+      `${this._dataContracts()}/${encodeURIComponent(contractId)}/user/${encodeURIComponent(userId)}`,
       {},
       this._token(token),
     );
