@@ -171,7 +171,7 @@ export class V1_ContractApprovedUsersResponse {
 
 export type V1_PendingTaskWithAssignees = {
   taskId: string;
-  assignee: string[];
+  assignees: string[];
 };
 
 export type V1_UserPendingContractsRecord = {

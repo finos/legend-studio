@@ -96,7 +96,7 @@ const AssigneesCellRenderer = (props: {
     );
 
     if (pendingContractRecord) {
-      setAssignees(pendingContractRecord.pendingTaskWithAssignees.assignee);
+      setAssignees(pendingContractRecord.pendingTaskWithAssignees.assignees);
     } else {
       // eslint-disable-next-line no-void
       void fetchAssignees();
