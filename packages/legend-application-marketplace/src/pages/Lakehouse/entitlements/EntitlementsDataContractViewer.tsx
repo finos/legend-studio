@@ -25,8 +25,12 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
+  FormControl,
   IconButton,
+  InputLabel,
   Link,
+  MenuItem,
+  Select,
 } from '@mui/material';
 import {
   Timeline,
@@ -158,6 +162,10 @@ export const EntitlementsDataContractViewer = observer(
     } = props;
     const auth = useAuth();
     const legendMarketplaceStore = useLegendMarketplaceBaseStore();
+    const consumer = currentViewer.value.consumer;
+    const [selectedTargetUser, setSelectedTargetUser] = useState<
+      string | undefined
+    >(consumer instanceof V1_AdhocTeam ? consumer.users[0]?.name : undefined);
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
@@ -211,10 +219,13 @@ export const EntitlementsDataContractViewer = observer(
     const accessPointGroup = currentViewer.value.resource.accessPointGroup;
     const privilegeManagerApprovalTask = currentViewer.associatedTasks?.find(
       (task) =>
+        task.rec.consumer === selectedTargetUser &&
         task.rec.type === V1_ApprovalType.CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
     );
     const dataOwnerApprovalTask = currentViewer.associatedTasks?.find(
-      (task) => task.rec.type === V1_ApprovalType.DATA_OWNER_APPROVAL,
+      (task) =>
+        task.rec.consumer === selectedTargetUser &&
+        task.rec.type === V1_ApprovalType.DATA_OWNER_APPROVAL,
     );
 
     const copyTaskLink = (text: string): void => {
@@ -379,23 +390,37 @@ export const EntitlementsDataContractViewer = observer(
                 </div>
                 <div className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-for">
                   <b>Ordered For: </b>
-                  {currentViewer.value.consumer instanceof V1_AdhocTeam
-                    ? currentViewer.value.consumer.users.map((user, index) => (
-                        <UserRenderer
-                          key={user.name}
-                          userId={user.name}
-                          marketplaceStore={legendMarketplaceStore}
-                          appendComma={
-                            index <
-                            (currentViewer.value.consumer as V1_AdhocTeam).users
-                              .length -
-                              1
+                  {consumer instanceof V1_AdhocTeam ? (
+                    consumer.users.length === 1 &&
+                    consumer.users[0] !== undefined ? (
+                      <UserRenderer
+                        key={consumer.users[0].name}
+                        userId={consumer.users[0].name}
+                        marketplaceStore={legendMarketplaceStore}
+                      />
+                    ) : (
+                      <FormControl fullWidth={true}>
+                        <InputLabel>User</InputLabel>
+                        <Select
+                          value={selectedTargetUser}
+                          onChange={(event) =>
+                            setSelectedTargetUser(event.target.value)
                           }
-                        />
-                      ))
-                    : stringifyOrganizationalScope(
-                        currentViewer.value.consumer,
-                      )}
+                        >
+                          {consumer.users.map((user) => (
+                            <MenuItem key={user.name} value={user.name}>
+                              <UserRenderer
+                                userId={user.name}
+                                marketplaceStore={legendMarketplaceStore}
+                              />
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    )
+                  ) : (
+                    stringifyOrganizationalScope(consumer)
+                  )}
                 </div>
                 <div>
                   <b>Business Justification: </b>
