@@ -403,6 +403,7 @@ export const EntitlementsDataContractViewer = observer(
                           setSelectedTargetUser(event.target.value)
                         }
                         size="small"
+                        className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-for__select"
                       >
                         {consumer.users.map((user) => (
                           <MenuItem key={user.name} value={user.name}>
