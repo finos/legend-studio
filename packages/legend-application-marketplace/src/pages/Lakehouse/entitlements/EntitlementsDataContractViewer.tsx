@@ -25,7 +25,6 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
-  FormControl,
   IconButton,
   Link,
   MenuItem,
@@ -398,24 +397,23 @@ export const EntitlementsDataContractViewer = observer(
                         marketplaceStore={legendMarketplaceStore}
                       />
                     ) : (
-                      <FormControl size="small">
-                        <Select
-                          value={selectedTargetUser}
-                          onChange={(event) =>
-                            setSelectedTargetUser(event.target.value)
-                          }
-                        >
-                          {consumer.users.map((user) => (
-                            <MenuItem key={user.name} value={user.name}>
-                              <UserRenderer
-                                userId={user.name}
-                                marketplaceStore={legendMarketplaceStore}
-                                disableOnClick={true}
-                              />
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
+                      <Select
+                        value={selectedTargetUser}
+                        onChange={(event) =>
+                          setSelectedTargetUser(event.target.value)
+                        }
+                        size="small"
+                      >
+                        {consumer.users.map((user) => (
+                          <MenuItem key={user.name} value={user.name}>
+                            <UserRenderer
+                              userId={user.name}
+                              marketplaceStore={legendMarketplaceStore}
+                              disableOnClick={true}
+                            />
+                          </MenuItem>
+                        ))}
+                      </Select>
                     )
                   ) : (
                     stringifyOrganizationalScope(consumer)
