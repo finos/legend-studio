@@ -408,6 +408,7 @@ export const EntitlementsDataContractViewer = observer(
                             <UserRenderer
                               userId={user.name}
                               marketplaceStore={legendMarketplaceStore}
+                              disableOnClick={true}
                             />
                           </MenuItem>
                         ))}

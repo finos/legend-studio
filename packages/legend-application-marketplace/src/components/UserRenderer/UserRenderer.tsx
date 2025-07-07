@@ -25,8 +25,10 @@ export const UserRenderer = (props: {
   marketplaceStore: LegendMarketplaceBaseStore;
   className?: string | undefined;
   appendComma?: boolean;
+  disableOnClick?: boolean;
 }): React.ReactNode => {
-  const { userId, marketplaceStore, className, appendComma } = props;
+  const { userId, marketplaceStore, className, appendComma, disableOnClick } =
+    props;
   const [userData, setUserData] = useState<LegendUser | string | undefined>();
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -64,7 +66,7 @@ export const UserRenderer = (props: {
       <UserDisplay
         user={userData}
         imgSrc={imgSrc}
-        onClick={() => openUserDirectoryLink()}
+        onClick={() => (disableOnClick ? undefined : openUserDirectoryLink())}
         className={className}
       />
     );
