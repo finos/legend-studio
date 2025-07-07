@@ -134,7 +134,7 @@ export const SnowflakeM2MUdfFunctionActivatorEditor = observer(() => {
         <PanelContent>
           <div className="snowflake-m2m-udf-function-activator-editor__header">
             <div className="snowflake-m2m-udf-function-activator-editor__header__label">
-              Snowflake Activator Metadata
+              SnowflakeM2MUdf Activator Metadata
             </div>
             <div className="snowflake-m2m-udf-function-activator-editor__header__actions">
               <button
