@@ -30,7 +30,7 @@ import React, { useEffect, useState, type ChangeEvent } from 'react';
 import { LegendUser } from '@finos/legend-shared';
 import { getUserById } from '../../stores/lakehouse/LakehouseUtils.js';
 import {
-  DataProductGroupAccess,
+  AccessPointGroupAccess,
   type DataProductGroupAccessState,
 } from '../../stores/lakehouse/DataProductDataAccessState.js';
 import { TextField } from '@mui/material';
@@ -110,7 +110,7 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
         };
         // We should only fetch the current user if the current user is not already entitled.
         // If the current user is already entitled, we can assume they are requesting access for another user or system account.
-        if (accessGroupState.access === DataProductGroupAccess.NO_ACCESS) {
+        if (accessGroupState.access === AccessPointGroupAccess.NO_ACCESS) {
           // eslint-disable-next-line no-void
           void fetchCurrentUser();
         }

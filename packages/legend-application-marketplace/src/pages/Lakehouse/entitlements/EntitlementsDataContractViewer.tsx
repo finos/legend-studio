@@ -50,9 +50,9 @@ import {
 } from '@finos/legend-graph';
 import React, { useEffect, useState } from 'react';
 import {
-  capitalize,
   formatDate,
   guaranteeNonNullable,
+  lodashCapitalize,
 } from '@finos/legend-shared';
 import {
   isContractInTerminalState,
@@ -140,7 +140,7 @@ const TaskApprovalView = (props: {
       return (
         <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__task-approval-view">
           <Box>
-            {capitalize(userStatus)} by{' '}
+            {lodashCapitalize(userStatus)} by{' '}
             <UserRenderer
               userId={approverId}
               marketplaceStore={marketplaceStore}
@@ -155,7 +155,7 @@ const TaskApprovalView = (props: {
         </Box>
       );
     } else {
-      return <Box>{capitalize(userStatus)}</Box>;
+      return <Box>{lodashCapitalize(userStatus)}</Box>;
     }
   } else if (contractState === V1_ContractState.REJECTED) {
     if (task) {

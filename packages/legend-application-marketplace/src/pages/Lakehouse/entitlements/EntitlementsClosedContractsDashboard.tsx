@@ -97,6 +97,7 @@ export const EntitlementsClosedContractsDashbaord = observer(
           const enrichedContract =
             V1_dataContractsResponseModelSchemaToContracts(
               rawEnrichedContract,
+              dashboardState.lakehouseEntitlementsStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
             )[0];
           if (enrichedContract) {
             setSelectedContract(enrichedContract);
