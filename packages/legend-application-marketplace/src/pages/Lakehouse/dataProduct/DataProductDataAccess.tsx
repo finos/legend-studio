@@ -357,7 +357,7 @@ export const DataProductAccessPointGroupViewer = observer(
     const [showSubscriptionsModal, setShowSubscriptionsModal] = useState(false);
     const [isEntitledButtonGroupMenuOpen, setIsEntitledButtonGroupMenuOpen] =
       useState(false);
-    const entitledButtonGroupRef = useRef<HTMLDivElement | null>(null);
+    const requestAccessButtonGroupRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
       if (
@@ -384,16 +384,46 @@ export const DataProductAccessPointGroupViewer = observer(
       switch (val) {
         case AccessPointGroupAccess.UNKNOWN:
           return (
-            <Button
-              variant="contained"
-              color="info"
-              loading={
-                accessGroupState.fetchingAccessState.isInProgress ||
-                accessGroupState.fetchingUserAccessStatus.isInProgress
-              }
-            >
-              UNKNOWN
-            </Button>
+            <>
+              <ButtonGroup
+                variant="contained"
+                color="info"
+                ref={requestAccessButtonGroupRef}
+              >
+                <Button
+                  loading={
+                    accessGroupState.fetchingAccessState.isInProgress ||
+                    accessGroupState.fetchingUserAccessStatus.isInProgress
+                  }
+                >
+                  UNKNOWN
+                </Button>
+                <Button
+                  size="small"
+                  onClick={() =>
+                    setIsEntitledButtonGroupMenuOpen((prev) => !prev)
+                  }
+                >
+                  <CaretDownIcon />
+                </Button>
+              </ButtonGroup>
+              <Menu
+                anchorEl={requestAccessButtonGroupRef.current}
+                open={isEntitledButtonGroupMenuOpen}
+                onClose={() => setIsEntitledButtonGroupMenuOpen(false)}
+              >
+                <MenuItem
+                  onClick={() => {
+                    accessGroupState.accessState.viewerState.setDataContractAccessPointGroup(
+                      accessGroupState.group,
+                    );
+                    setIsEntitledButtonGroupMenuOpen(false);
+                  }}
+                >
+                  Request Access for Others
+                </MenuItem>
+              </Menu>
+            </>
           );
         case AccessPointGroupAccess.NO_ACCESS:
         case AccessPointGroupAccess.DENIED:
@@ -413,21 +443,49 @@ export const DataProductAccessPointGroupViewer = observer(
         case AccessPointGroupAccess.PENDING_MANAGER_APPROVAL:
         case AccessPointGroupAccess.PENDING_DATA_OWNER_APPROVAL:
           return (
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleContractsClick}
-              loading={
-                accessGroupState.fetchingAccessState.isInProgress ||
-                accessGroupState.fetchingUserAccessStatus.isInProgress
-              }
-            >
-              <div>
-                {val === AccessPointGroupAccess.PENDING_MANAGER_APPROVAL
-                  ? 'PENDING MANAGER APPROVAL'
-                  : 'PENDING DATA OWNER APPROVAL'}
-              </div>
-            </Button>
+            <>
+              <ButtonGroup
+                variant="contained"
+                color="primary"
+                ref={requestAccessButtonGroupRef}
+              >
+                <Button
+                  onClick={handleContractsClick}
+                  loading={
+                    accessGroupState.fetchingAccessState.isInProgress ||
+                    accessGroupState.fetchingUserAccessStatus.isInProgress
+                  }
+                >
+                  {val === AccessPointGroupAccess.PENDING_MANAGER_APPROVAL
+                    ? 'PENDING MANAGER APPROVAL'
+                    : 'PENDING DATA OWNER APPROVAL'}
+                </Button>
+                <Button
+                  size="small"
+                  onClick={() =>
+                    setIsEntitledButtonGroupMenuOpen((prev) => !prev)
+                  }
+                >
+                  <CaretDownIcon />
+                </Button>
+              </ButtonGroup>
+              <Menu
+                anchorEl={requestAccessButtonGroupRef.current}
+                open={isEntitledButtonGroupMenuOpen}
+                onClose={() => setIsEntitledButtonGroupMenuOpen(false)}
+              >
+                <MenuItem
+                  onClick={() => {
+                    accessGroupState.accessState.viewerState.setDataContractAccessPointGroup(
+                      accessGroupState.group,
+                    );
+                    setIsEntitledButtonGroupMenuOpen(false);
+                  }}
+                >
+                  Request Access for Others
+                </MenuItem>
+              </Menu>
+            </>
           );
         case AccessPointGroupAccess.APPROVED:
           return (
@@ -435,7 +493,7 @@ export const DataProductAccessPointGroupViewer = observer(
               <ButtonGroup
                 variant="contained"
                 color="success"
-                ref={entitledButtonGroupRef}
+                ref={requestAccessButtonGroupRef}
               >
                 <Button
                   onClick={handleContractsClick}
@@ -456,7 +514,7 @@ export const DataProductAccessPointGroupViewer = observer(
                 </Button>
               </ButtonGroup>
               <Menu
-                anchorEl={entitledButtonGroupRef.current}
+                anchorEl={requestAccessButtonGroupRef.current}
                 open={isEntitledButtonGroupMenuOpen}
                 onClose={() => setIsEntitledButtonGroupMenuOpen(false)}
               >
