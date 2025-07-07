@@ -25,6 +25,7 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
+  FormControl,
   IconButton,
   Link,
   MenuItem,
@@ -397,22 +398,24 @@ export const EntitlementsDataContractViewer = observer(
                         marketplaceStore={legendMarketplaceStore}
                       />
                     ) : (
-                      <Select
-                        value={selectedTargetUser}
-                        onChange={(event) =>
-                          setSelectedTargetUser(event.target.value)
-                        }
-                      >
-                        {consumer.users.map((user) => (
-                          <MenuItem key={user.name} value={user.name}>
-                            <UserRenderer
-                              userId={user.name}
-                              marketplaceStore={legendMarketplaceStore}
-                              disableOnClick={true}
-                            />
-                          </MenuItem>
-                        ))}
-                      </Select>
+                      <FormControl size="small">
+                        <Select
+                          value={selectedTargetUser}
+                          onChange={(event) =>
+                            setSelectedTargetUser(event.target.value)
+                          }
+                        >
+                          {consumer.users.map((user) => (
+                            <MenuItem key={user.name} value={user.name}>
+                              <UserRenderer
+                                userId={user.name}
+                                marketplaceStore={legendMarketplaceStore}
+                                disableOnClick={true}
+                              />
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
                     )
                   ) : (
                     stringifyOrganizationalScope(consumer)
