@@ -113,11 +113,7 @@ export class DataProductGroupAccessState {
   }
 
   get access(): AccessPointGroupAccess {
-    if (
-      this.associatedContract === false ||
-      this.fetchingUserAccessStatus.isInProgress ||
-      this.userAccessStatus === undefined
-    ) {
+    if (this.associatedContract === false) {
       return AccessPointGroupAccess.UNKNOWN;
     } else if (
       this.userAccessStatus === V1_UserApprovalStatus.PENDING &&
