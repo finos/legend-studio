@@ -37,6 +37,7 @@ import {
   type InstanceSetImplementation,
   type INTERNAL__UnresolvedSetImplementation,
   type Mapping,
+  type RelationColumn,
   getAllClassMappings,
   PurePropertyMapping,
   EmbeddedFlatDataPropertyMapping,
@@ -66,6 +67,7 @@ import {
   SetImplementationExplicitReference,
   type INTERNAL__UnknownSetImplementation,
   type RelationFunctionInstanceSetImplementation,
+  RelationFunctionPropertyMapping,
 } from '@finos/legend-graph';
 import type { EditorStore } from '../../../EditorStore.js';
 import {
@@ -79,6 +81,7 @@ import {
 } from '../../../../graph-modifier/DSL_Mapping_GraphModifierHelper.js';
 import { rootRelationalSetImp_setPropertyMappings } from '../../../../graph-modifier/STO_Relational_GraphModifierHelper.js';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../../extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
+import { isStubbed_RelationColumn } from '../../../../graph-modifier/STO_RelationFunction_GraphModifierHelper.js';
 
 /**
  * Iterate through all properties (including supertypes' properties) of the set implementation
@@ -662,7 +665,65 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
   visit_RelationFunctionInstanceSetImplementation(
     setImplementation: RelationFunctionInstanceSetImplementation,
   ): void {
-    return;
+    const decoratePropertyMapping = (
+      propertyMappings: RelationFunctionPropertyMapping[] | undefined,
+      property: Property,
+    ): RelationFunctionPropertyMapping[] => {
+      const existingPropertyMappings = (propertyMappings ?? []).filter((pm) => {
+        if (pm instanceof RelationFunctionPropertyMapping) {
+          return !isStubbed_RelationColumn(pm.column);
+        }
+        return false;
+      });
+      const propertyType = property.genericType.value.rawType;
+      if (
+        propertyType instanceof PrimitiveType ||
+        propertyType instanceof Unit ||
+        propertyType instanceof Measure
+      ) {
+        if (existingPropertyMappings.length) {
+          // TODO?: do we want to check the type of the property mapping here?
+          return existingPropertyMappings;
+        }
+        const newPropertyMapping = new RelationFunctionPropertyMapping(
+          setImplementation,
+          PropertyExplicitReference.create(property),
+          SetImplementationExplicitReference.create(setImplementation),
+          undefined,
+          {} as RelationColumn,
+        );
+        return [newPropertyMapping];
+      } else if (propertyType instanceof Enumeration) {
+        // TODO: add changes
+      } else if (propertyType instanceof Class) {
+        // TODO: add change
+      }
+      return [];
+    };
+    const propertyMappingsBeforeDecoration =
+      setImplementation.propertyMappings as RelationFunctionPropertyMapping[];
+    const decoratedPropertyMappings =
+      getDecoratedSetImplementationPropertyMappings<RelationFunctionPropertyMapping>(
+        setImplementation,
+        decoratePropertyMapping,
+      );
+    instanceSetImplementation_setPropertyMappings(
+      setImplementation,
+      decoratedPropertyMappings.concat(
+        // NOTE: here, we remove some low-quality property mappings
+        // i.e. stubbed property mappings from before adding new decorated property mappings
+        propertyMappingsBeforeDecoration
+          .filter(
+            (propertyMapping) =>
+              !isStubbed_RelationColumn(propertyMapping.column),
+          )
+          .filter(
+            (propertyMapping) =>
+              !decoratedPropertyMappings.includes(propertyMapping),
+          ),
+      ),
+      this.editorStore.changeDetectionState.observerContext,
+    );
   }
 }
 
@@ -814,6 +875,13 @@ export class MappingElementDecorationCleaner
   visit_RelationFunctionInstanceSetImplementation(
     setImplementation: RelationFunctionInstanceSetImplementation,
   ): void {
-    return;
+    instanceSetImplementation_setPropertyMappings(
+      setImplementation,
+      setImplementation.propertyMappings.filter(
+        (propertyMapping) =>
+          propertyMapping instanceof RelationFunctionPropertyMapping,
+      ),
+      this.editorStore.changeDetectionState.observerContext,
+    );
   }
 }
