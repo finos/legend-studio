@@ -124,11 +124,17 @@ const TaskApprovalView = (props: {
     return (
       <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__task-approval-view">
         <Box>
-          {lodashCapitalize(taskStatus)} by{' '}
-          <UserRenderer
-            userId={approverId}
-            marketplaceStore={marketplaceStore}
-          />
+          {lodashCapitalize(taskStatus)}
+          {approverId !== undefined && (
+            <>
+              {' '}
+              by{' '}
+              <UserRenderer
+                userId={approverId}
+                marketplaceStore={marketplaceStore}
+              />
+            </>
+          )}
         </Box>
         <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__task-approval-view__timestamp">
           {formatDate(
