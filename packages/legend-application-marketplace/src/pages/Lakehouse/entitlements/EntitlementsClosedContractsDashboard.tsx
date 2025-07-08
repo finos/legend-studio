@@ -16,7 +16,6 @@
 
 import {
   type V1_DataContract,
-  type V1_DataContractsResponse,
   type V1_UserApprovalStatus,
   V1_AccessPointGroupReference,
   V1_AdhocTeam,
@@ -40,7 +39,7 @@ import {
   isContractInTerminalState,
   stringifyOrganizationalScope,
 } from '../../../stores/lakehouse/LakehouseUtils.js';
-import { type PlainObject, lodashCapitalize } from '@finos/legend-shared';
+import { lodashCapitalize } from '@finos/legend-shared';
 import { MultiUserCellRenderer } from '../../../components/MultiUserCellRenderer/MultiUserCellRenderer.js';
 import { useAuth } from 'react-oidc-context';
 
@@ -131,10 +130,10 @@ export const EntitlementsClosedContractsDashbaord = observer(
       ) {
         if (event.data) {
           const rawEnrichedContract =
-            (await dashboardState.lakehouseEntitlementsStore.lakehouseServerClient.getDataContract(
-              event.data?.guid,
+            await dashboardState.lakehouseEntitlementsStore.lakehouseServerClient.getDataContract(
+              event.data.guid,
               auth.user?.access_token,
-            )) as PlainObject<V1_DataContractsResponse>;
+            );
           const enrichedContract =
             V1_dataContractsResponseModelSchemaToContracts(
               rawEnrichedContract,
@@ -260,7 +259,10 @@ export const EntitlementsClosedContractsDashbaord = observer(
             suppressFieldDotNotation={true}
             suppressContextMenu={false}
             columnDefs={colDefs}
-            onCellClicked={handleCellClicked}
+            onCellClicked={(event: DataGridCellClickedEvent<V1_DataContract>) =>
+              // eslint-disable-next-line no-void
+              void handleCellClicked(event)
+            }
             defaultColDef={defaultColDef}
             rowHeight={45}
             overlayNoRowsTemplate="You have no closed contracts"

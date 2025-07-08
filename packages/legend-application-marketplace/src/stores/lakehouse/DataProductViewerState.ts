@@ -180,17 +180,17 @@ export class DataProductViewerState {
       const dataProductContractIds = dataProductContracts.map((e) => e.guid);
       const enrichedContracts = (yield Promise.all(
         dataProductContractIds.map(async (contractId) => {
-          const rawContracts = (await this.lakeServerClient.getDataContract(
+          const rawContracts = await this.lakeServerClient.getDataContract(
             contractId,
             token,
-          )) as PlainObject<V1_DataContractsResponse>;
+          );
           const contract = V1_dataContractsResponseModelSchemaToContracts(
             rawContracts,
             this.lakehouseStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
           );
           return contract;
         }),
-      )).flat();
+      )).flat() as V1_DataContract[];
       this.setAssociatedContracts(enrichedContracts);
       this.accessState.accessGroupStates.forEach((e) =>
         e.handleDataProductContracts(enrichedContracts, token),
