@@ -19,9 +19,9 @@ import {
   type V1_UserPendingContractsRecord,
   V1_AccessPointGroupReference,
   V1_AdhocTeam,
-  V1_ApprovalType,
   V1_ContractState,
   V1_deserializeTaskResponse,
+  V1_UserApprovalStatus,
 } from '@finos/legend-graph';
 import {
   DataGrid,
@@ -68,23 +68,13 @@ const AssigneesCellRenderer = (props: {
               token,
             );
           const tasks = V1_deserializeTaskResponse(rawTasks);
-          const privilegeManagerApprovalTask = tasks.find(
-            (task) =>
-              task.rec.type ===
-              V1_ApprovalType.CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
+          const pendingTasks = tasks.filter(
+            (task) => task.rec.status === V1_UserApprovalStatus.PENDING,
           );
-          const dataOwnerApprovalTask = tasks.find(
-            (task) => task.rec.type === V1_ApprovalType.DATA_OWNER_APPROVAL,
+          const pendingAssignees = Array.from(
+            new Set<string>(pendingTasks.map((task) => task.assignees).flat()),
           );
-          const currentTask =
-            dataContract.state ===
-            V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL
-              ? privilegeManagerApprovalTask
-              : dataContract.state ===
-                  V1_ContractState.PENDING_DATA_OWNER_APPROVAL
-                ? dataOwnerApprovalTask
-                : undefined;
-          setAssignees(currentTask?.assignees ?? []);
+          setAssignees(pendingAssignees);
         } finally {
           setLoading(false);
         }
