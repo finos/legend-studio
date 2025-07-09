@@ -274,13 +274,6 @@ export const buildDataContractDetail = (
   ];
 };
 
-export const TYPE_GRID_ITEM = Object.freeze({
-  TASK_ID: 'Task ID',
-  TASK_STATUS: 'Task Status',
-  TASK_CONSUMER: 'Task Consumer',
-  TASK_ASSIGNEE: 'Task Assignee',
-});
-
 export const stringifyOrganizationalScope = (
   scope: V1_OrganizationalScope,
 ): string => {
