@@ -16,7 +16,7 @@
 
 import {
   type V1_DataContract,
-  type V1_UserApprovalStatus,
+  type V1_EnrichedUserApprovalStatus,
   V1_AccessPointGroupReference,
   V1_AdhocTeam,
   V1_dataContractsResponseModelSchemaToContracts,
@@ -89,14 +89,14 @@ export const EntitlementsClosedContractsDashbaord = observer(
       closedContracts.length === 0 && closedContractsForOthers.length > 0,
     );
     const [contractUserStatus, setContractUserStatus] = useState<
-      Map<string, V1_UserApprovalStatus | undefined>
-    >(new Map<string, V1_UserApprovalStatus>());
+      Map<string, V1_EnrichedUserApprovalStatus | undefined>
+    >(new Map<string, V1_EnrichedUserApprovalStatus>());
 
     useEffect(() => {
       const fetchUserStatusesByContractId = async (): Promise<void> => {
         const userStatusesByContractId: [
           string,
-          V1_UserApprovalStatus | undefined,
+          V1_EnrichedUserApprovalStatus | undefined,
         ][] = await Promise.all(
           closedContracts.map(async (contract) => {
             const userStatus =
@@ -110,7 +110,7 @@ export const EntitlementsClosedContractsDashbaord = observer(
           }),
         );
         setContractUserStatus(
-          new Map<string, V1_UserApprovalStatus | undefined>(
+          new Map<string, V1_EnrichedUserApprovalStatus | undefined>(
             userStatusesByContractId,
           ),
         );

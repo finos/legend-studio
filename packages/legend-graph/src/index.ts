@@ -280,6 +280,7 @@ export {
   V1_DataContract,
   V1_DataContractApprovedUsersResponse,
   V1_DataContractsResponse,
+  V1_EnrichedUserApprovalStatus,
   V1_PendingTasksRespond,
   V1_ResourceType,
   V1_TaskMetadata,

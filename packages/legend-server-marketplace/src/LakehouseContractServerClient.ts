@@ -21,9 +21,9 @@ import type {
   V1_DataContractApprovedUsersResponse,
   V1_DataContractsResponse,
   V1_DataSubscriptionResponse,
+  V1_EnrichedUserApprovalStatus,
   V1_PendingTasksRespond,
   V1_TaskStatus,
-  V1_UserApprovalStatus,
   V1_UserPendingContractsResponse,
 } from '@finos/legend-graph';
 import { AbstractServerClient, type PlainObject } from '@finos/legend-shared';
@@ -82,7 +82,7 @@ export class LakehouseContractServerClient extends AbstractServerClient {
     contractId: string,
     userId: string,
     token: string | undefined,
-  ): Promise<V1_UserApprovalStatus> =>
+  ): Promise<V1_EnrichedUserApprovalStatus> =>
     this.get(
       `${this._dataContracts()}/${encodeURIComponent(contractId)}/user/${encodeURIComponent(userId)}`,
       {},

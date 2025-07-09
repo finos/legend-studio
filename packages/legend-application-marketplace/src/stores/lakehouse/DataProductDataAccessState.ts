@@ -21,12 +21,11 @@ import {
   type V1_DataSubscription,
   type V1_DataSubscriptionResponse,
   type V1_DataSubscriptionTarget,
-  V1_ContractState,
   V1_CreateSubscriptionInput,
   V1_CreateSubscriptionInputModelSchema,
   V1_dataSubscriptionModelSchema,
   V1_DataSubscriptionResponseModelSchema,
-  V1_UserApprovalStatus,
+  V1_EnrichedUserApprovalStatus,
 } from '@finos/legend-graph';
 import type { DataProductViewerState } from './DataProductViewerState.js';
 import {
@@ -61,17 +60,6 @@ export enum AccessPointGroupAccess {
   NO_ACCESS = 'NO_ACCESS',
 }
 
-const getPendingAccessPointGroupAccessFromContract = (
-  val: V1_DataContract,
-): AccessPointGroupAccess => {
-  if (val.state === V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL) {
-    return AccessPointGroupAccess.PENDING_MANAGER_APPROVAL;
-  } else if (val.state === V1_ContractState.PENDING_DATA_OWNER_APPROVAL) {
-    return AccessPointGroupAccess.PENDING_DATA_OWNER_APPROVAL;
-  }
-  return AccessPointGroupAccess.UNKNOWN;
-};
-
 export class DataProductGroupAccessState {
   readonly accessState: DataProductDataAccessState;
   readonly group: V1_AccessPointGroup;
@@ -87,7 +75,7 @@ export class DataProductGroupAccessState {
   // ASSUMPTION: one contract per user per group;
   // false here mentions contracts have not been fetched
   associatedContract: V1_DataContract | undefined | false = false;
-  userAccessStatus: V1_UserApprovalStatus | undefined = undefined;
+  userAccessStatus: V1_EnrichedUserApprovalStatus | undefined = undefined;
 
   constructor(
     group: V1_AccessPointGroup,
@@ -116,13 +104,18 @@ export class DataProductGroupAccessState {
     if (this.associatedContract === false) {
       return AccessPointGroupAccess.UNKNOWN;
     } else if (
-      this.userAccessStatus === V1_UserApprovalStatus.PENDING &&
-      this.associatedContract
+      this.userAccessStatus ===
+      V1_EnrichedUserApprovalStatus.PENDING_CONSUMER_PRIVILEGE_MANAGER_APPROVAL
     ) {
-      return getPendingAccessPointGroupAccessFromContract(
-        this.associatedContract,
-      );
-    } else if (this.userAccessStatus === V1_UserApprovalStatus.APPROVED) {
+      return AccessPointGroupAccess.PENDING_MANAGER_APPROVAL;
+    } else if (
+      this.userAccessStatus ===
+      V1_EnrichedUserApprovalStatus.PENDING_DATA_OWNER_APPROVAL
+    ) {
+      return AccessPointGroupAccess.PENDING_DATA_OWNER_APPROVAL;
+    } else if (
+      this.userAccessStatus === V1_EnrichedUserApprovalStatus.APPROVED
+    ) {
       return AccessPointGroupAccess.APPROVED;
     } else {
       return AccessPointGroupAccess.NO_ACCESS;
@@ -140,7 +133,7 @@ export class DataProductGroupAccessState {
     }
   }
 
-  setUserAccessStatus(val: V1_UserApprovalStatus | undefined): void {
+  setUserAccessStatus(val: V1_EnrichedUserApprovalStatus | undefined): void {
     this.userAccessStatus = val;
   }
 
@@ -200,7 +193,7 @@ export class DataProductGroupAccessState {
           this.accessState.viewerState.applicationStore.identityService
             .currentUser,
           token,
-        )) as V1_UserApprovalStatus;
+        )) as V1_EnrichedUserApprovalStatus;
       this.setUserAccessStatus(userStatus);
     } catch (error) {
       assertErrorThrown(error);
