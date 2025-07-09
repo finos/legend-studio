@@ -38,7 +38,8 @@ export type GridItemDetail = {
   onClick?: (() => void) | undefined;
   status?: GridTiemStatus | undefined;
 };
-const inValidContractState = [
+
+const invalidContractState = [
   V1_ContractState.DRAFT,
   V1_ContractState.REJECTED,
   V1_ContractState.CLOSED,
@@ -49,7 +50,7 @@ export const dataContractContainsDataProduct = (
   dataProdcutDeploymentID: string | undefined,
   dataContract: V1_DataContract,
 ): boolean => {
-  if (inValidContractState.includes(dataContract.state)) {
+  if (invalidContractState.includes(dataContract.state)) {
     return false;
   }
   const contractResource = dataContract.resource;
