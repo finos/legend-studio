@@ -26,19 +26,6 @@ import {
   V1_UnknownOrganizationalScopeType,
 } from '@finos/legend-graph';
 
-export enum GridTiemStatus {
-  SUCCESS = 'success',
-  ERROR = 'error',
-  INFO = 'info',
-}
-
-export type GridItemDetail = {
-  name: string;
-  value: string | number;
-  onClick?: (() => void) | undefined;
-  status?: GridTiemStatus | undefined;
-};
-
 const invalidContractState = [
   V1_ContractState.DRAFT,
   V1_ContractState.REJECTED,
