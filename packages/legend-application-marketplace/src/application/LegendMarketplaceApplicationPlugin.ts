@@ -19,6 +19,7 @@ import type { LegendMarketplacePluginManager } from '../application/LegendMarket
 import type { DataProductGroupAccessState } from '../stores/lakehouse/DataProductDataAccessState.js';
 import type { V1_OrganizationalScope } from '@finos/legend-graph';
 import type { LegendMarketplaceBaseStore } from '../stores/LegendMarketplaceBaseStore.js';
+import type React from 'react';
 
 export type ContractConsumerTypeRendererConfig = {
   type: string;
@@ -29,9 +30,9 @@ export type ContractConsumerTypeRendererConfig = {
     handleDescriptionChange: (description: string | undefined) => void,
     handleIsValidChange: (isValid: boolean) => void,
   ) => React.ReactNode;
-  getOrganizationalScopeDetails?: (
+  organizationalScopeDetailsRenderer?: (
     consumer: V1_OrganizationalScope,
-  ) => string | undefined;
+  ) => React.ReactNode | undefined;
 };
 
 export abstract class LegendMarketplaceApplicationPlugin extends LegendApplicationPlugin {

@@ -27,6 +27,7 @@ import {
 } from '@finos/legend-graph';
 import type { LegendMarketplaceApplicationPlugin } from '../../application/LegendMarketplaceApplicationPlugin.js';
 import { isNonNullable } from '@finos/legend-shared';
+import type React from 'react';
 
 const invalidContractState = [
   V1_ContractState.DRAFT,
@@ -112,28 +113,28 @@ export const stringifyOrganizationalScope = (
 export const getOrganizationalScopeDetails = (
   scope: V1_OrganizationalScope,
   plugins: LegendMarketplaceApplicationPlugin[],
-): string => {
+): React.ReactNode => {
   if (scope instanceof V1_AppDirOrganizationalScope) {
-    return 'AppDir Node';
+    return <>AppDir Node</>;
   } else if (scope instanceof V1_AdhocTeam) {
-    return 'Ad-hoc Team';
+    return <>Ad-hoc Team</>;
   } else if (scope instanceof V1_UnknownOrganizationalScopeType) {
-    return 'Unknown';
+    return <>Unknown</>;
   } else {
-    const detailsFunctions = plugins
+    const detailsRenderers = plugins
       .flatMap((plugin) =>
         plugin
           .getContractConsumerTypeRendererConfigs?.()
-          ?.flatMap((config) => config.getOrganizationalScopeDetails),
+          ?.flatMap((config) => config.organizationalScopeDetailsRenderer),
       )
       .filter(isNonNullable);
-    for (const detailsFunction of detailsFunctions) {
-      const details = detailsFunction(scope);
-      if (details) {
-        return details;
+    for (const detailsRenderer of detailsRenderers) {
+      const detailsComponent = detailsRenderer(scope);
+      if (detailsComponent) {
+        return detailsComponent;
       }
     }
 
-    return 'Unknown';
+    return <>Unknown</>;
   }
 };
