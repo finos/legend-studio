@@ -15,7 +15,7 @@
  */
 
 import {
-  V1_DataContractsRecordModelSchemaToContracts,
+  V1_dataContractsResponseModelSchemaToContracts,
   V1_dataProductModelSchema,
   V1_deserializeTaskResponse,
 } from '@finos/legend-graph';
@@ -35,7 +35,7 @@ import {
 
 describe('DataContract and DataProduct Association', () => {
   test('should correctly deserialize and check association', () => {
-    const contracts = V1_DataContractsRecordModelSchemaToContracts(
+    const contracts = V1_dataContractsResponseModelSchemaToContracts(
       CREATE_CONTRACT_RESPONSE,
       [],
     );

@@ -22,6 +22,7 @@ import {
   type V1_AppDirNode,
   type V1_AdhocTeam,
 } from './V1_CoreEntitlements.js';
+import type { V1_DataSubscription } from '../subscriptions/V1_ConsumerSubscriptions.js';
 
 export class V1_ConsumerEntitlementResource extends V1_Resource {}
 
@@ -57,12 +58,17 @@ export class V1_DataContract {
   createdBy!: string;
 }
 
-export class V1_DataContractRecord {
+export class V1_DataContractSubscriptions {
   dataContract!: V1_DataContract;
+  subscriptions?: V1_DataSubscription[];
 }
 
-export class V1_DataContractsRecord {
-  dataContracts?: V1_DataContractRecord[];
+export class V1_DataContractsResponse {
+  dataContracts?: V1_DataContractSubscriptions[];
+}
+
+export class V1_DataContractApprovedUsersResponse {
+  approvedUsers!: V1_User[];
 }
 
 export class V1_ContractUserMembership {
@@ -81,6 +87,8 @@ export enum V1_UserApprovalStatus {
   PENDING = 'PENDING',
   APPROVED = 'APPROVED',
   DENIED = 'DENIED',
+  REVOKED = 'REVOKED',
+  CLOSED = 'CLOSED',
 }
 
 export enum V1_ContractState {
@@ -163,7 +171,7 @@ export class V1_ContractApprovedUsersResponse {
 
 export type V1_PendingTaskWithAssignees = {
   taskId: string;
-  assignee: string[];
+  assignees: string[];
 };
 
 export type V1_UserPendingContractsRecord = {

@@ -31,7 +31,7 @@ import {
   type V1_TaskStatus,
   V1_pendingTasksRespondModelSchema,
   type V1_DataContract,
-  V1_DataContractsRecordModelSchemaToContracts,
+  V1_dataContractsResponseModelSchemaToContracts,
 } from '@finos/legend-graph';
 import { makeObservable, flow, observable, action, flowResult } from 'mobx';
 import {
@@ -130,7 +130,7 @@ export class EntitlementsDashboardState {
         (yield this.lakehouseEntitlementsStore.lakehouseServerClient.getDataContracts(
           token,
         )) as PlainObject<V1_PendingTasksRespond>;
-      const contracts = V1_DataContractsRecordModelSchemaToContracts(
+      const contracts = V1_dataContractsResponseModelSchemaToContracts(
         rawContracts,
         this.lakehouseEntitlementsStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
       );

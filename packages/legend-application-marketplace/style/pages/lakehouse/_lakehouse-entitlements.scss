@@ -214,6 +214,14 @@
     .legend-user-display {
       margin-left: 1rem;
     }
+
+    &__ordered-for__select {
+      margin-left: 1rem;
+
+      .legend-user-display {
+        margin-left: unset;
+      }
+    }
   }
 
   &__refresh-btn {

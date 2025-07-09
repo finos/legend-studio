@@ -394,16 +394,10 @@ export const EntitlementsPendingTasksDashbaord = observer(
         resizable: true,
         headerName: 'Action Date',
         flex: 1,
-        cellRenderer: (
-          params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
-        ) => {
+        valueGetter: (params) => {
           const taskType = params.data?.eventPayload.type;
           const timestamp = params.data?.eventPayload.eventTimestamp;
-          return (
-            <>
-              {taskType}: {timestamp}
-            </>
-          );
+          return `${taskType}: ${timestamp}`;
         },
       },
       {
@@ -432,9 +426,7 @@ export const EntitlementsPendingTasksDashbaord = observer(
         colId: 'requester',
         headerName: 'Requester',
         flex: 1,
-        cellRenderer: (
-          params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
-        ) => {
+        valueGetter: (params) => {
           const contractId = params.data?.dataContractId;
           const requester = allContracts?.find(
             (contract) => contract.guid === contractId,
@@ -456,9 +448,7 @@ export const EntitlementsPendingTasksDashbaord = observer(
         resizable: true,
         headerName: 'Target Data Product',
         flex: 1,
-        cellRenderer: (
-          params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
-        ) => {
+        valueGetter: (params) => {
           const contractId = params.data?.dataContractId;
           const resource = allContracts?.find(
             (contract) => contract.guid === contractId,
@@ -467,7 +457,7 @@ export const EntitlementsPendingTasksDashbaord = observer(
             resource instanceof V1_AccessPointGroupReference
               ? resource.dataProduct
               : undefined;
-          return <>{dataProduct?.name ?? 'Unknown'}</>;
+          return dataProduct?.name ?? 'Unknown';
         },
       },
       {
@@ -476,9 +466,7 @@ export const EntitlementsPendingTasksDashbaord = observer(
         resizable: true,
         headerName: 'Target Access Point Group',
         flex: 1,
-        cellRenderer: (
-          params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
-        ) => {
+        valueGetter: (params) => {
           const contractId = params.data?.dataContractId;
           const resource = allContracts?.find(
             (contract) => contract.guid === contractId,
@@ -487,7 +475,7 @@ export const EntitlementsPendingTasksDashbaord = observer(
             resource instanceof V1_AccessPointGroupReference
               ? resource.accessPointGroup
               : undefined;
-          return <>{accessPointGroup ?? 'Unknown'}</>;
+          return accessPointGroup ?? 'Unknown';
         },
       },
       {
@@ -496,14 +484,12 @@ export const EntitlementsPendingTasksDashbaord = observer(
         resizable: true,
         headerName: 'Business Justification',
         flex: 2,
-        cellRenderer: (
-          params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
-        ) => {
+        valueGetter: (params) => {
           const contractId = params.data?.dataContractId;
           const businessJustification = allContracts?.find(
             (contract) => contract.guid === contractId,
           )?.description;
-          return <>{businessJustification ?? 'Unknown'}</>;
+          return businessJustification ?? 'Unknown';
         },
       },
       {
@@ -513,11 +499,7 @@ export const EntitlementsPendingTasksDashbaord = observer(
         hide: true,
         headerName: 'Contract ID',
         flex: 2,
-        cellRenderer: (
-          params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
-        ) => {
-          return <>{params.data?.dataContractId ?? 'Unknown'}</>;
-        },
+        valueGetter: (params) => params.data?.dataContractId ?? 'Unknown',
       },
     ];
 

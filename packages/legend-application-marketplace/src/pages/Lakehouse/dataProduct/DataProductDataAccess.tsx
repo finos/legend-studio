@@ -32,7 +32,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
 import { useApplicationStore } from '@finos/legend-application';
 import {
-  DataProductGroupAccess,
+  AccessPointGroupAccess,
   type DataProductGroupAccessState,
 } from '../../../stores/lakehouse/DataProductDataAccessState.js';
 import {
@@ -357,11 +357,11 @@ export const DataProductAccessPointGroupViewer = observer(
     const [showSubscriptionsModal, setShowSubscriptionsModal] = useState(false);
     const [isEntitledButtonGroupMenuOpen, setIsEntitledButtonGroupMenuOpen] =
       useState(false);
-    const entitledButtonGroupRef = useRef<HTMLDivElement | null>(null);
+    const requestAccessButtonGroupRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
       if (
-        accessGroupState.access === DataProductGroupAccess.COMPLETED &&
+        accessGroupState.access === AccessPointGroupAccess.APPROVED &&
         accessGroupState.associatedContract &&
         accessGroupState.fetchingSubscriptionsState.isInInitialState
       ) {
@@ -380,56 +380,127 @@ export const DataProductAccessPointGroupViewer = observer(
       setShowSubscriptionsModal(true);
     };
 
-    const renderAccess = (val: DataProductGroupAccess): React.ReactNode => {
+    const renderAccess = (val: AccessPointGroupAccess): React.ReactNode => {
       switch (val) {
-        case DataProductGroupAccess.UNKNOWN:
+        case AccessPointGroupAccess.UNKNOWN:
           return (
-            <Button
-              variant="contained"
-              color="info"
-              loading={accessGroupState.fetchingAccessState.isInProgress}
-            >
-              UNKNOWN
-            </Button>
+            <>
+              <ButtonGroup
+                variant="contained"
+                color="info"
+                ref={requestAccessButtonGroupRef}
+              >
+                <Button
+                  loading={
+                    accessGroupState.fetchingAccessState.isInProgress ||
+                    accessGroupState.fetchingUserAccessStatus.isInProgress
+                  }
+                >
+                  UNKNOWN
+                </Button>
+                <Button
+                  size="small"
+                  onClick={() =>
+                    setIsEntitledButtonGroupMenuOpen((prev) => !prev)
+                  }
+                >
+                  <CaretDownIcon />
+                </Button>
+              </ButtonGroup>
+              <Menu
+                anchorEl={requestAccessButtonGroupRef.current}
+                open={isEntitledButtonGroupMenuOpen}
+                onClose={() => setIsEntitledButtonGroupMenuOpen(false)}
+              >
+                <MenuItem
+                  onClick={() => {
+                    accessGroupState.accessState.viewerState.setDataContractAccessPointGroup(
+                      accessGroupState.group,
+                    );
+                    setIsEntitledButtonGroupMenuOpen(false);
+                  }}
+                >
+                  Request Access for Others
+                </MenuItem>
+              </Menu>
+            </>
           );
-        case DataProductGroupAccess.NO_ACCESS:
+        case AccessPointGroupAccess.NO_ACCESS:
+        case AccessPointGroupAccess.DENIED:
           return (
             <Button
               variant="contained"
               color="error"
               onClick={handleContractsClick}
-              loading={accessGroupState.fetchingAccessState.isInProgress}
+              loading={
+                accessGroupState.fetchingAccessState.isInProgress ||
+                accessGroupState.fetchingUserAccessStatus.isInProgress
+              }
             >
               REQUEST ACCESS
             </Button>
           );
-        case DataProductGroupAccess.PENDING_MANAGER_APPROVAL:
-        case DataProductGroupAccess.PENDING_DATA_OWNER_APPROVAL:
+        case AccessPointGroupAccess.PENDING_MANAGER_APPROVAL:
+        case AccessPointGroupAccess.PENDING_DATA_OWNER_APPROVAL:
           return (
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleContractsClick}
-              loading={accessGroupState.fetchingAccessState.isInProgress}
-            >
-              <div>
-                {val === DataProductGroupAccess.PENDING_MANAGER_APPROVAL
-                  ? 'PENDING MANAGER APPROVAL'
-                  : 'PENDING DATA OWNER APPROVAL'}
-              </div>
-            </Button>
+            <>
+              <ButtonGroup
+                variant="contained"
+                color="primary"
+                ref={requestAccessButtonGroupRef}
+              >
+                <Button
+                  onClick={handleContractsClick}
+                  loading={
+                    accessGroupState.fetchingAccessState.isInProgress ||
+                    accessGroupState.fetchingUserAccessStatus.isInProgress
+                  }
+                >
+                  {val === AccessPointGroupAccess.PENDING_MANAGER_APPROVAL
+                    ? 'PENDING MANAGER APPROVAL'
+                    : 'PENDING DATA OWNER APPROVAL'}
+                </Button>
+                <Button
+                  size="small"
+                  onClick={() =>
+                    setIsEntitledButtonGroupMenuOpen((prev) => !prev)
+                  }
+                >
+                  <CaretDownIcon />
+                </Button>
+              </ButtonGroup>
+              <Menu
+                anchorEl={requestAccessButtonGroupRef.current}
+                open={isEntitledButtonGroupMenuOpen}
+                onClose={() => setIsEntitledButtonGroupMenuOpen(false)}
+              >
+                <MenuItem
+                  onClick={() => {
+                    accessGroupState.accessState.viewerState.setDataContractAccessPointGroup(
+                      accessGroupState.group,
+                    );
+                    setIsEntitledButtonGroupMenuOpen(false);
+                  }}
+                >
+                  Request Access for Others
+                </MenuItem>
+              </Menu>
+            </>
           );
-        case DataProductGroupAccess.COMPLETED:
+        case AccessPointGroupAccess.APPROVED:
           return (
             <>
               <ButtonGroup
                 variant="contained"
                 color="success"
-                ref={entitledButtonGroupRef}
+                ref={requestAccessButtonGroupRef}
               >
                 <Button
                   onClick={handleContractsClick}
-                  loading={accessGroupState.fetchingAccessState.isInProgress}
+                  loading={
+                    accessGroupState.fetchingAccessState.isInProgress ||
+                    accessGroupState.fetchingUserAccessStatus.isInProgress
+                  }
                 >
                   ENTITLED
                 </Button>
@@ -443,7 +514,7 @@ export const DataProductAccessPointGroupViewer = observer(
                 </Button>
               </ButtonGroup>
               <Menu
-                anchorEl={entitledButtonGroupRef.current}
+                anchorEl={requestAccessButtonGroupRef.current}
                 open={isEntitledButtonGroupMenuOpen}
                 onClose={() => setIsEntitledButtonGroupMenuOpen(false)}
               >
@@ -486,7 +557,7 @@ export const DataProductAccessPointGroupViewer = observer(
             <Box className="data-space__viewer__access-group__item__header__data-contract">
               {renderAccess(accessGroupState.access)}
             </Box>
-            {accessGroupState.access === DataProductGroupAccess.COMPLETED && (
+            {accessGroupState.access === AccessPointGroupAccess.APPROVED && (
               <Box className="data-space__viewer__access-group__item__header__subscription">
                 <Button
                   variant="outlined"

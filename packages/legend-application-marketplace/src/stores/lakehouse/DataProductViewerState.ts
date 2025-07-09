@@ -26,7 +26,7 @@ import {
   type V1_AccessPointGroup,
   type V1_CreateContractPayload,
   type V1_DataContract,
-  type V1_DataContractsRecord,
+  type V1_DataContractsResponse,
   type V1_DataProduct,
   type V1_OrganizationalScope,
   V1_AdhocTeam,
@@ -34,7 +34,7 @@ import {
   V1_AppDirNode,
   V1_AppDirNodeModelSchema,
   V1_createContractPayloadModelSchema,
-  V1_DataContractsRecordModelSchemaToContracts,
+  V1_dataContractsResponseModelSchemaToContracts,
   V1_ResourceType,
 } from '@finos/legend-graph';
 import type { VersionedProjectData } from '@finos/legend-server-depot';
@@ -165,20 +165,35 @@ export class DataProductViewerState {
       const _contracts = (yield this.lakeServerClient.getDataContractsFromDID(
         [serialize(V1_AppDirNodeModelSchema, didNode)],
         token,
-      )) as PlainObject<V1_DataContractsRecord>;
-      const dataProductContracts = V1_DataContractsRecordModelSchemaToContracts(
-        _contracts,
-        this.lakehouseStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
-      ).filter((_contract) =>
-        dataContractContainsDataProduct(
-          this.product,
-          this.deploymentId,
-          _contract,
-        ),
-      );
-      this.setAssociatedContracts(dataProductContracts);
+      )) as PlainObject<V1_DataContractsResponse>;
+      const dataProductContracts =
+        V1_dataContractsResponseModelSchemaToContracts(
+          _contracts,
+          this.lakehouseStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
+        ).filter((_contract) =>
+          dataContractContainsDataProduct(
+            this.product,
+            this.deploymentId,
+            _contract,
+          ),
+        );
+      const dataProductContractIds = dataProductContracts.map((e) => e.guid);
+      const enrichedContracts = (yield Promise.all(
+        dataProductContractIds.map(async (contractId) => {
+          const rawContracts = await this.lakeServerClient.getDataContract(
+            contractId,
+            token,
+          );
+          const contract = V1_dataContractsResponseModelSchemaToContracts(
+            rawContracts,
+            this.lakehouseStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
+          );
+          return contract;
+        }),
+      )).flat() as V1_DataContract[];
+      this.setAssociatedContracts(enrichedContracts);
       this.accessState.accessGroupStates.forEach((e) =>
-        e.handleDataProductContracts(dataProductContracts),
+        e.handleDataProductContracts(enrichedContracts, token),
       );
     } catch (error) {
       assertErrorThrown(error);
@@ -216,11 +231,11 @@ export class DataProductViewerState {
           consumer,
         } satisfies V1_CreateContractPayload,
       ) as PlainObject<V1_CreateContractPayload>;
-      const contracts = V1_DataContractsRecordModelSchemaToContracts(
+      const contracts = V1_dataContractsResponseModelSchemaToContracts(
         (yield this.lakeServerClient.createContract(
           request,
           token,
-        )) as unknown as PlainObject<V1_DataContractsRecord>,
+        )) as unknown as PlainObject<V1_DataContractsResponse>,
         this.lakehouseStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
       );
       const associatedContract = contracts[0];
@@ -234,7 +249,7 @@ export class DataProductViewerState {
         const groupAccessState = this.accessState.accessGroupStates.find(
           (e) => e.group === group,
         );
-        groupAccessState?.setAssociatedContract(associatedContract);
+        groupAccessState?.setAssociatedContract(associatedContract, token);
       }
 
       this.setDataContractAccessPointGroup(undefined);

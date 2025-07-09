@@ -26,6 +26,7 @@ import {
   V1_CreateSubscriptionInputModelSchema,
   V1_dataSubscriptionModelSchema,
   V1_DataSubscriptionResponseModelSchema,
+  V1_UserApprovalStatus,
 } from '@finos/legend-graph';
 import type { DataProductViewerState } from './DataProductViewerState.js';
 import {
@@ -45,34 +46,30 @@ import {
 } from 'mobx';
 import {
   dataContractContainsAccessGroup,
-  isContractCompleted,
   isMemberOfContract,
 } from './LakehouseUtils.js';
 import { deserialize, serialize } from 'serializr';
 
-export enum DataProductGroupAccess {
+export enum AccessPointGroupAccess {
   // can be used to indicate fetching or resyncing of group access
   UNKNOWN = 'UNKNOWN',
 
   PENDING_MANAGER_APPROVAL = 'PENDING_MANAGER_APPROVAL',
   PENDING_DATA_OWNER_APPROVAL = 'PENDING_DATA_OWNER_APPROVAL',
-  COMPLETED = 'COMPLETED',
+  APPROVED = 'APPROVED',
+  DENIED = 'DENIED',
   NO_ACCESS = 'NO_ACCESS',
 }
 
-const getDataProductGroupAccessFromContract = (
+const getPendingAccessPointGroupAccessFromContract = (
   val: V1_DataContract,
-): DataProductGroupAccess => {
-  if (isContractCompleted(val)) {
-    return DataProductGroupAccess.COMPLETED;
-  } else if (
-    val.state === V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL
-  ) {
-    return DataProductGroupAccess.PENDING_MANAGER_APPROVAL;
+): AccessPointGroupAccess => {
+  if (val.state === V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL) {
+    return AccessPointGroupAccess.PENDING_MANAGER_APPROVAL;
   } else if (val.state === V1_ContractState.PENDING_DATA_OWNER_APPROVAL) {
-    return DataProductGroupAccess.PENDING_DATA_OWNER_APPROVAL;
+    return AccessPointGroupAccess.PENDING_DATA_OWNER_APPROVAL;
   }
-  return DataProductGroupAccess.UNKNOWN;
+  return AccessPointGroupAccess.UNKNOWN;
 };
 
 export class DataProductGroupAccessState {
@@ -83,12 +80,14 @@ export class DataProductGroupAccessState {
 
   fetchingAccessState = ActionState.create();
   requestingAccessState = ActionState.create();
+  fetchingUserAccessStatus = ActionState.create();
   fetchingSubscriptionsState = ActionState.create();
   creatingSubscriptionState = ActionState.create();
 
   // ASSUMPTION: one contract per user per group;
   // false here mentions contracts have not been fetched
   associatedContract: V1_DataContract | undefined | false = false;
+  userAccessStatus: V1_UserApprovalStatus | undefined = undefined;
 
   constructor(
     group: V1_AccessPointGroup,
@@ -101,35 +100,58 @@ export class DataProductGroupAccessState {
       handleDataProductContracts: action,
       requestingAccessState: observable,
       associatedContract: observable,
+      userAccessStatus: observable,
       setAssociatedContract: action,
       subscriptions: observable,
       fetchingSubscriptionsState: observable,
       creatingSubscriptionState: observable,
       createSubscription: flow,
       setSubscriptions: action,
+      fetchUserAccessStatus: flow,
+      setUserAccessStatus: action,
     });
   }
 
-  get access(): DataProductGroupAccess {
+  get access(): AccessPointGroupAccess {
     if (this.associatedContract === false) {
-      return DataProductGroupAccess.UNKNOWN;
-    }
-    if (this.associatedContract) {
-      return getDataProductGroupAccessFromContract(this.associatedContract);
+      return AccessPointGroupAccess.UNKNOWN;
+    } else if (
+      this.userAccessStatus === V1_UserApprovalStatus.PENDING &&
+      this.associatedContract
+    ) {
+      return getPendingAccessPointGroupAccessFromContract(
+        this.associatedContract,
+      );
+    } else if (this.userAccessStatus === V1_UserApprovalStatus.APPROVED) {
+      return AccessPointGroupAccess.APPROVED;
     } else {
-      return DataProductGroupAccess.NO_ACCESS;
+      return AccessPointGroupAccess.NO_ACCESS;
     }
   }
 
-  setAssociatedContract(val: V1_DataContract | undefined): void {
+  setAssociatedContract(
+    val: V1_DataContract | undefined,
+    token: string | undefined,
+  ): void {
     this.associatedContract = val;
+
+    if (this.associatedContract) {
+      this.fetchUserAccessStatus(this.associatedContract.guid, token);
+    }
+  }
+
+  setUserAccessStatus(val: V1_UserApprovalStatus | undefined): void {
+    this.userAccessStatus = val;
   }
 
   setSubscriptions(val: V1_DataSubscription[]): void {
     this.subscriptions = val;
   }
 
-  handleDataProductContracts(contracts: V1_DataContract[]): void {
+  handleDataProductContracts(
+    contracts: V1_DataContract[],
+    token: string | undefined,
+  ): void {
     const groupContracts = contracts
       .filter((_contract) =>
         dataContractContainsAccessGroup(this.group, _contract),
@@ -143,21 +165,50 @@ export class DataProductGroupAccessState {
       );
     // ASSUMPTION: one contract per user per group
     const userContract = groupContracts[0];
-    this.setAssociatedContract(userContract);
+    this.setAssociatedContract(userContract, token);
   }
 
   handleContractClick(): void {
-    if (this.access === DataProductGroupAccess.NO_ACCESS) {
-      this.accessState.viewerState.setDataContractAccessPointGroup(this.group);
-    } else if (
-      this.access === DataProductGroupAccess.PENDING_MANAGER_APPROVAL ||
-      this.access === DataProductGroupAccess.PENDING_DATA_OWNER_APPROVAL ||
-      this.access === DataProductGroupAccess.COMPLETED
-    ) {
-      const associatedContract = this.associatedContract;
-      if (associatedContract) {
-        this.accessState.viewerState.setDataContract(associatedContract);
-      }
+    switch (this.access) {
+      case AccessPointGroupAccess.NO_ACCESS:
+      case AccessPointGroupAccess.DENIED:
+        this.accessState.viewerState.setDataContractAccessPointGroup(
+          this.group,
+        );
+        break;
+      case AccessPointGroupAccess.PENDING_MANAGER_APPROVAL:
+      case AccessPointGroupAccess.PENDING_DATA_OWNER_APPROVAL:
+      case AccessPointGroupAccess.APPROVED:
+        if (this.associatedContract) {
+          this.accessState.viewerState.setDataContract(this.associatedContract);
+        }
+        break;
+      default:
+        break;
+    }
+  }
+
+  *fetchUserAccessStatus(
+    contractId: string,
+    token: string | undefined,
+  ): GeneratorFn<void> {
+    try {
+      this.fetchingUserAccessStatus.inProgress();
+      const userStatus =
+        (yield this.accessState.viewerState.lakeServerClient.getContractUserStatus(
+          contractId,
+          this.accessState.viewerState.applicationStore.identityService
+            .currentUser,
+          token,
+        )) as V1_UserApprovalStatus;
+      this.setUserAccessStatus(userStatus);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.accessState.viewerState.applicationStore.notificationService.notifyError(
+        `Error fetching user access status: ${error.message}`,
+      );
+    } finally {
+      this.fetchingUserAccessStatus.complete();
     }
   }
 

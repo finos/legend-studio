@@ -25,7 +25,7 @@ import {
   type V1_DataSubscription,
   type V1_DataContract,
   V1_DataSubscriptionResponseModelSchema,
-  V1_DataContractsRecordModelSchemaToContracts,
+  V1_dataContractsResponseModelSchemaToContracts,
 } from '@finos/legend-graph';
 import { makeObservable, flow, action, observable } from 'mobx';
 import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
@@ -79,7 +79,7 @@ export class LakehouseAdminStore {
         this.contractsInitializationState.inProgress();
         const rawContracts =
           await this.lakehouseContractServerClient.getDataContracts(token);
-        const contracts = V1_DataContractsRecordModelSchemaToContracts(
+        const contracts = V1_dataContractsResponseModelSchemaToContracts(
           rawContracts,
           this.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
         );

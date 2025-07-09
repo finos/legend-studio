@@ -278,7 +278,8 @@ export {
   V1_ContractUserEventRecord,
   V1_CreateContractPayload,
   V1_DataContract,
-  V1_DataContractsRecord,
+  V1_DataContractApprovedUsersResponse,
+  V1_DataContractsResponse,
   V1_PendingTasksRespond,
   V1_ResourceType,
   V1_TaskMetadata,
@@ -300,11 +301,11 @@ export {
 export {
   V1_AppDirNodeModelSchema,
   V1_createContractPayloadModelSchema,
-  V1_DataContractsRecordModelSchema,
+  V1_dataContractsResponseModelSchema,
   V1_pendingTasksRespondModelSchema,
   V1_TaskStatusChangeResponseModelSchema,
   V1_AdhocTeamModelSchema,
-  V1_DataContractsRecordModelSchemaToContracts,
+  V1_dataContractsResponseModelSchemaToContracts,
   V1_deserializeTaskResponse,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_EntitlementSerializationHelper.js';
 export {

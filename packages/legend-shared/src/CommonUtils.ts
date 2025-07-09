@@ -15,6 +15,7 @@
  */
 
 import {
+  capitalize as lodashCapitalize,
   clone,
   cloneDeep as deepClone,
   isEqual as deepEqual,
@@ -45,6 +46,7 @@ export {
   deepDiff,
   findLast,
   isEmpty,
+  lodashCapitalize,
   pickBy,
   uniqBy,
   uniq,
