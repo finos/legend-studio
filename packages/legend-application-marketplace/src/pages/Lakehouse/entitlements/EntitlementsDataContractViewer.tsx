@@ -183,7 +183,7 @@ export const EntitlementsDataContractViewer = observer(
 
     const [selectedTargetUser, setSelectedTargetUser] = useState<
       string | undefined
-    >(consumer instanceof V1_AdhocTeam ? consumer.users[0]?.name : undefined);
+    >(targetUsers?.[0]);
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
