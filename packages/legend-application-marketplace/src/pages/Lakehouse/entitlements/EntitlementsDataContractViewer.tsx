@@ -29,6 +29,7 @@ import {
   Link,
   MenuItem,
   Select,
+  Tooltip,
 } from '@mui/material';
 import {
   Timeline,
@@ -63,6 +64,7 @@ import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
   ExpandMoreIcon,
+  InfoCircleIcon,
   RefreshIcon,
 } from '@finos/legend-art';
 import { generateLakehouseTaskPath } from '../../../__lib__/LegendMarketplaceNavigation.js';
@@ -409,7 +411,16 @@ export const EntitlementsDataContractViewer = observer(
                   />
                 </div>
                 <div className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-for">
-                  <b>Ordered For: </b>
+                  <b>
+                    Ordered For
+                    <Tooltip
+                      className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-for__tooltip__icon"
+                      title={`Contract consumer type: ${typeof consumer}`}
+                    >
+                      <InfoCircleIcon />
+                    </Tooltip>
+                    :{' '}
+                  </b>
                   {targetUsers !== undefined ? (
                     targetUsers.length === 1 ? (
                       <UserRenderer
