@@ -1,0 +1,530 @@
+{
+  "functionTrees": [
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "qualifierSubTree": {
+                "display": "root",
+                "value": "root"
+              },
+              "display": "id",
+              "value": {
+                "property": {
+                  "multiplicity": "meta::pure::metamodel::multiplicity::PureOne",
+                  "name": "id",
+                  "aggregation": null,
+                  "genericType": {
+                    "rawType": "String"
+                  }
+                },
+                "class": {
+                  "generalizations": [
+                    {
+                      "general": {
+                        "rawType": "meta::pure::metamodel::type::Any"
+                      }
+                    }
+                  ],
+                  "name": "Trade",
+                  "properties": [
+                    {
+                      "multiplicity": "meta::pure::metamodel::multiplicity::PureOne",
+                      "name": "id",
+                      "aggregation": null,
+                      "genericType": {
+                        "rawType": "String"
+                      }
+                    },
+                    {
+                      "multiplicity": "meta::pure::metamodel::multiplicity::PureOne",
+                      "name": "value",
+                      "aggregation": null,
+                      "genericType": {
+                        "rawType": "Integer"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "qualifierSubTree": {
+                "display": "root",
+                "value": "root"
+              },
+              "display": "value",
+              "value": {
+                "property": {
+                  "multiplicity": "meta::pure::metamodel::multiplicity::PureOne",
+                  "name": "value",
+                  "aggregation": null,
+                  "genericType": {
+                    "rawType": "Integer"
+                  }
+                },
+                "class": {
+                  "generalizations": [
+                    {
+                      "general": {
+                        "rawType": "meta::pure::metamodel::type::Any"
+                      }
+                    }
+                  ],
+                  "name": "Trade",
+                  "properties": [
+                    {
+                      "multiplicity": "meta::pure::metamodel::multiplicity::PureOne",
+                      "name": "id",
+                      "aggregation": null,
+                      "genericType": {
+                        "rawType": "String"
+                      }
+                    },
+                    {
+                      "multiplicity": "meta::pure::metamodel::multiplicity::PureOne",
+                      "name": "value",
+                      "aggregation": null,
+                      "genericType": {
+                        "rawType": "Integer"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          "display": "Trade",
+          "value": {
+            "generalizations": [
+              {
+                "general": {
+                  "rawType": "meta::pure::metamodel::type::Any"
+                }
+              }
+            ],
+            "name": "Trade",
+            "properties": [
+              {
+                "multiplicity": "meta::pure::metamodel::multiplicity::PureOne",
+                "name": "id",
+                "aggregation": null,
+                "genericType": {
+                  "rawType": "String"
+                }
+              },
+              {
+                "multiplicity": "meta::pure::metamodel::multiplicity::PureOne",
+                "name": "value",
+                "aggregation": null,
+                "genericType": {
+                  "rawType": "Integer"
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "display": "root",
+      "value": "root"
+    }
+  ],
+  "databaseLineage": {
+    "nodes": [
+      {
+        "data": {
+          "id": "Lambda",
+          "text": "",
+          "type": "LambdaFunction"
+        }
+      },
+      {
+        "data": {
+          "id": "tb_TradeDatabaseTradeTrade",
+          "text": "Trade",
+          "type": "Table"
+        }
+      },
+      {
+        "data": {
+          "id": "db_TradeDatabase",
+          "text": "TradeDatabase",
+          "type": "Database"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "data": {
+          "id": "x",
+          "text": "txt",
+          "source": {
+            "data": {
+              "id": "tb_TradeDatabaseTradeTrade",
+              "text": "Trade",
+              "type": "Table"
+            }
+          },
+          "type": "DataSet",
+          "target": {
+            "data": {
+              "id": "Lambda",
+              "text": "",
+              "type": "LambdaFunction"
+            }
+          }
+        }
+      },
+      {
+        "data": {
+          "id": "x",
+          "text": "txt",
+          "source": {
+            "data": {
+              "id": "db_TradeDatabase",
+              "text": "TradeDatabase",
+              "type": "Database"
+            }
+          },
+          "type": "DataSet",
+          "target": {
+            "data": {
+              "id": "tb_TradeDatabaseTradeTrade",
+              "text": "Trade",
+              "type": "Table"
+            }
+          }
+        }
+      }
+    ]
+  },
+  "classLineage": {
+    "nodes": [
+      {
+        "data": {
+          "id": "Lambda",
+          "text": "",
+          "type": "LambdaFunction"
+        }
+      },
+      {
+        "data": {
+          "id": "demo::trade::Trade",
+          "text": "Trade",
+          "type": "Class"
+        }
+      },
+      {
+        "data": {
+          "id": "pack_demo::trade",
+          "text": "trade",
+          "type": "Package"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "data": {
+          "id": "x",
+          "text": "txt",
+          "source": {
+            "data": {
+              "id": "demo::trade::Trade",
+              "text": "Trade",
+              "type": "Class"
+            }
+          },
+          "type": "Registered",
+          "target": {
+            "data": {
+              "id": "Lambda",
+              "text": "",
+              "type": "LambdaFunction"
+            }
+          }
+        }
+      },
+      {
+        "data": {
+          "id": "x",
+          "text": "txt",
+          "source": {
+            "data": {
+              "id": "pack_demo::trade",
+              "text": "trade",
+              "type": "Package"
+            }
+          },
+          "type": "Registered",
+          "target": {
+            "data": {
+              "id": "demo::trade::Trade",
+              "text": "Trade",
+              "type": "Class"
+            }
+          }
+        }
+      }
+    ]
+  },
+  "reportLineage": {
+    "columns": [
+      {
+        "columns": [
+          {
+            "column": {
+              "owner": {
+                "schema": {
+                  "database": {
+                    "package": "demo::stores",
+                    "name": "TradeDatabase"
+                  },
+                  "name": "Trade"
+                },
+                "columns": [
+                  {
+                    "nullable": false,
+                    "name": "value",
+                    "type": {}
+                  },
+                  {
+                    "nullable": false,
+                    "name": "ENTITY_ID_FK",
+                    "type": {
+                      "size": 32
+                    }
+                  }
+                ],
+                "name": "Trade"
+              },
+              "nullable": false,
+              "name": "id",
+              "type": {
+                "size": 32
+              }
+            },
+            "context": "TableAliasColumn"
+          }
+        ],
+        "name": "id",
+        "propertyTree": {
+          "children": [
+            {
+              "children": [
+                {
+                  "qualifierSubTree": {
+                    "display": "root",
+                    "value": "root"
+                  },
+                  "display": "id",
+                  "value": {
+                    "property": {
+                      "multiplicity": "meta::pure::metamodel::multiplicity::PureOne",
+                      "name": "id",
+                      "aggregation": null,
+                      "genericType": {
+                        "rawType": "String"
+                      }
+                    },
+                    "class": {
+                      "generalizations": [
+                        {
+                          "general": {
+                            "rawType": "meta::pure::metamodel::type::Any"
+                          }
+                        }
+                      ],
+                      "name": "Trade",
+                      "properties": [
+                        {
+                          "multiplicity": "meta::pure::metamodel::multiplicity::PureOne",
+                          "name": "id",
+                          "aggregation": null,
+                          "genericType": {
+                            "rawType": "String"
+                          }
+                        },
+                        {
+                          "multiplicity": "meta::pure::metamodel::multiplicity::PureOne",
+                          "name": "value",
+                          "aggregation": null,
+                          "genericType": {
+                            "rawType": "Integer"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "display": "Trade",
+              "value": {
+                "generalizations": [
+                  {
+                    "general": {
+                      "rawType": "meta::pure::metamodel::type::Any"
+                    }
+                  }
+                ],
+                "name": "Trade",
+                "properties": [
+                  {
+                    "multiplicity": "meta::pure::metamodel::multiplicity::PureOne",
+                    "name": "id",
+                    "aggregation": null,
+                    "genericType": {
+                      "rawType": "String"
+                    }
+                  },
+                  {
+                    "multiplicity": "meta::pure::metamodel::multiplicity::PureOne",
+                    "name": "value",
+                    "aggregation": null,
+                    "genericType": {
+                      "rawType": "Integer"
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "display": "root",
+          "value": "root"
+        }
+      },
+      {
+        "columns": [
+          {
+            "column": {
+              "owner": {
+                "schema": {
+                  "database": {
+                    "package": "demo::stores",
+                    "name": "TradeDatabase"
+                  },
+                  "name": "Trade"
+                },
+                "columns": [
+                  {
+                    "nullable": false,
+                    "name": "id",
+                    "type": {
+                      "size": 32
+                    }
+                  },
+                  {
+                    "nullable": false,
+                    "name": "ENTITY_ID_FK",
+                    "type": {
+                      "size": 32
+                    }
+                  }
+                ],
+                "name": "Trade",
+                "primaryKey": [
+                  {
+                    "nullable": false,
+                    "name": "id",
+                    "type": {
+                      "size": 32
+                    }
+                  }
+                ]
+              },
+              "nullable": false,
+              "name": "value",
+              "type": {}
+            },
+            "context": "TableAliasColumn"
+          }
+        ],
+        "name": "value",
+        "propertyTree": {
+          "children": [
+            {
+              "children": [
+                {
+                  "qualifierSubTree": {
+                    "display": "root",
+                    "value": "root"
+                  },
+                  "display": "value",
+                  "value": {
+                    "property": {
+                      "multiplicity": "meta::pure::metamodel::multiplicity::PureOne",
+                      "name": "value",
+                      "aggregation": null,
+                      "genericType": {
+                        "rawType": "Integer"
+                      }
+                    },
+                    "class": {
+                      "generalizations": [
+                        {
+                          "general": {
+                            "rawType": "meta::pure::metamodel::type::Any"
+                          }
+                        }
+                      ],
+                      "name": "Trade",
+                      "properties": [
+                        {
+                          "multiplicity": "meta::pure::metamodel::multiplicity::PureOne",
+                          "name": "id",
+                          "aggregation": null,
+                          "genericType": {
+                            "rawType": "String"
+                          }
+                        },
+                        {
+                          "multiplicity": "meta::pure::metamodel::multiplicity::PureOne",
+                          "name": "value",
+                          "aggregation": null,
+                          "genericType": {
+                            "rawType": "Integer"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "display": "Trade",
+              "value": {
+                "generalizations": [
+                  {
+                    "general": {
+                      "rawType": "meta::pure::metamodel::type::Any"
+                    }
+                  }
+                ],
+                "name": "Trade",
+                "properties": [
+                  {
+                    "multiplicity": "meta::pure::metamodel::multiplicity::PureOne",
+                    "name": "id",
+                    "aggregation": null,
+                    "genericType": {
+                      "rawType": "String"
+                    }
+                  },
+                  {
+                    "multiplicity": "meta::pure::metamodel::multiplicity::PureOne",
+                    "name": "value",
+                    "aggregation": null,
+                    "genericType": {
+                      "rawType": "Integer"
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "display": "root",
+          "value": "root"
+        }
+      }
+    ]
+  }
+}

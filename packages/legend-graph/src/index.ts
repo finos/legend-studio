@@ -341,6 +341,7 @@ export {
   V1_DataSubscriptionResponseModelSchema,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_SubscriptionSerializationHelper.js';
 export { V1_deserializeIngestEnvironment } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_IngestSerializationHelper.js';
+export * from './graph-manager/protocol/pure/v1/model/lineage/V1_Lineage.js';
 
 // --------------------------------------------- EXECUTION PLAN --------------------------------------------------
 
@@ -351,7 +352,7 @@ export {
   PersistentDataCube,
   LightPersistentDataCube,
 } from './graph-manager/action/query/PersistentDataCube.js';
-
+export * from './graph/metamodel/pure/lineage/LineageModel.js';
 export * from './graph/metamodel/pure/executionPlan/ExecutionPlan.js';
 export { ExecutionNode } from './graph/metamodel/pure/executionPlan/nodes/ExecutionNode.js';
 export { FunctionParametersValidationNode } from './graph/metamodel/pure/executionPlan/nodes/FunctionParametersValidationNode.js';
