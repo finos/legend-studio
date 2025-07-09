@@ -527,29 +527,6 @@ export const observe_FunctionTestSuite = skipObservedWithContext(
   },
 );
 
-export const observe_ConcreteFunctionDefinitionWithoutTests = skipObserved(
-  (metamodel: ConcreteFunctionDefinition): ConcreteFunctionDefinition => {
-    observe_Abstract_PackageableElement(metamodel);
-
-    makeObservable<ConcreteFunctionDefinition, '_elementHashCode'>(metamodel, {
-      functionName: observable,
-      returnMultiplicity: observable,
-      parameters: observable.shallow, // only observe the list structure, each object itself is not observed
-      expressionSequence: observable.ref, // only observe the reference, the object itself is not observed
-      stereotypes: observable,
-      taggedValues: observable,
-      tests: observable,
-      _elementHashCode: override,
-    });
-
-    metamodel.parameters.forEach(observe_RawVariableExpression);
-    observe_GenericTypeReference(metamodel.returnType);
-    metamodel.stereotypes.forEach(observe_StereotypeReference);
-    metamodel.taggedValues.forEach(observe_TaggedValue);
-    return metamodel;
-  },
-);
-
 export const observe_ConcreteFunctionDefinition = skipObservedWithContext(
   (
     metamodel: ConcreteFunctionDefinition,

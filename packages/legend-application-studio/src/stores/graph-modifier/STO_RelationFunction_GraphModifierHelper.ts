@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {
   type ConcreteFunctionDefinition,
+  type ObserverContext,
   type RelationColumn,
   type RelationFunctionInstanceSetImplementation,
-  observe_ConcreteFunctionDefinitionWithoutTests,
+  observe_ConcreteFunctionDefinition,
 } from '@finos/legend-graph';
 import { action } from 'mobx';
 
@@ -26,9 +26,12 @@ export const relationFunction_setRelationFunction = action(
   (
     setImplementation: RelationFunctionInstanceSetImplementation,
     relationFunction: ConcreteFunctionDefinition,
+    context: ObserverContext,
   ): void => {
-    setImplementation.relationFunction =
-      observe_ConcreteFunctionDefinitionWithoutTests(relationFunction);
+    setImplementation.relationFunction = observe_ConcreteFunctionDefinition(
+      relationFunction,
+      context,
+    );
   },
 );
 
