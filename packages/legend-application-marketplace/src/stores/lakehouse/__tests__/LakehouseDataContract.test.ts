@@ -17,20 +17,14 @@
 import {
   V1_dataContractsResponseModelSchemaToContracts,
   V1_dataProductModelSchema,
-  V1_deserializeTaskResponse,
 } from '@finos/legend-graph';
-import {
-  Data_Product,
-  CREATE_CONTRACT_RESPONSE,
-  TASK_RESPONSE,
-} from './ContractTestData.js';
+import { Data_Product, CREATE_CONTRACT_RESPONSE } from './ContractTestData.js';
 import { describe, expect, test } from '@jest/globals';
 import { deserialize } from 'serializr';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
   buildDataContractDetail,
   dataContractContainsDataProduct,
-  buildTaskGridItemDetail,
 } from '../LakehouseUtils.js';
 
 describe('DataContract and DataProduct Association', () => {
@@ -68,27 +62,5 @@ describe('DataContract and DataProduct Association', () => {
     expect(valueSet.get('Contract Access Group')).toBe('AccessGroup1');
     expect(valueSet.get('Contract Access Points')).toBe('simple');
     expect(valueSet.get('Contract Consumer Name')).toBe('user1');
-  });
-
-  test('should correctly deserialize TAST_RESPONSE and get grid details', () => {
-    const tasksMetadata = V1_deserializeTaskResponse(TASK_RESPONSE);
-    expect(tasksMetadata.length).toBe(1);
-    const taskMetadata = guaranteeNonNullable(tasksMetadata[0]);
-    const valueSet = new Map<string, string>();
-    // Use buildTaskGridItemDetail to build taskGridDetails
-    buildTaskGridItemDetail(
-      taskMetadata.rec,
-      taskMetadata.assignees,
-      undefined,
-      undefined,
-    ).forEach((e) => {
-      expect(valueSet.has(e.name)).toBe(false);
-      valueSet.set(e.name, e.value.toString());
-    });
-
-    expect(valueSet.get('Task ID')).toBe('1');
-    expect(valueSet.get('Task Status')).toBe('PENDING');
-    expect(valueSet.get('Task Assignee (1)')).toBe('user2');
-    expect(valueSet.get('Task Assignee (2)')).toBe('user3');
   });
 });

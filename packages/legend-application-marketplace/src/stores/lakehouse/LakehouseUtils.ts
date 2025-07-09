@@ -16,7 +16,6 @@
 
 import {
   type V1_AccessPointGroup,
-  type V1_ContractUserEventRecord,
   type V1_DataContract,
   type V1_DataProduct,
   type V1_OrganizationalScope,
@@ -25,7 +24,6 @@ import {
   V1_AppDirOrganizationalScope,
   V1_ContractState,
   V1_UnknownOrganizationalScopeType,
-  V1_UserApprovalStatus,
 } from '@finos/legend-graph';
 import { prettyCONSTName } from '@finos/legend-shared';
 
@@ -276,76 +274,12 @@ export const buildDataContractDetail = (
   ];
 };
 
-const getGridInfoFromTaskStatus = (
-  status: V1_UserApprovalStatus,
-): GridTiemStatus | undefined => {
-  switch (status) {
-    case V1_UserApprovalStatus.APPROVED:
-      return GridTiemStatus.SUCCESS;
-    case V1_UserApprovalStatus.DENIED:
-      return GridTiemStatus.ERROR;
-    case V1_UserApprovalStatus.PENDING:
-      return GridTiemStatus.INFO;
-    default:
-      return undefined;
-  }
-};
-
 export const TYPE_GRID_ITEM = Object.freeze({
   TASK_ID: 'Task ID',
   TASK_STATUS: 'Task Status',
   TASK_CONSUMER: 'Task Consumer',
   TASK_ASSIGNEE: 'Task Assignee',
 });
-
-export const buildTaskGridItemDetail = (
-  task: V1_ContractUserEventRecord,
-  assignees?: string[] | undefined,
-  contract?: V1_DataContract | undefined,
-  openContractHandler?: ((id: string) => void) | undefined,
-  openDirectoryHandler?: ((id: string) => void) | undefined,
-  openApplicationIdHandler?: ((user: string) => void) | undefined,
-): GridItemDetail[] => {
-  const taskAssignees = convertMutilGridItemDetail(
-    assignees?.map((name) => [
-      {
-        name: TYPE_GRID_ITEM.TASK_ASSIGNEE,
-        value: name,
-        onClick: openDirectoryHandler
-          ? () => openDirectoryHandler(name)
-          : undefined,
-      },
-    ]) ?? [],
-  );
-  return [
-    {
-      name: TYPE_GRID_ITEM.TASK_ID,
-      value: task.taskId,
-    },
-    {
-      name: TYPE_GRID_ITEM.TASK_STATUS,
-      value: task.status.toString(),
-      status: getGridInfoFromTaskStatus(task.status),
-    },
-    {
-      name: TYPE_GRID_ITEM.TASK_CONSUMER,
-      value: task.consumer,
-      onClick: openDirectoryHandler
-        ? () => openDirectoryHandler(task.consumer)
-        : undefined,
-    },
-    ...taskAssignees,
-    ...(contract && openContractHandler
-      ? buildDataContractDetail(contract, {
-          openDirectoryHandler,
-          openApplicationIdHandler,
-          externalReference: {
-            openContractHandler,
-          },
-        })
-      : []),
-  ];
-};
 
 export const stringifyOrganizationalScope = (
   scope: V1_OrganizationalScope,
