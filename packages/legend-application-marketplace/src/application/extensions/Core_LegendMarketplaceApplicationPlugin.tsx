@@ -28,7 +28,6 @@ import {
 import { UserSearchInput } from '@finos/legend-art';
 import React, { useEffect, useState, type ChangeEvent } from 'react';
 import { LegendUser } from '@finos/legend-shared';
-import { getUserById } from '../../stores/lakehouse/LakehouseUtils.js';
 import {
   AccessPointGroupAccess,
   type DataProductGroupAccessState,
@@ -95,12 +94,12 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
           if (marketplaceBaseStore.userSearchService) {
             setLoadingCurrentUser(true);
             try {
-              const currentUser = await getUserById(
-                marketplaceBaseStore.applicationStore.identityService
-                  .currentUser,
-                marketplaceBaseStore.userSearchService,
-              );
-              if (currentUser) {
+              const currentUser =
+                await marketplaceBaseStore.userSearchService.getOrFetchUser(
+                  marketplaceBaseStore.applicationStore.identityService
+                    .currentUser,
+                );
+              if (currentUser instanceof LegendUser) {
                 setUser(currentUser);
               }
             } finally {

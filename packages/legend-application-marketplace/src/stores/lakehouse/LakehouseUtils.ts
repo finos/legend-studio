@@ -27,11 +27,7 @@ import {
   V1_UnknownOrganizationalScopeType,
   V1_UserApprovalStatus,
 } from '@finos/legend-graph';
-import {
-  type LegendUser,
-  type UserSearchService,
-  prettyCONSTName,
-} from '@finos/legend-shared';
+import { prettyCONSTName } from '@finos/legend-shared';
 
 export enum GridTiemStatus {
   SUCCESS = 'success',
@@ -350,14 +346,6 @@ export const buildTaskGridItemDetail = (
       : []),
   ];
 };
-
-export const getUserById = async (
-  userId: string,
-  userSearchService: UserSearchService,
-): Promise<LegendUser | undefined> =>
-  (await userSearchService.executeSearch(userId)).filter(
-    (_user) => _user.id === userId,
-  )[0];
 
 export const stringifyOrganizationalScope = (
   scope: V1_OrganizationalScope,
