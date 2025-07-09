@@ -111,10 +111,6 @@ export const isMemberOfContract = (
   return false;
 };
 
-export const isContractCompleted = (contract: V1_DataContract): boolean => {
-  return contract.state === V1_ContractState.COMPLETED;
-};
-
 export const isContractInTerminalState = (
   contract: V1_DataContract,
 ): boolean => {
