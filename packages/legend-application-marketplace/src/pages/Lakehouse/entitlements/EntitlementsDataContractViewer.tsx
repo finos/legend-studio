@@ -167,6 +167,16 @@ export const EntitlementsDataContractViewer = observer(
     const auth = useAuth();
     const legendMarketplaceStore = useLegendMarketplaceBaseStore();
     const consumer = currentViewer.value.consumer;
+
+    // We try to get the target users from the associated tasks first, since the
+    // tasks are what drive the timeline view. If there are no associated tasks,
+    // then we use the contract consumer.
+    const targetUsers =
+      currentViewer.associatedTasks?.map((task) => task.rec.consumer) ??
+      (consumer instanceof V1_AdhocTeam
+        ? consumer.users.map((user) => user.name)
+        : undefined);
+
     const [selectedTargetUser, setSelectedTargetUser] = useState<
       string | undefined
     >(consumer instanceof V1_AdhocTeam ? consumer.users[0]?.name : undefined);
@@ -394,12 +404,11 @@ export const EntitlementsDataContractViewer = observer(
                 </div>
                 <div className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-for">
                   <b>Ordered For: </b>
-                  {consumer instanceof V1_AdhocTeam ? (
-                    consumer.users.length === 1 &&
-                    consumer.users[0] !== undefined ? (
+                  {targetUsers !== undefined ? (
+                    targetUsers.length === 1 ? (
                       <UserRenderer
-                        key={consumer.users[0].name}
-                        userId={consumer.users[0].name}
+                        key={targetUsers[0]}
+                        userId={targetUsers[0]}
                         marketplaceStore={legendMarketplaceStore}
                       />
                     ) : (
@@ -411,10 +420,10 @@ export const EntitlementsDataContractViewer = observer(
                         size="small"
                         className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-for__select"
                       >
-                        {consumer.users.map((user) => (
-                          <MenuItem key={user.name} value={user.name}>
+                        {targetUsers.map((user) => (
+                          <MenuItem key={user} value={user}>
                             <UserRenderer
-                              userId={user.name}
+                              userId={user}
                               marketplaceStore={legendMarketplaceStore}
                               disableOnClick={true}
                             />
