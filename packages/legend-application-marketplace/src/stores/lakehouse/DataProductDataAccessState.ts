@@ -21,6 +21,7 @@ import {
   type V1_DataSubscription,
   type V1_DataSubscriptionResponse,
   type V1_DataSubscriptionTarget,
+  V1_ContractState,
   V1_CreateSubscriptionInput,
   V1_CreateSubscriptionInputModelSchema,
   V1_dataSubscriptionModelSchema,
@@ -59,6 +60,17 @@ export enum AccessPointGroupAccess {
   DENIED = 'DENIED',
   NO_ACCESS = 'NO_ACCESS',
 }
+
+const getPendingAccessPointGroupAccessFromContract = (
+  val: V1_DataContract,
+): AccessPointGroupAccess => {
+  if (val.state === V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL) {
+    return AccessPointGroupAccess.PENDING_MANAGER_APPROVAL;
+  } else if (val.state === V1_ContractState.PENDING_DATA_OWNER_APPROVAL) {
+    return AccessPointGroupAccess.PENDING_DATA_OWNER_APPROVAL;
+  }
+  return AccessPointGroupAccess.UNKNOWN;
+};
 
 export class DataProductGroupAccessState {
   readonly accessState: DataProductDataAccessState;
@@ -104,15 +116,12 @@ export class DataProductGroupAccessState {
     if (this.associatedContract === false) {
       return AccessPointGroupAccess.UNKNOWN;
     } else if (
-      this.userAccessStatus ===
-      V1_UserApprovalStatus.PENDING_CONSUMER_PRIVILEGE_MANAGER_APPROVAL
+      this.userAccessStatus === V1_UserApprovalStatus.PENDING &&
+      this.associatedContract
     ) {
-      return AccessPointGroupAccess.PENDING_MANAGER_APPROVAL;
-    } else if (
-      this.userAccessStatus ===
-      V1_UserApprovalStatus.PENDING_DATA_OWNER_APPROVAL
-    ) {
-      return AccessPointGroupAccess.PENDING_DATA_OWNER_APPROVAL;
+      return getPendingAccessPointGroupAccessFromContract(
+        this.associatedContract,
+      );
     } else if (this.userAccessStatus === V1_UserApprovalStatus.APPROVED) {
       return AccessPointGroupAccess.APPROVED;
     } else {
