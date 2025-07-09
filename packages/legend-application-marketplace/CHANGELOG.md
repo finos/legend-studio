@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.0.55
+
+### Patch Changes
+
+- [#4255](https://github.com/finos/legend-studio/pull/4255) [`f6c4a71`](https://github.com/finos/legend-studio/commit/f6c4a71a55ed60904efbda7a1e0eef50537604f3) ([@travisstebbins](https://github.com/travisstebbins)) - Fix showing rejected contracts and multi-target user contracts
+
 ## 0.0.54
 
 ## 0.0.53
