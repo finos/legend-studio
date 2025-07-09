@@ -424,7 +424,15 @@ export const EntitlementsDataContractViewer = observer(
                     Ordered For
                     <Tooltip
                       className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-for__tooltip__icon"
-                      title={`Contract consumer type: ${getOrganizationalScopeDetails(consumer, legendMarketplaceStore.applicationStore.pluginManager.getApplicationPlugins())}`}
+                      title={
+                        <>
+                          Contract consumer type:{' '}
+                          {getOrganizationalScopeDetails(
+                            consumer,
+                            legendMarketplaceStore.applicationStore.pluginManager.getApplicationPlugins(),
+                          )}
+                        </>
+                      }
                     >
                       <InfoCircleIcon />
                     </Tooltip>
