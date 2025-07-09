@@ -49,7 +49,7 @@ import {
   V1_ContractUserEventPrivilegeManagerPayload,
   V1_UserApprovalStatus,
 } from '@finos/legend-graph';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { formatDate, lodashCapitalize } from '@finos/legend-shared';
 import {
   isContractInTerminalState,
@@ -175,15 +175,19 @@ export const EntitlementsDataContractViewer = observer(
     // We try to get the target users from the associated tasks first, since the
     // tasks are what drive the timeline view. If there are no associated tasks,
     // then we use the contract consumer.
-    const targetUsers = currentViewer.associatedTasks?.length
-      ? Array.from(
-          new Set<string>(
-            currentViewer.associatedTasks?.map((task) => task.rec.consumer),
-          ),
-        )
-      : consumer instanceof V1_AdhocTeam
-        ? consumer.users.map((user) => user.name)
-        : undefined;
+    const targetUsers = useMemo(
+      () =>
+        currentViewer.associatedTasks?.length
+          ? Array.from(
+              new Set<string>(
+                currentViewer.associatedTasks?.map((task) => task.rec.consumer),
+              ),
+            )
+          : consumer instanceof V1_AdhocTeam
+            ? consumer.users.map((user) => user.name)
+            : undefined,
+      [consumer, currentViewer.associatedTasks],
+    );
 
     const [selectedTargetUser, setSelectedTargetUser] = useState<
       string | undefined
@@ -196,9 +200,13 @@ export const EntitlementsDataContractViewer = observer(
         flowResult(currentViewer.init(auth.user?.access_token))
           .catch(legendMarketplaceStore.applicationStore.alertUnhandledError)
           .finally(() => setIsLoading(false));
+      } else if (currentViewer.initializationState.hasCompleted) {
+        setSelectedTargetUser(targetUsers?.[0]);
       }
     }, [
       currentViewer,
+      currentViewer.initializationState,
+      targetUsers,
       auth.user?.access_token,
       legendMarketplaceStore.applicationStore.alertUnhandledError,
     ]);
