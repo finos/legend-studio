@@ -44,23 +44,6 @@ const inValidContractState = [
   V1_ContractState.CLOSED,
 ];
 
-const idxLabel = (idx: number): string => {
-  return ` (${idx + 1})`;
-};
-
-export const convertMutilGridItemDetail = (
-  details: GridItemDetail[][],
-): GridItemDetail[] => {
-  if (details.length > 1) {
-    details.forEach((gridItems, idx) => {
-      gridItems.forEach((item) => {
-        item.name = `${item.name}${idxLabel(idx)}`;
-      });
-    });
-  }
-  return details.flat();
-};
-
 export const dataContractContainsDataProduct = (
   dataProduct: V1_DataProduct,
   dataProdcutDeploymentID: string | undefined,
