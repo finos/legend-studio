@@ -156,7 +156,7 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
     return [
       {
         type: 'User',
-        renderer: (
+        createContractRenderer: (
           marketplaceBaseStore: LegendMarketplaceBaseStore,
           accessGroupState: DataProductGroupAccessState,
           handleOrganizationalScopeChange: (
@@ -179,7 +179,7 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
       },
       {
         type: 'System Account',
-        renderer: (
+        createContractRenderer: (
           marketplaceBaseStore: LegendMarketplaceBaseStore,
           accessGroupState: DataProductGroupAccessState,
           handleOrganizationalScopeChange: (

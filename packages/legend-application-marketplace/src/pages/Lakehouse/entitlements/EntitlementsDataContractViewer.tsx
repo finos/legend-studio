@@ -52,6 +52,7 @@ import {
 import React, { useEffect, useMemo, useState } from 'react';
 import { formatDate, lodashCapitalize } from '@finos/legend-shared';
 import {
+  getOrganizationalScopeDetails,
   isContractInTerminalState,
   stringifyOrganizationalScope,
 } from '../../../stores/lakehouse/LakehouseUtils.js';
@@ -423,7 +424,7 @@ export const EntitlementsDataContractViewer = observer(
                     Ordered For
                     <Tooltip
                       className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-for__tooltip__icon"
-                      title={`Contract consumer type: ${typeof consumer}`}
+                      title={`Contract consumer type: ${getOrganizationalScopeDetails(consumer, legendMarketplaceStore.applicationStore.pluginManager.getApplicationPlugins())}`}
                     >
                       <InfoCircleIcon />
                     </Tooltip>

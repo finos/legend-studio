@@ -22,13 +22,16 @@ import type { LegendMarketplaceBaseStore } from '../stores/LegendMarketplaceBase
 
 export type ContractConsumerTypeRendererConfig = {
   type: string;
-  renderer: (
+  createContractRenderer: (
     marketplaceBaseStore: LegendMarketplaceBaseStore,
     accessGroupState: DataProductGroupAccessState,
     handleOrganizationalScopeChange: (consumer: V1_OrganizationalScope) => void,
     handleDescriptionChange: (description: string | undefined) => void,
     handleIsValidChange: (isValid: boolean) => void,
   ) => React.ReactNode;
+  getOrganizationalScopeDetails?: (
+    consumer: V1_OrganizationalScope,
+  ) => string | undefined;
 };
 
 export abstract class LegendMarketplaceApplicationPlugin extends LegendApplicationPlugin {
@@ -43,8 +46,9 @@ export abstract class LegendMarketplaceApplicationPlugin extends LegendApplicati
   }
 
   /**
-   * Renderers for contract consumer types to be used in the
-   * data contract creator dialog.
+   * Config to handle different types of contract consumers, including configuration for:
+   * - Contract creation dialog renderer
+   * - Stringify organizational scope
    */
   getContractConsumerTypeRendererConfigs?(): ContractConsumerTypeRendererConfig[];
 }

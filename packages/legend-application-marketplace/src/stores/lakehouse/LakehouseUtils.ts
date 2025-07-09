@@ -25,6 +25,8 @@ import {
   V1_ContractState,
   V1_UnknownOrganizationalScopeType,
 } from '@finos/legend-graph';
+import type { LegendMarketplaceApplicationPlugin } from '../../application/LegendMarketplaceApplicationPlugin.js';
+import { isNonNullable } from '@finos/legend-shared';
 
 const invalidContractState = [
   V1_ContractState.DRAFT,
@@ -105,4 +107,33 @@ export const stringifyOrganizationalScope = (
     return JSON.stringify(scope.content);
   }
   return '';
+};
+
+export const getOrganizationalScopeDetails = (
+  scope: V1_OrganizationalScope,
+  plugins: LegendMarketplaceApplicationPlugin[],
+): string => {
+  if (scope instanceof V1_AppDirOrganizationalScope) {
+    return 'AppDir Node';
+  } else if (scope instanceof V1_AdhocTeam) {
+    return 'Ad-hoc Team';
+  } else if (scope instanceof V1_UnknownOrganizationalScopeType) {
+    return 'Unknown';
+  } else {
+    const detailsFunctions = plugins
+      .flatMap((plugin) =>
+        plugin
+          .getContractConsumerTypeRendererConfigs?.()
+          ?.flatMap((config) => config.getOrganizationalScopeDetails),
+      )
+      .filter(isNonNullable);
+    for (const detailsFunction of detailsFunctions) {
+      const details = detailsFunction(scope);
+      if (details) {
+        return details;
+      }
+    }
+
+    return 'Unknown';
+  }
 };

@@ -76,7 +76,7 @@ export const EntitlementsDataContractCreator = observer(
       () =>
         consumerTypeRendererConfigs
           .find((config) => config.type === selectedConsumerType)
-          ?.renderer(
+          ?.createContractRenderer(
             legendMarketplaceStore,
             accessGroupState,
             setConsumer,
