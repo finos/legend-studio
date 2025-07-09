@@ -1,5 +1,15 @@
 # @finos/legend-graph
 
+## 32.1.52
+
+### Patch Changes
+
+- [#4256](https://github.com/finos/legend-studio/pull/4256) [`53add29`](https://github.com/finos/legend-studio/commit/53add295c45ff51258373af42ad11f01a00fc04c) ([@gs-gunjan](https://github.com/gs-gunjan)) - use observer context for relation mapping editor
+
+- [#4255](https://github.com/finos/legend-studio/pull/4255) [`f6c4a71`](https://github.com/finos/legend-studio/commit/f6c4a71a55ed60904efbda7a1e0eef50537604f3) ([@travisstebbins](https://github.com/travisstebbins)) - Refactor data contract class names
+
+- [#4250](https://github.com/finos/legend-studio/pull/4250) [`68e54f3`](https://github.com/finos/legend-studio/commit/68e54f32f0142278db48765c80abc7fa020d56b0) ([@gs-gunjan](https://github.com/gs-gunjan)) - relation function mapping editor
+
 ## 32.1.51
 
 ### Patch Changes

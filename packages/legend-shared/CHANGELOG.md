@@ -1,5 +1,11 @@
 # @finos/legend-shared
 
+## 11.0.17
+
+### Patch Changes
+
+- [#4255](https://github.com/finos/legend-studio/pull/4255) [`f6c4a71`](https://github.com/finos/legend-studio/commit/f6c4a71a55ed60904efbda7a1e0eef50537604f3) ([@travisstebbins](https://github.com/travisstebbins)) - Export lodash capitalize function
+
 ## 11.0.16
 
 ### Patch Changes
