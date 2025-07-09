@@ -1008,7 +1008,11 @@ export class MappingEditorState extends ElementEditorState {
           newSource instanceof ConcreteFunctionDefinition &&
           !getEmbeddedSetImplementations(setImplementation).length
         ) {
-          relationFunction_setRelationFunction(setImplementation, newSource);
+          relationFunction_setRelationFunction(
+            setImplementation,
+            newSource,
+            this.editorStore.changeDetectionState.observerContext,
+          );
           sourceUpdated = true;
         }
       } else {
