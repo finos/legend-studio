@@ -76,7 +76,9 @@ const AssigneesList = (props: {
   marketplaceStore: LegendMarketplaceBaseStore;
 }): React.ReactNode => {
   const { userIds, marketplaceStore } = props;
-  return userIds.length === 1 ? (
+  return userIds.length === 0 ? (
+    <span>No Assignees</span>
+  ) : userIds.length === 1 ? (
     <span>
       Assignee:{' '}
       <UserRenderer userId={userIds[0]} marketplaceStore={marketplaceStore} />
