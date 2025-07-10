@@ -110,7 +110,7 @@ export const stringifyOrganizationalScope = (
   return '';
 };
 
-export const getOrganizationalScopeDetails = (
+export const getOrganizationalScopeTypeDetails = (
   scope: V1_OrganizationalScope,
   plugins: LegendMarketplaceApplicationPlugin[],
 ): React.ReactNode => {
@@ -125,7 +125,7 @@ export const getOrganizationalScopeDetails = (
       .flatMap((plugin) =>
         plugin
           .getContractConsumerTypeRendererConfigs?.()
-          .flatMap((config) => config.organizationalScopeDetailsRenderer),
+          .flatMap((config) => config.organizationalScopeTypeDetailsRenderer),
       )
       .filter(isNonNullable);
     for (const detailsRenderer of detailsRenderers) {

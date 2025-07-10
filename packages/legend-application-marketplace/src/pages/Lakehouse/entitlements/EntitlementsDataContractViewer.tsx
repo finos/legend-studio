@@ -52,7 +52,7 @@ import {
 import React, { useEffect, useMemo, useState } from 'react';
 import { formatDate, lodashCapitalize } from '@finos/legend-shared';
 import {
-  getOrganizationalScopeDetails,
+  getOrganizationalScopeTypeDetails,
   isContractInTerminalState,
   stringifyOrganizationalScope,
 } from '../../../stores/lakehouse/LakehouseUtils.js';
@@ -427,7 +427,7 @@ export const EntitlementsDataContractViewer = observer(
                       title={
                         <>
                           Contract consumer type:{' '}
-                          {getOrganizationalScopeDetails(
+                          {getOrganizationalScopeTypeDetails(
                             consumer,
                             legendMarketplaceStore.applicationStore.pluginManager.getApplicationPlugins(),
                           )}

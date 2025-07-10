@@ -30,7 +30,7 @@ export type ContractConsumerTypeRendererConfig = {
     handleDescriptionChange: (description: string | undefined) => void,
     handleIsValidChange: (isValid: boolean) => void,
   ) => React.ReactNode;
-  organizationalScopeDetailsRenderer?: (
+  organizationalScopeTypeDetailsRenderer?: (
     consumer: V1_OrganizationalScope,
   ) => React.ReactNode | undefined;
 };
@@ -49,7 +49,7 @@ export abstract class LegendMarketplaceApplicationPlugin extends LegendApplicati
   /**
    * Config to handle different types of contract consumers, including configuration for:
    * - Contract creation dialog renderer
-   * - Stringify organizational scope
+   * - Organizational scope type details renderer
    */
   getContractConsumerTypeRendererConfigs?(): ContractConsumerTypeRendererConfig[];
 }
