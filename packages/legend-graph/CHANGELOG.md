@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.1.53
+
+### Patch Changes
+
+- [#4258](https://github.com/finos/legend-studio/pull/4258) [`633cb47`](https://github.com/finos/legend-studio/commit/633cb47bcc6f7d879b87d3855e7be7f3dd8b6f5a) ([@travisstebbins](https://github.com/travisstebbins)) - Add new V1_EnrichedUserApprovalStatus enum for getContractUserStatus endpoint
+
 ## 32.1.52
 
 ### Patch Changes
