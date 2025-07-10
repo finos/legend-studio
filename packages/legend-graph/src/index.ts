@@ -300,6 +300,18 @@ export {
   V1_UserType,
 } from './graph-manager/protocol/pure/v1/lakehouse/entitlements/V1_CoreEntitlements.js';
 export {
+  V1_AccessPointGroupStereotypeMapping,
+  V1_AdHocDeploymentDataProductOrigin,
+  V1_DataProductDetails,
+  V1_DataProductDetailsResponse,
+  V1_DataProductOrigin,
+  V1_LakehouseDataProduct,
+  V1_LakehouseDataProductAccessPoint,
+  V1_LakehouseEnvironment,
+  V1_LakehouseEnvironmentType,
+  V1_SdlcDeploymentDataProductOrigin,
+} from './graph-manager/protocol/pure/v1/lakehouse/entitlements/V1_DataProducts.js';
+export {
   V1_AppDirNodeModelSchema,
   V1_createContractPayloadModelSchema,
   V1_dataContractsResponseModelSchema,
