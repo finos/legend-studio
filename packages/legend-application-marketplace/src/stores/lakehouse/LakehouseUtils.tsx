@@ -125,7 +125,7 @@ export const getOrganizationalScopeDetails = (
       .flatMap((plugin) =>
         plugin
           .getContractConsumerTypeRendererConfigs?.()
-          ?.flatMap((config) => config.organizationalScopeDetailsRenderer),
+          .flatMap((config) => config.organizationalScopeDetailsRenderer),
       )
       .filter(isNonNullable);
     for (const detailsRenderer of detailsRenderers) {

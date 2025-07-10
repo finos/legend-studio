@@ -181,7 +181,7 @@ export const EntitlementsDataContractViewer = observer(
         currentViewer.associatedTasks?.length
           ? Array.from(
               new Set<string>(
-                currentViewer.associatedTasks?.map((task) => task.rec.consumer),
+                currentViewer.associatedTasks.map((task) => task.rec.consumer),
               ),
             )
           : consumer instanceof V1_AdhocTeam
@@ -201,7 +201,7 @@ export const EntitlementsDataContractViewer = observer(
         flowResult(currentViewer.init(auth.user?.access_token))
           .catch(legendMarketplaceStore.applicationStore.alertUnhandledError)
           .finally(() => setIsLoading(false));
-      } else if (currentViewer.initializationState.hasCompleted) {
+      } else {
         setSelectedTargetUser(targetUsers?.[0]);
       }
     }, [
