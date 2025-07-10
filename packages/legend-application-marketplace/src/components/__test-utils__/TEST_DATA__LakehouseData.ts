@@ -19,6 +19,8 @@ import { type IngestDeploymentServerConfig } from '@finos/legend-server-lakehous
 import { type StoredSummaryEntity } from '@finos/legend-server-depot';
 import {
   type V1_AWSSnowflakeIngestEnvironment,
+  type V1_DataContractsResponse,
+  type V1_DataSubscriptionResponse,
   type V1_SandboxDataProductDeploymentResponse,
   CORE_PURE_PATH,
 } from '@finos/legend-graph';
@@ -303,3 +305,55 @@ export const mockProdIngestEnvironmentResponse: PlainObject<V1_AWSSnowflakeInges
     s3StagingBucketName: 'test-prod-staging-bucket',
     storageIntegrationName: 'test-prod-storage-integration',
   };
+
+export const mockDataContracts: PlainObject<V1_DataContractsResponse> = {
+  dataContracts: [
+    {
+      dataContract: {
+        guid: 'contract-123',
+        description: 'Test Contract Description 1',
+        version: 1,
+        state: 'COMPLETED',
+        members: [{ user: 'john.doe' }, { user: 'jane.smith' }],
+        createdBy: 'admin.user',
+      },
+    },
+    {
+      dataContract: {
+        guid: 'contract-456',
+        description: 'Test Contract Description 2',
+        version: 2,
+        state: 'PENDING',
+        members: [{ user: 'bob.wilson' }],
+        createdBy: 'test.user',
+      },
+    },
+  ],
+};
+
+export const mockSubscriptions: PlainObject<V1_DataSubscriptionResponse> = {
+  subscriptions: [
+    {
+      guid: 'subscription-789',
+      dataContractId: 'contract-123',
+      target: {
+        _type: 'Snowflake',
+        snowflakeAccountId: 'account-123',
+        snowflakeRegion: 'AWS_US_EAST_1',
+        snowflakeNetwork: 'PUBLIC',
+      },
+      createdBy: 'subscriber.user',
+    },
+    {
+      guid: 'subscription-101',
+      dataContractId: 'contract-456',
+      target: {
+        _type: 'Snowflake',
+        snowflakeAccountId: 'account-456',
+        snowflakeRegion: 'AWS_US_EAST_1',
+        snowflakeNetwork: 'GOLDMAN',
+      },
+      createdBy: 'another.user',
+    },
+  ],
+};

@@ -52,7 +52,11 @@ import {
   mockDevIngestEnvironmentResponse,
   mockProdParallelIngestEnvironmentResponse,
   mockProdIngestEnvironmentResponse,
+  mockSubscriptions,
+  mockDataContracts,
 } from './TEST_DATA__LakehouseData.js';
+import { LakehouseAdminStore } from '../../stores/lakehouse/admin/LakehouseAdminStore.js';
+import { useLakehouseAdminStore } from '../../pages/Lakehouse/admin/LakehouseAdminStoreProvider.js';
 
 jest.mock('@finos/legend-graph', () => {
   const actual: Record<string, unknown> = jest.requireActual(
@@ -74,6 +78,21 @@ jest.mock('../../pages/Lakehouse/MarketplaceLakehouseStoreProvider.js', () => {
     ...actual,
     useMarketplaceLakehouseStore: jest.fn(),
     MarketplaceLakehouseStoreProvider: ({
+      children,
+    }: {
+      children: React.ReactNode;
+    }) => children,
+  };
+});
+
+jest.mock('../../pages/Lakehouse/admin/LakehouseAdminStoreProvider.js', () => {
+  const actual: Record<string, unknown> = jest.requireActual(
+    '../../pages/Lakehouse/admin/LakehouseAdminStoreProvider.js',
+  );
+  return {
+    ...actual,
+    useLakehouseAdminStore: jest.fn(),
+    LakehouseAdminStoreProvider: ({
       children,
     }: {
       children: React.ReactNode;
@@ -261,6 +280,14 @@ export const TEST__setUpMarketplaceLakehouse = async (
       );
     },
   );
+  createSpy(
+    MOCK__store.lakehouseContractServerClient,
+    'getAllSubscriptions',
+  ).mockResolvedValue(mockSubscriptions);
+  createSpy(
+    MOCK__store.lakehouseContractServerClient,
+    'getDataContracts',
+  ).mockResolvedValue(mockDataContracts);
 
   const MOCK__lakehouseStore = new MarketplaceLakehouseStore(
     MOCK__store,
@@ -270,15 +297,23 @@ export const TEST__setUpMarketplaceLakehouse = async (
     MOCK__store.depotServerClient,
   );
 
+  const MOCK__lakehouseAdminStore = new LakehouseAdminStore(
+    MOCK__store.applicationStore,
+    MOCK__store.lakehouseContractServerClient,
+  );
+
   (useMarketplaceLakehouseStore as jest.Mock).mockReturnValue(
     MOCK__lakehouseStore,
+  );
+  (useLakehouseAdminStore as jest.Mock).mockReturnValue(
+    MOCK__lakehouseAdminStore,
   );
 
   const renderResult = render(
     <ApplicationStoreProvider store={MOCK__store.applicationStore}>
       <AuthProvider>
         <TEST__BrowserEnvironmentProvider
-          initialEntries={['/lakehouse']}
+          initialEntries={[route ?? '/lakehouse']}
           baseUrl="/lakehouse"
         >
           <LegendMarketplaceFrameworkProvider>
