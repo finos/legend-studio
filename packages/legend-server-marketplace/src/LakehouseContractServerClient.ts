@@ -21,6 +21,7 @@ import type {
   V1_DataContract,
   V1_DataContractApprovedUsersResponse,
   V1_DataContractsResponse,
+  V1_DataProductDetailsResponse,
   V1_DataSubscriptionResponse,
   V1_PendingTasksResponse,
   V1_TaskStatus,
@@ -43,11 +44,6 @@ export class LakehouseContractServerClient extends AbstractServerClient {
   private _token = (token?: string) => ({
     Authorization: `Bearer ${token}`,
   });
-
-  private _contracts = (): string => `${this.baseUrl}/contracts`;
-
-  getDataProducts = (token?: string | undefined): Promise<PlainObject[]> =>
-    this.get(`${this._contracts()}/dataProducts`, {}, this._token(token));
 
   // ------------------------------------------- Data Contracts -------------------------------------------
 
@@ -210,4 +206,13 @@ export class LakehouseContractServerClient extends AbstractServerClient {
     token: string | undefined,
   ): Promise<PlainObject<V1_DataSubscriptionResponse>> =>
     this.post(this._subscriptions(), input, {}, this._token(token));
+
+  // --------------------------------------- Data Products ---------------------------------------
+
+  private _dataProducts = (): string => `${this.baseUrl}/dataproducts`;
+
+  getDataProducts = (
+    token: string | undefined,
+  ): Promise<V1_DataProductDetailsResponse> =>
+    this.get(this._dataProducts(), {}, this._token(token));
 }
