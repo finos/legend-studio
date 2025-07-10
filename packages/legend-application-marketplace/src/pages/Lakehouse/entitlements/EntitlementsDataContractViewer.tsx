@@ -29,6 +29,7 @@ import {
   Link,
   MenuItem,
   Select,
+  Tooltip,
 } from '@mui/material';
 import {
   Timeline,
@@ -48,9 +49,10 @@ import {
   V1_ContractUserEventPrivilegeManagerPayload,
   V1_UserApprovalStatus,
 } from '@finos/legend-graph';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { formatDate, lodashCapitalize } from '@finos/legend-shared';
 import {
+  getOrganizationalScopeTypeDetails,
   isContractInTerminalState,
   stringifyOrganizationalScope,
 } from '../../../stores/lakehouse/LakehouseUtils.js';
@@ -63,6 +65,7 @@ import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
   ExpandMoreIcon,
+  InfoCircleIcon,
   RefreshIcon,
 } from '@finos/legend-art';
 import { generateLakehouseTaskPath } from '../../../__lib__/LegendMarketplaceNavigation.js';
@@ -76,7 +79,9 @@ const AssigneesList = (props: {
   marketplaceStore: LegendMarketplaceBaseStore;
 }): React.ReactNode => {
   const { userIds, marketplaceStore } = props;
-  return userIds.length === 1 ? (
+  return userIds.length === 0 ? (
+    <span>No Assignees</span>
+  ) : userIds.length === 1 ? (
     <span>
       Assignee:{' '}
       <UserRenderer userId={userIds[0]} marketplaceStore={marketplaceStore} />
@@ -167,9 +172,27 @@ export const EntitlementsDataContractViewer = observer(
     const auth = useAuth();
     const legendMarketplaceStore = useLegendMarketplaceBaseStore();
     const consumer = currentViewer.value.consumer;
+
+    // We try to get the target users from the associated tasks first, since the
+    // tasks are what drive the timeline view. If there are no associated tasks,
+    // then we use the contract consumer.
+    const targetUsers = useMemo(
+      () =>
+        currentViewer.associatedTasks?.length
+          ? Array.from(
+              new Set<string>(
+                currentViewer.associatedTasks.map((task) => task.rec.consumer),
+              ),
+            )
+          : consumer instanceof V1_AdhocTeam
+            ? consumer.users.map((user) => user.name)
+            : undefined,
+      [consumer, currentViewer.associatedTasks],
+    );
+
     const [selectedTargetUser, setSelectedTargetUser] = useState<
       string | undefined
-    >(consumer instanceof V1_AdhocTeam ? consumer.users[0]?.name : undefined);
+    >(targetUsers?.[0]);
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
@@ -178,9 +201,13 @@ export const EntitlementsDataContractViewer = observer(
         flowResult(currentViewer.init(auth.user?.access_token))
           .catch(legendMarketplaceStore.applicationStore.alertUnhandledError)
           .finally(() => setIsLoading(false));
+      } else {
+        setSelectedTargetUser(targetUsers?.[0]);
       }
     }, [
       currentViewer,
+      currentViewer.initializationState,
+      targetUsers,
       auth.user?.access_token,
       legendMarketplaceStore.applicationStore.alertUnhandledError,
     ]);
@@ -393,13 +420,29 @@ export const EntitlementsDataContractViewer = observer(
                   />
                 </div>
                 <div className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-for">
-                  <b>Ordered For: </b>
-                  {consumer instanceof V1_AdhocTeam ? (
-                    consumer.users.length === 1 &&
-                    consumer.users[0] !== undefined ? (
+                  <b>
+                    Ordered For
+                    <Tooltip
+                      className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-for__tooltip__icon"
+                      title={
+                        <>
+                          Contract consumer type:{' '}
+                          {getOrganizationalScopeTypeDetails(
+                            consumer,
+                            legendMarketplaceStore.applicationStore.pluginManager.getApplicationPlugins(),
+                          )}
+                        </>
+                      }
+                    >
+                      <InfoCircleIcon />
+                    </Tooltip>
+                    :{' '}
+                  </b>
+                  {targetUsers !== undefined ? (
+                    targetUsers.length === 1 ? (
                       <UserRenderer
-                        key={consumer.users[0].name}
-                        userId={consumer.users[0].name}
+                        key={targetUsers[0]}
+                        userId={targetUsers[0]}
                         marketplaceStore={legendMarketplaceStore}
                       />
                     ) : (
@@ -411,10 +454,10 @@ export const EntitlementsDataContractViewer = observer(
                         size="small"
                         className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-for__select"
                       >
-                        {consumer.users.map((user) => (
-                          <MenuItem key={user.name} value={user.name}>
+                        {targetUsers.map((user) => (
+                          <MenuItem key={user} value={user}>
                             <UserRenderer
-                              userId={user.name}
+                              userId={user}
                               marketplaceStore={legendMarketplaceStore}
                               disableOnClick={true}
                             />

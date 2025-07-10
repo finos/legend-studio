@@ -37,10 +37,7 @@ import { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/e
 import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
 import { observer } from 'mobx-react-lite';
 import { UserRenderer } from '../../../components/UserRenderer/UserRenderer.js';
-import {
-  isContractInTerminalState,
-  stringifyOrganizationalScope,
-} from '../../../stores/lakehouse/LakehouseUtils.js';
+import { isContractInTerminalState } from '../../../stores/lakehouse/LakehouseUtils.js';
 import type { LegendMarketplaceBaseStore } from '../../../stores/LegendMarketplaceBaseStore.js';
 import { startCase } from '@finos/legend-shared';
 import { useAuth } from 'react-oidc-context';
@@ -111,6 +108,60 @@ const AssigneesCellRenderer = (props: {
   );
 };
 
+const TargetUserCellRenderer = (props: {
+  dataContract: V1_DataContract | undefined;
+  marketplaceStore: LegendMarketplaceBaseStore;
+  token: string | undefined;
+}): React.ReactNode => {
+  const { dataContract, marketplaceStore, token } = props;
+  const [targetUsers, setTargetUsers] = useState<string[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    const fetchTargetUsers = async () => {
+      if (dataContract) {
+        setLoading(true);
+        try {
+          // We try to get the target users from the associated tasks first, since the
+          // tasks are what drive the timeline view. If there are no associated tasks,
+          // then we use the contract consumer.
+          const rawTasks =
+            await marketplaceStore.lakehouseContractServerClient.getContractTasks(
+              dataContract.guid,
+              token,
+            );
+          const tasks = V1_deserializeTaskResponse(rawTasks);
+          const taskTargetUsers = Array.from(
+            new Set<string>(tasks.map((task) => task.rec.consumer)),
+          );
+          const _targetUsers = taskTargetUsers.length
+            ? taskTargetUsers
+            : dataContract.consumer instanceof V1_AdhocTeam
+              ? dataContract.consumer.users.map((user) => user.name)
+              : [];
+          setTargetUsers(_targetUsers);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+    // eslint-disable-next-line no-void
+    void fetchTargetUsers();
+  }, [dataContract, marketplaceStore.lakehouseContractServerClient, token]);
+
+  return loading ? (
+    <CircularProgress size={20} />
+  ) : targetUsers.length > 0 ? (
+    <MultiUserCellRenderer
+      userIds={targetUsers}
+      marketplaceStore={marketplaceStore}
+      singleUserClassName="marketplace-lakehouse-entitlements__grid__user-display"
+    />
+  ) : (
+    <>Unknown</>
+  );
+};
+
 export const EntitlementsPendingContractsDashbaord = observer(
   (props: { dashboardState: EntitlementsDashboardState }): React.ReactNode => {
     const { dashboardState } = props;
@@ -163,25 +214,15 @@ export const EntitlementsPendingContractsDashbaord = observer(
 
     const colDefs: DataGridColumnDefinition<V1_DataContract>[] = [
       {
-        headerName: 'Target User',
+        headerName: 'Target User(s)',
         colId: 'targetUser',
-        cellRenderer: (params: DataGridCellRendererParams<V1_DataContract>) => {
-          const consumer = params.data?.consumer;
-
-          if (consumer instanceof V1_AdhocTeam) {
-            return (
-              <MultiUserCellRenderer
-                userIds={consumer.users.map((user) => user.name)}
-                marketplaceStore={marketplaceBaseStore}
-                singleUserClassName="marketplace-lakehouse-entitlements__grid__user-display"
-              />
-            );
-          } else if (consumer) {
-            return <>{stringifyOrganizationalScope(consumer)}</>;
-          } else {
-            return <>Unknown</>;
-          }
-        },
+        cellRenderer: (params: DataGridCellRendererParams<V1_DataContract>) => (
+          <TargetUserCellRenderer
+            dataContract={params.data}
+            marketplaceStore={marketplaceBaseStore}
+            token={auth.user?.access_token}
+          />
+        ),
       },
       {
         headerName: 'Requester',

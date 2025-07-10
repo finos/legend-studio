@@ -19,16 +19,20 @@ import type { LegendMarketplacePluginManager } from '../application/LegendMarket
 import type { DataProductGroupAccessState } from '../stores/lakehouse/DataProductDataAccessState.js';
 import type { V1_OrganizationalScope } from '@finos/legend-graph';
 import type { LegendMarketplaceBaseStore } from '../stores/LegendMarketplaceBaseStore.js';
+import type React from 'react';
 
 export type ContractConsumerTypeRendererConfig = {
   type: string;
-  renderer: (
+  createContractRenderer: (
     marketplaceBaseStore: LegendMarketplaceBaseStore,
     accessGroupState: DataProductGroupAccessState,
     handleOrganizationalScopeChange: (consumer: V1_OrganizationalScope) => void,
     handleDescriptionChange: (description: string | undefined) => void,
     handleIsValidChange: (isValid: boolean) => void,
   ) => React.ReactNode;
+  organizationalScopeTypeDetailsRenderer?: (
+    consumer: V1_OrganizationalScope,
+  ) => React.ReactNode | undefined;
 };
 
 export abstract class LegendMarketplaceApplicationPlugin extends LegendApplicationPlugin {
@@ -43,8 +47,9 @@ export abstract class LegendMarketplaceApplicationPlugin extends LegendApplicati
   }
 
   /**
-   * Renderers for contract consumer types to be used in the
-   * data contract creator dialog.
+   * Config to handle different types of contract consumers, including configuration for:
+   * - Contract creation dialog renderer
+   * - Organizational scope type details renderer
    */
   getContractConsumerTypeRendererConfigs?(): ContractConsumerTypeRendererConfig[];
 }

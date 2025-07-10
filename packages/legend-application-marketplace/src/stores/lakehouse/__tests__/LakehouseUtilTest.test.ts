@@ -20,13 +20,11 @@ import {
   V1_AccessPointGroupReference,
   V1_DataContract,
   V1_AdhocTeam,
-  V1_ContractState,
   V1_User,
   V1_UserType,
 } from '@finos/legend-graph';
 import {
   dataContractContainsAccessGroup,
-  isContractCompleted,
   isMemberOfContract,
 } from '../LakehouseUtils.js';
 
@@ -91,19 +89,5 @@ describe('LakehouseUtils', () => {
     dataContract.consumer = adhocTeam;
 
     expect(isMemberOfContract(user, dataContract)).toBe(false);
-  });
-
-  test('isContractCompleted should return true if the contract state is COMPLETED', () => {
-    const dataContract = new V1_DataContract();
-    dataContract.state = V1_ContractState.COMPLETED;
-
-    expect(isContractCompleted(dataContract)).toBe(true);
-  });
-
-  test('isContractCompleted should return false if the contract state is not COMPLETED', () => {
-    const dataContract = new V1_DataContract();
-    dataContract.state = V1_ContractState.CLOSED;
-
-    expect(isContractCompleted(dataContract)).toBe(false);
   });
 });
