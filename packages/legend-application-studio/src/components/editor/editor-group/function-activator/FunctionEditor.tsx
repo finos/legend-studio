@@ -147,6 +147,7 @@ import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__
 import {
   type QueryBuilderState,
   ExecutionPlanViewer,
+  LineageViewer,
   FunctionQueryBuilderState,
   getTDSColumnCustomizations,
   LambdaEditor,
@@ -1383,6 +1384,10 @@ export const FunctionEditor = observer(() => {
     flowResult(functionEditorState.generatePlan(false)),
   );
 
+  const generateLineage = applicationStore.guardUnhandledError(() =>
+    flowResult(functionEditorState.generateLineage()),
+  );
+
   const debugPlanGeneration = applicationStore.guardUnhandledError(() =>
     flowResult(functionEditorState.generatePlan(true)),
   );
@@ -1601,6 +1606,12 @@ export const FunctionEditor = observer(() => {
                             >
                               Debug
                             </MenuContentItem>
+                            <MenuContentItem
+                              className="btn__dropdown-combo__option"
+                              onClick={generateLineage}
+                            >
+                              View Lineage
+                            </MenuContentItem>
                           </MenuContent>
                         }
                         menuProps={{
@@ -1750,6 +1761,7 @@ export const FunctionEditor = observer(() => {
           <ExecutionPlanViewer
             executionPlanState={functionEditorState.executionPlanState}
           />
+          <LineageViewer lineageState={functionEditorState.lineageState} />
           {functionEditorState.parametersState.parameterValuesEditorState
             .showModal && (
             <LambdaParameterValuesEditor

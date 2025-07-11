@@ -90,6 +90,7 @@ import type { V1_CompleteCodeInput } from './compilation/V1_CompleteCodeInput.js
 import type { DeploymentResult } from '../../../../action/DeploymentResult.js';
 import type { PersistentDataCube } from '../../../../action/query/PersistentDataCube.js';
 import { type V1_LambdaTdsToRelationInput } from './pureProtocol/V1_LambdaTdsToRelationInput.js';
+import type { RawLineageModel } from '../../../../../graph/metamodel/pure/lineage/LineageModel.js';
 
 enum CORE_ENGINE_ACTIVITY_TRACE {
   GRAMMAR_TO_JSON = 'transform Pure code to protocol',
@@ -109,7 +110,7 @@ enum CORE_ENGINE_ACTIVITY_TRACE {
 
   EXECUTE = 'execute',
   GENERATE_EXECUTION_PLAN = 'generate execution plan',
-
+  GENERATE_LINEAGE = 'generate lineage',
   GENERATE_ARTIFACTS = 'generate artifacts',
 
   REGISTER_SERVICE = 'register service',
@@ -742,6 +743,19 @@ export class V1_EngineServerClient extends AbstractServerClient {
       },
       { enableCompression: true },
       { skipProcessing: Boolean(options?.returnAsResponse) },
+    );
+
+  generateLineage = (
+    input: PlainObject<V1_ExecuteInput>,
+  ): Promise<PlainObject<RawLineageModel>> =>
+    this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GENERATE_LINEAGE),
+      `${this.baseUrl}/lineage/v1/function/fullAnalytics`,
+      this.debugPayload(input, CORE_ENGINE_ACTIVITY_TRACE.GENERATE_LINEAGE),
+      {},
+      undefined,
+      undefined,
+      { enableCompression: true },
     );
 
   generatePlan = (
