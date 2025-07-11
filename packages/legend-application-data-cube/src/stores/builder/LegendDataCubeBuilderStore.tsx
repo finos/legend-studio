@@ -336,6 +336,7 @@ export class LegendDataCubeBuilderStore {
     const sourceData =
       this.application.navigationService.navigator.getCurrentLocationParameterValue(
         LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN.SOURCE_DATA,
+        true,
       );
     if (sourceData && !dataCubeId) {
       this.application.navigationService.navigator.updateCurrentLocation(

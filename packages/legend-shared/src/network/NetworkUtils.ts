@@ -567,9 +567,16 @@ export const getQueryParameters = <T>(url: string, isFullUrl = false): T => {
 export const getQueryParameterValue = (
   key: string,
   data: Record<string, string | undefined>,
+  replaceUrlSafeBase64Characters: boolean = false,
 ): string | undefined => {
   const paramValue = data[key];
-  return paramValue ? decodeURIComponent(paramValue) : undefined;
+  if (replaceUrlSafeBase64Characters) {
+    return paramValue
+      ? decodeURIComponent(paramValue).replace(/-/g, '+').replace(/_/g, '/')
+      : undefined;
+  } else {
+    return paramValue ? decodeURIComponent(paramValue) : undefined;
+  }
 };
 
 export const stringifyQueryParams = (params: PlainObject): string => {

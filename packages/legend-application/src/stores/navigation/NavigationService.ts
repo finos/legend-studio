@@ -102,9 +102,12 @@ export interface ApplicationNavigator {
   getCurrentLocation(): NavigationLocation;
   getCurrentLocationParameters<
     T extends Record<string, NavigationLocationParameterValue>,
-  >(): T;
+  >(
+    replaceUrlSafeBase64Characters?: boolean,
+  ): T;
   getCurrentLocationParameterValue(
     key: string,
+    replaceUrlSafeBase64Characters?: boolean,
   ): NavigationLocationParameterValue;
 
   getCurrentZone(): NavigationZone;
