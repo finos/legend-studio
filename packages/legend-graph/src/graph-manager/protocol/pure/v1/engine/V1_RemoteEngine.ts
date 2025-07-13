@@ -168,10 +168,7 @@ import {
 } from '../../../../action/query/PersistentDataCube.js';
 import { V1_getGenericTypeFullPath } from '../helpers/V1_DomainHelper.js';
 import { V1_relationTypeModelSchema } from '../transformation/pureProtocol/serializationHelpers/V1_TypeSerializationHelper.js';
-import {
-  V1_LineageInput,
-  type V1_LineageModel,
-} from '../model/lineage/V1_Lineage.js';
+import { V1_LineageInput } from '../model/lineage/V1_Lineage.js';
 import type { RawLineageModel } from '../../../../../graph/metamodel/pure/lineage/LineageModel.js';
 
 class V1_RemoteEngineConfig extends TEMPORARY__AbstractEngineConfig {

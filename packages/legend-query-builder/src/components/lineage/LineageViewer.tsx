@@ -92,7 +92,9 @@ function autoLayoutNodesAndEdges<T extends { id: string }>(
   // Group nodes by level
   const levelNodes: Record<number, string[]> = {};
   Object.entries(levels).forEach(([id, lvl]) => {
-    if (!levelNodes[lvl]) levelNodes[lvl] = [];
+    if (!levelNodes[lvl]) {
+      levelNodes[lvl] = [];
+    }
     levelNodes[lvl].push(id);
   });
 
@@ -127,7 +129,9 @@ function autoLayoutNodesAndEdges<T extends { id: string }>(
 function getLayoutBounds(positions: Record<string, { x: number; y: number }>) {
   const xs = Object.values(positions).map((p) => p.x);
   const ys = Object.values(positions).map((p) => p.y);
-  if (!xs.length || !ys.length) return { width: 800, height: 600 };
+  if (!xs.length || !ys.length) {
+    return { width: 800, height: 600 };
+  }
   const minX = Math.min(...xs);
   const maxX = Math.max(...xs);
   const minY = Math.min(...ys);
@@ -140,7 +144,7 @@ function getLayoutBounds(positions: Record<string, { x: number; y: number }>) {
 }
 
 const convertGraphToFlow = (graph?: Graph) => {
-  if (!graph?.nodes || !graph.nodes.length) {
+  if (!graph?.nodes.length) {
     // Handle missing or empty graph
     return {
       nodes: [
@@ -194,7 +198,7 @@ const convertGraphToFlow = (graph?: Graph) => {
 };
 
 const convertReportLineageToFlow = (reportLineage?: ReportLineage) => {
-  if (!reportLineage?.columns || !reportLineage.columns.length) {
+  if (!reportLineage?.columns.length) {
     // Handle missing or empty report lineage
     return {
       nodes: [

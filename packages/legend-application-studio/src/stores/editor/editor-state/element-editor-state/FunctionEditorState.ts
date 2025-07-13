@@ -57,7 +57,6 @@ import {
   RawVariableExpression,
   type FunctionActivator,
   CodeCompletionResult,
-  type LineageModel,
   type RawLineageModel,
 } from '@finos/legend-graph';
 import {

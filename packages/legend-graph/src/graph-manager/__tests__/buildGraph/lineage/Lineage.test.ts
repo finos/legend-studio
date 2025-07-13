@@ -25,7 +25,9 @@ describe('Lineage deserialization tests', () => {
     '%s',
     async (testName: LineageTestCase[0], context: LineageTestCase[1]) => {
       const { lineageJSONPath } = context;
-      const lineageJSON = JSON.parse(fs.readFileSync(lineageJSONPath, 'utf-8'));
+      const lineageJSON = JSON.parse(
+        fs.readFileSync(lineageJSONPath, 'utf-8'),
+      ) as unknown[];
       const result = deserialize(LineageModel, lineageJSON);
       expect(result).toBeInstanceOf(LineageModel);
     },
