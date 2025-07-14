@@ -16,8 +16,6 @@
 
 import { createModelSchema, primitive, list, object, custom } from 'serializr';
 
-export type RawLineageModel = object;
-
 export class Graph {
   nodes: LineageNode[] = [];
   edges: LineageEdge[] = [];
@@ -82,6 +80,7 @@ export class Owner {
 }
 
 export class LineageColumn {
+  // Renamed class
   owner!: Owner;
   nullable!: boolean;
   name!: string;
@@ -130,7 +129,10 @@ createModelSchema(Graph, {
 
 createModelSchema(PropertyPathTree, {
   display: primitive(),
-  value: primitive(),
+  value: custom(
+    () => undefined,
+    () => undefined,
+  ),
   children: list(object(PropertyPathTree)),
   qualifierSubTree: object(PropertyPathTree),
 });

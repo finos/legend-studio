@@ -366,7 +366,7 @@ import { V1_DataProduct } from './model/packageableElements/dataProduct/V1_DataP
 import { V1_MemSQLFunction } from './model/packageableElements/function/V1_MemSQLFunction.js';
 import {
   LineageModel,
-  type RawLineageModel,
+  type V1_RawLineageModel,
 } from '../../../../graph/metamodel/pure/lineage/LineageModel.js';
 import { V1_LineageInput } from './model/lineage/V1_Lineage.js';
 
@@ -3196,7 +3196,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  buildLineage(lineageJSON: PlainObject<RawLineageModel>): LineageModel {
+  buildLineage(lineageJSON: PlainObject<V1_RawLineageModel>): LineageModel {
     return deserialize(LineageModel, lineageJSON);
   }
 
@@ -4646,7 +4646,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     runtime: Runtime | undefined,
     graph: PureModel,
     _report?: GraphManagerOperationReport,
-  ): Promise<RawLineageModel> {
+  ): Promise<V1_RawLineageModel> {
     const report = _report ?? createGraphManagerOperationReport();
     const stopWatch = new StopWatch();
 

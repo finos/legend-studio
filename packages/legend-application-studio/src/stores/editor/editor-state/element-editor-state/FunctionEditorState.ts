@@ -57,7 +57,7 @@ import {
   RawVariableExpression,
   type FunctionActivator,
   CodeCompletionResult,
-  type RawLineageModel,
+  type V1_RawLineageModel,
 } from '@finos/legend-graph';
 import {
   ExecutionPlanState,
@@ -709,7 +709,7 @@ export class FunctionEditorState extends ElementEditorState {
           undefined,
           this.editorStore.graphManagerState.graph,
           undefined,
-        )) as RawLineageModel;
+        )) as V1_RawLineageModel;
 
       const lineageData =
         this.editorStore.graphManagerState.graphManager.buildLineage(

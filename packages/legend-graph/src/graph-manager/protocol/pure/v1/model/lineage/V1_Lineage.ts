@@ -32,6 +32,7 @@ import {
 } from '../../transformation/pureProtocol/serializationHelpers/V1_RuntimeSerializationHelper.js';
 import { V1_rawLambdaModelSchema } from '../../transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper.js';
 
+export type V1_RawLineageModel = object;
 export class V1_LineageInput {
   clientVersion: string | undefined;
   /**
@@ -56,64 +57,4 @@ export class V1_LineageInput {
       ),
     }),
   );
-}
-
-export abstract class V1_LineageEdge {
-  abstract source: string;
-  abstract target: string;
-  abstract type: string;
-}
-
-export abstract class V1_LineageNode {
-  abstract id: string;
-  abstract text: string;
-  abstract type: string;
-}
-
-export abstract class V1_LineageGraph {
-  abstract edges: V1_LineageEdge[];
-  abstract nodes: V1_LineageNode[];
-}
-
-export abstract class V1_FunctionTreeNode {
-  abstract display: string;
-  abstract type: string;
-  abstract children?: V1_FunctionTreeNode[] | undefined;
-}
-
-export abstract class V1_ReportLineageColumn {
-  abstract database: string;
-  abstract name: string;
-  abstract schema: string;
-  abstract table: string;
-}
-
-export abstract class V1_ReportLineagePropertyTree {
-  abstract display: string;
-  abstract type: string;
-  abstract children?: V1_ReportLineagePropertyTree[] | undefined;
-}
-
-export abstract class V1_ReportLineage {
-  abstract columns: V1_ReportLineageColumn[];
-  abstract name: string;
-  abstract propertyTree: V1_ReportLineagePropertyTree;
-}
-
-export abstract class V1_RelationTree {
-  abstract display: string;
-  abstract isView: boolean;
-}
-
-export abstract class V1_SerializerInfo {
-  abstract name: string;
-  abstract version: string;
-}
-
-export abstract class V1_LineageModel {
-  abstract classLineage?: V1_LineageGraph | undefined;
-  abstract databaseLineage?: V1_LineageGraph | undefined;
-  abstract functionTree?: V1_FunctionTreeNode[] | undefined;
-  abstract relationTree?: V1_RelationTree | undefined;
-  abstract reportLineage?: V1_ReportLineage[] | undefined;
 }
