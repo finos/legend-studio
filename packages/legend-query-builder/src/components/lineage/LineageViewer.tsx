@@ -36,7 +36,6 @@ import {
   type Node as ReactFlowNode,
   type Edge as ReactFlowEdge,
 } from 'reactflow';
-import 'reactflow/dist/style.css';
 import {
   type LineageState,
   LINEAGE_VIEW_MODE,
