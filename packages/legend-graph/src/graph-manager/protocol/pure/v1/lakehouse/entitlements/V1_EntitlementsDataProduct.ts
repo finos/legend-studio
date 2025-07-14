@@ -16,36 +16,36 @@
 
 import { type V1_AppDirNode } from './V1_CoreEntitlements.js';
 import type { V1_StereotypePtr } from '../../model/packageableElements/domain/V1_StereotypePtr.js';
+import type { PlainObject } from '@finos/legend-shared';
 
-export enum V1_DataProductOriginType {
-  AD_HOC_DEPLOYMENT = 'AdHocDeployment',
-  SDLC_DEPLOYMENT = 'SdlcDeployment',
-}
+export abstract class V1_EntitlementsDataProductOrigin {}
 
-export abstract class V1_DataProductOrigin {}
-
-export class V1_AdHocDeploymentDataProductOrigin extends V1_DataProductOrigin {
+export class V1_AdHocDeploymentDataProductOrigin extends V1_EntitlementsDataProductOrigin {
   definition!: string;
 }
 
-export class V1_SdlcDeploymentDataProductOrigin extends V1_DataProductOrigin {
+export class V1_SdlcDeploymentDataProductOrigin extends V1_EntitlementsDataProductOrigin {
   group!: string;
   artifact!: string;
   version!: string;
 }
 
-export enum V1_LakehouseEnvironmentType {
+export class V1_UnknownDataProductOriginType extends V1_EntitlementsDataProductOrigin {
+  content!: PlainObject;
+}
+
+export enum V1_EntitlementsLakehouseEnvironmentType {
   PRODUCTION = 'PRODUCTION',
   PRODUCTION_PARALLEL = 'PRODUCTION_PARALLEL',
   DEVELOPMENT = 'DEVELOPMENT',
 }
 
-export class V1_LakehouseEnvironment {
+export class V1_EntitlementsLakehouseEnvironment {
   producerEnvironmentName!: string;
-  type!: V1_LakehouseEnvironmentType;
+  type!: V1_EntitlementsLakehouseEnvironmentType;
 }
 
-export class V1_LakehouseDataProductAccessPoint {
+export class V1_EntitlementsAccessPoint {
   name!: string;
   groups: string[] = [];
 }
@@ -55,22 +55,22 @@ export class V1_AccessPointGroupStereotypeMapping {
   stereotypes: V1_StereotypePtr[] = [];
 }
 
-export class V1_LakehouseDataProduct {
+export class V1_EntitlementsDataProduct {
   name!: string;
-  accessPoints: V1_LakehouseDataProductAccessPoint[] = [];
+  accessPoints: V1_EntitlementsAccessPoint[] = [];
   accessPointGroupStereotypeMappings: V1_AccessPointGroupStereotypeMapping[] =
     [];
   owner!: V1_AppDirNode;
 }
 
-export class V1_DataProductDetails {
+export class V1_EntitlementsDataProductDetails {
   id!: string;
   deploymentId!: number;
-  origin?: V1_DataProductOrigin;
-  lakehouseEnvironment?: V1_LakehouseEnvironment;
-  dataProduct!: V1_LakehouseDataProduct;
+  origin?: V1_EntitlementsDataProductOrigin;
+  lakehouseEnvironment?: V1_EntitlementsLakehouseEnvironment;
+  dataProduct!: V1_EntitlementsDataProduct;
 }
 
-export class V1_DataProductDetailsResponse {
-  dataProducts: V1_DataProductDetails[] = [];
+export class V1_EntitlementsDataProductDetailsResponse {
+  dataProducts: V1_EntitlementsDataProductDetails[] = [];
 }
