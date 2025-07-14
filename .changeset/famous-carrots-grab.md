@@ -3,6 +3,7 @@
 '@finos/legend-application-query': patch
 '@finos/legend-graph': patch
 '@finos/legend-query-builder': patch
+'@finos/legend-application-studio-bootstrap': patch
 ---
 
-add intial version of lineage viewer
+add initial version of lineage viewer
