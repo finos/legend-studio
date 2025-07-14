@@ -57,11 +57,12 @@ function autoLayoutNodesAndEdges<T extends { id: string }>(
   ySpacing = 120,
   areaHeight = 800,
 ): Record<string, { x: number; y: number }> {
-  // Build adjacency and levels
+  // Build in-degree map
   const nodeIds = nodes.map((n) => n.id);
-  const inDegree: Record<string, number> = Object.fromEntries(
-    nodeIds.map((id) => [id, 0]),
-  );
+  const inDegree: Record<string, number> = {};
+  nodeIds.forEach((id) => {
+    inDegree[id] = 0;
+  });
   edges.forEach((e) => {
     inDegree[e.target] = (inDegree[e.target] ?? 0) + 1;
   });
@@ -69,15 +70,21 @@ function autoLayoutNodesAndEdges<T extends { id: string }>(
   // BFS to assign levels
   const levels: Record<string, number> = {};
   const queue: string[] = [];
+
   nodeIds.forEach((id) => {
     if (inDegree[id] === 0) {
       levels[id] = 0;
       queue.push(id);
     }
   });
-  while (queue.length) {
-    const current = queue.shift()!;
-    const currentLevel = levels[current] ?? 0; // Ensure currentLevel is always a number
+
+  while (queue.length > 0) {
+    const current = queue.shift();
+    if (current === undefined) {
+      continue; // should never happen, but safe fallback
+    }
+
+    const currentLevel = levels[current] ?? 0;
     edges.forEach((e) => {
       if (e.source === current) {
         const targetLevel = levels[e.target] ?? -1;
@@ -98,11 +105,12 @@ function autoLayoutNodesAndEdges<T extends { id: string }>(
     levelNodes[lvl].push(id);
   });
 
-  // Position nodes per level, centered vertically
+  // Position nodes
   const positions: Record<string, { x: number; y: number }> = {};
   const maxLevel = Object.values(levels).length
     ? Math.max(...Object.values(levels))
     : 0;
+
   for (let lvl = 0; lvl <= maxLevel; lvl++) {
     const ids = levelNodes[lvl] ?? [];
     const totalHeight = (ids.length - 1) * ySpacing;
@@ -114,7 +122,8 @@ function autoLayoutNodesAndEdges<T extends { id: string }>(
       };
     });
   }
-  // Fallback for nodes not in levels (disconnected)
+
+  // Fallback for disconnected nodes
   nodeIds.forEach((id, idx) => {
     if (!positions[id]) {
       positions[id] = {
@@ -123,6 +132,7 @@ function autoLayoutNodesAndEdges<T extends { id: string }>(
       };
     }
   });
+
   return positions;
 }
 
@@ -299,7 +309,10 @@ const convertReportLineageToFlow = (reportLineage?: ReportLineage) => {
         });
       }
 
-      const tableInfo = tables.get(ownerKey)!;
+      const tableInfo = tables.get(ownerKey);
+      if (!tableInfo) {
+        return;
+      }
       if (!tableInfo.columns.includes(columnName)) {
         tableInfo.columns.push(columnName);
       }
@@ -521,9 +534,7 @@ export const LineageViewer = observer(
     };
 
     useEffect(() => {
-      if (!lineageState.selectedTab) {
-        lineageState.setSelectedTab(LINEAGE_VIEW_MODE.DATABASE_LINEAGE);
-      }
+      lineageState.setSelectedTab(LINEAGE_VIEW_MODE.DATABASE_LINEAGE);
     }, [lineageState]);
 
     if (!lineageState.lineageData) {

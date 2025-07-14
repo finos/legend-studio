@@ -26,7 +26,7 @@ export enum LINEAGE_VIEW_MODE {
 
 export class LineageState {
   applicationStore: GenericLegendApplicationStore;
-  selectedTab: LINEAGE_VIEW_MODE = LINEAGE_VIEW_MODE.CLASS_LINEAGE;
+  selectedTab: LINEAGE_VIEW_MODE = LINEAGE_VIEW_MODE.DATABASE_LINEAGE;
   lineageData: LineageModel | undefined = undefined;
   isLineageViewerOpen = false;
 
