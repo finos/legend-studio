@@ -14,215 +14,235 @@
  * limitations under the License.
  */
 
-import { action, computed, makeObservable, observable } from 'mobx';
-import { ActionState, isNonEmptyString, uuid } from '@finos/legend-shared';
+import { action, computed, flow, makeObservable, observable } from 'mobx';
 import {
-  ELEMENT_PATH_DELIMITER,
-  type V1_DataProduct,
-  type V1_DataProductArtifactGeneration,
-  type V1_DataProductDefinitionAndArtifact,
+  ActionState,
+  assertErrorThrown,
+  guaranteeNonNullable,
+  guaranteeType,
+  type GeneratorFn,
+} from '@finos/legend-shared';
+import {
+  type V1_EntitlementsDataProductDetails,
+  type V1_PureGraphManager,
+  GraphManagerState,
+  V1_AdHocDeploymentDataProductOrigin,
+  V1_DataProduct,
+  V1_dataProductModelSchema,
+  V1_EntitlementsLakehouseEnvironmentType,
+  V1_SdlcDeploymentDataProductOrigin,
 } from '@finos/legend-graph';
 import type { MarketplaceLakehouseStore } from '../MarketplaceLakehouseStore.js';
-
-export class DataProductEntity {
-  product: V1_DataProduct | undefined;
-  groupId!: string;
-  artifactId!: string;
-  versionId!: string;
-  path!: string;
-
-  loadingEntityState = ActionState.create();
-
-  constructor(
-    groupId: string,
-    artifactId: string,
-    versionId: string,
-    path: string,
-  ) {
-    this.groupId = groupId;
-    this.artifactId = artifactId;
-    this.versionId = versionId;
-    this.path = path;
-
-    makeObservable(this, {
-      groupId: observable,
-      artifactId: observable,
-      versionId: observable,
-      path: observable,
-      product: observable,
-      loadingEntityState: observable,
-      setProduct: action,
-      title: computed,
-    });
-  }
-
-  setProduct(product: V1_DataProduct | undefined): void {
-    this.product = product;
-  }
-
-  get title(): string {
-    return (
-      this.product?.title ?? this.path.split(ELEMENT_PATH_DELIMITER).pop() ?? ''
-    );
-  }
-}
+import { deserialize } from 'serializr';
+import { type Entity } from '@finos/legend-storage';
 
 export enum DataProductType {
   LAKEHOUSE = 'LAKEHOUSE',
   UNKNOWN = 'UNKNOWN',
 }
 
-export abstract class BaseDataProductState {
-  readonly state: MarketplaceLakehouseStore;
-  readonly id: string;
-  abstract accessTypes: DataProductType;
-  abstract isLoading: boolean;
-  abstract title: string;
-  abstract description: string | undefined;
-  abstract icon: string | undefined;
-  abstract imageUrl: string | undefined;
-  abstract isInitialized: boolean;
-  abstract versionOptions: string[];
-  abstract setSelectedVersion(versionId: string): void;
+export class DataProductDetailsAndElement {
+  readonly dataProductState: DataProductState;
+  readonly entitlementsDataProductDetails: V1_EntitlementsDataProductDetails;
+  dataProductElement: V1_DataProduct | undefined;
+  readonly loadingEntityState = ActionState.create();
 
-  constructor(state: MarketplaceLakehouseStore) {
-    this.id = uuid();
-    this.state = state;
+  constructor(
+    dataProductState: DataProductState,
+    entitlementsDataProductDetails: V1_EntitlementsDataProductDetails,
+  ) {
+    this.dataProductState = dataProductState;
+    this.entitlementsDataProductDetails = entitlementsDataProductDetails;
 
     makeObservable(this, {
-      id: observable,
-      accessTypes: computed,
-      isLoading: computed,
-      title: computed,
-      description: computed,
-      icon: computed,
-      imageUrl: computed,
+      dataProductElement: observable,
+      fetchDataProductElement: flow,
+    });
+  }
+
+  *fetchDataProductElement(): GeneratorFn<void> {
+    if (
+      this.entitlementsDataProductDetails.origin instanceof
+      V1_SdlcDeploymentDataProductOrigin
+    ) {
+      this.loadingEntityState.inProgress();
+      try {
+        const dataProductEntity = deserialize(
+          V1_dataProductModelSchema,
+          (
+            (yield this.dataProductState.lakehouseState.depotServerClient.getVersionEntity(
+              this.entitlementsDataProductDetails.origin.group,
+              this.entitlementsDataProductDetails.origin.artifact,
+              this.entitlementsDataProductDetails.origin.version,
+              this.entitlementsDataProductDetails.id,
+            )) as Entity
+          ).content,
+        );
+        this.dataProductElement = dataProductEntity;
+      } catch (error) {
+        assertErrorThrown(error);
+        this.dataProductState.lakehouseState.applicationStore.notificationService.notifyError(
+          'Error fetching data product entity from SDLC deployment',
+        );
+      } finally {
+        this.loadingEntityState.complete();
+      }
+    } else if (
+      this.entitlementsDataProductDetails.origin instanceof
+      V1_AdHocDeploymentDataProductOrigin
+    ) {
+      this.loadingEntityState.inProgress();
+      try {
+        const graphManagerState = new GraphManagerState(
+          this.dataProductState.lakehouseState.applicationStore.pluginManager,
+          this.dataProductState.lakehouseState.applicationStore.logService,
+        );
+        const entities: Entity[] =
+          yield this.dataProductState.graphManager.pureCodeToEntities(
+            this.entitlementsDataProductDetails.origin.definition,
+          );
+        yield this.dataProductState.graphManager.buildGraph(
+          graphManagerState.graph,
+          entities,
+          ActionState.create(),
+        );
+        const dataProductEntity = guaranteeType(
+          guaranteeNonNullable(
+            this.dataProductState.graphManager.elementToProtocol(
+              graphManagerState.graph.getElement(
+                this.entitlementsDataProductDetails.id,
+              ),
+            ),
+            `Unable to find ${this.entitlementsDataProductDetails.id} in deployed definition`,
+          ),
+          V1_DataProduct,
+          `${this.entitlementsDataProductDetails.id} is not a data product`,
+        );
+        this.dataProductElement = dataProductEntity;
+      } catch (error) {
+        assertErrorThrown(error);
+        this.dataProductState.lakehouseState.applicationStore.notificationService.notifyError(
+          'Error fetching data product entity from ad-hoc deployment',
+        );
+      }
+    }
+  }
+}
+
+export class DataProductState {
+  readonly lakehouseState: MarketplaceLakehouseStore;
+  readonly graphManager: V1_PureGraphManager;
+  readonly initState = ActionState.create();
+  dataProductDetailsMap: Map<string, DataProductDetailsAndElement>;
+  currentDataProductDetailsAndElement: DataProductDetailsAndElement | undefined;
+
+  constructor(
+    lakehouseState: MarketplaceLakehouseStore,
+    graphManager: V1_PureGraphManager,
+  ) {
+    this.lakehouseState = lakehouseState;
+    this.graphManager = graphManager;
+
+    this.dataProductDetailsMap = new Map<
+      string,
+      DataProductDetailsAndElement
+    >();
+
+    makeObservable(this, {
       isInitialized: computed,
       versionOptions: computed,
       setSelectedVersion: action,
-    });
-  }
-}
-
-export class DataProductState extends BaseDataProductState {
-  productEntityMap: Map<string, DataProductEntity>;
-  currentProductEntity: DataProductEntity | undefined;
-
-  constructor(state: MarketplaceLakehouseStore) {
-    super(state);
-
-    this.productEntityMap = new Map<string, DataProductEntity>();
-
-    makeObservable(this, {
-      productEntityMap: observable,
-      currentProductEntity: observable,
-      setProductEntity: action,
+      dataProductDetailsMap: observable,
+      currentDataProductDetailsAndElement: observable,
     });
   }
 
-  get accessTypes(): DataProductType {
-    return DataProductType.LAKEHOUSE;
-  }
-
-  get isLoading(): boolean {
-    return Array.from(this.productEntityMap.values()).some(
-      (entity) => entity.loadingEntityState.isInProgress,
+  get title(): string {
+    return (
+      this.currentDataProductDetailsAndElement?.dataProductElement?.title ?? ''
     );
   }
 
-  get title(): string {
-    return this.currentProductEntity?.title ?? '';
-  }
-
   get description(): string | undefined {
-    return this.currentProductEntity?.product?.description ?? '';
+    return (
+      this.currentDataProductDetailsAndElement?.dataProductElement
+        ?.description ?? ''
+    );
   }
 
   get icon(): string | undefined {
-    return this.currentProductEntity?.product?.icon;
+    return this.currentDataProductDetailsAndElement?.dataProductElement?.icon;
   }
 
   get imageUrl(): string | undefined {
-    return this.currentProductEntity?.product?.imageUrl;
+    return this.currentDataProductDetailsAndElement?.dataProductElement
+      ?.imageUrl;
   }
 
   get isInitialized(): boolean {
-    return this.currentProductEntity !== undefined;
+    return this.currentDataProductDetailsAndElement !== undefined;
   }
 
   get versionId(): string {
-    return this.currentProductEntity?.versionId ?? '';
+    const origin =
+      this.currentDataProductDetailsAndElement?.entitlementsDataProductDetails
+        .origin;
+    return origin instanceof V1_SdlcDeploymentDataProductOrigin
+      ? origin.version
+      : origin instanceof V1_AdHocDeploymentDataProductOrigin
+        ? `${
+            this.currentDataProductDetailsAndElement
+              ?.entitlementsDataProductDetails.deploymentId ?? 'Unknown'
+          }`
+        : 'default';
+  }
+
+  get environmentClassification():
+    | V1_EntitlementsLakehouseEnvironmentType
+    | undefined {
+    return this.currentDataProductDetailsAndElement
+      ?.entitlementsDataProductDetails.lakehouseEnvironment?.type;
   }
 
   get versionOptions(): string[] {
-    return Array.from(this.productEntityMap.keys());
-  }
-
-  setSelectedVersion(versionId: string): void {
-    this.currentProductEntity = this.productEntityMap.get(versionId);
-  }
-
-  setProductEntity(versionId: string, productEntity: DataProductEntity): void {
-    this.productEntityMap.set(versionId, productEntity);
-  }
-}
-
-export class SandboxDataProductState extends BaseDataProductState {
-  ingestEnvironmentUrn: string;
-  dataProductDefinition: string | undefined;
-  dataProductArtifact: V1_DataProductArtifactGeneration | undefined;
-
-  constructor(
-    state: MarketplaceLakehouseStore,
-    ingestEnvironmentUrn: string,
-    dataProductDefinitionAndArtifact: V1_DataProductDefinitionAndArtifact,
-  ) {
-    super(state);
-    this.ingestEnvironmentUrn = ingestEnvironmentUrn;
-    this.dataProductDefinition = dataProductDefinitionAndArtifact.definition;
-    this.dataProductArtifact = dataProductDefinitionAndArtifact.artifact;
-
-    makeObservable(this, {
-      dataProductDefinition: observable,
-      dataProductArtifact: observable,
-    });
-  }
-
-  get accessTypes(): DataProductType {
-    return DataProductType.LAKEHOUSE;
+    return Array.from(this.dataProductDetailsMap.keys());
   }
 
   get isLoading(): boolean {
-    return false;
+    return Array.from(this.dataProductDetailsMap.values()).some(
+      (detailsAndElement) => detailsAndElement.loadingEntityState.isInProgress,
+    );
   }
 
-  get title(): string {
-    return isNonEmptyString(this.dataProductArtifact?.dataProduct.title)
-      ? this.dataProductArtifact.dataProduct.title
-      : (this.dataProductArtifact?.dataProduct.path
-          .split(ELEMENT_PATH_DELIMITER)
-          .pop() ?? '');
+  setSelectedVersion(versionId: string): void {
+    this.currentDataProductDetailsAndElement =
+      this.dataProductDetailsMap.get(versionId);
   }
 
-  get description(): string | undefined {
-    return this.dataProductArtifact?.dataProduct.description;
+  addDataProductDetails(
+    dataProductDetails: V1_EntitlementsDataProductDetails,
+  ): void {
+    const detailsAndElement = new DataProductDetailsAndElement(
+      this,
+      dataProductDetails,
+    );
+    if (
+      dataProductDetails.origin instanceof V1_SdlcDeploymentDataProductOrigin
+    ) {
+      this.dataProductDetailsMap.set(
+        dataProductDetails.origin.version,
+        detailsAndElement,
+      );
+    } else if (
+      dataProductDetails.origin instanceof V1_AdHocDeploymentDataProductOrigin
+    ) {
+      this.dataProductDetailsMap.set(
+        `${dataProductDetails.deploymentId}`,
+        detailsAndElement,
+      );
+    } else {
+      this.dataProductDetailsMap.set('default', detailsAndElement);
+    }
+    detailsAndElement.fetchDataProductElement();
   }
-
-  get icon(): string | undefined {
-    return undefined;
-  }
-
-  get imageUrl(): string | undefined {
-    return '/assets/UnknownTypeLogo.png';
-  }
-
-  get isInitialized(): boolean {
-    return this.dataProductArtifact !== undefined;
-  }
-
-  get versionOptions(): string[] {
-    return [];
-  }
-
-  setSelectedVersion(_: string): void {}
 }

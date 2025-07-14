@@ -20,9 +20,9 @@ import type {
   V1_DataContract,
   V1_DataContractApprovedUsersResponse,
   V1_DataContractsResponse,
-  V1_DataProductDetailsResponse,
   V1_DataSubscriptionResponse,
   V1_EnrichedUserApprovalStatus,
+  V1_EntitlementsDataProductDetailsResponse,
   V1_PendingTasksRespond,
   V1_TaskStatus,
   V1_UserPendingContractsResponse,
@@ -213,6 +213,6 @@ export class LakehouseContractServerClient extends AbstractServerClient {
 
   getDataProducts = (
     token: string | undefined,
-  ): Promise<V1_DataProductDetailsResponse> =>
+  ): Promise<PlainObject<V1_EntitlementsDataProductDetailsResponse>> =>
     this.get(this._dataProducts(), {}, this._token(token));
 }

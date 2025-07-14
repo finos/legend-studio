@@ -16,30 +16,18 @@
 
 import { type PlainObject } from '@finos/legend-shared';
 import {
-  type V1_OrganizationalScope,
-  V1_Resource,
-  type V1_User,
-  type V1_AppDirNode,
   type V1_AdhocTeam,
+  type V1_OrganizationalScope,
+  type V1_User,
+  V1_Resource,
 } from './V1_CoreEntitlements.js';
 import type { V1_DataSubscription } from '../subscriptions/V1_ConsumerSubscriptions.js';
+import type { V1_EntitlementsDataProduct } from './V1_EntitlementsDataProduct.js';
 
 export class V1_ConsumerEntitlementResource extends V1_Resource {}
 
-export class V1_AccessPoint_Entitlements {
-  name!: string;
-  guid!: string;
-  groups: string[] = [];
-}
-export class V1_DataProduct_Entitlements {
-  name!: string;
-  guid!: string;
-  accessPoints: V1_AccessPoint_Entitlements[] = [];
-  owner!: V1_AppDirNode;
-}
-
 export class V1_AccessPointGroupReference extends V1_ConsumerEntitlementResource {
-  dataProduct!: V1_DataProduct_Entitlements;
+  dataProduct!: V1_EntitlementsDataProduct;
   accessPointGroup!: string;
 }
 

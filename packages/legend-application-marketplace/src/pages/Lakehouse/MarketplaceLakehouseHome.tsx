@@ -67,23 +67,22 @@ import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
 import { EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl } from '@finos/legend-application';
 import { useAuth } from 'react-oidc-context';
 import {
+  type DataProductDetailsAndElement,
   DataProductState,
-  SandboxDataProductState,
-  type BaseDataProductState,
-  type DataProductEntity,
 } from '../../stores/lakehouse/dataProducts/DataProducts.js';
 import type { LegendMarketplaceApplicationStore } from '../../stores/LegendMarketplaceBaseStore.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
   ELEMENT_PATH_DELIMITER,
   V1_IngestEnvironmentClassification,
+  V1_SdlcDeploymentDataProductOrigin,
 } from '@finos/legend-graph';
 
 const MAX_DESCRIPTION_LENGTH = 250;
 
 const LakehouseDataProductCardInfoPopover = observer(
   (props: {
-    dataProductEntity: DataProductEntity;
+    dataProductDetailsAndElement: DataProductDetailsAndElement;
     popoverAnchorEl: HTMLButtonElement | null;
     setPopoverAnchorEl: React.Dispatch<
       React.SetStateAction<HTMLButtonElement | null>
@@ -91,7 +90,7 @@ const LakehouseDataProductCardInfoPopover = observer(
     applicationStore: LegendMarketplaceApplicationStore;
   }) => {
     const {
-      dataProductEntity,
+      dataProductDetailsAndElement,
       popoverAnchorEl,
       setPopoverAnchorEl,
       applicationStore,
@@ -99,6 +98,8 @@ const LakehouseDataProductCardInfoPopover = observer(
 
     const popoverOpen = Boolean(popoverAnchorEl);
     const popoverId = popoverOpen ? 'popover' : undefined;
+    const origin =
+      dataProductDetailsAndElement.entitlementsDataProductDetails.origin;
 
     return (
       <Popover
@@ -131,65 +132,73 @@ const LakehouseDataProductCardInfoPopover = observer(
         }}
       >
         <div className="marketplace-lakehouse-data-product-card__popover__name">
-          {dataProductEntity.product?.title ??
-            dataProductEntity.path.split(ELEMENT_PATH_DELIMITER).pop()}
+          {dataProductDetailsAndElement.dataProductElement?.title ??
+            dataProductDetailsAndElement.dataProductElement?.path
+              .split(ELEMENT_PATH_DELIMITER)
+              .pop()}
         </div>
         <div className="marketplace-lakehouse-data-product-card__popover__description-label">
           Description
         </div>
         <div className="marketplace-lakehouse-data-product-card__popover__description">
-          {dataProductEntity.product?.description}
+          {dataProductDetailsAndElement.dataProductElement?.description}
         </div>
-        <hr />
-        <div className="marketplace-lakehouse-data-product-card__popover__project-table-header">
-          Data Product Project
-          <IconButton
-            className="marketplace-lakehouse-data-product-card__popover__project-link"
-            onClick={() =>
-              applicationStore.navigationService.navigator.visitAddress(
-                EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
-                  applicationStore.config.studioServerUrl,
-                  dataProductEntity.groupId,
-                  dataProductEntity.artifactId,
-                  dataProductEntity.versionId,
-                  dataProductEntity.path,
-                ),
-              )
-            }
-          >
-            <OpenIcon />
-          </IconButton>
-        </div>
-        <TableContainer className="marketplace-lakehouse-data-product-card__popover__project-table">
-          <Table>
-            <TableBody>
-              <TableRow>
-                <TableCell>
-                  <b>Group</b>
-                </TableCell>
-                <TableCell>{dataProductEntity.groupId}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>
-                  <b>Artifact</b>
-                </TableCell>
-                <TableCell>{dataProductEntity.artifactId}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>
-                  <b>Version</b>
-                </TableCell>
-                <TableCell>{dataProductEntity.versionId}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>
-                  <b>Path</b>
-                </TableCell>
-                <TableCell>{dataProductEntity.path}</TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </TableContainer>
+        {origin instanceof V1_SdlcDeploymentDataProductOrigin && (
+          <>
+            <hr />
+            <div className="marketplace-lakehouse-data-product-card__popover__project-table-header">
+              Data Product Project
+              <IconButton
+                className="marketplace-lakehouse-data-product-card__popover__project-link"
+                onClick={() =>
+                  applicationStore.navigationService.navigator.visitAddress(
+                    EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
+                      applicationStore.config.studioServerUrl,
+                      origin.group,
+                      origin.artifact,
+                      origin.version,
+                      dataProductDetailsAndElement.dataProductElement?.path,
+                    ),
+                  )
+                }
+              >
+                <OpenIcon />
+              </IconButton>
+            </div>
+            <TableContainer className="marketplace-lakehouse-data-product-card__popover__project-table">
+              <Table>
+                <TableBody>
+                  <TableRow>
+                    <TableCell>
+                      <b>Group</b>
+                    </TableCell>
+                    <TableCell>{origin.group}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>
+                      <b>Artifact</b>
+                    </TableCell>
+                    <TableCell>{origin.artifact}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>
+                      <b>Version</b>
+                    </TableCell>
+                    <TableCell>{origin.version}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>
+                      <b>Path</b>
+                    </TableCell>
+                    <TableCell>
+                      {dataProductDetailsAndElement.dataProductElement?.path}
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </>
+        )}
       </Popover>
     );
   },
@@ -197,8 +206,8 @@ const LakehouseDataProductCardInfoPopover = observer(
 
 export const LakehouseDataProductCard = observer(
   (props: {
-    dataProductState: BaseDataProductState;
-    onClick: (dataProductState: BaseDataProductState) => void;
+    dataProductState: DataProductState;
+    onClick: (dataProductState: DataProductState) => void;
   }): React.ReactNode => {
     const { dataProductState, onClick } = props;
 
@@ -221,18 +230,10 @@ export const LakehouseDataProductCard = observer(
           )}...`
         : dataProductState.description;
 
-    const versionId =
-      dataProductState instanceof DataProductState
-        ? dataProductState.versionId
-        : undefined;
+    const versionId = dataProductState.versionId;
     const isSnapshot = versionId ? isSnapshotVersion(versionId) : undefined;
     const environmentClassification =
-      dataProductState instanceof SandboxDataProductState &&
-      dataProductState.dataProductArtifact?.dataProduct.deploymentId
-        ? dataProductState.state.lakehouseIngestEnvironmentsByDID.get(
-            dataProductState.dataProductArtifact.dataProduct.deploymentId,
-          )?.environmentClassification
-        : undefined;
+      dataProductState.environmentClassification;
     const isLoading = dataProductState.isLoading;
 
     const content = isLoading ? (
@@ -368,7 +369,9 @@ export const LakehouseDataProductCard = observer(
                 )}
                 popoverAnchorEl={popoverAnchorEl}
                 setPopoverAnchorEl={setPopoverAnchorEl}
-                applicationStore={dataProductState.state.applicationStore}
+                applicationStore={
+                  dataProductState.lakehouseState.applicationStore
+                }
               />
             </>
           )}
@@ -579,7 +582,13 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
             className="marketplace-lakehouse-home__data-product-cards"
           >
             {marketPlaceStore.filterSortProducts?.map((dpState) => (
-              <Grid key={dpState.id} size={1}>
+              <Grid
+                key={
+                  dpState.currentDataProductDetailsAndElement
+                    ?.entitlementsDataProductDetails.id
+                }
+                size={1}
+              >
                 <LakehouseDataProductCard
                   dataProductState={dpState}
                   onClick={(dataProductState: BaseDataProductState) => {
