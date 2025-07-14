@@ -3472,6 +3472,7 @@ __metadata:
     react: "npm:19.0.0"
     react-dnd: "npm:16.0.1"
     react-dom: "npm:19.0.0"
+    reactflow: "npm:11.11.4"
     rimraf: "npm:6.0.1"
     sass: "npm:1.85.1"
     serializr: "npm:3.0.3"
