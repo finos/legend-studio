@@ -59,6 +59,7 @@ export const V1_lakehouseAccessPointModelSchema = createModelSchema(
     targetEnvironment: primitive(),
     classification: optional(primitive()),
     func: usingModelSchema(V1_rawLambdaModelSchema),
+    reproducible: optional(primitive()),
   },
 );
 

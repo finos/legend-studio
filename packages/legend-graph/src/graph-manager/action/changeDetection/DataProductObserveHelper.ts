@@ -41,6 +41,7 @@ export const observe_AccessPoint = skipObserved(
         classification: observable,
         func: observable.ref,
         description: observable,
+        reproducible: observable,
       });
     }
     // TODO others
