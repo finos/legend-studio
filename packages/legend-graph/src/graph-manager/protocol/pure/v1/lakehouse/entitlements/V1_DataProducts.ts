@@ -17,9 +17,12 @@
 import { type V1_AppDirNode } from './V1_CoreEntitlements.js';
 import type { V1_StereotypePtr } from '../../model/packageableElements/domain/V1_StereotypePtr.js';
 
-export abstract class V1_DataProductOrigin {
-  type!: string;
+export enum V1_DataProductOriginType {
+  AD_HOC_DEPLOYMENT = 'AdHocDeployment',
+  SDLC_DEPLOYMENT = 'SdlcDeployment',
 }
+
+export abstract class V1_DataProductOrigin {}
 
 export class V1_AdHocDeploymentDataProductOrigin extends V1_DataProductOrigin {
   definition!: string;
@@ -54,7 +57,7 @@ export class V1_AccessPointGroupStereotypeMapping {
 
 export class V1_LakehouseDataProduct {
   name!: string;
-  accessPoints!: V1_LakehouseDataProductAccessPoint[];
+  accessPoints: V1_LakehouseDataProductAccessPoint[] = [];
   accessPointGroupStereotypeMappings: V1_AccessPointGroupStereotypeMapping[] =
     [];
   owner!: V1_AppDirNode;
@@ -69,5 +72,5 @@ export class V1_DataProductDetails {
 }
 
 export class V1_DataProductDetailsResponse {
-  dataProducts!: V1_DataProductDetails[];
+  dataProducts: V1_DataProductDetails[] = [];
 }
