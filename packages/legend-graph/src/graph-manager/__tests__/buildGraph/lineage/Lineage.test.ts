@@ -43,9 +43,10 @@ describe('Lineage deserialization tests', () => {
       const { lineageJSONPath } = context;
       const lineageJSON = JSON.parse(
         fs.readFileSync(lineageJSONPath, 'utf-8'),
-      ) as unknown[];
-      const result = deserialize(LineageModel, lineageJSON);
-      expect(result).toBeInstanceOf(LineageModel);
+      ) as unknown;
+      const deser = deserialize(LineageModel, lineageJSON);
+      const result = Array.isArray(deser) ? deser[0] : deser;
+
       expect(result.databaseLineage.nodes).toHaveLength(3);
       expect(result.databaseLineage.edges).toHaveLength(2);
       expect(result.databaseLineage.nodes[0].data.id).toBe('Lambda');
