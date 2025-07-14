@@ -16,6 +16,8 @@
 
 import { createModelSchema, primitive, list, object, custom } from 'serializr';
 
+export type RawLineageModel = object;
+
 export class Graph {
   nodes: LineageNode[] = [];
   edges: LineageEdge[] = [];

@@ -364,11 +364,11 @@ import {
 } from './helpers/V1_DomainHelper.js';
 import { V1_DataProduct } from './model/packageableElements/dataProduct/V1_DataProduct.js';
 import { V1_MemSQLFunction } from './model/packageableElements/function/V1_MemSQLFunction.js';
+import { LineageModel } from '../../../../graph/metamodel/pure/lineage/LineageModel.js';
 import {
-  LineageModel,
+  V1_LineageInput,
   type V1_RawLineageModel,
-} from '../../../../graph/metamodel/pure/lineage/LineageModel.js';
-import { V1_LineageInput } from './model/lineage/V1_Lineage.js';
+} from './model/lineage/V1_Lineage.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
