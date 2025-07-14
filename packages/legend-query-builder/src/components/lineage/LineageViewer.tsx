@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect, type JSX } from 'react';
+import { useEffect } from 'react';
 import {
   PanelContent,
   clsx,
@@ -404,38 +404,28 @@ const convertReportLineageToFlow = (reportLineage?: ReportLineage) => {
   };
 };
 
-// Helper to render ReactFlow as a JSX.Element
-function renderReactFlow(
-  nodes: ReactFlowNode[],
-  edges: ReactFlowEdge[],
-): JSX.Element {
-  return (
-    <ReactFlowProvider>
-      <div style={{ width: '100%', height: '100%' }}>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          defaultEdgeOptions={{ type: 'default' }}
-          defaultViewport={{ x: 0, y: 0, zoom: 1.5 }}
-          fitView={true}
-          nodesDraggable={true}
-        >
-          <Background />
-          <MiniMap />
-          <Controls />
-        </ReactFlow>
-      </div>
-    </ReactFlowProvider>
-  );
-}
-
 // Graph Viewer Component
 const LineageGraphViewer = observer(
   (props: { nodes: ReactFlowNode[]; edges: ReactFlowEdge[] }) => {
     const { nodes, edges } = props;
     return (
       <div style={{ height: '100%', width: '100%' }}>
-        {renderReactFlow(nodes, edges)}
+        <ReactFlowProvider>
+          <div style={{ width: '100%', height: '100%' }}>
+            <ReactFlow
+              nodes={nodes}
+              edges={edges}
+              defaultEdgeOptions={{ type: 'default' }}
+              defaultViewport={{ x: 0, y: 0, zoom: 1.5 }}
+              fitView={true}
+              nodesDraggable={true}
+            >
+              <Background />
+              <MiniMap />
+              <Controls />
+            </ReactFlow>
+          </div>
+        </ReactFlowProvider>
       </div>
     );
   },

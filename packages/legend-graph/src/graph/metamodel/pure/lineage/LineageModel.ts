@@ -57,11 +57,11 @@ export class ReportColumn {
   name!: string;
   propertyTree!: PropertyPathTree;
   columns: ColumnWithContext[] = [];
-  accessorColumns: LineageColumn[] = []; // Updated reference
+  accessorColumns: LineageColumn[] = [];
 }
 
 export class ColumnWithContext {
-  column!: LineageColumn; // Updated reference
+  column!: LineageColumn;
   context!: string;
 }
 
@@ -82,7 +82,6 @@ export class Owner {
 }
 
 export class LineageColumn {
-  // Renamed class
   owner!: Owner;
   nullable!: boolean;
   name!: string;
@@ -131,10 +130,7 @@ createModelSchema(Graph, {
 
 createModelSchema(PropertyPathTree, {
   display: primitive(),
-  value: custom(
-    () => undefined,
-    () => undefined,
-  ), // Custom serialization logic if needed
+  value: primitive(),
   children: list(object(PropertyPathTree)),
   qualifierSubTree: object(PropertyPathTree),
 });
@@ -143,11 +139,11 @@ createModelSchema(ReportColumn, {
   name: primitive(),
   propertyTree: object(PropertyPathTree),
   columns: list(object(ColumnWithContext)),
-  accessorColumns: list(object(LineageColumn)), // Updated reference
+  accessorColumns: list(object(LineageColumn)),
 });
 
 createModelSchema(ColumnWithContext, {
-  column: object(LineageColumn), // Updated reference
+  column: object(LineageColumn),
   context: primitive(),
 });
 
@@ -168,7 +164,6 @@ createModelSchema(Owner, {
   primaryKey: list(object(LineageColumn)),
 });
 
-// Fix: Use custom for type property in LineageColumn to allow non-primitive objects
 createModelSchema(LineageColumn, {
   owner: object(Owner),
   nullable: primitive(),

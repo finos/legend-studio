@@ -911,6 +911,7 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
       V1_ExecuteInput.serialization.toJson(input),
     );
   }
+
   generateLineage(
     input: V1_LineageInput,
   ): Promise<PlainObject<RawLineageModel>> {
