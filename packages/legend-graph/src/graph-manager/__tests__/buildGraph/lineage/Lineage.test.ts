@@ -46,15 +46,13 @@ describe('Lineage deserialization tests', () => {
       const lineageJSON: PlainObject = JSON.parse(
         lineageJsonString,
       ) as PlainObject;
-      const deser = deserialize(LineageModel, lineageJSON) as LineageModel;
-      const result = Array.isArray(deser)
-        ? (deser[0] as LineageModel)
-        : (deser as LineageModel);
+      const deser = deserialize(LineageModel, lineageJSON);
+      const result = Array.isArray(deser) ? deser[0] : deser;
 
-      expect(result.databaseLineage.nodes?.length ?? 0).toBe(3);
-      expect(result.databaseLineage.edges?.length ?? 0).toBe(2);
-      expect(result.databaseLineage.nodes?.[0]?.data?.id).toBe('Lambda');
-      expect(result.databaseLineage.edges?.[0]?.data?.type).toBe('DataSet');
+      expect(result.databaseLineage.nodes.length).toBe(3);
+      expect(result.databaseLineage.edges.length).toBe(2);
+      expect(result.databaseLineage.nodes[0].data.id).toBe('Lambda');
+      expect(result.databaseLineage.edges[0].data.type).toBe('DataSet');
     },
   );
 });
