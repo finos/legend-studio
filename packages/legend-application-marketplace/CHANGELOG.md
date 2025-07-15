@@ -1,5 +1,13 @@
 # @finos/legend-application-marketplace
 
+## 0.0.56
+
+### Patch Changes
+
+- [#4258](https://github.com/finos/legend-studio/pull/4258) [`633cb47`](https://github.com/finos/legend-studio/commit/633cb47bcc6f7d879b87d3855e7be7f3dd8b6f5a) ([@travisstebbins](https://github.com/travisstebbins)) - Fix proprietary contract viewer
+
+- [#4260](https://github.com/finos/legend-studio/pull/4260) [`77f3efc`](https://github.com/finos/legend-studio/commit/77f3efc5618e6894ebef3f18309295bdb55198ee) ([@travisstebbins](https://github.com/travisstebbins)) - Add comprehensive tests for LakehouseAdmin component covering contracts and subscriptions tabs
+
 ## 0.0.55
 
 ### Patch Changes
