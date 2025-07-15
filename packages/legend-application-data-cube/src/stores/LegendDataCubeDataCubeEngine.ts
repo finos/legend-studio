@@ -86,6 +86,7 @@ import {
   type V1_LambdaReturnTypeResult,
   V1_Variable,
   type QueryInfo,
+  EXECUTION_SERIALIZATION_FORMAT,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
@@ -110,6 +111,7 @@ import {
   _defaultPrimitiveTypeValue,
   isPrimitiveType,
   _property,
+  DataCubeGridClientExportFormat,
 } from '@finos/legend-data-cube';
 import {
   isNonNullable,
@@ -971,6 +973,106 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     }
   }
 
+  override async exportData(
+    query: V1_Lambda,
+    source: DataCubeSource,
+    format: DataCubeGridClientExportFormat,
+    options?: DataCubeExecutionOptions | undefined,
+  ): Promise<void | Response> {
+    try {
+      if (source instanceof FreeformTDSExpressionDataCubeSource) {
+        return (await this._runExportQuery(
+          query,
+          source.model,
+          format,
+          undefined,
+          options,
+        )) as Response;
+      } else if (source instanceof UserDefinedFunctionDataCubeSource) {
+        return (await this._runExportQuery(
+          query,
+          source.model,
+          format,
+          undefined,
+          options,
+        )) as Response;
+      } else if (source instanceof LegendQueryDataCubeSource) {
+        // To handle parameter value with function calls we
+        // 1. Separate the parameters with function calls from regular parameters
+        // 2. Add let statements for function parameter values and store them in the source's letParameterValueSpec
+        // 3. Prepend the let statements to the lambda body when we execute the query
+        const letFuncs: V1_ValueSpecification[] = [];
+        const filteredParameterValues = (
+          await Promise.all(
+            source.parameterValues.map(async ({ variable, valueSpec }) => {
+              if (variable.genericType?.rawType instanceof V1_PackageableType) {
+                if (valueSpec instanceof V1_AppliedFunction) {
+                  const letFunc = guaranteeType(
+                    this.deserializeValueSpecification(
+                      await this._engineServerClient.grammarToJSON_lambda(
+                        `${LET_TOKEN} ${variable.name} ${DataCubeQueryFilterOperator.EQUAL} ${await this.getValueSpecificationCode(valueSpec)}`,
+                        '',
+                        undefined,
+                        undefined,
+                        false,
+                      ),
+                    ),
+                    V1_Lambda,
+                  );
+                  letFuncs.push(...letFunc.body);
+                } else {
+                  const paramValue = new V1_ParameterValue();
+                  paramValue.name = variable.name;
+                  paramValue.value = valueSpec;
+                  return paramValue;
+                }
+              }
+              return undefined;
+            }),
+          )
+        ).filter(isNonNullable);
+
+        query.parameters = source.lambda.parameters.filter((param) =>
+          filteredParameterValues.find((p) => p.name === param.name),
+        );
+        // If the source lambda has multiple expressions, we should prepend all but the
+        // last expression to the transformed query body (which came from the final
+        // expression of the source lambda).
+        query.body = [
+          ...letFuncs,
+          ...(source.lambda.body.length > 1
+            ? source.lambda.body.slice(0, -1)
+            : []),
+          ...query.body,
+        ];
+        return (await this._runExportQuery(
+          query,
+          source.model,
+          format,
+          filteredParameterValues,
+          options,
+        )) as Response;
+        // } else if (source instanceof CachedDataCubeSource) {
+        //   // TODO: completely fix this
+
+        // } else if (source instanceof LocalFileDataCubeSource) {
+        //   // TODO: completely fix this
+      } else {
+        return undefined;
+      }
+    } catch (error) {
+      assertErrorThrown(error);
+      if (error instanceof DataCubeExecutionError) {
+        try {
+          error.queryCode = await this.getValueSpecificationCode(query, true);
+        } catch {
+          // ignore
+        }
+      }
+      throw error;
+    }
+  }
+
   override buildExecutionContext(source: DataCubeSource) {
     if (source instanceof FreeformTDSExpressionDataCubeSource) {
       return _function(
@@ -1253,6 +1355,47 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       const error = new DataCubeExecutionError(err.message);
       error.executeInput = input;
       throw error;
+    }
+  }
+
+  private async _runExportQuery(
+    query: V1_Lambda,
+    model: PlainObject<V1_PureModelContext>,
+    format: DataCubeGridClientExportFormat,
+    parameterValues?: V1_ParameterValue[] | undefined,
+    options?: DataCubeExecutionOptions | undefined,
+  ): Promise<void | Response> {
+    if (format === DataCubeGridClientExportFormat.CSV) {
+      const input = {
+        clientVersion:
+          options?.clientVersion ??
+          // eslint-disable-next-line no-process-env
+          (process.env.NODE_ENV === 'development'
+            ? PureClientVersion.VX_X_X
+            : undefined),
+        function: this.serializeValueSpecification(query),
+        model,
+        context: serialize(
+          V1_rawBaseExecutionContextModelSchema,
+          new V1_RawBaseExecutionContext(),
+        ) as PlainObject<V1_RawBaseExecutionContext>,
+        parameterValues: (parameterValues ?? []).map((parameterValue) =>
+          serialize(V1_parameterValueModelSchema, parameterValue),
+        ),
+      };
+      try {
+        return (await this._engineServerClient.runQuery(input, {
+          returnAsResponse: true,
+          serializationFormat: EXECUTION_SERIALIZATION_FORMAT.CSV,
+        })) as Response;
+      } catch (err) {
+        assertErrorThrown(err);
+        const error = new DataCubeExecutionError(err.message);
+        error.executeInput = input;
+        throw error;
+      }
+    } else {
+      return undefined;
     }
   }
 

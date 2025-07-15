@@ -472,11 +472,21 @@ export function generateMenuBuilder(
             },
           },
           {
-            name: 'CSV',
+            name: 'CSV Grid',
             action: () => {
               view.grid.exportEngine.exportFile(
                 DataCubeGridClientExportFormat.CSV,
               );
+              logExport(DataCubeGridClientExportFormat.CSV);
+            },
+          },
+          {
+            name: 'CSV',
+            action: () => {
+              view.grid.exportEngine
+                .exportFullCSV(view.source, view.engine)
+                .then()
+                .catch((error) => view.alertService.alertUnhandledError(error));
               logExport(DataCubeGridClientExportFormat.CSV);
             },
           },

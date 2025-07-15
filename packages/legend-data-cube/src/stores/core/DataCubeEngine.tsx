@@ -89,6 +89,7 @@ import {
 import type { CachedDataCubeSource } from './model/CachedDataCubeSource.js';
 import { DataCubeSpecification } from './model/DataCubeSpecification.js';
 import { newConfiguration } from './DataCubeConfigurationBuilder.js';
+import type { DataCubeGridClientExportFormat } from '../view/grid/DataCubeGridClientEngine.js';
 
 export type CompletionItem = {
   completion: string;
@@ -283,6 +284,16 @@ export abstract class DataCubeEngine {
     source: DataCubeSource,
     options?: DataCubeExecutionOptions | undefined,
   ): Promise<DataCubeExecutionResult>;
+
+  async exportData(
+    query: V1_Lambda,
+    source: DataCubeSource,
+    format: DataCubeGridClientExportFormat,
+    options?: DataCubeExecutionOptions | undefined,
+  ): Promise<void | Response> {
+    //do nothing
+    return;
+  }
 
   abstract buildExecutionContext(
     source: DataCubeSource,
