@@ -63,6 +63,7 @@
     "react": "19.0.0",
     "react-dnd": "16.0.1",
     "react-dom": "19.0.0",
+    "reactflow": "11.11.4",
     "serializr": "3.0.3",
     "sql-formatter": "15.4.11"
   },
