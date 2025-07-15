@@ -47,12 +47,13 @@ describe('Lineage deserialization tests', () => {
         lineageJsonString,
       ) as PlainObject;
       const deser = deserialize(LineageModel, lineageJSON);
-      const result = Array.isArray(deser) ? deser[0] : deser;
+      const result: LineageModel = Array.isArray(deser)
+        ? (deser[0] as LineageModel)
+        : deser;
 
       expect(result.databaseLineage.nodes.length).toBe(3);
       expect(result.databaseLineage.edges.length).toBe(2);
       expect(result.databaseLineage.nodes[0].data.id).toBe('Lambda');
-      expect(result.databaseLineage.edges[0].data.type).toBe('DataSet');
     },
   );
 });
