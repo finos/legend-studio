@@ -53,7 +53,7 @@ describe('Lineage deserialization tests', () => {
 
       expect(result.databaseLineage.nodes.length).toBe(3);
       expect(result.databaseLineage.edges.length).toBe(2);
-      expect(result.databaseLineage.nodes[0].data.id).toBe('Lambda');
+      expect(result.databaseLineage.nodes[0]?.data.id).toBe('Lambda');
     },
   );
 });
