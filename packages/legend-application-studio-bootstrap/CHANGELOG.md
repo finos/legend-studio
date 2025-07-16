@@ -1,5 +1,13 @@
 # @finos/legend-application-studio-bootstrap
 
+## 13.99.0
+
+### Patch Changes
+
+- [#4263](https://github.com/finos/legend-studio/pull/4263) [`3cf0305`](https://github.com/finos/legend-studio/commit/3cf0305d7188c2141e787dc292ce684bb56a608f) ([@AFine-gs](https://github.com/AFine-gs)) - add initial version of lineage viewer
+
+## 13.98.0
+
 ## 13.97.0
 
 ## 13.96.0

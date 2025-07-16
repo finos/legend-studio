@@ -1,5 +1,19 @@
 # @finos/legend-graph
 
+## 32.1.54
+
+### Patch Changes
+
+- [#4263](https://github.com/finos/legend-studio/pull/4263) [`3cf0305`](https://github.com/finos/legend-studio/commit/3cf0305d7188c2141e787dc292ce684bb56a608f) ([@AFine-gs](https://github.com/AFine-gs)) - add initial version of lineage viewer
+
+## 32.1.53
+
+### Patch Changes
+
+- [#4258](https://github.com/finos/legend-studio/pull/4258) [`633cb47`](https://github.com/finos/legend-studio/commit/633cb47bcc6f7d879b87d3855e7be7f3dd8b6f5a) ([@travisstebbins](https://github.com/travisstebbins)) - Add new V1_EnrichedUserApprovalStatus enum for getContractUserStatus endpoint
+
+- [#4264](https://github.com/finos/legend-studio/pull/4264) [`c87df2b`](https://github.com/finos/legend-studio/commit/c87df2bc70d35c453fbb1066ae16b983239311e4) ([@kelly-thai](https://github.com/kelly-thai)) - Add reproducible to Data Product model
+
 ## 32.1.52
 
 ### Patch Changes

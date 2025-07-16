@@ -218,21 +218,28 @@ export class BrowserNavigator implements ApplicationNavigator {
 
   getCurrentLocationParameters<
     T extends Record<string, NavigationLocationParameterValue>,
-  >(): T {
+  >(replaceUrlSafeBase64Characters: boolean = false): T {
     const result: Record<string, NavigationLocationParameterValue> = {};
     const parameters = getQueryParameters<
       Record<string, NavigationLocationParameterValue>
     >(sanitizeURL(this.getCurrentAddress()), true);
     Object.keys(parameters).forEach((key) => {
-      result[key] = getQueryParameterValue(key, parameters);
+      result[key] = getQueryParameterValue(
+        key,
+        parameters,
+        replaceUrlSafeBase64Characters,
+      );
     });
     return result as T;
   }
 
   getCurrentLocationParameterValue(
     key: string,
+    replaceUrlSafeBase64Characters: boolean = false,
   ): NavigationLocationParameterValue {
-    return this.getCurrentLocationParameters()[key];
+    return this.getCurrentLocationParameters(replaceUrlSafeBase64Characters)[
+      key
+    ];
   }
 
   getCurrentZone(): NavigationZone {

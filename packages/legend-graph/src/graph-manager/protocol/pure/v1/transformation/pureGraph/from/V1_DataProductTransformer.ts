@@ -45,6 +45,7 @@ const transformAccessPoint = (
     lake.func = V1_transformRawLambda(ap.func, context);
     lake.targetEnvironment = ap.targetEnvironment;
     lake.classification = ap.classification;
+    lake.reproducible = ap.reproducible;
     return lake;
   } else if (ap instanceof UnknownAccessPoint) {
     const un = new V1_UnknownAccessPoint();
