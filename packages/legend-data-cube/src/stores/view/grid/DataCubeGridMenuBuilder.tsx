@@ -463,7 +463,7 @@ export function generateMenuBuilder(
             disabled: true,
           },
           {
-            name: 'Excel',
+            name: 'Excel (Grid)',
             action: () => {
               view.grid.exportEngine.exportFile(
                 DataCubeGridClientExportFormat.EXCEL,
