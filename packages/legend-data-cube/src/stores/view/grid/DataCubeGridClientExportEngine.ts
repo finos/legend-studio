@@ -18,12 +18,19 @@ import {
   ContentType,
   downloadFileUsingDataURI,
   formatDate,
+  guaranteeNonNullable,
+  guaranteeType,
   IllegalStateError,
   isString,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import type { DataCubeGridState } from './DataCubeGridState.js';
 import { DataCubeGridClientExportFormat } from './DataCubeGridClientEngine.js';
+import { buildExecutableQuery } from '../../core/DataCubeQueryBuilder.js';
+import { _lambda } from '../../core/DataCubeQueryBuilderUtils.js';
+import type { DataCubeSource } from '../../core/model/DataCubeSource.js';
+import type { DataCubeEngine } from '../../core/DataCubeEngine.js';
+import { downloadStream } from '@finos/legend-application';
 
 function blobToBase64(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -109,6 +116,29 @@ export class DataCubeGridClientExportEngine {
       }
       default:
       // do nothing
+    }
+  }
+
+  async exportCSV(source: DataCubeSource, engine: DataCubeEngine) {
+    const fileName = this.generateFileName();
+    const query = buildExecutableQuery(
+      guaranteeNonNullable(this._grid.getLatestSnapshot()),
+      source,
+      engine,
+    );
+    const result = await engine.exportData(
+      _lambda([], [query]),
+      source,
+      DataCubeGridClientExportFormat.CSV,
+    );
+    if (result === undefined) {
+      this.exportFile(DataCubeGridClientExportFormat.CSV);
+    } else {
+      await downloadStream(
+        guaranteeType(result, Response),
+        fileName,
+        ContentType.TEXT_CSV,
+      );
     }
   }
 

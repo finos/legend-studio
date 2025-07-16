@@ -463,7 +463,7 @@ export function generateMenuBuilder(
             disabled: true,
           },
           {
-            name: 'Excel',
+            name: 'Excel (Grid)',
             action: () => {
               view.grid.exportEngine.exportFile(
                 DataCubeGridClientExportFormat.EXCEL,
@@ -472,11 +472,20 @@ export function generateMenuBuilder(
             },
           },
           {
-            name: 'CSV',
+            name: 'CSV (Grid)',
             action: () => {
               view.grid.exportEngine.exportFile(
                 DataCubeGridClientExportFormat.CSV,
               );
+              logExport(DataCubeGridClientExportFormat.CSV);
+            },
+          },
+          {
+            name: 'CSV',
+            action: () => {
+              view.grid.exportEngine
+                .exportCSV(view.source, view.engine)
+                .catch((error) => view.alertService.alertUnhandledError(error));
               logExport(DataCubeGridClientExportFormat.CSV);
             },
           },

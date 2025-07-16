@@ -73,3 +73,5 @@ export {
   _property,
   _type,
 } from './stores/core/DataCubeQueryBuilderUtils.js';
+
+export { DataCubeGridClientExportFormat } from './stores/view/grid/DataCubeGridClientEngine.js';
