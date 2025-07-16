@@ -1,5 +1,7 @@
 # @finos/legend-application-marketplace-bootstrap
 
+## 13.100.0
+
 ## 13.99.0
 
 ## 13.98.0

@@ -1,5 +1,11 @@
 # @finos/legend-data-cube
 
+## 0.2.31
+
+### Patch Changes
+
+- [#4266](https://github.com/finos/legend-studio/pull/4266) [`40a9c9b`](https://github.com/finos/legend-studio/commit/40a9c9b034d7f45eac38ee36192adc745aa61675) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: exporting full data csv
+
 ## 0.2.30
 
 ## 0.2.29
