@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-application-data-cube-deployment",
-  "version": "13.99.0",
+  "version": "13.100.0",
   "private": true,
   "description": "Legend DataCube web application deployment",
   "keywords": [

@@ -1,5 +1,12 @@
 # @finos/legend-application
 
+## 16.0.57
+
+### Patch Changes
+
+- [#4261](https://github.com/finos/legend-studio/pull/4261) [`c2d9c89`](https://github.com/finos/legend-studio/commit/c2d9c89b7dcb7833875b822fddb2ad1852be4b4a) ([@kelly-thai](https://github.com/kelly-thai)) - Added a boolean variable that will create a different case for sourcedata extraction and replacement of encoded characters.
+  Updated the changeset again
+
 ## 16.0.56
 
 ## 16.0.55
