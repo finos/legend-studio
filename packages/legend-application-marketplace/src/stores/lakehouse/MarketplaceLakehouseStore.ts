@@ -461,7 +461,9 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     try {
       this.loadingProductsState.inProgress();
       const rawResponse =
-        yield this.lakehouseContractServerClient.getDataProducts(
+        yield this.lakehouseContractServerClient.getDataProductByIdAndDID(
+          dataProductId,
+          deploymentId,
           auth.user?.access_token,
         );
       const fetchedDataProductDetails =
