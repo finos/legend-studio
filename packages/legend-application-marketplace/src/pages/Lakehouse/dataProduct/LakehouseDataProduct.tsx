@@ -41,16 +41,18 @@ export const LakehouseDataProduct = withMarketplaceLakehouseStore(
     const applicationStore = marketPlaceStore.applicationStore;
     const params = useParams<LakehouseDataProductPathParams>();
     const auth = useAuth();
-    const gav = guaranteeNonNullable(
-      params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.GAV],
+    const dataProductId = guaranteeNonNullable(
+      params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_ID],
     );
-    const product = guaranteeNonNullable(
-      params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH],
+    const deploymentId = parseInt(
+      guaranteeNonNullable(
+        params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DEPLOYMENT_ID],
+      ),
     );
 
     useEffect(() => {
-      marketPlaceStore.initWithProduct(gav, product, auth);
-    }, [auth, gav, marketPlaceStore, product]);
+      marketPlaceStore.initWithProduct(dataProductId, deploymentId, auth);
+    }, [auth, dataProductId, marketPlaceStore, deploymentId]);
 
     useEffect(() => {
       applicationStore.layoutService.setColorTheme(
