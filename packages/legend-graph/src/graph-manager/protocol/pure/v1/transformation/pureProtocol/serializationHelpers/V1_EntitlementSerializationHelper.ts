@@ -407,7 +407,7 @@ const V1_deserializeDataProductOrigin = (
   if (json === null) {
     return null;
   }
-  switch (json._type) {
+  switch (json.type) {
     case V1_DataProductOriginType.AD_HOC_DEPLOYMENT:
       return deserialize(V1_AdHocDeploymentDataProductOriginModelSchema, json);
     case V1_DataProductOriginType.SDLC_DEPLOYMENT:
