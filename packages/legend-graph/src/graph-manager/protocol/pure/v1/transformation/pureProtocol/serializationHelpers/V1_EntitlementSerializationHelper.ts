@@ -166,11 +166,11 @@ const V1_deserializeOrganizationalScope = (
 };
 
 const V1_serializeOrganizationalScope = (
-  json: V1_OrganizationalScope,
+  organizationalScope: V1_OrganizationalScope,
   plugins: PureProtocolProcessorPlugin[],
 ): PlainObject<V1_OrganizationalScope> => {
-  if (json instanceof V1_AdhocTeam) {
-    return serialize(V1_AdhocTeamModelSchema, json);
+  if (organizationalScope instanceof V1_AdhocTeam) {
+    return serialize(V1_AdhocTeamModelSchema, organizationalScope);
   }
   const extraOrganizationalScopeSerializers = plugins.flatMap(
     (plugin) =>
@@ -179,7 +179,7 @@ const V1_serializeOrganizationalScope = (
       ).V1_getExtraOrganizationalScopeSerializers?.() ?? [],
   );
   for (const serializer of extraOrganizationalScopeSerializers) {
-    const result = serializer(json);
+    const result = serializer(organizationalScope);
     if (result) {
       return result;
     }
@@ -402,8 +402,11 @@ export const V1_SdlcDeploymentDataProductOriginModelSchema = createModelSchema(
 );
 
 const V1_deserializeDataProductOrigin = (
-  json: PlainObject<V1_EntitlementsDataProductOrigin>,
-): V1_EntitlementsDataProductOrigin => {
+  json: PlainObject<V1_EntitlementsDataProductOrigin> | null,
+): V1_EntitlementsDataProductOrigin | null => {
+  if (json === null) {
+    return null;
+  }
   switch (json._type) {
     case V1_DataProductOriginType.AD_HOC_DEPLOYMENT:
       return deserialize(V1_AdHocDeploymentDataProductOriginModelSchema, json);
@@ -419,13 +422,13 @@ const V1_deserializeDataProductOrigin = (
 };
 
 const V1_serializeDataProductOrigin = (
-  json: V1_EntitlementsDataProductOrigin,
+  origin: V1_EntitlementsDataProductOrigin | null,
 ): PlainObject<V1_EntitlementsDataProductOrigin> => {
-  if (json instanceof V1_AdHocDeploymentDataProductOrigin) {
-    return serialize(V1_AdHocDeploymentDataProductOriginModelSchema, json);
+  if (origin instanceof V1_AdHocDeploymentDataProductOrigin) {
+    return serialize(V1_AdHocDeploymentDataProductOriginModelSchema, origin);
   }
-  if (json instanceof V1_SdlcDeploymentDataProductOrigin) {
-    return serialize(V1_SdlcDeploymentDataProductOriginModelSchema, json);
+  if (origin instanceof V1_SdlcDeploymentDataProductOrigin) {
+    return serialize(V1_SdlcDeploymentDataProductOriginModelSchema, origin);
   }
   throw new UnsupportedOperationError();
 };
