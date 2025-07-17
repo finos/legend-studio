@@ -40,6 +40,7 @@ import {
 import {
   type V1_EntitlementsDataProductDetails,
   type V1_IngestEnvironment,
+  DataProduct,
   GraphManagerState,
   V1_AdHocDeploymentDataProductOrigin,
   V1_DataProduct,
@@ -591,11 +592,15 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         ActionState.create(),
       );
       return guaranteeType(
-        guaranteeNonNullable(
-          graphManager.elementToProtocol(
-            graphManagerState.graph.getElement(details.id),
+        graphManager.elementToProtocol(
+          guaranteeNonNullable(
+            graphManagerState.graph.allElements.find(
+              (element) =>
+                element instanceof DataProduct &&
+                element.name.toLowerCase() === details.id.toLowerCase(),
+            ),
+            `Unable to find ${details.id} in deployed definition`,
           ),
-          `Unable to find ${details.id} in deployed definition`,
         ),
         V1_DataProduct,
         `${details.id} is not a data product`,
