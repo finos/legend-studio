@@ -218,11 +218,11 @@ export class LakehouseContractServerClient extends AbstractServerClient {
 
   getDataProductByIdAndDID = (
     dataProductId: string,
-    did: number,
+    deploymentId: number,
     token: string | undefined,
   ): Promise<PlainObject<V1_EntitlementsDataProductDetailsResponse>> =>
     this.get(
-      `${this._dataProducts()}/${dataProductId}/deployments/${did}`,
+      `${this._dataProducts()}/${dataProductId}/deployments/${deploymentId}`,
       {},
       this._token(token),
     );

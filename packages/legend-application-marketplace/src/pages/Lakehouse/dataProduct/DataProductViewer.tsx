@@ -22,7 +22,11 @@ import { useApplicationStore } from '@finos/legend-application';
 import { DataProductWiki } from './DataProductWiki.js';
 import { Button } from '@mui/material';
 import { isSnapshotVersion } from '@finos/legend-server-depot';
-import { V1_IngestEnvironmentClassification } from '@finos/legend-graph';
+import {
+  V1_AdHocDeploymentDataProductOrigin,
+  V1_EntitlementsLakehouseEnvironmentType,
+  V1_SdlcDeploymentDataProductOrigin,
+} from '@finos/legend-graph';
 
 const DataProductHeader = observer(
   (props: {
@@ -33,12 +37,10 @@ const DataProductHeader = observer(
     const applicationStore = useApplicationStore();
     const headerRef = useRef<HTMLDivElement>(null);
     const dataProduct = dataProductViewerState.product;
-    const environmentClassification = dataProductViewerState.generation
-      ?.dataProduct.deploymentId
-      ? dataProductViewerState.lakehouseStore.lakehouseIngestEnvironmentsByDID.get(
-          dataProductViewerState.generation.dataProduct.deploymentId,
-        )?.environmentClassification
-      : undefined;
+    const environmentClassification =
+      dataProductViewerState.entitlementsDataProductDetails.lakehouseEnvironment
+        ?.type;
+    const origin = dataProductViewerState.entitlementsDataProductDetails.origin;
 
     useEffect(() => {
       if (headerRef.current) {
@@ -76,22 +78,24 @@ const DataProductHeader = observer(
             )}
           </div>
           <div className="data-space__viewer__header__type">
-            {dataProductViewerState.isSandboxProduct ? (
+            {origin instanceof V1_AdHocDeploymentDataProductOrigin && (
               <Button
                 onClick={() => {
-                  dataProductViewerState.viewIngestEnvironment?.();
+                  dataProductViewerState
+                    .viewDataProductSource()
+                    ?.catch(applicationStore.alertUnhandledError);
                 }}
                 title="View Ingest Environment"
                 className={clsx('data-space__viewer__header__type__sandbox', {
                   'data-space__viewer__header__type__sandbox--dev':
                     environmentClassification ===
-                    V1_IngestEnvironmentClassification.DEV,
+                    V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT,
                   'data-space__viewer__header__type__sandbox--prod-parallel':
                     environmentClassification ===
-                    V1_IngestEnvironmentClassification.PROD_PARALLEL,
+                    V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL,
                   'data-space__viewer__header__type__sandbox--prod':
                     environmentClassification ===
-                    V1_IngestEnvironmentClassification.PROD,
+                    V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
                 })}
               >
                 {environmentClassification
@@ -100,24 +104,23 @@ const DataProductHeader = observer(
                 Sandbox Data Product
                 <OpenIcon />
               </Button>
-            ) : (
+            )}
+            {origin instanceof V1_SdlcDeploymentDataProductOrigin && (
               <Button
                 onClick={() => {
                   dataProductViewerState
-                    .viewSDLCProject(dataProduct.path)
-                    .catch(applicationStore.alertUnhandledError);
+                    .viewDataProductSource()
+                    ?.catch(applicationStore.alertUnhandledError);
                 }}
                 title="View SDLC Project"
                 className={clsx('data-space__viewer__header__type__version', {
                   'data-space__viewer__header__type__version--snapshot':
-                    isSnapshotVersion(dataProductViewerState.project.versionId),
+                    isSnapshotVersion(origin.version),
                   'data-space__viewer__header__type__version--release':
-                    !isSnapshotVersion(
-                      dataProductViewerState.project.versionId,
-                    ),
+                    !isSnapshotVersion(origin.version),
                 })}
               >
-                Version: {dataProductViewerState.project.versionId}
+                Version: {origin.version}
                 <OpenIcon />
               </Button>
             )}

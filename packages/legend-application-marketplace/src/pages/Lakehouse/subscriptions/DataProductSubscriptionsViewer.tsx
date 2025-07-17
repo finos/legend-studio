@@ -56,11 +56,6 @@ import {
   type DataGridCellRendererParams,
 } from '@finos/legend-lego/data-grid';
 import { flowResult } from 'mobx';
-import { useParams } from '@finos/legend-application/browser';
-import {
-  LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN,
-  type LakehouseSandboxDataProductPathParams,
-} from '../../../__lib__/LegendMarketplaceNavigation.js';
 import { UserRenderer } from '../../../components/UserRenderer/UserRenderer.js';
 
 const LakehouseSubscriptionsCreateDialog = observer(
@@ -70,7 +65,6 @@ const LakehouseSubscriptionsCreateDialog = observer(
     accessGroupState: DataProductGroupAccessState;
     contractId: string;
     onSubmit: (target: V1_DataSubscriptionTarget) => Promise<void>;
-    ingestEnvironmentUrn?: string | undefined;
   }) => {
     const { open, onClose, accessGroupState, contractId, onSubmit } = props;
 
@@ -91,10 +85,10 @@ const LakehouseSubscriptionsCreateDialog = observer(
     };
 
     // TODO: Figure out better way to get the preferred list of snowflake accounts instead
-    // of relying upon ingest environment URN in the URL
-    const params = useParams<LakehouseSandboxDataProductPathParams>();
+    // of relying upon ingest environment URN
     const ingestEnvironmentUrn =
-      params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.ingestEnvironmentUrn];
+      accessGroupState.accessState.viewerState.entitlementsDataProductDetails
+        .lakehouseEnvironment?.producerEnvironmentName;
 
     const environmentDetails =
       accessGroupState.accessState.viewerState.lakehouseStore
