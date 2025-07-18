@@ -135,7 +135,7 @@ const LakehouseDataProductCardInfoPopover = observer(
           Deployment Details
         </div>
         <div className="marketplace-lakehouse-data-product-card__popover__deployment-details">
-          <TableContainer className="marketplace-lakehouse-data-product-card__popover__project-table">
+          <TableContainer className="marketplace-lakehouse-data-product-card__popover__table">
             <Table>
               <TableBody>
                 <TableRow>
@@ -198,7 +198,7 @@ const LakehouseDataProductCardInfoPopover = observer(
                 <OpenIcon />
               </IconButton>
             </div>
-            <TableContainer className="marketplace-lakehouse-data-product-card__popover__project-table">
+            <TableContainer className="marketplace-lakehouse-data-product-card__popover__table">
               <Table>
                 <TableBody>
                   <TableRow>
