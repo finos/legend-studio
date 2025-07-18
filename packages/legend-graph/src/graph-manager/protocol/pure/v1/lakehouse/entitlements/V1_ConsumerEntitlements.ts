@@ -122,7 +122,7 @@ export class V1_CreateContractPayload {
   description!: string;
   resourceId!: string;
   resourceType!: V1_ResourceType;
-  deploymentId!: string;
+  deploymentId!: number;
   accessPointGroup?: string | undefined;
   consumer!: V1_OrganizationalScope;
 }
