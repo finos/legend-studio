@@ -126,6 +126,10 @@
     gap: 1rem;
   }
 
+  &__tags {
+    @include flexVCenter;
+  }
+
   &__name {
     @include flexVCenter;
 
