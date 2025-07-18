@@ -129,6 +129,7 @@ export class DataProductState {
         assertErrorThrown(error);
         this.lakehouseState.applicationStore.notificationService.notifyError(
           'Error fetching data product entity from ad-hoc deployment',
+          error.message,
         );
       } finally {
         this.initState.complete();
