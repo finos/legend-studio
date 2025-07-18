@@ -18,25 +18,19 @@ import { flow, makeObservable, observable } from 'mobx';
 import {
   ActionState,
   assertErrorThrown,
-  guaranteeNonNullable,
-  guaranteeType,
   type GeneratorFn,
-  type PlainObject,
 } from '@finos/legend-shared';
 import {
+  type V1_DataProduct,
   type V1_EntitlementsDataProductDetails,
   type V1_EntitlementsLakehouseEnvironmentType,
   type V1_PureGraphManager,
-  DataProduct,
   GraphManagerState,
   V1_AdHocDeploymentDataProductOrigin,
-  V1_DataProduct,
-  V1_dataProductModelSchema,
   V1_SdlcDeploymentDataProductOrigin,
 } from '@finos/legend-graph';
 import type { MarketplaceLakehouseStore } from '../MarketplaceLakehouseStore.js';
-import { deserialize } from 'serializr';
-import { type Entity } from '@finos/legend-storage';
+import { getDataProductFromDetails } from '../LakehouseUtils.js';
 
 export enum DataProductType {
   LAKEHOUSE = 'LAKEHOUSE',
@@ -67,75 +61,26 @@ export class DataProductState {
 
   *init(): GeneratorFn<void> {
     this.initState.inProgress();
-    if (
-      this.dataProductDetails.origin instanceof
-      V1_SdlcDeploymentDataProductOrigin
-    ) {
-      try {
-        const dataProductEntity = deserialize(
-          V1_dataProductModelSchema,
-          (
-            (yield this.lakehouseState.depotServerClient.getVersionEntity(
-              this.dataProductDetails.origin.group,
-              this.dataProductDetails.origin.artifact,
-              this.dataProductDetails.origin.version,
-              this.dataProductDetails.id,
-            )) as PlainObject<Entity>
-          ).content,
-        );
-        this.dataProductElement = dataProductEntity;
-      } catch (error) {
-        assertErrorThrown(error);
-        this.lakehouseState.applicationStore.notificationService.notifyError(
-          'Error fetching data product entity from SDLC deployment',
-        );
-      } finally {
-        this.initState.complete();
-      }
-    } else if (
-      this.dataProductDetails.origin instanceof
-      V1_AdHocDeploymentDataProductOrigin
-    ) {
-      try {
-        const graphManagerState = new GraphManagerState(
-          this.lakehouseState.applicationStore.pluginManager,
-          this.lakehouseState.applicationStore.logService,
-        );
-        const entities: Entity[] = yield this.graphManager.pureCodeToEntities(
-          this.dataProductDetails.origin.definition,
-        );
-        yield this.graphManager.buildGraph(
-          graphManagerState.graph,
-          entities,
-          ActionState.create(),
-        );
-        const dataProductEntity = guaranteeType(
-          this.graphManager.elementToProtocol(
-            guaranteeNonNullable(
-              graphManagerState.graph.allElements.find(
-                (element) =>
-                  element instanceof DataProduct &&
-                  element.name.toLowerCase() ===
-                    this.dataProductDetails.id.toLowerCase(),
-              ),
-              `Unable to find ${this.dataProductDetails.id} in deployed definition`,
-            ),
-          ),
-          V1_DataProduct,
-          `${this.dataProductDetails.id} is not a data product`,
-        );
-        this.dataProductElement = dataProductEntity;
-      } catch (error) {
-        assertErrorThrown(error);
-        this.lakehouseState.applicationStore.notificationService.notifyError(
-          'Error fetching data product entity from ad-hoc deployment',
-          error.message,
-        );
-      } finally {
-        this.initState.complete();
-      }
+    try {
+      const graphManagerState = new GraphManagerState(
+        this.lakehouseState.applicationStore.pluginManager,
+        this.lakehouseState.applicationStore.logService,
+      );
+      const dataProductEntity = yield getDataProductFromDetails(
+        this.dataProductDetails,
+        graphManagerState,
+        this.lakehouseState.marketplaceBaseStore,
+      );
+      this.dataProductElement = dataProductEntity;
+    } catch (error) {
+      assertErrorThrown(error);
+      this.lakehouseState.applicationStore.notificationService.notifyError(
+        'Error fetching data product entity',
+        error.message,
+      );
+    } finally {
+      this.initState.complete();
     }
-    this.initState.complete();
   }
 
   get title(): string {
