@@ -20,7 +20,6 @@ import {
   type NavigationZone,
 } from '@finos/legend-application';
 import {
-  type DataProductArtifactGeneration,
   type GraphManagerState,
   type V1_AccessPointGroup,
   type V1_CreateContractPayload,
@@ -50,8 +49,6 @@ import { DataProductDataAccessState } from './DataProductDataAccessState.js';
 import {
   ActionState,
   assertErrorThrown,
-  guaranteeNonEmptyString,
-  guaranteeNonNullable,
   type GeneratorFn,
   type PlainObject,
 } from '@finos/legend-shared';
@@ -77,7 +74,6 @@ export class DataProductViewerState {
   readonly lakeServerClient: LakehouseContractServerClient;
   currentActivity = DATA_PRODUCT_VIEWER_ACTIVITY_MODE.DESCRIPTION;
   accessState: DataProductDataAccessState;
-  generation: DataProductArtifactGeneration | undefined;
   associatedContracts: V1_DataContract[] | undefined;
   dataContractAccessPointGroup: V1_AccessPointGroup | undefined;
   dataContract: V1_DataContract | undefined;
@@ -143,12 +139,8 @@ export class DataProductViewerState {
       this.accessState.accessGroupStates.forEach((e) =>
         e.fetchingAccessState.inProgress(),
       );
-      const did = guaranteeNonEmptyString(
-        this.generation?.dataProduct.deploymentId,
-        'did required to get contracts',
-      );
       const didNode = new V1_AppDirNode();
-      didNode.appDirId = Number(did);
+      didNode.appDirId = this.deploymentId;
       didNode.level = V1_AppDirLevel.DEPLOYMENT;
       const _contracts = (yield this.lakeServerClient.getDataContractsFromDID(
         [serialize(V1_AppDirNodeModelSchema, didNode)],
@@ -211,10 +203,7 @@ export class DataProductViewerState {
           description,
           resourceId: this.product.name,
           resourceType: V1_ResourceType.ACCESS_POINT_GROUP,
-          deploymentId: guaranteeNonNullable(
-            this.generation?.dataProduct.deploymentId,
-            'Cannot create contract. Data product generation is missing deployment ID',
-          ),
+          deploymentId: this.deploymentId,
           accessPointGroup: group.id,
           consumer,
         } satisfies V1_CreateContractPayload,
@@ -264,8 +253,8 @@ export class DataProductViewerState {
     return true;
   }
 
-  get deploymentId(): string | undefined {
-    return this.generation?.dataProduct.deploymentId;
+  get deploymentId(): number {
+    return this.entitlementsDataProductDetails.deploymentId;
   }
 
   changeZone(zone: NavigationZone, force = false): void {

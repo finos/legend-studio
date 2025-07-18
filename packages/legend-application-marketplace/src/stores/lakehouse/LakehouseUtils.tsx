@@ -37,7 +37,7 @@ const invalidContractState = [
 
 export const dataContractContainsDataProduct = (
   dataProduct: V1_DataProduct,
-  dataProdcutDeploymentID: string | undefined,
+  dataProdcutDeploymentID: number,
   dataContract: V1_DataContract,
 ): boolean => {
   if (invalidContractState.includes(dataContract.state)) {
@@ -49,8 +49,7 @@ export const dataContractContainsDataProduct = (
     dataProdcutDeploymentID
   ) {
     const sameDID =
-      Number(dataProdcutDeploymentID) ===
-      contractResource.dataProduct.owner.appDirId;
+      dataProdcutDeploymentID === contractResource.dataProduct.owner.appDirId;
     // revisit name
     const isName = contractResource.dataProduct.name === dataProduct.name;
     const hasGroup = dataProduct.accessPointGroups
