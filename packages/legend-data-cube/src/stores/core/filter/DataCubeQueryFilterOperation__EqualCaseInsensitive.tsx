@@ -89,7 +89,9 @@ export class DataCubeQueryFilterOperation__EqualCaseInsensitive extends DataCube
   buildConditionExpression(condition: DataCubeSnapshotFilterCondition) {
     return _function(_functionName(DataCubeFunction.EQUAL), [
       _function(_functionName(DataCubeFunction.TO_LOWERCASE), [
-        _property(condition.name),
+        _function(_functionName(DataCubeFunction.TO_ONE), [
+          _property(condition.name),
+        ]),
       ]),
       _function(_functionName(DataCubeFunction.TO_LOWERCASE), [
         _value(condition.value),

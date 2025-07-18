@@ -44,6 +44,7 @@ export enum DataCubeFunction {
   // generic
   CAST = 'meta::pure::functions::lang::cast',
   FROM = 'meta::pure::mapping::from',
+  TO_ONE = 'meta::pure::functions::multiplicity::toOne',
 
   // sort
   ASCENDING = 'meta::pure::functions::relation::ascending',
