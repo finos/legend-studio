@@ -106,26 +106,26 @@ const cases: TestCase[] = [
     validator: _checkFilterOperator(DataCubeQueryFilterOperator.NOT_EQUAL), // higher precendence than its non-negation counterpart
   }),
   _case(`Filter: == (case-insensitive)`, {
-    query: `filter(x|$x.Name->toLower() == toLower('Asd'))`,
+    query: `filter(x|$x.Name->toOne()->toLower() == toLower('Asd'))`,
     columns: ['Name:String'],
     validator: _checkFilterOperator(
       DataCubeQueryFilterOperator.EQUAL_CASE_INSENSITIVE,
     ),
   }),
   _case(`Filter: == (case-insensitive) : NOT`, {
-    query: `filter(x|$x.Name->toLower() != toLower('Asd'))`,
+    query: `filter(x|$x.Name->toOne()->toLower() != toLower('Asd'))`,
     columns: ['Name:String'],
     validator: _checkFilterOperator(
       DataCubeQueryFilterOperator.NOT_EQUAL_CASE_INSENSITIVE, // higher precendence than its non-negation counterpart
     ),
   }),
   _case(`Filter: == (case-insensitive) : ERROR - incompatible column`, {
-    query: `filter(x|$x.Age->toLower() != toLower('Asd'))`,
+    query: `filter(x|$x.Age->toOne()->toLower() != toLower('Asd'))`,
     columns: ['Age:Integer'],
     error: `Can't process filter condition: no matching operator found`,
   }),
   _case(`Filter: == (case-insensitive) : ERROR - incompatible value`, {
-    query: `filter(x|$x.Name->toLower() != toLower(2))`,
+    query: `filter(x|$x.Name->toOne()->toLower() != toLower(2))`,
     columns: ['Name:String'],
     error: `Can't process filter condition: no matching operator found`,
   }),
@@ -152,26 +152,26 @@ const cases: TestCase[] = [
     error: `Can't process filter condition: no matching operator found`,
   }),
   _case(`Filter: == column (case-insensitive)`, {
-    query: `filter(x|$x.Name->toLower() == $x.Name2->toLower())`,
+    query: `filter(x|$x.Name->toOne()->toLower() == $x.Name2->toOne()->toLower())`,
     columns: ['Name:String', 'Name2:String'],
     validator: _checkFilterOperator(
       DataCubeQueryFilterOperator.EQUAL_CASE_INSENSITIVE_COLUMN,
     ),
   }),
   _case(`Filter: == column (case-insensitive) : NOT`, {
-    query: `filter(x|$x.Name->toLower() != $x.Name2->toLower())`,
+    query: `filter(x|$x.Name->toOne()->toLower() != $x.Name2->toOne()->toLower())`,
     columns: ['Name:String', 'Name2:String'],
     validator: _checkFilterOperator(
       DataCubeQueryFilterOperator.NOT_EQUAL_CASE_INSENSITIVE_COLUMN,
     ), // higher precendence than its non-negation counterpart
   }),
   _case(`Filter: > column : ERROR - RHS column not found`, {
-    query: `filter(x|!($x.Name->toLower() == $x.Name2->toLower()))`,
+    query: `filter(x|!($x.Name->toOne()->toLower() == $x.Name2->toOne()->toLower()))`,
     columns: ['Name:String'],
     error: `Can't process filter condition: no matching operator found`,
   }),
   _case(`Filter: == column (case-insensitive) : ERROR - incompatible columns`, {
-    query: `filter(x|$x.Name->toLower() != $x.Name2->toLower())`,
+    query: `filter(x|$x.Name->toOne()->toLower() != $x.Name2->toOne()->toLower())`,
     columns: ['Name:Integer', 'Name2:String'],
     error: `Can't process filter condition: no matching operator found`,
   }),
@@ -196,26 +196,26 @@ const cases: TestCase[] = [
     error: `Can't process filter condition: no matching operator found`,
   }),
   _case(`Filter: contains() (case-insensitive)`, {
-    query: `filter(x|$x.Name->toLower()->contains(toLower('Asd')))`,
+    query: `filter(x|$x.Name->toOne()->toLower()->contains(toLower('Asd')))`,
     columns: ['Name:String'],
     validator: _checkFilterOperator(
       DataCubeQueryFilterOperator.CONTAIN_CASE_INSENSITIVE,
     ),
   }),
   _case(`Filter: contains() (case-insensitive) : NOT`, {
-    query: `filter(x|!$x.Name->toLower()->contains(toLower('Asd')))`,
+    query: `filter(x|!$x.Name->toOne()->toLower()->contains(toLower('Asd')))`,
     columns: ['Name:String'],
     validator: _checkFilterOperator(
       DataCubeQueryFilterOperator.CONTAIN_CASE_INSENSITIVE,
     ),
   }),
   _case(`Filter: contains() (case-insensitive) : ERROR - incompatible column`, {
-    query: `filter(x|!$x.Age->toLower()->contains(toLower('Asd')))`,
+    query: `filter(x|!$x.Age->toOne()->toLower()->contains(toLower('Asd')))`,
     columns: ['Age:Integer'],
     error: `Can't process filter condition: no matching operator found`,
   }),
   _case(`Filter: contains() (case-insensitive) : ERROR - incompatible value`, {
-    query: `filter(x|!$x.Name->toLower()->contains(toLower(2)))`,
+    query: `filter(x|!$x.Name->toOne()->toLower()->contains(toLower(2)))`,
     columns: ['Name:String'],
     error: `Can't process filter condition: no matching operator found`,
   }),
@@ -240,26 +240,26 @@ const cases: TestCase[] = [
     error: `Can't process filter condition: no matching operator found`,
   }),
   _case(`Filter: endsWith() (case-insensitive)`, {
-    query: `filter(x|$x.Name->toLower()->endsWith(toLower('Asd')))`,
+    query: `filter(x|$x.Name->toOne()->toLower()->endsWith(toLower('Asd')))`,
     columns: ['Name:String'],
     validator: _checkFilterOperator(
       DataCubeQueryFilterOperator.END_WITH_CASE_INSENSITIVE,
     ),
   }),
   _case(`Filter: endsWith() (case-insensitive) : NOT`, {
-    query: `filter(x|!$x.Name->toLower()->endsWith(toLower('Asd')))`,
+    query: `filter(x|!$x.Name->toOne()->toLower()->endsWith(toLower('Asd')))`,
     columns: ['Name:String'],
     validator: _checkFilterOperator(
       DataCubeQueryFilterOperator.END_WITH_CASE_INSENSITIVE,
     ),
   }),
   _case(`Filter: endsWith() (case-insensitive) : ERROR - incompatible column`, {
-    query: `filter(x|!$x.Age->toLower()->endsWith(toLower('Asd')))`,
+    query: `filter(x|!$x.Age->toOne()->toLower()->endsWith(toLower('Asd')))`,
     columns: ['Age:Integer'],
     error: `Can't process filter condition: no matching operator found`,
   }),
   _case(`Filter: endsWith() (case-insensitive) : ERROR - incompatible value`, {
-    query: `filter(x|!$x.Name->toLower()->endsWith(toLower(2)))`,
+    query: `filter(x|!$x.Name->toOne()->toLower()->endsWith(toLower(2)))`,
     columns: ['Name:String'],
     error: `Can't process filter condition: no matching operator found`,
   }),
@@ -284,14 +284,14 @@ const cases: TestCase[] = [
     error: `Can't process filter condition: no matching operator found`,
   }),
   _case(`Filter: startsWith() (case-insensitive)`, {
-    query: `filter(x|$x.Name->toLower()->startsWith(toLower('Asd')))`,
+    query: `filter(x|$x.Name->toOne()->toLower()->startsWith(toLower('Asd')))`,
     columns: ['Name:String'],
     validator: _checkFilterOperator(
       DataCubeQueryFilterOperator.START_WITH_CASE_INSENSITIVE,
     ),
   }),
   _case(`Filter: startsWith() (case-insensitive) : NOT`, {
-    query: `filter(x|!$x.Name->toLower()->startsWith(toLower('Asd')))`,
+    query: `filter(x|!$x.Name->toOne()->toLower()->startsWith(toLower('Asd')))`,
     columns: ['Name:String'],
     validator: _checkFilterOperator(
       DataCubeQueryFilterOperator.START_WITH_CASE_INSENSITIVE,
@@ -300,7 +300,7 @@ const cases: TestCase[] = [
   _case(
     `Filter: startsWith() (case-insensitive) : ERROR - incompatible column`,
     {
-      query: `filter(x|!$x.Age->toLower()->startsWith(toLower('Asd')))`,
+      query: `filter(x|!$x.Age->toOne()->toLower()->startsWith(toLower('Asd')))`,
       columns: ['Age:Integer'],
       error: `Can't process filter condition: no matching operator found`,
     },
@@ -308,7 +308,7 @@ const cases: TestCase[] = [
   _case(
     `Filter: startsWith() (case-insensitive) : ERROR - incompatible value`,
     {
-      query: `filter(x|!$x.Name->toLower()->startsWith(toLower(2)))`,
+      query: `filter(x|!$x.Name->toOne()->toLower()->startsWith(toLower(2)))`,
       columns: ['Name:String'],
       error: `Can't process filter condition: no matching operator found`,
     },
@@ -518,26 +518,26 @@ const cases: TestCase[] = [
     validator: _checkFilterOperator(DataCubeQueryFilterOperator.NOT_EQUAL),
   }),
   _case(`Filter: != (case-insensitive)`, {
-    query: `filter(x|$x.Name->toLower() != toLower('Asd'))`,
+    query: `filter(x|$x.Name->toOne()->toLower() != toLower('Asd'))`,
     columns: ['Name:String'],
     validator: _checkFilterOperator(
       DataCubeQueryFilterOperator.NOT_EQUAL_CASE_INSENSITIVE,
     ),
   }),
   _case(`Filter: != (case-insensitive) : NOT`, {
-    query: `filter(x|!($x.Name->toLower() != toLower('Asd')))`,
+    query: `filter(x|!($x.Name->toOne()->toLower() != toLower('Asd')))`,
     columns: ['Name:String'],
     validator: _checkFilterOperator(
       DataCubeQueryFilterOperator.NOT_EQUAL_CASE_INSENSITIVE,
     ),
   }),
   _case(`Filter: != (case-insensitive) : ERROR - incompatible column`, {
-    query: `filter(x|!($x.Age->toLower() != toLower('Asd')))`,
+    query: `filter(x|!($x.Age->toOne()->toLower() != toLower('Asd')))`,
     columns: ['Age:Integer'],
     error: `Can't process filter condition: no matching operator found`,
   }),
   _case(`Filter: != (case-insensitive) : ERROR - incompatible value`, {
-    query: `filter(x|!($x.Name->toLower() != toLower(2)))`,
+    query: `filter(x|!($x.Name->toOne()->toLower() != toLower(2)))`,
     columns: ['Name:String'],
     error: `Can't process filter condition: no matching operator found`,
   }),
@@ -566,21 +566,21 @@ const cases: TestCase[] = [
     error: `Can't process filter condition: no matching operator found`,
   }),
   _case(`Filter: != column (case-insensitive)`, {
-    query: `filter(x|$x.Name->toLower() != $x.Name2->toLower())`,
+    query: `filter(x|$x.Name->toOne()->toLower() != $x.Name2->toOne()->toLower())`,
     columns: ['Name:String', 'Name2:String'],
     validator: _checkFilterOperator(
       DataCubeQueryFilterOperator.NOT_EQUAL_CASE_INSENSITIVE_COLUMN,
     ),
   }),
   _case(`Filter: != column (case-insensitive) : NOT`, {
-    query: `filter(x|!($x.Name->toLower() != $x.Name2->toLower()))`,
+    query: `filter(x|!($x.Name->toOne()->toLower() != $x.Name2->toOne()->toLower()))`,
     columns: ['Name:String', 'Name2:String'],
     validator: _checkFilterOperator(
       DataCubeQueryFilterOperator.NOT_EQUAL_CASE_INSENSITIVE_COLUMN,
     ),
   }),
   _case(`Filter: != column : ERROR - RHS column not found`, {
-    query: `filter(x|!($x.Name->toLower() != $x.Name2->toLower()))`,
+    query: `filter(x|!($x.Name->toOne()->toLower() != $x.Name2->toOne()->toLower()))`,
     columns: ['Name:String'],
     error: `Can't process filter condition: no matching operator found`,
   }),
@@ -662,11 +662,11 @@ const cases: TestCase[] = [
 
   // filter tree grouping
   _case(`Filter: OR group`, {
-    query: `filter(x|($x.Age != 27) || ($x.Name->toLower() != toLower('Michael Phelps')))`,
+    query: `filter(x|($x.Age != 27) || ($x.Name->toOne()->toLower() != toLower('Michael Phelps')))`,
     columns: ['Age:Integer', 'Name:String'],
   }),
   _case(`Filter: OR group : NOT`, {
-    query: `filter(x|!(($x.Age != 27) || ($x.Name->toLower() != toLower('Michael Phelps'))))`,
+    query: `filter(x|!(($x.Age != 27) || ($x.Name->toOne()->toLower() != toLower('Michael Phelps'))))`,
     columns: ['Age:Integer', 'Name:String'],
   }),
   _case(`Filter: AND group`, {
@@ -678,7 +678,7 @@ const cases: TestCase[] = [
     columns: ['Age:Integer', 'Name:String'],
   }),
   _case(`Filter: simple grouping`, {
-    query: `filter(x|$x.Name->toLower()->endsWith(toLower('Phelps')) || !(($x.Age != 27) && ($x.Name == 'Michael Phelps')))`,
+    query: `filter(x|$x.Name->toOne()->toLower()->endsWith(toLower('Phelps')) || !(($x.Age != 27) && ($x.Name == 'Michael Phelps')))`,
     columns: ['Age:Integer', 'Name:String'],
   }),
   _case(`Filter: complex grouping`, {
@@ -705,7 +705,7 @@ const cases: TestCase[] = [
     error: `Can't process filter condition: no matching operator found`,
   }),
   _case(`Filter: ERROR - non-standard variable name within tree`, {
-    query: `filter(x|$x.Name->toLower()->endsWith(toLower('Phelps')) || !(($y.Age != 27) && ($x.Name == 'Michael Phelps')))`,
+    query: `filter(x|$x.Name->toOne()->toLower()->endsWith(toLower('Phelps')) || !(($y.Age != 27) && ($x.Name == 'Michael Phelps')))`,
     columns: ['Age:Integer', 'Name:String'],
     error: `Can't process filter condition: no matching operator found`,
   }),
