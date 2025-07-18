@@ -20,7 +20,6 @@ import {
 } from '@finos/legend-application';
 import {
   projectIdHandlerFunc,
-  resolveVersion,
   type DepotServerClient,
 } from '@finos/legend-server-depot';
 import { action, computed, flow, makeObservable, observable } from 'mobx';
@@ -32,19 +31,14 @@ import {
   ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
-  guaranteeType,
   isNonNullable,
   type GeneratorFn,
   type PlainObject,
 } from '@finos/legend-shared';
 import {
-  type V1_EntitlementsDataProductDetails,
   type V1_IngestEnvironment,
-  DataProduct,
   GraphManagerState,
   V1_AdHocDeploymentDataProductOrigin,
-  V1_DataProduct,
-  V1_dataProductModelSchema,
   V1_deserializeIngestEnvironment,
   V1_entitlementsDataProductDetailsResponseToDataProductDetails,
   V1_EntitlementsLakehouseEnvironmentType,
@@ -52,8 +46,6 @@ import {
   V1_PureGraphManager,
   V1_SdlcDeploymentDataProductOrigin,
 } from '@finos/legend-graph';
-import { deserialize } from 'serializr';
-import { type Entity } from '@finos/legend-storage';
 import { DataProductViewerState } from './DataProductViewerState.js';
 import { EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl } from '../../__lib__/LegendMarketplaceNavigation.js';
 import type { AuthContextProps } from 'react-oidc-context';
@@ -65,6 +57,7 @@ import {
   IngestDeploymentServerConfig,
 } from '@finos/legend-server-lakehouse';
 import { LegendMarketplaceUserDataHelper } from '../../__lib__/LegendMarketplaceUserDataHelper.js';
+import { getDataProductFromDetails } from './LakehouseUtils.js';
 
 export enum DataProductFilterType {
   DEPLOY_TYPE = 'DEPLOY_TYPE',
@@ -488,9 +481,10 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         this.applicationStore.pluginManager,
         this.applicationStore.logService,
       );
-      const v1DataProduct = yield this.getDataProductFromDetails(
+      const v1DataProduct = yield getDataProductFromDetails(
         dataProductDetails,
         graphManagerState,
+        this.marketplaceBaseStore,
       );
 
       const stateViewer = new DataProductViewerState(
@@ -547,66 +541,6 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         `Unable to load product ${dataProductId}: ${error.message}`,
       );
       this.loadingProductsState.fail();
-    }
-  }
-
-  async getDataProductFromDetails(
-    details: V1_EntitlementsDataProductDetails,
-    graphManagerState: GraphManagerState,
-  ): Promise<V1_DataProduct | undefined> {
-    if (details.origin instanceof V1_SdlcDeploymentDataProductOrigin) {
-      return deserialize(
-        V1_dataProductModelSchema,
-        (
-          await this.depotServerClient.getVersionEntity(
-            details.origin.group,
-            details.origin.artifact,
-            resolveVersion(details.origin.version),
-            details.id,
-          )
-        ).content,
-      );
-    } else if (details.origin instanceof V1_AdHocDeploymentDataProductOrigin) {
-      // Crete graph manager for parsing ad-hoc deployed data products
-      const graphManager = new V1_PureGraphManager(
-        this.applicationStore.pluginManager,
-        this.applicationStore.logService,
-        this.marketplaceBaseStore.remoteEngine,
-      );
-      await graphManager.initialize(
-        {
-          env: this.applicationStore.config.env,
-          tabSize: DEFAULT_TAB_SIZE,
-          clientConfig: {
-            baseUrl: this.applicationStore.config.engineServerUrl,
-          },
-        },
-        { engine: this.marketplaceBaseStore.remoteEngine },
-      );
-      const entities: Entity[] = await graphManager.pureCodeToEntities(
-        details.origin.definition,
-      );
-      await graphManager.buildGraph(
-        graphManagerState.graph,
-        entities,
-        ActionState.create(),
-      );
-      return guaranteeType(
-        graphManager.elementToProtocol(
-          guaranteeNonNullable(
-            graphManagerState.graph.allElements.find(
-              (element) =>
-                element instanceof DataProduct &&
-                element.name.toLowerCase() === details.id.toLowerCase(),
-            ),
-            `Unable to find ${details.id} in deployed definition`,
-          ),
-        ),
-        V1_DataProduct,
-        `${details.id} is not a data product`,
-      );
-    } else {
-      return undefined;
     }
   }
 

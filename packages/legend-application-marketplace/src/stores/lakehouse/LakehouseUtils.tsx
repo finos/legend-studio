@@ -15,19 +15,37 @@
  */
 
 import {
+  type GraphManagerState,
   type V1_AccessPointGroup,
   type V1_DataContract,
-  type V1_DataProduct,
+  type V1_EntitlementsDataProductDetails,
   type V1_OrganizationalScope,
+  CORE_PURE_PATH,
+  DataProduct,
   V1_AccessPointGroupReference,
+  V1_AdHocDeploymentDataProductOrigin,
   V1_AdhocTeam,
   V1_AppDirOrganizationalScope,
   V1_ContractState,
+  V1_DataProduct,
+  V1_dataProductModelSchema,
+  V1_PureGraphManager,
+  V1_SdlcDeploymentDataProductOrigin,
   V1_UnknownOrganizationalScopeType,
 } from '@finos/legend-graph';
 import type { LegendMarketplaceApplicationPlugin } from '../../application/LegendMarketplaceApplicationPlugin.js';
-import { isNonNullable } from '@finos/legend-shared';
+import {
+  ActionState,
+  guaranteeNonNullable,
+  guaranteeType,
+  isNonNullable,
+} from '@finos/legend-shared';
 import type React from 'react';
+import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
+import { resolveVersion } from '@finos/legend-server-depot';
+import type { Entity } from '@finos/legend-storage';
+import { deserialize } from 'serializr';
+import type { LegendMarketplaceBaseStore } from '../LegendMarketplaceBaseStore.js';
 
 const invalidContractState = [
   V1_ContractState.DRAFT,
@@ -137,5 +155,84 @@ export const getOrganizationalScopeTypeDetails = (
     }
 
     return <>Unknown</>;
+  }
+};
+
+export const getDataProductFromDetails = async (
+  details: V1_EntitlementsDataProductDetails,
+  graphManagerState: GraphManagerState,
+  marketplaceBaseStore: LegendMarketplaceBaseStore,
+): Promise<V1_DataProduct | undefined> => {
+  if (details.origin instanceof V1_SdlcDeploymentDataProductOrigin) {
+    const rawEntities =
+      await marketplaceBaseStore.depotServerClient.getVersionEntities(
+        details.origin.group,
+        details.origin.artifact,
+        resolveVersion(details.origin.version),
+        CORE_PURE_PATH.DATA_PRODUCT,
+      );
+    const entities = rawEntities.map((entity) =>
+      deserialize(V1_dataProductModelSchema, entity.content),
+    );
+    const matchingEntities = entities.filter(
+      (entity) => entity.name.toLowerCase() === details.id.toLowerCase(),
+    );
+    if (matchingEntities.length === 0) {
+      throw new Error(
+        `No data product found with name ${details.id} in project`,
+      );
+    } else if (matchingEntities.length > 1) {
+      throw new Error(
+        `Multiple data products found with name ${details.id} in project`,
+      );
+    }
+    return matchingEntities[0];
+  } else if (details.origin instanceof V1_AdHocDeploymentDataProductOrigin) {
+    // Crete graph manager for parsing ad-hoc deployed data products
+    const graphManager = new V1_PureGraphManager(
+      marketplaceBaseStore.applicationStore.pluginManager,
+      marketplaceBaseStore.applicationStore.logService,
+      marketplaceBaseStore.remoteEngine,
+    );
+    await graphManager.initialize(
+      {
+        env: marketplaceBaseStore.applicationStore.config.env,
+        tabSize: DEFAULT_TAB_SIZE,
+        clientConfig: {
+          baseUrl: marketplaceBaseStore.applicationStore.config.engineServerUrl,
+        },
+      },
+      { engine: marketplaceBaseStore.remoteEngine },
+    );
+    const entities: Entity[] = await graphManager.pureCodeToEntities(
+      details.origin.definition,
+    );
+    await graphManager.buildGraph(
+      graphManagerState.graph,
+      entities,
+      ActionState.create(),
+    );
+    const matchingEntities = graphManagerState.graph.allElements.filter(
+      (element) =>
+        element instanceof DataProduct &&
+        element.name.toLowerCase() === details.id.toLowerCase(),
+    );
+    if (matchingEntities.length > 1) {
+      throw new Error(
+        `Multiple data products found with name ${details.id} in deployed definition`,
+      );
+    }
+    return guaranteeType(
+      graphManager.elementToProtocol(
+        guaranteeNonNullable(
+          matchingEntities[0],
+          `No data product found with name ${details.id} in deployed definition`,
+        ),
+      ),
+      V1_DataProduct,
+      `${details.id} is not a data product`,
+    );
+  } else {
+    return undefined;
   }
 };
