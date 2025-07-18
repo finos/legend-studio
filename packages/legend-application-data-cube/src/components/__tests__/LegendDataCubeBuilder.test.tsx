@@ -232,52 +232,58 @@ test(
   },
 );
 
-test(integrationTest('Loads DataCube from FreeformTDSExpression'), async () => {
-  MockedMonacoEditorAPI.remeasureFonts.mockReturnValue(undefined);
+test.only(
+  integrationTest('Loads DataCube from FreeformTDSExpression'),
+  async () => {
+    MockedMonacoEditorAPI.remeasureFonts.mockReturnValue(undefined);
 
-  const testDataSetupSqls =
-    '[\'DROP TABLE IF EXISTS COVID_DATA;CREATE TABLE COVID_DATA(ID INT PRIMARY KEY,FIPS VARCHAR(200),DATE DATE,CASE_TYPE VARCHAR(200),CASES FLOAT,LAST_REPORTED_FLAG BIT);INSERT INTO COVID_DATA VALUES(1, "1", "2021-04-01", "Confirmed", 405.34343, 0);INSERT INTO COVID_DATA VALUES(2, "2", "2021-05-01", "Active", 290.2332233333, 1);INSERT INTO COVID_DATA VALUES(3, "3", "2021-08-01", "Active", 20.2332233333, 1);\']';
-
-  const model = {
-    _type: 'text',
-    code: `###Runtime\nRuntime H2::Runtime\n{\n  mappings: [];\n  connections: [\nH2::Database: [\n  connection_1: H2::Connection\n]\n  ];\n}\n###Connection\nRelationalDatabaseConnection H2::Connection\n{\n  store: H2::Database;\n  type: H2;\n  specification: LocalH2\n  {\ntestDataSetupSqls: ${testDataSetupSqls};\n  };\n  auth: DefaultH2;\n}\n###Relational\nDatabase H2::Database (\n  Schema default (\nTable COVID_DATA (\n  ID INT,\n  FIPS VARCHAR(200),\n  DATE DATE,\n  CASE_TYPE VARCHAR(200),\nCASES FLOAT,\nLAST_REPORTED_FLAG BIT\n)\n)\n)\n`,
-  };
-  const mockDataCubeId = 'test-freeform-tds-datacube-id';
-  const mockDataCube: PersistentDataCube =
-    PersistentDataCube.serialization.fromJson({
-      id: mockDataCubeId,
-      name: `${mockDataCubeId}-name`,
-      description: undefined,
-      content: {
-        query: `select(~[ID])`,
-        source: {
-          _type: 'freeformTDSExpression',
-          query: `#>{H2::Database.COVID_DATA}#->select(~[ID])->limit(2)`,
-          runtime: 'H2::Connection',
-          mapping: '',
-          model,
+    const model = {
+      _type: 'text',
+      code: `###Runtime\nRuntime showcase::northwind::store::NorthwindRuntime\n{\n  mappings: [];\n  connections: [\nshowcase::northwind::store::NorthwindDatabase: [\n  connection_1: showcase::northwind::connection::NorthwindConnection\n]\n  ];\n}\n###Connection\nRelationalDatabaseConnection showcase::northwind::connection::NorthwindConnection\n{\n  store: showcase::northwind::store::NorthwindDatabase;\n  type: H2;\n  specification: LocalH2\n  {\ntestDataSetupSqls: ['call loadNorthwindData()'];\n  };\n  auth: DefaultH2;\n}\n###Relational\nDatabase showcase::northwind::store::NorthwindDatabase (\n  Schema NORTHWIND (\nTable ORDERS (\n  ORDER_ID SMALLINT PRIMARY KEY,\n  CUSTOMER_ID VARCHAR(5),\nEMPLOYEE_ID SMALLINT,\n  ORDER_DATE DATE,\n SHIP_NAME VARCHAR(40),\n SHIP_CITY VARCHAR(15)\n)\n)\n)\n`,
+    };
+    const mockDataCubeId = 'test-freeform-tds-datacube-id';
+    const mockDataCube: PersistentDataCube =
+      PersistentDataCube.serialization.fromJson({
+        id: mockDataCubeId,
+        name: `${mockDataCubeId}-name`,
+        description: undefined,
+        content: {
+          query: `select(~[SHIP_NAME])`,
+          source: {
+            _type: 'freeformTDSExpression',
+            query: `#>{showcase::northwind::store::NorthwindDatabase.NORTHWIND.ORDERS}#->select(~[SHIP_NAME])->limit(2)`,
+            runtime: 'showcase::northwind::store::NorthwindRuntime',
+            mapping: '',
+            model,
+          },
+          configuration: {
+            name: `${mockDataCubeId}-freeform-query-name`,
+            columns: [{ name: 'SHIP_NAME', type: 'String' }],
+          },
         },
-        configuration: {
-          name: `${mockDataCubeId}-freeform-query-name`,
-          columns: [{ name: 'ID', type: 'Integer' }],
-        },
-      },
-    });
+      });
 
-  const mockedLegendDataCubeBuilderStore =
-    await TEST__provideMockedLegendDataCubeBuilderStore();
-  await TEST__setUpDataCubeBuilder(
-    guaranteeNonNullable(mockedLegendDataCubeBuilderStore),
-    mockDataCube,
-    undefined,
-    depotEntities,
-  );
+    const mockedLegendDataCubeBuilderStore =
+      await TEST__provideMockedLegendDataCubeBuilderStore();
+    await TEST__setUpDataCubeBuilder(
+      guaranteeNonNullable(mockedLegendDataCubeBuilderStore),
+      mockDataCube,
+      undefined,
+      depotEntities,
+    );
 
-  await screen.findByText('test-freeform-tds-datacube-id-freeform-query-name');
-  expect(
-    (await screen.findAllByText('ID', {}, { timeout: 10000 })).length,
-  ).toBeGreaterThanOrEqual(1);
-});
+    await screen.findByText(
+      'test-freeform-tds-datacube-id-freeform-query-name',
+    );
+    await screen.findByText('SHIP_NAME', {}, { timeout: 10000 });
+    await screen.findByText(
+      'Vins et alcools Chevalier',
+      {},
+      { timeout: 10000 },
+    );
+    await screen.findByText('Toms Spezialitäten', {}, { timeout: 10000 });
+  },
+);
 
 test(
   integrationTest(
