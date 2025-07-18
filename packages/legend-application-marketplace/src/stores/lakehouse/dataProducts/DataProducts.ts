@@ -157,13 +157,13 @@ export class DataProductState {
     return this.dataProductElement?.imageUrl;
   }
 
-  get versionId(): string {
+  get versionId(): string | undefined {
     const origin = this.dataProductDetails.origin;
     return origin instanceof V1_SdlcDeploymentDataProductOrigin
       ? origin.version
       : origin instanceof V1_AdHocDeploymentDataProductOrigin
         ? 'AdHoc'
-        : 'Unknown';
+        : undefined;
   }
 
   get environmentClassification():

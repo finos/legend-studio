@@ -231,44 +231,40 @@ export const LakehouseDataProductCard = observer(
             )}
           </Box>
           <Box className="marketplace-lakehouse-data-product-card__content">
-            {versionId !== undefined && versionId !== '' && (
-              <Chip
-                size="small"
-                label={versionId}
-                className={clsx(
-                  'marketplace-lakehouse-data-product-card__version',
-                  {
-                    'marketplace-lakehouse-data-product-card__version--snapshot':
-                      isSnapshot,
-                    'marketplace-lakehouse-data-product-card__version--release':
-                      !isSnapshot,
-                  },
-                )}
-              />
-            )}
-            {environmentClassification !== undefined && (
-              <Chip
-                label={environmentClassification}
-                size="small"
-                title="Environment Classification"
-                className={clsx(
-                  'marketplace-lakehouse-data-product-card__environment-classification',
-                  {
-                    'marketplace-lakehouse-data-product-card__environment-classification--unknown':
-                      environmentClassification === undefined,
-                    'marketplace-lakehouse-data-product-card__environment-classification--dev':
-                      environmentClassification ===
-                      V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT,
-                    'marketplace-lakehouse-data-product-card__environment-classification--prod-parallel':
-                      environmentClassification ===
-                      V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL,
-                    'marketplace-lakehouse-data-product-card__environment-classification--prod':
-                      environmentClassification ===
-                      V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
-                  },
-                )}
-              />
-            )}
+            <Chip
+              size="small"
+              label={versionId ?? 'Unknown Version'}
+              className={clsx(
+                'marketplace-lakehouse-data-product-card__version',
+                {
+                  'marketplace-lakehouse-data-product-card__version--snapshot':
+                    isSnapshot,
+                  'marketplace-lakehouse-data-product-card__version--release':
+                    !isSnapshot,
+                },
+              )}
+            />
+            <Chip
+              label={environmentClassification ?? 'Unknown Environment'}
+              size="small"
+              title="Environment Classification"
+              className={clsx(
+                'marketplace-lakehouse-data-product-card__environment-classification',
+                {
+                  'marketplace-lakehouse-data-product-card__environment-classification--unknown':
+                    environmentClassification === undefined,
+                  'marketplace-lakehouse-data-product-card__environment-classification--dev':
+                    environmentClassification ===
+                    V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT,
+                  'marketplace-lakehouse-data-product-card__environment-classification--prod-parallel':
+                    environmentClassification ===
+                    V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL,
+                  'marketplace-lakehouse-data-product-card__environment-classification--prod':
+                    environmentClassification ===
+                    V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
+                },
+              )}
+            />
             <Box className="marketplace-lakehouse-data-product-card__name">
               {dataProductState.title}
             </Box>
