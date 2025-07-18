@@ -71,4 +71,5 @@ export enum LEGEND_STUDIO_TEST_ID {
   SETUP__CONTENT = 'setup__content',
 
   HOVER_EDIT_ICON = 'hover-edit-icon',
+  ACCESS_POINT_GROUP_EDITOR = 'access-point-group-editor',
 }

@@ -488,9 +488,6 @@ const NewLakehouseDataProductEditor = observer(() => {
   const handleTitleChange: React.ChangeEventHandler<HTMLInputElement> = (
     event,
   ) => newProductDriver.setTitle(event.target.value);
-  const handleDescriptionChange: React.ChangeEventHandler<HTMLInputElement> = (
-    event,
-  ) => newProductDriver.setDescription(event.target.value);
   return (
     <>
       <div className="panel__content__form__section__header__label">Title</div>
@@ -501,18 +498,6 @@ const NewLakehouseDataProductEditor = observer(() => {
           value={newProductDriver.title}
           onChange={handleTitleChange}
           placeholder={`Choose a title for this Data Product to display in Marketplace`}
-        />
-      </div>
-      <div className="panel__content__form__section__header__label">
-        Description
-      </div>
-      <div className="explorer__new-element-modal__driver">
-        <input
-          className="input--dark explorer__new-element-modal__name-input"
-          spellCheck={false}
-          value={newProductDriver.description}
-          onChange={handleDescriptionChange}
-          placeholder={`Provide a meaningful description for this Data Product`}
         />
       </div>
     </>

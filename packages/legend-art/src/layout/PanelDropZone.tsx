@@ -104,12 +104,13 @@ export const PanelEntryDragHandle: React.FC<{
   dragSourceConnector: RefObject<HTMLElement | null>;
   className?: string;
   isDragging: boolean;
+  title?: string;
 }> = (props) => {
-  const { isDragging, dragSourceConnector, className } = props;
+  const { isDragging, dragSourceConnector, className, title } = props;
   return (
     <div
       ref={dragSourceConnector as RefObject<HTMLDivElement | null>}
-      title="Drag Element"
+      title={title ?? 'Drag Element'}
       className={clsx('dnd__entry__handle__container', className, {
         'dnd__entry__handle__container--dragging': isDragging,
       })}
