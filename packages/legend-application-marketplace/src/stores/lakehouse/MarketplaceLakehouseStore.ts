@@ -484,16 +484,19 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       const dataProductDetails = guaranteeNonNullable(
         fetchedDataProductDetails[0],
       );
-      const v1DataProduct =
-        yield this.getDataProductFromDetails(dataProductDetails);
+      const graphManagerState = new GraphManagerState(
+        this.applicationStore.pluginManager,
+        this.applicationStore.logService,
+      );
+      const v1DataProduct = yield this.getDataProductFromDetails(
+        dataProductDetails,
+        graphManagerState,
+      );
 
       const stateViewer = new DataProductViewerState(
         this.applicationStore,
         this,
-        new GraphManagerState(
-          this.applicationStore.pluginManager,
-          this.applicationStore.logService,
-        ),
+        graphManagerState,
         this.lakehouseContractServerClient,
         v1DataProduct,
         dataProductDetails,
@@ -549,6 +552,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
 
   async getDataProductFromDetails(
     details: V1_EntitlementsDataProductDetails,
+    graphManagerState: GraphManagerState,
   ): Promise<V1_DataProduct | undefined> {
     if (details.origin instanceof V1_SdlcDeploymentDataProductOrigin) {
       return deserialize(
@@ -578,10 +582,6 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
           },
         },
         { engine: this.marketplaceBaseStore.remoteEngine },
-      );
-      const graphManagerState = new GraphManagerState(
-        this.applicationStore.pluginManager,
-        this.applicationStore.logService,
       );
       const entities: Entity[] = await graphManager.pureCodeToEntities(
         details.origin.definition,
