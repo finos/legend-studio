@@ -69,6 +69,7 @@ import { LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE } from '../model/LocalFileDataCu
 import type { LegendDataCubeSourceLoaderState } from './source/LegendDataCubeSourceLoaderState.js';
 import { LocalFileDataCubeSourceLoaderState } from './source/LocalFileDataCubeSourceLoaderState.js';
 import { LEGEND_DATACUBE_APP_EVENT } from '../../__lib__/LegendDataCubeEvent.js';
+import { LegendDataCubeQueryEditor } from '../../components/builder/LegendDataCubeQueryEditor.js';
 
 export class LegendDataCubeBuilderState {
   readonly uuid = uuid();
@@ -140,6 +141,9 @@ export class LegendDataCubeBuilderStore {
 
   readonly saveState = ActionState.create();
   readonly saverDisplay: LegendDataCubeBlockingWindowState;
+
+  readonly codeEditorState = ActionState.create();
+  readonly codeEditorDisplay: LegendDataCubeBlockingWindowState;
 
   readonly deleteState = ActionState.create();
   dataCubeToDelete?: LightPersistentDataCube | PersistentDataCube | undefined;
@@ -213,6 +217,14 @@ export class LegendDataCubeBuilderStore {
       {
         ...DEFAULT_ALERT_WINDOW_CONFIG,
         height: 200,
+      },
+    );
+    this.codeEditorDisplay = new LegendDataCubeBlockingWindowState(
+      'Edit Query',
+      () => <LegendDataCubeQueryEditor />,
+      {
+        ...DEFAULT_ALERT_WINDOW_CONFIG,
+        height: 400,
       },
     );
     this.deleteConfirmationDisplay = new LegendDataCubeBlockingWindowState(
