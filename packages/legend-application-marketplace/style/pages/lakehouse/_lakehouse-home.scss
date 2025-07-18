@@ -228,15 +228,14 @@
       margin: 1rem 0;
     }
 
-    &__description-label,
-    &__project-table-header {
+    &__section-header {
       @include flexVCenter;
 
       font-style: italic;
       color: var(--color-dark-grey-400);
     }
 
-    &__project-table td {
+    &__table td {
       font-size: 1.6rem;
     }
 
