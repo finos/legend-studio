@@ -232,6 +232,58 @@ test(
   },
 );
 
+test.only(
+  integrationTest('Loads DataCube from FreeformTDSExpression'),
+  async () => {
+    MockedMonacoEditorAPI.remeasureFonts.mockReturnValue(undefined);
+
+    const testDataSetupSqls =
+      '[\'DROP TABLE IF EXISTS COVID_DATA;CREATE TABLE COVID_DATA(ID INT PRIMARY KEY,FIPS VARCHAR(200),DATE DATE,CASE_TYPE VARCHAR(200),CASES FLOAT,LAST_REPORTED_FLAG BIT);INSERT INTO COVID_DATA VALUES(1, "1", "2021-04-01", "Confirmed", 405.34343, 0);INSERT INTO COVID_DATA VALUES(2, "2", "2021-05-01", "Active", 290.2332233333, 1);INSERT INTO COVID_DATA VALUES(3, "3", "2021-08-01", "Active", 20.2332233333, 1);\']';
+
+    const model = {
+      _type: 'text',
+      code: `###Runtime\nRuntime H2::Runtime\n{\n  mappings: [];\n  connections: [\nH2::Database: [\n  connection_1: H2::Connection\n]\n  ];\n}\n###Connection\nRelationalDatabaseConnection H2::Connection\n{\n  store: H2::Database;\n  type: H2;\n  specification: LocalH2\n  {\ntestDataSetupSqls: ${testDataSetupSqls};\n  };\n  auth: DefaultH2;\n}\n###Relational\nDatabase H2::Database (\n  Schema default (\nTable COVID_DATA (\n  ID INT,\n  FIPS VARCHAR(200),\n  DATE DATE,\n  CASE_TYPE VARCHAR(200),\nCASES FLOAT,\nLAST_REPORTED_FLAG BIT\n)\n)\n)\n`,
+    };
+    const mockDataCubeId = 'test-freeform-tds-datacube-id';
+    const mockDataCube: PersistentDataCube =
+      PersistentDataCube.serialization.fromJson({
+        id: mockDataCubeId,
+        name: `${mockDataCubeId}-name`,
+        description: undefined,
+        content: {
+          query: `select(~[ID])`,
+          source: {
+            _type: 'freeformTDSExpression',
+            query: `#>{H2::Database.COVID_DATA}#->select(~[ID])->limit(2)`,
+            runtime: 'H2::Connection',
+            mapping: '',
+            model,
+          },
+          configuration: {
+            name: `${mockDataCubeId}-freeform-query-name`,
+            columns: [{ name: 'ID', type: 'Integer' }],
+          },
+        },
+      });
+
+    const mockedLegendDataCubeBuilderStore =
+      await TEST__provideMockedLegendDataCubeBuilderStore();
+    await TEST__setUpDataCubeBuilder(
+      guaranteeNonNullable(mockedLegendDataCubeBuilderStore),
+      mockDataCube,
+      undefined,
+      depotEntities,
+    );
+
+    await screen.findByText(
+      'test-freeform-tds-datacube-id-freeform-query-name',
+    );
+    expect(
+      (await screen.findAllByText('ID', {}, { timeout: 10000 })).length,
+    ).toBeGreaterThanOrEqual(1);
+  },
+);
+
 test(
   integrationTest(
     'Automatically converts TDS query to Relation query when loading DataCube from Legend Query',
