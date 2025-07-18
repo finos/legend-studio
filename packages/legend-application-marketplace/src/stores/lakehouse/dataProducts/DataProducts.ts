@@ -139,7 +139,10 @@ export class DataProductState {
   }
 
   get title(): string {
-    return this.dataProductElement?.title ?? '';
+    return this.dataProductElement?.title !== undefined &&
+      this.dataProductElement.title !== ''
+      ? this.dataProductElement.title
+      : this.dataProductDetails.dataProduct.name;
   }
 
   get description(): string | undefined {
