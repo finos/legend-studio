@@ -581,6 +581,19 @@ export function _filterCondition_caseSensitive(
       let column: DataCubeColumn | undefined;
       if (param1.parameters[0] instanceof V1_AppliedProperty) {
         column = _propertyCol(param1.parameters[0], columnGetter);
+      } else if (
+        param1.parameters[0] instanceof V1_AppliedFunction &&
+        matchFunctionName(
+          param1.parameters[0].function,
+          DataCubeFunction.TO_ONE,
+        )
+      ) {
+        if (param1.parameters[0].parameters[0] instanceof V1_AppliedProperty) {
+          column = _propertyCol(
+            param1.parameters[0].parameters[0],
+            columnGetter,
+          );
+        }
       }
       if (!column) {
         return undefined;
@@ -596,17 +609,25 @@ export function _filterCondition_caseSensitive(
       if (param2.parameters.length !== 1) {
         return undefined;
       }
-      const value = _operationValue(
-        param2.parameters[0],
-        columnGetter,
-        (_column) => {
-          if (getDataType(column.type) !== getDataType(_column.type)) {
-            throw new Error(
-              `Can't process filter condition: found incompatible columns`,
-            );
-          }
-        },
-      );
+      let operationValue = param2.parameters[0];
+      if (
+        param2.parameters[0] instanceof V1_AppliedFunction &&
+        matchFunctionName(
+          param2.parameters[0].function,
+          DataCubeFunction.TO_ONE,
+        )
+      ) {
+        if (param2.parameters[0].parameters[0] instanceof V1_AppliedProperty) {
+          operationValue = param2.parameters[0].parameters[0];
+        }
+      }
+      const value = _operationValue(operationValue, columnGetter, (_column) => {
+        if (getDataType(column.type) !== getDataType(_column.type)) {
+          throw new Error(
+            `Can't process filter condition: found incompatible columns`,
+          );
+        }
+      });
 
       return {
         column,
