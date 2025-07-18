@@ -24,9 +24,9 @@ import {
   observe_SupportInfo,
   observe_Email,
   SupportInfo,
+  type LakehouseAccessPoint,
 } from '@finos/legend-graph';
-import { addUniqueEntry, deleteEntry } from '@finos/legend-shared';
-
+import { addUniqueEntry, deleteEntry, swapEntry } from '@finos/legend-shared';
 import { action } from 'mobx';
 
 export const dataProduct_deleteAccessPoint = action(
@@ -38,6 +38,12 @@ export const dataProduct_deleteAccessPoint = action(
 export const dataProduct_addAccessPoint = action(
   (group: AccessPointGroup, accessPoint: AccessPoint) => {
     addUniqueEntry(group.accessPoints, observe_AccessPoint(accessPoint));
+  },
+);
+
+export const accessPoint_setClassification = action(
+  (accessPoint: LakehouseAccessPoint, classification: string | undefined) => {
+    accessPoint.classification = classification;
   },
 );
 
@@ -53,18 +59,46 @@ export const accessPointGroup_setName = action(
   },
 );
 
+export const accessPointGroup_swapAccessPoints = action(
+  (
+    group: AccessPointGroup,
+    sourceAp: AccessPoint,
+    targetAp: AccessPoint,
+  ): void => {
+    swapEntry(group.accessPoints, sourceAp, targetAp);
+  },
+);
+
 export const dataProduct_addAccessPointGroup = action(
-  (product: DataProduct, accessPointGroup: AccessPointGroup) => {
-    addUniqueEntry(
-      product.accessPointGroups,
-      observe_AccessPointGroup(accessPointGroup),
-    );
+  (
+    product: DataProduct,
+    accessPointGroup: AccessPointGroup,
+    addToEnd?: boolean,
+  ) => {
+    const observedGroup = observe_AccessPointGroup(accessPointGroup);
+
+    if (addToEnd) {
+      addUniqueEntry(product.accessPointGroups, observedGroup);
+    } else {
+      const insertIndex = Math.max(product.accessPointGroups.length - 1, 0);
+      product.accessPointGroups.splice(insertIndex, 0, observedGroup);
+    }
   },
 );
 
 export const dataProduct_deleteAccessPointGroup = action(
   (product: DataProduct, accessPointGroup: AccessPointGroup) => {
     deleteEntry(product.accessPointGroups, accessPointGroup);
+  },
+);
+
+export const dataProduct_swapAccessPointGroups = action(
+  (
+    product: DataProduct,
+    sourceGroup: AccessPointGroup,
+    targetGroup: AccessPointGroup,
+  ): void => {
+    swapEntry(product.accessPointGroups, sourceGroup, targetGroup);
   },
 );
 
