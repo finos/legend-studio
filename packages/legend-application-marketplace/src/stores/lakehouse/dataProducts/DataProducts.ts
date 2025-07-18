@@ -27,6 +27,7 @@ import {
   type V1_EntitlementsDataProductDetails,
   type V1_EntitlementsLakehouseEnvironmentType,
   type V1_PureGraphManager,
+  DataProduct,
   GraphManagerState,
   V1_AdHocDeploymentDataProductOrigin,
   V1_DataProduct,
@@ -109,11 +110,16 @@ export class DataProductState {
           ActionState.create(),
         );
         const dataProductEntity = guaranteeType(
-          guaranteeNonNullable(
-            this.graphManager.elementToProtocol(
-              graphManagerState.graph.getElement(this.dataProductDetails.id),
+          this.graphManager.elementToProtocol(
+            guaranteeNonNullable(
+              graphManagerState.graph.allElements.find(
+                (element) =>
+                  element instanceof DataProduct &&
+                  element.name.toLowerCase() ===
+                    this.dataProductDetails.id.toLowerCase(),
+              ),
+              `Unable to find ${this.dataProductDetails.id} in deployed definition`,
             ),
-            `Unable to find ${this.dataProductDetails.id} in deployed definition`,
           ),
           V1_DataProduct,
           `${this.dataProductDetails.id} is not a data product`,
