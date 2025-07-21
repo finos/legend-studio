@@ -20,7 +20,7 @@ import { useEffect, useRef, useState } from 'react';
 import { CaretUpIcon, clsx, OpenIcon, VerifiedIcon } from '@finos/legend-art';
 import { useApplicationStore } from '@finos/legend-application';
 import { DataProductWiki } from './DataProductWiki.js';
-import { Box, Button } from '@mui/material';
+import { Button } from '@mui/material';
 import { isSnapshotVersion } from '@finos/legend-server-depot';
 import {
   V1_AdHocDeploymentDataProductOrigin,
@@ -79,8 +79,7 @@ const DataProductHeader = observer(
           </div>
           <div className="data-space__viewer__header__type">
             {origin instanceof V1_AdHocDeploymentDataProductOrigin && (
-              <Box
-                title="View Ingest Environment"
+              <Button
                 className={clsx('data-space__viewer__header__type__sandbox', {
                   'data-space__viewer__header__type__sandbox--dev':
                     environmentClassification ===
@@ -97,7 +96,7 @@ const DataProductHeader = observer(
                   ? `${environmentClassification} `
                   : ''}
                 Sandbox Data Product
-              </Box>
+              </Button>
             )}
             {origin instanceof V1_SdlcDeploymentDataProductOrigin && (
               <Button
