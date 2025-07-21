@@ -97,9 +97,11 @@ class DataProductFilters {
     makeObservable(this, {
       sdlcDeployFilter: observable,
       sandboxDeployFilter: observable,
+      unknownDeployFilter: observable,
       devEnvironmentClassificationFilter: observable,
       prodParallelEnvironmentClassificationFilter: observable,
       prodEnvironmentClassificationFilter: observable,
+      unknownEnvironmentClassificationFilter: observable,
       search: observable,
     });
     this.sdlcDeployFilter = defaultBooleanFilters.sdlcDeployFilter;
