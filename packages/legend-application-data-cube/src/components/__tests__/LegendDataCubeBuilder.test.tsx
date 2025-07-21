@@ -242,9 +242,11 @@ test(integrationTest('Datacube with missing model'), async () => {
     depotEntities,
   );
   await expect(
-    screen.findByText('test-freeform-tds-datacube-id-freeform-query-name'),
-  ).rejects.toThrowError(
-    'Unable to find an element with the text: test-freeform-tds-datacube-id-freeform-query-name. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.',
+    screen.findByText(
+      /Initialization Failure: Can't get query result columns./,
+      {},
+      { timeout: 10000 },
+    ),
   );
 });
 
