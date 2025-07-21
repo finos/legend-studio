@@ -152,19 +152,11 @@
     &--snapshot {
       background: var(--tw-color-blue-100);
       color: var(--tw-color-blue-600);
-
-      &:hover {
-        background: var(--tw-color-blue-200);
-      }
     }
 
     &--release {
       background: var(--tw-color-green-100);
       color: var(--tw-color-green-600);
-
-      &:hover {
-        background: var(--tw-color-green-200);
-      }
     }
   }
 
