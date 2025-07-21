@@ -51,6 +51,7 @@ import {
   type V1_ValueSpecification,
   V1_entitiesToPureModelContextData,
   V1_ExecuteInput,
+  V1_PureModelContext,
   V1_PureModelContextData,
   V1_serializePureModelContext,
 } from '@finos/legend-graph';
@@ -176,7 +177,9 @@ export const TEST__setUpDataCubeBuilder = async (
       async (input: PlainObject<V1_LambdaReturnTypeInput>) => {
         return ENGINE_TEST_SUPPORT__getLambdaReturnType(
           input.lambda as PlainObject<V1_RawLambda>,
-          V1_serializePureModelContext(pmcd),
+          input.model
+            ? (input.model as PlainObject<V1_PureModelContext>)
+            : V1_serializePureModelContext(pmcd),
         );
       },
     );
@@ -187,7 +190,9 @@ export const TEST__setUpDataCubeBuilder = async (
       async (input: PlainObject<V1_LambdaReturnTypeInput>) => {
         return ENGINE_TEST_SUPPORT__getLambdaRelationType(
           input.lambda as PlainObject<V1_RawLambda>,
-          V1_serializePureModelContext(pmcd),
+          input.model
+            ? (input.model as PlainObject<V1_PureModelContext>)
+            : V1_serializePureModelContext(pmcd),
         );
       },
     );
@@ -198,7 +203,9 @@ export const TEST__setUpDataCubeBuilder = async (
       async (input: PlainObject<V1_LambdaReturnTypeInput>) => {
         return ENGINE_TEST_SUPPORT__transformTdsToRelation_lambda(
           input.lambda as PlainObject<V1_RawLambda>,
-          V1_serializePureModelContext(pmcd),
+          input.model
+            ? (input.model as PlainObject<V1_PureModelContext>)
+            : V1_serializePureModelContext(pmcd),
         );
       },
     );
@@ -207,7 +214,7 @@ export const TEST__setUpDataCubeBuilder = async (
       'runQuery',
     ).mockImplementation(async (input: PlainObject<V1_ExecuteInput>) => {
       const executeInput = V1_ExecuteInput.serialization.fromJson(input);
-      executeInput.model = pmcd;
+      executeInput.model = input.model ? input.model : pmcd;
       return ENGINE_TEST_SUPPORT__execute(executeInput);
     });
   }
