@@ -214,7 +214,7 @@ export const TEST__setUpDataCubeBuilder = async (
       'runQuery',
     ).mockImplementation(async (input: PlainObject<V1_ExecuteInput>) => {
       const executeInput = V1_ExecuteInput.serialization.fromJson(input);
-      executeInput.model = input.model ? input.model : pmcd;
+      executeInput.model = input.model ? executeInput.model : pmcd;
       return ENGINE_TEST_SUPPORT__execute(executeInput);
     });
   }
