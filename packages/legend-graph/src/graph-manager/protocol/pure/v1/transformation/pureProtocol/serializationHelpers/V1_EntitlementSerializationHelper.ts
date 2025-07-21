@@ -66,6 +66,7 @@ import {
   V1_AccessPointGroupStereotypeMapping,
   V1_AdHocDeploymentDataProductOrigin,
   V1_EntitlementsAccessPoint,
+  V1_EntitlementsDataProduct,
   V1_EntitlementsDataProductDetails,
   V1_EntitlementsDataProductDetailsResponse,
   V1_EntitlementsLakehouseEnvironment,
@@ -112,7 +113,7 @@ export const V1_AppDirNodeModelSchema = createModelSchema(V1_AppDirNode, {
 });
 
 export const V1_EntitlementsDataProductModelSchema = createModelSchema(
-  V1_EntitlementsDataProductDetails,
+  V1_EntitlementsDataProduct,
   {
     name: primitive(),
     accessPoints: customListWithSchema(V1_EntitlementsAccessPointModelSchema),
