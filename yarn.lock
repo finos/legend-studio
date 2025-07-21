@@ -2756,7 +2756,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@finos/legend-application@workspace:*, @finos/legend-application@workspace:^, @finos/legend-application@workspace:packages/legend-application":
+"@finos/legend-application@workspace:*, @finos/legend-application@workspace:packages/legend-application":
   version: 0.0.0-use.local
   resolution: "@finos/legend-application@workspace:packages/legend-application"
   dependencies:
@@ -2874,7 +2874,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-data-cube@workspace:packages/legend-data-cube"
   dependencies:
-    "@finos/legend-application": "workspace:^"
+    "@finos/legend-application": "workspace:*"
     "@finos/legend-art": "workspace:*"
     "@finos/legend-code-editor": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
