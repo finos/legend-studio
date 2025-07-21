@@ -123,63 +123,66 @@ const LakehouseDataProductCardInfoPopover = observer(
           },
         }}
       >
-        <div className="marketplace-lakehouse-data-product-card__popover__name">
+        <Box className="marketplace-lakehouse-data-product-card__popover__name">
           {dataProductState.title}
-        </div>
+        </Box>
         <Box className="marketplace-lakehouse-data-product-card__popover__content">
-          <div className="marketplace-lakehouse-data-product-card__popover__section-header">
-            Description
-          </div>
-          <div className="marketplace-lakehouse-data-product-card__popover__section-content">
-            {dataProductState.description}
-          </div>
-          <div className="marketplace-lakehouse-data-product-card__popover__section-header">
-            Deployment Details
-          </div>
-          <TableContainer className="marketplace-lakehouse-data-product-card__popover__table">
-            <Table>
-              <TableBody>
-                <TableRow>
-                  <TableCell>
-                    <b>Data Product ID</b>
-                  </TableCell>
-                  <TableCell>
-                    {dataProductState.dataProductDetails.id}
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>
-                    <b>Deployment ID</b>
-                  </TableCell>
-                  <TableCell>
-                    {dataProductState.dataProductDetails.deploymentId}
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>
-                    <b>Producer Environment name</b>
-                  </TableCell>
-                  <TableCell>
-                    {dataProductState.dataProductDetails.lakehouseEnvironment
-                      ?.producerEnvironmentName ?? 'Unknown'}
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>
-                    <b>Producer Environment Type</b>
-                  </TableCell>
-                  <TableCell>
-                    {dataProductState.dataProductDetails.lakehouseEnvironment
-                      ?.type ?? 'Unknown'}
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-          </TableContainer>
+          <Box className="marketplace-lakehouse-data-product-card__popover__section">
+            <Box className="marketplace-lakehouse-data-product-card__popover__section-header">
+              Description
+            </Box>
+            <Box className="marketplace-lakehouse-data-product-card__popover__section-content">
+              {dataProductState.description}
+            </Box>
+          </Box>
+          <Box className="marketplace-lakehouse-data-product-card__popover__section">
+            <Box className="marketplace-lakehouse-data-product-card__popover__section-header">
+              Deployment Details
+            </Box>
+            <TableContainer className="marketplace-lakehouse-data-product-card__popover__table">
+              <Table>
+                <TableBody>
+                  <TableRow>
+                    <TableCell>
+                      <b>Data Product ID</b>
+                    </TableCell>
+                    <TableCell>
+                      {dataProductState.dataProductDetails.id}
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>
+                      <b>Deployment ID</b>
+                    </TableCell>
+                    <TableCell>
+                      {dataProductState.dataProductDetails.deploymentId}
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>
+                      <b>Producer Environment name</b>
+                    </TableCell>
+                    <TableCell>
+                      {dataProductState.dataProductDetails.lakehouseEnvironment
+                        ?.producerEnvironmentName ?? 'Unknown'}
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>
+                      <b>Producer Environment Type</b>
+                    </TableCell>
+                    <TableCell>
+                      {dataProductState.dataProductDetails.lakehouseEnvironment
+                        ?.type ?? 'Unknown'}
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Box>
           {origin instanceof V1_SdlcDeploymentDataProductOrigin && (
-            <>
-              <hr />
-              <div className="marketplace-lakehouse-data-product-card__popover__section-header">
+            <Box className="marketplace-lakehouse-data-product-card__popover__section">
+              <Box className="marketplace-lakehouse-data-product-card__popover__section-header">
                 Data Product Project
                 <IconButton
                   className="marketplace-lakehouse-data-product-card__popover__project-link"
@@ -197,7 +200,7 @@ const LakehouseDataProductCardInfoPopover = observer(
                 >
                   <OpenIcon />
                 </IconButton>
-              </div>
+              </Box>
               <TableContainer className="marketplace-lakehouse-data-product-card__popover__table">
                 <Table>
                   <TableBody>
@@ -230,7 +233,7 @@ const LakehouseDataProductCardInfoPopover = observer(
                   </TableBody>
                 </Table>
               </TableContainer>
-            </>
+            </Box>
           )}
         </Box>
       </Popover>
