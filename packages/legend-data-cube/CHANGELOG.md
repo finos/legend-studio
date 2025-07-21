@@ -1,5 +1,11 @@
 # @finos/legend-data-cube
 
+## 0.3.1
+
+### Patch Changes
+
+- [#4276](https://github.com/finos/legend-studio/pull/4276) [`449ae81`](https://github.com/finos/legend-studio/commit/449ae8120e618bc69e02c29f5cc7af980a63f4e3) ([@travisstebbins](https://github.com/travisstebbins)) - Fix typo in package.json dependency version
+
 ## 0.3.0
 
 ### Minor Changes
