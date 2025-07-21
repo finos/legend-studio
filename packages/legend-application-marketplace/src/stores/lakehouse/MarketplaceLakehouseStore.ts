@@ -31,14 +31,17 @@ import {
   ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
+  guaranteeType,
   isNonNullable,
   type GeneratorFn,
   type PlainObject,
 } from '@finos/legend-shared';
 import {
+  type V1_EntitlementsDataProductDetailsResponse,
   type V1_IngestEnvironment,
   GraphManagerState,
   V1_AdHocDeploymentDataProductOrigin,
+  V1_DataProduct,
   V1_deserializeIngestEnvironment,
   V1_entitlementsDataProductDetailsResponseToDataProductDetails,
   V1_EntitlementsLakehouseEnvironmentType,
@@ -481,11 +484,11 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     try {
       this.loadingProductsState.inProgress();
       const rawResponse =
-        yield this.lakehouseContractServerClient.getDataProductByIdAndDID(
+        (yield this.lakehouseContractServerClient.getDataProductByIdAndDID(
           dataProductId,
           deploymentId,
           auth.user?.access_token,
-        );
+        )) as PlainObject<V1_EntitlementsDataProductDetailsResponse>;
       const fetchedDataProductDetails =
         V1_entitlementsDataProductDetailsResponseToDataProductDetails(
           rawResponse,
@@ -524,11 +527,15 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         },
         { engine: this.marketplaceBaseStore.remoteEngine },
       );
-      const v1DataProduct = yield getDataProductFromDetails(
-        dataProductDetails,
-        graphManagerState,
-        graphManager,
-        this.marketplaceBaseStore,
+      const v1DataProduct = guaranteeType(
+        yield getDataProductFromDetails(
+          dataProductDetails,
+          graphManagerState,
+          graphManager,
+          this.marketplaceBaseStore,
+        ),
+        V1_DataProduct,
+        `Unable to get V1_DataProduct from details for id: ${dataProductDetails.id}`,
       );
 
       const stateViewer = new DataProductViewerState(
@@ -545,9 +552,9 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
               V1_SdlcDeploymentDataProductOrigin
             ) {
               return projectIdHandlerFunc(
-                dataProductDetails.origin?.group,
-                dataProductDetails.origin?.artifact,
-                dataProductDetails.origin?.version,
+                dataProductDetails.origin.group,
+                dataProductDetails.origin.artifact,
+                dataProductDetails.origin.version,
                 this.depotServerClient,
                 (projectId: string, resolvedId: string) => {
                   const studioUrl = guaranteeNonNullable(

@@ -75,12 +75,12 @@ export class DataProductState {
           this.lakehouseState.applicationStore.pluginManager,
           this.lakehouseState.applicationStore.logService,
         );
-        const dataProductElement = yield getDataProductFromDetails(
+        const dataProductElement = (yield getDataProductFromDetails(
           this.dataProductDetails,
           graphManagerState,
           this.graphManager,
           this.lakehouseState.marketplaceBaseStore,
-        );
+        )) as V1_DataProduct | undefined;
         this.dataProductElement = dataProductElement;
       }
     } catch (error) {
