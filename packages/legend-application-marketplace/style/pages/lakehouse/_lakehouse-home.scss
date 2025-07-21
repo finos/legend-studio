@@ -223,6 +223,12 @@
       color: var(--color-blue-100);
     }
 
+    &__content {
+      @include flexCenter;
+
+      gap: 1rem;
+    }
+
     hr {
       margin: 1rem 0;
     }
