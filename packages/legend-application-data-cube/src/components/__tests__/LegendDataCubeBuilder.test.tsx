@@ -186,7 +186,7 @@ test(integrationTest('Loads DataCube from FreeformTDSExpression'), async () => {
   const mockedLegendDataCubeBuilderStore =
     await TEST__provideMockedLegendDataCubeBuilderStore();
   const { legendDataCubeBuilderState } = await TEST__setUpDataCubeBuilder(
-    guaranteeNonNullable(mockedLegendDataCubeBuilderStore),
+    mockedLegendDataCubeBuilderStore,
     mockDataCube,
     undefined,
     depotEntities,
@@ -236,7 +236,7 @@ test(integrationTest('Datacube with missing model'), async () => {
   const mockedLegendDataCubeBuilderStore =
     await TEST__provideMockedLegendDataCubeBuilderStore();
   const { legendDataCubeBuilderState } = await TEST__setUpDataCubeBuilder(
-    guaranteeNonNullable(mockedLegendDataCubeBuilderStore),
+    mockedLegendDataCubeBuilderStore,
     mockDataCube,
     undefined,
     depotEntities,
