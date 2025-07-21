@@ -438,6 +438,8 @@ export const V1_EntitlementDdataProductDetailsModelSchema = createModelSchema(
   {
     id: primitive(),
     deploymentId: primitive(),
+    title: optional(primitive()),
+    description: optional(primitive()),
     origin: custom(
       V1_serializeDataProductOrigin,
       V1_deserializeDataProductOrigin,
