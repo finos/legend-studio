@@ -126,16 +126,16 @@ const LakehouseDataProductCardInfoPopover = observer(
         <div className="marketplace-lakehouse-data-product-card__popover__name">
           {dataProductState.title}
         </div>
-        <div className="marketplace-lakehouse-data-product-card__popover__section-header">
-          Description
-        </div>
-        <div className="marketplace-lakehouse-data-product-card__popover__section-content">
-          {dataProductState.description}
-        </div>
-        <div className="marketplace-lakehouse-data-product-card__popover__section-header">
-          Deployment Details
-        </div>
-        <div className="marketplace-lakehouse-data-product-card__popover__deployment-details">
+        <Box className="marketplace-lakehouse-data-product-card__popover__content">
+          <div className="marketplace-lakehouse-data-product-card__popover__section-header">
+            Description
+          </div>
+          <div className="marketplace-lakehouse-data-product-card__popover__section-content">
+            {dataProductState.description}
+          </div>
+          <div className="marketplace-lakehouse-data-product-card__popover__section-header">
+            Deployment Details
+          </div>
           <TableContainer className="marketplace-lakehouse-data-product-card__popover__table">
             <Table>
               <TableBody>
@@ -176,63 +176,63 @@ const LakehouseDataProductCardInfoPopover = observer(
               </TableBody>
             </Table>
           </TableContainer>
-        </div>
-        {origin instanceof V1_SdlcDeploymentDataProductOrigin && (
-          <>
-            <hr />
-            <div className="marketplace-lakehouse-data-product-card__popover__section-header">
-              Data Product Project
-              <IconButton
-                className="marketplace-lakehouse-data-product-card__popover__project-link"
-                onClick={() =>
-                  applicationStore.navigationService.navigator.visitAddress(
-                    EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
-                      applicationStore.config.studioServerUrl,
-                      origin.group,
-                      origin.artifact,
-                      origin.version,
-                      dataProductState.dataProductElement?.path,
-                    ),
-                  )
-                }
-              >
-                <OpenIcon />
-              </IconButton>
-            </div>
-            <TableContainer className="marketplace-lakehouse-data-product-card__popover__table">
-              <Table>
-                <TableBody>
-                  <TableRow>
-                    <TableCell>
-                      <b>Group</b>
-                    </TableCell>
-                    <TableCell>{origin.group}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>
-                      <b>Artifact</b>
-                    </TableCell>
-                    <TableCell>{origin.artifact}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>
-                      <b>Version</b>
-                    </TableCell>
-                    <TableCell>{origin.version}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>
-                      <b>Path</b>
-                    </TableCell>
-                    <TableCell>
-                      {dataProductState.dataProductElement?.path}
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </>
-        )}
+          {origin instanceof V1_SdlcDeploymentDataProductOrigin && (
+            <>
+              <hr />
+              <div className="marketplace-lakehouse-data-product-card__popover__section-header">
+                Data Product Project
+                <IconButton
+                  className="marketplace-lakehouse-data-product-card__popover__project-link"
+                  onClick={() =>
+                    applicationStore.navigationService.navigator.visitAddress(
+                      EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
+                        applicationStore.config.studioServerUrl,
+                        origin.group,
+                        origin.artifact,
+                        origin.version,
+                        dataProductState.dataProductElement?.path,
+                      ),
+                    )
+                  }
+                >
+                  <OpenIcon />
+                </IconButton>
+              </div>
+              <TableContainer className="marketplace-lakehouse-data-product-card__popover__table">
+                <Table>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell>
+                        <b>Group</b>
+                      </TableCell>
+                      <TableCell>{origin.group}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>
+                        <b>Artifact</b>
+                      </TableCell>
+                      <TableCell>{origin.artifact}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>
+                        <b>Version</b>
+                      </TableCell>
+                      <TableCell>{origin.version}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>
+                        <b>Path</b>
+                      </TableCell>
+                      <TableCell>
+                        {dataProductState.dataProductElement?.path}
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </>
+          )}
+        </Box>
       </Popover>
     );
   },
