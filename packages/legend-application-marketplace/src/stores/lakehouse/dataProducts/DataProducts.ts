@@ -78,6 +78,7 @@ export class DataProductState {
         const dataProductElement = yield getDataProductFromDetails(
           this.dataProductDetails,
           graphManagerState,
+          this.graphManager,
           this.lakehouseState.marketplaceBaseStore,
         );
         this.dataProductElement = dataProductElement;
