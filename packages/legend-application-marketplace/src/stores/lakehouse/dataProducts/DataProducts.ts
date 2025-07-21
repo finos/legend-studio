@@ -21,12 +21,12 @@ import {
   type GeneratorFn,
 } from '@finos/legend-shared';
 import {
-  type V1_DataProduct,
   type V1_EntitlementsDataProductDetails,
   type V1_EntitlementsLakehouseEnvironmentType,
   type V1_PureGraphManager,
   GraphManagerState,
   V1_AdHocDeploymentDataProductOrigin,
+  V1_DataProduct,
   V1_SdlcDeploymentDataProductOrigin,
 } from '@finos/legend-graph';
 import type { MarketplaceLakehouseStore } from '../MarketplaceLakehouseStore.js';
@@ -62,16 +62,26 @@ export class DataProductState {
   *init(): GeneratorFn<void> {
     this.initState.inProgress();
     try {
-      const graphManagerState = new GraphManagerState(
-        this.lakehouseState.applicationStore.pluginManager,
-        this.lakehouseState.applicationStore.logService,
-      );
-      const dataProductEntity = yield getDataProductFromDetails(
-        this.dataProductDetails,
-        graphManagerState,
-        this.lakehouseState.marketplaceBaseStore,
-      );
-      this.dataProductElement = dataProductEntity;
+      if (
+        this.dataProductDetails.title !== undefined &&
+        this.dataProductDetails.description !== undefined
+      ) {
+        const dataProductElement = new V1_DataProduct();
+        dataProductElement.title = this.dataProductDetails.title;
+        dataProductElement.description = this.dataProductDetails.description;
+        this.dataProductElement = dataProductElement;
+      } else {
+        const graphManagerState = new GraphManagerState(
+          this.lakehouseState.applicationStore.pluginManager,
+          this.lakehouseState.applicationStore.logService,
+        );
+        const dataProductElement = yield getDataProductFromDetails(
+          this.dataProductDetails,
+          graphManagerState,
+          this.lakehouseState.marketplaceBaseStore,
+        );
+        this.dataProductElement = dataProductElement;
+      }
     } catch (error) {
       assertErrorThrown(error);
       this.lakehouseState.applicationStore.notificationService.notifyError(

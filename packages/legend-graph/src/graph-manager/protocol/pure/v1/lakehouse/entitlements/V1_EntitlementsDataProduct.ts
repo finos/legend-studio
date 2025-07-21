@@ -66,6 +66,8 @@ export class V1_EntitlementsDataProduct {
 export class V1_EntitlementsDataProductDetails {
   id!: string;
   deploymentId!: number;
+  title?: string;
+  description?: string;
   origin?: V1_EntitlementsDataProductOrigin | null;
   lakehouseEnvironment?: V1_EntitlementsLakehouseEnvironment;
   dataProduct!: V1_EntitlementsDataProduct;
