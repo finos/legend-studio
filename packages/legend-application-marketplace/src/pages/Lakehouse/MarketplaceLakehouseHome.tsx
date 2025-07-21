@@ -160,7 +160,7 @@ const LakehouseDataProductCardInfoPopover = observer(
                   </TableRow>
                   <TableRow>
                     <TableCell>
-                      <b>Producer Environment name</b>
+                      <b>Producer Environment Name</b>
                     </TableCell>
                     <TableCell>
                       {dataProductState.dataProductDetails.lakehouseEnvironment
