@@ -481,9 +481,27 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         this.applicationStore.pluginManager,
         this.applicationStore.logService,
       );
+      // Crete graph manager for parsing ad-hoc deployed data products
+      const graphManager = new V1_PureGraphManager(
+        this.applicationStore.pluginManager,
+        this.applicationStore.logService,
+        this.marketplaceBaseStore.remoteEngine,
+      );
+      yield graphManager.initialize(
+        {
+          env: this.marketplaceBaseStore.applicationStore.config.env,
+          tabSize: DEFAULT_TAB_SIZE,
+          clientConfig: {
+            baseUrl:
+              this.marketplaceBaseStore.applicationStore.config.engineServerUrl,
+          },
+        },
+        { engine: this.marketplaceBaseStore.remoteEngine },
+      );
       const v1DataProduct = yield getDataProductFromDetails(
         dataProductDetails,
         graphManagerState,
+        graphManager,
         this.marketplaceBaseStore,
       );
 
