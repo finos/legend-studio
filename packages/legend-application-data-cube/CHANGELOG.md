@@ -1,5 +1,18 @@
 # @finos/legend-application-data-cube
 
+## 0.4.0
+
+### Minor Changes
+
+- [#4271](https://github.com/finos/legend-studio/pull/4271) [`cd36958`](https://github.com/finos/legend-studio/commit/cd369589501f247f48e7dc59689da4ef184cc0fe) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: support editor for fixing initial lambda
+
+### Patch Changes
+
+- [#4266](https://github.com/finos/legend-studio/pull/4266) [`40a9c9b`](https://github.com/finos/legend-studio/commit/40a9c9b034d7f45eac38ee36192adc745aa61675) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: exporting full data csv
+
+- [#4261](https://github.com/finos/legend-studio/pull/4261) [`c2d9c89`](https://github.com/finos/legend-studio/commit/c2d9c89b7dcb7833875b822fddb2ad1852be4b4a) ([@kelly-thai](https://github.com/kelly-thai)) - Added a boolean variable that will create a different case for sourcedata extraction and replacement of encoded characters.
+  Updated the changeset again
+
 ## 0.3.60
 
 ## 0.3.59

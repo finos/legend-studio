@@ -1,5 +1,7 @@
 # @finos/legend-extension-tracer-zipkin
 
+## 3.0.135
+
 ## 3.0.134
 
 ## 3.0.133

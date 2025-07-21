@@ -1,5 +1,15 @@
 # @finos/legend-data-cube
 
+## 0.3.0
+
+### Minor Changes
+
+- [#4271](https://github.com/finos/legend-studio/pull/4271) [`cd36958`](https://github.com/finos/legend-studio/commit/cd369589501f247f48e7dc59689da4ef184cc0fe) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: support editor for fixing initial lambda
+
+### Patch Changes
+
+- [#4266](https://github.com/finos/legend-studio/pull/4266) [`40a9c9b`](https://github.com/finos/legend-studio/commit/40a9c9b034d7f45eac38ee36192adc745aa61675) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: exporting full data csv
+
 ## 0.2.30
 
 ## 0.2.29
