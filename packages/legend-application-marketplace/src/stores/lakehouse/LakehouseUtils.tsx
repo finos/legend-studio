@@ -165,14 +165,20 @@ export const getDataProductFromDetails = async (
 ): Promise<V1_DataProduct | undefined> => {
   if (details.origin instanceof V1_SdlcDeploymentDataProductOrigin) {
     const rawEntities =
-      await marketplaceBaseStore.depotServerClient.getVersionEntities(
+      (await marketplaceBaseStore.depotServerClient.getVersionEntities(
         details.origin.group,
         details.origin.artifact,
         resolveVersion(details.origin.version),
         CORE_PURE_PATH.DATA_PRODUCT,
-      );
+      )) as {
+        artifactId: string;
+        entity: Entity;
+        groupId: string;
+        versionId: string;
+        versionedEntity: boolean;
+      }[];
     const entities = rawEntities.map((entity) =>
-      deserialize(V1_dataProductModelSchema, entity.content),
+      deserialize(V1_dataProductModelSchema, entity.entity.content),
     );
     const matchingEntities = entities.filter(
       (entity) => entity.name.toLowerCase() === details.id.toLowerCase(),
