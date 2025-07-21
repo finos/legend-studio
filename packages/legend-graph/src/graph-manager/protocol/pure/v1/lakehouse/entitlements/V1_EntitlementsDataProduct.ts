@@ -69,7 +69,7 @@ export class V1_EntitlementsDataProductDetails {
   title?: string;
   description?: string;
   origin?: V1_EntitlementsDataProductOrigin | null;
-  lakehouseEnvironment?: V1_EntitlementsLakehouseEnvironment;
+  lakehouseEnvironment?: V1_EntitlementsLakehouseEnvironment | null;
   dataProduct!: V1_EntitlementsDataProduct;
 }
 
