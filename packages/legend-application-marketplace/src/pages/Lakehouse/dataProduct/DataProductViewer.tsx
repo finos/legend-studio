@@ -24,7 +24,7 @@ import { DataProductPlaceholderPanel } from './DataProductHolder.js';
 import { DataProductViewerActivityBar } from './DataProductViewerActivityBar.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { DataProductWiki } from './DataProductWiki.js';
-import { Button } from '@mui/material';
+import { Box, Button } from '@mui/material';
 import { isSnapshotVersion } from '@finos/legend-server-depot';
 import {
   V1_AdHocDeploymentDataProductOrigin,
@@ -83,12 +83,7 @@ const DataProductHeader = observer(
           </div>
           <div className="data-space__viewer__header__type">
             {origin instanceof V1_AdHocDeploymentDataProductOrigin && (
-              <Button
-                onClick={() => {
-                  dataProductViewerState
-                    .viewDataProductSource()
-                    ?.catch(applicationStore.alertUnhandledError);
-                }}
+              <Box
                 title="View Ingest Environment"
                 className={clsx('data-space__viewer__header__type__sandbox', {
                   'data-space__viewer__header__type__sandbox--dev':
@@ -106,8 +101,7 @@ const DataProductHeader = observer(
                   ? `${environmentClassification} `
                   : ''}
                 Sandbox Data Product
-                <OpenIcon />
-              </Button>
+              </Box>
             )}
             {origin instanceof V1_SdlcDeploymentDataProductOrigin && (
               <Button
