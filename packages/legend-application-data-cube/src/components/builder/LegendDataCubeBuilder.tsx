@@ -231,6 +231,13 @@ function generateMenuItems(store: LegendDataCubeBuilderStore) {
                 },
               },
               {
+                label: DataCubeTitleBarMenuItems.EDIT_QUERY,
+                action: () => {
+                  store.codeEditorDisplay.open();
+                  logMenuItem(DataCubeTitleBarMenuItems.EDIT_QUERY);
+                },
+              },
+              {
                 label: DataCubeTitleBarMenuItems.UPDATE_INFO,
                 action: () => {
                   // effectively, we open the save window to let user update the DataCube info, such as name, auto-enable caching, etc.

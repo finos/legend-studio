@@ -44,6 +44,7 @@ export enum DataCubeFunction {
   // generic
   CAST = 'meta::pure::functions::lang::cast',
   FROM = 'meta::pure::mapping::from',
+  TO_ONE = 'meta::pure::functions::multiplicity::toOne',
 
   // sort
   ASCENDING = 'meta::pure::functions::relation::ascending',
@@ -285,6 +286,7 @@ export enum DataCubeTitleBarMenuItems {
   UPDATE_INFO = 'Update Info...',
   DELETE_DATACUBE = 'Delete DataCube...',
   SEE_DOCUMENTATION = 'See Documentation',
+  EDIT_QUERY = 'Edit Latest Saved Query',
   ABOUT = 'About',
   UNDO = 'Undo',
   REDO = 'Redo',

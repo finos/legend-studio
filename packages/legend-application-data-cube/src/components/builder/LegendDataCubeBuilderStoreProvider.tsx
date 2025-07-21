@@ -40,6 +40,7 @@ const LegendDataCubeBuilderStoreProvider = (props: {
       <LegendDataCubeBlockingWindow
         windowState={store.deleteConfirmationDisplay}
       />
+      <LegendDataCubeBlockingWindow windowState={store.codeEditorDisplay} />
       <LegendDataCubeSourceLoaderBlockingWindow />
     </LegendDataCubeBuilderStoreContext.Provider>
   );
