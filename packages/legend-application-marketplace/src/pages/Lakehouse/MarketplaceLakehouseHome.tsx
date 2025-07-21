@@ -69,6 +69,7 @@ import {
   V1_IngestEnvironmentClassification,
   V1_SdlcDeploymentDataProductOrigin,
 } from '@finos/legend-graph';
+import { isNullable } from '@finos/legend-shared';
 
 const MAX_DESCRIPTION_LENGTH = 250;
 
@@ -359,12 +360,20 @@ export const LakehouseDataProductCard = observer(
 );
 
 const MarketplaceLakehouseHomeSortFilterPanel = observer(
-  (props: { marketPlaceStore: MarketplaceLakehouseStore }) => {
-    const { marketPlaceStore } = props;
+  (props: { marketplaceStore: MarketplaceLakehouseStore }) => {
+    const { marketplaceStore } = props;
 
     const [sortMenuAnchorEl, setSortMenuAnchorEl] =
       useState<HTMLElement | null>(null);
     const isSortMenuOpen = Boolean(sortMenuAnchorEl);
+
+    const showUnknownDeployTypeFilter = marketplaceStore.dataProductStates.some(
+      (state) => isNullable(state.dataProductDetails.origin),
+    );
+    const showUnknownEnvironmentFilter =
+      marketplaceStore.dataProductStates.some((state) =>
+        isNullable(state.environmentClassification),
+      );
 
     return (
       <Box className="marketplace-lakehouse-home__sort-filters">
@@ -377,7 +386,7 @@ const MarketplaceLakehouseHomeSortFilterPanel = observer(
               }}
               className="marketplace-lakehouse-home__sort-filters__sort__btn"
             >
-              {marketPlaceStore.sort}
+              {marketplaceStore.sort}
               <ExpandMoreIcon />
             </Button>
             <Menu
@@ -398,7 +407,7 @@ const MarketplaceLakehouseHomeSortFilterPanel = observer(
                   <MenuItem
                     key={sortValue}
                     onClick={(event: React.MouseEvent<HTMLLIElement>) => {
-                      marketPlaceStore.setSort(sortValue);
+                      marketplaceStore.setSort(sortValue);
                       setSortMenuAnchorEl(null);
                     }}
                   >
@@ -417,9 +426,9 @@ const MarketplaceLakehouseHomeSortFilterPanel = observer(
               <FormControlLabel
                 control={
                   <Checkbox
-                    checked={marketPlaceStore.filter.sdlcDeployFilter}
+                    checked={marketplaceStore.filter.sdlcDeployFilter}
                     onChange={() =>
-                      marketPlaceStore.handleFilterChange(
+                      marketplaceStore.handleFilterChange(
                         DataProductFilterType.DEPLOY_TYPE,
                         DeployType.SDLC,
                       )
@@ -431,9 +440,9 @@ const MarketplaceLakehouseHomeSortFilterPanel = observer(
               <FormControlLabel
                 control={
                   <Checkbox
-                    checked={marketPlaceStore.filter.sandboxDeployFilter}
+                    checked={marketplaceStore.filter.sandboxDeployFilter}
                     onChange={() =>
-                      marketPlaceStore.handleFilterChange(
+                      marketplaceStore.handleFilterChange(
                         DataProductFilterType.DEPLOY_TYPE,
                         DeployType.SANDBOX,
                       )
@@ -442,6 +451,22 @@ const MarketplaceLakehouseHomeSortFilterPanel = observer(
                 }
                 label="Sandbox Deployed"
               />
+              {showUnknownDeployTypeFilter === true && (
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={marketplaceStore.filter.unknownDeployFilter}
+                      onChange={() =>
+                        marketplaceStore.handleFilterChange(
+                          DataProductFilterType.DEPLOY_TYPE,
+                          DeployType.UNKNOWN,
+                        )
+                      }
+                    />
+                  }
+                  label="Unknown"
+                />
+              )}
             </FormGroup>
           </Box>
           <hr />
@@ -452,11 +477,11 @@ const MarketplaceLakehouseHomeSortFilterPanel = observer(
                 control={
                   <Checkbox
                     checked={
-                      marketPlaceStore.filter
+                      marketplaceStore.filter
                         .prodEnvironmentClassificationFilter
                     }
                     onChange={() =>
-                      marketPlaceStore.handleFilterChange(
+                      marketplaceStore.handleFilterChange(
                         DataProductFilterType.ENVIRONMENT_CLASSIFICATION,
                         V1_IngestEnvironmentClassification.PROD,
                       )
@@ -469,11 +494,11 @@ const MarketplaceLakehouseHomeSortFilterPanel = observer(
                 control={
                   <Checkbox
                     checked={
-                      marketPlaceStore.filter
+                      marketplaceStore.filter
                         .prodParallelEnvironmentClassificationFilter
                     }
                     onChange={() =>
-                      marketPlaceStore.handleFilterChange(
+                      marketplaceStore.handleFilterChange(
                         DataProductFilterType.ENVIRONMENT_CLASSIFICATION,
                         V1_IngestEnvironmentClassification.PROD_PARALLEL,
                       )
@@ -486,10 +511,10 @@ const MarketplaceLakehouseHomeSortFilterPanel = observer(
                 control={
                   <Checkbox
                     checked={
-                      marketPlaceStore.filter.devEnvironmentClassificationFilter
+                      marketplaceStore.filter.devEnvironmentClassificationFilter
                     }
                     onChange={() =>
-                      marketPlaceStore.handleFilterChange(
+                      marketplaceStore.handleFilterChange(
                         DataProductFilterType.ENVIRONMENT_CLASSIFICATION,
                         V1_IngestEnvironmentClassification.DEV,
                       )
@@ -498,6 +523,25 @@ const MarketplaceLakehouseHomeSortFilterPanel = observer(
                 }
                 label="Dev"
               />
+              {showUnknownEnvironmentFilter === true && (
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={
+                        marketplaceStore.filter
+                          .unknownEnvironmentClassificationFilter
+                      }
+                      onChange={() =>
+                        marketplaceStore.handleFilterChange(
+                          DataProductFilterType.ENVIRONMENT_CLASSIFICATION,
+                          'UNKNOWN',
+                        )
+                      }
+                    />
+                  }
+                  label="Unknown"
+                />
+              )}
             </FormGroup>
           </Box>
         </Box>
@@ -541,7 +585,7 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
           className="marketplace-lakehouse-home__results-container"
         >
           <MarketplaceLakehouseHomeSortFilterPanel
-            marketPlaceStore={marketPlaceStore}
+            marketplaceStore={marketPlaceStore}
           />
           <Grid
             container={true}
