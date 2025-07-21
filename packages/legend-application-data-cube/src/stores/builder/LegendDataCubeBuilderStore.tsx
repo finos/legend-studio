@@ -220,7 +220,7 @@ export class LegendDataCubeBuilderStore {
       },
     );
     this.codeEditorDisplay = new LegendDataCubeBlockingWindowState(
-      'Edit Query',
+      'Edit Latest Saved Query',
       () => <LegendDataCubeQueryEditor />,
       {
         ...DEFAULT_ALERT_WINDOW_CONFIG,

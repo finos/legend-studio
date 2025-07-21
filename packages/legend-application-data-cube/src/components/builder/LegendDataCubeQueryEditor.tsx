@@ -36,9 +36,10 @@ export const LegendDataCubeQueryEditor = observer(() => {
     () =>
       new LegendDataCubeCodeEditorState(
         store.engine,
-        store.alertService.alertUnhandledError.bind(store.alertService),
+        store.alertService,
+        builder.source,
       ),
-    [store],
+    [store, builder],
   );
 
   useEffect(() => {
@@ -50,7 +51,7 @@ export const LegendDataCubeQueryEditor = observer(() => {
           ),
         )
       : undefined;
-    state.code = guaranteeNonNullable(latestSpecification).query;
+    state.initialize(guaranteeNonNullable(latestSpecification).query);
   }, [builder, state]);
 
   return (
@@ -76,7 +77,10 @@ export const LegendDataCubeQueryEditor = observer(() => {
               finalSpec.query = state.code;
               builder.dataCube
                 ?.applySpecification(finalSpec)
-                .then()
+                .then(() => {
+                  state.close();
+                  store.codeEditorDisplay.close();
+                })
                 .catch((error) => {
                   assertErrorThrown(error);
                   store.alertService.alertUnhandledError(error);
