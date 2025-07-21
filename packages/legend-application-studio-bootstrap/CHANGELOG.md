@@ -1,5 +1,7 @@
 # @finos/legend-application-studio-bootstrap
 
+## 13.100.0
+
 ## 13.99.0
 
 ### Patch Changes
