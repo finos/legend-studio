@@ -98,6 +98,10 @@ export const DataCubeCodeEditor = observer(
               provideCompletionItems: async (model, position, context) => {
                 let suggestions: monacoLanguagesAPI.CompletionItem[] = [];
 
+                if (state.model === undefined) {
+                  return { suggestions };
+                }
+
                 if (model.uri === state.editorModelUri) {
                   suggestions = suggestions.concat(
                     await getCodeSuggestions(

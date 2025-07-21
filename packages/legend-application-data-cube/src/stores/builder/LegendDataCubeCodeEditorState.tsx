@@ -17,10 +17,10 @@
 import { setErrorMarkers } from '@finos/legend-code-editor';
 import {
   _lambda,
-  DataCubeAlertService,
   DataCubeCodeEditorState,
-  DataCubeSource,
   type DataCubeEngine,
+  type DataCubeAlertService,
+  type DataCubeSource,
 } from '@finos/legend-data-cube';
 import { EngineError, type V1_Lambda } from '@finos/legend-graph';
 import { ActionState, assertErrorThrown, uuid } from '@finos/legend-shared';
@@ -61,7 +61,7 @@ export class LegendDataCubeCodeEditorState extends DataCubeCodeEditorState {
     this.alertService.alertUnhandledError(error);
   };
 
-  async initialize(query: string) {
+  initialize(query: string) {
     this.code = query;
     this.editorModel.setValue(this.code);
   }
