@@ -67,22 +67,27 @@ export enum DataProductFilterType {
 export enum DeployType {
   SDLC = 'SDLC',
   SANDBOX = 'SANDBOX',
+  UNKNOWN = 'UNKNOWN',
 }
 
 export interface DataProductFilterConfig {
   sdlcDeployFilter: boolean;
   sandboxDeployFilter: boolean;
+  unknownDeployFilter: boolean;
   devEnvironmentClassificationFilter: boolean;
   prodParallelEnvironmentClassificationFilter: boolean;
   prodEnvironmentClassificationFilter: boolean;
+  unknownEnvironmentClassificationFilter: boolean;
 }
 
 class DataProductFilters {
   sdlcDeployFilter: boolean;
   sandboxDeployFilter: boolean;
+  unknownDeployFilter: boolean;
   devEnvironmentClassificationFilter: boolean;
   prodParallelEnvironmentClassificationFilter: boolean;
   prodEnvironmentClassificationFilter: boolean;
+  unknownEnvironmentClassificationFilter: boolean;
   search?: string | undefined;
 
   constructor(
@@ -99,12 +104,15 @@ class DataProductFilters {
     });
     this.sdlcDeployFilter = defaultBooleanFilters.sdlcDeployFilter;
     this.sandboxDeployFilter = defaultBooleanFilters.sandboxDeployFilter;
+    this.unknownDeployFilter = defaultBooleanFilters.unknownDeployFilter;
     this.devEnvironmentClassificationFilter =
       defaultBooleanFilters.devEnvironmentClassificationFilter;
     this.prodParallelEnvironmentClassificationFilter =
       defaultBooleanFilters.prodParallelEnvironmentClassificationFilter;
     this.prodEnvironmentClassificationFilter =
       defaultBooleanFilters.prodEnvironmentClassificationFilter;
+    this.unknownEnvironmentClassificationFilter =
+      defaultBooleanFilters.unknownEnvironmentClassificationFilter;
     this.search = search;
   }
 
@@ -113,9 +121,11 @@ class DataProductFilters {
       {
         sdlcDeployFilter: true,
         sandboxDeployFilter: true,
+        unknownDeployFilter: false,
         devEnvironmentClassificationFilter: false,
         prodParallelEnvironmentClassificationFilter: false,
         prodEnvironmentClassificationFilter: true,
+        unknownEnvironmentClassificationFilter: false,
       },
       undefined,
     );
@@ -125,12 +135,15 @@ class DataProductFilters {
     return {
       sdlcDeployFilter: this.sdlcDeployFilter,
       sandboxDeployFilter: this.sandboxDeployFilter,
+      unknownDeployFilter: this.unknownDeployFilter,
       devEnvironmentClassificationFilter:
         this.devEnvironmentClassificationFilter,
       prodParallelEnvironmentClassificationFilter:
         this.prodParallelEnvironmentClassificationFilter,
       prodEnvironmentClassificationFilter:
         this.prodEnvironmentClassificationFilter,
+      unknownEnvironmentClassificationFilter:
+        this.unknownEnvironmentClassificationFilter,
     };
   }
 }
@@ -216,10 +229,10 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
           (this.filter.sandboxDeployFilter &&
             dataProductState.dataProductDetails.origin instanceof
               V1_AdHocDeploymentDataProductOrigin) ||
-          dataProductState.dataProductDetails.origin === null;
+          (this.filter.unknownDeployFilter &&
+            dataProductState.dataProductDetails.origin === null);
         // Check if product matches environment classification filter
         const environmentClassificationMatch =
-          dataProductState.environmentClassification === undefined ||
           (this.filter.devEnvironmentClassificationFilter &&
             dataProductState.environmentClassification ===
               V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT) ||
@@ -228,7 +241,9 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
               V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL) ||
           (this.filter.prodEnvironmentClassificationFilter &&
             dataProductState.environmentClassification ===
-              V1_EntitlementsLakehouseEnvironmentType.PRODUCTION);
+              V1_EntitlementsLakehouseEnvironmentType.PRODUCTION) ||
+          (this.filter.unknownEnvironmentClassificationFilter &&
+            dataProductState.environmentClassification === undefined);
         // Check if product title matches search filter
         const titleMatch =
           this.filter.search === undefined ||
@@ -269,13 +284,19 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
 
   handleFilterChange(
     filterType: DataProductFilterType,
-    val: DeployType | V1_IngestEnvironmentClassification | undefined,
+    val:
+      | DeployType
+      | V1_IngestEnvironmentClassification
+      | 'UNKNOWN'
+      | undefined,
   ): void {
     if (filterType === DataProductFilterType.DEPLOY_TYPE) {
       if (val === DeployType.SDLC) {
         this.filter.sdlcDeployFilter = !this.filter.sdlcDeployFilter;
       } else if (val === DeployType.SANDBOX) {
         this.filter.sandboxDeployFilter = !this.filter.sandboxDeployFilter;
+      } else if (val === DeployType.UNKNOWN) {
+        this.filter.unknownDeployFilter = !this.filter.unknownDeployFilter;
       }
     } else {
       if (val === V1_IngestEnvironmentClassification.DEV) {
@@ -287,6 +308,9 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       } else if (val === V1_IngestEnvironmentClassification.PROD) {
         this.filter.prodEnvironmentClassificationFilter =
           !this.filter.prodEnvironmentClassificationFilter;
+      } else if (val === 'UNKNOWN') {
+        this.filter.unknownEnvironmentClassificationFilter =
+          !this.filter.unknownEnvironmentClassificationFilter;
       }
     }
     LegendMarketplaceUserDataHelper.saveDataProductFilterConfig(
