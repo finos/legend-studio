@@ -59,12 +59,6 @@ const DataProductHeader = observer(
               dataProductViewerState.layoutState.isExpandedModeEnabled,
           })}
         >
-          <div
-            className="data-space__viewer__header__title"
-            title={`${dataProduct.name} - ${dataProduct.path}`}
-          >
-            {dataProduct.title ? dataProduct.title : dataProduct.name}
-          </div>
           <div className="data-space__viewer__header__type">
             {origin instanceof V1_AdHocDeploymentDataProductOrigin && (
               <Button
@@ -103,6 +97,12 @@ const DataProductHeader = observer(
                 <OpenIcon />
               </Button>
             )}
+          </div>
+          <div
+            className="data-space__viewer__header__title"
+            title={`${dataProduct.name} - ${dataProduct.path}`}
+          >
+            {dataProduct.title ? dataProduct.title : dataProduct.name}
           </div>
         </div>
       </div>

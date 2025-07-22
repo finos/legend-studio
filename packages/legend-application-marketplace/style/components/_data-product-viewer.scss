@@ -57,6 +57,7 @@
 
     &__content {
       display: flex;
+      flex-direction: column;
       justify-content: space-between;
       width: min(140rem, 80vw);
       min-width: 80rem;
@@ -67,10 +68,15 @@
       width: 80vw;
     }
 
+    &__type {
+      align-self: end;
+    }
+
     &__title {
       @include flexCenter;
       @include ellipsisTextOverflow;
 
+      align-self: start;
       height: 5rem;
       padding: 0 3rem;
       max-width: 50vw;
