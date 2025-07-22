@@ -41,6 +41,7 @@ export class DataProductState {
   readonly lakehouseState: MarketplaceLakehouseStore;
   readonly graphManager: V1_PureGraphManager;
   readonly initState = ActionState.create();
+  readonly enrichedState = ActionState.create();
   readonly dataProductDetails: V1_EntitlementsDataProductDetails;
   dataProductElement: V1_DataProduct | undefined;
 
@@ -66,23 +67,25 @@ export class DataProductState {
         this.dataProductDetails.title !== undefined &&
         this.dataProductDetails.description !== undefined
       ) {
+        // To save load time, we create a temporary data product element with the title and
+        // description, and then we will enrich it with the actual data product element after.
         const dataProductElement = new V1_DataProduct();
         dataProductElement.title = this.dataProductDetails.title;
         dataProductElement.description = this.dataProductDetails.description;
         this.dataProductElement = dataProductElement;
-      } else {
-        const graphManagerState = new GraphManagerState(
-          this.lakehouseState.applicationStore.pluginManager,
-          this.lakehouseState.applicationStore.logService,
-        );
-        const dataProductElement = (yield getDataProductFromDetails(
-          this.dataProductDetails,
-          graphManagerState,
-          this.graphManager,
-          this.lakehouseState.marketplaceBaseStore,
-        )) as V1_DataProduct | undefined;
-        this.dataProductElement = dataProductElement;
+        this.initState.complete();
       }
+      this.enrichedState.inProgress();
+      const graphManagerState = new GraphManagerState(
+        this.lakehouseState.applicationStore.pluginManager,
+        this.lakehouseState.applicationStore.logService,
+      );
+      this.dataProductElement = yield getDataProductFromDetails(
+        this.dataProductDetails,
+        graphManagerState,
+        this.graphManager,
+        this.lakehouseState.marketplaceBaseStore,
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.lakehouseState.applicationStore.notificationService.notifyError(
@@ -91,6 +94,7 @@ export class DataProductState {
       );
     } finally {
       this.initState.complete();
+      this.enrichedState.complete();
     }
   }
 
