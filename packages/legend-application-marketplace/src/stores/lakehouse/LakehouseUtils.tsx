@@ -68,7 +68,9 @@ export const dataContractContainsDataProduct = (
     const sameDID =
       dataProductDeploymentID === contractResource.dataProduct.owner.appDirId;
     // revisit name
-    const isName = contractResource.dataProduct.name === dataProduct.name;
+    const isName =
+      contractResource.dataProduct.name.toLowerCase() ===
+      dataProduct.name.toLowerCase();
     const hasGroup = dataProduct.accessPointGroups
       .map((e) => e.id)
       .includes(contractResource.accessPointGroup);
