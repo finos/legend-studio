@@ -39,21 +39,17 @@ import { LegendMarketplaceFrameworkProvider } from '../../application/LegendMark
 import searchResults from './TEST_DATA__SearchResults.json' with { type: 'json' };
 import { LegendMarketplaceWebApplicationRouter } from '../../application/LegendMarketplaceWebApplication.js';
 import {
-  mockSDLCDataProductSummaries,
   mockReleaseSDLCDataProduct,
   mockSnapshotSDLCDataProduct,
-  mockSDLCDataProductWithoutTitle,
   mockDevIngestEnvironmentSummaryResponse,
   mockProdParallelIngestEnvironmentSummaryResponse,
   mockProdIngestEnvironmentSummaryResponse,
-  mockDevSandboxDataProductResponse,
-  mockProdParallelSandboxDataProductResponse,
-  mockProdSandboxDataProductResponse,
   mockDevIngestEnvironmentResponse,
   mockProdParallelIngestEnvironmentResponse,
   mockProdIngestEnvironmentResponse,
   mockSubscriptions,
   mockDataContracts,
+  mockDataProducts,
 } from './TEST_DATA__LakehouseData.js';
 import { LakehouseAdminStore } from '../../stores/lakehouse/admin/LakehouseAdminStore.js';
 import { useLakehouseAdminStore } from '../../pages/Lakehouse/admin/LakehouseAdminStoreProvider.js';
@@ -168,55 +164,51 @@ export const TEST__setUpMarketplaceLakehouse = async (
   route?: string,
 ) => {
   createSpy(
-    MOCK__store.depotServerClient,
-    'getEntitiesSummaryByClassifier',
-  ).mockImplementation(async (classifier: string) => {
-    if (classifier === CORE_PURE_PATH.DATA_PRODUCT) {
-      return mockSDLCDataProductSummaries;
-    }
-    return [];
-  });
-
+    MOCK__store.lakehouseContractServerClient,
+    'getDataProducts',
+  ).mockResolvedValue(mockDataProducts);
   createSpy(
     MOCK__store.depotServerClient,
-    'getVersionEntity',
+    'getVersionEntities',
   ).mockImplementation(
     async (
       groupId: string,
       artifactId: string,
       versionId: string,
-      path: string,
+      classifierPath?: string,
     ) => {
-      if (path === 'test::dataproduct::TestSDLCDataProduct') {
-        if (versionId === '1.0.0') {
-          return {
-            classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
-            content: mockReleaseSDLCDataProduct,
-            path: 'test::dataproduct::TestSDLCDataProduct',
-          };
-        } else if (versionId === 'master-SNAPSHOT') {
-          return {
-            classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
-            content: mockSnapshotSDLCDataProduct,
-            path: 'test::dataproduct::TestSDLCDataProduct',
-          };
-        }
-        throw new Error(
-          `Unable to find SDLC data product: ${groupId}:${artifactId}:${versionId}:${path}`,
-        );
-      } else if (path === 'test::dataproduct::AnotherSDLCDataProduct') {
-        return {
-          classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
-          content: mockSDLCDataProductWithoutTitle,
-          path: 'test::dataproduct::AnotherSDLCDataProduct',
-        };
+      if (
+        groupId === 'com.example.analytics' &&
+        artifactId === 'customer-analytics'
+      ) {
+        return [
+          {
+            entity: {
+              classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
+              content: mockReleaseSDLCDataProduct,
+              path: 'test::dataproduct::TestSDLCDataProduct',
+            },
+          },
+        ];
+      } else if (
+        groupId === 'com.example.finance' &&
+        artifactId === 'financial-reporting'
+      ) {
+        return [
+          {
+            entity: {
+              classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
+              content: mockSnapshotSDLCDataProduct,
+              path: 'test::dataproduct::AnotherSDLCDataProduct',
+            },
+          },
+        ];
       }
       throw new Error(
-        `Unable to find SDLC data product: ${groupId}:${artifactId}:${versionId}:${path}`,
+        `Unable to find entities at: ${groupId}:${artifactId}:${versionId}:${classifierPath}`,
       );
     },
   );
-
   createSpy(
     MOCK__store.lakehousePlatformServerClient,
     'getIngestEnvironmentSummaries',
@@ -225,41 +217,6 @@ export const TEST__setUpMarketplaceLakehouse = async (
     mockProdParallelIngestEnvironmentSummaryResponse,
     mockProdIngestEnvironmentSummaryResponse,
   ]);
-  createSpy(
-    MOCK__store.lakehousePlatformServerClient,
-    'findProducerServer',
-  ).mockImplementation(
-    async (did: number, level: string, token?: string | undefined) => {
-      if (did === 123) {
-        return mockDevIngestEnvironmentSummaryResponse;
-      } else if (did === 456) {
-        return mockProdParallelIngestEnvironmentSummaryResponse;
-      } else if (did === 789) {
-        return mockProdIngestEnvironmentSummaryResponse;
-      }
-      throw new Error(`Unable to find environment with deployment ID: ${did}`);
-    },
-  );
-  createSpy(
-    MOCK__store.lakehouseIngestServerClient,
-    'getDeployedIngestDefinitions',
-  ).mockImplementation(
-    async (ingestServerUrl: string | undefined, token: string | undefined) => {
-      if (ingestServerUrl === 'https://test-dev-ingest-server.com') {
-        return mockDevSandboxDataProductResponse;
-      } else if (
-        ingestServerUrl === 'https://test-prod-parallel-ingest-server.com'
-      ) {
-        return mockProdParallelSandboxDataProductResponse;
-      } else if (ingestServerUrl === 'https://test-prod-ingest-server.com') {
-        return mockProdSandboxDataProductResponse;
-      }
-
-      throw new Error(
-        `Unable to find deployed definitions for URL: ${ingestServerUrl}`,
-      );
-    },
-  );
   createSpy(
     MOCK__store.lakehouseIngestServerClient,
     'getIngestEnvironment',

@@ -20,14 +20,13 @@ import {
   type NavigationZone,
 } from '@finos/legend-application';
 import {
-  type DataProductArtifactGeneration,
-  type GraphData,
   type GraphManagerState,
   type V1_AccessPointGroup,
   type V1_CreateContractPayload,
   type V1_DataContract,
   type V1_DataContractsResponse,
   type V1_DataProduct,
+  type V1_EntitlementsDataProductDetails,
   type V1_OrganizationalScope,
   V1_AdhocTeam,
   V1_AppDirLevel,
@@ -37,7 +36,6 @@ import {
   V1_dataContractsResponseModelSchemaToContracts,
   V1_ResourceType,
 } from '@finos/legend-graph';
-import type { VersionedProjectData } from '@finos/legend-server-depot';
 import { action, computed, flow, makeObservable, observable } from 'mobx';
 import {
   DATA_PRODUCT_WIKI_PAGE_SECTIONS,
@@ -51,8 +49,6 @@ import { DataProductDataAccessState } from './DataProductDataAccessState.js';
 import {
   ActionState,
   assertErrorThrown,
-  guaranteeNonEmptyString,
-  guaranteeNonNullable,
   type GeneratorFn,
   type PlainObject,
 } from '@finos/legend-shared';
@@ -68,11 +64,8 @@ export class DataProductViewerState {
   readonly layoutState: DataProductLayoutState;
 
   readonly product: V1_DataProduct;
-  readonly isSandboxProduct: boolean;
-  readonly project: VersionedProjectData;
-  readonly retrieveGraphData: () => GraphData;
-  readonly viewSDLCProject: (path: string | undefined) => Promise<void>;
-  readonly viewIngestEnvironment?: (() => void) | undefined;
+  readonly entitlementsDataProductDetails: V1_EntitlementsDataProductDetails;
+  readonly viewDataProductSource: () => void;
   readonly onZoneChange?:
     | ((zone: NavigationZone | undefined) => void)
     | undefined;
@@ -81,7 +74,6 @@ export class DataProductViewerState {
   readonly lakeServerClient: LakehouseContractServerClient;
   currentActivity = DATA_PRODUCT_VIEWER_ACTIVITY_MODE.DESCRIPTION;
   accessState: DataProductDataAccessState;
-  generation: DataProductArtifactGeneration | undefined;
   associatedContracts: V1_DataContract[] | undefined;
   dataContractAccessPointGroup: V1_AccessPointGroup | undefined;
   dataContract: V1_DataContract | undefined;
@@ -94,14 +86,10 @@ export class DataProductViewerState {
     lakehouseStore: MarketplaceLakehouseStore,
     graphManagerState: GraphManagerState,
     lakeServerClient: LakehouseContractServerClient,
-    project: VersionedProjectData,
     product: V1_DataProduct,
-    isSandboxProduct: boolean,
-    generation: DataProductArtifactGeneration | undefined,
+    entitlementsDataProductDetails: V1_EntitlementsDataProductDetails,
     actions: {
-      retrieveGraphData: () => GraphData;
-      viewSDLCProject: (path: string | undefined) => Promise<void>;
-      viewIngestEnvironment?: (() => void) | undefined;
+      viewDataProductSource: () => void;
       onZoneChange?: ((zone: NavigationZone | undefined) => void) | undefined;
     },
   ) {
@@ -125,13 +113,9 @@ export class DataProductViewerState {
     this.lakehouseStore = lakehouseStore;
     this.graphManagerState = graphManagerState;
 
-    this.project = project;
     this.product = product;
-    this.isSandboxProduct = isSandboxProduct;
-    this.generation = generation;
-    this.retrieveGraphData = actions.retrieveGraphData;
-    this.viewSDLCProject = actions.viewSDLCProject;
-    this.viewIngestEnvironment = actions.viewIngestEnvironment;
+    this.entitlementsDataProductDetails = entitlementsDataProductDetails;
+    this.viewDataProductSource = actions.viewDataProductSource;
     this.onZoneChange = actions.onZoneChange;
     this.layoutState = new DataProductLayoutState(this);
     this.accessState = new DataProductDataAccessState(this);
@@ -155,12 +139,8 @@ export class DataProductViewerState {
       this.accessState.accessGroupStates.forEach((e) =>
         e.fetchingAccessState.inProgress(),
       );
-      const did = guaranteeNonEmptyString(
-        this.generation?.dataProduct.deploymentId,
-        'did required to get contracts',
-      );
       const didNode = new V1_AppDirNode();
-      didNode.appDirId = Number(did);
+      didNode.appDirId = this.deploymentId;
       didNode.level = V1_AppDirLevel.DEPLOYMENT;
       const _contracts = (yield this.lakeServerClient.getDataContractsFromDID(
         [serialize(V1_AppDirNodeModelSchema, didNode)],
@@ -223,10 +203,7 @@ export class DataProductViewerState {
           description,
           resourceId: this.product.name,
           resourceType: V1_ResourceType.ACCESS_POINT_GROUP,
-          deploymentId: guaranteeNonNullable(
-            this.generation?.dataProduct.deploymentId,
-            'Cannot create contract. Data product generation is missing deployment ID',
-          ),
+          deploymentId: this.deploymentId,
           accessPointGroup: group.id,
           consumer,
         } satisfies V1_CreateContractPayload,
@@ -276,8 +253,8 @@ export class DataProductViewerState {
     return true;
   }
 
-  get deploymentId(): string | undefined {
-    return this.generation?.dataProduct.deploymentId;
+  get deploymentId(): number {
+    return this.entitlementsDataProductDetails.deploymentId;
   }
 
   changeZone(zone: NavigationZone, force = false): void {
