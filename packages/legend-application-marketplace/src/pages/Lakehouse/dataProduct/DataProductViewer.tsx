@@ -18,7 +18,6 @@ import { observer } from 'mobx-react-lite';
 import type { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
 import { useEffect, useRef, useState } from 'react';
 import { CaretUpIcon, clsx, OpenIcon, VerifiedIcon } from '@finos/legend-art';
-import { useApplicationStore } from '@finos/legend-application';
 import { DataProductWiki } from './DataProductWiki.js';
 import { Button } from '@mui/material';
 import { isSnapshotVersion } from '@finos/legend-server-depot';
@@ -34,7 +33,6 @@ const DataProductHeader = observer(
     showFullHeader: boolean;
   }) => {
     const { dataProductViewerState, showFullHeader } = props;
-    const applicationStore = useApplicationStore();
     const headerRef = useRef<HTMLDivElement>(null);
     const dataProduct = dataProductViewerState.product;
     const environmentClassification =
@@ -101,9 +99,7 @@ const DataProductHeader = observer(
             {origin instanceof V1_SdlcDeploymentDataProductOrigin && (
               <Button
                 onClick={() => {
-                  dataProductViewerState
-                    .viewDataProductSource()
-                    ?.catch(applicationStore.alertUnhandledError);
+                  dataProductViewerState.viewDataProductSource();
                 }}
                 title="View SDLC Project"
                 className={clsx('data-space__viewer__header__type__version', {
