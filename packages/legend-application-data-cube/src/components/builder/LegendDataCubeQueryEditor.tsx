@@ -80,6 +80,19 @@ export const LegendDataCubeQueryEditor = observer(() => {
                 .then(() => {
                   state.close();
                   store.codeEditorDisplay.close();
+                  store
+                    .saveDataCube(
+                      guaranteeNonNullable(builder.persistentDataCube).name,
+                    )
+                    .then(() => {
+                      store.application.navigationService.navigator.reload({
+                        ignoreBlocking: true,
+                      });
+                    })
+                    .catch((error) => {
+                      assertErrorThrown(error);
+                      store.alertService.alertUnhandledError(error);
+                    });
                 })
                 .catch((error) => {
                   assertErrorThrown(error);
