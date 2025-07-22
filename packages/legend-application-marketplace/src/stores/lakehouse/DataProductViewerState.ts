@@ -65,7 +65,7 @@ export class DataProductViewerState {
 
   readonly product: V1_DataProduct;
   readonly entitlementsDataProductDetails: V1_EntitlementsDataProductDetails;
-  readonly viewDataProductSource: () => Promise<void> | undefined;
+  readonly viewDataProductSource: () => void;
   readonly onZoneChange?:
     | ((zone: NavigationZone | undefined) => void)
     | undefined;
@@ -89,7 +89,7 @@ export class DataProductViewerState {
     product: V1_DataProduct,
     entitlementsDataProductDetails: V1_EntitlementsDataProductDetails,
     actions: {
-      viewDataProductSource: () => Promise<void> | undefined;
+      viewDataProductSource: () => void;
       onZoneChange?: ((zone: NavigationZone | undefined) => void) | undefined;
     },
   ) {

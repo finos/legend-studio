@@ -16,12 +16,10 @@
 
 import {
   DEFAULT_TAB_SIZE,
+  EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl,
   type CommandRegistrar,
 } from '@finos/legend-application';
-import {
-  projectIdHandlerFunc,
-  type DepotServerClient,
-} from '@finos/legend-server-depot';
+import { type DepotServerClient } from '@finos/legend-server-depot';
 import { action, computed, flow, makeObservable, observable } from 'mobx';
 import type {
   LegendMarketplaceApplicationStore,
@@ -50,7 +48,6 @@ import {
   V1_SdlcDeploymentDataProductOrigin,
 } from '@finos/legend-graph';
 import { DataProductViewerState } from './DataProductViewerState.js';
-import { EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl } from '../../__lib__/LegendMarketplaceNavigation.js';
 import type { AuthContextProps } from 'react-oidc-context';
 import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
 import { DataProductState } from './dataProducts/DataProducts.js';
@@ -551,28 +548,15 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
               dataProductDetails.origin instanceof
               V1_SdlcDeploymentDataProductOrigin
             ) {
-              return projectIdHandlerFunc(
-                dataProductDetails.origin.group,
-                dataProductDetails.origin.artifact,
-                dataProductDetails.origin.version,
-                this.depotServerClient,
-                (projectId: string, resolvedId: string) => {
-                  const studioUrl = guaranteeNonNullable(
-                    this.applicationStore.config.studioServerUrl,
-                    'studio url required',
-                  );
-                  this.applicationStore.navigationService.navigator.visitAddress(
-                    EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl(
-                      studioUrl,
-                      projectId,
-                      resolvedId,
-                      dataProductDetails.id,
-                    ),
-                  );
-                },
+              this.applicationStore.navigationService.navigator.visitAddress(
+                EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
+                  this.applicationStore.config.studioServerUrl,
+                  dataProductDetails.origin.group,
+                  dataProductDetails.origin.artifact,
+                  dataProductDetails.origin.version,
+                  v1DataProduct.path,
+                ),
               );
-            } else {
-              return undefined;
             }
           },
         },
