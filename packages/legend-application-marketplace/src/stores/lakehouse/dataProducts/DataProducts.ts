@@ -80,12 +80,12 @@ export class DataProductState {
         this.lakehouseState.applicationStore.pluginManager,
         this.lakehouseState.applicationStore.logService,
       );
-      this.dataProductElement = yield getDataProductFromDetails(
+      this.dataProductElement = (yield getDataProductFromDetails(
         this.dataProductDetails,
         graphManagerState,
         this.graphManager,
         this.lakehouseState.marketplaceBaseStore,
-      );
+      )) as V1_DataProduct | undefined;
     } catch (error) {
       assertErrorThrown(error);
       this.lakehouseState.applicationStore.notificationService.notifyError(
