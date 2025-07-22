@@ -34,6 +34,7 @@ import {
   Button,
   Checkbox,
   Chip,
+  CircularProgress,
   Container,
   FormControlLabel,
   FormGroup,
@@ -184,22 +185,27 @@ const LakehouseDataProductCardInfoPopover = observer(
             <Box className="marketplace-lakehouse-data-product-card__popover__section">
               <Box className="marketplace-lakehouse-data-product-card__popover__section-header">
                 Data Product Project
-                <IconButton
-                  className="marketplace-lakehouse-data-product-card__popover__project-link"
-                  onClick={() =>
-                    applicationStore.navigationService.navigator.visitAddress(
-                      EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
-                        applicationStore.config.studioServerUrl,
-                        origin.group,
-                        origin.artifact,
-                        origin.version,
-                        dataProductState.dataProductElement?.path,
-                      ),
-                    )
-                  }
-                >
-                  <OpenIcon />
-                </IconButton>
+                {dataProductState.enrichedState.isInProgress === true && (
+                  <CircularProgress size={20} />
+                )}
+                {dataProductState.enrichedState.hasCompleted === true && (
+                  <IconButton
+                    className="marketplace-lakehouse-data-product-card__popover__project-link"
+                    onClick={() =>
+                      applicationStore.navigationService.navigator.visitAddress(
+                        EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
+                          applicationStore.config.studioServerUrl,
+                          origin.group,
+                          origin.artifact,
+                          origin.version,
+                          dataProductState.dataProductElement?.path,
+                        ),
+                      )
+                    }
+                  >
+                    <OpenIcon />
+                  </IconButton>
+                )}
               </Box>
               <TableContainer className="marketplace-lakehouse-data-product-card__popover__table">
                 <Table>
@@ -227,7 +233,13 @@ const LakehouseDataProductCardInfoPopover = observer(
                         <b>Path</b>
                       </TableCell>
                       <TableCell>
-                        {dataProductState.dataProductElement?.path ?? 'Unknown'}
+                        {dataProductState.enrichedState.isInProgress ===
+                        true ? (
+                          <CircularProgress size={20} />
+                        ) : (
+                          (dataProductState.dataProductElement?.path ??
+                          'Unknown')
+                        )}
                       </TableCell>
                     </TableRow>
                   </TableBody>
