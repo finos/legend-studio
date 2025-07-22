@@ -227,7 +227,7 @@ const LakehouseDataProductCardInfoPopover = observer(
                         <b>Path</b>
                       </TableCell>
                       <TableCell>
-                        {dataProductState.dataProductElement?.path}
+                        {dataProductState.dataProductElement?.path ?? 'Unknown'}
                       </TableCell>
                     </TableRow>
                   </TableBody>
