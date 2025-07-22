@@ -1168,9 +1168,9 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     } else if (source instanceof UserDefinedFunctionDataCubeSource) {
       return this._getLambdaRelationType(query, source.model);
     } else if (source instanceof LegendQueryDataCubeSource) {
-      const deserializedQuery = _lambda(
-        [],
-        [this.deserializeValueSpecification(query)],
+      const deserializedQuery = guaranteeType(
+        this.deserializeValueSpecification(query),
+        V1_Lambda,
       );
       await this._processLegendQueryParams(source, deserializedQuery);
       query = this.serializeValueSpecification(deserializedQuery);
