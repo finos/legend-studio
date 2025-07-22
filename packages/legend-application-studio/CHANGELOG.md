@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.19.15
+
+### Patch Changes
+
+- [#4273](https://github.com/finos/legend-studio/pull/4273) [`045674f`](https://github.com/finos/legend-studio/commit/045674f0944cd7f0acd1d30348b06bfd150e5d9d) ([@kelly-thai](https://github.com/kelly-thai)) - Revamping Data Product Form based on wireframe
+
 ## 28.19.14
 
 ## 28.19.13
