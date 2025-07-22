@@ -19,7 +19,7 @@ import {
   LakehouseAccessPoint,
   type PackageableElement,
   type IngestDefinition,
-  type AccessPoint,
+  AccessPoint,
   stub_RawLambda,
   LakehouseTargetEnv,
   LAMBDA_PIPE,
@@ -29,6 +29,9 @@ import {
   isStubbed_RawLambda,
   AccessPointGroup,
   CodeCompletionResult,
+  type Stereotype,
+  getStereotype,
+  type StereotypeReference,
 } from '@finos/legend-graph';
 import type { EditorStore } from '../../../EditorStore.js';
 import { ElementEditorState } from '../ElementEditorState.js';
@@ -52,12 +55,16 @@ import {
   guaranteeNonNullable,
   assertTrue,
   uuid,
+  swapEntry,
+  returnUndefOnError,
 } from '@finos/legend-shared';
 import {
+  accessPointGroup_swapAccessPoints,
   dataProduct_addAccessPoint,
   dataProduct_addAccessPointGroup,
   dataProduct_deleteAccessPoint,
   dataProduct_deleteAccessPointGroup,
+  dataProduct_swapAccessPointGroups,
 } from '../../../../graph-modifier/DSL_DataProduct_GraphModifierHelper.js';
 import { LambdaEditorState } from '@finos/legend-query-builder';
 import {
@@ -70,13 +77,30 @@ import type {
   LakehouseIngestionManager,
 } from '@finos/legend-server-lakehouse';
 
+export enum DATA_PRODUCT_TAB {
+  HOME = 'Home',
+  SUPPORT = 'Support',
+  APG = 'APG',
+}
+
 export class AccessPointState {
-  readonly state: AccessPointGroupState;
+  readonly uuid = uuid();
+  state: AccessPointGroupState;
   accessPoint: AccessPoint;
 
   constructor(val: AccessPoint, editorState: AccessPointGroupState) {
     this.accessPoint = val;
     this.state = editorState;
+
+    makeObservable(this, {
+      state: observable,
+      accessPoint: observable,
+      changeGroupState: action,
+    });
+  }
+
+  changeGroupState(newGroup: AccessPointGroupState): void {
+    this.state = newGroup;
   }
 }
 
@@ -208,12 +232,40 @@ export class AccessPointGroupState {
     this.accessPointStates = val.accessPoints.map((e) =>
       this.buildAccessPointState(e),
     );
+
     makeObservable(this, {
       value: observable,
       accessPointStates: observable,
       addAccessPoint: action,
       deleteAccessPoint: action,
+      swapAccessPoints: action,
+      containsPublicStereotype: computed,
     });
+  }
+
+  get containsPublicStereotype(): StereotypeReference | undefined {
+    return this.value.stereotypes.find(
+      (stereotype) => stereotype.value === this.publicStereotype,
+    );
+  }
+
+  get publicStereotype(): Stereotype | undefined {
+    const publicStereotype =
+      this.state.editorStore.applicationStore.config.options.dataProductConfig
+        ?.publicStereotype;
+
+    if (publicStereotype) {
+      return returnUndefOnError(() =>
+        getStereotype(
+          this.state.editorStore.graphManagerState.graph.getProfile(
+            publicStereotype.profile,
+          ),
+          publicStereotype.stereotype,
+        ),
+      );
+    }
+
+    return undefined;
   }
 
   deleteAccessPoint(val: AccessPointState): void {
@@ -222,10 +274,23 @@ export class AccessPointGroupState {
     dataProduct_deleteAccessPoint(this.value, val.accessPoint);
   }
 
-  addAccessPoint(point: AccessPoint): void {
-    const accessPointState = this.buildAccessPointState(point);
+  addAccessPoint(point: AccessPoint | AccessPointState): void {
+    const accessPointState =
+      point instanceof AccessPoint ? this.buildAccessPointState(point) : point;
     addUniqueEntry(this.accessPointStates, accessPointState);
-    dataProduct_addAccessPoint(this.value, point);
+    dataProduct_addAccessPoint(this.value, accessPointState.accessPoint);
+  }
+
+  swapAccessPoints(
+    sourceAccessPoint: AccessPointState,
+    targetAccessPoint: AccessPointState,
+  ): void {
+    swapEntry(this.accessPointStates, sourceAccessPoint, targetAccessPoint);
+    accessPointGroup_swapAccessPoints(
+      this.value,
+      sourceAccessPoint.accessPoint,
+      targetAccessPoint.accessPoint,
+    );
   }
 
   buildAccessPointState(val: AccessPoint): AccessPointState {
@@ -259,14 +324,13 @@ export const generateUrlToDeployOnOpen = (
 };
 
 export class DataProductEditorState extends ElementEditorState {
-  accessPointModal = false;
-  accessPointGroupModal = false;
   deploymentState = ActionState.create();
   accessPointGroupStates: AccessPointGroupState[] = [];
   isConvertingTransformLambdaObjects = false;
   deployOnOpen = false;
   deployResponse: AdhocDataProductDeployResponse | undefined;
-  editingGroupState: AccessPointGroupState | undefined;
+  selectedGroupState: AccessPointGroupState | undefined;
+  selectedTab: DATA_PRODUCT_TAB;
 
   constructor(
     editorStore: EditorStore,
@@ -277,29 +341,35 @@ export class DataProductEditorState extends ElementEditorState {
 
     makeObservable(this, {
       product: computed,
-      accessPointModal: observable,
-      accessPointGroupModal: observable,
       accessPointGroupStates: observable,
       isConvertingTransformLambdaObjects: observable,
+      selectedTab: observable,
+      setSelectedTab: action,
+      addGroupState: action,
+      deleteGroupState: action,
       deploy: flow,
       deployOnOpen: observable,
       deployResponse: observable,
       setDeployOnOpen: action,
       setDeployResponse: action,
-      setAccessPointModal: action,
-      setAccessPointGroupModal: action,
       addAccessPoint: action,
       convertAccessPointsFuncObjects: flow,
-      editingGroupState: observable,
-      setEditingGroupState: action,
+      selectedGroupState: observable,
+      setSelectedGroupState: action,
+      swapAccessPointGroups: action,
     });
+
     this.accessPointGroupStates = this.product.accessPointGroups.map(
       (e) => new AccessPointGroupState(e, this),
     );
+
+    this.selectedGroupState = this.accessPointGroupStates[0];
+
     const elementConfig = config?.elementEditorConfiguration;
     if (elementConfig instanceof DataProductElementEditorInitialConfiguration) {
       this.deployOnOpen = elementConfig.deployOnOpen ?? false;
     }
+    this.selectedTab = DATA_PRODUCT_TAB.HOME;
   }
 
   setDeployOnOpen(value: boolean): void {
@@ -310,6 +380,33 @@ export class DataProductEditorState extends ElementEditorState {
     response: AdhocDataProductDeployResponse | undefined,
   ): void {
     this.deployResponse = response;
+  }
+
+  setSelectedTab(value: DATA_PRODUCT_TAB): void {
+    this.selectedTab = value;
+  }
+
+  addGroupState(value: AccessPointGroupState): void {
+    this.accessPointGroupStates.push(value);
+  }
+
+  deleteGroupState(value: AccessPointGroupState): void {
+    deleteEntry(
+      this.accessPointGroupStates,
+      this.accessPointGroupStates.find((a) => a === value),
+    );
+  }
+
+  swapAccessPointGroups(
+    sourceGroup: AccessPointGroupState,
+    targetGroup: AccessPointGroupState,
+  ): void {
+    swapEntry(this.accessPointGroupStates, sourceGroup, targetGroup);
+    dataProduct_swapAccessPointGroups(
+      this.product,
+      sourceGroup.value,
+      targetGroup.value,
+    );
   }
 
   *convertAccessPointsFuncObjects(): GeneratorFn<void> {
@@ -350,16 +447,8 @@ export class DataProductEditorState extends ElementEditorState {
     }
   }
 
-  setAccessPointModal(val: boolean): void {
-    this.accessPointModal = val;
-  }
-
-  setEditingGroupState(val: AccessPointGroupState | undefined): void {
-    this.editingGroupState = val;
-  }
-
-  setAccessPointGroupModal(val: boolean): void {
-    this.accessPointGroupModal = val;
+  setSelectedGroupState(val: AccessPointGroupState | undefined): void {
+    this.selectedGroupState = val;
   }
 
   addAccessPoint(
@@ -393,13 +482,20 @@ export class DataProductEditorState extends ElementEditorState {
     group.id = id;
     group.description = description;
     dataProduct_addAccessPointGroup(this.product, group);
-    return new AccessPointGroupState(group, this);
+    const newGroupState = new AccessPointGroupState(group, this);
+    this.addGroupState(newGroupState);
+    return newGroupState;
   }
 
   deleteAccessPointGroup(val: AccessPointGroupState): void {
     const state = this.accessPointGroupStates.find((a) => a === val);
     runInAction(() => {
-      deleteEntry(this.accessPointGroupStates, state);
+      if (state) {
+        this.deleteGroupState(state);
+        if (state === this.selectedGroupState) {
+          this.setSelectedGroupState(this.accessPointGroupStates[0]);
+        }
+      }
       dataProduct_deleteAccessPointGroup(this.product, val.value);
     });
   }

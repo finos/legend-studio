@@ -81,6 +81,8 @@ import {
   MdOutlinePushPin,
   MdOutlineShoppingCart,
   MdOutlineHelpOutline,
+  MdError,
+  MdOutlineGroupWork,
 } from 'react-icons/md';
 
 export const ManageSearchIcon = MdManageSearch; // to be reviewed
@@ -121,6 +123,8 @@ export const PushPinIcon = MdOutlinePushPin;
 export const ShoppingCartOutlineIcon = MdOutlineShoppingCart;
 export const HelpOutlineIcon = MdOutlineHelpOutline;
 export const ExpandMoreIcon = MdExpandMore;
+export const ErrorWarnIcon = MdError;
+export const GroupWorkIcon = MdOutlineGroupWork;
 
 //======================================================= VSC =======================================================
 import {
@@ -395,6 +399,7 @@ import {
   FaShoppingCart,
   FaRegUserCircle,
   FaRegBell,
+  FaBuilding,
 } from 'react-icons/fa';
 
 import { PiFunctionBold } from 'react-icons/pi';
@@ -537,6 +542,7 @@ export const CubeIcon = FaCube;
 export const ShoppingCartIcon = FaShoppingCart;
 export const UserCircleIcon = FaRegUserCircle;
 export const BellIcon = FaRegBell;
+export const BuildingIcon = FaBuilding;
 //======================================================= GI =======================================================
 import {
   GiWaterDrop,

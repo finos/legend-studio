@@ -41,7 +41,6 @@
       margin-top: 1rem;
       color: var(--color-light-grey-300);
       font-weight: bold;
-      background: var(--color-dark-grey-85);
       border-top: 0.1rem solid var(--color-dark-grey-200);
       border-bottom: none;
       box-shadow: none;
@@ -139,9 +138,33 @@
 }
 
 .access-point-editor {
-  padding: 1rem;
+  padding: 0.5rem;
+  padding-left: 0.25rem;
   background: var(--color-dark-grey-85);
   border-radius: 0.2rem;
+  display: flex;
+
+  &__dnd-handle {
+    cursor: grab;
+    align-items: center;
+    display: flex;
+    font-size: 16px;
+    background: var(--color-dark-shade-250);
+  }
+
+  &__toggle {
+    display: flex;
+    flex-direction: row;
+    color: var(--color-light-grey-300);
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  &__classification {
+    color: var(--color-dark-grey-500);
+    display: flex;
+    gap: 0.5rem;
+  }
 
   &__metadata {
     @include flexVCenter;
@@ -152,6 +175,7 @@
 
   &__info {
     display: flex;
+    gap: 1rem;
     justify-content: flex-end;
     flex: 1 0 auto;
   }
@@ -161,13 +185,20 @@
 
     height: 2.8rem;
     background: var(--color-dark-grey-50);
-    padding: 0 1rem;
     border-radius: 0.2rem;
+    overflow: hidden;
+    width: auto;
+    color: white;
+    resize: none;
+    padding: 0.25rem;
+    border-width: thin;
+    margin-left: 0.5rem;
 
     &__label {
       margin-left: 0.5rem;
       margin-right: 0.5rem;
       color: var(--color-light-grey-100);
+      cursor: text;
     }
   }
 
@@ -244,10 +275,8 @@
   }
 
   &__group-container {
-    margin-bottom: 1.8rem;
-    margin-top: 1rem !important;
-    background-color: var(--color-dark-grey-85);
     padding: 1rem;
+    overflow: visible;
 
     &__title {
       color: white;
@@ -380,10 +409,13 @@
   &__dropdown {
     @include flexCenter;
 
-    height: 2.2rem;
     width: 2rem;
     border-radius: 0 0.2rem 0.2rem 0;
     border-left: 0.1rem solid var(--color-dark-shade-280);
+    background: transparent;
+    height: 100%;
+    align-items: center;
+    display: flex;
   }
 }
 

@@ -18,6 +18,8 @@ import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   type AccessPointGroupState,
+  type AccessPointState,
+  DATA_PRODUCT_TAB,
   DataProductEditorState,
   generateUrlToDeployOnOpen,
   LakehouseAccessPointState,
@@ -29,10 +31,6 @@ import {
   PanelHeader,
   PanelHeaderActions,
   Dialog,
-  PanelDivider,
-  InputWithInlineValidation,
-  useResizeDetector,
-  AccessPointIcon,
   TimesIcon,
   PlusIcon,
   PanelHeaderActionItem,
@@ -52,12 +50,26 @@ import {
   CaretDownIcon,
   WarningIcon,
   PanelFormSection,
+  useDragPreviewLayer,
+  DragPreviewLayer,
+  PanelDnDEntry,
+  PanelEntryDragHandle,
+  HomeIcon,
+  QuestionCircleIcon,
+  ErrorWarnIcon,
+  GroupWorkIcon,
+  CustomSelectorInput,
+  Switch,
+  BuildingIcon,
+  Tooltip,
+  InfoCircleIcon,
 } from '@finos/legend-art';
 import React, {
   useRef,
   useState,
   useEffect,
   type ChangeEventHandler,
+  useCallback,
 } from 'react';
 import { filterByType } from '@finos/legend-shared';
 import { InlineLambdaEditor } from '@finos/legend-query-builder';
@@ -65,7 +77,13 @@ import { action, flowResult } from 'mobx';
 import { useAuth } from 'react-oidc-context';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
-import { LakehouseTargetEnv, Email } from '@finos/legend-graph';
+import {
+  LakehouseTargetEnv,
+  Email,
+  type DataProduct,
+  type LakehouseAccessPoint,
+  StereotypeExplicitReference,
+} from '@finos/legend-graph';
 import {
   accessPointGroup_setDescription,
   accessPointGroup_setName,
@@ -78,6 +96,7 @@ import {
   supportInfo_setSupportUrl,
   supportInfo_addEmail,
   supportInfo_deleteEmail,
+  accessPoint_setClassification,
 } from '../../../../stores/graph-modifier/DSL_DataProduct_GraphModifierHelper.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
@@ -86,6 +105,11 @@ import {
   ActionAlertType,
   useApplicationNavigationContext,
 } from '@finos/legend-application';
+import { useDrag, useDrop } from 'react-dnd';
+import {
+  annotatedElement_addStereotype,
+  annotatedElement_deleteStereotype,
+} from '../../../../stores/graph-modifier/DomainGraphModifierHelper.js';
 
 export enum AP_GROUP_MODAL_ERRORS {
   GROUP_NAME_EMPTY = 'Group Name is empty',
@@ -97,332 +121,20 @@ export enum AP_GROUP_MODAL_ERRORS {
 }
 
 export const AP_EMPTY_DESC_WARNING =
-  'Describe the data this access point produces';
+  'Click here to describe the data this access point produces';
 
-const NewAccessPointAccessPoint = observer(
-  (props: { dataProductEditorState: DataProductEditorState }) => {
-    const { dataProductEditorState: dataProductEditorState } = props;
-    const accessPointInputRef = useRef<HTMLInputElement>(null);
-    const [id, setId] = useState<string | undefined>(undefined);
-    const handleIdChange: React.ChangeEventHandler<HTMLInputElement> = (
-      event,
-    ) => setId(event.target.value);
-    const [description, setDescription] = useState<string | undefined>(
-      undefined,
-    );
-    const handleDescriptionChange: React.ChangeEventHandler<
-      HTMLInputElement
-    > = (event) => setDescription(event.target.value);
-    const handleClose = () => {
-      dataProductEditorState.setAccessPointModal(false);
-    };
-    const handleSubmit = () => {
-      if (id) {
-        const accessPointGroup =
-          dataProductEditorState.editingGroupState ?? 'default';
-        dataProductEditorState.addAccessPoint(
-          id,
-          description,
-          accessPointGroup,
-        );
-        handleClose();
-      }
-    };
-    const handleEnter = (): void => {
-      accessPointInputRef.current?.focus();
-    };
-    const disableCreateButton =
-      id === '' ||
-      id === undefined ||
-      description === '' ||
-      description === undefined ||
-      dataProductEditorState.accessPoints.map((e) => e.id).includes(id);
-    const nameErrors =
-      id === ''
-        ? AP_GROUP_MODAL_ERRORS.AP_NAME_EMPTY
-        : dataProductEditorState.accessPoints
-              .map((e) => e.id)
-              .includes(id ?? '')
-          ? AP_GROUP_MODAL_ERRORS.AP_NAME_EXISTS
-          : undefined;
+const AP_DND_TYPE = 'ACCESS_POINT';
+const AP_GROUP_DND_TYPE = 'ACCESS_POINT_GROUP';
 
-    const descriptionErrors =
-      description === ''
-        ? AP_GROUP_MODAL_ERRORS.AP_DESCRIPTION_EMPTY
-        : undefined;
-    return (
-      <Dialog
-        open={true}
-        onClose={handleClose}
-        TransitionProps={{
-          onEnter: handleEnter,
-        }}
-        classes={{
-          container: 'search-modal__container',
-        }}
-        PaperProps={{
-          classes: {
-            root: 'search-modal__inner-container',
-          },
-        }}
-      >
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            handleSubmit();
-          }}
-          className={clsx('modal search-modal', {
-            'modal--dark': true,
-          })}
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '1rem',
-          }}
-        >
-          <div className="modal__title">New Access Point</div>
-          <div>
-            <div className="panel__content__form__section__header__label">
-              Name
-            </div>
-            <InputWithInlineValidation
-              className={clsx('input new-access-point-modal__id-input', {
-                'input--dark': true,
-              })}
-              ref={accessPointInputRef}
-              spellCheck={false}
-              value={id ?? ''}
-              onChange={handleIdChange}
-              placeholder="Access Point Name"
-              error={nameErrors}
-            />
-          </div>
-          <div>
-            <div className="panel__content__form__section__header__label">
-              Description
-            </div>
-            <InputWithInlineValidation
-              className={clsx('input new-access-point-modal__id-input', {
-                'input--dark': true,
-              })}
-              spellCheck={false}
-              value={description ?? ''}
-              onChange={handleDescriptionChange}
-              placeholder="Access Point Description"
-              error={descriptionErrors}
-            />
-          </div>
-          <div></div>
-          <PanelDivider />
-          <div className="search-modal__actions">
-            <button
-              className={clsx('btn btn--primary', {
-                'btn--dark': true,
-              })}
-              disabled={disableCreateButton}
-            >
-              Create
-            </button>
-          </div>
-        </form>
-      </Dialog>
-    );
-  },
-);
+export type AccessPointDragSource = {
+  accessPointState: AccessPointState;
+};
 
-const NewAccessPointGroupModal = observer(
-  (props: { dataProductEditorState: DataProductEditorState }) => {
-    const { dataProductEditorState: dataProductEditorState } = props;
-    const accessPointGroupInputRef = useRef<HTMLInputElement>(null);
-    const [groupName, setGroupName] = useState<string | undefined>(undefined);
-    const handleGroupNameChange: React.ChangeEventHandler<HTMLInputElement> = (
-      event,
-    ) => setGroupName(event.target.value);
-    const [groupDescription, setGroupDescription] = useState<
-      string | undefined
-    >(undefined);
-    const handleGroupDescriptionChange: React.ChangeEventHandler<
-      HTMLInputElement
-    > = (event) => setGroupDescription(event.target.value);
-    const [apName, setApName] = useState<string | undefined>(undefined);
-    const handleApNameChange: React.ChangeEventHandler<HTMLInputElement> = (
-      event,
-    ) => setApName(event.target.value);
-    const [apDescription, setApDescription] = useState<string | undefined>(
-      undefined,
-    );
-    const handleApDescriptionChange: React.ChangeEventHandler<
-      HTMLInputElement
-    > = (event) => setApDescription(event.target.value);
-    const handleClose = () => {
-      dataProductEditorState.setAccessPointGroupModal(false);
-    };
-    const handleEnter = (): void => {
-      accessPointGroupInputRef.current?.focus();
-    };
+export type APGDragSource = {
+  groupState: AccessPointGroupState;
+};
 
-    const groupNameErrors =
-      groupName === ''
-        ? AP_GROUP_MODAL_ERRORS.GROUP_NAME_EMPTY
-        : dataProductEditorState.accessPointGroupStates
-              .map((e) => e.value.id)
-              .includes(groupName ?? '')
-          ? AP_GROUP_MODAL_ERRORS.GROUP_NAME_EXISTS
-          : undefined;
-    const groupDescriptionErrors =
-      groupDescription === ''
-        ? AP_GROUP_MODAL_ERRORS.GROUP_DESCRIPTION_EMPTY
-        : undefined;
-    const apNameErrors =
-      apName === ''
-        ? AP_GROUP_MODAL_ERRORS.AP_NAME_EMPTY
-        : dataProductEditorState.accessPoints
-              .map((e) => e.id)
-              .includes(apName ?? '')
-          ? AP_GROUP_MODAL_ERRORS.AP_NAME_EXISTS
-          : undefined;
-    const apDescriptionErrors =
-      apDescription === ''
-        ? AP_GROUP_MODAL_ERRORS.AP_DESCRIPTION_EMPTY
-        : undefined;
-
-    const disableCreateButton =
-      !groupName ||
-      !groupDescription ||
-      !apName ||
-      !apDescription ||
-      Boolean(
-        groupNameErrors ??
-          groupDescriptionErrors ??
-          apNameErrors ??
-          apDescriptionErrors,
-      );
-    const handleSubmit = () => {
-      if (!disableCreateButton && apName) {
-        const createdGroup = dataProductEditorState.createGroupAndAdd(
-          groupName,
-          groupDescription,
-        );
-        dataProductEditorState.addAccessPoint(
-          apName,
-          apDescription,
-          createdGroup,
-        );
-        handleClose();
-      }
-    };
-
-    return (
-      <Dialog
-        open={true}
-        onClose={handleClose}
-        TransitionProps={{
-          onEnter: handleEnter,
-        }}
-        classes={{
-          container: 'search-modal__container',
-        }}
-        PaperProps={{
-          classes: {
-            root: 'search-modal__inner-container',
-          },
-        }}
-      >
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            handleSubmit();
-          }}
-          className={clsx('modal search-modal', {
-            'modal--dark': true,
-          })}
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '1rem',
-          }}
-        >
-          <div className="modal__title">New Access Point Group</div>
-          <div>
-            <div className="panel__content__form__section__header__label">
-              Group Name
-            </div>
-            <InputWithInlineValidation
-              className={clsx('input new-access-point-modal__id-input', {
-                'input--dark': true,
-              })}
-              ref={accessPointGroupInputRef}
-              spellCheck={false}
-              value={groupName ?? ''}
-              onChange={handleGroupNameChange}
-              placeholder="Access Point Group Name"
-              error={groupNameErrors}
-            />
-          </div>
-          <div>
-            <div className="panel__content__form__section__header__label">
-              Group Description
-            </div>
-            <InputWithInlineValidation
-              className={clsx('input new-access-point-modal__id-input', {
-                'input--dark': true,
-              })}
-              spellCheck={false}
-              value={groupDescription ?? ''}
-              onChange={handleGroupDescriptionChange}
-              placeholder="Access Point Group Description"
-              error={groupDescriptionErrors}
-            />
-          </div>
-          <div>
-            <div className="panel__content__form__section__header__label">
-              Access Point
-            </div>
-            <div className="new-access-point-group-modal">
-              <div className="panel__content__form__section__header__label">
-                Name
-              </div>
-              <InputWithInlineValidation
-                className={clsx('input new-access-point-modal__id-input', {
-                  'input--dark': true,
-                })}
-                spellCheck={false}
-                value={apName ?? ''}
-                onChange={handleApNameChange}
-                placeholder="Access Point Name"
-                error={apNameErrors}
-              />
-              <div className="panel__content__form__section__header__label">
-                Description
-              </div>
-              <InputWithInlineValidation
-                className={clsx('input new-access-point-modal__id-input', {
-                  'input--dark': true,
-                })}
-                spellCheck={false}
-                value={apDescription ?? ''}
-                onChange={handleApDescriptionChange}
-                placeholder="Access Point Description"
-                error={apDescriptionErrors}
-              />
-            </div>
-          </div>
-          <PanelDivider />
-          <div className="search-modal__actions">
-            <button
-              className={clsx('btn btn--primary', {
-                'btn--dark': true,
-              })}
-              disabled={disableCreateButton}
-            >
-              Create
-            </button>
-          </div>
-        </form>
-      </Dialog>
-    );
-  },
-);
+const newNamePlaceholder = '';
 
 interface HoverTextAreaProps {
   text: string;
@@ -456,204 +168,396 @@ const hoverIcon = () => {
   );
 };
 
+const AccessPointTitle = observer(
+  (props: { accessPoint: LakehouseAccessPoint }) => {
+    const { accessPoint } = props;
+    const [editingName, setEditingName] = useState(
+      accessPoint.id === newNamePlaceholder,
+    );
+    const handleNameEdit = () => setEditingName(true);
+    const handleNameBlur = () => {
+      if (accessPoint.id !== newNamePlaceholder) {
+        setEditingName(false);
+      }
+    };
+    const updateAccessPointName: React.ChangeEventHandler<HTMLTextAreaElement> =
+      action((event) => {
+        if (!event.target.value.includes(' ')) {
+          accessPoint.id = event.target.value;
+        }
+      });
+
+    return editingName ? (
+      <textarea
+        className="access-point-editor__name"
+        spellCheck={false}
+        value={accessPoint.id}
+        onChange={updateAccessPointName}
+        placeholder={'Access Point Name'}
+        onBlur={handleNameBlur}
+        style={{
+          borderColor:
+            accessPoint.id === newNamePlaceholder
+              ? 'var(--color-red-300)'
+              : 'transparent',
+        }}
+      />
+    ) : (
+      <div onClick={handleNameEdit} title="Click to edit access point title">
+        <div className="access-point-editor__name__label">{accessPoint.id}</div>
+      </div>
+    );
+  },
+);
+
+const AccessPointClassification = observer(
+  (props: {
+    accessPoint: LakehouseAccessPoint;
+    groupState: AccessPointGroupState;
+  }) => {
+    const { accessPoint, groupState } = props;
+    const applicationStore = useEditorStore().applicationStore;
+    const CHOOSE_CLASSIFICATION = 'Choose Classification';
+    const updateAccessPointClassificationTextbox: React.ChangeEventHandler<HTMLTextAreaElement> =
+      action((event) => {
+        accessPoint.classification = event.target.value;
+      });
+
+    const conditionalClassifications = (): string[] => {
+      if (groupState.containsPublicStereotype) {
+        return (
+          applicationStore.config.options.dataProductConfig
+            ?.publicClassifications ?? []
+        );
+      } else {
+        return (
+          applicationStore.config.options.dataProductConfig?.classifications ??
+          []
+        );
+      }
+    };
+
+    const classificationOptions = [CHOOSE_CLASSIFICATION]
+      .concat(conditionalClassifications())
+      .map((classfication) => ({
+        label: classfication,
+        value: classfication,
+      }));
+
+    const updateAccessPointClassificationFromDropdown = action(
+      (val: { label: string; value: string } | null): void => {
+        accessPoint_setClassification(
+          accessPoint,
+          val?.value === CHOOSE_CLASSIFICATION ? undefined : val?.value,
+        );
+      },
+    );
+
+    const currentClassification =
+      accessPoint.classification !== undefined
+        ? {
+            label: accessPoint.classification,
+            value: accessPoint.classification,
+          }
+        : {
+            label: CHOOSE_CLASSIFICATION,
+            value: CHOOSE_CLASSIFICATION,
+          };
+
+    const classificationDocumentationLink = (): void => {
+      const docLink =
+        applicationStore.config.options.dataProductConfig?.classificationDoc;
+      if (docLink) {
+        applicationStore.navigationService.navigator.visitAddress(docLink);
+      }
+    };
+    return (
+      <div className="access-point-editor__classification">
+        {classificationOptions.length > 1 ? (
+          <div>
+            <CustomSelectorInput
+              className="explorer__new-element-modal__driver__dropdown"
+              options={classificationOptions}
+              onChange={updateAccessPointClassificationFromDropdown}
+              value={currentClassification}
+              darkMode={
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
+            />
+          </div>
+        ) : (
+          <textarea
+            className="panel__content__form__section__input"
+            spellCheck={false}
+            value={accessPoint.classification ?? ''}
+            onChange={updateAccessPointClassificationTextbox}
+            placeholder="Add classification"
+            style={{
+              overflow: 'hidden',
+              width: '125px',
+              resize: 'none',
+              padding: '0.25rem',
+            }}
+          />
+        )}
+        <Tooltip
+          title="Learn more about data classification scheme here."
+          arrow={true}
+          placement={'top'}
+        >
+          <button onClick={classificationDocumentationLink}>
+            <InfoCircleIcon />
+          </button>
+        </Tooltip>
+      </div>
+    );
+  },
+);
+
 export const LakehouseDataProductAcccessPointEditor = observer(
   (props: {
     accessPointState: LakehouseAccessPointState;
     isReadOnly: boolean;
   }) => {
     const { accessPointState } = props;
+    const editorStore = useEditorStore();
     const accessPoint = accessPointState.accessPoint;
-    const productEditorState = accessPointState.state;
+    const groupState = accessPointState.state;
     const lambdaEditorState = accessPointState.lambdaState;
-    const propertyHasParserError = productEditorState.accessPointStates
+    const propertyHasParserError = groupState.accessPointStates
       .filter(filterByType(LakehouseAccessPointState))
       .find((pm) => pm.lambdaState.parserError);
     const [editingDescription, setEditingDescription] = useState(false);
     const [isHovering, setIsHovering] = useState(false);
+    const ref = useRef<HTMLDivElement>(null);
 
-    const handleEdit = () => setEditingDescription(true);
-    const handleBlur = () => {
+    const handleDescriptionEdit = () => setEditingDescription(true);
+    const handleDescriptionBlur = () => {
       setEditingDescription(false);
       setIsHovering(false);
     };
-
     const handleMouseOver: React.MouseEventHandler<HTMLDivElement> = () => {
       setIsHovering(true);
     };
     const handleMouseOut: React.MouseEventHandler<HTMLDivElement> = () => {
       setIsHovering(false);
     };
-
     const updateAccessPointDescription: React.ChangeEventHandler<HTMLTextAreaElement> =
       action((event) => {
         accessPoint.description = event.target.value;
       });
-
     const updateAccessPointTargetEnvironment = action(
       (targetEnvironment: LakehouseTargetEnv) => {
         accessPoint.targetEnvironment = targetEnvironment;
       },
     );
 
+    const handleRemoveAccessPoint = (): void => {
+      editorStore.applicationStore.alertService.setActionAlertInfo({
+        message: `Are you sure you want to delete Access Point ${accessPoint.id}?`,
+        type: ActionAlertType.CAUTION,
+        actions: [
+          {
+            label: 'Confirm',
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            handler: (): void => {
+              groupState.deleteAccessPoint(accessPointState);
+            },
+          },
+          {
+            label: 'Cancel',
+            type: ActionAlertActionType.PROCEED,
+            default: true,
+          },
+        ],
+      });
+    };
+
+    //Drag and drop - reorder access points/move between groups
+    const handleHover = useCallback(
+      (item: AccessPointDragSource): void => {
+        const draggingProperty = item.accessPointState;
+        const hoveredProperty = accessPointState;
+        groupState.swapAccessPoints(draggingProperty, hoveredProperty);
+      },
+      [accessPointState, groupState],
+    );
+
+    const [{ isBeingDraggedAP }, dropConnector] = useDrop<
+      AccessPointDragSource,
+      void,
+      { isBeingDraggedAP: AccessPointState | undefined }
+    >(
+      () => ({
+        accept: [AP_DND_TYPE],
+        hover: (item) => handleHover(item),
+        collect: (monitor) => ({
+          isBeingDraggedAP: monitor.getItem<AccessPointDragSource | null>()
+            ?.accessPointState,
+        }),
+      }),
+      [handleHover],
+    );
+    const isBeingDragged = accessPoint === isBeingDraggedAP?.accessPoint;
+
+    const [, dragConnector, dragPreviewConnector] =
+      useDrag<AccessPointDragSource>(
+        () => ({
+          type: AP_DND_TYPE,
+          item: () => ({
+            accessPointState: accessPointState,
+          }),
+          collect: (monitor) => ({
+            isDragging: monitor.isDragging(),
+          }),
+        }),
+        [accessPointState],
+      );
+    dragConnector(ref);
+    dropConnector(ref);
+    useDragPreviewLayer(dragPreviewConnector);
+
     return (
-      <div
-        className={clsx('access-point-editor', {
-          backdrop__element: propertyHasParserError,
-        })}
+      <PanelDnDEntry
+        ref={ref}
+        placeholder={<div className="dnd__placeholder--light"></div>}
+        showPlaceholder={isBeingDragged}
       >
-        <div className="access-point-editor__metadata">
-          <div className={clsx('access-point-editor__name', {})}>
-            <div className="access-point-editor__name__label">
-              {accessPoint.id}
-            </div>
-          </div>
-          {editingDescription ? (
-            <textarea
-              className="panel__content__form__section__input"
-              spellCheck={false}
-              value={accessPoint.description ?? ''}
-              onChange={updateAccessPointDescription}
-              placeholder="Access Point description"
-              onBlur={handleBlur}
-              style={{
-                overflow: 'hidden',
-                resize: 'none',
-                padding: '0.25rem',
-              }}
-            />
-          ) : (
-            <div
-              onClick={handleEdit}
-              title="Click to edit access point description"
-              className="access-point-editor__description-container"
-            >
-              {accessPoint.description ? (
-                <HoverTextArea
-                  text={accessPoint.description}
-                  handleMouseOver={handleMouseOver}
-                  handleMouseOut={handleMouseOut}
+        <div
+          className={clsx('access-point-editor', {
+            backdrop__element: propertyHasParserError,
+          })}
+        >
+          <PanelEntryDragHandle
+            dragSourceConnector={ref}
+            isDragging={isBeingDragged}
+            title={'Drag this Access Point to another group'}
+            className="access-point-editor__dnd-handle"
+          />
+          <div style={{ flex: 1 }}>
+            <div className="access-point-editor__metadata">
+              <AccessPointTitle accessPoint={accessPoint} />
+              {editingDescription ? (
+                <textarea
+                  className="panel__content__form__section__input"
+                  spellCheck={false}
+                  value={accessPoint.description ?? ''}
+                  onChange={updateAccessPointDescription}
+                  placeholder="Access Point description"
+                  onBlur={handleDescriptionBlur}
+                  style={{
+                    overflow: 'hidden',
+                    resize: 'none',
+                    padding: '0.25rem',
+                  }}
                 />
               ) : (
                 <div
-                  className="access-point-editor__group-container__description--warning"
-                  onMouseOver={handleMouseOver}
-                  onMouseOut={handleMouseOut}
+                  onClick={handleDescriptionEdit}
+                  title="Click to edit access point description"
+                  className="access-point-editor__description-container"
                 >
-                  <WarningIcon />
-                  {AP_EMPTY_DESC_WARNING}
+                  {accessPoint.description ? (
+                    <HoverTextArea
+                      text={accessPoint.description}
+                      handleMouseOver={handleMouseOver}
+                      handleMouseOut={handleMouseOut}
+                    />
+                  ) : (
+                    <div
+                      className="access-point-editor__group-container__description--warning"
+                      onMouseOver={handleMouseOver}
+                      onMouseOut={handleMouseOut}
+                    >
+                      <WarningIcon />
+                      {AP_EMPTY_DESC_WARNING}
+                    </div>
+                  )}
+                  {isHovering && hoverIcon()}
                 </div>
               )}
+              <div className="access-point-editor__info">
+                {editorStore.applicationStore.config.options
+                  .dataProductConfig && (
+                  <AccessPointClassification
+                    accessPoint={accessPoint}
+                    groupState={groupState}
+                  />
+                )}
 
-              {isHovering && hoverIcon()}
-            </div>
-          )}
-          <div className="access-point-editor__info">
-            <div
-              className={clsx('access-point-editor__type')}
-              title={'Change target environment'}
-            >
-              <div className="access-point-editor__type__label">
-                {accessPoint.targetEnvironment}
-              </div>
-              <div
-                style={{
-                  background: 'transparent',
-                  height: '100%',
-                  alignItems: 'center',
-                  display: 'flex',
-                }}
-              >
-                <ControlledDropdownMenu
-                  className="access-point-editor__dropdown"
-                  content={
-                    <MenuContent>
-                      {Object.values(LakehouseTargetEnv).map((environment) => (
-                        <MenuContentItem
-                          key={environment}
-                          className="btn__dropdown-combo__option"
-                          onClick={() =>
-                            updateAccessPointTargetEnvironment(environment)
-                          }
-                        >
-                          {environment}
-                        </MenuContentItem>
-                      ))}
-                    </MenuContent>
-                  }
-                  menuProps={{
-                    anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
-                    transformOrigin: { vertical: 'top', horizontal: 'right' },
-                  }}
+                <div
+                  className={clsx('access-point-editor__type')}
+                  title={'Change target environment'}
                 >
-                  <CaretDownIcon />
-                </ControlledDropdownMenu>
+                  <div className="access-point-editor__type__label">
+                    {accessPoint.targetEnvironment}
+                  </div>
+                  <ControlledDropdownMenu
+                    className="access-point-editor__dropdown"
+                    content={
+                      <MenuContent>
+                        {Object.values(LakehouseTargetEnv).map(
+                          (environment) => (
+                            <MenuContentItem
+                              key={environment}
+                              className="btn__dropdown-combo__option"
+                              onClick={() =>
+                                updateAccessPointTargetEnvironment(environment)
+                              }
+                            >
+                              {environment}
+                            </MenuContentItem>
+                          ),
+                        )}
+                      </MenuContent>
+                    }
+                    menuProps={{
+                      anchorOrigin: {
+                        vertical: 'bottom',
+                        horizontal: 'right',
+                      },
+                      transformOrigin: {
+                        vertical: 'top',
+                        horizontal: 'right',
+                      },
+                    }}
+                  >
+                    <CaretDownIcon />
+                  </ControlledDropdownMenu>
+                </div>
+              </div>
+            </div>
+            <div className="access-point-editor__content">
+              <div className="access-point-editor__generic-entry">
+                <div className="access-point-editor__entry__container">
+                  <div className="access-point-editor__entry">
+                    <InlineLambdaEditor
+                      className={'access-point-editor__lambda-editor'}
+                      disabled={
+                        lambdaEditorState.val.state.state
+                          .isConvertingTransformLambdaObjects
+                      }
+                      lambdaEditorState={lambdaEditorState}
+                      forceBackdrop={Boolean(lambdaEditorState.parserError)}
+                    />
+                  </div>
+                </div>
+                <button
+                  className="access-point-editor__generic-entry__remove-btn"
+                  onClick={() => {
+                    handleRemoveAccessPoint();
+                  }}
+                  tabIndex={-1}
+                  title="Remove"
+                >
+                  <TimesIcon />
+                </button>
               </div>
             </div>
           </div>
         </div>
-        <div className="access-point-editor__content">
-          <div className="access-point-editor__generic-entry">
-            <div className="access-point-editor__entry__container">
-              <div className="access-point-editor__entry">
-                <InlineLambdaEditor
-                  className={'access-point-editor__lambda-editor'}
-                  disabled={
-                    lambdaEditorState.val.state.state
-                      .isConvertingTransformLambdaObjects
-                  }
-                  lambdaEditorState={lambdaEditorState}
-                  forceBackdrop={Boolean(lambdaEditorState.parserError)}
-                />
-              </div>
-            </div>
-            <button
-              className="access-point-editor__generic-entry__remove-btn"
-              onClick={() => {
-                productEditorState.deleteAccessPoint(accessPointState);
-              }}
-              tabIndex={-1}
-              title="Remove"
-            >
-              <TimesIcon />
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  },
-);
-
-const DataProductEditorSplashScreen = observer(
-  (props: { dataProductEditorState: DataProductEditorState }) => {
-    const { dataProductEditorState } = props;
-    const logoWidth = 280;
-    const logoHeight = 270;
-    const [showLogo, setShowLogo] = useState(false);
-    const { ref, height, width } = useResizeDetector<HTMLDivElement>();
-
-    useEffect(() => {
-      setShowLogo((width ?? 0) > logoWidth && (height ?? 0) > logoHeight);
-    }, [height, width]);
-
-    return (
-      <div ref={ref} className="data-product-editor__splash-screen">
-        <div
-          onClick={() => dataProductEditorState.setAccessPointGroupModal(true)}
-          className="data-product-editor__splash-screen__label"
-        >
-          Add Access Point Group
-        </div>
-        <div className="data-product-editor__splash-screen__spacing"></div>
-        <div
-          onClick={() => dataProductEditorState.setAccessPointGroupModal(true)}
-          title="Add new Access Point Group"
-          className={clsx('data-product-editor__splash-screen__logo', {
-            'data-product-editor__splash-screen__logo--hidden': !showLogo,
-          })}
-        >
-          <AccessPointIcon />
-        </div>
-      </div>
+      </PanelDnDEntry>
     );
   },
 );
@@ -708,14 +612,54 @@ const DataProductDeploymentResponseModal = observer(
   },
 );
 
-const AccessPointGroupSection = observer(
+const AccessPointGroupPublicToggle = observer(
+  (props: { groupState: AccessPointGroupState }) => {
+    const { groupState } = props;
+
+    const handleSwitchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      const isChecked = event.target.checked;
+      if (isChecked && groupState.publicStereotype) {
+        annotatedElement_addStereotype(
+          groupState.value,
+          StereotypeExplicitReference.create(groupState.publicStereotype),
+        );
+      } else if (groupState.containsPublicStereotype) {
+        annotatedElement_deleteStereotype(
+          groupState.value,
+          groupState.containsPublicStereotype,
+        );
+      }
+    };
+    return (
+      <div className="access-point-editor__toggle">
+        <Switch
+          checked={Boolean(groupState.containsPublicStereotype)}
+          onChange={handleSwitchChange}
+          sx={{
+            '& .MuiSwitch-track': {
+              backgroundColor: groupState.containsPublicStereotype
+                ? 'default'
+                : 'var(--color-light-grey-400)',
+            },
+          }}
+        />
+        <BuildingIcon />
+        Enterprise Data. Anyone at the firm can access this without approvals.
+      </div>
+    );
+  },
+);
+
+const AccessPointGroupEditor = observer(
   (props: { groupState: AccessPointGroupState; isReadOnly: boolean }) => {
     const { groupState, isReadOnly } = props;
     const editorStore = useEditorStore();
     const productEditorState = groupState.state;
     const [editingDescription, setEditingDescription] = useState(false);
     const [isHoveringDescription, setIsHoveringDescription] = useState(false);
-    const [editingName, setEditingName] = useState(false);
+    const [editingName, setEditingName] = useState(
+      groupState.value.id === newNamePlaceholder,
+    );
     const [isHoveringName, setIsHoveringName] = useState(false);
 
     const handleDescriptionEdit = () => setEditingDescription(true);
@@ -739,8 +683,10 @@ const AccessPointGroupSection = observer(
 
     const handleNameEdit = () => setEditingName(true);
     const handleNameBlur = () => {
-      setEditingName(false);
-      setIsHoveringName(false);
+      if (groupState.value.id !== newNamePlaceholder) {
+        setEditingName(false);
+        setIsHoveringName(false);
+      }
     };
     const handleMouseOverName: React.MouseEventHandler<HTMLDivElement> = () => {
       setIsHoveringName(true);
@@ -749,38 +695,45 @@ const AccessPointGroupSection = observer(
       setIsHoveringName(false);
     };
     const updateGroupName = (val: string): void => {
-      if (val) {
+      if (val && !val.includes(' ')) {
         accessPointGroup_setName(groupState.value, val);
       }
     };
 
     const handleRemoveAccessPointGroup = (): void => {
       editorStore.applicationStore.alertService.setActionAlertInfo({
-        message: `Deleting access point group ${groupState.value.id} will permanently remove it and all associated access points. Are you sure you want to proceed?`,
+        message: `Are you sure you want to delete Access Point Group ${groupState.value.id} and all of its Access Points?`,
         type: ActionAlertType.CAUTION,
         actions: [
           {
-            label: 'Cancel',
-            type: ActionAlertActionType.PROCEED,
-            default: true,
-          },
-          {
-            label: 'Proceed',
+            label: 'Confirm',
             type: ActionAlertActionType.PROCEED_WITH_CAUTION,
             handler: (): void => {
               productEditorState.deleteAccessPointGroup(groupState);
             },
           },
+          {
+            label: 'Cancel',
+            type: ActionAlertActionType.PROCEED,
+            default: true,
+          },
         ],
       });
     };
 
-    const openNewModal = () => {
-      productEditorState.setEditingGroupState(groupState);
-      productEditorState.setAccessPointModal(true);
+    const handleAddAccessPoint = () => {
+      productEditorState.addAccessPoint(
+        newNamePlaceholder,
+        undefined,
+        productEditorState.selectedGroupState ?? groupState,
+      );
     };
+
     return (
-      <div className="access-point-editor__group-container">
+      <div
+        className="access-point-editor__group-container"
+        data-testid={LEGEND_STUDIO_TEST_ID.ACCESS_POINT_GROUP_EDITOR}
+      >
         <div className="access-point-editor__group-container__title-editor">
           {editingName ? (
             <textarea
@@ -794,6 +747,11 @@ const AccessPointGroupSection = observer(
                 overflow: 'hidden',
                 resize: 'none',
                 padding: '0.25rem',
+                borderColor:
+                  groupState.value.id === newNamePlaceholder
+                    ? 'var(--color-red-300)'
+                    : 'transparent',
+                borderWidth: 'thin',
               }}
             />
           ) : (
@@ -815,7 +773,6 @@ const AccessPointGroupSection = observer(
           <button
             className="access-point-editor__generic-entry__remove-btn--group"
             onClick={() => {
-              // productEditorState.deleteAccessPointGroup(groupState);
               handleRemoveAccessPointGroup();
             }}
             tabIndex={-1}
@@ -859,21 +816,23 @@ const AccessPointGroupSection = observer(
                   onMouseOut={handleMouseOutDescription}
                 >
                   <WarningIcon />
-                  Describe this access point group to clarify what users are
-                  requesting access to. Entitlements are provisioned at the
-                  group level.
+                  Users request access at the access point group level. Click
+                  here to add a meaningful description to guide users.
                 </div>
               )}
               {isHoveringDescription && hoverIcon()}
             </div>
           )}
         </div>
+        {editorStore.applicationStore.config.options.dataProductConfig && (
+          <AccessPointGroupPublicToggle groupState={groupState} />
+        )}
         <PanelHeader className="panel__header--access-point">
           <div className="panel__header__title">Access Points</div>
           <PanelHeaderActions>
             <PanelHeaderActionItem
               className="panel__header__action"
-              onClick={openNewModal}
+              onClick={handleAddAccessPoint}
               disabled={isReadOnly}
               title="Create new access point"
             >
@@ -881,21 +840,501 @@ const AccessPointGroupSection = observer(
             </PanelHeaderActionItem>
           </PanelHeaderActions>
         </PanelHeader>
-        {groupState.accessPointStates
-          .filter(filterByType(LakehouseAccessPointState))
-          .map((apState) => (
-            <LakehouseDataProductAcccessPointEditor
-              key={apState.accessPoint.id}
-              isReadOnly={isReadOnly}
-              accessPointState={apState}
-            />
-          ))}
-        {productEditorState.accessPointModal && (
-          <NewAccessPointAccessPoint
-            dataProductEditorState={productEditorState}
+        {groupState.accessPointStates.length === 0 && (
+          <div className="access-point-editor__group-container__description--warning">
+            <WarningIcon />
+            This group needs at least one access point defined.
+          </div>
+        )}
+        <div style={{ gap: '1rem', display: 'flex', flexDirection: 'column' }}>
+          {groupState.accessPointStates
+            .filter(filterByType(LakehouseAccessPointState))
+            .map((apState) => (
+              <LakehouseDataProductAcccessPointEditor
+                key={apState.uuid}
+                isReadOnly={isReadOnly}
+                accessPointState={apState}
+              />
+            ))}
+        </div>
+      </div>
+    );
+  },
+);
+
+const GroupTabRenderer = observer(
+  (props: {
+    group: AccessPointGroupState;
+    dataProductEditorState: DataProductEditorState;
+  }) => {
+    const { group, dataProductEditorState } = props;
+    const changeGroup = (newGroup: AccessPointGroupState): void => {
+      dataProductEditorState.setSelectedGroupState(newGroup);
+    };
+    const selectedGroupState = dataProductEditorState.selectedGroupState;
+    const ref = useRef<HTMLDivElement>(null);
+
+    const groupError = (): boolean => {
+      return (
+        group.accessPointStates.length === 0 ||
+        group.value.id === newNamePlaceholder ||
+        Boolean(
+          group.accessPointStates.find(
+            (apState) => apState.accessPoint.id === newNamePlaceholder,
+          ),
+        )
+      );
+    };
+
+    //Drag and Drop - reorder groups and accept access points from other groups
+    const handleHover = useCallback(
+      (item: APGDragSource): void => {
+        const draggingProperty = item.groupState;
+        const hoveredProperty = group;
+        dataProductEditorState.swapAccessPointGroups(
+          draggingProperty,
+          hoveredProperty,
+        );
+      },
+      [group, dataProductEditorState],
+    );
+
+    const [{ isOver }, dropConnector] = useDrop<
+      APGDragSource | AccessPointDragSource,
+      void,
+      {
+        isOver: boolean;
+      }
+    >(
+      () => ({
+        accept: [AP_GROUP_DND_TYPE, AP_DND_TYPE],
+        hover: (item, monitor) => {
+          const itemType = monitor.getItemType();
+          if (itemType === AP_GROUP_DND_TYPE) {
+            const groupItem = item as APGDragSource;
+            handleHover(groupItem);
+          }
+        },
+        drop: (item, monitor) => {
+          const itemType = monitor.getItemType();
+          if (itemType === AP_DND_TYPE) {
+            const accessPointItem = item as AccessPointDragSource;
+            group.addAccessPoint(accessPointItem.accessPointState);
+            accessPointItem.accessPointState.state.deleteAccessPoint(
+              accessPointItem.accessPointState,
+            );
+            accessPointItem.accessPointState.changeGroupState(group);
+          }
+        },
+        collect: (monitor) => ({
+          isBeingDraggedAPG:
+            monitor.getItemType() === AP_GROUP_DND_TYPE
+              ? monitor.getItem<APGDragSource | null>()?.groupState
+              : undefined,
+          isBeingDraggedAP:
+            monitor.getItemType() === AP_DND_TYPE
+              ? monitor.getItem<AccessPointDragSource | null>()
+                  ?.accessPointState
+              : undefined,
+          isOver: monitor.isOver(),
+        }),
+      }),
+      [handleHover],
+    );
+
+    const [, dragConnector, dragPreviewConnector] = useDrag<APGDragSource>(
+      () => ({
+        type: AP_GROUP_DND_TYPE,
+        item: () => ({
+          groupState: group,
+        }),
+        collect: (monitor) => ({
+          isDragging: monitor.isDragging(),
+        }),
+      }),
+      [group],
+    );
+    dragConnector(ref);
+    dropConnector(ref);
+    dragPreviewConnector(ref);
+
+    return (
+      <div
+        ref={ref}
+        key={group.uuid}
+        onClick={(): void => changeGroup(group)}
+        className={clsx('service-editor__tab', {
+          'service-editor__tab--active': group === selectedGroupState,
+        })}
+        style={{
+          backgroundColor: isOver
+            ? 'var(--color-dark-grey-100)'
+            : 'var(--color-dark-grey-50)',
+        }}
+      >
+        {group.value.id}
+        &nbsp;
+        {groupError() && (
+          <ErrorWarnIcon
+            title="Resolve Access Point Group error(s)"
+            style={{ color: 'var(--color-red-300)' }}
           />
         )}
       </div>
+    );
+  },
+);
+
+const AccessPointGroupTab = observer(
+  (props: {
+    dataProductEditorState: DataProductEditorState;
+    isReadOnly: boolean;
+  }) => {
+    const { dataProductEditorState, isReadOnly } = props;
+    const groupStates = dataProductEditorState.accessPointGroupStates;
+    const selectedGroupState = dataProductEditorState.selectedGroupState;
+    const handleAddAccessPointGroup = () => {
+      const newGroup =
+        dataProductEditorState.createGroupAndAdd(newNamePlaceholder);
+      dataProductEditorState.setSelectedGroupState(newGroup);
+    };
+
+    const AccessPointDragPreviewLayer: React.FC = () => (
+      <DragPreviewLayer
+        labelGetter={(item: AccessPointDragSource): string => {
+          return item.accessPointState.accessPoint.id;
+        }}
+        types={[AP_DND_TYPE]}
+      />
+    );
+
+    const disableAddGroup = Boolean(
+      dataProductEditorState.accessPointGroupStates.find(
+        (group) => group.value.id === newNamePlaceholder,
+      ),
+    );
+
+    return (
+      <div className="panel" style={{ overflow: 'visible' }}>
+        <AccessPointDragPreviewLayer />
+        <div
+          className="panel__content__form__section__header__label"
+          style={{ paddingLeft: '1rem' }}
+        >
+          Access Point Groups
+        </div>
+        <PanelHeader>
+          <div className="uml-element-editor__tabs">
+            {groupStates.map((group) => {
+              return (
+                <GroupTabRenderer
+                  key={group.uuid}
+                  group={group}
+                  dataProductEditorState={dataProductEditorState}
+                />
+              );
+            })}
+            <PanelHeaderActionItem
+              className="panel__header__action"
+              onClick={handleAddAccessPointGroup}
+              disabled={isReadOnly || disableAddGroup}
+              title={
+                disableAddGroup
+                  ? 'Provide all group names'
+                  : 'Create new access point group'
+              }
+            >
+              <PlusIcon />
+            </PanelHeaderActionItem>
+          </div>
+
+          <PanelHeaderActions></PanelHeaderActions>
+        </PanelHeader>
+        <PanelContent>
+          {selectedGroupState && (
+            <AccessPointGroupEditor
+              key={selectedGroupState.uuid}
+              groupState={selectedGroupState}
+              isReadOnly={isReadOnly}
+            />
+          )}
+        </PanelContent>
+        {dataProductEditorState.deployResponse && (
+          <DataProductDeploymentResponseModal state={dataProductEditorState} />
+        )}
+      </div>
+    );
+  },
+);
+
+const DataProductSidebar = observer(
+  (props: { dataProductEditorState: DataProductEditorState }) => {
+    const { dataProductEditorState } = props;
+    const sidebarTabs = [
+      {
+        label: DATA_PRODUCT_TAB.HOME,
+        icon: <HomeIcon />,
+      },
+      {
+        label: DATA_PRODUCT_TAB.APG,
+        title: 'Access Point Groups',
+        icon: <GroupWorkIcon />,
+      },
+      {
+        label: DATA_PRODUCT_TAB.SUPPORT,
+        icon: <QuestionCircleIcon />,
+      },
+    ];
+    return (
+      <div
+        className="data-space__viewer__activity-bar"
+        style={{ position: 'static', maxHeight: '100%' }}
+      >
+        <div className="data-space__viewer__activity-bar__items">
+          {sidebarTabs.map((activity) => (
+            <button
+              key={activity.label}
+              className={clsx('data-space__viewer__activity-bar__item', {
+                'data-space__viewer__activity-bar__item--active':
+                  dataProductEditorState.selectedTab === activity.label,
+              })}
+              onClick={() =>
+                dataProductEditorState.setSelectedTab(activity.label)
+              }
+              tabIndex={-1}
+              title={activity.title ?? activity.label}
+              style={{
+                flexDirection: 'column',
+                fontSize: '12px',
+                margin: '1rem 0rem',
+              }}
+            >
+              {activity.icon}
+              {activity.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  },
+);
+
+const HomeTab = observer(
+  (props: { product: DataProduct; isReadOnly: boolean }) => {
+    const { product, isReadOnly } = props;
+    const updateDataProductTitle = (val: string | undefined): void => {
+      dataProduct_setTitle(product, val ?? '');
+    };
+    const updateDataProductDescription: ChangeEventHandler<
+      HTMLTextAreaElement
+    > = (event) => {
+      dataProduct_setDescription(product, event.target.value);
+    };
+
+    return (
+      <div style={{ flexDirection: 'column', display: 'flex' }}>
+        <PanelFormTextField
+          name="Title"
+          value={product.title}
+          prompt="Provide a descriptive name for the Data Product to appear in Marketplace."
+          update={updateDataProductTitle}
+          placeholder="Enter title"
+        />
+        <div style={{ margin: '1rem' }}>
+          <div className="panel__content__form__section__header__label">
+            Description
+          </div>
+          <div
+            className="panel__content__form__section__header__prompt"
+            style={{
+              color:
+                product.description === '' || product.description === undefined
+                  ? 'var(--color-red-300)'
+                  : 'var(--color-light-grey-400)',
+            }}
+          >
+            Clearly describe the purpose, content, and intended use of the Data
+            Product.
+          </div>
+          <textarea
+            className="panel__content__form__section__textarea"
+            spellCheck={false}
+            disabled={isReadOnly}
+            value={product.description}
+            onChange={updateDataProductDescription}
+            style={{
+              padding: '0.5rem',
+              width: '45rem',
+              maxWidth: '45rem !important',
+              borderColor:
+                product.description === '' || product.description === undefined
+                  ? 'var(--color-red-300)'
+                  : 'transparent',
+            }}
+          />
+        </div>
+      </div>
+    );
+  },
+);
+
+const SupportTab = observer(
+  (props: { product: DataProduct; isReadOnly: boolean }) => {
+    const { product, isReadOnly } = props;
+    const updateSupportInfoDocumentationUrl = (
+      val: string | undefined,
+    ): void => {
+      dataProduct_setSupportInfoIfAbsent(product);
+      if (product.supportInfo) {
+        supportInfo_setDocumentationUrl(product.supportInfo, val ?? '');
+      }
+    };
+
+    const updateSupportInfoWebsite = (val: string | undefined): void => {
+      dataProduct_setSupportInfoIfAbsent(product);
+      if (product.supportInfo) {
+        supportInfo_setWebsite(product.supportInfo, val ?? '');
+      }
+    };
+
+    const updateSupportInfoFaqUrl = (val: string | undefined): void => {
+      dataProduct_setSupportInfoIfAbsent(product);
+      if (product.supportInfo) {
+        supportInfo_setFaqUrl(product.supportInfo, val ?? '');
+      }
+    };
+
+    const updateSupportInfoSupportUrl = (val: string | undefined): void => {
+      dataProduct_setSupportInfoIfAbsent(product);
+      if (product.supportInfo) {
+        supportInfo_setSupportUrl(product.supportInfo, val ?? '');
+      }
+    };
+
+    const handleSupportInfoEmailAdd = (
+      address: string,
+      title: string,
+    ): void => {
+      dataProduct_setSupportInfoIfAbsent(product);
+      if (product.supportInfo) {
+        supportInfo_addEmail(product.supportInfo, new Email(address, title));
+      }
+    };
+
+    const handleSupportInfoEmailRemove = (email: Email): void => {
+      if (product.supportInfo) {
+        supportInfo_deleteEmail(product.supportInfo, email);
+      }
+    };
+
+    const SupportEmailComponent = observer(
+      (supportEmailProps: { item: Email }): React.ReactElement => {
+        const { item } = supportEmailProps;
+
+        return (
+          <div className="panel__content__form__section__list__item__rows">
+            <div className="row">
+              <label className="label">Address</label>
+              <div className="textbox">{item.address}</div>
+            </div>
+            <div className="row">
+              <label className="label">Title</label>
+              <div className="textbox">{item.title}</div>
+            </div>
+          </div>
+        );
+      },
+    );
+
+    const NewSupportEmailComponent = observer(
+      (newSupportEmailProps: { onFinishEditing: () => void }) => {
+        const { onFinishEditing } = newSupportEmailProps;
+        const [address, setAddress] = useState('');
+        const [title, setTitle] = useState('');
+
+        return (
+          <div className="data-product-editor__support-info__new-email">
+            <div className="panel__content__form__section__list__new-item__input">
+              <input
+                className="input input-group__input panel__content__form__section__input input--dark"
+                type="email"
+                placeholder="Enter email"
+                value={address}
+                onChange={(event) => {
+                  setAddress(event.target.value);
+                }}
+              />
+            </div>
+            <div className="panel__content__form__section__list__new-item__input">
+              <input
+                className="input input-group__input panel__content__form__section__input input--dark"
+                type="title"
+                placeholder="Enter title"
+                value={title}
+                onChange={(event) => {
+                  setTitle(event.target.value);
+                }}
+              />
+            </div>
+            <button
+              className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
+              onClick={() => {
+                handleSupportInfoEmailAdd(address, title);
+                setAddress('');
+                setTitle('');
+                onFinishEditing();
+              }}
+            >
+              Save
+            </button>
+          </div>
+        );
+      },
+    );
+
+    return (
+      <PanelFormSection>
+        <div className="panel__content__form__section__header__label">
+          Support Information
+        </div>
+        <div className="panel__content__form__section__header__prompt">
+          Configure support information for this Lakehouse Data Product.
+        </div>
+        <PanelFormTextField
+          name="Documentation URL"
+          value={product.supportInfo?.documentationUrl ?? ''}
+          update={updateSupportInfoDocumentationUrl}
+          placeholder="Enter Documentation URL"
+        />
+        <PanelFormTextField
+          name="Website"
+          value={product.supportInfo?.website}
+          update={updateSupportInfoWebsite}
+          placeholder="Enter Website"
+        />
+        <PanelFormTextField
+          name="FAQ URL"
+          value={product.supportInfo?.faqUrl}
+          update={updateSupportInfoFaqUrl}
+          placeholder="Enter FAQ URL"
+        />
+        <PanelFormTextField
+          name="Support URL"
+          value={product.supportInfo?.supportUrl}
+          update={updateSupportInfoSupportUrl}
+          placeholder="Enter Support URL"
+        />
+        <ListEditor
+          title="Emails"
+          items={product.supportInfo?.emails}
+          keySelector={(email: Email) => email.address + email.title}
+          ItemComponent={SupportEmailComponent}
+          NewItemComponent={NewSupportEmailComponent}
+          handleRemoveItem={handleSupportInfoEmailRemove}
+          isReadOnly={isReadOnly}
+          emptyMessage="No emails specified"
+        />
+      </PanelFormSection>
     );
   },
 );
@@ -905,14 +1344,9 @@ export const DataProductEditor = observer(() => {
   const dataProductEditorState =
     editorStore.tabManagerState.getCurrentEditorState(DataProductEditorState);
   const product = dataProductEditorState.product;
-  const accessPointStates = dataProductEditorState.accessPointGroupStates
-    .map((e) => e.accessPointStates)
-    .flat();
   const isReadOnly = dataProductEditorState.isReadOnly;
-  const openNewModal = () => {
-    dataProductEditorState.setAccessPointGroupModal(true);
-  };
   const auth = useAuth();
+
   const deployDataProduct = (): void => {
     // Trigger OAuth flow if not authenticated
     if (!auth.isAuthenticated) {
@@ -937,42 +1371,25 @@ export const DataProductEditor = observer(() => {
     }
   };
 
-  const updateDataProductTitle = (val: string | undefined): void => {
-    dataProduct_setTitle(product, val ?? '');
-  };
-  const updateDataProductDescription: ChangeEventHandler<
-    HTMLTextAreaElement
-  > = (event) => {
-    dataProduct_setDescription(product, event.target.value);
-  };
-
-  const updateSupportInfoDocumentationUrl = (val: string | undefined): void => {
-    dataProduct_setSupportInfoIfAbsent(product);
-    if (product.supportInfo) {
-      supportInfo_setDocumentationUrl(product.supportInfo, val ?? '');
+  const selectedActivity = dataProductEditorState.selectedTab;
+  const renderActivivtyBarTab = (): React.ReactNode => {
+    switch (selectedActivity) {
+      case DATA_PRODUCT_TAB.HOME:
+        return <HomeTab product={product} isReadOnly={isReadOnly} />;
+      case DATA_PRODUCT_TAB.SUPPORT:
+        return <SupportTab product={product} isReadOnly={isReadOnly} />;
+      case DATA_PRODUCT_TAB.APG:
+        return (
+          <AccessPointGroupTab
+            dataProductEditorState={dataProductEditorState}
+            isReadOnly={isReadOnly}
+          />
+        );
+      default:
+        return null;
     }
   };
 
-  const updateSupportInfoWebsite = (val: string | undefined): void => {
-    dataProduct_setSupportInfoIfAbsent(product);
-    if (product.supportInfo) {
-      supportInfo_setWebsite(product.supportInfo, val ?? '');
-    }
-  };
-
-  const updateSupportInfoFaqUrl = (val: string | undefined): void => {
-    dataProduct_setSupportInfoIfAbsent(product);
-    if (product.supportInfo) {
-      supportInfo_setFaqUrl(product.supportInfo, val ?? '');
-    }
-  };
-
-  const updateSupportInfoSupportUrl = (val: string | undefined): void => {
-    dataProduct_setSupportInfoIfAbsent(product);
-    if (product.supportInfo) {
-      supportInfo_setSupportUrl(product.supportInfo, val ?? '');
-    }
-  };
   useApplicationNavigationContext(
     LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.DATA_PRODUCT_EDITOR,
   );
@@ -994,84 +1411,6 @@ export const DataProductEditor = observer(() => {
     editorStore.applicationStore.alertUnhandledError,
     dataProductEditorState,
   ]);
-
-  const handleSupportInfoEmailAdd = (address: string, title: string): void => {
-    dataProduct_setSupportInfoIfAbsent(product);
-    if (product.supportInfo) {
-      supportInfo_addEmail(product.supportInfo, new Email(address, title));
-    }
-  };
-
-  const handleSupportInfoEmailRemove = (email: Email): void => {
-    if (product.supportInfo) {
-      supportInfo_deleteEmail(product.supportInfo, email);
-    }
-  };
-
-  const SupportEmailComponent = observer(
-    (props: { item: Email }): React.ReactElement => {
-      const { item } = props;
-
-      return (
-        <div className="panel__content__form__section__list__item__rows">
-          <div className="row">
-            <label className="label">Address</label>
-            <div className="textbox">{item.address}</div>
-          </div>
-          <div className="row">
-            <label className="label">Title</label>
-            <div className="textbox">{item.title}</div>
-          </div>
-        </div>
-      );
-    },
-  );
-
-  const NewSupportEmailComponent = observer(
-    (props: { onFinishEditing: () => void }) => {
-      const { onFinishEditing } = props;
-      const [address, setAddress] = useState('');
-      const [title, setTitle] = useState('');
-
-      return (
-        <div className="data-product-editor__support-info__new-email">
-          <div className="panel__content__form__section__list__new-item__input">
-            <input
-              className="input input-group__input panel__content__form__section__input input--dark"
-              type="email"
-              placeholder="Enter email"
-              value={address}
-              onChange={(event) => {
-                setAddress(event.target.value);
-              }}
-            />
-          </div>
-          <div className="panel__content__form__section__list__new-item__input">
-            <input
-              className="input input-group__input panel__content__form__section__input input--dark"
-              type="title"
-              placeholder="Enter title"
-              value={title}
-              onChange={(event) => {
-                setTitle(event.target.value);
-              }}
-            />
-          </div>
-          <button
-            className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-            onClick={() => {
-              handleSupportInfoEmailAdd(address, title);
-              setAddress('');
-              setTitle('');
-              onFinishEditing();
-            }}
-          >
-            Save
-          </button>
-        </div>
-      );
-    },
-  );
 
   return (
     <div className="data-product-editor">
@@ -1100,127 +1439,14 @@ export const DataProductEditor = observer(() => {
             </div>
           </PanelHeaderActions>
         </div>
-        <div className="panel" style={{ padding: '1rem', flex: 0 }}>
-          <PanelFormTextField
-            name="Title"
-            value={product.title}
-            prompt="Provide a title for this Lakehouse Data Product."
-            update={updateDataProductTitle}
-            placeholder="Enter title"
-          />
-          <div style={{ margin: '1rem' }}>
-            <div className="panel__content__form__section__header__label">
-              Description
-            </div>
-            <div className="panel__content__form__section__header__prompt">
-              Provide a description for this Lakehouse Data Product.
-            </div>
-            <textarea
-              className="panel__content__form__section__textarea"
-              spellCheck={false}
-              disabled={isReadOnly}
-              value={product.description}
-              onChange={updateDataProductDescription}
-              style={{
-                padding: '0.5rem',
-                width: '45rem',
-                maxWidth: '45rem !important',
-              }}
-            />
-          </div>
 
-          <PanelFormSection>
-            <div className="panel__content__form__section__header__label">
-              Support Information
-            </div>
-            <div className="panel__content__form__section__header__prompt">
-              Configure support information for this Lakehouse Data Product.
-            </div>
-            <PanelFormTextField
-              name="Documentation URL"
-              value={product.supportInfo?.documentationUrl ?? ''}
-              update={updateSupportInfoDocumentationUrl}
-              placeholder="Enter Documentation URL"
-            />
-            <PanelFormTextField
-              name="Website"
-              value={product.supportInfo?.website}
-              update={updateSupportInfoWebsite}
-              placeholder="Enter Website"
-            />
-            <PanelFormTextField
-              name="FAQ URL"
-              value={product.supportInfo?.faqUrl}
-              update={updateSupportInfoFaqUrl}
-              placeholder="Enter FAQ URL"
-            />
-            <PanelFormTextField
-              name="Support URL"
-              value={product.supportInfo?.supportUrl}
-              update={updateSupportInfoSupportUrl}
-              placeholder="Enter Support URL"
-            />
-            <ListEditor
-              title="Emails"
-              items={product.supportInfo?.emails}
-              keySelector={(email: Email) => email.address + email.title}
-              ItemComponent={SupportEmailComponent}
-              NewItemComponent={NewSupportEmailComponent}
-              handleRemoveItem={handleSupportInfoEmailRemove}
-              isReadOnly={isReadOnly}
-              emptyMessage="No emails specified"
-            />
-          </PanelFormSection>
-        </div>
-        <div className="panel" style={{ overflow: 'auto' }}>
-          <PanelHeader>
-            <div className="panel__header__title">
-              <div className="panel__header__title__label">
-                access point groups
-              </div>
-            </div>
-            <PanelHeaderActions>
-              <PanelHeaderActionItem
-                className="panel__header__action"
-                onClick={openNewModal}
-                disabled={isReadOnly}
-                title="Create new access point group"
-              >
-                <PlusIcon />
-              </PanelHeaderActionItem>
-            </PanelHeaderActions>
-          </PanelHeader>
-          <PanelContent>
-            <div
-              style={{ overflow: 'auto', margin: '1rem', marginLeft: '1.5rem' }}
-            >
-              {dataProductEditorState.accessPointGroupStates.map(
-                (groupState) =>
-                  groupState.accessPointStates.length > 0 && (
-                    <AccessPointGroupSection
-                      key={groupState.uuid}
-                      groupState={groupState}
-                      isReadOnly={isReadOnly}
-                    />
-                  ),
-              )}
-            </div>
-            {!accessPointStates.length && (
-              <DataProductEditorSplashScreen
-                dataProductEditorState={dataProductEditorState}
-              />
-            )}
-          </PanelContent>
-          {dataProductEditorState.accessPointGroupModal && (
-            <NewAccessPointGroupModal
-              dataProductEditorState={dataProductEditorState}
-            />
-          )}
-          {dataProductEditorState.deployResponse && (
-            <DataProductDeploymentResponseModal
-              state={dataProductEditorState}
-            />
-          )}
+        <div
+          className="panel"
+          style={{ padding: '1rem', flexDirection: 'row' }}
+        >
+          <DataProductSidebar dataProductEditorState={dataProductEditorState} />
+
+          {renderActivivtyBarTab()}
         </div>
       </div>
     </div>
