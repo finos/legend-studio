@@ -155,6 +155,7 @@ export class DataCubeViewState {
       );
       snapshot.finalize();
       if (
+        this.snapshotService.getHistory().length === 0 ||
         snapshot.hashCode !== this.snapshotService.getCurrentSnapshot().hashCode
       ) {
         this.snapshotService.broadcastSnapshot(snapshot);
