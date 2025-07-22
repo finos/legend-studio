@@ -69,32 +69,14 @@
 
     &__title {
       @include flexCenter;
+      @include ellipsisTextOverflow;
 
       height: 5rem;
-      border-radius: 0.5rem;
       padding: 0 3rem;
-      background: var(--color-blue-200);
       max-width: 50vw;
-
-      &__label {
-        @include ellipsisTextOverflow;
-
-        font-size: 2.4rem;
-        font-weight: 500;
-        color: var(--color-light-grey-0);
-      }
-
-      &__verified-badge {
-        @include flexCenter;
-
-        margin-left: 1rem;
-        width: 3rem;
-
-        svg {
-          font-size: 2.4rem;
-          color: var(--color-light-grey-0);
-        }
-      }
+      font-size: 2.4rem;
+      font-weight: 500;
+      color: var(--color-light-grey-0);
     }
 
     &__actions {
