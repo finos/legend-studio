@@ -122,7 +122,7 @@ export class DataProductState {
     return origin instanceof V1_SdlcDeploymentDataProductOrigin
       ? origin.version
       : origin instanceof V1_AdHocDeploymentDataProductOrigin
-        ? 'AdHoc'
+        ? 'Sandbox'
         : undefined;
   }
 
