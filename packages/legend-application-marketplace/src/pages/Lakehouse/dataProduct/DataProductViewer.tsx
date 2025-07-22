@@ -22,7 +22,6 @@ import { CaretUpIcon, clsx, OpenIcon, VerifiedIcon } from '@finos/legend-art';
 import { DATA_PRODUCT_VIEWER_ACTIVITY_MODE } from '../../../stores/lakehouse/DataProductViewerNavigation.js';
 import { DataProductPlaceholderPanel } from './DataProductHolder.js';
 import { DataProductViewerActivityBar } from './DataProductViewerActivityBar.js';
-import { useApplicationStore } from '@finos/legend-application';
 import { DataProductWiki } from './DataProductWiki.js';
 import { Button } from '@mui/material';
 import { isSnapshotVersion } from '@finos/legend-server-depot';
@@ -38,7 +37,6 @@ const DataProductHeader = observer(
     showFullHeader: boolean;
   }) => {
     const { dataProductViewerState, showFullHeader } = props;
-    const applicationStore = useApplicationStore();
     const headerRef = useRef<HTMLDivElement>(null);
     const dataProduct = dataProductViewerState.product;
     const environmentClassification =
@@ -105,9 +103,7 @@ const DataProductHeader = observer(
             {origin instanceof V1_SdlcDeploymentDataProductOrigin && (
               <Button
                 onClick={() => {
-                  dataProductViewerState
-                    .viewDataProductSource()
-                    ?.catch(applicationStore.alertUnhandledError);
+                  dataProductViewerState.viewDataProductSource();
                 }}
                 title="View SDLC Project"
                 className={clsx('data-space__viewer__header__type__version', {
