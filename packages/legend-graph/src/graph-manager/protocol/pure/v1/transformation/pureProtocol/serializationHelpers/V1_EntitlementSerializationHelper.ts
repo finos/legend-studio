@@ -434,7 +434,7 @@ const V1_serializeDataProductOrigin = (
   throw new UnsupportedOperationError();
 };
 
-export const V1_LakehouseEnvironmentModelSchema = createModelSchema(
+export const V1_EntitlementsLakehouseEnvironmentModelSchema = createModelSchema(
   V1_EntitlementsLakehouseEnvironment,
   {
     producerEnvironmentName: primitive(),
@@ -442,7 +442,7 @@ export const V1_LakehouseEnvironmentModelSchema = createModelSchema(
   },
 );
 
-export const V1_EntitlementDdataProductDetailsModelSchema = createModelSchema(
+export const V1_EntitlementsDataProductDetailsModelSchema = createModelSchema(
   V1_EntitlementsDataProductDetails,
   {
     id: primitive(),
@@ -453,7 +453,9 @@ export const V1_EntitlementDdataProductDetailsModelSchema = createModelSchema(
       V1_serializeDataProductOrigin,
       V1_deserializeDataProductOrigin,
     ),
-    lakehouseEnvironment: usingModelSchema(V1_LakehouseEnvironmentModelSchema),
+    lakehouseEnvironment: usingModelSchema(
+      V1_EntitlementsLakehouseEnvironmentModelSchema,
+    ),
     dataProduct: usingModelSchema(V1_EntitlementsDataProductModelSchema),
   },
 );
@@ -461,7 +463,7 @@ export const V1_EntitlementDdataProductDetailsModelSchema = createModelSchema(
 export const V1_EntitlementsDataProductDetailsResponseModelSchema =
   createModelSchema(V1_EntitlementsDataProductDetailsResponse, {
     dataProducts: customListWithSchema(
-      V1_EntitlementDdataProductDetailsModelSchema,
+      V1_EntitlementsDataProductDetailsModelSchema,
     ),
   });
 
