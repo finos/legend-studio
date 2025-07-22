@@ -194,7 +194,9 @@ test(integrationTest('Loads DataCube from FreeformTDSExpression'), async () => {
   );
 
   await screen.findByText('test-freeform-tds-datacube-id-freeform-query-name');
-  await screen.findByText('SHIP_NAME', {}, { timeout: 10000 });
+  expect(
+    (await screen.findAllByText('SHIP_NAME')).length,
+  ).toBeGreaterThanOrEqual(1);
   await screen.findByText('Vins et alcools Chevalier', {}, { timeout: 10000 });
   await screen.findByText('Toms Spezialitäten', {}, { timeout: 10000 });
 
