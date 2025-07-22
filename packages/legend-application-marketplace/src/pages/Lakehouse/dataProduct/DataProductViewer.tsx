@@ -63,12 +63,6 @@ const DataProductHeader = observer(
               dataProductViewerState.layoutState.isExpandedModeEnabled,
           })}
         >
-          <div
-            className="data-space__viewer__header__title"
-            title={`${dataProduct.name} - ${dataProduct.path}`}
-          >
-            {dataProduct.title ? dataProduct.title : dataProduct.name}
-          </div>
           <div className="data-space__viewer__header__type">
             {dataProductViewerState.isSandboxProduct ? (
               <Button
@@ -115,6 +109,12 @@ const DataProductHeader = observer(
                 <OpenIcon />
               </Button>
             )}
+          </div>
+          <div
+            className="data-space__viewer__header__title"
+            title={`${dataProduct.name} - ${dataProduct.path}`}
+          >
+            {dataProduct.title ? dataProduct.title : dataProduct.name}
           </div>
         </div>
       </div>
