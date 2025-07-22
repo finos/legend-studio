@@ -43,7 +43,7 @@
 
     position: absolute;
     top: 0;
-    height: 9rem;
+    height: 12rem;
     width: 100%;
     z-index: 1;
     background: transparent;
@@ -61,7 +61,8 @@
       justify-content: space-between;
       width: min(140rem, 80vw);
       min-width: 80rem;
-      padding: 2rem 8rem;
+      padding: 3rem 8rem 2rem;
+      gap: 1rem;
     }
 
     &__content--expanded {
@@ -78,10 +79,9 @@
 
       align-self: start;
       height: 5rem;
-      padding: 0 3rem;
       max-width: 50vw;
-      font-size: 2.4rem;
-      font-weight: 500;
+      font-size: 3.6rem;
+      font-weight: 400;
       color: var(--color-hclight-blue-60);
       background: unset !important;
     }
