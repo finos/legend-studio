@@ -444,7 +444,7 @@ export const DataProductAccessPointGroupViewer = observer(
           return (
             <Button
               variant="contained"
-              color="error"
+              color="primary"
               onClick={handleContractsClick}
               loading={
                 accessGroupState.fetchingAccessState.isInProgress ||
@@ -460,7 +460,7 @@ export const DataProductAccessPointGroupViewer = observer(
             <>
               <ButtonGroup
                 variant="contained"
-                color="primary"
+                color="warning"
                 ref={requestAccessButtonGroupRef}
               >
                 <Button
