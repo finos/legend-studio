@@ -86,6 +86,7 @@ import {
   DataProduct,
   LakehouseRuntime,
   type Runtime,
+  AccessPointGroup,
 } from '@finos/legend-graph';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import {
@@ -111,6 +112,7 @@ import {
 import { EmbeddedDataType } from './editor-state/ExternalFormatState.js';
 import { createEmbeddedData } from './editor-state/element-editor-state/data/EmbeddedDataState.js';
 import {
+  dataProduct_addAccessPointGroup,
   dataProduct_setDescription,
   dataProduct_setTitle,
 } from '../graph-modifier/DSL_DataProduct_GraphModifierHelper.js';
@@ -528,7 +530,7 @@ export class NewLakehouseDataProductDriver extends NewElementDriver<DataProduct>
   }
 
   override get isValid(): boolean {
-    return Boolean(this.title && this.description);
+    return Boolean(this.title);
   }
 
   setTitle(val: string) {
@@ -541,6 +543,11 @@ export class NewLakehouseDataProductDriver extends NewElementDriver<DataProduct>
     const dataProduct = new DataProduct(name);
     dataProduct_setTitle(dataProduct, this.title);
     dataProduct_setDescription(dataProduct, this.description);
+
+    const defaultGroup = new AccessPointGroup();
+    defaultGroup.id = 'default';
+    dataProduct_addAccessPointGroup(dataProduct, defaultGroup);
+
     return dataProduct;
   }
 }

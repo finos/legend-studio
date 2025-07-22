@@ -56,6 +56,34 @@ export class ServiceRegistrationEnvironmentConfig {
   );
 }
 
+export class StereotypeConfig {
+  profile!: string;
+  stereotype!: string;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(StereotypeConfig, {
+      profile: primitive(),
+      stereotype: primitive(),
+    }),
+  );
+}
+
+export class DataProductConfig {
+  classifications: string[] = [];
+  publicClassifications: string[] = [];
+  classificationDoc!: string;
+  publicStereotype!: StereotypeConfig;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(DataProductConfig, {
+      classifications: list(primitive()),
+      publicClassifications: list(primitive()),
+      classificationDoc: primitive(),
+      publicStereotype: usingModelSchema(StereotypeConfig.serialization.schema),
+    }),
+  );
+}
+
 class LegendStudioApplicationCoreOptions {
   /**
    * Indicates if we should enable strict-mode for graph builder
@@ -119,6 +147,8 @@ class LegendStudioApplicationCoreOptions {
 
   ingestDeploymentConfig: LegendIngestionConfiguration | undefined;
 
+  dataProductConfig: DataProductConfig | undefined;
+
   /**
    * Indicates if we should enable oauth flow
    *
@@ -143,6 +173,9 @@ class LegendStudioApplicationCoreOptions {
       ),
       ingestDeploymentConfig: optional(
         usingModelSchema(LegendIngestionConfiguration.serialization.schema),
+      ),
+      dataProductConfig: optional(
+        usingModelSchema(DataProductConfig.serialization.schema),
       ),
       enableOauthFlow: optional(primitive()),
     }),
