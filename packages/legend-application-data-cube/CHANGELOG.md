@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.4.2
+
+### Patch Changes
+
+- [#4281](https://github.com/finos/legend-studio/pull/4281) [`d6b6200`](https://github.com/finos/legend-studio/commit/d6b6200603201cf635f5b5d5afb9254e2e52f3e5) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: smoothen editing flow of query
+
 ## 0.4.1
 
 ## 0.4.0
