@@ -426,14 +426,16 @@ export const EntitlementsPendingTasksDashbaord = observer(
         colId: 'requester',
         headerName: 'Requester',
         flex: 1,
-        valueGetter: (params) => {
+        cellRenderer: (
+          params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
+        ) => {
           const contractId = params.data?.dataContractId;
           const requester = allContracts?.find(
             (contract) => contract.guid === contractId,
           )?.createdBy;
           return requester ? (
             <UserRenderer
-              userId={params.data?.consumer}
+              userId={requester}
               marketplaceStore={marketplaceBaseStore}
               className="marketplace-lakehouse-entitlements__grid__user-display"
             />
