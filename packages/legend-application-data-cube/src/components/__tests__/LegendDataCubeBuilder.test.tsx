@@ -154,6 +154,106 @@ test(integrationTest('Loads DataCube from Legend Query'), async () => {
   await screen.findByText('Active', {}, { timeout: 10000 });
 });
 
+test(integrationTest('Loads DataCube from FreeformTDSExpression'), async () => {
+  MockedMonacoEditorAPI.remeasureFonts.mockReturnValue(undefined);
+
+  const model = {
+    _type: 'text',
+    code: `###Runtime\nRuntime showcase::northwind::store::NorthwindRuntime\n{\n  mappings: [];\n  connections: [\nshowcase::northwind::store::NorthwindDatabase: [\n  connection_1: showcase::northwind::connection::NorthwindConnection\n]\n  ];\n}\n###Connection\nRelationalDatabaseConnection showcase::northwind::connection::NorthwindConnection\n{\n  store: showcase::northwind::store::NorthwindDatabase;\n  type: H2;\n  specification: LocalH2\n  {\ntestDataSetupSqls: ['call loadNorthwindData()'];\n  };\n  auth: DefaultH2;\n}\n###Relational\nDatabase showcase::northwind::store::NorthwindDatabase (\n  Schema NORTHWIND (\nTable ORDERS (\n  ORDER_ID SMALLINT PRIMARY KEY,\n  CUSTOMER_ID VARCHAR(5),\nEMPLOYEE_ID SMALLINT,\n  ORDER_DATE DATE,\n SHIP_NAME VARCHAR(40),\n SHIP_CITY VARCHAR(15)\n)\n)\n)\n`,
+  };
+  const mockDataCubeId = 'test-freeform-tds-datacube-id';
+  const mockDataCube: PersistentDataCube =
+    PersistentDataCube.serialization.fromJson({
+      id: mockDataCubeId,
+      name: `${mockDataCubeId}-name`,
+      description: undefined,
+      content: {
+        query: `select(~[SHIP_NAME])`,
+        source: {
+          _type: 'freeformTDSExpression',
+          query: `#>{showcase::northwind::store::NorthwindDatabase.NORTHWIND.ORDERS}#->select(~[SHIP_NAME])->limit(2)`,
+          runtime: 'showcase::northwind::store::NorthwindRuntime',
+          mapping: '',
+          model,
+        },
+        configuration: {
+          name: `${mockDataCubeId}-freeform-query-name`,
+          columns: [{ name: 'SHIP_NAME', type: 'String' }],
+        },
+      },
+    });
+
+  const mockedLegendDataCubeBuilderStore =
+    await TEST__provideMockedLegendDataCubeBuilderStore();
+  const { legendDataCubeBuilderState } = await TEST__setUpDataCubeBuilder(
+    mockedLegendDataCubeBuilderStore,
+    mockDataCube,
+    undefined,
+    depotEntities,
+    true,
+  );
+
+  await screen.findByText('test-freeform-tds-datacube-id-freeform-query-name');
+  expect(
+    (await screen.findAllByText('SHIP_NAME')).length,
+  ).toBeGreaterThanOrEqual(1);
+  await screen.findByText('Vins et alcools Chevalier', {}, { timeout: 10000 });
+  await screen.findByText('Toms Spezialitäten', {}, { timeout: 10000 });
+
+  expect(legendDataCubeBuilderState?.initialSpecification).toMatchObject({
+    query: `select(~[SHIP_NAME])`,
+    source: {
+      _type: 'freeformTDSExpression',
+      runtime: 'showcase::northwind::store::NorthwindRuntime',
+      mapping: '',
+      model,
+    },
+  });
+});
+
+test(integrationTest('Datacube with missing model'), async () => {
+  MockedMonacoEditorAPI.remeasureFonts.mockReturnValue(undefined);
+  const model = {};
+  const mockDataCubeId = 'test-freeform-tds-datacube-id';
+  const mockDataCube: PersistentDataCube =
+    PersistentDataCube.serialization.fromJson({
+      id: mockDataCubeId,
+      name: `${mockDataCubeId}-name`,
+      description: undefined,
+      content: {
+        query: `select(~[SHIP_NAME])`,
+        source: {
+          _type: 'freeformTDSExpression',
+          query: `#>{showcase::northwind::store::NorthwindDatabase.NORTHWIND.ORDERS}#->select(~[SHIP_NAME])->limit(2)`,
+          runtime: 'showcase::northwind::store::NorthwindRuntime',
+          mapping: '',
+          model,
+        },
+        configuration: {
+          name: `${mockDataCubeId}-freeform-query-name`,
+          columns: [{ name: 'SHIP_NAME', type: 'String' }],
+        },
+      },
+    });
+
+  const mockedLegendDataCubeBuilderStore =
+    await TEST__provideMockedLegendDataCubeBuilderStore();
+  await TEST__setUpDataCubeBuilder(
+    mockedLegendDataCubeBuilderStore,
+    mockDataCube,
+    undefined,
+    depotEntities,
+    true,
+  );
+  expect(
+    await screen.findByText(
+      /Initialization Failure: Can't get query result columns./,
+      {},
+      { timeout: 10000 },
+    ),
+  );
+});
+
 test(
   integrationTest('Loads DataCube from Legend Query with multi-line lambda'),
   async () => {
