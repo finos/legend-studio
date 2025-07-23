@@ -18,7 +18,7 @@ import { observer } from 'mobx-react-lite';
 import type { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
 import { useEffect, useRef, useState } from 'react';
 import { DATA_PRODUCT_WIKI_PAGE_SECTIONS } from '../../../stores/lakehouse/DataProductLayoutState.js';
-import { CaretUpIcon, clsx, OpenIcon, VerifiedIcon } from '@finos/legend-art';
+import { CaretUpIcon, clsx, OpenIcon } from '@finos/legend-art';
 import { DATA_PRODUCT_VIEWER_ACTIVITY_MODE } from '../../../stores/lakehouse/DataProductViewerNavigation.js';
 import { DataProductPlaceholderPanel } from './DataProductHolder.js';
 import { DataProductViewerActivityBar } from './DataProductViewerActivityBar.js';
@@ -63,22 +63,6 @@ const DataProductHeader = observer(
               dataProductViewerState.layoutState.isExpandedModeEnabled,
           })}
         >
-          <div
-            className="data-space__viewer__header__title"
-            title={`${dataProduct.name} - ${dataProduct.path}`}
-          >
-            <div className="data-space__viewer__header__title__label">
-              {dataProduct.title ? dataProduct.title : dataProduct.name}
-            </div>
-            {dataProductViewerState.isVerified && (
-              <div
-                className="data-space__viewer__header__title__verified-badge"
-                title="Verified Data Product"
-              >
-                <VerifiedIcon />
-              </div>
-            )}
-          </div>
           <div className="data-space__viewer__header__type">
             {dataProductViewerState.isSandboxProduct ? (
               <Button
@@ -126,6 +110,13 @@ const DataProductHeader = observer(
               </Button>
             )}
           </div>
+          <div
+            className="data-space__viewer__header__title"
+            title={`${dataProduct.name} - ${dataProduct.path}`}
+          >
+            {dataProduct.title ? dataProduct.title : dataProduct.name}
+          </div>
+          <hr />
         </div>
       </div>
     );
