@@ -126,6 +126,13 @@
     gap: 1rem;
   }
 
+  &__tags {
+    @include flexVCenter;
+
+    align-self: end;
+    gap: 0.5rem;
+  }
+
   &__name {
     @include flexVCenter;
 
@@ -145,19 +152,11 @@
     &--snapshot {
       background: var(--tw-color-blue-100);
       color: var(--tw-color-blue-600);
-
-      &:hover {
-        background: var(--tw-color-blue-200);
-      }
     }
 
     &--release {
       background: var(--tw-color-green-100);
       color: var(--tw-color-green-600);
-
-      &:hover {
-        background: var(--tw-color-green-200);
-      }
     }
   }
 
@@ -224,19 +223,24 @@
       color: var(--color-blue-100);
     }
 
+    &__content {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
     hr {
       margin: 1rem 0;
     }
 
-    &__description-label,
-    &__project-table-header {
+    &__section-header {
       @include flexVCenter;
 
       font-style: italic;
       color: var(--color-dark-grey-400);
     }
 
-    &__project-table td {
+    &__table td {
       font-size: 1.6rem;
     }
 

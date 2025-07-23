@@ -15,7 +15,7 @@
  */
 
 import { beforeEach, expect, jest, test } from '@jest/globals';
-import { fireEvent, screen, waitFor, getByTitle } from '@testing-library/react';
+import { fireEvent, screen, getByTitle } from '@testing-library/react';
 import {
   TEST__provideMockedLegendMarketplaceBaseStore,
   TEST__setUpMarketplaceLakehouse,
@@ -57,18 +57,31 @@ test('renders search box with correct placeholder', async () => {
   ).toBeDefined();
 });
 
-test('displays cards for both SDLC and sandbox data products', async () => {
+test('displays cards for SDLC data products', async () => {
   await setupTestComponent();
 
-  await screen.findByText('Test SDLC Data Product');
-  await screen.findByText('1.0.0');
-  await screen.findByText('Prod Sandbox Data Product');
+  // Turn on prod-parallel filters
+  const prodParallelFilterButton = screen.getByText('Prod-Parallel');
+  fireEvent.click(prodParallelFilterButton);
+
+  // Check for SLDC data products
+  await screen.findByText('SDLC Release Data Product');
+  screen.getByText('1.2.0');
+  screen.getByText('PRODUCTION');
+  screen.getByText(
+    'Comprehensive customer analytics data for business intelligence and reporting',
+  );
+
+  // Check that SDLC data product without title uses ID
+  await screen.findByText('SDLC_SNAPSHOT_DATAPRODUCT');
+  screen.getByText('master-SNAPSHOT');
+  screen.getByText('PRODUCTION_PARALLEL');
 });
 
 test('shows info popper for SDLC data products with correct details', async () => {
   await setupTestComponent();
 
-  const dataProductTitle = await screen.findByText('Test SDLC Data Product');
+  const dataProductTitle = await screen.findByText('SDLC Release Data Product');
   const dataProductCard = guaranteeNonNullable(
     dataProductTitle.parentElement?.parentElement,
   );
@@ -78,33 +91,42 @@ test('shows info popper for SDLC data products with correct details', async () =
   fireEvent.click(guaranteeNonNullable(infoButton));
 
   await screen.findByText('Description');
+  expect(
+    screen.getAllByText(
+      'Comprehensive customer analytics data for business intelligence and reporting',
+    ),
+  ).toHaveLength(2);
+
+  screen.getByText('Deployment Details');
+  screen.getByText('Data Product ID');
+  screen.getByText('SDLC_RELEASE_DATAPRODUCT');
+  screen.getByText('Deployment ID');
+  screen.getByText('12345');
+  screen.getByText('Producer Environment Name');
+  screen.getByText('production-analytics');
+  screen.getByText('Producer Environment Type');
+  expect(screen.getAllByText('PRODUCTION')).toHaveLength(2);
+
   screen.getByText('Data Product Project');
   screen.getByText('Group');
+  screen.getByText('com.example.analytics');
   screen.getByText('Artifact');
+  screen.getByText('customer-analytics');
   screen.getByText('Version');
+  expect(screen.getAllByText('1.2.0')).toHaveLength(2);
   screen.getByText('Path');
-  expect(await screen.findAllByText('Test SDLC Data Product')).toHaveLength(2);
-  expect(
-    screen.getAllByText('A test SDLC data product for testing purposes'),
-  ).toHaveLength(2);
-  screen.getByText('com.example');
-  screen.getByText('test-sdlc-data-product');
-  expect(screen.getAllByText('1.0.0')).toHaveLength(2);
-  screen.getByText('test::dataproduct::TestSDLCDataProduct');
+  screen.getByText('test::dataproduct::Sdlc_Release_DataProduct');
 });
 
 test('filters data products by name when typing in search box', async () => {
   await setupTestComponent();
 
-  await screen.findByText('Test SDLC Data Product');
-  screen.getByText('Prod Sandbox Data Product');
+  await screen.findByText('SDLC Release Data Product');
 
   const searchBox = screen.getByPlaceholderText('Search Legend Marketplace');
   fireEvent.change(searchBox, { target: { value: 'Test' } });
 
-  screen.getByText('Test SDLC Data Product');
-
-  expect(screen.queryByText('Prod Sandbox Data Product')).toBeNull();
+  expect(screen.queryByText('SDLC Release Data Product')).toBeNull();
 });
 
 test('Sort/Filter Panel correctly sorts and filters data products', async () => {
@@ -114,69 +136,28 @@ test('Sort/Filter Panel correctly sorts and filters data products', async () => 
   screen.getByText('Sort By');
   screen.getByText('Name A-Z');
 
-  // Check filtering deploy type
+  // Check filtering type
   screen.getByText('Filter By');
   screen.getByText('Deploy Type');
   const sdlcFilterButton = screen.getByText('SDLC Deployed');
-  const sandboxFilterButton = screen.getByText('Sandbox Deployed');
-  screen.getByText('Test SDLC Data Product');
-  screen.getByText('Prod Sandbox Data Product');
+  screen.getByText('Sandbox Deployed');
+  screen.getByText('SDLC Release Data Product');
   fireEvent.click(sdlcFilterButton);
-  expect(screen.queryByText('Test SDLC Data Product')).toBeNull();
-  screen.getByText('Prod Sandbox Data Product');
-  fireEvent.click(sandboxFilterButton);
-  expect(screen.queryByText('Test SDLC Data Product')).toBeNull();
-  expect(screen.queryByText('Prod Sandbox Data Product')).toBeNull();
+  expect(screen.queryByText('SDLC Release Data Product')).toBeNull();
+  fireEvent.click(sdlcFilterButton);
 
   // Check filtering by deploy environment
   screen.getByText('Deploy Environment');
-  fireEvent.click(sandboxFilterButton);
-  const devFilterButton = screen.getByText('Dev');
+  screen.getByText('Dev');
   const prodParallelFilterButton = screen.getByText('Prod-Parallel');
   const prodFilterButton = screen.getByText('Prod');
-  screen.getByText('Prod Sandbox Data Product');
 
   fireEvent.click(prodFilterButton);
-  expect(screen.queryByText('Dev Sandbox Data Product')).toBeNull();
-  expect(screen.queryByText('Prod-Parallel Sandbox Data Product')).toBeNull();
-  expect(screen.queryByText('Prod Sandbox Data Product')).toBeNull();
-
-  fireEvent.click(devFilterButton);
-  screen.getByText('Dev Sandbox Data Product');
-  expect(screen.queryByText('Prod-Parallel Sandbox Data Product')).toBeNull();
-  expect(screen.queryByText('Prod Sandbox Data Product')).toBeNull();
-  fireEvent.click(devFilterButton);
+  expect(screen.queryByText('SDLC Release Data Product')).toBeNull();
 
   fireEvent.click(prodParallelFilterButton);
-  expect(screen.queryByText('Dev Sandbox Data Product')).toBeNull();
-  screen.queryByText('Prod-Parallel Sandbox Data Product');
-  expect(screen.queryByText('Prod Sandbox Data Product')).toBeNull();
-});
-
-test('Uses packageable element name for data products without titles', async () => {
-  await setupTestComponent();
-
-  await screen.findByText('AnotherSDLCDataProduct');
-});
-
-test('Clicking on SDLC version button shows list of available versions', async () => {
-  await setupTestComponent();
-
-  await screen.findByText('Test SDLC Data Product');
-  const versionButton = screen.getByText('1.0.0');
-
-  fireEvent.click(versionButton);
-
-  const snapshotMenuItem = await screen.findByText('master-SNAPSHOT');
-  fireEvent.click(snapshotMenuItem);
-  await waitFor(() =>
-    expect(screen.getAllByText('master-SNAPSHOT')).toHaveLength(1),
-  );
-
-  await screen.findByText('Test Snapshot SDLC Data Product');
-  screen.getByText('master-SNAPSHOT');
-  expect(screen.queryByText('Test SDLC Data Product')).toBeNull();
-  expect(screen.queryByText('1.0.0')).toBeNull();
+  expect(screen.queryByText('SDLC Release Data Product')).toBeNull();
+  expect(screen.queryByText('SDLC Snapshot Data Product')).toBeNull();
 });
 
 test('Clicking on SDLC data product card navigates to data product viewer page', async () => {
@@ -186,25 +167,10 @@ test('Clicking on SDLC data product card navigates to data product viewer page',
   mockedStore.applicationStore.navigationService.navigator.goToLocation =
     mockGoToLocation;
 
-  const dataProductTitle = await screen.findByText('Test SDLC Data Product');
+  const dataProductTitle = await screen.findByText('SDLC Release Data Product');
   fireEvent.click(dataProductTitle);
 
   expect(mockGoToLocation).toHaveBeenCalledWith(
-    '/lakehouse/dataProduct/com.example:test-sdlc-data-product:1.0.0/test::dataproduct::TestSDLCDataProduct',
-  );
-});
-
-test('Clicking on sandbox data product card navigates to data product viewer page', async () => {
-  const { mockedStore } = await setupTestComponent();
-
-  const mockGoToLocation = jest.fn();
-  mockedStore.applicationStore.navigationService.navigator.goToLocation =
-    mockGoToLocation;
-
-  const dataProductTitle = await screen.findByText('Prod Sandbox Data Product');
-  fireEvent.click(dataProductTitle);
-
-  expect(mockGoToLocation).toHaveBeenCalledWith(
-    '/lakehouse/dataProduct/sandbox/test-prod-urn/sandbox%3A%3Adataproduct%3A%3AProdSandboxDataProduct',
+    '/lakehouse/dataProduct/SDLC_RELEASE_DATAPRODUCT/12345',
   );
 });

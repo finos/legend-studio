@@ -16,47 +16,115 @@
 
 import { type PlainObject } from '@finos/legend-shared';
 import { type IngestDeploymentServerConfig } from '@finos/legend-server-lakehouse';
-import { type StoredSummaryEntity } from '@finos/legend-server-depot';
 import {
   type V1_AWSSnowflakeIngestEnvironment,
   type V1_DataContractsResponse,
   type V1_DataSubscriptionResponse,
-  type V1_SandboxDataProductDeploymentResponse,
-  CORE_PURE_PATH,
+  type V1_AppDirNode,
+  type V1_EntitlementsDataProductDetailsResponse,
+  V1_EntitlementsLakehouseEnvironmentType,
+  V1_AppDirLevel,
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-storage';
 
-export const mockSDLCDataProductSummaries: PlainObject<StoredSummaryEntity>[] =
-  [
-    {
-      groupId: 'com.example',
-      artifactId: 'test-sdlc-data-product',
-      versionId: '1.0.0',
-      path: 'test::dataproduct::TestSDLCDataProduct',
-      classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
-    },
-    {
-      groupId: 'com.example',
-      artifactId: 'test-sdlc-data-product',
-      versionId: 'master-SNAPSHOT',
-      path: 'test::dataproduct::TestSDLCDataProduct',
-      classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
-    },
-    {
-      groupId: 'com.example',
-      artifactId: 'another-sdlc-data-product',
-      versionId: '2.0.0',
-      path: 'test::dataproduct::AnotherSDLCDataProduct',
-      classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
-    },
-  ];
+export const mockDataProducts: PlainObject<V1_EntitlementsDataProductDetailsResponse> =
+  {
+    dataProducts: [
+      {
+        id: 'SDLC_RELEASE_DATAPRODUCT',
+        deploymentId: 12345,
+        title: 'SDLC Release Data Product',
+        description:
+          'Comprehensive customer analytics data for business intelligence and reporting',
+        origin: {
+          type: 'SdlcDeployment',
+          group: 'com.example.analytics',
+          artifact: 'customer-analytics',
+          version: '1.2.0',
+        },
+        lakehouseEnvironment: {
+          producerEnvironmentName: 'production-analytics',
+          type: V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
+        },
+        dataProduct: {
+          name: 'SDLC_RELEASE_DATAPRODUCT',
+          accessPoints: [
+            {
+              name: 'customer_demographics',
+              groups: ['marketing', 'analytics'],
+            },
+            {
+              name: 'customer_transactions',
+              groups: ['finance', 'analytics'],
+            },
+          ],
+          accessPointGroupStereotypeMappings: [
+            {
+              accessPointGroup: 'marketing',
+              stereotypes: [],
+            },
+            {
+              accessPointGroup: 'analytics',
+              stereotypes: [],
+            },
+          ],
+          owner: {
+            appDirId: 12345,
+            level: V1_AppDirLevel.DEPLOYMENT,
+          } satisfies V1_AppDirNode,
+        },
+      },
+      {
+        id: 'SDLC_SNAPSHOT_DATAPRODUCT',
+        deploymentId: 67890,
+        origin: {
+          type: 'SdlcDeployment',
+          group: 'com.example.finance',
+          artifact: 'financial-reporting',
+          version: 'master-SNAPSHOT',
+        },
+        lakehouseEnvironment: {
+          producerEnvironmentName: 'production-finance',
+          type: V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL,
+        },
+        dataProduct: {
+          name: 'SDLC_SNAPSHOT_DATAPRODUCT',
+          accessPoints: [
+            {
+              name: 'regulatory_reports',
+              groups: ['compliance', 'finance'],
+            },
+            {
+              name: 'financial_statements',
+              groups: ['finance', 'executives'],
+            },
+          ],
+          accessPointGroupStereotypeMappings: [
+            {
+              accessPointGroup: 'compliance',
+              stereotypes: [],
+            },
+            {
+              accessPointGroup: 'finance',
+              stereotypes: [],
+            },
+          ],
+          owner: {
+            appDirId: 67890,
+            level: V1_AppDirLevel.DEPLOYMENT,
+          } satisfies V1_AppDirNode,
+        },
+      },
+    ],
+  };
 
 export const mockReleaseSDLCDataProduct: PlainObject<Entity> = {
   _type: 'dataProduct',
-  name: 'TestSDLCDataProduct',
+  name: 'Sdlc_Release_DataProduct',
   package: 'test::dataproduct',
-  title: 'Test SDLC Data Product',
-  description: 'A test SDLC data product for testing purposes',
+  title: 'SDLC Release Data Product',
+  description:
+    'Comprehensive customer analytics data for business intelligence and reporting',
   accessPointGroups: [
     {
       id: 'testSDLCAccessPointGroup',
@@ -91,21 +159,8 @@ export const mockReleaseSDLCDataProduct: PlainObject<Entity> = {
 
 export const mockSnapshotSDLCDataProduct: PlainObject<Entity> = {
   _type: 'dataProduct',
-  name: 'TestSDLCDataProduct',
+  name: 'Sdlc_Snapshot_DataProduct',
   package: 'test::dataproduct',
-  title: 'Test Snapshot SDLC Data Product',
-  description: 'A test snapshot SDLC data product for testing purposes',
-  accessPointGroups: [],
-  icon: undefined,
-  imageUrl: undefined,
-};
-
-export const mockSDLCDataProductWithoutTitle: PlainObject<Entity> = {
-  _type: 'dataProduct',
-  name: 'AnotherSDLCDataProduct',
-  package: 'test::dataproduct',
-  title: undefined,
-  description: undefined,
   accessPointGroups: [],
   icon: undefined,
   imageUrl: undefined,
@@ -130,120 +185,6 @@ export const mockProdIngestEnvironmentSummaryResponse: PlainObject<IngestDeploym
     ingestEnvironmentUrn: 'test-prod-urn',
     environmentClassification: 'prod',
     ingestServerUrl: 'https://test-prod-ingest-server.com',
-  };
-
-export const mockDevSandboxDataProductResponse: PlainObject<V1_SandboxDataProductDeploymentResponse> =
-  {
-    deployedDataProducts: [
-      {
-        definition:
-          `###Lakehouse\n` +
-          `Ingest my::sandboxIngestDefinition owner=AppDir(production='123', prodParallel='456')[TESTTABLE(id: Double, name: Varchar(100))\npk=[id]]\n` +
-          `###DataProduct\n` +
-          `DataProduct sandbox::dataproduct::SandboxDataProduct\n` +
-          `{\naccessPoints: [group[testAccessPointGroup: LH(Snowflake, |#I{my::sandboxIngestDefinition.TESTTABLE}#->select(id, name))]]}`,
-        artifact: {
-          dataProduct: {
-            title: 'Dev Sandbox Data Product',
-            description: 'A dev sandbox data product',
-            path: 'sandbox::dataproduct::DevSandboxDataProduct',
-            deploymentId: '123',
-          },
-          accessPointGroups: [
-            {
-              id: 'testAccessPointGroup',
-              accessPointImplementations: [
-                {
-                  id: 'testAccessPointImplementation',
-                  resourceBuilder: {
-                    _type: 'databaseDDL',
-                    targetEnvironment: 'Snowflake',
-                    reproducible: false,
-                    script: 'CREATE TABLE test_table (id INT, name STRING);',
-                  },
-                },
-              ],
-            },
-          ],
-        },
-      },
-    ],
-  };
-
-export const mockProdParallelSandboxDataProductResponse: PlainObject<V1_SandboxDataProductDeploymentResponse> =
-  {
-    deployedDataProducts: [
-      {
-        definition:
-          `###Lakehouse\n` +
-          `Ingest my::sandboxIngestDefinition owner=AppDir(production='123', prodParallel='456')[TESTTABLE(id: Double, name: Varchar(100))\npk=[id]]\n` +
-          `###DataProduct\n` +
-          `DataProduct sandbox::dataproduct::SandboxDataProduct\n` +
-          `{\naccessPoints: [group[testAccessPointGroup: LH(Snowflake, |#I{my::sandboxIngestDefinition.TESTTABLE}#->select(id, name))]]}`,
-        artifact: {
-          dataProduct: {
-            title: 'Prod-Parallel Sandbox Data Product',
-            description: 'A prod-parallel sandbox data product',
-            path: 'sandbox::dataproduct::ProdParallelSandboxDataProduct',
-            deploymentId: '456',
-          },
-          accessPointGroups: [
-            {
-              id: 'testAccessPointGroup',
-              accessPointImplementations: [
-                {
-                  id: 'testAccessPointImplementation',
-                  resourceBuilder: {
-                    _type: 'databaseDDL',
-                    targetEnvironment: 'Snowflake',
-                    reproducible: false,
-                    script: 'CREATE TABLE test_table (id INT, name STRING);',
-                  },
-                },
-              ],
-            },
-          ],
-        },
-      },
-    ],
-  };
-
-export const mockProdSandboxDataProductResponse: PlainObject<V1_SandboxDataProductDeploymentResponse> =
-  {
-    deployedDataProducts: [
-      {
-        definition:
-          `###Lakehouse\n` +
-          `Ingest my::sandboxIngestDefinition owner=AppDir(production='123', prodParallel='456')[TESTTABLE(id: Double, name: Varchar(100))\npk=[id]]\n` +
-          `###DataProduct\n` +
-          `DataProduct sandbox::dataproduct::SandboxDataProduct\n` +
-          `{\naccessPoints: [group[testAccessPointGroup: LH(Snowflake, |#I{my::sandboxIngestDefinition.TESTTABLE}#->select(id, name))]]}`,
-        artifact: {
-          dataProduct: {
-            title: 'Prod Sandbox Data Product',
-            description: 'A prod sandbox data product',
-            path: 'sandbox::dataproduct::ProdSandboxDataProduct',
-            deploymentId: '789',
-          },
-          accessPointGroups: [
-            {
-              id: 'testAccessPointGroup',
-              accessPointImplementations: [
-                {
-                  id: 'testAccessPointImplementation',
-                  resourceBuilder: {
-                    _type: 'databaseDDL',
-                    targetEnvironment: 'Snowflake',
-                    reproducible: false,
-                    script: 'CREATE TABLE test_table (id INT, name STRING);',
-                  },
-                },
-              ],
-            },
-          ],
-        },
-      },
-    ],
   };
 
 export const mockDevIngestEnvironmentResponse: PlainObject<V1_AWSSnowflakeIngestEnvironment> =
