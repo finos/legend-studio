@@ -196,7 +196,7 @@ export const EntitlementsDataContractViewer = observer(
     // In order to ensure the Select menu is properly resized after we load
     // all the target user data, track how many users have finished loading
     // so that we can trigger a window resize event once all the user data is loaded.
-    const [_, setNumUsersLoaded] = useState(0);
+    const [, setNumUsersLoaded] = useState(0);
     const finishedLoadingUserCallback = useCallback(() => {
       setNumUsersLoaded((prev) => {
         if (prev + 1 === targetUsers?.length) {
