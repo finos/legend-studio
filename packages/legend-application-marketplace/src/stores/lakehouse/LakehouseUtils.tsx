@@ -48,15 +48,16 @@ export const dataContractContainsDataProduct = (
     contractResource instanceof V1_AccessPointGroupReference &&
     dataProdcutDeploymentID
   ) {
-    const sameDID =
+    const didMatch =
       Number(dataProdcutDeploymentID) ===
       contractResource.dataProduct.owner.appDirId;
-    // revisit name
-    const isName = contractResource.dataProduct.name === dataProduct.name;
-    const hasGroup = dataProduct.accessPointGroups
+    const nameMatch =
+      contractResource.dataProduct.name.toLowerCase() ===
+      dataProduct.name.toLowerCase();
+    const dataProductContainsContractAPG = dataProduct.accessPointGroups
       .map((e) => e.id)
       .includes(contractResource.accessPointGroup);
-    return sameDID && isName && hasGroup;
+    return didMatch && nameMatch && dataProductContainsContractAPG;
   }
 
   return false;
