@@ -68,7 +68,10 @@ import {
   InfoCircleIcon,
   RefreshIcon,
 } from '@finos/legend-art';
-import { generateLakehouseTaskPath } from '../../../__lib__/LegendMarketplaceNavigation.js';
+import {
+  generateLakehouseDataProductPath,
+  generateLakehouseTaskPath,
+} from '../../../__lib__/LegendMarketplaceNavigation.js';
 import type { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
 import type { DataProductGroupAccessState } from '../../../stores/lakehouse/DataProductDataAccessState.js';
 import { UserRenderer } from '../../../components/UserRenderer/UserRenderer.js';
@@ -406,9 +409,19 @@ export const EntitlementsDataContractViewer = observer(
                   {accessPointGroup}
                 </span>{' '}
                 Access Point Group in{' '}
-                <span className="marketplace-lakehouse-text__emphasis">
+                <Link
+                  className="marketplace-lakehouse-text__emphasis"
+                  href={legendMarketplaceStore.applicationStore.navigationService.navigator.generateAddress(
+                    generateLakehouseDataProductPath(
+                      dataProduct.name,
+                      dataProduct.owner.appDirId,
+                    ),
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   {dataProduct.name}
-                </span>{' '}
+                </Link>{' '}
                 Data Product
               </div>
               <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata">
