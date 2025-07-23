@@ -1,5 +1,11 @@
 # @finos/legend-server-marketplace
 
+## 0.0.27
+
+### Patch Changes
+
+- [#4288](https://github.com/finos/legend-studio/pull/4288) [`5d02840`](https://github.com/finos/legend-studio/commit/5d02840b3862f4bd3983cd259605c10c87a8b2d4) ([@travisstebbins](https://github.com/travisstebbins)) - Fix user access endpoint and DataProduct name comparison for contracts
+
 ## 0.0.26
 
 ## 0.0.25

@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.1.56
+
+### Patch Changes
+
+- [#4288](https://github.com/finos/legend-studio/pull/4288) [`5d02840`](https://github.com/finos/legend-studio/commit/5d02840b3862f4bd3983cd259605c10c87a8b2d4) ([@travisstebbins](https://github.com/travisstebbins)) - Fix user access endpoint and DataProduct name comparison for contracts
+
 ## 32.1.55
 
 ## 32.1.54

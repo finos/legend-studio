@@ -1,5 +1,13 @@
 # @finos/legend-application-data-cube
 
+## 0.4.4
+
+### Patch Changes
+
+- [#4280](https://github.com/finos/legend-studio/pull/4280) [`057295d`](https://github.com/finos/legend-studio/commit/057295d4b812c7c8a450e37c5d1c04c7d9010b23) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: fix processing lambda relation types for query with params
+
+- [#4285](https://github.com/finos/legend-studio/pull/4285) [`da85ede`](https://github.com/finos/legend-studio/commit/da85ede3afb3e8bdc4b2c3f79c1a89353cea3ec6) ([@travisstebbins](https://github.com/travisstebbins)) - added tests for freeformtdsexpression DataCubeSrc
+
 ## 0.4.3
 
 ## 0.4.2
