@@ -41,6 +41,7 @@ import {
   V1_TaskResponse,
   V1_TaskStatusChangeResponse,
   V1_ContractUserMembership,
+  V1_ContractUserStatusResponse,
 } from '../../../lakehouse/entitlements/V1_ConsumerEntitlements.js';
 import {
   createModelSchema,
@@ -352,3 +353,10 @@ export const V1_createContractPayloadModelSchema = (
       (val) => V1_deserializeOrganizationalScope(val, plugins),
     ),
   });
+
+export const V1_ContractUserResponseModelSchema = createModelSchema(
+  V1_ContractUserStatusResponse,
+  {
+    status: primitive(),
+  },
+);

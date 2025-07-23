@@ -15,13 +15,13 @@
  */
 
 import type {
+  V1_ContractUserStatusResponse,
   V1_CreateContractPayload,
   V1_CreateSubscriptionInput,
   V1_DataContract,
   V1_DataContractApprovedUsersResponse,
   V1_DataContractsResponse,
   V1_DataSubscriptionResponse,
-  V1_EnrichedUserApprovalStatus,
   V1_PendingTasksResponse,
   V1_TaskStatus,
   V1_UserPendingContractsResponse,
@@ -82,7 +82,7 @@ export class LakehouseContractServerClient extends AbstractServerClient {
     contractId: string,
     userId: string,
     token: string | undefined,
-  ): Promise<V1_EnrichedUserApprovalStatus> =>
+  ): Promise<PlainObject<V1_ContractUserStatusResponse>> =>
     this.get(
       `${this._dataContracts()}/${encodeURIComponent(contractId)}/user/${encodeURIComponent(userId)}`,
       {},

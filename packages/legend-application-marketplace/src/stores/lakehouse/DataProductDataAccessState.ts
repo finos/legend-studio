@@ -21,6 +21,7 @@ import {
   type V1_DataSubscription,
   type V1_DataSubscriptionResponse,
   type V1_DataSubscriptionTarget,
+  V1_ContractUserStatusResponse,
   V1_CreateSubscriptionInput,
   V1_CreateSubscriptionInputModelSchema,
   V1_dataSubscriptionModelSchema,
@@ -187,13 +188,17 @@ export class DataProductGroupAccessState {
   ): GeneratorFn<void> {
     try {
       this.fetchingUserAccessStatus.inProgress();
-      const userStatus =
+      const rawUserStatus =
         (yield this.accessState.viewerState.lakeServerClient.getContractUserStatus(
           contractId,
           this.accessState.viewerState.applicationStore.identityService
             .currentUser,
           token,
-        )) as V1_EnrichedUserApprovalStatus;
+        )) as PlainObject<V1_ContractUserStatusResponse>;
+      const userStatus = deserialize(
+        V1_ContractUserStatusResponse,
+        rawUserStatus,
+      ).status;
       this.setUserAccessStatus(userStatus);
     } catch (error) {
       assertErrorThrown(error);

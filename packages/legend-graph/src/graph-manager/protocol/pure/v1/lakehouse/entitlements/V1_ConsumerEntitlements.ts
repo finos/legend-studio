@@ -208,3 +208,7 @@ export class V1_TaskMetadata {
 export class V1_TaskResponse {
   tasks: V1_TaskMetadata[] | undefined;
 }
+
+export class V1_ContractUserStatusResponse {
+  status!: V1_EnrichedUserApprovalStatus;
+}
