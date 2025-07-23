@@ -235,14 +235,15 @@ export const EntitlementsDataContractViewer = observer(
           .catch(legendMarketplaceStore.applicationStore.alertUnhandledError)
           .finally(() => setIsLoading(false));
       } else {
-        setSelectedTargetUser(targetUsers?.[0]);
+        setSelectedTargetUser(initialSelectedUser ?? targetUsers?.[0]);
       }
     }, [
+      auth.user?.access_token,
       currentViewer,
       currentViewer.initializationState,
-      targetUsers,
-      auth.user?.access_token,
+      initialSelectedUser,
       legendMarketplaceStore.applicationStore.alertUnhandledError,
+      targetUsers,
     ]);
 
     const refresh = async (): Promise<void> => {
