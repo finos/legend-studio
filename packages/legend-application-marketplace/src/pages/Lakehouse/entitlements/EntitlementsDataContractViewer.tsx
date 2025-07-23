@@ -164,6 +164,7 @@ export const EntitlementsDataContractViewer = observer(
     dataProductGroupAccessState?: DataProductGroupAccessState | undefined;
     dataProductViewerState?: DataProductViewerState | undefined;
     onClose: () => void;
+    initialSelectedUser?: string | undefined;
   }) => {
     const {
       open,
@@ -171,6 +172,7 @@ export const EntitlementsDataContractViewer = observer(
       dataProductGroupAccessState,
       dataProductViewerState,
       onClose,
+      initialSelectedUser,
     } = props;
     const auth = useAuth();
     const legendMarketplaceStore = useLegendMarketplaceBaseStore();
@@ -223,7 +225,7 @@ export const EntitlementsDataContractViewer = observer(
 
     const [selectedTargetUser, setSelectedTargetUser] = useState<
       string | undefined
-    >(targetUsers?.[0]);
+    >(initialSelectedUser ?? targetUsers?.[0]);
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {

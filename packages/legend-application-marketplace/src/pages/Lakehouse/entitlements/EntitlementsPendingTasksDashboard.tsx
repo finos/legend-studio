@@ -249,6 +249,8 @@ export const EntitlementsPendingTasksDashbaord = observer(
     const [selectedContract, setSelectedContract] = useState<
       V1_DataContract | undefined
     >();
+    const [selectedContractTargetUser, setSelectedContractTargetUser] =
+      useState<string | undefined>();
 
     // Effects
 
@@ -308,6 +310,7 @@ export const EntitlementsPendingTasksDashbaord = observer(
           (_contract) => _contract.guid === event.data?.dataContractId,
         );
         setSelectedContract(contract);
+        setSelectedContractTargetUser(event.data?.consumer);
       }
     };
 
@@ -692,6 +695,7 @@ export const EntitlementsPendingTasksDashbaord = observer(
               )
             }
             onClose={() => setSelectedContract(undefined)}
+            initialSelectedUser={selectedContractTargetUser}
           />
         )}
       </>
