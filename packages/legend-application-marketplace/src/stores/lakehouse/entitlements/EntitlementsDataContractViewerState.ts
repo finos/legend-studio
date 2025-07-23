@@ -15,7 +15,7 @@
  */
 
 import {
-  type V1_PendingTasksRespond,
+  type V1_PendingTasksResponse,
   type V1_DataContract,
   type V1_TaskMetadata,
   V1_deserializeTaskResponse,
@@ -61,7 +61,7 @@ export class EntitlementsDataContractViewerState {
       const pendingTasks = (yield this.lakeServerClient.getContractTasks(
         this.value.guid,
         token,
-      )) as PlainObject<V1_PendingTasksRespond>;
+      )) as PlainObject<V1_PendingTasksResponse>;
       const tasks = V1_deserializeTaskResponse(pendingTasks);
       this.setAssociatedTasks(tasks);
     } catch (error) {

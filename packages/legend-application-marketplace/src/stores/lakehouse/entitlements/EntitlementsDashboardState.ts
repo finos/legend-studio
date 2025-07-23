@@ -25,11 +25,11 @@ import {
   type V1_ContractUserEventRecord,
   type V1_TaskStatusChangeResponse,
   V1_TaskStatusChangeResponseModelSchema,
-  type V1_PendingTasksRespond,
+  type V1_PendingTasksResponse,
   type V1_UserPendingContractsRecord,
   type V1_UserPendingContractsResponse,
   type V1_TaskStatus,
-  V1_pendingTasksRespondModelSchema,
+  V1_pendingTasksResponseModelSchema,
   type V1_DataContract,
   V1_dataContractsResponseModelSchemaToContracts,
 } from '@finos/legend-graph';
@@ -112,8 +112,8 @@ export class EntitlementsDashboardState {
         (yield this.lakehouseEntitlementsStore.lakehouseServerClient.getPendingTasks(
           TEST_USER,
           token,
-        )) as PlainObject<V1_PendingTasksRespond>;
-      const tasks = deserialize(V1_pendingTasksRespondModelSchema, rawTasks);
+        )) as PlainObject<V1_PendingTasksResponse>;
+      const tasks = deserialize(V1_pendingTasksResponseModelSchema, rawTasks);
       this.setPendingTasks([...tasks.dataOwner, ...tasks.privilegeManager]);
     } catch (error) {
       assertErrorThrown(error);
@@ -129,7 +129,7 @@ export class EntitlementsDashboardState {
       const rawContracts =
         (yield this.lakehouseEntitlementsStore.lakehouseServerClient.getDataContracts(
           token,
-        )) as PlainObject<V1_PendingTasksRespond>;
+        )) as PlainObject<V1_PendingTasksResponse>;
       const contracts = V1_dataContractsResponseModelSchemaToContracts(
         rawContracts,
         this.lakehouseEntitlementsStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),

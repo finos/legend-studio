@@ -36,7 +36,7 @@ import {
   V1_DataContractSubscriptions,
   V1_DataContractsResponse,
   V1_DataProduct_Entitlements,
-  V1_PendingTasksRespond,
+  V1_PendingTasksResponse,
   V1_TaskMetadata,
   V1_TaskResponse,
   V1_TaskStatusChangeResponse,
@@ -302,8 +302,8 @@ export const V1_taskResponseModelSchema = createModelSchema(V1_TaskResponse, {
   tasks: customListWithSchema(V1_taskMetadataModelSchema),
 });
 
-export const V1_pendingTasksRespondModelSchema = createModelSchema(
-  V1_PendingTasksRespond,
+export const V1_pendingTasksResponseModelSchema = createModelSchema(
+  V1_PendingTasksResponse,
   {
     privilegeManager: customListWithSchema(
       V1_contractUserEventRecordModelSchema,
