@@ -303,7 +303,7 @@ export {
 export {
   V1_AdhocTeamModelSchema,
   V1_AppDirNodeModelSchema,
-  V1_ContractUserResponseModelSchema,
+  V1_ContractUserStatusResponseModelSchema,
   V1_createContractPayloadModelSchema,
   V1_dataContractsResponseModelSchema,
   V1_dataContractsResponseModelSchemaToContracts,

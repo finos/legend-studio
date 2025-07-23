@@ -354,7 +354,7 @@ export const V1_createContractPayloadModelSchema = (
     ),
   });
 
-export const V1_ContractUserResponseModelSchema = createModelSchema(
+export const V1_ContractUserStatusResponseModelSchema = createModelSchema(
   V1_ContractUserStatusResponse,
   {
     status: primitive(),

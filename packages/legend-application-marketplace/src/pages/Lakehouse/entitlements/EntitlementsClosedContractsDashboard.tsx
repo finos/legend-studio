@@ -19,7 +19,7 @@ import {
   type V1_EnrichedUserApprovalStatus,
   V1_AccessPointGroupReference,
   V1_AdhocTeam,
-  V1_ContractUserResponseModelSchema,
+  V1_ContractUserStatusResponseModelSchema,
   V1_dataContractsResponseModelSchemaToContracts,
 } from '@finos/legend-graph';
 import {
@@ -109,7 +109,7 @@ export const EntitlementsClosedContractsDashbaord = observer(
                 auth.user?.access_token,
               );
             const userStatus = deserialize(
-              V1_ContractUserResponseModelSchema,
+              V1_ContractUserStatusResponseModelSchema,
               rawUserStatus,
             ).status;
             return [contract.guid, userStatus];
