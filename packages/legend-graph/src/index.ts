@@ -276,12 +276,13 @@ export {
   V1_ContractUserEventPayload,
   V1_ContractUserEventPrivilegeManagerPayload,
   V1_ContractUserEventRecord,
+  V1_ContractUserStatusResponse,
   V1_CreateContractPayload,
   V1_DataContract,
   V1_DataContractApprovedUsersResponse,
   V1_DataContractsResponse,
   V1_EnrichedUserApprovalStatus,
-  V1_PendingTasksRespond,
+  V1_PendingTasksResponse,
   V1_ResourceType,
   V1_TaskMetadata,
   V1_TaskResponse,
@@ -300,14 +301,15 @@ export {
   V1_UserType,
 } from './graph-manager/protocol/pure/v1/lakehouse/entitlements/V1_CoreEntitlements.js';
 export {
+  V1_AdhocTeamModelSchema,
   V1_AppDirNodeModelSchema,
+  V1_ContractUserStatusResponseModelSchema,
   V1_createContractPayloadModelSchema,
   V1_dataContractsResponseModelSchema,
-  V1_pendingTasksRespondModelSchema,
-  V1_TaskStatusChangeResponseModelSchema,
-  V1_AdhocTeamModelSchema,
   V1_dataContractsResponseModelSchemaToContracts,
   V1_deserializeTaskResponse,
+  V1_pendingTasksResponseModelSchema,
+  V1_TaskStatusChangeResponseModelSchema,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_EntitlementSerializationHelper.js';
 export {
   V1_CreateSubscriptionInput,

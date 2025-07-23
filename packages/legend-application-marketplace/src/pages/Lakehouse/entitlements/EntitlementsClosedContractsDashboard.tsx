@@ -19,6 +19,7 @@ import {
   type V1_EnrichedUserApprovalStatus,
   V1_AccessPointGroupReference,
   V1_AdhocTeam,
+  V1_ContractUserStatusResponseModelSchema,
   V1_dataContractsResponseModelSchemaToContracts,
 } from '@finos/legend-graph';
 import {
@@ -42,6 +43,7 @@ import {
 import { lodashCapitalize } from '@finos/legend-shared';
 import { MultiUserCellRenderer } from '../../../components/MultiUserCellRenderer/MultiUserCellRenderer.js';
 import { useAuth } from 'react-oidc-context';
+import { deserialize } from 'serializr';
 
 export const EntitlementsClosedContractsDashbaord = observer(
   (props: { dashboardState: EntitlementsDashboardState }): React.ReactNode => {
@@ -99,13 +101,17 @@ export const EntitlementsClosedContractsDashbaord = observer(
           V1_EnrichedUserApprovalStatus | undefined,
         ][] = await Promise.all(
           closedContracts.map(async (contract) => {
-            const userStatus =
+            const rawUserStatus =
               await dashboardState.lakehouseEntitlementsStore.lakehouseServerClient.getContractUserStatus(
                 contract.guid,
                 dashboardState.lakehouseEntitlementsStore.applicationStore
                   .identityService.currentUser,
                 auth.user?.access_token,
               );
+            const userStatus = deserialize(
+              V1_ContractUserStatusResponseModelSchema,
+              rawUserStatus,
+            ).status;
             return [contract.guid, userStatus];
           }),
         );

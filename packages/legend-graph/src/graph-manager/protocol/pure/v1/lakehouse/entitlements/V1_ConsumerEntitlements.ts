@@ -163,7 +163,7 @@ export class V1_ContractUserEventRecord {
   type!: V1_ApprovalType;
 }
 
-export class V1_PendingTasksRespond {
+export class V1_PendingTasksResponse {
   privilegeManager: V1_ContractUserEventRecord[] = [];
   dataOwner: V1_ContractUserEventRecord[] = [];
 }
@@ -207,4 +207,8 @@ export class V1_TaskMetadata {
 
 export class V1_TaskResponse {
   tasks: V1_TaskMetadata[] | undefined;
+}
+
+export class V1_ContractUserStatusResponse {
+  status!: V1_EnrichedUserApprovalStatus;
 }

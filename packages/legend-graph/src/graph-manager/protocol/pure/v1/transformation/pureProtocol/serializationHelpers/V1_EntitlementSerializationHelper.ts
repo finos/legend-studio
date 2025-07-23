@@ -36,11 +36,12 @@ import {
   V1_DataContractSubscriptions,
   V1_DataContractsResponse,
   V1_DataProduct_Entitlements,
-  V1_PendingTasksRespond,
+  V1_PendingTasksResponse,
   V1_TaskMetadata,
   V1_TaskResponse,
   V1_TaskStatusChangeResponse,
   V1_ContractUserMembership,
+  V1_ContractUserStatusResponse,
 } from '../../../lakehouse/entitlements/V1_ConsumerEntitlements.js';
 import {
   createModelSchema,
@@ -302,8 +303,8 @@ export const V1_taskResponseModelSchema = createModelSchema(V1_TaskResponse, {
   tasks: customListWithSchema(V1_taskMetadataModelSchema),
 });
 
-export const V1_pendingTasksRespondModelSchema = createModelSchema(
-  V1_PendingTasksRespond,
+export const V1_pendingTasksResponseModelSchema = createModelSchema(
+  V1_PendingTasksResponse,
   {
     privilegeManager: customListWithSchema(
       V1_contractUserEventRecordModelSchema,
@@ -352,3 +353,10 @@ export const V1_createContractPayloadModelSchema = (
       (val) => V1_deserializeOrganizationalScope(val, plugins),
     ),
   });
+
+export const V1_ContractUserStatusResponseModelSchema = createModelSchema(
+  V1_ContractUserStatusResponse,
+  {
+    status: primitive(),
+  },
+);
