@@ -831,54 +831,10 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       } else if (source instanceof UserDefinedFunctionDataCubeSource) {
         result = await this._runQuery(query, source.model, undefined, options);
       } else if (source instanceof LegendQueryDataCubeSource) {
-        // To handle parameter value with function calls we
-        // 1. Separate the parameters with function calls from regular parameters
-        // 2. Add let statements for function parameter values and store them in the source's letParameterValueSpec
-        // 3. Prepend the let statements to the lambda body when we execute the query
-        const letFuncs: V1_ValueSpecification[] = [];
-        const filteredParameterValues = (
-          await Promise.all(
-            source.parameterValues.map(async ({ variable, valueSpec }) => {
-              if (variable.genericType?.rawType instanceof V1_PackageableType) {
-                if (valueSpec instanceof V1_AppliedFunction) {
-                  const letFunc = guaranteeType(
-                    this.deserializeValueSpecification(
-                      await this._engineServerClient.grammarToJSON_lambda(
-                        `${LET_TOKEN} ${variable.name} ${DataCubeQueryFilterOperator.EQUAL} ${await this.getValueSpecificationCode(valueSpec)}`,
-                        '',
-                        undefined,
-                        undefined,
-                        false,
-                      ),
-                    ),
-                    V1_Lambda,
-                  );
-                  letFuncs.push(...letFunc.body);
-                } else {
-                  const paramValue = new V1_ParameterValue();
-                  paramValue.name = variable.name;
-                  paramValue.value = valueSpec;
-                  return paramValue;
-                }
-              }
-              return undefined;
-            }),
-          )
-        ).filter(isNonNullable);
-
-        query.parameters = source.lambda.parameters.filter((param) =>
-          filteredParameterValues.find((p) => p.name === param.name),
+        const filteredParameterValues = await this._processLegendQueryParams(
+          source,
+          query,
         );
-        // If the source lambda has multiple expressions, we should prepend all but the
-        // last expression to the transformed query body (which came from the final
-        // expression of the source lambda).
-        query.body = [
-          ...letFuncs,
-          ...(source.lambda.body.length > 1
-            ? source.lambda.body.slice(0, -1)
-            : []),
-          ...query.body,
-        ];
         result = await this._runQuery(
           query,
           source.model,
@@ -997,54 +953,10 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           options,
         )) as Response;
       } else if (source instanceof LegendQueryDataCubeSource) {
-        // To handle parameter value with function calls we
-        // 1. Separate the parameters with function calls from regular parameters
-        // 2. Add let statements for function parameter values and store them in the source's letParameterValueSpec
-        // 3. Prepend the let statements to the lambda body when we execute the query
-        const letFuncs: V1_ValueSpecification[] = [];
-        const filteredParameterValues = (
-          await Promise.all(
-            source.parameterValues.map(async ({ variable, valueSpec }) => {
-              if (variable.genericType?.rawType instanceof V1_PackageableType) {
-                if (valueSpec instanceof V1_AppliedFunction) {
-                  const letFunc = guaranteeType(
-                    this.deserializeValueSpecification(
-                      await this._engineServerClient.grammarToJSON_lambda(
-                        `${LET_TOKEN} ${variable.name} ${DataCubeQueryFilterOperator.EQUAL} ${await this.getValueSpecificationCode(valueSpec)}`,
-                        '',
-                        undefined,
-                        undefined,
-                        false,
-                      ),
-                    ),
-                    V1_Lambda,
-                  );
-                  letFuncs.push(...letFunc.body);
-                } else {
-                  const paramValue = new V1_ParameterValue();
-                  paramValue.name = variable.name;
-                  paramValue.value = valueSpec;
-                  return paramValue;
-                }
-              }
-              return undefined;
-            }),
-          )
-        ).filter(isNonNullable);
-
-        query.parameters = source.lambda.parameters.filter((param) =>
-          filteredParameterValues.find((p) => p.name === param.name),
+        const filteredParameterValues = await this._processLegendQueryParams(
+          source,
+          query,
         );
-        // If the source lambda has multiple expressions, we should prepend all but the
-        // last expression to the transformed query body (which came from the final
-        // expression of the source lambda).
-        query.body = [
-          ...letFuncs,
-          ...(source.lambda.body.length > 1
-            ? source.lambda.body.slice(0, -1)
-            : []),
-          ...query.body,
-        ];
         return (await this._runExportQuery(
           query,
           source.model,
@@ -1067,6 +979,59 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       }
       throw error;
     }
+  }
+
+  private async _processLegendQueryParams(
+    source: LegendQueryDataCubeSource,
+    query: V1_Lambda,
+  ) {
+    // To handle parameter value with function calls we
+    // 1. Separate the parameters with function calls from regular parameters
+    // 2. Add let statements for function parameter values and store them in the source's letParameterValueSpec
+    // 3. Prepend the let statements to the lambda body when we execute the query
+    const letFuncs: V1_ValueSpecification[] = [];
+    const filteredParameterValues = (
+      await Promise.all(
+        source.parameterValues.map(async ({ variable, valueSpec }) => {
+          if (variable.genericType?.rawType instanceof V1_PackageableType) {
+            if (valueSpec instanceof V1_AppliedFunction) {
+              const letFunc = guaranteeType(
+                this.deserializeValueSpecification(
+                  await this._engineServerClient.grammarToJSON_lambda(
+                    `${LET_TOKEN} ${variable.name} ${DataCubeQueryFilterOperator.EQUAL} ${await this.getValueSpecificationCode(valueSpec)}`,
+                    '',
+                    undefined,
+                    undefined,
+                    false,
+                  ),
+                ),
+                V1_Lambda,
+              );
+              letFuncs.push(...letFunc.body);
+            } else {
+              const paramValue = new V1_ParameterValue();
+              paramValue.name = variable.name;
+              paramValue.value = valueSpec;
+              return paramValue;
+            }
+          }
+          return undefined;
+        }),
+      )
+    ).filter(isNonNullable);
+
+    query.parameters = source.lambda.parameters.filter((param) =>
+      filteredParameterValues.find((p) => p.name === param.name),
+    );
+    // If the source lambda has multiple expressions, we should prepend all but the
+    // last expression to the transformed query body (which came from the final
+    // expression of the source lambda).
+    query.body = [
+      ...letFuncs,
+      ...(source.lambda.body.length > 1 ? source.lambda.body.slice(0, -1) : []),
+      ...query.body,
+    ];
+    return filteredParameterValues;
   }
 
   override buildExecutionContext(source: DataCubeSource) {
@@ -1203,6 +1168,12 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     } else if (source instanceof UserDefinedFunctionDataCubeSource) {
       return this._getLambdaRelationType(query, source.model);
     } else if (source instanceof LegendQueryDataCubeSource) {
+      const deserializedQuery = guaranteeType(
+        this.deserializeValueSpecification(query),
+        V1_Lambda,
+      );
+      await this._processLegendQueryParams(source, deserializedQuery);
+      query = this.serializeValueSpecification(deserializedQuery);
       return this._getLambdaRelationType(query, source.model);
     } else if (source instanceof CachedDataCubeSource) {
       return this._getLambdaRelationType(query, source.model);
