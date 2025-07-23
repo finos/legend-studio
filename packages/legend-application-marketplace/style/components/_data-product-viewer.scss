@@ -43,7 +43,7 @@
 
     position: absolute;
     top: 0;
-    height: 12rem;
+    height: 14rem;
     width: 100%;
     z-index: 1;
     background: transparent;
@@ -58,7 +58,6 @@
     &__content {
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
       width: min(140rem, 80vw);
       min-width: 80rem;
       padding: 3rem 8rem 2rem;
@@ -194,7 +193,7 @@
   &__content {
     display: flex;
     width: 100%;
-    padding: 4rem;
+    padding: 6rem 4rem 4rem;
     box-shadow: var(--color-dark-shade-280) 0 0.1rem 0.5rem 0;
   }
 }

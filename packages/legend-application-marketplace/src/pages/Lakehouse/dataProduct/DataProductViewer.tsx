@@ -116,6 +116,7 @@ const DataProductHeader = observer(
           >
             {dataProduct.title ? dataProduct.title : dataProduct.name}
           </div>
+          <hr />
         </div>
       </div>
     );
