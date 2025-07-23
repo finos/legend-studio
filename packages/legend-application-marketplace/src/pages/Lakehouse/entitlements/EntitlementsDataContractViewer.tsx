@@ -208,7 +208,7 @@ export const EntitlementsDataContractViewer = observer(
     }, [targetUsers]);
     const targetUserSelectItems = useMemo(
       () =>
-        targetUsers?.map((user, index) => (
+        targetUsers?.map((user) => (
           <MenuItem key={user} value={user}>
             <UserRenderer
               userId={user}
