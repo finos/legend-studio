@@ -49,7 +49,7 @@ import {
   V1_ContractUserEventPrivilegeManagerPayload,
   V1_UserApprovalStatus,
 } from '@finos/legend-graph';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { formatDate, lodashCapitalize } from '@finos/legend-shared';
 import {
   getOrganizationalScopeTypeDetails,
@@ -191,6 +191,34 @@ export const EntitlementsDataContractViewer = observer(
             ? consumer.users.map((user) => user.name)
             : undefined,
       [consumer, currentViewer.associatedTasks],
+    );
+
+    // In order to ensure the Select menu is properly resized after we load
+    // all the target user data, track how many users have finished loading
+    // so that we can trigger a window resize event once all the user data is loaded.
+    const [_, setNumUsersLoaded] = useState(0);
+    const finishedLoadingUserCallback = useCallback(() => {
+      setNumUsersLoaded((prev) => {
+        if (prev + 1 === targetUsers?.length) {
+          // Trigger a window resize event to ensure the Select menu is properly resized
+          window.dispatchEvent(new Event('resize'));
+        }
+        return prev + 1;
+      });
+    }, [targetUsers]);
+    const targetUserSelectItems = useMemo(
+      () =>
+        targetUsers?.map((user, index) => (
+          <MenuItem key={user} value={user}>
+            <UserRenderer
+              userId={user}
+              marketplaceStore={legendMarketplaceStore}
+              disableOnClick={true}
+              onFinishedLoadingCallback={finishedLoadingUserCallback}
+            />
+          </MenuItem>
+        )),
+      [targetUsers, legendMarketplaceStore, finishedLoadingUserCallback],
     );
 
     const [selectedTargetUser, setSelectedTargetUser] = useState<
@@ -467,15 +495,7 @@ export const EntitlementsDataContractViewer = observer(
                         size="small"
                         className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-for__select"
                       >
-                        {targetUsers.map((user) => (
-                          <MenuItem key={user} value={user}>
-                            <UserRenderer
-                              userId={user}
-                              marketplaceStore={legendMarketplaceStore}
-                              disableOnClick={true}
-                            />
-                          </MenuItem>
-                        ))}
+                        {targetUserSelectItems}
                       </Select>
                     )
                   ) : (
