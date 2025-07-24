@@ -37,7 +37,10 @@ import { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/e
 import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
 import { observer } from 'mobx-react-lite';
 import { UserRenderer } from '../../../components/UserRenderer/UserRenderer.js';
-import { isContractInTerminalState } from '../../../stores/lakehouse/LakehouseUtils.js';
+import {
+  getOrganizationalScopeTypeName,
+  isContractInTerminalState,
+} from '../../../stores/lakehouse/LakehouseUtils.js';
 import type { LegendMarketplaceBaseStore } from '../../../stores/LegendMarketplaceBaseStore.js';
 import { startCase } from '@finos/legend-shared';
 import { useAuth } from 'react-oidc-context';
@@ -214,6 +217,19 @@ export const EntitlementsPendingContractsDashbaord = observer(
 
     const colDefs: DataGridColumnDefinition<V1_DataContract>[] = [
       {
+        colId: 'consumerType',
+        headerName: 'Consumer Type',
+        valueGetter: (params) => {
+          const consumer = params.data?.consumer;
+          return consumer
+            ? getOrganizationalScopeTypeName(
+                consumer,
+                dashboardState.lakehouseEntitlementsStore.applicationStore.pluginManager.getApplicationPlugins(),
+              )
+            : 'Unknown';
+        },
+      },
+      {
         headerName: 'Target User(s)',
         colId: 'targetUser',
         cellRenderer: (params: DataGridCellRendererParams<V1_DataContract>) => (
@@ -242,37 +258,37 @@ export const EntitlementsPendingContractsDashbaord = observer(
       },
       {
         headerName: 'Target Data Product',
-        cellRenderer: (params: DataGridCellRendererParams<V1_DataContract>) => {
+        valueGetter: (params) => {
           const resource = params.data?.resource;
           const dataProduct =
             resource instanceof V1_AccessPointGroupReference
               ? resource.dataProduct
               : undefined;
-          return <>{dataProduct?.name ?? 'Unknown'}</>;
+          return dataProduct?.name ?? 'Unknown';
         },
       },
       {
         headerName: 'Target Access Point Group',
-        cellRenderer: (params: DataGridCellRendererParams<V1_DataContract>) => {
+        valueGetter: (params) => {
           const resource = params.data?.resource;
           const accessPointGroup =
             resource instanceof V1_AccessPointGroupReference
               ? resource.accessPointGroup
               : undefined;
-          return <>{accessPointGroup ?? 'Unknown'}</>;
+          return accessPointGroup ?? 'Unknown';
         },
       },
       {
         headerName: 'State',
-        cellRenderer: (params: DataGridCellRendererParams<V1_DataContract>) => {
+        valueGetter: (params) => {
           const state = params.data?.state;
           switch (state) {
             case V1_ContractState.PENDING_DATA_OWNER_APPROVAL:
-              return <>Data Owner Approval</>;
+              return 'Data Owner Approval';
             case V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL:
-              return <>Privilege Manager Approval</>;
+              return 'Privilege Manager Approval';
             default:
-              return <>{state ? startCase(state) : 'Unknown'}</>;
+              return state ? startCase(state) : 'Unknown';
           }
         },
       },
