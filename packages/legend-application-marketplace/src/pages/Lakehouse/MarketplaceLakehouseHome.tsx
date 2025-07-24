@@ -579,7 +579,7 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
     }, [marketPlaceStore, auth]);
 
     const isLoadingDataProducts =
-      marketPlaceStore.loadingProductsState.isInProgress ||
+      marketPlaceStore.loadingAllProductsState.isInProgress ||
       marketPlaceStore.loadingSandboxDataProductStates.isInProgress ||
       marketPlaceStore.loadingLakehouseEnvironmentsByDIDState.isInProgress;
 

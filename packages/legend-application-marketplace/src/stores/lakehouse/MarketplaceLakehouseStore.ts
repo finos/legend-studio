@@ -165,7 +165,8 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   dataProductStates: DataProductState[] = [];
   lakehouseIngestEnvironmentSummaries: IngestDeploymentServerConfig[] = [];
   lakehouseIngestEnvironmentDetails: V1_IngestEnvironment[] = [];
-  loadingProductsState = ActionState.create();
+  loadingAllProductsState = ActionState.create();
+  loadingProductState = ActionState.create();
   loadingLakehouseEnvironmentSummariesState = ActionState.create();
   loadingLakehouseEnvironmentsByDIDState = ActionState.create();
   loadingLakehouseEnvironmentDetailsState = ActionState.create();
@@ -331,7 +332,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
 
   async fetchDataProducts(token: string | undefined): Promise<void> {
     try {
-      this.loadingProductsState.inProgress();
+      this.loadingAllProductsState.inProgress();
       const rawResponse =
         await this.lakehouseContractServerClient.getDataProducts(token);
       const dataProductDetails =
@@ -364,13 +365,13 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       this.dataProductStates.forEach((dataProductState) =>
         dataProductState.init(),
       );
-      this.loadingProductsState.complete();
+      this.loadingAllProductsState.complete();
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(
         `Unable to load products: ${error.message}`,
       );
-      this.loadingProductsState.fail();
+      this.loadingAllProductsState.fail();
     }
   }
 
@@ -458,7 +459,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   *init(auth: AuthContextProps): GeneratorFn<void> {
     yield Promise.all([
       (async () => {
-        if (!this.loadingProductsState.hasCompleted) {
+        if (!this.loadingAllProductsState.hasCompleted) {
           await this.fetchDataProducts(auth.user?.access_token);
         }
       })(),
@@ -479,7 +480,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     auth: AuthContextProps,
   ): GeneratorFn<void> {
     try {
-      this.loadingProductsState.inProgress();
+      this.loadingProductState.inProgress();
       const rawResponse =
         (yield this.lakehouseContractServerClient.getDataProductByIdAndDID(
           dataProductId,
@@ -563,7 +564,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       );
       this.setDataProductViewerState(stateViewer);
       stateViewer.fetchContracts(auth.user?.access_token);
-      this.loadingProductsState.complete();
+      this.loadingProductState.complete();
       if (!this.loadingLakehouseEnvironmentSummariesState.hasCompleted) {
         yield this.fetchLakehouseEnvironmentSummaries(auth.user?.access_token);
       }
@@ -575,7 +576,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       this.applicationStore.notificationService.notifyError(
         `Unable to load product ${dataProductId}: ${error.message}`,
       );
-      this.loadingProductsState.fail();
+      this.loadingProductState.fail();
     }
   }
 
