@@ -56,6 +56,7 @@ import { useAuth } from 'react-oidc-context';
 import { observer } from 'mobx-react-lite';
 import { UserRenderer } from '../../../components/UserRenderer/UserRenderer.js';
 import type { LegendMarketplaceBaseStore } from '../../../stores/LegendMarketplaceBaseStore.js';
+import { getOrganizationalScopeTypeName } from '../../../stores/lakehouse/LakehouseUtils.js';
 
 const EntitlementsDashboardActionModal = (props: {
   open: boolean;
@@ -398,6 +399,26 @@ export const EntitlementsPendingTasksDashbaord = observer(
           const taskType = params.data?.eventPayload.type;
           const timestamp = params.data?.eventPayload.eventTimestamp;
           return `${taskType}: ${timestamp}`;
+        },
+      },
+      {
+        minWidth: 25,
+        sortable: true,
+        resizable: true,
+        colId: 'consumerType',
+        headerName: 'Consumer Type',
+        flex: 1,
+        valueGetter: (params) => {
+          const contractId = params.data?.dataContractId;
+          const consumer = allContracts?.find(
+            (contract) => contract.guid === contractId,
+          )?.consumer;
+          return consumer
+            ? getOrganizationalScopeTypeName(
+                consumer,
+                dashboardState.lakehouseEntitlementsStore.applicationStore.pluginManager.getApplicationPlugins(),
+              )
+            : 'Unknown';
         },
       },
       {
