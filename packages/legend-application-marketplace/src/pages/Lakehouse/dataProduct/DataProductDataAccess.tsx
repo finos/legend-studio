@@ -384,7 +384,7 @@ export const DataProductAccessPointGroupViewer = observer(
           auth.user?.access_token,
         );
       }
-    });
+    }, [accessGroupState, auth.user?.access_token]);
 
     const handleContractsClick = (): void => {
       accessGroupState.handleContractClick();
