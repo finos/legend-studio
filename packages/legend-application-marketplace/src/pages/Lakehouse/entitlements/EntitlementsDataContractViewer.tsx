@@ -189,9 +189,9 @@ export const EntitlementsDataContractViewer = observer(
               new Set<string>(
                 currentViewer.associatedTasks.map((task) => task.rec.consumer),
               ),
-            )
+            ).sort()
           : consumer instanceof V1_AdhocTeam
-            ? consumer.users.map((user) => user.name)
+            ? consumer.users.map((user) => user.name).sort()
             : undefined,
       [consumer, currentViewer.associatedTasks],
     );
