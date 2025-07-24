@@ -37,6 +37,7 @@ import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarket
 import { observer } from 'mobx-react-lite';
 import { UserRenderer } from '../../../components/UserRenderer/UserRenderer.js';
 import {
+  getOrganizationalScopeTypeName,
   isContractInTerminalState,
   stringifyOrganizationalScope,
 } from '../../../stores/lakehouse/LakehouseUtils.js';
@@ -161,6 +162,19 @@ export const EntitlementsClosedContractsDashbaord = observer(
 
     const colDefs: DataGridColumnDefinition<V1_DataContract>[] = [
       {
+        colId: 'consumerType',
+        headerName: 'Consumer Type',
+        valueGetter: (params) => {
+          const consumer = params.data?.consumer;
+          return consumer
+            ? getOrganizationalScopeTypeName(
+                consumer,
+                dashboardState.lakehouseEntitlementsStore.applicationStore.pluginManager.getApplicationPlugins(),
+              )
+            : 'Unknown';
+        },
+      },
+      {
         headerName: 'Target User',
         colId: 'targetUser',
         cellRenderer: (params: DataGridCellRendererParams<V1_DataContract>) => {
@@ -199,24 +213,24 @@ export const EntitlementsClosedContractsDashbaord = observer(
       },
       {
         headerName: 'Target Data Product',
-        cellRenderer: (params: DataGridCellRendererParams<V1_DataContract>) => {
+        valueGetter: (params) => {
           const resource = params.data?.resource;
           const dataProduct =
             resource instanceof V1_AccessPointGroupReference
               ? resource.dataProduct
               : undefined;
-          return <>{dataProduct?.name ?? 'Unknown'}</>;
+          return dataProduct?.name ?? 'Unknown';
         },
       },
       {
         headerName: 'Target Access Point Group',
-        cellRenderer: (params: DataGridCellRendererParams<V1_DataContract>) => {
+        valueGetter: (params) => {
           const resource = params.data?.resource;
           const accessPointGroup =
             resource instanceof V1_AccessPointGroupReference
               ? resource.accessPointGroup
               : undefined;
-          return <>{accessPointGroup ?? 'Unknown'}</>;
+          return accessPointGroup ?? 'Unknown';
         },
       },
       {
