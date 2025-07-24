@@ -310,6 +310,7 @@ export const EntitlementsDataContractViewer = observer(
       label: React.ReactNode;
       isCompleteOrActive: boolean;
       description?: React.ReactNode;
+      isDeniedStep?: boolean;
     }[] = [
       { key: 'submitted', isCompleteOrActive: true, label: <>Submitted</> },
       {
@@ -360,6 +361,11 @@ export const EntitlementsDataContractViewer = observer(
               marketplaceStore={legendMarketplaceStore}
             />
           ),
+        isDeniedStep:
+          privilegeManagerApprovalTask?.rec.status ===
+            V1_UserApprovalStatus.DENIED ||
+          privilegeManagerApprovalTask?.rec.status ===
+            V1_UserApprovalStatus.REVOKED,
       },
       {
         key: 'data-producer-approval',
@@ -407,6 +413,9 @@ export const EntitlementsDataContractViewer = observer(
               marketplaceStore={legendMarketplaceStore}
             />
           ) : undefined,
+        isDeniedStep:
+          dataOwnerApprovalTask?.rec.status === V1_UserApprovalStatus.DENIED ||
+          dataOwnerApprovalTask?.rec.status === V1_UserApprovalStatus.REVOKED,
       },
       {
         key: 'complete',
@@ -533,7 +542,7 @@ export const EntitlementsDataContractViewer = observer(
                       </TimelineOppositeContent>
                       <TimelineSeparator>
                         <TimelineDot
-                          color="primary"
+                          color={step.isDeniedStep ? 'error' : 'primary'}
                           variant={
                             step.isCompleteOrActive ? 'filled' : 'outlined'
                           }
