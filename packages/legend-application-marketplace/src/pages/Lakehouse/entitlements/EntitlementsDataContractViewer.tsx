@@ -72,8 +72,7 @@ import {
   generateLakehouseDataProductPath,
   generateLakehouseTaskPath,
 } from '../../../__lib__/LegendMarketplaceNavigation.js';
-import type { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
-import type { DataProductGroupAccessState } from '../../../stores/lakehouse/DataProductDataAccessState.js';
+import { type DataProductGroupAccessState } from '../../../stores/lakehouse/DataProductDataAccessState.js';
 import { UserRenderer } from '../../../components/UserRenderer/UserRenderer.js';
 import type { LegendMarketplaceBaseStore } from '../../../stores/LegendMarketplaceBaseStore.js';
 
@@ -162,7 +161,6 @@ export const EntitlementsDataContractViewer = observer(
     open: boolean;
     currentViewer: EntitlementsDataContractViewerState;
     dataProductGroupAccessState?: DataProductGroupAccessState | undefined;
-    dataProductViewerState?: DataProductViewerState | undefined;
     onClose: () => void;
     initialSelectedUser?: string | undefined;
   }) => {
@@ -170,7 +168,6 @@ export const EntitlementsDataContractViewer = observer(
       open,
       currentViewer,
       dataProductGroupAccessState,
-      dataProductViewerState,
       onClose,
       initialSelectedUser,
     } = props;
@@ -248,12 +245,10 @@ export const EntitlementsDataContractViewer = observer(
 
     const refresh = async (): Promise<void> => {
       setIsLoading(true);
-      await flowResult(
-        dataProductViewerState?.fetchContracts(auth.user?.access_token),
-      );
       if (dataProductGroupAccessState?.associatedContract) {
-        dataProductViewerState?.setDataContract(
-          dataProductGroupAccessState.associatedContract,
+        dataProductGroupAccessState?.fetchUserAccessStatus(
+          dataProductGroupAccessState.associatedContract.guid,
+          auth.user?.access_token,
         );
       }
       await flowResult(currentViewer.init(auth.user?.access_token))

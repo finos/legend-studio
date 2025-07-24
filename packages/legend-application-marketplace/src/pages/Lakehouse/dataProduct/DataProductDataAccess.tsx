@@ -686,7 +686,6 @@ export const DataProductAccessPointGroupViewer = observer(
               )
             }
             dataProductGroupAccessState={accessGroupState}
-            dataProductViewerState={accessGroupState.accessState.viewerState}
             onClose={() =>
               accessGroupState.accessState.viewerState.setDataContract(
                 undefined,
