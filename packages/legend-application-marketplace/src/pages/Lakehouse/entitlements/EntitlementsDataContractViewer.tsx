@@ -50,7 +50,11 @@ import {
   V1_UserApprovalStatus,
 } from '@finos/legend-graph';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { formatDate, lodashCapitalize } from '@finos/legend-shared';
+import {
+  ActionState,
+  formatDate,
+  lodashCapitalize,
+} from '@finos/legend-shared';
 import {
   getOrganizationalScopeTypeDetails,
   isContractInTerminalState,
@@ -231,17 +235,19 @@ export const EntitlementsDataContractViewer = observer(
         flowResult(currentViewer.init(auth.user?.access_token))
           .catch(legendMarketplaceStore.applicationStore.alertUnhandledError)
           .finally(() => setIsLoading(false));
-      } else {
-        setSelectedTargetUser(initialSelectedUser ?? targetUsers?.[0]);
       }
     }, [
       auth.user?.access_token,
       currentViewer,
       currentViewer.initializationState,
-      initialSelectedUser,
       legendMarketplaceStore.applicationStore.alertUnhandledError,
-      targetUsers,
     ]);
+
+    useEffect(() => {
+      if (selectedTargetUser === undefined) {
+        setSelectedTargetUser(initialSelectedUser ?? targetUsers?.[0]);
+      }
+    }, [initialSelectedUser, selectedTargetUser, targetUsers]);
 
     const refresh = async (): Promise<void> => {
       setIsLoading(true);
@@ -251,9 +257,7 @@ export const EntitlementsDataContractViewer = observer(
           auth.user?.access_token,
         );
       }
-      await flowResult(currentViewer.init(auth.user?.access_token))
-        .catch(legendMarketplaceStore.applicationStore.alertUnhandledError)
-        .finally(() => setIsLoading(false));
+      currentViewer.initializationState = ActionState.create();
     };
 
     if (
