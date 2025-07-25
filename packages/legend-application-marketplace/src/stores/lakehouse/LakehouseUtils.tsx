@@ -137,13 +137,13 @@ export const getOrganizationalScopeTypeName = (
 export const getOrganizationalScopeTypeDetails = (
   scope: V1_OrganizationalScope,
   plugins: LegendMarketplaceApplicationPlugin[],
-): React.ReactNode => {
+): React.ReactNode | null => {
   if (
     scope instanceof V1_AppDirOrganizationalScope ||
     scope instanceof V1_AdhocTeam ||
     scope instanceof V1_UnknownOrganizationalScopeType
   ) {
-    return <>{getOrganizationalScopeTypeName(scope, plugins)}</>;
+    return null;
   } else {
     const detailsRenderers = plugins
       .flatMap((plugin) =>
@@ -159,6 +159,6 @@ export const getOrganizationalScopeTypeDetails = (
       }
     }
 
-    return <>Unknown</>;
+    return null;
   }
 };
