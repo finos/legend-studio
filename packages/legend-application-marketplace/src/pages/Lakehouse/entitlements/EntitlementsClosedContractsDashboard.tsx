@@ -15,6 +15,7 @@
  */
 
 import {
+  type V1_ContractUserEventRecord,
   type V1_DataContract,
   type V1_EnrichedUserApprovalStatus,
   V1_AccessPointGroupReference,
@@ -28,7 +29,7 @@ import {
   type DataGridCellRendererParams,
   type DataGridColumnDefinition,
 } from '@finos/legend-lego/data-grid';
-import { Box, FormControlLabel, Switch } from '@mui/material';
+import { Box, FormControlLabel, Switch, Tooltip } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import type { EntitlementsDashboardState } from '../../../stores/lakehouse/entitlements/EntitlementsDashboardState.js';
 import { EntitlementsDataContractViewer } from './EntitlementsDataContractViewer.js';
@@ -37,6 +38,7 @@ import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarket
 import { observer } from 'mobx-react-lite';
 import { UserRenderer } from '../../../components/UserRenderer/UserRenderer.js';
 import {
+  getOrganizationalScopeTypeDetails,
   getOrganizationalScopeTypeName,
   isContractInTerminalState,
   stringifyOrganizationalScope,
@@ -45,6 +47,7 @@ import { lodashCapitalize } from '@finos/legend-shared';
 import { MultiUserCellRenderer } from '../../../components/MultiUserCellRenderer/MultiUserCellRenderer.js';
 import { useAuth } from 'react-oidc-context';
 import { deserialize } from 'serializr';
+import { InfoCircleIcon } from '@finos/legend-art';
 
 export const EntitlementsClosedContractsDashbaord = observer(
   (props: { dashboardState: EntitlementsDashboardState }): React.ReactNode => {
@@ -164,14 +167,35 @@ export const EntitlementsClosedContractsDashbaord = observer(
       {
         colId: 'consumerType',
         headerName: 'Consumer Type',
-        valueGetter: (params) => {
+        cellRenderer: (
+          params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
+        ) => {
           const consumer = params.data?.consumer;
-          return consumer
+          const typeName = consumer
             ? getOrganizationalScopeTypeName(
                 consumer,
                 dashboardState.lakehouseEntitlementsStore.applicationStore.pluginManager.getApplicationPlugins(),
               )
-            : 'Unknown';
+            : undefined;
+          const typeDetails = consumer
+            ? getOrganizationalScopeTypeDetails(
+                consumer,
+                dashboardState.lakehouseEntitlementsStore.applicationStore.pluginManager.getApplicationPlugins(),
+              )
+            : undefined;
+          return (
+            <>
+              {typeName ?? 'Unknown'}
+              {typeDetails !== undefined && (
+                <Tooltip
+                  className="marketplace-lakehouse-entitlements__grid__consumer-type__tooltip__icon"
+                  title={typeDetails}
+                >
+                  <InfoCircleIcon />
+                </Tooltip>
+              )}
+            </>
+          );
         },
       },
       {
