@@ -72,14 +72,11 @@
     }
 
     &__tooltip__icon {
+      @include hoverableLightTooltipIcon;
+
       display: inline-block;
       margin-left: 0.5rem;
       margin-bottom: 0.5rem;
-      color: var(--color-light-grey-400);
-
-      &:hover {
-        color: unset;
-      }
     }
   }
 
@@ -108,6 +105,14 @@
 
     &__user-display {
       height: 100%;
+    }
+
+    &__consumer-type__tooltip__icon {
+      @include hoverableLightTooltipIcon;
+
+      display: inline-block;
+      margin-left: 0.5rem;
+      margin-bottom: 0.5rem;
     }
   }
 }
@@ -221,14 +226,11 @@
       }
 
       &__tooltip__icon {
+        @include hoverableLightTooltipIcon;
+
         display: inline-block;
         margin-left: 0.5rem;
         margin-bottom: 0.5rem;
-        color: var(--color-dark-grey-500);
-
-        &:hover {
-          color: unset;
-        }
       }
     }
   }

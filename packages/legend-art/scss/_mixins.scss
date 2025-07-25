@@ -55,3 +55,11 @@
   flex-grow: 0;
   flex-shrink: 0;
 }
+
+@mixin hoverableLightTooltipIcon {
+  color: var(--color-dark-grey-500);
+
+  &:hover {
+    color: unset;
+  }
+}

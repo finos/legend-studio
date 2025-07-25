@@ -30,6 +30,9 @@ export type ContractConsumerTypeRendererConfig = {
     handleDescriptionChange: (description: string | undefined) => void,
     handleIsValidChange: (isValid: boolean) => void,
   ) => React.ReactNode;
+  organizationalScopeTypeName?: (
+    consumer: V1_OrganizationalScope,
+  ) => string | undefined;
   organizationalScopeTypeDetailsRenderer?: (
     consumer: V1_OrganizationalScope,
   ) => React.ReactNode | undefined;
