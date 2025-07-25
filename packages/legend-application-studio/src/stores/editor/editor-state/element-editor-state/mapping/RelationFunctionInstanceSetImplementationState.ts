@@ -22,6 +22,7 @@ import {
   RelationColumn,
   RelationFunctionPropertyMapping,
   type RelationFunctionInstanceSetImplementation,
+  isStubbed_RelationColumn,
 } from '@finos/legend-graph';
 import type { EditorStore } from '../../../EditorStore.js';
 import { MAPPING_ELEMENT_TYPE } from './MappingEditorState.js';
@@ -30,7 +31,6 @@ import {
   PropertyMappingState,
   InstanceSetImplementationState,
 } from './MappingElementState.js';
-import { isStubbed_RelationColumn } from '../../../../graph-modifier/STO_RelationFunction_GraphModifierHelper.js';
 
 export class RelationFunctionPropertyMappingState extends PropertyMappingState {
   editorStore: EditorStore;
