@@ -106,7 +106,10 @@ export const buildRelationAggregation = (
         `Can't create value spec for projection column ${projectionColumnState.columnName}. Missing type.`,
       );
       relationType.columns.push(
-        new RelationColumn(projectionColumnState.columnName, returnType),
+        new RelationColumn(
+          projectionColumnState.columnName,
+          GenericTypeExplicitReference.create(new GenericType(returnType)),
+        ),
       );
     });
 
@@ -176,7 +179,10 @@ export const buildRelationAggregation = (
       `Can't create value spec for aggregation column ${aggregationColumnState.columnName}. Missing type.`,
     );
     relationType.columns.push(
-      new RelationColumn(aggregationColumnState.columnName, returnType),
+      new RelationColumn(
+        aggregationColumnState.columnName,
+        GenericTypeExplicitReference.create(new GenericType(returnType)),
+      ),
     );
   });
 

@@ -1252,7 +1252,6 @@ export class V1_PropertyMappingBuilder
         this.context,
       ),
     );
-    const propertyType = property.genericType.value.rawType;
     const propertyMapping = new RelationFunctionPropertyMapping(
       this.topParent ?? this.immediateParent,
       PropertyImplicitReference.create(
@@ -1267,7 +1266,7 @@ export class V1_PropertyMappingBuilder
         protocol.source,
       ),
       undefined,
-      new RelationColumn(protocol.column, propertyType),
+      new RelationColumn(protocol.column, property.genericType),
     );
     propertyMapping.localMappingProperty = localMapping;
     return propertyMapping;

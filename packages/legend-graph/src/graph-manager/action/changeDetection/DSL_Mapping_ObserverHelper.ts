@@ -99,8 +99,8 @@ import {
 import {
   observe_ConcreteFunctionDefinition,
   observe_EnumValueReference,
+  observe_GenericTypeReference,
   observe_PropertyReference,
-  observe_Type,
 } from './DomainObserverHelper.js';
 import { observe_RawLambda } from './RawValueSpecificationObserver.js';
 import {
@@ -230,11 +230,11 @@ export const observe_RelationColumn = skipObserved(
   (metamodel: RelationColumn): RelationColumn => {
     makeObservable(metamodel, {
       name: observable,
-      type: observable,
+      genericType: observable,
       hashCode: computed,
     });
-
-    observe_Type(metamodel.type);
+    // FIXME
+    observe_GenericTypeReference(metamodel.genericType);
 
     return metamodel;
   },

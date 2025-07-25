@@ -102,6 +102,12 @@ import type { PropertyOwner } from '../../../../../../../graph/metamodel/pure/pa
 import type { DataElement } from '../../../../../../../graph/metamodel/pure/packageableElements/data/DataElement.js';
 import type { V1_GenericType } from '../../../model/packageableElements/type/V1_GenericType.js';
 import { V1_getGenericTypeFullPath } from '../../../helpers/V1_DomainHelper.js';
+import { V1_RelationType } from '../../../model/packageableElements/type/V1_RelationType.js';
+import {
+  RelationColumn,
+  RelationType,
+} from '../../../../../../../graph/metamodel/pure/packageableElements/relation/RelationType.js';
+import { V1_buildValueSpecification } from './helpers/V1_ValueSpecificationBuilderHelper.js';
 
 export const V1_buildFullPath = (
   packagePath: string | undefined,
@@ -331,6 +337,41 @@ export class V1_GraphBuilderContext {
       this.resolveGenericTypeFromProtocol(g),
     );
     const value = newGenericType(ownerReference.value, typeArguments);
+    return GenericTypeImplicitReference.create(ownerReference, value);
+  };
+
+  resolveGenericTypeFromProtocolWithRelationType = (
+    genericType: V1_GenericType,
+  ): GenericTypeReference => {
+    let ownerReference: PackageableElementImplicitReference<PackageableElement>;
+    const rawType = genericType.rawType;
+    if (rawType instanceof V1_RelationType) {
+      const _relType = new RelationType(RelationType.ID);
+      _relType.columns = rawType.columns.map((_col) => {
+        const relCol = new RelationColumn(
+          _col.name,
+          this.resolveGenericTypeFromProtocolWithRelationType(_col.genericType),
+        );
+        relCol.multiplicity = this.graph.getMultiplicity(
+          _col.multiplicity.lowerBound,
+          _col.multiplicity.upperBound,
+        );
+        return relCol;
+      });
+      ownerReference = PackageableElementImplicitReference.create(
+        _relType,
+        V1_RelationType.NAME,
+      );
+    } else {
+      ownerReference = this.resolveType(V1_getGenericTypeFullPath(genericType));
+    }
+    const typeArguments = genericType.typeArguments.map((g) =>
+      this.resolveGenericTypeFromProtocolWithRelationType(g),
+    );
+    const value = newGenericType(ownerReference.value, typeArguments);
+    value.typeVariableValues = genericType.typeVariableValues.map((v) =>
+      V1_buildValueSpecification(v, this),
+    );
     return GenericTypeImplicitReference.create(ownerReference, value);
   };
 

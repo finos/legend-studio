@@ -128,7 +128,7 @@ export class DataCubeColumnConfiguration {
 
   _convertPreciseToPrimitiveType(type: string) {
     switch (type) {
-      case PRECISE_PRIMITIVE_TYPE.STRING:
+      case PRECISE_PRIMITIVE_TYPE.VARCHAR:
         return PRIMITIVE_TYPE.STRING;
       case PRECISE_PRIMITIVE_TYPE.SMALL_INT:
       case PRECISE_PRIMITIVE_TYPE.TINY_INT:

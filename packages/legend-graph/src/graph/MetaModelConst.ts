@@ -62,7 +62,7 @@ export enum PRIMITIVE_TYPE {
 }
 
 export enum PRECISE_PRIMITIVE_TYPE {
-  STRING = 'meta::pure::precisePrimitives::Varchar',
+  VARCHAR = 'meta::pure::precisePrimitives::Varchar',
   INT = 'meta::pure::precisePrimitives::Int',
   TINY_INT = 'meta::pure::precisePrimitives::TinyInt',
   U_TINY_INT = 'meta::pure::precisePrimitives::UTinyInt',
@@ -77,6 +77,7 @@ export enum PRECISE_PRIMITIVE_TYPE {
   STRICTDATE = 'meta::pure::precisePrimitives::Date',
   DATETIME = 'meta::pure::precisePrimitives::Timestamp',
   STRICTTIME = 'meta::pure::precisePrimitives::Time',
+  NUMERIC = 'meta::pure::precisePrimitives::Numeric',
 }
 
 export enum ATOMIC_TEST_TYPE {

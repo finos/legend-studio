@@ -329,8 +329,9 @@ export abstract class BasicModel {
     this.sectionIndicesIndex.get(path);
   getOwnNullableProfile = (path: string): Profile | undefined =>
     this.profilesIndex.get(path);
-  getOwnNullableType = (path: string): Type | undefined =>
-    this.typesIndex.get(path);
+  getOwnNullableType(path: string): Type | undefined {
+    return this.typesIndex.get(path);
+  }
   getOwnNullableClass = (path: string): Class | undefined => {
     const el = this.getOwnNullableType(path);
     return el instanceof Class ? el : undefined;
