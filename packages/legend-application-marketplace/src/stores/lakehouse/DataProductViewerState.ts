@@ -15,7 +15,6 @@
  */
 
 import {
-  NAVIGATION_ZONE_SEPARATOR,
   type GenericLegendApplicationStore,
   type NavigationZone,
 } from '@finos/legend-application';
@@ -39,14 +38,7 @@ import {
 } from '@finos/legend-graph';
 import type { VersionedProjectData } from '@finos/legend-server-depot';
 import { action, computed, flow, makeObservable, observable } from 'mobx';
-import {
-  DATA_PRODUCT_WIKI_PAGE_SECTIONS,
-  DataProductLayoutState,
-} from './DataProductLayoutState.js';
-import {
-  DATA_PRODUCT_VIEWER_ACTIVITY_MODE,
-  generateAnchorForActivity,
-} from './DataProductViewerNavigation.js';
+import { DataProductLayoutState } from './DataProductLayoutState.js';
 import { DataProductDataAccessState } from './DataProductDataAccessState.js';
 import {
   ActionState,
@@ -60,6 +52,7 @@ import { serialize } from 'serializr';
 import { dataContractContainsDataProduct } from './LakehouseUtils.js';
 import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
 import type { MarketplaceLakehouseStore } from './MarketplaceLakehouseStore.js';
+import { DATA_PRODUCT_VIEWER_SECTION } from './DataProductViewerNavigation.js';
 
 export class DataProductViewerState {
   readonly applicationStore: GenericLegendApplicationStore;
@@ -79,7 +72,6 @@ export class DataProductViewerState {
 
   // we may want to move this out eventually
   readonly lakeServerClient: LakehouseContractServerClient;
-  currentActivity = DATA_PRODUCT_VIEWER_ACTIVITY_MODE.DESCRIPTION;
   accessState: DataProductDataAccessState;
   generation: DataProductArtifactGeneration | undefined;
   associatedContracts: V1_DataContract[] | undefined;
@@ -106,8 +98,6 @@ export class DataProductViewerState {
     },
   ) {
     makeObservable(this, {
-      currentActivity: observable,
-      setCurrentActivity: action,
       isVerified: computed,
       accessState: observable,
       fetchContracts: flow,
@@ -267,10 +257,6 @@ export class DataProductViewerState {
     }
   }
 
-  setCurrentActivity(val: DATA_PRODUCT_VIEWER_ACTIVITY_MODE): void {
-    this.currentActivity = val;
-  }
-
   get isVerified(): boolean {
     // TODO what does it mean if data product is vertified ?
     return true;
@@ -285,26 +271,17 @@ export class DataProductViewerState {
       this.layoutState.setCurrentNavigationZone('');
     }
     if (zone !== this.layoutState.currentNavigationZone) {
-      const zoneChunks = zone.split(NAVIGATION_ZONE_SEPARATOR);
-      const activityChunk = zoneChunks[0];
-      const matchingActivity = Object.values(
-        DATA_PRODUCT_VIEWER_ACTIVITY_MODE,
-      ).find(
-        (activity) => generateAnchorForActivity(activity) === activityChunk,
-      );
-      if (activityChunk && matchingActivity) {
-        if (DATA_PRODUCT_WIKI_PAGE_SECTIONS.includes(matchingActivity)) {
-          this.layoutState.setWikiPageAnchorToNavigate({
-            anchor: zone,
-          });
-        }
-        this.setCurrentActivity(matchingActivity);
-        this.onZoneChange?.(zone);
-        this.layoutState.setCurrentNavigationZone(zone);
-      } else {
-        this.setCurrentActivity(DATA_PRODUCT_VIEWER_ACTIVITY_MODE.DESCRIPTION);
-        this.layoutState.setCurrentNavigationZone('');
+      if (
+        Object.values(DATA_PRODUCT_VIEWER_SECTION)
+          .map((e) => e.toString())
+          .includes(zone)
+      ) {
+        this.layoutState.setWikiPageAnchorToNavigate({
+          anchor: zone,
+        });
       }
+      this.onZoneChange?.(zone);
+      this.layoutState.setCurrentNavigationZone(zone);
     }
   }
 }
