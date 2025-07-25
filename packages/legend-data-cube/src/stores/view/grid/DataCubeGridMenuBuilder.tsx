@@ -53,6 +53,7 @@ import { useGridMenuItem, type CustomMenuItemProps } from 'ag-grid-react';
 import { FormBadge_WIP } from '../../../components/core/DataCubeFormUtils.js';
 import { DataCubeEvent } from '../../../__lib__/DataCubeEvent.js';
 import type { DataCubeDimensionalMetadata } from './DataCubeGridDimensionalTree.js';
+import { AlertType } from '../../services/DataCubeAlertService.js';
 
 export function WIP_GridMenuItem({
   name,
@@ -204,10 +205,31 @@ export function generateMenuBuilder(
   const editor = view.editor;
   const extend = view.extend;
 
+  const USER_WARNING_MESSAGE =
+    'I attest that I am aware of the sensitive data leakage risk when exporting queried data. The data I export will only be used by me.';
+
   const logEmail = (format: string) => {
     view.dataCube.telemetryService.sendTelemetry(DataCubeEvent.EMAIL_DATACUBE, {
       ...view.engine.getDataFromSource(view.getInitialSource()),
       emailFormat: format,
+    });
+  };
+
+  const confirmExport = (onAccept: () => void) => {
+    view.alertService.alert({
+      message: `Confirm you want to proceed with export`,
+      text: USER_WARNING_MESSAGE,
+      type: AlertType.WARNING,
+      actions: [
+        {
+          label: 'Decline',
+          handler: () => {},
+        },
+        {
+          label: 'Accept',
+          handler: onAccept,
+        },
+      ],
     });
   };
 
@@ -465,28 +487,36 @@ export function generateMenuBuilder(
           {
             name: 'Excel (Grid)',
             action: () => {
-              view.grid.exportEngine.exportFile(
-                DataCubeGridClientExportFormat.EXCEL,
-              );
-              logExport(DataCubeGridClientExportFormat.EXCEL);
+              confirmExport(() => {
+                view.grid.exportEngine.exportFile(
+                  DataCubeGridClientExportFormat.EXCEL,
+                );
+                logExport(DataCubeGridClientExportFormat.EXCEL);
+              });
             },
           },
           {
             name: 'CSV (Grid)',
             action: () => {
-              view.grid.exportEngine.exportFile(
-                DataCubeGridClientExportFormat.CSV,
-              );
-              logExport(DataCubeGridClientExportFormat.CSV);
+              confirmExport(() => {
+                view.grid.exportEngine.exportFile(
+                  DataCubeGridClientExportFormat.CSV,
+                );
+                logExport(DataCubeGridClientExportFormat.EXCEL);
+              });
             },
           },
           {
             name: 'CSV',
             action: () => {
-              view.grid.exportEngine
-                .exportCSV(view.source, view.engine)
-                .catch((error) => view.alertService.alertUnhandledError(error));
-              logExport(DataCubeGridClientExportFormat.CSV);
+              confirmExport(() => {
+                view.grid.exportEngine
+                  .exportCSV(view.source, view.engine)
+                  .catch((error) =>
+                    view.alertService.alertUnhandledError(error),
+                  );
+                logExport(DataCubeGridClientExportFormat.CSV);
+              });
             },
           },
           'separator',
@@ -533,7 +563,7 @@ export function generateMenuBuilder(
             disabled: true,
           },
           {
-            name: 'Excel Attachment',
+            name: 'Excel (Grid) Attachment',
             action: () => {
               view.grid.exportEngine
                 .exportEmail(DataCubeGridClientExportFormat.EXCEL)
@@ -544,7 +574,7 @@ export function generateMenuBuilder(
             },
           },
           {
-            name: 'CSV Attachment',
+            name: 'CSV (Grid) Attachment',
             action: () => {
               view.grid.exportEngine
                 .exportEmail(DataCubeGridClientExportFormat.CSV)
