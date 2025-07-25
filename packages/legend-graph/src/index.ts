@@ -780,6 +780,7 @@ export {
   IdentifiedConnection,
   StoreConnections,
 } from './graph/metamodel/pure/packageableElements/runtime/Runtime.js';
+export * from './graph/helpers/STO_RelationFunction_Helper.js';
 export { PackageableRuntime } from './graph/metamodel/pure/packageableElements/runtime/PackageableRuntime.js';
 export { PureInstanceSetImplementation } from './graph/metamodel/pure/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation.js';
 export {

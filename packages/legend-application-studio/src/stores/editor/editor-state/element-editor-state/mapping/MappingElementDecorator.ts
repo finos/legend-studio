@@ -68,6 +68,7 @@ import {
   type INTERNAL__UnknownSetImplementation,
   type RelationFunctionInstanceSetImplementation,
   RelationFunctionPropertyMapping,
+  isStubbed_RelationColumn,
 } from '@finos/legend-graph';
 import type { EditorStore } from '../../../EditorStore.js';
 import {
@@ -81,7 +82,6 @@ import {
 } from '../../../../graph-modifier/DSL_Mapping_GraphModifierHelper.js';
 import { rootRelationalSetImp_setPropertyMappings } from '../../../../graph-modifier/STO_Relational_GraphModifierHelper.js';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../../extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
-import { isStubbed_RelationColumn } from '../../../../graph-modifier/STO_RelationFunction_GraphModifierHelper.js';
 
 /**
  * Iterate through all properties (including supertypes' properties) of the set implementation

@@ -177,10 +177,11 @@ import type { INTERNAL__UnknownSetImplementation } from '../../../../../../../gr
 import { V1_INTERNAL__UnknownClassMapping } from '../../../model/packageableElements/mapping/V1_INTERNAL__UnknownClassMapping.js';
 import { V1_PackageableElementPointer } from '../../../model/packageableElements/V1_PackageableElement.js';
 import type { RelationFunctionInstanceSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/relationFunction/RelationFunctionInstanceSetImplementation.js';
-import type { RelationFunctionPropertyMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/relationFunction/RelationFunctionPropertyMapping.js';
+import { RelationFunctionPropertyMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/relationFunction/RelationFunctionPropertyMapping.js';
 import { V1_RelationFunctionPropertyMapping } from '../../../model/packageableElements/mapping/V1_RelationFunctionPropertyMapping.js';
 import { V1_RelationFunctionClassMapping } from '../../../model/packageableElements/mapping/V1_RelationFunctionClassMapping.js';
 import { generateFunctionPrettyName } from '../../../../../../../graph/helpers/PureLanguageHelper.js';
+import { isStubbed_RelationColumn } from '../../../../../../../graph/helpers/STO_RelationFunction_Helper.js';
 
 export const V1_transformPropertyReference = (
   element: PropertyReference,
@@ -466,6 +467,8 @@ const transformClassMappingPropertyMappings = (
         return !isStubbed_RawRelationalOperationElement(
           value.relationalOperation,
         );
+      } else if (value instanceof RelationFunctionPropertyMapping) {
+        return !isStubbed_RelationColumn(value.column);
       }
       const checkerResult = context.plugins
         .flatMap(
