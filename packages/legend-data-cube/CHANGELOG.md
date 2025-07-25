@@ -1,5 +1,11 @@
 # @finos/legend-data-cube
 
+## 0.3.5
+
+### Patch Changes
+
+- [#4291](https://github.com/finos/legend-studio/pull/4291) [`f729c0e`](https://github.com/finos/legend-studio/commit/f729c0ef7a9c89e1cdb7a9e856e53ad4e6a781cd) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: attestation warning for export
+
 ## 0.3.4
 
 ## 0.3.3
