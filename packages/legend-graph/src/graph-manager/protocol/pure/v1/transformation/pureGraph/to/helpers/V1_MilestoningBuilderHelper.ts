@@ -31,6 +31,8 @@ import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
 import type { STO_Relational_PureProtocolProcessorPlugin_Extension } from '../../../../../extensions/STO_Relational_PureProtocolProcessorPlugin_Extension.js';
 import { RawPrimitiveInstanceValue } from '../../../../../../../../graph/metamodel/pure/rawValueSpecification/RawPrimitiveInstanceValue.js';
 import { V1_RawValueSpecificationBuilder } from '../V1_RawValueSpecificationBuilder.js';
+import { ProcessingSnapshotMilestoning } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/milestoning/ProcessingSnapshotMilestoning.js';
+import { V1_ProcessingSnapshotMilestoning } from '../../../../model/packageableElements/store/relational/model/milestoning/V1_ProcessingSnapshotMilestoning.js';
 
 const buildBusinessMilesoning = (
   protocol: V1_BusinessMilestoning,
@@ -108,6 +110,26 @@ const buildProcessingMilestoning = (
   return metamodel;
 };
 
+const buildProcessingSnapshotMilestoning = (
+  protocol: V1_ProcessingSnapshotMilestoning,
+  context: V1_GraphBuilderContext,
+): ProcessingSnapshotMilestoning => {
+  assertNonEmptyString(
+    protocol.snapshotDate,
+    'Processing snapshot milestoning snapshotDate value is required',
+  );
+  const metamodel = new ProcessingSnapshotMilestoning(protocol.snapshotDate);
+  if (protocol.infinityDate) {
+    metamodel.infinityDate = guaranteeType(
+      protocol.infinityDate.accept_RawValueSpecificationVisitor(
+        new V1_RawValueSpecificationBuilder(context),
+      ),
+      RawPrimitiveInstanceValue,
+    );
+  }
+  return metamodel;
+};
+
 export const V1_buildMilestoning = (
   protocol: V1_Milestoning,
   context: V1_GraphBuilderContext,
@@ -118,6 +140,8 @@ export const V1_buildMilestoning = (
     return buildBusinessSnapshotMilestoning(protocol, context);
   } else if (protocol instanceof V1_ProcessingMilestoning) {
     return buildProcessingMilestoning(protocol, context);
+  } else if (protocol instanceof V1_ProcessingSnapshotMilestoning) {
+    return buildProcessingSnapshotMilestoning(protocol, context);
   }
   const extraMilestoningBuilders = context.extensions.plugins.flatMap(
     (plugin) =>

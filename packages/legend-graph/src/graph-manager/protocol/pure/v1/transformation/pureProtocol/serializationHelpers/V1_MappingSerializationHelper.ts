@@ -675,6 +675,10 @@ const relationFunctionPropertyMappingModelSchema = createModelSchema(
     source: optional(primitive()),
     target: optional(primitive()),
     column: primitive(),
+    bindingTransformer: optionalCustom(
+      (val) => serialize(bindingTransformerModelSchema, val),
+      (val) => deserialize(bindingTransformerModelSchema, val),
+    ),
   },
 );
 
