@@ -138,6 +138,7 @@ import type { INTERNAL__UnknownStore } from '../../../graph/metamodel/pure/packa
 import type { RelationFunctionInstanceSetImplementation } from '../../../graph/metamodel/pure/packageableElements/mapping/relationFunction/RelationFunctionInstanceSetImplementation.js';
 import type { RelationFunctionPropertyMapping } from '../../../graph/metamodel/pure/packageableElements/mapping/relationFunction/RelationFunctionPropertyMapping.js';
 import { type RelationColumn } from '../../../graph/metamodel/pure/packageableElements/relation/RelationType.js';
+import { observe_BindingTransformer } from './DSL_ExternalFormat_ObserverHelper.js';
 
 // ------------------------------------- Store -------------------------------------
 
@@ -315,10 +316,14 @@ export const observe_RelationFunctionPropertyMapping = skipObservedWithContext(
 
     makeObservable(metamodel, {
       column: observable,
+      bindingTransformer: observable,
       hashCode: computed,
     });
 
     observe_RelationColumn(metamodel.column);
+    if (metamodel.bindingTransformer) {
+      observe_BindingTransformer(metamodel.bindingTransformer);
+    }
 
     return metamodel;
   },

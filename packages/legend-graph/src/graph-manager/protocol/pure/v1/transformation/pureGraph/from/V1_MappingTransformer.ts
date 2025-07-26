@@ -780,6 +780,13 @@ const transformRelationFunctionPropertyMapping = (
 ): V1_RelationFunctionPropertyMapping => {
   const propertyMapping = new V1_RelationFunctionPropertyMapping();
   propertyMapping.column = element.column.name;
+  if (element.bindingTransformer?.binding) {
+    const bindingTransformer = new V1_BindingTransformer();
+    bindingTransformer.binding = guaranteeNonEmptyString(
+      element.bindingTransformer.binding.valueForSerialization,
+    );
+    propertyMapping.bindingTransformer = bindingTransformer;
+  }
   propertyMapping.property = V1_transformPropertyReference(element.property);
   propertyMapping.source =
     element.sourceSetImplementation.valueForSerialization;

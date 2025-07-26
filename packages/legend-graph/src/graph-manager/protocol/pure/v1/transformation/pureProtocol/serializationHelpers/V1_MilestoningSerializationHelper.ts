@@ -36,11 +36,13 @@ import {
   V1_deserializeRawValueSpecification,
   V1_serializeRawValueSpecification,
 } from './V1_RawValueSpecificationSerializationHelper.js';
+import { V1_ProcessingSnapshotMilestoning } from '../../../model/packageableElements/store/relational/model/milestoning/V1_ProcessingSnapshotMilestoning.js';
 
 enum V1_MilestoningType {
   BUSINESS_MILESTONING = 'businessMilestoning',
   BUSINESS_SNAPSHOT_MILESTONING = 'businessSnapshotMilestoning',
   PROCESSING_MILESTONING = 'processingMilestoning',
+  PROCESSING_SNAPSHOT_MILESTONING = 'processingSnapshotMilestoning',
 }
 
 const businessMilestoningModelSchema = createModelSchema(
@@ -85,6 +87,20 @@ const processingMilestoningModelSchema = createModelSchema(
   },
 );
 
+const processingSnapshotMilestoningModelSchema = createModelSchema(
+  V1_ProcessingSnapshotMilestoning,
+  {
+    _type: usingConstantValueSchema(
+      V1_MilestoningType.PROCESSING_SNAPSHOT_MILESTONING,
+    ),
+    infinityDate: optionalCustom(
+      V1_serializeRawValueSpecification,
+      V1_deserializeRawValueSpecification,
+    ),
+    snapshotDate: primitive(),
+  },
+);
+
 export const V1_serializeMilestoning = (
   protocol: V1_Milestoning,
   plugins: PureProtocolProcessorPlugin[],
@@ -95,6 +111,8 @@ export const V1_serializeMilestoning = (
     return serialize(businessSnapshotMilestoningModelSchema, protocol);
   } else if (protocol instanceof V1_ProcessingMilestoning) {
     return serialize(processingMilestoningModelSchema, protocol);
+  } else if (protocol instanceof V1_ProcessingSnapshotMilestoning) {
+    return serialize(processingSnapshotMilestoningModelSchema, protocol);
   }
   const extraMilestoningProtocolSerializers = plugins.flatMap(
     (plugin) =>
@@ -125,6 +143,8 @@ export const V1_deserializeMilestoning = (
       return deserialize(businessSnapshotMilestoningModelSchema, json);
     case V1_MilestoningType.PROCESSING_MILESTONING:
       return deserialize(processingMilestoningModelSchema, json);
+    case V1_MilestoningType.PROCESSING_SNAPSHOT_MILESTONING:
+      return deserialize(processingSnapshotMilestoningModelSchema, json);
     default: {
       const extraMilestoningProtocolDeserializers = plugins.flatMap(
         (plugin) =>
