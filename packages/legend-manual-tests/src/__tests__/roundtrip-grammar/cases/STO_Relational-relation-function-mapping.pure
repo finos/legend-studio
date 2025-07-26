@@ -11,46 +11,21 @@ Database my::testDB
   Table firmTable
   (
     ID INTEGER PRIMARY KEY,
-    LEGALNAME VARCHAR(100),
-    ADDRESS_DETAILS SEMISTRUCTURED
+    LEGALNAME VARCHAR(100)
   )
 )
-
-
-###ExternalFormat
-Binding my::AddressBinding
-{
-  contentType: 'application/json';
-  modelIncludes: [
-    my::Address,
-    my::AddressLine
-  ];
-}
 
 
 ###Pure
 Class my::Firm
 {
   legalName: String[1];
-  address: my::Address[1];
 }
 
 Class my::Person
 {
   firstName: String[1];
   age: Integer[1];
-}
-
-Class my::Address
-{
-  name: String[1];
-  lines: my::AddressLine[*];
-  street: String[0..1];
-}
-
-Class my::AddressLine
-{
-  details: String[1];
 }
 
 Association my::Person_Firm
@@ -84,7 +59,6 @@ Mapping my::relationFunctionMapping
   {
     ~func my::firmFunction():Relation<Any>[1]
     legalName: LEGALNAME,
-    address: Binding my::AddressBinding : ADDRESS_DETAILS,
     +id: Integer[1]: ID
   }
 
