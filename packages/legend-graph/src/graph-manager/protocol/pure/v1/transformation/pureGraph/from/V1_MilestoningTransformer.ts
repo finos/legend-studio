@@ -27,6 +27,8 @@ import type { STO_Relational_PureProtocolProcessorPlugin_Extension } from '../..
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
 import { V1_RawPrimitiveInstanceValue } from '../../../model/rawValueSpecification/V1_RawPrimitiveInstanceValue.js';
 import { V1_RawValueSpecificationTransformer } from './V1_RawValueSpecificationTransformer.js';
+import { V1_ProcessingSnapshotMilestoning } from '../../../model/packageableElements/store/relational/model/milestoning/V1_ProcessingSnapshotMilestoning.js';
+import { ProcessingSnapshotMilestoning } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/milestoning/ProcessingSnapshotMilestoning.js';
 
 const transformBusinessMilesoning = (
   metamodel: BusinessMilestoning,
@@ -74,6 +76,14 @@ const transformProcessingMilestoning = (
   return protocol;
 };
 
+const transformProcessingSnapshotMilestoning = (
+  metamodel: ProcessingSnapshotMilestoning,
+): V1_ProcessingSnapshotMilestoning => {
+  const protocol = new V1_ProcessingSnapshotMilestoning();
+  protocol.snapshotDate = metamodel.snapshotDate;
+  return protocol;
+};
+
 export const V1_transformMilestoning = (
   metamodel: Milestoning,
   context: V1_GraphTransformerContext,
@@ -84,6 +94,8 @@ export const V1_transformMilestoning = (
     return transformBusinessSnapshotMilestoning(metamodel);
   } else if (metamodel instanceof ProcessingMilestoning) {
     return transformProcessingMilestoning(metamodel, context);
+  } else if (metamodel instanceof ProcessingSnapshotMilestoning) {
+    return transformProcessingSnapshotMilestoning(metamodel);
   }
   const extraMilestoningTransformers = context.plugins.flatMap(
     (plugin) =>

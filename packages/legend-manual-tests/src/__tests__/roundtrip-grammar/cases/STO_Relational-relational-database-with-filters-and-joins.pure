@@ -25,11 +25,11 @@ Database store::relational::tests::dbIncWithStoreFilter
   Filter personMappingFilter(PersonView.AGE < 200)
 )
 
-Database model::realtional::test::PersonDB
+Database model::relational::test::PersonDB
 (
   Schema PersonSchema
   (
-    Table PersonTable
+    Table PersonTableWithTemporalMilestoning
     (
       milestoning
       (
@@ -43,6 +43,20 @@ Database model::realtional::test::PersonDB
       out_z DATE,
       from_z DATE,
       thru_z DATE
+    )
+
+    Table PersonTableWithSnapshotMilestoning
+    (
+      milestoning
+      (
+        processing(PROCESSING_SNAPSHOT_DATE = p_date),
+        business(BUS_SNAPSHOT_DATE = b_date)
+      )
+
+      ID INTEGER PRIMARY KEY,
+      NAME VARCHAR(200),
+      p_date DATE,
+      b_date DATE
     )
   )
 )

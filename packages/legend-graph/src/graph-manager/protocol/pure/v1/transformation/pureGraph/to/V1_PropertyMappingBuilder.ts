@@ -1269,6 +1269,15 @@ export class V1_PropertyMappingBuilder
       new RelationColumn(protocol.column, property.genericType),
     );
     propertyMapping.localMappingProperty = localMapping;
+    if (protocol.bindingTransformer?.binding) {
+      const bindingTransformer = new BindingTransformer();
+      const binding = V1_resolveBinding(
+        protocol.bindingTransformer.binding,
+        this.context,
+      );
+      bindingTransformer.binding = binding;
+      propertyMapping.bindingTransformer = bindingTransformer;
+    }
     return propertyMapping;
   }
 }
