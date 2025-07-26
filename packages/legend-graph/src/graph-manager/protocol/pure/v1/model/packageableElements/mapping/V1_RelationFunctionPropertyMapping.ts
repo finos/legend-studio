@@ -36,12 +36,14 @@ import {
   type V1_PropertyMappingVisitor,
   V1_PropertyMapping,
 } from './V1_PropertyMapping.js';
+import type { V1_BindingTransformer } from '../externalFormat/store/V1_DSL_ExternalFormat_BindingTransformer.js';
 
 export class V1_RelationFunctionPropertyMapping
   extends V1_PropertyMapping
   implements Hashable
 {
   column!: string;
+  bindingTransformer?: V1_BindingTransformer | undefined;
 
   accept_PropertyMappingVisitor<T>(visitor: V1_PropertyMappingVisitor<T>): T {
     return visitor.visit_RelationFunctionPropertyMapping(this);
@@ -52,6 +54,7 @@ export class V1_RelationFunctionPropertyMapping
       CORE_HASH_STRUCTURE.RELATION_FUNCTION_PROPERTY_MAPPING,
       super.hashCode,
       this.column,
+      this.bindingTransformer ?? '',
     ]);
   }
 }

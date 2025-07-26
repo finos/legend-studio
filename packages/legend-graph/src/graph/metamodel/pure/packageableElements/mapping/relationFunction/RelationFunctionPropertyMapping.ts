@@ -40,12 +40,14 @@ import type { PropertyReference } from '../../domain/PropertyReference.js';
 import type { PropertyMappingsImplementation } from '../PropertyMappingsImplementation.js';
 import type { SetImplementationReference } from '../SetImplementationReference.js';
 import type { RelationColumn } from '../../relation/RelationType.js';
+import type { BindingTransformer } from '../../externalFormat/store/DSL_ExternalFormat_BindingTransformer.js';
 
 export class RelationFunctionPropertyMapping
   extends PropertyMapping
   implements Hashable
 {
   column: RelationColumn;
+  bindingTransformer?: BindingTransformer | undefined;
 
   constructor(
     owner: PropertyMappingsImplementation,
@@ -63,6 +65,7 @@ export class RelationFunctionPropertyMapping
       CORE_HASH_STRUCTURE.RELATION_FUNCTION_PROPERTY_MAPPING,
       super.hashCode,
       this.column.name,
+      this.bindingTransformer ?? '',
     ]);
   }
 
