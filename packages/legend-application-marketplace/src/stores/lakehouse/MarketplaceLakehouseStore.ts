@@ -216,6 +216,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     makeObservable(this, {
       init: flow,
       initWithProduct: flow,
+      initWithSDLCProduct: flow,
       dataProductStates: observable,
       lakehouseIngestEnvironmentSummaries: observable,
       lakehouseIngestEnvironmentDetails: observable,
