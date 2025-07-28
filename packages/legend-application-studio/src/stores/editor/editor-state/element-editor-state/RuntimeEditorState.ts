@@ -69,6 +69,7 @@ import {
   getAllIdentifiedConnections,
   generateIdentifiedConnectionId,
   LakehouseRuntime,
+  ConcreteFunctionDefinition,
 } from '@finos/legend-graph';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import { packageableElementReference_setValue } from '../../../graph-modifier/DomainGraphModifierHelper.js';
@@ -96,6 +97,8 @@ export const getClassMappingStore = (
     return sourceElement._OWNER._OWNER;
   } else if (sourceElement instanceof TableAlias) {
     return sourceElement.relation.ownerReference.value;
+  } else if (sourceElement instanceof ConcreteFunctionDefinition) {
+    return undefined;
   }
   if (sourceElement) {
     const extraInstanceSetImplementationStoreExtractors =
