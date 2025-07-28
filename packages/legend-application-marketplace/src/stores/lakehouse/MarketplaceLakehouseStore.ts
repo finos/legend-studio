@@ -604,13 +604,8 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
    *
    * @param gav The GAV coordinates of the product.
    * @param path The path to the product.
-   * @param auth The authentication context.
    */
-  *initWithSDLCProduct(
-    gav: string,
-    path: string,
-    auth: AuthContextProps,
-  ): GeneratorFn<void> {
+  *initWithSDLCProduct(gav: string, path: string): GeneratorFn<void> {
     try {
       this.loadingProductsState.inProgress();
       const projectData = VersionedProjectData.serialization.fromJson(

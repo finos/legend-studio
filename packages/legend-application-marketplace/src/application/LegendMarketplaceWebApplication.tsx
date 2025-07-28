@@ -149,20 +149,6 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
     },
   );
 
-  const ProtectedLakehouseSDLCDataProduct = withAuthenticationRequired(
-    LakehouseSDLCDataProduct,
-    {
-      OnRedirecting: () => (
-        <CubesLoadingIndicator isLoading={true}>
-          <CubesLoadingIndicatorIcon />
-        </CubesLoadingIndicator>
-      ),
-      signinRedirectArgs: {
-        state: `${window.location.pathname}${window.location.search}`,
-      },
-    },
-  );
-
   const ProtectedLakehouseEntitlements = withAuthenticationRequired(
     LakehouseEntitlements,
     {
@@ -255,7 +241,7 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
             />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SDLC_PRODUCT}
-              element={<ProtectedLakehouseSDLCDataProduct />}
+              element={<LakehouseSDLCDataProduct />}
             />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS}

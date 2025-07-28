@@ -32,7 +32,6 @@ import { useParams } from '@finos/legend-application/browser';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { DataProductViewer } from './DataProductViewer.js';
 import { LEGEND_APPLICATION_COLOR_THEME } from '@finos/legend-application';
-import { useAuth } from 'react-oidc-context';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
 
 export const LakehouseSDLCDataProduct = withMarketplaceLakehouseStore(
@@ -40,7 +39,6 @@ export const LakehouseSDLCDataProduct = withMarketplaceLakehouseStore(
     const marketPlaceStore = useMarketplaceLakehouseStore();
     const applicationStore = marketPlaceStore.applicationStore;
     const params = useParams<LakehouseSDLCDataProductPathParams>();
-    const auth = useAuth();
     const gav = guaranteeNonNullable(
       params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.GAV],
     );
@@ -49,8 +47,8 @@ export const LakehouseSDLCDataProduct = withMarketplaceLakehouseStore(
     );
 
     useEffect(() => {
-      marketPlaceStore.initWithSDLCProduct(gav, path, auth);
-    }, [auth, gav, marketPlaceStore, path]);
+      marketPlaceStore.initWithSDLCProduct(gav, path);
+    }, [gav, marketPlaceStore, path]);
 
     useEffect(() => {
       applicationStore.layoutService.setColorTheme(
