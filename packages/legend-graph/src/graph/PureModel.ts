@@ -18,6 +18,7 @@ import {
   type PRIMITIVE_TYPE,
   ROOT_PACKAGE_NAME,
   AUTO_IMPORTS,
+  PRECISE_PRIMITIVE_TYPE,
 } from '../graph/MetaModelConst.js';
 import {
   type Clazz,
@@ -27,7 +28,10 @@ import {
   IllegalStateError,
   isNonNullable,
 } from '@finos/legend-shared';
-import { PrimitiveType } from '../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
+import {
+  PrecisePrimitiveType,
+  PrimitiveType,
+} from '../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
 import { Enumeration } from '../graph/metamodel/pure/packageableElements/domain/Enumeration.js';
 import { Multiplicity } from '../graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
 import type { Association } from '../graph/metamodel/pure/packageableElements/domain/Association.js';
@@ -53,7 +57,10 @@ import {
   Unit,
 } from '../graph/metamodel/pure/packageableElements/domain/Measure.js';
 import type { PureGraphPlugin } from './PureGraphPlugin.js';
-import { createPath } from '../graph/MetaModelUtils.js';
+import {
+  createPath,
+  extractElementNameFromPath,
+} from '../graph/MetaModelUtils.js';
 import type { DataElement } from '../graph/metamodel/pure/packageableElements/data/DataElement.js';
 import type { Testable } from '../graph/metamodel/pure/test/Testable.js';
 import type { PackageableElement } from '../graph/metamodel/pure/packageableElements/PackageableElement.js';
@@ -78,20 +85,35 @@ export interface GraphTextInputOption {
  */
 export class CoreModel extends BasicModel {
   primitiveTypesIndex = new Map<string, PrimitiveType>();
+  precisePrimitiveTypesIndex = new Map<string, PrimitiveType>();
 
   get primitiveTypes(): PrimitiveType[] {
     return Array.from(this.primitiveTypesIndex.values());
   }
 
+  get precisePrimitiveTypes(): PrimitiveType[] {
+    return Array.from(this.precisePrimitiveTypesIndex.values());
+  }
+
   constructor(graphPlugins: PureGraphPlugin[]) {
     super(ROOT_PACKAGE_NAME.CORE, graphPlugins);
     this.initializePrimitiveTypes();
+    this.initializePrecisePrimitiveTypes();
     // index model store singleton
     this.setOwnStore(ModelStore.NAME, ModelStore.INSTANCE);
   }
 
   override get allOwnElements(): PackageableElement[] {
     return [...super.allOwnElements, ...this.primitiveTypes];
+  }
+
+  override getOwnNullableType(path: string): Type | undefined {
+    let resolvedPath = path;
+    if ((Object.values(PRECISE_PRIMITIVE_TYPE) as string[]).includes(path)) {
+      // for precise primitive types, we use the name as the path
+      resolvedPath = extractElementNameFromPath(path);
+    }
+    return super.getOwnNullableType(resolvedPath);
   }
 
   /**
@@ -115,6 +137,29 @@ export class CoreModel extends BasicModel {
     ].forEach((primitiveType) => {
       this.primitiveTypesIndex.set(primitiveType.path, primitiveType);
       this.setOwnType(primitiveType.path, primitiveType);
+    });
+  }
+
+  initializePrecisePrimitiveTypes(): void {
+    [
+      PrecisePrimitiveType.VARCHAR,
+      PrecisePrimitiveType.INT,
+      PrecisePrimitiveType.TINY_INT,
+      PrecisePrimitiveType.U_TINY_INT,
+      PrecisePrimitiveType.SMALL_INT,
+      PrecisePrimitiveType.U_SMALL_INT,
+      PrecisePrimitiveType.U_INT,
+      PrecisePrimitiveType.BIG_INT,
+      PrecisePrimitiveType.U_BIG_INT,
+      PrecisePrimitiveType._FLOAT,
+      PrecisePrimitiveType.DOUBLE,
+      PrecisePrimitiveType.Numeric,
+    ].forEach((precisePrimitiveType) => {
+      this.precisePrimitiveTypesIndex.set(
+        precisePrimitiveType.path,
+        precisePrimitiveType,
+      );
+      this.setOwnType(precisePrimitiveType.path, precisePrimitiveType);
     });
   }
 }

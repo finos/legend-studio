@@ -17,13 +17,16 @@
 import { Type } from '../domain/Type.js';
 import type { PackageableElementVisitor } from '../PackageableElement.js';
 import { Function } from '../domain/Function.js';
+import { Multiplicity } from '../domain/Multiplicity.js';
+import type { GenericTypeReference } from '../domain/GenericTypeReference.js';
 
 export class RelationColumn extends Function {
-  type: Type;
+  genericType: GenericTypeReference;
+  multiplicity: Multiplicity = Multiplicity.ONE;
 
-  constructor(name: string, type: Type) {
+  constructor(name: string, type: GenericTypeReference) {
     super(name);
-    this.type = type;
+    this.genericType = type;
   }
 
   override accept_PackageableElementVisitor<T>(

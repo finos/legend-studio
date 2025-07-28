@@ -102,7 +102,7 @@ export const renderColumnTypeIcon = (
 
 export const renderColumnTypeIconFromType = (type: string): React.ReactNode => {
   switch (type) {
-    case PRECISE_PRIMITIVE_TYPE.STRING:
+    case PRECISE_PRIMITIVE_TYPE.VARCHAR:
       return (
         <StringTypeIcon className="relation-source-tree__icon relation-source-tree__icon__string" />
       );

@@ -118,7 +118,10 @@ export const buildRelationProjection = (
       `Can't create value spec for projection column ${projectionColumnState.columnName}`,
     );
     relationType.columns.push(
-      new RelationColumn(projectionColumnState.columnName, returnType),
+      new RelationColumn(
+        projectionColumnState.columnName,
+        GenericTypeExplicitReference.create(new GenericType(returnType)),
+      ),
     );
   });
   projectFunction.parametersValues = [precedingExpression, instanceVal];

@@ -23,6 +23,8 @@ import {
   RelationFunctionPropertyMapping,
   type RelationFunctionInstanceSetImplementation,
   isStubbed_RelationColumn,
+  GenericTypeExplicitReference,
+  GenericType,
 } from '@finos/legend-graph';
 import type { EditorStore } from '../../../EditorStore.js';
 import { MAPPING_ELEMENT_TYPE } from './MappingEditorState.js';
@@ -67,7 +69,11 @@ export class RelationFunctionPropertyMappingState extends PropertyMappingState {
     if (this.lambdaString !== '') {
       this.propertyMapping.column = new RelationColumn(
         this.lambdaString,
-        this.propertyMapping.property.value.genericType.value.rawType,
+        GenericTypeExplicitReference.create(
+          new GenericType(
+            this.propertyMapping.property.value.genericType.value.rawType,
+          ),
+        ),
       );
     } else {
       this.clearErrors();
