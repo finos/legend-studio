@@ -22,6 +22,8 @@ import {
 
 export enum LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN {
   VENDOR_NAME = 'vendorName',
+  GAV = 'gav',
+  DATA_PRODUCT_PATH = 'path',
   DATA_PRODUCT_ID = 'dataProductId',
   DEPLOYMENT_ID = 'deploymentId',
 }
@@ -36,6 +38,11 @@ export type LakehouseDataProductPathParams = {
   [LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DEPLOYMENT_ID]: string;
 };
 
+export type LakehouseSDLCDataProductPathParams = {
+  [LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.GAV]: string;
+  [LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH]: string;
+};
+
 export const LEGEND_MARKETPLACE_ROUTE_PATTERN = Object.freeze({
   DEFAULT: '/',
   OAUTH_CALLBACK: '/callback',
@@ -44,7 +51,8 @@ export const LEGEND_MARKETPLACE_ROUTE_PATTERN = Object.freeze({
   VENDOR_DETAILS: `/vendor/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.VENDOR_NAME}`,
   LAKEHOUSE: '/lakehouse',
   LAKEHOUSE_ENTITLEMENTS: '/lakehouse/entitlements',
-  LAKEHOUSE_PRODUCT: `/lakehouse/dataProduct/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_ID}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DEPLOYMENT_ID}`,
+  LAKEHOUSE_PRODUCT: `/lakehouse/dataProduct/deployed/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_ID}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DEPLOYMENT_ID}`,
+  LAKEHOUSE_SDLC_PRODUCT: `/lakehouse/dataProduct/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.GAV}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH}`,
   SUBSCRIPTIONS: '/subscriptions',
   ORDERS: '/orders',
   LAKEHOUSE_ADMIN: '/lakehouse/admin',
@@ -54,6 +62,7 @@ export const LAKEHOUSE_ROUTES = Object.freeze([
   LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE,
   LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS,
   LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_PRODUCT,
+  LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SDLC_PRODUCT,
   LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ADMIN,
 ]);
 
@@ -69,6 +78,15 @@ export const generateLakehouseDataProductPath = (
   generatePath(LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_PRODUCT, {
     dataProductId,
     deploymentId: deploymentId.toString(),
+  });
+
+export const generateLakehouseSDLCDataProductPath = (
+  gav: string,
+  path: string,
+): string =>
+  generatePath(LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SDLC_PRODUCT, {
+    gav,
+    path,
   });
 
 export const generateLakehouseTaskPath = (taskId: string): string =>

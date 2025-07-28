@@ -19,7 +19,12 @@ import {
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl,
   type CommandRegistrar,
 } from '@finos/legend-application';
-import { type DepotServerClient } from '@finos/legend-server-depot';
+import {
+  resolveVersion,
+  StoreProjectData,
+  VersionedProjectData,
+  type DepotServerClient,
+} from '@finos/legend-server-depot';
 import { action, computed, flow, makeObservable, observable } from 'mobx';
 import type {
   LegendMarketplaceApplicationStore,
@@ -37,9 +42,11 @@ import {
 import {
   type V1_EntitlementsDataProductDetailsResponse,
   type V1_IngestEnvironment,
+  DataProductArtifactGeneration,
   GraphManagerState,
   V1_AdHocDeploymentDataProductOrigin,
   V1_DataProduct,
+  V1_dataProductModelSchema,
   V1_deserializeIngestEnvironment,
   V1_entitlementsDataProductDetailsResponseToDataProductDetails,
   V1_EntitlementsLakehouseEnvironmentType,
@@ -58,6 +65,15 @@ import {
 } from '@finos/legend-server-lakehouse';
 import { LegendMarketplaceUserDataHelper } from '../../__lib__/LegendMarketplaceUserDataHelper.js';
 import { getDataProductFromDetails } from './LakehouseUtils.js';
+import {
+  parseGAVCoordinates,
+  type StoredFileGeneration,
+  type Entity,
+} from '@finos/legend-storage';
+import { deserialize } from 'serializr';
+import { generateLakehouseDataProductPath } from '../../__lib__/LegendMarketplaceNavigation.js';
+
+const ARTIFACT_GENERATION_DAT_PRODUCT_KEY = 'dataProduct';
 
 export enum DataProductFilterType {
   DEPLOY_TYPE = 'DEPLOY_TYPE',
@@ -574,6 +590,69 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(
         `Unable to load product ${dataProductId}: ${error.message}`,
+      );
+      this.loadingProductsState.fail();
+    }
+  }
+
+  /**
+   * This is a fallback to support the old data product URL with GAV and path.
+   * We check to see if the data product has been deployed, and if so, we redirect
+   * to the new URL format with data product ID and deployment ID. If not, we show
+   * an error saying the product is not deployed.
+   *
+   * @param gav The GAV coordinates of the product.
+   * @param path The path to the product.
+   * @param auth The authentication context.
+   */
+  *initWithSDLCProduct(
+    gav: string,
+    path: string,
+    auth: AuthContextProps,
+  ): GeneratorFn<void> {
+    try {
+      this.loadingProductsState.inProgress();
+      const projectData = VersionedProjectData.serialization.fromJson(
+        parseGAVCoordinates(gav) as unknown as PlainObject,
+      );
+      const storeProject = new StoreProjectData();
+      storeProject.groupId = projectData.groupId;
+      storeProject.artifactId = projectData.artifactId;
+      const v1DataProduct = deserialize(
+        V1_dataProductModelSchema,
+        (
+          (yield this.depotServerClient.getVersionEntity(
+            projectData.groupId,
+            projectData.artifactId,
+            resolveVersion(projectData.versionId),
+            path,
+          )) as Entity
+        ).content,
+      );
+      const files = (yield this.depotServerClient.getGenerationFilesByType(
+        storeProject,
+        resolveVersion(projectData.versionId),
+        ARTIFACT_GENERATION_DAT_PRODUCT_KEY,
+      )) as StoredFileGeneration[];
+      const fileGen = files.filter((e) => e.path === v1DataProduct.path)[0]
+        ?.file.content;
+      if (fileGen) {
+        const content: PlainObject = JSON.parse(fileGen) as PlainObject;
+        const gen =
+          DataProductArtifactGeneration.serialization.fromJson(content);
+        this.applicationStore.navigationService.navigator.goToLocation(
+          generateLakehouseDataProductPath(
+            gen.dataProduct.path,
+            Number(gen.dataProduct.deploymentId),
+          ),
+        );
+      } else {
+        throw new Error('File generation not found');
+      }
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(
+        `Unable to load product ${path}: ${error.message}`,
       );
       this.loadingProductsState.fail();
     }

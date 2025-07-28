@@ -62,6 +62,7 @@ import { LegendMarketplaceSubscriptions } from '../pages/Profile/LegendMarketpla
 import { LegendMarketplaceOrders } from '../pages/Profile/LegendMarketplaceOrders.js';
 import { LegendMarketplaceComingSoon } from '../pages/Home/LegendMarketplaceComingSoon.js';
 import { MarketplaceLakehouseOAuthCallback } from '../pages/Lakehouse/MarketplaceLakehouseOAuthCallback.js';
+import { LakehouseSDLCDataProduct } from '../pages/Lakehouse/dataProduct/LakehouseSDLCDataProduct.js';
 
 const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();
@@ -136,6 +137,20 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
 
   const ProtectedLakehouseDataProduct = withAuthenticationRequired(
     LakehouseDataProduct,
+    {
+      OnRedirecting: () => (
+        <CubesLoadingIndicator isLoading={true}>
+          <CubesLoadingIndicatorIcon />
+        </CubesLoadingIndicator>
+      ),
+      signinRedirectArgs: {
+        state: `${window.location.pathname}${window.location.search}`,
+      },
+    },
+  );
+
+  const ProtectedLakehouseSDLCDataProduct = withAuthenticationRequired(
+    LakehouseSDLCDataProduct,
     {
       OnRedirecting: () => (
         <CubesLoadingIndicator isLoading={true}>
@@ -237,6 +252,10 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_PRODUCT}
               element={<ProtectedLakehouseDataProduct />}
+            />
+            <Route
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SDLC_PRODUCT}
+              element={<ProtectedLakehouseSDLCDataProduct />}
             />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS}
