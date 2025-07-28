@@ -1,0 +1,22 @@
+###Relational
+Database my::testDB
+(
+  Table personTable
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRSTNAME VARCHAR(100),
+    AGE INTEGER,
+    FIRMID INTEGER,
+    DOB TIMESTAMP,
+    _BIG_INT BIGINT,
+    _SMALL_INT SMALLINT,
+    _TINY_INT TINYINT
+  )
+)
+
+
+###Pure
+function my::firmFunction(): meta::pure::metamodel::relation::Relation<(FIRSTNAME:Varchar(100), ID:Integer, DOB:Timestamp, _BIG_INT:BigInt, _SMALL_INT:SmallInt, _TINY_INT:TinyInt)>[1]
+{
+  #>{my::testDB.personTable}#->limit(10)->select(~[FIRSTNAME, ID, DOB, _BIG_INT, _SMALL_INT, _TINY_INT])
+}

@@ -78,6 +78,7 @@ export enum PRECISE_PRIMITIVE_TYPE {
   DATETIME = 'meta::pure::precisePrimitives::Timestamp',
   STRICTTIME = 'meta::pure::precisePrimitives::Time',
   NUMERIC = 'meta::pure::precisePrimitives::Numeric',
+  TIMESTAMP = 'meta::relational::metamodel::datatype::Timestamp',
 }
 
 export enum ATOMIC_TEST_TYPE {

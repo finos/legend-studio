@@ -151,9 +151,10 @@ export class CoreModel extends BasicModel {
       PrecisePrimitiveType.U_INT,
       PrecisePrimitiveType.BIG_INT,
       PrecisePrimitiveType.U_BIG_INT,
-      PrecisePrimitiveType._FLOAT,
+      PrecisePrimitiveType.FLOAT,
       PrecisePrimitiveType.DOUBLE,
-      PrecisePrimitiveType.Numeric,
+      PrecisePrimitiveType.NUMERIC,
+      PrecisePrimitiveType.TIMESTAMP,
     ].forEach((precisePrimitiveType) => {
       this.precisePrimitiveTypesIndex.set(
         precisePrimitiveType.path,
