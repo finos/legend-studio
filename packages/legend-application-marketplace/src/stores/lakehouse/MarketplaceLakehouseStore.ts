@@ -641,7 +641,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         const content: PlainObject = JSON.parse(fileGen) as PlainObject;
         const gen =
           DataProductArtifactGeneration.serialization.fromJson(content);
-        const dataProductId = v1DataProduct.name;
+        const dataProductId = v1DataProduct.name.toUpperCase();
         const deploymentId = Number(gen.dataProduct.deploymentId);
         this.applicationStore.navigationService.navigator.goToLocation(
           generateLakehouseDataProductPath(dataProductId, deploymentId),
