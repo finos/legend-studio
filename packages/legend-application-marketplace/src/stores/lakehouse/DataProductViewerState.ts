@@ -39,6 +39,7 @@ import {
 import type { VersionedProjectData } from '@finos/legend-server-depot';
 import { action, computed, flow, makeObservable, observable } from 'mobx';
 import { DataProductLayoutState } from './DataProductLayoutState.js';
+import { DATA_PRODUCT_VIEWER_SECTION } from './DataProductViewerNavigation.js';
 import { DataProductDataAccessState } from './DataProductDataAccessState.js';
 import {
   ActionState,
@@ -52,7 +53,6 @@ import { serialize } from 'serializr';
 import { dataContractContainsDataProduct } from './LakehouseUtils.js';
 import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
 import type { MarketplaceLakehouseStore } from './MarketplaceLakehouseStore.js';
-import { DATA_PRODUCT_VIEWER_SECTION } from './DataProductViewerNavigation.js';
 
 export class DataProductViewerState {
   readonly applicationStore: GenericLegendApplicationStore;

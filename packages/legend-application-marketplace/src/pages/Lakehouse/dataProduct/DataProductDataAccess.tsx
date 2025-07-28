@@ -24,6 +24,10 @@ import {
   QuestionCircleIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
+import {
+  DATA_PRODUCT_VIEWER_SECTION,
+  generateAnchorForSection,
+} from '../../../stores/lakehouse/DataProductViewerNavigation.js';
 import { useEffect, useRef, useState } from 'react';
 import type { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
 import { useApplicationStore } from '@finos/legend-application';
@@ -87,10 +91,6 @@ import { DataProductSubscriptionViewer } from '../subscriptions/DataProductSubsc
 import { assertErrorThrown, guaranteeType } from '@finos/legend-shared';
 import { resolveVersion } from '@finos/legend-server-depot';
 import { deserialize } from 'serializr';
-import {
-  DATA_PRODUCT_VIEWER_SECTION,
-  generateAnchorForSection,
-} from '../../../stores/lakehouse/DataProductViewerNavigation.js';
 
 const MAX_GRID_AUTO_HEIGHT_ROWS = 10; // Maximum number of rows to show before switching to normal height (scrollable grid)
 
