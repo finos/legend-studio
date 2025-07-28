@@ -171,6 +171,6 @@ test('Clicking on SDLC data product card navigates to data product viewer page',
   fireEvent.click(dataProductTitle);
 
   expect(mockGoToLocation).toHaveBeenCalledWith(
-    '/lakehouse/dataProduct/SDLC_RELEASE_DATAPRODUCT/12345',
+    '/lakehouse/dataProduct/deployed/SDLC_RELEASE_DATAPRODUCT/12345',
   );
 });
