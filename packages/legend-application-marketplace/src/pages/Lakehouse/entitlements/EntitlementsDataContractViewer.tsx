@@ -49,8 +49,12 @@ import {
   V1_ContractUserEventPrivilegeManagerPayload,
   V1_UserApprovalStatus,
 } from '@finos/legend-graph';
-import React, { useEffect, useMemo, useState } from 'react';
-import { formatDate, lodashCapitalize } from '@finos/legend-shared';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  ActionState,
+  formatDate,
+  lodashCapitalize,
+} from '@finos/legend-shared';
 import {
   getOrganizationalScopeTypeDetails,
   isContractInTerminalState,
@@ -68,9 +72,11 @@ import {
   InfoCircleIcon,
   RefreshIcon,
 } from '@finos/legend-art';
-import { generateLakehouseTaskPath } from '../../../__lib__/LegendMarketplaceNavigation.js';
-import type { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
-import type { DataProductGroupAccessState } from '../../../stores/lakehouse/DataProductDataAccessState.js';
+import {
+  generateLakehouseDataProductPath,
+  generateLakehouseTaskPath,
+} from '../../../__lib__/LegendMarketplaceNavigation.js';
+import { type DataProductGroupAccessState } from '../../../stores/lakehouse/DataProductDataAccessState.js';
 import { UserRenderer } from '../../../components/UserRenderer/UserRenderer.js';
 import type { LegendMarketplaceBaseStore } from '../../../stores/LegendMarketplaceBaseStore.js';
 
@@ -159,15 +165,15 @@ export const EntitlementsDataContractViewer = observer(
     open: boolean;
     currentViewer: EntitlementsDataContractViewerState;
     dataProductGroupAccessState?: DataProductGroupAccessState | undefined;
-    dataProductViewerState?: DataProductViewerState | undefined;
     onClose: () => void;
+    initialSelectedUser?: string | undefined;
   }) => {
     const {
       open,
       currentViewer,
       dataProductGroupAccessState,
-      dataProductViewerState,
       onClose,
+      initialSelectedUser,
     } = props;
     const auth = useAuth();
     const legendMarketplaceStore = useLegendMarketplaceBaseStore();
@@ -183,16 +189,44 @@ export const EntitlementsDataContractViewer = observer(
               new Set<string>(
                 currentViewer.associatedTasks.map((task) => task.rec.consumer),
               ),
-            )
+            ).sort()
           : consumer instanceof V1_AdhocTeam
-            ? consumer.users.map((user) => user.name)
+            ? consumer.users.map((user) => user.name).sort()
             : undefined,
       [consumer, currentViewer.associatedTasks],
     );
 
+    // In order to ensure the Select menu is properly resized after we load
+    // all the target user data, track how many users have finished loading
+    // so that we can trigger a window resize event once all the user data is loaded.
+    const [, setNumUsersLoaded] = useState(0);
+    const finishedLoadingUserCallback = useCallback(() => {
+      setNumUsersLoaded((prev) => {
+        if (prev + 1 === targetUsers?.length) {
+          // Trigger a window resize event to ensure the Select menu is properly resized
+          window.dispatchEvent(new Event('resize'));
+        }
+        return prev + 1;
+      });
+    }, [targetUsers]);
+    const targetUserSelectItems = useMemo(
+      () =>
+        targetUsers?.map((user) => (
+          <MenuItem key={user} value={user}>
+            <UserRenderer
+              userId={user}
+              marketplaceStore={legendMarketplaceStore}
+              disableOnClick={true}
+              onFinishedLoadingCallback={finishedLoadingUserCallback}
+            />
+          </MenuItem>
+        )),
+      [targetUsers, legendMarketplaceStore, finishedLoadingUserCallback],
+    );
+
     const [selectedTargetUser, setSelectedTargetUser] = useState<
       string | undefined
-    >(targetUsers?.[0]);
+    >(initialSelectedUser ?? targetUsers?.[0]);
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
@@ -201,30 +235,29 @@ export const EntitlementsDataContractViewer = observer(
         flowResult(currentViewer.init(auth.user?.access_token))
           .catch(legendMarketplaceStore.applicationStore.alertUnhandledError)
           .finally(() => setIsLoading(false));
-      } else {
-        setSelectedTargetUser(targetUsers?.[0]);
       }
     }, [
+      auth.user?.access_token,
       currentViewer,
       currentViewer.initializationState,
-      targetUsers,
-      auth.user?.access_token,
       legendMarketplaceStore.applicationStore.alertUnhandledError,
     ]);
 
+    useEffect(() => {
+      if (selectedTargetUser === undefined) {
+        setSelectedTargetUser(initialSelectedUser ?? targetUsers?.[0]);
+      }
+    }, [initialSelectedUser, selectedTargetUser, targetUsers]);
+
     const refresh = async (): Promise<void> => {
       setIsLoading(true);
-      await flowResult(
-        dataProductViewerState?.fetchContracts(auth.user?.access_token),
-      );
       if (dataProductGroupAccessState?.associatedContract) {
-        dataProductViewerState?.setDataContract(
-          dataProductGroupAccessState.associatedContract,
+        dataProductGroupAccessState.fetchUserAccessStatus(
+          dataProductGroupAccessState.associatedContract.guid,
+          auth.user?.access_token,
         );
       }
-      await flowResult(currentViewer.init(auth.user?.access_token))
-        .catch(legendMarketplaceStore.applicationStore.alertUnhandledError)
-        .finally(() => setIsLoading(false));
+      currentViewer.initializationState = ActionState.create();
     };
 
     if (
@@ -277,6 +310,7 @@ export const EntitlementsDataContractViewer = observer(
       label: React.ReactNode;
       isCompleteOrActive: boolean;
       description?: React.ReactNode;
+      isDeniedStep?: boolean;
     }[] = [
       { key: 'submitted', isCompleteOrActive: true, label: <>Submitted</> },
       {
@@ -327,6 +361,11 @@ export const EntitlementsDataContractViewer = observer(
               marketplaceStore={legendMarketplaceStore}
             />
           ),
+        isDeniedStep:
+          privilegeManagerApprovalTask?.rec.status ===
+            V1_UserApprovalStatus.DENIED ||
+          privilegeManagerApprovalTask?.rec.status ===
+            V1_UserApprovalStatus.REVOKED,
       },
       {
         key: 'data-producer-approval',
@@ -374,6 +413,9 @@ export const EntitlementsDataContractViewer = observer(
               marketplaceStore={legendMarketplaceStore}
             />
           ) : undefined,
+        isDeniedStep:
+          dataOwnerApprovalTask?.rec.status === V1_UserApprovalStatus.DENIED ||
+          dataOwnerApprovalTask?.rec.status === V1_UserApprovalStatus.REVOKED,
       },
       {
         key: 'complete',
@@ -406,9 +448,19 @@ export const EntitlementsDataContractViewer = observer(
                   {accessPointGroup}
                 </span>{' '}
                 Access Point Group in{' '}
-                <span className="marketplace-lakehouse-text__emphasis">
+                <Link
+                  className="marketplace-lakehouse-text__emphasis"
+                  href={legendMarketplaceStore.applicationStore.navigationService.navigator.generateAddress(
+                    generateLakehouseDataProductPath(
+                      dataProduct.name,
+                      dataProduct.owner.appDirId,
+                    ),
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   {dataProduct.name}
-                </span>{' '}
+                </Link>{' '}
                 Data Product
               </div>
               <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata">
@@ -454,15 +506,7 @@ export const EntitlementsDataContractViewer = observer(
                         size="small"
                         className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-for__select"
                       >
-                        {targetUsers.map((user) => (
-                          <MenuItem key={user} value={user}>
-                            <UserRenderer
-                              userId={user}
-                              marketplaceStore={legendMarketplaceStore}
-                              disableOnClick={true}
-                            />
-                          </MenuItem>
-                        ))}
+                        {targetUserSelectItems}
                       </Select>
                     )
                   ) : (
@@ -498,7 +542,7 @@ export const EntitlementsDataContractViewer = observer(
                       </TimelineOppositeContent>
                       <TimelineSeparator>
                         <TimelineDot
-                          color="primary"
+                          color={step.isDeniedStep ? 'error' : 'primary'}
                           variant={
                             step.isCompleteOrActive ? 'filled' : 'outlined'
                           }

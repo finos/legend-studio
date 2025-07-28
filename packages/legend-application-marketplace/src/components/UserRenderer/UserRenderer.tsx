@@ -26,9 +26,16 @@ export const UserRenderer = (props: {
   className?: string | undefined;
   appendComma?: boolean;
   disableOnClick?: boolean;
+  onFinishedLoadingCallback?: () => void;
 }): React.ReactNode => {
-  const { userId, marketplaceStore, className, appendComma, disableOnClick } =
-    props;
+  const {
+    userId,
+    marketplaceStore,
+    className,
+    appendComma,
+    disableOnClick,
+    onFinishedLoadingCallback,
+  } = props;
   const [userData, setUserData] = useState<LegendUser | string | undefined>();
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -42,12 +49,13 @@ export const UserRenderer = (props: {
           setUserData(user);
         } finally {
           setLoading(false);
+          onFinishedLoadingCallback?.();
         }
       }
     };
     // eslint-disable-next-line no-void
     void fetchUserData();
-  }, [marketplaceStore.userSearchService, userId]);
+  }, [marketplaceStore.userSearchService, userId, onFinishedLoadingCallback]);
 
   if (loading) {
     return <CircularProgress size={20} />;

@@ -28,7 +28,7 @@ import {
   DATA_PRODUCT_VIEWER_SECTION,
   generateAnchorForSection,
 } from '../../../stores/lakehouse/DataProductViewerNavigation.js';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
 import { useApplicationStore } from '@finos/legend-application';
 import {
@@ -373,6 +373,20 @@ export const DataProductAccessPointGroupViewer = observer(
       useState(false);
     const requestAccessButtonGroupRef = useRef<HTMLDivElement | null>(null);
 
+    const entitlementsDataContractViewerState = useMemo(
+      () =>
+        accessGroupState.accessState.viewerState.dataContract
+          ? new EntitlementsDataContractViewerState(
+              accessGroupState.accessState.viewerState.dataContract,
+              accessGroupState.accessState.viewerState.lakeServerClient,
+            )
+          : undefined,
+      [
+        accessGroupState.accessState.viewerState.dataContract,
+        accessGroupState.accessState.viewerState.lakeServerClient,
+      ],
+    );
+
     useEffect(() => {
       if (
         accessGroupState.access === AccessPointGroupAccess.APPROVED &&
@@ -384,7 +398,7 @@ export const DataProductAccessPointGroupViewer = observer(
           auth.user?.access_token,
         );
       }
-    });
+    }, [accessGroupState, auth.user?.access_token]);
 
     const handleContractsClick = (): void => {
       accessGroupState.handleContractClick();
@@ -676,17 +690,11 @@ export const DataProductAccessPointGroupViewer = observer(
             accessGroupState={accessGroupState}
           />
         )}
-        {accessGroupState.accessState.viewerState.dataContract && (
+        {entitlementsDataContractViewerState && (
           <EntitlementsDataContractViewer
             open={true}
-            currentViewer={
-              new EntitlementsDataContractViewerState(
-                accessGroupState.accessState.viewerState.dataContract,
-                accessGroupState.accessState.viewerState.lakeServerClient,
-              )
-            }
+            currentViewer={entitlementsDataContractViewerState}
             dataProductGroupAccessState={accessGroupState}
-            dataProductViewerState={accessGroupState.accessState.viewerState}
             onClose={() =>
               accessGroupState.accessState.viewerState.setDataContract(
                 undefined,
