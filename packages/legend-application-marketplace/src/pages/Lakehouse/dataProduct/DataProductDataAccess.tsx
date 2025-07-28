@@ -46,6 +46,7 @@ import {
   type V1_RelationTypeColumn,
   extractElementNameFromPath,
   PureClientVersion,
+  V1_AdHocDeploymentDataProductOrigin,
   V1_AppliedFunction,
   V1_AppliedProperty,
   V1_CBoolean,
@@ -66,6 +67,7 @@ import {
   V1_PureModelContextPointer,
   V1_relationTypeModelSchema,
   V1_RenderStyle,
+  V1_SdlcDeploymentDataProductOrigin,
   V1_serializeRawValueSpecification,
 } from '@finos/legend-graph';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
@@ -88,7 +90,11 @@ import { EntitlementsDataContractViewer } from '../entitlements/EntitlementsData
 import { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
 import { useAuth } from 'react-oidc-context';
 import { DataProductSubscriptionViewer } from '../subscriptions/DataProductSubscriptionsViewer.js';
-import { assertErrorThrown, guaranteeType } from '@finos/legend-shared';
+import {
+  assertErrorThrown,
+  guaranteeNonNullable,
+  guaranteeType,
+} from '@finos/legend-shared';
 import { resolveVersion } from '@finos/legend-server-depot';
 import { deserialize } from 'serializr';
 
@@ -171,30 +177,38 @@ const TDSColumnMoreInfoCellRenderer = (props: {
 
     const fetchAccessPointRelationType = async () => {
       try {
-        const model = accessGroupState.accessState.viewerState.isSandboxProduct
-          ? guaranteeType(
-              accessGroupState.accessState.viewerState.graphManagerState
-                .graphManager,
-              V1_PureGraphManager,
-            ).getFullGraphModelData(
-              accessGroupState.accessState.viewerState.graphManagerState.graph,
-            )
-          : new V1_PureModelContextPointer(
-              // TODO: remove as backend should handle undefined protocol input
-              new V1_Protocol(
-                V1_PureGraphManager.PURE_PROTOCOL_NAME,
-                PureClientVersion.VX_X_X,
-              ),
-              new V1_LegendSDLC(
-                accessGroupState.accessState.viewerState.project.groupId,
-                accessGroupState.accessState.viewerState.project.artifactId,
-                resolveVersion(
-                  accessGroupState.accessState.viewerState.project.versionId,
-                ),
-              ),
-            );
+        const origin =
+          accessGroupState.accessState.viewerState
+            .entitlementsDataProductDetails.origin;
+        const model =
+          origin instanceof V1_AdHocDeploymentDataProductOrigin
+            ? guaranteeType(
+                accessGroupState.accessState.viewerState.graphManagerState
+                  .graphManager,
+                V1_PureGraphManager,
+              ).getFullGraphModelData(
+                accessGroupState.accessState.viewerState.graphManagerState
+                  .graph,
+              )
+            : origin instanceof V1_SdlcDeploymentDataProductOrigin
+              ? new V1_PureModelContextPointer(
+                  // TODO: remove as backend should handle undefined protocol input
+                  new V1_Protocol(
+                    V1_PureGraphManager.PURE_PROTOCOL_NAME,
+                    PureClientVersion.VX_X_X,
+                  ),
+                  new V1_LegendSDLC(
+                    origin.group,
+                    origin.artifact,
+                    resolveVersion(origin.version),
+                  ),
+                )
+              : undefined;
         const relationTypeInput = new V1_LambdaReturnTypeInput(
-          model,
+          guaranteeNonNullable(
+            model,
+            `Unable to get model from data product origin of type ${origin?.constructor.name}`,
+          ),
           data.func,
         );
         const relationType = deserialize(

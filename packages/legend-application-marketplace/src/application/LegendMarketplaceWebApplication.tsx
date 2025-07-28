@@ -60,9 +60,9 @@ import { LegendMarketplacePage } from '../pages/LegendMarketplacePage.js';
 import { LegendMarketplaceVendorDetails } from '../pages/VendorDetails/LegendMarketplaceVendorDetails.js';
 import { LegendMarketplaceSubscriptions } from '../pages/Profile/LegendMarketplaceSubscriptions.js';
 import { LegendMarketplaceOrders } from '../pages/Profile/LegendMarketplaceOrders.js';
-import { LakehouseSandboxDataProduct } from '../pages/Lakehouse/dataProduct/LakehouseSandboxDataProduct.js';
 import { LegendMarketplaceComingSoon } from '../pages/Home/LegendMarketplaceComingSoon.js';
 import { MarketplaceLakehouseOAuthCallback } from '../pages/Lakehouse/MarketplaceLakehouseOAuthCallback.js';
+import { LakehouseSDLCDataProduct } from '../pages/Lakehouse/dataProduct/LakehouseSDLCDataProduct.js';
 
 const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();
@@ -137,20 +137,6 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
 
   const ProtectedLakehouseDataProduct = withAuthenticationRequired(
     LakehouseDataProduct,
-    {
-      OnRedirecting: () => (
-        <CubesLoadingIndicator isLoading={true}>
-          <CubesLoadingIndicatorIcon />
-        </CubesLoadingIndicator>
-      ),
-      signinRedirectArgs: {
-        state: `${window.location.pathname}${window.location.search}`,
-      },
-    },
-  );
-
-  const ProtectedLakehouseSandboxDataProduct = withAuthenticationRequired(
-    LakehouseSandboxDataProduct,
     {
       OnRedirecting: () => (
         <CubesLoadingIndicator isLoading={true}>
@@ -254,8 +240,8 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
               element={<ProtectedLakehouseDataProduct />}
             />
             <Route
-              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SANDBOX_PRODUCT}
-              element={<ProtectedLakehouseSandboxDataProduct />}
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SDLC_PRODUCT}
+              element={<LakehouseSDLCDataProduct />}
             />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS}

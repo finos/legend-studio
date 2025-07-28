@@ -24,7 +24,6 @@ import {
 import {
   type V1_ConsumerEntitlementResource,
   type V1_ContractUserEventPayload,
-  V1_AccessPoint_Entitlements,
   V1_AccessPointGroupReference,
   V1_ContractEventPayloadType,
   V1_ContractUserEventDataProducerPayload,
@@ -35,7 +34,6 @@ import {
   V1_DataContract,
   V1_DataContractSubscriptions,
   V1_DataContractsResponse,
-  V1_DataProduct_Entitlements,
   V1_PendingTasksResponse,
   V1_TaskMetadata,
   V1_TaskResponse,
@@ -63,9 +61,27 @@ import {
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
 import type { DSL_Lakehouse_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/DSL_Lakehouse_PureProtocolProcessorPlugin_Extension.js';
 import { V1_dataSubscriptionModelSchema } from './V1_SubscriptionSerializationHelper.js';
+import {
+  type V1_EntitlementsDataProductOrigin,
+  V1_AccessPointGroupStereotypeMapping,
+  V1_AdHocDeploymentDataProductOrigin,
+  V1_EntitlementsAccessPoint,
+  V1_EntitlementsDataProduct,
+  V1_EntitlementsDataProductDetails,
+  V1_EntitlementsDataProductDetailsResponse,
+  V1_EntitlementsLakehouseEnvironment,
+  V1_SdlcDeploymentDataProductOrigin,
+  V1_UnknownDataProductOriginType,
+} from '../../../lakehouse/entitlements/V1_EntitlementsDataProduct.js';
+import { V1_stereotypePtrModelSchema } from './V1_CoreSerializationHelper.js';
 
 enum V1_OrganizationalScopeType {
   AdHocTeam = 'AdHocTeam',
+}
+
+export enum V1_DataProductOriginType {
+  AD_HOC_DEPLOYMENT = 'AdHocDeployment',
+  SDLC_DEPLOYMENT = 'SdlcDeployment',
 }
 
 enum V1_AccessPointGroupReferenceType {
@@ -77,26 +93,33 @@ export const V1_UserModelSchema = createModelSchema(V1_User, {
   userType: primitive(),
 });
 
-export const V1_AccessPoint_EntitlementsModelSchema = createModelSchema(
-  V1_AccessPoint_Entitlements,
+export const V1_EntitlementsAccessPointModelSchema = createModelSchema(
+  V1_EntitlementsAccessPoint,
   {
     name: primitive(),
-    guid: primitive(),
     groups: list(primitive()),
   },
 );
+
+export const V1_AccessPointGroupStereotypeMappingModelSchema =
+  createModelSchema(V1_AccessPointGroupStereotypeMapping, {
+    accessPointGroup: primitive(),
+    stereotypes: customListWithSchema(V1_stereotypePtrModelSchema),
+  });
 
 export const V1_AppDirNodeModelSchema = createModelSchema(V1_AppDirNode, {
   appDirId: primitive(),
   level: primitive(),
 });
 
-export const V1_DataProduct_EntitlementsModelSchema = createModelSchema(
-  V1_DataProduct_Entitlements,
+export const V1_EntitlementsDataProductModelSchema = createModelSchema(
+  V1_EntitlementsDataProduct,
   {
     name: primitive(),
-    guid: primitive(),
-    accessPoints: customListWithSchema(V1_AccessPoint_EntitlementsModelSchema),
+    accessPoints: customListWithSchema(V1_EntitlementsAccessPointModelSchema),
+    accessPointGroupStereotypeMappings: customListWithSchema(
+      V1_AccessPointGroupStereotypeMappingModelSchema,
+    ),
     owner: usingModelSchema(V1_AppDirNodeModelSchema),
   },
 );
@@ -104,7 +127,7 @@ export const V1_DataProduct_EntitlementsModelSchema = createModelSchema(
 export const V1_AccessPointGroupReferenceModelSchema = createModelSchema(
   V1_AccessPointGroupReference,
   {
-    dataProduct: usingModelSchema(V1_DataProduct_EntitlementsModelSchema),
+    dataProduct: usingModelSchema(V1_EntitlementsDataProductModelSchema),
     accessPointGroup: primitive(),
   },
 );
@@ -144,11 +167,11 @@ const V1_deserializeOrganizationalScope = (
 };
 
 const V1_serializeOrganizationalScope = (
-  json: V1_OrganizationalScope,
+  organizationalScope: V1_OrganizationalScope,
   plugins: PureProtocolProcessorPlugin[],
 ): PlainObject<V1_OrganizationalScope> => {
-  if (json instanceof V1_AdhocTeam) {
-    return serialize(V1_AdhocTeamModelSchema, json);
+  if (organizationalScope instanceof V1_AdhocTeam) {
+    return serialize(V1_AdhocTeamModelSchema, organizationalScope);
   }
   const extraOrganizationalScopeSerializers = plugins.flatMap(
     (plugin) =>
@@ -157,7 +180,7 @@ const V1_serializeOrganizationalScope = (
       ).V1_getExtraOrganizationalScopeSerializers?.() ?? [],
   );
   for (const serializer of extraOrganizationalScopeSerializers) {
-    const result = serializer(json);
+    const result = serializer(organizationalScope);
     if (result) {
       return result;
     }
@@ -360,3 +383,96 @@ export const V1_ContractUserStatusResponseModelSchema = createModelSchema(
     status: primitive(),
   },
 );
+
+export const V1_AdHocDeploymentDataProductOriginModelSchema = createModelSchema(
+  V1_AdHocDeploymentDataProductOrigin,
+  {
+    type: usingConstantValueSchema(V1_DataProductOriginType.AD_HOC_DEPLOYMENT),
+    definition: primitive(),
+  },
+);
+
+export const V1_SdlcDeploymentDataProductOriginModelSchema = createModelSchema(
+  V1_SdlcDeploymentDataProductOrigin,
+  {
+    type: usingConstantValueSchema(V1_DataProductOriginType.SDLC_DEPLOYMENT),
+    group: primitive(),
+    artifact: primitive(),
+    version: primitive(),
+  },
+);
+
+const V1_deserializeDataProductOrigin = (
+  json: PlainObject<V1_EntitlementsDataProductOrigin> | null,
+): V1_EntitlementsDataProductOrigin | null => {
+  if (json === null) {
+    return null;
+  }
+  switch (json.type) {
+    case V1_DataProductOriginType.AD_HOC_DEPLOYMENT:
+      return deserialize(V1_AdHocDeploymentDataProductOriginModelSchema, json);
+    case V1_DataProductOriginType.SDLC_DEPLOYMENT:
+      return deserialize(V1_SdlcDeploymentDataProductOriginModelSchema, json);
+    default: {
+      // Fall back to create unknown stub if not supported
+      const origin = new V1_UnknownDataProductOriginType();
+      origin.content = json;
+      return origin;
+    }
+  }
+};
+
+const V1_serializeDataProductOrigin = (
+  origin: V1_EntitlementsDataProductOrigin | null,
+): PlainObject<V1_EntitlementsDataProductOrigin> => {
+  if (origin instanceof V1_AdHocDeploymentDataProductOrigin) {
+    return serialize(V1_AdHocDeploymentDataProductOriginModelSchema, origin);
+  }
+  if (origin instanceof V1_SdlcDeploymentDataProductOrigin) {
+    return serialize(V1_SdlcDeploymentDataProductOriginModelSchema, origin);
+  }
+  throw new UnsupportedOperationError();
+};
+
+export const V1_EntitlementsLakehouseEnvironmentModelSchema = createModelSchema(
+  V1_EntitlementsLakehouseEnvironment,
+  {
+    producerEnvironmentName: primitive(),
+    type: primitive(),
+  },
+);
+
+export const V1_EntitlementsDataProductDetailsModelSchema = createModelSchema(
+  V1_EntitlementsDataProductDetails,
+  {
+    id: primitive(),
+    deploymentId: primitive(),
+    title: optional(primitive()),
+    description: optional(primitive()),
+    origin: custom(
+      V1_serializeDataProductOrigin,
+      V1_deserializeDataProductOrigin,
+    ),
+    lakehouseEnvironment: usingModelSchema(
+      V1_EntitlementsLakehouseEnvironmentModelSchema,
+    ),
+    dataProduct: usingModelSchema(V1_EntitlementsDataProductModelSchema),
+  },
+);
+
+export const V1_EntitlementsDataProductDetailsResponseModelSchema =
+  createModelSchema(V1_EntitlementsDataProductDetailsResponse, {
+    dataProducts: customListWithSchema(
+      V1_EntitlementsDataProductDetailsModelSchema,
+    ),
+  });
+
+export const V1_entitlementsDataProductDetailsResponseToDataProductDetails = (
+  json: PlainObject<V1_EntitlementsDataProductDetailsResponse>,
+): V1_EntitlementsDataProductDetails[] => {
+  const response = deserialize(
+    V1_EntitlementsDataProductDetailsResponseModelSchema,
+    json,
+  );
+  return response.dataProducts;
+};
