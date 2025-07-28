@@ -318,7 +318,7 @@ export const getMappingElementSource = (
   } else if (
     mappingElement instanceof RelationFunctionInstanceSetImplementation
   ) {
-    return undefined;
+    return mappingElement.relationFunction;
   }
   const extraMappingElementSourceExtractors = plugins.flatMap(
     (plugin) =>
