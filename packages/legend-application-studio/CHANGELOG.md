@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 28.19.17
+
+### Patch Changes
+
+- [#4294](https://github.com/finos/legend-studio/pull/4294) [`a0129e0`](https://github.com/finos/legend-studio/commit/a0129e0b2f4e33a6aeaed4b148c409897c3f7b31) ([@gs-gunjan](https://github.com/gs-gunjan)) - studio: fixing relational property graph
+
+- [#4299](https://github.com/finos/legend-studio/pull/4299) [`0638a15`](https://github.com/finos/legend-studio/commit/0638a155062b08fb7070ebf31641de7e3f78f1a3) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Handle return type type variables (specific with RelationType).
+
 ## 28.19.16
 
 ## 28.19.15
