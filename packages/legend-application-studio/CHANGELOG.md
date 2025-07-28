@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.19.18
+
+### Patch Changes
+
+- [#4298](https://github.com/finos/legend-studio/pull/4298) [`336fd73`](https://github.com/finos/legend-studio/commit/336fd732a68727833a575735463387d710135478) ([@gs-rpant1729](https://github.com/gs-rpant1729)) - Support Processing Snapshot milestoning, Semi-structured data on Relation Function class mappings.
+
 ## 28.19.17
 
 ### Patch Changes
