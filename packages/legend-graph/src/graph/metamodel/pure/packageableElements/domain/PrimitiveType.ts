@@ -73,15 +73,19 @@ export class PrecisePrimitiveType extends DataType {
   static readonly U_BIG_INT = new PrecisePrimitiveType(
     extractElementNameFromPath(PRECISE_PRIMITIVE_TYPE.U_BIG_INT),
   );
-  static readonly _FLOAT = new PrecisePrimitiveType(
+  static readonly FLOAT = new PrecisePrimitiveType(
     extractElementNameFromPath(PRECISE_PRIMITIVE_TYPE.FLOAT),
   );
   static readonly DOUBLE = new PrecisePrimitiveType(
     extractElementNameFromPath(PRECISE_PRIMITIVE_TYPE.DOUBLE),
   );
 
-  static readonly Numeric = new PrecisePrimitiveType(
+  static readonly NUMERIC = new PrecisePrimitiveType(
     extractElementNameFromPath(PRECISE_PRIMITIVE_TYPE.NUMERIC),
+  );
+
+  static readonly TIMESTAMP = new PrecisePrimitiveType(
+    extractElementNameFromPath(PRECISE_PRIMITIVE_TYPE.TIMESTAMP),
   );
 
   override accept_PackageableElementVisitor<T>(
