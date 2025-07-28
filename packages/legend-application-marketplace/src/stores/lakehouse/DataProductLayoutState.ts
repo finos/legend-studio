@@ -17,24 +17,15 @@
 import { NAVIGATION_ZONE_SEPARATOR } from '@finos/legend-application';
 import { action, computed, makeObservable, observable } from 'mobx';
 import { type DataProductViewerState } from './DataProductViewerState.js';
-import { at, guaranteeNonNullable, isNonNullable } from '@finos/legend-shared';
+import { isNonNullable } from '@finos/legend-shared';
 import {
-  DATA_PRODUCT_VIEWER_ACTIVITY_MODE,
-  extractActivityFromAnchor,
-  generateAnchorForActivity,
+  DATA_PRODUCT_VIEWER_SECTION,
+  generateAnchorForSection,
 } from './DataProductViewerNavigation.js';
 
-export const DATA_PRODUCT_WIKI_PAGE_SECTIONS = [
-  DATA_PRODUCT_VIEWER_ACTIVITY_MODE.DESCRIPTION,
-  DATA_PRODUCT_VIEWER_ACTIVITY_MODE.DIAGRAM_VIEWER,
-  DATA_PRODUCT_VIEWER_ACTIVITY_MODE.MODELS_DOCUMENTATION,
-  DATA_PRODUCT_VIEWER_ACTIVITY_MODE.QUICK_START,
-  DATA_PRODUCT_VIEWER_ACTIVITY_MODE.DATA_ACCESS,
-];
-
-const DATA_SPACE_WIKI_PAGE_ANCHORS = DATA_PRODUCT_WIKI_PAGE_SECTIONS.map(
-  (activity) => generateAnchorForActivity(activity),
-);
+const DATA_PRODUCT_VIEWER_ANCHORS = Object.values(
+  DATA_PRODUCT_VIEWER_SECTION,
+).map((activity) => generateAnchorForSection(activity));
 
 type DataProductPageNavigationCommand = {
   anchor: string;
@@ -91,10 +82,7 @@ export class DataProductLayoutState {
   get isWikiPageFullyRendered(): boolean {
     return (
       Boolean(this.frame) &&
-      DATA_PRODUCT_WIKI_PAGE_SECTIONS.includes(
-        this.dataProductViewerState.currentActivity,
-      ) &&
-      DATA_SPACE_WIKI_PAGE_ANCHORS.every((anchor) =>
+      DATA_PRODUCT_VIEWER_ANCHORS.every((anchor) =>
         this.wikiPageAnchorIndex.has(anchor),
       ) &&
       Array.from(this.wikiPageAnchorIndex.values()).every(isNonNullable)
@@ -143,17 +131,6 @@ export class DataProductLayoutState {
             )
           ) {
             return;
-          }
-          const anchor = at(this.wikiPageVisibleAnchors, 0);
-          // this.dataProductViewerState.syncZoneWithNavigation(anchor);
-          const anchorChunks = anchor.split(NAVIGATION_ZONE_SEPARATOR);
-          const activity = anchorChunks[0];
-          if (activity) {
-            this.dataProductViewerState.setCurrentActivity(
-              extractActivityFromAnchor(
-                activity,
-              ) as DATA_PRODUCT_VIEWER_ACTIVITY_MODE,
-            );
           }
         },
         {
@@ -230,33 +207,10 @@ export class DataProductLayoutState {
     ) {
       const anchor = this.wikiPageNavigationCommand.anchor;
       const matchingWikiPageSection = this.wikiPageAnchorIndex.get(anchor);
-      const anchorChunks = anchor.split(NAVIGATION_ZONE_SEPARATOR);
       if (matchingWikiPageSection) {
         this.frame.scrollTop =
           matchingWikiPageSection.offsetTop -
           (this.header?.getBoundingClientRect().height ?? 0);
-      } else if (
-        generateAnchorForActivity(
-          DATA_PRODUCT_VIEWER_ACTIVITY_MODE.DIAGRAM_VIEWER,
-        ) === anchorChunks[0]
-      ) {
-        this.frame.scrollTop =
-          guaranteeNonNullable(
-            this.wikiPageAnchorIndex.get(
-              generateAnchorForActivity(
-                DATA_PRODUCT_VIEWER_ACTIVITY_MODE.DIAGRAM_VIEWER,
-              ),
-            ),
-          ).offsetTop - (this.header?.getBoundingClientRect().height ?? 0);
-        // const matchingDiagram =
-        //   this.dataProductViewerState.dataSpaceAnalysisResult.diagrams.find(
-        //     (diagram) => generateAnchorForDiagram(diagram) === anchor,
-        //   );
-        // if (matchingDiagram) {
-        //   this.dataProductViewerState.diagramViewerState.setCurrentDiagram(
-        //     matchingDiagram,
-        //   );
-        // }
       }
 
       this.setWikiPageAnchorToNavigate(undefined);

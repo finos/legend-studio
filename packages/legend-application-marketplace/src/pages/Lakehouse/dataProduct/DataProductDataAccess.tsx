@@ -25,8 +25,8 @@ import {
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import {
-  DATA_PRODUCT_VIEWER_ACTIVITY_MODE,
-  generateAnchorForActivity,
+  DATA_PRODUCT_VIEWER_SECTION,
+  generateAnchorForSection,
 } from '../../../stores/lakehouse/DataProductViewerNavigation.js';
 import { useEffect, useRef, useState } from 'react';
 import type { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
@@ -696,8 +696,8 @@ export const DataProducteDataAccess = observer(
     const applicationStore = useApplicationStore();
     const documentationUrl = 'todo.com';
     const sectionRef = useRef<HTMLDivElement>(null);
-    const anchor = generateAnchorForActivity(
-      DATA_PRODUCT_VIEWER_ACTIVITY_MODE.DATA_ACCESS,
+    const anchor = generateAnchorForSection(
+      DATA_PRODUCT_VIEWER_SECTION.DATA_ACCESS,
     );
     useEffect(() => {
       if (sectionRef.current) {

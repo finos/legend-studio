@@ -18,8 +18,8 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useRef } from 'react';
 import type { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
 import {
-  DATA_PRODUCT_VIEWER_ACTIVITY_MODE,
-  generateAnchorForActivity,
+  DATA_PRODUCT_VIEWER_SECTION,
+  generateAnchorForSection,
 } from '../../../stores/lakehouse/DataProductViewerNavigation.js';
 import { AnchorLinkIcon, MarkdownTextViewer } from '@finos/legend-art';
 import { prettyCONSTName } from '@finos/legend-shared';
@@ -34,11 +34,11 @@ export const DataproducteWikiPlaceholder: React.FC<{ message: string }> = (
 export const DataProductWikiPlaceHolder = observer(
   (props: {
     dataProductViewerState: DataProductViewerState;
-    mode: DATA_PRODUCT_VIEWER_ACTIVITY_MODE;
+    section: DATA_PRODUCT_VIEWER_SECTION;
   }) => {
-    const { dataProductViewerState, mode } = props;
+    const { dataProductViewerState, section } = props;
     const sectionRef = useRef<HTMLDivElement>(null);
-    const anchor = generateAnchorForActivity(mode);
+    const anchor = generateAnchorForSection(section);
     useEffect(() => {
       if (sectionRef.current) {
         dataProductViewerState.layoutState.setWikiPageAnchor(
@@ -54,7 +54,7 @@ export const DataProductWikiPlaceHolder = observer(
       <div ref={sectionRef} className="data-space__viewer__wiki__section">
         <div className="data-space__viewer__wiki__section__header">
           <div className="data-space__viewer__wiki__section__header__label">
-            {prettyCONSTName(mode)}
+            {prettyCONSTName(section)}
             <button
               className="data-space__viewer__wiki__section__header__anchor"
               tabIndex={-1}
@@ -76,8 +76,8 @@ export const DataProductDescription = observer(
   (props: { dataProductViewerState: DataProductViewerState }) => {
     const { dataProductViewerState } = props;
     const sectionRef = useRef<HTMLDivElement>(null);
-    const anchor = generateAnchorForActivity(
-      DATA_PRODUCT_VIEWER_ACTIVITY_MODE.DESCRIPTION,
+    const anchor = generateAnchorForSection(
+      DATA_PRODUCT_VIEWER_SECTION.DESCRIPTION,
     );
     useEffect(() => {
       if (sectionRef.current) {
@@ -94,7 +94,7 @@ export const DataProductDescription = observer(
       <div ref={sectionRef} className="data-space__viewer__wiki__section">
         <div className="data-space__viewer__wiki__section__header">
           <div className="data-space__viewer__wiki__section__header__label">
-            {prettyCONSTName(DATA_PRODUCT_VIEWER_ACTIVITY_MODE.DESCRIPTION)}
+            {prettyCONSTName(DATA_PRODUCT_VIEWER_SECTION.DESCRIPTION)}
             <button
               className="data-space__viewer__wiki__section__header__anchor"
               tabIndex={-1}

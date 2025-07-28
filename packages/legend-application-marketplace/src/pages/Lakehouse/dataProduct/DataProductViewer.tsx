@@ -17,11 +17,7 @@
 import { observer } from 'mobx-react-lite';
 import type { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
 import { useEffect, useRef, useState } from 'react';
-import { DATA_PRODUCT_WIKI_PAGE_SECTIONS } from '../../../stores/lakehouse/DataProductLayoutState.js';
 import { CaretUpIcon, clsx, OpenIcon, VerifiedIcon } from '@finos/legend-art';
-import { DATA_PRODUCT_VIEWER_ACTIVITY_MODE } from '../../../stores/lakehouse/DataProductViewerNavigation.js';
-import { DataProductPlaceholderPanel } from './DataProductHolder.js';
-import { DataProductViewerActivityBar } from './DataProductViewerActivityBar.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { DataProductWiki } from './DataProductWiki.js';
 import { Button } from '@mui/material';
@@ -164,10 +160,6 @@ export const DataProductViewer = observer(
       }
     };
 
-    const isShowingWiki = DATA_PRODUCT_WIKI_PAGE_SECTIONS.includes(
-      dataSpaceViewerState.currentActivity,
-    );
-
     useEffect(() => {
       if (frame.current) {
         dataSpaceViewerState.layoutState.setFrame(frame.current);
@@ -176,9 +168,6 @@ export const DataProductViewer = observer(
 
     return (
       <div className="data-space__viewer">
-        <DataProductViewerActivityBar
-          dataSpaceViewerState={dataSpaceViewerState}
-        />
         <div
           ref={frame}
           className="data-space__viewer__body"
@@ -205,74 +194,16 @@ export const DataProductViewer = observer(
             </div>
           )}
           <div
-            className={clsx('data-space__viewer__frame', {
-              'data-space__viewer__frame--boundless': isShowingWiki,
-              'data-space__viewer__frame--expanded':
-                dataSpaceViewerState.layoutState.isExpandedModeEnabled,
-            })}
+            className={clsx(
+              'data-space__viewer__frame data-space__viewer__frame--boundless',
+              {
+                'data-space__viewer__frame--expanded':
+                  dataSpaceViewerState.layoutState.isExpandedModeEnabled,
+              },
+            )}
           >
             <div className="data-space__viewer__content">
-              {isShowingWiki && (
-                <DataProductWiki
-                  dataProductViewerState={dataSpaceViewerState}
-                />
-              )}
-              {dataSpaceViewerState.currentActivity ===
-                DATA_PRODUCT_VIEWER_ACTIVITY_MODE.EXECUTION_CONTEXT && (
-                <DataProductPlaceholderPanel
-                  header="EXECUTION_CONTEXT"
-                  message="No EXECUTION_CONTEXT"
-                />
-              )}
-              {dataSpaceViewerState.currentActivity ===
-                DATA_PRODUCT_VIEWER_ACTIVITY_MODE.DATA_STORES && (
-                <DataProductPlaceholderPanel
-                  header="Data Stores"
-                  message="This panel will provide details about the available datasets' schema and test data"
-                />
-              )}
-              {dataSpaceViewerState.currentActivity ===
-                DATA_PRODUCT_VIEWER_ACTIVITY_MODE.DATA_AVAILABILITY && (
-                <DataProductPlaceholderPanel
-                  header="Data Availability"
-                  message="This panel will provide details about the status of data being made available to end-users and applications"
-                />
-              )}
-              {dataSpaceViewerState.currentActivity ===
-                DATA_PRODUCT_VIEWER_ACTIVITY_MODE.DATA_READINESS && (
-                <DataProductPlaceholderPanel
-                  header="Data Readiness"
-                  message="This will provide details about the status of data being prepared to collect, process, and analyze"
-                />
-              )}
-              {dataSpaceViewerState.currentActivity ===
-                DATA_PRODUCT_VIEWER_ACTIVITY_MODE.DATA_COST && (
-                <DataProductPlaceholderPanel
-                  header="Data Cost"
-                  message="This will provide details about the cost of data usage"
-                />
-              )}
-              {dataSpaceViewerState.currentActivity ===
-                DATA_PRODUCT_VIEWER_ACTIVITY_MODE.DATA_GOVERNANCE && (
-                <DataProductPlaceholderPanel
-                  header="Data Governance"
-                  message="This will provide details about data policy, data contract, and dataset lineage information"
-                />
-              )}
-              {dataSpaceViewerState.currentActivity ===
-                DATA_PRODUCT_VIEWER_ACTIVITY_MODE.INFO && (
-                <DataProductPlaceholderPanel
-                  header="Info"
-                  message="This will provide details about info"
-                />
-              )}
-              {dataSpaceViewerState.currentActivity ===
-                DATA_PRODUCT_VIEWER_ACTIVITY_MODE.SUPPORT && (
-                <DataProductPlaceholderPanel
-                  header="Support"
-                  message="This will provide details about support"
-                />
-              )}
+              <DataProductWiki dataProductViewerState={dataSpaceViewerState} />
             </div>
           </div>
         </div>
