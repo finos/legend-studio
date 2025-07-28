@@ -66,8 +66,7 @@ export const dataContractContainsDataProduct = (
     dataProductDeploymentID
   ) {
     const didMatch =
-      Number(dataProductDeploymentID) ===
-      contractResource.dataProduct.owner.appDirId;
+      dataProductDeploymentID === contractResource.dataProduct.owner.appDirId;
     const nameMatch =
       contractResource.dataProduct.name.toLowerCase() ===
       dataProduct.name.toLowerCase();

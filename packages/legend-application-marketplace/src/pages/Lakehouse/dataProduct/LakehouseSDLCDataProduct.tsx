@@ -62,7 +62,7 @@ export const LakehouseSDLCDataProduct = withMarketplaceLakehouseStore(
     return (
       <LegendMarketplacePage className="legend-marketplace-lakehouse-data-product">
         <CubesLoadingIndicator
-          isLoading={marketPlaceStore.loadingProductsState.isInProgress}
+          isLoading={marketPlaceStore.loadingProductState.isInProgress}
         >
           <CubesLoadingIndicatorIcon />
         </CubesLoadingIndicator>

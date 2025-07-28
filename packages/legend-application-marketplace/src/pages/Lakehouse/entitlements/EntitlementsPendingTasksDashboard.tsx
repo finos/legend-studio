@@ -249,6 +249,8 @@ export const EntitlementsPendingTasksDashbaord = observer(
     const [selectedContract, setSelectedContract] = useState<
       V1_DataContract | undefined
     >();
+    const [selectedContractTargetUser, setSelectedContractTargetUser] =
+      useState<string | undefined>();
 
     // Effects
 
@@ -308,6 +310,7 @@ export const EntitlementsPendingTasksDashbaord = observer(
           (_contract) => _contract.guid === event.data?.dataContractId,
         );
         setSelectedContract(contract);
+        setSelectedContractTargetUser(event.data?.consumer);
       }
     };
 
@@ -426,14 +429,16 @@ export const EntitlementsPendingTasksDashbaord = observer(
         colId: 'requester',
         headerName: 'Requester',
         flex: 1,
-        valueGetter: (params) => {
+        cellRenderer: (
+          params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
+        ) => {
           const contractId = params.data?.dataContractId;
           const requester = allContracts?.find(
             (contract) => contract.guid === contractId,
           )?.createdBy;
           return requester ? (
             <UserRenderer
-              userId={params.data?.consumer}
+              userId={requester}
               marketplaceStore={marketplaceBaseStore}
               className="marketplace-lakehouse-entitlements__grid__user-display"
             />
@@ -690,6 +695,7 @@ export const EntitlementsPendingTasksDashbaord = observer(
               )
             }
             onClose={() => setSelectedContract(undefined)}
+            initialSelectedUser={selectedContractTargetUser}
           />
         )}
       </>

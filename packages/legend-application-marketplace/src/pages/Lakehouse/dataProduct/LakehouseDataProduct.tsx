@@ -51,7 +51,9 @@ export const LakehouseDataProduct = withMarketplaceLakehouseStore(
     );
 
     useEffect(() => {
-      marketPlaceStore.initWithProduct(dataProductId, deploymentId, auth);
+      if (!marketPlaceStore.loadingProductState.hasCompleted) {
+        marketPlaceStore.initWithProduct(dataProductId, deploymentId, auth);
+      }
     }, [auth, dataProductId, marketPlaceStore, deploymentId]);
 
     useEffect(() => {
@@ -66,7 +68,7 @@ export const LakehouseDataProduct = withMarketplaceLakehouseStore(
     return (
       <LegendMarketplacePage className="legend-marketplace-lakehouse-data-product">
         <CubesLoadingIndicator
-          isLoading={marketPlaceStore.loadingProductsState.isInProgress}
+          isLoading={marketPlaceStore.loadingProductState.isInProgress}
         >
           <CubesLoadingIndicatorIcon />
         </CubesLoadingIndicator>
