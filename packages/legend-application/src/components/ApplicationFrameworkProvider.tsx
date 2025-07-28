@@ -28,8 +28,9 @@ export const ApplicationFrameworkProvider = observer(
     children: React.ReactNode;
     simple?: boolean | undefined;
     enableTransitions?: boolean | undefined;
+    customFonts?: string | undefined;
   }) => {
-    const { children, simple, enableTransitions } = props;
+    const { children, simple, enableTransitions, customFonts } = props;
     const platform = useApplicationPlatform();
     const applicationStore = useApplicationStore();
 
@@ -49,6 +50,7 @@ export const ApplicationFrameworkProvider = observer(
       return (
         <SimpleApplicationComponentFrameworkProvider
           enableTransitions={enableTransitions}
+          customFonts={customFonts}
         >
           {children}
         </SimpleApplicationComponentFrameworkProvider>
@@ -57,6 +59,7 @@ export const ApplicationFrameworkProvider = observer(
     return (
       <ApplicationComponentFrameworkProvider
         enableTransitions={enableTransitions}
+        customFonts={customFonts}
       >
         {children}
       </ApplicationComponentFrameworkProvider>

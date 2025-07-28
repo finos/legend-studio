@@ -118,8 +118,9 @@ export const ApplicationComponentFrameworkProvider = observer(
   (props: {
     children: React.ReactNode;
     enableTransitions?: boolean | undefined;
+    customFonts?: string | undefined;
   }) => {
-    const { children, enableTransitions } = props;
+    const { children, enableTransitions, customFonts } = props;
     const applicationStore = useApplicationStore();
     const disableContextMenu: React.MouseEventHandler = (event) => {
       event.stopPropagation();
@@ -173,7 +174,10 @@ export const ApplicationComponentFrameworkProvider = observer(
     }, [applicationStore]);
 
     return (
-      <LegendStyleProvider enableTransitions={enableTransitions}>
+      <LegendStyleProvider
+        enableTransitions={enableTransitions}
+        customFonts={customFonts}
+      >
         <BlockingAlert />
         <ActionAlert />
         <NotificationManager />
@@ -225,8 +229,9 @@ export const SimpleApplicationComponentFrameworkProvider = observer(
   (props: {
     children: React.ReactNode;
     enableTransitions?: boolean | undefined;
+    customFonts?: string | undefined;
   }) => {
-    const { children, enableTransitions } = props;
+    const { children, enableTransitions, customFonts } = props;
     const applicationStore = useApplicationStore();
     const disableContextMenu: React.MouseEventHandler = (event) => {
       event.stopPropagation();
@@ -257,7 +262,10 @@ export const SimpleApplicationComponentFrameworkProvider = observer(
     }, [keyBindingMap]);
 
     return (
-      <LegendStyleProvider enableTransitions={enableTransitions}>
+      <LegendStyleProvider
+        enableTransitions={enableTransitions}
+        customFonts={customFonts}
+      >
         <DndProvider backend={HTML5Backend}>
           <div
             style={{ height: '100%', width: '100%' }}
