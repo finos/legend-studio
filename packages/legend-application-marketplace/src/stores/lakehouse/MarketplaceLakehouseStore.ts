@@ -237,9 +237,6 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   get filterSortProducts(): DataProductState[] | undefined {
     return this.dataProductStates
       .filter((dataProductState) => {
-        if (!dataProductState.initState.hasCompleted) {
-          return false;
-        }
         // Check if product matches deploy type filter
         const deployMatch =
           (this.filter.sdlcDeployFilter &&
@@ -373,10 +370,12 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         { engine: this.marketplaceBaseStore.remoteEngine },
       );
 
-      const fetchedDataProductStates = dataProductDetails.map(
-        (dataProductDetail) =>
-          new DataProductState(this, graphManager, dataProductDetail),
-      );
+      const fetchedDataProductStates = dataProductDetails
+        .map(
+          (dataProductDetail) =>
+            new DataProductState(this, graphManager, dataProductDetail),
+        )
+        .sort((a, b) => a.title.localeCompare(b.title));
       this.setDataProductStates(fetchedDataProductStates);
       this.dataProductStates.forEach((dataProductState) =>
         dataProductState.init(),
