@@ -64,7 +64,18 @@ export const useLegendMarketplaceBaseStore = (): LegendMarketplaceBaseStore =>
 export const LegendMarketplaceFrameworkProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => (
-  <ApplicationFrameworkProvider simple={true} enableTransitions={true}>
+  <ApplicationFrameworkProvider
+    simple={true}
+    enableTransitions={true}
+    customFonts={[
+      '"GS Sans"',
+      'Roboto',
+      '"Helvetica Neue"',
+      'Helvetica',
+      'Arial',
+      'sans-serif',
+    ].join(',')}
+  >
     <BlockingAlert />
     <NotificationManager />
     <LegendMarketplaceBaseStoreProvider>
