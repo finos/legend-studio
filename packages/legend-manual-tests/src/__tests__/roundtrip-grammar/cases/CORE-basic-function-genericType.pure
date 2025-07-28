@@ -18,14 +18,5 @@ Database my::testDB
 ###Pure
 function my::firmFunction(): meta::pure::metamodel::relation::Relation<(FIRSTNAME:Varchar(100), ID:Integer, DOB:Timestamp, _BIG_INT:BigInt, _SMALL_INT:SmallInt, _TINY_INT:TinyInt)>[1]
 {
-  #>{my::testDB.personTable}#->limit(10)->select(
-    ~[
-       FIRSTNAME,
-       ID,
-       DOB,
-       _BIG_INT,
-       _SMALL_INT,
-       _TINY_INT
-     ]
-  )
+  #>{my::testDB.personTable}#->limit(10)->select(~[FIRSTNAME, ID, DOB, _BIG_INT, _SMALL_INT, _TINY_INT])
 }
