@@ -29,6 +29,7 @@ import {
 } from '../stores/LegendMarketplaceBaseStore.js';
 import type { LegendMarketplaceApplicationConfig } from '../application/LegendMarketplaceApplicationConfig.js';
 import type { LegendMarketplacePluginManager } from '../application/LegendMarketplacePluginManager.js';
+import { GlobalStyles } from '@mui/material';
 
 export const useLegendMarketplaceApplicationStore =
   (): LegendMarketplaceApplicationStore =>
@@ -67,6 +68,7 @@ export const LegendMarketplaceFrameworkProvider: React.FC<{
   <ApplicationFrameworkProvider simple={true} enableTransitions={true}>
     <BlockingAlert />
     <NotificationManager />
+    <GlobalStyles styles={{ '*': { fontFamily: 'GS Sans' } }} />
     <LegendMarketplaceBaseStoreProvider>
       {children}
     </LegendMarketplaceBaseStoreProvider>
