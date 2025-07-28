@@ -64,7 +64,7 @@ export class DataProductState {
     this.initState.inProgress();
     try {
       if (
-        this.dataProductDetails.title !== undefined &&
+        this.dataProductDetails.title !== undefined ||
         this.dataProductDetails.description !== undefined
       ) {
         // To save load time, we create a temporary data product element with the title and
