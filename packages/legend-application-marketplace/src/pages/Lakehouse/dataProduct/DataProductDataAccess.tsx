@@ -438,6 +438,7 @@ export const DataProductAccessPointGroupViewer = observer(
                     <Tooltip
                       className="data-space__viewer__access-group__item__access__tooltip__icon"
                       title={tooltipText}
+                      arrow={true}
                       slotProps={{
                         tooltip: {
                           className:
@@ -493,6 +494,7 @@ export const DataProductAccessPointGroupViewer = observer(
                 <Tooltip
                   className="data-space__viewer__access-group__item__access__tooltip__icon"
                   title={tooltipText}
+                  arrow={true}
                   slotProps={{
                     tooltip: {
                       className:
@@ -528,6 +530,7 @@ export const DataProductAccessPointGroupViewer = observer(
                     <Tooltip
                       className="data-space__viewer__access-group__item__access__tooltip__icon"
                       title={tooltipText}
+                      arrow={true}
                       slotProps={{
                         tooltip: {
                           className:
@@ -586,6 +589,7 @@ export const DataProductAccessPointGroupViewer = observer(
                     <Tooltip
                       className="data-space__viewer__access-group__item__access__tooltip__icon"
                       title={tooltipText}
+                      arrow={true}
                       slotProps={{
                         tooltip: {
                           className:
@@ -640,6 +644,7 @@ export const DataProductAccessPointGroupViewer = observer(
                 <Tooltip
                   className="data-space__viewer__access-group__item__access__tooltip__icon"
                   title={tooltipText}
+                  arrow={true}
                   slotProps={{
                     tooltip: {
                       className:
