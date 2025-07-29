@@ -37,7 +37,7 @@ export class RelationColumn extends Function {
 }
 
 export class RelationType extends Type {
-  static ID = 'NO_ID';
+  static ID = 'RelationType';
   columns: RelationColumn[] = [];
 
   override accept_PackageableElementVisitor<T>(
