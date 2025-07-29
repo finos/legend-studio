@@ -1,5 +1,11 @@
 # @finos/legend-server-marketplace
 
+## 0.0.30
+
+### Patch Changes
+
+- [#4275](https://github.com/finos/legend-studio/pull/4275) [`b7d27c0`](https://github.com/finos/legend-studio/commit/b7d27c0f2bdf022953ce9d9c9f514a4734c7eada) ([@travisstebbins](https://github.com/travisstebbins)) - Fetch Lakehouse DataProducts from new endpoint
+
 ## 0.0.29
 
 ## 0.0.28

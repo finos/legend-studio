@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 16.0.59
+
+### Patch Changes
+
+- [#4307](https://github.com/finos/legend-studio/pull/4307) [`4fd1c9b`](https://github.com/finos/legend-studio/commit/4fd1c9b7fa7a9c683edb87ebf7d3c0534467ce94) ([@travisstebbins](https://github.com/travisstebbins)) - Allow passing custom fonts to ThemeProvider
+
 ## 16.0.58
 
 ## 16.0.57

@@ -1,5 +1,13 @@
 # @finos/legend-art
 
+## 7.1.113
+
+### Patch Changes
+
+- [#4296](https://github.com/finos/legend-studio/pull/4296) [`95a871e`](https://github.com/finos/legend-studio/commit/95a871e45a7f66cc384e5caddf70040cd6787156) ([@travisstebbins](https://github.com/travisstebbins)) - Add hoverableLightTooltipIcon mixin
+
+- [#4307](https://github.com/finos/legend-studio/pull/4307) [`4fd1c9b`](https://github.com/finos/legend-studio/commit/4fd1c9b7fa7a9c683edb87ebf7d3c0534467ce94) ([@travisstebbins](https://github.com/travisstebbins)) - Allow passing custom fonts to ThemeProvider
+
 ## 7.1.112
 
 ### Patch Changes
