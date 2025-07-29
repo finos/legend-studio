@@ -15,6 +15,7 @@
  */
 
 import {
+  type V1_ContractUserEventRecord,
   type V1_DataContract,
   type V1_UserPendingContractsRecord,
   V1_AccessPointGroupReference,
@@ -29,7 +30,13 @@ import {
   type DataGridCellRendererParams,
   type DataGridColumnDefinition,
 } from '@finos/legend-lego/data-grid';
-import { Box, CircularProgress, FormControlLabel, Switch } from '@mui/material';
+import {
+  Box,
+  CircularProgress,
+  FormControlLabel,
+  Switch,
+  Tooltip,
+} from '@mui/material';
 import { useEffect, useState } from 'react';
 import type { EntitlementsDashboardState } from '../../../stores/lakehouse/entitlements/EntitlementsDashboardState.js';
 import { EntitlementsDataContractViewer } from './EntitlementsDataContractViewer.js';
@@ -37,11 +44,16 @@ import { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/e
 import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
 import { observer } from 'mobx-react-lite';
 import { UserRenderer } from '../../../components/UserRenderer/UserRenderer.js';
-import { isContractInTerminalState } from '../../../stores/lakehouse/LakehouseUtils.js';
+import {
+  getOrganizationalScopeTypeDetails,
+  getOrganizationalScopeTypeName,
+  isContractInTerminalState,
+} from '../../../stores/lakehouse/LakehouseUtils.js';
 import type { LegendMarketplaceBaseStore } from '../../../stores/LegendMarketplaceBaseStore.js';
 import { startCase } from '@finos/legend-shared';
 import { useAuth } from 'react-oidc-context';
 import { MultiUserCellRenderer } from '../../../components/MultiUserCellRenderer/MultiUserCellRenderer.js';
+import { InfoCircleIcon } from '@finos/legend-art';
 
 const AssigneesCellRenderer = (props: {
   dataContract: V1_DataContract | undefined;
@@ -214,6 +226,40 @@ export const EntitlementsPendingContractsDashbaord = observer(
 
     const colDefs: DataGridColumnDefinition<V1_DataContract>[] = [
       {
+        colId: 'consumerType',
+        headerName: 'Consumer Type',
+        cellRenderer: (
+          params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
+        ) => {
+          const consumer = params.data?.consumer;
+          const typeName = consumer
+            ? getOrganizationalScopeTypeName(
+                consumer,
+                dashboardState.lakehouseEntitlementsStore.applicationStore.pluginManager.getApplicationPlugins(),
+              )
+            : undefined;
+          const typeDetails = consumer
+            ? getOrganizationalScopeTypeDetails(
+                consumer,
+                dashboardState.lakehouseEntitlementsStore.applicationStore.pluginManager.getApplicationPlugins(),
+              )
+            : undefined;
+          return (
+            <>
+              {typeName ?? 'Unknown'}
+              {typeDetails !== undefined && (
+                <Tooltip
+                  className="marketplace-lakehouse-entitlements__grid__consumer-type__tooltip__icon"
+                  title={typeDetails}
+                >
+                  <InfoCircleIcon />
+                </Tooltip>
+              )}
+            </>
+          );
+        },
+      },
+      {
         headerName: 'Target User(s)',
         colId: 'targetUser',
         cellRenderer: (params: DataGridCellRendererParams<V1_DataContract>) => (
@@ -242,37 +288,37 @@ export const EntitlementsPendingContractsDashbaord = observer(
       },
       {
         headerName: 'Target Data Product',
-        cellRenderer: (params: DataGridCellRendererParams<V1_DataContract>) => {
+        valueGetter: (params) => {
           const resource = params.data?.resource;
           const dataProduct =
             resource instanceof V1_AccessPointGroupReference
               ? resource.dataProduct
               : undefined;
-          return <>{dataProduct?.name ?? 'Unknown'}</>;
+          return dataProduct?.name ?? 'Unknown';
         },
       },
       {
         headerName: 'Target Access Point Group',
-        cellRenderer: (params: DataGridCellRendererParams<V1_DataContract>) => {
+        valueGetter: (params) => {
           const resource = params.data?.resource;
           const accessPointGroup =
             resource instanceof V1_AccessPointGroupReference
               ? resource.accessPointGroup
               : undefined;
-          return <>{accessPointGroup ?? 'Unknown'}</>;
+          return accessPointGroup ?? 'Unknown';
         },
       },
       {
         headerName: 'State',
-        cellRenderer: (params: DataGridCellRendererParams<V1_DataContract>) => {
+        valueGetter: (params) => {
           const state = params.data?.state;
           switch (state) {
             case V1_ContractState.PENDING_DATA_OWNER_APPROVAL:
-              return <>Data Owner Approval</>;
+              return 'Data Owner Approval';
             case V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL:
-              return <>Privilege Manager Approval</>;
+              return 'Privilege Manager Approval';
             default:
-              return <>{state ? startCase(state) : 'Unknown'}</>;
+              return state ? startCase(state) : 'Unknown';
           }
         },
       },

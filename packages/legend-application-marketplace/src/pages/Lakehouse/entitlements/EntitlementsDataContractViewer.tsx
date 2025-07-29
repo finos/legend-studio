@@ -57,6 +57,7 @@ import {
 } from '@finos/legend-shared';
 import {
   getOrganizationalScopeTypeDetails,
+  getOrganizationalScopeTypeName,
   isContractInTerminalState,
   stringifyOrganizationalScope,
 } from '../../../stores/lakehouse/LakehouseUtils.js';
@@ -479,6 +480,10 @@ export const EntitlementsDataContractViewer = observer(
                       title={
                         <>
                           Contract consumer type:{' '}
+                          {getOrganizationalScopeTypeName(
+                            consumer,
+                            legendMarketplaceStore.applicationStore.pluginManager.getApplicationPlugins(),
+                          )}
                           {getOrganizationalScopeTypeDetails(
                             consumer,
                             legendMarketplaceStore.applicationStore.pluginManager.getApplicationPlugins(),

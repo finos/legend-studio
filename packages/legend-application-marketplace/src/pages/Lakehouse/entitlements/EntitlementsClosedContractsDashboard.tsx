@@ -15,6 +15,7 @@
  */
 
 import {
+  type V1_ContractUserEventRecord,
   type V1_DataContract,
   type V1_EnrichedUserApprovalStatus,
   V1_AccessPointGroupReference,
@@ -28,7 +29,7 @@ import {
   type DataGridCellRendererParams,
   type DataGridColumnDefinition,
 } from '@finos/legend-lego/data-grid';
-import { Box, FormControlLabel, Switch } from '@mui/material';
+import { Box, FormControlLabel, Switch, Tooltip } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import type { EntitlementsDashboardState } from '../../../stores/lakehouse/entitlements/EntitlementsDashboardState.js';
 import { EntitlementsDataContractViewer } from './EntitlementsDataContractViewer.js';
@@ -37,6 +38,8 @@ import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarket
 import { observer } from 'mobx-react-lite';
 import { UserRenderer } from '../../../components/UserRenderer/UserRenderer.js';
 import {
+  getOrganizationalScopeTypeDetails,
+  getOrganizationalScopeTypeName,
   isContractInTerminalState,
   stringifyOrganizationalScope,
 } from '../../../stores/lakehouse/LakehouseUtils.js';
@@ -44,6 +47,7 @@ import { lodashCapitalize } from '@finos/legend-shared';
 import { MultiUserCellRenderer } from '../../../components/MultiUserCellRenderer/MultiUserCellRenderer.js';
 import { useAuth } from 'react-oidc-context';
 import { deserialize } from 'serializr';
+import { InfoCircleIcon } from '@finos/legend-art';
 
 export const EntitlementsClosedContractsDashbaord = observer(
   (props: { dashboardState: EntitlementsDashboardState }): React.ReactNode => {
@@ -161,6 +165,40 @@ export const EntitlementsClosedContractsDashbaord = observer(
 
     const colDefs: DataGridColumnDefinition<V1_DataContract>[] = [
       {
+        colId: 'consumerType',
+        headerName: 'Consumer Type',
+        cellRenderer: (
+          params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
+        ) => {
+          const consumer = params.data?.consumer;
+          const typeName = consumer
+            ? getOrganizationalScopeTypeName(
+                consumer,
+                dashboardState.lakehouseEntitlementsStore.applicationStore.pluginManager.getApplicationPlugins(),
+              )
+            : undefined;
+          const typeDetails = consumer
+            ? getOrganizationalScopeTypeDetails(
+                consumer,
+                dashboardState.lakehouseEntitlementsStore.applicationStore.pluginManager.getApplicationPlugins(),
+              )
+            : undefined;
+          return (
+            <>
+              {typeName ?? 'Unknown'}
+              {typeDetails !== undefined && (
+                <Tooltip
+                  className="marketplace-lakehouse-entitlements__grid__consumer-type__tooltip__icon"
+                  title={typeDetails}
+                >
+                  <InfoCircleIcon />
+                </Tooltip>
+              )}
+            </>
+          );
+        },
+      },
+      {
         headerName: 'Target User',
         colId: 'targetUser',
         cellRenderer: (params: DataGridCellRendererParams<V1_DataContract>) => {
@@ -199,24 +237,24 @@ export const EntitlementsClosedContractsDashbaord = observer(
       },
       {
         headerName: 'Target Data Product',
-        cellRenderer: (params: DataGridCellRendererParams<V1_DataContract>) => {
+        valueGetter: (params) => {
           const resource = params.data?.resource;
           const dataProduct =
             resource instanceof V1_AccessPointGroupReference
               ? resource.dataProduct
               : undefined;
-          return <>{dataProduct?.name ?? 'Unknown'}</>;
+          return dataProduct?.name ?? 'Unknown';
         },
       },
       {
         headerName: 'Target Access Point Group',
-        cellRenderer: (params: DataGridCellRendererParams<V1_DataContract>) => {
+        valueGetter: (params) => {
           const resource = params.data?.resource;
           const accessPointGroup =
             resource instanceof V1_AccessPointGroupReference
               ? resource.accessPointGroup
               : undefined;
-          return <>{accessPointGroup ?? 'Unknown'}</>;
+          return accessPointGroup ?? 'Unknown';
         },
       },
       {

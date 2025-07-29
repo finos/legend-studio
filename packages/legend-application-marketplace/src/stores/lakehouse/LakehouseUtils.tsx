@@ -127,16 +127,39 @@ export const stringifyOrganizationalScope = (
   return '';
 };
 
+export const getOrganizationalScopeTypeName = (
+  scope: V1_OrganizationalScope,
+  plugins: LegendMarketplaceApplicationPlugin[],
+): string => {
+  if (scope instanceof V1_AppDirOrganizationalScope) {
+    return 'AppDir Node';
+  } else if (scope instanceof V1_AdhocTeam) {
+    return 'Ad-hoc Team';
+  } else if (scope instanceof V1_UnknownOrganizationalScopeType) {
+    return 'Unknown';
+  } else {
+    const typeNames = plugins
+      .flatMap((plugin) =>
+        plugin
+          .getContractConsumerTypeRendererConfigs?.()
+          .flatMap((config) => config.organizationalScopeTypeName?.(scope)),
+      )
+      .filter(isNonNullable);
+
+    return typeNames[0] ?? 'Unknown';
+  }
+};
+
 export const getOrganizationalScopeTypeDetails = (
   scope: V1_OrganizationalScope,
   plugins: LegendMarketplaceApplicationPlugin[],
 ): React.ReactNode => {
-  if (scope instanceof V1_AppDirOrganizationalScope) {
-    return <>AppDir Node</>;
-  } else if (scope instanceof V1_AdhocTeam) {
-    return <>Ad-hoc Team</>;
-  } else if (scope instanceof V1_UnknownOrganizationalScopeType) {
-    return <>Unknown</>;
+  if (
+    scope instanceof V1_AppDirOrganizationalScope ||
+    scope instanceof V1_AdhocTeam ||
+    scope instanceof V1_UnknownOrganizationalScopeType
+  ) {
+    return undefined;
   } else {
     const detailsRenderers = plugins
       .flatMap((plugin) =>
@@ -152,7 +175,7 @@ export const getOrganizationalScopeTypeDetails = (
       }
     }
 
-    return <>Unknown</>;
+    return undefined;
   }
 };
 

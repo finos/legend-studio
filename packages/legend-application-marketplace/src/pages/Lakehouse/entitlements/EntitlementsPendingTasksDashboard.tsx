@@ -56,6 +56,10 @@ import { useAuth } from 'react-oidc-context';
 import { observer } from 'mobx-react-lite';
 import { UserRenderer } from '../../../components/UserRenderer/UserRenderer.js';
 import type { LegendMarketplaceBaseStore } from '../../../stores/LegendMarketplaceBaseStore.js';
+import {
+  getOrganizationalScopeTypeDetails,
+  getOrganizationalScopeTypeName,
+} from '../../../stores/lakehouse/LakehouseUtils.js';
 
 const EntitlementsDashboardActionModal = (props: {
   open: boolean;
@@ -401,6 +405,47 @@ export const EntitlementsPendingTasksDashbaord = observer(
           const taskType = params.data?.eventPayload.type;
           const timestamp = params.data?.eventPayload.eventTimestamp;
           return `${taskType}: ${timestamp}`;
+        },
+      },
+      {
+        minWidth: 25,
+        sortable: true,
+        resizable: true,
+        colId: 'consumerType',
+        headerName: 'Consumer Type',
+        flex: 1,
+        cellRenderer: (
+          params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
+        ) => {
+          const contractId = params.data?.dataContractId;
+          const consumer = allContracts?.find(
+            (contract) => contract.guid === contractId,
+          )?.consumer;
+          const typeName = consumer
+            ? getOrganizationalScopeTypeName(
+                consumer,
+                dashboardState.lakehouseEntitlementsStore.applicationStore.pluginManager.getApplicationPlugins(),
+              )
+            : undefined;
+          const typeDetails = consumer
+            ? getOrganizationalScopeTypeDetails(
+                consumer,
+                dashboardState.lakehouseEntitlementsStore.applicationStore.pluginManager.getApplicationPlugins(),
+              )
+            : undefined;
+          return (
+            <>
+              {typeName ?? 'Unknown'}
+              {typeDetails !== undefined && (
+                <Tooltip
+                  className="marketplace-lakehouse-entitlements__grid__consumer-type__tooltip__icon"
+                  title={typeDetails}
+                >
+                  <InfoCircleIcon />
+                </Tooltip>
+              )}
+            </>
+          );
         },
       },
       {
