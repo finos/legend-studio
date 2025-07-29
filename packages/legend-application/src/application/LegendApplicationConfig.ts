@@ -19,6 +19,7 @@ import {
   guaranteeNonNullable,
   type ExtensionsConfigurationData,
   URL_SEPARATOR,
+  SerializationFactory,
 } from '@finos/legend-shared';
 import type { LegendApplicationConfigurationInput } from './LegendApplication.js';
 import {
@@ -33,6 +34,7 @@ import {
   collectDocumentationLinkEntryFromConfig,
 } from '../stores/DocumentationService.js';
 import type { SettingOverrideConfigData } from '../stores/SettingService.js';
+import { createModelSchema, primitive } from 'serializr';
 
 export interface LegendApplicationVersionData {
   buildTime?: string;
@@ -43,6 +45,18 @@ export interface LegendApplicationVersionData {
 export interface LegendApplicationLink {
   url: string;
   label: string;
+}
+
+export class StereotypeConfig {
+  profile!: string;
+  stereotype!: string;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(StereotypeConfig, {
+      profile: primitive(),
+      stereotype: primitive(),
+    }),
+  );
 }
 
 export interface LegendApplicationConfigurationData {

@@ -173,52 +173,54 @@ export const TableIcon = VscTable;
 
 //======================================================= BS =======================================================
 import {
-  BsFillTriangleFill,
-  BsFillFileEarmarkSpreadsheetFill,
-  BsBoxSeam,
-  BsGripVertical,
-  BsAlignTop,
-  BsAlignMiddle,
   BsAlignBottom,
-  BsAlignStart,
   BsAlignCenter,
   BsAlignEnd,
+  BsAlignMiddle,
+  BsAlignStart,
+  BsAlignTop,
+  BsBoxArrowUpRight,
+  BsBoxSeam,
+  BsChevronDown,
+  BsChevronLeft,
+  BsChevronRight,
+  BsChevronUp,
+  BsDatabaseFillCheck,
+  BsDatabaseFillLock,
   BsDistributeHorizontal,
   BsDistributeVertical,
-  BsDatabaseFillLock,
-  BsDatabaseFillCheck,
-  BsChevronUp,
-  BsChevronDown,
-  BsChevronRight,
-  BsChevronLeft,
+  BsFillFileEarmarkSpreadsheetFill,
+  BsFillTriangleFill,
+  BsGripVertical,
+  BsInfoCircle,
   BsQuestionSquare,
   BsQuestionSquareFill,
   BsTextLeft,
-  BsBoxArrowUpRight,
 } from 'react-icons/bs';
 
-export const FilledTriangleIcon = BsFillTriangleFill;
-export const TabulatedDataFileIcon = BsFillFileEarmarkSpreadsheetFill;
-export const BundleIcon = BsBoxSeam;
-export const ThinVerticalDragHandleIcon = BsGripVertical;
-export const AlignTopIcon = BsAlignTop;
-export const AlignMiddleIcon = BsAlignMiddle;
 export const AlignBottomIcon = BsAlignBottom;
-export const AlignStartIcon = BsAlignStart;
 export const AlignCenterIcon = BsAlignCenter;
 export const AlignEndIcon = BsAlignEnd;
-export const DistributeHorizontalIcon = BsDistributeHorizontal;
-export const DistributeVerticalIcon = BsDistributeVertical;
+export const AlignMiddleIcon = BsAlignMiddle;
+export const AlignStartIcon = BsAlignStart;
+export const AlignTopIcon = BsAlignTop;
+export const BoxArrowUpRightIcon = BsBoxArrowUpRight;
+export const BundleIcon = BsBoxSeam;
 export const DataAccessIcon = BsDatabaseFillLock;
 export const DataReadyIcon = BsDatabaseFillCheck;
-export const ThinChevronUpIcon = BsChevronUp;
-export const ThinChevronDownIcon = BsChevronDown;
-export const ThinChevronRightIcon = BsChevronRight;
-export const ThinChevronLeftIcon = BsChevronLeft;
-export const QuestionSquareIcon = BsQuestionSquare;
-export const QuestionSquareFillIcon = BsQuestionSquareFill;
+export const DistributeHorizontalIcon = BsDistributeHorizontal;
+export const DistributeVerticalIcon = BsDistributeVertical;
+export const FilledTriangleIcon = BsFillTriangleFill;
+export const InfoCircleOutlineIcon = BsInfoCircle;
 export const GenericTextFileIcon = BsTextLeft;
-export const BoxArrowUpRightIcon = BsBoxArrowUpRight;
+export const QuestionSquareFillIcon = BsQuestionSquareFill;
+export const QuestionSquareIcon = BsQuestionSquare;
+export const TabulatedDataFileIcon = BsFillFileEarmarkSpreadsheetFill;
+export const ThinChevronDownIcon = BsChevronDown;
+export const ThinChevronLeftIcon = BsChevronLeft;
+export const ThinChevronRightIcon = BsChevronRight;
+export const ThinChevronUpIcon = BsChevronUp;
+export const ThinVerticalDragHandleIcon = BsGripVertical;
 
 //======================================================= HI =======================================================
 import { HiCode, HiHome, HiOutlineDocumentReport } from 'react-icons/hi';

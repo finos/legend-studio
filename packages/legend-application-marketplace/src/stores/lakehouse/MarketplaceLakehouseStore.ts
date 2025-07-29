@@ -520,10 +520,6 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       const dataProductDetails = guaranteeNonNullable(
         fetchedDataProductDetails[0],
       );
-      const graphManagerState = new GraphManagerState(
-        this.applicationStore.pluginManager,
-        this.applicationStore.logService,
-      );
       // Crete graph manager for parsing ad-hoc deployed data products
       const graphManager = new V1_PureGraphManager(
         this.applicationStore.pluginManager,
@@ -541,6 +537,11 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         },
         { engine: this.marketplaceBaseStore.remoteEngine },
       );
+      const graphManagerState = new GraphManagerState(
+        this.applicationStore.pluginManager,
+        this.applicationStore.logService,
+      );
+      yield graphManagerState.initializeSystem();
       const v1DataProduct = guaranteeType(
         yield getDataProductFromDetails(
           dataProductDetails,
