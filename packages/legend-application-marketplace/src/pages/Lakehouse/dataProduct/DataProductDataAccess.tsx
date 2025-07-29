@@ -20,6 +20,7 @@ import {
   clsx,
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
+  InfoCircleOutlineIcon,
   MarkdownTextViewer,
   QuestionCircleIcon,
 } from '@finos/legend-art';
@@ -83,6 +84,7 @@ import {
   MenuItem,
   Tab,
   Tabs,
+  Tooltip,
 } from '@mui/material';
 import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
 import { EntitlementsDataContractCreator } from '../entitlements/EntitlementsDataContractCreator.js';
@@ -409,6 +411,12 @@ export const DataProductAccessPointGroupViewer = observer(
     };
 
     const renderAccess = (val: AccessPointGroupAccess): React.ReactNode => {
+      const tooltipText =
+        accessGroupState.accessState.viewerState.applicationStore.pluginManager
+          .getApplicationPlugins()
+          .flatMap((plugin) => plugin.getExtraAccessPointGroupAccessInfo?.(val))
+          .filter(isNonEmptyString)[0];
+
       switch (val) {
         case AccessPointGroupAccess.UNKNOWN:
           return (
@@ -425,6 +433,20 @@ export const DataProductAccessPointGroupViewer = observer(
                   }
                 >
                   UNKNOWN
+                  {tooltipText !== undefined && (
+                    <Tooltip
+                      className="data-space__viewer__access-group__item__access__tooltip__icon"
+                      title={tooltipText}
+                      slotProps={{
+                        tooltip: {
+                          className:
+                            'data-space__viewer__access-group__item__access__tooltip',
+                        },
+                      }}
+                    >
+                      <InfoCircleOutlineIcon />
+                    </Tooltip>
+                  )}
                 </Button>
                 <Button
                   size="small"
@@ -466,6 +488,20 @@ export const DataProductAccessPointGroupViewer = observer(
               }
             >
               REQUEST ACCESS
+              {tooltipText !== undefined && (
+                <Tooltip
+                  className="data-space__viewer__access-group__item__access__tooltip__icon"
+                  title={tooltipText}
+                  slotProps={{
+                    tooltip: {
+                      className:
+                        'data-space__viewer__access-group__item__access__tooltip',
+                    },
+                  }}
+                >
+                  <InfoCircleOutlineIcon />
+                </Tooltip>
+              )}
             </Button>
           );
         case AccessPointGroupAccess.PENDING_MANAGER_APPROVAL:
@@ -487,6 +523,20 @@ export const DataProductAccessPointGroupViewer = observer(
                   {val === AccessPointGroupAccess.PENDING_MANAGER_APPROVAL
                     ? 'PENDING MANAGER APPROVAL'
                     : 'PENDING DATA OWNER APPROVAL'}
+                  {tooltipText !== undefined && (
+                    <Tooltip
+                      className="data-space__viewer__access-group__item__access__tooltip__icon"
+                      title={tooltipText}
+                      slotProps={{
+                        tooltip: {
+                          className:
+                            'data-space__viewer__access-group__item__access__tooltip',
+                        },
+                      }}
+                    >
+                      <InfoCircleOutlineIcon />
+                    </Tooltip>
+                  )}
                 </Button>
                 <Button
                   size="small"
@@ -531,6 +581,20 @@ export const DataProductAccessPointGroupViewer = observer(
                   }
                 >
                   ENTITLED
+                  {tooltipText !== undefined && (
+                    <Tooltip
+                      className="data-space__viewer__access-group__item__access__tooltip__icon"
+                      title={tooltipText}
+                      slotProps={{
+                        tooltip: {
+                          className:
+                            'data-space__viewer__access-group__item__access__tooltip',
+                        },
+                      }}
+                    >
+                      <InfoCircleOutlineIcon />
+                    </Tooltip>
+                  )}
                 </Button>
                 <Button
                   size="small"
@@ -558,6 +622,34 @@ export const DataProductAccessPointGroupViewer = observer(
                 </MenuItem>
               </Menu>
             </>
+          );
+        case AccessPointGroupAccess.ENTERPRISE:
+          return (
+            <Button
+              variant="contained"
+              color="success"
+              loading={
+                accessGroupState.fetchingAccessState.isInProgress ||
+                accessGroupState.fetchingUserAccessStatus.isInProgress
+              }
+              sx={{ cursor: 'default' }}
+            >
+              ENTERPRISE ACCESS
+              {tooltipText !== undefined && (
+                <Tooltip
+                  className="data-space__viewer__access-group__item__access__tooltip__icon"
+                  title={tooltipText}
+                  slotProps={{
+                    tooltip: {
+                      className:
+                        'data-space__viewer__access-group__item__access__tooltip',
+                    },
+                  }}
+                >
+                  <InfoCircleOutlineIcon />
+                </Tooltip>
+              )}
+            </Button>
           );
         default:
           return null;

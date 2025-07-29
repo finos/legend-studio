@@ -16,7 +16,10 @@
 
 import { LegendApplicationPlugin } from '@finos/legend-application';
 import type { LegendMarketplacePluginManager } from '../application/LegendMarketplacePluginManager.js';
-import type { DataProductGroupAccessState } from '../stores/lakehouse/DataProductDataAccessState.js';
+import type {
+  AccessPointGroupAccess,
+  DataProductGroupAccessState,
+} from '../stores/lakehouse/DataProductDataAccessState.js';
 import type { V1_OrganizationalScope } from '@finos/legend-graph';
 import type { LegendMarketplaceBaseStore } from '../stores/LegendMarketplaceBaseStore.js';
 import type React from 'react';
@@ -55,4 +58,13 @@ export abstract class LegendMarketplaceApplicationPlugin extends LegendApplicati
    * - Organizational scope type details renderer
    */
   getContractConsumerTypeRendererConfigs?(): ContractConsumerTypeRendererConfig[];
+
+  /**
+   * Returns additional details about a given access point group access type.
+   *
+   * @param access the AccessPointGroupAccess value for a given Access Point Group
+   */
+  getExtraAccessPointGroupAccessInfo?(
+    access: AccessPointGroupAccess,
+  ): string | undefined;
 }

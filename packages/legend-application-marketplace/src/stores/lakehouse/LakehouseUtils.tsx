@@ -248,3 +248,73 @@ export const getDataProductFromDetails = async (
     return undefined;
   }
 };
+
+export const getDataProductFromDetails = async (
+  details: V1_EntitlementsDataProductDetails,
+  graphManagerState: GraphManagerState,
+  graphManager: V1_PureGraphManager,
+  marketplaceBaseStore: LegendMarketplaceBaseStore,
+): Promise<V1_DataProduct | undefined> => {
+  if (details.origin instanceof V1_SdlcDeploymentDataProductOrigin) {
+    const rawEntities =
+      (await marketplaceBaseStore.depotServerClient.getVersionEntities(
+        details.origin.group,
+        details.origin.artifact,
+        resolveVersion(details.origin.version),
+        CORE_PURE_PATH.DATA_PRODUCT,
+      )) as {
+        artifactId: string;
+        entity: Entity;
+        groupId: string;
+        versionId: string;
+        versionedEntity: boolean;
+      }[];
+    const entities = rawEntities.map((entity) =>
+      deserialize(V1_dataProductModelSchema, entity.entity.content),
+    );
+    const matchingEntities = entities.filter(
+      (entity) => entity.name.toLowerCase() === details.id.toLowerCase(),
+    );
+    if (matchingEntities.length === 0) {
+      throw new Error(
+        `No data product found with name ${details.id} in project`,
+      );
+    } else if (matchingEntities.length > 1) {
+      throw new Error(
+        `Multiple data products found with name ${details.id} in project`,
+      );
+    }
+    return matchingEntities[0];
+  } else if (details.origin instanceof V1_AdHocDeploymentDataProductOrigin) {
+    const entities: Entity[] = await graphManager.pureCodeToEntities(
+      details.origin.definition,
+    );
+    await graphManager.buildGraph(
+      graphManagerState.graph,
+      entities,
+      ActionState.create(),
+    );
+    const matchingEntities = graphManagerState.graph.allElements.filter(
+      (element) =>
+        element instanceof DataProduct &&
+        element.name.toLowerCase() === details.id.toLowerCase(),
+    );
+    if (matchingEntities.length > 1) {
+      throw new Error(
+        `Multiple data products found with name ${details.id} in deployed definition`,
+      );
+    }
+    return guaranteeType(
+      graphManager.elementToProtocol(
+        guaranteeNonNullable(
+          matchingEntities[0],
+          `No data product found with name ${details.id} in deployed definition`,
+        ),
+      ),
+      V1_DataProduct,
+      `${details.id} is not a data product`,
+    );
+  } else {
+    return undefined;
+  }
+};

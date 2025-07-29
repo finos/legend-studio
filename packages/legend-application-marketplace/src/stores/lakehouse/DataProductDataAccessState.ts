@@ -60,6 +60,7 @@ export enum AccessPointGroupAccess {
   APPROVED = 'APPROVED',
   DENIED = 'DENIED',
   NO_ACCESS = 'NO_ACCESS',
+  ENTERPRISE = 'ENTERPRISE', // Used to indicate that the group is available for all users in the organization
 }
 
 export class DataProductGroupAccessState {
@@ -103,6 +104,19 @@ export class DataProductGroupAccessState {
   }
 
   get access(): AccessPointGroupAccess {
+    const publicStereotype =
+      this.accessState.viewerState.applicationStore.config.options
+        .dataProductConfig?.publicStereotype;
+    if (
+      publicStereotype &&
+      this.group.stereotypes.filter(
+        (stereotype) =>
+          stereotype.profile === publicStereotype.profile &&
+          stereotype.value === publicStereotype.stereotype,
+      ).length > 0
+    ) {
+      return AccessPointGroupAccess.ENTERPRISE;
+    }
     if (this.associatedContract === false) {
       return AccessPointGroupAccess.UNKNOWN;
     } else if (

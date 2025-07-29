@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  type GenericLegendApplicationStore,
-  type NavigationZone,
-} from '@finos/legend-application';
+import { type NavigationZone } from '@finos/legend-application';
 import {
   type GraphManagerState,
   type V1_AccessPointGroup,
@@ -49,9 +46,10 @@ import { serialize } from 'serializr';
 import { dataContractContainsDataProduct } from './LakehouseUtils.js';
 import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
 import type { MarketplaceLakehouseStore } from './MarketplaceLakehouseStore.js';
+import type { LegendMarketplaceApplicationStore } from '../LegendMarketplaceBaseStore.js';
 
 export class DataProductViewerState {
-  readonly applicationStore: GenericLegendApplicationStore;
+  readonly applicationStore: LegendMarketplaceApplicationStore;
   readonly lakehouseStore: MarketplaceLakehouseStore;
   readonly graphManagerState: GraphManagerState;
   readonly layoutState: DataProductLayoutState;
@@ -74,7 +72,7 @@ export class DataProductViewerState {
   creatingContractState = ActionState.create();
 
   constructor(
-    applicationStore: GenericLegendApplicationStore,
+    applicationStore: LegendMarketplaceApplicationStore,
     lakehouseStore: MarketplaceLakehouseStore,
     graphManagerState: GraphManagerState,
     lakeServerClient: LakehouseContractServerClient,

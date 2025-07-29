@@ -20,13 +20,25 @@ import {
   assertNonNullable,
   guaranteeNonEmptyString,
   SerializationFactory,
+  usingModelSchema,
 } from '@finos/legend-shared';
 import {
   type LegendApplicationConfigurationData,
   type LegendApplicationConfigurationInput,
   LegendApplicationConfig,
+  StereotypeConfig,
 } from '@finos/legend-application';
 import type { AuthProviderProps } from 'react-oidc-context';
+
+export class DataProductConfig {
+  publicStereotype!: StereotypeConfig;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(DataProductConfig, {
+      publicStereotype: usingModelSchema(StereotypeConfig.serialization.schema),
+    }),
+  );
+}
 
 class LegendMarketplaceApplicationCoreOptions {
   /**
@@ -37,9 +49,14 @@ class LegendMarketplaceApplicationCoreOptions {
    */
   enableMarketplacePages = false;
 
+  dataProductConfig: DataProductConfig | undefined;
+
   private static readonly serialization = new SerializationFactory(
     createModelSchema(LegendMarketplaceApplicationCoreOptions, {
       enableMarketplacePages: optional(primitive()),
+      dataProductConfig: optional(
+        usingModelSchema(DataProductConfig.serialization.schema),
+      ),
     }),
   );
 

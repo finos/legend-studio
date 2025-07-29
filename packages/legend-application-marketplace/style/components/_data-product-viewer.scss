@@ -1597,6 +1597,13 @@
     }
   }
 
+  &__item__access__tooltip {
+    &__icon {
+      font-size: 1.6rem;
+      margin-left: 0.5rem;
+    }
+  }
+
   &__tds__column-specs {
     height: 100%;
   }
