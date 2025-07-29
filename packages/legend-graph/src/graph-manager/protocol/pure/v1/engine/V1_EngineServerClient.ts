@@ -224,6 +224,21 @@ export class V1_EngineServerClient extends AbstractServerClient {
 
   _sdlc = (): string => `${this.baseUrl}/sdlc/v1`;
 
+  // ------------------------------------------- Terminal -------------------------------------------
+
+  _marketplace = (): string => `${this.baseUrl}/marketplace`;
+
+  getTerminals = (): Promise<PlainObject[]> => {
+    return this.get(
+      `https://dev.exec.alloy.site.gs.com/api/user/marketplace/terminals`,
+    ); //figure out path issue
+  };
+
+  getTerminalById = (id: number): Promise<PlainObject> => {
+    return this.get(
+      `https://dev.exec.alloy.site.gs.com/api/user/marketplace/terminals/${id}`,
+    );
+  };
   // ------------------------------------------- Server -------------------------------------------
 
   _server = (): string => `${this.baseUrl}/server/v1`;

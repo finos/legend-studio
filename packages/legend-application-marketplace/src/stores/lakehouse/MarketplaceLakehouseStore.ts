@@ -60,12 +60,14 @@ import {
   LegendSDLC,
   V1_AppDirLevel,
   V1_DataProduct,
+  V1_Terminal,
   V1_DataProductArtifactGeneration,
   V1_dataProductModelSchema,
   V1_deserializeIngestEnvironment,
   V1_deserializePackageableElement,
   V1_IngestEnvironmentClassification,
   V1_PureGraphManager,
+  V1_TerminalModelSchema,
   V1_SandboxDataProductDeploymentResponse,
 } from '@finos/legend-graph';
 import { deserialize } from 'serializr';
@@ -81,7 +83,7 @@ import {
   EXTERNAL_APPLICATION_NAVIGATION__generateIngestEnvironemntUrl,
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl,
 } from '../../__lib__/LegendMarketplaceNavigation.js';
-import type { AuthContextProps } from 'react-oidc-context';
+import { type AuthContextProps } from 'react-oidc-context';
 import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
 import {
   DataProductEntity,
@@ -95,7 +97,6 @@ import {
   IngestDeploymentServerConfig,
 } from '@finos/legend-server-lakehouse';
 import { LegendMarketplaceUserDataHelper } from '../../__lib__/LegendMarketplaceUserDataHelper.js';
-
 const ARTIFACT_GENERATION_DAT_PRODUCT_KEY = 'dataProduct';
 
 export enum DataProductFilterType {
@@ -202,6 +203,8 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   filter: DataProductFilters;
   sort: DataProductSort = DataProductSort.NAME_ALPHABETICAL;
   dataProductViewer: DataProductViewerState | undefined;
+  engineServerClient: any;
+  terminalProducts: V1_Terminal[] | undefined;
 
   constructor(
     marketplaceBaseStore: LegendMarketplaceBaseStore,
@@ -230,6 +233,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     makeObservable(this, {
       init: flow,
       initWithProduct: flow,
+      initWithTerminal: flow,
       initWithSandboxProduct: flow,
       productStatesMap: observable,
       sandboxDataProductStates: observable,
@@ -245,6 +249,8 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       setLakehouseIngestEnvironmentsByDID: action,
       setLakehouseIngestEnvironmentDetails: action,
       setSandboxDataProductStates: action,
+      setTerminalProducts: action,
+      terminalProducts: observable,
       filter: observable,
       sort: observable,
       setSort: action,
@@ -331,6 +337,9 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     sandboxDataProductStates: SandboxDataProductState[],
   ): void {
     this.sandboxDataProductStates = sandboxDataProductStates;
+  }
+  setTerminalProducts(products: V1_Terminal[] | undefined): void {
+    this.terminalProducts = products;
   }
 
   setDataProductViewerState(val: DataProductViewerState | undefined): void {
@@ -809,6 +818,102 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(
         `Unable to load product ${path}: ${error.message}`,
+      );
+      this.loadingProductsState.fail();
+    }
+  }
+
+  *initWithTerminal(
+    terminalId: number,
+    auth: AuthContextProps,
+  ): GeneratorFn<any> {
+    try {
+      this.loadingProductsState.inProgress();
+
+      const rawTerminalResponse =
+        yield this.marketplaceBaseStore.engineServerClient.getTerminalById(
+          terminalId,
+        );
+      const { columns, rows } = rawTerminalResponse.result;
+
+      if (!rawTerminalResponse.result || !rawTerminalResponse.result.rows) {
+        throw new Error('No result data found in API response');
+      }
+
+      const idColumnIndex = columns.findIndex(
+        (columnName: string) => columnName === 'Id',
+      );
+      if (idColumnIndex === -1) {
+        throw new Error('Id column not found in results');
+      }
+
+      const allTerminalRows = rows.filter((row: any) => {
+        return row.values[idColumnIndex] == terminalId;
+      });
+
+      if (allTerminalRows.length === 0) {
+        throw new Error(`No terminal rows found for ID ${terminalId}`);
+      }
+      const terminalProducts = allTerminalRows.map(
+        (row: any, index: number) => {
+          const terminalData: any = {
+            _type: 'terminal',
+            package: 'marketplace',
+            name: `Terminal_${terminalId}_Product_${index + 1}`,
+          };
+
+          columns.forEach((columnName: string, colIndex: number) => {
+            const value = row.values[colIndex];
+            switch (columnName) {
+              case 'Id':
+                terminalData.id = value;
+                break;
+              case 'providerName':
+                terminalData.vendorName = value;
+                break;
+              case 'productName':
+                terminalData.title = value;
+                break;
+              case 'category':
+                terminalData.category = value;
+                break;
+              case 'Description':
+                terminalData.description = value;
+                break;
+              case 'Application Name':
+                terminalData.applicationName = value;
+                break;
+              case 'Tiered_Price':
+                terminalData.tieredPrice = value;
+                break;
+              case 'vendorprofileId':
+                terminalData.vendorProfileId = value;
+                break;
+              case 'Model Name':
+                terminalData.modelName = value;
+                break;
+              case 'price':
+                terminalData.price = value;
+                break;
+              case 'Total Firm Price':
+                terminalData.totalFirmPrice = value;
+                break;
+              default:
+                console.log(`Unmapped column: ${columnName} = ${value}`);
+            }
+          });
+          return deserialize(V1_TerminalModelSchema, terminalData);
+        },
+      );
+
+      this.setTerminalProducts(terminalProducts);
+
+      this.loadingProductsState.complete();
+    } catch (error) {
+      console.error('Error in initWithTerminal:', error);
+      assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(
+        `Unable to load terminal ${terminalId}: ${error.message}`,
       );
       this.loadingProductsState.fail();
     }

@@ -185,6 +185,7 @@ export {
   V1_AccessPoint,
   V1_AccessPointGroup,
 } from './graph-manager/protocol/pure/v1/model/packageableElements/dataProduct/V1_DataProduct.js';
+export { V1_Terminal } from './graph-manager/protocol/pure/v1/model/packageableElements/dataProduct/V1_Terminal.js';
 export {
   V1_ExecuteInput,
   V1_TestDataGenerationExecutionInput,
@@ -558,6 +559,7 @@ export {
   V1_deserializeRawValueSpecificationType,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper.js';
 export { V1_dataProductModelSchema } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DataProductSerializationHelper.js';
+export { V1_TerminalModelSchema } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_TerminalSerializationHelper.js';
 export { V1_transformPropertyReference } from './graph-manager/protocol/pure/v1/transformation/pureGraph/from/V1_MappingTransformer.js';
 export * from './graph-manager/protocol/pure/v1/transformation/pureGraph/from/V1_DataElementTransformer.js';
 export {

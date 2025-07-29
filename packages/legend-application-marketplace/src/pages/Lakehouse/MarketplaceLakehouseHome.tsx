@@ -72,7 +72,7 @@ import {
   type BaseDataProductState,
   type DataProductEntity,
 } from '../../stores/lakehouse/dataProducts/DataProducts.js';
-import type { LegendMarketplaceApplicationStore } from '../../stores/LegendMarketplaceBaseStore.js';
+import { type LegendMarketplaceApplicationStore } from '../../stores/LegendMarketplaceBaseStore.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
   ELEMENT_PATH_DELIMITER,
