@@ -1,5 +1,19 @@
 # @finos/legend-application-marketplace
 
+## 0.0.63
+
+### Patch Changes
+
+- [#4275](https://github.com/finos/legend-studio/pull/4275) [`b7d27c0`](https://github.com/finos/legend-studio/commit/b7d27c0f2bdf022953ce9d9c9f514a4734c7eada) ([@travisstebbins](https://github.com/travisstebbins)) - Fetch Lakehouse DataProducts from new endpoint
+
+- [#4303](https://github.com/finos/legend-studio/pull/4303) [`f88c90f`](https://github.com/finos/legend-studio/commit/f88c90f8c591e1d96a4fca126bbec6a0d994a115) ([@travisstebbins](https://github.com/travisstebbins)) - Remove left side navigation bar from DataProduct page
+
+- [#4292](https://github.com/finos/legend-studio/pull/4292) [`80caee6`](https://github.com/finos/legend-studio/commit/80caee66b47f8d75bd7173b09fd3fd6a01d01d27) ([@travisstebbins](https://github.com/travisstebbins)) - Contract viewer UI/UX enhancements
+
+- [#4307](https://github.com/finos/legend-studio/pull/4307) [`4fd1c9b`](https://github.com/finos/legend-studio/commit/4fd1c9b7fa7a9c683edb87ebf7d3c0534467ce94) ([@travisstebbins](https://github.com/travisstebbins)) - Update Marketplace font
+
+- [#4296](https://github.com/finos/legend-studio/pull/4296) [`95a871e`](https://github.com/finos/legend-studio/commit/95a871e45a7f66cc384e5caddf70040cd6787156) ([@travisstebbins](https://github.com/travisstebbins)) - Entitlements Dashboard consumer type UI/UX improvements
+
 ## 0.0.62
 
 ## 0.0.61
