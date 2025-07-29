@@ -96,6 +96,7 @@ import {
   assertErrorThrown,
   guaranteeNonNullable,
   guaranteeType,
+  isNonEmptyString,
 } from '@finos/legend-shared';
 import { resolveVersion } from '@finos/legend-server-depot';
 import { deserialize } from 'serializr';
