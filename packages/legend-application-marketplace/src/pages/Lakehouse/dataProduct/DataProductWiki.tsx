@@ -92,18 +92,6 @@ export const DataProductDescription = observer(
 
     return (
       <div ref={sectionRef} className="data-space__viewer__wiki__section">
-        <div className="data-space__viewer__wiki__section__header">
-          <div className="data-space__viewer__wiki__section__header__label">
-            {prettyCONSTName(DATA_PRODUCT_VIEWER_SECTION.DESCRIPTION)}
-            <button
-              className="data-space__viewer__wiki__section__header__anchor"
-              tabIndex={-1}
-              onClick={() => dataProductViewerState.changeZone(anchor, true)}
-            >
-              <AnchorLinkIcon />
-            </button>
-          </div>
-        </div>
         <div className="data-space__viewer__wiki__section__content">
           {dataProductViewerState.product.description !== undefined ? (
             <div className="data-space__viewer__description">
@@ -122,7 +110,7 @@ export const DataProductDescription = observer(
               </div>
             </div>
           ) : (
-            <DataproducteWikiPlaceholder message="(not specified)" />
+            <DataproducteWikiPlaceholder message="(description not specified)" />
           )}
         </div>
       </div>

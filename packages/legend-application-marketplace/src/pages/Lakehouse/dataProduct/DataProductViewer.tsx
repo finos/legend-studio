@@ -17,7 +17,7 @@
 import { observer } from 'mobx-react-lite';
 import type { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
 import { useEffect, useRef, useState } from 'react';
-import { CaretUpIcon, clsx, OpenIcon, VerifiedIcon } from '@finos/legend-art';
+import { CaretUpIcon, clsx, OpenIcon } from '@finos/legend-art';
 import { DataProductWiki } from './DataProductWiki.js';
 import { Button } from '@mui/material';
 import { isSnapshotVersion } from '@finos/legend-server-depot';
@@ -59,22 +59,6 @@ const DataProductHeader = observer(
               dataProductViewerState.layoutState.isExpandedModeEnabled,
           })}
         >
-          <div
-            className="data-space__viewer__header__title"
-            title={`${dataProduct.name} - ${dataProduct.path}`}
-          >
-            <div className="data-space__viewer__header__title__label">
-              {dataProduct.title ? dataProduct.title : dataProduct.name}
-            </div>
-            {dataProductViewerState.isVerified && (
-              <div
-                className="data-space__viewer__header__title__verified-badge"
-                title="Verified Data Product"
-              >
-                <VerifiedIcon />
-              </div>
-            )}
-          </div>
           <div className="data-space__viewer__header__type">
             {origin instanceof V1_AdHocDeploymentDataProductOrigin && (
               <Button
@@ -114,6 +98,13 @@ const DataProductHeader = observer(
               </Button>
             )}
           </div>
+          <div
+            className="data-space__viewer__header__title"
+            title={`${dataProduct.name} - ${dataProduct.path}`}
+          >
+            {dataProduct.title ? dataProduct.title : dataProduct.name}
+          </div>
+          <hr />
         </div>
       </div>
     );
