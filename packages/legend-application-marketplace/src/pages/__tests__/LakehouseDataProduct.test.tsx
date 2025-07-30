@@ -41,6 +41,7 @@ import {
   mockReleaseSDLCDataProduct,
   mockSnapshotSDLCDataProduct,
 } from '../../components/__test-utils__/TEST_DATA__LakehouseData.js';
+import * as LakehouseUtils from '../../stores/lakehouse/LakehouseUtils.js';
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{
@@ -93,6 +94,26 @@ const setupLakehouseDataProductTest = async (
   const mockedStore = await TEST__provideMockedLegendMarketplaceBaseStore();
 
   createSpy(
+    mockedStore.depotServerClient,
+    'getVersionEntities',
+  ).mockResolvedValue([
+    {
+      artifactId: 'customer-analytics',
+      entity: mockReleaseSDLCDataProduct,
+      groupId: 'com.example.analytics',
+      versionId: '1.2.0',
+      versionedEntity: true,
+    },
+    {
+      artifactId: 'financial-reporting',
+      entity: mockSnapshotSDLCDataProduct,
+      groupId: 'com.example.finance',
+      versionId: 'master-SNAPSHOT',
+      versionedEntity: true,
+    },
+  ]);
+
+  createSpy(
     mockedStore.lakehouseContractServerClient,
     'getDataProductByIdAndDID',
   ).mockImplementation(async (id: string, did: number) => {
@@ -113,34 +134,6 @@ const setupLakehouseDataProductTest = async (
     mockedStore.lakehouseContractServerClient,
     'getDataContract',
   ).mockResolvedValue(mockContracts);
-
-  createSpy(
-    mockedStore.lakehouseContractServerClient,
-    'getContractUserStatus',
-  ).mockImplementation(async (contractId: string) => {
-    const contract = mockContracts.dataContracts?.find(
-      (c: any) => c.dataContract?.guid === contractId,
-    );
-    if (contract?.dataContract?.state) {
-      const state = contract.dataContract.state;
-      switch (state) {
-        case 'PENDING_CONSUMER_PRIVILEGE_MANAGER_APPROVAL':
-          return {
-            status:
-              V1_EnrichedUserApprovalStatus.PENDING_CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
-          };
-        case 'PENDING_DATA_OWNER_APPROVAL':
-          return {
-            status: V1_EnrichedUserApprovalStatus.PENDING_DATA_OWNER_APPROVAL,
-          };
-        case 'APPROVED':
-          return { status: V1_EnrichedUserApprovalStatus.APPROVED };
-        default:
-          return { status: V1_EnrichedUserApprovalStatus.DENIED };
-      }
-    }
-    return { status: V1_EnrichedUserApprovalStatus.DENIED };
-  });
 
   createSpy(
     mockedStore.depotServerClient,
@@ -257,6 +250,34 @@ const setupLakehouseDataProductTest = async (
     mockedStore.lakehouseIngestServerClient,
     'getIngestEnvironment',
   ).mockResolvedValue({});
+
+  createSpy(
+    mockedStore.lakehouseContractServerClient,
+    'getContractUserStatus',
+  ).mockImplementation(async (contractId: string) => {
+    const contract = mockContracts.dataContracts?.find(
+      (c: any) => c.dataContract?.guid === contractId,
+    );
+    if (contract?.dataContract?.state) {
+      const state = contract.dataContract.state;
+      switch (state) {
+        case 'PENDING_CONSUMER_PRIVILEGE_MANAGER_APPROVAL':
+          return {
+            status:
+              V1_EnrichedUserApprovalStatus.PENDING_CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
+          };
+        case 'PENDING_DATA_OWNER_APPROVAL':
+          return {
+            status: V1_EnrichedUserApprovalStatus.PENDING_DATA_OWNER_APPROVAL,
+          };
+        case 'APPROVED':
+          return { status: V1_EnrichedUserApprovalStatus.APPROVED };
+        default:
+          return { status: V1_EnrichedUserApprovalStatus.DENIED };
+      }
+    }
+    return { status: V1_EnrichedUserApprovalStatus.DENIED };
+  });
 
   const { renderResult } = await TEST__setUpMarketplaceLakehouse(
     mockedStore,
