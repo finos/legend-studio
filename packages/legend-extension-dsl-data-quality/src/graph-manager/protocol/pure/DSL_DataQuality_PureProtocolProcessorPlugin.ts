@@ -74,7 +74,9 @@ import {
 } from './v1/transformation/V1_DSL_DataQuality_ValueSpecificationSerializer.js';
 
 const DATA_QUALITY_CLASSIFIER_PATH =
-  'meta::pure::metamodel::dataquality::DataQuality';
+  'meta::external::dataquality::DataQuality';
+const DATA_QUALITY_RELATION_VALIDATION_CLASSIFIER_PATH =
+  'meta::external::dataquality::DataQualityRelationValidation';
 
 export class DSL_DataQuality_PureProtocolProcessorPlugin extends PureProtocolProcessorPlugin {
   constructor() {
@@ -210,7 +212,9 @@ export class DSL_DataQuality_PureProtocolProcessorPlugin extends PureProtocolPro
   override V1_getExtraElementClassifierPathGetters(): V1_ElementProtocolClassifierPathGetter[] {
     return [
       (protocol: V1_PackageableElement): string | undefined => {
-        if (protocol instanceof V1_DataQualityValidationsConfiguration) {
+        if (protocol instanceof V1_DataQualityRelationValidationsConfiguration) {
+          return DATA_QUALITY_RELATION_VALIDATION_CLASSIFIER_PATH;
+        } else if (protocol instanceof V1_DataQualityValidationsConfiguration) {
           return DATA_QUALITY_CLASSIFIER_PATH;
         }
         return undefined;
