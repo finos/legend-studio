@@ -85,7 +85,7 @@ export class DSL_DataQuality_PureProtocolProcessorPlugin extends PureProtocolPro
     );
   }
 
-  override V1_getExtraElementBuilders(): V1_ElementBuilder[] {
+  override V1_getExtraElementBuilders(): V1_ElementBuilder<V1_PackageableElement>[] {
     return [
       new V1_ElementBuilder<V1_DataQualityClassValidationsConfiguration>({
         elementClassName: V1_DATA_QUALITY_PROTOCOL_TYPE,
@@ -228,7 +228,7 @@ export class DSL_DataQuality_PureProtocolProcessorPlugin extends PureProtocolPro
       (
         protocol: V1_PackageableElement,
         plugins: PureProtocolProcessorPlugin[],
-      ): PlainObject | undefined => {
+      ): PlainObject<V1_PackageableElement> | undefined => {
         if (protocol instanceof V1_DataQualityClassValidationsConfiguration) {
           return V1_serializeDataQualityClassValidation(protocol, plugins);
         }
@@ -250,7 +250,7 @@ export class DSL_DataQuality_PureProtocolProcessorPlugin extends PureProtocolPro
       (
         protocol: V1_GraphFetchTree,
         plugins: PureProtocolProcessorPlugin[],
-      ): PlainObject | undefined => {
+      ): PlainObject<V1_GraphFetchTree> | undefined => {
         if (protocol instanceof V1_DataQualityPropertyGraphFetchTree) {
           return serialize(
             V1_propertyGraphFetchTreeModelSchema(plugins),
@@ -267,7 +267,7 @@ export class DSL_DataQuality_PureProtocolProcessorPlugin extends PureProtocolPro
   override V1_getExtraGraphFetchProtocolDeserializers(): V1_GraphFetchDeserializer[] {
     return [
       (
-        json: PlainObject,
+        json: PlainObject<V1_GraphFetchTree>,
         plugins: PureProtocolProcessorPlugin[],
       ): V1_GraphFetchTree | undefined => {
         if (json._type === V1_DATA_QUALITY_PROPERTY_GRAPH_FETCH_TREE_TYPE) {
@@ -287,7 +287,7 @@ export class DSL_DataQuality_PureProtocolProcessorPlugin extends PureProtocolPro
   override V1_getExtraElementProtocolDeserializers(): V1_ElementProtocolDeserializer[] {
     return [
       (
-        json: PlainObject,
+        json: PlainObject<V1_PackageableElement>,
         plugins: PureProtocolProcessorPlugin[],
       ): V1_PackageableElement | undefined => {
         if (json._type === V1_DATA_QUALITY_PROTOCOL_TYPE) {
