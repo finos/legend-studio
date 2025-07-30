@@ -135,6 +135,9 @@
     background: var(--color-dark-grey-250);
     height: 100%;
     border-left: 0.1rem solid var(--color-dark-shade-300);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
     svg {
       color: var(--color-light-grey-200);
