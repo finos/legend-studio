@@ -231,6 +231,22 @@ export class V1_EngineServerClient extends AbstractServerClient {
   getCurrentUserId = (): Promise<string> =>
     this.get(`${this._server()}/currentUser`);
 
+  // ------------------------------------------- Terminal -------------------------------------------
+
+  _marketplace = (): string => `${this.baseUrl}/marketplace`;
+
+  getTerminals = (): Promise<PlainObject[]> => {
+    return this.get(
+      `https://dev.exec.alloy.site.gs.com/api/user/marketplace/terminals`,
+    );
+  };
+
+  getTerminalById = (id: number): Promise<PlainObject> => {
+    return this.get(
+      `https://dev.exec.alloy.site.gs.com/api/user/marketplace/terminals/${id}`,
+    );
+  };
+
   // ------------------------------------------- Server -------------------------------------------
 
   _lambda = (): string => `${this.baseUrl}/lambda/v1`;
