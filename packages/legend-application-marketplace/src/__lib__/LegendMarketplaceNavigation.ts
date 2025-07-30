@@ -29,6 +29,10 @@ export enum LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN {
   TERMINAL_ID = 'terminalId',
 }
 
+export enum LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN_TERMINAL {
+  ID = 'id',
+}
+
 export enum LEGEND_MARKETPLACE_SEARCH_RESULTS_QUERY_PARAM_TOKEN {
   PROVIDER = 'provider',
   QUERY = 'query',
@@ -43,6 +47,9 @@ export type LegendTerminalProductPathParams = {
 export enum LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN {
   QUERY = 'query',
 }
+export type LegendTerminalProductPathParams = {
+  [LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN_TERMINAL.ID]: number;
+};
 
 export type LakehouseDataProductPathParams = {
   [LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_ID]: string;
