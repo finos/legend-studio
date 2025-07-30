@@ -33,6 +33,7 @@ const { ENGINE_TEST_SUPPORT__grammarToJSON_model } = jest.requireActual<{
 }>('@finos/legend-graph/test');
 import {
   CORE_PURE_PATH,
+  V1_DataProduct,
   V1_EntitlementsLakehouseEnvironmentType,
   V1_AppDirLevel,
   V1_EnrichedUserApprovalStatus,
@@ -279,6 +280,64 @@ const setupLakehouseDataProductTest = async (
     return { status: V1_EnrichedUserApprovalStatus.DENIED };
   });
 
+  createSpy(
+    mockedStore.engineServerClient,
+    'grammarToJSON_model',
+  ).mockImplementation(async (input: string) => {
+    const result = await ENGINE_TEST_SUPPORT__grammarToJSON_model(input);
+    return result;
+  });
+
+  createSpy(
+    mockedStore.engineServerClient,
+    'JSONToGrammar_model',
+  ).mockResolvedValue('');
+
+  createSpy(mockedStore.engineServerClient, 'compile').mockResolvedValue({
+    elements: [],
+  });
+
+  createSpy(
+    mockedStore.engineServerClient,
+    'getClassifierPathMap',
+  ).mockResolvedValue([]);
+
+  createSpy(mockedStore.engineServerClient, 'getSubtypeInfo').mockResolvedValue(
+    {
+      functionActivatorSubtypes: ['snowflakeM2MUdf', 'snowflakeApp'],
+      storeSubtypes: ['MongoDatabase', 'serviceStore', 'relational', 'binding'],
+    },
+  );
+
+  jest
+    .spyOn(mockedStore.applicationStore.identityService, 'currentUser', 'get')
+    .mockReturnValue('test-user-id');
+
+  jest
+    .spyOn(LakehouseUtils, 'dataContractContainsDataProduct')
+    .mockImplementation((dataProduct, deploymentId, dataContract) => {
+      if (
+        dataProduct.name === 'SDLC_RELEASE_DATAPRODUCT' &&
+        deploymentId === 12345 &&
+        dataContract.guid?.includes('test-contract-guid')
+      ) {
+        return true;
+      }
+      return false;
+    });
+
+  jest
+    .spyOn(LakehouseUtils, 'isMemberOfContract')
+    .mockImplementation((user, contract) => {
+      return (
+        user === 'test-user-id' && contract.guid?.includes('test-contract-guid')
+      );
+    });
+
+  jest
+    .spyOn(LakehouseUtils, 'getDataProductFromDetails')
+    .mockResolvedValue(mockReleaseSDLCDataProduct as unknown as V1_DataProduct);
+
   const { renderResult } = await TEST__setUpMarketplaceLakehouse(
     mockedStore,
     `/lakehouse/dataProduct/deployed/${dataProductId}/${deploymentId}`,
@@ -346,12 +405,25 @@ test('displays PENDING MANAGER APPROVAL button for contract in PENDING_CONSUMER_
           state: 'PENDING_CONSUMER_PRIVILEGE_MANAGER_APPROVAL',
           dataProductId: 'SDLC_RELEASE_DATAPRODUCT',
           deploymentId: 12345,
-          members: [
-            {
-              userId: 'test-user-id',
-              role: 'CONSUMER',
+          resource: {
+            _type: 'accessPointGroupReference',
+            accessPointGroup: 'testSDLCAccessPointGroup',
+            dataProduct: {
+              name: 'SDLC_RELEASE_DATAPRODUCT',
+              owner: {
+                appDirId: 12345,
+              },
             },
-          ],
+          },
+          consumer: {
+            _type: 'adhocTeam',
+            users: [
+              {
+                name: 'test-user-id',
+                type: 'USER',
+              },
+            ],
+          },
         },
       },
     ],
@@ -377,12 +449,25 @@ test('displays PENDING DATA OWNER APPROVAL button for contract in PENDING_DATA_O
           state: 'PENDING_DATA_OWNER_APPROVAL',
           dataProductId: 'SDLC_RELEASE_DATAPRODUCT',
           deploymentId: 12345,
-          members: [
-            {
-              userId: 'test-user-id',
-              role: 'CONSUMER',
+          resource: {
+            _type: 'accessPointGroupReference',
+            accessPointGroup: 'testSDLCAccessPointGroup',
+            dataProduct: {
+              name: 'SDLC_RELEASE_DATAPRODUCT',
+              owner: {
+                appDirId: 12345,
+              },
             },
-          ],
+          },
+          consumer: {
+            _type: 'adhocTeam',
+            users: [
+              {
+                name: 'test-user-id',
+                type: 'USER',
+              },
+            ],
+          },
         },
       },
     ],
@@ -408,12 +493,25 @@ test('displays ENTITLED button for contract in APPROVED status', async () => {
           state: 'APPROVED',
           dataProductId: 'SDLC_RELEASE_DATAPRODUCT',
           deploymentId: 12345,
-          members: [
-            {
-              userId: 'test-user-id',
-              role: 'CONSUMER',
+          resource: {
+            _type: 'accessPointGroupReference',
+            accessPointGroup: 'testSDLCAccessPointGroup',
+            dataProduct: {
+              name: 'SDLC_RELEASE_DATAPRODUCT',
+              owner: {
+                appDirId: 12345,
+              },
             },
-          ],
+          },
+          consumer: {
+            _type: 'adhocTeam',
+            users: [
+              {
+                name: 'test-user-id',
+                type: 'USER',
+              },
+            ],
+          },
         },
       },
     ],
