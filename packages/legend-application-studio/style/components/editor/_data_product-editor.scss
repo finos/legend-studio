@@ -178,6 +178,7 @@
     gap: 1rem;
     justify-content: flex-end;
     flex: 1 0 auto;
+    align-items: center;
   }
 
   &__name {
@@ -211,6 +212,13 @@
       margin-left: 0.5rem;
       color: var(--color-red-180);
     }
+  }
+
+  &__reproducible {
+    color: var(--color-light-grey-200);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
   }
 
   &__type {
@@ -322,6 +330,7 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    margin-left: 0.5rem;
   }
 
   &__entry {

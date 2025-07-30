@@ -63,6 +63,7 @@ import {
   BuildingIcon,
   Tooltip,
   InfoCircleIcon,
+  Checkbox,
 } from '@finos/legend-art';
 import React, {
   useRef,
@@ -97,6 +98,7 @@ import {
   supportInfo_addEmail,
   supportInfo_deleteEmail,
   accessPoint_setClassification,
+  accessPoint_setReproducible,
 } from '../../../../stores/graph-modifier/DSL_DataProduct_GraphModifierHelper.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
@@ -438,46 +440,28 @@ export const LakehouseDataProductAcccessPointEditor = observer(
           <div style={{ flex: 1 }}>
             <div className="access-point-editor__metadata">
               <AccessPointTitle accessPoint={accessPoint} />
-              {editingDescription ? (
-                <textarea
-                  className="panel__content__form__section__input"
-                  spellCheck={false}
-                  value={accessPoint.description ?? ''}
-                  onChange={updateAccessPointDescription}
-                  placeholder="Access Point description"
-                  onBlur={handleDescriptionBlur}
-                  style={{
-                    overflow: 'hidden',
-                    resize: 'none',
-                    padding: '0.25rem',
-                  }}
-                />
-              ) : (
-                <div
-                  onClick={handleDescriptionEdit}
-                  title="Click to edit access point description"
-                  className="access-point-editor__description-container"
-                >
-                  {accessPoint.description ? (
-                    <HoverTextArea
-                      text={accessPoint.description}
-                      handleMouseOver={handleMouseOver}
-                      handleMouseOut={handleMouseOut}
-                    />
-                  ) : (
-                    <div
-                      className="access-point-editor__group-container__description--warning"
-                      onMouseOver={handleMouseOver}
-                      onMouseOut={handleMouseOut}
-                    >
-                      <WarningIcon />
-                      {AP_EMPTY_DESC_WARNING}
-                    </div>
-                  )}
-                  {isHovering && hoverIcon()}
-                </div>
-              )}
               <div className="access-point-editor__info">
+                <div className="access-point-editor__reproducible">
+                  <Checkbox
+                    disabled={groupState.state.isReadOnly}
+                    checked={accessPoint.reproducible ?? false}
+                    onChange={() =>
+                      accessPoint_setReproducible(
+                        accessPoint,
+                        !accessPoint.reproducible,
+                      )
+                    }
+                    size="small"
+                    style={{ padding: 0, margin: 0 }}
+                  />
+                  <Tooltip
+                    title="This access point is reproducible based on a specific Lakehouse batch in time"
+                    arrow={true}
+                    placement={'top'}
+                  >
+                    <div>Reproducible</div>
+                  </Tooltip>
+                </div>
                 {editorStore.applicationStore.config.options
                   .dataProductConfig && (
                   <AccessPointClassification
@@ -485,7 +469,6 @@ export const LakehouseDataProductAcccessPointEditor = observer(
                     groupState={groupState}
                   />
                 )}
-
                 <div
                   className={clsx('access-point-editor__type')}
                   title={'Change target environment'}
@@ -528,6 +511,46 @@ export const LakehouseDataProductAcccessPointEditor = observer(
                 </div>
               </div>
             </div>
+            {editingDescription ? (
+              <textarea
+                className="panel__content__form__section__input"
+                spellCheck={false}
+                value={accessPoint.description ?? ''}
+                onChange={updateAccessPointDescription}
+                placeholder="Access Point description"
+                onBlur={handleDescriptionBlur}
+                style={{
+                  overflow: 'hidden',
+                  resize: 'none',
+                  padding: '0.25rem',
+                  marginLeft: '0.5rem',
+                }}
+              />
+            ) : (
+              <div
+                onClick={handleDescriptionEdit}
+                title="Click to edit access point description"
+                className="access-point-editor__description-container"
+              >
+                {accessPoint.description ? (
+                  <HoverTextArea
+                    text={accessPoint.description}
+                    handleMouseOver={handleMouseOver}
+                    handleMouseOut={handleMouseOut}
+                  />
+                ) : (
+                  <div
+                    className="access-point-editor__group-container__description--warning"
+                    onMouseOver={handleMouseOver}
+                    onMouseOut={handleMouseOut}
+                  >
+                    <WarningIcon />
+                    {AP_EMPTY_DESC_WARNING}
+                  </div>
+                )}
+                {isHovering && hoverIcon()}
+              </div>
+            )}
             <div className="access-point-editor__content">
               <div className="access-point-editor__generic-entry">
                 <div className="access-point-editor__entry__container">
@@ -841,7 +864,10 @@ const AccessPointGroupEditor = observer(
           </PanelHeaderActions>
         </PanelHeader>
         {groupState.accessPointStates.length === 0 && (
-          <div className="access-point-editor__group-container__description--warning">
+          <div
+            className="access-point-editor__group-container__description--warning"
+            style={{ color: 'var(--color-red-300)' }}
+          >
             <WarningIcon />
             This group needs at least one access point defined.
           </div>
