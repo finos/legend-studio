@@ -34,9 +34,19 @@ const { ENGINE_TEST_SUPPORT__grammarToJSON_model } = jest.requireActual<{
 import {
   CORE_PURE_PATH,
   V1_DataProduct,
+  V1_AccessPointGroup,
+  V1_LakehouseAccessPoint,
   V1_EntitlementsLakehouseEnvironmentType,
   V1_AppDirLevel,
   V1_EnrichedUserApprovalStatus,
+  V1_DataContract,
+  V1_AccessPointGroupReference,
+  V1_AdhocTeam,
+  V1_User,
+  V1_ContractState,
+  V1_SdlcDeploymentDataProductOrigin,
+  V1_AdHocDeploymentDataProductOrigin,
+  V1_RawLambda,
 } from '@finos/legend-graph';
 import {
   mockReleaseSDLCDataProduct,
@@ -121,10 +131,60 @@ const setupLakehouseDataProductTest = async (
     const matchingDataProduct = (mockDataProducts as any).dataProducts.find(
       (dp: any) => dp.id === id && dp.deploymentId === did,
     );
+
     return {
       dataProducts: matchingDataProduct ? [matchingDataProduct] : [],
     };
   });
+
+  jest
+    .spyOn(LakehouseUtils, 'getDataProductFromDetails')
+    .mockImplementation(async (details: any) => {
+      if (details.id === 'SDLC_RELEASE_DATAPRODUCT') {
+        const dataProduct = new V1_DataProduct();
+        dataProduct.name = 'SDLC_RELEASE_DATAPRODUCT';
+        dataProduct.package = 'test::dataproduct';
+        dataProduct.title = 'SDLC Release Data Product';
+        dataProduct.description =
+          'Comprehensive customer analytics data for business intelligence and reporting';
+
+        const accessPointGroup = new V1_AccessPointGroup();
+        accessPointGroup.id = 'testSDLCAccessPointGroup';
+        accessPointGroup.description = 'A test access point group';
+
+        const accessPoint = new V1_LakehouseAccessPoint();
+        accessPoint.id = 'testSDLCAccessPoint';
+        accessPoint.targetEnvironment = 'Snowflake';
+        accessPoint.reproducible = false;
+        accessPoint.description = 'Test access point description';
+        (accessPoint as any)._type = 'lakehouseAccessPoint';
+        const lambda = new V1_RawLambda();
+        lambda.parameters = [];
+        lambda.body = [
+          {
+            _type: 'classInstance',
+            type: 'I',
+            value: {
+              metadata: false,
+              path: ['my::sandboxIngestDefinition', 'TESTTABLE'],
+            },
+          },
+        ];
+        accessPoint.func = lambda;
+
+        accessPointGroup.accessPoints = [accessPoint];
+        dataProduct.accessPointGroups = [accessPointGroup];
+
+        return dataProduct;
+      } else if (details.id === 'SDLC_SNAPSHOT_DATAPRODUCT') {
+        const dataProduct = new V1_DataProduct();
+        dataProduct.name = 'SDLC_SNAPSHOT_DATAPRODUCT';
+        dataProduct.package = 'test::dataproduct';
+        dataProduct.accessPointGroups = [];
+        return dataProduct;
+      }
+      return undefined;
+    });
 
   createSpy(
     mockedStore.lakehouseContractServerClient,
@@ -134,7 +194,14 @@ const setupLakehouseDataProductTest = async (
   createSpy(
     mockedStore.lakehouseContractServerClient,
     'getDataContract',
-  ).mockResolvedValue(mockContracts);
+  ).mockImplementation(async (contractId: string) => {
+    const matchingContract = mockContracts.dataContracts?.find(
+      (dc: any) => dc.dataContract?.guid === contractId,
+    );
+    return {
+      dataContracts: matchingContract ? [matchingContract] : [],
+    };
+  });
 
   createSpy(
     mockedStore.depotServerClient,
@@ -142,14 +209,14 @@ const setupLakehouseDataProductTest = async (
   ).mockResolvedValue([
     {
       artifactId: 'test-artifact',
-      entity: mockReleaseSDLCDataProduct,
+      entity: { content: mockReleaseSDLCDataProduct },
       groupId: 'test-group',
       versionId: '1.0.0',
       versionedEntity: true,
     },
     {
       artifactId: 'test-artifact-2',
-      entity: mockSnapshotSDLCDataProduct,
+      entity: { content: mockSnapshotSDLCDataProduct },
       groupId: 'test-group',
       versionId: '1.0.0',
       versionedEntity: true,
@@ -170,6 +237,7 @@ const setupLakehouseDataProductTest = async (
     mockedStore.engineServerClient,
     'grammarToJSON_model',
   ).mockImplementation(async (input: string) => {
+    console.log('Mocked grammarToJSON_model called with:', input);
     const result = await ENGINE_TEST_SUPPORT__grammarToJSON_model(input);
     return result;
   });
@@ -178,6 +246,7 @@ const setupLakehouseDataProductTest = async (
     mockedStore.engineServerClient,
     'lambdaReturnType',
   ).mockImplementation(async (input: any) => {
+    console.log('Mocked lambdaReturnType called');
     return {
       returnType: 'String',
       multiplicity: { lowerBound: 1, upperBound: 1 },
@@ -282,14 +351,6 @@ const setupLakehouseDataProductTest = async (
 
   createSpy(
     mockedStore.engineServerClient,
-    'grammarToJSON_model',
-  ).mockImplementation(async (input: string) => {
-    const result = await ENGINE_TEST_SUPPORT__grammarToJSON_model(input);
-    return result;
-  });
-
-  createSpy(
-    mockedStore.engineServerClient,
     'JSONToGrammar_model',
   ).mockResolvedValue('');
 
@@ -299,31 +360,46 @@ const setupLakehouseDataProductTest = async (
 
   createSpy(
     mockedStore.engineServerClient,
-    'getClassifierPathMap',
-  ).mockResolvedValue([]);
+    'JSONToGrammar_lambda',
+  ).mockResolvedValue('x: String[1]|$x->filter(y|$y == "test")');
 
-  createSpy(mockedStore.engineServerClient, 'getSubtypeInfo').mockResolvedValue(
-    {
-      functionActivatorSubtypes: ['snowflakeM2MUdf', 'snowflakeApp'],
-      storeSubtypes: ['MongoDatabase', 'serviceStore', 'relational', 'binding'],
-    },
-  );
-
-  jest
-    .spyOn(mockedStore.applicationStore.identityService, 'currentUser', 'get')
-    .mockReturnValue('test-user-id');
+  createSpy(
+    mockedStore.engineServerClient,
+    'lambdaRelationType',
+  ).mockResolvedValue({
+    _type: 'relationType',
+    columns: [
+      {
+        name: 'testColumn',
+        genericType: {
+          _type: 'genericType',
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'String',
+          },
+          typeVariableValues: [],
+        },
+      },
+    ],
+  });
 
   jest
     .spyOn(LakehouseUtils, 'dataContractContainsDataProduct')
     .mockImplementation((dataProduct, deploymentId, dataContract) => {
-      if (
+      return (
         dataProduct.name === 'SDLC_RELEASE_DATAPRODUCT' &&
         deploymentId === 12345 &&
         dataContract.guid?.includes('test-contract-guid')
-      ) {
-        return true;
-      }
-      return false;
+      );
+    });
+
+  jest
+    .spyOn(LakehouseUtils, 'dataContractContainsAccessGroup')
+    .mockImplementation((accessPointGroup, dataContract) => {
+      return (
+        accessPointGroup.id === 'testSDLCAccessPointGroup' &&
+        dataContract.guid?.includes('test-contract-guid')
+      );
     });
 
   jest
@@ -333,10 +409,6 @@ const setupLakehouseDataProductTest = async (
         user === 'test-user-id' && contract.guid?.includes('test-contract-guid')
       );
     });
-
-  jest
-    .spyOn(LakehouseUtils, 'getDataProductFromDetails')
-    .mockResolvedValue(mockReleaseSDLCDataProduct as unknown as V1_DataProduct);
 
   const { renderResult } = await TEST__setUpMarketplaceLakehouse(
     mockedStore,
@@ -365,7 +437,13 @@ test('loads V1_EntitlementsDataProductDetails with V1_SdlcDeploymentDataProductO
     ),
   ).toBeDefined();
   expect(screen.getByText('testSDLCAccessPointGroup')).toBeDefined();
-  expect(screen.getByText('testSDLCAccessPoint')).toBeDefined();
+
+  await waitFor(
+    () => {
+      expect(screen.getByText('testSDLCAccessPoint')).toBeDefined();
+    },
+    { timeout: 5000 },
+  );
 });
 
 test('loads V1_EntitlementsDataProductDetails with V1_AdHocDeploymentDataProductOrigin and displays title, description, and access point groups', async () => {
