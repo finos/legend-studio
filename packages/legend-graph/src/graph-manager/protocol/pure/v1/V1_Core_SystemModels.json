@@ -196,6 +196,12 @@
       "properties": []
     },
     {
+      "package": "meta::pure::metamodel::variant",
+      "_type": "class",
+      "name": "Variant",
+      "properties": []
+    },
+    {
       "_type": "class",
       "name": "TDSRow",
       "package": "meta::pure::tds",
