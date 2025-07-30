@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.114
+
+### Patch Changes
+
+- [#4311](https://github.com/finos/legend-studio/pull/4311) [`c4dd622`](https://github.com/finos/legend-studio/commit/c4dd6222765b66ba76d554c32d2e6d2d8f2186cd) ([@travisstebbins](https://github.com/travisstebbins)) - Export InfoCircleOutlineIcon
+
 ## 7.1.113
 
 ### Patch Changes

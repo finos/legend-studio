@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-quality
 
+## 2.0.115
+
+### Patch Changes
+
+- [#4314](https://github.com/finos/legend-studio/pull/4314) [`d7a9977`](https://github.com/finos/legend-studio/commit/d7a9977ac0c4ae224b410ae131924f277b68ce0d) ([@sahil37](https://github.com/sahil37)) - Fix classifier paths for data quality elements
+
 ## 2.0.114
 
 ## 2.0.113

@@ -1,5 +1,13 @@
 # @finos/legend-application-marketplace
 
+## 0.0.64
+
+### Patch Changes
+
+- [#4289](https://github.com/finos/legend-studio/pull/4289) [`220021b`](https://github.com/finos/legend-studio/commit/220021bf415ad83f879b666813204fcad521e504) ([@travisstebbins](https://github.com/travisstebbins)) - DataProductViewer UI enhancements
+
+- [#4311](https://github.com/finos/legend-studio/pull/4311) [`c4dd622`](https://github.com/finos/legend-studio/commit/c4dd6222765b66ba76d554c32d2e6d2d8f2186cd) ([@travisstebbins](https://github.com/travisstebbins)) - Add support for Enterprise Access Point Groups
+
 ## 0.0.63
 
 ### Patch Changes

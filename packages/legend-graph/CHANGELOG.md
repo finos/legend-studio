@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.1.60
+
+### Patch Changes
+
+- [#4316](https://github.com/finos/legend-studio/pull/4316) [`2eea0eb`](https://github.com/finos/legend-studio/commit/2eea0eb4aa9382a4a06f6142367ff75abd0865c5) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - add variant to system
+
 ## 32.1.59
 
 ### Patch Changes
