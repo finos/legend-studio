@@ -180,6 +180,84 @@ const setupLakehouseDataProductTest = async (
     return result;
   });
 
+  createSpy(
+    mockedStore.engineServerClient,
+    'lambdaReturnType',
+  ).mockImplementation(async (input: any) => {
+    return {
+      returnType: 'String',
+      multiplicity: { lowerBound: 1, upperBound: 1 },
+    };
+  });
+
+  createSpy(
+    mockedStore.engineServerClient,
+    'lambdaRelationType',
+  ).mockImplementation(async (input: any) => {
+    return { relationType: 'Table', columns: [] };
+  });
+
+  createSpy(
+    mockedStore.engineServerClient,
+    'transformTdsToRelation_lambda',
+  ).mockImplementation(async (input: any) => {
+    return { lambda: { _type: 'lambda', body: [], parameters: [] } };
+  });
+
+  createSpy(mockedStore.engineServerClient, 'runQuery').mockImplementation(
+    async (input: any) => {
+      return { result: { columns: [], rows: [] } };
+    },
+  );
+
+  createSpy(
+    mockedStore.engineServerClient,
+    'grammarToJSON_lambda',
+  ).mockImplementation(async (input: string) => {
+    return { lambda: { _type: 'lambda', body: [], parameters: [] } };
+  });
+
+  createSpy(
+    mockedStore.engineServerClient,
+    'grammarToJSON_valueSpecification',
+  ).mockImplementation(async (input: string) => {
+    return { valueSpecification: { _type: 'string', value: 'test' } };
+  });
+
+  createSpy(
+    mockedStore.engineServerClient,
+    'JSONToGrammar_valueSpecification',
+  ).mockImplementation(async (input: any) => {
+    return 'test grammar';
+  });
+
+  createSpy(
+    mockedStore.engineServerClient,
+    'getCurrentUserId',
+  ).mockResolvedValue('test-user-id');
+
+  createSpy(
+    mockedStore.engineServerClient,
+    'getClassifierPathMap',
+  ).mockResolvedValue([]);
+
+  createSpy(mockedStore.engineServerClient, 'getSubtypeInfo').mockResolvedValue(
+    {
+      functionActivatorSubtypes: ['snowflakeM2MUdf', 'snowflakeApp'],
+      storeSubtypes: ['MongoDatabase', 'serviceStore', 'relational', 'binding'],
+    },
+  );
+
+  createSpy(
+    mockedStore.lakehousePlatformServerClient,
+    'getIngestEnvironmentSummaries',
+  ).mockResolvedValue([]);
+
+  createSpy(
+    mockedStore.lakehouseIngestServerClient,
+    'getIngestEnvironment',
+  ).mockResolvedValue({});
+
   const { renderResult } = await TEST__setUpMarketplaceLakehouse(
     mockedStore,
     `/lakehouse/dataProduct/deployed/${dataProductId}/${deploymentId}`,
