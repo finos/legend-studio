@@ -50,6 +50,8 @@ import {
   V1_deserializeIngestEnvironment,
   V1_entitlementsDataProductDetailsResponseToDataProductDetails,
   V1_EntitlementsLakehouseEnvironmentType,
+  V1_Terminal,
+  V1_TerminalModelSchema,
   V1_IngestEnvironmentClassification,
   V1_PureGraphManager,
   V1_SdlcDeploymentDataProductOrigin,
@@ -190,6 +192,8 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   filter: DataProductFilters;
   sort: DataProductSort = DataProductSort.NAME_ALPHABETICAL;
   dataProductViewer: DataProductViewerState | undefined;
+  engineServerClient: any;
+  terminalProducts: V1_Terminal[] | undefined;
 
   constructor(
     marketplaceBaseStore: LegendMarketplaceBaseStore,
@@ -217,6 +221,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     makeObservable(this, {
       init: flow,
       initWithProduct: flow,
+      initWithTerminal: flow,
       initWithSDLCProduct: flow,
       dataProductStates: observable,
       lakehouseIngestEnvironmentSummaries: observable,
@@ -230,6 +235,8 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       setLakehouseIngestEnvironmentSummaries: action,
       setLakehouseIngestEnvironmentDetails: action,
       filter: observable,
+      setTerminalProducts: action,
+      terminalProducts: observable,
       sort: observable,
       setSort: action,
     });
@@ -293,6 +300,9 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     environmentDetails: V1_IngestEnvironment[],
   ): void {
     this.lakehouseIngestEnvironmentDetails = environmentDetails;
+  }
+  setTerminalProducts(products: V1_Terminal[] | undefined): void {
+    this.terminalProducts = products;
   }
 
   setDataProductViewerState(val: DataProductViewerState | undefined): void {
@@ -488,6 +498,99 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         }
       })(),
     ]);
+  }
+
+  *initWithTerminal(terminalId: number): GeneratorFn<any> {
+    try {
+      this.loadingProductState.inProgress();
+
+      const rawTerminalResponse =
+        yield this.marketplaceBaseStore.engineServerClient.getTerminalById(
+          terminalId,
+        );
+      const { columns, rows } = rawTerminalResponse.result;
+
+      if (!rawTerminalResponse.result || !rawTerminalResponse.result.rows) {
+        throw new Error('No result data found in API response');
+      }
+
+      const idColumnIndex = columns.findIndex(
+        (columnName: string) => columnName === 'Id',
+      );
+      if (idColumnIndex === -1) {
+        throw new Error('Id column not found in results');
+      }
+
+      const allTerminalRows = rows.filter((row: any) => {
+        return row.values[idColumnIndex] == terminalId;
+      });
+
+      if (allTerminalRows.length === 0) {
+        throw new Error(`No terminal rows found for ID ${terminalId}`);
+      }
+      const terminalProducts = allTerminalRows.map(
+        (row: any, index: number) => {
+          const terminalData: any = {
+            _type: 'terminal',
+            package: 'marketplace',
+            name: `Terminal_${terminalId}_Product_${index + 1}`,
+          };
+
+          columns.forEach((columnName: string, colIndex: number) => {
+            const value = row.values[colIndex];
+            switch (columnName) {
+              case 'Id':
+                terminalData.id = value;
+                break;
+              case 'providerName':
+                terminalData.vendorName = value;
+                break;
+              case 'productName':
+                terminalData.title = value;
+                break;
+              case 'category':
+                terminalData.category = value;
+                break;
+              case 'Description':
+                terminalData.description = value;
+                break;
+              case 'Application Name':
+                terminalData.applicationName = value;
+                break;
+              case 'Tiered_Price':
+                terminalData.tieredPrice = value;
+                break;
+              case 'vendorprofileId':
+                terminalData.vendorProfileId = value;
+                break;
+              case 'Model Name':
+                terminalData.modelName = value;
+                break;
+              case 'price':
+                terminalData.price = value;
+                break;
+              case 'Total Firm Price':
+                terminalData.totalFirmPrice = value;
+                break;
+              default:
+                console.log(`Unmapped column: ${columnName} = ${value}`);
+            }
+          });
+          return deserialize(V1_TerminalModelSchema, terminalData);
+        },
+      );
+
+      this.setTerminalProducts(terminalProducts);
+
+      this.loadingProductState.complete();
+    } catch (error) {
+      console.error('Error in initWithTerminal:', error);
+      assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(
+        `Unable to load terminal ${terminalId}: ${error.message}`,
+      );
+      this.loadingProductState.fail();
+    }
   }
 
   *initWithProduct(
