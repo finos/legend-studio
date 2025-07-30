@@ -73,8 +73,7 @@ import {
   V1_rootGraphFetchTreeModelSchema,
 } from './v1/transformation/V1_DSL_DataQuality_ValueSpecificationSerializer.js';
 
-const DATA_QUALITY_CLASSIFIER_PATH =
-  'meta::external::dataquality::DataQuality';
+const DATA_QUALITY_CLASSIFIER_PATH = 'meta::external::dataquality::DataQuality';
 const DATA_QUALITY_RELATION_VALIDATION_CLASSIFIER_PATH =
   'meta::external::dataquality::DataQualityRelationValidation';
 
@@ -86,7 +85,7 @@ export class DSL_DataQuality_PureProtocolProcessorPlugin extends PureProtocolPro
     );
   }
 
-  override V1_getExtraElementBuilders(): V1_ElementBuilder<V1_PackageableElement>[] {
+  override V1_getExtraElementBuilders(): V1_ElementBuilder[] {
     return [
       new V1_ElementBuilder<V1_DataQualityClassValidationsConfiguration>({
         elementClassName: V1_DATA_QUALITY_PROTOCOL_TYPE,
@@ -212,7 +211,9 @@ export class DSL_DataQuality_PureProtocolProcessorPlugin extends PureProtocolPro
   override V1_getExtraElementClassifierPathGetters(): V1_ElementProtocolClassifierPathGetter[] {
     return [
       (protocol: V1_PackageableElement): string | undefined => {
-        if (protocol instanceof V1_DataQualityRelationValidationsConfiguration) {
+        if (
+          protocol instanceof V1_DataQualityRelationValidationsConfiguration
+        ) {
           return DATA_QUALITY_RELATION_VALIDATION_CLASSIFIER_PATH;
         } else if (protocol instanceof V1_DataQualityValidationsConfiguration) {
           return DATA_QUALITY_CLASSIFIER_PATH;
@@ -227,7 +228,7 @@ export class DSL_DataQuality_PureProtocolProcessorPlugin extends PureProtocolPro
       (
         protocol: V1_PackageableElement,
         plugins: PureProtocolProcessorPlugin[],
-      ): PlainObject<V1_PackageableElement> | undefined => {
+      ): PlainObject | undefined => {
         if (protocol instanceof V1_DataQualityClassValidationsConfiguration) {
           return V1_serializeDataQualityClassValidation(protocol, plugins);
         }
@@ -249,7 +250,7 @@ export class DSL_DataQuality_PureProtocolProcessorPlugin extends PureProtocolPro
       (
         protocol: V1_GraphFetchTree,
         plugins: PureProtocolProcessorPlugin[],
-      ): PlainObject<V1_GraphFetchTree> | undefined => {
+      ): PlainObject | undefined => {
         if (protocol instanceof V1_DataQualityPropertyGraphFetchTree) {
           return serialize(
             V1_propertyGraphFetchTreeModelSchema(plugins),
@@ -266,7 +267,7 @@ export class DSL_DataQuality_PureProtocolProcessorPlugin extends PureProtocolPro
   override V1_getExtraGraphFetchProtocolDeserializers(): V1_GraphFetchDeserializer[] {
     return [
       (
-        json: PlainObject<V1_GraphFetchTree>,
+        json: PlainObject,
         plugins: PureProtocolProcessorPlugin[],
       ): V1_GraphFetchTree | undefined => {
         if (json._type === V1_DATA_QUALITY_PROPERTY_GRAPH_FETCH_TREE_TYPE) {
@@ -286,7 +287,7 @@ export class DSL_DataQuality_PureProtocolProcessorPlugin extends PureProtocolPro
   override V1_getExtraElementProtocolDeserializers(): V1_ElementProtocolDeserializer[] {
     return [
       (
-        json: PlainObject<V1_PackageableElement>,
+        json: PlainObject,
         plugins: PureProtocolProcessorPlugin[],
       ): V1_PackageableElement | undefined => {
         if (json._type === V1_DATA_QUALITY_PROTOCOL_TYPE) {
