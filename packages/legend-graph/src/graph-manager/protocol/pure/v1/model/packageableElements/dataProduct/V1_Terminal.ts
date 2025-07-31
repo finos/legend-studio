@@ -16,6 +16,8 @@
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
 
+export const V1_TERMINAL_PRODUCT_ELEMENT_PROTOCOL_TYPE = 'terminal';
+
 export class V1_Terminal implements Hashable {
   id: string | undefined;
   providerName: string | undefined;

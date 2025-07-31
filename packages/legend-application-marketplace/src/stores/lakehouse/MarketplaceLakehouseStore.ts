@@ -237,8 +237,6 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       setLakehouseIngestEnvironmentSummaries: action,
       setLakehouseIngestEnvironmentDetails: action,
       filter: observable,
-      setTerminalProducts: action,
-      terminalProducts: observable,
       sort: observable,
       setSort: action,
     });
@@ -303,9 +301,8 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   ): void {
     this.lakehouseIngestEnvironmentDetails = environmentDetails;
   }
-  setTerminalProducts(products: V1_Terminal[] | undefined): void {
-    this.terminalProducts = products;
-  }
+
+
 
   setTerminalProducts(products: V1_Terminal[] | undefined): void {
     this.terminalProducts = products;
