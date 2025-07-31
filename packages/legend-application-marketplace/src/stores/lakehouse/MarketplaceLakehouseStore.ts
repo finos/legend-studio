@@ -508,43 +508,43 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         );
       const { columns, rows } = rawTerminalResponse.result;
 
+      console.log(rawTerminalResponse);
+
       if (!rows) {
         throw new Error('No result data found in API response');
       }
 
-      // Use the QueryBuilder pattern for row processing
-      // const terminalRowData = rows.map((rowIdx:, columnIdx: number) => {
-      //   const rowObject: Record<string, any> = {};
-      //   row.values.forEach((value: any, colIdx: number) => {
-      //     rowObject[columns[colIdx] as string] = value;
-      //   });
-      //   rowObject.rowNumber = rowIdx;
-      //   return rowObject;
-      // });
+      const terminalRowData = rows.map((row: any, rowIdx: number) => {
+        const rowObject: Record<string, any> = {};
+        row.values.forEach((value: any, colIdx: number) => {
+          rowObject[columns[colIdx] as string] = value;
+        });
+        rowObject.rowNumber = rowIdx;
+        return rowObject;
+      });
 
-      // // Filter for the specific terminal ID
-      // const matchingRows = terminalRowData.filter(row => row.Id == terminalId);
+      const matchingRows = terminalRowData.filter(
+        (row: any) => row.Id == terminalId,
+      );
 
-      // if (matchingRows.length === 0) {
-      //   throw new Error(`No terminal rows found for ID ${terminalId}`);
-      // }
+      if (matchingRows.length === 0) {
+        throw new Error(`No terminal rows found for ID ${terminalId}`);
+      }
 
-      // Convert to terminal objects with cleaner mapping
-      const terminalProducts = matchingRows.map(
-        (rowData: any, index: number) => {
+      const terminalProducts: V1_Terminal[] = matchingRows.map(
+        (rowData: any) => {
           const terminalData = {
-            // Direct property mapping
-            id: rowData.id,
-            providerName: rowData.providerName,
-            productName: rowData.productName,
-            category: rowData.category,
-            vendorProfileId: rowData.vendorProfileId,
-            modelName: rowData['modelName'],
-            description: rowData.description,
-            applicationName: rowData['applicationName'],
-            tieredPrice: rowData.tieredPrice,
-            price: rowData.price,
-            totalFirmPrice: rowData['totalFirmPrice'],
+            id: rowData['Id'],
+            providerName: rowData['providerName'],
+            productName: rowData['productName'],
+            category: rowData['category'],
+            vendorProfileId: rowData['vendorprofileId'],
+            modelName: rowData['Model Name'],
+            description: rowData['Description'],
+            applicationName: rowData['Application Name'],
+            tieredPrice: rowData['Tiered_Price']?.toString(),
+            price: rowData['price']?.toString(),
+            totalFirmPrice: rowData['Total Firm Price']?.toString(),
           };
 
           return deserialize(V1_TerminalModelSchema, terminalData);
