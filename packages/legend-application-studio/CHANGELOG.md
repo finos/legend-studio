@@ -1,5 +1,15 @@
 # @finos/legend-application-studio
 
+## 28.19.20
+
+### Patch Changes
+
+- [#4315](https://github.com/finos/legend-studio/pull/4315) [`c84ff80`](https://github.com/finos/legend-studio/commit/c84ff8038a37a105c53e8d6d3f7144702af2952b) ([@kelly-thai](https://github.com/kelly-thai)) - Add checkbox in Data Product form to allow users to flag Access Points as reproducible
+
+- [#4317](https://github.com/finos/legend-studio/pull/4317) [`f6f0dcd`](https://github.com/finos/legend-studio/commit/f6f0dcddc19cde67b5770cae21adc683e835ebda) ([@kelly-thai](https://github.com/kelly-thai)) - Fix bug to allow lambdas to take parameters when switching from text to form mode
+
+- [#4311](https://github.com/finos/legend-studio/pull/4311) [`c4dd622`](https://github.com/finos/legend-studio/commit/c4dd6222765b66ba76d554c32d2e6d2d8f2186cd) ([@travisstebbins](https://github.com/travisstebbins)) - Move StereotypeConfig to legend-application
+
 ## 28.19.19
 
 ## 28.19.18

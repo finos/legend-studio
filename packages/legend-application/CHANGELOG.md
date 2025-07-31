@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 16.0.60
+
+### Patch Changes
+
+- [#4311](https://github.com/finos/legend-studio/pull/4311) [`c4dd622`](https://github.com/finos/legend-studio/commit/c4dd6222765b66ba76d554c32d2e6d2d8f2186cd) ([@travisstebbins](https://github.com/travisstebbins)) - Move StereotypeConfig to legend-application
+
 ## 16.0.59
 
 ### Patch Changes
