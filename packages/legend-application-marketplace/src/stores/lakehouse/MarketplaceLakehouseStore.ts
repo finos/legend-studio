@@ -303,6 +303,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   ): void {
     this.lakehouseIngestEnvironmentDetails = environmentDetails;
   }
+
   setTerminalProducts(products: V1_Terminal[] | undefined): void {
     this.terminalProducts = products;
   }
