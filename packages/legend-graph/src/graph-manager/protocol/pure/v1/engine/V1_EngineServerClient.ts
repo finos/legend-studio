@@ -41,6 +41,7 @@ import type { V1_ExecuteInput } from './execution/V1_ExecuteInput.js';
 import type { V1_PureModelContext } from '../model/context/V1_PureModelContext.js';
 import type { V1_ExecutionPlan } from '../model/executionPlan/V1_ExecutionPlan.js';
 import type { V1_LightQuery, V1_Query } from './query/V1_Query.js';
+import type { V1_Terminal } from '../model/packageableElements/dataProduct/V1_Terminal.js';
 import type { V1_ServiceStorage } from './service/V1_ServiceStorage.js';
 import type { GenerationMode } from '../../../../../graph-manager/action/generation/GenerationConfigurationDescription.js';
 import type { V1_QuerySearchSpecification } from './query/V1_QuerySearchSpecification.js';
@@ -232,18 +233,15 @@ export class V1_EngineServerClient extends AbstractServerClient {
 
   // ------------------------------------------- Terminal -------------------------------------------
 
-  _marketplace = (): string => `${this.baseUrl}/marketplace`;
+  _marketplace = (): string => `${this.baseUrl}/marketplace/terminals`;
 
-  getTerminals = (): Promise<PlainObject[]> => {
-    return this.get(
-      `https://dev.exec.alloy.site.gs.com/api/user/marketplace/terminals`,
-    );
+  getTerminals = (): Promise<PlainObject<V1_Terminal>[]> => {
+    return this.get(`${this._marketplace()}`);
   };
 
-  getTerminalById = (id: number): Promise<PlainObject> => {
-    return this.get(
-      `https://dev.exec.alloy.site.gs.com/api/user/marketplace/terminals/${id}`,
-    );
+  getTerminalById = (id: string): Promise<PlainObject<V1_Terminal>[]> => {
+    console.log(`${this._marketplace()}/${id}`);
+    return this.get(`${this._marketplace()}/${id}`);
   };
 
   // ------------------------------------------- Server -------------------------------------------

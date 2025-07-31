@@ -192,7 +192,6 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   filter: DataProductFilters;
   sort: DataProductSort = DataProductSort.NAME_ALPHABETICAL;
   dataProductViewer: DataProductViewerState | undefined;
-  engineServerClient: any;
   terminalProducts: V1_Terminal[] | undefined;
 
   constructor(
@@ -301,6 +300,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   ): void {
     this.lakehouseIngestEnvironmentDetails = environmentDetails;
   }
+
   setTerminalProducts(products: V1_Terminal[] | undefined): void {
     this.terminalProducts = products;
   }
@@ -500,7 +500,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     ]);
   }
 
-  *initWithTerminal(terminalId: number): GeneratorFn<any> {
+  *initWithTerminal(terminalId: string): GeneratorFn<any> {
     try {
       this.loadingProductState.inProgress();
 
@@ -510,78 +510,50 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         );
       const { columns, rows } = rawTerminalResponse.result;
 
-      if (!rawTerminalResponse.result || !rawTerminalResponse.result.rows) {
+      if (!rows) {
         throw new Error('No result data found in API response');
       }
 
-      const idColumnIndex = columns.findIndex(
-        (columnName: string) => columnName === 'Id',
-      );
-      if (idColumnIndex === -1) {
-        throw new Error('Id column not found in results');
-      }
+      // Use the QueryBuilder pattern for row processing
+      // const terminalRowData = rows.map((rowIdx:, columnIdx: number) => {
+      //   const rowObject: Record<string, any> = {};
+      //   row.values.forEach((value: any, colIdx: number) => {
+      //     rowObject[columns[colIdx] as string] = value;
+      //   });
+      //   rowObject.rowNumber = rowIdx;
+      //   return rowObject;
+      // });
 
-      const allTerminalRows = rows.filter((row: any) => {
-        return row.values[idColumnIndex] == terminalId;
-      });
+      // // Filter for the specific terminal ID
+      // const matchingRows = terminalRowData.filter(row => row.Id == terminalId);
 
-      if (allTerminalRows.length === 0) {
-        throw new Error(`No terminal rows found for ID ${terminalId}`);
-      }
-      const terminalProducts = allTerminalRows.map(
-        (row: any, index: number) => {
-          const terminalData: any = {
-            _type: 'terminal',
-            package: 'marketplace',
-            name: `Terminal_${terminalId}_Product_${index + 1}`,
+      // if (matchingRows.length === 0) {
+      //   throw new Error(`No terminal rows found for ID ${terminalId}`);
+      // }
+
+      // Convert to terminal objects with cleaner mapping
+      const terminalProducts = matchingRows.map(
+        (rowData: any, index: number) => {
+          const terminalData = {
+            // Direct property mapping
+            id: rowData.id,
+            providerName: rowData.providerName,
+            productName: rowData.productName,
+            category: rowData.category,
+            vendorProfileId: rowData.vendorProfileId,
+            modelName: rowData['modelName'],
+            description: rowData.description,
+            applicationName: rowData['applicationName'],
+            tieredPrice: rowData.tieredPrice,
+            price: rowData.price,
+            totalFirmPrice: rowData['totalFirmPrice'],
           };
 
-          columns.forEach((columnName: string, colIndex: number) => {
-            const value = row.values[colIndex];
-            switch (columnName) {
-              case 'Id':
-                terminalData.id = value;
-                break;
-              case 'providerName':
-                terminalData.vendorName = value;
-                break;
-              case 'productName':
-                terminalData.title = value;
-                break;
-              case 'category':
-                terminalData.category = value;
-                break;
-              case 'Description':
-                terminalData.description = value;
-                break;
-              case 'Application Name':
-                terminalData.applicationName = value;
-                break;
-              case 'Tiered_Price':
-                terminalData.tieredPrice = value;
-                break;
-              case 'vendorprofileId':
-                terminalData.vendorProfileId = value;
-                break;
-              case 'Model Name':
-                terminalData.modelName = value;
-                break;
-              case 'price':
-                terminalData.price = value;
-                break;
-              case 'Total Firm Price':
-                terminalData.totalFirmPrice = value;
-                break;
-              default:
-                console.log(`Unmapped column: ${columnName} = ${value}`);
-            }
-          });
           return deserialize(V1_TerminalModelSchema, terminalData);
         },
       );
 
       this.setTerminalProducts(terminalProducts);
-
       this.loadingProductState.complete();
     } catch (error) {
       console.error('Error in initWithTerminal:', error);
