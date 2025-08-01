@@ -23,6 +23,11 @@ import {
   Panel,
   PanelContent,
   PanelHeader,
+  ControlledDropdownMenu,
+  MenuContent,
+  MenuContentItem,
+  CaretDownIcon,
+  PanelLoadingIndicator,
 } from '@finos/legend-art';
 import { useApplicationStore } from '@finos/legend-application';
 import { flowResult } from 'mobx';
@@ -33,6 +38,7 @@ import {
   getClassProperty,
 } from '@finos/legend-graph';
 import { returnUndefOnError } from '@finos/legend-shared';
+import { ActivatorArtifactViewer } from './ActivatorArtifactViewer.js';
 
 export const INTERNAL__UnknownFunctionActivatorEdtior = observer(() => {
   const editorStore = useEditorStore();
@@ -42,6 +48,11 @@ export const INTERNAL__UnknownFunctionActivatorEdtior = observer(() => {
   );
   const validate = (): void => {
     flowResult(editorState.validate()).catch(
+      applicationStore.alertUnhandledError,
+    );
+  };
+  const renderArtifact = (): void => {
+    flowResult(editorState.renderArtifact()).catch(
       applicationStore.alertUnhandledError,
     );
   };
@@ -66,6 +77,13 @@ export const INTERNAL__UnknownFunctionActivatorEdtior = observer(() => {
     <div className="function-activator-editor">
       <Panel>
         <PanelHeader title="function activator" />
+        <PanelLoadingIndicator
+          isLoading={Boolean(
+            editorState.validateState.isInProgress ||
+              editorState.renderArtifactState.isInProgress ||
+              editorState.publishToSandboxState.isInProgress,
+          )}
+        />
         <PanelContent>
           <div className="function-activator-editor__content">
             {valueBuilderState && (
@@ -118,23 +136,61 @@ export const INTERNAL__UnknownFunctionActivatorEdtior = observer(() => {
             )}
           </div>
           <div className="function-activator-editor__footer">
-            <button
-              className="function-activator-editor__footer__action btn--dark"
-              onClick={validate}
-              disabled={editorState.validateState.isInProgress}
-              tabIndex={-1}
-            >
-              Validate
-            </button>
-            <button
-              className="function-activator-editor__footer__action btn--dark"
-              onClick={publishToSandbox}
-              disabled={editorState.publishToSandboxState.isInProgress}
-              tabIndex={-1}
-            >
-              Publish to Sandbox
-            </button>
+            <div className="function-activator-editor__footer__actions btn__dropdown-combo--primary">
+              <button
+                className="function-activator-editor__footer__actions__action btn--dark"
+                onClick={validate}
+                disabled={editorState.validateState.isInProgress}
+                tabIndex={-1}
+              >
+                Validate
+              </button>
+              <ControlledDropdownMenu
+                className="function-activator-editor__footer__actions btn__dropdown-combo btn__dropdown-combo__dropdown-btn"
+                title="activator-artifact-dropdown"
+                content={
+                  <MenuContent>
+                    <MenuContentItem
+                      className="btn__dropdown-combo__option"
+                      onClick={renderArtifact}
+                    >
+                      Render Artifact
+                    </MenuContentItem>
+                  </MenuContent>
+                }
+                menuProps={{
+                  anchorOrigin: {
+                    vertical: 'bottom',
+                    horizontal: 'right',
+                  },
+                  transformOrigin: {
+                    vertical: 'top',
+                    horizontal: 'right',
+                  },
+                }}
+              >
+                <CaretDownIcon />
+              </ControlledDropdownMenu>
+            </div>
+            <div className="function-activator-editor__footer__actions btn__dropdown-combo--primary">
+              <button
+                className="function-activator-editor__footer__actions__action btn--dark"
+                onClick={publishToSandbox}
+                disabled={editorState.publishToSandboxState.isInProgress}
+                tabIndex={-1}
+              >
+                Publish to Sandbox
+              </button>
+            </div>
           </div>
+          <ActivatorArtifactViewer
+            artifact={editorState.artifact}
+            setArtifact={(value) => editorState.setArtifact(value)}
+            darkMode={
+              !applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
+            }
+          />
         </PanelContent>
       </Panel>
     </div>

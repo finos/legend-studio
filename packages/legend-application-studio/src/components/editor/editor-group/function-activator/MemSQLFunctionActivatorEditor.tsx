@@ -27,6 +27,10 @@ import {
   PURE_ConnectionIcon,
   CustomSelectorInput,
   createFilter,
+  ControlledDropdownMenu,
+  MenuContent,
+  MenuContentItem,
+  CaretDownIcon,
 } from '@finos/legend-art';
 import {
   type PackageableConnection,
@@ -45,6 +49,7 @@ import {
   buildRelationalDatabaseConnectionOption,
 } from '../connection-editor/RelationalDatabaseConnectionEditor.js';
 import { ActivatorOwnershipForm } from './ActivatorFormComponents.js';
+import { ActivatorArtifactViewer } from './ActivatorArtifactViewer.js';
 
 export const MemSQLFunctionActivatorEditor = observer(() => {
   const editorStore = useEditorStore();
@@ -115,6 +120,11 @@ export const MemSQLFunctionActivatorEditor = observer(() => {
       applicationStore.alertUnhandledError,
     );
   };
+  const renderArtifact = (): void => {
+    flowResult(editorState.renderArtifact()).catch(
+      applicationStore.alertUnhandledError,
+    );
+  };
   const deploy = (): void => {
     flowResult(editorState.deployToSandbox()).catch(
       applicationStore.alertUnhandledError,
@@ -128,6 +138,7 @@ export const MemSQLFunctionActivatorEditor = observer(() => {
         <PanelLoadingIndicator
           isLoading={Boolean(
             editorState.validateState.isInProgress ||
+              editorState.renderArtifactState.isInProgress ||
               editorState.deployState.isInProgress,
           )}
         />
@@ -137,24 +148,54 @@ export const MemSQLFunctionActivatorEditor = observer(() => {
               Mem SQL Function
             </div>
             <div className="mem-sql-function-activator-editor__header__actions">
-              <button
-                className="mem-sql-function-activator-editor__header__actions__action mem-sql-function-activator-editor__header__actions__action--primary"
-                onClick={validate}
-                disabled={editorState.validateState.isInProgress}
-                tabIndex={-1}
-                title="Click Validate to verify your activator before deployment"
-              >
-                Validate
-              </button>
-              <button
-                className="mem-sql-function-activator-editor__header__actions__action mem-sql-function-activator-editor__header__actions__action--primary"
-                onClick={deploy}
-                disabled={editorState.deployState.isInProgress}
-                title="Deploy to sandbox"
-                tabIndex={-1}
-              >
-                Deploy to Sandbox
-              </button>
+              <div className="mem-sql-function-activator-editor__header__actions btn__dropdown-combo--primary">
+                <button
+                  className="mem-sql-function-activator-editor__header__actions__action mem-sql-function-activator-editor__header__actions__action--primary"
+                  onClick={validate}
+                  disabled={editorState.validateState.isInProgress}
+                  tabIndex={-1}
+                  title="Click Validate to verify your activator before deployment"
+                >
+                  Validate
+                </button>
+                <ControlledDropdownMenu
+                  className="mem-sql-function-activator-editor__header__actions btn__dropdown-combo btn__dropdown-combo__dropdown-btn"
+                  title="activator-artifact-dropdown"
+                  content={
+                    <MenuContent>
+                      <MenuContentItem
+                        className="btn__dropdown-combo__option"
+                        onClick={renderArtifact}
+                      >
+                        Render Artifact
+                      </MenuContentItem>
+                    </MenuContent>
+                  }
+                  menuProps={{
+                    anchorOrigin: {
+                      vertical: 'bottom',
+                      horizontal: 'right',
+                    },
+                    transformOrigin: {
+                      vertical: 'top',
+                      horizontal: 'right',
+                    },
+                  }}
+                >
+                  <CaretDownIcon />
+                </ControlledDropdownMenu>
+              </div>
+              <div className="mem-sql-function-activator-editor__header__actions btn__dropdown-combo--primary">
+                <button
+                  className="mem-sql-function-activator-editor__header__actions__action mem-sql-function-activator-editor__header__actions__action--primary"
+                  onClick={deploy}
+                  disabled={editorState.deployState.isInProgress}
+                  title="Deploy to sandbox"
+                  tabIndex={-1}
+                >
+                  Deploy to Sandbox
+                </button>
+              </div>
             </div>
           </div>
           <PanelForm>
@@ -262,6 +303,14 @@ export const MemSQLFunctionActivatorEditor = observer(() => {
               isReadOnly={isReadOnly}
             />
           </PanelForm>
+          <ActivatorArtifactViewer
+            artifact={editorState.artifact}
+            setArtifact={(value) => editorState.setArtifact(value)}
+            darkMode={
+              !applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
+            }
+          />
         </PanelContent>
       </Panel>
     </div>

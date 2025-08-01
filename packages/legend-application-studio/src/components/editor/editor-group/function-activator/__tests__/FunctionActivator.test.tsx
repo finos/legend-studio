@@ -16,11 +16,13 @@
 
 import { expect, test } from '@jest/globals';
 import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
-import { integrationTest } from '@finos/legend-shared/test';
+import { createSpy, integrationTest } from '@finos/legend-shared/test';
 import {
   fireEvent,
   getByDisplayValue,
   getByText,
+  getByTitle,
+  queryByRole,
   waitFor,
 } from '@testing-library/react';
 import {
@@ -29,8 +31,13 @@ import {
 } from '../../../__test-utils__/EditorComponentTestUtils.js';
 import TEST_DATA__SimpleRelationalModel from './TEST_DATA__SimpleRelationalEntities.json' with { type: 'json' };
 import { LEGEND_STUDIO_TEST_ID } from '../../../../../__lib__/LegendStudioTesting.js';
-import { Core_GraphManagerPreset } from '@finos/legend-graph';
+import {
+  type V1_PureGraphManager,
+  Core_GraphManagerPreset,
+} from '@finos/legend-graph';
 import { LegendStudioPluginManager } from '../../../../../application/LegendStudioPluginManager.js';
+import { TEST_DATA_SimpleSnowflakeArtifact } from './TEST_DATA_SimpleSnowflakeArtifact.js';
+import { SnowflakeAppFunctionActivatorEdtiorState } from '../../../../../stores/editor/editor-state/element-editor-state/function-activator/SnowflakeAppFunctionActivatorEditorState.js';
 
 const pluginManager = LegendStudioPluginManager.create();
 pluginManager.usePresets([new Core_GraphManagerPreset()]).install();
@@ -92,4 +99,30 @@ test(integrationTest('Test Function Activator '), async () => {
   expect(getByText(editorGroupContent, `SnowflakeConnection`)).toBeDefined();
   expect(getByText(editorGroupContent, 'Activator Identifer')).toBeDefined();
   expect(getByText(editorGroupContent, `Description`)).toBeDefined();
+
+  // Render Artifact test
+  const MOCK__editorState =
+    MOCK__editorStore.tabManagerState.getCurrentEditorState(
+      SnowflakeAppFunctionActivatorEdtiorState,
+    );
+  const graphManager = MOCK__editorStore.graphManagerState
+    .graphManager as V1_PureGraphManager;
+  const engine = graphManager.engine;
+  const mockRenderArtifact = createSpy(
+    engine,
+    'renderFunctionActivatorArtifact',
+  ).mockReturnValue(Promise.resolve(TEST_DATA_SimpleSnowflakeArtifact));
+  fireEvent.click(
+    getByTitle(editorGroupContent, 'activator-artifact-dropdown'),
+  );
+  const renderArtifactButton = renderResult.getByText('Render Artifact');
+  fireEvent.click(renderArtifactButton);
+  const artifactModal = await waitFor(() => renderResult.getByRole('dialog'));
+  expect(mockRenderArtifact).toHaveBeenCalled();
+  expect(getByText(artifactModal, 'Artifact')).toBeDefined();
+  expect(getByText(artifactModal, 'Close')).toBeDefined();
+  expect(MOCK__editorState.artifact).toEqual(TEST_DATA_SimpleSnowflakeArtifact);
+  const closeArtifactButton = renderResult.getByTitle('Close artifact modal');
+  fireEvent.click(closeArtifactButton);
+  expect(queryByRole(editorGroupContent, 'dialog')).toBeNull();
 });

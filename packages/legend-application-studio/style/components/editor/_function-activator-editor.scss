@@ -52,13 +52,22 @@
     height: 5rem;
     padding: 0 1rem;
 
-    &__action {
-      width: 15rem;
-      height: 2.8rem;
-    }
+    &__actions {
+      @include flexVCenter;
 
-    &__action + &__action {
-      margin-left: 0.5rem;
+      .btn__dropdown-combo {
+        height: 2.8rem;
+      }
+
+      &__action {
+        width: 15rem;
+        height: 2.8rem;
+        margin-left: 0.5rem;
+      }
+
+      &__action + &__action {
+        margin-left: 0.5rem;
+      }
     }
   }
 

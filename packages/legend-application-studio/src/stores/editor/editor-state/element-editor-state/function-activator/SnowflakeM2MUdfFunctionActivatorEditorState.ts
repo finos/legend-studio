@@ -27,17 +27,21 @@ import {
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
+  type PlainObject,
   ActionState,
   assertErrorThrown,
   guaranteeType,
 } from '@finos/legend-shared';
-import { makeObservable, action, flow, computed } from 'mobx';
+import { makeObservable, action, flow, computed, observable } from 'mobx';
 import type { EditorStore } from '../../../EditorStore.js';
 import { ElementEditorState } from '../ElementEditorState.js';
 
 export class SnowflakeM2MUdfFunctionActivatorEdtiorState extends ElementEditorState {
   readonly validateState = ActionState.create();
+  readonly renderArtifactState = ActionState.create();
   readonly deployState = ActionState.create();
+
+  artifact: PlainObject | undefined;
 
   constructor(editorStore: EditorStore, element: SnowflakeM2MUdf) {
     super(editorStore, element);
@@ -52,6 +56,9 @@ export class SnowflakeM2MUdfFunctionActivatorEdtiorState extends ElementEditorSt
       updateUdfName: action,
       updateConnection: action,
       validate: flow,
+      renderArtifact: flow,
+      artifact: observable,
+      setArtifact: action,
       deployToSandbox: flow,
     });
   }
@@ -95,6 +102,10 @@ export class SnowflakeM2MUdfFunctionActivatorEdtiorState extends ElementEditorSt
     this.activator.description = val;
   }
 
+  setArtifact(newArtifact: PlainObject | undefined): void {
+    this.artifact = newArtifact;
+  }
+
   *validate(): GeneratorFn<void> {
     this.validateState.inProgress();
     try {
@@ -110,6 +121,23 @@ export class SnowflakeM2MUdfFunctionActivatorEdtiorState extends ElementEditorSt
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.validateState.complete();
+    }
+  }
+
+  *renderArtifact(): GeneratorFn<void> {
+    this.renderArtifactState.inProgress();
+    try {
+      const artifact =
+        (yield this.editorStore.graphManagerState.graphManager.renderFunctionActivatorArtifact(
+          this.activator,
+          new InMemoryGraphData(this.editorStore.graphManagerState.graph),
+        )) as PlainObject;
+      this.artifact = artifact;
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
+    } finally {
+      this.renderArtifactState.complete();
     }
   }
 
