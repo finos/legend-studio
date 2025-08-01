@@ -51,6 +51,12 @@ export {
   Measure,
   Unit,
 } from './graph/metamodel/pure/packageableElements/domain/Measure.js';
+export type {
+  TDSRowDataType,
+  TDSResultCellDataType,
+  TDSResultCellData,
+  TDSResultCellCoordinate,
+} from './graph-manager/action/execution/ExecutionResultHelper.js';
 export {
   EnumValueReference,
   EnumValueExplicitReference,

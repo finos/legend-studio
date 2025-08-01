@@ -508,8 +508,6 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         );
       const { columns, rows } = rawTerminalResponse.result;
 
-      console.log(rawTerminalResponse);
-
       if (!rows) {
         throw new Error('No result data found in API response');
       }
@@ -524,37 +522,15 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       });
 
       const matchingRows = terminalRowData.filter(
-        (row: any) => row.Id == terminalId,
+        (row: any) => row.id == terminalId,
       );
 
-      if (matchingRows.length === 0) {
-        throw new Error(`No terminal rows found for ID ${terminalId}`);
-      }
-
-      const terminalProducts: V1_Terminal[] = matchingRows.map(
-        (rowData: any) => {
-          const terminalData = {
-            id: rowData['Id'],
-            providerName: rowData['providerName'],
-            productName: rowData['productName'],
-            category: rowData['category'],
-            vendorProfileId: rowData['vendorprofileId'],
-            modelName: rowData['Model Name'],
-            description: rowData['Description'],
-            applicationName: rowData['Application Name'],
-            tieredPrice: rowData['Tiered_Price']?.toString(),
-            price: rowData['price']?.toString(),
-            totalFirmPrice: rowData['Total Firm Price']?.toString(),
-          };
-
-          return deserialize(V1_TerminalModelSchema, terminalData);
-        },
+      const terminalProducts: V1_Terminal[] = matchingRows.map((rowData: any) =>
+        deserialize(V1_TerminalModelSchema, rowData),
       );
-
       this.setTerminalProducts(terminalProducts);
       this.loadingProductState.complete();
     } catch (error) {
-      console.error('Error in initWithTerminal:', error);
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(
         `Unable to load terminal ${terminalId}: ${error.message}`,
