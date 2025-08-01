@@ -150,7 +150,7 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
     },
   );
 
-  const ProtectedTerminal = withAuthenticationRequired(TerminalProduct, {
+  const ProtectedTerminalProduct = withAuthenticationRequired(TerminalProduct, {
     OnRedirecting: () => (
       <CubesLoadingIndicator isLoading={true}>
         <CubesLoadingIndicatorIcon />
@@ -253,7 +253,7 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
             />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.TERMINAL_PRODUCT}
-              element={<ProtectedTerminal />}
+              element={<ProtectedTerminalProduct />}
             />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SDLC_PRODUCT}

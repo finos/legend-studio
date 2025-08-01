@@ -236,7 +236,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
   _marketplace = (): string => `${this.baseUrl}/user/marketplace/terminals`;
 
   getTerminals = (): Promise<PlainObject<V1_Terminal>[]> => {
-    return this.get(`${this._marketplace()}`);
+    return this.get(this._marketplace());
   };
 
   getTerminalById = (id: string): Promise<PlainObject<V1_Terminal>[]> => {

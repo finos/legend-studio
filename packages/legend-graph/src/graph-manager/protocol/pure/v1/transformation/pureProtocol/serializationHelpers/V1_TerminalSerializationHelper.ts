@@ -13,7 +13,4 @@ export const V1_TerminalModelSchema = createModelSchema(V1_Terminal, {
   tieredPrice: primitive(),
   price: primitive(),
   totalFirmPrice: primitive(),
-
-  icon: optional(primitive()),
-  imageUrl: optional(primitive()),
 });
