@@ -241,7 +241,6 @@ export class V1_EngineServerClient extends AbstractServerClient {
   };
 
   getTerminalById = (id: string): Promise<PlainObject<V1_Terminal>[]> => {
-    console.log(`${this._marketplace()}/${id}`);
     return this.get(`${this._marketplace()}/${id}`);
   };
 
