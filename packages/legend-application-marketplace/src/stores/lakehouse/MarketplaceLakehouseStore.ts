@@ -562,14 +562,14 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         fetchedDataProductDetails[0],
       );
       // Crete graph manager for parsing ad-hoc deployed data products
-      const graphManager = new V1_PureGraphManager(
+      const graphManager = new V1_PureGraphManager( //NOTE: Dont think I need bc this is pure related
         this.applicationStore.pluginManager,
         this.applicationStore.logService,
         this.marketplaceBaseStore.remoteEngine,
       );
       yield graphManager.initialize(
         {
-          env: this.marketplaceBaseStore.applicationStore.config.env,
+          env: this.marketplaceBaseStore.applicationStore.config.env, // How do I create a base store for this
           tabSize: DEFAULT_TAB_SIZE,
           clientConfig: {
             baseUrl:
@@ -585,6 +585,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       yield graphManagerState.initializeSystem();
       const v1DataProduct = guaranteeType(
         yield getDataProductFromDetails(
+          //Dont need this since it deals with different origins which terminals do not
           dataProductDetails,
           graphManagerState,
           graphManager,
@@ -594,7 +595,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         `Unable to get V1_DataProduct from details for id: ${dataProductDetails.id}`,
       );
 
-      const stateViewer = new DataProductViewerState(
+      const stateViewer = new DataProductViewerState( // Need to create a terminalProductViewerState. Manages state.
         this.applicationStore,
         this,
         graphManagerState,
