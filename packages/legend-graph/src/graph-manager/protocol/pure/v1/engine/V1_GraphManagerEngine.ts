@@ -399,6 +399,10 @@ export interface V1_GraphManagerEngine {
     input: V1_FunctionActivatorInput,
   ) => Promise<void>;
 
+  renderFunctionActivatorArtifact: (
+    input: V1_FunctionActivatorInput,
+  ) => Promise<PlainObject>;
+
   publishFunctionActivatorToSandbox: (
     input: V1_FunctionActivatorInput,
   ) => Promise<DeploymentResult>;

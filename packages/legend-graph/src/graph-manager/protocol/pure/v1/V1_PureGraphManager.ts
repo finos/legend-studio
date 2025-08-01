@@ -3808,6 +3808,18 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await this.engine.validateFunctionActivator(input);
   }
 
+  async renderFunctionActivatorArtifact(
+    functionActivator: FunctionActivator,
+    graphData: GraphData,
+  ): Promise<PlainObject> {
+    const input = new V1_FunctionActivatorInput();
+    input.clientVersion = V1_PureGraphManager.PROD_PROTOCOL_VERSION;
+    input.functionActivator = functionActivator.path;
+    input.model = this.prepareExecutionContextGraphData(graphData);
+    const result = await this.engine.renderFunctionActivatorArtifact(input);
+    return result;
+  }
+
   async publishFunctionActivatorToSandbox(
     functionActivator: FunctionActivator,
     graphData: GraphData,

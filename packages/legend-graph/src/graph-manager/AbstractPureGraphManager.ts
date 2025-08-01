@@ -742,6 +742,11 @@ export abstract class AbstractPureGraphManager {
     graphData: GraphData,
   ): Promise<void>;
 
+  abstract renderFunctionActivatorArtifact(
+    functionActivator: FunctionActivator,
+    graphData: GraphData,
+  ): Promise<PlainObject>;
+
   abstract publishFunctionActivatorToSandbox(
     functionActivator: FunctionActivator,
     graphData: GraphData,

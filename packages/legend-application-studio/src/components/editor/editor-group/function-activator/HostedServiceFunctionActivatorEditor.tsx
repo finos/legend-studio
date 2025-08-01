@@ -39,6 +39,7 @@ import {
   TimesIcon,
   clsx,
   PanelHeader,
+  CaretDownIcon,
 } from '@finos/legend-art';
 import {
   type PostDeploymentAction,
@@ -95,6 +96,7 @@ import {
 import type { DSL_Service_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/DSL_Service_LegendStudioApplicationPlugin_Extension.js';
 import { UnsupportedEditorPanel } from '../UnsupportedElementEditor.js';
 import type { LegendStudioApplicationPlugin } from '../../../../stores/LegendStudioApplicationPlugin.js';
+import { ActivatorArtifactViewer } from './ActivatorArtifactViewer.js';
 
 const renderEditorPostAction = (
   postDeploymentAction: PostDeploymentAction,
@@ -417,6 +419,11 @@ export const HostedServiceFunctionActivatorEditor = observer(() => {
       applicationStore.alertUnhandledError,
     );
   };
+  const renderArtifact = (): void => {
+    flowResult(editorState.renderArtifact()).catch(
+      applicationStore.alertUnhandledError,
+    );
+  };
   const deploy = (): void => {
     flowResult(editorState.deployToSandbox()).catch(
       applicationStore.alertUnhandledError,
@@ -477,6 +484,7 @@ export const HostedServiceFunctionActivatorEditor = observer(() => {
         <PanelLoadingIndicator
           isLoading={Boolean(
             editorState.validateState.isInProgress ||
+              editorState.renderArtifactState.isInProgress ||
               editorState.deployState.isInProgress,
           )}
         />
@@ -514,24 +522,55 @@ export const HostedServiceFunctionActivatorEditor = observer(() => {
                   Rest Service Activator
                 </div>
                 <div className="hosted-service-function-activator-editor__header__actions">
-                  <button
-                    className="hosted-service-function-activator-editor__header__actions__action hosted-service-function-activator-editor__header__actions__action--primary"
-                    onClick={validate}
-                    disabled={editorState.validateState.isInProgress}
-                    tabIndex={-1}
-                    title="Click Validate to verify your activator before deployment"
-                  >
-                    Validate
-                  </button>
-                  <button
-                    className="hosted-service-function-activator-editor__header__actions__action hosted-service-function-activator-editor__header__actions__action--primary"
-                    onClick={deploy}
-                    disabled={editorState.deployState.isInProgress}
-                    title="Deploy to sandbox"
-                    tabIndex={-1}
-                  >
-                    Deploy to Sandbox
-                  </button>
+                  <div className="hosted-service-function-activator-editor__header__actions btn__dropdown-combo--primary">
+                    <button
+                      className="hosted-service-function-activator-editor__header__actions__action hosted-service-function-activator-editor__header__actions__action--primary"
+                      onClick={validate}
+                      disabled={editorState.validateState.isInProgress}
+                      tabIndex={-1}
+                      title="Click Validate to verify your activator before deployment"
+                    >
+                      Validate
+                    </button>
+                    <ControlledDropdownMenu
+                      className="hosted-service-function-activator-editor__header__actions btn__dropdown-combo btn__dropdown-combo__dropdown-btn"
+                      title="activator-artifact-dropdown"
+                      content={
+                        <MenuContent>
+                          <MenuContentItem
+                            className="btn__dropdown-combo__option"
+                            onClick={renderArtifact}
+                            title="Render artifact"
+                          >
+                            Render Artifact
+                          </MenuContentItem>
+                        </MenuContent>
+                      }
+                      menuProps={{
+                        anchorOrigin: {
+                          vertical: 'bottom',
+                          horizontal: 'right',
+                        },
+                        transformOrigin: {
+                          vertical: 'top',
+                          horizontal: 'right',
+                        },
+                      }}
+                    >
+                      <CaretDownIcon />
+                    </ControlledDropdownMenu>
+                  </div>
+                  <div className="hosted-service-function-activator-editor__header__actions btn__dropdown-combo--primary">
+                    <button
+                      className="hosted-service-function-activator-editor__header__actions__action hosted-service-function-activator-editor__header__actions__action--primary"
+                      onClick={deploy}
+                      disabled={editorState.deployState.isInProgress}
+                      title="Deploy to sandbox"
+                      tabIndex={-1}
+                    >
+                      Deploy to Sandbox
+                    </button>
+                  </div>
                 </div>
               </div>
               <PanelForm>
@@ -725,6 +764,14 @@ export const HostedServiceFunctionActivatorEditor = observer(() => {
               />
             </div>
           )}
+          <ActivatorArtifactViewer
+            artifact={editorState.artifact}
+            setArtifact={(value) => editorState.setArtifact(value)}
+            darkMode={
+              !applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
+            }
+          />
         </PanelContent>
       </Panel>
     </div>
