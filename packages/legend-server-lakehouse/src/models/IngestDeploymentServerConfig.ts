@@ -31,3 +31,13 @@ export class IngestDeploymentServerConfig {
     }),
   );
 }
+
+export class ProducerEnvironment {
+  producerEnvironmentUrn!: string;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(ProducerEnvironment, {
+      producerEnvironmentUrn: primitive(),
+    }),
+  );
+}

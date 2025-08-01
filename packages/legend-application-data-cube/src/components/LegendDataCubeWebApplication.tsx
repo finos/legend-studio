@@ -24,6 +24,17 @@ import { observer } from 'mobx-react-lite';
 import { LegendDataCubeBuilder } from './builder/LegendDataCubeBuilder.js';
 import { LEGEND_DATA_CUBE_ROUTE_PATTERN } from '../__lib__/LegendDataCubeNavigation.js';
 import { useEffect } from 'react';
+import {
+  CubesLoadingIndicator,
+  CubesLoadingIndicatorIcon,
+} from '@finos/legend-art';
+import type { LegendDataCubeOidcConfig } from '../application/LegendDataCubeApplicationConfig.js';
+import {
+  type AuthProviderProps,
+  withAuthenticationRequired,
+  AuthProvider,
+} from 'react-oidc-context';
+import type { User } from 'oidc-client-ts';
 
 const LegendDataCubeWebApplicationRouter = observer(() => {
   const store = useLegendDataCubeBaseStore();
@@ -48,16 +59,58 @@ const LegendDataCubeWebApplicationRouter = observer(() => {
   );
 });
 
-export const LegendDataCubeWebApplication = observer(
-  (props: { baseUrl: string }) => {
-    const { baseUrl } = props;
+const LegendDataCubeWebProvider: React.FC<{
+  baseUrl: string;
+}> = ({ baseUrl }) => {
+  return (
+    <BrowserEnvironmentProvider baseUrl={baseUrl}>
+      <LegendDataCubeFrameworkProvider>
+        <LegendDataCubeWebApplicationRouter />
+      </LegendDataCubeFrameworkProvider>
+    </BrowserEnvironmentProvider>
+  );
+};
 
-    return (
-      <BrowserEnvironmentProvider baseUrl={baseUrl}>
-        <LegendDataCubeFrameworkProvider>
-          <LegendDataCubeWebApplicationRouter />
-        </LegendDataCubeFrameworkProvider>
-      </BrowserEnvironmentProvider>
+const AuthenticatedLegendDataCubeWebProvider = withAuthenticationRequired(
+  LegendDataCubeWebProvider,
+  {
+    OnRedirecting: () => (
+      <CubesLoadingIndicator isLoading={true}>
+        <CubesLoadingIndicatorIcon />
+      </CubesLoadingIndicator>
+    ),
+    signinRedirectArgs: {
+      state: `${window.location.pathname}${window.location.search}`,
+    },
+  },
+);
+
+export const LegendDataCubeWebApplication = observer(
+  (props: {
+    baseUrl: string;
+    oidcConfig: LegendDataCubeOidcConfig | undefined;
+  }) => {
+    const { baseUrl, oidcConfig } = props;
+
+    const onSigninCallback = (_user: User | undefined) => {
+      window.location.href = (_user?.state as string | undefined) ?? '/';
+    };
+
+    const mergedOIDCConfig: AuthProviderProps | undefined = oidcConfig
+      ? {
+          ...oidcConfig.authProviderProps,
+          redirect_uri: `${window.location.origin}${oidcConfig.redirectPath}`,
+          silent_redirect_uri: `${window.location.origin}${oidcConfig.silentRedirectPath}`,
+          onSigninCallback,
+        }
+      : undefined;
+
+    return mergedOIDCConfig ? (
+      <AuthProvider {...mergedOIDCConfig}>
+        <AuthenticatedLegendDataCubeWebProvider baseUrl={baseUrl} />
+      </AuthProvider>
+    ) : (
+      <LegendDataCubeWebProvider baseUrl={baseUrl} />
     );
   },
 );

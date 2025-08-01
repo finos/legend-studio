@@ -35,6 +35,18 @@ const TEST_DATA__appConfig = {
     url: 'https://testStudioUrl',
     instances: [],
   },
+  lakehouse: {
+    platformUrl: 'https://testLakehousePlatformUrl',
+  },
+  oidcConfig: {
+    redirectPath: '/callback',
+    silentRedirectPath: '/callback?silent=true',
+    authProviderProps: {
+      authority: 'http://localhost:8080/auth',
+      client_id: 'test-client-id',
+      redirect_uri: '/callback',
+    },
+  },
 };
 
 export const TEST__getTestLegendDataCubeApplicationConfig = (

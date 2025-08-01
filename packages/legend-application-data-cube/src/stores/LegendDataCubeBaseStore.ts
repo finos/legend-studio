@@ -35,6 +35,10 @@ import {
   guaranteeIsBoolean,
   guaranteeIsString,
 } from '@finos/legend-shared';
+import {
+  LakehouseIngestServerClient,
+  LakehousePlatformServerClient,
+} from '@finos/legend-server-lakehouse';
 import { LegendDataCubeDataCubeEngine } from './LegendDataCubeDataCubeEngine.js';
 import {
   DataCubeSettingGroup,
@@ -62,6 +66,8 @@ export class LegendDataCubeBaseStore {
   readonly application: LegendDataCubeApplicationStore;
   readonly pluginManager: LegendDataCubePluginManager;
   readonly depotServerClient: DepotServerClient;
+  readonly lakehousePlatformServerClient: LakehousePlatformServerClient;
+  readonly lakehouseIngestServerClient: LakehouseIngestServerClient;
   readonly graphManager: V1_PureGraphManager;
   readonly remoteEngine: V1_RemoteEngine;
   readonly engineServerClient: V1_EngineServerClient;
@@ -83,6 +89,20 @@ export class LegendDataCubeBaseStore {
       serverUrl: this.application.config.depotServerUrl,
     });
     this.depotServerClient.setTracerService(application.tracerService);
+
+    this.lakehousePlatformServerClient = new LakehousePlatformServerClient(
+      this.application.config.lakehousePlatformUrl,
+    );
+    this.lakehousePlatformServerClient.setTracerService(
+      application.tracerService,
+    );
+    this.lakehouseIngestServerClient = new LakehouseIngestServerClient(
+      undefined,
+    );
+    this.lakehouseIngestServerClient.setTracerService(
+      application.tracerService,
+    );
+
     this.graphManager = new V1_PureGraphManager(
       this.application.pluginManager,
       this.application.logService,

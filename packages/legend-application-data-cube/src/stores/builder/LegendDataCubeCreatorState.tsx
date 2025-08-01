@@ -44,6 +44,7 @@ import { generateBuilderRoute } from '../../__lib__/LegendDataCubeNavigation.js'
 import { LocalFileDataCubeSourceBuilderState } from './source/LocalFileDataCubeSourceBuilderState.js';
 import { UserDefinedFunctionDataCubeSourceBuilderState } from './source/UserDefinedFunctionDataCubeSourceBuilderState.js';
 import { LEGEND_DATACUBE_APP_EVENT } from '../../__lib__/LegendDataCubeEvent.js';
+import { IngestDefinitionDataCubeSourceBuilderState } from './source/IngestDefinitionDataCubeSourceBuilderState.js';
 
 const DEFAULT_SOURCE_TYPE = LegendDataCubeSourceBuilderType.LEGEND_QUERY;
 
@@ -123,6 +124,14 @@ export class LegendDataCubeCreatorState {
           this._engine,
           this._alertService,
           this._store,
+        );
+      case LegendDataCubeSourceBuilderType.INGEST_DEFINTION:
+        return new IngestDefinitionDataCubeSourceBuilderState(
+          this._application,
+          this._engine,
+          this._store.platformServerClient,
+          this._store.ingestServerClient,
+          this._alertService,
         );
       default:
         throw new UnsupportedOperationError(
