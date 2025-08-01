@@ -70,6 +70,10 @@ import type { LegendDataCubeSourceLoaderState } from './source/LegendDataCubeSou
 import { LocalFileDataCubeSourceLoaderState } from './source/LocalFileDataCubeSourceLoaderState.js';
 import { LEGEND_DATACUBE_APP_EVENT } from '../../__lib__/LegendDataCubeEvent.js';
 import { LegendDataCubeQueryEditor } from '../../components/builder/LegendDataCubeQueryEditor.js';
+import type {
+  LakehouseIngestServerClient,
+  LakehousePlatformServerClient,
+} from '@finos/legend-server-lakehouse';
 
 export class LegendDataCubeBuilderState {
   readonly uuid = uuid();
@@ -126,6 +130,8 @@ export class LegendDataCubeBuilderStore {
   readonly baseStore: LegendDataCubeBaseStore;
   readonly engine: LegendDataCubeDataCubeEngine;
   readonly depotServerClient: DepotServerClient;
+  readonly platformServerClient: LakehousePlatformServerClient;
+  readonly ingestServerClient: LakehouseIngestServerClient;
   readonly engineServerClient: V1_EngineServerClient;
   readonly graphManager: V1_PureGraphManager;
   readonly taskService: DataCubeTaskService;
@@ -175,6 +181,8 @@ export class LegendDataCubeBuilderStore {
     this.engine = baseStore.engine;
     this.depotServerClient = baseStore.depotServerClient;
     this.engineServerClient = baseStore.engineServerClient;
+    this.platformServerClient = baseStore.lakehousePlatformServerClient;
+    this.ingestServerClient = baseStore.lakehouseIngestServerClient;
     this.graphManager = baseStore.graphManager;
     this.taskService = baseStore.taskService;
     this.alertService = baseStore.alertService;

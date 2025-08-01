@@ -66,7 +66,10 @@ export class LegendDataCube extends LegendApplication {
   ): Promise<void> {
     createRoot(getApplicationRootElement()).render(
       <ApplicationStoreProvider store={applicationStore}>
-        <LegendDataCubeWebApplication baseUrl={this.baseAddress} />
+        <LegendDataCubeWebApplication
+          baseUrl={this.baseAddress}
+          oidcConfig={this.config.dataCubeOidcConfig}
+        />
       </ApplicationStoreProvider>,
     );
   }
