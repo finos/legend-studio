@@ -15,36 +15,25 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import type { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
+import type { TerminalProductViewerState } from '../../../stores/lakehouse/TerminalProductViewerState.ts';
 import { useEffect, useRef, useState } from 'react';
-import { CaretUpIcon, clsx, OpenIcon } from '@finos/legend-art';
-import { DataProductWiki } from './DataProductWiki.js';
-import { Button } from '@mui/material';
-import { isSnapshotVersion } from '@finos/legend-server-depot';
-import {
-  V1_AdHocDeploymentDataProductOrigin,
-  V1_EntitlementsLakehouseEnvironmentType,
-  V1_SdlcDeploymentDataProductOrigin,
-} from '@finos/legend-graph';
+import { CaretUpIcon, clsx } from '@finos/legend-art';
+import { TerminalProductWiki } from './TerminalProductWiki.js';
 
-const DataProductHeader = observer(
+const TerminalProductHeader = observer(
   (props: {
-    dataProductViewerState: DataProductViewerState;
+    terminalProductViewerState: TerminalProductViewerState;
     showFullHeader: boolean;
   }) => {
-    const { dataProductViewerState, showFullHeader } = props;
+    const { terminalProductViewerState, showFullHeader } = props;
     const headerRef = useRef<HTMLDivElement>(null);
-    const dataProduct = dataProductViewerState.product;
-    const environmentClassification =
-      dataProductViewerState.entitlementsDataProductDetails.lakehouseEnvironment
-        ?.type;
-    const origin = dataProductViewerState.entitlementsDataProductDetails.origin;
+    const terminalProduct = terminalProductViewerState.product;
 
     useEffect(() => {
       if (headerRef.current) {
-        dataProductViewerState.layoutState.header = headerRef.current;
+        terminalProductViewerState.layoutState.header = headerRef.current;
       }
-    }, [dataProductViewerState]);
+    }, [terminalProductViewerState]);
 
     return (
       <div
@@ -56,63 +45,28 @@ const DataProductHeader = observer(
         <div
           className={clsx('data-space__viewer__header__content', {
             'data-space__viewer__header__content--expanded':
-              dataProductViewerState.layoutState.isExpandedModeEnabled,
+              terminalProductViewerState.layoutState.isExpandedModeEnabled,
           })}
         >
-          <div className="data-space__viewer__header__type">
-            {origin instanceof V1_AdHocDeploymentDataProductOrigin && ( //No terminal
-              <Button
-                className={clsx('data-space__viewer__header__type__sandbox', {
-                  'data-space__viewer__header__type__sandbox--dev':
-                    environmentClassification ===
-                    V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT,
-                  'data-space__viewer__header__type__sandbox--prod-parallel':
-                    environmentClassification ===
-                    V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL,
-                  'data-space__viewer__header__type__sandbox--prod':
-                    environmentClassification ===
-                    V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
-                })}
-              >
-                {environmentClassification
-                  ? `${environmentClassification} `
-                  : ''}
-                Sandbox Data Product
-              </Button>
-            )}
-            {origin instanceof V1_SdlcDeploymentDataProductOrigin && ( //Not for terminal
-              <Button
-                onClick={() => {
-                  dataProductViewerState.viewDataProductSource();
-                }}
-                title="View SDLC Project"
-                className={clsx('data-space__viewer__header__type__version', {
-                  'data-space__viewer__header__type__version--snapshot':
-                    isSnapshotVersion(origin.version),
-                  'data-space__viewer__header__type__version--release':
-                    !isSnapshotVersion(origin.version),
-                })}
-              >
-                Version: {origin.version}
-                <OpenIcon />
-              </Button>
-            )}
-          </div>
           <div
             className="data-space__viewer__header__title"
-            title={`${dataProduct.name} - ${dataProduct.path}`}
+            title={`${terminalProduct.productName} - ${terminalProduct.providerName}`} //title
           >
-            {dataProduct.title ? dataProduct.title : dataProduct.name}
+            <div className="data-space__viewer__header__title__label">
+              {terminalProduct.productName
+                ? terminalProduct.productName
+                : terminalProduct.applicationName}
+            </div>
           </div>
-          <hr />
+          <div className="data-space__viewer__header__type"></div>
         </div>
       </div>
     );
   },
 );
 
-export const DataProductViewer = observer(
-  (props: { dataSpaceViewerState: DataProductViewerState }) => {
+export const TerminalProductViewer = observer(
+  (props: { dataSpaceViewerState: TerminalProductViewerState }) => {
     const { dataSpaceViewerState } = props;
     const frame = useRef<HTMLDivElement>(null);
     const [showFullHeader, setShowFullHeader] = useState(false);
@@ -146,6 +100,7 @@ export const DataProductViewer = observer(
     useEffect(() => {
       if (frame.current) {
         dataSpaceViewerState.layoutState.setFrame(frame.current);
+      } else {
       }
     }, [dataSpaceViewerState]);
 
@@ -156,8 +111,8 @@ export const DataProductViewer = observer(
           className="data-space__viewer__body"
           onScroll={onScroll}
         >
-          <DataProductHeader
-            dataProductViewerState={dataSpaceViewerState}
+          <TerminalProductHeader
+            terminalProductViewerState={dataSpaceViewerState}
             showFullHeader={showFullHeader}
           />
           {dataSpaceViewerState.layoutState.isTopScrollerVisible && (
@@ -186,7 +141,9 @@ export const DataProductViewer = observer(
             )}
           >
             <div className="data-space__viewer__content">
-              <DataProductWiki dataProductViewerState={dataSpaceViewerState} />
+              <TerminalProductWiki
+                terminalProductViewerState={dataSpaceViewerState}
+              />
             </div>
           </div>
         </div>

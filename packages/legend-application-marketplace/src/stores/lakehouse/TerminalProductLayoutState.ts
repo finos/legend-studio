@@ -16,24 +16,19 @@
 
 import { NAVIGATION_ZONE_SEPARATOR } from '@finos/legend-application';
 import { action, computed, makeObservable, observable } from 'mobx';
-import { type DataProductViewerState } from './DataProductViewerState.js';
+import { type TerminalProductViewerState } from './TerminalProductViewerState.js';
 import { isNonNullable } from '@finos/legend-shared';
 import {
-  DATA_PRODUCT_VIEWER_SECTION,
+  TERMINAL_PRODUCT_VIEWER_SECTION,
   generateAnchorForSection,
 } from './DataProductViewerNavigation.js';
+import {
+  type DataProductPageNavigationCommand,
+  DATA_PRODUCT_VIEWER_ANCHORS,
+} from './DataProductLayoutState.js';
 
-//Handles layout and wiki style viewer
-export const DATA_PRODUCT_VIEWER_ANCHORS = Object.values(
-  DATA_PRODUCT_VIEWER_SECTION,
-).map((activity) => generateAnchorForSection(activity));
-
-export type DataProductPageNavigationCommand = {
-  anchor: string;
-};
-
-export class DataProductLayoutState {
-  readonly dataProductViewerState: DataProductViewerState;
+export class TerminalProductLayoutState {
+  readonly terminalProductViewerState: TerminalProductViewerState;
 
   currentNavigationZone = '';
   isExpandedModeEnabled = false;
@@ -47,9 +42,9 @@ export class DataProductLayoutState {
   private wikiPageVisibleAnchors: string[] = [];
   private wikiPageScrollIntersectionObserver?: IntersectionObserver | undefined;
 
-  constructor(dataProductViewerState: DataProductViewerState) {
+  constructor(terminalProductViewerState: TerminalProductViewerState) {
     makeObservable<
-      DataProductLayoutState,
+      TerminalProductLayoutState,
       | 'wikiPageAnchorIndex'
       | 'wikiPageVisibleAnchors'
       | 'updatePageVisibleAnchors'
@@ -73,7 +68,7 @@ export class DataProductLayoutState {
       updatePageVisibleAnchors: action,
     });
 
-    this.dataProductViewerState = dataProductViewerState;
+    this.terminalProductViewerState = terminalProductViewerState;
   }
 
   setCurrentNavigationZone(val: string): void {
@@ -93,7 +88,7 @@ export class DataProductLayoutState {
   registerWikiPageScrollObserver(): void {
     if (this.frame && this.isWikiPageFullyRendered) {
       const wikiPageIntersectionObserver = new IntersectionObserver(
-        (entries, observer) => {
+        (entries) => {
           const anchorsWithVisibilityChanged = entries
             .map((entry) => {
               for (const [key, element] of this.wikiPageAnchorIndex.entries()) {
