@@ -63,6 +63,12 @@ import {
   BuildingIcon,
   Tooltip,
   InfoCircleIcon,
+  ResizablePanelGroup,
+  ResizablePanel,
+  MarkdownTextViewer,
+  ResizablePanelSplitter,
+  EyeIcon,
+  CloseEyeIcon,
   Checkbox,
 } from '@finos/legend-art';
 import React, {
@@ -1156,49 +1162,100 @@ const HomeTab = observer(
     > = (event) => {
       dataProduct_setDescription(product, event.target.value);
     };
-
+    const [showPreview, setshowPreview] = useState(false);
     return (
-      <div style={{ flexDirection: 'column', display: 'flex' }}>
-        <PanelFormTextField
-          name="Title"
-          value={product.title}
-          prompt="Provide a descriptive name for the Data Product to appear in Marketplace."
-          update={updateDataProductTitle}
-          placeholder="Enter title"
-        />
-        <div style={{ margin: '1rem' }}>
-          <div className="panel__content__form__section__header__label">
-            Description
-          </div>
-          <div
-            className="panel__content__form__section__header__prompt"
-            style={{
-              color:
-                product.description === '' || product.description === undefined
-                  ? 'var(--color-red-300)'
-                  : 'var(--color-light-grey-400)',
-            }}
-          >
-            Clearly describe the purpose, content, and intended use of the Data
-            Product.
-          </div>
-          <textarea
-            className="panel__content__form__section__textarea"
-            spellCheck={false}
-            disabled={isReadOnly}
-            value={product.description}
-            onChange={updateDataProductDescription}
-            style={{
-              padding: '0.5rem',
-              width: '45rem',
-              maxWidth: '45rem !important',
-              borderColor:
-                product.description === '' || product.description === undefined
-                  ? 'var(--color-red-300)'
-                  : 'transparent',
-            }}
-          />
-        </div>
+      <div className="panel__content">
+        <ResizablePanelGroup orientation="vertical">
+          <ResizablePanel>
+            <PanelFormTextField
+              name="Title"
+              value={product.title}
+              prompt="Provide a descriptive name for the Data Product to appear in Marketplace."
+              update={updateDataProductTitle}
+              placeholder="Enter title"
+            />
+            <div style={{ margin: '1rem' }}>
+              <div
+                className="panel__content__form__section__header__label"
+                style={{ justifyContent: 'space-between', width: '45rem' }}
+              >
+                Description
+                <button
+                  className="btn__dropdown-combo__label"
+                  onClick={() => setshowPreview(!showPreview)}
+                  title={showPreview ? 'Hide Preview' : 'Preview Description'}
+                  tabIndex={-1}
+                  style={{
+                    width: '12rem',
+                    justifyContent: 'center',
+                  }}
+                >
+                  {showPreview ? (
+                    <>
+                      <CloseEyeIcon className="btn__dropdown-combo__label__icon" />
+                      <div className="btn__dropdown-combo__label__title">
+                        Hide Preview
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <EyeIcon className="btn__dropdown-combo__label__icon" />
+                      <div className="btn__dropdown-combo__label__title">
+                        Preview
+                      </div>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              <div
+                className="panel__content__form__section__header__prompt"
+                style={{
+                  color:
+                    product.description === '' ||
+                    product.description === undefined
+                      ? 'var(--color-red-300)'
+                      : 'var(--color-light-grey-400)',
+                  width: '45rem',
+                }}
+              >
+                Clearly describe the purpose, content, and intended use of the
+                Data Product. Markdown is supported.
+              </div>
+              <textarea
+                className="panel__content__form__section__textarea"
+                spellCheck={false}
+                disabled={isReadOnly}
+                value={product.description}
+                onChange={updateDataProductDescription}
+                style={{
+                  padding: '0.5rem',
+                  width: '45rem',
+                  height: '10rem',
+                  borderColor:
+                    product.description === '' ||
+                    product.description === undefined
+                      ? 'var(--color-red-300)'
+                      : 'transparent',
+                  resize: 'vertical',
+                  maxHeight: '100%',
+                  maxWidth: '100%',
+                }}
+              />
+            </div>
+          </ResizablePanel>
+          {showPreview && <ResizablePanelSplitter />}
+          {showPreview && (
+            <ResizablePanel>
+              <div className="text-element-editor__preview">
+                <MarkdownTextViewer
+                  value={{ value: product.description ?? '' }}
+                  className="text-element-editor__preview__markdown"
+                />
+              </div>
+            </ResizablePanel>
+          )}
+        </ResizablePanelGroup>
       </div>
     );
   },
