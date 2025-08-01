@@ -42,6 +42,7 @@ import {
 import {
   type V1_EntitlementsDataProductDetailsResponse,
   type V1_IngestEnvironment,
+  type TDSRowDataType,
   DataProductArtifactGeneration,
   GraphManagerState,
   V1_AdHocDeploymentDataProductOrigin,
@@ -55,6 +56,7 @@ import {
   V1_IngestEnvironmentClassification,
   V1_PureGraphManager,
   V1_SdlcDeploymentDataProductOrigin,
+  getRowDataFromExecutionResult,
 } from '@finos/legend-graph';
 import { DataProductViewerState } from './DataProductViewerState.js';
 import type { AuthContextProps } from 'react-oidc-context';
@@ -508,27 +510,21 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         yield this.marketplaceBaseStore.engineServerClient.getTerminalById(
           terminalId,
         );
-      const { columns, rows } = rawTerminalResponse.result;
+      const { rows } = rawTerminalResponse.result;
 
       if (!rows) {
         throw new Error('No result data found in API response');
       }
 
-      const terminalRowData = rows.map((row: any, rowIdx: number) => {
-        const rowObject: Record<string, any> = {};
-        row.values.forEach((value: any, colIdx: number) => {
-          rowObject[columns[colIdx] as string] = value;
-        });
-        rowObject.rowNumber = rowIdx;
-        return rowObject;
-      });
-
+      const terminalRowData =
+        getRowDataFromExecutionResult(rawTerminalResponse);
       const matchingRows = terminalRowData.filter(
         (row: any) => row.id == terminalId,
       );
 
-      const terminalProducts: V1_Terminal[] = matchingRows.map((rowData: any) =>
-        deserialize(V1_TerminalModelSchema, rowData),
+      const terminalProducts: V1_Terminal[] = matchingRows.map(
+        (rowData: TDSRowDataType) =>
+          deserialize(V1_TerminalModelSchema, rowData),
       );
       this.setTerminalProducts(terminalProducts);
       this.loadingProductState.complete();
