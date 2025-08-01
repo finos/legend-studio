@@ -54,8 +54,8 @@ export class DataProductViewerState {
   readonly graphManagerState: GraphManagerState;
   readonly layoutState: DataProductLayoutState;
 
-  readonly product: V1_DataProduct;
-  readonly entitlementsDataProductDetails: V1_EntitlementsDataProductDetails;
+  readonly product: V1_DataProduct; //terminal
+  readonly entitlementsDataProductDetails: V1_EntitlementsDataProductDetails; //No entitlements?
   readonly viewDataProductSource: () => void;
   readonly onZoneChange?:
     | ((zone: NavigationZone | undefined) => void)
@@ -63,13 +63,14 @@ export class DataProductViewerState {
 
   // we may want to move this out eventually
   readonly lakeServerClient: LakehouseContractServerClient;
-  accessState: DataProductDataAccessState;
+  accessState: DataProductDataAccessState; //No access group needed
   associatedContracts: V1_DataContract[] | undefined;
   dataContractAccessPointGroup: V1_AccessPointGroup | undefined;
   dataContract: V1_DataContract | undefined;
 
   creatingContractState = ActionState.create();
 
+  //need something similar
   constructor(
     applicationStore: LegendMarketplaceApplicationStore,
     lakehouseStore: MarketplaceLakehouseStore,
@@ -82,6 +83,7 @@ export class DataProductViewerState {
       onZoneChange?: ((zone: NavigationZone | undefined) => void) | undefined;
     },
   ) {
+    //need this
     makeObservable(this, {
       isVerified: computed,
       accessState: observable,
@@ -120,6 +122,7 @@ export class DataProductViewerState {
   setDataContract(val: V1_DataContract | undefined) {
     this.dataContract = val;
   }
+  //nope
   *fetchContracts(token: string | undefined): GeneratorFn<void> {
     try {
       this.accessState.accessGroupStates.forEach((e) =>
@@ -159,6 +162,7 @@ export class DataProductViewerState {
       );
     }
   }
+  //nope
   *createContract(
     consumer: V1_OrganizationalScope,
     description: string,

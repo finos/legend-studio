@@ -22,6 +22,8 @@ import {
 import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
 import {
+  type TDSResultCellData,
+  type TDSRowDataType,
   type AbstractPropertyExpression,
   type Enumeration,
   type ExecutionResult,
