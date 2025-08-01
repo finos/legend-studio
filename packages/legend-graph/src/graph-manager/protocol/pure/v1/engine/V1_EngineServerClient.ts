@@ -23,6 +23,7 @@ import {
   HttpHeader,
   NetworkClient,
 } from '@finos/legend-shared';
+import type { TDSExecutionResult } from '../../../../../graph-manager/action/execution/ExecutionResult.js';
 import type { V1_PureModelContextData } from '../model/context/V1_PureModelContextData.js';
 import type {
   V1_LambdaReturnTypeInput,
@@ -41,7 +42,6 @@ import type { V1_ExecuteInput } from './execution/V1_ExecuteInput.js';
 import type { V1_PureModelContext } from '../model/context/V1_PureModelContext.js';
 import type { V1_ExecutionPlan } from '../model/executionPlan/V1_ExecutionPlan.js';
 import type { V1_LightQuery, V1_Query } from './query/V1_Query.js';
-import type { V1_Terminal } from '../model/packageableElements/dataProduct/V1_Terminal.js';
 import type { V1_ServiceStorage } from './service/V1_ServiceStorage.js';
 import type { GenerationMode } from '../../../../../graph-manager/action/generation/GenerationConfigurationDescription.js';
 import type { V1_QuerySearchSpecification } from './query/V1_QuerySearchSpecification.js';
@@ -236,11 +236,12 @@ export class V1_EngineServerClient extends AbstractServerClient {
 
   _marketplace = (): string => `${this.baseUrl}/user/marketplace/terminals`;
 
-  getTerminals = (): Promise<PlainObject<V1_Terminal>[]> => {
+  getTerminals = (): Promise<TDSExecutionResult> => {
     return this.get(this._marketplace());
   };
 
-  getTerminalById = (id: string): Promise<PlainObject<V1_Terminal>[]> => {
+  getTerminalById = (id: string): Promise<TDSExecutionResult> => {
+    console.log(`${this._marketplace()}/${id}`);
     return this.get(`${this._marketplace()}/${id}`);
   };
 
