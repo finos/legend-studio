@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.1.61
+
+### Patch Changes
+
+- [#4322](https://github.com/finos/legend-studio/pull/4322) [`df6995a`](https://github.com/finos/legend-studio/commit/df6995ae0ef50c0042870e066c445cb60d071111) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Added render artifact button in activator that creates a dialog to display json for the artifact.
+
 ## 32.1.60
 
 ### Patch Changes
