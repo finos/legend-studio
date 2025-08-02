@@ -46,6 +46,7 @@ import {
   DataElementReferenceState,
   ExternalFormatDataState,
   RelationalCSVDataState,
+  RelationalTestDataState,
   ModelStoreDataState,
   ModelEmbeddedDataState,
 } from '../../../../stores/editor/editor-state/element-editor-state/data/EmbeddedDataState.js';
@@ -60,6 +61,7 @@ import {
   type PackageableElementOption,
 } from '@finos/legend-lego/graph-editor';
 import { RelationalCSVDataEditor } from './RelationalCSVDataEditor.js';
+import { RelationalTestDataEditor } from './RelationalTestDataEditor.js';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 import { getEditorLanguageForFormat } from '../../../../stores/editor/editor-state/ArtifactGenerationViewerState.js';
 import { useApplicationNavigationContext } from '@finos/legend-application';
@@ -386,6 +388,13 @@ export function renderEmbeddedDataEditor(
   } else if (embeddedDataState instanceof RelationalCSVDataState) {
     return (
       <RelationalCSVDataEditor
+        dataState={embeddedDataState}
+        isReadOnly={isReadOnly}
+      />
+    );
+  } else if (embeddedDataState instanceof RelationalTestDataState) {
+    return (
+      <RelationalTestDataEditor
         dataState={embeddedDataState}
         isReadOnly={isReadOnly}
       />

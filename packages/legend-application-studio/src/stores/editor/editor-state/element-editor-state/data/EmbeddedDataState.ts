@@ -64,6 +64,9 @@ export const createEmbeddedData = (
   } else if (type === EmbeddedDataType.RELATIONAL_CSV) {
     const relational = new RelationalCSVData();
     return relational;
+  } else if (type === EmbeddedDataType.RELATIONAL_TEST_DATA) {
+    const testData = new RelationalCSVData();
+    return testData;
   } else if (type === EmbeddedDataType.MODEL_STORE_DATA) {
     const modelStoreData = new ModelStoreData();
     return modelStoreData;
@@ -219,6 +222,218 @@ export class RelationalCSVDataTableState {
   }
 }
 
+export interface TestDataColumn {
+  name: string;
+  type: string;
+}
+
+export interface TestDataRow {
+  [columnName: string]: string;
+}
+
+export class RelationalTestDataState extends EmbeddedDataState {
+  columns: TestDataColumn[] = [];
+  rows: TestDataRow[] = [];
+  showImportCSVModal = false;
+
+  constructor(editorStore: EditorStore, embeddedData: EmbeddedData) {
+    super(editorStore, embeddedData);
+    makeObservable(this, {
+      columns: observable,
+      rows: observable,
+      showImportCSVModal: observable,
+      addColumn: action,
+      removeColumn: action,
+      updateColumn: action,
+      addRow: action,
+      removeRow: action,
+      updateRow: action,
+      importCSV: action,
+      setShowImportCSVModal: action,
+    });
+  }
+
+  label(): string {
+    return 'Relational Test Data';
+  }
+
+  addColumn(name: string, type: string): void {
+    this.columns.push({ name, type });
+    this.rows.forEach((row) => {
+      row[name] = '';
+    });
+  }
+
+  removeColumn(index: number): void {
+    const columnName = this.columns[index]?.name;
+    if (columnName) {
+      this.columns.splice(index, 1);
+      this.rows.forEach((row) => {
+        delete row[columnName];
+      });
+    }
+  }
+
+  updateColumn(index: number, name: string, type: string): void {
+    const oldName = this.columns[index]?.name;
+    if (oldName && oldName !== name) {
+      this.rows.forEach((row) => {
+        if (oldName in row) {
+          row[name] = row[oldName];
+          delete row[oldName];
+        }
+      });
+    }
+    this.columns[index] = { name, type };
+  }
+
+  addRow(): void {
+    const newRow: TestDataRow = {};
+    this.columns.forEach((col) => {
+      newRow[col.name] = '';
+    });
+    this.rows.push(newRow);
+  }
+
+  removeRow(index: number): void {
+    this.rows.splice(index, 1);
+  }
+
+  updateRow(rowIndex: number, columnName: string, value: string): void {
+    if (this.rows[rowIndex]) {
+      this.rows[rowIndex][columnName] = value;
+    }
+  }
+
+  setShowImportCSVModal(show: boolean): void {
+    this.showImportCSVModal = show;
+  }
+
+  importCSV(csvContent: string): void {
+    const lines = csvContent.trim().split('\n');
+    if (lines.length === 0) {
+      return;
+    }
+
+    const headers = this.parseCSVLine(lines[0]);
+    this.columns = headers.map((header) => ({
+      name: header,
+      type: this.detectColumnType(lines.slice(1), headers.indexOf(header)),
+    }));
+
+    this.rows = lines.slice(1).map((line) => {
+      const values = this.parseCSVLine(line);
+      const row: TestDataRow = {};
+      headers.forEach((header, index) => {
+        row[header] = values[index] ?? '';
+      });
+      return row;
+    });
+  }
+
+  private parseCSVLine(line: string): string[] {
+    const result: string[] = [];
+    let current = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      if (char === '"') {
+        inQuotes = !inQuotes;
+      } else if (char === ',' && !inQuotes) {
+        result.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    result.push(current.trim());
+    return result;
+  }
+
+  private detectColumnType(dataRows: string[], columnIndex: number): string {
+    const values = dataRows
+      .map((row) => this.parseCSVLine(row)[columnIndex])
+      .filter((v) => v);
+    if (values.length === 0) {
+      return 'VARCHAR';
+    }
+
+    const isInteger = values.every((v) => /^\d+$/.test(v));
+    if (isInteger) {
+      return 'INTEGER';
+    }
+
+    const isDecimal = values.every((v) => /^\d*\.?\d+$/.test(v));
+    if (isDecimal) {
+      return 'DECIMAL';
+    }
+
+    const isDate = values.every((v) => !isNaN(Date.parse(v)));
+    if (isDate) {
+      return 'DATE';
+    }
+
+    return 'VARCHAR';
+  }
+
+  exportCSV(): string {
+    const headers = this.columns.map((col) => col.name);
+    const csvLines = [headers.join(',')];
+
+    this.rows.forEach((row) => {
+      const values = headers.map((header) => {
+        const value = row[header] ?? '';
+        if (value.includes(',') || value.includes('"')) {
+          return `"${value.replace(/"/g, '""')}"`;
+        }
+        return value;
+      });
+      csvLines.push(values.join(','));
+    });
+
+    return csvLines.join('\n');
+  }
+
+  exportJSON(): string {
+    return JSON.stringify(
+      {
+        columns: this.columns,
+        data: this.rows,
+      },
+      null,
+      2,
+    );
+  }
+
+  exportSQL(): string {
+    if (this.columns.length === 0 || this.rows.length === 0) {
+      return '';
+    }
+
+    const tableName = 'test_data';
+    const columnDefs = this.columns
+      .map((col) => `${col.name} ${col.type}`)
+      .join(', ');
+    const createTable = `CREATE TABLE ${tableName} (${columnDefs});`;
+
+    const insertStatements = this.rows.map((row) => {
+      const values = this.columns
+        .map((col) => {
+          const value = row[col.name] ?? '';
+          if (col.type === 'VARCHAR' || col.type === 'DATE') {
+            return `'${value.replace(/'/g, "''")}'`;
+          }
+          return value || 'NULL';
+        })
+        .join(', ');
+      return `INSERT INTO ${tableName} VALUES (${values});`;
+    });
+
+    return [createTable, '', ...insertStatements].join('\n');
+  }
+}
+
 export class RelationalCSVDataState extends EmbeddedDataState {
   override embeddedData: RelationalCSVData;
   selectedTable: RelationalCSVDataTableState | undefined;
@@ -309,6 +524,7 @@ export class RelationalCSVDataState extends EmbeddedDataState {
 }
 export interface EmbeddedDataStateOption {
   hideSource?: boolean;
+  isTestData?: boolean;
 }
 export class UnsupportedDataState extends EmbeddedDataState {
   label(): string {
@@ -373,6 +589,9 @@ export function buildEmbeddedDataEditorState(
       options?.hideSource,
     );
   } else if (embeddedData instanceof RelationalCSVData) {
+    if (options?.isTestData) {
+      return new RelationalTestDataState(editorStore, embeddedData);
+    }
     return new RelationalCSVDataState(editorStore, embeddedData);
   } else if (embeddedData instanceof DataElementReference) {
     return new DataElementReferenceState(editorStore, embeddedData, options);

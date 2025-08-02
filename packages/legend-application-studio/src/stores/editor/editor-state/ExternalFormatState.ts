@@ -36,6 +36,7 @@ export enum EmbeddedDataType {
   MODEL_STORE_DATA = 'MODEL_STORE',
   RELATIONAL_CSV = 'RELATIONAL',
   DATA_ELEMENT = 'DATA_ELEMENT',
+  RELATIONAL_TEST_DATA = 'RELATIONAL_TEST_DATA',
 }
 
 export class ExternalFormatState {
