@@ -102,12 +102,16 @@ export interface ApplicationNavigator {
   getCurrentLocation(): NavigationLocation;
   getCurrentLocationParameters<
     T extends Record<string, NavigationLocationParameterValue>,
-  >(
-    replaceUrlSafeBase64Characters?: boolean,
-  ): T;
+  >(options?: {
+    replaceUrlSafeBase64Characters?: boolean | undefined;
+    sanitizeParametersInsteadOfUrl?: boolean | undefined;
+  }): T;
   getCurrentLocationParameterValue(
     key: string,
-    replaceUrlSafeBase64Characters?: boolean,
+    options?: {
+      replaceUrlSafeBase64Characters?: boolean | undefined;
+      sanitizeParametersInsteadOfUrl?: boolean | undefined;
+    },
   ): NavigationLocationParameterValue;
 
   getCurrentZone(): NavigationZone;

@@ -256,7 +256,9 @@ export const MarketplaceLakehouseSearchResults = withMarketplaceLakehouseStore(
     const searchQuery =
       applicationStore.navigationService.navigator.getCurrentLocationParameterValue(
         LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN.QUERY,
-        true,
+        {
+          sanitizeParametersInsteadOfUrl: true,
+        },
       );
     marketPlaceStore.handleSearch(searchQuery);
 
