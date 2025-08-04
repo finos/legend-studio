@@ -24,14 +24,17 @@
   width: 100%;
   background: var(--color-white);
 
-  &__input {
+  &__text-field {
     height: 100%;
-    padding: 0 2rem;
     font-size: 2rem;
 
     .MuiInputBase-root {
       height: 100%;
     }
+  }
+
+  &__input {
+    padding: 0 2rem;
   }
 
   input {

@@ -44,7 +44,7 @@ export const LegendMarketplaceSearchBar = (props: {
       }}
     >
       <TextField
-        className="legend-marketplace__search-bar__input"
+        className="legend-marketplace__search-bar__text-field"
         type="search"
         placeholder={placeholder ?? 'Search'}
         fullWidth={true}
@@ -55,6 +55,7 @@ export const LegendMarketplaceSearchBar = (props: {
         }}
         slotProps={{
           input: {
+            className: 'legend-marketplace__search-bar__input',
             endAdornment: (
               <InputAdornment position="end">
                 <SearchIcon />
