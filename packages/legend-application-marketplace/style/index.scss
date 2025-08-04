@@ -21,6 +21,7 @@
 @forward 'components/data-product-viewer';
 @forward 'components/dataContract-creator';
 @forward 'components/header';
+@forward 'components/lakehouse-data-product-card';
 @forward 'components/legend-marketplace-card';
 @forward 'components/multi-user-cell-renderer';
 @forward 'components/notification';
@@ -41,6 +42,7 @@
 @forward 'pages/lakehouse/lakehouse-entitlements';
 @forward 'pages/lakehouse/lakehouse-home';
 @forward 'pages/lakehouse/lakehouse-oauth-callback';
+@forward 'pages/lakehouse/lakehouse-search-results';
 @forward 'pages/lakehouse/lakehouse-subscriptions';
 
 :root {

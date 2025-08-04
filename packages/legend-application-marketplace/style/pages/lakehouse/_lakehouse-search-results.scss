@@ -16,12 +16,12 @@
 
 @use 'mixins' as *;
 
-.marketplace-lakehouse-home {
+.marketplace-lakehouse-search-results {
   &__search-container {
     @include flexCenter;
 
     flex-direction: column;
-    min-height: 60vh;
+    min-height: 20rem;
     max-width: 100%;
     width: 100%;
     gap: 3rem;
@@ -29,11 +29,6 @@
     background-size: cover;
     background-repeat: no-repeat;
     background-attachment: fixed;
-
-    &__title {
-      color: var(--color-white);
-      font-size: 4rem;
-    }
   }
 
   &__search-bar {
@@ -47,5 +42,43 @@
       width: unset;
       margin-right: 1rem;
     }
+  }
+
+  &__results-container {
+    display: flex;
+    padding: 2rem;
+    gap: 2rem;
+  }
+
+  &__sort-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    font-size: 1.8rem;
+    min-width: 20rem;
+
+    &__filter {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+
+      .MuiSvgIcon-root {
+        font-size: 2rem;
+      }
+
+      .MuiTypography-root {
+        font-size: 1.2rem;
+      }
+    }
+  }
+
+  &__data-product-cards {
+    width: 100%;
+    justify-content: start;
+  }
+
+  &__loading-data-products-indicator {
+    position: relative;
+    height: 32rem;
   }
 }
