@@ -29,6 +29,7 @@ import {
   CubesLoadingIndicatorIcon,
 } from '@finos/legend-art';
 import { generateLakehouseSearchResultsRoute } from '../../__lib__/LegendMarketplaceNavigation.js';
+import { isNonEmptyString } from '@finos/legend-shared';
 
 export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
   observer(() => {
@@ -45,9 +46,11 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
       marketplaceStore.loadingLakehouseEnvironmentsByDIDState.isInProgress;
 
     const handleSearch = (query: string | undefined): void => {
-      marketplaceStore.applicationStore.navigationService.navigator.goToLocation(
-        generateLakehouseSearchResultsRoute(query),
-      );
+      if (isNonEmptyString(query)) {
+        marketplaceStore.applicationStore.navigationService.navigator.goToLocation(
+          generateLakehouseSearchResultsRoute(query),
+        );
+      }
     };
 
     return (
