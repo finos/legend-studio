@@ -20,9 +20,7 @@
   @include flexVCenter;
 
   height: 6rem;
-  border-radius: 3rem;
   width: 100%;
-  background: var(--color-white);
 
   &__text-field {
     height: 100%;
@@ -35,6 +33,8 @@
   &__input {
     padding: 0 2rem;
     font-size: 1.6rem;
+    background: var(--color-white);
+    border-radius: 3rem;
   }
 
   input {

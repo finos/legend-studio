@@ -58,7 +58,9 @@ export const LegendMarketplaceSearchBar = (props: {
             className: 'legend-marketplace__search-bar__input',
             endAdornment: (
               <InputAdornment position="end">
-                <SearchIcon />
+                <SearchIcon
+                  onClick={() => onSearch?.(undefined, searchQuery)}
+                />
               </InputAdornment>
             ),
           },
