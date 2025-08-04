@@ -23,6 +23,8 @@ import type {
 import type { V1_OrganizationalScope } from '@finos/legend-graph';
 import type { LegendMarketplaceBaseStore } from '../stores/LegendMarketplaceBaseStore.js';
 import type React from 'react';
+import type { MarketplaceLakehouseStore } from '../stores/lakehouse/MarketplaceLakehouseStore.js';
+import type { DataProductState } from '../stores/lakehouse/dataProducts/DataProducts.js';
 
 export type ContractConsumerTypeRendererConfig = {
   type: string;
@@ -51,6 +53,15 @@ export abstract class LegendMarketplaceApplicationPlugin extends LegendApplicati
   install(pluginManager: LegendMarketplacePluginManager): void {
     pluginManager.registerApplicationPlugin(this);
   }
+
+  /**
+   * Callback to return a list of data products to be displayed on the home page.
+   *
+   * @param marketplaceStore
+   */
+  async getHomePageDataProducts?(
+    marketplaceStore: MarketplaceLakehouseStore,
+  ): Promise<DataProductState[] | undefined>;
 
   /**
    * Config to handle different types of contract consumers, including configuration for:
