@@ -124,6 +124,7 @@ export enum V1_ClassInstanceType {
   COL_SPEC = 'colSpec',
   COL_SPEC_ARRAY = 'colSpecArray',
   RELATION_STORE_ACCESSOR = '>',
+  INGEST_ACCESSOR = 'I',
 
   TDS_AGGREGATE_VALUE = 'tdsAggregateValue',
   TDS_COLUMN_INFORMATION = 'tdsColumnInformation',

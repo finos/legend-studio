@@ -51,6 +51,17 @@ export const setup = (outputDir, dataCubeDocsDir) => {
         query: {
           url: 'http://localhost:9001/query',
         },
+        lakehouse: {
+          platformUrl: 'https://testLakehousePlatformUrl',
+        },
+        oidcConfig: {
+          redirectPath: '/callback',
+          silentRedirectPath: '/callback?silent=true',
+          authProviderProps: {
+            authority: 'http://localhost:8080/auth',
+            client_id: 'test-client-id',
+          },
+        },
         documentation: {
           url: 'https://legend.finos.org',
           registry: [],

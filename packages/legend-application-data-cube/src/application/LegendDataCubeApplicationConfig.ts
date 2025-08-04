@@ -23,6 +23,7 @@ import {
   assertNonNullable,
   guaranteeNonEmptyString,
 } from '@finos/legend-shared';
+import { type AuthProviderProps } from 'react-oidc-context';
 
 export interface LegendDataCubeApplicationConfigurationData
   extends LegendApplicationConfigurationData {
@@ -36,14 +37,26 @@ export interface LegendDataCubeApplicationConfigurationData
   studio?: {
     url: string;
   };
+  lakehouse: {
+    platformUrl: string;
+  };
+  oidcConfig?: LegendDataCubeOidcConfig | undefined;
+}
+
+export interface LegendDataCubeOidcConfig {
+  redirectPath: string;
+  silentRedirectPath: string;
+  authProviderProps: AuthProviderProps;
 }
 
 export class LegendDataCubeApplicationConfig extends LegendApplicationConfig {
   readonly engineServerUrl: string;
   readonly depotServerUrl: string;
+  readonly lakehousePlatformUrl: string;
   readonly engineQueryServerUrl?: string | undefined;
   readonly queryApplicationUrl?: string | undefined;
   readonly studioApplicationUrl?: string | undefined;
+  readonly dataCubeOidcConfig?: LegendDataCubeOidcConfig | undefined;
 
   constructor(
     input: LegendApplicationConfigurationInput<LegendDataCubeApplicationConfigurationData>,
@@ -79,6 +92,18 @@ export class LegendDataCubeApplicationConfig extends LegendApplicationConfig {
       ),
     );
 
+    //lakehouse
+    assertNonNullable(
+      input.configData.lakehouse,
+      `Can't configure application: 'lakehouse' field is missing`,
+    );
+    this.lakehousePlatformUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+      guaranteeNonEmptyString(
+        input.configData.lakehouse.platformUrl,
+        `Can't configure application: 'lakehouse.platformUrl' field is missing or empty`,
+      ),
+    );
+
     // query
     if (input.configData.query?.url) {
       this.queryApplicationUrl = LegendApplicationConfig.resolveAbsoluteUrl(
@@ -91,6 +116,8 @@ export class LegendDataCubeApplicationConfig extends LegendApplicationConfig {
         input.configData.studio.url,
       );
     }
+
+    this.dataCubeOidcConfig = input.configData.oidcConfig;
   }
   getDefaultApplicationStorageKey(): string {
     return 'legend-data-cube';

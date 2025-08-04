@@ -24,11 +24,15 @@ import type {
   IngestDefinitionDeploymentResponse,
   IngestDefinitionValidationResponse,
 } from './models/LakehouseIngestionDeploymentResponse.js';
-import type { IngestDeploymentServerConfig } from './models/IngestDeploymentServerConfig.js';
+import type {
+  IngestDeploymentServerConfig,
+  ProducerEnvironment,
+} from './models/IngestDeploymentServerConfig.js';
 import type { AdhocDataProductDeployResponse } from './models/AdhocDataProductDeployResponse.js';
 import type {
   V1_IngestEnvironment,
   V1_SandboxDataProductDeploymentResponse,
+  V1_IngestDefinition,
 } from '@finos/legend-graph';
 
 export class LakehouseIngestServerClient extends AbstractServerClient {
@@ -126,4 +130,40 @@ export class LakehouseIngestServerClient extends AbstractServerClient {
     token: string | undefined,
   ): Promise<PlainObject<V1_SandboxDataProductDeploymentResponse>> =>
     this.get(`${this._dataProduct(ingestServerUrl)}`, {}, this._token(token));
+
+  getProducerEnvironment = (
+    deploymentId: number,
+    ingestServerUrl: string | undefined,
+    token: string | undefined,
+  ): Promise<PlainObject<ProducerEnvironment>> =>
+    this.get(
+      `${this._ingest(ingestServerUrl)}/catalog-state/producer-environments/deployments/${deploymentId}`,
+      {},
+      this._token(token),
+    );
+
+  getIngestDefinitions = (
+    producerEnvironmentUrn: string,
+    ingestServerUrl: string | undefined,
+    token: string | undefined,
+  ): Promise<string[]> =>
+    this.get(
+      `${this._ingest(ingestServerUrl)}/catalog-state/producer-environments/${producerEnvironmentUrn}/definitions`,
+      {},
+      this._token(token),
+    );
+
+  getIngestDefinitionDetail = (
+    ingestDefinitionUrn: string,
+    ingestServerUrl: string | undefined,
+    token: string | undefined,
+  ): Promise<PlainObject<V1_IngestDefinition>> =>
+    this.get(
+      `${this._ingest(ingestServerUrl)}/catalog-state/definitions/details`,
+      {},
+      this._token(token),
+      {
+        ingestDefinitionUrn: ingestDefinitionUrn,
+      },
+    );
 }
