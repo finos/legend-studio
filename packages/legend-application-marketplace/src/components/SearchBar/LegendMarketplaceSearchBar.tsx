@@ -15,7 +15,7 @@
  */
 
 import { type JSX, useState } from 'react';
-import { Button, InputAdornment, TextField } from '@mui/material';
+import { InputAdornment, TextField } from '@mui/material';
 import { clsx, SearchIcon } from '@finos/legend-art';
 
 export interface Vendor {
@@ -58,19 +58,14 @@ export const LegendMarketplaceSearchBar = (props: {
         }}
         slotProps={{
           input: {
-            startAdornment: (
-              <InputAdornment position="start">
+            endAdornment: (
+              <InputAdornment position="end">
                 <SearchIcon />
               </InputAdornment>
             ),
           },
         }}
       />
-      {onSearch && (
-        <Button type="submit" variant="contained" disabled={!searchQuery}>
-          Go
-        </Button>
-      )}
     </form>
   );
 };
