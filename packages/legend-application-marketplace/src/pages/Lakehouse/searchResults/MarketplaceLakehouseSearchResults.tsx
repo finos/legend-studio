@@ -73,15 +73,15 @@ const SearchResultsSortFilterPanel = observer(
       );
 
     return (
-      <Box className="marketplace-lakehouse-home__sort-filters">
-        <Box className="marketplace-lakehouse-home__sort-filters__sort">
+      <Box className="marketplace-lakehouse-search-results__sort-filters">
+        <Box className="marketplace-lakehouse-search-results__sort-filters__sort">
           Sort By
           <Box>
             <Button
               onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
                 setSortMenuAnchorEl(event.currentTarget);
               }}
-              className="marketplace-lakehouse-home__sort-filters__sort__btn"
+              className="marketplace-lakehouse-search-results__sort-filters__sort__btn"
             >
               {marketplaceStore.sort}
               <ExpandMoreIcon />
@@ -115,7 +115,7 @@ const SearchResultsSortFilterPanel = observer(
             </Menu>
           </Box>
         </Box>
-        <Box className="marketplace-lakehouse-home__sort-filters__filter">
+        <Box className="marketplace-lakehouse-search-results__sort-filters__filter">
           Filter By
           <Box>
             <FormLabel>Deploy Type</FormLabel>

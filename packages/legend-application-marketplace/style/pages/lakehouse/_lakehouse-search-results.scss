@@ -21,7 +21,7 @@
     @include flexCenter;
 
     flex-direction: column;
-    min-height: 10rem;
+    min-height: 15rem;
     max-width: 100%;
     width: 100%;
     gap: 3rem;
@@ -34,8 +34,7 @@
   &__search-bar {
     @include flexVCenter;
 
-    margin-bottom: 2rem;
-    width: 80rem;
+    width: clamp(32rem, 50vw, 64rem);
 
     .legend-marketplace__search-bar {
       flex: 1;
