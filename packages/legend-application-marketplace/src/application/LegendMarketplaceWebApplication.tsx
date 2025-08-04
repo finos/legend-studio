@@ -63,6 +63,7 @@ import { LegendMarketplaceOrders } from '../pages/Profile/LegendMarketplaceOrder
 import { LegendMarketplaceComingSoon } from '../pages/Home/LegendMarketplaceComingSoon.js';
 import { MarketplaceLakehouseOAuthCallback } from '../pages/Lakehouse/MarketplaceLakehouseOAuthCallback.js';
 import { LakehouseSDLCDataProduct } from '../pages/Lakehouse/dataProduct/LakehouseSDLCDataProduct.js';
+import { MarketplaceLakehouseSearchResults } from '../pages/Lakehouse/searchResults/MarketplaceLakehouseSearchResults.js';
 
 const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();
@@ -136,7 +137,7 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
   );
 
   const ProtectedLakehouseSearchResults = withAuthenticationRequired(
-    LegendMarketplaceSearchResults,
+    MarketplaceLakehouseSearchResults,
     {
       OnRedirecting: () => (
         <CubesLoadingIndicator isLoading={true}>
