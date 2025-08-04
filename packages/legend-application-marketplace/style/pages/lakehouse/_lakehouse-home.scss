@@ -25,13 +25,10 @@
     max-width: 100%;
     width: 100%;
     gap: 3rem;
-    background: var(--color-blue-300);
-    background: linear-gradient(
-      90deg,
-      var(--color-blue-500) 0%,
-      var(--color-blue-300) 50%,
-      var(--color-blue-500) 100%
-    );
+    background-image: url('/assets/HomeBackground.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
 
     &__title {
       color: var(--color-white);
