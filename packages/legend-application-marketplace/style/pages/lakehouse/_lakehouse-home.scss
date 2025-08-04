@@ -40,7 +40,7 @@
     @include flexVCenter;
 
     margin-bottom: 2rem;
-    width: 80rem;
+    width: clamp(20rem, 50vw, 40rem);
 
     .legend-marketplace__search-bar {
       flex: 1;
