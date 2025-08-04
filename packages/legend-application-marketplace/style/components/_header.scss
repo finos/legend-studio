@@ -20,7 +20,11 @@
   @include flexVCenter;
 
   height: var(--legend-marketplace-header-height);
-  background: var(--color-blue-500);
+  background-image: url('/assets/HomeBackground.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  box-shadow: none;
 
   &__menu__icon {
     color: var(--color-white);
