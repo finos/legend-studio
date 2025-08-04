@@ -263,7 +263,7 @@ export const MarketplaceLakehouseSearchResults = withMarketplaceLakehouseStore(
     marketPlaceStore.handleSearch(searchQuery);
 
     useEffect(() => {
-      marketPlaceStore.init(auth);
+      marketPlaceStore.init(auth.user?.access_token);
     }, [marketPlaceStore, auth]);
 
     const isLoadingDataProducts =

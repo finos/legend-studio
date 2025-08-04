@@ -472,19 +472,17 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     }
   }
 
-  *init(auth: AuthContextProps): GeneratorFn<void> {
+  *init(token?: string | undefined): GeneratorFn<void> {
     yield Promise.all([
       (async () => {
         if (!this.loadingAllProductsState.hasCompleted) {
-          await this.fetchDataProducts(auth.user?.access_token);
+          await this.fetchDataProducts(token);
         }
       })(),
       (async () => {
         if (!this.loadingLakehouseEnvironmentSummariesState.hasCompleted) {
-          await this.fetchLakehouseEnvironmentSummaries(
-            auth.user?.access_token,
-          );
-          await this.fetchLakehouseEnvironmentDetails(auth.user?.access_token);
+          await this.fetchLakehouseEnvironmentSummaries(token);
+          await this.fetchLakehouseEnvironmentDetails(token);
         }
       })(),
     ]);

@@ -46,7 +46,7 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-      marketplaceStore.init(auth);
+      marketplaceStore.init(auth.user?.access_token);
     }, [marketplaceStore, auth]);
 
     useEffect(() => {
