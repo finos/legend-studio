@@ -61,6 +61,7 @@ export abstract class LegendMarketplaceApplicationPlugin extends LegendApplicati
    */
   async getHomePageDataProducts?(
     marketplaceStore: MarketplaceLakehouseStore,
+    token?: string | undefined,
   ): Promise<DataProductState[] | undefined>;
 
   /**
