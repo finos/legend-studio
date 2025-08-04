@@ -279,24 +279,24 @@ export const MarketplaceLakehouseSearchResults = withMarketplaceLakehouseStore(
 
     return (
       <LegendMarketplacePage className="marketplace-lakehouse-search-results">
-        <Container className="marketplace-lakehouse-home__search-container">
+        <Container className="marketplace-lakehouse-search-results__search-container">
           <LegendMarketplaceSearchBar
             onSearch={handleSearch}
             placeholder="Search Legend Marketplace"
-            className="marketplace-lakehouse-home__search-bar"
+            className="marketplace-lakehouse-search-results__search-bar"
             initialValue={searchQuery}
           />
         </Container>
         <Container
           maxWidth="xxxl"
-          className="marketplace-lakehouse-home__results-container"
+          className="marketplace-lakehouse-search-results__results-container"
         >
           <SearchResultsSortFilterPanel marketplaceStore={marketPlaceStore} />
           <Grid
             container={true}
             spacing={{ xs: 2, sm: 3, xxl: 4 }}
             columns={{ xs: 1, sm: 2, xxl: 3 }}
-            className="marketplace-lakehouse-home__data-product-cards"
+            className="marketplace-lakehouse-search-results__data-product-cards"
           >
             {marketPlaceStore.filterSortProducts?.map((dataProductState) => (
               <Grid
@@ -320,7 +320,7 @@ export const MarketplaceLakehouseSearchResults = withMarketplaceLakehouseStore(
               <Grid size={1}>
                 <CubesLoadingIndicator
                   isLoading={true}
-                  className="marketplace-lakehouse-home__loading-data-products-indicator"
+                  className="marketplace-lakehouse-search-results__loading-data-products-indicator"
                 >
                   <CubesLoadingIndicatorIcon />
                 </CubesLoadingIndicator>
