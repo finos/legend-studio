@@ -30,9 +30,19 @@
     background-repeat: no-repeat;
     background-attachment: fixed;
 
+    &__logo {
+      margin-bottom: 6rem;
+
+      img {
+        max-height: 22rem;
+      }
+    }
+
     &__title {
       color: var(--color-white);
-      font-size: 4rem;
+      font-size: 5.5rem;
+      letter-spacing: 1rem;
+      text-transform: uppercase;
     }
   }
 
