@@ -43,6 +43,8 @@ import {
   type V1_EntitlementsDataProductDetailsResponse,
   type V1_IngestEnvironment,
   type TDSRowDataType,
+  type V1_Terminal,
+  type TDSExecutionResult,
   DataProductArtifactGeneration,
   GraphManagerState,
   V1_AdHocDeploymentDataProductOrigin,
@@ -51,7 +53,6 @@ import {
   V1_deserializeIngestEnvironment,
   V1_entitlementsDataProductDetailsResponseToDataProductDetails,
   V1_EntitlementsLakehouseEnvironmentType,
-  V1_Terminal,
   V1_TerminalModelSchema,
   V1_IngestEnvironmentClassification,
   V1_PureGraphManager,
@@ -502,24 +503,19 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     ]);
   }
 
-  *initWithTerminal(terminalId: string): GeneratorFn<any> {
+  *initWithTerminal(terminalId: string): GeneratorFn<void> {
     try {
       this.loadingProductState.inProgress();
 
-      const rawTerminalResponse =
-        yield this.marketplaceBaseStore.engineServerClient.getTerminalById(
+      const rawTerminalResponse: TDSExecutionResult =
+        (yield this.marketplaceBaseStore.engineServerClient.getTerminalById(
           terminalId,
-        );
-      const { rows } = rawTerminalResponse.result;
+        )) as TDSExecutionResult;
 
-      if (!rows) {
-        throw new Error('No result data found in API response');
-      }
-
-      const terminalRowData =
+      const terminalRowData: TDSRowDataType[] =
         getRowDataFromExecutionResult(rawTerminalResponse);
       const matchingRows = terminalRowData.filter(
-        (row: any) => row.id == terminalId,
+        (row: TDSRowDataType) => row.id === terminalId,
       );
 
       const terminalProducts: V1_Terminal[] = matchingRows.map(

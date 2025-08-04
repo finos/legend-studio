@@ -23,7 +23,6 @@ import {
   HttpHeader,
   NetworkClient,
 } from '@finos/legend-shared';
-import type { TDSExecutionResult } from '../../../../../graph-manager/action/execution/ExecutionResult.js';
 import type { V1_PureModelContextData } from '../model/context/V1_PureModelContextData.js';
 import type {
   V1_LambdaReturnTypeInput,
@@ -45,7 +44,10 @@ import type { V1_LightQuery, V1_Query } from './query/V1_Query.js';
 import type { V1_ServiceStorage } from './service/V1_ServiceStorage.js';
 import type { GenerationMode } from '../../../../../graph-manager/action/generation/GenerationConfigurationDescription.js';
 import type { V1_QuerySearchSpecification } from './query/V1_QuerySearchSpecification.js';
-import { EXECUTION_SERIALIZATION_FORMAT } from '../../../../../graph-manager/action/execution/ExecutionResult.js';
+import {
+  type TDSExecutionResult,
+  EXECUTION_SERIALIZATION_FORMAT,
+} from '../../../../../graph-manager/action/execution/ExecutionResult.js';
 import type { V1_ExternalFormatDescription } from './externalFormat/V1_ExternalFormatDescription.js';
 import type { V1_ExternalFormatModelGenerationInput } from './externalFormat/V1_ExternalFormatModelGeneration.js';
 import type { V1_GenerateSchemaInput } from './externalFormat/V1_GenerateSchemaInput.js';
