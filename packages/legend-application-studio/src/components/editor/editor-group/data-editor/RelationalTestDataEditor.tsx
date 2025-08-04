@@ -18,17 +18,13 @@ import { observer } from 'mobx-react-lite';
 import { useState, useRef } from 'react';
 import {
   BlankPanelPlaceholder,
-  ControlledDropdownMenu,
-  MenuContent,
-  MenuContentItem,
   PanelContent,
   PanelHeader,
   PlusIcon,
   TimesIcon,
-  UploadIcon,
-  DownloadIcon,
   LockIcon,
 } from '@finos/legend-art';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import type { RelationalTestDataState } from '../../../../stores/editor/editor-state/element-editor-state/data/EmbeddedDataState.js';
 import { useApplicationNavigationContext } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
@@ -170,56 +166,6 @@ export const RelationalTestDataEditor = observer(
               {dataState.label()}
             </div>
           </div>
-          <div className="panel__header__actions">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".csv"
-              onChange={handleFileUpload}
-              style={{ display: 'none' }}
-              disabled={isReadOnly}
-            />
-            <button
-              className="panel__header__action"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isReadOnly}
-              title="Import CSV"
-              tabIndex={-1}
-            >
-              <UploadIcon />
-            </button>
-            <ControlledDropdownMenu
-              className="panel__header__action"
-              disabled={isReadOnly}
-              content={
-                <MenuContent>
-                  <MenuContentItem onClick={() => setExportFormat('json')}>
-                    Export as JSON
-                  </MenuContentItem>
-                  <MenuContentItem onClick={() => setExportFormat('csv')}>
-                    Export as CSV
-                  </MenuContentItem>
-                  <MenuContentItem onClick={() => setExportFormat('sql')}>
-                    Export as SQL
-                  </MenuContentItem>
-                </MenuContent>
-              }
-              menuProps={{
-                anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
-                transformOrigin: { vertical: 'top', horizontal: 'right' },
-              }}
-            >
-              <button
-                className="panel__header__action"
-                onClick={exportData}
-                disabled={isReadOnly}
-                title={`Export as ${exportFormat.toUpperCase()}`}
-                tabIndex={-1}
-              >
-                <DownloadIcon />
-              </button>
-            </ControlledDropdownMenu>
-          </div>
         </PanelHeader>
         <PanelContent>
           {dataState.columns.length === 0 ? (
@@ -250,7 +196,7 @@ export const RelationalTestDataEditor = observer(
                 <div className="relational-test-data-editor__columns-grid">
                   {dataState.columns.map((column, index) => (
                     <div
-                      key={`column-${index}`}
+                      key={`column-${guaranteeNonNullable(index)}`}
                       className="relational-test-data-editor__column-row"
                     >
                       <input
@@ -295,15 +241,6 @@ export const RelationalTestDataEditor = observer(
                   <div className="relational-test-data-editor__section-title">
                     Test Data ({dataState.rows.length} rows)
                   </div>
-                  <button
-                    className="btn btn--dark btn--sm"
-                    onClick={addRow}
-                    disabled={isReadOnly || dataState.columns.length === 0}
-                    title="Add Row"
-                  >
-                    <PlusIcon />
-                    Add Row
-                  </button>
                 </div>
                 {dataState.rows.length === 0 ? (
                   <div className="relational-test-data-editor__empty-data">
@@ -332,7 +269,7 @@ export const RelationalTestDataEditor = observer(
                     </div>
                     {dataState.rows.map((row, rowIndex) => (
                       <div
-                        key={`row-${rowIndex}`}
+                        key={`row-${guaranteeNonNullable(rowIndex)}`}
                         className="relational-test-data-editor__data-row"
                       >
                         {dataState.columns.map((column) => (
@@ -369,6 +306,81 @@ export const RelationalTestDataEditor = observer(
                     ))}
                   </div>
                 )}
+
+                <div className="relational-test-data-editor__export-controls">
+                  <button
+                    className="btn btn--dark btn--sm"
+                    onClick={addRow}
+                    disabled={isReadOnly || dataState.columns.length === 0}
+                    title="Add Row"
+                  >
+                    <PlusIcon />
+                    Add Row
+                  </button>
+
+                  <button
+                    className="btn btn--dark btn--sm"
+                    onClick={() => {
+                      if (
+                        window.confirm(
+                          'Are you sure you want to clear all test data?',
+                        )
+                      ) {
+                        dataState.clearAllData();
+                      }
+                    }}
+                    disabled={isReadOnly || dataState.rows.length === 0}
+                    title="Clear All Data"
+                  >
+                    Clear All Data
+                  </button>
+
+                  <div className="relational-test-data-editor__export-format">
+                    <label htmlFor="exportFormat">Export as:</label>
+                    <select
+                      id="exportFormat"
+                      value={exportFormat}
+                      onChange={(e) =>
+                        setExportFormat(
+                          e.target.value as 'json' | 'csv' | 'sql',
+                        )
+                      }
+                      disabled={isReadOnly}
+                      className="relational-test-data-editor__export-select"
+                    >
+                      <option value="json">JSON</option>
+                      <option value="csv">CSV</option>
+                      <option value="sql">SQL INSERT</option>
+                    </select>
+                    <button
+                      className="btn btn--dark btn--sm"
+                      onClick={exportData}
+                      disabled={isReadOnly}
+                      title={`Export as ${exportFormat.toUpperCase()}`}
+                    >
+                      Export
+                    </button>
+                  </div>
+
+                  <div className="relational-test-data-editor__import-controls">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".csv"
+                      onChange={handleFileUpload}
+                      style={{ display: 'none' }}
+                      disabled={isReadOnly}
+                    />
+                    <button
+                      className="btn btn--dark btn--sm"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isReadOnly}
+                      title="Upload a file of CSV"
+                    >
+                      Upload a file of CSV
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           )}

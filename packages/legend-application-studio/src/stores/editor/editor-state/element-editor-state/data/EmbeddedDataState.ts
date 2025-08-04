@@ -250,6 +250,7 @@ export class RelationalTestDataState extends EmbeddedDataState {
       updateRow: action,
       importCSV: action,
       setShowImportCSVModal: action,
+      clearAllData: action,
     });
   }
 
@@ -279,7 +280,10 @@ export class RelationalTestDataState extends EmbeddedDataState {
     if (oldName && oldName !== name) {
       this.rows.forEach((row) => {
         if (oldName in row) {
-          row[name] = row[oldName];
+          const oldValue = row[oldName];
+          if (oldValue !== undefined) {
+            row[name] = oldValue;
+          }
           delete row[oldName];
         }
       });
@@ -305,6 +309,10 @@ export class RelationalTestDataState extends EmbeddedDataState {
     }
   }
 
+  clearAllData(): void {
+    this.rows.splice(0);
+  }
+
   setShowImportCSVModal(show: boolean): void {
     this.showImportCSVModal = show;
   }
@@ -315,7 +323,12 @@ export class RelationalTestDataState extends EmbeddedDataState {
       return;
     }
 
-    const headers = this.parseCSVLine(lines[0]);
+    const firstLine = lines[0];
+    if (!firstLine) {
+      return;
+    }
+
+    const headers = this.parseCSVLine(firstLine);
     this.columns = headers.map((header) => ({
       name: header,
       type: this.detectColumnType(lines.slice(1), headers.indexOf(header)),
@@ -354,7 +367,7 @@ export class RelationalTestDataState extends EmbeddedDataState {
   private detectColumnType(dataRows: string[], columnIndex: number): string {
     const values = dataRows
       .map((row) => this.parseCSVLine(row)[columnIndex])
-      .filter((v) => v);
+      .filter((v): v is string => v !== undefined && v !== '');
     if (values.length === 0) {
       return 'VARCHAR';
     }
