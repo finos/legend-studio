@@ -44,10 +44,7 @@ export const LegendMarketplaceSearchBar = (props: {
       }}
     >
       <TextField
-        className={clsx('legend-marketplace__search-bar__input', {
-          'legend-marketplace__search-bar__input--with-button':
-            onSearch !== undefined,
-        })}
+        className="legend-marketplace__search-bar__input"
         type="search"
         placeholder={placeholder ?? 'Search'}
         fullWidth={true}
