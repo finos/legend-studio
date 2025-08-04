@@ -26,6 +26,8 @@
 
   &__input {
     height: 100%;
+    padding: 0 2rem;
+    font-size: 2rem;
 
     .MuiInputBase-root {
       height: 100%;
@@ -33,9 +35,8 @@
   }
 
   input {
-    font-size: 1.4rem;
     height: 100%;
-    padding: 0 1rem 0 0.4rem;
+    padding: 0;
   }
 
   button {
