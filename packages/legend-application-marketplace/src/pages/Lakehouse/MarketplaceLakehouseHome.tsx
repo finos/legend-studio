@@ -56,8 +56,11 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
     return (
       <LegendMarketplacePage className="marketplace-lakehouse-home">
         <Container className="marketplace-lakehouse-home__search-container">
+          <Box className="marketplace-lakehouse-home__search-container__logo">
+            <img src="/assets/LegendLogo.png" alt="Legend Logo" />
+          </Box>
           <Box className="marketplace-lakehouse-home__search-container__title">
-            Legend Marketplace
+            Marketplace
           </Box>
           <LegendMarketplaceSearchBar
             onSearch={handleSearch}
