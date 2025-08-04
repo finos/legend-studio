@@ -513,7 +513,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       const terminalRowData: TDSRowDataType[] =
         getRowDataFromExecutionResult(rawTerminalResponse);
       const matchingRows = terminalRowData.filter(
-        (row: TDSRowDataType) => row.id === terminalId,
+        (row: TDSRowDataType) => row.id === Number(terminalId),
       );
 
       const terminalProducts: V1_Terminal[] = matchingRows.map(
