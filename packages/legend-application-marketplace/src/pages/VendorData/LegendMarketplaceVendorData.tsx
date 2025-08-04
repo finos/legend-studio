@@ -239,17 +239,8 @@ export const LegendMarketplaceVendorData = observer(() => {
   const baseStore = useLegendMarketplaceBaseStore();
   const marketPlaceVendorDataState = baseStore.marketplaceVendorDataState;
 
-  const onChange = (
-    provider: string | undefined,
-    query: string | undefined,
-  ) => {
+  const onChange = (query: string | undefined) => {
     const filters: Filter[] = [];
-    if (provider) {
-      filters.push({
-        label: 'provider',
-        value: provider,
-      });
-    }
 
     if (query) {
       filters.push({

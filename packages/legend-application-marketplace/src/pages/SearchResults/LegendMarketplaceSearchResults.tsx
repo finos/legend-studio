@@ -77,12 +77,9 @@ export const LegendMarketplaceSearchResults = observer(() => {
     void fetchResults();
   }, [marketplaceServerClient, params.query, params.vendorName]);
 
-  const onSearch = (
-    provider: string | undefined,
-    query: string | undefined,
-  ): void => {
+  const onSearch = (query: string | undefined): void => {
     applicationStore.navigationService.navigator.goToLocation(
-      generateSearchResultsRoute(provider, query),
+      generateSearchResultsRoute(undefined, query),
     );
   };
 

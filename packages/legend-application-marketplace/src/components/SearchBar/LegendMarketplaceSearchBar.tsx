@@ -25,7 +25,7 @@ export interface Vendor {
 }
 
 export const LegendMarketplaceSearchBar = (props: {
-  onSearch?: (provider: string | undefined, query: string | undefined) => void;
+  onSearch?: (query: string | undefined) => void;
   initialValue?: string;
   placeholder?: string;
   onChange?: (query: string) => void;
@@ -40,7 +40,7 @@ export const LegendMarketplaceSearchBar = (props: {
       className={clsx('legend-marketplace__search-bar', className)}
       onSubmit={(event) => {
         event.preventDefault();
-        onSearch?.(undefined, searchQuery);
+        onSearch?.(searchQuery);
       }}
     >
       <TextField
@@ -58,7 +58,7 @@ export const LegendMarketplaceSearchBar = (props: {
             className: 'legend-marketplace__search-bar__input',
             endAdornment: (
               <InputAdornment position="end">
-                <IconButton onClick={() => onSearch?.(undefined, searchQuery)}>
+                <IconButton onClick={() => onSearch?.(searchQuery)}>
                   <SearchIcon />
                 </IconButton>
               </InputAdornment>
