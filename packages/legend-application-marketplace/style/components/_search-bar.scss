@@ -20,9 +20,9 @@
   @include flexVCenter;
 
   height: 6rem;
+  border-radius: 3rem;
   width: 100%;
   background: var(--color-white);
-  border-radius: 4px;
 
   &__input {
     height: 100%;
