@@ -26,7 +26,7 @@ export interface Vendor {
 
 export const LegendMarketplaceSearchBar = (props: {
   onSearch?: (query: string | undefined) => void;
-  initialValue?: string;
+  initialValue?: string | undefined;
   placeholder?: string;
   onChange?: (query: string) => void;
   className?: string | undefined;

@@ -284,6 +284,7 @@ export const MarketplaceLakehouseSearchResults = withMarketplaceLakehouseStore(
             onSearch={handleSearch}
             placeholder="Search Legend Marketplace"
             className="marketplace-lakehouse-home__search-bar"
+            initialValue={searchQuery}
           />
         </Container>
         <Container
