@@ -1,4 +1,4 @@
-import { createModelSchema, optional, primitive } from 'serializr';
+import { createModelSchema, primitive } from 'serializr';
 import { V1_Terminal } from '../../../model/packageableElements/dataProduct/V1_Terminal.js';
 
 export const V1_TerminalModelSchema = createModelSchema(V1_Terminal, {

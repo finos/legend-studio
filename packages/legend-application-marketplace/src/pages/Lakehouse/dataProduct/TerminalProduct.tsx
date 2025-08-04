@@ -73,7 +73,7 @@ export const TerminalProduct = withMarketplaceLakehouseStore(
 
             {marketPlaceStore.terminalProducts.map((terminal, index) => (
               <div
-                key={index}
+                key={terminal.id}
                 className="terminal-product-card"
                 style={{
                   border: '1px solid #ccc',
@@ -83,7 +83,7 @@ export const TerminalProduct = withMarketplaceLakehouseStore(
                   backgroundColor: '#f9f9f9',
                 }}
               >
-                <h3>{terminal.productName || `Product ${index + 1}`}</h3>
+                <h3>{terminal.productName ?? `Product ${index + 1}`}</h3>
                 <div>
                   <strong>ID:</strong> {terminal.id}
                 </div>
