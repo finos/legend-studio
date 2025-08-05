@@ -15,93 +15,156 @@
  */
 
 import { useApplicationStore } from '@finos/legend-application';
-import {
-  BellIcon,
-  ControlledDropdownMenu,
-  HelpOutlineIcon,
-  MenuContent,
-  MenuContentDivider,
-  MenuContentItem,
-  ShoppingCartOutlineIcon,
-  UserCircleIcon,
-} from '@finos/legend-art';
+import { HelpOutlineIcon, UserCircleIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
+import { Avatar, Box, IconButton, Menu, MenuItem } from '@mui/material';
+import { useEffect, useState } from 'react';
+import { assertErrorThrown, LegendUser } from '@finos/legend-shared';
+import { useMarketplaceLakehouseStore } from '../../pages/Lakehouse/MarketplaceLakehouseStoreProvider.js';
 import { LEGEND_MARKETPLACE_ROUTE_PATTERN } from '../../__lib__/LegendMarketplaceNavigation.js';
-import { Box } from '@mui/material';
+import { LegendMarketplaceAppInfo } from './LegendMarketplaceAppInfo.js';
 
 export const LegendMarketplaceIconToolbar = observer(() => {
   const applicationStore = useApplicationStore();
-  const username =
-    applicationStore.identityService.currentUser === '(unknown)'
-      ? 'user'
-      : applicationStore.identityService.currentUser;
+  const marketplaceStore = useMarketplaceLakehouseStore();
+  const userId = applicationStore.identityService.currentUser;
+  const [userData, setUserData] = useState<LegendUser | string | undefined>();
 
-  const userIconRenderer = () => {
-    return (
-      <ControlledDropdownMenu
-        className="legend-marketplace-header__menu-item"
-        menuProps={{
-          anchorOrigin: { vertical: 'bottom', horizontal: 'center' },
-          transformOrigin: { vertical: 'top', horizontal: 'center' },
-          elevation: 7,
-        }}
-        content={
-          <MenuContent>
-            <MenuContentItem disabled={true}>Hello, {username}</MenuContentItem>
-            <MenuContentDivider />
-
-            <MenuContentItem
-              onClick={() =>
-                applicationStore.navigationService.navigator.goToLocation(
-                  LEGEND_MARKETPLACE_ROUTE_PATTERN.SUBSCRIPTIONS,
-                )
-              }
-            >
-              View Subscriptions
-            </MenuContentItem>
-            <MenuContentItem
-              onClick={() =>
-                applicationStore.navigationService.navigator.goToLocation(
-                  LEGEND_MARKETPLACE_ROUTE_PATTERN.ORDERS,
-                )
-              }
-            >
-              View Orders
-            </MenuContentItem>
-          </MenuContent>
+  useEffect(() => {
+    const fetchUserData = async (): Promise<void> => {
+      if (userId) {
+        try {
+          const user =
+            await marketplaceStore.marketplaceBaseStore.userSearchService?.getOrFetchUser(
+              userId,
+            );
+          setUserData(user);
+        } catch (error) {
+          assertErrorThrown(error);
+          applicationStore.notificationService.notifyError(
+            `Failed to fetch user data: ${error.message}`,
+          );
         }
-      >
-        <UserCircleIcon />
-      </ControlledDropdownMenu>
+      }
+    };
+    // eslint-disable-next-line no-void
+    void fetchUserData();
+  }, [
+    userId,
+    applicationStore.notificationService,
+    marketplaceStore.marketplaceBaseStore.userSearchService,
+  ]);
+
+  const imgSrc =
+    marketplaceStore.applicationStore.config.marketplaceUserProfileImageUrl?.replace(
+      '{userId}',
+      userId,
+    );
+  const openUserDirectoryLink = (): void =>
+    marketplaceStore.applicationStore.navigationService.navigator.visitAddress(
+      `${marketplaceStore.applicationStore.config.lakehouseEntitlementsConfig?.applicationDirectoryUrl}/${userId}`,
+    );
+  const userName =
+    userData instanceof LegendUser && userData.displayName
+      ? userData.displayName
+      : (userId ?? '(unknown)');
+
+  const UserIconRenderer = () => {
+    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+    const [openAppInfo, setOpenAppInfo] = useState(false);
+
+    const open = Boolean(anchorEl);
+
+    return (
+      <>
+        <IconButton
+          onClick={(event) => setAnchorEl(event.currentTarget)}
+          className="legend-marketplace-header__menu__icon"
+        >
+          {imgSrc ? (
+            <Avatar
+              className="legend-user-display__avatar legend-user-display__avatar--image"
+              src={imgSrc}
+              alt={userName}
+              onClick={openUserDirectoryLink}
+            />
+          ) : (
+            <UserCircleIcon />
+          )}
+        </IconButton>
+        <Menu anchorEl={anchorEl} open={open} onClose={() => setAnchorEl(null)}>
+          <MenuItem>Hello, {userName}</MenuItem>
+          <MenuItem
+            component="a"
+            href={applicationStore.navigationService.navigator.generateAddress(
+              LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ADMIN,
+            )}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => setAnchorEl(null)}
+          >
+            Admin
+          </MenuItem>
+        </Menu>
+        <LegendMarketplaceAppInfo
+          open={openAppInfo}
+          closeModal={() => setOpenAppInfo(false)}
+        />
+      </>
+    );
+  };
+
+  const HelpIconRenderer = () => {
+    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+    const [openAppInfo, setOpenAppInfo] = useState(false);
+
+    const open = Boolean(anchorEl);
+
+    return (
+      <>
+        <IconButton
+          onClick={(event) => setAnchorEl(event.currentTarget)}
+          className="legend-marketplace-header__menu__icon"
+        >
+          <HelpOutlineIcon />
+        </IconButton>
+        <Menu anchorEl={anchorEl} open={open} onClose={() => setAnchorEl(null)}>
+          <MenuItem
+            onClick={() => {
+              setOpenAppInfo(true);
+              setAnchorEl(null);
+            }}
+          >
+            About
+          </MenuItem>
+          <MenuItem
+            component="a"
+            href={applicationStore.navigationService.navigator.generateAddress(
+              LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ADMIN,
+            )}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => setAnchorEl(null)}
+          >
+            Admin
+          </MenuItem>
+        </Menu>
+        <LegendMarketplaceAppInfo
+          open={openAppInfo}
+          closeModal={() => setOpenAppInfo(false)}
+        />
+      </>
     );
   };
 
   const toolbarIcons = [
     {
-      icon: <UserCircleIcon />,
       title: 'Profile',
-      renderer: userIconRenderer,
+      renderer: UserIconRenderer,
     },
     {
-      icon: <ShoppingCartOutlineIcon />,
-      title: 'Shopping Cart',
-      renderer: () => {
-        return <ShoppingCartOutlineIcon />;
-      },
-    },
-    {
-      icon: <BellIcon />,
-      title: 'Notifications',
-      renderer: () => {
-        return <BellIcon />;
-      },
-    },
-    {
-      icon: <HelpOutlineIcon />,
       title: 'Help',
-      renderer: () => {
-        return <HelpOutlineIcon />;
-      },
+      renderer: HelpIconRenderer,
     },
   ];
 

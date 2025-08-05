@@ -14,69 +14,14 @@
  * limitations under the License.
  */
 
-import { clsx, MenuIcon } from '@finos/legend-art';
-import {
-  AppBar,
-  Box,
-  Button,
-  Container,
-  IconButton,
-  Menu,
-  MenuItem,
-  Toolbar,
-} from '@mui/material';
+import { clsx } from '@finos/legend-art';
+import { AppBar, Box, Button, Container, Toolbar } from '@mui/material';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
 import { LEGEND_MARKETPLACE_TEST_ID } from '../../__lib__/LegendMarketplaceTesting.js';
-import { LegendMarketplaceAppInfo } from './LegendMarketplaceAppInfo.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { LEGEND_MARKETPLACE_ROUTE_PATTERN } from '../../__lib__/LegendMarketplaceNavigation.js';
 import { LegendMarketplaceIconToolbar } from './LegendMarketplaceIconToolbar.js';
 import { matchPath } from '@finos/legend-application/browser';
-
-const LegendMarketplaceHeaderMenu = observer(() => {
-  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-  const [openAppInfo, setOpenAppInfo] = useState(false);
-  const applicationStore = useApplicationStore();
-
-  const open = Boolean(anchorEl);
-
-  return (
-    <>
-      <IconButton
-        onClick={(event) => setAnchorEl(event.currentTarget)}
-        className="legend-marketplace-header__menu__icon"
-      >
-        <MenuIcon />
-      </IconButton>
-      <Menu anchorEl={anchorEl} open={open} onClose={() => setAnchorEl(null)}>
-        <MenuItem
-          onClick={() => {
-            setOpenAppInfo(true);
-            setAnchorEl(null);
-          }}
-        >
-          About
-        </MenuItem>
-        <MenuItem
-          component="a"
-          href={applicationStore.navigationService.navigator.generateAddress(
-            LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ADMIN,
-          )}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={() => setAnchorEl(null)}
-        >
-          Admin
-        </MenuItem>
-      </Menu>
-      <LegendMarketplaceAppInfo
-        open={openAppInfo}
-        closeModal={() => setOpenAppInfo(false)}
-      />
-    </>
-  );
-});
 
 const LegendMarketPlaceHeaderTabs = observer(
   (props: { pages: { title: string; urlRoute: string }[] }) => {
@@ -137,7 +82,6 @@ const LegendMarketplaceBaseHeader = observer(
       >
         <Container maxWidth="xxxl">
           <Toolbar disableGutters={true}>
-            <LegendMarketplaceHeaderMenu />
             <div
               className="legend-marketplace-header__name"
               onClick={() => navigateToHome()}
@@ -188,7 +132,7 @@ export const MarketplaceLakehouseHeader = observer(() => {
           urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS,
         },
       ]}
-      showIcons={false}
+      showIcons={true}
     />
   );
 });
