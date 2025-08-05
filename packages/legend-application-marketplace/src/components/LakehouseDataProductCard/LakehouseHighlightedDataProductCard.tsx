@@ -20,7 +20,6 @@ import {
   CardMedia,
   CardActionArea,
   CardContent,
-  CardHeader,
   Skeleton,
 } from '@mui/material';
 import { observer } from 'mobx-react-lite';
@@ -57,7 +56,7 @@ export const LakehouseHighlightedDataProductCard = observer(
     );
 
     return (
-      <Card>
+      <Card className="lakehouse-highlighted-data-product-card">
         <CardActionArea onClick={() => onClick(dataProductState)}>
           {loading ? (
             skeletonLoader
@@ -66,10 +65,15 @@ export const LakehouseHighlightedDataProductCard = observer(
               <CardMedia
                 image="/assets/LegendLogo.png"
                 title={dataProductState.title}
+                className="lakehouse-highlighted-data-product-card__image"
               />
-              <CardContent>
-                <CardHeader>{dataProductState.title}</CardHeader>
-                <Box>{truncatedDescription}</Box>
+              <CardContent className="lakehouse-highlighted-data-product-card__content">
+                <Box className="lakehouse-highlighted-data-product-card__title">
+                  {dataProductState.title}
+                </Box>
+                <Box className="lakehouse-highlighted-data-product-card__description">
+                  {truncatedDescription}
+                </Box>
               </CardContent>
             </>
           )}
