@@ -114,8 +114,8 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
           </CubesLoadingIndicator>
           <Grid
             container={true}
-            spacing={{ xs: 2, sm: 3, xxl: 4 }}
-            columns={{ xs: 1, sm: 2, xxl: 3 }}
+            spacing={{ xs: 2, sm: 3, lg: 4, xxl: 5 }}
+            columns={{ xs: 1, sm: 2, lg: 3, xxl: 4 }}
             className="marketplace-lakehouse-search-results__data-product-cards"
           >
             {highlightedDataProducts.map((dataProductState) => (
