@@ -67,7 +67,6 @@ export const LegendMarketplaceIconToolbar = observer(() => {
 
   const UserIconRenderer = () => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-    const [openAppInfo, setOpenAppInfo] = useState(false);
 
     const open = Boolean(anchorEl);
 
@@ -101,10 +100,6 @@ export const LegendMarketplaceIconToolbar = observer(() => {
             </Box>
           </MenuItem>
         </Menu>
-        <LegendMarketplaceAppInfo
-          open={openAppInfo}
-          closeModal={() => setOpenAppInfo(false)}
-        />
       </>
     );
   };
