@@ -26,6 +26,15 @@
   background-attachment: fixed;
   box-shadow: none;
 
+  &__backdrop {
+    position: absolute;
+    inset: 0;
+    height: 200%;
+    backdrop-filter: blur(16px);
+    mask-image: linear-gradient(to bottom, black 0% 50%, transparent 50% 100%);
+    pointer-events: none;
+  }
+
   &__menu__icon {
     color: var(--color-white);
 

@@ -25,6 +25,7 @@ import { flowResult } from 'mobx';
 import { useApplicationStore } from '@finos/legend-application';
 import {
   BrowserEnvironmentProvider,
+  matchPath,
   Outlet,
   Route,
   Routes,
@@ -199,7 +200,14 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
                 {isLakehouseRoute(
                   baseStore.applicationStore.navigationService.navigator.getCurrentLocation(),
                 ) ? (
-                  <MarketplaceLakehouseHeader />
+                  <MarketplaceLakehouseHeader
+                    blurHeader={
+                      matchPath(
+                        LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE as string,
+                        baseStore.applicationStore.navigationService.navigator.getCurrentLocation(),
+                      ) !== null
+                    }
+                  />
                 ) : (
                   <LegendMarketplaceHeader
                     enableMarketplacePages={enableMarketplacePages}

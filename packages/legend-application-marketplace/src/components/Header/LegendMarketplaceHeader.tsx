@@ -65,8 +65,9 @@ const LegendMarketplaceBaseHeader = observer(
     homeUrl: string;
     pages: { title: string; urlRoute: string }[];
     showIcons?: boolean;
+    blurHeader?: boolean | undefined;
   }) => {
-    const { headerName, homeUrl, pages, showIcons } = props;
+    const { headerName, homeUrl, pages, showIcons, blurHeader } = props;
 
     const applicationStore = useApplicationStore();
 
@@ -80,6 +81,9 @@ const LegendMarketplaceBaseHeader = observer(
         className="legend-marketplace-header"
         data-testid={LEGEND_MARKETPLACE_TEST_ID.HEADER}
       >
+        {blurHeader === true && (
+          <Box className="legend-marketplace-header__backdrop" />
+        )}
         <Container maxWidth="xxxl">
           <Toolbar disableGutters={true}>
             <div
@@ -122,18 +126,23 @@ export const LegendMarketplaceHeader = observer(
   },
 );
 
-export const MarketplaceLakehouseHeader = observer(() => {
-  return (
-    <LegendMarketplaceBaseHeader
-      headerName="Marketplace"
-      homeUrl={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE}
-      pages={[
-        {
-          title: 'Entitlements',
-          urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS,
-        },
-      ]}
-      showIcons={true}
-    />
-  );
-});
+export const MarketplaceLakehouseHeader = observer(
+  (props: { blurHeader?: boolean }) => {
+    const { blurHeader } = props;
+
+    return (
+      <LegendMarketplaceBaseHeader
+        headerName="Marketplace"
+        homeUrl={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE}
+        pages={[
+          {
+            title: 'Entitlements',
+            urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS,
+          },
+        ]}
+        showIcons={true}
+        blurHeader={blurHeader}
+      />
+    );
+  },
+);
