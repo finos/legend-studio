@@ -87,6 +87,7 @@ export { SnowflakeAppDeploymentConfiguration } from './graph/metamodel/pure/func
 export { SnowflakeM2MUdf } from './graph/metamodel/pure/packageableElements/function/SnowflakeM2MUdf.js';
 export { SnowflakeM2MUdfDeploymentConfiguration } from './graph/metamodel/pure/functionActivator/SnowflakeM2MUdfDeploymentConfiguration.js';
 export { INTERNAL__UnknownElement } from './graph/metamodel/pure/packageableElements/INTERNAL__UnknownElement.js';
+export { V1_IngestDefinition } from './graph-manager/protocol/pure/v1/model/packageableElements/ingest/V1_IngestDefinition.js';
 export {
   Ownership,
   DeploymentOwner,
@@ -892,6 +893,7 @@ export {
   V1_IdentifiedConnection,
   V1_StoreConnections,
   V1_RuntimePointer,
+  V1_LakehouseRuntime,
 } from './graph-manager/protocol/pure/v1/model/packageableElements/runtime/V1_Runtime.js';
 export {
   V1_ClassMapping,

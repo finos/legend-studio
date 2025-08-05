@@ -87,6 +87,8 @@ import {
   V1_Variable,
   type QueryInfo,
   EXECUTION_SERIALIZATION_FORMAT,
+  V1_LakehouseRuntime,
+  V1_IngestDefinition,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
@@ -148,6 +150,11 @@ import {
   RawLocalFileQueryDataCubeSource,
 } from './model/LocalFileDataCubeSource.js';
 import { QUERY_BUILDER_PURE_PATH } from '@finos/legend-query-builder';
+import {
+  INGEST_DEFINITION_DATA_CUBE_SOURCE_TYPE,
+  IngestDefinitionDataCubeSource,
+  RawIngestDefinitionDataCubeSource,
+} from './model/IngestDefinitionDataCubeSource.js';
 
 export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   private readonly _application: LegendDataCubeApplicationStore;
@@ -155,6 +162,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   private readonly _engineServerClient: V1_EngineServerClient;
   private readonly _graphManager: V1_PureGraphManager;
   private readonly _duckDBEngine: LegendDataCubeDuckDBEngine;
+  private _ingestDefinition: PlainObject | undefined;
 
   constructor(
     application: LegendDataCubeApplicationStore,
@@ -349,6 +357,18 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         adhocQuery: {
           mapping: rawSource.mapping,
           runtime: rawSource.runtime,
+        },
+        sourceType: source._type,
+      };
+    } else if (source.type === INGEST_DEFINITION_DATA_CUBE_SOURCE_TYPE) {
+      const rawSource =
+        RawIngestDefinitionDataCubeSource.serialization.fromJson(source);
+
+      return {
+        ingestDefinition: {
+          urn: rawSource.ingestDefinitionUrn,
+          warehouse: rawSource.warehouse,
+          ingestServerUrl: rawSource.ingestServerUrl,
         },
         sourceType: source._type,
       };
@@ -657,6 +677,38 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         );
         return source;
       }
+      case INGEST_DEFINITION_DATA_CUBE_SOURCE_TYPE: {
+        const rawSource =
+          RawIngestDefinitionDataCubeSource.serialization.fromJson(value);
+
+        const source = new IngestDefinitionDataCubeSource();
+
+        const query = new V1_ClassInstance();
+        query.type = V1_ClassInstanceType.INGEST_ACCESSOR;
+        const ingestAccesor = new V1_RelationStoreAccessor();
+        ingestAccesor.path = rawSource.paths;
+        ingestAccesor.metadata = false;
+        query.value = ingestAccesor;
+        source.query = query;
+
+        const model = this._synthesizeIngestionPMCD(rawSource, source);
+        source.model = V1_serializePureModelContextData(model);
+
+        try {
+          source.columns = (
+            await this._getLambdaRelationType(
+              this.serializeValueSpecification(_lambda([], [source.query])),
+              source.model,
+            )
+          ).columns;
+        } catch (error) {
+          assertErrorThrown(error);
+          throw new Error(
+            `Can't get query result columns. Make sure the source query return a relation (i.e. typed TDS). Error: ${error.message}`,
+          );
+        }
+        return source;
+      }
       default:
         throw new UnsupportedOperationError(
           `Can't process query source of type '${value._type}'`,
@@ -731,6 +783,13 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         })
       ).completions as CompletionItem[];
     } else if (context instanceof LegendQueryDataCubeSource) {
+      return (
+        await this._engineServerClient.completeCode({
+          codeBlock,
+          model: context.model,
+        })
+      ).completions as CompletionItem[];
+    } else if (context instanceof IngestDefinitionDataCubeSource) {
       return (
         await this._engineServerClient.completeCode({
           codeBlock,
@@ -829,6 +888,8 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       if (source instanceof FreeformTDSExpressionDataCubeSource) {
         result = await this._runQuery(query, source.model, undefined, options);
       } else if (source instanceof UserDefinedFunctionDataCubeSource) {
+        result = await this._runQuery(query, source.model, undefined, options);
+      } else if (source instanceof IngestDefinitionDataCubeSource) {
         result = await this._runQuery(query, source.model, undefined, options);
       } else if (source instanceof LegendQueryDataCubeSource) {
         const filteredParameterValues = await this._processLegendQueryParams(
@@ -952,6 +1013,14 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           undefined,
           options,
         )) as Response;
+      } else if (source instanceof IngestDefinitionDataCubeSource) {
+        return (await this._runExportQuery(
+          query,
+          source.model,
+          format,
+          undefined,
+          options,
+        )) as Response;
       } else if (source instanceof LegendQueryDataCubeSource) {
         const filteredParameterValues = await this._processLegendQueryParams(
           source,
@@ -1066,8 +1135,19 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         DataCubeFunction.FROM,
         [_elementPtr(source.runtime)].filter(isNonNullable),
       );
+    } else if (source instanceof IngestDefinitionDataCubeSource) {
+      return _function(
+        DataCubeFunction.FROM,
+        [_elementPtr(source.runtime)].filter(isNonNullable),
+      );
     }
     return undefined;
+  }
+
+  // ---------------------------------- INGEST ---------------------------------------
+
+  registerIngestDefinition(ingestDefinition: PlainObject | undefined) {
+    this._ingestDefinition = ingestDefinition;
   }
 
   // ---------------------------------- CACHING --------------------------------------
@@ -1178,6 +1258,8 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     } else if (source instanceof CachedDataCubeSource) {
       return this._getLambdaRelationType(query, source.model);
     } else if (source instanceof LocalFileDataCubeSource) {
+      return this._getLambdaRelationType(query, source.model);
+    } else if (source instanceof IngestDefinitionDataCubeSource) {
       return this._getLambdaRelationType(query, source.model);
     }
     throw new UnsupportedOperationError(
@@ -1465,6 +1547,37 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       table,
       runtime: packageableRuntime,
     };
+  }
+
+  private _synthesizeIngestionPMCD(
+    rawSource: RawIngestDefinitionDataCubeSource,
+    source: IngestDefinitionDataCubeSource,
+  ) {
+    const runtime = new V1_LakehouseRuntime();
+    runtime.warehouse = rawSource.warehouse;
+    const baseUrl = new URL(rawSource.ingestServerUrl).hostname;
+    const subdomain = baseUrl.split('.')[0];
+    const parts = subdomain?.split('-');
+    runtime.environment = parts?.slice(0, -1).join('-');
+
+    const packageableRuntime = new V1_PackageableRuntime();
+    packageableRuntime.runtimeValue = runtime;
+    packageableRuntime.name = 'ingestDefinition';
+    packageableRuntime.package = 'runtime';
+
+    source.runtime = packageableRuntime.path;
+
+    const model = new V1_PureModelContextData();
+    const ingestDefinition = new V1_IngestDefinition();
+    ingestDefinition.content = this._ingestDefinition as PlainObject;
+    const splits = rawSource.paths[0]?.split('::');
+    ingestDefinition.name = guaranteeNonNullable(splits?.pop());
+    ingestDefinition.package = guaranteeNonNullable(
+      splits?.slice(0, -1).join('::'),
+    );
+
+    model.elements = [ingestDefinition, packageableRuntime];
+    return model;
   }
 
   // ---------------------------------- APPLICATION ----------------------------------

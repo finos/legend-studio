@@ -85,6 +85,11 @@ export const LegendDataCubeSourceLoader = observer(
                     partialSourceLoader={state}
                   />
                 )}
+                {/* {state instanceof IngestDefinitionDataCubeSourceLoaderState && (
+                  <IngestDefinitionDataCubeSourceLoader
+                    partialSourceLoader={state}
+                  />
+                )} */}
               </div>
             </div>
           </div>
