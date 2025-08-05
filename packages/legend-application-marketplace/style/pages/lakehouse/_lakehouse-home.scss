@@ -61,5 +61,12 @@
   &__data-product-cards {
     padding: 5rem;
     justify-content: center;
+
+    &__container {
+      @include flexCenter;
+
+      width: 100%;
+      height: 100%;
+    }
   }
 }
