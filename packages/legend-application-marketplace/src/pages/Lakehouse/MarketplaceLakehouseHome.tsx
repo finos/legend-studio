@@ -34,7 +34,7 @@ import {
 } from '../../__lib__/LegendMarketplaceNavigation.js';
 import { assertErrorThrown, isNonEmptyString } from '@finos/legend-shared';
 import type { DataProductState } from '../../stores/lakehouse/dataProducts/DataProducts.js';
-import { LakehouseDataProductCard } from '../../components/LakehouseDataProductCard/LakehouseDataProductCard.js';
+import { LakehouseHighlightedDataProductCard } from '../../components/LakehouseDataProductCard/LakehouseHighlightedDataProductCard.js';
 
 export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
   observer(() => {
@@ -123,10 +123,10 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
                 key={`${dataProductState.dataProductDetails.id}-${dataProductState.dataProductDetails.deploymentId}`}
                 size={1}
               >
-                <LakehouseDataProductCard
+                <LakehouseHighlightedDataProductCard
                   dataProductState={dataProductState}
-                  onClick={(dpState: DataProductState) => {
-                    marketplaceStore.applicationStore.navigationService.navigator.goToLocation(
+                  onClick={() => {
+                    marketplaceStore.applicationStore.navigationService.navigator.visitAddress(
                       generateLakehouseDataProductPath(
                         dataProductState.dataProductDetails.id,
                         dataProductState.dataProductDetails.deploymentId,
