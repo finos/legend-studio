@@ -37,7 +37,7 @@
 
   &__name {
     color: var(--color-white);
-    font-size: 2rem;
+    font-size: 2.4rem;
     font-weight: 700;
     margin: 1rem 2rem;
     cursor: pointer;
@@ -53,7 +53,7 @@
     @include flexVCenter;
 
     color: var(--color-white);
-    font-size: 16px;
+    font-size: 2rem;
     padding: 1rem 2rem;
     text-transform: unset;
     border-radius: unset;
