@@ -114,7 +114,7 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
           <Grid
             container={true}
             spacing={{ xs: 2, sm: 3, lg: 4 }}
-            columns={{ xs: 1, sm: 2, lg: 3, xxxl: 5 }}
+            columns={{ xs: 1, sm: 2, md: 3, lg: 4, xxxl: 5 }}
             className="marketplace-lakehouse-home__data-product-cards"
           >
             {highlightedDataProducts.map((dataProductState) => (
