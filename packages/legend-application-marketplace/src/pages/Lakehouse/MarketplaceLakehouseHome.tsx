@@ -110,7 +110,10 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
           className="marketplace-lakehouse-home__data-product-cards__container"
         >
           {loading ? (
-            <CubesLoadingIndicator isLoading={loading}>
+            <CubesLoadingIndicator
+              isLoading={loading}
+              className="marketplace-lakehouse-home__data-product-cards__loading"
+            >
               <CubesLoadingIndicatorIcon />
             </CubesLoadingIndicator>
           ) : (
