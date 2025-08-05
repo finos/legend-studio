@@ -20,18 +20,25 @@
   @include flexVCenter;
 
   height: var(--legend-marketplace-header-height);
-  background-image: url('/assets/HomeBackground.png');
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
   box-shadow: none;
+  background: none;
+
+  &__backdrop-image {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    background-image: url('/assets/HomeBackground.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+  }
 
   &__backdrop {
     position: absolute;
     inset: 0;
-    height: 200%;
+    height: 110%;
     backdrop-filter: blur(16px);
-    mask-image: linear-gradient(to bottom, black 0% 50%, transparent 50% 100%);
+    mask-image: linear-gradient(to bottom, black 0% 91%, transparent 91% 100%);
     pointer-events: none;
   }
 
