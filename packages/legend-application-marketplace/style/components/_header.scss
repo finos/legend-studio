@@ -77,8 +77,21 @@
     text-transform: unset;
     border-radius: unset;
 
-    &--selected {
+    &:hover {
       background-color: var(--color-light-shade-50);
+    }
+
+    &--selected::before {
+      content: '';
+      display: block;
+      position: absolute;
+      background: var(--color-hclight-blue-60);
+      left: 0;
+      right: 0;
+      margin: auto;
+      height: 3px;
+      bottom: 0;
+      width: calc(100% - 24px);
     }
   }
 
