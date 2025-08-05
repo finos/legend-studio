@@ -63,7 +63,7 @@ export const LegendMarketplaceIconToolbar = observer(() => {
   const userName =
     userData instanceof LegendUser && userData.displayName
       ? userData.displayName
-      : (userId ?? '(unknown)');
+      : userId;
 
   const UserIconRenderer = () => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
