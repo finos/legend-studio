@@ -17,7 +17,7 @@
 import { useApplicationStore } from '@finos/legend-application';
 import { HelpOutlineIcon, UserCircleIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-import { Avatar, Box, IconButton, Menu, MenuItem } from '@mui/material';
+import { Avatar, Box, IconButton, Link, Menu, MenuItem } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { assertErrorThrown, LegendUser } from '@finos/legend-shared';
 import { LEGEND_MARKETPLACE_ROUTE_PATTERN } from '../../__lib__/LegendMarketplaceNavigation.js';
@@ -58,10 +58,8 @@ export const LegendMarketplaceIconToolbar = observer(() => {
       '{userId}',
       userId,
     );
-  const openUserDirectoryLink = (): void =>
-    marketplaceStore.applicationStore.navigationService.navigator.visitAddress(
-      `${marketplaceStore.applicationStore.config.lakehouseEntitlementsConfig?.applicationDirectoryUrl}/${userId}`,
-    );
+  const userDirectoryLink = `${marketplaceStore.applicationStore.config.lakehouseEntitlementsConfig?.applicationDirectoryUrl}/${userId}`;
+
   const userName =
     userData instanceof LegendUser && userData.displayName
       ? userData.displayName
@@ -84,24 +82,21 @@ export const LegendMarketplaceIconToolbar = observer(() => {
               className="legend-user-display__avatar legend-user-display__avatar--image"
               src={imgSrc}
               alt={userName}
-              onClick={openUserDirectoryLink}
             />
           ) : (
             <UserCircleIcon />
           )}
         </IconButton>
         <Menu anchorEl={anchorEl} open={open} onClose={() => setAnchorEl(null)}>
-          <MenuItem>Hello, {userName}</MenuItem>
-          <MenuItem
-            component="a"
-            href={applicationStore.navigationService.navigator.generateAddress(
-              LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ADMIN,
-            )}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={() => setAnchorEl(null)}
-          >
-            Admin
+          <MenuItem>
+            Hello,{' '}
+            <Link
+              href={userDirectoryLink}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {userName}
+            </Link>
           </MenuItem>
         </Menu>
         <LegendMarketplaceAppInfo
