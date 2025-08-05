@@ -16,4 +16,5 @@
 
 export class V1_RelationStoreAccessor {
   path: string[] = [];
+  metadata?: boolean;
 }

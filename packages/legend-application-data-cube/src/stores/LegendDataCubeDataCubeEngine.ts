@@ -687,6 +687,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         query.type = V1_ClassInstanceType.INGEST_ACCESSOR;
         const ingestAccesor = new V1_RelationStoreAccessor();
         ingestAccesor.path = rawSource.paths;
+        ingestAccesor.metadata = false;
         query.value = ingestAccesor;
         source.query = query;
 
@@ -1568,9 +1569,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
 
     const model = new V1_PureModelContextData();
     const ingestDefinition = new V1_IngestDefinition();
-    ingestDefinition.content = guaranteeNonNullable(
-      Object.values(guaranteeNonNullable(this._ingestDefinition))[0],
-    ) as PlainObject;
+    ingestDefinition.content = this._ingestDefinition as PlainObject;
     const splits = rawSource.paths[0]?.split('::');
     ingestDefinition.name = guaranteeNonNullable(splits?.pop());
     ingestDefinition.package = guaranteeNonNullable(

@@ -763,6 +763,7 @@ const relationStoreAccessorModelSchema = createModelSchema(
   V1_RelationStoreAccessor,
   {
     path: list(primitive()),
+    metadata: optional(primitive()),
   },
 );
 

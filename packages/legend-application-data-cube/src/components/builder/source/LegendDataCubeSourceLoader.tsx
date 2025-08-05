@@ -23,8 +23,6 @@ import { DataCubeIcon } from '@finos/legend-art';
 import { formatDistanceToNow } from '@finos/legend-shared';
 import type { LegendDataCubeSourceLoaderState } from '../../../stores/builder/source/LegendDataCubeSourceLoaderState.js';
 import { LegendDataCubeBlockingWindow } from '../../LegendDataCubeBlockingWindow.js';
-import { IngestDefinitionDataCubeSourceLoaderState } from '../../../stores/builder/source/IngestDefinitionDataCubeSourceLoaderState.js';
-import { IngestDefinitionDataCubeSourceLoader } from './IngestDefinitionDataCubeSourceLoader.js';
 
 export const LegendDataCubeSourceLoader = observer(
   (props: { state: LegendDataCubeSourceLoaderState }) => {
@@ -87,11 +85,11 @@ export const LegendDataCubeSourceLoader = observer(
                     partialSourceLoader={state}
                   />
                 )}
-                {state instanceof IngestDefinitionDataCubeSourceLoaderState && (
+                {/* {state instanceof IngestDefinitionDataCubeSourceLoaderState && (
                   <IngestDefinitionDataCubeSourceLoader
                     partialSourceLoader={state}
                   />
-                )}
+                )} */}
               </div>
             </div>
           </div>
