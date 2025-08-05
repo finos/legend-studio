@@ -76,7 +76,7 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
 
       // eslint-disable-next-line no-void
       void loadDataProducts();
-    });
+    }, [marketplaceStore]);
 
     const handleSearch = (query: string | undefined): void => {
       if (isNonEmptyString(query)) {
