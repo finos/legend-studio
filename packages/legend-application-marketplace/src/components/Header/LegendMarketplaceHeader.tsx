@@ -77,6 +77,10 @@ const LegendMarketplaceBaseHeader = observer(
     const [headerBackdropOpacity, setHeaderBackdropOpacity] = useState(1);
     const [headerBlurOpacity, setHeaderBlurOpacity] = useState(0);
 
+    // The below handles the scroll effect for the header's blur effect. When the user is at the top of the page,
+    // the header is fully opaque (i.e., no blur), so we hide the blur component and show the backdrop image component
+    // (which is rendered behind the header). As the user scrolls down, we increase the opacity of the blur component
+    // while reducing the opacity of the backdrop image component until a certain threshold.
     useEffect(() => {
       const appElement = document.querySelector('.app');
 
