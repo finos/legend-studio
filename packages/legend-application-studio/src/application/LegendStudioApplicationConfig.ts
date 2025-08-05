@@ -33,6 +33,7 @@ import {
   LegendApplicationConfig,
   type LegendApplicationConfigurationInput,
   type LegendApplicationConfigurationData,
+  StereotypeConfig,
 } from '@finos/legend-application';
 import { QueryBuilderConfig } from '@finos/legend-query-builder';
 import {
@@ -52,18 +53,6 @@ export class ServiceRegistrationEnvironmentConfig {
       executionUrl: primitive(),
       managementUrl: primitive(),
       modes: list(primitive()),
-    }),
-  );
-}
-
-export class StereotypeConfig {
-  profile!: string;
-  stereotype!: string;
-
-  static readonly serialization = new SerializationFactory(
-    createModelSchema(StereotypeConfig, {
-      profile: primitive(),
-      stereotype: primitive(),
     }),
   );
 }

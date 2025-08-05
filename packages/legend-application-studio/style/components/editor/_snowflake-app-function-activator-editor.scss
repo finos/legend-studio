@@ -117,6 +117,12 @@
     &__actions {
       @include flexVCenter;
 
+      margin-right: 0.5rem;
+
+      .btn__dropdown-combo {
+        height: 3.6rem;
+      }
+
       &__action {
         @include flexVCenter;
 
@@ -125,11 +131,10 @@
         height: 3.6rem;
         color: var(--color-light-grey-150);
         background: var(--color-dark-grey-500);
-        margin-right: 0.5rem;
+        margin-left: 0.5rem;
 
         &__icon {
           cursor: pointer;
-          margin-left: 0.5rem;
         }
 
         &__icon:hover {

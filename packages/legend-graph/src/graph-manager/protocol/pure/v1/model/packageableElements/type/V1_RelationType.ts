@@ -35,6 +35,7 @@ export class V1_RelationTypeColumn implements Hashable {
 }
 
 export class V1_RelationType implements V1_Type {
+  static readonly NAME = 'RelationType';
   columns: V1_RelationTypeColumn[] = [];
 
   get hashCode(): string {

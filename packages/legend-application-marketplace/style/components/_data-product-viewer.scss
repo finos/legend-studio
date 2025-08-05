@@ -43,7 +43,7 @@
 
     position: absolute;
     top: 0;
-    height: 9rem;
+    height: 14rem;
     width: 100%;
     z-index: 1;
     background: transparent;
@@ -57,44 +57,32 @@
 
     &__content {
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
       width: min(140rem, 80vw);
       min-width: 80rem;
-      padding: 2rem 8rem;
+      padding: 3rem 8rem 2rem;
+      gap: 1rem;
     }
 
     &__content--expanded {
       width: 80vw;
     }
 
+    &__type {
+      align-self: end;
+    }
+
     &__title {
       @include flexCenter;
+      @include ellipsisTextOverflow;
 
+      align-self: start;
       height: 5rem;
-      border-radius: 0.5rem;
-      padding: 0 3rem;
-      background: var(--color-blue-200);
       max-width: 50vw;
-
-      &__label {
-        @include ellipsisTextOverflow;
-
-        font-size: 2.4rem;
-        font-weight: 500;
-        color: var(--color-light-grey-0);
-      }
-
-      &__verified-badge {
-        @include flexCenter;
-
-        margin-left: 1rem;
-        width: 3rem;
-
-        svg {
-          font-size: 2.4rem;
-          color: var(--color-light-grey-0);
-        }
-      }
+      font-size: 3.6rem;
+      font-weight: 400;
+      color: var(--color-hclight-blue-60);
+      background: unset !important;
     }
 
     &__actions {
@@ -205,7 +193,7 @@
   &__content {
     display: flex;
     width: 100%;
-    padding: 4rem;
+    padding: 10rem 4rem 4rem;
     box-shadow: var(--color-dark-shade-280) 0 0.1rem 0.5rem 0;
   }
 }
@@ -1476,8 +1464,8 @@
     height: 2rem;
     padding: 0 0.5rem;
     border-radius: 0.5rem;
-    background: var(--color-dark-grey-300);
-    color: var(--color-light-grey-150);
+    background: var(--color-dark-grey-500);
+    color: var(--color-white);
     user-select: none;
     margin-left: 0.5rem;
     font-size: 1.2rem;
@@ -1594,6 +1582,13 @@
       display: flex;
       width: 19rem;
       border-left: 0.1rem solid var(--color-dark-grey-280);
+    }
+  }
+
+  &__item__access__tooltip {
+    &__icon {
+      font-size: 1.6rem;
+      margin-left: 0.5rem;
     }
   }
 

@@ -14,24 +14,9 @@
  * limitations under the License.
  */
 
-import { NAVIGATION_ZONE_SEPARATOR } from '@finos/legend-application';
-import type { V1_DataProduct } from '@finos/legend-graph';
-
-export enum DATA_PRODUCT_VIEWER_ACTIVITY_MODE {
+export enum DATA_PRODUCT_VIEWER_SECTION {
   DESCRIPTION = 'description',
-  DIAGRAM_VIEWER = 'diagram-viewer',
-  MODELS_DOCUMENTATION = 'models-documentation',
-  QUICK_START = 'quick-start',
-  EXECUTION_CONTEXT = 'execution-context',
   DATA_ACCESS = 'data-access',
-  /// -----------
-  DATA_STORES = 'data-stores', // TODO: with test-data, also let user call TDS query on top of these
-  DATA_AVAILABILITY = 'data-availability',
-  DATA_READINESS = 'data-readiness',
-  DATA_COST = 'data-cost',
-  DATA_GOVERNANCE = 'data-governance',
-  INFO = 'info', // TODO: test coverage? (or maybe this should be done in elements/diagrams/data-quality section)
-  SUPPORT = 'support',
 }
 
 const generateAnchorChunk = (text: string): string =>
@@ -41,12 +26,7 @@ const generateAnchorChunk = (text: string): string =>
       .toLowerCase() // anchor is case-insensitive
       .replace(/\s+/gu, '-'), // spaces will be replaced by hyphens
   );
-export const generateAnchorForActivity = (activity: string): string =>
+export const generateAnchorForSection = (activity: string): string =>
   generateAnchorChunk(activity);
-export const extractActivityFromAnchor = (anchor: string): string =>
+export const extractSectionFromAnchor = (anchor: string): string =>
   decodeURIComponent(anchor);
-export const generateAnchorForQuickStart = (product: V1_DataProduct): string =>
-  [
-    DATA_PRODUCT_VIEWER_ACTIVITY_MODE.QUICK_START,
-    generateAnchorChunk(product.title ?? product.name),
-  ].join(NAVIGATION_ZONE_SEPARATOR);

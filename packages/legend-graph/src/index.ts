@@ -302,14 +302,37 @@ export {
   V1_UserType,
 } from './graph-manager/protocol/pure/v1/lakehouse/entitlements/V1_CoreEntitlements.js';
 export {
+  V1_AccessPointGroupStereotypeMapping,
+  V1_AdHocDeploymentDataProductOrigin,
+  V1_EntitlementsAccessPoint,
+  V1_EntitlementsDataProduct,
+  V1_EntitlementsDataProductDetails,
+  V1_EntitlementsDataProductDetailsResponse,
+  V1_EntitlementsDataProductOrigin,
+  V1_EntitlementsLakehouseEnvironment,
+  V1_EntitlementsLakehouseEnvironmentType,
+  V1_SdlcDeploymentDataProductOrigin,
+  V1_UnknownDataProductOriginType,
+} from './graph-manager/protocol/pure/v1/lakehouse/entitlements/V1_EntitlementsDataProduct.js';
+export {
+  V1_AccessPointGroupStereotypeMappingModelSchema,
+  V1_AdHocDeploymentDataProductOriginModelSchema,
   V1_AdhocTeamModelSchema,
   V1_AppDirNodeModelSchema,
   V1_ContractUserStatusResponseModelSchema,
   V1_createContractPayloadModelSchema,
   V1_dataContractsResponseModelSchema,
   V1_dataContractsResponseModelSchemaToContracts,
+  V1_DataProductOriginType,
   V1_deserializeTaskResponse,
+  V1_EntitlementsDataProductDetailsModelSchema,
+  V1_EntitlementsAccessPointModelSchema,
+  V1_EntitlementsDataProductDetailsResponseModelSchema,
+  V1_entitlementsDataProductDetailsResponseToDataProductDetails,
+  V1_EntitlementsDataProductModelSchema,
+  V1_EntitlementsLakehouseEnvironmentModelSchema,
   V1_pendingTasksResponseModelSchema,
+  V1_SdlcDeploymentDataProductOriginModelSchema,
   V1_TaskStatusChangeResponseModelSchema,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_EntitlementSerializationHelper.js';
 export {

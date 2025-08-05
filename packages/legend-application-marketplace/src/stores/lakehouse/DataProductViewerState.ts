@@ -14,20 +14,15 @@
  * limitations under the License.
  */
 
+import { type NavigationZone } from '@finos/legend-application';
 import {
-  NAVIGATION_ZONE_SEPARATOR,
-  type GenericLegendApplicationStore,
-  type NavigationZone,
-} from '@finos/legend-application';
-import {
-  type DataProductArtifactGeneration,
-  type GraphData,
   type GraphManagerState,
   type V1_AccessPointGroup,
   type V1_CreateContractPayload,
   type V1_DataContract,
   type V1_DataContractsResponse,
   type V1_DataProduct,
+  type V1_EntitlementsDataProductDetails,
   type V1_OrganizationalScope,
   V1_AdhocTeam,
   V1_AppDirLevel,
@@ -37,22 +32,13 @@ import {
   V1_dataContractsResponseModelSchemaToContracts,
   V1_ResourceType,
 } from '@finos/legend-graph';
-import type { VersionedProjectData } from '@finos/legend-server-depot';
 import { action, computed, flow, makeObservable, observable } from 'mobx';
-import {
-  DATA_PRODUCT_WIKI_PAGE_SECTIONS,
-  DataProductLayoutState,
-} from './DataProductLayoutState.js';
-import {
-  DATA_PRODUCT_VIEWER_ACTIVITY_MODE,
-  generateAnchorForActivity,
-} from './DataProductViewerNavigation.js';
+import { DataProductLayoutState } from './DataProductLayoutState.js';
+import { DATA_PRODUCT_VIEWER_SECTION } from './DataProductViewerNavigation.js';
 import { DataProductDataAccessState } from './DataProductDataAccessState.js';
 import {
   ActionState,
   assertErrorThrown,
-  guaranteeNonEmptyString,
-  guaranteeNonNullable,
   type GeneratorFn,
   type PlainObject,
 } from '@finos/legend-shared';
@@ -60,28 +46,24 @@ import { serialize } from 'serializr';
 import { dataContractContainsDataProduct } from './LakehouseUtils.js';
 import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
 import type { MarketplaceLakehouseStore } from './MarketplaceLakehouseStore.js';
+import type { LegendMarketplaceApplicationStore } from '../LegendMarketplaceBaseStore.js';
 
 export class DataProductViewerState {
-  readonly applicationStore: GenericLegendApplicationStore;
+  readonly applicationStore: LegendMarketplaceApplicationStore;
   readonly lakehouseStore: MarketplaceLakehouseStore;
   readonly graphManagerState: GraphManagerState;
   readonly layoutState: DataProductLayoutState;
 
   readonly product: V1_DataProduct;
-  readonly isSandboxProduct: boolean;
-  readonly project: VersionedProjectData;
-  readonly retrieveGraphData: () => GraphData;
-  readonly viewSDLCProject: (path: string | undefined) => Promise<void>;
-  readonly viewIngestEnvironment?: (() => void) | undefined;
+  readonly entitlementsDataProductDetails: V1_EntitlementsDataProductDetails;
+  readonly viewDataProductSource: () => void;
   readonly onZoneChange?:
     | ((zone: NavigationZone | undefined) => void)
     | undefined;
 
   // we may want to move this out eventually
   readonly lakeServerClient: LakehouseContractServerClient;
-  currentActivity = DATA_PRODUCT_VIEWER_ACTIVITY_MODE.DESCRIPTION;
   accessState: DataProductDataAccessState;
-  generation: DataProductArtifactGeneration | undefined;
   associatedContracts: V1_DataContract[] | undefined;
   dataContractAccessPointGroup: V1_AccessPointGroup | undefined;
   dataContract: V1_DataContract | undefined;
@@ -90,24 +72,18 @@ export class DataProductViewerState {
   creatingContractState = ActionState.create();
 
   constructor(
-    applicationStore: GenericLegendApplicationStore,
+    applicationStore: LegendMarketplaceApplicationStore,
     lakehouseStore: MarketplaceLakehouseStore,
     graphManagerState: GraphManagerState,
     lakeServerClient: LakehouseContractServerClient,
-    project: VersionedProjectData,
     product: V1_DataProduct,
-    isSandboxProduct: boolean,
-    generation: DataProductArtifactGeneration | undefined,
+    entitlementsDataProductDetails: V1_EntitlementsDataProductDetails,
     actions: {
-      retrieveGraphData: () => GraphData;
-      viewSDLCProject: (path: string | undefined) => Promise<void>;
-      viewIngestEnvironment?: (() => void) | undefined;
+      viewDataProductSource: () => void;
       onZoneChange?: ((zone: NavigationZone | undefined) => void) | undefined;
     },
   ) {
     makeObservable(this, {
-      currentActivity: observable,
-      setCurrentActivity: action,
       isVerified: computed,
       accessState: observable,
       fetchContracts: flow,
@@ -125,13 +101,9 @@ export class DataProductViewerState {
     this.lakehouseStore = lakehouseStore;
     this.graphManagerState = graphManagerState;
 
-    this.project = project;
     this.product = product;
-    this.isSandboxProduct = isSandboxProduct;
-    this.generation = generation;
-    this.retrieveGraphData = actions.retrieveGraphData;
-    this.viewSDLCProject = actions.viewSDLCProject;
-    this.viewIngestEnvironment = actions.viewIngestEnvironment;
+    this.entitlementsDataProductDetails = entitlementsDataProductDetails;
+    this.viewDataProductSource = actions.viewDataProductSource;
     this.onZoneChange = actions.onZoneChange;
     this.layoutState = new DataProductLayoutState(this);
     this.accessState = new DataProductDataAccessState(this);
@@ -155,12 +127,8 @@ export class DataProductViewerState {
       this.accessState.accessGroupStates.forEach((e) =>
         e.fetchingAccessState.inProgress(),
       );
-      const did = guaranteeNonEmptyString(
-        this.generation?.dataProduct.deploymentId,
-        'did required to get contracts',
-      );
       const didNode = new V1_AppDirNode();
-      didNode.appDirId = Number(did);
+      didNode.appDirId = this.deploymentId;
       didNode.level = V1_AppDirLevel.DEPLOYMENT;
       const _contracts = (yield this.lakeServerClient.getDataContractsFromDID(
         [serialize(V1_AppDirNodeModelSchema, didNode)],
@@ -223,10 +191,7 @@ export class DataProductViewerState {
           description,
           resourceId: this.product.name,
           resourceType: V1_ResourceType.ACCESS_POINT_GROUP,
-          deploymentId: guaranteeNonNullable(
-            this.generation?.dataProduct.deploymentId,
-            'Cannot create contract. Data product generation is missing deployment ID',
-          ),
+          deploymentId: this.deploymentId,
           accessPointGroup: group.id,
           consumer,
         } satisfies V1_CreateContractPayload,
@@ -267,17 +232,13 @@ export class DataProductViewerState {
     }
   }
 
-  setCurrentActivity(val: DATA_PRODUCT_VIEWER_ACTIVITY_MODE): void {
-    this.currentActivity = val;
-  }
-
   get isVerified(): boolean {
     // TODO what does it mean if data product is vertified ?
     return true;
   }
 
-  get deploymentId(): string | undefined {
-    return this.generation?.dataProduct.deploymentId;
+  get deploymentId(): number {
+    return this.entitlementsDataProductDetails.deploymentId;
   }
 
   changeZone(zone: NavigationZone, force = false): void {
@@ -285,26 +246,17 @@ export class DataProductViewerState {
       this.layoutState.setCurrentNavigationZone('');
     }
     if (zone !== this.layoutState.currentNavigationZone) {
-      const zoneChunks = zone.split(NAVIGATION_ZONE_SEPARATOR);
-      const activityChunk = zoneChunks[0];
-      const matchingActivity = Object.values(
-        DATA_PRODUCT_VIEWER_ACTIVITY_MODE,
-      ).find(
-        (activity) => generateAnchorForActivity(activity) === activityChunk,
-      );
-      if (activityChunk && matchingActivity) {
-        if (DATA_PRODUCT_WIKI_PAGE_SECTIONS.includes(matchingActivity)) {
-          this.layoutState.setWikiPageAnchorToNavigate({
-            anchor: zone,
-          });
-        }
-        this.setCurrentActivity(matchingActivity);
-        this.onZoneChange?.(zone);
-        this.layoutState.setCurrentNavigationZone(zone);
-      } else {
-        this.setCurrentActivity(DATA_PRODUCT_VIEWER_ACTIVITY_MODE.DESCRIPTION);
-        this.layoutState.setCurrentNavigationZone('');
+      if (
+        Object.values(DATA_PRODUCT_VIEWER_SECTION)
+          .map((e) => e.toString())
+          .includes(zone)
+      ) {
+        this.layoutState.setWikiPageAnchorToNavigate({
+          anchor: zone,
+        });
       }
+      this.onZoneChange?.(zone);
+      this.layoutState.setCurrentNavigationZone(zone);
     }
   }
 }

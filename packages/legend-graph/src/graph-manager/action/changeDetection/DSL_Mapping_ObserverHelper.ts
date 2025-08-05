@@ -99,8 +99,8 @@ import {
 import {
   observe_ConcreteFunctionDefinition,
   observe_EnumValueReference,
+  observe_GenericTypeReference,
   observe_PropertyReference,
-  observe_Type,
 } from './DomainObserverHelper.js';
 import { observe_RawLambda } from './RawValueSpecificationObserver.js';
 import {
@@ -138,6 +138,7 @@ import type { INTERNAL__UnknownStore } from '../../../graph/metamodel/pure/packa
 import type { RelationFunctionInstanceSetImplementation } from '../../../graph/metamodel/pure/packageableElements/mapping/relationFunction/RelationFunctionInstanceSetImplementation.js';
 import type { RelationFunctionPropertyMapping } from '../../../graph/metamodel/pure/packageableElements/mapping/relationFunction/RelationFunctionPropertyMapping.js';
 import { type RelationColumn } from '../../../graph/metamodel/pure/packageableElements/relation/RelationType.js';
+import { observe_BindingTransformer } from './DSL_ExternalFormat_ObserverHelper.js';
 
 // ------------------------------------- Store -------------------------------------
 
@@ -230,11 +231,11 @@ export const observe_RelationColumn = skipObserved(
   (metamodel: RelationColumn): RelationColumn => {
     makeObservable(metamodel, {
       name: observable,
-      type: observable,
+      genericType: observable,
       hashCode: computed,
     });
-
-    observe_Type(metamodel.type);
+    // FIXME
+    observe_GenericTypeReference(metamodel.genericType);
 
     return metamodel;
   },
@@ -315,10 +316,14 @@ export const observe_RelationFunctionPropertyMapping = skipObservedWithContext(
 
     makeObservable(metamodel, {
       column: observable,
+      bindingTransformer: observable,
       hashCode: computed,
     });
 
     observe_RelationColumn(metamodel.column);
+    if (metamodel.bindingTransformer) {
+      observe_BindingTransformer(metamodel.bindingTransformer);
+    }
 
     return metamodel;
   },

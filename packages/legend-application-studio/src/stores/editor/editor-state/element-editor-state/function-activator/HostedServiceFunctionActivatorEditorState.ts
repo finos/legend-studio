@@ -69,10 +69,12 @@ export type HostedServiceOwnerOption = {
 
 export class HostedServiceFunctionActivatorEditorState extends ElementEditorState {
   readonly validateState = ActionState.create();
+  readonly renderArtifactState = ActionState.create();
   readonly deployState = ActionState.create();
 
   selectedTab: ACTIVATOR_EDITOR_TAB;
   selectedAction: PostDeploymentAction | undefined;
+  artifact: PlainObject | undefined;
 
   constructor(editorStore: EditorStore, element: HostedService) {
     super(editorStore, element);
@@ -86,6 +88,9 @@ export class HostedServiceFunctionActivatorEditorState extends ElementEditorStat
       selectedOwnership: computed,
       storeModel: action,
       validate: flow,
+      renderArtifact: flow,
+      artifact: observable,
+      setArtifact: action,
       deployToSandbox: flow,
       searchUsers: flow,
       selectedTab: observable,
@@ -172,6 +177,10 @@ export class HostedServiceFunctionActivatorEditorState extends ElementEditorStat
     }
   }
 
+  setArtifact(newArtifact: PlainObject | undefined): void {
+    this.artifact = newArtifact;
+  }
+
   *validate(): GeneratorFn<void> {
     this.validateState.inProgress();
     try {
@@ -187,6 +196,23 @@ export class HostedServiceFunctionActivatorEditorState extends ElementEditorStat
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.validateState.complete();
+    }
+  }
+
+  *renderArtifact(): GeneratorFn<void> {
+    this.renderArtifactState.inProgress();
+    try {
+      const artifact =
+        (yield this.editorStore.graphManagerState.graphManager.renderFunctionActivatorArtifact(
+          this.activator,
+          new InMemoryGraphData(this.editorStore.graphManagerState.graph),
+        )) as PlainObject;
+      this.artifact = artifact;
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
+    } finally {
+      this.renderArtifactState.complete();
     }
   }
 

@@ -26,35 +26,29 @@ import {
 } from '@finos/legend-art';
 import {
   LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN,
-  type LakehouseSandboxDataProductPathParams,
+  type LakehouseSDLCDataProductPathParams,
 } from '../../../__lib__/LegendMarketplaceNavigation.js';
 import { useParams } from '@finos/legend-application/browser';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { DataProductViewer } from './DataProductViewer.js';
 import { LEGEND_APPLICATION_COLOR_THEME } from '@finos/legend-application';
-import { useAuth } from 'react-oidc-context';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
 
-export const LakehouseSandboxDataProduct = withMarketplaceLakehouseStore(
+export const LakehouseSDLCDataProduct = withMarketplaceLakehouseStore(
   observer(() => {
     const marketPlaceStore = useMarketplaceLakehouseStore();
     const applicationStore = marketPlaceStore.applicationStore;
-    const params = useParams<LakehouseSandboxDataProductPathParams>();
-    const auth = useAuth();
-    const ingestEnvironmentUrn = guaranteeNonNullable(
-      params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.ingestEnvironmentUrn],
+    const params = useParams<LakehouseSDLCDataProductPathParams>();
+    const gav = guaranteeNonNullable(
+      params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.GAV],
     );
-    const product = guaranteeNonNullable(
+    const path = guaranteeNonNullable(
       params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH],
     );
 
     useEffect(() => {
-      marketPlaceStore.initWithSandboxProduct(
-        ingestEnvironmentUrn,
-        product,
-        auth,
-      );
-    }, [auth, ingestEnvironmentUrn, marketPlaceStore, product]);
+      marketPlaceStore.initWithSDLCProduct(gav, path);
+    }, [gav, marketPlaceStore, path]);
 
     useEffect(() => {
       applicationStore.layoutService.setColorTheme(
@@ -68,7 +62,7 @@ export const LakehouseSandboxDataProduct = withMarketplaceLakehouseStore(
     return (
       <LegendMarketplacePage className="legend-marketplace-lakehouse-data-product">
         <CubesLoadingIndicator
-          isLoading={marketPlaceStore.loadingProductsState.isInProgress}
+          isLoading={marketPlaceStore.loadingProductState.isInProgress}
         >
           <CubesLoadingIndicatorIcon />
         </CubesLoadingIndicator>

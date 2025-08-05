@@ -1,5 +1,17 @@
 # @finos/legend-application
 
+## 16.0.60
+
+### Patch Changes
+
+- [#4311](https://github.com/finos/legend-studio/pull/4311) [`c4dd622`](https://github.com/finos/legend-studio/commit/c4dd6222765b66ba76d554c32d2e6d2d8f2186cd) ([@travisstebbins](https://github.com/travisstebbins)) - Move StereotypeConfig to legend-application
+
+## 16.0.59
+
+### Patch Changes
+
+- [#4307](https://github.com/finos/legend-studio/pull/4307) [`4fd1c9b`](https://github.com/finos/legend-studio/commit/4fd1c9b7fa7a9c683edb87ebf7d3c0534467ce94) ([@travisstebbins](https://github.com/travisstebbins)) - Allow passing custom fonts to ThemeProvider
+
 ## 16.0.58
 
 ## 16.0.57

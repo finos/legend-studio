@@ -120,6 +120,10 @@ export class AccessPointLambdaEditorState extends LambdaEditorState {
     return this.val.accessPoint.id;
   }
 
+  override get fullLambdaString(): string {
+    return `${this.lambdaString}`;
+  }
+
   *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
     const emptyLambda = stub_RawLambda();
     if (this.lambdaString) {
@@ -431,9 +435,16 @@ export class DataProductEditorState extends ElementEditorState {
           )) as Map<string, string>;
         isolatedLambdas.forEach((grammarText, key) => {
           const purePropertyMapping = index.get(key);
-          purePropertyMapping?.lambdaState.setLambdaString(
-            purePropertyMapping.lambdaState.extractLambdaString(grammarText),
-          );
+          if (
+            purePropertyMapping?.lambdaState.lambdaPrefix &&
+            grammarText.startsWith(purePropertyMapping.lambdaState.lambdaPrefix)
+          ) {
+            purePropertyMapping.lambdaState.setLambdaString(
+              purePropertyMapping.lambdaState.extractLambdaString(grammarText),
+            );
+          } else {
+            purePropertyMapping?.lambdaState.setLambdaString(grammarText);
+          }
         });
       } catch (error) {
         assertErrorThrown(error);

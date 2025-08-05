@@ -18,6 +18,8 @@ import {
   type ColSpec,
   type LambdaFunction,
   ColSpecArrayInstance,
+  GenericType,
+  GenericTypeExplicitReference,
   LambdaFunctionInstanceValue,
   matchFunctionName,
   RelationType,
@@ -155,8 +157,10 @@ export const processTypedAggregationColSpec = (
           ),
           `Can't process colSpec: Can't find column '${colSpec.name}' in parent groupBy() expression's relation return type`,
         );
-        relationTypeColumn.type =
-          aggregateColumnState.getColumnType() ?? relationTypeColumn.type;
+        const columnType = aggregateColumnState.getColumnType();
+        relationTypeColumn.genericType = columnType
+          ? GenericTypeExplicitReference.create(new GenericType(columnType))
+          : relationTypeColumn.genericType;
         return;
       }
     }

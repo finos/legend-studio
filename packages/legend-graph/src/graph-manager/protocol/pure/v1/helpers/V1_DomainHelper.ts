@@ -30,10 +30,14 @@ import {
   V1_RelationTypeColumn,
 } from '../model/packageableElements/type/V1_RelationType.js';
 import type { V1_Type } from '../model/packageableElements/type/V1_Type.js';
+import { V1_transformMultiplicity } from '../transformation/pureGraph/from/V1_CoreTransformerHelper.js';
+import type { Multiplicity } from '../../../../../graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
 
 export const V1_getGenericTypeFullPath = (val: V1_GenericType): string => {
   if (val.rawType instanceof V1_PackageableType) {
     return val.rawType.fullPath;
+  } else if (val.rawType instanceof V1_RelationType) {
+    return V1_RelationType.NAME;
   }
   throw new UnsupportedOperationError(
     `Can't extract type path from generic type`,
@@ -122,22 +126,6 @@ export const V1_buildFunctionPrettyName = (
     return '';
   });
 
-export function V1_createGenericTypeWithElementPath(
-  path: string,
-): V1_GenericType {
-  const genType = new V1_GenericType();
-  const pType = new V1_PackageableType();
-  pType.fullPath = path;
-  genType.rawType = pType;
-  return genType;
-}
-
-export function V1_createGenericTypeWithRawType(type: V1_Type): V1_GenericType {
-  const genType = new V1_GenericType();
-  genType.rawType = type;
-  return genType;
-}
-
 export function V1_createRelationType(
   columns: V1_RelationTypeColumn[],
 ): V1_RelationType {
@@ -155,4 +143,32 @@ export function V1_createRelationTypeColumn(
   column.genericType = V1_createGenericTypeWithElementPath(type);
   column.multiplicity = V1_Multiplicity.ZERO_ONE;
   return column;
+}
+
+export function V1_createRelationTypeColumnWithGenericType(
+  name: string,
+  type: V1_GenericType,
+  multiplicity: Multiplicity,
+): V1_RelationTypeColumn {
+  const column = new V1_RelationTypeColumn();
+  column.name = name;
+  column.genericType = type;
+  column.multiplicity = V1_transformMultiplicity(multiplicity);
+  return column;
+}
+
+export function V1_createGenericTypeWithElementPath(
+  path: string,
+): V1_GenericType {
+  const genType = new V1_GenericType();
+  const pType = new V1_PackageableType();
+  pType.fullPath = path;
+  genType.rawType = pType;
+  return genType;
+}
+
+export function V1_createGenericTypeWithRawType(type: V1_Type): V1_GenericType {
+  const genType = new V1_GenericType();
+  genType.rawType = type;
+  return genType;
 }

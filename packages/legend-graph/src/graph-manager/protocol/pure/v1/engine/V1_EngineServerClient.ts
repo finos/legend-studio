@@ -142,6 +142,7 @@ enum CORE_ENGINE_ACTIVITY_TRACE {
   DATABASE_RAW_SQL_EXECUTION = 'database raw SQL execution',
 
   VALIDATE_FUNCTION_ACTIVATOR = 'validate function activator',
+  RENDER_FUNCTION_ACTIVATOR_ARTIFACT = 'render function activator artifact',
   PUBLISH_FUNCTION_ACTIVATOR_TO_SANDBOX = 'publish function activator to sandbox',
 }
 
@@ -1042,6 +1043,21 @@ export class V1_EngineServerClient extends AbstractServerClient {
       this.debugPayload(
         input,
         CORE_ENGINE_ACTIVITY_TRACE.VALIDATE_FUNCTION_ACTIVATOR,
+      ),
+    );
+  }
+
+  renderFunctionActivatorArtifact(
+    input: PlainObject<V1_FunctionActivatorInput>,
+  ): Promise<PlainObject> {
+    return this.postWithTracing(
+      this.getTraceData(
+        CORE_ENGINE_ACTIVITY_TRACE.RENDER_FUNCTION_ACTIVATOR_ARTIFACT,
+      ),
+      `${this._functionActivator()}/renderArtifact`,
+      this.debugPayload(
+        input,
+        CORE_ENGINE_ACTIVITY_TRACE.RENDER_FUNCTION_ACTIVATOR_ARTIFACT,
       ),
     );
   }

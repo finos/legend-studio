@@ -16,26 +16,16 @@
 
 import {
   DEFAULT_TAB_SIZE,
+  EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl,
   type CommandRegistrar,
 } from '@finos/legend-application';
 import {
-  DepotScope,
-  isSnapshotVersion,
-  projectIdHandlerFunc,
   resolveVersion,
-  StoredSummaryEntity,
   StoreProjectData,
   VersionedProjectData,
   type DepotServerClient,
 } from '@finos/legend-server-depot';
-import {
-  action,
-  computed,
-  flow,
-  makeObservable,
-  observable,
-  runInAction,
-} from 'mobx';
+import { action, computed, flow, makeObservable, observable } from 'mobx';
 import type {
   LegendMarketplaceApplicationStore,
   LegendMarketplaceBaseStore,
@@ -50,53 +40,33 @@ import {
   type PlainObject,
 } from '@finos/legend-shared';
 import {
+  type V1_EntitlementsDataProductDetailsResponse,
   type V1_IngestEnvironment,
-  buildDataProductArtifactGeneration,
-  CORE_PURE_PATH,
   DataProductArtifactGeneration,
-  GraphDataWithOrigin,
   GraphManagerState,
-  InMemoryGraphData,
-  LegendSDLC,
-  V1_AppDirLevel,
+  V1_AdHocDeploymentDataProductOrigin,
   V1_DataProduct,
   V1_Terminal,
-  V1_DataProductArtifactGeneration,
   V1_dataProductModelSchema,
   V1_deserializeIngestEnvironment,
-  V1_deserializePackageableElement,
+  V1_entitlementsDataProductDetailsResponseToDataProductDetails,
+  V1_EntitlementsLakehouseEnvironmentType,
   V1_IngestEnvironmentClassification,
   V1_PureGraphManager,
   V1_TerminalModelSchema,
-  V1_SandboxDataProductDeploymentResponse,
+  V1_SdlcDeploymentDataProductOrigin,
 } from '@finos/legend-graph';
-import { deserialize } from 'serializr';
-import {
-  GAV_DELIMITER,
-  generateGAVCoordinates,
-  parseGAVCoordinates,
-  type Entity,
-  type StoredFileGeneration,
-} from '@finos/legend-storage';
 import { DataProductViewerState } from './DataProductViewerState.js';
-import {
-  EXTERNAL_APPLICATION_NAVIGATION__generateIngestEnvironemntUrl,
-  EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl,
-} from '../../__lib__/LegendMarketplaceNavigation.js';
-import { type AuthContextProps } from 'react-oidc-context';
+import type { AuthContextProps } from 'react-oidc-context';
 import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
-import {
-  DataProductEntity,
-  DataProductState,
-  SandboxDataProductState,
-  type BaseDataProductState,
-} from './dataProducts/DataProducts.js';
+import { DataProductState } from './dataProducts/DataProducts.js';
 import {
   type LakehousePlatformServerClient,
   type LakehouseIngestServerClient,
   IngestDeploymentServerConfig,
 } from '@finos/legend-server-lakehouse';
 import { LegendMarketplaceUserDataHelper } from '../../__lib__/LegendMarketplaceUserDataHelper.js';
+
 const ARTIFACT_GENERATION_DAT_PRODUCT_KEY = 'dataProduct';
 
 export enum DataProductFilterType {
@@ -107,22 +77,27 @@ export enum DataProductFilterType {
 export enum DeployType {
   SDLC = 'SDLC',
   SANDBOX = 'SANDBOX',
+  UNKNOWN = 'UNKNOWN',
 }
 
 export interface DataProductFilterConfig {
   sdlcDeployFilter: boolean;
   sandboxDeployFilter: boolean;
+  unknownDeployFilter: boolean;
   devEnvironmentClassificationFilter: boolean;
   prodParallelEnvironmentClassificationFilter: boolean;
   prodEnvironmentClassificationFilter: boolean;
+  unknownEnvironmentClassificationFilter: boolean;
 }
 
 class DataProductFilters {
   sdlcDeployFilter: boolean;
   sandboxDeployFilter: boolean;
+  unknownDeployFilter: boolean;
   devEnvironmentClassificationFilter: boolean;
   prodParallelEnvironmentClassificationFilter: boolean;
   prodEnvironmentClassificationFilter: boolean;
+  unknownEnvironmentClassificationFilter: boolean;
   search?: string | undefined;
 
   constructor(
@@ -132,19 +107,24 @@ class DataProductFilters {
     makeObservable(this, {
       sdlcDeployFilter: observable,
       sandboxDeployFilter: observable,
+      unknownDeployFilter: observable,
       devEnvironmentClassificationFilter: observable,
       prodParallelEnvironmentClassificationFilter: observable,
       prodEnvironmentClassificationFilter: observable,
+      unknownEnvironmentClassificationFilter: observable,
       search: observable,
     });
     this.sdlcDeployFilter = defaultBooleanFilters.sdlcDeployFilter;
     this.sandboxDeployFilter = defaultBooleanFilters.sandboxDeployFilter;
+    this.unknownDeployFilter = defaultBooleanFilters.unknownDeployFilter;
     this.devEnvironmentClassificationFilter =
       defaultBooleanFilters.devEnvironmentClassificationFilter;
     this.prodParallelEnvironmentClassificationFilter =
       defaultBooleanFilters.prodParallelEnvironmentClassificationFilter;
     this.prodEnvironmentClassificationFilter =
       defaultBooleanFilters.prodEnvironmentClassificationFilter;
+    this.unknownEnvironmentClassificationFilter =
+      defaultBooleanFilters.unknownEnvironmentClassificationFilter;
     this.search = search;
   }
 
@@ -153,9 +133,11 @@ class DataProductFilters {
       {
         sdlcDeployFilter: true,
         sandboxDeployFilter: true,
+        unknownDeployFilter: false,
         devEnvironmentClassificationFilter: false,
         prodParallelEnvironmentClassificationFilter: false,
         prodEnvironmentClassificationFilter: true,
+        unknownEnvironmentClassificationFilter: false,
       },
       undefined,
     );
@@ -165,12 +147,15 @@ class DataProductFilters {
     return {
       sdlcDeployFilter: this.sdlcDeployFilter,
       sandboxDeployFilter: this.sandboxDeployFilter,
+      unknownDeployFilter: this.unknownDeployFilter,
       devEnvironmentClassificationFilter:
         this.devEnvironmentClassificationFilter,
       prodParallelEnvironmentClassificationFilter:
         this.prodParallelEnvironmentClassificationFilter,
       prodEnvironmentClassificationFilter:
         this.prodEnvironmentClassificationFilter,
+      unknownEnvironmentClassificationFilter:
+        this.unknownEnvironmentClassificationFilter,
     };
   }
 }
@@ -187,15 +172,11 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   readonly lakehouseContractServerClient: LakehouseContractServerClient;
   readonly lakehousePlatformServerClient: LakehousePlatformServerClient;
   readonly lakehouseIngestServerClient: LakehouseIngestServerClient;
-  // To consolidate all versions of a data product, we use a map from group:artifact:path to a DataProductState object, which contains
-  // a map of all the verions of the data product.
-  productStatesMap: Map<string, DataProductState>;
+  dataProductStates: DataProductState[] = [];
   lakehouseIngestEnvironmentSummaries: IngestDeploymentServerConfig[] = [];
-  lakehouseIngestEnvironmentsByDID: Map<string, IngestDeploymentServerConfig> =
-    new Map<string, IngestDeploymentServerConfig>();
   lakehouseIngestEnvironmentDetails: V1_IngestEnvironment[] = [];
-  sandboxDataProductStates: SandboxDataProductState[] = [];
-  loadingProductsState = ActionState.create();
+  loadingAllProductsState = ActionState.create();
+  loadingProductState = ActionState.create();
   loadingLakehouseEnvironmentSummariesState = ActionState.create();
   loadingLakehouseEnvironmentsByDIDState = ActionState.create();
   loadingLakehouseEnvironmentDetailsState = ActionState.create();
@@ -220,7 +201,6 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     this.lakehouseIngestServerClient = lakehouseIngestServerClient;
 
     this.depotServerClient = depotServerClient;
-    this.productStatesMap = new Map<string, DataProductState>();
 
     const savedFilterConfig =
       LegendMarketplaceUserDataHelper.getSavedDataProductFilterConfig(
@@ -234,21 +214,18 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       init: flow,
       initWithProduct: flow,
       initWithTerminal: flow,
-      initWithSandboxProduct: flow,
-      productStatesMap: observable,
-      sandboxDataProductStates: observable,
+      initWithSDLCProduct: flow,
+      dataProductStates: observable,
       lakehouseIngestEnvironmentSummaries: observable,
-      lakehouseIngestEnvironmentsByDID: observable,
       lakehouseIngestEnvironmentDetails: observable,
       dataProductViewer: observable,
       handleFilterChange: action,
       handleSearch: action,
       filterSortProducts: computed,
+      setDataProductStates: action,
       setDataProductViewerState: action,
       setLakehouseIngestEnvironmentSummaries: action,
-      setLakehouseIngestEnvironmentsByDID: action,
       setLakehouseIngestEnvironmentDetails: action,
-      setSandboxDataProductStates: action,
       setTerminalProducts: action,
       terminalProducts: observable,
       filter: observable,
@@ -257,51 +234,37 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     });
   }
 
-  get filterSortProducts(): BaseDataProductState[] | undefined {
-    return (
-      Array.from(this.productStatesMap.values()) as BaseDataProductState[]
-    )
-      .concat(
-        this.loadingLakehouseEnvironmentsByDIDState.isInProgress
-          ? []
-          : this.sandboxDataProductStates,
-      )
-      .filter((baseDataProductState) => {
-        if (!baseDataProductState.isInitialized) {
-          return false;
-        }
+  get filterSortProducts(): DataProductState[] | undefined {
+    return this.dataProductStates
+      .filter((dataProductState) => {
         // Check if product matches deploy type filter
         const deployMatch =
           (this.filter.sdlcDeployFilter &&
-            baseDataProductState instanceof DataProductState) ||
+            dataProductState.dataProductDetails.origin instanceof
+              V1_SdlcDeploymentDataProductOrigin) ||
           (this.filter.sandboxDeployFilter &&
-            baseDataProductState instanceof SandboxDataProductState);
+            dataProductState.dataProductDetails.origin instanceof
+              V1_AdHocDeploymentDataProductOrigin) ||
+          (this.filter.unknownDeployFilter &&
+            dataProductState.dataProductDetails.origin === null);
         // Check if product matches environment classification filter
-        const environmentClassification =
-          baseDataProductState instanceof SandboxDataProductState &&
-          baseDataProductState.dataProductArtifact?.dataProduct.deploymentId
-            ? baseDataProductState.state.lakehouseIngestEnvironmentsByDID.get(
-                baseDataProductState.dataProductArtifact.dataProduct
-                  .deploymentId,
-              )?.environmentClassification
-            : undefined;
         const environmentClassificationMatch =
-          environmentClassification === undefined ||
           (this.filter.devEnvironmentClassificationFilter &&
-            environmentClassification ===
-              V1_IngestEnvironmentClassification.DEV) ||
+            dataProductState.environmentClassification ===
+              V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT) ||
           (this.filter.prodParallelEnvironmentClassificationFilter &&
-            environmentClassification ===
-              V1_IngestEnvironmentClassification.PROD_PARALLEL) ||
+            dataProductState.environmentClassification ===
+              V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL) ||
           (this.filter.prodEnvironmentClassificationFilter &&
-            environmentClassification ===
-              V1_IngestEnvironmentClassification.PROD);
+            dataProductState.environmentClassification ===
+              V1_EntitlementsLakehouseEnvironmentType.PRODUCTION) ||
+          (this.filter.unknownEnvironmentClassificationFilter &&
+            dataProductState.environmentClassification === undefined);
         // Check if product title matches search filter
-        const dataProductTitle = baseDataProductState.title;
         const titleMatch =
           this.filter.search === undefined ||
           this.filter.search === '' ||
-          dataProductTitle
+          dataProductState.title
             .toLowerCase()
             .includes(this.filter.search.toLowerCase());
         return deployMatch && environmentClassificationMatch && titleMatch;
@@ -315,16 +278,14 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       });
   }
 
+  setDataProductStates(dataProductStates: DataProductState[]): void {
+    this.dataProductStates = dataProductStates;
+  }
+
   setLakehouseIngestEnvironmentSummaries(
     summaries: IngestDeploymentServerConfig[],
   ): void {
     this.lakehouseIngestEnvironmentSummaries = summaries;
-  }
-
-  setLakehouseIngestEnvironmentsByDID(
-    environmentsByDID: Map<string, IngestDeploymentServerConfig>,
-  ): void {
-    this.lakehouseIngestEnvironmentsByDID = environmentsByDID;
   }
 
   setLakehouseIngestEnvironmentDetails(
@@ -333,28 +294,25 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     this.lakehouseIngestEnvironmentDetails = environmentDetails;
   }
 
-  setSandboxDataProductStates(
-    sandboxDataProductStates: SandboxDataProductState[],
-  ): void {
-    this.sandboxDataProductStates = sandboxDataProductStates;
-  }
-  setTerminalProducts(products: V1_Terminal[] | undefined): void {
-    this.terminalProducts = products;
-  }
-
   setDataProductViewerState(val: DataProductViewerState | undefined): void {
     this.dataProductViewer = val;
   }
 
   handleFilterChange(
     filterType: DataProductFilterType,
-    val: DeployType | V1_IngestEnvironmentClassification | undefined,
+    val:
+      | DeployType
+      | V1_IngestEnvironmentClassification
+      | 'UNKNOWN'
+      | undefined,
   ): void {
     if (filterType === DataProductFilterType.DEPLOY_TYPE) {
       if (val === DeployType.SDLC) {
         this.filter.sdlcDeployFilter = !this.filter.sdlcDeployFilter;
       } else if (val === DeployType.SANDBOX) {
         this.filter.sandboxDeployFilter = !this.filter.sandboxDeployFilter;
+      } else if (val === DeployType.UNKNOWN) {
+        this.filter.unknownDeployFilter = !this.filter.unknownDeployFilter;
       }
     } else {
       if (val === V1_IngestEnvironmentClassification.DEV) {
@@ -366,6 +324,9 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       } else if (val === V1_IngestEnvironmentClassification.PROD) {
         this.filter.prodEnvironmentClassificationFilter =
           !this.filter.prodEnvironmentClassificationFilter;
+      } else if (val === 'UNKNOWN') {
+        this.filter.unknownEnvironmentClassificationFilter =
+          !this.filter.unknownEnvironmentClassificationFilter;
       }
     }
     LegendMarketplaceUserDataHelper.saveDataProductFilterConfig(
@@ -382,120 +343,50 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     this.sort = sort;
   }
 
-  async fetchDataProducts(): Promise<void> {
+  async fetchDataProducts(token: string | undefined): Promise<void> {
     try {
-      this.loadingProductsState.inProgress();
-      // we will show both released and snapshot versions for now to support deployment via workspaces
-      const dataProductEntitySummaries = (
-        await Promise.all([
-          this.depotServerClient.getEntitiesSummaryByClassifier(
-            CORE_PURE_PATH.DATA_PRODUCT,
-            {
-              scope: DepotScope.RELEASES,
-              summary: true,
-            },
-          ),
-          this.depotServerClient.getEntitiesSummaryByClassifier(
-            CORE_PURE_PATH.DATA_PRODUCT,
-            {
-              scope: DepotScope.SNAPSHOT,
-              summary: true,
-            },
-          ),
-        ])
-      )
-        .flat()
-        .map((e: PlainObject<StoredSummaryEntity>) =>
-          StoredSummaryEntity.serialization.fromJson(e),
+      this.loadingAllProductsState.inProgress();
+      const rawResponse =
+        await this.lakehouseContractServerClient.getDataProducts(token);
+      const dataProductDetails =
+        V1_entitlementsDataProductDetailsResponseToDataProductDetails(
+          rawResponse,
         );
-      // Store summary information in the product state map
-      dataProductEntitySummaries.forEach((entitySummary) => {
-        const key =
-          generateGAVCoordinates(
-            entitySummary.groupId,
-            entitySummary.artifactId,
-            undefined,
-          ) +
-          GAV_DELIMITER +
-          entitySummary.path;
-        if (!this.productStatesMap.has(key)) {
-          runInAction(() => {
-            this.productStatesMap.set(key, new DataProductState(this));
-          });
-        }
-        const productState = guaranteeNonNullable(
-          this.productStatesMap.get(key),
-        );
-        productState.setProductEntity(
-          entitySummary.versionId,
-          new DataProductEntity(
-            entitySummary.groupId,
-            entitySummary.artifactId,
-            entitySummary.versionId,
-            entitySummary.path,
-          ),
-        );
-      });
-      // Set the currentProductEntity for each product state to the latest version (or if no released versions, just pick the first snapshot version)
-      this.productStatesMap.forEach((dataProductState) => {
-        const productEntities = Array.from(
-          dataProductState.productEntityMap.values(),
-        );
-        const latestReleasedEntity = productEntities
-          .filter((entity) => !isSnapshotVersion(entity.versionId))
-          .sort((a, b) => b.versionId.localeCompare(a.versionId))[0];
-        if (latestReleasedEntity) {
-          dataProductState.setSelectedVersion(latestReleasedEntity.versionId);
-        } else if (productEntities[0]) {
-          dataProductState.setSelectedVersion(productEntities[0].versionId);
-        }
-      });
-      this.loadingProductsState.complete();
-      // Fetch the data product content for each entity summary and update the product state map.
-      await Promise.all(
-        // TODO: explore a different way to get data product content to avoid overloading metadata server
-        // as the number of data products increases.
-        dataProductEntitySummaries.map(async (entitySummary) => {
-          const key =
-            generateGAVCoordinates(
-              entitySummary.groupId,
-              entitySummary.artifactId,
-              undefined,
-            ) +
-            GAV_DELIMITER +
-            entitySummary.path;
-          const dataProductEntity = this.productStatesMap
-            .get(key)
-            ?.productEntityMap.get(entitySummary.versionId);
-          if (dataProductEntity) {
-            dataProductEntity.loadingEntityState.inProgress();
-            try {
-              const entity = await this.depotServerClient.getVersionEntity(
-                entitySummary.groupId,
-                entitySummary.artifactId,
-                entitySummary.versionId,
-                entitySummary.path,
-              );
-              const dataProduct = guaranteeType(
-                V1_deserializePackageableElement(
-                  entity.content as PlainObject<V1_DataProduct>,
-                  [],
-                ),
-                V1_DataProduct,
-              );
-              dataProductEntity.setProduct(dataProduct);
-            } finally {
-              dataProductEntity.loadingEntityState.complete();
-            }
-          }
-        }),
+
+      // Crete graph manager for parsing ad-hoc deployed data products
+      const graphManager = new V1_PureGraphManager(
+        this.applicationStore.pluginManager,
+        this.applicationStore.logService,
+        this.marketplaceBaseStore.remoteEngine,
       );
+      await graphManager.initialize(
+        {
+          env: this.applicationStore.config.env,
+          tabSize: DEFAULT_TAB_SIZE,
+          clientConfig: {
+            baseUrl: this.applicationStore.config.engineServerUrl,
+          },
+        },
+        { engine: this.marketplaceBaseStore.remoteEngine },
+      );
+
+      const fetchedDataProductStates = dataProductDetails
+        .map(
+          (dataProductDetail) =>
+            new DataProductState(this, graphManager, dataProductDetail),
+        )
+        .sort((a, b) => a.title.localeCompare(b.title));
+      this.setDataProductStates(fetchedDataProductStates);
+      this.dataProductStates.forEach((dataProductState) =>
+        dataProductState.init(),
+      );
+      this.loadingAllProductsState.complete();
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(
         `Unable to load products: ${error.message}`,
       );
-      this.loadingProductsState.fail();
+      this.loadingAllProductsState.fail();
     }
   }
 
@@ -544,53 +435,6 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     }
   }
 
-  async fetchLakehouseEnvironmentsByDID(
-    dids: string[],
-    token: string | undefined,
-  ): Promise<void> {
-    try {
-      this.loadingLakehouseEnvironmentsByDIDState.inProgress();
-      const didsAndEnvironments = (
-        await Promise.all(
-          dids.map(async (did) => {
-            try {
-              return [
-                did,
-                IngestDeploymentServerConfig.serialization.fromJson(
-                  await this.lakehousePlatformServerClient.findProducerServer(
-                    parseInt(did),
-                    V1_AppDirLevel.DEPLOYMENT,
-                    token,
-                  ),
-                ),
-              ] as [string, IngestDeploymentServerConfig];
-            } catch (error) {
-              assertErrorThrown(error);
-              this.applicationStore.notificationService.notifyError(
-                `Unable to load lakehouse environment for DID ${did}: ${error.message}`,
-              );
-              return undefined;
-            }
-          }),
-        )
-      ).filter(isNonNullable);
-      const didToEnvironment = new Map<string, IngestDeploymentServerConfig>(
-        this.lakehouseIngestEnvironmentsByDID,
-      );
-      didsAndEnvironments.forEach(([did, environment]) => {
-        didToEnvironment.set(did, environment);
-      });
-      this.setLakehouseIngestEnvironmentsByDID(didToEnvironment);
-      this.loadingLakehouseEnvironmentsByDIDState.complete();
-    } catch (error) {
-      assertErrorThrown(error);
-      this.applicationStore.notificationService.notifyError(
-        `Unable to load lakehouse environments by DID: ${error.message}`,
-      );
-      this.loadingLakehouseEnvironmentsByDIDState.fail();
-    }
-  }
-
   async fetchLakehouseEnvironmentDetails(
     token: string | undefined,
   ): Promise<void> {
@@ -627,71 +471,11 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     }
   }
 
-  async fetchSandboxDataProducts(token: string | undefined): Promise<void> {
-    try {
-      this.loadingSandboxDataProductStates.inProgress();
-      const ingestUrnsAndRawResponses: {
-        ingestEnvironmentUrn: string;
-        response: PlainObject<V1_SandboxDataProductDeploymentResponse>;
-      }[] = (
-        await Promise.all(
-          this.lakehouseIngestEnvironmentSummaries.map(async (env) => {
-            try {
-              const response =
-                await this.lakehouseIngestServerClient.getDeployedIngestDefinitions(
-                  env.ingestServerUrl,
-                  token,
-                );
-              return {
-                ingestEnvironmentUrn: env.ingestEnvironmentUrn,
-                response,
-              };
-            } catch {
-              return undefined;
-            }
-          }),
-        )
-      )
-        .flat()
-        .filter(isNonNullable) as {
-        ingestEnvironmentUrn: string;
-        response: PlainObject<V1_SandboxDataProductDeploymentResponse>;
-      }[];
-      const ingestUrnsAndDataProducts = ingestUrnsAndRawResponses
-        .map((ingestUrnAndResponse) =>
-          V1_SandboxDataProductDeploymentResponse.serialization
-            .fromJson(ingestUrnAndResponse.response)
-            .deployedDataProducts.map((deployedDataProduct) => ({
-              ingestEnvironmentUrn: ingestUrnAndResponse.ingestEnvironmentUrn,
-              dataProduct: deployedDataProduct,
-            })),
-        )
-        .flat();
-      const sandboxDataProductStates: SandboxDataProductState[] =
-        ingestUrnsAndDataProducts.map(
-          (ingestUrlAndDataProduct) =>
-            new SandboxDataProductState(
-              this,
-              ingestUrlAndDataProduct.ingestEnvironmentUrn,
-              ingestUrlAndDataProduct.dataProduct,
-            ),
-        );
-      this.setSandboxDataProductStates(sandboxDataProductStates);
-      this.loadingSandboxDataProductStates.complete();
-    } catch (error) {
-      assertErrorThrown(error);
-      this.applicationStore.notificationService.notifyError(
-        `Unable to fetch sandbox data products: ${error.message}`,
-      );
-      this.loadingSandboxDataProductStates.fail();
-    }
-  }
-
   *init(auth: AuthContextProps): GeneratorFn<void> {
     yield Promise.all([
       (async () => {
-        if (!this.loadingProductsState.hasCompleted) {
-          await this.fetchDataProducts();
+        if (!this.loadingAllProductsState.hasCompleted) {
+          await this.fetchDataProducts(auth.user?.access_token);
         }
       })(),
       (async () => {
@@ -699,115 +483,104 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
           await this.fetchLakehouseEnvironmentSummaries(
             auth.user?.access_token,
           );
-          await Promise.all([
-            (async () => {
-              await this.fetchSandboxDataProducts(auth.user?.access_token);
-              await this.fetchLakehouseEnvironmentsByDID(
-                this.sandboxDataProductStates
-                  .map(
-                    (state) =>
-                      state.dataProductArtifact?.dataProduct.deploymentId,
-                  )
-                  .filter(isNonNullable),
-                auth.user?.access_token,
-              );
-            })(),
-            this.fetchLakehouseEnvironmentDetails(auth.user?.access_token),
-          ]);
+          await this.fetchLakehouseEnvironmentDetails(auth.user?.access_token);
         }
       })(),
     ]);
   }
 
   *initWithProduct(
-    gav: string,
-    path: string,
+    dataProductId: string,
+    deploymentId: number,
     auth: AuthContextProps,
   ): GeneratorFn<void> {
     try {
-      this.loadingProductsState.inProgress();
-      const projectData = VersionedProjectData.serialization.fromJson(
-        parseGAVCoordinates(gav) as unknown as PlainObject,
-      );
-      const storeProject = new StoreProjectData();
-      storeProject.groupId = projectData.groupId;
-      storeProject.artifactId = projectData.artifactId;
-      const v1DataProduct = deserialize(
-        V1_dataProductModelSchema,
-        (
-          (yield this.depotServerClient.getVersionEntity(
-            projectData.groupId,
-            projectData.artifactId,
-            resolveVersion(projectData.versionId),
-            path,
-          )) as Entity
-        ).content,
-      );
-      const files = (yield this.depotServerClient.getGenerationFilesByType(
-        storeProject,
-        resolveVersion(projectData.versionId),
-        ARTIFACT_GENERATION_DAT_PRODUCT_KEY,
-      )) as StoredFileGeneration[];
-      const fileGen = files.filter((e) => e.path === v1DataProduct.path)[0]
-        ?.file.content;
-      let parsed: DataProductArtifactGeneration | undefined = undefined;
-      if (fileGen) {
-        const content: PlainObject = JSON.parse(fileGen) as PlainObject;
-        const gen =
-          DataProductArtifactGeneration.serialization.fromJson(content);
-        gen.content = content;
-        parsed = gen;
+      this.loadingProductState.inProgress();
+      const rawResponse =
+        (yield this.lakehouseContractServerClient.getDataProductByIdAndDID(
+          dataProductId,
+          deploymentId,
+          auth.user?.access_token,
+        )) as PlainObject<V1_EntitlementsDataProductDetailsResponse>;
+      const fetchedDataProductDetails =
+        V1_entitlementsDataProductDetailsResponseToDataProductDetails(
+          rawResponse,
+        );
+      if (fetchedDataProductDetails.length === 0) {
+        throw new Error(
+          `No data products found for ID ${dataProductId} and DID ${deploymentId}`,
+        );
+      } else if (fetchedDataProductDetails.length > 1) {
+        throw new Error(
+          `Multiple data products found for ID ${dataProductId} and DID ${deploymentId}`,
+        );
       }
+
+      const dataProductDetails = guaranteeNonNullable(
+        fetchedDataProductDetails[0],
+      );
+      // Crete graph manager for parsing ad-hoc deployed data products
+      const graphManager = new V1_PureGraphManager(
+        this.applicationStore.pluginManager,
+        this.applicationStore.logService,
+        this.marketplaceBaseStore.remoteEngine,
+      );
+      yield graphManager.initialize(
+        {
+          env: this.marketplaceBaseStore.applicationStore.config.env,
+          tabSize: DEFAULT_TAB_SIZE,
+          clientConfig: {
+            baseUrl:
+              this.marketplaceBaseStore.applicationStore.config.engineServerUrl,
+          },
+        },
+        { engine: this.marketplaceBaseStore.remoteEngine },
+      );
+      const graphManagerState = new GraphManagerState(
+        this.applicationStore.pluginManager,
+        this.applicationStore.logService,
+      );
+      yield graphManagerState.initializeSystem();
+      const v1DataProduct = guaranteeType(
+        yield getDataProductFromDetails(
+          dataProductDetails,
+          graphManagerState,
+          graphManager,
+          this.marketplaceBaseStore,
+        ),
+        V1_DataProduct,
+        `Unable to get V1_DataProduct from details for id: ${dataProductDetails.id}`,
+      );
+
       const stateViewer = new DataProductViewerState(
         this.applicationStore,
         this,
-        new GraphManagerState(
-          this.applicationStore.pluginManager,
-          this.applicationStore.logService,
-        ),
+        graphManagerState,
         this.lakehouseContractServerClient,
-        projectData,
         v1DataProduct,
-        false,
-        parsed,
+        dataProductDetails,
         {
-          retrieveGraphData: () => {
-            const sdlc = new LegendSDLC(
-              projectData.groupId,
-              projectData.artifactId,
-              projectData.versionId,
-            );
-            return new GraphDataWithOrigin(sdlc);
-          },
-
-          viewSDLCProject: () => {
-            return projectIdHandlerFunc(
-              projectData.groupId,
-              projectData.artifactId,
-              projectData.versionId,
-              this.depotServerClient,
-              (projectId: string, resolvedId: string) => {
-                const studioUrl = guaranteeNonNullable(
+          viewDataProductSource: () => {
+            if (
+              dataProductDetails.origin instanceof
+              V1_SdlcDeploymentDataProductOrigin
+            ) {
+              this.applicationStore.navigationService.navigator.visitAddress(
+                EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
                   this.applicationStore.config.studioServerUrl,
-                  'studio url required',
-                );
-                this.applicationStore.navigationService.navigator.visitAddress(
-                  EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl(
-                    studioUrl,
-                    projectId,
-                    resolvedId,
-                    path,
-                  ),
-                );
-              },
-            );
+                  dataProductDetails.origin.group,
+                  dataProductDetails.origin.artifact,
+                  dataProductDetails.origin.version,
+                  v1DataProduct.path,
+                ),
+              );
+            }
           },
-          onZoneChange: undefined,
         },
       );
       this.setDataProductViewerState(stateViewer);
       stateViewer.fetchContracts(auth.user?.access_token);
-      this.loadingProductsState.complete();
+      this.loadingProductState.complete();
       if (!this.loadingLakehouseEnvironmentSummariesState.hasCompleted) {
         yield this.fetchLakehouseEnvironmentSummaries(auth.user?.access_token);
       }
@@ -817,9 +590,9 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(
-        `Unable to load product ${path}: ${error.message}`,
+        `Unable to load product ${dataProductId}: ${error.message}`,
       );
-      this.loadingProductsState.fail();
+      this.loadingProductState.fail();
     }
   }
 
@@ -918,135 +691,60 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       this.loadingProductsState.fail();
     }
   }
-
-  *initWithSandboxProduct(
-    ingestEnvironmentUrn: string,
-    path: string,
-    auth: AuthContextProps,
-  ): GeneratorFn<void> {
+  /**
+   * This is a fallback to support the old data product URL with GAV and path.
+   * We check to see if the data product has been deployed, and if so, we redirect
+   * to the new URL format with data product ID and deployment ID. If not, we show
+   * an error saying the product is not deployed.
+   *
+   * @param gav The GAV coordinates of the product.
+   * @param path The path to the product.
+   */
+  *initWithSDLCProduct(gav: string, path: string): GeneratorFn<void> {
     try {
-      this.loadingProductsState.inProgress();
-      const ingestServerUrl: string = guaranteeNonNullable(
-        this.lakehouseIngestEnvironmentSummaries.find(
-          (summary) => summary.ingestEnvironmentUrn === ingestEnvironmentUrn,
-        )?.ingestServerUrl ??
-          ((yield this.fetchLakehouseEnvironmentSummary(
-            ingestEnvironmentUrn,
-            auth.user?.access_token,
-          ))?.ingestServerUrl as string),
-        `Unable to find ingest server URL for environment ${ingestEnvironmentUrn}`,
+      this.loadingProductState.inProgress();
+      const projectData = VersionedProjectData.serialization.fromJson(
+        parseGAVCoordinates(gav) as unknown as PlainObject,
       );
-      const rawSandboxDataProductResponse: PlainObject<V1_SandboxDataProductDeploymentResponse> =
-        (yield this.lakehouseIngestServerClient.getDeployedIngestDefinitions(
-          ingestServerUrl,
-          auth.user?.access_token,
-        )) as PlainObject<V1_SandboxDataProductDeploymentResponse>;
-      const sandboxDataProduct = guaranteeNonNullable(
-        V1_SandboxDataProductDeploymentResponse.serialization
-          .fromJson(rawSandboxDataProductResponse)
-          .deployedDataProducts.find(
-            (dataProduct) => dataProduct.artifact.dataProduct.path === path,
-          ),
-        `Unable to find data product ${path} deployed at ${ingestServerUrl}`,
+      const storeProject = new StoreProjectData();
+      storeProject.groupId = projectData.groupId;
+      storeProject.artifactId = projectData.artifactId;
+      const v1DataProduct = deserialize(
+        V1_dataProductModelSchema,
+        (
+          (yield this.depotServerClient.getVersionEntity(
+            projectData.groupId,
+            projectData.artifactId,
+            resolveVersion(projectData.versionId),
+            path,
+          )) as Entity
+        ).content,
       );
-      yield Promise.all([
-        (async () => {
-          const graphManager = new V1_PureGraphManager(
-            this.applicationStore.pluginManager,
-            this.applicationStore.logService,
-            this.marketplaceBaseStore.remoteEngine,
-          );
-          await graphManager.initialize(
-            {
-              env: this.applicationStore.config.env,
-              tabSize: DEFAULT_TAB_SIZE,
-              clientConfig: {
-                baseUrl: this.applicationStore.config.engineServerUrl,
-              },
-            },
-            { engine: this.marketplaceBaseStore.remoteEngine },
-          );
-          const graphManagerState = new GraphManagerState(
-            this.applicationStore.pluginManager,
-            this.applicationStore.logService,
-          );
-          const entities: Entity[] = await graphManager.pureCodeToEntities(
-            sandboxDataProduct.definition,
-          );
-          await graphManager.buildGraph(
-            graphManagerState.graph,
-            entities,
-            ActionState.create(),
-          );
-          const v1_DataProduct = guaranteeType(
-            guaranteeNonNullable(
-              graphManager.elementToProtocol(
-                graphManagerState.graph.getElement(
-                  sandboxDataProduct.artifact.dataProduct.path,
-                ),
-              ),
-              `Unable to find ${sandboxDataProduct.artifact.dataProduct.path} in deployed definition`,
-            ),
-            V1_DataProduct,
-            `${sandboxDataProduct.artifact.dataProduct.path} is not a data product`,
-          );
-
-          const stateViewer = new DataProductViewerState(
-            this.applicationStore,
-            this,
-            graphManagerState,
-            this.lakehouseContractServerClient,
-            VersionedProjectData.serialization.fromJson({
-              groupId: '',
-              artifactId: '',
-              versionId: '',
-            }),
-            v1_DataProduct,
-            true,
-            buildDataProductArtifactGeneration({
-              ...V1_DataProductArtifactGeneration.serialization.toJson(
-                sandboxDataProduct.artifact,
-              ),
-              content: V1_DataProductArtifactGeneration.serialization.toJson(
-                sandboxDataProduct.artifact,
-              ),
-            }),
-            {
-              retrieveGraphData: () => {
-                return new InMemoryGraphData(graphManagerState.graph);
-              },
-              viewSDLCProject: () => {
-                throw new Error('Project does not exist in SDLC');
-              },
-              viewIngestEnvironment: () =>
-                this.applicationStore.navigationService.navigator.visitAddress(
-                  EXTERNAL_APPLICATION_NAVIGATION__generateIngestEnvironemntUrl(
-                    ingestServerUrl,
-                  ),
-                ),
-            },
-          );
-          this.setDataProductViewerState(stateViewer);
-          stateViewer.fetchContracts(auth.user?.access_token);
-        })(),
-        this.fetchLakehouseEnvironmentsByDID(
-          [sandboxDataProduct.artifact.dataProduct.deploymentId],
-          auth.user?.access_token,
-        ),
-      ]);
-      this.loadingProductsState.complete();
-      if (!this.loadingLakehouseEnvironmentSummariesState.hasCompleted) {
-        yield this.fetchLakehouseEnvironmentSummaries(auth.user?.access_token);
-      }
-      if (!this.loadingLakehouseEnvironmentDetailsState.hasCompleted) {
-        yield this.fetchLakehouseEnvironmentDetails(auth.user?.access_token);
+      const files = (yield this.depotServerClient.getGenerationFilesByType(
+        storeProject,
+        resolveVersion(projectData.versionId),
+        ARTIFACT_GENERATION_DAT_PRODUCT_KEY,
+      )) as StoredFileGeneration[];
+      const fileGen = files.filter((e) => e.path === v1DataProduct.path)[0]
+        ?.file.content;
+      if (fileGen) {
+        const content: PlainObject = JSON.parse(fileGen) as PlainObject;
+        const gen =
+          DataProductArtifactGeneration.serialization.fromJson(content);
+        const dataProductId = v1DataProduct.name.toUpperCase();
+        const deploymentId = Number(gen.dataProduct.deploymentId);
+        this.applicationStore.navigationService.navigator.goToLocation(
+          generateLakehouseDataProductPath(dataProductId, deploymentId),
+        );
+      } else {
+        throw new Error('File generation not found');
       }
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(
         `Unable to load product ${path}: ${error.message}`,
       );
-      this.loadingProductsState.fail();
+      this.loadingProductState.fail();
     }
   }
 

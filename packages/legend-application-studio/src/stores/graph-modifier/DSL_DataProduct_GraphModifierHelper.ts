@@ -47,6 +47,12 @@ export const accessPoint_setClassification = action(
   },
 );
 
+export const accessPoint_setReproducible = action(
+  (accessPoint: LakehouseAccessPoint, reproducible: boolean | undefined) => {
+    accessPoint.reproducible = reproducible;
+  },
+);
+
 export const accessPointGroup_setDescription = action(
   (group: AccessPointGroup, description: string) => {
     group.description = description;

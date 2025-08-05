@@ -20,15 +20,16 @@ import {
   clsx,
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
+  InfoCircleOutlineIcon,
   MarkdownTextViewer,
   QuestionCircleIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import {
-  DATA_PRODUCT_VIEWER_ACTIVITY_MODE,
-  generateAnchorForActivity,
+  DATA_PRODUCT_VIEWER_SECTION,
+  generateAnchorForSection,
 } from '../../../stores/lakehouse/DataProductViewerNavigation.js';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
 import { useApplicationStore } from '@finos/legend-application';
 import {
@@ -46,6 +47,7 @@ import {
   type V1_RelationTypeColumn,
   extractElementNameFromPath,
   PureClientVersion,
+  V1_AdHocDeploymentDataProductOrigin,
   V1_AppliedFunction,
   V1_AppliedProperty,
   V1_CBoolean,
@@ -66,6 +68,7 @@ import {
   V1_PureModelContextPointer,
   V1_relationTypeModelSchema,
   V1_RenderStyle,
+  V1_SdlcDeploymentDataProductOrigin,
   V1_serializeRawValueSpecification,
 } from '@finos/legend-graph';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
@@ -81,6 +84,7 @@ import {
   MenuItem,
   Tab,
   Tabs,
+  Tooltip,
 } from '@mui/material';
 import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
 import { EntitlementsDataContractCreator } from '../entitlements/EntitlementsDataContractCreator.js';
@@ -88,7 +92,12 @@ import { EntitlementsDataContractViewer } from '../entitlements/EntitlementsData
 import { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
 import { useAuth } from 'react-oidc-context';
 import { DataProductSubscriptionViewer } from '../subscriptions/DataProductSubscriptionsViewer.js';
-import { assertErrorThrown, guaranteeType } from '@finos/legend-shared';
+import {
+  assertErrorThrown,
+  guaranteeNonNullable,
+  guaranteeType,
+  isNonEmptyString,
+} from '@finos/legend-shared';
 import { resolveVersion } from '@finos/legend-server-depot';
 import { deserialize } from 'serializr';
 
@@ -171,30 +180,38 @@ const TDSColumnMoreInfoCellRenderer = (props: {
 
     const fetchAccessPointRelationType = async () => {
       try {
-        const model = accessGroupState.accessState.viewerState.isSandboxProduct
-          ? guaranteeType(
-              accessGroupState.accessState.viewerState.graphManagerState
-                .graphManager,
-              V1_PureGraphManager,
-            ).getFullGraphModelData(
-              accessGroupState.accessState.viewerState.graphManagerState.graph,
-            )
-          : new V1_PureModelContextPointer(
-              // TODO: remove as backend should handle undefined protocol input
-              new V1_Protocol(
-                V1_PureGraphManager.PURE_PROTOCOL_NAME,
-                PureClientVersion.VX_X_X,
-              ),
-              new V1_LegendSDLC(
-                accessGroupState.accessState.viewerState.project.groupId,
-                accessGroupState.accessState.viewerState.project.artifactId,
-                resolveVersion(
-                  accessGroupState.accessState.viewerState.project.versionId,
-                ),
-              ),
-            );
+        const origin =
+          accessGroupState.accessState.viewerState
+            .entitlementsDataProductDetails.origin;
+        const model =
+          origin instanceof V1_AdHocDeploymentDataProductOrigin
+            ? guaranteeType(
+                accessGroupState.accessState.viewerState.graphManagerState
+                  .graphManager,
+                V1_PureGraphManager,
+              ).getFullGraphModelData(
+                accessGroupState.accessState.viewerState.graphManagerState
+                  .graph,
+              )
+            : origin instanceof V1_SdlcDeploymentDataProductOrigin
+              ? new V1_PureModelContextPointer(
+                  // TODO: remove as backend should handle undefined protocol input
+                  new V1_Protocol(
+                    V1_PureGraphManager.PURE_PROTOCOL_NAME,
+                    PureClientVersion.VX_X_X,
+                  ),
+                  new V1_LegendSDLC(
+                    origin.group,
+                    origin.artifact,
+                    resolveVersion(origin.version),
+                  ),
+                )
+              : undefined;
         const relationTypeInput = new V1_LambdaReturnTypeInput(
-          model,
+          guaranteeNonNullable(
+            model,
+            `Unable to get model from data product origin of type ${origin?.constructor.name}`,
+          ),
           data.func,
         );
         const relationType = deserialize(
@@ -359,6 +376,20 @@ export const DataProductAccessPointGroupViewer = observer(
       useState(false);
     const requestAccessButtonGroupRef = useRef<HTMLDivElement | null>(null);
 
+    const entitlementsDataContractViewerState = useMemo(
+      () =>
+        accessGroupState.accessState.viewerState.dataContract
+          ? new EntitlementsDataContractViewerState(
+              accessGroupState.accessState.viewerState.dataContract,
+              accessGroupState.accessState.viewerState.lakeServerClient,
+            )
+          : undefined,
+      [
+        accessGroupState.accessState.viewerState.dataContract,
+        accessGroupState.accessState.viewerState.lakeServerClient,
+      ],
+    );
+
     useEffect(() => {
       if (
         accessGroupState.access === AccessPointGroupAccess.APPROVED &&
@@ -370,7 +401,7 @@ export const DataProductAccessPointGroupViewer = observer(
           auth.user?.access_token,
         );
       }
-    });
+    }, [accessGroupState, auth.user?.access_token]);
 
     const handleContractsClick = (): void => {
       accessGroupState.handleContractClick();
@@ -381,6 +412,12 @@ export const DataProductAccessPointGroupViewer = observer(
     };
 
     const renderAccess = (val: AccessPointGroupAccess): React.ReactNode => {
+      const tooltipText =
+        accessGroupState.accessState.viewerState.applicationStore.pluginManager
+          .getApplicationPlugins()
+          .flatMap((plugin) => plugin.getExtraAccessPointGroupAccessInfo?.(val))
+          .filter(isNonEmptyString)[0];
+
       switch (val) {
         case AccessPointGroupAccess.UNKNOWN:
           return (
@@ -397,6 +434,21 @@ export const DataProductAccessPointGroupViewer = observer(
                   }
                 >
                   UNKNOWN
+                  {tooltipText !== undefined && (
+                    <Tooltip
+                      className="data-space__viewer__access-group__item__access__tooltip__icon"
+                      title={tooltipText}
+                      arrow={true}
+                      slotProps={{
+                        tooltip: {
+                          className:
+                            'data-space__viewer__access-group__item__access__tooltip',
+                        },
+                      }}
+                    >
+                      <InfoCircleOutlineIcon />
+                    </Tooltip>
+                  )}
                 </Button>
                 <Button
                   size="small"
@@ -430,7 +482,7 @@ export const DataProductAccessPointGroupViewer = observer(
           return (
             <Button
               variant="contained"
-              color="error"
+              color="primary"
               onClick={handleContractsClick}
               loading={
                 accessGroupState.fetchingAccessState.isInProgress ||
@@ -438,6 +490,21 @@ export const DataProductAccessPointGroupViewer = observer(
               }
             >
               REQUEST ACCESS
+              {tooltipText !== undefined && (
+                <Tooltip
+                  className="data-space__viewer__access-group__item__access__tooltip__icon"
+                  title={tooltipText}
+                  arrow={true}
+                  slotProps={{
+                    tooltip: {
+                      className:
+                        'data-space__viewer__access-group__item__access__tooltip',
+                    },
+                  }}
+                >
+                  <InfoCircleOutlineIcon />
+                </Tooltip>
+              )}
             </Button>
           );
         case AccessPointGroupAccess.PENDING_MANAGER_APPROVAL:
@@ -446,7 +513,7 @@ export const DataProductAccessPointGroupViewer = observer(
             <>
               <ButtonGroup
                 variant="contained"
-                color="primary"
+                color="warning"
                 ref={requestAccessButtonGroupRef}
               >
                 <Button
@@ -459,6 +526,21 @@ export const DataProductAccessPointGroupViewer = observer(
                   {val === AccessPointGroupAccess.PENDING_MANAGER_APPROVAL
                     ? 'PENDING MANAGER APPROVAL'
                     : 'PENDING DATA OWNER APPROVAL'}
+                  {tooltipText !== undefined && (
+                    <Tooltip
+                      className="data-space__viewer__access-group__item__access__tooltip__icon"
+                      title={tooltipText}
+                      arrow={true}
+                      slotProps={{
+                        tooltip: {
+                          className:
+                            'data-space__viewer__access-group__item__access__tooltip',
+                        },
+                      }}
+                    >
+                      <InfoCircleOutlineIcon />
+                    </Tooltip>
+                  )}
                 </Button>
                 <Button
                   size="small"
@@ -503,6 +585,21 @@ export const DataProductAccessPointGroupViewer = observer(
                   }
                 >
                   ENTITLED
+                  {tooltipText !== undefined && (
+                    <Tooltip
+                      className="data-space__viewer__access-group__item__access__tooltip__icon"
+                      title={tooltipText}
+                      arrow={true}
+                      slotProps={{
+                        tooltip: {
+                          className:
+                            'data-space__viewer__access-group__item__access__tooltip',
+                        },
+                      }}
+                    >
+                      <InfoCircleOutlineIcon />
+                    </Tooltip>
+                  )}
                 </Button>
                 <Button
                   size="small"
@@ -530,6 +627,35 @@ export const DataProductAccessPointGroupViewer = observer(
                 </MenuItem>
               </Menu>
             </>
+          );
+        case AccessPointGroupAccess.ENTERPRISE:
+          return (
+            <Button
+              variant="contained"
+              color="success"
+              loading={
+                accessGroupState.fetchingAccessState.isInProgress ||
+                accessGroupState.fetchingUserAccessStatus.isInProgress
+              }
+              sx={{ cursor: 'default' }}
+            >
+              ENTERPRISE ACCESS
+              {tooltipText !== undefined && (
+                <Tooltip
+                  className="data-space__viewer__access-group__item__access__tooltip__icon"
+                  title={tooltipText}
+                  arrow={true}
+                  slotProps={{
+                    tooltip: {
+                      className:
+                        'data-space__viewer__access-group__item__access__tooltip',
+                    },
+                  }}
+                >
+                  <InfoCircleOutlineIcon />
+                </Tooltip>
+              )}
+            </Button>
           );
         default:
           return null;
@@ -662,17 +788,11 @@ export const DataProductAccessPointGroupViewer = observer(
             accessGroupState={accessGroupState}
           />
         )}
-        {accessGroupState.accessState.viewerState.dataContract && (
+        {entitlementsDataContractViewerState && (
           <EntitlementsDataContractViewer
             open={true}
-            currentViewer={
-              new EntitlementsDataContractViewerState(
-                accessGroupState.accessState.viewerState.dataContract,
-                accessGroupState.accessState.viewerState.lakeServerClient,
-              )
-            }
+            currentViewer={entitlementsDataContractViewerState}
             dataProductGroupAccessState={accessGroupState}
-            dataProductViewerState={accessGroupState.accessState.viewerState}
             onClose={() =>
               accessGroupState.accessState.viewerState.setDataContract(
                 undefined,
@@ -696,8 +816,8 @@ export const DataProducteDataAccess = observer(
     const applicationStore = useApplicationStore();
     const documentationUrl = 'todo.com';
     const sectionRef = useRef<HTMLDivElement>(null);
-    const anchor = generateAnchorForActivity(
-      DATA_PRODUCT_VIEWER_ACTIVITY_MODE.DATA_ACCESS,
+    const anchor = generateAnchorForSection(
+      DATA_PRODUCT_VIEWER_SECTION.DATA_ACCESS,
     );
     useEffect(() => {
       if (sectionRef.current) {

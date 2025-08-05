@@ -28,6 +28,10 @@ import {
   CustomSelectorInput,
   createFilter,
   DataAccessIcon,
+  ControlledDropdownMenu,
+  MenuContent,
+  MenuContentItem,
+  CaretDownIcon,
 } from '@finos/legend-art';
 import {
   type PackageableConnection,
@@ -47,6 +51,7 @@ import {
   buildRelationalDatabaseConnectionOption,
 } from '../connection-editor/RelationalDatabaseConnectionEditor.js';
 import { ActivatorOwnershipForm } from './ActivatorFormComponents.js';
+import { ActivatorArtifactViewer } from './ActivatorArtifactViewer.js';
 
 export const SnowflakeAppFunctionActivatorEditor = observer(() => {
   const editorStore = useEditorStore();
@@ -133,6 +138,11 @@ export const SnowflakeAppFunctionActivatorEditor = observer(() => {
       applicationStore.alertUnhandledError,
     );
   };
+  const renderArtifact = (): void => {
+    flowResult(editorState.renderArtifact()).catch(
+      applicationStore.alertUnhandledError,
+    );
+  };
   const deploy = (): void => {
     flowResult(editorState.deployToSandbox()).catch(
       applicationStore.alertUnhandledError,
@@ -146,6 +156,7 @@ export const SnowflakeAppFunctionActivatorEditor = observer(() => {
         <PanelLoadingIndicator
           isLoading={Boolean(
             editorState.validateState.isInProgress ||
+              editorState.renderArtifactState.isInProgress ||
               editorState.deployState.isInProgress,
           )}
         />
@@ -155,24 +166,55 @@ export const SnowflakeAppFunctionActivatorEditor = observer(() => {
               Snowflake Activator Metadata
             </div>
             <div className="snowflake-app-function-activator-editor__header__actions">
-              <button
-                className="snowflake-app-function-activator-editor__header__actions__action snowflake-app-function-activator-editor__header__actions__action--primary"
-                onClick={validate}
-                disabled={editorState.validateState.isInProgress}
-                tabIndex={-1}
-                title="Click Validate to verify your activator before deployment"
-              >
-                Validate
-              </button>
-              <button
-                className="snowflake-app-function-activator-editor__header__actions__action snowflake-app-function-activator-editor__header__actions__action--primary"
-                onClick={deploy}
-                disabled={editorState.deployState.isInProgress}
-                title="Deploy to sandbox"
-                tabIndex={-1}
-              >
-                Deploy to Sandbox
-              </button>
+              <div className="snowflake-app-function-activator-editor__header__actions btn__dropdown-combo--primary">
+                <button
+                  className="snowflake-app-function-activator-editor__header__actions__action snowflake-app-function-activator-editor__header__actions__action--primary"
+                  onClick={validate}
+                  disabled={editorState.validateState.isInProgress}
+                  tabIndex={-1}
+                  title="Click Validate to verify your activator before deployment"
+                >
+                  Validate
+                </button>
+                <ControlledDropdownMenu
+                  className="snowflake-app-function-activator-editor__header__actions btn__dropdown-combo btn__dropdown-combo__dropdown-btn"
+                  title="activator-artifact-dropdown"
+                  content={
+                    <MenuContent>
+                      <MenuContentItem
+                        className="btn__dropdown-combo__option"
+                        onClick={renderArtifact}
+                        title="Render artifact"
+                      >
+                        Render Artifact
+                      </MenuContentItem>
+                    </MenuContent>
+                  }
+                  menuProps={{
+                    anchorOrigin: {
+                      vertical: 'bottom',
+                      horizontal: 'right',
+                    },
+                    transformOrigin: {
+                      vertical: 'top',
+                      horizontal: 'right',
+                    },
+                  }}
+                >
+                  <CaretDownIcon />
+                </ControlledDropdownMenu>
+              </div>
+              <div className="snowflake-app-function-activator-editor__header__actions btn__dropdown-combo--primary">
+                <button
+                  className="snowflake-app-function-activator-editor__header__actions__action snowflake-app-function-activator-editor__header__actions__action--primary"
+                  onClick={deploy}
+                  disabled={editorState.deployState.isInProgress}
+                  title="Deploy to sandbox"
+                  tabIndex={-1}
+                >
+                  Deploy to Sandbox
+                </button>
+              </div>
             </div>
           </div>
           <PanelForm>
@@ -334,6 +376,14 @@ export const SnowflakeAppFunctionActivatorEditor = observer(() => {
               isReadOnly={isReadOnly}
             />
           </PanelForm>
+          <ActivatorArtifactViewer
+            artifact={editorState.artifact}
+            setArtifact={(value) => editorState.setArtifact(value)}
+            darkMode={
+              !applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
+            }
+          />
         </PanelContent>
       </Panel>
     </div>

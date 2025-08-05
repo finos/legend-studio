@@ -76,23 +76,65 @@ import { V1_transformEmbeddedData } from './V1_DataElementTransformer.js';
 import { V1_transformTestAssertion } from './V1_TestTransformer.js';
 import { V1_DefaultValue } from '../../../model/packageableElements/domain/V1_DefaultValue.js';
 import { PackageableElementPointerType } from '../../../../../../../graph/MetaModelConst.js';
-import { V1_createGenericTypeWithElementPath } from '../../../helpers/V1_DomainHelper.js';
+import {
+  V1_createGenericTypeWithElementPath,
+  V1_createRelationTypeColumnWithGenericType,
+} from '../../../helpers/V1_DomainHelper.js';
 import { V1_PackageableElementPointer } from '../../../model/packageableElements/V1_PackageableElement.js';
 import type { GenericType } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/GenericType.js';
-import type { V1_GenericType } from '../../../model/packageableElements/type/V1_GenericType.js';
+import { V1_GenericType } from '../../../model/packageableElements/type/V1_GenericType.js';
+import type { V1_Type } from '../../../model/packageableElements/type/V1_Type.js';
+import { RelationType } from '../../../../../../../graph/metamodel/pure/packageableElements/relation/RelationType.js';
+import { V1_PackageableType } from '../../../model/packageableElements/type/V1_PackageableType.js';
+import type { Type } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Type.js';
+import { V1_RelationType } from '../../../model/packageableElements/type/V1_RelationType.js';
+import { V1_transformRootValueSpecification } from './V1_ValueSpecificationTransformer.js';
 
 export const V1_createGenericType = (
   genericType: GenericType,
 ): V1_GenericType => {
-  const protocolGenType = V1_createGenericTypeWithElementPath(
-    genericType.rawType.path,
-  );
+  const v1Type = V1_transformGenericType_Type(genericType.rawType);
+  const protocolGenType = new V1_GenericType();
+  protocolGenType.rawType = v1Type;
   const typeArguments = genericType.typeArguments ?? [];
   protocolGenType.typeArguments = typeArguments.map((t) =>
     V1_createGenericType(t.value),
   );
+  protocolGenType.typeVariableValues =
+    genericType.typeVariableValues?.map((v) =>
+      V1_transformRootValueSpecification(v),
+    ) ?? [];
   return protocolGenType;
 };
+
+export function V1_transformGenericType_Type(type: Type): V1_Type {
+  if (type instanceof RelationType) {
+    return V1_transformGenericType_RelationType(type);
+  }
+  const pType = new V1_PackageableType();
+  pType.fullPath = type.path;
+  return pType;
+}
+
+export function V1_transformGenericType_RelationType(
+  path: RelationType,
+): V1_RelationType {
+  const genType = new V1_RelationType();
+  genType.columns = path.columns.map((col) =>
+    V1_createRelationTypeColumnWithGenericType(
+      col.name,
+      V1_createGenericType(col.genericType.value),
+      col.multiplicity,
+    ),
+  );
+  return genType;
+}
+
+export function V1_createGenericTypeWithRawType(type: V1_Type): V1_GenericType {
+  const genType = new V1_GenericType();
+  genType.rawType = type;
+  return genType;
+}
 
 export const V1_createRawGenericTypeWithElementPath = (
   path: string,

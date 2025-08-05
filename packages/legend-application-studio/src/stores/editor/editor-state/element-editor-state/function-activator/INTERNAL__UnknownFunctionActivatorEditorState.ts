@@ -21,7 +21,7 @@ import {
 } from '@finos/legend-graph';
 import type { EditorStore } from '../../../EditorStore.js';
 import { ElementEditorState } from '../ElementEditorState.js';
-import { action, flow, makeObservable } from 'mobx';
+import { action, flow, makeObservable, observable } from 'mobx';
 import {
   ActionState,
   assertErrorThrown,
@@ -35,8 +35,10 @@ import { FUNCTION_ACTIVATOR_EXCLUDED_PATHS } from '../ToDelete_FunctionActivator
 export class INTERNAL__UnknownFunctionActivatorEdtiorState extends ElementEditorState {
   readonly activator: INTERNAL__UnknownFunctionActivator;
   readonly validateState = ActionState.create();
+  readonly renderArtifactState = ActionState.create();
   readonly publishToSandboxState = ActionState.create();
   protocolValueBuilderState?: ProtocolValueBuilderState | undefined;
+  artifact: PlainObject | undefined;
 
   constructor(
     editorStore: EditorStore,
@@ -47,6 +49,9 @@ export class INTERNAL__UnknownFunctionActivatorEdtiorState extends ElementEditor
     makeObservable(this, {
       reprocess: action,
       validate: flow,
+      renderArtifact: flow,
+      artifact: observable,
+      setArtifact: action,
       publishToSandbox: flow,
     });
 
@@ -88,6 +93,10 @@ export class INTERNAL__UnknownFunctionActivatorEdtiorState extends ElementEditor
       : undefined;
   }
 
+  setArtifact(newArtifact: PlainObject | undefined): void {
+    this.artifact = newArtifact;
+  }
+
   *validate(): GeneratorFn<void> {
     this.validateState.inProgress();
     try {
@@ -103,6 +112,23 @@ export class INTERNAL__UnknownFunctionActivatorEdtiorState extends ElementEditor
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.validateState.complete();
+    }
+  }
+
+  *renderArtifact(): GeneratorFn<void> {
+    this.renderArtifactState.inProgress();
+    try {
+      const artifact =
+        (yield this.editorStore.graphManagerState.graphManager.renderFunctionActivatorArtifact(
+          this.activator,
+          new InMemoryGraphData(this.editorStore.graphManagerState.graph),
+        )) as PlainObject;
+      this.artifact = artifact;
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
+    } finally {
+      this.renderArtifactState.complete();
     }
   }
 

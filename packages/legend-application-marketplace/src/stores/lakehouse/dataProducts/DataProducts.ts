@@ -14,215 +14,121 @@
  * limitations under the License.
  */
 
-import { action, computed, makeObservable, observable } from 'mobx';
-import { ActionState, isNonEmptyString, uuid } from '@finos/legend-shared';
+import { flow, makeObservable, observable } from 'mobx';
 import {
-  ELEMENT_PATH_DELIMITER,
-  type V1_DataProduct,
-  type V1_DataProductArtifactGeneration,
-  type V1_DataProductDefinitionAndArtifact,
+  ActionState,
+  assertErrorThrown,
+  type GeneratorFn,
+} from '@finos/legend-shared';
+import {
+  type V1_EntitlementsDataProductDetails,
+  type V1_EntitlementsLakehouseEnvironmentType,
+  type V1_PureGraphManager,
+  GraphManagerState,
+  V1_AdHocDeploymentDataProductOrigin,
+  V1_DataProduct,
+  V1_SdlcDeploymentDataProductOrigin,
 } from '@finos/legend-graph';
 import type { MarketplaceLakehouseStore } from '../MarketplaceLakehouseStore.js';
-
-export class DataProductEntity {
-  product: V1_DataProduct | undefined;
-  groupId!: string;
-  artifactId!: string;
-  versionId!: string;
-  path!: string;
-
-  loadingEntityState = ActionState.create();
-
-  constructor(
-    groupId: string,
-    artifactId: string,
-    versionId: string,
-    path: string,
-  ) {
-    this.groupId = groupId;
-    this.artifactId = artifactId;
-    this.versionId = versionId;
-    this.path = path;
-
-    makeObservable(this, {
-      groupId: observable,
-      artifactId: observable,
-      versionId: observable,
-      path: observable,
-      product: observable,
-      loadingEntityState: observable,
-      setProduct: action,
-      title: computed,
-    });
-  }
-
-  setProduct(product: V1_DataProduct | undefined): void {
-    this.product = product;
-  }
-
-  get title(): string {
-    return (
-      this.product?.title ?? this.path.split(ELEMENT_PATH_DELIMITER).pop() ?? ''
-    );
-  }
-}
+import { getDataProductFromDetails } from '../LakehouseUtils.js';
 
 export enum DataProductType {
   LAKEHOUSE = 'LAKEHOUSE',
   UNKNOWN = 'UNKNOWN',
 }
 
-export abstract class BaseDataProductState {
-  readonly state: MarketplaceLakehouseStore;
-  readonly id: string;
-  abstract accessTypes: DataProductType;
-  abstract isLoading: boolean;
-  abstract title: string;
-  abstract description: string | undefined;
-  abstract icon: string | undefined;
-  abstract imageUrl: string | undefined;
-  abstract isInitialized: boolean;
-  abstract versionOptions: string[];
-  abstract setSelectedVersion(versionId: string): void;
-
-  constructor(state: MarketplaceLakehouseStore) {
-    this.id = uuid();
-    this.state = state;
-
-    makeObservable(this, {
-      id: observable,
-      accessTypes: computed,
-      isLoading: computed,
-      title: computed,
-      description: computed,
-      icon: computed,
-      imageUrl: computed,
-      isInitialized: computed,
-      versionOptions: computed,
-      setSelectedVersion: action,
-    });
-  }
-}
-
-export class DataProductState extends BaseDataProductState {
-  productEntityMap: Map<string, DataProductEntity>;
-  currentProductEntity: DataProductEntity | undefined;
-
-  constructor(state: MarketplaceLakehouseStore) {
-    super(state);
-
-    this.productEntityMap = new Map<string, DataProductEntity>();
-
-    makeObservable(this, {
-      productEntityMap: observable,
-      currentProductEntity: observable,
-      setProductEntity: action,
-    });
-  }
-
-  get accessTypes(): DataProductType {
-    return DataProductType.LAKEHOUSE;
-  }
-
-  get isLoading(): boolean {
-    return Array.from(this.productEntityMap.values()).some(
-      (entity) => entity.loadingEntityState.isInProgress,
-    );
-  }
-
-  get title(): string {
-    return this.currentProductEntity?.title ?? '';
-  }
-
-  get description(): string | undefined {
-    return this.currentProductEntity?.product?.description ?? '';
-  }
-
-  get icon(): string | undefined {
-    return this.currentProductEntity?.product?.icon;
-  }
-
-  get imageUrl(): string | undefined {
-    return this.currentProductEntity?.product?.imageUrl;
-  }
-
-  get isInitialized(): boolean {
-    return this.currentProductEntity !== undefined;
-  }
-
-  get versionId(): string {
-    return this.currentProductEntity?.versionId ?? '';
-  }
-
-  get versionOptions(): string[] {
-    return Array.from(this.productEntityMap.keys());
-  }
-
-  setSelectedVersion(versionId: string): void {
-    this.currentProductEntity = this.productEntityMap.get(versionId);
-  }
-
-  setProductEntity(versionId: string, productEntity: DataProductEntity): void {
-    this.productEntityMap.set(versionId, productEntity);
-  }
-}
-
-export class SandboxDataProductState extends BaseDataProductState {
-  ingestEnvironmentUrn: string;
-  dataProductDefinition: string | undefined;
-  dataProductArtifact: V1_DataProductArtifactGeneration | undefined;
+export class DataProductState {
+  readonly lakehouseState: MarketplaceLakehouseStore;
+  readonly graphManager: V1_PureGraphManager;
+  readonly initState = ActionState.create();
+  readonly enrichedState = ActionState.create();
+  readonly dataProductDetails: V1_EntitlementsDataProductDetails;
+  dataProductElement: V1_DataProduct | undefined;
 
   constructor(
-    state: MarketplaceLakehouseStore,
-    ingestEnvironmentUrn: string,
-    dataProductDefinitionAndArtifact: V1_DataProductDefinitionAndArtifact,
+    lakehouseState: MarketplaceLakehouseStore,
+    graphManager: V1_PureGraphManager,
+    dataProductDetails: V1_EntitlementsDataProductDetails,
   ) {
-    super(state);
-    this.ingestEnvironmentUrn = ingestEnvironmentUrn;
-    this.dataProductDefinition = dataProductDefinitionAndArtifact.definition;
-    this.dataProductArtifact = dataProductDefinitionAndArtifact.artifact;
+    this.lakehouseState = lakehouseState;
+    this.graphManager = graphManager;
+    this.dataProductDetails = dataProductDetails;
 
     makeObservable(this, {
-      dataProductDefinition: observable,
-      dataProductArtifact: observable,
+      dataProductElement: observable,
+      init: flow,
     });
   }
 
-  get accessTypes(): DataProductType {
-    return DataProductType.LAKEHOUSE;
-  }
-
-  get isLoading(): boolean {
-    return false;
+  *init(): GeneratorFn<void> {
+    this.initState.inProgress();
+    try {
+      if (
+        this.dataProductDetails.title !== undefined ||
+        this.dataProductDetails.description !== undefined
+      ) {
+        // To save load time, we create a temporary data product element with the title and
+        // description, and then we will enrich it with the actual data product element after.
+        const dataProductElement = new V1_DataProduct();
+        dataProductElement.title = this.dataProductDetails.title;
+        dataProductElement.description = this.dataProductDetails.description;
+        this.dataProductElement = dataProductElement;
+        this.initState.complete();
+      }
+      this.enrichedState.inProgress();
+      const graphManagerState = new GraphManagerState(
+        this.lakehouseState.applicationStore.pluginManager,
+        this.lakehouseState.applicationStore.logService,
+      );
+      this.dataProductElement = (yield getDataProductFromDetails(
+        this.dataProductDetails,
+        graphManagerState,
+        this.graphManager,
+        this.lakehouseState.marketplaceBaseStore,
+      )) as V1_DataProduct | undefined;
+    } catch (error) {
+      assertErrorThrown(error);
+      this.lakehouseState.applicationStore.notificationService.notifyError(
+        'Error fetching data product entity',
+        error.message,
+      );
+    } finally {
+      this.initState.complete();
+      this.enrichedState.complete();
+    }
   }
 
   get title(): string {
-    return isNonEmptyString(this.dataProductArtifact?.dataProduct.title)
-      ? this.dataProductArtifact.dataProduct.title
-      : (this.dataProductArtifact?.dataProduct.path
-          .split(ELEMENT_PATH_DELIMITER)
-          .pop() ?? '');
+    return this.dataProductElement?.title !== undefined &&
+      this.dataProductElement.title !== ''
+      ? this.dataProductElement.title
+      : this.dataProductDetails.dataProduct.name;
   }
 
   get description(): string | undefined {
-    return this.dataProductArtifact?.dataProduct.description;
+    return this.dataProductElement?.description ?? '';
   }
 
   get icon(): string | undefined {
-    return undefined;
+    return this.dataProductElement?.icon;
   }
 
   get imageUrl(): string | undefined {
-    return '/assets/UnknownTypeLogo.png';
+    return this.dataProductElement?.imageUrl;
   }
 
-  get isInitialized(): boolean {
-    return this.dataProductArtifact !== undefined;
+  get versionId(): string | undefined {
+    const origin = this.dataProductDetails.origin;
+    return origin instanceof V1_SdlcDeploymentDataProductOrigin
+      ? origin.version
+      : origin instanceof V1_AdHocDeploymentDataProductOrigin
+        ? 'Sandbox'
+        : undefined;
   }
 
-  get versionOptions(): string[] {
-    return [];
+  get environmentClassification():
+    | V1_EntitlementsLakehouseEnvironmentType
+    | undefined {
+    return this.dataProductDetails.lakehouseEnvironment?.type;
   }
-
-  setSelectedVersion(_: string): void {}
 }

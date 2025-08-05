@@ -16,7 +16,11 @@
 
 import { DataType } from './DataType.js';
 import type { PackageableElementVisitor } from '../PackageableElement.js';
-import { PRIMITIVE_TYPE } from '../../../../MetaModelConst.js';
+import {
+  PRECISE_PRIMITIVE_TYPE,
+  PRIMITIVE_TYPE,
+} from '../../../../MetaModelConst.js';
+import { extractElementNameFromPath } from '../../../../MetaModelUtils.js';
 
 export class PrimitiveType extends DataType {
   accept_PackageableElementVisitor<T>(
@@ -38,6 +42,57 @@ export class PrimitiveType extends DataType {
   static readonly STRICTTIME = new PrimitiveType(PRIMITIVE_TYPE.STRICTTIME);
   static readonly LATESTDATE = new PrimitiveType(PRIMITIVE_TYPE.LATESTDATE);
   static readonly BYTE = new PrimitiveType(PRIMITIVE_TYPE.BYTE);
+  // precise primitive
+}
+
+export class PrecisePrimitiveType extends DataType {
+  static readonly VARCHAR = new PrecisePrimitiveType(
+    extractElementNameFromPath(PRECISE_PRIMITIVE_TYPE.VARCHAR),
+  );
+  static readonly INT = new PrecisePrimitiveType(
+    extractElementNameFromPath(PRECISE_PRIMITIVE_TYPE.INT),
+  );
+  static readonly TINY_INT = new PrecisePrimitiveType(
+    extractElementNameFromPath(PRECISE_PRIMITIVE_TYPE.TINY_INT),
+  );
+  static readonly U_TINY_INT = new PrecisePrimitiveType(
+    extractElementNameFromPath(PRECISE_PRIMITIVE_TYPE.U_TINY_INT),
+  );
+  static readonly SMALL_INT = new PrecisePrimitiveType(
+    extractElementNameFromPath(PRECISE_PRIMITIVE_TYPE.SMALL_INT),
+  );
+  static readonly U_SMALL_INT = new PrecisePrimitiveType(
+    extractElementNameFromPath(PRECISE_PRIMITIVE_TYPE.U_SMALL_INT),
+  );
+  static readonly U_INT = new PrecisePrimitiveType(
+    extractElementNameFromPath(PRECISE_PRIMITIVE_TYPE.U_INT),
+  );
+  static readonly BIG_INT = new PrecisePrimitiveType(
+    extractElementNameFromPath(PRECISE_PRIMITIVE_TYPE.BIG_INT),
+  );
+  static readonly U_BIG_INT = new PrecisePrimitiveType(
+    extractElementNameFromPath(PRECISE_PRIMITIVE_TYPE.U_BIG_INT),
+  );
+  static readonly FLOAT = new PrecisePrimitiveType(
+    extractElementNameFromPath(PRECISE_PRIMITIVE_TYPE.FLOAT),
+  );
+  static readonly DOUBLE = new PrecisePrimitiveType(
+    extractElementNameFromPath(PRECISE_PRIMITIVE_TYPE.DOUBLE),
+  );
+
+  static readonly NUMERIC = new PrecisePrimitiveType(
+    extractElementNameFromPath(PRECISE_PRIMITIVE_TYPE.NUMERIC),
+  );
+
+  static readonly TIMESTAMP = new PrecisePrimitiveType(
+    extractElementNameFromPath(PRECISE_PRIMITIVE_TYPE.TIMESTAMP),
+  );
+
+  override accept_PackageableElementVisitor<T>(
+    visitor: PackageableElementVisitor<T>,
+  ): T {
+    throw new Error('Method not implemented.');
+  }
 }
 
 export const getPrimitiveTypeInstanceFromEnum = (

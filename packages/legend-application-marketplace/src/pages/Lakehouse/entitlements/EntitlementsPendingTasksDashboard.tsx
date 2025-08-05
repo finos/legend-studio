@@ -56,6 +56,10 @@ import { useAuth } from 'react-oidc-context';
 import { observer } from 'mobx-react-lite';
 import { UserRenderer } from '../../../components/UserRenderer/UserRenderer.js';
 import type { LegendMarketplaceBaseStore } from '../../../stores/LegendMarketplaceBaseStore.js';
+import {
+  getOrganizationalScopeTypeDetails,
+  getOrganizationalScopeTypeName,
+} from '../../../stores/lakehouse/LakehouseUtils.js';
 
 const EntitlementsDashboardActionModal = (props: {
   open: boolean;
@@ -249,6 +253,8 @@ export const EntitlementsPendingTasksDashbaord = observer(
     const [selectedContract, setSelectedContract] = useState<
       V1_DataContract | undefined
     >();
+    const [selectedContractTargetUser, setSelectedContractTargetUser] =
+      useState<string | undefined>();
 
     // Effects
 
@@ -308,6 +314,7 @@ export const EntitlementsPendingTasksDashbaord = observer(
           (_contract) => _contract.guid === event.data?.dataContractId,
         );
         setSelectedContract(contract);
+        setSelectedContractTargetUser(event.data?.consumer);
       }
     };
 
@@ -401,6 +408,47 @@ export const EntitlementsPendingTasksDashbaord = observer(
         },
       },
       {
+        minWidth: 25,
+        sortable: true,
+        resizable: true,
+        colId: 'consumerType',
+        headerName: 'Consumer Type',
+        flex: 1,
+        cellRenderer: (
+          params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
+        ) => {
+          const contractId = params.data?.dataContractId;
+          const consumer = allContracts?.find(
+            (contract) => contract.guid === contractId,
+          )?.consumer;
+          const typeName = consumer
+            ? getOrganizationalScopeTypeName(
+                consumer,
+                dashboardState.lakehouseEntitlementsStore.applicationStore.pluginManager.getApplicationPlugins(),
+              )
+            : undefined;
+          const typeDetails = consumer
+            ? getOrganizationalScopeTypeDetails(
+                consumer,
+                dashboardState.lakehouseEntitlementsStore.applicationStore.pluginManager.getApplicationPlugins(),
+              )
+            : undefined;
+          return (
+            <>
+              {typeName ?? 'Unknown'}
+              {typeDetails !== undefined && (
+                <Tooltip
+                  className="marketplace-lakehouse-entitlements__grid__consumer-type__tooltip__icon"
+                  title={typeDetails}
+                >
+                  <InfoCircleIcon />
+                </Tooltip>
+              )}
+            </>
+          );
+        },
+      },
+      {
         minWidth: 50,
         sortable: true,
         resizable: true,
@@ -426,14 +474,16 @@ export const EntitlementsPendingTasksDashbaord = observer(
         colId: 'requester',
         headerName: 'Requester',
         flex: 1,
-        valueGetter: (params) => {
+        cellRenderer: (
+          params: DataGridCellRendererParams<V1_ContractUserEventRecord>,
+        ) => {
           const contractId = params.data?.dataContractId;
           const requester = allContracts?.find(
             (contract) => contract.guid === contractId,
           )?.createdBy;
           return requester ? (
             <UserRenderer
-              userId={params.data?.consumer}
+              userId={requester}
               marketplaceStore={marketplaceBaseStore}
               className="marketplace-lakehouse-entitlements__grid__user-display"
             />
@@ -690,6 +740,7 @@ export const EntitlementsPendingTasksDashbaord = observer(
               )
             }
             onClose={() => setSelectedContract(undefined)}
+            initialSelectedUser={selectedContractTargetUser}
           />
         )}
       </>

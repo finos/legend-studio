@@ -691,7 +691,12 @@ const V1_buildTypedProjectFunctionExpression = (
     pColSpec.name = colSpec.name;
     const returnType = getValueSpecificationReturnType(lambda);
     if (returnType) {
-      relationType.columns.push(new RelationColumn(colSpec.name, returnType));
+      relationType.columns.push(
+        new RelationColumn(
+          colSpec.name,
+          GenericTypeExplicitReference.create(new GenericType(returnType)),
+        ),
+      );
     } else {
       throw new UnsupportedOperationError(
         'Unable to get return type for current lambda',
@@ -1299,11 +1304,13 @@ export const V1_buildTypedGroupByFunctionExpression = (
       // For now, we temporarily set the return type of the column in the groupBy() expression to be
       // the same as the return type of the column in the preceding project() expression.
       // The actual return type for the groupBy() expression will be determined when we process/build the graph.
-      const returnType = projectRelationReturnType.columns.find(
+      const genericType = projectRelationReturnType.columns.find(
         (_column) => _column.name === colSpec.name,
-      )?.type;
-      if (returnType) {
-        relationType.columns.push(new RelationColumn(colSpec.name, returnType));
+      )?.genericType;
+      if (genericType) {
+        relationType.columns.push(
+          new RelationColumn(colSpec.name, genericType),
+        );
       } else {
         throw new UnsupportedOperationError(
           `Unable to find projected column with name ${colSpec.name}`,

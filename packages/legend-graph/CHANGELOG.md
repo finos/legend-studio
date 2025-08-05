@@ -1,5 +1,31 @@
 # @finos/legend-graph
 
+## 32.1.60
+
+### Patch Changes
+
+- [#4316](https://github.com/finos/legend-studio/pull/4316) [`2eea0eb`](https://github.com/finos/legend-studio/commit/2eea0eb4aa9382a4a06f6142367ff75abd0865c5) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - add variant to system
+
+## 32.1.59
+
+### Patch Changes
+
+- [#4275](https://github.com/finos/legend-studio/pull/4275) [`b7d27c0`](https://github.com/finos/legend-studio/commit/b7d27c0f2bdf022953ce9d9c9f514a4734c7eada) ([@travisstebbins](https://github.com/travisstebbins)) - Fetch Lakehouse DataProducts from new endpoint
+
+## 32.1.58
+
+### Patch Changes
+
+- [#4298](https://github.com/finos/legend-studio/pull/4298) [`336fd73`](https://github.com/finos/legend-studio/commit/336fd732a68727833a575735463387d710135478) ([@gs-rpant1729](https://github.com/gs-rpant1729)) - Support Processing Snapshot milestoning, Semi-structured data on Relation Function class mappings.
+
+## 32.1.57
+
+### Patch Changes
+
+- [#4294](https://github.com/finos/legend-studio/pull/4294) [`a0129e0`](https://github.com/finos/legend-studio/commit/a0129e0b2f4e33a6aeaed4b148c409897c3f7b31) ([@gs-gunjan](https://github.com/gs-gunjan)) - studio: fixing relational property graph
+
+- [#4299](https://github.com/finos/legend-studio/pull/4299) [`0638a15`](https://github.com/finos/legend-studio/commit/0638a155062b08fb7070ebf31641de7e3f78f1a3) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Handle return type type variables (specific with RelationType).
+
 ## 32.1.56
 
 ### Patch Changes

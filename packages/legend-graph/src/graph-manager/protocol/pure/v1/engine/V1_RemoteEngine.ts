@@ -1339,6 +1339,16 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
     }
   }
 
+  async renderFunctionActivatorArtifact(
+    input: V1_FunctionActivatorInput,
+  ): Promise<PlainObject> {
+    const response =
+      await this.engineServerClient.renderFunctionActivatorArtifact(
+        V1_FunctionActivatorInput.serialization.toJson(input),
+      );
+    return response;
+  }
+
   async publishFunctionActivatorToSandbox(
     input: V1_FunctionActivatorInput,
   ): Promise<DeploymentResult> {
