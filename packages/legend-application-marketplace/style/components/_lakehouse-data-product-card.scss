@@ -210,7 +210,6 @@
     position: absolute;
     bottom: 0;
     height: 60%;
-    color: rgba(var(--color-white), 0.95);
     background-color: rgb(85 75 75 / 30%);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -224,9 +223,19 @@
   }
 
   &__title {
-    font-size: 1.8rem;
+    font-size: 4rem;
+    font-family: 'GS Sans Condensed', 'Trebuchet MS', sans-serif;
+    letter-spacing: 0;
     margin-bottom: 0;
     padding-bottom: 0;
     word-wrap: break-word;
+    color: var(--color-white);
+    opacity: 0.95;
+  }
+
+  &__description {
+    font-size: 1.6rem;
+    color: var(--color-white);
+    opacity: 0.95;
   }
 }
