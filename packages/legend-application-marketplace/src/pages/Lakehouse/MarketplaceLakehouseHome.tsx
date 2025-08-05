@@ -46,10 +46,6 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-      marketplaceStore.init(auth.user?.access_token);
-    }, [marketplaceStore, auth]);
-
-    useEffect(() => {
       const loadDataProducts = async (): Promise<void> => {
         setLoading(true);
 
@@ -59,8 +55,10 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
               .getApplicationPlugins()
               .flatMap(
                 async (plugin) =>
-                  (await plugin.getHomePageDataProducts?.(marketplaceStore)) ??
-                  [],
+                  (await plugin.getHomePageDataProducts?.(
+                    marketplaceStore,
+                    auth.user?.access_token,
+                  )) ?? [],
               ),
           );
           setHighlightedDataProducts(dataProducts.flat());
@@ -74,9 +72,15 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
         }
       };
 
-      // eslint-disable-next-line no-void
-      void loadDataProducts();
-    }, [marketplaceStore]);
+      if (highlightedDataProducts.length === 0) {
+        // eslint-disable-next-line no-void
+        void loadDataProducts();
+      }
+    }, [
+      marketplaceStore,
+      auth.user?.access_token,
+      highlightedDataProducts.length,
+    ]);
 
     const handleSearch = (query: string | undefined): void => {
       if (isNonEmptyString(query)) {
