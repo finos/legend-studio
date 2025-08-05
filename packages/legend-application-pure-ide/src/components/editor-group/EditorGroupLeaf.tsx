@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020-present, Goldman Sachs
+ * Copyright (c) 2025-present, Goldman Sachs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,14 +24,26 @@ import {
   FileAltIcon,
   LockIcon,
   PlusIcon,
+  ArrowsSplitIcon,
+  TimesIcon,
+  CompressIcon,
   useResizeDetector,
+  ContextMenu,
+  MenuContent,
+  MenuContentItem,
+  MenuContentDivider,
 } from '@finos/legend-art';
 import { DiagramEditorState } from '../../stores/DiagramEditorState.js';
 import { DiagramEditor } from './DiagramEditor.js';
 import { usePureIDEStore } from '../PureIDEStoreProvider.js';
 import { PURE_DiagramIcon } from '../shared/ConceptIconUtils.js';
-import { TabManager, type TabState } from '@finos/legend-lego/application';
+import { type TabState } from '@finos/legend-lego/application';
+import { PureIDETabManager } from './PureIDETabManager.js';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
+import {
+  EditorSplitLeaf,
+  EditorSplitOrientation,
+} from '../../stores/EditorSplitGroupState.js';
 
 const EditorGroupSplashScreen: React.FC = () => {
   const commandListWidth = 300;
@@ -85,9 +97,17 @@ const EditorGroupSplashScreen: React.FC = () => {
   );
 };
 
-export const EditorGroup = observer(() => {
+interface EditorGroupLeafProps {
+  leaf: EditorSplitLeaf;
+  isActive: boolean;
+  onActivate: () => void;
+}
+
+export const EditorGroupLeaf = observer((props: EditorGroupLeafProps) => {
+  const { leaf, isActive, onActivate } = props;
   const ideStore = usePureIDEStore();
-  const currentTab = ideStore.editorSplitState.currentTab;
+  const currentTab = leaf.tabManagerState.currentTab;
+
   const renderActiveEditorState = (): React.ReactNode => {
     if (currentTab instanceof FileEditorState) {
       if (currentTab.textEditorState.language === CODE_EDITOR_LANGUAGE.PURE) {
@@ -99,14 +119,15 @@ export const EditorGroup = observer(() => {
     }
     return null;
   };
+
   const renderTab = (editorState: TabState): React.ReactNode | undefined => {
     if (editorState instanceof FileEditorState) {
       const showMoreInfo =
-        (ideStore.editorSplitState.activeLeaf?.tabManagerState.tabs.filter(
+        leaf.tabManagerState.tabs.filter(
           (tab) =>
             tab instanceof FileEditorState &&
             tab.fileName === editorState.fileName,
-        ).length ?? 0) > 1;
+        ).length > 1;
       return (
         <div className="editor-group__header__tab">
           <div className="editor-group__header__tab__icon">
@@ -129,11 +150,11 @@ export const EditorGroup = observer(() => {
       );
     } else if (editorState instanceof DiagramEditorState) {
       const showMoreInfo =
-        (ideStore.editorSplitState.activeLeaf?.tabManagerState.tabs.filter(
+        leaf.tabManagerState.tabs.filter(
           (tab) =>
             tab instanceof DiagramEditorState &&
             tab.diagramName === editorState.diagramName,
-        ).length ?? 0) > 1;
+        ).length > 1;
       return (
         <div className="editor-group__header__tab">
           <div className="editor-group__header__tab__icon">
@@ -153,29 +174,128 @@ export const EditorGroup = observer(() => {
     return editorState.label;
   };
 
+  const handleSplitRight = (): void => {
+    ideStore.editorSplitState.splitLeaf(leaf, EditorSplitOrientation.VERTICAL);
+  };
+
+  const handleSplitDown = (): void => {
+    ideStore.editorSplitState.splitLeaf(
+      leaf,
+      EditorSplitOrientation.HORIZONTAL,
+    );
+  };
+
+  const handleRemoveSplit = (): void => {
+    ideStore.editorSplitState.removeSplit(leaf);
+  };
+
+  const handleUnsplitAll = (): void => {
+    ideStore.editorSplitState.unsplitAll();
+  };
+
+  const handleClick = (): void => {
+    onActivate();
+  };
+
   if (!currentTab) {
-    return <EditorGroupSplashScreen />;
+    return (
+      <div
+        className={clsx('panel editor-group', {
+          'editor-group--active': isActive,
+        })}
+        onClick={handleClick}
+      >
+        <EditorGroupSplashScreen />
+      </div>
+    );
   }
+
   return (
-    <div className="panel editor-group">
+    <div
+      className={clsx('panel editor-group', {
+        'editor-group--active': isActive,
+      })}
+      onClick={handleClick}
+    >
       <div className="panel__header editor-group__header">
         <div className="editor-group__header__tabs">
-          {ideStore.editorSplitState.activeLeaf && (
-            <TabManager
-              tabManagerState={
-                ideStore.editorSplitState.activeLeaf.tabManagerState
-              }
-              tabRenderer={renderTab}
-            />
-          )}
+          <PureIDETabManager
+            tabManagerState={leaf.tabManagerState}
+            leaf={leaf}
+            tabRenderer={renderTab}
+          />
         </div>
-        <div className="panel__header__actions"></div>
+        <div className="panel__header__actions">
+          <ContextMenu
+            className="editor-group__header__action"
+            content={
+              <MenuContent>
+                <MenuContentItem onClick={handleSplitRight}>
+                  <div className="editor-group__context-menu__item">
+                    <div className="editor-group__context-menu__item__icon">
+                      <ArrowsSplitIcon />
+                    </div>
+                    <div className="editor-group__context-menu__item__label">
+                      Split Right
+                    </div>
+                  </div>
+                </MenuContentItem>
+                <MenuContentItem onClick={handleSplitDown}>
+                  <div className="editor-group__context-menu__item">
+                    <div className="editor-group__context-menu__item__icon">
+                      <ArrowsSplitIcon className="editor-group__context-menu__item__icon--rotated" />
+                    </div>
+                    <div className="editor-group__context-menu__item__label">
+                      Split Down
+                    </div>
+                  </div>
+                </MenuContentItem>
+                <MenuContentDivider />
+                {ideStore.editorSplitState.canRemoveSplit(leaf) && (
+                  <MenuContentItem onClick={handleRemoveSplit}>
+                    <div className="editor-group__context-menu__item">
+                      <div className="editor-group__context-menu__item__icon">
+                        <TimesIcon />
+                      </div>
+                      <div className="editor-group__context-menu__item__label">
+                        Remove Split
+                      </div>
+                    </div>
+                  </MenuContentItem>
+                )}
+                {ideStore.editorSplitState.hasSplits() && (
+                  <MenuContentItem onClick={handleUnsplitAll}>
+                    <div className="editor-group__context-menu__item">
+                      <div className="editor-group__context-menu__item__icon">
+                        <CompressIcon />
+                      </div>
+                      <div className="editor-group__context-menu__item__label">
+                        Unsplit All
+                      </div>
+                    </div>
+                  </MenuContentItem>
+                )}
+                <MenuContentDivider />
+                <MenuContentItem>
+                  <div className="editor-group__context-menu__item">
+                    <div className="editor-group__context-menu__item__label">
+                      Close All
+                    </div>
+                  </div>
+                </MenuContentItem>
+              </MenuContent>
+            }
+          >
+            <button
+              className="editor-group__header__action__btn"
+              title="Split editor"
+            >
+              <ArrowsSplitIcon />
+            </button>
+          </ContextMenu>
+        </div>
       </div>
       <div
-        // NOTE: This is one small but extremely important line. Using `key` we effectivly force-remounting the element editor
-        // component every time current element editor state is changed. This is great to control errors that has to do with stale states
-        // when we `reprocess` world or when we switch tabs between 2 elements of the same type (i.e. 2 classes, 2 mappings, etc.)
-        // See https://github.com/bvaughn/react-error-boundary/issues/23#issuecomment-425470511
         key={currentTab.uuid}
         className="panel__content editor-group__content"
       >
@@ -184,3 +304,5 @@ export const EditorGroup = observer(() => {
     </div>
   );
 });
+
+EditorGroupLeaf.displayName = 'EditorGroupLeaf';

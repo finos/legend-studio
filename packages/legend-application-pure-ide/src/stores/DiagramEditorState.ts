@@ -228,7 +228,7 @@ export class DiagramEditorState
   registerCommands(): void {
     const DEFAULT_TRIGGER = (): boolean =>
       // make sure the current active editor is this diagram editor
-      this.ideStore.tabManagerState.currentTab === this &&
+      this.ideStore.editorSplitState.currentTab === this &&
       // make sure the renderer is initialized
       this.isDiagramRendererInitialized;
     this.ideStore.applicationStore.commandService.registerCommand({

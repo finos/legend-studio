@@ -333,7 +333,7 @@ export const DirectoryTreeExplorer = observer(() => {
     );
   };
   const focus = (): void => {
-    const currentTab = ideStore.tabManagerState.currentTab;
+    const currentTab = ideStore.editorSplitState.currentTab;
     if (currentTab instanceof FileEditorState) {
       flowResult(treeState.revealPath(currentTab.filePath)).catch(
         applicationStore.alertUnhandledError,

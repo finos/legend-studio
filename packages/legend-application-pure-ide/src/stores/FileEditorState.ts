@@ -333,7 +333,7 @@ export class FileEditorState
       this.ideStore.applicationStore.commandService.registerCommand({
         key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.GO_TO_DEFINITION,
         trigger: () =>
-          this.ideStore.tabManagerState.currentTab === this &&
+          this.ideStore.editorSplitState.currentTab === this &&
           Boolean(this.textEditorState.editor?.hasTextFocus()),
         action: () => {
           const currentPosition = this.textEditorState.editor?.getPosition();
@@ -361,7 +361,7 @@ export class FileEditorState
       this.ideStore.applicationStore.commandService.registerCommand({
         key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.REVEAL_CONCEPT_IN_TREE,
         trigger: () =>
-          this.ideStore.tabManagerState.currentTab === this &&
+          this.ideStore.editorSplitState.currentTab === this &&
           Boolean(this.textEditorState.editor?.hasTextFocus()),
         action: () => {
           const currentPosition = this.textEditorState.editor?.getPosition();
@@ -381,7 +381,7 @@ export class FileEditorState
       this.ideStore.applicationStore.commandService.registerCommand({
         key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.FIND_USAGES,
         trigger: () =>
-          this.ideStore.tabManagerState.currentTab === this &&
+          this.ideStore.editorSplitState.currentTab === this &&
           Boolean(this.textEditorState.editor?.hasTextFocus()),
         action: () => {
           const currentPosition = this.textEditorState.editor?.getPosition();
@@ -398,7 +398,7 @@ export class FileEditorState
       this.ideStore.applicationStore.commandService.registerCommand({
         key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.RENAME_CONCEPT,
         trigger: () =>
-          this.ideStore.tabManagerState.currentTab === this &&
+          this.ideStore.editorSplitState.currentTab === this &&
           Boolean(this.textEditorState.editor?.hasTextFocus()),
         action: () => {
           const currentPosition = this.textEditorState.editor?.getPosition();
@@ -423,7 +423,7 @@ export class FileEditorState
     this.ideStore.applicationStore.commandService.registerCommand({
       key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.DELETE_LINE,
       trigger: () =>
-        this.ideStore.tabManagerState.currentTab === this &&
+        this.ideStore.editorSplitState.currentTab === this &&
         Boolean(this.textEditorState.editor?.hasTextFocus()),
       action: () => {
         const currentPosition = this.textEditorState.editor?.getPosition();
@@ -449,14 +449,14 @@ export class FileEditorState
     });
     this.ideStore.applicationStore.commandService.registerCommand({
       key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.GO_TO_LINE,
-      trigger: () => this.ideStore.tabManagerState.currentTab === this,
+      trigger: () => this.ideStore.editorSplitState.currentTab === this,
       action: () => {
         this.setShowGoToLinePrompt(true);
       },
     });
     this.ideStore.applicationStore.commandService.registerCommand({
       key: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.TOGGLE_TEXT_WRAP,
-      trigger: () => this.ideStore.tabManagerState.currentTab === this,
+      trigger: () => this.ideStore.editorSplitState.currentTab === this,
       action: () => {
         this.textEditorState.setWrapText(!this.textEditorState.wrapText);
       },
