@@ -223,10 +223,9 @@
 
   &__title {
     font-size: 4rem;
+    line-height: 4rem;
     font-family: 'GS Sans Condensed', 'Trebuchet MS', sans-serif;
-    letter-spacing: 0;
-    margin-bottom: 0;
-    padding-bottom: 0;
+    margin-bottom: 1rem;
     word-wrap: break-word;
     color: var(--color-white);
     opacity: 0.95;

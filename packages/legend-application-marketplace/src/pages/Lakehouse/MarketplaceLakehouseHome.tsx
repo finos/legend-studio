@@ -105,39 +105,36 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
             className="marketplace-lakehouse-home__search-bar"
           />
         </Container>
-        <Container
-          maxWidth="xxxl"
-          className="marketplace-lakehouse-home__highlights-container"
-        >
+        {loading === true && (
           <CubesLoadingIndicator isLoading={loading}>
             <CubesLoadingIndicatorIcon />
           </CubesLoadingIndicator>
-          <Grid
-            container={true}
-            spacing={{ xs: 2, sm: 3, lg: 4, xxl: 5 }}
-            columns={{ xs: 1, sm: 2, lg: 3, xxl: 4 }}
-            className="marketplace-lakehouse-search-results__data-product-cards"
-          >
-            {highlightedDataProducts.map((dataProductState) => (
-              <Grid
-                key={`${dataProductState.dataProductDetails.id}-${dataProductState.dataProductDetails.deploymentId}`}
-                size={1}
-              >
-                <LakehouseHighlightedDataProductCard
-                  dataProductState={dataProductState}
-                  onClick={() => {
-                    marketplaceStore.applicationStore.navigationService.navigator.visitAddress(
-                      generateLakehouseDataProductPath(
-                        dataProductState.dataProductDetails.id,
-                        dataProductState.dataProductDetails.deploymentId,
-                      ),
-                    );
-                  }}
-                />
-              </Grid>
-            ))}
-          </Grid>
-        </Container>
+        )}
+        <Grid
+          container={true}
+          spacing={{ xs: 2, sm: 3, lg: 4 }}
+          columns={{ xs: 1, sm: 2, lg: 3, xxxl: 5 }}
+          className="marketplace-lakehouse-home__data-product-cards"
+        >
+          {highlightedDataProducts.map((dataProductState) => (
+            <Grid
+              key={`${dataProductState.dataProductDetails.id}-${dataProductState.dataProductDetails.deploymentId}`}
+              size={1}
+            >
+              <LakehouseHighlightedDataProductCard
+                dataProductState={dataProductState}
+                onClick={() => {
+                  marketplaceStore.applicationStore.navigationService.navigator.visitAddress(
+                    generateLakehouseDataProductPath(
+                      dataProductState.dataProductDetails.id,
+                      dataProductState.dataProductDetails.deploymentId,
+                    ),
+                  );
+                }}
+              />
+            </Grid>
+          ))}
+        </Grid>
       </LegendMarketplacePage>
     );
   }),

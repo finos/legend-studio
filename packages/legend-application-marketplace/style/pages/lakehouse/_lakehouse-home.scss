@@ -31,7 +31,7 @@
     background-attachment: fixed;
 
     &__logo {
-      margin-bottom: 6rem;
+      margin-bottom: -6rem;
 
       img {
         max-height: 22rem;
@@ -56,5 +56,10 @@
       width: unset;
       margin-right: 1rem;
     }
+  }
+
+  &__data-product-cards {
+    padding: 5rem;
+    justify-content: center;
   }
 }
