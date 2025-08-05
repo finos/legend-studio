@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.5.0
+
+### Minor Changes
+
+- [#4318](https://github.com/finos/legend-studio/pull/4318) [`7fb8eaf`](https://github.com/finos/legend-studio/commit/7fb8eafffc244226762c5e63ed0f4791712a565b) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: support ingest definition data cube source
+
 ## 0.4.8
 
 ## 0.4.7
