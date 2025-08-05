@@ -57,7 +57,10 @@ export const LakehouseHighlightedDataProductCard = observer(
 
     return (
       <Card className="lakehouse-highlighted-data-product-card">
-        <CardActionArea onClick={() => onClick(dataProductState)}>
+        <CardActionArea
+          onClick={() => onClick(dataProductState)}
+          className="lakehouse-highlighted-data-product-card__action"
+        >
           {loading ? (
             skeletonLoader
           ) : (
