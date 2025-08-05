@@ -17,7 +17,6 @@
 import {
   Box,
   Card,
-  CardMedia,
   CardActionArea,
   CardContent,
   Skeleton,
@@ -65,11 +64,13 @@ export const LakehouseHighlightedDataProductCard = observer(
             skeletonLoader
           ) : (
             <>
-              <CardMedia
-                image="/assets/LegendLogo.png"
-                title={dataProductState.title}
-                className="lakehouse-highlighted-data-product-card__image"
-              />
+              <Box className="lakehouse-highlighted-data-product-card__image__container">
+                <img
+                  src="/assets/LegendLogo.png"
+                  title={dataProductState.title}
+                  className="lakehouse-highlighted-data-product-card__image"
+                />
+              </Box>
               <CardContent className="lakehouse-highlighted-data-product-card__content">
                 <Box className="lakehouse-highlighted-data-product-card__title">
                   {dataProductState.title}
