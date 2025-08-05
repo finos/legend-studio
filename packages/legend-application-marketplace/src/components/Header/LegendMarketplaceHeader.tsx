@@ -135,7 +135,7 @@ const LegendMarketplaceBaseHeader = observer(
         className="legend-marketplace-header"
         data-testid={LEGEND_MARKETPLACE_TEST_ID.HEADER}
       >
-        <Container maxWidth="xxl">
+        <Container maxWidth="xxxl">
           <Toolbar disableGutters={true}>
             <LegendMarketplaceHeaderMenu />
             <div
