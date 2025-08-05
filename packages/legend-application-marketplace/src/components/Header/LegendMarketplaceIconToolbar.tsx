@@ -89,14 +89,16 @@ export const LegendMarketplaceIconToolbar = observer(() => {
         </IconButton>
         <Menu anchorEl={anchorEl} open={open} onClose={() => setAnchorEl(null)}>
           <MenuItem>
-            Hello,{' '}
-            <Link
-              href={userDirectoryLink}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {userName}
-            </Link>
+            <Box>
+              Hello,{' '}
+              <Link
+                href={userDirectoryLink}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {userName}
+              </Link>
+            </Box>
           </MenuItem>
         </Menu>
         <LegendMarketplaceAppInfo
