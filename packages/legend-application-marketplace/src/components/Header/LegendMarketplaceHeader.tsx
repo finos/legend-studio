@@ -82,11 +82,11 @@ const LegendMarketplaceBaseHeader = observer(
       >
         <Container maxWidth="xxxl">
           <Toolbar disableGutters={true}>
-            <LegendLogo />
             <div
               className="legend-marketplace-header__name"
               onClick={() => navigateToHome()}
             >
+              <LegendLogo />
               {headerName}
             </div>
             <LegendMarketPlaceHeaderTabs pages={pages} />
