@@ -20,13 +20,13 @@ import { observer } from 'mobx-react-lite';
 import { Avatar, Box, IconButton, Menu, MenuItem } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { assertErrorThrown, LegendUser } from '@finos/legend-shared';
-import { useMarketplaceLakehouseStore } from '../../pages/Lakehouse/MarketplaceLakehouseStoreProvider.js';
 import { LEGEND_MARKETPLACE_ROUTE_PATTERN } from '../../__lib__/LegendMarketplaceNavigation.js';
 import { LegendMarketplaceAppInfo } from './LegendMarketplaceAppInfo.js';
+import { useLegendMarketplaceBaseStore } from '../../application/LegendMarketplaceFrameworkProvider.js';
 
 export const LegendMarketplaceIconToolbar = observer(() => {
   const applicationStore = useApplicationStore();
-  const marketplaceStore = useMarketplaceLakehouseStore();
+  const marketplaceStore = useLegendMarketplaceBaseStore();
   const userId = applicationStore.identityService.currentUser;
   const [userData, setUserData] = useState<LegendUser | string | undefined>();
 
@@ -35,9 +35,7 @@ export const LegendMarketplaceIconToolbar = observer(() => {
       if (userId) {
         try {
           const user =
-            await marketplaceStore.marketplaceBaseStore.userSearchService?.getOrFetchUser(
-              userId,
-            );
+            await marketplaceStore.userSearchService?.getOrFetchUser(userId);
           setUserData(user);
         } catch (error) {
           assertErrorThrown(error);
@@ -52,7 +50,7 @@ export const LegendMarketplaceIconToolbar = observer(() => {
   }, [
     userId,
     applicationStore.notificationService,
-    marketplaceStore.marketplaceBaseStore.userSearchService,
+    marketplaceStore.userSearchService,
   ]);
 
   const imgSrc =
