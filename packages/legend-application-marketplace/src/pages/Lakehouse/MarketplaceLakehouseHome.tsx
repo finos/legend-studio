@@ -125,9 +125,11 @@ export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
                 dataProductState={dataProductState}
                 onClick={() => {
                   marketplaceStore.applicationStore.navigationService.navigator.visitAddress(
-                    generateLakehouseDataProductPath(
-                      dataProductState.dataProductDetails.id,
-                      dataProductState.dataProductDetails.deploymentId,
+                    marketplaceStore.applicationStore.navigationService.navigator.generateAddress(
+                      generateLakehouseDataProductPath(
+                        dataProductState.dataProductDetails.id,
+                        dataProductState.dataProductDetails.deploymentId,
+                      ),
                     ),
                   );
                 }}
