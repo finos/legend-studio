@@ -32,8 +32,6 @@ import { useParams } from '@finos/legend-application/browser';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
 
-//todo move to base store
-//Use other framework in return to display data
 export const TerminalProduct = withMarketplaceLakehouseStore(
   observer(() => {
     const marketPlaceStore = useMarketplaceLakehouseStore();

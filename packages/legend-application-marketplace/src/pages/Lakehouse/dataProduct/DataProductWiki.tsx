@@ -72,7 +72,6 @@ export const DataProductWikiPlaceHolder = observer(
   },
 );
 
-//components to store specific wiki sections
 export const DataProductDescription = observer(
   (props: { dataProductViewerState: DataProductViewerState }) => {
     const { dataProductViewerState } = props;
@@ -126,7 +125,7 @@ export const DataProductWiki = observer(
     useEffect(() => {
       if (
         dataProductViewerState.layoutState.wikiPageNavigationCommand &&
-        dataProductViewerState.layoutState.isWikiPageFullyRendered //from DataProductLayoutState.ts
+        dataProductViewerState.layoutState.isWikiPageFullyRendered
       ) {
         dataProductViewerState.layoutState.navigateWikiPageAnchor();
       }

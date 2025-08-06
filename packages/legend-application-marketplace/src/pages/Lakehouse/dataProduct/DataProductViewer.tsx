@@ -60,7 +60,7 @@ const DataProductHeader = observer(
           })}
         >
           <div className="data-space__viewer__header__type">
-            {origin instanceof V1_AdHocDeploymentDataProductOrigin && ( //No terminal
+            {origin instanceof V1_AdHocDeploymentDataProductOrigin && (
               <Button
                 className={clsx('data-space__viewer__header__type__sandbox', {
                   'data-space__viewer__header__type__sandbox--dev':
@@ -80,7 +80,7 @@ const DataProductHeader = observer(
                 Sandbox Data Product
               </Button>
             )}
-            {origin instanceof V1_SdlcDeploymentDataProductOrigin && ( //Not for terminal
+            {origin instanceof V1_SdlcDeploymentDataProductOrigin && (
               <Button
                 onClick={() => {
                   dataProductViewerState.viewDataProductSource();
