@@ -50,6 +50,7 @@ import {
   mockSubscriptions,
   mockDataContracts,
   mockDataProducts,
+  mockLiteDataContracts,
 } from './TEST_DATA__LakehouseData.js';
 import { LakehouseAdminStore } from '../../stores/lakehouse/admin/LakehouseAdminStore.js';
 import { useLakehouseAdminStore } from '../../pages/Lakehouse/admin/LakehouseAdminStoreProvider.js';
@@ -245,6 +246,10 @@ export const TEST__setUpMarketplaceLakehouse = async (
     MOCK__store.lakehouseContractServerClient,
     'getDataContracts',
   ).mockResolvedValue(mockDataContracts);
+  createSpy(
+    MOCK__store.lakehouseContractServerClient,
+    'getLiteDataContracts',
+  ).mockResolvedValue(mockLiteDataContracts);
 
   const MOCK__lakehouseStore = new MarketplaceLakehouseStore(
     MOCK__store,
