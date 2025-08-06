@@ -23,8 +23,6 @@ import { DataCubeIcon } from '@finos/legend-art';
 import { formatDistanceToNow } from '@finos/legend-shared';
 import type { LegendDataCubeSourceLoaderState } from '../../../stores/builder/source/LegendDataCubeSourceLoaderState.js';
 import { LegendDataCubeBlockingWindow } from '../../LegendDataCubeBlockingWindow.js';
-import { LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE } from '../../../stores/model/LocalFileDataCubeSource.js';
-import { INGEST_DEFINITION_DATA_CUBE_SOURCE_TYPE } from '../../../stores/model/IngestDefinitionDataCubeSource.js';
 import type { IngestDefinitionDataCubeSourceLoaderState } from '../../../stores/builder/source/IngestDefinitionDataCubeSourceLoaderState.js';
 import { IngestDefinitionDataCubeSourceLoader } from './IngestDefinitionDataCubeSourceLoader.js';
 import { LegendDataCubeSourceBuilderType } from '../../../stores/builder/source/LegendDataCubeSourceBuilderState.js';
