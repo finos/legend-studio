@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export enum DATA_PRODUCT_VIEWER_SECTION { //rename or make new enum for terminals?
+export enum DATA_PRODUCT_VIEWER_SECTION {
   DESCRIPTION = 'description',
   DATA_ACCESS = 'data-access',
 }
