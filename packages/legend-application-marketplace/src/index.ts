@@ -31,3 +31,5 @@ export {
   AccessPointGroupAccess,
   DataProductGroupAccessState,
 } from './stores/lakehouse/DataProductDataAccessState.js';
+export { MarketplaceLakehouseStore } from './stores/lakehouse/MarketplaceLakehouseStore.js';
+export { DataProductState } from './stores/lakehouse/dataProducts/DataProducts.js';

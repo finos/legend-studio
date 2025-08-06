@@ -61,10 +61,7 @@ export const LegendMarketplaceSubscriptions = observer(() => {
     [store],
   );
 
-  const onUserSearch = (
-    provider: string | undefined,
-    user: string | undefined,
-  ): void => {
+  const onUserSearch = (user: string | undefined): void => {
     if (!user) {
       return;
     }

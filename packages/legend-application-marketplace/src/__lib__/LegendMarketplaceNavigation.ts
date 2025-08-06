@@ -33,6 +33,10 @@ export enum LEGEND_MARKETPLACE_SEARCH_RESULTS_QUERY_PARAM_TOKEN {
   QUERY = 'query',
 }
 
+export enum LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN {
+  QUERY = 'query',
+}
+
 export type LakehouseDataProductPathParams = {
   [LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_ID]: string;
   [LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DEPLOYMENT_ID]: string;
@@ -50,6 +54,7 @@ export const LEGEND_MARKETPLACE_ROUTE_PATTERN = Object.freeze({
   VENDOR_DATA: '/vendordata',
   VENDOR_DETAILS: `/vendor/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.VENDOR_NAME}`,
   LAKEHOUSE: '/lakehouse',
+  LAKEHOUSE_SEARCH_RESULTS: '/lakehouse/results',
   LAKEHOUSE_ENTITLEMENTS: '/lakehouse/entitlements',
   LAKEHOUSE_PRODUCT: `/lakehouse/dataProduct/deployed/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_ID}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DEPLOYMENT_ID}`,
   LAKEHOUSE_SDLC_PRODUCT: `/lakehouse/dataProduct/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.GAV}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH}`,
@@ -60,6 +65,7 @@ export const LEGEND_MARKETPLACE_ROUTE_PATTERN = Object.freeze({
 
 export const LAKEHOUSE_ROUTES = Object.freeze([
   LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE,
+  LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SEARCH_RESULTS,
   LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS,
   LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_PRODUCT,
   LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SDLC_PRODUCT,
@@ -91,6 +97,17 @@ export const generateLakehouseSDLCDataProductPath = (
 
 export const generateLakehouseTaskPath = (taskId: string): string =>
   `${LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS}?selectedTasks=${taskId}`;
+
+export const generateLakehouseSearchResultsRoute = (
+  query: string | undefined,
+): string =>
+  addQueryParametersToUrl(
+    LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SEARCH_RESULTS,
+    stringifyQueryParams({
+      [LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN.QUERY]:
+        query ? query : undefined,
+    }),
+  );
 
 export const generateSearchResultsRoute = (
   provider: string | undefined,

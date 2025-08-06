@@ -567,10 +567,15 @@ export const getQueryParameters = <T>(url: string, isFullUrl = false): T => {
 export const getQueryParameterValue = (
   key: string,
   data: Record<string, string | undefined>,
-  replaceUrlSafeBase64Characters: boolean = false,
+  options?: {
+    replaceUrlSafeBase64Characters?: boolean | undefined;
+    sanitizeParametersInsteadOfUrl?: boolean | undefined;
+  },
 ): string | undefined => {
-  const paramValue = data[key];
-  if (replaceUrlSafeBase64Characters) {
+  const paramValue = options?.sanitizeParametersInsteadOfUrl
+    ? sanitizeUrl(data[key])
+    : data[key];
+  if (options?.replaceUrlSafeBase64Characters) {
     return paramValue
       ? decodeURIComponent(paramValue).replace(/-/g, '+').replace(/_/g, '/')
       : undefined;

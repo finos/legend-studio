@@ -20,22 +20,46 @@
   @include flexVCenter;
 
   height: var(--legend-marketplace-header-height);
-  background: var(--color-blue-500);
+  box-shadow: none;
+  background: none;
+
+  &__backdrop-image {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    background-image: url('/assets/HomeBackground.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+  }
+
+  &__backdrop {
+    position: absolute;
+    inset: 0;
+    height: 110%;
+    backdrop-filter: blur(16px);
+    mask-image: linear-gradient(to bottom, black 0% 91%, transparent 91% 100%);
+    pointer-events: none;
+  }
 
   &__menu__icon {
     color: var(--color-white);
 
     svg {
-      font-size: 2.3rem;
+      font-size: 3.4rem;
+      opacity: 0.95;
     }
   }
 
   &__name {
+    @include flexVCenter;
+
     color: var(--color-white);
-    font-size: 2rem;
+    font-size: 2.4rem;
     font-weight: 700;
     margin: 1rem 2rem;
     cursor: pointer;
+    gap: 0.5rem;
   }
 
   &__tabs {
@@ -48,19 +72,33 @@
     @include flexVCenter;
 
     color: var(--color-white);
-    font-size: 16px;
+    font-size: 2rem;
     padding: 1rem 2rem;
     text-transform: unset;
     border-radius: unset;
 
-    &--selected {
-      background: var(--color-blue-300);
+    &:hover {
+      background-color: var(--color-light-shade-50);
+    }
+
+    &--selected::before {
+      content: '';
+      display: block;
+      position: absolute;
+      background: var(--color-hclight-blue-60);
+      left: 0;
+      right: 0;
+      margin: auto;
+      height: 3px;
+      bottom: 0;
+      width: calc(100% - 24px);
     }
   }
 
   &__icons {
     display: flex;
     flex-grow: 0;
+    gap: 2rem;
   }
 
   &__icon {

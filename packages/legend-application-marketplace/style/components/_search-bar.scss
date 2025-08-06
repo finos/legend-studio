@@ -19,42 +19,26 @@
 .legend-marketplace__search-bar {
   @include flexVCenter;
 
-  height: 4rem;
+  height: 6rem;
   width: 100%;
-  background: var(--color-white);
-  border-radius: 4px;
 
-  &__input {
+  &__text-field {
     height: 100%;
 
     .MuiInputBase-root {
       height: 100%;
     }
+  }
 
-    &--with-button .MuiInputBase-root {
-      border-top-right-radius: 0;
-      border-bottom-right-radius: 0;
-    }
+  &__input {
+    padding: 0 2rem;
+    font-size: 1.6rem;
+    background: var(--color-white);
+    border-radius: 3rem;
   }
 
   input {
-    font-size: 1.4rem;
     height: 100%;
-    padding: 0 1rem 0 0.4rem;
-  }
-
-  button {
-    min-width: 4rem;
-    width: 4rem;
-    height: 100%;
-    font-size: 1.4rem;
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-    color: var(--color-black);
-    background: var(--color-light-blue-50);
-
-    &:disabled {
-      background: rgb(from var(--color-light-blue-50) r g b / 75%);
-    }
+    padding: 0;
   }
 }

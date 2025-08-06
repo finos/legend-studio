@@ -19,6 +19,16 @@ import {
   type LegendMarketplaceApplicationConfigurationData,
   LegendMarketplaceApplicationConfig,
 } from '../LegendMarketplaceApplicationConfig.js';
+import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
+import {
+  type V1_EntitlementsDataProductDetailsResponse,
+  V1_PureGraphManager,
+} from '@finos/legend-graph';
+import { guaranteeNonNullable } from '@finos/legend-shared';
+import { mockDataProducts } from '../../components/__test-utils__/TEST_DATA__LakehouseData.js';
+import { DataProductState } from '../../stores/lakehouse/dataProducts/DataProducts.js';
+import type { MarketplaceLakehouseStore } from '../../stores/lakehouse/MarketplaceLakehouseStore.js';
+import { LegendMarketplaceApplicationPlugin } from '../LegendMarketplaceApplicationPlugin.js';
 
 const TEST_DATA__appConfig: LegendMarketplaceApplicationConfigurationData = {
   appName: 'marketplace',
@@ -66,3 +76,39 @@ export const TEST__getTestLegendMarketplaceApplicationConfig = (
   });
   return config;
 };
+
+export class TestLegendMarketplaceApplicationPlugin extends LegendMarketplaceApplicationPlugin {
+  constructor() {
+    super('TestLegendMarketplaceApplicationPlugin', '0.0.0');
+  }
+
+  override async getHomePageDataProducts(
+    marketplaceStore: MarketplaceLakehouseStore,
+  ): Promise<DataProductState[] | undefined> {
+    const mockDataProductDetail = guaranteeNonNullable(
+      (mockDataProducts as unknown as V1_EntitlementsDataProductDetailsResponse)
+        .dataProducts[0],
+    );
+    const graphManager = new V1_PureGraphManager(
+      marketplaceStore.applicationStore.pluginManager,
+      marketplaceStore.applicationStore.logService,
+      marketplaceStore.marketplaceBaseStore.remoteEngine,
+    );
+    await graphManager.initialize(
+      {
+        env: marketplaceStore.applicationStore.config.env,
+        tabSize: DEFAULT_TAB_SIZE,
+        clientConfig: {
+          baseUrl: marketplaceStore.applicationStore.config.engineServerUrl,
+        },
+      },
+      { engine: marketplaceStore.marketplaceBaseStore.remoteEngine },
+    );
+    const dataProductState = new DataProductState(
+      marketplaceStore,
+      graphManager,
+      mockDataProductDetail,
+    );
+    return [dataProductState];
+  }
+}

@@ -34,6 +34,10 @@ class TEST__BrowserNavigator extends BrowserNavigator {
     this.mockBaseUrl = baseUrl;
   }
 
+  override getCurrentAddress(): string {
+    return `http://localhost${this.mockBaseUrl ?? TEST__APPLICATION_BASE_URL}`;
+  }
+
   override getCurrentLocation(): string {
     return this.mockBaseUrl ?? TEST__APPLICATION_BASE_URL;
   }
