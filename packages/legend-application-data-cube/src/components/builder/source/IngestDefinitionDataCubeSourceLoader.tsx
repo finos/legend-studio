@@ -17,10 +17,9 @@
 import { observer } from 'mobx-react-lite';
 import { useEffect } from 'react';
 import type { IngestDefinitionDataCubeSourceLoaderState } from '../../../stores/builder/source/IngestDefinitionDataCubeSourceLoaderState.js';
-import { DataCubeIcon } from '@finos/legend-art';
 import { useAuth } from 'react-oidc-context';
-import { assertErrorThrown } from '@finos/legend-shared';
 import { useLegendDataCubeBuilderStore } from '../LegendDataCubeBuilderStoreProvider.js';
+import { FormButton, FormTextInput } from '@finos/legend-data-cube';
 
 export const IngestDefinitionDataCubeSourceLoader = observer(
   (props: {
@@ -31,20 +30,41 @@ export const IngestDefinitionDataCubeSourceLoader = observer(
     const store = useLegendDataCubeBuilderStore();
 
     useEffect(() => {
-      partialSourceLoader
-        .loadIngestDefinition(auth.user?.access_token)
-        .catch((error) => {
-          assertErrorThrown(error);
-          store.alertService.alertUnhandledError(error);
-        });
-    }, [partialSourceLoader, auth, store]);
+      partialSourceLoader.reset();
+    }, [partialSourceLoader]);
 
     return (
-      <div className="flex items-center border-[1.5px] border-neutral-300 p-2 font-medium text-neutral-400">
-        <div>
-          <DataCubeIcon.Loader className="mr-1 animate-spin stroke-2 text-lg" />
+      <div className="flex h-full w-full">
+        <div className="m-3 flex w-full flex-col items-stretch gap-2 text-neutral-500">
+          <div className="query-setup__wizard__group">
+            <div className="query-setup__wizard__group__title">Ingest Urn</div>
+            <div className="flex h-full w-fit flex-auto items-center justify-end text-nowrap">
+              <FormTextInput
+                className="text-base"
+                value={partialSourceLoader.ingestDefinitionUrn}
+                disabled={true}
+              />
+              <FormButton
+                compact={true}
+                className="ml-1.5 text-nowrap text-sm text-black"
+                onClick={() => {
+                  partialSourceLoader
+                    .loadIngestDefinition(
+                      auth.user?.access_token,
+                      store.ingestServerClient,
+                    )
+                    .catch((error) =>
+                      store.alertService.alertUnhandledError(error),
+                    );
+                }}
+              >
+                {Boolean(partialSourceLoader.ingestDefinition)
+                  ? 'Loaded!'
+                  : 'Load Ingest'}
+              </FormButton>
+            </div>
+          </div>
         </div>
-        Loading...
       </div>
     );
   },

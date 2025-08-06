@@ -17,12 +17,15 @@
 import { observer } from 'mobx-react-lite';
 import { FormButton, FormDropdownMenuTrigger } from '@finos/legend-data-cube';
 import { useLegendDataCubeBuilderStore } from '../LegendDataCubeBuilderStoreProvider.js';
-import { LocalFileDataCubeSourceLoaderState } from '../../../stores/builder/source/LocalFileDataCubeSourceLoaderState.js';
+import type { LocalFileDataCubeSourceLoaderState } from '../../../stores/builder/source/LocalFileDataCubeSourceLoaderState.js';
 import { LocalFileDataCubePartialSourceLoader } from './LocalFileDataCubeSourceLoader.js';
 import { DataCubeIcon } from '@finos/legend-art';
 import { formatDistanceToNow } from '@finos/legend-shared';
 import type { LegendDataCubeSourceLoaderState } from '../../../stores/builder/source/LegendDataCubeSourceLoaderState.js';
 import { LegendDataCubeBlockingWindow } from '../../LegendDataCubeBlockingWindow.js';
+import type { IngestDefinitionDataCubeSourceLoaderState } from '../../../stores/builder/source/IngestDefinitionDataCubeSourceLoaderState.js';
+import { IngestDefinitionDataCubeSourceLoader } from './IngestDefinitionDataCubeSourceLoader.js';
+import { LegendDataCubeSourceBuilderType } from '../../../stores/builder/source/LegendDataCubeSourceBuilderState.js';
 
 export const LegendDataCubeSourceLoader = observer(
   (props: { state: LegendDataCubeSourceLoaderState }) => {
@@ -80,16 +83,21 @@ export const LegendDataCubeSourceLoader = observer(
               </div>
               <div className="mb-2 h-[1px] w-full bg-neutral-200" />
               <div className="h-[calc(100%_-_98px)] w-full overflow-auto">
-                {state instanceof LocalFileDataCubeSourceLoaderState && (
+                {state.label === LegendDataCubeSourceBuilderType.LOCAL_FILE && (
                   <LocalFileDataCubePartialSourceLoader
-                    partialSourceLoader={state}
+                    partialSourceLoader={
+                      state as LocalFileDataCubeSourceLoaderState
+                    }
                   />
                 )}
-                {/* {state instanceof IngestDefinitionDataCubeSourceLoaderState && (
+                {state.label ===
+                  LegendDataCubeSourceBuilderType.INGEST_DEFINTION && (
                   <IngestDefinitionDataCubeSourceLoader
-                    partialSourceLoader={state}
+                    partialSourceLoader={
+                      state as IngestDefinitionDataCubeSourceLoaderState
+                    }
                   />
-                )} */}
+                )}
               </div>
             </div>
           </div>

@@ -22,17 +22,19 @@ import {
 import type { LegendDataCubeApplicationStore } from '../../LegendDataCubeBaseStore.js';
 import type { LegendDataCubeDataCubeEngine } from '../../LegendDataCubeDataCubeEngine.js';
 import { LegendDataCubeSourceLoaderState } from './LegendDataCubeSourceLoaderState.js';
-import { LegendDataCubeSourceBuilderType } from './LegendDataCubeSourceBuilderState.js';
 import type { DataCubeAlertService } from '@finos/legend-data-cube';
 import type { PersistentDataCube } from '@finos/legend-graph';
 import { RawIngestDefinitionDataCubeSource } from '../../model/IngestDefinitionDataCubeSource.js';
-import { LakehouseIngestServerClient } from '@finos/legend-server-lakehouse';
+import type { LakehouseIngestServerClient } from '@finos/legend-server-lakehouse';
+import { action, makeObservable, observable } from 'mobx';
+import { LegendDataCubeSourceBuilderType } from './LegendDataCubeSourceBuilderState.js';
 
 export class IngestDefinitionDataCubeSourceLoaderState extends LegendDataCubeSourceLoaderState {
   readonly processState = ActionState.create();
 
-  private ingestDefinition: PlainObject | undefined;
-  private lakehouseIngestServerClient: LakehouseIngestServerClient;
+  ingestDefinition: PlainObject | undefined;
+  ingestDefinitionUrn: string;
+  ingestServerUrl: string;
 
   constructor(
     application: LegendDataCubeApplicationStore,
@@ -52,9 +54,25 @@ export class IngestDefinitionDataCubeSourceLoaderState extends LegendDataCubeSou
       onSuccess,
       onError,
     );
-    this.lakehouseIngestServerClient = new LakehouseIngestServerClient(
-      undefined,
-    );
+
+    this.ingestDefinitionUrn = '';
+    this.ingestServerUrl = '';
+
+    makeObservable(this, {
+      ingestDefinition: observable,
+      setIngestDefintion: action,
+
+      ingestDefinitionUrn: observable,
+      setIngestDefinitionUrn: action,
+    });
+  }
+
+  setIngestDefintion(ingestDefinition: PlainObject | undefined) {
+    this.ingestDefinition = ingestDefinition;
+  }
+
+  setIngestDefinitionUrn(urn: string) {
+    this.ingestDefinitionUrn = urn;
   }
 
   override get isValid(): boolean {
@@ -65,16 +83,25 @@ export class IngestDefinitionDataCubeSourceLoaderState extends LegendDataCubeSou
     return LegendDataCubeSourceBuilderType.INGEST_DEFINTION;
   }
 
-  async loadIngestDefinition(access_token: string | undefined) {
+  reset() {
     const rawSource = RawIngestDefinitionDataCubeSource.serialization.fromJson(
       this.sourceData,
     );
-    this.ingestDefinition =
-      await this.lakehouseIngestServerClient.getIngestDefinitionDetail(
-        rawSource.ingestDefinitionUrn,
-        rawSource.ingestServerUrl,
+    this.setIngestDefinitionUrn(rawSource.ingestDefinitionUrn);
+    this.ingestServerUrl = rawSource.ingestServerUrl;
+  }
+
+  async loadIngestDefinition(
+    access_token: string | undefined,
+    lakehouseIngestServerClient: LakehouseIngestServerClient,
+  ) {
+    this.setIngestDefintion(
+      await lakehouseIngestServerClient.getIngestDefinitionDetail(
+        this.ingestDefinitionUrn,
+        this.ingestServerUrl,
         access_token,
-      );
+      ),
+    );
   }
 
   override async load(source: PlainObject | undefined) {
@@ -83,7 +110,11 @@ export class IngestDefinitionDataCubeSourceLoaderState extends LegendDataCubeSou
         guaranteeNonNullable(source),
       );
 
-    this._engine.registerIngestDefinition(this.ingestDefinition);
+    this._engine.registerIngestDefinition(
+      Object.values(
+        guaranteeNonNullable(this.ingestDefinition),
+      )[0] as PlainObject,
+    );
 
     return RawIngestDefinitionDataCubeSource.serialization.toJson(
       deserializedSource,
