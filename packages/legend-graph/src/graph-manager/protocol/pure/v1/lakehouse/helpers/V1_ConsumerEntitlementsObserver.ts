@@ -16,7 +16,10 @@
 
 import { makeObservable, observable } from 'mobx';
 import { skipObserved } from '../../../../../action/changeDetection/CoreObserverHelper.js';
-import type { V1_DataContract } from '../entitlements/V1_ConsumerEntitlements.js';
+import type {
+  V1_DataContract,
+  V1_LiteDataContract,
+} from '../entitlements/V1_ConsumerEntitlements.js';
 
 export const V1_observe_DataContract = skipObserved(
   (metamodel: V1_DataContract) => {
@@ -29,6 +32,26 @@ export const V1_observe_DataContract = skipObserved(
       members: observable,
       consumer: observable,
       createdBy: observable,
+    });
+
+    return metamodel;
+  },
+);
+
+export const V1_observe_LiteDataContract = skipObserved(
+  (metamodel: V1_LiteDataContract) => {
+    makeObservable(metamodel, {
+      description: observable,
+      guid: observable,
+      version: observable,
+      state: observable,
+      members: observable,
+      consumer: observable,
+      createdBy: observable,
+      resourceId: observable,
+      resourceType: observable,
+      deploymentId: observable,
+      accessPointGroup: observable,
     });
 
     return metamodel;

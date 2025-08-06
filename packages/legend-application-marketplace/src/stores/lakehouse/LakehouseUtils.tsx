@@ -19,6 +19,7 @@ import {
   type V1_AccessPointGroup,
   type V1_DataContract,
   type V1_EntitlementsDataProductDetails,
+  type V1_LiteDataContract,
   type V1_OrganizationalScope,
   type V1_PureGraphManager,
   CORE_PURE_PATH,
@@ -103,7 +104,7 @@ export const isMemberOfContract = (
 };
 
 export const isContractInTerminalState = (
-  contract: V1_DataContract,
+  contract: V1_DataContract | V1_LiteDataContract,
 ): boolean => {
   return [
     V1_ContractState.CLOSED,

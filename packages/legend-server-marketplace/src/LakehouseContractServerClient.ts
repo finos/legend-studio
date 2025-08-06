@@ -26,6 +26,7 @@ import type {
   V1_EntitlementsDataProductDetailsResponse,
   V1_TaskStatus,
   V1_UserPendingContractsResponse,
+  V1_LiteDataContractsResponse,
 } from '@finos/legend-graph';
 import { AbstractServerClient, type PlainObject } from '@finos/legend-shared';
 
@@ -53,6 +54,11 @@ export class LakehouseContractServerClient extends AbstractServerClient {
     token: string | undefined,
   ): Promise<PlainObject<V1_DataContractsResponse>> =>
     this.get(this._dataContracts(), {}, this._token(token));
+
+  getLiteDataContracts = (
+    token: string | undefined,
+  ): Promise<PlainObject<V1_LiteDataContractsResponse>> =>
+    this.get(`${this._dataContracts()}/lite`, {}, this._token(token));
 
   getDataContract = (
     id: string,

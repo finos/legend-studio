@@ -24,7 +24,7 @@ import {
   type DataGridRowClickedEvent,
 } from '@finos/legend-lego/data-grid';
 import { Box } from '@mui/material';
-import { type V1_DataContract } from '@finos/legend-graph';
+import { type V1_LiteDataContract } from '@finos/legend-graph';
 import type { LakehouseAdminStore } from '../../../stores/lakehouse/admin/LakehouseAdminStore.js';
 import { useState } from 'react';
 import { EntitlementsDataContractViewer } from '../entitlements/EntitlementsDataContractViewer.js';
@@ -37,11 +37,11 @@ export const LakehouseAdminContractsDashboard = observer(
     const contracts = adminStore.contracts;
 
     const [selectedContract, setSelectedContract] = useState<
-      V1_DataContract | undefined
+      V1_LiteDataContract | undefined
     >();
 
     const handleRowClicked = (
-      event: DataGridRowClickedEvent<V1_DataContract>,
+      event: DataGridRowClickedEvent<V1_LiteDataContract>,
     ) => {
       setSelectedContract(event.data);
     };

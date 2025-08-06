@@ -65,7 +65,27 @@ export class V1_DataContractsResponse {
   dataContracts?: V1_DataContractSubscriptions[];
 }
 
-// -------------------------------------- Data Contract Approval --------------------------------------
+// -------------------------------------- Lite Data Contracts ------------------------------------------
+
+export class V1_LiteDataContract {
+  description!: string;
+  guid!: string;
+  version!: number;
+  state!: V1_ContractState;
+  members: V1_ContractUserMembership[] = [];
+  consumer!: V1_OrganizationalScope;
+  createdBy!: string;
+  resourceId!: string;
+  resourceType!: V1_ResourceType;
+  deploymentId!: number;
+  accessPointGroup?: string;
+}
+
+export class V1_LiteDataContractsResponse {
+  dataContracts?: V1_LiteDataContract[];
+}
+
+// -------------------------------------- Data Contract Approval ---------------------------------------
 
 export enum V1_UserApprovalStatus {
   PENDING = 'PENDING',
