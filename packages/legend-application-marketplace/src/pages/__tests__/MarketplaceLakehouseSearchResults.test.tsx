@@ -51,6 +51,8 @@ beforeEach(() => {
 });
 
 test('renders search box pre-filled based on URL query param', async () => {
+  await setupTestComponent();
+
   expect(screen.getByDisplayValue('data')).toBeDefined();
 });
 
