@@ -16,7 +16,6 @@
 
 import { observer } from 'mobx-react-lite';
 import React, { useEffect, useRef } from 'react';
-// import type { TerminalProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
 import {
   TERMINAL_PRODUCT_VIEWER_SECTION,
   generateAnchorForSection,
@@ -28,7 +27,7 @@ import type { TerminalProductViewerState } from '../../../stores/lakehouse/Termi
 
 export const TerminalProductWikiPlaceHolder = observer(
   (props: {
-    terminalProductViewerState: any; // IMPLEMENT LATER
+    terminalProductViewerState: TerminalProductViewerState;
     section: TERMINAL_PRODUCT_VIEWER_SECTION;
   }) => {
     const { terminalProductViewerState, section } = props;
@@ -69,7 +68,7 @@ export const TerminalProductWikiPlaceHolder = observer(
 );
 
 export const TerminalProductDescription = observer(
-  (props: { terminalProductViewerState: any }) => {
+  (props: { terminalProductViewerState: TerminalProductViewerState }) => {
     const { terminalProductViewerState } = props;
     const sectionRef = useRef<HTMLDivElement>(null);
     const anchor = generateAnchorForSection(
@@ -153,17 +152,17 @@ export const TerminalProductPrice = observer(
     const priceData = [
       {
         label: 'Price',
-        value: terminal.price || 'Not Specified',
+        value: terminal.price ?? 'Not Specified',
         field: 'price',
       },
       {
         label: 'Tiered Price',
-        value: terminal.tieredPrice || 'Not Specified',
+        value: terminal.tieredPrice ?? 'Not Specified',
         field: 'tieredPrice',
       },
       {
         label: 'Total Firm Price',
-        value: terminal.totalFirmPrice || 'Not Specified',
+        value: terminal.totalFirmPrice ?? 'Not Specified',
         field: 'totalFirmPrice',
       },
     ];

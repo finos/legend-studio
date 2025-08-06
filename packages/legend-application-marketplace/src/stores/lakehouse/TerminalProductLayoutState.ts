@@ -19,10 +19,6 @@ import { action, computed, makeObservable, observable } from 'mobx';
 import { type TerminalProductViewerState } from './TerminalProductViewerState.js';
 import { isNonNullable } from '@finos/legend-shared';
 import {
-  TERMINAL_PRODUCT_VIEWER_SECTION,
-  generateAnchorForSection,
-} from './DataProductViewerNavigation.js';
-import {
   type DataProductPageNavigationCommand,
   DATA_PRODUCT_VIEWER_ANCHORS,
 } from './DataProductLayoutState.js';

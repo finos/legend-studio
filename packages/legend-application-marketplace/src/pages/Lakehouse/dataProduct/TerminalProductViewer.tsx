@@ -50,7 +50,7 @@ const TerminalProductHeader = observer(
         >
           <div
             className="data-space__viewer__header__title"
-            title={`${terminalProduct.productName} - ${terminalProduct.providerName}`} //title
+            title={`${terminalProduct.productName} - ${terminalProduct.providerName}`}
           >
             <div className="data-space__viewer__header__title__label">
               {terminalProduct.productName

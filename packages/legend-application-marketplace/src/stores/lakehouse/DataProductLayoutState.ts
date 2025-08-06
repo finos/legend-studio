@@ -23,7 +23,6 @@ import {
   generateAnchorForSection,
 } from './DataProductViewerNavigation.js';
 
-//Handles layout and wiki style viewer
 export const DATA_PRODUCT_VIEWER_ANCHORS = Object.values(
   DATA_PRODUCT_VIEWER_SECTION,
 ).map((activity) => generateAnchorForSection(activity));
