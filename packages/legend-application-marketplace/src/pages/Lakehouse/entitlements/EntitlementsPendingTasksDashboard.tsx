@@ -172,7 +172,7 @@ const EntitlementsDashboardActionModal = (props: {
                         marketplaceStore={marketplaceStore}
                       />
                     </div>{' '}
-                    for {startCase(contract?.resourceType?.toLowerCase())}{' '}
+                    for {startCase(contract?.resourceType.toLowerCase())}{' '}
                     <span className="marketplace-lakehouse-text__emphasis">
                       {contract?.accessPointGroup}
                     </span>{' '}
