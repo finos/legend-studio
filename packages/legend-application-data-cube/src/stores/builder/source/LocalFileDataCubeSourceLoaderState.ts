@@ -27,11 +27,11 @@ import { makeObservable, observable, action } from 'mobx';
 import type { LegendDataCubeApplicationStore } from '../../LegendDataCubeBaseStore.js';
 import type { LegendDataCubeDataCubeEngine } from '../../LegendDataCubeDataCubeEngine.js';
 import {
+  LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE,
   LocalFileDataCubeSourceFormat,
   RawLocalFileQueryDataCubeSource,
 } from '../../model/LocalFileDataCubeSource.js';
 import { LegendDataCubeSourceLoaderState } from './LegendDataCubeSourceLoaderState.js';
-import { LegendDataCubeSourceBuilderType } from './LegendDataCubeSourceBuilderState.js';
 import type { DataCubeAlertService } from '@finos/legend-data-cube';
 import type { PersistentDataCube } from '@finos/legend-graph';
 
@@ -179,7 +179,7 @@ export class LocalFileDataCubeSourceLoaderState extends LegendDataCubeSourceLoad
   }
 
   override get label() {
-    return LegendDataCubeSourceBuilderType.LOCAL_FILE;
+    return LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE;
   }
 
   override async load(source: PlainObject | undefined) {
