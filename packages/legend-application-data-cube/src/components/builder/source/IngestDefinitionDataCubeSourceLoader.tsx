@@ -37,12 +37,10 @@ export const IngestDefinitionDataCubeSourceLoader = observer(
       <div className="flex h-full w-full">
         <div className="m-3 flex w-full flex-col items-stretch gap-2 text-neutral-500">
           <div className="query-setup__wizard__group">
-            <div className="query-setup__wizard__group__title">
-              Deploymet ID
-            </div>
+            <div className="query-setup__wizard__group__title">Ingest Urn</div>
             <div className="flex h-full w-fit flex-auto items-center justify-end text-nowrap">
               <FormTextInput
-                className="text-base text-black"
+                className="text-base"
                 value={partialSourceLoader.ingestDefinitionUrn}
                 disabled={true}
               />

@@ -26,8 +26,8 @@ import type { DataCubeAlertService } from '@finos/legend-data-cube';
 import type { PersistentDataCube } from '@finos/legend-graph';
 import { RawIngestDefinitionDataCubeSource } from '../../model/IngestDefinitionDataCubeSource.js';
 import type { LakehouseIngestServerClient } from '@finos/legend-server-lakehouse';
-import { LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE } from '../../model/LocalFileDataCubeSource.js';
 import { action, makeObservable, observable } from 'mobx';
+import { LegendDataCubeSourceBuilderType } from './LegendDataCubeSourceBuilderState.js';
 
 export class IngestDefinitionDataCubeSourceLoaderState extends LegendDataCubeSourceLoaderState {
   readonly processState = ActionState.create();
@@ -73,7 +73,7 @@ export class IngestDefinitionDataCubeSourceLoaderState extends LegendDataCubeSou
   }
 
   override get label() {
-    return LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE;
+    return LegendDataCubeSourceBuilderType.INGEST_DEFINTION;
   }
 
   reset() {

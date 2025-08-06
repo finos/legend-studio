@@ -27,6 +27,7 @@ import { LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE } from '../../../stores/model/Lo
 import { INGEST_DEFINITION_DATA_CUBE_SOURCE_TYPE } from '../../../stores/model/IngestDefinitionDataCubeSource.js';
 import type { IngestDefinitionDataCubeSourceLoaderState } from '../../../stores/builder/source/IngestDefinitionDataCubeSourceLoaderState.js';
 import { IngestDefinitionDataCubeSourceLoader } from './IngestDefinitionDataCubeSourceLoader.js';
+import { LegendDataCubeSourceBuilderType } from '../../../stores/builder/source/LegendDataCubeSourceBuilderState.js';
 
 export const LegendDataCubeSourceLoader = observer(
   (props: { state: LegendDataCubeSourceLoaderState }) => {
@@ -84,14 +85,15 @@ export const LegendDataCubeSourceLoader = observer(
               </div>
               <div className="mb-2 h-[1px] w-full bg-neutral-200" />
               <div className="h-[calc(100%_-_98px)] w-full overflow-auto">
-                {state.label === LOCAL_FILE_QUERY_DATA_CUBE_SOURCE_TYPE && (
+                {state.label === LegendDataCubeSourceBuilderType.LOCAL_FILE && (
                   <LocalFileDataCubePartialSourceLoader
                     partialSourceLoader={
                       state as LocalFileDataCubeSourceLoaderState
                     }
                   />
                 )}
-                {state.label === INGEST_DEFINITION_DATA_CUBE_SOURCE_TYPE && (
+                {state.label ===
+                  LegendDataCubeSourceBuilderType.INGEST_DEFINTION && (
                   <IngestDefinitionDataCubeSourceLoader
                     partialSourceLoader={
                       state as IngestDefinitionDataCubeSourceLoaderState
