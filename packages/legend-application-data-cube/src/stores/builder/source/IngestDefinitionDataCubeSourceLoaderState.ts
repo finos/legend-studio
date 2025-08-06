@@ -61,11 +61,18 @@ export class IngestDefinitionDataCubeSourceLoaderState extends LegendDataCubeSou
     makeObservable(this, {
       ingestDefinition: observable,
       setIngestDefintion: action,
+
+      ingestDefinitionUrn: observable,
+      setIngestDefinitionUrn: action,
     });
   }
 
   setIngestDefintion(ingestDefinition: PlainObject | undefined) {
     this.ingestDefinition = ingestDefinition;
+  }
+
+  setIngestDefinitionUrn(urn: string) {
+    this.ingestDefinitionUrn = urn;
   }
 
   override get isValid(): boolean {
@@ -80,7 +87,7 @@ export class IngestDefinitionDataCubeSourceLoaderState extends LegendDataCubeSou
     const rawSource = RawIngestDefinitionDataCubeSource.serialization.fromJson(
       this.sourceData,
     );
-    this.ingestDefinitionUrn = rawSource.ingestDefinitionUrn;
+    this.setIngestDefinitionUrn(rawSource.ingestDefinitionUrn);
     this.ingestServerUrl = rawSource.ingestServerUrl;
   }
 
