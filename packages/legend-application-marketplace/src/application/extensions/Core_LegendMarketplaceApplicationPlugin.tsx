@@ -43,16 +43,20 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
   }
 
   override getContractConsumerTypeRendererConfigs(): ContractConsumerTypeRendererConfig[] {
-    const buildAdhocUser = (user: string): V1_AdhocTeam => {
+    const buildAdhocUser = (
+      userName: string,
+      type?: V1_UserType,
+    ): V1_AdhocTeam => {
       const _user = new V1_User();
-      _user.name = user;
-      _user.userType = V1_UserType.WORKFORCE_USER;
+      _user.name = userName;
+      _user.userType = type ?? V1_UserType.WORKFORCE_USER;
       const _adhocTeam = new V1_AdhocTeam();
       _adhocTeam.users = [_user];
       return _adhocTeam;
     };
 
     const CommonRenderer = (props: {
+      type: 'user' | 'system-account';
       label: string;
       marketplaceBaseStore: LegendMarketplaceBaseStore;
       accessGroupState: DataProductGroupAccessState;
@@ -64,6 +68,7 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
       enableUserSearch: boolean;
     }): React.ReactElement => {
       const {
+        type,
         label,
         marketplaceBaseStore,
         accessGroupState,
@@ -78,10 +83,18 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
 
       // Update parent state whenever local state changes
       useEffect(() => {
-        handleOrganizationalScopeChange(buildAdhocUser(user.id));
+        handleOrganizationalScopeChange(
+          buildAdhocUser(
+            user.id,
+            type === 'system-account'
+              ? V1_UserType.SYSTEM_ACCOUNT
+              : V1_UserType.WORKFORCE_USER,
+          ),
+        );
         handleDescriptionChange(description);
         handleIsValidChange(user.id !== '' && description.trim() !== '');
       }, [
+        type,
         user,
         description,
         handleOrganizationalScopeChange,
@@ -167,6 +180,7 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
         ) => (
           <CommonRenderer
             key="user"
+            type="user"
             label="User"
             marketplaceBaseStore={marketplaceBaseStore}
             accessGroupState={accessGroupState}
@@ -190,6 +204,7 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
         ) => (
           <CommonRenderer
             key="system-account"
+            type="system-account"
             label="System Account"
             marketplaceBaseStore={marketplaceBaseStore}
             accessGroupState={accessGroupState}
