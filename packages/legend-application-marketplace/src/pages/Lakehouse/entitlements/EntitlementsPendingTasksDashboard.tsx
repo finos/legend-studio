@@ -17,9 +17,9 @@
 import { useSearchParams } from '@finos/legend-application/browser';
 import {
   type V1_ContractUserEventRecord,
-  V1_AccessPointGroupReference,
+  type V1_LiteDataContract,
   V1_ApprovalType,
-  type V1_DataContract,
+  V1_ResourceType,
 } from '@finos/legend-graph';
 import {
   DataGrid,
@@ -60,6 +60,7 @@ import {
   getOrganizationalScopeTypeDetails,
   getOrganizationalScopeTypeName,
 } from '../../../stores/lakehouse/LakehouseUtils.js';
+import { startCase } from '@finos/legend-shared';
 
 const EntitlementsDashboardActionModal = (props: {
   open: boolean;
@@ -67,7 +68,7 @@ const EntitlementsDashboardActionModal = (props: {
   dashboardState: EntitlementsDashboardState;
   onClose: () => void;
   action: 'approve' | 'deny' | undefined;
-  allContracts: V1_DataContract[];
+  allContracts: V1_LiteDataContract[];
   marketplaceStore: LegendMarketplaceBaseStore;
 }) => {
   const {
@@ -154,17 +155,9 @@ const EntitlementsDashboardActionModal = (props: {
             )}
             {errorMessages.map(([task, errorMessage]) => {
               const contractId = task.dataContractId;
-              const resource = allContracts.find(
-                (contract) => contract.guid === contractId,
-              )?.resource;
-              const dataProduct =
-                resource instanceof V1_AccessPointGroupReference
-                  ? resource.dataProduct.name
-                  : 'unknown';
-              const accessPointGroup =
-                resource instanceof V1_AccessPointGroupReference
-                  ? resource.accessPointGroup
-                  : 'unknown';
+              const contract = allContracts.find(
+                (_contract) => _contract.guid === contractId,
+              );
               return (
                 <Box
                   key={task.taskId}
@@ -179,13 +172,13 @@ const EntitlementsDashboardActionModal = (props: {
                         marketplaceStore={marketplaceStore}
                       />
                     </div>{' '}
-                    for Access Point Group{' '}
+                    for {startCase(contract?.resourceType.toLowerCase())}{' '}
                     <span className="marketplace-lakehouse-text__emphasis">
-                      {accessPointGroup}
+                      {contract?.accessPointGroup}
                     </span>{' '}
                     on Data Product{' '}
                     <span className="marketplace-lakehouse-text__emphasis">
-                      {dataProduct}
+                      {contract?.resourceId}
                     </span>
                     :
                   </div>
@@ -251,7 +244,7 @@ export const EntitlementsPendingTasksDashbaord = observer(
       new Set<string>(searchParams.get('selectedTasks')?.split(',') ?? []),
     );
     const [selectedContract, setSelectedContract] = useState<
-      V1_DataContract | undefined
+      V1_LiteDataContract | undefined
     >();
     const [selectedContractTargetUser, setSelectedContractTargetUser] =
       useState<string | undefined>();
@@ -500,14 +493,10 @@ export const EntitlementsPendingTasksDashbaord = observer(
         flex: 1,
         valueGetter: (params) => {
           const contractId = params.data?.dataContractId;
-          const resource = allContracts?.find(
-            (contract) => contract.guid === contractId,
-          )?.resource;
-          const dataProduct =
-            resource instanceof V1_AccessPointGroupReference
-              ? resource.dataProduct
-              : undefined;
-          return dataProduct?.name ?? 'Unknown';
+          const contract = allContracts?.find(
+            (_contract) => _contract.guid === contractId,
+          );
+          return contract?.resourceId ?? 'Unknown';
         },
       },
       {
@@ -518,13 +507,13 @@ export const EntitlementsPendingTasksDashbaord = observer(
         flex: 1,
         valueGetter: (params) => {
           const contractId = params.data?.dataContractId;
-          const resource = allContracts?.find(
-            (contract) => contract.guid === contractId,
-          )?.resource;
+          const contract = allContracts?.find(
+            (_contract) => _contract.guid === contractId,
+          );
           const accessPointGroup =
-            resource instanceof V1_AccessPointGroupReference
-              ? resource.accessPointGroup
-              : undefined;
+            contract?.resourceType === V1_ResourceType.ACCESS_POINT_GROUP
+              ? contract.accessPointGroup
+              : `${contract?.accessPointGroup ?? 'Unknown'} (${contract?.resourceType ?? 'Unknown Type'})`;
           return accessPointGroup ?? 'Unknown';
         },
       },

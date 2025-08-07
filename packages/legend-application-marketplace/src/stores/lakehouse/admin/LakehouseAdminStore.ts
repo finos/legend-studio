@@ -23,9 +23,9 @@ import {
 import { deserialize } from 'serializr';
 import {
   type V1_DataSubscription,
-  type V1_DataContract,
+  type V1_LiteDataContract,
   V1_DataSubscriptionResponseModelSchema,
-  V1_dataContractsResponseModelSchemaToContracts,
+  V1_liteDataContractsResponseModelSchemaToContracts,
 } from '@finos/legend-graph';
 import { makeObservable, flow, action, observable } from 'mobx';
 import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
@@ -36,7 +36,7 @@ export class LakehouseAdminStore {
   subscriptionsInitializationState = ActionState.create();
   contractsInitializationState = ActionState.create();
   subscriptions: V1_DataSubscription[] = [];
-  contracts: V1_DataContract[] = [];
+  contracts: V1_LiteDataContract[] = [];
 
   constructor(
     applicationStore: LegendMarketplaceApplicationStore,
@@ -78,8 +78,8 @@ export class LakehouseAdminStore {
       try {
         this.contractsInitializationState.inProgress();
         const rawContracts =
-          await this.lakehouseContractServerClient.getDataContracts(token);
-        const contracts = V1_dataContractsResponseModelSchemaToContracts(
+          await this.lakehouseContractServerClient.getLiteDataContracts(token);
+        const contracts = V1_liteDataContractsResponseModelSchemaToContracts(
           rawContracts,
           this.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
         );
@@ -101,7 +101,7 @@ export class LakehouseAdminStore {
     this.subscriptions = val;
   }
 
-  setContracts(val: V1_DataContract[]): void {
+  setContracts(val: V1_LiteDataContract[]): void {
     this.contracts = val;
   }
 }

@@ -16,12 +16,11 @@
 
 import {
   type V1_ContractUserEventRecord,
-  type V1_DataContract,
   type V1_EnrichedUserApprovalStatus,
-  V1_AccessPointGroupReference,
+  type V1_LiteDataContract,
   V1_AdhocTeam,
   V1_ContractUserStatusResponseModelSchema,
-  V1_dataContractsResponseModelSchemaToContracts,
+  V1_ResourceType,
 } from '@finos/legend-graph';
 import {
   DataGrid,
@@ -89,7 +88,7 @@ export const EntitlementsClosedContractsDashbaord = observer(
 
     const marketplaceBaseStore = useLegendMarketplaceBaseStore();
     const [selectedContract, setSelectedContract] = useState<
-      V1_DataContract | undefined
+      V1_LiteDataContract | undefined
     >();
     const [showForOthers, setShowForOthers] = useState<boolean>(
       closedContracts.length === 0 && closedContractsForOthers.length > 0,
@@ -131,39 +130,25 @@ export const EntitlementsClosedContractsDashbaord = observer(
     }, [auth.user?.access_token, closedContracts, dashboardState]);
 
     const handleCellClicked = async (
-      event: DataGridCellClickedEvent<V1_DataContract>,
+      event: DataGridCellClickedEvent<V1_LiteDataContract>,
     ) => {
       if (
         event.colDef.colId !== 'targetUser' &&
         event.colDef.colId !== 'requester' &&
         event.colDef.colId !== 'actioner'
       ) {
-        if (event.data) {
-          const rawEnrichedContract =
-            await dashboardState.lakehouseEntitlementsStore.lakehouseServerClient.getDataContract(
-              event.data.guid,
-              auth.user?.access_token,
-            );
-          const enrichedContract =
-            V1_dataContractsResponseModelSchemaToContracts(
-              rawEnrichedContract,
-              dashboardState.lakehouseEntitlementsStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
-            )[0];
-          if (enrichedContract) {
-            setSelectedContract(enrichedContract);
-          }
-        }
+        setSelectedContract(event.data);
       }
     };
 
-    const defaultColDef: DataGridColumnDefinition<V1_DataContract> = {
+    const defaultColDef: DataGridColumnDefinition<V1_LiteDataContract> = {
       minWidth: 50,
       sortable: true,
       resizable: true,
       flex: 1,
     };
 
-    const colDefs: DataGridColumnDefinition<V1_DataContract>[] = [
+    const colDefs: DataGridColumnDefinition<V1_LiteDataContract>[] = [
       {
         colId: 'consumerType',
         headerName: 'Consumer Type',
@@ -201,7 +186,9 @@ export const EntitlementsClosedContractsDashbaord = observer(
       {
         headerName: 'Target User',
         colId: 'targetUser',
-        cellRenderer: (params: DataGridCellRendererParams<V1_DataContract>) => {
+        cellRenderer: (
+          params: DataGridCellRendererParams<V1_LiteDataContract>,
+        ) => {
           const consumer = params.data?.consumer;
 
           if (consumer instanceof V1_AdhocTeam) {
@@ -222,7 +209,9 @@ export const EntitlementsClosedContractsDashbaord = observer(
       {
         headerName: 'Requester',
         colId: 'requester',
-        cellRenderer: (params: DataGridCellRendererParams<V1_DataContract>) => {
+        cellRenderer: (
+          params: DataGridCellRendererParams<V1_LiteDataContract>,
+        ) => {
           const requester = params.data?.createdBy;
           return requester ? (
             <UserRenderer
@@ -238,22 +227,16 @@ export const EntitlementsClosedContractsDashbaord = observer(
       {
         headerName: 'Target Data Product',
         valueGetter: (params) => {
-          const resource = params.data?.resource;
-          const dataProduct =
-            resource instanceof V1_AccessPointGroupReference
-              ? resource.dataProduct
-              : undefined;
-          return dataProduct?.name ?? 'Unknown';
+          return params.data?.resourceId ?? 'Unknown';
         },
       },
       {
         headerName: 'Target Access Point Group',
         valueGetter: (params) => {
-          const resource = params.data?.resource;
           const accessPointGroup =
-            resource instanceof V1_AccessPointGroupReference
-              ? resource.accessPointGroup
-              : undefined;
+            params.data?.resourceType === V1_ResourceType.ACCESS_POINT_GROUP
+              ? params.data.accessPointGroup
+              : `${params.data?.accessPointGroup ?? 'Unknown'} (${params.data?.resourceType ?? 'Unknown Type'})`;
           return accessPointGroup ?? 'Unknown';
         },
       },
@@ -303,7 +286,9 @@ export const EntitlementsClosedContractsDashbaord = observer(
             suppressFieldDotNotation={true}
             suppressContextMenu={false}
             columnDefs={colDefs}
-            onCellClicked={(event: DataGridCellClickedEvent<V1_DataContract>) =>
+            onCellClicked={(
+              event: DataGridCellClickedEvent<V1_LiteDataContract>,
+            ) =>
               // eslint-disable-next-line no-void
               void handleCellClicked(event)
             }

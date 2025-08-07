@@ -16,12 +16,12 @@
 
 import {
   type V1_ContractUserEventRecord,
-  type V1_DataContract,
+  type V1_LiteDataContract,
   type V1_UserPendingContractsRecord,
-  V1_AccessPointGroupReference,
   V1_AdhocTeam,
   V1_ContractState,
   V1_deserializeTaskResponse,
+  V1_ResourceType,
   V1_UserApprovalStatus,
 } from '@finos/legend-graph';
 import {
@@ -56,7 +56,7 @@ import { MultiUserCellRenderer } from '../../../components/MultiUserCellRenderer
 import { InfoCircleIcon } from '@finos/legend-art';
 
 const AssigneesCellRenderer = (props: {
-  dataContract: V1_DataContract | undefined;
+  dataContract: V1_LiteDataContract | undefined;
   pendingContractRecords: V1_UserPendingContractsRecord[] | undefined;
   marketplaceStore: LegendMarketplaceBaseStore;
   token: string | undefined;
@@ -121,7 +121,7 @@ const AssigneesCellRenderer = (props: {
 };
 
 const TargetUserCellRenderer = (props: {
-  dataContract: V1_DataContract | undefined;
+  dataContract: V1_LiteDataContract | undefined;
   marketplaceStore: LegendMarketplaceBaseStore;
   token: string | undefined;
 }): React.ReactNode => {
@@ -198,7 +198,7 @@ export const EntitlementsPendingContractsDashbaord = observer(
 
     const marketplaceBaseStore = useLegendMarketplaceBaseStore();
     const [selectedContract, setSelectedContract] = useState<
-      V1_DataContract | undefined
+      V1_LiteDataContract | undefined
     >();
     const [showForOthers, setShowForOthers] = useState<boolean>(
       pendingContracts.length === 0 && pendingContractsForOthers.length > 0,
@@ -206,7 +206,7 @@ export const EntitlementsPendingContractsDashbaord = observer(
     const auth = useAuth();
 
     const handleCellClicked = (
-      event: DataGridCellClickedEvent<V1_DataContract>,
+      event: DataGridCellClickedEvent<V1_LiteDataContract>,
     ) => {
       if (
         event.colDef.colId !== 'targetUser' &&
@@ -217,14 +217,14 @@ export const EntitlementsPendingContractsDashbaord = observer(
       }
     };
 
-    const defaultColDef: DataGridColumnDefinition<V1_DataContract> = {
+    const defaultColDef: DataGridColumnDefinition<V1_LiteDataContract> = {
       minWidth: 50,
       sortable: true,
       resizable: true,
       flex: 1,
     };
 
-    const colDefs: DataGridColumnDefinition<V1_DataContract>[] = [
+    const colDefs: DataGridColumnDefinition<V1_LiteDataContract>[] = [
       {
         colId: 'consumerType',
         headerName: 'Consumer Type',
@@ -262,7 +262,9 @@ export const EntitlementsPendingContractsDashbaord = observer(
       {
         headerName: 'Target User(s)',
         colId: 'targetUser',
-        cellRenderer: (params: DataGridCellRendererParams<V1_DataContract>) => (
+        cellRenderer: (
+          params: DataGridCellRendererParams<V1_LiteDataContract>,
+        ) => (
           <TargetUserCellRenderer
             dataContract={params.data}
             marketplaceStore={marketplaceBaseStore}
@@ -273,7 +275,9 @@ export const EntitlementsPendingContractsDashbaord = observer(
       {
         headerName: 'Requester',
         colId: 'requester',
-        cellRenderer: (params: DataGridCellRendererParams<V1_DataContract>) => {
+        cellRenderer: (
+          params: DataGridCellRendererParams<V1_LiteDataContract>,
+        ) => {
           const requester = params.data?.createdBy;
           return requester ? (
             <UserRenderer
@@ -289,22 +293,16 @@ export const EntitlementsPendingContractsDashbaord = observer(
       {
         headerName: 'Target Data Product',
         valueGetter: (params) => {
-          const resource = params.data?.resource;
-          const dataProduct =
-            resource instanceof V1_AccessPointGroupReference
-              ? resource.dataProduct
-              : undefined;
-          return dataProduct?.name ?? 'Unknown';
+          return params.data?.resourceId ?? 'Unknown';
         },
       },
       {
         headerName: 'Target Access Point Group',
         valueGetter: (params) => {
-          const resource = params.data?.resource;
           const accessPointGroup =
-            resource instanceof V1_AccessPointGroupReference
-              ? resource.accessPointGroup
-              : undefined;
+            params.data?.resourceType === V1_ResourceType.ACCESS_POINT_GROUP
+              ? params.data.accessPointGroup
+              : `${params.data?.accessPointGroup ?? 'Unknown'} (${params.data?.resourceType ?? 'Unknown Type'})`;
           return accessPointGroup ?? 'Unknown';
         },
       },
@@ -329,7 +327,9 @@ export const EntitlementsPendingContractsDashbaord = observer(
       {
         headerName: 'Assignees',
         colId: 'assignees',
-        cellRenderer: (params: DataGridCellRendererParams<V1_DataContract>) => (
+        cellRenderer: (
+          params: DataGridCellRendererParams<V1_LiteDataContract>,
+        ) => (
           <AssigneesCellRenderer
             dataContract={params.data}
             pendingContractRecords={pendingContractRecords}

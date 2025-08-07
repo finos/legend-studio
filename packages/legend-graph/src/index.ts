@@ -267,7 +267,6 @@ export { V1_TestAuthenticationStrategy } from './graph-manager/protocol/pure/v1/
 export { V1_RelationStoreAccessor } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/classInstance/relation/V1_RelationStoreAccessor.js';
 export { V1_PackageableConnection } from './graph-manager/protocol/pure/v1/model/packageableElements/connection/V1_PackageableConnection.js';
 export {
-  type V1_DataContractsCreation,
   type V1_UserPendingContractsRecord,
   type V1_UserPendingContractsResponse,
   V1_AccessPointGroupReference,
@@ -283,6 +282,8 @@ export {
   V1_DataContractApprovedUsersResponse,
   V1_DataContractsResponse,
   V1_EnrichedUserApprovalStatus,
+  V1_LiteDataContract,
+  V1_LiteDataContractsResponse,
   V1_PendingTasksResponse,
   V1_ResourceType,
   V1_TaskMetadata,
@@ -325,12 +326,13 @@ export {
   V1_dataContractsResponseModelSchemaToContracts,
   V1_DataProductOriginType,
   V1_deserializeTaskResponse,
-  V1_EntitlementsDataProductDetailsModelSchema,
   V1_EntitlementsAccessPointModelSchema,
+  V1_EntitlementsDataProductDetailsModelSchema,
   V1_EntitlementsDataProductDetailsResponseModelSchema,
   V1_entitlementsDataProductDetailsResponseToDataProductDetails,
   V1_EntitlementsDataProductModelSchema,
   V1_EntitlementsLakehouseEnvironmentModelSchema,
+  V1_liteDataContractsResponseModelSchemaToContracts,
   V1_pendingTasksResponseModelSchema,
   V1_SdlcDeploymentDataProductOriginModelSchema,
   V1_TaskStatusChangeResponseModelSchema,
@@ -360,7 +362,11 @@ export {
   V1_IngestEnvironment,
   V1_AWSSnowflakeIngestEnvironment,
 } from './graph-manager/protocol/pure/v1/lakehouse/ingest/V1_LakehouseIngestEnvironment.js';
-export { V1_observe_DataContract } from './graph-manager/protocol/pure/v1/lakehouse/helpers/V1_ConsumerEntitlementsObserver.js';
+export {
+  V1_observe_DataContract,
+  V1_observe_LiteDataContract,
+} from './graph-manager/protocol/pure/v1/lakehouse/helpers/V1_ConsumerEntitlementsObserver.js';
+export { V1_transformDataContractToLiteDatacontract } from './graph-manager/protocol/pure/v1/lakehouse/helpers/V1_ConsumerEntitlementsUtils.js';
 export {
   V1_CreateSubscriptionInputModelSchema,
   V1_dataSubscriptionModelSchema,

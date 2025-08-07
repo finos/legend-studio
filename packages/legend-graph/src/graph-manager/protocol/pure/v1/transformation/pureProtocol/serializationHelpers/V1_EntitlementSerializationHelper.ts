@@ -40,6 +40,8 @@ import {
   V1_TaskStatusChangeResponse,
   V1_ContractUserMembership,
   V1_ContractUserStatusResponse,
+  V1_LiteDataContractsResponse,
+  V1_LiteDataContract,
 } from '../../../lakehouse/entitlements/V1_ConsumerEntitlements.js';
 import {
   createModelSchema,
@@ -239,12 +241,43 @@ export const V1_dataContractSubscriptionsModelSchema = (
     ),
   });
 
+export const V1_liteDataContractModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+) =>
+  createModelSchema(V1_LiteDataContract, {
+    description: primitive(),
+    guid: primitive(),
+    version: primitive(),
+    state: primitive(),
+    members: optional(
+      list(usingModelSchema(V1_contractUserMembershipModelSchema)),
+    ),
+    consumer: custom(
+      (val) => V1_serializeOrganizationalScope(val, plugins),
+      (val) => V1_deserializeOrganizationalScope(val, plugins),
+    ),
+    createdBy: primitive(),
+    resourceId: primitive(),
+    resourceType: primitive(),
+    deploymentId: primitive(),
+    accessPointGroup: optional(primitive()),
+  });
+
 export const V1_dataContractsResponseModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ) =>
   createModelSchema(V1_DataContractsResponse, {
     dataContracts: optional(
       customListWithSchema(V1_dataContractSubscriptionsModelSchema(plugins)),
+    ),
+  });
+
+export const V1_liteDataContractsResponseModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+) =>
+  createModelSchema(V1_LiteDataContractsResponse, {
+    dataContracts: optional(
+      customListWithSchema(V1_liteDataContractModelSchema(plugins)),
     ),
   });
 
@@ -354,6 +387,17 @@ export const V1_dataContractsResponseModelSchemaToContracts = (
     json,
   );
   return contracts.dataContracts?.map((e) => e.dataContract) ?? [];
+};
+
+export const V1_liteDataContractsResponseModelSchemaToContracts = (
+  json: PlainObject<V1_LiteDataContractsResponse>,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_LiteDataContract[] => {
+  const contracts = deserialize(
+    V1_liteDataContractsResponseModelSchema(plugins),
+    json,
+  );
+  return contracts.dataContracts ?? [];
 };
 
 export const V1_deserializeTaskResponse = (

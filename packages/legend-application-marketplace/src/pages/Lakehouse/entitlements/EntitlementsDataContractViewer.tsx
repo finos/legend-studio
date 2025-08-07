@@ -42,11 +42,11 @@ import {
 } from '@mui/lab';
 import {
   type V1_TaskMetadata,
-  V1_AccessPointGroupReference,
   V1_AdhocTeam,
   V1_ApprovalType,
   V1_ContractUserEventDataProducerPayload,
   V1_ContractUserEventPrivilegeManagerPayload,
+  V1_ResourceType,
   V1_UserApprovalStatus,
 } from '@finos/legend-graph';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -262,7 +262,7 @@ export const EntitlementsDataContractViewer = observer(
     };
 
     if (
-      !(currentViewer.value.resource instanceof V1_AccessPointGroupReference)
+      currentViewer.value.resourceType !== V1_ResourceType.ACCESS_POINT_GROUP
     ) {
       return (
         <Dialog open={true} onClose={onClose} fullWidth={true} maxWidth="md">
@@ -274,14 +274,16 @@ export const EntitlementsDataContractViewer = observer(
             <CloseIcon />
           </IconButton>
           <DialogContent className="marketplace-lakehouse-entitlements__data-contract-viewer__content">
-            Unable to display data contract request details for this resource.
+            Unable to display data contract request details for resource of type{' '}
+            {currentViewer.value.resourceType} on data product{' '}
+            {currentViewer.value.resourceId}.
           </DialogContent>
         </Dialog>
       );
     }
 
-    const dataProduct = currentViewer.value.resource.dataProduct;
-    const accessPointGroup = currentViewer.value.resource.accessPointGroup;
+    const dataProduct = currentViewer.value.resourceId;
+    const accessPointGroup = currentViewer.value.accessPointGroup;
     const privilegeManagerApprovalTask = currentViewer.associatedTasks?.find(
       (task) =>
         task.rec.consumer === selectedTargetUser &&
@@ -453,14 +455,14 @@ export const EntitlementsDataContractViewer = observer(
                   className="marketplace-lakehouse-text__emphasis"
                   href={legendMarketplaceStore.applicationStore.navigationService.navigator.generateAddress(
                     generateLakehouseDataProductPath(
-                      dataProduct.name,
-                      dataProduct.owner.appDirId,
+                      dataProduct,
+                      currentViewer.value.deploymentId,
                     ),
                   )}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  {dataProduct.name}
+                  {dataProduct}
                 </Link>{' '}
                 Data Product
               </div>

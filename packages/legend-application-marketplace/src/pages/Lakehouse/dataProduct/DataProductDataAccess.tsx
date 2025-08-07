@@ -70,6 +70,7 @@ import {
   V1_RenderStyle,
   V1_SdlcDeploymentDataProductOrigin,
   V1_serializeRawValueSpecification,
+  V1_transformDataContractToLiteDatacontract,
 } from '@finos/legend-graph';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 import {
@@ -380,7 +381,9 @@ export const DataProductAccessPointGroupViewer = observer(
       () =>
         accessGroupState.accessState.viewerState.dataContract
           ? new EntitlementsDataContractViewerState(
-              accessGroupState.accessState.viewerState.dataContract,
+              V1_transformDataContractToLiteDatacontract(
+                accessGroupState.accessState.viewerState.dataContract,
+              ),
               accessGroupState.accessState.viewerState.lakeServerClient,
             )
           : undefined,
