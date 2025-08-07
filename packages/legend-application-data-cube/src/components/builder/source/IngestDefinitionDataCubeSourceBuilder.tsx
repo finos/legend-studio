@@ -139,7 +139,6 @@ export const IngestDefinitionDataCubeSourceBuilder: React.FC<{
               onChange={(event) => {
                 state.setWarehouse(event.target.value);
               }}
-              placeholder="Enter Warehouse Name"
             />
           </div>
         )}
