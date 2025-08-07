@@ -15,7 +15,7 @@
  */
 
 import { type JSX, useState } from 'react';
-import { Button, InputAdornment, TextField } from '@mui/material';
+import { IconButton, InputAdornment, TextField } from '@mui/material';
 import { clsx, SearchIcon } from '@finos/legend-art';
 
 export interface Vendor {
@@ -25,8 +25,8 @@ export interface Vendor {
 }
 
 export const LegendMarketplaceSearchBar = (props: {
-  onSearch?: (provider: string | undefined, query: string | undefined) => void;
-  initialValue?: string;
+  onSearch?: (query: string | undefined) => void;
+  initialValue?: string | undefined;
   placeholder?: string;
   onChange?: (query: string) => void;
   className?: string | undefined;
@@ -40,14 +40,11 @@ export const LegendMarketplaceSearchBar = (props: {
       className={clsx('legend-marketplace__search-bar', className)}
       onSubmit={(event) => {
         event.preventDefault();
-        onSearch?.(undefined, searchQuery);
+        onSearch?.(searchQuery);
       }}
     >
       <TextField
-        className={clsx('legend-marketplace__search-bar__input', {
-          'legend-marketplace__search-bar__input--with-button':
-            onSearch !== undefined,
-        })}
+        className="legend-marketplace__search-bar__text-field"
         type="search"
         placeholder={placeholder ?? 'Search'}
         fullWidth={true}
@@ -58,19 +55,20 @@ export const LegendMarketplaceSearchBar = (props: {
         }}
         slotProps={{
           input: {
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon />
+            className: 'legend-marketplace__search-bar__input',
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  onClick={() => onSearch?.(searchQuery)}
+                  title="search"
+                >
+                  <SearchIcon />
+                </IconButton>
               </InputAdornment>
             ),
           },
         }}
       />
-      {onSearch && (
-        <Button type="submit" variant="contained" disabled={!searchQuery}>
-          Go
-        </Button>
-      )}
     </form>
   );
 };

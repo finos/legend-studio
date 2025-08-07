@@ -19,15 +19,14 @@ import {
   useMarketplaceLakehouseStore,
   withMarketplaceLakehouseStore,
 } from './MarketplaceLakehouseStoreProvider.js';
-import React, { useEffect, useState, type MouseEvent } from 'react';
+import { useEffect, useState } from 'react';
+import { Box, Container, Grid2 as Grid } from '@mui/material';
+import { LegendMarketplaceSearchBar } from '../../components/SearchBar/LegendMarketplaceSearchBar.js';
+import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
+import { useAuth } from 'react-oidc-context';
 import {
-  clsx,
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
-  deserializeIcon,
-  ExpandMoreIcon,
-  InfoCircleIcon,
-  OpenIcon,
 } from '@finos/legend-art';
 import {
   Box,
@@ -566,78 +565,116 @@ const MarketplaceLakehouseHomeSortFilterPanel = observer(
   },
 );
 
+
 export const MarketplaceLakehouseHome = withMarketplaceLakehouseStore(
   observer(() => {
-    const marketPlaceStore = useMarketplaceLakehouseStore();
+    const marketplaceStore = useMarketplaceLakehouseStore();
     const auth = useAuth();
-
-    const onSearchChange = (query: string) => {
-      marketPlaceStore.handleSearch(query);
-    };
+    const [highlightedDataProducts, setHighlightedDataProducts] = useState<
+      DataProductState[]
+    >([]);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-      marketPlaceStore.init(auth);
-    }, [marketPlaceStore, auth]);
+      const loadDataProducts = async (): Promise<void> => {
+        setLoading(true);
 
-    const isLoadingDataProducts =
-      marketPlaceStore.loadingAllProductsState.isInProgress ||
-      marketPlaceStore.loadingSandboxDataProductStates.isInProgress ||
-      marketPlaceStore.loadingLakehouseEnvironmentsByDIDState.isInProgress;
+        try {
+          const dataProducts = await Promise.all(
+            marketplaceStore.applicationStore.pluginManager
+              .getApplicationPlugins()
+              .flatMap(
+                async (plugin) =>
+                  (await plugin.getHomePageDataProducts?.(
+                    marketplaceStore,
+                    auth.user?.access_token,
+                  )) ?? [],
+              ),
+          );
+          setHighlightedDataProducts(dataProducts.flat());
+        } catch (error) {
+          assertErrorThrown(error);
+          marketplaceStore.applicationStore.notificationService.notifyError(
+            `Can't load highlighted data products: ${error.message}`,
+          );
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      if (highlightedDataProducts.length === 0) {
+        // eslint-disable-next-line no-void
+        void loadDataProducts();
+      }
+    }, [
+      marketplaceStore,
+      auth.user?.access_token,
+      highlightedDataProducts.length,
+    ]);
+
+    const handleSearch = (query: string | undefined): void => {
+      if (isNonEmptyString(query)) {
+        marketplaceStore.applicationStore.navigationService.navigator.goToLocation(
+          generateLakehouseSearchResultsRoute(query),
+        );
+      }
+    };
 
     return (
       <LegendMarketplacePage className="marketplace-lakehouse-home">
         <Container className="marketplace-lakehouse-home__search-container">
+          <Box className="marketplace-lakehouse-home__search-container__logo">
+            <img src="/assets/LegendLogo.png" alt="Legend Logo" />
+          </Box>
           <Box className="marketplace-lakehouse-home__search-container__title">
-            Legend Marketplace
+            Marketplace
           </Box>
           <LegendMarketplaceSearchBar
-            onChange={onSearchChange}
+            onSearch={handleSearch}
             placeholder="Search Legend Marketplace"
             className="marketplace-lakehouse-home__search-bar"
           />
         </Container>
         <Container
           maxWidth="xxxl"
-          className="marketplace-lakehouse-home__results-container"
+          className="marketplace-lakehouse-home__data-product-cards__container"
         >
-          <MarketplaceLakehouseHomeSortFilterPanel
-            marketplaceStore={marketPlaceStore}
-          />
-          <Grid
-            container={true}
-            spacing={{ xs: 2, sm: 3, xxl: 4 }}
-            columns={{ xs: 1, sm: 2, xxl: 3 }}
-            className="marketplace-lakehouse-home__data-product-cards"
-          >
-            {marketPlaceStore.filterSortProducts?.map((dataProductState) => (
-              <Grid
-                key={`${dataProductState.dataProductDetails.id}-${dataProductState.dataProductDetails.deploymentId}`}
-                size={1}
-              >
-                <LakehouseDataProductCard
-                  dataProductState={dataProductState}
-                  onClick={(dpState: DataProductState) => {
-                    marketPlaceStore.applicationStore.navigationService.navigator.goToLocation(
-                      generateLakehouseDataProductPath(
-                        dataProductState.dataProductDetails.id,
-                        dataProductState.dataProductDetails.deploymentId,
-                      ),
-                    );
-                  }}
-                />
-              </Grid>
-            ))}
-            {isLoadingDataProducts && (
-              <Grid size={1}>
-                <CubesLoadingIndicator
-                  isLoading={true}
-                  className="marketplace-lakehouse-home__loading-data-products-indicator"
+          {loading ? (
+            <CubesLoadingIndicator
+              isLoading={loading}
+              className="marketplace-lakehouse-home__data-product-cards__loading"
+            >
+              <CubesLoadingIndicatorIcon />
+            </CubesLoadingIndicator>
+          ) : (
+            <Grid
+              container={true}
+              spacing={{ xs: 2, sm: 3, lg: 4 }}
+              columns={{ xs: 1, sm: 2, md: 3, lg: 4, xxxl: 5 }}
+              className="marketplace-lakehouse-home__data-product-cards"
+            >
+              {highlightedDataProducts.map((dataProductState) => (
+                <Grid
+                  key={`${dataProductState.dataProductDetails.id}-${dataProductState.dataProductDetails.deploymentId}`}
+                  size={1}
                 >
-                  <CubesLoadingIndicatorIcon />
-                </CubesLoadingIndicator>
-              </Grid>
-            )}
-          </Grid>
+                  <LakehouseHighlightedDataProductCard
+                    dataProductState={dataProductState}
+                    onClick={() => {
+                      marketplaceStore.applicationStore.navigationService.navigator.visitAddress(
+                        marketplaceStore.applicationStore.navigationService.navigator.generateAddress(
+                          generateLakehouseDataProductPath(
+                            dataProductState.dataProductDetails.id,
+                            dataProductState.dataProductDetails.deploymentId,
+                          ),
+                        ),
+                      );
+                    }}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          )}
         </Container>
       </LegendMarketplacePage>
     );

@@ -270,13 +270,19 @@
       @include flexCenter;
 
       width: 2.8rem;
-      height: 2.8rem;
       flex: 2.8rem 0 0;
       color: var(--color-light-grey-0);
       background: var(--color-dark-grey-300);
       border-radius: 0.2rem;
       margin-left: 0.5rem;
       cursor: pointer;
+
+      &__debug {
+        @extend .access-point-editor__generic-entry__remove-btn;
+
+        height: 2.8rem;
+        background: var(--color-dark-grey-400);
+      }
     }
 
     &__remove-btn--group {

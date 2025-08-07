@@ -15,11 +15,11 @@
  */
 
 import {
+  type V1_LiteDataContract,
   type V1_PendingTasksResponse,
-  type V1_DataContract,
   type V1_TaskMetadata,
   V1_deserializeTaskResponse,
-  V1_observe_DataContract,
+  V1_observe_LiteDataContract,
 } from '@finos/legend-graph';
 import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
 import {
@@ -31,16 +31,16 @@ import {
 import { action, flow, makeObservable, observable } from 'mobx';
 
 export class EntitlementsDataContractViewerState {
-  readonly value: V1_DataContract;
+  readonly value: V1_LiteDataContract;
   readonly lakeServerClient: LakehouseContractServerClient;
   associatedTasks: V1_TaskMetadata[] | undefined;
   initializationState = ActionState.create();
 
   constructor(
-    dataContract: V1_DataContract,
+    dataContract: V1_LiteDataContract,
     lakeServerClient: LakehouseContractServerClient,
   ) {
-    this.value = V1_observe_DataContract(dataContract);
+    this.value = V1_observe_LiteDataContract(dataContract);
     this.lakeServerClient = lakeServerClient;
     makeObservable(this, {
       value: observable,

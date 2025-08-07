@@ -1,5 +1,15 @@
 # @finos/legend-application-studio
 
+## 28.19.22
+
+## 28.19.21
+
+### Patch Changes
+
+- [#4319](https://github.com/finos/legend-studio/pull/4319) [`43ff186`](https://github.com/finos/legend-studio/commit/43ff186272fbd000135405540996f73736b10e16) ([@kelly-thai](https://github.com/kelly-thai)) - Add a markdown preview in Data Product form and allow users to resize description textbox
+
+- [#4322](https://github.com/finos/legend-studio/pull/4322) [`df6995a`](https://github.com/finos/legend-studio/commit/df6995ae0ef50c0042870e066c445cb60d071111) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Added render artifact button in activator that creates a dialog to display json for the artifact.
+
 ## 28.19.20
 
 ### Patch Changes

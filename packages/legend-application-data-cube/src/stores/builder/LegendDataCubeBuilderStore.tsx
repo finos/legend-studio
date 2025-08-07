@@ -70,6 +70,12 @@ import type { LegendDataCubeSourceLoaderState } from './source/LegendDataCubeSou
 import { LocalFileDataCubeSourceLoaderState } from './source/LocalFileDataCubeSourceLoaderState.js';
 import { LEGEND_DATACUBE_APP_EVENT } from '../../__lib__/LegendDataCubeEvent.js';
 import { LegendDataCubeQueryEditor } from '../../components/builder/LegendDataCubeQueryEditor.js';
+import type {
+  LakehouseIngestServerClient,
+  LakehousePlatformServerClient,
+} from '@finos/legend-server-lakehouse';
+import { INGEST_DEFINITION_DATA_CUBE_SOURCE_TYPE } from '../model/IngestDefinitionDataCubeSource.js';
+import { IngestDefinitionDataCubeSourceLoaderState } from './source/IngestDefinitionDataCubeSourceLoaderState.js';
 
 export class LegendDataCubeBuilderState {
   readonly uuid = uuid();
@@ -126,6 +132,8 @@ export class LegendDataCubeBuilderStore {
   readonly baseStore: LegendDataCubeBaseStore;
   readonly engine: LegendDataCubeDataCubeEngine;
   readonly depotServerClient: DepotServerClient;
+  readonly platformServerClient: LakehousePlatformServerClient;
+  readonly ingestServerClient: LakehouseIngestServerClient;
   readonly engineServerClient: V1_EngineServerClient;
   readonly graphManager: V1_PureGraphManager;
   readonly taskService: DataCubeTaskService;
@@ -175,6 +183,8 @@ export class LegendDataCubeBuilderStore {
     this.engine = baseStore.engine;
     this.depotServerClient = baseStore.depotServerClient;
     this.engineServerClient = baseStore.engineServerClient;
+    this.platformServerClient = baseStore.lakehousePlatformServerClient;
+    this.ingestServerClient = baseStore.lakehouseIngestServerClient;
     this.graphManager = baseStore.graphManager;
     this.taskService = baseStore.taskService;
     this.alertService = baseStore.alertService;
@@ -336,6 +346,16 @@ export class LegendDataCubeBuilderStore {
           onSuccess,
           onError,
         );
+      case INGEST_DEFINITION_DATA_CUBE_SOURCE_TYPE:
+        return new IngestDefinitionDataCubeSourceLoaderState(
+          this.application,
+          this.engine,
+          this.alertService,
+          sourceData,
+          persistentDataCube,
+          onSuccess,
+          onError,
+        );
       default:
         throw new UnsupportedOperationError(
           `Can't create source loader for unsupported type '${sourceData._type}'`,
@@ -348,7 +368,7 @@ export class LegendDataCubeBuilderStore {
     const sourceData =
       this.application.navigationService.navigator.getCurrentLocationParameterValue(
         LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN.SOURCE_DATA,
-        true,
+        { replaceUrlSafeBase64Characters: true },
       );
     if (sourceData && !dataCubeId) {
       this.application.navigationService.navigator.updateCurrentLocation(

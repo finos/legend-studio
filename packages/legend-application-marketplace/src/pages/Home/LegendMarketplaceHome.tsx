@@ -32,12 +32,9 @@ export const LegendMarketplaceHome = observer(() => {
   const applicationStore = useApplicationStore();
   const store = useLegendMarketplaceBaseStore();
 
-  const onSearch = (
-    provider: string | undefined,
-    query: string | undefined,
-  ): void => {
+  const onSearch = (query: string | undefined): void => {
     applicationStore.navigationService.navigator.goToLocation(
-      generateSearchResultsRoute(provider, query),
+      generateSearchResultsRoute(undefined, query),
     );
   };
 

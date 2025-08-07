@@ -17,11 +17,12 @@
 import { type PlainObject } from '@finos/legend-shared';
 import { type IngestDeploymentServerConfig } from '@finos/legend-server-lakehouse';
 import {
+  type V1_AppDirNode,
   type V1_AWSSnowflakeIngestEnvironment,
   type V1_DataContractsResponse,
   type V1_DataSubscriptionResponse,
-  type V1_AppDirNode,
   type V1_EntitlementsDataProductDetailsResponse,
+  type V1_LiteDataContractsResponse,
   V1_EntitlementsLakehouseEnvironmentType,
   V1_AppDirLevel,
 } from '@finos/legend-graph';
@@ -271,6 +272,26 @@ export const mockDataContracts: PlainObject<V1_DataContractsResponse> = {
     },
   ],
 };
+
+export const mockLiteDataContracts: PlainObject<V1_LiteDataContractsResponse> =
+  {
+    dataContracts: [
+      {
+        guid: 'contract-123',
+        description: 'Test Contract Description 1',
+        version: 1,
+        state: 'COMPLETED',
+        createdBy: 'admin.user',
+      },
+      {
+        guid: 'contract-456',
+        description: 'Test Contract Description 2',
+        version: 2,
+        state: 'PENDING',
+        createdBy: 'test.user',
+      },
+    ],
+  };
 
 export const mockSubscriptions: PlainObject<V1_DataSubscriptionResponse> = {
   subscriptions: [

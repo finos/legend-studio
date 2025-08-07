@@ -23,15 +23,16 @@ import {
 import { deserialize } from 'serializr';
 import {
   type V1_ContractUserEventRecord,
-  type V1_TaskStatusChangeResponse,
-  V1_TaskStatusChangeResponseModelSchema,
+  type V1_LiteDataContract,
+  type V1_LiteDataContractsResponse,
   type V1_PendingTasksResponse,
+  type V1_TaskStatus,
+  type V1_TaskStatusChangeResponse,
   type V1_UserPendingContractsRecord,
   type V1_UserPendingContractsResponse,
-  type V1_TaskStatus,
+  V1_liteDataContractsResponseModelSchemaToContracts,
   V1_pendingTasksResponseModelSchema,
-  type V1_DataContract,
-  V1_dataContractsResponseModelSchemaToContracts,
+  V1_TaskStatusChangeResponseModelSchema,
 } from '@finos/legend-graph';
 import { makeObservable, flow, observable, action, flowResult } from 'mobx';
 import {
@@ -44,7 +45,7 @@ export class EntitlementsDashboardState {
   readonly lakehouseEntitlementsStore: LakehouseEntitlementsStore;
   pendingTasks: V1_ContractUserEventRecord[] | undefined;
   pendingContracts: V1_UserPendingContractsRecord[] | undefined;
-  allContracts: V1_DataContract[] | undefined;
+  allContracts: V1_LiteDataContract[] | undefined;
   initializationState = ActionState.create();
   changingState = ActionState.create();
 
@@ -127,10 +128,10 @@ export class EntitlementsDashboardState {
     try {
       this.setAllContracts(undefined);
       const rawContracts =
-        (yield this.lakehouseEntitlementsStore.lakehouseServerClient.getDataContracts(
+        (yield this.lakehouseEntitlementsStore.lakehouseServerClient.getLiteDataContracts(
           token,
-        )) as PlainObject<V1_PendingTasksResponse>;
-      const contracts = V1_dataContractsResponseModelSchemaToContracts(
+        )) as PlainObject<V1_LiteDataContractsResponse>;
+      const contracts = V1_liteDataContractsResponseModelSchemaToContracts(
         rawContracts,
         this.lakehouseEntitlementsStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
       );
@@ -151,7 +152,7 @@ export class EntitlementsDashboardState {
     this.pendingContracts = val;
   }
 
-  setAllContracts(val: V1_DataContract[] | undefined): void {
+  setAllContracts(val: V1_LiteDataContract[] | undefined): void {
     this.allContracts = val;
   }
 

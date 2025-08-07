@@ -14,69 +14,18 @@
  * limitations under the License.
  */
 
-import { clsx, MenuIcon } from '@finos/legend-art';
-import {
-  AppBar,
-  Box,
-  Button,
-  Container,
-  IconButton,
-  Menu,
-  MenuItem,
-  Toolbar,
-} from '@mui/material';
+import { clsx, LegendLogo } from '@finos/legend-art';
+import { AppBar, Box, Button, Container, Toolbar } from '@mui/material';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
 import { LEGEND_MARKETPLACE_TEST_ID } from '../../__lib__/LegendMarketplaceTesting.js';
-import { LegendMarketplaceAppInfo } from './LegendMarketplaceAppInfo.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { LEGEND_MARKETPLACE_ROUTE_PATTERN } from '../../__lib__/LegendMarketplaceNavigation.js';
 import { LegendMarketplaceIconToolbar } from './LegendMarketplaceIconToolbar.js';
 import { matchPath } from '@finos/legend-application/browser';
+import { useEffect, useState } from 'react';
 
-const LegendMarketplaceHeaderMenu = observer(() => {
-  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-  const [openAppInfo, setOpenAppInfo] = useState(false);
-  const applicationStore = useApplicationStore();
-
-  const open = Boolean(anchorEl);
-
-  return (
-    <>
-      <IconButton
-        onClick={(event) => setAnchorEl(event.currentTarget)}
-        className="legend-marketplace-header__menu__icon"
-      >
-        <MenuIcon />
-      </IconButton>
-      <Menu anchorEl={anchorEl} open={open} onClose={() => setAnchorEl(null)}>
-        <MenuItem
-          onClick={() => {
-            setOpenAppInfo(true);
-            setAnchorEl(null);
-          }}
-        >
-          About
-        </MenuItem>
-        <MenuItem
-          component="a"
-          href={applicationStore.navigationService.navigator.generateAddress(
-            LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ADMIN,
-          )}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={() => setAnchorEl(null)}
-        >
-          Admin
-        </MenuItem>
-      </Menu>
-      <LegendMarketplaceAppInfo
-        open={openAppInfo}
-        closeModal={() => setOpenAppInfo(false)}
-      />
-    </>
-  );
-});
+const HEADER_HEIGHT = 64;
+const MIN_HEADER_OPACITY = 0.75;
 
 const LegendMarketPlaceHeaderTabs = observer(
   (props: { pages: { title: string; urlRoute: string }[] }) => {
@@ -125,6 +74,40 @@ const LegendMarketplaceBaseHeader = observer(
 
     const applicationStore = useApplicationStore();
 
+    const [headerBackdropOpacity, setHeaderBackdropOpacity] = useState(1);
+    const [headerBlurOpacity, setHeaderBlurOpacity] = useState(0);
+
+    // The below handles the scroll effect for the header's blur effect. When the user is at the top of the page,
+    // the header is fully opaque (i.e., no blur), so we hide the blur component and show the backdrop image component
+    // (which is rendered behind the header). As the user scrolls down, we increase the opacity of the blur component
+    // while reducing the opacity of the backdrop image component until a certain threshold.
+    useEffect(() => {
+      const appElement = document.querySelector('.app');
+
+      const listenerCallback = () => {
+        const scrollTop = appElement?.scrollTop ?? 0;
+        const newBackdropOpacity = Math.max(
+          MIN_HEADER_OPACITY,
+          Math.min(1, 1 - (scrollTop - HEADER_HEIGHT) / HEADER_HEIGHT),
+        );
+        const newBlurOpacity = Math.max(
+          0,
+          Math.min(1, (scrollTop - HEADER_HEIGHT) / HEADER_HEIGHT),
+        );
+        setHeaderBackdropOpacity(newBackdropOpacity);
+        setHeaderBlurOpacity(newBlurOpacity);
+      };
+
+      if (appElement) {
+        appElement.addEventListener('scroll', listenerCallback);
+      }
+      return () => {
+        if (appElement) {
+          appElement.removeEventListener('scroll', listenerCallback);
+        }
+      };
+    }, []);
+
     const navigateToHome = (): void => {
       applicationStore.navigationService.navigator.goToLocation(homeUrl);
     };
@@ -135,13 +118,21 @@ const LegendMarketplaceBaseHeader = observer(
         className="legend-marketplace-header"
         data-testid={LEGEND_MARKETPLACE_TEST_ID.HEADER}
       >
-        <Container maxWidth="xxl">
+        <div
+          className="legend-marketplace-header__backdrop-image"
+          style={{ opacity: headerBackdropOpacity }}
+        />
+        <div
+          className="legend-marketplace-header__backdrop"
+          style={{ opacity: headerBlurOpacity }}
+        />
+        <Container maxWidth="xxxl">
           <Toolbar disableGutters={true}>
-            <LegendMarketplaceHeaderMenu />
             <div
               className="legend-marketplace-header__name"
               onClick={() => navigateToHome()}
             >
+              <LegendLogo />
               {headerName}
             </div>
             <LegendMarketPlaceHeaderTabs pages={pages} />
@@ -159,7 +150,7 @@ export const LegendMarketplaceHeader = observer(
 
     return (
       <LegendMarketplaceBaseHeader
-        headerName="Legend Marketplace"
+        headerName="Marketplace"
         homeUrl={LEGEND_MARKETPLACE_ROUTE_PATTERN.DEFAULT}
         pages={
           enableMarketplacePages
@@ -180,7 +171,7 @@ export const LegendMarketplaceHeader = observer(
 export const MarketplaceLakehouseHeader = observer(() => {
   return (
     <LegendMarketplaceBaseHeader
-      headerName="Legend Marketplace"
+      headerName="Marketplace"
       homeUrl={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE}
       pages={[
         {
@@ -188,7 +179,7 @@ export const MarketplaceLakehouseHeader = observer(() => {
           urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS,
         },
       ]}
-      showIcons={false}
+      showIcons={true}
     />
   );
 });

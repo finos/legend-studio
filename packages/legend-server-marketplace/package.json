@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-server-marketplace",
-  "version": "0.0.31",
+  "version": "0.0.33",
   "description": "Legend Marketplace server client",
   "keywords": [
     "legend",

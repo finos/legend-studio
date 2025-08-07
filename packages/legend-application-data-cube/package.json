@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-application-data-cube",
-  "version": "0.4.8",
+  "version": "0.5.1",
   "description": "Legend DataCube application core",
   "keywords": [
     "legend",
@@ -50,6 +50,7 @@
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-query-builder": "workspace:*",
     "@finos/legend-server-depot": "workspace:*",
+    "@finos/legend-server-lakehouse": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-storage": "workspace:*",
     "@types/react": "19.0.10",
@@ -59,6 +60,7 @@
     "mobx-react-lite": "4.1.0",
     "react": "19.0.0",
     "react-dom": "19.0.0",
+    "react-oidc-context": "^3.3.0",
     "serializr": "3.0.3"
   },
   "devDependencies": {

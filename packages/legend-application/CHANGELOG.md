@@ -1,5 +1,13 @@
 # @finos/legend-application
 
+## 16.0.62
+
+### Patch Changes
+
+- [#4330](https://github.com/finos/legend-studio/pull/4330) [`fc4e7b0`](https://github.com/finos/legend-studio/commit/fc4e7b0a2a844a6518490e867e0e53c449827425) ([@travisstebbins](https://github.com/travisstebbins)) - Add sanitizeParametersInsteadOfUrl parameter to getQueryParameterValue function
+
+## 16.0.61
+
 ## 16.0.60
 
 ### Patch Changes

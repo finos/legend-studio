@@ -18,6 +18,7 @@ import { flow, makeObservable, observable } from 'mobx';
 import {
   ActionState,
   assertErrorThrown,
+  isNonEmptyString,
   type GeneratorFn,
 } from '@finos/legend-shared';
 import {
@@ -99,14 +100,17 @@ export class DataProductState {
   }
 
   get title(): string {
-    return this.dataProductElement?.title !== undefined &&
-      this.dataProductElement.title !== ''
-      ? this.dataProductElement.title
-      : this.dataProductDetails.dataProduct.name;
+    return isNonEmptyString(this.dataProductDetails.title)
+      ? this.dataProductDetails.title
+      : isNonEmptyString(this.dataProductElement?.title)
+        ? this.dataProductElement.title
+        : this.dataProductDetails.dataProduct.name;
   }
 
   get description(): string | undefined {
-    return this.dataProductElement?.description ?? '';
+    return isNonEmptyString(this.dataProductDetails.description)
+      ? this.dataProductDetails.description
+      : (this.dataProductElement?.description ?? '');
   }
 
   get icon(): string | undefined {

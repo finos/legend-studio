@@ -1,5 +1,17 @@
 # @finos/legend-application-marketplace-deployment
 
+## 13.110.0
+
+### Patch Changes
+
+- [#4330](https://github.com/finos/legend-studio/pull/4330) [`fc4e7b0`](https://github.com/finos/legend-studio/commit/fc4e7b0a2a844a6518490e867e0e53c449827425) ([@travisstebbins](https://github.com/travisstebbins)) - Redesign Marketplace Lakehouse home page
+
+## 13.109.0
+
+### Patch Changes
+
+- [#4326](https://github.com/finos/legend-studio/pull/4326) [`f8ca190`](https://github.com/finos/legend-studio/commit/f8ca190137fd96d8e6e1463353d844ecd4d4ee4c) ([@travisstebbins](https://github.com/travisstebbins)) - Add Legend logo
+
 ## 13.108.0
 
 ## 13.107.0

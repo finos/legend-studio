@@ -33,6 +33,8 @@ import { LocalFileDataCubeSourceBuilderState } from '../../stores/builder/source
 import { LocalFileDataCubeSourceBuilder } from './source/LocalFileDataCubeSourceBuilder.js';
 import { UserDefinedFunctionDataCubeSourceBuilderState } from '../../stores/builder/source/UserDefinedFunctionDataCubeSourceBuilderState.js';
 import { UserDefinedFunctionDataCubeSourceBuilder } from './source/UserDefinedFunctionDataCubeSourceBuilder.js';
+import { IngestDefinitionDataCubeSourceBuilderState } from '../../stores/builder/source/IngestDefinitionDataCubeSourceBuilderState.js';
+import { IngestDefinitionDataCubeSourceBuilder } from './source/IngestDefinitionDataCubeSourceBuilder.js';
 
 export const LegendDataCubeCreator = observer(() => {
   const store = useLegendDataCubeBuilderStore();
@@ -74,6 +76,7 @@ export const LegendDataCubeCreator = observer(() => {
                   LegendDataCubeSourceBuilderType.USER_DEFINED_FUNCTION,
                   LegendDataCubeSourceBuilderType.FREEFORM_TDS_EXPRESSION,
                   LegendDataCubeSourceBuilderType.LOCAL_FILE,
+                  LegendDataCubeSourceBuilderType.INGEST_DEFINTION,
                 ].map((type) => (
                   <FormDropdownMenuItem
                     key={type}
@@ -112,6 +115,12 @@ export const LegendDataCubeCreator = observer(() => {
                 <UserDefinedFunctionDataCubeSourceBuilder
                   sourceBuilder={sourceBuilder}
                   store={store}
+                />
+              )}
+              {sourceBuilder instanceof
+                IngestDefinitionDataCubeSourceBuilderState && (
+                <IngestDefinitionDataCubeSourceBuilder
+                  sourceBuilder={sourceBuilder}
                 />
               )}
             </div>

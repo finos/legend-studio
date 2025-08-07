@@ -480,6 +480,7 @@ export abstract class AbstractPureGraphManager {
   abstract generateArtifacts(
     graph: PureModel,
     graphOptions?: GraphTextInputOption,
+    elementPaths?: string[],
   ): Promise<ArtifactGenerationExtensionResult>;
   abstract generateFile(
     fileGeneration: FileGenerationSpecification,

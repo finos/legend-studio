@@ -31,9 +31,9 @@ import {
   RawLocalFileQueryDataCubeSource,
 } from '../../model/LocalFileDataCubeSource.js';
 import { LegendDataCubeSourceLoaderState } from './LegendDataCubeSourceLoaderState.js';
-import { LegendDataCubeSourceBuilderType } from './LegendDataCubeSourceBuilderState.js';
 import type { DataCubeAlertService } from '@finos/legend-data-cube';
 import type { PersistentDataCube } from '@finos/legend-graph';
+import { LegendDataCubeSourceBuilderType } from './LegendDataCubeSourceBuilderState.js';
 
 export class LocalFileDataCubeSourceLoaderState extends LegendDataCubeSourceLoaderState {
   readonly processState = ActionState.create();

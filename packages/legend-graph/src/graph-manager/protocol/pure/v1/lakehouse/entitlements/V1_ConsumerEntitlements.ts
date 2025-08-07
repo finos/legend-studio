@@ -16,13 +16,14 @@
 
 import { type PlainObject } from '@finos/legend-shared';
 import {
-  type V1_AdhocTeam,
   type V1_OrganizationalScope,
   type V1_User,
   V1_Resource,
 } from './V1_CoreEntitlements.js';
 import type { V1_DataSubscription } from '../subscriptions/V1_ConsumerSubscriptions.js';
 import type { V1_EntitlementsDataProduct } from './V1_EntitlementsDataProduct.js';
+
+// ------------------------------------------- Data Contracts -------------------------------------------
 
 export class V1_ConsumerEntitlementResource extends V1_Resource {}
 
@@ -33,6 +34,15 @@ export class V1_AccessPointGroupReference extends V1_ConsumerEntitlementResource
 
 export class V1_DataBundle extends V1_ConsumerEntitlementResource {
   content!: PlainObject;
+}
+
+export enum V1_ContractState {
+  DRAFT = 'DRAFT',
+  PENDING_DATA_OWNER_APPROVAL = 'PENDING_DATA_OWNER_APPROVAL',
+  OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL = 'OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL',
+  COMPLETED = 'COMPLETED',
+  REJECTED = 'REJECTED',
+  CLOSED = 'CLOSED',
 }
 
 export class V1_DataContract {
@@ -55,21 +65,27 @@ export class V1_DataContractsResponse {
   dataContracts?: V1_DataContractSubscriptions[];
 }
 
-export class V1_DataContractApprovedUsersResponse {
-  approvedUsers!: V1_User[];
-}
+// -------------------------------------- Lite Data Contracts ------------------------------------------
 
-export class V1_ContractUserMembership {
+export class V1_LiteDataContract {
+  description!: string;
   guid!: string;
-  user!: V1_User;
-  status!: V1_UserApprovalStatus;
+  version!: number;
+  state!: V1_ContractState;
+  members: V1_ContractUserMembership[] = [];
+  consumer!: V1_OrganizationalScope;
+  createdBy!: string;
+  resourceId!: string;
+  resourceType!: V1_ResourceType;
+  deploymentId!: number;
+  accessPointGroup?: string;
 }
 
-export enum V1_ResourceType {
-  ACCESS_POINT_GROUP = 'ACCESS_POINT_GROUP',
-  DATA_PRODUCT = 'DATA_PRODUCT',
-  DATA_BUNDLE = 'DATA_BUNDLE',
+export class V1_LiteDataContractsResponse {
+  dataContracts?: V1_LiteDataContract[];
 }
+
+// -------------------------------------- Data Contract Approval ---------------------------------------
 
 export enum V1_UserApprovalStatus {
   PENDING = 'PENDING',
@@ -88,19 +104,32 @@ export enum V1_EnrichedUserApprovalStatus {
   CLOSED = 'CLOSED',
 }
 
-export enum V1_ContractState {
-  DRAFT = 'DRAFT',
-  PENDING_DATA_OWNER_APPROVAL = 'PENDING_DATA_OWNER_APPROVAL',
-  OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL = 'OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL',
-  COMPLETED = 'COMPLETED',
-  REJECTED = 'REJECTED',
-  CLOSED = 'CLOSED',
+export class V1_DataContractApprovedUsersResponse {
+  approvedUsers!: V1_User[];
+}
+
+export class V1_ContractUserMembership {
+  guid!: string;
+  user!: V1_User;
+  status!: V1_UserApprovalStatus;
+}
+
+export enum V1_ResourceType {
+  ACCESS_POINT_GROUP = 'ACCESS_POINT_GROUP',
+  DATA_PRODUCT = 'DATA_PRODUCT',
+  DATA_BUNDLE = 'DATA_BUNDLE',
 }
 
 export enum V1_ApprovalType {
   DATA_OWNER_APPROVAL = 'DATA_OWNER_APPROVAL',
   CONSUMER_PRIVILEGE_MANAGER_APPROVAL = 'CONSUMER_PRIVILEGE_MANAGER_APPROVAL',
 }
+
+export class V1_ContractUserStatusResponse {
+  status!: V1_EnrichedUserApprovalStatus;
+}
+
+// ---------------------------------------- Data Contract Tasks ----------------------------------------
 
 export enum V1_ContractEventPayloadType {
   CLOSED = 'Closed',
@@ -162,9 +191,16 @@ export class V1_TaskStatusChangeResponse {
   errorMessage: string | undefined;
 }
 
-export class V1_ContractApprovedUsersResponse {
-  approvedUsers: V1_User[] = [];
+export class V1_TaskMetadata {
+  rec!: V1_ContractUserEventRecord;
+  assignees: string[] = [];
 }
+
+export class V1_TaskResponse {
+  tasks: V1_TaskMetadata[] | undefined;
+}
+
+// ---------------------------------------- Pending Data Contracts ----------------------------------------
 
 export type V1_PendingTaskWithAssignees = {
   taskId: string;
@@ -180,23 +216,3 @@ export type V1_UserPendingContractsRecord = {
 export type V1_UserPendingContractsResponse = {
   records: V1_UserPendingContractsRecord[] | undefined;
 };
-
-export type V1_DataContractsCreation = {
-  description: string;
-  product: PlainObject;
-  accessPointGroup: string;
-  consumer: PlainObject<V1_AdhocTeam>;
-};
-
-export class V1_TaskMetadata {
-  rec!: V1_ContractUserEventRecord;
-  assignees: string[] = [];
-}
-
-export class V1_TaskResponse {
-  tasks: V1_TaskMetadata[] | undefined;
-}
-
-export class V1_ContractUserStatusResponse {
-  status!: V1_EnrichedUserApprovalStatus;
-}
