@@ -31,7 +31,18 @@ const generateAnchorChunk = (text: string): string =>
       .toLowerCase() // anchor is case-insensitive
       .replace(/\s+/gu, '-'), // spaces will be replaced by hyphens
   );
+
 export const generateAnchorForSection = (activity: string): string =>
   generateAnchorChunk(activity);
+
+export const DATA_PRODUCT_VIEWER_ANCHORS = Object.values(
+  DATA_PRODUCT_VIEWER_SECTION,
+).map((activity) => generateAnchorForSection(activity));
+
+// Add this for terminals:
+export const TERMINAL_PRODUCT_VIEWER_ANCHORS = Object.values(
+  TERMINAL_PRODUCT_VIEWER_SECTION,
+).map((activity) => generateAnchorForSection(activity));
+
 export const extractSectionFromAnchor = (anchor: string): string =>
   decodeURIComponent(anchor);

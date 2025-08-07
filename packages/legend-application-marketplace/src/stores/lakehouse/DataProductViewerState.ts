@@ -32,8 +32,8 @@ import {
   V1_dataContractsResponseModelSchemaToContracts,
   V1_ResourceType,
 } from '@finos/legend-graph';
-import { action, computed, flow, makeObservable, observable } from 'mobx';
-import { DataProductLayoutState } from './DataProductLayoutState.js';
+import { action, computed, flow, observable, type AnnotationsMap } from 'mobx';
+import { DataProductLayoutState } from './BaseLayoutState.js';
 import { DATA_PRODUCT_VIEWER_SECTION } from './DataProductViewerNavigation.js';
 import { DataProductDataAccessState } from './DataProductDataAccessState.js';
 import {
@@ -47,27 +47,24 @@ import { dataContractContainsDataProduct } from './LakehouseUtils.js';
 import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
 import type { MarketplaceLakehouseStore } from './MarketplaceLakehouseStore.js';
 import type { LegendMarketplaceApplicationStore } from '../LegendMarketplaceBaseStore.js';
+import { BaseViewerState } from './BaseViewerState.js';
 
-export class DataProductViewerState {
+export class DataProductViewerState extends BaseViewerState<
+  V1_DataProduct,
+  DataProductLayoutState
+> {
   readonly applicationStore: LegendMarketplaceApplicationStore;
   readonly lakehouseStore: MarketplaceLakehouseStore;
   readonly graphManagerState: GraphManagerState;
-  readonly layoutState: DataProductLayoutState;
-
-  readonly product: V1_DataProduct;
   readonly entitlementsDataProductDetails: V1_EntitlementsDataProductDetails;
   readonly viewDataProductSource: () => void;
-  readonly onZoneChange?:
-    | ((zone: NavigationZone | undefined) => void)
-    | undefined;
+  readonly lakeServerClient: LakehouseContractServerClient;
 
   // we may want to move this out eventually
-  readonly lakeServerClient: LakehouseContractServerClient;
   accessState: DataProductDataAccessState;
   associatedContracts: V1_DataContract[] | undefined;
   dataContractAccessPointGroup: V1_AccessPointGroup | undefined;
   dataContract: V1_DataContract | undefined;
-
   creatingContractState = ActionState.create();
 
   constructor(
@@ -82,7 +79,23 @@ export class DataProductViewerState {
       onZoneChange?: ((zone: NavigationZone | undefined) => void) | undefined;
     },
   ) {
-    makeObservable(this, {
+    super(product, actions);
+
+    this.applicationStore = applicationStore;
+    this.lakehouseStore = lakehouseStore;
+    this.graphManagerState = graphManagerState;
+    this.entitlementsDataProductDetails = entitlementsDataProductDetails;
+    this.viewDataProductSource = actions.viewDataProductSource;
+    this.accessState = new DataProductDataAccessState(this);
+    this.lakeServerClient = lakeServerClient;
+  }
+
+  protected createLayoutState(): DataProductLayoutState {
+    return new DataProductLayoutState(this);
+  }
+
+  protected getObservableProperties(): AnnotationsMap<this, never> {
+    return {
       isVerified: computed,
       accessState: observable,
       fetchContracts: flow,
@@ -94,19 +107,13 @@ export class DataProductViewerState {
       setAssociatedContracts: action,
       createContract: flow,
       creatingContractState: observable,
-    });
+    };
+  }
 
-    this.applicationStore = applicationStore;
-    this.lakehouseStore = lakehouseStore;
-    this.graphManagerState = graphManagerState;
-
-    this.product = product;
-    this.entitlementsDataProductDetails = entitlementsDataProductDetails;
-    this.viewDataProductSource = actions.viewDataProductSource;
-    this.onZoneChange = actions.onZoneChange;
-    this.layoutState = new DataProductLayoutState(this);
-    this.accessState = new DataProductDataAccessState(this);
-    this.lakeServerClient = lakeServerClient;
+  protected getValidSections(): string[] {
+    return Object.values(DATA_PRODUCT_VIEWER_SECTION).map((section) =>
+      section.toString(),
+    );
   }
 
   setAssociatedContracts(val: V1_DataContract[] | undefined): void {
@@ -223,23 +230,5 @@ export class DataProductViewerState {
 
   get deploymentId(): number {
     return this.entitlementsDataProductDetails.deploymentId;
-  }
-  changeZone(zone: NavigationZone, force = false): void {
-    if (force) {
-      this.layoutState.setCurrentNavigationZone('');
-    }
-    if (zone !== this.layoutState.currentNavigationZone) {
-      if (
-        Object.values(DATA_PRODUCT_VIEWER_SECTION)
-          .map((e) => e.toString())
-          .includes(zone)
-      ) {
-        this.layoutState.setWikiPageAnchorToNavigate({
-          anchor: zone,
-        });
-      }
-      this.onZoneChange?.(zone);
-      this.layoutState.setCurrentNavigationZone(zone);
-    }
   }
 }

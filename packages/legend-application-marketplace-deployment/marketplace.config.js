@@ -35,8 +35,9 @@ export default {
    */
   devServerOptions: {
     // NOTE: for development from within a Docker container, it's best to update this to 0.0.0.0
-    host: 'localhost',
+    host: '0.0.0.0',
     port: 9008,
+    allowedHosts: 'all',
     static: {
       directory: './assets',
       publicPath: '/assets',

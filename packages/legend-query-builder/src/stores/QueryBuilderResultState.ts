@@ -32,8 +32,8 @@ import {
   type RawLambda,
   type EXECUTION_SERIALIZATION_FORMAT,
   type QueryGridConfig,
-  type TDSResultCellData,
   type ExecutionResultWithMetadata,
+  type TDSResultCellData,
   GRAPH_MANAGER_EVENT,
   buildRawLambdaFromLambdaFunction,
   reportGraphAnalytics,
@@ -55,7 +55,6 @@ import type { DataGridColumnState } from '@finos/legend-lego/data-grid';
 import { downloadStream } from '@finos/legend-application';
 import { QueryBuilderDataGridCustomAggregationFunction } from '../components/result/tds/QueryBuilderTDSGridResult.js';
 import { QueryBuilderTDSState } from './fetch-structure/tds/QueryBuilderTDSState.js';
-import type { TDSResultCellData } from '@finos/legend-graph';
 
 export const DEFAULT_LIMIT = 1000;
 
