@@ -214,13 +214,21 @@ export class LakehouseAccessPointState extends AccessPointState {
   declare accessPoint: LakehouseAccessPoint;
   lambdaState: AccessPointLambdaEditorState;
 
+  showDebug = false;
+
   constructor(val: LakehouseAccessPoint, editorState: AccessPointGroupState) {
     super(val, editorState);
     makeObservable(this, {
       lambdaState: observable,
+      showDebug: observable,
+      setShowDebug: action,
     });
     this.accessPoint = val;
     this.lambdaState = new AccessPointLambdaEditorState(this);
+  }
+
+  setShowDebug(value: boolean): void {
+    this.showDebug = value;
   }
 }
 
