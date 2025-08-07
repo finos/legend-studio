@@ -1,5 +1,13 @@
 # @finos/legend-application-data-cube
 
+## 0.5.1
+
+### Patch Changes
+
+- [#4330](https://github.com/finos/legend-studio/pull/4330) [`fc4e7b0`](https://github.com/finos/legend-studio/commit/fc4e7b0a2a844a6518490e867e0e53c449827425) ([@travisstebbins](https://github.com/travisstebbins)) - Add sanitizeParametersInsteadOfUrl parameter to getQueryParameterValue function
+
+- [#4331](https://github.com/finos/legend-studio/pull/4331) [`4d3ad0c`](https://github.com/finos/legend-studio/commit/4d3ad0c2f87df4a9320813790870d0a812256c22) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: saving ingest definition datacube source grid
+
 ## 0.5.0
 
 ### Minor Changes

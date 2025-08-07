@@ -1,5 +1,13 @@
 # @finos/legend-application-marketplace
 
+## 0.0.66
+
+### Patch Changes
+
+- [#4330](https://github.com/finos/legend-studio/pull/4330) [`fc4e7b0`](https://github.com/finos/legend-studio/commit/fc4e7b0a2a844a6518490e867e0e53c449827425) ([@travisstebbins](https://github.com/travisstebbins)) - Redesign Marketplace Lakehouse home page
+
+- [#4332](https://github.com/finos/legend-studio/pull/4332) [`24e7f03`](https://github.com/finos/legend-studio/commit/24e7f03e4536c28b8293ef71e43808d96179fe1d) ([@travisstebbins](https://github.com/travisstebbins)) - Use new lite data contracts API
+
 ## 0.0.65
 
 ## 0.0.64

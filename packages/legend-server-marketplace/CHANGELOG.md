@@ -1,5 +1,11 @@
 # @finos/legend-server-marketplace
 
+## 0.0.33
+
+### Patch Changes
+
+- [#4332](https://github.com/finos/legend-studio/pull/4332) [`24e7f03`](https://github.com/finos/legend-studio/commit/24e7f03e4536c28b8293ef71e43808d96179fe1d) ([@travisstebbins](https://github.com/travisstebbins)) - Use new lite data contracts API
+
 ## 0.0.32
 
 ## 0.0.31
