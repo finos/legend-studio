@@ -2257,12 +2257,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   async generateArtifacts(
     graph: PureModel,
     graphOptions?: GraphTextInputOption,
+    elementPaths?: string[],
   ): Promise<ArtifactGenerationExtensionResult> {
     const model = await this.buildPMCDWithOptions(graph, graphOptions);
     const input = new V1_ArtifactGenerationExtensionInput(
       model,
       // TODO provide plugin to filter out artifacts we don't want to show in the generation
-      graph.allOwnElements.map((e) => e.path),
+      elementPaths ?? graph.allOwnElements.map((e) => e.path),
     );
     const result = await this.engine.generateArtifacts(input);
     return V1_buildArtifactsByExtensionElement(result);

@@ -70,6 +70,7 @@ import {
   EyeIcon,
   CloseEyeIcon,
   Checkbox,
+  BugIcon,
 } from '@finos/legend-art';
 import React, {
   useRef,
@@ -90,6 +91,9 @@ import {
   type DataProduct,
   type LakehouseAccessPoint,
   StereotypeExplicitReference,
+  type V1_DataProductArtifactAccessPointGroup,
+  type V1_DataProductArtifactAccessPointImplementation,
+  type V1_DataProductArtifactGeneration,
 } from '@finos/legend-graph';
 import {
   accessPointGroup_setDescription,
@@ -323,6 +327,62 @@ const AccessPointClassification = observer(
   },
 );
 
+const AccessPointGenerationViewer = observer(
+  (props: {
+    accessPointState: LakehouseAccessPointState;
+    generationOutput: string;
+  }) => {
+    const { accessPointState, generationOutput } = props;
+    const editorStore = accessPointState.state.state.editorStore;
+    const closeDebug = (): void => {
+      accessPointState.setShowDebug(false);
+    };
+
+    return (
+      <Dialog
+        open={accessPointState.showDebug}
+        onClose={closeDebug}
+        classes={{
+          root: 'editor-modal__root-container',
+          container: 'editor-modal__container',
+          paper: 'editor-modal__content',
+        }}
+      >
+        <Modal
+          className="editor-modal"
+          darkMode={
+            !editorStore.applicationStore.layoutService
+              .TEMPORARY__isLightColorThemeEnabled
+          }
+        >
+          <ModalHeader
+            title={`${accessPointState.accessPoint.id} Plan Generation`}
+          />
+          <ModalBody>
+            <div className="panel__content execution-plan-viewer__panel__content">
+              <CodeEditor
+                inputValue={generationOutput}
+                isReadOnly={true}
+                language={CODE_EDITOR_LANGUAGE.JSON}
+                hidePadding={true}
+                hideMinimap={true}
+              />
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <ModalFooterButton
+              title="Close plan generation modal"
+              onClick={closeDebug}
+              text="Close"
+              type="secondary"
+            />
+          </ModalFooter>
+        </Modal>
+      </Dialog>
+    );
+  },
+);
+
 export const LakehouseDataProductAcccessPointEditor = observer(
   (props: {
     accessPointState: LakehouseAccessPointState;
@@ -339,6 +399,7 @@ export const LakehouseDataProductAcccessPointEditor = observer(
     const [editingDescription, setEditingDescription] = useState(false);
     const [isHovering, setIsHovering] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
+    const [debugOutput, setDebugOutput] = useState('');
 
     const handleDescriptionEdit = () => setEditingDescription(true);
     const handleDescriptionBlur = () => {
@@ -360,6 +421,51 @@ export const LakehouseDataProductAcccessPointEditor = observer(
         accessPoint.targetEnvironment = targetEnvironment;
       },
     );
+
+    const debugPlanGeneration = async (): Promise<void> => {
+      try {
+        const generatedArtifacts =
+          await editorStore.graphManagerState.graphManager.generateArtifacts(
+            editorStore.graphManagerState.graph,
+            editorStore.graphEditorMode.getGraphTextInputOption(),
+            [groupState.state.elementPath],
+          );
+        const dataProductExtension = 'dataProduct';
+        const dataProductArtifact = generatedArtifacts.values.filter(
+          (artifact) => artifact.extension === dataProductExtension,
+        );
+        const dataProductContent =
+          dataProductArtifact[0]?.artifactsByExtensionElements[0]?.files[0]
+            ?.content ?? null;
+
+        if (dataProductContent) {
+          const contentJson = JSON.parse(
+            dataProductContent,
+          ) as V1_DataProductArtifactGeneration;
+          const apPlanGeneration = contentJson.accessPointGroups
+            .find(
+              (group: V1_DataProductArtifactAccessPointGroup) =>
+                group.id === groupState.value.id,
+            )
+            ?.accessPointImplementations.find(
+              (
+                apImplementation: V1_DataProductArtifactAccessPointImplementation,
+              ) => apImplementation.id === accessPoint.id,
+            );
+
+          setDebugOutput(JSON.stringify(apPlanGeneration, null, 2));
+          accessPointState.setShowDebug(true);
+        } else {
+          throw new Error(
+            'Could not find contents of this data product artifact',
+          );
+        }
+      } catch (error) {
+        editorStore.applicationStore.notificationService.notifyError(
+          `Failed to fetch access point plan generation: ${error}`,
+        );
+      }
+    };
 
     const handleRemoveAccessPoint = (): void => {
       editorStore.applicationStore.alertService.setActionAlertInfo({
@@ -573,18 +679,36 @@ export const LakehouseDataProductAcccessPointEditor = observer(
                   </div>
                 </div>
                 <button
-                  className="access-point-editor__generic-entry__remove-btn"
+                  className="access-point-editor__generic-entry__remove-btn__debug"
                   onClick={() => {
-                    handleRemoveAccessPoint();
+                    debugPlanGeneration().catch(
+                      editorStore.applicationStore.alertUnhandledError,
+                    );
                   }}
                   tabIndex={-1}
-                  title="Remove"
+                  title="AP Plan Generation"
                 >
-                  <TimesIcon />
+                  <BugIcon />
                 </button>
               </div>
             </div>
           </div>
+          <button
+            className="access-point-editor__generic-entry__remove-btn"
+            onClick={() => {
+              handleRemoveAccessPoint();
+            }}
+            tabIndex={-1}
+            title="Remove"
+          >
+            <TimesIcon />
+          </button>
+          {accessPointState.showDebug && (
+            <AccessPointGenerationViewer
+              accessPointState={accessPointState}
+              generationOutput={debugOutput}
+            />
+          )}
         </div>
       </PanelDnDEntry>
     );
