@@ -81,6 +81,7 @@ export class IngestDefinitionDataCubeSourceBuilderState extends LegendDataCubeSo
 
   setDeploymentId(deploymentId: number | undefined): void {
     this.deploymentId = deploymentId;
+    this.setWarehouse(`LAKEHOUSE_PRODUCER_${deploymentId}_QUERY_WH`);
   }
 
   setWarehouse(warehouse: string | undefined): void {
@@ -105,6 +106,7 @@ export class IngestDefinitionDataCubeSourceBuilderState extends LegendDataCubeSo
 
   async fetchIngestUrns(access_token: string | undefined) {
     //TODO: we should retry this method if access token is invalid
+    this.resetDeployment(this.deploymentId);
     try {
       const producerServer =
         await this._platformServerClient.findProducerServer(
@@ -166,6 +168,7 @@ export class IngestDefinitionDataCubeSourceBuilderState extends LegendDataCubeSo
   }
 
   createPath() {
+    this.paths = [];
     this.paths.push(
       guaranteeNonNullable(
         this.decoratedIngest(guaranteeNonNullable(this.selectedIngestUrn)),
@@ -181,6 +184,14 @@ export class IngestDefinitionDataCubeSourceBuilderState extends LegendDataCubeSo
     this.setTables([]);
     this.setSelectedTable(undefined);
     this.setWarehouse(undefined);
+  }
+
+  resetDeployment(deploymentId: number | undefined) {
+    this.setDeploymentId(deploymentId);
+    this.setIngestUrns([]);
+    this.setSelectedIngestUrn(undefined);
+    this.setTables([]);
+    this.setSelectedTable(undefined);
   }
 
   override get label(): LegendDataCubeSourceBuilderType {
