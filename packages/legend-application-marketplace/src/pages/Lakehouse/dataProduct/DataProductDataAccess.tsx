@@ -663,6 +663,14 @@ export const DataProductAccessPointGroupViewer = observer(
                     </Tooltip>
                   )}
                 </Button>
+                <Button
+                  size="small"
+                  onClick={() =>
+                    setIsEntitledButtonGroupMenuOpen((prev) => !prev)
+                  }
+                >
+                  <CaretDownIcon />
+                </Button>
               </ButtonGroup>
               <Menu
                 anchorEl={requestAccessButtonGroupRef.current}
