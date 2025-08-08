@@ -472,14 +472,12 @@ export const DataProductSubscriptionViewer = observer(
             )}
           </DialogContent>
         </Dialog>
-        {accessGroupState.associatedContract !== false && (
-          <LakehouseSubscriptionsCreateDialog
-            open={showCreateDialog}
-            onClose={() => setShowCreateDialog(false)}
-            accessGroupState={accessGroupState}
-            onSubmit={createDialogHandleSubmit}
-          />
-        )}
+        <LakehouseSubscriptionsCreateDialog
+          open={showCreateDialog}
+          onClose={() => setShowCreateDialog(false)}
+          accessGroupState={accessGroupState}
+          onSubmit={createDialogHandleSubmit}
+        />
       </>
     );
   },

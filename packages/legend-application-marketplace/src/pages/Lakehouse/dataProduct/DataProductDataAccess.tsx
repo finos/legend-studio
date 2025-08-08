@@ -835,11 +835,13 @@ export const DataProductAccessPointGroupViewer = observer(
             }
           />
         )}
-        <DataProductSubscriptionViewer
-          open={showSubscriptionsModal}
-          accessGroupState={accessGroupState}
-          onClose={() => setShowSubscriptionsModal(false)}
-        />
+        {accessGroupState.associatedContract !== false && (
+          <DataProductSubscriptionViewer
+            open={showSubscriptionsModal}
+            accessGroupState={accessGroupState}
+            onClose={() => setShowSubscriptionsModal(false)}
+          />
+        )}
       </div>
     );
   },
