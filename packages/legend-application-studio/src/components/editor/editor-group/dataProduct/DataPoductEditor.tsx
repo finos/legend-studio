@@ -166,6 +166,7 @@ const HoverTextArea: React.FC<HoverTextAreaProps> = ({
       onMouseOver={handleMouseOver}
       onMouseOut={handleMouseOut}
       className={clsx(className)}
+      style={{ whiteSpace: 'pre-line' }}
     >
       {text}
     </div>
@@ -194,7 +195,7 @@ const AccessPointTitle = observer(
     };
     const updateAccessPointName: React.ChangeEventHandler<HTMLTextAreaElement> =
       action((event) => {
-        if (!event.target.value.includes(' ')) {
+        if (event.target.value.match(/^[0-9a-zA-Z_]+$/)) {
           accessPoint.id = event.target.value;
         }
       });
@@ -215,8 +216,13 @@ const AccessPointTitle = observer(
         }}
       />
     ) : (
-      <div onClick={handleNameEdit} title="Click to edit access point title">
-        <div className="access-point-editor__name__label">{accessPoint.id}</div>
+      <div
+        className="access-point-editor__name__label"
+        onClick={handleNameEdit}
+        title="Click to edit access point title"
+        style={{ flex: '1 1 auto' }}
+      >
+        {accessPoint.id}
       </div>
     );
   },
@@ -229,7 +235,7 @@ const AccessPointClassification = observer(
   }) => {
     const { accessPoint, groupState } = props;
     const applicationStore = useEditorStore().applicationStore;
-    const CHOOSE_CLASSIFICATION = 'Choose Classification';
+    const CHOOSE_CLASSIFICATION = 'Classification';
     const updateAccessPointClassificationTextbox: React.ChangeEventHandler<HTMLTextAreaElement> =
       action((event) => {
         accessPoint.classification = event.target.value;
@@ -286,7 +292,15 @@ const AccessPointClassification = observer(
     return (
       <div className="access-point-editor__classification">
         {classificationOptions.length > 1 ? (
-          <div>
+          <div
+            style={{
+              borderWidth: 'thin',
+              borderColor:
+                currentClassification.label === CHOOSE_CLASSIFICATION
+                  ? 'var(--color-red-300)'
+                  : 'transparent',
+            }}
+          >
             <CustomSelectorInput
               className="explorer__new-element-modal__driver__dropdown"
               options={classificationOptions}
@@ -567,7 +581,19 @@ export const LakehouseDataProductAcccessPointEditor = observer(
                     style={{ padding: 0, margin: 0 }}
                   />
                   <Tooltip
-                    title="This access point is reproducible based on a specific Lakehouse batch in time"
+                    title={
+                      <div
+                        style={{
+                          maxWidth: '400px',
+                          whiteSpace: 'normal',
+                          wordWrap: 'break-word',
+                        }}
+                      >
+                        Marking as &quot;reproducible&quot; means consumers can
+                        consistently retrieve the exact historical data as it
+                        existed at any specific Lakehouse batch.
+                      </div>
+                    }
                     arrow={true}
                     placement={'top'}
                   >
@@ -632,10 +658,11 @@ export const LakehouseDataProductAcccessPointEditor = observer(
                 placeholder="Access Point description"
                 onBlur={handleDescriptionBlur}
                 style={{
-                  overflow: 'hidden',
-                  resize: 'none',
+                  resize: 'vertical',
                   padding: '0.25rem',
                   marginLeft: '0.5rem',
+                  marginTop: '0.5rem',
+                  height: 'auto',
                 }}
               />
             ) : (
@@ -848,7 +875,7 @@ const AccessPointGroupEditor = observer(
       setIsHoveringName(false);
     };
     const updateGroupName = (val: string): void => {
-      if (val && !val.includes(' ')) {
+      if (val.match(/^[0-9a-zA-Z_]+$/)) {
         accessPointGroup_setName(groupState.value, val);
       }
     };
@@ -945,8 +972,8 @@ const AccessPointGroupEditor = observer(
               onBlur={handleDescriptionBlur}
               style={{
                 overflow: 'hidden',
-                resize: 'none',
                 padding: '0.25rem',
+                height: 'auto',
               }}
             />
           ) : (
