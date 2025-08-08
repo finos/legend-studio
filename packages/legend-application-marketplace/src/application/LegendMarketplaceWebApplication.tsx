@@ -147,7 +147,7 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
       state: `${window.location.pathname}${window.location.search}`,
     },
   });
-  
+
   const ProtectedLakehouseSearchResults = withAuthenticationRequired(
     MarketplaceLakehouseSearchResults,
     {
@@ -274,6 +274,7 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.TERMINAL_PRODUCT}
               element={<ProtectedTerminal />}
             />
+            <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SDLC_PRODUCT}
               element={<LakehouseSDLCDataProduct />}
             />
