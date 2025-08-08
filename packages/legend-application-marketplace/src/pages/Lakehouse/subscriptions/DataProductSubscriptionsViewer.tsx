@@ -237,6 +237,12 @@ const LakehouseSubscriptionsCreateDialog = observer(
               )
             }
             autoFocus={true}
+            slotProps={{
+              listbox: {
+                className:
+                  'marketplace-lakehouse-subscriptions__subscription-creator__autocomplete__listbox',
+              },
+            }}
           />
           <FormControl fullWidth={true} margin="dense">
             <InputLabel id="snowflake-region-select-label">

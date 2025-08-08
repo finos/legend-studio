@@ -43,13 +43,9 @@
 }
 
 .marketplace-lakehouse-subscriptions__subscription-creator {
-  &__select {
-    &__subheader {
+  &__autocomplete {
+    &__listbox {
       font-size: 1.2rem;
-    }
-
-    &__item {
-      font-size: 1.4rem;
     }
   }
 }
