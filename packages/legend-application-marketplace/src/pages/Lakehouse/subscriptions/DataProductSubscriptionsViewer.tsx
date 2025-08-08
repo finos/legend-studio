@@ -229,6 +229,7 @@ const LakehouseSubscriptionsCreateDialog = observer(
               <TextField
                 {...(params as TextFieldProps)}
                 label="Snowflake Account ID"
+                required={true}
               />
             )}
             onChange={(_, value) =>
@@ -287,7 +288,7 @@ const LakehouseSubscriptionsCreateDialog = observer(
           <Button onClick={handleClose} variant="outlined">
             Cancel
           </Button>
-          <Button type="submit" variant="contained" disabled={!contract}>
+          <Button type="submit" variant="contained">
             Create Subsciption
           </Button>
         </DialogActions>
