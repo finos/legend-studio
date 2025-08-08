@@ -44,7 +44,10 @@ import type { V1_LightQuery, V1_Query } from './query/V1_Query.js';
 import type { V1_ServiceStorage } from './service/V1_ServiceStorage.js';
 import type { GenerationMode } from '../../../../../graph-manager/action/generation/GenerationConfigurationDescription.js';
 import type { V1_QuerySearchSpecification } from './query/V1_QuerySearchSpecification.js';
-import { EXECUTION_SERIALIZATION_FORMAT } from '../../../../../graph-manager/action/execution/ExecutionResult.js';
+import {
+  type TDSExecutionResult,
+  EXECUTION_SERIALIZATION_FORMAT,
+} from '../../../../../graph-manager/action/execution/ExecutionResult.js';
 import type { V1_ExternalFormatDescription } from './externalFormat/V1_ExternalFormatDescription.js';
 import type { V1_ExternalFormatModelGenerationInput } from './externalFormat/V1_ExternalFormatModelGeneration.js';
 import type { V1_GenerateSchemaInput } from './externalFormat/V1_GenerateSchemaInput.js';
@@ -230,6 +233,18 @@ export class V1_EngineServerClient extends AbstractServerClient {
   _server = (): string => `${this.baseUrl}/server/v1`;
   getCurrentUserId = (): Promise<string> =>
     this.get(`${this._server()}/currentUser`);
+
+  // ------------------------------------------- Terminal -------------------------------------------
+
+  _marketplace = (): string => `${this.baseUrl}/user/marketplace/terminals`;
+
+  getTerminals = (): Promise<TDSExecutionResult> => {
+    return this.get(this._marketplace());
+  };
+
+  getTerminalById = (id: string): Promise<TDSExecutionResult> => {
+    return this.get(`${this._marketplace()}/${id}`);
+  };
 
   // ------------------------------------------- Server -------------------------------------------
 

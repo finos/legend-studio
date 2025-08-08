@@ -42,6 +42,9 @@ import {
 import {
   type V1_EntitlementsDataProductDetailsResponse,
   type V1_IngestEnvironment,
+  type TDSRowDataType,
+  type V1_Terminal,
+  type TDSExecutionResult,
   DataProductArtifactGeneration,
   GraphManagerState,
   V1_AdHocDeploymentDataProductOrigin,
@@ -50,9 +53,11 @@ import {
   V1_deserializeIngestEnvironment,
   V1_entitlementsDataProductDetailsResponseToDataProductDetails,
   V1_EntitlementsLakehouseEnvironmentType,
+  V1_TerminalModelSchema,
   V1_IngestEnvironmentClassification,
   V1_PureGraphManager,
   V1_SdlcDeploymentDataProductOrigin,
+  getRowDataFromExecutionResult,
 } from '@finos/legend-graph';
 import { DataProductViewerState } from './DataProductViewerState.js';
 import type { AuthContextProps } from 'react-oidc-context';
@@ -190,6 +195,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   filter: DataProductFilters;
   sort: DataProductSort = DataProductSort.NAME_ALPHABETICAL;
   dataProductViewer: DataProductViewerState | undefined;
+  terminalProducts: V1_Terminal[] | undefined;
 
   constructor(
     marketplaceBaseStore: LegendMarketplaceBaseStore,
@@ -217,6 +223,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     makeObservable(this, {
       init: flow,
       initWithProduct: flow,
+      initWithTerminal: flow,
       initWithSDLCProduct: flow,
       dataProductStates: observable,
       lakehouseIngestEnvironmentSummaries: observable,
@@ -230,6 +237,8 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       setLakehouseIngestEnvironmentSummaries: action,
       setLakehouseIngestEnvironmentDetails: action,
       filter: observable,
+      setTerminalProducts: action,
+      terminalProducts: observable,
       sort: observable,
       setSort: action,
     });
@@ -293,6 +302,10 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     environmentDetails: V1_IngestEnvironment[],
   ): void {
     this.lakehouseIngestEnvironmentDetails = environmentDetails;
+  }
+
+  setTerminalProducts(products: V1_Terminal[] | undefined): void {
+    this.terminalProducts = products;
   }
 
   setDataProductViewerState(val: DataProductViewerState | undefined): void {
@@ -486,6 +499,36 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
         }
       })(),
     ]);
+  }
+
+  *initWithTerminal(terminalId: string): GeneratorFn<void> {
+    try {
+      this.loadingProductState.inProgress();
+
+      const rawTerminalResponse: TDSExecutionResult =
+        (yield this.marketplaceBaseStore.engineServerClient.getTerminalById(
+          terminalId,
+        )) as TDSExecutionResult;
+
+      const terminalRowData: TDSRowDataType[] =
+        getRowDataFromExecutionResult(rawTerminalResponse);
+      const matchingRows = terminalRowData.filter(
+        (row: TDSRowDataType) => row.id === Number(terminalId),
+      );
+
+      const terminalProducts: V1_Terminal[] = matchingRows.map(
+        (rowData: TDSRowDataType) =>
+          deserialize(V1_TerminalModelSchema, rowData),
+      );
+      this.setTerminalProducts(terminalProducts);
+      this.loadingProductState.complete();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(
+        `Unable to load terminal ${terminalId}: ${error.message}`,
+      );
+      this.loadingProductState.fail();
+    }
   }
 
   *initWithProduct(
