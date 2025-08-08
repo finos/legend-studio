@@ -77,7 +77,7 @@ const LakehouseSubscriptionsCreateDialog = observer(
       accessGroupState.associatedSystemAccountContracts;
 
     const [contract, setContract] = useState<V1_DataContract | undefined>(
-      associatedUserContract,
+      associatedUserContract ?? systemAccountContracts[0],
     );
     const [targetType] = useState<V1_DataSubscriptionTargetType>(
       V1_DataSubscriptionTargetType.Snowflake,
