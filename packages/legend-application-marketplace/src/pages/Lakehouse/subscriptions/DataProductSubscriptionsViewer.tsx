@@ -312,37 +312,12 @@ export const DataProductSubscriptionViewer = observer(
     const legendMarketplaceStore = useLegendMarketplaceBaseStore();
     const [showCreateDialog, setShowCreateDialog] = useState(false);
 
-    const contract = accessGroupState.associatedContract;
     const subscriptions = accessGroupState.subscriptions;
     const isLoading = accessGroupState.fetchingSubscriptionsState.isInProgress;
 
-    if (!(contract instanceof V1_DataContract)) {
-      return (
-        <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="md">
-          <DialogTitle>Data Product Subscriptions</DialogTitle>
-          <IconButton
-            onClick={onClose}
-            className="marketplace-dialog-close-btn"
-          >
-            <CloseIcon />
-          </IconButton>
-          <DialogContent>
-            <div>
-              Unable to show subscriptions for{' '}
-              <span className="marketplace-lakehouse-text__emphasis">
-                {accessGroupState.group.id}
-              </span>{' '}
-              Access Point Group in{' '}
-              <span className="marketplace-lakehouse-text__emphasis">
-                {accessGroupState.accessState.viewerState.product.name}
-              </span>{' '}
-              Data Product.
-            </div>
-            <div>No contract found for Access Point Group.</div>
-          </DialogContent>
-        </Dialog>
-      );
-    }
+    const canCreateSubscription =
+      accessGroupState.associatedContract instanceof V1_DataContract ||
+      accessGroupState.associatedSystemAccountContracts.length > 0;
 
     const createDialogHandleSubmit = async (
       _contract: V1_DataContract,
@@ -388,6 +363,12 @@ export const DataProductSubscriptionViewer = observer(
                   onClick={() => setShowCreateDialog(true)}
                   variant="contained"
                   className="marketplace-lakehouse-subscriptions__subscriptions-viewer__create-btn"
+                  disabled={!canCreateSubscription}
+                  title={
+                    !canCreateSubscription
+                      ? 'Cannot create subscription. No contracts found for this Access Point Group.'
+                      : undefined
+                  }
                 >
                   Create New Subscription
                 </Button>
