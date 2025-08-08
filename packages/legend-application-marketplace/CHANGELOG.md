@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.0.67
+
+### Patch Changes
+
+- [#4337](https://github.com/finos/legend-studio/pull/4337) [`9d3cf25`](https://github.com/finos/legend-studio/commit/9d3cf25ddee972b9c77b21bc4302a7bbafe2f014) ([@travisstebbins](https://github.com/travisstebbins)) - Fix System Account data contract creation requests
+
 ## 0.0.66
 
 ### Patch Changes

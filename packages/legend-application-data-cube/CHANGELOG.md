@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.5.2
+
+### Patch Changes
+
+- [#4333](https://github.com/finos/legend-studio/pull/4333) [`a2115ad`](https://github.com/finos/legend-studio/commit/a2115ad19308b7ecbf541a615d2c569bc8f88a2e) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: smoothen transitions
+
 ## 0.5.1
 
 ### Patch Changes

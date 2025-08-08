@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 28.19.23
+
+### Patch Changes
+
+- [#4336](https://github.com/finos/legend-studio/pull/4336) [`0dea4aa`](https://github.com/finos/legend-studio/commit/0dea4aa13716b3d5309fe5c9a35974d9f1c188e8) ([@kelly-thai](https://github.com/kelly-thai)) - Add access point plan generation feature
+
+- [#4339](https://github.com/finos/legend-studio/pull/4339) [`10ede1b`](https://github.com/finos/legend-studio/commit/10ede1b6cad2c353c791f1b2686449529b668feb) ([@kelly-thai](https://github.com/kelly-thai)) - Update Data Product form to be more user-friendly
+
 ## 28.19.22
 
 ## 28.19.21
