@@ -45,7 +45,13 @@
 .marketplace-lakehouse-subscriptions__subscription-creator {
   &__autocomplete {
     &__listbox {
-      font-size: 1.2rem;
+      .MuiListSubheader-root {
+        font-size: 1.2rem;
+      }
+
+      .MuiAutocomplete-option {
+        font-size: 1.4rem;
+      }
     }
   }
 }
