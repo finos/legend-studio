@@ -17,6 +17,8 @@
 import { observer } from 'mobx-react-lite';
 import {
   type SelectChangeEvent,
+  type TextFieldProps,
+  Autocomplete,
   Box,
   Button,
   Dialog,
@@ -26,9 +28,9 @@ import {
   FormControl,
   IconButton,
   InputLabel,
-  ListSubheader,
   MenuItem,
   Select,
+  TextField,
 } from '@mui/material';
 import {
   type V1_DataSubscription,
@@ -129,6 +131,18 @@ const LakehouseSubscriptionsCreateDialog = observer(
       ),
     );
 
+    const snowflakeAccountOptions = [
+      ...suggestedSnowflakeAccounts,
+      ...otherSnowflakeAccounts,
+    ].map((account) => {
+      return {
+        isSuggested: suggestedSnowflakeAccounts.includes(account)
+          ? 'Suggested Accounts'
+          : 'Other Accounts',
+        account,
+      };
+    });
+
     return (
       <Dialog
         open={open}
@@ -203,52 +217,27 @@ const LakehouseSubscriptionsCreateDialog = observer(
               )}
             </Select>
           </FormControl>
-          <FormControl fullWidth={true} margin="dense">
-            <InputLabel id="snowflake-account-id-select-label">
-              Snowflake Account ID
-            </InputLabel>
-            <Select
-              required={true}
-              labelId="snowflake-account-id-select-label"
-              id="snowflake-account-id-select"
-              value={snowflakeAccountId}
-              label="Snowflake Account ID"
-              onChange={(event: SelectChangeEvent<string>) => {
-                setSnowflakeAccountId(event.target.value);
-              }}
-              autoFocus={true}
-            >
-              {suggestedSnowflakeAccounts.length > 0 && (
-                <ListSubheader className="marketplace-lakehouse-subscriptions__subscription-creator__select__subheader">
-                  Suggested Accounts
-                </ListSubheader>
-              )}
-              {suggestedSnowflakeAccounts.map((snowflakeAccount) => (
-                <MenuItem
-                  key={snowflakeAccount}
-                  value={snowflakeAccount}
-                  className="marketplace-lakehouse-subscriptions__subscription-creator__select__item"
-                >
-                  {snowflakeAccount}
-                </MenuItem>
-              ))}
-              {suggestedSnowflakeAccounts.length > 0 &&
-                otherSnowflakeAccounts.length > 0 && (
-                  <ListSubheader className="marketplace-lakehouse-subscriptions__subscription-creator__select__subheader">
-                    Other Accounts
-                  </ListSubheader>
-                )}
-              {otherSnowflakeAccounts.map((snowflakeAccount) => (
-                <MenuItem
-                  key={snowflakeAccount}
-                  value={snowflakeAccount}
-                  className="marketplace-lakehouse-subscriptions__subscription-creator__select__item"
-                >
-                  {snowflakeAccount}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <Autocomplete
+            fullWidth={true}
+            freeSolo={true}
+            options={snowflakeAccountOptions}
+            groupBy={(option) => option.isSuggested}
+            getOptionLabel={(option) =>
+              typeof option === 'string' ? option : option.account
+            }
+            renderInput={(params) => (
+              <TextField
+                {...(params as TextFieldProps)}
+                label="Snowflake Account ID"
+              />
+            )}
+            onChange={(_, value) =>
+              setSnowflakeAccountId(
+                typeof value === 'string' ? value : (value?.account ?? ''),
+              )
+            }
+            autoFocus={true}
+          />
           <FormControl fullWidth={true} margin="dense">
             <InputLabel id="snowflake-region-select-label">
               Snowflake Region
