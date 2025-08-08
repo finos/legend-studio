@@ -168,20 +168,21 @@
     color: var(--color-dark-grey-500);
     display: flex;
     gap: 0.5rem;
+    width: 13.5rem;
   }
 
   &__metadata {
     @include flexVCenter;
 
-    height: 2.8rem;
     gap: 1rem;
+    height: auto;
   }
 
   &__info {
     display: flex;
     gap: 1rem;
     justify-content: flex-end;
-    flex: 1 0 auto;
+    flex: 0;
     align-items: center;
   }
 
@@ -191,8 +192,8 @@
     height: 2.8rem;
     background: var(--color-dark-grey-50);
     border-radius: 0.2rem;
-    overflow: hidden;
-    width: auto;
+    overflow: visible;
+    width: 100%;
     color: white;
     resize: none;
     padding: 0.25rem;
@@ -204,6 +205,8 @@
       margin-right: 0.5rem;
       color: var(--color-light-grey-100);
       cursor: text;
+      overflow-wrap: anywhere;
+      flex: 1 1 auto;
     }
   }
 
@@ -318,6 +321,7 @@
     &__description {
       color: var(--color-dark-grey-500);
       font-size: 14px;
+      height: auto;
     }
 
     &__description--warning {
@@ -333,8 +337,8 @@
   }
 
   &__description-container {
-    height: 32px;
-    overflow: hidden;
+    height: auto;
+    overflow: visible;
     color: var(--color-dark-grey-500);
     flex-direction: row;
     display: flex;
