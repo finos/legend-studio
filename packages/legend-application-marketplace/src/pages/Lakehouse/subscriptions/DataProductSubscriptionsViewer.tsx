@@ -359,19 +359,23 @@ export const DataProductSubscriptionViewer = observer(
                   </span>{' '}
                   Data Product
                 </div>
-                <Button
-                  onClick={() => setShowCreateDialog(true)}
-                  variant="contained"
+                <span
                   className="marketplace-lakehouse-subscriptions__subscriptions-viewer__create-btn"
-                  disabled={!canCreateSubscription}
                   title={
                     !canCreateSubscription
                       ? 'Cannot create subscription. No contracts found for this Access Point Group.'
                       : undefined
                   }
                 >
-                  Create New Subscription
-                </Button>
+                  <Button
+                    onClick={() => setShowCreateDialog(true)}
+                    variant="contained"
+                    disabled={!canCreateSubscription}
+                  >
+                    Create New Subscription
+                  </Button>
+                </span>
+
                 <Box className="marketplace-lakehouse-subscriptions__subscriptions-viewer__grid ag-theme-balham">
                   <DataGrid
                     rowData={subscriptions}
