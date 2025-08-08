@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.1.63
+
+### Patch Changes
+
+- [#4339](https://github.com/finos/legend-studio/pull/4339) [`10ede1b`](https://github.com/finos/legend-studio/commit/10ede1b6cad2c353c791f1b2686449529b668feb) ([@kelly-thai](https://github.com/kelly-thai)) - Fix Access Point Group studio roundtrip, include description in transformer
+
 ## 32.1.62
 
 ### Patch Changes
