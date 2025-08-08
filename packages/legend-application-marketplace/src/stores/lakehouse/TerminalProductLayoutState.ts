@@ -18,10 +18,8 @@ import { NAVIGATION_ZONE_SEPARATOR } from '@finos/legend-application';
 import { action, computed, makeObservable, observable } from 'mobx';
 import { type TerminalProductViewerState } from './TerminalProductViewerState.js';
 import { isNonNullable } from '@finos/legend-shared';
-import {
-  type DataProductPageNavigationCommand,
-  DATA_PRODUCT_VIEWER_ANCHORS,
-} from './DataProductLayoutState.js';
+import { type DataProductPageNavigationCommand } from './BaseLayoutState.js';
+import { DATA_PRODUCT_VIEWER_ANCHORS } from './DataProductViewerNavigation.js';
 
 export class TerminalProductLayoutState {
   readonly terminalProductViewerState: TerminalProductViewerState;
