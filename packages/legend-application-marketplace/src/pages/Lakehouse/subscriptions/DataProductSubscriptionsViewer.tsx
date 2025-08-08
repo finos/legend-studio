@@ -29,7 +29,6 @@ import {
   ListSubheader,
   MenuItem,
   Select,
-  TextField,
 } from '@mui/material';
 import {
   type V1_DataSubscription,
@@ -42,7 +41,7 @@ import {
   V1_SnowflakeTarget,
 } from '@finos/legend-graph';
 import React, { useState } from 'react';
-import { isType } from '@finos/legend-shared';
+import { guaranteeNonNullable, isType } from '@finos/legend-shared';
 import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
 import { useAuth } from 'react-oidc-context';
 import {
@@ -63,11 +62,21 @@ const LakehouseSubscriptionsCreateDialog = observer(
     open: boolean;
     onClose: () => void;
     accessGroupState: DataProductGroupAccessState;
-    contractId: string;
-    onSubmit: (target: V1_DataSubscriptionTarget) => Promise<void>;
+    onSubmit: (
+      contract: V1_DataContract,
+      target: V1_DataSubscriptionTarget,
+    ) => Promise<void>;
   }) => {
-    const { open, onClose, accessGroupState, contractId, onSubmit } = props;
+    const { open, onClose, accessGroupState, onSubmit } = props;
 
+    const associatedUserContract =
+      accessGroupState.associatedContract || undefined;
+    const systemAccountContracts =
+      accessGroupState.associatedSystemAccountContracts;
+
+    const [contract, setContract] = useState<V1_DataContract | undefined>(
+      associatedUserContract,
+    );
     const [targetType] = useState<V1_DataSubscriptionTargetType>(
       V1_DataSubscriptionTargetType.Snowflake,
     );
@@ -136,7 +145,7 @@ const LakehouseSubscriptionsCreateDialog = observer(
                 snowflakeTarget.snowflakeRegion = snowflakeRegion;
                 snowflakeTarget.snowflakeNetwork = snowflakeNetwork;
                 // eslint-disable-next-line no-void
-                void onSubmit(snowflakeTarget);
+                void onSubmit(guaranteeNonNullable(contract), snowflakeTarget);
                 handleClose();
               } else {
                 handleClose();
@@ -148,17 +157,33 @@ const LakehouseSubscriptionsCreateDialog = observer(
       >
         <DialogTitle>Create New Subscription</DialogTitle>
         <DialogContent>
-          <TextField
-            required={true}
-            margin="dense"
-            id="contractId"
-            name="contractId"
-            label="Contract ID"
-            fullWidth={true}
-            variant="outlined"
-            value={contractId}
-            disabled={true}
-          />
+          <FormControl fullWidth={true} margin="dense">
+            <InputLabel id="contract-select-label">Contract</InputLabel>
+            <Select
+              required={true}
+              labelId="contract-select-label"
+              id="contract-select"
+              name="contract"
+              value={contract?.guid ?? ''}
+              label="Contract"
+              disabled={systemAccountContracts.length === 0}
+              onChange={(event: SelectChangeEvent<string>) => {
+                setContract(
+                  [associatedUserContract, ...systemAccountContracts].find(
+                    (_contract) => _contract?.guid === event.target.value,
+                  ),
+                );
+              }}
+            >
+              {[associatedUserContract, ...systemAccountContracts]
+                .filter((_contract) => _contract instanceof V1_DataContract)
+                .map((_contract) => (
+                  <MenuItem key={_contract.guid} value={_contract.guid}>
+                    {_contract.guid}
+                  </MenuItem>
+                ))}
+            </Select>
+          </FormControl>
           <FormControl fullWidth={true} margin="dense">
             <InputLabel id="target-type-select-label">Target Type</InputLabel>
             <Select
@@ -267,7 +292,7 @@ const LakehouseSubscriptionsCreateDialog = observer(
           <Button onClick={handleClose} variant="outlined">
             Cancel
           </Button>
-          <Button type="submit" variant="contained">
+          <Button type="submit" variant="contained" disabled={!contract}>
             Create Subsciption
           </Button>
         </DialogActions>
@@ -320,11 +345,12 @@ export const DataProductSubscriptionViewer = observer(
     }
 
     const createDialogHandleSubmit = async (
+      _contract: V1_DataContract,
       target: V1_DataSubscriptionTarget,
     ): Promise<void> => {
       await flowResult(
         accessGroupState.createSubscription(
-          contract.guid,
+          _contract.guid,
           target,
           auth.user?.access_token,
         ),
@@ -465,7 +491,6 @@ export const DataProductSubscriptionViewer = observer(
           open={showCreateDialog}
           onClose={() => setShowCreateDialog(false)}
           accessGroupState={accessGroupState}
-          contractId={contract.guid}
           onSubmit={createDialogHandleSubmit}
         />
       </>

@@ -708,7 +708,9 @@ export const DataProductAccessPointGroupViewer = observer(
             <Box className="data-space__viewer__access-group__item__header__data-contract">
               {renderAccess(accessGroupState.access)}
             </Box>
-            {accessGroupState.access === AccessPointGroupAccess.APPROVED && (
+            {(accessGroupState.access === AccessPointGroupAccess.APPROVED ||
+              accessGroupState.access ===
+                AccessPointGroupAccess.ENTERPRISE) && (
               <Box className="data-space__viewer__access-group__item__header__subscription">
                 <Button
                   variant="outlined"

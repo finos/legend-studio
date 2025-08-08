@@ -22,12 +22,14 @@ import {
   type V1_DataSubscription,
   type V1_DataSubscriptionResponse,
   type V1_DataSubscriptionTarget,
+  V1_AdhocTeam,
   V1_ContractUserStatusResponseModelSchema,
   V1_CreateSubscriptionInput,
   V1_CreateSubscriptionInputModelSchema,
   V1_dataSubscriptionModelSchema,
   V1_DataSubscriptionResponseModelSchema,
   V1_EnrichedUserApprovalStatus,
+  V1_UserType,
 } from '@finos/legend-graph';
 import type { DataProductViewerState } from './DataProductViewerState.js';
 import {
@@ -80,6 +82,8 @@ export class DataProductGroupAccessState {
   associatedContract: V1_DataContract | undefined | false = false;
   userAccessStatus: V1_EnrichedUserApprovalStatus | undefined = undefined;
 
+  associatedSystemAccountContracts: V1_DataContract[] = [];
+
   constructor(
     group: V1_AccessPointGroup,
     accessState: DataProductDataAccessState,
@@ -92,7 +96,9 @@ export class DataProductGroupAccessState {
       requestingAccessState: observable,
       associatedContract: observable,
       userAccessStatus: observable,
+      associatedSystemAccountContracts: observable,
       setAssociatedContract: action,
+      setAssociatedSystemAccountContracts: action,
       subscriptions: observable,
       fetchingSubscriptionsState: observable,
       creatingSubscriptionState: observable,
@@ -149,6 +155,10 @@ export class DataProductGroupAccessState {
     }
   }
 
+  setAssociatedSystemAccountContracts(val: V1_DataContract[]): void {
+    this.associatedSystemAccountContracts = val;
+  }
+
   setUserAccessStatus(val: V1_EnrichedUserApprovalStatus | undefined): void {
     this.userAccessStatus = val;
   }
@@ -161,20 +171,27 @@ export class DataProductGroupAccessState {
     contracts: V1_DataContract[],
     token: string | undefined,
   ): void {
-    const groupContracts = contracts
-      .filter((_contract) =>
-        dataContractContainsAccessGroup(this.group, _contract),
-      )
-      .filter((_contract) =>
-        isMemberOfContract(
-          this.accessState.viewerState.applicationStore.identityService
-            .currentUser,
-          _contract,
+    const accessPointGroupContracts = contracts.filter((_contract) =>
+      dataContractContainsAccessGroup(this.group, _contract),
+    );
+    const userContracts = accessPointGroupContracts.filter((_contract) =>
+      isMemberOfContract(
+        this.accessState.viewerState.applicationStore.identityService
+          .currentUser,
+        _contract,
+      ),
+    );
+    const systemAccountContracts = accessPointGroupContracts.filter(
+      (_contract) =>
+        _contract.consumer instanceof V1_AdhocTeam &&
+        _contract.consumer.users.some(
+          (_user) => _user.userType === V1_UserType.SYSTEM_ACCOUNT,
         ),
-      );
+    );
     // ASSUMPTION: one contract per user per group
-    const userContract = groupContracts[0];
+    const userContract = userContracts[0];
     this.setAssociatedContract(userContract, token);
+    this.setAssociatedSystemAccountContracts(systemAccountContracts);
   }
 
   handleContractClick(): void {
