@@ -134,6 +134,12 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
 
       return (
         <>
+          {accessGroupState.access === AccessPointGroupAccess.ENTERPRISE && (
+            <p className="marketplace-lakehouse-entitlements__data-contract-creator__enterprise-apg-notice">
+              Note: Enterprise APGs only require contracts for System Accounts.
+              Regular users do not need to request access.
+            </p>
+          )}
           <UserSearchInput
             className="marketplace-lakehouse-entitlements__data-contract-creator__user-input"
             key={label}
@@ -193,6 +199,7 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
       },
       {
         type: 'System Account',
+        enableForEnterpriseAPGs: true,
         createContractRenderer: (
           marketplaceBaseStore: LegendMarketplaceBaseStore,
           accessGroupState: DataProductGroupAccessState,

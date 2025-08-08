@@ -633,32 +633,54 @@ export const DataProductAccessPointGroupViewer = observer(
           );
         case AccessPointGroupAccess.ENTERPRISE:
           return (
-            <Button
-              variant="contained"
-              color="success"
-              loading={
-                accessGroupState.fetchingAccessState.isInProgress ||
-                accessGroupState.fetchingUserAccessStatus.isInProgress
-              }
-              sx={{ cursor: 'default' }}
-            >
-              ENTERPRISE ACCESS
-              {tooltipText !== undefined && (
-                <Tooltip
-                  className="data-space__viewer__access-group__item__access__tooltip__icon"
-                  title={tooltipText}
-                  arrow={true}
-                  slotProps={{
-                    tooltip: {
-                      className:
-                        'data-space__viewer__access-group__item__access__tooltip',
-                    },
+            <>
+              <ButtonGroup
+                variant="contained"
+                color="success"
+                ref={requestAccessButtonGroupRef}
+              >
+                <Button
+                  loading={
+                    accessGroupState.fetchingAccessState.isInProgress ||
+                    accessGroupState.fetchingUserAccessStatus.isInProgress
+                  }
+                  sx={{ cursor: 'default' }}
+                >
+                  ENTERPRISE ACCESS
+                  {tooltipText !== undefined && (
+                    <Tooltip
+                      className="data-space__viewer__access-group__item__access__tooltip__icon"
+                      title={tooltipText}
+                      arrow={true}
+                      slotProps={{
+                        tooltip: {
+                          className:
+                            'data-space__viewer__access-group__item__access__tooltip',
+                        },
+                      }}
+                    >
+                      <InfoCircleOutlineIcon />
+                    </Tooltip>
+                  )}
+                </Button>
+              </ButtonGroup>
+              <Menu
+                anchorEl={requestAccessButtonGroupRef.current}
+                open={isEntitledButtonGroupMenuOpen}
+                onClose={() => setIsEntitledButtonGroupMenuOpen(false)}
+              >
+                <MenuItem
+                  onClick={() => {
+                    accessGroupState.accessState.viewerState.setDataContractAccessPointGroup(
+                      accessGroupState.group,
+                    );
+                    setIsEntitledButtonGroupMenuOpen(false);
                   }}
                 >
-                  <InfoCircleOutlineIcon />
-                </Tooltip>
-              )}
-            </Button>
+                  Request Access for System Account
+                </MenuItem>
+              </Menu>
+            </>
           );
         default:
           return null;
