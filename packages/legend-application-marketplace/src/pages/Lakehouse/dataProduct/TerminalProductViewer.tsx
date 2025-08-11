@@ -19,6 +19,8 @@ import type { TerminalProductViewerState } from '../../../stores/lakehouse/Termi
 import { useEffect, useRef, useState } from 'react';
 import { CaretUpIcon, clsx } from '@finos/legend-art';
 import { TerminalProductWiki } from './TerminalProductWiki.js';
+import { Divider } from '@mui/material';
+import type { $mobx } from 'mobx';
 
 const TerminalProductHeader = observer(
   (props: {
@@ -57,8 +59,52 @@ const TerminalProductHeader = observer(
                 ? terminalProduct.productName
                 : terminalProduct.applicationName}
             </div>
+            <Divider
+              className="data-space__viewer__header__title__divider"
+              sx={{
+                marginTop: '8px',
+                width: '100%',
+                borderColor: '#1E88E5',
+              }}
+            />
           </div>
           <div className="data-space__viewer__header__type"></div>
+        </div>
+      </div>
+    );
+  },
+);
+
+export const TerminalProductNavigationSections = observer(
+  (props: { terminalProductViewerState: TerminalProductViewerState }) => {
+    const { terminalProductViewerState } = props;
+    const [activeTab, setActiveTab] = useState('overview');
+
+    const tabs = [
+      { id: 'overview', label: 'OVERVIEW' },
+      { id: 'access', label: 'ACCESS' },
+      { id: 'support', label: 'SUPPORT' },
+    ];
+
+    const handleTabClick = (tabId: string) => {
+      setActiveTab(tabId);
+      terminalProductViewerState.layoutState.setCurrentNavigationZone(tabId);
+    };
+
+    return (
+      <div className="terminal-header-tabs">
+        <div className="terminal-header-tabs__container">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              className={`terminal-header-tabs__tab ${
+                activeTab === tab.id ? 'terminal-header-tabs__tab--active' : ''
+              }`}
+              onClick={() => handleTabClick(tab.id)}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
       </div>
     );

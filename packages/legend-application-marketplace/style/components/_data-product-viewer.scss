@@ -559,6 +559,20 @@
   padding: 0;
 }
 
+.data-space__viewer__wiki__section__pricing {
+  height: 2.8rem;
+  width: fit-content;
+  border: 1px solid var(--color-hclight-blue-60);
+  color: var(--color-hclight-blue-60);
+  padding: 6px 16px;
+  font-size: 14px;
+  transition: opacity 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
 .data-space__viewer__description {
   @include flexCenter;
 

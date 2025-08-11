@@ -24,6 +24,7 @@ import { AnchorLinkIcon, MarkdownTextViewer } from '@finos/legend-art';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { DataproducteWikiPlaceholder } from './DataProductWiki.js';
 import type { TerminalProductViewerState } from '../../../stores/lakehouse/TerminalProductViewerState.js';
+import { listItemSecondaryActionClasses } from '@mui/material';
 
 export const TerminalProductWikiPlaceHolder = observer(
   (props: {
@@ -131,74 +132,54 @@ export const TerminalProductDescription = observer(
 export const TerminalProductPrice = observer(
   (props: { terminalProductViewerState: TerminalProductViewerState }) => {
     const { terminalProductViewerState } = props;
-    const sectionRef = useRef<HTMLDivElement>(null);
-    const anchor = generateAnchorForSection(
-      TERMINAL_PRODUCT_VIEWER_SECTION.PRICE,
-    );
-
-    useEffect(() => {
-      if (sectionRef.current) {
-        terminalProductViewerState.layoutState.setWikiPageAnchor(
-          anchor,
-          sectionRef.current,
-        );
-      }
-      return () =>
-        terminalProductViewerState.layoutState.unsetWikiPageAnchor(anchor);
-    }, [terminalProductViewerState, anchor]);
-
     const terminal = terminalProductViewerState.product;
+    const [isAnnual, setIsAnnual] = React.useState(true);
 
-    const priceData = [
-      {
-        label: 'Price',
-        value: terminal.price ?? 'Not Specified',
-        field: 'price',
-      },
-      {
-        label: 'Tiered Price',
-        value: terminal.tieredPrice ?? 'Not Specified',
-        field: 'tieredPrice',
-      },
-      {
-        label: 'Total Firm Price',
-        value: terminal.totalFirmPrice ?? 'Not Specified',
-        field: 'totalFirmPrice',
-      },
-    ];
+    const getAvailablePrice = () => {
+      if (terminal.price) return terminal.price;
+      if (terminal.tieredPrice) return terminal.tieredPrice;
+      if (terminal.totalFirmPrice) return terminal.totalFirmPrice;
+      return undefined;
+    };
+    const availablePrice = getAvailablePrice();
+
+    if (!availablePrice) {
+      return (
+        <DataproducteWikiPlaceholder message="No price information available." />
+      );
+    }
+
+    const getDisplayPrice = () => {
+      const priceStr = String(availablePrice || '0');
+      const annualPrice = parseFloat(priceStr.replace(/[^0-9.-]+/g, '')) || 0;
+
+      const currencyMatch = priceStr.match(/[^0-9.-]+/);
+      const currency = currencyMatch ? currencyMatch[0] : '';
+
+      if (isAnnual) {
+        return `${currency}${annualPrice.toFixed(2)}`;
+      } else {
+        const monthlyPrice = (annualPrice / 12).toFixed(2);
+        return `${currency}${monthlyPrice}`;
+      }
+    };
+
+    const handlePricingToggle = () => {
+      setIsAnnual((prev) => !prev);
+    };
 
     return (
-      <div ref={sectionRef} className="data-space__viewer__wiki__section">
-        <div className="data-space__viewer__wiki__section__header">
-          <div className="data-space__viewer__wiki__section__header__label">
-            Pricing
-            <button
-              className="data-space__viewer__wiki__section__header__anchor"
-              tabIndex={-1}
-              onClick={() =>
-                terminalProductViewerState.changeZone(anchor, true)
-              }
-            >
-              <AnchorLinkIcon />
-            </button>
-          </div>
-        </div>
-        <div className="data-space__viewer__wiki__section__content">
-          <div className="data-space__viewer__price-section">
-            <div className="data-space__viewer__price-table">
-              {priceData.map((item) => (
-                <div key={item.field} className="data-space__viewer__price-row">
-                  <div className="data-space__viewer__price-label">
-                    {item.label}:
-                  </div>
-                  <div className="data-space__viewer__price-value">
-                    {item.value}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+      <div
+        className="data-space__viewer__wiki__section__pricing"
+        onClick={handlePricingToggle}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.opacity = '0.9';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.opacity = '1';
+        }}
+      >
+        {getDisplayPrice()} {isAnnual ? 'annually' : 'monthly'} per license
       </div>
     );
   },
@@ -234,11 +215,10 @@ export const TerminalProductWiki = observer(
 
     return (
       <div className="data-space__viewer__wiki">
-        <TerminalProductDescription
+        <TerminalProductPrice
           terminalProductViewerState={terminalProductViewerState}
         />
-
-        <TerminalProductPrice
+        <TerminalProductDescription
           terminalProductViewerState={terminalProductViewerState}
         />
       </div>

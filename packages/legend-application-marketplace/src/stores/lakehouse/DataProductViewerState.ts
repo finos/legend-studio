@@ -32,7 +32,14 @@ import {
   V1_dataContractsResponseModelSchemaToContracts,
   V1_ResourceType,
 } from '@finos/legend-graph';
-import { action, computed, flow, observable, type AnnotationsMap } from 'mobx';
+import {
+  action,
+  computed,
+  flow,
+  observable,
+  makeObservable,
+  type AnnotationsMap,
+} from 'mobx';
 import { DataProductLayoutState } from './BaseLayoutState.js';
 import { DATA_PRODUCT_VIEWER_SECTION } from './DataProductViewerNavigation.js';
 import { DataProductDataAccessState } from './DataProductDataAccessState.js';
@@ -61,10 +68,10 @@ export class DataProductViewerState extends BaseViewerState<
   readonly lakeServerClient: LakehouseContractServerClient;
 
   // we may want to move this out eventually
-  accessState: DataProductDataAccessState;
-  associatedContracts: V1_DataContract[] | undefined;
-  dataContractAccessPointGroup: V1_AccessPointGroup | undefined;
-  dataContract: V1_DataContract | undefined;
+  accessState!: DataProductDataAccessState;
+  associatedContracts: V1_DataContract[] | undefined = undefined;
+  dataContractAccessPointGroup: V1_AccessPointGroup | undefined = undefined;
+  dataContract: V1_DataContract | undefined = undefined;
   creatingContractState = ActionState.create();
 
   constructor(
@@ -80,6 +87,20 @@ export class DataProductViewerState extends BaseViewerState<
     },
   ) {
     super(product, actions);
+
+    makeObservable(this, {
+      isVerified: computed,
+      accessState: observable,
+      fetchContracts: flow,
+      associatedContracts: observable,
+      dataContractAccessPointGroup: observable,
+      setDataContractAccessPointGroup: action,
+      dataContract: observable,
+      setDataContract: action,
+      setAssociatedContracts: action,
+      createContract: flow,
+      creatingContractState: observable,
+    });
 
     this.applicationStore = applicationStore;
     this.lakehouseStore = lakehouseStore;

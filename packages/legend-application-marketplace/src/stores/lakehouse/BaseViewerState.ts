@@ -15,12 +15,11 @@
  */
 import { type NavigationZone } from '@finos/legend-application';
 import { makeObservable, observable, type AnnotationsMap } from 'mobx';
-// import { setCurrentNavigationZone } from '@finos/legend-graph';
 
 export interface ILayoutState {
   currentNavigationZone: string;
   setCurrentNavigationZone: (zone: string) => void;
-  setWikiPageAnchorToNavigate: (params: { anchor: string }) => void;
+  setWikiPageAnchorToNavigate: (params: { anchor: string } | undefined) => void;
 }
 
 export abstract class BaseViewerState<
@@ -39,15 +38,18 @@ export abstract class BaseViewerState<
       onZoneChange?: ((zone: NavigationZone | undefined) => void) | undefined;
     },
   ) {
+    this.product = product;
+    this.onZoneChange = actions?.onZoneChange;
+    this.layoutState = this.createLayoutState();
+    this.initializeObservables();
+  }
+
+  protected initializeObservables(): void {
     makeObservable(this, {
       product: observable,
       onZoneChange: observable,
       ...this.getObservableProperties(),
     });
-
-    this.product = product;
-    this.onZoneChange = actions?.onZoneChange;
-    this.layoutState = this.createLayoutState();
   }
 
   // Abstract methods that subclasses must implement
