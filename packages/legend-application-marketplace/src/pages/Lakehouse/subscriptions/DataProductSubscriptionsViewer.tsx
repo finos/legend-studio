@@ -35,6 +35,7 @@ import {
 import {
   type V1_DataSubscription,
   type V1_DataSubscriptionTarget,
+  V1_AdhocTeam,
   V1_AWSSnowflakeIngestEnvironment,
   V1_DataContract,
   V1_DataSubscriptionTargetType,
@@ -58,6 +59,64 @@ import {
 } from '@finos/legend-lego/data-grid';
 import { flowResult } from 'mobx';
 import { UserRenderer } from '../../../components/UserRenderer/UserRenderer.js';
+import { MultiUserCellRenderer } from '../../../components/MultiUserCellRenderer/MultiUserCellRenderer.js';
+import {
+  getOrganizationalScopeTypeDetails,
+  getOrganizationalScopeTypeName,
+} from '../../../stores/lakehouse/LakehouseUtils.js';
+import type { MarketplaceLakehouseStore } from '../../../stores/lakehouse/MarketplaceLakehouseStore.js';
+
+const LakehouseSubscriptionsCreateDialogContractRenderer = observer(
+  (props: {
+    contract: V1_DataContract;
+    marketplaceStore: MarketplaceLakehouseStore;
+  }) => {
+    const { contract, marketplaceStore } = props;
+    const consumer = contract.consumer;
+    let consumerComponent = null;
+
+    if (consumer instanceof V1_AdhocTeam) {
+      consumerComponent = (
+        <MultiUserCellRenderer
+          userIds={consumer.users.map((_user) => _user.name)}
+          marketplaceStore={marketplaceStore.marketplaceBaseStore}
+        />
+      );
+    } else {
+      consumerComponent = (
+        <>
+          {' '}
+          <Box>
+            {getOrganizationalScopeTypeName(
+              consumer,
+              marketplaceStore.applicationStore.pluginManager.getApplicationPlugins(),
+            )}
+          </Box>
+          <Box>
+            {getOrganizationalScopeTypeDetails(
+              consumer,
+              marketplaceStore.applicationStore.pluginManager.getApplicationPlugins(),
+            )}
+          </Box>
+        </>
+      );
+    }
+
+    return (
+      <Box className="marketplace-lakehouse-subscriptions__subscription-creator__contract-details">
+        <Box className="marketplace-lakehouse-subscriptions__subscription-creator__contract-details__users">
+          Users: {consumerComponent}
+        </Box>
+        <Box className="marketplace-lakehouse-subscriptions__subscription-creator__contract-details__description">
+          {contract.description}
+        </Box>
+        <Box className="marketplace-lakehouse-subscriptions__subscription-creator__contract-details__id">
+          {contract.guid}
+        </Box>
+      </Box>
+    );
+  },
+);
 
 const LakehouseSubscriptionsCreateDialog = observer(
   (props: {
@@ -195,7 +254,12 @@ const LakehouseSubscriptionsCreateDialog = observer(
                 .filter((_contract) => _contract instanceof V1_DataContract)
                 .map((_contract) => (
                   <MenuItem key={_contract.guid} value={_contract.guid}>
-                    {_contract.guid}
+                    <LakehouseSubscriptionsCreateDialogContractRenderer
+                      contract={_contract}
+                      marketplaceStore={
+                        accessGroupState.accessState.viewerState.lakehouseStore
+                      }
+                    />
                   </MenuItem>
                 ))}
             </Select>
