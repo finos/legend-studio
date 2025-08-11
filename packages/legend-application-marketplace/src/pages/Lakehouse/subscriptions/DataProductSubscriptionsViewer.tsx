@@ -39,6 +39,7 @@ import {
   V1_AWSSnowflakeIngestEnvironment,
   V1_DataContract,
   V1_DataSubscriptionTargetType,
+  V1_EnrichedUserApprovalStatus,
   V1_SnowflakeNetwork,
   V1_SnowflakeRegion,
   V1_SnowflakeTarget,
@@ -152,13 +153,19 @@ const LakehouseSubscriptionsCreateDialog = observer(
   }) => {
     const { open, onClose, accessGroupState, onSubmit } = props;
 
-    const associatedUserContract =
-      accessGroupState.associatedContract || undefined;
-    const systemAccountContracts =
-      accessGroupState.associatedSystemAccountContracts;
+    const approvedUserContract =
+      accessGroupState.userAccessStatus ===
+        V1_EnrichedUserApprovalStatus.APPROVED &&
+      accessGroupState.associatedContract instanceof V1_DataContract
+        ? accessGroupState.associatedContract
+        : undefined;
+    const approvedSystemAccountContracts =
+      accessGroupState.associatedSystemAccountContractsAndApprovedUsers
+        .filter((_contract) => _contract.approvedUsers.length > 0)
+        .map((_contract) => _contract.contract);
 
     const [contract, setContract] = useState<V1_DataContract | undefined>(
-      associatedUserContract ?? systemAccountContracts[0],
+      approvedUserContract ?? approvedSystemAccountContracts[0],
     );
     const [targetType] = useState<V1_DataSubscriptionTargetType>(
       V1_DataSubscriptionTargetType.Snowflake,
@@ -267,16 +274,16 @@ const LakehouseSubscriptionsCreateDialog = observer(
               name="contract"
               value={contract?.guid ?? ''}
               label="Contract"
-              disabled={systemAccountContracts.length === 0}
               onChange={(event: SelectChangeEvent<string>) => {
                 setContract(
-                  [associatedUserContract, ...systemAccountContracts].find(
-                    (_contract) => _contract?.guid === event.target.value,
-                  ),
+                  [
+                    approvedUserContract,
+                    ...approvedSystemAccountContracts,
+                  ].find((_contract) => _contract?.guid === event.target.value),
                 );
               }}
             >
-              {[associatedUserContract, ...systemAccountContracts]
+              {[approvedUserContract, ...approvedSystemAccountContracts]
                 .filter((_contract) => _contract instanceof V1_DataContract)
                 .map((_contract) => (
                   <MenuItem key={_contract.guid} value={_contract.guid}>
@@ -405,10 +412,6 @@ export const DataProductSubscriptionViewer = observer(
     const subscriptions = accessGroupState.subscriptions;
     const isLoading = accessGroupState.fetchingSubscriptionsState.isInProgress;
 
-    const canCreateSubscription =
-      accessGroupState.associatedContract instanceof V1_DataContract ||
-      accessGroupState.associatedSystemAccountContracts.length > 0;
-
     const createDialogHandleSubmit = async (
       _contract: V1_DataContract,
       target: V1_DataSubscriptionTarget,
@@ -452,15 +455,15 @@ export const DataProductSubscriptionViewer = observer(
                 <span
                   className="marketplace-lakehouse-subscriptions__subscriptions-viewer__create-btn"
                   title={
-                    !canCreateSubscription
-                      ? 'Cannot create subscription. No contracts found for this Access Point Group.'
+                    !accessGroupState.canCreateSubscription
+                      ? 'Cannot create subscription. No approved contracts found for this Access Point Group.'
                       : undefined
                   }
                 >
                   <Button
                     onClick={() => setShowCreateDialog(true)}
                     variant="contained"
-                    disabled={!canCreateSubscription}
+                    disabled={!accessGroupState.canCreateSubscription}
                   >
                     Create New Subscription
                   </Button>

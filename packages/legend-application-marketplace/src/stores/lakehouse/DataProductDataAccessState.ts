@@ -17,15 +17,17 @@
 import {
   type V1_AccessPointGroup,
   type V1_ContractUserStatusResponse,
-  type V1_DataContract,
   type V1_DataProduct,
   type V1_DataSubscription,
   type V1_DataSubscriptionResponse,
   type V1_DataSubscriptionTarget,
+  type V1_User,
   V1_AdhocTeam,
   V1_ContractUserStatusResponseModelSchema,
   V1_CreateSubscriptionInput,
   V1_CreateSubscriptionInputModelSchema,
+  V1_DataContract,
+  V1_DataContractApprovedUsersResponseModelSchema,
   V1_dataSubscriptionModelSchema,
   V1_DataSubscriptionResponseModelSchema,
   V1_EnrichedUserApprovalStatus,
@@ -42,6 +44,7 @@ import {
 } from '@finos/legend-shared';
 import {
   action,
+  computed,
   flow,
   makeAutoObservable,
   makeObservable,
@@ -82,7 +85,10 @@ export class DataProductGroupAccessState {
   associatedContract: V1_DataContract | undefined | false = false;
   userAccessStatus: V1_EnrichedUserApprovalStatus | undefined = undefined;
 
-  associatedSystemAccountContracts: V1_DataContract[] = [];
+  associatedSystemAccountContractsAndApprovedUsers: {
+    contract: V1_DataContract;
+    approvedUsers: V1_User[];
+  }[] = [];
 
   constructor(
     group: V1_AccessPointGroup,
@@ -96,9 +102,9 @@ export class DataProductGroupAccessState {
       requestingAccessState: observable,
       associatedContract: observable,
       userAccessStatus: observable,
-      associatedSystemAccountContracts: observable,
+      associatedSystemAccountContractsAndApprovedUsers: observable,
       setAssociatedContract: action,
-      setAssociatedSystemAccountContracts: action,
+      fetchAndSetAssociatedSystemAccountContracts: flow,
       subscriptions: observable,
       fetchingSubscriptionsState: observable,
       creatingSubscriptionState: observable,
@@ -106,6 +112,7 @@ export class DataProductGroupAccessState {
       setSubscriptions: action,
       fetchUserAccessStatus: flow,
       setUserAccessStatus: action,
+      canCreateSubscription: computed,
     });
   }
 
@@ -144,6 +151,16 @@ export class DataProductGroupAccessState {
     }
   }
 
+  get canCreateSubscription(): boolean {
+    return (
+      (this.associatedContract instanceof V1_DataContract &&
+        this.userAccessStatus === V1_EnrichedUserApprovalStatus.APPROVED) ||
+      this.associatedSystemAccountContractsAndApprovedUsers.some(
+        (contract) => contract.approvedUsers.length > 0,
+      )
+    );
+  }
+
   setAssociatedContract(
     val: V1_DataContract | undefined,
     token: string | undefined,
@@ -155,8 +172,27 @@ export class DataProductGroupAccessState {
     }
   }
 
-  setAssociatedSystemAccountContracts(val: V1_DataContract[]): void {
-    this.associatedSystemAccountContracts = val;
+  *fetchAndSetAssociatedSystemAccountContracts(
+    val: V1_DataContract[],
+    token: string | undefined,
+  ): GeneratorFn<void> {
+    this.associatedSystemAccountContractsAndApprovedUsers = yield Promise.all(
+      val.map(async (contract) => {
+        const rawApprovedUsers =
+          await this.accessState.viewerState.lakeServerClient.getApprovedUsersForDataContract(
+            contract.guid,
+            token,
+          );
+        const approvedUsers = deserialize(
+          V1_DataContractApprovedUsersResponseModelSchema,
+          rawApprovedUsers,
+        ).approvedUsers;
+        return {
+          contract,
+          approvedUsers,
+        };
+      }),
+    );
   }
 
   setUserAccessStatus(val: V1_EnrichedUserApprovalStatus | undefined): void {
@@ -191,7 +227,10 @@ export class DataProductGroupAccessState {
     // ASSUMPTION: one contract per user per group
     const userContract = userContracts[0];
     this.setAssociatedContract(userContract, token);
-    this.setAssociatedSystemAccountContracts(systemAccountContracts);
+    this.fetchAndSetAssociatedSystemAccountContracts(
+      systemAccountContracts,
+      token,
+    );
   }
 
   handleContractClick(): void {
