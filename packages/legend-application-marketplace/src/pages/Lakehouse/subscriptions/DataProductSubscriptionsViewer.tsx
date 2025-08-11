@@ -105,13 +105,15 @@ const LakehouseSubscriptionsCreateDialogContractRenderer = observer(
     return (
       <Box className="marketplace-lakehouse-subscriptions__subscription-creator__contract-details">
         <Box className="marketplace-lakehouse-subscriptions__subscription-creator__contract-details__users">
-          Users: {consumerComponent}
+          User(s): {consumerComponent}
         </Box>
-        <Box className="marketplace-lakehouse-subscriptions__subscription-creator__contract-details__description">
-          {contract.description}
-        </Box>
-        <Box className="marketplace-lakehouse-subscriptions__subscription-creator__contract-details__id">
-          {contract.guid}
+        <Box className="marketplace-lakehouse-subscriptions__subscription-creator__contract-details__footer">
+          <Box className="marketplace-lakehouse-subscriptions__subscription-creator__contract-details__description">
+            {contract.description}
+          </Box>
+          <Box className="marketplace-lakehouse-subscriptions__subscription-creator__contract-details__id">
+            {contract.guid}
+          </Box>
         </Box>
       </Box>
     );
