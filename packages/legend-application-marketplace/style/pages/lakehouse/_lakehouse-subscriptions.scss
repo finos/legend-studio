@@ -43,6 +43,16 @@
 }
 
 .marketplace-lakehouse-subscriptions__subscription-creator {
+  &__content {
+    @include flexVCenter;
+
+    gap: 1rem;
+
+    .MuiSelect-select {
+      font-size: 1.4rem;
+    }
+  }
+
   &__autocomplete {
     &__listbox {
       .MuiListSubheader-root {
@@ -56,11 +66,14 @@
   }
 
   &__contract-details {
+    &__users {
+      font-size: 1.4rem;
+    }
+
     &__footer {
       @include flexVCenter;
 
-      flex-direction: column;
-      font-size: 1rem;
+      font-size: 1.2rem;
       color: var(--color-light-grey-300);
     }
 

@@ -109,10 +109,10 @@ const LakehouseSubscriptionsCreateDialogContractRenderer = observer(
         </Box>
         <Box className="marketplace-lakehouse-subscriptions__subscription-creator__contract-details__footer">
           <Box className="marketplace-lakehouse-subscriptions__subscription-creator__contract-details__description">
-            {contract.description}
+            Description: {contract.description}
           </Box>
           <Box className="marketplace-lakehouse-subscriptions__subscription-creator__contract-details__id">
-            {contract.guid}
+            ID: {contract.guid}
           </Box>
         </Box>
       </Box>
