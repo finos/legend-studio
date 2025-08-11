@@ -127,7 +127,12 @@ const LakehouseSubscriptionsCreateDialogContractRenderer = observer(
           </Box>
           <Box className="marketplace-lakehouse-subscriptions__subscription-creator__contract-details__id">
             ID: {contract.guid}
-            <IconButton onClick={() => copyContractId(contract.guid)}>
+            <IconButton
+              onClick={(event) => {
+                event.stopPropagation();
+                copyContractId(contract.guid);
+              }}
+            >
               <CopyIcon />
             </IconButton>
           </Box>
