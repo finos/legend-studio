@@ -36,12 +36,12 @@ import {
   isString,
   isValidURL,
 } from '@finos/legend-shared';
-import type {
-  TDSResultCellCoordinate,
-  TDSResultCellData,
+import {
+  type TDSResultCellCoordinate,
+  type TDSResultCellData,
+  type TDSResultCellDataType,
+  type TDSRowDataType,
   TDSExecutionResult,
-  TDSResultCellDataType,
-  TDSRowDataType,
   getTDSRowRankByColumnInAsc,
   PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
