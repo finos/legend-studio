@@ -165,7 +165,10 @@ const LakehouseSubscriptionsCreateDialog = observer(
         .map((_contract) => _contract.contract);
 
     const [contract, setContract] = useState<V1_DataContract | undefined>(
-      approvedUserContract ?? approvedSystemAccountContracts[0],
+      approvedUserContract ??
+        (approvedSystemAccountContracts.length === 1
+          ? approvedSystemAccountContracts[0]
+          : undefined),
     );
     const [targetType] = useState<V1_DataSubscriptionTargetType>(
       V1_DataSubscriptionTargetType.Snowflake,
@@ -274,6 +277,7 @@ const LakehouseSubscriptionsCreateDialog = observer(
               name="contract"
               value={contract?.guid ?? ''}
               label="Contract"
+              autoFocus={contract === undefined}
               onChange={(event: SelectChangeEvent<string>) => {
                 setContract(
                   [
@@ -330,6 +334,7 @@ const LakehouseSubscriptionsCreateDialog = observer(
                   {...(params as TextFieldProps)}
                   label="Snowflake Account ID"
                   required={true}
+                  autoFocus={contract !== undefined}
                 />
               )}
               onChange={(_, value) =>
@@ -337,7 +342,6 @@ const LakehouseSubscriptionsCreateDialog = observer(
                   typeof value === 'string' ? value : (value?.account ?? ''),
                 )
               }
-              autoFocus={true}
               slotProps={{
                 listbox: {
                   className:
