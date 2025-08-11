@@ -477,38 +477,74 @@ export const DataProductAccessPointGroupViewer = observer(
                 >
                   Request Access for Others
                 </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    handleSubscriptionsClick();
+                    setIsEntitledButtonGroupMenuOpen(false);
+                  }}
+                >
+                  Manage Subscriptions
+                </MenuItem>
               </Menu>
             </>
           );
         case AccessPointGroupAccess.NO_ACCESS:
         case AccessPointGroupAccess.DENIED:
           return (
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleContractsClick}
-              loading={
-                accessGroupState.fetchingAccessState.isInProgress ||
-                accessGroupState.fetchingUserAccessStatus.isInProgress
-              }
-            >
-              REQUEST ACCESS
-              {tooltipText !== undefined && (
-                <Tooltip
-                  className="data-space__viewer__access-group__item__access__tooltip__icon"
-                  title={tooltipText}
-                  arrow={true}
-                  slotProps={{
-                    tooltip: {
-                      className:
-                        'data-space__viewer__access-group__item__access__tooltip',
-                    },
+            <>
+              <ButtonGroup
+                variant="contained"
+                color="primary"
+                ref={requestAccessButtonGroupRef}
+              >
+                <Button
+                  onClick={handleContractsClick}
+                  loading={
+                    accessGroupState.fetchingAccessState.isInProgress ||
+                    accessGroupState.fetchingUserAccessStatus.isInProgress
+                  }
+                >
+                  REQUEST ACCESS
+                  {tooltipText !== undefined && (
+                    <Tooltip
+                      className="data-space__viewer__access-group__item__access__tooltip__icon"
+                      title={tooltipText}
+                      arrow={true}
+                      slotProps={{
+                        tooltip: {
+                          className:
+                            'data-space__viewer__access-group__item__access__tooltip',
+                        },
+                      }}
+                    >
+                      <InfoCircleOutlineIcon />
+                    </Tooltip>
+                  )}
+                </Button>
+                <Button
+                  size="small"
+                  onClick={() =>
+                    setIsEntitledButtonGroupMenuOpen((prev) => !prev)
+                  }
+                >
+                  <CaretDownIcon />
+                </Button>
+              </ButtonGroup>
+              <Menu
+                anchorEl={requestAccessButtonGroupRef.current}
+                open={isEntitledButtonGroupMenuOpen}
+                onClose={() => setIsEntitledButtonGroupMenuOpen(false)}
+              >
+                <MenuItem
+                  onClick={() => {
+                    handleSubscriptionsClick();
+                    setIsEntitledButtonGroupMenuOpen(false);
                   }}
                 >
-                  <InfoCircleOutlineIcon />
-                </Tooltip>
-              )}
-            </Button>
+                  Manage Subscriptions
+                </MenuItem>
+              </Menu>
+            </>
           );
         case AccessPointGroupAccess.PENDING_MANAGER_APPROVAL:
         case AccessPointGroupAccess.PENDING_DATA_OWNER_APPROVAL:
@@ -569,6 +605,14 @@ export const DataProductAccessPointGroupViewer = observer(
                 >
                   Request Access for Others
                 </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    handleSubscriptionsClick();
+                    setIsEntitledButtonGroupMenuOpen(false);
+                  }}
+                >
+                  Manage Subscriptions
+                </MenuItem>
               </Menu>
             </>
           );
@@ -627,6 +671,14 @@ export const DataProductAccessPointGroupViewer = observer(
                   }}
                 >
                   Request Access for Others
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    handleSubscriptionsClick();
+                    setIsEntitledButtonGroupMenuOpen(false);
+                  }}
+                >
+                  Manage Subscriptions
                 </MenuItem>
               </Menu>
             </>
@@ -713,23 +765,7 @@ export const DataProductAccessPointGroupViewer = observer(
             </button>
           </div>
           <Box className="data-space__viewer__access-group__item__header__actions">
-            <Box className="data-space__viewer__access-group__item__header__data-contract">
-              {renderAccess(accessGroupState.access)}
-            </Box>
-            {(accessGroupState.access === AccessPointGroupAccess.APPROVED ||
-              accessGroupState.access ===
-                AccessPointGroupAccess.ENTERPRISE) && (
-              <Box className="data-space__viewer__access-group__item__header__subscription">
-                <Button
-                  variant="outlined"
-                  color="info"
-                  loading={accessGroupState.fetchingAccessState.isInProgress}
-                  onClick={handleSubscriptionsClick}
-                >
-                  SUBSCRIPTIONS
-                </Button>
-              </Box>
-            )}
+            {renderAccess(accessGroupState.access)}
           </Box>
         </div>
         <div className="data-space__viewer__access-group__item__description">
