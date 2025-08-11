@@ -234,123 +234,126 @@ const LakehouseSubscriptionsCreateDialog = observer(
       >
         <DialogTitle>Create New Subscription</DialogTitle>
         <DialogContent>
-          <FormControl fullWidth={true} margin="dense">
-            <InputLabel id="contract-select-label">Contract</InputLabel>
-            <Select
-              required={true}
-              labelId="contract-select-label"
-              id="contract-select"
-              name="contract"
-              value={contract?.guid ?? ''}
-              label="Contract"
-              disabled={systemAccountContracts.length === 0}
-              onChange={(event: SelectChangeEvent<string>) => {
-                setContract(
-                  [associatedUserContract, ...systemAccountContracts].find(
-                    (_contract) => _contract?.guid === event.target.value,
+          <Box className="marketplace-lakehouse-subscriptions__subscription-creator__content">
+            <FormControl fullWidth={true} margin="dense">
+              <InputLabel id="contract-select-label">Contract</InputLabel>
+              <Select
+                required={true}
+                labelId="contract-select-label"
+                id="contract-select"
+                name="contract"
+                value={contract?.guid ?? ''}
+                label="Contract"
+                disabled={systemAccountContracts.length === 0}
+                onChange={(event: SelectChangeEvent<string>) => {
+                  setContract(
+                    [associatedUserContract, ...systemAccountContracts].find(
+                      (_contract) => _contract?.guid === event.target.value,
+                    ),
+                  );
+                }}
+              >
+                {[associatedUserContract, ...systemAccountContracts]
+                  .filter((_contract) => _contract instanceof V1_DataContract)
+                  .map((_contract) => (
+                    <MenuItem key={_contract.guid} value={_contract.guid}>
+                      <LakehouseSubscriptionsCreateDialogContractRenderer
+                        contract={_contract}
+                        marketplaceStore={
+                          accessGroupState.accessState.viewerState
+                            .lakehouseStore
+                        }
+                      />
+                    </MenuItem>
+                  ))}
+              </Select>
+            </FormControl>
+            <FormControl fullWidth={true} margin="dense">
+              <InputLabel id="target-type-select-label">Target Type</InputLabel>
+              <Select
+                required={true}
+                labelId="target-type-select-label"
+                id="target-type-select"
+                value={targetType}
+                label="Target Type"
+                disabled={true}
+              >
+                {Object.values(V1_DataSubscriptionTargetType).map(
+                  (_targetType) => (
+                    <MenuItem key={_targetType} value={_targetType}>
+                      {_targetType}
+                    </MenuItem>
                   ),
-                );
+                )}
+              </Select>
+            </FormControl>
+            <Autocomplete
+              fullWidth={true}
+              freeSolo={true}
+              options={snowflakeAccountOptions}
+              groupBy={(option) => option.isSuggested}
+              getOptionLabel={(option) =>
+                typeof option === 'string' ? option : option.account
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...(params as TextFieldProps)}
+                  label="Snowflake Account ID"
+                  required={true}
+                />
+              )}
+              onChange={(_, value) =>
+                setSnowflakeAccountId(
+                  typeof value === 'string' ? value : (value?.account ?? ''),
+                )
+              }
+              autoFocus={true}
+              slotProps={{
+                listbox: {
+                  className:
+                    'marketplace-lakehouse-subscriptions__subscription-creator__autocomplete__listbox',
+                },
               }}
-            >
-              {[associatedUserContract, ...systemAccountContracts]
-                .filter((_contract) => _contract instanceof V1_DataContract)
-                .map((_contract) => (
-                  <MenuItem key={_contract.guid} value={_contract.guid}>
-                    <LakehouseSubscriptionsCreateDialogContractRenderer
-                      contract={_contract}
-                      marketplaceStore={
-                        accessGroupState.accessState.viewerState.lakehouseStore
-                      }
-                    />
+            />
+            <FormControl fullWidth={true} margin="dense">
+              <InputLabel id="snowflake-region-select-label">
+                Snowflake Region
+              </InputLabel>
+              <Select
+                required={true}
+                labelId="snowflake-region-select-label"
+                id="snowflake-region-select"
+                value={snowflakeRegion}
+                label="Snowflake Region"
+                disabled={true}
+              >
+                {Object.values(V1_SnowflakeRegion).map((region) => (
+                  <MenuItem key={region} value={region}>
+                    {region}
                   </MenuItem>
                 ))}
-            </Select>
-          </FormControl>
-          <FormControl fullWidth={true} margin="dense">
-            <InputLabel id="target-type-select-label">Target Type</InputLabel>
-            <Select
-              required={true}
-              labelId="target-type-select-label"
-              id="target-type-select"
-              value={targetType}
-              label="Target Type"
-              disabled={true}
-            >
-              {Object.values(V1_DataSubscriptionTargetType).map(
-                (_targetType) => (
-                  <MenuItem key={_targetType} value={_targetType}>
-                    {_targetType}
-                  </MenuItem>
-                ),
-              )}
-            </Select>
-          </FormControl>
-          <Autocomplete
-            fullWidth={true}
-            freeSolo={true}
-            options={snowflakeAccountOptions}
-            groupBy={(option) => option.isSuggested}
-            getOptionLabel={(option) =>
-              typeof option === 'string' ? option : option.account
-            }
-            renderInput={(params) => (
-              <TextField
-                {...(params as TextFieldProps)}
-                label="Snowflake Account ID"
+              </Select>
+            </FormControl>
+            <FormControl fullWidth={true} margin="dense">
+              <InputLabel id="snowflake-network-select-label">
+                Snowflake Network
+              </InputLabel>
+              <Select
                 required={true}
-              />
-            )}
-            onChange={(_, value) =>
-              setSnowflakeAccountId(
-                typeof value === 'string' ? value : (value?.account ?? ''),
-              )
-            }
-            autoFocus={true}
-            slotProps={{
-              listbox: {
-                className:
-                  'marketplace-lakehouse-subscriptions__subscription-creator__autocomplete__listbox',
-              },
-            }}
-          />
-          <FormControl fullWidth={true} margin="dense">
-            <InputLabel id="snowflake-region-select-label">
-              Snowflake Region
-            </InputLabel>
-            <Select
-              required={true}
-              labelId="snowflake-region-select-label"
-              id="snowflake-region-select"
-              value={snowflakeRegion}
-              label="Snowflake Region"
-              disabled={true}
-            >
-              {Object.values(V1_SnowflakeRegion).map((region) => (
-                <MenuItem key={region} value={region}>
-                  {region}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <FormControl fullWidth={true} margin="dense">
-            <InputLabel id="snowflake-network-select-label">
-              Snowflake Network
-            </InputLabel>
-            <Select
-              required={true}
-              labelId="snowflake-network-select-label"
-              id="snowflake-network-select"
-              value={snowflakeNetwork}
-              label="Snowflake Network"
-              disabled={true}
-            >
-              {Object.values(V1_SnowflakeNetwork).map((_snowflakeNetwork) => (
-                <MenuItem key={_snowflakeNetwork} value={_snowflakeNetwork}>
-                  {_snowflakeNetwork}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+                labelId="snowflake-network-select-label"
+                id="snowflake-network-select"
+                value={snowflakeNetwork}
+                label="Snowflake Network"
+                disabled={true}
+              >
+                {Object.values(V1_SnowflakeNetwork).map((_snowflakeNetwork) => (
+                  <MenuItem key={_snowflakeNetwork} value={_snowflakeNetwork}>
+                    {_snowflakeNetwork}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} variant="outlined">
