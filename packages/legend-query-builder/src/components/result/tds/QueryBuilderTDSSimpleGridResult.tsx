@@ -18,11 +18,6 @@ import { ContextMenu, WarningIcon, clsx } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import type { QueryBuilderState } from '../../../stores/QueryBuilderState.js';
 import {
-  getTDSRowRankByColumnInAsc,
-  PRIMITIVE_TYPE,
-  TDSExecutionResult,
-} from '@finos/legend-graph';
-import {
   DataGrid,
   type DataGridColumnDefinition,
   type DataGridCustomHeaderProps,
@@ -44,8 +39,11 @@ import {
 import type {
   TDSResultCellCoordinate,
   TDSResultCellData,
+  TDSExecutionResult,
   TDSResultCellDataType,
   TDSRowDataType,
+  getTDSRowRankByColumnInAsc,
+  PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
 import { QUERY_BUILDER_TEST_ID } from '../../../__lib__/QueryBuilderTesting.js';
 
