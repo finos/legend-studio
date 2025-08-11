@@ -177,23 +177,24 @@ export class DataProductGroupAccessState {
   ): GeneratorFn<void> {
     this.fetchingApprovedContractsState.inProgress();
     try {
-      this.associatedSystemAccountContractsAndApprovedUsers = yield Promise.all(
-        val.map(async (contract) => {
-          const rawApprovedUsers =
-            await this.accessState.viewerState.lakeServerClient.getApprovedUsersForDataContract(
-              contract.guid,
-              token,
-            );
-          const approvedUsers = deserialize(
-            V1_DataContractApprovedUsersResponseModelSchema,
-            rawApprovedUsers,
-          ).approvedUsers;
-          return {
-            contract,
-            approvedUsers,
-          };
-        }),
-      );
+      this.associatedSystemAccountContractsAndApprovedUsers =
+        (yield Promise.all(
+          val.map(async (contract) => {
+            const rawApprovedUsers =
+              await this.accessState.viewerState.lakeServerClient.getApprovedUsersForDataContract(
+                contract.guid,
+                token,
+              );
+            const approvedUsers = deserialize(
+              V1_DataContractApprovedUsersResponseModelSchema,
+              rawApprovedUsers,
+            ).approvedUsers;
+            return {
+              contract,
+              approvedUsers,
+            };
+          }),
+        )) as { contract: V1_DataContract; approvedUsers: V1_User[] }[];
     } catch (error) {
       assertErrorThrown(error);
       this.accessState.viewerState.applicationStore.notificationService.notifyError(
