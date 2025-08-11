@@ -464,6 +464,11 @@ export const DataProductSubscriptionViewer = observer(
                     onClick={() => setShowCreateDialog(true)}
                     variant="contained"
                     disabled={!accessGroupState.canCreateSubscription}
+                    loading={
+                      accessGroupState.fetchingAccessState.isInProgress ||
+                      accessGroupState.fetchingApprovedContractsState
+                        .isInProgress
+                    }
                   >
                     Create New Subscription
                   </Button>
@@ -565,12 +570,14 @@ export const DataProductSubscriptionViewer = observer(
             )}
           </DialogContent>
         </Dialog>
-        <LakehouseSubscriptionsCreateDialog
-          open={showCreateDialog}
-          onClose={() => setShowCreateDialog(false)}
-          accessGroupState={accessGroupState}
-          onSubmit={createDialogHandleSubmit}
-        />
+        {showCreateDialog && (
+          <LakehouseSubscriptionsCreateDialog
+            open={showCreateDialog}
+            onClose={() => setShowCreateDialog(false)}
+            accessGroupState={accessGroupState}
+            onSubmit={createDialogHandleSubmit}
+          />
+        )}
       </>
     );
   },

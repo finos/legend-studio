@@ -75,8 +75,8 @@ export class DataProductGroupAccessState {
   subscriptions: V1_DataSubscription[] = [];
 
   fetchingAccessState = ActionState.create();
-  requestingAccessState = ActionState.create();
   fetchingUserAccessStatus = ActionState.create();
+  fetchingApprovedContractsState = ActionState.create();
   fetchingSubscriptionsState = ActionState.create();
   creatingSubscriptionState = ActionState.create();
 
@@ -99,7 +99,6 @@ export class DataProductGroupAccessState {
     makeAutoObservable(this, {
       handleContractClick: action,
       handleDataProductContracts: action,
-      requestingAccessState: observable,
       associatedContract: observable,
       userAccessStatus: observable,
       associatedSystemAccountContractsAndApprovedUsers: observable,
@@ -176,23 +175,33 @@ export class DataProductGroupAccessState {
     val: V1_DataContract[],
     token: string | undefined,
   ): GeneratorFn<void> {
-    this.associatedSystemAccountContractsAndApprovedUsers = yield Promise.all(
-      val.map(async (contract) => {
-        const rawApprovedUsers =
-          await this.accessState.viewerState.lakeServerClient.getApprovedUsersForDataContract(
-            contract.guid,
-            token,
-          );
-        const approvedUsers = deserialize(
-          V1_DataContractApprovedUsersResponseModelSchema,
-          rawApprovedUsers,
-        ).approvedUsers;
-        return {
-          contract,
-          approvedUsers,
-        };
-      }),
-    );
+    this.fetchingApprovedContractsState.inProgress();
+    try {
+      this.associatedSystemAccountContractsAndApprovedUsers = yield Promise.all(
+        val.map(async (contract) => {
+          const rawApprovedUsers =
+            await this.accessState.viewerState.lakeServerClient.getApprovedUsersForDataContract(
+              contract.guid,
+              token,
+            );
+          const approvedUsers = deserialize(
+            V1_DataContractApprovedUsersResponseModelSchema,
+            rawApprovedUsers,
+          ).approvedUsers;
+          return {
+            contract,
+            approvedUsers,
+          };
+        }),
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      this.accessState.viewerState.applicationStore.notificationService.notifyError(
+        `Error fetching approved users for contract: ${error.message}`,
+      );
+    } finally {
+      this.fetchingApprovedContractsState.complete();
+    }
   }
 
   setUserAccessStatus(val: V1_EnrichedUserApprovalStatus | undefined): void {
