@@ -71,6 +71,9 @@
     width: 100%;
 
     &__users {
+      @include flexVCenter;
+
+      gap: 1rem;
       font-size: 1.4rem;
     }
 
