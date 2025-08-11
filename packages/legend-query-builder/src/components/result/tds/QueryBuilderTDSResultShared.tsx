@@ -25,6 +25,8 @@ import {
   type AbstractPropertyExpression,
   type Enumeration,
   type ExecutionResult,
+  type TDSResultCellData, 
+  type TDSRowDataType,
   type TDSExecutionResult,
   EnumValueExplicitReference,
   EnumValueInstanceValue,
@@ -73,7 +75,6 @@ import {
 } from '../../../stores/shared/ValueSpecificationModifierHelper.js';
 import { type DataGridCellRendererParams } from '@finos/legend-lego/data-grid';
 import type { QueryBuilderResultState } from '../../../stores/QueryBuilderResultState.js';
-import type { TDSResultCellData, TDSRowDataType } from '@finos/legend-graph';
 import {
   QueryBuilderPostFilterOperator_IsEmpty,
   QueryBuilderPostFilterOperator_IsNotEmpty,
