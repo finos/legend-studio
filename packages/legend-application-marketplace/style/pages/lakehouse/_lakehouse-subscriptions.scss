@@ -47,9 +47,10 @@
     @include flexVCenter;
 
     flex-direction: column;
-    gap: 1rem;
+    gap: 2rem;
 
-    .MuiSelect-select {
+    .MuiSelect-select,
+    .MuiInputBase-input {
       font-size: 1.4rem;
     }
   }

@@ -289,34 +289,36 @@ const LakehouseSubscriptionsCreateDialog = observer(
               )}
             </Select>
           </FormControl>
-          <Autocomplete
-            fullWidth={true}
-            freeSolo={true}
-            options={snowflakeAccountOptions}
-            groupBy={(option) => option.isSuggested}
-            getOptionLabel={(option) =>
-              typeof option === 'string' ? option : option.account
-            }
-            renderInput={(params) => (
-              <TextField
-                {...(params as TextFieldProps)}
-                label="Snowflake Account ID"
-                required={true}
-              />
-            )}
-            onChange={(_, value) =>
-              setSnowflakeAccountId(
-                typeof value === 'string' ? value : (value?.account ?? ''),
-              )
-            }
-            autoFocus={true}
-            slotProps={{
-              listbox: {
-                className:
-                  'marketplace-lakehouse-subscriptions__subscription-creator__autocomplete__listbox',
-              },
-            }}
-          />
+          <FormControl fullWidth={true} margin="dense">
+            <Autocomplete
+              fullWidth={true}
+              freeSolo={true}
+              options={snowflakeAccountOptions}
+              groupBy={(option) => option.isSuggested}
+              getOptionLabel={(option) =>
+                typeof option === 'string' ? option : option.account
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...(params as TextFieldProps)}
+                  label="Snowflake Account ID"
+                  required={true}
+                />
+              )}
+              onChange={(_, value) =>
+                setSnowflakeAccountId(
+                  typeof value === 'string' ? value : (value?.account ?? ''),
+                )
+              }
+              autoFocus={true}
+              slotProps={{
+                listbox: {
+                  className:
+                    'marketplace-lakehouse-subscriptions__subscription-creator__autocomplete__listbox',
+                },
+              }}
+            />
+          </FormControl>
           <FormControl fullWidth={true} margin="dense">
             <InputLabel id="snowflake-region-select-label">
               Snowflake Region
