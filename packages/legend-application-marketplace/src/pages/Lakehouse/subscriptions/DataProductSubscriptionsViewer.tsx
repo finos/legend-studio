@@ -148,6 +148,8 @@ const LakehouseSubscriptionsCreateDialog = observer(
         open={open}
         onClose={onClose}
         className="marketplace-lakehouse-subscriptions__subscription-creator"
+        fullWidth={true}
+        maxWidth="md"
         slotProps={{
           paper: {
             component: 'form',
@@ -330,7 +332,7 @@ export const DataProductSubscriptionViewer = observer(
 
     return (
       <>
-        <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="md">
+        <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="lg">
           <DialogTitle>Data Product Subscriptions</DialogTitle>
           <IconButton
             onClick={onClose}
