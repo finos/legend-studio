@@ -46,6 +46,7 @@
   &__content {
     @include flexVCenter;
 
+    flex-direction: column;
     gap: 1rem;
 
     .MuiSelect-select {
