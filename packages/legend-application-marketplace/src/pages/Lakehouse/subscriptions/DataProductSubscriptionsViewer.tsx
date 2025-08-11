@@ -49,6 +49,7 @@ import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarket
 import { useAuth } from 'react-oidc-context';
 import {
   CloseIcon,
+  CopyIcon,
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
 } from '@finos/legend-art';
@@ -74,6 +75,19 @@ const LakehouseSubscriptionsCreateDialogContractRenderer = observer(
     const { contract, marketplaceStore } = props;
     const consumer = contract.consumer;
     let consumerComponent = null;
+
+    const copyContractId = (id: string): void => {
+      marketplaceStore.applicationStore.clipboardService
+        .copyTextToClipboard(id)
+        .then(() =>
+          marketplaceStore.applicationStore.notificationService.notifySuccess(
+            'ID Copied to Clipboard',
+            undefined,
+            2500,
+          ),
+        )
+        .catch(marketplaceStore.applicationStore.alertUnhandledError);
+    };
 
     if (consumer instanceof V1_AdhocTeam) {
       consumerComponent = (
@@ -113,6 +127,9 @@ const LakehouseSubscriptionsCreateDialogContractRenderer = observer(
           </Box>
           <Box className="marketplace-lakehouse-subscriptions__subscription-creator__contract-details__id">
             ID: {contract.guid}
+            <IconButton onClick={() => copyContractId(contract.guid)}>
+              <CopyIcon />
+            </IconButton>
           </Box>
         </Box>
       </Box>

@@ -92,7 +92,10 @@
     }
 
     &__id {
+      @include flexVCenter;
+
       width: fit-content;
+      gap: 1rem;
     }
   }
 }
