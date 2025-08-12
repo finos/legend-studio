@@ -32,7 +32,7 @@ import {
 } from '@finos/legend-server-lakehouse';
 import type { V1_IngestDefinition } from '@finos/legend-graph';
 
-export class IngestDefinitionDataCubeSourceBuilderState extends LegendDataCubeSourceBuilderState {
+export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeSourceBuilderState {
   deploymentId: number | undefined;
   warehouse: string | undefined;
   ingestDefinition: PlainObject<V1_IngestDefinition> | undefined;
@@ -42,6 +42,7 @@ export class IngestDefinitionDataCubeSourceBuilderState extends LegendDataCubeSo
   paths: string[];
   ingestUrns: string[] = [];
   tables: string[] = [];
+  datasetGroup: string | undefined;
 
   readonly _platformServerClient: LakehousePlatformServerClient;
   readonly _ingestServerClient: LakehouseIngestServerClient;
@@ -63,6 +64,7 @@ export class IngestDefinitionDataCubeSourceBuilderState extends LegendDataCubeSo
       ingestUrns: observable,
       selectedIngestUrn: observable,
       tables: observable,
+      datasetGroup: observable,
       selectedTable: observable,
 
       setDeploymentId: action,
@@ -70,6 +72,7 @@ export class IngestDefinitionDataCubeSourceBuilderState extends LegendDataCubeSo
       setWarehouse: action,
       setIngestUrns: action,
       setTables: action,
+      setDatasetGroup: action,
       setSelectedTable: action,
     });
 
@@ -98,6 +101,10 @@ export class IngestDefinitionDataCubeSourceBuilderState extends LegendDataCubeSo
 
   setTables(tables: string[]) {
     this.tables = tables;
+  }
+
+  setDatasetGroup(datasetGroup: string | undefined) {
+    this.datasetGroup = datasetGroup;
   }
 
   setSelectedTable(selectedTable: string | undefined) {
@@ -151,6 +158,9 @@ export class IngestDefinitionDataCubeSourceBuilderState extends LegendDataCubeSo
         );
       this.ingestDefinition = Object.values(plainObjectDef)[0] as PlainObject;
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      this.setDatasetGroup((this.ingestDefinition as any).datasetGroup);
+
       this.setTables(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (this.ingestDefinition as any).datasets.map(
@@ -183,6 +193,7 @@ export class IngestDefinitionDataCubeSourceBuilderState extends LegendDataCubeSo
     this.setSelectedIngestUrn(undefined);
     this.setTables([]);
     this.setSelectedTable(undefined);
+    this.setDatasetGroup(undefined);
     this.setWarehouse(undefined);
   }
 
@@ -191,11 +202,12 @@ export class IngestDefinitionDataCubeSourceBuilderState extends LegendDataCubeSo
     this.setIngestUrns([]);
     this.setSelectedIngestUrn(undefined);
     this.setTables([]);
+    this.setDatasetGroup(undefined);
     this.setSelectedTable(undefined);
   }
 
   override get label(): LegendDataCubeSourceBuilderType {
-    return LegendDataCubeSourceBuilderType.INGEST_DEFINTION;
+    return LegendDataCubeSourceBuilderType.LAKEHOUSE_PRODUCER;
   }
 
   override get isValid(): boolean {

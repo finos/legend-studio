@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { observer } from 'mobx-react-lite';
-import type { IngestDefinitionDataCubeSourceBuilderState } from '../../../stores/builder/source/IngestDefinitionDataCubeSourceBuilderState.js';
+import type { LakehouseProducerDataCubeSourceBuilderState } from '../../../stores/builder/source/LakehouseProducerDataCubeSourceBuilderState.js';
 import { FormButton, FormTextInput } from '@finos/legend-data-cube';
 import { CustomSelectorInput } from '@finos/legend-art';
 import { useAuth } from 'react-oidc-context';
@@ -22,8 +22,8 @@ import { useLegendDataCubeBuilderStore } from '../LegendDataCubeBuilderStoreProv
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useEffect } from 'react';
 
-export const IngestDefinitionDataCubeSourceBuilder: React.FC<{
-  sourceBuilder: IngestDefinitionDataCubeSourceBuilderState;
+export const LakehouseProducerDataCubeSourceBuilder: React.FC<{
+  sourceBuilder: LakehouseProducerDataCubeSourceBuilderState;
 }> = observer(({ sourceBuilder: state }) => {
   const auth = useAuth();
   const store = useLegendDataCubeBuilderStore();
@@ -111,7 +111,7 @@ export const IngestDefinitionDataCubeSourceBuilder: React.FC<{
             <CustomSelectorInput
               className="query-setup__wizard__selector"
               options={state.tables.map((table) => ({
-                label: table,
+                label: `${state.datasetGroup}.${table}`,
                 value: table,
               }))}
               disabled={false}

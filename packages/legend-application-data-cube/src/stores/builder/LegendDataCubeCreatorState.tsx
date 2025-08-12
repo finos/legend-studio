@@ -44,7 +44,7 @@ import { generateBuilderRoute } from '../../__lib__/LegendDataCubeNavigation.js'
 import { LocalFileDataCubeSourceBuilderState } from './source/LocalFileDataCubeSourceBuilderState.js';
 import { UserDefinedFunctionDataCubeSourceBuilderState } from './source/UserDefinedFunctionDataCubeSourceBuilderState.js';
 import { LEGEND_DATACUBE_APP_EVENT } from '../../__lib__/LegendDataCubeEvent.js';
-import { IngestDefinitionDataCubeSourceBuilderState } from './source/IngestDefinitionDataCubeSourceBuilderState.js';
+import { LakehouseProducerDataCubeSourceBuilderState } from './source/LakehouseProducerDataCubeSourceBuilderState.js';
 
 const DEFAULT_SOURCE_TYPE = LegendDataCubeSourceBuilderType.LEGEND_QUERY;
 
@@ -125,8 +125,8 @@ export class LegendDataCubeCreatorState {
           this._alertService,
           this._store,
         );
-      case LegendDataCubeSourceBuilderType.INGEST_DEFINTION:
-        return new IngestDefinitionDataCubeSourceBuilderState(
+      case LegendDataCubeSourceBuilderType.LAKEHOUSE_PRODUCER:
+        return new LakehouseProducerDataCubeSourceBuilderState(
           this._application,
           this._engine,
           this._store.platformServerClient,

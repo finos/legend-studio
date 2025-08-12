@@ -23,7 +23,7 @@ import {
 } from '@finos/legend-shared';
 import { createModelSchema, list, primitive } from 'serializr';
 
-export const INGEST_DEFINITION_DATA_CUBE_SOURCE_TYPE = 'ingestDefinition';
+export const LAKEHOUSE_PRODUCER_DATA_CUBE_SOURCE_TYPE = 'lakehouseProducer';
 
 export class IngestDefinitionDataCubeSource extends DataCubeSource {
   model!: PlainObject<V1_PureModelContextData>;
@@ -38,7 +38,7 @@ export class RawIngestDefinitionDataCubeSource {
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(RawIngestDefinitionDataCubeSource, {
-      _type: usingConstantValueSchema(INGEST_DEFINITION_DATA_CUBE_SOURCE_TYPE),
+      _type: usingConstantValueSchema(LAKEHOUSE_PRODUCER_DATA_CUBE_SOURCE_TYPE),
       ingestDefinitionUrn: primitive(),
       warehouse: primitive(),
       ingestServerUrl: primitive(),

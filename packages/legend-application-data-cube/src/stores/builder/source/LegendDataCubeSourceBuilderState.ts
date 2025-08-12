@@ -27,7 +27,7 @@ export enum LegendDataCubeSourceBuilderType {
   FREEFORM_TDS_EXPRESSION = 'Freeform TDS Expression',
   LOCAL_FILE = 'Local File',
   USER_DEFINED_FUNCTION = 'User Defined Function',
-  INGEST_DEFINTION = 'Ingest Definition',
+  LAKEHOUSE_PRODUCER = 'Lakehouse Producer',
 }
 
 export abstract class LegendDataCubeSourceBuilderState {
