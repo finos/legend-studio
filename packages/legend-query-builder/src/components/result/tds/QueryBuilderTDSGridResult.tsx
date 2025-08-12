@@ -43,7 +43,7 @@ import {
   type TDSResultCellDataType,
   type TDSRowDataType,
   type TDSExecutionResult,
-  PRIMITIVE_TYPE
+  PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
 import { QueryBuilderTDSState } from '../../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { DEFAULT_LOCALE } from '../../../graph-manager/QueryBuilderConst.js';
