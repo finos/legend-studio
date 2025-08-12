@@ -31,6 +31,7 @@ import {
   MenuItem,
   Select,
   TextField,
+  Tooltip,
 } from '@mui/material';
 import {
   type V1_DataSubscription,
@@ -53,6 +54,7 @@ import {
   CopyIcon,
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
+  InfoCircleIcon,
 } from '@finos/legend-art';
 import type { DataProductGroupAccessState } from '../../../stores/lakehouse/DataProductDataAccessState.js';
 import {
@@ -98,22 +100,25 @@ const LakehouseSubscriptionsCreateDialogContractRenderer = observer(
         />
       );
     } else {
+      const typeDetails = getOrganizationalScopeTypeDetails(
+        consumer,
+        marketplaceStore.applicationStore.pluginManager.getApplicationPlugins(),
+      );
       consumerComponent = (
-        <>
-          {' '}
-          <Box>
-            {getOrganizationalScopeTypeName(
-              consumer,
-              marketplaceStore.applicationStore.pluginManager.getApplicationPlugins(),
-            )}
-          </Box>
-          <Box>
-            {getOrganizationalScopeTypeDetails(
-              consumer,
-              marketplaceStore.applicationStore.pluginManager.getApplicationPlugins(),
-            )}
-          </Box>
-        </>
+        <Box>
+          {getOrganizationalScopeTypeName(
+            consumer,
+            marketplaceStore.applicationStore.pluginManager.getApplicationPlugins(),
+          )}
+          {typeDetails !== undefined && (
+            <Tooltip
+              className="marketplace-lakehouse-subscriptions__creator__contract-details__users__tooltip__icon"
+              title={typeDetails}
+            >
+              <InfoCircleIcon />
+            </Tooltip>
+          )}
+        </Box>
       );
     }
 
