@@ -18,11 +18,6 @@ import { ContextMenu, WarningIcon, clsx } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import type { QueryBuilderState } from '../../../stores/QueryBuilderState.js';
 import {
-  getTDSRowRankByColumnInAsc,
-  PRIMITIVE_TYPE,
-  TDSExecutionResult,
-} from '@finos/legend-graph';
-import {
   DataGrid,
   type DataGridColumnDefinition,
   type DataGridCustomHeaderProps,
@@ -41,12 +36,15 @@ import {
   isString,
   isValidURL,
 } from '@finos/legend-shared';
-import type {
-  QueryBuilderTDSResultCellCoordinate,
-  QueryBuilderTDSResultCellData,
-  QueryBuilderTDSResultCellDataType,
-  QueryBuilderTDSRowDataType,
-} from '../../../stores/QueryBuilderResultState.js';
+import {
+  type TDSResultCellCoordinate,
+  type TDSResultCellData,
+  type TDSResultCellDataType,
+  type TDSRowDataType,
+  TDSExecutionResult,
+  getTDSRowRankByColumnInAsc,
+  PRIMITIVE_TYPE,
+} from '@finos/legend-graph';
 import { QUERY_BUILDER_TEST_ID } from '../../../__lib__/QueryBuilderTesting.js';
 
 export const MAXIMUM_FRACTION_DIGITS = 4;
@@ -119,12 +117,12 @@ const QueryResultCellRenderer = observer(
     const fetchStructureImplementation =
       resultState.queryBuilderState.fetchStructureState.implementation;
     const applicationStore = resultState.queryBuilderState.applicationStore;
-    const cellValue = params.value as QueryBuilderTDSResultCellDataType;
+    const cellValue = params.value as TDSResultCellDataType;
     const nodeRowIndex = guaranteeNonNullable(params.node.rowIndex);
     const darkMode =
       !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
 
-    const formattedCellValue = (): QueryBuilderTDSResultCellDataType => {
+    const formattedCellValue = (): TDSResultCellDataType => {
       if (isNumber(cellValue)) {
         return Intl.NumberFormat(DEFAULT_LOCALE, {
           maximumFractionDigits: MAXIMUM_FRACTION_DIGITS,
@@ -140,7 +138,7 @@ const QueryResultCellRenderer = observer(
     const findCoordinatesFromResultValue = (
       colId: string,
       rowNumber: number,
-    ): QueryBuilderTDSResultCellCoordinate => {
+    ): TDSResultCellCoordinate => {
       const colIndex = tdsExecutionResult.result.columns.findIndex(
         (col) => col === colId,
       );
@@ -159,7 +157,7 @@ const QueryResultCellRenderer = observer(
 
     const findColumnFromCoordinates = (
       colIndex: number,
-    ): QueryBuilderTDSResultCellDataType => {
+    ): TDSResultCellDataType => {
       if (
         !resultState.executionResult ||
         !(resultState.executionResult instanceof TDSExecutionResult)
@@ -171,7 +169,7 @@ const QueryResultCellRenderer = observer(
 
     const findResultValueFromCoordinates = (
       resultCoordinate: [number, number],
-    ): QueryBuilderTDSResultCellDataType => {
+    ): TDSResultCellDataType => {
       const rowIndex = resultCoordinate[0];
       const colIndex = resultCoordinate[1];
 
@@ -196,7 +194,7 @@ const QueryResultCellRenderer = observer(
     };
 
     const isCoordinatesSelected = (
-      resultCoordinate: QueryBuilderTDSResultCellCoordinate,
+      resultCoordinate: TDSResultCellCoordinate,
     ): boolean =>
       resultState.selectedCells.some(
         (cell) =>
@@ -306,7 +304,7 @@ const QueryResultCellRenderer = observer(
                 rowIndex: x,
                 colIndex: y,
               },
-            } as QueryBuilderTDSResultCellData;
+            } as TDSResultCellData;
 
             if (
               !resultState.selectedCells.find(
@@ -345,10 +343,10 @@ const QueryResultCellRenderer = observer(
           }
           // try to get the entire row value separated by comma
           // rowData is in format of {columnName: value, columnName1: value, ...., rowNumber:value}
-          const valueArr: QueryBuilderTDSResultCellDataType[] = [];
+          const valueArr: TDSResultCellDataType[] = [];
           Object.entries(
             params.api.getRenderedNodes().find((n) => n.rowIndex === rowIndex)
-              ?.data as QueryBuilderTDSRowDataType,
+              ?.data as TDSRowDataType,
           ).forEach((entry) => {
             if (entry[0] !== 'rowNumber') {
               valueArr.push(entry[1]);

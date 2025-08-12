@@ -49,6 +49,7 @@ import {
 import type { User } from 'oidc-client-ts';
 import type { LegendMarketplaceOidcConfig } from './LegendMarketplaceApplicationConfig.js';
 import { LakehouseDataProduct } from '../pages/Lakehouse/dataProduct/LakehouseDataProduct.js';
+import { TerminalProduct } from '../pages/Lakehouse/dataProduct/TerminalProduct.js';
 import { LegendMarketplaceVendorData } from '../pages/VendorData/LegendMarketplaceVendorData.js';
 import { LakehouseEntitlements } from '../pages/Lakehouse/entitlements/LakehouseEntitlements.js';
 import { LakehouseAdmin } from '../pages/Lakehouse/admin/LakehouseAdmin.js';
@@ -164,6 +165,17 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
     },
   );
 
+  const ProtectedTerminalProduct = withAuthenticationRequired(TerminalProduct, {
+    OnRedirecting: () => (
+      <CubesLoadingIndicator isLoading={true}>
+        <CubesLoadingIndicatorIcon />
+      </CubesLoadingIndicator>
+    ),
+    signinRedirectArgs: {
+      state: `${window.location.pathname}${window.location.search}`,
+    },
+  });
+
   const ProtectedLakehouseEntitlements = withAuthenticationRequired(
     LakehouseEntitlements,
     {
@@ -257,6 +269,10 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_PRODUCT}
               element={<ProtectedLakehouseDataProduct />}
+            />
+            <Route
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.TERMINAL_PRODUCT}
+              element={<ProtectedTerminalProduct />}
             />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SDLC_PRODUCT}

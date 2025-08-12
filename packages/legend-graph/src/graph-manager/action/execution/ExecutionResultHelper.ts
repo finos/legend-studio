@@ -23,6 +23,27 @@ import {
 } from './ExecutionResult.js';
 import { INTERNAL__UnknownExecutionResult } from './INTERNAL__UnknownExecutionResult.js';
 
+export interface TDSRowDataType {
+  [key: string]: TDSResultCellDataType;
+}
+
+export type TDSResultCellDataType =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined;
+
+export interface TDSResultCellData {
+  value: TDSResultCellDataType;
+  columnName: string;
+  coordinates: TDSResultCellCoordinate;
+}
+export interface TDSResultCellCoordinate {
+  rowIndex: number;
+  colIndex: number;
+}
+
 // Execution Results often wrap the result values with additional metadata.
 // This method extracts the actual values from the execution result
 export const extractExecutionResultValues = (
@@ -42,4 +63,19 @@ export const extractExecutionResultValues = (
     `Can't extract values from execution result`,
     executionResult,
   );
+};
+
+export const getRowDataFromExecutionResult = (
+  executionResult: TDSExecutionResult,
+): TDSRowDataType[] => {
+  const rowData = executionResult.result.rows.map((_row, rowIdx) => {
+    const row: TDSRowDataType = {};
+    const cols = executionResult.result.columns;
+    _row.values.forEach((value, colIdx) => {
+      row[cols[colIdx] as string] = value;
+    });
+    row.rowNumber = rowIdx;
+    return row;
+  });
+  return rowData;
 };

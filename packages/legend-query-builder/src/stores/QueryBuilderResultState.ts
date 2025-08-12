@@ -32,6 +32,7 @@ import {
   type RawLambda,
   type EXECUTION_SERIALIZATION_FORMAT,
   type QueryGridConfig,
+  type TDSResultCellData,
   type ExecutionResultWithMetadata,
   GRAPH_MANAGER_EVENT,
   buildRawLambdaFromLambdaFunction,
@@ -57,26 +58,9 @@ import { QueryBuilderTDSState } from './fetch-structure/tds/QueryBuilderTDSState
 
 export const DEFAULT_LIMIT = 1000;
 
-export type QueryBuilderTDSResultCellDataType =
-  | string
-  | number
-  | boolean
-  | null
-  | undefined;
-
-export interface QueryBuilderTDSRowDataType {
-  [key: string]: QueryBuilderTDSResultCellDataType;
-}
-
 export interface ExportDataInfo {
   contentType: ContentType;
   serializationFormat?: EXECUTION_SERIALIZATION_FORMAT | undefined;
-}
-
-export interface QueryBuilderTDSResultCellData {
-  value: QueryBuilderTDSResultCellDataType;
-  columnName: string;
-  coordinates: QueryBuilderTDSResultCellCoordinate;
 }
 
 export interface QueryBuilderTDSResultCellCoordinate {
@@ -138,8 +122,8 @@ export class QueryBuilderResultState {
   isQueryUsageViewerOpened = false;
   executionError: Error | string | undefined;
 
-  selectedCells: QueryBuilderTDSResultCellData[];
-  mousedOverCell: QueryBuilderTDSResultCellData | null = null;
+  selectedCells: TDSResultCellData[];
+  mousedOverCell: TDSResultCellData | null = null;
   isSelectingCells: boolean;
 
   gridConfig: QueryBuilderDataGridConfig | undefined;
@@ -230,15 +214,15 @@ export class QueryBuilderResultState {
     this.previewLimit = Math.max(1, val);
   }
 
-  addSelectedCell(val: QueryBuilderTDSResultCellData): void {
+  addSelectedCell(val: TDSResultCellData): void {
     this.selectedCells.push(val);
   }
 
-  setSelectedCells(val: QueryBuilderTDSResultCellData[]): void {
+  setSelectedCells(val: TDSResultCellData[]): void {
     this.selectedCells = val;
   }
 
-  setMouseOverCell(val: QueryBuilderTDSResultCellData | null): void {
+  setMouseOverCell(val: TDSResultCellData | null): void {
     this.mousedOverCell = val;
   }
 

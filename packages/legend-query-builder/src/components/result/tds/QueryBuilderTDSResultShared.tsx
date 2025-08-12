@@ -25,6 +25,8 @@ import {
   type AbstractPropertyExpression,
   type Enumeration,
   type ExecutionResult,
+  type TDSResultCellData,
+  type TDSRowDataType,
   type TDSExecutionResult,
   EnumValueExplicitReference,
   EnumValueInstanceValue,
@@ -72,11 +74,7 @@ import {
   instanceValue_setValues,
 } from '../../../stores/shared/ValueSpecificationModifierHelper.js';
 import { type DataGridCellRendererParams } from '@finos/legend-lego/data-grid';
-import type {
-  QueryBuilderResultState,
-  QueryBuilderTDSResultCellData,
-  QueryBuilderTDSRowDataType,
-} from '../../../stores/QueryBuilderResultState.js';
+import type { QueryBuilderResultState } from '../../../stores/QueryBuilderResultState.js';
 import {
   QueryBuilderPostFilterOperator_IsEmpty,
   QueryBuilderPostFilterOperator_IsNotEmpty,
@@ -147,9 +145,9 @@ export const getExecutedSqlFromExecutionResult = (
 
 export const getRowDataFromExecutionResult = (
   executionResult: TDSExecutionResult,
-): QueryBuilderTDSRowDataType[] => {
+): TDSRowDataType[] => {
   const rowData = executionResult.result.rows.map((_row, rowIdx) => {
-    const row: QueryBuilderTDSRowDataType = {};
+    const row: TDSRowDataType = {};
     const cols = executionResult.result.columns;
     _row.values.forEach((value, colIdx) => {
       row[cols[colIdx] as string] = value;
@@ -221,7 +219,7 @@ const getExistingPostFilterNode = (
 
 const updateFilterConditionValue = (
   conditionValue: InstanceValue,
-  _cellData: QueryBuilderTDSResultCellData,
+  _cellData: TDSResultCellData,
   queryBuilderState: QueryBuilderState,
 ): void => {
   if (_cellData.value) {
@@ -248,7 +246,7 @@ const generateNewFilterConditionNodeData = (
     LegendApplicationPluginManager<LegendApplicationPlugin>
   >,
   operator: QueryBuilderFilterOperator,
-  _cellData: QueryBuilderTDSResultCellData,
+  _cellData: TDSResultCellData,
   filterState: QueryBuilderFilterState,
   propertyExpression: AbstractPropertyExpression | undefined,
 ): void => {
@@ -295,7 +293,7 @@ const generateNewPostFilterConditionNodeData = async (
     LegendApplicationPluginManager<LegendApplicationPlugin>
   >,
   operator: QueryBuilderPostFilterOperator,
-  _cellData: QueryBuilderTDSResultCellData,
+  _cellData: TDSResultCellData,
   tdsState: QueryBuilderTDSState,
   tdsColState: QueryBuilderTDSColumnState | undefined,
 ): Promise<void> => {
@@ -351,9 +349,9 @@ const generateNewPostFilterConditionNodeData = async (
 const updateExistingFilterConditionNodeData = (
   existingPreFilterNode: QueryBuilderFilterTreeNodeData,
   isFilterBy: boolean,
-  _cellData: QueryBuilderTDSResultCellData,
+  _cellData: TDSResultCellData,
   operator: QueryBuilderFilterOperator,
-  data: QueryBuilderTDSResultCellData | null,
+  data: TDSResultCellData | null,
   queryBuilderState: QueryBuilderState,
 ): void => {
   if (operator === filterEmptyOperator || operator === filterNotEmptyOperator) {
@@ -436,9 +434,9 @@ const updateExistingFilterConditionNodeData = (
 const updateExistingPostFilterConditionNodeData = (
   existingPostFilterNode: QueryBuilderPostFilterTreeNodeData,
   isFilterBy: boolean,
-  _cellData: QueryBuilderTDSResultCellData,
+  _cellData: TDSResultCellData,
   operator: QueryBuilderPostFilterOperator,
-  data: QueryBuilderTDSResultCellData | null,
+  data: TDSResultCellData | null,
   tdsState: QueryBuilderTDSState,
 ): void => {
   if (
@@ -523,7 +521,7 @@ const updateExistingPostFilterConditionNodeData = (
 
 const getFilterOperator = (
   isFilterBy: boolean,
-  _cellData: QueryBuilderTDSResultCellData,
+  _cellData: TDSResultCellData,
 ): QueryBuilderFilterOperator => {
   if (isFilterBy) {
     if (_cellData.value === null) {
@@ -542,7 +540,7 @@ const getFilterOperator = (
 
 const getPostFilterOperator = (
   isFilterBy: boolean,
-  _cellData: QueryBuilderTDSResultCellData,
+  _cellData: TDSResultCellData,
 ): QueryBuilderPostFilterOperator => {
   if (isFilterBy) {
     if (_cellData.value === null) {
@@ -565,8 +563,8 @@ const preFilterByOrOutValue = (
     LegendApplicationPluginManager<LegendApplicationPlugin>
   >,
   isFilterBy: boolean,
-  _cellData: QueryBuilderTDSResultCellData,
-  data: QueryBuilderTDSResultCellData | null,
+  _cellData: TDSResultCellData,
+  data: TDSResultCellData | null,
   propertyExpressionState: QueryBuilderPropertyExpressionState,
   queryBuilderState: QueryBuilderState,
 ): void => {
@@ -612,8 +610,8 @@ const postFilterByOrOutValue = async (
     LegendApplicationPluginManager<LegendApplicationPlugin>
   >,
   isFilterBy: boolean,
-  _cellData: QueryBuilderTDSResultCellData,
-  data: QueryBuilderTDSResultCellData | null,
+  _cellData: TDSResultCellData,
+  data: TDSResultCellData | null,
   tdsColState: QueryBuilderTDSColumnState,
   tdsState: QueryBuilderTDSState,
 ): Promise<void> => {
@@ -660,8 +658,8 @@ const filterByOrOutValue = async (
     LegendApplicationPluginManager<LegendApplicationPlugin>
   >,
   isFilterBy: boolean,
-  _cellData: QueryBuilderTDSResultCellData,
-  data: QueryBuilderTDSResultCellData | null,
+  _cellData: TDSResultCellData,
+  data: TDSResultCellData | null,
   tdsState: QueryBuilderTDSState,
 ): Promise<void> => {
   const tdsColState = data?.columnName
@@ -706,7 +704,7 @@ export const filterByOrOutValues = async (
     LegendApplicationConfig,
     LegendApplicationPluginManager<LegendApplicationPlugin>
   >,
-  data: QueryBuilderTDSResultCellData | null,
+  data: TDSResultCellData | null,
   isFilterBy: boolean,
   tdsState: QueryBuilderTDSState,
 ): Promise<void> => {
@@ -726,7 +724,7 @@ export const QueryBuilderGridResultContextMenu = observer(
   forwardRef<
     HTMLDivElement,
     {
-      data: QueryBuilderTDSResultCellData | null;
+      data: TDSResultCellData | null;
       tdsState: QueryBuilderTDSState;
       copyCellValueFunc: () => void;
       copyCellRowValueFunc: () => void;

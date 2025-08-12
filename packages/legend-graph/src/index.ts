@@ -51,6 +51,12 @@ export {
   Measure,
   Unit,
 } from './graph/metamodel/pure/packageableElements/domain/Measure.js';
+export type {
+  TDSRowDataType,
+  TDSResultCellDataType,
+  TDSResultCellData,
+  TDSResultCellCoordinate,
+} from './graph-manager/action/execution/ExecutionResultHelper.js';
 export {
   EnumValueReference,
   EnumValueExplicitReference,
@@ -982,6 +988,8 @@ export { V1_DatabaseToModelGenerationInput } from './graph-manager/protocol/pure
 export { V1_RelationalConnectionBuilder } from './graph-manager/protocol/pure/v1/engine/relational/V1_RelationalConnectionBuilder.js';
 export * from './graph-manager/protocol/pure/extensions/DSL_FunctionActivator_PureProtocolProcessorPlugin_Extension.js';
 export * from './graph-manager/protocol/pure/extensions/DSL_Lakehouse_PureProtocolProcessorPlugin_Extension.js';
+export { V1_Terminal } from './graph-manager/protocol/pure/v1/model/packageableElements/dataProduct/V1_Terminal.js';
+export { V1_TerminalModelSchema } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_TerminalSerializationHelper.js';
 
 // ------------------------------------- TO BE MODULARIZED --------------------------------------------
 /**

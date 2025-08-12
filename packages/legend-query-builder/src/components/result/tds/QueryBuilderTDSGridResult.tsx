@@ -16,7 +16,6 @@
 
 import { observer } from 'mobx-react-lite';
 import type { QueryBuilderState } from '../../../stores/QueryBuilderState.js';
-import { PRIMITIVE_TYPE, type TDSExecutionResult } from '@finos/legend-graph';
 import { useState, useCallback, useEffect } from 'react';
 import {
   DataGrid,
@@ -38,10 +37,14 @@ import {
 import {
   type QueryBuilderResultState,
   QueryBuilderResultWavgAggregationState,
-  type QueryBuilderTDSResultCellData,
-  type QueryBuilderTDSResultCellDataType,
-  type QueryBuilderTDSRowDataType,
 } from '../../../stores/QueryBuilderResultState.js';
+import {
+  type TDSResultCellData,
+  type TDSResultCellDataType,
+  type TDSRowDataType,
+  type TDSExecutionResult,
+  PRIMITIVE_TYPE,
+} from '@finos/legend-graph';
 import { QueryBuilderTDSState } from '../../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { DEFAULT_LOCALE } from '../../../graph-manager/QueryBuilderConst.js';
 import {
@@ -112,8 +115,8 @@ const getAggregationTDSColumnCustomizations = (
 const QueryResultCellRenderer = observer(
   (params: IQueryRendererParamsWithGridType) => {
     const resultState = params.resultState;
-    const cellValue = params.value as QueryBuilderTDSResultCellDataType;
-    const formattedCellValue = (): QueryBuilderTDSResultCellDataType => {
+    const cellValue = params.value as TDSResultCellDataType;
+    const formattedCellValue = (): TDSResultCellDataType => {
       if (isNumber(cellValue)) {
         return Intl.NumberFormat(DEFAULT_LOCALE, {
           maximumFractionDigits: MAXIMUM_FRACTION_DIGITS,
@@ -160,10 +163,7 @@ const QueryResultCellRenderer = observer(
 const getLocalColDefs = (
   executionResult: TDSExecutionResult,
   resultState: QueryBuilderResultState,
-): DataGridColumnDefinition<
-  QueryBuilderTDSRowDataType,
-  QueryBuilderTDSResultCellDataType
->[] =>
+): DataGridColumnDefinition<TDSRowDataType, TDSResultCellDataType>[] =>
   executionResult.result.columns.map((colName) => {
     const col = {
       minWidth: 50,
@@ -231,10 +231,7 @@ export const getFilterTDSColumnCustomizations = (
 const getColDefs = (
   executionResult: TDSExecutionResult,
   resultState: QueryBuilderResultState,
-): DataGridColumnDefinition<
-  QueryBuilderTDSRowDataType,
-  QueryBuilderTDSResultCellDataType
->[] =>
+): DataGridColumnDefinition<TDSRowDataType, TDSResultCellDataType>[] =>
   executionResult.result.columns.map(
     (colName) =>
       ({
@@ -289,10 +286,10 @@ export const QueryBuilderTDSGridResult = observer(
     };
 
     const getSelectedCells = (
-      api: DataGridApi<QueryBuilderTDSRowDataType>,
-    ): QueryBuilderTDSResultCellData[] => {
+      api: DataGridApi<TDSRowDataType>,
+    ): TDSResultCellData[] => {
       const selectedRanges: DataGridCellRange[] | null = api.getCellRanges();
-      const nodes = [] as DataGridIRowNode<QueryBuilderTDSRowDataType>[];
+      const nodes = [] as DataGridIRowNode<TDSRowDataType>[];
       api.forEachNode((node) => nodes.push(node));
       const columns = api.getColumnDefs() as DataGridColumnDefinition[];
       const selectedCells = [];
@@ -322,7 +319,7 @@ export const QueryBuilderTDSGridResult = observer(
                       (colDef) => colDef.colId === col,
                     ),
                   },
-                } as QueryBuilderTDSResultCellData;
+                } as TDSResultCellData;
                 selectedCells.push(valueAndColumnId);
               }
             }
@@ -333,9 +330,7 @@ export const QueryBuilderTDSGridResult = observer(
     };
 
     const getContextMenuItems = useCallback(
-      (
-        params: DataGridGetContextMenuItemsParams<QueryBuilderTDSRowDataType>,
-      ) => {
+      (params: DataGridGetContextMenuItemsParams<TDSRowDataType>) => {
         let result: (DataGridDefaultMenuItem | DataGridMenuItemDef)[] = [];
         const fetchStructureImplementation =
           resultState.queryBuilderState.fetchStructureState.implementation;
@@ -558,7 +553,7 @@ export const QueryBuilderTDSGridResult = observer(
                 params.api.refreshCells({ force: true });
               }}
               onCellSelectionChanged={(
-                event: DataGridCellSelectionChangedEvent<QueryBuilderTDSRowDataType>,
+                event: DataGridCellSelectionChangedEvent<TDSRowDataType>,
               ) => {
                 const selectedCells = getSelectedCells(event.api);
                 resultState.setSelectedCells([]);
