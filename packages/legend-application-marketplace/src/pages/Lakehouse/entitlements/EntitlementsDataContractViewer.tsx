@@ -104,7 +104,7 @@ const AssigneesList = (props: {
         Assignees ({userIds.length}):
       </AccordionSummary>
       <AccordionDetails className="marketplace-lakehouse-entitlements__data-contract-viewer__user-list">
-        {userIds.map((userId) => (
+        {[...userIds].sort().map((userId) => (
           <UserRenderer
             key={userId}
             userId={userId}
