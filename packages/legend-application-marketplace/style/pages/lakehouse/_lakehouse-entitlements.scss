@@ -176,6 +176,11 @@
     margin: 2rem 0;
   }
 
+  &__enterprise-apg-notice {
+    color: var(--color-light-grey-300);
+    font-style: italic;
+  }
+
   &__user-input,
   &__business-justification-input {
     max-width: 70rem;

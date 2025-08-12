@@ -16,6 +16,7 @@
 
 import {
   customListWithSchema,
+  optionalCustomListWithSchema,
   UnsupportedOperationError,
   usingConstantValueSchema,
   usingModelSchema,
@@ -42,6 +43,7 @@ import {
   V1_ContractUserStatusResponse,
   V1_LiteDataContractsResponse,
   V1_LiteDataContract,
+  V1_DataContractApprovedUsersResponse,
 } from '../../../lakehouse/entitlements/V1_ConsumerEntitlements.js';
 import {
   createModelSchema,
@@ -520,3 +522,8 @@ export const V1_entitlementsDataProductDetailsResponseToDataProductDetails = (
   );
   return response.dataProducts;
 };
+
+export const V1_DataContractApprovedUsersResponseModelSchema =
+  createModelSchema(V1_DataContractApprovedUsersResponse, {
+    approvedUsers: optionalCustomListWithSchema(V1_UserModelSchema),
+  });

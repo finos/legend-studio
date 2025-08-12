@@ -105,7 +105,7 @@ export enum V1_EnrichedUserApprovalStatus {
 }
 
 export class V1_DataContractApprovedUsersResponse {
-  approvedUsers!: V1_User[];
+  approvedUsers?: V1_User[];
 }
 
 export class V1_ContractUserMembership {

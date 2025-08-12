@@ -36,7 +36,10 @@ import {
 } from '@finos/legend-art';
 import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
 import { guaranteeNonNullable, isNonNullable } from '@finos/legend-shared';
-import { type DataProductGroupAccessState } from '../../../stores/lakehouse/DataProductDataAccessState.js';
+import {
+  AccessPointGroupAccess,
+  type DataProductGroupAccessState,
+} from '../../../stores/lakehouse/DataProductDataAccessState.js';
 import type { ContractConsumerTypeRendererConfig } from '../../../application/LegendMarketplaceApplicationPlugin.js';
 
 export const EntitlementsDataContractCreator = observer(
@@ -60,8 +63,13 @@ export const EntitlementsDataContractCreator = observer(
             .getApplicationPlugins()
             .map((plugin) => plugin.getContractConsumerTypeRendererConfigs?.())
             .flat()
-            .filter(isNonNullable),
-        [legendMarketplaceStore.pluginManager],
+            .filter(isNonNullable)
+            .filter(
+              (rendererConfig: ContractConsumerTypeRendererConfig) =>
+                accessGroupState.access !== AccessPointGroupAccess.ENTERPRISE ||
+                rendererConfig.enableForEnterpriseAPGs,
+            ),
+        [legendMarketplaceStore.pluginManager, accessGroupState.access],
       );
     const [selectedConsumerType, setSelectedConsumerType] = useState<string>(
       consumerTypeRendererConfigs[0]?.type ?? '',

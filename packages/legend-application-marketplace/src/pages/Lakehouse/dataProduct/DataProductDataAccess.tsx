@@ -415,84 +415,70 @@ export const DataProductAccessPointGroupViewer = observer(
     };
 
     const renderAccess = (val: AccessPointGroupAccess): React.ReactNode => {
+      let buttonLabel: string | undefined = undefined;
+      let onClick: (() => void) | undefined = undefined;
+      let buttonColor: 'info' | 'primary' | 'warning' | 'success' | undefined =
+        undefined;
+      switch (val) {
+        case AccessPointGroupAccess.UNKNOWN:
+          buttonLabel = 'UNKNOWN';
+          buttonColor = 'info';
+          break;
+        case AccessPointGroupAccess.NO_ACCESS:
+        case AccessPointGroupAccess.DENIED:
+          buttonLabel = 'REQUEST ACCESS';
+          onClick = handleContractsClick;
+          buttonColor = 'primary';
+          break;
+        case AccessPointGroupAccess.PENDING_MANAGER_APPROVAL:
+          buttonLabel = 'PENDING MANAGER APPROVAL';
+          onClick = handleContractsClick;
+          buttonColor = 'warning';
+          break;
+        case AccessPointGroupAccess.PENDING_DATA_OWNER_APPROVAL:
+          buttonLabel = 'PENDING DATA OWNER APPROVAL';
+          onClick = handleContractsClick;
+          buttonColor = 'warning';
+          break;
+        case AccessPointGroupAccess.APPROVED:
+          buttonLabel = 'ENTITLED';
+          onClick = handleContractsClick;
+          buttonColor = 'success';
+          break;
+        case AccessPointGroupAccess.ENTERPRISE:
+          buttonLabel = 'ENTERPRISE ACCESS';
+          buttonColor = 'success';
+          break;
+        default:
+          buttonLabel = undefined;
+      }
+
+      if (buttonLabel === undefined) {
+        return null;
+      }
+
       const tooltipText =
         accessGroupState.accessState.viewerState.applicationStore.pluginManager
           .getApplicationPlugins()
           .flatMap((plugin) => plugin.getExtraAccessPointGroupAccessInfo?.(val))
           .filter(isNonEmptyString)[0];
 
-      switch (val) {
-        case AccessPointGroupAccess.UNKNOWN:
-          return (
-            <>
-              <ButtonGroup
-                variant="contained"
-                color="info"
-                ref={requestAccessButtonGroupRef}
-              >
-                <Button
-                  loading={
-                    accessGroupState.fetchingAccessState.isInProgress ||
-                    accessGroupState.fetchingUserAccessStatus.isInProgress
-                  }
-                >
-                  UNKNOWN
-                  {tooltipText !== undefined && (
-                    <Tooltip
-                      className="data-space__viewer__access-group__item__access__tooltip__icon"
-                      title={tooltipText}
-                      arrow={true}
-                      slotProps={{
-                        tooltip: {
-                          className:
-                            'data-space__viewer__access-group__item__access__tooltip',
-                        },
-                      }}
-                    >
-                      <InfoCircleOutlineIcon />
-                    </Tooltip>
-                  )}
-                </Button>
-                <Button
-                  size="small"
-                  onClick={() =>
-                    setIsEntitledButtonGroupMenuOpen((prev) => !prev)
-                  }
-                >
-                  <CaretDownIcon />
-                </Button>
-              </ButtonGroup>
-              <Menu
-                anchorEl={requestAccessButtonGroupRef.current}
-                open={isEntitledButtonGroupMenuOpen}
-                onClose={() => setIsEntitledButtonGroupMenuOpen(false)}
-              >
-                <MenuItem
-                  onClick={() => {
-                    accessGroupState.accessState.viewerState.setDataContractAccessPointGroup(
-                      accessGroupState.group,
-                    );
-                    setIsEntitledButtonGroupMenuOpen(false);
-                  }}
-                >
-                  Request Access for Others
-                </MenuItem>
-              </Menu>
-            </>
-          );
-        case AccessPointGroupAccess.NO_ACCESS:
-        case AccessPointGroupAccess.DENIED:
-          return (
+      return (
+        <>
+          <ButtonGroup
+            variant="contained"
+            color={buttonColor ?? 'primary'}
+            ref={requestAccessButtonGroupRef}
+          >
             <Button
-              variant="contained"
-              color="primary"
-              onClick={handleContractsClick}
+              onClick={onClick}
               loading={
                 accessGroupState.fetchingAccessState.isInProgress ||
                 accessGroupState.fetchingUserAccessStatus.isInProgress
               }
+              sx={{ cursor: onClick === undefined ? 'default' : 'pointer' }}
             >
-              REQUEST ACCESS
+              {buttonLabel}
               {tooltipText !== undefined && (
                 <Tooltip
                   className="data-space__viewer__access-group__item__access__tooltip__icon"
@@ -509,160 +495,42 @@ export const DataProductAccessPointGroupViewer = observer(
                 </Tooltip>
               )}
             </Button>
-          );
-        case AccessPointGroupAccess.PENDING_MANAGER_APPROVAL:
-        case AccessPointGroupAccess.PENDING_DATA_OWNER_APPROVAL:
-          return (
-            <>
-              <ButtonGroup
-                variant="contained"
-                color="warning"
-                ref={requestAccessButtonGroupRef}
-              >
-                <Button
-                  onClick={handleContractsClick}
-                  loading={
-                    accessGroupState.fetchingAccessState.isInProgress ||
-                    accessGroupState.fetchingUserAccessStatus.isInProgress
-                  }
-                >
-                  {val === AccessPointGroupAccess.PENDING_MANAGER_APPROVAL
-                    ? 'PENDING MANAGER APPROVAL'
-                    : 'PENDING DATA OWNER APPROVAL'}
-                  {tooltipText !== undefined && (
-                    <Tooltip
-                      className="data-space__viewer__access-group__item__access__tooltip__icon"
-                      title={tooltipText}
-                      arrow={true}
-                      slotProps={{
-                        tooltip: {
-                          className:
-                            'data-space__viewer__access-group__item__access__tooltip',
-                        },
-                      }}
-                    >
-                      <InfoCircleOutlineIcon />
-                    </Tooltip>
-                  )}
-                </Button>
-                <Button
-                  size="small"
-                  onClick={() =>
-                    setIsEntitledButtonGroupMenuOpen((prev) => !prev)
-                  }
-                >
-                  <CaretDownIcon />
-                </Button>
-              </ButtonGroup>
-              <Menu
-                anchorEl={requestAccessButtonGroupRef.current}
-                open={isEntitledButtonGroupMenuOpen}
-                onClose={() => setIsEntitledButtonGroupMenuOpen(false)}
-              >
-                <MenuItem
-                  onClick={() => {
-                    accessGroupState.accessState.viewerState.setDataContractAccessPointGroup(
-                      accessGroupState.group,
-                    );
-                    setIsEntitledButtonGroupMenuOpen(false);
-                  }}
-                >
-                  Request Access for Others
-                </MenuItem>
-              </Menu>
-            </>
-          );
-        case AccessPointGroupAccess.APPROVED:
-          return (
-            <>
-              <ButtonGroup
-                variant="contained"
-                color="success"
-                ref={requestAccessButtonGroupRef}
-              >
-                <Button
-                  onClick={handleContractsClick}
-                  loading={
-                    accessGroupState.fetchingAccessState.isInProgress ||
-                    accessGroupState.fetchingUserAccessStatus.isInProgress
-                  }
-                >
-                  ENTITLED
-                  {tooltipText !== undefined && (
-                    <Tooltip
-                      className="data-space__viewer__access-group__item__access__tooltip__icon"
-                      title={tooltipText}
-                      arrow={true}
-                      slotProps={{
-                        tooltip: {
-                          className:
-                            'data-space__viewer__access-group__item__access__tooltip',
-                        },
-                      }}
-                    >
-                      <InfoCircleOutlineIcon />
-                    </Tooltip>
-                  )}
-                </Button>
-                <Button
-                  size="small"
-                  onClick={() =>
-                    setIsEntitledButtonGroupMenuOpen((prev) => !prev)
-                  }
-                >
-                  <CaretDownIcon />
-                </Button>
-              </ButtonGroup>
-              <Menu
-                anchorEl={requestAccessButtonGroupRef.current}
-                open={isEntitledButtonGroupMenuOpen}
-                onClose={() => setIsEntitledButtonGroupMenuOpen(false)}
-              >
-                <MenuItem
-                  onClick={() => {
-                    accessGroupState.accessState.viewerState.setDataContractAccessPointGroup(
-                      accessGroupState.group,
-                    );
-                    setIsEntitledButtonGroupMenuOpen(false);
-                  }}
-                >
-                  Request Access for Others
-                </MenuItem>
-              </Menu>
-            </>
-          );
-        case AccessPointGroupAccess.ENTERPRISE:
-          return (
             <Button
-              variant="contained"
-              color="success"
-              loading={
-                accessGroupState.fetchingAccessState.isInProgress ||
-                accessGroupState.fetchingUserAccessStatus.isInProgress
-              }
-              sx={{ cursor: 'default' }}
+              size="small"
+              onClick={() => setIsEntitledButtonGroupMenuOpen((prev) => !prev)}
             >
-              ENTERPRISE ACCESS
-              {tooltipText !== undefined && (
-                <Tooltip
-                  className="data-space__viewer__access-group__item__access__tooltip__icon"
-                  title={tooltipText}
-                  arrow={true}
-                  slotProps={{
-                    tooltip: {
-                      className:
-                        'data-space__viewer__access-group__item__access__tooltip',
-                    },
+              <CaretDownIcon />
+            </Button>
+          </ButtonGroup>
+          <Menu
+            anchorEl={requestAccessButtonGroupRef.current}
+            open={isEntitledButtonGroupMenuOpen}
+            onClose={() => setIsEntitledButtonGroupMenuOpen(false)}
+          >
+            {val !== AccessPointGroupAccess.NO_ACCESS &&
+              val !== AccessPointGroupAccess.DENIED && (
+                <MenuItem
+                  onClick={() => {
+                    accessGroupState.accessState.viewerState.setDataContractAccessPointGroup(
+                      accessGroupState.group,
+                    );
+                    setIsEntitledButtonGroupMenuOpen(false);
                   }}
                 >
-                  <InfoCircleOutlineIcon />
-                </Tooltip>
+                  Request Access for Others
+                </MenuItem>
               )}
-            </Button>
-          );
-        default:
-          return null;
-      }
+            <MenuItem
+              onClick={() => {
+                handleSubscriptionsClick();
+                setIsEntitledButtonGroupMenuOpen(false);
+              }}
+            >
+              Manage Subscriptions
+            </MenuItem>
+          </Menu>
+        </>
+      );
     };
 
     return (
@@ -683,21 +551,7 @@ export const DataProductAccessPointGroupViewer = observer(
             </button>
           </div>
           <Box className="data-space__viewer__access-group__item__header__actions">
-            <Box className="data-space__viewer__access-group__item__header__data-contract">
-              {renderAccess(accessGroupState.access)}
-            </Box>
-            {accessGroupState.access === AccessPointGroupAccess.APPROVED && (
-              <Box className="data-space__viewer__access-group__item__header__subscription">
-                <Button
-                  variant="outlined"
-                  color="info"
-                  loading={accessGroupState.fetchingAccessState.isInProgress}
-                  onClick={handleSubscriptionsClick}
-                >
-                  SUBSCRIPTIONS
-                </Button>
-              </Box>
-            )}
+            {renderAccess(accessGroupState.access)}
           </Box>
         </div>
         <div className="data-space__viewer__access-group__item__description">
@@ -803,11 +657,13 @@ export const DataProductAccessPointGroupViewer = observer(
             }
           />
         )}
-        <DataProductSubscriptionViewer
-          open={showSubscriptionsModal}
-          accessGroupState={accessGroupState}
-          onClose={() => setShowSubscriptionsModal(false)}
-        />
+        {accessGroupState.associatedContract !== false && (
+          <DataProductSubscriptionViewer
+            open={showSubscriptionsModal}
+            accessGroupState={accessGroupState}
+            onClose={() => setShowSubscriptionsModal(false)}
+          />
+        )}
       </div>
     );
   },

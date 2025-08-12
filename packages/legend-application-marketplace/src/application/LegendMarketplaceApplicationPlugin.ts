@@ -41,6 +41,7 @@ export type ContractConsumerTypeRendererConfig = {
   organizationalScopeTypeDetailsRenderer?: (
     consumer: V1_OrganizationalScope,
   ) => React.ReactNode | undefined;
+  enableForEnterpriseAPGs?: boolean;
 };
 
 export abstract class LegendMarketplaceApplicationPlugin extends LegendApplicationPlugin {

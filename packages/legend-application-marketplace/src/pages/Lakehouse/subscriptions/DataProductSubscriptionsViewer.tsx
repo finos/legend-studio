@@ -17,6 +17,8 @@
 import { observer } from 'mobx-react-lite';
 import {
   type SelectChangeEvent,
+  type TextFieldProps,
+  Autocomplete,
   Box,
   Button,
   Dialog,
@@ -26,29 +28,33 @@ import {
   FormControl,
   IconButton,
   InputLabel,
-  ListSubheader,
   MenuItem,
   Select,
   TextField,
+  Tooltip,
 } from '@mui/material';
 import {
   type V1_DataSubscription,
   type V1_DataSubscriptionTarget,
+  V1_AdhocTeam,
   V1_AWSSnowflakeIngestEnvironment,
   V1_DataContract,
   V1_DataSubscriptionTargetType,
+  V1_EnrichedUserApprovalStatus,
   V1_SnowflakeNetwork,
   V1_SnowflakeRegion,
   V1_SnowflakeTarget,
 } from '@finos/legend-graph';
 import React, { useState } from 'react';
-import { isType } from '@finos/legend-shared';
+import { guaranteeNonNullable, isType } from '@finos/legend-shared';
 import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
 import { useAuth } from 'react-oidc-context';
 import {
   CloseIcon,
+  CopyIcon,
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
+  InfoCircleIcon,
 } from '@finos/legend-art';
 import type { DataProductGroupAccessState } from '../../../stores/lakehouse/DataProductDataAccessState.js';
 import {
@@ -57,17 +63,118 @@ import {
 } from '@finos/legend-lego/data-grid';
 import { flowResult } from 'mobx';
 import { UserRenderer } from '../../../components/UserRenderer/UserRenderer.js';
+import { MultiUserCellRenderer } from '../../../components/MultiUserCellRenderer/MultiUserCellRenderer.js';
+import {
+  getOrganizationalScopeTypeDetails,
+  getOrganizationalScopeTypeName,
+} from '../../../stores/lakehouse/LakehouseUtils.js';
+import type { MarketplaceLakehouseStore } from '../../../stores/lakehouse/MarketplaceLakehouseStore.js';
+
+const LakehouseSubscriptionsCreateDialogContractRenderer = observer(
+  (props: {
+    contract: V1_DataContract;
+    marketplaceStore: MarketplaceLakehouseStore;
+  }) => {
+    const { contract, marketplaceStore } = props;
+    const consumer = contract.consumer;
+    let consumerComponent = null;
+
+    const copyContractId = (id: string): void => {
+      marketplaceStore.applicationStore.clipboardService
+        .copyTextToClipboard(id)
+        .then(() =>
+          marketplaceStore.applicationStore.notificationService.notifySuccess(
+            'ID Copied to Clipboard',
+            undefined,
+            2500,
+          ),
+        )
+        .catch(marketplaceStore.applicationStore.alertUnhandledError);
+    };
+
+    if (consumer instanceof V1_AdhocTeam) {
+      consumerComponent = (
+        <MultiUserCellRenderer
+          userIds={consumer.users.map((_user) => _user.name)}
+          marketplaceStore={marketplaceStore.marketplaceBaseStore}
+        />
+      );
+    } else {
+      const typeDetails = getOrganizationalScopeTypeDetails(
+        consumer,
+        marketplaceStore.applicationStore.pluginManager.getApplicationPlugins(),
+      );
+      consumerComponent = (
+        <Box>
+          {getOrganizationalScopeTypeName(
+            consumer,
+            marketplaceStore.applicationStore.pluginManager.getApplicationPlugins(),
+          )}
+          {typeDetails !== undefined && (
+            <Tooltip
+              className="marketplace-lakehouse-subscriptions__creator__contract-details__users__tooltip__icon"
+              title={typeDetails}
+            >
+              <InfoCircleIcon />
+            </Tooltip>
+          )}
+        </Box>
+      );
+    }
+
+    return (
+      <Box className="marketplace-lakehouse-subscriptions__subscription-creator__contract-details">
+        <Box className="marketplace-lakehouse-subscriptions__subscription-creator__contract-details__users">
+          User(s): {consumerComponent}
+        </Box>
+        <Box className="marketplace-lakehouse-subscriptions__subscription-creator__contract-details__footer">
+          <Box className="marketplace-lakehouse-subscriptions__subscription-creator__contract-details__description">
+            Description: {contract.description}
+          </Box>
+          <Box className="marketplace-lakehouse-subscriptions__subscription-creator__contract-details__id">
+            ID: {contract.guid}
+            <IconButton
+              onClick={() => copyContractId(contract.guid)}
+              onMouseDown={(event) => event.stopPropagation()}
+            >
+              <CopyIcon />
+            </IconButton>
+          </Box>
+        </Box>
+      </Box>
+    );
+  },
+);
 
 const LakehouseSubscriptionsCreateDialog = observer(
   (props: {
     open: boolean;
     onClose: () => void;
     accessGroupState: DataProductGroupAccessState;
-    contractId: string;
-    onSubmit: (target: V1_DataSubscriptionTarget) => Promise<void>;
+    onSubmit: (
+      contract: V1_DataContract,
+      target: V1_DataSubscriptionTarget,
+    ) => Promise<void>;
   }) => {
-    const { open, onClose, accessGroupState, contractId, onSubmit } = props;
+    const { open, onClose, accessGroupState, onSubmit } = props;
 
+    const approvedUserContract =
+      accessGroupState.userAccessStatus ===
+        V1_EnrichedUserApprovalStatus.APPROVED &&
+      accessGroupState.associatedContract instanceof V1_DataContract
+        ? accessGroupState.associatedContract
+        : undefined;
+    const approvedSystemAccountContracts =
+      accessGroupState.associatedSystemAccountContractsAndApprovedUsers
+        .filter((_contract) => _contract.approvedUsers.length > 0)
+        .map((_contract) => _contract.contract);
+
+    const [contract, setContract] = useState<V1_DataContract | undefined>(
+      approvedUserContract ??
+        (approvedSystemAccountContracts.length === 1
+          ? approvedSystemAccountContracts[0]
+          : undefined),
+    );
     const [targetType] = useState<V1_DataSubscriptionTargetType>(
       V1_DataSubscriptionTargetType.Snowflake,
     );
@@ -120,11 +227,25 @@ const LakehouseSubscriptionsCreateDialog = observer(
       ),
     );
 
+    const snowflakeAccountOptions = [
+      ...suggestedSnowflakeAccounts,
+      ...otherSnowflakeAccounts,
+    ].map((account) => {
+      return {
+        isSuggested: suggestedSnowflakeAccounts.includes(account)
+          ? 'Suggested Accounts'
+          : 'Other Accounts',
+        account,
+      };
+    });
+
     return (
       <Dialog
         open={open}
         onClose={onClose}
         className="marketplace-lakehouse-subscriptions__subscription-creator"
+        fullWidth={true}
+        maxWidth="md"
         slotProps={{
           paper: {
             component: 'form',
@@ -136,7 +257,7 @@ const LakehouseSubscriptionsCreateDialog = observer(
                 snowflakeTarget.snowflakeRegion = snowflakeRegion;
                 snowflakeTarget.snowflakeNetwork = snowflakeNetwork;
                 // eslint-disable-next-line no-void
-                void onSubmit(snowflakeTarget);
+                void onSubmit(guaranteeNonNullable(contract), snowflakeTarget);
                 handleClose();
               } else {
                 handleClose();
@@ -147,18 +268,44 @@ const LakehouseSubscriptionsCreateDialog = observer(
         }}
       >
         <DialogTitle>Create New Subscription</DialogTitle>
-        <DialogContent>
-          <TextField
-            required={true}
-            margin="dense"
-            id="contractId"
-            name="contractId"
-            label="Contract ID"
-            fullWidth={true}
-            variant="outlined"
-            value={contractId}
-            disabled={true}
-          />
+        <DialogContent
+          classes={{
+            root: 'marketplace-lakehouse-subscriptions__subscription-creator__content',
+          }}
+        >
+          <FormControl fullWidth={true} margin="dense">
+            <InputLabel id="contract-select-label">Contract</InputLabel>
+            <Select
+              required={true}
+              labelId="contract-select-label"
+              id="contract-select"
+              name="contract"
+              value={contract?.guid ?? ''}
+              label="Contract"
+              autoFocus={contract === undefined}
+              onChange={(event: SelectChangeEvent<string>) => {
+                setContract(
+                  [
+                    approvedUserContract,
+                    ...approvedSystemAccountContracts,
+                  ].find((_contract) => _contract?.guid === event.target.value),
+                );
+              }}
+            >
+              {[approvedUserContract, ...approvedSystemAccountContracts]
+                .filter((_contract) => _contract instanceof V1_DataContract)
+                .map((_contract) => (
+                  <MenuItem key={_contract.guid} value={_contract.guid}>
+                    <LakehouseSubscriptionsCreateDialogContractRenderer
+                      contract={_contract}
+                      marketplaceStore={
+                        accessGroupState.accessState.viewerState.lakehouseStore
+                      }
+                    />
+                  </MenuItem>
+                ))}
+            </Select>
+          </FormControl>
           <FormControl fullWidth={true} margin="dense">
             <InputLabel id="target-type-select-label">Target Type</InputLabel>
             <Select
@@ -179,50 +326,34 @@ const LakehouseSubscriptionsCreateDialog = observer(
             </Select>
           </FormControl>
           <FormControl fullWidth={true} margin="dense">
-            <InputLabel id="snowflake-account-id-select-label">
-              Snowflake Account ID
-            </InputLabel>
-            <Select
-              required={true}
-              labelId="snowflake-account-id-select-label"
-              id="snowflake-account-id-select"
-              value={snowflakeAccountId}
-              label="Snowflake Account ID"
-              onChange={(event: SelectChangeEvent<string>) => {
-                setSnowflakeAccountId(event.target.value);
-              }}
-              autoFocus={true}
-            >
-              {suggestedSnowflakeAccounts.length > 0 && (
-                <ListSubheader className="marketplace-lakehouse-subscriptions__subscription-creator__select__subheader">
-                  Suggested Accounts
-                </ListSubheader>
+            <Autocomplete
+              fullWidth={true}
+              freeSolo={true}
+              options={snowflakeAccountOptions}
+              groupBy={(option) => option.isSuggested}
+              getOptionLabel={(option) =>
+                typeof option === 'string' ? option : option.account
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...(params as TextFieldProps)}
+                  label="Snowflake Account ID"
+                  required={true}
+                  autoFocus={contract !== undefined}
+                />
               )}
-              {suggestedSnowflakeAccounts.map((snowflakeAccount) => (
-                <MenuItem
-                  key={snowflakeAccount}
-                  value={snowflakeAccount}
-                  className="marketplace-lakehouse-subscriptions__subscription-creator__select__item"
-                >
-                  {snowflakeAccount}
-                </MenuItem>
-              ))}
-              {suggestedSnowflakeAccounts.length > 0 &&
-                otherSnowflakeAccounts.length > 0 && (
-                  <ListSubheader className="marketplace-lakehouse-subscriptions__subscription-creator__select__subheader">
-                    Other Accounts
-                  </ListSubheader>
-                )}
-              {otherSnowflakeAccounts.map((snowflakeAccount) => (
-                <MenuItem
-                  key={snowflakeAccount}
-                  value={snowflakeAccount}
-                  className="marketplace-lakehouse-subscriptions__subscription-creator__select__item"
-                >
-                  {snowflakeAccount}
-                </MenuItem>
-              ))}
-            </Select>
+              onChange={(_, value) =>
+                setSnowflakeAccountId(
+                  typeof value === 'string' ? value : (value?.account ?? ''),
+                )
+              }
+              slotProps={{
+                listbox: {
+                  className:
+                    'marketplace-lakehouse-subscriptions__subscription-creator__autocomplete__listbox',
+                },
+              }}
+            />
           </FormControl>
           <FormControl fullWidth={true} margin="dense">
             <InputLabel id="snowflake-region-select-label">
@@ -287,44 +418,16 @@ export const DataProductSubscriptionViewer = observer(
     const legendMarketplaceStore = useLegendMarketplaceBaseStore();
     const [showCreateDialog, setShowCreateDialog] = useState(false);
 
-    const contract = accessGroupState.associatedContract;
     const subscriptions = accessGroupState.subscriptions;
     const isLoading = accessGroupState.fetchingSubscriptionsState.isInProgress;
 
-    if (!(contract instanceof V1_DataContract)) {
-      return (
-        <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="md">
-          <DialogTitle>Data Product Subscriptions</DialogTitle>
-          <IconButton
-            onClick={onClose}
-            className="marketplace-dialog-close-btn"
-          >
-            <CloseIcon />
-          </IconButton>
-          <DialogContent>
-            <div>
-              Unable to show subscriptions for{' '}
-              <span className="marketplace-lakehouse-text__emphasis">
-                {accessGroupState.group.id}
-              </span>{' '}
-              Access Point Group in{' '}
-              <span className="marketplace-lakehouse-text__emphasis">
-                {accessGroupState.accessState.viewerState.product.name}
-              </span>{' '}
-              Data Product.
-            </div>
-            <div>No contract found for Access Point Group.</div>
-          </DialogContent>
-        </Dialog>
-      );
-    }
-
     const createDialogHandleSubmit = async (
+      _contract: V1_DataContract,
       target: V1_DataSubscriptionTarget,
     ): Promise<void> => {
       await flowResult(
         accessGroupState.createSubscription(
-          contract.guid,
+          _contract.guid,
           target,
           auth.user?.access_token,
         ),
@@ -333,7 +436,7 @@ export const DataProductSubscriptionViewer = observer(
 
     return (
       <>
-        <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="md">
+        <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="lg">
           <DialogTitle>Data Product Subscriptions</DialogTitle>
           <IconButton
             onClick={onClose}
@@ -358,13 +461,28 @@ export const DataProductSubscriptionViewer = observer(
                   </span>{' '}
                   Data Product
                 </div>
-                <Button
-                  onClick={() => setShowCreateDialog(true)}
-                  variant="contained"
+                <span
                   className="marketplace-lakehouse-subscriptions__subscriptions-viewer__create-btn"
+                  title={
+                    !accessGroupState.canCreateSubscription
+                      ? 'Cannot create subscription. No approved contracts found for this Access Point Group.'
+                      : undefined
+                  }
                 >
-                  Create New Subscription
-                </Button>
+                  <Button
+                    onClick={() => setShowCreateDialog(true)}
+                    variant="contained"
+                    disabled={!accessGroupState.canCreateSubscription}
+                    loading={
+                      accessGroupState.fetchingAccessState.isInProgress ||
+                      accessGroupState.fetchingApprovedContractsState
+                        .isInProgress
+                    }
+                  >
+                    Create New Subscription
+                  </Button>
+                </span>
+
                 <Box className="marketplace-lakehouse-subscriptions__subscriptions-viewer__grid ag-theme-balham">
                   <DataGrid
                     rowData={subscriptions}
@@ -461,13 +579,14 @@ export const DataProductSubscriptionViewer = observer(
             )}
           </DialogContent>
         </Dialog>
-        <LakehouseSubscriptionsCreateDialog
-          open={showCreateDialog}
-          onClose={() => setShowCreateDialog(false)}
-          accessGroupState={accessGroupState}
-          contractId={contract.guid}
-          onSubmit={createDialogHandleSubmit}
-        />
+        {showCreateDialog && (
+          <LakehouseSubscriptionsCreateDialog
+            open={showCreateDialog}
+            onClose={() => setShowCreateDialog(false)}
+            accessGroupState={accessGroupState}
+            onSubmit={createDialogHandleSubmit}
+          />
+        )}
       </>
     );
   },

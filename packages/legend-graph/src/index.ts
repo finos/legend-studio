@@ -322,6 +322,7 @@ export {
   V1_AppDirNodeModelSchema,
   V1_ContractUserStatusResponseModelSchema,
   V1_createContractPayloadModelSchema,
+  V1_DataContractApprovedUsersResponseModelSchema,
   V1_dataContractsResponseModelSchema,
   V1_dataContractsResponseModelSchemaToContracts,
   V1_DataProductOriginType,
