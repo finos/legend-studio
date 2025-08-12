@@ -24,7 +24,7 @@ import { AnchorLinkIcon, MarkdownTextViewer } from '@finos/legend-art';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { DataproducteWikiPlaceholder } from './DataProductWiki.js';
 import type { TerminalProductViewerState } from '../../../stores/lakehouse/TerminalProductViewerState.js';
-import { listItemSecondaryActionClasses } from '@mui/material';
+import { TERMINAL_ACCESS } from './TerminalDataAccess.js';
 
 export const TerminalProductWikiPlaceHolder = observer(
   (props: {
@@ -136,9 +136,15 @@ export const TerminalProductPrice = observer(
     const [isAnnual, setIsAnnual] = React.useState(true);
 
     const getAvailablePrice = () => {
-      if (terminal.price) return terminal.price;
-      if (terminal.tieredPrice) return terminal.tieredPrice;
-      if (terminal.totalFirmPrice) return terminal.totalFirmPrice;
+      if (terminal.price) {
+        return terminal.price;
+      }
+      if (terminal.tieredPrice) {
+        return terminal.tieredPrice;
+      }
+      if (terminal.totalFirmPrice) {
+        return terminal.totalFirmPrice;
+      }
       return undefined;
     };
     const availablePrice = getAvailablePrice();
@@ -150,18 +156,8 @@ export const TerminalProductPrice = observer(
     }
 
     const getDisplayPrice = () => {
-      const priceStr = String(availablePrice || '0');
-      const annualPrice = parseFloat(priceStr.replace(/[^0-9.-]+/g, '')) || 0;
-
-      const currencyMatch = priceStr.match(/[^0-9.-]+/);
-      const currency = currencyMatch ? currencyMatch[0] : '';
-
-      if (isAnnual) {
-        return `${currency}${annualPrice.toFixed(2)}`;
-      } else {
-        const monthlyPrice = (annualPrice / 12).toFixed(2);
-        return `${currency}${monthlyPrice}`;
-      }
+      const price = Number(availablePrice) || 0;
+      return (isAnnual ? price : price / 12).toFixed(2);
     };
 
     const handlePricingToggle = () => {
@@ -181,6 +177,110 @@ export const TerminalProductPrice = observer(
       >
         {getDisplayPrice()} {isAnnual ? 'annually' : 'monthly'} per license
       </div>
+    );
+  },
+);
+
+const getButtonConfig = (accessStatus: TERMINAL_ACCESS) => {
+  const baseClass = 'data-space__viewer__content__access-button';
+
+  switch (accessStatus) {
+    case TERMINAL_ACCESS.REQUEST:
+      return {
+        text: 'REQUEST ACCESS',
+        className: baseClass,
+        disabled: false,
+      };
+    case TERMINAL_ACCESS.PENDING:
+      return {
+        text: 'PENDING',
+        className: `${baseClass} ${baseClass}--pending`,
+        disabled: true,
+      };
+    case TERMINAL_ACCESS.ENTITLED:
+      return {
+        text: 'ENTITLED',
+        className: `${baseClass} ${baseClass}--entitled`,
+        disabled: false,
+        dropdownText: 'Request Access For Others',
+      };
+    default:
+      return {
+        text: 'REQUEST ACCESS',
+        className: baseClass,
+        disabled: false,
+      };
+  }
+};
+
+const EntitlementButton = observer(() => {
+  const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
+  const buttonConfig = getButtonConfig(TERMINAL_ACCESS.ENTITLED);
+  const handleDropdownToggle = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
+  const handleRequestForOthers = () => {
+    setIsDropdownOpen(false);
+  };
+
+  return (
+    <div className="data-space__viewer__content__entitlement-button">
+      <button
+        className="data-space__viewer__content__access-button data-space__viewer__content__access-button--entitled" //clean this
+        onClick={handleDropdownToggle}
+      >
+        {buttonConfig.text}
+        <span>{isDropdownOpen ? '▲' : '▼'}</span>
+      </button>
+
+      {isDropdownOpen && (
+        <button
+          className={`${buttonConfig.className}--dropdown`}
+          onClick={handleRequestForOthers}
+        >
+          {buttonConfig.dropdownText}
+        </button>
+      )}
+    </div>
+  );
+});
+
+export const RequestAccessButton = observer(
+  (props: {
+    children?: React.ReactNode;
+    onAccessRequested?: (callback: () => void) => void;
+  }) => {
+    const { onAccessRequested } = props;
+    const [accessStatus, setAccessStatus] = React.useState(
+      TERMINAL_ACCESS.REQUEST,
+    );
+    const [disabled, setDisabled] = React.useState(false);
+    const buttonConfig = getButtonConfig(accessStatus);
+    const handleClick = () => {
+      if (accessStatus === TERMINAL_ACCESS.REQUEST) {
+        setAccessStatus(TERMINAL_ACCESS.PENDING);
+        setDisabled(buttonConfig.disabled);
+        if (onAccessRequested) {
+          onAccessRequested(() => {
+            setAccessStatus(TERMINAL_ACCESS.ENTITLED);
+          });
+        }
+      } else if (accessStatus === TERMINAL_ACCESS.PENDING) {
+        setAccessStatus(TERMINAL_ACCESS.ENTITLED);
+      }
+    };
+
+    return accessStatus === TERMINAL_ACCESS.ENTITLED ? (
+      <EntitlementButton />
+    ) : (
+      <button
+        className={buttonConfig.className}
+        onClick={handleClick}
+        disabled={disabled}
+      >
+        {buttonConfig.text}
+      </button>
     );
   },
 );
@@ -221,6 +321,7 @@ export const TerminalProductWiki = observer(
         <TerminalProductDescription
           terminalProductViewerState={terminalProductViewerState}
         />
+        <RequestAccessButton />
       </div>
     );
   },

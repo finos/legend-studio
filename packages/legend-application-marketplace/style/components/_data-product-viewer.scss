@@ -57,11 +57,13 @@
 
     &__content {
       display: flex;
-      flex-direction: column;
+      flex-direction: row !important;
+      align-items: center;
+      justify-content: space-between;
       width: min(140rem, 80vw);
       min-width: 80rem;
       padding: 3rem 8rem 2rem;
-      gap: 1rem;
+      gap: 2rem;
     }
 
     &__content--expanded {
@@ -76,10 +78,13 @@
       @include flexCenter;
       @include ellipsisTextOverflow;
 
-      align-self: start;
+      align-self: start !important;
+      align-items: center !important;
+      justify-content: flex-start !important;
+      flex: 0 1 auto;
       height: 5rem;
       max-width: 50vw;
-      font-size: 3.6rem;
+      font-size: 3rem;
       font-weight: 400;
       color: var(--color-hclight-blue-60);
       background: unset !important;
@@ -195,6 +200,101 @@
     width: 100%;
     padding: 10rem 4rem 4rem;
     box-shadow: var(--color-dark-shade-280) 0 0.1rem 0.5rem 0;
+
+    &__access-button {
+      width: 134px;
+      height: 30px;
+      border-radius: 4px;
+      background-color: var(--color-hclight-blue-60);
+      color: var(--color-hclight-white);
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      outline: none;
+
+      &:hover {
+        opacity: 0.9;
+      }
+
+      &--pending {
+        background-color: #ef6c00;
+      }
+
+      &--entitled {
+        background-color: #2e7d32;
+        padding: 0 12px;
+        justify-content: space-between;
+
+        &--dropdown {
+          width: 195px;
+          padding: 8px 12px;
+          border: 1px;
+          border-radius: 4px;
+          background-color: white;
+          text-align: left;
+          cursor: pointer;
+          font-size: 14px;
+          color: #333;
+          z-index: 1000;
+
+          // Need above for conflicting style rules
+          box-shadow: var(--color-dark-shade-100) 0 0.1rem 0.5rem 0;
+
+          &:hover {
+            background-color: #f5f5f5;
+            box-shadow: var(--color-dark-shade-200) 0 0.1rem 0.5rem 0;
+          }
+        }
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+
+.terminal-header-tabs {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+
+  &__container {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+  }
+
+  &__tab {
+    background: none;
+    border: none;
+    padding: 1rem 0;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    position: relative;
+    color: var(--color-dark-grey-400);
+    border-bottom: 2px solid transparent;
+
+    &:hover {
+      color: var(--color-hclight-blue-60);
+    }
+
+    &--active {
+      color: var(--color-hclight-blue-60);
+      border-bottom: 2px solid var(--color-hclight-blue-60);
+    }
+
+    &:focus {
+      outline: none;
+    }
   }
 }
 
