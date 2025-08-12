@@ -185,10 +185,11 @@ export class DataProductGroupAccessState {
                 contract.guid,
                 token,
               );
-            const approvedUsers = deserialize(
-              V1_DataContractApprovedUsersResponseModelSchema,
-              rawApprovedUsers,
-            ).approvedUsers;
+            const approvedUsers =
+              deserialize(
+                V1_DataContractApprovedUsersResponseModelSchema,
+                rawApprovedUsers,
+              ).approvedUsers ?? [];
             return {
               contract,
               approvedUsers,

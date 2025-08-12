@@ -16,6 +16,7 @@
 
 import {
   customListWithSchema,
+  optionalCustomListWithSchema,
   UnsupportedOperationError,
   usingConstantValueSchema,
   usingModelSchema,
@@ -524,5 +525,5 @@ export const V1_entitlementsDataProductDetailsResponseToDataProductDetails = (
 
 export const V1_DataContractApprovedUsersResponseModelSchema =
   createModelSchema(V1_DataContractApprovedUsersResponse, {
-    approvedUsers: customListWithSchema(V1_UserModelSchema),
+    approvedUsers: optionalCustomListWithSchema(V1_UserModelSchema),
   });
