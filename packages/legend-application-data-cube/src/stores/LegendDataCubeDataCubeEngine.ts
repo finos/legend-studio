@@ -151,7 +151,7 @@ import {
 } from './model/LocalFileDataCubeSource.js';
 import { QUERY_BUILDER_PURE_PATH } from '@finos/legend-query-builder';
 import {
-  INGEST_DEFINITION_DATA_CUBE_SOURCE_TYPE,
+  LAKEHOUSE_PRODUCER_DATA_CUBE_SOURCE_TYPE,
   IngestDefinitionDataCubeSource,
   RawIngestDefinitionDataCubeSource,
 } from './model/IngestDefinitionDataCubeSource.js';
@@ -360,7 +360,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         },
         sourceType: source._type,
       };
-    } else if (source.type === INGEST_DEFINITION_DATA_CUBE_SOURCE_TYPE) {
+    } else if (source.type === LAKEHOUSE_PRODUCER_DATA_CUBE_SOURCE_TYPE) {
       const rawSource =
         RawIngestDefinitionDataCubeSource.serialization.fromJson(source);
 
@@ -677,7 +677,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         );
         return source;
       }
-      case INGEST_DEFINITION_DATA_CUBE_SOURCE_TYPE: {
+      case LAKEHOUSE_PRODUCER_DATA_CUBE_SOURCE_TYPE: {
         const rawSource =
           RawIngestDefinitionDataCubeSource.serialization.fromJson(value);
 
@@ -691,7 +691,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         query.value = ingestAccesor;
         source.query = query;
 
-        const model = this._synthesizeIngestionPMCD(rawSource, source);
+        const model = this._synthesizeLakehouseProducerPMCD(rawSource, source);
         source.model = V1_serializePureModelContextData(model);
 
         try {
@@ -1549,7 +1549,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     };
   }
 
-  private _synthesizeIngestionPMCD(
+  private _synthesizeLakehouseProducerPMCD(
     rawSource: RawIngestDefinitionDataCubeSource,
     source: IngestDefinitionDataCubeSource,
   ) {
