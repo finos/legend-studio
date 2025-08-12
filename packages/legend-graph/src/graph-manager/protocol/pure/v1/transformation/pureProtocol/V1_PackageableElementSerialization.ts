@@ -394,9 +394,7 @@ export const V1_deserializePackageableElement = (
       case V1_MEM_SQL_TYPE:
         return deserialize(V1_MemSQLModelSchema(plugins), json);
       case V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE:
-        // TODO: remove this once we have a proper icon for data product in the metamodel
-        const adjustedJson = { ...json, icon: '' };
-        return deserialize(V1_dataProductModelSchema, adjustedJson);
+        return deserialize(V1_dataProductModelSchema, json);
       case V1_INGEST_DEFINITION_TYPE:
         return V1_createIngestDef(name, packagePath, json);
       default: {

@@ -119,11 +119,16 @@ import type { V1_INTERNAL__UnknownElement } from '../../../model/packageableElem
 import type { V1_HostedService } from '../../../model/packageableElements/function/V1_HostedService.js';
 import { type V1_DataProduct } from '../../../model/packageableElements/dataProduct/V1_DataProduct.js';
 import {
-  AccessPointGroup,
+  type DataProduct_DeliveryFrequency,
+  type DataProduct_Region,
   Email,
   SupportInfo,
 } from '../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
-import { V1_buildAccessPoint } from './helpers/V1_DataProductBuilder.js';
+import {
+  V1_buildAccessPointGroup,
+  V1_buildDataProductIcon,
+  V1_buildDataProductLink,
+} from './helpers/V1_DataProductBuilder.js';
 import type { V1_IngestDefinition } from '../../../model/packageableElements/ingest/V1_IngestDefinition.js';
 
 export class V1_ElementSecondPassBuilder
@@ -694,33 +699,44 @@ export class V1_ElementSecondPassBuilder
     );
     dataProduct.title = element.title;
     dataProduct.description = element.description;
-    dataProduct.accessPointGroups = element.accessPointGroups.map(
-      (elementGroup) => {
-        const group = new AccessPointGroup();
-        group.id = elementGroup.id;
-        group.description = elementGroup.description;
-        group.accessPoints = elementGroup.accessPoints.map((ep) =>
-          V1_buildAccessPoint(ep, this.context),
-        );
-        group.stereotypes = elementGroup.stereotypes
-          .map((stereotype) => this.context.resolveStereotype(stereotype))
-          .filter(isNonNullable);
-        return group;
-      },
+    if (element.icon) {
+      dataProduct.icon = V1_buildDataProductIcon(element.icon);
+    }
+    dataProduct.accessPointGroups = element.accessPointGroups.map((gr) =>
+      V1_buildAccessPointGroup(gr, this.context),
     );
-    if (!element.supportInfo) {
-      dataProduct.supportInfo = undefined;
-    } else {
+    const protocolSupportInfo = element.supportInfo;
+    if (protocolSupportInfo) {
       const supportInfo = new SupportInfo();
-      supportInfo.documentationUrl = element.supportInfo.documentationUrl;
-      supportInfo.website = element.supportInfo.website;
-      supportInfo.faqUrl = element.supportInfo.faqUrl;
-      supportInfo.supportUrl = element.supportInfo.supportUrl;
-      supportInfo.emails = element.supportInfo.emails.map((elementEmail) => {
+      supportInfo.documentation = protocolSupportInfo.documentation
+        ? V1_buildDataProductLink(protocolSupportInfo.documentation)
+        : undefined;
+      supportInfo.website = protocolSupportInfo.website
+        ? V1_buildDataProductLink(protocolSupportInfo.website)
+        : undefined;
+      supportInfo.faqUrl = protocolSupportInfo.faqUrl
+        ? V1_buildDataProductLink(protocolSupportInfo.faqUrl)
+        : undefined;
+      supportInfo.supportUrl = protocolSupportInfo.supportUrl
+        ? V1_buildDataProductLink(protocolSupportInfo.supportUrl)
+        : undefined;
+      supportInfo.emails = protocolSupportInfo.emails.map((elementEmail) => {
         const email = new Email(elementEmail.address, elementEmail.title);
         return email;
       });
       dataProduct.supportInfo = supportInfo;
     }
+    dataProduct.deliveryFrequency = element.deliveryFrequency as
+      | DataProduct_DeliveryFrequency
+      | undefined;
+    dataProduct.coverageRegions = element.coverageRegions as
+      | DataProduct_Region[]
+      | undefined;
+    dataProduct.stereotypes = element.stereotypes
+      .map((stereotype) => this.context.resolveStereotype(stereotype))
+      .filter(isNonNullable);
+    dataProduct.taggedValues = element.taggedValues
+      .map((taggedValue) => V1_buildTaggedValue(taggedValue, this.context))
+      .filter(isNonNullable);
   }
 }

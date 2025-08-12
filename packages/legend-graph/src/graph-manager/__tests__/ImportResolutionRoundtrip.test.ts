@@ -73,6 +73,11 @@ import {
 import { TEST_DATA__RuntimeRoundtrip } from './roundtripTestData/TEST_DATA__RuntimeRoundtrip.js';
 import { TEST__checkBuildingElementsRoundtrip } from '../__test-utils__/GraphManagerTestUtils.js';
 import { TEST_DATA__DataRoundtrip } from './roundtripTestData/TEST_DATA__DataRoundtrip.js';
+import {
+  TEST_DATA__DATAPRODUCT__MODEL_ACCESS_GROUPS,
+  TEST_DATA__DATAPRODUCT_DELIVERY,
+  TEST_DATA__DATAPRODUCT_GROUPS,
+} from './roundtripTestData/TEST_DATA__DataProductRoundtrip.js';
 
 describe(unitTest('M2M graph roundtrip'), () => {
   test.each([
@@ -248,4 +253,17 @@ describe(unitTest('DSL Data import resolution roundtrip'), () => {
       await TEST__checkBuildingElementsRoundtrip(entities);
     },
   );
+});
+
+describe(unitTest('DSL Data product'), () => {
+  test.each([
+    ['DSL Data Product', TEST_DATA__DATAPRODUCT_DELIVERY],
+    ['DSL Data Product Groups', TEST_DATA__DATAPRODUCT_GROUPS],
+    [
+      'DSL Data Model Access Groups',
+      TEST_DATA__DATAPRODUCT__MODEL_ACCESS_GROUPS,
+    ],
+  ])('%s', async (testName, entities) => {
+    await TEST__checkBuildingElementsRoundtrip(entities);
+  });
 });

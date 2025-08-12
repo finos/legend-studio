@@ -29,6 +29,13 @@ import {
   hashObjectWithoutSourceInformation,
 } from '../../../Core_HashUtils.js';
 import { AnnotatedElement } from '../packageableElements/domain/AnnotatedElement.js';
+import type { Mapping } from '../packageableElements/mapping/Mapping.js';
+import type { PackageableRuntime } from '../packageableElements/runtime/PackageableRuntime.js';
+import type { PackageableElementReference } from '../packageableElements/PackageableElementReference.js';
+import type { Package } from '../packageableElements/domain/Package.js';
+import type { Class } from '../packageableElements/domain/Class.js';
+import type { Enumeration } from '../packageableElements/domain/Enumeration.js';
+import type { Association } from '../packageableElements/domain/Association.js';
 
 export abstract class AccessPoint implements Hashable {
   id: string;
@@ -89,6 +96,51 @@ export class UnknownAccessPoint extends AccessPoint {
   }
 }
 
+export class DataProductRuntimeInfo {
+  id!: string;
+  description: string | undefined;
+  runtime!: PackageableElementReference<PackageableRuntime>;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.DATA_PRODUCT_RUNTIME_INFO,
+      this.id,
+      this.description ?? '',
+      this.runtime.valueForSerialization ?? '',
+    ]);
+  }
+}
+
+export type DataProductElement = Package | Class | Enumeration | Association;
+
+export class DataProductElementScope implements Hashable {
+  exclude: boolean | undefined;
+  element!: PackageableElementReference<DataProductElement>;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.DATA_PRODUCT_ELEMENT_SCOPE,
+      this.exclude ?? '',
+      this.element.valueForSerialization ?? '',
+    ]);
+  }
+}
+
+export class DataProductDiagram implements Hashable {
+  title!: string;
+  description: string | undefined;
+  diagram!: PackageableElement;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.DATA_PRODUCT_DIAGRAM,
+      this.title,
+      this.description ?? '',
+      this.diagram,
+    ]);
+  }
+}
+
 export class AccessPointGroup extends AnnotatedElement implements Hashable {
   id!: string;
   description: string | undefined;
@@ -99,9 +151,31 @@ export class AccessPointGroup extends AnnotatedElement implements Hashable {
       CORE_HASH_STRUCTURE.DATA_PRODUCT_ACCESS_POINT_GROUP,
       this.id,
       this.description ?? '',
-      hashArray(this.stereotypes.map((val) => val.pointerHashCode)),
-      hashArray(this.taggedValues.map((val) => val.hashCode)),
       hashArray(this.accessPoints),
+      hashArray(this.stereotypes.map((val) => val.pointerHashCode)),
+    ]);
+  }
+}
+
+export class ModelAccessPointGroup
+  extends AccessPointGroup
+  implements Hashable
+{
+  mapping!: PackageableElementReference<Mapping>;
+  defaultRuntime!: DataProductRuntimeInfo;
+  featuredElements: DataProductElementScope[] = [];
+  compatibleRuntimes: DataProductRuntimeInfo[] = [];
+  diagrams: DataProductDiagram[] = [];
+
+  override get hashCode(): string {
+    return hashArray([
+      super.hashCode,
+      CORE_HASH_STRUCTURE.DATA_PRODUCT_MODEL_ACCESS_POINT_GROUP,
+      this.mapping.valueForSerialization ?? '',
+      this.defaultRuntime.id,
+      hashArray(this.featuredElements),
+      hashArray(this.compatibleRuntimes),
+      hashArray(this.diagrams),
     ]);
   }
 }
@@ -120,17 +194,35 @@ export class Email implements Hashable {
   }
 }
 
+export class DataProductLink {
+  label: string | undefined;
+  url: string;
+
+  constructor(url: string, label?: string) {
+    this.url = url;
+    this.label = label;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.DATA_PRODUCT_LINK,
+      this.label ?? '',
+      this.url,
+    ]);
+  }
+}
+
 export class SupportInfo implements Hashable {
-  documentationUrl: string | undefined;
-  website: string | undefined;
-  faqUrl: string | undefined;
-  supportUrl: string | undefined;
+  documentation: DataProductLink | undefined;
+  website: DataProductLink | undefined;
+  faqUrl: DataProductLink | undefined;
+  supportUrl: DataProductLink | undefined;
   emails: Email[] = [];
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.SUPPORT_INFO,
-      this.documentationUrl ?? '',
+      this.documentation ?? '',
       this.website ?? '',
       this.faqUrl ?? '',
       this.supportUrl ?? '',
@@ -139,11 +231,71 @@ export class SupportInfo implements Hashable {
   }
 }
 
+export enum DataProduct_DeliveryFrequency {
+  DAILY = 'DAILY',
+  WEEKLY = 'WEEKLY',
+  MONTHLY = 'MONTHLY',
+  QUARTERLY = 'QUARTERLY',
+  ANNUALLY = 'ANNUALLY',
+  ON_DEMAND = 'ON_DEMAND',
+  INTRA_DAY = 'INTRA_DAY',
+  OTHER = 'OTHER',
+}
+
+export enum DataProduct_Region {
+  APAC = 'APAC',
+  EMEA = 'EMEA',
+  LATAM = 'LATAM',
+  NAMR = 'NAMR',
+}
+
+export abstract class DataProductIcon implements Hashable {
+  abstract get hashCode(): string;
+}
+
+export class EmbeddedImageIcon extends DataProductIcon implements Hashable {
+  imageUrl: string;
+
+  constructor(imageUrl: string) {
+    super();
+    this.imageUrl = imageUrl;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.DATA_PRODUCT_ICON_EMBEDDED_IMAGE,
+      this.imageUrl,
+    ]);
+  }
+}
+
+export class LibraryIcon extends DataProductIcon implements Hashable {
+  libraryId: string;
+  iconId: string;
+
+  constructor(libraryId: string, iconId: string) {
+    super();
+    this.libraryId = libraryId;
+    this.iconId = iconId;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.DATA_PRODUCT_ICON_LIBRARY,
+      this.libraryId,
+      this.iconId,
+    ]);
+  }
+}
+
 export class DataProduct extends PackageableElement {
   title: string | undefined;
   description: string | undefined;
-  supportInfo: SupportInfo | undefined;
+  coverageRegions: DataProduct_Region[] | undefined;
+  deliveryFrequency: DataProduct_DeliveryFrequency | undefined;
+  icon: DataProductIcon | undefined;
   accessPointGroups: AccessPointGroup[] = [];
+  supportInfo: SupportInfo | undefined;
 
   override accept_PackageableElementVisitor<T>(
     visitor: PackageableElementVisitor<T>,
@@ -154,10 +306,15 @@ export class DataProduct extends PackageableElement {
   protected override get _elementHashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.DATA_PRODUCT,
-      hashArray(this.accessPointGroups),
       this.title ?? '',
       this.description ?? '',
+      hashArray(this.coverageRegions ?? []),
+      this.deliveryFrequency ?? '',
+      this.icon ?? '',
+      hashArray(this.accessPointGroups),
       this.supportInfo ?? '',
+      hashArray(this.stereotypes.map((val) => val.pointerHashCode)),
+      hashArray(this.taggedValues),
     ]);
   }
 }

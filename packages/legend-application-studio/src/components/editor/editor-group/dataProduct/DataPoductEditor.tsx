@@ -1536,25 +1536,25 @@ const SupportTab = observer(
         </div>
         <PanelFormTextField
           name="Documentation URL"
-          value={product.supportInfo?.documentationUrl ?? ''}
+          value={product.supportInfo?.documentation?.url ?? ''}
           update={updateSupportInfoDocumentationUrl}
           placeholder="Enter Documentation URL"
         />
         <PanelFormTextField
           name="Website"
-          value={product.supportInfo?.website}
+          value={product.supportInfo?.website?.url ?? ''}
           update={updateSupportInfoWebsite}
           placeholder="Enter Website"
         />
         <PanelFormTextField
           name="FAQ URL"
-          value={product.supportInfo?.faqUrl}
+          value={product.supportInfo?.faqUrl?.url}
           update={updateSupportInfoFaqUrl}
           placeholder="Enter FAQ URL"
         />
         <PanelFormTextField
           name="Support URL"
-          value={product.supportInfo?.supportUrl}
+          value={product.supportInfo?.supportUrl?.url ?? ''}
           update={updateSupportInfoSupportUrl}
           placeholder="Enter Support URL"
         />
