@@ -23,7 +23,7 @@ import {
 } from '@finos/legend-shared';
 import { createModelSchema, list, primitive } from 'serializr';
 
-export const INGEST_DEFINITION_DATA_CUBE_SOURCE_TYPE = 'ingestDefinition';
+export const INGEST_DEFINITION_DATA_CUBE_SOURCE_TYPE = 'lakehouseProducer';
 
 export class IngestDefinitionDataCubeSource extends DataCubeSource {
   model!: PlainObject<V1_PureModelContextData>;

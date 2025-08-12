@@ -16,14 +16,14 @@
 
 import { observer } from 'mobx-react-lite';
 import { useEffect } from 'react';
-import type { IngestDefinitionDataCubeSourceLoaderState } from '../../../stores/builder/source/IngestDefinitionDataCubeSourceLoaderState.js';
+import type { LakehouseProducerDataCubeSourceLoaderState } from '../../../stores/builder/source/LakehouseProducerDataCubeSourceLoaderState.js';
 import { useAuth } from 'react-oidc-context';
 import { useLegendDataCubeBuilderStore } from '../LegendDataCubeBuilderStoreProvider.js';
 import { FormButton, FormTextInput } from '@finos/legend-data-cube';
 
-export const IngestDefinitionDataCubeSourceLoader = observer(
+export const LakehouseProducerDataCubeSourceLoader = observer(
   (props: {
-    partialSourceLoader: IngestDefinitionDataCubeSourceLoaderState;
+    partialSourceLoader: LakehouseProducerDataCubeSourceLoaderState;
   }) => {
     const { partialSourceLoader } = props;
     const auth = useAuth();
@@ -38,7 +38,7 @@ export const IngestDefinitionDataCubeSourceLoader = observer(
         <div className="m-3 flex w-full flex-col items-stretch gap-2 text-neutral-500">
           <div className="query-setup__wizard__group">
             <div className="query-setup__wizard__group__title">Ingest Urn</div>
-            <div className="flex h-full w-fit flex-auto items-center justify-end text-nowrap">
+            <div className="flex h-full w-full flex-auto items-center justify-between text-nowrap">
               <FormTextInput
                 className="text-base"
                 value={partialSourceLoader.ingestDefinitionUrn}

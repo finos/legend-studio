@@ -33,8 +33,8 @@ import { LocalFileDataCubeSourceBuilderState } from '../../stores/builder/source
 import { LocalFileDataCubeSourceBuilder } from './source/LocalFileDataCubeSourceBuilder.js';
 import { UserDefinedFunctionDataCubeSourceBuilderState } from '../../stores/builder/source/UserDefinedFunctionDataCubeSourceBuilderState.js';
 import { UserDefinedFunctionDataCubeSourceBuilder } from './source/UserDefinedFunctionDataCubeSourceBuilder.js';
-import { IngestDefinitionDataCubeSourceBuilderState } from '../../stores/builder/source/IngestDefinitionDataCubeSourceBuilderState.js';
-import { IngestDefinitionDataCubeSourceBuilder } from './source/IngestDefinitionDataCubeSourceBuilder.js';
+import { LakehouseProducerDataCubeSourceBuilderState } from '../../stores/builder/source/LakehouseProducerDataCubeSourceBuilderState.js';
+import { LakehouseProducerDataCubeSourceBuilder } from './source/LakehouseProducerDataCubeSourceBuilder.js';
 
 export const LegendDataCubeCreator = observer(() => {
   const store = useLegendDataCubeBuilderStore();
@@ -76,7 +76,7 @@ export const LegendDataCubeCreator = observer(() => {
                   LegendDataCubeSourceBuilderType.USER_DEFINED_FUNCTION,
                   LegendDataCubeSourceBuilderType.FREEFORM_TDS_EXPRESSION,
                   LegendDataCubeSourceBuilderType.LOCAL_FILE,
-                  LegendDataCubeSourceBuilderType.INGEST_DEFINTION,
+                  LegendDataCubeSourceBuilderType.LAKEHOUSE_PRODUCER,
                 ].map((type) => (
                   <FormDropdownMenuItem
                     key={type}
@@ -118,8 +118,8 @@ export const LegendDataCubeCreator = observer(() => {
                 />
               )}
               {sourceBuilder instanceof
-                IngestDefinitionDataCubeSourceBuilderState && (
-                <IngestDefinitionDataCubeSourceBuilder
+                LakehouseProducerDataCubeSourceBuilderState && (
+                <LakehouseProducerDataCubeSourceBuilder
                   sourceBuilder={sourceBuilder}
                 />
               )}

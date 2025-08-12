@@ -1562,7 +1562,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
 
     const packageableRuntime = new V1_PackageableRuntime();
     packageableRuntime.runtimeValue = runtime;
-    packageableRuntime.name = 'ingestDefinition';
+    packageableRuntime.name = 'lakehouseProducer';
     packageableRuntime.package = 'runtime';
 
     source.runtime = packageableRuntime.path;

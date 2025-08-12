@@ -29,7 +29,7 @@ import type { LakehouseIngestServerClient } from '@finos/legend-server-lakehouse
 import { action, makeObservable, observable } from 'mobx';
 import { LegendDataCubeSourceBuilderType } from './LegendDataCubeSourceBuilderState.js';
 
-export class IngestDefinitionDataCubeSourceLoaderState extends LegendDataCubeSourceLoaderState {
+export class LakehouseProducerDataCubeSourceLoaderState extends LegendDataCubeSourceLoaderState {
   readonly processState = ActionState.create();
 
   ingestDefinition: PlainObject | undefined;
@@ -80,7 +80,7 @@ export class IngestDefinitionDataCubeSourceLoaderState extends LegendDataCubeSou
   }
 
   override get label() {
-    return LegendDataCubeSourceBuilderType.INGEST_DEFINTION;
+    return LegendDataCubeSourceBuilderType.LAKEHOUSE_PRODUCER;
   }
 
   reset() {

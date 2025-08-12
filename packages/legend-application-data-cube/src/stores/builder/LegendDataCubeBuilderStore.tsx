@@ -75,7 +75,7 @@ import type {
   LakehousePlatformServerClient,
 } from '@finos/legend-server-lakehouse';
 import { INGEST_DEFINITION_DATA_CUBE_SOURCE_TYPE } from '../model/IngestDefinitionDataCubeSource.js';
-import { IngestDefinitionDataCubeSourceLoaderState } from './source/IngestDefinitionDataCubeSourceLoaderState.js';
+import { LakehouseProducerDataCubeSourceLoaderState } from './source/LakehouseProducerDataCubeSourceLoaderState.js';
 
 export class LegendDataCubeBuilderState {
   readonly uuid = uuid();
@@ -347,7 +347,7 @@ export class LegendDataCubeBuilderStore {
           onError,
         );
       case INGEST_DEFINITION_DATA_CUBE_SOURCE_TYPE:
-        return new IngestDefinitionDataCubeSourceLoaderState(
+        return new LakehouseProducerDataCubeSourceLoaderState(
           this.application,
           this.engine,
           this.alertService,
