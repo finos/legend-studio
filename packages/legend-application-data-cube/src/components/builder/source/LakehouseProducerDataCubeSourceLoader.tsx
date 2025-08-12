@@ -40,7 +40,7 @@ export const LakehouseProducerDataCubeSourceLoader = observer(
             <div className="query-setup__wizard__group__title">Ingest Urn</div>
             <div className="flex h-full w-full flex-auto items-center justify-between text-nowrap">
               <FormTextInput
-                className="text-base"
+                className="w-3/4 text-base"
                 value={partialSourceLoader.ingestDefinitionUrn}
                 disabled={true}
               />
