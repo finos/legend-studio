@@ -22,6 +22,7 @@ import {
   type AccessPoint,
   type AccessPointGroup,
   type DataProduct,
+  type DataProductLink,
 } from '../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import {
   observe_Abstract_PackageableElement,
@@ -57,16 +58,37 @@ export const observe_Email = skipObserved((metamodel: Email): Email => {
   return metamodel;
 });
 
+export const observer_DataProductLink = skipObserved(
+  (metamodel: DataProductLink): DataProductLink => {
+    makeObservable(metamodel, {
+      label: observable,
+      url: observable,
+    });
+    return metamodel;
+  },
+);
 export const observe_SupportInfo = skipObserved(
   (metamodel: SupportInfo): SupportInfo => {
     makeObservable(metamodel, {
-      documentationUrl: observable,
+      documentation: observable,
       website: observable,
       faqUrl: observable,
       supportUrl: observable,
       emails: observable,
     });
     metamodel.emails.forEach(observe_Email);
+    if (metamodel.documentation) {
+      observer_DataProductLink(metamodel.documentation);
+    }
+    if (metamodel.website) {
+      observer_DataProductLink(metamodel.website);
+    }
+    if (metamodel.faqUrl) {
+      observer_DataProductLink(metamodel.faqUrl);
+    }
+    if (metamodel.supportUrl) {
+      observer_DataProductLink(metamodel.supportUrl);
+    }
     return metamodel;
   },
 );

@@ -25,6 +25,8 @@ import {
   observe_Email,
   SupportInfo,
   type LakehouseAccessPoint,
+  observer_DataProductLink,
+  DataProductLink,
 } from '@finos/legend-graph';
 import { addUniqueEntry, deleteEntry, swapEntry } from '@finos/legend-shared';
 import { action } from 'mobx';
@@ -122,25 +124,31 @@ export const dataProduct_setSupportInfoIfAbsent = action(
 
 export const supportInfo_setDocumentationUrl = action(
   (supportInfo: SupportInfo, documentationUrl: string) => {
-    supportInfo.documentationUrl = documentationUrl;
+    supportInfo.documentation = observer_DataProductLink(
+      new DataProductLink(documentationUrl),
+    );
   },
 );
 
 export const supportInfo_setWebsite = action(
   (supportInfo: SupportInfo, website: string) => {
-    supportInfo.website = website;
+    supportInfo.website = observer_DataProductLink(
+      new DataProductLink(website),
+    );
   },
 );
 
 export const supportInfo_setFaqUrl = action(
   (supportInfo: SupportInfo, faqUrl: string) => {
-    supportInfo.faqUrl = faqUrl;
+    supportInfo.faqUrl = observer_DataProductLink(new DataProductLink(faqUrl));
   },
 );
 
 export const supportInfo_setSupportUrl = action(
   (supportInfo: SupportInfo, supportUrl: string) => {
-    supportInfo.supportUrl = supportUrl;
+    supportInfo.supportUrl = observer_DataProductLink(
+      new DataProductLink(supportUrl),
+    );
   },
 );
 

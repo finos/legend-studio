@@ -29,6 +29,8 @@ import {
   V1_AdHocDeploymentDataProductOrigin,
   V1_DataProduct,
   V1_SdlcDeploymentDataProductOrigin,
+  V1_EmbeddedImageIcon,
+  V1_LibraryIcon,
 } from '@finos/legend-graph';
 import type { MarketplaceLakehouseStore } from '../MarketplaceLakehouseStore.js';
 import { getDataProductFromDetails } from '../LakehouseUtils.js';
@@ -114,11 +116,19 @@ export class DataProductState {
   }
 
   get icon(): string | undefined {
-    return this.dataProductElement?.icon;
+    const icon = this.dataProductElement?.icon;
+    if (icon instanceof V1_LibraryIcon) {
+      return icon.iconId;
+    }
+    return undefined;
   }
 
   get imageUrl(): string | undefined {
-    return this.dataProductElement?.imageUrl;
+    const icon = this.dataProductElement?.icon;
+    if (icon instanceof V1_EmbeddedImageIcon) {
+      return icon.imageUrl;
+    }
+    return undefined;
   }
 
   get versionId(): string | undefined {
