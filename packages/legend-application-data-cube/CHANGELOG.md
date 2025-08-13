@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.5.3
+
+### Patch Changes
+
+- [#4346](https://github.com/finos/legend-studio/pull/4346) [`65fb1fc`](https://github.com/finos/legend-studio/commit/65fb1fc8e47de44ea0f11e10a9a9f7d169bba4cd) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: rename source
+
 ## 0.5.2
 
 ### Patch Changes

@@ -1,5 +1,15 @@
 # @finos/legend-graph
 
+## 32.1.64
+
+### Patch Changes
+
+- [#4341](https://github.com/finos/legend-studio/pull/4341) [`f526aad`](https://github.com/finos/legend-studio/commit/f526aad608422b0485f53d6df598e0790c226d2f) ([@travisstebbins](https://github.com/travisstebbins)) - Added Terminals viewing by id
+
+- [#4347](https://github.com/finos/legend-studio/pull/4347) [`affd894`](https://github.com/finos/legend-studio/commit/affd89410927958b97b5646b83c1c85ea2a77962) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `ModelAccessPointGroup`, `DataProductLink` and `deliveryFrequency` and `coverageRegions` to Data Product Model.
+
+- [#4344](https://github.com/finos/legend-studio/pull/4344) [`2644280`](https://github.com/finos/legend-studio/commit/264428098cf3244f6f42c198468d1e62c92cae92) ([@travisstebbins](https://github.com/travisstebbins)) - Enhance contracts and subscriptions UI/UX
+
 ## 32.1.63
 
 ### Patch Changes
