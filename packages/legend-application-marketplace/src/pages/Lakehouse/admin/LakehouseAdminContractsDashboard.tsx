@@ -27,7 +27,7 @@ import { Box } from '@mui/material';
 import { type V1_LiteDataContract } from '@finos/legend-graph';
 import type { LakehouseAdminStore } from '../../../stores/lakehouse/admin/LakehouseAdminStore.js';
 import { useState } from 'react';
-import { EntitlementsDataContractViewer } from '../entitlements/EntitlementsDataContractViewer.js';
+import { EntitlementsDataContractViewer } from '../../../components/DataContractViewer/EntitlementsDataContractViewer.js';
 import { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
 
 export const LakehouseAdminContractsDashboard = observer(

@@ -15,7 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import type { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
+import type { EntitlementsDataContractViewerState } from '../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
 import {
   Accordion,
   AccordionDetails,
@@ -60,8 +60,8 @@ import {
   getOrganizationalScopeTypeName,
   isContractInTerminalState,
   stringifyOrganizationalScope,
-} from '../../../stores/lakehouse/LakehouseUtils.js';
-import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
+} from '../../stores/lakehouse/LakehouseUtils.js';
+import { useLegendMarketplaceBaseStore } from '../../application/LegendMarketplaceFrameworkProvider.js';
 import { flowResult } from 'mobx';
 import { useAuth } from 'react-oidc-context';
 import {
@@ -76,10 +76,10 @@ import {
 import {
   generateLakehouseDataProductPath,
   generateLakehouseTaskPath,
-} from '../../../__lib__/LegendMarketplaceNavigation.js';
-import { type DataProductGroupAccessState } from '../../../stores/lakehouse/DataProductDataAccessState.js';
-import { UserRenderer } from '../../../components/UserRenderer/UserRenderer.js';
-import type { LegendMarketplaceBaseStore } from '../../../stores/LegendMarketplaceBaseStore.js';
+} from '../../__lib__/LegendMarketplaceNavigation.js';
+import { type DataProductGroupAccessState } from '../../stores/lakehouse/DataProductDataAccessState.js';
+import { UserRenderer } from '../../components/UserRenderer/UserRenderer.js';
+import type { LegendMarketplaceBaseStore } from '../../stores/LegendMarketplaceBaseStore.js';
 
 const AssigneesList = (props: {
   userIds: string[];

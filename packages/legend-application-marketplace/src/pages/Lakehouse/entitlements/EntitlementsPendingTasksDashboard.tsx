@@ -43,7 +43,7 @@ import {
 } from '@mui/material';
 import { useEffect, useMemo, useState, type ChangeEvent } from 'react';
 import type { EntitlementsDashboardState } from '../../../stores/lakehouse/entitlements/EntitlementsDashboardState.js';
-import { EntitlementsDataContractViewer } from './EntitlementsDataContractViewer.js';
+import { EntitlementsDataContractViewer } from '../../../components/DataContractViewer/EntitlementsDataContractViewer.js';
 import { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
 import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
 import {
