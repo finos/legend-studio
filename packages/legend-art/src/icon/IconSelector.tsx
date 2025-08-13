@@ -66,7 +66,11 @@ export const IconSelector = observer(
           open={open}
           onClose={handleClose}
           anchorEl={anchorEl}
-          className="icon-selector__popover"
+          slotProps={{
+            paper: {
+              className: 'icon-selector__popover',
+            },
+          }}
         >
           <div
             onClick={() => {
