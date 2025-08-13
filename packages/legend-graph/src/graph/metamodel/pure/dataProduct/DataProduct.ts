@@ -308,7 +308,7 @@ export class UnknownDataProductIcon
 
   override get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.DATA_PRODUCT_ICON,
+      CORE_HASH_STRUCTURE.INTERNAL__UNKNOWN_DATA_PRODUCT_ICON,
       hashObjectWithoutSourceInformation(this.content),
     ]);
   }

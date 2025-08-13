@@ -74,7 +74,7 @@ export enum V1_DataProductIconType {
   EMBEDDED_IMAGE_ICON = 'embeddedImageIcon',
 }
 
-export enum V1_LibraryIconId {
+export enum V1_DataProductIconLibraryId {
   REACT_ICONS = 'react-icons',
 }
 
@@ -240,7 +240,7 @@ const V1_deserializeDataProductIcon = (
 
 const V1_serializeDataProductIcon = (
   protocol: V1_DataProductIcon,
-): PlainObject<V1_AccessPoint> => {
+): PlainObject<V1_DataProductIcon> => {
   if (protocol instanceof V1_DataProductLibraryIcon) {
     return serialize(V1_DataProductLibraryIconModelSchema, protocol);
   } else if (protocol instanceof V1_DataProductEmbeddedImageIcon) {

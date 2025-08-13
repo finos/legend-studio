@@ -21,6 +21,8 @@ import {
 } from '@finos/legend-shared';
 import {
   type AccessPoint,
+  type DataProductElement,
+  type DataProductIcon,
   AccessPointGroup,
   DataProductElementScope,
   DataProductEmbeddedImageIcon,
@@ -29,8 +31,6 @@ import {
   DataProductRuntimeInfo,
   LakehouseAccessPoint,
   ModelAccessPointGroup,
-  type DataProductElement,
-  type DataProductIcon,
   UnknownAccessPoint,
   UnknownDataProductIcon,
 } from '../../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
@@ -49,8 +49,8 @@ import {
 import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
 import { V1_buildRawLambdaWithResolvedPaths } from './V1_ValueSpecificationPathResolver.js';
 import {
-  PackageableElementExplicitReference,
   type PackageableElementReference,
+  PackageableElementExplicitReference,
 } from '../../../../../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
 import { Package } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Package.js';
 import { Class } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Class.js';

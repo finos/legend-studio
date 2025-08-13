@@ -24,10 +24,10 @@ import {
   InfoCircleIcon,
 } from '@finos/legend-art';
 import {
-  V1_SdlcDeploymentDataProductOrigin,
-  V1_EntitlementsLakehouseEnvironmentType,
   V1_DataProductEmbeddedImageIcon,
   V1_DataProductLibraryIcon,
+  V1_EntitlementsLakehouseEnvironmentType,
+  V1_SdlcDeploymentDataProductOrigin,
 } from '@finos/legend-graph';
 import { isSnapshotVersion } from '@finos/legend-server-depot';
 import {

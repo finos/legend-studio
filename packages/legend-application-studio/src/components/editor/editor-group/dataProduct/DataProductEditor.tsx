@@ -91,15 +91,15 @@ import { CodeEditor } from '@finos/legend-lego/code-editor';
 import {
   type DataProduct,
   type LakehouseAccessPoint,
+  type V1_DataProductArtifactAccessPointGroup,
+  type V1_DataProductArtifactAccessPointImplementation,
+  type V1_DataProductArtifactGeneration,
   DataProductEmbeddedImageIcon,
   DataProductLibraryIcon,
   Email,
   LakehouseTargetEnv,
   StereotypeExplicitReference,
-  type V1_DataProductArtifactAccessPointGroup,
-  type V1_DataProductArtifactAccessPointImplementation,
-  type V1_DataProductArtifactGeneration,
-  V1_LibraryIconId,
+  V1_DataProductIconLibraryId,
 } from '@finos/legend-graph';
 import {
   accessPoint_setClassification,
@@ -1320,7 +1320,7 @@ const IconSelectorComponent = observer(
 
     const handleChange = (iconId: string | undefined): void => {
       const _dataProductLibraryIcon = new DataProductLibraryIcon(
-        V1_LibraryIconId.REACT_ICONS,
+        V1_DataProductIconLibraryId.REACT_ICONS,
         iconId ?? '',
       );
       dataProduct_setIcon(dataProduct, _dataProductLibraryIcon);
@@ -1463,7 +1463,10 @@ const DataProductIconEditor = observer(
               setIconEditorComponent('libraryIcon');
               dataProduct_setIcon(
                 product,
-                new DataProductLibraryIcon(V1_LibraryIconId.REACT_ICONS, ''),
+                new DataProductLibraryIcon(
+                  V1_DataProductIconLibraryId.REACT_ICONS,
+                  '',
+                ),
               );
             }}
             disabled={isReadOnly}
