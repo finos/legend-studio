@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
+import { jest } from '@jest/globals';
+
 /**
  * Simple mock for `react-markdown` to help with running Jest in non-ESM mode.
  * See Jest config for more details
  */
-const Mermaid = (): void => {
-  // do nothing
+const Mermaid = {
+  initialize: jest.fn(),
+  contentLoaded: jest.fn(),
 };
 
 // eslint-disable-next-line import/no-default-export
