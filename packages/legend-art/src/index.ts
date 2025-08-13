@@ -15,6 +15,7 @@
  */
 
 export * from './icon/Icon.js';
+export * from './icon/IconSelector.js';
 export * from './icon/IconSerialization.js';
 export * from './icon/TypeIcon.js';
 export * from './icon/LegendLogo.js';
@@ -79,6 +80,7 @@ export * from './utils/Backdrop.js';
 export * from './utils/ClickAwayListener.js';
 export * from './utils/LegendStyleProvider.js';
 export * from './utils/ComponentUtils.js';
+export * from './utils/ImageUtils.js';
 
 export * from './markdown/MarkdownTextViewer.js';
 

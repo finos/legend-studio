@@ -35,7 +35,7 @@ import { LegendStudioPluginManager } from '../../../../../application/LegendStud
 import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { findByPlaceholderText, screen, within } from '@testing-library/dom';
-import { AP_EMPTY_DESC_WARNING } from '../DataPoductEditor.js';
+import { AP_EMPTY_DESC_WARNING } from '../DataProductEditor.js';
 
 const pluginManager = LegendStudioPluginManager.create();
 pluginManager
