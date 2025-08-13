@@ -49,7 +49,6 @@ export const TEST_DATA__DATAPRODUCT_DELIVERY = [
       _type: 'dataProduct',
       accessPointGroups: [
         {
-          _type: 'defaultAccessPointGroup',
           accessPoints: [
             {
               _type: 'lakehouseAccessPoint',
@@ -170,7 +169,6 @@ export const TEST_DATA__DATAPRODUCT_GROUPS = [
       _type: 'dataProduct',
       accessPointGroups: [
         {
-          _type: 'defaultAccessPointGroup',
           accessPoints: [
             {
               _type: 'lakehouseAccessPoint',
@@ -219,7 +217,6 @@ export const TEST_DATA__DATAPRODUCT_GROUPS = [
           ],
         },
         {
-          _type: 'defaultAccessPointGroup',
           accessPoints: [
             {
               _type: 'lakehouseAccessPoint',
