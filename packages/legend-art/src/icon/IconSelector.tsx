@@ -62,7 +62,12 @@ export const IconSelector = observer(
             </span>
           )}
         </Button>
-        <BasePopover open={open} onClose={handleClose} anchorEl={anchorEl}>
+        <BasePopover
+          open={open}
+          onClose={handleClose}
+          anchorEl={anchorEl}
+          className="icon-selector__popover"
+        >
           <div
             onClick={() => {
               onChange('');
