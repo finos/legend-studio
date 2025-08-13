@@ -15,11 +15,12 @@
  */
 
 import { useState } from 'react';
-import { IconSelectorIcons } from './Icon.js';
+import { IconSelectorIcons, WarningIcon } from './Icon.js';
 import { observer } from 'mobx-react-lite';
 import { Button } from '../button/Button.js';
 import { BasePopover } from '../popover/BasePopover.js';
 import clsx from 'clsx';
+import { isNonEmptyString } from '@finos/legend-shared';
 
 export const IconSelector = observer(
   (props: {
@@ -34,7 +35,7 @@ export const IconSelector = observer(
     const IconComponent =
       iconId !== undefined
         ? IconSelectorIcons[iconId as keyof typeof IconSelectorIcons]
-        : null;
+        : undefined;
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
       setAnchorEl(event.currentTarget);
@@ -48,22 +49,26 @@ export const IconSelector = observer(
 
     return (
       <>
-        <div className="icon-selector__container">
-          <Button
-            className="icon-selector__button"
-            onClick={handleClick}
-            disabled={isReadOnly}
-          >
-            {IconComponent ? <IconComponent /> : 'Select Icon'}
-          </Button>
-        </div>
+        <Button
+          className="icon-selector__button"
+          onClick={handleClick}
+          disabled={isReadOnly}
+        >
+          {IconComponent ? <IconComponent /> : 'Select Icon'}
+          {IconComponent === undefined && isNonEmptyString(iconId) && (
+            <span className="icon-selector__unknown-icon">
+              <WarningIcon />
+              Icon not recognized
+            </span>
+          )}
+        </Button>
         <BasePopover open={open} onClose={handleClose} anchorEl={anchorEl}>
           <div
             onClick={() => {
-              onChange(undefined);
+              onChange('');
             }}
             className={clsx(
-              'icon-selector__option icon-selector__option__none',
+              'icon-selector__option icon-selector__option--none',
               {
                 'icon-selector__option--selected': iconId === undefined,
               },
