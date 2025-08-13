@@ -1,5 +1,13 @@
 # @finos/legend-application-marketplace
 
+## 0.0.68
+
+### Patch Changes
+
+- [#4341](https://github.com/finos/legend-studio/pull/4341) [`f526aad`](https://github.com/finos/legend-studio/commit/f526aad608422b0485f53d6df598e0790c226d2f) ([@travisstebbins](https://github.com/travisstebbins)) - Added Terminals viewing by id
+
+- [#4344](https://github.com/finos/legend-studio/pull/4344) [`2644280`](https://github.com/finos/legend-studio/commit/264428098cf3244f6f42c198468d1e62c92cae92) ([@travisstebbins](https://github.com/travisstebbins)) - Enhance contracts and subscriptions UI/UX
+
 ## 0.0.67
 
 ### Patch Changes

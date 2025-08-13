@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.17.24
+
+### Patch Changes
+
+- [#4341](https://github.com/finos/legend-studio/pull/4341) [`f526aad`](https://github.com/finos/legend-studio/commit/f526aad608422b0485f53d6df598e0790c226d2f) ([@travisstebbins](https://github.com/travisstebbins)) - Added Terminals viewing by id
+
 ## 4.17.23
 
 ## 4.17.22

@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace-deployment
 
+## 13.112.0
+
+### Patch Changes
+
+- [#4341](https://github.com/finos/legend-studio/pull/4341) [`f526aad`](https://github.com/finos/legend-studio/commit/f526aad608422b0485f53d6df598e0790c226d2f) ([@travisstebbins](https://github.com/travisstebbins)) - Added Terminals viewing by id
+
 ## 13.111.0
 
 ## 13.110.0
