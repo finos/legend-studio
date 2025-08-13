@@ -27,7 +27,6 @@ import {
 import {
   BugIcon,
   BuildingIcon,
-  Button,
   CaretDownIcon,
   Checkbox,
   CloseEyeIcon,
@@ -1441,7 +1440,7 @@ const DataProductIconEditor = observer(
       <div style={{ margin: '1rem' }}>
         <div className="panel__content__form__section__header__label">Icon</div>
         <div className="data-product-editor__icon-selector__button-group">
-          <Button
+          <button
             className={clsx('data-product-editor__icon-selector__button', {
               'data-product-editor__icon-selector__button--selected':
                 iconEditorComponent === 'none',
@@ -1453,8 +1452,8 @@ const DataProductIconEditor = observer(
             disabled={isReadOnly}
           >
             None
-          </Button>
-          <Button
+          </button>
+          <button
             className={clsx('data-product-editor__icon-selector__button', {
               'data-product-editor__icon-selector__button--selected':
                 iconEditorComponent === 'libraryIcon',
@@ -1472,8 +1471,8 @@ const DataProductIconEditor = observer(
             disabled={isReadOnly}
           >
             Icon
-          </Button>
-          <Button
+          </button>
+          <button
             className={clsx('data-product-editor__icon-selector__button', {
               'data-product-editor__icon-selector__button--selected':
                 iconEditorComponent === 'embeddedImage',
@@ -1488,7 +1487,7 @@ const DataProductIconEditor = observer(
             disabled={isReadOnly}
           >
             Image
-          </Button>
+          </button>
         </div>
         {iconEditorComponent === 'libraryIcon' && (
           <IconSelectorComponent

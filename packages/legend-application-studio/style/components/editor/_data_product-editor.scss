@@ -139,6 +139,57 @@
       display: none;
     }
   }
+
+  &__icon-selector {
+    &__button-group {
+      display: flex;
+      gap: 0;
+      border-radius: 0.2rem;
+      overflow: hidden;
+      border: 0.1rem solid var(--color-dark-grey-280);
+    }
+
+    &__button {
+      flex: 1;
+      padding: 0.5rem 1rem;
+      border: none;
+      background: var(--color-dark-grey-300);
+      color: var(--color-light-grey-200);
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+
+      &:first-child {
+        border-radius: 0;
+      }
+
+      &:last-child {
+        border-radius: 0;
+      }
+
+      &:not(:last-child) {
+        border-right: 0.1rem solid var(--color-dark-grey-280);
+      }
+
+      &:hover:not(:disabled) {
+        background: var(--color-dark-grey-250);
+      }
+
+      &:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
+
+      &--selected {
+        background: var(--color-blue-200);
+        color: var(--color-light-grey-0);
+
+        &:hover:not(:disabled) {
+          background: var(--color-blue-180);
+        }
+      }
+    }
+  }
 }
 
 .access-point-editor {
