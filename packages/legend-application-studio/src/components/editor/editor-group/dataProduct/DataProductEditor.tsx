@@ -25,90 +25,97 @@ import {
   LakehouseAccessPointState,
 } from '../../../../stores/editor/editor-state/element-editor-state/dataProduct/DataProductEditorState.js';
 import {
+  BugIcon,
+  BuildingIcon,
+  Button,
+  CaretDownIcon,
+  Checkbox,
+  CloseEyeIcon,
   clsx,
-  LockIcon,
-  PanelContent,
-  PanelHeader,
-  PanelHeaderActions,
+  compressImage,
+  ControlledDropdownMenu,
+  CustomSelectorInput,
   Dialog,
-  TimesIcon,
-  PlusIcon,
-  PanelHeaderActionItem,
-  RocketIcon,
+  DragPreviewLayer,
+  ErrorWarnIcon,
+  EyeIcon,
+  GroupWorkIcon,
+  HomeIcon,
+  IconSelector,
+  InfoCircleIcon,
   ListEditor,
+  LockIcon,
+  MarkdownTextViewer,
+  MenuContent,
+  MenuContentItem,
   Modal,
-  ModalHeader,
-  ModalTitle,
   ModalBody,
   ModalFooter,
   ModalFooterButton,
-  PencilEditIcon,
-  PanelFormTextField,
-  ControlledDropdownMenu,
-  MenuContent,
-  MenuContentItem,
-  CaretDownIcon,
-  WarningIcon,
-  PanelFormSection,
-  useDragPreviewLayer,
-  DragPreviewLayer,
+  ModalHeader,
+  ModalTitle,
+  PanelContent,
   PanelDnDEntry,
   PanelEntryDragHandle,
-  HomeIcon,
+  PanelFormSection,
+  PanelFormTextField,
+  PanelHeader,
+  PanelHeaderActionItem,
+  PanelHeaderActions,
+  PencilEditIcon,
+  PlusIcon,
   QuestionCircleIcon,
-  ErrorWarnIcon,
-  GroupWorkIcon,
-  CustomSelectorInput,
-  Switch,
-  BuildingIcon,
-  Tooltip,
-  InfoCircleIcon,
-  ResizablePanelGroup,
   ResizablePanel,
-  MarkdownTextViewer,
+  ResizablePanelGroup,
   ResizablePanelSplitter,
-  EyeIcon,
-  CloseEyeIcon,
-  Checkbox,
-  BugIcon,
+  RocketIcon,
+  Switch,
+  TimesIcon,
+  Tooltip,
+  useDragPreviewLayer,
+  WarningIcon,
 } from '@finos/legend-art';
-import React, {
-  useRef,
-  useState,
-  useEffect,
+import {
   type ChangeEventHandler,
   useCallback,
+  useEffect,
+  useRef,
+  useState,
 } from 'react';
-import { filterByType } from '@finos/legend-shared';
+import { filterByType, guaranteeType } from '@finos/legend-shared';
 import { InlineLambdaEditor } from '@finos/legend-query-builder';
 import { action, flowResult } from 'mobx';
 import { useAuth } from 'react-oidc-context';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 import {
-  LakehouseTargetEnv,
-  Email,
   type DataProduct,
   type LakehouseAccessPoint,
+  DataProductEmbeddedImageIcon,
+  DataProductLibraryIcon,
+  Email,
+  LakehouseTargetEnv,
   StereotypeExplicitReference,
   type V1_DataProductArtifactAccessPointGroup,
   type V1_DataProductArtifactAccessPointImplementation,
   type V1_DataProductArtifactGeneration,
+  V1_LibraryIconId,
 } from '@finos/legend-graph';
 import {
+  accessPoint_setClassification,
+  accessPoint_setReproducible,
   accessPointGroup_setDescription,
   accessPointGroup_setName,
   dataProduct_setDescription,
+  dataProduct_setIcon,
   dataProduct_setSupportInfoIfAbsent,
   dataProduct_setTitle,
-  supportInfo_setDocumentationUrl,
-  supportInfo_setWebsite,
-  supportInfo_setFaqUrl,
-  supportInfo_setSupportUrl,
   supportInfo_addEmail,
   supportInfo_deleteEmail,
-  accessPoint_setClassification,
-  accessPoint_setReproducible,
+  supportInfo_setDocumentationUrl,
+  supportInfo_setFaqUrl,
+  supportInfo_setSupportUrl,
+  supportInfo_setWebsite,
 } from '../../../../stores/graph-modifier/DSL_DataProduct_GraphModifierHelper.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
@@ -1302,9 +1309,205 @@ const DataProductSidebar = observer(
   },
 );
 
+const IconSelectorComponent = observer(
+  (props: { dataProduct: DataProduct; isReadOnly: boolean }) => {
+    const { dataProduct, isReadOnly } = props;
+
+    const dataProductLibraryIcon = guaranteeType(
+      dataProduct.icon,
+      DataProductLibraryIcon,
+    );
+
+    const handleChange = (iconId: string | undefined): void => {
+      const _dataProductLibraryIcon = new DataProductLibraryIcon(
+        V1_LibraryIconId.REACT_ICONS,
+        iconId ?? '',
+      );
+      dataProduct_setIcon(dataProduct, _dataProductLibraryIcon);
+    };
+
+    return (
+      <IconSelector
+        iconId={dataProductLibraryIcon.iconId}
+        onChange={handleChange}
+        isReadOnly={isReadOnly}
+      />
+    );
+  },
+);
+
+const ImageSelectorComponent = observer(
+  (props: { dataProduct: DataProduct; isReadOnly: boolean }) => {
+    const { dataProduct, isReadOnly } = props;
+
+    const editorStore = useEditorStore();
+
+    const handleFileChange = async (
+      event: React.ChangeEvent<HTMLInputElement>,
+    ) => {
+      const file = event.target.files?.[0];
+      if (file) {
+        try {
+          // Check file size first
+          const fileSizeKB = file.size / 1024;
+          if (fileSizeKB > 1024 * 5) {
+            // 5MB limit
+            editorStore.applicationStore.notificationService.notifyError(
+              'File size must be less than 5MB',
+            );
+            return;
+          }
+
+          const compressedImage = await compressImage(file, 128);
+          const dataProductEmbeddedImageIcon = new DataProductEmbeddedImageIcon(
+            compressedImage,
+          );
+          dataProduct_setIcon(dataProduct, dataProductEmbeddedImageIcon);
+        } catch {
+          editorStore.applicationStore.notificationService.notifyError(
+            'Failed to process image. Please try a different file.',
+          );
+        }
+      }
+    };
+
+    return (
+      <>
+        <div className="panel__content__form__section__header__prompt">
+          Upload an image to represent this Data Product in the marketplace.
+        </div>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.5rem',
+          }}
+        >
+          <input
+            type="file"
+            accept="image/*"
+            disabled={isReadOnly}
+            onChange={handleFileChange}
+            style={{
+              padding: '0.5rem',
+              border: '1px solid var(--color-light-grey-400)',
+              borderRadius: '0.25rem',
+              backgroundColor: isReadOnly
+                ? 'var(--color-light-grey-100)'
+                : 'var(--color-white)',
+            }}
+          />
+          <div
+            style={{
+              fontSize: '0.75rem',
+              color: 'var(--color-light-grey-400)',
+              fontStyle: 'italic',
+            }}
+          >
+            Supported formats: PNG, JPG, JPEG, GIF (max 5MB)
+          </div>
+        </div>
+        {dataProduct.icon instanceof DataProductEmbeddedImageIcon && (
+          <div style={{ margin: '1rem' }}>
+            <div className="panel__content__form__section__header__label">
+              Preview
+            </div>
+            <img
+              src={dataProduct.icon.imageUrl}
+              alt="Data Product"
+              style={{
+                maxWidth: '300px',
+                maxHeight: '200px',
+                border: '1px solid var(--color-light-grey-400)',
+                borderRadius: '0.25rem',
+              }}
+            />
+          </div>
+        )}
+      </>
+    );
+  },
+);
+
+const DataProductIconEditor = observer(
+  (props: { product: DataProduct; isReadOnly: boolean }) => {
+    const { product, isReadOnly } = props;
+
+    const [iconEditorComponent, setIconEditorComponent] = useState<
+      'libraryIcon' | 'embeddedImage' | 'none'
+    >('none');
+
+    return (
+      <div style={{ margin: '1rem' }}>
+        <div className="panel__content__form__section__header__label">Icon</div>
+        <div className="data-product-editor__icon-selector__button-group">
+          <Button
+            className={clsx('data-product-editor__icon-selector__button', {
+              'data-product-editor__icon-selector__button--selected':
+                iconEditorComponent === 'none',
+            })}
+            onClick={() => {
+              setIconEditorComponent('none');
+              dataProduct_setIcon(product, undefined);
+            }}
+            disabled={isReadOnly}
+          >
+            None
+          </Button>
+          <Button
+            className={clsx('data-product-editor__icon-selector__button', {
+              'data-product-editor__icon-selector__button--selected':
+                iconEditorComponent === 'libraryIcon',
+            })}
+            onClick={() => {
+              setIconEditorComponent('libraryIcon');
+              dataProduct_setIcon(
+                product,
+                new DataProductLibraryIcon(V1_LibraryIconId.REACT_ICONS, ''),
+              );
+            }}
+            disabled={isReadOnly}
+          >
+            Icon
+          </Button>
+          <Button
+            className={clsx('data-product-editor__icon-selector__button', {
+              'data-product-editor__icon-selector__button--selected':
+                iconEditorComponent === 'embeddedImage',
+            })}
+            onClick={() => {
+              setIconEditorComponent('embeddedImage');
+              dataProduct_setIcon(
+                product,
+                new DataProductEmbeddedImageIcon(''),
+              );
+            }}
+            disabled={isReadOnly}
+          >
+            Image
+          </Button>
+        </div>
+        {iconEditorComponent === 'libraryIcon' && (
+          <IconSelectorComponent
+            dataProduct={product}
+            isReadOnly={isReadOnly}
+          />
+        )}
+        {iconEditorComponent === 'embeddedImage' && (
+          <ImageSelectorComponent
+            dataProduct={product}
+            isReadOnly={isReadOnly}
+          />
+        )}
+      </div>
+    );
+  },
+);
+
 const HomeTab = observer(
   (props: { product: DataProduct; isReadOnly: boolean }) => {
     const { product, isReadOnly } = props;
+
     const updateDataProductTitle = (val: string | undefined): void => {
       dataProduct_setTitle(product, val ?? '');
     };
@@ -1394,6 +1597,7 @@ const HomeTab = observer(
                 }}
               />
             </div>
+            <DataProductIconEditor product={product} isReadOnly={isReadOnly} />
           </ResizablePanel>
           {showPreview && <ResizablePanelSplitter />}
           {showPreview && (
@@ -1679,7 +1883,6 @@ export const DataProductEditor = observer(() => {
           style={{ padding: '1rem', flexDirection: 'row' }}
         >
           <DataProductSidebar dataProductEditorState={dataProductEditorState} />
-
           {renderActivivtyBarTab()}
         </div>
       </div>
