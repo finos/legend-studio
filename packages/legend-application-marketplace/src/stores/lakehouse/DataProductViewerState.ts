@@ -145,25 +145,9 @@ export class DataProductViewerState {
             _contract,
           ),
         );
-      const dataProductContractIds = dataProductContracts.map((e) => e.guid);
-      const enrichedContracts = (
-        (yield Promise.all(
-          dataProductContractIds.map(async (contractId) => {
-            const rawContracts = await this.lakeServerClient.getDataContract(
-              contractId,
-              token,
-            );
-            const contract = V1_dataContractsResponseModelSchemaToContracts(
-              rawContracts,
-              this.lakehouseStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
-            );
-            return contract;
-          }),
-        )) as V1_DataContract[][]
-      ).flat();
-      this.setAssociatedContracts(enrichedContracts);
+      this.setAssociatedContracts(dataProductContracts);
       this.accessState.accessGroupStates.forEach((e) =>
-        e.handleDataProductContracts(enrichedContracts, token),
+        e.handleDataProductContracts(dataProductContracts, token),
       );
     } catch (error) {
       assertErrorThrown(error);
