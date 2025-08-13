@@ -81,7 +81,11 @@ import {
   useRef,
   useState,
 } from 'react';
-import { filterByType, guaranteeType } from '@finos/legend-shared';
+import {
+  filterByType,
+  guaranteeType,
+  isNonEmptyString,
+} from '@finos/legend-shared';
 import { InlineLambdaEditor } from '@finos/legend-query-builder';
 import { action, flowResult } from 'mobx';
 import { useAuth } from 'react-oidc-context';
@@ -1375,54 +1379,31 @@ const ImageSelectorComponent = observer(
         <div className="panel__content__form__section__header__prompt">
           Upload an image to represent this Data Product in the marketplace.
         </div>
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0.5rem',
-          }}
-        >
+        <div className="data-product-editor__image-selector__container">
           <input
             type="file"
             accept="image/*"
             disabled={isReadOnly}
             onChange={handleFileChange}
-            style={{
-              padding: '0.5rem',
-              border: '1px solid var(--color-light-grey-400)',
-              borderRadius: '0.25rem',
-              backgroundColor: isReadOnly
-                ? 'var(--color-light-grey-100)'
-                : 'var(--color-white)',
-            }}
+            className="data-product-editor__image-selector__input"
           />
-          <div
-            style={{
-              fontSize: '0.75rem',
-              color: 'var(--color-light-grey-400)',
-              fontStyle: 'italic',
-            }}
-          >
+          <div className="data-product-editor__image-selector__hint">
             Supported formats: PNG, JPG, JPEG, GIF (max 5MB)
           </div>
         </div>
-        {dataProduct.icon instanceof DataProductEmbeddedImageIcon && (
-          <div style={{ margin: '1rem' }}>
-            <div className="panel__content__form__section__header__label">
-              Preview
+        {dataProduct.icon instanceof DataProductEmbeddedImageIcon &&
+          isNonEmptyString(dataProduct.icon.imageUrl) && (
+            <div className="data-product-editor__image-selector__preview__container">
+              <div className="panel__content__form__section__header__label">
+                Preview
+              </div>
+              <img
+                src={dataProduct.icon.imageUrl}
+                alt="Data Product"
+                className="data-product-editor__image-selector__preview"
+              />
             </div>
-            <img
-              src={dataProduct.icon.imageUrl}
-              alt="Data Product"
-              style={{
-                maxWidth: '300px',
-                maxHeight: '200px',
-                border: '1px solid var(--color-light-grey-400)',
-                borderRadius: '0.25rem',
-              }}
-            />
-          </div>
-        )}
+          )}
       </>
     );
   },
