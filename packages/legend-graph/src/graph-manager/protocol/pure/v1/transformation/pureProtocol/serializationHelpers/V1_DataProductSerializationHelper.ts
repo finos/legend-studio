@@ -159,9 +159,6 @@ export const V1_ModelAccessPointGroupModelSchema = createModelSchema(
 export const V1_DefaultAccessPointGroupModelSchema = createModelSchema(
   V1_AccessPointGroup,
   {
-    _type: usingConstantValueSchema(
-      V1_AccessPointGrouptype.DEFAULT_ACCESS_POINT_GROUP,
-    ),
     accessPoints: customList(
       V1_serializeAccessPoint,
       V1_deserializeAccessPoint,
