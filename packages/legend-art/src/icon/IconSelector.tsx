@@ -75,6 +75,7 @@ export const IconSelector = observer(
           <div
             onClick={() => {
               onChange('');
+              handleClose();
             }}
             className={clsx(
               'icon-selector__option icon-selector__option--none',
