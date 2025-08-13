@@ -147,16 +147,17 @@
       border-radius: 0.2rem;
       overflow: hidden;
       border: 0.1rem solid var(--color-dark-grey-280);
+      width: fit-content;
     }
 
     &__button {
+      min-width: 8rem;
       flex: 1;
       padding: 0.5rem 1rem;
       border: none;
       background: var(--color-dark-grey-300);
       color: var(--color-light-grey-200);
       cursor: pointer;
-      font-size: 0.9rem;
       transition: all 0.2s ease;
 
       &:first-child {
