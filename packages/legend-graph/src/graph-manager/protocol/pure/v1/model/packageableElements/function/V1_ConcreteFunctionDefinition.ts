@@ -70,6 +70,7 @@ export class V1_ConcreteFunctionDefinition extends V1_PackageableElement {
       this.returnGenericType.rawType instanceof V1_PackageableType
         ? this.returnGenericType.rawType.fullPath
         : '',
+      this.returnGenericType,
       hashArray(this.taggedValues),
       hashArray(this.stereotypes),
       hashRawLambda(undefined, this.body),

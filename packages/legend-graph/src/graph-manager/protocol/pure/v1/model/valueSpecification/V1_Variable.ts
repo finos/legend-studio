@@ -20,8 +20,10 @@ import {
 } from '../../model/valueSpecification/V1_ValueSpecification.js';
 import type { V1_Multiplicity } from '../../model/packageableElements/domain/V1_Multiplicity.js';
 import type { V1_GenericType } from '../packageableElements/type/V1_GenericType.js';
+import { hashArray, type Hashable } from '@finos/legend-shared';
+import { CORE_HASH_STRUCTURE } from '../../../../../../graph/Core_HashUtils.js';
 
-export class V1_Variable extends V1_ValueSpecification {
+export class V1_Variable extends V1_ValueSpecification implements Hashable {
   name!: string;
   multiplicity!: V1_Multiplicity;
   genericType: V1_GenericType | undefined;
@@ -30,5 +32,14 @@ export class V1_Variable extends V1_ValueSpecification {
     visitor: V1_ValueSpecificationVisitor<T>,
   ): T {
     return visitor.visit_Variable(this);
+  }
+
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.VARIABLE_EXPRESSION,
+      this.name,
+      this.multiplicity,
+      this.genericType?.rawType.hashCode,
+    ]);
   }
 }

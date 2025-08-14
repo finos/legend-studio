@@ -63,6 +63,7 @@ export class ConcreteFunctionDefinition
       this.path,
       hashArray(this.parameters),
       this.returnType.ownerReference.valueForSerialization ?? '',
+      this.returnType.value,
       hashArray(this.taggedValues),
       hashArray(this.stereotypes.map((val) => val.pointerHashCode)),
       hashRawLambda(undefined, this.expressionSequence),

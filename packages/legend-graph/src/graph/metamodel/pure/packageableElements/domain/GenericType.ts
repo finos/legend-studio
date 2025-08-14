@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import { uuid } from '@finos/legend-shared';
+import { hashArray, uuid, type Hashable } from '@finos/legend-shared';
 import type { Type } from './Type.js';
 import type { GenericTypeReference } from './GenericTypeReference.js';
 import type { ValueSpecification } from '../../valueSpecification/ValueSpecification.js';
 
-export class GenericType {
+export class GenericType implements Hashable {
   readonly _UUID = uuid();
 
   rawType: Type;
@@ -28,5 +28,13 @@ export class GenericType {
 
   constructor(rawType: Type) {
     this.rawType = rawType;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      this.rawType.path,
+      hashArray(this.typeArguments?.map((e) => e.value) ?? []),
+      hashArray(this.typeVariableValues ?? []),
+    ]);
   }
 }
