@@ -281,6 +281,7 @@ export {
   type V1_UserPendingContractsResponse,
   V1_AccessPointGroupReference,
   V1_ApprovalType,
+  V1_ContractEventPayloadType,
   V1_ContractState,
   V1_ContractUserEventDataProducerPayload,
   V1_ContractUserEventPayload,

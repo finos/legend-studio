@@ -61,7 +61,6 @@ import {
   isContractInTerminalState,
   stringifyOrganizationalScope,
 } from '../../stores/lakehouse/LakehouseUtils.js';
-import { useLegendMarketplaceBaseStore } from '../../application/LegendMarketplaceFrameworkProvider.js';
 import { flowResult } from 'mobx';
 import { useAuth } from 'react-oidc-context';
 import {
@@ -165,6 +164,7 @@ export const EntitlementsDataContractViewer = observer(
   (props: {
     open: boolean;
     currentViewer: EntitlementsDataContractViewerState;
+    legendMarketplaceStore: LegendMarketplaceBaseStore;
     dataProductGroupAccessState?: DataProductGroupAccessState | undefined;
     onClose: () => void;
     initialSelectedUser?: string | undefined;
@@ -172,12 +172,12 @@ export const EntitlementsDataContractViewer = observer(
     const {
       open,
       currentViewer,
+      legendMarketplaceStore,
       dataProductGroupAccessState,
       onClose,
       initialSelectedUser,
     } = props;
     const auth = useAuth();
-    const legendMarketplaceStore = useLegendMarketplaceBaseStore();
     const consumer = currentViewer.value.consumer;
 
     // We try to get the target users from the associated tasks first, since the

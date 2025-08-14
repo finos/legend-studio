@@ -728,6 +728,7 @@ export const EntitlementsPendingTasksDashbaord = observer(
                 marketplaceBaseStore.lakehouseContractServerClient,
               )
             }
+            legendMarketplaceStore={marketplaceBaseStore}
             onClose={() => setSelectedContract(undefined)}
             initialSelectedUser={selectedContractTargetUser}
           />

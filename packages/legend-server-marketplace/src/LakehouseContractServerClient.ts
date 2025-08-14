@@ -27,6 +27,7 @@ import type {
   V1_TaskStatus,
   V1_UserPendingContractsResponse,
   V1_LiteDataContractsResponse,
+  V1_TaskResponse,
 } from '@finos/legend-graph';
 import { AbstractServerClient, type PlainObject } from '@finos/legend-shared';
 
@@ -155,7 +156,7 @@ export class LakehouseContractServerClient extends AbstractServerClient {
   getContractTasks = (
     contractId: string,
     token: string | undefined,
-  ): Promise<PlainObject<V1_PendingTasksResponse>> => {
+  ): Promise<PlainObject<V1_TaskResponse>> => {
     return this.get(
       `${this._contract_tasks()}/${encodeURIComponent(contractId)}`,
       {},

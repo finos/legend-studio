@@ -650,6 +650,10 @@ export const DataProductAccessPointGroupViewer = observer(
             open={true}
             currentViewer={entitlementsDataContractViewerState}
             dataProductGroupAccessState={accessGroupState}
+            legendMarketplaceStore={
+              accessGroupState.accessState.viewerState.lakehouseStore
+                .marketplaceBaseStore
+            }
             onClose={() =>
               accessGroupState.accessState.viewerState.setDataContract(
                 undefined,

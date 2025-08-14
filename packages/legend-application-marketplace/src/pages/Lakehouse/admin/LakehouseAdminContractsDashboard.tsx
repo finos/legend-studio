@@ -29,12 +29,15 @@ import type { LakehouseAdminStore } from '../../../stores/lakehouse/admin/Lakeho
 import { useState } from 'react';
 import { EntitlementsDataContractViewer } from '../../../components/DataContractViewer/EntitlementsDataContractViewer.js';
 import { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
+import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
 
 export const LakehouseAdminContractsDashboard = observer(
   (props: { adminStore: LakehouseAdminStore }) => {
     const { adminStore } = props;
 
     const contracts = adminStore.contracts;
+
+    const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
 
     const [selectedContract, setSelectedContract] = useState<
       V1_LiteDataContract | undefined
@@ -125,6 +128,7 @@ export const LakehouseAdminContractsDashboard = observer(
                 adminStore.lakehouseContractServerClient,
               )
             }
+            legendMarketplaceStore={legendMarketplaceBaseStore}
             onClose={() => setSelectedContract(undefined)}
           />
         )}

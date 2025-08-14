@@ -403,7 +403,7 @@ export const V1_liteDataContractsResponseModelSchemaToContracts = (
 };
 
 export const V1_deserializeTaskResponse = (
-  json: PlainObject<V1_TaskMetadata>,
+  json: PlainObject<V1_TaskResponse>,
 ): V1_TaskMetadata[] => {
   return deserialize(V1_taskResponseModelSchema, json).tasks ?? [];
 };

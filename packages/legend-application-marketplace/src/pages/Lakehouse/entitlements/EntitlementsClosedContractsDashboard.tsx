@@ -306,6 +306,7 @@ export const EntitlementsClosedContractsDashbaord = observer(
                 marketplaceBaseStore.lakehouseContractServerClient,
               )
             }
+            legendMarketplaceStore={marketplaceBaseStore}
             onClose={() => setSelectedContract(undefined)}
           />
         )}
