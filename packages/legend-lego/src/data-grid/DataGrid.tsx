@@ -71,7 +71,6 @@ export function DataGrid<TData = unknown>(
       {...props}
       // NOTE: for test, we don't want to handle the error messages outputed by ag-grid so
       // we disable enterprise features for now
-      // eslint-disable-next-line no-process-env
       modules={[AllCommunityModule, AllEnterpriseModule]}
       onGridReady={() => {
         // eslint-disable-next-line no-process-env
