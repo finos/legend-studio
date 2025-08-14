@@ -20,7 +20,11 @@ import {
   TERMINAL_PRODUCT_VIEWER_SECTION,
   generateAnchorForSection,
 } from '../../../stores/lakehouse/DataProductViewerNavigation.js';
-import { AnchorLinkIcon, MarkdownTextViewer } from '@finos/legend-art';
+import {
+  AnchorLinkIcon,
+  MarkdownTextViewer,
+  UserIcon,
+} from '@finos/legend-art';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { DataproducteWikiPlaceholder } from './DataProductWiki.js';
 import type { TerminalProductViewerState } from '../../../stores/lakehouse/TerminalProductViewerState.js';
@@ -156,8 +160,8 @@ export const TerminalProductPrice = observer(
     }
 
     const getDisplayPrice = () => {
-      const price = Number(availablePrice) || 0;
-      return (isAnnual ? price : price / 12).toFixed(2);
+      const price = Number(availablePrice);
+      return (price / 12).toFixed(2);
     };
 
     const handlePricingToggle = () => {
@@ -250,37 +254,331 @@ export const RequestAccessButton = observer(
   (props: {
     children?: React.ReactNode;
     onAccessRequested?: (callback: () => void) => void;
+    onOpenModal?: () => void;
+    onModalSubmitted?: () => void;
+    terminalProductViewerState: TerminalProductViewerState;
+    buttonRef?:
+      | React.RefObject<{ handleModalSubmitted: () => void } | null>
+      | undefined;
   }) => {
-    const { onAccessRequested } = props;
+    const { onAccessRequested, onOpenModal } = props;
     const [accessStatus, setAccessStatus] = React.useState(
       TERMINAL_ACCESS.REQUEST,
     );
     const [disabled, setDisabled] = React.useState(false);
     const buttonConfig = getButtonConfig(accessStatus);
+
     const handleClick = () => {
       if (accessStatus === TERMINAL_ACCESS.REQUEST) {
-        setAccessStatus(TERMINAL_ACCESS.PENDING);
-        setDisabled(buttonConfig.disabled);
-        if (onAccessRequested) {
-          onAccessRequested(() => {
-            setAccessStatus(TERMINAL_ACCESS.ENTITLED);
-          });
+        if (onOpenModal) {
+          onOpenModal();
         }
       } else if (accessStatus === TERMINAL_ACCESS.PENDING) {
         setAccessStatus(TERMINAL_ACCESS.ENTITLED);
       }
     };
 
-    return accessStatus === TERMINAL_ACCESS.ENTITLED ? (
-      <EntitlementButton />
-    ) : (
-      <button
-        className={buttonConfig.className}
-        onClick={handleClick}
-        disabled={disabled}
-      >
-        {buttonConfig.text}
-      </button>
+    const handleModalSubmitted = () => {
+      setAccessStatus(TERMINAL_ACCESS.PENDING);
+      setDisabled(true);
+
+      if (onAccessRequested) {
+        onAccessRequested(() => {
+          setAccessStatus(TERMINAL_ACCESS.ENTITLED);
+          setDisabled(false);
+        });
+      }
+    };
+
+    React.useImperativeHandle(props.buttonRef, () => ({
+      handleModalSubmitted,
+    }));
+
+    return (
+      <>
+        {accessStatus === TERMINAL_ACCESS.ENTITLED ? (
+          <EntitlementButton />
+        ) : (
+          <button
+            className={buttonConfig.className}
+            onClick={handleClick}
+            disabled={disabled}
+          >
+            {buttonConfig.text}
+          </button>
+        )}
+      </>
+    );
+  },
+);
+
+const TerminalProductTable = observer(
+  (props: {
+    terminalProductViewerState: TerminalProductViewerState;
+    onOpenModal?: () => void;
+    buttonRef?: React.RefObject<{ handleModalSubmitted: () => void } | null>;
+  }) => {
+    const { terminalProductViewerState, onOpenModal, buttonRef } = props;
+    const terminal = terminalProductViewerState.product;
+
+    const getProductName = () => {
+      return (
+        terminal.productName ?? terminal.applicationName ?? 'Unknown Product'
+      );
+    };
+
+    const getAnnualPrice = () => {
+      const price =
+        terminal.price ?? terminal.tieredPrice ?? terminal.totalFirmPrice;
+      return price ? Number(price) || 0 : 0;
+    };
+
+    const formatPrice = (price: number) => {
+      return `$${price.toFixed(2)}/year`;
+    };
+
+    return (
+      <div className="data-space__viewer__content__">
+        <table className="data-space__viewer__content__table">
+          <thead>
+            <tr className="data-space__viewer__content__table--row">
+              <th className="data-space__viewer__content__table--header">
+                Entity
+              </th>
+              <th className="data-space__viewer__content__table--header">
+                Cost
+              </th>
+              <th className="data-space__viewer__content__table--header">
+                Status
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr className="data-space__viewer__content__table--row">
+              <td className="data-space__viewer__content__table--cell data-space__viewer__content__table--cell--entity">
+                {getProductName()}
+              </td>
+              <td className="data-space__viewer__content__table--cell data-space__viewer__content__table--cell--cost">
+                {formatPrice(getAnnualPrice())}
+              </td>
+              <td className="data-space__viewer__content__table--cell data-space__viewer__content__table--cell--status">
+                <RequestAccessButton
+                  terminalProductViewerState={terminalProductViewerState}
+                  onOpenModal={onOpenModal ?? (() => {})}
+                  buttonRef={buttonRef}
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    );
+  },
+);
+
+export const TerminalAccessModal = observer(
+  (props: {
+    terminalProductViewerState: TerminalProductViewerState;
+    isOpen: boolean;
+    onClose: () => void;
+    onSubmit: (data: { user: string; justification: string }) => void;
+  }) => {
+    const { terminalProductViewerState, isOpen, onClose, onSubmit } = props;
+    const [user, setUser] = React.useState('');
+    const [justification, setJustification] = React.useState('');
+    const [errors, setErrors] = React.useState<{
+      user?: string;
+      justification?: string;
+    }>({});
+
+    const errorTimeouts = React.useRef<{ [key: string]: NodeJS.Timeout }>({});
+
+    const terminal = terminalProductViewerState.product;
+    const productName =
+      terminal.productName ?? terminal.applicationName ?? 'Unknown Product';
+
+    const clearError = (field: 'user' | 'justification') => {
+      setErrors((prev) => {
+        const { [field]: removed, ...rest } = prev;
+        return rest;
+      });
+
+      if (errorTimeouts.current[field]) {
+        clearTimeout(errorTimeouts.current[field]);
+        delete errorTimeouts.current[field];
+      }
+    };
+
+    const handleSubmit = (e: React.FormEvent) => {
+      e.preventDefault();
+      let hasErrors = false;
+
+      const setErrorWithTimeout = (
+        field: 'user' | 'justification',
+        message: string,
+      ) => {
+        setErrors((prev) => ({ ...prev, [field]: message }));
+        if (errorTimeouts.current[field]) {
+          clearTimeout(errorTimeouts.current[field]);
+        }
+        errorTimeouts.current[field] = setTimeout(() => {
+          clearError(field);
+        }, 2000);
+      };
+
+      if (!user.trim()) {
+        setErrorWithTimeout('user', 'User field is required');
+        hasErrors = true;
+      }
+      if (!justification.trim()) {
+        setErrorWithTimeout('justification', 'Justification field is required');
+      }
+      if (hasErrors) {
+        return;
+      }
+      setErrors({});
+      onSubmit({ user, justification });
+      setUser('');
+      setJustification('');
+    };
+
+    const handleCancel = () => {
+      setUser('');
+      setJustification('');
+      setErrors({});
+      onClose();
+    };
+
+    const handleUserChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      setUser(e.target.value);
+      if (errors.user && e.target.value.trim()) {
+        clearError('user');
+      }
+    };
+
+    const handleJustificationChange = (
+      e: React.ChangeEvent<HTMLTextAreaElement>,
+    ) => {
+      setJustification(e.target.value);
+      if (errors.justification && e.target.value.trim()) {
+        clearError('justification');
+      }
+    };
+
+    React.useEffect(() => {
+      const currentTimeouts = errorTimeouts.current;
+      return () => {
+        Object.values(currentTimeouts).forEach((timeout) => {
+          clearTimeout(timeout);
+        });
+      };
+    }, []);
+
+    if (!isOpen) {
+      return null;
+    }
+
+    return (
+      <div className="data-space__viewer__content__modal">
+        <div
+          className="data-space__viewer__content__modal__overlay"
+          onClick={handleCancel}
+        />
+        <div className="data-space__viewer__content__modal__container">
+          <div className="data-space__viewer__content__modal__header">
+            <h2 className="data-space__viewer__content__modal__header__title">
+              Access Request
+            </h2>
+          </div>
+
+          <div className="data-space__viewer__content__modal__description">
+            <p>
+              Submit access request for{' '}
+              <span className="data-space__viewer__content__modal__description__terminal-name">
+                {productName}
+              </span>
+            </p>
+          </div>
+
+          <div className="data-space__viewer__content__modal__user-button-section">
+            <button
+              type="button"
+              className="data-space__viewer__content__modal__user-button"
+            >
+              <UserIcon />
+
+              <span className="data-space__viewer__content__modal__user-button__text">
+                User
+              </span>
+            </button>
+          </div>
+
+          <div className="data-space__viewer__content__modal__form">
+            <form onSubmit={handleSubmit}>
+              <div className="data-space__viewer__content__modal__form__field">
+                <label
+                  htmlFor="user"
+                  className="data-space__viewer__content__modal__form__field--label"
+                >
+                  User
+                </label>
+                <input
+                  id="user"
+                  type="text"
+                  className="data-space__viewer__content__modal__form__input"
+                  value={user}
+                  onChange={handleUserChange}
+                  placeholder="Enter username"
+                />
+                {errors.user && (
+                  <span className="data-space__viewer__content__modal__form__error">
+                    {errors.user}
+                  </span>
+                )}
+              </div>
+
+              <div className="data-space__viewer__content__modal__form__field">
+                <label
+                  htmlFor="justification"
+                  className="data-space__viewer__modal__form__field--label"
+                >
+                  Business Justification
+                </label>
+                <textarea
+                  id="justification"
+                  className="data-space__viewer__content__modal__form__textarea"
+                  value={justification}
+                  onChange={handleJustificationChange}
+                  placeholder="Enter business justification"
+                  rows={1}
+                />
+                {errors.justification && (
+                  <span className="data-space__viewer__content__modal__form__error">
+                    {errors.justification}
+                  </span>
+                )}
+              </div>
+            </form>
+          </div>
+
+          <div className="data-space__viewer__content__modal__actions">
+            <button
+              type="button"
+              className="data-space__viewer__content__modal__button data-space__viewer__content__modal__actions--cancel"
+              onClick={handleCancel}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="data-space__viewer__content__modal__button data-space__viewer__content__modal__actions--submit"
+              onClick={handleSubmit}
+            >
+              Submit
+            </button>
+          </div>
+        </div>
+      </div>
     );
   },
 );
@@ -288,6 +586,25 @@ export const RequestAccessButton = observer(
 export const TerminalProductWiki = observer(
   (props: { terminalProductViewerState: TerminalProductViewerState }) => {
     const { terminalProductViewerState } = props;
+    const [isModalOpen, setIsModalOpen] = React.useState(false);
+    const buttonRef = React.useRef<{ handleModalSubmitted: () => void } | null>(
+      null,
+    );
+
+    const handleOpenModal = () => {
+      setIsModalOpen(true);
+    };
+
+    const handleModalSubmit = (data: {
+      user: string;
+      justification: string;
+    }) => {
+      setIsModalOpen(false);
+
+      if (buttonRef.current) {
+        buttonRef.current.handleModalSubmitted();
+      }
+    };
 
     useEffect(() => {
       if (
@@ -314,14 +631,31 @@ export const TerminalProductWiki = observer(
     ]);
 
     return (
-      <div className="data-space__viewer__wiki">
-        <TerminalProductPrice
+      <div
+        className="data-space__viewer__wiki"
+        style={{ position: 'relative' }}
+      >
+        <div style={{ display: isModalOpen ? 'none' : 'block' }}>
+          <TerminalProductPrice
+            terminalProductViewerState={terminalProductViewerState}
+          />
+          <TerminalProductDescription
+            terminalProductViewerState={terminalProductViewerState}
+          />
+          <TerminalProductTable
+            terminalProductViewerState={terminalProductViewerState}
+            onOpenModal={handleOpenModal}
+            buttonRef={buttonRef}
+          />
+        </div>
+
+        {/* Modal */}
+        <TerminalAccessModal
           terminalProductViewerState={terminalProductViewerState}
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSubmit={handleModalSubmit}
         />
-        <TerminalProductDescription
-          terminalProductViewerState={terminalProductViewerState}
-        />
-        <RequestAccessButton />
       </div>
     );
   },
