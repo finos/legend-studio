@@ -388,10 +388,6 @@ export const V1_dataContractsResponseModelSchemaToContracts = (
     V1_dataContractsResponseModelSchema(plugins),
     json,
   );
-  console.log(
-    'V1_dataContractsResponseModelSchemaToContracts contracts',
-    contracts,
-  );
   return contracts.dataContracts?.map((e) => e.dataContract) ?? [];
 };
 
