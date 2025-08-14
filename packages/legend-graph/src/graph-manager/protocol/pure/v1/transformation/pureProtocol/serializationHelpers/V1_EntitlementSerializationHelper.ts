@@ -79,7 +79,7 @@ import {
 } from '../../../lakehouse/entitlements/V1_EntitlementsDataProduct.js';
 import { V1_stereotypePtrModelSchema } from './V1_CoreSerializationHelper.js';
 
-enum V1_OrganizationalScopeType {
+export enum V1_OrganizationalScopeType {
   AdHocTeam = 'AdHocTeam',
 }
 
@@ -88,7 +88,7 @@ export enum V1_DataProductOriginType {
   SDLC_DEPLOYMENT = 'SdlcDeployment',
 }
 
-enum V1_AccessPointGroupReferenceType {
+export enum V1_AccessPointGroupReferenceType {
   AccessPointGroupReference = 'AccessPointGroupReference',
 }
 
@@ -387,6 +387,10 @@ export const V1_dataContractsResponseModelSchemaToContracts = (
   const contracts = deserialize(
     V1_dataContractsResponseModelSchema(plugins),
     json,
+  );
+  console.log(
+    'V1_dataContractsResponseModelSchemaToContracts contracts',
+    contracts,
   );
   return contracts.dataContracts?.map((e) => e.dataContract) ?? [];
 };

@@ -114,62 +114,19 @@ export const mockSDLCDataProductEntitiesResponse: {
   },
 ];
 
-// export const mockSDLCDataProduct: V1_DataProduct = guaranteeType(
-//   V1_deserializePackageableElement(
-//     {
-//       _type: 'dataProduct',
-//       package: 'test',
-//       name: 'Mock_SDLC_DataProduct',
-//       title: 'Mock SDLC Data Product',
-//       description:
-//         'Comprehensive customer analytics data for business intelligence and reporting',
-//       accessPointGroups: [
-//         {
-//           _type: 'defaultAccessPointGroup',
-//           id: 'GROUP1',
-//           description: 'Test access point group',
-//           accessPoints: [
-//             {
-//               _type: 'lakehouseAccessPoint',
-//               id: 'customer_demographics',
-//               description: 'Customer demographics data access point',
-//               func: {
-//                 _type: 'lambda',
-//                 body: [
-//                   {
-//                     _type: 'classInstnace',
-//                     type: 'I',
-//                     value: {
-//                       metadata: false,
-//                       path: ['test', 'IngestDefinition'],
-//                     },
-//                   },
-//                 ],
-//                 parameters: [],
-//               },
-//             },
-//           ],
-//         },
-//       ],
-//     },
-//     [],
-//   ),
-//   V1_DataProduct,
-// );
-
 export const mockEntitlementsAdHocDataProduct: V1_EntitlementsDataProductDetailsResponse =
   {
     dataProducts: [
       {
         id: 'MOCK_ADHOC_DATAPRODUCT',
         deploymentId: 22222,
-        title: 'Ad Hoc Data Product',
+        title: 'Mock Ad-Hoc Data Product',
         description:
           'Flexible and dynamic data product for ad hoc analysis and reporting',
         origin: {
           type: 'AdHocDeployment',
           definition:
-            "###Lakehouse\nIngest test::IngestDefinition Snapshot<CSV> owner=AppDir(production='297484')\n[\nTEST_TABLE(\nint_val: Int,\nvarchar_val: Varchar(500)\n)\npk=[ int_val ];\n]\n\n###DataProduct test::Mock_AdHoc_DataProduct\n{\naccessPoints:\n[\nGROUP1[\nTEST_VIEW: *LH(Snowflake, |#I{test::Ingest.TEST_TABLE}#)\n]\n]\n}",
+            "###Lakehouse\nIngest test::IngestDefinition Snapshot<CSV> owner=AppDir(production='297484')\n[\nTEST_TABLE(\nint_val: Int,\nvarchar_val: Varchar(500)\n)\npk=[ int_val ];\n]\n\n###DataProduct test::Mock_AdHoc_DataProduct\n{\ntitle: 'Mock Ad-Hoc Data Product'\naccessPoints:\n[\nGROUP1[\nTEST_VIEW: *LH(Snowflake, |#I{test::Ingest.TEST_TABLE}#)\n]\n]\n}",
         },
         lakehouseEnvironment: {
           producerEnvironmentName: 'production-analytics',
@@ -198,6 +155,8 @@ export const mockAdHocDataProductPMCD = {
   elements: [
     {
       _type: 'ingestDefinition',
+      package: 'test',
+      name: 'IngestDefinition',
       owner: {
         _type: 'appDir',
         production: {
@@ -210,14 +169,14 @@ export const mockAdHocDataProductPMCD = {
       _type: 'dataProduct',
       package: 'test',
       name: 'Mock_AdHoc_DataProduct',
-      title: 'Mock Ad Hoc Data Product',
+      title: 'Mock Ad-Hoc Data Product',
       description:
         'Flexible and dynamic data product for ad hoc analysis and reporting',
       accessPointGroups: [
         {
           _type: 'defaultAccessPointGroup',
           id: 'GROUP1',
-          description: 'Test access point group',
+          description: 'Test ad-hoc access point group',
           accessPoints: [
             {
               _type: 'lakehouseAccessPoint',

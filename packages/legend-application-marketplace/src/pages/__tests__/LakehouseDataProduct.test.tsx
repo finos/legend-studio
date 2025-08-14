@@ -27,7 +27,11 @@ import {
   type V1_LambdaReturnTypeInput,
   type V1_PureModelContextData,
   type V1_RawLambda,
+  V1_AccessPointGroupReferenceType,
+  V1_ContractState,
   V1_EnrichedUserApprovalStatus,
+  V1_OrganizationalScopeType,
+  V1_UserType,
 } from '@finos/legend-graph';
 import {
   mockAdHocDataProductPMCD,
@@ -36,7 +40,10 @@ import {
   mockSDLCDataProductEntitiesResponse,
 } from '../__test-utils__/TEST_DATA__LakehouseDataProducts.js';
 import { createSpy } from '@finos/legend-shared/test';
-import { ENGINE_TEST_SUPPORT__getLambdaRelationType } from '@finos/legend-graph/test';
+import {
+  ENGINE_TEST_SUPPORT__getClassifierPathMapping,
+  ENGINE_TEST_SUPPORT__getLambdaRelationType,
+} from '@finos/legend-graph/test';
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{
@@ -133,6 +140,8 @@ const setupLakehouseDataProductTest = async (
         };
       case 'test-approved-contract-id':
         return { status: V1_EnrichedUserApprovalStatus.APPROVED };
+      case 'test-denied-contract-id':
+        return { status: V1_EnrichedUserApprovalStatus.DENIED };
       default:
         return { status: V1_EnrichedUserApprovalStatus.DENIED };
     }
@@ -163,193 +172,20 @@ const setupLakehouseDataProductTest = async (
     'getCurrentUserId',
   ).mockResolvedValue('test-user-id');
 
-  // jest
-  //   .spyOn(LakehouseUtils, 'getDataProductFromDetails')
-  //   .mockImplementation(async (details: any) => {
-  //     if (details.id === 'SDLC_RELEASE_DATAPRODUCT') {
-  //       const dataProduct = new V1_DataProduct();
-  //       dataProduct.name = 'SDLC_RELEASE_DATAPRODUCT';
-  //       dataProduct.package = 'test::dataproduct';
-  //       dataProduct.title = 'SDLC Release Data Product';
-  //       dataProduct.description =
-  //         'Comprehensive customer analytics data for business intelligence and reporting';
-
-  //       const accessPointGroup = new V1_AccessPointGroup();
-  //       accessPointGroup.id = 'testSDLCAccessPointGroup';
-  //       accessPointGroup.description = 'A test access point group';
-
-  //       const accessPoint = new V1_LakehouseAccessPoint();
-  //       accessPoint.id = 'testSDLCAccessPoint';
-  //       accessPoint.targetEnvironment = 'Snowflake';
-  //       accessPoint.reproducible = false;
-  //       accessPoint.description = 'Test access point description';
-  //       (accessPoint as any)._type = 'lakehouseAccessPoint';
-  //       const lambda = new V1_RawLambda();
-  //       lambda.parameters = [];
-  //       lambda.body = [
-  //         {
-  //           _type: 'classInstance',
-  //           type: 'I',
-  //           value: {
-  //             metadata: false,
-  //             path: ['my::sandboxIngestDefinition', 'TESTTABLE'],
-  //           },
-  //         },
-  //       ];
-  //       accessPoint.func = lambda;
-
-  //       accessPointGroup.accessPoints = [accessPoint];
-  //       dataProduct.accessPointGroups = [accessPointGroup];
-
-  //       return dataProduct;
-  //     } else if (details.id === 'SDLC_SNAPSHOT_DATAPRODUCT') {
-  //       const dataProduct = new V1_DataProduct();
-  //       dataProduct.name = 'SDLC_SNAPSHOT_DATAPRODUCT';
-  //       dataProduct.package = 'test::dataproduct';
-  //       dataProduct.accessPointGroups = [];
-  //       return dataProduct;
-  //     }
-  //     return undefined;
-  //   });
-
-  // createSpy(
-  //   mockedStore.lakehouseContractServerClient,
-  //   'getDataContract',
-  // ).mockImplementation(async (contractId: string) => {
-  //   const matchingContract = mockContracts.dataContracts?.find(
-  //     (dc: any) => dc.dataContract?.guid === contractId,
-  //   );
-  //   return {
-  //     dataContracts: matchingContract ? [matchingContract] : [],
-  //   };
-  // });
-
-  // createSpy(
-  //   mockedStore.depotServerClient,
-  //   'getVersionEntities',
-  // ).mockResolvedValue([
-  //   {
-  //     artifactId: 'test-artifact',
-  //     entity: { content: mockReleaseSDLCDataProduct },
-  //     groupId: 'test-group',
-  //     versionId: '1.0.0',
-  //     versionedEntity: true,
-  //   },
-  //   {
-  //     artifactId: 'test-artifact-2',
-  //     entity: { content: mockSnapshotSDLCDataProduct },
-  //     groupId: 'test-group',
-  //     versionId: '1.0.0',
-  //     versionedEntity: true,
-  //   },
-  // ]);
-
-  // createSpy(
-  //   mockedStore.engineServerClient,
-  //   'grammarToJSON_model',
-  // ).mockImplementation(async (input: string) => {
-  //   console.log('Mocked grammarToJSON_model called with:', input);
-  //   const result = await ENGINE_TEST_SUPPORT__grammarToJSON_model(input);
-  //   return result;
-  // });
-
-  // createSpy(
-  //   mockedStore.engineServerClient,
-  //   'lambdaReturnType',
-  // ).mockImplementation(async (input: any) => {
-  //   console.log('Mocked lambdaReturnType called');
-  //   return {
-  //     returnType: 'String',
-  //     multiplicity: { lowerBound: 1, upperBound: 1 },
-  //   };
-  // });
-
-  // createSpy(
-  //   mockedStore.engineServerClient,
-  //   'transformTdsToRelation_lambda',
-  // ).mockImplementation(async (input: any) => {
-  //   return { lambda: { _type: 'lambda', body: [], parameters: [] } };
-  // });
-
-  // createSpy(mockedStore.engineServerClient, 'runQuery').mockImplementation(
-  //   async (input: any) => {
-  //     return { result: { columns: [], rows: [] } };
-  //   },
-  // );
-
-  // createSpy(
-  //   mockedStore.engineServerClient,
-  //   'grammarToJSON_lambda',
-  // ).mockImplementation(async (input: string) => {
-  //   return { lambda: { _type: 'lambda', body: [], parameters: [] } };
-  // });
-
-  // createSpy(
-  //   mockedStore.engineServerClient,
-  //   'grammarToJSON_valueSpecification',
-  // ).mockImplementation(async (input: string) => {
-  //   return { valueSpecification: { _type: 'string', value: 'test' } };
-  // });
-
-  // createSpy(
-  //   mockedStore.engineServerClient,
-  //   'JSONToGrammar_valueSpecification',
-  // ).mockImplementation(async (input: any) => {
-  //   return 'test grammar';
-  // });
-
-  // createSpy(
-  //   mockedStore.engineServerClient,
-  //   'getClassifierPathMap',
-  // ).mockResolvedValue([]);
-
-  // createSpy(mockedStore.engineServerClient, 'getSubtypeInfo').mockResolvedValue(
-  //   {
-  //     functionActivatorSubtypes: ['snowflakeM2MUdf', 'snowflakeApp'],
-  //     storeSubtypes: ['MongoDatabase', 'serviceStore', 'relational', 'binding'],
-  //   },
-  // );
-
-  // createSpy(
-  //   mockedStore.engineServerClient,
-  //   'JSONToGrammar_model',
-  // ).mockResolvedValue('');
-
-  // createSpy(mockedStore.engineServerClient, 'compile').mockResolvedValue({
-  //   elements: [],
-  // });
-
-  // createSpy(
-  //   mockedStore.engineServerClient,
-  //   'JSONToGrammar_lambda',
-  // ).mockResolvedValue('x: String[1]|$x->filter(y|$y == "test")');
-
-  // jest
-  //   .spyOn(LakehouseUtils, 'dataContractContainsDataProduct')
-  //   .mockImplementation((dataProduct, deploymentId, dataContract) => {
-  //     return (
-  //       dataProduct.name === 'SDLC_RELEASE_DATAPRODUCT' &&
-  //       deploymentId === 12345 &&
-  //       dataContract.guid?.includes('test-contract-guid')
-  //     );
-  //   });
-
-  // jest
-  //   .spyOn(LakehouseUtils, 'dataContractContainsAccessGroup')
-  //   .mockImplementation((accessPointGroup, dataContract) => {
-  //     return (
-  //       accessPointGroup.id === 'testSDLCAccessPointGroup' &&
-  //       dataContract.guid?.includes('test-contract-guid')
-  //     );
-  //   });
-
-  // jest
-  //   .spyOn(LakehouseUtils, 'isMemberOfContract')
-  //   .mockImplementation((user, contract) => {
-  //     return (
-  //       user === 'test-user-id' && contract.guid?.includes('test-contract-guid')
-  //     );
-  //   });
+  createSpy(
+    mockedStore.engineServerClient,
+    'getClassifierPathMap',
+  ).mockImplementation(async () => {
+    const result = await ENGINE_TEST_SUPPORT__getClassifierPathMapping();
+    return [
+      ...result,
+      {
+        type: 'ingestDefinition',
+        classifierPath:
+          'meta::external::ingest::specification::metamodel::IngestDefinition',
+      },
+    ];
+  });
 
   const { renderResult } = await TEST__setUpMarketplaceLakehouse(
     mockedStore,
@@ -373,165 +209,194 @@ test('Loads LakehosueDataProduct with SDLC Data Product and displays title, desc
   screen.getByText('GROUP1');
   screen.getByText('Test access point group');
   await screen.findByText('customer_demographics');
-  await screen.getByText('Customer demographics data access point');
+  await screen.findByText('Customer demographics data access point');
 });
 
-// test('loads V1_EntitlementsDataProductDetails with V1_AdHocDeploymentDataProductOrigin and displays title, description, and access point groups', async () => {
-//   const mockContracts = { dataContracts: [] };
+test('Loads LakehosueDataProduct with Ad-Hoc Data Product and displays title, description, and access point groups', async () => {
+  await setupLakehouseDataProductTest(
+    MOCK_DataProductId.MOCK_ADHOC_DATAPRODUCT,
+    2222,
+    [],
+  );
 
-//   await setupLakehouseDataProductTest(
-//     'SDLC_SNAPSHOT_DATAPRODUCT',
-//     67890,
-//     mockContracts,
-//   );
+  await screen.findByText('Mock Ad-Hoc Data Product');
+  screen.getByText(
+    'Flexible and dynamic data product for ad hoc analysis and reporting',
+  );
+  screen.getByText('GROUP1');
+  screen.getByText('Test ad-hoc access point group');
+  await screen.findByText('test_view');
+  await screen.findByText('No description to provide');
+});
 
-//   await waitFor(() => {
-//     expect(screen.getByText('SDLC_SNAPSHOT_DATAPRODUCT')).toBeDefined();
-//   });
-// });
+test('displays REQUEST ACCESS button when user has no contracts', async () => {
+  const mockContracts: V1_DataContract[] = [];
 
-// test('displays REQUEST ACCESS button when user has no contracts for V1_SdlcDeploymentDataProductOrigin', async () => {
-//   const mockContracts = { dataContracts: [] };
+  await setupLakehouseDataProductTest(
+    MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
+    11111,
+    mockContracts,
+  );
 
-//   await setupLakehouseDataProductTest(
-//     'SDLC_RELEASE_DATAPRODUCT',
-//     12345,
-//     mockContracts,
-//   );
+  await screen.findByRole('button', { name: 'REQUEST ACCESS' });
+});
 
-//   await waitFor(() => {
-//     expect(screen.getByText('REQUEST ACCESS')).toBeDefined();
-//   });
-// });
+test('displays REQUEST ACCESS button when user has denied contract', async () => {
+  const mockContracts: V1_DataContract[] = [
+    {
+      description: 'Test denied contract',
+      guid: 'test-denied-contract-id',
+      version: 0,
+      state: V1_ContractState.COMPLETED,
+      resource: {
+        _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+        accessPointGroup: 'GROUP1',
+        dataProduct: {
+          name: 'MOCK_SDLC_DATAPRODUCT',
+          owner: {
+            appDirId: 11111,
+          },
+        },
+      },
+      members: [],
+      consumer: {
+        _type: V1_OrganizationalScopeType.AdHocTeam,
+        users: [
+          {
+            name: 'test-user-id',
+            type: V1_UserType.WORKFORCE_USER,
+          },
+        ],
+      },
+      createdBy: 'test-user',
+    },
+  ];
 
-// test('displays PENDING MANAGER APPROVAL button for contract in PENDING_CONSUMER_PRIVILEGE_MANAGER_APPROVAL status', async () => {
-//   const mockContracts = {
-//     dataContracts: [
-//       {
-//         dataContract: {
-//           guid: 'test-contract-guid-1',
-//           state: 'PENDING_CONSUMER_PRIVILEGE_MANAGER_APPROVAL',
-//           dataProductId: 'SDLC_RELEASE_DATAPRODUCT',
-//           deploymentId: 12345,
-//           resource: {
-//             _type: 'accessPointGroupReference',
-//             accessPointGroup: 'testSDLCAccessPointGroup',
-//             dataProduct: {
-//               name: 'SDLC_RELEASE_DATAPRODUCT',
-//               owner: {
-//                 appDirId: 12345,
-//               },
-//             },
-//           },
-//           consumer: {
-//             _type: 'adhocTeam',
-//             users: [
-//               {
-//                 name: 'test-user-id',
-//                 type: 'USER',
-//               },
-//             ],
-//           },
-//         },
-//       },
-//     ],
-//   };
+  await setupLakehouseDataProductTest(
+    MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
+    11111,
+    mockContracts,
+  );
 
-//   await setupLakehouseDataProductTest(
-//     'SDLC_RELEASE_DATAPRODUCT',
-//     12345,
-//     mockContracts,
-//   );
+  await screen.findByRole('button', { name: 'REQUEST ACCESS' });
+});
 
-//   await waitFor(() => {
-//     expect(screen.getByText('PENDING MANAGER APPROVAL')).toBeDefined();
-//   });
-// });
+test('displays PENDING MANAGER APPROVAL button for contract in PENDING_CONSUMER_PRIVILEGE_MANAGER_APPROVAL status', async () => {
+  const mockContracts: V1_DataContract[] = [
+    {
+      description: 'Test pending privilege manager approval contract',
+      guid: 'test-pending-consumer-privilege-manager-approval-contract-id',
+      version: 0,
+      state: V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL,
+      resource: {
+        _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+        accessPointGroup: 'GROUP1',
+        dataProduct: {
+          name: 'MOCK_SDLC_DATAPRODUCT',
+          owner: {
+            appDirId: 11111,
+          },
+        },
+      },
+      members: [],
+      consumer: {
+        _type: V1_OrganizationalScopeType.AdHocTeam,
+        users: [
+          {
+            name: 'test-user-id',
+            type: V1_UserType.WORKFORCE_USER,
+          },
+        ],
+      },
+      createdBy: 'test-user',
+    },
+  ];
 
-// test('displays PENDING DATA OWNER APPROVAL button for contract in PENDING_DATA_OWNER_APPROVAL status', async () => {
-//   const mockContracts = {
-//     dataContracts: [
-//       {
-//         dataContract: {
-//           guid: 'test-contract-guid-2',
-//           state: 'PENDING_DATA_OWNER_APPROVAL',
-//           dataProductId: 'SDLC_RELEASE_DATAPRODUCT',
-//           deploymentId: 12345,
-//           resource: {
-//             _type: 'accessPointGroupReference',
-//             accessPointGroup: 'testSDLCAccessPointGroup',
-//             dataProduct: {
-//               name: 'SDLC_RELEASE_DATAPRODUCT',
-//               owner: {
-//                 appDirId: 12345,
-//               },
-//             },
-//           },
-//           consumer: {
-//             _type: 'adhocTeam',
-//             users: [
-//               {
-//                 name: 'test-user-id',
-//                 type: 'USER',
-//               },
-//             ],
-//           },
-//         },
-//       },
-//     ],
-//   };
+  await setupLakehouseDataProductTest(
+    MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
+    11111,
+    mockContracts,
+  );
 
-//   await setupLakehouseDataProductTest(
-//     'SDLC_RELEASE_DATAPRODUCT',
-//     12345,
-//     mockContracts,
-//   );
+  await screen.findByRole('button', { name: 'PENDING MANAGER APPROVAL' });
+});
 
-//   await waitFor(() => {
-//     expect(screen.getByText('PENDING DATA OWNER APPROVAL')).toBeDefined();
-//   });
-// });
+test('displays PENDING DATA OWNER APPROVAL button for contract in PENDING_DATA_OWNER_APPROVAL status', async () => {
+  const mockContracts: V1_DataContract[] = [
+    {
+      description: 'Test pending data owner approval contract',
+      guid: 'test-pending-data-owner-approval-contract-id',
+      version: 0,
+      state: V1_ContractState.PENDING_DATA_OWNER_APPROVAL,
+      resource: {
+        _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+        accessPointGroup: 'GROUP1',
+        dataProduct: {
+          name: 'MOCK_SDLC_DATAPRODUCT',
+          owner: {
+            appDirId: 11111,
+          },
+        },
+      },
+      members: [],
+      consumer: {
+        _type: V1_OrganizationalScopeType.AdHocTeam,
+        users: [
+          {
+            name: 'test-user-id',
+            type: V1_UserType.WORKFORCE_USER,
+          },
+        ],
+      },
+      createdBy: 'test-user',
+    },
+  ];
 
-// test('displays ENTITLED button for contract in APPROVED status', async () => {
-//   const mockContracts = {
-//     dataContracts: [
-//       {
-//         dataContract: {
-//           guid: 'test-contract-guid-3',
-//           state: 'APPROVED',
-//           dataProductId: 'SDLC_RELEASE_DATAPRODUCT',
-//           deploymentId: 12345,
-//           resource: {
-//             _type: 'accessPointGroupReference',
-//             accessPointGroup: 'testSDLCAccessPointGroup',
-//             dataProduct: {
-//               name: 'SDLC_RELEASE_DATAPRODUCT',
-//               owner: {
-//                 appDirId: 12345,
-//               },
-//             },
-//           },
-//           consumer: {
-//             _type: 'adhocTeam',
-//             users: [
-//               {
-//                 name: 'test-user-id',
-//                 type: 'USER',
-//               },
-//             ],
-//           },
-//         },
-//       },
-//     ],
-//   };
+  await setupLakehouseDataProductTest(
+    MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
+    11111,
+    mockContracts,
+  );
 
-//   await setupLakehouseDataProductTest(
-//     'SDLC_RELEASE_DATAPRODUCT',
-//     12345,
-//     mockContracts,
-//   );
+  await screen.findByRole('button', { name: 'PENDING DATA OWNER APPROVAL' });
+});
 
-//   await waitFor(() => {
-//     expect(screen.getByText('ENTITLED')).toBeDefined();
-//   });
-// });
+test('displays ENTITLED button for contract in APPROVED status', async () => {
+  const mockContracts: V1_DataContract[] = [
+    {
+      description: 'Test pending data owner approval contract',
+      guid: 'test-approved-contract-id',
+      version: 0,
+      state: V1_ContractState.COMPLETED,
+      resource: {
+        _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+        accessPointGroup: 'GROUP1',
+        dataProduct: {
+          name: 'MOCK_SDLC_DATAPRODUCT',
+          owner: {
+            appDirId: 11111,
+          },
+        },
+      },
+      members: [],
+      consumer: {
+        _type: V1_OrganizationalScopeType.AdHocTeam,
+        users: [
+          {
+            name: 'test-user-id',
+            type: V1_UserType.WORKFORCE_USER,
+          },
+        ],
+      },
+      createdBy: 'test-user',
+    },
+  ];
+
+  await setupLakehouseDataProductTest(
+    MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
+    11111,
+    mockContracts,
+  );
+
+  await screen.findByRole('button', { name: 'ENTITLED' });
+});
