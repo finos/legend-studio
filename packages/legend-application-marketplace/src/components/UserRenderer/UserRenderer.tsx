@@ -16,7 +16,7 @@
 
 import { UserDisplay } from '@finos/legend-art';
 import { LegendUser } from '@finos/legend-shared';
-import { CircularProgress } from '@mui/material';
+import { Box, CircularProgress } from '@mui/material';
 import type { LegendMarketplaceBaseStore } from '../../stores/LegendMarketplaceBaseStore.js';
 import { useEffect, useState } from 'react';
 
@@ -80,17 +80,17 @@ export const UserRenderer = (props: {
     );
   } else if (userData) {
     return (
-      <>
+      <Box>
         {userData}
         {appendComma ? ', ' : ''}
-      </>
+      </Box>
     );
   } else {
     return (
-      <>
+      <Box>
         {userId}
         {appendComma ? ', ' : ''}
-      </>
+      </Box>
     );
   }
 };
