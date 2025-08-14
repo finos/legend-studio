@@ -28,9 +28,9 @@ import {
   V1_UserType,
 } from '@finos/legend-graph';
 
-export const getMockDataContract = (guid: string): V1_LiteDataContract => ({
+export const mockDataContract: V1_LiteDataContract = {
   description: 'Test contract creation request',
-  guid,
+  guid: 'test-data-contract-id',
   version: 0,
   state: V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL,
   members: [],
@@ -48,17 +48,41 @@ export const getMockDataContract = (guid: string): V1_LiteDataContract => ({
   resourceType: V1_ResourceType.ACCESS_POINT_GROUP,
   deploymentId: 11111,
   accessPointGroup: 'GROUP1',
-});
+};
 
-export const getMockPendingManagerApprovalTasksResponse = (
-  dataContractId: string,
-): V1_TaskResponse => ({
+export const mockDataContractMultipleConsumers: V1_LiteDataContract = {
+  description: 'Test contract creation request',
+  guid: 'test-data-contract-id',
+  version: 0,
+  state: V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL,
+  members: [],
+  consumer: {
+    _type: V1_OrganizationalScopeType.AdHocTeam,
+    users: [
+      {
+        name: 'test-consumer-user-id-1',
+        type: V1_UserType.WORKFORCE_USER,
+      },
+      {
+        name: 'test-consumer-user-id-2',
+        type: V1_UserType.WORKFORCE_USER,
+      },
+    ],
+  },
+  createdBy: 'test-requester-user-id',
+  resourceId: 'MOCK_SDLC_DATAPRODUCT',
+  resourceType: V1_ResourceType.ACCESS_POINT_GROUP,
+  deploymentId: 11111,
+  accessPointGroup: 'GROUP1',
+};
+
+export const mockPendingManagerApprovalTasksResponse: V1_TaskResponse = {
   tasks: [
     {
       assignees: ['test-privilege-manager-user-id'],
       rec: {
         consumer: 'test-consumer-user-id',
-        dataContractId,
+        dataContractId: 'test-data-contract-id',
         eventPayload: {
           type: V1_ContractEventPayloadType.SUBMITTED,
           eventTimestamp: '2025-08-06T20:54:46.069672876Z',
@@ -69,17 +93,72 @@ export const getMockPendingManagerApprovalTasksResponse = (
       },
     },
   ],
-});
+};
 
-export const getMockPendingDataOwnerApprovalTasksResponse = (
-  dataContractId: string,
-): V1_TaskResponse => ({
+export const mockPendingManagerApprovalMultipleAssigneesTasksResponse: V1_TaskResponse =
+  {
+    tasks: [
+      {
+        assignees: [
+          'test-privilege-manager-user-id-1',
+          'test-privilege-manager-user-id-2',
+        ],
+        rec: {
+          consumer: 'test-consumer-user-id',
+          dataContractId: 'test-data-contract-id',
+          eventPayload: {
+            type: V1_ContractEventPayloadType.SUBMITTED,
+            eventTimestamp: '2025-08-06T20:54:46.069672876Z',
+          },
+          status: V1_UserApprovalStatus.PENDING,
+          taskId: 'mock-privilege-manager-approval-task-id',
+          type: V1_ApprovalType.CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
+        },
+      },
+    ],
+  };
+
+export const mockPendingManagerApprovalMultipleConsumersTasksResponse: V1_TaskResponse =
+  {
+    tasks: [
+      {
+        assignees: ['test-privilege-manager-user-id'],
+        rec: {
+          consumer: 'test-consumer-user-id-1',
+          dataContractId: 'test-data-contract-id',
+          eventPayload: {
+            type: V1_ContractEventPayloadType.SUBMITTED,
+            eventTimestamp: '2025-08-06T20:54:46.069672876Z',
+          },
+          status: V1_UserApprovalStatus.PENDING,
+          taskId: 'mock-privilege-manager-approval-task-id',
+          type: V1_ApprovalType.CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
+        },
+      },
+      {
+        assignees: ['test-privilege-manager-user-id'],
+        rec: {
+          consumer: 'test-consumer-user-id-2',
+          dataContractId: 'test-data-contract-id',
+          eventPayload: {
+            type: V1_ContractEventPayloadType.SUBMITTED,
+            eventTimestamp: '2025-08-06T20:54:46.069672876Z',
+          },
+          status: V1_UserApprovalStatus.PENDING,
+          taskId: 'mock-privilege-manager-approval-task-id',
+          type: V1_ApprovalType.CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
+        },
+      },
+    ],
+  };
+
+export const mockPendingDataOwnerApprovalTasksResponse: V1_TaskResponse = {
   tasks: [
     {
       assignees: ['test-privilege-manager-user-id'],
       rec: {
         consumer: 'test-consumer-user-id',
-        dataContractId,
+        dataContractId: 'test-data-contract-id',
         eventPayload: {
           type: V1_ContractEventPayloadType.PRIVILEGE_MANAGER_APPROVED,
           candidateIdentity: 'test-consumer-user-id',
@@ -96,7 +175,7 @@ export const getMockPendingDataOwnerApprovalTasksResponse = (
       assignees: ['test-data-owner-user-id'],
       rec: {
         consumer: 'test-consumer-user-id',
-        dataContractId,
+        dataContractId: 'test-data-contract-id',
         eventPayload: {
           type: V1_ContractEventPayloadType.PRIVILEGE_MANAGER_APPROVED,
           candidateIdentity: 'test-consumer-user-id',
@@ -110,17 +189,15 @@ export const getMockPendingDataOwnerApprovalTasksResponse = (
       },
     },
   ],
-});
+};
 
-export const getMockApprovedTasksResponse = (
-  dataContractId: string,
-): V1_TaskResponse => ({
+export const mockApprovedTasksResponse: V1_TaskResponse = {
   tasks: [
     {
       assignees: ['test-privilege-manager-user-id'],
       rec: {
         consumer: 'test-consumer-user-id',
-        dataContractId,
+        dataContractId: 'test-data-contract-id',
         eventPayload: {
           type: V1_ContractEventPayloadType.PRIVILEGE_MANAGER_APPROVED,
           candidateIdentity: 'test-consumer-user-id',
@@ -137,12 +214,12 @@ export const getMockApprovedTasksResponse = (
       assignees: ['test-data-owner-user-id'],
       rec: {
         consumer: 'test-consumer-user-id',
-        dataContractId,
+        dataContractId: 'test-data-contract-id',
         eventPayload: {
           type: V1_ContractEventPayloadType.DATA_PRODUCER_APPROVED,
           candidateIdentity: 'test-consumer-user-id',
           eventTimestamp: '2025-08-07T20:54:46.069672876Z',
-          dataProducerIdentity: 'test-privilege-manager-user-id',
+          dataProducerIdentity: 'test-data-owner-user-id',
           taskId: 'mock-data-owner-approval-task-id',
         } as V1_ContractUserEventDataProducerPayload,
         status: V1_UserApprovalStatus.APPROVED,
@@ -151,17 +228,15 @@ export const getMockApprovedTasksResponse = (
       },
     },
   ],
-});
+};
 
-export const getMockDeniedTasksResponse = (
-  dataContractId: string,
-): V1_TaskResponse => ({
+export const mockDeniedTasksResponse: V1_TaskResponse = {
   tasks: [
     {
       assignees: ['test-privilege-manager-user-id'],
       rec: {
         consumer: 'test-consumer-user-id',
-        dataContractId,
+        dataContractId: 'test-data-contract-id',
         eventPayload: {
           type: V1_ContractEventPayloadType.PRIVILEGE_MANAGER_REJECTED,
           candidateIdentity: 'test-consumer-user-id',
@@ -175,4 +250,4 @@ export const getMockDeniedTasksResponse = (
       },
     },
   ],
-});
+};

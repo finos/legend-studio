@@ -14,19 +14,25 @@
  * limitations under the License.
  */
 
-import { jest, test } from '@jest/globals';
-import { act, render, screen } from '@testing-library/react';
+import { expect, jest, test } from '@jest/globals';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { TEST__provideMockedLegendMarketplaceBaseStore } from '../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
 import { type PlainObject } from '@finos/legend-shared';
 import type { V1_LiteDataContract, V1_TaskResponse } from '@finos/legend-graph';
 import { createSpy } from '@finos/legend-shared/test';
-import {
-  getMockDataContract,
-  getMockPendingManagerApprovalTasksResponse,
-} from '../__test-utils__/TEST_DATA__LakehouseContractData.js';
 import { AuthProvider } from 'react-oidc-context';
 import { EntitlementsDataContractViewerState } from '../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
 import { EntitlementsDataContractViewer } from '../DataContractViewer/EntitlementsDataContractViewer.js';
+import {
+  mockApprovedTasksResponse,
+  mockDataContract,
+  mockDataContractMultipleConsumers,
+  mockDeniedTasksResponse,
+  mockPendingDataOwnerApprovalTasksResponse,
+  mockPendingManagerApprovalMultipleAssigneesTasksResponse,
+  mockPendingManagerApprovalMultipleConsumersTasksResponse,
+  mockPendingManagerApprovalTasksResponse,
+} from '../__test-utils__/TEST_DATA__LakehouseContractData.js';
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{
@@ -35,16 +41,10 @@ jest.mock('react-oidc-context', () => {
   return MOCK__reactOIDCContext;
 });
 
-enum MOCK_DataContractId {
-  PENDING_CONSUMER_PRIVILEGE_MANAGER_APPROVAL = 'mock-pending-privilege-manager-approval-contract-id',
-  PENDING_DATA_OWNER_APPROVAL = 'mock-pending-data-owner-approval-contract-id',
-  APPROVED = 'mock-approved-contract-id',
-  DENIED = 'mock-denied-contract-id',
-}
-
 const setupDataContractViewerTest = async (
   mockContract: V1_LiteDataContract,
   mockTasks: V1_TaskResponse,
+  initialSelectedUser?: string,
 ) => {
   const mockedStore = await TEST__provideMockedLegendMarketplaceBaseStore();
 
@@ -73,6 +73,7 @@ const setupDataContractViewerTest = async (
           currentViewer={contractViewerState}
           legendMarketplaceStore={mockedStore}
           onClose={jest.fn()}
+          initialSelectedUser={initialSelectedUser}
         />
       </AuthProvider>,
     );
@@ -85,12 +86,8 @@ const setupDataContractViewerTest = async (
 
 test('Displays contract details', async () => {
   await setupDataContractViewerTest(
-    getMockDataContract(
-      MOCK_DataContractId.PENDING_CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
-    ),
-    getMockPendingManagerApprovalTasksResponse(
-      MOCK_DataContractId.PENDING_CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
-    ),
+    mockDataContract,
+    mockPendingManagerApprovalTasksResponse,
   );
 
   // Verify title
@@ -119,9 +116,86 @@ test('Displays contract details', async () => {
   screen.getByText('Complete');
 
   // Verify Contract ID
-  screen.getByText(
-    `Contract ID: ${
-      MOCK_DataContractId.PENDING_CONSUMER_PRIVILEGE_MANAGER_APPROVAL
-    }`,
+  screen.getByText('Contract ID: test-data-contract-id');
+});
+
+test('Shows correct details for Pending Privilege Manager Approval', async () => {
+  await setupDataContractViewerTest(
+    mockDataContract,
+    mockPendingManagerApprovalTasksResponse,
   );
+
+  // Verify pending assignee
+  await screen.findByText('Assignee:');
+  screen.getByText('test-privilege-manager-user-id');
+});
+
+test('Shows correct details for Pending Data Producer Approval', async () => {
+  await setupDataContractViewerTest(
+    mockDataContract,
+    mockPendingDataOwnerApprovalTasksResponse,
+  );
+
+  // Verify approved task
+  await screen.findByText('Approved by');
+  screen.getByText('test-privilege-manager-user-id');
+  screen.getByText('08/06/2025 16:54:46');
+
+  // Verify pending assignee
+  await screen.findByText('Assignee:');
+  screen.getByText('test-data-owner-user-id');
+});
+
+test('Shows correct details for Approved contract', async () => {
+  await setupDataContractViewerTest(
+    mockDataContract,
+    mockApprovedTasksResponse,
+  );
+
+  // Verify approved privilege manager task
+  expect(await screen.findAllByText('Approved by')).toHaveLength(2);
+  screen.getByText('test-privilege-manager-user-id');
+  screen.getByText('08/06/2025 16:54:46');
+
+  // Verify approved data owner task
+  screen.getByText('test-data-owner-user-id');
+  screen.getByText('08/07/2025 16:54:46');
+});
+
+test('Shows correct details for Denied contract', async () => {
+  await setupDataContractViewerTest(mockDataContract, mockDeniedTasksResponse);
+
+  // Verify denied privilege manager task
+  await screen.findByText('Denied by');
+  screen.getByText('test-privilege-manager-user-id');
+  screen.getByText('08/06/2025 16:54:46');
+});
+
+test('Shows list of assignees if there is more than 1', async () => {
+  await setupDataContractViewerTest(
+    mockDataContract,
+    mockPendingManagerApprovalMultipleAssigneesTasksResponse,
+  );
+
+  // Verify pending assignees
+  await screen.findByText('Assignees (2):');
+  screen.getByText('test-privilege-manager-user-id-1');
+  screen.getByText('test-privilege-manager-user-id-2');
+});
+
+test('Shows list of "ordered for"" if there is more than 1 consumer and respects initialSelectedUser', async () => {
+  await setupDataContractViewerTest(
+    mockDataContractMultipleConsumers,
+    mockPendingManagerApprovalMultipleConsumersTasksResponse,
+    'test-consumer-user-id-2',
+  );
+
+  // Verify consumers
+  await screen.findByText('test-consumer-user-id-2');
+  expect(screen.queryByText('test-consumer-user-id-1')).toBeNull();
+  const userButton = screen.getByRole('combobox');
+  await act(async () => {
+    fireEvent.mouseDown(userButton);
+  });
+  await screen.findByText('test-consumer-user-id-1');
 });
