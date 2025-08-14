@@ -79,18 +79,22 @@ export const UserRenderer = (props: {
       />
     );
   } else if (userData) {
-    return (
-      <Box>
+    return appendComma ? (
+      <>
         {userData}
-        {appendComma ? ', ' : ''}
-      </Box>
+        {', '}
+      </>
+    ) : (
+      <Box>{userData}</Box>
     );
   } else {
-    return (
-      <Box>
+    return appendComma ? (
+      <>
         {userId}
-        {appendComma ? ', ' : ''}
-      </Box>
+        {', '}
+      </>
+    ) : (
+      <Box>{userId}</Box>
     );
   }
 };
