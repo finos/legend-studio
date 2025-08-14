@@ -45,41 +45,12 @@ jest.mock('react-oidc-context', () => {
   return MOCK__reactOIDCContext;
 });
 
-// jest.mock('mermaid', () => ({
-//   __esModule: true,
-//   default: {
-//     initialize: jest.fn(),
-//     contentLoaded: jest.fn(),
-//   },
-// }));
-
-// jest.mock('ag-grid-community', () => ({
-//   ModuleRegistry: {
-//     registerModules: jest.fn(),
-//   },
-//   Grid: class MockGrid {},
-//   GridApi: class MockGridApi {},
-//   ColumnApi: class MockColumnApi {},
-//   Component: class MockComponent {},
-// }));
-
-// jest.mock('ag-grid-enterprise', () => ({
-//   MasterDetailModule: {},
-//   AllEnterpriseModule: {},
-//   LicenseManager: {
-//     setLicenseKey: jest.fn(),
-//   },
-// }));
-
-// jest.mock('ag-grid-react', () => ({
-//   AgGridReact: () => null,
-// }));
-
-(global as any).IntersectionObserver = jest.fn().mockImplementation(() => ({
-  observe: jest.fn(),
-  unobserve: jest.fn(),
-  disconnect: jest.fn(),
-}));
+(global as unknown as { IntersectionObserver: unknown }).IntersectionObserver =
+  jest.fn().mockImplementation(() => ({
+    observe: jest.fn(),
+    unobserve: jest.fn(),
+    disconnect: jest.fn(),
+  }));
 
 enum MOCK_DataProductId {
   MOCK_SDLC_DATAPRODUCT = 'MOCK_SDLC_DATAPRODUCT',
@@ -401,8 +372,8 @@ test('Loads LakehosueDataProduct with SDLC Data Product and displays title, desc
   );
   screen.getByText('GROUP1');
   screen.getByText('Test access point group');
-  screen.getByText('customer_demographics');
-  screen.getByText('Customer demographics data access point');
+  await screen.findByText('customer_demographics');
+  await screen.getByText('Customer demographics data access point');
 });
 
 // test('loads V1_EntitlementsDataProductDetails with V1_AdHocDeploymentDataProductOrigin and displays title, description, and access point groups', async () => {
