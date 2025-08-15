@@ -219,13 +219,11 @@ test.only('Refresh button re-initializes data contract viewer', async () => {
   // Verify refresh button
   const refreshButton = await screen.findByRole('button', { name: 'Refresh' });
 
-  jest.spyOn(mockedContractViewerState, 'init');
+  const initSpy = jest.spyOn(mockedContractViewerState, 'init');
 
-  expect(mockedContractViewerState.init).toHaveBeenCalledTimes(0);
+  expect(initSpy).toHaveBeenCalledTimes(0);
 
   fireEvent.click(refreshButton);
 
-  await waitFor(() =>
-    expect(mockedContractViewerState.init).toHaveBeenCalledTimes(1),
-  );
+  await waitFor(() => expect(initSpy).toHaveBeenCalledTimes(1));
 });
