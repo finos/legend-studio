@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.117
+
+### Patch Changes
+
+- [#4355](https://github.com/finos/legend-studio/pull/4355) [`dcd854e`](https://github.com/finos/legend-studio/commit/dcd854eacf1cede503623b3ff53e506afb22fb59) ([@travisstebbins](https://github.com/travisstebbins)) - Update Mermaid mock to return object
+
 ## 7.1.116
 
 ## 7.1.115

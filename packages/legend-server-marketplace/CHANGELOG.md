@@ -1,5 +1,11 @@
 # @finos/legend-server-marketplace
 
+## 0.0.37
+
+### Patch Changes
+
+- [#4355](https://github.com/finos/legend-studio/pull/4355) [`dcd854e`](https://github.com/finos/legend-studio/commit/dcd854eacf1cede503623b3ff53e506afb22fb59) ([@travisstebbins](https://github.com/travisstebbins)) - Add LakehouseDataProduct tests
+
 ## 0.0.36
 
 ## 0.0.35
