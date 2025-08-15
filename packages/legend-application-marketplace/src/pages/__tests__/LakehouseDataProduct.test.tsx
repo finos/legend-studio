@@ -27,6 +27,7 @@ import {
   type V1_LambdaReturnTypeInput,
   type V1_PureModelContextData,
   type V1_RawLambda,
+  type V1_TaskResponse,
   V1_AccessPointGroupReferenceType,
   V1_ContractState,
   V1_EnrichedUserApprovalStatus,
@@ -44,6 +45,10 @@ import {
   ENGINE_TEST_SUPPORT__getClassifierPathMapping,
   ENGINE_TEST_SUPPORT__getLambdaRelationType,
 } from '@finos/legend-graph/test';
+import {
+  mockApprovedTasksResponse,
+  mockPendingManagerApprovalTasksResponse,
+} from '../../components/__test-utils__/TEST_DATA__LakehouseContractData.js';
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{
@@ -170,7 +175,7 @@ const setupLakehouseDataProductTest = async (
   createSpy(
     mockedStore.engineServerClient,
     'getCurrentUserId',
-  ).mockResolvedValue('test-user-id');
+  ).mockResolvedValue('test-consumer-user-id');
 
   createSpy(
     mockedStore.engineServerClient,
@@ -185,6 +190,16 @@ const setupLakehouseDataProductTest = async (
           'meta::external::ingest::specification::metamodel::IngestDefinition',
       },
     ];
+  });
+
+  createSpy(
+    mockedStore.lakehouseContractServerClient,
+    'getContractTasks',
+  ).mockImplementation(async (contractId: string) => {
+    if (contractId === 'test-approved-contract-id') {
+      return mockApprovedTasksResponse as unknown as PlainObject<V1_TaskResponse>;
+    }
+    return mockPendingManagerApprovalTasksResponse as unknown as PlainObject<V1_TaskResponse>;
   });
 
   const { renderResult } = await TEST__setUpMarketplaceLakehouse(
@@ -263,7 +278,7 @@ test('displays REQUEST ACCESS button when user has denied contract', async () =>
         _type: V1_OrganizationalScopeType.AdHocTeam,
         users: [
           {
-            name: 'test-user-id',
+            name: 'test-consumer-user-id',
             type: V1_UserType.WORKFORCE_USER,
           },
         ],
@@ -290,6 +305,7 @@ test('clicking REQUEST ACCESS button opens create contract modal', async () => {
     mockContracts,
   );
 
+  await screen.findByText('GROUP1');
   const requestAccessButton = await screen.findByRole('button', {
     name: 'REQUEST ACCESS',
   });
@@ -320,7 +336,7 @@ test('displays PENDING MANAGER APPROVAL button for contract in PENDING_CONSUMER_
         _type: V1_OrganizationalScopeType.AdHocTeam,
         users: [
           {
-            name: 'test-user-id',
+            name: 'test-consumer-user-id',
             type: V1_UserType.WORKFORCE_USER,
           },
         ],
@@ -360,7 +376,7 @@ test('clicking PENDING MANAGER APPROVAL button opens pending contract viewer', a
         _type: V1_OrganizationalScopeType.AdHocTeam,
         users: [
           {
-            name: 'test-user-id',
+            name: 'test-consumer-user-id',
             type: V1_UserType.WORKFORCE_USER,
           },
         ],
@@ -375,6 +391,7 @@ test('clicking PENDING MANAGER APPROVAL button opens pending contract viewer', a
     mockContracts,
   );
 
+  await screen.findByText('GROUP1');
   const pendingButton = await screen.findByRole('button', {
     name: 'PENDING MANAGER APPROVAL',
   });
@@ -405,7 +422,7 @@ test('displays PENDING DATA OWNER APPROVAL button for contract in PENDING_DATA_O
         _type: V1_OrganizationalScopeType.AdHocTeam,
         users: [
           {
-            name: 'test-user-id',
+            name: 'test-consumer-user-id',
             type: V1_UserType.WORKFORCE_USER,
           },
         ],
@@ -445,7 +462,7 @@ test('clicking PENDING DATA OWNER APPROVAL button opens pending contract viewer'
         _type: V1_OrganizationalScopeType.AdHocTeam,
         users: [
           {
-            name: 'test-user-id',
+            name: 'test-consumer-user-id',
             type: V1_UserType.WORKFORCE_USER,
           },
         ],
@@ -460,6 +477,7 @@ test('clicking PENDING DATA OWNER APPROVAL button opens pending contract viewer'
     mockContracts,
   );
 
+  await screen.findByText('GROUP1');
   const pendingButton = await screen.findByRole('button', {
     name: 'PENDING DATA OWNER APPROVAL',
   });
@@ -490,7 +508,7 @@ test('displays ENTITLED button for contract in APPROVED status', async () => {
         _type: V1_OrganizationalScopeType.AdHocTeam,
         users: [
           {
-            name: 'test-user-id',
+            name: 'test-consumer-user-id',
             type: V1_UserType.WORKFORCE_USER,
           },
         ],
@@ -530,7 +548,7 @@ test('clicking ENTITLED button opens completed contract viewer', async () => {
         _type: V1_OrganizationalScopeType.AdHocTeam,
         users: [
           {
-            name: 'test-user-id',
+            name: 'test-consumer-user-id',
             type: V1_UserType.WORKFORCE_USER,
           },
         ],
@@ -545,6 +563,7 @@ test('clicking ENTITLED button opens completed contract viewer', async () => {
     mockContracts,
   );
 
+  await screen.findByText('GROUP1');
   const entitledButton = await screen.findByRole('button', {
     name: 'ENTITLED',
   });
