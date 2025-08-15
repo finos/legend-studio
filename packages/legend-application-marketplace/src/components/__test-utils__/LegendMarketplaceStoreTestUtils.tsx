@@ -47,7 +47,7 @@ jest.mock('@finos/legend-graph', () => {
   return {
     ...actual,
     getCurrentUserIDFromEngineServer: jest.fn(() =>
-      Promise.resolve('test-user-id'),
+      Promise.resolve('test-consumer-user-id'),
     ),
   };
 });
