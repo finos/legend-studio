@@ -15,7 +15,13 @@
  */
 
 import { expect, jest, test } from '@jest/globals';
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import { TEST__provideMockedLegendMarketplaceBaseStore } from '../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
 import { type PlainObject } from '@finos/legend-shared';
 import type { V1_LiteDataContract, V1_TaskResponse } from '@finos/legend-graph';
@@ -81,7 +87,11 @@ const setupDataContractViewerTest = async (
     await new Promise((resolve) => setTimeout(resolve, 0)); // wait for async state updates
   });
 
-  return { mockedStore, renderResult };
+  return {
+    mockedStore,
+    mockedContractViewerState: contractViewerState,
+    renderResult,
+  };
 };
 
 test('Displays contract details', async () => {
@@ -198,4 +208,24 @@ test('Shows list of "ordered for"" if there is more than 1 consumer and respects
     fireEvent.mouseDown(userButton);
   });
   await screen.findByText('test-consumer-user-id-1');
+});
+
+test.only('Refresh button re-initializes data contract viewer', async () => {
+  const { mockedContractViewerState } = await setupDataContractViewerTest(
+    mockDataContract,
+    mockPendingManagerApprovalTasksResponse,
+  );
+
+  // Verify refresh button
+  const refreshButton = await screen.findByRole('button', { name: 'Refresh' });
+
+  jest.spyOn(mockedContractViewerState, 'init');
+
+  expect(mockedContractViewerState.init).toHaveBeenCalledTimes(0);
+
+  fireEvent.click(refreshButton);
+
+  await waitFor(() =>
+    expect(mockedContractViewerState.init).toHaveBeenCalledTimes(1),
+  );
 });
