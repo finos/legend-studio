@@ -294,6 +294,10 @@ export const EntitlementsDataContractViewer = observer(
         task.rec.consumer === selectedTargetUser &&
         task.rec.type === V1_ApprovalType.DATA_OWNER_APPROVAL,
     );
+    const isContractInProgressForUser =
+      privilegeManagerApprovalTask?.rec.status ===
+        V1_UserApprovalStatus.PENDING ||
+      dataOwnerApprovalTask?.rec.status === V1_UserApprovalStatus.PENDING;
 
     const copyTaskLink = (text: string): void => {
       legendMarketplaceStore.applicationStore.clipboardService
@@ -433,8 +437,7 @@ export const EntitlementsDataContractViewer = observer(
     return (
       <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="md">
         <DialogTitle>
-          {isContractInTerminalState(currentViewer.value) ? '' : 'Pending '}Data
-          Contract Request
+          {isContractInProgressForUser ? 'Pending ' : ''}Data Contract Request
         </DialogTitle>
         <IconButton onClick={onClose} className="marketplace-dialog-close-btn">
           <CloseIcon />
