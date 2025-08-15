@@ -214,7 +214,7 @@ test('Shows list of "ordered for"" if there is more than 1 consumer and respects
   await screen.findByText('test-consumer-user-id-1');
 });
 
-test.only('Refresh button re-initializes data contract viewer', async () => {
+test('Refresh button re-initializes data contract viewer', async () => {
   const { mockedContractViewerState } = await setupDataContractViewerTest(
     mockDataContract,
     mockPendingManagerApprovalTasksResponse,
