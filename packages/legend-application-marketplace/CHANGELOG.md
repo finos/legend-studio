@@ -1,5 +1,13 @@
 # @finos/legend-application-marketplace
 
+## 0.0.70
+
+### Patch Changes
+
+- [#4355](https://github.com/finos/legend-studio/pull/4355) [`dcd854e`](https://github.com/finos/legend-studio/commit/dcd854eacf1cede503623b3ff53e506afb22fb59) ([@travisstebbins](https://github.com/travisstebbins)) - Add comprehensive unit tests for LakehouseDataProduct component, covering different data product origin types (SDLC and AdHoc deployments) and contract states (no contracts, pending approvals, approved).
+
+- [#4355](https://github.com/finos/legend-studio/pull/4355) [`dcd854e`](https://github.com/finos/legend-studio/commit/dcd854eacf1cede503623b3ff53e506afb22fb59) ([@travisstebbins](https://github.com/travisstebbins)) - Add LakehouseDataProduct tests
+
 ## 0.0.69
 
 ## 0.0.68

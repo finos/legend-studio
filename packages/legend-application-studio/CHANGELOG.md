@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.19.26
+
+### Patch Changes
+
+- [#4353](https://github.com/finos/legend-studio/pull/4353) [`6d018c3`](https://github.com/finos/legend-studio/commit/6d018c3b75a1d48392ed45fc52860f6b2b308f9e) ([@kelly-thai](https://github.com/kelly-thai)) - Updating Support Info section in Data Product editor to support URL labels
+
 ## 28.19.25
 
 ## 28.19.24
