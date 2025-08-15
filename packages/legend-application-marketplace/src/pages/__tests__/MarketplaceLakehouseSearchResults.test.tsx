@@ -21,6 +21,13 @@ import {
   TEST__setUpMarketplaceLakehouse,
 } from '../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
+import { createSpy } from '@finos/legend-shared/test';
+import { CORE_PURE_PATH } from '@finos/legend-graph';
+import {
+  mockDataProducts,
+  mockReleaseSDLCDataProduct,
+  mockSnapshotSDLCDataProduct,
+} from '../../components/__test-utils__/TEST_DATA__LakehouseData.js';
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{
@@ -37,6 +44,53 @@ const setupTestComponent = async (query?: string) => {
       'getCurrentAddress',
     )
     .mockReturnValue('http://localhost/lakehouse/results?query=data');
+
+  createSpy(
+    mockedStore.lakehouseContractServerClient,
+    'getDataProducts',
+  ).mockResolvedValue(mockDataProducts);
+  createSpy(
+    mockedStore.depotServerClient,
+    'getVersionEntities',
+  ).mockImplementation(
+    async (
+      groupId: string,
+      artifactId: string,
+      versionId: string,
+      classifierPath?: string,
+    ) => {
+      if (
+        groupId === 'com.example.analytics' &&
+        artifactId === 'customer-analytics'
+      ) {
+        return [
+          {
+            entity: {
+              classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
+              content: mockReleaseSDLCDataProduct,
+              path: 'test::dataproduct::TestSDLCDataProduct',
+            },
+          },
+        ];
+      } else if (
+        groupId === 'com.example.finance' &&
+        artifactId === 'financial-reporting'
+      ) {
+        return [
+          {
+            entity: {
+              classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
+              content: mockSnapshotSDLCDataProduct,
+              path: 'test::dataproduct::AnotherSDLCDataProduct',
+            },
+          },
+        ];
+      }
+      throw new Error(
+        `Unable to find entities at: ${groupId}:${artifactId}:${versionId}:${classifierPath}`,
+      );
+    },
+  );
 
   const { renderResult, MOCK__store } = await TEST__setUpMarketplaceLakehouse(
     mockedStore,

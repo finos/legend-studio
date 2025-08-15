@@ -89,7 +89,7 @@ import {
 } from '@mui/material';
 import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
 import { EntitlementsDataContractCreator } from '../entitlements/EntitlementsDataContractCreator.js';
-import { EntitlementsDataContractViewer } from '../entitlements/EntitlementsDataContractViewer.js';
+import { EntitlementsDataContractViewer } from '../../../components/DataContractViewer/EntitlementsDataContractViewer.js';
 import { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
 import { useAuth } from 'react-oidc-context';
 import { DataProductSubscriptionViewer } from '../subscriptions/DataProductSubscriptionsViewer.js';
@@ -498,6 +498,7 @@ export const DataProductAccessPointGroupViewer = observer(
             <Button
               size="small"
               onClick={() => setIsEntitledButtonGroupMenuOpen((prev) => !prev)}
+              title="More options"
             >
               <CaretDownIcon />
             </Button>
@@ -650,6 +651,10 @@ export const DataProductAccessPointGroupViewer = observer(
             open={true}
             currentViewer={entitlementsDataContractViewerState}
             dataProductGroupAccessState={accessGroupState}
+            legendMarketplaceStore={
+              accessGroupState.accessState.viewerState.lakehouseStore
+                .marketplaceBaseStore
+            }
             onClose={() =>
               accessGroupState.accessState.viewerState.setDataContract(
                 undefined,

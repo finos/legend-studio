@@ -158,17 +158,19 @@ export class V1_CreateContractPayload {
 
 export abstract class V1_ContractUserEventPayload {
   type!: V1_ContractEventPayloadType;
-  candidateIdentity!: string;
-  taskId!: string;
   eventTimestamp!: string;
 }
 
 export class V1_ContractUserEventPrivilegeManagerPayload extends V1_ContractUserEventPayload {
+  candidateIdentity!: string;
   managerIdentity!: string;
+  taskId!: string;
 }
 
 export class V1_ContractUserEventDataProducerPayload extends V1_ContractUserEventPayload {
+  candidateIdentity!: string;
   dataProducerIdentity!: string;
+  taskId!: string;
 }
 
 export class V1_ContractUserEventRecord {

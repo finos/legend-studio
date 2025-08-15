@@ -281,6 +281,7 @@ export {
   type V1_UserPendingContractsResponse,
   V1_AccessPointGroupReference,
   V1_ApprovalType,
+  V1_ContractEventPayloadType,
   V1_ContractState,
   V1_ContractUserEventDataProducerPayload,
   V1_ContractUserEventPayload,
@@ -326,6 +327,7 @@ export {
   V1_UnknownDataProductOriginType,
 } from './graph-manager/protocol/pure/v1/lakehouse/entitlements/V1_EntitlementsDataProduct.js';
 export {
+  V1_AccessPointGroupReferenceType,
   V1_AccessPointGroupStereotypeMappingModelSchema,
   V1_AdHocDeploymentDataProductOriginModelSchema,
   V1_AdhocTeamModelSchema,
@@ -344,6 +346,7 @@ export {
   V1_EntitlementsDataProductModelSchema,
   V1_EntitlementsLakehouseEnvironmentModelSchema,
   V1_liteDataContractsResponseModelSchemaToContracts,
+  V1_OrganizationalScopeType,
   V1_pendingTasksResponseModelSchema,
   V1_SdlcDeploymentDataProductOriginModelSchema,
   V1_TaskStatusChangeResponseModelSchema,

@@ -20,6 +20,11 @@ import {
   TEST__provideMockedLegendMarketplaceBaseStore,
   TEST__setUpMarketplaceLakehouse,
 } from '../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
+import { createSpy } from '@finos/legend-shared/test';
+import {
+  mockSubscriptions,
+  mockLiteDataContracts,
+} from '../../components/__test-utils__/TEST_DATA__LakehouseData.js';
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{
@@ -30,6 +35,15 @@ jest.mock('react-oidc-context', () => {
 
 const setupLakehouseAdminTest = async () => {
   const mockedStore = await TEST__provideMockedLegendMarketplaceBaseStore();
+
+  createSpy(
+    mockedStore.lakehouseContractServerClient,
+    'getAllSubscriptions',
+  ).mockResolvedValue(mockSubscriptions);
+  createSpy(
+    mockedStore.lakehouseContractServerClient,
+    'getLiteDataContracts',
+  ).mockResolvedValue(mockLiteDataContracts);
 
   const { renderResult } = await TEST__setUpMarketplaceLakehouse(
     mockedStore,

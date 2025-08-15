@@ -31,7 +31,7 @@ import {
 import { Box, FormControlLabel, Switch, Tooltip } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import type { EntitlementsDashboardState } from '../../../stores/lakehouse/entitlements/EntitlementsDashboardState.js';
-import { EntitlementsDataContractViewer } from './EntitlementsDataContractViewer.js';
+import { EntitlementsDataContractViewer } from '../../../components/DataContractViewer/EntitlementsDataContractViewer.js';
 import { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
 import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
 import { observer } from 'mobx-react-lite';
@@ -306,6 +306,7 @@ export const EntitlementsClosedContractsDashbaord = observer(
                 marketplaceBaseStore.lakehouseContractServerClient,
               )
             }
+            legendMarketplaceStore={marketplaceBaseStore}
             onClose={() => setSelectedContract(undefined)}
           />
         )}

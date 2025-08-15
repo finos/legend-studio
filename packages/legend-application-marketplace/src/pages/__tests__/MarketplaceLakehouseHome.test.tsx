@@ -33,6 +33,7 @@ const setupTestComponent = async () => {
   const mockedStore = await TEST__provideMockedLegendMarketplaceBaseStore({
     extraPlugins: [new TestLegendMarketplaceApplicationPlugin()],
   });
+
   const { renderResult, MOCK__store } =
     await TEST__setUpMarketplaceLakehouse(mockedStore);
 
