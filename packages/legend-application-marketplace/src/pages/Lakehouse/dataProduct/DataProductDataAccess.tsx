@@ -498,6 +498,7 @@ export const DataProductAccessPointGroupViewer = observer(
             <Button
               size="small"
               onClick={() => setIsEntitledButtonGroupMenuOpen((prev) => !prev)}
+              title="More options"
             >
               <CaretDownIcon />
             </Button>

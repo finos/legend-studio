@@ -114,6 +114,104 @@ export const mockSDLCDataProductEntitiesResponse: {
   },
 ];
 
+export const mockEntitlementsEnterpriseDataProduct: V1_EntitlementsDataProductDetailsResponse =
+  {
+    dataProducts: [
+      {
+        id: 'MOCK_ENTERPRISE_DATAPRODUCT',
+        deploymentId: 33333,
+        title: 'Mock Enterprise Data Product',
+        description:
+          'Robust and secure data product for enterprise-wide analytics and reporting',
+        origin: {
+          type: 'SdlcDeployment',
+          group: 'com.example.analytics',
+          artifact: 'enterprise-data-product',
+          version: '1.0.0',
+        },
+        lakehouseEnvironment: {
+          producerEnvironmentName: 'production-analytics',
+          type: V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
+        },
+        dataProduct: {
+          name: 'MOCK_ENTERPRISE_DATAPRODUCT',
+          accessPoints: [
+            {
+              name: 'enterprise_data',
+              groups: ['ENTERPRISE_GROUP'],
+            },
+          ],
+          accessPointGroupStereotypeMappings: [],
+          owner: {
+            appDirId: 33333,
+            level: V1_AppDirLevel.DEPLOYMENT,
+          },
+        },
+      },
+    ],
+  };
+
+export const mockEnterpriseDataProductEntitiesResponse: {
+  artifactId: string;
+  entity: Entity;
+  groupId: string;
+  versionId: string;
+  versionedEntity: boolean;
+}[] = [
+  {
+    artifactId: 'lakehouse-enterprise-dataproduct',
+    groupId: 'com.example.analytics',
+    versionId: '1.0.0',
+    versionedEntity: false,
+    entity: {
+      path: 'com::test::Mock_Enterprise_DataProduct',
+      classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
+      content: {
+        _type: 'dataProduct',
+        package: 'test',
+        name: 'Mock_Enterprise_DataProduct',
+        title: 'Mock Enterprise Data Product',
+        description:
+          'Robust and secure data product for enterprise-wide analytics and reporting',
+        accessPointGroups: [
+          {
+            _type: 'defaultAccessPointGroup',
+            id: 'ENTERPRISE_GROUP',
+            description: 'Test enterprise access point group',
+            stereotypes: [
+              {
+                profile: 'test::profile::EnterpriseDataProduct',
+                value: 'enterprise',
+              },
+            ],
+            accessPoints: [
+              {
+                _type: 'lakehouseAccessPoint',
+                id: 'enterprise_data',
+                description: 'Enterprise data access point',
+                func: {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'classInstnace',
+                      type: 'I',
+                      value: {
+                        metadata: false,
+                        path: ['test', 'IngestDefinition'],
+                      },
+                    },
+                  ],
+                  parameters: [],
+                },
+              },
+            ],
+          },
+        ],
+      },
+    },
+  },
+];
+
 export const mockEntitlementsAdHocDataProduct: V1_EntitlementsDataProductDetailsResponse =
   {
     dataProducts: [
