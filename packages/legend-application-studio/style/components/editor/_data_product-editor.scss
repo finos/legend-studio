@@ -80,14 +80,33 @@
       padding: 1rem;
       overflow: auto;
     }
+
+    &__content__form__section {
+      width: 100%;
+      margin: 0;
+      max-width: 45rem;
+    }
   }
 
   &__support-info {
+    width: 100%;
+    padding: 0 1rem;
+
     &__new-email {
       @include flexVCenter;
 
       align-items: center;
       margin-right: 0.5rem;
+    }
+
+    &__link-container {
+      display: flex;
+      align-items: end;
+      margin-bottom: 1rem;
+    }
+
+    &__input {
+      max-width: 45rem;
     }
   }
 

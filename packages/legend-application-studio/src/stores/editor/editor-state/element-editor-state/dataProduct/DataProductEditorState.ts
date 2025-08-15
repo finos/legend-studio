@@ -558,6 +558,32 @@ export class DataProductEditorState extends ElementEditorState {
     }
   }
 
+  clearSupportInfo(): void {
+    const supportInfo = this.product.supportInfo;
+    runInAction(() => {
+      //if the url is empty, the label should be too
+      if (supportInfo?.documentation && !supportInfo.documentation.url) {
+        supportInfo.documentation = undefined;
+      } else if (supportInfo?.website && !supportInfo.website.url) {
+        supportInfo.website = undefined;
+      } else if (supportInfo?.faqUrl && !supportInfo.faqUrl.url) {
+        supportInfo.faqUrl = undefined;
+      } else if (supportInfo?.supportUrl && !supportInfo.supportUrl.url) {
+        supportInfo.supportUrl = undefined;
+      }
+      //clear support info section if everything is clear
+      if (
+        !supportInfo?.documentation &&
+        !supportInfo?.website &&
+        !supportInfo?.faqUrl &&
+        !supportInfo?.supportUrl &&
+        supportInfo?.emails.length === 0
+      ) {
+        this.product.supportInfo = undefined;
+      }
+    });
+  }
+
   get product(): DataProduct {
     return guaranteeType(
       this.element,

@@ -122,33 +122,57 @@ export const dataProduct_setSupportInfoIfAbsent = action(
   },
 );
 
+export const supportInfo_setLinkLabel = action(
+  (link: DataProductLink, label: string | undefined) => {
+    link.label = label;
+  },
+);
+
 export const supportInfo_setDocumentationUrl = action(
   (supportInfo: SupportInfo, documentationUrl: string) => {
-    supportInfo.documentation = observer_DataProductLink(
-      new DataProductLink(documentationUrl),
-    );
+    if (!supportInfo.documentation) {
+      supportInfo.documentation = observer_DataProductLink(
+        new DataProductLink(documentationUrl),
+      );
+    } else {
+      supportInfo.documentation.url = documentationUrl;
+    }
   },
 );
 
 export const supportInfo_setWebsite = action(
   (supportInfo: SupportInfo, website: string) => {
-    supportInfo.website = observer_DataProductLink(
-      new DataProductLink(website),
-    );
+    if (!supportInfo.website) {
+      supportInfo.website = observer_DataProductLink(
+        new DataProductLink(website),
+      );
+    } else {
+      supportInfo.website.url = website;
+    }
   },
 );
 
 export const supportInfo_setFaqUrl = action(
   (supportInfo: SupportInfo, faqUrl: string) => {
-    supportInfo.faqUrl = observer_DataProductLink(new DataProductLink(faqUrl));
+    if (!supportInfo.faqUrl) {
+      supportInfo.faqUrl = observer_DataProductLink(
+        new DataProductLink(faqUrl),
+      );
+    } else {
+      supportInfo.faqUrl.url = faqUrl;
+    }
   },
 );
 
 export const supportInfo_setSupportUrl = action(
   (supportInfo: SupportInfo, supportUrl: string) => {
-    supportInfo.supportUrl = observer_DataProductLink(
-      new DataProductLink(supportUrl),
-    );
+    if (!supportInfo.supportUrl) {
+      supportInfo.supportUrl = observer_DataProductLink(
+        new DataProductLink(supportUrl),
+      );
+    } else {
+      supportInfo.supportUrl.url = supportUrl;
+    }
   },
 );
 
