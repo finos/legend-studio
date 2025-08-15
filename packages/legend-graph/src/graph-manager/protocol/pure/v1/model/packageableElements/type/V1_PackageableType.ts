@@ -21,7 +21,7 @@ export class V1_PackageableType
   extends V1_PackageableElementPtr
   implements V1_Type
 {
-  get hashCode(): string {
+  override get hashCode(): string {
     return this.fullPath;
   }
 }

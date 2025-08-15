@@ -78,6 +78,7 @@ import {
   TEST_DATA__DATAPRODUCT_DELIVERY,
   TEST_DATA__DATAPRODUCT_GROUPS,
 } from './roundtripTestData/TEST_DATA__DataProductRoundtrip.js';
+import { TEST_DATA__Function_genericType } from './roundtripTestData/TEST_DATA__Function-generictype.js';
 
 describe(unitTest('M2M graph roundtrip'), () => {
   test.each([
@@ -266,4 +267,13 @@ describe(unitTest('DSL Data product'), () => {
   ])('%s', async (testName, entities) => {
     await TEST__checkBuildingElementsRoundtrip(entities);
   });
+});
+
+describe(unitTest('Function Generic Type'), () => {
+  test.each([['Function generic type', TEST_DATA__Function_genericType]])(
+    '%s',
+    async (testName, entities) => {
+      await TEST__checkBuildingElementsRoundtrip(entities);
+    },
+  );
 });

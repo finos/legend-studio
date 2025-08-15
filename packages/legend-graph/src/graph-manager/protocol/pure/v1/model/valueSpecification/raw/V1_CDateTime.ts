@@ -16,6 +16,12 @@
 
 import type { V1_ValueSpecificationVisitor } from '../../../model/valueSpecification/V1_ValueSpecification.js';
 import { V1_CDate } from './V1_CDate.js';
+import { hashArray } from '@finos/legend-shared';
+import {
+  CORE_HASH_STRUCTURE,
+  hashObjectWithoutSourceInformation,
+} from '../../../../../../../graph/Core_HashUtils.js';
+import { PRIMITIVE_TYPE } from '../../../../../../../graph/MetaModelConst.js';
 
 export class V1_CDateTime extends V1_CDate {
   value!: string;
@@ -24,5 +30,14 @@ export class V1_CDateTime extends V1_CDate {
     visitor: V1_ValueSpecificationVisitor<T>,
   ): T {
     return visitor.visit_CDateTime(this);
+  }
+
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.PRIMITIVE_INSTANCE_VALUE,
+      PRIMITIVE_TYPE.DATETIME,
+      this.multiplicity,
+      hashObjectWithoutSourceInformation([this.value]),
+    ]);
   }
 }

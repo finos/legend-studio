@@ -19,8 +19,10 @@ import type { PackageableElementVisitor } from '../PackageableElement.js';
 import { Function } from '../domain/Function.js';
 import { Multiplicity } from '../domain/Multiplicity.js';
 import type { GenericTypeReference } from '../domain/GenericTypeReference.js';
+import { hashArray, type Hashable } from '@finos/legend-shared';
+import { CORE_HASH_STRUCTURE } from '../../../../Core_HashUtils.js';
 
-export class RelationColumn extends Function {
+export class RelationColumn extends Function implements Hashable {
   genericType: GenericTypeReference;
   multiplicity: Multiplicity = Multiplicity.ONE;
 
@@ -34,9 +36,17 @@ export class RelationColumn extends Function {
   ): T {
     throw new Error('Method not implemented.');
   }
+
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.RELATION_TYPE,
+      this.name,
+      this.genericType.value,
+    ]);
+  }
 }
 
-export class RelationType extends Type {
+export class RelationType extends Type implements Hashable {
   static ID = 'RelationType';
   columns: RelationColumn[] = [];
 
@@ -44,5 +54,12 @@ export class RelationType extends Type {
     visitor: PackageableElementVisitor<T>,
   ): T {
     throw new Error('Method not implemented.');
+  }
+
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.RELATION_TYPE,
+      hashArray(this.columns),
+    ]);
   }
 }

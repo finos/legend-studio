@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { hashArray } from '@finos/legend-shared';
 import type { V1_ValueSpecification } from '../../valueSpecification/V1_ValueSpecification.js';
 import type { V1_Multiplicity } from '../domain/V1_Multiplicity.js';
 import type { V1_Type } from './V1_Type.js';
@@ -25,6 +26,10 @@ export class V1_GenericType {
   typeVariableValues: V1_ValueSpecification[] = [];
 
   get hashCode(): string {
-    return this.rawType.hashCode;
+    return hashArray([
+      this.rawType.hashCode,
+      hashArray(this.typeArguments),
+      hashArray(this.typeVariableValues),
+    ]);
   }
 }
