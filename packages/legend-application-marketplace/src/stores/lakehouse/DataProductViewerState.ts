@@ -89,17 +89,15 @@ export class DataProductViewerState extends BaseViewerState<
     super(product, actions);
 
     makeObservable(this, {
-      isVerified: computed,
       accessState: observable,
-      fetchContracts: flow,
       associatedContracts: observable,
       dataContractAccessPointGroup: observable,
-      setDataContractAccessPointGroup: action,
       dataContract: observable,
+      creatingContractState: observable,
+      isVerified: computed,
+      setDataContractAccessPointGroup: action,
       setDataContract: action,
       setAssociatedContracts: action,
-      createContract: flow,
-      creatingContractState: observable,
     });
 
     this.applicationStore = applicationStore;
@@ -117,17 +115,7 @@ export class DataProductViewerState extends BaseViewerState<
 
   protected getObservableProperties(): AnnotationsMap<this, never> {
     return {
-      isVerified: computed,
-      accessState: observable,
       fetchContracts: flow,
-      associatedContracts: observable,
-      dataContractAccessPointGroup: observable,
-      setDataContractAccessPointGroup: action,
-      dataContract: observable,
-      setDataContract: action,
-      setAssociatedContracts: action,
-      createContract: flow,
-      creatingContractState: observable,
     };
   }
 

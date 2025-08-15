@@ -17,9 +17,8 @@
 import { observer } from 'mobx-react-lite';
 import type { TerminalProductViewerState } from '../../../stores/lakehouse/TerminalProductViewerState.ts';
 import { useEffect, useRef, useState } from 'react';
-import { CaretUpIcon, clsx } from '@finos/legend-art';
+import { clsx } from '@finos/legend-art';
 import { TerminalProductWiki } from './TerminalProductWiki.js';
-// import { Divider } from '@mui/material';
 
 export const TerminalProductNavigationSections = observer(
   (props: { terminalProductViewerState: TerminalProductViewerState }) => {
@@ -85,20 +84,22 @@ const TerminalProductHeader = observer(
               terminalProductViewerState.layoutState.isExpandedModeEnabled,
           })}
         >
-          <div
-            className="data-space__viewer__header__title"
-            title={`${terminalProduct.productName} - ${terminalProduct.providerName}`}
-          >
-            <div className="data-space__viewer__header__title__label">
-              {terminalProduct.productName
-                ? terminalProduct.productName
-                : terminalProduct.applicationName}
-            </div>
+          {/* <div className="data-space__viewer__header__type"></div> */}
+          <div className="data-space__terminal__header__product-name">
+            {terminalProduct.productName
+              ? terminalProduct.productName
+              : terminalProduct.applicationName}
           </div>
-          <div className="data-space__viewer__header__type"></div>
-          <TerminalProductNavigationSections
-            terminalProductViewerState={terminalProductViewerState}
-          />
+          <div
+            style={{
+              width: '50%',
+              marginLeft: 'auto',
+            }}
+          >
+            <TerminalProductNavigationSections
+              terminalProductViewerState={terminalProductViewerState}
+            />
+          </div>
         </div>
       </div>
     );
@@ -163,9 +164,7 @@ export const TerminalProductViewer = observer(
                 title="Scroll to top"
                 disabled={!dataSpaceViewerState.layoutState.frame}
                 onClick={scrollToTop}
-              >
-                <CaretUpIcon />
-              </button>
+              ></button>
               <div className="data-space__viewer__scroller__percentage">
                 {scrollPercentage}%
               </div>
@@ -180,7 +179,13 @@ export const TerminalProductViewer = observer(
               },
             )}
           >
-            <div className="data-space__viewer__content">
+            <div
+              className="data-space__viewer__content"
+              style={{
+                paddingTop: '75px',
+                paddingRight: '20px',
+              }}
+            >
               <TerminalProductWiki
                 terminalProductViewerState={dataSpaceViewerState}
               />

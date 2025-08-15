@@ -22,13 +22,22 @@ import {
 } from '../../../stores/lakehouse/DataProductViewerNavigation.js';
 import {
   AnchorLinkIcon,
+  PencilEditIcon,
   MarkdownTextViewer,
   UserIcon,
+  KeyIcon,
+  QuestionCircleIcon,
+  ReportIcon,
 } from '@finos/legend-art';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { DataproducteWikiPlaceholder } from './DataProductWiki.js';
 import type { TerminalProductViewerState } from '../../../stores/lakehouse/TerminalProductViewerState.js';
 import { TERMINAL_ACCESS } from './TerminalDataAccess.js';
+import { Divider } from '@mui/material';
+import type { IconType } from 'react-icons';
+import { FaGithub } from 'react-icons/fa';
+import { TiWorldOutline } from 'react-icons/ti';
+import { DataProducteDataAccess } from './DataProductDataAccess.js';
 
 export const TerminalProductWikiPlaceHolder = observer(
   (props: {
@@ -93,21 +102,7 @@ export const TerminalProductDescription = observer(
 
     return (
       <div ref={sectionRef} className="data-space__viewer__wiki__section">
-        <div className="data-space__viewer__wiki__section__header">
-          <div className="data-space__viewer__wiki__section__header__label">
-            {prettyCONSTName(TERMINAL_PRODUCT_VIEWER_SECTION.DESCRIPTION)}
-            <button
-              className="data-space__viewer__wiki__section__header__anchor"
-              tabIndex={-1}
-              onClick={() =>
-                terminalProductViewerState.changeZone(anchor, true)
-              }
-            >
-              <AnchorLinkIcon />
-            </button>
-          </div>
-        </div>
-        <div className="data-space__viewer__wiki__section__content">
+        <div className="data-space__viewer__terminal__description-div">
           {terminalProductViewerState.product.description !== undefined ? (
             <div className="data-space__viewer__description">
               <div className="data-space__viewer__description__content">
@@ -161,6 +156,9 @@ export const TerminalProductPrice = observer(
 
     const getDisplayPrice = () => {
       const price = Number(availablePrice);
+      if (isAnnual) {
+        return price.toFixed(2);
+      }
       return (price / 12).toFixed(2);
     };
 
@@ -172,14 +170,8 @@ export const TerminalProductPrice = observer(
       <div
         className="data-space__viewer__wiki__section__pricing"
         onClick={handlePricingToggle}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.opacity = '0.9';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.opacity = '1';
-        }}
       >
-        {getDisplayPrice()} {isAnnual ? 'annually' : 'monthly'} per license
+        ${getDisplayPrice()} {isAnnual ? 'ANNUALLY' : 'MONTHLY'} PER LICENSE
       </div>
     );
   },
@@ -312,6 +304,55 @@ export const RequestAccessButton = observer(
   },
 );
 
+interface TerminalAccessSectionProps {
+  userImageUrl: string;
+  userImageAlt?: string;
+  onButtonClick?: () => void;
+  buttonText?: string;
+  className?: string;
+}
+
+export const TerminalAccessSection: React.FC<TerminalAccessSectionProps> = ({
+  userImageUrl,
+  userImageAlt = 'User',
+  onButtonClick,
+  buttonText = 'Change User',
+}) => {
+  return (
+    <div className="data-space__viewer__content__access-section">
+      <h1 className="data-space__viewer__content__access-section__header">
+        Access
+      </h1>
+      <Divider className="data-space__divider" />
+
+      <div className="data-space__viewer__content__access-section__container">
+        <span className="data-space__viewer__content__access-section__span">
+          Showing access for
+        </span>
+
+        <div className="data-space__viewer__content__access-section__image-container">
+          <img
+            src={
+              'https://i.pinimg.com/736x/16/ab/50/16ab501640405bb0503463b634a72cae.jpg'
+            }
+            alt={userImageAlt}
+            className="data-space__viewer__content__access-section__image"
+          />
+        </div>
+
+        <span className="data-space__viewer__content__access-section__span">
+          Last, First [Engineering]
+        </span>
+
+        <PencilEditIcon
+          className="data-space__viewer__content__access-section__icon"
+          onClick={onButtonClick}
+        />
+      </div>
+    </div>
+  );
+};
+
 const TerminalProductTable = observer(
   (props: {
     terminalProductViewerState: TerminalProductViewerState;
@@ -328,9 +369,13 @@ const TerminalProductTable = observer(
     };
 
     const getAnnualPrice = () => {
-      const price =
-        terminal.price ?? terminal.tieredPrice ?? terminal.totalFirmPrice;
-      return price ? Number(price) || 0 : 0;
+      const prices = [
+        Number(terminal.price),
+        Number(terminal.tieredPrice),
+        Number(terminal.totalFirmPrice),
+      ];
+      const validPrice = prices.find((price) => price > 0);
+      return Number(validPrice) || 0;
     };
 
     const formatPrice = (price: number) => {
@@ -375,6 +420,89 @@ const TerminalProductTable = observer(
     );
   },
 );
+
+interface SupportLinkItem {
+  id: string;
+  name: string;
+  url: string;
+  icon: IconType;
+}
+
+interface SupportLinkProps {
+  links: SupportLinkItem[];
+  gridColumns?: number;
+  className?: string;
+}
+
+const exampleLinks: SupportLinkItem[] = [
+  {
+    id: '1',
+    name: 'GitHub',
+    url: 'https://github.com',
+    icon: FaGithub,
+  },
+  {
+    id: '2',
+    name: 'Keystone',
+    url: 'https://keystone.site.gs.com/default/app',
+    icon: KeyIcon,
+  },
+  {
+    id: '3',
+    name: 'Stack Overflow',
+    url: 'https://stackoverflow.com',
+    icon: QuestionCircleIcon,
+  },
+  {
+    id: '4',
+    name: 'Supporting Documentation',
+    url: 'https://github.com',
+    icon: ReportIcon,
+  },
+  {
+    id: '5',
+    name: 'Bloomberg Website',
+    url: 'https://github.com',
+    icon: TiWorldOutline,
+  },
+];
+
+export const TerminalSupportSection: React.FC<SupportLinkProps> = ({
+  links,
+}) => {
+  return (
+    <div className="data-space__viewer__content__support-section__container">
+      <h1 className="data-space__viewer__content__support-section__heading">
+        Support
+      </h1>
+      <Divider className="data-space__divider" />
+      <div className="data-space__viewer__content__support-section__container__div">
+        {links.map((link) => (
+          <div
+            key={link.id}
+            className="data-space__viewer__content__support-section__link--item"
+          >
+            <div className="data-space__viewer__content__support-section__link--circle">
+              <link.icon size={20} color="#FFFFFF" />
+            </div>
+            <a
+              href={link.url}
+              className="data-space__viewer__content__support-section__link"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {link.name}
+              <span className="data-space__viewer__content__support-section__link">
+                {' '}
+                ↗
+              </span>
+            </a>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 export const TerminalAccessModal = observer(
   (props: {
@@ -631,17 +759,30 @@ export const TerminalProductWiki = observer(
     ]);
 
     return (
-      <div
-        className="data-space__viewer__wiki"
-        style={{ position: 'relative' }}
-      >
-        <div style={{ display: isModalOpen ? 'none' : 'block' }}>
+      <div className="data-space__viewer__wiki">
+        <div
+          style={{
+            display: isModalOpen ? 'none' : 'block',
+            paddingBottom: '50px',
+          }}
+        >
+          <Divider className="data-space__divider" />
           <TerminalProductPrice
             terminalProductViewerState={terminalProductViewerState}
           />
+
           <TerminalProductDescription
             terminalProductViewerState={terminalProductViewerState}
           />
+        </div>
+
+        <div style={{ display: isModalOpen ? 'none' : 'block' }}>
+          <TerminalAccessSection
+            userImageUrl="https://example.com/user-avatar.jpg"
+            userImageAlt="Current User"
+            buttonText="Change User"
+          />
+
           <TerminalProductTable
             terminalProductViewerState={terminalProductViewerState}
             onOpenModal={handleOpenModal}
@@ -656,6 +797,8 @@ export const TerminalProductWiki = observer(
           onClose={() => setIsModalOpen(false)}
           onSubmit={handleModalSubmit}
         />
+
+        <TerminalSupportSection links={exampleLinks} gridColumns={3} />
       </div>
     );
   },
