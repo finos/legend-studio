@@ -121,7 +121,7 @@ export const mockDataProducts: PlainObject<V1_EntitlementsDataProductDetailsResp
 
 export const mockReleaseSDLCDataProduct: PlainObject<Entity> = {
   _type: 'dataProduct',
-  name: 'SDLC_RELEASE_DATAPRODUCT',
+  name: 'Sdlc_Release_DataProduct',
   package: 'test::dataproduct',
   title: 'SDLC Release Data Product',
   description:
