@@ -133,16 +133,6 @@ const setupLakehouseDataProductTest = async (
   });
 
   createSpy(
-    mockedStore.lakehousePlatformServerClient,
-    'getIngestEnvironmentSummaries',
-  ).mockResolvedValue([]);
-
-  createSpy(
-    mockedStore.lakehouseIngestServerClient,
-    'getIngestEnvironment',
-  ).mockResolvedValue({});
-
-  createSpy(
     mockedStore.lakehouseContractServerClient,
     'getContractUserStatus',
   ).mockImplementation(async (contractId: string) => {
@@ -166,16 +156,6 @@ const setupLakehouseDataProductTest = async (
   });
 
   createSpy(
-    mockedStore.lakehouseContractServerClient,
-    'getSubscriptionsForContract',
-  ).mockResolvedValue([]);
-
-  createSpy(
-    mockedStore.lakehouseContractServerClient,
-    'createSubscription',
-  ).mockResolvedValue({ subscriptions: [] });
-
-  createSpy(
     mockedStore.engineServerClient,
     'lambdaRelationType',
   ).mockImplementation(async (input: PlainObject<V1_LambdaReturnTypeInput>) => {
@@ -184,11 +164,6 @@ const setupLakehouseDataProductTest = async (
       input.model as PlainObject<V1_PureModelContextData>,
     );
   });
-
-  createSpy(
-    mockedStore.engineServerClient,
-    'getCurrentUserId',
-  ).mockResolvedValue('test-consumer-user-id');
 
   createSpy(
     mockedStore.engineServerClient,
