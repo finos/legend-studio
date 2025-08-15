@@ -95,7 +95,7 @@ export const mockSDLCDataProductEntitiesResponse: {
                   _type: 'lambda',
                   body: [
                     {
-                      _type: 'classInstnace',
+                      _type: 'classInstance',
                       type: 'I',
                       value: {
                         metadata: false,
@@ -193,7 +193,7 @@ export const mockEnterpriseDataProductEntitiesResponse: {
                   _type: 'lambda',
                   body: [
                     {
-                      _type: 'classInstnace',
+                      _type: 'classInstance',
                       type: 'I',
                       value: {
                         metadata: false,
@@ -283,7 +283,7 @@ export const mockAdHocDataProductPMCD = {
                 _type: 'lambda',
                 body: [
                   {
-                    _type: 'classInstnace',
+                    _type: 'classInstance',
                     type: 'I',
                     value: {
                       metadata: false,

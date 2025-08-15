@@ -20,13 +20,10 @@ import {
   TEST__provideMockedLegendMarketplaceBaseStore,
   TEST__setUpMarketplaceLakehouse,
 } from '../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
-import { type PlainObject } from '@finos/legend-shared';
+import { guaranteeNonNullable, type PlainObject } from '@finos/legend-shared';
 import {
   type V1_DataContract,
   type V1_EntitlementsDataProductDetailsResponse,
-  type V1_LambdaReturnTypeInput,
-  type V1_PureModelContextData,
-  type V1_RawLambda,
   type V1_TaskResponse,
   V1_AccessPointGroupReferenceType,
   V1_ContractState,
@@ -43,10 +40,7 @@ import {
   mockSDLCDataProductEntitiesResponse,
 } from '../__test-utils__/TEST_DATA__LakehouseDataProducts.js';
 import { createSpy } from '@finos/legend-shared/test';
-import {
-  ENGINE_TEST_SUPPORT__getClassifierPathMapping,
-  ENGINE_TEST_SUPPORT__getLambdaRelationType,
-} from '@finos/legend-graph/test';
+import { ENGINE_TEST_SUPPORT__getClassifierPathMapping } from '@finos/legend-graph/test';
 import {
   mockApprovedTasksResponse,
   mockPendingManagerApprovalTasksResponse,
@@ -158,11 +152,42 @@ const setupLakehouseDataProductTest = async (
   createSpy(
     mockedStore.engineServerClient,
     'lambdaRelationType',
-  ).mockImplementation(async (input: PlainObject<V1_LambdaReturnTypeInput>) => {
-    return ENGINE_TEST_SUPPORT__getLambdaRelationType(
-      input.lambda as PlainObject<V1_RawLambda>,
-      input.model as PlainObject<V1_PureModelContextData>,
-    );
+  ).mockResolvedValue({
+    _type: 'relationType',
+    columns: [
+      {
+        name: 'varchar_val',
+        multiplicity: {
+          lowerBound: 1,
+          upperBound: 1,
+        },
+        genericType: {
+          multiplicityArguments: [],
+          typeArguments: [],
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'meta::pure::precisePrimitives::Varchar',
+          },
+          typeVariableValues: [{ _type: 'integer', value: 32 }],
+        },
+      },
+      {
+        name: 'int_val',
+        multiplicity: {
+          lowerBound: 1,
+          upperBound: 1,
+        },
+        genericType: {
+          multiplicityArguments: [],
+          typeArguments: [],
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'meta::pure::precisePrimitives::Int',
+          },
+          typeVariableValues: [],
+        },
+      },
+    ],
   });
 
   createSpy(
@@ -828,4 +853,31 @@ test('On enterprise APG, Request Access for Others button opens create contract 
   screen.getByText(
     'Note: Enterprise APGs only require contracts for System Accounts. Regular users do not need to request access.',
   );
+});
+
+test('Access Point "More Info" button shows table with access point columns and types', async () => {
+  await setupLakehouseDataProductTest(
+    MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
+    1111,
+    [],
+  );
+
+  await screen.findByText('customer_demographics');
+  await screen.findByText('Customer demographics data access point');
+  const apgContainer = guaranteeNonNullable(
+    (await screen.findByText('GROUP1')).parentElement?.parentElement
+      ?.parentElement,
+  );
+  const moreInfoButton = guaranteeNonNullable(
+    apgContainer.querySelector('.ag-icon-tree-closed'),
+  );
+  fireEvent.click(moreInfoButton);
+
+  await screen.findByText('Column Name');
+  screen.getByText('Column Type');
+
+  await screen.findByText('varchar_val');
+  screen.getByText('Varchar(32)');
+  screen.getByText('int_val');
+  screen.getByText('Int');
 });
