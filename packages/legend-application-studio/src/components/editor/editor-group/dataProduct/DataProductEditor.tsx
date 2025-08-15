@@ -1413,9 +1413,15 @@ const DataProductIconEditor = observer(
   (props: { product: DataProduct; isReadOnly: boolean }) => {
     const { product, isReadOnly } = props;
 
+    const initialState =
+      product.icon instanceof DataProductLibraryIcon
+        ? 'libraryIcon'
+        : product.icon instanceof DataProductEmbeddedImageIcon
+          ? 'embeddedImage'
+          : 'none';
     const [iconEditorComponent, setIconEditorComponent] = useState<
       'libraryIcon' | 'embeddedImage' | 'none'
-    >('none');
+    >(initialState);
 
     return (
       <div style={{ margin: '1rem' }}>
