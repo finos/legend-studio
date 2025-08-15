@@ -162,6 +162,10 @@ test('Shows correct details for Approved contract', async () => {
     mockApprovedTasksResponse,
   );
 
+  // Verify title
+  await screen.findByText('Data Contract Request');
+  expect(screen.queryByText('Pending Data Contract Request')).toBeNull();
+
   // Verify approved privilege manager task
   expect(await screen.findAllByText('Approved by')).toHaveLength(2);
   screen.getByText('test-privilege-manager-user-id');
