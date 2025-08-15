@@ -59,6 +59,12 @@ const TEST_DATA__appConfig: LegendMarketplaceApplicationConfigurationData = {
   extensions: {
     core: {
       enableMarketplacePages: true,
+      dataProductConfig: {
+        publicStereotype: {
+          profile: 'test::profile::EnterpriseDataProduct',
+          stereotype: 'enterprise',
+        },
+      },
     },
   },
 };

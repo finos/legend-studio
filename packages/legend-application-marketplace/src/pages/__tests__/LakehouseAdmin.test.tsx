@@ -20,6 +20,22 @@ import {
   TEST__provideMockedLegendMarketplaceBaseStore,
   TEST__setUpMarketplaceLakehouse,
 } from '../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
+import { createSpy } from '@finos/legend-shared/test';
+import {
+  mockReleaseSDLCDataProduct,
+  mockSnapshotSDLCDataProduct,
+  mockDevIngestEnvironmentSummaryResponse,
+  mockProdParallelIngestEnvironmentSummaryResponse,
+  mockProdIngestEnvironmentSummaryResponse,
+  mockDevIngestEnvironmentResponse,
+  mockProdParallelIngestEnvironmentResponse,
+  mockProdIngestEnvironmentResponse,
+  mockSubscriptions,
+  mockDataContracts,
+  mockDataProducts,
+  mockLiteDataContracts,
+} from '../../components/__test-utils__/TEST_DATA__LakehouseData.js';
+import { CORE_PURE_PATH } from '@finos/legend-graph';
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{
@@ -30,6 +46,93 @@ jest.mock('react-oidc-context', () => {
 
 const setupLakehouseAdminTest = async () => {
   const mockedStore = await TEST__provideMockedLegendMarketplaceBaseStore();
+
+  createSpy(
+    mockedStore.lakehouseContractServerClient,
+    'getDataProducts',
+  ).mockResolvedValue(mockDataProducts);
+  createSpy(
+    mockedStore.depotServerClient,
+    'getVersionEntities',
+  ).mockImplementation(
+    async (
+      groupId: string,
+      artifactId: string,
+      versionId: string,
+      classifierPath?: string,
+    ) => {
+      if (
+        groupId === 'com.example.analytics' &&
+        artifactId === 'customer-analytics'
+      ) {
+        return [
+          {
+            entity: {
+              classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
+              content: mockReleaseSDLCDataProduct,
+              path: 'test::dataproduct::TestSDLCDataProduct',
+            },
+          },
+        ];
+      } else if (
+        groupId === 'com.example.finance' &&
+        artifactId === 'financial-reporting'
+      ) {
+        return [
+          {
+            entity: {
+              classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
+              content: mockSnapshotSDLCDataProduct,
+              path: 'test::dataproduct::AnotherSDLCDataProduct',
+            },
+          },
+        ];
+      }
+      throw new Error(
+        `Unable to find entities at: ${groupId}:${artifactId}:${versionId}:${classifierPath}`,
+      );
+    },
+  );
+  createSpy(
+    mockedStore.lakehousePlatformServerClient,
+    'getIngestEnvironmentSummaries',
+  ).mockResolvedValue([
+    mockDevIngestEnvironmentSummaryResponse,
+    mockProdParallelIngestEnvironmentSummaryResponse,
+    mockProdIngestEnvironmentSummaryResponse,
+  ]);
+  createSpy(
+    mockedStore.lakehouseIngestServerClient,
+    'getIngestEnvironment',
+  ).mockImplementation(
+    async (ingestServerUrl: string | undefined, token: string | undefined) => {
+      if (ingestServerUrl === 'https://test-dev-ingest-server.com') {
+        return mockDevIngestEnvironmentResponse;
+      } else if (
+        ingestServerUrl === 'https://test-prod-parallel-ingest-server.com'
+      ) {
+        return mockProdParallelIngestEnvironmentResponse;
+      } else if (ingestServerUrl === 'https://test-prod-ingest-server.com') {
+        return mockProdIngestEnvironmentResponse;
+      }
+
+      throw new Error(
+        `Unable to find deployed definitions for URL: ${ingestServerUrl}`,
+      );
+    },
+  );
+  createSpy(
+    mockedStore.lakehouseContractServerClient,
+    'getAllSubscriptions',
+  ).mockResolvedValue(mockSubscriptions);
+  createSpy(
+    mockedStore.lakehouseContractServerClient,
+    'getDataContracts',
+  ).mockResolvedValue(mockDataContracts);
+  createSpy(
+    mockedStore.lakehouseContractServerClient,
+    'getLiteDataContracts',
+  ).mockResolvedValue(mockLiteDataContracts);
 
   const { renderResult } = await TEST__setUpMarketplaceLakehouse(
     mockedStore,

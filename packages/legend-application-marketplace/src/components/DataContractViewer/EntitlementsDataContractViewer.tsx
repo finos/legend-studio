@@ -15,7 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import type { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
+import type { EntitlementsDataContractViewerState } from '../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
 import {
   Accordion,
   AccordionDetails,
@@ -60,8 +60,7 @@ import {
   getOrganizationalScopeTypeName,
   isContractInTerminalState,
   stringifyOrganizationalScope,
-} from '../../../stores/lakehouse/LakehouseUtils.js';
-import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
+} from '../../stores/lakehouse/LakehouseUtils.js';
 import { flowResult } from 'mobx';
 import { useAuth } from 'react-oidc-context';
 import {
@@ -76,10 +75,10 @@ import {
 import {
   generateLakehouseDataProductPath,
   generateLakehouseTaskPath,
-} from '../../../__lib__/LegendMarketplaceNavigation.js';
-import { type DataProductGroupAccessState } from '../../../stores/lakehouse/DataProductDataAccessState.js';
-import { UserRenderer } from '../../../components/UserRenderer/UserRenderer.js';
-import type { LegendMarketplaceBaseStore } from '../../../stores/LegendMarketplaceBaseStore.js';
+} from '../../__lib__/LegendMarketplaceNavigation.js';
+import { type DataProductGroupAccessState } from '../../stores/lakehouse/DataProductDataAccessState.js';
+import { UserRenderer } from '../../components/UserRenderer/UserRenderer.js';
+import type { LegendMarketplaceBaseStore } from '../../stores/LegendMarketplaceBaseStore.js';
 
 const AssigneesList = (props: {
   userIds: string[];
@@ -165,6 +164,7 @@ export const EntitlementsDataContractViewer = observer(
   (props: {
     open: boolean;
     currentViewer: EntitlementsDataContractViewerState;
+    legendMarketplaceStore: LegendMarketplaceBaseStore;
     dataProductGroupAccessState?: DataProductGroupAccessState | undefined;
     onClose: () => void;
     initialSelectedUser?: string | undefined;
@@ -172,12 +172,12 @@ export const EntitlementsDataContractViewer = observer(
     const {
       open,
       currentViewer,
+      legendMarketplaceStore,
       dataProductGroupAccessState,
       onClose,
       initialSelectedUser,
     } = props;
     const auth = useAuth();
-    const legendMarketplaceStore = useLegendMarketplaceBaseStore();
     const consumer = currentViewer.value.consumer;
 
     // We try to get the target users from the associated tasks first, since the
@@ -294,6 +294,10 @@ export const EntitlementsDataContractViewer = observer(
         task.rec.consumer === selectedTargetUser &&
         task.rec.type === V1_ApprovalType.DATA_OWNER_APPROVAL,
     );
+    const isContractInProgressForUser =
+      privilegeManagerApprovalTask?.rec.status ===
+        V1_UserApprovalStatus.PENDING ||
+      dataOwnerApprovalTask?.rec.status === V1_UserApprovalStatus.PENDING;
 
     const copyTaskLink = (text: string): void => {
       legendMarketplaceStore.applicationStore.clipboardService
@@ -433,8 +437,7 @@ export const EntitlementsDataContractViewer = observer(
     return (
       <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="md">
         <DialogTitle>
-          {isContractInTerminalState(currentViewer.value) ? '' : 'Pending '}Data
-          Contract Request
+          {isContractInProgressForUser ? 'Pending ' : ''}Data Contract Request
         </DialogTitle>
         <IconButton onClick={onClose} className="marketplace-dialog-close-btn">
           <CloseIcon />

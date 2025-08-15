@@ -16,8 +16,8 @@
 
 import {
   type V1_LiteDataContract,
-  type V1_PendingTasksResponse,
   type V1_TaskMetadata,
+  type V1_TaskResponse,
   V1_deserializeTaskResponse,
   V1_observe_LiteDataContract,
 } from '@finos/legend-graph';
@@ -61,7 +61,7 @@ export class EntitlementsDataContractViewerState {
       const pendingTasks = (yield this.lakeServerClient.getContractTasks(
         this.value.guid,
         token,
-      )) as PlainObject<V1_PendingTasksResponse>;
+      )) as PlainObject<V1_TaskResponse>;
       const tasks = V1_deserializeTaskResponse(pendingTasks);
       this.setAssociatedTasks(tasks);
     } catch (error) {

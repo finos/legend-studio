@@ -23,7 +23,6 @@ import {
   ApplicationStoreProvider,
 } from '@finos/legend-application';
 import { AuthProvider } from 'react-oidc-context';
-import { CORE_PURE_PATH } from '@finos/legend-graph';
 import { MarketplaceLakehouseStore } from '../../stores/lakehouse/MarketplaceLakehouseStore.js';
 import { TEST__BrowserEnvironmentProvider } from '@finos/legend-application/test';
 import {
@@ -38,20 +37,6 @@ import { TEST__getTestLegendMarketplaceApplicationConfig } from '../../applicati
 import { LegendMarketplaceFrameworkProvider } from '../../application/LegendMarketplaceFrameworkProvider.js';
 import searchResults from './TEST_DATA__SearchResults.json' with { type: 'json' };
 import { LegendMarketplaceWebApplicationRouter } from '../../application/LegendMarketplaceWebApplication.js';
-import {
-  mockReleaseSDLCDataProduct,
-  mockSnapshotSDLCDataProduct,
-  mockDevIngestEnvironmentSummaryResponse,
-  mockProdParallelIngestEnvironmentSummaryResponse,
-  mockProdIngestEnvironmentSummaryResponse,
-  mockDevIngestEnvironmentResponse,
-  mockProdParallelIngestEnvironmentResponse,
-  mockProdIngestEnvironmentResponse,
-  mockSubscriptions,
-  mockDataContracts,
-  mockDataProducts,
-  mockLiteDataContracts,
-} from './TEST_DATA__LakehouseData.js';
 import { LakehouseAdminStore } from '../../stores/lakehouse/admin/LakehouseAdminStore.js';
 import { useLakehouseAdminStore } from '../../pages/Lakehouse/admin/LakehouseAdminStoreProvider.js';
 
@@ -62,7 +47,7 @@ jest.mock('@finos/legend-graph', () => {
   return {
     ...actual,
     getCurrentUserIDFromEngineServer: jest.fn(() =>
-      Promise.resolve('test-user-id'),
+      Promise.resolve('test-consumer-user-id'),
     ),
   };
 });
@@ -164,93 +149,6 @@ export const TEST__setUpMarketplaceLakehouse = async (
   MOCK__store: LegendMarketplaceBaseStore,
   route?: string,
 ) => {
-  createSpy(
-    MOCK__store.lakehouseContractServerClient,
-    'getDataProducts',
-  ).mockResolvedValue(mockDataProducts);
-  createSpy(
-    MOCK__store.depotServerClient,
-    'getVersionEntities',
-  ).mockImplementation(
-    async (
-      groupId: string,
-      artifactId: string,
-      versionId: string,
-      classifierPath?: string,
-    ) => {
-      if (
-        groupId === 'com.example.analytics' &&
-        artifactId === 'customer-analytics'
-      ) {
-        return [
-          {
-            entity: {
-              classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
-              content: mockReleaseSDLCDataProduct,
-              path: 'test::dataproduct::TestSDLCDataProduct',
-            },
-          },
-        ];
-      } else if (
-        groupId === 'com.example.finance' &&
-        artifactId === 'financial-reporting'
-      ) {
-        return [
-          {
-            entity: {
-              classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
-              content: mockSnapshotSDLCDataProduct,
-              path: 'test::dataproduct::AnotherSDLCDataProduct',
-            },
-          },
-        ];
-      }
-      throw new Error(
-        `Unable to find entities at: ${groupId}:${artifactId}:${versionId}:${classifierPath}`,
-      );
-    },
-  );
-  createSpy(
-    MOCK__store.lakehousePlatformServerClient,
-    'getIngestEnvironmentSummaries',
-  ).mockResolvedValue([
-    mockDevIngestEnvironmentSummaryResponse,
-    mockProdParallelIngestEnvironmentSummaryResponse,
-    mockProdIngestEnvironmentSummaryResponse,
-  ]);
-  createSpy(
-    MOCK__store.lakehouseIngestServerClient,
-    'getIngestEnvironment',
-  ).mockImplementation(
-    async (ingestServerUrl: string | undefined, token: string | undefined) => {
-      if (ingestServerUrl === 'https://test-dev-ingest-server.com') {
-        return mockDevIngestEnvironmentResponse;
-      } else if (
-        ingestServerUrl === 'https://test-prod-parallel-ingest-server.com'
-      ) {
-        return mockProdParallelIngestEnvironmentResponse;
-      } else if (ingestServerUrl === 'https://test-prod-ingest-server.com') {
-        return mockProdIngestEnvironmentResponse;
-      }
-
-      throw new Error(
-        `Unable to find deployed definitions for URL: ${ingestServerUrl}`,
-      );
-    },
-  );
-  createSpy(
-    MOCK__store.lakehouseContractServerClient,
-    'getAllSubscriptions',
-  ).mockResolvedValue(mockSubscriptions);
-  createSpy(
-    MOCK__store.lakehouseContractServerClient,
-    'getDataContracts',
-  ).mockResolvedValue(mockDataContracts);
-  createSpy(
-    MOCK__store.lakehouseContractServerClient,
-    'getLiteDataContracts',
-  ).mockResolvedValue(mockLiteDataContracts);
-
   const MOCK__lakehouseStore = new MarketplaceLakehouseStore(
     MOCK__store,
     MOCK__store.lakehouseContractServerClient,

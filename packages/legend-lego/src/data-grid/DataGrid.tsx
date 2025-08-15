@@ -30,7 +30,6 @@ import {
   type ICellRendererParams,
   type IRowNode,
   type MenuItemDef,
-  type Module,
   type RowClickedEvent,
   type RowSelectedEvent,
   type RowSelectionOptions,
@@ -43,11 +42,13 @@ import {
   type CustomHeaderProps,
 } from 'ag-grid-react';
 
-export const communityModules: Module[] = [AllCommunityModule];
-export const enterpriseModules: Module[] = [AllEnterpriseModule];
-export const allModules: Module[] = communityModules.concat(enterpriseModules);
-
 declare const AG_GRID_LICENSE: string;
+
+// NOTE: This is a workaround to prevent ag-grid license key check from flooding the console screen
+// with its stack trace in Chrome.
+// We MUST NEVER completely surpress this warning in production, else it's a violation of the ag-grid license!
+// See https://www.ag-grid.com/react-data-grid/licensing/
+const __INTERNAL__original_console_error = console.error; // eslint-disable-line no-console
 
 export function DataGrid<TData = unknown>(
   props: AgGridReactProps<TData>,
@@ -55,14 +56,29 @@ export function DataGrid<TData = unknown>(
   if (AG_GRID_LICENSE) {
     LicenseManager.setLicenseKey(AG_GRID_LICENSE);
   }
+
+  // eslint-disable-next-line no-process-env
+  if (process.env.NODE_ENV !== 'production') {
+    // eslint-disable-next-line no-console
+    console.error = (message?: unknown, ...agrs: unknown[]) => {
+      console.debug(`%c ${message}`, 'color: silver'); // eslint-disable-line no-console
+    };
+  }
+
   return (
     <AgGridReact
       theme="legacy"
       {...props}
       // NOTE: for test, we don't want to handle the error messages outputed by ag-grid so
       // we disable enterprise features for now
-      // eslint-disable-next-line no-process-env
-      modules={process.env.NODE_ENV === 'test' ? communityModules : allModules}
+      modules={[AllCommunityModule, AllEnterpriseModule]}
+      onGridReady={() => {
+        // eslint-disable-next-line no-process-env
+        if (process.env.NODE_ENV !== 'production') {
+          // restore original error logging
+          console.error = __INTERNAL__original_console_error; // eslint-disable-line no-console
+        }
+      }}
     />
   );
 }
