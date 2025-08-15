@@ -85,7 +85,7 @@ export const mockPendingManagerApprovalTasksResponse: V1_TaskResponse = {
         dataContractId: 'test-data-contract-id',
         eventPayload: {
           type: V1_ContractEventPayloadType.SUBMITTED,
-          eventTimestamp: '2025-08-06T20:54:46.069672876Z',
+          eventTimestamp: '2025-08-06T11:54:46.069672876Z',
         },
         status: V1_UserApprovalStatus.PENDING,
         taskId: 'mock-privilege-manager-approval-task-id',
@@ -108,7 +108,7 @@ export const mockPendingManagerApprovalMultipleAssigneesTasksResponse: V1_TaskRe
           dataContractId: 'test-data-contract-id',
           eventPayload: {
             type: V1_ContractEventPayloadType.SUBMITTED,
-            eventTimestamp: '2025-08-06T20:54:46.069672876Z',
+            eventTimestamp: '2025-08-06T11:54:46.069672876Z',
           },
           status: V1_UserApprovalStatus.PENDING,
           taskId: 'mock-privilege-manager-approval-task-id',
@@ -128,7 +128,7 @@ export const mockPendingManagerApprovalMultipleConsumersTasksResponse: V1_TaskRe
           dataContractId: 'test-data-contract-id',
           eventPayload: {
             type: V1_ContractEventPayloadType.SUBMITTED,
-            eventTimestamp: '2025-08-06T20:54:46.069672876Z',
+            eventTimestamp: '2025-08-06T11:54:46.069672876Z',
           },
           status: V1_UserApprovalStatus.PENDING,
           taskId: 'mock-privilege-manager-approval-task-id',
@@ -142,7 +142,7 @@ export const mockPendingManagerApprovalMultipleConsumersTasksResponse: V1_TaskRe
           dataContractId: 'test-data-contract-id',
           eventPayload: {
             type: V1_ContractEventPayloadType.SUBMITTED,
-            eventTimestamp: '2025-08-06T20:54:46.069672876Z',
+            eventTimestamp: '2025-08-06T11:54:46.069672876Z',
           },
           status: V1_UserApprovalStatus.PENDING,
           taskId: 'mock-privilege-manager-approval-task-id',
@@ -162,7 +162,7 @@ export const mockPendingDataOwnerApprovalTasksResponse: V1_TaskResponse = {
         eventPayload: {
           type: V1_ContractEventPayloadType.PRIVILEGE_MANAGER_APPROVED,
           candidateIdentity: 'test-consumer-user-id',
-          eventTimestamp: '2025-08-06T20:54:46.069672876Z',
+          eventTimestamp: '2025-08-06T11:54:46.069672876Z',
           managerIdentity: 'test-privilege-manager-user-id',
           taskId: 'mock-privilege-manager-approval-task-id',
         } as V1_ContractUserEventPrivilegeManagerPayload,
@@ -179,7 +179,7 @@ export const mockPendingDataOwnerApprovalTasksResponse: V1_TaskResponse = {
         eventPayload: {
           type: V1_ContractEventPayloadType.PRIVILEGE_MANAGER_APPROVED,
           candidateIdentity: 'test-consumer-user-id',
-          eventTimestamp: '2025-08-06T20:54:46.069672876Z',
+          eventTimestamp: '2025-08-06T11:54:46.069672876Z',
           managerIdentity: 'test-privilege-manager-user-id',
           taskId: 'mock-data-owner-approval-task-id',
         } as V1_ContractUserEventPrivilegeManagerPayload,
@@ -201,7 +201,7 @@ export const mockApprovedTasksResponse: V1_TaskResponse = {
         eventPayload: {
           type: V1_ContractEventPayloadType.PRIVILEGE_MANAGER_APPROVED,
           candidateIdentity: 'test-consumer-user-id',
-          eventTimestamp: '2025-08-06T20:54:46.069672876Z',
+          eventTimestamp: '2025-08-06T11:54:46.069672876Z',
           managerIdentity: 'test-privilege-manager-user-id',
           taskId: 'mock-privilege-manager-approval-task-id',
         } as V1_ContractUserEventPrivilegeManagerPayload,
@@ -218,7 +218,7 @@ export const mockApprovedTasksResponse: V1_TaskResponse = {
         eventPayload: {
           type: V1_ContractEventPayloadType.DATA_PRODUCER_APPROVED,
           candidateIdentity: 'test-consumer-user-id',
-          eventTimestamp: '2025-08-07T20:54:46.069672876Z',
+          eventTimestamp: '2025-08-07T14:32:18.571824717Z',
           dataProducerIdentity: 'test-data-owner-user-id',
           taskId: 'mock-data-owner-approval-task-id',
         } as V1_ContractUserEventDataProducerPayload,
@@ -240,7 +240,7 @@ export const mockDeniedTasksResponse: V1_TaskResponse = {
         eventPayload: {
           type: V1_ContractEventPayloadType.PRIVILEGE_MANAGER_REJECTED,
           candidateIdentity: 'test-consumer-user-id',
-          eventTimestamp: '2025-08-06T20:54:46.069672876Z',
+          eventTimestamp: '2025-08-06T11:54:46.069672876Z',
           managerIdentity: 'test-privilege-manager-user-id',
           taskId: 'mock-privilege-manager-denied-task-id',
         } as V1_ContractUserEventPrivilegeManagerPayload,
