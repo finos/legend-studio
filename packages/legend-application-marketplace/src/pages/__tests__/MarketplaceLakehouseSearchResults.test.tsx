@@ -27,15 +27,6 @@ import {
   mockDataProducts,
   mockReleaseSDLCDataProduct,
   mockSnapshotSDLCDataProduct,
-  mockDevIngestEnvironmentSummaryResponse,
-  mockProdParallelIngestEnvironmentSummaryResponse,
-  mockProdIngestEnvironmentSummaryResponse,
-  mockDevIngestEnvironmentResponse,
-  mockProdParallelIngestEnvironmentResponse,
-  mockProdIngestEnvironmentResponse,
-  mockSubscriptions,
-  mockDataContracts,
-  mockLiteDataContracts,
 } from '../../components/__test-utils__/TEST_DATA__LakehouseData.js';
 
 jest.mock('react-oidc-context', () => {
@@ -100,46 +91,6 @@ const setupTestComponent = async (query?: string) => {
       );
     },
   );
-  createSpy(
-    mockedStore.lakehousePlatformServerClient,
-    'getIngestEnvironmentSummaries',
-  ).mockResolvedValue([
-    mockDevIngestEnvironmentSummaryResponse,
-    mockProdParallelIngestEnvironmentSummaryResponse,
-    mockProdIngestEnvironmentSummaryResponse,
-  ]);
-  createSpy(
-    mockedStore.lakehouseIngestServerClient,
-    'getIngestEnvironment',
-  ).mockImplementation(
-    async (ingestServerUrl: string | undefined, token: string | undefined) => {
-      if (ingestServerUrl === 'https://test-dev-ingest-server.com') {
-        return mockDevIngestEnvironmentResponse;
-      } else if (
-        ingestServerUrl === 'https://test-prod-parallel-ingest-server.com'
-      ) {
-        return mockProdParallelIngestEnvironmentResponse;
-      } else if (ingestServerUrl === 'https://test-prod-ingest-server.com') {
-        return mockProdIngestEnvironmentResponse;
-      }
-
-      throw new Error(
-        `Unable to find deployed definitions for URL: ${ingestServerUrl}`,
-      );
-    },
-  );
-  createSpy(
-    mockedStore.lakehouseContractServerClient,
-    'getAllSubscriptions',
-  ).mockResolvedValue(mockSubscriptions);
-  createSpy(
-    mockedStore.lakehouseContractServerClient,
-    'getDataContracts',
-  ).mockResolvedValue(mockDataContracts);
-  createSpy(
-    mockedStore.lakehouseContractServerClient,
-    'getLiteDataContracts',
-  ).mockResolvedValue(mockLiteDataContracts);
 
   const { renderResult, MOCK__store } = await TEST__setUpMarketplaceLakehouse(
     mockedStore,
