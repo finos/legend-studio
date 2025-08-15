@@ -49,7 +49,6 @@ import {
   MenuContentItem,
   CaretDownIcon,
   WarningIcon,
-  PanelFormSection,
   useDragPreviewLayer,
   DragPreviewLayer,
   PanelDnDEntry,
@@ -109,6 +108,7 @@ import {
   supportInfo_deleteEmail,
   accessPoint_setClassification,
   accessPoint_setReproducible,
+  supportInfo_setLinkLabel,
 } from '../../../../stores/graph-modifier/DSL_DataProduct_GraphModifierHelper.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
@@ -1413,14 +1413,28 @@ const HomeTab = observer(
 );
 
 const SupportTab = observer(
-  (props: { product: DataProduct; isReadOnly: boolean }) => {
-    const { product, isReadOnly } = props;
+  (props: {
+    dataProductEditorState: DataProductEditorState;
+    isReadOnly: boolean;
+  }) => {
+    const { dataProductEditorState, isReadOnly } = props;
+    const product = dataProductEditorState.product;
     const updateSupportInfoDocumentationUrl = (
       val: string | undefined,
     ): void => {
       dataProduct_setSupportInfoIfAbsent(product);
       if (product.supportInfo) {
         supportInfo_setDocumentationUrl(product.supportInfo, val ?? '');
+      }
+      if (!val) {
+        dataProductEditorState.clearSupportInfo();
+      }
+    };
+    const updateSupportInfoDocumentationLabel = (
+      val: string | undefined,
+    ): void => {
+      if (product.supportInfo?.documentation) {
+        supportInfo_setLinkLabel(product.supportInfo.documentation, val);
       }
     };
 
@@ -1429,6 +1443,14 @@ const SupportTab = observer(
       if (product.supportInfo) {
         supportInfo_setWebsite(product.supportInfo, val ?? '');
       }
+      if (!val) {
+        dataProductEditorState.clearSupportInfo();
+      }
+    };
+    const updateSupportInfoWebsiteLabel = (val: string | undefined): void => {
+      if (product.supportInfo?.website) {
+        supportInfo_setLinkLabel(product.supportInfo.website, val);
+      }
     };
 
     const updateSupportInfoFaqUrl = (val: string | undefined): void => {
@@ -1436,12 +1458,40 @@ const SupportTab = observer(
       if (product.supportInfo) {
         supportInfo_setFaqUrl(product.supportInfo, val ?? '');
       }
+      if (!val) {
+        dataProductEditorState.clearSupportInfo();
+      }
+    };
+    const updateSupportInfoFaqLabel = (val: string | undefined): void => {
+      if (product.supportInfo?.faqUrl) {
+        supportInfo_setLinkLabel(product.supportInfo.faqUrl, val);
+      }
     };
 
     const updateSupportInfoSupportUrl = (val: string | undefined): void => {
       dataProduct_setSupportInfoIfAbsent(product);
       if (product.supportInfo) {
         supportInfo_setSupportUrl(product.supportInfo, val ?? '');
+      }
+      if (!val) {
+        dataProductEditorState.clearSupportInfo();
+      }
+      const supportLabelOptions = ['Keystone', 'Jira', 'ServiceNow'];
+      supportLabelOptions.forEach((derivedLabel) => {
+        if (
+          val?.includes(derivedLabel.toLowerCase()) &&
+          product.supportInfo?.supportUrl
+        ) {
+          supportInfo_setLinkLabel(
+            product.supportInfo.supportUrl,
+            derivedLabel,
+          );
+        }
+      });
+    };
+    const updateSupportInfoSupportLabel = (val: string | undefined): void => {
+      if (product.supportInfo?.supportUrl) {
+        supportInfo_setLinkLabel(product.supportInfo.supportUrl, val);
       }
     };
 
@@ -1458,6 +1508,9 @@ const SupportTab = observer(
     const handleSupportInfoEmailRemove = (email: Email): void => {
       if (product.supportInfo) {
         supportInfo_deleteEmail(product.supportInfo, email);
+      }
+      if (product.supportInfo?.emails.length === 0) {
+        dataProductEditorState.clearSupportInfo();
       }
     };
 
@@ -1527,37 +1580,87 @@ const SupportTab = observer(
     );
 
     return (
-      <PanelFormSection>
+      <div className="data-product-editor__support-info">
         <div className="panel__content__form__section__header__label">
           Support Information
         </div>
         <div className="panel__content__form__section__header__prompt">
           Configure support information for this Lakehouse Data Product.
         </div>
-        <PanelFormTextField
-          name="Documentation URL"
-          value={product.supportInfo?.documentation?.url ?? ''}
-          update={updateSupportInfoDocumentationUrl}
-          placeholder="Enter Documentation URL"
-        />
-        <PanelFormTextField
-          name="Website"
-          value={product.supportInfo?.website?.url ?? ''}
-          update={updateSupportInfoWebsite}
-          placeholder="Enter Website"
-        />
-        <PanelFormTextField
-          name="FAQ URL"
-          value={product.supportInfo?.faqUrl?.url}
-          update={updateSupportInfoFaqUrl}
-          placeholder="Enter FAQ URL"
-        />
-        <PanelFormTextField
-          name="Support URL"
-          value={product.supportInfo?.supportUrl?.url ?? ''}
-          update={updateSupportInfoSupportUrl}
-          placeholder="Enter Support URL"
-        />
+        <div className="data-product-editor__support-info__link-container">
+          <PanelFormTextField
+            className="data-product-editor__support-info__input"
+            name="Documentation"
+            prompt="URL"
+            value={product.supportInfo?.documentation?.url ?? ''}
+            update={updateSupportInfoDocumentationUrl}
+            placeholder="Documentation URL"
+          />
+          <PanelFormTextField
+            className="data-product-editor__support-info__input"
+            name=""
+            prompt="Label"
+            isReadOnly={!Boolean(product.supportInfo?.documentation)}
+            value={product.supportInfo?.documentation?.label ?? ''}
+            update={updateSupportInfoDocumentationLabel}
+            placeholder="Documentation Label"
+          />
+        </div>
+
+        <div className="data-product-editor__support-info__link-container">
+          <PanelFormTextField
+            name="Website"
+            prompt="URL"
+            value={product.supportInfo?.website?.url ?? ''}
+            update={updateSupportInfoWebsite}
+            placeholder="Website URL"
+          />
+          <PanelFormTextField
+            name=""
+            prompt="Label"
+            isReadOnly={!Boolean(product.supportInfo?.website)}
+            value={product.supportInfo?.website?.label ?? ''}
+            update={updateSupportInfoWebsiteLabel}
+            placeholder="Website Label"
+          />
+        </div>
+
+        <div className="data-product-editor__support-info__link-container">
+          <PanelFormTextField
+            name="FAQ"
+            prompt="URL"
+            value={product.supportInfo?.faqUrl?.url}
+            update={updateSupportInfoFaqUrl}
+            placeholder="FAQ URL"
+          />
+          <PanelFormTextField
+            name=""
+            prompt="Label"
+            isReadOnly={!Boolean(product.supportInfo?.faqUrl)}
+            value={product.supportInfo?.faqUrl?.label}
+            update={updateSupportInfoFaqLabel}
+            placeholder="FAQ Label"
+          />
+        </div>
+
+        <div className="data-product-editor__support-info__link-container">
+          <PanelFormTextField
+            name="Support"
+            prompt="URL"
+            value={product.supportInfo?.supportUrl?.url ?? ''}
+            update={updateSupportInfoSupportUrl}
+            placeholder="Support URL"
+          />
+          <PanelFormTextField
+            name=""
+            prompt="Label"
+            isReadOnly={!Boolean(product.supportInfo?.supportUrl)}
+            value={product.supportInfo?.supportUrl?.label}
+            update={updateSupportInfoSupportLabel}
+            placeholder="Support Label"
+          />
+        </div>
+
         <ListEditor
           title="Emails"
           items={product.supportInfo?.emails}
@@ -1568,7 +1671,7 @@ const SupportTab = observer(
           isReadOnly={isReadOnly}
           emptyMessage="No emails specified"
         />
-      </PanelFormSection>
+      </div>
     );
   },
 );
@@ -1611,7 +1714,12 @@ export const DataProductEditor = observer(() => {
       case DATA_PRODUCT_TAB.HOME:
         return <HomeTab product={product} isReadOnly={isReadOnly} />;
       case DATA_PRODUCT_TAB.SUPPORT:
-        return <SupportTab product={product} isReadOnly={isReadOnly} />;
+        return (
+          <SupportTab
+            dataProductEditorState={dataProductEditorState}
+            isReadOnly={isReadOnly}
+          />
+        );
       case DATA_PRODUCT_TAB.APG:
         return (
           <AccessPointGroupTab
