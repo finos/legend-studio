@@ -14,40 +14,49 @@
  * limitations under the License.
  */
 
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import {
-  PanelContent,
   clsx,
   Dialog,
   Modal,
-  ModalHeader,
   ModalBody,
   ModalFooter,
   ModalFooterButton,
+  ModalHeader,
+  PanelContent,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import {
-  ReactFlow,
   Background,
   Controls,
-  MiniMap,
-  ReactFlowProvider,
-  Position,
-  type Node as ReactFlowNode,
   type Edge as ReactFlowEdge,
+  MiniMap,
+  type Node as ReactFlowNode,
+  Position,
+  ReactFlow,
+  ReactFlowProvider,
 } from 'reactflow';
 import {
-  type LineageState,
   LINEAGE_VIEW_MODE,
+  type LineageState,
 } from '../../stores/lineage/LineageState.js';
 
 import {
   type Graph,
-  type Owner,
-  type ReportLineage,
-  type LineageNode,
   type LineageEdge,
+  type LineageNode,
+  type LineageProperty,
+  type Owner,
+  type OwnerLink,
+  type PropertyLineageNode,
+  type PropertyLineageReport,
+  PropertyOwnerNode,
+  type ReportLineage,
 } from '@finos/legend-graph';
+import {
+  PropertyOwnerNode as PropertyOwnerNodeComponent,
+  type PropertyOwnerNodeData,
+} from './PropertyOwnerNode.js';
 
 function autoLayoutNodesAndEdges<T extends { id: string }>(
   nodes: T[],
@@ -177,7 +186,7 @@ const convertGraphToFlow = (graph?: Graph) => {
   }
   const nodeList = graph.nodes.map((node: LineageNode) => ({
     id: node.data.id,
-    label: node.data.text || node.data.id,
+    label: node.data.text,
   }));
   const edgeList = graph.edges.map((edge: LineageEdge) => ({
     source: edge.data.source.data.id,
@@ -404,6 +413,514 @@ const convertReportLineageToFlow = (reportLineage?: ReportLineage) => {
   };
 };
 
+const convertPropertyLineageToFlow = (
+  propertyLineage?: PropertyLineageReport,
+  selectedSourcePropertiesMap?: Map<string, Set<string>>,
+) => {
+  if (!propertyLineage?.propertyOwner.length) {
+    return {
+      nodes: [
+        {
+          id: 'no-property-lineage',
+          data: { label: 'No Property Lineage Generated' },
+          position: { x: 350, y: 300 },
+          type: 'default',
+          style: {
+            backgroundColor: '#f5f5f5',
+            border: '1px solid #ccc',
+            borderRadius: '5px',
+            padding: '10px',
+            width: 200,
+          },
+        },
+      ],
+      edges: [],
+      bounds: { width: 800, height: 600 },
+    };
+  }
+
+  const nodeList = propertyLineage.propertyOwner.map(
+    (node: PropertyLineageNode) => ({
+      id: node.id,
+      label: node.name,
+      isPropertyOwner: node instanceof PropertyOwnerNode,
+      node: node,
+    }),
+  );
+
+  const edgeList = propertyLineage.ownerLink.map((link: OwnerLink) => ({
+    source: link.source,
+    target: link.target,
+  }));
+
+  const nodeIds = new Set(nodeList.map((n) => n.id));
+  const validEdgeList = edgeList.filter((edge) => {
+    return !(!nodeIds.has(edge.source) || !nodeIds.has(edge.target));
+  });
+
+  const nodeDimensions = new Map<string, { width: number; height: number }>();
+
+  nodeList.forEach((nodeItem) => {
+    const isPropertyOwner = nodeItem.isPropertyOwner;
+    const highlightedProperties = selectedSourcePropertiesMap?.get(nodeItem.id);
+    const hasHighlightedProperties = (highlightedProperties?.size ?? 0) > 0;
+    let nodeWidth = 220;
+    let nodeHeight = isPropertyOwner ? 80 : 60;
+
+    if (hasHighlightedProperties && isPropertyOwner) {
+      const propertyCount = Math.min(highlightedProperties?.size ?? 0, 20);
+
+      // Header (50px) + properties (32px each including margins) + container padding (20px)
+      const propertiesHeight = propertyCount * 32; // 28px min-height + 4px margin
+
+      nodeHeight = 50 + propertiesHeight + 20;
+      nodeHeight = Math.max(nodeHeight, 160);
+      nodeHeight = Math.min(nodeHeight, 800);
+
+      nodeWidth = 340;
+    }
+
+    nodeDimensions.set(nodeItem.id, { width: nodeWidth, height: nodeHeight });
+  });
+
+  const maxHeight = Math.max(
+    ...Array.from(nodeDimensions.values()).map((d) => d.height),
+  );
+  const dynamicYSpacing = Math.max(220, maxHeight + 100);
+  const dynamicXSpacing = 380;
+
+  const positions = autoLayoutNodesAndEdges(
+    nodeList,
+    validEdgeList,
+    dynamicXSpacing,
+    dynamicYSpacing,
+  );
+  const bounds = getLayoutBounds(positions);
+
+  const nodes = nodeList.map((nodeItem) => {
+    const isPropertyOwner = nodeItem.isPropertyOwner;
+    const highlightedProperties = selectedSourcePropertiesMap?.get(nodeItem.id);
+
+    let allProperties: Array<{
+      name: string;
+      dataType?: string | undefined;
+      propertyType: string | undefined;
+    }> = [];
+    if (isPropertyOwner && nodeItem.node instanceof PropertyOwnerNode) {
+      const properties = nodeItem.node.properties;
+      allProperties = properties.map((prop) => ({
+        name: prop.name,
+        dataType: prop.dataType,
+        propertyType: prop.propertyType,
+      }));
+    }
+
+    const dimensions = nodeDimensions.get(nodeItem.id) ?? {
+      width: 220,
+      height: 80,
+    };
+
+    const nodeData: PropertyOwnerNodeData = {
+      label: nodeItem.label,
+      isPropertyOwner: isPropertyOwner,
+      highlightedProperties: highlightedProperties,
+      allProperties: allProperties,
+    };
+
+    return {
+      id: nodeItem.id,
+      data: nodeData,
+      position: positions[nodeItem.id] ?? { x: 0, y: 0 },
+      type: isPropertyOwner ? 'propertyOwner' : 'default',
+      sourcePosition: Position.Right,
+      targetPosition: Position.Left,
+      style: {
+        width: dimensions.width,
+        height: dimensions.height,
+        background: 'transparent',
+        border: 'none',
+        padding: 0,
+        margin: 0,
+      },
+      width: dimensions.width,
+      height: dimensions.height,
+    };
+  });
+
+  const edges = validEdgeList.map((edge, idx) => ({
+    id: `${edge.source}-${edge.target}-${idx}`,
+    source: edge.source,
+    target: edge.target,
+    type: 'smoothstep' as const,
+    style: { strokeWidth: 2, stroke: '#1976d2' },
+  }));
+
+  const expandedBounds = {
+    width: Math.max(bounds.width, 1200),
+    height: Math.max(bounds.height, 800),
+  };
+
+  return { nodes, edges, bounds: expandedBounds };
+};
+
+const collectSourceOwnerProperties = (
+  property: LineageProperty,
+  map: Map<string, Set<string>>,
+  visited: Set<string> = new Set(),
+  depth: number = 0,
+): void => {
+  if (depth > 50) {
+    return;
+  }
+
+  if (
+    !Array.isArray(property.sourceProperties) ||
+    property.sourceProperties.length === 0
+  ) {
+    return;
+  }
+
+  const propertyKey = `${property.ownerID}-${property.name}`;
+
+  if (visited.has(propertyKey)) {
+    return;
+  }
+
+  visited.add(propertyKey);
+
+  try {
+    property.sourceProperties.forEach((sourceProp) => {
+      if (!map.has(sourceProp.ownerID)) {
+        map.set(sourceProp.ownerID, new Set());
+      }
+      const sourceSet = map.get(sourceProp.ownerID);
+      if (sourceSet) {
+        sourceSet.add(sourceProp.name);
+      }
+      collectSourceOwnerProperties(sourceProp, map, visited, depth + 1);
+    });
+  } catch {
+    return;
+  } finally {
+    visited.delete(propertyKey);
+  }
+};
+
+const findRelevantEdges = (
+  highlightedNodeIds: Set<string>,
+  allEdges: ReactFlowEdge[],
+): Set<string> => {
+  const relevantEdgeIds = new Set<string>();
+
+  allEdges.forEach((edge) => {
+    if (
+      highlightedNodeIds.has(edge.source) &&
+      highlightedNodeIds.has(edge.target)
+    ) {
+      relevantEdgeIds.add(edge.id);
+    }
+  });
+
+  return relevantEdgeIds;
+};
+
+const PROPERTY_LINEAGE_NODE_TYPES = {
+  propertyOwner: PropertyOwnerNodeComponent,
+};
+
+const PropertyOwnerPanel = observer(
+  (props: { lineageState: LineageState; selectedNodeId?: string }) => {
+    const { lineageState, selectedNodeId } = props;
+    const propertyLineage = lineageState.lineageData?.propertyLineage;
+
+    if (!selectedNodeId || !propertyLineage) {
+      return (
+        <div className="property-lineage__panel">
+          <div className="property-lineage__panel-header">
+            <h3>Properties</h3>
+          </div>
+          <div className="property-lineage__panel-content">
+            <p>Select a node with properties to view details</p>
+          </div>
+        </div>
+      );
+    }
+
+    const selectedNode = propertyLineage.propertyOwner.find(
+      (node) => node.id === selectedNodeId,
+    );
+    const isPropertyOwner = selectedNode instanceof PropertyOwnerNode;
+
+    if (!isPropertyOwner) {
+      return (
+        <div className="property-lineage__panel">
+          <div className="property-lineage__panel-header">
+            <h3>Properties</h3>
+          </div>
+          <div className="property-lineage__panel-content">
+            <p>Selected node has no properties</p>
+          </div>
+        </div>
+      );
+    }
+
+    const propertyOwnerNode = selectedNode;
+
+    const handlePropertyClick = (property: LineageProperty) => {
+      const propertyKey = `${property.ownerID}-${property.name}`;
+      const currentSelection = lineageState.selectedProperty;
+
+      lineageState.setSelectedProperty(
+        currentSelection === propertyKey ? undefined : propertyKey,
+      );
+      if (currentSelection === propertyKey) {
+        lineageState.setSelectedSourcePropertiesMap(undefined);
+      } else {
+        const map = new Map<string, Set<string>>();
+        collectSourceOwnerProperties(property, map, new Set(), 0);
+        lineageState.setSelectedSourcePropertiesMap(map);
+      }
+    };
+
+    const properties = propertyOwnerNode.properties;
+
+    let highlightedSourceProps: Set<string> | undefined = undefined;
+    if (lineageState.selectedSourcePropertiesMap?.has(propertyOwnerNode.id)) {
+      highlightedSourceProps = lineageState.selectedSourcePropertiesMap.get(
+        propertyOwnerNode.id,
+      );
+    }
+
+    return (
+      <div className="property-lineage__panel">
+        <div className="property-lineage__panel-header">
+          <h3>{propertyOwnerNode.name}</h3>
+          <span className="property-lineage__panel-subtitle">
+            {properties.length} properties
+          </span>
+        </div>
+        <div className="property-lineage__panel-content">
+          {properties.length === 0 ? (
+            <p>No properties found</p>
+          ) : (
+            <div className="property-lineage__properties-list">
+              {properties.map((property) => {
+                const propertyKey = `${property.ownerID}-${property.name}`;
+                const isSelected =
+                  lineageState.selectedProperty === propertyKey;
+
+                const isSourceHighlighted = highlightedSourceProps?.has(
+                  property.name,
+                );
+
+                return (
+                  <div
+                    key={propertyKey}
+                    className={clsx('property-lineage__property-item', {
+                      'property-lineage__property-item--selected': isSelected,
+                      'property-lineage__property-item--source-highlighted':
+                        isSourceHighlighted,
+                    })}
+                    onClick={() => handlePropertyClick(property)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <div className="property-lineage__property-name">
+                      {property.name}
+                    </div>
+                    <div className="property-lineage__property-details">
+                      <span className="property-lineage__property-type">
+                        {property.dataType ?? 'Unknown'}
+                      </span>
+                      <span className="property-lineage__property-scope">
+                        {property.propertyType}
+                      </span>
+                    </div>
+                    {property.scope && (
+                      <div className="property-lineage__property-scope-detail">
+                        {property.scope}
+                      </div>
+                    )}
+                    {Array.isArray(property.sourceProperties) &&
+                      property.sourceProperties.length > 0 && (
+                        <div className="property-lineage__property-sources">
+                          {property.sourceProperties.length} source properties
+                        </div>
+                      )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  },
+);
+
+const PropertyLineageGraphViewer = observer(
+  (props: {
+    lineageState: LineageState;
+    nodes: ReactFlowNode[];
+    edges: ReactFlowEdge[];
+  }) => {
+    const { lineageState, nodes, edges } = props;
+
+    const getHighlightMaps = () => {
+      const highlightedNodeIds = new Set<string>();
+
+      const sourcePropertiesMap =
+        lineageState.selectedSourcePropertiesMap ??
+        new Map<string, Set<string>>();
+
+      if (
+        !lineageState.selectedProperty ||
+        !lineageState.selectedPropertyOwnerNode
+      ) {
+        return { highlightedNodeIds, sourcePropertiesMap };
+      }
+
+      const propertyLineage = lineageState.lineageData?.propertyLineage;
+      if (!propertyLineage) {
+        return { highlightedNodeIds, sourcePropertiesMap };
+      }
+
+      const selectedNode = propertyLineage.propertyOwner.find(
+        (node) => node.id === lineageState.selectedPropertyOwnerNode,
+      );
+
+      if (!(selectedNode instanceof PropertyOwnerNode)) {
+        return { highlightedNodeIds, sourcePropertiesMap };
+      }
+
+      const [ownerID, propertyName] = lineageState.selectedProperty.split('-');
+      const selectedProperty = selectedNode.properties.find(
+        (prop) => prop.ownerID === ownerID && prop.name === propertyName,
+      );
+
+      if (selectedProperty) {
+        highlightedNodeIds.add(selectedProperty.ownerID);
+
+        for (const ownerId of sourcePropertiesMap.keys()) {
+          highlightedNodeIds.add(ownerId);
+        }
+      }
+
+      return { highlightedNodeIds, sourcePropertiesMap };
+    };
+
+    const { highlightedNodeIds, sourcePropertiesMap } = getHighlightMaps();
+
+    const onNodeClick = (
+      _event: React.MouseEvent<Element, MouseEvent>,
+      node: ReactFlowNode,
+    ) => {
+      if (node.data.isPropertyOwner) {
+        lineageState.setSelectedPropertyOwnerNode(
+          lineageState.selectedPropertyOwnerNode === node.id
+            ? undefined
+            : node.id,
+        );
+        lineageState.setSelectedProperty(undefined);
+        lineageState.setSelectedSourcePropertiesMap(undefined);
+      }
+    };
+
+    const enhancedNodes = nodes.map((node) => {
+      const isSelected = lineageState.selectedPropertyOwnerNode === node.id;
+      // Remove unnecessary type annotation
+      const isHighlighted = highlightedNodeIds.has(node.id);
+
+      // Add type for updatedData to avoid unsafe assignment
+      const updatedData: PropertyOwnerNodeData = {
+        ...(node.data as PropertyOwnerNodeData),
+        isSelected,
+        isHighlighted,
+      };
+      return {
+        ...node,
+        data: updatedData,
+        style: {
+          ...node.style,
+          cursor: node.data.isPropertyOwner ? 'pointer' : 'default',
+          background:
+            node.type === 'propertyOwner'
+              ? 'transparent'
+              : node.style?.backgroundColor,
+          border:
+            node.type === 'propertyOwner'
+              ? 'none'
+              : isSelected
+                ? '3px solid #ff6b35'
+                : isHighlighted
+                  ? '3px solid #4caf50'
+                  : node.style?.border,
+          zIndex: isSelected ? 1000 : isHighlighted ? 100 : 1,
+        },
+      };
+    });
+
+    const highlightedEdgeIds = findRelevantEdges(highlightedNodeIds, edges);
+
+    const enhancedEdges = edges.map((edge) => {
+      const isHighlighted = highlightedEdgeIds.has(edge.id);
+
+      return {
+        ...edge,
+        style: {
+          ...edge.style,
+          strokeWidth: isHighlighted ? 4 : 2,
+          stroke: isHighlighted ? '#4caf50' : '#1976d2',
+          opacity: isHighlighted ? 1 : 0.6,
+        },
+      };
+    });
+
+    // DO NOT set selectedSourcePropertiesMap here as it causes infinite re-renders
+    // The map is already set in handlePropertyClick
+    return (
+      <div style={{ height: '100%', width: '100%', display: 'flex' }}>
+        <div style={{ flex: 1, height: '100%' }}>
+          <ReactFlowProvider>
+            <ReactFlow
+              nodes={enhancedNodes}
+              edges={enhancedEdges}
+              nodeTypes={PROPERTY_LINEAGE_NODE_TYPES}
+              defaultEdgeOptions={{ type: 'default' }}
+              defaultViewport={{ x: 0, y: 0, zoom: 0.6 }}
+              fitView={true}
+              fitViewOptions={{
+                padding: 0.2,
+                minZoom: 0.3,
+                maxZoom: 1.5,
+              }}
+              nodesDraggable={true}
+              onNodeClick={onNodeClick}
+              nodeExtent={[
+                [-1000, -1000],
+                [3000, 3000],
+              ]}
+              key={`${lineageState.selectedProperty}-${sourcePropertiesMap.size}`}
+            >
+              <Background />
+              <MiniMap />
+              <Controls />
+            </ReactFlow>
+          </ReactFlowProvider>
+        </div>
+
+        {lineageState.selectedPropertyOwnerNode && (
+          <div style={{ width: '350px', borderLeft: '1px solid #ccc' }}>
+            <PropertyOwnerPanel
+              lineageState={lineageState}
+              selectedNodeId={lineageState.selectedPropertyOwnerNode}
+            />
+          </div>
+        )}
+      </div>
+    );
+  },
+);
+
 // Graph Viewer Component
 const LineageGraphViewer = observer(
   (props: { nodes: ReactFlowNode[]; edges: ReactFlowEdge[] }) => {
@@ -435,12 +952,14 @@ const TAB_ORDER = [
   LINEAGE_VIEW_MODE.DATABASE_LINEAGE,
   LINEAGE_VIEW_MODE.CLASS_LINEAGE,
   LINEAGE_VIEW_MODE.REPORT_LINEAGE,
+  LINEAGE_VIEW_MODE.PROPERTY_LINEAGE,
 ];
 
 const TAB_LABELS: Record<LINEAGE_VIEW_MODE, string> = {
   [LINEAGE_VIEW_MODE.CLASS_LINEAGE]: 'Class Lineage',
   [LINEAGE_VIEW_MODE.DATABASE_LINEAGE]: 'Database Lineage',
   [LINEAGE_VIEW_MODE.REPORT_LINEAGE]: 'Report Lineage',
+  [LINEAGE_VIEW_MODE.PROPERTY_LINEAGE]: 'Property Lineage',
 };
 
 const LineageTabSelector = observer((props: { lineageState: LineageState }) => {
@@ -471,13 +990,16 @@ const LineageViewerContent = observer(
     const selectedTab = lineageState.selectedTab;
     const lineageData = lineageState.lineageData;
 
-    // Prepare all three graphs
     const classLineageFlow = convertGraphToFlow(lineageData?.classLineage);
     const databaseLineageFlow = convertGraphToFlow(
       lineageData?.databaseLineage,
     );
     const reportLineageFlow = convertReportLineageToFlow(
       lineageData?.reportLineage,
+    );
+    const propertyLineageFlow = convertPropertyLineageToFlow(
+      lineageData?.propertyLineage,
+      lineageState.selectedSourcePropertiesMap,
     );
 
     return (
@@ -506,6 +1028,13 @@ const LineageViewerContent = observer(
                 edges={reportLineageFlow.edges}
               />
             )}
+            {selectedTab === LINEAGE_VIEW_MODE.PROPERTY_LINEAGE && (
+              <PropertyLineageGraphViewer
+                lineageState={lineageState}
+                nodes={propertyLineageFlow.nodes}
+                edges={propertyLineageFlow.edges}
+              />
+            )}
           </PanelContent>
         </div>
       </div>
@@ -520,6 +1049,7 @@ export const LineageViewer = observer(
     const closePlanViewer = (): void => {
       lineageState.setLineageData(undefined);
       lineageState.setSelectedTab(LINEAGE_VIEW_MODE.DATABASE_LINEAGE);
+      lineageState.clearPropertySelections();
     };
 
     useEffect(() => {

@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { createModelSchema, primitive, list, object, custom } from 'serializr';
+import {
+  createModelSchema,
+  primitive,
+  list,
+  object,
+  custom,
+  optional,
+} from 'serializr';
 
 export type RawLineageModel = object;
 
@@ -98,7 +105,132 @@ export class LineageModel {
   classLineage!: Graph;
   functionTrees: PropertyPathTree[] = [];
   reportLineage!: ReportLineage;
+  propertyLineage?: PropertyLineageReport;
 }
+
+// --- Property Lineage Model Classes ---
+
+export class PropertyLineageReport {
+  propertyOwner: PropertyLineageNode[] = [];
+  ownerLink: OwnerLink[] = [];
+}
+
+export class PropertyLineageNode {
+  id!: string;
+  name!: string;
+}
+
+export class StorePropertyLineageNode extends PropertyLineageNode {}
+
+export class PropertyOwnerNode extends PropertyLineageNode {
+  properties: LineageProperty[] = [];
+}
+
+export class RootQuery extends PropertyOwnerNode {}
+
+export class LineageQuery extends PropertyOwnerNode {}
+
+export class RelationalPropertyOwner extends PropertyOwnerNode {
+  namedRelation!: string; // NamedRelation[1] as string
+  relationType!: string;
+  relationName!: string;
+  schemaName!: string;
+  relationOwnerPath!: string;
+}
+
+export class MappedSetOwner extends PropertyOwnerNode {
+  setImplementationID!: string;
+}
+
+export class MappedClassOwner extends PropertyOwnerNode {
+  mapping?: string;
+  setImplementationID?: string;
+  _class!: string;
+}
+
+export class OwnerLink {
+  source!: string; // reference by id
+  target!: string; // reference by id
+}
+
+export class LineageProperty {
+  name!: string;
+  dataType?: string;
+  sourceInfo?: SourceInformation;
+  scope?: string;
+  propertyType!: string;
+  ownerID!: string;
+  sourceProperties: LineageProperty[] = [];
+  annotations: Annotation[] = [];
+}
+
+export class LineageModelProperty extends LineageProperty {
+  propertyTree!: PropertyPathTree;
+}
+
+// Placeholder types for SourceInformation and Annotation
+export class SourceInformation {
+  // ...define as needed...
+}
+export class Annotation {
+  // ...define as needed...
+}
+
+// Helper for __TYPE-based subtyping
+function subtypeFactory<T>(
+  typeMap: Record<string, new () => T>,
+  fallbackType?: new () => T,
+) {
+  return custom(
+    (value) => value, // serialization: just return as is
+    (value) => {
+      if (
+        value &&
+        typeof value === 'object' &&
+        typeof value.__TYPE === 'string'
+      ) {
+        const ctor = typeMap[value.__TYPE];
+        if (ctor) {
+          const instance = Object.create(ctor.prototype);
+          Object.assign(instance, value);
+          return instance;
+        }
+        const fallback = Object.create(PropertyOwnerNode.prototype);
+        Object.assign(fallback, value);
+        return fallback;
+      }
+      if (fallbackType) {
+        const instance = Object.create(fallbackType.prototype);
+        Object.assign(instance, value);
+        return instance;
+      }
+      return value;
+    },
+  );
+}
+
+// Subtype maps for deserialization
+const propertyLineageNodeTypeMap = {
+  'meta::analytics::lineage::property::PropertyLineageNode':
+    PropertyLineageNode,
+  'meta::analytics::lineage::property::StorePropertyLineageNode':
+    StorePropertyLineageNode,
+  'meta::analytics::lineage::property::PropertyOwnerNode': PropertyOwnerNode,
+  'meta::analytics::lineage::property::RootQuery': RootQuery,
+  'meta::analytics::lineage::property::Query': LineageQuery,
+  'meta::analytics::lineage::property::RelationalPropertyOwner':
+    RelationalPropertyOwner,
+  'meta::analytics::lineage::property::MappedSetOwner': MappedSetOwner,
+  'meta::analytics::lineage::property::MappedClassOwner': MappedClassOwner,
+  // Add other subtypes as needed
+};
+
+const lineagePropertyTypeMap = {
+  'meta::analytics::lineage::property::LineageProperty': LineageProperty,
+  'meta::analytics::lineage::property::LineageModelProperty':
+    LineageModelProperty,
+  // Add other subtypes as needed
+};
 
 // Serialization schemas
 createModelSchema(NodeData, {
@@ -183,4 +315,107 @@ createModelSchema(LineageModel, {
   classLineage: object(Graph),
   functionTrees: list(object(PropertyPathTree)),
   reportLineage: object(ReportLineage),
+  propertyLineage: object(PropertyLineageReport),
+});
+
+createModelSchema(PropertyLineageReport, {
+  propertyOwner: list(
+    subtypeFactory(propertyLineageNodeTypeMap, PropertyLineageNode),
+  ),
+  ownerLink: list(object(OwnerLink)),
+});
+
+createModelSchema(PropertyLineageNode, {
+  id: primitive(),
+  name: primitive(),
+});
+
+createModelSchema(StorePropertyLineageNode, {
+  id: primitive(),
+  name: primitive(),
+});
+
+createModelSchema(PropertyOwnerNode, {
+  id: primitive(),
+  name: primitive(),
+  properties: list(subtypeFactory(lineagePropertyTypeMap, LineageProperty)),
+});
+
+createModelSchema(RootQuery, {
+  id: primitive(),
+  name: primitive(),
+  properties: list(subtypeFactory(lineagePropertyTypeMap, LineageProperty)),
+});
+
+createModelSchema(LineageQuery, {
+  id: primitive(),
+  name: primitive(),
+  properties: list(subtypeFactory(lineagePropertyTypeMap, LineageProperty)),
+});
+
+createModelSchema(RelationalPropertyOwner, {
+  id: primitive(),
+  name: primitive(),
+  properties: list(subtypeFactory(lineagePropertyTypeMap, LineageProperty)),
+  namedRelation: primitive(),
+  relationType: primitive(),
+  relationName: primitive(),
+  schemaName: primitive(),
+  relationOwnerPath: primitive(),
+});
+
+createModelSchema(MappedSetOwner, {
+  id: primitive(),
+  name: primitive(),
+  properties: list(subtypeFactory(lineagePropertyTypeMap, LineageProperty)),
+  setImplementationID: primitive(),
+});
+
+createModelSchema(MappedClassOwner, {
+  id: primitive(),
+  name: primitive(),
+  properties: list(subtypeFactory(lineagePropertyTypeMap, LineageProperty)),
+  mapping: optional(primitive()),
+  setImplementationID: optional(primitive()),
+  _class: primitive(),
+});
+
+createModelSchema(OwnerLink, {
+  source: primitive(),
+  target: primitive(),
+});
+
+createModelSchema(LineageProperty, {
+  name: primitive(),
+  dataType: optional(primitive()),
+  sourceInfo: optional(object(SourceInformation)),
+  scope: optional(primitive()),
+  propertyType: primitive(), // as string
+  ownerID: primitive(),
+  sourceProperties: list(
+    subtypeFactory(lineagePropertyTypeMap, LineageProperty),
+  ),
+  annotations: list(object(Annotation)),
+});
+
+createModelSchema(LineageModelProperty, {
+  name: primitive(),
+  dataType: optional(primitive()),
+  sourceInfo: optional(object(SourceInformation)),
+  scope: optional(primitive()),
+  propertyType: primitive(),
+  ownerID: primitive(),
+  sourceProperties: list(
+    subtypeFactory(lineagePropertyTypeMap, LineageProperty),
+  ),
+  annotations: list(object(Annotation)),
+  propertyTree: object(PropertyPathTree),
+});
+
+createModelSchema(SourceInformation, {
+  // ...define as needed...
+});
+
+createModelSchema(Annotation, {
+  // ...define as needed...
 });
