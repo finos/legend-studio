@@ -114,7 +114,9 @@ test(integrationTest('test query execution with parameters'), async () => {
     queryBuilderState.resultState.buildExecutionRawLambda(),
     guaranteeNonNullable(queryBuilderState.executionContextState.runtimeValue),
     V1_PureGraphManager.DEV_PROTOCOL_VERSION,
-    parameterValues,
+    {
+      parameterValues,
+    },
   );
   const executionResult = await ENGINE_TEST_SUPPORT__execute(executionInput);
   createSpy(
@@ -178,7 +180,9 @@ test(integrationTest('test query execution with parameters'), async () => {
     queryBuilderState.resultState.buildExecutionRawLambda(),
     guaranteeNonNullable(queryBuilderState.executionContextState.runtimeValue),
     V1_PureGraphManager.DEV_PROTOCOL_VERSION,
-    parameterValues,
+    {
+      parameterValues,
+    },
   );
   const executionResult1 = await ENGINE_TEST_SUPPORT__execute(executionInput1);
   createSpy(
