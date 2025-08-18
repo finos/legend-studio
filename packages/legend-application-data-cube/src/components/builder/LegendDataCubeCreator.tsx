@@ -35,6 +35,8 @@ import { UserDefinedFunctionDataCubeSourceBuilderState } from '../../stores/buil
 import { UserDefinedFunctionDataCubeSourceBuilder } from './source/UserDefinedFunctionDataCubeSourceBuilder.js';
 import { LakehouseProducerDataCubeSourceBuilderState } from '../../stores/builder/source/LakehouseProducerDataCubeSourceBuilderState.js';
 import { LakehouseProducerDataCubeSourceBuilder } from './source/LakehouseProducerDataCubeSourceBuilder.js';
+import { LakehouseConsumerDataCubeSourceBuilderState } from '../../stores/builder/source/LakehouseConsumerDataCubeSourceBuilderState.js';
+import { LakehouseConsumerDataCubeSourceBuilder } from './source/LakehouseConsumerDataCubeSourceBuilder.js';
 
 export const LegendDataCubeCreator = observer(() => {
   const store = useLegendDataCubeBuilderStore();
@@ -121,6 +123,12 @@ export const LegendDataCubeCreator = observer(() => {
               {sourceBuilder instanceof
                 LakehouseProducerDataCubeSourceBuilderState && (
                 <LakehouseProducerDataCubeSourceBuilder
+                  sourceBuilder={sourceBuilder}
+                />
+              )}
+              {sourceBuilder instanceof
+                LakehouseConsumerDataCubeSourceBuilderState && (
+                <LakehouseConsumerDataCubeSourceBuilder
                   sourceBuilder={sourceBuilder}
                 />
               )}

@@ -33,15 +33,6 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
     state.loadDataProducts();
   }, [state]);
 
-  // function createUrnPairs(
-  //   urns: string[],
-  // ): Record<string, string | undefined>[] {
-  //   return urns.map((urn) => ({
-  //     urn,
-  //     decoratedUrn: state.decoratedIngest(urn),
-  //   }));
-  // }
-
   return (
     <div className="flex h-full w-full">
       <div className="m-3 flex w-full flex-col items-stretch gap-2 text-neutral-500">
@@ -53,8 +44,8 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
             <CustomSelectorInput
               className="query-setup__wizard__selector text-nowrap"
               options={state.dataProducts.map((dataProduct) => ({
-                label: guaranteeNonNullable(dataProduct.entity.path),
-                value: guaranteeNonNullable(dataProduct.entity.path),
+                label: guaranteeNonNullable(dataProduct.path),
+                value: guaranteeNonNullable(dataProduct.path),
               }))}
               disabled={false}
               isLoading={false}
@@ -126,10 +117,10 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
                 });
               }}
               value={
-                state.selectedEnvironment
+                state.selectedAccessPoint
                   ? {
-                      label: state.selectedEnvironment,
-                      value: state.selectedEnvironment,
+                      label: state.selectedAccessPoint,
+                      value: state.selectedAccessPoint,
                     }
                   : null
               }

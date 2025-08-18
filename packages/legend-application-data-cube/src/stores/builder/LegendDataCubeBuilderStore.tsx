@@ -75,7 +75,7 @@ import type {
   LakehouseIngestServerClient,
   LakehousePlatformServerClient,
 } from '@finos/legend-server-lakehouse';
-import { LAKEHOUSE_PRODUCER_DATA_CUBE_SOURCE_TYPE } from '../model/IngestDefinitionDataCubeSource.js';
+import { LAKEHOUSE_PRODUCER_DATA_CUBE_SOURCE_TYPE } from '../model/LakehouseProducerDataCubeSource.js';
 import { LakehouseProducerDataCubeSourceLoaderState } from './source/LakehouseProducerDataCubeSourceLoaderState.js';
 
 export class LegendDataCubeBuilderState {

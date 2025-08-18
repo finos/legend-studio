@@ -104,16 +104,16 @@ export class LegendDataCubeBaseStore {
     this.lakehouseIngestServerClient.setTracerService(
       application.tracerService,
     );
-
-    this.graphManager = new V1_PureGraphManager(
-      this.application.pluginManager,
-      this.application.logService,
-    );
     this.lakehouseContractServerClient = new LakehouseContractServerClient({
       baseUrl: this.application.config.lakehouseContractUrl,
     });
     this.lakehouseContractServerClient.setTracerService(
       application.tracerService,
+    );
+
+    this.graphManager = new V1_PureGraphManager(
+      this.application.pluginManager,
+      this.application.logService,
     );
 
     // initialize early so that subsequent steps can refer to these settings below

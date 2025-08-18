@@ -25,19 +25,19 @@ import { createModelSchema, list, primitive } from 'serializr';
 
 export const LAKEHOUSE_PRODUCER_DATA_CUBE_SOURCE_TYPE = 'lakehouseProducer';
 
-export class IngestDefinitionDataCubeSource extends DataCubeSource {
+export class LakehouseProducerDataCubeSource extends DataCubeSource {
   model!: PlainObject<V1_PureModelContextData>;
   runtime!: string;
 }
 
-export class RawIngestDefinitionDataCubeSource {
+export class RawLakehouseProducerDataCubeSource {
   ingestDefinitionUrn!: string;
   warehouse!: string;
   ingestServerUrl!: string;
   paths!: string[];
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(RawIngestDefinitionDataCubeSource, {
+    createModelSchema(RawLakehouseProducerDataCubeSource, {
       _type: usingConstantValueSchema(LAKEHOUSE_PRODUCER_DATA_CUBE_SOURCE_TYPE),
       ingestDefinitionUrn: primitive(),
       warehouse: primitive(),

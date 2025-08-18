@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, makeObservable, observable } from 'mobx';
+import { action, flow, makeObservable, observable } from 'mobx';
 import {
   LegendDataCubeSourceBuilderState,
   LegendDataCubeSourceBuilderType,
@@ -37,7 +37,7 @@ import {
   DepotScope,
   VersionedProjectData,
   type DepotServerClient,
-  type StoredEntity,
+  type StoredSummaryEntity,
 } from '@finos/legend-server-depot';
 import {
   CORE_PURE_PATH,
@@ -53,7 +53,7 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
   selectedAccessPoint: string | undefined;
   selectedEnvironment: string | undefined;
   paths: string[] = [];
-  dataProducts: StoredEntity[] = [];
+  dataProducts: StoredSummaryEntity[] = [];
   dataProductMap: Record<string, V1_EntitlementsDataProductDetails> = {};
   accessPoints: string[] = [];
   environments: string[] = [];
@@ -84,6 +84,8 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
       environments: observable,
       selectedAccessPoint: observable,
       selectedEnvironment: observable,
+      fetchDataProductEnvironments: flow,
+      loadDataProducts: flow,
 
       setWarehouse: action,
       setDataProducts: action,
@@ -99,7 +101,7 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
     this.warehouse = warehouse;
   }
 
-  setDataProducts(dataProducts: StoredEntity[]) {
+  setDataProducts(dataProducts: StoredSummaryEntity[]) {
     this.dataProducts = dataProducts;
   }
 
@@ -133,7 +135,7 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
             latest: true,
             summary: true,
           },
-        )) as StoredEntity[],
+        )) as StoredSummaryEntity[],
       );
     } catch (error) {
       assertErrorThrown(error);
@@ -144,29 +146,33 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
   *fetchDataProductEnvironments(
     access_token: string | undefined,
   ): GeneratorFn<void> {
+    this.resetDataProduct();
     const selectedDp = guaranteeNonNullable(this.selectedDataProduct);
     const dataProductResponse =
       (yield this._contractServerClient.getDataProduct(
         selectedDp.split('::').pop() ?? '',
         access_token,
       )) as V1_EntitlementsDataProductDetailsResponse;
-    this.dataProductMap = dataProductResponse.dataProducts
-      .filter((dp) => dp.lakehouseEnvironment)
-      .reduce(
-        (acc, dp) => {
-          const envType = guaranteeNonNullable(
-            dp.lakehouseEnvironment,
-          ).type.valueOf();
-          acc[envType] = dp;
-          return acc;
-        },
-        {} as Record<string, V1_EntitlementsDataProductDetails>,
-      );
+    if (dataProductResponse.dataProducts) {
+      this.dataProductMap = dataProductResponse.dataProducts
+        .filter((dp) => Boolean(dp.lakehouseEnvironment))
+        .reduce(
+          (acc, dp) => {
+            const envType = guaranteeNonNullable(
+              dp.lakehouseEnvironment,
+            ).type.valueOf();
+            acc[envType] = dp;
+            return acc;
+          },
+          {} as Record<string, V1_EntitlementsDataProductDetails>,
+        );
 
-    this.setEnvironments(Object.keys(this.dataProductMap));
+      this.setEnvironments(Object.keys(this.dataProductMap));
+    }
   }
 
   fetchAccessPoints() {
+    this.resetDataProduct();
     const selectedEnvironment = guaranteeNonNullable(this.selectedEnvironment);
     const dataProduct = this.dataProductMap[selectedEnvironment];
 
@@ -209,6 +215,22 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
     this.setEnvironments([]);
     this.setSelectedAccessPoint(undefined);
     this.setSelectedEnvironment(undefined);
+    this.dpCoordinates = undefined;
+  }
+
+  resetDataProduct() {
+    this.setWarehouse(undefined);
+    this.setAccessPoints([]);
+    this.setEnvironments([]);
+    this.setSelectedAccessPoint(undefined);
+    this.setSelectedEnvironment(undefined);
+    this.dpCoordinates = undefined;
+  }
+
+  resetEnvironment() {
+    this.setWarehouse(undefined);
+    this.setAccessPoints([]);
+    this.setSelectedAccessPoint(undefined);
     this.dpCoordinates = undefined;
   }
 
