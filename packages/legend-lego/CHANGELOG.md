@@ -1,5 +1,11 @@
 # @finos/legend-lego
 
+## 2.0.115
+
+### Patch Changes
+
+- [#4355](https://github.com/finos/legend-studio/pull/4355) [`dcd854e`](https://github.com/finos/legend-studio/commit/dcd854eacf1cede503623b3ff53e506afb22fb59) ([@travisstebbins](https://github.com/travisstebbins)) - Disable error logging in DataGrid for non-prod node envs
+
 ## 2.0.114
 
 ## 2.0.113
