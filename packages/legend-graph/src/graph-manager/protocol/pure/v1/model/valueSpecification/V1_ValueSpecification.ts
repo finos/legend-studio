@@ -35,7 +35,8 @@ import type { V1_INTERNAL__UnknownValueSpecification } from './V1_INTERNAL__Unkn
 import type { V1_GenericTypeInstance } from './raw/V1_GenericTypeInstance.js';
 import type { V1_ClassInstance } from './raw/V1_ClassInstance.js';
 import type { V1_CByteArray } from './raw/V1_CByteArray.js';
-import { hashArray, type Hashable } from '@finos/legend-shared';
+import { type Hashable } from '@finos/legend-shared';
+import { CORE_HASH_STRUCTURE } from '../../../../../../graph/Core_HashUtils.js';
 
 export interface V1_ValueSpecificationVisitor<T> {
   visit_INTERNAL__UnknownValueSpecfication(
@@ -74,6 +75,6 @@ export abstract class V1_ValueSpecification implements Hashable {
   ): T;
 
   get hashCode(): string {
-    return hashArray(['']);
+    return CORE_HASH_STRUCTURE.INTERNAL__UNKNOWN_VALUE_SPECIFICATION;
   }
 }
