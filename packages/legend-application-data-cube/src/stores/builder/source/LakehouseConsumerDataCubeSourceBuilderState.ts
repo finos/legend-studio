@@ -53,6 +53,7 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
   selectedAccessPoint: string | undefined;
   selectedEnvironment: string | undefined;
   paths: string[] = [];
+  ingestEnvironment: string | undefined;
   dataProducts: StoredSummaryEntity[] = [];
   dataProductMap: Record<string, V1_EntitlementsDataProductDetails> = {};
   accessPoints: string[] = [];
@@ -172,7 +173,7 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
   }
 
   fetchAccessPoints() {
-    this.resetDataProduct();
+    this.resetEnvironment();
     const selectedEnvironment = guaranteeNonNullable(this.selectedEnvironment);
     const dataProduct = this.dataProductMap[selectedEnvironment];
 
@@ -190,21 +191,22 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
     );
   }
 
-  async fetchEnvironment(): Promise<string | undefined> {
+  async fetchEnvironment(access_token: string | undefined) {
     const selectedEnvironment = guaranteeNonNullable(this.selectedEnvironment);
     const dataProduct = this.dataProductMap[selectedEnvironment];
     const config = IngestDeploymentServerConfig.serialization.fromJson(
       await this._platformServerClient.findProducerServer(
         guaranteeNonNullable(dataProduct?.deploymentId),
         'DEPLOYMENT',
-        undefined,
+        access_token,
       ),
     );
     const baseUrl = new URL(config.ingestServerUrl).hostname;
     const subdomain = baseUrl.split('.')[0];
     const parts = subdomain?.split('-');
     const env = parts?.slice(0, -1).join('-');
-    return env;
+    this.ingestEnvironment = env;
+    this.setWarehouse('LAKEHOUSE_CONSUMER_DEFAULT_WH');
   }
 
   reset() {
@@ -258,7 +260,7 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
     );
 
     const rawSource = new RawLakehouseConsumerDataCubeSource();
-    rawSource.environment = guaranteeNonNullable(await this.fetchEnvironment());
+    rawSource.environment = guaranteeNonNullable(this.ingestEnvironment);
     rawSource.dpCoordinates = guaranteeNonNullable(this.dpCoordinates);
     rawSource.paths = this.paths;
     rawSource.warehouse = guaranteeNonNullable(this.warehouse);

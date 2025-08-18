@@ -111,10 +111,12 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
               onChange={(newValue: { label: string; value: string } | null) => {
                 const accessPoint = newValue?.value ?? '';
                 state.setSelectedAccessPoint(accessPoint);
-                state.fetchEnvironment().catch((error) => {
-                  assertErrorThrown(error);
-                  store.alertService.alertUnhandledError(error);
-                });
+                state
+                  .fetchEnvironment(auth.user?.access_token)
+                  .catch((error) => {
+                    assertErrorThrown(error);
+                    store.alertService.alertUnhandledError(error);
+                  });
               }}
               value={
                 state.selectedAccessPoint
