@@ -19,6 +19,11 @@ import {
   V1_ValueSpecification,
   type V1_ValueSpecificationVisitor,
 } from '../V1_ValueSpecification.js';
+import { hashArray } from '@finos/legend-shared';
+import {
+  CORE_HASH_STRUCTURE,
+  hashObjectWithoutSourceInformation,
+} from '../../../../../../../graph/Core_HashUtils.js';
 
 /**
  * This is the mechanism by which we scale the system. Pretty much any constructs like
@@ -35,5 +40,14 @@ export class V1_ClassInstance extends V1_ValueSpecification {
     visitor: V1_ValueSpecificationVisitor<T>,
   ): T {
     return visitor.visit_ClassInstance(this);
+  }
+
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.INSTANCE_VALUE,
+      this.type,
+      this.multiplicity,
+      hashObjectWithoutSourceInformation([this.value]),
+    ]);
   }
 }

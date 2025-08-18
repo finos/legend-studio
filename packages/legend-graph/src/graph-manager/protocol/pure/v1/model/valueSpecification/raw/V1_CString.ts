@@ -14,15 +14,33 @@
  * limitations under the License.
  */
 
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import type { V1_ValueSpecificationVisitor } from '../V1_ValueSpecification.js';
 import { V1_PrimitiveValueSpecification } from './V1_PrimitiveValueSpecification.js';
+import {
+  CORE_HASH_STRUCTURE,
+  hashObjectWithoutSourceInformation,
+} from '../../../../../../../graph/Core_HashUtils.js';
+import { PRIMITIVE_TYPE } from '../../../../../../../graph/MetaModelConst.js';
 
-export class V1_CString extends V1_PrimitiveValueSpecification {
+export class V1_CString
+  extends V1_PrimitiveValueSpecification
+  implements Hashable
+{
   value!: string;
 
   accept_ValueSpecificationVisitor<T>(
     visitor: V1_ValueSpecificationVisitor<T>,
   ): T {
     return visitor.visit_CString(this);
+  }
+
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.PRIMITIVE_INSTANCE_VALUE,
+      PRIMITIVE_TYPE.STRING,
+      this.multiplicity,
+      hashObjectWithoutSourceInformation([this.value]),
+    ]);
   }
 }

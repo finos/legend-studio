@@ -16,6 +16,12 @@
 
 import type { V1_ValueSpecificationVisitor } from '../V1_ValueSpecification.js';
 import { V1_PrimitiveValueSpecification } from './V1_PrimitiveValueSpecification.js';
+import { hashArray } from '@finos/legend-shared';
+import {
+  CORE_HASH_STRUCTURE,
+  hashObjectWithoutSourceInformation,
+} from '../../../../../../../graph/Core_HashUtils.js';
+import { PRIMITIVE_TYPE } from '../../../../../../../graph/MetaModelConst.js';
 
 export class V1_CByteArray extends V1_PrimitiveValueSpecification {
   value!: string; // the Base64String transformed from byte[] by Jackson
@@ -24,5 +30,14 @@ export class V1_CByteArray extends V1_PrimitiveValueSpecification {
     visitor: V1_ValueSpecificationVisitor<T>,
   ): T {
     return visitor.visit_CByteArray(this);
+  }
+
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.PRIMITIVE_INSTANCE_VALUE,
+      PRIMITIVE_TYPE.BYTE,
+      this.multiplicity,
+      hashObjectWithoutSourceInformation([this.value]),
+    ]);
   }
 }

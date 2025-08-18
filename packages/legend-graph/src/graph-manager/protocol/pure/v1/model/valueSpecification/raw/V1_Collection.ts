@@ -19,6 +19,8 @@ import {
   V1_ValueSpecification,
 } from '../../../model/valueSpecification/V1_ValueSpecification.js';
 import { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Multiplicity.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
+import { hashArray } from '@finos/legend-shared';
 
 export class V1_Collection extends V1_ValueSpecification {
   multiplicity = V1_Multiplicity.ONE_MANY;
@@ -28,5 +30,13 @@ export class V1_Collection extends V1_ValueSpecification {
     visitor: V1_ValueSpecificationVisitor<T>,
   ): T {
     return visitor.visit_Collection(this);
+  }
+
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.COLLECTION_INSTANCE_VALUE,
+      this.multiplicity,
+      hashArray(this.values),
+    ]);
   }
 }

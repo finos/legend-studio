@@ -16,6 +16,8 @@
 
 import type { V1_ValueSpecificationVisitor } from '../V1_ValueSpecification.js';
 import { V1_DataTypeValueSpecification } from './V1_DataTypeValueSpecification.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
+import { hashArray } from '@finos/legend-shared';
 
 export class V1_EnumValue extends V1_DataTypeValueSpecification {
   fullPath!: string;
@@ -25,5 +27,14 @@ export class V1_EnumValue extends V1_DataTypeValueSpecification {
     visitor: V1_ValueSpecificationVisitor<T>,
   ): T {
     return visitor.visit_EnumValue(this);
+  }
+
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.PRIMITIVE_INSTANCE_VALUE,
+      this.multiplicity,
+      this.fullPath,
+      this.value,
+    ]);
   }
 }
