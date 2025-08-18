@@ -45,6 +45,7 @@ import { LocalFileDataCubeSourceBuilderState } from './source/LocalFileDataCubeS
 import { UserDefinedFunctionDataCubeSourceBuilderState } from './source/UserDefinedFunctionDataCubeSourceBuilderState.js';
 import { LEGEND_DATACUBE_APP_EVENT } from '../../__lib__/LegendDataCubeEvent.js';
 import { LakehouseProducerDataCubeSourceBuilderState } from './source/LakehouseProducerDataCubeSourceBuilderState.js';
+import { LakehouseConsumerDataCubeSourceBuilderState } from './source/LakehouseConsumerDataCubeSourceBuilderState.js';
 
 const DEFAULT_SOURCE_TYPE = LegendDataCubeSourceBuilderType.LEGEND_QUERY;
 
@@ -131,6 +132,15 @@ export class LegendDataCubeCreatorState {
           this._engine,
           this._store.platformServerClient,
           this._store.ingestServerClient,
+          this._alertService,
+        );
+      case LegendDataCubeSourceBuilderType.LAKEHOUSE_CONSUMER:
+        return new LakehouseConsumerDataCubeSourceBuilderState(
+          this._application,
+          this._engine,
+          this._store.depotServerClient,
+          this._store.platformServerClient,
+          this._store.contractServerClient,
           this._alertService,
         );
       default:

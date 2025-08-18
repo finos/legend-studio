@@ -77,6 +77,7 @@ export const LegendDataCubeCreator = observer(() => {
                   LegendDataCubeSourceBuilderType.FREEFORM_TDS_EXPRESSION,
                   LegendDataCubeSourceBuilderType.LOCAL_FILE,
                   LegendDataCubeSourceBuilderType.LAKEHOUSE_PRODUCER,
+                  LegendDataCubeSourceBuilderType.LAKEHOUSE_CONSUMER,
                 ].map((type) => (
                   <FormDropdownMenuItem
                     key={type}

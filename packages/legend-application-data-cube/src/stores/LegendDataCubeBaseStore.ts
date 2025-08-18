@@ -36,6 +36,7 @@ import {
   guaranteeIsString,
 } from '@finos/legend-shared';
 import {
+  LakehouseContractServerClient,
   LakehouseIngestServerClient,
   LakehousePlatformServerClient,
 } from '@finos/legend-server-lakehouse';
@@ -68,6 +69,7 @@ export class LegendDataCubeBaseStore {
   readonly depotServerClient: DepotServerClient;
   readonly lakehousePlatformServerClient: LakehousePlatformServerClient;
   readonly lakehouseIngestServerClient: LakehouseIngestServerClient;
+  readonly lakehouseContractServerClient: LakehouseContractServerClient;
   readonly graphManager: V1_PureGraphManager;
   readonly remoteEngine: V1_RemoteEngine;
   readonly engineServerClient: V1_EngineServerClient;
@@ -106,6 +108,12 @@ export class LegendDataCubeBaseStore {
     this.graphManager = new V1_PureGraphManager(
       this.application.pluginManager,
       this.application.logService,
+    );
+    this.lakehouseContractServerClient = new LakehouseContractServerClient({
+      baseUrl: this.application.config.lakehouseContractUrl,
+    });
+    this.lakehouseContractServerClient.setTracerService(
+      application.tracerService,
     );
 
     // initialize early so that subsequent steps can refer to these settings below
