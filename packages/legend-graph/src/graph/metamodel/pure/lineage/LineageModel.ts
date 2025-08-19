@@ -168,13 +168,14 @@ export class LineageModelProperty extends LineageProperty {
   propertyTree!: PropertyPathTree;
 }
 
-// Placeholder types for SourceInformation and Annotation
 export class SourceInformation {
-  // ...define as needed...
+  sourceId!: string;
+  startLine!: number;
+  startColumn!: number;
+  endLine!: number;
+  endColumn!: number;
 }
-export class Annotation {
-  // ...define as needed...
-}
+export class Annotation {}
 
 // Helper for __TYPE-based subtyping
 function subtypeFactory<T>(
@@ -183,7 +184,7 @@ function subtypeFactory<T>(
 ) {
   return custom(
     (value) => value, // serialization: just return as is
-    (value) => {
+    (value): unknown => {
       if (
         value &&
         typeof value === 'object' &&
@@ -191,16 +192,20 @@ function subtypeFactory<T>(
       ) {
         const ctor = typeMap[value.__TYPE];
         if (ctor) {
-          const instance = Object.create(ctor.prototype);
+          const instance = Object.create(ctor.prototype as object) as object;
           Object.assign(instance, value);
           return instance;
         }
-        const fallback = Object.create(PropertyOwnerNode.prototype);
+        const fallback = Object.create(
+          PropertyOwnerNode.prototype,
+        ) as PropertyOwnerNode;
         Object.assign(fallback, value);
         return fallback;
       }
       if (fallbackType) {
-        const instance = Object.create(fallbackType.prototype);
+        const instance = Object.create(
+          fallbackType.prototype as object,
+        ) as object;
         Object.assign(instance, value);
         return instance;
       }
@@ -222,6 +227,7 @@ const propertyLineageNodeTypeMap = {
     RelationalPropertyOwner,
   'meta::analytics::lineage::property::MappedSetOwner': MappedSetOwner,
   'meta::analytics::lineage::property::MappedClassOwner': MappedClassOwner,
+  // Add other subtypes as needed
   // Add other subtypes as needed
 };
 
