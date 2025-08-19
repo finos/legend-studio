@@ -74,5 +74,5 @@ export class V1_EntitlementsDataProductDetails {
 }
 
 export class V1_EntitlementsDataProductDetailsResponse {
-  dataProducts: V1_EntitlementsDataProductDetails[] = [];
+  dataProducts?: V1_EntitlementsDataProductDetails[];
 }
