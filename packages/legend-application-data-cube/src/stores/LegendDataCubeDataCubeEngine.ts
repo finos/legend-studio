@@ -743,7 +743,10 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         query.value = dataProductAccessor;
         source.query = query;
 
-        source.model = this._synthesizeLakehouseConsumerPMCD(rawSource, source);
+        source.model = await this._synthesizeLakehouseConsumerPMCD(
+          rawSource,
+          source,
+        );
 
         try {
           source.columns = (
@@ -1655,22 +1658,19 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     return model;
   }
 
-  private _synthesizeLakehouseConsumerPMCD(
+  private async _synthesizeLakehouseConsumerPMCD(
     rawSource: RawLakehouseConsumerDataCubeSource,
     source: LakehouseConsumerDataCubeSource,
   ) {
-    const protocol = new V1_Protocol(
-      V1_PureGraphManager.PURE_PROTOCOL_NAME,
-      PureClientVersion.VX_X_X,
+    const pmcd = await this._depotServerClient.getPureModelContextData(
+      rawSource.dpCoordinates.groupId,
+      rawSource.dpCoordinates.artifactId,
+      rawSource.dpCoordinates.versionId,
+      true,
     );
-    const pointer = new V1_PureModelContextPointer(
-      // TODO: remove as backend should handle undefined protocol input
-      protocol,
-      new V1_LegendSDLC(
-        rawSource.dpCoordinates.groupId,
-        rawSource.dpCoordinates.artifactId,
-        resolveVersion(rawSource.dpCoordinates.versionId),
-      ),
+    const deserializedPMCD = guaranteeType(
+      V1_deserializePureModelContext(pmcd),
+      V1_PureModelContextData,
     );
     const runtime = new V1_LakehouseRuntime();
     runtime.warehouse = rawSource.warehouse;
@@ -1678,16 +1678,13 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
 
     const packageableRuntime = new V1_PackageableRuntime();
     packageableRuntime.runtimeValue = runtime;
-    packageableRuntime.name = 'lakehouseProducer';
+    packageableRuntime.name = 'lakehouseConsumer';
     packageableRuntime.package = 'runtime';
     source.runtime = packageableRuntime.path;
 
-    const modelData = new V1_PureModelContextData();
-    modelData.elements = [packageableRuntime];
+    deserializedPMCD.elements = [packageableRuntime];
 
-    return V1_serializePureModelContext(
-      new V1_PureModelContextComposite(protocol, modelData, pointer),
-    );
+    return V1_serializePureModelContext(deserializedPMCD);
   }
 
   // ---------------------------------- APPLICATION ----------------------------------

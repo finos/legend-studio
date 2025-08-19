@@ -25,6 +25,7 @@ import {
   HttpHeader,
   ContentType,
 } from '@finos/legend-shared';
+import type { V1_PureModelContextData } from '@finos/legend-graph';
 import type { DepotScope } from './models/DepotScope.js';
 import {
   type ProjectDependencyCoordinates,
@@ -253,6 +254,21 @@ export class DepotServerClient extends AbstractServerClient {
         transitive,
         includeOrigin,
         versioned: false, // we don't need to add version prefix to entity path
+      },
+    );
+
+  getPureModelContextData = (
+    groupId: string,
+    artifactId: string,
+    version: string,
+    getDependencies: boolean,
+  ): Promise<PlainObject<V1_PureModelContextData>> =>
+    this.get(
+      `${this._projects()}/${groupId}/${artifactId}/versions/${version}/pureModelContextData`,
+      undefined,
+      undefined,
+      {
+        getDependencies,
       },
     );
 
