@@ -22,6 +22,7 @@ export enum LINEAGE_VIEW_MODE {
   CLASS_LINEAGE = 'CLASS_LINEAGE',
   DATABASE_LINEAGE = 'DATABASE_LINEAGE',
   REPORT_LINEAGE = 'REPORT_LINEAGE',
+  PROPERTY_LINEAGE = 'PROPERTY_LINEAGE',
 }
 
 export class LineageState {
@@ -29,15 +30,25 @@ export class LineageState {
   selectedTab: LINEAGE_VIEW_MODE = LINEAGE_VIEW_MODE.DATABASE_LINEAGE;
   lineageData: LineageModel | undefined = undefined;
   isLineageViewerOpen = false;
+  selectedPropertyOwnerNode: string | undefined = undefined;
+  selectedProperty: string | undefined = undefined;
+  selectedSourcePropertiesMap: Map<string, Set<string>> | undefined = undefined;
 
   constructor(applicationStore: GenericLegendApplicationStore) {
     makeObservable(this, {
       selectedTab: observable,
       lineageData: observable,
       isLineageViewerOpen: observable,
+      selectedPropertyOwnerNode: observable,
+      selectedProperty: observable,
+      selectedSourcePropertiesMap: observable,
       setSelectedTab: action,
       setLineageData: action,
       setIsLineageViewerOpen: action,
+      setSelectedPropertyOwnerNode: action,
+      setSelectedProperty: action,
+      setSelectedSourcePropertiesMap: action,
+      clearPropertySelections: action,
     });
     this.applicationStore = applicationStore;
   }
@@ -52,5 +63,25 @@ export class LineageState {
 
   setIsLineageViewerOpen(isOpen: boolean): void {
     this.isLineageViewerOpen = isOpen;
+  }
+
+  setSelectedPropertyOwnerNode(nodeId: string | undefined): void {
+    this.selectedPropertyOwnerNode = nodeId;
+  }
+
+  setSelectedProperty(propertyKey: string | undefined): void {
+    this.selectedProperty = propertyKey;
+  }
+
+  setSelectedSourcePropertiesMap(
+    map: Map<string, Set<string>> | undefined,
+  ): void {
+    this.selectedSourcePropertiesMap = map;
+  }
+
+  clearPropertySelections(): void {
+    this.selectedProperty = undefined;
+    this.selectedPropertyOwnerNode = undefined;
+    this.selectedSourcePropertiesMap = undefined;
   }
 }
