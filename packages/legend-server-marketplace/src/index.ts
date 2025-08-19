@@ -17,6 +17,4 @@
 export * from './models/DataProduct.js';
 export * from './models/Provider.js';
 export * from './models/Subscription.js';
-
-export { LakehouseContractServerClient } from './LakehouseContractServerClient.js';
 export { MarketplaceServerClient } from './MarketplaceServerClient.js';

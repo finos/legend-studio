@@ -17,7 +17,7 @@
 import type { LegendMarketplaceApplicationStore } from '../../LegendMarketplaceBaseStore.js';
 import { ActionState } from '@finos/legend-shared';
 import { EntitlementsDashboardState } from './EntitlementsDashboardState.js';
-import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
+import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
 
 export const TEST_USER = undefined;
 export const TEST_USER2 = undefined;

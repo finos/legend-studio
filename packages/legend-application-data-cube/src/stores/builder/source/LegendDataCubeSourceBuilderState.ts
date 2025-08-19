@@ -28,6 +28,7 @@ export enum LegendDataCubeSourceBuilderType {
   LOCAL_FILE = 'Local File',
   USER_DEFINED_FUNCTION = 'User Defined Function',
   LAKEHOUSE_PRODUCER = 'Lakehouse Producer',
+  LAKEHOUSE_CONSUMER = 'Lakehouse Consumer',
 }
 
 export abstract class LegendDataCubeSourceBuilderState {

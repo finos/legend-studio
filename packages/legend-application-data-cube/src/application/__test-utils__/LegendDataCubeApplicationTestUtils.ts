@@ -37,6 +37,7 @@ const TEST_DATA__appConfig = {
   },
   lakehouse: {
     platformUrl: 'https://testLakehousePlatformUrl',
+    url: 'http://localhost:6400/api',
   },
   oidcConfig: {
     redirectPath: '/callback',

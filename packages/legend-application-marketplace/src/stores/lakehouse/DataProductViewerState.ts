@@ -44,9 +44,9 @@ import {
 } from '@finos/legend-shared';
 import { serialize } from 'serializr';
 import { dataContractContainsDataProduct } from './LakehouseUtils.js';
-import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
 import type { MarketplaceLakehouseStore } from './MarketplaceLakehouseStore.js';
 import type { LegendMarketplaceApplicationStore } from '../LegendMarketplaceBaseStore.js';
+import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
 
 export class DataProductViewerState {
   readonly applicationStore: LegendMarketplaceApplicationStore;

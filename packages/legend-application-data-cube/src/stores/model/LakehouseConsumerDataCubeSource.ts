@@ -15,33 +15,37 @@
  */
 
 import { DataCubeSource } from '@finos/legend-data-cube';
-import type { V1_PureModelContextData } from '@finos/legend-graph';
+import type { V1_PureModelContextComposite } from '@finos/legend-graph';
+import { VersionedProjectData } from '@finos/legend-server-depot';
 import {
   SerializationFactory,
   usingConstantValueSchema,
+  usingModelSchema,
   type PlainObject,
 } from '@finos/legend-shared';
 import { createModelSchema, list, primitive } from 'serializr';
 
-export const LAKEHOUSE_PRODUCER_DATA_CUBE_SOURCE_TYPE = 'lakehouseProducer';
+export const LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE = 'lakehouseConsumer';
 
-export class IngestDefinitionDataCubeSource extends DataCubeSource {
-  model!: PlainObject<V1_PureModelContextData>;
+export class LakehouseConsumerDataCubeSource extends DataCubeSource {
+  model!: PlainObject<V1_PureModelContextComposite>;
   runtime!: string;
 }
 
-export class RawIngestDefinitionDataCubeSource {
-  ingestDefinitionUrn!: string;
+export class RawLakehouseConsumerDataCubeSource {
+  dpCoordinates!: VersionedProjectData;
   warehouse!: string;
-  ingestServerUrl!: string;
+  environment!: string;
   paths!: string[];
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(RawIngestDefinitionDataCubeSource, {
-      _type: usingConstantValueSchema(LAKEHOUSE_PRODUCER_DATA_CUBE_SOURCE_TYPE),
-      ingestDefinitionUrn: primitive(),
+    createModelSchema(RawLakehouseConsumerDataCubeSource, {
+      _type: usingConstantValueSchema(LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE),
+      dpCoordinates: usingModelSchema(
+        VersionedProjectData.serialization.schema,
+      ),
       warehouse: primitive(),
-      ingestServerUrl: primitive(),
+      environment: primitive(),
       paths: list(primitive()),
     }),
   );

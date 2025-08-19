@@ -61,11 +61,11 @@ import {
 } from '@finos/legend-graph';
 import { DataProductViewerState } from './DataProductViewerState.js';
 import type { AuthContextProps } from 'react-oidc-context';
-import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
 import { DataProductState } from './dataProducts/DataProducts.js';
 import {
   type LakehousePlatformServerClient,
   type LakehouseIngestServerClient,
+  type LakehouseContractServerClient,
   IngestDeploymentServerConfig,
 } from '@finos/legend-server-lakehouse';
 import { LegendMarketplaceUserDataHelper } from '../../__lib__/LegendMarketplaceUserDataHelper.js';

@@ -53,6 +53,7 @@ export const setup = (outputDir, dataCubeDocsDir) => {
         },
         lakehouse: {
           platformUrl: 'https://testLakehousePlatformUrl',
+          url: 'http://localhost:6400/api',
         },
         oidcConfig: {
           redirectPath: '/callback',

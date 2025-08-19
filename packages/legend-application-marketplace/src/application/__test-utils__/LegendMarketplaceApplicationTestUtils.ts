@@ -92,8 +92,11 @@ export class TestLegendMarketplaceApplicationPlugin extends LegendMarketplaceApp
     marketplaceStore: MarketplaceLakehouseStore,
   ): Promise<DataProductState[] | undefined> {
     const mockDataProductDetail = guaranteeNonNullable(
-      (mockDataProducts as unknown as V1_EntitlementsDataProductDetailsResponse)
-        .dataProducts[0],
+      guaranteeNonNullable(
+        (
+          mockDataProducts as unknown as V1_EntitlementsDataProductDetailsResponse
+        ).dataProducts,
+      )[0],
     );
     const graphManager = new V1_PureGraphManager(
       marketplaceStore.applicationStore.pluginManager,

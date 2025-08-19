@@ -23,7 +23,7 @@ import { guaranteeNonNullable, type PlainObject } from '@finos/legend-shared';
 import type { DataCubeAlertService } from '@finos/legend-data-cube';
 import type { LegendDataCubeApplicationStore } from '../../LegendDataCubeBaseStore.js';
 import type { LegendDataCubeDataCubeEngine } from '../../LegendDataCubeDataCubeEngine.js';
-import { RawIngestDefinitionDataCubeSource } from '../../model/IngestDefinitionDataCubeSource.js';
+import { RawLakehouseProducerDataCubeSource } from '../../model/LakehouseProducerDataCubeSource.js';
 import {
   IngestDeploymentServerConfig,
   ProducerEnvironment,
@@ -225,7 +225,7 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
 
     // build data cube source
     this.createPath();
-    const rawSource = new RawIngestDefinitionDataCubeSource();
+    const rawSource = new RawLakehouseProducerDataCubeSource();
     rawSource.ingestDefinitionUrn = guaranteeNonNullable(
       this.selectedIngestUrn,
     );
@@ -234,7 +234,7 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
     rawSource.warehouse = guaranteeNonNullable(this.warehouse);
 
     return Promise.resolve(
-      RawIngestDefinitionDataCubeSource.serialization.toJson(rawSource),
+      RawLakehouseProducerDataCubeSource.serialization.toJson(rawSource),
     );
   }
 }

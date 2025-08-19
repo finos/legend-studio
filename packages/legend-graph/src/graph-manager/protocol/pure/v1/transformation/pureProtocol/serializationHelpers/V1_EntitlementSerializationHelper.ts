@@ -520,7 +520,7 @@ export const V1_entitlementsDataProductDetailsResponseToDataProductDetails = (
     V1_EntitlementsDataProductDetailsResponseModelSchema,
     json,
   );
-  return response.dataProducts;
+  return response.dataProducts ?? [];
 };
 
 export const V1_DataContractApprovedUsersResponseModelSchema =
