@@ -17,29 +17,33 @@
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import {
   type AccessPoint,
-  LakehouseAccessPoint,
-  UnknownAccessPoint,
   type DataProduct,
-  LibraryIcon,
-  EmbeddedImageIcon,
+  type DataProductIcon,
+  DataProductEmbeddedImageIcon,
+  DataProductLibraryIcon,
+  LakehouseAccessPoint,
   ModelAccessPointGroup,
+  UnknownAccessPoint,
+  UnknownDataProductIcon,
 } from '../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import {
   type V1_AccessPoint,
+  type V1_DataProductIcon,
+  type V1_DataProductRegion,
+  type V1_DeliveryFrequency,
   V1_AccessPointGroup,
   V1_DataProduct,
-  type V1_DeliveryFrequency,
-  V1_Email,
-  V1_EmbeddedImageIcon,
-  V1_LakehouseAccessPoint,
-  V1_LibraryIcon,
-  V1_SupportInfo,
-  V1_UnknownAccessPoint,
-  type V1_DataProductRegion,
-  V1_ModelAccessPointGroup,
+  V1_DataProductDiagram,
+  V1_DataProductEmbeddedImageIcon,
+  V1_DataProductLibraryIcon,
   V1_DataProductRuntimeInfo,
   V1_ElementScope,
-  V1_DataProductDiagram,
+  V1_Email,
+  V1_LakehouseAccessPoint,
+  V1_ModelAccessPointGroup,
+  V1_SupportInfo,
+  V1_UnknownAccessPoint,
+  V1_UnknownDataProductIcon,
 } from '../../../model/packageableElements/dataProduct/V1_DataProduct.js';
 import { V1_initPackageableElement } from './V1_CoreTransformerHelper.js';
 import { V1_transformRawLambda } from './V1_RawValueSpecificationTransformer.js';
@@ -74,6 +78,28 @@ const transformAccessPoint = (
   );
 };
 
+const transformDataProductIcon = (
+  icon: DataProductIcon,
+): V1_DataProductIcon => {
+  if (icon instanceof DataProductLibraryIcon) {
+    const dataProductLibraryIcon = new V1_DataProductLibraryIcon();
+    dataProductLibraryIcon.libraryId = icon.libraryId;
+    dataProductLibraryIcon.iconId = icon.iconId;
+    return dataProductLibraryIcon;
+  } else if (icon instanceof DataProductEmbeddedImageIcon) {
+    const dataProductEmbeddedImageIcon = new V1_DataProductEmbeddedImageIcon();
+    dataProductEmbeddedImageIcon.imageUrl = icon.imageUrl;
+    return dataProductEmbeddedImageIcon;
+  } else if (icon instanceof UnknownDataProductIcon) {
+    const unknownDataProductIcon = new V1_UnknownDataProductIcon();
+    unknownDataProductIcon.content = icon.content;
+    return unknownDataProductIcon;
+  }
+  throw new UnsupportedOperationError(
+    `Can't transform data product icon type: ${icon}`,
+  );
+};
+
 export const V1_transformDataProduct = (
   element: DataProduct,
   context: V1_GraphTransformerContext,
@@ -88,16 +114,13 @@ export const V1_transformDataProduct = (
   product.coverageRegions = element.coverageRegions as
     | V1_DataProductRegion[]
     | undefined;
-  if (element.icon instanceof LibraryIcon) {
-    const libIcon = new V1_LibraryIcon();
-    libIcon.libraryId = element.icon.libraryId;
-    libIcon.iconId = element.icon.iconId;
-    product.icon = libIcon;
-  } else if (element.icon instanceof EmbeddedImageIcon) {
-    const embeddedIcon = new V1_EmbeddedImageIcon();
-    embeddedIcon.imageUrl = element.icon.imageUrl;
-    product.icon = embeddedIcon;
+
+  if (!element.icon) {
+    product.icon = undefined;
+  } else {
+    product.icon = transformDataProductIcon(element.icon);
   }
+
   if (!element.supportInfo) {
     product.supportInfo = undefined;
   } else {
@@ -114,6 +137,7 @@ export const V1_transformDataProduct = (
     });
     product.supportInfo = supportInfo;
   }
+
   product.accessPointGroups = element.accessPointGroups.map(
     (metamodelGroup) => {
       if (metamodelGroup instanceof ModelAccessPointGroup) {
@@ -181,9 +205,11 @@ export const V1_transformDataProduct = (
       return group;
     },
   );
+
   product.stereotypes = element.stereotypes.map(V1_transformStereotype);
   product.taggedValues = element.taggedValues.map((taggedValue) =>
     V1_transformTaggedValue(taggedValue),
   );
+
   return product;
 };

@@ -155,7 +155,6 @@ export const mockReleaseSDLCDataProduct: PlainObject<Entity> = {
     },
   ],
   icon: undefined,
-  imageUrl: undefined,
 };
 
 export const mockSnapshotSDLCDataProduct: PlainObject<Entity> = {
@@ -164,7 +163,6 @@ export const mockSnapshotSDLCDataProduct: PlainObject<Entity> = {
   package: 'test::dataproduct',
   accessPointGroups: [],
   icon: undefined,
-  imageUrl: undefined,
 };
 
 export const mockDevIngestEnvironmentSummaryResponse: PlainObject<IngestDeploymentServerConfig> =

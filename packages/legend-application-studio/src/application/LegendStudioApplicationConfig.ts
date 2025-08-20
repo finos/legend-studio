@@ -57,11 +57,40 @@ export class ServiceRegistrationEnvironmentConfig {
   );
 }
 
+export class DataProductImageConfig {
+  /**
+   * Indicates the maximum dimention (width or height) of the iamge.
+   * Images larger than this will be resized (maintaining aspect ratio)
+   * to fit within this dimension.
+   */
+  maxDimension!: number;
+  /**
+   * Indicates the maximum size of the image in KB that a user can upload.
+   * Images larger than this will not be accepted and the user must upload
+   * a smaller image.
+   */
+  maxUploadSizeKB!: number;
+  /**
+   * Indicates the maximum size of the image in KB.
+   * Images larger than this will be compressed.
+   */
+  maxSizeKB!: number;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(DataProductImageConfig, {
+      maxDimension: primitive(),
+      maxUploadSizeKB: primitive(),
+      maxSizeKB: primitive(),
+    }),
+  );
+}
+
 export class DataProductConfig {
   classifications: string[] = [];
   publicClassifications: string[] = [];
   classificationDoc!: string;
   publicStereotype!: StereotypeConfig;
+  imageConfig!: DataProductImageConfig;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(DataProductConfig, {
@@ -69,6 +98,9 @@ export class DataProductConfig {
       publicClassifications: list(primitive()),
       classificationDoc: primitive(),
       publicStereotype: usingModelSchema(StereotypeConfig.serialization.schema),
+      imageConfig: usingModelSchema(
+        DataProductImageConfig.serialization.schema,
+      ),
     }),
   );
 }

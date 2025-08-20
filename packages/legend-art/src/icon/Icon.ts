@@ -16,17 +16,47 @@
 
 //======================================================= TB =======================================================
 import {
+  TbAlertCircle,
+  TbArrowsExchange,
   TbArrowsJoin2,
   TbArrowsSplit2,
-  TbMathFunction,
   TbBook,
-  TbCircleOff,
-  TbCalendarTime,
-  TbClockEdit,
-  TbSql,
-  TbDatabaseImport,
   TbBrandSnowflake,
+  TbBriefcase,
+  TbBuildingBank,
+  TbBuildingCommunity,
+  TbCalculator,
+  TbCalendarStats,
+  TbCalendarTime,
+  TbCash,
+  TbChartCandle,
+  TbCircleOff,
+  TbClockEdit,
+  TbCreditCard,
+  TbCurrencyDollar,
+  TbDatabase,
+  TbDatabaseImport,
+  TbFileAnalytics,
+  TbFileInvoice,
   TbFileUnknown,
+  TbGavel,
+  TbGraph,
+  TbHeartbeat,
+  TbHierarchy,
+  TbHierarchy3,
+  TbMapPin2,
+  TbMathFunction,
+  TbReceipt,
+  TbReport,
+  TbShieldCheck,
+  TbSql,
+  TbStopwatch,
+  TbTimeline,
+  TbTrees,
+  TbUser,
+  TbUsersGroup,
+  TbWindElectricity,
+  TbWorld,
 } from 'react-icons/tb';
 
 export const ArrowsJoinIcon = TbArrowsJoin2;
@@ -40,6 +70,7 @@ export const SQLIcon = TbSql;
 export const Snowflake_BrandIcon = TbBrandSnowflake;
 export const DatabaseImportIcon = TbDatabaseImport;
 export const FileUnknownIcon = TbFileUnknown;
+export const Database = TbDatabase;
 
 //======================================================= MD =======================================================
 import {
@@ -673,3 +704,35 @@ export const Code_TerminalIcon = ImTerminal;
 import { LuRadioTower } from 'react-icons/lu';
 
 export const AccessPointIcon = LuRadioTower;
+
+export const IconSelectorIcons = {
+  TbAlertCircle,
+  TbArrowsExchange,
+  TbBriefcase,
+  TbBuildingBank,
+  TbBuildingCommunity,
+  TbCalculator,
+  TbCalendarStats,
+  TbCash,
+  TbChartCandle,
+  TbCreditCard,
+  TbCurrencyDollar,
+  TbFileAnalytics,
+  TbFileInvoice,
+  TbGavel,
+  TbGraph,
+  TbHeartbeat,
+  TbHierarchy,
+  TbHierarchy3,
+  TbMapPin2,
+  TbReceipt,
+  TbReport,
+  TbShieldCheck,
+  TbStopwatch,
+  TbTimeline,
+  TbTrees,
+  TbUser,
+  TbUsersGroup,
+  TbWindElectricity,
+  TbWorld,
+};
