@@ -702,10 +702,11 @@ export const Code_TerminalIcon = ImTerminal;
 //======================================================= LU =======================================================
 
 import { LuRadioTower } from 'react-icons/lu';
+import type { IconType } from 'react-icons';
 
 export const AccessPointIcon = LuRadioTower;
 
-export const IconSelectorIcons = {
+export const IconSelectorIcons: Record<string, IconType> = {
   TbAlertCircle,
   TbArrowsExchange,
   TbBriefcase,

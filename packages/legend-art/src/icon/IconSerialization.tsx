@@ -22,8 +22,7 @@ export const deserializeIcon = (
 ): React.ReactNode | undefined => {
   switch (libraryId) {
     case 'react-icons':
-      const IconComponent =
-        IconSelectorIcons[iconId as keyof typeof IconSelectorIcons];
+      const IconComponent = IconSelectorIcons[iconId];
       return IconComponent ? <IconComponent /> : <Database />;
     default:
       return undefined;

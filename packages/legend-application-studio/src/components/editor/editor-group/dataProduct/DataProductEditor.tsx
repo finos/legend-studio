@@ -1315,10 +1315,7 @@ const IconPreviewComponent = observer((props: { dataProduct: DataProduct }) => {
 
   if (dataProduct.icon instanceof DataProductLibraryIcon) {
     const iconId = dataProduct.icon.iconId;
-    const IconComponent =
-      iconId !== undefined
-        ? IconSelectorIcons[iconId as keyof typeof IconSelectorIcons]
-        : undefined;
+    const IconComponent = IconSelectorIcons[iconId];
     return (
       <div className="data-product-editor__icon-preview">
         {IconComponent ? <IconComponent /> : 'No icon selected'}
@@ -1352,7 +1349,7 @@ const IconSelectorComponent = observer(
       } else {
         const _dataProductLibraryIcon = new DataProductLibraryIcon(
           V1_DataProductIconLibraryId.REACT_ICONS,
-          iconId ?? '',
+          iconId,
         );
         dataProduct_setIcon(dataProduct, _dataProductLibraryIcon);
       }
@@ -1430,7 +1427,10 @@ const ImageSelectorComponent = observer(
             type="file"
             accept="image/*"
             disabled={isReadOnly}
-            onChange={handleFileChange}
+            onChange={(event) => {
+              // eslint-disable-next-line no-void
+              void handleFileChange(event);
+            }}
             className="data-product-editor__image-selector__input"
             value={
               dataProduct.icon instanceof DataProductEmbeddedImageIcon
