@@ -35,9 +35,6 @@ import type { TerminalProductViewerState } from '../../../stores/lakehouse/Termi
 import { TERMINAL_ACCESS } from './TerminalDataAccess.js';
 import { Divider } from '@mui/material';
 import type { IconType } from 'react-icons';
-import { FaGithub } from 'react-icons/fa';
-import { TiWorldOutline } from 'react-icons/ti';
-import { DataProducteDataAccess } from './DataProductDataAccess.js';
 
 export const TerminalProductWikiPlaceHolder = observer(
   (props: {
@@ -109,7 +106,9 @@ export const TerminalProductDescription = observer(
                 <MarkdownTextViewer
                   className="data-space__viewer__markdown-text-viewer"
                   value={{
-                    value: terminalProductViewerState.product.description,
+                    // value: terminalProductViewerState.product.description,
+                    value:
+                      'The Bloomberg Terminal is a comprehensive financial data and analytics platform providing real-time and historical information on global markets. It offers a wide range of features, including market data, news, analytics tools, and trading capabilities. The Terminal also boasts a vast library of over 1300 add-ons, allowing users to customize their experience and access specialized data and functionalities',
                   }}
                   components={{
                     h1: 'h2',
@@ -167,12 +166,12 @@ export const TerminalProductPrice = observer(
     };
 
     return (
-      <div
+      <button
         className="data-space__viewer__wiki__section__pricing"
         onClick={handlePricingToggle}
       >
         ${getDisplayPrice()} {isAnnual ? 'ANNUALLY' : 'MONTHLY'} PER LICENSE
-      </div>
+      </button>
     );
   },
 );
@@ -320,7 +319,7 @@ export const TerminalAccessSection: React.FC<TerminalAccessSectionProps> = ({
 }) => {
   return (
     <div className="data-space__viewer__content__access-section">
-      <h1 className="data-space__viewer__content__access-section__header">
+      <h1 className="data-space__viewer__content__access-section__heading">
         Access
       </h1>
       <Divider className="data-space__divider" />
@@ -332,9 +331,7 @@ export const TerminalAccessSection: React.FC<TerminalAccessSectionProps> = ({
 
         <div className="data-space__viewer__content__access-section__image-container">
           <img
-            src={
-              'https://i.pinimg.com/736x/16/ab/50/16ab501640405bb0503463b634a72cae.jpg'
-            }
+            src={''}
             alt={userImageAlt}
             className="data-space__viewer__content__access-section__image"
           />
@@ -436,12 +433,6 @@ interface SupportLinkProps {
 
 const exampleLinks: SupportLinkItem[] = [
   {
-    id: '1',
-    name: 'GitHub',
-    url: 'https://github.com',
-    icon: FaGithub,
-  },
-  {
     id: '2',
     name: 'Keystone',
     url: 'https://keystone.site.gs.com/default/app',
@@ -458,12 +449,6 @@ const exampleLinks: SupportLinkItem[] = [
     name: 'Supporting Documentation',
     url: 'https://github.com',
     icon: ReportIcon,
-  },
-  {
-    id: '5',
-    name: 'Bloomberg Website',
-    url: 'https://github.com',
-    icon: TiWorldOutline,
   },
 ];
 
@@ -790,6 +775,10 @@ export const TerminalProductWiki = observer(
           />
         </div>
 
+        <div style={{ display: isModalOpen ? 'none' : 'block' }}>
+          <TerminalSupportSection links={exampleLinks} gridColumns={2} />
+        </div>
+
         {/* Modal */}
         <TerminalAccessModal
           terminalProductViewerState={terminalProductViewerState}
@@ -797,8 +786,6 @@ export const TerminalProductWiki = observer(
           onClose={() => setIsModalOpen(false)}
           onSubmit={handleModalSubmit}
         />
-
-        <TerminalSupportSection links={exampleLinks} gridColumns={3} />
       </div>
     );
   },

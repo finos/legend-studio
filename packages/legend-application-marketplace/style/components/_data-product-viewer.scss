@@ -266,10 +266,10 @@
         &__div {
           display: grid;
           gap: 20px;
-          grid-template-columns: repeat(3, 1fr);
+          grid-template-columns: repeat(2, 1fr);
           grid-template-rows: repeat(3, auto);
           grid-auto-flow: column;
-          width: 60%;
+          width: 50%;
           padding: 10px;
         }
       }
@@ -291,6 +291,7 @@
           flex-direction: row;
           align-items: center;
           text-align: left;
+          white-space: nowrap;
         }
 
         &--circle {
@@ -342,7 +343,7 @@
       }
 
       &--header {
-        padding: 2px 16px;
+        padding: 2px 8px;
         text-align: left;
         font-weight: 600;
         color: black;
@@ -362,7 +363,7 @@
 
       &__container {
         gap: 12px;
-        padding-bottom: 25px;
+        padding-bottom: 15px;
         display: flex;
         align-items: center;
         justify-content: flex-start;
@@ -1055,7 +1056,7 @@
 
   height: 100%;
   width: 100%;
-  padding-top: 20px;
+  padding-top: 30px;
 
   &__content {
     width: 100%;
