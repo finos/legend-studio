@@ -31,6 +31,7 @@ import {
 import { useParams } from '@finos/legend-application/browser';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
+import { TerminalProductViewer } from './TerminalProductViewer.js';
 
 export const TerminalProduct = withMarketplaceLakehouseStore(
   observer(() => {
@@ -63,81 +64,12 @@ export const TerminalProduct = withMarketplaceLakehouseStore(
           <CubesLoadingIndicatorIcon />
         </CubesLoadingIndicator>
 
-        {marketPlaceStore.terminalProducts &&
-        marketPlaceStore.terminalProducts.length > 0 ? (
-          <div className="terminal-products">
-            <h1>
-              Terminal {terminalId} - {marketPlaceStore.terminalProducts.length}{' '}
-              Products
-            </h1>
-
-            {marketPlaceStore.terminalProducts.map((terminal, index) => (
-              <div
-                key={terminal.id}
-                className="terminal-product-card"
-                style={{
-                  border: '1px solid #ccc',
-                  margin: '10px 0',
-                  padding: '15px',
-                  borderRadius: '5px',
-                  backgroundColor: '#f9f9f9',
-                }}
-              >
-                <h3>{terminal.productName ?? `Product ${index + 1}`}</h3>
-                <div>
-                  <strong>ID:</strong> {terminal.id}
-                </div>
-                <div>
-                  <strong>Vendor:</strong> {terminal.providerName}
-                </div>
-                <div>
-                  <strong>Category:</strong> {terminal.category}
-                </div>
-                <div>
-                  <strong>Application:</strong> {terminal.applicationName}
-                </div>
-                <div>
-                  <strong>Description:</strong> {terminal.description}
-                </div>
-                <div>
-                  <strong>Price:</strong> ${terminal.price}
-                </div>
-                <div>
-                  <strong>Vendor Profile ID:</strong> {terminal.vendorProfileId}
-                </div>
-                <div>
-                  <strong>Model Name:</strong> {terminal.modelName}
-                </div>
-                <div>
-                  <strong>Tiered Price:</strong> {terminal.tieredPrice}
-                </div>
-                <div>
-                  <strong>Total Firm Price:</strong> ${terminal.totalFirmPrice}
-                </div>
-              </div>
-            ))}
-
-            <details style={{ marginTop: '20px' }}>
-              <summary>
-                Debug: Raw Terminal Data (
-                {marketPlaceStore.terminalProducts.length} products)
-              </summary>
-              <pre
-                style={{
-                  backgroundColor: '#f5f5f5',
-                  padding: '10px',
-                  overflow: 'auto',
-                  fontSize: '12px',
-                }}
-              >
-                {JSON.stringify(marketPlaceStore.terminalProducts, null, 2)}
-              </pre>
-            </details>
-          </div>
-        ) : marketPlaceStore.loadingProductState.isInProgress ? (
-          <div>Loading terminal data...</div>
+        {marketPlaceStore.terminalProductViewer ? (
+          <TerminalProductViewer
+            dataSpaceViewerState={marketPlaceStore.terminalProductViewer}
+          />
         ) : (
-          <div>No terminal data found.</div>
+          <></>
         )}
       </LegendMarketplacePage>
     );

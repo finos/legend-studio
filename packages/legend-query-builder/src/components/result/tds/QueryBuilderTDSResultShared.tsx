@@ -27,8 +27,6 @@ import {
   type AbstractPropertyExpression,
   type Enumeration,
   type ExecutionResult,
-  type TDSResultCellData,
-  type TDSRowDataType,
   type TDSExecutionResult,
   EnumValueExplicitReference,
   EnumValueInstanceValue,

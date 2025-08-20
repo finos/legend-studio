@@ -112,7 +112,6 @@ export const TerminalProductViewer = observer(
     const frame = useRef<HTMLDivElement>(null);
     const [showFullHeader, setShowFullHeader] = useState(false);
     const [scrollPercentage, setScrollPercentage] = useState(0);
-
     const onScroll: React.UIEventHandler<HTMLDivElement> = (event) => {
       const scrollTop = event.currentTarget.scrollTop;
       setShowFullHeader(scrollTop > 0);
