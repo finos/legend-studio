@@ -64,12 +64,10 @@ export const TerminalProduct = withMarketplaceLakehouseStore(
           <CubesLoadingIndicatorIcon />
         </CubesLoadingIndicator>
 
-        {marketPlaceStore.terminalProductViewer ? (
+        {marketPlaceStore.terminalProductViewer && (
           <TerminalProductViewer
             dataSpaceViewerState={marketPlaceStore.terminalProductViewer}
           />
-        ) : (
-          <></>
         )}
       </LegendMarketplacePage>
     );
