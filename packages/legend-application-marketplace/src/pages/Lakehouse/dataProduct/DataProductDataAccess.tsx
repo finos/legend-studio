@@ -660,6 +660,10 @@ export const DataProductAccessPointGroupViewer = observer(
                 undefined,
               )
             }
+            initialSelectedUser={
+              accessGroupState.accessState.viewerState.applicationStore
+                .identityService.currentUser
+            }
           />
         )}
         {accessGroupState.associatedContract !== false && (
