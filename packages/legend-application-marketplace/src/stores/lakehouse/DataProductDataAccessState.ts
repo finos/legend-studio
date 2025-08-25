@@ -38,6 +38,7 @@ import {
   ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
+  isNonNullable,
   uuid,
   type GeneratorFn,
   type PlainObject,
@@ -221,17 +222,20 @@ export class DataProductGroupAccessState {
     const accessPointGroupContracts = contracts.filter((_contract) =>
       dataContractContainsAccessGroup(this.group, _contract),
     );
-    const userContracts = await Promise.all(
-      accessPointGroupContracts.filter(async (_contract) =>
-        isMemberOfContract(
-          this.accessState.viewerState.applicationStore.identityService
-            .currentUser,
-          _contract,
-          this.accessState.viewerState.lakeServerClient,
-          token,
-        ),
-      ),
-    );
+    const userContracts = (
+      await Promise.all(
+        accessPointGroupContracts.map(async (_contract) => {
+          const isMember = await isMemberOfContract(
+            this.accessState.viewerState.applicationStore.identityService
+              .currentUser,
+            _contract,
+            this.accessState.viewerState.lakeServerClient,
+            token,
+          );
+          return isMember ? _contract : undefined;
+        }),
+      )
+    ).filter(isNonNullable);
     const systemAccountContracts = accessPointGroupContracts.filter(
       (_contract) =>
         _contract.consumer instanceof V1_AdhocTeam &&
