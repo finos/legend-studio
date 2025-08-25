@@ -1,5 +1,7 @@
 # @finos/legend-application-marketplace
 
+## 0.0.71
+
 ## 0.0.70
 
 ### Patch Changes

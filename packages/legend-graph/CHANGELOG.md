@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.1.67
+
+### Patch Changes
+
+- [#4363](https://github.com/finos/legend-studio/pull/4363) [`abeb716`](https://github.com/finos/legend-studio/commit/abeb716575eb31f41af0bcf87cc2f76f3ef2a2f6) ([@AFine-gs](https://github.com/AFine-gs)) - add property lineage
+
 ## 32.1.66
 
 ### Patch Changes
