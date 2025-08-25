@@ -33,9 +33,7 @@ export const IconSelector = observer(
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 
     const IconComponent =
-      iconId !== undefined
-        ? IconSelectorIcons[iconId as keyof typeof IconSelectorIcons]
-        : undefined;
+      iconId !== undefined ? IconSelectorIcons[iconId] : undefined;
 
     const handleButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
       setAnchorEl(event.currentTarget);

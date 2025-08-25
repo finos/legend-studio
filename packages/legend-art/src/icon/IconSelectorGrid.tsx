@@ -59,7 +59,7 @@ export const IconSelectorGrid = observer(
               isReadOnly
                 ? undefined
                 : () => {
-                    onChange(key as keyof typeof IconSelectorIcons);
+                    onChange(key);
                   }
             }
           >
