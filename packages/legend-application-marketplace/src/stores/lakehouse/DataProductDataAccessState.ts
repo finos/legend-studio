@@ -214,18 +214,22 @@ export class DataProductGroupAccessState {
     this.subscriptions = val;
   }
 
-  handleDataProductContracts(
+  async handleDataProductContracts(
     contracts: V1_DataContract[],
     token: string | undefined,
-  ): void {
+  ): Promise<void> {
     const accessPointGroupContracts = contracts.filter((_contract) =>
       dataContractContainsAccessGroup(this.group, _contract),
     );
-    const userContracts = accessPointGroupContracts.filter((_contract) =>
-      isMemberOfContract(
-        this.accessState.viewerState.applicationStore.identityService
-          .currentUser,
-        _contract,
+    const userContracts = await Promise.all(
+      accessPointGroupContracts.filter(async (_contract) =>
+        isMemberOfContract(
+          this.accessState.viewerState.applicationStore.identityService
+            .currentUser,
+          _contract,
+          this.accessState.viewerState.lakeServerClient,
+          token,
+        ),
       ),
     );
     const systemAccountContracts = accessPointGroupContracts.filter(
