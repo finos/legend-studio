@@ -46,7 +46,7 @@ export const compressImage = (
       let quality = 1;
       const tryCompress = () => {
         const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
-        const sizeKB = (compressedDataUrl.length * 3) / 4 / 1024; // Approximate size in KB
+        const sizeKB = (compressedDataUrl.length * 3) / 4 / 1024; // Approximate size in KB (assuming 6 bits per character in base64 encoding)
 
         if (sizeKB <= maxSizeKB || quality <= 0.1) {
           resolve(compressedDataUrl);
