@@ -43,7 +43,7 @@ export const compressImage = (
       ctx?.drawImage(img, 0, 0, width, height);
 
       // Start with high quality and reduce until size is acceptable
-      let quality = 0.9;
+      let quality = 1;
       const tryCompress = () => {
         const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
         const sizeKB = (compressedDataUrl.length * 3) / 4 / 1024; // Approximate size in KB
