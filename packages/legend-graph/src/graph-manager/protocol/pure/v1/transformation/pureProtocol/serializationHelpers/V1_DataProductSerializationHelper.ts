@@ -206,8 +206,8 @@ export const V1_DataProductLibraryIconModelSchema = createModelSchema(
   V1_DataProductLibraryIcon,
   {
     _type: usingConstantValueSchema(V1_DataProductIconType.LIBRARY_ICON),
-    libraryId: primitive(),
     iconId: primitive(),
+    libraryId: primitive(),
   },
 );
 
