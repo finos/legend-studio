@@ -31,7 +31,7 @@ import {
 import { useParams } from '@finos/legend-application/browser';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
-import { TerminalProductViewer } from './TerminalProductViewer.js';
+import { ProductViewer } from './ProductViewer.js';
 
 export const TerminalProduct = withMarketplaceLakehouseStore(
   observer(() => {
@@ -65,8 +65,8 @@ export const TerminalProduct = withMarketplaceLakehouseStore(
         </CubesLoadingIndicator>
 
         {marketPlaceStore.terminalProductViewer && (
-          <TerminalProductViewer
-            dataSpaceViewerState={marketPlaceStore.terminalProductViewer}
+          <ProductViewer
+            productViewerState={marketPlaceStore.terminalProductViewer}
           />
         )}
       </LegendMarketplacePage>
