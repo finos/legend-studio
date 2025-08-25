@@ -83,6 +83,22 @@ export class AssertFailState extends TestAssertionStatusState {
   }
 }
 
+export class EqualToAssertFailState extends AssertFailState {
+  diffModal = false;
+
+  constructor(resultState: TestAssertionResultState, status: AssertionStatus) {
+    super(resultState, status);
+    makeObservable(this, {
+      diffModal: observable,
+      setDiffModal: action,
+    });
+  }
+
+  setDiffModal(val: boolean): void {
+    this.diffModal = val;
+  }
+}
+
 export class EqualToJsonAssertFailState extends AssertFailState {
   declare status: EqualToJsonAssertFail;
   diffModal = false;
@@ -157,13 +173,21 @@ export class TestAssertionResultState {
         return new EqualToJsonAssertFailState(this, val);
       }
       if (val instanceof AssertFail) {
+        if (this.assertionState.assertion instanceof EqualTo) {
+          const message = val.message ?? '';
+          const hasExpectedFoundPattern =
+            message.includes('expected:') && message.includes('Found :');
+
+          if (hasExpectedFoundPattern) {
+            return new EqualToAssertFailState(this, val);
+          }
+        }
         return new AssertFailState(this, val);
       }
       return new UnsupportedAssertionStatusState(this, val);
     }
     return undefined;
   }
-
   get result(): TESTABLE_RESULT {
     if (this.assertionState.testState.runningTestAction.isInProgress) {
       return TESTABLE_RESULT.IN_PROGRESS;

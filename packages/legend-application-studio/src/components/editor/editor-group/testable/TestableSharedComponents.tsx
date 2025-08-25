@@ -60,6 +60,7 @@ import {
   type TestAssertionEditorState,
   type TestAssertionState,
   EqualToAssertionState,
+  EqualToAssertFailState,
 } from '../../../../stores/editor/editor-state/element-editor-state/testable/TestAssertionState.js';
 import { externalFormatData_setData } from '../../../../stores/graph-modifier/DSL_Data_GraphModifierHelper.js';
 import { TESTABLE_RESULT } from '../../../../stores/editor/sidebar-state/testable/GlobalTestRunnerState.js';
@@ -328,6 +329,26 @@ const EqualToJsonAssertFailViewer = observer(
     const expected = equalToJsonAssertFailState.status.expected;
     const actual = equalToJsonAssertFailState.status.actual;
 
+    const acceptActualValue = (): void => {
+      try {
+        const assertionState =
+          equalToJsonAssertFailState.resultState.assertionState;
+        if (
+          assertionState.assertionState instanceof EqualToJsonAssertionState
+        ) {
+          assertionState.assertionState.setExpectedValue(actual);
+          applicationStore.notificationService.notifySuccess(
+            'Expected value updated successfully!',
+          );
+          close();
+        }
+      } catch (error) {
+        applicationStore.notificationService.notifyError(
+          `Failed to update expected value: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+    };
+
     return (
       <>
         <div className="equal-to-json-editor__message" onClick={open}>
@@ -368,10 +389,124 @@ const EqualToJsonAssertFailViewer = observer(
               </ModalBody>
               <ModalFooter>
                 <ModalFooterButton
+                  text="Accept Actual Result"
+                  onClick={acceptActualValue}
+                />
+                <ModalFooterButton
                   text="Close"
                   onClick={close}
                   type="secondary"
                 />
+              </ModalFooter>
+            </Modal>
+          </Dialog>
+        )}
+      </>
+    );
+  },
+);
+
+const EqualToAssertFailViewer = observer(
+  (props: { equalToAssertFailState: EqualToAssertFailState }) => {
+    const { equalToAssertFailState } = props;
+    const applicationStore =
+      equalToAssertFailState.resultState.editorStore.applicationStore;
+    const open = (): void => equalToAssertFailState.setDiffModal(true);
+    const close = (): void => equalToAssertFailState.setDiffModal(false);
+
+    const statusMessage = equalToAssertFailState.status.message ?? '';
+    const extractValues = (message: string) => {
+      const expectedMatch = message.match(
+        /expected:\s*(?<expected>.*?)(?:\s+Found\s*:|$)/s,
+      );
+      const actualMatch = message.match(/Found\s*:\s*(?<actual>.*?)$/s);
+
+      return {
+        expected: expectedMatch?.groups?.expected?.trim() ?? 'N/A',
+        actual: actualMatch?.groups?.actual?.trim() ?? 'N/A',
+      };
+    };
+
+    const { expected, actual } = extractValues(statusMessage);
+
+    const acceptActualValue = (): void => {
+      const assertionState = equalToAssertFailState.resultState.assertionState;
+      if (assertionState.assertionState instanceof EqualToAssertionState) {
+        try {
+          const editorStore = assertionState.editorStore;
+          const graph = editorStore.graphManagerState.graph;
+
+          const newValueSpec = buildDefaultInstanceValue(
+            graph,
+            PrimitiveType.STRING,
+            editorStore.changeDetectionState.observerContext,
+            true,
+          );
+          (newValueSpec as PrimitiveInstanceValue).values = [actual];
+
+          assertionState.assertionState.updateValueSpec(newValueSpec);
+
+          applicationStore.notificationService.notifySuccess(
+            'Expected value updated successfully!',
+          );
+          close();
+        } catch (error) {
+          applicationStore.notificationService.notifyError(
+            `Failed to update expected value: ${error instanceof Error ? error.message : String(error)}`,
+          );
+        }
+      } else {
+        applicationStore.notificationService.notifyError(
+          'Unable to access assertion state for this assertion type',
+        );
+      }
+    };
+
+    return (
+      <>
+        <div className="equal-to-json-editor__message" onClick={open}>
+          {`<Click to see difference>`}
+        </div>
+        {equalToAssertFailState.diffModal && (
+          <Dialog
+            open={equalToAssertFailState.diffModal}
+            onClose={close}
+            classes={{
+              root: 'editor-modal__root-container',
+              container: 'editor-modal__container',
+              paper: 'editor-modal__content',
+            }}
+          >
+            <Modal
+              darkMode={
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
+              className="editor-modal"
+            >
+              <ModalHeader>
+                <div className="equal-to-json-result__diff__summary">
+                  <div className="equal-to-json-result__diff__header__label">
+                    expected
+                  </div>
+                  <div className="equal-to-json-result__diff__icon">
+                    <CompareIcon />
+                  </div>
+                  <div className="equal-to-json-result__diff__header__label">
+                    actual
+                  </div>
+                </div>
+              </ModalHeader>
+
+              <ModalBody className="test-assertion-diff-modal__body">
+                <JSONDiffView from={expected} to={actual} lossless={false} />
+              </ModalBody>
+              <ModalFooter>
+                <ModalFooterButton
+                  text="Accept Actual Result"
+                  onClick={acceptActualValue}
+                />
+                <ModalFooterButton text="Close" onClick={close} />
               </ModalFooter>
             </Modal>
           </Dialog>
@@ -395,16 +530,81 @@ const TestErrorViewer = observer((props: { testError: TestError }) => {
 const AssertFailViewer = observer(
   (props: { assertFailState: AssertFailState }) => {
     const { assertFailState } = props;
+    const applicationStore = useApplicationStore();
+    const [showGenericDiffModal, setShowGenericDiffModal] = useState(false);
+    const message = assertFailState.status.message ?? '';
+    const isGenericEqualToFail =
+      message.includes('expected:') && message.includes('Found :');
+
+    const extractValues = (msg: string) => {
+      const expectedMatch = msg.match(
+        /expected:\s*(?<expected>.*?)(?:\s+Found\s*:|$)/s,
+      );
+      const actualMatch = msg.match(/Found\s*:\s*(?<actual>.*?)$/s);
+
+      return {
+        expected: expectedMatch?.groups?.expected?.trim() ?? 'N/A',
+        actual: actualMatch?.groups?.actual?.trim() ?? 'N/A',
+      };
+    };
+    const { expected, actual } = extractValues(message);
+
     return (
       <>
         <div className="testable-test-assertion-result__summary-info">
           {assertFailState.status.message}
         </div>
-        {assertFailState instanceof EqualToJsonAssertFailState && (
+        {assertFailState instanceof EqualToJsonAssertFailState ? (
           <EqualToJsonAssertFailViewer
             equalToJsonAssertFailState={assertFailState}
           />
-        )}
+        ) : assertFailState instanceof EqualToAssertFailState ? (
+          <EqualToAssertFailViewer equalToAssertFailState={assertFailState} />
+        ) : isGenericEqualToFail ? (
+          <>
+            <div
+              className="equal-to-json-editor__message"
+              onClick={() => setShowGenericDiffModal(true)}
+            >
+              {`<Click to see difference>`}
+            </div>
+            {showGenericDiffModal && (
+              <Dialog
+                open={showGenericDiffModal}
+                onClose={() => setShowGenericDiffModal(false)}
+                classes={{ container: 'search-modal__container' }}
+                PaperProps={{
+                  classes: { root: 'search-modal__inner-container' },
+                }}
+              >
+                <Modal
+                  darkMode={
+                    !applicationStore.layoutService
+                      .TEMPORARY__isLightColorThemeEnabled
+                  }
+                  className="modal--xl"
+                >
+                  <ModalHeader>
+                    <ModalTitle title="Test Assertion Comparison" />
+                  </ModalHeader>
+                  <ModalBody>
+                    <JSONDiffView
+                      from={expected}
+                      to={actual}
+                      lossless={false}
+                    />
+                  </ModalBody>
+                  <ModalFooter>
+                    <ModalFooterButton
+                      text="Close"
+                      onClick={() => setShowGenericDiffModal(false)}
+                    />
+                  </ModalFooter>
+                </Modal>
+              </Dialog>
+            )}
+          </>
+        ) : null}
       </>
     );
   },
