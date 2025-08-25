@@ -31,6 +31,7 @@ import {
   V1_ContractState,
   V1_DataProduct,
   V1_dataProductModelSchema,
+  V1_deserializeTaskResponse,
   V1_SdlcDeploymentDataProductOrigin,
   V1_UnknownOrganizationalScopeType,
 } from '@finos/legend-graph';
@@ -46,6 +47,7 @@ import { resolveVersion } from '@finos/legend-server-depot';
 import type { Entity } from '@finos/legend-storage';
 import { deserialize } from 'serializr';
 import type { LegendMarketplaceBaseStore } from '../LegendMarketplaceBaseStore.js';
+import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
 
 const invalidContractState = [
   V1_ContractState.DRAFT,
@@ -92,15 +94,25 @@ export const dataContractContainsAccessGroup = (
   return false;
 };
 
-export const isMemberOfContract = (
+export const isMemberOfContract = async (
   user: string,
   contract: V1_DataContract,
-): boolean => {
+  lakehouseContractServerClient: LakehouseContractServerClient,
+  token: string | undefined,
+): Promise<boolean> => {
   const consumer = contract.consumer;
   if (consumer instanceof V1_AdhocTeam) {
     return consumer.users.some((e) => e.name === user);
+  } else {
+    // If consumer is not an ad-hoc team, we will fetch the tasks
+    // and use the tasks to determine if user is a member of the contract.
+    const rawTasks = await lakehouseContractServerClient.getContractTasks(
+      contract.guid,
+      token,
+    );
+    const tasks = V1_deserializeTaskResponse(rawTasks);
+    return tasks.some((task) => task.rec.consumer === user);
   }
-  return false;
 };
 
 export const isContractInTerminalState = (
