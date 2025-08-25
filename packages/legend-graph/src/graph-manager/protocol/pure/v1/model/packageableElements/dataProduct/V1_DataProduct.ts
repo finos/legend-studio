@@ -242,7 +242,7 @@ export class V1_DataProductEmbeddedImageIcon
   extends V1_DataProductIcon
   implements Hashable
 {
-  imageUrl!: string;
+  imageUrl!: string; // base64 encoded image content
 
   override get hashCode(): string {
     return hashArray([

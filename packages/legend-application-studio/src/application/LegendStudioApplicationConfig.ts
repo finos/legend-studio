@@ -59,7 +59,7 @@ export class ServiceRegistrationEnvironmentConfig {
 
 export class DataProductImageConfig {
   /**
-   * Indicates the maximum dimention (width or height) of the iamge.
+   * Indicates the maximum dimension (width or height) of the image in pixels.
    * Images larger than this will be resized (maintaining aspect ratio)
    * to fit within this dimension.
    */
