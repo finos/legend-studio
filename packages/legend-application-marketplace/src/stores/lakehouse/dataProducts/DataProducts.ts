@@ -22,6 +22,7 @@ import {
   type GeneratorFn,
 } from '@finos/legend-shared';
 import {
+  type V1_DataProductIcon,
   type V1_EntitlementsDataProductDetails,
   type V1_EntitlementsLakehouseEnvironmentType,
   type V1_PureGraphManager,
@@ -29,8 +30,6 @@ import {
   V1_AdHocDeploymentDataProductOrigin,
   V1_DataProduct,
   V1_SdlcDeploymentDataProductOrigin,
-  V1_EmbeddedImageIcon,
-  V1_LibraryIcon,
 } from '@finos/legend-graph';
 import type { MarketplaceLakehouseStore } from '../MarketplaceLakehouseStore.js';
 import { getDataProductFromDetails } from '../LakehouseUtils.js';
@@ -115,20 +114,8 @@ export class DataProductState {
       : (this.dataProductElement?.description ?? '');
   }
 
-  get icon(): string | undefined {
-    const icon = this.dataProductElement?.icon;
-    if (icon instanceof V1_LibraryIcon) {
-      return icon.iconId;
-    }
-    return undefined;
-  }
-
-  get imageUrl(): string | undefined {
-    const icon = this.dataProductElement?.icon;
-    if (icon instanceof V1_EmbeddedImageIcon) {
-      return icon.imageUrl;
-    }
-    return undefined;
+  get icon(): V1_DataProductIcon | undefined {
+    return this.dataProductElement?.icon;
   }
 
   get versionId(): string | undefined {

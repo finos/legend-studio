@@ -222,13 +222,29 @@ export abstract class V1_DataProductIcon implements Hashable {
   abstract get hashCode(): string;
 }
 
-export class V1_EmbeddedImageIcon
+export class V1_DataProductLibraryIcon
+  extends V1_DataProductIcon
+  implements Hashable
+{
+  libraryId!: string;
+  iconId!: string;
+
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.DATA_PRODUCT_ICON_LIBRARY,
+      this.libraryId,
+      this.iconId,
+    ]);
+  }
+}
+
+export class V1_DataProductEmbeddedImageIcon
   extends V1_DataProductIcon
   implements Hashable
 {
   imageUrl!: string; // base64 encoded image content
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.DATA_PRODUCT_ICON_EMBEDDED_IMAGE,
       this.imageUrl,
@@ -236,14 +252,17 @@ export class V1_EmbeddedImageIcon
   }
 }
 
-export class V1_LibraryIcon extends V1_DataProductIcon implements Hashable {
-  libraryId!: string;
-  iconId!: string;
-  get hashCode(): string {
+// handle incoming icons not yet modeled
+export class V1_UnknownDataProductIcon
+  extends V1_DataProductIcon
+  implements Hashable
+{
+  content!: PlainObject;
+
+  override get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.DATA_PRODUCT_ICON_LIBRARY,
-      this.libraryId,
-      this.iconId,
+      CORE_HASH_STRUCTURE.INTERNAL__UNKNOWN_DATA_PRODUCT_ICON,
+      hashObjectWithoutSourceInformation(this.content),
     ]);
   }
 }
