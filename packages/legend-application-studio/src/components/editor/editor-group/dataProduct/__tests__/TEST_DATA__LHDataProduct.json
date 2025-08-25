@@ -7,6 +7,11 @@
       "package": "model",
       "title": "My Data Product",
       "description": "sample for testing",
+      "icon": {
+        "_type": "libraryIcon",
+        "libraryId": "react-icons",
+        "iconId": "TbArrowsExchange"
+      },
       "accessPointGroups": [
         {
           "id": "group1",
