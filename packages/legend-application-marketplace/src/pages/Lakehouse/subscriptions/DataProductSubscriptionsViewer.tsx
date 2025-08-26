@@ -112,7 +112,7 @@ const LakehouseSubscriptionsCreateDialogContractRenderer = observer(
           )}
           {typeDetails !== undefined && (
             <Tooltip
-              className="marketplace-lakehouse-subscriptions__creator__contract-details__users__tooltip__icon"
+              className="marketplace-lakehouse-subscriptions__subscription-creator__contract-details__users__tooltip__icon"
               title={typeDetails}
             >
               <InfoCircleIcon />
