@@ -128,6 +128,20 @@ const setupLakehouseDataProductTest = async (
 
   createSpy(
     mockedStore.lakehouseContractServerClient,
+    'getDataContract',
+  ).mockImplementation(async (id: string) => {
+    const matchingContract = mockContracts.find(
+      (_contract) => _contract.guid === id,
+    );
+    return {
+      dataContracts: matchingContract
+        ? [{ dataContract: matchingContract }]
+        : [],
+    };
+  });
+
+  createSpy(
+    mockedStore.lakehouseContractServerClient,
     'getContractUserStatus',
   ).mockImplementation(async (contractId: string) => {
     switch (contractId) {
