@@ -75,6 +75,20 @@
 
       gap: 1rem;
       font-size: 1.4rem;
+
+      &__details {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      &__tooltip__icon {
+        color: var(--color-dark-grey-500);
+
+        &:hover {
+          color: unset;
+        }
+      }
     }
 
     &__footer {
