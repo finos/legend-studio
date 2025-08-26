@@ -27,6 +27,7 @@ import {
   V1_UserApprovalStatus,
 } from '@finos/legend-graph';
 import {
+  contractContainsSystemAccount,
   dataContractContainsAccessGroup,
   isMemberOfContract,
 } from '../LakehouseUtils.js';
@@ -114,6 +115,62 @@ describe('LakehouseUtils', () => {
     ).toBe(false);
   });
 
+  test('isMemberOfContract should return true if the user belongs to the contract members', async () => {
+    const mockedStore = await TEST__provideMockedLegendMarketplaceBaseStore();
+
+    const user = 'user1';
+
+    const dataContract = new V1_DataContract();
+    dataContract.consumer = new V1_UnknownOrganizationalScopeType();
+    dataContract.members = [
+      {
+        guid: 'test-guid',
+        user: {
+          name: 'user1',
+          userType: V1_UserType.WORKFORCE_USER,
+        },
+        status: V1_UserApprovalStatus.APPROVED,
+      },
+    ];
+
+    expect(
+      await isMemberOfContract(
+        user,
+        dataContract,
+        mockedStore.lakehouseContractServerClient,
+        undefined,
+      ),
+    ).toBe(true);
+  });
+
+  test('isMemberOfContract should return false if the user does not belong to the contract members', async () => {
+    const mockedStore = await TEST__provideMockedLegendMarketplaceBaseStore();
+
+    const user = 'user1';
+
+    const dataContract = new V1_DataContract();
+    dataContract.consumer = new V1_UnknownOrganizationalScopeType();
+    dataContract.members = [
+      {
+        guid: 'test-guid',
+        user: {
+          name: 'user2',
+          userType: V1_UserType.WORKFORCE_USER,
+        },
+        status: V1_UserApprovalStatus.APPROVED,
+      },
+    ];
+
+    expect(
+      await isMemberOfContract(
+        user,
+        dataContract,
+        mockedStore.lakehouseContractServerClient,
+        undefined,
+      ),
+    ).toBe(false);
+  });
+
   test('isMemberOfContract should return true if the user belongs to the contract tasks', async () => {
     const mockedStore = await TEST__provideMockedLegendMarketplaceBaseStore();
 
@@ -184,5 +241,65 @@ describe('LakehouseUtils', () => {
         undefined,
       ),
     ).toBe(false);
+  });
+
+  test('contractContainsSystemAccount should return true if an ad-hoc team contract contains a system account user', async () => {
+    const adhocTeam = new V1_AdhocTeam();
+    const user1 = new V1_User();
+    user1.name = 'system-user1';
+    user1.userType = V1_UserType.SYSTEM_ACCOUNT;
+    adhocTeam.users = [user1];
+
+    const dataContract = new V1_DataContract();
+    dataContract.consumer = adhocTeam;
+
+    expect(contractContainsSystemAccount(dataContract)).toBe(true);
+  });
+
+  test('contractContainsSystemAccount should return false if an ad-hoc team contract does not contain a system account user', async () => {
+    const adhocTeam = new V1_AdhocTeam();
+    const user1 = new V1_User();
+    user1.name = 'user1';
+    user1.userType = V1_UserType.WORKFORCE_USER;
+    adhocTeam.users = [user1];
+
+    const dataContract = new V1_DataContract();
+    dataContract.consumer = adhocTeam;
+
+    expect(contractContainsSystemAccount(dataContract)).toBe(false);
+  });
+
+  test('contractContainsSystemAccount should return true if contract members contain a system account user', async () => {
+    const dataContract = new V1_DataContract();
+    dataContract.consumer = new V1_UnknownOrganizationalScopeType();
+    dataContract.members = [
+      {
+        guid: 'test-guid',
+        user: {
+          name: 'user1',
+          userType: V1_UserType.SYSTEM_ACCOUNT,
+        },
+        status: V1_UserApprovalStatus.APPROVED,
+      },
+    ];
+
+    expect(contractContainsSystemAccount(dataContract)).toBe(true);
+  });
+
+  test('contractContainsSystemAccount should return false if contract members do not contain a system account user', async () => {
+    const dataContract = new V1_DataContract();
+    dataContract.consumer = new V1_UnknownOrganizationalScopeType();
+    dataContract.members = [
+      {
+        guid: 'test-guid',
+        user: {
+          name: 'user1',
+          userType: V1_UserType.WORKFORCE_USER,
+        },
+        status: V1_UserApprovalStatus.APPROVED,
+      },
+    ];
+
+    expect(contractContainsSystemAccount(dataContract)).toBe(false);
   });
 });
