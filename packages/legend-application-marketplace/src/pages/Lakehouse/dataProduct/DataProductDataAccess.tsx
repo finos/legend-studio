@@ -474,6 +474,7 @@ export const DataProductAccessPointGroupViewer = observer(
               onClick={onClick}
               loading={
                 accessGroupState.fetchingAccessState.isInProgress ||
+                accessGroupState.handlingContractsState.isInProgress ||
                 accessGroupState.fetchingUserAccessStatus.isInProgress
               }
               sx={{ cursor: onClick === undefined ? 'default' : 'pointer' }}

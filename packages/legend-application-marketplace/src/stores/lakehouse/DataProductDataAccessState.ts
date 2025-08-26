@@ -76,6 +76,7 @@ export class DataProductGroupAccessState {
   subscriptions: V1_DataSubscription[] = [];
 
   fetchingAccessState = ActionState.create();
+  handlingContractsState = ActionState.create();
   fetchingUserAccessStatus = ActionState.create();
   fetchingApprovedContractsState = ActionState.create();
   fetchingSubscriptionsState = ActionState.create();
@@ -219,49 +220,55 @@ export class DataProductGroupAccessState {
     contracts: V1_DataContract[],
     token: string | undefined,
   ): Promise<void> {
-    const accessPointGroupContracts = contracts.filter((_contract) =>
-      dataContractContainsAccessGroup(this.group, _contract),
-    );
-    const rawAccessPointGroupContractsWithMembers = await Promise.all(
-      accessPointGroupContracts.map((_contract) =>
-        this.accessState.viewerState.lakeServerClient.getDataContract(
-          _contract.guid,
-          true,
-          token,
-        ),
-      ),
-    );
-    const accessPointGroupContractsWithMembers =
-      rawAccessPointGroupContractsWithMembers.flatMap((_response) =>
-        V1_dataContractsResponseModelSchemaToContracts(
-          _response,
-          this.accessState.viewerState.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
+    try {
+      this.handlingContractsState.inProgress();
+
+      const accessPointGroupContracts = contracts.filter((_contract) =>
+        dataContractContainsAccessGroup(this.group, _contract),
+      );
+      const rawAccessPointGroupContractsWithMembers = await Promise.all(
+        accessPointGroupContracts.map((_contract) =>
+          this.accessState.viewerState.lakeServerClient.getDataContract(
+            _contract.guid,
+            true,
+            token,
+          ),
         ),
       );
-    const userContracts = (
-      await Promise.all(
-        accessPointGroupContractsWithMembers.map(async (_contract) => {
-          const isMember = await isMemberOfContract(
-            this.accessState.viewerState.applicationStore.identityService
-              .currentUser,
-            _contract,
-            this.accessState.viewerState.lakeServerClient,
-            token,
-          );
-          return isMember ? _contract : undefined;
-        }),
-      )
-    ).filter(isNonNullable);
-    const systemAccountContracts = accessPointGroupContracts.filter(
-      contractContainsSystemAccount,
-    );
-    // ASSUMPTION: one contract per user per group
-    const userContract = userContracts[0];
-    this.setAssociatedContract(userContract, token);
-    this.fetchAndSetAssociatedSystemAccountContracts(
-      systemAccountContracts,
-      token,
-    );
+      const accessPointGroupContractsWithMembers =
+        rawAccessPointGroupContractsWithMembers.flatMap((_response) =>
+          V1_dataContractsResponseModelSchemaToContracts(
+            _response,
+            this.accessState.viewerState.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
+          ),
+        );
+      const userContracts = (
+        await Promise.all(
+          accessPointGroupContractsWithMembers.map(async (_contract) => {
+            const isMember = await isMemberOfContract(
+              this.accessState.viewerState.applicationStore.identityService
+                .currentUser,
+              _contract,
+              this.accessState.viewerState.lakeServerClient,
+              token,
+            );
+            return isMember ? _contract : undefined;
+          }),
+        )
+      ).filter(isNonNullable);
+      const systemAccountContracts = accessPointGroupContracts.filter(
+        contractContainsSystemAccount,
+      );
+      // ASSUMPTION: one contract per user per group
+      const userContract = userContracts[0];
+      this.setAssociatedContract(userContract, token);
+      this.fetchAndSetAssociatedSystemAccountContracts(
+        systemAccountContracts,
+        token,
+      );
+    } finally {
+      this.handlingContractsState.complete();
+    }
   }
 
   handleContractClick(): void {
