@@ -34,6 +34,7 @@ import {
   V1_deserializeTaskResponse,
   V1_SdlcDeploymentDataProductOrigin,
   V1_UnknownOrganizationalScopeType,
+  V1_UserType,
 } from '@finos/legend-graph';
 import type { LegendMarketplaceApplicationPlugin } from '../../application/LegendMarketplaceApplicationPlugin.js';
 import {
@@ -116,6 +117,20 @@ export const isMemberOfContract = async (
     const tasks = V1_deserializeTaskResponse(rawTasks);
     return tasks.some((task) => task.rec.consumer === user);
   }
+};
+
+export const contractContainsSystemAccount = (
+  contract: V1_DataContract,
+): boolean => {
+  return (
+    (contract.consumer instanceof V1_AdhocTeam &&
+      contract.consumer.users.some(
+        (_user) => _user.userType === V1_UserType.SYSTEM_ACCOUNT,
+      )) ||
+    contract.members.some(
+      (_user) => _user.user.userType === V1_UserType.SYSTEM_ACCOUNT,
+    )
+  );
 };
 
 export const isContractInTerminalState = (

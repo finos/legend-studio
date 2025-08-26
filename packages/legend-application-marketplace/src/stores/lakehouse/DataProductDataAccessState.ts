@@ -22,7 +22,6 @@ import {
   type V1_DataSubscriptionResponse,
   type V1_DataSubscriptionTarget,
   type V1_User,
-  V1_AdhocTeam,
   V1_ContractUserStatusResponseModelSchema,
   V1_CreateSubscriptionInput,
   V1_CreateSubscriptionInputModelSchema,
@@ -32,7 +31,6 @@ import {
   V1_dataSubscriptionModelSchema,
   V1_DataSubscriptionResponseModelSchema,
   V1_EnrichedUserApprovalStatus,
-  V1_UserType,
 } from '@finos/legend-graph';
 import type { DataProductViewerState } from './DataProductViewerState.js';
 import {
@@ -53,6 +51,7 @@ import {
   observable,
 } from 'mobx';
 import {
+  contractContainsSystemAccount,
   dataContractContainsAccessGroup,
   isMemberOfContract,
 } from './LakehouseUtils.js';
@@ -174,14 +173,14 @@ export class DataProductGroupAccessState {
   }
 
   *fetchAndSetAssociatedSystemAccountContracts(
-    val: V1_DataContract[],
+    systemAccountContracts: V1_DataContract[],
     token: string | undefined,
   ): GeneratorFn<void> {
     this.fetchingApprovedContractsState.inProgress();
     try {
       this.associatedSystemAccountContractsAndApprovedUsers =
         (yield Promise.all(
-          val.map(async (contract) => {
+          systemAccountContracts.map(async (contract) => {
             const rawApprovedUsers =
               await this.accessState.viewerState.lakeServerClient.getApprovedUsersForDataContract(
                 contract.guid,
@@ -241,7 +240,7 @@ export class DataProductGroupAccessState {
       );
     const userContracts = (
       await Promise.all(
-        accessPointGroupContracts.map(async (_contract) => {
+        accessPointGroupContractsWithMembers.map(async (_contract) => {
           const isMember = await isMemberOfContract(
             this.accessState.viewerState.applicationStore.identityService
               .currentUser,
@@ -254,11 +253,7 @@ export class DataProductGroupAccessState {
       )
     ).filter(isNonNullable);
     const systemAccountContracts = accessPointGroupContracts.filter(
-      (_contract) =>
-        _contract.consumer instanceof V1_AdhocTeam &&
-        _contract.consumer.users.some(
-          (_user) => _user.userType === V1_UserType.SYSTEM_ACCOUNT,
-        ),
+      contractContainsSystemAccount,
     );
     // ASSUMPTION: one contract per user per group
     const userContract = userContracts[0];
