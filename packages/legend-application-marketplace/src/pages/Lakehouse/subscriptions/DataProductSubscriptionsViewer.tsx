@@ -138,6 +138,9 @@ const LakehouseSubscriptionsCreateDialogContractRenderer = observer(
                 event.stopPropagation();
                 copyContractId(contract.guid);
               }}
+              onMouseDown={(event) => {
+                event.stopPropagation();
+              }}
             >
               <CopyIcon />
             </IconButton>
