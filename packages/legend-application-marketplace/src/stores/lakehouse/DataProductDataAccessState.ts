@@ -22,22 +22,22 @@ import {
   type V1_DataSubscriptionResponse,
   type V1_DataSubscriptionTarget,
   type V1_User,
-  V1_AdhocTeam,
   V1_ContractUserStatusResponseModelSchema,
   V1_CreateSubscriptionInput,
   V1_CreateSubscriptionInputModelSchema,
   V1_DataContract,
   V1_DataContractApprovedUsersResponseModelSchema,
+  V1_dataContractsResponseModelSchemaToContracts,
   V1_dataSubscriptionModelSchema,
   V1_DataSubscriptionResponseModelSchema,
   V1_EnrichedUserApprovalStatus,
-  V1_UserType,
 } from '@finos/legend-graph';
 import type { DataProductViewerState } from './DataProductViewerState.js';
 import {
   ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
+  isNonNullable,
   uuid,
   type GeneratorFn,
   type PlainObject,
@@ -51,6 +51,7 @@ import {
   observable,
 } from 'mobx';
 import {
+  contractContainsSystemAccount,
   dataContractContainsAccessGroup,
   isMemberOfContract,
 } from './LakehouseUtils.js';
@@ -75,7 +76,8 @@ export class DataProductGroupAccessState {
   subscriptions: V1_DataSubscription[] = [];
 
   fetchingAccessState = ActionState.create();
-  fetchingUserAccessStatus = ActionState.create();
+  handlingContractsState = ActionState.create();
+  fetchingUserAccessState = ActionState.create();
   fetchingApprovedContractsState = ActionState.create();
   fetchingSubscriptionsState = ActionState.create();
   creatingSubscriptionState = ActionState.create();
@@ -172,14 +174,14 @@ export class DataProductGroupAccessState {
   }
 
   *fetchAndSetAssociatedSystemAccountContracts(
-    val: V1_DataContract[],
+    systemAccountContracts: V1_DataContract[],
     token: string | undefined,
   ): GeneratorFn<void> {
     this.fetchingApprovedContractsState.inProgress();
     try {
       this.associatedSystemAccountContractsAndApprovedUsers =
         (yield Promise.all(
-          val.map(async (contract) => {
+          systemAccountContracts.map(async (contract) => {
             const rawApprovedUsers =
               await this.accessState.viewerState.lakeServerClient.getApprovedUsersForDataContract(
                 contract.guid,
@@ -214,34 +216,59 @@ export class DataProductGroupAccessState {
     this.subscriptions = val;
   }
 
-  handleDataProductContracts(
+  async handleDataProductContracts(
     contracts: V1_DataContract[],
     token: string | undefined,
-  ): void {
-    const accessPointGroupContracts = contracts.filter((_contract) =>
-      dataContractContainsAccessGroup(this.group, _contract),
-    );
-    const userContracts = accessPointGroupContracts.filter((_contract) =>
-      isMemberOfContract(
-        this.accessState.viewerState.applicationStore.identityService
-          .currentUser,
-        _contract,
-      ),
-    );
-    const systemAccountContracts = accessPointGroupContracts.filter(
-      (_contract) =>
-        _contract.consumer instanceof V1_AdhocTeam &&
-        _contract.consumer.users.some(
-          (_user) => _user.userType === V1_UserType.SYSTEM_ACCOUNT,
+  ): Promise<void> {
+    try {
+      this.handlingContractsState.inProgress();
+
+      const accessPointGroupContracts = contracts.filter((_contract) =>
+        dataContractContainsAccessGroup(this.group, _contract),
+      );
+      const rawAccessPointGroupContractsWithMembers = await Promise.all(
+        accessPointGroupContracts.map((_contract) =>
+          this.accessState.viewerState.lakeServerClient.getDataContract(
+            _contract.guid,
+            true,
+            token,
+          ),
         ),
-    );
-    // ASSUMPTION: one contract per user per group
-    const userContract = userContracts[0];
-    this.setAssociatedContract(userContract, token);
-    this.fetchAndSetAssociatedSystemAccountContracts(
-      systemAccountContracts,
-      token,
-    );
+      );
+      const accessPointGroupContractsWithMembers =
+        rawAccessPointGroupContractsWithMembers.flatMap((_response) =>
+          V1_dataContractsResponseModelSchemaToContracts(
+            _response,
+            this.accessState.viewerState.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
+          ),
+        );
+      const userContracts = (
+        await Promise.all(
+          accessPointGroupContractsWithMembers.map(async (_contract) => {
+            const isMember = await isMemberOfContract(
+              this.accessState.viewerState.applicationStore.identityService
+                .currentUser,
+              _contract,
+              this.accessState.viewerState.lakeServerClient,
+              token,
+            );
+            return isMember ? _contract : undefined;
+          }),
+        )
+      ).filter(isNonNullable);
+      const systemAccountContracts = accessPointGroupContracts.filter(
+        contractContainsSystemAccount,
+      );
+      // ASSUMPTION: one contract per user per group
+      const userContract = userContracts[0];
+      this.setAssociatedContract(userContract, token);
+      this.fetchAndSetAssociatedSystemAccountContracts(
+        systemAccountContracts,
+        token,
+      );
+    } finally {
+      this.handlingContractsState.complete();
+    }
   }
 
   handleContractClick(): void {
@@ -269,7 +296,7 @@ export class DataProductGroupAccessState {
     token: string | undefined,
   ): GeneratorFn<void> {
     try {
-      this.fetchingUserAccessStatus.inProgress();
+      this.fetchingUserAccessState.inProgress();
       const rawUserStatus =
         (yield this.accessState.viewerState.lakeServerClient.getContractUserStatus(
           contractId,
@@ -288,7 +315,7 @@ export class DataProductGroupAccessState {
         `Error fetching user access status: ${error.message}`,
       );
     } finally {
-      this.fetchingUserAccessStatus.complete();
+      this.fetchingUserAccessState.complete();
     }
   }
 

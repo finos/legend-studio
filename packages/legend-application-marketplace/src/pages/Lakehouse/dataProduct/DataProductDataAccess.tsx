@@ -474,7 +474,8 @@ export const DataProductAccessPointGroupViewer = observer(
               onClick={onClick}
               loading={
                 accessGroupState.fetchingAccessState.isInProgress ||
-                accessGroupState.fetchingUserAccessStatus.isInProgress
+                accessGroupState.handlingContractsState.isInProgress ||
+                accessGroupState.fetchingUserAccessState.isInProgress
               }
               sx={{ cursor: onClick === undefined ? 'default' : 'pointer' }}
             >
@@ -499,6 +500,11 @@ export const DataProductAccessPointGroupViewer = observer(
               size="small"
               onClick={() => setIsEntitledButtonGroupMenuOpen((prev) => !prev)}
               title="More options"
+              loading={
+                accessGroupState.fetchingAccessState.isInProgress ||
+                accessGroupState.handlingContractsState.isInProgress ||
+                accessGroupState.fetchingUserAccessState.isInProgress
+              }
             >
               <CaretDownIcon />
             </Button>
@@ -659,6 +665,10 @@ export const DataProductAccessPointGroupViewer = observer(
               accessGroupState.accessState.viewerState.setDataContract(
                 undefined,
               )
+            }
+            initialSelectedUser={
+              accessGroupState.accessState.viewerState.applicationStore
+                .identityService.currentUser
             }
           />
         )}

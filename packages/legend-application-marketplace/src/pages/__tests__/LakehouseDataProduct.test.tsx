@@ -128,6 +128,20 @@ const setupLakehouseDataProductTest = async (
 
   createSpy(
     mockedStore.lakehouseContractServerClient,
+    'getDataContract',
+  ).mockImplementation(async (id: string) => {
+    const matchingContract = mockContracts.find(
+      (_contract) => _contract.guid === id,
+    );
+    return {
+      dataContracts: matchingContract
+        ? [{ dataContract: matchingContract }]
+        : [],
+    };
+  });
+
+  createSpy(
+    mockedStore.lakehouseContractServerClient,
     'getContractUserStatus',
   ).mockImplementation(async (contractId: string) => {
     switch (contractId) {
@@ -141,6 +155,7 @@ const setupLakehouseDataProductTest = async (
           status: V1_EnrichedUserApprovalStatus.PENDING_DATA_OWNER_APPROVAL,
         };
       case 'test-approved-contract-id':
+      case 'test-partially-approved-contract-id':
         return { status: V1_EnrichedUserApprovalStatus.APPROVED };
       case 'test-denied-contract-id':
         return { status: V1_EnrichedUserApprovalStatus.DENIED };
@@ -209,7 +224,10 @@ const setupLakehouseDataProductTest = async (
     mockedStore.lakehouseContractServerClient,
     'getContractTasks',
   ).mockImplementation(async (contractId: string) => {
-    if (contractId === 'test-approved-contract-id') {
+    if (
+      contractId === 'test-approved-contract-id' ||
+      contractId === 'test-partially-approved-contract-id'
+    ) {
       return mockApprovedTasksResponse as unknown as PlainObject<V1_TaskResponse>;
     }
     return mockPendingManagerApprovalTasksResponse as unknown as PlainObject<V1_TaskResponse>;
@@ -631,6 +649,40 @@ test('displays ENTITLED button for contract in APPROVED status', async () => {
             type: V1_UserType.WORKFORCE_USER,
           },
         ],
+      },
+      createdBy: 'test-user',
+    },
+  ];
+
+  await setupLakehouseDataProductTest(
+    MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
+    11111,
+    mockContracts,
+  );
+
+  await screen.findByRole('button', { name: 'ENTITLED' });
+});
+
+test('displays ENTITLED button for contract when user is approved but entire contract is not yet completed', async () => {
+  const mockContracts: V1_DataContract[] = [
+    {
+      description: 'Test partially approved contract',
+      guid: 'test-partially-approved-contract-id',
+      version: 0,
+      state: V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL,
+      resource: {
+        _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+        accessPointGroup: 'GROUP1',
+        dataProduct: {
+          name: 'MOCK_SDLC_DATAPRODUCT',
+          owner: {
+            appDirId: 11111,
+          },
+        },
+      },
+      members: [],
+      consumer: {
+        _type: 'unknown',
       },
       createdBy: 'test-user',
     },

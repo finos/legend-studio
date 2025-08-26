@@ -146,9 +146,10 @@ export class DataProductViewerState {
           ),
         );
       this.setAssociatedContracts(dataProductContracts);
-      this.accessState.accessGroupStates.forEach((e) =>
-        e.handleDataProductContracts(dataProductContracts, token),
-      );
+      this.accessState.accessGroupStates.forEach((e) => {
+        // eslint-disable-next-line no-void
+        void e.handleDataProductContracts(dataProductContracts, token);
+      });
     } catch (error) {
       assertErrorThrown(error);
       this.accessState.viewerState.applicationStore.notificationService.notifyError(

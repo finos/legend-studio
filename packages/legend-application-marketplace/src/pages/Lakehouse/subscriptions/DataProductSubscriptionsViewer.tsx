@@ -105,14 +105,14 @@ const LakehouseSubscriptionsCreateDialogContractRenderer = observer(
         marketplaceStore.applicationStore.pluginManager.getApplicationPlugins(),
       );
       consumerComponent = (
-        <Box>
+        <Box className="marketplace-lakehouse-subscriptions__subscription-creator__contract-details__users__details">
           {getOrganizationalScopeTypeName(
             consumer,
             marketplaceStore.applicationStore.pluginManager.getApplicationPlugins(),
           )}
           {typeDetails !== undefined && (
             <Tooltip
-              className="marketplace-lakehouse-subscriptions__creator__contract-details__users__tooltip__icon"
+              className="marketplace-lakehouse-subscriptions__subscription-creator__contract-details__users__tooltip__icon"
               title={typeDetails}
             >
               <InfoCircleIcon />
@@ -134,8 +134,13 @@ const LakehouseSubscriptionsCreateDialogContractRenderer = observer(
           <Box className="marketplace-lakehouse-subscriptions__subscription-creator__contract-details__id">
             ID: {contract.guid}
             <IconButton
-              onClick={() => copyContractId(contract.guid)}
-              onMouseDown={(event) => event.stopPropagation()}
+              onClick={(event) => {
+                event.stopPropagation();
+                copyContractId(contract.guid);
+              }}
+              onMouseDown={(event) => {
+                event.stopPropagation();
+              }}
             >
               <CopyIcon />
             </IconButton>
