@@ -105,7 +105,7 @@ const LakehouseSubscriptionsCreateDialogContractRenderer = observer(
         marketplaceStore.applicationStore.pluginManager.getApplicationPlugins(),
       );
       consumerComponent = (
-        <Box>
+        <Box className="marketplace-lakehouse-subscriptions__subscription-creator__contract-details__users__details">
           {getOrganizationalScopeTypeName(
             consumer,
             marketplaceStore.applicationStore.pluginManager.getApplicationPlugins(),
