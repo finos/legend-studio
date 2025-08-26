@@ -28,6 +28,7 @@ import {
   V1_CreateSubscriptionInputModelSchema,
   V1_DataContract,
   V1_DataContractApprovedUsersResponseModelSchema,
+  V1_dataContractsResponseModelSchemaToContracts,
   V1_dataSubscriptionModelSchema,
   V1_DataSubscriptionResponseModelSchema,
   V1_EnrichedUserApprovalStatus,
@@ -222,6 +223,22 @@ export class DataProductGroupAccessState {
     const accessPointGroupContracts = contracts.filter((_contract) =>
       dataContractContainsAccessGroup(this.group, _contract),
     );
+    const rawAccessPointGroupContractsWithMembers = await Promise.all(
+      accessPointGroupContracts.map((_contract) =>
+        this.accessState.viewerState.lakeServerClient.getDataContract(
+          _contract.guid,
+          true,
+          token,
+        ),
+      ),
+    );
+    const accessPointGroupContractsWithMembers =
+      rawAccessPointGroupContractsWithMembers.flatMap((_response) =>
+        V1_dataContractsResponseModelSchemaToContracts(
+          _response,
+          this.accessState.viewerState.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
+        ),
+      );
     const userContracts = (
       await Promise.all(
         accessPointGroupContracts.map(async (_contract) => {

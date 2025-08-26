@@ -103,9 +103,12 @@ export const isMemberOfContract = async (
   const consumer = contract.consumer;
   if (consumer instanceof V1_AdhocTeam) {
     return consumer.users.some((e) => e.name === user);
+  } else if (contract.members.length > 0) {
+    return contract.members.some((e) => e.user.name === user);
   } else {
-    // If consumer is not an ad-hoc team, we will fetch the tasks
-    // and use the tasks to determine if user is a member of the contract.
+    // If consumer is not an ad-hoc team and the contract's members are not defined,
+    // we will fetch the tasks and use the tasks to determine if user is a member
+    // of the contract.
     const rawTasks = await lakehouseContractServerClient.getContractTasks(
       contract.guid,
       token,

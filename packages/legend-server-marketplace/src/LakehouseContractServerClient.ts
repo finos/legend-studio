@@ -63,10 +63,11 @@ export class LakehouseContractServerClient extends AbstractServerClient {
 
   getDataContract = (
     id: string,
+    withMembers: boolean,
     token: string | undefined,
   ): Promise<PlainObject<V1_DataContractsResponse>> =>
     this.get(
-      `${this._dataContracts()}/${encodeURIComponent(id)}`,
+      `${this._dataContracts()}/${encodeURIComponent(id)}?withMembers=${withMembers}`,
       {},
       this._token(token),
     );
