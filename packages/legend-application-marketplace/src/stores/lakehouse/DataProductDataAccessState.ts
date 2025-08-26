@@ -77,7 +77,7 @@ export class DataProductGroupAccessState {
 
   fetchingAccessState = ActionState.create();
   handlingContractsState = ActionState.create();
-  fetchingUserAccessStatus = ActionState.create();
+  fetchingUserAccessState = ActionState.create();
   fetchingApprovedContractsState = ActionState.create();
   fetchingSubscriptionsState = ActionState.create();
   creatingSubscriptionState = ActionState.create();
@@ -296,7 +296,7 @@ export class DataProductGroupAccessState {
     token: string | undefined,
   ): GeneratorFn<void> {
     try {
-      this.fetchingUserAccessStatus.inProgress();
+      this.fetchingUserAccessState.inProgress();
       const rawUserStatus =
         (yield this.accessState.viewerState.lakeServerClient.getContractUserStatus(
           contractId,
@@ -315,7 +315,7 @@ export class DataProductGroupAccessState {
         `Error fetching user access status: ${error.message}`,
       );
     } finally {
-      this.fetchingUserAccessStatus.complete();
+      this.fetchingUserAccessState.complete();
     }
   }
 
