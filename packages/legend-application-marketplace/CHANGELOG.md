@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.0.71
+
+### Patch Changes
+
+- [#4368](https://github.com/finos/legend-studio/pull/4368) [`1a6bc57`](https://github.com/finos/legend-studio/commit/1a6bc578a6cbf84f60b7260f57ae1a3604807e3e) ([@travisstebbins](https://github.com/travisstebbins)) - Fix determining if a user is a member of a contract
+
 ## 0.0.70
 
 ### Patch Changes
