@@ -500,6 +500,11 @@ export const DataProductAccessPointGroupViewer = observer(
               size="small"
               onClick={() => setIsEntitledButtonGroupMenuOpen((prev) => !prev)}
               title="More options"
+              loading={
+                accessGroupState.fetchingAccessState.isInProgress ||
+                accessGroupState.handlingContractsState.isInProgress ||
+                accessGroupState.fetchingUserAccessState.isInProgress
+              }
             >
               <CaretDownIcon />
             </Button>
