@@ -33,7 +33,7 @@ import {
   V1_ResourceType,
 } from '@finos/legend-graph';
 import { action, computed, flow, observable, makeObservable } from 'mobx';
-import { DataProductLayoutState } from './BaseLayoutState.js';
+import type { DataProductLayoutState } from './BaseLayoutState.js';
 import { DATA_PRODUCT_VIEWER_SECTION } from './ProductViewerNavigation.js';
 import { DataProductDataAccessState } from './DataProductDataAccessState.js';
 import {
@@ -71,6 +71,7 @@ export class DataProductViewerState extends BaseViewerState<
     graphManagerState: GraphManagerState,
     applicationStore: LegendMarketplaceApplicationStore,
     lakeServerClient: LakehouseContractServerClient,
+    dataProductLayoutState: DataProductLayoutState,
     product: V1_DataProduct,
     entitlementsDataProductDetails: V1_EntitlementsDataProductDetails,
     actions: {
@@ -78,21 +79,21 @@ export class DataProductViewerState extends BaseViewerState<
       onZoneChange?: ((zone: NavigationZone | undefined) => void) | undefined;
     },
   ) {
-    super(product, applicationStore, DataProductLayoutState, actions);
+    super(product, applicationStore, dataProductLayoutState, actions);
 
     makeObservable(this, {
+      isVerified: computed,
       accessState: observable,
+      fetchContracts: flow,
       associatedContracts: observable,
       dataContractAccessPointGroup: observable,
+      setDataContractAccessPointGroup: action,
       dataContract: observable,
       creatingContractState: observable,
-      isVerified: computed,
-      setDataContractAccessPointGroup: action,
       setDataContract: action,
       setAssociatedContracts: action,
-      fetchContracts: flow,
-      product: observable,
       onZoneChange: observable,
+      createContract: flow,
     });
 
     this.lakehouseStore = lakehouseStore;

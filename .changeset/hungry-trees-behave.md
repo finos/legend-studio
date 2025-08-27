@@ -2,4 +2,4 @@
 '@finos/legend-application-marketplace': patch
 ---
 
-Added UI Styling to TerminalViewer
+Refactored terminal code to utilize data product functions

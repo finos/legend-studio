@@ -15,16 +15,11 @@
  */
 import { type NavigationZone } from '@finos/legend-application';
 import type { LegendMarketplaceApplicationStore } from '../LegendMarketplaceBaseStore.js';
-
-export interface ILayoutState {
-  currentNavigationZone: string;
-  setCurrentNavigationZone: (zone: string) => void;
-  setWikiPageAnchorToNavigate: (params: { anchor: string } | undefined) => void;
-}
+import type { BaseLayoutState } from './BaseLayoutState.js';
 
 export abstract class BaseViewerState<
   TProduct,
-  TLayoutState extends ILayoutState,
+  TLayoutState extends BaseLayoutState,
 > {
   readonly product: TProduct;
   readonly layoutState: TLayoutState;
@@ -37,7 +32,7 @@ export abstract class BaseViewerState<
   constructor(
     product: TProduct,
     applicationStore: LegendMarketplaceApplicationStore,
-    layoutStateClass: new () => TLayoutState,
+    layoutStateClass: TLayoutState,
     actions?: {
       onZoneChange?: ((zone: NavigationZone | undefined) => void) | undefined;
     },
@@ -45,7 +40,7 @@ export abstract class BaseViewerState<
     this.product = product;
     this.applicationStore = applicationStore;
     this.onZoneChange = actions?.onZoneChange;
-    this.layoutState = new layoutStateClass();
+    this.layoutState = layoutStateClass;
   }
 
   protected abstract getValidSections(): string[];

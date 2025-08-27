@@ -31,7 +31,7 @@ export abstract class BaseLayoutState {
   isTopScrollerVisible = false;
 
   private wikiPageAnchorIndex = new Map<string, HTMLElement>();
-  wikiPageNavigationCommand?: { anchor: string } | undefined;
+  wikiPageNavigationCommand?: WikiPageNavigationCommand | undefined;
   private wikiPageVisibleAnchors: string[] = [];
   private wikiPageScrollIntersectionObserver?: IntersectionObserver | undefined;
 
@@ -60,7 +60,6 @@ export abstract class BaseLayoutState {
       setWikiPageAnchorToNavigate: action,
       updatePageVisibleAnchors: action,
     });
-    // this.viewerState = viewerState;
   }
 
   protected abstract getValidAnchors(): string[];
