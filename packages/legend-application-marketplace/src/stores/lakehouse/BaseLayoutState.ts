@@ -18,16 +18,12 @@ import { isNonNullable } from '@finos/legend-shared';
 import {
   DATA_PRODUCT_VIEWER_ANCHORS,
   TERMINAL_PRODUCT_VIEWER_ANCHORS,
-} from './DataProductViewerNavigation.js';
+} from './ProductViewerNavigation.js';
 import { NAVIGATION_ZONE_SEPARATOR } from '@finos/legend-application';
-import type { DataProductViewerState } from './DataProductViewerState.js';
-import type { TerminalProductViewerState } from './TerminalProductViewerState.js';
 
 export type WikiPageNavigationCommand = { anchor: string };
 
-export abstract class BaseLayoutState<TViewerState> {
-  readonly viewerState: TViewerState;
-
+export abstract class BaseLayoutState {
   currentNavigationZone = '';
   isExpandedModeEnabled = false;
   frame?: HTMLElement | undefined;
@@ -39,9 +35,9 @@ export abstract class BaseLayoutState<TViewerState> {
   private wikiPageVisibleAnchors: string[] = [];
   private wikiPageScrollIntersectionObserver?: IntersectionObserver | undefined;
 
-  constructor(viewerState: TViewerState) {
+  constructor() {
     makeObservable<
-      BaseLayoutState<TViewerState>,
+      BaseLayoutState,
       | 'wikiPageAnchorIndex'
       | 'wikiPageVisibleAnchors'
       | 'updatePageVisibleAnchors'
@@ -64,7 +60,7 @@ export abstract class BaseLayoutState<TViewerState> {
       setWikiPageAnchorToNavigate: action,
       updatePageVisibleAnchors: action,
     });
-    this.viewerState = viewerState;
+    // this.viewerState = viewerState;
   }
 
   protected abstract getValidAnchors(): string[];
@@ -86,7 +82,7 @@ export abstract class BaseLayoutState<TViewerState> {
   registerWikiPageScrollObserver(): void {
     if (this.frame && this.isWikiPageFullyRendered) {
       const wikiPageIntersectionObserver = new IntersectionObserver(
-        (entries, observer) => {
+        (entries) => {
           const anchorsWithVisibilityChanged = entries
             .map((entry) => {
               for (const [key, element] of this.wikiPageAnchorIndex.entries()) {
@@ -212,7 +208,7 @@ export abstract class BaseLayoutState<TViewerState> {
   }
 }
 
-export class DataProductLayoutState extends BaseLayoutState<DataProductViewerState> {
+export class DataProductLayoutState extends BaseLayoutState {
   protected getValidAnchors(): string[] {
     return DATA_PRODUCT_VIEWER_ANCHORS;
   }
@@ -220,7 +216,7 @@ export class DataProductLayoutState extends BaseLayoutState<DataProductViewerSta
 
 export type DataProductPageNavigationCommand = { anchor: string };
 
-export class TerminalProductLayoutState extends BaseLayoutState<TerminalProductViewerState> {
+export class TerminalProductLayoutState extends BaseLayoutState {
   protected getValidAnchors(): string[] {
     return TERMINAL_PRODUCT_VIEWER_ANCHORS;
   }

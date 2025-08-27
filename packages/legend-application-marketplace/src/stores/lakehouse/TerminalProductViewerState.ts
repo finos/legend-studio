@@ -15,25 +15,41 @@
  */
 
 import { BaseViewerState } from './BaseViewerState.js';
-import { TERMINAL_PRODUCT_VIEWER_SECTION } from './DataProductViewerNavigation.js';
+import { TERMINAL_PRODUCT_VIEWER_SECTION } from './ProductViewerNavigation.js';
 import type { V1_Terminal } from '@finos/legend-graph';
 import { TerminalProductLayoutState } from './BaseLayoutState.js';
-import { observable, type AnnotationsMap } from 'mobx';
+import { makeObservable, observable } from 'mobx';
+import type { LegendMarketplaceApplicationStore } from '../LegendMarketplaceBaseStore.js';
 
 export class TerminalProductViewerState extends BaseViewerState<
   V1_Terminal,
   TerminalProductLayoutState
 > {
-  protected createLayoutState(): TerminalProductLayoutState {
-    return new TerminalProductLayoutState(this);
-  }
-
-  protected getObservableProperties(): AnnotationsMap<this, never> {
-    return {
+  constructor(
+    product: V1_Terminal,
+    applicationStore: LegendMarketplaceApplicationStore,
+    actions?: {
+      onZoneChange?: ((zone: string | undefined) => void) | undefined;
+    },
+  ) {
+    super(product, applicationStore, TerminalProductLayoutState, actions);
+    makeObservable(this, {
       product: observable,
       onZoneChange: observable,
       layoutState: observable,
-    };
+    });
+  }
+
+  public override getTitle(): string | undefined {
+    return this.product.productName;
+  }
+
+  public override getPath(): string | undefined {
+    return undefined;
+  }
+
+  public override getName(): string | undefined {
+    return undefined;
   }
 
   protected override getValidSections(): string[] {

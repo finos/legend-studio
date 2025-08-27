@@ -32,16 +32,9 @@ import {
   V1_dataContractsResponseModelSchemaToContracts,
   V1_ResourceType,
 } from '@finos/legend-graph';
-import {
-  action,
-  computed,
-  flow,
-  observable,
-  makeObservable,
-  type AnnotationsMap,
-} from 'mobx';
+import { action, computed, flow, observable, makeObservable } from 'mobx';
 import { DataProductLayoutState } from './BaseLayoutState.js';
-import { DATA_PRODUCT_VIEWER_SECTION } from './DataProductViewerNavigation.js';
+import { DATA_PRODUCT_VIEWER_SECTION } from './ProductViewerNavigation.js';
 import { DataProductDataAccessState } from './DataProductDataAccessState.js';
 import {
   ActionState,
@@ -53,14 +46,13 @@ import { serialize } from 'serializr';
 import { dataContractContainsDataProduct } from './LakehouseUtils.js';
 import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
 import type { MarketplaceLakehouseStore } from './MarketplaceLakehouseStore.js';
-import type { LegendMarketplaceApplicationStore } from '../LegendMarketplaceBaseStore.js';
 import { BaseViewerState } from './BaseViewerState.js';
+import type { LegendMarketplaceApplicationStore } from '../LegendMarketplaceBaseStore.js';
 
 export class DataProductViewerState extends BaseViewerState<
   V1_DataProduct,
   DataProductLayoutState
 > {
-  readonly applicationStore: LegendMarketplaceApplicationStore;
   readonly lakehouseStore: MarketplaceLakehouseStore;
   readonly graphManagerState: GraphManagerState;
   readonly entitlementsDataProductDetails: V1_EntitlementsDataProductDetails;
@@ -75,9 +67,9 @@ export class DataProductViewerState extends BaseViewerState<
   creatingContractState = ActionState.create();
 
   constructor(
-    applicationStore: LegendMarketplaceApplicationStore,
     lakehouseStore: MarketplaceLakehouseStore,
     graphManagerState: GraphManagerState,
+    applicationStore: LegendMarketplaceApplicationStore,
     lakeServerClient: LakehouseContractServerClient,
     product: V1_DataProduct,
     entitlementsDataProductDetails: V1_EntitlementsDataProductDetails,
@@ -86,7 +78,7 @@ export class DataProductViewerState extends BaseViewerState<
       onZoneChange?: ((zone: NavigationZone | undefined) => void) | undefined;
     },
   ) {
-    super(product, actions);
+    super(product, applicationStore, DataProductLayoutState, actions);
 
     makeObservable(this, {
       accessState: observable,
@@ -98,9 +90,11 @@ export class DataProductViewerState extends BaseViewerState<
       setDataContractAccessPointGroup: action,
       setDataContract: action,
       setAssociatedContracts: action,
+      fetchContracts: flow,
+      product: observable,
+      onZoneChange: observable,
     });
 
-    this.applicationStore = applicationStore;
     this.lakehouseStore = lakehouseStore;
     this.graphManagerState = graphManagerState;
     this.entitlementsDataProductDetails = entitlementsDataProductDetails;
@@ -109,14 +103,16 @@ export class DataProductViewerState extends BaseViewerState<
     this.lakeServerClient = lakeServerClient;
   }
 
-  protected createLayoutState(): DataProductLayoutState {
-    return new DataProductLayoutState(this);
+  public override getTitle(): string | undefined {
+    return this.product.title;
   }
 
-  protected getObservableProperties(): AnnotationsMap<this, never> {
-    return {
-      fetchContracts: flow,
-    };
+  public override getPath(): string | undefined {
+    return this.product.path;
+  }
+
+  public override getName(): string | undefined {
+    return this.product.name;
   }
 
   protected getValidSections(): string[] {

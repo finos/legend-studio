@@ -27,8 +27,8 @@ import {
 } from '@finos/legend-server-depot';
 import { action, computed, flow, makeObservable, observable } from 'mobx';
 import type {
-  LegendMarketplaceApplicationStore,
   LegendMarketplaceBaseStore,
+  LegendMarketplaceApplicationStore,
 } from '../LegendMarketplaceBaseStore.js';
 import {
   ActionState,
@@ -526,11 +526,15 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
           deserialize(V1_TerminalModelSchema, rowData),
       );
       this.setTerminalProducts(terminalProducts);
-      if (this.terminalProducts && this.terminalProducts.length > 0) {
-        this.terminalProductViewer = new TerminalProductViewerState(
-          guaranteeNonNullable(terminalProducts[0]),
-        );
-      }
+
+      this.terminalProductViewer = new TerminalProductViewerState(
+        guaranteeNonNullable(
+          terminalProducts[0],
+          `No terminal found with ID ${terminalId}`,
+        ),
+        this.applicationStore,
+      );
+
       this.loadingProductState.complete();
     } catch (error) {
       assertErrorThrown(error);
@@ -605,9 +609,9 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       );
 
       const stateViewer = new DataProductViewerState(
-        this.applicationStore,
         this,
         graphManagerState,
+        this.applicationStore,
         this.lakehouseContractServerClient,
         v1DataProduct,
         dataProductDetails,

@@ -20,90 +20,36 @@ import { DataProductViewerState } from '../../../stores/lakehouse/DataProductVie
 import {
   DATA_PRODUCT_VIEWER_SECTION,
   generateAnchorForSection,
-} from '../../../stores/lakehouse/DataProductViewerNavigation.js';
-import { AnchorLinkIcon, MarkdownTextViewer } from '@finos/legend-art';
-import { prettyCONSTName } from '@finos/legend-shared';
+  TERMINAL_PRODUCT_VIEWER_SECTION,
+} from '../../../stores/lakehouse/ProductViewerNavigation.js';
+import { MarkdownTextViewer } from '@finos/legend-art';
 import { DataProducteDataAccess } from './DataProductDataAccess.js';
 import type { BaseViewerState } from '../../../stores/lakehouse/BaseViewerState.js';
-import type { V1_Terminal, V1_DataProduct } from '@finos/legend-graph';
+import { TerminalProductViewerState } from '../../../stores/lakehouse/TerminalProductViewerState.js';
 import type {
-  TerminalProductLayoutState,
-  DataProductLayoutState,
-} from '../../../stores/lakehouse/BaseLayoutState.js';
-import type { TerminalProductViewerState } from '../../../stores/lakehouse/TerminalProductViewerState.js';
+  SupportedProducts,
+  SupportedLayoutStates,
+} from './ProductViewer.js';
 
-export const ProducteWikiPlaceholder: React.FC<{ message: string }> = (
+export const ProductWikiPlaceholder: React.FC<{ message: string }> = (
   props,
 ) => (
   <div className="data-space__viewer__wiki__placeholder">{props.message}</div>
 );
 
-type SupportedProducts = V1_Terminal | V1_DataProduct;
-type SupportedLayoutStates =
-  | TerminalProductLayoutState
-  | DataProductLayoutState;
-
-export const ProductWikiPlaceHolder = observer(
-  (props: {
-    productViewerState: BaseViewerState<
-      SupportedProducts,
-      SupportedLayoutStates
-    >;
-    section: DATA_PRODUCT_VIEWER_SECTION;
-  }) => {
-    const { productViewerState, section } = props;
-    const sectionRef = useRef<HTMLDivElement>(null);
-    const anchor = generateAnchorForSection(section);
-    useEffect(() => {
-      if (sectionRef.current) {
-        productViewerState.layoutState.setWikiPageAnchor(
-          anchor,
-          sectionRef.current,
-        );
-      }
-      return () => productViewerState.layoutState.unsetWikiPageAnchor(anchor);
-    }, [productViewerState, anchor]);
-
-    return (
-      <div ref={sectionRef} className="data-space__viewer__wiki__section">
-        <div className="data-space__viewer__wiki__section__header">
-          <div className="data-space__viewer__wiki__section__header__label">
-            {prettyCONSTName(section)}
-            <button
-              className="data-space__viewer__wiki__section__header__anchor"
-              tabIndex={-1}
-              onClick={() => productViewerState.changeZone(anchor, true)}
-            >
-              <AnchorLinkIcon />
-            </button>
-          </div>
-        </div>
-        <div className="data-space__viewer__wiki__section__content">
-          <ProducteWikiPlaceholder message="(not specified)" />
-        </div>
-      </div>
-    );
-  },
-);
-
 export const TerminalProductPrice = observer(
-  (props: {
-    productViewerState: BaseViewerState<
-      V1_Terminal,
-      TerminalProductLayoutState
-    >;
-  }) => {
-    const { productViewerState } = props;
-    const terminal = productViewerState.product;
+  (props: { terminalProductViewerState: TerminalProductViewerState }) => {
+    const { terminalProductViewerState } = props;
+    const terminal = terminalProductViewerState.product;
     const [isAnnual, setIsAnnual] = useState(true);
 
-    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
     const availablePrice =
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
       terminal.price || terminal.tieredPrice || terminal.totalFirmPrice;
 
     if (!availablePrice) {
       return (
-        <ProducteWikiPlaceholder message="No price information available." />
+        <ProductWikiPlaceholder message="No price information available." />
       );
     }
 
@@ -136,9 +82,18 @@ export const ProductDescription = observer(
   }) => {
     const { productViewerState } = props;
     const sectionRef = useRef<HTMLDivElement>(null);
-    const anchor = generateAnchorForSection(
-      DATA_PRODUCT_VIEWER_SECTION.DESCRIPTION,
-    );
+    const isDataProductViewerState =
+      productViewerState instanceof DataProductViewerState;
+    const isTerminalProductViewerState =
+      productViewerState instanceof TerminalProductViewerState;
+
+    const section = isDataProductViewerState
+      ? DATA_PRODUCT_VIEWER_SECTION.DESCRIPTION
+      : isTerminalProductViewerState
+        ? TERMINAL_PRODUCT_VIEWER_SECTION.DESCRIPTION
+        : undefined;
+    const anchor = section ? generateAnchorForSection(section) : '';
+
     useEffect(() => {
       if (sectionRef.current) {
         productViewerState.layoutState.setWikiPageAnchor(
@@ -169,7 +124,7 @@ export const ProductDescription = observer(
               </div>
             </div>
           ) : (
-            <ProducteWikiPlaceholder message="(description not specified)" />
+            <ProductWikiPlaceholder message="(description not specified)" />
           )}
         </div>
       </div>
@@ -186,6 +141,8 @@ export const DataProductWiki = observer(
     const { productViewerState } = props;
     const isDataProductViewerState =
       productViewerState instanceof DataProductViewerState;
+    const isTerminalProductViewerState =
+      productViewerState instanceof TerminalProductViewerState;
 
     useEffect(() => {
       if (
@@ -214,11 +171,9 @@ export const DataProductWiki = observer(
     return (
       <div className="data-space__viewer__wiki">
         <ProductDescription productViewerState={productViewerState} />
-        {!isDataProductViewerState && (
+        {isTerminalProductViewerState && (
           <TerminalProductPrice
-            productViewerState={
-              productViewerState as TerminalProductViewerState
-            }
+            terminalProductViewerState={productViewerState}
           />
         )}
         {isDataProductViewerState && (

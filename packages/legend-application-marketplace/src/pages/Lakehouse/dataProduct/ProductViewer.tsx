@@ -34,12 +34,12 @@ import type {
   DataProductLayoutState,
 } from '../../../stores/lakehouse/BaseLayoutState.js';
 
-type SupportedProducts = V1_Terminal | V1_DataProduct;
-type SupportedLayoutStates =
+export type SupportedProducts = V1_Terminal | V1_DataProduct;
+export type SupportedLayoutStates =
   | TerminalProductLayoutState
   | DataProductLayoutState;
 
-export const ProductNavigationSections = observer(
+export const TerminalNavigationSections = observer(
   (props: {
     productViewerState: BaseViewerState<
       SupportedProducts,
@@ -61,20 +61,71 @@ export const ProductNavigationSections = observer(
     };
 
     return (
-      <div className="terminal-header-tabs">
-        <div className="terminal-header-tabs__container">
+      <div className="product-header-tabs">
+        <div className="product-header-tabs__container">
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              className={`terminal-header-tabs__tab ${
-                activeTab === tab.id ? 'terminal-header-tabs__tab--active' : ''
-              }`}
+              className={clsx('product-header-tabs__tab', {
+                'product-header-tabs__tab--active': activeTab === tab.id,
+              })}
               onClick={() => handleTabClick(tab.id)}
             >
               {tab.label}
             </button>
           ))}
         </div>
+      </div>
+    );
+  },
+);
+
+const DataProductEnvironmentLabel = observer(
+  (props: { productViewerState: DataProductViewerState }) => {
+    const { productViewerState } = props;
+
+    const environmentClassification =
+      productViewerState.entitlementsDataProductDetails.lakehouseEnvironment
+        ?.type;
+    const origin = productViewerState.entitlementsDataProductDetails.origin;
+
+    return (
+      <div className="data-space__viewer__header__type">
+        {origin instanceof V1_AdHocDeploymentDataProductOrigin && (
+          <Button
+            className={clsx('data-space__viewer__header__type__sandbox', {
+              'data-space__viewer__header__type__sandbox--dev':
+                environmentClassification ===
+                V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT,
+              'data-space__viewer__header__type__sandbox--prod-parallel':
+                environmentClassification ===
+                V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL,
+              'data-space__viewer__header__type__sandbox--prod':
+                environmentClassification ===
+                V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
+            })}
+          >
+            {environmentClassification ? `${environmentClassification} ` : ''}
+            Sandbox Data Product
+          </Button>
+        )}
+        {origin instanceof V1_SdlcDeploymentDataProductOrigin && (
+          <Button
+            onClick={() => {
+              productViewerState.viewDataProductSource();
+            }}
+            title="View SDLC Project"
+            className={clsx('data-space__viewer__header__type__version', {
+              'data-space__viewer__header__type__version--snapshot':
+                isSnapshotVersion(origin.version),
+              'data-space__viewer__header__type__version--release':
+                !isSnapshotVersion(origin.version),
+            })}
+          >
+            Version: {origin.version}
+            <OpenIcon />
+          </Button>
+        )}
       </div>
     );
   },
@@ -90,30 +141,13 @@ const ProductHeader = observer(
   }) => {
     const { productViewerState, showFullHeader } = props;
     const headerRef = useRef<HTMLDivElement>(null);
-    const product = productViewerState.product;
     const isDataProductViewerState =
       productViewerState instanceof DataProductViewerState;
-    const title = isDataProductViewerState
-      ? (product as V1_DataProduct).title
-      : (product as V1_Terminal).productName;
-    const productPath = isDataProductViewerState
-      ? (product as V1_DataProduct).path
-      : '';
-    const productName = isDataProductViewerState
-      ? (product as V1_DataProduct).name
-      : '';
-
-    let environmentClassification = undefined;
-    let origin = undefined;
-    if (isDataProductViewerState) {
-      const entitlementsDataProductDetails =
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-        (productViewerState as DataProductViewerState)
-          .entitlementsDataProductDetails;
-      environmentClassification =
-        entitlementsDataProductDetails.lakehouseEnvironment?.type;
-      origin = entitlementsDataProductDetails.origin;
-    }
+    const isTerminalProductViewerState =
+      productViewerState instanceof DataProductViewerState;
+    const productTitle = productViewerState.getTitle();
+    const productPath = productViewerState.getPath();
+    const productName = productViewerState.getName();
 
     useEffect(() => {
       if (headerRef.current) {
@@ -135,54 +169,18 @@ const ProductHeader = observer(
           })}
         >
           {isDataProductViewerState && (
-            <div className="data-space__viewer__header__type">
-              {origin instanceof V1_AdHocDeploymentDataProductOrigin && (
-                <Button
-                  className={clsx('data-space__viewer__header__type__sandbox', {
-                    'data-space__viewer__header__type__sandbox--dev':
-                      environmentClassification ===
-                      V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT,
-                    'data-space__viewer__header__type__sandbox--prod-parallel':
-                      environmentClassification ===
-                      V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL,
-                    'data-space__viewer__header__type__sandbox--prod':
-                      environmentClassification ===
-                      V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
-                  })}
-                >
-                  {environmentClassification
-                    ? `${environmentClassification} `
-                    : ''}
-                  Sandbox Data Product
-                </Button>
-              )}
-              {origin instanceof V1_SdlcDeploymentDataProductOrigin && (
-                <Button
-                  onClick={() => {
-                    productViewerState.viewDataProductSource();
-                  }}
-                  title="View SDLC Project"
-                  className={clsx('data-space__viewer__header__type__version', {
-                    'data-space__viewer__header__type__version--snapshot':
-                      isSnapshotVersion(origin.version),
-                    'data-space__viewer__header__type__version--release':
-                      !isSnapshotVersion(origin.version),
-                  })}
-                >
-                  Version: {origin.version}
-                  <OpenIcon />
-                </Button>
-              )}
-            </div>
+            <DataProductEnvironmentLabel
+              productViewerState={productViewerState}
+            />
           )}
           <div
             className="data-space__viewer__header__title"
-            title={`${title} - ${productPath}`}
+            title={`${productTitle} - ${productPath}`}
           >
-            {title ? title : productName}
+            {productTitle ? productTitle : productName}
           </div>
-          {!isDataProductViewerState && (
-            <ProductNavigationSections
+          {isTerminalProductViewerState && (
+            <TerminalNavigationSections
               productViewerState={productViewerState}
             />
           )}
@@ -274,7 +272,6 @@ export const ProductViewer = observer(
           >
             <div className="data-space__viewer__content">
               <DataProductWiki productViewerState={productViewerState} />
-              {/* We should eventually make this basic to take in either */}
             </div>
           </div>
         </div>

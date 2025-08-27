@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { type NavigationZone } from '@finos/legend-application';
-import { makeObservable, observable, type AnnotationsMap } from 'mobx';
+import type { LegendMarketplaceApplicationStore } from '../LegendMarketplaceBaseStore.js';
 
 export interface ILayoutState {
   currentNavigationZone: string;
@@ -28,36 +28,31 @@ export abstract class BaseViewerState<
 > {
   readonly product: TProduct;
   readonly layoutState: TLayoutState;
+  readonly applicationStore: LegendMarketplaceApplicationStore;
+
   readonly onZoneChange?:
     | ((zone: NavigationZone | undefined) => void)
     | undefined;
 
   constructor(
     product: TProduct,
+    applicationStore: LegendMarketplaceApplicationStore,
+    layoutStateClass: new () => TLayoutState,
     actions?: {
       onZoneChange?: ((zone: NavigationZone | undefined) => void) | undefined;
     },
   ) {
     this.product = product;
+    this.applicationStore = applicationStore;
     this.onZoneChange = actions?.onZoneChange;
-    this.layoutState = this.createLayoutState();
-    this.initializeObservables();
+    this.layoutState = new layoutStateClass();
   }
 
-  protected initializeObservables(): void {
-    makeObservable(this, {
-      product: observable,
-      onZoneChange: observable,
-      ...this.getObservableProperties(),
-    });
-  }
-
-  // Abstract methods that subclasses must implement
-  protected abstract createLayoutState(): TLayoutState;
-  protected abstract getObservableProperties(): AnnotationsMap<this, never>;
   protected abstract getValidSections(): string[];
+  public abstract getTitle(): string | undefined;
+  public abstract getPath(): string | undefined;
+  public abstract getName(): string | undefined;
 
-  // Common changeZone implementation
   changeZone(zone: NavigationZone, force = false): void {
     if (force) {
       this.layoutState.setCurrentNavigationZone('');
