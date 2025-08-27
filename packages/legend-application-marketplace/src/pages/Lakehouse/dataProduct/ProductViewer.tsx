@@ -33,6 +33,7 @@ import type {
   TerminalProductLayoutState,
   DataProductLayoutState,
 } from '../../../stores/lakehouse/BaseLayoutState.js';
+import { TerminalProductViewerState } from '../../../stores/lakehouse/TerminalProductViewerState.js';
 
 export type SupportedProducts = V1_Terminal | V1_DataProduct;
 export type SupportedLayoutStates =
@@ -144,7 +145,7 @@ const ProductHeader = observer(
     const isDataProductViewerState =
       productViewerState instanceof DataProductViewerState;
     const isTerminalProductViewerState =
-      productViewerState instanceof DataProductViewerState;
+      productViewerState instanceof TerminalProductViewerState;
     const productTitle = productViewerState.getTitle();
     const productPath = productViewerState.getPath();
     const productName = productViewerState.getName();
@@ -178,12 +179,12 @@ const ProductHeader = observer(
             title={`${productTitle} - ${productPath}`}
           >
             {productTitle ? productTitle : productName}
+            {isTerminalProductViewerState && (
+              <TerminalNavigationSections
+                productViewerState={productViewerState}
+              />
+            )}
           </div>
-          {isTerminalProductViewerState && (
-            <TerminalNavigationSections
-              productViewerState={productViewerState}
-            />
-          )}
           <hr />
         </div>
       </div>

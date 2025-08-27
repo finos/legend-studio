@@ -18,28 +18,11 @@ import { BaseViewerState } from './BaseViewerState.js';
 import { TERMINAL_PRODUCT_VIEWER_SECTION } from './ProductViewerNavigation.js';
 import type { V1_Terminal } from '@finos/legend-graph';
 import type { TerminalProductLayoutState } from './BaseLayoutState.js';
-import { makeObservable, observable } from 'mobx';
-import type { LegendMarketplaceApplicationStore } from '../LegendMarketplaceBaseStore.js';
 
 export class TerminalProductViewerState extends BaseViewerState<
   V1_Terminal,
   TerminalProductLayoutState
 > {
-  constructor(
-    product: V1_Terminal,
-    applicationStore: LegendMarketplaceApplicationStore,
-    terminalProductViewerState: TerminalProductLayoutState,
-    actions?: {
-      onZoneChange?: ((zone: string | undefined) => void) | undefined;
-    },
-  ) {
-    super(product, applicationStore, terminalProductViewerState, actions);
-    makeObservable(this, {
-      onZoneChange: observable,
-      layoutState: observable,
-    });
-  }
-
   public override getTitle(): string | undefined {
     return this.product.productName;
   }

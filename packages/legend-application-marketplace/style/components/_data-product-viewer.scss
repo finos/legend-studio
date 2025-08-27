@@ -43,7 +43,7 @@
 
     position: absolute;
     top: 0;
-    height: 12rem;
+    height: 14rem;
     width: 100%;
     z-index: 1;
     background: transparent;
@@ -57,13 +57,11 @@
 
     &__content {
       display: flex;
-      flex-direction: row !important;
-      align-items: center;
-      justify-content: space-between;
+      flex-direction: column;
       width: min(140rem, 80vw);
       min-width: 80rem;
-      padding: 50px 8rem 0;
-      gap: 2rem;
+      padding: 3rem 8rem 2rem;
+      gap: 1rem;
     }
 
     &__content--expanded {
@@ -78,13 +76,10 @@
       @include flexCenter;
       @include ellipsisTextOverflow;
 
-      align-self: start !important;
-      align-items: center !important;
-      justify-content: flex-start !important;
-      flex: 0 1 auto;
+      align-self: start;
       height: 5rem;
       max-width: 50vw;
-      font-size: 3rem;
+      font-size: 3.6rem;
       font-weight: 400;
       color: var(--color-hclight-blue-60);
       background: unset !important;
@@ -186,17 +181,23 @@
   }
 }
 
-.terminal-header-tabs {
-  flex: 0 0 50%;
+.product-header-tabs {
+  position: absolute;
+  right: 200px;
+  top: 50%;
+  transform: translateY(-50%);
+  flex: 0 0 auto;
+  max-width: none;
   display: flex;
   justify-content: flex-end;
   align-items: center;
+  z-index: 10;
 
   &__container {
-    width: 100%;
+    width: auto;
     display: flex;
-    gap: 0;
-    justify-content: space-evenly;
+    gap: 1rem;
+    justify-content: flex-end;
     align-items: center;
   }
 

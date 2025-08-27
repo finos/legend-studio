@@ -92,7 +92,6 @@ export class DataProductViewerState extends BaseViewerState<
       creatingContractState: observable,
       setDataContract: action,
       setAssociatedContracts: action,
-      onZoneChange: observable,
       createContract: flow,
     });
 

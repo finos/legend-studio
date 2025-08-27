@@ -32,7 +32,7 @@ export abstract class BaseViewerState<
   constructor(
     product: TProduct,
     applicationStore: LegendMarketplaceApplicationStore,
-    layoutStateClass: TLayoutState,
+    layoutState: TLayoutState,
     actions?: {
       onZoneChange?: ((zone: NavigationZone | undefined) => void) | undefined;
     },
@@ -40,7 +40,7 @@ export abstract class BaseViewerState<
     this.product = product;
     this.applicationStore = applicationStore;
     this.onZoneChange = actions?.onZoneChange;
-    this.layoutState = layoutStateClass;
+    this.layoutState = layoutState;
   }
 
   protected abstract getValidSections(): string[];
