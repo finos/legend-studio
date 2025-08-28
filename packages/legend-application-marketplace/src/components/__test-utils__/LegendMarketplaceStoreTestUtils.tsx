@@ -23,22 +23,18 @@ import {
   ApplicationStoreProvider,
 } from '@finos/legend-application';
 import { AuthProvider } from 'react-oidc-context';
-import { MarketplaceLakehouseStore } from '../../stores/lakehouse/MarketplaceLakehouseStore.js';
 import { TEST__BrowserEnvironmentProvider } from '@finos/legend-application/test';
 import {
   type LegendMarketplaceApplicationStore,
   LegendMarketplaceBaseStore,
 } from '../../stores/LegendMarketplaceBaseStore.js';
-import { useMarketplaceLakehouseStore } from '../../pages/Lakehouse/MarketplaceLakehouseStoreProvider.js';
 import { LEGEND_MARKETPLACE_TEST_ID } from '../../__lib__/LegendMarketplaceTesting.js';
 import { LegendMarketplacePluginManager } from '../../application/LegendMarketplacePluginManager.js';
 import { Core_LegendMarketplaceApplicationPlugin } from '../../application/extensions/Core_LegendMarketplaceApplicationPlugin.js';
 import { TEST__getTestLegendMarketplaceApplicationConfig } from '../../application/__test-utils__/LegendMarketplaceApplicationTestUtils.js';
-import { LegendMarketplaceFrameworkProvider } from '../../application/LegendMarketplaceFrameworkProvider.js';
+import { LegendMarketplaceFrameworkProvider } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import searchResults from './TEST_DATA__SearchResults.json' with { type: 'json' };
 import { LegendMarketplaceWebApplicationRouter } from '../../application/LegendMarketplaceWebApplication.js';
-import { LakehouseAdminStore } from '../../stores/lakehouse/admin/LakehouseAdminStore.js';
-import { useLakehouseAdminStore } from '../../pages/Lakehouse/admin/LakehouseAdminStoreProvider.js';
 
 jest.mock('@finos/legend-graph', () => {
   const actual: Record<string, unknown> = jest.requireActual(
@@ -52,39 +48,9 @@ jest.mock('@finos/legend-graph', () => {
   };
 });
 
-jest.mock('../../pages/Lakehouse/MarketplaceLakehouseStoreProvider.js', () => {
-  const actual: Record<string, unknown> = jest.requireActual(
-    '../../pages/Lakehouse/MarketplaceLakehouseStoreProvider.js',
-  );
-  return {
-    ...actual,
-    useMarketplaceLakehouseStore: jest.fn(),
-    MarketplaceLakehouseStoreProvider: ({
-      children,
-    }: {
-      children: React.ReactNode;
-    }) => children,
-  };
-});
-
-jest.mock('../../pages/Lakehouse/admin/LakehouseAdminStoreProvider.js', () => {
-  const actual: Record<string, unknown> = jest.requireActual(
-    '../../pages/Lakehouse/admin/LakehouseAdminStoreProvider.js',
-  );
-  return {
-    ...actual,
-    useLakehouseAdminStore: jest.fn(),
-    LakehouseAdminStoreProvider: ({
-      children,
-    }: {
-      children: React.ReactNode;
-    }) => children,
-  };
-});
-
-export const TEST__provideMockedLegendMarketplaceBaseStore =
+export const TEST__provideMockLegendMarketplaceBaseStore =
   async (customization?: {
-    mock?: LegendMarketplaceBaseStore;
+    mockBaseStore?: LegendMarketplaceBaseStore;
     applicationStore?: LegendMarketplaceApplicationStore;
     pluginManager?: LegendMarketplacePluginManager;
     extraPlugins?: AbstractPlugin[];
@@ -105,15 +71,22 @@ export const TEST__provideMockedLegendMarketplaceBaseStore =
         TEST__getTestLegendMarketplaceApplicationConfig(),
         pluginManager,
       );
-    const value =
-      customization?.mock ?? new LegendMarketplaceBaseStore(applicationStore);
-    const MOCK__LegendMarketplaceBaseStoreProvider = require('../../application/LegendMarketplaceFrameworkProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-require-imports
+    const mockBaseStore =
+      customization?.mockBaseStore ??
+      new LegendMarketplaceBaseStore(applicationStore);
+
+    createSpy(
+      mockBaseStore.lakehousePlatformServerClient,
+      'getIngestEnvironmentSummaries',
+    ).mockResolvedValue([]);
+
+    const MOCK__LegendMarketplaceBaseStoreProvider = require('../../application/providers/LegendMarketplaceFrameworkProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-require-imports
     MOCK__LegendMarketplaceBaseStoreProvider.useLegendMarketplaceBaseStore =
       createMock();
     MOCK__LegendMarketplaceBaseStoreProvider.useLegendMarketplaceBaseStore.mockReturnValue(
-      value,
+      mockBaseStore,
     );
-    return value;
+    return mockBaseStore;
   };
 
 export const TEST__setUpMarketplace = async (
@@ -146,31 +119,11 @@ export const TEST__setUpMarketplace = async (
 };
 
 export const TEST__setUpMarketplaceLakehouse = async (
-  MOCK__store: LegendMarketplaceBaseStore,
+  MOCK__baseStore: LegendMarketplaceBaseStore,
   route?: string,
 ) => {
-  const MOCK__lakehouseStore = new MarketplaceLakehouseStore(
-    MOCK__store,
-    MOCK__store.lakehouseContractServerClient,
-    MOCK__store.lakehousePlatformServerClient,
-    MOCK__store.lakehouseIngestServerClient,
-    MOCK__store.depotServerClient,
-  );
-
-  const MOCK__lakehouseAdminStore = new LakehouseAdminStore(
-    MOCK__store.applicationStore,
-    MOCK__store.lakehouseContractServerClient,
-  );
-
-  (useMarketplaceLakehouseStore as jest.Mock).mockReturnValue(
-    MOCK__lakehouseStore,
-  );
-  (useLakehouseAdminStore as jest.Mock).mockReturnValue(
-    MOCK__lakehouseAdminStore,
-  );
-
   const renderResult = render(
-    <ApplicationStoreProvider store={MOCK__store.applicationStore}>
+    <ApplicationStoreProvider store={MOCK__baseStore.applicationStore}>
       <AuthProvider>
         <TEST__BrowserEnvironmentProvider
           initialEntries={[route ?? '/lakehouse']}
@@ -190,7 +143,5 @@ export const TEST__setUpMarketplaceLakehouse = async (
 
   return {
     renderResult,
-    MOCK__store,
-    MOCK__lakehouseStore,
   };
 };

@@ -17,17 +17,17 @@
 import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
 import { guaranteeNonNullable } from '@finos/legend-shared';
+import { LakehouseEntitlementsStore } from '../../stores/lakehouse/entitlements/LakehouseEntitlementsStore.js';
 import {
   useLegendMarketplaceApplicationStore,
   useLegendMarketplaceBaseStore,
-} from '../../../application/LegendMarketplaceFrameworkProvider.js';
-import { LakehouseAdminStore } from '../../../stores/lakehouse/admin/LakehouseAdminStore.js';
+} from './LegendMarketplaceFrameworkProvider.js';
 
-const LakehouseAdminStoreContext = createContext<
-  LakehouseAdminStore | undefined
+const LakehouseEntitlementsStoreContext = createContext<
+  LakehouseEntitlementsStore | undefined
 >(undefined);
 
-export const LakehouseAdminStoreProvider: React.FC<{
+export const LakehouseEntitlementsStoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
   const applicationStore = useLegendMarketplaceApplicationStore();
@@ -37,26 +37,29 @@ export const LakehouseAdminStoreProvider: React.FC<{
     'lakehouse server client required to render',
   );
   const store = useLocalObservable(
-    () => new LakehouseAdminStore(applicationStore, lakehouseServerClient),
+    () =>
+      new LakehouseEntitlementsStore(applicationStore, lakehouseServerClient),
   );
   return (
-    <LakehouseAdminStoreContext.Provider value={store}>
+    <LakehouseEntitlementsStoreContext.Provider value={store}>
       {children}
-    </LakehouseAdminStoreContext.Provider>
+    </LakehouseEntitlementsStoreContext.Provider>
   );
 };
 
-export const useLakehouseAdminStore = (): LakehouseAdminStore =>
+export const useLakehouseEntitlementsStore = (): LakehouseEntitlementsStore =>
   guaranteeNonNullable(
-    useContext(LakehouseAdminStoreContext),
-    `Can't find lakehouse subscriptions store in context`,
+    useContext(LakehouseEntitlementsStoreContext),
+    `Can't find editor store in context`,
   );
 
-export const withLakehouseAdminStore = (WrappedComponent: React.FC): React.FC =>
-  function WithLakehouseAdminStore() {
+export const withLakehouseEntitlementsStore = (
+  WrappedComponent: React.FC,
+): React.FC =>
+  function WithLakehouseEntitlementsStore() {
     return (
-      <LakehouseAdminStoreProvider>
+      <LakehouseEntitlementsStoreProvider>
         <WrappedComponent />
-      </LakehouseAdminStoreProvider>
+      </LakehouseEntitlementsStoreProvider>
     );
   };

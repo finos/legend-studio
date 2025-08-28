@@ -16,9 +16,9 @@
 
 import { observer } from 'mobx-react-lite';
 import {
-  useLakehouseAdminStore,
   withLakehouseAdminStore,
-} from './LakehouseAdminStoreProvider.js';
+  useLakehouseAdminStore,
+} from '../../../application/providers/LakehouseAdminStoreProvider.js';
 import { useAuth } from 'react-oidc-context';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
 import { useEffect, useState } from 'react';

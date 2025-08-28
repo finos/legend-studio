@@ -47,7 +47,7 @@ import {
 } from '@finos/legend-graph';
 import React, { useState } from 'react';
 import { guaranteeNonNullable, isType } from '@finos/legend-shared';
-import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
+import { useLegendMarketplaceBaseStore } from '../../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import { useAuth } from 'react-oidc-context';
 import {
   CloseIcon,
@@ -68,47 +68,47 @@ import {
   getOrganizationalScopeTypeDetails,
   getOrganizationalScopeTypeName,
 } from '../../../stores/lakehouse/LakehouseUtils.js';
-import type { MarketplaceLakehouseStore } from '../../../stores/lakehouse/MarketplaceLakehouseStore.js';
+import type { LegendMarketplaceBaseStore } from '../../../stores/LegendMarketplaceBaseStore.js';
 
 const LakehouseSubscriptionsCreateDialogContractRenderer = observer(
   (props: {
     contract: V1_DataContract;
-    marketplaceStore: MarketplaceLakehouseStore;
+    marketplaceBaseStore: LegendMarketplaceBaseStore;
   }) => {
-    const { contract, marketplaceStore } = props;
+    const { contract, marketplaceBaseStore } = props;
     const consumer = contract.consumer;
     let consumerComponent = null;
 
     const copyContractId = (id: string): void => {
-      marketplaceStore.applicationStore.clipboardService
+      marketplaceBaseStore.applicationStore.clipboardService
         .copyTextToClipboard(id)
         .then(() =>
-          marketplaceStore.applicationStore.notificationService.notifySuccess(
+          marketplaceBaseStore.applicationStore.notificationService.notifySuccess(
             'ID Copied to Clipboard',
             undefined,
             2500,
           ),
         )
-        .catch(marketplaceStore.applicationStore.alertUnhandledError);
+        .catch(marketplaceBaseStore.applicationStore.alertUnhandledError);
     };
 
     if (consumer instanceof V1_AdhocTeam) {
       consumerComponent = (
         <MultiUserCellRenderer
           userIds={consumer.users.map((_user) => _user.name)}
-          marketplaceStore={marketplaceStore.marketplaceBaseStore}
+          marketplaceStore={marketplaceBaseStore}
         />
       );
     } else {
       const typeDetails = getOrganizationalScopeTypeDetails(
         consumer,
-        marketplaceStore.applicationStore.pluginManager.getApplicationPlugins(),
+        marketplaceBaseStore.applicationStore.pluginManager.getApplicationPlugins(),
       );
       consumerComponent = (
         <Box className="marketplace-lakehouse-subscriptions__subscription-creator__contract-details__users__details">
           {getOrganizationalScopeTypeName(
             consumer,
-            marketplaceStore.applicationStore.pluginManager.getApplicationPlugins(),
+            marketplaceBaseStore.applicationStore.pluginManager.getApplicationPlugins(),
           )}
           {typeDetails !== undefined && (
             <Tooltip
@@ -203,8 +203,8 @@ const LakehouseSubscriptionsCreateDialog = observer(
         .lakehouseEnvironment?.producerEnvironmentName;
 
     const environmentDetails =
-      accessGroupState.accessState.viewerState.lakehouseStore
-        .lakehouseIngestEnvironmentDetails;
+      accessGroupState.accessState.viewerState.productViewerStore
+        .marketplaceBaseStore.lakehouseIngestEnvironmentDetails;
     const suggestedSnowflakeAccounts = Array.from(
       new Set(
         environmentDetails
@@ -303,8 +303,9 @@ const LakehouseSubscriptionsCreateDialog = observer(
                   <MenuItem key={_contract.guid} value={_contract.guid}>
                     <LakehouseSubscriptionsCreateDialogContractRenderer
                       contract={_contract}
-                      marketplaceStore={
-                        accessGroupState.accessState.viewerState.lakehouseStore
+                      marketplaceBaseStore={
+                        accessGroupState.accessState.viewerState
+                          .productViewerStore.marketplaceBaseStore
                       }
                     />
                   </MenuItem>

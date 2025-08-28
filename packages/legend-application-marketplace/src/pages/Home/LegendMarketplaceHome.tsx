@@ -16,7 +16,6 @@
 
 import { observer } from 'mobx-react-lite';
 import { LegendMarketplaceSearchBar } from '../../components/SearchBar/LegendMarketplaceSearchBar.js';
-import { useApplicationStore } from '@finos/legend-application';
 import {
   generateSearchResultsRoute,
   generateVendorDetailsRoute,
@@ -25,79 +24,56 @@ import type { LightDataProduct } from '@finos/legend-server-marketplace';
 import { LegendMarketplaceLightDataProductCard } from '../../components/DataProductCard/LegendMarketplaceLightDataProductCard.js';
 import { Grid2 as Grid } from '@mui/material';
 import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
-import { useLegendMarketplaceBaseStore } from '../../application/LegendMarketplaceFrameworkProvider.js';
 import { useEffect } from 'react';
+import {
+  useLegendMarketPlaceVendorDataStore,
+  withLegendMarketplaceVendorDataStore,
+} from '../../application/providers/LegendMarketplaceVendorDataProvider.js';
 
-export const LegendMarketplaceHome = observer(() => {
-  const applicationStore = useApplicationStore();
-  const store = useLegendMarketplaceBaseStore();
+export const LegendMarketplaceHome = withLegendMarketplaceVendorDataStore(
+  observer(() => {
+    const vendorDataStore = useLegendMarketPlaceVendorDataStore();
+    const applicationStore = vendorDataStore.applicationStore;
 
-  const onSearch = (query: string | undefined): void => {
-    applicationStore.navigationService.navigator.goToLocation(
-      generateSearchResultsRoute(undefined, query),
-    );
-  };
+    const onSearch = (query: string | undefined): void => {
+      vendorDataStore.applicationStore.navigationService.navigator.goToLocation(
+        generateSearchResultsRoute(undefined, query),
+      );
+    };
 
-  useEffect(() => {
-    store.marketplaceVendorDataState.init();
-  }, [store.marketplaceVendorDataState]);
+    useEffect(() => {
+      vendorDataStore.init();
+    }, [vendorDataStore]);
 
-  return (
-    <LegendMarketplacePage className="legend-marketplace-home">
-      <div className="legend-marketplace-home__landing">
-        <div className="legend-marketplace-home__landing__title">
-          <h1>
-            <span style={{ color: '#76A1E3' }}>All data in </span>
-            <span style={{ color: 'white' }}>One Place</span>
-          </h1>
+    return (
+      <LegendMarketplacePage className="legend-marketplace-home">
+        <div className="legend-marketplace-home__landing">
+          <div className="legend-marketplace-home__landing__title">
+            <h1>
+              <span style={{ color: '#76A1E3' }}>All data in </span>
+              <span style={{ color: 'white' }}>One Place</span>
+            </h1>
+          </div>
+          <div className="legend-marketplace-home__landing__description">
+            <h3>
+              Discover the right data and accelerate analytic productivity.
+            </h3>
+          </div>
+          <div className="legend-marketplace-home__landing__search-bar">
+            <LegendMarketplaceSearchBar onSearch={onSearch} />
+          </div>
         </div>
-        <div className="legend-marketplace-home__landing__description">
-          <h3>Discover the right data and accelerate analytic productivity.</h3>
+        <div className="legend-marketplace-home__vendors-title">
+          <h3>Explore our Data</h3>
         </div>
-        <div className="legend-marketplace-home__landing__search-bar">
-          <LegendMarketplaceSearchBar onSearch={onSearch} />
-        </div>
-      </div>
-      <div className="legend-marketplace-home__vendors-title">
-        <h3>Explore our Data</h3>
-      </div>
-      <div className="legend-marketplace-home__vendors-cards">
-        <Grid
-          container={true}
-          spacing={{ xs: 2, md: 3, xl: 4 }}
-          columns={{ xs: 1, sm: 2, md: 3, xl: 6 }}
-          sx={{ justifyContent: 'center' }}
-        >
-          {store.marketplaceVendorDataState.homeDataProducts.map((asset) => (
-            <Grid
-              key={`${asset.provider}.${asset.type}.${asset.description}`}
-              size={1}
-            >
-              <LegendMarketplaceLightDataProductCard
-                dataAsset={asset}
-                onClick={(dataAsset: LightDataProduct) => {
-                  applicationStore.navigationService.navigator.goToLocation(
-                    generateVendorDetailsRoute(dataAsset.provider),
-                  );
-                }}
-              />
-            </Grid>
-          ))}
-        </Grid>
-      </div>
-
-      <div className="legend-marketplace-home__vendors-title">
-        <h3>Explore our Solutions</h3>
-      </div>
-      <div className="legend-marketplace-home__vendors-cards">
-        <Grid
-          container={true}
-          spacing={{ xs: 2, md: 3, xl: 4 }}
-          columns={{ xs: 1, sm: 2, md: 3, xl: 6 }}
-          sx={{ justifyContent: 'center' }}
-        >
-          {store.marketplaceVendorDataState.terminalProvidersAsDataProducts.map(
-            (asset) => (
+        <div className="legend-marketplace-home__vendors-cards">
+          <Grid
+            container={true}
+            spacing={{ xs: 2, md: 3, xl: 4 }}
+            columns={{ xs: 1, sm: 2, md: 3, xl: 6 }}
+            sx={{ justifyContent: 'center' }}
+          >
+            {vendorDataStore.homeDataProducts.map((asset) => (
               <Grid
                 key={`${asset.provider}.${asset.type}.${asset.description}`}
                 size={1}
@@ -111,10 +87,38 @@ export const LegendMarketplaceHome = observer(() => {
                   }}
                 />
               </Grid>
-            ),
-          )}
-        </Grid>
-      </div>
-    </LegendMarketplacePage>
-  );
-});
+            ))}
+          </Grid>
+        </div>
+
+        <div className="legend-marketplace-home__vendors-title">
+          <h3>Explore our Solutions</h3>
+        </div>
+        <div className="legend-marketplace-home__vendors-cards">
+          <Grid
+            container={true}
+            spacing={{ xs: 2, md: 3, xl: 4 }}
+            columns={{ xs: 1, sm: 2, md: 3, xl: 6 }}
+            sx={{ justifyContent: 'center' }}
+          >
+            {vendorDataStore.terminalProvidersAsDataProducts.map((asset) => (
+              <Grid
+                key={`${asset.provider}.${asset.type}.${asset.description}`}
+                size={1}
+              >
+                <LegendMarketplaceLightDataProductCard
+                  dataAsset={asset}
+                  onClick={(dataAsset: LightDataProduct) => {
+                    applicationStore.navigationService.navigator.goToLocation(
+                      generateVendorDetailsRoute(dataAsset.provider),
+                    );
+                  }}
+                />
+              </Grid>
+            ))}
+          </Grid>
+        </div>
+      </LegendMarketplacePage>
+    );
+  }),
+);

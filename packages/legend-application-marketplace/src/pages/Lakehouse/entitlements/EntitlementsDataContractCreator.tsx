@@ -34,7 +34,7 @@ import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
 } from '@finos/legend-art';
-import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
+import { useLegendMarketplaceBaseStore } from '../../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import { guaranteeNonNullable, isNonNullable } from '@finos/legend-shared';
 import {
   AccessPointGroupAccess,

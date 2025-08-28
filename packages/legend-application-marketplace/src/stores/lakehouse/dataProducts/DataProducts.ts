@@ -31,7 +31,7 @@ import {
   V1_DataProduct,
   V1_SdlcDeploymentDataProductOrigin,
 } from '@finos/legend-graph';
-import type { MarketplaceLakehouseStore } from '../MarketplaceLakehouseStore.js';
+import type { LegendMarketplaceBaseStore } from '../../LegendMarketplaceBaseStore.js';
 import { getDataProductFromDetails } from '../LakehouseUtils.js';
 
 export enum DataProductType {
@@ -40,7 +40,7 @@ export enum DataProductType {
 }
 
 export class DataProductState {
-  readonly lakehouseState: MarketplaceLakehouseStore;
+  readonly marketplaceBaseStore: LegendMarketplaceBaseStore;
   readonly graphManager: V1_PureGraphManager;
   readonly initState = ActionState.create();
   readonly enrichedState = ActionState.create();
@@ -48,11 +48,11 @@ export class DataProductState {
   dataProductElement: V1_DataProduct | undefined;
 
   constructor(
-    lakehouseState: MarketplaceLakehouseStore,
+    marketplaceBaseStore: LegendMarketplaceBaseStore,
     graphManager: V1_PureGraphManager,
     dataProductDetails: V1_EntitlementsDataProductDetails,
   ) {
-    this.lakehouseState = lakehouseState;
+    this.marketplaceBaseStore = marketplaceBaseStore;
     this.graphManager = graphManager;
     this.dataProductDetails = dataProductDetails;
 
@@ -79,18 +79,18 @@ export class DataProductState {
       }
       this.enrichedState.inProgress();
       const graphManagerState = new GraphManagerState(
-        this.lakehouseState.applicationStore.pluginManager,
-        this.lakehouseState.applicationStore.logService,
+        this.marketplaceBaseStore.applicationStore.pluginManager,
+        this.marketplaceBaseStore.applicationStore.logService,
       );
       this.dataProductElement = (yield getDataProductFromDetails(
         this.dataProductDetails,
         graphManagerState,
         this.graphManager,
-        this.lakehouseState.marketplaceBaseStore,
+        this.marketplaceBaseStore,
       )) as V1_DataProduct | undefined;
     } catch (error) {
       assertErrorThrown(error);
-      this.lakehouseState.applicationStore.notificationService.notifyError(
+      this.marketplaceBaseStore.applicationStore.notificationService.notifyError(
         'Error fetching data product entity',
         error.message,
       );

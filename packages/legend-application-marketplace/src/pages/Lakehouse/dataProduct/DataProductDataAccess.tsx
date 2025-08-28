@@ -87,7 +87,7 @@ import {
   Tabs,
   Tooltip,
 } from '@mui/material';
-import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
+import { useLegendMarketplaceBaseStore } from '../../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import { EntitlementsDataContractCreator } from '../entitlements/EntitlementsDataContractCreator.js';
 import { EntitlementsDataContractViewer } from '../../../components/DataContractViewer/EntitlementsDataContractViewer.js';
 import { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
@@ -384,12 +384,13 @@ export const DataProductAccessPointGroupViewer = observer(
               V1_transformDataContractToLiteDatacontract(
                 accessGroupState.accessState.viewerState.dataContract,
               ),
-              accessGroupState.accessState.viewerState.lakeServerClient,
+              accessGroupState.accessState.viewerState.productViewerStore.marketplaceBaseStore.lakehouseContractServerClient,
             )
           : undefined,
       [
         accessGroupState.accessState.viewerState.dataContract,
-        accessGroupState.accessState.viewerState.lakeServerClient,
+        accessGroupState.accessState.viewerState.productViewerStore
+          .marketplaceBaseStore.lakehouseContractServerClient,
       ],
     );
 
@@ -658,7 +659,7 @@ export const DataProductAccessPointGroupViewer = observer(
             currentViewer={entitlementsDataContractViewerState}
             dataProductGroupAccessState={accessGroupState}
             legendMarketplaceStore={
-              accessGroupState.accessState.viewerState.lakehouseStore
+              accessGroupState.accessState.viewerState.productViewerStore
                 .marketplaceBaseStore
             }
             onClose={() =>

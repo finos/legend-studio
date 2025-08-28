@@ -16,9 +16,9 @@
 
 import { observer } from 'mobx-react-lite';
 import {
-  useMarketplaceLakehouseStore,
-  withMarketplaceLakehouseStore,
-} from '../MarketplaceLakehouseStoreProvider.js';
+  useLegendMarketplaceProductViewerStore,
+  withLegendMarketplaceProductViewerStore,
+} from '../../../application/providers/LegendMarketplaceProductViewerStoreProvider.js';
 import { useEffect } from 'react';
 import {
   CubesLoadingIndicator,
@@ -35,10 +35,11 @@ import { LEGEND_APPLICATION_COLOR_THEME } from '@finos/legend-application';
 import { useAuth } from 'react-oidc-context';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
 
-export const LakehouseDataProduct = withMarketplaceLakehouseStore(
+export const LakehouseDataProduct = withLegendMarketplaceProductViewerStore(
   observer(() => {
-    const marketPlaceStore = useMarketplaceLakehouseStore();
-    const applicationStore = marketPlaceStore.applicationStore;
+    const productViewerStore = useLegendMarketplaceProductViewerStore();
+    const applicationStore =
+      productViewerStore.marketplaceBaseStore.applicationStore;
     const params = useParams<LakehouseDataProductPathParams>();
     const auth = useAuth();
     const dataProductId = guaranteeNonNullable(
@@ -51,10 +52,10 @@ export const LakehouseDataProduct = withMarketplaceLakehouseStore(
     );
 
     useEffect(() => {
-      if (!marketPlaceStore.loadingProductState.hasCompleted) {
-        marketPlaceStore.initWithProduct(dataProductId, deploymentId, auth);
+      if (!productViewerStore.loadingProductState.hasCompleted) {
+        productViewerStore.initWithProduct(dataProductId, deploymentId, auth);
       }
-    }, [auth, dataProductId, marketPlaceStore, deploymentId]);
+    }, [auth, dataProductId, productViewerStore, deploymentId]);
 
     useEffect(() => {
       applicationStore.layoutService.setColorTheme(
@@ -68,13 +69,13 @@ export const LakehouseDataProduct = withMarketplaceLakehouseStore(
     return (
       <LegendMarketplacePage className="legend-marketplace-lakehouse-data-product">
         <CubesLoadingIndicator
-          isLoading={marketPlaceStore.loadingProductState.isInProgress}
+          isLoading={productViewerStore.loadingProductState.isInProgress}
         >
           <CubesLoadingIndicatorIcon />
         </CubesLoadingIndicator>
-        {marketPlaceStore.dataProductViewer && (
+        {productViewerStore.dataProductViewer && (
           <ProductViewer
-            productViewerState={marketPlaceStore.dataProductViewer}
+            productViewerState={productViewerStore.dataProductViewer}
           />
         )}
       </LegendMarketplacePage>
