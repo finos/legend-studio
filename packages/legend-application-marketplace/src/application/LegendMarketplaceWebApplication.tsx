@@ -120,9 +120,16 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
     applicationStore.config.options.enableMarketplacePages;
 
   useEffect(() => {
-    flowResult(marketplaceBaseStore.initialize(auth.user?.access_token)).catch(
+    flowResult(marketplaceBaseStore.initialize()).catch(
       applicationStore.alertUnhandledError,
     );
+    if (auth.user?.access_token) {
+      flowResult(
+        marketplaceBaseStore.initializeIngestEnvironmentDetails(
+          auth.user.access_token,
+        ),
+      ).catch(applicationStore.alertUnhandledError);
+    }
   }, [applicationStore, marketplaceBaseStore, auth.user?.access_token]);
 
   const ProtectedLakehouseMarketplace = withAuthenticationRequired(
