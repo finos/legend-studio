@@ -27,8 +27,8 @@ import {
 } from '@finos/legend-server-depot';
 import { action, computed, flow, makeObservable, observable } from 'mobx';
 import type {
-  LegendMarketplaceApplicationStore,
   LegendMarketplaceBaseStore,
+  LegendMarketplaceApplicationStore,
 } from '../LegendMarketplaceBaseStore.js';
 import {
   ActionState,
@@ -43,8 +43,8 @@ import {
   type V1_EntitlementsDataProductDetailsResponse,
   type V1_IngestEnvironment,
   type TDSRowDataType,
-  type V1_Terminal,
   type TDSExecutionResult,
+  type V1_Terminal,
   DataProductArtifactGeneration,
   GraphManagerState,
   V1_AdHocDeploymentDataProductOrigin,
@@ -60,6 +60,7 @@ import {
   getRowDataFromExecutionResult,
 } from '@finos/legend-graph';
 import { DataProductViewerState } from './DataProductViewerState.js';
+import { TerminalProductViewerState } from './TerminalProductViewerState.js';
 import type { AuthContextProps } from 'react-oidc-context';
 import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
 import { DataProductState } from './dataProducts/DataProducts.js';
@@ -77,6 +78,10 @@ import {
 } from '@finos/legend-storage';
 import { deserialize } from 'serializr';
 import { generateLakehouseDataProductPath } from '../../__lib__/LegendMarketplaceNavigation.js';
+import {
+  DataProductLayoutState,
+  TerminalProductLayoutState,
+} from './BaseLayoutState.js';
 
 const ARTIFACT_GENERATION_DAT_PRODUCT_KEY = 'dataProduct';
 
@@ -195,7 +200,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   filter: DataProductFilters;
   sort: DataProductSort = DataProductSort.NAME_ALPHABETICAL;
   dataProductViewer: DataProductViewerState | undefined;
-  terminalProducts: V1_Terminal[] | undefined;
+  terminalProductViewer: TerminalProductViewerState | undefined;
 
   constructor(
     marketplaceBaseStore: LegendMarketplaceBaseStore,
@@ -229,16 +234,16 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       lakehouseIngestEnvironmentSummaries: observable,
       lakehouseIngestEnvironmentDetails: observable,
       dataProductViewer: observable,
+      terminalProductViewer: observable,
       handleFilterChange: action,
       handleSearch: action,
       filterSortProducts: computed,
       setDataProductStates: action,
-      setDataProductViewerState: action,
+      setDataProductViewer: action,
+      setTerminalProductViewer: action,
       setLakehouseIngestEnvironmentSummaries: action,
       setLakehouseIngestEnvironmentDetails: action,
       filter: observable,
-      setTerminalProducts: action,
-      terminalProducts: observable,
       sort: observable,
       setSort: action,
     });
@@ -304,12 +309,12 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
     this.lakehouseIngestEnvironmentDetails = environmentDetails;
   }
 
-  setTerminalProducts(products: V1_Terminal[] | undefined): void {
-    this.terminalProducts = products;
+  setDataProductViewer(val: DataProductViewerState | undefined): void {
+    this.dataProductViewer = val;
   }
 
-  setDataProductViewerState(val: DataProductViewerState | undefined): void {
-    this.dataProductViewer = val;
+  setTerminalProductViewer(val: TerminalProductViewerState | undefined): void {
+    this.terminalProductViewer = val;
   }
 
   handleFilterChange(
@@ -504,23 +509,31 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   *initWithTerminal(terminalId: string): GeneratorFn<void> {
     try {
       this.loadingProductState.inProgress();
-
       const rawTerminalResponse: TDSExecutionResult =
         (yield this.marketplaceBaseStore.engineServerClient.getTerminalById(
           terminalId,
         )) as TDSExecutionResult;
-
       const terminalRowData: TDSRowDataType[] =
         getRowDataFromExecutionResult(rawTerminalResponse);
       const matchingRows = terminalRowData.filter(
         (row: TDSRowDataType) => row.id === Number(terminalId),
       );
-
       const terminalProducts: V1_Terminal[] = matchingRows.map(
         (rowData: TDSRowDataType) =>
           deserialize(V1_TerminalModelSchema, rowData),
       );
-      this.setTerminalProducts(terminalProducts);
+
+      this.setTerminalProductViewer(
+        new TerminalProductViewerState(
+          guaranteeNonNullable(
+            terminalProducts[0],
+            `No terminal found with ID ${terminalId}`,
+          ),
+          this.applicationStore,
+          new TerminalProductLayoutState(),
+        ),
+      );
+
       this.loadingProductState.complete();
     } catch (error) {
       assertErrorThrown(error);
@@ -595,10 +608,11 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       );
 
       const stateViewer = new DataProductViewerState(
-        this.applicationStore,
         this,
         graphManagerState,
+        this.applicationStore,
         this.lakehouseContractServerClient,
+        new DataProductLayoutState(),
         v1DataProduct,
         dataProductDetails,
         {
@@ -620,7 +634,7 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
           },
         },
       );
-      this.setDataProductViewerState(stateViewer);
+      this.setDataProductViewer(stateViewer);
       stateViewer.fetchContracts(auth.user?.access_token);
       this.loadingProductState.complete();
       if (!this.loadingLakehouseEnvironmentSummariesState.hasCompleted) {

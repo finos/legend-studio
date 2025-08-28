@@ -32,9 +32,9 @@ import {
   V1_dataContractsResponseModelSchemaToContracts,
   V1_ResourceType,
 } from '@finos/legend-graph';
-import { action, computed, flow, makeObservable, observable } from 'mobx';
-import { DataProductLayoutState } from './DataProductLayoutState.js';
-import { DATA_PRODUCT_VIEWER_SECTION } from './DataProductViewerNavigation.js';
+import { action, computed, flow, observable, makeObservable } from 'mobx';
+import type { DataProductLayoutState } from './BaseLayoutState.js';
+import { DATA_PRODUCT_VIEWER_SECTION } from './ProductViewerNavigation.js';
 import { DataProductDataAccessState } from './DataProductDataAccessState.js';
 import {
   ActionState,
@@ -46,36 +46,32 @@ import { serialize } from 'serializr';
 import { dataContractContainsDataProduct } from './LakehouseUtils.js';
 import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
 import type { MarketplaceLakehouseStore } from './MarketplaceLakehouseStore.js';
+import { BaseViewerState } from './BaseViewerState.js';
 import type { LegendMarketplaceApplicationStore } from '../LegendMarketplaceBaseStore.js';
 
-export class DataProductViewerState {
-  readonly applicationStore: LegendMarketplaceApplicationStore;
+export class DataProductViewerState extends BaseViewerState<
+  V1_DataProduct,
+  DataProductLayoutState
+> {
   readonly lakehouseStore: MarketplaceLakehouseStore;
   readonly graphManagerState: GraphManagerState;
-  readonly layoutState: DataProductLayoutState;
-
-  readonly product: V1_DataProduct;
   readonly entitlementsDataProductDetails: V1_EntitlementsDataProductDetails;
   readonly viewDataProductSource: () => void;
-  readonly onZoneChange?:
-    | ((zone: NavigationZone | undefined) => void)
-    | undefined;
+  readonly lakeServerClient: LakehouseContractServerClient;
 
   // we may want to move this out eventually
-  readonly lakeServerClient: LakehouseContractServerClient;
-  accessState: DataProductDataAccessState;
-  associatedContracts: V1_DataContract[] | undefined;
-  dataContractAccessPointGroup: V1_AccessPointGroup | undefined;
-  dataContract: V1_DataContract | undefined;
-  // actions
-
+  accessState!: DataProductDataAccessState;
+  associatedContracts: V1_DataContract[] | undefined = undefined;
+  dataContractAccessPointGroup: V1_AccessPointGroup | undefined = undefined;
+  dataContract: V1_DataContract | undefined = undefined;
   creatingContractState = ActionState.create();
 
   constructor(
-    applicationStore: LegendMarketplaceApplicationStore,
     lakehouseStore: MarketplaceLakehouseStore,
     graphManagerState: GraphManagerState,
+    applicationStore: LegendMarketplaceApplicationStore,
     lakeServerClient: LakehouseContractServerClient,
+    dataProductLayoutState: DataProductLayoutState,
     product: V1_DataProduct,
     entitlementsDataProductDetails: V1_EntitlementsDataProductDetails,
     actions: {
@@ -83,6 +79,8 @@ export class DataProductViewerState {
       onZoneChange?: ((zone: NavigationZone | undefined) => void) | undefined;
     },
   ) {
+    super(product, applicationStore, dataProductLayoutState, actions);
+
     makeObservable(this, {
       isVerified: computed,
       accessState: observable,
@@ -91,23 +89,36 @@ export class DataProductViewerState {
       dataContractAccessPointGroup: observable,
       setDataContractAccessPointGroup: action,
       dataContract: observable,
+      creatingContractState: observable,
       setDataContract: action,
       setAssociatedContracts: action,
       createContract: flow,
-      creatingContractState: observable,
     });
 
-    this.applicationStore = applicationStore;
     this.lakehouseStore = lakehouseStore;
     this.graphManagerState = graphManagerState;
-
-    this.product = product;
     this.entitlementsDataProductDetails = entitlementsDataProductDetails;
     this.viewDataProductSource = actions.viewDataProductSource;
-    this.onZoneChange = actions.onZoneChange;
-    this.layoutState = new DataProductLayoutState(this);
     this.accessState = new DataProductDataAccessState(this);
     this.lakeServerClient = lakeServerClient;
+  }
+
+  public override getTitle(): string | undefined {
+    return this.product.title;
+  }
+
+  public override getPath(): string | undefined {
+    return this.product.path;
+  }
+
+  public override getName(): string | undefined {
+    return this.product.name;
+  }
+
+  protected getValidSections(): string[] {
+    return Object.values(DATA_PRODUCT_VIEWER_SECTION).map((section) =>
+      section.toString(),
+    );
   }
 
   setAssociatedContracts(val: V1_DataContract[] | undefined): void {
@@ -121,7 +132,6 @@ export class DataProductViewerState {
   setDataContract(val: V1_DataContract | undefined) {
     this.dataContract = val;
   }
-
   *fetchContracts(token: string | undefined): GeneratorFn<void> {
     try {
       this.accessState.accessGroupStates.forEach((e) =>
@@ -161,7 +171,6 @@ export class DataProductViewerState {
       );
     }
   }
-
   *createContract(
     consumer: V1_OrganizationalScope,
     description: string,
@@ -226,24 +235,5 @@ export class DataProductViewerState {
 
   get deploymentId(): number {
     return this.entitlementsDataProductDetails.deploymentId;
-  }
-
-  changeZone(zone: NavigationZone, force = false): void {
-    if (force) {
-      this.layoutState.setCurrentNavigationZone('');
-    }
-    if (zone !== this.layoutState.currentNavigationZone) {
-      if (
-        Object.values(DATA_PRODUCT_VIEWER_SECTION)
-          .map((e) => e.toString())
-          .includes(zone)
-      ) {
-        this.layoutState.setWikiPageAnchorToNavigate({
-          anchor: zone,
-        });
-      }
-      this.onZoneChange?.(zone);
-      this.layoutState.setCurrentNavigationZone(zone);
-    }
   }
 }

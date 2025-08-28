@@ -19,6 +19,11 @@ export enum DATA_PRODUCT_VIEWER_SECTION {
   DATA_ACCESS = 'data-access',
 }
 
+export enum TERMINAL_PRODUCT_VIEWER_SECTION {
+  DESCRIPTION = 'description',
+  PRICE = 'price',
+}
+
 const generateAnchorChunk = (text: string): string =>
   encodeURIComponent(
     text
@@ -26,7 +31,17 @@ const generateAnchorChunk = (text: string): string =>
       .toLowerCase() // anchor is case-insensitive
       .replace(/\s+/gu, '-'), // spaces will be replaced by hyphens
   );
+
 export const generateAnchorForSection = (activity: string): string =>
   generateAnchorChunk(activity);
+
+export const DATA_PRODUCT_VIEWER_ANCHORS = Object.values(
+  DATA_PRODUCT_VIEWER_SECTION,
+).map((activity) => generateAnchorForSection(activity));
+
+export const TERMINAL_PRODUCT_VIEWER_ANCHORS = Object.values(
+  TERMINAL_PRODUCT_VIEWER_SECTION,
+).map((activity) => generateAnchorForSection(activity));
+
 export const extractSectionFromAnchor = (anchor: string): string =>
   decodeURIComponent(anchor);

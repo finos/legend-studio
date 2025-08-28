@@ -15,91 +15,105 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { useEffect, useRef } from 'react';
-import type { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
+import { useEffect, useRef, useState } from 'react';
+import { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
 import {
   DATA_PRODUCT_VIEWER_SECTION,
   generateAnchorForSection,
-} from '../../../stores/lakehouse/DataProductViewerNavigation.js';
-import { AnchorLinkIcon, MarkdownTextViewer } from '@finos/legend-art';
-import { prettyCONSTName } from '@finos/legend-shared';
+  TERMINAL_PRODUCT_VIEWER_SECTION,
+} from '../../../stores/lakehouse/ProductViewerNavigation.js';
+import { MarkdownTextViewer } from '@finos/legend-art';
 import { DataProducteDataAccess } from './DataProductDataAccess.js';
+import type { BaseViewerState } from '../../../stores/lakehouse/BaseViewerState.js';
+import { TerminalProductViewerState } from '../../../stores/lakehouse/TerminalProductViewerState.js';
+import type {
+  SupportedProducts,
+  SupportedLayoutStates,
+} from './ProductViewer.js';
 
-export const DataproducteWikiPlaceholder: React.FC<{ message: string }> = (
+export const ProductWikiPlaceholder: React.FC<{ message: string }> = (
   props,
 ) => (
   <div className="data-space__viewer__wiki__placeholder">{props.message}</div>
 );
 
-export const DataProductWikiPlaceHolder = observer(
-  (props: {
-    dataProductViewerState: DataProductViewerState;
-    section: DATA_PRODUCT_VIEWER_SECTION;
-  }) => {
-    const { dataProductViewerState, section } = props;
-    const sectionRef = useRef<HTMLDivElement>(null);
-    const anchor = generateAnchorForSection(section);
-    useEffect(() => {
-      if (sectionRef.current) {
-        dataProductViewerState.layoutState.setWikiPageAnchor(
-          anchor,
-          sectionRef.current,
-        );
-      }
-      return () =>
-        dataProductViewerState.layoutState.unsetWikiPageAnchor(anchor);
-    }, [dataProductViewerState, anchor]);
+export const TerminalProductPrice = observer(
+  (props: { terminalProductViewerState: TerminalProductViewerState }) => {
+    const { terminalProductViewerState } = props;
+    const terminal = terminalProductViewerState.product;
+    const [isAnnual, setIsAnnual] = useState(true);
+
+    const availablePrice =
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+      terminal.price || terminal.tieredPrice || terminal.totalFirmPrice;
+
+    if (!availablePrice) {
+      return (
+        <ProductWikiPlaceholder message="No price information available." />
+      );
+    }
+
+    const getDisplayPrice = () => {
+      const price = Number(availablePrice);
+      return isAnnual ? Number(price).toFixed(2) : (price / 12).toFixed(2);
+    };
+
+    const handlePricingToggle = () => {
+      setIsAnnual((prev) => !prev);
+    };
 
     return (
-      <div ref={sectionRef} className="data-space__viewer__wiki__section">
-        <div className="data-space__viewer__wiki__section__header">
-          <div className="data-space__viewer__wiki__section__header__label">
-            {prettyCONSTName(section)}
-            <button
-              className="data-space__viewer__wiki__section__header__anchor"
-              tabIndex={-1}
-              onClick={() => dataProductViewerState.changeZone(anchor, true)}
-            >
-              <AnchorLinkIcon />
-            </button>
-          </div>
-        </div>
-        <div className="data-space__viewer__wiki__section__content">
-          <DataproducteWikiPlaceholder message="(not specified)" />
-        </div>
-      </div>
+      <button
+        className="data-space__viewer__wiki__section__pricing"
+        onClick={handlePricingToggle}
+      >
+        ${getDisplayPrice()} {isAnnual ? 'ANNUALLY' : 'MONTHLY'} PER LICENSE
+      </button>
     );
   },
 );
 
-export const DataProductDescription = observer(
-  (props: { dataProductViewerState: DataProductViewerState }) => {
-    const { dataProductViewerState } = props;
+export const ProductDescription = observer(
+  (props: {
+    productViewerState: BaseViewerState<
+      SupportedProducts,
+      SupportedLayoutStates
+    >;
+  }) => {
+    const { productViewerState } = props;
     const sectionRef = useRef<HTMLDivElement>(null);
-    const anchor = generateAnchorForSection(
-      DATA_PRODUCT_VIEWER_SECTION.DESCRIPTION,
-    );
+    const isDataProductViewerState =
+      productViewerState instanceof DataProductViewerState;
+    const isTerminalProductViewerState =
+      productViewerState instanceof TerminalProductViewerState;
+
+    const section = isDataProductViewerState
+      ? DATA_PRODUCT_VIEWER_SECTION.DESCRIPTION
+      : isTerminalProductViewerState
+        ? TERMINAL_PRODUCT_VIEWER_SECTION.DESCRIPTION
+        : undefined;
+    const anchor = section ? generateAnchorForSection(section) : '';
+
     useEffect(() => {
       if (sectionRef.current) {
-        dataProductViewerState.layoutState.setWikiPageAnchor(
+        productViewerState.layoutState.setWikiPageAnchor(
           anchor,
           sectionRef.current,
         );
       }
-      return () =>
-        dataProductViewerState.layoutState.unsetWikiPageAnchor(anchor);
-    }, [dataProductViewerState, anchor]);
+      return () => productViewerState.layoutState.unsetWikiPageAnchor(anchor);
+    }, [productViewerState, anchor]);
 
     return (
       <div ref={sectionRef} className="data-space__viewer__wiki__section">
         <div className="data-space__viewer__wiki__section__content">
-          {dataProductViewerState.product.description !== undefined ? (
+          {productViewerState.product.description !== undefined ? (
             <div className="data-space__viewer__description">
               <div className="data-space__viewer__description__content">
                 <MarkdownTextViewer
                   className="data-space__viewer__markdown-text-viewer"
                   value={{
-                    value: dataProductViewerState.product.description,
+                    value: productViewerState.product.description,
                   }}
                   components={{
                     h1: 'h2',
@@ -110,50 +124,61 @@ export const DataProductDescription = observer(
               </div>
             </div>
           ) : (
-            <DataproducteWikiPlaceholder message="(description not specified)" />
+            <ProductWikiPlaceholder message="(description not specified)" />
           )}
         </div>
       </div>
     );
   },
 );
-
 export const DataProductWiki = observer(
-  (props: { dataProductViewerState: DataProductViewerState }) => {
-    const { dataProductViewerState } = props;
+  (props: {
+    productViewerState: BaseViewerState<
+      SupportedProducts,
+      SupportedLayoutStates
+    >;
+  }) => {
+    const { productViewerState } = props;
+    const isDataProductViewerState =
+      productViewerState instanceof DataProductViewerState;
+    const isTerminalProductViewerState =
+      productViewerState instanceof TerminalProductViewerState;
 
     useEffect(() => {
       if (
-        dataProductViewerState.layoutState.wikiPageNavigationCommand &&
-        dataProductViewerState.layoutState.isWikiPageFullyRendered
+        productViewerState.layoutState.wikiPageNavigationCommand &&
+        productViewerState.layoutState.isWikiPageFullyRendered
       ) {
-        dataProductViewerState.layoutState.navigateWikiPageAnchor();
+        productViewerState.layoutState.navigateWikiPageAnchor();
       }
     }, [
-      dataProductViewerState,
-      dataProductViewerState.layoutState.wikiPageNavigationCommand,
-      dataProductViewerState.layoutState.isWikiPageFullyRendered,
+      productViewerState,
+      productViewerState.layoutState.wikiPageNavigationCommand,
+      productViewerState.layoutState.isWikiPageFullyRendered,
     ]);
 
     useEffect(() => {
-      if (dataProductViewerState.layoutState.isWikiPageFullyRendered) {
-        dataProductViewerState.layoutState.registerWikiPageScrollObserver();
+      if (productViewerState.layoutState.isWikiPageFullyRendered) {
+        productViewerState.layoutState.registerWikiPageScrollObserver();
       }
       return () =>
-        dataProductViewerState.layoutState.unregisterWikiPageScrollObserver();
+        productViewerState.layoutState.unregisterWikiPageScrollObserver();
     }, [
-      dataProductViewerState,
-      dataProductViewerState.layoutState.isWikiPageFullyRendered,
+      productViewerState,
+      productViewerState.layoutState.isWikiPageFullyRendered,
     ]);
 
     return (
       <div className="data-space__viewer__wiki">
-        <DataProductDescription
-          dataProductViewerState={dataProductViewerState}
-        />
-        <DataProducteDataAccess
-          dataProductViewerState={dataProductViewerState}
-        />
+        <ProductDescription productViewerState={productViewerState} />
+        {isTerminalProductViewerState && (
+          <TerminalProductPrice
+            terminalProductViewerState={productViewerState}
+          />
+        )}
+        {isDataProductViewerState && (
+          <DataProducteDataAccess dataProductViewerState={productViewerState} />
+        )}
       </div>
     );
   },

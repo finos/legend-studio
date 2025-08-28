@@ -28,7 +28,7 @@ import { observer } from 'mobx-react-lite';
 import {
   DATA_PRODUCT_VIEWER_SECTION,
   generateAnchorForSection,
-} from '../../../stores/lakehouse/DataProductViewerNavigation.js';
+} from '../../../stores/lakehouse/ProductViewerNavigation.js';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
 import { useApplicationStore } from '@finos/legend-application';

@@ -13,42 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import { NAVIGATION_ZONE_SEPARATOR } from '@finos/legend-application';
 import { action, computed, makeObservable, observable } from 'mobx';
-import { type DataProductViewerState } from './DataProductViewerState.js';
 import { isNonNullable } from '@finos/legend-shared';
 import {
-  DATA_PRODUCT_VIEWER_SECTION,
-  generateAnchorForSection,
-} from './DataProductViewerNavigation.js';
+  DATA_PRODUCT_VIEWER_ANCHORS,
+  TERMINAL_PRODUCT_VIEWER_ANCHORS,
+} from './ProductViewerNavigation.js';
+import { NAVIGATION_ZONE_SEPARATOR } from '@finos/legend-application';
 
-const DATA_PRODUCT_VIEWER_ANCHORS = Object.values(
-  DATA_PRODUCT_VIEWER_SECTION,
-).map((activity) => generateAnchorForSection(activity));
+export type WikiPageNavigationCommand = { anchor: string };
 
-type DataProductPageNavigationCommand = {
-  anchor: string;
-};
-
-export class DataProductLayoutState {
-  readonly dataProductViewerState: DataProductViewerState;
-
+export abstract class BaseLayoutState {
   currentNavigationZone = '';
   isExpandedModeEnabled = false;
-
   frame?: HTMLElement | undefined;
   header?: HTMLElement | undefined;
   isTopScrollerVisible = false;
 
   private wikiPageAnchorIndex = new Map<string, HTMLElement>();
-  wikiPageNavigationCommand?: DataProductPageNavigationCommand | undefined;
+  wikiPageNavigationCommand?: WikiPageNavigationCommand | undefined;
   private wikiPageVisibleAnchors: string[] = [];
   private wikiPageScrollIntersectionObserver?: IntersectionObserver | undefined;
 
-  constructor(dataProductViewerState: DataProductViewerState) {
+  constructor() {
     makeObservable<
-      DataProductLayoutState,
+      BaseLayoutState,
       | 'wikiPageAnchorIndex'
       | 'wikiPageVisibleAnchors'
       | 'updatePageVisibleAnchors'
@@ -56,9 +45,9 @@ export class DataProductLayoutState {
       currentNavigationZone: observable,
       isExpandedModeEnabled: observable,
       isTopScrollerVisible: observable,
-      wikiPageAnchorIndex: observable,
       wikiPageVisibleAnchors: observable,
       frame: observable.ref,
+      wikiPageAnchorIndex: observable,
       wikiPageNavigationCommand: observable.ref,
       isWikiPageFullyRendered: computed,
       registerWikiPageScrollObserver: action,
@@ -71,28 +60,28 @@ export class DataProductLayoutState {
       setWikiPageAnchorToNavigate: action,
       updatePageVisibleAnchors: action,
     });
-
-    this.dataProductViewerState = dataProductViewerState;
   }
 
-  setCurrentNavigationZone(val: string): void {
-    this.currentNavigationZone = val;
-  }
+  protected abstract getValidAnchors(): string[];
 
   get isWikiPageFullyRendered(): boolean {
     return (
       Boolean(this.frame) &&
-      DATA_PRODUCT_VIEWER_ANCHORS.every((anchor) =>
+      this.getValidAnchors().every((anchor) =>
         this.wikiPageAnchorIndex.has(anchor),
       ) &&
       Array.from(this.wikiPageAnchorIndex.values()).every(isNonNullable)
     );
   }
 
+  setCurrentNavigationZone(val: string): void {
+    this.currentNavigationZone = val;
+  }
+
   registerWikiPageScrollObserver(): void {
     if (this.frame && this.isWikiPageFullyRendered) {
       const wikiPageIntersectionObserver = new IntersectionObserver(
-        (entries, observer) => {
+        (entries) => {
           const anchorsWithVisibilityChanged = entries
             .map((entry) => {
               for (const [key, element] of this.wikiPageAnchorIndex.entries()) {
@@ -194,7 +183,7 @@ export class DataProductLayoutState {
   }
 
   setWikiPageAnchorToNavigate(
-    val: DataProductPageNavigationCommand | undefined,
+    val: WikiPageNavigationCommand | undefined,
   ): void {
     this.wikiPageNavigationCommand = val;
   }
@@ -215,5 +204,17 @@ export class DataProductLayoutState {
 
       this.setWikiPageAnchorToNavigate(undefined);
     }
+  }
+}
+
+export class DataProductLayoutState extends BaseLayoutState {
+  protected getValidAnchors(): string[] {
+    return DATA_PRODUCT_VIEWER_ANCHORS;
+  }
+}
+
+export class TerminalProductLayoutState extends BaseLayoutState {
+  protected getValidAnchors(): string[] {
+    return TERMINAL_PRODUCT_VIEWER_ANCHORS;
   }
 }

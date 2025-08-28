@@ -30,7 +30,7 @@ import {
 } from '../../../__lib__/LegendMarketplaceNavigation.js';
 import { useParams } from '@finos/legend-application/browser';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { DataProductViewer } from './DataProductViewer.js';
+import { ProductViewer } from './ProductViewer.js';
 import { LEGEND_APPLICATION_COLOR_THEME } from '@finos/legend-application';
 import { useAuth } from 'react-oidc-context';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
@@ -73,8 +73,8 @@ export const LakehouseDataProduct = withMarketplaceLakehouseStore(
           <CubesLoadingIndicatorIcon />
         </CubesLoadingIndicator>
         {marketPlaceStore.dataProductViewer && (
-          <DataProductViewer
-            dataSpaceViewerState={marketPlaceStore.dataProductViewer}
+          <ProductViewer
+            productViewerState={marketPlaceStore.dataProductViewer}
           />
         )}
       </LegendMarketplacePage>
