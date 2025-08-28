@@ -58,10 +58,10 @@ import { InfoCircleIcon } from '@finos/legend-art';
 const AssigneesCellRenderer = (props: {
   dataContract: V1_LiteDataContract | undefined;
   pendingContractRecords: V1_UserPendingContractsRecord[] | undefined;
-  marketplaceStore: LegendMarketplaceBaseStore;
+  marketplaceBaseStore: LegendMarketplaceBaseStore;
   token: string | undefined;
 }): React.ReactNode => {
-  const { dataContract, pendingContractRecords, marketplaceStore, token } =
+  const { dataContract, pendingContractRecords, marketplaceBaseStore, token } =
     props;
   const [assignees, setAssignees] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -72,7 +72,7 @@ const AssigneesCellRenderer = (props: {
         setLoading(true);
         try {
           const rawTasks =
-            await marketplaceStore.lakehouseContractServerClient.getContractTasks(
+            await marketplaceBaseStore.lakehouseContractServerClient.getContractTasks(
               dataContract.guid,
               token,
             );
@@ -84,6 +84,11 @@ const AssigneesCellRenderer = (props: {
             new Set<string>(pendingTasks.map((task) => task.assignees).flat()),
           );
           setAssignees(pendingAssignees);
+        } catch (error) {
+          assertErrorThrown(error);
+          marketplaceBaseStore.applicationStore.notificationService.notifyError(
+            `Error fetching contact assignees: ${error.message}`,
+          );
         } finally {
           setLoading(false);
         }
@@ -102,7 +107,8 @@ const AssigneesCellRenderer = (props: {
     }
   }, [
     dataContract,
-    marketplaceStore.lakehouseContractServerClient,
+    marketplaceBaseStore.lakehouseContractServerClient,
+    marketplaceBaseStore.applicationStore.notificationService,
     token,
     pendingContractRecords,
   ]);
@@ -112,7 +118,7 @@ const AssigneesCellRenderer = (props: {
   ) : assignees.length > 0 ? (
     <MultiUserCellRenderer
       userIds={assignees}
-      marketplaceStore={marketplaceStore}
+      marketplaceStore={marketplaceBaseStore}
       singleUserClassName="marketplace-lakehouse-entitlements__grid__user-display"
     />
   ) : (
@@ -155,7 +161,7 @@ const TargetUserCellRenderer = (props: {
         } catch (error) {
           assertErrorThrown(error);
           marketplaceBaseStore.applicationStore.notificationService.notifyError(
-            `Error fetching pending contacts: ${error.message}`,
+            `Error fetching contact target users: ${error.message}`,
           );
         } finally {
           setLoading(false);
@@ -343,7 +349,7 @@ export const EntitlementsPendingContractsDashbaord = observer(
           <AssigneesCellRenderer
             dataContract={params.data}
             pendingContractRecords={pendingContractRecords}
-            marketplaceStore={marketplaceBaseStore}
+            marketplaceBaseStore={marketplaceBaseStore}
             token={auth.user?.access_token}
           />
         ),
