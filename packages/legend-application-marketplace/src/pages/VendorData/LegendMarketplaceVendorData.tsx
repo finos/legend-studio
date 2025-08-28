@@ -30,21 +30,20 @@ import {
 import { useApplicationStore } from '@finos/legend-application';
 import type { Filter, ProviderResult } from '@finos/legend-server-marketplace';
 import { LegendMarketplaceProviderCard } from '../../components/ProviderCard/LegendMarketplaceProviderCard.js';
-import type { LegendMarketPlaceVendorDataState } from '../../stores/LegendMarketPlaceVendorDataState.js';
-import { useLegendMarketplaceBaseStore } from '../../application/LegendMarketplaceFrameworkProvider.js';
+import {
+  type LegendMarketPlaceVendorDataStore,
+  VendorDataProviderType,
+} from '../../stores/LegendMarketPlaceVendorDataStore.js';
 import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
 import { InfoCircleIcon } from '@finos/legend-art';
 import { useEffect } from 'react';
-
-export enum VendorDataProviderType {
-  ALL = 'All',
-  DATAFEEDS = 'Datafeeds',
-  TERMINAL_LICENSE = 'Terminal License',
-  ADD_ONS = 'Add-Ons',
-}
+import {
+  useLegendMarketPlaceVendorDataStore,
+  withLegendMarketplaceVendorDataStore,
+} from '../../application/providers/LegendMarketplaceVendorDataProvider.js';
 
 export const RefinedVendorRadioSelector = observer(
-  (props: { vendorDataState: LegendMarketPlaceVendorDataState }) => {
+  (props: { vendorDataState: LegendMarketPlaceVendorDataStore }) => {
     const { vendorDataState } = props;
     const radioOptions = [
       VendorDataProviderType.ALL,
@@ -82,7 +81,7 @@ export const RefinedVendorRadioSelector = observer(
 
 const SearchResultsRenderer = observer(
   (props: {
-    vendorDataState: LegendMarketPlaceVendorDataState;
+    vendorDataState: LegendMarketPlaceVendorDataStore;
     providerResults: ProviderResult[];
     sectionTitle: VendorDataProviderType;
     seeAll?: boolean;
@@ -142,7 +141,7 @@ const SearchResultsRenderer = observer(
 );
 
 export const VendorDataMainContent = observer(
-  (props: { marketPlaceVendorDataState: LegendMarketPlaceVendorDataState }) => {
+  (props: { marketPlaceVendorDataState: LegendMarketPlaceVendorDataStore }) => {
     const { marketPlaceVendorDataState } = props;
 
     const addOnsInfoMessage =
@@ -235,59 +234,60 @@ export const VendorDataMainContent = observer(
   },
 );
 
-export const LegendMarketplaceVendorData = observer(() => {
-  const baseStore = useLegendMarketplaceBaseStore();
-  const marketPlaceVendorDataState = baseStore.marketplaceVendorDataState;
+export const LegendMarketplaceVendorData = withLegendMarketplaceVendorDataStore(
+  observer(() => {
+    const marketPlaceVendorDataStore = useLegendMarketPlaceVendorDataStore();
 
-  const onChange = (query: string | undefined) => {
-    const filters: Filter[] = [];
+    const onChange = (query: string | undefined) => {
+      const filters: Filter[] = [];
 
-    if (query) {
-      filters.push({
-        label: 'query',
-        value: query,
-      });
-    }
-    marketPlaceVendorDataState.setProvidersFilters(filters);
-  };
+      if (query) {
+        filters.push({
+          label: 'query',
+          value: query,
+        });
+      }
+      marketPlaceVendorDataStore.setProvidersFilters(filters);
+    };
 
-  useEffect(() => {
-    marketPlaceVendorDataState.init();
-  }, [marketPlaceVendorDataState]);
+    useEffect(() => {
+      marketPlaceVendorDataStore.init();
+    }, [marketPlaceVendorDataStore]);
 
-  return (
-    <LegendMarketplacePage className="legend-marketplace-vendor-data">
-      <div className="legend-marketplace-banner">
-        <div className="legend-marketplace-banner__title">Vendor Data</div>
-        <div className="legend-marketplace-banner__subtitle">
-          <p>Discover high quality data</p>
+    return (
+      <LegendMarketplacePage className="legend-marketplace-vendor-data">
+        <div className="legend-marketplace-banner">
+          <div className="legend-marketplace-banner__title">Vendor Data</div>
+          <div className="legend-marketplace-banner__subtitle">
+            <p>Discover high quality data</p>
+          </div>
         </div>
-      </div>
-      <div className="legend-marketplace-new-datasets">
-        <h3>Recently Onboarded</h3>
-        <div className="legend-marketplace-new-datasets__buttons">
-          {marketPlaceVendorDataState.dataFeedProviders
-            .slice(0, 10)
-            .map((vendor) => (
-              <Badge
-                className="legend-marketplace-new-datasets__providers"
-                title={vendor.productName}
-                key={vendor.id}
-              >
-                {vendor.productName}
-              </Badge>
-            ))}
+        <div className="legend-marketplace-new-datasets">
+          <h3>Recently Onboarded</h3>
+          <div className="legend-marketplace-new-datasets__buttons">
+            {marketPlaceVendorDataStore.dataFeedProviders
+              .slice(0, 10)
+              .map((vendor) => (
+                <Badge
+                  className="legend-marketplace-new-datasets__providers"
+                  title={vendor.productName}
+                  key={vendor.id}
+                >
+                  {vendor.productName}
+                </Badge>
+              ))}
+          </div>
         </div>
-      </div>
-      <div className="legend-marketplace-body__content">
-        <RefinedVendorRadioSelector
-          vendorDataState={marketPlaceVendorDataState}
-        />
-        <LegendMarketplaceSearchBar onSearch={onChange} />
-        <VendorDataMainContent
-          marketPlaceVendorDataState={marketPlaceVendorDataState}
-        />
-      </div>
-    </LegendMarketplacePage>
-  );
-});
+        <div className="legend-marketplace-body__content">
+          <RefinedVendorRadioSelector
+            vendorDataState={marketPlaceVendorDataStore}
+          />
+          <LegendMarketplaceSearchBar onSearch={onChange} />
+          <VendorDataMainContent
+            marketPlaceVendorDataState={marketPlaceVendorDataStore}
+          />
+        </div>
+      </LegendMarketplacePage>
+    );
+  }),
+);

@@ -26,9 +26,9 @@ import {
 import {
   type LegendMarketplaceApplicationStore,
   LegendMarketplaceBaseStore,
-} from '../stores/LegendMarketplaceBaseStore.js';
-import type { LegendMarketplaceApplicationConfig } from '../application/LegendMarketplaceApplicationConfig.js';
-import type { LegendMarketplacePluginManager } from '../application/LegendMarketplacePluginManager.js';
+} from '../../stores/LegendMarketplaceBaseStore.js';
+import type { LegendMarketplaceApplicationConfig } from '../../application/LegendMarketplaceApplicationConfig.js';
+import type { LegendMarketplacePluginManager } from '../../application/LegendMarketplacePluginManager.js';
 
 export const useLegendMarketplaceApplicationStore =
   (): LegendMarketplaceApplicationStore =>

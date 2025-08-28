@@ -33,7 +33,7 @@ import {
   LegendMarketplaceFrameworkProvider,
   useLegendMarketplaceApplicationStore,
   useLegendMarketplaceBaseStore,
-} from './LegendMarketplaceFrameworkProvider.js';
+} from './providers/LegendMarketplaceFrameworkProvider.js';
 import {
   isLakehouseRoute,
   LEGEND_MARKETPLACE_ROUTE_PATTERN,
@@ -44,6 +44,7 @@ import { LegendMarketplaceSearchResults } from '../pages/SearchResults/LegendMar
 import {
   type AuthProviderProps,
   AuthProvider,
+  useAuth,
   withAuthenticationRequired,
 } from 'react-oidc-context';
 import type { User } from 'oidc-client-ts';
@@ -111,17 +112,18 @@ const NotFoundPage = observer(() => {
 });
 
 export const LegendMarketplaceWebApplicationRouter = observer(() => {
-  const baseStore = useLegendMarketplaceBaseStore();
+  const marketplaceBaseStore = useLegendMarketplaceBaseStore();
   const applicationStore = useLegendMarketplaceApplicationStore();
+  const auth = useAuth();
 
   const enableMarketplacePages =
     applicationStore.config.options.enableMarketplacePages;
 
   useEffect(() => {
-    flowResult(baseStore.initialize()).catch(
+    flowResult(marketplaceBaseStore.initialize(auth.user?.access_token)).catch(
       applicationStore.alertUnhandledError,
     );
-  }, [applicationStore, baseStore]);
+  }, [applicationStore, marketplaceBaseStore, auth.user?.access_token]);
 
   const ProtectedLakehouseMarketplace = withAuthenticationRequired(
     MarketplaceLakehouseHome,
@@ -203,13 +205,13 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
 
   return (
     <div className="app">
-      {baseStore.initState.hasCompleted && (
+      {marketplaceBaseStore.initState.hasCompleted && (
         <Routes>
           <Route
             element={
               <>
                 {isLakehouseRoute(
-                  baseStore.applicationStore.navigationService.navigator.getCurrentLocation(),
+                  marketplaceBaseStore.applicationStore.navigationService.navigator.getCurrentLocation(),
                 ) ? (
                   <MarketplaceLakehouseHeader />
                 ) : (

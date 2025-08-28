@@ -23,7 +23,6 @@ import type {
 import type { V1_OrganizationalScope } from '@finos/legend-graph';
 import type { LegendMarketplaceBaseStore } from '../stores/LegendMarketplaceBaseStore.js';
 import type React from 'react';
-import type { MarketplaceLakehouseStore } from '../stores/lakehouse/MarketplaceLakehouseStore.js';
 import type { DataProductState } from '../stores/lakehouse/dataProducts/DataProducts.js';
 
 export type ContractConsumerTypeRendererConfig = {
@@ -61,7 +60,7 @@ export abstract class LegendMarketplaceApplicationPlugin extends LegendApplicati
    * @param marketplaceStore
    */
   async getHomePageDataProducts?(
-    marketplaceStore: MarketplaceLakehouseStore,
+    marketplaceBaseStore: LegendMarketplaceBaseStore,
     token: string | undefined,
   ): Promise<DataProductState[] | undefined>;
 

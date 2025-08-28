@@ -18,29 +18,33 @@ import { observer } from 'mobx-react-lite';
 import { useParams } from '@finos/legend-application/browser';
 import { List, ListItem, Typography } from '@mui/material';
 import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
+import { withLegendMarketplaceVendorDataStore } from '../../application/providers/LegendMarketplaceVendorDataProvider.js';
 
-export const LegendMarketplaceVendorDetails = observer(() => {
-  const { vendorName } = useParams<Record<string, string | undefined>>();
+export const LegendMarketplaceVendorDetails =
+  withLegendMarketplaceVendorDataStore(
+    observer(() => {
+      const { vendorName } = useParams<Record<string, string | undefined>>();
 
-  const vendorDatasets = ['Dataset 1', 'Dataset 2', 'Dataset 3'];
+      const vendorDatasets = ['Dataset 1', 'Dataset 2', 'Dataset 3'];
 
-  return (
-    <LegendMarketplacePage className="legend-marketplace-vendor-data">
-      <div className="legend-marketplace-vendor-data__content">
-        <Typography variant="h3" fontWeight="bold">
-          {vendorName}
-        </Typography>
-        <List sx={{ listStyleType: 'disc', paddingLeft: '16px' }}>
-          {vendorDatasets.map((dataset) => (
-            <ListItem
-              key={dataset}
-              sx={{ display: 'list-item', padding: 'unset' }}
-            >
-              {dataset}
-            </ListItem>
-          ))}
-        </List>
-      </div>
-    </LegendMarketplacePage>
+      return (
+        <LegendMarketplacePage className="legend-marketplace-vendor-data">
+          <div className="legend-marketplace-vendor-data__content">
+            <Typography variant="h3" fontWeight="bold">
+              {vendorName}
+            </Typography>
+            <List sx={{ listStyleType: 'disc', paddingLeft: '16px' }}>
+              {vendorDatasets.map((dataset) => (
+                <ListItem
+                  key={dataset}
+                  sx={{ display: 'list-item', padding: 'unset' }}
+                >
+                  {dataset}
+                </ListItem>
+              ))}
+            </List>
+          </div>
+        </LegendMarketplacePage>
+      );
+    }),
   );
-});

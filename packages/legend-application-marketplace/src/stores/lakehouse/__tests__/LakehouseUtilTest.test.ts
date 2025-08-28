@@ -31,7 +31,7 @@ import {
   dataContractContainsAccessGroup,
   isMemberOfContract,
 } from '../LakehouseUtils.js';
-import { TEST__provideMockedLegendMarketplaceBaseStore } from '../../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
+import { TEST__provideMockLegendMarketplaceBaseStore } from '../../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
 import { createSpy } from '@finos/legend-shared/test';
 
 describe('LakehouseUtils', () => {
@@ -62,7 +62,7 @@ describe('LakehouseUtils', () => {
   });
 
   test('isMemberOfContract should return true if the user is a member of an ad-hoc team contract', async () => {
-    const mockedStore = await TEST__provideMockedLegendMarketplaceBaseStore();
+    const MOCK__baseStore = await TEST__provideMockLegendMarketplaceBaseStore();
 
     const user = 'user1';
 
@@ -83,14 +83,14 @@ describe('LakehouseUtils', () => {
       await isMemberOfContract(
         user,
         dataContract,
-        mockedStore.lakehouseContractServerClient,
+        MOCK__baseStore.lakehouseContractServerClient,
         undefined,
       ),
     ).toBe(true);
   });
 
   test('isMemberOfContract should return false if the user is not a member of an ad-hoc team contract', async () => {
-    const mockedStore = await TEST__provideMockedLegendMarketplaceBaseStore();
+    const MOCK__baseStore = await TEST__provideMockLegendMarketplaceBaseStore();
 
     const user = 'user3';
 
@@ -109,14 +109,14 @@ describe('LakehouseUtils', () => {
       await isMemberOfContract(
         user,
         dataContract,
-        mockedStore.lakehouseContractServerClient,
+        MOCK__baseStore.lakehouseContractServerClient,
         undefined,
       ),
     ).toBe(false);
   });
 
   test('isMemberOfContract should return true if the user belongs to the contract members', async () => {
-    const mockedStore = await TEST__provideMockedLegendMarketplaceBaseStore();
+    const MOCK__baseStore = await TEST__provideMockLegendMarketplaceBaseStore();
 
     const user = 'user1';
 
@@ -137,14 +137,14 @@ describe('LakehouseUtils', () => {
       await isMemberOfContract(
         user,
         dataContract,
-        mockedStore.lakehouseContractServerClient,
+        MOCK__baseStore.lakehouseContractServerClient,
         undefined,
       ),
     ).toBe(true);
   });
 
   test('isMemberOfContract should return false if the user does not belong to the contract members', async () => {
-    const mockedStore = await TEST__provideMockedLegendMarketplaceBaseStore();
+    const MOCK__baseStore = await TEST__provideMockLegendMarketplaceBaseStore();
 
     const user = 'user1';
 
@@ -165,19 +165,19 @@ describe('LakehouseUtils', () => {
       await isMemberOfContract(
         user,
         dataContract,
-        mockedStore.lakehouseContractServerClient,
+        MOCK__baseStore.lakehouseContractServerClient,
         undefined,
       ),
     ).toBe(false);
   });
 
   test('isMemberOfContract should return true if the user belongs to the contract tasks', async () => {
-    const mockedStore = await TEST__provideMockedLegendMarketplaceBaseStore();
+    const MOCK__baseStore = await TEST__provideMockLegendMarketplaceBaseStore();
 
     const user = 'user1';
 
     createSpy(
-      mockedStore.lakehouseContractServerClient,
+      MOCK__baseStore.lakehouseContractServerClient,
       'getContractTasks',
     ).mockResolvedValue({
       tasks: [
@@ -201,19 +201,19 @@ describe('LakehouseUtils', () => {
       await isMemberOfContract(
         user,
         dataContract,
-        mockedStore.lakehouseContractServerClient,
+        MOCK__baseStore.lakehouseContractServerClient,
         undefined,
       ),
     ).toBe(true);
   });
 
   test('isMemberOfContract should return false if the user does not belong to the contract tasks', async () => {
-    const mockedStore = await TEST__provideMockedLegendMarketplaceBaseStore();
+    const MOCK__baseStore = await TEST__provideMockLegendMarketplaceBaseStore();
 
     const user = 'user1';
 
     createSpy(
-      mockedStore.lakehouseContractServerClient,
+      MOCK__baseStore.lakehouseContractServerClient,
       'getContractTasks',
     ).mockResolvedValue({
       tasks: [
@@ -237,7 +237,7 @@ describe('LakehouseUtils', () => {
       await isMemberOfContract(
         user,
         dataContract,
-        mockedStore.lakehouseContractServerClient,
+        MOCK__baseStore.lakehouseContractServerClient,
         undefined,
       ),
     ).toBe(false);

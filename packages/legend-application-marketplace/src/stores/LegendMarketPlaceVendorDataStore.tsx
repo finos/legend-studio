@@ -27,9 +27,15 @@ import type {
   LegendMarketplaceBaseStore,
 } from './LegendMarketplaceBaseStore.js';
 import type { GeneratorFn } from '@finos/legend-shared';
-import { VendorDataProviderType } from '../pages/VendorData/LegendMarketplaceVendorData.js';
 
-export class LegendMarketPlaceVendorDataState {
+export enum VendorDataProviderType {
+  ALL = 'All',
+  DATAFEEDS = 'Datafeeds',
+  TERMINAL_LICENSE = 'Terminal License',
+  ADD_ONS = 'Add-Ons',
+}
+
+export class LegendMarketPlaceVendorDataStore {
   readonly applicationStore: LegendMarketplaceApplicationStore;
   readonly store: LegendMarketplaceBaseStore;
   marketplaceServerClient: MarketplaceServerClient;

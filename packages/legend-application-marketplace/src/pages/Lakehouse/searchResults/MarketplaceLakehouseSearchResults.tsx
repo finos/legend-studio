@@ -16,9 +16,9 @@
 
 import { observer } from 'mobx-react-lite';
 import {
-  useMarketplaceLakehouseStore,
-  withMarketplaceLakehouseStore,
-} from '../MarketplaceLakehouseStoreProvider.js';
+  useLegendMarketplaceSearchResultsStore,
+  withLegendMarketplaceSearchResultsStore,
+} from '../../../application/providers/LegendMarketplaceSearchResultsStoreProvider.js';
 import React, { useEffect, useState } from 'react';
 import {
   CubesLoadingIndicator,
@@ -38,11 +38,11 @@ import {
   MenuItem,
 } from '@mui/material';
 import {
+  type LegendMarketplaceSearchResultsStore,
   DataProductFilterType,
   DataProductSort,
   DeployType,
-  type MarketplaceLakehouseStore,
-} from '../../../stores/lakehouse/MarketplaceLakehouseStore.js';
+} from '../../../stores/lakehouse/LegendMarketplaceSearchResultsStore.js';
 import {
   generateLakehouseDataProductPath,
   generateLakehouseSearchResultsRoute,
@@ -51,24 +51,24 @@ import {
 import { LegendMarketplaceSearchBar } from '../../../components/SearchBar/LegendMarketplaceSearchBar.js';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
 import { useAuth } from 'react-oidc-context';
-import { type DataProductState } from '../../../stores/lakehouse/dataProducts/DataProducts.js';
 import { V1_IngestEnvironmentClassification } from '@finos/legend-graph';
 import { isNullable } from '@finos/legend-shared';
 import { LakehouseDataProductCard } from '../../../components/LakehouseDataProductCard/LakehouseDataProductCard.js';
 
 const SearchResultsSortFilterPanel = observer(
-  (props: { marketplaceStore: MarketplaceLakehouseStore }) => {
-    const { marketplaceStore } = props;
+  (props: { searchResultsStore: LegendMarketplaceSearchResultsStore }) => {
+    const { searchResultsStore } = props;
 
     const [sortMenuAnchorEl, setSortMenuAnchorEl] =
       useState<HTMLElement | null>(null);
     const isSortMenuOpen = Boolean(sortMenuAnchorEl);
 
-    const showUnknownDeployTypeFilter = marketplaceStore.dataProductStates.some(
-      (state) => isNullable(state.dataProductDetails.origin),
-    );
+    const showUnknownDeployTypeFilter =
+      searchResultsStore.dataProductStates.some((state) =>
+        isNullable(state.dataProductDetails.origin),
+      );
     const showUnknownEnvironmentFilter =
-      marketplaceStore.dataProductStates.some((state) =>
+      searchResultsStore.dataProductStates.some((state) =>
         isNullable(state.environmentClassification),
       );
 
@@ -83,7 +83,7 @@ const SearchResultsSortFilterPanel = observer(
               }}
               className="marketplace-lakehouse-search-results__sort-filters__sort__btn"
             >
-              {marketplaceStore.sort}
+              {searchResultsStore.sort}
               <ExpandMoreIcon />
             </Button>
             <Menu
@@ -104,7 +104,7 @@ const SearchResultsSortFilterPanel = observer(
                   <MenuItem
                     key={sortValue}
                     onClick={(event: React.MouseEvent<HTMLLIElement>) => {
-                      marketplaceStore.setSort(sortValue);
+                      searchResultsStore.setSort(sortValue);
                       setSortMenuAnchorEl(null);
                     }}
                   >
@@ -123,9 +123,9 @@ const SearchResultsSortFilterPanel = observer(
               <FormControlLabel
                 control={
                   <Checkbox
-                    checked={marketplaceStore.filter.sdlcDeployFilter}
+                    checked={searchResultsStore.filter.sdlcDeployFilter}
                     onChange={() =>
-                      marketplaceStore.handleFilterChange(
+                      searchResultsStore.handleFilterChange(
                         DataProductFilterType.DEPLOY_TYPE,
                         DeployType.SDLC,
                       )
@@ -137,9 +137,9 @@ const SearchResultsSortFilterPanel = observer(
               <FormControlLabel
                 control={
                   <Checkbox
-                    checked={marketplaceStore.filter.sandboxDeployFilter}
+                    checked={searchResultsStore.filter.sandboxDeployFilter}
                     onChange={() =>
-                      marketplaceStore.handleFilterChange(
+                      searchResultsStore.handleFilterChange(
                         DataProductFilterType.DEPLOY_TYPE,
                         DeployType.SANDBOX,
                       )
@@ -152,9 +152,9 @@ const SearchResultsSortFilterPanel = observer(
                 <FormControlLabel
                   control={
                     <Checkbox
-                      checked={marketplaceStore.filter.unknownDeployFilter}
+                      checked={searchResultsStore.filter.unknownDeployFilter}
                       onChange={() =>
-                        marketplaceStore.handleFilterChange(
+                        searchResultsStore.handleFilterChange(
                           DataProductFilterType.DEPLOY_TYPE,
                           DeployType.UNKNOWN,
                         )
@@ -174,11 +174,11 @@ const SearchResultsSortFilterPanel = observer(
                 control={
                   <Checkbox
                     checked={
-                      marketplaceStore.filter
+                      searchResultsStore.filter
                         .prodEnvironmentClassificationFilter
                     }
                     onChange={() =>
-                      marketplaceStore.handleFilterChange(
+                      searchResultsStore.handleFilterChange(
                         DataProductFilterType.ENVIRONMENT_CLASSIFICATION,
                         V1_IngestEnvironmentClassification.PROD,
                       )
@@ -191,11 +191,11 @@ const SearchResultsSortFilterPanel = observer(
                 control={
                   <Checkbox
                     checked={
-                      marketplaceStore.filter
+                      searchResultsStore.filter
                         .prodParallelEnvironmentClassificationFilter
                     }
                     onChange={() =>
-                      marketplaceStore.handleFilterChange(
+                      searchResultsStore.handleFilterChange(
                         DataProductFilterType.ENVIRONMENT_CLASSIFICATION,
                         V1_IngestEnvironmentClassification.PROD_PARALLEL,
                       )
@@ -208,10 +208,11 @@ const SearchResultsSortFilterPanel = observer(
                 control={
                   <Checkbox
                     checked={
-                      marketplaceStore.filter.devEnvironmentClassificationFilter
+                      searchResultsStore.filter
+                        .devEnvironmentClassificationFilter
                     }
                     onChange={() =>
-                      marketplaceStore.handleFilterChange(
+                      searchResultsStore.handleFilterChange(
                         DataProductFilterType.ENVIRONMENT_CLASSIFICATION,
                         V1_IngestEnvironmentClassification.DEV,
                       )
@@ -225,11 +226,11 @@ const SearchResultsSortFilterPanel = observer(
                   control={
                     <Checkbox
                       checked={
-                        marketplaceStore.filter
+                        searchResultsStore.filter
                           .unknownEnvironmentClassificationFilter
                       }
                       onChange={() =>
-                        marketplaceStore.handleFilterChange(
+                        searchResultsStore.handleFilterChange(
                           DataProductFilterType.ENVIRONMENT_CLASSIFICATION,
                           'UNKNOWN',
                         )
@@ -247,88 +248,92 @@ const SearchResultsSortFilterPanel = observer(
   },
 );
 
-export const MarketplaceLakehouseSearchResults = withMarketplaceLakehouseStore(
-  observer(() => {
-    const marketPlaceStore = useMarketplaceLakehouseStore();
-    const auth = useAuth();
+export const MarketplaceLakehouseSearchResults =
+  withLegendMarketplaceSearchResultsStore(
+    observer(() => {
+      const searchResultsStore = useLegendMarketplaceSearchResultsStore();
+      const auth = useAuth();
 
-    const applicationStore = marketPlaceStore.applicationStore;
-    const searchQuery =
-      applicationStore.navigationService.navigator.getCurrentLocationParameterValue(
-        LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN.QUERY,
-        {
-          sanitizeParametersInsteadOfUrl: true,
-        },
-      );
-    marketPlaceStore.handleSearch(searchQuery);
+      const applicationStore =
+        searchResultsStore.marketplaceBaseStore.applicationStore;
+      const searchQuery =
+        applicationStore.navigationService.navigator.getCurrentLocationParameterValue(
+          LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN.QUERY,
+          {
+            sanitizeParametersInsteadOfUrl: true,
+          },
+        );
+      searchResultsStore.handleSearch(searchQuery);
 
-    useEffect(() => {
-      marketPlaceStore.init(auth.user?.access_token);
-    }, [marketPlaceStore, auth]);
+      useEffect(() => {
+        searchResultsStore.init(auth.user?.access_token);
+      }, [searchResultsStore, auth]);
 
-    const isLoadingDataProducts =
-      marketPlaceStore.loadingAllProductsState.isInProgress ||
-      marketPlaceStore.loadingSandboxDataProductStates.isInProgress ||
-      marketPlaceStore.loadingLakehouseEnvironmentsByDIDState.isInProgress;
+      const isLoadingDataProducts =
+        searchResultsStore.loadingAllProductsState.isInProgress;
 
-    const handleSearch = (query: string | undefined): void => {
-      applicationStore.navigationService.navigator.goToLocation(
-        generateLakehouseSearchResultsRoute(query),
-      );
-    };
+      const handleSearch = (query: string | undefined): void => {
+        applicationStore.navigationService.navigator.goToLocation(
+          generateLakehouseSearchResultsRoute(query),
+        );
+      };
 
-    return (
-      <LegendMarketplacePage className="marketplace-lakehouse-search-results">
-        <Container className="marketplace-lakehouse-search-results__search-container">
-          <LegendMarketplaceSearchBar
-            onSearch={handleSearch}
-            placeholder="Search Legend Marketplace"
-            className="marketplace-lakehouse-search-results__search-bar"
-            initialValue={searchQuery}
-          />
-        </Container>
-        <Container
-          maxWidth="xxxl"
-          className="marketplace-lakehouse-search-results__results-container"
-        >
-          <SearchResultsSortFilterPanel marketplaceStore={marketPlaceStore} />
-          <Grid
-            container={true}
-            spacing={{ xs: 2, sm: 3, xxl: 4 }}
-            columns={{ xs: 1, sm: 2, xxl: 3 }}
-            className="marketplace-lakehouse-search-results__data-product-cards"
+      return (
+        <LegendMarketplacePage className="marketplace-lakehouse-search-results">
+          <Container className="marketplace-lakehouse-search-results__search-container">
+            <LegendMarketplaceSearchBar
+              onSearch={handleSearch}
+              placeholder="Search Legend Marketplace"
+              className="marketplace-lakehouse-search-results__search-bar"
+              initialValue={searchQuery}
+            />
+          </Container>
+          <Container
+            maxWidth="xxxl"
+            className="marketplace-lakehouse-search-results__results-container"
           >
-            {marketPlaceStore.filterSortProducts?.map((dataProductState) => (
-              <Grid
-                key={`${dataProductState.dataProductDetails.id}-${dataProductState.dataProductDetails.deploymentId}`}
-                size={1}
-              >
-                <LakehouseDataProductCard
-                  dataProductState={dataProductState}
-                  onClick={(dpState: DataProductState) => {
-                    marketPlaceStore.applicationStore.navigationService.navigator.goToLocation(
-                      generateLakehouseDataProductPath(
-                        dataProductState.dataProductDetails.id,
-                        dataProductState.dataProductDetails.deploymentId,
-                      ),
-                    );
-                  }}
-                />
-              </Grid>
-            ))}
-            {isLoadingDataProducts && (
-              <Grid size={1}>
-                <CubesLoadingIndicator
-                  isLoading={true}
-                  className="marketplace-lakehouse-search-results__loading-data-products-indicator"
-                >
-                  <CubesLoadingIndicatorIcon />
-                </CubesLoadingIndicator>
-              </Grid>
-            )}
-          </Grid>
-        </Container>
-      </LegendMarketplacePage>
-    );
-  }),
-);
+            <SearchResultsSortFilterPanel
+              searchResultsStore={searchResultsStore}
+            />
+            <Grid
+              container={true}
+              spacing={{ xs: 2, sm: 3, xxl: 4 }}
+              columns={{ xs: 1, sm: 2, xxl: 3 }}
+              className="marketplace-lakehouse-search-results__data-product-cards"
+            >
+              {searchResultsStore.filterSortProducts?.map(
+                (dataProductState) => (
+                  <Grid
+                    key={`${dataProductState.dataProductDetails.id}-${dataProductState.dataProductDetails.deploymentId}`}
+                    size={1}
+                  >
+                    <LakehouseDataProductCard
+                      dataProductState={dataProductState}
+                      onClick={() => {
+                        applicationStore.navigationService.navigator.goToLocation(
+                          generateLakehouseDataProductPath(
+                            dataProductState.dataProductDetails.id,
+                            dataProductState.dataProductDetails.deploymentId,
+                          ),
+                        );
+                      }}
+                    />
+                  </Grid>
+                ),
+              )}
+              {isLoadingDataProducts && (
+                <Grid size={1}>
+                  <CubesLoadingIndicator
+                    isLoading={true}
+                    className="marketplace-lakehouse-search-results__loading-data-products-indicator"
+                  >
+                    <CubesLoadingIndicatorIcon />
+                  </CubesLoadingIndicator>
+                </Grid>
+              )}
+            </Grid>
+          </Container>
+        </LegendMarketplacePage>
+      );
+    }),
+  );

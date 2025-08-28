@@ -15,9 +15,9 @@
  */
 import { observer } from 'mobx-react-lite';
 import {
-  useMarketplaceLakehouseStore,
-  withMarketplaceLakehouseStore,
-} from '../MarketplaceLakehouseStoreProvider.js';
+  useLegendMarketplaceProductViewerStore,
+  withLegendMarketplaceProductViewerStore,
+} from '../../../application/providers/LegendMarketplaceProductViewerStoreProvider.js';
 import { useEffect } from 'react';
 import {
   CubesLoadingIndicator,
@@ -33,10 +33,11 @@ import { guaranteeNonNullable } from '@finos/legend-shared';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
 import { ProductViewer } from './ProductViewer.js';
 
-export const TerminalProduct = withMarketplaceLakehouseStore(
+export const TerminalProduct = withLegendMarketplaceProductViewerStore(
   observer(() => {
-    const marketPlaceStore = useMarketplaceLakehouseStore();
-    const applicationStore = marketPlaceStore.applicationStore;
+    const productViewerStore = useLegendMarketplaceProductViewerStore();
+    const applicationStore =
+      productViewerStore.marketplaceBaseStore.applicationStore;
     const params = useParams<LegendTerminalProductPathParams>();
 
     const terminalId = guaranteeNonNullable(
@@ -44,8 +45,8 @@ export const TerminalProduct = withMarketplaceLakehouseStore(
     );
 
     useEffect(() => {
-      marketPlaceStore.initWithTerminal(terminalId);
-    }, [marketPlaceStore, terminalId]);
+      productViewerStore.initWithTerminal(terminalId);
+    }, [productViewerStore, terminalId]);
 
     useEffect(() => {
       applicationStore.layoutService.setColorTheme(
@@ -59,14 +60,14 @@ export const TerminalProduct = withMarketplaceLakehouseStore(
     return (
       <LegendMarketplacePage className="legend-marketplace-terminal-data-product">
         <CubesLoadingIndicator
-          isLoading={marketPlaceStore.loadingProductState.isInProgress}
+          isLoading={productViewerStore.loadingProductState.isInProgress}
         >
           <CubesLoadingIndicatorIcon />
         </CubesLoadingIndicator>
 
-        {marketPlaceStore.terminalProductViewer && (
+        {productViewerStore.terminalProductViewer && (
           <ProductViewer
-            productViewerState={marketPlaceStore.terminalProductViewer}
+            productViewerState={productViewerStore.terminalProductViewer}
           />
         )}
       </LegendMarketplacePage>
