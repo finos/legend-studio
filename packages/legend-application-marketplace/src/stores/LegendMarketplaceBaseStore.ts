@@ -78,6 +78,7 @@ export class LegendMarketplaceBaseStore {
       setLakehouseIngestEnvironmentSummaries: action,
       setLakehouseIngestEnvironmentDetails: action,
       initialize: flow,
+      initializeIngestEnvironmentDetails: flow,
     });
 
     this.applicationStore = applicationStore;
@@ -147,7 +148,7 @@ export class LegendMarketplaceBaseStore {
     }
   }
 
-  *initialize(token: string | undefined): GeneratorFn<void> {
+  *initialize(): GeneratorFn<void> {
     if (!this.initState.isInInitialState) {
       this.applicationStore.notificationService.notifyIllegalState(
         'Base store is re-initialized',
@@ -187,6 +188,17 @@ export class LegendMarketplaceBaseStore {
     );
 
     this.initState.complete();
+  }
+
+  *initializeIngestEnvironmentDetails(
+    token: string | undefined,
+  ): GeneratorFn<void> {
+    if (!this.ingestEnvironmentFetchState.isInInitialState) {
+      this.applicationStore.notificationService.notifyIllegalState(
+        'Base store ingest environment details are re-initialized',
+      );
+      return;
+    }
 
     this.ingestEnvironmentFetchState.inProgress();
     yield this.fetchLakehouseIngestEnvironmentSummaries(token);
