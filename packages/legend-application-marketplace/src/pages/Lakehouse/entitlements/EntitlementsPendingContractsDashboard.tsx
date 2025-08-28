@@ -50,7 +50,7 @@ import {
   isContractInTerminalState,
 } from '../../../stores/lakehouse/LakehouseUtils.js';
 import type { LegendMarketplaceBaseStore } from '../../../stores/LegendMarketplaceBaseStore.js';
-import { startCase } from '@finos/legend-shared';
+import { assertErrorThrown, startCase } from '@finos/legend-shared';
 import { useAuth } from 'react-oidc-context';
 import { MultiUserCellRenderer } from '../../../components/MultiUserCellRenderer/MultiUserCellRenderer.js';
 import { InfoCircleIcon } from '@finos/legend-art';
@@ -122,10 +122,10 @@ const AssigneesCellRenderer = (props: {
 
 const TargetUserCellRenderer = (props: {
   dataContract: V1_LiteDataContract | undefined;
-  marketplaceStore: LegendMarketplaceBaseStore;
+  marketplaceBaseStore: LegendMarketplaceBaseStore;
   token: string | undefined;
 }): React.ReactNode => {
-  const { dataContract, marketplaceStore, token } = props;
+  const { dataContract, marketplaceBaseStore, token } = props;
   const [targetUsers, setTargetUsers] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -138,7 +138,7 @@ const TargetUserCellRenderer = (props: {
           // tasks are what drive the timeline view. If there are no associated tasks,
           // then we use the contract consumer.
           const rawTasks =
-            await marketplaceStore.lakehouseContractServerClient.getContractTasks(
+            await marketplaceBaseStore.lakehouseContractServerClient.getContractTasks(
               dataContract.guid,
               token,
             );
@@ -152,6 +152,11 @@ const TargetUserCellRenderer = (props: {
               ? dataContract.consumer.users.map((user) => user.name)
               : [];
           setTargetUsers(_targetUsers);
+        } catch (error) {
+          assertErrorThrown(error);
+          marketplaceBaseStore.applicationStore.notificationService.notifyError(
+            `Error fetching pending contacts: ${error.message}`,
+          );
         } finally {
           setLoading(false);
         }
@@ -159,14 +164,19 @@ const TargetUserCellRenderer = (props: {
     };
     // eslint-disable-next-line no-void
     void fetchTargetUsers();
-  }, [dataContract, marketplaceStore.lakehouseContractServerClient, token]);
+  }, [
+    dataContract,
+    marketplaceBaseStore.lakehouseContractServerClient,
+    marketplaceBaseStore.applicationStore.notificationService,
+    token,
+  ]);
 
   return loading ? (
     <CircularProgress size={20} />
   ) : targetUsers.length > 0 ? (
     <MultiUserCellRenderer
       userIds={targetUsers}
-      marketplaceStore={marketplaceStore}
+      marketplaceStore={marketplaceBaseStore}
       singleUserClassName="marketplace-lakehouse-entitlements__grid__user-display"
     />
   ) : (
@@ -267,7 +277,7 @@ export const EntitlementsPendingContractsDashbaord = observer(
         ) => (
           <TargetUserCellRenderer
             dataContract={params.data}
-            marketplaceStore={marketplaceBaseStore}
+            marketplaceBaseStore={marketplaceBaseStore}
             token={auth.user?.access_token}
           />
         ),
