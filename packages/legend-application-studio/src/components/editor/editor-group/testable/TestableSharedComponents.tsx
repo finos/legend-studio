@@ -435,14 +435,54 @@ const EqualToAssertFailViewer = observer(
         try {
           const editorStore = assertionState.editorStore;
           const graph = editorStore.graphManagerState.graph;
-
+          const currentVS = assertionState.assertionState.valueSpec;
+          const rawType =
+            currentVS.genericType?.value.rawType ?? PrimitiveType.STRING;
           const newValueSpec = buildDefaultInstanceValue(
             graph,
-            PrimitiveType.STRING,
+            rawType,
             editorStore.changeDetectionState.observerContext,
             true,
-          );
-          (newValueSpec as PrimitiveInstanceValue).values = [actual];
+          ) as PrimitiveInstanceValue;
+
+          const coerce = (txt: string, type: PrimitiveType): unknown => {
+            const trimmed = txt.trim();
+
+            switch (type) {
+              case PrimitiveType.INTEGER: {
+                const n = Number(trimmed);
+                if (!Number.isFinite(n) || !Number.isInteger(n)) {
+                  throw new Error(`Actual "${trimmed}" is not an integer`);
+                }
+                return n;
+              }
+              case PrimitiveType.FLOAT:
+              case PrimitiveType.DECIMAL:
+              case PrimitiveType.NUMBER: {
+                const n = Number(trimmed);
+                if (!Number.isFinite(n)) {
+                  throw new Error(`Actual "${trimmed}" is not a number`);
+                }
+                return n;
+              }
+              case PrimitiveType.BOOLEAN: {
+                if (trimmed.toLowerCase() === 'true') {
+                  return true;
+                }
+                if (trimmed.toLowerCase() === 'false') {
+                  return false;
+                }
+                throw new Error(`Actual "${trimmed}" is not a boolean`);
+              }
+              default:
+                return trimmed;
+            }
+          };
+
+          const expectedType: PrimitiveType =
+            rawType instanceof PrimitiveType ? rawType : PrimitiveType.STRING;
+
+          newValueSpec.values = [coerce(actual, expectedType)];
 
           assertionState.assertionState.updateValueSpec(newValueSpec);
 
