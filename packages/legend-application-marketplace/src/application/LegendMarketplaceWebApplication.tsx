@@ -22,7 +22,10 @@ import {
   GhostIcon,
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
-import { useApplicationStore } from '@finos/legend-application';
+import {
+  LEGEND_APPLICATION_COLOR_THEME,
+  useApplicationStore,
+} from '@finos/legend-application';
 import {
   BrowserEnvironmentProvider,
   Outlet,
@@ -131,6 +134,15 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
       ).catch(applicationStore.alertUnhandledError);
     }
   }, [applicationStore, marketplaceBaseStore, auth.user?.access_token]);
+
+  useEffect(() => {
+    applicationStore.layoutService.setColorTheme(
+      LEGEND_APPLICATION_COLOR_THEME.HIGH_CONTRAST_LIGHT,
+      {
+        persist: true,
+      },
+    );
+  }, [applicationStore]);
 
   const ProtectedLakehouseMarketplace = withAuthenticationRequired(
     MarketplaceLakehouseHome,

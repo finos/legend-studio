@@ -31,15 +31,12 @@ import {
 import { useParams } from '@finos/legend-application/browser';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { ProductViewer } from './ProductViewer.js';
-import { LEGEND_APPLICATION_COLOR_THEME } from '@finos/legend-application';
 import { useAuth } from 'react-oidc-context';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
 
 export const LakehouseDataProduct = withLegendMarketplaceProductViewerStore(
   observer(() => {
     const productViewerStore = useLegendMarketplaceProductViewerStore();
-    const applicationStore =
-      productViewerStore.marketplaceBaseStore.applicationStore;
     const params = useParams<LakehouseDataProductPathParams>();
     const auth = useAuth();
     const dataProductId = guaranteeNonNullable(
@@ -56,15 +53,6 @@ export const LakehouseDataProduct = withLegendMarketplaceProductViewerStore(
         productViewerStore.initWithProduct(dataProductId, deploymentId, auth);
       }
     }, [auth, dataProductId, productViewerStore, deploymentId]);
-
-    useEffect(() => {
-      applicationStore.layoutService.setColorTheme(
-        LEGEND_APPLICATION_COLOR_THEME.HIGH_CONTRAST_LIGHT,
-        {
-          persist: true,
-        },
-      );
-    }, [applicationStore]);
 
     return (
       <LegendMarketplacePage className="legend-marketplace-lakehouse-data-product">

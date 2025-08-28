@@ -23,7 +23,6 @@ import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
 } from '@finos/legend-art';
-import { LEGEND_APPLICATION_COLOR_THEME } from '@finos/legend-application';
 import {
   LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN,
   type LegendTerminalProductPathParams,
@@ -36,8 +35,6 @@ import { ProductViewer } from './ProductViewer.js';
 export const TerminalProduct = withLegendMarketplaceProductViewerStore(
   observer(() => {
     const productViewerStore = useLegendMarketplaceProductViewerStore();
-    const applicationStore =
-      productViewerStore.marketplaceBaseStore.applicationStore;
     const params = useParams<LegendTerminalProductPathParams>();
 
     const terminalId = guaranteeNonNullable(
@@ -47,15 +44,6 @@ export const TerminalProduct = withLegendMarketplaceProductViewerStore(
     useEffect(() => {
       productViewerStore.initWithTerminal(terminalId);
     }, [productViewerStore, terminalId]);
-
-    useEffect(() => {
-      applicationStore.layoutService.setColorTheme(
-        LEGEND_APPLICATION_COLOR_THEME.HIGH_CONTRAST_LIGHT,
-        {
-          persist: true,
-        },
-      );
-    }, [applicationStore]);
 
     return (
       <LegendMarketplacePage className="legend-marketplace-terminal-data-product">
