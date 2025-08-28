@@ -213,8 +213,6 @@ export class DataProductLayoutState extends BaseLayoutState {
   }
 }
 
-export type DataProductPageNavigationCommand = { anchor: string };
-
 export class TerminalProductLayoutState extends BaseLayoutState {
   protected getValidAnchors(): string[] {
     return TERMINAL_PRODUCT_VIEWER_ANCHORS;
