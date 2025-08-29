@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.0.72
+
+### Patch Changes
+
+- [#4370](https://github.com/finos/legend-studio/pull/4370) [`4c40aaf`](https://github.com/finos/legend-studio/commit/4c40aafdc8e4559215c4f4009a57dfd7f30113dd) ([@jackp5150](https://github.com/jackp5150)) - Refactored terminal code to utilize data product functions
+
 ## 0.0.71
 
 ### Patch Changes

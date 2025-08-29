@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 28.19.28
+
+### Patch Changes
+
+- [#4373](https://github.com/finos/legend-studio/pull/4373) [`1e9d4d7`](https://github.com/finos/legend-studio/commit/1e9d4d7abb6da0c9a7dace84256bc73251e4418f) ([@RakanHamoury](https://github.com/RakanHamoury)) - fix(EqualToAssertFailViewer): Preserve native types for accepted values
+
+  Previously, accepting actual values for primitive types like integers and floats incorrectly stored them as strings. This commit ensures `EqualToAssertFailViewer` parses and sets these values to their correct native types (number or boolean) based on the expected
+
 ## 28.19.27
 
 ### Patch Changes
