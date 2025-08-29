@@ -18,7 +18,7 @@ import { observer } from 'mobx-react-lite';
 import {
   BlankPanelContent,
   DocumentationIcon,
-  EnvelopIcon,
+  EnvelopeIcon,
   HomeIcon,
   QuestionAnswerIcon,
   SparkleIcon,
@@ -41,7 +41,7 @@ const DataSpaceSupportEmailViewer = observer(
       <div className="data-space__viewer__support__section">
         <div className="data-space__viewer__support__entry">
           <div className="data-space__viewer__support__entry__icon">
-            <EnvelopIcon />
+            <EnvelopeIcon />
           </div>
           <a
             href={`mailto:${supportInfo.address}`}
@@ -143,7 +143,7 @@ const DataSpaceSupportCombinedInfoViewer = observer(
               // eslint-disable-next-line react/no-array-index-key
               <div key={idx} className="data-space__viewer__support__entry">
                 <div className="data-space__viewer__support__entry__icon">
-                  <EnvelopIcon />
+                  <EnvelopeIcon />
                 </div>
                 <a
                   href={`mailto:${email}`}
