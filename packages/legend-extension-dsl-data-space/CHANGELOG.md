@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.4.131
+
+### Patch Changes
+
+- [#4375](https://github.com/finos/legend-studio/pull/4375) [`07f8059`](https://github.com/finos/legend-studio/commit/07f80595aeac2b7ba4d2fe61ab8ff97810710478) ([@travisstebbins](https://github.com/travisstebbins)) - Reorder icons and fix icon typo
+
 ## 10.4.130
 
 ## 10.4.129
