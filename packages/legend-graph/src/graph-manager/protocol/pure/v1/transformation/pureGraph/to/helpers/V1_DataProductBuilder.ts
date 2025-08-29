@@ -20,35 +20,37 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import {
-  LakehouseAccessPoint,
   type AccessPoint,
-  UnknownAccessPoint,
-  DataProductLink,
-  AccessPointGroup,
-  ModelAccessPointGroup,
-  DataProductRuntimeInfo,
-  DataProductElementScope,
   type DataProductElement,
   type DataProductIcon,
-  EmbeddedImageIcon,
-  LibraryIcon,
+  AccessPointGroup,
+  DataProductElementScope,
+  DataProductEmbeddedImageIcon,
+  DataProductLibraryIcon,
+  DataProductLink,
+  DataProductRuntimeInfo,
+  LakehouseAccessPoint,
+  ModelAccessPointGroup,
+  UnknownAccessPoint,
+  UnknownDataProductIcon,
 } from '../../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import {
+  type V1_AccessPoint,
   type V1_AccessPointGroup,
   type V1_DataProductIcon,
   type V1_DataProductLink,
-  V1_EmbeddedImageIcon,
+  V1_DataProductEmbeddedImageIcon,
+  V1_DataProductLibraryIcon,
   V1_LakehouseAccessPoint,
-  V1_LibraryIcon,
   V1_ModelAccessPointGroup,
   V1_UnknownAccessPoint,
-  type V1_AccessPoint,
+  V1_UnknownDataProductIcon,
 } from '../../../../model/packageableElements/dataProduct/V1_DataProduct.js';
 import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
 import { V1_buildRawLambdaWithResolvedPaths } from './V1_ValueSpecificationPathResolver.js';
 import {
-  PackageableElementExplicitReference,
   type PackageableElementReference,
+  PackageableElementExplicitReference,
 } from '../../../../../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
 import { Package } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Package.js';
 import { Class } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Class.js';
@@ -92,10 +94,12 @@ export const V1_buildAccessPoint = (
 export const V1_buildDataProductIcon = (
   icon: V1_DataProductIcon,
 ): DataProductIcon => {
-  if (icon instanceof V1_EmbeddedImageIcon) {
-    return new EmbeddedImageIcon(icon.imageUrl);
-  } else if (icon instanceof V1_LibraryIcon) {
-    return new LibraryIcon(icon.libraryId, icon.iconId);
+  if (icon instanceof V1_DataProductLibraryIcon) {
+    return new DataProductLibraryIcon(icon.libraryId, icon.iconId);
+  } else if (icon instanceof V1_DataProductEmbeddedImageIcon) {
+    return new DataProductEmbeddedImageIcon(icon.imageUrl);
+  } else if (icon instanceof V1_UnknownDataProductIcon) {
+    return new UnknownDataProductIcon(icon.content);
   }
   throw new UnsupportedOperationError(
     `Unsupported data product icon type ${icon}`,

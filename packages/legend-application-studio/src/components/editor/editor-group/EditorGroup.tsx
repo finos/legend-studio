@@ -91,7 +91,7 @@ import {
 import { HostedServiceFunctionActivatorEditorState } from '../../../stores/editor/editor-state/element-editor-state/function-activator/HostedServiceFunctionActivatorEditorState.js';
 import { HostedServiceFunctionActivatorEditor } from './function-activator/HostedServiceFunctionActivatorEditor.js';
 import { DataProductEditorState } from '../../../stores/editor/editor-state/element-editor-state/dataProduct/DataProductEditorState.js';
-import { DataProductEditor } from './dataProduct/DataPoductEditor.js';
+import { DataProductEditor } from './dataProduct/DataProductEditor.js';
 import { IngestDefinitionEditorState } from '../../../stores/editor/editor-state/element-editor-state/ingest/IngestDefinitionEditorState.js';
 import { IngestDefinitionEditor } from './ingest-editor/IngestDefinitionEditor.js';
 import {

@@ -78,8 +78,8 @@ export const TEST_DATA__DATAPRODUCT_DELIVERY = [
       description: 'Test description',
       icon: {
         _type: 'libraryIcon',
-        iconId: "'UpArrow'",
-        libraryId: "'react-icons'",
+        iconId: 'UpArrow',
+        libraryId: 'react-icons',
       },
       name: 'A',
       package: 'x',

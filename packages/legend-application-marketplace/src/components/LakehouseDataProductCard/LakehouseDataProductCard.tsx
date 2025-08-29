@@ -24,8 +24,10 @@ import {
   InfoCircleIcon,
 } from '@finos/legend-art';
 import {
-  V1_SdlcDeploymentDataProductOrigin,
+  V1_DataProductEmbeddedImageIcon,
+  V1_DataProductLibraryIcon,
   V1_EntitlementsLakehouseEnvironmentType,
+  V1_SdlcDeploymentDataProductOrigin,
 } from '@finos/legend-graph';
 import { isSnapshotVersion } from '@finos/legend-server-depot';
 import {
@@ -259,11 +261,15 @@ export const LakehouseDataProductCard = observer(
       <>
         <Box className="marketplace-lakehouse-data-product-card__container">
           <Box className="marketplace-lakehouse-data-product-card__icon">
-            {dataProductState.imageUrl ? (
-              <img src={dataProductState.imageUrl} />
-            ) : (
-              deserializeIcon(dataProductState.icon)
-            )}
+            {dataProductState.icon instanceof
+            V1_DataProductEmbeddedImageIcon ? (
+              <img src={dataProductState.icon.imageUrl} />
+            ) : dataProductState.icon instanceof V1_DataProductLibraryIcon ? (
+              deserializeIcon(
+                dataProductState.icon.libraryId,
+                dataProductState.icon.iconId,
+              )
+            ) : null}
           </Box>
           <Box className="marketplace-lakehouse-data-product-card__content">
             <Box className="marketplace-lakehouse-data-product-card__tags">
