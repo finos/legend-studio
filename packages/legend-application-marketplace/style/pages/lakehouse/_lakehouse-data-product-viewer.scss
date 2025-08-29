@@ -128,6 +128,16 @@
   &__support-info {
     &__section {
       display: flex;
+
+      &__icon {
+        width: 3rem;
+        height: 3rem;
+        background: currentcolor;
+
+        svg {
+          color: var(--color-white);
+        }
+      }
     }
 
     &__email {

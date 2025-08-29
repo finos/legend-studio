@@ -30,7 +30,7 @@ import {
 } from '../../../stores/lakehouse/ProductViewerNavigation.js';
 import { useEffect, useRef } from 'react';
 import type { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
-import { Grid2 as Grid, Link } from '@mui/material';
+import { Box, Grid2 as Grid, Link } from '@mui/material';
 import { ProductWikiPlaceholder } from './DataProductWiki.js';
 
 export const DataProductSupportInfo = observer(
@@ -85,7 +85,9 @@ export const DataProductSupportInfo = observer(
                     size={1}
                     className="data-product__viewer__support-info__section"
                   >
-                    <EnvelopIcon />
+                    <Box className="data-product__viewer__support-info__section__icon">
+                      <EnvelopIcon />
+                    </Box>
                     {supportInfo?.emails.map((email, index) => (
                       <>
                         <Link
@@ -106,7 +108,9 @@ export const DataProductSupportInfo = observer(
                   size={1}
                   className="data-product__viewer__support-info__section"
                 >
-                  <DocumentIcon />
+                  <Box className="data-product__viewer__support-info__section__icon">
+                    <DocumentIcon />
+                  </Box>
                   <Link
                     className="data-product__viewer__support-info__link"
                     href={supportInfo.documentation.url}
@@ -122,7 +126,9 @@ export const DataProductSupportInfo = observer(
                   size={1}
                   className="data-product__viewer__support-info__section"
                 >
-                  <HeadsetIcon />
+                  <Box className="data-product__viewer__support-info__section__icon">
+                    <HeadsetIcon />
+                  </Box>
                   <Link
                     className="data-product__viewer__support-info__link"
                     href={supportInfo.supportUrl.url}
@@ -137,7 +143,9 @@ export const DataProductSupportInfo = observer(
                   size={1}
                   className="data-product__viewer__support-info__section"
                 >
-                  <WorldOutlineIcon />
+                  <Box className="data-product__viewer__support-info__section__icon">
+                    <WorldOutlineIcon />
+                  </Box>
                   <Link
                     className="data-product__viewer__support-info__link"
                     href={supportInfo.website.url}
@@ -152,7 +160,9 @@ export const DataProductSupportInfo = observer(
                   size={1}
                   className="data-product__viewer__support-info__section"
                 >
-                  <QuestionCircleOutlineIcon />
+                  <Box className="data-product__viewer__support-info__section__icon">
+                    <QuestionCircleOutlineIcon />
+                  </Box>
                   <Link
                     className="data-product__viewer__support-info__link"
                     href={supportInfo.faqUrl.url}
