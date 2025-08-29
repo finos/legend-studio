@@ -18,9 +18,9 @@ import {
   AnchorLinkIcon,
   DocumentIcon,
   EnvelopIcon,
+  ExternalLinkIcon,
   HeadsetIcon,
   QuestionCircleOutlineIcon,
-  ShareIcon,
   WorldOutlineIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
@@ -81,22 +81,31 @@ export const DataProductSupportInfo = observer(
             <Grid container={true} spacing={3} columns={2}>
               {supportInfo?.emails !== undefined &&
                 supportInfo.emails.length > 0 && (
-                  <Grid size={1}>
+                  <Grid
+                    size={1}
+                    className="data-product__viewer__support-info__section"
+                  >
                     <EnvelopIcon />
-                    {supportInfo?.emails.map((email) => (
-                      <Link
-                        key={email.address}
-                        className="data-product__viewer__support-info__email"
-                        href={`mailto:${email.address}`}
-                      >
-                        {email.title}
-                        <ShareIcon />
-                      </Link>
+                    {supportInfo?.emails.map((email, index) => (
+                      <>
+                        <Link
+                          key={email.address}
+                          className="data-product__viewer__support-info__email"
+                          href={`mailto:${email.address}`}
+                        >
+                          {email.title}
+                          <ExternalLinkIcon />
+                        </Link>
+                        {index === supportInfo.emails.length - 1 ? ', ' : null}
+                      </>
                     ))}
                   </Grid>
                 )}
               {supportInfo?.documentation !== undefined && (
-                <Grid size={1}>
+                <Grid
+                  size={1}
+                  className="data-product__viewer__support-info__section"
+                >
                   <DocumentIcon />
                   <Link
                     className="data-product__viewer__support-info__link"
@@ -104,43 +113,52 @@ export const DataProductSupportInfo = observer(
                   >
                     {supportInfo.documentation.label ??
                       supportInfo.documentation.url}
-                    <ShareIcon />
+                    <ExternalLinkIcon />
                   </Link>
                 </Grid>
               )}
               {supportInfo?.supportUrl !== undefined && (
-                <Grid size={1}>
+                <Grid
+                  size={1}
+                  className="data-product__viewer__support-info__section"
+                >
                   <HeadsetIcon />
                   <Link
                     className="data-product__viewer__support-info__link"
                     href={supportInfo.supportUrl.url}
                   >
                     {supportInfo.supportUrl.label ?? supportInfo.supportUrl.url}
-                    <ShareIcon />
+                    <ExternalLinkIcon />
                   </Link>
                 </Grid>
               )}
               {supportInfo?.website !== undefined && (
-                <Grid size={1}>
+                <Grid
+                  size={1}
+                  className="data-product__viewer__support-info__section"
+                >
                   <WorldOutlineIcon />
                   <Link
                     className="data-product__viewer__support-info__link"
                     href={supportInfo.website.url}
                   >
                     {supportInfo.website.label ?? supportInfo.website.url}
-                    <ShareIcon />
+                    <ExternalLinkIcon />
                   </Link>
                 </Grid>
               )}
               {supportInfo?.faqUrl !== undefined && (
-                <Grid size={1}>
+                <Grid
+                  size={1}
+                  className="data-product__viewer__support-info__section"
+                >
                   <QuestionCircleOutlineIcon />
                   <Link
                     className="data-product__viewer__support-info__link"
                     href={supportInfo.faqUrl.url}
                   >
                     {supportInfo.faqUrl.label ?? supportInfo.faqUrl.url}
-                    <ShareIcon />
+                    <ExternalLinkIcon />
                   </Link>
                 </Grid>
               )}

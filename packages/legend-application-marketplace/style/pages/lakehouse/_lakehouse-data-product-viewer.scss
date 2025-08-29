@@ -123,3 +123,15 @@
     }
   }
 }
+
+.data-product__viewer {
+  &__support-info {
+    &__section {
+      display: flex;
+    }
+
+    &__email {
+      display: flex;
+    }
+  }
+}
