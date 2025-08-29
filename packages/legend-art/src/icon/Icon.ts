@@ -41,6 +41,12 @@ export const Snowflake_BrandIcon = TbBrandSnowflake;
 export const DatabaseImportIcon = TbDatabaseImport;
 export const FileUnknownIcon = TbFileUnknown;
 
+//======================================================= TI =======================================================
+import { TiDocument, TiWorldOutline } from 'react-icons/ti';
+
+export const DocumentIcon = TiDocument;
+export const WorldOutlineIcon = TiWorldOutline;
+
 //======================================================= MD =======================================================
 import {
   MdManageSearch,
@@ -192,7 +198,9 @@ import {
   BsFillFileEarmarkSpreadsheetFill,
   BsFillTriangleFill,
   BsGripVertical,
+  BsHeadset,
   BsInfoCircle,
+  BsQuestionCircle,
   BsQuestionSquare,
   BsQuestionSquareFill,
   BsTextLeft,
@@ -211,8 +219,10 @@ export const DataReadyIcon = BsDatabaseFillCheck;
 export const DistributeHorizontalIcon = BsDistributeHorizontal;
 export const DistributeVerticalIcon = BsDistributeVertical;
 export const FilledTriangleIcon = BsFillTriangleFill;
+export const HeadsetIcon = BsHeadset;
 export const InfoCircleOutlineIcon = BsInfoCircle;
 export const GenericTextFileIcon = BsTextLeft;
+export const QuestionCircleOutlineIcon = BsQuestionCircle;
 export const QuestionSquareFillIcon = BsQuestionSquareFill;
 export const QuestionSquareIcon = BsQuestionSquare;
 export const TabulatedDataFileIcon = BsFillFileEarmarkSpreadsheetFill;

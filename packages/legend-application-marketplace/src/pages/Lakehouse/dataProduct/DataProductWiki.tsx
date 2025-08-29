@@ -30,6 +30,7 @@ import type {
   SupportedProducts,
   SupportedLayoutStates,
 } from './ProductViewer.js';
+import { DataProductSupportInfo } from './DataProductSupportInfo.js';
 
 export const ProductWikiPlaceholder: React.FC<{ message: string }> = (
   props,
@@ -177,7 +178,14 @@ export const DataProductWiki = observer(
           />
         )}
         {isDataProductViewerState && (
-          <DataProducteDataAccess dataProductViewerState={productViewerState} />
+          <>
+            <DataProducteDataAccess
+              dataProductViewerState={productViewerState}
+            />
+            <DataProductSupportInfo
+              dataProductViewerState={productViewerState}
+            />
+          </>
         )}
       </div>
     );
