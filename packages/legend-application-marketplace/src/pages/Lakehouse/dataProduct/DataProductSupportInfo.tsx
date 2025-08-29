@@ -92,7 +92,7 @@ export const DataProductSupportInfo = observer(
                       <>
                         <Link
                           key={email.address}
-                          className="data-product__viewer__support-info__email"
+                          className="data-product__viewer__support-info__link"
                           href={`mailto:${email.address}`}
                         >
                           {email.title}

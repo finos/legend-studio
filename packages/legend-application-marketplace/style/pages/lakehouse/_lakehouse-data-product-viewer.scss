@@ -129,6 +129,8 @@
     &__section {
       @include flexVCenter;
 
+      gap: 0.5rem;
+
       &__icon {
         @include flexCenter;
 
@@ -136,6 +138,7 @@
         height: 3rem;
         border-radius: 3rem;
         background: currentcolor;
+        margin-right: 0.5rem;
 
         svg {
           color: var(--color-white);
@@ -143,8 +146,10 @@
       }
     }
 
-    &__email {
+    &__link {
       @include flexVCenter;
+
+      gap: 0.5rem;
     }
   }
 }
