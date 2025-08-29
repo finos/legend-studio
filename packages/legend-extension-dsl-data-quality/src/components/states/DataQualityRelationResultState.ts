@@ -70,6 +70,7 @@ export class DataQualityRelationResultState {
   previewLimit = DEFAULT_LIMIT;
   isRunningValidation = false;
   isGeneratingPlan = false;
+  allValidationsChecked = false;
   executionResult?: ExecutionResult | undefined;
   executionDuration?: number | undefined;
   latestRunHashCode?: string | undefined;
@@ -88,6 +89,7 @@ export class DataQualityRelationResultState {
       isGeneratingPlan: observable,
       isRunningValidation: observable,
       validationToRun: observable,
+      allValidationsChecked: observable,
       setIsRunningValidation: action,
       setExecutionResult: action,
       setExecutionDuration: action,
@@ -96,6 +98,7 @@ export class DataQualityRelationResultState {
       setValidationToRun: action,
       handleRunValidation: action,
       handleExport: action,
+      onToggleAllValidationsChecked: action,
       runValidation: flow,
       cancelValidation: flow,
       generatePlan: flow,
@@ -120,6 +123,10 @@ export class DataQualityRelationResultState {
 
   setExecutionDuration(val: number | undefined): void {
     this.executionDuration = val;
+  }
+
+  onToggleAllValidationsChecked(val: boolean): void {
+    this.allValidationsChecked = !val;
   }
 
   setPreviewLimit(val: number): void {
@@ -208,6 +215,7 @@ export class DataQualityRelationResultState {
           .graphManagerState.graphManager,
       ).execute(model, packagePath, {
         previewLimit: this.previewLimit,
+        allValidationsChecked: this.allValidationsChecked,
         validationName: this.validationToRun?.name,
         lambdaParameterValues: buildExecutionParameterValues(
           this.dataQualityRelationValidationConfigurationState.parametersState
@@ -277,6 +285,7 @@ export class DataQualityRelationResultState {
             .graphManagerState.graphManager,
         ).debugExecutionPlanGeneration(model, packagePath, {
           validationName: this.validationToRun?.name,
+          allValidationsChecked: this.allValidationsChecked,
           previewLimit: this.previewLimit,
         })) as {
           plan: RawExecutionPlan;
@@ -294,6 +303,7 @@ export class DataQualityRelationResultState {
             .graphManagerState.graphManager,
         ).generatePlan(model, packagePath, {
           validationName: this.validationToRun?.name,
+          allValidationsChecked: this.allValidationsChecked,
           previewLimit: this.previewLimit,
         })) as RawExecutionPlan;
       }
@@ -367,6 +377,7 @@ export class DataQualityRelationResultState {
         serializationFormat,
         previewLimit: this.previewLimit,
         validationName: this.validationToRun?.name,
+        allValidationsChecked: this.allValidationsChecked,
         lambdaParameterValues: buildExecutionParameterValues(
           this.dataQualityRelationValidationConfigurationState.parametersState
             .parameterStates,

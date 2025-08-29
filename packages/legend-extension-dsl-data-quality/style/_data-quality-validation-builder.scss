@@ -1229,6 +1229,18 @@
   }
 }
 
+.data-quality-validation__result__constraint__checkbox {
+  width: 25px;
+  padding-right: 5px;
+  padding-bottom: 3px;
+}
+
+.data-quality-validation__result__constraint__text {
+  display: flex;
+  padding-top: 2px;
+  margin-right: 0.5rem;
+}
+
 .data-quality-validation__result__stale-status__icon,
 .data-quality-validation__result__stale-status__label {
   color: var(--color-legacylight-orange-100);
@@ -1420,6 +1432,7 @@
 
     &__input {
       height: 100%;
+      width: 6rem;
 
       &:not(:focus) {
         border: 0.1rem solid var(--color-dark-grey-250);

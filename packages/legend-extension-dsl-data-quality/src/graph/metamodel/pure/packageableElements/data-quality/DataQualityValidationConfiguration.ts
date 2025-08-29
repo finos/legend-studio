@@ -39,6 +39,7 @@ export enum RelationValidationType {
 export interface DQExecuteInputOptions {
   lambdaParameterValues?: ParameterValue[];
   clientVersion?: string | undefined;
+  allValidationsChecked?: boolean | undefined;
   validationName?: string | undefined;
   previewLimit?: number | undefined;
   runQuery?: boolean | undefined;
