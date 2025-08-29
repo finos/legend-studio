@@ -127,11 +127,14 @@
 .data-product__viewer {
   &__support-info {
     &__section {
-      display: flex;
+      @include flexVCenter;
 
       &__icon {
+        @include flexCenter;
+
         width: 3rem;
         height: 3rem;
+        border-radius: 3rem;
         background: currentcolor;
 
         svg {
@@ -141,7 +144,7 @@
     }
 
     &__email {
-      display: flex;
+      @include flexVCenter;
     }
   }
 }
