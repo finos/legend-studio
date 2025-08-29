@@ -96,7 +96,7 @@ export const DataProductSupportInfo = observer(
                           {email.title}
                           <ExternalLinkIcon />
                         </Link>
-                        {index === supportInfo.emails.length - 1 ? ', ' : null}
+                        {index < supportInfo.emails.length - 1 ? ', ' : null}
                       </>
                     ))}
                   </Grid>
