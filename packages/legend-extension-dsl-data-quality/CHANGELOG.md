@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-quality
 
+## 2.0.124
+
+### Patch Changes
+
+- [#4374](https://github.com/finos/legend-studio/pull/4374) [`4d5fcea`](https://github.com/finos/legend-studio/commit/4d5fcea3dfe5b340916803c2f7c2f6f30155a575) ([@viju4076](https://github.com/viju4076)) - all validations checkbox in data quality relation validations trial runs
+
 ## 2.0.123
 
 ## 2.0.122

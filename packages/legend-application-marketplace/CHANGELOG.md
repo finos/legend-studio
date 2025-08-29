@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.0.73
+
+### Patch Changes
+
+- [#4375](https://github.com/finos/legend-studio/pull/4375) [`07f8059`](https://github.com/finos/legend-studio/commit/07f80595aeac2b7ba4d2fe61ab8ff97810710478) ([@travisstebbins](https://github.com/travisstebbins)) - Add Legend Marketplace data product support section
+
 ## 0.0.72
 
 ### Patch Changes
