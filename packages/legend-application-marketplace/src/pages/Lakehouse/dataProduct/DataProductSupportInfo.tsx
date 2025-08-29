@@ -31,6 +31,7 @@ import {
 import { useEffect, useRef } from 'react';
 import type { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
 import { Grid2 as Grid, Link } from '@mui/material';
+import { ProductWikiPlaceholder } from './DataProductWiki.js';
 
 export const DataProductSupportInfo = observer(
   (props: { dataProductViewerState: DataProductViewerState }) => {
@@ -40,6 +41,15 @@ export const DataProductSupportInfo = observer(
     const anchor = generateAnchorForSection(
       DATA_PRODUCT_VIEWER_SECTION.SUPPORT_INFO,
     );
+
+    const supportInfo = dataProductViewerState.product.supportInfo;
+    const doesSupportInfoExist =
+      supportInfo !== undefined &&
+      (supportInfo.emails.length > 0 ||
+        supportInfo.documentation ||
+        supportInfo.website ||
+        supportInfo.faqUrl ||
+        supportInfo.supportUrl);
 
     useEffect(() => {
       if (sectionRef.current) {
@@ -67,13 +77,13 @@ export const DataProductSupportInfo = observer(
           </div>
         </div>
         <div className="data-space__viewer__wiki__section__content">
-          <Grid container={true} spacing={3} columns={2}>
-            {dataProductViewerState.product.supportInfo?.emails !== undefined &&
-              dataProductViewerState.product.supportInfo.emails.length > 0 && (
-                <Grid size={1}>
-                  <EnvelopIcon />
-                  {dataProductViewerState.product.supportInfo?.emails.map(
-                    (email) => (
+          {doesSupportInfoExist ? (
+            <Grid container={true} spacing={3} columns={2}>
+              {supportInfo?.emails !== undefined &&
+                supportInfo.emails.length > 0 && (
+                  <Grid size={1}>
+                    <EnvelopIcon />
+                    {supportInfo?.emails.map((email) => (
                       <Link
                         key={email.address}
                         className="data-product__viewer__support-info__email"
@@ -82,70 +92,62 @@ export const DataProductSupportInfo = observer(
                         {email.title}
                         <ShareIcon />
                       </Link>
-                    ),
-                  )}
+                    ))}
+                  </Grid>
+                )}
+              {supportInfo?.documentation !== undefined && (
+                <Grid size={1}>
+                  <DocumentIcon />
+                  <Link
+                    className="data-product__viewer__support-info__link"
+                    href={supportInfo.documentation.url}
+                  >
+                    {supportInfo.documentation.label ??
+                      supportInfo.documentation.url}
+                    <ShareIcon />
+                  </Link>
                 </Grid>
               )}
-            {dataProductViewerState.product.supportInfo?.documentation !==
-              undefined && (
-              <Grid size={1}>
-                <DocumentIcon />
-                <Link
-                  className="data-product__viewer__support-info__link"
-                  href={
-                    dataProductViewerState.product.supportInfo.documentation.url
-                  }
-                >
-                  {
-                    dataProductViewerState.product.supportInfo.documentation
-                      .label
-                  }
-                  <ShareIcon />
-                </Link>
-              </Grid>
-            )}
-            {dataProductViewerState.product.supportInfo?.supportUrl !==
-              undefined && (
-              <Grid size={1}>
-                <HeadsetIcon />
-                <Link
-                  className="data-product__viewer__support-info__link"
-                  href={
-                    dataProductViewerState.product.supportInfo.supportUrl.url
-                  }
-                >
-                  {dataProductViewerState.product.supportInfo.supportUrl.label}
-                  <ShareIcon />
-                </Link>
-              </Grid>
-            )}
-            {dataProductViewerState.product.supportInfo?.website !==
-              undefined && (
-              <Grid size={1}>
-                <WorldOutlineIcon />
-                <Link
-                  className="data-product__viewer__support-info__link"
-                  href={dataProductViewerState.product.supportInfo.website.url}
-                >
-                  {dataProductViewerState.product.supportInfo.website.label}
-                  <ShareIcon />
-                </Link>
-              </Grid>
-            )}
-            {dataProductViewerState.product.supportInfo?.faqUrl !==
-              undefined && (
-              <Grid size={1}>
-                <QuestionCircleOutlineIcon />
-                <Link
-                  className="data-product__viewer__support-info__link"
-                  href={dataProductViewerState.product.supportInfo.faqUrl.url}
-                >
-                  {dataProductViewerState.product.supportInfo.faqUrl.label}
-                  <ShareIcon />
-                </Link>
-              </Grid>
-            )}
-          </Grid>
+              {supportInfo?.supportUrl !== undefined && (
+                <Grid size={1}>
+                  <HeadsetIcon />
+                  <Link
+                    className="data-product__viewer__support-info__link"
+                    href={supportInfo.supportUrl.url}
+                  >
+                    {supportInfo.supportUrl.label ?? supportInfo.supportUrl.url}
+                    <ShareIcon />
+                  </Link>
+                </Grid>
+              )}
+              {supportInfo?.website !== undefined && (
+                <Grid size={1}>
+                  <WorldOutlineIcon />
+                  <Link
+                    className="data-product__viewer__support-info__link"
+                    href={supportInfo.website.url}
+                  >
+                    {supportInfo.website.label ?? supportInfo.website.url}
+                    <ShareIcon />
+                  </Link>
+                </Grid>
+              )}
+              {supportInfo?.faqUrl !== undefined && (
+                <Grid size={1}>
+                  <QuestionCircleOutlineIcon />
+                  <Link
+                    className="data-product__viewer__support-info__link"
+                    href={supportInfo.faqUrl.url}
+                  >
+                    {supportInfo.faqUrl.label ?? supportInfo.faqUrl.url}
+                    <ShareIcon />
+                  </Link>
+                </Grid>
+              )}
+            </Grid>
+          ) : (
+            <ProductWikiPlaceholder message="(support information not specified)" />
+          )}
         </div>
       </div>
     );
