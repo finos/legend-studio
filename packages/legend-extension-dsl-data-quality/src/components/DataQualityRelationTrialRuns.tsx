@@ -51,6 +51,9 @@ import {
   PlayIcon,
   ReportIcon,
   CsvIcon,
+  clsx,
+  CheckSquareIcon,
+  SquareIcon,
 } from '@finos/legend-art';
 import { DataQualityResultValues } from './DataQualityResultValues.js';
 import type { DataQualityRelationValidationConfigurationState } from './states/DataQualityRelationValidationConfigurationState.js';
@@ -108,7 +111,7 @@ export const DataQualityRelationTrialRuns = observer(
     );
 
     const isRunValidationDisabled =
-      !resultState.validationToRun ||
+      (!resultState.validationToRun && !resultState.allValidationsChecked) ||
       resultState.isGeneratingPlan ||
       resultState.isRunningValidation;
 
@@ -129,6 +132,8 @@ export const DataQualityRelationTrialRuns = observer(
       !resultState.isRunningValidation && executionResult
         ? getResultSetDescription(executionResult)
         : undefined;
+
+    const allValidationsChecked = resultState.allValidationsChecked;
 
     const [previewLimitValue, setPreviewLimitValue] = useState(
       resultState.previewLimit,
@@ -186,6 +191,17 @@ export const DataQualityRelationTrialRuns = observer(
       );
     };
 
+    const checkBoxIcon = () => {
+      if (allValidationsChecked) {
+        return <CheckSquareIcon />;
+      }
+      return <SquareIcon />;
+    };
+
+    const onToggleAllValidationsCheck = (): void => {
+      resultState.onToggleAllValidationsChecked(allValidationsChecked);
+    };
+
     return (
       <div
         data-testid={
@@ -221,6 +237,26 @@ export const DataQualityRelationTrialRuns = observer(
             )}
           </div>
           <div className="panel__header__actions data-quality-validation__result__header__actions">
+            <div
+              className="data-quality-validation__result__constraint__text"
+              onClick={onToggleAllValidationsCheck}
+            >
+              <button
+                className={clsx(
+                  'panel__content__form__section__toggler__btn',
+                  'data-quality-validation__result__constraint__checkbox',
+                  {
+                    'panel__content__form__section__toggler__btn--toggled':
+                      allValidationsChecked,
+                  },
+                )}
+              >
+                {checkBoxIcon()}
+              </button>
+              <div className="data-quality-validation__result__constraint__text">
+                Run All Validations
+              </div>
+            </div>
             <div className="data-quality-validation__result__validation">
               <div className="data-quality-validation__result__validation__label">
                 Selected Validation
@@ -237,6 +273,7 @@ export const DataQualityRelationTrialRuns = observer(
                     .TEMPORARY__isLightColorThemeEnabled
                 }
                 placeholder={'Select validation to run'}
+                disabled={allValidationsChecked}
               />
             </div>
             <div className="data-quality-validation__result__limit">

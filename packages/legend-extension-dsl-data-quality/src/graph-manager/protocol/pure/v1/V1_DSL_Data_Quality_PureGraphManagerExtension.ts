@@ -76,6 +76,7 @@ export class V1_DQExecuteInput {
   lambdaParameterValues: V1_ParameterValue[] = [];
   packagePath!: string;
   defectsLimit: number | undefined;
+  allValidationsChecked: boolean | undefined;
   validationName: string | undefined;
   runQuery: boolean | undefined;
 
@@ -211,8 +212,10 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
       : [];
     dqExecuteInput.packagePath = packagePath;
     dqExecuteInput.defectsLimit = options.previewLimit;
-    dqExecuteInput.validationName = options.validationName;
     dqExecuteInput.runQuery = options.runQuery;
+    if (!options.allValidationsChecked) {
+      dqExecuteInput.validationName = options.validationName;
+    }
     return dqExecuteInput;
   }
 
