@@ -2694,7 +2694,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     lambda: RawLambda,
     runtime: Runtime | undefined,
     clientVersion: string | undefined,
-    parameterValues?: ParameterValue[],
+    options?: ExecutionOptions,
   ): V1_ExecuteInput =>
     this.createExecutionInputWithPureModelContext(
       graph.origin
@@ -2705,7 +2705,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       runtime,
       clientVersion,
       new V1_ExecuteInput(),
-      parameterValues,
+      options,
     );
 
   public createLineageInput = (
@@ -2714,7 +2714,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     lambda: RawLambda,
     runtime: Runtime | undefined,
     clientVersion: string | undefined,
-    parameterValues?: ParameterValue[],
   ): V1_LineageInput => {
     const executionInput = this.createExecutionInput(
       graph,
@@ -2722,7 +2721,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       lambda,
       runtime,
       clientVersion,
-      parameterValues,
     );
 
     const lineageInput = new V1_LineageInput();
@@ -2741,29 +2739,91 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     runtime: Runtime | undefined,
     clientVersion: string | undefined,
     executeInput: V1_ExecuteInput,
-    parameterValues?: ParameterValue[],
+    options?: ExecutionOptions | undefined,
   ): V1_ExecuteInput => {
+    let mappingPath = mapping?.path;
+    const lambdaToExecute = V1_transformRawLambda(
+      lambda,
+      new V1_GraphTransformerContextBuilder(
+        this.pluginManager.getPureProtocolProcessorPlugins(),
+      ).build(),
+    );
+    let runtimeToExecute = runtime
+      ? V1_transformRuntime(
+          runtime,
+          new V1_GraphTransformerContextBuilder(
+            this.pluginManager.getPureProtocolProcessorPlugins(),
+          ).build(),
+        )
+      : undefined;
+    if (options?.forceFromExpression) {
+      if (runtimeToExecute instanceof V1_RuntimePointer) {
+        const runtimePath = runtimeToExecute.runtime;
+        const body = lambdaToExecute.body;
+        if (body && runtimePath.length) {
+          // handles multi expression lambda (i.e let statement executions)
+          if (Array.isArray(body)) {
+            const expressions = body as object[];
+            if (expressions.length) {
+              const lastIdx = expressions.length - 1;
+              const lastBody = expressions[lastIdx];
+              if (lastBody) {
+                const fromExpression = this.__fromExpression(
+                  mappingPath,
+                  runtimePath,
+                  lastBody,
+                );
+                expressions[lastIdx] = fromExpression;
+                mappingPath = undefined;
+                runtimeToExecute = undefined;
+              }
+            }
+          } else {
+            const fromExpression = this.__fromExpression(
+              mappingPath,
+              runtimePath,
+              body,
+            );
+            lambdaToExecute.body = fromExpression;
+            mappingPath = undefined;
+            runtimeToExecute = undefined;
+          }
+        }
+      }
+    }
     return this.createExecutionInputWithPureModelContextWithV1(
       data,
-      mapping?.path,
-      V1_transformRawLambda(
-        lambda,
-        new V1_GraphTransformerContextBuilder(
-          this.pluginManager.getPureProtocolProcessorPlugins(),
-        ).build(),
-      ),
-      runtime
-        ? V1_transformRuntime(
-            runtime,
-            new V1_GraphTransformerContextBuilder(
-              this.pluginManager.getPureProtocolProcessorPlugins(),
-            ).build(),
-          )
-        : undefined,
+      mappingPath,
+      lambdaToExecute,
+      runtimeToExecute,
       clientVersion,
       executeInput,
-      parameterValues,
+      options?.parameterValues,
     );
+  };
+
+  __fromExpression = (
+    mapping: string | undefined,
+    runtime: string,
+    body: object,
+  ): object => {
+    return {
+      _type: 'func',
+      function: 'from',
+      parameters: [
+        body,
+        mapping
+          ? {
+              _type: 'packageableElementPtr',
+              fullPath: mapping,
+            }
+          : undefined,
+        {
+          _type: 'packageableElementPtr',
+          fullPath: runtime,
+        },
+      ].filter(isNonNullable),
+    };
   };
 
   private createExecutionInputWithPureModelContextWithV1 = (
@@ -2857,7 +2917,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           this.engine.config.useDevClientProtocol
             ? V1_PureGraphManager.DEV_PROTOCOL_VERSION
             : V1_PureGraphManager.PROD_PROTOCOL_VERSION,
-          options?.parameterValues,
+          options,
         ),
       options,
       _report,
@@ -2915,7 +2975,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       this.engine.config.useDevClientProtocol
         ? V1_PureGraphManager.DEV_PROTOCOL_VERSION
         : V1_PureGraphManager.PROD_PROTOCOL_VERSION,
-      options?.parameterValues,
+      options,
     );
     stopWatch.record(GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_INPUT__SUCCESS);
     const stream = await this.engine.exportData(input, options, contentType);
@@ -2984,7 +3044,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         testInfo.runtime,
         V1_PureGraphManager.PROD_PROTOCOL_VERSION,
         new V1_ExecuteInput(),
-        options?.parameterValues,
+        options,
       );
       const result = V1_buildExecutionResult(
         (await this.engine.runQuery(input, options)).executionResult,
@@ -3096,7 +3156,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       runtime,
       V1_PureGraphManager.DEV_PROTOCOL_VERSION,
       testDataGenerationExecuteInput,
-      options?.parameterValues,
+      options,
     );
     testDataGenerationExecuteInput.parameters = parameters;
     testDataGenerationExecuteInput.hashStrings = Boolean(
@@ -3144,7 +3204,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       runtime,
       V1_PureGraphManager.DEV_PROTOCOL_VERSION,
       testDataGenerationExecuteWithSeedInput,
-      options?.parameterValues,
+      options,
     );
     testDataGenerationExecuteWithSeedInput.hashStrings = Boolean(
       options?.anonymizeGeneratedData,
