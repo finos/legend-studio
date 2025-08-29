@@ -123,3 +123,38 @@
     }
   }
 }
+
+.data-product__viewer {
+  &__support-info {
+    &__container {
+      width: fit-content;
+    }
+
+    &__section {
+      @include flexVCenter;
+
+      gap: 0.5rem;
+
+      &__icon {
+        @include flexCenter;
+
+        width: 3.5rem;
+        height: 3.5rem;
+        border-radius: 3.5rem;
+        background: currentcolor;
+        margin-right: 0.5rem;
+
+        svg {
+          color: var(--color-white);
+          font-size: 2rem;
+        }
+      }
+    }
+
+    &__link {
+      @include flexVCenter;
+
+      gap: 0.5rem;
+    }
+  }
+}

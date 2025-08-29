@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { expect, jest, test } from '@jest/globals';
+import { describe, expect, jest, test } from '@jest/globals';
 import { fireEvent, screen } from '@testing-library/react';
 import {
   TEST__provideMockedLegendMarketplaceBaseStore,
@@ -37,7 +37,9 @@ import {
   mockEntitlementsAdHocDataProduct,
   mockEntitlementsEnterpriseDataProduct,
   mockEntitlementsSDLCDataProduct,
+  mockEntitlementsSDLCDataProductNoSupportInfo,
   mockSDLCDataProductEntitiesResponse,
+  mockSDLCDataProductNoSupportInfoEntitiesResponse,
 } from '../__test-utils__/TEST_DATA__LakehouseDataProducts.js';
 import { createSpy } from '@finos/legend-shared/test';
 import { ENGINE_TEST_SUPPORT__getClassifierPathMapping } from '@finos/legend-graph/test';
@@ -62,6 +64,7 @@ jest.mock('react-oidc-context', () => {
 
 enum MOCK_DataProductId {
   MOCK_SDLC_DATAPRODUCT = 'MOCK_SDLC_DATAPRODUCT',
+  MOCK_SDLC_NO_SUPPORT_INFO_DATAPRODUCT = 'MOCK_SDLC_NO_SUPPORT_INFO_DATAPRODUCT',
   MOCK_ADHOC_DATAPRODUCT = 'MOCK_ADHOC_DATAPRODUCT',
   MOCK_ENTERPRISE_DATAPRODUCT = 'MOCK_ENTERPRISE_DATAPRODUCT',
 }
@@ -79,6 +82,11 @@ const setupLakehouseDataProductTest = async (
   ).mockImplementation(async (_dataProductId: string) => {
     if (_dataProductId === MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT) {
       return mockEntitlementsSDLCDataProduct as unknown as PlainObject<V1_EntitlementsDataProductDetailsResponse>;
+    } else if (
+      _dataProductId ===
+      MOCK_DataProductId.MOCK_SDLC_NO_SUPPORT_INFO_DATAPRODUCT
+    ) {
+      return mockEntitlementsSDLCDataProductNoSupportInfo as unknown as PlainObject<V1_EntitlementsDataProductDetailsResponse>;
     } else if (_dataProductId === MOCK_DataProductId.MOCK_ADHOC_DATAPRODUCT) {
       return mockEntitlementsAdHocDataProduct as unknown as PlainObject<V1_EntitlementsDataProductDetailsResponse>;
     } else if (
@@ -101,6 +109,12 @@ const setupLakehouseDataProductTest = async (
         version === '1.2.0'
       ) {
         return mockSDLCDataProductEntitiesResponse;
+      } else if (
+        groupId === 'com.example.analytics' &&
+        artifactId === 'customer-analytics-no-support-info' &&
+        version === '1.2.0'
+      ) {
+        return mockSDLCDataProductNoSupportInfoEntitiesResponse;
       } else if (
         groupId === 'com.example.analytics' &&
         artifactId === 'enterprise-data-product' &&
@@ -241,695 +255,739 @@ const setupLakehouseDataProductTest = async (
   return { mockedStore, renderResult };
 };
 
-test('Loads LakehosueDataProduct with SDLC Data Product and displays title, description, and access point groups', async () => {
-  await setupLakehouseDataProductTest(
-    MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
-    11111,
-    [],
-  );
+describe('LakehouseDataProduct', () => {
+  describe('Basic rendering', () => {
+    test('Loads LakehouseDataProduct with SDLC Data Product and displays title, description, and access point groups', async () => {
+      await setupLakehouseDataProductTest(
+        MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
+        11111,
+        [],
+      );
 
-  await screen.findByText('Mock SDLC Data Product');
-  screen.getByText(
-    'Comprehensive customer analytics data for business intelligence and reporting',
-  );
-  screen.getByText('GROUP1');
-  screen.getByText('Test access point group');
-  await screen.findByText('customer_demographics');
-  await screen.findByText('Customer demographics data access point');
-});
+      await screen.findByText('Mock SDLC Data Product');
+      screen.getByText(
+        'Comprehensive customer analytics data for business intelligence and reporting',
+      );
+      screen.getByText('GROUP1');
+      screen.getByText('Test access point group');
+      await screen.findByText('customer_demographics');
+      await screen.findByText('Customer demographics data access point');
+    });
 
-test('Loads LakehosueDataProduct with Ad-Hoc Data Product and displays title, description, and access point groups', async () => {
-  await setupLakehouseDataProductTest(
-    MOCK_DataProductId.MOCK_ADHOC_DATAPRODUCT,
-    2222,
-    [],
-  );
+    test('Loads LakehouseDataProduct with Ad-Hoc Data Product and displays title, description, and access point groups', async () => {
+      await setupLakehouseDataProductTest(
+        MOCK_DataProductId.MOCK_ADHOC_DATAPRODUCT,
+        2222,
+        [],
+      );
 
-  await screen.findByText('Mock Ad-Hoc Data Product');
-  screen.getByText(
-    'Flexible and dynamic data product for ad hoc analysis and reporting',
-  );
-  screen.getByText('GROUP1');
-  screen.getByText('Test ad-hoc access point group');
-  await screen.findByText('test_view');
-  await screen.findByText('No description to provide');
-});
+      await screen.findByText('Mock Ad-Hoc Data Product');
+      screen.getByText(
+        'Flexible and dynamic data product for ad hoc analysis and reporting',
+      );
+      screen.getByText('GROUP1');
+      screen.getByText('Test ad-hoc access point group');
+      await screen.findByText('test_view');
+      await screen.findByText('No description to provide');
+    });
 
-test('displays REQUEST ACCESS button when user has no contracts', async () => {
-  const mockContracts: V1_DataContract[] = [];
+    test('Access Point "More Info" button shows table with access point columns and types', async () => {
+      await setupLakehouseDataProductTest(
+        MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
+        1111,
+        [],
+      );
 
-  await setupLakehouseDataProductTest(
-    MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
-    11111,
-    mockContracts,
-  );
+      await screen.findByText('customer_demographics');
+      await screen.findByText('Customer demographics data access point');
+      const apgContainer = guaranteeNonNullable(
+        (await screen.findByText('GROUP1')).parentElement?.parentElement
+          ?.parentElement,
+      );
+      const moreInfoButton = guaranteeNonNullable(
+        apgContainer.querySelector('.ag-icon-tree-closed'),
+      );
+      fireEvent.click(moreInfoButton);
 
-  await screen.findByRole('button', { name: 'REQUEST ACCESS' });
-});
+      await screen.findByText('Column Name');
+      screen.getByText('Column Type');
 
-test('displays REQUEST ACCESS button when user has denied contract', async () => {
-  const mockContracts: V1_DataContract[] = [
-    {
-      description: 'Test denied contract',
-      guid: 'test-denied-contract-id',
-      version: 0,
-      state: V1_ContractState.COMPLETED,
-      resource: {
-        _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
-        accessPointGroup: 'GROUP1',
-        dataProduct: {
-          name: 'MOCK_SDLC_DATAPRODUCT',
-          owner: {
-            appDirId: 11111,
-          },
-        },
-      },
-      members: [],
-      consumer: {
-        _type: V1_OrganizationalScopeType.AdHocTeam,
-        users: [
-          {
-            name: 'test-consumer-user-id',
-            type: V1_UserType.WORKFORCE_USER,
-          },
-        ],
-      },
-      createdBy: 'test-user',
-    },
-  ];
-
-  await setupLakehouseDataProductTest(
-    MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
-    11111,
-    mockContracts,
-  );
-
-  await screen.findByRole('button', { name: 'REQUEST ACCESS' });
-});
-
-test('clicking REQUEST ACCESS button opens create contract modal', async () => {
-  const mockContracts: V1_DataContract[] = [];
-
-  await setupLakehouseDataProductTest(
-    MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
-    11111,
-    mockContracts,
-  );
-
-  await screen.findByText('GROUP1');
-  const requestAccessButton = await screen.findByRole('button', {
-    name: 'REQUEST ACCESS',
+      await screen.findByText('varchar_val');
+      screen.getByText('Varchar(32)');
+      screen.getByText('int_val');
+      screen.getByText('Int');
+    });
   });
-  fireEvent.click(requestAccessButton);
 
-  await screen.findByText('Data Contract Request');
-});
+  describe('Access/contract logic', () => {
+    test('displays REQUEST ACCESS button when user has no contracts', async () => {
+      const mockContracts: V1_DataContract[] = [];
 
-test('REQUEST ACCESS secondary button only shows "Manage Subscriptions"', async () => {
-  const mockContracts: V1_DataContract[] = [];
+      await setupLakehouseDataProductTest(
+        MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
+        11111,
+        mockContracts,
+      );
 
-  await setupLakehouseDataProductTest(
-    MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
-    11111,
-    mockContracts,
-  );
+      await screen.findByRole('button', { name: 'REQUEST ACCESS' });
+    });
 
-  await screen.findByText('GROUP1');
-  const secondaryButton = await screen.findByTitle('More options');
-  fireEvent.click(secondaryButton);
-
-  await screen.findByText('Manage Subscriptions');
-});
-
-test('displays PENDING MANAGER APPROVAL button for contract in PENDING_CONSUMER_PRIVILEGE_MANAGER_APPROVAL status', async () => {
-  const mockContracts: V1_DataContract[] = [
-    {
-      description: 'Test pending privilege manager approval contract',
-      guid: 'test-pending-consumer-privilege-manager-approval-contract-id',
-      version: 0,
-      state: V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL,
-      resource: {
-        _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
-        accessPointGroup: 'GROUP1',
-        dataProduct: {
-          name: 'MOCK_SDLC_DATAPRODUCT',
-          owner: {
-            appDirId: 11111,
+    test('displays REQUEST ACCESS button when user has denied contract', async () => {
+      const mockContracts: V1_DataContract[] = [
+        {
+          description: 'Test denied contract',
+          guid: 'test-denied-contract-id',
+          version: 0,
+          state: V1_ContractState.COMPLETED,
+          resource: {
+            _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+            accessPointGroup: 'GROUP1',
+            dataProduct: {
+              name: 'MOCK_SDLC_DATAPRODUCT',
+              owner: {
+                appDirId: 11111,
+              },
+            },
           },
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
         },
-      },
-      members: [],
-      consumer: {
-        _type: V1_OrganizationalScopeType.AdHocTeam,
-        users: [
-          {
-            name: 'test-consumer-user-id',
-            type: V1_UserType.WORKFORCE_USER,
+      ];
+
+      await setupLakehouseDataProductTest(
+        MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
+        11111,
+        mockContracts,
+      );
+
+      await screen.findByRole('button', { name: 'REQUEST ACCESS' });
+    });
+
+    test('clicking REQUEST ACCESS button opens create contract modal', async () => {
+      const mockContracts: V1_DataContract[] = [];
+
+      await setupLakehouseDataProductTest(
+        MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
+        11111,
+        mockContracts,
+      );
+
+      await screen.findByText('GROUP1');
+      const requestAccessButton = await screen.findByRole('button', {
+        name: 'REQUEST ACCESS',
+      });
+      fireEvent.click(requestAccessButton);
+
+      await screen.findByText('Data Contract Request');
+    });
+
+    test('REQUEST ACCESS secondary button only shows "Manage Subscriptions"', async () => {
+      const mockContracts: V1_DataContract[] = [];
+
+      await setupLakehouseDataProductTest(
+        MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
+        11111,
+        mockContracts,
+      );
+
+      await screen.findByText('GROUP1');
+      const secondaryButton = await screen.findByTitle('More options');
+      fireEvent.click(secondaryButton);
+
+      await screen.findByText('Manage Subscriptions');
+    });
+
+    test('displays PENDING MANAGER APPROVAL button for contract in PENDING_CONSUMER_PRIVILEGE_MANAGER_APPROVAL status', async () => {
+      const mockContracts: V1_DataContract[] = [
+        {
+          description: 'Test pending privilege manager approval contract',
+          guid: 'test-pending-consumer-privilege-manager-approval-contract-id',
+          version: 0,
+          state: V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL,
+          resource: {
+            _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+            accessPointGroup: 'GROUP1',
+            dataProduct: {
+              name: 'MOCK_SDLC_DATAPRODUCT',
+              owner: {
+                appDirId: 11111,
+              },
+            },
           },
-        ],
-      },
-      createdBy: 'test-user',
-    },
-  ];
-
-  await setupLakehouseDataProductTest(
-    MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
-    11111,
-    mockContracts,
-  );
-
-  await screen.findByRole('button', { name: 'PENDING MANAGER APPROVAL' });
-});
-
-test('clicking PENDING MANAGER APPROVAL button opens pending contract viewer', async () => {
-  const mockContracts: V1_DataContract[] = [
-    {
-      description: 'Test pending privilege manager approval contract',
-      guid: 'test-pending-consumer-privilege-manager-approval-contract-id',
-      version: 0,
-      state: V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL,
-      resource: {
-        _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
-        accessPointGroup: 'GROUP1',
-        dataProduct: {
-          name: 'MOCK_SDLC_DATAPRODUCT',
-          owner: {
-            appDirId: 11111,
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
           },
+          createdBy: 'test-user',
         },
-      },
-      members: [],
-      consumer: {
-        _type: V1_OrganizationalScopeType.AdHocTeam,
-        users: [
-          {
-            name: 'test-consumer-user-id',
-            type: V1_UserType.WORKFORCE_USER,
+      ];
+
+      await setupLakehouseDataProductTest(
+        MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
+        11111,
+        mockContracts,
+      );
+
+      await screen.findByRole('button', { name: 'PENDING MANAGER APPROVAL' });
+    });
+
+    test('clicking PENDING MANAGER APPROVAL button opens pending contract viewer', async () => {
+      const mockContracts: V1_DataContract[] = [
+        {
+          description: 'Test pending privilege manager approval contract',
+          guid: 'test-pending-consumer-privilege-manager-approval-contract-id',
+          version: 0,
+          state: V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL,
+          resource: {
+            _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+            accessPointGroup: 'GROUP1',
+            dataProduct: {
+              name: 'MOCK_SDLC_DATAPRODUCT',
+              owner: {
+                appDirId: 11111,
+              },
+            },
           },
-        ],
-      },
-      createdBy: 'test-user',
-    },
-  ];
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+        },
+      ];
 
-  await setupLakehouseDataProductTest(
-    MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
-    11111,
-    mockContracts,
-  );
+      await setupLakehouseDataProductTest(
+        MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
+        11111,
+        mockContracts,
+      );
 
-  await screen.findByText('GROUP1');
-  const pendingButton = await screen.findByRole('button', {
-    name: 'PENDING MANAGER APPROVAL',
+      await screen.findByText('GROUP1');
+      const pendingButton = await screen.findByRole('button', {
+        name: 'PENDING MANAGER APPROVAL',
+      });
+      fireEvent.click(pendingButton);
+
+      await screen.findByText('Pending Data Contract Request');
+    });
+
+    test('PENDING MANAGER APPROVAL secondary button shows "Request for Others" and "Manage Subscriptions"', async () => {
+      const mockContracts: V1_DataContract[] = [
+        {
+          description: 'Test pending privilege manager approval contract',
+          guid: 'test-pending-consumer-privilege-manager-approval-contract-id',
+          version: 0,
+          state: V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL,
+          resource: {
+            _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+            accessPointGroup: 'GROUP1',
+            dataProduct: {
+              name: 'MOCK_SDLC_DATAPRODUCT',
+              owner: {
+                appDirId: 11111,
+              },
+            },
+          },
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+        },
+      ];
+
+      await setupLakehouseDataProductTest(
+        MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
+        11111,
+        mockContracts,
+      );
+
+      await screen.findByText('GROUP1');
+      const secondaryButton = await screen.findByTitle('More options');
+      fireEvent.click(secondaryButton);
+
+      await screen.findByText('Request Access for Others');
+      screen.getByText('Manage Subscriptions');
+    });
+
+    test('displays PENDING DATA OWNER APPROVAL button for contract in PENDING_DATA_OWNER_APPROVAL status', async () => {
+      const mockContracts: V1_DataContract[] = [
+        {
+          description: 'Test pending data owner approval contract',
+          guid: 'test-pending-data-owner-approval-contract-id',
+          version: 0,
+          state: V1_ContractState.PENDING_DATA_OWNER_APPROVAL,
+          resource: {
+            _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+            accessPointGroup: 'GROUP1',
+            dataProduct: {
+              name: 'MOCK_SDLC_DATAPRODUCT',
+              owner: {
+                appDirId: 11111,
+              },
+            },
+          },
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+        },
+      ];
+
+      await setupLakehouseDataProductTest(
+        MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
+        11111,
+        mockContracts,
+      );
+
+      await screen.findByRole('button', {
+        name: 'PENDING DATA OWNER APPROVAL',
+      });
+    });
+
+    test('clicking PENDING DATA OWNER APPROVAL button opens pending contract viewer', async () => {
+      const mockContracts: V1_DataContract[] = [
+        {
+          description: 'Test pending data owner approval contract',
+          guid: 'test-pending-data-owner-approval-contract-id',
+          version: 0,
+          state: V1_ContractState.PENDING_DATA_OWNER_APPROVAL,
+          resource: {
+            _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+            accessPointGroup: 'GROUP1',
+            dataProduct: {
+              name: 'MOCK_SDLC_DATAPRODUCT',
+              owner: {
+                appDirId: 11111,
+              },
+            },
+          },
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+        },
+      ];
+
+      await setupLakehouseDataProductTest(
+        MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
+        11111,
+        mockContracts,
+      );
+
+      await screen.findByText('GROUP1');
+      const pendingButton = await screen.findByRole('button', {
+        name: 'PENDING DATA OWNER APPROVAL',
+      });
+      fireEvent.click(pendingButton);
+
+      await screen.findByText('Pending Data Contract Request');
+    });
+
+    test('PENDING DATA OWNER APPROVAL secondary button shows "Request for Others" and "Manage Subscriptions"', async () => {
+      const mockContracts: V1_DataContract[] = [
+        {
+          description: 'Test pending data owner approval contract',
+          guid: 'test-pending-data-owner-approval-contract-id',
+          version: 0,
+          state: V1_ContractState.PENDING_DATA_OWNER_APPROVAL,
+          resource: {
+            _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+            accessPointGroup: 'GROUP1',
+            dataProduct: {
+              name: 'MOCK_SDLC_DATAPRODUCT',
+              owner: {
+                appDirId: 11111,
+              },
+            },
+          },
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+        },
+      ];
+
+      await setupLakehouseDataProductTest(
+        MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
+        11111,
+        mockContracts,
+      );
+
+      await screen.findByText('GROUP1');
+      const secondaryButton = await screen.findByTitle('More options');
+      fireEvent.click(secondaryButton);
+
+      await screen.findByText('Request Access for Others');
+      screen.getByText('Manage Subscriptions');
+    });
+
+    test('displays ENTITLED button for contract in APPROVED status', async () => {
+      const mockContracts: V1_DataContract[] = [
+        {
+          description: 'Test pending data owner approval contract',
+          guid: 'test-approved-contract-id',
+          version: 0,
+          state: V1_ContractState.COMPLETED,
+          resource: {
+            _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+            accessPointGroup: 'GROUP1',
+            dataProduct: {
+              name: 'MOCK_SDLC_DATAPRODUCT',
+              owner: {
+                appDirId: 11111,
+              },
+            },
+          },
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+        },
+      ];
+
+      await setupLakehouseDataProductTest(
+        MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
+        11111,
+        mockContracts,
+      );
+
+      await screen.findByRole('button', { name: 'ENTITLED' });
+    });
+
+    test('displays ENTITLED button for contract when user is approved but entire contract is not yet completed', async () => {
+      const mockContracts: V1_DataContract[] = [
+        {
+          description: 'Test partially approved contract',
+          guid: 'test-partially-approved-contract-id',
+          version: 0,
+          state: V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL,
+          resource: {
+            _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+            accessPointGroup: 'GROUP1',
+            dataProduct: {
+              name: 'MOCK_SDLC_DATAPRODUCT',
+              owner: {
+                appDirId: 11111,
+              },
+            },
+          },
+          members: [],
+          consumer: {
+            _type: 'unknown',
+          },
+          createdBy: 'test-user',
+        },
+      ];
+
+      await setupLakehouseDataProductTest(
+        MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
+        11111,
+        mockContracts,
+      );
+
+      await screen.findByRole('button', { name: 'ENTITLED' });
+    });
+
+    test('clicking ENTITLED button opens completed contract viewer', async () => {
+      const mockContracts: V1_DataContract[] = [
+        {
+          description: 'Test pending data owner approval contract',
+          guid: 'test-approved-contract-id',
+          version: 0,
+          state: V1_ContractState.COMPLETED,
+          resource: {
+            _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+            accessPointGroup: 'GROUP1',
+            dataProduct: {
+              name: 'MOCK_SDLC_DATAPRODUCT',
+              owner: {
+                appDirId: 11111,
+              },
+            },
+          },
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+        },
+      ];
+
+      await setupLakehouseDataProductTest(
+        MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
+        11111,
+        mockContracts,
+      );
+
+      await screen.findByText('GROUP1');
+      const entitledButton = await screen.findByRole('button', {
+        name: 'ENTITLED',
+      });
+      fireEvent.click(entitledButton);
+
+      await screen.findByText('Data Contract Request');
+    });
+
+    test('ENTITLED secondary button shows "Request for Others" and "Manage Subscriptions"', async () => {
+      const mockContracts: V1_DataContract[] = [
+        {
+          description: 'Test pending data owner approval contract',
+          guid: 'test-approved-contract-id',
+          version: 0,
+          state: V1_ContractState.COMPLETED,
+          resource: {
+            _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+            accessPointGroup: 'GROUP1',
+            dataProduct: {
+              name: 'MOCK_SDLC_DATAPRODUCT',
+              owner: {
+                appDirId: 11111,
+              },
+            },
+          },
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+        },
+      ];
+
+      await setupLakehouseDataProductTest(
+        MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
+        11111,
+        mockContracts,
+      );
+
+      await screen.findByText('GROUP1');
+      const secondaryButton = await screen.findByTitle('More options');
+      fireEvent.click(secondaryButton);
+
+      await screen.findByText('Request Access for Others');
+      screen.getByText('Manage Subscriptions');
+    });
+
+    test('displays ENTERPRISE ACCESS for Access Point Group marked as Enterprise', async () => {
+      await setupLakehouseDataProductTest(
+        MOCK_DataProductId.MOCK_ENTERPRISE_DATAPRODUCT,
+        33333,
+        [],
+      );
+
+      await screen.findByRole('button', { name: 'ENTERPRISE ACCESS' });
+    });
+
+    test('ENTERPRISE ACCESS secondary button shows "Request for Others" and "Manage Subscriptions"', async () => {
+      await setupLakehouseDataProductTest(
+        MOCK_DataProductId.MOCK_ENTERPRISE_DATAPRODUCT,
+        33333,
+        [],
+      );
+
+      await screen.findByText('ENTERPRISE_GROUP');
+      const secondaryButton = await screen.findByTitle('More options');
+      fireEvent.click(secondaryButton);
+
+      await screen.findByText('Request Access for Others');
+      screen.getByText('Manage Subscriptions');
+    });
+
+    test('Request Access for Others button opens create contract modal', async () => {
+      const mockContracts: V1_DataContract[] = [
+        {
+          description: 'Test pending data owner approval contract',
+          guid: 'test-approved-contract-id',
+          version: 0,
+          state: V1_ContractState.COMPLETED,
+          resource: {
+            _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+            accessPointGroup: 'GROUP1',
+            dataProduct: {
+              name: 'MOCK_SDLC_DATAPRODUCT',
+              owner: {
+                appDirId: 11111,
+              },
+            },
+          },
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+        },
+      ];
+
+      await setupLakehouseDataProductTest(
+        MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
+        11111,
+        mockContracts,
+      );
+
+      await screen.findByText('GROUP1');
+      const secondaryButton = await screen.findByTitle('More options');
+      fireEvent.click(secondaryButton);
+
+      const requestForOthersButton = await screen.findByText(
+        'Request Access for Others',
+      );
+      fireEvent.click(requestForOthersButton);
+
+      await screen.findByText('Data Contract Request');
+      screen.getByRole('button', { name: 'User' });
+      screen.getByRole('button', { name: 'System Account' });
+    });
+
+    test('On enterprise APG, Request Access for Others button opens create contract modal for only system account', async () => {
+      await setupLakehouseDataProductTest(
+        MOCK_DataProductId.MOCK_ENTERPRISE_DATAPRODUCT,
+        33333,
+        [],
+      );
+
+      await screen.findByText('ENTERPRISE_GROUP');
+      const secondaryButton = await screen.findByTitle('More options');
+      fireEvent.click(secondaryButton);
+
+      const requestForOthersButton = await screen.findByText(
+        'Request Access for Others',
+      );
+      fireEvent.click(requestForOthersButton);
+
+      await screen.findByText('Data Contract Request');
+      await screen.findByRole('button', { name: 'System Account' });
+      expect(screen.queryByRole('button', { name: 'User' })).toBeNull();
+      screen.getByText(
+        'Note: Enterprise APGs only require contracts for System Accounts. Regular users do not need to request access.',
+      );
+    });
   });
-  fireEvent.click(pendingButton);
 
-  await screen.findByText('Pending Data Contract Request');
-});
+  describe('Subscriptions', () => {
+    test('Manage Subscriptions button opens subscriptions modal', async () => {
+      await setupLakehouseDataProductTest(
+        MOCK_DataProductId.MOCK_ENTERPRISE_DATAPRODUCT,
+        33333,
+        [],
+      );
 
-test('PENDING MANAGER APPROVAL secondary button shows "Request for Others" and "Manage Subscriptions"', async () => {
-  const mockContracts: V1_DataContract[] = [
-    {
-      description: 'Test pending privilege manager approval contract',
-      guid: 'test-pending-consumer-privilege-manager-approval-contract-id',
-      version: 0,
-      state: V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL,
-      resource: {
-        _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
-        accessPointGroup: 'GROUP1',
-        dataProduct: {
-          name: 'MOCK_SDLC_DATAPRODUCT',
-          owner: {
-            appDirId: 11111,
-          },
-        },
-      },
-      members: [],
-      consumer: {
-        _type: V1_OrganizationalScopeType.AdHocTeam,
-        users: [
-          {
-            name: 'test-consumer-user-id',
-            type: V1_UserType.WORKFORCE_USER,
-          },
-        ],
-      },
-      createdBy: 'test-user',
-    },
-  ];
+      await screen.findByText('ENTERPRISE_GROUP');
+      const secondaryButton = await screen.findByTitle('More options');
+      fireEvent.click(secondaryButton);
 
-  await setupLakehouseDataProductTest(
-    MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
-    11111,
-    mockContracts,
-  );
+      const manageSubscriptionsButton = await screen.findByText(
+        'Manage Subscriptions',
+      );
+      fireEvent.click(manageSubscriptionsButton);
 
-  await screen.findByText('GROUP1');
-  const secondaryButton = await screen.findByTitle('More options');
-  fireEvent.click(secondaryButton);
-
-  await screen.findByText('Request Access for Others');
-  screen.getByText('Manage Subscriptions');
-});
-
-test('displays PENDING DATA OWNER APPROVAL button for contract in PENDING_DATA_OWNER_APPROVAL status', async () => {
-  const mockContracts: V1_DataContract[] = [
-    {
-      description: 'Test pending data owner approval contract',
-      guid: 'test-pending-data-owner-approval-contract-id',
-      version: 0,
-      state: V1_ContractState.PENDING_DATA_OWNER_APPROVAL,
-      resource: {
-        _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
-        accessPointGroup: 'GROUP1',
-        dataProduct: {
-          name: 'MOCK_SDLC_DATAPRODUCT',
-          owner: {
-            appDirId: 11111,
-          },
-        },
-      },
-      members: [],
-      consumer: {
-        _type: V1_OrganizationalScopeType.AdHocTeam,
-        users: [
-          {
-            name: 'test-consumer-user-id',
-            type: V1_UserType.WORKFORCE_USER,
-          },
-        ],
-      },
-      createdBy: 'test-user',
-    },
-  ];
-
-  await setupLakehouseDataProductTest(
-    MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
-    11111,
-    mockContracts,
-  );
-
-  await screen.findByRole('button', { name: 'PENDING DATA OWNER APPROVAL' });
-});
-
-test('clicking PENDING DATA OWNER APPROVAL button opens pending contract viewer', async () => {
-  const mockContracts: V1_DataContract[] = [
-    {
-      description: 'Test pending data owner approval contract',
-      guid: 'test-pending-data-owner-approval-contract-id',
-      version: 0,
-      state: V1_ContractState.PENDING_DATA_OWNER_APPROVAL,
-      resource: {
-        _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
-        accessPointGroup: 'GROUP1',
-        dataProduct: {
-          name: 'MOCK_SDLC_DATAPRODUCT',
-          owner: {
-            appDirId: 11111,
-          },
-        },
-      },
-      members: [],
-      consumer: {
-        _type: V1_OrganizationalScopeType.AdHocTeam,
-        users: [
-          {
-            name: 'test-consumer-user-id',
-            type: V1_UserType.WORKFORCE_USER,
-          },
-        ],
-      },
-      createdBy: 'test-user',
-    },
-  ];
-
-  await setupLakehouseDataProductTest(
-    MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
-    11111,
-    mockContracts,
-  );
-
-  await screen.findByText('GROUP1');
-  const pendingButton = await screen.findByRole('button', {
-    name: 'PENDING DATA OWNER APPROVAL',
+      await screen.findByText('Data Product Subscriptions');
+    });
   });
-  fireEvent.click(pendingButton);
 
-  await screen.findByText('Pending Data Contract Request');
-});
+  describe.only('Support info rendering', () => {
+    test('Renders support info correctly', async () => {
+      await setupLakehouseDataProductTest(
+        MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
+        11111,
+        [],
+      );
 
-test('PENDING DATA OWNER APPROVAL secondary button shows "Request for Others" and "Manage Subscriptions"', async () => {
-  const mockContracts: V1_DataContract[] = [
-    {
-      description: 'Test pending data owner approval contract',
-      guid: 'test-pending-data-owner-approval-contract-id',
-      version: 0,
-      state: V1_ContractState.PENDING_DATA_OWNER_APPROVAL,
-      resource: {
-        _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
-        accessPointGroup: 'GROUP1',
-        dataProduct: {
-          name: 'MOCK_SDLC_DATAPRODUCT',
-          owner: {
-            appDirId: 11111,
-          },
-        },
-      },
-      members: [],
-      consumer: {
-        _type: V1_OrganizationalScopeType.AdHocTeam,
-        users: [
-          {
-            name: 'test-consumer-user-id',
-            type: V1_UserType.WORKFORCE_USER,
-          },
-        ],
-      },
-      createdBy: 'test-user',
-    },
-  ];
+      await screen.findByText('Support');
 
-  await setupLakehouseDataProductTest(
-    MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
-    11111,
-    mockContracts,
-  );
+      // Confirm all emails render
+      await screen.findByText('Person 1 Email');
+      screen.getByText('Person 2 Email');
 
-  await screen.findByText('GROUP1');
-  const secondaryButton = await screen.findByTitle('More options');
-  fireEvent.click(secondaryButton);
+      // Confirm support info with label renders label
+      screen.getByText('Documentation Link Label');
 
-  await screen.findByText('Request Access for Others');
-  screen.getByText('Manage Subscriptions');
-});
+      // Confirm support info without label renders URL
+      screen.getByText('https://example-website.com');
+    });
 
-test('displays ENTITLED button for contract in APPROVED status', async () => {
-  const mockContracts: V1_DataContract[] = [
-    {
-      description: 'Test pending data owner approval contract',
-      guid: 'test-approved-contract-id',
-      version: 0,
-      state: V1_ContractState.COMPLETED,
-      resource: {
-        _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
-        accessPointGroup: 'GROUP1',
-        dataProduct: {
-          name: 'MOCK_SDLC_DATAPRODUCT',
-          owner: {
-            appDirId: 11111,
-          },
-        },
-      },
-      members: [],
-      consumer: {
-        _type: V1_OrganizationalScopeType.AdHocTeam,
-        users: [
-          {
-            name: 'test-consumer-user-id',
-            type: V1_UserType.WORKFORCE_USER,
-          },
-        ],
-      },
-      createdBy: 'test-user',
-    },
-  ];
+    test('Renders placeholder if no support info is available', async () => {
+      await setupLakehouseDataProductTest(
+        MOCK_DataProductId.MOCK_SDLC_NO_SUPPORT_INFO_DATAPRODUCT,
+        11111,
+        [],
+      );
 
-  await setupLakehouseDataProductTest(
-    MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
-    11111,
-    mockContracts,
-  );
+      await screen.findByText('Support');
 
-  await screen.findByRole('button', { name: 'ENTITLED' });
-});
-
-test('displays ENTITLED button for contract when user is approved but entire contract is not yet completed', async () => {
-  const mockContracts: V1_DataContract[] = [
-    {
-      description: 'Test partially approved contract',
-      guid: 'test-partially-approved-contract-id',
-      version: 0,
-      state: V1_ContractState.OPEN_FOR_PRIVILEGE_MANAGER_APPROVAL,
-      resource: {
-        _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
-        accessPointGroup: 'GROUP1',
-        dataProduct: {
-          name: 'MOCK_SDLC_DATAPRODUCT',
-          owner: {
-            appDirId: 11111,
-          },
-        },
-      },
-      members: [],
-      consumer: {
-        _type: 'unknown',
-      },
-      createdBy: 'test-user',
-    },
-  ];
-
-  await setupLakehouseDataProductTest(
-    MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
-    11111,
-    mockContracts,
-  );
-
-  await screen.findByRole('button', { name: 'ENTITLED' });
-});
-
-test('clicking ENTITLED button opens completed contract viewer', async () => {
-  const mockContracts: V1_DataContract[] = [
-    {
-      description: 'Test pending data owner approval contract',
-      guid: 'test-approved-contract-id',
-      version: 0,
-      state: V1_ContractState.COMPLETED,
-      resource: {
-        _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
-        accessPointGroup: 'GROUP1',
-        dataProduct: {
-          name: 'MOCK_SDLC_DATAPRODUCT',
-          owner: {
-            appDirId: 11111,
-          },
-        },
-      },
-      members: [],
-      consumer: {
-        _type: V1_OrganizationalScopeType.AdHocTeam,
-        users: [
-          {
-            name: 'test-consumer-user-id',
-            type: V1_UserType.WORKFORCE_USER,
-          },
-        ],
-      },
-      createdBy: 'test-user',
-    },
-  ];
-
-  await setupLakehouseDataProductTest(
-    MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
-    11111,
-    mockContracts,
-  );
-
-  await screen.findByText('GROUP1');
-  const entitledButton = await screen.findByRole('button', {
-    name: 'ENTITLED',
+      await screen.findByText('(support information not specified)');
+    });
   });
-  fireEvent.click(entitledButton);
-
-  await screen.findByText('Data Contract Request');
-});
-
-test('ENTITLED secondary button shows "Request for Others" and "Manage Subscriptions"', async () => {
-  const mockContracts: V1_DataContract[] = [
-    {
-      description: 'Test pending data owner approval contract',
-      guid: 'test-approved-contract-id',
-      version: 0,
-      state: V1_ContractState.COMPLETED,
-      resource: {
-        _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
-        accessPointGroup: 'GROUP1',
-        dataProduct: {
-          name: 'MOCK_SDLC_DATAPRODUCT',
-          owner: {
-            appDirId: 11111,
-          },
-        },
-      },
-      members: [],
-      consumer: {
-        _type: V1_OrganizationalScopeType.AdHocTeam,
-        users: [
-          {
-            name: 'test-consumer-user-id',
-            type: V1_UserType.WORKFORCE_USER,
-          },
-        ],
-      },
-      createdBy: 'test-user',
-    },
-  ];
-
-  await setupLakehouseDataProductTest(
-    MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
-    11111,
-    mockContracts,
-  );
-
-  await screen.findByText('GROUP1');
-  const secondaryButton = await screen.findByTitle('More options');
-  fireEvent.click(secondaryButton);
-
-  await screen.findByText('Request Access for Others');
-  screen.getByText('Manage Subscriptions');
-});
-
-test('displays ENTERPRISE ACCESS for Access Point Group marked as Enterprise', async () => {
-  await setupLakehouseDataProductTest(
-    MOCK_DataProductId.MOCK_ENTERPRISE_DATAPRODUCT,
-    33333,
-    [],
-  );
-
-  await screen.findByRole('button', { name: 'ENTERPRISE ACCESS' });
-});
-
-test('ENTERPRISE ACCESS secondary button shows "Request for Others" and "Manage Subscriptions"', async () => {
-  await setupLakehouseDataProductTest(
-    MOCK_DataProductId.MOCK_ENTERPRISE_DATAPRODUCT,
-    33333,
-    [],
-  );
-
-  await screen.findByText('ENTERPRISE_GROUP');
-  const secondaryButton = await screen.findByTitle('More options');
-  fireEvent.click(secondaryButton);
-
-  await screen.findByText('Request Access for Others');
-  screen.getByText('Manage Subscriptions');
-});
-
-test('Manage Subscriptions button opens subscriptions modal', async () => {
-  await setupLakehouseDataProductTest(
-    MOCK_DataProductId.MOCK_ENTERPRISE_DATAPRODUCT,
-    33333,
-    [],
-  );
-
-  await screen.findByText('ENTERPRISE_GROUP');
-  const secondaryButton = await screen.findByTitle('More options');
-  fireEvent.click(secondaryButton);
-
-  const manageSubscriptionsButton = await screen.findByText(
-    'Manage Subscriptions',
-  );
-  fireEvent.click(manageSubscriptionsButton);
-
-  await screen.findByText('Data Product Subscriptions');
-});
-
-test('Request Access for Others button opens create contract modal', async () => {
-  const mockContracts: V1_DataContract[] = [
-    {
-      description: 'Test pending data owner approval contract',
-      guid: 'test-approved-contract-id',
-      version: 0,
-      state: V1_ContractState.COMPLETED,
-      resource: {
-        _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
-        accessPointGroup: 'GROUP1',
-        dataProduct: {
-          name: 'MOCK_SDLC_DATAPRODUCT',
-          owner: {
-            appDirId: 11111,
-          },
-        },
-      },
-      members: [],
-      consumer: {
-        _type: V1_OrganizationalScopeType.AdHocTeam,
-        users: [
-          {
-            name: 'test-consumer-user-id',
-            type: V1_UserType.WORKFORCE_USER,
-          },
-        ],
-      },
-      createdBy: 'test-user',
-    },
-  ];
-
-  await setupLakehouseDataProductTest(
-    MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
-    11111,
-    mockContracts,
-  );
-
-  await screen.findByText('GROUP1');
-  const secondaryButton = await screen.findByTitle('More options');
-  fireEvent.click(secondaryButton);
-
-  const requestForOthersButton = await screen.findByText(
-    'Request Access for Others',
-  );
-  fireEvent.click(requestForOthersButton);
-
-  await screen.findByText('Data Contract Request');
-  screen.getByRole('button', { name: 'User' });
-  screen.getByRole('button', { name: 'System Account' });
-});
-
-test('On enterprise APG, Request Access for Others button opens create contract modal for only system account', async () => {
-  await setupLakehouseDataProductTest(
-    MOCK_DataProductId.MOCK_ENTERPRISE_DATAPRODUCT,
-    33333,
-    [],
-  );
-
-  await screen.findByText('ENTERPRISE_GROUP');
-  const secondaryButton = await screen.findByTitle('More options');
-  fireEvent.click(secondaryButton);
-
-  const requestForOthersButton = await screen.findByText(
-    'Request Access for Others',
-  );
-  fireEvent.click(requestForOthersButton);
-
-  await screen.findByText('Data Contract Request');
-  await screen.findByRole('button', { name: 'System Account' });
-  expect(screen.queryByRole('button', { name: 'User' })).toBeNull();
-  screen.getByText(
-    'Note: Enterprise APGs only require contracts for System Accounts. Regular users do not need to request access.',
-  );
-});
-
-test('Access Point "More Info" button shows table with access point columns and types', async () => {
-  await setupLakehouseDataProductTest(
-    MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
-    1111,
-    [],
-  );
-
-  await screen.findByText('customer_demographics');
-  await screen.findByText('Customer demographics data access point');
-  const apgContainer = guaranteeNonNullable(
-    (await screen.findByText('GROUP1')).parentElement?.parentElement
-      ?.parentElement,
-  );
-  const moreInfoButton = guaranteeNonNullable(
-    apgContainer.querySelector('.ag-icon-tree-closed'),
-  );
-  fireEvent.click(moreInfoButton);
-
-  await screen.findByText('Column Name');
-  screen.getByText('Column Type');
-
-  await screen.findByText('varchar_val');
-  screen.getByText('Varchar(32)');
-  screen.getByText('int_val');
-  screen.getByText('Int');
 });
