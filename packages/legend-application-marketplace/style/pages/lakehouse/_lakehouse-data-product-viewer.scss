@@ -126,6 +126,10 @@
 
 .data-product__viewer {
   &__support-info {
+    &__container {
+      width: fit-content;
+    }
+
     &__section {
       @include flexVCenter;
 

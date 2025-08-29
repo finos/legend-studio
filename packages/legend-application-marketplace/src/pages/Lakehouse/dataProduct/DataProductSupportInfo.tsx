@@ -78,7 +78,12 @@ export const DataProductSupportInfo = observer(
         </div>
         <div className="data-space__viewer__wiki__section__content">
           {doesSupportInfoExist ? (
-            <Grid container={true} spacing={3} columns={2}>
+            <Grid
+              container={true}
+              spacing={3}
+              columns={2}
+              className="data-product__viewer__support-info_container"
+            >
               {supportInfo?.emails !== undefined &&
                 supportInfo.emails.length > 0 && (
                   <Grid
@@ -114,6 +119,8 @@ export const DataProductSupportInfo = observer(
                   <Link
                     className="data-product__viewer__support-info__link"
                     href={supportInfo.documentation.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
                     {supportInfo.documentation.label ??
                       supportInfo.documentation.url}
@@ -132,6 +139,8 @@ export const DataProductSupportInfo = observer(
                   <Link
                     className="data-product__viewer__support-info__link"
                     href={supportInfo.supportUrl.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
                     {supportInfo.supportUrl.label ?? supportInfo.supportUrl.url}
                     <ExternalLinkIcon />
@@ -149,6 +158,8 @@ export const DataProductSupportInfo = observer(
                   <Link
                     className="data-product__viewer__support-info__link"
                     href={supportInfo.website.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
                     {supportInfo.website.label ?? supportInfo.website.url}
                     <ExternalLinkIcon />
@@ -166,6 +177,8 @@ export const DataProductSupportInfo = observer(
                   <Link
                     className="data-product__viewer__support-info__link"
                     href={supportInfo.faqUrl.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
                     {supportInfo.faqUrl.label ?? supportInfo.faqUrl.url}
                     <ExternalLinkIcon />
