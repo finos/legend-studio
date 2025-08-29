@@ -84,31 +84,30 @@ export const DataProductSupportInfo = observer(
               columns={2}
               className="data-product__viewer__support-info_container"
             >
-              {supportInfo?.emails !== undefined &&
-                supportInfo.emails.length > 0 && (
-                  <Grid
-                    size={1}
-                    className="data-product__viewer__support-info__section"
-                  >
-                    <Box className="data-product__viewer__support-info__section__icon">
-                      <EnvelopeOutlineIcon />
-                    </Box>
-                    {supportInfo?.emails.map((email, index) => (
-                      <>
-                        <Link
-                          key={email.address}
-                          className="data-product__viewer__support-info__link"
-                          href={`mailto:${email.address}`}
-                        >
-                          {email.title}
-                          <ExternalLinkIcon />
-                        </Link>
-                        {index < supportInfo.emails.length - 1 ? ', ' : null}
-                      </>
-                    ))}
-                  </Grid>
-                )}
-              {supportInfo?.documentation !== undefined && (
+              {supportInfo.emails.length > 0 && (
+                <Grid
+                  size={1}
+                  className="data-product__viewer__support-info__section"
+                >
+                  <Box className="data-product__viewer__support-info__section__icon">
+                    <EnvelopeOutlineIcon />
+                  </Box>
+                  {supportInfo.emails.map((email, index) => (
+                    <>
+                      <Link
+                        key={email.address}
+                        className="data-product__viewer__support-info__link"
+                        href={`mailto:${email.address}`}
+                      >
+                        {email.title}
+                        <ExternalLinkIcon />
+                      </Link>
+                      {index < supportInfo.emails.length - 1 ? ', ' : null}
+                    </>
+                  ))}
+                </Grid>
+              )}
+              {supportInfo.documentation !== undefined && (
                 <Grid
                   size={1}
                   className="data-product__viewer__support-info__section"
@@ -128,7 +127,7 @@ export const DataProductSupportInfo = observer(
                   </Link>
                 </Grid>
               )}
-              {supportInfo?.supportUrl !== undefined && (
+              {supportInfo.supportUrl !== undefined && (
                 <Grid
                   size={1}
                   className="data-product__viewer__support-info__section"
@@ -147,7 +146,7 @@ export const DataProductSupportInfo = observer(
                   </Link>
                 </Grid>
               )}
-              {supportInfo?.website !== undefined && (
+              {supportInfo.website !== undefined && (
                 <Grid
                   size={1}
                   className="data-product__viewer__support-info__section"
@@ -166,7 +165,7 @@ export const DataProductSupportInfo = observer(
                   </Link>
                 </Grid>
               )}
-              {supportInfo?.faqUrl !== undefined && (
+              {supportInfo.faqUrl !== undefined && (
                 <Grid
                   size={1}
                   className="data-product__viewer__support-info__section"
