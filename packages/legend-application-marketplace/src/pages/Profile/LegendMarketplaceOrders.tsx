@@ -16,11 +16,14 @@
 
 import { observer } from 'mobx-react-lite';
 import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
+import { withLegendMarketplaceVendorDataStore } from '../../application/providers/LegendMarketplaceVendorDataProvider.js';
 
-export const LegendMarketplaceOrders = observer(() => {
-  return (
-    <LegendMarketplacePage className="legend-marketplace-home">
-      Your orders work in progress
-    </LegendMarketplacePage>
-  );
-});
+export const LegendMarketplaceOrders = withLegendMarketplaceVendorDataStore(
+  observer(() => {
+    return (
+      <LegendMarketplacePage className="legend-marketplace-home">
+        Your orders work in progress
+      </LegendMarketplacePage>
+    );
+  }),
+);

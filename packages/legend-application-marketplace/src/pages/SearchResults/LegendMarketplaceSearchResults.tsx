@@ -24,124 +24,128 @@ import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
 } from '@finos/legend-art';
-import { useLegendMarketplaceBaseStore } from '../../application/LegendMarketplaceFrameworkProvider.js';
+import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import { assertErrorThrown } from '@finos/legend-shared';
 import { LegendMarketplaceSearchResultDrawerContent } from './LegendMarketplaceSearchResultDrawerContent.js';
 import { Drawer, Grid2 as Grid } from '@mui/material';
 import { LegendMarketplaceProductSearchCard } from '../../components/DataProductCard/LegendMarketplaceDataProductSearchCard.js';
 import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
+import { withLegendMarketplaceVendorDataStore } from '../../application/providers/LegendMarketplaceVendorDataProvider.js';
 
-export const LegendMarketplaceSearchResults = observer(() => {
-  const applicationStore = useApplicationStore();
-  const store = useLegendMarketplaceBaseStore();
-  const marketplaceServerClient = store.marketplaceServerClient;
+export const LegendMarketplaceSearchResults =
+  withLegendMarketplaceVendorDataStore(
+    observer(() => {
+      const applicationStore = useApplicationStore();
+      const store = useLegendMarketplaceBaseStore();
+      const marketplaceServerClient = store.marketplaceServerClient;
 
-  const params =
-    applicationStore.navigationService.navigator.getCurrentLocationParameters<{
-      vendorName: string | undefined;
-      query: string | undefined;
-    }>();
+      const params =
+        applicationStore.navigationService.navigator.getCurrentLocationParameters<{
+          vendorName: string | undefined;
+          query: string | undefined;
+        }>();
 
-  const [results, setResults] = useState<DataProductSearchResult[]>([]);
-  const [isError, setIsError] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+      const [results, setResults] = useState<DataProductSearchResult[]>([]);
+      const [isError, setIsError] = useState<boolean>(false);
+      const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const [selectedPreviewResult, setSelectedPreviewResult] =
-    useState<DataProductSearchResult>();
+      const [selectedPreviewResult, setSelectedPreviewResult] =
+        useState<DataProductSearchResult>();
 
-  useEffect(() => {
-    const fetchResults = async () => {
-      setIsLoading(true);
-      try {
-        const vendorName = params.vendorName?.trim() ?? '';
-        const query = params.query?.trim() ?? '';
+      useEffect(() => {
+        const fetchResults = async () => {
+          setIsLoading(true);
+          try {
+            const vendorName = params.vendorName?.trim() ?? '';
+            const query = params.query?.trim() ?? '';
 
-        const _results = await marketplaceServerClient.semanticSearch(
-          query,
-          vendorName,
-          30,
+            const _results = await marketplaceServerClient.semanticSearch(
+              query,
+              vendorName,
+              30,
+            );
+            setResults(
+              _results.map((result) =>
+                DataProductSearchResult.serialization.fromJson(result),
+              ),
+            );
+          } catch (error) {
+            assertErrorThrown(error);
+            setIsError(true);
+          } finally {
+            setIsLoading(false);
+          }
+        };
+        // eslint-disable-next-line no-void
+        void fetchResults();
+      }, [marketplaceServerClient, params.query, params.vendorName]);
+
+      const onSearch = (query: string | undefined): void => {
+        applicationStore.navigationService.navigator.goToLocation(
+          generateSearchResultsRoute(undefined, query),
         );
-        setResults(
-          _results.map((result) =>
-            DataProductSearchResult.serialization.fromJson(result),
-          ),
-        );
-      } catch (error) {
-        assertErrorThrown(error);
-        setIsError(true);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    // eslint-disable-next-line no-void
-    void fetchResults();
-  }, [marketplaceServerClient, params.query, params.vendorName]);
+      };
 
-  const onSearch = (query: string | undefined): void => {
-    applicationStore.navigationService.navigator.goToLocation(
-      generateSearchResultsRoute(undefined, query),
-    );
-  };
-
-  return (
-    <LegendMarketplacePage className="legend-marketplace-search-results">
-      <div className="legend-marketplace-search-results__search-bar">
-        <LegendMarketplaceSearchBar
-          onSearch={onSearch}
-          initialValue={params.query?.trim() ?? ''}
-        />
-      </div>
-      <div className="legend-marketplace-search-results__results">
-        <CubesLoadingIndicator isLoading={isLoading}>
-          <CubesLoadingIndicatorIcon />
-        </CubesLoadingIndicator>
-        {isError ? (
-          <div>Error loading results</div>
-        ) : (
-          <Grid
-            container={true}
-            spacing={{ xs: 4 }}
-            columns={{ xs: 1, sm: 2, lg: 3, xxl: 4, xxxl: 5, xxxxl: 6 }}
-            className="legend-marketplace-search-results__results__cards"
-          >
-            {results.map((result) => (
+      return (
+        <LegendMarketplacePage className="legend-marketplace-search-results">
+          <div className="legend-marketplace-search-results__search-bar">
+            <LegendMarketplaceSearchBar
+              onSearch={onSearch}
+              initialValue={params.query?.trim() ?? ''}
+            />
+          </div>
+          <div className="legend-marketplace-search-results__results">
+            <CubesLoadingIndicator isLoading={isLoading}>
+              <CubesLoadingIndicatorIcon />
+            </CubesLoadingIndicator>
+            {isError ? (
+              <div>Error loading results</div>
+            ) : (
               <Grid
-                key={`${result.vendor_name}-${result.data_product_name}`}
-                size={1}
+                container={true}
+                spacing={{ xs: 4 }}
+                columns={{ xs: 1, sm: 2, lg: 3, xxl: 4, xxxl: 5, xxxxl: 6 }}
+                className="legend-marketplace-search-results__results__cards"
               >
-                <LegendMarketplaceProductSearchCard
-                  productSearchResult={result}
-                  onPreviewClick={() => {
-                    setSelectedPreviewResult(result);
-                  }}
-                  onLearnMoreClick={() => {
-                    applicationStore.navigationService.navigator.visitAddress(
-                      result.data_product_link,
-                    );
-                  }}
-                />
+                {results.map((result) => (
+                  <Grid
+                    key={`${result.vendor_name}-${result.data_product_name}`}
+                    size={1}
+                  >
+                    <LegendMarketplaceProductSearchCard
+                      productSearchResult={result}
+                      onPreviewClick={() => {
+                        setSelectedPreviewResult(result);
+                      }}
+                      onLearnMoreClick={() => {
+                        applicationStore.navigationService.navigator.visitAddress(
+                          result.data_product_link,
+                        );
+                      }}
+                    />
+                  </Grid>
+                ))}
               </Grid>
-            ))}
-          </Grid>
-        )}
-      </div>
-      <Drawer
-        anchor="right"
-        open={selectedPreviewResult !== undefined}
-        onClose={() => setSelectedPreviewResult(undefined)}
-        slotProps={{
-          paper: {
-            sx: {
-              width: '40%',
-              maxWidth: '100rem',
-            },
-          },
-        }}
-      >
-        <LegendMarketplaceSearchResultDrawerContent
-          productSearchResult={selectedPreviewResult}
-        />
-      </Drawer>
-    </LegendMarketplacePage>
+            )}
+          </div>
+          <Drawer
+            anchor="right"
+            open={selectedPreviewResult !== undefined}
+            onClose={() => setSelectedPreviewResult(undefined)}
+            slotProps={{
+              paper: {
+                sx: {
+                  width: '40%',
+                  maxWidth: '100rem',
+                },
+              },
+            }}
+          >
+            <LegendMarketplaceSearchResultDrawerContent
+              productSearchResult={selectedPreviewResult}
+            />
+          </Drawer>
+        </LegendMarketplacePage>
+      );
+    }),
   );
-});

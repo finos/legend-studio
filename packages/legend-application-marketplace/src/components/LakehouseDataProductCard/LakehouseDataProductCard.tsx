@@ -331,7 +331,9 @@ export const LakehouseDataProductCard = observer(
             dataProductState={dataProductState}
             popoverAnchorEl={popoverAnchorEl}
             setPopoverAnchorEl={setPopoverAnchorEl}
-            applicationStore={dataProductState.lakehouseState.applicationStore}
+            applicationStore={
+              dataProductState.marketplaceBaseStore.applicationStore
+            }
           />
         </Box>
       </>
