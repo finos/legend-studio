@@ -17,7 +17,7 @@
 import {
   AnchorLinkIcon,
   DocumentIcon,
-  EnvelopIcon,
+  EnvelopeOutlineIcon,
   ExternalLinkIcon,
   HeadsetIcon,
   QuestionCircleOutlineIcon,
@@ -86,7 +86,7 @@ export const DataProductSupportInfo = observer(
                     className="data-product__viewer__support-info__section"
                   >
                     <Box className="data-product__viewer__support-info__section__icon">
-                      <EnvelopIcon />
+                      <EnvelopeOutlineIcon />
                     </Box>
                     {supportInfo?.emails.map((email, index) => (
                       <>

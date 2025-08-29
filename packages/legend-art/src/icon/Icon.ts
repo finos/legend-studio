@@ -272,289 +272,294 @@ export const QuestionThinIcon = IoHelp;
 export const SunIcon = IoSunnyOutline;
 export const MoonIcon = IoMoon;
 
-//======================================================= FA =======================================================
-import {
-  FaHistory,
-  FaCrosshairs,
-  FaLayerGroup,
-  FaGhost,
-  FaLock,
-  FaMask,
-  FaFile,
-  FaLongArrowAltRight,
-  FaTimes,
-  FaTimesCircle,
-  FaPlus,
-  FaCog,
-  FaEye,
-  FaEyeSlash,
-  FaCaretUp,
-  FaCaretDown,
-  FaFire,
-  FaSave,
-  FaSquare,
-  FaRegSquare,
-  FaCheckSquare,
-  FaMinusSquare,
-  FaHashtag,
-  FaHammer,
-  FaCommentDots,
-  FaClock,
-  FaRegClock,
-  FaToggleOn,
-  FaQuestion,
-  FaQuestionCircle,
-  FaInfoCircle,
-  FaCompress,
-  FaMap,
-  FaPlay,
-  FaGripVertical,
-  FaRobot,
-  FaArrowLeft,
-  FaArrowRight,
-  FaArrowAltCircleDown,
-  FaArrowAltCircleRight,
-  FaArrowCircleRight,
-  FaUser,
-  FaShapes,
-  FaEnvelope,
-  FaSkull,
-  FaDollarSign,
-  FaSearch,
-  FaStar,
-  FaKey,
-  FaExternalLinkAlt,
-  FaExternalLinkSquareAlt,
-  FaLightbulb,
-  FaRegLightbulb,
-  FaList,
-  FaCircle,
-  FaMinusCircle,
-  FaTrash,
-  FaRegCircle,
-  FaShieldAlt,
-  FaTag,
-  FaTags,
-  FaBolt,
-  FaCheckCircle,
-  FaExclamationTriangle,
-  FaBug,
-  FaCircleNotch,
-  FaRegKeyboard,
-  FaUserSecret,
-  FaBuffer,
-  FaSitemap,
-  FaExpand,
-  FaExpandArrowsAlt,
-  FaSortAlphaDown,
-  FaSort,
-  FaSortAlphaDownAlt,
-  FaFolderPlus,
-  FaCaretRight,
-  FaCaretLeft,
-  FaWrench,
-  FaArrowDown,
-  FaArrowUp,
-  FaTerminal,
-  FaTruckLoading,
-  FaFileCsv,
-  FaFolderOpen,
-  FaFolder,
-  FaFileCode,
-  FaCodeBranch,
-  FaArrowAltCircleUp,
-  FaArrowAltCircleLeft,
-  FaRegStopCircle,
-  FaAsterisk,
-  FaFilter,
-  FaExclamationCircle,
-  FaRocket,
-  FaCheck,
-  FaBan,
-  FaFileImport,
-  FaUserFriends,
-  FaDownload,
-  FaUpload,
-  FaRegWindowRestore,
-  FaPauseCircle,
-  FaShare,
-  FaRegCopy,
-  FaFileAlt,
-  FaEdit,
-  FaArrowsAltH,
-  FaRegWindowMaximize,
-  FaWindowMaximize,
-  FaLongArrowAltDown,
-  FaLongArrowAltUp,
-  FaMeteor,
-  FaPiedPiperSquare,
-  FaPuzzlePiece,
-  FaToggleOff,
-  FaMapMarkerAlt,
-  FaHatWizard,
-  FaRegLaughWink,
-  FaRegChartBar,
-  FaRegSadTear,
-  FaBusinessTime,
-  FaDatabase,
-  FaServer,
-  FaArchive,
-  FaBrain,
-  FaBookOpen,
-  FaLevelDownAlt,
-  FaRegCalendarAlt,
-  FaCalculator,
-  FaReadme,
-  FaRedo,
-  FaUndo,
-  FaCube,
-  FaShoppingCart,
-  FaRegUserCircle,
-  FaRegBell,
-  FaBuilding,
-} from 'react-icons/fa';
-
+//======================================================= PI =======================================================
 import { PiFunctionBold } from 'react-icons/pi';
 
-export const HistoryIcon = FaHistory;
-export const CrosshairsIcon = FaCrosshairs;
-export const LayerGroupIcon = FaLayerGroup;
-export const GhostIcon = FaGhost;
-export const LockIcon = FaLock;
-export const MaskIcon = FaMask;
-export const FileIcon = FaFile;
-export const LongArrowRightIcon = FaLongArrowAltRight;
-export const TimesIcon = FaTimes;
-export const TimesCircleIcon = FaTimesCircle;
-export const PlusIcon = FaPlus;
-export const CogIcon = FaCog;
-export const EyeIcon = FaEye;
-export const CloseEyeIcon = FaEyeSlash;
-export const CaretUpIcon = FaCaretUp;
-export const CaretDownIcon = FaCaretDown;
-export const FireIcon = FaFire;
-export const SaveIcon = FaSave;
-export const SquareIcon = FaSquare;
-export const EmptySquareIcon = FaRegSquare;
-export const CheckSquareIcon = FaCheckSquare;
-export const MinusSquareIcon = FaMinusSquare;
-export const HashtagIcon = FaHashtag;
-export const HammerIcon = FaHammer;
-export const ChatIcon = FaCommentDots;
-export const ClockIcon = FaClock;
-export const EmptyClockIcon = FaRegClock;
-export const ToggleIcon = FaToggleOn;
-export const QuestionIcon = FaQuestion;
-export const QuestionCircleIcon = FaQuestionCircle;
-export const InfoCircleIcon = FaInfoCircle;
-export const CompressIcon = FaCompress;
-export const MapIcon = FaMap;
-export const PlayIcon = FaPlay;
-export const VerticalDragHandleIcon = FaGripVertical;
-export const RobotIcon = FaRobot;
+export const PiFunctionBoldIcon = PiFunctionBold;
+
+//======================================================= FA =======================================================
+import {
+  FaArchive,
+  FaArrowAltCircleDown,
+  FaArrowAltCircleLeft,
+  FaArrowAltCircleRight,
+  FaArrowAltCircleUp,
+  FaArrowCircleRight,
+  FaArrowDown,
+  FaArrowLeft,
+  FaArrowRight,
+  FaArrowsAltH,
+  FaArrowUp,
+  FaAsterisk,
+  FaBan,
+  FaBolt,
+  FaBookOpen,
+  FaBrain,
+  FaBuffer,
+  FaBug,
+  FaBuilding,
+  FaBusinessTime,
+  FaCalculator,
+  FaCaretDown,
+  FaCaretLeft,
+  FaCaretRight,
+  FaCaretUp,
+  FaCheck,
+  FaCheckCircle,
+  FaCheckSquare,
+  FaCircle,
+  FaCircleNotch,
+  FaClock,
+  FaCodeBranch,
+  FaCog,
+  FaCommentDots,
+  FaCompress,
+  FaCrosshairs,
+  FaCube,
+  FaDatabase,
+  FaDollarSign,
+  FaDownload,
+  FaEdit,
+  FaEnvelope,
+  FaExclamationCircle,
+  FaExclamationTriangle,
+  FaExpand,
+  FaExpandArrowsAlt,
+  FaExternalLinkAlt,
+  FaExternalLinkSquareAlt,
+  FaEye,
+  FaEyeSlash,
+  FaFile,
+  FaFileAlt,
+  FaFileCode,
+  FaFileCsv,
+  FaFileImport,
+  FaFilter,
+  FaFire,
+  FaFolder,
+  FaFolderOpen,
+  FaFolderPlus,
+  FaGhost,
+  FaGripVertical,
+  FaHammer,
+  FaHashtag,
+  FaHatWizard,
+  FaHistory,
+  FaInfoCircle,
+  FaKey,
+  FaLayerGroup,
+  FaLevelDownAlt,
+  FaLightbulb,
+  FaList,
+  FaLock,
+  FaLongArrowAltDown,
+  FaLongArrowAltRight,
+  FaLongArrowAltUp,
+  FaMap,
+  FaMapMarkerAlt,
+  FaMask,
+  FaMeteor,
+  FaMinusCircle,
+  FaMinusSquare,
+  FaPauseCircle,
+  FaPiedPiperSquare,
+  FaPlay,
+  FaPlus,
+  FaPuzzlePiece,
+  FaQuestion,
+  FaQuestionCircle,
+  FaReadme,
+  FaRedo,
+  FaRegBell,
+  FaRegCalendarAlt,
+  FaRegChartBar,
+  FaRegCircle,
+  FaRegClock,
+  FaRegCopy,
+  FaRegEnvelope,
+  FaRegKeyboard,
+  FaRegLaughWink,
+  FaRegLightbulb,
+  FaRegSadTear,
+  FaRegSquare,
+  FaRegStopCircle,
+  FaRegUserCircle,
+  FaRegWindowMaximize,
+  FaRegWindowRestore,
+  FaRobot,
+  FaRocket,
+  FaSave,
+  FaSearch,
+  FaServer,
+  FaShapes,
+  FaShare,
+  FaShieldAlt,
+  FaShoppingCart,
+  FaSitemap,
+  FaSkull,
+  FaSort,
+  FaSortAlphaDown,
+  FaSortAlphaDownAlt,
+  FaSquare,
+  FaStar,
+  FaTag,
+  FaTags,
+  FaTerminal,
+  FaTimes,
+  FaTimesCircle,
+  FaToggleOff,
+  FaToggleOn,
+  FaTrash,
+  FaTruckLoading,
+  FaUndo,
+  FaUpload,
+  FaUser,
+  FaUserFriends,
+  FaUserSecret,
+  FaWindowMaximize,
+  FaWrench,
+} from 'react-icons/fa';
+
+export const ArchiveIcon = FaArchive;
+export const ArrowCircleDownIcon = FaArrowAltCircleDown;
+export const ArrowCircleLeftIcon = FaArrowAltCircleLeft;
+export const ArrowCircleRightIcon = FaArrowAltCircleRight;
+export const ArrowCircleUpIcon = FaArrowAltCircleUp;
+export const ArrowDownIcon = FaArrowDown;
 export const ArrowLeftIcon = FaArrowLeft;
 export const ArrowRightIcon = FaArrowRight;
-export const ArrowCircleDownIcon = FaArrowAltCircleDown;
-export const ArrowCircleRightIcon = FaArrowAltCircleRight;
-export const StickArrowCircleRightIcon = FaArrowCircleRight;
-export const UserIcon = FaUser;
-export const ShapesIcon = FaShapes;
-export const EnvelopIcon = FaEnvelope;
-export const SkullIcon = FaSkull;
+export const ArrowsAltHIcon = FaArrowsAltH; // to be reviewed/combined
+export const ArrowUpIcon = FaArrowUp;
+export const AsteriskIcon = FaAsterisk;
+export const BanIcon = FaBan;
+export const BellIcon = FaRegBell;
+export const BoltIcon = FaBolt;
+export const BrainIcon = FaBrain;
+export const BufferIcon = FaBuffer; // to be reviewed, moved to LegendIcon
+export const BugIcon = FaBug;
+export const BuildingIcon = FaBuilding;
+export const BusinessTimeIcon = FaBusinessTime; // to be reviewed/combined
+export const CalculatorIcon = FaCalculator;
+export const CalendarIcon = FaRegCalendarAlt;
+export const CaretDownIcon = FaCaretDown;
+export const CaretLeftIcon = FaCaretLeft;
+export const CaretRightIcon = FaCaretRight;
+export const CaretUpIcon = FaCaretUp;
+export const ChartIcon = FaRegChartBar;
+export const ChatIcon = FaCommentDots;
+export const CheckCircleIcon = FaCheckCircle;
+export const CheckIcon = FaCheck;
+export const CheckSquareIcon = FaCheckSquare;
+export const CircleIcon = FaCircle;
+export const CircleNotchIcon = FaCircleNotch;
+export const ClockIcon = FaClock;
+export const CloseEyeIcon = FaEyeSlash;
+export const CodeBranchIcon = FaCodeBranch;
+export const CogIcon = FaCog;
+export const CompressIcon = FaCompress;
+export const CopyIcon = FaRegCopy;
+export const CrosshairsIcon = FaCrosshairs;
+export const CsvIcon = FaFileCsv;
+export const CubeIcon = FaCube;
+export const DatabaseIcon = FaDatabase;
+export const DocumentationIcon = FaBookOpen;
 export const DollarIcon = FaDollarSign;
-export const SearchIcon = FaSearch;
-export const StarIcon = FaStar;
-export const KeyIcon = FaKey;
+export const DownloadIcon = FaDownload;
+export const EmptyCircleIcon = FaRegCircle;
+export const EmptyClockIcon = FaRegClock;
+export const EmptyLightBulbIcon = FaRegLightbulb;
+export const EmptySquareIcon = FaRegSquare;
+export const EmptyStopCircleIcon = FaRegStopCircle;
+export const EmptyWindowRestoreIcon = FaRegWindowRestore;
+export const EnvelopeIcon = FaEnvelope;
+export const EnvelopeOutlineIcon = FaRegEnvelope;
+export const ExclamationCircleIcon = FaExclamationCircle;
+export const ExclamationTriangleIcon = FaExclamationTriangle;
+export const ExpandAllIcon = FaExpandArrowsAlt;
+export const ExpandIcon = FaExpand;
 export const ExternalLinkIcon = FaExternalLinkAlt;
 export const ExternalLinkSquareIcon = FaExternalLinkSquareAlt;
-export const LightBulbIcon = FaLightbulb;
-export const EmptyLightBulbIcon = FaRegLightbulb;
-export const ListIcon = FaList;
-export const CircleIcon = FaCircle;
-export const MinusCircleIcon = FaMinusCircle;
-export const TrashIcon = FaTrash;
-export const EmptyCircleIcon = FaRegCircle;
-export const ShieldIcon = FaShieldAlt;
-export const TagIcon = FaTag;
-export const TagsIcon = FaTags;
-export const BoltIcon = FaBolt;
-export const CheckCircleIcon = FaCheckCircle;
-export const ExclamationTriangleIcon = FaExclamationTriangle;
-export const BugIcon = FaBug;
-export const CircleNotchIcon = FaCircleNotch;
-export const KeyboardIcon = FaRegKeyboard;
-export const HackerIcon = FaUserSecret;
-export const BufferIcon = FaBuffer; // to be reviewed, moved to LegendIcon
-export const SitemapIcon = FaSitemap; // to be reviewed, moved to LegendIcon
-export const ExpandIcon = FaExpand;
-export const ExpandAllIcon = FaExpandArrowsAlt;
-export const SortDownIcon = FaSortAlphaDown;
-export const SortIcon = FaSort;
-export const SortDownAltIcon = FaSortAlphaDownAlt;
-export const NewFolderIcon = FaFolderPlus;
-export const CaretRightIcon = FaCaretRight;
-export const CaretLeftIcon = FaCaretLeft;
-export const WrenchIcon = FaWrench;
-export const ArrowDownIcon = FaArrowDown;
-export const ArrowUpIcon = FaArrowUp;
-export const TerminalIcon = FaTerminal;
-export const TruckLoadingIcon = FaTruckLoading;
-export const FolderOpenIcon = FaFolderOpen;
-export const FolderIcon = FaFolder;
-export const FileCodeIcon = FaFileCode;
-export const PiFunctionBoldIcon = PiFunctionBold;
-export const CodeBranchIcon = FaCodeBranch;
-export const ArrowCircleUpIcon = FaArrowAltCircleUp;
-export const ArrowCircleLeftIcon = FaArrowAltCircleLeft;
-export const EmptyStopCircleIcon = FaRegStopCircle;
-export const AsteriskIcon = FaAsterisk;
-export const FilterIcon = FaFilter;
-export const ExclamationCircleIcon = FaExclamationCircle;
-export const RocketIcon = FaRocket;
-export const CheckIcon = FaCheck;
-export const BanIcon = FaBan;
-export const FileImportIcon = FaFileImport;
-export const UsersIcon = FaUserFriends;
-export const DownloadIcon = FaDownload;
-export const UploadIcon = FaUpload;
-export const EmptyWindowRestoreIcon = FaRegWindowRestore;
-export const PauseCircleIcon = FaPauseCircle;
-export const ShareIcon = FaShare;
-export const CopyIcon = FaRegCopy;
+export const EyeIcon = FaEye;
+export const FaceLaughWinkIcon = FaRegLaughWink;
+export const FaceSadTearIcon = FaRegSadTear;
 export const FileAltIcon = FaFileAlt; // to be reviewed/combined
-export const PencilEditIcon = FaEdit; // to be reviewed/combined
-export const ArrowsAltHIcon = FaArrowsAltH; // to be reviewed/combined
-export const WindowMaximizeIcon = FaRegWindowMaximize; // to be reviewed/combined
+export const FileCodeIcon = FaFileCode;
+export const FileIcon = FaFile;
+export const FileImportIcon = FaFileImport;
 export const FilledWindowMaximizeIcon = FaWindowMaximize; // to be reviewed/combined
+export const FilterIcon = FaFilter;
+export const FireIcon = FaFire;
+export const FolderIcon = FaFolder;
+export const FolderOpenIcon = FaFolderOpen;
+export const GhostIcon = FaGhost;
+export const HackerIcon = FaUserSecret;
+export const HammerIcon = FaHammer;
+export const HashtagIcon = FaHashtag;
+export const HistoryIcon = FaHistory;
+export const InfoCircleIcon = FaInfoCircle;
+export const KeyboardIcon = FaRegKeyboard;
+export const KeyIcon = FaKey;
+export const LayerGroupIcon = FaLayerGroup;
+export const LevelDownIcon = FaLevelDownAlt; // to be reviewed/combined
+export const LightBulbIcon = FaLightbulb;
+export const ListIcon = FaList;
+export const LockIcon = FaLock;
 export const LongArrowAltDownIcon = FaLongArrowAltDown; // to be reviewed/combined
 export const LongArrowAltUpIcon = FaLongArrowAltUp; // to be reviewed/combined
-export const MeteorIcon = FaMeteor; // to be reviewed/combined
-export const PiedPiperSquareIcon = FaPiedPiperSquare; // to be reviewed/combined
-export const PuzzlePieceIcon = FaPuzzlePiece; // to be reviewed/combined
-export const ToggleOffIcon = FaToggleOff;
+export const LongArrowRightIcon = FaLongArrowAltRight;
+export const MapIcon = FaMap;
 export const MapMarkerIcon = FaMapMarkerAlt;
-export const WizardHatIcon = FaHatWizard;
-export const FaceLaughWinkIcon = FaRegLaughWink;
-export const ChartIcon = FaRegChartBar;
-export const CsvIcon = FaFileCsv;
-export const FaceSadTearIcon = FaRegSadTear;
-export const BusinessTimeIcon = FaBusinessTime; // to be reviewed/combined
-export const DatabaseIcon = FaDatabase;
-export const ServerIcon = FaServer;
-export const ArchiveIcon = FaArchive;
-export const BrainIcon = FaBrain;
-export const DocumentationIcon = FaBookOpen;
-export const LevelDownIcon = FaLevelDownAlt; // to be reviewed/combined
-export const CalendarIcon = FaRegCalendarAlt;
-export const CalculatorIcon = FaCalculator;
+export const MaskIcon = FaMask;
+export const MeteorIcon = FaMeteor; // to be reviewed/combined
+export const MinusCircleIcon = FaMinusCircle;
+export const MinusSquareIcon = FaMinusSquare;
+export const NewFolderIcon = FaFolderPlus;
+export const PauseCircleIcon = FaPauseCircle;
+export const PencilEditIcon = FaEdit; // to be reviewed/combined
+export const PiedPiperSquareIcon = FaPiedPiperSquare; // to be reviewed/combined
+export const PlayIcon = FaPlay;
+export const PlusIcon = FaPlus;
+export const PuzzlePieceIcon = FaPuzzlePiece; // to be reviewed/combined
+export const QuestionCircleIcon = FaQuestionCircle;
+export const QuestionIcon = FaQuestion;
 export const ReadMeIcon = FaReadme;
-export const UndoIcon = FaUndo;
 export const RedoIcon = FaRedo;
-export const CubeIcon = FaCube;
+export const RobotIcon = FaRobot;
+export const RocketIcon = FaRocket;
+export const SaveIcon = FaSave;
+export const SearchIcon = FaSearch;
+export const ServerIcon = FaServer;
+export const ShapesIcon = FaShapes;
+export const ShareIcon = FaShare;
+export const ShieldIcon = FaShieldAlt;
 export const ShoppingCartIcon = FaShoppingCart;
+export const SitemapIcon = FaSitemap; // to be reviewed, moved to LegendIcon
+export const SkullIcon = FaSkull;
+export const SortDownAltIcon = FaSortAlphaDownAlt;
+export const SortDownIcon = FaSortAlphaDown;
+export const SortIcon = FaSort;
+export const SquareIcon = FaSquare;
+export const StarIcon = FaStar;
+export const StickArrowCircleRightIcon = FaArrowCircleRight;
+export const TagIcon = FaTag;
+export const TagsIcon = FaTags;
+export const TerminalIcon = FaTerminal;
+export const TimesCircleIcon = FaTimesCircle;
+export const TimesIcon = FaTimes;
+export const ToggleIcon = FaToggleOn;
+export const ToggleOffIcon = FaToggleOff;
+export const TrashIcon = FaTrash;
+export const TruckLoadingIcon = FaTruckLoading;
+export const UndoIcon = FaUndo;
+export const UploadIcon = FaUpload;
 export const UserCircleIcon = FaRegUserCircle;
-export const BellIcon = FaRegBell;
-export const BuildingIcon = FaBuilding;
+export const UserIcon = FaUser;
+export const UsersIcon = FaUserFriends;
+export const VerticalDragHandleIcon = FaGripVertical;
+export const WindowMaximizeIcon = FaRegWindowMaximize; // to be reviewed/combined
+export const WizardHatIcon = FaHatWizard;
+export const WrenchIcon = FaWrench;
+
 //======================================================= GI =======================================================
 import {
   GiWaterDrop,
