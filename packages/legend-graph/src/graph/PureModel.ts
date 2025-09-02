@@ -180,6 +180,8 @@ export class SystemModel extends BasicModel {
    *
    * `meta::pure::metamodel::type::Any` covers `meta::pure::metamodel::type`
    * `meta::pure::profiles::doc` covers `meta::pure::profiles`
+   * `meta::pure::metamodel::relation::Relation` covers `meta::pure::metamodel::relation`
+   * `meta::pure::metamodel::variant::Variant` covers `meta::pure::metamodel::variant`
    */
   initializeAutoImports(): void {
     this.autoImports = AUTO_IMPORTS.map((_package) =>
