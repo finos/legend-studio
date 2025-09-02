@@ -1,5 +1,15 @@
 # @finos/legend-graph
 
+## 32.2.0
+
+### Minor Changes
+
+- [#4378](https://github.com/finos/legend-studio/pull/4378) [`e730da2`](https://github.com/finos/legend-studio/commit/e730da2909e9bdc9129322f16515ec4413d0fa1a) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: initial support for lakehouse consumer
+
+### Patch Changes
+
+- [#4350](https://github.com/finos/legend-studio/pull/4350) [`74ae874`](https://github.com/finos/legend-studio/commit/74ae874018cb9a82e18b14cc8bb6ed17faa1ad16) ([@travisstebbins](https://github.com/travisstebbins)) - Add icon/image components to DataProductEditor
+
 ## 32.1.67
 
 ### Patch Changes

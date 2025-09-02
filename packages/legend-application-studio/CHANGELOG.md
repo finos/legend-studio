@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.19.29
+
+### Patch Changes
+
+- [#4350](https://github.com/finos/legend-studio/pull/4350) [`74ae874`](https://github.com/finos/legend-studio/commit/74ae874018cb9a82e18b14cc8bb6ed17faa1ad16) ([@travisstebbins](https://github.com/travisstebbins)) - Add icon/image components to DataProductEditor
+
 ## 28.19.28
 
 ### Patch Changes
