@@ -245,7 +245,8 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
       Boolean(this.warehouse) &&
       Boolean(this.selectedAccessPoint) &&
       Boolean(this.selectedDataProduct) &&
-      Boolean(this.selectedEnvironment)
+      Boolean(this.selectedEnvironment) &&
+      Boolean(this.dpCoordinates)
     );
   }
 

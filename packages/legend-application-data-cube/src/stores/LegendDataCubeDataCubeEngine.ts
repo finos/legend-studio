@@ -1677,7 +1677,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     packageableRuntime.package = 'runtime';
     source.runtime = packageableRuntime.path;
 
-    deserializedPMCD.elements = [packageableRuntime];
+    deserializedPMCD.elements.push(packageableRuntime);
 
     const dataProduct = guaranteeType(
       deserializedPMCD.elements.find((pe) => pe.path === rawSource.paths[0]),
