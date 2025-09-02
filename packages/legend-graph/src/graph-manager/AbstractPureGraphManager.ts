@@ -170,6 +170,11 @@ export interface ExecutionOptions {
   abortController?: AbortController | undefined;
   preservedResponseHeadersList?: string[];
   tracingtags?: PlainObject | undefined;
+  /**
+   * If set will force lambda to append ->from(mapping/runtime)
+   * instead of providing in separate input property
+   */
+  forceFromExpression?: boolean | undefined;
 }
 
 export interface ServiceRegistrationOptions {

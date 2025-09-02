@@ -314,6 +314,9 @@ export class FilterConditionState implements Hashable {
                 .runtimeValue,
             ),
             this.filterState.queryBuilderState.graphManagerState.graph,
+            {
+              forceFromExpression: true,
+            },
           )) as ExecutionResultWithMetadata
         ).executionResult;
         this.typeaheadSearchResults = buildTypeaheadOptions(result);
