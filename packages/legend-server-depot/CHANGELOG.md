@@ -1,5 +1,11 @@
 # @finos/legend-server-depot
 
+## 6.1.0
+
+### Minor Changes
+
+- [#4378](https://github.com/finos/legend-studio/pull/4378) [`e730da2`](https://github.com/finos/legend-studio/commit/e730da2909e9bdc9129322f16515ec4413d0fa1a) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: initial support for lakehouse consumer
+
 ## 6.0.98
 
 ## 6.0.97
