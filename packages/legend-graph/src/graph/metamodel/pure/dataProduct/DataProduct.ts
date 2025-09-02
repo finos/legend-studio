@@ -314,6 +314,22 @@ export class UnknownDataProductIcon
   }
 }
 
+export abstract class DataProductType implements Hashable {
+  get hashCode(): string {
+    return hashArray([CORE_HASH_STRUCTURE.DATA_PRODUCT_TYPE]);
+  }
+}
+
+export class InternalDataProductType extends DataProductType {}
+
+export class ExternalDataProductType extends DataProductType {
+  link!: DataProductLink;
+
+  override get hashCode(): string {
+    return hashArray([CORE_HASH_STRUCTURE.DATA_PRODUCT_TYPE, this.link]);
+  }
+}
+
 export class DataProduct extends PackageableElement {
   title: string | undefined;
   description: string | undefined;
@@ -322,6 +338,7 @@ export class DataProduct extends PackageableElement {
   icon: DataProductIcon | undefined;
   accessPointGroups: AccessPointGroup[] = [];
   supportInfo: SupportInfo | undefined;
+  type: DataProductType | undefined;
 
   override accept_PackageableElementVisitor<T>(
     visitor: PackageableElementVisitor<T>,
@@ -339,6 +356,7 @@ export class DataProduct extends PackageableElement {
       this.icon ?? '',
       hashArray(this.accessPointGroups),
       this.supportInfo ?? '',
+      this.type ?? '',
       hashArray(this.stereotypes.map((val) => val.pointerHashCode)),
       hashArray(this.taggedValues),
     ]);

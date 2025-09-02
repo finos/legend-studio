@@ -34,6 +34,11 @@ import type { V1_TaggedValue } from '../domain/V1_TaggedValue.js';
 
 export const V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE = 'dataProduct';
 
+export enum V1_DataProductTypeValue {
+  INTERNAL = 'internalDataProductType',
+  EXTERNAL = 'externalDataProductType',
+}
+
 export abstract class V1_AccessPoint implements Hashable {
   id!: string;
   description: string | undefined;
@@ -267,6 +272,25 @@ export class V1_UnknownDataProductIcon
   }
 }
 
+export abstract class V1_DataProductType implements Hashable {
+  get hashCode(): string {
+    return hashArray([CORE_HASH_STRUCTURE.DATA_PRODUCT_TYPE]);
+  }
+}
+
+export class V1_InternalDataProductType extends V1_DataProductType {
+  _type = V1_DataProductTypeValue.INTERNAL;
+}
+
+export class V1_ExternalDataProductType extends V1_DataProductType {
+  _type = V1_DataProductTypeValue.EXTERNAL;
+  link!: V1_DataProductLink;
+
+  override get hashCode(): string {
+    return hashArray([CORE_HASH_STRUCTURE.DATA_PRODUCT_TYPE, this.link]);
+  }
+}
+
 export class V1_DataProduct extends V1_PackageableElement implements Hashable {
   title: string | undefined;
   description: string | undefined;
@@ -275,6 +299,7 @@ export class V1_DataProduct extends V1_PackageableElement implements Hashable {
   icon: V1_DataProductIcon | undefined;
   accessPointGroups: V1_AccessPointGroup[] = [];
   supportInfo: V1_SupportInfo | undefined;
+  type: V1_DataProductType | undefined;
   stereotypes: V1_StereotypePtr[] = [];
   taggedValues: V1_TaggedValue[] = [];
 
@@ -288,6 +313,7 @@ export class V1_DataProduct extends V1_PackageableElement implements Hashable {
       this.icon ?? '',
       hashArray(this.accessPointGroups),
       this.supportInfo ?? '',
+      this.type ?? '',
       hashArray(this.stereotypes),
       hashArray(this.taggedValues),
     ]);

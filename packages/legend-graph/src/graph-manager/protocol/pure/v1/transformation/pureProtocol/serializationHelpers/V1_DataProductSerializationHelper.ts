@@ -39,6 +39,10 @@ import {
   V1_SupportInfo,
   V1_UnknownAccessPoint,
   V1_UnknownDataProductIcon,
+  type V1_DataProductType,
+  V1_InternalDataProductType,
+  V1_ExternalDataProductType,
+  V1_DataProductTypeValue,
 } from '../../../model/packageableElements/dataProduct/V1_DataProduct.js';
 import {
   UnsupportedOperationError,
@@ -267,6 +271,45 @@ export const V1_SupportInfoModelSchema = createModelSchema(V1_SupportInfo, {
   website: optional(usingModelSchema(V1_DataProductLinkModelSchema)),
 });
 
+export const V1_InternalDataProductTypeModelSchema = createModelSchema(
+  V1_InternalDataProductType,
+  {
+    _type: usingConstantValueSchema(V1_DataProductTypeValue.INTERNAL),
+  },
+);
+
+export const V1_ExternalDataProductTypeModelSchema = createModelSchema(
+  V1_ExternalDataProductType,
+  {
+    _type: usingConstantValueSchema(V1_DataProductTypeValue.EXTERNAL),
+    link: usingModelSchema(V1_DataProductLinkModelSchema),
+  },
+);
+
+export const V1_deserializeDataProductType = (
+  json: Record<string, unknown>,
+): V1_DataProductType => {
+  switch (json._type) {
+    case V1_DataProductTypeValue.INTERNAL:
+      return deserialize(V1_InternalDataProductTypeModelSchema, json);
+    case V1_DataProductTypeValue.EXTERNAL:
+      return deserialize(V1_ExternalDataProductTypeModelSchema, json);
+    default:
+      throw new Error(`Unknown V1_DataProductType type: ${json._type}`);
+  }
+};
+
+export const V1_serializeDataProductType = (
+  value: V1_DataProductType,
+): PlainObject<V1_DataProductType> => {
+  if (value instanceof V1_InternalDataProductType) {
+    return serialize(V1_InternalDataProductTypeModelSchema, value);
+  } else if (value instanceof V1_ExternalDataProductType) {
+    return serialize(V1_ExternalDataProductTypeModelSchema, value);
+  }
+  throw new Error(`Unknown V1_DataProductType instance: ${value}`);
+};
+
 export const V1_dataProductModelSchema = createModelSchema(V1_DataProduct, {
   _type: usingConstantValueSchema(V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE),
   accessPointGroups: customList(
@@ -289,6 +332,10 @@ export const V1_dataProductModelSchema = createModelSchema(V1_DataProduct, {
   ),
   name: primitive(),
   package: primitive(),
+  type: optionalCustom(
+    V1_serializeDataProductType,
+    V1_deserializeDataProductType,
+  ),
   stereotypes: customListWithSchema(V1_stereotypePtrModelSchema),
   supportInfo: optionalCustomUsingModelSchema(V1_SupportInfoModelSchema),
   taggedValues: customListWithSchema(V1_taggedValueModelSchema),

@@ -117,11 +117,17 @@ import {
 } from './helpers/V1_FunctionActivatorBuilderHelper.js';
 import type { V1_INTERNAL__UnknownElement } from '../../../model/packageableElements/V1_INTERNAL__UnknownElement.js';
 import type { V1_HostedService } from '../../../model/packageableElements/function/V1_HostedService.js';
-import { type V1_DataProduct } from '../../../model/packageableElements/dataProduct/V1_DataProduct.js';
+import {
+  V1_ExternalDataProductType,
+  V1_InternalDataProductType,
+  type V1_DataProduct,
+} from '../../../model/packageableElements/dataProduct/V1_DataProduct.js';
 import {
   type DataProduct_DeliveryFrequency,
   type DataProduct_Region,
   Email,
+  ExternalDataProductType,
+  InternalDataProductType,
   SupportInfo,
 } from '../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import {
@@ -725,6 +731,13 @@ export class V1_ElementSecondPassBuilder
         return email;
       });
       dataProduct.supportInfo = supportInfo;
+    }
+    if (element.type instanceof V1_InternalDataProductType) {
+      dataProduct.type = new InternalDataProductType();
+    } else if (element.type instanceof V1_ExternalDataProductType) {
+      const dataProductType = new ExternalDataProductType();
+      dataProductType.link = element.type.link;
+      dataProduct.type = dataProductType;
     }
     dataProduct.deliveryFrequency = element.deliveryFrequency as
       | DataProduct_DeliveryFrequency

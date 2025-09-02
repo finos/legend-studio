@@ -390,6 +390,7 @@ export enum CORE_HASH_STRUCTURE {
   EMAIL = 'EMAIL',
   LAKEHOUSE_ACCESS_POINT = 'LAKEHOUSE_ACCESS_POINT',
   UNKNOWN_ACCESS_POINT = 'UNKNOWN_ACCESS_POINT',
+  DATA_PRODUCT_TYPE = 'DATA_PRODUCT_TYPE',
 }
 
 export const hashObjectWithoutSourceInformation = (val: object): string =>
