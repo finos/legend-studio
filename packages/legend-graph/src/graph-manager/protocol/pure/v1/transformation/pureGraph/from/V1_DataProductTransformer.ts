@@ -23,6 +23,8 @@ import {
   DataProductLibraryIcon,
   LakehouseAccessPoint,
   ModelAccessPointGroup,
+  ExternalDataProductType,
+  InternalDataProductType,
   UnknownAccessPoint,
   UnknownDataProductIcon,
 } from '../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
@@ -44,6 +46,8 @@ import {
   V1_SupportInfo,
   V1_UnknownAccessPoint,
   V1_UnknownDataProductIcon,
+  V1_InternalDataProductType,
+  V1_ExternalDataProductType,
 } from '../../../model/packageableElements/dataProduct/V1_DataProduct.js';
 import { V1_initPackageableElement } from './V1_CoreTransformerHelper.js';
 import { V1_transformRawLambda } from './V1_RawValueSpecificationTransformer.js';
@@ -114,6 +118,13 @@ export const V1_transformDataProduct = (
   product.coverageRegions = element.coverageRegions as
     | V1_DataProductRegion[]
     | undefined;
+  if (element.type instanceof InternalDataProductType) {
+    product.type = new V1_InternalDataProductType();
+  } else if (element.type instanceof ExternalDataProductType) {
+    const dataProductType = new V1_ExternalDataProductType();
+    dataProductType.link = element.type.link;
+    product.type = dataProductType;
+  }
 
   if (!element.icon) {
     product.icon = undefined;
