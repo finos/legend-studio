@@ -21,7 +21,7 @@ import {
   V1_deserializeTaskResponse,
   V1_observe_LiteDataContract,
 } from '@finos/legend-graph';
-import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
+import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
 import {
   ActionState,
   assertErrorThrown,

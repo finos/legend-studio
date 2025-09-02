@@ -48,7 +48,7 @@ import { resolveVersion } from '@finos/legend-server-depot';
 import type { Entity } from '@finos/legend-storage';
 import { deserialize } from 'serializr';
 import type { LegendMarketplaceBaseStore } from '../LegendMarketplaceBaseStore.js';
-import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
+import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
 
 const invalidContractState = [
   V1_ContractState.DRAFT,

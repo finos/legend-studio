@@ -28,10 +28,7 @@ import {
 } from '@finos/legend-application';
 import { flow, makeObservable } from 'mobx';
 import { DepotServerClient } from '@finos/legend-server-depot';
-import {
-  LakehouseContractServerClient,
-  MarketplaceServerClient,
-} from '@finos/legend-server-marketplace';
+import { MarketplaceServerClient } from '@finos/legend-server-marketplace';
 import {
   getCurrentUserIDFromEngineServer,
   type V1_EngineServerClient,
@@ -44,6 +41,7 @@ import { LegendMarketPlaceVendorDataState } from './LegendMarketPlaceVendorDataS
 import {
   LakehousePlatformServerClient,
   LakehouseIngestServerClient,
+  LakehouseContractServerClient,
 } from '@finos/legend-server-lakehouse';
 
 export type LegendMarketplaceApplicationStore = ApplicationStore<
