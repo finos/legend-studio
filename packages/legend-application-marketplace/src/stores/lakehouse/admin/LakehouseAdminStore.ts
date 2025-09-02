@@ -28,7 +28,7 @@ import {
   V1_liteDataContractsResponseModelSchemaToContracts,
 } from '@finos/legend-graph';
 import { makeObservable, flow, action, observable } from 'mobx';
-import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
+import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
 
 export class LakehouseAdminStore {
   readonly applicationStore: LegendMarketplaceApplicationStore;

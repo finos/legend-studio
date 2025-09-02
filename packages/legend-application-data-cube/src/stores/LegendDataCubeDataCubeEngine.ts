@@ -89,6 +89,9 @@ import {
   EXECUTION_SERIALIZATION_FORMAT,
   V1_LakehouseRuntime,
   V1_IngestDefinition,
+  V1_DataProduct,
+  V1_LakehouseAccessPoint,
+  V1_serializeRawValueSpecification,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
@@ -152,9 +155,14 @@ import {
 import { QUERY_BUILDER_PURE_PATH } from '@finos/legend-query-builder';
 import {
   LAKEHOUSE_PRODUCER_DATA_CUBE_SOURCE_TYPE,
-  IngestDefinitionDataCubeSource,
-  RawIngestDefinitionDataCubeSource,
-} from './model/IngestDefinitionDataCubeSource.js';
+  LakehouseProducerDataCubeSource,
+  RawLakehouseProducerDataCubeSource,
+} from './model/LakehouseProducerDataCubeSource.js';
+import {
+  LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE,
+  LakehouseConsumerDataCubeSource,
+  RawLakehouseConsumerDataCubeSource,
+} from './model/LakehouseConsumerDataCubeSource.js';
 
 export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   private readonly _application: LegendDataCubeApplicationStore;
@@ -362,13 +370,27 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       };
     } else if (source.type === LAKEHOUSE_PRODUCER_DATA_CUBE_SOURCE_TYPE) {
       const rawSource =
-        RawIngestDefinitionDataCubeSource.serialization.fromJson(source);
+        RawLakehouseProducerDataCubeSource.serialization.fromJson(source);
 
       return {
         ingestDefinition: {
           urn: rawSource.ingestDefinitionUrn,
           warehouse: rawSource.warehouse,
           ingestServerUrl: rawSource.ingestServerUrl,
+        },
+        sourceType: source._type,
+      };
+    } else if (source.type === LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE) {
+      const rawSource =
+        RawLakehouseConsumerDataCubeSource.serialization.fromJson(source);
+
+      return {
+        dataProduct: {
+          environment: rawSource.environment,
+          warehouse: rawSource.warehouse,
+          path: rawSource.paths[0],
+          accessPoint: rawSource.paths[1],
+          dpCoordinates: rawSource.dpCoordinates,
         },
         sourceType: source._type,
       };
@@ -679,9 +701,9 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       }
       case LAKEHOUSE_PRODUCER_DATA_CUBE_SOURCE_TYPE: {
         const rawSource =
-          RawIngestDefinitionDataCubeSource.serialization.fromJson(value);
+          RawLakehouseProducerDataCubeSource.serialization.fromJson(value);
 
-        const source = new IngestDefinitionDataCubeSource();
+        const source = new LakehouseProducerDataCubeSource();
 
         const query = new V1_ClassInstance();
         query.type = V1_ClassInstanceType.INGEST_ACCESSOR;
@@ -694,6 +716,33 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         const model = this._synthesizeLakehouseProducerPMCD(rawSource, source);
         source.model = V1_serializePureModelContextData(model);
 
+        try {
+          source.columns = (
+            await this._getLambdaRelationType(
+              this.serializeValueSpecification(_lambda([], [source.query])),
+              source.model,
+            )
+          ).columns;
+        } catch (error) {
+          assertErrorThrown(error);
+          throw new Error(
+            `Can't get query result columns. Make sure the source query return a relation (i.e. typed TDS). Error: ${error.message}`,
+          );
+        }
+        return source;
+      }
+      case LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE: {
+        const rawSource =
+          RawLakehouseConsumerDataCubeSource.serialization.fromJson(value);
+
+        const source = new LakehouseConsumerDataCubeSource();
+
+        source.model = await this._synthesizeLakehouseConsumerPMCD(
+          rawSource,
+          source,
+        );
+
+        //TODO: add support for parameters
         try {
           source.columns = (
             await this._getLambdaRelationType(
@@ -789,7 +838,14 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           model: context.model,
         })
       ).completions as CompletionItem[];
-    } else if (context instanceof IngestDefinitionDataCubeSource) {
+    } else if (context instanceof LakehouseProducerDataCubeSource) {
+      return (
+        await this._engineServerClient.completeCode({
+          codeBlock,
+          model: context.model,
+        })
+      ).completions as CompletionItem[];
+    } else if (context instanceof LakehouseConsumerDataCubeSource) {
       return (
         await this._engineServerClient.completeCode({
           codeBlock,
@@ -889,7 +945,9 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         result = await this._runQuery(query, source.model, undefined, options);
       } else if (source instanceof UserDefinedFunctionDataCubeSource) {
         result = await this._runQuery(query, source.model, undefined, options);
-      } else if (source instanceof IngestDefinitionDataCubeSource) {
+      } else if (source instanceof LakehouseProducerDataCubeSource) {
+        result = await this._runQuery(query, source.model, undefined, options);
+      } else if (source instanceof LakehouseConsumerDataCubeSource) {
         result = await this._runQuery(query, source.model, undefined, options);
       } else if (source instanceof LegendQueryDataCubeSource) {
         const filteredParameterValues = await this._processLegendQueryParams(
@@ -1013,7 +1071,15 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           undefined,
           options,
         )) as Response;
-      } else if (source instanceof IngestDefinitionDataCubeSource) {
+      } else if (source instanceof LakehouseProducerDataCubeSource) {
+        return (await this._runExportQuery(
+          query,
+          source.model,
+          format,
+          undefined,
+          options,
+        )) as Response;
+      } else if (source instanceof LakehouseConsumerDataCubeSource) {
         return (await this._runExportQuery(
           query,
           source.model,
@@ -1135,7 +1201,12 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         DataCubeFunction.FROM,
         [_elementPtr(source.runtime)].filter(isNonNullable),
       );
-    } else if (source instanceof IngestDefinitionDataCubeSource) {
+    } else if (source instanceof LakehouseProducerDataCubeSource) {
+      return _function(
+        DataCubeFunction.FROM,
+        [_elementPtr(source.runtime)].filter(isNonNullable),
+      );
+    } else if (source instanceof LakehouseConsumerDataCubeSource) {
       return _function(
         DataCubeFunction.FROM,
         [_elementPtr(source.runtime)].filter(isNonNullable),
@@ -1259,7 +1330,9 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       return this._getLambdaRelationType(query, source.model);
     } else if (source instanceof LocalFileDataCubeSource) {
       return this._getLambdaRelationType(query, source.model);
-    } else if (source instanceof IngestDefinitionDataCubeSource) {
+    } else if (source instanceof LakehouseProducerDataCubeSource) {
+      return this._getLambdaRelationType(query, source.model);
+    } else if (source instanceof LakehouseConsumerDataCubeSource) {
       return this._getLambdaRelationType(query, source.model);
     }
     throw new UnsupportedOperationError(
@@ -1550,8 +1623,8 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   }
 
   private _synthesizeLakehouseProducerPMCD(
-    rawSource: RawIngestDefinitionDataCubeSource,
-    source: IngestDefinitionDataCubeSource,
+    rawSource: RawLakehouseProducerDataCubeSource,
+    source: LakehouseProducerDataCubeSource,
   ) {
     const runtime = new V1_LakehouseRuntime();
     runtime.warehouse = rawSource.warehouse;
@@ -1578,6 +1651,48 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
 
     model.elements = [ingestDefinition, packageableRuntime];
     return model;
+  }
+
+  private async _synthesizeLakehouseConsumerPMCD(
+    rawSource: RawLakehouseConsumerDataCubeSource,
+    source: LakehouseConsumerDataCubeSource,
+  ) {
+    const pmcd = await this._depotServerClient.getPureModelContextData(
+      rawSource.dpCoordinates.groupId,
+      rawSource.dpCoordinates.artifactId,
+      rawSource.dpCoordinates.versionId,
+      true,
+    );
+    const deserializedPMCD = guaranteeType(
+      V1_deserializePureModelContext(pmcd),
+      V1_PureModelContextData,
+    );
+    const runtime = new V1_LakehouseRuntime();
+    runtime.warehouse = rawSource.warehouse;
+    runtime.environment = rawSource.environment;
+
+    const packageableRuntime = new V1_PackageableRuntime();
+    packageableRuntime.runtimeValue = runtime;
+    packageableRuntime.name = 'lakehouseConsumer';
+    packageableRuntime.package = 'runtime';
+    source.runtime = packageableRuntime.path;
+
+    deserializedPMCD.elements = [packageableRuntime];
+
+    const dataProduct = guaranteeType(
+      deserializedPMCD.elements.find((pe) => pe.path === rawSource.paths[0]),
+      V1_DataProduct,
+    );
+    const accessPoint = guaranteeType(
+      dataProduct.accessPointGroups.map((group) =>
+        group.accessPoints.find((point) => point.id === rawSource.paths[1]),
+      ),
+      V1_LakehouseAccessPoint,
+    );
+    const lambda = V1_serializeRawValueSpecification(accessPoint.func);
+    source.query = this.deserializeValueSpecification(lambda);
+
+    return V1_serializePureModelContext(deserializedPMCD);
   }
 
   // ---------------------------------- APPLICATION ----------------------------------

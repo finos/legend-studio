@@ -125,6 +125,7 @@ export enum V1_ClassInstanceType {
   COL_SPEC_ARRAY = 'colSpecArray',
   RELATION_STORE_ACCESSOR = '>',
   INGEST_ACCESSOR = 'I',
+  DATA_PRODUCT_ACCESSOR = 'P',
 
   TDS_AGGREGATE_VALUE = 'tdsAggregateValue',
   TDS_COLUMN_INFORMATION = 'tdsColumnInformation',
@@ -838,6 +839,7 @@ export function V1_deserializeClassInstanceValue(
     case V1_ClassInstanceType.COL_SPEC_ARRAY:
       return deserialize(colSpecArrayModelSchema(plugins), json);
     case V1_ClassInstanceType.RELATION_STORE_ACCESSOR:
+    case V1_ClassInstanceType.INGEST_ACCESSOR:
       return deserialize(relationStoreAccessorModelSchema, json);
     default: {
       const deserializers = plugins.flatMap(

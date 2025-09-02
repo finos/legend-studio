@@ -24,7 +24,7 @@ import type { LegendDataCubeDataCubeEngine } from '../../LegendDataCubeDataCubeE
 import { LegendDataCubeSourceLoaderState } from './LegendDataCubeSourceLoaderState.js';
 import type { DataCubeAlertService } from '@finos/legend-data-cube';
 import type { PersistentDataCube } from '@finos/legend-graph';
-import { RawIngestDefinitionDataCubeSource } from '../../model/IngestDefinitionDataCubeSource.js';
+import { RawLakehouseProducerDataCubeSource } from '../../model/LakehouseProducerDataCubeSource.js';
 import type { LakehouseIngestServerClient } from '@finos/legend-server-lakehouse';
 import { action, makeObservable, observable } from 'mobx';
 import { LegendDataCubeSourceBuilderType } from './LegendDataCubeSourceBuilderState.js';
@@ -84,7 +84,7 @@ export class LakehouseProducerDataCubeSourceLoaderState extends LegendDataCubeSo
   }
 
   reset() {
-    const rawSource = RawIngestDefinitionDataCubeSource.serialization.fromJson(
+    const rawSource = RawLakehouseProducerDataCubeSource.serialization.fromJson(
       this.sourceData,
     );
     this.setIngestDefinitionUrn(rawSource.ingestDefinitionUrn);
@@ -106,7 +106,7 @@ export class LakehouseProducerDataCubeSourceLoaderState extends LegendDataCubeSo
 
   override async load(source: PlainObject | undefined) {
     const deserializedSource =
-      RawIngestDefinitionDataCubeSource.serialization.fromJson(
+      RawLakehouseProducerDataCubeSource.serialization.fromJson(
         guaranteeNonNullable(source),
       );
 
@@ -116,7 +116,7 @@ export class LakehouseProducerDataCubeSourceLoaderState extends LegendDataCubeSo
       )[0] as PlainObject,
     );
 
-    return RawIngestDefinitionDataCubeSource.serialization.toJson(
+    return RawLakehouseProducerDataCubeSource.serialization.toJson(
       deserializedSource,
     );
   }
