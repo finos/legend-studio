@@ -1686,7 +1686,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     const accessPoint = guaranteeType(
       dataProduct.accessPointGroups.map((group) =>
         group.accessPoints.find((point) => point.id === rawSource.paths[1]),
-      ),
+      )[0],
       V1_LakehouseAccessPoint,
     );
     const lambda = V1_serializeRawValueSpecification(accessPoint.func);

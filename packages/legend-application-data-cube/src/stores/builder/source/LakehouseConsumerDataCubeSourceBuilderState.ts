@@ -41,7 +41,6 @@ import {
 } from '@finos/legend-server-depot';
 import {
   CORE_PURE_PATH,
-  V1_SdlcDeploymentDataProductOrigin,
   type V1_EntitlementsDataProductDetailsResponse,
   type V1_EntitlementsDataProductDetails,
 } from '@finos/legend-graph';
@@ -177,11 +176,16 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
     const selectedEnvironment = guaranteeNonNullable(this.selectedEnvironment);
     const dataProduct = this.dataProductMap[selectedEnvironment];
 
-    if (dataProduct?.origin instanceof V1_SdlcDeploymentDataProductOrigin) {
+    if (
+      dataProduct?.origin &&
+      'group' in dataProduct.origin &&
+      'artifact' in dataProduct.origin &&
+      'version' in dataProduct.origin
+    ) {
       const versionedData = new VersionedProjectData();
-      versionedData.groupId = dataProduct.origin.group;
-      versionedData.artifactId = dataProduct.origin.artifact;
-      versionedData.versionId = dataProduct.origin.version;
+      versionedData.groupId = dataProduct.origin.group as string;
+      versionedData.artifactId = dataProduct.origin.artifact as string;
+      versionedData.versionId = dataProduct.origin.version as string;
       this.dpCoordinates = versionedData;
     }
     this.setAccessPoints(
