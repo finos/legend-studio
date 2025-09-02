@@ -253,8 +253,33 @@ export abstract class DataProductIcon implements Hashable {
   abstract get hashCode(): string;
 }
 
-export class EmbeddedImageIcon extends DataProductIcon implements Hashable {
-  imageUrl: string;
+export class DataProductLibraryIcon
+  extends DataProductIcon
+  implements Hashable
+{
+  libraryId!: string;
+  iconId!: string;
+
+  constructor(libraryId: string, iconId: string) {
+    super();
+    this.libraryId = libraryId;
+    this.iconId = iconId;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.DATA_PRODUCT_ICON_LIBRARY,
+      this.libraryId,
+      this.iconId,
+    ]);
+  }
+}
+
+export class DataProductEmbeddedImageIcon
+  extends DataProductIcon
+  implements Hashable
+{
+  imageUrl!: string;
 
   constructor(imageUrl: string) {
     super();
@@ -269,21 +294,22 @@ export class EmbeddedImageIcon extends DataProductIcon implements Hashable {
   }
 }
 
-export class LibraryIcon extends DataProductIcon implements Hashable {
-  libraryId: string;
-  iconId: string;
+// handle incoming icons not yet modeled
+export class UnknownDataProductIcon
+  extends DataProductIcon
+  implements Hashable
+{
+  content!: PlainObject;
 
-  constructor(libraryId: string, iconId: string) {
+  constructor(content: PlainObject) {
     super();
-    this.libraryId = libraryId;
-    this.iconId = iconId;
+    this.content = content;
   }
 
-  get hashCode(): string {
+  override get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.DATA_PRODUCT_ICON_LIBRARY,
-      this.libraryId,
-      this.iconId,
+      CORE_HASH_STRUCTURE.INTERNAL__UNKNOWN_DATA_PRODUCT_ICON,
+      hashObjectWithoutSourceInformation(this.content),
     ]);
   }
 }

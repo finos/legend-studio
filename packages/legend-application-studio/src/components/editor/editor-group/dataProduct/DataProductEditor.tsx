@@ -25,58 +25,62 @@ import {
   LakehouseAccessPointState,
 } from '../../../../stores/editor/editor-state/element-editor-state/dataProduct/DataProductEditorState.js';
 import {
+  BugIcon,
+  BuildingIcon,
+  CaretDownIcon,
+  Checkbox,
+  CloseEyeIcon,
   clsx,
-  LockIcon,
-  PanelContent,
-  PanelHeader,
-  PanelHeaderActions,
+  compressImage,
+  ControlledDropdownMenu,
+  CustomSelectorInput,
   Dialog,
-  TimesIcon,
-  PlusIcon,
-  PanelHeaderActionItem,
-  RocketIcon,
+  DragPreviewLayer,
+  ErrorWarnIcon,
+  EyeIcon,
+  GroupWorkIcon,
+  HomeIcon,
+  IconSelectorGrid,
+  IconSelectorIcons,
+  InfoCircleIcon,
   ListEditor,
+  LockIcon,
+  MarkdownTextViewer,
+  MenuContent,
+  MenuContentItem,
   Modal,
-  ModalHeader,
-  ModalTitle,
   ModalBody,
   ModalFooter,
   ModalFooterButton,
-  PencilEditIcon,
-  PanelFormTextField,
-  ControlledDropdownMenu,
-  MenuContent,
-  MenuContentItem,
-  CaretDownIcon,
-  WarningIcon,
-  useDragPreviewLayer,
-  DragPreviewLayer,
+  ModalHeader,
+  ModalTitle,
+  PanelContent,
   PanelDnDEntry,
   PanelEntryDragHandle,
-  HomeIcon,
+  PanelFormTextField,
+  PanelHeader,
+  PanelHeaderActionItem,
+  PanelHeaderActions,
+  PencilEditIcon,
+  PlusIcon,
   QuestionCircleIcon,
-  ErrorWarnIcon,
-  GroupWorkIcon,
-  CustomSelectorInput,
-  Switch,
-  BuildingIcon,
-  Tooltip,
-  InfoCircleIcon,
-  ResizablePanelGroup,
   ResizablePanel,
-  MarkdownTextViewer,
+  ResizablePanelGroup,
   ResizablePanelSplitter,
-  EyeIcon,
-  CloseEyeIcon,
-  Checkbox,
-  BugIcon,
+  RocketIcon,
+  Switch,
+  TimesIcon,
+  Tooltip,
+  UploadIcon,
+  useDragPreviewLayer,
+  WarningIcon,
 } from '@finos/legend-art';
-import React, {
-  useRef,
-  useState,
-  useEffect,
+import {
   type ChangeEventHandler,
   useCallback,
+  useEffect,
+  useRef,
+  useState,
 } from 'react';
 import { filterByType } from '@finos/legend-shared';
 import { InlineLambdaEditor } from '@finos/legend-query-builder';
@@ -85,30 +89,34 @@ import { useAuth } from 'react-oidc-context';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 import {
-  LakehouseTargetEnv,
-  Email,
   type DataProduct,
   type LakehouseAccessPoint,
-  StereotypeExplicitReference,
   type V1_DataProductArtifactAccessPointGroup,
   type V1_DataProductArtifactAccessPointImplementation,
   type V1_DataProductArtifactGeneration,
+  DataProductEmbeddedImageIcon,
+  DataProductLibraryIcon,
+  Email,
+  LakehouseTargetEnv,
+  StereotypeExplicitReference,
+  V1_DataProductIconLibraryId,
 } from '@finos/legend-graph';
 import {
+  accessPoint_setClassification,
+  accessPoint_setReproducible,
   accessPointGroup_setDescription,
   accessPointGroup_setName,
   dataProduct_setDescription,
+  dataProduct_setIcon,
   dataProduct_setSupportInfoIfAbsent,
   dataProduct_setTitle,
-  supportInfo_setDocumentationUrl,
-  supportInfo_setWebsite,
-  supportInfo_setFaqUrl,
-  supportInfo_setSupportUrl,
   supportInfo_addEmail,
   supportInfo_deleteEmail,
-  accessPoint_setClassification,
-  accessPoint_setReproducible,
+  supportInfo_setDocumentationUrl,
+  supportInfo_setFaqUrl,
   supportInfo_setLinkLabel,
+  supportInfo_setSupportUrl,
+  supportInfo_setWebsite,
 } from '../../../../stores/graph-modifier/DSL_DataProduct_GraphModifierHelper.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
@@ -1302,9 +1310,178 @@ const DataProductSidebar = observer(
   },
 );
 
+const IconPreviewComponent = observer((props: { dataProduct: DataProduct }) => {
+  const { dataProduct } = props;
+
+  if (dataProduct.icon instanceof DataProductLibraryIcon) {
+    const iconId = dataProduct.icon.iconId;
+    const IconComponent = IconSelectorIcons[iconId];
+    return (
+      <div className="data-product-editor__icon-preview">
+        {IconComponent ? <IconComponent /> : 'No icon selected'}
+      </div>
+    );
+  } else if (dataProduct.icon instanceof DataProductEmbeddedImageIcon) {
+    return (
+      <img
+        src={dataProduct.icon.imageUrl}
+        alt="Data Product Image"
+        className="data-product-editor__icon-preview__image"
+      />
+    );
+  }
+  return (
+    <div className="data-product-editor__icon-preview">
+      <div className="data-product-editor__icon-preview__no-icon">
+        No icon selected
+      </div>
+    </div>
+  );
+});
+
+const IconSelectorComponent = observer(
+  (props: { dataProduct: DataProduct; isReadOnly: boolean }) => {
+    const { dataProduct, isReadOnly } = props;
+
+    const handleChange = (iconId: string | undefined): void => {
+      if (iconId === undefined) {
+        dataProduct_setIcon(dataProduct, undefined);
+      } else {
+        const _dataProductLibraryIcon = new DataProductLibraryIcon(
+          V1_DataProductIconLibraryId.REACT_ICONS,
+          iconId,
+        );
+        dataProduct_setIcon(dataProduct, _dataProductLibraryIcon);
+      }
+    };
+
+    return (
+      <IconSelectorGrid
+        iconId={
+          dataProduct.icon instanceof DataProductLibraryIcon
+            ? dataProduct.icon.iconId
+            : undefined
+        }
+        onChange={handleChange}
+        isReadOnly={isReadOnly}
+        disableHighlightNoneOption={
+          dataProduct.icon instanceof DataProductEmbeddedImageIcon
+        }
+      />
+    );
+  },
+);
+
+const ImageSelectorComponent = observer(
+  (props: { dataProduct: DataProduct; isReadOnly: boolean }) => {
+    const { dataProduct, isReadOnly } = props;
+
+    const editorStore = useEditorStore();
+    const imageInputRef = useRef<HTMLInputElement>(null);
+    const imageConfig =
+      editorStore.applicationStore.config.options.dataProductConfig
+        ?.imageConfig;
+
+    const handleFileChange = async (
+      event: React.ChangeEvent<HTMLInputElement>,
+    ) => {
+      const file = event.target.files?.[0];
+      if (file) {
+        try {
+          // Check file size first
+          const fileSizeKB = file.size / 1024;
+          if (fileSizeKB > (imageConfig?.maxUploadSizeKB ?? 1024 * 5)) {
+            // 5MB limit by default
+            editorStore.applicationStore.notificationService.notifyError(
+              `File size must be less than ${imageConfig?.maxUploadSizeKB ?? 1024 * 5}KB`,
+            );
+            return;
+          }
+
+          const compressedImage = await compressImage(
+            file,
+            imageConfig?.maxSizeKB ?? 128,
+            imageConfig?.maxDimension ?? 800,
+          );
+          const dataProductEmbeddedImageIcon = new DataProductEmbeddedImageIcon(
+            compressedImage,
+          );
+          dataProduct_setIcon(dataProduct, dataProductEmbeddedImageIcon);
+        } catch {
+          editorStore.applicationStore.notificationService.notifyError(
+            'Failed to process image. Please try a different file.',
+          );
+        }
+      }
+    };
+
+    return (
+      <div>
+        <div className="panel__content__form__section__header__prompt">
+          Upload an image to represent this Data Product in the marketplace.
+        </div>
+        <div className="data-product-editor__image-selector__container">
+          <input
+            id="data-product-image-upload"
+            name="data-product-image-upload"
+            type="file"
+            accept="image/*"
+            disabled={isReadOnly}
+            onChange={(event) => {
+              // eslint-disable-next-line no-void
+              void handleFileChange(event);
+            }}
+            className="data-product-editor__image-selector__input"
+            value={
+              dataProduct.icon instanceof DataProductEmbeddedImageIcon
+                ? ''
+                : undefined
+            }
+            ref={imageInputRef}
+          />
+          <button
+            onClick={() => imageInputRef.current?.click()}
+            className="data-product-editor__image-selector__upload-btn btn btn--dark"
+          >
+            <UploadIcon /> Upload File
+          </button>
+          <div className="data-product-editor__image-selector__hint">
+            Supported formats: PNG, JPG, JPEG, GIF (max{' '}
+            {(imageConfig?.maxUploadSizeKB ?? 1024 * 5) / 1024}MB)
+          </div>
+        </div>
+      </div>
+    );
+  },
+);
+
+const DataProductIconEditor = observer(
+  (props: { product: DataProduct; isReadOnly: boolean }) => {
+    const { product, isReadOnly } = props;
+
+    return (
+      <div className="panel__content__form__section data-product-editor__icon-editor">
+        <div className="panel__content__form__section__header__label">
+          Icon/Image
+        </div>
+        <IconPreviewComponent dataProduct={product} />
+        <IconSelectorComponent dataProduct={product} isReadOnly={isReadOnly} />
+        <div
+          className="panel__content__form__section__header__prompt"
+          style={{ marginBottom: 0 }}
+        >
+          <b>or</b>
+        </div>
+        <ImageSelectorComponent dataProduct={product} isReadOnly={isReadOnly} />
+      </div>
+    );
+  },
+);
+
 const HomeTab = observer(
   (props: { product: DataProduct; isReadOnly: boolean }) => {
     const { product, isReadOnly } = props;
+
     const updateDataProductTitle = (val: string | undefined): void => {
       dataProduct_setTitle(product, val ?? '');
     };
@@ -1317,7 +1494,7 @@ const HomeTab = observer(
     return (
       <div className="panel__content">
         <ResizablePanelGroup orientation="vertical">
-          <ResizablePanel>
+          <ResizablePanel className="data-product-editor__home-tab">
             <PanelFormTextField
               name="Title"
               value={product.title}
@@ -1325,7 +1502,7 @@ const HomeTab = observer(
               update={updateDataProductTitle}
               placeholder="Enter title"
             />
-            <div style={{ margin: '1rem' }}>
+            <div className="panel__content__form__section">
               <div
                 className="panel__content__form__section__header__label"
                 style={{ justifyContent: 'space-between', width: '45rem' }}
@@ -1394,6 +1571,7 @@ const HomeTab = observer(
                 }}
               />
             </div>
+            <DataProductIconEditor product={product} isReadOnly={isReadOnly} />
           </ResizablePanel>
           {showPreview && <ResizablePanelSplitter />}
           {showPreview && (
@@ -1787,7 +1965,6 @@ export const DataProductEditor = observer(() => {
           style={{ padding: '1rem', flexDirection: 'row' }}
         >
           <DataProductSidebar dataProductEditorState={dataProductEditorState} />
-
           {renderActivivtyBarTab()}
         </div>
       </div>

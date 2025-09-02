@@ -14,33 +14,17 @@
  * limitations under the License.
  */
 
-import {
-  UserIcon,
-  HackerIcon,
-  DollarIcon,
-  ShoppingCartIcon,
-  ServerIcon,
-  FileUnknownIcon,
-  DatabaseIcon,
-} from './Icon.js';
+import { IconSelectorIcons, Database } from './Icon.js';
 
 export const deserializeIcon = (
-  iconId: string | undefined,
+  libraryId: string,
+  iconId: string,
 ): React.ReactNode | undefined => {
-  switch (iconId) {
-    case 'FaUser':
-      return <UserIcon />;
-    case 'FaUserSecret':
-      return <HackerIcon />;
-    case 'FaDollarSign':
-      return <DollarIcon />;
-    case 'FaShoppingCart':
-      return <ShoppingCartIcon />;
-    case 'FaServer':
-      return <ServerIcon />;
-    case 'FaDatabase':
-      return <DatabaseIcon />;
+  switch (libraryId) {
+    case 'react-icons':
+      const IconComponent = IconSelectorIcons[iconId];
+      return IconComponent ? <IconComponent /> : <Database />;
     default:
-      return <FileUnknownIcon />;
+      return undefined;
   }
 };

@@ -29,13 +29,16 @@ import {
 } from '../../../__test-utils__/EditorComponentTestUtils.js';
 import TEST_DATA__LHDataProduct from './TEST_DATA__LHDataProduct.json' with { type: 'json' };
 import { LEGEND_STUDIO_TEST_ID } from '../../../../../__lib__/LegendStudioTesting.js';
-import { Core_GraphManagerPreset } from '@finos/legend-graph';
+import {
+  Core_GraphManagerPreset,
+  DataProductLibraryIcon,
+} from '@finos/legend-graph';
 import { QueryBuilder_GraphManagerPreset } from '@finos/legend-query-builder';
 import { LegendStudioPluginManager } from '../../../../../application/LegendStudioPluginManager.js';
 import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { findByPlaceholderText, screen, within } from '@testing-library/dom';
-import { AP_EMPTY_DESC_WARNING } from '../DataPoductEditor.js';
+import { AP_EMPTY_DESC_WARNING } from '../DataProductEditor.js';
 
 const pluginManager = LegendStudioPluginManager.create();
 pluginManager
@@ -181,4 +184,54 @@ test(integrationTest('Editing access points'), async () => {
   );
   fireEvent.click(await screen.findByText('Confirm'));
   expect(screen.queryByText('ap1')).toBeNull();
+});
+
+test(integrationTest('Editing data product icon'), async () => {
+  const MOCK__editorStore = TEST__provideMockedEditorStore({ pluginManager });
+  const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
+    MOCK__editorStore,
+    { entities: TEST_DATA__LHDataProduct },
+  );
+  MockedMonacoEditorInstance.getRawOptions.mockReturnValue({
+    readOnly: true,
+  });
+
+  await TEST__openElementFromExplorerTree(
+    'model::sampleDataProduct',
+    renderResult,
+  );
+
+  const editorGroup = await waitFor(() =>
+    renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
+  );
+
+  // Check that data product has icon set
+  const dataProduct =
+    MOCK__editorStore.graphManagerState.graph.getOwnDataProduct(
+      'model::sampleDataProduct',
+    );
+  expect(dataProduct.icon instanceof DataProductLibraryIcon).toBe(true);
+  expect((dataProduct.icon as DataProductLibraryIcon).libraryId).toBe(
+    'react-icons',
+  );
+  expect((dataProduct.icon as DataProductLibraryIcon).iconId).toBe(
+    'TbArrowsExchange',
+  );
+
+  // Test changing icon
+  const iconGrid = editorGroup.querySelector('.icon-selector__grid');
+  fireEvent.click(iconGrid?.children[1] as HTMLElement);
+
+  expect(dataProduct.icon instanceof DataProductLibraryIcon).toBe(true);
+  expect((dataProduct.icon as DataProductLibraryIcon).libraryId).toBe(
+    'react-icons',
+  );
+  expect((dataProduct.icon as DataProductLibraryIcon).iconId).toBe(
+    'TbAlertCircle',
+  );
+
+  // Test setting icon to None
+  fireEvent.click(screen.getByText('None'));
+  await screen.findByText('No icon selected');
+  expect(dataProduct.icon).toBeUndefined();
 });

@@ -24,15 +24,16 @@
 @forward 'base/modal';
 @forward 'base/menu';
 @forward 'base/table';
+@forward 'components/badge';
+@forward 'components/blank-panel-placeholder';
+@forward 'components/cubes-loading-indicator';
+@forward 'components/icon-selector';
 @forward 'components/icon';
 @forward 'components/input';
-@forward 'components/badge';
+@forward 'components/markdown-viewer';
 @forward 'components/panel-loading-indicator';
-@forward 'components/blank-panel-placeholder';
 @forward 'components/selector-input';
 @forward 'components/tree-view';
-@forward 'components/markdown-viewer';
-@forward 'components/cubes-loading-indicator';
 @forward 'components/user-display';
 
 // Reset (override library styles)
