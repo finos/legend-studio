@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.6.1
+
+### Patch Changes
+
+- [#4383](https://github.com/finos/legend-studio/pull/4383) [`ab10be0`](https://github.com/finos/legend-studio/commit/ab10be03050d05efc4c34458c0cd605a3c875fa6) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: fixing building source query for dataproduct functions
+
 ## 0.6.0
 
 ### Minor Changes
