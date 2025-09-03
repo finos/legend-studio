@@ -1690,7 +1690,11 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       V1_LakehouseAccessPoint,
     );
     const lambda = V1_serializeRawValueSpecification(accessPoint.func);
-    source.query = this.deserializeValueSpecification(lambda);
+    const convertedLambda = guaranteeType(
+      this.deserializeValueSpecification(lambda),
+      V1_Lambda,
+    );
+    source.query = guaranteeNonNullable(convertedLambda.body[0]);
 
     return V1_serializePureModelContext(deserializedPMCD);
   }
