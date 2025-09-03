@@ -731,6 +731,13 @@ export abstract class QueryEditorStore {
               this.depotServerClient,
             ),
           () =>
+            retrieveProjectEntitiesWithClassifier(
+              project,
+              versionId,
+              CORE_PURE_PATH.RUNTIME,
+              this.depotServerClient,
+            ),
+          () =>
             retrieveDataspaceArtifactsCache(
               project,
               versionId,

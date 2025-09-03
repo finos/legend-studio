@@ -25,6 +25,7 @@ import {
   type QueryBuilderActionConfig,
   QueryBuilderState,
   type QueryBuilderExtraFunctionAnalysisInfo,
+  QUERY_BUILDER_LAMBDA_WRITER_MODE,
 } from '@finos/legend-query-builder';
 import {
   type Class,
@@ -437,6 +438,11 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
     this.dataSpaceAnalysisResult = dataSpaceAnalysisResult;
     this.workflowState.updateActionConfig(actionConfig);
     this.isLightGraphEnabled = isLightGraphEnabled;
+    if (dataSpaceAnalysisResult?.__INTERNAL__useRelationTDS) {
+      this.setLambdaWriteMode(
+        QUERY_BUILDER_LAMBDA_WRITER_MODE.TYPED_FETCH_STRUCTURE,
+      );
+    }
   }
 
   override get sideBarClassName(): string | undefined {

@@ -49,6 +49,8 @@ import {
   V1_MappingModelCoveragePartition,
   V1_getGenericTypeFullPath,
   V1_buildFullPath,
+  V1_LakehouseRuntime,
+  V1_packageableRuntimeModelSchema,
 } from '@finos/legend-graph';
 import type {
   Entity,
@@ -118,6 +120,7 @@ import { resolveVersion } from '@finos/legend-server-depot';
 import { DATASPACE_ANALYTICS_FILE_NAME } from '../../../action/analytics/DataSpaceAnalysisHelper.js';
 import { buildDataSpaceElements } from '../../../DSL_DataSpaceAnalyticsHelper.js';
 import { DSL_DATASPACE_EVENT } from '../../../../__lib__/DSL_DataSpace_Event.js';
+import { deserialize } from 'serializr';
 
 const ANALYZE_DATA_SPACE_TRACE = 'analyze data product';
 const TEMPORARY__TDS_SAMPLE_VALUES__DELIMITER = '-- e.g.';
@@ -273,7 +276,10 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
 
   async analyzeDataSpaceCoverage(
     dataSpacePath: string,
-    entitiesWithClassifierRetriever: () => Promise<
+    functionEntitiesRetriever: () => Promise<
+      [PlainObject<Entity>[], PlainObject<Entity>[]]
+    >,
+    runtimeEntitiesRetriever: () => Promise<
       [PlainObject<Entity>[], PlainObject<Entity>[]]
     >,
     cacheRetriever?: () => Promise<PlainObject<StoredFileGeneration>[]>,
@@ -362,7 +368,8 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
           : undefined,
       mappingPath,
       projectInfo,
-      entitiesWithClassifierRetriever,
+      functionEntitiesRetriever,
+      runtimeEntitiesRetriever,
     );
   }
 
@@ -422,7 +429,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
 
   // build function analysis info by fetching functions within this project from metadata when building minimal graph
   async processFunctionForMinimalGraph(
-    entitiesWithClassifierRetriever: () => Promise<
+    functionEntitiesRetriever: () => Promise<
       [PlainObject<Entity>[], PlainObject<Entity>[]]
     >,
     graph: PureModel,
@@ -432,7 +439,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     const [functionEntities, dependencyFunctionEntities]: [
       PlainObject<Entity>[],
       PlainObject<Entity>[],
-    ] = await entitiesWithClassifierRetriever();
+    ] = await functionEntitiesRetriever();
     const functionProtocols = functionEntities.map((func) =>
       guaranteeType(
         V1_deserializePackageableElement(
@@ -476,6 +483,31 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     }
   }
 
+  async processRuntimeInfo(
+    runtimeEntitiesRetriever: () => Promise<
+      [PlainObject<Entity>[], PlainObject<Entity>[]]
+    >,
+    defaultRuntime: string,
+    dataSpaceAnalysisResult: DataSpaceAnalysisResult,
+  ): Promise<void> {
+    const [runtimeEntities, dependencyRuntimeEntities]: [
+      PlainObject<Entity>[],
+      PlainObject<Entity>[],
+    ] = await runtimeEntitiesRetriever();
+    const runtimeEntity = [...runtimeEntities, ...dependencyRuntimeEntities]
+      .map((e) => e.entity as Entity)
+      .find((e) => e.path === defaultRuntime);
+    if (runtimeEntity) {
+      const runtimeProtocol = deserialize(
+        V1_packageableRuntimeModelSchema,
+        runtimeEntity.content,
+      );
+      if (runtimeProtocol.runtimeValue instanceof V1_LakehouseRuntime) {
+        dataSpaceAnalysisResult.__INTERNAL__useRelationTDS = true;
+      }
+    }
+  }
+
   async buildDataSpaceAnalytics(
     analytics: PlainObject<V1_DataSpaceAnalysisResult>,
     plugins: PureProtocolProcessorPlugin[],
@@ -487,7 +519,10 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     executionContext?: string | undefined,
     mappingPath?: string | undefined,
     projectInfo?: ProjectGAVCoordinates,
-    entitiesWithClassifierRetriever?: () => Promise<
+    functionEntitiesRetriever?: () => Promise<
+      [PlainObject<Entity>[], PlainObject<Entity>[]]
+    >,
+    runtimeEntitiesRetriever?: () => Promise<
       [PlainObject<Entity>[], PlainObject<Entity>[]]
     >,
   ): Promise<DataSpaceAnalysisResult> {
@@ -658,7 +693,6 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
         mappingModelCoveragePartitionMap.get(resolvedMappingPath);
       pmcd = mappingModelCoverageAnalysisResult?.model;
     }
-
     // if there is a PMCD saved in metadata, we can build a minimal graph
     if (pmcd && projectInfo) {
       graphEntities = pmcd.elements
@@ -698,16 +732,32 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
       }
 
       // build extra function analysis info
-      if (entitiesWithClassifierRetriever) {
+      if (functionEntitiesRetriever) {
         try {
           await this.processFunctionForMinimalGraph(
-            entitiesWithClassifierRetriever,
+            functionEntitiesRetriever,
             graph,
             result,
             plugins,
           );
         } catch {
           //do nothing
+        }
+      }
+      if (runtimeEntitiesRetriever) {
+        try {
+          const defaultRuntime = guaranteeNonNullable(
+            analysisResult.executionContexts.find(
+              (value) => value.name === analysisResult.defaultExecutionContext,
+            ),
+          ).defaultRuntime;
+          await this.processRuntimeInfo(
+            runtimeEntitiesRetriever,
+            defaultRuntime,
+            result,
+          );
+        } catch {
+          // do nothing
         }
       }
       isMiniGraphSuccess = true;
