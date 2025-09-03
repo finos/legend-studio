@@ -157,6 +157,9 @@ export class ShowcaseViewerStore {
       this.editorStore.explorerTreeState.buildImmutableModelTrees();
       this.editorStore.explorerTreeState.build();
 
+      // observe graph: we still capture user changes on forms
+      yield flowResult(this.editorStore.changeDetectionState.observeGraph());
+
       // complete actions
       this.editorStore.initState.setMessage(undefined);
       onLeave(true);
