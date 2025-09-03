@@ -1,5 +1,13 @@
 # @finos/legend-graph
 
+## 32.2.1
+
+### Patch Changes
+
+- [#4382](https://github.com/finos/legend-studio/pull/4382) [`9119058`](https://github.com/finos/legend-studio/commit/91190583a9ac91bbe317d7f12a6f5c301a35941b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - add `meta::pure::metamodel::relation` and `meta::pure::metamodel::variant` as auto import package
+
+- [#4381](https://github.com/finos/legend-studio/pull/4381) [`28d52ac`](https://github.com/finos/legend-studio/commit/28d52ac19610c2373021330224652aea935649ff) ([@kelly-thai](https://github.com/kelly-thai)) - Add type property in Data Products to studio roundtrip
+
 ## 32.2.0
 
 ### Minor Changes
