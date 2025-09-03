@@ -119,6 +119,8 @@ export const AUTO_IMPORTS = [
   // 'meta::pure::tds',
   // 'meta::pure::tools',
   'meta::pure::profiles',
+  'meta::pure::metamodel::relation',
+  'meta::pure::metamodel::variant',
 ];
 
 export enum CORE_PURE_PATH {
