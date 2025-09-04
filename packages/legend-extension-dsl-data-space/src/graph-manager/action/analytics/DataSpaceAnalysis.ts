@@ -227,6 +227,8 @@ export class DataSpaceAnalysisResult {
   functionInfos?: Map<string, FunctionAnalysisInfo>;
   dependencyFunctionInfos?: Map<string, FunctionAnalysisInfo>;
 
+  __INTERNAL__useRelationTDS = false;
+
   get displayName(): string {
     return this.title ?? prettyCONSTName(this.name);
   }

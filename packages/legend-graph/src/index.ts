@@ -932,9 +932,10 @@ export * from './graph-manager/protocol/pure/extensions/DSL_Mapping_PureProtocol
 export { V1_MAPPING_ELEMENT_PROTOCOL_TYPE } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_MappingSerializationHelper.js';
 export {
   V1_serializeRuntime,
+  V1_deserializeRuntime,
   V1_setupLegacyRuntimeSerialization,
   V1_setupEngineRuntimeSerialization,
-  V1_runtimePointerModelSchema,
+  V1_packageableRuntimeModelSchema,
   V1_PACKAGEABLE_RUNTIME_ELEMENT_PROTOCOL_TYPE,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RuntimeSerializationHelper.js';
 export { MappingInclude } from './graph/metamodel/pure/packageableElements/mapping/MappingInclude.js';
