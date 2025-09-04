@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.6.2
+
+### Patch Changes
+
+- [#4389](https://github.com/finos/legend-studio/pull/4389) [`cc714e8`](https://github.com/finos/legend-studio/commit/cc714e8964ac6e9a25ae9b487264ceab7e2b25c4) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: improve feedback for loading data products
+
 ## 0.6.1
 
 ### Patch Changes
