@@ -20,6 +20,7 @@ import {
   LegendDataCubeSourceBuilderType,
 } from './LegendDataCubeSourceBuilderState.js';
 import {
+  ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
   type GeneratorFn,
@@ -62,6 +63,7 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
   private readonly _depotServerClient: DepotServerClient;
   private readonly _platformServerClient: LakehousePlatformServerClient;
   private readonly _contractServerClient: LakehouseContractServerClient;
+  readonly dataProductLoadingState = ActionState.create();
 
   constructor(
     application: LegendDataCubeApplicationStore,
@@ -127,6 +129,7 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
 
   *loadDataProducts(): GeneratorFn<void> {
     try {
+      this.dataProductLoadingState.inProgress();
       this.setDataProducts(
         (yield this._depotServerClient.getEntitiesSummaryByClassifier(
           CORE_PURE_PATH.DATA_PRODUCT,
@@ -137,8 +140,10 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
           },
         )) as StoredSummaryEntity[],
       );
+      this.dataProductLoadingState.complete();
     } catch (error) {
       assertErrorThrown(error);
+      this.dataProductLoadingState.fail();
       throw error;
     }
   }
