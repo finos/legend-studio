@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-application-studio-deployment",
-  "version": "13.119.0",
+  "version": "13.120.0",
   "private": true,
   "description": "Legend Studio web application deployment",
   "keywords": [

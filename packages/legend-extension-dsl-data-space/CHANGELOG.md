@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.4.134
+
+### Patch Changes
+
+- [#4388](https://github.com/finos/legend-studio/pull/4388) [`b16899b`](https://github.com/finos/legend-studio/commit/b16899b1935b08bcbbc0f8dba5e110b7e7ebf51c) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - default to new TDS for any dataspaces using new lakehouse runtime
+
 ## 10.4.133
 
 ## 10.4.132
