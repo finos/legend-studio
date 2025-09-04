@@ -935,6 +935,7 @@ export {
   V1_deserializeRuntime,
   V1_setupLegacyRuntimeSerialization,
   V1_setupEngineRuntimeSerialization,
+  V1_runtimePointerModelSchema,
   V1_packageableRuntimeModelSchema,
   V1_PACKAGEABLE_RUNTIME_ELEMENT_PROTOCOL_TYPE,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RuntimeSerializationHelper.js';
