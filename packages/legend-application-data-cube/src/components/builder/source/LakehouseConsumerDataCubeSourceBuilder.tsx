@@ -36,36 +36,36 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
   return (
     <div className="flex h-full w-full">
       <div className="m-3 flex w-full flex-col items-stretch gap-2 text-neutral-500">
-        {state.dataProducts.length > 0 && (
-          <div className="query-setup__wizard__group mt-3">
-            <div className="query-setup__wizard__group__title">
-              Data Product
-            </div>
-            <CustomSelectorInput
-              className="query-setup__wizard__selector text-nowrap"
-              options={state.dataProducts.map((dataProduct) => ({
-                label: guaranteeNonNullable(dataProduct.path),
-                value: guaranteeNonNullable(dataProduct.path),
-              }))}
-              disabled={false}
-              isLoading={false}
-              onChange={(newValue: { label: string; value: string } | null) => {
-                state.setSelectedDataProduct(newValue?.value ?? '');
-                state.fetchDataProductEnvironments(auth.user?.access_token);
-              }}
-              value={
-                state.selectedDataProduct
-                  ? {
-                      label: state.selectedDataProduct,
-                      value: state.selectedDataProduct,
-                    }
-                  : null
-              }
-              isClearable={false}
-              escapeClearsValue={true}
-            />
-          </div>
-        )}
+        <div className="query-setup__wizard__group mt-3">
+          <div className="query-setup__wizard__group__title">Data Product</div>
+          <CustomSelectorInput
+            className="query-setup__wizard__selector text-nowrap"
+            options={state.dataProducts.map((dataProduct) => ({
+              label: guaranteeNonNullable(dataProduct.path),
+              value: guaranteeNonNullable(dataProduct.path),
+            }))}
+            disabled={
+              state.dataProductLoadingState.isInProgress ||
+              state.dataProductLoadingState.hasFailed
+            }
+            isLoading={state.dataProductLoadingState.isInProgress}
+            onChange={(newValue: { label: string; value: string } | null) => {
+              state.setSelectedDataProduct(newValue?.value ?? '');
+              state.fetchDataProductEnvironments(auth.user?.access_token);
+            }}
+            value={
+              state.selectedDataProduct
+                ? {
+                    label: state.selectedDataProduct,
+                    value: state.selectedDataProduct,
+                  }
+                : null
+            }
+            placeholder={`Choose a Data Product`}
+            isClearable={false}
+            escapeClearsValue={true}
+          />
+        </div>
         {state.environments.length > 0 && (
           <div className="query-setup__wizard__group mt-2">
             <div className="query-setup__wizard__group__title">Environment</div>
@@ -98,7 +98,7 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
         {state.accessPoints.length > 0 && (
           <div className="query-setup__wizard__group mt-2">
             <div className="query-setup__wizard__group__title">
-              Access Points
+              Access Point
             </div>
             <CustomSelectorInput
               className="query-setup__wizard__selector"
