@@ -14,4 +14,7 @@
  * limitations under the License.
  */
 
-export { TEST__setUpQueryBuilder } from './components/__test-utils__/QueryBuilderComponentTestUtils.js';
+export {
+  TEST__setUpQueryBuilder,
+  TEST__setUpGraphManagerState,
+} from './components/__test-utils__/QueryBuilderComponentTestUtils.js';
