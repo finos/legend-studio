@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.19.35
+
+### Patch Changes
+
+- [#4401](https://github.com/finos/legend-studio/pull/4401) [`9ea40b0`](https://github.com/finos/legend-studio/commit/9ea40b08a23052cd81748343baeb4917892c4d7a) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Turn on fromExpression if using typed TDS
+
 ## 28.19.34
 
 ## 28.19.33
