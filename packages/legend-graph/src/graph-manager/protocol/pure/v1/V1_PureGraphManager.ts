@@ -3068,6 +3068,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     mapping: Mapping | undefined,
     runtime: Runtime | undefined,
     graph: PureModel,
+    options?: ExecutionOptions,
     _report?: GraphManagerOperationReport,
   ): Promise<RawExecutionPlan> {
     const report = _report ?? createGraphManagerOperationReport();
@@ -3079,6 +3080,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       lambda,
       runtime,
       V1_PureGraphManager.DEV_PROTOCOL_VERSION,
+      options,
     );
     stopWatch.record(GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_INPUT__SUCCESS);
 
@@ -3100,6 +3102,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     mapping: Mapping | undefined,
     runtime: Runtime | undefined,
     graph: PureModel,
+    options?: ExecutionOptions,
     _report?: GraphManagerOperationReport,
   ): Promise<{ plan: RawExecutionPlan; debug: string }> {
     const report = _report ?? createGraphManagerOperationReport();
@@ -3111,6 +3114,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       lambda,
       runtime,
       V1_PureGraphManager.DEV_PROTOCOL_VERSION,
+      options,
     );
     stopWatch.record(GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_INPUT__SUCCESS);
 

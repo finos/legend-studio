@@ -315,7 +315,8 @@ export class FilterConditionState implements Hashable {
             ),
             this.filterState.queryBuilderState.graphManagerState.graph,
             {
-              forceFromExpression: false,
+              forceFromExpression:
+                this.filterState.queryBuilderState.forceFromExpressionForExec,
             },
           )) as ExecutionResultWithMetadata
         ).executionResult;

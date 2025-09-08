@@ -1021,7 +1021,8 @@ export class QueryBuilderExplorerState {
               {
                 abortController:
                   this.previewDataState.previewDataAbortController,
-                forceFromExpression: false,
+                forceFromExpression:
+                  this.queryBuilderState.forceFromExpressionForExec,
               },
             )) as ExecutionResultWithMetadata
           ).executionResult;
@@ -1064,7 +1065,8 @@ export class QueryBuilderExplorerState {
               {
                 abortController:
                   this.previewDataState.previewDataAbortController,
-                forceFromExpression: false,
+                forceFromExpression:
+                  this.queryBuilderState.forceFromExpressionForExec,
               },
             )) as ExecutionResultWithMetadata
           ).executionResult;

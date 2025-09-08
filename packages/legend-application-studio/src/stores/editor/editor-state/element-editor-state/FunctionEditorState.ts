@@ -497,6 +497,7 @@ export class FunctionEditorState extends ElementEditorState {
             undefined,
             undefined,
             this.editorStore.graphManagerState.graph,
+            undefined,
             report,
           )) as { plan: RawExecutionPlan; debug: string };
         rawPlan = debugResult.plan;
@@ -511,6 +512,7 @@ export class FunctionEditorState extends ElementEditorState {
             undefined,
             undefined,
             this.editorStore.graphManagerState.graph,
+            undefined,
             report,
           )) as object;
       }

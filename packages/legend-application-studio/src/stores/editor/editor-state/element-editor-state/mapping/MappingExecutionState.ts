@@ -885,6 +885,7 @@ export class MappingExecutionState extends MappingEditorTabState {
               this.mappingEditorState.mapping,
               runtime,
               this.editorStore.graphManagerState.graph,
+              undefined,
               report,
             )) as { plan: RawExecutionPlan; debug: string };
 
@@ -900,6 +901,7 @@ export class MappingExecutionState extends MappingEditorTabState {
               this.mappingEditorState.mapping,
               runtime,
               this.editorStore.graphManagerState.graph,
+              undefined,
               report,
             )) as object;
         }

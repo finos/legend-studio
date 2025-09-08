@@ -570,6 +570,7 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
             this.selectedExecutionContextState?.executionContext.mapping.value,
             this.selectedExecutionContextState?.executionContext.runtime,
             this.editorStore.graphManagerState.graph,
+            undefined,
             report,
           )) as { plan: RawExecutionPlan; debug: string };
         rawPlan = debugResult.plan;
@@ -584,6 +585,7 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
             this.selectedExecutionContextState?.executionContext.mapping.value,
             this.selectedExecutionContextState?.executionContext.runtime,
             this.editorStore.graphManagerState.graph,
+            undefined,
             report,
           )) as object;
       }

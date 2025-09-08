@@ -515,7 +515,9 @@ export class PostFilterConditionState implements Hashable {
             this.postFilterState.tdsState.queryBuilderState.graphManagerState
               .graph,
             {
-              forceFromExpression: false,
+              forceFromExpression:
+                this.postFilterState.tdsState.queryBuilderState
+                  .forceFromExpressionForExec,
             },
           )) as ExecutionResultWithMetadata
         ).executionResult;
