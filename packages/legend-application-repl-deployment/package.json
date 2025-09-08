@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-application-repl-deployment",
-  "version": "13.122.0",
+  "version": "13.123.0",
   "description": "Legend REPL web application deployment",
   "keywords": [
     "legend",

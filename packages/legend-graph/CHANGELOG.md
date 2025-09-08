@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.2.4
+
+### Patch Changes
+
+- [#4401](https://github.com/finos/legend-studio/pull/4401) [`9ea40b0`](https://github.com/finos/legend-studio/commit/9ea40b08a23052cd81748343baeb4917892c4d7a) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add execOptions to generatePlan and debugExecPlan
+
 ## 32.2.3
 
 ## 32.2.2
