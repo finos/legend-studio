@@ -354,6 +354,10 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     );
   }
 
+  get forceFromExpressionForExec(): boolean {
+    return this.isFetchStructureTyped;
+  }
+
   setLambdaWriteMode(val: QUERY_BUILDER_LAMBDA_WRITER_MODE): void {
     this.lambdaWriteMode = val;
   }

@@ -494,7 +494,8 @@ export class QueryBuilderResultState {
           convertUnsafeNumbersToString: true,
           preservedResponseHeadersList: [V1_ZIPKIN_TRACE_HEADER],
           tracingtags: { ...this.queryBuilderState.sourceInfo },
-          forceFromExpression: false,
+          forceFromExpression:
+            this.queryBuilderState.forceFromExpressionForExec,
         },
       );
 
@@ -590,7 +591,10 @@ export class QueryBuilderResultState {
             contextstate.explicitMappingValue,
             contextstate.explicitRuntimeValue,
             this.queryBuilderState.graphManagerState.graph,
-            undefined,
+            {
+              forceFromExpression:
+                this.queryBuilderState.forceFromExpressionForExec,
+            },
             report,
           )) as { plan: RawExecutionPlan; debug: string };
         rawPlan = debugResult.plan;
@@ -605,7 +609,10 @@ export class QueryBuilderResultState {
             contextstate.explicitMappingValue,
             contextstate.explicitRuntimeValue,
             this.queryBuilderState.graphManagerState.graph,
-            undefined,
+            {
+              forceFromExpression:
+                this.queryBuilderState.forceFromExpressionForExec,
+            },
             report,
           )) as object;
       }

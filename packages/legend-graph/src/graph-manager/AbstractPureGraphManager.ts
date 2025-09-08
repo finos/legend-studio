@@ -601,7 +601,6 @@ export abstract class AbstractPureGraphManager {
     runtime: Runtime | undefined,
     graph: PureModel,
     options?: ExecutionOptions,
-
     report?: GraphManagerOperationReport,
   ): Promise<{ plan: RawExecutionPlan; debug: string }>;
 
