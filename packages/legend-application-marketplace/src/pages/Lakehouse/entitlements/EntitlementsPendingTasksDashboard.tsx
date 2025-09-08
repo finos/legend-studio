@@ -395,9 +395,12 @@ export const EntitlementsPendingTasksDashbaord = observer(
         headerName: 'Action Date',
         flex: 1,
         valueGetter: (params) => {
-          const taskType = params.data?.eventPayload.type;
-          const timestamp = params.data?.eventPayload.eventTimestamp;
-          return `${taskType}: ${timestamp}`;
+          const taskType = params.data?.eventPayload?.type;
+          const timestamp = params.data?.eventPayload?.eventTimestamp;
+          if (taskType && timestamp) {
+            return `${taskType}: ${timestamp}`;
+          }
+          return 'Unknown';
         },
       },
       {
