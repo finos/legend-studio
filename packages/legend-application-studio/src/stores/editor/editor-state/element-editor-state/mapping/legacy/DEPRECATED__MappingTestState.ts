@@ -874,6 +874,7 @@ export class DEPRECATED__MappingTestState extends MappingEditorTabState {
             this.mappingEditorState.mapping,
             this.inputDataState.runtime,
             this.editorStore.graphManagerState.graph,
+            undefined,
             report,
           )) as { plan: RawExecutionPlan; debug: string };
         rawPlan = debugResult.plan;
@@ -888,6 +889,7 @@ export class DEPRECATED__MappingTestState extends MappingEditorTabState {
             this.mappingEditorState.mapping,
             this.inputDataState.runtime,
             this.editorStore.graphManagerState.graph,
+            undefined,
             report,
           )) as object;
       }

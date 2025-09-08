@@ -590,6 +590,7 @@ export class QueryBuilderResultState {
             contextstate.explicitMappingValue,
             contextstate.explicitRuntimeValue,
             this.queryBuilderState.graphManagerState.graph,
+            undefined,
             report,
           )) as { plan: RawExecutionPlan; debug: string };
         rawPlan = debugResult.plan;
@@ -604,6 +605,7 @@ export class QueryBuilderResultState {
             contextstate.explicitMappingValue,
             contextstate.explicitRuntimeValue,
             this.queryBuilderState.graphManagerState.graph,
+            undefined,
             report,
           )) as object;
       }

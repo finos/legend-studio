@@ -583,6 +583,7 @@ export abstract class AbstractPureGraphManager {
     mapping: Mapping | undefined,
     runtime: Runtime | undefined,
     graph: PureModel,
+    options?: ExecutionOptions,
     report?: GraphManagerOperationReport,
   ): Promise<RawExecutionPlan>;
 
@@ -599,6 +600,8 @@ export abstract class AbstractPureGraphManager {
     mapping: Mapping | undefined,
     runtime: Runtime | undefined,
     graph: PureModel,
+    options?: ExecutionOptions,
+
     report?: GraphManagerOperationReport,
   ): Promise<{ plan: RawExecutionPlan; debug: string }>;
 
