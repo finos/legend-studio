@@ -494,7 +494,7 @@ export class QueryBuilderResultState {
           convertUnsafeNumbersToString: true,
           preservedResponseHeadersList: [V1_ZIPKIN_TRACE_HEADER],
           tracingtags: { ...this.queryBuilderState.sourceInfo },
-          forceFromExpression: true,
+          forceFromExpression: false,
         },
       );
 
