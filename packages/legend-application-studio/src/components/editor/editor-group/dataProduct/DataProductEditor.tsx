@@ -23,6 +23,7 @@ import {
   DataProductEditorState,
   generateUrlToDeployOnOpen,
   LakehouseAccessPointState,
+  ModelAccessPointGroupState,
 } from '../../../../stores/editor/editor-state/element-editor-state/dataProduct/DataProductEditorState.js';
 import {
   BugIcon,
@@ -74,6 +75,8 @@ import {
   UploadIcon,
   useDragPreviewLayer,
   WarningIcon,
+  LongArrowRightIcon,
+  PURE_MappingIcon,
 } from '@finos/legend-art';
 import {
   type ChangeEventHandler,
@@ -94,12 +97,19 @@ import {
   type V1_DataProductArtifactAccessPointGroup,
   type V1_DataProductArtifactAccessPointImplementation,
   type V1_DataProductArtifactGeneration,
+  type Mapping,
+  type PackageableRuntime,
+  type DataProductRuntimeInfo,
+  type PackageableElement,
+  type DataProductElementScope,
+  type DataProductElement,
   DataProductEmbeddedImageIcon,
   DataProductLibraryIcon,
   Email,
   LakehouseTargetEnv,
   StereotypeExplicitReference,
   V1_DataProductIconLibraryId,
+  validate_PureExecutionMapping,
 } from '@finos/legend-graph';
 import {
   accessPoint_setClassification,
@@ -115,6 +125,8 @@ import {
   supportInfo_setDocumentationUrl,
   supportInfo_setFaqUrl,
   supportInfo_setLinkLabel,
+  runtimeInfo_setId,
+  runtimeInfo_setDescription,
   supportInfo_setSupportUrl,
   supportInfo_setWebsite,
 } from '../../../../stores/graph-modifier/DSL_DataProduct_GraphModifierHelper.js';
@@ -130,6 +142,10 @@ import {
   annotatedElement_addStereotype,
   annotatedElement_deleteStereotype,
 } from '../../../../stores/graph-modifier/DomainGraphModifierHelper.js';
+import {
+  buildElementOption,
+  type PackageableElementOption,
+} from '@finos/legend-lego/graph-editor';
 
 export enum AP_GROUP_MODAL_ERRORS {
   GROUP_NAME_EMPTY = 'Group Name is empty',
@@ -405,7 +421,7 @@ const AccessPointGenerationViewer = observer(
   },
 );
 
-export const LakehouseDataProductAcccessPointEditor = observer(
+export const LakehouseDataProductAccessPointEditor = observer(
   (props: {
     accessPointState: LakehouseAccessPointState;
     isReadOnly: boolean;
@@ -838,6 +854,309 @@ const AccessPointGroupPublicToggle = observer(
   },
 );
 
+export const CompatibleRuntimesEditor = observer(
+  (props: { groupState: ModelAccessPointGroupState }) => {
+    const { groupState } = props;
+    const group = groupState.value;
+
+    const handleSelectRuntime = (runtime: DataProductRuntimeInfo) => {
+      groupState.setDefaultRuntime(runtime);
+    };
+
+    // Event handlers
+    const handleAddRuntime = (option: {
+      label: string;
+      value: PackageableRuntime;
+    }): void => {
+      if (typeof option.value === 'object') {
+        groupState.addCompatibleRuntime(option.value);
+      }
+    };
+
+    const handleRemoveRuntime = (runtime: DataProductRuntimeInfo): void => {
+      groupState.removeCompatibleRuntime(runtime);
+    };
+
+    const handleRuntimeTitleChange = (
+      runtimeInfo: DataProductRuntimeInfo,
+      value: string | undefined,
+    ): void => {
+      runtimeInfo_setId(runtimeInfo, value ?? '');
+    };
+
+    const handleRuntimeDescriptionChange = (
+      runtimeInfo: DataProductRuntimeInfo,
+      value: string | undefined,
+    ): void => {
+      runtimeInfo_setDescription(runtimeInfo, value);
+    };
+
+    // ListEditor component renderers
+    const RuntimeComponent = observer(
+      (runtimeComponentProps: {
+        item: DataProductRuntimeInfo;
+      }): React.ReactElement => {
+        const { item } = runtimeComponentProps;
+
+        return (
+          <>
+            <div className="panel__content__form__section__list__item__content">
+              <div className="panel__content__form__section__header__label">
+                Default?
+              </div>
+              <input
+                type="radio"
+                name="defaultRuntimeRadio"
+                value={item.id}
+                checked={group.defaultRuntime === item}
+                onChange={() => handleSelectRuntime(item)}
+              />
+            </div>
+            <div className="panel__content__form__section__list__item__content">
+              <div className="panel__content__form__section__header__label">
+                Runtime
+              </div>
+              <div className="panel__content__form__section__list__item__content__title">
+                {item.runtime.value.path}
+              </div>
+            </div>
+            <div className="panel__content__form__section__list__item__form">
+              <PanelFormTextField
+                name="Title"
+                value={item.id}
+                update={(value) => handleRuntimeTitleChange(item, value)}
+                placeholder="Enter title"
+                className="dataSpace-editor__general__diagrams__title"
+              />
+              <PanelFormTextField
+                name="Description"
+                value={item.description ?? ''}
+                update={(value) => handleRuntimeDescriptionChange(item, value)}
+                placeholder="Enter description"
+                className="dataSpace-editor__general__diagrams__description"
+              />
+            </div>
+          </>
+        );
+      },
+    );
+
+    const NewRuntimeComponent = observer(
+      (newRuntimeProps: {
+        onFinishEditing: () => void;
+      }): React.ReactElement => {
+        const { onFinishEditing } = newRuntimeProps;
+
+        return (
+          <div className="panel__content__form__section__list__new-item__input">
+            <CustomSelectorInput
+              options={groupState.getCompatibleRuntimeOptions()}
+              onChange={(event: {
+                label: string;
+                value: PackageableRuntime;
+              }) => {
+                onFinishEditing();
+                handleAddRuntime(event);
+              }}
+              placeholder="Select a runtime to add..."
+              darkMode={true}
+            />
+          </div>
+        );
+      },
+    );
+
+    return (
+      <ListEditor
+        title="Compatible Runtimes"
+        prompt="Add compatible runtimes to include in this Data Product. Set a title and description for each runtime."
+        items={group.compatibleRuntimes}
+        keySelector={(element: DataProductRuntimeInfo) =>
+          element.runtime.value.path
+        }
+        ItemComponent={RuntimeComponent}
+        NewItemComponent={NewRuntimeComponent}
+        handleRemoveItem={handleRemoveRuntime}
+        isReadOnly={groupState.state.isReadOnly}
+        emptyMessage="No runtimes specified"
+        emptyClassName="data-product-editor__empty-runtime"
+      />
+    );
+  },
+);
+
+export const FeaturedElementsEditor = observer(
+  (props: { groupState: ModelAccessPointGroupState; isReadOnly: boolean }) => {
+    const { groupState, isReadOnly } = props;
+    const group = groupState.value;
+
+    // Event handlers
+    const handleAddElement = (option: {
+      label: string;
+      value: DataProductElement;
+    }): void => {
+      if (typeof option.value === 'object') {
+        groupState.addFeaturedElement(option.value);
+      }
+    };
+
+    const handleRemoveElement = (element: DataProductElementScope): void => {
+      groupState.removeFeaturedElement(element);
+    };
+
+    const handleElementExcludeChange = (
+      element: DataProductElementScope,
+      event: React.ChangeEvent<HTMLInputElement>,
+    ): void => {
+      groupState.excludeFeaturedElement(element, event.target.checked);
+    };
+
+    // ListEditor component renderers
+    const ElementComponent = observer(
+      (elementComponentProps: {
+        item: DataProductElementScope;
+      }): React.ReactElement => {
+        const { item } = elementComponentProps;
+
+        return (
+          <div className="data-product-editor__element-item">
+            <div className="panel__content__form__section__list__item__content__label">
+              {item.element.value.path}
+            </div>
+            <div className="panel__content__form__section__list__item__content__actions">
+              <div className="panel__content__form__section__list__item__content__actions-exclude">
+                <Checkbox
+                  disabled={isReadOnly}
+                  checked={item.exclude ?? false}
+                  onChange={(event) => handleElementExcludeChange(item, event)}
+                  size="small"
+                  className="panel__content__form__section__list__item__content__actions-exclude__btn"
+                />
+                <span className="panel__content__form__section__list__item__content__actions__label">
+                  Exclude
+                </span>
+              </div>
+            </div>
+          </div>
+        );
+      },
+    );
+
+    const NewElementComponent = observer(
+      (newElementProps: { onFinishEditing: () => void }) => {
+        const { onFinishEditing } = newElementProps;
+
+        return (
+          <div className="panel__content__form__section__list__new-item__input">
+            <CustomSelectorInput
+              options={groupState.getFeaturedElementOptions()}
+              onChange={(event: {
+                label: string;
+                value: DataProductElement;
+              }) => {
+                onFinishEditing();
+                handleAddElement(event);
+              }}
+              placeholder="Select an element to add..."
+              darkMode={true}
+            />
+          </div>
+        );
+      },
+    );
+
+    return (
+      <ListEditor
+        title="Featured Elements"
+        prompt="Add classes and associations to display under Models Documentation. Use the exclude checkbox to exclude certain elements from this Data Product entirely."
+        items={group.featuredElements}
+        keySelector={(element: DataProductElementScope) =>
+          element.element.value.path
+        }
+        ItemComponent={ElementComponent}
+        NewItemComponent={NewElementComponent}
+        handleRemoveItem={handleRemoveElement}
+        isReadOnly={isReadOnly}
+        emptyMessage="No elements specified"
+      />
+    );
+  },
+);
+
+const ModelAccessPointGroupEditor = observer(
+  (props: { groupState: ModelAccessPointGroupState; isReadOnly: boolean }) => {
+    const { groupState, isReadOnly } = props;
+    const editorStore = useEditorStore();
+
+    // mapping
+    const mapping = groupState.value.mapping;
+    const isMappingEmpty = validate_PureExecutionMapping(
+      groupState.value.mapping.value,
+    );
+    const mappingOptions =
+      groupState.state.editorStore.graphManagerState.usableMappings.map(
+        buildElementOption,
+      );
+    const selectedMappingOption = {
+      value: mapping.value,
+      label: mapping.value.path === '' ? '(none)' : mapping.value.path,
+    } as PackageableElementOption<Mapping>;
+    const onMappingChange = (val: PackageableElementOption<Mapping>): void => {
+      if (val.value !== mapping.value) {
+        groupState.setMapping(val.value);
+      }
+    };
+
+    const visitElement = (element: PackageableElement): void => {
+      editorStore.graphEditorMode.openElement(element);
+    };
+
+    return (
+      <div className="data-product-editor__model-apg-editor">
+        <div className="data-product-editor__model-apg-editor__label">
+          Mapping
+        </div>
+        <div
+          className="service-execution-editor__configuration__item"
+          style={{ padding: '0 1rem' }}
+        >
+          <div className="btn--sm service-execution-editor__configuration__item__label">
+            <PURE_MappingIcon />
+          </div>
+          <CustomSelectorInput
+            className="panel__content__form__section__dropdown service-execution-editor__configuration__item__dropdown"
+            disabled={isReadOnly}
+            options={mappingOptions}
+            onChange={onMappingChange}
+            value={selectedMappingOption}
+            darkMode={
+              !groupState.state.editorStore.applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
+            }
+            hasError={Boolean(isMappingEmpty)}
+          />
+          <button
+            className="btn--dark btn--sm service-execution-editor__configuration__item__btn"
+            onClick={() => {
+              visitElement(groupState.value.mapping.value);
+            }}
+            tabIndex={-1}
+            title="See mapping"
+            disabled={Boolean(isMappingEmpty)}
+          >
+            <LongArrowRightIcon />
+          </button>
+        </div>
+        <CompatibleRuntimesEditor groupState={groupState} />
+        <FeaturedElementsEditor
+          groupState={groupState}
+          isReadOnly={isReadOnly}
+        />
+      </div>
+    );
+  },
+);
+
 const AccessPointGroupEditor = observer(
   (props: { groupState: AccessPointGroupState; isReadOnly: boolean }) => {
     const { groupState, isReadOnly } = props;
@@ -849,7 +1168,6 @@ const AccessPointGroupEditor = observer(
       groupState.value.id === newNamePlaceholder,
     );
     const [isHoveringName, setIsHoveringName] = useState(false);
-
     const handleDescriptionEdit = () => setEditingDescription(true);
     const handleDescriptionBlur = () => {
       setEditingDescription(false);
@@ -958,16 +1276,18 @@ const AccessPointGroupEditor = observer(
               {isHoveringName && hoverIcon()}
             </div>
           )}
-          <button
-            className="access-point-editor__generic-entry__remove-btn--group"
-            onClick={() => {
-              handleRemoveAccessPointGroup();
-            }}
-            tabIndex={-1}
-            title="Remove Access Point Group"
-          >
-            <TimesIcon />
-          </button>
+          {!groupState.state.modelledDataProduct && (
+            <button
+              className="access-point-editor__generic-entry__remove-btn--group"
+              onClick={() => {
+                handleRemoveAccessPointGroup();
+              }}
+              tabIndex={-1}
+              title="Remove Access Point Group"
+            >
+              <TimesIcon />
+            </button>
+          )}
         </div>
         <div className="access-point-editor__group-container__description-editor">
           {editingDescription ? (
@@ -1015,13 +1335,20 @@ const AccessPointGroupEditor = observer(
         {editorStore.applicationStore.config.options.dataProductConfig && (
           <AccessPointGroupPublicToggle groupState={groupState} />
         )}
+        {groupState instanceof ModelAccessPointGroupState && (
+          <ModelAccessPointGroupEditor
+            groupState={groupState}
+            isReadOnly={isReadOnly}
+          />
+        )}
         <PanelHeader className="panel__header--access-point">
           <div className="panel__header__title">Access Points</div>
           <PanelHeaderActions>
+            {/* TODO: remove disabling this button for MAPG when Function Access Points are ready */}
             <PanelHeaderActionItem
               className="panel__header__action"
               onClick={handleAddAccessPoint}
-              disabled={isReadOnly}
+              disabled={isReadOnly || productEditorState.modelledDataProduct}
               title="Create new access point"
             >
               <PlusIcon />
@@ -1041,7 +1368,7 @@ const AccessPointGroupEditor = observer(
           {groupState.accessPointStates
             .filter(filterByType(LakehouseAccessPointState))
             .map((apState) => (
-              <LakehouseDataProductAcccessPointEditor
+              <LakehouseDataProductAccessPointEditor
                 key={apState.uuid}
                 isReadOnly={isReadOnly}
                 accessPointState={apState}
@@ -1064,18 +1391,6 @@ const GroupTabRenderer = observer(
     };
     const selectedGroupState = dataProductEditorState.selectedGroupState;
     const ref = useRef<HTMLDivElement>(null);
-
-    const groupError = (): boolean => {
-      return (
-        group.accessPointStates.length === 0 ||
-        group.value.id === newNamePlaceholder ||
-        Boolean(
-          group.accessPointStates.find(
-            (apState) => apState.accessPoint.id === newNamePlaceholder,
-          ),
-        )
-      );
-    };
 
     //Drag and Drop - reorder groups and accept access points from other groups
     const handleHover = useCallback(
@@ -1162,10 +1477,11 @@ const GroupTabRenderer = observer(
             ? 'var(--color-dark-grey-100)'
             : 'var(--color-dark-grey-50)',
         }}
+        role="tab"
       >
         {group.value.id}
         &nbsp;
-        {groupError() && (
+        {group.hasErrors() && (
           <ErrorWarnIcon
             title="Resolve Access Point Group error(s)"
             style={{ color: 'var(--color-red-300)' }}
@@ -1225,21 +1541,21 @@ const AccessPointGroupTab = observer(
                 />
               );
             })}
-            <PanelHeaderActionItem
-              className="panel__header__action"
-              onClick={handleAddAccessPointGroup}
-              disabled={isReadOnly || disableAddGroup}
-              title={
-                disableAddGroup
-                  ? 'Provide all group names'
-                  : 'Create new access point group'
-              }
-            >
-              <PlusIcon />
-            </PanelHeaderActionItem>
+            {!dataProductEditorState.modelledDataProduct && (
+              <PanelHeaderActionItem
+                className="panel__header__action"
+                onClick={handleAddAccessPointGroup}
+                disabled={isReadOnly || disableAddGroup}
+                title={
+                  disableAddGroup
+                    ? 'Provide all group names'
+                    : 'Create new access point group'
+                }
+              >
+                <PlusIcon />
+              </PanelHeaderActionItem>
+            )}
           </div>
-
-          <PanelHeaderActions></PanelHeaderActions>
         </PanelHeader>
         <PanelContent>
           {selectedGroupState && (

@@ -21,15 +21,20 @@ import {
   type DataProduct,
   type DataProductIcon,
   type DataProductLink,
+  ModelAccessPointGroup,
+  type DataProductElementScope,
+  type DataProductDiagram,
   type Email,
   type SupportInfo,
   DataProductEmbeddedImageIcon,
   DataProductLibraryIcon,
+  type DataProductRuntimeInfo,
   LakehouseAccessPoint,
   UnknownDataProductIcon,
 } from '../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import {
   observe_Abstract_PackageableElement,
+  observe_PackageableElementReference,
   skipObserved,
 } from './CoreObserverHelper.js';
 import {
@@ -97,6 +102,38 @@ export const observe_SupportInfo = skipObserved(
   },
 );
 
+export const observe_DataProductRuntimeInfo = skipObserved(
+  (metamodel: DataProductRuntimeInfo): DataProductRuntimeInfo => {
+    makeObservable(metamodel, {
+      id: observable,
+      description: observable,
+      runtime: observable,
+    });
+    return metamodel;
+  },
+);
+
+export const observe_DataProductElementScope = skipObserved(
+  (metamodel: DataProductElementScope): DataProductElementScope => {
+    makeObservable(metamodel, {
+      exclude: observable,
+      element: observable,
+    });
+    return metamodel;
+  },
+);
+
+export const observe_DataProductDiagram = skipObserved(
+  (metamodel: DataProductDiagram): DataProductDiagram => {
+    makeObservable(metamodel, {
+      title: observable,
+      description: observable,
+      diagram: observable,
+    });
+    return metamodel;
+  },
+);
+
 export const observe_AccessPointGroup = skipObserved(
   (metamodel: AccessPointGroup): AccessPointGroup => {
     makeObservable(metamodel, {
@@ -109,9 +146,39 @@ export const observe_AccessPointGroup = skipObserved(
     metamodel.stereotypes.forEach(observe_StereotypeReference);
     metamodel.taggedValues.forEach(observe_TaggedValue);
     metamodel.accessPoints.forEach(observe_AccessPoint);
+
     return metamodel;
   },
 );
+
+export const observe_ModelAccessPointGroup = skipObserved(
+  (metamodel: ModelAccessPointGroup): ModelAccessPointGroup => {
+    observe_AccessPointGroup(metamodel);
+
+    makeObservable(metamodel, {
+      mapping: observable,
+      defaultRuntime: observable,
+      compatibleRuntimes: observable,
+      featuredElements: observable,
+      diagrams: observable,
+    });
+    observe_PackageableElementReference(metamodel.mapping);
+    observe_DataProductRuntimeInfo(metamodel.defaultRuntime);
+    metamodel.compatibleRuntimes.forEach(observe_DataProductRuntimeInfo);
+    metamodel.featuredElements.forEach(observe_DataProductElementScope);
+    metamodel.diagrams.forEach(observe_DataProductDiagram);
+
+    return metamodel;
+  },
+);
+
+export const observe_APG = (metamodel: AccessPointGroup): AccessPointGroup => {
+  if (metamodel instanceof ModelAccessPointGroup) {
+    return observe_ModelAccessPointGroup(metamodel);
+  } else {
+    return observe_AccessPointGroup(metamodel);
+  }
+};
 
 export const observe_DataProductIcon = skipObserved(
   (metamodel: DataProductIcon): DataProductIcon => {
@@ -152,7 +219,7 @@ export const observe_DataProduct = skipObserved(
     if (metamodel.icon) {
       observe_DataProductIcon(metamodel.icon);
     }
-    metamodel.accessPointGroups.forEach(observe_AccessPointGroup);
+    metamodel.accessPointGroups.forEach(observe_APG);
     return metamodel;
   },
 );

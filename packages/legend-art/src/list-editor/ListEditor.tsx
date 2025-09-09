@@ -18,6 +18,7 @@ import React, { useState } from 'react';
 import { TimesIcon } from '../icon/Icon.js';
 import { PanelFormListItems } from '../layout/Panel.js';
 import { observer } from 'mobx-react-lite';
+import clsx from 'clsx';
 
 export const ListEditor = observer(
   /* eslint-disable comma-spacing */
@@ -34,6 +35,7 @@ export const ListEditor = observer(
     handleRemoveItem: (item: T) => void;
     isReadOnly: boolean;
     emptyMessage?: string;
+    emptyClassName?: string;
   }) => {
     const {
       title,
@@ -45,6 +47,7 @@ export const ListEditor = observer(
       handleRemoveItem,
       isReadOnly,
       emptyMessage,
+      emptyClassName,
     } = props;
     const [showAddButton, setShowAddButton] = useState(true);
 
@@ -91,7 +94,12 @@ export const ListEditor = observer(
             </div>
           )}
           {!items?.length && showAddButton && (
-            <div className="panel__content__form__section__list__empty">
+            <div
+              className={clsx(
+                'panel__content__form__section__list__empty',
+                emptyClassName,
+              )}
+            >
               {emptyMessage ?? 'No items specified'}
             </div>
           )}

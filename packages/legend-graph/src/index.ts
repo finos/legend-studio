@@ -712,7 +712,6 @@ export * from './graph-manager/action/changeDetection/Testable_ObserverHelper.js
 export * from './graph-manager/action/changeDetection/DSL_FunctionActivatorObserverHelper.js';
 
 // ------------------------------------- Data Product --------------------------------------------
-
 export {
   AccessPoint,
   AccessPointGroup,
@@ -725,7 +724,12 @@ export {
   LakehouseAccessPoint,
   LakehouseTargetEnv,
   SupportInfo,
+  ModelAccessPointGroup,
+  DataProductRuntimeInfo,
   UnknownDataProductIcon,
+  DataProductElementScope,
+  DataProductDiagram,
+  type DataProductElement,
 } from './graph/metamodel/pure/dataProduct/DataProduct.js';
 export * from './graph-manager/action/changeDetection/DataProductObserveHelper.js';
 
