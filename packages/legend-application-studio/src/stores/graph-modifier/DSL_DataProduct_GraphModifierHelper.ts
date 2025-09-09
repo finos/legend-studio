@@ -23,11 +23,17 @@ import {
   type LakehouseAccessPoint,
   DataProductLink,
   observe_AccessPoint,
-  observe_AccessPointGroup,
   observe_Email,
   observe_SupportInfo,
   observer_DataProductLink,
   SupportInfo,
+  type ModelAccessPointGroup,
+  type DataProductRuntimeInfo,
+  type PackageableElementReference,
+  type Mapping,
+  type DataProductDiagram,
+  type DataProductElementScope,
+  observe_APG,
 } from '@finos/legend-graph';
 import { addUniqueEntry, deleteEntry, swapEntry } from '@finos/legend-shared';
 import { action } from 'mobx';
@@ -68,6 +74,87 @@ export const accessPointGroup_setName = action(
   },
 );
 
+export const modelAccessPointGroup_setDefaultRuntime = action(
+  (group: ModelAccessPointGroup, runtime: DataProductRuntimeInfo) => {
+    group.defaultRuntime = runtime;
+  },
+);
+
+export const modelAccessPointGroup_setMapping = action(
+  (
+    group: ModelAccessPointGroup,
+    mapping: PackageableElementReference<Mapping>,
+  ) => {
+    group.mapping = mapping;
+  },
+);
+
+export const modelAccessPointGroup_addCompatibleRuntime = action(
+  (group: ModelAccessPointGroup, runtime: DataProductRuntimeInfo) => {
+    addUniqueEntry(group.compatibleRuntimes, runtime);
+  },
+);
+
+export const modelAccessPointGroup_removeCompatibleRuntime = action(
+  (group: ModelAccessPointGroup, runtime: DataProductRuntimeInfo): void => {
+    deleteEntry(group.compatibleRuntimes, runtime);
+  },
+);
+
+export const modelAccessPointGroup_addElement = action(
+  (group: ModelAccessPointGroup, element: DataProductElementScope): void => {
+    addUniqueEntry(group.featuredElements, element);
+  },
+);
+
+export const modelAccessPointGroup_removeElement = action(
+  (group: ModelAccessPointGroup, element: DataProductElementScope): void => {
+    deleteEntry(group.featuredElements, element);
+  },
+);
+
+export const modelAccessPointGroup_setElementExclude = action(
+  (element: DataProductElementScope, exclude: boolean): void => {
+    element.exclude = exclude;
+  },
+);
+
+export const modelAccessPointGroup_addDiagram = action(
+  (group: ModelAccessPointGroup, diagram: DataProductDiagram): void => {
+    addUniqueEntry(group.diagrams, diagram);
+  },
+);
+
+export const modelAccessPointGroup_removeDiagram = action(
+  (group: ModelAccessPointGroup, diagram: DataProductDiagram): void => {
+    deleteEntry(group.diagrams, diagram);
+  },
+);
+
+export const dataProductDiagram_setTitle = action(
+  (diagram: DataProductDiagram, title: string): void => {
+    diagram.title = title;
+  },
+);
+
+export const dataProductDiagram_setDescription = action(
+  (diagram: DataProductDiagram, desc: string | undefined): void => {
+    diagram.description = desc;
+  },
+);
+
+export const runtimeInfo_setId = action(
+  (runtimeInfo: DataProductRuntimeInfo, id: string): void => {
+    runtimeInfo.id = id;
+  },
+);
+
+export const runtimeInfo_setDescription = action(
+  (runtimeInfo: DataProductRuntimeInfo, desc: string | undefined): void => {
+    runtimeInfo.description = desc;
+  },
+);
+
 export const accessPointGroup_swapAccessPoints = action(
   (
     group: AccessPointGroup,
@@ -80,10 +167,8 @@ export const accessPointGroup_swapAccessPoints = action(
 
 export const dataProduct_addAccessPointGroup = action(
   (product: DataProduct, accessPointGroup: AccessPointGroup) => {
-    addUniqueEntry(
-      product.accessPointGroups,
-      observe_AccessPointGroup(accessPointGroup),
-    );
+    const observedApg = observe_APG(accessPointGroup);
+    addUniqueEntry(product.accessPointGroups, observedApg);
   },
 );
 

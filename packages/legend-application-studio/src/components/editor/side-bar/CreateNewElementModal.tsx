@@ -29,6 +29,7 @@ import {
   type RuntimeOption,
   NewLakehouseDataProductDriver,
   NewRuntimeType,
+  DataProductType,
 } from '../../../stores/editor/NewElementState.js';
 import { Dialog, compareLabelFn, CustomSelectorInput } from '@finos/legend-art';
 import type { EditorStore } from '../../../stores/editor/EditorStore.js';
@@ -488,6 +489,23 @@ const NewLakehouseDataProductEditor = observer(() => {
   const handleTitleChange: React.ChangeEventHandler<HTMLInputElement> = (
     event,
   ) => newProductDriver.setTitle(event.target.value);
+
+  const type = newProductDriver.type;
+  const typeOptions = Object.values(DataProductType).map((typeOption) => ({
+    label: prettyCONSTName(typeOption),
+    value: typeOption,
+  }));
+  const typeOption = {
+    value: type,
+    label: prettyCONSTName(type),
+  };
+  const onTypeChange = (val: {
+    value: DataProductType;
+    label: string;
+  }): void => {
+    newProductDriver.setType(val.value);
+  };
+
   return (
     <>
       <div className="panel__content__form__section__header__label">Title</div>
@@ -498,6 +516,21 @@ const NewLakehouseDataProductEditor = observer(() => {
           value={newProductDriver.title}
           onChange={handleTitleChange}
           placeholder={`Choose a title for this Data Product to display in Marketplace`}
+        />
+      </div>
+      <div className="panel__content__form__section__header__label">
+        Data Product Type
+      </div>
+      <div className="explorer__new-element-modal__driver">
+        <CustomSelectorInput
+          className="explorer__new-element-modal__driver__dropdown"
+          options={typeOptions}
+          onChange={onTypeChange}
+          value={typeOption}
+          darkMode={
+            !editorStore.applicationStore.layoutService
+              .TEMPORARY__isLightColorThemeEnabled
+          }
         />
       </div>
     </>

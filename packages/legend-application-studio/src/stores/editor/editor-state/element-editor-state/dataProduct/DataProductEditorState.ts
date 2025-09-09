@@ -32,6 +32,20 @@ import {
   type Stereotype,
   getStereotype,
   type StereotypeReference,
+  ModelAccessPointGroup,
+  PackageableRuntime,
+  Association,
+  Class,
+  Enumeration,
+  Package,
+  observe_DataProductRuntimeInfo,
+  PackageableElementExplicitReference,
+  DataProductRuntimeInfo,
+  type DataProductElement,
+  type Mapping,
+  observe_DataProductElementScope,
+  DataProductElementScope,
+  validate_PureExecutionMapping,
 } from '@finos/legend-graph';
 import type { EditorStore } from '../../../EditorStore.js';
 import { ElementEditorState } from '../ElementEditorState.js';
@@ -57,6 +71,7 @@ import {
   uuid,
   swapEntry,
   returnUndefOnError,
+  deepEqual,
 } from '@finos/legend-shared';
 import {
   accessPointGroup_swapAccessPoints,
@@ -65,6 +80,13 @@ import {
   dataProduct_deleteAccessPoint,
   dataProduct_deleteAccessPointGroup,
   dataProduct_swapAccessPointGroups,
+  modelAccessPointGroup_addCompatibleRuntime,
+  modelAccessPointGroup_addElement,
+  modelAccessPointGroup_removeCompatibleRuntime,
+  modelAccessPointGroup_removeElement,
+  modelAccessPointGroup_setDefaultRuntime,
+  modelAccessPointGroup_setElementExclude,
+  modelAccessPointGroup_setMapping,
 } from '../../../../graph-modifier/DSL_DataProduct_GraphModifierHelper.js';
 import { LambdaEditorState } from '@finos/legend-query-builder';
 import {
@@ -280,6 +302,16 @@ export class AccessPointGroupState {
     return undefined;
   }
 
+  hasErrors(): boolean {
+    return (
+      this.accessPointStates.length === 0 ||
+      this.value.id === '' ||
+      Boolean(
+        this.accessPointStates.find((apState) => apState.accessPoint.id === ''),
+      )
+    );
+  }
+
   deleteAccessPoint(val: AccessPointState): void {
     const state = this.accessPointStates.find((a) => a === val);
     deleteEntry(this.accessPointStates, state);
@@ -313,6 +345,122 @@ export class AccessPointGroupState {
   }
 }
 
+export class ModelAccessPointGroupState extends AccessPointGroupState {
+  declare value: ModelAccessPointGroup;
+  showNewModal = false;
+
+  constructor(val: ModelAccessPointGroup, editorState: DataProductEditorState) {
+    super(val, editorState);
+    this.value = val;
+  }
+
+  setMapping(mapping: Mapping): void {
+    modelAccessPointGroup_setMapping(
+      this.value,
+      PackageableElementExplicitReference.create(mapping),
+    );
+  }
+
+  setDefaultRuntime(runtime: DataProductRuntimeInfo) {
+    modelAccessPointGroup_setDefaultRuntime(this.value, runtime);
+  }
+
+  addCompatibleRuntime(runtime: PackageableRuntime): void {
+    const newRuntime = observe_DataProductRuntimeInfo(
+      new DataProductRuntimeInfo(),
+    );
+    newRuntime.id = runtime.name;
+    newRuntime.runtime = PackageableElementExplicitReference.create(runtime);
+    modelAccessPointGroup_addCompatibleRuntime(this.value, newRuntime);
+
+    if (deepEqual(this.value.defaultRuntime, new DataProductRuntimeInfo())) {
+      this.setDefaultRuntime(newRuntime);
+    }
+  }
+
+  removeCompatibleRuntime(runtime: DataProductRuntimeInfo): void {
+    modelAccessPointGroup_removeCompatibleRuntime(this.value, runtime);
+    if (runtime === this.value.defaultRuntime) {
+      if (!this.value.compatibleRuntimes.length) {
+        this.setDefaultRuntime(new DataProductRuntimeInfo());
+      } else if (this.value.compatibleRuntimes[0]) {
+        this.setDefaultRuntime(this.value.compatibleRuntimes[0]);
+      }
+    }
+  }
+
+  addFeaturedElement(element: DataProductElement): void {
+    const elementPointer = observe_DataProductElementScope(
+      new DataProductElementScope(),
+    );
+    elementPointer.element =
+      PackageableElementExplicitReference.create(element);
+    modelAccessPointGroup_addElement(this.value, elementPointer);
+  }
+
+  removeFeaturedElement(element: DataProductElementScope): void {
+    modelAccessPointGroup_removeElement(this.value, element);
+  }
+
+  excludeFeaturedElement(
+    element: DataProductElementScope,
+    value: boolean,
+  ): void {
+    modelAccessPointGroup_setElementExclude(element, value);
+  }
+
+  override hasErrors(): boolean {
+    return Boolean(
+      super.hasErrors() ||
+        !validate_PureExecutionMapping(this.value.mapping.value) ||
+        !deepEqual(this.value.defaultRuntime, new DataProductRuntimeInfo()),
+    );
+  }
+
+  getCompatibleRuntimeOptions(): {
+    label: string;
+    value: PackageableRuntime;
+  }[] {
+    const currentRuntimes = this.value.compatibleRuntimes.map(
+      (runtimePointer) => runtimePointer.runtime.value,
+    );
+    return this.state.editorStore.graphManagerState.graph.allOwnElements
+      .filter(
+        (element): element is PackageableRuntime =>
+          element instanceof PackageableRuntime,
+      )
+      .filter((runtime) => !currentRuntimes.includes(runtime))
+      .map((runtime) => ({
+        label: runtime.path,
+        value: runtime,
+      }));
+  }
+
+  isValidDataProductElement(
+    element: PackageableElement,
+  ): element is DataProductElement {
+    return (
+      element instanceof Package ||
+      element instanceof Class ||
+      element instanceof Enumeration ||
+      element instanceof Association
+    );
+  }
+
+  getFeaturedElementOptions(): { label: string; value: DataProductElement }[] {
+    const currentElements = this.value.featuredElements.map(
+      (elementPointer) => elementPointer.element.value,
+    );
+    return this.state.editorStore.graphManagerState.graph.allOwnElements
+      .filter((element) => this.isValidDataProductElement(element))
+      .filter((element) => !currentElements.includes(element))
+      .map((element) => ({
+        label: element.path,
+        value: element,
+      }));
+  }
+}
+
 const createEditorInitialConfiguration = (): EditorInitialConfiguration => {
   const config = new EditorInitialConfiguration();
   const ingest = new DataProductElementEditorInitialConfiguration();
@@ -343,6 +491,7 @@ export class DataProductEditorState extends ElementEditorState {
   deployResponse: AdhocDataProductDeployResponse | undefined;
   selectedGroupState: AccessPointGroupState | undefined;
   selectedTab: DATA_PRODUCT_TAB;
+  modelledDataProduct = false;
 
   constructor(
     editorStore: EditorStore,
@@ -356,6 +505,7 @@ export class DataProductEditorState extends ElementEditorState {
       accessPointGroupStates: observable,
       isConvertingTransformLambdaObjects: observable,
       selectedTab: observable,
+      modelledDataProduct: observable,
       setSelectedTab: action,
       addGroupState: action,
       deleteGroupState: action,
@@ -371,9 +521,18 @@ export class DataProductEditorState extends ElementEditorState {
       swapAccessPointGroups: action,
     });
 
-    this.accessPointGroupStates = this.product.accessPointGroups.map(
-      (e) => new AccessPointGroupState(e, this),
-    );
+    this.accessPointGroupStates = this.product.accessPointGroups.map((e) => {
+      if (e instanceof ModelAccessPointGroup) {
+        this.modelledDataProduct = true;
+        return new ModelAccessPointGroupState(e, this);
+      } else if (e instanceof AccessPointGroup) {
+        return new AccessPointGroupState(e, this);
+      } else {
+        throw new Error(
+          `Can't build access point group state for unsupported access point group type: ${e}`,
+        );
+      }
+    });
 
     this.selectedGroupState = this.accessPointGroupStates[0];
 

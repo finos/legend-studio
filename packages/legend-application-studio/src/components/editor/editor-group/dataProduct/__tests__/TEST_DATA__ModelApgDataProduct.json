@@ -1,0 +1,978 @@
+[
+  {
+    "path": "model::ProfileNotIncluded",
+    "content": {
+      "_type": "profile",
+      "name": "ProfileNotIncluded",
+      "package": "model",
+      "stereotypes": [
+        {
+          "value": "stereotype1"
+        }
+      ],
+      "tags": [
+        {
+          "value": "tag1"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::extension::Profile"
+  },
+  {
+    "path": "model::animal::Family",
+    "content": {
+      "_type": "Enumeration",
+      "name": "Family",
+      "package": "model::animal",
+      "stereotypes": [
+        {
+          "profile": "doc",
+          "value": "deprecated"
+        }
+      ],
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "doc",
+            "value": "doc"
+          },
+          "value": "my doc for enum"
+        }
+      ],
+      "values": [
+        {
+          "value": "UO"
+        },
+        {
+          "value": "OP"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Enumeration"
+  },
+  {
+    "path": "model::animal::reptile::Reptile",
+    "content": {
+      "_type": "class",
+      "name": "Reptile",
+      "package": "model::animal::reptile",
+      "properties": [
+        {
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Boolean"
+            }
+          },
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "hasFin",
+          "stereotypes": [
+            {
+              "profile": "doc",
+              "value": "deprecated"
+            },
+            {
+              "profile": "model::ProfileNotIncluded",
+              "value": "stereotype1"
+            }
+          ],
+          "taggedValues": [
+            {
+              "tag": {
+                "profile": "doc",
+                "value": "doc"
+              },
+              "value": "my doc for hasFin"
+            },
+            {
+              "tag": {
+                "profile": "model::ProfileNotIncluded",
+                "value": "tag1"
+              },
+              "value": " class property not included"
+            }
+          ]
+        }
+      ],
+      "stereotypes": [
+        {
+          "profile": "doc",
+          "value": "deprecated"
+        }
+      ],
+      "superTypes": [
+        {
+          "path": "model::animal::Animal2",
+          "type": "CLASS"
+        },
+        {
+          "path": "model::animal::Animal",
+          "type": "CLASS"
+        }
+      ],
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "doc",
+            "value": "doc"
+          },
+          "value": ""
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "model::animal::GenericAnimal",
+    "content": {
+      "_type": "class",
+      "name": "GenericAnimal",
+      "package": "model::animal"
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "model::animal::GenericAnimal2",
+    "content": {
+      "_type": "class",
+      "name": "GenericAnimal2",
+      "package": "model::animal"
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "model::animal::mammal::Mammal",
+    "content": {
+      "_type": "class",
+      "name": "Mammal",
+      "package": "model::animal::mammal",
+      "properties": [
+        {
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "String"
+            }
+          },
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "noOfLegs"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "model::animal::Animal2",
+    "content": {
+      "_type": "class",
+      "name": "Animal2",
+      "package": "model::animal",
+      "properties": [
+        {
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "String"
+            }
+          },
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "name"
+        }
+      ],
+      "qualifiedProperties": [
+        {
+          "body": [
+            {
+              "_type": "string",
+              "sourceInformation": {
+                "endColumn": 177,
+                "endLine": 121,
+                "sourceId": "",
+                "startColumn": 176,
+                "startLine": 121
+              },
+              "value": ""
+            }
+          ],
+          "name": "name2",
+          "parameters": [],
+          "returnGenericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "String"
+            }
+          },
+          "returnMultiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "stereotypes": [
+            {
+              "profile": "doc",
+              "value": "deprecated"
+            },
+            {
+              "profile": "model::ProfileNotIncluded",
+              "value": "stereotype1"
+            }
+          ],
+          "taggedValues": [
+            {
+              "tag": {
+                "profile": "doc",
+                "value": "doc"
+              },
+              "value": "my doc for hasFin"
+            },
+            {
+              "tag": {
+                "profile": "model::ProfileNotIncluded",
+                "value": "tag1"
+              },
+              "value": "class qualified property not included"
+            }
+          ]
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "model::animal::Animal",
+    "content": {
+      "_type": "class",
+      "name": "Animal",
+      "package": "model::animal",
+      "properties": [
+        {
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "model::animal::Family"
+            }
+          },
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "family"
+        },
+        {
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Number"
+            }
+          },
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "noOfLegs"
+        },
+        {
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "model::animal::GenericAnimal2"
+            }
+          },
+          "multiplicity": {
+            "lowerBound": 0
+          },
+          "name": "children"
+        }
+      ],
+      "qualifiedProperties": [
+        {
+          "body": [
+            {
+              "_type": "func",
+              "function": "greaterThan",
+              "parameters": [
+                {
+                  "_type": "property",
+                  "parameters": [
+                    {
+                      "_type": "var",
+                      "name": "this",
+                      "sourceInformation": {
+                        "endColumn": 20,
+                        "endLine": 129,
+                        "sourceId": "",
+                        "startColumn": 16,
+                        "startLine": 129
+                      }
+                    }
+                  ],
+                  "property": "noOfLegs",
+                  "sourceInformation": {
+                    "endColumn": 29,
+                    "endLine": 129,
+                    "sourceId": "",
+                    "startColumn": 22,
+                    "startLine": 129
+                  }
+                },
+                {
+                  "_type": "integer",
+                  "sourceInformation": {
+                    "endColumn": 33,
+                    "endLine": 129,
+                    "sourceId": "",
+                    "startColumn": 33,
+                    "startLine": 129
+                  },
+                  "value": 4
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 33,
+                "endLine": 129,
+                "sourceId": "",
+                "startColumn": 31,
+                "startLine": 129
+              }
+            }
+          ],
+          "name": "something",
+          "parameters": [],
+          "returnGenericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Boolean"
+            }
+          },
+          "returnMultiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          }
+        },
+        {
+          "body": [
+            {
+              "_type": "collection",
+              "multiplicity": {
+                "lowerBound": 0,
+                "upperBound": 0
+              },
+              "sourceInformation": {
+                "endColumn": 18,
+                "endLine": 130,
+                "sourceId": "",
+                "startColumn": 17,
+                "startLine": 130
+              },
+              "values": []
+            }
+          ],
+          "name": "something2",
+          "parameters": [],
+          "returnGenericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "model::animal::GenericAnimal"
+            }
+          },
+          "returnMultiplicity": {
+            "lowerBound": 0,
+            "upperBound": 1
+          }
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "model::dummyMapping",
+    "content": {
+      "_type": "mapping",
+      "classMappings": [
+        {
+          "_type": "pureInstance",
+          "class": "model::animal::Animal",
+          "propertyMappings": [
+            {
+              "_type": "purePropertyMapping",
+              "explodeProperty": false,
+              "property": {
+                "class": "model::animal::Animal",
+                "property": "noOfLegs"
+              },
+              "source": "",
+              "transform": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "integer",
+                    "value": 4
+                  }
+                ],
+                "parameters": []
+              }
+            }
+          ],
+          "root": true
+        },
+        {
+          "_type": "pureInstance",
+          "class": "model::animal::Animal2",
+          "propertyMappings": [
+            {
+              "_type": "purePropertyMapping",
+              "explodeProperty": false,
+              "property": {
+                "class": "model::animal::Animal2",
+                "property": "name"
+              },
+              "source": "",
+              "transform": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "string",
+                    "value": "asdasdasdasd"
+                  }
+                ],
+                "parameters": []
+              }
+            }
+          ],
+          "root": true
+        },
+        {
+          "_type": "pureInstance",
+          "class": "model::animal::GenericAnimal",
+          "propertyMappings": [],
+          "root": true
+        },
+        {
+          "_type": "pureInstance",
+          "class": "model::animal::GenericAnimal2",
+          "propertyMappings": [],
+          "root": true
+        }
+      ],
+      "enumerationMappings": [
+        {
+          "enumValueMappings": [
+            {
+              "enumValue": "UO",
+              "sourceValues": [
+                {
+                  "_type": "stringSourceValue",
+                  "value": "uo"
+                }
+              ]
+            }
+          ],
+          "enumeration": {
+            "path": "model::animal::Family",
+            "type": "ENUMERATION"
+          }
+        }
+      ],
+      "includedMappings": [],
+      "name": "dummyMapping",
+      "package": "model",
+      "tests": []
+    },
+    "classifierPath": "meta::pure::mapping::Mapping"
+  },
+  {
+    "path": "model::dummyMapping2",
+    "content": {
+      "_type": "mapping",
+      "classMappings": [
+        {
+          "_type": "pureInstance",
+          "class": "model::animal::Animal",
+          "propertyMappings": [
+            {
+              "_type": "purePropertyMapping",
+              "explodeProperty": false,
+              "property": {
+                "class": "model::animal::Animal",
+                "property": "noOfLegs"
+              },
+              "source": "",
+              "transform": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "integer",
+                    "value": 4
+                  }
+                ],
+                "parameters": []
+              }
+            }
+          ],
+          "root": true
+        },
+        {
+          "_type": "pureInstance",
+          "class": "model::animal::Animal2",
+          "propertyMappings": [
+            {
+              "_type": "purePropertyMapping",
+              "explodeProperty": false,
+              "property": {
+                "class": "model::animal::Animal2",
+                "property": "name"
+              },
+              "source": "",
+              "transform": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "string",
+                    "value": "asdasdasdasd"
+                  }
+                ],
+                "parameters": []
+              }
+            }
+          ],
+          "root": true
+        },
+        {
+          "_type": "pureInstance",
+          "class": "model::animal::GenericAnimal",
+          "propertyMappings": [],
+          "root": true
+        },
+        {
+          "_type": "pureInstance",
+          "class": "model::animal::GenericAnimal2",
+          "propertyMappings": [],
+          "root": true
+        }
+      ],
+      "enumerationMappings": [
+        {
+          "enumValueMappings": [
+            {
+              "enumValue": "UO",
+              "sourceValues": [
+                {
+                  "_type": "stringSourceValue",
+                  "value": "uo"
+                }
+              ]
+            }
+          ],
+          "enumeration": {
+            "path": "model::animal::Family",
+            "type": "ENUMERATION"
+          }
+        }
+      ],
+      "includedMappings": [],
+      "name": "dummyMapping2",
+      "package": "model",
+      "tests": []
+    },
+    "classifierPath": "meta::pure::mapping::Mapping"
+  },
+  {
+    "path": "model::dummyRuntime",
+    "content": {
+      "_type": "runtime",
+      "name": "dummyRuntime",
+      "package": "model",
+      "runtimeValue": {
+        "_type": "engineRuntime",
+        "connectionStores": [],
+        "connections": [
+          {
+            "store": {
+              "path": "ModelStore",
+              "type": "STORE"
+            },
+            "storeConnections": [
+              {
+                "connection": {
+                  "_type": "JsonModelConnection",
+                  "class": "model::animal::mammal::Mammal",
+                  "url": "my_url"
+                },
+                "id": "id1"
+              }
+            ]
+          }
+        ],
+        "mappings": [
+          {
+            "path": "model::dummyMapping",
+            "type": "MAPPING"
+          }
+        ]
+      }
+    },
+    "classifierPath": "meta::pure::runtime::PackageableRuntime"
+  },
+  {
+    "path": "model::dummyRuntime2",
+    "content": {
+      "_type": "runtime",
+      "name": "dummyRuntime2",
+      "package": "model",
+      "runtimeValue": {
+        "_type": "engineRuntime",
+        "connectionStores": [],
+        "connections": [
+          {
+            "store": {
+              "path": "ModelStore",
+              "type": "STORE"
+            },
+            "storeConnections": [
+              {
+                "connection": {
+                  "_type": "JsonModelConnection",
+                  "class": "model::animal::mammal::Mammal",
+                  "url": "my_url"
+                },
+                "id": "id1"
+              }
+            ]
+          }
+        ],
+        "mappings": [
+          {
+            "path": "model::dummyMapping",
+            "type": "MAPPING"
+          }
+        ]
+      }
+    },
+    "classifierPath": "meta::pure::runtime::PackageableRuntime"
+  },
+  {
+    "path": "model::animal::AnimalDataProduct",
+    "content": {
+      "_type": "dataProduct",
+      "accessPointGroups": [
+        {
+          "_type": "modelAccessPointGroup",
+          "accessPoints": [
+            {
+              "_type": "lakehouseAccessPoint",
+              "classification": "DP00",
+              "func": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "func",
+                    "function": "filter",
+                    "parameters": [
+                      {
+                        "_type": "classInstance",
+                        "type": "I",
+                        "value": {
+                          "metadata": false,
+                          "path": ["model::MyIngest", "MyDataSet"]
+                        }
+                      },
+                      {
+                        "_type": "lambda",
+                        "body": [
+                          {
+                            "_type": "func",
+                            "function": "equal",
+                            "parameters": [
+                              {
+                                "_type": "property",
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "x"
+                                  }
+                                ],
+                                "property": "name"
+                              },
+                              {
+                                "_type": "string",
+                                "value": "ee"
+                              }
+                            ]
+                          }
+                        ],
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "x"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "parameters": []
+              },
+              "id": "myId",
+              "reproducible": false,
+              "targetEnvironment": "Snowflake"
+            }
+          ],
+          "compatibleRuntimes": [
+            {
+              "description": "desc",
+              "id": "runtimeId",
+              "runtime": {
+                "path": "model::dummyRuntime"
+              }
+            }
+          ],
+          "defaultRuntime": "runtimeId",
+          "description": "des",
+          "id": "grp",
+          "mapping": {
+            "path": "model::dummyMapping"
+          }
+        }
+      ],
+      "name": "AnimalDataProduct",
+      "package": "model::animal",
+      "type": {
+        "_type": "internalDataProductType"
+      }
+    },
+    "classifierPath": "meta::external::catalog::dataProduct::specification::metamodel::DataProduct"
+  },
+  {
+    "path": "model::MyIngest",
+    "content": {
+      "_type": "ingestDefinition",
+      "datasetGroup": "test",
+      "datasets": [
+        {
+          "ingestPartitionColumns": [],
+          "name": "MyDataSet",
+          "preprocessors": [],
+          "primaryKey": [],
+          "privacyClassification": {
+            "sensitivity": "DP10"
+          },
+          "source": {
+            "_type": "serializedSource",
+            "schema": {
+              "_type": "relationType",
+              "columns": [
+                {
+                  "genericType": {
+                    "multiplicityArguments": [],
+                    "rawType": {
+                      "_type": "packageableType",
+                      "fullPath": "Varchar",
+                      "sourceInformation": {
+                        "endColumn": 24,
+                        "endLine": 57,
+                        "sourceId": "",
+                        "startColumn": 13,
+                        "startLine": 57
+                      }
+                    },
+                    "typeArguments": [],
+                    "typeVariableValues": [
+                      {
+                        "_type": "integer",
+                        "sourceInformation": {
+                          "endColumn": 23,
+                          "endLine": 57,
+                          "sourceId": "",
+                          "startColumn": 21,
+                          "startLine": 57
+                        },
+                        "value": 200
+                      }
+                    ]
+                  },
+                  "multiplicity": {
+                    "lowerBound": 0,
+                    "upperBound": 1
+                  },
+                  "name": "name",
+                  "sourceInformation": {
+                    "endColumn": 24,
+                    "endLine": 57,
+                    "sourceId": "",
+                    "startColumn": 7,
+                    "startLine": 57
+                  }
+                }
+              ]
+            }
+          },
+          "storageLayoutClusterColumns": [],
+          "storageLayoutPartitionColumns": []
+        }
+      ],
+      "name": "MyIngest",
+      "owner": {
+        "_type": "appDir",
+        "prodParallel": {
+          "appDirId": 1,
+          "level": "DEPLOYMENT"
+        },
+        "production": {
+          "appDirId": 2,
+          "level": "DEPLOYMENT"
+        }
+      },
+      "package": "model",
+      "readMode": {
+        "_type": "Snapshot",
+        "format": {
+          "_type": "CSV",
+          "fieldDelimiter": ",",
+          "headerRowsToSkipCount": 0,
+          "recordDelimiter": "\n"
+        }
+      },
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 60,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 54
+      },
+      "stereotypes": [],
+      "taggedValues": [],
+      "writeMode": {
+        "_type": "batch_milestoned"
+      }
+    },
+    "classifierPath": "meta::external::ingest::specification::metamodel::IngestDefinition"
+  },
+  {
+    "path": "model::GeneralDiagram",
+    "content": {
+      "_type": "diagram",
+      "classViews": [
+        {
+          "class": "model::animal::reptile::Reptile",
+          "id": "4cec85f9-9b66-450a-bdcb-c855aa0314e1",
+          "position": {
+            "x": 568,
+            "y": 404
+          },
+          "rectangle": {
+            "height": 58,
+            "width": 120.84765625
+          }
+        },
+        {
+          "class": "model::animal::Animal",
+          "id": "902bf14e-e7ff-40e7-92e4-8780f91bfa29",
+          "position": {
+            "x": 809,
+            "y": 187
+          },
+          "rectangle": {
+            "height": 44,
+            "width": 108.64453125
+          }
+        }
+      ],
+      "generalizationViews": [
+        {
+          "line": {
+            "points": [
+              {
+                "x": 628.423828125,
+                "y": 433
+              },
+              {
+                "x": 863.322265625,
+                "y": 209
+              }
+            ]
+          },
+          "sourceView": "4cec85f9-9b66-450a-bdcb-c855aa0314e1",
+          "targetView": "902bf14e-e7ff-40e7-92e4-8780f91bfa29"
+        }
+      ],
+      "name": "GeneralDiagram",
+      "package": "model",
+      "propertyViews": []
+    },
+    "classifierPath": "meta::pure::metamodel::diagram::Diagram"
+  },
+  {
+    "path": "model::animal::AnimalDiagram",
+    "content": {
+      "_type": "diagram",
+      "classViews": [
+        {
+          "class": "model::animal::mammal::Mammal",
+          "id": "641a0336-d4b5-418c-b656-2f52461264e2",
+          "position": {
+            "x": 427,
+            "y": 210
+          },
+          "rectangle": {
+            "height": 44,
+            "width": 125.1123046875
+          }
+        },
+        {
+          "class": "model::animal::reptile::Reptile",
+          "id": "b92253d8-0389-4c7d-b5d2-3cdc3bb1ad98",
+          "position": {
+            "x": 787,
+            "y": 216
+          },
+          "rectangle": {
+            "height": 58,
+            "width": 120.84765625
+          }
+        },
+        {
+          "class": "model::animal::Animal",
+          "id": "7a992cfc-c888-4091-aa00-ab430915aced",
+          "position": {
+            "x": 515.423828125,
+            "y": -7.5
+          },
+          "rectangle": {
+            "height": 100,
+            "width": 199.716796875
+          }
+        }
+      ],
+      "generalizationViews": [
+        {
+          "line": {
+            "points": [
+              {
+                "x": 847.423828125,
+                "y": 245
+              },
+              {
+                "x": 615.2822265625,
+                "y": 42.5
+              }
+            ]
+          },
+          "sourceView": "b92253d8-0389-4c7d-b5d2-3cdc3bb1ad98",
+          "targetView": "7a992cfc-c888-4091-aa00-ab430915aced"
+        }
+      ],
+      "name": "AnimalDiagram",
+      "package": "model::animal",
+      "propertyViews": []
+    },
+    "classifierPath": "meta::pure::metamodel::diagram::Diagram"
+  }
+]

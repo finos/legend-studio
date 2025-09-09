@@ -84,8 +84,62 @@
     &__content__form__section {
       width: 100%;
       margin: 0;
-      max-width: 45rem;
+
+      &__list__items {
+        max-width: none !important;
+      }
+
+      &__list__item {
+        width: unset;
+
+        &__form {
+          flex-direction: row;
+        }
+      }
+
+      &__list {
+        max-width: none !important;
+      }
     }
+  }
+
+  &__model-apg-editor {
+    border-radius: 3px;
+
+    &__label {
+      display: flex;
+      align-items: center;
+      font-weight: 500;
+      color: var(--color-light-grey-50);
+      margin-bottom: 0.5rem;
+      line-height: 2rem;
+      cursor: default;
+      padding: 0 1rem;
+    }
+
+    &__item {
+      display: flex;
+      align-items: center;
+      margin: 0 0 1rem;
+      padding: 0 1rem;
+    }
+  }
+
+  &__element-item {
+    display: flex;
+    align-items: center;
+  }
+
+  &__empty-runtime {
+    @include flexCenter;
+
+    height: 4rem;
+    width: 100%;
+    font-weight: 500;
+    max-width: 45rem;
+    border: 0.2rem dashed var(--color-red-300);
+    margin-bottom: 1rem;
+    color: var(--color-red-300);
   }
 
   &__home-tab {

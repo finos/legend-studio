@@ -28,6 +28,7 @@ import {
   TEST__setUpEditorWithDefaultSDLCData,
 } from '../../../__test-utils__/EditorComponentTestUtils.js';
 import TEST_DATA__LHDataProduct from './TEST_DATA__LHDataProduct.json' with { type: 'json' };
+import TEST_DATA__ModelApgDataProduct from './TEST_DATA__ModelApgDataProduct.json' with { type: 'json' };
 import { LEGEND_STUDIO_TEST_ID } from '../../../../../__lib__/LegendStudioTesting.js';
 import {
   Core_GraphManagerPreset,
@@ -37,7 +38,13 @@ import { QueryBuilder_GraphManagerPreset } from '@finos/legend-query-builder';
 import { LegendStudioPluginManager } from '../../../../../application/LegendStudioPluginManager.js';
 import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { findByPlaceholderText, screen, within } from '@testing-library/dom';
+import {
+  findAllByDisplayValue,
+  findByPlaceholderText,
+  queryAllByTitle,
+  screen,
+  within,
+} from '@testing-library/dom';
 import { AP_EMPTY_DESC_WARNING } from '../DataProductEditor.js';
 
 const pluginManager = LegendStudioPluginManager.create();
@@ -100,10 +107,12 @@ test(integrationTest('Editing access point groups'), async () => {
   const textbox = await findByDisplayValue(editorGroup, 'group1');
   fireEvent.click(textbox);
   fireEvent.change(textbox, { target: { value: 'NewGroupName' } });
+  fireEvent.blur(textbox);
   fireEvent.click(await findByText(editorGroup, 'Access Points'));
   expect(within(editorGroup).getAllByText('NewGroupName')).not.toBeNull();
   //title cannot be undefined
   fireEvent.change(textbox, { target: { value: '' } });
+  fireEvent.blur(textbox);
   fireEvent.click(await findByText(editorGroup, 'Access Points'));
   expect(within(editorGroup).getAllByText('NewGroupName')).not.toBeNull();
 
@@ -123,6 +132,7 @@ test(integrationTest('Editing access point groups'), async () => {
   fireEvent.change(descriptionTextbox, {
     target: { value: 'Updated Group Description' },
   });
+  fireEvent.blur(descriptionTextbox);
   fireEvent.click(await findByText(editorGroup, 'Access Points'));
   await findByText(editorGroup, 'Updated Group Description');
 
@@ -173,6 +183,7 @@ test(integrationTest('Editing access points'), async () => {
   );
   fireEvent.click(textbox);
   fireEvent.change(textbox, { target: { value: 'New description here' } });
+  fireEvent.blur(textbox);
   fireEvent.click(await findByText(editorGroup, 'Access Points'));
   await findByText(editorGroup, 'New description here');
 
@@ -235,3 +246,225 @@ test(integrationTest('Editing data product icon'), async () => {
   await screen.findByText('No icon selected');
   expect(dataProduct.icon).toBeUndefined();
 });
+
+test(
+  integrationTest('Editing model access point groups, mapping'),
+  async () => {
+    const MOCK__editorStore = TEST__provideMockedEditorStore({ pluginManager });
+    const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
+      MOCK__editorStore,
+      { entities: TEST_DATA__ModelApgDataProduct },
+    );
+    MockedMonacoEditorInstance.getRawOptions.mockReturnValue({
+      readOnly: true,
+    });
+
+    await TEST__openElementFromExplorerTree(
+      'model::animal::AnimalDataProduct',
+      renderResult,
+    );
+
+    const editorGroup = await waitFor(() =>
+      renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
+    );
+    fireEvent.click(await findByText(editorGroup, 'APG'));
+
+    //check rendered as mapg editor
+    await findByText(editorGroup, 'Mapping');
+    await findByText(editorGroup, 'Compatible Runtimes');
+    await findByText(editorGroup, 'Featured Elements');
+
+    //make sure there is only one mapg
+    expect(within(editorGroup).getAllByRole('tab')).toHaveLength(1);
+    expect(
+      queryAllByTitle(editorGroup, 'Create new access point group'),
+    ).toHaveLength(0);
+    expect(
+      queryAllByTitle(editorGroup, 'Remove Access Point Group'),
+    ).toHaveLength(0);
+
+    //mapping editor
+    const mappingDropdown = await screen.findByText('model::dummyMapping');
+    fireEvent.mouseDown(mappingDropdown);
+
+    const options = await screen.findAllByRole('option');
+    options.find((opt) => opt.textContent === 'dummyMapping');
+    const dropdownOption = options.find(
+      (opt) => opt.textContent === 'dummyMapping2',
+    );
+    expect(dropdownOption).not.toBeUndefined();
+    fireEvent.click(dropdownOption as HTMLElement);
+
+    await screen.findByText('model::dummyMapping2');
+  },
+);
+
+test(
+  integrationTest('Model Access Point Group compatible runtimes editor'),
+  async () => {
+    const MOCK__editorStore = TEST__provideMockedEditorStore({ pluginManager });
+    const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
+      MOCK__editorStore,
+      { entities: TEST_DATA__ModelApgDataProduct },
+    );
+    MockedMonacoEditorInstance.getRawOptions.mockReturnValue({
+      readOnly: true,
+    });
+
+    await TEST__openElementFromExplorerTree(
+      'model::animal::AnimalDataProduct',
+      renderResult,
+    );
+
+    const editorGroup = await waitFor(() =>
+      renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
+    );
+    fireEvent.click(await findByText(editorGroup, 'APG'));
+
+    //edit title
+    const runtimeElement = await findAllByDisplayValue(
+      editorGroup,
+      'runtimeId',
+    );
+    const runtimeTitleTextbox = guaranteeNonNullable(
+      runtimeElement.find(
+        (el) => el.tagName === 'INPUT' && el.getAttribute('type') !== 'radio',
+      ),
+    );
+    fireEvent.click(runtimeTitleTextbox);
+    fireEvent.change(runtimeTitleTextbox, {
+      target: { value: 'defaultRuntime' },
+    });
+    fireEvent.blur(runtimeTitleTextbox);
+    expect(
+      within(editorGroup).getAllByDisplayValue('defaultRuntime'),
+    ).not.toBeNull();
+
+    //edit description
+    const runtimeDescTextbox = guaranteeNonNullable(
+      runtimeElement.find(
+        (el) => el.tagName === 'INPUT' && el.getAttribute('type') !== 'radio',
+      ),
+    );
+    fireEvent.click(runtimeDescTextbox);
+    fireEvent.change(runtimeDescTextbox, {
+      target: { value: 'new runtime description' },
+    });
+    fireEvent.blur(runtimeDescTextbox);
+    expect(
+      within(editorGroup).getAllByDisplayValue('new runtime description'),
+    ).not.toBeNull();
+
+    //add new element
+    fireEvent.click(
+      guaranteeNonNullable(
+        (
+          await screen.findAllByRole('button', {
+            name: 'Add Value',
+          })
+        )[0],
+      ),
+    );
+    const newRuntimeDropdown = await screen.findByText(
+      'Select a runtime to add...',
+    );
+    fireEvent.mouseDown(newRuntimeDropdown);
+
+    const runtimeOptions = await screen.findAllByRole('option');
+    runtimeOptions.find((opt) => opt.textContent === 'model::dummyRuntime2');
+    const selectRuntime = runtimeOptions.find(
+      (opt) => opt.textContent === 'model::dummyRuntime2',
+    );
+    expect(selectRuntime).not.toBeUndefined();
+    fireEvent.click(selectRuntime as HTMLElement);
+
+    await screen.findByText('model::dummyRuntime2');
+
+    //change default runtime
+    const radio = guaranteeNonNullable(
+      screen.getAllByRole('radio', { name: '' })[1],
+    );
+    fireEvent.click(radio);
+    expect((radio as HTMLInputElement).checked).toBe(true);
+
+    //remove runtime
+    fireEvent.click(
+      guaranteeNonNullable(
+        (
+          await screen.findAllByRole('button', {
+            name: 'Remove item',
+          })
+        )[1],
+      ),
+    );
+    expect(within(editorGroup).queryByText('dummyRuntime2')).toBeNull();
+    expect(screen.getAllByRole('radio', { name: '' })).toHaveLength(1);
+  },
+);
+
+test(
+  integrationTest('Model Access Point Group featured elements editor'),
+  async () => {
+    const MOCK__editorStore = TEST__provideMockedEditorStore({ pluginManager });
+    const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
+      MOCK__editorStore,
+      { entities: TEST_DATA__ModelApgDataProduct },
+    );
+    MockedMonacoEditorInstance.getRawOptions.mockReturnValue({
+      readOnly: true,
+    });
+
+    await TEST__openElementFromExplorerTree(
+      'model::animal::AnimalDataProduct',
+      renderResult,
+    );
+
+    const editorGroup = await waitFor(() =>
+      renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
+    );
+    fireEvent.click(await findByText(editorGroup, 'APG'));
+
+    //add new element
+    fireEvent.click(
+      guaranteeNonNullable(
+        (
+          await screen.findAllByRole('button', {
+            name: 'Add Value',
+          })
+        )[1],
+      ),
+    );
+    const newElementDropdown = await screen.findByText(
+      'Select an element to add...',
+    );
+    fireEvent.mouseDown(newElementDropdown);
+
+    const elementOptions = await screen.findAllByRole('option');
+    const mammalClass = elementOptions.find(
+      (opt) => opt.textContent === 'model::animal::mammal::Mammal',
+    );
+    fireEvent.click(mammalClass as HTMLElement);
+    expect(
+      findByText(editorGroup, 'model::animal::mammal::Mammal'),
+    ).not.toBeNull();
+
+    //test exclude checkbox
+    const excludeCheckbox = guaranteeNonNullable(
+      within(editorGroup).getAllByRole('checkbox')[0],
+    );
+    fireEvent.click(excludeCheckbox);
+    expect((excludeCheckbox as HTMLInputElement).checked).toBe(true);
+    fireEvent.click(excludeCheckbox);
+    expect((excludeCheckbox as HTMLInputElement).checked).toBe(false);
+
+    // remove element
+    fireEvent.click(
+      guaranteeNonNullable(
+        (await screen.findAllByRole('button', { name: 'Remove item' }))[1],
+      ),
+    );
+    expect(
+      within(editorGroup).queryByText('model::animal::mammal::Mammal'),
+    ).toBeNull();
+  },
+);

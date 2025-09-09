@@ -87,6 +87,9 @@ import {
   LakehouseRuntime,
   type Runtime,
   AccessPointGroup,
+  ModelAccessPointGroup,
+  stub_Mapping,
+  DataProductRuntimeInfo,
 } from '@finos/legend-graph';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import {
@@ -113,7 +116,6 @@ import { EmbeddedDataType } from './editor-state/ExternalFormatState.js';
 import { createEmbeddedData } from './editor-state/element-editor-state/data/EmbeddedDataState.js';
 import {
   dataProduct_addAccessPointGroup,
-  dataProduct_setDescription,
   dataProduct_setTitle,
 } from '../graph-modifier/DSL_DataProduct_GraphModifierHelper.js';
 
@@ -512,19 +514,23 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
   }
 }
 
+export enum DataProductType {
+  LAKEHOUSE = 'LAKEHOUSE',
+  MODELLED = 'MODELLED',
+}
+
 export class NewLakehouseDataProductDriver extends NewElementDriver<DataProduct> {
   title: string;
-  description: string;
+  type = DataProductType.LAKEHOUSE;
 
   constructor(editorStore: EditorStore) {
     super(editorStore);
     this.title = '';
-    this.description = '';
     makeObservable(this, {
       title: observable,
-      description: observable,
+      type: observable,
+      setType: action,
       setTitle: action,
-      setDescription: action,
       isValid: computed,
     });
   }
@@ -532,21 +538,28 @@ export class NewLakehouseDataProductDriver extends NewElementDriver<DataProduct>
   override get isValid(): boolean {
     return Boolean(this.title);
   }
-
   setTitle(val: string) {
     this.title = val;
   }
-  setDescription(val: string) {
-    this.description = val;
+  setType(val: DataProductType) {
+    this.type = val;
   }
   override createElement(name: string): DataProduct {
     const dataProduct = new DataProduct(name);
     dataProduct_setTitle(dataProduct, this.title);
-    dataProduct_setDescription(dataProduct, this.description);
 
-    const defaultGroup = new AccessPointGroup();
-    defaultGroup.id = 'default';
-    dataProduct_addAccessPointGroup(dataProduct, defaultGroup);
+    if (this.type === DataProductType.LAKEHOUSE) {
+      const defaultGroup = new AccessPointGroup();
+      defaultGroup.id = 'default';
+      dataProduct_addAccessPointGroup(dataProduct, defaultGroup);
+    } else {
+      const defaultGroup = new ModelAccessPointGroup();
+      defaultGroup.id = 'default';
+      defaultGroup.mapping =
+        PackageableElementExplicitReference.create(stub_Mapping());
+      defaultGroup.defaultRuntime = new DataProductRuntimeInfo();
+      dataProduct_addAccessPointGroup(dataProduct, defaultGroup);
+    }
 
     return dataProduct;
   }
