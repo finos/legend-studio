@@ -138,6 +138,20 @@ export class DepotServerClient extends AbstractServerClient {
     );
   }
 
+  getEntityByGAV(
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    entityPath: string,
+  ): Promise<PlainObject<Entity>> {
+    return this.getVersionEntity(
+      groupId,
+      artifactId,
+      resolveVersion(versionId),
+      entityPath,
+    );
+  }
+
   // NOTE: this is experimental API to get elements by classifier path
   DEPRECATED_getEntitiesByClassifierPath = (
     classifierPath: string,

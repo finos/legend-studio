@@ -15,7 +15,12 @@
  */
 
 import { DataCubeSource } from '@finos/legend-data-cube';
-import type { V1_PureModelContextComposite } from '@finos/legend-graph';
+import type {
+  V1_Lambda,
+  V1_PureModelContextComposite,
+  V1_ValueSpecification,
+  V1_Variable,
+} from '@finos/legend-graph';
 import { VersionedProjectData } from '@finos/legend-server-depot';
 import {
   SerializationFactory,
@@ -29,7 +34,12 @@ export const LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE = 'lakehouseConsumer';
 
 export class LakehouseConsumerDataCubeSource extends DataCubeSource {
   model!: PlainObject<V1_PureModelContextComposite>;
+  lambda!: V1_Lambda;
   runtime!: string;
+  parameterValues: {
+    variable: V1_Variable;
+    valueSpec: V1_ValueSpecification;
+  }[] = [];
 }
 
 export class RawLakehouseConsumerDataCubeSource {
@@ -37,6 +47,7 @@ export class RawLakehouseConsumerDataCubeSource {
   warehouse!: string;
   environment!: string;
   paths!: string[];
+  parameterValues?: [string, string][] | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(RawLakehouseConsumerDataCubeSource, {
@@ -47,6 +58,7 @@ export class RawLakehouseConsumerDataCubeSource {
       warehouse: primitive(),
       environment: primitive(),
       paths: list(primitive()),
+      parameterValues: list(list(primitive())),
     }),
   );
 }

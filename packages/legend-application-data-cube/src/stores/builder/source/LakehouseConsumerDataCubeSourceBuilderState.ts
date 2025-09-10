@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { action, flow, makeObservable, observable } from 'mobx';
+import {
+  action,
+  computed,
+  flow,
+  makeObservable,
+  observable,
+  runInAction,
+} from 'mobx';
 import {
   LegendDataCubeSourceBuilderState,
   LegendDataCubeSourceBuilderType,
@@ -23,10 +30,15 @@ import {
   ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
+  guaranteeType,
   type GeneratorFn,
   type PlainObject,
 } from '@finos/legend-shared';
-import type { DataCubeAlertService } from '@finos/legend-data-cube';
+import {
+  _defaultPrimitiveTypeValue,
+  _primitiveValue,
+  type DataCubeAlertService,
+} from '@finos/legend-data-cube';
 import type { LegendDataCubeApplicationStore } from '../../LegendDataCubeBaseStore.js';
 import type { LegendDataCubeDataCubeEngine } from '../../LegendDataCubeDataCubeEngine.js';
 import {
@@ -44,8 +56,28 @@ import {
   CORE_PURE_PATH,
   type V1_EntitlementsDataProductDetailsResponse,
   type V1_EntitlementsDataProductDetails,
+  type V1_ValueSpecification,
+  type V1_Variable,
+  V1_serializeValueSpecification,
+  V1_PackageableType,
+  V1_deserializeRawValueSpecificationType,
+  V1_observe_ValueSpecification,
+  V1_dataProductModelSchema,
+  V1_LakehouseAccessPoint,
+  V1_serializeRawValueSpecification,
+  V1_deserializeValueSpecification,
+  V1_Lambda,
 } from '@finos/legend-graph';
 import { RawLakehouseConsumerDataCubeSource } from '../../model/LakehouseConsumerDataCubeSource.js';
+import { isValidV1_ValueSpecification } from '@finos/legend-query-builder';
+import { deserialize } from 'serializr';
+
+type QueryParameterValues = {
+  [varName: string]: {
+    variable: V1_Variable;
+    valueSpec: V1_ValueSpecification;
+  };
+};
 
 export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeSourceBuilderState {
   warehouse: string | undefined;
@@ -59,6 +91,8 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
   accessPoints: string[] = [];
   environments: string[] = [];
   dpCoordinates: VersionedProjectData | undefined;
+
+  queryParameterValues?: QueryParameterValues | undefined;
 
   private readonly _depotServerClient: DepotServerClient;
   private readonly _platformServerClient: LakehousePlatformServerClient;
@@ -89,6 +123,10 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
       fetchDataProductEnvironments: flow,
       loadDataProducts: flow,
 
+      queryParameters: computed,
+      queryParameterValues: observable,
+      hasInvalidQueryParameters: computed,
+
       setWarehouse: action,
       setDataProducts: action,
       setSelectedDataProduct: action,
@@ -96,6 +134,7 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
       setEnvironments: action,
       setSelectedAccessPoint: action,
       setSelectedEnvironment: action,
+      setQueryParameterValue: action,
     });
   }
 
@@ -125,6 +164,31 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
 
   setSelectedEnvironment(environment: string | undefined) {
     this.selectedEnvironment = environment;
+  }
+
+  setQueryParameterValue(name: string, value: V1_ValueSpecification) {
+    if (this.queryParameterValues?.[name]) {
+      this.queryParameterValues[name].valueSpec = value;
+    }
+  }
+
+  get queryParameters(): V1_Variable[] | undefined {
+    return this.queryParameterValues
+      ? Object.values(this.queryParameterValues).map((elem) => elem.variable)
+      : undefined;
+  }
+
+  get hasInvalidQueryParameters(): boolean {
+    if (this.queryParameterValues) {
+      return Object.values(this.queryParameterValues).some(
+        (paramVal) =>
+          !isValidV1_ValueSpecification(
+            paramVal.valueSpec,
+            paramVal.variable.multiplicity,
+          ),
+      );
+    }
+    return false;
   }
 
   *loadDataProducts(): GeneratorFn<void> {
@@ -216,6 +280,58 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
     const env = parts?.slice(0, -1).join('-');
     this.ingestEnvironment = env;
     this.setWarehouse('LAKEHOUSE_CONSUMER_DEFAULT_WH');
+
+    await this._initializeQueryParameters();
+  }
+
+  private async _initializeQueryParameters() {
+    const dataProductFull = deserialize(
+      V1_dataProductModelSchema,
+      (
+        await this._depotServerClient.getEntityByGAV(
+          guaranteeNonNullable(this.dpCoordinates?.groupId),
+          guaranteeNonNullable(this.dpCoordinates?.artifactId),
+          guaranteeNonNullable(this.dpCoordinates?.versionId),
+          guaranteeNonNullable(this.selectedDataProduct),
+        )
+      ).content,
+    );
+
+    const accessPoint = guaranteeType(
+      dataProductFull.accessPointGroups.map((group) =>
+        group.accessPoints.find(
+          (point) => point.id === this.selectedAccessPoint,
+        ),
+      )[0],
+      V1_LakehouseAccessPoint,
+    );
+    const lambda = V1_serializeRawValueSpecification(accessPoint.func);
+    const convertedLambda = guaranteeType(
+      V1_deserializeValueSpecification(lambda, []),
+      V1_Lambda,
+    );
+
+    const queryParameters = convertedLambda.parameters;
+
+    const queryParameterValues: QueryParameterValues = {};
+    for (const param of queryParameters) {
+      const genericType = guaranteeNonNullable(param.genericType);
+      const packageableType = guaranteeType(
+        genericType.rawType,
+        V1_PackageableType,
+      );
+      const defaultValueSpec = _primitiveValue(
+        V1_deserializeRawValueSpecificationType(packageableType.fullPath),
+        _defaultPrimitiveTypeValue(packageableType.fullPath),
+      );
+      queryParameterValues[param.name] = {
+        variable: param,
+        valueSpec: V1_observe_ValueSpecification(defaultValueSpec),
+      };
+    }
+    runInAction(() => {
+      this.queryParameterValues = queryParameterValues;
+    });
   }
 
   reset() {
@@ -255,9 +371,12 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
       Boolean(this.selectedAccessPoint) &&
       Boolean(this.selectedDataProduct) &&
       Boolean(this.selectedEnvironment) &&
-      Boolean(this.dpCoordinates)
+      Boolean(this.dpCoordinates) &&
+      !this.hasInvalidQueryParameters
     );
   }
+
+  //set query params
 
   override async generateSourceData(): Promise<PlainObject> {
     // build data cube source
@@ -274,6 +393,23 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
     rawSource.dpCoordinates = guaranteeNonNullable(this.dpCoordinates);
     rawSource.paths = this.paths;
     rawSource.warehouse = guaranteeNonNullable(this.warehouse);
+
+    rawSource.parameterValues = this.queryParameterValues
+      ? Object.values(this.queryParameterValues).map((variableAndValueSpec) => [
+          JSON.stringify(
+            V1_serializeValueSpecification(
+              variableAndValueSpec.variable,
+              this._application.pluginManager.getPureProtocolProcessorPlugins(),
+            ),
+          ),
+          JSON.stringify(
+            V1_serializeValueSpecification(
+              variableAndValueSpec.valueSpec,
+              this._application.pluginManager.getPureProtocolProcessorPlugins(),
+            ),
+          ),
+        ])
+      : [];
 
     return Promise.resolve(
       RawLakehouseConsumerDataCubeSource.serialization.toJson(rawSource),

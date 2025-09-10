@@ -14,13 +14,29 @@
  * limitations under the License.
  */
 import { observer } from 'mobx-react-lite';
-import { FormTextInput } from '@finos/legend-data-cube';
+import {
+  _defaultPrimitiveTypeValue,
+  _primitiveValue,
+  FormTextInput,
+  isPrimitiveType,
+} from '@finos/legend-data-cube';
 import { CustomSelectorInput } from '@finos/legend-art';
 import { useAuth } from 'react-oidc-context';
 import { useLegendDataCubeBuilderStore } from '../LegendDataCubeBuilderStoreProvider.js';
-import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  assertErrorThrown,
+  guaranteeNonNullable,
+  guaranteeType,
+} from '@finos/legend-shared';
 import { useEffect } from 'react';
 import type { LakehouseConsumerDataCubeSourceBuilderState } from '../../../stores/builder/source/LakehouseConsumerDataCubeSourceBuilderState.js';
+import {
+  PRIMITIVE_TYPE,
+  V1_observe_ValueSpecification,
+  V1_PackageableType,
+  type V1_ValueSpecification,
+} from '@finos/legend-graph';
+import { V1_BasicValueSpecificationEditor } from '@finos/legend-query-builder';
 
 export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
   sourceBuilder: LakehouseConsumerDataCubeSourceBuilderState;
@@ -141,6 +157,66 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
                 state.setWarehouse(event.target.value);
               }}
             />
+          </div>
+        )}
+        {state.queryParameters && state.queryParameters.length > 0 && (
+          <div className="h-50 mt-2 w-full overflow-auto">
+            {state.queryParameterValues &&
+              Object.entries(state.queryParameterValues).map(
+                ([name, { variable, valueSpec }]) => {
+                  const packageableType = guaranteeType(
+                    variable.genericType?.rawType,
+                    V1_PackageableType,
+                    'Can only edit parameters with packageable type',
+                  );
+                  const resetValue = (): void => {
+                    if (isPrimitiveType(packageableType.fullPath)) {
+                      state.setQueryParameterValue(
+                        name,
+                        V1_observe_ValueSpecification(
+                          _primitiveValue(
+                            packageableType.fullPath,
+                            _defaultPrimitiveTypeValue(
+                              packageableType.fullPath,
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+                    // TODO: check if enum is ever present for Data Products
+                  };
+                  return (
+                    <div key={name} className="mt-1 flex h-fit min-h-5 w-full">
+                      <div className="my-auto">
+                        {name}
+                        {': '}
+                      </div>
+                      <V1_BasicValueSpecificationEditor
+                        valueSpecification={valueSpec}
+                        multiplicity={variable.multiplicity}
+                        typeCheckOption={{
+                          expectedType: packageableType,
+                          match:
+                            packageableType.fullPath ===
+                            PRIMITIVE_TYPE.DATETIME,
+                        }}
+                        setValueSpecification={(val: V1_ValueSpecification) => {
+                          state.setQueryParameterValue(
+                            name,
+                            V1_observe_ValueSpecification(val),
+                          );
+                        }}
+                        resetValue={resetValue}
+                        className="ml-2 flex flex-auto"
+                        selectorConfig={{
+                          optionCustomization: { rowHeight: 20 },
+                        }}
+                        lightMode={true}
+                      />
+                    </div>
+                  );
+                },
+              )}
           </div>
         )}
       </div>

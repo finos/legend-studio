@@ -742,7 +742,11 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           source,
         );
 
-        //TODO: add support for parameters
+        source.parameterValues = await this._getQueryParameterValues(
+          rawSource,
+          source.lambda,
+        );
+
         try {
           source.columns = (
             await this._getLambdaRelationType(
@@ -948,7 +952,16 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       } else if (source instanceof LakehouseProducerDataCubeSource) {
         result = await this._runQuery(query, source.model, undefined, options);
       } else if (source instanceof LakehouseConsumerDataCubeSource) {
-        result = await this._runQuery(query, source.model, undefined, options);
+        const filteredParameterValues = await this._processLegendQueryParams(
+          source,
+          query,
+        );
+        result = await this._runQuery(
+          query,
+          source.model,
+          filteredParameterValues,
+          options,
+        );
       } else if (source instanceof LegendQueryDataCubeSource) {
         const filteredParameterValues = await this._processLegendQueryParams(
           source,
@@ -1080,11 +1093,15 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           options,
         )) as Response;
       } else if (source instanceof LakehouseConsumerDataCubeSource) {
+        const filteredParameterValues = await this._processLegendQueryParams(
+          source,
+          query,
+        );
         return (await this._runExportQuery(
           query,
           source.model,
           format,
-          undefined,
+          filteredParameterValues,
           options,
         )) as Response;
       } else if (source instanceof LegendQueryDataCubeSource) {
@@ -1117,7 +1134,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   }
 
   private async _processLegendQueryParams(
-    source: LegendQueryDataCubeSource,
+    source: LegendQueryDataCubeSource | LakehouseConsumerDataCubeSource,
     query: V1_Lambda,
   ) {
     // To handle parameter value with function calls we
@@ -1333,6 +1350,12 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     } else if (source instanceof LakehouseProducerDataCubeSource) {
       return this._getLambdaRelationType(query, source.model);
     } else if (source instanceof LakehouseConsumerDataCubeSource) {
+      const deserializedQuery = guaranteeType(
+        this.deserializeValueSpecification(query),
+        V1_Lambda,
+      );
+      await this._processLegendQueryParams(source, deserializedQuery);
+      query = this.serializeValueSpecification(deserializedQuery);
       return this._getLambdaRelationType(query, source.model);
     }
     throw new UnsupportedOperationError(
@@ -1372,9 +1395,11 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   }
 
   async _getQueryParameterValues(
-    rawSource: RawLegendQueryDataCubeSource,
+    rawSource:
+      | RawLegendQueryDataCubeSource
+      | RawLakehouseConsumerDataCubeSource,
     lambda: V1_Lambda,
-    queryInfo: QueryInfo,
+    queryInfo?: QueryInfo,
   ): Promise<{ variable: V1_Variable; valueSpec: V1_ValueSpecification }[]> {
     const rawSourceParameters: {
       variable: V1_Variable;
@@ -1396,9 +1421,11 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         lambda.parameters.map(async (parameter) => {
           if (parameter.genericType?.rawType instanceof V1_PackageableType) {
             const type = parameter.genericType.rawType.fullPath;
-            const defaultValueString = queryInfo.defaultParameterValues?.find(
-              (val) => val.name === parameter.name,
-            )?.content;
+            const defaultValueString = queryInfo
+              ? queryInfo.defaultParameterValues?.find(
+                  (val) => val.name === parameter.name,
+                )?.content
+              : undefined;
             // If not a primitive value, assume enum type.
             const defaultValueSpec =
               defaultValueString !== undefined
@@ -1695,6 +1722,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       V1_Lambda,
     );
     source.query = guaranteeNonNullable(convertedLambda.body[0]);
+    source.lambda = convertedLambda;
 
     return V1_serializePureModelContext(deserializedPMCD);
   }
