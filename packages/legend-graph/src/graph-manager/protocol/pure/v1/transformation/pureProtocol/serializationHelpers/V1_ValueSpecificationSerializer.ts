@@ -840,6 +840,7 @@ export function V1_deserializeClassInstanceValue(
       return deserialize(colSpecArrayModelSchema(plugins), json);
     case V1_ClassInstanceType.RELATION_STORE_ACCESSOR:
     case V1_ClassInstanceType.INGEST_ACCESSOR:
+    case V1_ClassInstanceType.DATA_PRODUCT_ACCESSOR:
       return deserialize(relationStoreAccessorModelSchema, json);
     default: {
       const deserializers = plugins.flatMap(

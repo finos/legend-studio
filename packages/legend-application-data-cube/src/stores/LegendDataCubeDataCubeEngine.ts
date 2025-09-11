@@ -89,9 +89,6 @@ import {
   EXECUTION_SERIALIZATION_FORMAT,
   V1_LakehouseRuntime,
   V1_IngestDefinition,
-  V1_DataProduct,
-  V1_LakehouseAccessPoint,
-  V1_serializeRawValueSpecification,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
@@ -1678,23 +1675,21 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     source.runtime = packageableRuntime.path;
 
     deserializedPMCD.elements.push(packageableRuntime);
-
-    const dataProduct = guaranteeType(
-      deserializedPMCD.elements.find((pe) => pe.path === rawSource.paths[0]),
-      V1_DataProduct,
+    const dataProduct = guaranteeNonNullable(
+      rawSource.paths[0],
+      'Data Product expected as first path in lakehouse consumer source',
     );
-    const accessPoint = guaranteeType(
-      dataProduct.accessPointGroups.map((group) =>
-        group.accessPoints.find((point) => point.id === rawSource.paths[1]),
-      )[0],
-      V1_LakehouseAccessPoint,
+    const accessPoint = guaranteeNonNullable(
+      rawSource.paths[1],
+      'Data Product access point expected as second path in lakehouse consumer source',
     );
-    const lambda = V1_serializeRawValueSpecification(accessPoint.func);
-    const convertedLambda = guaranteeType(
-      this.deserializeValueSpecification(lambda),
-      V1_Lambda,
-    );
-    source.query = guaranteeNonNullable(convertedLambda.body[0]);
+    const query = new V1_ClassInstance();
+    query.type = V1_ClassInstanceType.DATA_PRODUCT_ACCESSOR;
+    const dataProductAccessor = new V1_RelationStoreAccessor();
+    dataProductAccessor.path = [dataProduct, accessPoint];
+    dataProductAccessor.metadata = false;
+    query.value = dataProductAccessor;
+    source.query = query;
 
     return V1_serializePureModelContext(deserializedPMCD);
   }
