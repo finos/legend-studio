@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.6.8
+
+### Patch Changes
+
+- [#4417](https://github.com/finos/legend-studio/pull/4417) [`9b5e036`](https://github.com/finos/legend-studio/commit/9b5e03668221677359603cd373ad6d3137b22319) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: adding a selection for environments for data products
+
 ## 0.6.7
 
 ### Patch Changes

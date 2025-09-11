@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-application-marketplace-deployment",
-  "version": "13.125.0",
+  "version": "13.126.0",
   "private": true,
   "description": "Legend Marketplace web application deployment",
   "keywords": [
