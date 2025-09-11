@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.6.7
+
+### Patch Changes
+
+- [#4415](https://github.com/finos/legend-studio/pull/4415) [`11fc2ce`](https://github.com/finos/legend-studio/commit/11fc2ceb85cab2276bc241b130466efd9012400c) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `dataProductAccessor`
+
 ## 0.6.6
 
 ### Patch Changes
