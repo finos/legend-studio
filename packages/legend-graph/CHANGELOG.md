@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.2.5
+
+### Patch Changes
+
+- [#4410](https://github.com/finos/legend-studio/pull/4410) [`d47b91d`](https://github.com/finos/legend-studio/commit/d47b91de64f7fd4705135141c6b6f331c423d962) ([@kelly-thai](https://github.com/kelly-thai)) - Support Model Access Point Groups in form mode
+
 ## 32.2.4
 
 ### Patch Changes

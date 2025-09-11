@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.6.6
+
+### Patch Changes
+
+- [#4412](https://github.com/finos/legend-studio/pull/4412) [`0647e9d`](https://github.com/finos/legend-studio/commit/0647e9d2f9f028f2474efcd75829cd94773e56a1) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - change lakehouse consumer query to query directly against access point accessor
+
 ## 0.6.5
 
 ## 0.6.4

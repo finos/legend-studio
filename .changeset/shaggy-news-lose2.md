@@ -1,4 +1,0 @@
----
-'@finos/legend-graph': patch
----
-
