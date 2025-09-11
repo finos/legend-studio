@@ -18,3 +18,8 @@ export class V1_RelationStoreAccessor {
   path: string[] = [];
   metadata?: boolean;
 }
+
+export class V1_DataProductAccessor {
+  path: string[] = [];
+  parameters: string[] = [];
+}

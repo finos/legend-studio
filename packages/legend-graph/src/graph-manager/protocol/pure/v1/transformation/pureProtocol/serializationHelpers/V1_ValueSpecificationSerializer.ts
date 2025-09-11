@@ -67,7 +67,10 @@ import { V1_TDSOlapRank } from '../../../model/valueSpecification/raw/classInsta
 import { V1_TDSOlapAggregation } from '../../../model/valueSpecification/raw/classInstance/V1_TDSOlapAggregation.js';
 import { V1_ColSpecArray } from '../../../model/valueSpecification/raw/classInstance/relation/V1_ColSpecArray.js';
 import { V1_ColSpec } from '../../../model/valueSpecification/raw/classInstance/relation/V1_ColSpec.js';
-import { V1_RelationStoreAccessor } from '../../../model/valueSpecification/raw/classInstance/relation/V1_RelationStoreAccessor.js';
+import {
+  V1_DataProductAccessor,
+  V1_RelationStoreAccessor,
+} from '../../../model/valueSpecification/raw/classInstance/relation/V1_RelationStoreAccessor.js';
 import { V1_multiplicityModelSchema } from './V1_CoreSerializationHelper.js';
 import type {
   V1_ValueSpecification,
@@ -768,6 +771,14 @@ const relationStoreAccessorModelSchema = createModelSchema(
   },
 );
 
+const dataProductAccessorModelSchema = createModelSchema(
+  V1_DataProductAccessor,
+  {
+    path: list(primitive()),
+    parameters: list(primitive()),
+  },
+);
+
 const colSpecModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_ColSpec> =>
@@ -840,8 +851,9 @@ export function V1_deserializeClassInstanceValue(
       return deserialize(colSpecArrayModelSchema(plugins), json);
     case V1_ClassInstanceType.RELATION_STORE_ACCESSOR:
     case V1_ClassInstanceType.INGEST_ACCESSOR:
-    case V1_ClassInstanceType.DATA_PRODUCT_ACCESSOR:
       return deserialize(relationStoreAccessorModelSchema, json);
+    case V1_ClassInstanceType.DATA_PRODUCT_ACCESSOR:
+      return deserialize(dataProductAccessorModelSchema, json);
     default: {
       const deserializers = plugins.flatMap(
         (plugin) =>
@@ -896,6 +908,8 @@ export function V1_serializeClassInstanceValue(
     return serialize(colSpecArrayModelSchema(plugins), protocol);
   } else if (protocol instanceof V1_RelationStoreAccessor) {
     return serialize(relationStoreAccessorModelSchema, protocol);
+  } else if (protocol instanceof V1_DataProductAccessor) {
+    return serialize(dataProductAccessorModelSchema, protocol);
   }
   const serializers = plugins.flatMap(
     (plugin) =>

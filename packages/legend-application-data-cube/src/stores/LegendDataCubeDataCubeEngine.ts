@@ -89,6 +89,7 @@ import {
   EXECUTION_SERIALIZATION_FORMAT,
   V1_LakehouseRuntime,
   V1_IngestDefinition,
+  V1_DataProductAccessor,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
@@ -1685,9 +1686,9 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     );
     const query = new V1_ClassInstance();
     query.type = V1_ClassInstanceType.DATA_PRODUCT_ACCESSOR;
-    const dataProductAccessor = new V1_RelationStoreAccessor();
+    const dataProductAccessor = new V1_DataProductAccessor();
     dataProductAccessor.path = [dataProduct, accessPoint];
-    dataProductAccessor.metadata = false;
+    dataProductAccessor.parameters = [];
     query.value = dataProductAccessor;
     source.query = query;
 
