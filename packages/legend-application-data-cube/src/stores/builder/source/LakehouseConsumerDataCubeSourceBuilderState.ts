@@ -30,9 +30,9 @@ import type { DataCubeAlertService } from '@finos/legend-data-cube';
 import type { LegendDataCubeApplicationStore } from '../../LegendDataCubeBaseStore.js';
 import type { LegendDataCubeDataCubeEngine } from '../../LegendDataCubeDataCubeEngine.js';
 import {
-  IngestDeploymentServerConfig,
   type LakehousePlatformServerClient,
   type LakehouseContractServerClient,
+  type IngestDeploymentServerConfig,
 } from '@finos/legend-server-lakehouse';
 import {
   DepotScope,
@@ -53,17 +53,21 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
   selectedAccessPoint: string | undefined;
   selectedEnvironment: string | undefined;
   paths: string[] = [];
-  ingestEnvironment: string | undefined;
+  ingestEnvironments: string[] = [];
+  selectedIngestEnvironment: string | undefined;
   dataProducts: StoredSummaryEntity[] = [];
   dataProductMap: Record<string, V1_EntitlementsDataProductDetails> = {};
   accessPoints: string[] = [];
   environments: string[] = [];
   dpCoordinates: VersionedProjectData | undefined;
 
+  DEFAULT_CONSUMER_WAREHOUSE = 'LAKEHOUSE_CONSUMER_DEFAULT_WH';
+
   private readonly _depotServerClient: DepotServerClient;
   private readonly _platformServerClient: LakehousePlatformServerClient;
   private readonly _contractServerClient: LakehouseContractServerClient;
   readonly dataProductLoadingState = ActionState.create();
+  readonly ingestEnvLoadingState = ActionState.create();
 
   constructor(
     application: LegendDataCubeApplicationStore,
@@ -84,10 +88,14 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
       selectedDataProduct: observable,
       accessPoints: observable,
       environments: observable,
+      ingestEnvironments: observable,
       selectedAccessPoint: observable,
       selectedEnvironment: observable,
+      selectedIngestEnvironment: observable,
+
       fetchDataProductEnvironments: flow,
       loadDataProducts: flow,
+      fetchEnvironment: flow,
 
       setWarehouse: action,
       setDataProducts: action,
@@ -96,6 +104,8 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
       setEnvironments: action,
       setSelectedAccessPoint: action,
       setSelectedEnvironment: action,
+      setSelectedIngestEnvironment: action,
+      setIngestEnvironments: action,
     });
   }
 
@@ -119,12 +129,20 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
     this.environments = environments;
   }
 
+  setIngestEnvironments(ingestEnvironments: string[]) {
+    this.ingestEnvironments = ingestEnvironments;
+  }
+
   setSelectedAccessPoint(accessPoint: string | undefined) {
     this.selectedAccessPoint = accessPoint;
   }
 
   setSelectedEnvironment(environment: string | undefined) {
     this.selectedEnvironment = environment;
+  }
+
+  setSelectedIngestEnvironment(ingestEnvironment: string | undefined) {
+    this.selectedIngestEnvironment = ingestEnvironment;
   }
 
   *loadDataProducts(): GeneratorFn<void> {
@@ -200,22 +218,23 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
     );
   }
 
-  async fetchEnvironment(access_token: string | undefined) {
-    const selectedEnvironment = guaranteeNonNullable(this.selectedEnvironment);
-    const dataProduct = this.dataProductMap[selectedEnvironment];
-    const config = IngestDeploymentServerConfig.serialization.fromJson(
-      await this._platformServerClient.findProducerServer(
-        guaranteeNonNullable(dataProduct?.deploymentId),
-        'DEPLOYMENT',
+  *fetchEnvironment(access_token: string | undefined): GeneratorFn<void> {
+    this.ingestEnvLoadingState.inProgress();
+    const ingestServerConfigs =
+      (yield this._platformServerClient.getIngestEnvironmentSummaries(
         access_token,
-      ),
+      )) as IngestDeploymentServerConfig[];
+    this.setIngestEnvironments(
+      ingestServerConfigs
+        .map((config) => {
+          const baseUrl = new URL(config.ingestServerUrl).hostname;
+          const subdomain = baseUrl.split('.')[0];
+          const parts = subdomain?.split('-');
+          return parts?.slice(0, -1).join('-');
+        })
+        .filter((env) => env !== undefined),
     );
-    const baseUrl = new URL(config.ingestServerUrl).hostname;
-    const subdomain = baseUrl.split('.')[0];
-    const parts = subdomain?.split('-');
-    const env = parts?.slice(0, -1).join('-');
-    this.ingestEnvironment = env;
-    this.setWarehouse('LAKEHOUSE_CONSUMER_DEFAULT_WH');
+    this.ingestEnvLoadingState.complete();
   }
 
   reset() {
@@ -226,6 +245,7 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
     this.setEnvironments([]);
     this.setSelectedAccessPoint(undefined);
     this.setSelectedEnvironment(undefined);
+    this.setSelectedIngestEnvironment(undefined);
     this.dpCoordinates = undefined;
   }
 
@@ -235,6 +255,7 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
     this.setEnvironments([]);
     this.setSelectedAccessPoint(undefined);
     this.setSelectedEnvironment(undefined);
+    this.setSelectedIngestEnvironment(undefined);
     this.dpCoordinates = undefined;
   }
 
@@ -242,6 +263,7 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
     this.setWarehouse(undefined);
     this.setAccessPoints([]);
     this.setSelectedAccessPoint(undefined);
+    this.setSelectedIngestEnvironment(undefined);
     this.dpCoordinates = undefined;
   }
 
@@ -255,7 +277,8 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
       Boolean(this.selectedAccessPoint) &&
       Boolean(this.selectedDataProduct) &&
       Boolean(this.selectedEnvironment) &&
-      Boolean(this.dpCoordinates)
+      Boolean(this.dpCoordinates) &&
+      Boolean(this.selectedIngestEnvironment)
     );
   }
 
@@ -270,7 +293,9 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
     );
 
     const rawSource = new RawLakehouseConsumerDataCubeSource();
-    rawSource.environment = guaranteeNonNullable(this.ingestEnvironment);
+    rawSource.environment = guaranteeNonNullable(
+      this.selectedIngestEnvironment,
+    );
     rawSource.dpCoordinates = guaranteeNonNullable(this.dpCoordinates);
     rawSource.paths = this.paths;
     rawSource.warehouse = guaranteeNonNullable(this.warehouse);
