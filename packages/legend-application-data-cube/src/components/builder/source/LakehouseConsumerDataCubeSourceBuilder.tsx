@@ -65,12 +65,14 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
             escapeClearsValue={true}
           />
         </div>
-        {state.environments.length > 0 && (
+        {state.ingestEnvironments.length > 0 && (
           <div className="query-setup__wizard__group mt-2">
-            <div className="query-setup__wizard__group__title">Environment</div>
+            <div className="query-setup__wizard__group__title">
+              Ingest Environment
+            </div>
             <CustomSelectorInput
               className="query-setup__wizard__selector"
-              options={state.environments.map((env) => ({
+              options={state.ingestEnvironments.map((env) => ({
                 label: env,
                 value: env,
               }))}
@@ -78,14 +80,14 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
               isLoading={false}
               onChange={(newValue: { label: string; value: string } | null) => {
                 const env = newValue?.value ?? '';
-                state.setSelectedEnvironment(env);
+                state.setSelectedIngestEnvironment(env);
                 state.fetchAccessPoints();
               }}
               value={
-                state.selectedEnvironment
+                state.selectedIngestEnvironment
                   ? {
-                      label: state.selectedEnvironment,
-                      value: state.selectedEnvironment,
+                      label: state.selectedIngestEnvironment,
+                      value: state.selectedIngestEnvironment,
                     }
                   : null
               }
@@ -124,14 +126,12 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
             />
           </div>
         )}
-        {state.ingestEnvironments.length > 0 && state.selectedAccessPoint && (
+        {state.environments.length > 0 && state.selectedAccessPoint && (
           <div className="query-setup__wizard__group mt-3">
-            <div className="query-setup__wizard__group__title">
-              Ingest Environment
-            </div>
+            <div className="query-setup__wizard__group__title">Environment</div>
             <CustomSelectorInput
               className="query-setup__wizard__selector text-nowrap"
-              options={state.ingestEnvironments.map((env) => ({
+              options={state.environments.map((env) => ({
                 label: env,
                 value: env,
               }))}
@@ -141,24 +141,24 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
               }
               isLoading={state.ingestEnvLoadingState.isInProgress}
               onChange={(newValue: { label: string; value: string } | null) => {
-                state.setSelectedIngestEnvironment(newValue?.value ?? '');
+                state.setSelectedEnvironment(newValue?.value ?? '');
                 state.setWarehouse(state.DEFAULT_CONSUMER_WAREHOUSE);
               }}
               value={
-                state.selectedIngestEnvironment
+                state.selectedEnvironment
                   ? {
-                      label: state.selectedIngestEnvironment,
-                      value: state.selectedIngestEnvironment,
+                      label: state.selectedEnvironment,
+                      value: state.selectedEnvironment,
                     }
                   : null
               }
-              placeholder={`Choose an Ingest Environment`}
+              placeholder={`Choose an Environment`}
               isClearable={false}
               escapeClearsValue={true}
             />
           </div>
         )}
-        {state.selectedIngestEnvironment && (
+        {state.selectedEnvironment && (
           <div className="query-setup__wizard__group mt-2">
             <div className="query-setup__wizard__group__title">Warehouse</div>
             <FormTextInput
