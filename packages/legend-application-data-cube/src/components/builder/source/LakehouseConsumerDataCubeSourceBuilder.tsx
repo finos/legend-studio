@@ -17,8 +17,7 @@ import { observer } from 'mobx-react-lite';
 import { FormTextInput } from '@finos/legend-data-cube';
 import { CustomSelectorInput } from '@finos/legend-art';
 import { useAuth } from 'react-oidc-context';
-import { useLegendDataCubeBuilderStore } from '../LegendDataCubeBuilderStoreProvider.js';
-import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useEffect } from 'react';
 import type { LakehouseConsumerDataCubeSourceBuilderState } from '../../../stores/builder/source/LakehouseConsumerDataCubeSourceBuilderState.js';
 
@@ -26,12 +25,12 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
   sourceBuilder: LakehouseConsumerDataCubeSourceBuilderState;
 }> = observer(({ sourceBuilder: state }) => {
   const auth = useAuth();
-  const store = useLegendDataCubeBuilderStore();
 
   useEffect(() => {
     state.reset();
     state.loadDataProducts();
-  }, [state]);
+    state.fetchEnvironment(auth.user?.access_token);
+  }, [state, auth]);
 
   return (
     <div className="flex h-full w-full">
@@ -66,12 +65,14 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
             escapeClearsValue={true}
           />
         </div>
-        {state.environments.length > 0 && (
+        {state.ingestEnvironments.length > 0 && (
           <div className="query-setup__wizard__group mt-2">
-            <div className="query-setup__wizard__group__title">Environment</div>
+            <div className="query-setup__wizard__group__title">
+              Ingest Environment
+            </div>
             <CustomSelectorInput
               className="query-setup__wizard__selector"
-              options={state.environments.map((env) => ({
+              options={state.ingestEnvironments.map((env) => ({
                 label: env,
                 value: env,
               }))}
@@ -79,14 +80,14 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
               isLoading={false}
               onChange={(newValue: { label: string; value: string } | null) => {
                 const env = newValue?.value ?? '';
-                state.setSelectedEnvironment(env);
+                state.setSelectedIngestEnvironment(env);
                 state.fetchAccessPoints();
               }}
               value={
-                state.selectedEnvironment
+                state.selectedIngestEnvironment
                   ? {
-                      label: state.selectedEnvironment,
-                      value: state.selectedEnvironment,
+                      label: state.selectedIngestEnvironment,
+                      value: state.selectedIngestEnvironment,
                     }
                   : null
               }
@@ -111,12 +112,6 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
               onChange={(newValue: { label: string; value: string } | null) => {
                 const accessPoint = newValue?.value ?? '';
                 state.setSelectedAccessPoint(accessPoint);
-                state
-                  .fetchEnvironment(auth.user?.access_token)
-                  .catch((error) => {
-                    assertErrorThrown(error);
-                    store.alertService.alertUnhandledError(error);
-                  });
               }}
               value={
                 state.selectedAccessPoint
@@ -131,7 +126,39 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
             />
           </div>
         )}
-        {state.selectedAccessPoint && (
+        {state.environments.length > 0 && state.selectedAccessPoint && (
+          <div className="query-setup__wizard__group mt-3">
+            <div className="query-setup__wizard__group__title">Environment</div>
+            <CustomSelectorInput
+              className="query-setup__wizard__selector text-nowrap"
+              options={state.environments.map((env) => ({
+                label: env,
+                value: env,
+              }))}
+              disabled={
+                state.ingestEnvLoadingState.isInProgress ||
+                state.ingestEnvLoadingState.hasFailed
+              }
+              isLoading={state.ingestEnvLoadingState.isInProgress}
+              onChange={(newValue: { label: string; value: string } | null) => {
+                state.setSelectedEnvironment(newValue?.value ?? '');
+                state.setWarehouse(state.DEFAULT_CONSUMER_WAREHOUSE);
+              }}
+              value={
+                state.selectedEnvironment
+                  ? {
+                      label: state.selectedEnvironment,
+                      value: state.selectedEnvironment,
+                    }
+                  : null
+              }
+              placeholder={`Choose an Environment`}
+              isClearable={false}
+              escapeClearsValue={true}
+            />
+          </div>
+        )}
+        {state.selectedEnvironment && (
           <div className="query-setup__wizard__group mt-2">
             <div className="query-setup__wizard__group__title">Warehouse</div>
             <FormTextInput
