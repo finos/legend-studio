@@ -18,9 +18,11 @@ import * as duckdb from '@duckdb/duckdb-wasm';
 import duckdb_wasm from '@duckdb/duckdb-wasm/dist/duckdb-mvp.wasm';
 import duckdb_wasm_next from '@duckdb/duckdb-wasm/dist/duckdb-eh.wasm';
 import {
+  CORE_PURE_PATH,
   DATE_FORMAT,
   DATE_TIME_FORMAT,
   INTERNAL__TDSColumn,
+  PRECISE_PRIMITIVE_TYPE,
   PRIMITIVE_TYPE,
   TDSBuilder,
   TDSExecutionResult,
@@ -125,32 +127,50 @@ export class LegendDataCubeDuckDBEngine {
           colType = 'BOOLEAN';
           break;
         }
+        case PRECISE_PRIMITIVE_TYPE.DOUBLE:
+        case PRECISE_PRIMITIVE_TYPE.NUMERIC:
         case PRIMITIVE_TYPE.NUMBER: {
           colType = 'DOUBLE';
           break;
         }
+        case PRECISE_PRIMITIVE_TYPE.INT:
+        case PRECISE_PRIMITIVE_TYPE.TINY_INT:
+        case PRECISE_PRIMITIVE_TYPE.U_TINY_INT:
+        case PRECISE_PRIMITIVE_TYPE.SMALL_INT:
+        case PRECISE_PRIMITIVE_TYPE.U_SMALL_INT:
+        case PRECISE_PRIMITIVE_TYPE.U_INT:
+        case PRECISE_PRIMITIVE_TYPE.BIG_INT:
+        case PRECISE_PRIMITIVE_TYPE.U_BIG_INT:
         case PRIMITIVE_TYPE.INTEGER: {
           colType = 'INTEGER';
           break;
         }
         // TODO: we need precision and scale
+        case PRECISE_PRIMITIVE_TYPE.DECIMAL:
         case PRIMITIVE_TYPE.DECIMAL: {
           colType = 'DECIMAL';
           break;
         }
+        case PRECISE_PRIMITIVE_TYPE.FLOAT:
         case PRIMITIVE_TYPE.FLOAT: {
           colType = 'FLOAT';
           break;
         }
+        case PRECISE_PRIMITIVE_TYPE.STRICTDATE:
         case PRIMITIVE_TYPE.STRICTDATE:
         case PRIMITIVE_TYPE.DATE: {
           colType = 'DATE';
           break;
         }
+        case PRECISE_PRIMITIVE_TYPE.TIMESTAMP:
+        case PRECISE_PRIMITIVE_TYPE.STRICTTIME:
+        case PRECISE_PRIMITIVE_TYPE.DATETIME:
         case PRIMITIVE_TYPE.DATETIME: {
           colType = 'TIMESTAMP';
           break;
         }
+        case PRECISE_PRIMITIVE_TYPE.VARCHAR:
+        case CORE_PURE_PATH.VARIANT:
         case PRIMITIVE_TYPE.STRING: {
           colType = 'VARCHAR';
           break;
