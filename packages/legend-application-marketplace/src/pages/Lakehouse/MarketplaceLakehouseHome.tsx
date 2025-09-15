@@ -140,9 +140,9 @@ export const MarketplaceLakehouseHome = observer(() => {
                         : productCardState instanceof LegacyDataProductCardState
                           ? generateLegacyDataProductPath(
                               generateGAVCoordinates(
-                                productCardState.group,
-                                productCardState.artifact,
-                                productCardState.version,
+                                productCardState.groupId,
+                                productCardState.artifactId,
+                                productCardState._versionId,
                               ),
                               productCardState.dataSpace.path,
                             )

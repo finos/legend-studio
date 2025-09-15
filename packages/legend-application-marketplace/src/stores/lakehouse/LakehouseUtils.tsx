@@ -15,7 +15,6 @@
  */
 
 import {
-  type GraphManagerState,
   type V1_AccessPointGroup,
   type V1_DataContract,
   type V1_EntitlementsDataProductDetails,
@@ -206,7 +205,6 @@ export const getOrganizationalScopeTypeDetails = (
 
 export const getDataProductFromDetails = async (
   details: V1_EntitlementsDataProductDetails,
-  graphManagerState: GraphManagerState,
   graphManager: V1_PureGraphManager,
   marketplaceBaseStore: LegendMarketplaceBaseStore,
 ): Promise<V1_DataProduct | undefined> => {

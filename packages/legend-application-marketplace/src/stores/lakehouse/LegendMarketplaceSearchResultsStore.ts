@@ -21,6 +21,7 @@ import {
   ActionState,
   assertErrorThrown,
   type GeneratorFn,
+  type PlainObject,
 } from '@finos/legend-shared';
 import {
   V1_entitlementsDataProductDetailsResponseToDataProductDetails,
@@ -31,7 +32,13 @@ import {
 import { LegendMarketplaceUserDataHelper } from '../../__lib__/LegendMarketplaceUserDataHelper.js';
 import type { BaseProductCardState } from './dataProducts/BaseProductCardState.js';
 import { DataProductCardState } from './dataProducts/DataProductCardState.js';
-import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '@finos/legend-extension-dsl-data-space/graph';
+import {
+  DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
+  V1_deserializeDataSpace,
+} from '@finos/legend-extension-dsl-data-space/graph';
+import { LegacyDataProductCardState } from './dataProducts/LegacyDataProductCardState.js';
+import { type StoredEntity, DepotScope } from '@finos/legend-server-depot';
+import type { Entity } from '@finos/legend-storage';
 
 export enum DataProductFilterType {
   DEPLOY_TYPE = 'DEPLOY_TYPE',
@@ -131,7 +138,8 @@ export enum DataProductSort {
 
 export class LegendMarketplaceSearchResultsStore {
   readonly marketplaceBaseStore: LegendMarketplaceBaseStore;
-  productCardStates: BaseProductCardState[] = [];
+  dataProductCardStates: DataProductCardState[] = [];
+  legacyDataProductCardStates: LegacyDataProductCardState[] = [];
   filter: DataProductFilters;
   sort: DataProductSort = DataProductSort.NAME_ALPHABETICAL;
 
@@ -149,12 +157,14 @@ export class LegendMarketplaceSearchResultsStore {
       : DataProductFilters.default();
 
     makeObservable(this, {
-      productCardStates: observable,
+      dataProductCardStates: observable,
+      legacyDataProductCardStates: observable,
       filter: observable,
       sort: observable,
       handleFilterChange: action,
       handleSearch: action,
-      setProductCardStates: action,
+      setDataProductCardStates: action,
+      setLegacyDataProductCardStates: action,
       setSort: action,
       filterSortProducts: computed,
       init: flow,
@@ -162,7 +172,7 @@ export class LegendMarketplaceSearchResultsStore {
   }
 
   get filterSortProducts(): BaseProductCardState[] | undefined {
-    return this.productCardStates
+    return [...this.dataProductCardStates, ...this.legacyDataProductCardStates]
       .filter((productCardState) => {
         // Check if product matches deploy type filter
         const deployMatch =
@@ -203,8 +213,16 @@ export class LegendMarketplaceSearchResultsStore {
       });
   }
 
-  setProductCardStates(productCardStates: DataProductCardState[]): void {
-    this.productCardStates = productCardStates;
+  setDataProductCardStates(
+    dataProductCardStates: DataProductCardState[],
+  ): void {
+    this.dataProductCardStates = dataProductCardStates;
+  }
+
+  setLegacyDataProductCardStates(
+    legacyDataProductCardStates: LegacyDataProductCardState[],
+  ): void {
+    this.legacyDataProductCardStates = legacyDataProductCardStates;
   }
 
   handleFilterChange(
@@ -281,7 +299,7 @@ export class LegendMarketplaceSearchResultsStore {
         { engine: this.marketplaceBaseStore.remoteEngine },
       );
 
-      const fetchedDataProductStates = dataProductDetails
+      const dataProductCardStates = dataProductDetails
         .map(
           (dataProductDetail) =>
             new DataProductCardState(
@@ -291,9 +309,9 @@ export class LegendMarketplaceSearchResultsStore {
             ),
         )
         .sort((a, b) => a.title.localeCompare(b.title));
-      this.setProductCardStates(fetchedDataProductStates);
-      this.productCardStates.forEach((dataProductState) =>
-        dataProductState.init(),
+      this.setDataProductCardStates(dataProductCardStates);
+      this.dataProductCardStates.forEach((dataProductCardState) =>
+        dataProductCardState.init(),
       );
     } catch (error) {
       assertErrorThrown(error);
@@ -305,12 +323,34 @@ export class LegendMarketplaceSearchResultsStore {
 
   async fetchLegacyDataProducts(): Promise<void> {
     try {
-      const dataProductEntities =
-        await this.marketplaceBaseStore.depotServerClient.getEntitiesByClassifier(
+      const dataSpaceEntities =
+        (await this.marketplaceBaseStore.depotServerClient.getEntitiesByClassifier(
           DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
+          {
+            scope: DepotScope.RELEASES,
+          },
+        )) as unknown as StoredEntity[];
+      const legacyDataProductCardStates = dataSpaceEntities.map((entity) => {
+        const dataSpace = V1_deserializeDataSpace(
+          entity.entity as unknown as PlainObject<Entity>,
         );
+        return new LegacyDataProductCardState(
+          this.marketplaceBaseStore,
+          dataSpace,
+          entity.groupId,
+          entity.artifactId,
+          entity.versionId,
+        );
+      });
+      this.setLegacyDataProductCardStates(legacyDataProductCardStates);
+      this.legacyDataProductCardStates.forEach((legacyDataProductCardState) =>
+        legacyDataProductCardState.init(),
+      );
     } catch (error) {
       assertErrorThrown(error);
+      this.marketplaceBaseStore.applicationStore.notificationService.notifyError(
+        `Unable to load legacy products: ${error.message}`,
+      );
     }
   }
 

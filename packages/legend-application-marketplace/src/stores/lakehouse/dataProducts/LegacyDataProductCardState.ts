@@ -25,23 +25,23 @@ import type { V1_DataSpace } from '@finos/legend-extension-dsl-data-space/graph'
 
 export class LegacyDataProductCardState extends BaseProductCardState {
   readonly dataSpace: V1_DataSpace;
-  readonly group: string;
-  readonly artifact: string;
-  readonly version: string;
+  readonly groupId: string;
+  readonly artifactId: string;
+  readonly _versionId: string;
 
   constructor(
     marketplaceBaseStore: LegendMarketplaceBaseStore,
     dataSpace: V1_DataSpace,
-    group: string,
-    artifact: string,
-    version: string,
+    groupId: string,
+    artifactId: string,
+    versionId: string,
   ) {
     super(marketplaceBaseStore);
 
     this.dataSpace = dataSpace;
-    this.group = group;
-    this.artifact = artifact;
-    this.version = version;
+    this.groupId = groupId;
+    this.artifactId = artifactId;
+    this._versionId = versionId;
   }
 
   *init() {
@@ -59,7 +59,7 @@ export class LegacyDataProductCardState extends BaseProductCardState {
   }
 
   get guid(): string {
-    return `${this.group}:${this.artifact}:${this.version}`;
+    return `${this.groupId}:${this.artifactId}:${this._versionId}`;
   }
 
   get icon(): V1_DataProductIcon | undefined {
@@ -67,7 +67,7 @@ export class LegacyDataProductCardState extends BaseProductCardState {
   }
 
   get versionId(): string | undefined {
-    return this.version;
+    return this._versionId;
   }
 
   get isSdlcDeployed(): boolean {

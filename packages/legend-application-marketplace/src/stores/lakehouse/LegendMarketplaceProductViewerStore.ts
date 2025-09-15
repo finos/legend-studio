@@ -188,7 +188,6 @@ export class LegendMarketplaceProductViewerStore {
       const v1DataProduct = guaranteeType(
         yield getDataProductFromDetails(
           dataProductDetails,
-          graphManagerState,
           graphManager,
           this.marketplaceBaseStore,
         ),

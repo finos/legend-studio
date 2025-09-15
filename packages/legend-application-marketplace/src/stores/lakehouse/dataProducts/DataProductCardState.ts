@@ -27,7 +27,6 @@ import {
   type V1_EntitlementsDataProductDetails,
   type V1_EntitlementsLakehouseEnvironmentType,
   type V1_PureGraphManager,
-  GraphManagerState,
   V1_AdHocDeploymentDataProductOrigin,
   V1_DataProduct,
   V1_SdlcDeploymentDataProductOrigin,
@@ -92,13 +91,8 @@ export class DataProductCardState extends BaseProductCardState {
         this.initState.complete();
       }
       this.enrichedState.inProgress();
-      const graphManagerState = new GraphManagerState(
-        this.marketplaceBaseStore.applicationStore.pluginManager,
-        this.marketplaceBaseStore.applicationStore.logService,
-      );
       this.dataProductElement = (yield getDataProductFromDetails(
         this.dataProductDetails,
-        graphManagerState,
         this.graphManager,
         this.marketplaceBaseStore,
       )) as V1_DataProduct | undefined;

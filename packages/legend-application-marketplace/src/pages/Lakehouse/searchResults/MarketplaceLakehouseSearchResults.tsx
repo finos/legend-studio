@@ -68,13 +68,13 @@ const SearchResultsSortFilterPanel = observer(
     const isSortMenuOpen = Boolean(sortMenuAnchorEl);
 
     const showUnknownDeployTypeFilter =
-      searchResultsStore.productCardStates.some(
+      searchResultsStore.dataProductCardStates.some(
         (state) =>
           state instanceof DataProductCardState &&
           isNullable(state.dataProductDetails.origin),
       );
     const showUnknownEnvironmentFilter =
-      searchResultsStore.productCardStates.some((state) =>
+      searchResultsStore.dataProductCardStates.some((state) =>
         isNullable(state.environmentClassification),
       );
 
@@ -324,9 +324,9 @@ export const MarketplaceLakehouseSearchResults =
                                 LegacyDataProductCardState
                               ? generateLegacyDataProductPath(
                                   generateGAVCoordinates(
-                                    productCardState.group,
-                                    productCardState.artifact,
-                                    productCardState.version,
+                                    productCardState.groupId,
+                                    productCardState.artifactId,
+                                    productCardState._versionId,
                                   ),
                                   productCardState.dataSpace.path,
                                 )
