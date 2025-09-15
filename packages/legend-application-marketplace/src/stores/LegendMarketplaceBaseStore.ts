@@ -47,6 +47,7 @@ import {
   LakehouseIngestServerClient,
   LakehousePlatformServerClient,
 } from '@finos/legend-server-lakehouse';
+import { LEGEND_MARKETPLACE_APP_EVENT } from '../__lib__/LegendMarketplaceAppEvent.js';
 
 export type LegendMarketplaceApplicationStore = ApplicationStore<
   LegendMarketplaceApplicationConfig,
@@ -230,7 +231,8 @@ export class LegendMarketplaceBaseStore {
       this.setLakehouseIngestEnvironmentSummaries(discoveryEnvironments);
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notificationService.notifyError(
+      this.applicationStore.logService.warn(
+        LogEvent.create(LEGEND_MARKETPLACE_APP_EVENT.FETCH_INGEST_ENV_FAILURE),
         `Unable to load lakehouse environment summaries: ${error.message}`,
       );
     }
@@ -252,7 +254,10 @@ export class LegendMarketplaceBaseStore {
               return V1_deserializeIngestEnvironment(env);
             } catch (error) {
               assertErrorThrown(error);
-              this.applicationStore.notificationService.notifyError(
+              this.applicationStore.logService.warn(
+                LogEvent.create(
+                  LEGEND_MARKETPLACE_APP_EVENT.FETCH_INGEST_ENV_FAILURE,
+                ),
                 `Unable to load lakehouse environment details for ${discoveryEnv.ingestEnvironmentUrn}: ${error.message}`,
               );
               return undefined;
@@ -263,7 +268,8 @@ export class LegendMarketplaceBaseStore {
       this.setLakehouseIngestEnvironmentDetails(ingestEnvironments);
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notificationService.notifyError(
+      this.applicationStore.logService.warn(
+        LogEvent.create(LEGEND_MARKETPLACE_APP_EVENT.FETCH_INGEST_ENV_FAILURE),
         `Unable to load lakehouse environment details: ${error.message}`,
       );
     }

@@ -22,14 +22,13 @@ import {
   type V1_LiteDataContract,
   type V1_OrganizationalScope,
   type V1_PureGraphManager,
+  type V1_DataProduct,
   CORE_PURE_PATH,
-  DataProduct,
   V1_AccessPointGroupReference,
   V1_AdHocDeploymentDataProductOrigin,
   V1_AdhocTeam,
   V1_AppDirOrganizationalScope,
   V1_ContractState,
-  V1_DataProduct,
   V1_dataProductModelSchema,
   V1_deserializeTaskResponse,
   V1_SdlcDeploymentDataProductOrigin,
@@ -37,12 +36,7 @@ import {
   V1_UserType,
 } from '@finos/legend-graph';
 import type { LegendMarketplaceApplicationPlugin } from '../../application/LegendMarketplaceApplicationPlugin.js';
-import {
-  ActionState,
-  guaranteeNonNullable,
-  guaranteeType,
-  isNonNullable,
-} from '@finos/legend-shared';
+import { guaranteeNonNullable, isNonNullable } from '@finos/legend-shared';
 import type React from 'react';
 import { resolveVersion } from '@finos/legend-server-depot';
 import type { Entity } from '@finos/legend-storage';
@@ -250,30 +244,20 @@ export const getDataProductFromDetails = async (
     const entities: Entity[] = await graphManager.pureCodeToEntities(
       details.origin.definition,
     );
-    await graphManager.buildGraph(
-      graphManagerState.graph,
-      entities,
-      ActionState.create(),
-    );
-    const matchingEntities = graphManagerState.graph.allElements.filter(
-      (element) =>
-        element instanceof DataProduct &&
-        element.name.toLowerCase() === details.id.toLowerCase(),
+    const elements = entities
+      .filter((e) => e.classifierPath === CORE_PURE_PATH.DATA_PRODUCT)
+      .map((entity) => deserialize(V1_dataProductModelSchema, entity.content));
+    const matchingEntities = elements.filter(
+      (element) => element.name.toLowerCase() === details.id.toLowerCase(),
     );
     if (matchingEntities.length > 1) {
       throw new Error(
         `Multiple data products found with name ${details.id} in deployed definition`,
       );
     }
-    return guaranteeType(
-      graphManager.elementToProtocol(
-        guaranteeNonNullable(
-          matchingEntities[0],
-          `No data product found with name ${details.id} in deployed definition`,
-        ),
-      ),
-      V1_DataProduct,
-      `${details.id} is not a data product`,
+    return guaranteeNonNullable(
+      matchingEntities[0],
+      `No data product found with name ${details.id} in deployed definition`,
     );
   } else {
     return undefined;
