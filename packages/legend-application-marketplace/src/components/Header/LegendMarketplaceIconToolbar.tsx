@@ -22,7 +22,7 @@ import { useEffect, useState } from 'react';
 import { assertErrorThrown, LegendUser } from '@finos/legend-shared';
 import { LEGEND_MARKETPLACE_ROUTE_PATTERN } from '../../__lib__/LegendMarketplaceNavigation.js';
 import { LegendMarketplaceAppInfo } from './LegendMarketplaceAppInfo.js';
-import { useLegendMarketplaceBaseStore } from '../../application/LegendMarketplaceFrameworkProvider.js';
+import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 
 export const LegendMarketplaceIconToolbar = observer(() => {
   const applicationStore = useApplicationStore();

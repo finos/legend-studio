@@ -17,7 +17,7 @@
 import { expect, jest, test } from '@jest/globals';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import {
-  TEST__provideMockedLegendMarketplaceBaseStore,
+  TEST__provideMockLegendMarketplaceBaseStore,
   TEST__setUpMarketplaceLakehouse,
 } from '../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
 import { createSpy } from '@finos/legend-shared/test';
@@ -34,7 +34,7 @@ jest.mock('react-oidc-context', () => {
 });
 
 const setupLakehouseAdminTest = async () => {
-  const mockedStore = await TEST__provideMockedLegendMarketplaceBaseStore();
+  const mockedStore = await TEST__provideMockLegendMarketplaceBaseStore();
 
   createSpy(
     mockedStore.lakehouseContractServerClient,

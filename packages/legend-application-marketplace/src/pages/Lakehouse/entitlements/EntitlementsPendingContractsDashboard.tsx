@@ -41,7 +41,7 @@ import { useEffect, useState } from 'react';
 import type { EntitlementsDashboardState } from '../../../stores/lakehouse/entitlements/EntitlementsDashboardState.js';
 import { EntitlementsDataContractViewer } from '../../../components/DataContractViewer/EntitlementsDataContractViewer.js';
 import { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
-import { useLegendMarketplaceBaseStore } from '../../../application/LegendMarketplaceFrameworkProvider.js';
+import { useLegendMarketplaceBaseStore } from '../../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import { observer } from 'mobx-react-lite';
 import { UserRenderer } from '../../../components/UserRenderer/UserRenderer.js';
 import {
@@ -50,7 +50,7 @@ import {
   isContractInTerminalState,
 } from '../../../stores/lakehouse/LakehouseUtils.js';
 import type { LegendMarketplaceBaseStore } from '../../../stores/LegendMarketplaceBaseStore.js';
-import { startCase } from '@finos/legend-shared';
+import { assertErrorThrown, startCase } from '@finos/legend-shared';
 import { useAuth } from 'react-oidc-context';
 import { MultiUserCellRenderer } from '../../../components/MultiUserCellRenderer/MultiUserCellRenderer.js';
 import { InfoCircleIcon } from '@finos/legend-art';
@@ -58,10 +58,10 @@ import { InfoCircleIcon } from '@finos/legend-art';
 const AssigneesCellRenderer = (props: {
   dataContract: V1_LiteDataContract | undefined;
   pendingContractRecords: V1_UserPendingContractsRecord[] | undefined;
-  marketplaceStore: LegendMarketplaceBaseStore;
+  marketplaceBaseStore: LegendMarketplaceBaseStore;
   token: string | undefined;
 }): React.ReactNode => {
-  const { dataContract, pendingContractRecords, marketplaceStore, token } =
+  const { dataContract, pendingContractRecords, marketplaceBaseStore, token } =
     props;
   const [assignees, setAssignees] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -72,7 +72,7 @@ const AssigneesCellRenderer = (props: {
         setLoading(true);
         try {
           const rawTasks =
-            await marketplaceStore.lakehouseContractServerClient.getContractTasks(
+            await marketplaceBaseStore.lakehouseContractServerClient.getContractTasks(
               dataContract.guid,
               token,
             );
@@ -84,6 +84,11 @@ const AssigneesCellRenderer = (props: {
             new Set<string>(pendingTasks.map((task) => task.assignees).flat()),
           );
           setAssignees(pendingAssignees);
+        } catch (error) {
+          assertErrorThrown(error);
+          marketplaceBaseStore.applicationStore.notificationService.notifyError(
+            `Error fetching contact assignees: ${error.message}`,
+          );
         } finally {
           setLoading(false);
         }
@@ -102,7 +107,8 @@ const AssigneesCellRenderer = (props: {
     }
   }, [
     dataContract,
-    marketplaceStore.lakehouseContractServerClient,
+    marketplaceBaseStore.lakehouseContractServerClient,
+    marketplaceBaseStore.applicationStore.notificationService,
     token,
     pendingContractRecords,
   ]);
@@ -112,7 +118,7 @@ const AssigneesCellRenderer = (props: {
   ) : assignees.length > 0 ? (
     <MultiUserCellRenderer
       userIds={assignees}
-      marketplaceStore={marketplaceStore}
+      marketplaceStore={marketplaceBaseStore}
       singleUserClassName="marketplace-lakehouse-entitlements__grid__user-display"
     />
   ) : (
@@ -122,10 +128,10 @@ const AssigneesCellRenderer = (props: {
 
 const TargetUserCellRenderer = (props: {
   dataContract: V1_LiteDataContract | undefined;
-  marketplaceStore: LegendMarketplaceBaseStore;
+  marketplaceBaseStore: LegendMarketplaceBaseStore;
   token: string | undefined;
 }): React.ReactNode => {
-  const { dataContract, marketplaceStore, token } = props;
+  const { dataContract, marketplaceBaseStore, token } = props;
   const [targetUsers, setTargetUsers] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -138,7 +144,7 @@ const TargetUserCellRenderer = (props: {
           // tasks are what drive the timeline view. If there are no associated tasks,
           // then we use the contract consumer.
           const rawTasks =
-            await marketplaceStore.lakehouseContractServerClient.getContractTasks(
+            await marketplaceBaseStore.lakehouseContractServerClient.getContractTasks(
               dataContract.guid,
               token,
             );
@@ -152,6 +158,11 @@ const TargetUserCellRenderer = (props: {
               ? dataContract.consumer.users.map((user) => user.name)
               : [];
           setTargetUsers(_targetUsers);
+        } catch (error) {
+          assertErrorThrown(error);
+          marketplaceBaseStore.applicationStore.notificationService.notifyError(
+            `Error fetching contact target users: ${error.message}`,
+          );
         } finally {
           setLoading(false);
         }
@@ -159,14 +170,19 @@ const TargetUserCellRenderer = (props: {
     };
     // eslint-disable-next-line no-void
     void fetchTargetUsers();
-  }, [dataContract, marketplaceStore.lakehouseContractServerClient, token]);
+  }, [
+    dataContract,
+    marketplaceBaseStore.lakehouseContractServerClient,
+    marketplaceBaseStore.applicationStore.notificationService,
+    token,
+  ]);
 
   return loading ? (
     <CircularProgress size={20} />
   ) : targetUsers.length > 0 ? (
     <MultiUserCellRenderer
       userIds={targetUsers}
-      marketplaceStore={marketplaceStore}
+      marketplaceStore={marketplaceBaseStore}
       singleUserClassName="marketplace-lakehouse-entitlements__grid__user-display"
     />
   ) : (
@@ -267,7 +283,7 @@ export const EntitlementsPendingContractsDashbaord = observer(
         ) => (
           <TargetUserCellRenderer
             dataContract={params.data}
-            marketplaceStore={marketplaceBaseStore}
+            marketplaceBaseStore={marketplaceBaseStore}
             token={auth.user?.access_token}
           />
         ),
@@ -333,7 +349,7 @@ export const EntitlementsPendingContractsDashbaord = observer(
           <AssigneesCellRenderer
             dataContract={params.data}
             pendingContractRecords={pendingContractRecords}
-            marketplaceStore={marketplaceBaseStore}
+            marketplaceBaseStore={marketplaceBaseStore}
             token={auth.user?.access_token}
           />
         ),

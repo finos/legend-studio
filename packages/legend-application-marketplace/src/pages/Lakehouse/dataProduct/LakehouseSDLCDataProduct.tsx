@@ -16,9 +16,9 @@
 
 import { observer } from 'mobx-react-lite';
 import {
-  useMarketplaceLakehouseStore,
-  withMarketplaceLakehouseStore,
-} from '../MarketplaceLakehouseStoreProvider.js';
+  useLegendMarketplaceProductViewerStore,
+  withLegendMarketplaceProductViewerStore,
+} from '../../../application/providers/LegendMarketplaceProductViewerStoreProvider.js';
 import { useEffect } from 'react';
 import {
   CubesLoadingIndicator,
@@ -31,13 +31,11 @@ import {
 import { useParams } from '@finos/legend-application/browser';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { ProductViewer } from './ProductViewer.js';
-import { LEGEND_APPLICATION_COLOR_THEME } from '@finos/legend-application';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
 
-export const LakehouseSDLCDataProduct = withMarketplaceLakehouseStore(
+export const LakehouseSDLCDataProduct = withLegendMarketplaceProductViewerStore(
   observer(() => {
-    const marketPlaceStore = useMarketplaceLakehouseStore();
-    const applicationStore = marketPlaceStore.applicationStore;
+    const productViewerStore = useLegendMarketplaceProductViewerStore();
     const params = useParams<LakehouseSDLCDataProductPathParams>();
     const gav = guaranteeNonNullable(
       params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.GAV],
@@ -47,28 +45,19 @@ export const LakehouseSDLCDataProduct = withMarketplaceLakehouseStore(
     );
 
     useEffect(() => {
-      marketPlaceStore.initWithSDLCProduct(gav, path);
-    }, [gav, marketPlaceStore, path]);
-
-    useEffect(() => {
-      applicationStore.layoutService.setColorTheme(
-        LEGEND_APPLICATION_COLOR_THEME.HIGH_CONTRAST_LIGHT,
-        {
-          persist: true,
-        },
-      );
-    }, [applicationStore]);
+      productViewerStore.initWithSDLCProduct(gav, path);
+    }, [gav, productViewerStore, path]);
 
     return (
       <LegendMarketplacePage className="legend-marketplace-lakehouse-data-product">
         <CubesLoadingIndicator
-          isLoading={marketPlaceStore.loadingProductState.isInProgress}
+          isLoading={productViewerStore.loadingProductState.isInProgress}
         >
           <CubesLoadingIndicatorIcon />
         </CubesLoadingIndicator>
-        {marketPlaceStore.dataProductViewer && (
+        {productViewerStore.dataProductViewer && (
           <ProductViewer
-            productViewerState={marketPlaceStore.dataProductViewer}
+            productViewerState={productViewerStore.dataProductViewer}
           />
         )}
       </LegendMarketplacePage>

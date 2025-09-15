@@ -183,7 +183,7 @@ export class DataProductGroupAccessState {
         (yield Promise.all(
           systemAccountContracts.map(async (contract) => {
             const rawApprovedUsers =
-              await this.accessState.viewerState.lakeServerClient.getApprovedUsersForDataContract(
+              await this.accessState.viewerState.productViewerStore.marketplaceBaseStore.lakehouseContractServerClient.getApprovedUsersForDataContract(
                 contract.guid,
                 token,
               );
@@ -228,7 +228,7 @@ export class DataProductGroupAccessState {
       );
       const rawAccessPointGroupContractsWithMembers = await Promise.all(
         accessPointGroupContracts.map((_contract) =>
-          this.accessState.viewerState.lakeServerClient.getDataContract(
+          this.accessState.viewerState.productViewerStore.marketplaceBaseStore.lakehouseContractServerClient.getDataContract(
             _contract.guid,
             true,
             token,
@@ -249,7 +249,8 @@ export class DataProductGroupAccessState {
               this.accessState.viewerState.applicationStore.identityService
                 .currentUser,
               _contract,
-              this.accessState.viewerState.lakeServerClient,
+              this.accessState.viewerState.productViewerStore
+                .marketplaceBaseStore.lakehouseContractServerClient,
               token,
             );
             return isMember ? _contract : undefined;
@@ -298,7 +299,7 @@ export class DataProductGroupAccessState {
     try {
       this.fetchingUserAccessState.inProgress();
       const rawUserStatus =
-        (yield this.accessState.viewerState.lakeServerClient.getContractUserStatus(
+        (yield this.accessState.viewerState.productViewerStore.marketplaceBaseStore.lakehouseContractServerClient.getContractUserStatus(
           contractId,
           this.accessState.viewerState.applicationStore.identityService
             .currentUser,
@@ -326,7 +327,7 @@ export class DataProductGroupAccessState {
     try {
       this.fetchingSubscriptionsState.inProgress();
       const rawSubscriptions =
-        (yield this.accessState.viewerState.lakeServerClient.getSubscriptionsForContract(
+        (yield this.accessState.viewerState.productViewerStore.marketplaceBaseStore.lakehouseContractServerClient.getSubscriptionsForContract(
           contractId,
           token,
         )) as V1_DataSubscriptionResponse;
@@ -356,7 +357,7 @@ export class DataProductGroupAccessState {
       input.contractId = contractId;
       input.target = target;
       const response =
-        (yield this.accessState.viewerState.lakeServerClient.createSubscription(
+        (yield this.accessState.viewerState.productViewerStore.marketplaceBaseStore.lakehouseContractServerClient.createSubscription(
           serialize(V1_CreateSubscriptionInputModelSchema, input),
           token,
         )) as PlainObject<V1_DataSubscriptionResponse>;

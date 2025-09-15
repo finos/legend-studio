@@ -17,7 +17,7 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import { fireEvent, screen } from '@testing-library/react';
 import {
-  TEST__provideMockedLegendMarketplaceBaseStore,
+  TEST__provideMockLegendMarketplaceBaseStore,
   TEST__setUpMarketplaceLakehouse,
 } from '../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
 import { guaranteeNonNullable, type PlainObject } from '@finos/legend-shared';
@@ -74,7 +74,7 @@ const setupLakehouseDataProductTest = async (
   deploymentId: number,
   mockContracts: V1_DataContract[],
 ) => {
-  const mockedStore = await TEST__provideMockedLegendMarketplaceBaseStore();
+  const mockedStore = await TEST__provideMockLegendMarketplaceBaseStore();
 
   createSpy(
     mockedStore.lakehouseContractServerClient,

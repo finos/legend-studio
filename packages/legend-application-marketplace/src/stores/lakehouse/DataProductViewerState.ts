@@ -32,7 +32,7 @@ import {
   V1_dataContractsResponseModelSchemaToContracts,
   V1_ResourceType,
 } from '@finos/legend-graph';
-import { action, computed, flow, observable, makeObservable } from 'mobx';
+import { action, flow, observable, makeObservable } from 'mobx';
 import type { DataProductLayoutState } from './BaseLayoutState.js';
 import { DATA_PRODUCT_VIEWER_SECTION } from './ProductViewerNavigation.js';
 import { DataProductDataAccessState } from './DataProductDataAccessState.js';
@@ -44,20 +44,17 @@ import {
 } from '@finos/legend-shared';
 import { serialize } from 'serializr';
 import { dataContractContainsDataProduct } from './LakehouseUtils.js';
-import type { MarketplaceLakehouseStore } from './MarketplaceLakehouseStore.js';
+import type { LegendMarketplaceProductViewerStore } from './LegendMarketplaceProductViewerStore.js';
 import { BaseViewerState } from './BaseViewerState.js';
-import type { LegendMarketplaceApplicationStore } from '../LegendMarketplaceBaseStore.js';
-import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
 
 export class DataProductViewerState extends BaseViewerState<
   V1_DataProduct,
   DataProductLayoutState
 > {
-  readonly lakehouseStore: MarketplaceLakehouseStore;
+  readonly productViewerStore: LegendMarketplaceProductViewerStore;
   readonly graphManagerState: GraphManagerState;
   readonly entitlementsDataProductDetails: V1_EntitlementsDataProductDetails;
   readonly viewDataProductSource: () => void;
-  readonly lakeServerClient: LakehouseContractServerClient;
 
   // we may want to move this out eventually
   accessState!: DataProductDataAccessState;
@@ -67,11 +64,9 @@ export class DataProductViewerState extends BaseViewerState<
   creatingContractState = ActionState.create();
 
   constructor(
-    lakehouseStore: MarketplaceLakehouseStore,
-    graphManagerState: GraphManagerState,
-    applicationStore: LegendMarketplaceApplicationStore,
-    lakeServerClient: LakehouseContractServerClient,
+    productViewerStore: LegendMarketplaceProductViewerStore,
     dataProductLayoutState: DataProductLayoutState,
+    graphManagerState: GraphManagerState,
     product: V1_DataProduct,
     entitlementsDataProductDetails: V1_EntitlementsDataProductDetails,
     actions: {
@@ -79,10 +74,14 @@ export class DataProductViewerState extends BaseViewerState<
       onZoneChange?: ((zone: NavigationZone | undefined) => void) | undefined;
     },
   ) {
-    super(product, applicationStore, dataProductLayoutState, actions);
+    super(
+      product,
+      productViewerStore.marketplaceBaseStore.applicationStore,
+      dataProductLayoutState,
+      actions,
+    );
 
     makeObservable(this, {
-      isVerified: computed,
       accessState: observable,
       fetchContracts: flow,
       associatedContracts: observable,
@@ -95,12 +94,11 @@ export class DataProductViewerState extends BaseViewerState<
       createContract: flow,
     });
 
-    this.lakehouseStore = lakehouseStore;
+    this.productViewerStore = productViewerStore;
     this.graphManagerState = graphManagerState;
     this.entitlementsDataProductDetails = entitlementsDataProductDetails;
     this.viewDataProductSource = actions.viewDataProductSource;
     this.accessState = new DataProductDataAccessState(this);
-    this.lakeServerClient = lakeServerClient;
   }
 
   public override getTitle(): string | undefined {
@@ -140,14 +138,15 @@ export class DataProductViewerState extends BaseViewerState<
       const didNode = new V1_AppDirNode();
       didNode.appDirId = this.deploymentId;
       didNode.level = V1_AppDirLevel.DEPLOYMENT;
-      const _contracts = (yield this.lakeServerClient.getDataContractsFromDID(
-        [serialize(V1_AppDirNodeModelSchema, didNode)],
-        token,
-      )) as PlainObject<V1_DataContractsResponse>;
+      const _contracts =
+        (yield this.productViewerStore.marketplaceBaseStore.lakehouseContractServerClient.getDataContractsFromDID(
+          [serialize(V1_AppDirNodeModelSchema, didNode)],
+          token,
+        )) as PlainObject<V1_DataContractsResponse>;
       const dataProductContracts =
         V1_dataContractsResponseModelSchemaToContracts(
           _contracts,
-          this.lakehouseStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
+          this.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
         ).filter((_contract) =>
           dataContractContainsDataProduct(
             this.product,
@@ -171,6 +170,7 @@ export class DataProductViewerState extends BaseViewerState<
       );
     }
   }
+
   *createContract(
     consumer: V1_OrganizationalScope,
     description: string,
@@ -181,7 +181,7 @@ export class DataProductViewerState extends BaseViewerState<
       this.creatingContractState.inProgress();
       const request = serialize(
         V1_createContractPayloadModelSchema(
-          this.lakehouseStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
+          this.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
         ),
         {
           description,
@@ -193,11 +193,11 @@ export class DataProductViewerState extends BaseViewerState<
         } satisfies V1_CreateContractPayload,
       ) as PlainObject<V1_CreateContractPayload>;
       const contracts = V1_dataContractsResponseModelSchemaToContracts(
-        (yield this.lakeServerClient.createContract(
+        (yield this.productViewerStore.marketplaceBaseStore.lakehouseContractServerClient.createContract(
           request,
           token,
         )) as unknown as PlainObject<V1_DataContractsResponse>,
-        this.lakehouseStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
+        this.productViewerStore.marketplaceBaseStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
       );
       const associatedContract = contracts[0];
       // Only if the user has requested a contract for themself do we update the associated contract.
@@ -226,11 +226,6 @@ export class DataProductViewerState extends BaseViewerState<
     } finally {
       this.creatingContractState.complete();
     }
-  }
-
-  get isVerified(): boolean {
-    // TODO what does it mean if data product is vertified ?
-    return true;
   }
 
   get deploymentId(): number {

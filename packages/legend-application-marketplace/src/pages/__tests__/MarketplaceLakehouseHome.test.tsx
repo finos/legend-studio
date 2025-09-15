@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import { beforeEach, expect, jest, test } from '@jest/globals';
+import { expect, jest, test } from '@jest/globals';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import {
-  TEST__provideMockedLegendMarketplaceBaseStore,
+  TEST__provideMockLegendMarketplaceBaseStore,
   TEST__setUpMarketplaceLakehouse,
 } from '../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
 import { TestLegendMarketplaceApplicationPlugin } from '../../application/__test-utils__/LegendMarketplaceApplicationTestUtils.js';
@@ -30,19 +30,15 @@ jest.mock('react-oidc-context', () => {
 });
 
 const setupTestComponent = async () => {
-  const mockedStore = await TEST__provideMockedLegendMarketplaceBaseStore({
+  const MOCK__baseStore = await TEST__provideMockLegendMarketplaceBaseStore({
     extraPlugins: [new TestLegendMarketplaceApplicationPlugin()],
   });
 
-  const { renderResult, MOCK__store } =
-    await TEST__setUpMarketplaceLakehouse(mockedStore);
+  const { renderResult } =
+    await TEST__setUpMarketplaceLakehouse(MOCK__baseStore);
 
-  return { mockedStore: MOCK__store, renderResult };
+  return { MOCK__baseStore, renderResult };
 };
-
-beforeEach(() => {
-  localStorage.clear();
-});
 
 test('renders header with Marketplace title and Entitlements button and Marketplace landing title', async () => {
   await setupTestComponent();
@@ -70,9 +66,9 @@ test('renders highlighted data products from plugin', async () => {
 });
 
 test("doesn't navigate to search results page if search box is empty", async () => {
-  const { mockedStore } = await setupTestComponent();
+  const { MOCK__baseStore } = await setupTestComponent();
   const mockGoToLocation = jest.fn();
-  mockedStore.applicationStore.navigationService.navigator.goToLocation =
+  MOCK__baseStore.applicationStore.navigationService.navigator.goToLocation =
     mockGoToLocation;
 
   const searchInput = screen.getByPlaceholderText('Search Legend Marketplace');
@@ -85,9 +81,9 @@ test("doesn't navigate to search results page if search box is empty", async () 
 });
 
 test('navigates to search results page if search box contains text', async () => {
-  const { mockedStore } = await setupTestComponent();
+  const { MOCK__baseStore } = await setupTestComponent();
   const mockGoToLocation = jest.fn();
-  mockedStore.applicationStore.navigationService.navigator.goToLocation =
+  MOCK__baseStore.applicationStore.navigationService.navigator.goToLocation =
     mockGoToLocation;
 
   const searchInput = screen.getByPlaceholderText('Search Legend Marketplace');

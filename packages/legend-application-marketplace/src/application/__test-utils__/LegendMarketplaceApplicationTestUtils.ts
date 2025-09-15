@@ -27,8 +27,8 @@ import {
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { mockDataProducts } from '../../components/__test-utils__/TEST_DATA__LakehouseData.js';
 import { DataProductState } from '../../stores/lakehouse/dataProducts/DataProducts.js';
-import type { MarketplaceLakehouseStore } from '../../stores/lakehouse/MarketplaceLakehouseStore.js';
 import { LegendMarketplaceApplicationPlugin } from '../LegendMarketplaceApplicationPlugin.js';
+import type { LegendMarketplaceBaseStore } from '../../stores/LegendMarketplaceBaseStore.js';
 
 const TEST_DATA__appConfig: LegendMarketplaceApplicationConfigurationData = {
   appName: 'marketplace',
@@ -89,7 +89,7 @@ export class TestLegendMarketplaceApplicationPlugin extends LegendMarketplaceApp
   }
 
   override async getHomePageDataProducts(
-    marketplaceStore: MarketplaceLakehouseStore,
+    marketplaceBaseStore: LegendMarketplaceBaseStore,
   ): Promise<DataProductState[] | undefined> {
     const mockDataProductDetail = guaranteeNonNullable(
       guaranteeNonNullable(
@@ -99,22 +99,22 @@ export class TestLegendMarketplaceApplicationPlugin extends LegendMarketplaceApp
       )[0],
     );
     const graphManager = new V1_PureGraphManager(
-      marketplaceStore.applicationStore.pluginManager,
-      marketplaceStore.applicationStore.logService,
-      marketplaceStore.marketplaceBaseStore.remoteEngine,
+      marketplaceBaseStore.applicationStore.pluginManager,
+      marketplaceBaseStore.applicationStore.logService,
+      marketplaceBaseStore.remoteEngine,
     );
     await graphManager.initialize(
       {
-        env: marketplaceStore.applicationStore.config.env,
+        env: marketplaceBaseStore.applicationStore.config.env,
         tabSize: DEFAULT_TAB_SIZE,
         clientConfig: {
-          baseUrl: marketplaceStore.applicationStore.config.engineServerUrl,
+          baseUrl: marketplaceBaseStore.applicationStore.config.engineServerUrl,
         },
       },
-      { engine: marketplaceStore.marketplaceBaseStore.remoteEngine },
+      { engine: marketplaceBaseStore.remoteEngine },
     );
     const dataProductState = new DataProductState(
-      marketplaceStore,
+      marketplaceBaseStore,
       graphManager,
       mockDataProductDetail,
     );

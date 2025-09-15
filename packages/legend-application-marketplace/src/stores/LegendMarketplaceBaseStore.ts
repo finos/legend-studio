@@ -16,9 +16,11 @@
 
 import {
   type GeneratorFn,
+  type PlainObject,
   ActionState,
-  LogEvent,
   assertErrorThrown,
+  isNonNullable,
+  LogEvent,
   UserSearchService,
 } from '@finos/legend-shared';
 import {
@@ -26,22 +28,24 @@ import {
   LegendApplicationTelemetryHelper,
   APPLICATION_EVENT,
 } from '@finos/legend-application';
-import { flow, makeObservable } from 'mobx';
+import { action, flow, makeObservable, observable } from 'mobx';
 import { DepotServerClient } from '@finos/legend-server-depot';
 import { MarketplaceServerClient } from '@finos/legend-server-marketplace';
 import {
-  getCurrentUserIDFromEngineServer,
   type V1_EngineServerClient,
+  type V1_IngestEnvironment,
+  getCurrentUserIDFromEngineServer,
+  V1_deserializeIngestEnvironment,
   V1_RemoteEngine,
 } from '@finos/legend-graph';
 import type { LegendMarketplaceApplicationConfig } from '../application/LegendMarketplaceApplicationConfig.js';
 import type { LegendMarketplacePluginManager } from '../application/LegendMarketplacePluginManager.js';
 import { LegendMarketplaceEventHelper } from '../__lib__/LegendMarketplaceEventHelper.js';
-import { LegendMarketPlaceVendorDataState } from './LegendMarketPlaceVendorDataState.js';
 import {
-  LakehousePlatformServerClient,
-  LakehouseIngestServerClient,
+  IngestDeploymentServerConfig,
   LakehouseContractServerClient,
+  LakehouseIngestServerClient,
+  LakehousePlatformServerClient,
 } from '@finos/legend-server-lakehouse';
 
 export type LegendMarketplaceApplicationStore = ApplicationStore<
@@ -56,18 +60,25 @@ export class LegendMarketplaceBaseStore {
   readonly lakehouseContractServerClient: LakehouseContractServerClient;
   readonly lakehousePlatformServerClient: LakehousePlatformServerClient;
   readonly lakehouseIngestServerClient: LakehouseIngestServerClient;
-  readonly pluginManager: LegendMarketplacePluginManager;
   readonly engineServerClient: V1_EngineServerClient;
+  readonly pluginManager: LegendMarketplacePluginManager;
   readonly remoteEngine: V1_RemoteEngine;
   readonly userSearchService: UserSearchService | undefined;
 
-  readonly initState = ActionState.create();
+  lakehouseIngestEnvironmentSummaries: IngestDeploymentServerConfig[] = [];
+  lakehouseIngestEnvironmentDetails: V1_IngestEnvironment[] = [];
 
-  marketplaceVendorDataState: LegendMarketPlaceVendorDataState;
+  readonly initState = ActionState.create();
+  readonly ingestEnvironmentFetchState = ActionState.create();
 
   constructor(applicationStore: LegendMarketplaceApplicationStore) {
     makeObservable<LegendMarketplaceBaseStore>(this, {
+      lakehouseIngestEnvironmentSummaries: observable,
+      lakehouseIngestEnvironmentDetails: observable,
+      setLakehouseIngestEnvironmentSummaries: action,
+      setLakehouseIngestEnvironmentDetails: action,
       initialize: flow,
+      initializeIngestEnvironmentDetails: flow,
     });
 
     this.applicationStore = applicationStore;
@@ -123,11 +134,6 @@ export class LegendMarketplaceBaseStore {
     this.engineServerClient = this.remoteEngine.getEngineServerClient();
     this.engineServerClient.setTracerService(applicationStore.tracerService);
 
-    this.marketplaceVendorDataState = new LegendMarketPlaceVendorDataState(
-      this.applicationStore,
-      this,
-    );
-
     // User search
     if (this.pluginManager.getUserPlugins().length > 0) {
       this.pluginManager
@@ -182,5 +188,84 @@ export class LegendMarketplaceBaseStore {
     );
 
     this.initState.complete();
+  }
+
+  *initializeIngestEnvironmentDetails(
+    token: string | undefined,
+  ): GeneratorFn<void> {
+    if (!this.ingestEnvironmentFetchState.isInInitialState) {
+      this.applicationStore.notificationService.notifyIllegalState(
+        'Base store ingest environment details are re-initialized',
+      );
+      return;
+    }
+
+    this.ingestEnvironmentFetchState.inProgress();
+    yield this.fetchLakehouseIngestEnvironmentSummaries(token);
+    yield this.fetchLakehouseIngestEnvironmentDetails(token);
+    this.ingestEnvironmentFetchState.complete();
+  }
+
+  setLakehouseIngestEnvironmentSummaries(
+    summaries: IngestDeploymentServerConfig[],
+  ): void {
+    this.lakehouseIngestEnvironmentSummaries = summaries;
+  }
+
+  setLakehouseIngestEnvironmentDetails(details: V1_IngestEnvironment[]): void {
+    this.lakehouseIngestEnvironmentDetails = details;
+  }
+
+  async fetchLakehouseIngestEnvironmentSummaries(
+    token: string | undefined,
+  ): Promise<void> {
+    try {
+      const discoveryEnvironments = (
+        await this.lakehousePlatformServerClient.getIngestEnvironmentSummaries(
+          token,
+        )
+      ).map((e: PlainObject<IngestDeploymentServerConfig>) =>
+        IngestDeploymentServerConfig.serialization.fromJson(e),
+      );
+      this.setLakehouseIngestEnvironmentSummaries(discoveryEnvironments);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(
+        `Unable to load lakehouse environment summaries: ${error.message}`,
+      );
+    }
+  }
+
+  async fetchLakehouseIngestEnvironmentDetails(
+    token: string | undefined,
+  ): Promise<void> {
+    try {
+      const ingestEnvironments: V1_IngestEnvironment[] = (
+        await Promise.all(
+          this.lakehouseIngestEnvironmentSummaries.map(async (discoveryEnv) => {
+            try {
+              const env =
+                await this.lakehouseIngestServerClient.getIngestEnvironment(
+                  discoveryEnv.ingestServerUrl,
+                  token,
+                );
+              return V1_deserializeIngestEnvironment(env);
+            } catch (error) {
+              assertErrorThrown(error);
+              this.applicationStore.notificationService.notifyError(
+                `Unable to load lakehouse environment details for ${discoveryEnv.ingestEnvironmentUrn}: ${error.message}`,
+              );
+              return undefined;
+            }
+          }),
+        )
+      ).filter(isNonNullable);
+      this.setLakehouseIngestEnvironmentDetails(ingestEnvironments);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(
+        `Unable to load lakehouse environment details: ${error.message}`,
+      );
+    }
   }
 }

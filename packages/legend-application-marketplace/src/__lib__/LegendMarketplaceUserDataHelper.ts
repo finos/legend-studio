@@ -15,7 +15,7 @@
  */
 
 import type { UserDataService } from '@finos/legend-application';
-import type { DataProductFilterConfig } from '../stores/lakehouse/MarketplaceLakehouseStore.js';
+import type { DataProductFilterConfig } from '../stores/lakehouse/LegendMarketplaceSearchResultsStore.js';
 
 export enum LEGEND_MARKETPLACE_USER_DATA_KEY {
   DATA_PRODUCT_FILTER_CONFIG = 'home.data-product.filter-config',

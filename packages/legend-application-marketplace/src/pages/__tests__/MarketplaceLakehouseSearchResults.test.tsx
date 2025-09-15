@@ -17,7 +17,7 @@
 import { beforeEach, expect, jest, test } from '@jest/globals';
 import { fireEvent, screen, getByTitle } from '@testing-library/react';
 import {
-  TEST__provideMockedLegendMarketplaceBaseStore,
+  TEST__provideMockLegendMarketplaceBaseStore,
   TEST__setUpMarketplaceLakehouse,
 } from '../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
@@ -37,20 +37,20 @@ jest.mock('react-oidc-context', () => {
 });
 
 const setupTestComponent = async (query?: string) => {
-  const mockedStore = await TEST__provideMockedLegendMarketplaceBaseStore();
+  const MOCK__baseStore = await TEST__provideMockLegendMarketplaceBaseStore();
   jest
     .spyOn(
-      mockedStore.applicationStore.navigationService.navigator,
+      MOCK__baseStore.applicationStore.navigationService.navigator,
       'getCurrentAddress',
     )
     .mockReturnValue('http://localhost/lakehouse/results?query=data');
 
   createSpy(
-    mockedStore.lakehouseContractServerClient,
+    MOCK__baseStore.lakehouseContractServerClient,
     'getDataProducts',
   ).mockResolvedValue(mockDataProducts);
   createSpy(
-    mockedStore.depotServerClient,
+    MOCK__baseStore.depotServerClient,
     'getVersionEntities',
   ).mockImplementation(
     async (
@@ -92,12 +92,12 @@ const setupTestComponent = async (query?: string) => {
     },
   );
 
-  const { renderResult, MOCK__store } = await TEST__setUpMarketplaceLakehouse(
-    mockedStore,
+  const { renderResult } = await TEST__setUpMarketplaceLakehouse(
+    MOCK__baseStore,
     `/lakehouse/results?query=${query ?? 'data'}`,
   );
 
-  return { mockedStore: MOCK__store, renderResult };
+  return { MOCK__baseStore, renderResult };
 };
 
 beforeEach(() => {
@@ -210,10 +210,10 @@ test('Sort/Filter Panel correctly sorts and filters data products', async () => 
 });
 
 test('Clicking on SDLC data product card navigates to data product viewer page', async () => {
-  const { mockedStore } = await setupTestComponent();
+  const { MOCK__baseStore } = await setupTestComponent();
 
   const mockGoToLocation = jest.fn();
-  mockedStore.applicationStore.navigationService.navigator.goToLocation =
+  MOCK__baseStore.applicationStore.navigationService.navigator.goToLocation =
     mockGoToLocation;
 
   const dataProductTitle = await screen.findByText('SDLC Release Data Product');

@@ -22,7 +22,7 @@ import {
   screen,
   waitFor,
 } from '@testing-library/react';
-import { TEST__provideMockedLegendMarketplaceBaseStore } from '../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
+import { TEST__provideMockLegendMarketplaceBaseStore } from '../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
 import { type PlainObject } from '@finos/legend-shared';
 import type { V1_LiteDataContract, V1_TaskResponse } from '@finos/legend-graph';
 import { createSpy } from '@finos/legend-shared/test';
@@ -52,7 +52,7 @@ const setupDataContractViewerTest = async (
   mockTasks: V1_TaskResponse,
   initialSelectedUser?: string,
 ) => {
-  const mockedStore = await TEST__provideMockedLegendMarketplaceBaseStore();
+  const mockedStore = await TEST__provideMockLegendMarketplaceBaseStore();
 
   mockedStore.applicationStore.navigationService.navigator.generateAddress =
     jest.fn((location: string) => location);

@@ -15,7 +15,7 @@
  */
 
 import type React from 'react';
-import { useLegendMarketplaceApplicationStore } from '../../application/LegendMarketplaceFrameworkProvider.js';
+import { useLegendMarketplaceApplicationStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import { isNonNullable } from '@finos/legend-shared';
 import {
   CopyIcon,
