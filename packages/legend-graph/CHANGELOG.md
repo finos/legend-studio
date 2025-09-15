@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.2.7
+
+### Patch Changes
+
+- [#4423](https://github.com/finos/legend-studio/pull/4423) [`115719d`](https://github.com/finos/legend-studio/commit/115719dcd64d1caaa8b81b880873a20511071ea5) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add variant to `CORE_PURE_PATH`
+
 ## 32.2.6
 
 ### Patch Changes

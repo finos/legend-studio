@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.6.9
+
+### Patch Changes
+
+- [#4423](https://github.com/finos/legend-studio/pull/4423) [`115719d`](https://github.com/finos/legend-studio/commit/115719dcd64d1caaa8b81b880873a20511071ea5) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - handle precise primitives on conversion to duckdb
+
 ## 0.6.8
 
 ### Patch Changes

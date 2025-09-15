@@ -1,5 +1,13 @@
 # @finos/legend-application-marketplace
 
+## 0.1.7
+
+### Patch Changes
+
+- [#4420](https://github.com/finos/legend-studio/pull/4420) [`7a5bd64`](https://github.com/finos/legend-studio/commit/7a5bd641161695bd50b3c1220f855ffb4e4b565f) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Remove need to bild graph when building V1_DataProduct
+
+- [#4369](https://github.com/finos/legend-studio/pull/4369) [`b2d8169`](https://github.com/finos/legend-studio/commit/b2d8169f9e649f2fbfa141884283fb62481df9cb) ([@travisstebbins](https://github.com/travisstebbins)) - Refactor marketplace state code
+
 ## 0.1.6
 
 ## 0.1.5
