@@ -21,7 +21,6 @@ import {
   ActionState,
   assertErrorThrown,
   type GeneratorFn,
-  type PlainObject,
 } from '@finos/legend-shared';
 import {
   V1_entitlementsDataProductDetailsResponseToDataProductDetails,
@@ -38,7 +37,6 @@ import {
 } from '@finos/legend-extension-dsl-data-space/graph';
 import { LegacyDataProductCardState } from './dataProducts/LegacyDataProductCardState.js';
 import { type StoredEntity, DepotScope } from '@finos/legend-server-depot';
-import type { Entity } from '@finos/legend-storage';
 
 export enum DataProductFilterType {
   DEPLOY_TYPE = 'DEPLOY_TYPE',
@@ -184,6 +182,7 @@ export class LegendMarketplaceSearchResultsStore {
             productCardState.dataProductDetails.origin === null);
         // Check if product matches environment classification filter
         const environmentClassificationMatch =
+          productCardState instanceof LegacyDataProductCardState ||
           (this.filter.devEnvironmentClassificationFilter &&
             productCardState.environmentClassification ===
               V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT) ||
@@ -331,9 +330,7 @@ export class LegendMarketplaceSearchResultsStore {
           },
         )) as unknown as StoredEntity[];
       const legacyDataProductCardStates = dataSpaceEntities.map((entity) => {
-        const dataSpace = V1_deserializeDataSpace(
-          entity.entity as unknown as PlainObject<Entity>,
-        );
+        const dataSpace = V1_deserializeDataSpace(entity.entity.content);
         return new LegacyDataProductCardState(
           this.marketplaceBaseStore,
           dataSpace,
