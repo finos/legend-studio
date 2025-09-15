@@ -23,15 +23,15 @@ import {
   type GeneratorFn,
 } from '@finos/legend-shared';
 import {
-  V1_AdHocDeploymentDataProductOrigin,
   V1_entitlementsDataProductDetailsResponseToDataProductDetails,
   V1_EntitlementsLakehouseEnvironmentType,
   V1_IngestEnvironmentClassification,
   V1_PureGraphManager,
-  V1_SdlcDeploymentDataProductOrigin,
 } from '@finos/legend-graph';
-import { DataProductState } from './dataProducts/DataProducts.js';
 import { LegendMarketplaceUserDataHelper } from '../../__lib__/LegendMarketplaceUserDataHelper.js';
+import type { BaseProductCardState } from './dataProducts/BaseProductCardState.js';
+import { DataProductCardState } from './dataProducts/DataProductCardState.js';
+import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '@finos/legend-extension-dsl-data-space/graph';
 
 export enum DataProductFilterType {
   DEPLOY_TYPE = 'DEPLOY_TYPE',
@@ -131,7 +131,7 @@ export enum DataProductSort {
 
 export class LegendMarketplaceSearchResultsStore {
   readonly marketplaceBaseStore: LegendMarketplaceBaseStore;
-  dataProductStates: DataProductState[] = [];
+  productCardStates: BaseProductCardState[] = [];
   filter: DataProductFilters;
   sort: DataProductSort = DataProductSort.NAME_ALPHABETICAL;
 
@@ -149,49 +149,47 @@ export class LegendMarketplaceSearchResultsStore {
       : DataProductFilters.default();
 
     makeObservable(this, {
-      dataProductStates: observable,
+      productCardStates: observable,
       filter: observable,
       sort: observable,
       handleFilterChange: action,
       handleSearch: action,
-      setDataProductStates: action,
+      setProductCardStates: action,
       setSort: action,
       filterSortProducts: computed,
       init: flow,
     });
   }
 
-  get filterSortProducts(): DataProductState[] | undefined {
-    return this.dataProductStates
-      .filter((dataProductState) => {
+  get filterSortProducts(): BaseProductCardState[] | undefined {
+    return this.productCardStates
+      .filter((productCardState) => {
         // Check if product matches deploy type filter
         const deployMatch =
-          (this.filter.sdlcDeployFilter &&
-            dataProductState.dataProductDetails.origin instanceof
-              V1_SdlcDeploymentDataProductOrigin) ||
+          (this.filter.sdlcDeployFilter && productCardState.isSdlcDeployed) ||
           (this.filter.sandboxDeployFilter &&
-            dataProductState.dataProductDetails.origin instanceof
-              V1_AdHocDeploymentDataProductOrigin) ||
+            productCardState.isAdHocDeployed) ||
           (this.filter.unknownDeployFilter &&
-            dataProductState.dataProductDetails.origin === null);
+            productCardState instanceof DataProductCardState &&
+            productCardState.dataProductDetails.origin === null);
         // Check if product matches environment classification filter
         const environmentClassificationMatch =
           (this.filter.devEnvironmentClassificationFilter &&
-            dataProductState.environmentClassification ===
+            productCardState.environmentClassification ===
               V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT) ||
           (this.filter.prodParallelEnvironmentClassificationFilter &&
-            dataProductState.environmentClassification ===
+            productCardState.environmentClassification ===
               V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL) ||
           (this.filter.prodEnvironmentClassificationFilter &&
-            dataProductState.environmentClassification ===
+            productCardState.environmentClassification ===
               V1_EntitlementsLakehouseEnvironmentType.PRODUCTION) ||
           (this.filter.unknownEnvironmentClassificationFilter &&
-            dataProductState.environmentClassification === undefined);
+            productCardState.environmentClassification === undefined);
         // Check if product title matches search filter
         const titleMatch =
           this.filter.search === undefined ||
           this.filter.search === '' ||
-          dataProductState.title
+          productCardState.title
             .toLowerCase()
             .includes(this.filter.search.toLowerCase());
         return deployMatch && environmentClassificationMatch && titleMatch;
@@ -205,8 +203,8 @@ export class LegendMarketplaceSearchResultsStore {
       });
   }
 
-  setDataProductStates(dataProductStates: DataProductState[]): void {
-    this.dataProductStates = dataProductStates;
+  setProductCardStates(productCardStates: DataProductCardState[]): void {
+    this.productCardStates = productCardStates;
   }
 
   handleFilterChange(
@@ -256,7 +254,6 @@ export class LegendMarketplaceSearchResultsStore {
 
   async fetchDataProducts(token: string | undefined): Promise<void> {
     try {
-      this.loadingAllProductsState.inProgress();
       const rawResponse =
         await this.marketplaceBaseStore.lakehouseContractServerClient.getDataProducts(
           token,
@@ -287,30 +284,47 @@ export class LegendMarketplaceSearchResultsStore {
       const fetchedDataProductStates = dataProductDetails
         .map(
           (dataProductDetail) =>
-            new DataProductState(
+            new DataProductCardState(
               this.marketplaceBaseStore,
               graphManager,
               dataProductDetail,
             ),
         )
         .sort((a, b) => a.title.localeCompare(b.title));
-      this.setDataProductStates(fetchedDataProductStates);
-      this.dataProductStates.forEach((dataProductState) =>
+      this.setProductCardStates(fetchedDataProductStates);
+      this.productCardStates.forEach((dataProductState) =>
         dataProductState.init(),
       );
-      this.loadingAllProductsState.complete();
     } catch (error) {
       assertErrorThrown(error);
       this.marketplaceBaseStore.applicationStore.notificationService.notifyError(
         `Unable to load products: ${error.message}`,
       );
-      this.loadingAllProductsState.fail();
+    }
+  }
+
+  async fetchLegacyDataProducts(): Promise<void> {
+    try {
+      const dataProductEntities =
+        await this.marketplaceBaseStore.depotServerClient.getEntitiesByClassifier(
+          DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
+        );
+    } catch (error) {
+      assertErrorThrown(error);
     }
   }
 
   *init(token?: string | undefined): GeneratorFn<void> {
     if (!this.loadingAllProductsState.hasCompleted) {
-      yield this.fetchDataProducts(token);
+      try {
+        this.loadingAllProductsState.inProgress();
+        yield Promise.all([
+          this.fetchDataProducts(token),
+          this.fetchLegacyDataProducts(),
+        ]);
+      } finally {
+        this.loadingAllProductsState.complete();
+      }
     }
   }
 }

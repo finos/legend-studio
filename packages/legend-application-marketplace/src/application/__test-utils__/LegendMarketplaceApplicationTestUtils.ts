@@ -26,9 +26,10 @@ import {
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { mockDataProducts } from '../../components/__test-utils__/TEST_DATA__LakehouseData.js';
-import { DataProductState } from '../../stores/lakehouse/dataProducts/DataProducts.js';
 import { LegendMarketplaceApplicationPlugin } from '../LegendMarketplaceApplicationPlugin.js';
 import type { LegendMarketplaceBaseStore } from '../../stores/LegendMarketplaceBaseStore.js';
+import type { BaseProductCardState } from '../../stores/lakehouse/dataProducts/BaseProductCardState.js';
+import { DataProductCardState } from '../../stores/lakehouse/dataProducts/DataProductCardState.js';
 
 const TEST_DATA__appConfig: LegendMarketplaceApplicationConfigurationData = {
   appName: 'marketplace',
@@ -90,7 +91,7 @@ export class TestLegendMarketplaceApplicationPlugin extends LegendMarketplaceApp
 
   override async getHomePageDataProducts(
     marketplaceBaseStore: LegendMarketplaceBaseStore,
-  ): Promise<DataProductState[] | undefined> {
+  ): Promise<BaseProductCardState[] | undefined> {
     const mockDataProductDetail = guaranteeNonNullable(
       guaranteeNonNullable(
         (
@@ -113,7 +114,7 @@ export class TestLegendMarketplaceApplicationPlugin extends LegendMarketplaceApp
       },
       { engine: marketplaceBaseStore.remoteEngine },
     );
-    const dataProductState = new DataProductState(
+    const dataProductState = new DataProductCardState(
       marketplaceBaseStore,
       graphManager,
       mockDataProductDetail,

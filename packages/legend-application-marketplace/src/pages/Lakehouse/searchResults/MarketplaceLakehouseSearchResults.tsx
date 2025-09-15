@@ -46,6 +46,7 @@ import {
 import {
   generateLakehouseDataProductPath,
   generateLakehouseSearchResultsRoute,
+  generateLegacyDataProductPath,
   LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN,
 } from '../../../__lib__/LegendMarketplaceNavigation.js';
 import { LegendMarketplaceSearchBar } from '../../../components/SearchBar/LegendMarketplaceSearchBar.js';
@@ -53,7 +54,10 @@ import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
 import { useAuth } from 'react-oidc-context';
 import { V1_IngestEnvironmentClassification } from '@finos/legend-graph';
 import { isNullable } from '@finos/legend-shared';
-import { LakehouseDataProductCard } from '../../../components/LakehouseDataProductCard/LakehouseDataProductCard.js';
+import { DataProductCardState } from '../../../stores/lakehouse/dataProducts/DataProductCardState.js';
+import { LegacyDataProductCardState } from '../../../stores/lakehouse/dataProducts/LegacyDataProductCardState.js';
+import { generateGAVCoordinates } from '@finos/legend-storage';
+import { LakehouseProductCard } from '../../../components/LakehouseProductCard/LakehouseProductCard.js';
 
 const SearchResultsSortFilterPanel = observer(
   (props: { searchResultsStore: LegendMarketplaceSearchResultsStore }) => {
@@ -64,11 +68,13 @@ const SearchResultsSortFilterPanel = observer(
     const isSortMenuOpen = Boolean(sortMenuAnchorEl);
 
     const showUnknownDeployTypeFilter =
-      searchResultsStore.dataProductStates.some((state) =>
-        isNullable(state.dataProductDetails.origin),
+      searchResultsStore.productCardStates.some(
+        (state) =>
+          state instanceof DataProductCardState &&
+          isNullable(state.dataProductDetails.origin),
       );
     const showUnknownEnvironmentFilter =
-      searchResultsStore.dataProductStates.some((state) =>
+      searchResultsStore.productCardStates.some((state) =>
         isNullable(state.environmentClassification),
       );
 
@@ -302,19 +308,31 @@ export const MarketplaceLakehouseSearchResults =
               className="marketplace-lakehouse-search-results__data-product-cards"
             >
               {searchResultsStore.filterSortProducts?.map(
-                (dataProductState) => (
-                  <Grid
-                    key={`${dataProductState.dataProductDetails.id}-${dataProductState.dataProductDetails.deploymentId}`}
-                    size={1}
-                  >
-                    <LakehouseDataProductCard
-                      dataProductState={dataProductState}
+                (productCardState) => (
+                  <Grid key={productCardState.guid} size={1}>
+                    <LakehouseProductCard
+                      productCardState={productCardState}
                       onClick={() => {
+                        const path =
+                          productCardState instanceof DataProductCardState
+                            ? generateLakehouseDataProductPath(
+                                productCardState.dataProductDetails.id,
+                                productCardState.dataProductDetails
+                                  .deploymentId,
+                              )
+                            : productCardState instanceof
+                                LegacyDataProductCardState
+                              ? generateLegacyDataProductPath(
+                                  generateGAVCoordinates(
+                                    productCardState.group,
+                                    productCardState.artifact,
+                                    productCardState.version,
+                                  ),
+                                  productCardState.dataSpace.path,
+                                )
+                              : '';
                         applicationStore.navigationService.navigator.goToLocation(
-                          generateLakehouseDataProductPath(
-                            dataProductState.dataProductDetails.id,
-                            dataProductState.dataProductDetails.deploymentId,
-                          ),
+                          path,
                         );
                       }}
                     />

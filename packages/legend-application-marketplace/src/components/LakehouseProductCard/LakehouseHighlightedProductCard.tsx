@@ -22,27 +22,27 @@ import {
   Skeleton,
 } from '@mui/material';
 import { observer } from 'mobx-react-lite';
-import { type DataProductState } from '../../stores/lakehouse/dataProducts/DataProducts.js';
+import type { BaseProductCardState } from '../../stores/lakehouse/dataProducts/BaseProductCardState.js';
 
 const MAX_DESCRIPTION_LENGTH = 350;
 
-export const LakehouseHighlightedDataProductCard = observer(
+export const LakehouseHighlightedProductCard = observer(
   (props: {
-    dataProductState: DataProductState;
-    onClick: (dataProductState: DataProductState) => void;
+    productCardState: BaseProductCardState;
+    onClick: (productCardState: BaseProductCardState) => void;
   }): React.ReactNode => {
-    const { dataProductState, onClick } = props;
+    const { productCardState, onClick } = props;
 
     const truncatedDescription =
-      dataProductState.description &&
-      dataProductState.description.length > MAX_DESCRIPTION_LENGTH
-        ? `${dataProductState.description.substring(
+      productCardState.description &&
+      productCardState.description.length > MAX_DESCRIPTION_LENGTH
+        ? `${productCardState.description.substring(
             0,
             MAX_DESCRIPTION_LENGTH,
           )}...`
-        : dataProductState.description;
+        : productCardState.description;
 
-    const loading = dataProductState.initState.isInProgress;
+    const loading = productCardState.initState.isInProgress;
 
     const skeletonLoader = (
       <>
@@ -57,7 +57,7 @@ export const LakehouseHighlightedDataProductCard = observer(
     return (
       <Card className="lakehouse-highlighted-data-product-card">
         <CardActionArea
-          onClick={() => onClick(dataProductState)}
+          onClick={() => onClick(productCardState)}
           className="lakehouse-highlighted-data-product-card__action"
         >
           {loading ? (
@@ -67,13 +67,13 @@ export const LakehouseHighlightedDataProductCard = observer(
               <Box className="lakehouse-highlighted-data-product-card__image__container">
                 <img
                   src="/assets/LegendLogo.png"
-                  title={dataProductState.title}
+                  title={productCardState.title}
                   className="lakehouse-highlighted-data-product-card__image"
                 />
               </Box>
               <CardContent className="lakehouse-highlighted-data-product-card__content">
                 <Box className="lakehouse-highlighted-data-product-card__title">
-                  {dataProductState.title}
+                  {productCardState.title}
                 </Box>
                 <Box className="lakehouse-highlighted-data-product-card__description">
                   {truncatedDescription}

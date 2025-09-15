@@ -11,13 +11,14 @@
     { "path": "./tsconfig.package.json" },
     { "path": "../legend-application" },
     { "path": "../legend-art" },
-    { "path": "../legend-lego" },
+    { "path": "../legend-code-editor" },
+    { "path": "../legend-extension-dsl-data-space" },
     { "path": "../legend-graph" },
+    { "path": "../legend-lego" },
     { "path": "../legend-server-depot" },
-    { "path": "../legend-storage" },
-    { "path": "../legend-server-marketplace" },
     { "path": "../legend-server-lakehouse" },
+    { "path": "../legend-server-marketplace" },
     { "path": "../legend-shared" },
-    { "path": "../legend-code-editor" }
+    { "path": "../legend-storage" }
   ]
 }

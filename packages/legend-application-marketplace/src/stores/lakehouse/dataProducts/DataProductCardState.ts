@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { flow, makeObservable, observable } from 'mobx';
+import { makeObservable, observable } from 'mobx';
 import {
   ActionState,
   assertErrorThrown,
@@ -35,6 +35,7 @@ import {
 import type { LegendMarketplaceBaseStore } from '../../LegendMarketplaceBaseStore.js';
 import { getDataProductFromDetails } from '../LakehouseUtils.js';
 import { LEGEND_MARKETPLACE_APP_EVENT } from '../../../__lib__/LegendMarketplaceAppEvent.js';
+import { BaseProductCardState } from './BaseProductCardState.js';
 
 export enum DataProductType {
   LAKEHOUSE = 'LAKEHOUSE',
@@ -54,26 +55,24 @@ const getDataProductDescriptorFromDetails = (
   return name;
 };
 
-export class DataProductState {
-  readonly marketplaceBaseStore: LegendMarketplaceBaseStore;
+export class DataProductCardState extends BaseProductCardState {
   readonly graphManager: V1_PureGraphManager;
-  readonly initState = ActionState.create();
-  readonly enrichedState = ActionState.create();
   readonly dataProductDetails: V1_EntitlementsDataProductDetails;
   dataProductElement: V1_DataProduct | undefined;
+
+  readonly enrichedState = ActionState.create();
 
   constructor(
     marketplaceBaseStore: LegendMarketplaceBaseStore,
     graphManager: V1_PureGraphManager,
     dataProductDetails: V1_EntitlementsDataProductDetails,
   ) {
-    this.marketplaceBaseStore = marketplaceBaseStore;
+    super(marketplaceBaseStore);
     this.graphManager = graphManager;
     this.dataProductDetails = dataProductDetails;
 
     makeObservable(this, {
       dataProductElement: observable,
-      init: flow,
     });
   }
 
@@ -132,6 +131,10 @@ export class DataProductState {
       : (this.dataProductElement?.description ?? '');
   }
 
+  get guid(): string {
+    return `${this.dataProductDetails.id}-${this.dataProductDetails.deploymentId}`;
+  }
+
   get icon(): V1_DataProductIcon | undefined {
     return this.dataProductElement?.icon;
   }
@@ -143,6 +146,20 @@ export class DataProductState {
       : origin instanceof V1_AdHocDeploymentDataProductOrigin
         ? 'Sandbox'
         : undefined;
+  }
+
+  get isSdlcDeployed(): boolean {
+    return (
+      this.dataProductDetails.origin instanceof
+      V1_SdlcDeploymentDataProductOrigin
+    );
+  }
+
+  get isAdHocDeployed(): boolean {
+    return (
+      this.dataProductDetails.origin instanceof
+      V1_AdHocDeploymentDataProductOrigin
+    );
   }
 
   get environmentClassification():
