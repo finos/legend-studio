@@ -142,20 +142,6 @@ export class DataProductCardState extends BaseProductCardState {
         : undefined;
   }
 
-  get isSdlcDeployed(): boolean {
-    return (
-      this.dataProductDetails.origin instanceof
-      V1_SdlcDeploymentDataProductOrigin
-    );
-  }
-
-  get isAdHocDeployed(): boolean {
-    return (
-      this.dataProductDetails.origin instanceof
-      V1_AdHocDeploymentDataProductOrigin
-    );
-  }
-
   get environmentClassification():
     | V1_EntitlementsLakehouseEnvironmentType
     | undefined {

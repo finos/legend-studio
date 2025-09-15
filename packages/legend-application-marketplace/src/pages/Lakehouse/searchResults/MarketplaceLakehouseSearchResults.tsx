@@ -53,7 +53,6 @@ import { LegendMarketplaceSearchBar } from '../../../components/SearchBar/Legend
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
 import { useAuth } from 'react-oidc-context';
 import { V1_IngestEnvironmentClassification } from '@finos/legend-graph';
-import { isNullable } from '@finos/legend-shared';
 import { DataProductCardState } from '../../../stores/lakehouse/dataProducts/DataProductCardState.js';
 import { LegacyDataProductCardState } from '../../../stores/lakehouse/dataProducts/LegacyDataProductCardState.js';
 import { generateGAVCoordinates } from '@finos/legend-storage';
@@ -66,17 +65,6 @@ const SearchResultsSortFilterPanel = observer(
     const [sortMenuAnchorEl, setSortMenuAnchorEl] =
       useState<HTMLElement | null>(null);
     const isSortMenuOpen = Boolean(sortMenuAnchorEl);
-
-    const showUnknownDeployTypeFilter =
-      searchResultsStore.dataProductCardStates.some(
-        (state) =>
-          state instanceof DataProductCardState &&
-          isNullable(state.dataProductDetails.origin),
-      );
-    const showUnknownEnvironmentFilter =
-      searchResultsStore.dataProductCardStates.some((state) =>
-        isNullable(state.environmentClassification),
-      );
 
     return (
       <Box className="marketplace-lakehouse-search-results__sort-filters">
@@ -154,22 +142,6 @@ const SearchResultsSortFilterPanel = observer(
                 }
                 label="Sandbox Deployed"
               />
-              {showUnknownDeployTypeFilter === true && (
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={searchResultsStore.filter.unknownDeployFilter}
-                      onChange={() =>
-                        searchResultsStore.handleFilterChange(
-                          DataProductFilterType.DEPLOY_TYPE,
-                          DeployType.UNKNOWN,
-                        )
-                      }
-                    />
-                  }
-                  label="Unknown"
-                />
-              )}
             </FormGroup>
           </Box>
           <hr />
@@ -210,42 +182,28 @@ const SearchResultsSortFilterPanel = observer(
                 }
                 label="Prod-Parallel"
               />
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={
-                      searchResultsStore.filter
-                        .devEnvironmentClassificationFilter
+              {
+                // eslint-disable-next-line no-process-env
+                process.env.NODE_ENV !== 'production' && (
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={
+                          searchResultsStore.filter
+                            .devEnvironmentClassificationFilter
+                        }
+                        onChange={() =>
+                          searchResultsStore.handleFilterChange(
+                            DataProductFilterType.ENVIRONMENT_CLASSIFICATION,
+                            V1_IngestEnvironmentClassification.DEV,
+                          )
+                        }
+                      />
                     }
-                    onChange={() =>
-                      searchResultsStore.handleFilterChange(
-                        DataProductFilterType.ENVIRONMENT_CLASSIFICATION,
-                        V1_IngestEnvironmentClassification.DEV,
-                      )
-                    }
+                    label="Dev"
                   />
-                }
-                label="Dev"
-              />
-              {showUnknownEnvironmentFilter === true && (
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={
-                        searchResultsStore.filter
-                          .unknownEnvironmentClassificationFilter
-                      }
-                      onChange={() =>
-                        searchResultsStore.handleFilterChange(
-                          DataProductFilterType.ENVIRONMENT_CLASSIFICATION,
-                          'UNKNOWN',
-                        )
-                      }
-                    />
-                  }
-                  label="Unknown"
-                />
-              )}
+                )
+              }
             </FormGroup>
           </Box>
         </Box>
@@ -272,7 +230,9 @@ export const MarketplaceLakehouseSearchResults =
       searchResultsStore.handleSearch(searchQuery);
 
       useEffect(() => {
-        searchResultsStore.init(auth.user?.access_token);
+        if (searchResultsStore.loadingAllProductsState.isInInitialState) {
+          searchResultsStore.init(auth.user?.access_token);
+        }
       }, [searchResultsStore, auth]);
 
       const isLoadingDataProducts =

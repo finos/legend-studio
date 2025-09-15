@@ -16,10 +16,7 @@
 
 import { flow, makeObservable } from 'mobx';
 import { ActionState, type GeneratorFn } from '@finos/legend-shared';
-import {
-  type V1_DataProductIcon,
-  type V1_EntitlementsLakehouseEnvironmentType,
-} from '@finos/legend-graph';
+import { type V1_DataProductIcon } from '@finos/legend-graph';
 import type { LegendMarketplaceBaseStore } from '../../LegendMarketplaceBaseStore.js';
 
 export abstract class BaseProductCardState {
@@ -45,12 +42,4 @@ export abstract class BaseProductCardState {
   abstract get icon(): V1_DataProductIcon | undefined;
 
   abstract get versionId(): string | undefined;
-
-  abstract get isSdlcDeployed(): boolean;
-
-  abstract get isAdHocDeployed(): boolean;
-
-  abstract get environmentClassification():
-    | V1_EntitlementsLakehouseEnvironmentType
-    | undefined;
 }

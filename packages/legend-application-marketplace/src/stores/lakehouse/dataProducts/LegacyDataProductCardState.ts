@@ -15,10 +15,7 @@
  */
 
 import { isNonEmptyString } from '@finos/legend-shared';
-import {
-  type V1_DataProductIcon,
-  type V1_EntitlementsLakehouseEnvironmentType,
-} from '@finos/legend-graph';
+import { type V1_DataProductIcon } from '@finos/legend-graph';
 import type { LegendMarketplaceBaseStore } from '../../LegendMarketplaceBaseStore.js';
 import { BaseProductCardState } from './BaseProductCardState.js';
 import type { V1_DataSpace } from '@finos/legend-extension-dsl-data-space/graph';
@@ -68,19 +65,5 @@ export class LegacyDataProductCardState extends BaseProductCardState {
 
   get versionId(): string | undefined {
     return this._versionId;
-  }
-
-  get isSdlcDeployed(): boolean {
-    return true;
-  }
-
-  get isAdHocDeployed(): boolean {
-    return false;
-  }
-
-  get environmentClassification():
-    | V1_EntitlementsLakehouseEnvironmentType
-    | undefined {
-    return undefined;
   }
 }

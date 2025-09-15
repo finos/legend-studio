@@ -253,7 +253,9 @@ export const LakehouseProductCard = observer(
     const versionId = productCardState.versionId;
     const isSnapshot = versionId ? isSnapshotVersion(versionId) : undefined;
     const environmentClassification =
-      productCardState.environmentClassification;
+      productCardState instanceof DataProductCardState
+        ? productCardState.environmentClassification
+        : undefined;
 
     const content = productCardState.initState.isInProgress ? (
       <CubesLoadingIndicator isLoading={true}>
