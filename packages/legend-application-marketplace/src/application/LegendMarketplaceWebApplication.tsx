@@ -277,8 +277,13 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
             )}
             {/* Lakehouse pages */}
             <Route
-              path="/lakehouse"
-              element={<Navigate to="/" replace={true} />}
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_REDIRECT}
+              element={
+                <Navigate
+                  to={LEGEND_MARKETPLACE_ROUTE_PATTERN.DEFAULT}
+                  replace={true}
+                />
+              }
             />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SEARCH_RESULTS}
@@ -301,7 +306,7 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
               element={<ProtectedLakehouseEntitlements />}
             />
             <Route
-              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE}
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.DEFAULT}
               element={<ProtectedLakehouseMarketplace />}
             />
             <Route
