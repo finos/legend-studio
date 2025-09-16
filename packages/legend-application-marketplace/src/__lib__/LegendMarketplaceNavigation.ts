@@ -197,6 +197,7 @@ enum DATA_SPACE_QUERY_CREATOR_QUERY_PARAM_TOKEN {
  */
 export const EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryCreatorRoute =
   (
+    queryApplicationUrl: string,
     groupId: string,
     artifactId: string,
     versionId: string,
@@ -207,7 +208,7 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryCreatorRoute
   ): string =>
     addQueryParametersToUrl(
       generatePath(
-        generateExtensionUrlPattern(DATA_SPACE_QUERY_ROUTE_PATTERN.CREATE),
+        `${queryApplicationUrl}/${generateExtensionUrlPattern(DATA_SPACE_QUERY_ROUTE_PATTERN.CREATE)}`,
         {
           [DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.GAV]:
             generateGAVCoordinates(groupId, artifactId, versionId),
