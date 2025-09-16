@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.1.8
+
+### Patch Changes
+
+- [#4425](https://github.com/finos/legend-studio/pull/4425) [`6c64fa6`](https://github.com/finos/legend-studio/commit/6c64fa6d73c2d22f12a884e8dc27ad06e8ee306a) ([@travisstebbins](https://github.com/travisstebbins)) - Fix LegendMarketplaceBaseStore being initialized multiple times
+
 ## 0.1.7
 
 ### Patch Changes
