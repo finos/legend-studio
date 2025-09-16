@@ -190,10 +190,14 @@ export class LegendMarketplaceProductViewerStore {
         fetchedDataProductDetails[0],
       );
       // Crete graph manager for parsing ad-hoc deployed data products
-      const graphManager = new V1_PureGraphManager(
+      const graphManagerState = new GraphManagerState(
         this.marketplaceBaseStore.applicationStore.pluginManager,
         this.marketplaceBaseStore.applicationStore.logService,
-        this.marketplaceBaseStore.remoteEngine,
+      );
+      const graphManager = guaranteeType(
+        graphManagerState.graphManager,
+        V1_PureGraphManager,
+        'GraphManager must be a V1_PureGraphManager',
       );
       yield graphManager.initialize(
         {
@@ -205,11 +209,6 @@ export class LegendMarketplaceProductViewerStore {
           },
         },
         { engine: this.marketplaceBaseStore.remoteEngine },
-      );
-      const graphManagerState = new GraphManagerState(
-        this.marketplaceBaseStore.applicationStore.pluginManager,
-        this.marketplaceBaseStore.applicationStore.logService,
-        graphManager,
       );
       yield graphManagerState.initializeSystem();
       const v1DataProduct = guaranteeType(
@@ -336,10 +335,15 @@ export class LegendMarketplaceProductViewerStore {
       );
 
       // create graph manager
-      const graphManager = new V1_PureGraphManager(
+      // Crete graph manager for parsing ad-hoc deployed data products
+      const graphManagerState = new GraphManagerState(
         this.marketplaceBaseStore.applicationStore.pluginManager,
         this.marketplaceBaseStore.applicationStore.logService,
-        this.marketplaceBaseStore.remoteEngine,
+      );
+      const graphManager = guaranteeType(
+        graphManagerState.graphManager,
+        V1_PureGraphManager,
+        'GraphManager must be a V1_PureGraphManager',
       );
       yield graphManager.initialize(
         {
@@ -351,11 +355,6 @@ export class LegendMarketplaceProductViewerStore {
           },
         },
         { engine: this.marketplaceBaseStore.remoteEngine },
-      );
-      const graphManagerState = new GraphManagerState(
-        this.marketplaceBaseStore.applicationStore.pluginManager,
-        this.marketplaceBaseStore.applicationStore.logService,
-        graphManager,
       );
       yield graphManagerState.initializeSystem();
 
