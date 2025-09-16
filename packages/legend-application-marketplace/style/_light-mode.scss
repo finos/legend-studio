@@ -417,7 +417,7 @@
     }
 
     &__header__title__label {
-      color: var(--color-hclight-blue-60);
+      color: var(--color-hclight-white);
     }
 
     &__header__title__verified-badge {
@@ -913,6 +913,154 @@
       border-color: var(--color-hclight-grey-20);
     }
 
+    &__info__project-info__label {
+      background: var(--color-hclight-blue-50);
+      color: var(--color-hclight-white);
+    }
+
+    &__info__project-info__value {
+      background: var(--color-hclight-grey-10);
+      color: var(--color-hclight-grey-70);
+    }
+
+    &__info__project-info__link {
+      background: var(--color-hclight-grey-10);
+      color: var(--color-hclight-grey-60);
+      border-color: var(--color-hclight-grey-30);
+    }
+
+    &__info__section__title {
+      color: var(--color-hclight-grey-90);
+    }
+
+    &__info__tagged-value__tag {
+      background: var(--color-hclight-orange-50);
+      color: var(--color-hclight-white);
+    }
+
+    &__info__tagged-value__value {
+      background: var(--color-hclight-grey-10);
+      color: var(--color-hclight-grey-70);
+    }
+
+    &__info__steoreotype {
+      background: var(--color-hclight-orange-50);
+      color: var(--color-hclight-white);
+    }
+
+    &__info__section__placeholder {
+      color: var(--color-hclight-grey-30);
+      border-color: var(--color-hclight-grey-30);
+    }
+
+    &__support__entry__icon {
+      background: var(--color-hclight-grey-10);
+    }
+
+    &__support__entry__icon svg {
+      color: var(--color-hclight-grey-70);
+    }
+
+    &__support__entry__content {
+      border-color: transparent;
+      color: var(--color-hclight-grey-70);
+      background: var(--color-hclight-grey-10);
+      border-left-color: var(--color-hclight-grey-30);
+    }
+  }
+
+  .data-space__viewer {
+    &__quickstart__item__header__title {
+      color: var(--color-hclight-aqua-90);
+    }
+
+    &__quickstart__item__header__anchor {
+      color: var(--color-hclight-blue-60);
+    }
+
+    &__quickstart__item__header__anchor svg {
+      color: var(--color-hclight-grey-30);
+    }
+
+    &__quickstart__item__header__anchor:hover svg {
+      color: var(--color-hclight-grey-60);
+    }
+
+    &__quickstart__item__content__tab__header {
+      border-bottom-color: var(--color-hclight-grey-15);
+      border-top-color: var(--color-hclight-grey-15);
+    }
+
+    &__quickstart__item__content__tab {
+      color: var(--color-hclight-grey-60);
+      border-left-color: var(--color-hclight-grey-15);
+    }
+
+    &__quickstart__item__content__tab:hover
+      &__quickstart__item__content__tab__label {
+      color: var(--color-hclight-grey-70);
+    }
+
+    &__quickstart__item__content__tab:hover
+      &__quickstart__item__content__tab__icon
+      svg {
+      color: var(--color-hclight-grey-70);
+    }
+
+    &__quickstart__item__content__tab--active:hover
+      &__quickstart__item__content__tab__label,
+    &__quickstart__item__content__tab--active
+      &__quickstart__item__content__tab__label {
+      color: var(--color-hclight-blue-60);
+    }
+
+    &__quickstart__item__content__tab--active:hover
+      &__quickstart__item__content__tab__icon
+      svg,
+    &__quickstart__item__content__tab--active
+      &__quickstart__item__content__tab__icon
+      svg {
+      color: var(--color-hclight-blue-60);
+    }
+
+    &__quickstart__item__content__action-tab-group {
+      border-left-color: var(--color-hclight-grey-15);
+    }
+
+    &__quickstart__tds__query {
+      border-color: var(--color-hclight-grey-30);
+    }
+
+    &__quickstart__tds__placeholder-panel {
+      border-color: var(--color-hclight-grey-30);
+    }
+
+    &__quickstart__tds__query-text__action svg {
+      color: var(--color-hclight-grey-60);
+    }
+
+    &__quickstart__tds__query-text__action:hover svg {
+      color: var(--color-hclight-grey-80);
+    }
+
+    &__quickstart__tds__code-action {
+      border-color: var(--color-hclight-grey-30);
+    }
+
+    &__quickstart__tds__code-action__content {
+      border-color: var(--color-hclight-grey-30);
+    }
+
+    &__quickstart__tds__code-action__action svg {
+      color: var(--color-hclight-grey-60);
+    }
+
+    &__quickstart__tds__code-action__action:hover svg {
+      color: var(--color-hclight-grey-80);
+    }
+  }
+
+  .data-product__viewer {
     &__access-group__item__header__title {
       color: var(--color-hclight-aqua-90);
     }
@@ -1000,61 +1148,6 @@
 
     &__access-group__tds__code-action__action:hover svg {
       color: var(--color-hclight-grey-80);
-    }
-
-    &__info__project-info__label {
-      background: var(--color-hclight-blue-50);
-      color: var(--color-hclight-white);
-    }
-
-    &__info__project-info__value {
-      background: var(--color-hclight-grey-10);
-      color: var(--color-hclight-grey-70);
-    }
-
-    &__info__project-info__link {
-      background: var(--color-hclight-grey-10);
-      color: var(--color-hclight-grey-60);
-      border-color: var(--color-hclight-grey-30);
-    }
-
-    &__info__section__title {
-      color: var(--color-hclight-grey-90);
-    }
-
-    &__info__tagged-value__tag {
-      background: var(--color-hclight-orange-50);
-      color: var(--color-hclight-white);
-    }
-
-    &__info__tagged-value__value {
-      background: var(--color-hclight-grey-10);
-      color: var(--color-hclight-grey-70);
-    }
-
-    &__info__steoreotype {
-      background: var(--color-hclight-orange-50);
-      color: var(--color-hclight-white);
-    }
-
-    &__info__section__placeholder {
-      color: var(--color-hclight-grey-30);
-      border-color: var(--color-hclight-grey-30);
-    }
-
-    &__support__entry__icon {
-      background: var(--color-hclight-grey-10);
-    }
-
-    &__support__entry__icon svg {
-      color: var(--color-hclight-grey-70);
-    }
-
-    &__support__entry__content {
-      border-color: transparent;
-      color: var(--color-hclight-grey-70);
-      background: var(--color-hclight-grey-10);
-      border-left-color: var(--color-hclight-grey-30);
     }
   }
 
