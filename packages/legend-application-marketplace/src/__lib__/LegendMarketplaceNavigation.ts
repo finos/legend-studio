@@ -193,7 +193,7 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryCreatorRoute
     classPath?: string | undefined,
   ): string =>
     addQueryParametersToUrl(
-      `${queryApplicationUrl}/dataspace/${generateGAVCoordinates(groupId, artifactId, versionId)}}/${dataSpacePath}/${executionContextKey}?`,
+      `${queryApplicationUrl}/extensions/dataspace/${generateGAVCoordinates(groupId, artifactId, versionId)}/${dataSpacePath}/${executionContextKey}`,
       stringifyQueryParams({
         [DATA_SPACE_QUERY_CREATOR_QUERY_PARAM_TOKEN.RUNTIME_PATH]: runtimePath
           ? encodeURIComponent(runtimePath)
