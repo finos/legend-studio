@@ -20,10 +20,11 @@ import {
 } from '@finos/legend-application';
 import {
   resolveVersion,
+  retrieveProjectEntitiesWithDependencies,
   StoreProjectData,
   VersionedProjectData,
 } from '@finos/legend-server-depot';
-import { action, flow, makeObservable, observable } from 'mobx';
+import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import type { LegendMarketplaceBaseStore } from '../LegendMarketplaceBaseStore.js';
 import {
   type GeneratorFn,
@@ -78,6 +79,7 @@ import {
 import {
   type DataSpaceAnalysisResult,
   DSL_DataSpace_getGraphManagerExtension,
+  retrieveAnalyticsResultCache,
 } from '@finos/legend-extension-dsl-data-space/graph';
 
 const ARTIFACT_GENERATION_DAT_PRODUCT_KEY = 'dataProduct';
@@ -207,6 +209,7 @@ export class LegendMarketplaceProductViewerStore {
       const graphManagerState = new GraphManagerState(
         this.marketplaceBaseStore.applicationStore.pluginManager,
         this.marketplaceBaseStore.applicationStore.logService,
+        graphManager,
       );
       yield graphManagerState.initializeSystem();
       const v1DataProduct = guaranteeType(
@@ -321,6 +324,18 @@ export class LegendMarketplaceProductViewerStore {
 
       const { groupId, artifactId, versionId } = parseGAVCoordinates(gav);
 
+      // fetch project
+      this.loadingProductState.setMessage(`Fetching project...`);
+      const project = StoreProjectData.serialization.fromJson(
+        (yield flowResult(
+          this.marketplaceBaseStore.depotServerClient.getProject(
+            groupId,
+            artifactId,
+          ),
+        )) as PlainObject<StoreProjectData>,
+      );
+
+      // create graph manager
       const graphManager = new V1_PureGraphManager(
         this.marketplaceBaseStore.applicationStore.pluginManager,
         this.marketplaceBaseStore.applicationStore.logService,
@@ -340,6 +355,7 @@ export class LegendMarketplaceProductViewerStore {
       const graphManagerState = new GraphManagerState(
         this.marketplaceBaseStore.applicationStore.pluginManager,
         this.marketplaceBaseStore.applicationStore.logService,
+        graphManager,
       );
       yield graphManagerState.initializeSystem();
 
@@ -348,18 +364,19 @@ export class LegendMarketplaceProductViewerStore {
         graphManagerState.graphManager,
       ).analyzeDataSpace(
         path,
-        async () =>
-          graphManagerState.graph.allOwnElements
-            .map((element) =>
-              graphManagerState.graphManager.elementToEntity(element),
-            )
-            .concat(
-              graphManagerState.graph.dependencyManager.allOwnElements.map(
-                (element) =>
-                  graphManagerState.graphManager.elementToEntity(element),
-              ),
-            ),
-        undefined,
+        () =>
+          retrieveProjectEntitiesWithDependencies(
+            project,
+            versionId,
+            this.marketplaceBaseStore.depotServerClient,
+          ),
+        () =>
+          retrieveAnalyticsResultCache(
+            project,
+            versionId,
+            path,
+            this.marketplaceBaseStore.depotServerClient,
+          ),
         this.loadingProductState,
       )) as DataSpaceAnalysisResult;
 
@@ -396,13 +413,6 @@ export class LegendMarketplaceProductViewerStore {
             );
           },
           viewSDLCProject: async () => {
-            // fetch project data
-            const project = StoreProjectData.serialization.fromJson(
-              await this.marketplaceBaseStore.depotServerClient.getProject(
-                groupId,
-                artifactId,
-              ),
-            );
             // find the matching SDLC instance
             const projectIDPrefix = parseProjectIdentifier(
               project.projectId,
