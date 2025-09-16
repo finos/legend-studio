@@ -69,6 +69,10 @@
         font-size: 1.2rem;
       }
 
+      &__section {
+        @include flexVCenter;
+      }
+
       &__unmodeled-config {
         margin-left: 2rem;
       }
