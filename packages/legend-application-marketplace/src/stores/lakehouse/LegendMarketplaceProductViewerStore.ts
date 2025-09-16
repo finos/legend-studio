@@ -392,12 +392,14 @@ export class LegendMarketplaceProductViewerStore {
               new LegendSDLC(groupId, artifactId, versionId),
             ),
           queryDataSpace: (executionContextKey: string) =>
-            EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryCreatorRoute(
-              groupId,
-              artifactId,
-              versionId,
-              analysisResult.path,
-              executionContextKey,
+            this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
+              EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryCreatorRoute(
+                groupId,
+                artifactId,
+                versionId,
+                analysisResult.path,
+                executionContextKey,
+              ),
             ),
           viewProject: (_path) => {
             this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
