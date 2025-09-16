@@ -123,10 +123,15 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
     applicationStore.config.options.enableMarketplacePages;
 
   useEffect(() => {
-    flowResult(marketplaceBaseStore.initialize()).catch(
-      applicationStore.alertUnhandledError,
-    );
-    if (auth.user?.access_token) {
+    if (marketplaceBaseStore.initState.isInInitialState) {
+      flowResult(marketplaceBaseStore.initialize()).catch(
+        applicationStore.alertUnhandledError,
+      );
+    }
+    if (
+      marketplaceBaseStore.ingestEnvironmentFetchState.isInInitialState &&
+      auth.user?.access_token
+    ) {
       flowResult(
         marketplaceBaseStore.initializeIngestEnvironmentDetails(
           auth.user.access_token,
