@@ -63,12 +63,12 @@ export const DataProductSupportInfo = observer(
     }, [dataProductViewerState, anchor]);
 
     return (
-      <div ref={sectionRef} className="data-space__viewer__wiki__section">
-        <div className="data-space__viewer__wiki__section__header">
-          <div className="data-space__viewer__wiki__section__header__label">
+      <div ref={sectionRef} className="data-product__viewer__wiki__section">
+        <div className="data-product__viewer__wiki__section__header">
+          <div className="data-product__viewer__wiki__section__header__label">
             Support
             <button
-              className="data-space__viewer__wiki__section__header__anchor"
+              className="data-product__viewer__wiki__section__header__anchor"
               tabIndex={-1}
               onClick={() => dataProductViewerState.changeZone(anchor, true)}
             >
@@ -76,7 +76,7 @@ export const DataProductSupportInfo = observer(
             </button>
           </div>
         </div>
-        <div className="data-space__viewer__wiki__section__content">
+        <div className="data-product__viewer__wiki__section__content">
           {doesSupportInfoExist ? (
             <Grid
               container={true}

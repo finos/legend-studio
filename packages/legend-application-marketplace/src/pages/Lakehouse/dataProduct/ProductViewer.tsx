@@ -91,17 +91,17 @@ const DataProductEnvironmentLabel = observer(
     const origin = productViewerState.entitlementsDataProductDetails.origin;
 
     return (
-      <div className="data-space__viewer__header__type">
+      <div className="data-product__viewer__header__type">
         {origin instanceof V1_AdHocDeploymentDataProductOrigin && (
           <Button
-            className={clsx('data-space__viewer__header__type__sandbox', {
-              'data-space__viewer__header__type__sandbox--dev':
+            className={clsx('data-product__viewer__header__type__sandbox', {
+              'data-product__viewer__header__type__sandbox--dev':
                 environmentClassification ===
                 V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT,
-              'data-space__viewer__header__type__sandbox--prod-parallel':
+              'data-product__viewer__header__type__sandbox--prod-parallel':
                 environmentClassification ===
                 V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL,
-              'data-space__viewer__header__type__sandbox--prod':
+              'data-product__viewer__header__type__sandbox--prod':
                 environmentClassification ===
                 V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
             })}
@@ -116,10 +116,10 @@ const DataProductEnvironmentLabel = observer(
               productViewerState.viewDataProductSource();
             }}
             title="View SDLC Project"
-            className={clsx('data-space__viewer__header__type__version', {
-              'data-space__viewer__header__type__version--snapshot':
+            className={clsx('data-product__viewer__header__type__version', {
+              'data-product__viewer__header__type__version--snapshot':
                 isSnapshotVersion(origin.version),
-              'data-space__viewer__header__type__version--release':
+              'data-product__viewer__header__type__version--release':
                 !isSnapshotVersion(origin.version),
             })}
           >
@@ -159,13 +159,13 @@ const ProductHeader = observer(
     return (
       <div
         ref={headerRef}
-        className={clsx('data-space__viewer__header', {
-          'data-space__viewer__header--floating': showFullHeader,
+        className={clsx('data-product__viewer__header', {
+          'data-product__viewer__header--floating': showFullHeader,
         })}
       >
         <div
-          className={clsx('data-space__viewer__header__content', {
-            'data-space__viewer__header__content--expanded':
+          className={clsx('data-product__viewer__header__content', {
+            'data-product__viewer__header__content--expanded':
               productViewerState.layoutState.isExpandedModeEnabled,
           })}
         >
@@ -175,7 +175,7 @@ const ProductHeader = observer(
             />
           )}
           <div
-            className="data-space__viewer__header__title"
+            className="data-product__viewer__header__title"
             title={`${productTitle} - ${productPath}`}
           >
             {productTitle ? productTitle : productName}
@@ -236,10 +236,10 @@ export const ProductViewer = observer(
     }, [productViewerState]);
 
     return (
-      <div className="data-space__viewer">
+      <div className="data-product__viewer">
         <div
           ref={frame}
-          className="data-space__viewer__body"
+          className="data-product__viewer__body"
           onScroll={onScroll}
         >
           <ProductHeader
@@ -247,9 +247,9 @@ export const ProductViewer = observer(
             showFullHeader={showFullHeader}
           />
           {productViewerState.layoutState.isTopScrollerVisible && (
-            <div className="data-space__viewer__scroller">
+            <div className="data-product__viewer__scroller">
               <button
-                className="data-space__viewer__scroller__btn btn--dark"
+                className="data-product__viewer__scroller__btn btn--dark"
                 tabIndex={-1}
                 title="Scroll to top"
                 disabled={!productViewerState.layoutState.frame}
@@ -257,21 +257,21 @@ export const ProductViewer = observer(
               >
                 <CaretUpIcon />
               </button>
-              <div className="data-space__viewer__scroller__percentage">
+              <div className="data-product__viewer__scroller__percentage">
                 {scrollPercentage}%
               </div>
             </div>
           )}
           <div
             className={clsx(
-              'data-space__viewer__frame data-space__viewer__frame--boundless',
+              'data-product__viewer__frame data-product__viewer__frame--boundless',
               {
-                'data-space__viewer__frame--expanded':
+                'data-product__viewer__frame--expanded':
                   productViewerState.layoutState.isExpandedModeEnabled,
               },
             )}
           >
-            <div className="data-space__viewer__content">
+            <div className="data-product__viewer__content">
               <DataProductWiki productViewerState={productViewerState} />
             </div>
           </div>

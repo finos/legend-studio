@@ -108,7 +108,7 @@ export const DataProductMarkdownTextViewer: React.FC<{ value: string }> = (
   props,
 ) => (
   <MarkdownTextViewer
-    className="data-space__viewer__markdown-text-viewer"
+    className="data-product__viewer__markdown-text-viewer"
     value={{
       value: props.value,
     }}
@@ -130,7 +130,7 @@ const TDSColumnDocumentationCellRenderer = (
   return data.description?.trim() ? (
     data.description
   ) : (
-    <div className="data-space__viewer__grid__empty-cell">
+    <div className="data-product__viewer__grid__empty-cell">
       No description to provide
     </div>
   );
@@ -306,9 +306,9 @@ const TDSColumnMoreInfoCellRenderer = (props: {
         <Tab label={MoreInfoTabs.COLUMNS} value={MoreInfoTabs.COLUMNS} />
         <Tab label={MoreInfoTabs.GRAMMAR} value={MoreInfoTabs.GRAMMAR} />
       </Tabs>
-      <Box className="data-space__viewer__more-info__container">
+      <Box className="data-product__viewer__more-info__container">
         {loadingAccessPointDetails && (
-          <Box className="data-space__viewer__more-info__loading-indicator">
+          <Box className="data-product__viewer__more-info__loading-indicator">
             <CubesLoadingIndicator isLoading={true}>
               <CubesLoadingIndicatorIcon />
             </CubesLoadingIndicator>
@@ -318,17 +318,20 @@ const TDSColumnMoreInfoCellRenderer = (props: {
           <>
             {selectedTab === MoreInfoTabs.COLUMNS && (
               <Box
-                className={clsx('data-space__viewer__more-info__columns-grid', {
-                  'data-space__viewer__more-info__columns-grid--auto-height':
-                    (accessPointRelationType?.columns.length ?? 0) <=
-                    MAX_GRID_AUTO_HEIGHT_ROWS,
-                  'data-space__viewer__more-info__columns-grid--auto-height--empty':
-                    (accessPointRelationType?.columns.length ?? 0) === 0,
-                  'data-space__viewer__more-info__columns-grid--auto-height--non-empty':
-                    (accessPointRelationType?.columns.length ?? 0) > 0 &&
-                    (accessPointRelationType?.columns.length ?? 0) <=
+                className={clsx(
+                  'data-product__viewer__more-info__columns-grid',
+                  {
+                    'data-product__viewer__more-info__columns-grid--auto-height':
+                      (accessPointRelationType?.columns.length ?? 0) <=
                       MAX_GRID_AUTO_HEIGHT_ROWS,
-                })}
+                    'data-product__viewer__more-info__columns-grid--auto-height--empty':
+                      (accessPointRelationType?.columns.length ?? 0) === 0,
+                    'data-product__viewer__more-info__columns-grid--auto-height--non-empty':
+                      (accessPointRelationType?.columns.length ?? 0) > 0 &&
+                      (accessPointRelationType?.columns.length ?? 0) <=
+                        MAX_GRID_AUTO_HEIGHT_ROWS,
+                  },
+                )}
               >
                 <DataGrid
                   rowData={accessPointRelationType?.columns ?? []}
@@ -343,7 +346,7 @@ const TDSColumnMoreInfoCellRenderer = (props: {
               </Box>
             )}
             {selectedTab === MoreInfoTabs.GRAMMAR && (
-              <Box className="data-space__viewer__more-info__grammar">
+              <Box className="data-product__viewer__more-info__grammar">
                 <CodeEditor
                   inputValue={accessPointGrammar}
                   isReadOnly={true}
@@ -483,13 +486,13 @@ export const DataProductAccessPointGroupViewer = observer(
               {buttonLabel}
               {tooltipText !== undefined && (
                 <Tooltip
-                  className="data-space__viewer__access-group__item__access__tooltip__icon"
+                  className="data-product__viewer__access-group__item__access__tooltip__icon"
                   title={tooltipText}
                   arrow={true}
                   slotProps={{
                     tooltip: {
                       className:
-                        'data-space__viewer__access-group__item__access__tooltip',
+                        'data-product__viewer__access-group__item__access__tooltip',
                     },
                   }}
                 >
@@ -542,42 +545,42 @@ export const DataProductAccessPointGroupViewer = observer(
     };
 
     return (
-      <div className="data-space__viewer__access-group__item">
-        <div className="data-space__viewer__access-group__item__header">
-          <div className="data-space__viewer__access-group__item__header-main">
-            <div className="data-space__viewer__access-group__item__header__title">
+      <div className="data-product__viewer__access-group__item">
+        <div className="data-product__viewer__access-group__item__header">
+          <div className="data-product__viewer__access-group__item__header-main">
+            <div className="data-product__viewer__access-group__item__header__title">
               {accessGroupState.group.id}
             </div>
-            <div className="data-space__viewer__access-group__item__header__type">
+            <div className="data-product__viewer__access-group__item__header__type">
               LAKEHOUSE
             </div>
             <button
-              className="data-space__viewer__access-group__item__header__anchor"
+              className="data-product__viewer__access-group__item__header__anchor"
               tabIndex={-1}
             >
               <AnchorLinkIcon />
             </button>
           </div>
-          <Box className="data-space__viewer__access-group__item__header__actions">
+          <Box className="data-product__viewer__access-group__item__header__actions">
             {renderAccess(accessGroupState.access)}
           </Box>
         </div>
-        <div className="data-space__viewer__access-group__item__description">
+        <div className="data-product__viewer__access-group__item__description">
           <DataProductMarkdownTextViewer
             value={accessGroupState.group.description ?? ''}
           />
         </div>
-        <div className="data-space__viewer__access-group__item__content">
-          <div className="data-space__viewer__access-group__item__content__tab__content">
+        <div className="data-product__viewer__access-group__item__content">
+          <div className="data-product__viewer__access-group__item__content__tab__content">
             <div
               className={clsx(
-                'data-space__viewer__access-group__tds__column-specs',
-                'data-space__viewer__grid',
+                'data-product__viewer__access-group__tds__column-specs',
+                'data-product__viewer__grid',
                 'ag-theme-balham',
                 {
-                  'data-space__viewer__grid--auto-height':
+                  'data-product__viewer__grid--auto-height':
                     accessPoints.length <= MAX_GRID_AUTO_HEIGHT_ROWS,
-                  'data-space__viewer__grid--auto-height--non-empty':
+                  'data-product__viewer__grid--auto-height--non-empty':
                     accessPoints.length > 0 &&
                     accessPoints.length <= MAX_GRID_AUTO_HEIGHT_ROWS,
                 },
@@ -618,7 +621,8 @@ export const DataProductAccessPointGroupViewer = observer(
                     minWidth: 50,
                     sortable: false,
                     resizable: false,
-                    headerClass: 'data-space__viewer__grid__last-column-header',
+                    headerClass:
+                      'data-product__viewer__grid__last-column-header',
                     cellRenderer: 'agGroupCellRenderer',
                     headerName: 'More Info',
                     flex: 1,
@@ -712,12 +716,12 @@ export const DataProducteDataAccess = observer(
     };
 
     return (
-      <div ref={sectionRef} className="data-space__viewer__wiki__section">
-        <div className="data-space__viewer__wiki__section__header">
-          <div className="data-space__viewer__wiki__section__header__label">
+      <div ref={sectionRef} className="data-product__viewer__wiki__section">
+        <div className="data-product__viewer__wiki__section__header">
+          <div className="data-product__viewer__wiki__section__header__label">
             Data Access
             <button
-              className="data-space__viewer__wiki__section__header__anchor"
+              className="data-product__viewer__wiki__section__header__anchor"
               tabIndex={-1}
               onClick={() => dataProductViewerState.changeZone(anchor, true)}
             >
@@ -726,7 +730,7 @@ export const DataProducteDataAccess = observer(
           </div>
           {Boolean(documentationUrl) && (
             <button
-              className="data-space__viewer__wiki__section__header__documentation"
+              className="data-product__viewer__wiki__section__header__documentation"
               tabIndex={-1}
               onClick={seeDocumentation}
               title="See Documentation"
@@ -735,8 +739,8 @@ export const DataProducteDataAccess = observer(
             </button>
           )}
         </div>
-        <div className="data-space__viewer__wiki__section__content">
-          <div className="data-space__viewer__data-access">
+        <div className="data-product__viewer__wiki__section__content">
+          <div className="data-product__viewer__data-access">
             {dataProductViewerState.accessState.accessGroupStates.map(
               (groupState) => (
                 <DataProductAccessPointGroupViewer

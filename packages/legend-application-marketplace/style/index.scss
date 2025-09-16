@@ -434,74 +434,74 @@
     color: var(--color-hclight-grey-40);
   }
 
-  .data-space__viewer {
+  .data-product__viewer {
     background: var(--color-hclight-white);
     color: var(--color-hclight-grey-90);
   }
 
-  .data-space__viewer__header--floating {
+  .data-product__viewer__header--floating {
     background: var(--color-hclight-white);
   }
 
-  .data-space__viewer__header__title {
+  .data-product__viewer__header__title {
     background: var(--color-hclight-blue-60);
   }
 
-  .data-space__viewer__header__title__label {
+  .data-product__viewer__header__title__label {
     color: var(--color-hclight-blue-60);
   }
 
-  .data-space__viewer__header__title__verified-badge {
+  .data-product__viewer__header__title__verified-badge {
     color: var(--color-hclight-white);
   }
 
-  .data-space__viewer__header__actions {
+  .data-product__viewer__header__actions {
     background: var(--color-hclight-white);
     border-color: var(--color-hclight-blue-50);
   }
 
-  .data-space__viewer__header__execution-context-selector__trigger__icon {
+  .data-product__viewer__header__execution-context-selector__trigger__icon {
     border-right-color: var(--color-hclight-blue-20);
   }
 
-  .data-space__viewer__header__execution-context-selector__trigger__icon svg {
+  .data-product__viewer__header__execution-context-selector__trigger__icon svg {
     color: var(--color-hclight-blue-50);
   }
 
-  .data-space__viewer__header__execution-context-selector__trigger__label {
+  .data-product__viewer__header__execution-context-selector__trigger__label {
     color: var(--color-hclight-blue-50);
   }
 
-  .data-space__viewer__header__execution-context-selector__trigger__dropdown-icon
+  .data-product__viewer__header__execution-context-selector__trigger__dropdown-icon
     svg {
     color: var(--color-hclight-blue-30);
   }
 
-  .data-space__viewer__header__execution-context-selector__option--active {
+  .data-product__viewer__header__execution-context-selector__option--active {
     background: var(--color-hclight-blue-20);
   }
 
-  .data-space__viewer__header__actions-selector {
+  .data-product__viewer__header__actions-selector {
     border-left-color: var(--color-hclight-blue-50);
   }
 
-  .data-space__viewer__header__actions-selector svg {
+  .data-product__viewer__header__actions-selector svg {
     color: var(--color-hclight-blue-50);
   }
 
-  .data-space__viewer__header__actions-selector:hover svg {
+  .data-product__viewer__header__actions-selector:hover svg {
     color: var(--color-hclight-blue-60);
   }
 
-  .data-space__viewer__frame {
+  .data-product__viewer__frame {
     background: var(--color-hclight-grey-10);
   }
 
-  .data-space__viewer__content {
+  .data-product__viewer__content {
     background: var(--color-hclight-white);
   }
 
-  .data-space__viewer__grid {
+  .data-product__viewer__grid {
     --ag-border-color: var(--color-hclight-grey-30);
     --ag-background-color: var(--color-hclight-white);
     --ag-foreground-color: var(--color-hclight-grey-90);
@@ -514,16 +514,16 @@
     --ag-row-border-color: var(--color-hclight-grey-30);
   }
 
-  .data-space__viewer__grid--empty {
+  .data-product__viewer__grid--empty {
     background: var(--color-hclight-white);
     color: var(--color-hclight-grey-60);
   }
 
-  .data-space__viewer__grid__empty-cell {
+  .data-product__viewer__grid__empty-cell {
     color: var(--color-hclight-grey-30);
   }
 
-  .data-space__viewer__grid .ag-center-cols-viewport {
+  .data-product__viewer__grid .ag-center-cols-viewport {
     background: repeating-linear-gradient(
       135deg,
       var(--color-hclight-white),
@@ -533,569 +533,570 @@
     );
   }
 
-  .data-space__viewer__grid ::-webkit-scrollbar-thumb {
+  .data-product__viewer__grid ::-webkit-scrollbar-thumb {
     background: var(--color-hclight-grey-15);
     border: 0.1rem solid transparent;
     background-clip: content-box;
     border-radius: 0.4rem;
   }
 
-  .data-space__viewer__grid ::-webkit-scrollbar-track-piece {
+  .data-product__viewer__grid ::-webkit-scrollbar-track-piece {
     background: transparent;
   }
 
-  .data-space__viewer__scroller {
+  .data-product__viewer__scroller {
     background: var(--color-hclight-blue-60);
   }
 
-  .data-space__viewer__scroller__btn:focus {
+  .data-product__viewer__scroller__btn:focus {
     outline: none;
   }
 
-  .data-space__viewer__scroller__percentage {
+  .data-product__viewer__scroller__percentage {
     background: var(--color-hclight-blue-70);
     color: var(--color-hclight-white);
   }
 
-  .data-space__viewer__activity-bar {
+  .data-product__viewer__activity-bar {
     background: var(--color-hclight-grey-20);
   }
 
-  .data-space__viewer__activity-bar ::-webkit-scrollbar-thumb {
+  .data-product__viewer__activity-bar ::-webkit-scrollbar-thumb {
     background: var(--color-hclight-grey-30);
   }
 
-  .data-space__viewer__activity-bar ::-webkit-scrollbar-track-piece {
+  .data-product__viewer__activity-bar ::-webkit-scrollbar-track-piece {
     background: transparent;
   }
 
-  .data-space__viewer__activity-bar__menu {
+  .data-product__viewer__activity-bar__menu {
     border-color: var(--color-hclight-grey-30);
   }
 
-  .data-space__viewer__activity-bar__menu-item {
+  .data-product__viewer__activity-bar__menu-item {
     color: var(--color-hclight-aqua-90);
   }
 
-  .data-space__viewer__activity-bar__item {
+  .data-product__viewer__activity-bar__item {
     color: var(--color-hclight-grey-40);
   }
 
-  .data-space__viewer__activity-bar__item:hover,
-  .data-space__viewer__activity-bar__item--active {
+  .data-product__viewer__activity-bar__item:hover,
+  .data-product__viewer__activity-bar__item--active {
     color: var(--color-hclight-aqua-90);
   }
 
-  .data-space__viewer__activity-bar__divider {
+  .data-product__viewer__activity-bar__divider {
     background: var(--color-hclight-grey-30);
   }
 
-  .data-space__viewer__activity-bar__item__experimental-badge {
+  .data-product__viewer__activity-bar__item__experimental-badge {
     background: var(--color-hclight-blue-50);
     border-color: var(--color-hclight-grey-20);
   }
 
-  .data-space__viewer__activity-bar__item__experimental-badge svg {
+  .data-product__viewer__activity-bar__item__experimental-badge svg {
     color: var(--color-hclight-grey-20);
   }
 
-  .data-space__viewer__panel__header {
+  .data-product__viewer__panel__header {
     color: var(--color-hclight-blue-60);
     border-bottom-color: var(--color-hclight-blue-60);
   }
 
-  .data-space__viewer__panel__content__placeholder {
+  .data-product__viewer__panel__content__placeholder {
     color: var(--color-hclight-grey-40);
   }
 
-  .data-space__viewer__panel__content__placeholder svg {
+  .data-product__viewer__panel__content__placeholder svg {
     color: var(--color-hclight-blue-50);
   }
 
-  .data-space__viewer__wiki__placeholder {
+  .data-product__viewer__wiki__placeholder {
     color: var(--color-hclight-grey-40);
   }
 
-  .data-space__viewer__wiki__section__header {
+  .data-product__viewer__wiki__section__header {
     color: var(--color-hclight-blue-60);
     border-bottom-color: var(--color-hclight-blue-60);
   }
 
-  .data-space__viewer__wiki__section__header__anchor {
+  .data-product__viewer__wiki__section__header__anchor {
     color: var(--color-hclight-blue-60);
     border-bottom-color: var(--color-hclight-blue-60);
   }
 
-  .data-space__viewer__wiki__section__header__anchor svg {
+  .data-product__viewer__wiki__section__header__anchor svg {
     color: var(--color-hclight-grey-30);
   }
 
-  .data-space__viewer__wiki__section__header__anchor:hover svg {
+  .data-product__viewer__wiki__section__header__anchor:hover svg {
     color: var(--color-hclight-grey-60);
   }
 
-  .data-space__viewer__wiki__section__header__documentation {
+  .data-product__viewer__wiki__section__header__documentation {
     color: var(--color-hclight-blue-60);
   }
 
-  .data-space__viewer__markdown-text-viewer.markdown-content {
+  .data-product__viewer__markdown-text-viewer.markdown-content {
     background: var(--color-hclight-white);
     color: var(--color-hclight-grey-90);
   }
 
-  .data-space__viewer__markdown-text-viewer.markdown-content a {
+  .data-product__viewer__markdown-text-viewer.markdown-content a {
     color: var(--color-hclight-blue-50);
   }
 
-  .data-space__viewer__markdown-text-viewer.markdown-content pre {
+  .data-product__viewer__markdown-text-viewer.markdown-content pre {
     background: var(--color-hclight-grey-90);
   }
 
-  .data-space__viewer__markdown-text-viewer.markdown-content pre code {
+  .data-product__viewer__markdown-text-viewer.markdown-content pre code {
     color: var(--color-hclight-white);
   }
 
-  .data-space__viewer__diagram-viewer__carousel__frame__indicator--active svg {
+  .data-product__viewer__diagram-viewer__carousel__frame__indicator--active
+    svg {
     color: var(--color-hclight-blue-60);
   }
 
-  .data-space__viewer__diagram-viewer .diagram-canvas {
+  .data-product__viewer__diagram-viewer .diagram-canvas {
     border-color: var(--color-hclight-grey-60);
   }
 
-  .data-space__viewer__diagram-viewer__header__navigation__pager {
+  .data-product__viewer__diagram-viewer__header__navigation__pager {
     border-left-color: var(--color-hclight-grey-20);
   }
 
-  .data-space__viewer__diagram-viewer__header__navigation__selector__icon {
+  .data-product__viewer__diagram-viewer__header__navigation__selector__icon {
     color: var(--color-hclight-grey-70);
   }
 
-  .data-space__viewer__diagram-viewer__header__group__separator {
+  .data-product__viewer__diagram-viewer__header__group__separator {
     border-color: var(--color-hclight-grey-20);
   }
 
-  .data-space__viewer__diagram-viewer__header__dropdown {
+  .data-product__viewer__diagram-viewer__header__dropdown {
     border-color: var(--color-hclight-grey-20);
   }
 
-  .data-space__viewer__diagram-viewer__header__dropdown__label {
+  .data-product__viewer__diagram-viewer__header__dropdown__label {
     color: var(--color-hclight-grey-90);
   }
 
-  .data-space__viewer__diagram-viewer__header__dropdown__trigger svg {
+  .data-product__viewer__diagram-viewer__header__dropdown__trigger svg {
     color: var(--color-hclight-grey-60);
   }
 
-  .data-space__viewer__diagram-viewer__header__tool:hover svg {
+  .data-product__viewer__diagram-viewer__header__tool:hover svg {
     color: var(--color-hclight-grey-70);
   }
 
-  .data-space__viewer__diagram-viewer__header__tool:hover[disabled] svg,
-  .data-space__viewer__diagram-viewer__header__tool[disabled] svg {
+  .data-product__viewer__diagram-viewer__header__tool:hover[disabled] svg,
+  .data-product__viewer__diagram-viewer__header__tool[disabled] svg {
     color: var(--color-hclight-grey-20);
   }
 
-  .data-space__viewer__diagram-viewer__header__tool svg {
+  .data-product__viewer__diagram-viewer__header__tool svg {
     color: var(--color-hclight-grey-50);
   }
 
-  .data-space__viewer__diagram-viewer__header__tool--active:hover,
-  .data-space__viewer__diagram-viewer__header__tool--active {
+  .data-product__viewer__diagram-viewer__header__tool--active:hover,
+  .data-product__viewer__diagram-viewer__header__tool--active {
     background: var(--color-hclight-grey-10);
     border-color: var(--color-hclight-blue-50);
   }
 
-  .data-space__viewer__diagram-viewer__header__tool--active:hover svg,
-  .data-space__viewer__diagram-viewer__header__tool--active svg {
+  .data-product__viewer__diagram-viewer__header__tool--active:hover svg,
+  .data-product__viewer__diagram-viewer__header__tool--active svg {
     color: var(--color-hclight-blue-50);
   }
 
-  .data-space__viewer__diagram-viewer__description {
+  .data-product__viewer__diagram-viewer__description {
     background: var(--color-hclight-grey-shade-60);
   }
 
-  .data-space__viewer__diagram-viewer__description__title {
+  .data-product__viewer__diagram-viewer__description__title {
     color: var(--color-hclight-white);
   }
 
-  .data-space__viewer__diagram-viewer__description__content
-    .data-space__viewer__markdown-text-viewer {
+  .data-product__viewer__diagram-viewer__description__content
+    .data-product__viewer__markdown-text-viewer {
     background: transparent;
     color: var(--color-hclight-white);
   }
 
-  .data-space__viewer__diagram-viewer__description__content__placeholder {
+  .data-product__viewer__diagram-viewer__description__content__placeholder {
     color: var(--color-hclight-grey-20);
   }
 
-  .data-space__viewer__diagram-viewer__description ::-webkit-scrollbar-thumb {
+  .data-product__viewer__diagram-viewer__description ::-webkit-scrollbar-thumb {
     background: var(--color-hclight-grey-30);
     border: 0.2rem solid transparent;
     background-clip: content-box;
     border-radius: 0.4rem;
   }
 
-  .data-space__viewer__diagram-viewer__description
+  .data-product__viewer__diagram-viewer__description
     ::-webkit-scrollbar-track-piece {
     background: transparent;
   }
 
-  .data-space__viewer__diagram-viewer__description__close-btn svg {
+  .data-product__viewer__diagram-viewer__description__close-btn svg {
     color: var(--color-hclight-grey-30);
   }
 
-  .data-space__viewer__diagram-viewer__description__close-btn:hover svg {
+  .data-product__viewer__diagram-viewer__description__close-btn:hover svg {
     color: var(--color-hclight-grey-20);
   }
 
-  .data-space__viewer__diagram-viewer__description__expand-btn svg {
+  .data-product__viewer__diagram-viewer__description__expand-btn svg {
     color: var(--color-hclight-grey-30);
   }
 
-  .data-space__viewer__diagram-viewer__description__expand-btn:hover svg {
+  .data-product__viewer__diagram-viewer__description__expand-btn:hover svg {
     color: var(--color-hclight-grey-20);
   }
 
-  .data-space__viewer__models-documentation__search__input-group__icon svg {
+  .data-product__viewer__models-documentation__search__input-group__icon svg {
     color: var(--color-hclight-grey-80);
   }
 
-  .data-space__viewer__models-documentation__grid__cell__label__icon {
+  .data-product__viewer__models-documentation__grid__cell__label__icon {
     color: var(--color-hclight-white);
   }
 
-  .data-space__viewer__models-documentation__grid__cell__label__icon--class {
+  .data-product__viewer__models-documentation__grid__cell__label__icon--class {
     background: var(--color-hclight-purple-60);
   }
 
-  .data-space__viewer__models-documentation__grid__cell__label__icon--enumeration {
+  .data-product__viewer__models-documentation__grid__cell__label__icon--enumeration {
     background: var(--color-hclight-pink-50);
   }
 
-  .data-space__viewer__models-documentation__grid__cell__label__icon--association {
+  .data-product__viewer__models-documentation__grid__cell__label__icon--association {
     background: var(--color-hclight-green-40);
   }
 
-  .data-space__viewer__models-documentation__grid__cell__label__icon--property {
+  .data-product__viewer__models-documentation__grid__cell__label__icon--property {
     background: var(--color-hclight-blue-50);
   }
 
-  .data-space__viewer__models-documentation__grid__cell__label__icon--enum {
+  .data-product__viewer__models-documentation__grid__cell__label__icon--enum {
     background: var(--color-hclight-orange-40);
   }
 
-  .data-space__viewer__models-documentation__grid__cell__label__derived-property-badge {
+  .data-product__viewer__models-documentation__grid__cell__label__derived-property-badge {
     background: var(--color-hclight-grey-10);
     color: var(--color-hclight-blue-50);
   }
 
-  .data-space__viewer__models-documentation__grid__cell__label__milestoning-badge
+  .data-product__viewer__models-documentation__grid__cell__label__milestoning-badge
     svg {
     color: var(--color-hclight-blue-50);
   }
 
-  .data-space__viewer__models-documentation__grid__cell__action {
+  .data-product__viewer__models-documentation__grid__cell__action {
     color: var(--color-hclight-grey-30);
   }
 
-  .data-space__viewer__models-documentation__grid__cell__action:hover {
+  .data-product__viewer__models-documentation__grid__cell__action:hover {
     color: var(--color-hclight-grey-60);
   }
 
-  .data-space__viewer__models-documentation__grid__element-row {
+  .data-product__viewer__models-documentation__grid__element-row {
     background: var(--color-hclight-yellow-5);
     color: var(--color-hclight-grey-90);
 
     --ag-row-hover-color: var(--color-hclight-yellow-15);
   }
 
-  .data-space__viewer__models-documentation__filter__toggler {
+  .data-product__viewer__models-documentation__filter__toggler {
     border-color: var(--color-hclight-grey-20);
     color: var(--color-hclight-grey-50);
   }
 
-  .data-space__viewer__models-documentation__filter__toggler:hover {
+  .data-product__viewer__models-documentation__filter__toggler:hover {
     color: var(--color-hclight-grey-70);
   }
 
-  .data-space__viewer__models-documentation__filter__toggler__icon {
+  .data-product__viewer__models-documentation__filter__toggler__icon {
     border-color: var(--color-hclight-grey-30);
   }
 
-  .data-space__viewer__models-documentation__filter__panel {
+  .data-product__viewer__models-documentation__filter__panel {
     background: var(--color-hclight-white);
     border-color: var(--color-hclight-grey-20);
     color: var(--color-hclight-grey-70);
   }
 
-  .data-space__viewer__models-documentation__filter__group {
+  .data-product__viewer__models-documentation__filter__group {
     border-color: var(--color-hclight-grey-20);
   }
 
-  .data-space__viewer__models-documentation__filter__group__header__reset {
+  .data-product__viewer__models-documentation__filter__group__header__reset {
     color: var(--color-hclight-blue-50);
   }
 
-  .data-space__viewer__models-documentation__filter__group__header__reset:hover {
+  .data-product__viewer__models-documentation__filter__group__header__reset:hover {
     color: var(--color-hclight-blue-60);
   }
 
-  .data-space__viewer__models-documentation__filter__group__header__reset[disabled],
-  .data-space__viewer__models-documentation__filter__group__header__reset[disabled]:hover {
+  .data-product__viewer__models-documentation__filter__group__header__reset[disabled],
+  .data-product__viewer__models-documentation__filter__group__header__reset[disabled]:hover {
     color: var(--color-hclight-grey-40);
   }
 
-  .data-space__viewer__models-documentation__filter__tree__node__container:hover {
+  .data-product__viewer__models-documentation__filter__tree__node__container:hover {
     background: var(--color-hclight-blue-shade-10);
   }
 
-  .data-space__viewer__models-documentation__filter__tree__node__type-icon {
+  .data-product__viewer__models-documentation__filter__tree__node__type-icon {
     color: var(--color-hclight-white);
   }
 
-  .data-space__viewer__models-documentation__filter__tree__node__type-icon--class {
+  .data-product__viewer__models-documentation__filter__tree__node__type-icon--class {
     background: var(--color-hclight-purple-60);
   }
 
-  .data-space__viewer__models-documentation__filter__tree__node__type-icon--enumeration {
+  .data-product__viewer__models-documentation__filter__tree__node__type-icon--enumeration {
     background: var(--color-hclight-pink-50);
   }
 
-  .data-space__viewer__models-documentation__filter__tree__node__type-icon--association {
+  .data-product__viewer__models-documentation__filter__tree__node__type-icon--association {
     background: var(--color-hclight-green-40);
   }
 
-  .data-space__viewer__models-documentation__filter__tree__node__type-icon--package {
+  .data-product__viewer__models-documentation__filter__tree__node__type-icon--package {
     color: var(--color-hclight-grey-30);
   }
 
-  .data-space__viewer__models-documentation__filter__tree__node__checker svg {
+  .data-product__viewer__models-documentation__filter__tree__node__checker svg {
     color: var(--color-hclight-grey-40);
   }
 
-  .data-space__viewer__models-documentation__filter__tree__node__checker:hover
+  .data-product__viewer__models-documentation__filter__tree__node__checker:hover
     svg {
     color: var(--color-hclight-grey-50);
   }
 
-  .data-space__viewer__models-documentation__filter__tree__node__expand-icon
+  .data-product__viewer__models-documentation__filter__tree__node__expand-icon
     svg {
     color: var(--color-hclight-grey-50);
   }
 
-  .data-space__viewer__models-documentation__filter__tree__node__label {
+  .data-product__viewer__models-documentation__filter__tree__node__label {
     color: var(--color-hclight-grey-80);
   }
 
-  .data-space__viewer__models-documentation__filter__tree__node__count {
+  .data-product__viewer__models-documentation__filter__tree__node__count {
     background: var(--color-hclight-grey-15);
     color: var(--color-hclight-grey-50);
   }
 
-  .data-space__viewer__models-documentation__search__input {
+  .data-product__viewer__models-documentation__search__input {
     background: var(--color-hclight-white);
     border-color: var(--color-hclight-grey-20);
     color: var(--color-hclight-grey-90);
   }
 
-  .data-space__viewer__models-documentation__search__input:focus {
+  .data-product__viewer__models-documentation__search__input:focus {
     border-color: var(--color-hclight-grey-30);
   }
 
-  .data-space__viewer__models-documentation__search__input__search__icon svg {
+  .data-product__viewer__models-documentation__search__input__search__icon svg {
     color: var(--color-hclight-grey-30);
   }
 
-  .data-space__viewer__models-documentation__search__input__clear-btn svg {
+  .data-product__viewer__models-documentation__search__input__clear-btn svg {
     color: var(--color-hclight-grey-50);
   }
 
-  .data-space__viewer__models-documentation__search__input__clear-btn:hover
+  .data-product__viewer__models-documentation__search__input__clear-btn:hover
     svg {
     color: var(--color-hclight-grey-70);
   }
 
-  .data-space__viewer__models-documentation__search__input__config__trigger
+  .data-product__viewer__models-documentation__search__input__config__trigger
     svg {
     color: var(--color-hclight-grey-50);
   }
 
-  .data-space__viewer__models-documentation__search__input__config__trigger--toggled
+  .data-product__viewer__models-documentation__search__input__config__trigger--toggled
     svg,
-  .data-space__viewer__models-documentation__search__input__config__trigger:hover
+  .data-product__viewer__models-documentation__search__input__config__trigger:hover
     svg {
     color: var(--color-hclight-grey-70);
   }
 
-  .data-space__viewer__models-documentation__search__input__config__trigger--active
+  .data-product__viewer__models-documentation__search__input__config__trigger--active
     svg,
-  .data-space__viewer__models-documentation__search__input__config__trigger--active:hover
+  .data-product__viewer__models-documentation__search__input__config__trigger--active:hover
     svg {
     color: var(--color-hclight-blue-50);
   }
 
-  .data-space__viewer__execution-context__entry__icon {
+  .data-product__viewer__execution-context__entry__icon {
     background: var(--color-hclight-grey-10);
   }
 
-  .data-space__viewer__execution-context__entry__content {
+  .data-product__viewer__execution-context__entry__content {
     border-color: var(--color-hclight-grey-10);
     color: var(--color-hclight-grey-70);
     background: var(--color-hclight-grey-10);
     border-left-color: var(--color-hclight-grey-30);
   }
 
-  .data-space__viewer__execution-context__entry__content__dropdown__option__tag {
+  .data-product__viewer__execution-context__entry__content__dropdown__option__tag {
     background: var(--color-hclight-blue-70);
     color: var(--color-hclight-white);
   }
 
-  .data-space__viewer__execution-context__entry__content
+  .data-product__viewer__execution-context__entry__content
     .selector-input__control,
-  .data-space__viewer__execution-context__entry__content
+  .data-product__viewer__execution-context__entry__content
     .selector-input__control:hover {
     border-color: var(--color-hclight-grey-20);
   }
 
-  .data-space__viewer__access-group__item__header__title {
+  .data-product__viewer__access-group__item__header__title {
     color: var(--color-hclight-aqua-90);
   }
 
-  .data-space__viewer__access-group__item__header__anchor {
+  .data-product__viewer__access-group__item__header__anchor {
     color: var(--color-hclight-blue-60);
   }
 
-  .data-space__viewer__access-group__item__header__anchor svg {
+  .data-product__viewer__access-group__item__header__anchor svg {
     color: var(--color-hclight-grey-30);
   }
 
-  .data-space__viewer__access-group__item__header__anchor:hover svg {
+  .data-product__viewer__access-group__item__header__anchor:hover svg {
     color: var(--color-hclight-grey-60);
   }
 
-  .data-space__viewer__access-group__item__content__tab__header {
+  .data-product__viewer__access-group__item__content__tab__header {
     border-bottom-color: var(--color-hclight-grey-15);
     border-top-color: var(--color-hclight-grey-15);
   }
 
-  .data-space__viewer__access-group__item__content__tab {
+  .data-product__viewer__access-group__item__content__tab {
     color: var(--color-hclight-grey-60);
     border-left-color: var(--color-hclight-grey-15);
   }
 
-  .data-space__viewer__access-group__item__content__tab:hover
-    .data-space__viewer__access-group__item__content__tab__label {
+  .data-product__viewer__access-group__item__content__tab:hover
+    .data-product__viewer__access-group__item__content__tab__label {
     color: var(--color-hclight-grey-70);
   }
 
-  .data-space__viewer__access-group__item__content__tab:hover
-    .data-space__viewer__access-group__item__content__tab__icon
+  .data-product__viewer__access-group__item__content__tab:hover
+    .data-product__viewer__access-group__item__content__tab__icon
     svg {
     color: var(--color-hclight-grey-70);
   }
 
-  .data-space__viewer__access-group__item__content__tab--active:hover
-    .data-space__viewer__access-group__item__content__tab__label,
-  .data-space__viewer__access-group__item__content__tab--active
-    .data-space__viewer__access-group__item__content__tab__label {
+  .data-product__viewer__access-group__item__content__tab--active:hover
+    .data-product__viewer__access-group__item__content__tab__label,
+  .data-product__viewer__access-group__item__content__tab--active
+    .data-product__viewer__access-group__item__content__tab__label {
     color: var(--color-hclight-blue-60);
   }
 
-  .data-space__viewer__access-group__item__content__tab--active:hover
-    .data-space__viewer__access-group__item__content__tab__icon
+  .data-product__viewer__access-group__item__content__tab--active:hover
+    .data-product__viewer__access-group__item__content__tab__icon
     svg,
-  .data-space__viewer__access-group__item__content__tab--active
-    .data-space__viewer__access-group__item__content__tab__icon
+  .data-product__viewer__access-group__item__content__tab--active
+    .data-product__viewer__access-group__item__content__tab__icon
     svg {
     color: var(--color-hclight-blue-60);
   }
 
-  .data-space__viewer__access-group__item__content__action-tab-group {
+  .data-product__viewer__access-group__item__content__action-tab-group {
     border-left-color: var(--color-hclight-grey-15);
   }
 
-  .data-space__viewer__access-group__tds__query {
+  .data-product__viewer__access-group__tds__query {
     border-color: var(--color-hclight-grey-30);
   }
 
-  .data-space__viewer__access-group__tds__placeholder-panel {
+  .data-product__viewer__access-group__tds__placeholder-panel {
     border-color: var(--color-hclight-grey-30);
   }
 
-  .data-space__viewer__access-group__tds__query-text__action svg {
+  .data-product__viewer__access-group__tds__query-text__action svg {
     color: var(--color-hclight-grey-60);
   }
 
-  .data-space__viewer__access-group__tds__query-text__action:hover svg {
+  .data-product__viewer__access-group__tds__query-text__action:hover svg {
     color: var(--color-hclight-grey-80);
   }
 
-  .data-space__viewer__access-group__tds__code-action {
+  .data-product__viewer__access-group__tds__code-action {
     border-color: var(--color-hclight-grey-30);
   }
 
-  .data-space__viewer__access-group__tds__code-action__content {
+  .data-product__viewer__access-group__tds__code-action__content {
     border-color: var(--color-hclight-grey-30);
   }
 
-  .data-space__viewer__access-group__tds__code-action__action svg {
+  .data-product__viewer__access-group__tds__code-action__action svg {
     color: var(--color-hclight-grey-60);
   }
 
-  .data-space__viewer__access-group__tds__code-action__action:hover svg {
+  .data-product__viewer__access-group__tds__code-action__action:hover svg {
     color: var(--color-hclight-grey-80);
   }
 
-  .data-space__viewer__info__project-info__label {
+  .data-product__viewer__info__project-info__label {
     background: var(--color-hclight-blue-50);
     color: var(--color-hclight-white);
   }
 
-  .data-space__viewer__info__project-info__value {
+  .data-product__viewer__info__project-info__value {
     background: var(--color-hclight-grey-10);
     color: var(--color-hclight-grey-70);
   }
 
-  .data-space__viewer__info__project-info__link {
+  .data-product__viewer__info__project-info__link {
     background: var(--color-hclight-grey-10);
     color: var(--color-hclight-grey-60);
     border-color: var(--color-hclight-grey-30);
   }
 
-  .data-space__viewer__info__section__title {
+  .data-product__viewer__info__section__title {
     color: var(--color-hclight-grey-90);
   }
 
-  .data-space__viewer__info__tagged-value__tag {
+  .data-product__viewer__info__tagged-value__tag {
     background: var(--color-hclight-orange-50);
     color: var(--color-hclight-white);
   }
 
-  .data-space__viewer__info__tagged-value__value {
+  .data-product__viewer__info__tagged-value__value {
     background: var(--color-hclight-grey-10);
     color: var(--color-hclight-grey-70);
   }
 
-  .data-space__viewer__info__steoreotype {
+  .data-product__viewer__info__steoreotype {
     background: var(--color-hclight-orange-50);
     color: var(--color-hclight-white);
   }
 
-  .data-space__viewer__info__section__placeholder {
+  .data-product__viewer__info__section__placeholder {
     color: var(--color-hclight-grey-30);
     border-color: var(--color-hclight-grey-30);
   }
 
-  .data-space__viewer__support__entry__icon {
+  .data-product__viewer__support__entry__icon {
     background: var(--color-hclight-grey-10);
   }
 
-  .data-space__viewer__support__entry__icon svg {
+  .data-product__viewer__support__entry__icon svg {
     color: var(--color-hclight-grey-70);
   }
 
-  .data-space__viewer__support__entry__content {
+  .data-product__viewer__support__entry__content {
     border-color: transparent;
     color: var(--color-hclight-grey-70);
     background: var(--color-hclight-grey-10);

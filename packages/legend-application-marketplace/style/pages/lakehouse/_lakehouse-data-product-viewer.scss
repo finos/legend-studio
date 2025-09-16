@@ -16,7 +16,7 @@
 
 @use 'mixins' as *;
 
-.data-space__viewer {
+.data-product__viewer {
   &__access-group__item__content__tab__content {
     height: fit-content;
   }
@@ -122,9 +122,7 @@
       height: 300px;
     }
   }
-}
 
-.data-product__viewer {
   &__support-info {
     &__container {
       width: fit-content;
