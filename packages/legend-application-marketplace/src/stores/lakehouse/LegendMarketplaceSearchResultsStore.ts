@@ -53,9 +53,9 @@ export enum UnmodeledDataProductDeployType {
 }
 
 export interface DataProductFilterConfig {
-  modeledDataProducts: boolean;
-  unmodeledDataProducts: boolean;
-  unmodeledDataProductsConfig: {
+  modeledDataProducts?: boolean;
+  unmodeledDataProducts?: boolean;
+  unmodeledDataProductsConfig?: {
     sdlcDeploy: boolean;
     sandboxDeploy: boolean;
     devEnvironmentClassification: boolean;
@@ -86,10 +86,15 @@ class DataProductFilterState {
       unmodeledDataProductsConfig: observable,
       search: observable,
     });
-    this.modeledDataProducts = defaultBooleanFilters.modeledDataProducts;
-    this.unmodeledDataProducts = defaultBooleanFilters.unmodeledDataProducts;
+    this.modeledDataProducts =
+      defaultBooleanFilters.modeledDataProducts ??
+      DataProductFilterState.default().modeledDataProducts;
+    this.unmodeledDataProducts =
+      defaultBooleanFilters.unmodeledDataProducts ??
+      DataProductFilterState.default().unmodeledDataProducts;
     this.unmodeledDataProductsConfig =
-      defaultBooleanFilters.unmodeledDataProductsConfig;
+      defaultBooleanFilters.unmodeledDataProductsConfig ??
+      DataProductFilterState.default().unmodeledDataProductsConfig;
     this.search = search;
   }
 
