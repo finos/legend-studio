@@ -394,6 +394,8 @@ export class LegendMarketplaceProductViewerStore {
           queryDataSpace: (executionContextKey: string) =>
             this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
               EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryCreatorRoute(
+                this.marketplaceBaseStore.applicationStore.config
+                  .queryApplicationUrl,
                 groupId,
                 artifactId,
                 versionId,
@@ -440,6 +442,8 @@ export class LegendMarketplaceProductViewerStore {
           queryClass: (_class: Class): void => {
             this.marketplaceBaseStore.applicationStore.navigationService.navigator.goToLocation(
               EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryCreatorRoute(
+                this.marketplaceBaseStore.applicationStore.config
+                  .queryApplicationUrl,
                 groupId,
                 artifactId,
                 versionId,
