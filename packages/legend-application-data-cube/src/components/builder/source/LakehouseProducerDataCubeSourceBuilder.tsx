@@ -15,22 +15,42 @@
  */
 import { observer } from 'mobx-react-lite';
 import type { LakehouseProducerDataCubeSourceBuilderState } from '../../../stores/builder/source/LakehouseProducerDataCubeSourceBuilderState.js';
-import { FormButton, FormTextInput } from '@finos/legend-data-cube';
+import {
+  FormButton,
+  FormCheckbox,
+  FormTextInput,
+} from '@finos/legend-data-cube';
 import { CustomSelectorInput } from '@finos/legend-art';
 import { useAuth } from 'react-oidc-context';
 import { useLegendDataCubeBuilderStore } from '../LegendDataCubeBuilderStoreProvider.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export const LakehouseProducerDataCubeSourceBuilder: React.FC<{
   sourceBuilder: LakehouseProducerDataCubeSourceBuilderState;
 }> = observer(({ sourceBuilder: state }) => {
   const auth = useAuth();
   const store = useLegendDataCubeBuilderStore();
+  const [isIcebergEnabled, setIsIcebergEnabled] = useState(false);
+
+  const toggleSetisIcebergEnabled = () => {
+    setIsIcebergEnabled(!isIcebergEnabled);
+    state.setIcebergEnabled(isIcebergEnabled);
+  };
 
   useEffect(() => {
     state.reset();
   }, [state]);
+
+  useEffect(() => {
+    if (isIcebergEnabled) {
+      state
+        .fetchIcebergCatalogDetails(auth.user?.access_token)
+        .catch((error) => {
+          store.alertService.alertUnhandledError(error);
+        });
+    }
+  }, [state, auth, store, isIcebergEnabled]);
 
   function createUrnPairs(
     urns: string[],
@@ -130,7 +150,18 @@ export const LakehouseProducerDataCubeSourceBuilder: React.FC<{
             />
           </div>
         )}
-        {state.selectedTable && (
+        {state.icebergEnabled && (
+          <div className="query-setup__wizard__group mt-2">
+            <div className="query-setup__wizard__group__title">Dataset</div>
+            <div className="flex h-5 w-[calc(100%_-_40px)] overflow-x-auto">
+              <FormCheckbox
+                checked={isIcebergEnabled}
+                onChange={toggleSetisIcebergEnabled}
+              />
+            </div>
+          </div>
+        )}
+        {state.selectedTable && !isIcebergEnabled && (
           <div className="query-setup__wizard__group mt-2">
             <div className="query-setup__wizard__group__title">Warehouse</div>
             <FormTextInput
