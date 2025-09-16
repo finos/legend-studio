@@ -156,10 +156,6 @@ export const TEST_DATA__simpleProjectionQuery = {
               _type: 'packageableElementPtr',
               fullPath: 'model::Firm',
             },
-            {
-              _type: 'strictDate',
-              value: '2021-11-12',
-            },
           ],
         },
         {
