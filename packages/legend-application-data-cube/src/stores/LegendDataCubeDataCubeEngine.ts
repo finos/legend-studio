@@ -90,6 +90,8 @@ import {
   V1_LakehouseRuntime,
   V1_IngestDefinition,
   V1_DataProductAccessor,
+  PRECISE_PRIMITIVE_TYPE,
+  CORE_PURE_PATH,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
@@ -1249,14 +1251,26 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           const column = new V1_Column();
           column.name = col.name;
           switch (col.type as string) {
+            case PRIMITIVE_TYPE.BINARY:
             case PRIMITIVE_TYPE.BOOLEAN: {
               column.type = new V1_Bit();
               break;
             }
+            case PRECISE_PRIMITIVE_TYPE.INT:
+            case PRECISE_PRIMITIVE_TYPE.TINY_INT:
+            case PRECISE_PRIMITIVE_TYPE.U_TINY_INT:
+            case PRECISE_PRIMITIVE_TYPE.SMALL_INT:
+            case PRECISE_PRIMITIVE_TYPE.U_SMALL_INT:
+            case PRECISE_PRIMITIVE_TYPE.U_INT:
+            case PRECISE_PRIMITIVE_TYPE.BIG_INT:
+            case PRECISE_PRIMITIVE_TYPE.U_BIG_INT:
             case PRIMITIVE_TYPE.INTEGER: {
               column.type = new V1_Integer();
               break;
             }
+            case PRECISE_PRIMITIVE_TYPE.DOUBLE:
+            case PRECISE_PRIMITIVE_TYPE.DECIMAL:
+            case PRECISE_PRIMITIVE_TYPE.NUMERIC:
             case PRIMITIVE_TYPE.NUMBER:
             case PRIMITIVE_TYPE.FLOAT:
             case PRIMITIVE_TYPE.DECIMAL: {
@@ -1265,10 +1279,17 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
             }
             case PRIMITIVE_TYPE.DATE:
             case PRIMITIVE_TYPE.STRICTDATE:
+            case PRECISE_PRIMITIVE_TYPE.STRICTDATE:
+            case PRIMITIVE_TYPE.STRICTDATE:
+            case PRECISE_PRIMITIVE_TYPE.TIMESTAMP:
+            case PRECISE_PRIMITIVE_TYPE.STRICTTIME:
+            case PRECISE_PRIMITIVE_TYPE.DATETIME:
             case PRIMITIVE_TYPE.DATETIME: {
               column.type = new V1_Date();
               break;
             }
+            case PRECISE_PRIMITIVE_TYPE.VARCHAR:
+            case CORE_PURE_PATH.VARIANT:
             case PRIMITIVE_TYPE.STRING: {
               column.type = new V1_VarChar();
               break;
