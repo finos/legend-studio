@@ -71,13 +71,16 @@ export const setup = (outputDir) => {
           url: 'http://localhost:6200/depot/api',
         },
         studio: {
-          url: 'http://localhost:9000',
+          url: 'http://localhost:9000/studio',
           instances: [
             {
               sdlcProjectIDPrefix: 'PROD',
               url: 'http://localhost:9000/studio',
             },
           ],
+        },
+        query: {
+          url: 'http://localhost:9001/query',
         },
         documentation: {
           url: 'https://legend.finos.org',

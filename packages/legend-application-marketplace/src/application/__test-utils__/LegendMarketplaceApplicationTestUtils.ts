@@ -56,6 +56,15 @@ const TEST_DATA__appConfig: LegendMarketplaceApplicationConfigurationData = {
   },
   studio: {
     url: 'https://testStudioUrl',
+    instances: [
+      {
+        sdlcProjectIDPrefix: 'PROD',
+        url: 'http://localhost:9000/studio',
+      },
+    ],
+  },
+  query: {
+    url: 'https://testQueryUrl',
   },
   extensions: {
     core: {
