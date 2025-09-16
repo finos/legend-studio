@@ -154,12 +154,17 @@ const SearchResultsSortFilterPanel = observer(
                     checked={
                       searchResultsStore.filterState.unmodeledDataProducts
                     }
-                    onChange={() =>
+                    onChange={() => {
                       searchResultsStore.handleFilterChange(
                         DataProductFilterType.UNMODELED_DATA_PRODUCTS,
                         undefined,
-                      )
-                    }
+                      );
+                      if (
+                        searchResultsStore.filterState.unmodeledDataProducts
+                      ) {
+                        setIsUnmodeledFilterConfigOpen(true);
+                      }
+                    }}
                   />
                 }
                 label="Unmodeled Data Products"
