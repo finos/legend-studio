@@ -42,6 +42,7 @@ import {
   useParams,
   useLocation,
   useSearchParams,
+  Navigate,
   type NavigateFunction,
 } from 'react-router';
 
@@ -55,6 +56,7 @@ export {
   matchPath,
   matchRoutes,
   generatePath,
+  Navigate,
 };
 export const useNavigationZone = (): NavigationZone => {
   const location = useLocation();

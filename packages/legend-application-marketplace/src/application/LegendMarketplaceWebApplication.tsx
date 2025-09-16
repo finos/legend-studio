@@ -31,6 +31,7 @@ import {
   Outlet,
   Route,
   Routes,
+  Navigate,
 } from '@finos/legend-application/browser';
 import {
   LegendMarketplaceFrameworkProvider,
@@ -275,6 +276,10 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
               </>
             )}
             {/* Lakehouse pages */}
+            <Route
+              path="/"
+              element={<Navigate to="/lakehouse" replace={true} />}
+            />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SEARCH_RESULTS}
               element={<ProtectedLakehouseSearchResults />}
