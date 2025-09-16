@@ -68,6 +68,7 @@ import { LegendMarketplaceOrders } from '../pages/Profile/LegendMarketplaceOrder
 import { MarketplaceLakehouseOAuthCallback } from '../pages/Lakehouse/MarketplaceLakehouseOAuthCallback.js';
 import { LakehouseSDLCDataProduct } from '../pages/Lakehouse/dataProduct/LakehouseSDLCDataProduct.js';
 import { MarketplaceLakehouseSearchResults } from '../pages/Lakehouse/searchResults/MarketplaceLakehouseSearchResults.js';
+import { LegacyDataProduct } from '../pages/Lakehouse/dataProduct/LegacyDataProduct.js';
 
 const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();
@@ -300,6 +301,10 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SDLC_PRODUCT}
               element={<LakehouseSDLCDataProduct />}
+            />
+            <Route
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LEGACY_DATA_PRODUCT}
+              element={<LegacyDataProduct />}
             />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS}

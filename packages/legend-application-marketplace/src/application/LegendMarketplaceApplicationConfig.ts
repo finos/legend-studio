@@ -19,6 +19,7 @@ import {
   type PlainObject,
   assertNonNullable,
   guaranteeNonEmptyString,
+  guaranteeNonNullable,
   SerializationFactory,
   usingModelSchema,
 } from '@finos/legend-shared';
@@ -75,6 +76,11 @@ export interface LegendMarketplaceOidcConfig {
   authProviderProps: AuthProviderProps;
 }
 
+type LegendStudioApplicationInstanceConfigurationData = {
+  sdlcProjectIDPrefix: string;
+  url: string;
+};
+
 export interface LegendMarketplaceApplicationConfigurationData
   extends LegendApplicationConfigurationData {
   marketplace: {
@@ -98,6 +104,10 @@ export interface LegendMarketplaceApplicationConfigurationData
   };
   studio: {
     url: string;
+    instances: LegendStudioApplicationInstanceConfigurationData[];
+  };
+  query: {
+    url: string;
   };
 }
 
@@ -109,6 +119,7 @@ export class LegendLakehouseEntitlementsConfig {
     this.applicationIDUrl = applicationIDUrl;
   }
 }
+
 export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig {
   readonly options = new LegendMarketplaceApplicationCoreOptions();
 
@@ -124,7 +135,10 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
   readonly lakehouseEntitlementsConfig:
     | LegendLakehouseEntitlementsConfig
     | undefined;
-  readonly studioServerUrl: string;
+  readonly studioApplicationUrl: string;
+  readonly studioInstances: LegendStudioApplicationInstanceConfigurationData[] =
+    [];
+  readonly queryApplicationUrl: string;
 
   constructor(
     input: LegendApplicationConfigurationInput<LegendMarketplaceApplicationConfigurationData>,
@@ -226,10 +240,26 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
       input.configData.studio,
       `Can't configure application: 'studio' field is missing`,
     );
-    this.studioServerUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+    this.studioApplicationUrl = LegendApplicationConfig.resolveAbsoluteUrl(
       guaranteeNonEmptyString(
         input.configData.studio.url,
         `Can't configure application: 'studio.url' field is missing or empty`,
+      ),
+    );
+    this.studioInstances = guaranteeNonNullable(
+      input.configData.studio.instances,
+      `Can't configure application: 'studio.instances' field is missing`,
+    );
+
+    // query
+    assertNonNullable(
+      input.configData.query,
+      `Can't configure application: 'query' field is missing`,
+    );
+    this.queryApplicationUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+      guaranteeNonEmptyString(
+        input.configData.query.url,
+        `Can't configure application: 'query.url' field is missing or empty`,
       ),
     );
 

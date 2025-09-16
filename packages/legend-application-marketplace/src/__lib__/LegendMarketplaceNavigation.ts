@@ -14,11 +14,16 @@
  * limitations under the License.
  */
 
-import { generatePath, matchPath } from '@finos/legend-application/browser';
+import {
+  generateExtensionUrlPattern,
+  generatePath,
+  matchPath,
+} from '@finos/legend-application/browser';
 import {
   addQueryParametersToUrl,
   stringifyQueryParams,
 } from '@finos/legend-shared';
+import { generateGAVCoordinates } from '@finos/legend-storage';
 
 export enum LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN {
   VENDOR_NAME = 'vendorName',
@@ -47,6 +52,11 @@ export type LakehouseDataProductPathParams = {
 };
 
 export type LakehouseSDLCDataProductPathParams = {
+  [LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.GAV]: string;
+  [LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH]: string;
+};
+
+export type LegacyDataProductPathParams = {
   [LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.GAV]: string;
   [LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH]: string;
 };
@@ -157,3 +167,93 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl =
 export const EXTERNAL_APPLICATION_NAVIGATION__generateIngestEnvironemntUrl = (
   baseUrl: string,
 ): string => `${baseUrl}/data-product/swagger-ui`;
+
+enum DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN {
+  GAV = 'gav',
+  DATA_SPACE_PATH = 'dataSpacePath',
+  EXECUTION_CONTEXT = 'executionContext',
+}
+
+const DATA_SPACE_QUERY_ROUTE_PATTERN = Object.freeze({
+  CREATE: `/dataspace/:${DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.GAV}/:${DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_SPACE_PATH}/:${DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.EXECUTION_CONTEXT}?`,
+});
+
+enum LEGEND_QUERY_ROUTE_PATTERN_TOKEN {
+  GAV = 'gav',
+  SERVICE_PATH = 'servicePath',
+}
+
+const LEGEND_QUERY_ROUTE_PATTERN = Object.freeze({
+  CREATE_FROM_SERVICE_QUERY: `/create-from-service/:${LEGEND_QUERY_ROUTE_PATTERN_TOKEN.GAV}/:${LEGEND_QUERY_ROUTE_PATTERN_TOKEN.SERVICE_PATH}`,
+});
+
+enum DATA_SPACE_QUERY_CREATOR_QUERY_PARAM_TOKEN {
+  RUNTIME_PATH = 'runtimePath',
+  CLASS_PATH = 'class',
+}
+
+/**
+ * @external_application_navigation This depends on Legend Query routing and is hardcoded so it's potentially brittle
+ */
+export const EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryCreatorRoute =
+  (
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    dataSpacePath: string,
+    executionContextKey: string,
+    runtimePath?: string | undefined,
+    classPath?: string | undefined,
+  ): string =>
+    addQueryParametersToUrl(
+      generatePath(
+        generateExtensionUrlPattern(DATA_SPACE_QUERY_ROUTE_PATTERN.CREATE),
+        {
+          [DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.GAV]:
+            generateGAVCoordinates(groupId, artifactId, versionId),
+          [DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_SPACE_PATH]:
+            dataSpacePath,
+          [DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.EXECUTION_CONTEXT]:
+            executionContextKey,
+        },
+      ),
+      stringifyQueryParams({
+        [DATA_SPACE_QUERY_CREATOR_QUERY_PARAM_TOKEN.RUNTIME_PATH]: runtimePath
+          ? encodeURIComponent(runtimePath)
+          : undefined,
+        [DATA_SPACE_QUERY_CREATOR_QUERY_PARAM_TOKEN.CLASS_PATH]: classPath
+          ? encodeURIComponent(classPath)
+          : undefined,
+      }),
+    );
+
+export enum LEGEND_QUERY_QUERY_PARAM_TOKEN {
+  SERVICE_EXECUTION_KEY = 'executionKey',
+}
+
+/**
+ * @external_application_navigation This depends on Legend Query routing and is hardcoded so it's potentially brittle
+ */
+export const EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorRoute =
+  (
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    servicePath: string,
+    executionKey?: string | undefined,
+  ): string =>
+    addQueryParametersToUrl(
+      generatePath(LEGEND_QUERY_ROUTE_PATTERN.CREATE_FROM_SERVICE_QUERY, {
+        [LEGEND_QUERY_ROUTE_PATTERN_TOKEN.GAV]: generateGAVCoordinates(
+          groupId,
+          artifactId,
+          versionId,
+        ),
+        [LEGEND_QUERY_ROUTE_PATTERN_TOKEN.SERVICE_PATH]: servicePath,
+      }),
+      stringifyQueryParams({
+        [LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_EXECUTION_KEY]: executionKey
+          ? encodeURIComponent(executionKey)
+          : executionKey,
+      }),
+    );

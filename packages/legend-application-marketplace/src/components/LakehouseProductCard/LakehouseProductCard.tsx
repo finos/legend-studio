@@ -172,7 +172,7 @@ const LakehouseDataProductCardInfoPopover = observer(
                     onClick={() =>
                       applicationStore.navigationService.navigator.visitAddress(
                         EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
-                          applicationStore.config.studioServerUrl,
+                          applicationStore.config.studioApplicationUrl,
                           origin.group,
                           origin.artifact,
                           origin.version,
