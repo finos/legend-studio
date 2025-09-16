@@ -52,12 +52,12 @@ export type LakehouseSDLCDataProductPathParams = {
 };
 
 export const LEGEND_MARKETPLACE_ROUTE_PATTERN = Object.freeze({
-  LAKEHOUSE_REDIRECT: '/lakehouse',
+  DEFAULT: '/',
   OAUTH_CALLBACK: '/callback',
   SEARCH_RESULTS: '/results',
   VENDOR_DATA: '/vendordata',
   VENDOR_DETAILS: `/vendor/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.VENDOR_NAME}`,
-  DEFAULT: '/',
+  LAKEHOUSE: '/lakehouse',
   LAKEHOUSE_SEARCH_RESULTS: '/lakehouse/results',
   LAKEHOUSE_ENTITLEMENTS: '/lakehouse/entitlements',
   LAKEHOUSE_PRODUCT: `/lakehouse/dataProduct/deployed/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_ID}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DEPLOYMENT_ID}`,

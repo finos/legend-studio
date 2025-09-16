@@ -151,7 +151,7 @@ export const LegendMarketplaceHeader = observer(
     return (
       <LegendMarketplaceBaseHeader
         headerName="Marketplace"
-        homeUrl={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE}
+        homeUrl={LEGEND_MARKETPLACE_ROUTE_PATTERN.DEFAULT}
         pages={
           enableMarketplacePages
             ? [
@@ -172,7 +172,7 @@ export const MarketplaceLakehouseHeader = observer(() => {
   return (
     <LegendMarketplaceBaseHeader
       headerName="Marketplace"
-      homeUrl={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE}
+      homeUrl={LEGEND_MARKETPLACE_ROUTE_PATTERN.DEFAULT}
       pages={[
         {
           title: 'Entitlements',

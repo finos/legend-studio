@@ -1,6 +1,5 @@
 ---
 '@finos/legend-application-marketplace': patch
-'@finos/legend-application': patch
 ---
 
-Added redirect from / to /lakehouse
+Added redirect from /lakehouse - LAKEHOUSE to / - DEFAULT

@@ -277,7 +277,7 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
             )}
             {/* Lakehouse pages */}
             <Route
-              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_REDIRECT}
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE}
               element={
                 <Navigate
                   to={LEGEND_MARKETPLACE_ROUTE_PATTERN.DEFAULT}
