@@ -151,7 +151,7 @@ export const LegendMarketplaceHeader = observer(
     return (
       <LegendMarketplaceBaseHeader
         headerName="Marketplace"
-        homeUrl={LEGEND_MARKETPLACE_ROUTE_PATTERN.DEFAULT}
+        homeUrl={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE}
         pages={
           enableMarketplacePages
             ? [
