@@ -35,7 +35,7 @@ export const LakehouseProducerDataCubeSourceBuilder: React.FC<{
 
   const toggleSetisIcebergEnabled = () => {
     setIsIcebergEnabled(!isIcebergEnabled);
-    state.setIcebergEnabled(isIcebergEnabled);
+    state.setIcebergEnabled(!isIcebergEnabled);
   };
 
   useEffect(() => {
@@ -90,6 +90,17 @@ export const LakehouseProducerDataCubeSourceBuilder: React.FC<{
             </FormButton>
           </div>
         </div>
+        {state.icebergEnabled && (
+          <div className="query-setup__wizard__group mt-2">
+            <div className="flex h-5 w-[calc(100%_-_40px)] overflow-x-auto">
+              <FormCheckbox
+                label="Use Iceberg"
+                checked={isIcebergEnabled}
+                onChange={toggleSetisIcebergEnabled}
+              />
+            </div>
+          </div>
+        )}
         {state.ingestUrns.length > 0 && (
           <div className="query-setup__wizard__group mt-3">
             <div className="query-setup__wizard__group__title">Ingest Urn</div>
@@ -148,17 +159,6 @@ export const LakehouseProducerDataCubeSourceBuilder: React.FC<{
               isClearable={false}
               escapeClearsValue={true}
             />
-          </div>
-        )}
-        {state.icebergEnabled && (
-          <div className="query-setup__wizard__group mt-2">
-            <div className="query-setup__wizard__group__title">Dataset</div>
-            <div className="flex h-5 w-[calc(100%_-_40px)] overflow-x-auto">
-              <FormCheckbox
-                checked={isIcebergEnabled}
-                onChange={toggleSetisIcebergEnabled}
-              />
-            </div>
           </div>
         )}
         {state.selectedTable && !isIcebergEnabled && (

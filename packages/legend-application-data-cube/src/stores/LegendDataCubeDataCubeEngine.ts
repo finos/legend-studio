@@ -1600,13 +1600,14 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     warehouse: string,
     paths: string[],
     catalogApi: string,
+    refId?: string,
     token?: string,
   ) {
     const { dbReference } = await this._duckDBEngine.ingestIcebergTable(
       warehouse,
       paths,
       catalogApi,
-      undefined,
+      refId,
       token,
     );
     return { dbReference };

@@ -53,7 +53,7 @@ export class RawLakehouseProducerDataCubeSource {
       warehouse: primitive(),
       ingestServerUrl: primitive(),
       paths: list(primitive()),
-      icebergEnabled: optional(primitive()),
+      icebergRef: optional(primitive()),
       catalogUrl: optional(primitive()),
     }),
   );

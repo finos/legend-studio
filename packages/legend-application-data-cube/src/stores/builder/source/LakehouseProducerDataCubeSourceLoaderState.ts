@@ -115,6 +115,7 @@ export class LakehouseProducerDataCubeSourceLoaderState extends LegendDataCubeSo
         deserializedSource.warehouse,
         deserializedSource.paths,
         deserializedSource.catalogUrl,
+        deserializedSource.icebergRef,
       );
       deserializedSource.icebergRef = refId.dbReference;
     } else {

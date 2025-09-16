@@ -290,7 +290,7 @@ export class LegendDataCubeDuckDBEngine {
 
     const connection = await this.database.connect();
 
-    const secret = `CREATE OR REPLACE iceberg_secret (
+    const secret = `CREATE OR REPLACE SECRET iceberg_secret (
       TYPE ICEBERG,
       TOKEN '${token}'
     );`;
