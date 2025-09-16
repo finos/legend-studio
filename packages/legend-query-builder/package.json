@@ -21,7 +21,8 @@
   "exports": {
     ".": "./lib/index.js",
     "./test": "./lib/__test__.js",
-    "./lib/index.css": "./lib/index.css"
+    "./lib/index.css": "./lib/index.css",
+    "./lib/data-access-overview.css": "./lib/data-access-overview.css"
   },
   "module": "lib/index.js",
   "types": "lib/index.d.ts",

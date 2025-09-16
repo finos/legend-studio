@@ -8,10 +8,11 @@
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.json"],
   "references": [
+    { "path": "../legend-application-marketplace" },
     { "path": "../legend-application" },
     { "path": "../legend-art" },
     { "path": "../legend-lego" },
-    { "path": "../legend-application-marketplace" },
+    { "path": "../legend-query-builder" },
     { "path": "../legend-shared" }
   ]
 }
