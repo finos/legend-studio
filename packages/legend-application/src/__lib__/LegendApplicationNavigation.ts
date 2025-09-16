@@ -28,7 +28,7 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl = (
   groupId: string,
   artifactId: string,
   versionId: string,
-  entityPath: string | undefined,
+  entityPath?: string | undefined,
 ): string =>
   `${studioApplicationUrl}/view/archive/${generateGAVCoordinates(
     groupId,

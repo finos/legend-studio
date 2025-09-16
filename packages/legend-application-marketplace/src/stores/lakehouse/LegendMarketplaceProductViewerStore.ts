@@ -399,7 +399,7 @@ export class LegendMarketplaceProductViewerStore {
               analysisResult.path,
               executionContextKey,
             ),
-          viewProject: () => {
+          viewProject: (_path) => {
             this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
               EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
                 this.marketplaceBaseStore.applicationStore.config
@@ -407,7 +407,7 @@ export class LegendMarketplaceProductViewerStore {
                 groupId,
                 artifactId,
                 versionId,
-                path,
+                _path,
               ),
             );
           },
