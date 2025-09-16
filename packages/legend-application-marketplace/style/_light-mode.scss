@@ -403,672 +403,659 @@
     color: var(--color-hclight-grey-40);
   }
 
-  .data-space__viewer {
+  .data-space__viewer,
+  .data-product__viewer {
     background: var(--color-hclight-white);
     color: var(--color-hclight-grey-90);
-  }
-
-  .data-space__viewer__header--floating {
-    background: var(--color-hclight-white);
-  }
-
-  .data-space__viewer__header__title {
-    background: var(--color-hclight-blue-60);
-  }
-
-  .data-space__viewer__header__title__label {
-    color: var(--color-hclight-blue-60);
-  }
-
-  .data-space__viewer__header__title__verified-badge {
-    color: var(--color-hclight-white);
-  }
-
-  .data-space__viewer__header__actions {
-    background: var(--color-hclight-white);
-    border-color: var(--color-hclight-blue-50);
-  }
-
-  .data-space__viewer__header__execution-context-selector__trigger__icon {
-    border-right-color: var(--color-hclight-blue-20);
-  }
-
-  .data-space__viewer__header__execution-context-selector__trigger__icon svg {
-    color: var(--color-hclight-blue-50);
-  }
-
-  .data-space__viewer__header__execution-context-selector__trigger__label {
-    color: var(--color-hclight-blue-50);
-  }
-
-  .data-space__viewer__header__execution-context-selector__trigger__dropdown-icon
-    svg {
-    color: var(--color-hclight-blue-30);
-  }
-
-  .data-space__viewer__header__execution-context-selector__option--active {
-    background: var(--color-hclight-blue-20);
-  }
-
-  .data-space__viewer__header__actions-selector {
-    border-left-color: var(--color-hclight-blue-50);
-  }
-
-  .data-space__viewer__header__actions-selector svg {
-    color: var(--color-hclight-blue-50);
-  }
-
-  .data-space__viewer__header__actions-selector:hover svg {
-    color: var(--color-hclight-blue-60);
-  }
-
-  .data-space__viewer__frame {
-    background: var(--color-hclight-grey-10);
-  }
-
-  .data-space__viewer__content {
-    background: var(--color-hclight-white);
-  }
-
-  .data-space__viewer__grid {
-    --ag-border-color: var(--color-hclight-grey-30);
-    --ag-background-color: var(--color-hclight-white);
-    --ag-foreground-color: var(--color-hclight-grey-90);
-    --ag-header-background-color: var(--color-hclight-grey-10);
-    --ag-header-foreground-color: var(--color-hclight-grey-90);
-    --ag-balham-active-color: transparent;
-    --ag-odd-row-background-color: var(--color-hclight-white);
-    --ag-even-row-background-color: var(--color-hclight-white);
-    --ag-row-hover-color: var(--color-hclight-grey-5);
-    --ag-row-border-color: var(--color-hclight-grey-30);
-  }
-
-  .data-space__viewer__grid--empty {
-    background: var(--color-hclight-white);
-    color: var(--color-hclight-grey-60);
-  }
-
-  .data-space__viewer__grid__empty-cell {
-    color: var(--color-hclight-grey-30);
-  }
-
-  .data-space__viewer__grid .ag-center-cols-viewport {
-    background: repeating-linear-gradient(
-      135deg,
-      var(--color-hclight-white),
-      var(--color-hclight-white) 0.5rem,
-      var(--color-hclight-grey-5) 0.5rem,
-      var(--color-hclight-grey-5) 1rem
-    );
-  }
-
-  .data-space__viewer__grid ::-webkit-scrollbar-thumb {
-    background: var(--color-hclight-grey-15);
-    border: 0.1rem solid transparent;
-    background-clip: content-box;
-    border-radius: 0.4rem;
-  }
-
-  .data-space__viewer__grid ::-webkit-scrollbar-track-piece {
-    background: transparent;
-  }
-
-  .data-space__viewer__scroller {
-    background: var(--color-hclight-blue-60);
-  }
-
-  .data-space__viewer__scroller__btn:focus {
-    outline: none;
-  }
-
-  .data-space__viewer__scroller__percentage {
-    background: var(--color-hclight-blue-70);
-    color: var(--color-hclight-white);
-  }
-
-  .data-space__viewer__activity-bar {
-    background: var(--color-hclight-grey-20);
-  }
-
-  .data-space__viewer__activity-bar ::-webkit-scrollbar-thumb {
-    background: var(--color-hclight-grey-30);
-  }
-
-  .data-space__viewer__activity-bar ::-webkit-scrollbar-track-piece {
-    background: transparent;
-  }
-
-  .data-space__viewer__activity-bar__menu {
-    border-color: var(--color-hclight-grey-30);
-  }
-
-  .data-space__viewer__activity-bar__menu-item {
-    color: var(--color-hclight-aqua-90);
-  }
-
-  .data-space__viewer__activity-bar__item {
-    color: var(--color-hclight-grey-40);
-  }
-
-  .data-space__viewer__activity-bar__item:hover,
-  .data-space__viewer__activity-bar__item--active {
-    color: var(--color-hclight-aqua-90);
-  }
-
-  .data-space__viewer__activity-bar__divider {
-    background: var(--color-hclight-grey-30);
-  }
-
-  .data-space__viewer__activity-bar__item__experimental-badge {
-    background: var(--color-hclight-blue-50);
-    border-color: var(--color-hclight-grey-20);
-  }
-
-  .data-space__viewer__activity-bar__item__experimental-badge svg {
-    color: var(--color-hclight-grey-20);
-  }
-
-  .data-space__viewer__panel__header {
-    color: var(--color-hclight-blue-60);
-    border-bottom-color: var(--color-hclight-blue-60);
-  }
-
-  .data-space__viewer__panel__content__placeholder {
-    color: var(--color-hclight-grey-40);
-  }
-
-  .data-space__viewer__panel__content__placeholder svg {
-    color: var(--color-hclight-blue-50);
-  }
-
-  .data-space__viewer__wiki__placeholder {
-    color: var(--color-hclight-grey-40);
-  }
-
-  .data-space__viewer__wiki__section__header {
-    color: var(--color-hclight-blue-60);
-    border-bottom-color: var(--color-hclight-blue-60);
-  }
-
-  .data-space__viewer__wiki__section__header__anchor {
-    color: var(--color-hclight-blue-60);
-    border-bottom-color: var(--color-hclight-blue-60);
-  }
-
-  .data-space__viewer__wiki__section__header__anchor svg {
-    color: var(--color-hclight-grey-30);
-  }
-
-  .data-space__viewer__wiki__section__header__anchor:hover svg {
-    color: var(--color-hclight-grey-60);
-  }
-
-  .data-space__viewer__wiki__section__header__documentation {
-    color: var(--color-hclight-blue-60);
-  }
-
-  .data-space__viewer__markdown-text-viewer.markdown-content {
-    background: var(--color-hclight-white);
-    color: var(--color-hclight-grey-90);
-  }
-
-  .data-space__viewer__markdown-text-viewer.markdown-content a {
-    color: var(--color-hclight-blue-50);
-  }
-
-  .data-space__viewer__markdown-text-viewer.markdown-content pre {
-    background: var(--color-hclight-grey-90);
-  }
-
-  .data-space__viewer__markdown-text-viewer.markdown-content pre code {
-    color: var(--color-hclight-white);
-  }
-
-  .data-space__viewer__diagram-viewer__carousel__frame__indicator--active svg {
-    color: var(--color-hclight-blue-60);
-  }
-
-  .data-space__viewer__diagram-viewer .diagram-canvas {
-    border-color: var(--color-hclight-grey-60);
-  }
-
-  .data-space__viewer__diagram-viewer__header__navigation__pager {
-    border-left-color: var(--color-hclight-grey-20);
-  }
-
-  .data-space__viewer__diagram-viewer__header__navigation__selector__icon {
-    color: var(--color-hclight-grey-70);
-  }
-
-  .data-space__viewer__diagram-viewer__header__group__separator {
-    border-color: var(--color-hclight-grey-20);
-  }
-
-  .data-space__viewer__diagram-viewer__header__dropdown {
-    border-color: var(--color-hclight-grey-20);
-  }
-
-  .data-space__viewer__diagram-viewer__header__dropdown__label {
-    color: var(--color-hclight-grey-90);
-  }
-
-  .data-space__viewer__diagram-viewer__header__dropdown__trigger svg {
-    color: var(--color-hclight-grey-60);
-  }
-
-  .data-space__viewer__diagram-viewer__header__tool:hover svg {
-    color: var(--color-hclight-grey-70);
-  }
-
-  .data-space__viewer__diagram-viewer__header__tool:hover[disabled] svg,
-  .data-space__viewer__diagram-viewer__header__tool[disabled] svg {
-    color: var(--color-hclight-grey-20);
-  }
-
-  .data-space__viewer__diagram-viewer__header__tool svg {
-    color: var(--color-hclight-grey-50);
-  }
-
-  .data-space__viewer__diagram-viewer__header__tool--active:hover,
-  .data-space__viewer__diagram-viewer__header__tool--active {
-    background: var(--color-hclight-grey-10);
-    border-color: var(--color-hclight-blue-50);
-  }
-
-  .data-space__viewer__diagram-viewer__header__tool--active:hover svg,
-  .data-space__viewer__diagram-viewer__header__tool--active svg {
-    color: var(--color-hclight-blue-50);
-  }
-
-  .data-space__viewer__diagram-viewer__description {
-    background: var(--color-hclight-grey-shade-60);
-  }
-
-  .data-space__viewer__diagram-viewer__description__title {
-    color: var(--color-hclight-white);
-  }
-
-  .data-space__viewer__diagram-viewer__description__content
-    .data-space__viewer__markdown-text-viewer {
-    background: transparent;
-    color: var(--color-hclight-white);
-  }
-
-  .data-space__viewer__diagram-viewer__description__content__placeholder {
-    color: var(--color-hclight-grey-20);
-  }
-
-  .data-space__viewer__diagram-viewer__description ::-webkit-scrollbar-thumb {
-    background: var(--color-hclight-grey-30);
-    border: 0.2rem solid transparent;
-    background-clip: content-box;
-    border-radius: 0.4rem;
-  }
-
-  .data-space__viewer__diagram-viewer__description
-    ::-webkit-scrollbar-track-piece {
-    background: transparent;
-  }
-
-  .data-space__viewer__diagram-viewer__description__close-btn svg {
-    color: var(--color-hclight-grey-30);
-  }
-
-  .data-space__viewer__diagram-viewer__description__close-btn:hover svg {
-    color: var(--color-hclight-grey-20);
-  }
-
-  .data-space__viewer__diagram-viewer__description__expand-btn svg {
-    color: var(--color-hclight-grey-30);
-  }
-
-  .data-space__viewer__diagram-viewer__description__expand-btn:hover svg {
-    color: var(--color-hclight-grey-20);
-  }
-
-  .data-space__viewer__models-documentation__search__input-group__icon svg {
-    color: var(--color-hclight-grey-80);
-  }
-
-  .data-space__viewer__models-documentation__grid__cell__label__icon {
-    color: var(--color-hclight-white);
-  }
-
-  .data-space__viewer__models-documentation__grid__cell__label__icon--class {
-    background: var(--color-hclight-purple-60);
-  }
-
-  .data-space__viewer__models-documentation__grid__cell__label__icon--enumeration {
-    background: var(--color-hclight-pink-50);
-  }
-
-  .data-space__viewer__models-documentation__grid__cell__label__icon--association {
-    background: var(--color-hclight-green-40);
-  }
-
-  .data-space__viewer__models-documentation__grid__cell__label__icon--property {
-    background: var(--color-hclight-blue-50);
-  }
-
-  .data-space__viewer__models-documentation__grid__cell__label__icon--enum {
-    background: var(--color-hclight-orange-40);
-  }
-
-  .data-space__viewer__models-documentation__grid__cell__label__derived-property-badge {
-    background: var(--color-hclight-grey-10);
-    color: var(--color-hclight-blue-50);
-  }
-
-  .data-space__viewer__models-documentation__grid__cell__label__milestoning-badge
-    svg {
-    color: var(--color-hclight-blue-50);
-  }
-
-  .data-space__viewer__models-documentation__grid__cell__action {
-    color: var(--color-hclight-grey-30);
-  }
-
-  .data-space__viewer__models-documentation__grid__cell__action:hover {
-    color: var(--color-hclight-grey-60);
-  }
-
-  .data-space__viewer__models-documentation__grid__element-row {
-    background: var(--color-hclight-yellow-5);
-    color: var(--color-hclight-grey-90);
-
-    --ag-row-hover-color: var(--color-hclight-yellow-15);
-  }
-
-  .data-space__viewer__models-documentation__filter__toggler {
-    border-color: var(--color-hclight-grey-20);
-    color: var(--color-hclight-grey-50);
-  }
-
-  .data-space__viewer__models-documentation__filter__toggler:hover {
-    color: var(--color-hclight-grey-70);
-  }
-
-  .data-space__viewer__models-documentation__filter__toggler__icon {
-    border-color: var(--color-hclight-grey-30);
-  }
-
-  .data-space__viewer__models-documentation__filter__panel {
-    background: var(--color-hclight-white);
-    border-color: var(--color-hclight-grey-20);
-    color: var(--color-hclight-grey-70);
-  }
-
-  .data-space__viewer__models-documentation__filter__group {
-    border-color: var(--color-hclight-grey-20);
-  }
-
-  .data-space__viewer__models-documentation__filter__group__header__reset {
-    color: var(--color-hclight-blue-50);
-  }
-
-  .data-space__viewer__models-documentation__filter__group__header__reset:hover {
-    color: var(--color-hclight-blue-60);
-  }
-
-  .data-space__viewer__models-documentation__filter__group__header__reset[disabled],
-  .data-space__viewer__models-documentation__filter__group__header__reset[disabled]:hover {
-    color: var(--color-hclight-grey-40);
-  }
-
-  .data-space__viewer__models-documentation__filter__tree__node__container:hover {
-    background: var(--color-hclight-blue-shade-10);
-  }
-
-  .data-space__viewer__models-documentation__filter__tree__node__type-icon {
-    color: var(--color-hclight-white);
-  }
-
-  .data-space__viewer__models-documentation__filter__tree__node__type-icon--class {
-    background: var(--color-hclight-purple-60);
-  }
-
-  .data-space__viewer__models-documentation__filter__tree__node__type-icon--enumeration {
-    background: var(--color-hclight-pink-50);
-  }
-
-  .data-space__viewer__models-documentation__filter__tree__node__type-icon--association {
-    background: var(--color-hclight-green-40);
-  }
-
-  .data-space__viewer__models-documentation__filter__tree__node__type-icon--package {
-    color: var(--color-hclight-grey-30);
-  }
-
-  .data-space__viewer__models-documentation__filter__tree__node__checker svg {
-    color: var(--color-hclight-grey-40);
-  }
-
-  .data-space__viewer__models-documentation__filter__tree__node__checker:hover
-    svg {
-    color: var(--color-hclight-grey-50);
-  }
-
-  .data-space__viewer__models-documentation__filter__tree__node__expand-icon
-    svg {
-    color: var(--color-hclight-grey-50);
-  }
-
-  .data-space__viewer__models-documentation__filter__tree__node__label {
-    color: var(--color-hclight-grey-80);
-  }
-
-  .data-space__viewer__models-documentation__filter__tree__node__count {
-    background: var(--color-hclight-grey-15);
-    color: var(--color-hclight-grey-50);
-  }
-
-  .data-space__viewer__models-documentation__search__input {
-    background: var(--color-hclight-white);
-    border-color: var(--color-hclight-grey-20);
-    color: var(--color-hclight-grey-90);
-  }
-
-  .data-space__viewer__models-documentation__search__input:focus {
-    border-color: var(--color-hclight-grey-30);
-  }
-
-  .data-space__viewer__models-documentation__search__input__search__icon svg {
-    color: var(--color-hclight-grey-30);
-  }
-
-  .data-space__viewer__models-documentation__search__input__clear-btn svg {
-    color: var(--color-hclight-grey-50);
-  }
-
-  .data-space__viewer__models-documentation__search__input__clear-btn:hover
-    svg {
-    color: var(--color-hclight-grey-70);
-  }
-
-  .data-space__viewer__models-documentation__search__input__config__trigger
-    svg {
-    color: var(--color-hclight-grey-50);
-  }
-
-  .data-space__viewer__models-documentation__search__input__config__trigger--toggled
-    svg,
-  .data-space__viewer__models-documentation__search__input__config__trigger:hover
-    svg {
-    color: var(--color-hclight-grey-70);
-  }
-
-  .data-space__viewer__models-documentation__search__input__config__trigger--active
-    svg,
-  .data-space__viewer__models-documentation__search__input__config__trigger--active:hover
-    svg {
-    color: var(--color-hclight-blue-50);
-  }
-
-  .data-space__viewer__execution-context__entry__icon {
-    background: var(--color-hclight-grey-10);
-  }
-
-  .data-space__viewer__execution-context__entry__content {
-    border-color: var(--color-hclight-grey-10);
-    color: var(--color-hclight-grey-70);
-    background: var(--color-hclight-grey-10);
-    border-left-color: var(--color-hclight-grey-30);
-  }
-
-  .data-space__viewer__execution-context__entry__content__dropdown__option__tag {
-    background: var(--color-hclight-blue-70);
-    color: var(--color-hclight-white);
-  }
-
-  .data-space__viewer__execution-context__entry__content
-    .selector-input__control,
-  .data-space__viewer__execution-context__entry__content
-    .selector-input__control:hover {
-    border-color: var(--color-hclight-grey-20);
-  }
-
-  .data-space__viewer__access-group__item__header__title {
-    color: var(--color-hclight-aqua-90);
-  }
-
-  .data-space__viewer__access-group__item__header__anchor {
-    color: var(--color-hclight-blue-60);
-  }
-
-  .data-space__viewer__access-group__item__header__anchor svg {
-    color: var(--color-hclight-grey-30);
-  }
-
-  .data-space__viewer__access-group__item__header__anchor:hover svg {
-    color: var(--color-hclight-grey-60);
-  }
-
-  .data-space__viewer__access-group__item__content__tab__header {
-    border-bottom-color: var(--color-hclight-grey-15);
-    border-top-color: var(--color-hclight-grey-15);
-  }
-
-  .data-space__viewer__access-group__item__content__tab {
-    color: var(--color-hclight-grey-60);
-    border-left-color: var(--color-hclight-grey-15);
-  }
-
-  .data-space__viewer__access-group__item__content__tab:hover
-    .data-space__viewer__access-group__item__content__tab__label {
-    color: var(--color-hclight-grey-70);
-  }
-
-  .data-space__viewer__access-group__item__content__tab:hover
-    .data-space__viewer__access-group__item__content__tab__icon
-    svg {
-    color: var(--color-hclight-grey-70);
-  }
-
-  .data-space__viewer__access-group__item__content__tab--active:hover
-    .data-space__viewer__access-group__item__content__tab__label,
-  .data-space__viewer__access-group__item__content__tab--active
-    .data-space__viewer__access-group__item__content__tab__label {
-    color: var(--color-hclight-blue-60);
-  }
-
-  .data-space__viewer__access-group__item__content__tab--active:hover
-    .data-space__viewer__access-group__item__content__tab__icon
-    svg,
-  .data-space__viewer__access-group__item__content__tab--active
-    .data-space__viewer__access-group__item__content__tab__icon
-    svg {
-    color: var(--color-hclight-blue-60);
-  }
-
-  .data-space__viewer__access-group__item__content__action-tab-group {
-    border-left-color: var(--color-hclight-grey-15);
-  }
-
-  .data-space__viewer__access-group__tds__query {
-    border-color: var(--color-hclight-grey-30);
-  }
-
-  .data-space__viewer__access-group__tds__placeholder-panel {
-    border-color: var(--color-hclight-grey-30);
-  }
-
-  .data-space__viewer__access-group__tds__query-text__action svg {
-    color: var(--color-hclight-grey-60);
-  }
-
-  .data-space__viewer__access-group__tds__query-text__action:hover svg {
-    color: var(--color-hclight-grey-80);
-  }
-
-  .data-space__viewer__access-group__tds__code-action {
-    border-color: var(--color-hclight-grey-30);
-  }
-
-  .data-space__viewer__access-group__tds__code-action__content {
-    border-color: var(--color-hclight-grey-30);
-  }
-
-  .data-space__viewer__access-group__tds__code-action__action svg {
-    color: var(--color-hclight-grey-60);
-  }
-
-  .data-space__viewer__access-group__tds__code-action__action:hover svg {
-    color: var(--color-hclight-grey-80);
-  }
-
-  .data-space__viewer__info__project-info__label {
-    background: var(--color-hclight-blue-50);
-    color: var(--color-hclight-white);
-  }
-
-  .data-space__viewer__info__project-info__value {
-    background: var(--color-hclight-grey-10);
-    color: var(--color-hclight-grey-70);
-  }
-
-  .data-space__viewer__info__project-info__link {
-    background: var(--color-hclight-grey-10);
-    color: var(--color-hclight-grey-60);
-    border-color: var(--color-hclight-grey-30);
-  }
-
-  .data-space__viewer__info__section__title {
-    color: var(--color-hclight-grey-90);
-  }
-
-  .data-space__viewer__info__tagged-value__tag {
-    background: var(--color-hclight-orange-50);
-    color: var(--color-hclight-white);
-  }
-
-  .data-space__viewer__info__tagged-value__value {
-    background: var(--color-hclight-grey-10);
-    color: var(--color-hclight-grey-70);
-  }
-
-  .data-space__viewer__info__steoreotype {
-    background: var(--color-hclight-orange-50);
-    color: var(--color-hclight-white);
-  }
-
-  .data-space__viewer__info__section__placeholder {
-    color: var(--color-hclight-grey-30);
-    border-color: var(--color-hclight-grey-30);
-  }
-
-  .data-space__viewer__support__entry__icon {
-    background: var(--color-hclight-grey-10);
-  }
-
-  .data-space__viewer__support__entry__icon svg {
-    color: var(--color-hclight-grey-70);
-  }
-
-  .data-space__viewer__support__entry__content {
-    border-color: transparent;
-    color: var(--color-hclight-grey-70);
-    background: var(--color-hclight-grey-10);
-    border-left-color: var(--color-hclight-grey-30);
+
+    &__header--floating {
+      background: var(--color-hclight-white);
+    }
+
+    &__header__title {
+      background: var(--color-hclight-blue-60);
+    }
+
+    &__header__title__label {
+      color: var(--color-hclight-blue-60);
+    }
+
+    &__header__title__verified-badge {
+      color: var(--color-hclight-white);
+    }
+
+    &__header__actions {
+      background: var(--color-hclight-white);
+      border-color: var(--color-hclight-blue-50);
+    }
+
+    &__header__execution-context-selector__trigger__icon {
+      border-right-color: var(--color-hclight-blue-20);
+    }
+
+    &__header__execution-context-selector__trigger__icon svg {
+      color: var(--color-hclight-blue-50);
+    }
+
+    &__header__execution-context-selector__trigger__label {
+      color: var(--color-hclight-blue-50);
+    }
+
+    &__header__execution-context-selector__trigger__dropdown-icon svg {
+      color: var(--color-hclight-blue-30);
+    }
+
+    &__header__execution-context-selector__option--active {
+      background: var(--color-hclight-blue-20);
+    }
+
+    &__header__actions-selector {
+      border-left-color: var(--color-hclight-blue-50);
+    }
+
+    &__header__actions-selector svg {
+      color: var(--color-hclight-blue-50);
+    }
+
+    &__header__actions-selector:hover svg {
+      color: var(--color-hclight-blue-60);
+    }
+
+    &__frame {
+      background: var(--color-hclight-grey-10);
+    }
+
+    &__content {
+      background: var(--color-hclight-white);
+    }
+
+    &__grid {
+      --ag-border-color: var(--color-hclight-grey-30);
+      --ag-background-color: var(--color-hclight-white);
+      --ag-foreground-color: var(--color-hclight-grey-90);
+      --ag-header-background-color: var(--color-hclight-grey-10);
+      --ag-header-foreground-color: var(--color-hclight-grey-90);
+      --ag-balham-active-color: transparent;
+      --ag-odd-row-background-color: var(--color-hclight-white);
+      --ag-even-row-background-color: var(--color-hclight-white);
+      --ag-row-hover-color: var(--color-hclight-grey-5);
+      --ag-row-border-color: var(--color-hclight-grey-30);
+    }
+
+    &__grid--empty {
+      background: var(--color-hclight-white);
+      color: var(--color-hclight-grey-60);
+    }
+
+    &__grid__empty-cell {
+      color: var(--color-hclight-grey-30);
+    }
+
+    &__grid .ag-center-cols-viewport {
+      background: repeating-linear-gradient(
+        135deg,
+        var(--color-hclight-white),
+        var(--color-hclight-white) 0.5rem,
+        var(--color-hclight-grey-5) 0.5rem,
+        var(--color-hclight-grey-5) 1rem
+      );
+    }
+
+    &__grid ::-webkit-scrollbar-thumb {
+      background: var(--color-hclight-grey-15);
+      border: 0.1rem solid transparent;
+      background-clip: content-box;
+      border-radius: 0.4rem;
+    }
+
+    &__grid ::-webkit-scrollbar-track-piece {
+      background: transparent;
+    }
+
+    &__scroller {
+      background: var(--color-hclight-blue-60);
+    }
+
+    &__scroller__btn:focus {
+      outline: none;
+    }
+
+    &__scroller__percentage {
+      background: var(--color-hclight-blue-70);
+      color: var(--color-hclight-white);
+    }
+
+    &__activity-bar {
+      background: var(--color-hclight-grey-20);
+    }
+
+    &__activity-bar ::-webkit-scrollbar-thumb {
+      background: var(--color-hclight-grey-30);
+    }
+
+    &__activity-bar ::-webkit-scrollbar-track-piece {
+      background: transparent;
+    }
+
+    &__activity-bar__menu {
+      border-color: var(--color-hclight-grey-30);
+    }
+
+    &__activity-bar__menu-item {
+      color: var(--color-hclight-aqua-90);
+    }
+
+    &__activity-bar__item {
+      color: var(--color-hclight-grey-40);
+    }
+
+    &__activity-bar__item:hover,
+    &__activity-bar__item--active {
+      color: var(--color-hclight-aqua-90);
+    }
+
+    &__activity-bar__divider {
+      background: var(--color-hclight-grey-30);
+    }
+
+    &__activity-bar__item__experimental-badge {
+      background: var(--color-hclight-blue-50);
+      border-color: var(--color-hclight-grey-20);
+    }
+
+    &__activity-bar__item__experimental-badge svg {
+      color: var(--color-hclight-grey-20);
+    }
+
+    &__panel__header {
+      color: var(--color-hclight-blue-60);
+      border-bottom-color: var(--color-hclight-blue-60);
+    }
+
+    &__panel__content__placeholder {
+      color: var(--color-hclight-grey-40);
+    }
+
+    &__panel__content__placeholder svg {
+      color: var(--color-hclight-blue-50);
+    }
+
+    &__wiki__placeholder {
+      color: var(--color-hclight-grey-40);
+    }
+
+    &__wiki__section__header {
+      color: var(--color-hclight-blue-60);
+      border-bottom-color: var(--color-hclight-blue-60);
+    }
+
+    &__wiki__section__header__anchor {
+      color: var(--color-hclight-blue-60);
+      border-bottom-color: var(--color-hclight-blue-60);
+    }
+
+    &__wiki__section__header__anchor svg {
+      color: var(--color-hclight-grey-30);
+    }
+
+    &__wiki__section__header__anchor:hover svg {
+      color: var(--color-hclight-grey-60);
+    }
+
+    &__wiki__section__header__documentation {
+      color: var(--color-hclight-blue-60);
+    }
+
+    &__markdown-text-viewer.markdown-content {
+      background: var(--color-hclight-white);
+      color: var(--color-hclight-grey-90);
+    }
+
+    &__markdown-text-viewer.markdown-content a {
+      color: var(--color-hclight-blue-50);
+    }
+
+    &__markdown-text-viewer.markdown-content pre {
+      background: var(--color-hclight-grey-90);
+    }
+
+    &__markdown-text-viewer.markdown-content pre code {
+      color: var(--color-hclight-white);
+    }
+
+    &__diagram-viewer__carousel__frame__indicator--active svg {
+      color: var(--color-hclight-blue-60);
+    }
+
+    &__diagram-viewer .diagram-canvas {
+      border-color: var(--color-hclight-grey-60);
+    }
+
+    &__diagram-viewer__header__navigation__pager {
+      border-left-color: var(--color-hclight-grey-20);
+    }
+
+    &__diagram-viewer__header__navigation__selector__icon {
+      color: var(--color-hclight-grey-70);
+    }
+
+    &__diagram-viewer__header__group__separator {
+      border-color: var(--color-hclight-grey-20);
+    }
+
+    &__diagram-viewer__header__dropdown {
+      border-color: var(--color-hclight-grey-20);
+    }
+
+    &__diagram-viewer__header__dropdown__label {
+      color: var(--color-hclight-grey-90);
+    }
+
+    &__diagram-viewer__header__dropdown__trigger svg {
+      color: var(--color-hclight-grey-60);
+    }
+
+    &__diagram-viewer__header__tool:hover svg {
+      color: var(--color-hclight-grey-70);
+    }
+
+    &__diagram-viewer__header__tool:hover[disabled] svg,
+    &__diagram-viewer__header__tool[disabled] svg {
+      color: var(--color-hclight-grey-20);
+    }
+
+    &__diagram-viewer__header__tool svg {
+      color: var(--color-hclight-grey-50);
+    }
+
+    &__diagram-viewer__header__tool--active:hover,
+    &__diagram-viewer__header__tool--active {
+      background: var(--color-hclight-grey-10);
+      border-color: var(--color-hclight-blue-50);
+    }
+
+    &__diagram-viewer__header__tool--active:hover svg,
+    &__diagram-viewer__header__tool--active svg {
+      color: var(--color-hclight-blue-50);
+    }
+
+    &__diagram-viewer__description {
+      background: var(--color-hclight-grey-shade-60);
+    }
+
+    &__diagram-viewer__description__title {
+      color: var(--color-hclight-white);
+    }
+
+    &__diagram-viewer__description__content &__markdown-text-viewer {
+      background: transparent;
+      color: var(--color-hclight-white);
+    }
+
+    &__diagram-viewer__description__content__placeholder {
+      color: var(--color-hclight-grey-20);
+    }
+
+    &__diagram-viewer__description ::-webkit-scrollbar-thumb {
+      background: var(--color-hclight-grey-30);
+      border: 0.2rem solid transparent;
+      background-clip: content-box;
+      border-radius: 0.4rem;
+    }
+
+    &__diagram-viewer__description ::-webkit-scrollbar-track-piece {
+      background: transparent;
+    }
+
+    &__diagram-viewer__description__close-btn svg {
+      color: var(--color-hclight-grey-30);
+    }
+
+    &__diagram-viewer__description__close-btn:hover svg {
+      color: var(--color-hclight-grey-20);
+    }
+
+    &__diagram-viewer__description__expand-btn svg {
+      color: var(--color-hclight-grey-30);
+    }
+
+    &__diagram-viewer__description__expand-btn:hover svg {
+      color: var(--color-hclight-grey-20);
+    }
+
+    &__models-documentation__search__input-group__icon svg {
+      color: var(--color-hclight-grey-80);
+    }
+
+    &__models-documentation__grid__cell__label__icon {
+      color: var(--color-hclight-white);
+    }
+
+    &__models-documentation__grid__cell__label__icon--class {
+      background: var(--color-hclight-purple-60);
+    }
+
+    &__models-documentation__grid__cell__label__icon--enumeration {
+      background: var(--color-hclight-pink-50);
+    }
+
+    &__models-documentation__grid__cell__label__icon--association {
+      background: var(--color-hclight-green-40);
+    }
+
+    &__models-documentation__grid__cell__label__icon--property {
+      background: var(--color-hclight-blue-50);
+    }
+
+    &__models-documentation__grid__cell__label__icon--enum {
+      background: var(--color-hclight-orange-40);
+    }
+
+    &__models-documentation__grid__cell__label__derived-property-badge {
+      background: var(--color-hclight-grey-10);
+      color: var(--color-hclight-blue-50);
+    }
+
+    &__models-documentation__grid__cell__label__milestoning-badge svg {
+      color: var(--color-hclight-blue-50);
+    }
+
+    &__models-documentation__grid__cell__action {
+      color: var(--color-hclight-grey-30);
+    }
+
+    &__models-documentation__grid__cell__action:hover {
+      color: var(--color-hclight-grey-60);
+    }
+
+    &__models-documentation__grid__element-row {
+      background: var(--color-hclight-yellow-5);
+      color: var(--color-hclight-grey-90);
+
+      --ag-row-hover-color: var(--color-hclight-yellow-15);
+    }
+
+    &__models-documentation__filter__toggler {
+      border-color: var(--color-hclight-grey-20);
+      color: var(--color-hclight-grey-50);
+    }
+
+    &__models-documentation__filter__toggler:hover {
+      color: var(--color-hclight-grey-70);
+    }
+
+    &__models-documentation__filter__toggler__icon {
+      border-color: var(--color-hclight-grey-30);
+    }
+
+    &__models-documentation__filter__panel {
+      background: var(--color-hclight-white);
+      border-color: var(--color-hclight-grey-20);
+      color: var(--color-hclight-grey-70);
+    }
+
+    &__models-documentation__filter__group {
+      border-color: var(--color-hclight-grey-20);
+    }
+
+    &__models-documentation__filter__group__header__reset {
+      color: var(--color-hclight-blue-50);
+    }
+
+    &__models-documentation__filter__group__header__reset:hover {
+      color: var(--color-hclight-blue-60);
+    }
+
+    &__models-documentation__filter__group__header__reset[disabled],
+    &__models-documentation__filter__group__header__reset[disabled]:hover {
+      color: var(--color-hclight-grey-40);
+    }
+
+    &__models-documentation__filter__tree__node__container:hover {
+      background: var(--color-hclight-blue-shade-10);
+    }
+
+    &__models-documentation__filter__tree__node__type-icon {
+      color: var(--color-hclight-white);
+    }
+
+    &__models-documentation__filter__tree__node__type-icon--class {
+      background: var(--color-hclight-purple-60);
+    }
+
+    &__models-documentation__filter__tree__node__type-icon--enumeration {
+      background: var(--color-hclight-pink-50);
+    }
+
+    &__models-documentation__filter__tree__node__type-icon--association {
+      background: var(--color-hclight-green-40);
+    }
+
+    &__models-documentation__filter__tree__node__type-icon--package {
+      color: var(--color-hclight-grey-30);
+    }
+
+    &__models-documentation__filter__tree__node__checker svg {
+      color: var(--color-hclight-grey-40);
+    }
+
+    &__models-documentation__filter__tree__node__checker:hover svg {
+      color: var(--color-hclight-grey-50);
+    }
+
+    &__models-documentation__filter__tree__node__expand-icon svg {
+      color: var(--color-hclight-grey-50);
+    }
+
+    &__models-documentation__filter__tree__node__label {
+      color: var(--color-hclight-grey-80);
+    }
+
+    &__models-documentation__filter__tree__node__count {
+      background: var(--color-hclight-grey-15);
+      color: var(--color-hclight-grey-50);
+    }
+
+    &__models-documentation__search__input {
+      background: var(--color-hclight-white);
+      border-color: var(--color-hclight-grey-20);
+      color: var(--color-hclight-grey-90);
+    }
+
+    &__models-documentation__search__input:focus {
+      border-color: var(--color-hclight-grey-30);
+    }
+
+    &__models-documentation__search__input__search__icon svg {
+      color: var(--color-hclight-grey-30);
+    }
+
+    &__models-documentation__search__input__clear-btn svg {
+      color: var(--color-hclight-grey-50);
+    }
+
+    &__models-documentation__search__input__clear-btn:hover svg {
+      color: var(--color-hclight-grey-70);
+    }
+
+    &__models-documentation__search__input__config__trigger svg {
+      color: var(--color-hclight-grey-50);
+    }
+
+    &__models-documentation__search__input__config__trigger--toggled svg,
+    &__models-documentation__search__input__config__trigger:hover svg {
+      color: var(--color-hclight-grey-70);
+    }
+
+    &__models-documentation__search__input__config__trigger--active svg,
+    &__models-documentation__search__input__config__trigger--active:hover svg {
+      color: var(--color-hclight-blue-50);
+    }
+
+    &__execution-context__entry__icon {
+      background: var(--color-hclight-grey-10);
+    }
+
+    &__execution-context__entry__content {
+      border-color: var(--color-hclight-grey-10);
+      color: var(--color-hclight-grey-70);
+      background: var(--color-hclight-grey-10);
+      border-left-color: var(--color-hclight-grey-30);
+    }
+
+    &__execution-context__entry__content__dropdown__option__tag {
+      background: var(--color-hclight-blue-70);
+      color: var(--color-hclight-white);
+    }
+
+    &__execution-context__entry__content .selector-input__control,
+    &__execution-context__entry__content .selector-input__control:hover {
+      border-color: var(--color-hclight-grey-20);
+    }
+
+    &__access-group__item__header__title {
+      color: var(--color-hclight-aqua-90);
+    }
+
+    &__access-group__item__header__anchor {
+      color: var(--color-hclight-blue-60);
+    }
+
+    &__access-group__item__header__anchor svg {
+      color: var(--color-hclight-grey-30);
+    }
+
+    &__access-group__item__header__anchor:hover svg {
+      color: var(--color-hclight-grey-60);
+    }
+
+    &__access-group__item__content__tab__header {
+      border-bottom-color: var(--color-hclight-grey-15);
+      border-top-color: var(--color-hclight-grey-15);
+    }
+
+    &__access-group__item__content__tab {
+      color: var(--color-hclight-grey-60);
+      border-left-color: var(--color-hclight-grey-15);
+    }
+
+    &__access-group__item__content__tab:hover
+      &__access-group__item__content__tab__label {
+      color: var(--color-hclight-grey-70);
+    }
+
+    &__access-group__item__content__tab:hover
+      &__access-group__item__content__tab__icon
+      svg {
+      color: var(--color-hclight-grey-70);
+    }
+
+    &__access-group__item__content__tab--active:hover
+      &__access-group__item__content__tab__label,
+    &__access-group__item__content__tab--active
+      &__access-group__item__content__tab__label {
+      color: var(--color-hclight-blue-60);
+    }
+
+    &__access-group__item__content__tab--active:hover
+      &__access-group__item__content__tab__icon
+      svg,
+    &__access-group__item__content__tab--active
+      &__access-group__item__content__tab__icon
+      svg {
+      color: var(--color-hclight-blue-60);
+    }
+
+    &__access-group__item__content__action-tab-group {
+      border-left-color: var(--color-hclight-grey-15);
+    }
+
+    &__access-group__tds__query {
+      border-color: var(--color-hclight-grey-30);
+    }
+
+    &__access-group__tds__placeholder-panel {
+      border-color: var(--color-hclight-grey-30);
+    }
+
+    &__access-group__tds__query-text__action svg {
+      color: var(--color-hclight-grey-60);
+    }
+
+    &__access-group__tds__query-text__action:hover svg {
+      color: var(--color-hclight-grey-80);
+    }
+
+    &__access-group__tds__code-action {
+      border-color: var(--color-hclight-grey-30);
+    }
+
+    &__access-group__tds__code-action__content {
+      border-color: var(--color-hclight-grey-30);
+    }
+
+    &__access-group__tds__code-action__action svg {
+      color: var(--color-hclight-grey-60);
+    }
+
+    &__access-group__tds__code-action__action:hover svg {
+      color: var(--color-hclight-grey-80);
+    }
+
+    &__info__project-info__label {
+      background: var(--color-hclight-blue-50);
+      color: var(--color-hclight-white);
+    }
+
+    &__info__project-info__value {
+      background: var(--color-hclight-grey-10);
+      color: var(--color-hclight-grey-70);
+    }
+
+    &__info__project-info__link {
+      background: var(--color-hclight-grey-10);
+      color: var(--color-hclight-grey-60);
+      border-color: var(--color-hclight-grey-30);
+    }
+
+    &__info__section__title {
+      color: var(--color-hclight-grey-90);
+    }
+
+    &__info__tagged-value__tag {
+      background: var(--color-hclight-orange-50);
+      color: var(--color-hclight-white);
+    }
+
+    &__info__tagged-value__value {
+      background: var(--color-hclight-grey-10);
+      color: var(--color-hclight-grey-70);
+    }
+
+    &__info__steoreotype {
+      background: var(--color-hclight-orange-50);
+      color: var(--color-hclight-white);
+    }
+
+    &__info__section__placeholder {
+      color: var(--color-hclight-grey-30);
+      border-color: var(--color-hclight-grey-30);
+    }
+
+    &__support__entry__icon {
+      background: var(--color-hclight-grey-10);
+    }
+
+    &__support__entry__icon svg {
+      color: var(--color-hclight-grey-70);
+    }
+
+    &__support__entry__content {
+      border-color: transparent;
+      color: var(--color-hclight-grey-70);
+      background: var(--color-hclight-grey-10);
+      border-left-color: var(--color-hclight-grey-30);
+    }
   }
 
   .table th,
