@@ -252,10 +252,6 @@ export const LakehouseProductCard = observer(
 
     const versionId = productCardState.versionId;
     const isSnapshot = versionId ? isSnapshotVersion(versionId) : undefined;
-    const environmentClassification =
-      productCardState instanceof DataProductCardState
-        ? productCardState.environmentClassification
-        : undefined;
 
     const content = productCardState.initState.isInProgress ? (
       <CubesLoadingIndicator isLoading={true}>
@@ -290,27 +286,33 @@ export const LakehouseProductCard = observer(
                   },
                 )}
               />
-              <Chip
-                label={environmentClassification ?? 'Unknown Environment'}
-                size="small"
-                title="Environment Classification"
-                className={clsx(
-                  'marketplace-lakehouse-data-product-card__environment-classification',
-                  {
-                    'marketplace-lakehouse-data-product-card__environment-classification--unknown':
-                      environmentClassification === undefined,
-                    'marketplace-lakehouse-data-product-card__environment-classification--dev':
-                      environmentClassification ===
-                      V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT,
-                    'marketplace-lakehouse-data-product-card__environment-classification--prod-parallel':
-                      environmentClassification ===
-                      V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL,
-                    'marketplace-lakehouse-data-product-card__environment-classification--prod':
-                      environmentClassification ===
-                      V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
-                  },
-                )}
-              />
+              {productCardState instanceof DataProductCardState && (
+                <Chip
+                  label={
+                    productCardState.environmentClassification ??
+                    'Unknown Environment'
+                  }
+                  size="small"
+                  title="Environment Classification"
+                  className={clsx(
+                    'marketplace-lakehouse-data-product-card__environment-classification',
+                    {
+                      'marketplace-lakehouse-data-product-card__environment-classification--unknown':
+                        productCardState.environmentClassification ===
+                        undefined,
+                      'marketplace-lakehouse-data-product-card__environment-classification--dev':
+                        productCardState.environmentClassification ===
+                        V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT,
+                      'marketplace-lakehouse-data-product-card__environment-classification--prod-parallel':
+                        productCardState.environmentClassification ===
+                        V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL,
+                      'marketplace-lakehouse-data-product-card__environment-classification--prod':
+                        productCardState.environmentClassification ===
+                        V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
+                    },
+                  )}
+                />
+              )}
             </Box>
             <Box className="marketplace-lakehouse-data-product-card__name">
               {productCardState.title}
