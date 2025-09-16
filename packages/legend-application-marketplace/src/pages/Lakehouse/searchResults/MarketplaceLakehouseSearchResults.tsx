@@ -147,6 +147,9 @@ const SearchResultsSortFilterPanel = observer(
                   <FormControlLabel
                     control={
                       <Checkbox
+                        disabled={
+                          !searchResultsStore.filterState.unmodeledDataProducts
+                        }
                         checked={
                           searchResultsStore.filterState
                             .unmodeledDataProductsConfig.sdlcDeploy
@@ -164,6 +167,9 @@ const SearchResultsSortFilterPanel = observer(
                   <FormControlLabel
                     control={
                       <Checkbox
+                        disabled={
+                          !searchResultsStore.filterState.unmodeledDataProducts
+                        }
                         checked={
                           searchResultsStore.filterState
                             .unmodeledDataProductsConfig.sandboxDeploy
@@ -187,6 +193,9 @@ const SearchResultsSortFilterPanel = observer(
                   <FormControlLabel
                     control={
                       <Checkbox
+                        disabled={
+                          !searchResultsStore.filterState.unmodeledDataProducts
+                        }
                         checked={
                           searchResultsStore.filterState
                             .unmodeledDataProductsConfig
@@ -205,6 +214,9 @@ const SearchResultsSortFilterPanel = observer(
                   <FormControlLabel
                     control={
                       <Checkbox
+                        disabled={
+                          !searchResultsStore.filterState.unmodeledDataProducts
+                        }
                         checked={
                           searchResultsStore.filterState
                             .unmodeledDataProductsConfig
@@ -226,6 +238,10 @@ const SearchResultsSortFilterPanel = observer(
                       <FormControlLabel
                         control={
                           <Checkbox
+                            disabled={
+                              !searchResultsStore.filterState
+                                .unmodeledDataProducts
+                            }
                             checked={
                               searchResultsStore.filterState
                                 .unmodeledDataProductsConfig
