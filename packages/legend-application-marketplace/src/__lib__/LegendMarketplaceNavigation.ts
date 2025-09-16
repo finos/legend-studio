@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  generateExtensionUrlPattern,
-  generatePath,
-  matchPath,
-} from '@finos/legend-application/browser';
+import { generatePath, matchPath } from '@finos/legend-application/browser';
 import {
   addQueryParametersToUrl,
   stringifyQueryParams,
@@ -168,16 +164,6 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateIngestEnvironemntUrl = (
   baseUrl: string,
 ): string => `${baseUrl}/data-product/swagger-ui`;
 
-enum DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN {
-  GAV = 'gav',
-  DATA_SPACE_PATH = 'dataSpacePath',
-  EXECUTION_CONTEXT = 'executionContext',
-}
-
-const DATA_SPACE_QUERY_ROUTE_PATTERN = Object.freeze({
-  CREATE: `/dataspace/:${DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.GAV}/:${DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_SPACE_PATH}/:${DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.EXECUTION_CONTEXT}?`,
-});
-
 enum LEGEND_QUERY_ROUTE_PATTERN_TOKEN {
   GAV = 'gav',
   SERVICE_PATH = 'servicePath',
@@ -207,17 +193,7 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryCreatorRoute
     classPath?: string | undefined,
   ): string =>
     addQueryParametersToUrl(
-      generatePath(
-        `${queryApplicationUrl}/${generateExtensionUrlPattern(DATA_SPACE_QUERY_ROUTE_PATTERN.CREATE)}`,
-        {
-          [DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.GAV]:
-            generateGAVCoordinates(groupId, artifactId, versionId),
-          [DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_SPACE_PATH]:
-            dataSpacePath,
-          [DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.EXECUTION_CONTEXT]:
-            executionContextKey,
-        },
-      ),
+      `${queryApplicationUrl}/dataspace/${generateGAVCoordinates(groupId, artifactId, versionId)}}/${dataSpacePath}/${executionContextKey}?`,
       stringifyQueryParams({
         [DATA_SPACE_QUERY_CREATOR_QUERY_PARAM_TOKEN.RUNTIME_PATH]: runtimePath
           ? encodeURIComponent(runtimePath)
