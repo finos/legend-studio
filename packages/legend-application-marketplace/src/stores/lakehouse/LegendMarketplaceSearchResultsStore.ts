@@ -301,53 +301,6 @@ export class LegendMarketplaceSearchResultsStore {
     );
   }
 
-  handleFilterChange2(
-    filterType: DataProductFilterType,
-    val:
-      | UnmodeledDataProductDeployType
-      | V1_IngestEnvironmentClassification
-      | undefined,
-  ): void {
-    if (filterType === DataProductFilterType.MODELED_DATA_PRODUCTS) {
-      this.filterState.modeledDataProducts =
-        !this.filterState.modeledDataProducts;
-    } else if (filterType === DataProductFilterType.UNMODELED_DATA_PRODUCTS) {
-      this.filterState.unmodeledDataProducts =
-        !this.filterState.unmodeledDataProducts;
-    } else if (
-      filterType === DataProductFilterType.UNMODELED_DATA_PRODUCTS__DEPLOY_TYPE
-    ) {
-      if (val === UnmodeledDataProductDeployType.SDLC) {
-        this.filterState.unmodeledDataProductsConfig.sdlcDeploy =
-          !this.filterState.unmodeledDataProductsConfig.sdlcDeploy;
-      } else if (val === UnmodeledDataProductDeployType.SANDBOX) {
-        this.filterState.unmodeledDataProductsConfig.sandboxDeploy =
-          !this.filterState.unmodeledDataProductsConfig.sandboxDeploy;
-      }
-    } else if (
-      filterType ===
-      DataProductFilterType.UNMODELED_DATA_PRODUCTS__ENVIRONMENT_CLASSIFICATION
-    ) {
-      if (val === V1_IngestEnvironmentClassification.DEV) {
-        this.filterState.unmodeledDataProductsConfig.devEnvironmentClassification =
-          !this.filterState.unmodeledDataProductsConfig
-            .devEnvironmentClassification;
-      } else if (val === V1_IngestEnvironmentClassification.PROD_PARALLEL) {
-        this.filterState.unmodeledDataProductsConfig.prodParallelEnvironmentClassification =
-          !this.filterState.unmodeledDataProductsConfig
-            .prodParallelEnvironmentClassification;
-      } else if (val === V1_IngestEnvironmentClassification.PROD) {
-        this.filterState.unmodeledDataProductsConfig.prodEnvironmentClassification =
-          !this.filterState.unmodeledDataProductsConfig
-            .prodEnvironmentClassification;
-      }
-    }
-    LegendMarketplaceUserDataHelper.saveDataProductFilterConfig(
-      this.marketplaceBaseStore.applicationStore.userDataService,
-      this.filterState.currentFilterValues,
-    );
-  }
-
   handleSearch(query: string | undefined) {
     this.filterState.search = query;
   }
