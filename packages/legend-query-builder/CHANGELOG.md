@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.17.37
+
+### Patch Changes
+
+- [#4430](https://github.com/finos/legend-studio/pull/4430) [`2c120d3`](https://github.com/finos/legend-studio/commit/2c120d3d08517c67decf3ad1387e5331d57fe8cc) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - reprocess execution result only if query is supported
+
 ## 4.17.36
 
 ## 4.17.35
