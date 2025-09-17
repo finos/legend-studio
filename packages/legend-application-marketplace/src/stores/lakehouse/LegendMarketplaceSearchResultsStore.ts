@@ -190,7 +190,6 @@ export class LegendMarketplaceSearchResultsStore {
               V1_AdHocDeploymentDataProductOrigin);
         // Check if product matches environment classification filter
         const environmentClassificationMatch =
-          dataProductCardState instanceof LegacyDataProductCardState ||
           (this.filterState.unmodeledDataProductsConfig
             .devEnvironmentClassification &&
             dataProductCardState.environmentClassification ===
