@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.1.9
+
+### Patch Changes
+
+- [#4429](https://github.com/finos/legend-studio/pull/4429) [`c833147`](https://github.com/finos/legend-studio/commit/c8331475ece3643cd0de392d9151b2b59fdac143) ([@jackp5150](https://github.com/jackp5150)) - Added redirect from /lakehouse - LAKEHOUSE to / - DEFAULT
+
 ## 0.1.8
 
 ### Patch Changes
