@@ -21,6 +21,8 @@ import {
 } from '../../../application/providers/LegendMarketplaceSearchResultsStoreProvider.js';
 import React, { useEffect, useState } from 'react';
 import {
+  ChevronDownIcon,
+  ChevronRightIcon,
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
   ExpandMoreIcon,
@@ -41,36 +43,37 @@ import {
   type LegendMarketplaceSearchResultsStore,
   DataProductFilterType,
   DataProductSort,
-  DeployType,
+  UnmodeledDataProductDeployType,
 } from '../../../stores/lakehouse/LegendMarketplaceSearchResultsStore.js';
 import {
   generateLakehouseDataProductPath,
   generateLakehouseSearchResultsRoute,
+  generateLegacyDataProductPath,
   LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN,
 } from '../../../__lib__/LegendMarketplaceNavigation.js';
 import { LegendMarketplaceSearchBar } from '../../../components/SearchBar/LegendMarketplaceSearchBar.js';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
 import { useAuth } from 'react-oidc-context';
 import { V1_IngestEnvironmentClassification } from '@finos/legend-graph';
-import { isNullable } from '@finos/legend-shared';
-import { LakehouseDataProductCard } from '../../../components/LakehouseDataProductCard/LakehouseDataProductCard.js';
+import { DataProductCardState } from '../../../stores/lakehouse/dataProducts/DataProductCardState.js';
+import { LegacyDataProductCardState } from '../../../stores/lakehouse/dataProducts/LegacyDataProductCardState.js';
+import { generateGAVCoordinates } from '@finos/legend-storage';
+import { LakehouseProductCard } from '../../../components/LakehouseProductCard/LakehouseProductCard.js';
 
 const SearchResultsSortFilterPanel = observer(
   (props: { searchResultsStore: LegendMarketplaceSearchResultsStore }) => {
     const { searchResultsStore } = props;
 
+    const [isUnmodeledFilterConfigOpen, setIsUnmodeledFilterConfigOpen] =
+      useState(searchResultsStore.filterState.unmodeledDataProducts);
     const [sortMenuAnchorEl, setSortMenuAnchorEl] =
       useState<HTMLElement | null>(null);
+
     const isSortMenuOpen = Boolean(sortMenuAnchorEl);
 
-    const showUnknownDeployTypeFilter =
-      searchResultsStore.dataProductStates.some((state) =>
-        isNullable(state.dataProductDetails.origin),
-      );
-    const showUnknownEnvironmentFilter =
-      searchResultsStore.dataProductStates.some((state) =>
-        isNullable(state.environmentClassification),
-      );
+    const handleToggleUnmodeledFilterConfig = () => {
+      setIsUnmodeledFilterConfigOpen((prev) => !prev);
+    };
 
     return (
       <Box className="marketplace-lakehouse-search-results__sort-filters">
@@ -117,131 +120,185 @@ const SearchResultsSortFilterPanel = observer(
         </Box>
         <Box className="marketplace-lakehouse-search-results__sort-filters__filter">
           Filter By
-          <Box>
-            <FormLabel>Deploy Type</FormLabel>
-            <FormGroup>
+          <FormGroup>
+            <Box className="marketplace-lakehouse-search-results__sort-filters__filter__section-header">
               <FormControlLabel
                 control={
                   <Checkbox
-                    checked={searchResultsStore.filter.sdlcDeployFilter}
+                    checked={searchResultsStore.filterState.modeledDataProducts}
                     onChange={() =>
                       searchResultsStore.handleFilterChange(
-                        DataProductFilterType.DEPLOY_TYPE,
-                        DeployType.SDLC,
+                        DataProductFilterType.MODELED_DATA_PRODUCTS,
+                        undefined,
                       )
                     }
                   />
                 }
-                label="SDLC Deployed"
+                label="Modeled Data Products"
               />
+            </Box>
+            <Box className="marketplace-lakehouse-search-results__sort-filters__filter__section-header">
+              <Box
+                className="marketplace-lakehouse-search-results__sort-filters__filter__expander"
+                onClick={handleToggleUnmodeledFilterConfig}
+              >
+                {isUnmodeledFilterConfigOpen ? (
+                  <ChevronDownIcon />
+                ) : (
+                  <ChevronRightIcon />
+                )}
+              </Box>
               <FormControlLabel
                 control={
                   <Checkbox
-                    checked={searchResultsStore.filter.sandboxDeployFilter}
-                    onChange={() =>
-                      searchResultsStore.handleFilterChange(
-                        DataProductFilterType.DEPLOY_TYPE,
-                        DeployType.SANDBOX,
-                      )
+                    checked={
+                      searchResultsStore.filterState.unmodeledDataProducts
                     }
-                  />
-                }
-                label="Sandbox Deployed"
-              />
-              {showUnknownDeployTypeFilter === true && (
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={searchResultsStore.filter.unknownDeployFilter}
-                      onChange={() =>
-                        searchResultsStore.handleFilterChange(
-                          DataProductFilterType.DEPLOY_TYPE,
-                          DeployType.UNKNOWN,
-                        )
+                    onChange={() => {
+                      searchResultsStore.handleFilterChange(
+                        DataProductFilterType.UNMODELED_DATA_PRODUCTS,
+                        undefined,
+                      );
+                      if (
+                        searchResultsStore.filterState.unmodeledDataProducts
+                      ) {
+                        setIsUnmodeledFilterConfigOpen(true);
                       }
+                    }}
+                  />
+                }
+                label="Unmodeled Data Products"
+              />
+            </Box>
+            {isUnmodeledFilterConfigOpen === true && (
+              <Box className="marketplace-lakehouse-search-results__sort-filters__filter__unmodeled-config">
+                <Box>
+                  <FormLabel>Deploy Type</FormLabel>
+                  <FormGroup>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          disabled={
+                            !searchResultsStore.filterState
+                              .unmodeledDataProducts
+                          }
+                          checked={
+                            searchResultsStore.filterState
+                              .unmodeledDataProductsConfig.sdlcDeploy
+                          }
+                          onChange={() =>
+                            searchResultsStore.handleFilterChange(
+                              DataProductFilterType.UNMODELED_DATA_PRODUCTS__DEPLOY_TYPE,
+                              UnmodeledDataProductDeployType.SDLC,
+                            )
+                          }
+                        />
+                      }
+                      label="SDLC Deployed"
                     />
-                  }
-                  label="Unknown"
-                />
-              )}
-            </FormGroup>
-          </Box>
-          <hr />
-          <Box>
-            <FormLabel>Deploy Environment</FormLabel>
-            <FormGroup>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={
-                      searchResultsStore.filter
-                        .prodEnvironmentClassificationFilter
-                    }
-                    onChange={() =>
-                      searchResultsStore.handleFilterChange(
-                        DataProductFilterType.ENVIRONMENT_CLASSIFICATION,
-                        V1_IngestEnvironmentClassification.PROD,
-                      )
-                    }
-                  />
-                }
-                label="Prod"
-              />
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={
-                      searchResultsStore.filter
-                        .prodParallelEnvironmentClassificationFilter
-                    }
-                    onChange={() =>
-                      searchResultsStore.handleFilterChange(
-                        DataProductFilterType.ENVIRONMENT_CLASSIFICATION,
-                        V1_IngestEnvironmentClassification.PROD_PARALLEL,
-                      )
-                    }
-                  />
-                }
-                label="Prod-Parallel"
-              />
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={
-                      searchResultsStore.filter
-                        .devEnvironmentClassificationFilter
-                    }
-                    onChange={() =>
-                      searchResultsStore.handleFilterChange(
-                        DataProductFilterType.ENVIRONMENT_CLASSIFICATION,
-                        V1_IngestEnvironmentClassification.DEV,
-                      )
-                    }
-                  />
-                }
-                label="Dev"
-              />
-              {showUnknownEnvironmentFilter === true && (
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={
-                        searchResultsStore.filter
-                          .unknownEnvironmentClassificationFilter
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          disabled={
+                            !searchResultsStore.filterState
+                              .unmodeledDataProducts
+                          }
+                          checked={
+                            searchResultsStore.filterState
+                              .unmodeledDataProductsConfig.sandboxDeploy
+                          }
+                          onChange={() =>
+                            searchResultsStore.handleFilterChange(
+                              DataProductFilterType.UNMODELED_DATA_PRODUCTS__DEPLOY_TYPE,
+                              UnmodeledDataProductDeployType.SANDBOX,
+                            )
+                          }
+                        />
                       }
-                      onChange={() =>
-                        searchResultsStore.handleFilterChange(
-                          DataProductFilterType.ENVIRONMENT_CLASSIFICATION,
-                          'UNKNOWN',
-                        )
-                      }
+                      label="Sandbox Deployed"
                     />
-                  }
-                  label="Unknown"
-                />
-              )}
-            </FormGroup>
-          </Box>
+                  </FormGroup>
+                </Box>
+                <hr />
+                <Box>
+                  <FormLabel>Deploy Environment</FormLabel>
+                  <FormGroup>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          disabled={
+                            !searchResultsStore.filterState
+                              .unmodeledDataProducts
+                          }
+                          checked={
+                            searchResultsStore.filterState
+                              .unmodeledDataProductsConfig
+                              .prodEnvironmentClassification
+                          }
+                          onChange={() =>
+                            searchResultsStore.handleFilterChange(
+                              DataProductFilterType.UNMODELED_DATA_PRODUCTS__ENVIRONMENT_CLASSIFICATION,
+                              V1_IngestEnvironmentClassification.PROD,
+                            )
+                          }
+                        />
+                      }
+                      label="Prod"
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          disabled={
+                            !searchResultsStore.filterState
+                              .unmodeledDataProducts
+                          }
+                          checked={
+                            searchResultsStore.filterState
+                              .unmodeledDataProductsConfig
+                              .prodParallelEnvironmentClassification
+                          }
+                          onChange={() =>
+                            searchResultsStore.handleFilterChange(
+                              DataProductFilterType.UNMODELED_DATA_PRODUCTS__ENVIRONMENT_CLASSIFICATION,
+                              V1_IngestEnvironmentClassification.PROD_PARALLEL,
+                            )
+                          }
+                        />
+                      }
+                      label="Prod-Parallel"
+                    />
+                    {
+                      // eslint-disable-next-line no-process-env
+                      process.env.NODE_ENV !== 'production' && (
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              disabled={
+                                !searchResultsStore.filterState
+                                  .unmodeledDataProducts
+                              }
+                              checked={
+                                searchResultsStore.filterState
+                                  .unmodeledDataProductsConfig
+                                  .devEnvironmentClassification
+                              }
+                              onChange={() =>
+                                searchResultsStore.handleFilterChange(
+                                  DataProductFilterType.UNMODELED_DATA_PRODUCTS__ENVIRONMENT_CLASSIFICATION,
+                                  V1_IngestEnvironmentClassification.DEV,
+                                )
+                              }
+                            />
+                          }
+                          label="Dev"
+                        />
+                      )
+                    }
+                  </FormGroup>
+                </Box>
+              </Box>
+            )}
+          </FormGroup>
         </Box>
       </Box>
     );
@@ -266,7 +323,9 @@ export const MarketplaceLakehouseSearchResults =
       searchResultsStore.handleSearch(searchQuery);
 
       useEffect(() => {
-        searchResultsStore.init(auth.user?.access_token);
+        if (searchResultsStore.loadingAllProductsState.isInInitialState) {
+          searchResultsStore.init(auth.user?.access_token);
+        }
       }, [searchResultsStore, auth]);
 
       const isLoadingDataProducts =
@@ -302,19 +361,31 @@ export const MarketplaceLakehouseSearchResults =
               className="marketplace-lakehouse-search-results__data-product-cards"
             >
               {searchResultsStore.filterSortProducts?.map(
-                (dataProductState) => (
-                  <Grid
-                    key={`${dataProductState.dataProductDetails.id}-${dataProductState.dataProductDetails.deploymentId}`}
-                    size={1}
-                  >
-                    <LakehouseDataProductCard
-                      dataProductState={dataProductState}
+                (productCardState) => (
+                  <Grid key={productCardState.guid} size={1}>
+                    <LakehouseProductCard
+                      productCardState={productCardState}
                       onClick={() => {
+                        const path =
+                          productCardState instanceof DataProductCardState
+                            ? generateLakehouseDataProductPath(
+                                productCardState.dataProductDetails.id,
+                                productCardState.dataProductDetails
+                                  .deploymentId,
+                              )
+                            : productCardState instanceof
+                                LegacyDataProductCardState
+                              ? generateLegacyDataProductPath(
+                                  generateGAVCoordinates(
+                                    productCardState.groupId,
+                                    productCardState.artifactId,
+                                    productCardState._versionId,
+                                  ),
+                                  productCardState.dataSpace.path,
+                                )
+                              : '';
                         applicationStore.navigationService.navigator.goToLocation(
-                          generateLakehouseDataProductPath(
-                            dataProductState.dataProductDetails.id,
-                            dataProductState.dataProductDetails.deploymentId,
-                          ),
+                          path,
                         );
                       }}
                     />

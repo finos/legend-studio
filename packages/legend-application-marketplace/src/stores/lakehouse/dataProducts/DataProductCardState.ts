@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { flow, makeObservable, observable } from 'mobx';
+import { makeObservable, observable } from 'mobx';
 import {
   ActionState,
   assertErrorThrown,
@@ -27,7 +27,6 @@ import {
   type V1_EntitlementsDataProductDetails,
   type V1_EntitlementsLakehouseEnvironmentType,
   type V1_PureGraphManager,
-  GraphManagerState,
   V1_AdHocDeploymentDataProductOrigin,
   V1_DataProduct,
   V1_SdlcDeploymentDataProductOrigin,
@@ -35,6 +34,7 @@ import {
 import type { LegendMarketplaceBaseStore } from '../../LegendMarketplaceBaseStore.js';
 import { getDataProductFromDetails } from '../LakehouseUtils.js';
 import { LEGEND_MARKETPLACE_APP_EVENT } from '../../../__lib__/LegendMarketplaceAppEvent.js';
+import { BaseProductCardState } from './BaseProductCardState.js';
 
 export enum DataProductType {
   LAKEHOUSE = 'LAKEHOUSE',
@@ -54,26 +54,24 @@ const getDataProductDescriptorFromDetails = (
   return name;
 };
 
-export class DataProductState {
-  readonly marketplaceBaseStore: LegendMarketplaceBaseStore;
+export class DataProductCardState extends BaseProductCardState {
   readonly graphManager: V1_PureGraphManager;
-  readonly initState = ActionState.create();
-  readonly enrichedState = ActionState.create();
   readonly dataProductDetails: V1_EntitlementsDataProductDetails;
   dataProductElement: V1_DataProduct | undefined;
+
+  readonly enrichedState = ActionState.create();
 
   constructor(
     marketplaceBaseStore: LegendMarketplaceBaseStore,
     graphManager: V1_PureGraphManager,
     dataProductDetails: V1_EntitlementsDataProductDetails,
   ) {
-    this.marketplaceBaseStore = marketplaceBaseStore;
+    super(marketplaceBaseStore);
     this.graphManager = graphManager;
     this.dataProductDetails = dataProductDetails;
 
     makeObservable(this, {
       dataProductElement: observable,
-      init: flow,
     });
   }
 
@@ -93,13 +91,8 @@ export class DataProductState {
         this.initState.complete();
       }
       this.enrichedState.inProgress();
-      const graphManagerState = new GraphManagerState(
-        this.marketplaceBaseStore.applicationStore.pluginManager,
-        this.marketplaceBaseStore.applicationStore.logService,
-      );
       this.dataProductElement = (yield getDataProductFromDetails(
         this.dataProductDetails,
-        graphManagerState,
         this.graphManager,
         this.marketplaceBaseStore,
       )) as V1_DataProduct | undefined;
@@ -130,6 +123,10 @@ export class DataProductState {
     return isNonEmptyString(this.dataProductDetails.description)
       ? this.dataProductDetails.description
       : (this.dataProductElement?.description ?? '');
+  }
+
+  get guid(): string {
+    return `${this.dataProductDetails.id}-${this.dataProductDetails.deploymentId}`;
   }
 
   get icon(): V1_DataProductIcon | undefined {

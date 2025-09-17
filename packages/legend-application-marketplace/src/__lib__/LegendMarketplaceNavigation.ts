@@ -19,6 +19,7 @@ import {
   addQueryParametersToUrl,
   stringifyQueryParams,
 } from '@finos/legend-shared';
+import { generateGAVCoordinates } from '@finos/legend-storage';
 
 export enum LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN {
   VENDOR_NAME = 'vendorName',
@@ -51,6 +52,11 @@ export type LakehouseSDLCDataProductPathParams = {
   [LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH]: string;
 };
 
+export type LegacyDataProductPathParams = {
+  [LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.GAV]: string;
+  [LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH]: string;
+};
+
 export const LEGEND_MARKETPLACE_ROUTE_PATTERN = Object.freeze({
   DEFAULT: '/',
   OAUTH_CALLBACK: '/callback',
@@ -61,6 +67,7 @@ export const LEGEND_MARKETPLACE_ROUTE_PATTERN = Object.freeze({
   LAKEHOUSE_SEARCH_RESULTS: '/lakehouse/results',
   LAKEHOUSE_ENTITLEMENTS: '/lakehouse/entitlements',
   LAKEHOUSE_PRODUCT: `/lakehouse/dataProduct/deployed/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_ID}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DEPLOYMENT_ID}`,
+  LEGACY_DATA_PRODUCT: `/lakehouse/dataProduct/legacy/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.GAV}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH}`,
   TERMINAL_PRODUCT: `/terminal/terminalProduct/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.TERMINAL_ID}`,
   LAKEHOUSE_SDLC_PRODUCT: `/lakehouse/dataProduct/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.GAV}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH}`,
   SUBSCRIPTIONS: '/subscriptions',
@@ -92,11 +99,11 @@ export const generateLakehouseDataProductPath = (
     deploymentId: deploymentId.toString(),
   });
 
-export const generateLakehouseSDLCDataProductPath = (
+export const generateLegacyDataProductPath = (
   gav: string,
   path: string,
 ): string =>
-  generatePath(LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SDLC_PRODUCT, {
+  generatePath(LEGEND_MARKETPLACE_ROUTE_PATTERN.LEGACY_DATA_PRODUCT, {
     gav,
     path,
   });
@@ -143,12 +150,11 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl =
   (
     studioApplicationUrl: string,
     projectId: string,
-    versionId: string | undefined,
     entityPath: string | undefined,
   ): string =>
     `${studioApplicationUrl}/view/${projectId}${
-      versionId ? `/version/${versionId}` : ''
-    }${entityPath ? `/entity/${entityPath}` : ''}`;
+      entityPath ? `/entity/${entityPath}` : ''
+    }`;
 
 /**
  * @external_application_navigation This depends on Ingest Environment swagger URL and is hardcoded so it's potentially brittle
@@ -156,3 +162,25 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl =
 export const EXTERNAL_APPLICATION_NAVIGATION__generateIngestEnvironemntUrl = (
   baseUrl: string,
 ): string => `${baseUrl}/data-product/swagger-ui`;
+
+/**
+ * @external_application_navigation This depends on Legend Query routing and is hardcoded so it's potentially brittle
+ */
+export const EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl =
+  (
+    queryApplicationUrl: string,
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    dataSpacePath: string,
+    executionContext: string,
+    runtimePath: string | undefined,
+    classPath: string | undefined,
+  ): string =>
+    `${queryApplicationUrl}/extensions/dataspace/${generateGAVCoordinates(
+      groupId,
+      artifactId,
+      versionId,
+    )}/${dataSpacePath}/${executionContext}/${
+      runtimePath ? `/${runtimePath}` : ''
+    }${classPath ? `?class=${classPath}` : ''}`;

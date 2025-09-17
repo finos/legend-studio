@@ -27,18 +27,22 @@ import {
 import {
   generateLakehouseDataProductPath,
   generateLakehouseSearchResultsRoute,
+  generateLegacyDataProductPath,
 } from '../../__lib__/LegendMarketplaceNavigation.js';
 import { assertErrorThrown, isNonEmptyString } from '@finos/legend-shared';
-import type { DataProductState } from '../../stores/lakehouse/dataProducts/DataProducts.js';
-import { LakehouseHighlightedDataProductCard } from '../../components/LakehouseDataProductCard/LakehouseHighlightedDataProductCard.js';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
+import type { BaseProductCardState } from '../../stores/lakehouse/dataProducts/BaseProductCardState.js';
+import { LakehouseHighlightedProductCard } from '../../components/LakehouseProductCard/LakehouseHighlightedProductCard.js';
+import { DataProductCardState } from '../../stores/lakehouse/dataProducts/DataProductCardState.js';
+import { LegacyDataProductCardState } from '../../stores/lakehouse/dataProducts/LegacyDataProductCardState.js';
+import { generateGAVCoordinates } from '@finos/legend-storage';
 
 export const MarketplaceLakehouseHome = observer(() => {
   const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
   const applicationStore = legendMarketplaceBaseStore.applicationStore;
   const auth = useAuth();
   const [highlightedDataProducts, setHighlightedDataProducts] = useState<
-    DataProductState[]
+    BaseProductCardState[]
   >([]);
   const [loading, setLoading] = useState(false);
 
@@ -122,21 +126,29 @@ export const MarketplaceLakehouseHome = observer(() => {
             columns={{ xs: 1, sm: 2, md: 3, lg: 4, xxxl: 5 }}
             className="marketplace-lakehouse-home__data-product-cards"
           >
-            {highlightedDataProducts.map((dataProductState) => (
-              <Grid
-                key={`${dataProductState.dataProductDetails.id}-${dataProductState.dataProductDetails.deploymentId}`}
-                size={1}
-              >
-                <LakehouseHighlightedDataProductCard
-                  dataProductState={dataProductState}
+            {highlightedDataProducts.map((productCardState) => (
+              <Grid key={productCardState.guid} size={1}>
+                <LakehouseHighlightedProductCard
+                  productCardState={productCardState}
                   onClick={() => {
-                    applicationStore.navigationService.navigator.visitAddress(
-                      applicationStore.navigationService.navigator.generateAddress(
-                        generateLakehouseDataProductPath(
-                          dataProductState.dataProductDetails.id,
-                          dataProductState.dataProductDetails.deploymentId,
-                        ),
-                      ),
+                    const path =
+                      productCardState instanceof DataProductCardState
+                        ? generateLakehouseDataProductPath(
+                            productCardState.dataProductDetails.id,
+                            productCardState.dataProductDetails.deploymentId,
+                          )
+                        : productCardState instanceof LegacyDataProductCardState
+                          ? generateLegacyDataProductPath(
+                              generateGAVCoordinates(
+                                productCardState.groupId,
+                                productCardState.artifactId,
+                                productCardState._versionId,
+                              ),
+                              productCardState.dataSpace.path,
+                            )
+                          : '';
+                    applicationStore.navigationService.navigator.goToLocation(
+                      path,
                     );
                   }}
                 />

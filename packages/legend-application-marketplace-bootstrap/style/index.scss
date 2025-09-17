@@ -17,5 +17,14 @@
 @import url('@finos/legend-art/lib/normalize.css');
 @import url('@finos/legend-art/lib/index.css');
 @import url('@finos/legend-lego/lib/index.css');
+@import url('@finos/legend-query-builder/lib/data-access-overview.css');
 @import url('@finos/legend-application-marketplace/lib/index.css');
+
+@import url('@finos/legend-extension-dsl-diagram/lib/index.css');
+@import url('@finos/legend-extension-dsl-data-space/lib/index.css');
+
+// NOTE: The reason why we put the code here is that this is where we essentially do all
+// the overriding for everything from every extensions. In other words, this is the
+// only place where we can exhaustively and correctly override native dark theme with
+// light theme colors.
 @import url('@finos/legend-application-query/lib/light-mode.css');

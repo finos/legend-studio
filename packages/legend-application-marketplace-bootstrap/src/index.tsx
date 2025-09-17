@@ -20,10 +20,16 @@ import {
   type AbstractPlugin,
   WebConsole,
 } from '@finos/legend-shared';
+import { DSL_DataSpace_GraphManagerPreset } from '@finos/legend-extension-dsl-data-space/graph';
+import { DSL_Diagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram/graph';
 
 export class LegendMarketplaceWebApplication {
   static getPresetCollection(): AbstractPreset[] {
-    return [];
+    return [
+      // graph managers
+      new DSL_DataSpace_GraphManagerPreset(),
+      new DSL_Diagram_GraphManagerPreset(),
+    ];
   }
 
   static getPluginCollection(): AbstractPlugin[] {

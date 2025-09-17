@@ -35,7 +35,7 @@ import { DataProductSupportInfo } from './DataProductSupportInfo.js';
 export const ProductWikiPlaceholder: React.FC<{ message: string }> = (
   props,
 ) => (
-  <div className="data-space__viewer__wiki__placeholder">{props.message}</div>
+  <div className="data-product__viewer__wiki__placeholder">{props.message}</div>
 );
 
 export const TerminalProductPrice = observer(
@@ -65,7 +65,7 @@ export const TerminalProductPrice = observer(
 
     return (
       <button
-        className="data-space__viewer__wiki__section__pricing"
+        className="data-product__viewer__wiki__section__pricing"
         onClick={handlePricingToggle}
       >
         ${getDisplayPrice()} {isAnnual ? 'ANNUALLY' : 'MONTHLY'} PER LICENSE
@@ -106,13 +106,13 @@ export const ProductDescription = observer(
     }, [productViewerState, anchor]);
 
     return (
-      <div ref={sectionRef} className="data-space__viewer__wiki__section">
-        <div className="data-space__viewer__wiki__section__content">
+      <div ref={sectionRef} className="data-product__viewer__wiki__section">
+        <div className="data-product__viewer__wiki__section__content">
           {productViewerState.product.description !== undefined ? (
-            <div className="data-space__viewer__description">
-              <div className="data-space__viewer__description__content">
+            <div className="data-product__viewer__description">
+              <div className="data-product__viewer__description__content">
                 <MarkdownTextViewer
-                  className="data-space__viewer__markdown-text-viewer"
+                  className="data-product__viewer__markdown-text-viewer"
                   value={{
                     value: productViewerState.product.description,
                   }}
@@ -170,7 +170,7 @@ export const DataProductWiki = observer(
     ]);
 
     return (
-      <div className="data-space__viewer__wiki">
+      <div className="data-product__viewer__wiki">
         <ProductDescription productViewerState={productViewerState} />
         {isTerminalProductViewerState && (
           <TerminalProductPrice

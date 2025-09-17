@@ -54,7 +54,7 @@
     flex-direction: column;
     gap: 2rem;
     font-size: 1.8rem;
-    min-width: 20rem;
+    min-width: 25rem;
 
     &__filter {
       display: flex;
@@ -67,6 +67,28 @@
 
       .MuiTypography-root {
         font-size: 1.2rem;
+      }
+
+      &__section-header {
+        @include flexVCenter;
+
+        margin-left: 3rem;
+      }
+
+      &__expander {
+        @include flexCenter;
+
+        min-width: 3rem;
+        margin-left: -3rem;
+        cursor: pointer;
+      }
+
+      &__unmodeled-config {
+        margin-left: 5.5rem;
+
+        hr {
+          margin-right: 2rem;
+        }
       }
     }
   }
