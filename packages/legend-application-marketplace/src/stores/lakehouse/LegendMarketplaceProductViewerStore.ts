@@ -89,7 +89,7 @@ export class LegendMarketplaceProductViewerStore {
   readonly marketplaceBaseStore: LegendMarketplaceBaseStore;
   dataProductViewer: DataProductViewerState | undefined;
   terminalProductViewer: TerminalProductViewerState | undefined;
-  legacyProductViewer: DataSpaceViewerState | undefined;
+  legacyDataProductViewer: DataSpaceViewerState | undefined;
 
   readonly loadingProductState = ActionState.create();
 
@@ -99,10 +99,10 @@ export class LegendMarketplaceProductViewerStore {
     makeObservable(this, {
       dataProductViewer: observable,
       terminalProductViewer: observable,
-      legacyProductViewer: observable,
+      legacyDataProductViewer: observable,
       setDataProductViewer: action,
       setTerminalProductViewer: action,
-      setLegacyProductViewer: action,
+      setLegacyDataProductViewer: action,
       initWithProduct: flow,
       initWithTerminal: flow,
       initWithSDLCProduct: flow,
@@ -118,8 +118,8 @@ export class LegendMarketplaceProductViewerStore {
     this.terminalProductViewer = val;
   }
 
-  setLegacyProductViewer(val: DataSpaceViewerState | undefined): void {
-    this.legacyProductViewer = val;
+  setLegacyDataProductViewer(val: DataSpaceViewerState | undefined): void {
+    this.legacyDataProductViewer = val;
   }
 
   *initWithTerminal(terminalId: string): GeneratorFn<void> {
@@ -489,7 +489,7 @@ export class LegendMarketplaceProductViewerStore {
           },
         },
       );
-      this.setLegacyProductViewer(dataSpaceViewerState);
+      this.setLegacyDataProductViewer(dataSpaceViewerState);
       this.loadingProductState.complete();
     } catch (error) {
       assertErrorThrown(error);

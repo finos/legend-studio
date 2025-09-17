@@ -57,9 +57,9 @@ export const LegacyDataProduct = withLegendMarketplaceProductViewerStore(
         >
           <CubesLoadingIndicatorIcon />
         </CubesLoadingIndicator>
-        {productViewerStore.legacyProductViewer && (
+        {productViewerStore.legacyDataProductViewer && (
           <DataSpaceViewer
-            dataSpaceViewerState={productViewerStore.legacyProductViewer}
+            dataSpaceViewerState={productViewerStore.legacyDataProductViewer}
           />
         )}
       </LegendMarketplacePage>
