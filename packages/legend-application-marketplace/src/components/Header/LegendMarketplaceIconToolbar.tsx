@@ -15,7 +15,11 @@
  */
 
 import { useApplicationStore } from '@finos/legend-application';
-import { HelpOutlineIcon, UserCircleIcon } from '@finos/legend-art';
+import {
+  HelpOutlineIcon,
+  ShoppingCartOutlineIcon,
+  UserCircleIcon,
+} from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { Avatar, Box, IconButton, Link, Menu, MenuItem } from '@mui/material';
 import { useEffect, useState } from 'react';
@@ -104,6 +108,16 @@ export const LegendMarketplaceIconToolbar = observer(() => {
     );
   };
 
+  const CartIconRenderer = () => {
+    return (
+      <>
+        <IconButton className="legend-marketplace-header__menu__icon">
+          <ShoppingCartOutlineIcon />
+        </IconButton>
+      </>
+    );
+  };
+
   const HelpIconRenderer = () => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
     const [openAppInfo, setOpenAppInfo] = useState(false);
@@ -151,6 +165,10 @@ export const LegendMarketplaceIconToolbar = observer(() => {
     {
       title: 'Profile',
       renderer: UserIconRenderer,
+    },
+    {
+      title: 'Cart',
+      renderer: CartIconRenderer,
     },
     {
       title: 'Help',

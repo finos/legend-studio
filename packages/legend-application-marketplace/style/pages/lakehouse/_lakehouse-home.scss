@@ -25,10 +25,7 @@
     max-width: 100%;
     width: 100%;
     gap: 3rem;
-    background-image: url('/assets/HomeBackground.png');
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
+    background: #7297c5;
 
     &__logo {
       margin-bottom: -6rem;
@@ -38,11 +35,22 @@
       }
     }
 
-    &__title {
-      color: var(--color-white);
-      font-size: 5.5rem;
-      letter-spacing: 1rem;
+    &__title_marketplace {
+      color: var(--color-black);
+      font-size: 2.5rem;
+      font-weight: bold;
+      letter-spacing: 0.125rem;
       text-transform: uppercase;
+      margin-top: -3.125rem;
+    }
+
+    &__title_legend {
+      color: var(--color-black);
+      font-size: 1.125rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      margin-right: 14.688rem;
+      text-align: left;
     }
   }
 
@@ -50,11 +58,23 @@
     @include flexVCenter;
 
     width: clamp(32rem, 50vw, 64rem);
+    height: 3.499rem;
+    margin-top: -1.563rem;
 
     .legend-marketplace__search-bar {
       flex: 1;
       width: unset;
       margin-right: 1rem;
+    }
+
+    &__text-field {
+      font-size: 1.25rem;
+    }
+
+    &__input {
+      font-size: 1.25rem;
+      line-height: 1.5rem;
+      color: var(--color-black);
     }
   }
 

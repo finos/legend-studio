@@ -21,45 +21,30 @@
 
   height: var(--legend-marketplace-header-height);
   box-shadow: none;
-  background: none;
-
-  &__backdrop-image {
-    position: absolute;
-    inset: 0;
-    height: 100%;
-    background-image: url('/assets/HomeBackground.png');
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-  }
-
-  &__backdrop {
-    position: absolute;
-    inset: 0;
-    height: 110%;
-    backdrop-filter: blur(16px);
-    mask-image: linear-gradient(to bottom, black 0% 91%, transparent 91% 100%);
-    pointer-events: none;
-  }
+  background: #7297c5;
 
   &__menu__icon {
-    color: var(--color-white);
+    color: var(--color-black);
 
     svg {
-      font-size: 3.4rem;
-      opacity: 0.95;
+      font-size: 1.875rem;
     }
   }
 
   &__name {
     @include flexVCenter;
 
-    color: var(--color-white);
+    color: var(--color-black);
     font-size: 2.4rem;
     font-weight: 700;
     margin: 1rem 2rem;
     cursor: pointer;
     gap: 0.5rem;
+  }
+
+  &__logo {
+    display: block;
+    object-fit: contain;
   }
 
   &__tabs {
@@ -71,9 +56,9 @@
   &__tab {
     @include flexVCenter;
 
-    color: var(--color-white);
-    font-size: 2rem;
-    padding: 1rem 2rem;
+    color: var(--color-black);
+    font-size: 1rem;
+    padding: 0.625rem 0.75rem;
     text-transform: unset;
     border-radius: unset;
 
