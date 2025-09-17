@@ -164,7 +164,6 @@ export class DepotServerClient extends AbstractServerClient {
     classifierPath: string,
     options?: {
       scope?: DepotScope | undefined;
-      summary?: boolean | undefined;
     },
   ): Promise<PlainObject<StoredEntity>[]> =>
     this.get(
@@ -175,7 +174,6 @@ export class DepotServerClient extends AbstractServerClient {
       undefined,
       {
         scope: options?.scope,
-        summary: options?.summary,
       },
     );
 

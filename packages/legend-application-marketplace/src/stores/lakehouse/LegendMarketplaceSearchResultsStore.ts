@@ -368,7 +368,7 @@ export class LegendMarketplaceSearchResultsStore {
   async fetchLegacyDataProducts(): Promise<void> {
     try {
       const dataSpaceEntitySummaries =
-        (await this.marketplaceBaseStore.depotServerClient.getEntitiesByClassifier(
+        (await this.marketplaceBaseStore.depotServerClient.getEntitiesSummaryByClassifier(
           DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
           {
             scope: DepotScope.RELEASES,
