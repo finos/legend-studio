@@ -23,6 +23,8 @@ import {
   type GeneratorFn,
 } from '@finos/legend-shared';
 import {
+  extractElementNameFromPath,
+  extractPackagePathFromPath,
   V1_AdHocDeploymentDataProductOrigin,
   V1_entitlementsDataProductDetailsResponseToDataProductDetails,
   V1_EntitlementsLakehouseEnvironmentType,
@@ -38,7 +40,10 @@ import {
   V1_deserializeDataSpace,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import { LegacyDataProductCardState } from './dataProducts/LegacyDataProductCardState.js';
-import { type StoredEntity, DepotScope } from '@finos/legend-server-depot';
+import {
+  type StoredSummaryEntity,
+  DepotScope,
+} from '@finos/legend-server-depot';
 
 export enum DataProductFilterType {
   MODELED_DATA_PRODUCTS = 'MODELED_DATA_PRODUCTS',
@@ -362,23 +367,31 @@ export class LegendMarketplaceSearchResultsStore {
 
   async fetchLegacyDataProducts(): Promise<void> {
     try {
-      const dataSpaceEntities =
+      const dataSpaceEntitySummaries =
         (await this.marketplaceBaseStore.depotServerClient.getEntitiesByClassifier(
           DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
           {
             scope: DepotScope.RELEASES,
+            summary: true,
           },
-        )) as unknown as StoredEntity[];
-      const legacyDataProductCardStates = dataSpaceEntities.map((entity) => {
-        const dataSpace = V1_deserializeDataSpace(entity.entity.content);
-        return new LegacyDataProductCardState(
-          this.marketplaceBaseStore,
-          dataSpace,
-          entity.groupId,
-          entity.artifactId,
-          entity.versionId,
-        );
-      });
+        )) as unknown as StoredSummaryEntity[];
+      const legacyDataProductCardStates = dataSpaceEntitySummaries.map(
+        (entity) => {
+          const dataSpace = V1_deserializeDataSpace({
+            executionContexts: [],
+            defaultExecutionContext: '',
+            package: extractPackagePathFromPath(entity.path) ?? '',
+            name: extractElementNameFromPath(entity.path) ?? entity.path,
+          });
+          return new LegacyDataProductCardState(
+            this.marketplaceBaseStore,
+            dataSpace,
+            entity.groupId,
+            entity.artifactId,
+            entity.versionId,
+          );
+        },
+      );
       this.setLegacyDataProductCardStates(legacyDataProductCardStates);
       this.legacyDataProductCardStates.forEach((legacyDataProductCardState) =>
         legacyDataProductCardState.init(),
