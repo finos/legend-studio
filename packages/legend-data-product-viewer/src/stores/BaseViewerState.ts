@@ -13,9 +13,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { type NavigationZone } from '@finos/legend-application';
-import type { LegendMarketplaceApplicationStore } from '../LegendMarketplaceBaseStore.js';
+import {
+  type ApplicationStore,
+  type LegendApplicationConfig,
+  type LegendApplicationPlugin,
+  type LegendApplicationPluginManager,
+  type NavigationZone,
+  StereotypeConfig,
+} from '@finos/legend-application';
 import type { BaseLayoutState } from './BaseLayoutState.js';
+import type { GraphManagerPluginManager } from '@finos/legend-graph';
+import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
+import { createModelSchema } from 'serializr';
+
+export class DataProductConfig {
+  publicStereotype!: StereotypeConfig;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(DataProductConfig, {
+      publicStereotype: usingModelSchema(StereotypeConfig.serialization.schema),
+    }),
+  );
+}
+
+export type ProductViewerLegendApplicationConfig = LegendApplicationConfig & {
+  options: {
+    dataProductConfig: DataProductConfig;
+  };
+};
+
+export type ProductViewerLegendApplicationStore = ApplicationStore<
+  ProductViewerLegendApplicationConfig,
+  LegendApplicationPluginManager<LegendApplicationPlugin> &
+    GraphManagerPluginManager
+>;
 
 export abstract class BaseViewerState<
   TProduct,
@@ -23,7 +54,7 @@ export abstract class BaseViewerState<
 > {
   readonly product: TProduct;
   readonly layoutState: TLayoutState;
-  readonly applicationStore: LegendMarketplaceApplicationStore;
+  readonly applicationStore: ProductViewerLegendApplicationStore;
 
   readonly onZoneChange?:
     | ((zone: NavigationZone | undefined) => void)
@@ -31,7 +62,7 @@ export abstract class BaseViewerState<
 
   constructor(
     product: TProduct,
-    applicationStore: LegendMarketplaceApplicationStore,
+    applicationStore: ProductViewerLegendApplicationStore,
     layoutState: TLayoutState,
     actions?: {
       onZoneChange?: ((zone: NavigationZone | undefined) => void) | undefined;

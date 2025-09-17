@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { type NavigationZone } from '@finos/legend-application';
+import type { NavigationZone } from '@finos/legend-application';
 import {
   type GraphManagerState,
   type V1_AccessPointGroup,
@@ -33,8 +33,6 @@ import {
   V1_ResourceType,
 } from '@finos/legend-graph';
 import { action, flow, observable, makeObservable } from 'mobx';
-import type { DataProductLayoutState } from './BaseLayoutState.js';
-import { DATA_PRODUCT_VIEWER_SECTION } from './ProductViewerNavigation.js';
 import { DataProductDataAccessState } from './DataProductDataAccessState.js';
 import {
   ActionState,
@@ -43,9 +41,6 @@ import {
   type PlainObject,
 } from '@finos/legend-shared';
 import { serialize } from 'serializr';
-import { dataContractContainsDataProduct } from './LakehouseUtils.js';
-import type { LegendMarketplaceProductViewerStore } from './LegendMarketplaceProductViewerStore.js';
-import { BaseViewerState } from './BaseViewerState.js';
 
 export class DataProductViewerState extends BaseViewerState<
   V1_DataProduct,
@@ -130,6 +125,7 @@ export class DataProductViewerState extends BaseViewerState<
   setDataContract(val: V1_DataContract | undefined) {
     this.dataContract = val;
   }
+
   *fetchContracts(token: string | undefined): GeneratorFn<void> {
     try {
       this.accessState.accessGroupStates.forEach((e) =>

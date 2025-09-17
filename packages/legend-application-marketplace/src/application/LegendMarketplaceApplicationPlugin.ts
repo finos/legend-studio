@@ -16,10 +16,6 @@
 
 import { LegendApplicationPlugin } from '@finos/legend-application';
 import type { LegendMarketplacePluginManager } from '../application/LegendMarketplacePluginManager.js';
-import type {
-  AccessPointGroupAccess,
-  DataProductGroupAccessState,
-} from '../stores/lakehouse/DataProductDataAccessState.js';
 import type { V1_OrganizationalScope } from '@finos/legend-graph';
 import type { LegendMarketplaceBaseStore } from '../stores/LegendMarketplaceBaseStore.js';
 import type React from 'react';

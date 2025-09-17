@@ -25,17 +25,8 @@ import {
   QuestionCircleIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-import {
-  DATA_PRODUCT_VIEWER_SECTION,
-  generateAnchorForSection,
-} from '../../../stores/lakehouse/ProductViewerNavigation.js';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
 import { useApplicationStore } from '@finos/legend-application';
-import {
-  AccessPointGroupAccess,
-  type DataProductGroupAccessState,
-} from '../../../stores/lakehouse/DataProductDataAccessState.js';
 import {
   type DataGridCellRendererParams,
   type DataGridColumnDefinition,
@@ -87,12 +78,7 @@ import {
   Tabs,
   Tooltip,
 } from '@mui/material';
-import { useLegendMarketplaceBaseStore } from '../../../application/providers/LegendMarketplaceFrameworkProvider.js';
-import { EntitlementsDataContractCreator } from '../entitlements/EntitlementsDataContractCreator.js';
-import { EntitlementsDataContractViewer } from '../../../components/DataContractViewer/EntitlementsDataContractViewer.js';
-import { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
 import { useAuth } from 'react-oidc-context';
-import { DataProductSubscriptionViewer } from '../subscriptions/DataProductSubscriptionsViewer.js';
 import {
   assertErrorThrown,
   guaranteeNonNullable,
@@ -101,6 +87,15 @@ import {
 } from '@finos/legend-shared';
 import { resolveVersion } from '@finos/legend-server-depot';
 import { deserialize } from 'serializr';
+import type {
+  DataProductGroupAccessState,
+  AccessPointGroupAccess,
+} from '../../stores/DataProduct/DataProductDataAccessState.js';
+import type { DataProductViewerState } from '../../stores/DataProduct/DataProductViewerState.js';
+import {
+  generateAnchorForSection,
+  DATA_PRODUCT_VIEWER_SECTION,
+} from '../../stores/ProductViewerNavigation.js';
 
 const MAX_GRID_AUTO_HEIGHT_ROWS = 10; // Maximum number of rows to show before switching to normal height (scrollable grid)
 
@@ -142,7 +137,6 @@ const TDSColumnMoreInfoCellRenderer = (props: {
 }): React.ReactNode => {
   const { params, accessGroupState } = props;
   const data = params.data;
-  const store = useLegendMarketplaceBaseStore();
   const enum MoreInfoTabs {
     COLUMNS = 'Columns',
     GRAMMAR = 'Grammar',
@@ -169,10 +163,11 @@ const TDSColumnMoreInfoCellRenderer = (props: {
 
     const fetchAccessPointGrammar = async () => {
       try {
-        const grammar = await store.engineServerClient.JSONToGrammar_lambda(
-          V1_serializeRawValueSpecification(data.func),
-          V1_RenderStyle.PRETTY,
-        );
+        const grammar =
+          await accessGroupState.accessState.viewerState.engineServerClient.JSONToGrammar_lambda(
+            V1_serializeRawValueSpecification(data.func),
+            V1_RenderStyle.PRETTY,
+          );
         setAccessPointGrammar(grammar);
       } catch {
         throw new Error('Error fetching access point grammar');
@@ -217,7 +212,7 @@ const TDSColumnMoreInfoCellRenderer = (props: {
         );
         const relationType = deserialize(
           V1_relationTypeModelSchema,
-          await store.engineServerClient.lambdaRelationType(
+          await accessGroupState.accessState.viewerState.engineServerClient.lambdaRelationType(
             V1_LambdaReturnTypeInput.serialization.toJson(relationTypeInput),
           ),
         );
@@ -245,7 +240,7 @@ const TDSColumnMoreInfoCellRenderer = (props: {
       .finally(() => {
         setLoadingAccessPointDetails(false);
       });
-  }, [data, store, accessGroupState]);
+  }, [data, accessGroupState]);
 
   if (!data) {
     return null;

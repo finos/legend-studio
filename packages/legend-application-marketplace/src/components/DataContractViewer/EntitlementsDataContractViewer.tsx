@@ -15,7 +15,6 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import type { EntitlementsDataContractViewerState } from '../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
 import {
   Accordion,
   AccordionDetails,

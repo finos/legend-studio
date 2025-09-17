@@ -54,7 +54,6 @@ import {
   V1_SdlcDeploymentDataProductOrigin,
   V1_TerminalModelSchema,
 } from '@finos/legend-graph';
-import { DataProductViewerState } from './DataProductViewerState.js';
 import type { AuthContextProps } from 'react-oidc-context';
 import { getDataProductFromDetails } from './LakehouseUtils.js';
 import {
@@ -69,11 +68,6 @@ import {
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl,
   generateLakehouseDataProductPath,
 } from '../../__lib__/LegendMarketplaceNavigation.js';
-import { TerminalProductViewerState } from './TerminalProductViewerState.js';
-import {
-  DataProductLayoutState,
-  TerminalProductLayoutState,
-} from './BaseLayoutState.js';
 import {
   DataSpaceViewerState,
   EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl,

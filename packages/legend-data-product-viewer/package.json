@@ -1,22 +1,20 @@
 {
-  "name": "@finos/legend-application-marketplace",
-  "version": "0.1.9",
-  "description": "Legend Marketplace application core",
+  "name": "@finos/legend-data-product-viewer",
+  "version": "0.0.1",
+  "description": "Legend data product viewer core",
   "keywords": [
     "legend",
-    "legend-application",
-    "legend-marketplace",
-    "search",
-    "discovery"
+    "data product",
+    "viewer"
   ],
-  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-application-marketplace",
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-data-product-viewer",
   "bugs": {
     "url": "https://github.com/finos/legend-studio/issues"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/finos/legend-studio.git",
-    "directory": "packages/legend-application-marketplace"
+    "directory": "packages/legend-data-product-viewer"
   },
   "license": "Apache-2.0",
   "sideEffects": false,
@@ -48,8 +46,6 @@
     "@finos/legend-application": "workspace:*",
     "@finos/legend-art": "workspace:*",
     "@finos/legend-code-editor": "workspace:*",
-    "@finos/legend-data-product-viewer": "workspace:*",
-    "@finos/legend-extension-dsl-data-space": "workspace:*",
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-lego": "workspace:*",
     "@finos/legend-server-depot": "workspace:*",
@@ -92,8 +88,5 @@
   },
   "publishConfig": {
     "directory": "build/publishContent"
-  },
-  "extensions": {
-    "applicationMarketplacePlugin": "@finos/legend-application-marketplace-plugin-core"
   }
 }

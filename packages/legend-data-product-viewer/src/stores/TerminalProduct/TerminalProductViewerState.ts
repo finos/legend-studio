@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import { BaseViewerState } from './BaseViewerState.js';
-import { TERMINAL_PRODUCT_VIEWER_SECTION } from './ProductViewerNavigation.js';
 import type { V1_Terminal } from '@finos/legend-graph';
-import type { TerminalProductLayoutState } from './BaseLayoutState.js';
+import { BaseViewerState } from '../BaseViewerState.js';
+import type { TerminalProductLayoutState } from '../BaseLayoutState.js';
+import { TERMINAL_PRODUCT_VIEWER_SECTION } from '../ProductViewerNavigation.js';
 
 export class TerminalProductViewerState extends BaseViewerState<
   V1_Terminal,

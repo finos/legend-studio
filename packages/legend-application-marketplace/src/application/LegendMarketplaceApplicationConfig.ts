@@ -27,19 +27,9 @@ import {
   type LegendApplicationConfigurationData,
   type LegendApplicationConfigurationInput,
   LegendApplicationConfig,
-  StereotypeConfig,
 } from '@finos/legend-application';
 import type { AuthProviderProps } from 'react-oidc-context';
-
-export class DataProductConfig {
-  publicStereotype!: StereotypeConfig;
-
-  static readonly serialization = new SerializationFactory(
-    createModelSchema(DataProductConfig, {
-      publicStereotype: usingModelSchema(StereotypeConfig.serialization.schema),
-    }),
-  );
-}
+import { DataProductConfig } from '@finos/legend-data-product-viewer';
 
 class LegendMarketplaceApplicationCoreOptions {
   /**

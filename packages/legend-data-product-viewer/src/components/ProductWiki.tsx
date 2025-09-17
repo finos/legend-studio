@@ -16,21 +16,20 @@
 
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
-import { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
-import {
-  DATA_PRODUCT_VIEWER_SECTION,
-  generateAnchorForSection,
-  TERMINAL_PRODUCT_VIEWER_SECTION,
-} from '../../../stores/lakehouse/ProductViewerNavigation.js';
 import { MarkdownTextViewer } from '@finos/legend-art';
-import { DataProducteDataAccess } from './DataProductDataAccess.js';
-import type { BaseViewerState } from '../../../stores/lakehouse/BaseViewerState.js';
-import { TerminalProductViewerState } from '../../../stores/lakehouse/TerminalProductViewerState.js';
 import type {
   SupportedProducts,
   SupportedLayoutStates,
 } from './ProductViewer.js';
-import { DataProductSupportInfo } from './DataProductSupportInfo.js';
+import { TerminalProductViewerState } from '../stores/TerminalProduct/TerminalProductViewerState.js';
+import type { BaseViewerState } from '../stores/BaseViewerState.js';
+import { DataProductViewerState } from '../stores/DataProduct/DataProductViewerState.js';
+import {
+  DATA_PRODUCT_VIEWER_SECTION,
+  TERMINAL_PRODUCT_VIEWER_SECTION,
+  generateAnchorForSection,
+} from '../stores/ProductViewerNavigation.js';
+import { DataProducteDataAccess } from './DataProduct/DataProductDataAccess.js';
 
 export const ProductWikiPlaceholder: React.FC<{ message: string }> = (
   props,
@@ -132,7 +131,7 @@ export const ProductDescription = observer(
     );
   },
 );
-export const DataProductWiki = observer(
+export const ProductWiki = observer(
   (props: {
     productViewerState: BaseViewerState<
       SupportedProducts,

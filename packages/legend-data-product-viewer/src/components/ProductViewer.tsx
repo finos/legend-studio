@@ -15,10 +15,8 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
 import { useEffect, useRef, useState } from 'react';
 import { CaretUpIcon, clsx, OpenIcon } from '@finos/legend-art';
-import { DataProductWiki } from './DataProductWiki.js';
 import { Button } from '@mui/material';
 import { isSnapshotVersion } from '@finos/legend-server-depot';
 import {
@@ -28,12 +26,14 @@ import {
   V1_EntitlementsLakehouseEnvironmentType,
   V1_SdlcDeploymentDataProductOrigin,
 } from '@finos/legend-graph';
-import type { BaseViewerState } from '../../../stores/lakehouse/BaseViewerState.js';
 import type {
   TerminalProductLayoutState,
   DataProductLayoutState,
-} from '../../../stores/lakehouse/BaseLayoutState.js';
-import { TerminalProductViewerState } from '../../../stores/lakehouse/TerminalProductViewerState.js';
+} from '../stores/BaseLayoutState.js';
+import type { BaseViewerState } from '../stores/BaseViewerState.js';
+import { DataProductViewerState } from '../stores/DataProduct/DataProductViewerState.js';
+import { TerminalProductViewerState } from '../stores/TerminalProduct/TerminalProductViewerState.js';
+import { ProductWiki } from './ProductWiki.js';
 
 export type SupportedProducts = V1_Terminal | V1_DataProduct;
 export type SupportedLayoutStates =
@@ -272,7 +272,7 @@ export const ProductViewer = observer(
             )}
           >
             <div className="data-product__viewer__content">
-              <DataProductWiki productViewerState={productViewerState} />
+              <ProductWiki productViewerState={productViewerState} />
             </div>
           </div>
         </div>

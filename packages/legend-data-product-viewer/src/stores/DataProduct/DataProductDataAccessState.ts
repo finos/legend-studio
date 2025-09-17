@@ -50,12 +50,12 @@ import {
   makeObservable,
   observable,
 } from 'mobx';
+import { deserialize, serialize } from 'serializr';
 import {
   contractContainsSystemAccount,
   dataContractContainsAccessGroup,
   isMemberOfContract,
-} from './LakehouseUtils.js';
-import { deserialize, serialize } from 'serializr';
+} from '../../utils/DataContractUtils.js';
 
 export enum AccessPointGroupAccess {
   // can be used to indicate fetching or resyncing of group access
