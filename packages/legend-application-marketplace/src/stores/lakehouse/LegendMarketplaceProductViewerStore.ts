@@ -191,7 +191,8 @@ export class LegendMarketplaceProductViewerStore {
       const dataProductDetails = guaranteeNonNullable(
         fetchedDataProductDetails[0],
       );
-      // Crete graph manager for parsing ad-hoc deployed data products
+
+      // Create graph manager state
       const graphManagerState = new GraphManagerState(
         this.marketplaceBaseStore.applicationStore.pluginManager,
         this.marketplaceBaseStore.applicationStore.logService,
