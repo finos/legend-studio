@@ -16,7 +16,7 @@
 
 import { type JSX, useState } from 'react';
 import { IconButton, InputAdornment, TextField } from '@mui/material';
-import { clsx, SearchIcon } from '@finos/legend-art';
+import { clsx, SearchIcon, TuneIcon } from '@finos/legend-art';
 
 export interface Vendor {
   provider: string;
@@ -58,6 +58,9 @@ export const LegendMarketplaceSearchBar = (props: {
             className: 'legend-marketplace__search-bar__input',
             endAdornment: (
               <InputAdornment position="end">
+                <IconButton onClick={() => {}} title="filter">
+                  <TuneIcon />
+                </IconButton>
                 <IconButton
                   onClick={() => onSearch?.(searchQuery)}
                   title="search"

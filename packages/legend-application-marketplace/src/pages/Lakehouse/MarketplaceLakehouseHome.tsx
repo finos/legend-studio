@@ -93,14 +93,17 @@ export const MarketplaceLakehouseHome = observer(() => {
     <LegendMarketplacePage className="marketplace-lakehouse-home">
       <Container className="marketplace-lakehouse-home__search-container">
         <Box className="marketplace-lakehouse-home__search-container__logo">
-          <img src="/assets/LegendLogo.png" alt="Legend Logo" />
+          <img src="/assets/legendmarketplacehomelogo.png" alt="Legend Logo" />
         </Box>
-        <Box className="marketplace-lakehouse-home__search-container__title">
+        <Box className="marketplace-lakehouse-home__search-container__title_legend">
+          Legend
+        </Box>
+        <Box className="marketplace-lakehouse-home__search-container__title_marketplace">
           Marketplace
         </Box>
         <LegendMarketplaceSearchBar
           onSearch={handleSearch}
-          placeholder="Search Legend Marketplace"
+          placeholder="Which data can I help you find?"
           className="marketplace-lakehouse-home__search-bar"
         />
       </Container>

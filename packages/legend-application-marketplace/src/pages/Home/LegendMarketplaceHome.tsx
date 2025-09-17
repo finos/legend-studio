@@ -59,9 +59,7 @@ export const LegendMarketplaceHome = withLegendMarketplaceVendorDataStore(
               Discover the right data and accelerate analytic productivity.
             </h3>
           </div>
-          <div className="legend-marketplace-home__landing__search-bar">
-            <LegendMarketplaceSearchBar onSearch={onSearch} />
-          </div>
+          <div className="legend-marketplace-home__landing__search-bar"></div>
         </div>
         <div className="legend-marketplace-home__vendors-title">
           <h3>Explore our Data</h3>

@@ -47,7 +47,7 @@ const LegendMarketPlaceHeaderTabs = observer(
             ) !== null;
 
           return (
-            <Button
+            <a
               key={page.title}
               className={clsx('legend-marketplace-header__tab', {
                 'legend-marketplace-header__tab--selected': isSelectedTab,
@@ -55,7 +55,7 @@ const LegendMarketPlaceHeaderTabs = observer(
               onClick={() => navigateToPage(page.urlRoute)}
             >
               {page.title}
-            </Button>
+            </a>
           );
         })}
       </Box>
@@ -175,8 +175,28 @@ export const MarketplaceLakehouseHeader = observer(() => {
       homeUrl={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE}
       pages={[
         {
-          title: 'Entitlements',
+          title: 'Lakehouse Entitlements',
           urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS,
+        },
+        {
+          title: 'Data Products',
+          urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_PRODUCTS,
+        },
+        {
+          title: 'Data APIs',
+          urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_APIS,
+        },
+        {
+          title: 'Intelligence and AI Agents',
+          urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.AGENTS,
+        },
+        {
+          title: 'Terminals and Addons',
+          urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.VENDOR_DATA,
+        },
+        {
+          title: 'GS Inventory',
+          urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.INVENTORY,
         },
       ]}
       showIcons={true}

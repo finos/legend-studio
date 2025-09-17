@@ -66,6 +66,10 @@ export const LEGEND_MARKETPLACE_ROUTE_PATTERN = Object.freeze({
   SUBSCRIPTIONS: '/subscriptions',
   ORDERS: '/orders',
   LAKEHOUSE_ADMIN: '/lakehouse/admin',
+  DATA_PRODUCTS: '/dataproducts',
+  DATA_APIS: '/dataapis',
+  AGENTS: '/agents',
+  INVENTORY: '/inventory',
 });
 
 export const LAKEHOUSE_ROUTES = Object.freeze([
