@@ -120,7 +120,6 @@ import {
   MdOutlineHelpOutline,
   MdError,
   MdOutlineGroupWork,
-  MdOutlineDeleteOutline,
   MdOutlineTune,
 } from 'react-icons/md';
 

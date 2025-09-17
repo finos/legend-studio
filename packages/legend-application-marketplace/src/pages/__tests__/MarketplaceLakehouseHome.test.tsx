@@ -45,14 +45,14 @@ test('renders header with Marketplace title and Entitlements button and Marketpl
 
   expect(await screen.findAllByText(/^Marketplace$/)).toHaveLength(2);
 
-  expect(screen.getByText('Entitlements')).toBeDefined();
+  expect(screen.getByText('Lakehouse Entitlements')).toBeDefined();
 });
 
 test('renders search box with correct placeholder', async () => {
   await setupTestComponent();
 
   expect(
-    screen.getByPlaceholderText('Search Legend Marketplace'),
+    screen.getByPlaceholderText('Which data can I help you find?'),
   ).toBeDefined();
 });
 
@@ -71,7 +71,9 @@ test("doesn't navigate to search results page if search box is empty", async () 
   MOCK__baseStore.applicationStore.navigationService.navigator.goToLocation =
     mockGoToLocation;
 
-  const searchInput = screen.getByPlaceholderText('Search Legend Marketplace');
+  const searchInput = screen.getByPlaceholderText(
+    'Which data can I help you find?',
+  );
   fireEvent.keyPress(searchInput, {
     key: 'Enter',
     code: 'Enter',
@@ -86,7 +88,9 @@ test('navigates to search results page if search box contains text', async () =>
   MOCK__baseStore.applicationStore.navigationService.navigator.goToLocation =
     mockGoToLocation;
 
-  const searchInput = screen.getByPlaceholderText('Search Legend Marketplace');
+  const searchInput = screen.getByPlaceholderText(
+    'Which data can I help you find?',
+  );
   const searchButton = screen.getByTitle('search');
   fireEvent.change(searchInput, { target: { value: 'data' } });
   fireEvent.click(searchButton);

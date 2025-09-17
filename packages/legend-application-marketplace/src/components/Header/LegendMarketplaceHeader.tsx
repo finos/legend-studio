@@ -15,7 +15,7 @@
  */
 
 import { clsx, LegendLogo } from '@finos/legend-art';
-import { AppBar, Box, Button, Container, Toolbar } from '@mui/material';
+import { AppBar, Box, Container, Toolbar } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { LEGEND_MARKETPLACE_TEST_ID } from '../../__lib__/LegendMarketplaceTesting.js';
 import { useApplicationStore } from '@finos/legend-application';
