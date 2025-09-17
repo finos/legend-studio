@@ -163,15 +163,6 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateIngestEnvironemntUrl = (
   baseUrl: string,
 ): string => `${baseUrl}/data-product/swagger-ui`;
 
-enum LEGEND_QUERY_ROUTE_PATTERN_TOKEN {
-  GAV = 'gav',
-  SERVICE_PATH = 'servicePath',
-}
-
-const LEGEND_QUERY_ROUTE_PATTERN = Object.freeze({
-  CREATE_FROM_SERVICE_QUERY: `/create-from-service/:${LEGEND_QUERY_ROUTE_PATTERN_TOKEN.GAV}/:${LEGEND_QUERY_ROUTE_PATTERN_TOKEN.SERVICE_PATH}`,
-});
-
 /**
  * @external_application_navigation This depends on Legend Query routing and is hardcoded so it's potentially brittle
  */
@@ -193,34 +184,3 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl =
     )}/${dataSpacePath}/${executionContext}/${
       runtimePath ? `/${runtimePath}` : ''
     }${classPath ? `?class=${classPath}` : ''}`;
-
-export enum LEGEND_QUERY_QUERY_PARAM_TOKEN {
-  SERVICE_EXECUTION_KEY = 'executionKey',
-}
-
-/**
- * @external_application_navigation This depends on Legend Query routing and is hardcoded so it's potentially brittle
- */
-export const EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorRoute =
-  (
-    groupId: string,
-    artifactId: string,
-    versionId: string,
-    servicePath: string,
-    executionKey?: string | undefined,
-  ): string =>
-    addQueryParametersToUrl(
-      generatePath(LEGEND_QUERY_ROUTE_PATTERN.CREATE_FROM_SERVICE_QUERY, {
-        [LEGEND_QUERY_ROUTE_PATTERN_TOKEN.GAV]: generateGAVCoordinates(
-          groupId,
-          artifactId,
-          versionId,
-        ),
-        [LEGEND_QUERY_ROUTE_PATTERN_TOKEN.SERVICE_PATH]: servicePath,
-      }),
-      stringifyQueryParams({
-        [LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_EXECUTION_KEY]: executionKey
-          ? encodeURIComponent(executionKey)
-          : executionKey,
-      }),
-    );
