@@ -148,10 +148,12 @@ const TaskApprovalView = (props: {
           )}
         </Box>
         <Box className="marketplace-lakehouse-entitlements__data-contract-viewer__task-approval-view__timestamp">
-          {formatDate(
-            new Date(task.rec.eventPayload.eventTimestamp),
-            `MM/dd/yyyy HH:mm:ss`,
-          )}
+          {task.rec.eventPayload
+            ? formatDate(
+                new Date(task.rec.eventPayload.eventTimestamp),
+                `MM/dd/yyyy HH:mm:ss`,
+              )
+            : 'Unkown'}
         </Box>
       </Box>
     );

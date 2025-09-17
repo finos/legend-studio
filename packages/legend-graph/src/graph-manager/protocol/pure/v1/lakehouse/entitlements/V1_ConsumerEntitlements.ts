@@ -178,7 +178,7 @@ export class V1_ContractUserEventRecord {
   dataContractId!: string;
   status!: V1_UserApprovalStatus;
   consumer!: string;
-  eventPayload!: V1_ContractUserEventPayload;
+  eventPayload: V1_ContractUserEventPayload | undefined;
   type!: V1_ApprovalType;
 }
 

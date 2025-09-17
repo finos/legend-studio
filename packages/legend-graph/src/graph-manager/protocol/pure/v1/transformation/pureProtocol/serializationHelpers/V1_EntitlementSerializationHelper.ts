@@ -16,6 +16,7 @@
 
 import {
   customListWithSchema,
+  optionalCustom,
   optionalCustomListWithSchema,
   UnsupportedOperationError,
   usingConstantValueSchema,
@@ -345,7 +346,7 @@ export const V1_contractUserEventRecordModelSchema = createModelSchema(
     dataContractId: primitive(),
     status: primitive(),
     consumer: primitive(),
-    eventPayload: custom(
+    eventPayload: optionalCustom(
       V1_serializeContractUserEventPayload,
       V1_deserializeContractUserEventPayload,
     ),
