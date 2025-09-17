@@ -220,9 +220,9 @@ export class LegendMarketplaceProductViewerStore {
       if (
         dataProductDetails.origin instanceof V1_AdHocDeploymentDataProductOrigin
       ) {
-        const entities: Entity[] = yield graphManager.pureCodeToEntities(
+        const entities: Entity[] = (yield graphManager.pureCodeToEntities(
           dataProductDetails.origin.definition,
-        );
+        )) as Entity[];
         yield graphManager.buildGraph(
           graphManagerState.graph,
           entities,
