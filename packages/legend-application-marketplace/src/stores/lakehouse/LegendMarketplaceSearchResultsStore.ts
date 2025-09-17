@@ -248,6 +248,66 @@ export class LegendMarketplaceSearchResultsStore {
       | V1_IngestEnvironmentClassification
       | undefined,
   ): void {
+    switch (filterType) {
+      case DataProductFilterType.MODELED_DATA_PRODUCTS:
+        this.filterState.modeledDataProducts =
+          !this.filterState.modeledDataProducts;
+        break;
+      case DataProductFilterType.UNMODELED_DATA_PRODUCTS:
+        this.filterState.unmodeledDataProducts =
+          !this.filterState.unmodeledDataProducts;
+        break;
+      case DataProductFilterType.UNMODELED_DATA_PRODUCTS__DEPLOY_TYPE:
+        switch (val) {
+          case UnmodeledDataProductDeployType.SDLC:
+            this.filterState.unmodeledDataProductsConfig.sdlcDeploy =
+              !this.filterState.unmodeledDataProductsConfig.sdlcDeploy;
+            break;
+          case UnmodeledDataProductDeployType.SANDBOX:
+            this.filterState.unmodeledDataProductsConfig.sandboxDeploy =
+              !this.filterState.unmodeledDataProductsConfig.sandboxDeploy;
+            break;
+          default:
+            break;
+        }
+        break;
+      case DataProductFilterType.UNMODELED_DATA_PRODUCTS__ENVIRONMENT_CLASSIFICATION:
+        switch (val) {
+          case V1_IngestEnvironmentClassification.DEV:
+            this.filterState.unmodeledDataProductsConfig.devEnvironmentClassification =
+              !this.filterState.unmodeledDataProductsConfig
+                .devEnvironmentClassification;
+            break;
+          case V1_IngestEnvironmentClassification.PROD_PARALLEL:
+            this.filterState.unmodeledDataProductsConfig.prodParallelEnvironmentClassification =
+              !this.filterState.unmodeledDataProductsConfig
+                .prodParallelEnvironmentClassification;
+            break;
+          case V1_IngestEnvironmentClassification.PROD:
+            this.filterState.unmodeledDataProductsConfig.prodEnvironmentClassification =
+              !this.filterState.unmodeledDataProductsConfig
+                .prodEnvironmentClassification;
+            break;
+          default:
+            break;
+        }
+        break;
+      default:
+        break;
+    }
+    LegendMarketplaceUserDataHelper.saveDataProductFilterConfig(
+      this.marketplaceBaseStore.applicationStore.userDataService,
+      this.filterState.currentFilterValues,
+    );
+  }
+
+  handleFilterChange2(
+    filterType: DataProductFilterType,
+    val:
+      | UnmodeledDataProductDeployType
+      | V1_IngestEnvironmentClassification
+      | undefined,
+  ): void {
     if (filterType === DataProductFilterType.MODELED_DATA_PRODUCTS) {
       this.filterState.modeledDataProducts =
         !this.filterState.modeledDataProducts;
