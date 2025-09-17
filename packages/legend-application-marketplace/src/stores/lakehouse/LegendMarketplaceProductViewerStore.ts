@@ -46,6 +46,7 @@ import {
   GraphDataWithOrigin,
   GraphManagerState,
   LegendSDLC,
+  V1_AdHocDeploymentDataProductOrigin,
   V1_DataProduct,
   V1_dataProductModelSchema,
   V1_entitlementsDataProductDetailsResponseToDataProductDetails,
@@ -212,6 +213,22 @@ export class LegendMarketplaceProductViewerStore {
         { engine: this.marketplaceBaseStore.remoteEngine },
       );
       yield graphManagerState.initializeSystem();
+
+      // For AdHoc DataProducts, we need to build the graph so that we have the
+      // PCMD to use for fetching access point relation types.
+      if (
+        dataProductDetails.origin instanceof V1_AdHocDeploymentDataProductOrigin
+      ) {
+        const entities: Entity[] = yield graphManager.pureCodeToEntities(
+          dataProductDetails.origin.definition,
+        );
+        yield graphManager.buildGraph(
+          graphManagerState.graph,
+          entities,
+          ActionState.create(),
+        );
+      }
+
       const v1DataProduct = guaranteeType(
         yield getDataProductFromDetails(
           dataProductDetails,
