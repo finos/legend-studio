@@ -31,8 +31,10 @@ export const LegendMarketplaceCard = (props: {
   onClick?: () => void;
   moreInfo?: JSX.Element | undefined;
   className?: string;
+  cardMedia?: string | undefined;
 }): JSX.Element => {
-  const { content, size, actions, onClick, moreInfo, className } = props;
+  const { content, size, actions, onClick, moreInfo, className, cardMedia } =
+    props;
 
   const [isMouseOver, setIsMouseOver] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -74,6 +76,13 @@ export const LegendMarketplaceCard = (props: {
         className,
       )}
       ref={containerRef}
+      sx={
+        cardMedia
+          ? {
+              background: `url(${cardMedia})`,
+            }
+          : {}
+      }
     >
       {onClick ? (
         <CardActionArea

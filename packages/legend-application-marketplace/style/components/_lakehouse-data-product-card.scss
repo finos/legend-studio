@@ -49,6 +49,7 @@
     height: 100%;
     flex: 1;
     gap: 1rem;
+    justify-content: space-between;
   }
 
   &__tags {
@@ -65,7 +66,7 @@
     justify-content: space-between;
     font-size: 2.8rem;
     font-weight: 500;
-    color: var(--color-blue-100);
+    color: white;
     overflow-wrap: anywhere;
   }
 
@@ -75,13 +76,13 @@
     text-transform: none;
 
     &--snapshot {
-      background: var(--tw-color-blue-100);
-      color: var(--tw-color-blue-600);
+      color: var(--tw-color-blue-100);
+      background: var(--tw-color-blue-600);
     }
 
     &--release {
-      background: var(--tw-color-green-100);
-      color: var(--tw-color-green-600);
+      color: var(--tw-color-green-100);
+      background: var(--tw-color-green-600);
     }
   }
 
@@ -91,23 +92,23 @@
     text-transform: none;
 
     &--unknown {
-      background: var(--tw-color-gray-100);
-      color: var(--tw-color-gray-600);
+      color: var(--tw-color-gray-100);
+      background: var(--tw-color-gray-600);
     }
 
     &--dev {
-      background: var(--tw-color-amber-100);
-      color: var(--tw-color-amber-600);
+      color: var(--tw-color-amber-100);
+      background: var(--tw-color-amber-600);
     }
 
     &--prod-parallel {
-      background: var(--tw-color-blue-100);
-      color: var(--tw-color-blue-600);
+      color: var(--tw-color-blue-100);
+      background: var(--tw-color-blue-600);
     }
 
     &--prod {
-      background: var(--tw-color-green-100);
-      color: var(--tw-color-green-600);
+      color: var(--tw-color-green-100);
+      background: var(--tw-color-green-600);
     }
   }
 
@@ -115,6 +116,7 @@
     font-size: 1.8rem;
     flex: 1;
     width: 100%;
+    color: var(--color-light-grey-180);
   }
 
   &__more-info-btn {
@@ -131,7 +133,7 @@
     svg {
       width: 20px;
       height: 20px;
-      color: var(--color-blue-100);
+      color: white;
     }
   }
 

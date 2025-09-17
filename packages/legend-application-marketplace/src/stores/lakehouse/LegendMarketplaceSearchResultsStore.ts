@@ -146,6 +146,7 @@ export enum DataProductSort {
 
 export class LegendMarketplaceSearchResultsStore {
   readonly marketplaceBaseStore: LegendMarketplaceBaseStore;
+  readonly displayImageMap = new Map<string, string>();
   dataProductCardStates: DataProductCardState[] = [];
   legacyDataProductCardStates: LegacyDataProductCardState[] = [];
   filterState: DataProductFilterState;
@@ -344,15 +345,16 @@ export class LegendMarketplaceSearchResultsStore {
       );
 
       const dataProductCardStates = dataProductDetails
+        .sort((a, b) => a.id.localeCompare(b.id))
         .map(
           (dataProductDetail) =>
             new DataProductCardState(
               this.marketplaceBaseStore,
               graphManager,
               dataProductDetail,
+              this.displayImageMap,
             ),
-        )
-        .sort((a, b) => a.title.localeCompare(b.title));
+        );
       this.setDataProductCardStates(dataProductCardStates);
       this.dataProductCardStates.forEach((dataProductCardState) =>
         dataProductCardState.init(),
