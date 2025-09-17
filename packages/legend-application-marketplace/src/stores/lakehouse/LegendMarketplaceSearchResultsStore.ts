@@ -380,8 +380,8 @@ export class LegendMarketplaceSearchResultsStore {
           const dataSpace = V1_deserializeDataSpace({
             executionContexts: [],
             defaultExecutionContext: '',
-            package: extractPackagePathFromPath(entity.path) ?? '',
-            name: extractElementNameFromPath(entity.path) ?? entity.path,
+            package: extractPackagePathFromPath(entity.path) ?? entity.path,
+            name: extractElementNameFromPath(entity.path),
           });
           return new LegacyDataProductCardState(
             this.marketplaceBaseStore,
