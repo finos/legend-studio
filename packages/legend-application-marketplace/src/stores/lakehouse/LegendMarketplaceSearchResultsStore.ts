@@ -106,7 +106,7 @@ class DataProductFilterState {
   static default(): DataProductFilterState {
     return new DataProductFilterState(
       {
-        modeledDataProducts: true,
+        modeledDataProducts: false,
         unmodeledDataProducts: true,
         unmodeledDataProductsConfig: {
           sdlcDeploy: true,
