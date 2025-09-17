@@ -126,8 +126,8 @@ export const TEST__setUpMarketplaceLakehouse = async (
     <ApplicationStoreProvider store={MOCK__baseStore.applicationStore}>
       <AuthProvider>
         <TEST__BrowserEnvironmentProvider
-          initialEntries={[route ?? '/lakehouse']}
-          baseUrl={route ?? '/lakehouse'}
+          initialEntries={[route ?? '/']}
+          baseUrl={route ?? '/'}
         >
           <LegendMarketplaceFrameworkProvider>
             <LegendMarketplaceWebApplicationRouter />
