@@ -31,6 +31,7 @@ import {
   Outlet,
   Route,
   Routes,
+  Navigate,
 } from '@finos/legend-application/browser';
 import {
   LegendMarketplaceFrameworkProvider,
@@ -42,7 +43,6 @@ import {
   LEGEND_MARKETPLACE_ROUTE_PATTERN,
 } from '../__lib__/LegendMarketplaceNavigation.js';
 import { MarketplaceLakehouseHome } from '../pages/Lakehouse/MarketplaceLakehouseHome.js';
-import { LegendMarketplaceHome } from '../pages/Home/LegendMarketplaceHome.js';
 import { LegendMarketplaceSearchResults } from '../pages/SearchResults/LegendMarketplaceSearchResults.js';
 import {
   type AuthProviderProps,
@@ -65,7 +65,6 @@ import { LegendMarketplacePage } from '../pages/LegendMarketplacePage.js';
 import { LegendMarketplaceVendorDetails } from '../pages/VendorDetails/LegendMarketplaceVendorDetails.js';
 import { LegendMarketplaceSubscriptions } from '../pages/Profile/LegendMarketplaceSubscriptions.js';
 import { LegendMarketplaceOrders } from '../pages/Profile/LegendMarketplaceOrders.js';
-import { LegendMarketplaceComingSoon } from '../pages/Home/LegendMarketplaceComingSoon.js';
 import { MarketplaceLakehouseOAuthCallback } from '../pages/Lakehouse/MarketplaceLakehouseOAuthCallback.js';
 import { LakehouseSDLCDataProduct } from '../pages/Lakehouse/dataProduct/LakehouseSDLCDataProduct.js';
 import { MarketplaceLakehouseSearchResults } from '../pages/Lakehouse/searchResults/MarketplaceLakehouseSearchResults.js';
@@ -247,17 +246,6 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
               </>
             }
           >
-            {enableMarketplacePages ? (
-              <Route
-                path={LEGEND_MARKETPLACE_ROUTE_PATTERN.DEFAULT}
-                element={<LegendMarketplaceHome />}
-              />
-            ) : (
-              <Route
-                path={LEGEND_MARKETPLACE_ROUTE_PATTERN.DEFAULT}
-                element={<LegendMarketplaceComingSoon />}
-              />
-            )}
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.OAUTH_CALLBACK}
               element={<MarketplaceLakehouseOAuthCallback />}
@@ -289,6 +277,15 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
             )}
             {/* Lakehouse pages */}
             <Route
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE}
+              element={
+                <Navigate
+                  to={LEGEND_MARKETPLACE_ROUTE_PATTERN.DEFAULT}
+                  replace={true}
+                />
+              }
+            />
+            <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SEARCH_RESULTS}
               element={<ProtectedLakehouseSearchResults />}
             />
@@ -309,7 +306,7 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
               element={<ProtectedLakehouseEntitlements />}
             />
             <Route
-              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE}
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.DEFAULT}
               element={<ProtectedLakehouseMarketplace />}
             />
             <Route
