@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+import { type LegendApplicationSetup } from '@finos/legend-application';
+import { setupPureLanguageService } from '@finos/legend-code-editor';
+import { configureCodeEditorComponent } from '@finos/legend-lego/code-editor';
 import {
   V1_AdhocTeam,
   V1_User,
@@ -40,6 +43,15 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
 
   constructor() {
     super(Core_LegendMarketplaceApplicationPlugin.NAME, packageJson.version);
+  }
+
+  override getExtraApplicationSetups(): LegendApplicationSetup[] {
+    return [
+      async (applicationStore) => {
+        await configureCodeEditorComponent(applicationStore);
+        setupPureLanguageService({});
+      },
+    ];
   }
 
   override getContractConsumerTypeRendererConfigs(): ContractConsumerTypeRendererConfig[] {
