@@ -264,7 +264,10 @@ export class QueryBuilderResultState {
 
   processExecutionResult = (result: ExecutionResult): void => {
     this.setIsExecutionResultOverflowing(false);
-    if (result instanceof TDSExecutionResult) {
+    if (
+      result instanceof TDSExecutionResult &&
+      this.queryBuilderState.isQuerySupported
+    ) {
       const resultLimit = this.getExecutionResultLimit();
       if (result.result.rows.length > resultLimit) {
         this.setIsExecutionResultOverflowing(true);
