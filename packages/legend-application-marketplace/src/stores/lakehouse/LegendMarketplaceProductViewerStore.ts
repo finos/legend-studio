@@ -15,6 +15,7 @@
  */
 
 import {
+  type NavigationZone,
   DEFAULT_TAB_SIZE,
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl,
 } from '@finos/legend-application';
@@ -63,7 +64,7 @@ import {
 } from '@finos/legend-storage';
 import { deserialize } from 'serializr';
 import {
-  EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryCreatorRoute,
+  EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl,
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl,
   generateLakehouseDataProductPath,
 } from '../../__lib__/LegendMarketplaceNavigation.js';
@@ -323,6 +324,35 @@ export class LegendMarketplaceProductViewerStore {
 
       const { groupId, artifactId, versionId } = parseGAVCoordinates(gav);
 
+      // create graph manager
+      const graphManagerState = new GraphManagerState(
+        this.marketplaceBaseStore.applicationStore.pluginManager,
+        this.marketplaceBaseStore.applicationStore.logService,
+      );
+      const graphManager = guaranteeType(
+        graphManagerState.graphManager,
+        V1_PureGraphManager,
+        'GraphManager must be a V1_PureGraphManager',
+      );
+
+      // initialize graph manager
+      yield graphManager.initialize(
+        {
+          env: this.marketplaceBaseStore.applicationStore.config.env,
+          tabSize: DEFAULT_TAB_SIZE,
+          clientConfig: {
+            baseUrl:
+              this.marketplaceBaseStore.applicationStore.config.engineServerUrl,
+            queryBaseUrl:
+              this.marketplaceBaseStore.applicationStore.config
+                .engineQueryServerUrl,
+            enableCompression: true,
+          },
+        },
+        { engine: this.marketplaceBaseStore.remoteEngine },
+      );
+      yield graphManagerState.initializeSystem();
+
       // fetch project
       this.loadingProductState.setMessage(`Fetching project...`);
       const project = StoreProjectData.serialization.fromJson(
@@ -334,29 +364,10 @@ export class LegendMarketplaceProductViewerStore {
         )) as PlainObject<StoreProjectData>,
       );
 
-      // create graph manager
-      // Crete graph manager for parsing ad-hoc deployed data products
-      const graphManagerState = new GraphManagerState(
-        this.marketplaceBaseStore.applicationStore.pluginManager,
-        this.marketplaceBaseStore.applicationStore.logService,
+      // set origin
+      graphManagerState.graph.setOrigin(
+        new LegendSDLC(groupId, artifactId, resolveVersion(versionId)),
       );
-      const graphManager = guaranteeType(
-        graphManagerState.graphManager,
-        V1_PureGraphManager,
-        'GraphManager must be a V1_PureGraphManager',
-      );
-      yield graphManager.initialize(
-        {
-          env: this.marketplaceBaseStore.applicationStore.config.env,
-          tabSize: DEFAULT_TAB_SIZE,
-          clientConfig: {
-            baseUrl:
-              this.marketplaceBaseStore.applicationStore.config.engineServerUrl,
-          },
-        },
-        { engine: this.marketplaceBaseStore.remoteEngine },
-      );
-      yield graphManagerState.initializeSystem();
 
       // analyze data product
       const analysisResult = (yield DSL_DataSpace_getGraphManagerExtension(
@@ -393,7 +404,7 @@ export class LegendMarketplaceProductViewerStore {
             ),
           queryDataSpace: (executionContextKey: string) =>
             this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
-              EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryCreatorRoute(
+              EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl(
                 this.marketplaceBaseStore.applicationStore.config
                   .queryApplicationUrl,
                 groupId,
@@ -401,9 +412,11 @@ export class LegendMarketplaceProductViewerStore {
                 versionId,
                 analysisResult.path,
                 executionContextKey,
+                undefined,
+                undefined,
               ),
             ),
-          viewProject: (_path) => {
+          viewProject: (entityPath: string | undefined) => {
             this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
               EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
                 this.marketplaceBaseStore.applicationStore.config
@@ -411,11 +424,11 @@ export class LegendMarketplaceProductViewerStore {
                 groupId,
                 artifactId,
                 versionId,
-                _path,
+                entityPath,
               ),
             );
           },
-          viewSDLCProject: async () => {
+          viewSDLCProject: async (entityPath: string | undefined) => {
             // find the matching SDLC instance
             const projectIDPrefix = parseProjectIdentifier(
               project.projectId,
@@ -429,8 +442,7 @@ export class LegendMarketplaceProductViewerStore {
                 EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl(
                   matchingSDLCEntry.url,
                   project.projectId,
-                  undefined,
-                  path,
+                  entityPath,
                 ),
               );
             } else {
@@ -440,18 +452,17 @@ export class LegendMarketplaceProductViewerStore {
             }
           },
           queryClass: (_class: Class): void => {
-            this.marketplaceBaseStore.applicationStore.navigationService.navigator.goToLocation(
-              EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryCreatorRoute(
+            this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
+              EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl(
                 this.marketplaceBaseStore.applicationStore.config
                   .queryApplicationUrl,
                 groupId,
                 artifactId,
                 versionId,
                 analysisResult.path,
-                Object.values(analysisResult.executionContextsIndex).find(
-                  (executionContext) =>
-                    executionContext === analysisResult.defaultExecutionContext,
-                ),
+                analysisResult.defaultExecutionContext.name,
+                undefined,
+                _class.path,
               ),
             );
           },
@@ -466,6 +477,15 @@ export class LegendMarketplaceProductViewerStore {
                 servicePath,
               ),
             );
+          },
+          onZoneChange: (zone: NavigationZone | undefined): void => {
+            if (zone === undefined) {
+              this.marketplaceBaseStore.applicationStore.navigationService.navigator.resetZone();
+            } else {
+              this.marketplaceBaseStore.applicationStore.navigationService.navigator.updateCurrentZone(
+                zone,
+              );
+            }
           },
         },
       );

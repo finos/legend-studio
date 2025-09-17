@@ -93,6 +93,7 @@ export interface LegendMarketplaceApplicationConfigurationData
   depot: { url: string };
   engine: {
     url: string;
+    queryUrl?: string;
   };
   lakehouse?: {
     url: string;
@@ -129,6 +130,7 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
   readonly marketplaceUserProfileImageUrl?: string | undefined;
   readonly marketplaceOidcConfig?: LegendMarketplaceOidcConfig | undefined;
   readonly engineServerUrl: string;
+  readonly engineQueryServerUrl?: string | undefined;
   readonly depotServerUrl: string;
   readonly lakehouseServerUrl: string;
   readonly lakehousePlatformUrl: string;
@@ -194,6 +196,11 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
         `Can't configure application: 'engine.url' field is missing or empty`,
       ),
     );
+    if (input.configData.engine.queryUrl) {
+      this.engineQueryServerUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+        input.configData.engine.queryUrl,
+      );
+    }
 
     // depot
     assertNonNullable(

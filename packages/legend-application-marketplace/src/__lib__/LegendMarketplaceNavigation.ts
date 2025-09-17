@@ -150,12 +150,11 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl =
   (
     studioApplicationUrl: string,
     projectId: string,
-    versionId: string | undefined,
     entityPath: string | undefined,
   ): string =>
     `${studioApplicationUrl}/view/${projectId}${
-      versionId ? `/version/${versionId}` : ''
-    }${entityPath ? `/entity/${entityPath}` : ''}`;
+      entityPath ? `/entity/${entityPath}` : ''
+    }`;
 
 /**
  * @external_application_navigation This depends on Ingest Environment swagger URL and is hardcoded so it's potentially brittle
@@ -173,36 +172,27 @@ const LEGEND_QUERY_ROUTE_PATTERN = Object.freeze({
   CREATE_FROM_SERVICE_QUERY: `/create-from-service/:${LEGEND_QUERY_ROUTE_PATTERN_TOKEN.GAV}/:${LEGEND_QUERY_ROUTE_PATTERN_TOKEN.SERVICE_PATH}`,
 });
 
-enum DATA_SPACE_QUERY_CREATOR_QUERY_PARAM_TOKEN {
-  RUNTIME_PATH = 'runtimePath',
-  CLASS_PATH = 'class',
-}
-
 /**
  * @external_application_navigation This depends on Legend Query routing and is hardcoded so it's potentially brittle
  */
-export const EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryCreatorRoute =
+export const EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl =
   (
     queryApplicationUrl: string,
     groupId: string,
     artifactId: string,
     versionId: string,
     dataSpacePath: string,
-    executionContextKey: string,
-    runtimePath?: string | undefined,
-    classPath?: string | undefined,
+    executionContext: string,
+    runtimePath: string | undefined,
+    classPath: string | undefined,
   ): string =>
-    addQueryParametersToUrl(
-      `${queryApplicationUrl}/extensions/dataspace/${generateGAVCoordinates(groupId, artifactId, versionId)}/${dataSpacePath}/${executionContextKey}`,
-      stringifyQueryParams({
-        [DATA_SPACE_QUERY_CREATOR_QUERY_PARAM_TOKEN.RUNTIME_PATH]: runtimePath
-          ? encodeURIComponent(runtimePath)
-          : undefined,
-        [DATA_SPACE_QUERY_CREATOR_QUERY_PARAM_TOKEN.CLASS_PATH]: classPath
-          ? encodeURIComponent(classPath)
-          : undefined,
-      }),
-    );
+    `${queryApplicationUrl}/extensions/dataspace/${generateGAVCoordinates(
+      groupId,
+      artifactId,
+      versionId,
+    )}/${dataSpacePath}/${executionContext}/${
+      runtimePath ? `/${runtimePath}` : ''
+    }${classPath ? `?class=${classPath}` : ''}`;
 
 export enum LEGEND_QUERY_QUERY_PARAM_TOKEN {
   SERVICE_EXECUTION_KEY = 'executionKey',
