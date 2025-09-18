@@ -27,7 +27,7 @@ import { Box } from '@mui/material';
 import { type V1_LiteDataContract } from '@finos/legend-graph';
 import type { LakehouseAdminStore } from '../../../stores/lakehouse/admin/LakehouseAdminStore.js';
 import { useState } from 'react';
-import { EntitlementsDataContractViewer } from '../../../components/DataContractViewer/EntitlementsDataContractViewer.js';
+import { EntitlementsDataContractViewer } from '../../../../../legend-extension-dsl-data-product/src/components/DataContract/EntitlementsDataContractViewer.js';
 import { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
 import { useLegendMarketplaceBaseStore } from '../../../application/providers/LegendMarketplaceFrameworkProvider.js';
 

@@ -2423,8 +2423,8 @@ __metadata:
     "@finos/legend-application": "workspace:*"
     "@finos/legend-art": "workspace:*"
     "@finos/legend-code-editor": "workspace:*"
-    "@finos/legend-data-product-viewer": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-extension-dsl-data-product": "workspace:*"
     "@finos/legend-extension-dsl-data-space": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-lego": "workspace:*"
@@ -2911,52 +2911,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@finos/legend-data-product-viewer@workspace:*, @finos/legend-data-product-viewer@workspace:packages/legend-data-product-viewer":
-  version: 0.0.0-use.local
-  resolution: "@finos/legend-data-product-viewer@workspace:packages/legend-data-product-viewer"
-  dependencies:
-    "@finos/legend-application": "workspace:*"
-    "@finos/legend-art": "workspace:*"
-    "@finos/legend-code-editor": "workspace:*"
-    "@finos/legend-dev-utils": "workspace:*"
-    "@finos/legend-graph": "workspace:*"
-    "@finos/legend-lego": "workspace:*"
-    "@finos/legend-server-depot": "workspace:*"
-    "@finos/legend-server-lakehouse": "workspace:*"
-    "@finos/legend-server-marketplace": "workspace:*"
-    "@finos/legend-shared": "workspace:*"
-    "@finos/legend-storage": "workspace:*"
-    "@jest/globals": "npm:29.7.0"
-    "@mui/lab": "npm:6.0.1-beta.34"
-    "@mui/material": "npm:6.4.7"
-    "@testing-library/dom": "npm:10.4.0"
-    "@testing-library/react": "npm:16.2.0"
-    "@types/react": "npm:19.0.10"
-    "@types/react-dom": "npm:19.0.4"
-    cross-env: "npm:7.0.3"
-    dompurify: "npm:3.2.5"
-    eslint: "npm:9.20.1"
-    jest: "npm:29.7.0"
-    mobx: "npm:6.13.6"
-    mobx-react-lite: "npm:4.1.0"
-    mobx-utils: "npm:6.1.0"
-    node-diff3: "npm:3.1.2"
-    npm-run-all: "npm:4.1.5"
-    oidc-client-ts: "npm:^3.2.0"
-    react: "npm:19.0.0"
-    react-dnd: "npm:16.0.1"
-    react-dom: "npm:19.0.0"
-    react-oidc-context: "npm:^3.3.0"
-    rimraf: "npm:6.0.1"
-    sass: "npm:1.85.0"
-    serializr: "npm:3.0.3"
-    typescript: "npm:5.7.3"
-    yaml: "npm:2.7.0"
-  peerDependencies:
-    react: ^19.0.0
-  languageName: unknown
-  linkType: soft
-
 "@finos/legend-dev-utils@workspace:*, @finos/legend-dev-utils@workspace:packages/legend-dev-utils":
   version: 0.0.0-use.local
   resolution: "@finos/legend-dev-utils@workspace:packages/legend-dev-utils"
@@ -3031,6 +2985,52 @@ __metadata:
     sass: "npm:1.85.1"
     serializr: "npm:3.0.3"
     typescript: "npm:5.8.2"
+  peerDependencies:
+    react: ^19.0.0
+  languageName: unknown
+  linkType: soft
+
+"@finos/legend-extension-dsl-data-product@workspace:*, @finos/legend-extension-dsl-data-product@workspace:packages/legend-extension-dsl-data-product":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-extension-dsl-data-product@workspace:packages/legend-extension-dsl-data-product"
+  dependencies:
+    "@finos/legend-application": "workspace:*"
+    "@finos/legend-art": "workspace:*"
+    "@finos/legend-code-editor": "workspace:*"
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-graph": "workspace:*"
+    "@finos/legend-lego": "workspace:*"
+    "@finos/legend-server-depot": "workspace:*"
+    "@finos/legend-server-lakehouse": "workspace:*"
+    "@finos/legend-server-marketplace": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
+    "@finos/legend-storage": "workspace:*"
+    "@jest/globals": "npm:29.7.0"
+    "@mui/lab": "npm:6.0.1-beta.34"
+    "@mui/material": "npm:6.4.7"
+    "@testing-library/dom": "npm:10.4.0"
+    "@testing-library/react": "npm:16.2.0"
+    "@types/react": "npm:19.0.10"
+    "@types/react-dom": "npm:19.0.4"
+    cross-env: "npm:7.0.3"
+    dompurify: "npm:3.2.5"
+    eslint: "npm:9.20.1"
+    jest: "npm:29.7.0"
+    mobx: "npm:6.13.6"
+    mobx-react-lite: "npm:4.1.0"
+    mobx-utils: "npm:6.1.0"
+    node-diff3: "npm:3.1.2"
+    npm-run-all: "npm:4.1.5"
+    oidc-client-ts: "npm:^3.2.0"
+    react: "npm:19.0.0"
+    react-dnd: "npm:16.0.1"
+    react-dom: "npm:19.0.0"
+    react-oidc-context: "npm:^3.3.0"
+    rimraf: "npm:6.0.1"
+    sass: "npm:1.85.0"
+    serializr: "npm:3.0.3"
+    typescript: "npm:5.7.3"
+    yaml: "npm:2.7.0"
   peerDependencies:
     react: ^19.0.0
   languageName: unknown

@@ -31,11 +31,11 @@ import {
 import { Box, FormControlLabel, Switch, Tooltip } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import type { EntitlementsDashboardState } from '../../../stores/lakehouse/entitlements/EntitlementsDashboardState.js';
-import { EntitlementsDataContractViewer } from '../../../components/DataContractViewer/EntitlementsDataContractViewer.js';
+import { EntitlementsDataContractViewer } from '../../../../../legend-extension-dsl-data-product/src/components/DataContract/EntitlementsDataContractViewer.js';
 import { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
 import { useLegendMarketplaceBaseStore } from '../../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import { observer } from 'mobx-react-lite';
-import { UserRenderer } from '../../../components/UserRenderer/UserRenderer.js';
+import { UserRenderer } from '../../../../../legend-extension-dsl-data-product/src/components/UserRenderer/UserRenderer.js';
 import {
   getOrganizationalScopeTypeDetails,
   getOrganizationalScopeTypeName,

@@ -20,6 +20,7 @@ import {
   type ExtensionsConfigurationData,
   URL_SEPARATOR,
   SerializationFactory,
+  usingModelSchema,
 } from '@finos/legend-shared';
 import type { LegendApplicationConfigurationInput } from './LegendApplication.js';
 import {
@@ -34,7 +35,7 @@ import {
   collectDocumentationLinkEntryFromConfig,
 } from '../stores/DocumentationService.js';
 import type { SettingOverrideConfigData } from '../stores/SettingService.js';
-import { createModelSchema, primitive } from 'serializr';
+import { createModelSchema, list, primitive } from 'serializr';
 
 export interface LegendApplicationVersionData {
   buildTime?: string;
@@ -55,6 +56,54 @@ export class StereotypeConfig {
     createModelSchema(StereotypeConfig, {
       profile: primitive(),
       stereotype: primitive(),
+    }),
+  );
+}
+
+export class DataProductImageConfig {
+  /**
+   * Indicates the maximum dimension (width or height) of the image in pixels.
+   * Images larger than this will be resized (maintaining aspect ratio)
+   * to fit within this dimension.
+   */
+  maxDimension!: number;
+  /**
+   * Indicates the maximum size of the image in KB that a user can upload.
+   * Images larger than this will not be accepted and the user must upload
+   * a smaller image.
+   */
+  maxUploadSizeKB!: number;
+  /**
+   * Indicates the maximum size of the image in KB.
+   * Images larger than this will be compressed.
+   */
+  maxSizeKB!: number;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(DataProductImageConfig, {
+      maxDimension: primitive(),
+      maxUploadSizeKB: primitive(),
+      maxSizeKB: primitive(),
+    }),
+  );
+}
+
+export class DataProductConfig {
+  classifications: string[] = [];
+  publicClassifications: string[] = [];
+  classificationDoc!: string;
+  publicStereotype!: StereotypeConfig;
+  imageConfig!: DataProductImageConfig;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(DataProductConfig, {
+      classifications: list(primitive()),
+      publicClassifications: list(primitive()),
+      classificationDoc: primitive(),
+      publicStereotype: usingModelSchema(StereotypeConfig.serialization.schema),
+      imageConfig: usingModelSchema(
+        DataProductImageConfig.serialization.schema,
+      ),
     }),
   );
 }

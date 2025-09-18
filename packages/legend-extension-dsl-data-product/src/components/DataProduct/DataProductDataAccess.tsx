@@ -87,8 +87,8 @@ import {
 } from '@finos/legend-shared';
 import { resolveVersion } from '@finos/legend-server-depot';
 import { deserialize } from 'serializr';
-import type {
-  DataProductGroupAccessState,
+import {
+  type DataProductGroupAccessState,
   AccessPointGroupAccess,
 } from '../../stores/DataProduct/DataProductDataAccessState.js';
 import type { DataProductViewerState } from '../../stores/DataProduct/DataProductViewerState.js';
@@ -96,6 +96,9 @@ import {
   generateAnchorForSection,
   DATA_PRODUCT_VIEWER_SECTION,
 } from '../../stores/ProductViewerNavigation.js';
+import { EntitlementsDataContractViewerState } from '../../stores/DataProduct/EntitlementsDataContractViewerState.js';
+import { EntitlementsDataContractCreator } from './DataContract/EntitlementsDataContractCreator.js';
+import { EntitlementsDataContractViewer } from './DataContract/EntitlementsDataContractViewer.js';
 
 const MAX_GRID_AUTO_HEIGHT_ROWS = 10; // Maximum number of rows to show before switching to normal height (scrollable grid)
 
@@ -375,22 +378,30 @@ export const DataProductAccessPointGroupViewer = observer(
       useState(false);
     const requestAccessButtonGroupRef = useRef<HTMLDivElement | null>(null);
 
-    const entitlementsDataContractViewerState = useMemo(
-      () =>
-        accessGroupState.accessState.viewerState.dataContract
-          ? new EntitlementsDataContractViewerState(
-              V1_transformDataContractToLiteDatacontract(
-                accessGroupState.accessState.viewerState.dataContract,
-              ),
-              accessGroupState.accessState.viewerState.productViewerStore.marketplaceBaseStore.lakehouseContractServerClient,
-            )
-          : undefined,
-      [
-        accessGroupState.accessState.viewerState.dataContract,
-        accessGroupState.accessState.viewerState.productViewerStore
-          .marketplaceBaseStore.lakehouseContractServerClient,
-      ],
-    );
+    const entitlementsDataContractViewerState = useMemo(() => {
+      if (
+        !accessGroupState.accessState.viewerState.lakehouseContractServerClient
+      ) {
+        accessGroupState.accessState.viewerState.applicationStore.notificationService.notifyWarning(
+          'Cannot view data contracts. Lakehouse contract server client is not configured',
+        );
+        return undefined;
+      }
+
+      return accessGroupState.accessState.viewerState.dataContract
+        ? new EntitlementsDataContractViewerState(
+            V1_transformDataContractToLiteDatacontract(
+              accessGroupState.accessState.viewerState.dataContract,
+            ),
+            accessGroupState.accessState.viewerState.lakehouseContractServerClient,
+          )
+        : undefined;
+    }, [
+      accessGroupState.accessState.viewerState.applicationStore
+        .notificationService,
+      accessGroupState.accessState.viewerState.dataContract,
+      accessGroupState.accessState.viewerState.lakehouseContractServerClient,
+    ]);
 
     useEffect(() => {
       if (
@@ -648,6 +659,12 @@ export const DataProductAccessPointGroupViewer = observer(
               accessGroupState.accessState.viewerState.setDataContractAccessPointGroup(
                 undefined,
               )
+            }
+            applicationStore={
+              accessGroupState.accessState.viewerState.applicationStore
+            }
+            userSearchService={
+              accessGroupState.accessState.viewerState.applicationStore
             }
             accessGroupState={accessGroupState}
           />

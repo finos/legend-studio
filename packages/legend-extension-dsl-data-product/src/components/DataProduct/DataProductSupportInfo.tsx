@@ -24,14 +24,14 @@ import {
   WorldOutlineIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-import {
-  DATA_PRODUCT_VIEWER_SECTION,
-  generateAnchorForSection,
-} from '../../../stores/lakehouse/ProductViewerNavigation.js';
 import { useEffect, useRef } from 'react';
-import type { DataProductViewerState } from '../../../stores/lakehouse/DataProductViewerState.js';
 import { Box, Grid2 as Grid, Link } from '@mui/material';
-import { ProductWikiPlaceholder } from './DataProductWiki.js';
+import type { DataProductViewerState } from '../../stores/DataProduct/DataProductViewerState.js';
+import {
+  generateAnchorForSection,
+  DATA_PRODUCT_VIEWER_SECTION,
+} from '../../stores/ProductViewerNavigation.js';
+import { ProductWikiPlaceholder } from '../ProductWiki.js';
 
 export const DataProductSupportInfo = observer(
   (props: { dataProductViewerState: DataProductViewerState }) => {

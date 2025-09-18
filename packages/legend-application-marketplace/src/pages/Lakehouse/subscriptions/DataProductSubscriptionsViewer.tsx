@@ -62,7 +62,7 @@ import {
   type DataGridCellRendererParams,
 } from '@finos/legend-lego/data-grid';
 import { flowResult } from 'mobx';
-import { UserRenderer } from '../../../components/UserRenderer/UserRenderer.js';
+import { UserRenderer } from '../../../../../legend-extension-dsl-data-product/src/components/UserRenderer/UserRenderer.js';
 import { MultiUserCellRenderer } from '../../../components/MultiUserCellRenderer/MultiUserCellRenderer.js';
 import {
   getOrganizationalScopeTypeDetails,

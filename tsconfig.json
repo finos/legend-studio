@@ -61,6 +61,7 @@
     { "path": "packages/legend-extension-assortment" },
     { "path": "packages/legend-extension-dsl-text" },
     { "path": "packages/legend-extension-dsl-diagram" },
+    { "path": "packages/legend-extension-dsl-data-product" },
     { "path": "packages/legend-extension-dsl-data-space" },
     { "path": "packages/legend-extension-dsl-data-space-studio" },
     { "path": "packages/legend-extension-dsl-service" },

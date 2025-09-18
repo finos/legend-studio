@@ -77,6 +77,7 @@ import {
   DSL_DataSpace_getGraphManagerExtension,
   retrieveAnalyticsResultCache,
 } from '@finos/legend-extension-dsl-data-space/graph';
+import { DataProductViewerState } from '@finos/legend-extension-dsl-data-product';
 
 const ARTIFACT_GENERATION_DAT_PRODUCT_KEY = 'dataProduct';
 
@@ -235,8 +236,10 @@ export class LegendMarketplaceProductViewerStore {
       );
 
       const stateViewer = new DataProductViewerState(
-        this,
-        new DataProductLayoutState(),
+        this.marketplaceBaseStore.applicationStore,
+        this.marketplaceBaseStore.engineServerClient,
+        this.marketplaceBaseStore.lakehouseContractServerClient,
+        this.marketplaceBaseStore.userSearchService,
         graphManagerState,
         v1DataProduct,
         dataProductDetails,
@@ -258,6 +261,17 @@ export class LegendMarketplaceProductViewerStore {
               );
             }
           },
+        },
+        {
+          dataProductConfig:
+            this.marketplaceBaseStore.applicationStore.config.options
+              .dataProductConfig,
+          userProfileImageUrl:
+            this.marketplaceBaseStore.applicationStore.config
+              .marketplaceUserProfileImageUrl,
+          applicationDirectoryUrl:
+            this.marketplaceBaseStore.applicationStore.config
+              .lakehouseEntitlementsConfig?.applicationDirectoryUrl,
         },
       );
       this.setDataProductViewer(stateViewer);

@@ -24,21 +24,23 @@ import {
   type V1_OrganizationalScope,
 } from '@finos/legend-graph';
 import packageJson from '../../../package.json' with { type: 'json' };
-import {
-  LegendMarketplaceApplicationPlugin,
-  type ContractConsumerTypeRendererConfig,
-} from '../LegendMarketplaceApplicationPlugin.js';
+import { LegendMarketplaceApplicationPlugin } from '../LegendMarketplaceApplicationPlugin.js';
 import { UserSearchInput } from '@finos/legend-art';
 import React, { useEffect, useState, type ChangeEvent } from 'react';
-import { LegendUser } from '@finos/legend-shared';
+import { type UserSearchService, LegendUser } from '@finos/legend-shared';
+import { TextField } from '@mui/material';
 import {
   AccessPointGroupAccess,
+  type ContractConsumerTypeRendererConfig,
   type DataProductGroupAccessState,
-} from '../../stores/lakehouse/DataProductDataAccessState.js';
-import { TextField } from '@mui/material';
-import type { LegendMarketplaceBaseStore } from '../../stores/LegendMarketplaceBaseStore.js';
+  type DataProductViewer_LegendApplicationPlugin_Extension,
+  type ProductViewerLegendApplicationStore,
+} from '@finos/legend-extension-dsl-data-product';
 
-export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceApplicationPlugin {
+export class Core_LegendMarketplaceApplicationPlugin
+  extends LegendMarketplaceApplicationPlugin
+  implements DataProductViewer_LegendApplicationPlugin_Extension
+{
   static NAME = packageJson.extensions.applicationMarketplacePlugin;
 
   constructor() {
@@ -54,7 +56,7 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
     ];
   }
 
-  override getContractConsumerTypeRendererConfigs(): ContractConsumerTypeRendererConfig[] {
+  getContractConsumerTypeRendererConfigs(): ContractConsumerTypeRendererConfig[] {
     const buildAdhocUser = (
       userName: string,
       type?: V1_UserType,
@@ -70,7 +72,8 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
     const CommonRenderer = (props: {
       type: 'user' | 'system-account';
       label: string;
-      marketplaceBaseStore: LegendMarketplaceBaseStore;
+      applicationStore: ProductViewerLegendApplicationStore;
+      userSearchService: UserSearchService | undefined;
       accessGroupState: DataProductGroupAccessState;
       handleOrganizationalScopeChange: (
         consumer: V1_OrganizationalScope,
@@ -82,7 +85,8 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
       const {
         type,
         label,
-        marketplaceBaseStore,
+        applicationStore,
+        userSearchService,
         accessGroupState,
         handleOrganizationalScopeChange,
         handleDescriptionChange,
@@ -116,14 +120,12 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
 
       useEffect(() => {
         const fetchCurrentUser = async () => {
-          if (marketplaceBaseStore.userSearchService) {
+          if (userSearchService) {
             setLoadingCurrentUser(true);
             try {
-              const currentUser =
-                await marketplaceBaseStore.userSearchService.getOrFetchUser(
-                  marketplaceBaseStore.applicationStore.identityService
-                    .currentUser,
-                );
+              const currentUser = await userSearchService.getOrFetchUser(
+                applicationStore.identityService.currentUser,
+              );
               if (currentUser instanceof LegendUser) {
                 setUser(currentUser);
               }
@@ -140,8 +142,8 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
         }
       }, [
         accessGroupState.access,
-        marketplaceBaseStore.applicationStore.identityService.currentUser,
-        marketplaceBaseStore.userSearchService,
+        applicationStore.identityService.currentUser,
+        userSearchService,
       ]);
 
       return (
@@ -157,11 +159,7 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
             key={label}
             userValue={user}
             setUserValue={(_user: LegendUser): void => setUser(_user)}
-            userSearchService={
-              enableUserSearch
-                ? marketplaceBaseStore.userSearchService
-                : undefined
-            }
+            userSearchService={enableUserSearch ? userSearchService : undefined}
             label={label}
             required={true}
             variant="outlined"
@@ -188,7 +186,8 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
       {
         type: 'User',
         createContractRenderer: (
-          marketplaceBaseStore: LegendMarketplaceBaseStore,
+          applicationStore: ProductViewerLegendApplicationStore,
+          userSearchService: UserSearchService | undefined,
           accessGroupState: DataProductGroupAccessState,
           handleOrganizationalScopeChange: (
             consumer: V1_OrganizationalScope,
@@ -200,7 +199,8 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
             key="user"
             type="user"
             label="User"
-            marketplaceBaseStore={marketplaceBaseStore}
+            applicationStore={applicationStore}
+            userSearchService={userSearchService}
             accessGroupState={accessGroupState}
             handleOrganizationalScopeChange={handleOrganizationalScopeChange}
             handleDescriptionChange={handleDescriptionChange}
@@ -213,7 +213,8 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
         type: 'System Account',
         enableForEnterpriseAPGs: true,
         createContractRenderer: (
-          marketplaceBaseStore: LegendMarketplaceBaseStore,
+          applicationStore: ProductViewerLegendApplicationStore,
+          userSearchService: UserSearchService | undefined,
           accessGroupState: DataProductGroupAccessState,
           handleOrganizationalScopeChange: (
             consumer: V1_OrganizationalScope,
@@ -225,7 +226,8 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
             key="system-account"
             type="system-account"
             label="System Account"
-            marketplaceBaseStore={marketplaceBaseStore}
+            applicationStore={applicationStore}
+            userSearchService={userSearchService}
             accessGroupState={accessGroupState}
             handleOrganizationalScopeChange={handleOrganizationalScopeChange}
             handleDescriptionChange={handleDescriptionChange}

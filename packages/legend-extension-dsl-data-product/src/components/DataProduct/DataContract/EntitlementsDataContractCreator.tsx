@@ -20,7 +20,6 @@ import {
 } from '@finos/legend-graph';
 import { observer } from 'mobx-react-lite';
 import { useMemo, useState } from 'react';
-import { useAuth } from 'react-oidc-context';
 import { flowResult } from 'mobx';
 import {
   Button,
@@ -34,32 +33,44 @@ import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
 } from '@finos/legend-art';
-import { useLegendMarketplaceBaseStore } from '../../../application/providers/LegendMarketplaceFrameworkProvider.js';
-import { guaranteeNonNullable, isNonNullable } from '@finos/legend-shared';
+import {
+  type UserSearchService,
+  guaranteeNonNullable,
+  isNonNullable,
+} from '@finos/legend-shared';
+import type { ProductViewerLegendApplicationStore } from '../../../stores/BaseViewerState.js';
 import {
   AccessPointGroupAccess,
   type DataProductGroupAccessState,
-} from '../../../stores/lakehouse/DataProductDataAccessState.js';
-import type { ContractConsumerTypeRendererConfig } from '../../../application/LegendMarketplaceApplicationPlugin.js';
+} from '../../../stores/DataProduct/DataProductDataAccessState.js';
+import type { ContractConsumerTypeRendererConfig } from '../../DataProductViewer_LegendApplicationPlugin_Extension.js';
 
 export const EntitlementsDataContractCreator = observer(
   (props: {
     open: boolean;
     onClose: () => void;
+    applicationStore: ProductViewerLegendApplicationStore;
+    userSearchService: UserSearchService | undefined;
+    token: string | undefined;
     accessGroupState: DataProductGroupAccessState;
   }) => {
-    const { open, onClose, accessGroupState } = props;
+    const {
+      open,
+      onClose,
+      applicationStore,
+      token,
+      accessGroupState,
+      userSearchService,
+    } = props;
     const viewerState = accessGroupState.accessState.viewerState;
     const accessPointGroup = guaranteeNonNullable(
       viewerState.dataContractAccessPointGroup,
       'Cannot show DataContractCreator. No access point group is selected.',
     );
-    const legendMarketplaceStore = useLegendMarketplaceBaseStore();
-    const auth = useAuth();
     const consumerTypeRendererConfigs: ContractConsumerTypeRendererConfig[] =
       useMemo(
         () =>
-          legendMarketplaceStore.pluginManager
+          applicationStore.pluginManager
             .getApplicationPlugins()
             .map((plugin) => plugin.getContractConsumerTypeRendererConfigs?.())
             .flat()
@@ -69,7 +80,7 @@ export const EntitlementsDataContractCreator = observer(
                 accessGroupState.access !== AccessPointGroupAccess.ENTERPRISE ||
                 rendererConfig.enableForEnterpriseAPGs,
             ),
-        [legendMarketplaceStore.pluginManager, accessGroupState.access],
+        [accessGroupState.access, applicationStore.pluginManager],
       );
     const [selectedConsumerType, setSelectedConsumerType] = useState<string>(
       consumerTypeRendererConfigs[0]?.type ?? '',
@@ -85,7 +96,8 @@ export const EntitlementsDataContractCreator = observer(
         consumerTypeRendererConfigs
           .find((config) => config.type === selectedConsumerType)
           ?.createContractRenderer(
-            legendMarketplaceStore,
+            applicationStore,
+            userSearchService,
             accessGroupState,
             setConsumer,
             setDescription,
@@ -93,9 +105,10 @@ export const EntitlementsDataContractCreator = observer(
           ),
       [
         accessGroupState,
+        applicationStore,
         consumerTypeRendererConfigs,
-        legendMarketplaceStore,
         selectedConsumerType,
+        userSearchService,
       ],
     );
 
@@ -106,7 +119,7 @@ export const EntitlementsDataContractCreator = observer(
             consumer,
             description,
             accessPointGroup,
-            auth.user?.access_token,
+            token,
           ),
         ).catch(viewerState.applicationStore.alertUnhandledError);
       }

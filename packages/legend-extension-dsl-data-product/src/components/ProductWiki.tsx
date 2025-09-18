@@ -30,6 +30,7 @@ import {
   generateAnchorForSection,
 } from '../stores/ProductViewerNavigation.js';
 import { DataProducteDataAccess } from './DataProduct/DataProductDataAccess.js';
+import { DataProductSupportInfo } from './DataProduct/DataProductSupportInfo.js';
 
 export const ProductWikiPlaceholder: React.FC<{ message: string }> = (
   props,

@@ -1,5 +1,5 @@
 {
-  "name": "@finos/legend-data-product-viewer",
+  "name": "@finos/legend-extension-dsl-data-product",
   "version": "0.0.1",
   "description": "Legend data product viewer core",
   "keywords": [
@@ -7,14 +7,14 @@
     "data product",
     "viewer"
   ],
-  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-data-product-viewer",
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-extension-dsl-data-product",
   "bugs": {
     "url": "https://github.com/finos/legend-studio/issues"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/finos/legend-studio.git",
-    "directory": "packages/legend-data-product-viewer"
+    "directory": "packages/legend-extension-dsl-data-product"
   },
   "license": "Apache-2.0",
   "sideEffects": false,
@@ -88,5 +88,8 @@
   },
   "publishConfig": {
     "directory": "build/publishContent"
+  },
+  "extensions": {
+    "applicationPlugin": "@finos/legend-application-plugin-dsl-data-product"
   }
 }

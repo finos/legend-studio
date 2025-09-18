@@ -15,14 +15,17 @@
  */
 
 import { UserDisplay } from '@finos/legend-art';
-import { LegendUser } from '@finos/legend-shared';
+import { LegendUser, type UserSearchService } from '@finos/legend-shared';
 import { Box, CircularProgress } from '@mui/material';
-import type { LegendMarketplaceBaseStore } from '../../stores/LegendMarketplaceBaseStore.js';
+import type { ProductViewerLegendApplicationStore } from '@finos/legend-extension-dsl-data-product';
 import { useEffect, useState } from 'react';
 
 export const UserRenderer = (props: {
   userId: string | undefined;
-  marketplaceStore: LegendMarketplaceBaseStore;
+  applicationStore: ProductViewerLegendApplicationStore;
+  userSearchService: UserSearchService | undefined;
+  userProfileImageUrl?: string | undefined;
+  applicationDirectoryUrl?: string | undefined;
   className?: string | undefined;
   appendComma?: boolean;
   disableOnClick?: boolean;
@@ -30,7 +33,10 @@ export const UserRenderer = (props: {
 }): React.ReactNode => {
   const {
     userId,
-    marketplaceStore,
+    applicationStore,
+    userSearchService,
+    userProfileImageUrl,
+    applicationDirectoryUrl,
     className,
     appendComma,
     disableOnClick,
@@ -44,8 +50,7 @@ export const UserRenderer = (props: {
       if (userId) {
         setLoading(true);
         try {
-          const user =
-            await marketplaceStore.userSearchService?.getOrFetchUser(userId);
+          const user = await userSearchService?.getOrFetchUser(userId);
           setUserData(user);
         } finally {
           setLoading(false);
@@ -55,19 +60,15 @@ export const UserRenderer = (props: {
     };
     // eslint-disable-next-line no-void
     void fetchUserData();
-  }, [marketplaceStore.userSearchService, userId, onFinishedLoadingCallback]);
+  }, [userSearchService, userId, onFinishedLoadingCallback]);
 
   if (loading) {
     return <CircularProgress size={20} />;
   } else if (userData instanceof LegendUser) {
-    const imgSrc =
-      marketplaceStore.applicationStore.config.marketplaceUserProfileImageUrl?.replace(
-        '{userId}',
-        userData.id,
-      );
+    const imgSrc = userProfileImageUrl?.replace('{userId}', userData.id);
     const openUserDirectoryLink = (): void =>
-      marketplaceStore.applicationStore.navigationService.navigator.visitAddress(
-        `${marketplaceStore.applicationStore.config.lakehouseEntitlementsConfig?.applicationDirectoryUrl}/${userId}`,
+      applicationStore.navigationService.navigator.visitAddress(
+        `${applicationDirectoryUrl}/${userId}`,
       );
 
     return (

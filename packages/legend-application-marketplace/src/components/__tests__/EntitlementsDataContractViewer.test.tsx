@@ -28,7 +28,7 @@ import type { V1_LiteDataContract, V1_TaskResponse } from '@finos/legend-graph';
 import { createSpy } from '@finos/legend-shared/test';
 import { AuthProvider } from 'react-oidc-context';
 import { EntitlementsDataContractViewerState } from '../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
-import { EntitlementsDataContractViewer } from '../DataContractViewer/EntitlementsDataContractViewer.js';
+import { EntitlementsDataContractViewer } from '../../../../legend-extension-dsl-data-product/src/components/DataContract/EntitlementsDataContractViewer.js';
 import {
   mockApprovedTasksResponse,
   mockDataContract,

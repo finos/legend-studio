@@ -14,4 +14,11 @@
  * limitations under the License.
  */
 
+export * from './components/ProductViewer.js';
+export * from './components/DataProductViewer_LegendApplicationPlugin_Extension.js';
+
 export * from './stores/BaseViewerState.js';
+export * from './stores/BaseLayoutState.js';
+export * from './stores/DataProduct/DataProductDataAccessState.js';
+export * from './stores/DataProduct/DataProductViewerState.js';
+export * from './stores/TerminalProduct/TerminalProductViewerState.js';

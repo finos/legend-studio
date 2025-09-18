@@ -17,7 +17,7 @@
 import { Link, Popover, Box } from '@mui/material';
 import { useState } from 'react';
 import type { LegendMarketplaceBaseStore } from '../../stores/LegendMarketplaceBaseStore.js';
-import { UserRenderer } from '../UserRenderer/UserRenderer.js';
+import { UserRenderer } from '../../../../legend-extension-dsl-data-product/src/components/UserRenderer/UserRenderer.js';
 
 export const MultiUserCellRenderer = (props: {
   userIds: string[];

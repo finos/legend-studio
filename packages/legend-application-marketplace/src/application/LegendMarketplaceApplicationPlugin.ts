@@ -16,28 +16,8 @@
 
 import { LegendApplicationPlugin } from '@finos/legend-application';
 import type { LegendMarketplacePluginManager } from '../application/LegendMarketplacePluginManager.js';
-import type { V1_OrganizationalScope } from '@finos/legend-graph';
 import type { LegendMarketplaceBaseStore } from '../stores/LegendMarketplaceBaseStore.js';
-import type React from 'react';
 import type { BaseProductCardState } from '../stores/lakehouse/dataProducts/BaseProductCardState.js';
-
-export type ContractConsumerTypeRendererConfig = {
-  type: string;
-  createContractRenderer: (
-    marketplaceBaseStore: LegendMarketplaceBaseStore,
-    accessGroupState: DataProductGroupAccessState,
-    handleOrganizationalScopeChange: (consumer: V1_OrganizationalScope) => void,
-    handleDescriptionChange: (description: string | undefined) => void,
-    handleIsValidChange: (isValid: boolean) => void,
-  ) => React.ReactNode;
-  organizationalScopeTypeName?: (
-    consumer: V1_OrganizationalScope,
-  ) => string | undefined;
-  organizationalScopeTypeDetailsRenderer?: (
-    consumer: V1_OrganizationalScope,
-  ) => React.ReactNode | undefined;
-  enableForEnterpriseAPGs?: boolean;
-};
 
 export abstract class LegendMarketplaceApplicationPlugin extends LegendApplicationPlugin {
   /**
@@ -59,20 +39,4 @@ export abstract class LegendMarketplaceApplicationPlugin extends LegendApplicati
     marketplaceBaseStore: LegendMarketplaceBaseStore,
     token: string | undefined,
   ): Promise<BaseProductCardState[] | undefined>;
-
-  /**
-   * Config to handle different types of contract consumers, including configuration for:
-   * - Contract creation dialog renderer
-   * - Organizational scope type details renderer
-   */
-  getContractConsumerTypeRendererConfigs?(): ContractConsumerTypeRendererConfig[];
-
-  /**
-   * Returns additional details about a given access point group access type.
-   *
-   * @param access the AccessPointGroupAccess value for a given Access Point Group
-   */
-  getExtraAccessPointGroupAccessInfo?(
-    access: AccessPointGroupAccess,
-  ): string | undefined;
 }

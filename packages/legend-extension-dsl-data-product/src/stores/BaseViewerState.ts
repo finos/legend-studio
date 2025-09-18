@@ -16,7 +16,6 @@
 import {
   type ApplicationStore,
   type LegendApplicationConfig,
-  type LegendApplicationPlugin,
   type LegendApplicationPluginManager,
   type NavigationZone,
   StereotypeConfig,
@@ -25,26 +24,11 @@ import type { BaseLayoutState } from './BaseLayoutState.js';
 import type { GraphManagerPluginManager } from '@finos/legend-graph';
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
 import { createModelSchema } from 'serializr';
-
-export class DataProductConfig {
-  publicStereotype!: StereotypeConfig;
-
-  static readonly serialization = new SerializationFactory(
-    createModelSchema(DataProductConfig, {
-      publicStereotype: usingModelSchema(StereotypeConfig.serialization.schema),
-    }),
-  );
-}
-
-export type ProductViewerLegendApplicationConfig = LegendApplicationConfig & {
-  options: {
-    dataProductConfig: DataProductConfig;
-  };
-};
+import type { DataProductViewer_LegendApplicationPlugin_Extension } from '../components/DataProductViewer_LegendApplicationPlugin_Extension.js';
 
 export type ProductViewerLegendApplicationStore = ApplicationStore<
-  ProductViewerLegendApplicationConfig,
-  LegendApplicationPluginManager<LegendApplicationPlugin> &
+  LegendApplicationConfig,
+  LegendApplicationPluginManager<DataProductViewer_LegendApplicationPlugin_Extension> &
     GraphManagerPluginManager
 >;
 

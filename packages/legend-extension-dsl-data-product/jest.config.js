@@ -25,5 +25,5 @@ const packageJson = loadJSON(resolve(__dirname, './package.json'));
 
 export default getBaseJestDOMProjectConfig(
   packageJson.name,
-  'packages/legend-data-product-viewer',
+  'packages/legend-extension-dsl-data-product',
 );

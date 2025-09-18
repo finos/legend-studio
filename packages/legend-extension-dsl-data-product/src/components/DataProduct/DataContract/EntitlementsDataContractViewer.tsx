@@ -54,12 +54,6 @@ import {
   formatDate,
   lodashCapitalize,
 } from '@finos/legend-shared';
-import {
-  getOrganizationalScopeTypeDetails,
-  getOrganizationalScopeTypeName,
-  isContractInTerminalState,
-  stringifyOrganizationalScope,
-} from '../../stores/lakehouse/LakehouseUtils.js';
 import { flowResult } from 'mobx';
 import { useAuth } from 'react-oidc-context';
 import {
@@ -71,13 +65,8 @@ import {
   InfoCircleIcon,
   RefreshIcon,
 } from '@finos/legend-art';
-import {
-  generateLakehouseDataProductPath,
-  generateLakehouseTaskPath,
-} from '../../__lib__/LegendMarketplaceNavigation.js';
-import { type DataProductGroupAccessState } from '../../stores/lakehouse/DataProductDataAccessState.js';
-import { UserRenderer } from '../../components/UserRenderer/UserRenderer.js';
-import type { LegendMarketplaceBaseStore } from '../../stores/LegendMarketplaceBaseStore.js';
+import type { EntitlementsDataContractViewerState } from '../../../stores/DataProduct/EntitlementsDataContractViewerState.js';
+import type { DataProductGroupAccessState } from '../../../stores/DataProduct/DataProductDataAccessState.js';
 
 const AssigneesList = (props: {
   userIds: string[];
@@ -163,7 +152,6 @@ export const EntitlementsDataContractViewer = observer(
   (props: {
     open: boolean;
     currentViewer: EntitlementsDataContractViewerState;
-    legendMarketplaceStore: LegendMarketplaceBaseStore;
     dataProductGroupAccessState?: DataProductGroupAccessState | undefined;
     onClose: () => void;
     initialSelectedUser?: string | undefined;
@@ -171,7 +159,6 @@ export const EntitlementsDataContractViewer = observer(
     const {
       open,
       currentViewer,
-      legendMarketplaceStore,
       dataProductGroupAccessState,
       onClose,
       initialSelectedUser,

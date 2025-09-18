@@ -56,6 +56,7 @@ import {
   dataContractContainsAccessGroup,
   isMemberOfContract,
 } from '../../utils/DataContractUtils.js';
+import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
 
 export enum AccessPointGroupAccess {
   // can be used to indicate fetching or resyncing of group access
@@ -72,6 +73,9 @@ export enum AccessPointGroupAccess {
 export class DataProductGroupAccessState {
   readonly accessState: DataProductDataAccessState;
   readonly group: V1_AccessPointGroup;
+  readonly lakehouseContractServerClient:
+    | LakehouseContractServerClient
+    | undefined;
   id = uuid();
   subscriptions: V1_DataSubscription[] = [];
 
@@ -96,8 +100,6 @@ export class DataProductGroupAccessState {
     group: V1_AccessPointGroup,
     accessState: DataProductDataAccessState,
   ) {
-    this.group = group;
-    this.accessState = accessState;
     makeAutoObservable(this, {
       handleContractClick: action,
       handleDataProductContracts: action,
@@ -115,6 +117,11 @@ export class DataProductGroupAccessState {
       setUserAccessStatus: action,
       canCreateSubscription: computed,
     });
+
+    this.group = group;
+    this.accessState = accessState;
+    this.lakehouseContractServerClient =
+      this.accessState.viewerState.lakehouseContractServerClient;
   }
 
   get access(): AccessPointGroupAccess {
@@ -177,13 +184,21 @@ export class DataProductGroupAccessState {
     systemAccountContracts: V1_DataContract[],
     token: string | undefined,
   ): GeneratorFn<void> {
+    const lakehouseContractServerClient = this.lakehouseContractServerClient;
+    if (!lakehouseContractServerClient) {
+      this.accessState.viewerState.applicationStore.notificationService.notifyWarning(
+        'Cannot fetch associated system account contracts. Lakehouse contract server client is not configured',
+      );
+      return;
+    }
+
     this.fetchingApprovedContractsState.inProgress();
     try {
       this.associatedSystemAccountContractsAndApprovedUsers =
         (yield Promise.all(
           systemAccountContracts.map(async (contract) => {
             const rawApprovedUsers =
-              await this.accessState.viewerState.productViewerStore.marketplaceBaseStore.lakehouseContractServerClient.getApprovedUsersForDataContract(
+              await lakehouseContractServerClient.getApprovedUsersForDataContract(
                 contract.guid,
                 token,
               );
@@ -220,6 +235,14 @@ export class DataProductGroupAccessState {
     contracts: V1_DataContract[],
     token: string | undefined,
   ): Promise<void> {
+    const lakehouseContractServerClient = this.lakehouseContractServerClient;
+    if (!lakehouseContractServerClient) {
+      this.accessState.viewerState.applicationStore.notificationService.notifyWarning(
+        'Cannot handle data product contracts. Lakehouse contract server client is not configured',
+      );
+      return;
+    }
+
     try {
       this.handlingContractsState.inProgress();
 
@@ -228,7 +251,7 @@ export class DataProductGroupAccessState {
       );
       const rawAccessPointGroupContractsWithMembers = await Promise.all(
         accessPointGroupContracts.map((_contract) =>
-          this.accessState.viewerState.productViewerStore.marketplaceBaseStore.lakehouseContractServerClient.getDataContract(
+          lakehouseContractServerClient.getDataContract(
             _contract.guid,
             true,
             token,
@@ -249,8 +272,7 @@ export class DataProductGroupAccessState {
               this.accessState.viewerState.applicationStore.identityService
                 .currentUser,
               _contract,
-              this.accessState.viewerState.productViewerStore
-                .marketplaceBaseStore.lakehouseContractServerClient,
+              lakehouseContractServerClient,
               token,
             );
             return isMember ? _contract : undefined;
@@ -296,10 +318,18 @@ export class DataProductGroupAccessState {
     contractId: string,
     token: string | undefined,
   ): GeneratorFn<void> {
+    const lakehouseContractServerClient = this.lakehouseContractServerClient;
+    if (!lakehouseContractServerClient) {
+      this.accessState.viewerState.applicationStore.notificationService.notifyWarning(
+        'Cannot fetch user access status. Lakehouse contract server client is not configured',
+      );
+      return;
+    }
+
     try {
       this.fetchingUserAccessState.inProgress();
       const rawUserStatus =
-        (yield this.accessState.viewerState.productViewerStore.marketplaceBaseStore.lakehouseContractServerClient.getContractUserStatus(
+        (yield lakehouseContractServerClient.getContractUserStatus(
           contractId,
           this.accessState.viewerState.applicationStore.identityService
             .currentUser,
@@ -324,10 +354,18 @@ export class DataProductGroupAccessState {
     contractId: string,
     token: string | undefined,
   ): GeneratorFn<void> {
+    const lakehouseContractServerClient = this.lakehouseContractServerClient;
+    if (!lakehouseContractServerClient) {
+      this.accessState.viewerState.applicationStore.notificationService.notifyWarning(
+        'Cannot fetch subscriptions. Lakehouse contract server client is not configured',
+      );
+      return;
+    }
+
     try {
       this.fetchingSubscriptionsState.inProgress();
       const rawSubscriptions =
-        (yield this.accessState.viewerState.productViewerStore.marketplaceBaseStore.lakehouseContractServerClient.getSubscriptionsForContract(
+        (yield lakehouseContractServerClient.getSubscriptionsForContract(
           contractId,
           token,
         )) as V1_DataSubscriptionResponse;
@@ -351,16 +389,23 @@ export class DataProductGroupAccessState {
     target: V1_DataSubscriptionTarget,
     token: string | undefined,
   ): GeneratorFn<void> {
+    const lakehouseContractServerClient = this.lakehouseContractServerClient;
+    if (!lakehouseContractServerClient) {
+      this.accessState.viewerState.applicationStore.notificationService.notifyWarning(
+        'Cannot create subscription. Lakehouse contract server client is not configured',
+      );
+      return;
+    }
+
     try {
       this.creatingSubscriptionState.inProgress();
       const input = new V1_CreateSubscriptionInput();
       input.contractId = contractId;
       input.target = target;
-      const response =
-        (yield this.accessState.viewerState.productViewerStore.marketplaceBaseStore.lakehouseContractServerClient.createSubscription(
-          serialize(V1_CreateSubscriptionInputModelSchema, input),
-          token,
-        )) as PlainObject<V1_DataSubscriptionResponse>;
+      const response = (yield lakehouseContractServerClient.createSubscription(
+        serialize(V1_CreateSubscriptionInputModelSchema, input),
+        token,
+      )) as PlainObject<V1_DataSubscriptionResponse>;
       guaranteeNonNullable(
         deserialize(V1_DataSubscriptionResponseModelSchema, response)
           .subscriptions?.[0],
