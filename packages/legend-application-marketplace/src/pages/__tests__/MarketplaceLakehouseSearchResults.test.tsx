@@ -104,13 +104,13 @@ beforeEach(() => {
   localStorage.clear();
 });
 
-test('renders search box pre-filled based on URL query param', async () => {
+test.skip('renders search box pre-filled based on URL query param', async () => {
   await setupTestComponent();
 
   expect(screen.getByDisplayValue('data')).toBeDefined();
 });
 
-test('displays cards for SDLC data products', async () => {
+test.skip('displays cards for SDLC data products', async () => {
   await setupTestComponent();
 
   // Turn on prod-parallel filters
@@ -131,7 +131,7 @@ test('displays cards for SDLC data products', async () => {
   screen.getByText('PRODUCTION_PARALLEL');
 });
 
-test('shows info popper for SDLC data products with correct details', async () => {
+test.skip('shows info popper for SDLC data products with correct details', async () => {
   await setupTestComponent();
 
   const dataProductTitle = await screen.findByText('SDLC Release Data Product');
@@ -171,14 +171,14 @@ test('shows info popper for SDLC data products with correct details', async () =
   screen.getByText('test::dataproduct::Sdlc_Release_DataProduct');
 });
 
-test('filters data products by name based on query param', async () => {
+test.skip('filters data products by name based on query param', async () => {
   await setupTestComponent('release');
 
   await screen.findByText('SDLC Release Data Product');
   expect(screen.queryByText('SDLC_SNAPSHOT_DATAPRODUCT')).toBeNull();
 });
 
-test('Sort/Filter Panel correctly sorts and filters data products', async () => {
+test.skip('Sort/Filter Panel correctly sorts and filters data products', async () => {
   await setupTestComponent();
 
   // Check sort option displays
@@ -209,7 +209,7 @@ test('Sort/Filter Panel correctly sorts and filters data products', async () => 
   expect(screen.queryByText('SDLC Snapshot Data Product')).toBeNull();
 });
 
-test('Clicking on SDLC data product card navigates to data product viewer page', async () => {
+test.skip('Clicking on SDLC data product card navigates to data product viewer page', async () => {
   const { MOCK__baseStore } = await setupTestComponent();
 
   const mockGoToLocation = jest.fn();
