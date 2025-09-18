@@ -104,13 +104,13 @@ beforeEach(() => {
   localStorage.clear();
 });
 
-test.skip('renders search box pre-filled based on URL query param', async () => {
+test('renders search box pre-filled based on URL query param', async () => {
   await setupTestComponent();
 
   expect(screen.getByDisplayValue('data')).toBeDefined();
 });
 
-test.skip('displays cards for SDLC data products', async () => {
+test('displays cards for SDLC data products', async () => {
   await setupTestComponent();
 
   // Turn on prod-parallel filters
@@ -118,7 +118,7 @@ test.skip('displays cards for SDLC data products', async () => {
   fireEvent.click(prodParallelFilterButton);
 
   // Check for SLDC data products
-  await screen.findByText('SDLC Release Data Product');
+  await screen.findAllByText('SDLC Release Data Product');
   screen.getByText('1.2.0');
   screen.getByText('PRODUCTION');
   screen.getByText(
@@ -126,20 +126,25 @@ test.skip('displays cards for SDLC data products', async () => {
   );
 
   // Check that SDLC data product without title uses ID
-  await screen.findByText('SDLC_SNAPSHOT_DATAPRODUCT');
+  await screen.findAllByText('SDLC_SNAPSHOT_DATAPRODUCT');
   screen.getByText('master-SNAPSHOT');
   screen.getByText('PRODUCTION_PARALLEL');
 });
 
-test.skip('shows info popper for SDLC data products with correct details', async () => {
+test('shows info popper for SDLC data products with correct details', async () => {
   await setupTestComponent();
 
-  const dataProductTitle = await screen.findByText('SDLC Release Data Product');
+  const findDataProductTitle = await screen.findAllByText(
+    'SDLC Release Data Product',
+  );
+  const dataProductTitle = guaranteeNonNullable(findDataProductTitle[0]);
   const dataProductCard = guaranteeNonNullable(
     dataProductTitle.parentElement?.parentElement,
   );
 
-  const infoButton = getByTitle(dataProductCard, 'More Info');
+  fireEvent.mouseEnter(dataProductCard);
+
+  const infoButton = screen.getByRole('button', { name: 'More Info' });
 
   fireEvent.click(guaranteeNonNullable(infoButton));
 
@@ -171,14 +176,14 @@ test.skip('shows info popper for SDLC data products with correct details', async
   screen.getByText('test::dataproduct::Sdlc_Release_DataProduct');
 });
 
-test.skip('filters data products by name based on query param', async () => {
+test('filters data products by name based on query param', async () => {
   await setupTestComponent('release');
 
-  await screen.findByText('SDLC Release Data Product');
+  await screen.findAllByText('SDLC Release Data Product');
   expect(screen.queryByText('SDLC_SNAPSHOT_DATAPRODUCT')).toBeNull();
 });
 
-test.skip('Sort/Filter Panel correctly sorts and filters data products', async () => {
+test('Sort/Filter Panel correctly sorts and filters data products', async () => {
   await setupTestComponent();
 
   // Check sort option displays
@@ -190,7 +195,7 @@ test.skip('Sort/Filter Panel correctly sorts and filters data products', async (
   screen.getByText('Deploy Type');
   const sdlcFilterButton = screen.getByText('SDLC Deployed');
   screen.getByText('Sandbox Deployed');
-  screen.getByText('SDLC Release Data Product');
+  screen.getAllByText('SDLC Release Data Product');
   fireEvent.click(sdlcFilterButton);
   expect(screen.queryByText('SDLC Release Data Product')).toBeNull();
   fireEvent.click(sdlcFilterButton);
@@ -209,14 +214,17 @@ test.skip('Sort/Filter Panel correctly sorts and filters data products', async (
   expect(screen.queryByText('SDLC Snapshot Data Product')).toBeNull();
 });
 
-test.skip('Clicking on SDLC data product card navigates to data product viewer page', async () => {
+test('Clicking on SDLC data product card navigates to data product viewer page', async () => {
   const { MOCK__baseStore } = await setupTestComponent();
 
   const mockGoToLocation = jest.fn();
   MOCK__baseStore.applicationStore.navigationService.navigator.goToLocation =
     mockGoToLocation;
 
-  const dataProductTitle = await screen.findByText('SDLC Release Data Product');
+  const findDataProductTitle = await screen.findAllByText(
+    'SDLC Release Data Product',
+  );
+  const dataProductTitle = guaranteeNonNullable(findDataProductTitle[0]);
   fireEvent.click(dataProductTitle);
 
   expect(mockGoToLocation).toHaveBeenCalledWith(
