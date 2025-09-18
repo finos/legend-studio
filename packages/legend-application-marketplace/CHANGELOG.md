@@ -1,5 +1,13 @@
 # @finos/legend-application-marketplace
 
+## 0.1.10
+
+### Patch Changes
+
+- [#4439](https://github.com/finos/legend-studio/pull/4439) [`b85c2e3`](https://github.com/finos/legend-studio/commit/b85c2e3e334bd9830f7cbbd1d2cbc881d429bd90) ([@kelly-thai](https://github.com/kelly-thai)) - Update Data Product Card style in search results
+
+- [#4431](https://github.com/finos/legend-studio/pull/4431) [`ed362b6`](https://github.com/finos/legend-studio/commit/ed362b660bb2f2c2b0b2c9b506bb11de8569981e) ([@travisstebbins](https://github.com/travisstebbins)) - Add support for legacy data products (data spaces) in Marketplace
+
 ## 0.1.9
 
 ### Patch Changes
