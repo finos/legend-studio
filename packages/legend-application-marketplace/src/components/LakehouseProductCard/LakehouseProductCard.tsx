@@ -19,13 +19,10 @@ import {
   OpenIcon,
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
-  deserializeIcon,
   clsx,
   InfoCircleIcon,
 } from '@finos/legend-art';
 import {
-  V1_DataProductEmbeddedImageIcon,
-  V1_DataProductLibraryIcon,
   V1_EntitlementsLakehouseEnvironmentType,
   V1_SdlcDeploymentDataProductOrigin,
 } from '@finos/legend-graph';
@@ -260,17 +257,6 @@ export const LakehouseProductCard = observer(
     ) : (
       <>
         <Box className="marketplace-lakehouse-data-product-card__container">
-          <Box className="marketplace-lakehouse-data-product-card__icon">
-            {productCardState.icon instanceof
-            V1_DataProductEmbeddedImageIcon ? (
-              <img src={productCardState.icon.imageUrl} />
-            ) : productCardState.icon instanceof V1_DataProductLibraryIcon ? (
-              deserializeIcon(
-                productCardState.icon.libraryId,
-                productCardState.icon.iconId,
-              )
-            ) : null}
-          </Box>
           <Box className="marketplace-lakehouse-data-product-card__content">
             <Box className="marketplace-lakehouse-data-product-card__tags">
               <Chip
@@ -314,43 +300,52 @@ export const LakehouseProductCard = observer(
                 />
               )}
             </Box>
+
             <Box className="marketplace-lakehouse-data-product-card__name">
               {productCardState.title}
             </Box>
-            <Box className="marketplace-lakehouse-data-product-card__description">
-              {truncatedDescription}
-            </Box>
           </Box>
-          {productCardState instanceof DataProductCardState && (
-            <>
-              <IconButton
-                onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  setPopoverAnchorEl(event.currentTarget);
-                }}
-                className={clsx(
-                  'marketplace-lakehouse-data-product-card__more-info-btn',
-                  {
-                    'marketplace-lakehouse-data-product-card__more-info-btn--selected':
-                      Boolean(popoverAnchorEl),
-                  },
-                )}
-                title="More Info"
-              >
-                <InfoCircleIcon />
-              </IconButton>
-              <LakehouseDataProductCardInfoPopover
-                dataProductCardState={productCardState}
-                popoverAnchorEl={popoverAnchorEl}
-                setPopoverAnchorEl={setPopoverAnchorEl}
-                applicationStore={
-                  productCardState.marketplaceBaseStore.applicationStore
-                }
-              />
-            </>
-          )}
         </Box>
+      </>
+    );
+
+    const moreInfoContent = (
+      <>
+        <Box className="marketplace-lakehouse-data-product-card__name">
+          {productCardState.title}
+        </Box>
+        <Box className="marketplace-lakehouse-data-product-card__description">
+          {truncatedDescription}
+        </Box>
+        {productCardState instanceof DataProductCardState && (
+          <>
+            <IconButton
+              onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
+                event.preventDefault();
+                event.stopPropagation();
+                setPopoverAnchorEl(event.currentTarget);
+              }}
+              className={clsx(
+                'marketplace-lakehouse-data-product-card__more-info-btn',
+                {
+                  'marketplace-lakehouse-data-product-card__more-info-btn--selected':
+                    Boolean(popoverAnchorEl),
+                },
+              )}
+              title="More Info"
+            >
+              <InfoCircleIcon />
+            </IconButton>
+            <LakehouseDataProductCardInfoPopover
+              dataProductCardState={productCardState}
+              popoverAnchorEl={popoverAnchorEl}
+              setPopoverAnchorEl={setPopoverAnchorEl}
+              applicationStore={
+                productCardState.marketplaceBaseStore.applicationStore
+              }
+            />
+          </>
+        )}
       </>
     );
 
@@ -360,6 +355,12 @@ export const LakehouseProductCard = observer(
         content={content}
         onClick={() => onClick(productCardState)}
         className="marketplace-lakehouse-data-product-card"
+        moreInfo={moreInfoContent}
+        cardMedia={
+          productCardState instanceof DataProductCardState
+            ? productCardState.displayImage
+            : undefined
+        }
       />
     );
   },

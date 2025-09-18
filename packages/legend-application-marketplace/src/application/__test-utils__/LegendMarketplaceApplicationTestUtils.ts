@@ -123,10 +123,12 @@ export class TestLegendMarketplaceApplicationPlugin extends LegendMarketplaceApp
       },
       { engine: marketplaceBaseStore.remoteEngine },
     );
+    const testImageMap = new Map<string, string>();
     const dataProductState = new DataProductCardState(
       marketplaceBaseStore,
       graphManager,
       mockDataProductDetail,
+      testImageMap,
     );
     return [dataProductState];
   }
