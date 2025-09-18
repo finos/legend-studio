@@ -88,7 +88,7 @@ export const generateLakehouseDataProductPath = (
   dataProductId: string,
   deploymentId: number,
 ): string =>
-  generatePath(LEGEND_MARKETPLACE_ROUTE_PATTERN.DEPRECATED_LAKEHOUSE_PRODUCT, {
+  generatePath(LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_PRODUCT, {
     dataProductId,
     deploymentId: deploymentId.toString(),
   });
