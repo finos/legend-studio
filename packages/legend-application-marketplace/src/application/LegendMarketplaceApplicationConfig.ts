@@ -52,12 +52,15 @@ class LegendMarketplaceApplicationCoreOptions {
 
   dataProductConfig: DataProductConfig | undefined;
 
+  newsletterUrl!: string;
+
   private static readonly serialization = new SerializationFactory(
     createModelSchema(LegendMarketplaceApplicationCoreOptions, {
       enableMarketplacePages: optional(primitive()),
       dataProductConfig: optional(
         usingModelSchema(DataProductConfig.serialization.schema),
       ),
+      newsletterUrl: primitive(),
     }),
   );
 

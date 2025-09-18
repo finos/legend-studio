@@ -21,8 +21,10 @@ import { LegendMarketplaceSearchBar } from '../../components/SearchBar/LegendMar
 import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
 import { useAuth } from 'react-oidc-context';
 import {
+  CalendarIcon,
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
+  OpenNewTabIcon,
 } from '@finos/legend-art';
 import {
   generateLakehouseDataProductPath,
@@ -93,8 +95,27 @@ export const MarketplaceLakehouseHome = observer(() => {
     }
   };
 
+  const newsletterNavigation = (): void => {
+    applicationStore.navigationService.navigator.visitAddress(
+      applicationStore.config.options.newsletterUrl,
+    );
+  };
+
   return (
     <LegendMarketplacePage className="marketplace-lakehouse-home">
+      <div className="legend-marketplace-home__button-group">
+        <button className="legend-marketplace-home__button">
+          <CalendarIcon className="legend-marketplace-home__button__icon" />
+          Schedule a Demo
+        </button>
+        <button
+          className="legend-marketplace-home__button"
+          onClick={newsletterNavigation}
+        >
+          <OpenNewTabIcon className="legend-marketplace-home__button__icon" />
+          Subscribe to our Newsletter
+        </button>
+      </div>
       <Container className="marketplace-lakehouse-home__search-container">
         <Box className="marketplace-lakehouse-home__search-container__logo">
           <img src="/assets/legendmarketplacehomelogo.png" alt="Legend Logo" />
