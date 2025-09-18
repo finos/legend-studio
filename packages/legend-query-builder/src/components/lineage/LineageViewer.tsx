@@ -950,9 +950,9 @@ const LineageGraphViewer = observer(
 
 const TAB_ORDER = [
   LINEAGE_VIEW_MODE.DATABASE_LINEAGE,
+  LINEAGE_VIEW_MODE.PROPERTY_LINEAGE,
   LINEAGE_VIEW_MODE.CLASS_LINEAGE,
   LINEAGE_VIEW_MODE.REPORT_LINEAGE,
-  LINEAGE_VIEW_MODE.PROPERTY_LINEAGE,
 ];
 
 const TAB_LABELS: Record<LINEAGE_VIEW_MODE, string> = {
@@ -965,15 +965,14 @@ const TAB_LABELS: Record<LINEAGE_VIEW_MODE, string> = {
 const LineageTabSelector = observer((props: { lineageState: LineageState }) => {
   const { lineageState } = props;
   return (
-    <div className="panel__header query-builder__execution-plan-form--editor__header--with-tabs">
-      <div className="uml-element-editor__tabs">
+    <div className="viewer__header lineage-viewer__header--with-tabs">
+      <div>
         {TAB_ORDER.map((tab) => (
           <div
             key={tab}
             onClick={() => lineageState.setSelectedTab(tab)}
-            className={clsx('query-builder__execution-plan-form--editor__tab', {
-              'query-builder__execution-plan-form--editor__tab--active':
-                tab === lineageState.selectedTab,
+            className={clsx('lineage-viewer__tab', {
+              'lineage-viewer__tab--active': tab === lineageState.selectedTab,
             })}
           >
             {TAB_LABELS[tab]}
@@ -1003,11 +1002,8 @@ const LineageViewerContent = observer(
     );
 
     return (
-      <div
-        className="query-builder__execution-plan-form--editor"
-        style={{ height: '100%' }}
-      >
-        <div className="panel" style={{ height: '100%' }}>
+      <div className="lineage-viewer" style={{ height: '100%' }}>
+        <div style={{ height: '100%' }}>
           <LineageTabSelector lineageState={lineageState} />
           <PanelContent>
             {selectedTab === LINEAGE_VIEW_MODE.CLASS_LINEAGE && (
@@ -1046,7 +1042,7 @@ export const LineageViewer = observer(
   (props: { lineageState: LineageState }) => {
     const { lineageState } = props;
 
-    const closePlanViewer = (): void => {
+    const closeLineageViewer = (): void => {
       lineageState.setLineageData(undefined);
       lineageState.setSelectedTab(LINEAGE_VIEW_MODE.DATABASE_LINEAGE);
       lineageState.clearPropertySelections();
@@ -1065,21 +1061,18 @@ export const LineageViewer = observer(
     return (
       <Dialog
         open={Boolean(lineageState.lineageData)}
-        onClose={closePlanViewer}
+        onClose={closeLineageViewer}
       >
         <Modal className="editor-modal" darkMode={isDarkMode}>
           <ModalHeader title="Lineage Viewer" />
           <ModalBody>
-            <div
-              className="query-builder__execution-plan"
-              style={{ height: '100%' }}
-            >
+            <div className="lineage-viewer" style={{ height: '100%' }}>
               <LineageViewerContent lineageState={lineageState} />
             </div>
           </ModalBody>
           <ModalFooter className="editor-modal__footer">
             <ModalFooterButton
-              onClick={closePlanViewer}
+              onClick={closeLineageViewer}
               text="Close"
               type="secondary"
             />

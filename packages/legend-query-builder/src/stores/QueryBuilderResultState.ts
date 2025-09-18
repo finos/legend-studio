@@ -41,6 +41,7 @@ import {
   V1_ZIPKIN_TRACE_HEADER,
   ExecutionError,
   V1_DELEGATED_EXPORT_HEADER,
+  type V1_RawLineageModel,
 } from '@finos/legend-graph';
 import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
 import {
@@ -55,6 +56,7 @@ import type { DataGridColumnState } from '@finos/legend-lego/data-grid';
 import { downloadStream } from '@finos/legend-application';
 import { QueryBuilderDataGridCustomAggregationFunction } from '../components/result/tds/QueryBuilderTDSGridResult.js';
 import { QueryBuilderTDSState } from './fetch-structure/tds/QueryBuilderTDSState.js';
+import { LineageState } from './lineage/LineageState.js';
 
 export const DEFAULT_LIMIT = 1000;
 
@@ -129,6 +131,9 @@ export class QueryBuilderResultState {
   gridConfig: QueryBuilderDataGridConfig | undefined;
   wavgAggregationState: QueryBuilderResultWavgAggregationState | undefined;
 
+  lineageState: LineageState;
+  isGeneratingLineage = false;
+
   constructor(queryBuilderState: QueryBuilderState) {
     makeObservable(this, {
       executionResult: observable,
@@ -168,6 +173,7 @@ export class QueryBuilderResultState {
       runQuery: flow,
       cancelQuery: flow,
       generatePlan: flow,
+      generateLineage: flow,
     });
     this.isSelectingCells = false;
 
@@ -177,6 +183,9 @@ export class QueryBuilderResultState {
     this.executionPlanState = new ExecutionPlanState(
       this.queryBuilderState.applicationStore,
       this.queryBuilderState.graphManagerState,
+    );
+    this.lineageState = new LineageState(
+      this.queryBuilderState.applicationStore,
     );
   }
 
@@ -667,6 +676,40 @@ export class QueryBuilderResultState {
       );
     } finally {
       this.isGeneratingPlan = false;
+    }
+  }
+
+  *generateLineage(): GeneratorFn<void> {
+    if (this.isGeneratingLineage) {
+      return;
+    }
+    try {
+      this.isGeneratingLineage = true;
+      const lambda = this.buildExecutionRawLambda();
+      const lineageRawData =
+        (yield this.queryBuilderState.graphManagerState.graphManager.generateLineage(
+          lambda,
+          this.queryBuilderState.executionContextState.explicitMappingValue,
+          undefined,
+          this.queryBuilderState.graphManagerState.graph,
+          undefined,
+        )) as V1_RawLineageModel;
+      const lineageData =
+        this.queryBuilderState.graphManagerState.graphManager.buildLineage(
+          lineageRawData,
+        );
+      this.lineageState.setLineageData(lineageData);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.queryBuilderState.applicationStore.logService.error(
+        LogEvent.create(GRAPH_MANAGER_EVENT.LINEAGE_GENERATION_FAILURE),
+        error,
+      );
+      this.queryBuilderState.applicationStore.notificationService.notifyError(
+        error,
+      );
+    } finally {
+      this.isGeneratingLineage = false;
     }
   }
 }

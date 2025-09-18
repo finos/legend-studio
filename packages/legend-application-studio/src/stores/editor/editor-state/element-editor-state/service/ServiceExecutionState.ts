@@ -59,6 +59,7 @@ import {
   stub_Mapping,
   reportGraphAnalytics,
   QuerySearchSpecification,
+  type V1_RawLineageModel,
 } from '@finos/legend-graph';
 import { parseGACoordinates } from '@finos/legend-storage';
 import { runtime_addMapping } from '../../../../graph-modifier/DSL_Mapping_GraphModifierHelper.js';
@@ -86,6 +87,7 @@ import {
   ExecutionPlanState,
   QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT,
   getRawLambdaForLetFuncs,
+  LineageState,
 } from '@finos/legend-query-builder';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 import { openDataCube } from '../../../data-cube/LegendStudioDataCubeHelper.js';
@@ -457,10 +459,12 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
   showChangeExecModal = false;
   isRunningQuery = false;
   isGeneratingPlan = false;
+  isGeneratingLineage = false;
   executionResultText?: string | undefined; // NOTE: stored as lossless JSON string
   executionPlanState: ExecutionPlanState;
   readonly parametersState: ServiceExecutionParametersState;
   queryRunPromise: Promise<ExecutionResultWithMetadata> | undefined = undefined;
+  lineageState: LineageState;
 
   constructor(
     editorStore: EditorStore,
@@ -470,6 +474,8 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
     super(editorStore, serviceEditorState, execution);
     makeObservable(this, {
       cancelQuery: flow,
+      generateLineage: flow,
+      isGeneratingLineage: observable,
     });
 
     this.execution = execution;
@@ -482,6 +488,7 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
       this.editorStore.graphManagerState,
     );
     this.parametersState = new ServiceExecutionParametersState(this);
+    this.lineageState = new LineageState(this.editorStore.applicationStore);
   }
 
   abstract changeExecution(): void;
@@ -734,6 +741,40 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
         LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
+    }
+  }
+
+  *generateLineage(): GeneratorFn<void> {
+    if (this.isGeneratingLineage) {
+      return;
+    }
+    try {
+      this.isGeneratingLineage = true;
+      const query = this.queryState.query;
+      const mapping =
+        this.selectedExecutionContextState?.executionContext.mapping.value;
+      const lineageRawData =
+        (yield this.editorStore.graphManagerState.graphManager.generateLineage(
+          query,
+          mapping,
+          undefined,
+          this.editorStore.graphManagerState.graph,
+          undefined,
+        )) as V1_RawLineageModel;
+      const lineageData =
+        this.editorStore.graphManagerState.graphManager.buildLineage(
+          lineageRawData,
+        );
+      this.lineageState.setLineageData(lineageData);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.logService.error(
+        LogEvent.create(GRAPH_MANAGER_EVENT.LINEAGE_GENERATION_FAILURE),
+        error,
+      );
+      this.editorStore.applicationStore.notificationService.notifyError(error);
+    } finally {
+      this.isGeneratingLineage = false;
     }
   }
 
