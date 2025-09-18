@@ -15,7 +15,7 @@
  */
 
 import { beforeEach, expect, jest, test } from '@jest/globals';
-import { fireEvent, screen, getByTitle } from '@testing-library/react';
+import { fireEvent, screen } from '@testing-library/react';
 import {
   TEST__provideMockLegendMarketplaceBaseStore,
   TEST__setUpMarketplaceLakehouse,
