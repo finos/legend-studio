@@ -109,7 +109,7 @@ export const generateLakehouseSearchResultsRoute = (
   query: string | undefined,
 ): string =>
   addQueryParametersToUrl(
-    LEGEND_MARKETPLACE_ROUTE_PATTERN.DEPRECATED_LAKEHOUSE_SEARCH_RESULTS,
+    LEGEND_MARKETPLACE_ROUTE_PATTERN.SEARCH_RESULTS,
     stringifyQueryParams({
       [LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN.QUERY]:
         query ? query : undefined,
