@@ -284,9 +284,8 @@ export class LegendDataCubeDuckDBEngine {
         dbReference: refId,
       };
     }
-    const schemaName = LegendDataCubeDuckDBEngine.DUCKDB_DEFAULT_SCHEMA_NAME;
-    LegendDataCubeDuckDBEngine.ingestFileTableCounter += 1;
-    const tableName = `${LegendDataCubeDuckDBEngine.INGEST_TABLE_NAME_PREFIX}${LegendDataCubeDuckDBEngine.ingestFileTableCounter}`;
+    const schemaName = `iceberg_catalog."${paths[0]}.${paths[1]}"`;
+    const tableName = `${paths[2]}`;
 
     const connection = await this.database.connect();
 
@@ -304,18 +303,10 @@ export class LegendDataCubeDuckDBEngine {
     );`;
     await connection.query(catalog);
 
-    const selectQuery = `SELECT * from iceberg_catalog."${paths[0]}.${paths[1]}".${paths[2]};`;
+    const selectQuery = `DESCRIBE ${schemaName}.${tableName};`;
     const results = await connection.query(selectQuery);
 
-    await connection.insertArrowTable(results, {
-      name: tableName,
-      create: true,
-      schema: schemaName,
-    });
-
-    const tableSpec = (
-      await connection.query(`DESCRIBE ${schemaName}.${tableName}`)
-    )
+    const tableSpec = results
       .toArray()
       .map((spec) => [
         spec[LegendDataCubeDuckDBEngine.COLUMN_NAME] as string,

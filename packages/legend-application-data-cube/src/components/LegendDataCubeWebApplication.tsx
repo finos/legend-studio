@@ -81,6 +81,7 @@ const AuthenticatedLegendDataCubeWebProvider = withAuthenticationRequired(
     ),
     signinRedirectArgs: {
       state: `${window.location.pathname}${window.location.search}`,
+      extraQueryParams: {},
     },
   },
 );

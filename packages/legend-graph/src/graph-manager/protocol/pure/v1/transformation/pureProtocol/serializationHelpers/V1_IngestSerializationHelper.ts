@@ -77,7 +77,7 @@ export const V1_createIngestDef = (
 export const V1_OpenCatalogModelSchema = createModelSchema(V1_OpenCatalog, {
   name: primitive(),
   url: primitive(),
-  privateLinkUrl: primitive(),
+  proxyUrl: primitive(),
   _type: usingConstantValueSchema(V1_CatalogType.OpenCatalog),
 });
 

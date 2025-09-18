@@ -244,7 +244,7 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
       this.catalogUrl = guaranteeType(
         ingestEnv.iceberg.catalog,
         V1_OpenCatalog,
-      ).privateLinkUrl;
+      ).proxyUrl;
     } catch (error) {
       throw error;
     }

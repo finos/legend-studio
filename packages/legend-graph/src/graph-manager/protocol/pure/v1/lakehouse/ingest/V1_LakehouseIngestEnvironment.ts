@@ -68,5 +68,5 @@ export abstract class V1_Catalog {
 }
 
 export class V1_OpenCatalog extends V1_Catalog {
-  privateLinkUrl!: string;
+  proxyUrl!: string;
 }

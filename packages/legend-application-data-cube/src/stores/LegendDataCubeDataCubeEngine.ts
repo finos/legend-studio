@@ -162,6 +162,7 @@ import {
   LakehouseConsumerDataCubeSource,
   RawLakehouseConsumerDataCubeSource,
 } from './model/LakehouseConsumerDataCubeSource.js';
+import type { OAuthClient } from './model/OauthClient.js';
 
 export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   private readonly _application: LegendDataCubeApplicationStore;
@@ -169,6 +170,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   private readonly _engineServerClient: V1_EngineServerClient;
   private readonly _graphManager: V1_PureGraphManager;
   private readonly _duckDBEngine: LegendDataCubeDuckDBEngine;
+  private readonly _oauthClient?: OAuthClient;
   private _ingestDefinition: PlainObject | undefined;
 
   constructor(
@@ -176,10 +178,12 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     depotServerClient: DepotServerClient,
     engineServerClient: V1_EngineServerClient,
     graphManager: V1_PureGraphManager,
+    oauthClient: OAuthClient,
   ) {
     super();
 
     this._application = application;
+    this._oauthClient = oauthClient;
     this._depotServerClient = depotServerClient;
     this._engineServerClient = engineServerClient;
     this._graphManager = graphManager;
@@ -1603,12 +1607,13 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     refId?: string,
     token?: string,
   ) {
+    const token1 = await this._oauthClient?.getToken();
     const { dbReference } = await this._duckDBEngine.ingestIcebergTable(
       warehouse,
       paths,
       catalogApi,
       refId,
-      token,
+      token ?? token1,
     );
     return { dbReference };
   }
