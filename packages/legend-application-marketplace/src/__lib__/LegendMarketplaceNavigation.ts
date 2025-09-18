@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { generatePath, matchPath } from '@finos/legend-application/browser';
+import { generatePath } from '@finos/legend-application/browser';
 import {
   addQueryParametersToUrl,
   stringifyQueryParams,
@@ -58,47 +58,37 @@ export type LegacyDataProductPathParams = {
 };
 
 export const LEGEND_MARKETPLACE_ROUTE_PATTERN = Object.freeze({
-  DEFAULT: '/',
+  HOME_PAGE: '/',
   OAUTH_CALLBACK: '/callback',
-  SEARCH_RESULTS: '/results',
-  VENDOR_DATA: '/vendordata',
-  VENDOR_DETAILS: `/vendor/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.VENDOR_NAME}`,
-  LAKEHOUSE: '/lakehouse',
-  LAKEHOUSE_SEARCH_RESULTS: '/lakehouse/results',
-  LAKEHOUSE_ENTITLEMENTS: '/lakehouse/entitlements',
-  LAKEHOUSE_PRODUCT: `/lakehouse/dataProduct/deployed/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_ID}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DEPLOYMENT_ID}`,
-  LEGACY_DATA_PRODUCT: `/lakehouse/dataProduct/legacy/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.GAV}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH}`,
-  TERMINAL_PRODUCT: `/terminal/terminalProduct/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.TERMINAL_ID}`,
-  LAKEHOUSE_SDLC_PRODUCT: `/lakehouse/dataProduct/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.GAV}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH}`,
-  SUBSCRIPTIONS: '/subscriptions',
-  ORDERS: '/orders',
-  LAKEHOUSE_ADMIN: '/lakehouse/admin',
+  // PRODUCTS
   DATA_PRODUCTS: '/dataproducts',
   DATA_APIS: '/dataapis',
   AGENTS: '/agents',
   INVENTORY: '/inventory',
+  SUBSCRIPTIONS: '/subscriptions',
+  ORDERS: '/orders',
+  TERMINAL_PRODUCT: `/terminal/terminalProduct/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.TERMINAL_ID}`,
+  VENDOR_DETAILS: `/vendor/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.VENDOR_NAME}`,
+  // Data Products
+  DATA_PRODUCT: `/dataProduct/deployed/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_ID}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DEPLOYMENT_ID}`,
+  LEGACY_DATA_PRODUCT: `/dataProduct/legacy/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.GAV}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH}`,
+  SDLC_DATA_PRODUCT: `/dataProduct/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.GAV}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH}`,
+  DATA_PRODUCT_SEARCH_RESULTS: '/dataProduct/results',
+  // Lakehouse
+  LAKEHOUSE_ENTITLEMENTS: '/lakehouse/entitlements',
+  LAKEHOUSE_ADMIN: '/lakehouse/admin',
+  // Deprecated
+  DEPRECATED_LAKEHOUSE: '/lakehouse',
+  DEPRECATED_LAKEHOUSE_SEARCH_RESULTS: '/lakehouse/results',
+  DEPRECATED_LAKEHOUSE_PRODUCT: `/lakehouse/dataProduct/deployed/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_ID}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DEPLOYMENT_ID}`,
+  DEPRECATED_LAKEHOUSE_SDLC_PRODUCT: `/lakehouse/dataProduct/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.GAV}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH}`,
 });
-
-export const LAKEHOUSE_ROUTES = Object.freeze([
-  LEGEND_MARKETPLACE_ROUTE_PATTERN.DEFAULT,
-  LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SEARCH_RESULTS,
-  LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS,
-  LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_PRODUCT,
-  LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SDLC_PRODUCT,
-  LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ADMIN,
-  LEGEND_MARKETPLACE_ROUTE_PATTERN.TERMINAL_PRODUCT,
-]);
-
-export const isLakehouseRoute = (pathName: string): boolean =>
-  LAKEHOUSE_ROUTES.some(
-    (route) => matchPath(route as string, pathName) !== null,
-  );
 
 export const generateLakehouseDataProductPath = (
   dataProductId: string,
   deploymentId: number,
 ): string =>
-  generatePath(LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_PRODUCT, {
+  generatePath(LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_PRODUCT, {
     dataProductId,
     deploymentId: deploymentId.toString(),
   });
@@ -119,7 +109,7 @@ export const generateLakehouseSearchResultsRoute = (
   query: string | undefined,
 ): string =>
   addQueryParametersToUrl(
-    LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SEARCH_RESULTS,
+    LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_PRODUCT_SEARCH_RESULTS,
     stringifyQueryParams({
       [LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN.QUERY]:
         query ? query : undefined,
@@ -131,7 +121,7 @@ export const generateSearchResultsRoute = (
   query: string | undefined,
 ): string =>
   addQueryParametersToUrl(
-    LEGEND_MARKETPLACE_ROUTE_PATTERN.SEARCH_RESULTS,
+    LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_PRODUCT_SEARCH_RESULTS,
     stringifyQueryParams({
       [LEGEND_MARKETPLACE_SEARCH_RESULTS_QUERY_PARAM_TOKEN.PROVIDER]: provider
         ? provider
@@ -141,11 +131,6 @@ export const generateSearchResultsRoute = (
         : undefined,
     }),
   );
-
-export const generateVendorDetailsRoute = (vendorName: string): string =>
-  generatePath(LEGEND_MARKETPLACE_ROUTE_PATTERN.VENDOR_DETAILS, {
-    vendorName,
-  });
 
 /**
  * @external_application_navigation This depends on Legend Studio routing and is hardcoded so it's potentially brittle
