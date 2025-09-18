@@ -88,7 +88,7 @@ export class LegendDataCubeBaseStore {
 
   constructor(
     application: LegendDataCubeApplicationStore,
-    userManagerSettings: UserManagerSettings,
+    userManagerSettings?: UserManagerSettings,
   ) {
     this.application = application;
     this.pluginManager = application.pluginManager;
@@ -168,7 +168,7 @@ export class LegendDataCubeBaseStore {
       this.depotServerClient,
       this.engineServerClient,
       this.graphManager,
-      new OAuthClient(userManagerSettings),
+      userManagerSettings ? new OAuthClient(userManagerSettings) : undefined,
     );
     this.taskService = new DataCubeTaskService();
     this.layoutService = new DataCubeLayoutService();

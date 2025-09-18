@@ -170,7 +170,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   private readonly _engineServerClient: V1_EngineServerClient;
   private readonly _graphManager: V1_PureGraphManager;
   private readonly _duckDBEngine: LegendDataCubeDuckDBEngine;
-  private readonly _oauthClient?: OAuthClient;
+  private readonly _oauthClient?: OAuthClient | undefined;
   private _ingestDefinition: PlainObject | undefined;
 
   constructor(
@@ -178,7 +178,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     depotServerClient: DepotServerClient,
     engineServerClient: V1_EngineServerClient,
     graphManager: V1_PureGraphManager,
-    oauthClient: OAuthClient,
+    oauthClient?: OAuthClient,
   ) {
     super();
 
