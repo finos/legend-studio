@@ -121,6 +121,7 @@ import {
   MdError,
   MdOutlineGroupWork,
   MdOutlineTune,
+  MdOpenInNew,
 } from 'react-icons/md';
 
 export const ManageSearchIcon = MdManageSearch; // to be reviewed
@@ -164,6 +165,7 @@ export const ExpandMoreIcon = MdExpandMore;
 export const ErrorWarnIcon = MdError;
 export const GroupWorkIcon = MdOutlineGroupWork;
 export const TuneIcon = MdOutlineTune;
+export const OpenNewTabIcon = MdOpenInNew;
 
 //======================================================= VSC =======================================================
 import {
