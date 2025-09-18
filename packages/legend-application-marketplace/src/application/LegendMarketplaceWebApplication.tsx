@@ -228,53 +228,12 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.OAUTH_CALLBACK}
               element={<MarketplaceLakehouseOAuthCallback />}
             />
-            {/* Reroute pages */}
-            <Route
-              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.DEPRECATED_LAKEHOUSE}
-              element={
-                <Navigate
-                  to={LEGEND_MARKETPLACE_ROUTE_PATTERN.HOME_PAGE}
-                  replace={true}
-                />
-              }
-            />
-            <Route
-              path={
-                LEGEND_MARKETPLACE_ROUTE_PATTERN.DEPRECATED_LAKEHOUSE_SEARCH_RESULTS
-              }
-              element={
-                <Navigate
-                  to={LEGEND_MARKETPLACE_ROUTE_PATTERN.SEARCH_RESULTS}
-                  replace={true}
-                />
-              }
-            />
-            <Route
-              path={
-                LEGEND_MARKETPLACE_ROUTE_PATTERN.DEPRECATED_LAKEHOUSE_PRODUCT
-              }
-              element={
-                <Navigate
-                  to={LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_PRODUCT}
-                  replace={true}
-                />
-              }
-            />
-            <Route
-              path={
-                LEGEND_MARKETPLACE_ROUTE_PATTERN.DEPRECATED_LAKEHOUSE_SDLC_PRODUCT
-              }
-              element={
-                <Navigate
-                  to={LEGEND_MARKETPLACE_ROUTE_PATTERN.SDLC_DATA_PRODUCT}
-                  replace={true}
-                />
-              }
-            />
 
             {/* Marketplace Routes */}
             <Route
-              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.SEARCH_RESULTS}
+              path={
+                LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_PRODUCT_SEARCH_RESULTS
+              }
               element={<ProtectedLakehouseSearchResults />}
             />
 
@@ -305,6 +264,52 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ADMIN}
               element={<ProtectedLakehouseAdmin />}
+            />
+
+            {/* Reroute pages */}
+            <Route
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.DEPRECATED_LAKEHOUSE}
+              element={
+                <Navigate
+                  to={LEGEND_MARKETPLACE_ROUTE_PATTERN.HOME_PAGE}
+                  replace={true}
+                />
+              }
+            />
+            <Route
+              path={
+                LEGEND_MARKETPLACE_ROUTE_PATTERN.DEPRECATED_LAKEHOUSE_SEARCH_RESULTS
+              }
+              element={
+                <Navigate
+                  to={
+                    LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_PRODUCT_SEARCH_RESULTS
+                  }
+                  replace={true}
+                />
+              }
+            />
+            <Route
+              path={
+                LEGEND_MARKETPLACE_ROUTE_PATTERN.DEPRECATED_LAKEHOUSE_PRODUCT
+              }
+              element={
+                <Navigate
+                  to={LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_PRODUCT}
+                  replace={true}
+                />
+              }
+            />
+            <Route
+              path={
+                LEGEND_MARKETPLACE_ROUTE_PATTERN.DEPRECATED_LAKEHOUSE_SDLC_PRODUCT
+              }
+              element={
+                <Navigate
+                  to={LEGEND_MARKETPLACE_ROUTE_PATTERN.SDLC_DATA_PRODUCT}
+                  replace={true}
+                />
+              }
             />
             <Route path="*" element={<NotFoundPage />} />
           </Route>

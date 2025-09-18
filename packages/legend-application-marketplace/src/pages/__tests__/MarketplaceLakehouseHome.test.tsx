@@ -97,7 +97,7 @@ test('navigates to search results page if search box contains text', async () =>
 
   await waitFor(() =>
     expect(mockGoToLocation).toHaveBeenLastCalledWith(
-      '/lakehouse/results?query=data',
+      '/dataProduct/results?query=data',
     ),
   );
 });

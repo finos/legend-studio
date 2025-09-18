@@ -60,7 +60,6 @@ export type LegacyDataProductPathParams = {
 export const LEGEND_MARKETPLACE_ROUTE_PATTERN = Object.freeze({
   HOME_PAGE: '/',
   OAUTH_CALLBACK: '/callback',
-  SEARCH_RESULTS: '/results',
   // PRODUCTS
   DATA_PRODUCTS: '/dataproducts',
   DATA_APIS: '/dataapis',
@@ -74,6 +73,7 @@ export const LEGEND_MARKETPLACE_ROUTE_PATTERN = Object.freeze({
   DATA_PRODUCT: `/dataProduct/deployed/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_ID}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DEPLOYMENT_ID}`,
   LEGACY_DATA_PRODUCT: `/dataProduct/legacy/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.GAV}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH}`,
   SDLC_DATA_PRODUCT: `/dataProduct/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.GAV}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH}`,
+  DATA_PRODUCT_SEARCH_RESULTS: '/dataProduct/results',
   // Lakehouse
   LAKEHOUSE_ENTITLEMENTS: '/lakehouse/entitlements',
   LAKEHOUSE_ADMIN: '/lakehouse/admin',
@@ -109,7 +109,7 @@ export const generateLakehouseSearchResultsRoute = (
   query: string | undefined,
 ): string =>
   addQueryParametersToUrl(
-    LEGEND_MARKETPLACE_ROUTE_PATTERN.SEARCH_RESULTS,
+    LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_PRODUCT_SEARCH_RESULTS,
     stringifyQueryParams({
       [LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN.QUERY]:
         query ? query : undefined,
@@ -121,7 +121,7 @@ export const generateSearchResultsRoute = (
   query: string | undefined,
 ): string =>
   addQueryParametersToUrl(
-    LEGEND_MARKETPLACE_ROUTE_PATTERN.SEARCH_RESULTS,
+    LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_PRODUCT_SEARCH_RESULTS,
     stringifyQueryParams({
       [LEGEND_MARKETPLACE_SEARCH_RESULTS_QUERY_PARAM_TOKEN.PROVIDER]: provider
         ? provider

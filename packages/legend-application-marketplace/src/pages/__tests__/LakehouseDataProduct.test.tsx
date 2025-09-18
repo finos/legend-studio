@@ -249,7 +249,7 @@ const setupLakehouseDataProductTest = async (
 
   const { renderResult } = await TEST__setUpMarketplaceLakehouse(
     mockedStore,
-    `/lakehouse/dataProduct/deployed/${dataProductId}/${deploymentId}`,
+    `/dataProduct/deployed/${dataProductId}/${deploymentId}`,
   );
 
   return { mockedStore, renderResult };

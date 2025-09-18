@@ -43,7 +43,7 @@ const setupTestComponent = async (query?: string) => {
       MOCK__baseStore.applicationStore.navigationService.navigator,
       'getCurrentAddress',
     )
-    .mockReturnValue('http://localhost/lakehouse/results?query=data');
+    .mockReturnValue('http://localhost/dataProduct/results?query=data');
 
   createSpy(
     MOCK__baseStore.lakehouseContractServerClient,
@@ -91,10 +91,9 @@ const setupTestComponent = async (query?: string) => {
       );
     },
   );
-
   const { renderResult } = await TEST__setUpMarketplaceLakehouse(
     MOCK__baseStore,
-    `/lakehouse/results?query=${query ?? 'data'}`,
+    `/dataProduct/results?query=${query ?? 'data'}`,
   );
 
   return { MOCK__baseStore, renderResult };
@@ -228,6 +227,6 @@ test('Clicking on SDLC data product card navigates to data product viewer page',
   fireEvent.click(dataProductTitle);
 
   expect(mockGoToLocation).toHaveBeenCalledWith(
-    '/lakehouse/dataProduct/deployed/SDLC_RELEASE_DATAPRODUCT/12345',
+    '/dataProduct/deployed/SDLC_RELEASE_DATAPRODUCT/12345',
   );
 });
