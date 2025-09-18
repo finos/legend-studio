@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.1.11
+
+### Patch Changes
+
+- [#4440](https://github.com/finos/legend-studio/pull/4440) [`7d1569d`](https://github.com/finos/legend-studio/commit/7d1569dfe7cedbd21723d3943b2ffca57e5f7cdd) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - route /lakehouse to / routes
+
 ## 0.1.10
 
 ### Patch Changes
