@@ -88,6 +88,7 @@ import {
   MdWrapText,
   MdSaveAs,
   MdSave,
+  MdSend,
   MdVerticalAlignBottom,
   MdRefresh,
   MdFunctions,
@@ -131,6 +132,7 @@ export const MoreHorizontalIcon = MdMoreHoriz;
 export const WrapTextIcon = MdWrapText;
 export const SaveAsIcon = MdSaveAs;
 export const SaveCurrIcon = MdSave;
+export const SendIcon = MdSend;
 export const VerticalAlignBottomIcon = MdVerticalAlignBottom;
 export const RefreshIcon = MdRefresh;
 export const SigmaIcon = MdFunctions;
@@ -421,6 +423,7 @@ import {
   FaRegWindowRestore,
   FaRobot,
   FaRocket,
+  FaRegCalendar,
   FaSave,
   FaSearch,
   FaServer,
@@ -474,6 +477,7 @@ export const BuildingIcon = FaBuilding;
 export const BusinessTimeIcon = FaBusinessTime; // to be reviewed/combined
 export const CalculatorIcon = FaCalculator;
 export const CalendarIcon = FaRegCalendarAlt;
+export const SimpleCalendarIcon = FaRegCalendar;
 export const CaretDownIcon = FaCaretDown;
 export const CaretLeftIcon = FaCaretLeft;
 export const CaretRightIcon = FaCaretRight;

@@ -1,0 +1,784 @@
+.home-buttons-container {
+  position: fixed;
+  top: 8rem;
+  right: 1rem;
+  z-index: 100;
+  font-family: 'GS Sans', Helvetica, Arial, sans-serif;
+}
+
+.floating-buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.floating-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 1.2rem 1.6rem;
+  border: none;
+  border-radius: 0.8rem;
+  cursor: pointer;
+  font-size: 1.8rem;
+  font-weight: 400;
+  background: transparent;
+  color: #000;
+  transition: all 0.2s ease;
+  min-width: 14rem;
+  justify-content: center;
+  font-family: 'GS Sans', Helvetica, Arial, sans-serif;
+
+  &:hover {
+    color: #000;
+    box-shadow: 0 0.4rem 1.2rem rgb(0 0 0 / 15%);
+  }
+
+  .btn-icon {
+    flex-shrink: 0;
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .gs-icon {
+      font-size: 2.5rem;
+    }
+  }
+
+  .btn-text {
+    white-space: nowrap;
+  }
+}
+
+.demo-btn {
+  &:hover {
+    background: linear-gradient(
+      90deg,
+      rgb(75 80 207 / 100%) 0%,
+      rgb(102 126 234 / 100%) 100%
+    );
+    color: #000;
+
+    .btn-icon .gs-icon {
+      color: #000;
+    }
+  }
+}
+
+.newsletter-btn {
+  &:hover {
+    background: linear-gradient(
+      90deg,
+      rgb(75 80 207 / 100%) 0%,
+      rgb(102 126 234 / 100%) 100%
+    );
+    color: #000;
+
+    .btn-icon .gs-icon {
+      color: #000;
+    }
+  }
+}
+
+/* Demo Form Modal Styles */
+.demo-form-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgb(0 0 0 / 60%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.3s ease-out;
+  font-family: 'GS Sans', Helvetica, Arial, sans-serif;
+}
+
+.demo-form-modal {
+  position: relative;
+  background: white;
+  border-radius: 1.6rem;
+  max-width: 50rem;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 2.5rem 5rem rgb(0 0 0 / 25%);
+  animation: slideInScale 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: 'GS Sans', Helvetica, Arial, sans-serif;
+
+  &__icon {
+    font-size: 2.8rem;
+    color: var(--color-white);
+  }
+
+  &__close {
+    font-size: 1.8rem;
+    color: var(--color-black);
+  }
+
+  .close-btn {
+    position: absolute;
+    top: 2rem;
+    right: 2rem;
+    background: #f3f4f6;
+    border: none;
+    border-radius: 50%;
+    width: 3.6rem;
+    height: 3.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 1;
+
+    &:hover {
+      background: linear-gradient(
+        90deg,
+        rgb(75 80 207 / 100%) 0%,
+        rgb(102 126 234 / 100%) 100%
+      );
+      transform: scale(1.1);
+    }
+
+    .gs-icon {
+      color: #000;
+      font-size: 1.8rem;
+    }
+  }
+}
+
+.form-header {
+  text-align: center;
+  padding: 4rem 3rem 2rem;
+  border-bottom: 0.1rem solid #f3f4f6;
+  font-family: 'GS Sans', Helvetica, Arial, sans-serif;
+
+  .form-icon {
+    width: 6.4rem;
+    height: 6.4rem;
+    background: linear-gradient(135deg, #667eea 0%, #343ae9 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 2rem;
+
+    .gs-icon {
+      font-size: 2.8rem;
+      color: white;
+    }
+  }
+
+  .form-title {
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 0.8rem;
+    font-family: 'GS Sans', Helvetica, Arial, sans-serif;
+  }
+
+  .form-subtitle {
+    font-size: 1.6rem;
+    color: #6b7280;
+    margin: 0;
+    line-height: 1.4;
+    font-family: 'GS Sans', Helvetica, Arial, sans-serif;
+  }
+}
+
+.demo-form {
+  padding: 3rem;
+  font-family: 'GS Sans', Helvetica, Arial, sans-serif;
+
+  .form-group {
+    margin-bottom: 2.4rem;
+
+    .form-label {
+      display: block;
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 0.8rem;
+      font-family: 'GS Sans', Helvetica, Arial, sans-serif;
+    }
+
+    .form-input,
+    .form-textarea {
+      width: 100%;
+      padding: 1.2rem 1.6rem;
+      border: 0.2rem solid #e5e7eb;
+      border-radius: 0.8rem;
+      font-size: 1.4rem;
+      transition: all 0.2s ease;
+      font-family: 'GS Sans', Helvetica, Arial, sans-serif;
+      box-sizing: border-box;
+
+      &:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.3rem rgb(102 126 234 / 10%);
+      }
+
+      &.error {
+        border-color: #ef4444;
+        box-shadow: 0 0 0 0.3rem rgb(239 68 68 / 10%);
+      }
+
+      &::placeholder {
+        color: #9ca3af;
+      }
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 10rem;
+      line-height: 1.5;
+    }
+
+    .error-message {
+      display: block;
+      font-size: 1.2rem;
+      color: #ef4444;
+      margin-top: 0.6rem;
+      font-weight: 500;
+      font-family: 'GS Sans', Helvetica, Arial, sans-serif;
+    }
+
+    .character-count {
+      font-size: 1.2rem;
+      color: #9ca3af;
+      margin-top: 0.4rem;
+      text-align: right;
+      font-family: 'GS Sans', Helvetica, Arial, sans-serif;
+    }
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 1.2rem;
+    justify-content: flex-end;
+    margin-top: 3.2rem;
+    padding-top: 2.4rem;
+    border-top: 0.1rem solid #f3f4f6;
+
+    .btn-secondary,
+    .btn-primary {
+      padding: 1.2rem 2.4rem;
+      border-radius: 0.8rem;
+      font-size: 1.4rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      min-width: 12rem;
+      justify-content: center;
+      font-family: 'GS Sans', Helvetica, Arial, sans-serif;
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+
+    .btn-secondary {
+      background: #f9fafb;
+      border: 0.1rem solid #d1d5db;
+      color: #374151;
+
+      &:hover:not(:disabled) {
+        background: #f3f4f6;
+        border-color: #9ca3af;
+      }
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #343ae9 100%);
+      border: none;
+      color: white;
+
+      &:hover:not(:disabled) {
+        transform: translateY(-0.1rem);
+        box-shadow: 0 0.4rem 1.2rem rgb(102 126 234 / 40%);
+      }
+
+      .spinning {
+        animation: spin 1s linear infinite;
+      }
+    }
+  }
+}
+
+/* Coming Soon Banner Styles */
+.coming-soon-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgb(0 0 0 / 50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.3s ease-out;
+  font-family: 'GS Sans', Helvetica, Arial, sans-serif;
+}
+
+.api-error-message {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 1.2rem 1.6rem;
+  background: #fef2f2;
+  border: 0.1rem solid #fecaca;
+  border-radius: 0.8rem;
+  color: #dc2626;
+  font-size: 1.4rem;
+  font-weight: 500;
+  margin-bottom: 2rem;
+  font-family: 'GS Sans', Helvetica, Arial, sans-serif;
+
+  .gs-icon {
+    font-size: 1.8rem;
+    flex-shrink: 0;
+  }
+}
+
+/* Success Popup Styles */
+.success-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgb(0 0 0 / 60%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+  animation: fadeIn 0.2s ease-out;
+  font-family: 'GS Sans', Helvetica, Arial, sans-serif;
+}
+
+.success-popup {
+  position: relative;
+  background: linear-gradient(135deg, #667eea 0%, #343ae9 100%);
+  color: white;
+  padding: 4rem 5rem;
+  border-radius: 2rem;
+  text-align: center;
+  max-width: 45rem;
+  width: 90%;
+  box-shadow: 0 2rem 6rem rgb(0 0 0 / 30%);
+  animation: slideInScale 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  font-family: 'GS Sans', Helvetica, Arial, sans-serif;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgb(255 255 255 / 20%),
+      transparent
+    );
+    animation: shimmer 2s infinite;
+  }
+
+  .close-btn {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    background: rgb(255 255 255 / 20%);
+    border: none;
+    border-radius: 50%;
+    width: 3.2rem;
+    height: 3.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgb(255 255 255 / 30%);
+      transform: scale(1.1);
+    }
+
+    .gs-icon {
+      color: white;
+      font-size: 1.6rem;
+    }
+  }
+
+  .success-content {
+    position: relative;
+    z-index: 1;
+  }
+
+  .success-icon {
+    width: 8rem;
+    height: 8rem;
+    background: rgb(255 255 255 / 20%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 2.5rem;
+    animation: bounceIn 0.6s ease-out;
+
+    .gs-icon {
+      font-size: 4rem;
+      color: white;
+    }
+  }
+
+  .success-title {
+    font-size: 2.8rem;
+    font-weight: 700;
+    margin: 0 0 1.2rem;
+    text-shadow: 0 0.2rem 0.4rem rgb(0 0 0 / 30%);
+    font-family: 'GS Sans', Helvetica, Arial, sans-serif;
+  }
+
+  .success-subtitle {
+    font-size: 1.6rem;
+    font-weight: 500;
+    margin: 0 0 2rem;
+    opacity: 0.9;
+    font-family: 'GS Sans', Helvetica, Arial, sans-serif;
+  }
+
+  .success-message {
+    font-size: 1.4rem;
+    line-height: 1.6;
+    opacity: 0.8;
+    margin-bottom: 3rem;
+    font-family: 'GS Sans', Helvetica, Arial, sans-serif;
+  }
+
+  .success-btn {
+    background: rgb(255 255 255 / 20%);
+    border: 0.2rem solid rgb(255 255 255 / 30%);
+    color: white;
+    padding: 1.2rem 2.4rem;
+    border-radius: 2.5rem;
+    font-size: 1.4rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-family: 'GS Sans', Helvetica, Arial, sans-serif;
+
+    &:hover {
+      background: rgb(255 255 255 / 30%);
+      border-color: rgb(255 255 255 / 50%);
+      transform: translateY(-0.2rem);
+    }
+
+    .gs-icon {
+      font-size: 1.6rem;
+    }
+  }
+
+  .progress-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 0.4rem;
+    background: rgb(255 255 255 / 20%);
+    overflow: hidden;
+
+    .progress-fill {
+      height: 100%;
+      background: rgb(255 255 255 / 80%);
+      width: 0;
+      animation: progressFill 4s linear;
+    }
+  }
+}
+
+/* ...existing code... */
+
+/* All remaining animations and media queries stay the same */
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+
+  70% {
+    transform: scale(0.9);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes progressFill {
+  from {
+    width: 0%;
+  }
+
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.7) translateY(-5rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+
+  100% {
+    left: 100%;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Mobile Responsive styles remain the same... */
+@media (width <= 76.8rem) {
+  .home-buttons-container {
+    top: 7rem;
+    right: 1rem;
+  }
+
+  .floating-buttons {
+    gap: 0.8rem;
+  }
+
+  .floating-btn {
+    min-width: 12rem;
+    padding: 1rem 1.4rem;
+    font-size: 1.3rem;
+
+    .btn-icon .gs-icon {
+      font-size: 1.6rem;
+    }
+  }
+
+  .coming-soon-banner {
+    padding: 3rem 2.5rem;
+    margin: 2rem;
+
+    .banner-title {
+      font-size: 2.4rem;
+    }
+
+    .banner-subtitle {
+      font-size: 1.4rem;
+    }
+
+    .banner-message {
+      font-size: 1.3rem;
+    }
+
+    .banner-icon {
+      width: 5rem;
+      height: 5rem;
+
+      .gs-icon {
+        font-size: 2.4rem;
+      }
+    }
+  }
+
+  .demo-form-modal {
+    width: 95%;
+    margin: 2rem;
+    max-height: 85vh;
+  }
+
+  .form-header {
+    padding: 3rem 2rem 1.5rem;
+
+    .form-title {
+      font-size: 2rem;
+    }
+
+    .form-subtitle {
+      font-size: 1.4rem;
+    }
+
+    .form-icon {
+      width: 5.6rem;
+      height: 5.6rem;
+
+      .gs-icon {
+        font-size: 2.4rem;
+      }
+    }
+  }
+
+  .demo-form {
+    padding: 2rem;
+
+    .form-actions {
+      flex-direction: column;
+
+      .btn-secondary,
+      .btn-primary {
+        width: 100%;
+      }
+    }
+  }
+
+  .success-popup {
+    padding: 3rem 2.5rem;
+    margin: 2rem;
+
+    .success-title {
+      font-size: 2.4rem;
+    }
+
+    .success-subtitle {
+      font-size: 1.4rem;
+    }
+
+    .success-message {
+      font-size: 1.3rem;
+    }
+
+    .success-icon {
+      width: 7rem;
+      height: 7rem;
+
+      .gs-icon {
+        font-size: 3.5rem;
+      }
+    }
+  }
+}
+
+@media (width <= 48rem) {
+  .home-buttons-container {
+    top: 6rem;
+    right: 0.8rem;
+  }
+
+  .floating-buttons {
+    gap: 0.6rem;
+  }
+
+  .floating-btn {
+    min-width: 10rem;
+    padding: 0.8rem 1.2rem;
+    font-size: 1.2rem;
+    gap: 0.6rem;
+  }
+
+  .demo-form-modal {
+    width: 98%;
+    margin: 1rem;
+  }
+
+  .form-header {
+    padding: 2.5rem 1.5rem 1.2rem;
+
+    .form-icon {
+      width: 4.8rem;
+      height: 4.8rem;
+
+      .gs-icon {
+        font-size: 2rem;
+      }
+    }
+  }
+
+  .demo-form {
+    padding: 1.5rem;
+
+    .form-group {
+      margin-bottom: 2rem;
+
+      .form-input,
+      .form-textarea {
+        padding: 1rem 1.2rem;
+        font-size: 1.3rem;
+      }
+    }
+  }
+
+  .success-popup {
+    padding: 2.5rem 2rem;
+
+    .success-icon {
+      width: 6rem;
+      height: 6rem;
+
+      .gs-icon {
+        font-size: 3rem;
+      }
+    }
+
+    .success-title {
+      font-size: 2rem;
+    }
+  }
+}

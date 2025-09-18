@@ -36,6 +36,7 @@ import { LakehouseHighlightedProductCard } from '../../components/LakehouseProdu
 import { DataProductCardState } from '../../stores/lakehouse/dataProducts/DataProductCardState.js';
 import { LegacyDataProductCardState } from '../../stores/lakehouse/dataProducts/LegacyDataProductCardState.js';
 import { generateGAVCoordinates } from '@finos/legend-storage';
+import { DemoModal } from './DemoModal.js';
 
 export const MarketplaceLakehouseHome = observer(() => {
   const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
@@ -160,6 +161,7 @@ export const MarketplaceLakehouseHome = observer(() => {
           </Grid>
         )}
       </Container>
+      <DemoModal />
     </LegendMarketplacePage>
   );
 });
