@@ -151,13 +151,13 @@ export const LegendMarketplaceHeader = observer(
     return (
       <LegendMarketplaceBaseHeader
         headerName="Marketplace"
-        homeUrl={LEGEND_MARKETPLACE_ROUTE_PATTERN.DEFAULT}
+        homeUrl={LEGEND_MARKETPLACE_ROUTE_PATTERN.HOME_PAGE}
         pages={
           enableMarketplacePages
             ? [
                 {
                   title: 'Vendor Data',
-                  urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.VENDOR_DATA,
+                  urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.VENDOR_DETAILS,
                 },
               ]
             : []
@@ -172,7 +172,7 @@ export const MarketplaceLakehouseHeader = observer(() => {
   return (
     <LegendMarketplaceBaseHeader
       headerName="Marketplace"
-      homeUrl={LEGEND_MARKETPLACE_ROUTE_PATTERN.DEFAULT}
+      homeUrl={LEGEND_MARKETPLACE_ROUTE_PATTERN.HOME_PAGE}
       pages={[
         {
           title: 'Lakehouse Entitlements',
@@ -192,7 +192,7 @@ export const MarketplaceLakehouseHeader = observer(() => {
         },
         {
           title: 'Terminals and Addons',
-          urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.VENDOR_DATA,
+          urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.VENDOR_DETAILS,
         },
         {
           title: 'GS Inventory',
