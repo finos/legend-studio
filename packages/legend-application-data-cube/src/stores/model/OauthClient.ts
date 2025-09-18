@@ -19,6 +19,7 @@ import {
   UserManager,
   type UserManagerSettings,
   type User,
+  WebStorageStateStore,
 } from 'oidc-client-ts';
 
 export class OAuthClient {
@@ -26,7 +27,11 @@ export class OAuthClient {
   private user: User | null = null;
 
   constructor(config: UserManagerSettings) {
-    this.userManager = new UserManager(config);
+    this.userManager = new UserManager({
+      ...config,
+      userStore: new WebStorageStateStore({ store: window.localStorage }),
+      scope: config.extraQueryParams?.scope as string,
+    });
   }
 
   /** Login via popup */
