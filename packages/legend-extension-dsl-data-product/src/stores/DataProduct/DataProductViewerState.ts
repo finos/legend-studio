@@ -16,6 +16,7 @@
 
 import type {
   DataProductConfig,
+  GenericLegendApplicationStore,
   NavigationZone,
 } from '@finos/legend-application';
 import {
@@ -25,7 +26,6 @@ import {
   type V1_DataContract,
   type V1_DataContractsResponse,
   type V1_DataProduct,
-  type V1_EngineServerClient,
   type V1_EntitlementsDataProductDetails,
   type V1_OrganizationalScope,
   V1_AdhocTeam,
@@ -37,7 +37,10 @@ import {
   V1_ResourceType,
 } from '@finos/legend-graph';
 import { action, flow, observable, makeObservable } from 'mobx';
-import { DataProductDataAccessState } from './DataProductDataAccessState.js';
+import {
+  DataProductDataAccessState,
+  DataProductGroupAccessState,
+} from './DataProductDataAccessState.js';
 import {
   type UserSearchService,
   type GeneratorFn,
@@ -46,16 +49,15 @@ import {
   assertErrorThrown,
 } from '@finos/legend-shared';
 import { serialize } from 'serializr';
-import {
-  BaseViewerState,
-  type ProductViewerLegendApplicationStore,
-} from '../BaseViewerState.js';
+import { BaseViewerState } from '../BaseViewerState.js';
 import { DataProductLayoutState } from '../BaseLayoutState.js';
 import { DATA_PRODUCT_VIEWER_SECTION } from '../ProductViewerNavigation.js';
 import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
 import { dataContractContainsDataProduct } from '../../utils/DataContractUtils.js';
+import type { ContractConsumerTypeRendererConfig } from '../../components/DataProduct/DataContract/EntitlementsDataContractCreator.js';
 
 export type DataProductViewerStateOptions = {
+  userSearchService?: UserSearchService | undefined;
   dataProductConfig?: DataProductConfig | undefined;
   userProfileImageUrl?: string | undefined;
   applicationDirectoryUrl?: string | undefined;
@@ -65,7 +67,6 @@ export class DataProductViewerState extends BaseViewerState<
   V1_DataProduct,
   DataProductLayoutState
 > {
-  readonly engineServerClient: V1_EngineServerClient;
   readonly lakehouseContractServerClient:
     | LakehouseContractServerClient
     | undefined;
@@ -73,7 +74,16 @@ export class DataProductViewerState extends BaseViewerState<
   readonly graphManagerState: GraphManagerState;
   readonly entitlementsDataProductDetails: V1_EntitlementsDataProductDetails;
   readonly viewDataProductSource: () => void;
-  readonly options: DataProductViewerStateOptions | undefined;
+  readonly getContractTaskUrl: (taskId: string) => string;
+  readonly getDataProductUrl: (
+    dataProductId: string,
+    deploymentId: number,
+  ) => string;
+  readonly getContractConsumerTypeRendererConfigs: (
+    accessGroupState: DataProductGroupAccessState,
+  ) => ContractConsumerTypeRendererConfig[];
+
+  readonly options: DataProductViewerStateOptions;
 
   // we may want to move this out eventually
   accessState!: DataProductDataAccessState;
@@ -83,18 +93,24 @@ export class DataProductViewerState extends BaseViewerState<
   creatingContractState = ActionState.create();
 
   constructor(
-    applicationStore: ProductViewerLegendApplicationStore,
-    engineServerClient: V1_EngineServerClient,
-    lakehouseContractServerClient: LakehouseContractServerClient | undefined,
-    userSearchService: UserSearchService | undefined,
+    applicationStore: GenericLegendApplicationStore,
     graphManagerState: GraphManagerState,
     product: V1_DataProduct,
     entitlementsDataProductDetails: V1_EntitlementsDataProductDetails,
+    lakehouseContractServerClient: LakehouseContractServerClient | undefined,
+    options: DataProductViewerStateOptions,
     actions: {
       viewDataProductSource: () => void;
+      getContractTaskUrl: (taskId: string) => string;
+      getDataProductUrl: (
+        dataProductId: string,
+        deploymentId: number,
+      ) => string;
+      getContractConsumerTypeRendererConfigs: (
+        accessGroupState: DataProductGroupAccessState,
+      ) => ContractConsumerTypeRendererConfig[];
       onZoneChange?: ((zone: NavigationZone | undefined) => void) | undefined;
     },
-    options?: DataProductViewerStateOptions,
   ) {
     super(product, applicationStore, new DataProductLayoutState(), actions);
 
@@ -111,12 +127,14 @@ export class DataProductViewerState extends BaseViewerState<
       createContract: flow,
     });
 
-    this.engineServerClient = engineServerClient;
-    this.lakehouseContractServerClient = lakehouseContractServerClient;
-    this.userSearchService = userSearchService;
     this.graphManagerState = graphManagerState;
+    this.lakehouseContractServerClient = lakehouseContractServerClient;
     this.entitlementsDataProductDetails = entitlementsDataProductDetails;
     this.viewDataProductSource = actions.viewDataProductSource;
+    this.getContractTaskUrl = actions.getContractTaskUrl;
+    this.getDataProductUrl = actions.getDataProductUrl;
+    this.getContractConsumerTypeRendererConfigs =
+      actions.getContractConsumerTypeRendererConfigs;
     this.options = options;
     this.accessState = new DataProductDataAccessState(this);
   }
@@ -174,7 +192,7 @@ export class DataProductViewerState extends BaseViewerState<
       const dataProductContracts =
         V1_dataContractsResponseModelSchemaToContracts(
           _contracts,
-          this.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
+          this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
         ).filter((_contract) =>
           dataContractContainsDataProduct(
             this.product,
@@ -189,7 +207,7 @@ export class DataProductViewerState extends BaseViewerState<
       });
     } catch (error) {
       assertErrorThrown(error);
-      this.accessState.viewerState.applicationStore.notificationService.notifyError(
+      this.accessState.dataProductViewerState.applicationStore.notificationService.notifyError(
         `${error.message}`,
       );
     } finally {
@@ -216,7 +234,7 @@ export class DataProductViewerState extends BaseViewerState<
       this.creatingContractState.inProgress();
       const request = serialize(
         V1_createContractPayloadModelSchema(
-          this.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
+          this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
         ),
         {
           description,
@@ -232,7 +250,7 @@ export class DataProductViewerState extends BaseViewerState<
           request,
           token,
         )) as unknown as PlainObject<V1_DataContractsResponse>,
-        this.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
+        this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
       );
       const associatedContract = contracts[0];
       // Only if the user has requested a contract for themself do we update the associated contract.
@@ -255,7 +273,7 @@ export class DataProductViewerState extends BaseViewerState<
       );
     } catch (error) {
       assertErrorThrown(error);
-      this.accessState.viewerState.applicationStore.notificationService.notifyError(
+      this.accessState.dataProductViewerState.applicationStore.notificationService.notifyError(
         `${error.message}`,
       );
     } finally {

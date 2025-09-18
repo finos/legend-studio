@@ -37,10 +37,7 @@ import {
   type ProductViewerLegendApplicationStore,
 } from '@finos/legend-extension-dsl-data-product';
 
-export class Core_LegendMarketplaceApplicationPlugin
-  extends LegendMarketplaceApplicationPlugin
-  implements DataProductViewer_LegendApplicationPlugin_Extension
-{
+export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceApplicationPlugin {
   static NAME = packageJson.extensions.applicationMarketplacePlugin;
 
   constructor() {

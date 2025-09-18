@@ -167,7 +167,7 @@ const TDSColumnMoreInfoCellRenderer = (props: {
     const fetchAccessPointGrammar = async () => {
       try {
         const grammar =
-          await accessGroupState.accessState.viewerState.engineServerClient.JSONToGrammar_lambda(
+          await accessGroupState.accessState.dataProductViewerState.engineServerClient.JSONToGrammar_lambda(
             V1_serializeRawValueSpecification(data.func),
             V1_RenderStyle.PRETTY,
           );
@@ -180,17 +180,17 @@ const TDSColumnMoreInfoCellRenderer = (props: {
     const fetchAccessPointRelationType = async () => {
       try {
         const origin =
-          accessGroupState.accessState.viewerState
+          accessGroupState.accessState.dataProductViewerState
             .entitlementsDataProductDetails.origin;
         const model =
           origin instanceof V1_AdHocDeploymentDataProductOrigin
             ? guaranteeType(
-                accessGroupState.accessState.viewerState.graphManagerState
-                  .graphManager,
+                accessGroupState.accessState.dataProductViewerState
+                  .graphManagerState.graphManager,
                 V1_PureGraphManager,
               ).getFullGraphModelData(
-                accessGroupState.accessState.viewerState.graphManagerState
-                  .graph,
+                accessGroupState.accessState.dataProductViewerState
+                  .graphManagerState.graph,
               )
             : origin instanceof V1_SdlcDeploymentDataProductOrigin
               ? new V1_PureModelContextPointer(
@@ -215,7 +215,7 @@ const TDSColumnMoreInfoCellRenderer = (props: {
         );
         const relationType = deserialize(
           V1_relationTypeModelSchema,
-          await accessGroupState.accessState.viewerState.engineServerClient.lambdaRelationType(
+          await accessGroupState.accessState.dataProductViewerState.engineServerClient.lambdaRelationType(
             V1_LambdaReturnTypeInput.serialization.toJson(relationTypeInput),
           ),
         );
@@ -236,7 +236,7 @@ const TDSColumnMoreInfoCellRenderer = (props: {
     fetchAccessPointDetails()
       .catch((error) => {
         assertErrorThrown(error);
-        accessGroupState.accessState.viewerState.applicationStore.notificationService.notifyError(
+        accessGroupState.accessState.dataProductViewerState.applicationStore.notificationService.notifyError(
           error,
         );
       })
@@ -380,27 +380,29 @@ export const DataProductAccessPointGroupViewer = observer(
 
     const entitlementsDataContractViewerState = useMemo(() => {
       if (
-        !accessGroupState.accessState.viewerState.lakehouseContractServerClient
+        !accessGroupState.accessState.dataProductViewerState
+          .lakehouseContractServerClient
       ) {
-        accessGroupState.accessState.viewerState.applicationStore.notificationService.notifyWarning(
+        accessGroupState.accessState.dataProductViewerState.applicationStore.notificationService.notifyWarning(
           'Cannot view data contracts. Lakehouse contract server client is not configured',
         );
         return undefined;
       }
 
-      return accessGroupState.accessState.viewerState.dataContract
+      return accessGroupState.accessState.dataProductViewerState.dataContract
         ? new EntitlementsDataContractViewerState(
             V1_transformDataContractToLiteDatacontract(
-              accessGroupState.accessState.viewerState.dataContract,
+              accessGroupState.accessState.dataProductViewerState.dataContract,
             ),
-            accessGroupState.accessState.viewerState.lakehouseContractServerClient,
+            accessGroupState.accessState.dataProductViewerState.lakehouseContractServerClient,
           )
         : undefined;
     }, [
-      accessGroupState.accessState.viewerState.applicationStore
+      accessGroupState.accessState.dataProductViewerState.applicationStore
         .notificationService,
-      accessGroupState.accessState.viewerState.dataContract,
-      accessGroupState.accessState.viewerState.lakehouseContractServerClient,
+      accessGroupState.accessState.dataProductViewerState.dataContract,
+      accessGroupState.accessState.dataProductViewerState
+        .lakehouseContractServerClient,
     ]);
 
     useEffect(() => {
@@ -468,7 +470,7 @@ export const DataProductAccessPointGroupViewer = observer(
       }
 
       const tooltipText =
-        accessGroupState.accessState.viewerState.applicationStore.pluginManager
+        accessGroupState.accessState.dataProductViewerState.applicationStore.pluginManager
           .getApplicationPlugins()
           .flatMap((plugin) => plugin.getExtraAccessPointGroupAccessInfo?.(val))
           .filter(isNonEmptyString)[0];
@@ -528,7 +530,7 @@ export const DataProductAccessPointGroupViewer = observer(
               val !== AccessPointGroupAccess.DENIED && (
                 <MenuItem
                   onClick={() => {
-                    accessGroupState.accessState.viewerState.setDataContractAccessPointGroup(
+                    accessGroupState.accessState.dataProductViewerState.setDataContractAccessPointGroup(
                       accessGroupState.group,
                     );
                     setIsEntitledButtonGroupMenuOpen(false);
@@ -651,20 +653,22 @@ export const DataProductAccessPointGroupViewer = observer(
             </div>
           </div>
         </div>
-        {accessGroupState.accessState.viewerState
+        {accessGroupState.accessState.dataProductViewerState
           .dataContractAccessPointGroup === accessGroupState.group && (
           <EntitlementsDataContractCreator
             open={true}
             onClose={() =>
-              accessGroupState.accessState.viewerState.setDataContractAccessPointGroup(
+              accessGroupState.accessState.dataProductViewerState.setDataContractAccessPointGroup(
                 undefined,
               )
             }
             applicationStore={
-              accessGroupState.accessState.viewerState.applicationStore
+              accessGroupState.accessState.dataProductViewerState
+                .applicationStore
             }
             userSearchService={
-              accessGroupState.accessState.viewerState.applicationStore
+              accessGroupState.accessState.dataProductViewerState
+                .applicationStore
             }
             accessGroupState={accessGroupState}
           />
@@ -675,17 +679,17 @@ export const DataProductAccessPointGroupViewer = observer(
             currentViewer={entitlementsDataContractViewerState}
             dataProductGroupAccessState={accessGroupState}
             legendMarketplaceStore={
-              accessGroupState.accessState.viewerState.productViewerStore
-                .marketplaceBaseStore
+              accessGroupState.accessState.dataProductViewerState
+                .productViewerStore.marketplaceBaseStore
             }
             onClose={() =>
-              accessGroupState.accessState.viewerState.setDataContract(
+              accessGroupState.accessState.dataProductViewerState.setDataContract(
                 undefined,
               )
             }
             initialSelectedUser={
-              accessGroupState.accessState.viewerState.applicationStore
-                .identityService.currentUser
+              accessGroupState.accessState.dataProductViewerState
+                .applicationStore.identityService.currentUser
             }
           />
         )}

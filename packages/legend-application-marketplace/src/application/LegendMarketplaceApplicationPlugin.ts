@@ -18,6 +18,10 @@ import { LegendApplicationPlugin } from '@finos/legend-application';
 import type { LegendMarketplacePluginManager } from '../application/LegendMarketplacePluginManager.js';
 import type { LegendMarketplaceBaseStore } from '../stores/LegendMarketplaceBaseStore.js';
 import type { BaseProductCardState } from '../stores/lakehouse/dataProducts/BaseProductCardState.js';
+import type {
+  AccessPointGroupAccess,
+  ContractConsumerTypeRendererConfig,
+} from '@finos/legend-extension-dsl-data-product';
 
 export abstract class LegendMarketplaceApplicationPlugin extends LegendApplicationPlugin {
   /**
@@ -39,4 +43,20 @@ export abstract class LegendMarketplaceApplicationPlugin extends LegendApplicati
     marketplaceBaseStore: LegendMarketplaceBaseStore,
     token: string | undefined,
   ): Promise<BaseProductCardState[] | undefined>;
+
+  /**
+   * Returns additional details about a given access point group access type.
+   *
+   * @param access the AccessPointGroupAccess value for a given Access Point Group
+   */
+  getExtraAccessPointGroupAccessInfo?(
+    access: AccessPointGroupAccess,
+  ): string | undefined;
+
+  /**
+   * Config to handle different types of contract consumers, including configuration for:
+   * - Contract creation dialog renderer
+   * - Organizational scope type details renderer
+   */
+  getContractConsumerTypeRendererConfigs?(): ContractConsumerTypeRendererConfig[];
 }

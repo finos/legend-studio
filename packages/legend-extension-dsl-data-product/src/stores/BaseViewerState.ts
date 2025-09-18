@@ -14,23 +14,16 @@
  * limitations under the License.
  */
 import {
-  type ApplicationStore,
-  type LegendApplicationConfig,
-  type LegendApplicationPluginManager,
+  type GenericLegendApplicationStore,
   type NavigationZone,
-  StereotypeConfig,
 } from '@finos/legend-application';
 import type { BaseLayoutState } from './BaseLayoutState.js';
-import type { GraphManagerPluginManager } from '@finos/legend-graph';
-import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
-import { createModelSchema } from 'serializr';
-import type { DataProductViewer_LegendApplicationPlugin_Extension } from '../components/DataProductViewer_LegendApplicationPlugin_Extension.js';
 
-export type ProductViewerLegendApplicationStore = ApplicationStore<
-  LegendApplicationConfig,
-  LegendApplicationPluginManager<DataProductViewer_LegendApplicationPlugin_Extension> &
-    GraphManagerPluginManager
->;
+// export type ProductViewerLegendApplicationStore = ApplicationStore<
+//   LegendApplicationConfig,
+//   LegendApplicationPluginManager<DataProductViewer_LegendApplicationPlugin_Extension> &
+//     GraphManagerPluginManager
+// >;
 
 export abstract class BaseViewerState<
   TProduct,
@@ -38,7 +31,7 @@ export abstract class BaseViewerState<
 > {
   readonly product: TProduct;
   readonly layoutState: TLayoutState;
-  readonly applicationStore: ProductViewerLegendApplicationStore;
+  readonly applicationStore: GenericLegendApplicationStore;
 
   readonly onZoneChange?:
     | ((zone: NavigationZone | undefined) => void)
@@ -46,7 +39,7 @@ export abstract class BaseViewerState<
 
   constructor(
     product: TProduct,
-    applicationStore: ProductViewerLegendApplicationStore,
+    applicationStore: GenericLegendApplicationStore,
     layoutState: TLayoutState,
     actions?: {
       onZoneChange?: ((zone: NavigationZone | undefined) => void) | undefined;

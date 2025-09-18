@@ -46,8 +46,11 @@ import {
   V1_SnowflakeTarget,
 } from '@finos/legend-graph';
 import React, { useState } from 'react';
-import { guaranteeNonNullable, isType } from '@finos/legend-shared';
-import { useLegendMarketplaceBaseStore } from '../../../application/providers/LegendMarketplaceFrameworkProvider.js';
+import {
+  guaranteeNonNullable,
+  isType,
+  UserSearchService,
+} from '@finos/legend-shared';
 import { useAuth } from 'react-oidc-context';
 import {
   CloseIcon,
@@ -56,47 +59,54 @@ import {
   CubesLoadingIndicatorIcon,
   InfoCircleIcon,
 } from '@finos/legend-art';
-import type { DataProductGroupAccessState } from '../../../stores/lakehouse/DataProductDataAccessState.js';
 import {
   DataGrid,
   type DataGridCellRendererParams,
 } from '@finos/legend-lego/data-grid';
 import { flowResult } from 'mobx';
-import { UserRenderer } from '../../../../../legend-extension-dsl-data-product/src/components/UserRenderer/UserRenderer.js';
-import { MultiUserCellRenderer } from '../../../components/MultiUserCellRenderer/MultiUserCellRenderer.js';
-import {
-  getOrganizationalScopeTypeDetails,
-  getOrganizationalScopeTypeName,
-} from '../../../stores/lakehouse/LakehouseUtils.js';
-import type { LegendMarketplaceBaseStore } from '../../../stores/LegendMarketplaceBaseStore.js';
+import { UserRenderer } from '../../UserRenderer/UserRenderer.js';
+import type { GenericLegendApplicationStore } from '@finos/legend-application';
+import { MultiUserRenderer } from '../../UserRenderer/MultiUserRenderer.js';
 
 const LakehouseSubscriptionsCreateDialogContractRenderer = observer(
   (props: {
     contract: V1_DataContract;
-    marketplaceBaseStore: LegendMarketplaceBaseStore;
+    applicationStore: GenericLegendApplicationStore;
+    userSearchService: UserSearchService | undefined;
+    userProfileImageUrl?: string | undefined;
+    applicationDirectoryUrl?: string | undefined;
   }) => {
-    const { contract, marketplaceBaseStore } = props;
+    const {
+      contract,
+      applicationStore,
+      userSearchService,
+      userProfileImageUrl,
+      applicationDirectoryUrl,
+    } = props;
     const consumer = contract.consumer;
     let consumerComponent = null;
 
     const copyContractId = (id: string): void => {
-      marketplaceBaseStore.applicationStore.clipboardService
+      applicationStore.clipboardService
         .copyTextToClipboard(id)
         .then(() =>
-          marketplaceBaseStore.applicationStore.notificationService.notifySuccess(
+          applicationStore.notificationService.notifySuccess(
             'ID Copied to Clipboard',
             undefined,
             2500,
           ),
         )
-        .catch(marketplaceBaseStore.applicationStore.alertUnhandledError);
+        .catch(applicationStore.alertUnhandledError);
     };
 
     if (consumer instanceof V1_AdhocTeam) {
       consumerComponent = (
-        <MultiUserCellRenderer
+        <MultiUserRenderer
           userIds={consumer.users.map((_user) => _user.name)}
-          marketplaceStore={marketplaceBaseStore}
+          applicationStore={applicationStore}
+          userSearchService={userSearchService}
+          userProfileImageUrl={userProfileImageUrl}
+          applicationDirectoryUrl={applicationDirectoryUrl}
         />
       );
     } else {

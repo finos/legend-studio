@@ -16,23 +16,37 @@
 
 import { Link, Popover, Box } from '@mui/material';
 import { useState } from 'react';
-import type { LegendMarketplaceBaseStore } from '../../stores/LegendMarketplaceBaseStore.js';
-import { UserRenderer } from '../../../../legend-extension-dsl-data-product/src/components/UserRenderer/UserRenderer.js';
+import { UserRenderer } from './UserRenderer.js';
+import type { GenericLegendApplicationStore } from '@finos/legend-application';
+import type { UserSearchService } from '@finos/legend-shared';
 
-export const MultiUserCellRenderer = (props: {
+export const MultiUserRenderer = (props: {
   userIds: string[];
-  marketplaceStore: LegendMarketplaceBaseStore;
+  applicationStore: GenericLegendApplicationStore;
+  userSearchService: UserSearchService | undefined;
+  userProfileImageUrl?: string | undefined;
+  applicationDirectoryUrl?: string | undefined;
   singleUserClassName?: string;
 }): React.ReactNode => {
-  const { userIds, marketplaceStore, singleUserClassName } = props;
+  const {
+    userIds,
+    applicationStore,
+    userSearchService,
+    userProfileImageUrl,
+    applicationDirectoryUrl,
+    singleUserClassName,
+  } = props;
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
   if (userIds.length === 1) {
     return (
       <UserRenderer
         userId={userIds[0]}
-        marketplaceStore={marketplaceStore}
         className={singleUserClassName}
+        applicationStore={applicationStore}
+        userSearchService={userSearchService}
+        userProfileImageUrl={userProfileImageUrl}
+        applicationDirectoryUrl={applicationDirectoryUrl}
       />
     );
   } else {
@@ -58,7 +72,10 @@ export const MultiUserCellRenderer = (props: {
               <UserRenderer
                 key={userId}
                 userId={userId}
-                marketplaceStore={marketplaceStore}
+                applicationStore={applicationStore}
+                userSearchService={userSearchService}
+                userProfileImageUrl={userProfileImageUrl}
+                applicationDirectoryUrl={applicationDirectoryUrl}
               />
             ))}
           </Box>

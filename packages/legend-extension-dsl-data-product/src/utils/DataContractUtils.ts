@@ -22,9 +22,10 @@ import {
   V1_AdhocTeam,
   V1_ContractState,
   V1_deserializeTaskResponse,
+  V1_LiteDataContract,
   V1_UserType,
 } from '@finos/legend-graph';
-import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
+import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
 
 const invalidContractState = [
   V1_ContractState.DRAFT,
@@ -69,6 +70,16 @@ export const dataContractContainsAccessGroup = (
     return contractResource.accessPointGroup === group.id;
   }
   return false;
+};
+
+export const isContractInTerminalState = (
+  contract: V1_DataContract | V1_LiteDataContract,
+): boolean => {
+  return [
+    V1_ContractState.CLOSED,
+    V1_ContractState.COMPLETED,
+    V1_ContractState.REJECTED,
+  ].includes(contract.state);
 };
 
 export const isMemberOfContract = async (

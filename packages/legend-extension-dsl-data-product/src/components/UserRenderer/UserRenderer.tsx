@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
+import type { GenericLegendApplicationStore } from '@finos/legend-application';
 import { UserDisplay } from '@finos/legend-art';
 import { LegendUser, type UserSearchService } from '@finos/legend-shared';
 import { Box, CircularProgress } from '@mui/material';
-import type { ProductViewerLegendApplicationStore } from '@finos/legend-extension-dsl-data-product';
 import { useEffect, useState } from 'react';
 
 export const UserRenderer = (props: {
   userId: string | undefined;
-  applicationStore: ProductViewerLegendApplicationStore;
+  applicationStore: GenericLegendApplicationStore;
   userSearchService: UserSearchService | undefined;
   userProfileImageUrl?: string | undefined;
   applicationDirectoryUrl?: string | undefined;

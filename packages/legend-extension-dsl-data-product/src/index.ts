@@ -15,7 +15,7 @@
  */
 
 export * from './components/ProductViewer.js';
-export * from './components/DataProductViewer_LegendApplicationPlugin_Extension.js';
+export { type ContractConsumerTypeRendererConfig } from './components/DataProduct/DataContract/EntitlementsDataContractCreator.js';
 
 export * from './stores/BaseViewerState.js';
 export * from './stores/BaseLayoutState.js';

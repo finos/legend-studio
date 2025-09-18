@@ -21,7 +21,6 @@ import {
   V1_deserializeTaskResponse,
   V1_observe_LiteDataContract,
 } from '@finos/legend-graph';
-import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
 import {
   ActionState,
   assertErrorThrown,
@@ -29,19 +28,20 @@ import {
   type PlainObject,
 } from '@finos/legend-shared';
 import { action, flow, makeObservable, observable } from 'mobx';
+import type { DataProductViewerState } from './DataProductViewerState.js';
 
 export class EntitlementsDataContractViewerState {
   readonly value: V1_LiteDataContract;
-  readonly lakeServerClient: LakehouseContractServerClient;
+  readonly dataProductViewerState: DataProductViewerState;
   associatedTasks: V1_TaskMetadata[] | undefined;
   initializationState = ActionState.create();
 
   constructor(
     dataContract: V1_LiteDataContract,
-    lakeServerClient: LakehouseContractServerClient,
+    dataProductViewerState: DataProductViewerState,
   ) {
     this.value = V1_observe_LiteDataContract(dataContract);
-    this.lakeServerClient = lakeServerClient;
+    this.dataProductViewerState = dataProductViewerState;
     makeObservable(this, {
       value: observable,
       associatedTasks: observable,
@@ -55,13 +55,21 @@ export class EntitlementsDataContractViewerState {
   }
 
   *init(token: string | undefined): GeneratorFn<void> {
+    if (!this.dataProductViewerState.lakehouseContractServerClient) {
+      this.dataProductViewerState.applicationStore.notificationService.notifyWarning(
+        'Cannot initialize data contract viewer: lakehouse contract server client not configured',
+      );
+      return;
+    }
+
     try {
       this.initializationState.inProgress();
       this.setAssociatedTasks(undefined);
-      const pendingTasks = (yield this.lakeServerClient.getContractTasks(
-        this.value.guid,
-        token,
-      )) as PlainObject<V1_TaskResponse>;
+      const pendingTasks =
+        (yield this.dataProductViewerState.lakehouseContractServerClient.getContractTasks(
+          this.value.guid,
+          token,
+        )) as PlainObject<V1_TaskResponse>;
       const tasks = V1_deserializeTaskResponse(pendingTasks);
       this.setAssociatedTasks(tasks);
     } catch (error) {

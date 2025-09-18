@@ -34,6 +34,7 @@ import {
   assertErrorThrown,
   guaranteeNonNullable,
   guaranteeType,
+  isNonNullable,
 } from '@finos/legend-shared';
 import {
   type Class,
@@ -67,6 +68,7 @@ import {
   EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl,
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl,
   generateLakehouseDataProductPath,
+  generateLakehouseTaskPath,
 } from '../../__lib__/LegendMarketplaceNavigation.js';
 import {
   DataSpaceViewerState,
@@ -77,7 +79,14 @@ import {
   DSL_DataSpace_getGraphManagerExtension,
   retrieveAnalyticsResultCache,
 } from '@finos/legend-extension-dsl-data-space/graph';
-import { DataProductViewerState } from '@finos/legend-extension-dsl-data-product';
+import {
+  AccessPointGroupAccess,
+  DataProductGroupAccessState,
+  DataProductViewerState,
+  TerminalProductLayoutState,
+  TerminalProductViewerState,
+  type ContractConsumerTypeRendererConfig,
+} from '@finos/legend-extension-dsl-data-product';
 
 const ARTIFACT_GENERATION_DAT_PRODUCT_KEY = 'dataProduct';
 
@@ -237,12 +246,22 @@ export class LegendMarketplaceProductViewerStore {
 
       const stateViewer = new DataProductViewerState(
         this.marketplaceBaseStore.applicationStore,
-        this.marketplaceBaseStore.engineServerClient,
-        this.marketplaceBaseStore.lakehouseContractServerClient,
-        this.marketplaceBaseStore.userSearchService,
         graphManagerState,
         v1DataProduct,
         dataProductDetails,
+        this.marketplaceBaseStore.lakehouseContractServerClient,
+        {
+          userSearchService: this.marketplaceBaseStore.userSearchService,
+          dataProductConfig:
+            this.marketplaceBaseStore.applicationStore.config.options
+              .dataProductConfig,
+          userProfileImageUrl:
+            this.marketplaceBaseStore.applicationStore.config
+              .marketplaceUserProfileImageUrl,
+          applicationDirectoryUrl:
+            this.marketplaceBaseStore.applicationStore.config
+              .lakehouseEntitlementsConfig?.applicationDirectoryUrl,
+        },
         {
           viewDataProductSource: () => {
             if (
@@ -261,17 +280,30 @@ export class LegendMarketplaceProductViewerStore {
               );
             }
           },
-        },
-        {
-          dataProductConfig:
-            this.marketplaceBaseStore.applicationStore.config.options
-              .dataProductConfig,
-          userProfileImageUrl:
-            this.marketplaceBaseStore.applicationStore.config
-              .marketplaceUserProfileImageUrl,
-          applicationDirectoryUrl:
-            this.marketplaceBaseStore.applicationStore.config
-              .lakehouseEntitlementsConfig?.applicationDirectoryUrl,
+          getContractTaskUrl: (taskId: string) =>
+            this.marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
+              generateLakehouseTaskPath(taskId),
+            ),
+          getDataProductUrl: (dataProductId: string, deploymentId: number) =>
+            this.marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
+              generateLakehouseDataProductPath(dataProductId, deploymentId),
+            ),
+          getContractConsumerTypeRendererConfigs: (
+            accessGroupState: DataProductGroupAccessState,
+          ) =>
+            this.marketplaceBaseStore.applicationStore.pluginManager
+              .getApplicationPlugins()
+              .map((plugin) =>
+                plugin.getContractConsumerTypeRendererConfigs?.(),
+              )
+              .flat()
+              .filter(isNonNullable)
+              .filter(
+                (rendererConfig: ContractConsumerTypeRendererConfig) =>
+                  accessGroupState.access !==
+                    AccessPointGroupAccess.ENTERPRISE ||
+                  rendererConfig.enableForEnterpriseAPGs,
+              ),
         },
       );
       this.setDataProductViewer(stateViewer);

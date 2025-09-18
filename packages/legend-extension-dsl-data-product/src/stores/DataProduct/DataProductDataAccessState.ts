@@ -121,13 +121,13 @@ export class DataProductGroupAccessState {
     this.group = group;
     this.accessState = accessState;
     this.lakehouseContractServerClient =
-      this.accessState.viewerState.lakehouseContractServerClient;
+      this.accessState.dataProductViewerState.lakehouseContractServerClient;
   }
 
   get access(): AccessPointGroupAccess {
     const publicStereotype =
-      this.accessState.viewerState.applicationStore.config.options
-        .dataProductConfig?.publicStereotype;
+      this.accessState.dataProductViewerState.options.dataProductConfig
+        ?.publicStereotype;
     if (
       publicStereotype &&
       this.group.stereotypes.filter(
@@ -186,7 +186,7 @@ export class DataProductGroupAccessState {
   ): GeneratorFn<void> {
     const lakehouseContractServerClient = this.lakehouseContractServerClient;
     if (!lakehouseContractServerClient) {
-      this.accessState.viewerState.applicationStore.notificationService.notifyWarning(
+      this.accessState.dataProductViewerState.applicationStore.notificationService.notifyWarning(
         'Cannot fetch associated system account contracts. Lakehouse contract server client is not configured',
       );
       return;
@@ -215,7 +215,7 @@ export class DataProductGroupAccessState {
         )) as { contract: V1_DataContract; approvedUsers: V1_User[] }[];
     } catch (error) {
       assertErrorThrown(error);
-      this.accessState.viewerState.applicationStore.notificationService.notifyError(
+      this.accessState.dataProductViewerState.applicationStore.notificationService.notifyError(
         `Error fetching approved users for contract: ${error.message}`,
       );
     } finally {
@@ -237,7 +237,7 @@ export class DataProductGroupAccessState {
   ): Promise<void> {
     const lakehouseContractServerClient = this.lakehouseContractServerClient;
     if (!lakehouseContractServerClient) {
-      this.accessState.viewerState.applicationStore.notificationService.notifyWarning(
+      this.accessState.dataProductViewerState.applicationStore.notificationService.notifyWarning(
         'Cannot handle data product contracts. Lakehouse contract server client is not configured',
       );
       return;
@@ -262,15 +262,15 @@ export class DataProductGroupAccessState {
         rawAccessPointGroupContractsWithMembers.flatMap((_response) =>
           V1_dataContractsResponseModelSchemaToContracts(
             _response,
-            this.accessState.viewerState.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
+            this.accessState.dataProductViewerState.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
           ),
         );
       const userContracts = (
         await Promise.all(
           accessPointGroupContractsWithMembers.map(async (_contract) => {
             const isMember = await isMemberOfContract(
-              this.accessState.viewerState.applicationStore.identityService
-                .currentUser,
+              this.accessState.dataProductViewerState.applicationStore
+                .identityService.currentUser,
               _contract,
               lakehouseContractServerClient,
               token,
@@ -298,7 +298,7 @@ export class DataProductGroupAccessState {
     switch (this.access) {
       case AccessPointGroupAccess.NO_ACCESS:
       case AccessPointGroupAccess.DENIED:
-        this.accessState.viewerState.setDataContractAccessPointGroup(
+        this.accessState.dataProductViewerState.setDataContractAccessPointGroup(
           this.group,
         );
         break;
@@ -306,7 +306,9 @@ export class DataProductGroupAccessState {
       case AccessPointGroupAccess.PENDING_DATA_OWNER_APPROVAL:
       case AccessPointGroupAccess.APPROVED:
         if (this.associatedContract) {
-          this.accessState.viewerState.setDataContract(this.associatedContract);
+          this.accessState.dataProductViewerState.setDataContract(
+            this.associatedContract,
+          );
         }
         break;
       default:
@@ -320,7 +322,7 @@ export class DataProductGroupAccessState {
   ): GeneratorFn<void> {
     const lakehouseContractServerClient = this.lakehouseContractServerClient;
     if (!lakehouseContractServerClient) {
-      this.accessState.viewerState.applicationStore.notificationService.notifyWarning(
+      this.accessState.dataProductViewerState.applicationStore.notificationService.notifyWarning(
         'Cannot fetch user access status. Lakehouse contract server client is not configured',
       );
       return;
@@ -331,8 +333,8 @@ export class DataProductGroupAccessState {
       const rawUserStatus =
         (yield lakehouseContractServerClient.getContractUserStatus(
           contractId,
-          this.accessState.viewerState.applicationStore.identityService
-            .currentUser,
+          this.accessState.dataProductViewerState.applicationStore
+            .identityService.currentUser,
           token,
         )) as PlainObject<V1_ContractUserStatusResponse>;
       const userStatus = deserialize(
@@ -342,7 +344,7 @@ export class DataProductGroupAccessState {
       this.setUserAccessStatus(userStatus);
     } catch (error) {
       assertErrorThrown(error);
-      this.accessState.viewerState.applicationStore.notificationService.notifyError(
+      this.accessState.dataProductViewerState.applicationStore.notificationService.notifyError(
         `Error fetching user access status: ${error.message}`,
       );
     } finally {
@@ -356,7 +358,7 @@ export class DataProductGroupAccessState {
   ): GeneratorFn<void> {
     const lakehouseContractServerClient = this.lakehouseContractServerClient;
     if (!lakehouseContractServerClient) {
-      this.accessState.viewerState.applicationStore.notificationService.notifyWarning(
+      this.accessState.dataProductViewerState.applicationStore.notificationService.notifyWarning(
         'Cannot fetch subscriptions. Lakehouse contract server client is not configured',
       );
       return;
@@ -376,7 +378,7 @@ export class DataProductGroupAccessState {
       this.setSubscriptions(subscriptions ?? []);
     } catch (error) {
       assertErrorThrown(error);
-      this.accessState.viewerState.applicationStore.notificationService.notifyError(
+      this.accessState.dataProductViewerState.applicationStore.notificationService.notifyError(
         `${error.message}`,
       );
     } finally {
@@ -391,7 +393,7 @@ export class DataProductGroupAccessState {
   ): GeneratorFn<void> {
     const lakehouseContractServerClient = this.lakehouseContractServerClient;
     if (!lakehouseContractServerClient) {
-      this.accessState.viewerState.applicationStore.notificationService.notifyWarning(
+      this.accessState.dataProductViewerState.applicationStore.notificationService.notifyWarning(
         'Cannot create subscription. Lakehouse contract server client is not configured',
       );
       return;
@@ -411,13 +413,13 @@ export class DataProductGroupAccessState {
           .subscriptions?.[0],
         'No subsription returned from server',
       );
-      this.accessState.viewerState.applicationStore.notificationService.notifySuccess(
+      this.accessState.dataProductViewerState.applicationStore.notificationService.notifySuccess(
         `Subscription created`,
       );
       this.fetchSubscriptions(contractId, token);
     } catch (error) {
       assertErrorThrown(error);
-      this.accessState.viewerState.applicationStore.notificationService.notifyError(
+      this.accessState.dataProductViewerState.applicationStore.notificationService.notifyError(
         `${error.message}`,
       );
     } finally {
@@ -427,23 +429,23 @@ export class DataProductGroupAccessState {
 }
 
 export class DataProductDataAccessState {
-  readonly viewerState: DataProductViewerState;
+  readonly dataProductViewerState: DataProductViewerState;
   accessGroupStates: DataProductGroupAccessState[];
   fetchingDataProductAccessState = ActionState.create();
 
-  constructor(viewerState: DataProductViewerState) {
+  constructor(dataProductViewerState: DataProductViewerState) {
     makeObservable(this, {
       accessGroupStates: observable,
       fetchingDataProductAccessState: observable,
     });
 
-    this.viewerState = viewerState;
+    this.dataProductViewerState = dataProductViewerState;
     this.accessGroupStates = this.product.accessPointGroups.map(
       (e) => new DataProductGroupAccessState(e, this),
     );
   }
 
   get product(): V1_DataProduct {
-    return this.viewerState.product;
+    return this.dataProductViewerState.product;
   }
 }

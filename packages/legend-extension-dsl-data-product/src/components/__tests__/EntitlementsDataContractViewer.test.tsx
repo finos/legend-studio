@@ -22,23 +22,10 @@ import {
   screen,
   waitFor,
 } from '@testing-library/react';
-import { TEST__provideMockLegendMarketplaceBaseStore } from '../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
 import { type PlainObject } from '@finos/legend-shared';
 import type { V1_LiteDataContract, V1_TaskResponse } from '@finos/legend-graph';
 import { createSpy } from '@finos/legend-shared/test';
 import { AuthProvider } from 'react-oidc-context';
-import { EntitlementsDataContractViewerState } from '../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
-import { EntitlementsDataContractViewer } from '../../../../legend-extension-dsl-data-product/src/components/DataContract/EntitlementsDataContractViewer.js';
-import {
-  mockApprovedTasksResponse,
-  mockDataContract,
-  mockDataContractMultipleConsumers,
-  mockDeniedTasksResponse,
-  mockPendingDataOwnerApprovalTasksResponse,
-  mockPendingManagerApprovalMultipleAssigneesTasksResponse,
-  mockPendingManagerApprovalMultipleConsumersTasksResponse,
-  mockPendingManagerApprovalTasksResponse,
-} from '../__test-utils__/TEST_DATA__LakehouseContractData.js';
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{

@@ -38,18 +38,15 @@ import {
   guaranteeNonNullable,
   isNonNullable,
 } from '@finos/legend-shared';
-import type { ProductViewerLegendApplicationStore } from '../../../stores/BaseViewerState.js';
-import {
-  AccessPointGroupAccess,
-  type DataProductGroupAccessState,
-} from '../../../stores/DataProduct/DataProductDataAccessState.js';
-import type { ContractConsumerTypeRendererConfig } from '../../DataProductViewer_LegendApplicationPlugin_Extension.js';
+import { type DataProductGroupAccessState } from '../../../stores/DataProduct/DataProductDataAccessState.js';
+import type { GenericLegendApplicationStore } from '@finos/legend-application';
+import type { ContractConsumerTypeRendererConfig } from '../../../index.js';
 
 export const EntitlementsDataContractCreator = observer(
   (props: {
     open: boolean;
     onClose: () => void;
-    applicationStore: ProductViewerLegendApplicationStore;
+    applicationStore: GenericLegendApplicationStore;
     userSearchService: UserSearchService | undefined;
     token: string | undefined;
     accessGroupState: DataProductGroupAccessState;
@@ -62,7 +59,7 @@ export const EntitlementsDataContractCreator = observer(
       accessGroupState,
       userSearchService,
     } = props;
-    const viewerState = accessGroupState.accessState.viewerState;
+    const viewerState = accessGroupState.accessState.dataProductViewerState;
     const accessPointGroup = guaranteeNonNullable(
       viewerState.dataContractAccessPointGroup,
       'Cannot show DataContractCreator. No access point group is selected.',
@@ -70,17 +67,10 @@ export const EntitlementsDataContractCreator = observer(
     const consumerTypeRendererConfigs: ContractConsumerTypeRendererConfig[] =
       useMemo(
         () =>
-          applicationStore.pluginManager
-            .getApplicationPlugins()
-            .map((plugin) => plugin.getContractConsumerTypeRendererConfigs?.())
-            .flat()
-            .filter(isNonNullable)
-            .filter(
-              (rendererConfig: ContractConsumerTypeRendererConfig) =>
-                accessGroupState.access !== AccessPointGroupAccess.ENTERPRISE ||
-                rendererConfig.enableForEnterpriseAPGs,
-            ),
-        [accessGroupState.access, applicationStore.pluginManager],
+          viewerState
+            .getContractConsumerTypeRendererConfigs(accessGroupState)
+            .filter(isNonNullable),
+        [accessGroupState, viewerState],
       );
     const [selectedConsumerType, setSelectedConsumerType] = useState<string>(
       consumerTypeRendererConfigs[0]?.type ?? '',

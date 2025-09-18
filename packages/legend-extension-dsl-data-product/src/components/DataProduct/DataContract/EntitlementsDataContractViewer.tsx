@@ -50,6 +50,7 @@ import {
 } from '@finos/legend-graph';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  type UserSearchService,
   ActionState,
   formatDate,
   lodashCapitalize,
@@ -67,18 +68,41 @@ import {
 } from '@finos/legend-art';
 import type { EntitlementsDataContractViewerState } from '../../../stores/DataProduct/EntitlementsDataContractViewerState.js';
 import type { DataProductGroupAccessState } from '../../../stores/DataProduct/DataProductDataAccessState.js';
+import {
+  getOrganizationalScopeTypeDetails,
+  getOrganizationalScopeTypeName,
+  stringifyOrganizationalScope,
+} from '../../../utils/LakehouseUtils.js';
+import { UserRenderer } from '../../UserRenderer/UserRenderer.js';
+import { isContractInTerminalState } from '../../../utils/DataContractUtils.js';
+import type { GenericLegendApplicationStore } from '@finos/legend-application';
 
 const AssigneesList = (props: {
   userIds: string[];
-  marketplaceStore: LegendMarketplaceBaseStore;
+  applicationStore: GenericLegendApplicationStore;
+  userSearchService: UserSearchService | undefined;
+  userProfileImageUrl: string | undefined;
+  applicationDirectoryUrl: string | undefined;
 }): React.ReactNode => {
-  const { userIds, marketplaceStore } = props;
+  const {
+    userIds,
+    applicationStore,
+    userSearchService,
+    userProfileImageUrl,
+    applicationDirectoryUrl,
+  } = props;
   return userIds.length === 0 ? (
     <span>No Assignees</span>
   ) : userIds.length === 1 ? (
     <span>
       Assignee:{' '}
-      <UserRenderer userId={userIds[0]} marketplaceStore={marketplaceStore} />
+      <UserRenderer
+        userId={userIds[0]}
+        applicationStore={applicationStore}
+        userSearchService={userSearchService}
+        userProfileImageUrl={userProfileImageUrl}
+        applicationDirectoryUrl={applicationDirectoryUrl}
+      />
     </span>
   ) : (
     <Accordion
@@ -95,7 +119,10 @@ const AssigneesList = (props: {
           <UserRenderer
             key={userId}
             userId={userId}
-            marketplaceStore={marketplaceStore}
+            applicationStore={applicationStore}
+            userSearchService={userSearchService}
+            userProfileImageUrl={userProfileImageUrl}
+            applicationDirectoryUrl={applicationDirectoryUrl}
           />
         ))}
       </AccordionDetails>
@@ -105,9 +132,18 @@ const AssigneesList = (props: {
 
 const TaskApprovalView = (props: {
   task: V1_TaskMetadata | undefined;
-  marketplaceStore: LegendMarketplaceBaseStore;
+  applicationStore: GenericLegendApplicationStore;
+  userSearchService: UserSearchService | undefined;
+  userProfileImageUrl: string | undefined;
+  applicationDirectoryUrl: string | undefined;
 }): React.ReactNode => {
-  const { task, marketplaceStore } = props;
+  const {
+    task,
+    applicationStore,
+    userSearchService,
+    userProfileImageUrl,
+    applicationDirectoryUrl,
+  } = props;
   const approverId =
     task?.rec.eventPayload instanceof
     V1_ContractUserEventPrivilegeManagerPayload
@@ -130,7 +166,10 @@ const TaskApprovalView = (props: {
               by{' '}
               <UserRenderer
                 userId={approverId}
-                marketplaceStore={marketplaceStore}
+                applicationStore={applicationStore}
+                userSearchService={userSearchService}
+                userProfileImageUrl={userProfileImageUrl}
+                applicationDirectoryUrl={applicationDirectoryUrl}
               />
             </>
           )}
@@ -152,6 +191,10 @@ export const EntitlementsDataContractViewer = observer(
   (props: {
     open: boolean;
     currentViewer: EntitlementsDataContractViewerState;
+    applicationStore: GenericLegendApplicationStore;
+    userSearchService?: UserSearchService | undefined;
+    userProfileImageUrl?: string | undefined;
+    applicationDirectoryUrl?: string | undefined;
     dataProductGroupAccessState?: DataProductGroupAccessState | undefined;
     onClose: () => void;
     initialSelectedUser?: string | undefined;
@@ -159,6 +202,10 @@ export const EntitlementsDataContractViewer = observer(
     const {
       open,
       currentViewer,
+      applicationStore,
+      userSearchService,
+      userProfileImageUrl,
+      applicationDirectoryUrl,
       dataProductGroupAccessState,
       onClose,
       initialSelectedUser,
@@ -202,13 +249,21 @@ export const EntitlementsDataContractViewer = observer(
           <MenuItem key={user} value={user}>
             <UserRenderer
               userId={user}
-              marketplaceStore={legendMarketplaceStore}
+              applicationStore={applicationStore}
+              userSearchService={userSearchService}
+              userProfileImageUrl={userProfileImageUrl}
               disableOnClick={true}
               onFinishedLoadingCallback={finishedLoadingUserCallback}
             />
           </MenuItem>
         )),
-      [targetUsers, legendMarketplaceStore, finishedLoadingUserCallback],
+      [
+        applicationStore,
+        finishedLoadingUserCallback,
+        targetUsers,
+        userProfileImageUrl,
+        userSearchService,
+      ],
     );
 
     const [selectedTargetUser, setSelectedTargetUser] = useState<
@@ -220,15 +275,10 @@ export const EntitlementsDataContractViewer = observer(
       if (!currentViewer.initializationState.hasCompleted) {
         setIsLoading(true);
         flowResult(currentViewer.init(auth.user?.access_token))
-          .catch(legendMarketplaceStore.applicationStore.alertUnhandledError)
+          .catch(applicationStore.alertUnhandledError)
           .finally(() => setIsLoading(false));
       }
-    }, [
-      auth.user?.access_token,
-      currentViewer,
-      currentViewer.initializationState,
-      legendMarketplaceStore.applicationStore.alertUnhandledError,
-    ]);
+    }, [currentViewer, applicationStore, auth.user?.access_token]);
 
     useEffect(() => {
       if (selectedTargetUser === undefined) {
@@ -286,16 +336,16 @@ export const EntitlementsDataContractViewer = observer(
       dataOwnerApprovalTask?.rec.status === V1_UserApprovalStatus.PENDING;
 
     const copyTaskLink = (text: string): void => {
-      legendMarketplaceStore.applicationStore.clipboardService
+      applicationStore.clipboardService
         .copyTextToClipboard(text)
         .then(() =>
-          legendMarketplaceStore.applicationStore.notificationService.notifySuccess(
+          applicationStore.notificationService.notifySuccess(
             'Task Link Copied to Clipboard',
             undefined,
             2500,
           ),
         )
-        .catch(legendMarketplaceStore.applicationStore.alertUnhandledError);
+        .catch(applicationStore.alertUnhandledError);
     };
 
     const steps: {
@@ -313,10 +363,8 @@ export const EntitlementsDataContractViewer = observer(
           V1_UserApprovalStatus.PENDING ? (
             <>
               <Link
-                href={legendMarketplaceStore.applicationStore.navigationService.navigator.generateAddress(
-                  generateLakehouseTaskPath(
-                    privilegeManagerApprovalTask.rec.taskId,
-                  ),
+                href={currentViewer.dataProductViewerState.getContractTaskUrl(
+                  privilegeManagerApprovalTask.rec.taskId,
                 )}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -326,10 +374,8 @@ export const EntitlementsDataContractViewer = observer(
               <IconButton
                 onClick={() =>
                   copyTaskLink(
-                    legendMarketplaceStore.applicationStore.navigationService.navigator.generateAddress(
-                      generateLakehouseTaskPath(
-                        privilegeManagerApprovalTask.rec.taskId,
-                      ),
+                    currentViewer.dataProductViewerState.getContractTaskUrl(
+                      privilegeManagerApprovalTask.rec.taskId,
                     ),
                   )
                 }
@@ -346,12 +392,18 @@ export const EntitlementsDataContractViewer = observer(
           V1_UserApprovalStatus.PENDING ? (
             <AssigneesList
               userIds={privilegeManagerApprovalTask.assignees}
-              marketplaceStore={legendMarketplaceStore}
+              applicationStore={applicationStore}
+              userSearchService={userSearchService}
+              userProfileImageUrl={userProfileImageUrl}
+              applicationDirectoryUrl={applicationDirectoryUrl}
             />
           ) : (
             <TaskApprovalView
               task={privilegeManagerApprovalTask}
-              marketplaceStore={legendMarketplaceStore}
+              applicationStore={applicationStore}
+              userSearchService={userSearchService}
+              userProfileImageUrl={userProfileImageUrl}
+              applicationDirectoryUrl={applicationDirectoryUrl}
             />
           ),
         isDeniedStep:
@@ -367,8 +419,8 @@ export const EntitlementsDataContractViewer = observer(
           V1_UserApprovalStatus.PENDING ? (
             <>
               <Link
-                href={legendMarketplaceStore.applicationStore.navigationService.navigator.generateAddress(
-                  generateLakehouseTaskPath(dataOwnerApprovalTask.rec.taskId),
+                href={currentViewer.dataProductViewerState.getContractTaskUrl(
+                  dataOwnerApprovalTask.rec.taskId,
                 )}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -378,10 +430,8 @@ export const EntitlementsDataContractViewer = observer(
               <IconButton
                 onClick={() =>
                   copyTaskLink(
-                    legendMarketplaceStore.applicationStore.navigationService.navigator.generateAddress(
-                      generateLakehouseTaskPath(
-                        dataOwnerApprovalTask.rec.taskId,
-                      ),
+                    currentViewer.dataProductViewerState.getContractTaskUrl(
+                      dataOwnerApprovalTask.rec.taskId,
                     ),
                   )
                 }
@@ -398,12 +448,18 @@ export const EntitlementsDataContractViewer = observer(
           V1_UserApprovalStatus.PENDING ? (
             <AssigneesList
               userIds={dataOwnerApprovalTask.assignees}
-              marketplaceStore={legendMarketplaceStore}
+              applicationStore={applicationStore}
+              userSearchService={userSearchService}
+              userProfileImageUrl={userProfileImageUrl}
+              applicationDirectoryUrl={applicationDirectoryUrl}
             />
           ) : dataOwnerApprovalTask !== undefined ? (
             <TaskApprovalView
               task={dataOwnerApprovalTask}
-              marketplaceStore={legendMarketplaceStore}
+              applicationStore={applicationStore}
+              userSearchService={userSearchService}
+              userProfileImageUrl={userProfileImageUrl}
+              applicationDirectoryUrl={applicationDirectoryUrl}
             />
           ) : undefined,
         isDeniedStep:
@@ -442,11 +498,9 @@ export const EntitlementsDataContractViewer = observer(
                 Access Point Group in{' '}
                 <Link
                   className="marketplace-lakehouse-text__emphasis"
-                  href={legendMarketplaceStore.applicationStore.navigationService.navigator.generateAddress(
-                    generateLakehouseDataProductPath(
-                      dataProduct,
-                      currentViewer.value.deploymentId,
-                    ),
+                  href={currentViewer.dataProductViewerState.getDataProductUrl(
+                    dataProduct,
+                    currentViewer.value.deploymentId,
                   )}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -460,7 +514,10 @@ export const EntitlementsDataContractViewer = observer(
                   <b>Ordered By: </b>
                   <UserRenderer
                     userId={currentViewer.value.createdBy}
-                    marketplaceStore={legendMarketplaceStore}
+                    applicationStore={applicationStore}
+                    userSearchService={userSearchService}
+                    userProfileImageUrl={userProfileImageUrl}
+                    applicationDirectoryUrl={applicationDirectoryUrl}
                   />
                 </div>
                 <div className="marketplace-lakehouse-entitlements__data-contract-viewer__metadata__ordered-for">
@@ -473,11 +530,11 @@ export const EntitlementsDataContractViewer = observer(
                           Contract consumer type:{' '}
                           {getOrganizationalScopeTypeName(
                             consumer,
-                            legendMarketplaceStore.applicationStore.pluginManager.getApplicationPlugins(),
+                            currentViewer.dataProductViewerState.applicationStore.pluginManager.getApplicationPlugins(),
                           )}
                           {getOrganizationalScopeTypeDetails(
                             consumer,
-                            legendMarketplaceStore.applicationStore.pluginManager.getApplicationPlugins(),
+                            currentViewer.dataProductViewerState.applicationStore.pluginManager.getApplicationPlugins(),
                           )}
                         </>
                       }
@@ -491,7 +548,10 @@ export const EntitlementsDataContractViewer = observer(
                       <UserRenderer
                         key={targetUsers[0]}
                         userId={targetUsers[0]}
-                        marketplaceStore={legendMarketplaceStore}
+                        applicationStore={applicationStore}
+                        userSearchService={userSearchService}
+                        userProfileImageUrl={userProfileImageUrl}
+                        applicationDirectoryUrl={applicationDirectoryUrl}
                       />
                     ) : (
                       <Select
