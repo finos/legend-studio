@@ -20,6 +20,7 @@ import {
   CardActionArea,
   CardActions,
   CardContent,
+  ClickAwayListener,
   Slide,
 } from '@mui/material';
 import { clsx } from '@finos/legend-art';
@@ -55,11 +56,18 @@ export const LegendMarketplaceCard = (props: {
         </CardActions>
       )}
       {moreInfo && (
-        <Slide direction="up" in={isMouseOver} container={containerRef.current}>
-          <CardContent className="legend-marketplace-card__more-info">
-            {moreInfo}
-          </CardContent>
-        </Slide>
+        <ClickAwayListener onClickAway={() => setIsMouseOver(false)}>
+          <Slide
+            direction="up"
+            in={isMouseOver}
+            appear={isMouseOver}
+            container={containerRef.current}
+          >
+            <CardContent className="legend-marketplace-card__more-info">
+              {moreInfo}
+            </CardContent>
+          </Slide>
+        </ClickAwayListener>
       )}
     </>
   );
