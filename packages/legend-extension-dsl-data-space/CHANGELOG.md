@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.4.142
+
+### Patch Changes
+
+- [#4431](https://github.com/finos/legend-studio/pull/4431) [`ed362b6`](https://github.com/finos/legend-studio/commit/ed362b660bb2f2c2b0b2c9b506bb11de8569981e) ([@travisstebbins](https://github.com/travisstebbins)) - Export V1_deserializeDataSpace function
+
 ## 10.4.141
 
 ## 10.4.140

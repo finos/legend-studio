@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.17.38
+
+### Patch Changes
+
+- [#4431](https://github.com/finos/legend-studio/pull/4431) [`ed362b6`](https://github.com/finos/legend-studio/commit/ed362b660bb2f2c2b0b2c9b506bb11de8569981e) ([@travisstebbins](https://github.com/travisstebbins)) - Export data-access-overview stylesheet by itself
+
 ## 4.17.37
 
 ### Patch Changes
