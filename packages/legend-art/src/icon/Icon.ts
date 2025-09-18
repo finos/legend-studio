@@ -120,6 +120,7 @@ import {
   MdOutlineHelpOutline,
   MdError,
   MdOutlineGroupWork,
+  MdOutlineTune,
 } from 'react-icons/md';
 
 export const ManageSearchIcon = MdManageSearch; // to be reviewed
@@ -162,6 +163,7 @@ export const HelpOutlineIcon = MdOutlineHelpOutline;
 export const ExpandMoreIcon = MdExpandMore;
 export const ErrorWarnIcon = MdError;
 export const GroupWorkIcon = MdOutlineGroupWork;
+export const TuneIcon = MdOutlineTune;
 
 //======================================================= VSC =======================================================
 import {
