@@ -71,6 +71,7 @@ export class LegendMarketplaceBaseStore {
 
   readonly initState = ActionState.create();
   readonly ingestEnvironmentFetchState = ActionState.create();
+  showDemoModal = false;
 
   constructor(applicationStore: LegendMarketplaceApplicationStore) {
     makeObservable<LegendMarketplaceBaseStore>(this, {
@@ -78,6 +79,8 @@ export class LegendMarketplaceBaseStore {
       lakehouseIngestEnvironmentDetails: observable,
       setLakehouseIngestEnvironmentSummaries: action,
       setLakehouseIngestEnvironmentDetails: action,
+      showDemoModal: observable,
+      setDemoModal: action,
       initialize: flow,
       initializeIngestEnvironmentDetails: flow,
     });
@@ -147,6 +150,10 @@ export class LegendMarketplaceBaseStore {
         this.pluginManager.getUserPlugins(),
       );
     }
+  }
+
+  setDemoModal(val: boolean): void {
+    this.showDemoModal = val;
   }
 
   *initialize(): GeneratorFn<void> {
