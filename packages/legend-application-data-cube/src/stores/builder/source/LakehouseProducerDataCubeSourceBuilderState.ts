@@ -197,6 +197,7 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
     this.icebergEnabled = producerEnv.icebergEnabled;
 
     if (this.icebergEnabled) {
+      this.setIcebergEnabled(this.icebergEnabled);
       await this.fetchIcebergCatalogDetails(access_token);
     }
 
