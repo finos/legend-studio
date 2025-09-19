@@ -55,6 +55,8 @@ import {
   LegendDataCubeSettingKey,
   LegendDataCubeSettingStorageKey,
 } from '../__lib__/LegendDataCubeSetting.js';
+import { OAuthClient } from './model/OauthClient.js';
+import { type UserManagerSettings } from 'oidc-client-ts';
 
 declare const AG_GRID_LICENSE: string | undefined;
 
@@ -84,7 +86,10 @@ export class LegendDataCubeBaseStore {
 
   gridClientLicense?: string | undefined;
 
-  constructor(application: LegendDataCubeApplicationStore) {
+  constructor(
+    application: LegendDataCubeApplicationStore,
+    userManagerSettings?: UserManagerSettings,
+  ) {
     this.application = application;
     this.pluginManager = application.pluginManager;
     this.depotServerClient = new DepotServerClient({
@@ -163,6 +168,7 @@ export class LegendDataCubeBaseStore {
       this.depotServerClient,
       this.engineServerClient,
       this.graphManager,
+      userManagerSettings ? new OAuthClient(userManagerSettings) : undefined,
     );
     this.taskService = new DataCubeTaskService();
     this.layoutService = new DataCubeLayoutService();

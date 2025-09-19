@@ -25,6 +25,7 @@ import {
 import type { LegendDataCubeApplicationConfig } from '../application/LegendDataCubeApplicationConfig.js';
 import type { LegendDataCubePluginManager } from '../application/LegendDataCubePluginManager.js';
 import { LegendDataCubeBaseStore } from '../stores/LegendDataCubeBaseStore.js';
+import { useAuth } from 'react-oidc-context';
 
 export const useLegendDataCubeApplicationStore = (): ApplicationStore<
   LegendDataCubeApplicationConfig,
@@ -43,8 +44,9 @@ const LegendDataCubeBaseStoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
   const application = useLegendDataCubeApplicationStore();
+  const auth = useAuth();
   const store = useLocalObservable(
-    () => new LegendDataCubeBaseStore(application),
+    () => new LegendDataCubeBaseStore(application, auth.settings),
   );
   return (
     <LegendDataCubeBaseStoreContext.Provider value={store}>

@@ -110,11 +110,21 @@ export class LakehouseProducerDataCubeSourceLoaderState extends LegendDataCubeSo
         guaranteeNonNullable(source),
       );
 
-    this._engine.registerIngestDefinition(
-      Object.values(
-        guaranteeNonNullable(this.ingestDefinition),
-      )[0] as PlainObject,
-    );
+    if (deserializedSource.icebergRef && deserializedSource.catalogUrl) {
+      const refId = await this._engine.ingestIcebergTable(
+        deserializedSource.warehouse,
+        deserializedSource.paths,
+        deserializedSource.catalogUrl,
+        deserializedSource.icebergRef,
+      );
+      deserializedSource.icebergRef = refId.dbReference;
+    } else {
+      this._engine.registerIngestDefinition(
+        Object.values(
+          guaranteeNonNullable(this.ingestDefinition),
+        )[0] as PlainObject,
+      );
+    }
 
     return RawLakehouseProducerDataCubeSource.serialization.toJson(
       deserializedSource,
