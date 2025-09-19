@@ -727,7 +727,7 @@ export const LakehouseDataProductAccessPointEditor = observer(
                     transformOrigin: { vertical: 'top', horizontal: 'right' },
                   }}
                 >
-                  <button
+                  <div
                     className="access-point-editor__generic-entry__remove-btn__debug"
                     tabIndex={-1}
                     title="Access Point Tools"
@@ -741,7 +741,7 @@ export const LakehouseDataProductAccessPointEditor = observer(
                     }}
                   >
                     <ListIcon />
-                  </button>
+                  </div>
                 </ControlledDropdownMenu>
               </div>
             </div>
