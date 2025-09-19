@@ -440,7 +440,6 @@ export const LakehouseDataProductAccessPointEditor = observer(
     const [isHovering, setIsHovering] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
     const [debugOutput, setDebugOutput] = useState('');
-    const [showLineage, setShowLineage] = useState(false);
 
     const handleDescriptionEdit = () => setEditingDescription(true);
     const handleDescriptionBlur = () => {
@@ -572,7 +571,9 @@ export const LakehouseDataProductAccessPointEditor = observer(
     dragConnector(ref);
     dropConnector(ref);
     useDragPreviewLayer(dragPreviewConnector);
-
+    const generateLineage = editorStore.applicationStore.guardUnhandledError(
+      () => flowResult(accessPointState.generateLineage()),
+    );
     return (
       <PanelDnDEntry
         ref={ref}
@@ -680,11 +681,11 @@ export const LakehouseDataProductAccessPointEditor = observer(
                     <MenuContent>
                       <MenuContentItem
                         className="btn__dropdown-combo__option"
-                        onClick={() =>
+                        onClick={() => {
                           debugPlanGeneration().catch(
                             editorStore.applicationStore.alertUnhandledError,
-                          )
-                        }
+                          );
+                        }}
                       >
                         <div
                           style={{
@@ -698,12 +699,7 @@ export const LakehouseDataProductAccessPointEditor = observer(
                       </MenuContentItem>
                       <MenuContentItem
                         className="btn__dropdown-combo__option"
-                        onClick={() => {
-                          flowResult(accessPointState.generateLineage()).catch(
-                            editorStore.applicationStore.alertUnhandledError,
-                          );
-                          setShowLineage(true);
-                        }}
+                        onClick={generateLineage}
                       >
                         <div
                           style={{
@@ -807,9 +803,7 @@ export const LakehouseDataProductAccessPointEditor = observer(
                 </div>
               </div>
             </div>
-            {showLineage && (
-              <LineageViewer lineageState={accessPointState.lineageState} />
-            )}
+            {<LineageViewer lineageState={accessPointState.lineageState} />}
           </div>
           <button
             className="access-point-editor__generic-entry__remove-btn"
