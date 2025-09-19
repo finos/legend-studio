@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { ServicePureExecutionState } from '../../../../stores/editor/editor-state/element-editor-state/service/ServiceExecutionState.js';
 import {
@@ -55,6 +55,7 @@ import {
   ExecutionPlanViewer,
   QueryBuilderAdvancedWorkflowState,
   QueryBuilderActionConfig,
+  LineageViewer,
 } from '@finos/legend-query-builder';
 import { ProjectViewerEditorMode } from '../../../../stores/project-view/ProjectViewerEditorMode.js';
 import { useLegendStudioApplicationStore } from '../../../LegendStudioFrameworkProvider.js';
@@ -231,6 +232,9 @@ export const ServiceExecutionQueryEditor = observer(
       flowResult(executionState.generatePlan(false)),
     );
 
+    const generateLineage = applicationStore.guardUnhandledError(() =>
+      flowResult(executionState.generateLineage()),
+    );
     const debugPlanGeneration = applicationStore.guardUnhandledError(() =>
       flowResult(executionState.generatePlan(true)),
     );
@@ -381,6 +385,12 @@ export const ServiceExecutionQueryEditor = observer(
                         </MenuContentItem>
                         <MenuContentItem
                           className="btn__dropdown-combo__option"
+                          onClick={generateLineage}
+                        >
+                          View Lineage
+                        </MenuContentItem>
+                        <MenuContentItem
+                          className="btn__dropdown-combo__option"
                           onClick={debugPlanGeneration}
                         >
                           Debug
@@ -468,6 +478,7 @@ export const ServiceExecutionQueryEditor = observer(
           <ExecutionPlanViewer
             executionPlanState={executionState.executionPlanState}
           />
+          <LineageViewer lineageState={executionState.lineageState} />
           <ServiceExecutionResultViewer executionState={executionState} />
           {executionState.parametersState.parameterValuesEditorState
             .showModal && (

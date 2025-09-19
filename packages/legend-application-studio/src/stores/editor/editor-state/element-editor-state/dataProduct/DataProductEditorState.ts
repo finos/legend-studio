@@ -46,6 +46,7 @@ import {
   observe_DataProductElementScope,
   DataProductElementScope,
   validate_PureExecutionMapping,
+  type V1_RawLineageModel,
 } from '@finos/legend-graph';
 import type { EditorStore } from '../../../EditorStore.js';
 import { ElementEditorState } from '../ElementEditorState.js';
@@ -88,7 +89,7 @@ import {
   modelAccessPointGroup_setElementExclude,
   modelAccessPointGroup_setMapping,
 } from '../../../../graph-modifier/DSL_DataProduct_GraphModifierHelper.js';
-import { LambdaEditorState } from '@finos/legend-query-builder';
+import { LambdaEditorState, LineageState } from '@finos/legend-query-builder';
 import {
   DataProductElementEditorInitialConfiguration,
   EditorInitialConfiguration,
@@ -238,19 +239,66 @@ export class LakehouseAccessPointState extends AccessPointState {
 
   showDebug = false;
 
+  // Add lineage state and isGeneratingLineage
+  lineageState: LineageState;
+  isGeneratingLineage = false;
+
   constructor(val: LakehouseAccessPoint, editorState: AccessPointGroupState) {
     super(val, editorState);
     makeObservable(this, {
       lambdaState: observable,
       showDebug: observable,
       setShowDebug: action,
+      // Add observables for lineage
+      lineageState: observable,
+      isGeneratingLineage: observable,
+      generateLineage: flow,
     });
     this.accessPoint = val;
     this.lambdaState = new AccessPointLambdaEditorState(this);
+    this.lineageState = new LineageState(
+      this.state.state.editorStore.applicationStore,
+    );
   }
 
   setShowDebug(value: boolean): void {
     this.showDebug = value;
+  }
+
+  *generateLineage(): GeneratorFn<void> {
+    if (this.isGeneratingLineage) {
+      return;
+    }
+    try {
+      this.isGeneratingLineage = true;
+      const lambda = this.accessPoint.func;
+      const lineageRawData =
+        (yield this.state.state.editorStore.graphManagerState.graphManager.generateLineage(
+          lambda,
+          undefined,
+          undefined,
+          this.state.state.editorStore.graphManagerState.graph,
+          undefined,
+        )) as V1_RawLineageModel;
+
+      const lineageData =
+        this.state.state.editorStore.graphManagerState.graphManager.buildLineage(
+          lineageRawData,
+        );
+
+      this.lineageState.setLineageData(lineageData);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.state.state.editorStore.applicationStore.logService.error(
+        LogEvent.create(GRAPH_MANAGER_EVENT.LINEAGE_GENERATION_FAILURE),
+        error,
+      );
+      this.state.state.editorStore.applicationStore.notificationService.notifyError(
+        error,
+      );
+    } finally {
+      this.isGeneratingLineage = false;
+    }
   }
 }
 

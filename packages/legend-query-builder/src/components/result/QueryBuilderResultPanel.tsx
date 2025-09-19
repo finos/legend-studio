@@ -80,6 +80,7 @@ import { QueryBuilderTDSGridResult } from './tds/QueryBuilderTDSGridResult.js';
 import type { QueryBuilder_LegendApplicationPlugin_Extension } from '../../stores/QueryBuilder_LegendApplicationPlugin_Extension.js';
 import type { QueryBuilderResultState } from '../../stores/QueryBuilderResultState.js';
 import { QueryBuilderBaseInfoTooltip } from '../shared/QueryBuilderPropertyInfoTooltip.js';
+import { LineageViewer } from '../lineage/LineageViewer.js';
 
 const PERMISSION_ERRORS = [
   'permission denied',
@@ -413,6 +414,10 @@ export const QueryBuilderResultPanel = observer(
 
     const generatePlan = applicationStore.guardUnhandledError(() =>
       flowResult(resultState.generatePlan(false)),
+    );
+
+    const generateLineage = applicationStore.guardUnhandledError(() =>
+      flowResult(resultState.generateLineage()),
     );
     const debugPlanGeneration = applicationStore.guardUnhandledError(() =>
       flowResult(resultState.generatePlan(true)),
@@ -797,6 +802,18 @@ export const QueryBuilderResultPanel = observer(
                           </MenuContentItemIcon>
                           <MenuContentItemLabel>Debug</MenuContentItemLabel>
                         </MenuContentItem>
+                        <MenuContentItem
+                          className="btn__dropdown-combo__option"
+                          onClick={generateLineage}
+                          disabled={isRunQueryDisabled}
+                        >
+                          <MenuContentItemIcon>
+                            <ReportIcon />
+                          </MenuContentItemIcon>
+                          <MenuContentItemLabel>
+                            View Lineage
+                          </MenuContentItemLabel>
+                        </MenuContentItem>
                       </MenuContent>
                     }
                     menuProps={{
@@ -906,6 +923,7 @@ export const QueryBuilderResultPanel = observer(
         <ExecutionPlanViewer
           executionPlanState={resultState.executionPlanState}
         />
+        <LineageViewer lineageState={resultState.lineageState} />
       </div>
     );
   },

@@ -77,6 +77,8 @@ import {
   WarningIcon,
   LongArrowRightIcon,
   PURE_MappingIcon,
+  GitBranchIcon,
+  ListIcon,
 } from '@finos/legend-art';
 import {
   type ChangeEventHandler,
@@ -86,7 +88,7 @@ import {
   useState,
 } from 'react';
 import { filterByType } from '@finos/legend-shared';
-import { InlineLambdaEditor } from '@finos/legend-query-builder';
+import { InlineLambdaEditor, LineageViewer } from '@finos/legend-query-builder';
 import { action, flowResult } from 'mobx';
 import { useAuth } from 'react-oidc-context';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
@@ -569,7 +571,9 @@ export const LakehouseDataProductAccessPointEditor = observer(
     dragConnector(ref);
     dropConnector(ref);
     useDragPreviewLayer(dragPreviewConnector);
-
+    const generateLineage = editorStore.applicationStore.guardUnhandledError(
+      () => flowResult(accessPointState.generateLineage()),
+    );
     return (
       <PanelDnDEntry
         ref={ref}
@@ -671,6 +675,74 @@ export const LakehouseDataProductAccessPointEditor = observer(
                     <CaretDownIcon />
                   </ControlledDropdownMenu>
                 </div>
+                <ControlledDropdownMenu
+                  className="access-point-editor__dropdown"
+                  content={
+                    <MenuContent>
+                      <MenuContentItem
+                        className="btn__dropdown-combo__option"
+                        onClick={() => {
+                          debugPlanGeneration().catch(
+                            editorStore.applicationStore.alertUnhandledError,
+                          );
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: 'flex',
+                            gap: '0.5rem',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <BugIcon /> <span>AP Plan Generation</span>
+                        </div>
+                      </MenuContentItem>
+                      <MenuContentItem
+                        className="btn__dropdown-combo__option"
+                        onClick={generateLineage}
+                      >
+                        <div
+                          style={{
+                            display: 'flex',
+                            gap: '0.5rem',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <span
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              transform: 'rotate(90deg)',
+                            }}
+                          >
+                            <GitBranchIcon />
+                          </span>
+                          <span>Lineage Viewer</span>
+                        </div>
+                      </MenuContentItem>
+                    </MenuContent>
+                  }
+                  menuProps={{
+                    anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                    transformOrigin: { vertical: 'top', horizontal: 'right' },
+                  }}
+                >
+                  <div
+                    className="access-point-editor__generic-entry__remove-btn__debug"
+                    tabIndex={-1}
+                    title="Access Point Tools"
+                    style={{
+                      background: 'var(--color-blue-200)',
+                      borderRadius: '4px',
+                      marginRight: '0.5rem',
+                      padding: '0.25rem 0.5rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <ListIcon />
+                  </div>
+                </ControlledDropdownMenu>
               </div>
             </div>
             {editingDescription ? (
@@ -729,20 +801,9 @@ export const LakehouseDataProductAccessPointEditor = observer(
                     />
                   </div>
                 </div>
-                <button
-                  className="access-point-editor__generic-entry__remove-btn__debug"
-                  onClick={() => {
-                    debugPlanGeneration().catch(
-                      editorStore.applicationStore.alertUnhandledError,
-                    );
-                  }}
-                  tabIndex={-1}
-                  title="AP Plan Generation"
-                >
-                  <BugIcon />
-                </button>
               </div>
             </div>
+            {<LineageViewer lineageState={accessPointState.lineageState} />}
           </div>
           <button
             className="access-point-editor__generic-entry__remove-btn"
