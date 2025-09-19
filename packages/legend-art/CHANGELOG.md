@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.122
+
+### Patch Changes
+
+- [#4444](https://github.com/finos/legend-studio/pull/4444) [`341e668`](https://github.com/finos/legend-studio/commit/341e668da9116ca700838d94f0382a53d32e5cb3) ([@AFine-gs](https://github.com/AFine-gs)) - update lineage viewer
+
 ## 7.1.121
 
 ### Patch Changes
