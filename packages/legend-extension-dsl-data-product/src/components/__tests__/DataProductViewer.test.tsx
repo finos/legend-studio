@@ -273,7 +273,6 @@ const setupLakehouseDataProductTest = async (
           stereotype: 'enterprise',
         },
       }),
-      lakehouseIngestEnvironmentDetails: [],
     },
     {
       viewDataProductSource: jest.fn(),

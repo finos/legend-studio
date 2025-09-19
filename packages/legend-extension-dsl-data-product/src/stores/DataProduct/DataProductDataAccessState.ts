@@ -126,7 +126,7 @@ export class DataProductGroupAccessState {
 
   get access(): AccessPointGroupAccess {
     const publicStereotype =
-      this.accessState.dataProductViewerState.options.dataProductConfig
+      this.accessState.dataProductViewerState.dataProductConfig
         ?.publicStereotype;
     if (
       publicStereotype &&

@@ -219,7 +219,7 @@ const LakehouseSubscriptionsCreateDialog = observer(
         ?.producerEnvironmentName;
 
     const environmentDetails =
-      accessGroupState.accessState.dataProductViewerState.options
+      accessGroupState.accessState.dataProductViewerState
         .lakehouseIngestEnvironmentDetails;
     const suggestedSnowflakeAccounts = Array.from(
       new Set(
@@ -329,11 +329,11 @@ const LakehouseSubscriptionsCreateDialog = observer(
                       }
                       userProfileImageUrl={
                         accessGroupState.accessState.dataProductViewerState
-                          .options.userProfileImageUrl
+                          .userProfileImageUrl
                       }
                       applicationDirectoryUrl={
                         accessGroupState.accessState.dataProductViewerState
-                          .options.applicationDirectoryUrl
+                          .applicationDirectoryUrl
                       }
                     />
                   </MenuItem>
@@ -594,12 +594,11 @@ export const DataProductSubscriptionViewer = observer(
                               }
                               userProfileImageUrl={
                                 accessGroupState.accessState
-                                  .dataProductViewerState.options
-                                  .userProfileImageUrl
+                                  .dataProductViewerState.userProfileImageUrl
                               }
                               applicationDirectoryUrl={
                                 accessGroupState.accessState
-                                  .dataProductViewerState.options
+                                  .dataProductViewerState
                                   .applicationDirectoryUrl
                               }
                             />

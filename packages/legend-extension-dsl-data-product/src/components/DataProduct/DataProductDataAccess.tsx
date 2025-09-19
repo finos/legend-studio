@@ -698,10 +698,10 @@ export const DataProductAccessPointGroupViewer = observer(
                 accessGroupState.accessState.dataProductViewerState
                   .userSearchService,
               userProfileImageUrl:
-                accessGroupState.accessState.dataProductViewerState.options
+                accessGroupState.accessState.dataProductViewerState
                   .userProfileImageUrl,
               applicationDirectoryUrl:
-                accessGroupState.accessState.dataProductViewerState.options
+                accessGroupState.accessState.dataProductViewerState
                   .applicationDirectoryUrl,
               initialSelectedUser:
                 accessGroupState.accessState.dataProductViewerState

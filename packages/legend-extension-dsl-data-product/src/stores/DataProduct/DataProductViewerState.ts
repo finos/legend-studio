@@ -57,14 +57,6 @@ import { DATA_PRODUCT_VIEWER_SECTION } from '../ProductViewerNavigation.js';
 import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
 import { dataContractContainsDataProduct } from '../../utils/DataContractUtils.js';
 
-export type DataProductViewerStateOptions = {
-  userSearchService?: UserSearchService | undefined;
-  dataProductConfig?: DataProductConfig | undefined;
-  userProfileImageUrl?: string | undefined;
-  applicationDirectoryUrl?: string | undefined;
-  lakehouseIngestEnvironmentDetails: V1_IngestEnvironment[];
-};
-
 export type ContractConsumerTypeRendererConfig = {
   type: string;
   createContractRenderer: (
@@ -84,6 +76,14 @@ export type ContractConsumerTypeRendererConfig = {
   enableForEnterpriseAPGs?: boolean;
 };
 
+export type DataProductViewerStateOptions = {
+  userSearchService?: UserSearchService | undefined;
+  dataProductConfig?: DataProductConfig | undefined;
+  userProfileImageUrl?: string | undefined;
+  applicationDirectoryUrl?: string | undefined;
+  lakehouseIngestEnvironmentDetails?: V1_IngestEnvironment[];
+};
+
 export class DataProductViewerState extends BaseViewerState<
   V1_DataProduct,
   DataProductLayoutState
@@ -92,9 +92,10 @@ export class DataProductViewerState extends BaseViewerState<
   readonly lakehouseContractServerClient:
     | LakehouseContractServerClient
     | undefined;
-  readonly userSearchService: UserSearchService | undefined;
   readonly graphManagerState: GraphManagerState;
   readonly entitlementsDataProductDetails: V1_EntitlementsDataProductDetails;
+
+  // actions
   readonly viewDataProductSource: () => void;
   readonly getContractTaskUrl: (taskId: string) => string;
   readonly getDataProductUrl: (
@@ -105,7 +106,12 @@ export class DataProductViewerState extends BaseViewerState<
     accessGroupState: DataProductGroupAccessState,
   ) => ContractConsumerTypeRendererConfig[];
 
-  readonly options: DataProductViewerStateOptions;
+  // optional configuration
+  readonly userSearchService: UserSearchService | undefined;
+  readonly dataProductConfig?: DataProductConfig | undefined;
+  readonly userProfileImageUrl?: string | undefined;
+  readonly applicationDirectoryUrl?: string | undefined;
+  readonly lakehouseIngestEnvironmentDetails: V1_IngestEnvironment[];
 
   // we may want to move this out eventually
   accessState!: DataProductDataAccessState;
@@ -154,13 +160,22 @@ export class DataProductViewerState extends BaseViewerState<
     this.graphManagerState = graphManagerState;
     this.lakehouseContractServerClient = lakehouseContractServerClient;
     this.entitlementsDataProductDetails = entitlementsDataProductDetails;
+    this.accessState = new DataProductDataAccessState(this);
+
+    // actions
     this.viewDataProductSource = actions.viewDataProductSource;
     this.getContractTaskUrl = actions.getContractTaskUrl;
     this.getDataProductUrl = actions.getDataProductUrl;
     this.getContractConsumerTypeRendererConfigs =
       actions.getContractConsumerTypeRendererConfigs;
-    this.options = options;
-    this.accessState = new DataProductDataAccessState(this);
+
+    // optional configuration
+    this.userSearchService = options.userSearchService;
+    this.dataProductConfig = options.dataProductConfig;
+    this.userProfileImageUrl = options.userProfileImageUrl;
+    this.applicationDirectoryUrl = options.applicationDirectoryUrl;
+    this.lakehouseIngestEnvironmentDetails =
+      options.lakehouseIngestEnvironmentDetails ?? [];
   }
 
   public override getTitle(): string | undefined {
