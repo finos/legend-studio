@@ -83,6 +83,7 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
       datasetGroup: observable,
       selectedTable: observable,
       icebergEnabled: observable,
+      enableIceberg: observable,
 
       setDeploymentId: action,
       setSelectedIngestUrn: action,
@@ -194,6 +195,10 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
       V1_AWSSnowflakeProducerEnvironment,
     );
     this.icebergEnabled = producerEnv.icebergEnabled;
+
+    if (this.icebergEnabled) {
+      await this.fetchIcebergCatalogDetails(access_token);
+    }
 
     this.databaseName = producerEnv.databaseName;
   }

@@ -31,7 +31,7 @@ export const LakehouseProducerDataCubeSourceBuilder: React.FC<{
 }> = observer(({ sourceBuilder: state }) => {
   const auth = useAuth();
   const store = useLegendDataCubeBuilderStore();
-  const [isIcebergEnabled, setIsIcebergEnabled] = useState(false);
+  const [isIcebergEnabled, setIsIcebergEnabled] = useState(true);
 
   const toggleSetisIcebergEnabled = () => {
     setIsIcebergEnabled(!isIcebergEnabled);
@@ -161,18 +161,19 @@ export const LakehouseProducerDataCubeSourceBuilder: React.FC<{
             />
           </div>
         )}
-        {state.selectedTable && !isIcebergEnabled && (
-          <div className="query-setup__wizard__group mt-2">
-            <div className="query-setup__wizard__group__title">Warehouse</div>
-            <FormTextInput
-              className="w-full text-base text-black"
-              value={state.warehouse}
-              onChange={(event) => {
-                state.setWarehouse(event.target.value);
-              }}
-            />
-          </div>
-        )}
+        {state.selectedTable &&
+          (!isIcebergEnabled || !state.icebergEnabled) && (
+            <div className="query-setup__wizard__group mt-2">
+              <div className="query-setup__wizard__group__title">Warehouse</div>
+              <FormTextInput
+                className="w-full text-base text-black"
+                value={state.warehouse}
+                onChange={(event) => {
+                  state.setWarehouse(event.target.value);
+                }}
+              />
+            </div>
+          )}
       </div>
     </div>
   );
