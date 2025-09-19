@@ -80,12 +80,12 @@ import {
   retrieveAnalyticsResultCache,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import {
+  type ContractConsumerTypeRendererConfig,
+  type DataProductGroupAccessState,
   AccessPointGroupAccess,
-  DataProductGroupAccessState,
   DataProductViewerState,
   TerminalProductLayoutState,
   TerminalProductViewerState,
-  type ContractConsumerTypeRendererConfig,
 } from '@finos/legend-extension-dsl-data-product';
 
 const ARTIFACT_GENERATION_DAT_PRODUCT_KEY = 'dataProduct';
@@ -246,6 +246,7 @@ export class LegendMarketplaceProductViewerStore {
 
       const stateViewer = new DataProductViewerState(
         this.marketplaceBaseStore.applicationStore,
+        this.marketplaceBaseStore.engineServerClient,
         graphManagerState,
         v1DataProduct,
         dataProductDetails,
@@ -261,6 +262,8 @@ export class LegendMarketplaceProductViewerStore {
           applicationDirectoryUrl:
             this.marketplaceBaseStore.applicationStore.config
               .lakehouseEntitlementsConfig?.applicationDirectoryUrl,
+          lakehouseIngestEnvironmentDetails:
+            this.marketplaceBaseStore.lakehouseIngestEnvironmentDetails,
         },
         {
           viewDataProductSource: () => {
@@ -284,9 +287,9 @@ export class LegendMarketplaceProductViewerStore {
             this.marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
               generateLakehouseTaskPath(taskId),
             ),
-          getDataProductUrl: (dataProductId: string, deploymentId: number) =>
+          getDataProductUrl: (_dataProductId: string, _deploymentId: number) =>
             this.marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
-              generateLakehouseDataProductPath(dataProductId, deploymentId),
+              generateLakehouseDataProductPath(_dataProductId, _deploymentId),
             ),
           getContractConsumerTypeRendererConfigs: (
             accessGroupState: DataProductGroupAccessState,

@@ -23,9 +23,30 @@ import {
   waitFor,
 } from '@testing-library/react';
 import { type PlainObject } from '@finos/legend-shared';
-import type { V1_LiteDataContract, V1_TaskResponse } from '@finos/legend-graph';
+import {
+  type V1_LiteDataContract,
+  type V1_TaskResponse,
+} from '@finos/legend-graph';
 import { createSpy } from '@finos/legend-shared/test';
 import { AuthProvider } from 'react-oidc-context';
+import { EntitlementsDataContractViewerState } from '../../stores/DataProduct/EntitlementsDataContractViewerState.js';
+import { EntitlementsDataContractViewer } from '../DataProduct/DataContract/EntitlementsDataContractViewer.js';
+import { ApplicationStore } from '@finos/legend-application';
+import {
+  TEST__getGenericApplicationConfig,
+  TEST__LegendApplicationPluginManager,
+} from '../__test-utils__/StateTestUtils.js';
+import { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
+import {
+  mockDataContract,
+  mockPendingManagerApprovalTasksResponse,
+  mockPendingDataOwnerApprovalTasksResponse,
+  mockApprovedTasksResponse,
+  mockDeniedTasksResponse,
+  mockPendingManagerApprovalMultipleAssigneesTasksResponse,
+  mockDataContractMultipleConsumers,
+  mockPendingManagerApprovalMultipleConsumersTasksResponse,
+} from '../__test-utils__/TEST_DATA__LakehouseContractData.js';
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{
@@ -39,21 +60,30 @@ const setupDataContractViewerTest = async (
   mockTasks: V1_TaskResponse,
   initialSelectedUser?: string,
 ) => {
-  const mockedStore = await TEST__provideMockLegendMarketplaceBaseStore();
+  const pluginManager = TEST__LegendApplicationPluginManager.create();
+  const MOCK__applicationStore = new ApplicationStore(
+    TEST__getGenericApplicationConfig(),
+    pluginManager,
+  );
+  MOCK__applicationStore.navigationService.navigator.generateAddress = jest.fn(
+    (location: string) => location,
+  );
 
-  mockedStore.applicationStore.navigationService.navigator.generateAddress =
-    jest.fn((location: string) => location);
+  const lakehouseContractServerClient = new LakehouseContractServerClient({
+    baseUrl: 'http://test-contract-server-client',
+  });
 
   createSpy(
-    mockedStore.lakehouseContractServerClient,
+    lakehouseContractServerClient,
     'getContractTasks',
   ).mockImplementation(async (contractId: string) => {
     return mockTasks as unknown as PlainObject<V1_TaskResponse>;
   });
 
-  const contractViewerState = new EntitlementsDataContractViewerState(
+  const MOCK__contractViewerState = new EntitlementsDataContractViewerState(
     mockContract,
-    mockedStore.lakehouseContractServerClient,
+    MOCK__applicationStore,
+    lakehouseContractServerClient,
   );
 
   let renderResult;
@@ -63,10 +93,11 @@ const setupDataContractViewerTest = async (
       <AuthProvider>
         <EntitlementsDataContractViewer
           open={true}
-          currentViewer={contractViewerState}
-          legendMarketplaceStore={mockedStore}
           onClose={jest.fn()}
-          initialSelectedUser={initialSelectedUser}
+          currentViewer={MOCK__contractViewerState}
+          getContractTaskUrl={() => ''}
+          getDataProductUrl={() => ''}
+          userConfig={{ initialSelectedUser }}
         />
       </AuthProvider>,
     );
@@ -75,8 +106,8 @@ const setupDataContractViewerTest = async (
   });
 
   return {
-    mockedStore,
-    mockedContractViewerState: contractViewerState,
+    MOCK__applicationStore,
+    MOCK__contractViewerState,
     renderResult,
   };
 };
@@ -206,10 +237,11 @@ test('Shows list of "ordered for"" if there is more than 1 consumer and respects
 });
 
 test('Refresh button re-initializes data contract viewer', async () => {
-  const { mockedContractViewerState } = await setupDataContractViewerTest(
-    mockDataContract,
-    mockPendingManagerApprovalTasksResponse,
-  );
+  const { MOCK__contractViewerState: mockedContractViewerState } =
+    await setupDataContractViewerTest(
+      mockDataContract,
+      mockPendingManagerApprovalTasksResponse,
+    );
 
   // Verify refresh button
   const refreshButton = await screen.findByRole('button', { name: 'Refresh' });

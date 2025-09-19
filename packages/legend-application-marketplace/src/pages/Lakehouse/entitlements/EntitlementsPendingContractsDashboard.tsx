@@ -39,21 +39,25 @@ import {
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import type { EntitlementsDashboardState } from '../../../stores/lakehouse/entitlements/EntitlementsDashboardState.js';
-import { EntitlementsDataContractViewer } from '../../../../../legend-extension-dsl-data-product/src/components/DataContract/EntitlementsDataContractViewer.js';
-import { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
 import { useLegendMarketplaceBaseStore } from '../../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import { observer } from 'mobx-react-lite';
-import { UserRenderer } from '../../../../../legend-extension-dsl-data-product/src/components/UserRenderer/UserRenderer.js';
-import {
-  getOrganizationalScopeTypeDetails,
-  getOrganizationalScopeTypeName,
-  isContractInTerminalState,
-} from '../../../stores/lakehouse/LakehouseUtils.js';
 import type { LegendMarketplaceBaseStore } from '../../../stores/LegendMarketplaceBaseStore.js';
 import { assertErrorThrown, startCase } from '@finos/legend-shared';
 import { useAuth } from 'react-oidc-context';
-import { MultiUserCellRenderer } from '../../../components/MultiUserCellRenderer/MultiUserCellRenderer.js';
 import { InfoCircleIcon } from '@finos/legend-art';
+import {
+  MultiUserRenderer,
+  isContractInTerminalState,
+  getOrganizationalScopeTypeName,
+  getOrganizationalScopeTypeDetails,
+  UserRenderer,
+  EntitlementsDataContractViewer,
+  EntitlementsDataContractViewerState,
+} from '@finos/legend-extension-dsl-data-product';
+import {
+  generateLakehouseTaskPath,
+  generateLakehouseDataProductPath,
+} from '../../../__lib__/LegendMarketplaceNavigation.js';
 
 const AssigneesCellRenderer = (props: {
   dataContract: V1_LiteDataContract | undefined;
@@ -116,9 +120,18 @@ const AssigneesCellRenderer = (props: {
   return loading ? (
     <CircularProgress size={20} />
   ) : assignees.length > 0 ? (
-    <MultiUserCellRenderer
+    <MultiUserRenderer
       userIds={assignees}
-      marketplaceStore={marketplaceBaseStore}
+      applicationStore={marketplaceBaseStore.applicationStore}
+      userSearchService={marketplaceBaseStore.userSearchService}
+      userProfileImageUrl={
+        marketplaceBaseStore.applicationStore.config
+          .marketplaceUserProfileImageUrl
+      }
+      applicationDirectoryUrl={
+        marketplaceBaseStore.applicationStore.config.lakehouseEntitlementsConfig
+          ?.applicationDirectoryUrl
+      }
       singleUserClassName="marketplace-lakehouse-entitlements__grid__user-display"
     />
   ) : (
@@ -180,9 +193,18 @@ const TargetUserCellRenderer = (props: {
   return loading ? (
     <CircularProgress size={20} />
   ) : targetUsers.length > 0 ? (
-    <MultiUserCellRenderer
+    <MultiUserRenderer
       userIds={targetUsers}
-      marketplaceStore={marketplaceBaseStore}
+      applicationStore={marketplaceBaseStore.applicationStore}
+      userSearchService={marketplaceBaseStore.userSearchService}
+      userProfileImageUrl={
+        marketplaceBaseStore.applicationStore.config
+          .marketplaceUserProfileImageUrl
+      }
+      applicationDirectoryUrl={
+        marketplaceBaseStore.applicationStore.config.lakehouseEntitlementsConfig
+          ?.applicationDirectoryUrl
+      }
       singleUserClassName="marketplace-lakehouse-entitlements__grid__user-display"
     />
   ) : (
@@ -298,7 +320,16 @@ export const EntitlementsPendingContractsDashbaord = observer(
           return requester ? (
             <UserRenderer
               userId={requester}
-              marketplaceStore={marketplaceBaseStore}
+              applicationStore={marketplaceBaseStore.applicationStore}
+              userSearchService={marketplaceBaseStore.userSearchService}
+              userProfileImageUrl={
+                marketplaceBaseStore.applicationStore.config
+                  .marketplaceUserProfileImageUrl
+              }
+              applicationDirectoryUrl={
+                marketplaceBaseStore.applicationStore.config
+                  .lakehouseEntitlementsConfig?.applicationDirectoryUrl
+              }
               className="marketplace-lakehouse-entitlements__grid__user-display"
             />
           ) : (
@@ -396,14 +427,33 @@ export const EntitlementsPendingContractsDashbaord = observer(
         {selectedContract !== undefined && (
           <EntitlementsDataContractViewer
             open={true}
+            onClose={() => setSelectedContract(undefined)}
             currentViewer={
               new EntitlementsDataContractViewerState(
                 selectedContract,
+                marketplaceBaseStore.applicationStore,
                 marketplaceBaseStore.lakehouseContractServerClient,
               )
             }
-            legendMarketplaceStore={marketplaceBaseStore}
-            onClose={() => setSelectedContract(undefined)}
+            getContractTaskUrl={(taskId: string) =>
+              marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
+                generateLakehouseTaskPath(taskId),
+              )
+            }
+            getDataProductUrl={(dataProductId: string, deploymentId: number) =>
+              marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
+                generateLakehouseDataProductPath(dataProductId, deploymentId),
+              )
+            }
+            userConfig={{
+              userSearchService: marketplaceBaseStore.userSearchService,
+              userProfileImageUrl:
+                marketplaceBaseStore.applicationStore.config
+                  .marketplaceUserProfileImageUrl,
+              applicationDirectoryUrl:
+                marketplaceBaseStore.applicationStore.config
+                  .lakehouseEntitlementsConfig?.applicationDirectoryUrl,
+            }}
           />
         )}
       </Box>

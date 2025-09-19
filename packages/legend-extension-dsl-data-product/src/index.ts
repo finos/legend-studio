@@ -14,11 +14,19 @@
  * limitations under the License.
  */
 
+export { EntitlementsDataContractCreator } from './components/DataProduct/DataContract/EntitlementsDataContractCreator.js';
+export { EntitlementsDataContractViewer } from './components/DataProduct/DataContract/EntitlementsDataContractViewer.js';
 export * from './components/ProductViewer.js';
-export { type ContractConsumerTypeRendererConfig } from './components/DataProduct/DataContract/EntitlementsDataContractCreator.js';
+export { MultiUserRenderer } from './components/UserRenderer/MultiUserRenderer.js';
+export { UserRenderer } from './components/UserRenderer/UserRenderer.js';
 
 export * from './stores/BaseViewerState.js';
 export * from './stores/BaseLayoutState.js';
+export * from './stores/DataProductViewer_LegendApplicationPlugin_Extension.js';
 export * from './stores/DataProduct/DataProductDataAccessState.js';
 export * from './stores/DataProduct/DataProductViewerState.js';
+export * from './stores/DataProduct/EntitlementsDataContractViewerState.js';
 export * from './stores/TerminalProduct/TerminalProductViewerState.js';
+
+export * from './utils/DataContractUtils.js';
+export * from './utils/LakehouseUtils.js';

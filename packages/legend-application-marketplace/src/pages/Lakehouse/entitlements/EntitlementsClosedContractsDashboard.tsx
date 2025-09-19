@@ -31,22 +31,26 @@ import {
 import { Box, FormControlLabel, Switch, Tooltip } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import type { EntitlementsDashboardState } from '../../../stores/lakehouse/entitlements/EntitlementsDashboardState.js';
-import { EntitlementsDataContractViewer } from '../../../../../legend-extension-dsl-data-product/src/components/DataContract/EntitlementsDataContractViewer.js';
-import { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
 import { useLegendMarketplaceBaseStore } from '../../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import { observer } from 'mobx-react-lite';
-import { UserRenderer } from '../../../../../legend-extension-dsl-data-product/src/components/UserRenderer/UserRenderer.js';
-import {
-  getOrganizationalScopeTypeDetails,
-  getOrganizationalScopeTypeName,
-  isContractInTerminalState,
-  stringifyOrganizationalScope,
-} from '../../../stores/lakehouse/LakehouseUtils.js';
 import { lodashCapitalize } from '@finos/legend-shared';
-import { MultiUserCellRenderer } from '../../../components/MultiUserCellRenderer/MultiUserCellRenderer.js';
 import { useAuth } from 'react-oidc-context';
 import { deserialize } from 'serializr';
 import { InfoCircleIcon } from '@finos/legend-art';
+import {
+  EntitlementsDataContractViewer,
+  EntitlementsDataContractViewerState,
+  getOrganizationalScopeTypeDetails,
+  getOrganizationalScopeTypeName,
+  isContractInTerminalState,
+  MultiUserRenderer,
+  stringifyOrganizationalScope,
+  UserRenderer,
+} from '@finos/legend-extension-dsl-data-product';
+import {
+  generateLakehouseDataProductPath,
+  generateLakehouseTaskPath,
+} from '../../../__lib__/LegendMarketplaceNavigation.js';
 
 export const EntitlementsClosedContractsDashbaord = observer(
   (props: { dashboardState: EntitlementsDashboardState }): React.ReactNode => {
@@ -193,9 +197,18 @@ export const EntitlementsClosedContractsDashbaord = observer(
 
           if (consumer instanceof V1_AdhocTeam) {
             return (
-              <MultiUserCellRenderer
+              <MultiUserRenderer
                 userIds={consumer.users.map((user) => user.name)}
-                marketplaceStore={marketplaceBaseStore}
+                applicationStore={marketplaceBaseStore.applicationStore}
+                userSearchService={marketplaceBaseStore.userSearchService}
+                userProfileImageUrl={
+                  marketplaceBaseStore.applicationStore.config
+                    .marketplaceUserProfileImageUrl
+                }
+                applicationDirectoryUrl={
+                  marketplaceBaseStore.applicationStore.config
+                    .lakehouseEntitlementsConfig?.applicationDirectoryUrl
+                }
                 singleUserClassName="marketplace-lakehouse-entitlements__grid__user-display"
               />
             );
@@ -216,7 +229,16 @@ export const EntitlementsClosedContractsDashbaord = observer(
           return requester ? (
             <UserRenderer
               userId={requester}
-              marketplaceStore={marketplaceBaseStore}
+              applicationStore={marketplaceBaseStore.applicationStore}
+              userSearchService={marketplaceBaseStore.userSearchService}
+              userProfileImageUrl={
+                marketplaceBaseStore.applicationStore.config
+                  .marketplaceUserProfileImageUrl
+              }
+              applicationDirectoryUrl={
+                marketplaceBaseStore.applicationStore.config
+                  .lakehouseEntitlementsConfig?.applicationDirectoryUrl
+              }
               className="marketplace-lakehouse-entitlements__grid__user-display"
             />
           ) : (
@@ -300,14 +322,33 @@ export const EntitlementsClosedContractsDashbaord = observer(
         {selectedContract !== undefined && (
           <EntitlementsDataContractViewer
             open={true}
+            onClose={() => setSelectedContract(undefined)}
             currentViewer={
               new EntitlementsDataContractViewerState(
                 selectedContract,
+                marketplaceBaseStore.applicationStore,
                 marketplaceBaseStore.lakehouseContractServerClient,
               )
             }
-            legendMarketplaceStore={marketplaceBaseStore}
-            onClose={() => setSelectedContract(undefined)}
+            getContractTaskUrl={(taskId: string) =>
+              marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
+                generateLakehouseTaskPath(taskId),
+              )
+            }
+            getDataProductUrl={(dataProductId: string, deploymentId: number) =>
+              marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
+                generateLakehouseDataProductPath(dataProductId, deploymentId),
+              )
+            }
+            userConfig={{
+              userSearchService: marketplaceBaseStore.userSearchService,
+              userProfileImageUrl:
+                marketplaceBaseStore.applicationStore.config
+                  .marketplaceUserProfileImageUrl,
+              applicationDirectoryUrl:
+                marketplaceBaseStore.applicationStore.config
+                  .lakehouseEntitlementsConfig?.applicationDirectoryUrl,
+            }}
           />
         )}
       </Box>

@@ -47,9 +47,9 @@ import {
 } from '@finos/legend-graph';
 import React, { useState } from 'react';
 import {
+  type UserSearchService,
   guaranteeNonNullable,
   isType,
-  UserSearchService,
 } from '@finos/legend-shared';
 import { useAuth } from 'react-oidc-context';
 import {
@@ -67,6 +67,11 @@ import { flowResult } from 'mobx';
 import { UserRenderer } from '../../UserRenderer/UserRenderer.js';
 import type { GenericLegendApplicationStore } from '@finos/legend-application';
 import { MultiUserRenderer } from '../../UserRenderer/MultiUserRenderer.js';
+import type { DataProductGroupAccessState } from '../../../stores/DataProduct/DataProductDataAccessState.js';
+import {
+  getOrganizationalScopeTypeDetails,
+  getOrganizationalScopeTypeName,
+} from '../../../utils/LakehouseUtils.js';
 
 const LakehouseSubscriptionsCreateDialogContractRenderer = observer(
   (props: {
@@ -112,13 +117,13 @@ const LakehouseSubscriptionsCreateDialogContractRenderer = observer(
     } else {
       const typeDetails = getOrganizationalScopeTypeDetails(
         consumer,
-        marketplaceBaseStore.applicationStore.pluginManager.getApplicationPlugins(),
+        applicationStore.pluginManager.getApplicationPlugins(),
       );
       consumerComponent = (
         <Box className="marketplace-lakehouse-subscriptions__subscription-creator__contract-details__users__details">
           {getOrganizationalScopeTypeName(
             consumer,
-            marketplaceBaseStore.applicationStore.pluginManager.getApplicationPlugins(),
+            applicationStore.pluginManager.getApplicationPlugins(),
           )}
           {typeDetails !== undefined && (
             <Tooltip
@@ -209,12 +214,13 @@ const LakehouseSubscriptionsCreateDialog = observer(
     // TODO: Figure out better way to get the preferred list of snowflake accounts instead
     // of relying upon ingest environment URN
     const ingestEnvironmentUrn =
-      accessGroupState.accessState.viewerState.entitlementsDataProductDetails
-        .lakehouseEnvironment?.producerEnvironmentName;
+      accessGroupState.accessState.dataProductViewerState
+        .entitlementsDataProductDetails.lakehouseEnvironment
+        ?.producerEnvironmentName;
 
     const environmentDetails =
-      accessGroupState.accessState.viewerState.productViewerStore
-        .marketplaceBaseStore.lakehouseIngestEnvironmentDetails;
+      accessGroupState.accessState.dataProductViewerState.options
+        .lakehouseIngestEnvironmentDetails;
     const suggestedSnowflakeAccounts = Array.from(
       new Set(
         environmentDetails
@@ -313,9 +319,21 @@ const LakehouseSubscriptionsCreateDialog = observer(
                   <MenuItem key={_contract.guid} value={_contract.guid}>
                     <LakehouseSubscriptionsCreateDialogContractRenderer
                       contract={_contract}
-                      marketplaceBaseStore={
-                        accessGroupState.accessState.viewerState
-                          .productViewerStore.marketplaceBaseStore
+                      applicationStore={
+                        accessGroupState.accessState.dataProductViewerState
+                          .applicationStore
+                      }
+                      userSearchService={
+                        accessGroupState.accessState.dataProductViewerState
+                          .userSearchService
+                      }
+                      userProfileImageUrl={
+                        accessGroupState.accessState.dataProductViewerState
+                          .options.userProfileImageUrl
+                      }
+                      applicationDirectoryUrl={
+                        accessGroupState.accessState.dataProductViewerState
+                          .options.applicationDirectoryUrl
                       }
                     />
                   </MenuItem>
@@ -431,7 +449,6 @@ export const DataProductSubscriptionViewer = observer(
   }) => {
     const { open, accessGroupState, onClose } = props;
     const auth = useAuth();
-    const legendMarketplaceStore = useLegendMarketplaceBaseStore();
     const [showCreateDialog, setShowCreateDialog] = useState(false);
 
     const subscriptions = accessGroupState.subscriptions;
@@ -473,7 +490,10 @@ export const DataProductSubscriptionViewer = observer(
                   </span>{' '}
                   Access Point Group in{' '}
                   <span className="marketplace-lakehouse-text__emphasis">
-                    {accessGroupState.accessState.viewerState.product.name}
+                    {
+                      accessGroupState.accessState.dataProductViewerState
+                        .product.name
+                    }
                   </span>{' '}
                   Data Product
                 </div>
@@ -564,7 +584,24 @@ export const DataProductSubscriptionViewer = observer(
                           return (
                             <UserRenderer
                               userId={params.data?.createdBy}
-                              marketplaceStore={legendMarketplaceStore}
+                              applicationStore={
+                                accessGroupState.accessState
+                                  .dataProductViewerState.applicationStore
+                              }
+                              userSearchService={
+                                accessGroupState.accessState
+                                  .dataProductViewerState.userSearchService
+                              }
+                              userProfileImageUrl={
+                                accessGroupState.accessState
+                                  .dataProductViewerState.options
+                                  .userProfileImageUrl
+                              }
+                              applicationDirectoryUrl={
+                                accessGroupState.accessState
+                                  .dataProductViewerState.options
+                                  .applicationDirectoryUrl
+                              }
                             />
                           );
                         },

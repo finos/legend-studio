@@ -43,8 +43,6 @@ import {
 } from '@mui/material';
 import { useEffect, useMemo, useState, type ChangeEvent } from 'react';
 import type { EntitlementsDashboardState } from '../../../stores/lakehouse/entitlements/EntitlementsDashboardState.js';
-import { EntitlementsDataContractViewer } from '../../../../../legend-extension-dsl-data-product/src/components/DataContract/EntitlementsDataContractViewer.js';
-import { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
 import { useLegendMarketplaceBaseStore } from '../../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import {
   CubesLoadingIndicator,
@@ -54,13 +52,19 @@ import {
 import { flowResult } from 'mobx';
 import { useAuth } from 'react-oidc-context';
 import { observer } from 'mobx-react-lite';
-import { UserRenderer } from '../../../../../legend-extension-dsl-data-product/src/components/UserRenderer/UserRenderer.js';
 import type { LegendMarketplaceBaseStore } from '../../../stores/LegendMarketplaceBaseStore.js';
-import {
-  getOrganizationalScopeTypeDetails,
-  getOrganizationalScopeTypeName,
-} from '../../../stores/lakehouse/LakehouseUtils.js';
 import { startCase } from '@finos/legend-shared';
+import {
+  UserRenderer,
+  getOrganizationalScopeTypeName,
+  getOrganizationalScopeTypeDetails,
+  EntitlementsDataContractViewer,
+  EntitlementsDataContractViewerState,
+} from '@finos/legend-extension-dsl-data-product';
+import {
+  generateLakehouseTaskPath,
+  generateLakehouseDataProductPath,
+} from '../../../__lib__/LegendMarketplaceNavigation.js';
 
 const EntitlementsDashboardActionModal = (props: {
   open: boolean;
@@ -69,7 +73,7 @@ const EntitlementsDashboardActionModal = (props: {
   onClose: () => void;
   action: 'approve' | 'deny' | undefined;
   allContracts: V1_LiteDataContract[];
-  marketplaceStore: LegendMarketplaceBaseStore;
+  marketplaceBaseStore: LegendMarketplaceBaseStore;
 }) => {
   const {
     open,
@@ -78,7 +82,7 @@ const EntitlementsDashboardActionModal = (props: {
     onClose,
     action,
     allContracts,
-    marketplaceStore,
+    marketplaceBaseStore,
   } = props;
 
   const auth = useAuth();
@@ -169,7 +173,19 @@ const EntitlementsDashboardActionModal = (props: {
                     <div className="marketplace-lakehouse-entitlements__data-contract-approval__error__user">
                       <UserRenderer
                         userId={task.consumer}
-                        marketplaceStore={marketplaceStore}
+                        applicationStore={marketplaceBaseStore.applicationStore}
+                        userSearchService={
+                          marketplaceBaseStore.userSearchService
+                        }
+                        userProfileImageUrl={
+                          marketplaceBaseStore.applicationStore.config
+                            .marketplaceUserProfileImageUrl
+                        }
+                        applicationDirectoryUrl={
+                          marketplaceBaseStore.applicationStore.config
+                            .lakehouseEntitlementsConfig
+                            ?.applicationDirectoryUrl
+                        }
                       />
                     </div>{' '}
                     for {startCase(contract?.resourceType.toLowerCase())}{' '}
@@ -454,7 +470,16 @@ export const EntitlementsPendingTasksDashbaord = observer(
           return (
             <UserRenderer
               userId={params.data?.consumer}
-              marketplaceStore={marketplaceBaseStore}
+              applicationStore={marketplaceBaseStore.applicationStore}
+              userSearchService={marketplaceBaseStore.userSearchService}
+              userProfileImageUrl={
+                marketplaceBaseStore.applicationStore.config
+                  .marketplaceUserProfileImageUrl
+              }
+              applicationDirectoryUrl={
+                marketplaceBaseStore.applicationStore.config
+                  .lakehouseEntitlementsConfig?.applicationDirectoryUrl
+              }
               className="marketplace-lakehouse-entitlements__grid__user-display"
             />
           );
@@ -477,7 +502,16 @@ export const EntitlementsPendingTasksDashbaord = observer(
           return requester ? (
             <UserRenderer
               userId={requester}
-              marketplaceStore={marketplaceBaseStore}
+              applicationStore={marketplaceBaseStore.applicationStore}
+              userSearchService={marketplaceBaseStore.userSearchService}
+              userProfileImageUrl={
+                marketplaceBaseStore.applicationStore.config
+                  .marketplaceUserProfileImageUrl
+              }
+              applicationDirectoryUrl={
+                marketplaceBaseStore.applicationStore.config
+                  .lakehouseEntitlementsConfig?.applicationDirectoryUrl
+              }
               className="marketplace-lakehouse-entitlements__grid__user-display"
             />
           ) : (
@@ -717,20 +751,39 @@ export const EntitlementsPendingTasksDashbaord = observer(
           onClose={() => setSelectedAction(undefined)}
           action={selectedAction}
           allContracts={allContracts ?? []}
-          marketplaceStore={marketplaceBaseStore}
+          marketplaceBaseStore={marketplaceBaseStore}
         />
         {selectedContract !== undefined && (
           <EntitlementsDataContractViewer
             open={true}
+            onClose={() => setSelectedContract(undefined)}
             currentViewer={
               new EntitlementsDataContractViewerState(
                 selectedContract,
+                marketplaceBaseStore.applicationStore,
                 marketplaceBaseStore.lakehouseContractServerClient,
               )
             }
-            legendMarketplaceStore={marketplaceBaseStore}
-            onClose={() => setSelectedContract(undefined)}
-            initialSelectedUser={selectedContractTargetUser}
+            getContractTaskUrl={(taskId: string) =>
+              marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
+                generateLakehouseTaskPath(taskId),
+              )
+            }
+            getDataProductUrl={(dataProductId: string, deploymentId: number) =>
+              marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
+                generateLakehouseDataProductPath(dataProductId, deploymentId),
+              )
+            }
+            userConfig={{
+              userSearchService: marketplaceBaseStore.userSearchService,
+              userProfileImageUrl:
+                marketplaceBaseStore.applicationStore.config
+                  .marketplaceUserProfileImageUrl,
+              applicationDirectoryUrl:
+                marketplaceBaseStore.applicationStore.config
+                  .lakehouseEntitlementsConfig?.applicationDirectoryUrl,
+              initialSelectedUser: selectedContractTargetUser,
+            }}
           />
         )}
       </>

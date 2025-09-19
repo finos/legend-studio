@@ -21,9 +21,13 @@ import type { BaseProductCardState } from '../stores/lakehouse/dataProducts/Base
 import type {
   AccessPointGroupAccess,
   ContractConsumerTypeRendererConfig,
+  DataProductViewer_LegendApplicationPlugin_Extension,
 } from '@finos/legend-extension-dsl-data-product';
 
-export abstract class LegendMarketplaceApplicationPlugin extends LegendApplicationPlugin {
+export abstract class LegendMarketplaceApplicationPlugin
+  extends LegendApplicationPlugin
+  implements DataProductViewer_LegendApplicationPlugin_Extension
+{
   /**
    * This helps to better type-check for this empty abtract type
    * See https://github.com/finos/legend-studio/blob/master/docs/technical/typescript-usage.md#understand-typescript-structual-type-system

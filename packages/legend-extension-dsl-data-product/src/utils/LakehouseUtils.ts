@@ -20,7 +20,7 @@ import {
   V1_UnknownOrganizationalScopeType,
   type V1_OrganizationalScope,
 } from '@finos/legend-graph';
-import type { DataProductViewer_LegendApplicationPlugin_Extension } from '../components/DataProductViewer_LegendApplicationPlugin_Extension.js';
+import type { DataProductViewer_LegendApplicationPlugin_Extension } from '../stores/DataProductViewer_LegendApplicationPlugin_Extension.js';
 import { isNonNullable } from '@finos/legend-shared';
 
 export const getOrganizationalScopeTypeName = (

@@ -15,6 +15,7 @@
  */
 
 import {
+  type V1_EntitlementsDataProductDetails,
   type V1_EntitlementsDataProductDetailsResponse,
   CORE_PURE_PATH,
   V1_AppDirLevel,
@@ -22,41 +23,74 @@ import {
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-storage';
 
-export const mockEntitlementsSDLCDataProduct: V1_EntitlementsDataProductDetailsResponse =
+// export const mockEntitlementsSDLCDataProduct: V1_EntitlementsDataProductDetailsResponse =
+//   {
+//     dataProducts: [
+//       {
+//         id: 'MOCK_SDLC_DATAPRODUCT',
+//         deploymentId: 11111,
+//         title: 'Mock SDLC Data Product',
+//         description:
+//           'Comprehensive customer analytics data for business intelligence and reporting',
+//         origin: {
+//           type: 'SdlcDeployment',
+//           group: 'com.example.analytics',
+//           artifact: 'customer-analytics',
+//           version: '1.2.0',
+//         },
+//         lakehouseEnvironment: {
+//           producerEnvironmentName: 'production-analytics',
+//           type: V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
+//         },
+//         dataProduct: {
+//           name: 'MOCK_SDLC_DATAPRODUCT',
+//           accessPoints: [
+//             {
+//               name: 'customer_demographics',
+//               groups: ['GROUP1'],
+//             },
+//           ],
+//           accessPointGroupStereotypeMappings: [],
+//           owner: {
+//             appDirId: 12345,
+//             level: V1_AppDirLevel.DEPLOYMENT,
+//           },
+//         },
+//       },
+//     ],
+//   };
+
+export const mockEntitlementsSDLCDataProduct: V1_EntitlementsDataProductDetails =
   {
-    dataProducts: [
-      {
-        id: 'MOCK_SDLC_DATAPRODUCT',
-        deploymentId: 11111,
-        title: 'Mock SDLC Data Product',
-        description:
-          'Comprehensive customer analytics data for business intelligence and reporting',
-        origin: {
-          type: 'SdlcDeployment',
-          group: 'com.example.analytics',
-          artifact: 'customer-analytics',
-          version: '1.2.0',
+    id: 'MOCK_SDLC_DATAPRODUCT',
+    deploymentId: 11111,
+    title: 'Mock SDLC Data Product',
+    description:
+      'Comprehensive customer analytics data for business intelligence and reporting',
+    origin: {
+      type: 'SdlcDeployment',
+      group: 'com.example.analytics',
+      artifact: 'customer-analytics',
+      version: '1.2.0',
+    },
+    lakehouseEnvironment: {
+      producerEnvironmentName: 'production-analytics',
+      type: V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
+    },
+    dataProduct: {
+      name: 'MOCK_SDLC_DATAPRODUCT',
+      accessPoints: [
+        {
+          name: 'customer_demographics',
+          groups: ['GROUP1'],
         },
-        lakehouseEnvironment: {
-          producerEnvironmentName: 'production-analytics',
-          type: V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
-        },
-        dataProduct: {
-          name: 'MOCK_SDLC_DATAPRODUCT',
-          accessPoints: [
-            {
-              name: 'customer_demographics',
-              groups: ['GROUP1'],
-            },
-          ],
-          accessPointGroupStereotypeMappings: [],
-          owner: {
-            appDirId: 12345,
-            level: V1_AppDirLevel.DEPLOYMENT,
-          },
-        },
+      ],
+      accessPointGroupStereotypeMappings: [],
+      owner: {
+        appDirId: 12345,
+        level: V1_AppDirLevel.DEPLOYMENT,
       },
-    ],
+    },
   };
 
 export const mockSDLCDataProductEntitiesResponse: {

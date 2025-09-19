@@ -28,20 +28,26 @@ import {
   type PlainObject,
 } from '@finos/legend-shared';
 import { action, flow, makeObservable, observable } from 'mobx';
-import type { DataProductViewerState } from './DataProductViewerState.js';
+import type { GenericLegendApplicationStore } from '@finos/legend-application';
+import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
 
 export class EntitlementsDataContractViewerState {
   readonly value: V1_LiteDataContract;
-  readonly dataProductViewerState: DataProductViewerState;
+  readonly applicationStore: GenericLegendApplicationStore;
+  readonly lakehouseContractServerClient:
+    | LakehouseContractServerClient
+    | undefined;
   associatedTasks: V1_TaskMetadata[] | undefined;
   initializationState = ActionState.create();
 
   constructor(
     dataContract: V1_LiteDataContract,
-    dataProductViewerState: DataProductViewerState,
+    applicationStore: GenericLegendApplicationStore,
+    lakehouseContractServerClient: LakehouseContractServerClient | undefined,
   ) {
     this.value = V1_observe_LiteDataContract(dataContract);
-    this.dataProductViewerState = dataProductViewerState;
+    this.applicationStore = applicationStore;
+    this.lakehouseContractServerClient = lakehouseContractServerClient;
     makeObservable(this, {
       value: observable,
       associatedTasks: observable,
@@ -55,8 +61,8 @@ export class EntitlementsDataContractViewerState {
   }
 
   *init(token: string | undefined): GeneratorFn<void> {
-    if (!this.dataProductViewerState.lakehouseContractServerClient) {
-      this.dataProductViewerState.applicationStore.notificationService.notifyWarning(
+    if (!this.lakehouseContractServerClient) {
+      this.applicationStore.notificationService.notifyWarning(
         'Cannot initialize data contract viewer: lakehouse contract server client not configured',
       );
       return;
@@ -66,7 +72,7 @@ export class EntitlementsDataContractViewerState {
       this.initializationState.inProgress();
       this.setAssociatedTasks(undefined);
       const pendingTasks =
-        (yield this.dataProductViewerState.lakehouseContractServerClient.getContractTasks(
+        (yield this.lakehouseContractServerClient.getContractTasks(
           this.value.guid,
           token,
         )) as PlainObject<V1_TaskResponse>;

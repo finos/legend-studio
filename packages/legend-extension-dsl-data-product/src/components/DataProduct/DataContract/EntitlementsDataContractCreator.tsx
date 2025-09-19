@@ -40,7 +40,7 @@ import {
 } from '@finos/legend-shared';
 import { type DataProductGroupAccessState } from '../../../stores/DataProduct/DataProductDataAccessState.js';
 import type { GenericLegendApplicationStore } from '@finos/legend-application';
-import type { ContractConsumerTypeRendererConfig } from '../../../index.js';
+import type { ContractConsumerTypeRendererConfig } from '../../../stores/DataProduct/DataProductViewerState.js';
 
 export const EntitlementsDataContractCreator = observer(
   (props: {

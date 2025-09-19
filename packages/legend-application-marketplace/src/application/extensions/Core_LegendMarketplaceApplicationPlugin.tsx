@@ -14,28 +14,29 @@
  * limitations under the License.
  */
 
-import { type LegendApplicationSetup } from '@finos/legend-application';
+import {
+  type GenericLegendApplicationStore,
+  type LegendApplicationSetup,
+} from '@finos/legend-application';
 import { setupPureLanguageService } from '@finos/legend-code-editor';
 import { configureCodeEditorComponent } from '@finos/legend-lego/code-editor';
-import {
-  V1_AdhocTeam,
-  V1_User,
-  V1_UserType,
-  type V1_OrganizationalScope,
-} from '@finos/legend-graph';
 import packageJson from '../../../package.json' with { type: 'json' };
 import { LegendMarketplaceApplicationPlugin } from '../LegendMarketplaceApplicationPlugin.js';
 import { UserSearchInput } from '@finos/legend-art';
-import React, { useEffect, useState, type ChangeEvent } from 'react';
-import { type UserSearchService, LegendUser } from '@finos/legend-shared';
-import { TextField } from '@mui/material';
 import {
-  AccessPointGroupAccess,
   type ContractConsumerTypeRendererConfig,
   type DataProductGroupAccessState,
-  type DataProductViewer_LegendApplicationPlugin_Extension,
-  type ProductViewerLegendApplicationStore,
+  AccessPointGroupAccess,
 } from '@finos/legend-extension-dsl-data-product';
+import {
+  type V1_OrganizationalScope,
+  V1_AdhocTeam,
+  V1_User,
+  V1_UserType,
+} from '@finos/legend-graph';
+import { type UserSearchService, LegendUser } from '@finos/legend-shared';
+import { TextField } from '@mui/material';
+import { useEffect, useState, type ChangeEvent } from 'react';
 
 export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceApplicationPlugin {
   static NAME = packageJson.extensions.applicationMarketplacePlugin;
@@ -53,7 +54,7 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
     ];
   }
 
-  getContractConsumerTypeRendererConfigs(): ContractConsumerTypeRendererConfig[] {
+  override getContractConsumerTypeRendererConfigs(): ContractConsumerTypeRendererConfig[] {
     const buildAdhocUser = (
       userName: string,
       type?: V1_UserType,
@@ -69,7 +70,7 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
     const CommonRenderer = (props: {
       type: 'user' | 'system-account';
       label: string;
-      applicationStore: ProductViewerLegendApplicationStore;
+      applicationStore: GenericLegendApplicationStore;
       userSearchService: UserSearchService | undefined;
       accessGroupState: DataProductGroupAccessState;
       handleOrganizationalScopeChange: (
@@ -183,7 +184,7 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
       {
         type: 'User',
         createContractRenderer: (
-          applicationStore: ProductViewerLegendApplicationStore,
+          applicationStore: GenericLegendApplicationStore,
           userSearchService: UserSearchService | undefined,
           accessGroupState: DataProductGroupAccessState,
           handleOrganizationalScopeChange: (
@@ -210,7 +211,7 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
         type: 'System Account',
         enableForEnterpriseAPGs: true,
         createContractRenderer: (
-          applicationStore: ProductViewerLegendApplicationStore,
+          applicationStore: GenericLegendApplicationStore,
           userSearchService: UserSearchService | undefined,
           accessGroupState: DataProductGroupAccessState,
           handleOrganizationalScopeChange: (

@@ -99,6 +99,7 @@ import {
 import { EntitlementsDataContractViewerState } from '../../stores/DataProduct/EntitlementsDataContractViewerState.js';
 import { EntitlementsDataContractCreator } from './DataContract/EntitlementsDataContractCreator.js';
 import { EntitlementsDataContractViewer } from './DataContract/EntitlementsDataContractViewer.js';
+import { DataProductSubscriptionViewer } from './Subscriptions/DataProductSubscriptionsViewer.js';
 
 const MAX_GRID_AUTO_HEIGHT_ROWS = 10; // Maximum number of rows to show before switching to normal height (scrollable grid)
 
@@ -394,12 +395,12 @@ export const DataProductAccessPointGroupViewer = observer(
             V1_transformDataContractToLiteDatacontract(
               accessGroupState.accessState.dataProductViewerState.dataContract,
             ),
+            accessGroupState.accessState.dataProductViewerState.applicationStore,
             accessGroupState.accessState.dataProductViewerState.lakehouseContractServerClient,
           )
         : undefined;
     }, [
-      accessGroupState.accessState.dataProductViewerState.applicationStore
-        .notificationService,
+      accessGroupState.accessState.dataProductViewerState.applicationStore,
       accessGroupState.accessState.dataProductViewerState.dataContract,
       accessGroupState.accessState.dataProductViewerState
         .lakehouseContractServerClient,
@@ -668,29 +669,44 @@ export const DataProductAccessPointGroupViewer = observer(
             }
             userSearchService={
               accessGroupState.accessState.dataProductViewerState
-                .applicationStore
+                .userSearchService
             }
             accessGroupState={accessGroupState}
+            token={auth.user?.access_token}
           />
         )}
         {entitlementsDataContractViewerState && (
           <EntitlementsDataContractViewer
             open={true}
-            currentViewer={entitlementsDataContractViewerState}
-            dataProductGroupAccessState={accessGroupState}
-            legendMarketplaceStore={
-              accessGroupState.accessState.dataProductViewerState
-                .productViewerStore.marketplaceBaseStore
-            }
             onClose={() =>
               accessGroupState.accessState.dataProductViewerState.setDataContract(
                 undefined,
               )
             }
-            initialSelectedUser={
+            currentViewer={entitlementsDataContractViewerState}
+            dataProductGroupAccessState={accessGroupState}
+            getContractTaskUrl={
               accessGroupState.accessState.dataProductViewerState
-                .applicationStore.identityService.currentUser
+                .getContractTaskUrl
             }
+            getDataProductUrl={
+              accessGroupState.accessState.dataProductViewerState
+                .getDataProductUrl
+            }
+            userConfig={{
+              userSearchService:
+                accessGroupState.accessState.dataProductViewerState
+                  .userSearchService,
+              userProfileImageUrl:
+                accessGroupState.accessState.dataProductViewerState.options
+                  .userProfileImageUrl,
+              applicationDirectoryUrl:
+                accessGroupState.accessState.dataProductViewerState.options
+                  .applicationDirectoryUrl,
+              initialSelectedUser:
+                accessGroupState.accessState.dataProductViewerState
+                  .applicationStore.identityService.currentUser,
+            }}
           />
         )}
         {accessGroupState.associatedContract !== false && (

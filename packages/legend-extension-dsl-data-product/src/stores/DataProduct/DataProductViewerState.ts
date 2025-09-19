@@ -26,7 +26,9 @@ import {
   type V1_DataContract,
   type V1_DataContractsResponse,
   type V1_DataProduct,
+  type V1_EngineServerClient,
   type V1_EntitlementsDataProductDetails,
+  type V1_IngestEnvironment,
   type V1_OrganizationalScope,
   V1_AdhocTeam,
   V1_AppDirLevel,
@@ -38,8 +40,8 @@ import {
 } from '@finos/legend-graph';
 import { action, flow, observable, makeObservable } from 'mobx';
 import {
+  type DataProductGroupAccessState,
   DataProductDataAccessState,
-  DataProductGroupAccessState,
 } from './DataProductDataAccessState.js';
 import {
   type UserSearchService,
@@ -54,19 +56,39 @@ import { DataProductLayoutState } from '../BaseLayoutState.js';
 import { DATA_PRODUCT_VIEWER_SECTION } from '../ProductViewerNavigation.js';
 import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
 import { dataContractContainsDataProduct } from '../../utils/DataContractUtils.js';
-import type { ContractConsumerTypeRendererConfig } from '../../components/DataProduct/DataContract/EntitlementsDataContractCreator.js';
 
 export type DataProductViewerStateOptions = {
   userSearchService?: UserSearchService | undefined;
   dataProductConfig?: DataProductConfig | undefined;
   userProfileImageUrl?: string | undefined;
   applicationDirectoryUrl?: string | undefined;
+  lakehouseIngestEnvironmentDetails: V1_IngestEnvironment[];
+};
+
+export type ContractConsumerTypeRendererConfig = {
+  type: string;
+  createContractRenderer: (
+    applicationStore: GenericLegendApplicationStore,
+    userSearchService: UserSearchService | undefined,
+    accessGroupState: DataProductGroupAccessState,
+    handleOrganizationalScopeChange: (consumer: V1_OrganizationalScope) => void,
+    handleDescriptionChange: (description: string | undefined) => void,
+    handleIsValidChange: (isValid: boolean) => void,
+  ) => React.ReactNode;
+  organizationalScopeTypeName?: (
+    consumer: V1_OrganizationalScope,
+  ) => string | undefined;
+  organizationalScopeTypeDetailsRenderer?: (
+    consumer: V1_OrganizationalScope,
+  ) => React.ReactNode | undefined;
+  enableForEnterpriseAPGs?: boolean;
 };
 
 export class DataProductViewerState extends BaseViewerState<
   V1_DataProduct,
   DataProductLayoutState
 > {
+  readonly engineServerClient: V1_EngineServerClient;
   readonly lakehouseContractServerClient:
     | LakehouseContractServerClient
     | undefined;
@@ -94,6 +116,7 @@ export class DataProductViewerState extends BaseViewerState<
 
   constructor(
     applicationStore: GenericLegendApplicationStore,
+    engineServerClient: V1_EngineServerClient,
     graphManagerState: GraphManagerState,
     product: V1_DataProduct,
     entitlementsDataProductDetails: V1_EntitlementsDataProductDetails,
@@ -127,6 +150,7 @@ export class DataProductViewerState extends BaseViewerState<
       createContract: flow,
     });
 
+    this.engineServerClient = engineServerClient;
     this.graphManagerState = graphManagerState;
     this.lakehouseContractServerClient = lakehouseContractServerClient;
     this.entitlementsDataProductDetails = entitlementsDataProductDetails;

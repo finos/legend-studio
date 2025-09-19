@@ -27,9 +27,15 @@ import { Box } from '@mui/material';
 import { type V1_LiteDataContract } from '@finos/legend-graph';
 import type { LakehouseAdminStore } from '../../../stores/lakehouse/admin/LakehouseAdminStore.js';
 import { useState } from 'react';
-import { EntitlementsDataContractViewer } from '../../../../../legend-extension-dsl-data-product/src/components/DataContract/EntitlementsDataContractViewer.js';
-import { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
 import { useLegendMarketplaceBaseStore } from '../../../application/providers/LegendMarketplaceFrameworkProvider.js';
+import {
+  EntitlementsDataContractViewer,
+  EntitlementsDataContractViewerState,
+} from '@finos/legend-extension-dsl-data-product';
+import {
+  generateLakehouseDataProductPath,
+  generateLakehouseTaskPath,
+} from '../../../__lib__/LegendMarketplaceNavigation.js';
 
 export const LakehouseAdminContractsDashboard = observer(
   (props: { adminStore: LakehouseAdminStore }) => {
@@ -122,14 +128,33 @@ export const LakehouseAdminContractsDashboard = observer(
         {selectedContract !== undefined && (
           <EntitlementsDataContractViewer
             open={true}
+            onClose={() => setSelectedContract(undefined)}
             currentViewer={
               new EntitlementsDataContractViewerState(
                 selectedContract,
+                adminStore.applicationStore,
                 adminStore.lakehouseContractServerClient,
               )
             }
-            legendMarketplaceStore={legendMarketplaceBaseStore}
-            onClose={() => setSelectedContract(undefined)}
+            getContractTaskUrl={(taskId: string) =>
+              adminStore.applicationStore.navigationService.navigator.generateAddress(
+                generateLakehouseTaskPath(taskId),
+              )
+            }
+            getDataProductUrl={(dataProductId: string, deploymentId: number) =>
+              adminStore.applicationStore.navigationService.navigator.generateAddress(
+                generateLakehouseDataProductPath(dataProductId, deploymentId),
+              )
+            }
+            userConfig={{
+              userSearchService: legendMarketplaceBaseStore.userSearchService,
+              userProfileImageUrl:
+                legendMarketplaceBaseStore.applicationStore.config
+                  .marketplaceUserProfileImageUrl,
+              applicationDirectoryUrl:
+                legendMarketplaceBaseStore.applicationStore.config
+                  .lakehouseEntitlementsConfig?.applicationDirectoryUrl,
+            }}
           />
         )}
       </>

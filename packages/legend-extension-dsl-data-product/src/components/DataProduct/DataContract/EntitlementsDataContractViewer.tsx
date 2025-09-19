@@ -190,26 +190,32 @@ const TaskApprovalView = (props: {
 export const EntitlementsDataContractViewer = observer(
   (props: {
     open: boolean;
-    currentViewer: EntitlementsDataContractViewerState;
-    applicationStore: GenericLegendApplicationStore;
-    userSearchService?: UserSearchService | undefined;
-    userProfileImageUrl?: string | undefined;
-    applicationDirectoryUrl?: string | undefined;
-    dataProductGroupAccessState?: DataProductGroupAccessState | undefined;
     onClose: () => void;
-    initialSelectedUser?: string | undefined;
+    currentViewer: EntitlementsDataContractViewerState;
+    getContractTaskUrl: (taskId: string) => string;
+    getDataProductUrl: (dataProductId: string, deploymentId: number) => string;
+    dataProductGroupAccessState?: DataProductGroupAccessState | undefined;
+    userConfig: {
+      userSearchService?: UserSearchService | undefined;
+      userProfileImageUrl?: string | undefined;
+      applicationDirectoryUrl?: string | undefined;
+      initialSelectedUser?: string | undefined;
+    };
   }) => {
     const {
       open,
       currentViewer,
-      applicationStore,
+      getContractTaskUrl,
+      getDataProductUrl,
+      dataProductGroupAccessState,
+      onClose,
+    } = props;
+    const {
       userSearchService,
       userProfileImageUrl,
       applicationDirectoryUrl,
-      dataProductGroupAccessState,
-      onClose,
       initialSelectedUser,
-    } = props;
+    } = props.userConfig;
     const auth = useAuth();
     const consumer = currentViewer.value.consumer;
 
@@ -249,7 +255,7 @@ export const EntitlementsDataContractViewer = observer(
           <MenuItem key={user} value={user}>
             <UserRenderer
               userId={user}
-              applicationStore={applicationStore}
+              applicationStore={currentViewer.applicationStore}
               userSearchService={userSearchService}
               userProfileImageUrl={userProfileImageUrl}
               disableOnClick={true}
@@ -258,7 +264,7 @@ export const EntitlementsDataContractViewer = observer(
           </MenuItem>
         )),
       [
-        applicationStore,
+        currentViewer.applicationStore,
         finishedLoadingUserCallback,
         targetUsers,
         userProfileImageUrl,
@@ -275,10 +281,10 @@ export const EntitlementsDataContractViewer = observer(
       if (!currentViewer.initializationState.hasCompleted) {
         setIsLoading(true);
         flowResult(currentViewer.init(auth.user?.access_token))
-          .catch(applicationStore.alertUnhandledError)
+          .catch(currentViewer.applicationStore.alertUnhandledError)
           .finally(() => setIsLoading(false));
       }
-    }, [currentViewer, applicationStore, auth.user?.access_token]);
+    }, [currentViewer, auth.user?.access_token]);
 
     useEffect(() => {
       if (selectedTargetUser === undefined) {
@@ -336,16 +342,16 @@ export const EntitlementsDataContractViewer = observer(
       dataOwnerApprovalTask?.rec.status === V1_UserApprovalStatus.PENDING;
 
     const copyTaskLink = (text: string): void => {
-      applicationStore.clipboardService
+      currentViewer.applicationStore.clipboardService
         .copyTextToClipboard(text)
         .then(() =>
-          applicationStore.notificationService.notifySuccess(
+          currentViewer.applicationStore.notificationService.notifySuccess(
             'Task Link Copied to Clipboard',
             undefined,
             2500,
           ),
         )
-        .catch(applicationStore.alertUnhandledError);
+        .catch(currentViewer.applicationStore.alertUnhandledError);
     };
 
     const steps: {
@@ -363,7 +369,7 @@ export const EntitlementsDataContractViewer = observer(
           V1_UserApprovalStatus.PENDING ? (
             <>
               <Link
-                href={currentViewer.dataProductViewerState.getContractTaskUrl(
+                href={getContractTaskUrl(
                   privilegeManagerApprovalTask.rec.taskId,
                 )}
                 target="_blank"
@@ -374,9 +380,7 @@ export const EntitlementsDataContractViewer = observer(
               <IconButton
                 onClick={() =>
                   copyTaskLink(
-                    currentViewer.dataProductViewerState.getContractTaskUrl(
-                      privilegeManagerApprovalTask.rec.taskId,
-                    ),
+                    getContractTaskUrl(privilegeManagerApprovalTask.rec.taskId),
                   )
                 }
               >
@@ -392,7 +396,7 @@ export const EntitlementsDataContractViewer = observer(
           V1_UserApprovalStatus.PENDING ? (
             <AssigneesList
               userIds={privilegeManagerApprovalTask.assignees}
-              applicationStore={applicationStore}
+              applicationStore={currentViewer.applicationStore}
               userSearchService={userSearchService}
               userProfileImageUrl={userProfileImageUrl}
               applicationDirectoryUrl={applicationDirectoryUrl}
@@ -400,7 +404,7 @@ export const EntitlementsDataContractViewer = observer(
           ) : (
             <TaskApprovalView
               task={privilegeManagerApprovalTask}
-              applicationStore={applicationStore}
+              applicationStore={currentViewer.applicationStore}
               userSearchService={userSearchService}
               userProfileImageUrl={userProfileImageUrl}
               applicationDirectoryUrl={applicationDirectoryUrl}
@@ -419,9 +423,7 @@ export const EntitlementsDataContractViewer = observer(
           V1_UserApprovalStatus.PENDING ? (
             <>
               <Link
-                href={currentViewer.dataProductViewerState.getContractTaskUrl(
-                  dataOwnerApprovalTask.rec.taskId,
-                )}
+                href={getContractTaskUrl(dataOwnerApprovalTask.rec.taskId)}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -430,9 +432,7 @@ export const EntitlementsDataContractViewer = observer(
               <IconButton
                 onClick={() =>
                   copyTaskLink(
-                    currentViewer.dataProductViewerState.getContractTaskUrl(
-                      dataOwnerApprovalTask.rec.taskId,
-                    ),
+                    getContractTaskUrl(dataOwnerApprovalTask.rec.taskId),
                   )
                 }
               >
@@ -448,7 +448,7 @@ export const EntitlementsDataContractViewer = observer(
           V1_UserApprovalStatus.PENDING ? (
             <AssigneesList
               userIds={dataOwnerApprovalTask.assignees}
-              applicationStore={applicationStore}
+              applicationStore={currentViewer.applicationStore}
               userSearchService={userSearchService}
               userProfileImageUrl={userProfileImageUrl}
               applicationDirectoryUrl={applicationDirectoryUrl}
@@ -456,7 +456,7 @@ export const EntitlementsDataContractViewer = observer(
           ) : dataOwnerApprovalTask !== undefined ? (
             <TaskApprovalView
               task={dataOwnerApprovalTask}
-              applicationStore={applicationStore}
+              applicationStore={currentViewer.applicationStore}
               userSearchService={userSearchService}
               userProfileImageUrl={userProfileImageUrl}
               applicationDirectoryUrl={applicationDirectoryUrl}
@@ -498,7 +498,7 @@ export const EntitlementsDataContractViewer = observer(
                 Access Point Group in{' '}
                 <Link
                   className="marketplace-lakehouse-text__emphasis"
-                  href={currentViewer.dataProductViewerState.getDataProductUrl(
+                  href={getDataProductUrl(
                     dataProduct,
                     currentViewer.value.deploymentId,
                   )}
@@ -514,7 +514,7 @@ export const EntitlementsDataContractViewer = observer(
                   <b>Ordered By: </b>
                   <UserRenderer
                     userId={currentViewer.value.createdBy}
-                    applicationStore={applicationStore}
+                    applicationStore={currentViewer.applicationStore}
                     userSearchService={userSearchService}
                     userProfileImageUrl={userProfileImageUrl}
                     applicationDirectoryUrl={applicationDirectoryUrl}
@@ -530,11 +530,11 @@ export const EntitlementsDataContractViewer = observer(
                           Contract consumer type:{' '}
                           {getOrganizationalScopeTypeName(
                             consumer,
-                            currentViewer.dataProductViewerState.applicationStore.pluginManager.getApplicationPlugins(),
+                            currentViewer.applicationStore.pluginManager.getApplicationPlugins(),
                           )}
                           {getOrganizationalScopeTypeDetails(
                             consumer,
-                            currentViewer.dataProductViewerState.applicationStore.pluginManager.getApplicationPlugins(),
+                            currentViewer.applicationStore.pluginManager.getApplicationPlugins(),
                           )}
                         </>
                       }
@@ -548,7 +548,7 @@ export const EntitlementsDataContractViewer = observer(
                       <UserRenderer
                         key={targetUsers[0]}
                         userId={targetUsers[0]}
-                        applicationStore={applicationStore}
+                        applicationStore={currentViewer.applicationStore}
                         userSearchService={userSearchService}
                         userProfileImageUrl={userProfileImageUrl}
                         applicationDirectoryUrl={applicationDirectoryUrl}

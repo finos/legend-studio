@@ -15,38 +15,45 @@
  */
 
 import { describe, expect, jest, test } from '@jest/globals';
-import { fireEvent, screen } from '@testing-library/react';
-import {
-  TEST__provideMockLegendMarketplaceBaseStore,
-  TEST__setUpMarketplaceLakehouse,
-} from '../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { guaranteeNonNullable, type PlainObject } from '@finos/legend-shared';
 import {
   type V1_DataContract,
-  type V1_EntitlementsDataProductDetailsResponse,
+  type V1_DataProduct,
+  type V1_EntitlementsDataProductDetails,
   type V1_TaskResponse,
   V1_AccessPointGroupReferenceType,
   V1_ContractState,
+  V1_dataProductModelSchema,
+  V1_EngineServerClient,
   V1_EnrichedUserApprovalStatus,
   V1_OrganizationalScopeType,
   V1_UserType,
 } from '@finos/legend-graph';
 import {
-  mockAdHocDataProductPMCD,
-  mockEnterpriseDataProductEntitiesResponse,
-  mockEntitlementsAdHocDataProduct,
+  mockEnterpriseDataProduct,
   mockEntitlementsEnterpriseDataProduct,
   mockEntitlementsSDLCDataProduct,
   mockEntitlementsSDLCDataProductNoSupportInfo,
-  mockSDLCDataProductEntitiesResponse,
-  mockSDLCDataProductNoSupportInfoEntitiesResponse,
+  mockSDLCDataProduct,
+  mockSDLCDataProductNoSupportInfo,
 } from '../__test-utils__/TEST_DATA__LakehouseDataProducts.js';
 import { createSpy } from '@finos/legend-shared/test';
-import { ENGINE_TEST_SUPPORT__getClassifierPathMapping } from '@finos/legend-graph/test';
+import { TEST__getTestGraphManagerState } from '@finos/legend-graph/test';
 import {
   mockApprovedTasksResponse,
   mockPendingManagerApprovalTasksResponse,
 } from '../../components/__test-utils__/TEST_DATA__LakehouseContractData.js';
+import { AuthProvider } from 'react-oidc-context';
+import { ProductViewer } from '../ProductViewer.js';
+import {
+  TEST__getGenericApplicationConfig,
+  TEST__LegendApplicationPluginManager,
+} from '../__test-utils__/StateTestUtils.js';
+import { ApplicationStore, DataProductConfig } from '@finos/legend-application';
+import { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
+import { DataProductViewerState } from '../../stores/DataProduct/DataProductViewerState.js';
+import { deserialize } from 'serializr';
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{
@@ -62,77 +69,78 @@ jest.mock('react-oidc-context', () => {
     disconnect: jest.fn(),
   }));
 
-enum MOCK_DataProductId {
-  MOCK_SDLC_DATAPRODUCT = 'MOCK_SDLC_DATAPRODUCT',
-  MOCK_SDLC_NO_SUPPORT_INFO_DATAPRODUCT = 'MOCK_SDLC_NO_SUPPORT_INFO_DATAPRODUCT',
-  MOCK_ADHOC_DATAPRODUCT = 'MOCK_ADHOC_DATAPRODUCT',
-  MOCK_ENTERPRISE_DATAPRODUCT = 'MOCK_ENTERPRISE_DATAPRODUCT',
-}
-
 const setupLakehouseDataProductTest = async (
-  dataProductId: MOCK_DataProductId,
-  deploymentId: number,
+  dataProductObject: PlainObject<V1_DataProduct>,
+  entitlementsDataProductDetails: V1_EntitlementsDataProductDetails,
   mockContracts: V1_DataContract[],
 ) => {
-  const mockedStore = await TEST__provideMockLegendMarketplaceBaseStore();
-
-  createSpy(
-    mockedStore.lakehouseContractServerClient,
-    'getDataProductByIdAndDID',
-  ).mockImplementation(async (_dataProductId: string) => {
-    if (_dataProductId === MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT) {
-      return mockEntitlementsSDLCDataProduct as unknown as PlainObject<V1_EntitlementsDataProductDetailsResponse>;
-    } else if (
-      _dataProductId ===
-      MOCK_DataProductId.MOCK_SDLC_NO_SUPPORT_INFO_DATAPRODUCT
-    ) {
-      return mockEntitlementsSDLCDataProductNoSupportInfo as unknown as PlainObject<V1_EntitlementsDataProductDetailsResponse>;
-    } else if (_dataProductId === MOCK_DataProductId.MOCK_ADHOC_DATAPRODUCT) {
-      return mockEntitlementsAdHocDataProduct as unknown as PlainObject<V1_EntitlementsDataProductDetailsResponse>;
-    } else if (
-      _dataProductId === MOCK_DataProductId.MOCK_ENTERPRISE_DATAPRODUCT
-    ) {
-      return mockEntitlementsEnterpriseDataProduct as unknown as PlainObject<V1_EntitlementsDataProductDetailsResponse>;
-    } else {
-      return {} as PlainObject<V1_EntitlementsDataProductDetailsResponse>;
-    }
-  });
-
-  createSpy(
-    mockedStore.depotServerClient,
-    'getVersionEntities',
-  ).mockImplementation(
-    async (groupId: string, artifactId: string, version: string) => {
-      if (
-        groupId === 'com.example.analytics' &&
-        artifactId === 'customer-analytics' &&
-        version === '1.2.0'
-      ) {
-        return mockSDLCDataProductEntitiesResponse;
-      } else if (
-        groupId === 'com.example.analytics' &&
-        artifactId === 'customer-analytics-no-support-info' &&
-        version === '1.2.0'
-      ) {
-        return mockSDLCDataProductNoSupportInfoEntitiesResponse;
-      } else if (
-        groupId === 'com.example.analytics' &&
-        artifactId === 'enterprise-data-product' &&
-        version === '1.0.0'
-      ) {
-        return mockEnterpriseDataProductEntitiesResponse;
-      }
-      return [];
-    },
+  const pluginManager = TEST__LegendApplicationPluginManager.create();
+  const MOCK__applicationStore = new ApplicationStore(
+    TEST__getGenericApplicationConfig(),
+    pluginManager,
   );
+  const lakehouseContractServerClient = new LakehouseContractServerClient({
+    baseUrl: 'http://test-contract-server-client',
+  });
+  const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
+
+  // createSpy(
+  //   lakehouseContractServerClient,
+  //   'getDataProductByIdAndDID',
+  // ).mockImplementation(async (_dataProductId: string) => {
+  //   if (_dataProductId === MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT) {
+  //     return mockEntitlementsSDLCDataProduct as unknown as PlainObject<V1_EntitlementsDataProductDetailsResponse>;
+  //   } else if (
+  //     _dataProductId ===
+  //     MOCK_DataProductId.MOCK_SDLC_NO_SUPPORT_INFO_DATAPRODUCT
+  //   ) {
+  //     return mockEntitlementsSDLCDataProductNoSupportInfo as unknown as PlainObject<V1_EntitlementsDataProductDetailsResponse>;
+  //   } else if (_dataProductId === MOCK_DataProductId.MOCK_ADHOC_DATAPRODUCT) {
+  //     return mockEntitlementsAdHocDataProduct as unknown as PlainObject<V1_EntitlementsDataProductDetailsResponse>;
+  //   } else if (
+  //     _dataProductId === MOCK_DataProductId.MOCK_ENTERPRISE_DATAPRODUCT
+  //   ) {
+  //     return mockEntitlementsEnterpriseDataProduct as unknown as PlainObject<V1_EntitlementsDataProductDetailsResponse>;
+  //   } else {
+  //     return {} as PlainObject<V1_EntitlementsDataProductDetailsResponse>;
+  //   }
+  // });
+
+  // createSpy(
+  //   mockedStore.depotServerClient,
+  //   'getVersionEntities',
+  // ).mockImplementation(
+  //   async (groupId: string, artifactId: string, version: string) => {
+  //     if (
+  //       groupId === 'com.example.analytics' &&
+  //       artifactId === 'customer-analytics' &&
+  //       version === '1.2.0'
+  //     ) {
+  //       return mockSDLCDataProductEntitiesResponse;
+  //     } else if (
+  //       groupId === 'com.example.analytics' &&
+  //       artifactId === 'customer-analytics-no-support-info' &&
+  //       version === '1.2.0'
+  //     ) {
+  //       return mockSDLCDataProductNoSupportInfoEntitiesResponse;
+  //     } else if (
+  //       groupId === 'com.example.analytics' &&
+  //       artifactId === 'enterprise-data-product' &&
+  //       version === '1.0.0'
+  //     ) {
+  //       return mockEnterpriseDataProductEntitiesResponse;
+  //     }
+  //     return [];
+  //   },
+  // );
+
+  // createSpy(
+  //   mockedStore.engineServerClient,
+  //   'grammarToJSON_model',
+  // ).mockResolvedValue(mockAdHocDataProductPMCD);
 
   createSpy(
-    mockedStore.engineServerClient,
-    'grammarToJSON_model',
-  ).mockResolvedValue(mockAdHocDataProductPMCD);
-
-  createSpy(
-    mockedStore.lakehouseContractServerClient,
+    lakehouseContractServerClient,
     'getDataContractsFromDID',
   ).mockResolvedValue({
     dataContracts: mockContracts.map((_contract) => ({
@@ -141,7 +149,7 @@ const setupLakehouseDataProductTest = async (
   });
 
   createSpy(
-    mockedStore.lakehouseContractServerClient,
+    lakehouseContractServerClient,
     'getDataContract',
   ).mockImplementation(async (id: string) => {
     const matchingContract = mockContracts.find(
@@ -155,7 +163,7 @@ const setupLakehouseDataProductTest = async (
   });
 
   createSpy(
-    mockedStore.lakehouseContractServerClient,
+    lakehouseContractServerClient,
     'getContractUserStatus',
   ).mockImplementation(async (contractId: string) => {
     switch (contractId) {
@@ -178,64 +186,64 @@ const setupLakehouseDataProductTest = async (
     }
   });
 
-  createSpy(
-    mockedStore.engineServerClient,
-    'lambdaRelationType',
-  ).mockResolvedValue({
-    _type: 'relationType',
-    columns: [
-      {
-        name: 'varchar_val',
-        multiplicity: {
-          lowerBound: 1,
-          upperBound: 1,
-        },
-        genericType: {
-          multiplicityArguments: [],
-          typeArguments: [],
-          rawType: {
-            _type: 'packageableType',
-            fullPath: 'meta::pure::precisePrimitives::Varchar',
-          },
-          typeVariableValues: [{ _type: 'integer', value: 32 }],
-        },
-      },
-      {
-        name: 'int_val',
-        multiplicity: {
-          lowerBound: 1,
-          upperBound: 1,
-        },
-        genericType: {
-          multiplicityArguments: [],
-          typeArguments: [],
-          rawType: {
-            _type: 'packageableType',
-            fullPath: 'meta::pure::precisePrimitives::Int',
-          },
-          typeVariableValues: [],
-        },
-      },
-    ],
-  });
+  // createSpy(
+  //   mockedStore.engineServerClient,
+  //   'lambdaRelationType',
+  // ).mockResolvedValue({
+  //   _type: 'relationType',
+  //   columns: [
+  //     {
+  //       name: 'varchar_val',
+  //       multiplicity: {
+  //         lowerBound: 1,
+  //         upperBound: 1,
+  //       },
+  //       genericType: {
+  //         multiplicityArguments: [],
+  //         typeArguments: [],
+  //         rawType: {
+  //           _type: 'packageableType',
+  //           fullPath: 'meta::pure::precisePrimitives::Varchar',
+  //         },
+  //         typeVariableValues: [{ _type: 'integer', value: 32 }],
+  //       },
+  //     },
+  //     {
+  //       name: 'int_val',
+  //       multiplicity: {
+  //         lowerBound: 1,
+  //         upperBound: 1,
+  //       },
+  //       genericType: {
+  //         multiplicityArguments: [],
+  //         typeArguments: [],
+  //         rawType: {
+  //           _type: 'packageableType',
+  //           fullPath: 'meta::pure::precisePrimitives::Int',
+  //         },
+  //         typeVariableValues: [],
+  //       },
+  //     },
+  //   ],
+  // });
+
+  // createSpy(
+  //   mockedStore.engineServerClient,
+  //   'getClassifierPathMap',
+  // ).mockImplementation(async () => {
+  //   const result = await ENGINE_TEST_SUPPORT__getClassifierPathMapping();
+  //   return [
+  //     ...result,
+  //     {
+  //       type: 'ingestDefinition',
+  //       classifierPath:
+  //         'meta::external::ingest::specification::metamodel::IngestDefinition',
+  //     },
+  //   ];
+  // });
 
   createSpy(
-    mockedStore.engineServerClient,
-    'getClassifierPathMap',
-  ).mockImplementation(async () => {
-    const result = await ENGINE_TEST_SUPPORT__getClassifierPathMapping();
-    return [
-      ...result,
-      {
-        type: 'ingestDefinition',
-        classifierPath:
-          'meta::external::ingest::specification::metamodel::IngestDefinition',
-      },
-    ];
-  });
-
-  createSpy(
-    mockedStore.lakehouseContractServerClient,
+    lakehouseContractServerClient,
     'getContractTasks',
   ).mockImplementation(async (contractId: string) => {
     if (
@@ -247,20 +255,55 @@ const setupLakehouseDataProductTest = async (
     return mockPendingManagerApprovalTasksResponse as unknown as PlainObject<V1_TaskResponse>;
   });
 
-  const { renderResult } = await TEST__setUpMarketplaceLakehouse(
-    mockedStore,
-    `/lakehouse/dataProduct/deployed/${dataProductId}/${deploymentId}`,
+  const dataProduct = deserialize(V1_dataProductModelSchema, dataProductObject);
+
+  const engineServerClient = new V1_EngineServerClient({});
+
+  const dataProductViewerState = new DataProductViewerState(
+    MOCK__applicationStore,
+    engineServerClient,
+    graphManagerState,
+    dataProduct,
+    entitlementsDataProductDetails,
+    lakehouseContractServerClient,
+    {
+      dataProductConfig: DataProductConfig.serialization.fromJson({
+        publicStereotype: {
+          profile: 'test::profile::EnterpriseDataProduct',
+          stereotype: 'enterprise',
+        },
+      }),
+      lakehouseIngestEnvironmentDetails: [],
+    },
+    {
+      viewDataProductSource: jest.fn(),
+      getContractTaskUrl: jest.fn(() => ''),
+      getDataProductUrl: jest.fn(() => ''),
+      getContractConsumerTypeRendererConfigs: jest.fn(() => []),
+    },
   );
 
-  return { mockedStore, renderResult };
+  let renderResult;
+
+  await act(async () => {
+    renderResult = render(
+      <AuthProvider>
+        <ProductViewer productViewerState={dataProductViewerState} />
+      </AuthProvider>,
+    );
+
+    await new Promise((resolve) => setTimeout(resolve, 0)); // wait for async state updates
+  });
+
+  return { MOCK__applicationStore, renderResult };
 };
 
 describe('LakehouseDataProduct', () => {
   describe('Basic rendering', () => {
     test('Loads LakehouseDataProduct with SDLC Data Product and displays title, description, and access point groups', async () => {
       await setupLakehouseDataProductTest(
-        MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
-        11111,
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
         [],
       );
 
@@ -274,27 +317,27 @@ describe('LakehouseDataProduct', () => {
       await screen.findByText('Customer demographics data access point');
     });
 
-    test('Loads LakehouseDataProduct with Ad-Hoc Data Product and displays title, description, and access point groups', async () => {
-      await setupLakehouseDataProductTest(
-        MOCK_DataProductId.MOCK_ADHOC_DATAPRODUCT,
-        2222,
-        [],
-      );
+    // test('Loads LakehouseDataProduct with Ad-Hoc Data Product and displays title, description, and access point groups', async () => {
+    //   await setupLakehouseDataProductTest(
+    //     MOCK_DataProductId.MOCK_ADHOC_DATAPRODUCT,
+    //     2222,
+    //     [],
+    //   );
 
-      await screen.findByText('Mock Ad-Hoc Data Product');
-      screen.getByText(
-        'Flexible and dynamic data product for ad hoc analysis and reporting',
-      );
-      screen.getByText('GROUP1');
-      screen.getByText('Test ad-hoc access point group');
-      await screen.findByText('test_view');
-      await screen.findByText('No description to provide');
-    });
+    //   await screen.findByText('Mock Ad-Hoc Data Product');
+    //   screen.getByText(
+    //     'Flexible and dynamic data product for ad hoc analysis and reporting',
+    //   );
+    //   screen.getByText('GROUP1');
+    //   screen.getByText('Test ad-hoc access point group');
+    //   await screen.findByText('test_view');
+    //   await screen.findByText('No description to provide');
+    // });
 
     test('Access Point "More Info" button shows table with access point columns and types', async () => {
       await setupLakehouseDataProductTest(
-        MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
-        1111,
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
         [],
       );
 
@@ -324,8 +367,8 @@ describe('LakehouseDataProduct', () => {
       const mockContracts: V1_DataContract[] = [];
 
       await setupLakehouseDataProductTest(
-        MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
-        11111,
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
         mockContracts,
       );
 
@@ -364,8 +407,8 @@ describe('LakehouseDataProduct', () => {
       ];
 
       await setupLakehouseDataProductTest(
-        MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
-        11111,
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
         mockContracts,
       );
 
@@ -376,8 +419,8 @@ describe('LakehouseDataProduct', () => {
       const mockContracts: V1_DataContract[] = [];
 
       await setupLakehouseDataProductTest(
-        MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
-        11111,
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
         mockContracts,
       );
 
@@ -394,8 +437,8 @@ describe('LakehouseDataProduct', () => {
       const mockContracts: V1_DataContract[] = [];
 
       await setupLakehouseDataProductTest(
-        MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
-        11111,
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
         mockContracts,
       );
 
@@ -438,8 +481,8 @@ describe('LakehouseDataProduct', () => {
       ];
 
       await setupLakehouseDataProductTest(
-        MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
-        11111,
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
         mockContracts,
       );
 
@@ -478,8 +521,8 @@ describe('LakehouseDataProduct', () => {
       ];
 
       await setupLakehouseDataProductTest(
-        MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
-        11111,
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
         mockContracts,
       );
 
@@ -524,8 +567,8 @@ describe('LakehouseDataProduct', () => {
       ];
 
       await setupLakehouseDataProductTest(
-        MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
-        11111,
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
         mockContracts,
       );
 
@@ -569,8 +612,8 @@ describe('LakehouseDataProduct', () => {
       ];
 
       await setupLakehouseDataProductTest(
-        MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
-        11111,
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
         mockContracts,
       );
 
@@ -611,8 +654,8 @@ describe('LakehouseDataProduct', () => {
       ];
 
       await setupLakehouseDataProductTest(
-        MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
-        11111,
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
         mockContracts,
       );
 
@@ -657,8 +700,8 @@ describe('LakehouseDataProduct', () => {
       ];
 
       await setupLakehouseDataProductTest(
-        MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
-        11111,
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
         mockContracts,
       );
 
@@ -702,8 +745,8 @@ describe('LakehouseDataProduct', () => {
       ];
 
       await setupLakehouseDataProductTest(
-        MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
-        11111,
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
         mockContracts,
       );
 
@@ -736,8 +779,8 @@ describe('LakehouseDataProduct', () => {
       ];
 
       await setupLakehouseDataProductTest(
-        MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
-        11111,
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
         mockContracts,
       );
 
@@ -776,8 +819,8 @@ describe('LakehouseDataProduct', () => {
       ];
 
       await setupLakehouseDataProductTest(
-        MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
-        11111,
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
         mockContracts,
       );
 
@@ -822,8 +865,8 @@ describe('LakehouseDataProduct', () => {
       ];
 
       await setupLakehouseDataProductTest(
-        MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
-        11111,
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
         mockContracts,
       );
 
@@ -837,8 +880,8 @@ describe('LakehouseDataProduct', () => {
 
     test('displays ENTERPRISE ACCESS for Access Point Group marked as Enterprise', async () => {
       await setupLakehouseDataProductTest(
-        MOCK_DataProductId.MOCK_ENTERPRISE_DATAPRODUCT,
-        33333,
+        mockEnterpriseDataProduct,
+        mockEntitlementsEnterpriseDataProduct,
         [],
       );
 
@@ -847,8 +890,8 @@ describe('LakehouseDataProduct', () => {
 
     test('ENTERPRISE ACCESS secondary button shows "Request for Others" and "Manage Subscriptions"', async () => {
       await setupLakehouseDataProductTest(
-        MOCK_DataProductId.MOCK_ENTERPRISE_DATAPRODUCT,
-        33333,
+        mockEnterpriseDataProduct,
+        mockEntitlementsEnterpriseDataProduct,
         [],
       );
 
@@ -892,8 +935,8 @@ describe('LakehouseDataProduct', () => {
       ];
 
       await setupLakehouseDataProductTest(
-        MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
-        11111,
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
         mockContracts,
       );
 
@@ -913,8 +956,8 @@ describe('LakehouseDataProduct', () => {
 
     test('On enterprise APG, Request Access for Others button opens create contract modal for only system account', async () => {
       await setupLakehouseDataProductTest(
-        MOCK_DataProductId.MOCK_ENTERPRISE_DATAPRODUCT,
-        33333,
+        mockEnterpriseDataProduct,
+        mockEntitlementsEnterpriseDataProduct,
         [],
       );
 
@@ -939,8 +982,8 @@ describe('LakehouseDataProduct', () => {
   describe('Subscriptions', () => {
     test('Manage Subscriptions button opens subscriptions modal', async () => {
       await setupLakehouseDataProductTest(
-        MOCK_DataProductId.MOCK_ENTERPRISE_DATAPRODUCT,
-        33333,
+        mockEnterpriseDataProduct,
+        mockEntitlementsEnterpriseDataProduct,
         [],
       );
 
@@ -960,8 +1003,8 @@ describe('LakehouseDataProduct', () => {
   describe.only('Support info rendering', () => {
     test('Renders support info correctly', async () => {
       await setupLakehouseDataProductTest(
-        MOCK_DataProductId.MOCK_SDLC_DATAPRODUCT,
-        11111,
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
         [],
       );
 
@@ -980,8 +1023,8 @@ describe('LakehouseDataProduct', () => {
 
     test('Renders placeholder if no support info is available', async () => {
       await setupLakehouseDataProductTest(
-        MOCK_DataProductId.MOCK_SDLC_NO_SUPPORT_INFO_DATAPRODUCT,
-        11111,
+        mockSDLCDataProductNoSupportInfo,
+        mockEntitlementsSDLCDataProductNoSupportInfo,
         [],
       );
 

@@ -13,17 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-  type GenericLegendApplicationStore,
-  type NavigationZone,
+import type {
+  ApplicationStore,
+  GenericLegendApplicationStore,
+  LegendApplicationConfig,
+  LegendApplicationPluginManager,
+  NavigationZone,
 } from '@finos/legend-application';
 import type { BaseLayoutState } from './BaseLayoutState.js';
-
-// export type ProductViewerLegendApplicationStore = ApplicationStore<
-//   LegendApplicationConfig,
-//   LegendApplicationPluginManager<DataProductViewer_LegendApplicationPlugin_Extension> &
-//     GraphManagerPluginManager
-// >;
+import type { DataProductViewer_LegendApplicationPlugin_Extension } from './DataProductViewer_LegendApplicationPlugin_Extension.js';
 
 export abstract class BaseViewerState<
   TProduct,
@@ -31,7 +29,10 @@ export abstract class BaseViewerState<
 > {
   readonly product: TProduct;
   readonly layoutState: TLayoutState;
-  readonly applicationStore: GenericLegendApplicationStore;
+  readonly applicationStore: ApplicationStore<
+    LegendApplicationConfig,
+    LegendApplicationPluginManager<DataProductViewer_LegendApplicationPlugin_Extension>
+  >;
 
   readonly onZoneChange?:
     | ((zone: NavigationZone | undefined) => void)
