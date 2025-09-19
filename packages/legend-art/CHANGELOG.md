@@ -1,5 +1,13 @@
 # @finos/legend-art
 
+## 7.1.121
+
+### Patch Changes
+
+- [#4448](https://github.com/finos/legend-studio/pull/4448) [`984a4df`](https://github.com/finos/legend-studio/commit/984a4df3ff0c368ec476f5b8d1a116423db22dd7) ([@kelly-thai](https://github.com/kelly-thai)) - Add 'Schedule a Demo' and 'Subscribe to our Newsletter' buttons to Marketplace home page
+
+- [#4449](https://github.com/finos/legend-studio/pull/4449) [`d3ad298`](https://github.com/finos/legend-studio/commit/d3ad29850ea0a786a5ce489159f2618f38b62bdb) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add Calendar and Send Icon
+
 ## 7.1.120
 
 ## 7.1.119
