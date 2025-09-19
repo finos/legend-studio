@@ -21,10 +21,10 @@ import { LegendMarketplaceSearchBar } from '../../components/SearchBar/LegendMar
 import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
 import { useAuth } from 'react-oidc-context';
 import {
-  CalendarIcon,
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
   OpenNewTabIcon,
+  SimpleCalendarIcon,
 } from '@finos/legend-art';
 import {
   generateLakehouseDataProductPath,
@@ -38,6 +38,7 @@ import { LakehouseHighlightedProductCard } from '../../components/LakehouseProdu
 import { DataProductCardState } from '../../stores/lakehouse/dataProducts/DataProductCardState.js';
 import { LegacyDataProductCardState } from '../../stores/lakehouse/dataProducts/LegacyDataProductCardState.js';
 import { generateGAVCoordinates } from '@finos/legend-storage';
+import { DemoModal } from './DemoModal.js';
 
 export const MarketplaceLakehouseHome = observer(() => {
   const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
@@ -101,11 +102,18 @@ export const MarketplaceLakehouseHome = observer(() => {
     );
   };
 
+  const handleShowDemo = (): void => {
+    legendMarketplaceBaseStore.setDemoModal(true);
+  };
+
   return (
     <LegendMarketplacePage className="marketplace-lakehouse-home">
       <div className="legend-marketplace-home__button-group">
-        <button className="legend-marketplace-home__button">
-          <CalendarIcon className="legend-marketplace-home__button__icon" />
+        <button
+          onClick={handleShowDemo}
+          className="legend-marketplace-home__button"
+        >
+          <SimpleCalendarIcon className="legend-marketplace-home__button__icon" />
           Schedule a Demo
         </button>
         <button
@@ -181,6 +189,7 @@ export const MarketplaceLakehouseHome = observer(() => {
           </Grid>
         )}
       </Container>
+      <DemoModal />
     </LegendMarketplacePage>
   );
 });
