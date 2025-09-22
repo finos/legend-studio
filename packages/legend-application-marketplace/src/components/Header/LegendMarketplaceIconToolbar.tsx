@@ -17,6 +17,7 @@
 import { useApplicationStore } from '@finos/legend-application';
 import {
   HelpOutlineIcon,
+  MenuContentDivider,
   ShoppingCartOutlineIcon,
   UserCircleIcon,
 } from '@finos/legend-art';
@@ -102,6 +103,15 @@ export const LegendMarketplaceIconToolbar = observer(() => {
                 {userName}
               </Link>
             </Box>
+          </MenuItem>
+          <MenuContentDivider />
+          <MenuItem
+            component="a"
+            href={applicationStore.navigationService.navigator.generateAddress(
+              LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS,
+            )}
+          >
+            View Lakehouse Entitlements
           </MenuItem>
         </Menu>
       </>

@@ -175,10 +175,6 @@ export const MarketplaceLakehouseHeader = observer(() => {
       homeUrl={LEGEND_MARKETPLACE_ROUTE_PATTERN.HOME_PAGE}
       pages={[
         {
-          title: 'Lakehouse Entitlements',
-          urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS,
-        },
-        {
           title: 'Data Products',
           urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_PRODUCTS,
         },
