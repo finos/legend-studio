@@ -30,8 +30,8 @@ import {
 } from '../../../__lib__/LegendMarketplaceNavigation.js';
 import { useParams } from '@finos/legend-application/browser';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { ProductViewer } from './ProductViewer.js';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
+import { ProductViewer } from '@finos/legend-extension-dsl-data-product';
 
 export const LakehouseSDLCDataProduct = withLegendMarketplaceProductViewerStore(
   observer(() => {

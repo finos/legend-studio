@@ -17,26 +17,23 @@
 import { type LegendApplicationSetup } from '@finos/legend-application';
 import { setupPureLanguageService } from '@finos/legend-code-editor';
 import { configureCodeEditorComponent } from '@finos/legend-lego/code-editor';
+import packageJson from '../../../package.json' with { type: 'json' };
+import { LegendMarketplaceApplicationPlugin } from '../LegendMarketplaceApplicationPlugin.js';
+import { UserSearchInput } from '@finos/legend-art';
 import {
+  type ContractConsumerTypeRendererConfig,
+  type DataProductAPGState,
+  AccessPointGroupAccess,
+} from '@finos/legend-extension-dsl-data-product';
+import {
+  type V1_OrganizationalScope,
   V1_AdhocTeam,
   V1_User,
   V1_UserType,
-  type V1_OrganizationalScope,
 } from '@finos/legend-graph';
-import packageJson from '../../../package.json' with { type: 'json' };
-import {
-  LegendMarketplaceApplicationPlugin,
-  type ContractConsumerTypeRendererConfig,
-} from '../LegendMarketplaceApplicationPlugin.js';
-import { UserSearchInput } from '@finos/legend-art';
-import React, { useEffect, useState, type ChangeEvent } from 'react';
 import { LegendUser } from '@finos/legend-shared';
-import {
-  AccessPointGroupAccess,
-  type DataProductGroupAccessState,
-} from '../../stores/lakehouse/DataProductDataAccessState.js';
 import { TextField } from '@mui/material';
-import type { LegendMarketplaceBaseStore } from '../../stores/LegendMarketplaceBaseStore.js';
+import { useEffect, useState, type ChangeEvent } from 'react';
 
 export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceApplicationPlugin {
   static NAME = packageJson.extensions.applicationMarketplacePlugin;
@@ -70,8 +67,7 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
     const CommonRenderer = (props: {
       type: 'user' | 'system-account';
       label: string;
-      marketplaceBaseStore: LegendMarketplaceBaseStore;
-      accessGroupState: DataProductGroupAccessState;
+      apgState: DataProductAPGState;
       handleOrganizationalScopeChange: (
         consumer: V1_OrganizationalScope,
       ) => void;
@@ -82,8 +78,7 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
       const {
         type,
         label,
-        marketplaceBaseStore,
-        accessGroupState,
+        apgState,
         handleOrganizationalScopeChange,
         handleDescriptionChange,
         handleIsValidChange,
@@ -116,13 +111,12 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
 
       useEffect(() => {
         const fetchCurrentUser = async () => {
-          if (marketplaceBaseStore.userSearchService) {
+          if (apgState.dataProductViewerState.userSearchService) {
             setLoadingCurrentUser(true);
             try {
               const currentUser =
-                await marketplaceBaseStore.userSearchService.getOrFetchUser(
-                  marketplaceBaseStore.applicationStore.identityService
-                    .currentUser,
+                await apgState.dataProductViewerState.userSearchService.getOrFetchUser(
+                  apgState.applicationStore.identityService.currentUser,
                 );
               if (currentUser instanceof LegendUser) {
                 setUser(currentUser);
@@ -134,19 +128,19 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
         };
         // We should only fetch the current user if the current user is not already entitled.
         // If the current user is already entitled, we can assume they are requesting access for another user or system account.
-        if (accessGroupState.access === AccessPointGroupAccess.NO_ACCESS) {
+        if (apgState.access === AccessPointGroupAccess.NO_ACCESS) {
           // eslint-disable-next-line no-void
           void fetchCurrentUser();
         }
       }, [
-        accessGroupState.access,
-        marketplaceBaseStore.applicationStore.identityService.currentUser,
-        marketplaceBaseStore.userSearchService,
+        apgState.access,
+        apgState.applicationStore.identityService.currentUser,
+        apgState.dataProductViewerState.userSearchService,
       ]);
 
       return (
         <>
-          {accessGroupState.access === AccessPointGroupAccess.ENTERPRISE && (
+          {apgState.access === AccessPointGroupAccess.ENTERPRISE && (
             <p className="marketplace-lakehouse-entitlements__data-contract-creator__enterprise-apg-notice">
               Note: Enterprise APGs only require contracts for System Accounts.
               Regular users do not need to request access.
@@ -159,7 +153,7 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
             setUserValue={(_user: LegendUser): void => setUser(_user)}
             userSearchService={
               enableUserSearch
-                ? marketplaceBaseStore.userSearchService
+                ? apgState.dataProductViewerState.userSearchService
                 : undefined
             }
             label={label}
@@ -188,8 +182,7 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
       {
         type: 'User',
         createContractRenderer: (
-          marketplaceBaseStore: LegendMarketplaceBaseStore,
-          accessGroupState: DataProductGroupAccessState,
+          apgState: DataProductAPGState,
           handleOrganizationalScopeChange: (
             consumer: V1_OrganizationalScope,
           ) => void,
@@ -200,8 +193,7 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
             key="user"
             type="user"
             label="User"
-            marketplaceBaseStore={marketplaceBaseStore}
-            accessGroupState={accessGroupState}
+            apgState={apgState}
             handleOrganizationalScopeChange={handleOrganizationalScopeChange}
             handleDescriptionChange={handleDescriptionChange}
             handleIsValidChange={handleIsValidChange}
@@ -213,8 +205,7 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
         type: 'System Account',
         enableForEnterpriseAPGs: true,
         createContractRenderer: (
-          marketplaceBaseStore: LegendMarketplaceBaseStore,
-          accessGroupState: DataProductGroupAccessState,
+          apgState: DataProductAPGState,
           handleOrganizationalScopeChange: (
             consumer: V1_OrganizationalScope,
           ) => void,
@@ -225,8 +216,7 @@ export class Core_LegendMarketplaceApplicationPlugin extends LegendMarketplaceAp
             key="system-account"
             type="system-account"
             label="System Account"
-            marketplaceBaseStore={marketplaceBaseStore}
-            accessGroupState={accessGroupState}
+            apgState={apgState}
             handleOrganizationalScopeChange={handleOrganizationalScopeChange}
             handleDescriptionChange={handleDescriptionChange}
             handleIsValidChange={handleIsValidChange}

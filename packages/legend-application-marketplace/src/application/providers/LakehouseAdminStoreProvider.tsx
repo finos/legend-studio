@@ -18,10 +18,7 @@ import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { LakehouseAdminStore } from '../../stores/lakehouse/admin/LakehouseAdminStore.js';
-import {
-  useLegendMarketplaceApplicationStore,
-  useLegendMarketplaceBaseStore,
-} from './LegendMarketplaceFrameworkProvider.js';
+import { useLegendMarketplaceBaseStore } from './LegendMarketplaceFrameworkProvider.js';
 
 const LakehouseAdminStoreContext = createContext<
   LakehouseAdminStore | undefined
@@ -30,14 +27,9 @@ const LakehouseAdminStoreContext = createContext<
 export const LakehouseAdminStoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
-  const applicationStore = useLegendMarketplaceApplicationStore();
-  const baseStore = useLegendMarketplaceBaseStore();
-  const lakehouseServerClient = guaranteeNonNullable(
-    baseStore.lakehouseContractServerClient,
-    'lakehouse server client required to render',
-  );
+  const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
   const store = useLocalObservable(
-    () => new LakehouseAdminStore(applicationStore, lakehouseServerClient),
+    () => new LakehouseAdminStore(legendMarketplaceBaseStore),
   );
   return (
     <LakehouseAdminStoreContext.Provider value={store}>

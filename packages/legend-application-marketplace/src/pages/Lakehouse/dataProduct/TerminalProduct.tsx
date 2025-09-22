@@ -30,7 +30,7 @@ import {
 import { useParams } from '@finos/legend-application/browser';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
-import { ProductViewer } from './ProductViewer.js';
+import { ProductViewer } from '@finos/legend-extension-dsl-data-product';
 
 export const TerminalProduct = withLegendMarketplaceProductViewerStore(
   observer(() => {

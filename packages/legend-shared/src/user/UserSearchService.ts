@@ -53,12 +53,23 @@ export class UserSearchService {
     string,
     LegendUser | string
   >();
+  readonly userProfileImageUrl: string | undefined;
+  readonly applicationDirectoryUrl: string | undefined;
 
-  constructor() {
+  constructor({
+    userProfileImageUrl,
+    applicationDirectoryUrl,
+  }: {
+    userProfileImageUrl?: string | undefined;
+    applicationDirectoryUrl?: string | undefined;
+  }) {
     makeObservable(this, {
       userMap: observable,
       setUser: action,
     });
+
+    this.userProfileImageUrl = userProfileImageUrl;
+    this.applicationDirectoryUrl = applicationDirectoryUrl;
   }
 
   registerPlugins(plugins: LegendUserPlugin[]): void {

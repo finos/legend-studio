@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { LegendMarketplaceApplicationStore } from '../../LegendMarketplaceBaseStore.js';
+import type { LegendMarketplaceBaseStore } from '../../LegendMarketplaceBaseStore.js';
 import {
   type GeneratorFn,
   ActionState,
@@ -28,22 +28,16 @@ import {
   V1_liteDataContractsResponseModelSchemaToContracts,
 } from '@finos/legend-graph';
 import { makeObservable, flow, action, observable } from 'mobx';
-import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
 
 export class LakehouseAdminStore {
-  readonly applicationStore: LegendMarketplaceApplicationStore;
-  readonly lakehouseContractServerClient: LakehouseContractServerClient;
+  readonly legendMarketplaceBaseStore: LegendMarketplaceBaseStore;
   subscriptionsInitializationState = ActionState.create();
   contractsInitializationState = ActionState.create();
   subscriptions: V1_DataSubscription[] = [];
   contracts: V1_LiteDataContract[] = [];
 
-  constructor(
-    applicationStore: LegendMarketplaceApplicationStore,
-    lakehouseContractServerClient: LakehouseContractServerClient,
-  ) {
-    this.applicationStore = applicationStore;
-    this.lakehouseContractServerClient = lakehouseContractServerClient;
+  constructor(legendMarketplaceBaseStore: LegendMarketplaceBaseStore) {
+    this.legendMarketplaceBaseStore = legendMarketplaceBaseStore;
     makeObservable(this, {
       subscriptions: observable,
       contracts: observable,
@@ -58,7 +52,9 @@ export class LakehouseAdminStore {
       try {
         this.subscriptionsInitializationState.inProgress();
         const rawSubscriptions =
-          await this.lakehouseContractServerClient.getAllSubscriptions(token);
+          await this.legendMarketplaceBaseStore.lakehouseContractServerClient.getAllSubscriptions(
+            token,
+          );
         const subscriptions = deserialize(
           V1_DataSubscriptionResponseModelSchema,
           rawSubscriptions,
@@ -66,7 +62,7 @@ export class LakehouseAdminStore {
         this.setSubscriptions(subscriptions ?? []);
       } catch (error) {
         assertErrorThrown(error);
-        this.applicationStore.notificationService.notifyError(
+        this.legendMarketplaceBaseStore.applicationStore.notificationService.notifyError(
           `Error fetching subscriptions: ${error.message}`,
         );
       } finally {
@@ -78,15 +74,17 @@ export class LakehouseAdminStore {
       try {
         this.contractsInitializationState.inProgress();
         const rawContracts =
-          await this.lakehouseContractServerClient.getLiteDataContracts(token);
+          await this.legendMarketplaceBaseStore.lakehouseContractServerClient.getLiteDataContracts(
+            token,
+          );
         const contracts = V1_liteDataContractsResponseModelSchemaToContracts(
           rawContracts,
-          this.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
+          this.legendMarketplaceBaseStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins(),
         );
         this.setContracts(contracts);
       } catch (error) {
         assertErrorThrown(error);
-        this.applicationStore.notificationService.notifyError(
+        this.legendMarketplaceBaseStore.applicationStore.notificationService.notifyError(
           `Error fetching data contracts: ${error.message}`,
         );
       } finally {
