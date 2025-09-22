@@ -26,7 +26,6 @@ import {
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useApplicationStore } from '@finos/legend-application';
 import {
   type DataGridCellRendererParams,
   type DataGridColumnDefinition,
@@ -691,7 +690,6 @@ export const DataProducteDataAccess = observer(
     dataProductDataAccessState: DataProductDataAccessState | undefined;
   }) => {
     const { dataProductViewerState, dataProductDataAccessState } = props;
-    const applicationStore = useApplicationStore();
     const documentationUrl = 'todo.com';
     const sectionRef = useRef<HTMLDivElement>(null);
     const anchor = generateAnchorForSection(
@@ -709,7 +707,7 @@ export const DataProducteDataAccess = observer(
     }, [dataProductViewerState, anchor]);
 
     const seeDocumentation = (): void => {
-      applicationStore.navigationService.navigator.visitAddress(
+      dataProductViewerState.applicationStore.navigationService.navigator.visitAddress(
         documentationUrl,
       );
     };
