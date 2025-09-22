@@ -356,11 +356,7 @@ export const LakehouseProductCard = observer(
         onClick={() => onClick(productCardState)}
         className="marketplace-lakehouse-data-product-card"
         moreInfo={moreInfoContent}
-        cardMedia={
-          productCardState instanceof DataProductCardState
-            ? productCardState.displayImage
-            : undefined
-        }
+        cardMedia={productCardState.displayImage}
       />
     );
   },

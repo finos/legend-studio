@@ -32,6 +32,7 @@ export class LegacyDataProductCardState extends BaseProductCardState {
     groupId: string,
     artifactId: string,
     versionId: string,
+    displayImageMap: Map<string, string>,
   ) {
     super(marketplaceBaseStore);
 
@@ -39,6 +40,7 @@ export class LegacyDataProductCardState extends BaseProductCardState {
     this.groupId = groupId;
     this.artifactId = artifactId;
     this._versionId = versionId;
+    this.displayImage = this.dataProductImage(displayImageMap);
   }
 
   *init() {

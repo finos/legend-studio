@@ -57,7 +57,6 @@ const getDataProductDescriptorFromDetails = (
 export class DataProductCardState extends BaseProductCardState {
   readonly graphManager: V1_PureGraphManager;
   readonly dataProductDetails: V1_EntitlementsDataProductDetails;
-  readonly displayImage: string;
   dataProductElement: V1_DataProduct | undefined;
 
   readonly enrichedState = ActionState.create();
@@ -150,18 +149,5 @@ export class DataProductCardState extends BaseProductCardState {
     | V1_EntitlementsLakehouseEnvironmentType
     | undefined {
     return this.dataProductDetails.lakehouseEnvironment?.type;
-  }
-
-  dataProductImage(productImageMap: Map<string, string>): string {
-    const maxImageCount = 7;
-    const existingImage = productImageMap.get(this.title);
-    if (existingImage) {
-      return existingImage;
-    }
-
-    const randomIndex = Math.floor(Math.random() * maxImageCount) + 1;
-    const selectedImage = `/assets/images${randomIndex}.jpg`;
-    productImageMap.set(this.title, selectedImage);
-    return selectedImage;
   }
 }
