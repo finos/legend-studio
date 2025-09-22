@@ -16,20 +16,6 @@
 
 @use 'mixins' as *;
 
-.legend-marketplace-data-product {
-  &-home__body {
-    height: 100%;
-    width: 100%;
-  }
-
-  &__content {
-    height: 100%;
-    width: 100%;
-    color: var(--color-dark-grey-500);
-    padding: 1rem;
-  }
-}
-
 .data-product__viewer {
   height: 100%;
   width: 100%;
@@ -69,7 +55,57 @@
     }
 
     &__type {
-      align-self: end;
+      @include flexVCenter;
+
+      button {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      &__sandbox {
+        background: var(--color-white);
+        color: var(--color-hclight-blue-60);
+        border: 1px solid var(--color-hclight-blue-60);
+        cursor: default;
+
+        &--dev {
+          background: var(--tw-color-amber-100);
+          color: var(--tw-color-amber-600);
+          border: none;
+        }
+
+        &--prod-parallel {
+          background: var(--tw-color-blue-100);
+          color: var(--tw-color-blue-600);
+          border: none;
+        }
+
+        &--prod {
+          background: var(--tw-color-green-100);
+          color: var(--tw-color-green-600);
+          border: none;
+        }
+      }
+
+      &__version {
+        &--snapshot {
+          background: var(--tw-color-blue-100);
+          color: var(--tw-color-blue-600);
+
+          &:hover {
+            background: var(--tw-color-blue-200);
+          }
+        }
+
+        &--release {
+          background: var(--tw-color-green-100);
+          color: var(--tw-color-green-600);
+
+          &:hover {
+            background: var(--tw-color-green-200);
+          }
+        }
+      }
     }
 
     &__title {
@@ -178,6 +214,39 @@
     padding: 10rem 4rem 1rem;
     box-shadow: var(--color-dark-shade-280) 0 0.1rem 0.5rem 0;
   }
+
+  &__support-info {
+    &__container {
+      width: fit-content;
+    }
+
+    &__section {
+      @include flexVCenter;
+
+      gap: 0.5rem;
+
+      &__icon {
+        @include flexCenter;
+
+        width: 3.5rem;
+        height: 3.5rem;
+        border-radius: 3.5rem;
+        background: currentcolor;
+        margin-right: 0.5rem;
+
+        svg {
+          color: var(--color-white);
+          font-size: 2rem;
+        }
+      }
+    }
+
+    &__link {
+      @include flexVCenter;
+
+      gap: 0.5rem;
+    }
+  }
 }
 
 .product-header-tabs {
@@ -265,6 +334,18 @@
 }
 
 .data-product__viewer__grid {
+  height: 30rem;
+
+  &--auto-height {
+    height: fit-content;
+
+    &--non-empty {
+      .ag-center-cols-viewport {
+        min-height: unset;
+      }
+    }
+  }
+
   &--empty {
     @include flexCenter;
 
@@ -1644,7 +1725,7 @@
 
     &__tab__content {
       margin-top: 1rem;
-      height: 30rem;
+      height: fit-content;
     }
 
     &__action-tab-group {
@@ -2026,8 +2107,37 @@
 
 .data-product__viewer__more-info {
   &__container {
+    width: 100%;
     height: calc(100% - 3.8rem);
     border: 0.1rem solid var(--color-dark-grey-200);
     position: relative;
+  }
+
+  &__loading-indicator {
+    height: 10rem;
+  }
+
+  &__columns-grid {
+    height: 300px;
+
+    &--auto-height {
+      height: fit-content;
+
+      &--empty {
+        .ag-root-wrapper-body {
+          height: 10rem;
+        }
+      }
+
+      &--non-empty {
+        .ag-center-cols-viewport {
+          min-height: unset;
+        }
+      }
+    }
+  }
+
+  &__grammar {
+    height: 300px;
   }
 }
