@@ -53,10 +53,8 @@ import {
 } from '@finos/legend-server-lakehouse';
 import type { GenericLegendApplicationStore } from '@finos/legend-application';
 import { DSL_DATAPRODUCT_EVENT } from '../../__lib__/DSL_DataProduct_Event.js';
-import type {
-  AccessPointGroupAccess,
-  DataProductAPGState,
-} from './DataProductAPGState.js';
+import type { DataProductAPGState } from './DataProductAPGState.js';
+import type { DataProductDataAccess_LegendApplicationPlugin_Extension } from '../DataProductDataAccess_LegendApplicationPlugin_Extension.js';
 
 export type ContractConsumerTypeRendererConfig = {
   type: string;
@@ -76,9 +74,6 @@ export type ContractConsumerTypeRendererConfig = {
 };
 
 export type DataProductDataAccessStateActions = {
-  getExtraAccessPointGroupAccessInfoCallbacks: ((
-    access: AccessPointGroupAccess,
-  ) => string | undefined)[];
   getContractTaskUrl: (taskId: string) => string;
   getDataProductUrl: (dataProductId: string, deploymentId: number) => string;
   getContractConsumerTypeRendererConfigs: (
@@ -94,11 +89,9 @@ export class DataProductDataAccessState {
   readonly lakehousePlatformServerClient: LakehousePlatformServerClient;
   readonly lakehouseIngestServerClient: LakehouseIngestServerClient;
   readonly graphManagerState: GraphManagerState;
+  readonly dataAccessPlugins: DataProductDataAccess_LegendApplicationPlugin_Extension[];
 
   // actions/data callbacks
-  readonly getExtraAccessPointGroupAccessInfoCallbacks: ((
-    access: AccessPointGroupAccess,
-  ) => string | undefined)[];
   readonly getContractTaskUrl: (taskId: string) => string;
   readonly getDataProductUrl: (
     dataProductId: string,
@@ -124,6 +117,7 @@ export class DataProductDataAccessState {
     lakehouseContractServerClient: LakehouseContractServerClient,
     lakehousePlatformServerClient: LakehousePlatformServerClient,
     lakehouseIngestServerClient: LakehouseIngestServerClient,
+    dataAccessPlugins: DataProductDataAccess_LegendApplicationPlugin_Extension[],
     actions: DataProductDataAccessStateActions,
   ) {
     makeObservable(this, {
@@ -151,10 +145,9 @@ export class DataProductDataAccessState {
     this.lakehousePlatformServerClient = lakehousePlatformServerClient;
     this.lakehouseIngestServerClient = lakehouseIngestServerClient;
     this.graphManagerState = this.dataProductViewerState.graphManagerState;
+    this.dataAccessPlugins = dataAccessPlugins;
 
     // actions
-    this.getExtraAccessPointGroupAccessInfoCallbacks =
-      actions.getExtraAccessPointGroupAccessInfoCallbacks;
     this.getContractTaskUrl = actions.getContractTaskUrl;
     this.getDataProductUrl = actions.getDataProductUrl;
     this.getContractConsumerTypeRendererConfigs =

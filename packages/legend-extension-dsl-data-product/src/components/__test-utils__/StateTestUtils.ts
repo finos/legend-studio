@@ -160,8 +160,8 @@ export const TEST__getDataProductDataAccessState = (
     lakehouseContractServerClient,
     lakehousePlatformServerClient,
     lakehouseIngestServerClient,
+    [],
     {
-      getExtraAccessPointGroupAccessInfoCallbacks: [],
       getContractTaskUrl: jest.fn(() => ''),
       getDataProductUrl: jest.fn(() => ''),
       getContractConsumerTypeRendererConfigs: jest.fn(() => []),

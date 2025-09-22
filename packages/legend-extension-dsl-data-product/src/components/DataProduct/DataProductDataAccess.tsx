@@ -469,10 +469,9 @@ export const DataProductAccessPointGroupViewer = observer(
         return null;
       }
 
-      const tooltipText =
-        dataAccessState?.getExtraAccessPointGroupAccessInfoCallbacks
-          .map((callback) => callback(val))
-          .filter(isNonEmptyString)[0];
+      const tooltipText = dataAccessState?.dataAccessPlugins
+        .map((plugin) => plugin.getExtraAccessPointGroupAccessInfo?.(val))
+        .filter(isNonEmptyString)[0];
 
       return (
         <>
@@ -666,11 +665,11 @@ export const DataProductAccessPointGroupViewer = observer(
         {entitlementsDataContractViewerState && dataAccessState && (
           <EntitlementsDataContractViewer
             open={true}
-            onClose={() => dataAccessState?.setDataContract(undefined)}
+            onClose={() => dataAccessState.setDataContract(undefined)}
             currentViewer={entitlementsDataContractViewerState}
             apgState={apgState}
-            getContractTaskUrl={dataAccessState?.getContractTaskUrl}
-            getDataProductUrl={dataAccessState?.getDataProductUrl}
+            getContractTaskUrl={dataAccessState.getContractTaskUrl}
+            getDataProductUrl={dataAccessState.getDataProductUrl}
           />
         )}
         {dataAccessState && apgState.associatedContract !== false && (
@@ -741,7 +740,7 @@ export const DataProducteDataAccess = observer(
         </div>
         <div className="data-product__viewer__wiki__section__content">
           <div className="data-product__viewer__data-access">
-            {dataProductViewerState?.apgStates.map((groupState) => (
+            {dataProductViewerState.apgStates.map((groupState) => (
               <DataProductAccessPointGroupViewer
                 key={groupState.id}
                 apgState={groupState}

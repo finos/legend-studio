@@ -285,12 +285,8 @@ export class LegendMarketplaceProductViewerStore {
         this.marketplaceBaseStore.lakehouseContractServerClient,
         this.marketplaceBaseStore.lakehousePlatformServerClient,
         this.marketplaceBaseStore.lakehouseIngestServerClient,
+        this.marketplaceBaseStore.applicationStore.pluginManager.getApplicationPlugins(),
         {
-          getExtraAccessPointGroupAccessInfoCallbacks:
-            this.marketplaceBaseStore.applicationStore.pluginManager
-              .getApplicationPlugins()
-              .map((plugin) => plugin.getExtraAccessPointGroupAccessInfo)
-              .filter(isNonNullable),
           getContractTaskUrl: (taskId: string) =>
             this.marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
               generateLakehouseTaskPath(taskId),
