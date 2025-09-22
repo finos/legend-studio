@@ -60,6 +60,7 @@ import { LegacyDataProduct } from '../pages/Lakehouse/dataProduct/LegacyDataProd
 import { LegendMarketplaceAgents } from '../pages/Agents/LegendMarketplaceAgents.js';
 import { LegendMarketplaceInventory } from '../pages/Inventory/LegendMarketplaceInventory.js';
 import { LegendMarketplaceTerminalsAddOnsComingSoon } from '../pages/VendorDetails/LegendMarketplaceVendorDetails.js';
+import { flowResult } from 'mobx';
 
 const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();
@@ -108,6 +109,14 @@ const NotFoundPage = observer(() => {
 export const LegendMarketplaceWebApplicationRouter = observer(() => {
   const marketplaceBaseStore = useLegendMarketplaceBaseStore();
   const applicationStore = useLegendMarketplaceApplicationStore();
+
+  useEffect(() => {
+    if (marketplaceBaseStore.initState.isInInitialState) {
+      flowResult(marketplaceBaseStore.initialize()).catch(
+        applicationStore.alertUnhandledError,
+      );
+    }
+  }, [applicationStore.alertUnhandledError, marketplaceBaseStore]);
 
   useEffect(() => {
     applicationStore.layoutService.setColorTheme(
