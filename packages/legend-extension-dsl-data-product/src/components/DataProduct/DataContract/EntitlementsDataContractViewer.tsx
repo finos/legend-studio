@@ -252,7 +252,12 @@ export const EntitlementsDataContractViewer = observer(
           .catch(currentViewer.applicationStore.alertUnhandledError)
           .finally(() => setIsLoading(false));
       }
-    }, [currentViewer, auth.user?.access_token]);
+    }, [
+      auth.user?.access_token,
+      currentViewer,
+      currentViewer.initializationState,
+      currentViewer.applicationStore.alertUnhandledError,
+    ]);
 
     useEffect(() => {
       if (selectedTargetUser === undefined) {
