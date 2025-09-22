@@ -25,6 +25,7 @@ export class LegacyDataProductCardState extends BaseProductCardState {
   readonly groupId: string;
   readonly artifactId: string;
   readonly _versionId: string;
+  readonly displayImage: string;
 
   constructor(
     marketplaceBaseStore: LegendMarketplaceBaseStore,
@@ -40,7 +41,7 @@ export class LegacyDataProductCardState extends BaseProductCardState {
     this.groupId = groupId;
     this.artifactId = artifactId;
     this._versionId = versionId;
-    this.displayImage = this.dataProductImage(displayImageMap);
+    this.displayImage = this.getDataProductImage(displayImageMap);
   }
 
   *init() {

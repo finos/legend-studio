@@ -57,6 +57,7 @@ const getDataProductDescriptorFromDetails = (
 export class DataProductCardState extends BaseProductCardState {
   readonly graphManager: V1_PureGraphManager;
   readonly dataProductDetails: V1_EntitlementsDataProductDetails;
+  readonly displayImage: string;
   dataProductElement: V1_DataProduct | undefined;
 
   readonly enrichedState = ActionState.create();
@@ -75,7 +76,7 @@ export class DataProductCardState extends BaseProductCardState {
       dataProductElement: observable,
     });
 
-    this.displayImage = this.dataProductImage(displayImageMap);
+    this.displayImage = this.getDataProductImage(displayImageMap);
   }
 
   *init(): GeneratorFn<void> {

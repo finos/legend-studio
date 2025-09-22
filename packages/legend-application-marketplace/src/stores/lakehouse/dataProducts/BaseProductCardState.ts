@@ -22,7 +22,7 @@ import type { LegendMarketplaceBaseStore } from '../../LegendMarketplaceBaseStor
 export abstract class BaseProductCardState {
   readonly marketplaceBaseStore: LegendMarketplaceBaseStore;
   readonly initState = ActionState.create();
-  displayImage!: string;
+  abstract readonly displayImage: string;
 
   constructor(marketplaceBaseStore: LegendMarketplaceBaseStore) {
     this.marketplaceBaseStore = marketplaceBaseStore;
@@ -44,7 +44,7 @@ export abstract class BaseProductCardState {
 
   abstract get versionId(): string | undefined;
 
-  dataProductImage(productImageMap: Map<string, string>): string {
+  getDataProductImage(productImageMap: Map<string, string>): string {
     const maxImageCount = 7;
     const existingImage = productImageMap.get(this.title);
     if (existingImage) {
