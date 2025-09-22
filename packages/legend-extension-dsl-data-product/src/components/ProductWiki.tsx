@@ -139,7 +139,7 @@ export const ProductWiki = observer(
       SupportedProducts,
       SupportedLayoutStates
     >;
-    dataProductDataAccessState?: DataProductDataAccessState | undefined;
+    dataProductDataAccessState: DataProductDataAccessState | undefined;
   }) => {
     const { productViewerState, dataProductDataAccessState } = props;
     const isDataProductViewerState =

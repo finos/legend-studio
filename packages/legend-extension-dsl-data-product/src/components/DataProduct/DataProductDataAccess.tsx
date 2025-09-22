@@ -688,7 +688,7 @@ export const DataProductAccessPointGroupViewer = observer(
 export const DataProducteDataAccess = observer(
   (props: {
     dataProductViewerState: DataProductViewerState;
-    dataProductDataAccessState?: DataProductDataAccessState | undefined;
+    dataProductDataAccessState: DataProductDataAccessState | undefined;
   }) => {
     const { dataProductViewerState, dataProductDataAccessState } = props;
     const applicationStore = useApplicationStore();
