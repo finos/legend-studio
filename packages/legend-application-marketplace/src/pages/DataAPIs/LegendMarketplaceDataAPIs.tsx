@@ -16,11 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
-import { Container } from '@mui/material';
-import { LegendMarketplaceSearchBar } from '../../components/SearchBar/LegendMarketplaceSearchBar.js';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
-import { isNonEmptyString } from '@finos/legend-shared';
-import { generateLakehouseSearchResultsRoute } from '../../__lib__/LegendMarketplaceNavigation.js';
 import { ComingSoonDisplay } from '../../components/ComingSoon/ComingSoonDisplay.js';
 import {
   AnalyticsIcon,
@@ -30,17 +26,6 @@ import {
 } from '@finos/legend-art';
 
 export const LegendMarketplaceDataAPIs = observer(() => {
-  const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
-  const applicationStore = legendMarketplaceBaseStore.applicationStore;
-
-  const handleSearch = (query: string | undefined): void => {
-    if (isNonEmptyString(query)) {
-      applicationStore.navigationService.navigator.goToLocation(
-        generateLakehouseSearchResultsRoute(query),
-      );
-    }
-  };
-
   const featuresPreviewItems = [
     {
       icon: <DashboardIcon />,
@@ -58,13 +43,6 @@ export const LegendMarketplaceDataAPIs = observer(() => {
 
   return (
     <LegendMarketplacePage className="data-api-coming-soon">
-      <Container className="marketplace-lakehouse-search-results__search-container">
-        <LegendMarketplaceSearchBar
-          onSearch={handleSearch}
-          placeholder="Search Legend Marketplace"
-          className="marketplace-lakehouse-search-results__search-bar"
-        />
-      </Container>
       <ComingSoonDisplay
         loadingIcon={<AnalyticsIcon />}
         title={`Data API's`}

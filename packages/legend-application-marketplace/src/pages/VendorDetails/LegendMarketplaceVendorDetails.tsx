@@ -16,20 +16,16 @@
 
 import { observer } from 'mobx-react-lite';
 import { useParams } from '@finos/legend-application/browser';
-import { Container, List, ListItem, Typography } from '@mui/material';
+import { List, ListItem, Typography } from '@mui/material';
 import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
 import { withLegendMarketplaceVendorDataStore } from '../../application/providers/LegendMarketplaceVendorDataProvider.js';
-import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import {
   CompassIcon,
   AnalyticsIcon,
   SparkleStarsIcon,
   DatabaseIcon,
 } from '@finos/legend-art';
-import { isNonEmptyString } from '@finos/legend-shared';
-import { generateLakehouseSearchResultsRoute } from '../../__lib__/LegendMarketplaceNavigation.js';
 import { ComingSoonDisplay } from '../../components/ComingSoon/ComingSoonDisplay.js';
-import { LegendMarketplaceSearchBar } from '../../components/SearchBar/LegendMarketplaceSearchBar.js';
 
 export const LegendMarketplaceVendorDetails =
   withLegendMarketplaceVendorDataStore(
@@ -60,22 +56,11 @@ export const LegendMarketplaceVendorDetails =
     }),
   );
 
-export const LegendMarketplaceVendorDataComingSoon = observer(() => {
-  const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
-  const applicationStore = legendMarketplaceBaseStore.applicationStore;
-
-  const handleSearch = (query: string | undefined): void => {
-    if (isNonEmptyString(query)) {
-      applicationStore.navigationService.navigator.goToLocation(
-        generateLakehouseSearchResultsRoute(query),
-      );
-    }
-  };
-
+export const LegendMarketplaceTerminalsAddOnsComingSoon = observer(() => {
   const featuresPreviewItems = [
     {
       icon: <CompassIcon />,
-      title: 'Data Discovery',
+      title: 'Vendor Data',
     },
     {
       icon: <AnalyticsIcon />,
@@ -89,16 +74,9 @@ export const LegendMarketplaceVendorDataComingSoon = observer(() => {
 
   return (
     <LegendMarketplacePage className="vendor-data-coming-soon">
-      <Container className="marketplace-lakehouse-search-results__search-container">
-        <LegendMarketplaceSearchBar
-          onSearch={handleSearch}
-          placeholder="Search Legend Marketplace"
-          className="marketplace-lakehouse-search-results__search-bar"
-        />
-      </Container>
       <ComingSoonDisplay
         loadingIcon={<DatabaseIcon />}
-        title="Vendor Data"
+        title="Terminals and Add Ons"
         description="Discover quality vendor data available for use"
         featuresPreviewItems={featuresPreviewItems}
       />

@@ -61,7 +61,7 @@ import { MarketplaceLakehouseSearchResults } from '../pages/Lakehouse/searchResu
 import { LegacyDataProduct } from '../pages/Lakehouse/dataProduct/LegacyDataProduct.js';
 import { LegendMarketplaceAgents } from '../pages/Agents/LegendMarketplaceAgents.js';
 import { LegendMarketplaceInventory } from '../pages/Inventory/LegendMarketplaceInventory.js';
-import { LegendMarketplaceVendorDataComingSoon } from '../pages/VendorDetails/LegendMarketplaceVendorDetails.js';
+import { LegendMarketplaceTerminalsAddOnsComingSoon } from '../pages/VendorDetails/LegendMarketplaceVendorDetails.js';
 
 const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();
@@ -254,7 +254,7 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
             />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.VENDOR_DETAILS}
-              element={<LegendMarketplaceVendorDataComingSoon />}
+              element={<LegendMarketplaceTerminalsAddOnsComingSoon />}
             />
 
             <Route
