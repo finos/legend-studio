@@ -43,6 +43,12 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateQueryViewUrl = (
   queryId: string,
 ) => `${queryApplicationUrl}/edit/${queryId}`;
 
+export const EXTERNAL_APPLICATION_NAVIGATION__generateLakehouseViewUrl = (
+  LakehouseApplicationUrl: string,
+  gav: string,
+  dataProductPath: string,
+) => `${LakehouseApplicationUrl}/dataProduct/${gav}/${dataProductPath}`;
+
 export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCViewUrl = (
   studioApplicationUrl: string,
   projectId: string,

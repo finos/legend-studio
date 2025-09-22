@@ -20,11 +20,13 @@ import {
   LegendQueryDataCubeSource,
   RawLegendQueryDataCubeSource,
 } from '../../stores/model/LegendQueryDataCubeSource.js';
+import { LakehouseConsumerDataCubeSource } from '../../stores/model/LakehouseConsumerDataCubeSource.js';
 import { useLegendDataCubeApplicationStore } from '../LegendDataCubeFrameworkProvider.js';
 import {
   EXTERNAL_APPLICATION_NAVIGATION__generateQueryViewUrl,
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCViewUrl,
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioViewUrl,
+  EXTERNAL_APPLICATION_NAVIGATION__generateLakehouseViewUrl,
 } from '../../__lib__/LegendDataCubeNavigation.js';
 import { DataCubeIcon } from '@finos/legend-art';
 import {
@@ -79,6 +81,7 @@ import {
   fetchV1Enumeration,
   isVariableEnumerationType,
 } from '../../stores/builder/source/LegendQueryDataCubeSourceBuilderStateHelper.js';
+import { generateGAVCoordinates } from '@finos/legend-storage';
 
 const handleFetchEnumerations = async (
   enumerationVariables: V1_Variable[],
@@ -256,7 +259,6 @@ const LegendQuerySourceViewer = observer(
           source.info.id,
         )
       : undefined;
-
     const queryHasParameters = params.length > 0;
 
     return (
@@ -459,6 +461,113 @@ const LegendQuerySourceViewer = observer(
   },
 );
 
+const LakehouseConsumerSourceViewer = observer(
+  (props: { source: LakehouseConsumerDataCubeSource }) => {
+    const { source } = props;
+    const store = useLegendDataCubeBuilderStore();
+    const application = useLegendDataCubeApplicationStore();
+    const dataSpacePath = guaranteeNonNullable(source.paths[0]);
+    const accessPoint = guaranteeNonNullable(source.paths[1]);
+    const accessPointPath = `${dataSpacePath}.${accessPoint}`;
+    const link = application.config.LegendLakehouseUrl
+      ? EXTERNAL_APPLICATION_NAVIGATION__generateLakehouseViewUrl(
+          application.config.LegendLakehouseUrl,
+          generateGAVCoordinates(
+            source.dpCoordinates.groupId,
+            source.dpCoordinates.artifactId,
+            source.dpCoordinates.versionId,
+          ),
+          dataSpacePath,
+        )
+      : undefined;
+    return (
+      <div className="h-full w-full px-2 pt-2">
+        <div
+          className={`h-[calc(100%_-_8px)] w-full border border-neutral-300 bg-white`}
+        >
+          <div className="h-full w-full select-none overflow-auto p-2">
+            <div className="flex h-6">
+              <div className="flex h-6 items-center text-xl font-medium">
+                <DataCubeIcon.Table />
+              </div>
+              <div className="ml-1 flex h-6 items-center text-xl font-medium">
+                Lakehouse Consumer
+              </div>
+            </div>
+            {accessPointPath && (
+              <div className="mt-2 flex h-6 w-full">
+                <div className="flex h-full w-[calc(100%_-_24px)] items-center border border-r-0 border-neutral-400 px-1.5">
+                  <a
+                    href={link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="overflow-hidden overflow-ellipsis whitespace-nowrap font-bold text-sky-500 underline"
+                  >
+                    {accessPointPath}
+                  </a>
+                </div>
+                <button
+                  className="flex aspect-square h-full w-6 items-center justify-center border border-neutral-400 bg-neutral-300 hover:brightness-95"
+                  onClick={() => {
+                    store.application.clipboardService
+                      .copyTextToClipboard(link ?? accessPointPath)
+                      .catch((error) =>
+                        store.alertService.alertUnhandledError(error),
+                      );
+                  }}
+                  title="Copy Link"
+                >
+                  <DataCubeIcon.Clipboard />
+                </button>
+              </div>
+            )}
+            {source.environment && (
+              <div className="mt-2 flex h-6 w-full">
+                <div className="flex h-full w-[calc(100%_-_20px)] items-center border border-r-0 border-neutral-400 px-1.5">
+                  {source.environment}
+                </div>
+                <button
+                  className="flex aspect-square h-full w-6 items-center justify-center border border-neutral-400 bg-neutral-300 hover:brightness-95"
+                  onClick={() => {
+                    store.application.clipboardService
+                      .copyTextToClipboard(source.environment)
+                      .catch((error) =>
+                        store.alertService.alertUnhandledError(error),
+                      );
+                  }}
+                  title="Copy Link"
+                >
+                  <DataCubeIcon.Clipboard />
+                </button>
+              </div>
+            )}
+            {source.warehouse && (
+              <div className="mt-2 flex h-6 w-full">
+                <div className="flex h-full w-[calc(100%_-_20px)] items-center border border-r-0 border-neutral-400 px-1.5">
+                  {source.warehouse}
+                </div>
+                <button
+                  className="flex aspect-square h-full w-6 items-center justify-center border border-neutral-400 bg-neutral-300 hover:brightness-95"
+                  onClick={() => {
+                    store.application.clipboardService
+                      .copyTextToClipboard(source.warehouse)
+                      .catch((error) =>
+                        store.alertService.alertUnhandledError(error),
+                      );
+                  }}
+                  title="Copy Link"
+                >
+                  <DataCubeIcon.Clipboard />
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  },
+);
+
 const handleFetchProject = (
   depotServerClient: DepotServerClient,
   model: V1_PureModelContext,
@@ -619,6 +728,8 @@ export const LegendDataCubeSourceViewer = observer(() => {
     return <LegendQuerySourceViewer source={source} />;
   } else if (source instanceof UserDefinedFunctionDataCubeSource) {
     return <UserDefinedFunctionSourceViewer source={source} />;
+  } else if (source instanceof LakehouseConsumerDataCubeSource) {
+    return <LakehouseConsumerSourceViewer source={source} />;
   }
   return (
     <div className="h-full w-full px-2 pt-2">{`Can't display source`}</div>

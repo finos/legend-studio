@@ -736,11 +736,14 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           RawLakehouseConsumerDataCubeSource.serialization.fromJson(value);
 
         const source = new LakehouseConsumerDataCubeSource();
-
         source.model = await this._synthesizeLakehouseConsumerPMCD(
           rawSource,
           source,
         );
+        source.environment = rawSource.environment;
+        source.paths = rawSource.paths;
+        source.warehouse = rawSource.warehouse;
+        source.dpCoordinates = rawSource.dpCoordinates;
 
         //TODO: add support for parameters
         try {
