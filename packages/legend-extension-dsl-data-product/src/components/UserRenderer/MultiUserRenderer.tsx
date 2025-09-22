@@ -15,7 +15,7 @@
  */
 
 import { Link, Popover, Box } from '@mui/material';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { UserRenderer } from './UserRenderer.js';
 import type { GenericLegendApplicationStore } from '@finos/legend-application';
 import type { UserSearchService } from '@finos/legend-shared';
@@ -29,6 +29,20 @@ export const MultiUserRenderer = (props: {
   const { userIds, applicationStore, userSearchService, singleUserClassName } =
     props;
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+
+  // In order to ensure the popover is properly resized after we load
+  // all the target user data, track how many users have finished loading
+  // so that we can trigger a window resize event once all the user data is loaded.
+  const [, setNumUsersLoaded] = useState(0);
+  const finishedLoadingUserCallback = useCallback(() => {
+    setNumUsersLoaded((prev) => {
+      if (prev + 1 === userIds?.length) {
+        // Trigger a window resize event to ensure the Select menu is properly resized
+        window.dispatchEvent(new Event('resize'));
+      }
+      return prev + 1;
+    });
+  }, [userIds]);
 
   if (userIds.length === 1) {
     return (
@@ -64,6 +78,7 @@ export const MultiUserRenderer = (props: {
                 userId={userId}
                 applicationStore={applicationStore}
                 userSearchService={userSearchService}
+                onFinishedLoadingCallback={finishedLoadingUserCallback}
               />
             ))}
           </Box>
