@@ -868,7 +868,7 @@ describe('LakehouseDataProduct', () => {
     });
   });
 
-  describe.only('Support info rendering', () => {
+  describe('Support info rendering', () => {
     test('Renders support info correctly', async () => {
       await setupLakehouseDataProductTest(
         mockSDLCDataProduct,
