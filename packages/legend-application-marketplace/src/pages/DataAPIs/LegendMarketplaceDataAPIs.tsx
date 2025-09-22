@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020-present, Goldman Sachs
+ * Copyright (c) 2025-present, Goldman Sachs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,52 +15,21 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { useParams } from '@finos/legend-application/browser';
-import { Container, List, ListItem, Typography } from '@mui/material';
 import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
-import { withLegendMarketplaceVendorDataStore } from '../../application/providers/LegendMarketplaceVendorDataProvider.js';
+import { Container } from '@mui/material';
+import { LegendMarketplaceSearchBar } from '../../components/SearchBar/LegendMarketplaceSearchBar.js';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
-import {
-  CompassIcon,
-  AnalyticsIcon,
-  SparkleStarsIcon,
-  DatabaseIcon,
-} from '@finos/legend-art';
 import { isNonEmptyString } from '@finos/legend-shared';
 import { generateLakehouseSearchResultsRoute } from '../../__lib__/LegendMarketplaceNavigation.js';
 import { ComingSoonDisplay } from '../../components/ComingSoon/ComingSoonDisplay.js';
-import { LegendMarketplaceSearchBar } from '../../components/SearchBar/LegendMarketplaceSearchBar.js';
+import {
+  AnalyticsIcon,
+  DashboardIcon,
+  InsightsIcon,
+  TrendingUpIcon,
+} from '@finos/legend-art';
 
-export const LegendMarketplaceVendorDetails =
-  withLegendMarketplaceVendorDataStore(
-    observer(() => {
-      const { vendorName } = useParams<Record<string, string | undefined>>();
-
-      const vendorDatasets = ['Dataset 1', 'Dataset 2', 'Dataset 3'];
-
-      return (
-        <LegendMarketplacePage className="legend-marketplace-vendor-data">
-          <div className="legend-marketplace-vendor-data__content">
-            <Typography variant="h3" fontWeight="bold">
-              {vendorName}
-            </Typography>
-            <List sx={{ listStyleType: 'disc', paddingLeft: '16px' }}>
-              {vendorDatasets.map((dataset) => (
-                <ListItem
-                  key={dataset}
-                  sx={{ display: 'list-item', padding: 'unset' }}
-                >
-                  {dataset}
-                </ListItem>
-              ))}
-            </List>
-          </div>
-        </LegendMarketplacePage>
-      );
-    }),
-  );
-
-export const LegendMarketplaceVendorDataComingSoon = observer(() => {
+export const LegendMarketplaceDataAPIs = observer(() => {
   const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
   const applicationStore = legendMarketplaceBaseStore.applicationStore;
 
@@ -74,21 +43,21 @@ export const LegendMarketplaceVendorDataComingSoon = observer(() => {
 
   const featuresPreviewItems = [
     {
-      icon: <CompassIcon />,
-      title: 'Data Discovery',
+      icon: <DashboardIcon />,
+      title: 'Interactive Dashboard',
     },
     {
-      icon: <AnalyticsIcon />,
-      title: 'Terminals',
+      icon: <TrendingUpIcon />,
+      title: 'Trend Analysis',
     },
     {
-      icon: <SparkleStarsIcon />,
-      title: 'Add Ons',
+      icon: <InsightsIcon />,
+      title: 'AI Insights',
     },
   ];
 
   return (
-    <LegendMarketplacePage className="vendor-data-coming-soon">
+    <LegendMarketplacePage className="data-api-coming-soon">
       <Container className="marketplace-lakehouse-search-results__search-container">
         <LegendMarketplaceSearchBar
           onSearch={handleSearch}
@@ -97,9 +66,11 @@ export const LegendMarketplaceVendorDataComingSoon = observer(() => {
         />
       </Container>
       <ComingSoonDisplay
-        loadingIcon={<DatabaseIcon />}
-        title="Vendor Data"
-        description="Discover quality vendor data available for use"
+        loadingIcon={<AnalyticsIcon />}
+        title={`Data API's`}
+        description="Unlock powerful insights with our advanced analytics platform. Get
+                        comprehensive data visualization, and intelligent reporting to drive
+                        data-driven decision making."
         featuresPreviewItems={featuresPreviewItems}
       />
     </LegendMarketplacePage>
