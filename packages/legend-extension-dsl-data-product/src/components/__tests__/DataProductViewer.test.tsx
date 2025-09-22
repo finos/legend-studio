@@ -49,6 +49,7 @@ import {
   TEST__getDataProductViewerState,
 } from '../__test-utils__/StateTestUtils.js';
 import { deserialize } from 'serializr';
+import { ENGINE_TEST_SUPPORT__getClassifierPathMapping } from '@finos/legend-graph/test';
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{
@@ -91,6 +92,7 @@ const setupLakehouseDataProductTest = async (
     dataProductViewerState,
   );
 
+  // lakehouseContractServerClient spies
   createSpy(
     dataProductDataAccessState.lakehouseContractServerClient,
     'getDataContractsFromDID',
@@ -151,12 +153,72 @@ const setupLakehouseDataProductTest = async (
     return mockPendingManagerApprovalTasksResponse as unknown as PlainObject<V1_TaskResponse>;
   });
 
+  // engineServerClient spies
+  createSpy(
+    dataProductViewerState.engineServerClient,
+    'lambdaRelationType',
+  ).mockResolvedValue({
+    _type: 'relationType',
+    columns: [
+      {
+        name: 'varchar_val',
+        multiplicity: {
+          lowerBound: 1,
+          upperBound: 1,
+        },
+        genericType: {
+          multiplicityArguments: [],
+          typeArguments: [],
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'meta::pure::precisePrimitives::Varchar',
+          },
+          typeVariableValues: [{ _type: 'integer', value: 32 }],
+        },
+      },
+      {
+        name: 'int_val',
+        multiplicity: {
+          lowerBound: 1,
+          upperBound: 1,
+        },
+        genericType: {
+          multiplicityArguments: [],
+          typeArguments: [],
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'meta::pure::precisePrimitives::Int',
+          },
+          typeVariableValues: [],
+        },
+      },
+    ],
+  });
+
+  createSpy(
+    dataProductViewerState.engineServerClient,
+    'getClassifierPathMap',
+  ).mockImplementation(async () => {
+    const result = await ENGINE_TEST_SUPPORT__getClassifierPathMapping();
+    return [
+      ...result,
+      {
+        type: 'ingestDefinition',
+        classifierPath:
+          'meta::external::ingest::specification::metamodel::IngestDefinition',
+      },
+    ];
+  });
+
   let renderResult;
 
   await act(async () => {
     renderResult = render(
       <AuthProvider>
-        <ProductViewer productViewerState={dataProductViewerState} />
+        <ProductViewer
+          productViewerState={dataProductViewerState}
+          dataProductDataAccessState={dataProductDataAccessState}
+        />
       </AuthProvider>,
     );
 
