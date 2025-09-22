@@ -50,6 +50,7 @@ import type { User } from 'oidc-client-ts';
 import type { LegendMarketplaceOidcConfig } from './LegendMarketplaceApplicationConfig.js';
 import { LakehouseDataProduct } from '../pages/Lakehouse/dataProduct/LakehouseDataProduct.js';
 import { TerminalProduct } from '../pages/Lakehouse/dataProduct/TerminalProduct.js';
+import { LegendMarketplaceDataAPIs } from '../pages/DataAPIs/LegendMarketplaceDataAPIs.js';
 import { LakehouseEntitlements } from '../pages/Lakehouse/entitlements/LakehouseEntitlements.js';
 import { LakehouseAdmin } from '../pages/Lakehouse/admin/LakehouseAdmin.js';
 import { MarketplaceLakehouseHeader } from '../components/Header/LegendMarketplaceHeader.js';
@@ -58,6 +59,9 @@ import { MarketplaceLakehouseOAuthCallback } from '../pages/Lakehouse/Marketplac
 import { LakehouseSDLCDataProduct } from '../pages/Lakehouse/dataProduct/LakehouseSDLCDataProduct.js';
 import { MarketplaceLakehouseSearchResults } from '../pages/Lakehouse/searchResults/MarketplaceLakehouseSearchResults.js';
 import { LegacyDataProduct } from '../pages/Lakehouse/dataProduct/LegacyDataProduct.js';
+import { LegendMarketplaceAgents } from '../pages/Agents/LegendMarketplaceAgents.js';
+import { LegendMarketplaceInventory } from '../pages/Inventory/LegendMarketplaceInventory.js';
+import { LegendMarketplaceTerminalsAddOnsComingSoon } from '../pages/VendorDetails/LegendMarketplaceVendorDetails.js';
 
 const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();
@@ -235,6 +239,22 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
                 LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_PRODUCT_SEARCH_RESULTS
               }
               element={<ProtectedLakehouseSearchResults />}
+            />
+            <Route
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_APIS}
+              element={<LegendMarketplaceDataAPIs />}
+            />
+            <Route
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.AGENTS}
+              element={<LegendMarketplaceAgents />}
+            />
+            <Route
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.INVENTORY}
+              element={<LegendMarketplaceInventory />}
+            />
+            <Route
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.VENDOR_DETAILS}
+              element={<LegendMarketplaceTerminalsAddOnsComingSoon />}
             />
 
             <Route

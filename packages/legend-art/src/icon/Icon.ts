@@ -123,6 +123,17 @@ import {
   MdOutlineGroupWork,
   MdOutlineTune,
   MdOpenInNew,
+  MdOutlineAnalytics,
+  MdOutlineDashboard,
+  MdInsights,
+  MdTrendingUp,
+  MdOutlineSmartToy,
+  MdAutoAwesome,
+  MdOutlinePsychology,
+  MdOutlineLibraryBooks,
+  MdOutlineExplore,
+  MdOutlineAccountTree,
+  MdGroup,
 } from 'react-icons/md';
 
 export const ManageSearchIcon = MdManageSearch; // to be reviewed
@@ -168,6 +179,17 @@ export const ErrorWarnIcon = MdError;
 export const GroupWorkIcon = MdOutlineGroupWork;
 export const TuneIcon = MdOutlineTune;
 export const OpenNewTabIcon = MdOpenInNew;
+export const AnalyticsIcon = MdOutlineAnalytics;
+export const DashboardIcon = MdOutlineDashboard;
+export const InsightsIcon = MdInsights;
+export const TrendingUpIcon = MdTrendingUp;
+export const RobotOutlineIcon = MdOutlineSmartToy;
+export const SparkleStarsIcon = MdAutoAwesome;
+export const PsychologyIcon = MdOutlinePsychology;
+export const LibraryBooksIcon = MdOutlineLibraryBooks;
+export const CompassIcon = MdOutlineExplore;
+export const AccountTreeIcon = MdOutlineAccountTree;
+export const CollaborationIcon = MdGroup;
 
 //======================================================= VSC =======================================================
 import {

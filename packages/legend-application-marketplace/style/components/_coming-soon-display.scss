@@ -1,0 +1,159 @@
+/**
+ * Copyright (c) 2025-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.coming-soon-display {
+  position: relative;
+  z-index: 10;
+  max-width: 90rem;
+  padding: 4rem 2rem;
+  text-align: center;
+  display: flex;
+  height: 100%;
+  align-items: center;
+
+  &__content {
+    background: rgb(255 255 255 / 95%);
+    backdrop-filter: blur(2rem);
+    border-radius: 2.4rem;
+    padding: 6rem 4rem;
+    box-shadow: 0 2rem 4rem rgb(0 0 0 / 10%);
+    border: 0.1rem solid rgb(255 255 255 / 20%);
+    animation: fadeInUp 0.8s ease-out;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  &__icon {
+    margin-bottom: 3.2rem;
+    font-size: 12rem;
+    color: #ffecd2;
+    animation: iconFloat 3s ease-in-out infinite;
+  }
+
+  &__title {
+    font-size: 5.6rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #003a6d, #0071b8);
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 1.6rem;
+    letter-spacing: -0.1rem;
+  }
+
+  &__subtitle {
+    font-size: 3.2rem;
+    color: #666;
+    margin-bottom: 2.4rem;
+    font-weight: 300;
+    letter-spacing: 0.2rem;
+    text-transform: uppercase;
+  }
+
+  &__description {
+    font-size: 2rem;
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 4.8rem;
+    max-width: 65rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .features-preview {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 3.2rem;
+    margin-bottom: 4.8rem;
+    max-width: 60rem;
+    margin-left: auto;
+    margin-right: auto;
+
+    &__item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.2rem;
+      padding: 2.4rem 1.6rem;
+      background: rgb(255 236 210 / 15%);
+      border-radius: 1.6rem;
+      transition: all 0.3s ease;
+      border: 0.1rem solid rgb(255 236 210 / 30%);
+
+      &:hover {
+        transform: translateY(-5px);
+        background: rgb(255 236 210 / 25%);
+        box-shadow: 0 0.8rem 2rem rgb(255 236 210 / 30%);
+      }
+
+      &__icon {
+        font-size: 1.5rem;
+        // color: #fcb69f;
+      }
+
+      &__text {
+        font-size: 1.5rem;
+        font-weight: 500;
+        color: #555;
+        text-align: center;
+      }
+    }
+  }
+}
+
+.data-api-coming-soon {
+  background: linear-gradient(135deg, #121212 0%, #3a3a3a 100%);
+}
+
+.agents-coming-soon {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.inventory-coming-soon {
+  background: linear-gradient(135deg, #4a90e2 0%, #003a6d 100%);
+}
+
+.vendor-data-coming-soon {
+  background: linear-gradient(135deg, #667eea 0%, #003a6d 100%);
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes iconFloat {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  33% {
+    transform: translateY(-25px) rotate(120deg);
+  }
+
+  66% {
+    transform: translateY(15px) rotate(240deg);
+  }
+}
