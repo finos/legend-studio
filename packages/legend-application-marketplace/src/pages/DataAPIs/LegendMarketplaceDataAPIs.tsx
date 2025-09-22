@@ -16,7 +16,6 @@
 
 import { observer } from 'mobx-react-lite';
 import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
-import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import { ComingSoonDisplay } from '../../components/ComingSoon/ComingSoonDisplay.js';
 import {
   AnalyticsIcon,
