@@ -22,6 +22,7 @@ import type { LegendMarketplaceBaseStore } from '../../LegendMarketplaceBaseStor
 export abstract class BaseProductCardState {
   readonly marketplaceBaseStore: LegendMarketplaceBaseStore;
   readonly initState = ActionState.create();
+  abstract readonly displayImage: string;
 
   constructor(marketplaceBaseStore: LegendMarketplaceBaseStore) {
     this.marketplaceBaseStore = marketplaceBaseStore;
@@ -42,4 +43,17 @@ export abstract class BaseProductCardState {
   abstract get icon(): V1_DataProductIcon | undefined;
 
   abstract get versionId(): string | undefined;
+
+  getDataProductImage(productImageMap: Map<string, string>): string {
+    const maxImageCount = 7;
+    const existingImage = productImageMap.get(this.title);
+    if (existingImage) {
+      return existingImage;
+    }
+
+    const randomIndex = Math.floor(Math.random() * maxImageCount) + 1;
+    const selectedImage = `/assets/images${randomIndex}.jpg`;
+    productImageMap.set(this.title, selectedImage);
+    return selectedImage;
+  }
 }

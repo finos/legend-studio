@@ -76,7 +76,7 @@ export class DataProductCardState extends BaseProductCardState {
       dataProductElement: observable,
     });
 
-    this.displayImage = this.dataProductImage(displayImageMap);
+    this.displayImage = this.getDataProductImage(displayImageMap);
   }
 
   *init(): GeneratorFn<void> {
@@ -150,18 +150,5 @@ export class DataProductCardState extends BaseProductCardState {
     | V1_EntitlementsLakehouseEnvironmentType
     | undefined {
     return this.dataProductDetails.lakehouseEnvironment?.type;
-  }
-
-  dataProductImage(productImageMap: Map<string, string>): string {
-    const maxImageCount = 7;
-    const existingImage = productImageMap.get(this.title);
-    if (existingImage) {
-      return existingImage;
-    }
-
-    const randomIndex = Math.floor(Math.random() * maxImageCount) + 1;
-    const selectedImage = `/assets/images${randomIndex}.jpg`;
-    productImageMap.set(this.title, selectedImage);
-    return selectedImage;
   }
 }
