@@ -82,6 +82,7 @@ const setupLakehouseDataProductTest = async (
   dataProductObject: PlainObject<V1_DataProduct>,
   entitlementsDataProductDetailsObject: PlainObject<V1_EntitlementsDataProductDetails>,
   mockContracts: V1_DataContract[],
+  omitDataProductDataAccessState?: boolean,
 ) => {
   const dataProduct = deserialize(V1_dataProductModelSchema, dataProductObject);
   const entitlementsDataProductDetails = deserialize(
@@ -224,12 +225,18 @@ const setupLakehouseDataProductTest = async (
   let renderResult;
 
   await act(async () => {
-    await flowResult(dataProductDataAccessState.init(undefined));
+    if (!omitDataProductDataAccessState) {
+      await flowResult(dataProductDataAccessState.init(undefined));
+    }
     renderResult = render(
       <AuthProvider>
         <ProductViewer
           productViewerState={dataProductViewerState}
-          dataProductDataAccessState={dataProductDataAccessState}
+          dataProductDataAccessState={
+            omitDataProductDataAccessState
+              ? undefined
+              : dataProductDataAccessState
+          }
         />
       </AuthProvider>,
     );
@@ -242,7 +249,7 @@ const setupLakehouseDataProductTest = async (
 
 describe('DataProductViewer', () => {
   describe('Basic rendering', () => {
-    test('Loads LakehouseDataProduct with SDLC Data Product and displays title, description, and access point groups', async () => {
+    test('Loads DataProductViewer and displays title, description, and access point groups', async () => {
       await setupLakehouseDataProductTest(
         mockSDLCDataProduct,
         mockEntitlementsSDLCDataProduct,
@@ -259,28 +266,57 @@ describe('DataProductViewer', () => {
       await screen.findByText('Customer demographics data access point');
     });
 
-    // test('Loads LakehouseDataProduct with Ad-Hoc Data Product and displays title, description, and access point groups', async () => {
-    //   await setupLakehouseDataProductTest(
-    //     MOCK_DataProductId.MOCK_ADHOC_DATAPRODUCT,
-    //     2222,
-    //     [],
-    //   );
+    test('Loads DataProductViewer without DataProductDataAccessState and displays title, description, and access point groups', async () => {
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        true,
+      );
 
-    //   await screen.findByText('Mock Ad-Hoc Data Product');
-    //   screen.getByText(
-    //     'Flexible and dynamic data product for ad hoc analysis and reporting',
-    //   );
-    //   screen.getByText('GROUP1');
-    //   screen.getByText('Test ad-hoc access point group');
-    //   await screen.findByText('test_view');
-    //   await screen.findByText('No description to provide');
-    // });
+      await screen.findByText('Mock SDLC Data Product');
+      screen.getByText(
+        'Comprehensive customer analytics data for business intelligence and reporting',
+      );
+      screen.getByText('GROUP1');
+      screen.getByText('Test access point group');
+      await screen.findByText('customer_demographics');
+      await screen.findByText('Customer demographics data access point');
+    });
 
     test('Access Point "More Info" button shows table with access point columns and types', async () => {
       await setupLakehouseDataProductTest(
         mockSDLCDataProduct,
         mockEntitlementsSDLCDataProduct,
         [],
+      );
+
+      await screen.findByText('customer_demographics');
+      await screen.findByText('Customer demographics data access point');
+      const apgContainer = guaranteeNonNullable(
+        (await screen.findByText('GROUP1')).parentElement?.parentElement
+          ?.parentElement,
+      );
+      const moreInfoButton = guaranteeNonNullable(
+        apgContainer.querySelector('.ag-icon-tree-closed'),
+      );
+      fireEvent.click(moreInfoButton);
+
+      await screen.findByText('Column Name');
+      screen.getByText('Column Type');
+
+      await screen.findByText('varchar_val');
+      screen.getByText('Varchar(32)');
+      screen.getByText('int_val');
+      screen.getByText('Int');
+    });
+
+    test('Access Point "More Info" button shows table with access point columns and types even when DataProductDataAccessState is not configured', async () => {
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        true,
       );
 
       await screen.findByText('customer_demographics');
@@ -918,6 +954,20 @@ describe('DataProductViewer', () => {
       screen.getByText(
         'Note: Enterprise APGs only require contracts for System Accounts. Regular users do not need to request access.',
       );
+    });
+
+    test('displays disabled UNKNOWN button when no DataProductDataAccessState is provided', async () => {
+      const mockContracts: V1_DataContract[] = [];
+
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        mockContracts,
+        true,
+      );
+
+      const button = await screen.findByRole('button', { name: 'UNKNOWN' });
+      expect(button.hasAttribute('disabled')).toBe(true);
     });
   });
 
