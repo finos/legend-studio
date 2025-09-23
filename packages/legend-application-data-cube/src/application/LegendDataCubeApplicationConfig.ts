@@ -56,7 +56,7 @@ export class LegendDataCubeApplicationConfig extends LegendApplicationConfig {
   readonly depotServerUrl: string;
   readonly lakehousePlatformUrl: string;
   readonly lakehouseContractUrl: string;
-  readonly LegendLakehouseUrl?: string;
+  readonly LegendLakehouseUrl?: string | undefined;
   readonly engineQueryServerUrl?: string | undefined;
   readonly queryApplicationUrl?: string | undefined;
   readonly studioApplicationUrl?: string | undefined;
@@ -113,12 +113,11 @@ export class LegendDataCubeApplicationConfig extends LegendApplicationConfig {
         `Can't configure application: 'lakehouse.url' field is missing or empty`,
       ),
     );
-    this.LegendLakehouseUrl = LegendApplicationConfig.resolveAbsoluteUrl(
-      guaranteeNonEmptyString(
-        input.configData.lakehouse.LegendLakehouseUrl,
-        `Can't configure application: 'lakehouse.LegendUrl' field is missing or empty`,
-      ),
-    );
+    this.LegendLakehouseUrl = input.configData.lakehouse.LegendLakehouseUrl
+      ? LegendApplicationConfig.resolveAbsoluteUrl(
+          input.configData.lakehouse.LegendLakehouseUrl,
+        )
+      : undefined;
 
     // query
     if (input.configData.query?.url) {
