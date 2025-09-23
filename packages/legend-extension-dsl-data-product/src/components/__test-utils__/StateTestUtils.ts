@@ -41,6 +41,7 @@ import {
 import { jest } from '@jest/globals';
 import { DataProductDataAccessState } from '../../stores/DataProduct/DataProductDataAccessState.js';
 import { guaranteeType } from '@finos/legend-shared';
+import { Core_DataProductDataAccess_LegendApplicationPlugin } from '../Core_DataProductDataAccess_LegendApplicationPlugin.js';
 
 export class TEST__LegendApplicationPluginManager
   extends LegendApplicationPluginManager<LegendApplicationPlugin>
@@ -160,11 +161,10 @@ export const TEST__getDataProductDataAccessState = (
     lakehouseContractServerClient,
     lakehousePlatformServerClient,
     lakehouseIngestServerClient,
-    [],
+    [new Core_DataProductDataAccess_LegendApplicationPlugin()],
     {
       getContractTaskUrl: jest.fn(() => ''),
       getDataProductUrl: jest.fn(() => ''),
-      getContractConsumerTypeRendererConfigs: jest.fn(() => []),
     },
   );
 };

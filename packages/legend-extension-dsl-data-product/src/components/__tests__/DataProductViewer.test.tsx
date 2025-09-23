@@ -26,6 +26,7 @@ import {
   V1_ContractState,
   V1_dataProductModelSchema,
   V1_EnrichedUserApprovalStatus,
+  V1_EntitlementsDataProductDetailsModelSchema,
   V1_OrganizationalScopeType,
   V1_UserType,
 } from '@finos/legend-graph';
@@ -50,6 +51,7 @@ import {
 } from '../__test-utils__/StateTestUtils.js';
 import { deserialize } from 'serializr';
 import { ENGINE_TEST_SUPPORT__getClassifierPathMapping } from '@finos/legend-graph/test';
+import { flowResult } from 'mobx';
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{
@@ -78,10 +80,14 @@ jest.mock('swiper/modules', () => ({
 
 const setupLakehouseDataProductTest = async (
   dataProductObject: PlainObject<V1_DataProduct>,
-  entitlementsDataProductDetails: V1_EntitlementsDataProductDetails,
+  entitlementsDataProductDetailsObject: PlainObject<V1_EntitlementsDataProductDetails>,
   mockContracts: V1_DataContract[],
 ) => {
   const dataProduct = deserialize(V1_dataProductModelSchema, dataProductObject);
+  const entitlementsDataProductDetails = deserialize(
+    V1_EntitlementsDataProductDetailsModelSchema,
+    entitlementsDataProductDetailsObject,
+  );
 
   const dataProductViewerState = TEST__getDataProductViewerState(
     dataProduct,
@@ -90,6 +96,11 @@ const setupLakehouseDataProductTest = async (
 
   const dataProductDataAccessState = TEST__getDataProductDataAccessState(
     dataProductViewerState,
+  );
+
+  // application store spies
+  dataProductViewerState.applicationStore.identityService.setCurrentUser(
+    'test-consumer-user-id',
   );
 
   // lakehouseContractServerClient spies
@@ -213,6 +224,7 @@ const setupLakehouseDataProductTest = async (
   let renderResult;
 
   await act(async () => {
+    await flowResult(dataProductDataAccessState.init(undefined));
     renderResult = render(
       <AuthProvider>
         <ProductViewer
@@ -228,7 +240,7 @@ const setupLakehouseDataProductTest = async (
   return { renderResult };
 };
 
-describe('LakehouseDataProduct', () => {
+describe('DataProductViewer', () => {
   describe('Basic rendering', () => {
     test('Loads LakehouseDataProduct with SDLC Data Product and displays title, description, and access point groups', async () => {
       await setupLakehouseDataProductTest(

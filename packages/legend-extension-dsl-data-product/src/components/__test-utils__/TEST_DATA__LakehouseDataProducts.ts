@@ -22,44 +22,7 @@ import {
 } from '@finos/legend-graph';
 import type { PlainObject } from '@finos/legend-shared';
 
-// export const mockEntitlementsSDLCDataProduct: V1_EntitlementsDataProductDetailsResponse =
-//   {
-//     dataProducts: [
-//       {
-//         id: 'MOCK_SDLC_DATAPRODUCT',
-//         deploymentId: 11111,
-//         title: 'Mock SDLC Data Product',
-//         description:
-//           'Comprehensive customer analytics data for business intelligence and reporting',
-//         origin: {
-//           type: 'SdlcDeployment',
-//           group: 'com.example.analytics',
-//           artifact: 'customer-analytics',
-//           version: '1.2.0',
-//         },
-//         lakehouseEnvironment: {
-//           producerEnvironmentName: 'production-analytics',
-//           type: V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
-//         },
-//         dataProduct: {
-//           name: 'MOCK_SDLC_DATAPRODUCT',
-//           accessPoints: [
-//             {
-//               name: 'customer_demographics',
-//               groups: ['GROUP1'],
-//             },
-//           ],
-//           accessPointGroupStereotypeMappings: [],
-//           owner: {
-//             appDirId: 12345,
-//             level: V1_AppDirLevel.DEPLOYMENT,
-//           },
-//         },
-//       },
-//     ],
-//   };
-
-export const mockEntitlementsSDLCDataProduct: V1_EntitlementsDataProductDetails =
+export const mockEntitlementsSDLCDataProduct: PlainObject<V1_EntitlementsDataProductDetails> =
   {
     id: 'MOCK_SDLC_DATAPRODUCT',
     deploymentId: 11111,
@@ -148,7 +111,7 @@ export const mockSDLCDataProduct: PlainObject<V1_DataProduct> = {
   },
 };
 
-export const mockEntitlementsSDLCDataProductNoSupportInfo: V1_EntitlementsDataProductDetails =
+export const mockEntitlementsSDLCDataProductNoSupportInfo: PlainObject<V1_EntitlementsDataProductDetails> =
   {
     id: 'MOCK_SDLC_DATAPRODUCT',
     deploymentId: 11111,
@@ -218,7 +181,7 @@ export const mockSDLCDataProductNoSupportInfo: PlainObject<V1_DataProduct> = {
   ],
 };
 
-export const mockEntitlementsEnterpriseDataProduct: V1_EntitlementsDataProductDetails =
+export const mockEntitlementsEnterpriseDataProduct: PlainObject<V1_EntitlementsDataProductDetails> =
   {
     id: 'MOCK_ENTERPRISE_DATAPRODUCT',
     deploymentId: 33333,
@@ -294,7 +257,7 @@ export const mockEnterpriseDataProduct: PlainObject<V1_DataProduct> = {
   ],
 };
 
-export const mockEntitlementsAdHocDataProduct: V1_EntitlementsDataProductDetails =
+export const mockEntitlementsAdHocDataProduct: PlainObject<V1_EntitlementsDataProductDetails> =
   {
     id: 'MOCK_ADHOC_DATAPRODUCT',
     deploymentId: 22222,
