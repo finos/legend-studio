@@ -2456,6 +2456,7 @@ __metadata:
     rimraf: "npm:6.0.1"
     sass: "npm:1.85.0"
     serializr: "npm:3.0.3"
+    swiper: "npm:^12.0.2"
     typescript: "npm:5.7.3"
     yaml: "npm:2.7.0"
   peerDependencies:
@@ -19904,6 +19905,13 @@ __metadata:
   bin:
     svgo: ./bin/svgo
   checksum: 10/82fdea9b938884d808506104228e4d3af0050d643d5b46ff7abc903ff47a91bbf6561373394868aaf07a28f006c4057b8fbf14bbd666298abdd7cc590d4f7700
+  languageName: node
+  linkType: hard
+
+"swiper@npm:^12.0.2":
+  version: 12.0.2
+  resolution: "swiper@npm:12.0.2"
+  checksum: 10/56df7e0b3a8c328e6eed735989d13dc83b9cb319b4940c74bd7e43a5c82efe6b98987b0797252bb533e90e8f4739339a459b047234b7397efc9715046db1222d
   languageName: node
   linkType: hard
 
