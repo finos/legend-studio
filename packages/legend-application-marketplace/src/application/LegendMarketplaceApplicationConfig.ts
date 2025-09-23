@@ -54,6 +54,13 @@ class LegendMarketplaceApplicationCoreOptions {
 
   newsletterUrl!: string;
 
+  /**
+   * Indicates if we should show a checkbox to filter
+   * on/off data products in dev ingest environments
+   * in the Marketplace search results page.
+   */
+  showDevIngestEnvironmentFilter = false;
+
   private static readonly serialization = new SerializationFactory(
     createModelSchema(LegendMarketplaceApplicationCoreOptions, {
       enableMarketplacePages: optional(primitive()),
@@ -61,6 +68,7 @@ class LegendMarketplaceApplicationCoreOptions {
         usingModelSchema(DataProductConfig.serialization.schema),
       ),
       newsletterUrl: primitive(),
+      showDevIngestEnvironmentFilter: optional(primitive()),
     }),
   );
 
