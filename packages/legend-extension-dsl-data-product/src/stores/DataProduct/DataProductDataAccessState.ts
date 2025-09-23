@@ -196,10 +196,10 @@ export class DataProductDataAccessState {
       didNode.appDirId = this.dataProductViewerState.deploymentId;
       didNode.level = V1_AppDirLevel.DEPLOYMENT;
       const _contracts =
-        (await this.lakehouseContractServerClient.getDataContractsFromDID(
+        await this.lakehouseContractServerClient.getDataContractsFromDID(
           [serialize(V1_AppDirNodeModelSchema, didNode)],
           token,
-        )) as PlainObject<V1_DataContractsResponse>;
+        );
       const dataProductContracts =
         V1_dataContractsResponseModelSchemaToContracts(
           _contracts,

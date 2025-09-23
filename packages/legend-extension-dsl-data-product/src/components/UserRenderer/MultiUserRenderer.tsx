@@ -36,7 +36,7 @@ export const MultiUserRenderer = (props: {
   const [, setNumUsersLoaded] = useState(0);
   const finishedLoadingUserCallback = useCallback(() => {
     setNumUsersLoaded((prev) => {
-      if (prev + 1 === userIds?.length) {
+      if (prev + 1 === userIds.length) {
         // Trigger a window resize event to ensure the Select menu is properly resized
         window.dispatchEvent(new Event('resize'));
       }

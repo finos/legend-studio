@@ -61,7 +61,7 @@ export const EntitlementsDataContractCreator = observer(
       useMemo(
         () =>
           dataAccessState.dataAccessPlugins
-            .map((plugin) => plugin?.getContractConsumerTypeRendererConfigs?.())
+            .map((plugin) => plugin.getContractConsumerTypeRendererConfigs?.())
             .flat()
             .filter(isNonNullable)
             .filter(
