@@ -472,7 +472,7 @@ export const DataProductAccessPointGroupViewer = observer(
       }
 
       const tooltipText = dataAccessState?.dataAccessPlugins
-        .map((plugin) => plugin.getExtraAccessPointGroupAccessInfo?.(val))
+        .flatMap((plugin) => plugin.getExtraAccessPointGroupAccessInfo?.(val))
         .filter(isNonEmptyString)[0];
 
       return (
