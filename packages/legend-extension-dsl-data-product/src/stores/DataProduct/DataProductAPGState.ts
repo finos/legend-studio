@@ -160,6 +160,10 @@ export class DataProductAPGState {
     );
   }
 
+  get viewerState(): DataProductViewerState {
+    return this.accessState.viewerState;
+  }
+
   setAssociatedContract(
     val: V1_DataContract | undefined,
     lakehouseContractServerClient: LakehouseContractServerClient,

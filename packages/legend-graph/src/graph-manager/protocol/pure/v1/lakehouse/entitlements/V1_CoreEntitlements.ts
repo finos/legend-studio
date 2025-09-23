@@ -52,6 +52,10 @@ export class V1_Role {
   name!: string;
 }
 
+export class V1_ProducerScope extends V1_OrganizationalScope {
+  did!: string;
+}
+
 export class V1_RoleMembership {
   user!: V1_User;
   role!: V1_Role;
