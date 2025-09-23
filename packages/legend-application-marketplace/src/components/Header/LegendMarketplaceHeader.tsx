@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { clsx, LegendLogo } from '@finos/legend-art';
+import { clsx } from '@finos/legend-art';
 import { AppBar, Box, Container, Toolbar } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { LEGEND_MARKETPLACE_TEST_ID } from '../../__lib__/LegendMarketplaceTesting.js';
@@ -70,7 +70,7 @@ const LegendMarketplaceBaseHeader = observer(
     pages: { title: string; urlRoute: string }[];
     showIcons?: boolean;
   }) => {
-    const { headerName, homeUrl, pages, showIcons } = props;
+    const { homeUrl, pages, showIcons } = props;
 
     const applicationStore = useApplicationStore();
 
@@ -132,8 +132,12 @@ const LegendMarketplaceBaseHeader = observer(
               className="legend-marketplace-header__name"
               onClick={() => navigateToHome()}
             >
-              <LegendLogo />
-              {headerName}
+              <img
+                src="/assets/legendmarketplacehomelogo.png"
+                alt="Legend Logo"
+                className="legend-marketplace-header__logo"
+                style={{ height: 28 }}
+              />
             </div>
             <LegendMarketPlaceHeaderTabs pages={pages} />
             {showIcons && <LegendMarketplaceIconToolbar />}
@@ -171,7 +175,7 @@ export const LegendMarketplaceHeader = observer(
 export const MarketplaceLakehouseHeader = observer(() => {
   return (
     <LegendMarketplaceBaseHeader
-      headerName="Marketplace"
+      headerName=""
       homeUrl={LEGEND_MARKETPLACE_ROUTE_PATTERN.HOME_PAGE}
       pages={[
         {
