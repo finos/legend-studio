@@ -48,6 +48,17 @@ jest.mock('@finos/legend-graph', () => {
   };
 });
 
+jest.mock('swiper/react', () => ({
+  Swiper: ({}) => <div></div>,
+  SwiperSlide: ({}) => <div></div>,
+}));
+
+jest.mock('swiper/modules', () => ({
+  Navigation: ({}) => <div></div>,
+  Pagination: ({}) => <div></div>,
+  Autoplay: ({}) => <div></div>,
+}));
+
 export const TEST__provideMockLegendMarketplaceBaseStore =
   async (customization?: {
     mockBaseStore?: LegendMarketplaceBaseStore;

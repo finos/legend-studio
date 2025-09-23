@@ -62,6 +62,17 @@ jest.mock('react-oidc-context', () => {
   return MOCK__reactOIDCContext;
 });
 
+jest.mock('swiper/react', () => ({
+  Swiper: ({}) => <div></div>,
+  SwiperSlide: ({}) => <div></div>,
+}));
+
+jest.mock('swiper/modules', () => ({
+  Navigation: ({}) => <div></div>,
+  Pagination: ({}) => <div></div>,
+  Autoplay: ({}) => <div></div>,
+}));
+
 test(integrationTest('Editing access point groups'), async () => {
   const MOCK__editorStore = TEST__provideMockedEditorStore({ pluginManager });
   const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
