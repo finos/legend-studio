@@ -469,9 +469,9 @@ const LakehouseConsumerSourceViewer = observer(
     const dataSpacePath = guaranteeNonNullable(source.paths[0]);
     const accessPoint = guaranteeNonNullable(source.paths[1]);
     const accessPointPath = `${dataSpacePath}.${accessPoint}`;
-    const link = application.config.LegendLakehouseUrl
+    const link = application.config.legendLakehouseUrl
       ? EXTERNAL_APPLICATION_NAVIGATION__generateLakehouseViewUrl(
-          application.config.LegendLakehouseUrl,
+          application.config.legendLakehouseUrl,
           generateGAVCoordinates(
             source.dpCoordinates.groupId,
             source.dpCoordinates.artifactId,
