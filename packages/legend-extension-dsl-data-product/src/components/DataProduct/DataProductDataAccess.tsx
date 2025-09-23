@@ -489,6 +489,12 @@ export const DataProductAccessPointGroupViewer = observer(
                 apgState.handlingContractsState.isInProgress ||
                 apgState.fetchingUserAccessState.isInProgress
               }
+              disabled={dataAccessState === undefined}
+              title={
+                dataAccessState === undefined
+                  ? 'Data access state not configured'
+                  : undefined
+              }
               sx={{ cursor: onClick === undefined ? 'default' : 'pointer' }}
             >
               {buttonLabel}
@@ -511,12 +517,17 @@ export const DataProductAccessPointGroupViewer = observer(
             <Button
               size="small"
               onClick={() => setIsEntitledButtonGroupMenuOpen((prev) => !prev)}
-              title="More options"
+              title={
+                dataAccessState === undefined
+                  ? 'Data access state not configured'
+                  : 'More options'
+              }
               loading={
                 apgState.fetchingAccessState.isInProgress ||
                 apgState.handlingContractsState.isInProgress ||
                 apgState.fetchingUserAccessState.isInProgress
               }
+              disabled={dataAccessState === undefined}
             >
               <CaretDownIcon />
             </Button>
