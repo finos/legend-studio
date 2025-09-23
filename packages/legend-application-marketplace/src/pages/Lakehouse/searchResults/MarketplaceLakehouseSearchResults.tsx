@@ -269,7 +269,8 @@ const SearchResultsSortFilterPanel = observer(
                     />
                     {
                       // eslint-disable-next-line no-process-env
-                      process.env.NODE_ENV !== 'production' && (
+                      searchResultsStore.marketplaceBaseStore.applicationStore
+                        .config.options.showDevIngestEnvironmentFilter && (
                         <FormControlLabel
                           control={
                             <Checkbox

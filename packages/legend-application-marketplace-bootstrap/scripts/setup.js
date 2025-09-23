@@ -89,6 +89,7 @@ export const setup = (outputDir) => {
         extensions: {
           core: {
             enableMarketplacePages: true,
+            showDevIngestEnvironmentFilter: true,
           },
         },
       },
