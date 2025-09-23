@@ -39,6 +39,11 @@ import { DataProductCardState } from '../../stores/lakehouse/dataProducts/DataPr
 import { LegacyDataProductCardState } from '../../stores/lakehouse/dataProducts/LegacyDataProductCardState.js';
 import { generateGAVCoordinates } from '@finos/legend-storage';
 import { DemoModal } from './DemoModal.js';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination, Autoplay } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
 
 export const MarketplaceLakehouseHome = observer(() => {
   const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
@@ -48,6 +53,8 @@ export const MarketplaceLakehouseHome = observer(() => {
     BaseProductCardState[]
   >([]);
   const [loading, setLoading] = useState(false);
+
+  const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
     const loadDataProducts = async (): Promise<void> => {
@@ -94,6 +101,19 @@ export const MarketplaceLakehouseHome = observer(() => {
         generateLakehouseSearchResultsRoute(query),
       );
     }
+  };
+
+  const getCarouselTitle = (): string => {
+    if (activeIndex === 0) {
+      return 'New';
+    }
+    if (activeIndex === 1) {
+      return 'Trending';
+    }
+    if (activeIndex === 2) {
+      return 'Sponsored';
+    }
+    return '';
   };
 
   const newsletterNavigation = (): void => {
@@ -152,41 +172,145 @@ export const MarketplaceLakehouseHome = observer(() => {
             <CubesLoadingIndicatorIcon />
           </CubesLoadingIndicator>
         ) : (
-          <Grid
-            container={true}
-            spacing={{ xs: 2, sm: 3, lg: 4 }}
-            columns={{ xs: 1, sm: 2, md: 3, lg: 4, xxxl: 5 }}
-            className="marketplace-lakehouse-home__data-product-cards"
-          >
-            {highlightedDataProducts.map((productCardState) => (
-              <Grid key={productCardState.guid} size={1}>
-                <LakehouseHighlightedProductCard
-                  productCardState={productCardState}
-                  onClick={() => {
-                    const path =
-                      productCardState instanceof DataProductCardState
-                        ? generateLakehouseDataProductPath(
-                            productCardState.dataProductDetails.id,
-                            productCardState.dataProductDetails.deploymentId,
-                          )
-                        : productCardState instanceof LegacyDataProductCardState
-                          ? generateLegacyDataProductPath(
-                              generateGAVCoordinates(
-                                productCardState.groupId,
-                                productCardState.artifactId,
-                                productCardState._versionId,
-                              ),
-                              productCardState.dataSpace.path,
-                            )
-                          : '';
-                    applicationStore.navigationService.navigator.goToLocation(
-                      path,
-                    );
-                  }}
-                />
-              </Grid>
-            ))}
-          </Grid>
+          <>
+            <div className="marketplace-lakehouse-home__carousel-header">
+              <div className="marketplace-lakehouse-home__carousel-title">
+                {getCarouselTitle()}
+              </div>
+            </div>
+            <Swiper
+              modules={[Navigation, Pagination, Autoplay]}
+              // spaceBetween={30}
+              slidesPerView={1}
+              navigation={false}
+              pagination={{ clickable: true }}
+              autoplay={{
+                delay: 5000,
+                disableOnInteraction: false,
+                pauseOnMouseEnter: true,
+              }}
+              onSlideChange={(swiper) => setActiveIndex(swiper.activeIndex)}
+              className="marketplace-lakehouse-home__carousel"
+            >
+              <SwiperSlide key={1}>
+                <Grid
+                  container={true}
+                  spacing={{ xs: 2, sm: 3, lg: 4, xl: 6 }}
+                  columns={{ xs: 1, sm: 2, md: 3, lg: 4, xxxl: 5 }}
+                  className="marketplace-lakehouse-home__data-product-cards"
+                >
+                  {highlightedDataProducts.map((productCardState) => (
+                    <Grid key={productCardState.guid} size={1}>
+                      <LakehouseHighlightedProductCard
+                        productCardState={productCardState}
+                        onClick={() => {
+                          const path =
+                            productCardState instanceof DataProductCardState
+                              ? generateLakehouseDataProductPath(
+                                  productCardState.dataProductDetails.id,
+                                  productCardState.dataProductDetails
+                                    .deploymentId,
+                                )
+                              : productCardState instanceof
+                                  LegacyDataProductCardState
+                                ? generateLegacyDataProductPath(
+                                    generateGAVCoordinates(
+                                      productCardState.groupId,
+                                      productCardState.artifactId,
+                                      productCardState._versionId,
+                                    ),
+                                    productCardState.dataSpace.path,
+                                  )
+                                : '';
+                          applicationStore.navigationService.navigator.goToLocation(
+                            path,
+                          );
+                        }}
+                      />
+                    </Grid>
+                  ))}
+                </Grid>
+              </SwiperSlide>
+              <SwiperSlide key={2}>
+                <Grid
+                  container={true}
+                  spacing={{ xs: 2, sm: 3, lg: 4, xl: 6 }}
+                  columns={{ xs: 1, sm: 2, md: 3, lg: 4, xxxl: 5 }}
+                  className="marketplace-lakehouse-home__data-product-cards"
+                >
+                  {highlightedDataProducts.map((productCardState) => (
+                    <Grid key={productCardState.guid} size={1}>
+                      <LakehouseHighlightedProductCard
+                        productCardState={productCardState}
+                        onClick={() => {
+                          const path =
+                            productCardState instanceof DataProductCardState
+                              ? generateLakehouseDataProductPath(
+                                  productCardState.dataProductDetails.id,
+                                  productCardState.dataProductDetails
+                                    .deploymentId,
+                                )
+                              : productCardState instanceof
+                                  LegacyDataProductCardState
+                                ? generateLegacyDataProductPath(
+                                    generateGAVCoordinates(
+                                      productCardState.groupId,
+                                      productCardState.artifactId,
+                                      productCardState._versionId,
+                                    ),
+                                    productCardState.dataSpace.path,
+                                  )
+                                : '';
+                          applicationStore.navigationService.navigator.goToLocation(
+                            path,
+                          );
+                        }}
+                      />
+                    </Grid>
+                  ))}
+                </Grid>
+              </SwiperSlide>
+              <SwiperSlide key={3}>
+                <Grid
+                  container={true}
+                  spacing={{ xs: 2, sm: 3, lg: 4, xl: 6 }}
+                  columns={{ xs: 1, sm: 2, md: 3, lg: 4, xxxl: 5 }}
+                  className="marketplace-lakehouse-home__data-product-cards"
+                >
+                  {highlightedDataProducts.map((productCardState) => (
+                    <Grid key={productCardState.guid} size={1}>
+                      <LakehouseHighlightedProductCard
+                        productCardState={productCardState}
+                        onClick={() => {
+                          const path =
+                            productCardState instanceof DataProductCardState
+                              ? generateLakehouseDataProductPath(
+                                  productCardState.dataProductDetails.id,
+                                  productCardState.dataProductDetails
+                                    .deploymentId,
+                                )
+                              : productCardState instanceof
+                                  LegacyDataProductCardState
+                                ? generateLegacyDataProductPath(
+                                    generateGAVCoordinates(
+                                      productCardState.groupId,
+                                      productCardState.artifactId,
+                                      productCardState._versionId,
+                                    ),
+                                    productCardState.dataSpace.path,
+                                  )
+                                : '';
+                          applicationStore.navigationService.navigator.goToLocation(
+                            path,
+                          );
+                        }}
+                      />
+                    </Grid>
+                  ))}
+                </Grid>
+              </SwiperSlide>
+            </Swiper>
+          </>
         )}
       </Container>
       <DemoModal />

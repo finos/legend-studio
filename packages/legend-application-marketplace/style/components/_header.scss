@@ -16,18 +16,23 @@
 
 @use 'mixins' as *;
 
+.css-1u9o2lj-MuiToolbar-root {
+  min-width: 100% !important;
+}
+
 .legend-marketplace-header {
   @include flexVCenter;
 
   height: var(--legend-marketplace-header-height);
   box-shadow: none;
   background: #7297c5;
+  width: 100% !important;
 
   &__menu__icon {
     color: var(--color-black);
 
     svg {
-      font-size: 1.875rem;
+      font-size: 2.7rem;
     }
   }
 
@@ -57,7 +62,7 @@
     @include flexVCenter;
 
     color: var(--color-black);
-    font-size: 1rem;
+    font-size: 1.5rem;
     padding: 0.625rem 0.75rem;
     text-transform: unset;
     border-radius: unset;
