@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+export { Core_DataProductDataAccess_LegendApplicationPlugin } from './components/Core_DataProductDataAccess_LegendApplicationPlugin.js';
 export { EntitlementsDataContractCreator } from './components/DataProduct/DataContract/EntitlementsDataContractCreator.js';
 export { EntitlementsDataContractViewer } from './components/DataProduct/DataContract/EntitlementsDataContractViewer.js';
 export * from './components/ProductViewer.js';

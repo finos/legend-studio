@@ -90,6 +90,6 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "applicationPlugin": "@finos/legend-application-plugin-dsl-data-product"
+    "dataProductDataAccessApplicationPlugin": "@finos/legend-application-plugin-dsl-data-product-data-access"
   }
 }

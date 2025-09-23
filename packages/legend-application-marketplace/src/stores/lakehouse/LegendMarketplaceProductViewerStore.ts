@@ -34,7 +34,6 @@ import {
   assertErrorThrown,
   guaranteeNonNullable,
   guaranteeType,
-  isNonNullable,
 } from '@finos/legend-shared';
 import {
   type Class,
@@ -80,9 +79,6 @@ import {
   retrieveAnalyticsResultCache,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import {
-  type ContractConsumerTypeRendererConfig,
-  type DataProductAPGState,
-  AccessPointGroupAccess,
   DataProductDataAccessState,
   DataProductViewerState,
   TerminalProductLayoutState,
@@ -295,21 +291,6 @@ export class LegendMarketplaceProductViewerStore {
             this.marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
               generateLakehouseDataProductPath(_dataProductId, _deploymentId),
             ),
-          getContractConsumerTypeRendererConfigs: (
-            apgState: DataProductAPGState,
-          ) =>
-            this.marketplaceBaseStore.applicationStore.pluginManager
-              .getApplicationPlugins()
-              .map((plugin) =>
-                plugin.getContractConsumerTypeRendererConfigs?.(),
-              )
-              .flat()
-              .filter(isNonNullable)
-              .filter(
-                (rendererConfig: ContractConsumerTypeRendererConfig) =>
-                  apgState.access !== AccessPointGroupAccess.ENTERPRISE ||
-                  rendererConfig.enableForEnterpriseAPGs,
-              ),
         },
       );
       this.setDataProductViewer(dataProductViewerState);

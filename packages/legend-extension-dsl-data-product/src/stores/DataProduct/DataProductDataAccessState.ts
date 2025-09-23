@@ -76,9 +76,6 @@ export type ContractConsumerTypeRendererConfig = {
 export type DataProductDataAccessStateActions = {
   getContractTaskUrl: (taskId: string) => string;
   getDataProductUrl: (dataProductId: string, deploymentId: number) => string;
-  getContractConsumerTypeRendererConfigs: (
-    apgState: DataProductAPGState,
-  ) => ContractConsumerTypeRendererConfig[];
 };
 
 export class DataProductDataAccessState {
@@ -97,9 +94,6 @@ export class DataProductDataAccessState {
     dataProductId: string,
     deploymentId: number,
   ) => string;
-  readonly getContractConsumerTypeRendererConfigs: (
-    apgState: DataProductAPGState,
-  ) => ContractConsumerTypeRendererConfig[];
 
   // state
   associatedContracts: V1_DataContract[] | undefined = undefined;
@@ -149,8 +143,6 @@ export class DataProductDataAccessState {
     // actions
     this.getContractTaskUrl = actions.getContractTaskUrl;
     this.getDataProductUrl = actions.getDataProductUrl;
-    this.getContractConsumerTypeRendererConfigs =
-      actions.getContractConsumerTypeRendererConfigs;
   }
 
   get product(): V1_DataProduct {

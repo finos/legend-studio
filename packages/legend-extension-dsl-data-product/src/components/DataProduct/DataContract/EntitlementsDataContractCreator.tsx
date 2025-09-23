@@ -38,7 +38,10 @@ import type {
   ContractConsumerTypeRendererConfig,
   DataProductDataAccessState,
 } from '../../../stores/DataProduct/DataProductDataAccessState.js';
-import type { DataProductAPGState } from '../../../stores/DataProduct/DataProductAPGState.js';
+import {
+  AccessPointGroupAccess,
+  type DataProductAPGState,
+} from '../../../stores/DataProduct/DataProductAPGState.js';
 
 export const EntitlementsDataContractCreator = observer(
   (props: {
@@ -57,10 +60,16 @@ export const EntitlementsDataContractCreator = observer(
     const consumerTypeRendererConfigs: ContractConsumerTypeRendererConfig[] =
       useMemo(
         () =>
-          dataAccessState
-            .getContractConsumerTypeRendererConfigs(apgState)
-            .filter(isNonNullable),
-        [apgState, dataAccessState],
+          dataAccessState.dataAccessPlugins
+            .map((plugin) => plugin?.getContractConsumerTypeRendererConfigs?.())
+            .flat()
+            .filter(isNonNullable)
+            .filter(
+              (rendererConfig: ContractConsumerTypeRendererConfig) =>
+                apgState.access !== AccessPointGroupAccess.ENTERPRISE ||
+                rendererConfig.enableForEnterpriseAPGs,
+            ),
+        [apgState.access, dataAccessState.dataAccessPlugins],
       );
     const [selectedConsumerType, setSelectedConsumerType] = useState<string>(
       consumerTypeRendererConfigs[0]?.type ?? '',
