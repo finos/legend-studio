@@ -314,10 +314,7 @@ export class LegendMarketplaceProductViewerStore {
       );
       this.setDataProductViewer(dataProductViewerState);
       this.setDataProductDataAccess(dataProductDataAccessState);
-      dataProductDataAccessState.initializeIngestEnvironmentDetails(
-        auth.user?.access_token,
-      );
-      dataProductDataAccessState.fetchContracts(auth.user?.access_token);
+      dataProductDataAccessState.init(auth.user?.access_token);
       this.loadingProductState.complete();
     } catch (error) {
       assertErrorThrown(error);

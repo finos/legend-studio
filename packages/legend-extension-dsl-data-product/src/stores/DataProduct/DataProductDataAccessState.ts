@@ -108,7 +108,6 @@ export class DataProductDataAccessState {
   lakehouseIngestEnvironmentSummaries: IngestDeploymentServerConfig[] = [];
   lakehouseIngestEnvironmentDetails: V1_IngestEnvironment[] = [];
 
-  readonly fetchingDataProductAccessState = ActionState.create();
   readonly creatingContractState = ActionState.create();
   readonly ingestEnvironmentFetchState = ActionState.create();
 
@@ -124,7 +123,6 @@ export class DataProductDataAccessState {
       associatedContracts: observable,
       dataContractAccessPointGroup: observable,
       dataContract: observable,
-      fetchingDataProductAccessState: observable,
       creatingContractState: observable,
       lakehouseIngestEnvironmentSummaries: observable,
       lakehouseIngestEnvironmentDetails: observable,
@@ -134,8 +132,9 @@ export class DataProductDataAccessState {
       setLakehouseIngestEnvironmentSummaries: action,
       setLakehouseIngestEnvironmentDetails: action,
       createContract: flow,
-      fetchContracts: flow,
-      initializeIngestEnvironmentDetails: flow,
+      fetchContracts: action,
+      fetchIngestEnvironmentDetails: action,
+      init: flow,
     });
 
     this.dataProductViewerState = dataProductViewerState;
@@ -180,9 +179,9 @@ export class DataProductDataAccessState {
     this.lakehouseIngestEnvironmentDetails = details;
   }
 
-  *initializeIngestEnvironmentDetails(
+  async fetchIngestEnvironmentDetails(
     token: string | undefined,
-  ): GeneratorFn<void> {
+  ): Promise<void> {
     if (!this.ingestEnvironmentFetchState.isInInitialState) {
       this.applicationStore.notificationService.notifyIllegalState(
         'Base store ingest environment details are re-initialized',
@@ -191,12 +190,12 @@ export class DataProductDataAccessState {
     }
 
     this.ingestEnvironmentFetchState.inProgress();
-    yield this.fetchLakehouseIngestEnvironmentSummaries(token);
-    yield this.fetchLakehouseIngestEnvironmentDetails(token);
+    await this.fetchLakehouseIngestEnvironmentSummaries(token);
+    await this.fetchLakehouseIngestEnvironmentDetails(token);
     this.ingestEnvironmentFetchState.complete();
   }
 
-  *fetchContracts(token: string | undefined): GeneratorFn<void> {
+  async fetchContracts(token: string | undefined): Promise<void> {
     try {
       this.dataProductViewerState.apgStates.forEach((e) =>
         e.fetchingAccessState.inProgress(),
@@ -205,7 +204,7 @@ export class DataProductDataAccessState {
       didNode.appDirId = this.dataProductViewerState.deploymentId;
       didNode.level = V1_AppDirLevel.DEPLOYMENT;
       const _contracts =
-        (yield this.lakehouseContractServerClient.getDataContractsFromDID(
+        (await this.lakehouseContractServerClient.getDataContractsFromDID(
           [serialize(V1_AppDirNodeModelSchema, didNode)],
           token,
         )) as PlainObject<V1_DataContractsResponse>;
@@ -237,6 +236,13 @@ export class DataProductDataAccessState {
         e.fetchingAccessState.complete(),
       );
     }
+  }
+
+  *init(token: string | undefined): GeneratorFn<void> {
+    yield Promise.all([
+      this.fetchContracts(token),
+      this.fetchIngestEnvironmentDetails(token),
+    ]);
   }
 
   *createContract(

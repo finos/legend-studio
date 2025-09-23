@@ -29,7 +29,7 @@ import { makeObservable } from 'mobx';
 import { BaseViewerState } from '../BaseViewerState.js';
 import { DataProductLayoutState } from '../BaseLayoutState.js';
 import { DATA_PRODUCT_VIEWER_SECTION } from '../ProductViewerNavigation.js';
-import { type UserSearchService, ActionState } from '@finos/legend-shared';
+import { type UserSearchService } from '@finos/legend-shared';
 import { DataProductAPGState } from './DataProductAPGState.js';
 
 export class DataProductViewerState extends BaseViewerState<
@@ -45,9 +45,6 @@ export class DataProductViewerState extends BaseViewerState<
 
   // actions
   readonly viewDataProductSource: () => void;
-
-  // state
-  readonly initState = ActionState.create();
 
   constructor(
     product: V1_DataProduct,
