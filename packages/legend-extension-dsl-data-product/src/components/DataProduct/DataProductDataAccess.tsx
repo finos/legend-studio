@@ -216,8 +216,11 @@ const TDSColumnMoreInfoCellRenderer = (props: {
           ),
         );
         setAccessPointRelationType(relationType);
-      } catch {
-        throw new Error('Error fetching access point relation type');
+      } catch (error) {
+        assertErrorThrown(error);
+        throw new Error(
+          `Error fetching access point relation type: ${error.message}`,
+        );
       }
     };
 
