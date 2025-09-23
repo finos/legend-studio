@@ -45,7 +45,10 @@ test('renders header with Marketplace title and Entitlements button and Marketpl
 
   expect(await screen.findAllByText(/^Marketplace$/)).toHaveLength(2);
 
-  expect(screen.getByText('Lakehouse Entitlements')).toBeDefined();
+  expect(screen.getByText('Data Products')).toBeDefined();
+  expect(screen.getByText('Data APIs')).toBeDefined();
+  expect(screen.getByText('Intelligence and AI Agents')).toBeDefined();
+  expect(screen.getByText('Terminals and Addons')).toBeDefined();
 });
 
 test('renders search box with correct placeholder', async () => {
