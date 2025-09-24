@@ -41,9 +41,6 @@ import { generateGAVCoordinates } from '@finos/legend-storage';
 import { DemoModal } from './DemoModal.js';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
 
 export const MarketplaceLakehouseHome = observer(() => {
   const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();

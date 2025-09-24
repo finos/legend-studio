@@ -47,6 +47,17 @@ jest.mock('react-oidc-context', () => {
   return MOCK__reactOIDCContext;
 });
 
+jest.mock('swiper/react', () => ({
+  Swiper: ({}) => <div></div>,
+  SwiperSlide: ({}) => <div></div>,
+}));
+
+jest.mock('swiper/modules', () => ({
+  Navigation: ({}) => <div></div>,
+  Pagination: ({}) => <div></div>,
+  Autoplay: ({}) => <div></div>,
+}));
+
 const setupDataContractViewerTest = async (
   mockContract: V1_LiteDataContract,
   mockTasks: V1_TaskResponse,

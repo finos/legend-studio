@@ -36,6 +36,17 @@ jest.mock('react-oidc-context', () => {
   return MOCK__reactOIDCContext;
 });
 
+jest.mock('swiper/react', () => ({
+  Swiper: ({}) => <div></div>,
+  SwiperSlide: ({}) => <div></div>,
+}));
+
+jest.mock('swiper/modules', () => ({
+  Navigation: ({}) => <div></div>,
+  Pagination: ({}) => <div></div>,
+  Autoplay: ({}) => <div></div>,
+}));
+
 const setupTestComponent = async (query?: string) => {
   const MOCK__baseStore = await TEST__provideMockLegendMarketplaceBaseStore();
   jest

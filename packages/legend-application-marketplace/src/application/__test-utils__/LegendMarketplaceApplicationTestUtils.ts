@@ -79,7 +79,7 @@ const TEST_DATA__appConfig: LegendMarketplaceApplicationConfigurationData = {
     },
   },
   assets: {
-    baseUrl: '',
+    baseUrl: '/fileName',
     productImageMap: {},
   },
 };
