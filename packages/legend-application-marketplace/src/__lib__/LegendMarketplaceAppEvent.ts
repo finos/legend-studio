@@ -15,6 +15,5 @@
  */
 
 export enum LEGEND_MARKETPLACE_APP_EVENT {
-  FETCH_INGEST_ENV_FAILURE = 'marketplace.fetch.ingest-env.failure',
   FETCH_DATA_PRODUCT_FAILURE = 'marketplace.fetch.data-product.failure',
 }

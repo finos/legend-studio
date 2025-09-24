@@ -31,6 +31,7 @@ import { Core_LegendMarketplaceApplicationPlugin } from './extensions/Core_Legen
 import type { LegendMarketplaceApplicationStore } from '../stores/LegendMarketplaceBaseStore.js';
 import { LegendMarketplaceWebApplication } from './LegendMarketplaceWebApplication.js';
 import { Core_LegendMarketplace_LegendApplicationPlugin } from './extensions/Core_LegendMarketplace_LegendApplicationPlugin.js';
+import { Core_DataProductDataAccess_LegendApplicationPlugin } from '@finos/legend-extension-dsl-data-product';
 
 export class LegendMarketplace extends LegendApplication {
   declare config: LegendMarketplaceApplicationConfig;
@@ -43,6 +44,7 @@ export class LegendMarketplace extends LegendApplication {
     application.withBasePlugins([
       new Core_LegendMarketplace_LegendApplicationPlugin(),
       new Core_LegendMarketplaceApplicationPlugin(),
+      new Core_DataProductDataAccess_LegendApplicationPlugin(),
     ]);
     return application;
   }

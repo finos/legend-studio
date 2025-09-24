@@ -21,7 +21,6 @@ import {
   CubesLoadingIndicatorIcon,
   GhostIcon,
 } from '@finos/legend-art';
-import { flowResult } from 'mobx';
 import {
   LEGEND_APPLICATION_COLOR_THEME,
   useApplicationStore,
@@ -43,7 +42,6 @@ import { MarketplaceLakehouseHome } from '../pages/Lakehouse/MarketplaceLakehous
 import {
   type AuthProviderProps,
   AuthProvider,
-  useAuth,
   withAuthenticationRequired,
 } from 'react-oidc-context';
 import type { User } from 'oidc-client-ts';
@@ -62,6 +60,7 @@ import { LegacyDataProduct } from '../pages/Lakehouse/dataProduct/LegacyDataProd
 import { LegendMarketplaceAgents } from '../pages/Agents/LegendMarketplaceAgents.js';
 import { LegendMarketplaceInventory } from '../pages/Inventory/LegendMarketplaceInventory.js';
 import { LegendMarketplaceTerminalsAddOnsComingSoon } from '../pages/VendorDetails/LegendMarketplaceVendorDetails.js';
+import { flowResult } from 'mobx';
 
 const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();
@@ -110,24 +109,14 @@ const NotFoundPage = observer(() => {
 export const LegendMarketplaceWebApplicationRouter = observer(() => {
   const marketplaceBaseStore = useLegendMarketplaceBaseStore();
   const applicationStore = useLegendMarketplaceApplicationStore();
-  const auth = useAuth();
+
   useEffect(() => {
     if (marketplaceBaseStore.initState.isInInitialState) {
       flowResult(marketplaceBaseStore.initialize()).catch(
         applicationStore.alertUnhandledError,
       );
     }
-    if (
-      marketplaceBaseStore.ingestEnvironmentFetchState.isInInitialState &&
-      auth.user?.access_token
-    ) {
-      flowResult(
-        marketplaceBaseStore.initializeIngestEnvironmentDetails(
-          auth.user.access_token,
-        ),
-      ).catch(applicationStore.alertUnhandledError);
-    }
-  }, [applicationStore, marketplaceBaseStore, auth.user?.access_token]);
+  }, [applicationStore.alertUnhandledError, marketplaceBaseStore]);
 
   useEffect(() => {
     applicationStore.layoutService.setColorTheme(
