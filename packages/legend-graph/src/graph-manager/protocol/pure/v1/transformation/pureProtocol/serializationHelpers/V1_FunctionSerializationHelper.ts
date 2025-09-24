@@ -40,7 +40,7 @@ import {
   usingConstantValueSchema,
   type PlainObject,
 } from '@finos/legend-shared';
-import { V1_FunctionStoreTestData } from '../../../model/packageableElements/function/test/V1_FunctionStoreTestData.js';
+import { V1_FunctionTestData } from '../../../model/packageableElements/function/test/V1_FunctionTestData.js';
 import {
   V1_deserializeEmbeddedDataType,
   V1_serializeEmbeddedDataType,
@@ -55,6 +55,7 @@ import {
 } from '../../../../../../../graph/MetaModelConst.js';
 import { V1_packageableElementPointerModelSchema } from './V1_CoreSerializationHelper.js';
 import { V1_PackageableElementPointer } from '../../../model/packageableElements/V1_PackageableElement.js';
+import type { V1_EmbeddedData } from '../../../model/data/V1_EmbeddedData.js';
 
 export const V1_parameterValueModelSchema = createModelSchema(
   V1_FunctionParameterValue,
@@ -77,10 +78,10 @@ export const V1_functionTestModelSchema = createModelSchema(V1_FunctionTest, {
   parameters: customListWithSchema(V1_parameterValueModelSchema),
 });
 
-const V1_serializeDataElementReferenceValue = (
+const V1_deserializeDataElementReferenceValue = (
   json: PlainObject<V1_PackageableElementPointer> | string,
 ): V1_PackageableElementPointer => {
-  // For backward compatible: see https://github.com/finos/legend-engine/pull/2621
+  // For backward compatibility: see https://github.com/finos/legend-engine/pull/2621
   if (isString(json)) {
     return new V1_PackageableElementPointer(
       PackageableElementPointerType.STORE,
@@ -90,20 +91,45 @@ const V1_serializeDataElementReferenceValue = (
   return deserialize(V1_packageableElementPointerModelSchema, json);
 };
 
-const V1_FunctionStoreTestDataModelSchema = (
+const V1_serializeFunctionTestData = (
+  protocol: V1_FunctionTestData,
   plugins: PureProtocolProcessorPlugin[],
-): ModelSchema<V1_FunctionStoreTestData> =>
-  createModelSchema(V1_FunctionStoreTestData, {
-    data: custom(
-      (val) => V1_serializeEmbeddedDataType(val, plugins),
-      (val) => V1_deserializeEmbeddedDataType(val, plugins),
+): PlainObject<V1_FunctionTestData> => {
+  return {
+    data: V1_serializeEmbeddedDataType(protocol.data, plugins),
+    doc: protocol.doc,
+    packageableElementPointer: serialize(
+      V1_packageableElementPointerModelSchema,
+      protocol.packageableElementPointer,
     ),
-    doc: optional(primitive()),
-    store: custom(
-      (val) => serialize(V1_packageableElementPointerModelSchema, val),
-      (val) => V1_serializeDataElementReferenceValue(val),
-    ),
-  });
+  };
+};
+
+const V1_deserializeFunctionTestData = (
+  json: PlainObject<V1_FunctionTestData>,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_FunctionTestData => {
+  const functionTestData = new V1_FunctionTestData();
+  functionTestData.data = V1_deserializeEmbeddedDataType(
+    json.data as PlainObject<V1_EmbeddedData>,
+    plugins,
+  );
+  functionTestData.doc = json.doc as string | undefined;
+
+  // For backward compatibility: see https://github.com/finos/legend-engine/pull/4098
+  if (json.store) {
+    functionTestData.packageableElementPointer =
+      V1_deserializeDataElementReferenceValue(
+        json.store as PlainObject<V1_PackageableElementPointer>,
+      );
+  } else {
+    functionTestData.packageableElementPointer =
+      V1_deserializeDataElementReferenceValue(
+        json.packageableElementPointer as PlainObject<V1_PackageableElementPointer>,
+      );
+  }
+  return functionTestData;
+};
 
 export const V1_functionTestSuiteModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
@@ -112,11 +138,11 @@ export const V1_functionTestSuiteModelSchema = (
     _type: usingConstantValueSchema(V1_TestSuiteType.FUNCTION_TEST_SUITE),
     doc: optional(primitive()),
     id: primitive(),
-    testData: customListWithSchema(
-      V1_FunctionStoreTestDataModelSchema(plugins),
-      {
-        INTERNAL__forceReturnEmptyInTest: true,
-      },
+    testData: list(
+      custom(
+        (val) => V1_serializeFunctionTestData(val, plugins),
+        (val) => V1_deserializeFunctionTestData(val, plugins),
+      ),
     ),
     tests: list(
       custom(
