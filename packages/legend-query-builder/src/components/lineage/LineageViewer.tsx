@@ -172,11 +172,20 @@ const convertGraphToFlow = (graph?: Graph) => {
           position: { x: 350, y: 300 },
           type: 'default',
           style: {
-            backgroundColor: '#f5f5f5',
-            border: '1px solid #ccc',
-            borderRadius: '5px',
-            padding: '10px',
+            background: 'white',
+            border: '2px solid #1976d2',
+            borderRadius: '8px',
+            padding: '16px 12px',
             width: 200,
+            minHeight: 80,
+            fontSize: '14px',
+            fontWeight: '600',
+            textAlign: 'center' as const,
+            color: '#1976d2',
+            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           },
         },
       ],
@@ -203,6 +212,23 @@ const convertGraphToFlow = (graph?: Graph) => {
     type: 'default' as const,
     sourcePosition: Position.Right,
     targetPosition: Position.Left,
+    style: {
+      background: 'white',
+      border: '2px solid #1976d2',
+      borderRadius: '8px',
+      padding: '16px 12px',
+      minHeight: 80,
+      width: 220,
+      fontSize: '14px',
+      fontWeight: '600',
+      textAlign: 'center' as const,
+      color: '#1976d2',
+      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      transition: 'all 0.3s ease',
+    },
   }));
 
   const edges = edgeList.map((edge, idx) => ({
@@ -508,11 +534,16 @@ const convertPropertyLineageToFlow = (
     }> = [];
     if (isPropertyOwner && nodeItem.node instanceof PropertyOwnerNode) {
       const properties = nodeItem.node.properties;
-      allProperties = properties.map((prop) => ({
-        name: prop.name,
-        dataType: prop.dataType,
-        propertyType: prop.propertyType,
-      }));
+      // Handle the case where properties is empty or not an array
+      if (Array.isArray(properties) && properties.length > 0) {
+        allProperties = properties.map((prop) => ({
+          name: prop.name,
+          dataType: prop.dataType,
+          propertyType: prop.propertyType,
+        }));
+      } else {
+        allProperties = [];
+      }
     }
 
     const dimensions = nodeDimensions.get(nodeItem.id) ?? {
@@ -682,7 +713,12 @@ const PropertyOwnerPanel = observer(
       }
     };
 
-    const properties = propertyOwnerNode.properties;
+    // Ensure properties is always an array
+    const properties: LineageProperty[] = Array.isArray(
+      propertyOwnerNode.properties,
+    )
+      ? propertyOwnerNode.properties
+      : [];
 
     let highlightedSourceProps: Set<string> | undefined = undefined;
     if (lineageState.selectedSourcePropertiesMap?.has(propertyOwnerNode.id)) {
