@@ -197,11 +197,13 @@ test('Sort/Filter Panel correctly sorts and filters data products', async () => 
   await setupTestComponent();
 
   // Check sort option displays
-  screen.getByText('Sort By');
+  const sortDropdown = screen.getByText('Sort');
+  fireEvent.mouseDown(sortDropdown);
   screen.getByText('Name A-Z');
+  screen.getByText('Name Z-A');
 
   // Check filtering type
-  screen.getByText('Filter By');
+  screen.getByText('Filters');
   screen.getByText('Deploy Type');
   const sdlcFilterButton = screen.getByText('SDLC Deployed');
   screen.getByText('Sandbox Deployed');

@@ -19,25 +19,26 @@ import {
   useLegendMarketplaceSearchResultsStore,
   withLegendMarketplaceSearchResultsStore,
 } from '../../../application/providers/LegendMarketplaceSearchResultsStoreProvider.js';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
+  CheckIcon,
   ChevronDownIcon,
   ChevronRightIcon,
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
-  ExpandMoreIcon,
 } from '@finos/legend-art';
 import {
   Box,
-  Button,
   Checkbox,
   Container,
+  FormControl,
   FormControlLabel,
   FormGroup,
   FormLabel,
   Grid2 as Grid,
-  Menu,
   MenuItem,
+  Select,
+  Typography,
 } from '@mui/material';
 import {
   type LegendMarketplaceSearchResultsStore,
@@ -66,10 +67,6 @@ const SearchResultsSortFilterPanel = observer(
 
     const [isUnmodeledFilterConfigOpen, setIsUnmodeledFilterConfigOpen] =
       useState(searchResultsStore.filterState.unmodeledDataProducts);
-    const [sortMenuAnchorEl, setSortMenuAnchorEl] =
-      useState<HTMLElement | null>(null);
-
-    const isSortMenuOpen = Boolean(sortMenuAnchorEl);
 
     const handleToggleUnmodeledFilterConfig = () => {
       setIsUnmodeledFilterConfigOpen((prev) => !prev);
@@ -77,49 +74,14 @@ const SearchResultsSortFilterPanel = observer(
 
     return (
       <Box className="marketplace-lakehouse-search-results__sort-filters">
-        <Box className="marketplace-lakehouse-search-results__sort-filters__sort">
-          Sort By
-          <Box>
-            <Button
-              onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
-                setSortMenuAnchorEl(event.currentTarget);
-              }}
-              className="marketplace-lakehouse-search-results__sort-filters__sort__btn"
-            >
-              {searchResultsStore.sort}
-              <ExpandMoreIcon />
-            </Button>
-            <Menu
-              anchorEl={sortMenuAnchorEl}
-              open={isSortMenuOpen}
-              onClose={() => setSortMenuAnchorEl(null)}
-              anchorOrigin={{
-                horizontal: 'left',
-                vertical: 'bottom',
-              }}
-              transformOrigin={{
-                horizontal: 'left',
-                vertical: 'top',
-              }}
-            >
-              {Object.values(DataProductSort).map((sortValue) => {
-                return (
-                  <MenuItem
-                    key={sortValue}
-                    onClick={(event: React.MouseEvent<HTMLLIElement>) => {
-                      searchResultsStore.setSort(sortValue);
-                      setSortMenuAnchorEl(null);
-                    }}
-                  >
-                    {sortValue}
-                  </MenuItem>
-                );
-              })}
-            </Menu>
-          </Box>
-        </Box>
         <Box className="marketplace-lakehouse-search-results__sort-filters__filter">
-          Filter By
+          <Typography
+            variant="h4"
+            className="marketplace-lakehouse-search-results__subtitles"
+          >
+            Filters
+          </Typography>
+          <hr />
           <FormGroup>
             <Box className="marketplace-lakehouse-search-results__sort-filters__filter__section-header">
               <FormControlLabel
@@ -345,6 +307,53 @@ export const MarketplaceLakehouseSearchResults =
               initialValue={searchQuery}
             />
           </Container>
+          <div className="legend-marketplace-search-results__sort-bar">
+            <Typography
+              variant="h4"
+              className="marketplace-lakehouse-search-results__subtitles"
+            >
+              {searchResultsStore.filterSortProducts?.length ?? '0'} Products
+            </Typography>
+            <FormControl sx={{ width: '10rem' }}>
+              <Select
+                autoWidth={true}
+                displayEmpty={true}
+                value={'Sort'}
+                onChange={(e) => {
+                  searchResultsStore.setSort(e.target.value as DataProductSort);
+                }}
+                sx={{
+                  '& .MuiSelect-select': {
+                    fontWeight: 'bold',
+                    fontSize: '1.6rem',
+                    lineHeight: '1.6',
+                  },
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'black',
+                    borderRadius: '0rem',
+                  },
+                }}
+              >
+                <MenuItem disabled={true} value="Sort">
+                  Sort
+                </MenuItem>
+                {Object.values(DataProductSort).map((sortValue) => {
+                  return (
+                    <MenuItem
+                      key={sortValue}
+                      value={sortValue}
+                      sx={{
+                        gap: '0.5rem',
+                      }}
+                    >
+                      {sortValue}
+                      {searchResultsStore.sort === sortValue && <CheckIcon />}
+                    </MenuItem>
+                  );
+                })}
+              </Select>
+            </FormControl>
+          </div>
           <Container
             maxWidth="xxxl"
             className="marketplace-lakehouse-search-results__results-container"
