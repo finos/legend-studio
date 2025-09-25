@@ -201,8 +201,8 @@ const LakehouseSubscriptionsCreateDialog = observer(
     // TODO: Figure out better way to get the preferred list of snowflake accounts instead
     // of relying upon ingest environment URN
     const ingestEnvironmentUrn =
-      dataAccessState.dataProductViewerState.entitlementsDataProductDetails
-        .lakehouseEnvironment?.producerEnvironmentName;
+      dataAccessState.entitlementsDataProductDetails.lakehouseEnvironment
+        ?.producerEnvironmentName;
 
     const environmentDetails =
       dataAccessState.lakehouseIngestEnvironmentDetails;

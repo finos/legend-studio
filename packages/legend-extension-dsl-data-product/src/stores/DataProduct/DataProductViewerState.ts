@@ -22,7 +22,6 @@ import {
   type GraphManagerState,
   type V1_DataProduct,
   type V1_EngineServerClient,
-  type V1_EntitlementsDataProductDetails,
 } from '@finos/legend-graph';
 import { makeObservable } from 'mobx';
 import { BaseViewerState } from '../BaseViewerState.js';
@@ -38,7 +37,6 @@ export class DataProductViewerState extends BaseViewerState<
 > {
   readonly engineServerClient: V1_EngineServerClient;
   readonly graphManagerState: GraphManagerState;
-  readonly entitlementsDataProductDetails: V1_EntitlementsDataProductDetails;
   readonly apgStates: DataProductAPGState[];
   readonly userSearchService: UserSearchService | undefined;
   readonly dataProductConfig?: DataProductConfig | undefined;
@@ -48,7 +46,6 @@ export class DataProductViewerState extends BaseViewerState<
 
   constructor(
     product: V1_DataProduct,
-    entitlementsDataProductDetails: V1_EntitlementsDataProductDetails,
     applicationStore: GenericLegendApplicationStore,
     engineServerClient: V1_EngineServerClient,
     graphManagerState: GraphManagerState,
@@ -63,7 +60,6 @@ export class DataProductViewerState extends BaseViewerState<
 
     makeObservable(this);
 
-    this.entitlementsDataProductDetails = entitlementsDataProductDetails;
     this.apgStates = this.product.accessPointGroups.map(
       (e) => new DataProductAPGState(e, this),
     );
@@ -92,9 +88,5 @@ export class DataProductViewerState extends BaseViewerState<
     return Object.values(DATA_PRODUCT_VIEWER_SECTION).map((section) =>
       section.toString(),
     );
-  }
-
-  get deploymentId(): number {
-    return this.entitlementsDataProductDetails.deploymentId;
   }
 }
