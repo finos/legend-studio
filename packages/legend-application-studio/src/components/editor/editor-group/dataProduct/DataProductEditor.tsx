@@ -2216,7 +2216,10 @@ export const DataProductEditor = observer(() => {
       V1_DataProduct,
     );
     const graphManager = guaranteeType(
-      editorStore.graphManagerState.graphManager,
+      guaranteeType(
+        editorStore.graphManagerState.graphManager,
+        V1_PureGraphManager,
+      ).engine,
       V1_RemoteEngine,
     );
     return new DataProductViewerState(
