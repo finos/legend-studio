@@ -1,5 +1,11 @@
 # @finos/legend-server-lakehouse
 
+## 0.2.8
+
+### Patch Changes
+
+- [#4471](https://github.com/finos/legend-studio/pull/4471) [`acc1d25`](https://github.com/finos/legend-studio/commit/acc1d25daa0b3e76ca9ca09e46332faeaa863c43) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: fixing incompatible protocol for ingest from datacube
+
 ## 0.2.7
 
 ## 0.2.6

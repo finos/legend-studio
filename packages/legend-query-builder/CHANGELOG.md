@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.17.41
+
+### Patch Changes
+
+- [#4476](https://github.com/finos/legend-studio/pull/4476) [`0209077`](https://github.com/finos/legend-studio/commit/0209077b91066db1d532f0dec5d08d72ed01a68a) ([@AFine-gs](https://github.com/AFine-gs)) - Fix lineage viewer for empty property nodes
+
 ## 4.17.40
 
 ### Patch Changes
