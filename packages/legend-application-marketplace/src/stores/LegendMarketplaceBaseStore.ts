@@ -16,10 +16,8 @@
 
 import {
   type GeneratorFn,
-  type PlainObject,
   ActionState,
   assertErrorThrown,
-  isNonNullable,
   LogEvent,
   UserSearchService,
 } from '@finos/legend-shared';
@@ -33,21 +31,17 @@ import { DepotServerClient } from '@finos/legend-server-depot';
 import { MarketplaceServerClient } from '@finos/legend-server-marketplace';
 import {
   type V1_EngineServerClient,
-  type V1_IngestEnvironment,
   getCurrentUserIDFromEngineServer,
-  V1_deserializeIngestEnvironment,
   V1_RemoteEngine,
 } from '@finos/legend-graph';
 import type { LegendMarketplaceApplicationConfig } from '../application/LegendMarketplaceApplicationConfig.js';
 import type { LegendMarketplacePluginManager } from '../application/LegendMarketplacePluginManager.js';
 import { LegendMarketplaceEventHelper } from '../__lib__/LegendMarketplaceEventHelper.js';
 import {
-  IngestDeploymentServerConfig,
   LakehouseContractServerClient,
   LakehouseIngestServerClient,
   LakehousePlatformServerClient,
 } from '@finos/legend-server-lakehouse';
-import { LEGEND_MARKETPLACE_APP_EVENT } from '../__lib__/LegendMarketplaceAppEvent.js';
 
 export type LegendMarketplaceApplicationStore = ApplicationStore<
   LegendMarketplaceApplicationConfig,
@@ -66,20 +60,14 @@ export class LegendMarketplaceBaseStore {
   readonly remoteEngine: V1_RemoteEngine;
   readonly userSearchService: UserSearchService | undefined;
 
-  lakehouseIngestEnvironmentSummaries: IngestDeploymentServerConfig[] = [];
-  lakehouseIngestEnvironmentDetails: V1_IngestEnvironment[] = [];
-
   readonly initState = ActionState.create();
-  readonly ingestEnvironmentFetchState = ActionState.create();
+  showDemoModal = false;
 
   constructor(applicationStore: LegendMarketplaceApplicationStore) {
     makeObservable<LegendMarketplaceBaseStore>(this, {
-      lakehouseIngestEnvironmentSummaries: observable,
-      lakehouseIngestEnvironmentDetails: observable,
-      setLakehouseIngestEnvironmentSummaries: action,
-      setLakehouseIngestEnvironmentDetails: action,
+      showDemoModal: observable,
+      setDemoModal: action,
       initialize: flow,
-      initializeIngestEnvironmentDetails: flow,
     });
 
     this.applicationStore = applicationStore;
@@ -142,11 +130,21 @@ export class LegendMarketplaceBaseStore {
         .forEach((plugin) =>
           plugin.setup(this.applicationStore.config.marketplaceUserSearchUrl),
         );
-      this.userSearchService = new UserSearchService();
+      this.userSearchService = new UserSearchService({
+        userProfileImageUrl:
+          this.applicationStore.config.marketplaceUserProfileImageUrl,
+        applicationDirectoryUrl:
+          this.applicationStore.config.lakehouseEntitlementsConfig
+            ?.applicationDirectoryUrl,
+      });
       this.userSearchService.registerPlugins(
         this.pluginManager.getUserPlugins(),
       );
     }
+  }
+
+  setDemoModal(val: boolean): void {
+    this.showDemoModal = val;
   }
 
   *initialize(): GeneratorFn<void> {
@@ -189,89 +187,5 @@ export class LegendMarketplaceBaseStore {
     );
 
     this.initState.complete();
-  }
-
-  *initializeIngestEnvironmentDetails(
-    token: string | undefined,
-  ): GeneratorFn<void> {
-    if (!this.ingestEnvironmentFetchState.isInInitialState) {
-      this.applicationStore.notificationService.notifyIllegalState(
-        'Base store ingest environment details are re-initialized',
-      );
-      return;
-    }
-
-    this.ingestEnvironmentFetchState.inProgress();
-    yield this.fetchLakehouseIngestEnvironmentSummaries(token);
-    yield this.fetchLakehouseIngestEnvironmentDetails(token);
-    this.ingestEnvironmentFetchState.complete();
-  }
-
-  setLakehouseIngestEnvironmentSummaries(
-    summaries: IngestDeploymentServerConfig[],
-  ): void {
-    this.lakehouseIngestEnvironmentSummaries = summaries;
-  }
-
-  setLakehouseIngestEnvironmentDetails(details: V1_IngestEnvironment[]): void {
-    this.lakehouseIngestEnvironmentDetails = details;
-  }
-
-  async fetchLakehouseIngestEnvironmentSummaries(
-    token: string | undefined,
-  ): Promise<void> {
-    try {
-      const discoveryEnvironments = (
-        await this.lakehousePlatformServerClient.getIngestEnvironmentSummaries(
-          token,
-        )
-      ).map((e: PlainObject<IngestDeploymentServerConfig>) =>
-        IngestDeploymentServerConfig.serialization.fromJson(e),
-      );
-      this.setLakehouseIngestEnvironmentSummaries(discoveryEnvironments);
-    } catch (error) {
-      assertErrorThrown(error);
-      this.applicationStore.logService.warn(
-        LogEvent.create(LEGEND_MARKETPLACE_APP_EVENT.FETCH_INGEST_ENV_FAILURE),
-        `Unable to load lakehouse environment summaries: ${error.message}`,
-      );
-    }
-  }
-
-  async fetchLakehouseIngestEnvironmentDetails(
-    token: string | undefined,
-  ): Promise<void> {
-    try {
-      const ingestEnvironments: V1_IngestEnvironment[] = (
-        await Promise.all(
-          this.lakehouseIngestEnvironmentSummaries.map(async (discoveryEnv) => {
-            try {
-              const env =
-                await this.lakehouseIngestServerClient.getIngestEnvironment(
-                  discoveryEnv.ingestServerUrl,
-                  token,
-                );
-              return V1_deserializeIngestEnvironment(env);
-            } catch (error) {
-              assertErrorThrown(error);
-              this.applicationStore.logService.warn(
-                LogEvent.create(
-                  LEGEND_MARKETPLACE_APP_EVENT.FETCH_INGEST_ENV_FAILURE,
-                ),
-                `Unable to load lakehouse environment details for ${discoveryEnv.ingestEnvironmentUrn}: ${error.message}`,
-              );
-              return undefined;
-            }
-          }),
-        )
-      ).filter(isNonNullable);
-      this.setLakehouseIngestEnvironmentDetails(ingestEnvironments);
-    } catch (error) {
-      assertErrorThrown(error);
-      this.applicationStore.logService.warn(
-        LogEvent.create(LEGEND_MARKETPLACE_APP_EVENT.FETCH_INGEST_ENV_FAILURE),
-        `Unable to load lakehouse environment details: ${error.message}`,
-      );
-    }
   }
 }

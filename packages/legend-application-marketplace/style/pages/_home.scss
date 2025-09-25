@@ -44,6 +44,50 @@
     }
   }
 
+  &__button-group {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+    align-self: flex-end;
+    position: absolute;
+  }
+
+  &__button {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 1.2rem 1.6rem;
+    border: none;
+    border-radius: 0.8rem;
+    cursor: pointer;
+    font-size: 1.8rem;
+    font-weight: 400;
+    background: transparent;
+    color: #000;
+    transition: all 0.2s ease;
+    min-width: 14rem;
+    justify-content: center;
+
+    &:hover {
+      background: linear-gradient(
+        90deg,
+        rgb(75 80 207 / 100%) 0%,
+        rgb(102 126 234 / 100%) 100%
+      );
+      color: #000;
+    }
+
+    &__icon {
+      flex-shrink: 0;
+      width: 2rem;
+      height: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+
   &__vendors {
     &-title {
       font-size: 3rem;

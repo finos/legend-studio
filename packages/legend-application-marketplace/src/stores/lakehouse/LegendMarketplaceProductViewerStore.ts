@@ -54,7 +54,6 @@ import {
   V1_SdlcDeploymentDataProductOrigin,
   V1_TerminalModelSchema,
 } from '@finos/legend-graph';
-import { DataProductViewerState } from './DataProductViewerState.js';
 import type { AuthContextProps } from 'react-oidc-context';
 import { getDataProductFromDetails } from './LakehouseUtils.js';
 import {
@@ -68,12 +67,8 @@ import {
   EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl,
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl,
   generateLakehouseDataProductPath,
+  generateLakehouseTaskPath,
 } from '../../__lib__/LegendMarketplaceNavigation.js';
-import { TerminalProductViewerState } from './TerminalProductViewerState.js';
-import {
-  DataProductLayoutState,
-  TerminalProductLayoutState,
-} from './BaseLayoutState.js';
 import {
   DataSpaceViewerState,
   EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl,
@@ -83,12 +78,19 @@ import {
   DSL_DataSpace_getGraphManagerExtension,
   retrieveAnalyticsResultCache,
 } from '@finos/legend-extension-dsl-data-space/graph';
+import {
+  DataProductDataAccessState,
+  DataProductViewerState,
+  TerminalProductLayoutState,
+  TerminalProductViewerState,
+} from '@finos/legend-extension-dsl-data-product';
 
 const ARTIFACT_GENERATION_DAT_PRODUCT_KEY = 'dataProduct';
 
 export class LegendMarketplaceProductViewerStore {
   readonly marketplaceBaseStore: LegendMarketplaceBaseStore;
   dataProductViewer: DataProductViewerState | undefined;
+  dataProductDataAccess: DataProductDataAccessState | undefined;
   terminalProductViewer: TerminalProductViewerState | undefined;
   legacyDataProductViewer: DataSpaceViewerState | undefined;
 
@@ -99,9 +101,11 @@ export class LegendMarketplaceProductViewerStore {
 
     makeObservable(this, {
       dataProductViewer: observable,
+      dataProductDataAccess: observable,
       terminalProductViewer: observable,
       legacyDataProductViewer: observable,
       setDataProductViewer: action,
+      setDataProductDataAccess: action,
       setTerminalProductViewer: action,
       setLegacyDataProductViewer: action,
       initWithProduct: flow,
@@ -113,6 +117,10 @@ export class LegendMarketplaceProductViewerStore {
 
   setDataProductViewer(val: DataProductViewerState | undefined): void {
     this.dataProductViewer = val;
+  }
+
+  setDataProductDataAccess(val: DataProductDataAccessState | undefined): void {
+    this.dataProductDataAccess = val;
   }
 
   setTerminalProductViewer(val: TerminalProductViewerState | undefined): void {
@@ -240,12 +248,14 @@ export class LegendMarketplaceProductViewerStore {
         `Unable to get V1_DataProduct from details for id: ${dataProductDetails.id}`,
       );
 
-      const stateViewer = new DataProductViewerState(
-        this,
-        new DataProductLayoutState(),
-        graphManagerState,
+      const dataProductViewerState = new DataProductViewerState(
         v1DataProduct,
         dataProductDetails,
+        this.marketplaceBaseStore.applicationStore,
+        this.marketplaceBaseStore.engineServerClient,
+        graphManagerState,
+        this.marketplaceBaseStore.applicationStore.config.options.dataProductConfig,
+        this.marketplaceBaseStore.userSearchService,
         {
           viewDataProductSource: () => {
             if (
@@ -266,8 +276,26 @@ export class LegendMarketplaceProductViewerStore {
           },
         },
       );
-      this.setDataProductViewer(stateViewer);
-      stateViewer.fetchContracts(auth.user?.access_token);
+      const dataProductDataAccessState = new DataProductDataAccessState(
+        dataProductViewerState,
+        this.marketplaceBaseStore.lakehouseContractServerClient,
+        this.marketplaceBaseStore.lakehousePlatformServerClient,
+        this.marketplaceBaseStore.lakehouseIngestServerClient,
+        this.marketplaceBaseStore.applicationStore.pluginManager.getApplicationPlugins(),
+        {
+          getContractTaskUrl: (taskId: string) =>
+            this.marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
+              generateLakehouseTaskPath(taskId),
+            ),
+          getDataProductUrl: (_dataProductId: string, _deploymentId: number) =>
+            this.marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
+              generateLakehouseDataProductPath(_dataProductId, _deploymentId),
+            ),
+        },
+      );
+      this.setDataProductViewer(dataProductViewerState);
+      this.setDataProductDataAccess(dataProductDataAccessState);
+      dataProductDataAccessState.init(auth.user?.access_token);
       this.loadingProductState.complete();
     } catch (error) {
       assertErrorThrown(error);

@@ -391,6 +391,7 @@ export class LegendMarketplaceSearchResultsStore {
             entity.groupId,
             entity.artifactId,
             entity.versionId,
+            this.displayImageMap,
           );
         },
       );

@@ -88,6 +88,7 @@ import {
   MdWrapText,
   MdSaveAs,
   MdSave,
+  MdSend,
   MdVerticalAlignBottom,
   MdRefresh,
   MdFunctions,
@@ -121,6 +122,18 @@ import {
   MdError,
   MdOutlineGroupWork,
   MdOutlineTune,
+  MdOpenInNew,
+  MdOutlineAnalytics,
+  MdOutlineDashboard,
+  MdInsights,
+  MdTrendingUp,
+  MdOutlineSmartToy,
+  MdAutoAwesome,
+  MdOutlinePsychology,
+  MdOutlineLibraryBooks,
+  MdOutlineExplore,
+  MdOutlineAccountTree,
+  MdGroup,
 } from 'react-icons/md';
 
 export const ManageSearchIcon = MdManageSearch; // to be reviewed
@@ -131,6 +144,7 @@ export const MoreHorizontalIcon = MdMoreHoriz;
 export const WrapTextIcon = MdWrapText;
 export const SaveAsIcon = MdSaveAs;
 export const SaveCurrIcon = MdSave;
+export const SendIcon = MdSend;
 export const VerticalAlignBottomIcon = MdVerticalAlignBottom;
 export const RefreshIcon = MdRefresh;
 export const SigmaIcon = MdFunctions;
@@ -164,6 +178,18 @@ export const ExpandMoreIcon = MdExpandMore;
 export const ErrorWarnIcon = MdError;
 export const GroupWorkIcon = MdOutlineGroupWork;
 export const TuneIcon = MdOutlineTune;
+export const OpenNewTabIcon = MdOpenInNew;
+export const AnalyticsIcon = MdOutlineAnalytics;
+export const DashboardIcon = MdOutlineDashboard;
+export const InsightsIcon = MdInsights;
+export const TrendingUpIcon = MdTrendingUp;
+export const RobotOutlineIcon = MdOutlineSmartToy;
+export const SparkleStarsIcon = MdAutoAwesome;
+export const PsychologyIcon = MdOutlinePsychology;
+export const LibraryBooksIcon = MdOutlineLibraryBooks;
+export const CompassIcon = MdOutlineExplore;
+export const AccountTreeIcon = MdOutlineAccountTree;
+export const CollaborationIcon = MdGroup;
 
 //======================================================= VSC =======================================================
 import {
@@ -421,6 +447,7 @@ import {
   FaRegWindowRestore,
   FaRobot,
   FaRocket,
+  FaRegCalendar,
   FaSave,
   FaSearch,
   FaServer,
@@ -474,6 +501,7 @@ export const BuildingIcon = FaBuilding;
 export const BusinessTimeIcon = FaBusinessTime; // to be reviewed/combined
 export const CalculatorIcon = FaCalculator;
 export const CalendarIcon = FaRegCalendarAlt;
+export const SimpleCalendarIcon = FaRegCalendar;
 export const CaretDownIcon = FaCaretDown;
 export const CaretLeftIcon = FaCaretLeft;
 export const CaretRightIcon = FaCaretRight;

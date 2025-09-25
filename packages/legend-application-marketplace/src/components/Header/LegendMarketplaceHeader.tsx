@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { clsx, LegendLogo } from '@finos/legend-art';
+import { clsx } from '@finos/legend-art';
 import { AppBar, Box, Container, Toolbar } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { LEGEND_MARKETPLACE_TEST_ID } from '../../__lib__/LegendMarketplaceTesting.js';
@@ -70,7 +70,7 @@ const LegendMarketplaceBaseHeader = observer(
     pages: { title: string; urlRoute: string }[];
     showIcons?: boolean;
   }) => {
-    const { headerName, homeUrl, pages, showIcons } = props;
+    const { homeUrl, pages, showIcons } = props;
 
     const applicationStore = useApplicationStore();
 
@@ -132,8 +132,12 @@ const LegendMarketplaceBaseHeader = observer(
               className="legend-marketplace-header__name"
               onClick={() => navigateToHome()}
             >
-              <LegendLogo />
-              {headerName}
+              <img
+                src="/assets/legendmarketplacehomelogo.png"
+                alt="Legend Logo"
+                className="legend-marketplace-header__logo"
+                style={{ height: 28 }}
+              />
             </div>
             <LegendMarketPlaceHeaderTabs pages={pages} />
             {showIcons && <LegendMarketplaceIconToolbar />}
@@ -151,13 +155,13 @@ export const LegendMarketplaceHeader = observer(
     return (
       <LegendMarketplaceBaseHeader
         headerName="Marketplace"
-        homeUrl={LEGEND_MARKETPLACE_ROUTE_PATTERN.DEFAULT}
+        homeUrl={LEGEND_MARKETPLACE_ROUTE_PATTERN.HOME_PAGE}
         pages={
           enableMarketplacePages
             ? [
                 {
                   title: 'Vendor Data',
-                  urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.VENDOR_DATA,
+                  urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.VENDOR_DETAILS,
                 },
               ]
             : []
@@ -171,13 +175,9 @@ export const LegendMarketplaceHeader = observer(
 export const MarketplaceLakehouseHeader = observer(() => {
   return (
     <LegendMarketplaceBaseHeader
-      headerName="Marketplace"
-      homeUrl={LEGEND_MARKETPLACE_ROUTE_PATTERN.DEFAULT}
+      headerName=""
+      homeUrl={LEGEND_MARKETPLACE_ROUTE_PATTERN.HOME_PAGE}
       pages={[
-        {
-          title: 'Lakehouse Entitlements',
-          urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ENTITLEMENTS,
-        },
         {
           title: 'Data Products',
           urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_PRODUCTS,
@@ -192,7 +192,7 @@ export const MarketplaceLakehouseHeader = observer(() => {
         },
         {
           title: 'Terminals and Addons',
-          urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.VENDOR_DATA,
+          urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.VENDOR_DETAILS,
         },
         {
           title: 'GS Inventory',

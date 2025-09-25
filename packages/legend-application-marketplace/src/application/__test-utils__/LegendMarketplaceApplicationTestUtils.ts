@@ -75,7 +75,12 @@ const TEST_DATA__appConfig: LegendMarketplaceApplicationConfigurationData = {
           stereotype: 'enterprise',
         },
       },
+      showDevIngestEnvironmentFilter: true,
     },
+  },
+  assets: {
+    baseUrl: '/fileName',
+    productImageMap: {},
   },
 };
 

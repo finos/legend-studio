@@ -1,5 +1,33 @@
 # @finos/legend-application-marketplace
 
+## 0.1.13
+
+### Patch Changes
+
+- [#4463](https://github.com/finos/legend-studio/pull/4463) [`7d780a7`](https://github.com/finos/legend-studio/commit/7d780a7033e2c3d1fa1ba9db671a6e8756c21a56) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Migrated Home Page UI and Carousel to LM
+
+- [#4466](https://github.com/finos/legend-studio/pull/4466) [`ff3a3f3`](https://github.com/finos/legend-studio/commit/ff3a3f385bc101f6098f228736e930b9f6242a09) ([@travisstebbins](https://github.com/travisstebbins)) - Fix showing marketplace search results dev ingest environment filter
+
+- [#4456](https://github.com/finos/legend-studio/pull/4456) [`727b7c7`](https://github.com/finos/legend-studio/commit/727b7c70799da887084bf7f79a674e1cf1d38654) ([@kelly-thai](https://github.com/kelly-thai)) - Add Coming Soon pages to Marketplace
+
+- [#4455](https://github.com/finos/legend-studio/pull/4455) [`02be6d8`](https://github.com/finos/legend-studio/commit/02be6d84bf8f49bc7a81f4327767cee666e67990) ([@kelly-thai](https://github.com/kelly-thai)) - Update Data Product cards to include images for Modeled Data Products
+
+- [#4461](https://github.com/finos/legend-studio/pull/4461) [`5bd2208`](https://github.com/finos/legend-studio/commit/5bd220828342e12ee44c1d25d3cb07c48197f0bd) ([@kelly-thai](https://github.com/kelly-thai)) - Move entitlements mavigation from header to icon bar
+
+## 0.1.12
+
+### Patch Changes
+
+- [#4448](https://github.com/finos/legend-studio/pull/4448) [`984a4df`](https://github.com/finos/legend-studio/commit/984a4df3ff0c368ec476f5b8d1a116423db22dd7) ([@kelly-thai](https://github.com/kelly-thai)) - Add 'Schedule a Demo' and 'Subscribe to our Newsletter' buttons to Marketplace home page
+
+- [#4449](https://github.com/finos/legend-studio/pull/4449) [`d3ad298`](https://github.com/finos/legend-studio/commit/d3ad29850ea0a786a5ce489159f2618f38b62bdb) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add request demo modal
+
+## 0.1.11
+
+### Patch Changes
+
+- [#4440](https://github.com/finos/legend-studio/pull/4440) [`7d1569d`](https://github.com/finos/legend-studio/commit/7d1569dfe7cedbd21723d3943b2ffca57e5f7cdd) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - route /lakehouse to / routes
+
 ## 0.1.10
 
 ### Patch Changes

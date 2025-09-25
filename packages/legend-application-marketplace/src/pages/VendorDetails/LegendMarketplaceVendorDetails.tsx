@@ -19,6 +19,13 @@ import { useParams } from '@finos/legend-application/browser';
 import { List, ListItem, Typography } from '@mui/material';
 import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
 import { withLegendMarketplaceVendorDataStore } from '../../application/providers/LegendMarketplaceVendorDataProvider.js';
+import {
+  CompassIcon,
+  AnalyticsIcon,
+  SparkleStarsIcon,
+  DatabaseIcon,
+} from '@finos/legend-art';
+import { ComingSoonDisplay } from '../../components/ComingSoon/ComingSoonDisplay.js';
 
 export const LegendMarketplaceVendorDetails =
   withLegendMarketplaceVendorDataStore(
@@ -48,3 +55,31 @@ export const LegendMarketplaceVendorDetails =
       );
     }),
   );
+
+export const LegendMarketplaceTerminalsAddOnsComingSoon = observer(() => {
+  const featuresPreviewItems = [
+    {
+      icon: <CompassIcon />,
+      title: 'Vendor Data',
+    },
+    {
+      icon: <AnalyticsIcon />,
+      title: 'Terminals',
+    },
+    {
+      icon: <SparkleStarsIcon />,
+      title: 'Add Ons',
+    },
+  ];
+
+  return (
+    <LegendMarketplacePage className="vendor-data-coming-soon">
+      <ComingSoonDisplay
+        loadingIcon={<DatabaseIcon />}
+        title="Terminals and Add Ons"
+        description="Discover quality vendor data available for use"
+        featuresPreviewItems={featuresPreviewItems}
+      />
+    </LegendMarketplacePage>
+  );
+});

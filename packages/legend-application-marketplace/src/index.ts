@@ -27,10 +27,6 @@ export {
   type LegendMarketplaceBaseStore,
 } from './stores/LegendMarketplaceBaseStore.js';
 export * from './application/LegendMarketplaceApplicationPlugin.js';
-export {
-  AccessPointGroupAccess,
-  DataProductGroupAccessState,
-} from './stores/lakehouse/DataProductDataAccessState.js';
 export { LegendMarketplaceProductViewerStore } from './stores/lakehouse/LegendMarketplaceProductViewerStore.js';
 export { LegendMarketplaceSearchResultsStore } from './stores/lakehouse/LegendMarketplaceSearchResultsStore.js';
 export { BaseProductCardState } from './stores/lakehouse/dataProducts/BaseProductCardState.js';

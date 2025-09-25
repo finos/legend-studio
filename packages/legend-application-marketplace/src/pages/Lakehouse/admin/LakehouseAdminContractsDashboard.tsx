@@ -27,17 +27,20 @@ import { Box } from '@mui/material';
 import { type V1_LiteDataContract } from '@finos/legend-graph';
 import type { LakehouseAdminStore } from '../../../stores/lakehouse/admin/LakehouseAdminStore.js';
 import { useState } from 'react';
-import { EntitlementsDataContractViewer } from '../../../components/DataContractViewer/EntitlementsDataContractViewer.js';
-import { EntitlementsDataContractViewerState } from '../../../stores/lakehouse/entitlements/EntitlementsDataContractViewerState.js';
-import { useLegendMarketplaceBaseStore } from '../../../application/providers/LegendMarketplaceFrameworkProvider.js';
+import {
+  EntitlementsDataContractViewer,
+  EntitlementsDataContractViewerState,
+} from '@finos/legend-extension-dsl-data-product';
+import {
+  generateLakehouseDataProductPath,
+  generateLakehouseTaskPath,
+} from '../../../__lib__/LegendMarketplaceNavigation.js';
 
 export const LakehouseAdminContractsDashboard = observer(
   (props: { adminStore: LakehouseAdminStore }) => {
     const { adminStore } = props;
 
     const contracts = adminStore.contracts;
-
-    const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
 
     const [selectedContract, setSelectedContract] = useState<
       V1_LiteDataContract | undefined
@@ -122,14 +125,25 @@ export const LakehouseAdminContractsDashboard = observer(
         {selectedContract !== undefined && (
           <EntitlementsDataContractViewer
             open={true}
+            onClose={() => setSelectedContract(undefined)}
             currentViewer={
               new EntitlementsDataContractViewerState(
                 selectedContract,
-                adminStore.lakehouseContractServerClient,
+                adminStore.legendMarketplaceBaseStore.applicationStore,
+                adminStore.legendMarketplaceBaseStore.lakehouseContractServerClient,
+                adminStore.legendMarketplaceBaseStore.userSearchService,
               )
             }
-            legendMarketplaceStore={legendMarketplaceBaseStore}
-            onClose={() => setSelectedContract(undefined)}
+            getContractTaskUrl={(taskId: string) =>
+              adminStore.legendMarketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
+                generateLakehouseTaskPath(taskId),
+              )
+            }
+            getDataProductUrl={(dataProductId: string, deploymentId: number) =>
+              adminStore.legendMarketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
+                generateLakehouseDataProductPath(dataProductId, deploymentId),
+              )
+            }
           />
         )}
       </>

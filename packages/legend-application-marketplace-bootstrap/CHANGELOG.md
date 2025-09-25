@@ -1,5 +1,15 @@
 # @finos/legend-application-marketplace-bootstrap
 
+## 13.133.0
+
+### Patch Changes
+
+- [#4466](https://github.com/finos/legend-studio/pull/4466) [`ff3a3f3`](https://github.com/finos/legend-studio/commit/ff3a3f385bc101f6098f228736e930b9f6242a09) ([@travisstebbins](https://github.com/travisstebbins)) - Fix showing marketplace search results dev ingest environment filter
+
+## 13.132.0
+
+## 13.131.0
+
 ## 13.130.0
 
 ### Patch Changes

@@ -267,33 +267,31 @@ const SearchResultsSortFilterPanel = observer(
                       }
                       label="Prod-Parallel"
                     />
-                    {
-                      // eslint-disable-next-line no-process-env
-                      process.env.NODE_ENV !== 'production' && (
-                        <FormControlLabel
-                          control={
-                            <Checkbox
-                              disabled={
-                                !searchResultsStore.filterState
-                                  .unmodeledDataProducts
-                              }
-                              checked={
-                                searchResultsStore.filterState
-                                  .unmodeledDataProductsConfig
-                                  .devEnvironmentClassification
-                              }
-                              onChange={() =>
-                                searchResultsStore.handleFilterChange(
-                                  DataProductFilterType.UNMODELED_DATA_PRODUCTS__ENVIRONMENT_CLASSIFICATION,
-                                  V1_IngestEnvironmentClassification.DEV,
-                                )
-                              }
-                            />
-                          }
-                          label="Dev"
-                        />
-                      )
-                    }
+                    {searchResultsStore.marketplaceBaseStore.applicationStore
+                      .config.options.showDevIngestEnvironmentFilter && (
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            disabled={
+                              !searchResultsStore.filterState
+                                .unmodeledDataProducts
+                            }
+                            checked={
+                              searchResultsStore.filterState
+                                .unmodeledDataProductsConfig
+                                .devEnvironmentClassification
+                            }
+                            onChange={() =>
+                              searchResultsStore.handleFilterChange(
+                                DataProductFilterType.UNMODELED_DATA_PRODUCTS__ENVIRONMENT_CLASSIFICATION,
+                                V1_IngestEnvironmentClassification.DEV,
+                              )
+                            }
+                          />
+                        }
+                        label="Dev"
+                      />
+                    )}
                   </FormGroup>
                 </Box>
               </Box>

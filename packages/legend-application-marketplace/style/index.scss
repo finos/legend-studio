@@ -18,7 +18,6 @@
 @forward 'app';
 
 @forward 'components/data-product-card';
-@forward 'components/data-product-viewer';
 @forward 'components/dataContract-creator';
 @forward 'components/header';
 @forward 'components/lakehouse-data-product-card';
@@ -29,6 +28,8 @@
 @forward 'components/radio-selector';
 @forward 'components/search-bar';
 @forward 'components/vendor-card';
+@forward 'components/homebuttons';
+@forward 'components/coming-soon-display';
 
 @forward 'pages/coming-soon';
 @forward 'pages/home';
@@ -38,7 +39,6 @@
 @forward 'pages/vendor-data';
 
 @forward 'pages/lakehouse/lakehouse-admin';
-@forward 'pages/lakehouse/lakehouse-data-product-viewer';
 @forward 'pages/lakehouse/lakehouse-entitlements';
 @forward 'pages/lakehouse/lakehouse-home';
 @forward 'pages/lakehouse/lakehouse-oauth-callback';
@@ -46,3 +46,10 @@
 @forward 'pages/lakehouse/lakehouse-subscriptions';
 
 @forward 'light-mode';
+
+/* stylelint-disable-next-line no-invalid-position-at-import-rule */
+@import url('~swiper/css');
+/* stylelint-disable-next-line no-invalid-position-at-import-rule */
+@import url('~swiper/css/navigation');
+/* stylelint-disable-next-line no-invalid-position-at-import-rule */
+@import url('~swiper/css/pagination');

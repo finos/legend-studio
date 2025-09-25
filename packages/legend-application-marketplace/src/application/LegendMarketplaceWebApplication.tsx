@@ -21,7 +21,6 @@ import {
   CubesLoadingIndicatorIcon,
   GhostIcon,
 } from '@finos/legend-art';
-import { flowResult } from 'mobx';
 import {
   LEGEND_APPLICATION_COLOR_THEME,
   useApplicationStore,
@@ -38,37 +37,30 @@ import {
   useLegendMarketplaceApplicationStore,
   useLegendMarketplaceBaseStore,
 } from './providers/LegendMarketplaceFrameworkProvider.js';
-import {
-  isLakehouseRoute,
-  LEGEND_MARKETPLACE_ROUTE_PATTERN,
-} from '../__lib__/LegendMarketplaceNavigation.js';
+import { LEGEND_MARKETPLACE_ROUTE_PATTERN } from '../__lib__/LegendMarketplaceNavigation.js';
 import { MarketplaceLakehouseHome } from '../pages/Lakehouse/MarketplaceLakehouseHome.js';
-import { LegendMarketplaceSearchResults } from '../pages/SearchResults/LegendMarketplaceSearchResults.js';
 import {
   type AuthProviderProps,
   AuthProvider,
-  useAuth,
   withAuthenticationRequired,
 } from 'react-oidc-context';
 import type { User } from 'oidc-client-ts';
 import type { LegendMarketplaceOidcConfig } from './LegendMarketplaceApplicationConfig.js';
 import { LakehouseDataProduct } from '../pages/Lakehouse/dataProduct/LakehouseDataProduct.js';
 import { TerminalProduct } from '../pages/Lakehouse/dataProduct/TerminalProduct.js';
-import { LegendMarketplaceVendorData } from '../pages/VendorData/LegendMarketplaceVendorData.js';
+import { LegendMarketplaceDataAPIs } from '../pages/DataAPIs/LegendMarketplaceDataAPIs.js';
 import { LakehouseEntitlements } from '../pages/Lakehouse/entitlements/LakehouseEntitlements.js';
 import { LakehouseAdmin } from '../pages/Lakehouse/admin/LakehouseAdmin.js';
-import {
-  LegendMarketplaceHeader,
-  MarketplaceLakehouseHeader,
-} from '../components/Header/LegendMarketplaceHeader.js';
+import { MarketplaceLakehouseHeader } from '../components/Header/LegendMarketplaceHeader.js';
 import { LegendMarketplacePage } from '../pages/LegendMarketplacePage.js';
-import { LegendMarketplaceVendorDetails } from '../pages/VendorDetails/LegendMarketplaceVendorDetails.js';
-import { LegendMarketplaceSubscriptions } from '../pages/Profile/LegendMarketplaceSubscriptions.js';
-import { LegendMarketplaceOrders } from '../pages/Profile/LegendMarketplaceOrders.js';
 import { MarketplaceLakehouseOAuthCallback } from '../pages/Lakehouse/MarketplaceLakehouseOAuthCallback.js';
 import { LakehouseSDLCDataProduct } from '../pages/Lakehouse/dataProduct/LakehouseSDLCDataProduct.js';
 import { MarketplaceLakehouseSearchResults } from '../pages/Lakehouse/searchResults/MarketplaceLakehouseSearchResults.js';
 import { LegacyDataProduct } from '../pages/Lakehouse/dataProduct/LegacyDataProduct.js';
+import { LegendMarketplaceAgents } from '../pages/Agents/LegendMarketplaceAgents.js';
+import { LegendMarketplaceInventory } from '../pages/Inventory/LegendMarketplaceInventory.js';
+import { LegendMarketplaceTerminalsAddOnsComingSoon } from '../pages/VendorDetails/LegendMarketplaceVendorDetails.js';
+import { flowResult } from 'mobx';
 
 const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();
@@ -117,10 +109,6 @@ const NotFoundPage = observer(() => {
 export const LegendMarketplaceWebApplicationRouter = observer(() => {
   const marketplaceBaseStore = useLegendMarketplaceBaseStore();
   const applicationStore = useLegendMarketplaceApplicationStore();
-  const auth = useAuth();
-
-  const enableMarketplacePages =
-    applicationStore.config.options.enableMarketplacePages;
 
   useEffect(() => {
     if (marketplaceBaseStore.initState.isInInitialState) {
@@ -128,17 +116,7 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
         applicationStore.alertUnhandledError,
       );
     }
-    if (
-      marketplaceBaseStore.ingestEnvironmentFetchState.isInInitialState &&
-      auth.user?.access_token
-    ) {
-      flowResult(
-        marketplaceBaseStore.initializeIngestEnvironmentDetails(
-          auth.user.access_token,
-        ),
-      ).catch(applicationStore.alertUnhandledError);
-    }
-  }, [applicationStore, marketplaceBaseStore, auth.user?.access_token]);
+  }, [applicationStore.alertUnhandledError, marketplaceBaseStore]);
 
   useEffect(() => {
     applicationStore.layoutService.setColorTheme(
@@ -234,15 +212,7 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
           <Route
             element={
               <>
-                {isLakehouseRoute(
-                  marketplaceBaseStore.applicationStore.navigationService.navigator.getCurrentLocation(),
-                ) ? (
-                  <MarketplaceLakehouseHeader />
-                ) : (
-                  <LegendMarketplaceHeader
-                    enableMarketplacePages={enableMarketplacePages}
-                  />
-                )}
+                <MarketplaceLakehouseHeader />
                 <Outlet />
               </>
             }
@@ -251,47 +221,33 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.OAUTH_CALLBACK}
               element={<MarketplaceLakehouseOAuthCallback />}
             />
-            {/* Marketplace pages */}
-            {enableMarketplacePages && (
-              <>
-                <Route
-                  path={LEGEND_MARKETPLACE_ROUTE_PATTERN.SEARCH_RESULTS}
-                  element={<LegendMarketplaceSearchResults />}
-                />
-                <Route
-                  path={LEGEND_MARKETPLACE_ROUTE_PATTERN.VENDOR_DATA}
-                  element={<LegendMarketplaceVendorData />}
-                />
-                <Route
-                  path={LEGEND_MARKETPLACE_ROUTE_PATTERN.VENDOR_DETAILS}
-                  element={<LegendMarketplaceVendorDetails />}
-                />
-                <Route
-                  path={LEGEND_MARKETPLACE_ROUTE_PATTERN.SUBSCRIPTIONS}
-                  element={<LegendMarketplaceSubscriptions />}
-                />
-                <Route
-                  path={LEGEND_MARKETPLACE_ROUTE_PATTERN.ORDERS}
-                  element={<LegendMarketplaceOrders />}
-                />
-              </>
-            )}
-            {/* Lakehouse pages */}
+
+            {/* Marketplace Routes */}
             <Route
-              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE}
-              element={
-                <Navigate
-                  to={LEGEND_MARKETPLACE_ROUTE_PATTERN.DEFAULT}
-                  replace={true}
-                />
+              path={
+                LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_PRODUCT_SEARCH_RESULTS
               }
-            />
-            <Route
-              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SEARCH_RESULTS}
               element={<ProtectedLakehouseSearchResults />}
             />
             <Route
-              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_PRODUCT}
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_APIS}
+              element={<LegendMarketplaceDataAPIs />}
+            />
+            <Route
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.AGENTS}
+              element={<LegendMarketplaceAgents />}
+            />
+            <Route
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.INVENTORY}
+              element={<LegendMarketplaceInventory />}
+            />
+            <Route
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.VENDOR_DETAILS}
+              element={<LegendMarketplaceTerminalsAddOnsComingSoon />}
+            />
+
+            <Route
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_PRODUCT}
               element={<ProtectedLakehouseDataProduct />}
             />
             <Route
@@ -299,7 +255,7 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
               element={<ProtectedTerminalProduct />}
             />
             <Route
-              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_SDLC_PRODUCT}
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.SDLC_DATA_PRODUCT}
               element={<LakehouseSDLCDataProduct />}
             />
             <Route
@@ -311,12 +267,58 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
               element={<ProtectedLakehouseEntitlements />}
             />
             <Route
-              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.DEFAULT}
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.HOME_PAGE}
               element={<ProtectedLakehouseMarketplace />}
             />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ADMIN}
               element={<ProtectedLakehouseAdmin />}
+            />
+
+            {/* Reroute pages */}
+            <Route
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.DEPRECATED_LAKEHOUSE}
+              element={
+                <Navigate
+                  to={LEGEND_MARKETPLACE_ROUTE_PATTERN.HOME_PAGE}
+                  replace={true}
+                />
+              }
+            />
+            <Route
+              path={
+                LEGEND_MARKETPLACE_ROUTE_PATTERN.DEPRECATED_LAKEHOUSE_SEARCH_RESULTS
+              }
+              element={
+                <Navigate
+                  to={
+                    LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_PRODUCT_SEARCH_RESULTS
+                  }
+                  replace={true}
+                />
+              }
+            />
+            <Route
+              path={
+                LEGEND_MARKETPLACE_ROUTE_PATTERN.DEPRECATED_LAKEHOUSE_PRODUCT
+              }
+              element={
+                <Navigate
+                  to={LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_PRODUCT}
+                  replace={true}
+                />
+              }
+            />
+            <Route
+              path={
+                LEGEND_MARKETPLACE_ROUTE_PATTERN.DEPRECATED_LAKEHOUSE_SDLC_PRODUCT
+              }
+              element={
+                <Navigate
+                  to={LEGEND_MARKETPLACE_ROUTE_PATTERN.SDLC_DATA_PRODUCT}
+                  replace={true}
+                />
+              }
             />
             <Route path="*" element={<NotFoundPage />} />
           </Route>

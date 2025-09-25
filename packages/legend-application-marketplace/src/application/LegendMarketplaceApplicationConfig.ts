@@ -26,20 +26,10 @@ import {
 import {
   type LegendApplicationConfigurationData,
   type LegendApplicationConfigurationInput,
+  DataProductConfig,
   LegendApplicationConfig,
-  StereotypeConfig,
 } from '@finos/legend-application';
 import type { AuthProviderProps } from 'react-oidc-context';
-
-export class DataProductConfig {
-  publicStereotype!: StereotypeConfig;
-
-  static readonly serialization = new SerializationFactory(
-    createModelSchema(DataProductConfig, {
-      publicStereotype: usingModelSchema(StereotypeConfig.serialization.schema),
-    }),
-  );
-}
 
 class LegendMarketplaceApplicationCoreOptions {
   /**
@@ -52,12 +42,23 @@ class LegendMarketplaceApplicationCoreOptions {
 
   dataProductConfig: DataProductConfig | undefined;
 
+  newsletterUrl!: string;
+
+  /**
+   * Indicates if we should show a checkbox to filter
+   * on/off data products in dev ingest environments
+   * in the Marketplace search results page.
+   */
+  showDevIngestEnvironmentFilter = false;
+
   private static readonly serialization = new SerializationFactory(
     createModelSchema(LegendMarketplaceApplicationCoreOptions, {
       enableMarketplacePages: optional(primitive()),
       dataProductConfig: optional(
         usingModelSchema(DataProductConfig.serialization.schema),
       ),
+      newsletterUrl: primitive(),
+      showDevIngestEnvironmentFilter: optional(primitive()),
     }),
   );
 
@@ -103,6 +104,10 @@ export interface LegendMarketplaceApplicationConfigurationData
       applicationIDUrl: string;
     };
   };
+  assets: {
+    baseUrl: string;
+    productImageMap: Record<string, string>;
+  };
   studio: {
     url: string;
     instances: LegendStudioApplicationInstanceConfigurationData[];
@@ -141,6 +146,8 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
   readonly studioInstances: LegendStudioApplicationInstanceConfigurationData[] =
     [];
   readonly queryApplicationUrl: string;
+  readonly assetsBaseUrl: string;
+  readonly assetsProductImageMap: Record<string, string>;
 
   constructor(
     input: LegendApplicationConfigurationInput<LegendMarketplaceApplicationConfigurationData>,
@@ -212,6 +219,20 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
         input.configData.depot.url,
         `Can't configure application: 'depot.url' field is missing or empty`,
       ),
+    );
+
+    // assets
+    assertNonNullable(
+      input.configData.assets,
+      `Can't configure application: 'assets' field is missing`,
+    );
+    this.assetsBaseUrl = guaranteeNonEmptyString(
+      input.configData.assets.baseUrl,
+      `Can't configure application: 'assets.baseUrl' field is missing or empty`,
+    );
+    this.assetsProductImageMap = guaranteeNonNullable(
+      input.configData.assets.productImageMap,
+      `Can't configure application: 'assets.productImageMap' field is missing`,
     );
 
     // lakehouse

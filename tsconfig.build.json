@@ -53,6 +53,9 @@
     { "path": "packages/legend-extension-tracer-zipkin/tsconfig.build.json" },
     { "path": "packages/legend-extension-dsl-text/tsconfig.build.json" },
     { "path": "packages/legend-extension-dsl-diagram/tsconfig.build.json" },
+    {
+      "path": "packages/legend-extension-dsl-data-product/tsconfig.build.json"
+    },
     { "path": "packages/legend-extension-dsl-data-space/tsconfig.build.json" },
     {
       "path": "packages/legend-extension-dsl-data-space-studio/tsconfig.build.json"

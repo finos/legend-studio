@@ -29,7 +29,11 @@ export const LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE = 'lakehouseConsumer';
 
 export class LakehouseConsumerDataCubeSource extends DataCubeSource {
   model!: PlainObject<V1_PureModelContextComposite>;
+  dpCoordinates!: VersionedProjectData;
   runtime!: string;
+  warehouse!: string;
+  environment!: string;
+  paths!: string[];
 }
 
 export class RawLakehouseConsumerDataCubeSource {

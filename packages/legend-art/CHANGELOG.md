@@ -1,5 +1,21 @@
 # @finos/legend-art
 
+## 7.1.122
+
+### Patch Changes
+
+- [#4444](https://github.com/finos/legend-studio/pull/4444) [`341e668`](https://github.com/finos/legend-studio/commit/341e668da9116ca700838d94f0382a53d32e5cb3) ([@AFine-gs](https://github.com/AFine-gs)) - update lineage viewer
+
+- [#4456](https://github.com/finos/legend-studio/pull/4456) [`727b7c7`](https://github.com/finos/legend-studio/commit/727b7c70799da887084bf7f79a674e1cf1d38654) ([@kelly-thai](https://github.com/kelly-thai)) - Add Coming Soon pages to Marketplace
+
+## 7.1.121
+
+### Patch Changes
+
+- [#4448](https://github.com/finos/legend-studio/pull/4448) [`984a4df`](https://github.com/finos/legend-studio/commit/984a4df3ff0c368ec476f5b8d1a116423db22dd7) ([@kelly-thai](https://github.com/kelly-thai)) - Add 'Schedule a Demo' and 'Subscribe to our Newsletter' buttons to Marketplace home page
+
+- [#4449](https://github.com/finos/legend-studio/pull/4449) [`d3ad298`](https://github.com/finos/legend-studio/commit/d3ad29850ea0a786a5ce489159f2618f38b62bdb) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add Calendar and Send Icon
+
 ## 7.1.120
 
 ## 7.1.119

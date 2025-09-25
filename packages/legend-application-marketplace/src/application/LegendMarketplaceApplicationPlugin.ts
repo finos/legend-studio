@@ -16,34 +16,18 @@
 
 import { LegendApplicationPlugin } from '@finos/legend-application';
 import type { LegendMarketplacePluginManager } from '../application/LegendMarketplacePluginManager.js';
+import type { LegendMarketplaceBaseStore } from '../stores/LegendMarketplaceBaseStore.js';
+import type { BaseProductCardState } from '../stores/lakehouse/dataProducts/BaseProductCardState.js';
 import type {
   AccessPointGroupAccess,
-  DataProductGroupAccessState,
-} from '../stores/lakehouse/DataProductDataAccessState.js';
-import type { V1_OrganizationalScope } from '@finos/legend-graph';
-import type { LegendMarketplaceBaseStore } from '../stores/LegendMarketplaceBaseStore.js';
-import type React from 'react';
-import type { BaseProductCardState } from '../stores/lakehouse/dataProducts/BaseProductCardState.js';
+  ContractConsumerTypeRendererConfig,
+  DataProductDataAccess_LegendApplicationPlugin_Extension,
+} from '@finos/legend-extension-dsl-data-product';
 
-export type ContractConsumerTypeRendererConfig = {
-  type: string;
-  createContractRenderer: (
-    marketplaceBaseStore: LegendMarketplaceBaseStore,
-    accessGroupState: DataProductGroupAccessState,
-    handleOrganizationalScopeChange: (consumer: V1_OrganizationalScope) => void,
-    handleDescriptionChange: (description: string | undefined) => void,
-    handleIsValidChange: (isValid: boolean) => void,
-  ) => React.ReactNode;
-  organizationalScopeTypeName?: (
-    consumer: V1_OrganizationalScope,
-  ) => string | undefined;
-  organizationalScopeTypeDetailsRenderer?: (
-    consumer: V1_OrganizationalScope,
-  ) => React.ReactNode | undefined;
-  enableForEnterpriseAPGs?: boolean;
-};
-
-export abstract class LegendMarketplaceApplicationPlugin extends LegendApplicationPlugin {
+export abstract class LegendMarketplaceApplicationPlugin
+  extends LegendApplicationPlugin
+  implements DataProductDataAccess_LegendApplicationPlugin_Extension
+{
   /**
    * This helps to better type-check for this empty abtract type
    * See https://github.com/finos/legend-studio/blob/master/docs/technical/typescript-usage.md#understand-typescript-structual-type-system
@@ -65,13 +49,6 @@ export abstract class LegendMarketplaceApplicationPlugin extends LegendApplicati
   ): Promise<BaseProductCardState[] | undefined>;
 
   /**
-   * Config to handle different types of contract consumers, including configuration for:
-   * - Contract creation dialog renderer
-   * - Organizational scope type details renderer
-   */
-  getContractConsumerTypeRendererConfigs?(): ContractConsumerTypeRendererConfig[];
-
-  /**
    * Returns additional details about a given access point group access type.
    *
    * @param access the AccessPointGroupAccess value for a given Access Point Group
@@ -79,4 +56,11 @@ export abstract class LegendMarketplaceApplicationPlugin extends LegendApplicati
   getExtraAccessPointGroupAccessInfo?(
     access: AccessPointGroupAccess,
   ): string | undefined;
+
+  /**
+   * Config to handle different types of contract consumers, including configuration for:
+   * - Contract creation dialog renderer
+   * - Organizational scope type details renderer
+   */
+  getContractConsumerTypeRendererConfigs?(): ContractConsumerTypeRendererConfig[];
 }

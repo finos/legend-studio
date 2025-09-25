@@ -1,5 +1,13 @@
 # @finos/legend-application-data-cube
 
+## 0.6.14
+
+### Patch Changes
+
+- [#4460](https://github.com/finos/legend-studio/pull/4460) [`2450039`](https://github.com/finos/legend-studio/commit/2450039957b09da7b2f253a6950ae4c944a84712) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Added navigation to Marketplace from DataCube
+
+## 0.6.13
+
 ## 0.6.12
 
 ## 0.6.11

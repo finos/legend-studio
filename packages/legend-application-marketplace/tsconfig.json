@@ -12,6 +12,7 @@
     { "path": "../legend-application" },
     { "path": "../legend-art" },
     { "path": "../legend-code-editor" },
+    { "path": "../legend-extension-dsl-data-product" },
     { "path": "../legend-extension-dsl-data-space" },
     { "path": "../legend-graph" },
     { "path": "../legend-lego" },
