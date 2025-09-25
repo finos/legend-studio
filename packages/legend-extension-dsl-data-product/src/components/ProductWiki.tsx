@@ -15,7 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { MarkdownTextViewer } from '@finos/legend-art';
 import type {
   SupportedProducts,
@@ -32,47 +32,16 @@ import {
 import { DataProducteDataAccess } from './DataProduct/DataProductDataAccess.js';
 import { DataProductSupportInfo } from './DataProduct/DataProductSupportInfo.js';
 import type { DataProductDataAccessState } from '../stores/DataProduct/DataProductDataAccessState.js';
+import {
+  TerminalAccessSection,
+  TerminalProductPrice,
+  TerminalProductTable,
+} from './TerminalWikiUtils.js';
 
 export const ProductWikiPlaceholder: React.FC<{ message: string }> = (
   props,
 ) => (
   <div className="data-product__viewer__wiki__placeholder">{props.message}</div>
-);
-
-export const TerminalProductPrice = observer(
-  (props: { terminalProductViewerState: TerminalProductViewerState }) => {
-    const { terminalProductViewerState } = props;
-    const terminal = terminalProductViewerState.product;
-    const [isAnnual, setIsAnnual] = useState(true);
-
-    const availablePrice =
-      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-      terminal.price || terminal.tieredPrice || terminal.totalFirmPrice;
-
-    if (!availablePrice) {
-      return (
-        <ProductWikiPlaceholder message="No price information available." />
-      );
-    }
-
-    const getDisplayPrice = () => {
-      const price = Number(availablePrice);
-      return isAnnual ? Number(price).toFixed(2) : (price / 12).toFixed(2);
-    };
-
-    const handlePricingToggle = () => {
-      setIsAnnual((prev) => !prev);
-    };
-
-    return (
-      <button
-        className="data-product__viewer__wiki__section__pricing"
-        onClick={handlePricingToggle}
-      >
-        ${getDisplayPrice()} {isAnnual ? 'ANNUALLY' : 'MONTHLY'} PER LICENSE
-      </button>
-    );
-  },
 );
 
 export const ProductDescription = observer(
@@ -173,12 +142,12 @@ export const ProductWiki = observer(
 
     return (
       <div className="data-product__viewer__wiki">
-        <ProductDescription productViewerState={productViewerState} />
         {isTerminalProductViewerState && (
           <TerminalProductPrice
             terminalProductViewerState={productViewerState}
           />
         )}
+        <ProductDescription productViewerState={productViewerState} />
         {isDataProductViewerState && (
           <>
             <DataProducteDataAccess
@@ -189,6 +158,18 @@ export const ProductWiki = observer(
               dataProductViewerState={productViewerState}
             />
           </>
+        )}
+        {isTerminalProductViewerState && (
+          <div>
+            <TerminalAccessSection
+              userImageUrl="https://example.com/user-avatar.jpg"
+              userImageAlt="Current User"
+              buttonText="Change User"
+            />
+            <TerminalProductTable
+              terminalProductViewerState={productViewerState}
+            />
+          </div>
         )}
       </div>
     );
