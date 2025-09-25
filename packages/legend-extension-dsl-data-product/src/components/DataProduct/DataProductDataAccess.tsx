@@ -303,32 +303,29 @@ const TDSColumnCellRenderer = (props: {
           className="data-product__viewer__tabs"
         >
           <Tab
-            className={
-              'data-product__viewer__tab' +
-              (selectedTab === DataProductTabs.COLUMNS
-                ? ' data-product__viewer__tab--selected'
-                : '')
-            }
+            className={`data-product__viewer__tab${
+              selectedTab === DataProductTabs.COLUMNS
+                ? 'data-product__viewer__tab--selected'
+                : ''
+            }`}
             label={<span>Column Specifications</span>}
             value={DataProductTabs.COLUMNS}
           />
           <Tab
-            className={
-              'data-product__viewer__tab' +
-              (selectedTab === DataProductTabs.GRAMMAR
-                ? ' data-product__viewer__tab--selected'
-                : '')
-            }
+            className={`data-product__viewer__tab${
+              selectedTab === DataProductTabs.GRAMMAR
+                ? 'data-product__viewer__tab--selected'
+                : ''
+            }`}
             label={<span>Grammar</span>}
             value={DataProductTabs.GRAMMAR}
           />
           <Tab
-            className={
-              'data-product__viewer__tab' +
-              (selectedTab === DataProductTabs.DATACUBE
-                ? ' data-product__viewer__tab--selected'
-                : '')
-            }
+            className={`data-product__viewer__tab${
+              selectedTab === DataProductTabs.DATACUBE
+                ? 'data-product__viewer__tab--selected'
+                : ''
+            }`}
             label={
               <span className="label-container">
                 <DataCubeIcon.Cube
@@ -346,12 +343,11 @@ const TDSColumnCellRenderer = (props: {
             value={DataProductTabs.DATACUBE}
           />
           <Tab
-            className={
-              'data-product__viewer__tab' +
-              (selectedTab === DataProductTabs.BUSINESS_INTELLIGENCE
-                ? ' data-product__viewer__tab--selected'
-                : '')
-            }
+            className={`data-product__viewer__tab${
+              selectedTab === DataProductTabs.BUSINESS_INTELLIGENCE
+                ? 'data-product__viewer__tab--selected'
+                : ''
+            }`}
             label={
               <span className="label-container">
                 <TableIcon
@@ -369,12 +365,11 @@ const TDSColumnCellRenderer = (props: {
             value={DataProductTabs.BUSINESS_INTELLIGENCE}
           />
           <Tab
-            className={
-              'data-product__viewer__tab' +
-              (selectedTab === DataProductTabs.PYTHON
-                ? ' data-product__viewer__tab--selected'
-                : '')
-            }
+            className={`data-product__viewer__tab${
+              selectedTab === DataProductTabs.PYTHON
+                ? 'data-product__viewer__tab--selected'
+                : ''
+            }`}
             label={
               <span className="label-container">
                 <PythonIcon
@@ -392,12 +387,11 @@ const TDSColumnCellRenderer = (props: {
             value={DataProductTabs.PYTHON}
           />
           <Tab
-            className={
-              'data-product__viewer__tab' +
-              (selectedTab === DataProductTabs.SQL
-                ? ' data-product__viewer__tab--selected'
-                : '')
-            }
+            className={`data-product__viewer__tab${
+              selectedTab === DataProductTabs.SQL
+                ? 'data-product__viewer__tab--selected'
+                : ''
+            }`}
             label={
               <span className="label-container">
                 <SQLIcon
