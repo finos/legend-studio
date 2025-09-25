@@ -268,7 +268,7 @@ const SearchResultsSortFilterPanel = observer(
                       label="Prod-Parallel"
                     />
                     {searchResultsStore.marketplaceBaseStore.applicationStore
-                      .config.options.showDevIngestEnvironmentFilter && (
+                      .config.options.showDevFeatures && (
                       <FormControlLabel
                         control={
                           <Checkbox

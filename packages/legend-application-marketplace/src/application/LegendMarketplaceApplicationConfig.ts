@@ -32,33 +32,25 @@ import {
 import type { AuthProviderProps } from 'react-oidc-context';
 
 class LegendMarketplaceApplicationCoreOptions {
-  /**
-   * Indicates whether we should enable the marketplace pages.
-   * If not, the home page will be the coming soon page.
-   *
-   * Default to `false`
-   */
-  enableMarketplacePages = false;
-
   dataProductConfig: DataProductConfig | undefined;
 
   newsletterUrl!: string;
 
   /**
-   * Indicates if we should show a checkbox to filter
-   * on/off data products in dev ingest environments
-   * in the Marketplace search results page.
+   * Used for any features that are still in development
    */
-  showDevIngestEnvironmentFilter = false;
+  showDevFeatures = false;
+
+  highlightedDataProducts: string | undefined;
 
   private static readonly serialization = new SerializationFactory(
     createModelSchema(LegendMarketplaceApplicationCoreOptions, {
-      enableMarketplacePages: optional(primitive()),
       dataProductConfig: optional(
         usingModelSchema(DataProductConfig.serialization.schema),
       ),
       newsletterUrl: primitive(),
-      showDevIngestEnvironmentFilter: optional(primitive()),
+      showDevFeatures: optional(primitive()),
+      highlightedDataProducts: optional(primitive()),
     }),
   );
 

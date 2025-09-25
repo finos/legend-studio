@@ -68,14 +68,13 @@ const TEST_DATA__appConfig: LegendMarketplaceApplicationConfigurationData = {
   },
   extensions: {
     core: {
-      enableMarketplacePages: true,
       dataProductConfig: {
         publicStereotype: {
           profile: 'test::profile::EnterpriseDataProduct',
           stereotype: 'enterprise',
         },
       },
-      showDevIngestEnvironmentFilter: true,
+      showDevFeatures: true,
     },
   },
   assets: {
@@ -103,7 +102,7 @@ export class TestLegendMarketplaceApplicationPlugin extends LegendMarketplaceApp
     super('TestLegendMarketplaceApplicationPlugin', '0.0.0');
   }
 
-  override async getHomePageDataProducts(
+  override async getExtraHomePageDataProducts(
     marketplaceBaseStore: LegendMarketplaceBaseStore,
   ): Promise<BaseProductCardState[] | undefined> {
     const mockDataProductDetail = guaranteeNonNullable(

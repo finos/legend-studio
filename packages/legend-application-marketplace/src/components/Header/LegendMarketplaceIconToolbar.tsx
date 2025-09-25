@@ -34,7 +34,8 @@ export const LegendMarketplaceIconToolbar = observer(() => {
   const marketplaceStore = useLegendMarketplaceBaseStore();
   const userId = applicationStore.identityService.currentUser;
   const [userData, setUserData] = useState<LegendUser | string | undefined>();
-
+  const showDevFeatures =
+    marketplaceStore.applicationStore.config.options.showDevFeatures;
   useEffect(() => {
     const fetchUserData = async (): Promise<void> => {
       if (userId) {
@@ -179,12 +180,13 @@ export const LegendMarketplaceIconToolbar = observer(() => {
     {
       title: 'Cart',
       renderer: CartIconRenderer,
+      disable: !showDevFeatures,
     },
     {
       title: 'Help',
       renderer: HelpIconRenderer,
     },
-  ];
+  ].filter((item) => !item.disable);
 
   return (
     <Box className="legend-marketplace-header__icons">

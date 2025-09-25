@@ -18,6 +18,7 @@ import {
   type GeneratorFn,
   ActionState,
   assertErrorThrown,
+  isNonNullable,
   LogEvent,
   UserSearchService,
 } from '@finos/legend-shared';
@@ -25,13 +26,19 @@ import {
   type ApplicationStore,
   LegendApplicationTelemetryHelper,
   APPLICATION_EVENT,
+  DEFAULT_TAB_SIZE,
 } from '@finos/legend-application';
 import { action, flow, makeObservable, observable } from 'mobx';
-import { DepotServerClient } from '@finos/legend-server-depot';
+import {
+  DepotServerClient,
+  StoreProjectData,
+} from '@finos/legend-server-depot';
 import { MarketplaceServerClient } from '@finos/legend-server-marketplace';
 import {
   type V1_EngineServerClient,
   getCurrentUserIDFromEngineServer,
+  V1_entitlementsDataProductDetailsResponseToDataProductDetails,
+  V1_PureGraphManager,
   V1_RemoteEngine,
 } from '@finos/legend-graph';
 import type { LegendMarketplaceApplicationConfig } from '../application/LegendMarketplaceApplicationConfig.js';
@@ -42,6 +49,11 @@ import {
   LakehouseIngestServerClient,
   LakehousePlatformServerClient,
 } from '@finos/legend-server-lakehouse';
+import { DataProductCardState } from './lakehouse/dataProducts/DataProductCardState.js';
+import type { BaseProductCardState } from './lakehouse/dataProducts/BaseProductCardState.js';
+import { parseGAVCoordinates, type Entity } from '@finos/legend-storage';
+import { V1_deserializeDataSpace } from '@finos/legend-extension-dsl-data-space/graph';
+import { LegacyDataProductCardState } from './lakehouse/dataProducts/LegacyDataProductCardState.js';
 
 export type LegendMarketplaceApplicationStore = ApplicationStore<
   LegendMarketplaceApplicationConfig,
@@ -141,6 +153,120 @@ export class LegendMarketplaceBaseStore {
         this.pluginManager.getUserPlugins(),
       );
     }
+  }
+
+  async initHighlightedDataProducts(
+    token: string | undefined,
+  ): Promise<BaseProductCardState[] | undefined> {
+    const highlightedDataProducts =
+      this.applicationStore.config.options.highlightedDataProducts
+        ?.split(',')
+        .map((entry) => {
+          const vals = entry.split('/');
+          if (vals[0] === undefined || vals[1] === undefined) {
+            return undefined;
+          }
+          const id = vals[0];
+          const secondPart = vals[1];
+          if (Number.isInteger(Number(secondPart))) {
+            return {
+              dataProductId: id,
+              deploymentId: parseInt(secondPart),
+            };
+          } else {
+            return { dataProductId: id, gav: secondPart };
+          }
+        })
+        .filter(isNonNullable);
+
+    if (highlightedDataProducts?.length) {
+      const getDataProductState = async (
+        dataProductId: string,
+        deploymentId: number,
+        graphManager: V1_PureGraphManager,
+      ) => {
+        const rawResponse =
+          await this.lakehouseContractServerClient.getDataProductByIdAndDID(
+            dataProductId,
+            deploymentId,
+            token,
+          );
+        const dataProductDetail =
+          V1_entitlementsDataProductDetailsResponseToDataProductDetails(
+            rawResponse,
+          )[0];
+        return dataProductDetail
+          ? new DataProductCardState(
+              this,
+              graphManager,
+              dataProductDetail,
+              new Map(),
+            )
+          : undefined;
+      };
+
+      const getLegacyDataProductState = async (
+        dataProductId: string,
+        gave: string,
+      ) => {
+        const coordinates = parseGAVCoordinates(gave);
+        const storeProject = new StoreProjectData();
+        storeProject.groupId = coordinates.groupId;
+        storeProject.artifactId = coordinates.artifactId;
+        const legacyDataProuct = await this.depotServerClient.getEntity(
+          storeProject,
+          coordinates.versionId,
+          dataProductId,
+        );
+        const dataSpace = V1_deserializeDataSpace(
+          (legacyDataProuct as unknown as Entity).content,
+        );
+        return new LegacyDataProductCardState(
+          this,
+          dataSpace,
+          coordinates.groupId,
+          coordinates.artifactId,
+          coordinates.versionId,
+          new Map(),
+        );
+      };
+
+      const graphManager = new V1_PureGraphManager(
+        this.applicationStore.pluginManager,
+        this.applicationStore.logService,
+        this.remoteEngine,
+      );
+      await graphManager.initialize(
+        {
+          env: this.applicationStore.config.env,
+          tabSize: DEFAULT_TAB_SIZE,
+          clientConfig: {
+            baseUrl: this.applicationStore.config.engineServerUrl,
+          },
+        },
+        { engine: this.remoteEngine },
+      );
+
+      const dataProductStates = (
+        await Promise.all(
+          highlightedDataProducts.map(async (dataProduct) =>
+            'deploymentId' in dataProduct
+              ? getDataProductState(
+                  dataProduct.dataProductId,
+                  dataProduct.deploymentId,
+                  graphManager,
+                )
+              : getLegacyDataProductState(
+                  dataProduct.dataProductId,
+                  dataProduct.gav,
+                ),
+          ),
+        )
+      ).filter(isNonNullable);
+      dataProductStates.forEach((dataProductState) => dataProductState.init());
+      return dataProductStates;
+    }
+    return undefined;
   }
 
   setDemoModal(val: boolean): void {
