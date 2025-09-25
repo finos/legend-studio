@@ -44,7 +44,6 @@
     &__content {
       display: flex;
       flex-direction: column;
-      width: min(140rem, 80vw);
       min-width: 80rem;
       padding: 3rem 8rem 2rem;
     }
@@ -194,7 +193,6 @@
 
   &__frame {
     display: flex;
-    width: min(140rem, 80vw);
     min-width: 80rem;
     height: 100%;
     padding: 4rem;
