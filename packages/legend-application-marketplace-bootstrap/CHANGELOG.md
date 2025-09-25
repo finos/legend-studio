@@ -1,5 +1,13 @@
 # @finos/legend-application-marketplace-bootstrap
 
+## 13.134.0
+
+### Patch Changes
+
+- [#4477](https://github.com/finos/legend-studio/pull/4477) [`38d0e13`](https://github.com/finos/legend-studio/commit/38d0e135bf09e416c1dade5b48bc3be8e9aa14aa) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Addd `showDevFeatures` for WIP + dev features such as schedule a demo + Cart.
+
+- [#4457](https://github.com/finos/legend-studio/pull/4457) [`4a26d6b`](https://github.com/finos/legend-studio/commit/4a26d6b85a00880801c5bcb089eee632bd8e2aae) ([@travisstebbins](https://github.com/travisstebbins)) - Create legend-extension-dsl-data-product package"
+
 ## 13.133.0
 
 ### Patch Changes

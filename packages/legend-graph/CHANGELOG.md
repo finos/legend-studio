@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.2.8
+
+### Patch Changes
+
+- [#4469](https://github.com/finos/legend-studio/pull/4469) [`8a8c8c5`](https://github.com/finos/legend-studio/commit/8a8c8c53a3c24fcf682f107fa0044d91dacfd4e8) ([@travisstebbins](https://github.com/travisstebbins)) - Fix handling contracts with undefined eventPayload
+
 ## 32.2.7
 
 ### Patch Changes
