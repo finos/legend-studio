@@ -9,19 +9,20 @@
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.json"],
   "references": [
     { "path": "../legend-application" },
-    { "path": "../legend-art" },
-    { "path": "../legend-lego" },
-    { "path": "../legend-graph" },
     { "path": "../legend-application-studio" },
-    { "path": "../legend-shared" },
+    { "path": "../legend-art" },
     { "path": "../legend-extension-assortment" },
-    { "path": "../legend-extension-dsl-service" },
-    { "path": "../legend-extension-dsl-data-space" },
+    { "path": "../legend-extension-dsl-data-product" },
+    { "path": "../legend-extension-dsl-data-quality" },
     { "path": "../legend-extension-dsl-data-space-studio" },
+    { "path": "../legend-extension-dsl-data-space" },
     { "path": "../legend-extension-dsl-diagram" },
     { "path": "../legend-extension-dsl-persistence" },
+    { "path": "../legend-extension-dsl-service" },
     { "path": "../legend-extension-dsl-text" },
     { "path": "../legend-extension-store-service-store" },
-    { "path": "../legend-extension-dsl-data-quality" }
+    { "path": "../legend-graph" },
+    { "path": "../legend-lego" },
+    { "path": "../legend-shared" }
   ]
 }
