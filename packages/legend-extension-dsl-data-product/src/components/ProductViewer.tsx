@@ -113,7 +113,7 @@ const DataProductEnvironmentLabel = observer(
         {origin instanceof V1_SdlcDeploymentDataProductOrigin && (
           <Button
             onClick={() => {
-              dataAccessState.dataProductViewerState.viewDataProductSource();
+              dataAccessState.dataProductViewerState.viewDataProductSource?.();
             }}
             title="View SDLC Project"
             className={clsx('data-product__viewer__header__type__version', {
