@@ -478,6 +478,7 @@ import {
   FaUserSecret,
   FaWindowMaximize,
   FaWrench,
+  FaPython,
 } from 'react-icons/fa';
 
 export const ArchiveIcon = FaArchive;
@@ -620,7 +621,7 @@ export const VerticalDragHandleIcon = FaGripVertical;
 export const WindowMaximizeIcon = FaRegWindowMaximize; // to be reviewed/combined
 export const WizardHatIcon = FaHatWizard;
 export const WrenchIcon = FaWrench;
-
+export const PythonIcon = FaPython;
 //======================================================= GI =======================================================
 import {
   GiWaterDrop,

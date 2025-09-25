@@ -23,6 +23,10 @@ import {
   InfoCircleOutlineIcon,
   MarkdownTextViewer,
   QuestionCircleIcon,
+  DataCubeIcon,
+  PythonIcon,
+  SQLIcon,
+  TableIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -31,6 +35,7 @@ import {
   type DataGridColumnDefinition,
   DataGrid,
 } from '@finos/legend-lego/data-grid';
+import 'ag-grid-community/styles/ag-grid.css';
 import {
   type V1_LakehouseAccessPoint,
   type V1_RelationType,
@@ -135,19 +140,26 @@ const TDSColumnDocumentationCellRenderer = (
   );
 };
 
-const TDSColumnMoreInfoCellRenderer = (props: {
+const TDSColumnCellRenderer = (props: {
   params: DataGridCellRendererParams<V1_LakehouseAccessPoint>;
   apgState: DataProductAPGState;
 }): React.ReactNode => {
   const { params, apgState } = props;
   const dataProductViewerState = apgState.dataProductViewerState;
   const data = params.data;
-  const enum MoreInfoTabs {
+  const enum DataProductTabs {
     COLUMNS = 'Columns',
     GRAMMAR = 'Grammar',
+    DATACUBE = 'Datacube',
+    BUSINESS_INTELLIGENCE = 'Business Intelligence',
+    PYTHON = 'Python',
+    SQL = 'SQL',
   }
-  const [selectedTab, setSelectedTab] = useState(MoreInfoTabs.COLUMNS);
-  const handleTabChange = (_: React.SyntheticEvent, newValue: MoreInfoTabs) => {
+  const [selectedTab, setSelectedTab] = useState(DataProductTabs.COLUMNS);
+  const handleTabChange = (
+    _: React.SyntheticEvent,
+    newValue: DataProductTabs,
+  ) => {
     setSelectedTab(newValue);
   };
   const [accessPointGrammar, setAccessPointGrammar] =
@@ -304,10 +316,127 @@ const TDSColumnMoreInfoCellRenderer = (props: {
 
   return (
     <div>
-      <Tabs value={selectedTab} onChange={handleTabChange}>
-        <Tab label={MoreInfoTabs.COLUMNS} value={MoreInfoTabs.COLUMNS} />
-        <Tab label={MoreInfoTabs.GRAMMAR} value={MoreInfoTabs.GRAMMAR} />
-      </Tabs>
+      <div className="data-product__viewer__tabs-bar">
+        <Tabs
+          value={selectedTab}
+          onChange={handleTabChange}
+          className="data-product__viewer__tabs"
+        >
+          <Tab
+            className={
+              'data-product__viewer__tab' +
+              (selectedTab === DataProductTabs.COLUMNS
+                ? ' data-product__viewer__tab--selected'
+                : '')
+            }
+            label={<span>Column Specifications</span>}
+            value={DataProductTabs.COLUMNS}
+          />
+          <Tab
+            className={
+              'data-product__viewer__tab' +
+              (selectedTab === DataProductTabs.GRAMMAR
+                ? ' data-product__viewer__tab--selected'
+                : '')
+            }
+            label={<span>Grammar</span>}
+            value={DataProductTabs.GRAMMAR}
+          />
+          <Tab
+            className={
+              'data-product__viewer__tab' +
+              (selectedTab === DataProductTabs.DATACUBE
+                ? ' data-product__viewer__tab--selected'
+                : '')
+            }
+            label={
+              <span className="label-container">
+                <DataCubeIcon.Cube
+                  className="data-product__viewer__tab-icon"
+                  style={{
+                    color:
+                      selectedTab === DataProductTabs.DATACUBE
+                        ? '#1976d2'
+                        : '#6c757d',
+                  }}
+                />
+                <span>Datacube</span>
+              </span>
+            }
+            value={DataProductTabs.DATACUBE}
+          />
+          <Tab
+            className={
+              'data-product__viewer__tab' +
+              (selectedTab === DataProductTabs.BUSINESS_INTELLIGENCE
+                ? ' data-product__viewer__tab--selected'
+                : '')
+            }
+            label={
+              <span className="label-container">
+                <TableIcon
+                  className="data-product__viewer__tab-icon"
+                  style={{
+                    color:
+                      selectedTab === DataProductTabs.BUSINESS_INTELLIGENCE
+                        ? '#1976d2'
+                        : '#6c757d',
+                  }}
+                />
+                <span>Business Intelligence</span>
+              </span>
+            }
+            value={DataProductTabs.BUSINESS_INTELLIGENCE}
+          />
+          <Tab
+            className={
+              'data-product__viewer__tab' +
+              (selectedTab === DataProductTabs.PYTHON
+                ? ' data-product__viewer__tab--selected'
+                : '')
+            }
+            label={
+              <span className="label-container">
+                <PythonIcon
+                  className="data-product__viewer__tab-icon"
+                  style={{
+                    color:
+                      selectedTab === DataProductTabs.PYTHON
+                        ? '#1976d2'
+                        : '#6c757d',
+                  }}
+                />
+                <span>Python</span>
+              </span>
+            }
+            value={DataProductTabs.PYTHON}
+          />
+          <Tab
+            className={
+              'data-product__viewer__tab' +
+              (selectedTab === DataProductTabs.SQL
+                ? ' data-product__viewer__tab--selected'
+                : '')
+            }
+            label={
+              <span className="label-container">
+                <SQLIcon
+                  className="data-product__viewer__tab-icon"
+                  style={{
+                    color:
+                      selectedTab === DataProductTabs.SQL
+                        ? '#1976d2'
+                        : '#6c757d',
+                  }}
+                />
+                <span>SQL</span>
+              </span>
+            }
+            value={DataProductTabs.SQL}
+          />
+        </Tabs>
+      </div>
+      <div style={{ marginBottom: '16px' }} />
       <Box className="data-product__viewer__more-info__container">
         {loadingAccessPointDetails && (
           <Box className="data-product__viewer__more-info__loading-indicator">
@@ -318,7 +447,7 @@ const TDSColumnMoreInfoCellRenderer = (props: {
         )}
         {!loadingAccessPointDetails && (
           <>
-            {selectedTab === MoreInfoTabs.COLUMNS && (
+            {selectedTab === DataProductTabs.COLUMNS && (
               <Box
                 className={clsx(
                   'data-product__viewer__more-info__columns-grid',
@@ -335,19 +464,24 @@ const TDSColumnMoreInfoCellRenderer = (props: {
                   },
                 )}
               >
-                <DataGrid
-                  rowData={accessPointRelationType?.columns ?? []}
-                  columnDefs={relationColumnDefs}
-                  domLayout={
-                    (accessPointRelationType?.columns.length ?? 0) >
-                    MAX_GRID_AUTO_HEIGHT_ROWS
-                      ? 'normal'
-                      : 'autoHeight'
-                  }
-                />
+                <div
+                  className="ag-theme-balham"
+                  style={{ width: '100%', height: '100%' }}
+                >
+                  <DataGrid
+                    rowData={accessPointRelationType?.columns ?? []}
+                    columnDefs={relationColumnDefs}
+                    domLayout={
+                      (accessPointRelationType?.columns.length ?? 0) >
+                      MAX_GRID_AUTO_HEIGHT_ROWS
+                        ? 'normal'
+                        : 'autoHeight'
+                    }
+                  />
+                </div>
               </Box>
             )}
-            {selectedTab === MoreInfoTabs.GRAMMAR && (
+            {selectedTab === DataProductTabs.GRAMMAR && (
               <Box className="data-product__viewer__more-info__grammar">
                 <CodeEditor
                   inputValue={accessPointGrammar}
@@ -364,6 +498,14 @@ const TDSColumnMoreInfoCellRenderer = (props: {
                 />
               </Box>
             )}
+            {selectedTab === DataProductTabs.DATACUBE && (
+              <WorkInProgressNotice />
+            )}
+            {selectedTab === DataProductTabs.BUSINESS_INTELLIGENCE && (
+              <WorkInProgressNotice />
+            )}
+            {selectedTab === DataProductTabs.PYTHON && <WorkInProgressNotice />}
+            {selectedTab === DataProductTabs.SQL && <WorkInProgressNotice />}
           </>
         )}
       </Box>
@@ -591,77 +733,38 @@ export const DataProductAccessPointGroupViewer = observer(
         </div>
         <div className="data-product__viewer__access-group__item__content">
           <div className="data-product__viewer__access-group__item__content__tab__content">
-            <div
-              className={clsx(
-                'data-product__viewer__access-group__tds__column-specs',
-                'data-product__viewer__grid',
-                'ag-theme-balham',
-                {
-                  'data-product__viewer__grid--auto-height':
-                    accessPoints.length <= MAX_GRID_AUTO_HEIGHT_ROWS,
-                  'data-product__viewer__grid--auto-height--non-empty':
-                    accessPoints.length > 0 &&
-                    accessPoints.length <= MAX_GRID_AUTO_HEIGHT_ROWS,
-                },
-              )}
-            >
-              <DataGrid
-                rowData={accessPoints}
-                gridOptions={{
-                  suppressScrollOnNewData: true,
-                  getRowId: (rowData) => rowData.data.id,
-                }}
-                suppressFieldDotNotation={true}
-                domLayout={
-                  accessPoints.length > MAX_GRID_AUTO_HEIGHT_ROWS
-                    ? 'normal'
-                    : 'autoHeight'
-                }
-                columnDefs={[
-                  {
-                    minWidth: 50,
-                    sortable: true,
-                    resizable: true,
-                    field: 'id',
-                    headerValueGetter: () => `Access Points`,
-                    flex: 1,
-                  },
-                  {
-                    minWidth: 50,
-                    sortable: false,
-                    resizable: true,
-                    cellRenderer: TDSColumnDocumentationCellRenderer,
-                    headerName: 'Description',
-                    flex: 1,
-                    wrapText: true,
-                    autoHeight: true,
-                  },
-                  {
-                    minWidth: 50,
-                    sortable: false,
-                    resizable: false,
-                    headerClass:
-                      'data-product__viewer__grid__last-column-header',
-                    cellRenderer: 'agGroupCellRenderer',
-                    headerName: 'More Info',
-                    flex: 1,
-                  },
-                ]}
-                onRowDataUpdated={(params) => {
-                  params.api.refreshCells({ force: true });
-                }}
-                masterDetail={true}
-                detailCellRenderer={(
-                  params: DataGridCellRendererParams<V1_LakehouseAccessPoint>,
-                ) => (
-                  <TDSColumnMoreInfoCellRenderer
-                    params={params}
+            {accessPoints.map((accessPoint) => (
+              <div
+                key={accessPoint.id}
+                className="data-product__viewer__access-point-section"
+                style={{ marginBottom: '2rem' }}
+              >
+                {/* Access Point Name and Description */}
+                <div className="data-product__viewer__access-point__info">
+                  <div className="data-product__viewer__access-point__name">
+                    <strong>{accessPoint.id}</strong>
+                  </div>
+                  <div className="data-product__viewer__access-point__description">
+                    {accessPoint.description?.trim() || (
+                      <span className="data-product__viewer__grid__empty-cell">
+                        No description to provide
+                      </span>
+                    )}
+                  </div>
+                </div>
+                {/* Directly show the More Info Tabs */}
+                <div className="data-product__viewer__access-point__tabs">
+                  <TDSColumnCellRenderer
+                    params={
+                      {
+                        data: accessPoint,
+                      } as DataGridCellRendererParams<V1_LakehouseAccessPoint>
+                    }
                     apgState={apgState}
                   />
-                )}
-                detailRowAutoHeight={true}
-              />
-            </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
         {dataAccessState?.dataContractAccessPointGroup === apgState.apg && (
@@ -696,6 +799,12 @@ export const DataProductAccessPointGroupViewer = observer(
       </div>
     );
   },
+);
+
+export const WorkInProgressNotice: React.FC = () => (
+  <Box className="data-product__viewer__work-in-progress">
+    <span>Work in progress</span>
+  </Box>
 );
 
 export const DataProducteDataAccess = observer(

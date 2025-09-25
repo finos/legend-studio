@@ -1810,6 +1810,74 @@
   }
 }
 
+.data-product__viewer__work-in-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+
+  span {
+    color: #bfc6ce;
+  }
+}
+
+.data-product__viewer__tabs-bar {
+  border-top: 1px solid #e0e0e0;
+  background: #fff;
+  width: 100%;
+}
+
+.data-product__viewer__tabs {
+  border-bottom: 1px solid #e0e0e0;
+  min-height: 40px;
+  background: #fff;
+
+  .MuiTabs-indicator {
+    display: none;
+  }
+}
+
+.data-product__viewer__tab {
+  min-height: 40px;
+  padding: 0 16px;
+  border-right: 1px solid #e0e0e0;
+  text-transform: none;
+  background: transparent;
+  font-size: 10px;
+  font-weight: 600;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  span {
+    font-size: 10px;
+    font-weight: 600;
+  }
+
+  &:last-child {
+    border-right: none;
+  }
+}
+
+.data-product__viewer__tab--selected {
+  color: #1976d2;
+  font-weight: 600;
+}
+
+.label-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.data-product__viewer__tab-icon {
+  font-size: 16px;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
 .data-product__viewer__execution-context {
   &__context-icon {
     color: var(--color-lime-75);
