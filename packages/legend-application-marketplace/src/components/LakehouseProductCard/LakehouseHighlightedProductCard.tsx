@@ -53,16 +53,15 @@ export const LakehouseHighlightedProductCard = observer(
       return applicationStore.config.assetsBaseUrl;
     };
 
-    const productToImageMap = (imageName: string): string => {
-      return (
-        applicationStore.config.assetsProductImageMap[imageName] ??
-        productCardState.displayImage
-      );
+    const productToImageMap = (imageName: string): string | undefined => {
+      return applicationStore.config.assetsProductImageMap[imageName];
     };
 
     const getImageUrl = (): string => {
       const key = props.productCardState.title.toUpperCase();
-      return `${assetUrl()}/${productToImageMap(key)}`;
+      return productToImageMap(key)
+        ? `${assetUrl()}/${productToImageMap(key)}`
+        : productCardState.displayImage;
     };
 
     const skeletonLoader = (

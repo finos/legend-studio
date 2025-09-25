@@ -126,7 +126,10 @@ const LegendMarketplaceBaseHeader = observer(
           className="legend-marketplace-header__backdrop"
           style={{ opacity: headerBlurOpacity }}
         />
-        <Container maxWidth="xxxl">
+        <Container
+          className="legend-marketplace-header__container"
+          maxWidth={false}
+        >
           <Toolbar disableGutters={true}>
             <div
               className="legend-marketplace-header__name"
@@ -136,7 +139,7 @@ const LegendMarketplaceBaseHeader = observer(
                 src="/assets/legendmarketplacehomelogo.png"
                 alt="Legend Logo"
                 className="legend-marketplace-header__logo"
-                style={{ height: 28 }}
+                style={{ height: 35 }}
               />
             </div>
             <LegendMarketPlaceHeaderTabs pages={pages} />

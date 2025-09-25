@@ -16,10 +16,6 @@
 
 @use 'mixins' as *;
 
-.css-1u9o2lj-MuiToolbar-root {
-  min-width: 100% !important;
-}
-
 .legend-marketplace-header {
   @include flexVCenter;
 
@@ -36,13 +32,18 @@
     }
   }
 
+  &__container {
+    margin: 0;
+    width: 100% !important;
+  }
+
   &__name {
     @include flexVCenter;
 
     color: var(--color-black);
     font-size: 2.4rem;
     font-weight: 700;
-    margin: 1rem 2rem;
+    margin: 1rem;
     cursor: pointer;
     gap: 0.5rem;
   }
@@ -56,6 +57,7 @@
     display: flex;
     flex-grow: 1;
     align-self: stretch;
+    padding: 0 12px;
   }
 
   &__tab {
@@ -63,9 +65,10 @@
 
     color: var(--color-black);
     font-size: 1.5rem;
-    padding: 0.625rem 0.75rem;
+    padding: 10px 12px;
     text-transform: unset;
     border-radius: unset;
+    cursor: pointer;
 
     &:hover {
       background-color: var(--color-light-shade-50);
@@ -97,6 +100,7 @@
     color: white;
     width: 3rem;
     font-size: 2rem;
+    cursor: pointer;
   }
 }
 
