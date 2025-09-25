@@ -24,6 +24,7 @@ export { UserRenderer } from './components/UserRenderer/UserRenderer.js';
 export * from './stores/BaseLayoutState.js';
 export * from './stores/BaseViewerState.js';
 export * from './stores/DataProduct/DataProductAPGState.js';
+export * from './stores/DataProduct/DataProductConfig.js';
 export * from './stores/DataProduct/DataProductDataAccessState.js';
 export * from './stores/DataProduct/DataProductViewerState.js';
 export * from './stores/DataProduct/EntitlementsDataContractViewerState.js';
