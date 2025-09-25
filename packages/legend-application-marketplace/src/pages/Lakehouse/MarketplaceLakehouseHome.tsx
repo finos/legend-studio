@@ -31,7 +31,11 @@ import {
   generateLakehouseSearchResultsRoute,
   generateLegacyDataProductPath,
 } from '../../__lib__/LegendMarketplaceNavigation.js';
-import { assertErrorThrown, isNonEmptyString } from '@finos/legend-shared';
+import {
+  assertErrorThrown,
+  isNonEmptyString,
+  isNonNullable,
+} from '@finos/legend-shared';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import type { BaseProductCardState } from '../../stores/lakehouse/dataProducts/BaseProductCardState.js';
 import { LakehouseHighlightedProductCard } from '../../components/LakehouseProductCard/LakehouseHighlightedProductCard.js';
@@ -46,30 +50,35 @@ export const MarketplaceLakehouseHome = observer(() => {
   const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
   const applicationStore = legendMarketplaceBaseStore.applicationStore;
   const auth = useAuth();
+  const configOptions = applicationStore.config.options;
+  const showDevFeatures = configOptions.showDevFeatures;
+
   const [highlightedDataProducts, setHighlightedDataProducts] = useState<
     BaseProductCardState[]
   >([]);
   const [loading, setLoading] = useState(false);
 
   const [activeIndex, setActiveIndex] = useState(0);
-
   useEffect(() => {
     const loadDataProducts = async (): Promise<void> => {
       setLoading(true);
 
       try {
-        const dataProducts = await Promise.all(
-          applicationStore.pluginManager
+        const dataProducts = await Promise.all([
+          await legendMarketplaceBaseStore.initHighlightedDataProducts(
+            auth.user?.access_token,
+          ),
+          ...applicationStore.pluginManager
             .getApplicationPlugins()
             .flatMap(
               async (plugin) =>
-                (await plugin.getHomePageDataProducts?.(
+                (await plugin.getExtraHomePageDataProducts?.(
                   legendMarketplaceBaseStore,
                   auth.user?.access_token,
                 )) ?? [],
             ),
-        );
-        setHighlightedDataProducts(dataProducts.flat());
+        ]);
+        setHighlightedDataProducts(dataProducts.filter(isNonNullable).flat());
       } catch (error) {
         assertErrorThrown(error);
         applicationStore.notificationService.notifyError(
@@ -126,13 +135,15 @@ export const MarketplaceLakehouseHome = observer(() => {
   return (
     <LegendMarketplacePage className="marketplace-lakehouse-home">
       <div className="legend-marketplace-home__button-group">
-        <button
-          onClick={handleShowDemo}
-          className="legend-marketplace-home__button"
-        >
-          <SimpleCalendarIcon className="legend-marketplace-home__button__icon" />
-          Schedule a Demo
-        </button>
+        {showDevFeatures && (
+          <button
+            onClick={handleShowDemo}
+            className="legend-marketplace-home__button"
+          >
+            <SimpleCalendarIcon className="legend-marketplace-home__button__icon" />
+            Schedule a Demo
+          </button>
+        )}
         <button
           className="legend-marketplace-home__button"
           onClick={newsletterNavigation}

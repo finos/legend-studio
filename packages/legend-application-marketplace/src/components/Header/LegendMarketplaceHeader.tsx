@@ -148,30 +148,6 @@ const LegendMarketplaceBaseHeader = observer(
   },
 );
 
-export const LegendMarketplaceHeader = observer(
-  (props: { enableMarketplacePages: boolean }) => {
-    const { enableMarketplacePages } = props;
-
-    return (
-      <LegendMarketplaceBaseHeader
-        headerName="Marketplace"
-        homeUrl={LEGEND_MARKETPLACE_ROUTE_PATTERN.HOME_PAGE}
-        pages={
-          enableMarketplacePages
-            ? [
-                {
-                  title: 'Vendor Data',
-                  urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.VENDOR_DETAILS,
-                },
-              ]
-            : []
-        }
-        showIcons={enableMarketplacePages}
-      />
-    );
-  },
-);
-
 export const MarketplaceLakehouseHeader = observer(() => {
   return (
     <LegendMarketplaceBaseHeader

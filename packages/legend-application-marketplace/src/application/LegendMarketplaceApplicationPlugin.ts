@@ -43,7 +43,7 @@ export abstract class LegendMarketplaceApplicationPlugin
    *
    * @param marketplaceStore
    */
-  async getHomePageDataProducts?(
+  async getExtraHomePageDataProducts?(
     marketplaceBaseStore: LegendMarketplaceBaseStore,
     token: string | undefined,
   ): Promise<BaseProductCardState[] | undefined>;
