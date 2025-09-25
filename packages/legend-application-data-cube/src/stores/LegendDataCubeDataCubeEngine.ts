@@ -1218,6 +1218,12 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     return undefined;
   }
 
+  override async parseCompatibleModel(
+    code: string,
+  ): Promise<PlainObject<V1_PureModelContextData>> {
+    return this._engineServerClient.grammarToJSON_model(code);
+  }
+
   // ---------------------------------- INGEST ---------------------------------------
 
   registerIngestDefinition(ingestDefinition: PlainObject | undefined) {

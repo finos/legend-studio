@@ -19,7 +19,11 @@ import {
   LegendDataCubeSourceBuilderState,
   LegendDataCubeSourceBuilderType,
 } from './LegendDataCubeSourceBuilderState.js';
-import { guaranteeNonNullable, type PlainObject } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  guaranteeType,
+  type PlainObject,
+} from '@finos/legend-shared';
 import type { DataCubeAlertService } from '@finos/legend-data-cube';
 import type { LegendDataCubeApplicationStore } from '../../LegendDataCubeBaseStore.js';
 import type { LegendDataCubeDataCubeEngine } from '../../LegendDataCubeDataCubeEngine.js';
@@ -30,7 +34,11 @@ import {
   type LakehouseIngestServerClient,
   type LakehousePlatformServerClient,
 } from '@finos/legend-server-lakehouse';
-import type { V1_IngestDefinition } from '@finos/legend-graph';
+import {
+  V1_deserializePureModelContext,
+  V1_PureModelContextData,
+  type V1_IngestDefinition,
+} from '@finos/legend-graph';
 
 export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeSourceBuilderState {
   deploymentId: number | undefined;
@@ -43,6 +51,8 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
   ingestUrns: string[] = [];
   tables: string[] = [];
   datasetGroup: string | undefined;
+
+  private LAKEHOUSE_SECTION = '###Lakehouse';
 
   readonly _platformServerClient: LakehousePlatformServerClient;
   readonly _ingestServerClient: LakehouseIngestServerClient;
@@ -150,13 +160,25 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
     this.setTables([]);
     this.setSelectedTable(undefined);
     try {
-      const plainObjectDef =
-        await this._ingestServerClient.getIngestDefinitionDetail(
+      const ingestGrammar =
+        await this._ingestServerClient.getIngestDefinitionGrammar(
           guaranteeNonNullable(this.selectedIngestUrn),
           this.ingestionServerUrl,
           access_token,
         );
-      this.ingestDefinition = Object.values(plainObjectDef)[0] as PlainObject;
+
+      const ingestPMCDPlainObject = await this._engine.parseCompatibleModel(
+        `${this.LAKEHOUSE_SECTION}\n${ingestGrammar}`,
+      );
+
+      const ingestDefPMCD = guaranteeType(
+        V1_deserializePureModelContext(ingestPMCDPlainObject),
+        V1_PureModelContextData,
+      );
+
+      this.ingestDefinition = (
+        ingestDefPMCD.elements.at(0) as V1_IngestDefinition
+      ).content;
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       this.setDatasetGroup((this.ingestDefinition as any).datasetGroup);
