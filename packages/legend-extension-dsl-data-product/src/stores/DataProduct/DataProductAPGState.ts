@@ -161,7 +161,7 @@ export class DataProductAPGState {
   }
 
   get viewerState(): DataProductViewerState {
-    return this.accessState.viewerState;
+    return this.dataProductViewerState;
   }
 
   setAssociatedContract(
