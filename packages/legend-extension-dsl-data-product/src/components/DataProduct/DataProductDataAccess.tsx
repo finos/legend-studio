@@ -35,7 +35,6 @@ import {
   type DataGridColumnDefinition,
   DataGrid,
 } from '@finos/legend-lego/data-grid';
-import 'ag-grid-community/styles/ag-grid.css';
 import {
   type V1_LakehouseAccessPoint,
   type V1_RelationType,
@@ -107,7 +106,6 @@ import {
 } from '../../stores/DataProduct/DataProductAPGState.js';
 
 const MAX_GRID_AUTO_HEIGHT_ROWS = 10; // Maximum number of rows to show before switching to normal height (scrollable grid)
-
 export const DataProductMarkdownTextViewer: React.FC<{ value: string }> = (
   props,
 ) => (
@@ -123,23 +121,11 @@ export const DataProductMarkdownTextViewer: React.FC<{ value: string }> = (
     }}
   />
 );
-
-const TDSColumnDocumentationCellRenderer = (
-  params: DataGridCellRendererParams<V1_LakehouseAccessPoint>,
-): React.ReactNode => {
-  const data = params.data;
-  if (!data) {
-    return null;
-  }
-  return data.description?.trim() ? (
-    data.description
-  ) : (
-    <div className="data-product__viewer__grid__empty-cell">
-      No description to provide
-    </div>
-  );
-};
-
+export const WorkInProgressNotice: React.FC = () => (
+  <Box className="data-product__viewer__work-in-progress">
+    <span>Work in progress</span>
+  </Box>
+);
 const TDSColumnCellRenderer = (props: {
   params: DataGridCellRendererParams<V1_LakehouseAccessPoint>;
   apgState: DataProductAPGState;
@@ -174,7 +160,6 @@ const TDSColumnCellRenderer = (props: {
     if (!data) {
       return;
     }
-
     const fetchAccessPointGrammar = async () => {
       try {
         const grammar =
@@ -187,7 +172,6 @@ const TDSColumnCellRenderer = (props: {
         throw new Error('Error fetching access point grammar');
       }
     };
-
     const fetchAccessPointRelationType = async () => {
       try {
         const origin =
@@ -235,14 +219,12 @@ const TDSColumnCellRenderer = (props: {
         );
       }
     };
-
     const fetchAccessPointDetails = async () => {
       return Promise.all([
         fetchAccessPointGrammar(),
         fetchAccessPointRelationType(),
       ]);
     };
-
     setLoadingAccessPointDetails(true);
     fetchAccessPointDetails()
       .catch((error) => {
@@ -264,7 +246,6 @@ const TDSColumnCellRenderer = (props: {
   if (!data) {
     return null;
   }
-
   const relationColumnDefs: DataGridColumnDefinition<V1_RelationTypeColumn>[] =
     [
       {
@@ -313,7 +294,6 @@ const TDSColumnCellRenderer = (props: {
             : '',
       },
     ];
-
   return (
     <div>
       <div className="data-product__viewer__tabs-bar">
@@ -512,7 +492,6 @@ const TDSColumnCellRenderer = (props: {
     </div>
   );
 };
-
 export const DataProductAccessPointGroupViewer = observer(
   (props: {
     apgState: DataProductAPGState;
@@ -544,7 +523,6 @@ export const DataProductAccessPointGroupViewer = observer(
       dataAccessState?.dataContract,
       dataAccessState?.lakehouseContractServerClient,
     ]);
-
     useEffect(() => {
       if (
         dataAccessState?.lakehouseContractServerClient &&
@@ -559,7 +537,6 @@ export const DataProductAccessPointGroupViewer = observer(
         );
       }
     }, [apgState, auth.user?.access_token, dataAccessState]);
-
     const handleContractsClick = (): void => {
       if (dataAccessState) {
         apgState.handleContractClick(dataAccessState);
@@ -569,7 +546,6 @@ export const DataProductAccessPointGroupViewer = observer(
     const handleSubscriptionsClick = (): void => {
       setShowSubscriptionsModal(true);
     };
-
     const renderAccess = (val: AccessPointGroupAccess): React.ReactNode => {
       let buttonLabel: string | undefined = undefined;
       let onClick: (() => void) | undefined = undefined;
@@ -612,11 +588,9 @@ export const DataProductAccessPointGroupViewer = observer(
       if (buttonLabel === undefined) {
         return null;
       }
-
       const tooltipText = dataAccessState?.dataAccessPlugins
         .flatMap((plugin) => plugin.getExtraAccessPointGroupAccessInfo?.(val))
         .filter(isNonEmptyString)[0];
-
       return (
         <>
           <ButtonGroup
@@ -704,7 +678,6 @@ export const DataProductAccessPointGroupViewer = observer(
         </>
       );
     };
-
     return (
       <div className="data-product__viewer__access-group__item">
         <div className="data-product__viewer__access-group__item__header">
@@ -745,7 +718,7 @@ export const DataProductAccessPointGroupViewer = observer(
                     <strong>{accessPoint.id}</strong>
                   </div>
                   <div className="data-product__viewer__access-point__description">
-                    {accessPoint.description?.trim() || (
+                    {accessPoint.description?.trim() ?? (
                       <span className="data-product__viewer__grid__empty-cell">
                         No description to provide
                       </span>
@@ -800,13 +773,6 @@ export const DataProductAccessPointGroupViewer = observer(
     );
   },
 );
-
-export const WorkInProgressNotice: React.FC = () => (
-  <Box className="data-product__viewer__work-in-progress">
-    <span>Work in progress</span>
-  </Box>
-);
-
 export const DataProducteDataAccess = observer(
   (props: {
     dataProductViewerState: DataProductViewerState;
