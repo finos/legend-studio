@@ -16,7 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
-import { Box, Container, Grid2 as Grid } from '@mui/material';
+import { Box, Container } from '@mui/material';
 import { LegendMarketplaceSearchBar } from '../../components/SearchBar/LegendMarketplaceSearchBar.js';
 import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
 import { useAuth } from 'react-oidc-context';
@@ -180,15 +180,12 @@ export const MarketplaceLakehouseHome = observer(() => {
             <CubesLoadingIndicatorIcon />
           </CubesLoadingIndicator>
         ) : (
-          <>
-            <div className="marketplace-lakehouse-home__carousel-header">
-              <div className="marketplace-lakehouse-home__carousel-title">
-                {getCarouselTitle()}
-              </div>
+          <div className="marketplace-lakehouse-home__carousel-header">
+            <div className="marketplace-lakehouse-home__carousel-title">
+              {getCarouselTitle()}
             </div>
             <Swiper
               modules={[Navigation, Pagination, Autoplay]}
-              // spaceBetween={30}
               slidesPerView={1}
               navigation={false}
               pagination={{ clickable: true }}
@@ -201,15 +198,11 @@ export const MarketplaceLakehouseHome = observer(() => {
               className="marketplace-lakehouse-home__carousel"
             >
               <SwiperSlide key={1}>
-                <Grid
-                  container={true}
-                  spacing={{ xs: 2, sm: 3, lg: 4, xl: 6 }}
-                  columns={{ xs: 1, sm: 2, md: 3, lg: 4, xxxl: 5 }}
-                  className="marketplace-lakehouse-home__data-product-cards"
-                >
-                  {highlightedDataProducts.map((productCardState) => (
-                    <Grid key={productCardState.guid} size={1}>
+                <div className="marketplace-lakehouse-home__carousel-slide">
+                  {highlightedDataProducts.map(
+                    (productCardState: BaseProductCardState, index: number) => (
                       <LakehouseHighlightedProductCard
+                        key={`slide-1-${productCardState.guid}`}
                         productCardState={productCardState}
                         onClick={() => {
                           const path =
@@ -235,20 +228,16 @@ export const MarketplaceLakehouseHome = observer(() => {
                           );
                         }}
                       />
-                    </Grid>
-                  ))}
-                </Grid>
+                    ),
+                  )}
+                </div>
               </SwiperSlide>
               <SwiperSlide key={2}>
-                <Grid
-                  container={true}
-                  spacing={{ xs: 2, sm: 3, lg: 4, xl: 6 }}
-                  columns={{ xs: 1, sm: 2, md: 3, lg: 4, xxxl: 5 }}
-                  className="marketplace-lakehouse-home__data-product-cards"
-                >
-                  {highlightedDataProducts.map((productCardState) => (
-                    <Grid key={productCardState.guid} size={1}>
+                <div className="marketplace-lakehouse-home__carousel-slide">
+                  {highlightedDataProducts.map(
+                    (productCardState: BaseProductCardState, index: number) => (
                       <LakehouseHighlightedProductCard
+                        key={`slide-2-${productCardState.guid}`}
                         productCardState={productCardState}
                         onClick={() => {
                           const path =
@@ -274,20 +263,16 @@ export const MarketplaceLakehouseHome = observer(() => {
                           );
                         }}
                       />
-                    </Grid>
-                  ))}
-                </Grid>
+                    ),
+                  )}
+                </div>
               </SwiperSlide>
               <SwiperSlide key={3}>
-                <Grid
-                  container={true}
-                  spacing={{ xs: 2, sm: 3, lg: 4, xl: 6 }}
-                  columns={{ xs: 1, sm: 2, md: 3, lg: 4, xxxl: 5 }}
-                  className="marketplace-lakehouse-home__data-product-cards"
-                >
-                  {highlightedDataProducts.map((productCardState) => (
-                    <Grid key={productCardState.guid} size={1}>
+                <div className="marketplace-lakehouse-home__carousel-slide">
+                  {highlightedDataProducts.map(
+                    (productCardState: BaseProductCardState, index: number) => (
                       <LakehouseHighlightedProductCard
+                        key={`slide-1-${productCardState.guid}`}
                         productCardState={productCardState}
                         onClick={() => {
                           const path =
@@ -313,12 +298,12 @@ export const MarketplaceLakehouseHome = observer(() => {
                           );
                         }}
                       />
-                    </Grid>
-                  ))}
-                </Grid>
+                    ),
+                  )}
+                </div>
               </SwiperSlide>
             </Swiper>
-          </>
+          </div>
         )}
       </Container>
       <DemoModal />

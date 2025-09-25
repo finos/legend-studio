@@ -183,11 +183,12 @@
 }
 
 .lakehouse-highlighted-data-product-card {
-  height: 30rem;
+  height: 28rem;
   cursor: pointer;
   margin: 1rem;
   box-shadow: 0 4px 8px rgb(0 0 0 / 10%);
   background-color: var(--color-black);
+  width: 45rem;
 
   &__action {
     height: 100%;
@@ -195,7 +196,7 @@
 
   &__image {
     width: 100%;
-    height: 50%;
+    height: 55%;
     position: absolute;
     aspect-ratio: auto;
     top: 0;
@@ -205,12 +206,13 @@
   &__content {
     position: absolute;
     bottom: 0;
-    height: 60%;
-    background-color: rgb(11 11 11 / 90%);
+    height: 55%;
+    background-color: rgb(11 11 11 / 70%);
     overflow: hidden;
     text-overflow: ellipsis;
     word-wrap: break-word;
     width: 100%;
+    padding: 0.5rem 1.2rem;
 
     &:hover {
       height: 100%;
@@ -219,10 +221,9 @@
   }
 
   &__title {
-    font-size: 4rem;
-    line-height: 4rem;
+    font-size: 3rem;
     font-family: 'GS Sans Condensed', 'Trebuchet MS', sans-serif;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
     word-wrap: break-word;
     color: var(--color-white);
     opacity: 0.95;
