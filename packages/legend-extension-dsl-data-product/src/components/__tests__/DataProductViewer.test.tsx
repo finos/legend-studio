@@ -90,13 +90,11 @@ const setupLakehouseDataProductTest = async (
     entitlementsDataProductDetailsObject,
   );
 
-  const dataProductViewerState = TEST__getDataProductViewerState(
-    dataProduct,
-    entitlementsDataProductDetails,
-  );
+  const dataProductViewerState = TEST__getDataProductViewerState(dataProduct);
 
   const dataProductDataAccessState = TEST__getDataProductDataAccessState(
     dataProductViewerState,
+    entitlementsDataProductDetails,
   );
 
   // application store spies

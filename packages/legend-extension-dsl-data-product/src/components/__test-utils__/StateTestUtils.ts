@@ -109,7 +109,6 @@ export const TEST__getGenericApplicationConfig = (
 
 export const TEST__getDataProductViewerState = (
   dataProduct: V1_DataProduct,
-  entitlementsDataProductDetails: V1_EntitlementsDataProductDetails,
 ): DataProductViewerState => {
   const pluginManager = TEST__LegendApplicationPluginManager.create();
   const MOCK__applicationStore = new ApplicationStore(
@@ -126,7 +125,6 @@ export const TEST__getDataProductViewerState = (
 
   return new DataProductViewerState(
     dataProduct,
-    entitlementsDataProductDetails,
     MOCK__applicationStore,
     engineServerClient,
     graphManagerState,
@@ -145,6 +143,7 @@ export const TEST__getDataProductViewerState = (
 
 export const TEST__getDataProductDataAccessState = (
   dataProductViewerState: DataProductViewerState,
+  entitlementsDataProductDetails: V1_EntitlementsDataProductDetails,
 ): DataProductDataAccessState => {
   const lakehouseContractServerClient = new LakehouseContractServerClient({
     baseUrl: 'http://test-contract-server-client',
@@ -157,6 +156,7 @@ export const TEST__getDataProductDataAccessState = (
   );
 
   return new DataProductDataAccessState(
+    entitlementsDataProductDetails,
     dataProductViewerState,
     lakehouseContractServerClient,
     lakehousePlatformServerClient,
