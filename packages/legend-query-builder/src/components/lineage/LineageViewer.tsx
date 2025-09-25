@@ -508,11 +508,16 @@ const convertPropertyLineageToFlow = (
     }> = [];
     if (isPropertyOwner && nodeItem.node instanceof PropertyOwnerNode) {
       const properties = nodeItem.node.properties;
-      allProperties = properties.map((prop) => ({
-        name: prop.name,
-        dataType: prop.dataType,
-        propertyType: prop.propertyType,
-      }));
+      // Handle the case where properties is empty or not an array
+      if (Array.isArray(properties) && properties.length > 0) {
+        allProperties = properties.map((prop) => ({
+          name: prop.name,
+          dataType: prop.dataType,
+          propertyType: prop.propertyType,
+        }));
+      } else {
+        allProperties = [];
+      }
     }
 
     const dimensions = nodeDimensions.get(nodeItem.id) ?? {
@@ -682,7 +687,12 @@ const PropertyOwnerPanel = observer(
       }
     };
 
-    const properties = propertyOwnerNode.properties;
+    // Ensure properties is always an array
+    const properties: LineageProperty[] = Array.isArray(
+      propertyOwnerNode.properties,
+    )
+      ? propertyOwnerNode.properties
+      : [];
 
     let highlightedSourceProps: Set<string> | undefined = undefined;
     if (lineageState.selectedSourcePropertiesMap?.has(propertyOwnerNode.id)) {
