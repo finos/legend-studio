@@ -56,6 +56,11 @@ export class LakehouseIngestServerClient extends AbstractServerClient {
     Authorization: `Bearer ${token}`,
   });
 
+  private _tokenWithAcceptTextPlain = (token?: string) => ({
+    [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN,
+    Authorization: `Bearer ${token}`,
+  });
+
   private _dataProduct = (serverUrl?: string | undefined): string =>
     `${serverUrl ?? this.baseUrl}/${this.DATA_PRODUCT_URL}/api/entitlements/sdlc/deploy/definitions`;
 
@@ -165,5 +170,16 @@ export class LakehouseIngestServerClient extends AbstractServerClient {
       {
         ingestDefinitionUrn: ingestDefinitionUrn,
       },
+    );
+
+  getIngestDefinitionGrammar = (
+    ingestDefinitionUrn: string,
+    ingestServerUrl: string | undefined,
+    token: string | undefined,
+  ): Promise<string> =>
+    this.get(
+      `${this._ingest(ingestServerUrl)}/catalog-state/definitions/${ingestDefinitionUrn}`,
+      {},
+      this._tokenWithAcceptTextPlain(token),
     );
 }

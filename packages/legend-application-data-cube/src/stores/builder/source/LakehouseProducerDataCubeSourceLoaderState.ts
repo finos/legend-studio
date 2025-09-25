@@ -17,13 +17,19 @@
 import {
   ActionState,
   guaranteeNonNullable,
+  guaranteeType,
   type PlainObject,
 } from '@finos/legend-shared';
 import type { LegendDataCubeApplicationStore } from '../../LegendDataCubeBaseStore.js';
 import type { LegendDataCubeDataCubeEngine } from '../../LegendDataCubeDataCubeEngine.js';
 import { LegendDataCubeSourceLoaderState } from './LegendDataCubeSourceLoaderState.js';
 import type { DataCubeAlertService } from '@finos/legend-data-cube';
-import type { PersistentDataCube } from '@finos/legend-graph';
+import {
+  V1_deserializePureModelContext,
+  V1_PureModelContextData,
+  type PersistentDataCube,
+  type V1_IngestDefinition,
+} from '@finos/legend-graph';
 import { RawLakehouseProducerDataCubeSource } from '../../model/LakehouseProducerDataCubeSource.js';
 import type { LakehouseIngestServerClient } from '@finos/legend-server-lakehouse';
 import { action, makeObservable, observable } from 'mobx';
@@ -35,6 +41,8 @@ export class LakehouseProducerDataCubeSourceLoaderState extends LegendDataCubeSo
   ingestDefinition: PlainObject | undefined;
   ingestDefinitionUrn: string;
   ingestServerUrl: string;
+
+  private LAKEHOUSE_SECTION = '###Lakehouse';
 
   constructor(
     application: LegendDataCubeApplicationStore,
@@ -60,14 +68,14 @@ export class LakehouseProducerDataCubeSourceLoaderState extends LegendDataCubeSo
 
     makeObservable(this, {
       ingestDefinition: observable,
-      setIngestDefintion: action,
+      setIngestDefinition: action,
 
       ingestDefinitionUrn: observable,
       setIngestDefinitionUrn: action,
     });
   }
 
-  setIngestDefintion(ingestDefinition: PlainObject | undefined) {
+  setIngestDefinition(ingestDefinition: PlainObject | undefined) {
     this.ingestDefinition = ingestDefinition;
   }
 
@@ -95,13 +103,26 @@ export class LakehouseProducerDataCubeSourceLoaderState extends LegendDataCubeSo
     access_token: string | undefined,
     lakehouseIngestServerClient: LakehouseIngestServerClient,
   ) {
-    this.setIngestDefintion(
-      await lakehouseIngestServerClient.getIngestDefinitionDetail(
-        this.ingestDefinitionUrn,
+    const ingestGrammar =
+      await lakehouseIngestServerClient.getIngestDefinitionGrammar(
+        guaranteeNonNullable(this.ingestDefinitionUrn),
         this.ingestServerUrl,
         access_token,
-      ),
+      );
+
+    const ingestPMCDPlainObject = await this._engine.parseCompatibleModel(
+      `${this.LAKEHOUSE_SECTION}\n${ingestGrammar}`,
     );
+
+    const ingestDefPMCD = guaranteeType(
+      V1_deserializePureModelContext(ingestPMCDPlainObject),
+      V1_PureModelContextData,
+    );
+
+    const protocolIngestDefinition = (
+      ingestDefPMCD.elements.at(0) as V1_IngestDefinition
+    ).content;
+    this.setIngestDefinition(protocolIngestDefinition);
   }
 
   override async load(source: PlainObject | undefined) {
@@ -111,9 +132,7 @@ export class LakehouseProducerDataCubeSourceLoaderState extends LegendDataCubeSo
       );
 
     this._engine.registerIngestDefinition(
-      Object.values(
-        guaranteeNonNullable(this.ingestDefinition),
-      )[0] as PlainObject,
+      guaranteeNonNullable(this.ingestDefinition),
     );
 
     return RawLakehouseProducerDataCubeSource.serialization.toJson(

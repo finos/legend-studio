@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {
   type V1_ValueSpecification,
   type V1_Lambda,
@@ -23,6 +22,7 @@ import {
   V1_deserializeValueSpecification,
   V1_serializeValueSpecification,
   type V1_ExecuteInput,
+  type V1_PureModelContextData,
 } from '@finos/legend-graph';
 import {
   getFilterOperation,
@@ -298,6 +298,12 @@ export abstract class DataCubeEngine {
   abstract buildExecutionContext(
     source: DataCubeSource,
   ): V1_AppliedFunction | undefined;
+
+  async parseCompatibleModel(
+    code: string,
+  ): Promise<PlainObject<V1_PureModelContextData>> {
+    throw new Error('Method not implemented.');
+  }
 
   // ---------------------------------- CACHING ----------------------------------
 
