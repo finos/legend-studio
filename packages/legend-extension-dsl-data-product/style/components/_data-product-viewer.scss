@@ -112,7 +112,9 @@
       @include flexCenter;
       @include ellipsisTextOverflow;
 
+      flex-grow: 1;
       align-self: start;
+      align-items: end;
       height: 5rem;
       font-size: 3.6rem;
       font-weight: 400;
