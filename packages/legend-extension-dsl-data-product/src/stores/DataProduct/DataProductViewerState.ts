@@ -42,7 +42,7 @@ export class DataProductViewerState extends BaseViewerState<
   readonly dataProductConfig?: DataProductConfig | undefined;
 
   // actions
-  readonly viewDataProductSource: () => void;
+  readonly viewDataProductSource?: (() => void) | undefined;
 
   constructor(
     product: V1_DataProduct,
@@ -52,7 +52,7 @@ export class DataProductViewerState extends BaseViewerState<
     dataProductConfig: DataProductConfig | undefined,
     userSearchService: UserSearchService | undefined,
     actions: {
-      viewDataProductSource: () => void;
+      viewDataProductSource?: (() => void) | undefined;
       onZoneChange?: ((zone: NavigationZone | undefined) => void) | undefined;
     },
   ) {
