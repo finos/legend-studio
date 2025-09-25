@@ -15,7 +15,6 @@
  */
 
 import type {
-  DataProductConfig,
   GenericLegendApplicationStore,
   NavigationZone,
 } from '@finos/legend-application';
@@ -31,6 +30,7 @@ import { DataProductLayoutState } from '../BaseLayoutState.js';
 import { DATA_PRODUCT_VIEWER_SECTION } from '../ProductViewerNavigation.js';
 import { type UserSearchService } from '@finos/legend-shared';
 import { DataProductAPGState } from './DataProductAPGState.js';
+import type { DataProductConfig } from './DataProductConfig.js';
 
 export class DataProductViewerState extends BaseViewerState<
   V1_DataProduct,

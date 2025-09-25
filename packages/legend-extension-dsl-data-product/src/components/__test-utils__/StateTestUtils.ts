@@ -17,7 +17,6 @@
 import {
   type LegendApplicationPlugin,
   ApplicationStore,
-  DataProductConfig,
   LegendApplicationConfig,
   LegendApplicationPluginManager,
 } from '@finos/legend-application';
@@ -42,6 +41,7 @@ import { jest } from '@jest/globals';
 import { DataProductDataAccessState } from '../../stores/DataProduct/DataProductDataAccessState.js';
 import { guaranteeType } from '@finos/legend-shared';
 import { Core_DataProductDataAccess_LegendApplicationPlugin } from '../Core_DataProductDataAccess_LegendApplicationPlugin.js';
+import { DataProductConfig } from '../../stores/DataProduct/DataProductConfig.js';
 
 export class TEST__LegendApplicationPluginManager
   extends LegendApplicationPluginManager<LegendApplicationPlugin>
