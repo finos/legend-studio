@@ -49,12 +49,20 @@
     gap: 2rem;
   }
 
+  &__subtitles {
+    font-weight: bold;
+    margin: 0.8em 0;
+  }
+
   &__sort-filters {
     display: flex;
     flex-direction: column;
     gap: 2rem;
     font-size: 1.8rem;
     min-width: 25rem;
+    height: 100%;
+    background: #f2f2f2;
+    padding: 1.6rem;
 
     &__filter {
       display: flex;
@@ -63,10 +71,6 @@
 
       .MuiSvgIcon-root {
         font-size: 2rem;
-      }
-
-      .MuiTypography-root {
-        font-size: 1.2rem;
       }
 
       &__section-header {
