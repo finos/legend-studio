@@ -17,7 +17,7 @@
 @use 'mixins' as *;
 
 .data-product__viewer {
-  @include flexVCenter;
+  @include flexHCenter;
 
   height: 100%;
   width: 100%;
