@@ -377,7 +377,17 @@ const TDSColumnCellRenderer = (props: {
               'data-product__viewer__tab--selected':
                 selectedTab === DataProductTabs.SQL,
             })}
-            label={<span>SQL</span>}
+            label={
+              <span className="label-container">
+                <SQLIcon
+                  className={clsx('data-product__viewer__tab-icon', {
+                    'data-product__viewer__tab-icon--selected':
+                      selectedTab === DataProductTabs.SQL,
+                  })}
+                />
+                <span>SQL</span>
+              </span>
+            }
             value={DataProductTabs.SQL}
           />
         </Tabs>
