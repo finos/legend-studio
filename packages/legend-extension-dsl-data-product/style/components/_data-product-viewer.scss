@@ -17,12 +17,15 @@
 @use 'mixins' as *;
 
 .data-product__viewer {
+  @include flexVCenter;
+
   height: 100%;
   width: 100%;
   position: relative;
   background: var(--color-dark-grey-80);
   color: var(--color-light-grey-200);
   font-family: Roboto, sans-serif;
+  overflow: auto;
 
   &__header {
     @include flexHCenter;
@@ -30,7 +33,6 @@
     position: absolute;
     top: 0;
     height: 14rem;
-    width: 100%;
     z-index: 1;
     background: transparent;
     transition: all 0.5s ease;
@@ -187,7 +189,7 @@
     align-items: center;
     flex-direction: column;
     height: 100%;
-    width: 100%;
+    width: fit-content;
     overflow: auto;
   }
 
