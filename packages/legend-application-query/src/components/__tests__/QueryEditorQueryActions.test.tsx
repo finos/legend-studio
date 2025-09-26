@@ -32,6 +32,7 @@ import {
   getByText,
   getByTitle,
   waitFor,
+  getByPlaceholderText,
 } from '@testing-library/react';
 import {
   TEST_QUERY_NAME,
@@ -48,6 +49,61 @@ import {
   TEST_DATA__modelCoverageAnalysisResult,
   TEST_DATA__simpleProjectionQuery,
 } from './TEST_DATA__QueryBuilder_ResultStateTest.js';
+
+test(
+  integrationTest(
+    'User can enter a description and it is included in the query payload',
+  ),
+  async () => {
+    const { renderResult } = await TEST__setUpQueryEditor(
+      TEST__provideMockedQueryEditorStore(),
+      TEST_DATA__ResultState_entities,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__modelCoverageAnalysisResult,
+    );
+
+    // Open the save as new query modal
+    const saveDropdown = await waitFor(() =>
+      renderResult.getByTitle('query__editor__save-dropdown'),
+    );
+    fireEvent.click(saveDropdown);
+    const saveAsNewQueryButton = renderResult.getByTitle(
+      'query__editor__save-dropdown__save-as',
+    );
+    fireEvent.click(saveAsNewQueryButton);
+
+    // Wait for the modal to appear
+    const createNewQueryModal = await waitFor(() =>
+      renderResult.getByRole('dialog'),
+    );
+
+    const nameInput = getByPlaceholderText(
+      createNewQueryModal,
+      /e\.g\. "MyQuery"/i, // or whatever your placeholder is for the name
+    );
+    fireEvent.change(nameInput, {
+      target: { value: 'Test Query Name' },
+    });
+
+    // Find the description input and enter a value
+    const descriptionInput = getByPlaceholderText(
+      createNewQueryModal,
+      /details about what this query retrieves/i,
+    );
+    fireEvent.change(descriptionInput, {
+      target: { value: 'This is a test description 123' },
+    });
+    expect((descriptionInput as HTMLInputElement).value).toBe(
+      'This is a test description 123',
+    );
+    // Find and click the Create Query button
+    const createButton = getByText(createNewQueryModal, 'Create Query');
+    expect(createButton.hasAttribute('disabled')).toBe(false);
+    fireEvent.click(createButton);
+  },
+);
 
 test(
   integrationTest(
