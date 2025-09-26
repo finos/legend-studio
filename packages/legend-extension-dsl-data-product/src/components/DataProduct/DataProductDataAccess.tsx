@@ -86,7 +86,7 @@ import {
 } from '@finos/legend-shared';
 import { resolveVersion } from '@finos/legend-server-depot';
 import { deserialize } from 'serializr';
-import type { DataProductDataAccessState } from '../../stores/DataProduct/DataProductDataAccessState.js';
+import { type DataProductDataAccessState } from '../../stores/DataProduct/DataProductDataAccessState.js';
 import type { DataProductViewerState } from '../../stores/DataProduct/DataProductViewerState.js';
 import {
   generateAnchorForSection,
@@ -138,8 +138,9 @@ const TDSColumnDocumentationCellRenderer = (
 const TDSColumnMoreInfoCellRenderer = (props: {
   params: DataGridCellRendererParams<V1_LakehouseAccessPoint>;
   apgState: DataProductAPGState;
+  dataAccessState: DataProductDataAccessState | undefined;
 }): React.ReactNode => {
-  const { params, apgState } = props;
+  const { params, apgState, dataAccessState } = props;
   const dataProductViewerState = apgState.dataProductViewerState;
   const data = params.data;
   const enum MoreInfoTabs {
@@ -178,10 +179,10 @@ const TDSColumnMoreInfoCellRenderer = (props: {
 
     const fetchAccessPointRelationType = async () => {
       try {
-        const origin =
-          dataProductViewerState.entitlementsDataProductDetails.origin;
+        const origin = dataAccessState?.entitlementsDataProductDetails.origin;
         const model =
-          origin instanceof V1_AdHocDeploymentDataProductOrigin
+          origin instanceof V1_AdHocDeploymentDataProductOrigin ||
+          origin === undefined
             ? guaranteeType(
                 dataProductViewerState.graphManagerState.graphManager,
                 V1_PureGraphManager,
@@ -243,8 +244,8 @@ const TDSColumnMoreInfoCellRenderer = (props: {
   }, [
     apgState.applicationStore.notificationService,
     data,
+    dataAccessState?.entitlementsDataProductDetails.origin,
     dataProductViewerState.engineServerClient,
-    dataProductViewerState.entitlementsDataProductDetails.origin,
     dataProductViewerState.graphManagerState.graph,
     dataProductViewerState.graphManagerState.graphManager,
   ]);
@@ -657,6 +658,7 @@ export const DataProductAccessPointGroupViewer = observer(
                   <TDSColumnMoreInfoCellRenderer
                     params={params}
                     apgState={apgState}
+                    dataAccessState={dataAccessState}
                   />
                 )}
                 detailRowAutoHeight={true}

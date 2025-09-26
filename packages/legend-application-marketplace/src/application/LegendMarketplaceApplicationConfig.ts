@@ -26,10 +26,10 @@ import {
 import {
   type LegendApplicationConfigurationData,
   type LegendApplicationConfigurationInput,
-  DataProductConfig,
   LegendApplicationConfig,
 } from '@finos/legend-application';
 import type { AuthProviderProps } from 'react-oidc-context';
+import { DataProductConfig } from '@finos/legend-extension-dsl-data-product';
 
 class LegendMarketplaceApplicationCoreOptions {
   dataProductConfig: DataProductConfig | undefined;

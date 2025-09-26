@@ -88,322 +88,7 @@
 }
 
 .theme__hc-light {
-  ::-webkit-scrollbar-thumb {
-    background: var(--color-hclight-grey-30);
-    border: 0.2rem solid transparent;
-    background-clip: content-box;
-    border-radius: 0.4rem;
-  }
-
-  ::-webkit-scrollbar-track-piece {
-    background: var(--color-hclight-grey-10);
-  }
-
-  .btn--dark {
-    background: var(--color-hclight-blue-60);
-    color: var(--color-hclight-white);
-  }
-
-  .btn--dark:hover {
-    background: var(--color-hclight-blue-50);
-  }
-
-  .btn--dark[disabled] {
-    background: var(--color-hclight-grey-20);
-    color: var(--color-hclight-grey-30);
-  }
-
-  .btn--dark:focus {
-    outline: 0.1rem solid var(--color-hclight-blue-60);
-  }
-
-  .menu {
-    background: var(--color-hclight-white);
-    border-color: transparent;
-  }
-
-  .menu__item {
-    color: var(--color-hclight-grey-90);
-  }
-
-  .menu__item:hover {
-    background: var(--color-hclight-blue-50);
-  }
-
-  .menu__item[disabled] {
-    color: var(--color-hclight-grey-60);
-  }
-
-  .menu__divider {
-    background: var(--color-hclight-grey-20);
-  }
-
-  .input {
-    border-color: var(--color-hclight-grey-30);
-  }
-
-  .input:hover {
-    border-color: var(--color-hclight-blue-50);
-  }
-
-  .input:focus {
-    border-color: var(--color-hclight-blue-50);
-  }
-
-  .input[disabled] {
-    border-color: var(--color-hclight-grey-30);
-    background: var(--color-hclight-grey-10);
-  }
-
-  .input--dark {
-    background: var(--color-hclight-white);
-    color: var(--color-hclight-grey-90);
-    border-color: var(--color-hclight-grey-20);
-  }
-
-  .input--dark:hover {
-    border-color: var(--color-hclight-blue-50);
-  }
-
-  .input--dark:focus {
-    border-color: var(--color-hclight-blue-50);
-  }
-
-  .input--dark[disabled] {
-    border-color: var(--color-hclight-grey-20);
-    color: var(--color-hclight-grey-30);
-  }
-
-  .selector-input__control,
-  .selector-input .selector-input__control,
-  .selector-input--dark__control,
-  .selector-menu--dark .selector-input--dark__control,
-  .selector-input--dark .selector-input--dark__control {
-    border-color: var(--color-hclight-blue-50);
-    background: var(--color-hclight-white);
-    color: var(--color-hclight-grey-90);
-  }
-
-  .selector-input__control:hover,
-  .selector-input .selector-input__control:hover,
-  .selector-input--dark__control:hover,
-  .selector-menu--dark .selector-input--dark__control:hover,
-  .selector-input--dark .selector-input--dark__control:hover {
-    border-color: var(--color-hclight-blue-50);
-  }
-
-  .selector-input__indicator-separator,
-  .selector-input .selector-input__indicator-separator,
-  .selector-input--dark__indicator-separator,
-  .selector-menu--dark .selector-input--dark__indicator-separator,
-  .selector-input--dark .selector-input--dark__indicator-separator {
-    background: var(--color-hclight-white);
-  }
-
-  .selector-input .selector-menu--no-match,
-  .selector-input .selector-input .selector-menu--no-match,
-  .selector-input--dark .selector-menu--no-match,
-  .selector-menu--dark .selector-input--dark .selector-menu--no-match,
-  .selector-input--dark .selector-input--dark .selector-menu--no-match {
-    color: var(--color-hclight-grey-90);
-  }
-
-  .selector-input .selector-input__dropdown-indicator,
-  .selector-input .selector-input .selector-input__dropdown-indicator,
-  .selector-input--dark .selector-input__dropdown-indicator,
-  .selector-menu--dark
-    .selector-input--dark
-    .selector-input__dropdown-indicator,
-  .selector-input--dark
-    .selector-input--dark
-    .selector-input__dropdown-indicator {
-    color: var(--color-hclight-grey-60);
-  }
-
-  .selector-input__value-container,
-  .selector-input .selector-input__value-container,
-  .selector-input--dark__value-container,
-  .selector-menu--dark .selector-input--dark__value-container,
-  .selector-input--dark .selector-input--dark__value-container {
-    color: var(--color-hclight-grey-90);
-  }
-
-  .selector-input__value-container > *,
-  .selector-input .selector-input__value-container > *,
-  .selector-input--dark__value-container > *,
-  .selector-menu--dark .selector-input--dark__value-container > *,
-  .selector-input--dark .selector-input--dark__value-container > * {
-    color: var(--color-hclight-grey-90) !important;
-  }
-
-  .selector-input__option--custom:hover,
-  .selector-input .selector-input__option--custom:hover,
-  .selector-input--dark__option--custom:hover,
-  .selector-menu--dark .selector-input--dark__option--custom:hover,
-  .selector-input--dark .selector-input--dark__option--custom:hover {
-    background: var(--color-hclight-white);
-  }
-
-  .selector-input__menu,
-  .selector-input .selector-input__menu,
-  .selector-input--dark__menu,
-  .selector-menu--dark .selector-input--dark__menu,
-  .selector-input--dark .selector-input--dark__menu {
-    border-color: var(--color-hclight-blue-50);
-    color: var(--color-hclight-grey-90);
-  }
-
-  .selector-input__option,
-  .selector-input .selector-input__option,
-  .selector-input--dark__option,
-  .selector-menu--dark .selector-input--dark__option,
-  .selector-input--dark .selector-input--dark__option {
-    color: var(--color-hclight-grey-90) !important;
-  }
-
-  .selector-input__option--is-focused,
-  .selector-input .selector-input__option--is-focused,
-  .selector-input--dark__option--is-focused,
-  .selector-menu--dark .selector-input--dark__option--is-focused,
-  .selector-input--dark .selector-input--dark__option--is-focused {
-    background-color: var(--color-hclight-aqua-10);
-  }
-
-  .selector-input__option--is-selected,
-  .selector-input .selector-input__option--is-selected,
-  .selector-input--dark__option--is-selected,
-  .selector-menu--dark .selector-input--dark__option--is-selected,
-  .selector-input--dark .selector-input--dark__option--is-selected {
-    background-color: var(--color-hclight-blue-50);
-  }
-
-  .selector-input__option--is-disabled,
-  .selector-input .selector-input__option--is-disabled,
-  .selector-input--dark__option--is-disabled,
-  .selector-menu--dark .selector-input--dark__option--is-disabled,
-  .selector-input--dark .selector-input--dark__option--is-disabled {
-    color: var(--color-hclight-grey-40) !important;
-  }
-
-  .selector-input__option:active,
-  .selector-input .selector-input__option:active,
-  .selector-input--dark__option:active,
-  .selector-menu--dark .selector-input--dark__option:active,
-  .selector-input--dark .selector-input--dark__option:active {
-    background-color: var(--color-hclight-white);
-  }
-
-  .selector-menu--dark {
-    background: var(--color-hclight-white);
-  }
-
-  .panel-loading-indicator::before {
-    background: var(--color-hclight-blue-50);
-  }
-
-  .panel__content__blank__content {
-    color: var(--color-hclight-grey-40);
-  }
-
-  .app {
-    background: var(--color-hclight-white);
-  }
-
-  .notification__content {
-    background: var(--color-hclight-white);
-    color: var(--color-hclight-grey-90);
-  }
-
-  .notification__message__content:active {
-    background: var(--color-hclight-grey-10);
-  }
-
-  .fuzzy-search__advanced-config__panel {
-    background: var(--color-hclight-white);
-  }
-
-  .fuzzy-search__advanced-config__panel__header__label {
-    color: var(--color-hclight-grey-90);
-    background: var(--color-hclight-grey-20);
-  }
-
-  .fuzzy-search__advanced-config__panel__header__hint {
-    color: var(--color-hclight-grey-90);
-  }
-
-  .fuzzy-search__advanced-config__panel .mui-radio-group__group__item__label {
-    color: var(--color-hclight-grey-90);
-  }
-
-  .fuzzy-search__advanced-config__panel .Mui-checked {
-    color: var(--color-hclight-blue-50);
-  }
-
-  .data-access-overview__grid {
-    --ag-border-color: var(--color-hclight-grey-30);
-    --ag-background-color: var(--color-hclight-white);
-    --ag-foreground-color: var(--color-hclight-grey-90);
-    --ag-header-background-color: var(--color-hclight-grey-10);
-    --ag-header-foreground-color: var(--color-hclight-grey-90);
-    --ag-balham-active-color: transparent;
-    --ag-odd-row-background-color: var(--color-hclight-white);
-    --ag-even-row-background-color: var(--color-hclight-white);
-    --ag-row-hover-color: var(--color-hclight-grey-5);
-    --ag-row-border-color: var(--color-hclight-grey-30);
-  }
-
-  .data-access-overview__grid--empty {
-    background: var(--color-hclight-white);
-    color: var(--color-hclight-grey-60);
-  }
-
-  .data-access-overview__grid__empty-cell {
-    color: var(--color-hclight-grey-30);
-  }
-
-  .data-access-overview__grid .ag-center-cols-viewport {
-    background: repeating-linear-gradient(
-      135deg,
-      var(--color-hclight-white),
-      var(--color-hclight-white) 0.5rem,
-      var(--color-hclight-grey-5) 0.5rem,
-      var(--color-hclight-grey-5) 1rem
-    );
-  }
-
-  .data-access-overview__grid ::-webkit-scrollbar-thumb {
-    background: var(--color-hclight-grey-15);
-    border: 0.1rem solid transparent;
-    background-clip: content-box;
-    border-radius: 0.4rem;
-  }
-
-  .data-access-overview__grid ::-webkit-scrollbar-track-piece {
-    background: transparent;
-  }
-
-  .data-access-overview__grid__access-status-cell__icon--access-granted svg {
-    color: var(--color-hclight-lime-50);
-  }
-
-  .data-access-overview__grid__access-status-cell__icon--access-approved svg {
-    color: var(--color-hclight-blue-50);
-  }
-
-  .data-access-overview__grid__access-status-cell__icon--access-requested svg {
-    color: var(--color-hclight-yellow-30);
-  }
-
-  .data-access-overview__grid__access-status-cell__icon--access-not-granted
-    svg {
-    color: var(--color-hclight-red-50);
-  }
-
-  .data-space-preview__failure__text {
-    color: var(--color-hclight-grey-40);
-  }
-
-  .data-space__viewer {
+  .data-product__viewer {
     background: var(--color-hclight-white);
     color: var(--color-hclight-grey-90);
 
@@ -968,179 +653,93 @@
       border-left-color: var(--color-hclight-grey-30);
     }
 
-    &__quickstart__item__header__title {
+    &__access-group__item__header__title {
       color: var(--color-hclight-aqua-90);
     }
 
-    &__quickstart__item__header__anchor {
+    &__access-group__item__header__anchor {
       color: var(--color-hclight-blue-60);
     }
 
-    &__quickstart__item__header__anchor svg {
+    &__access-group__item__header__anchor svg {
       color: var(--color-hclight-grey-30);
     }
 
-    &__quickstart__item__header__anchor:hover svg {
+    &__access-group__item__header__anchor:hover svg {
       color: var(--color-hclight-grey-60);
     }
 
-    &__quickstart__item__content__tab__header {
+    &__access-group__item__content__tab__header {
       border-bottom-color: var(--color-hclight-grey-15);
       border-top-color: var(--color-hclight-grey-15);
     }
 
-    &__quickstart__item__content__tab {
+    &__access-group__item__content__tab {
       color: var(--color-hclight-grey-60);
       border-left-color: var(--color-hclight-grey-15);
     }
 
-    &__quickstart__item__content__tab:hover
-      &__quickstart__item__content__tab__label {
+    &__access-group__item__content__tab:hover
+      &__access-group__item__content__tab__label {
       color: var(--color-hclight-grey-70);
     }
 
-    &__quickstart__item__content__tab:hover
-      &__quickstart__item__content__tab__icon
+    &__access-group__item__content__tab:hover
+      &__access-group__item__content__tab__icon
       svg {
       color: var(--color-hclight-grey-70);
     }
 
-    &__quickstart__item__content__tab--active:hover
-      &__quickstart__item__content__tab__label,
-    &__quickstart__item__content__tab--active
-      &__quickstart__item__content__tab__label {
+    &__access-group__item__content__tab--active:hover
+      &__access-group__item__content__tab__label,
+    &__access-group__item__content__tab--active
+      &__access-group__item__content__tab__label {
       color: var(--color-hclight-blue-60);
     }
 
-    &__quickstart__item__content__tab--active:hover
-      &__quickstart__item__content__tab__icon
+    &__access-group__item__content__tab--active:hover
+      &__access-group__item__content__tab__icon
       svg,
-    &__quickstart__item__content__tab--active
-      &__quickstart__item__content__tab__icon
+    &__access-group__item__content__tab--active
+      &__access-group__item__content__tab__icon
       svg {
       color: var(--color-hclight-blue-60);
     }
 
-    &__quickstart__item__content__action-tab-group {
+    &__access-group__item__content__action-tab-group {
       border-left-color: var(--color-hclight-grey-15);
     }
 
-    &__quickstart__tds__query {
+    &__access-group__tds__query {
       border-color: var(--color-hclight-grey-30);
     }
 
-    &__quickstart__tds__placeholder-panel {
+    &__access-group__tds__placeholder-panel {
       border-color: var(--color-hclight-grey-30);
     }
 
-    &__quickstart__tds__query-text__action svg {
+    &__access-group__tds__query-text__action svg {
       color: var(--color-hclight-grey-60);
     }
 
-    &__quickstart__tds__query-text__action:hover svg {
+    &__access-group__tds__query-text__action:hover svg {
       color: var(--color-hclight-grey-80);
     }
 
-    &__quickstart__tds__code-action {
+    &__access-group__tds__code-action {
       border-color: var(--color-hclight-grey-30);
     }
 
-    &__quickstart__tds__code-action__content {
+    &__access-group__tds__code-action__content {
       border-color: var(--color-hclight-grey-30);
     }
 
-    &__quickstart__tds__code-action__action svg {
+    &__access-group__tds__code-action__action svg {
       color: var(--color-hclight-grey-60);
     }
 
-    &__quickstart__tds__code-action__action:hover svg {
+    &__access-group__tds__code-action__action:hover svg {
       color: var(--color-hclight-grey-80);
     }
-  }
-
-  .table th,
-  .table td {
-    border-color: var(--color-light-grey-250);
-  }
-
-  .table thead {
-    background: var(--color-light-grey-100);
-  }
-
-  .panel__header--dark {
-    background: var(--color-light-grey-200);
-  }
-
-  .panel__content__form__section__header__label {
-    color: var(--color-hclight-grey-70);
-  }
-
-  .panel__content__form__section__toggler__prompt,
-  .panel__content__form__section__header__prompt {
-    color: var(--color-hclight-grey-80);
-  }
-
-  .panel__content__form__section__input {
-    background: var(--color-hclight-white);
-    color: var(--color-hclight-grey-200);
-    border: 0.1rem solid var(--color-hclight-grey-70);
-  }
-
-  .panel__content__form__section__input:focus {
-    border-color: var(--color-hclight-blue-30);
-  }
-
-  .panel__content__form__section__list__item:hover {
-    background: transparent;
-  }
-
-  .panel__content__form__section__toggler__btn svg {
-    color: var(--color-light-grey-250);
-  }
-
-  .panel__content__form__section__toggler__btn--toggled svg {
-    color: var(--color-hclight-blue-30);
-  }
-
-  .mui-popover__paper {
-    background: var(--color-hclight-white);
-  }
-
-  .modal.modal--dark {
-    background: var(--color-hclight-white);
-    color: var(--color-hclight-grey-90);
-    border: none;
-  }
-
-  .modal__header {
-    color: var(--color-hclight-grey-90);
-    background: var(--color-hclight-grey-15);
-  }
-
-  .modal__footer {
-    border: none;
-    background: var(--color-hclight-grey-15);
-  }
-
-  .blocking-alert__summary-text,
-  .blocking-alert__prompt-text {
-    color: var(--color-legacylight-dark-grey-400);
-  }
-
-  .modal__footer__close-btn {
-    background: var(--color-hclight-blue-30);
-  }
-
-  .data-access__check-entitlements__table__head {
-    background: var(--color-hclight-grey-10) !important;
-    color: var(--color-hclight-grey-90);
-  }
-
-  .lake_entitlement-btn {
-    background: var(--color-hclight-blue-50);
-  }
-
-  .data-access__check-entitlements__user-entitlements__table-container {
-    border: 0.1rem solid var(--color-hclight-grey-20);
   }
 }

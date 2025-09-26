@@ -33,9 +33,9 @@ import {
   type LegendApplicationConfigurationInput,
   type LegendApplicationConfigurationData,
   LegendApplicationConfig,
-  DataProductConfig,
 } from '@finos/legend-application';
 import { QueryBuilderConfig } from '@finos/legend-query-builder';
+import { DataProductConfig } from '@finos/legend-extension-dsl-data-product';
 import {
   LegendIngestionConfiguration,
   validateIngestionDeploymentConfiguration,

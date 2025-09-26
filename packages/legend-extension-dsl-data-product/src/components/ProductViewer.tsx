@@ -83,13 +83,12 @@ export const TerminalNavigationSections = observer(
 );
 
 const DataProductEnvironmentLabel = observer(
-  (props: { productViewerState: DataProductViewerState }) => {
-    const { productViewerState } = props;
+  (props: { dataAccessState: DataProductDataAccessState }) => {
+    const { dataAccessState } = props;
 
     const environmentClassification =
-      productViewerState.entitlementsDataProductDetails.lakehouseEnvironment
-        ?.type;
-    const origin = productViewerState.entitlementsDataProductDetails.origin;
+      dataAccessState.entitlementsDataProductDetails.lakehouseEnvironment?.type;
+    const origin = dataAccessState.entitlementsDataProductDetails.origin;
 
     return (
       <div className="data-product__viewer__header__type">
@@ -114,7 +113,7 @@ const DataProductEnvironmentLabel = observer(
         {origin instanceof V1_SdlcDeploymentDataProductOrigin && (
           <Button
             onClick={() => {
-              productViewerState.viewDataProductSource();
+              dataAccessState.dataProductViewerState.viewDataProductSource?.();
             }}
             title="View SDLC Project"
             className={clsx('data-product__viewer__header__type__version', {
@@ -139,9 +138,10 @@ const ProductHeader = observer(
       SupportedProducts,
       SupportedLayoutStates
     >;
+    dataAccessState: DataProductDataAccessState | undefined;
     showFullHeader: boolean;
   }) => {
-    const { productViewerState, showFullHeader } = props;
+    const { productViewerState, dataAccessState, showFullHeader } = props;
     const headerRef = useRef<HTMLDivElement>(null);
     const isDataProductViewerState =
       productViewerState instanceof DataProductViewerState;
@@ -170,10 +170,8 @@ const ProductHeader = observer(
               productViewerState.layoutState.isExpandedModeEnabled,
           })}
         >
-          {isDataProductViewerState && (
-            <DataProductEnvironmentLabel
-              productViewerState={productViewerState}
-            />
+          {isDataProductViewerState && dataAccessState && (
+            <DataProductEnvironmentLabel dataAccessState={dataAccessState} />
           )}
           <div
             className="data-product__viewer__header__title"
@@ -246,6 +244,7 @@ export const ProductViewer = observer(
         >
           <ProductHeader
             productViewerState={productViewerState}
+            dataAccessState={dataProductDataAccessState}
             showFullHeader={showFullHeader}
           />
           {productViewerState.layoutState.isTopScrollerVisible && (
