@@ -17,19 +17,19 @@
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import type { PackageableElementReference } from '../../PackageableElementReference.js';
 import type { EmbeddedData } from '../../../data/EmbeddedData.js';
-import type { Store } from '../../store/Store.js';
 import { CORE_HASH_STRUCTURE } from '../../../../../Core_HashUtils.js';
+import type { PackageableElement } from '../../PackageableElement.js';
 
-export class FunctionStoreTestData implements Hashable {
+export class FunctionTestData implements Hashable {
   doc: string | undefined;
-  store!: PackageableElementReference<Store>;
+  element!: PackageableElementReference<PackageableElement>;
   data!: EmbeddedData;
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FUNCTION_STORE_TEST_DATA,
       this.doc ?? '',
-      this.store.valueForSerialization ?? '',
+      this.element.valueForSerialization ?? '',
       this.data,
     ]);
   }
