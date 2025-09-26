@@ -118,9 +118,7 @@ export class Core_DataProductDataAccess_LegendApplicationPlugin
         }
 
         handleDescriptionChange(description);
-        handleIsValidChange(
-          (type === 'producer' || user.id !== '') && description.trim() !== '',
-        );
+        handleIsValidChange(user.id !== '' && description.trim() !== '');
       }, [
         type,
         user,
