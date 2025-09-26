@@ -2310,27 +2310,29 @@ export const DataProductEditor = observer(() => {
     dataProductEditorState,
   ]);
 
-  useEffect(() => {
-    return autorun(
-      () => {
-        if (showPreview) {
-          setDataProductViewerState(
-            getDataProductViewerState(
-              product,
-              editorStore.graphManagerState,
-              editorStore.applicationStore,
-            ),
-          );
-        }
-      },
-      { delay: 1000 },
-    );
-  }, [
-    editorStore.applicationStore,
-    editorStore.graphManagerState,
-    product,
-    showPreview,
-  ]);
+  useEffect(
+    () =>
+      autorun(
+        () => {
+          if (showPreview) {
+            setDataProductViewerState(
+              getDataProductViewerState(
+                product,
+                editorStore.graphManagerState,
+                editorStore.applicationStore,
+              ),
+            );
+          }
+        },
+        { delay: 1000 },
+      ),
+    [
+      editorStore.applicationStore,
+      editorStore.graphManagerState,
+      product,
+      showPreview,
+    ],
+  );
 
   return (
     <div className="data-product-editor">
@@ -2395,13 +2397,17 @@ export const DataProductEditor = observer(() => {
           <DataProductSidebar dataProductEditorState={dataProductEditorState} />
           <ResizablePanelGroup orientation="vertical">
             <ResizablePanel>{renderActivivtyBarTab()}</ResizablePanel>
-            {showPreview && <ResizablePanelSplitter />}
             {showPreview && (
-              <ResizablePanel>
-                <div className="data-product-editor__preview-container theme__hc-light">
-                  <ProductViewer productViewerState={dataProductViewerState} />
-                </div>
-              </ResizablePanel>
+              <>
+                <ResizablePanelSplitter />
+                <ResizablePanel>
+                  <div className="data-product-editor__preview-container theme__hc-light">
+                    <ProductViewer
+                      productViewerState={dataProductViewerState}
+                    />
+                  </div>
+                </ResizablePanel>
+              </>
             )}
           </ResizablePanelGroup>
         </div>
