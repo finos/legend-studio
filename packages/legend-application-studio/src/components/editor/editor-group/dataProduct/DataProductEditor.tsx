@@ -2372,6 +2372,8 @@ export const DataProductEditor = observer(() => {
                   </>
                 )}
               </button>
+            </div>
+            <div className="btn__dropdown-combo btn__dropdown-combo--primary">
               <button
                 className="btn__dropdown-combo__label"
                 onClick={deployDataProduct}
