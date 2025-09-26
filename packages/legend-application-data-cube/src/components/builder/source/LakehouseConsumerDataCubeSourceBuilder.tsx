@@ -20,11 +20,13 @@ import { useAuth } from 'react-oidc-context';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useEffect } from 'react';
 import type { LakehouseConsumerDataCubeSourceBuilderState } from '../../../stores/builder/source/LakehouseConsumerDataCubeSourceBuilderState.js';
+import { useLegendDataCubeBuilderStore } from '../LegendDataCubeBuilderStoreProvider.js';
 
 export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
   sourceBuilder: LakehouseConsumerDataCubeSourceBuilderState;
 }> = observer(({ sourceBuilder: state }) => {
   const auth = useAuth();
+  const store = useLegendDataCubeBuilderStore();
 
   useEffect(() => {
     state.reset();
@@ -50,7 +52,11 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
             isLoading={state.dataProductLoadingState.isInProgress}
             onChange={(newValue: { label: string; value: string } | null) => {
               state.setSelectedDataProduct(newValue?.value ?? '');
-              state.fetchDataProductEnvironments(auth.user?.access_token);
+              state
+                .fetchAccessPoints(auth.user?.access_token)
+                .catch((error) =>
+                  store.alertService.alertUnhandledError(error),
+                );
             }}
             value={
               state.selectedDataProduct
@@ -65,37 +71,6 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
             escapeClearsValue={true}
           />
         </div>
-        {state.ingestEnvironments.length > 0 && (
-          <div className="query-setup__wizard__group mt-2">
-            <div className="query-setup__wizard__group__title">
-              Ingest Environment
-            </div>
-            <CustomSelectorInput
-              className="query-setup__wizard__selector"
-              options={state.ingestEnvironments.map((env) => ({
-                label: env,
-                value: env,
-              }))}
-              disabled={false}
-              isLoading={false}
-              onChange={(newValue: { label: string; value: string } | null) => {
-                const env = newValue?.value ?? '';
-                state.setSelectedIngestEnvironment(env);
-                state.fetchAccessPoints();
-              }}
-              value={
-                state.selectedIngestEnvironment
-                  ? {
-                      label: state.selectedIngestEnvironment,
-                      value: state.selectedIngestEnvironment,
-                    }
-                  : null
-              }
-              isClearable={false}
-              escapeClearsValue={true}
-            />
-          </div>
-        )}
         {state.accessPoints.length > 0 && (
           <div className="query-setup__wizard__group mt-2">
             <div className="query-setup__wizard__group__title">

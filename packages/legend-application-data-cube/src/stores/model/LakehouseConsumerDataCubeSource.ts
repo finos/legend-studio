@@ -15,7 +15,7 @@
  */
 
 import { DataCubeSource } from '@finos/legend-data-cube';
-import type { V1_PureModelContextComposite } from '@finos/legend-graph';
+import type { V1_PureModelContextData } from '@finos/legend-graph';
 import { VersionedProjectData } from '@finos/legend-server-depot';
 import {
   SerializationFactory,
@@ -28,7 +28,7 @@ import { createModelSchema, list, primitive } from 'serializr';
 export const LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE = 'lakehouseConsumer';
 
 export class LakehouseConsumerDataCubeSource extends DataCubeSource {
-  model!: PlainObject<V1_PureModelContextComposite>;
+  model!: PlainObject<V1_PureModelContextData>;
   dpCoordinates!: VersionedProjectData;
   runtime!: string;
   warehouse!: string;
