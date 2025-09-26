@@ -86,7 +86,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { debounce, filterByType, guaranteeType } from '@finos/legend-shared';
+import { filterByType, guaranteeType } from '@finos/legend-shared';
 import { InlineLambdaEditor, LineageViewer } from '@finos/legend-query-builder';
 import { action, autorun, flowResult } from 'mobx';
 import { useAuth } from 'react-oidc-context';
@@ -2311,20 +2311,26 @@ export const DataProductEditor = observer(() => {
   ]);
 
   useEffect(() => {
-    const debouncedUpdateDataProductViewerState = debounce(() => {
-      setDataProductViewerState(
-        getDataProductViewerState(
-          product,
-          editorStore.graphManagerState,
-          editorStore.applicationStore,
-        ),
-      );
-    });
-
-    return autorun(() => {
-      debouncedUpdateDataProductViewerState();
-    });
-  }, [editorStore.applicationStore, editorStore.graphManagerState, product]);
+    return autorun(
+      () => {
+        if (showPreview) {
+          setDataProductViewerState(
+            getDataProductViewerState(
+              product,
+              editorStore.graphManagerState,
+              editorStore.applicationStore,
+            ),
+          );
+        }
+      },
+      { delay: 1000 },
+    );
+  }, [
+    editorStore.applicationStore,
+    editorStore.graphManagerState,
+    product,
+    showPreview,
+  ]);
 
   return (
     <div className="data-product-editor">
