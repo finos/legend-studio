@@ -159,7 +159,8 @@ export const MarketplaceLakehouseHeader = observer(() => {
       pages={[
         {
           title: 'Data Products',
-          urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_PRODUCTS,
+          urlRoute:
+            LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_PRODUCT_SEARCH_RESULTS,
         },
         {
           title: 'Data APIs',
