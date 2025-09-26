@@ -2396,7 +2396,7 @@ export const DataProductEditor = observer(() => {
             {showPreview && <ResizablePanelSplitter />}
             {showPreview && (
               <ResizablePanel>
-                <div className="theme__hc-light">
+                <div className="data-product-editor__preview-container theme__hc-light">
                   <ProductViewer productViewerState={dataProductViewerState} />
                 </div>
               </ResizablePanel>
