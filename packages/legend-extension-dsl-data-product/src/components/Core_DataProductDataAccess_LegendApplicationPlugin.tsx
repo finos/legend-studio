@@ -179,14 +179,9 @@ export class Core_DataProductDataAccess_LegendApplicationPlugin
                 setUser(updatedUser);
               }}
               label={label}
-              placeholder="Enter Deployment ID (numbers only)"
               required={true}
               variant="outlined"
               fullWidth={true}
-              inputProps={{
-                inputMode: 'numeric',
-                pattern: '[0-9]*',
-              }}
             />
           ) : (
             <UserSearchInput
