@@ -31,11 +31,11 @@ export const LakehouseProducerDataCubeSourceBuilder: React.FC<{
 }> = observer(({ sourceBuilder: state }) => {
   const auth = useAuth();
   const store = useLegendDataCubeBuilderStore();
-  const [isIcebergEnabled, setIsIcebergEnabled] = useState(true);
+  const [isIcebergFlowSelected, setIsIcebergFlowSelected] = useState(true);
 
   const toggleSetisIcebergEnabled = () => {
-    setIsIcebergEnabled(!isIcebergEnabled);
-    state.setIcebergEnabled(!isIcebergEnabled);
+    setIsIcebergFlowSelected(!isIcebergFlowSelected);
+    state.setEnableIceberg(!isIcebergFlowSelected);
   };
 
   useEffect(() => {
@@ -89,7 +89,7 @@ export const LakehouseProducerDataCubeSourceBuilder: React.FC<{
             <div className="flex h-5 w-[calc(100%_-_40px)] overflow-x-auto">
               <FormCheckbox
                 label="Use Iceberg"
-                checked={isIcebergEnabled}
+                checked={isIcebergFlowSelected}
                 onChange={toggleSetisIcebergEnabled}
               />
             </div>
@@ -156,7 +156,7 @@ export const LakehouseProducerDataCubeSourceBuilder: React.FC<{
           </div>
         )}
         {state.selectedTable &&
-          (!isIcebergEnabled || !state.icebergEnabled) && (
+          (!isIcebergFlowSelected || !state.icebergEnabled) && (
             <div className="query-setup__wizard__group mt-2">
               <div className="query-setup__wizard__group__title">Warehouse</div>
               <FormTextInput

@@ -103,7 +103,7 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
       setTables: action,
       setDatasetGroup: action,
       setSelectedTable: action,
-      setIcebergEnabled: action,
+      setEnableIceberg: action,
     });
 
     this.selectedIngestUrn = '';
@@ -143,7 +143,7 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
     this.selectedTable = selectedTable;
   }
 
-  setIcebergEnabled(enable: boolean) {
+  setEnableIceberg(enable: boolean) {
     this.enableIceberg = enable;
   }
 
@@ -212,7 +212,7 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
     this.icebergEnabled = producerEnv.icebergEnabled;
 
     if (this.icebergEnabled) {
-      this.setIcebergEnabled(this.icebergEnabled);
+      this.setEnableIceberg(this.icebergEnabled);
       await this.fetchIcebergCatalogDetails(access_token);
     }
 
