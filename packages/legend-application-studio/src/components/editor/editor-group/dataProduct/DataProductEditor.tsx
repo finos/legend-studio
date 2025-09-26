@@ -83,18 +83,18 @@ import {
   type ChangeEventHandler,
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from 'react';
 import { filterByType, guaranteeType } from '@finos/legend-shared';
 import { InlineLambdaEditor, LineageViewer } from '@finos/legend-query-builder';
-import { action, flowResult } from 'mobx';
+import { action, autorun, flowResult } from 'mobx';
 import { useAuth } from 'react-oidc-context';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 import {
   type DataProduct,
+  type GraphManagerState,
   type LakehouseAccessPoint,
   type V1_DataProductArtifactAccessPointGroup,
   type V1_DataProductArtifactAccessPointImplementation,
@@ -155,6 +155,7 @@ import {
   DataProductViewerState,
   ProductViewer,
 } from '@finos/legend-extension-dsl-data-product';
+import type { LegendStudioApplicationStore } from '../../../../stores/LegendStudioBaseStore.js';
 
 export enum AP_GROUP_MODAL_ERRORS {
   GROUP_NAME_EMPTY = 'Group Name is empty',
@@ -2198,6 +2199,31 @@ const SupportTab = observer(
   },
 );
 
+const getDataProductViewerState = (
+  product: DataProduct,
+  graphManagerState: GraphManagerState,
+  applicationStore: LegendStudioApplicationStore,
+) => {
+  const graphManager = guaranteeType(
+    graphManagerState.graphManager,
+    V1_PureGraphManager,
+  );
+  const v1_dataProduct = guaranteeType(
+    graphManager.elementToProtocol(product),
+    V1_DataProduct,
+  );
+  const remoteEngine = guaranteeType(graphManager.engine, V1_RemoteEngine);
+  return new DataProductViewerState(
+    v1_dataProduct,
+    applicationStore,
+    remoteEngine.getEngineServerClient(),
+    graphManagerState,
+    applicationStore.config.options.dataProductConfig,
+    undefined,
+    {},
+  );
+};
+
 export const DataProductEditor = observer(() => {
   const editorStore = useEditorStore();
   const dataProductEditorState =
@@ -2206,32 +2232,13 @@ export const DataProductEditor = observer(() => {
   const isReadOnly = dataProductEditorState.isReadOnly;
   const auth = useAuth();
   const [showPreview, setshowPreview] = useState(false);
-
-  const dataProductViewerState = useMemo(() => {
-    const v1_dataProduct = guaranteeType(
-      guaranteeType(
-        editorStore.graphManagerState.graphManager,
-        V1_PureGraphManager,
-      ).elementToProtocol(product),
-      V1_DataProduct,
-    );
-    const graphManager = guaranteeType(
-      guaranteeType(
-        editorStore.graphManagerState.graphManager,
-        V1_PureGraphManager,
-      ).engine,
-      V1_RemoteEngine,
-    );
-    return new DataProductViewerState(
-      v1_dataProduct,
-      editorStore.applicationStore,
-      graphManager.getEngineServerClient(),
+  const [dataProductViewerState, setDataProductViewerState] = useState(
+    getDataProductViewerState(
+      product,
       editorStore.graphManagerState,
-      editorStore.applicationStore.config.options.dataProductConfig,
-      undefined,
-      {},
-    );
-  }, [editorStore.applicationStore, editorStore.graphManagerState, product]);
+      editorStore.applicationStore,
+    ),
+  );
 
   const deployDataProduct = (): void => {
     // Trigger OAuth flow if not authenticated
@@ -2302,6 +2309,20 @@ export const DataProductEditor = observer(() => {
     editorStore.applicationStore.alertUnhandledError,
     dataProductEditorState,
   ]);
+
+  useEffect(
+    () =>
+      autorun(() => {
+        setDataProductViewerState(
+          getDataProductViewerState(
+            product,
+            editorStore.graphManagerState,
+            editorStore.applicationStore,
+          ),
+        );
+      }),
+    [editorStore.applicationStore, editorStore.graphManagerState, product],
+  );
 
   return (
     <div className="data-product-editor">
