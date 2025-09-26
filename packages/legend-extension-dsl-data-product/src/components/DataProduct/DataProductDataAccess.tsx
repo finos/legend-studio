@@ -303,39 +303,33 @@ const TDSColumnCellRenderer = (props: {
           className="data-product__viewer__tabs"
         >
           <Tab
-            className={`data-product__viewer__tab${
-              selectedTab === DataProductTabs.COLUMNS
-                ? 'data-product__viewer__tab--selected'
-                : ''
-            }`}
+            className={clsx('data-product__viewer__tab', {
+              'data-product__viewer__tab--selected':
+                selectedTab === DataProductTabs.COLUMNS,
+            })}
             label={<span>Column Specifications</span>}
             value={DataProductTabs.COLUMNS}
           />
           <Tab
-            className={`data-product__viewer__tab${
-              selectedTab === DataProductTabs.GRAMMAR
-                ? 'data-product__viewer__tab--selected'
-                : ''
-            }`}
+            className={clsx('data-product__viewer__tab', {
+              'data-product__viewer__tab--selected':
+                selectedTab === DataProductTabs.GRAMMAR,
+            })}
             label={<span>Grammar</span>}
             value={DataProductTabs.GRAMMAR}
           />
           <Tab
-            className={`data-product__viewer__tab${
-              selectedTab === DataProductTabs.DATACUBE
-                ? 'data-product__viewer__tab--selected'
-                : ''
-            }`}
+            className={clsx('data-product__viewer__tab', {
+              'data-product__viewer__tab--selected':
+                selectedTab === DataProductTabs.DATACUBE,
+            })}
             label={
               <span className="label-container">
                 <DataCubeIcon.Cube
-                  className="data-product__viewer__tab-icon"
-                  style={{
-                    color:
-                      selectedTab === DataProductTabs.DATACUBE
-                        ? '#1976d2'
-                        : '#6c757d',
-                  }}
+                  className={clsx('data-product__viewer__tab-icon', {
+                    'data-product__viewer__tab-icon--selected':
+                      selectedTab === DataProductTabs.DATACUBE,
+                  })}
                 />
                 <span>Datacube</span>
               </span>
@@ -343,21 +337,17 @@ const TDSColumnCellRenderer = (props: {
             value={DataProductTabs.DATACUBE}
           />
           <Tab
-            className={`data-product__viewer__tab${
-              selectedTab === DataProductTabs.BUSINESS_INTELLIGENCE
-                ? 'data-product__viewer__tab--selected'
-                : ''
-            }`}
+            className={clsx('data-product__viewer__tab', {
+              'data-product__viewer__tab--selected':
+                selectedTab === DataProductTabs.BUSINESS_INTELLIGENCE,
+            })}
             label={
               <span className="label-container">
                 <TableIcon
-                  className="data-product__viewer__tab-icon"
-                  style={{
-                    color:
-                      selectedTab === DataProductTabs.BUSINESS_INTELLIGENCE
-                        ? '#1976d2'
-                        : '#6c757d',
-                  }}
+                  className={clsx('data-product__viewer__tab-icon', {
+                    'data-product__viewer__tab-icon--selected':
+                      selectedTab === DataProductTabs.BUSINESS_INTELLIGENCE,
+                  })}
                 />
                 <span>Business Intelligence</span>
               </span>
@@ -365,21 +355,17 @@ const TDSColumnCellRenderer = (props: {
             value={DataProductTabs.BUSINESS_INTELLIGENCE}
           />
           <Tab
-            className={`data-product__viewer__tab${
-              selectedTab === DataProductTabs.PYTHON
-                ? 'data-product__viewer__tab--selected'
-                : ''
-            }`}
+            className={clsx('data-product__viewer__tab', {
+              'data-product__viewer__tab--selected':
+                selectedTab === DataProductTabs.PYTHON,
+            })}
             label={
               <span className="label-container">
                 <PythonIcon
-                  className="data-product__viewer__tab-icon"
-                  style={{
-                    color:
-                      selectedTab === DataProductTabs.PYTHON
-                        ? '#1976d2'
-                        : '#6c757d',
-                  }}
+                  className={clsx('data-product__viewer__tab-icon', {
+                    'data-product__viewer__tab-icon--selected':
+                      selectedTab === DataProductTabs.PYTHON,
+                  })}
                 />
                 <span>Python</span>
               </span>
@@ -387,30 +373,16 @@ const TDSColumnCellRenderer = (props: {
             value={DataProductTabs.PYTHON}
           />
           <Tab
-            className={`data-product__viewer__tab${
-              selectedTab === DataProductTabs.SQL
-                ? 'data-product__viewer__tab--selected'
-                : ''
-            }`}
-            label={
-              <span className="label-container">
-                <SQLIcon
-                  className="data-product__viewer__tab-icon"
-                  style={{
-                    color:
-                      selectedTab === DataProductTabs.SQL
-                        ? '#1976d2'
-                        : '#6c757d',
-                  }}
-                />
-                <span>SQL</span>
-              </span>
-            }
+            className={clsx('data-product__viewer__tab', {
+              'data-product__viewer__tab--selected':
+                selectedTab === DataProductTabs.SQL,
+            })}
+            label={<span>SQL</span>}
             value={DataProductTabs.SQL}
           />
         </Tabs>
       </div>
-      <div style={{ marginBottom: '16px' }} />
+      <div className="access_group_gap" />
       <Box className="data-product__viewer__more-info__container">
         {loadingAccessPointDetails && (
           <Box className="data-product__viewer__more-info__loading-indicator">
@@ -438,10 +410,7 @@ const TDSColumnCellRenderer = (props: {
                   },
                 )}
               >
-                <div
-                  className="ag-theme-balham"
-                  style={{ width: '100%', height: '100%' }}
-                >
+                <div className="ag-theme-balham">
                   <DataGrid
                     rowData={accessPointRelationType?.columns ?? []}
                     columnDefs={relationColumnDefs}
@@ -703,10 +672,8 @@ export const DataProductAccessPointGroupViewer = observer(
             {accessPoints.map((accessPoint) => (
               <div
                 key={accessPoint.id}
-                className="data-product__viewer__access-point-section"
-                style={{ marginBottom: '2rem' }}
+                className="data-product__viewer__access-point-section access_group_gap"
               >
-                {/* Access Point Name and Description */}
                 <div className="data-product__viewer__access-point__info">
                   <div className="data-product__viewer__access-point__name">
                     <strong>{accessPoint.id}</strong>
@@ -719,7 +686,6 @@ export const DataProductAccessPointGroupViewer = observer(
                     )}
                   </div>
                 </div>
-                {/* Directly show the More Info Tabs */}
                 <div className="data-product__viewer__access-point__tabs">
                   <TDSColumnCellRenderer
                     params={
