@@ -313,6 +313,7 @@ export {
   V1_AppDirNode,
   V1_AppDirOrganizationalScope,
   V1_OrganizationalScope,
+  V1_ProducerScope,
   V1_UnknownOrganizationalScopeType,
   V1_User,
   V1_UserType,

@@ -19,6 +19,7 @@ import {
   type V1_OrganizationalScope,
   V1_UserType,
   V1_AdhocTeam,
+  V1_ProducerScope,
   V1_User,
 } from '@finos/legend-graph';
 import { LegendUser } from '@finos/legend-shared';
@@ -68,8 +69,14 @@ export class Core_DataProductDataAccess_LegendApplicationPlugin
       return _adhocTeam;
     };
 
+    const buildProducerScope = (deploymentId: string): V1_ProducerScope => {
+      const producerScope = new V1_ProducerScope();
+      producerScope.did = deploymentId;
+      return producerScope;
+    };
+
     const CommonRenderer = (props: {
-      type: 'user' | 'system-account';
+      type: 'user' | 'system-account' | 'producer';
       label: string;
       apgState: DataProductAPGState;
       handleOrganizationalScopeChange: (
@@ -94,14 +101,22 @@ export class Core_DataProductDataAccess_LegendApplicationPlugin
 
       // Update parent state whenever local state changes
       useEffect(() => {
-        handleOrganizationalScopeChange(
-          buildAdhocUser(
-            user.id,
-            type === 'system-account'
-              ? V1_UserType.SYSTEM_ACCOUNT
-              : V1_UserType.WORKFORCE_USER,
-          ),
-        );
+        if (type === 'producer') {
+          const deploymentId = user.id;
+          if (deploymentId) {
+            handleOrganizationalScopeChange(buildProducerScope(deploymentId));
+          }
+        } else {
+          handleOrganizationalScopeChange(
+            buildAdhocUser(
+              user.id,
+              type === 'system-account'
+                ? V1_UserType.SYSTEM_ACCOUNT
+                : V1_UserType.WORKFORCE_USER,
+            ),
+          );
+        }
+
         handleDescriptionChange(description);
         handleIsValidChange(user.id !== '' && description.trim() !== '');
       }, [
@@ -150,22 +165,40 @@ export class Core_DataProductDataAccess_LegendApplicationPlugin
               Regular users do not need to request access.
             </p>
           )}
-          <UserSearchInput
-            className="marketplace-lakehouse-entitlements__data-contract-creator__user-input"
-            key={label}
-            userValue={user}
-            setUserValue={(_user: LegendUser): void => setUser(_user)}
-            userSearchService={
-              enableUserSearch
-                ? apgState.dataProductViewerState.userSearchService
-                : undefined
-            }
-            label={label}
-            required={true}
-            variant="outlined"
-            fullWidth={true}
-            initializing={loadingCurrentUser}
-          />
+          {type === 'producer' ? (
+            <TextField
+              className="marketplace-lakehouse-entitlements__data-contract-creator__business-justification-input"
+              key={label}
+              value={user.id}
+              onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                const value = event.target.value.replace(/\D/g, '');
+                const updatedUser = new LegendUser();
+                updatedUser.id = value;
+                setUser(updatedUser);
+              }}
+              label={label}
+              required={true}
+              variant="outlined"
+              fullWidth={true}
+            />
+          ) : (
+            <UserSearchInput
+              className="marketplace-lakehouse-entitlements__data-contract-creator__user-input"
+              key={label}
+              userValue={user}
+              setUserValue={(_user: LegendUser): void => setUser(_user)}
+              userSearchService={
+                enableUserSearch
+                  ? apgState.dataProductViewerState.userSearchService
+                  : undefined
+              }
+              label={label}
+              required={true}
+              variant="outlined"
+              fullWidth={true}
+              initializing={loadingCurrentUser}
+            />
+          )}
           <TextField
             className="marketplace-lakehouse-entitlements__data-contract-creator__business-justification-input"
             required={true}
@@ -220,6 +253,28 @@ export class Core_DataProductDataAccess_LegendApplicationPlugin
             key="system-account"
             type="system-account"
             label="System Account"
+            apgState={apgState}
+            handleOrganizationalScopeChange={handleOrganizationalScopeChange}
+            handleDescriptionChange={handleDescriptionChange}
+            handleIsValidChange={handleIsValidChange}
+            enableUserSearch={false}
+          />
+        ),
+      },
+      {
+        type: 'Producer',
+        createContractRenderer: (
+          apgState: DataProductAPGState,
+          handleOrganizationalScopeChange: (
+            consumer: V1_OrganizationalScope,
+          ) => void,
+          handleDescriptionChange: (description: string | undefined) => void,
+          handleIsValidChange: (isValid: boolean) => void,
+        ) => (
+          <CommonRenderer
+            key="producer"
+            type="producer"
+            label="Producer"
             apgState={apgState}
             handleOrganizationalScopeChange={handleOrganizationalScopeChange}
             handleDescriptionChange={handleDescriptionChange}

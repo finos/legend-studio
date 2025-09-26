@@ -56,11 +56,12 @@ import {
   SKIP,
 } from 'serializr';
 import {
+  type V1_OrganizationalScope,
   V1_AdhocTeam,
   V1_AppDirNode,
+  V1_ProducerScope,
   V1_UnknownOrganizationalScopeType,
   V1_User,
-  type V1_OrganizationalScope,
 } from '../../../lakehouse/entitlements/V1_CoreEntitlements.js';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
 import type { DSL_Lakehouse_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/DSL_Lakehouse_PureProtocolProcessorPlugin_Extension.js';
@@ -81,6 +82,7 @@ import { V1_stereotypePtrModelSchema } from './V1_CoreSerializationHelper.js';
 
 export enum V1_OrganizationalScopeType {
   AdHocTeam = 'AdHocTeam',
+  Producer = 'Producer',
 }
 
 export enum V1_DataProductOriginType {
@@ -141,6 +143,11 @@ export const V1_AdhocTeamModelSchema = createModelSchema(V1_AdhocTeam, {
   users: customListWithSchema(V1_UserModelSchema),
 });
 
+export const V1_ProducerScopeModelSchema = createModelSchema(V1_ProducerScope, {
+  _type: usingConstantValueSchema(V1_OrganizationalScopeType.Producer),
+  did: primitive(),
+});
+
 const V1_deserializeOrganizationalScope = (
   json: PlainObject<V1_OrganizationalScope>,
   plugins: PureProtocolProcessorPlugin[],
@@ -148,6 +155,8 @@ const V1_deserializeOrganizationalScope = (
   switch (json._type) {
     case V1_OrganizationalScopeType.AdHocTeam:
       return deserialize(V1_AdhocTeamModelSchema, json);
+    case V1_OrganizationalScopeType.Producer:
+      return deserialize(V1_ProducerScopeModelSchema, json);
     default: {
       const extraOrganizationalScopeDeserializers = plugins.flatMap(
         (plugin) =>
@@ -176,6 +185,9 @@ const V1_serializeOrganizationalScope = (
 ): PlainObject<V1_OrganizationalScope> => {
   if (organizationalScope instanceof V1_AdhocTeam) {
     return serialize(V1_AdhocTeamModelSchema, organizationalScope);
+  }
+  if (organizationalScope instanceof V1_ProducerScope) {
+    return serialize(V1_ProducerScopeModelSchema, organizationalScope);
   }
   const extraOrganizationalScopeSerializers = plugins.flatMap(
     (plugin) =>
