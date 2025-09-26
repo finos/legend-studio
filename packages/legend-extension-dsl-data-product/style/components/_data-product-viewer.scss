@@ -17,8 +17,6 @@
 @use 'mixins' as *;
 
 .data-product__viewer {
-  @include flexHCenter;
-
   height: 100%;
   width: 100%;
   position: relative;
@@ -33,9 +31,7 @@
     position: absolute;
     top: 0;
     height: 14rem;
-    width: 80vw;
-    min-width: fit-content;
-    max-width: 140rem;
+    width: 100%;
     z-index: 1;
     background: transparent;
     transition: all 0.5s ease;
@@ -51,6 +47,7 @@
       flex-direction: column;
       width: 100%;
       min-width: 80rem;
+      max-width: 140rem;
       padding: 3rem 8rem 2rem;
     }
 
@@ -193,9 +190,7 @@
     align-items: center;
     flex-direction: column;
     height: 100%;
-    width: 80vw;
-    min-width: fit-content;
-    max-width: 140rem;
+    width: 100%;
     overflow: auto;
   }
 
@@ -203,6 +198,7 @@
     display: flex;
     width: 100%;
     min-width: 80rem;
+    max-width: 140rem;
     height: 100%;
     padding: 4rem;
     position: relative;
