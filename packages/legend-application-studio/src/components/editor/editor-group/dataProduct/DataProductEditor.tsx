@@ -2397,17 +2397,13 @@ export const DataProductEditor = observer(() => {
           <DataProductSidebar dataProductEditorState={dataProductEditorState} />
           <ResizablePanelGroup orientation="vertical">
             <ResizablePanel>{renderActivivtyBarTab()}</ResizablePanel>
+            {showPreview && <ResizablePanelSplitter />}
             {showPreview && (
-              <>
-                <ResizablePanelSplitter />
-                <ResizablePanel>
-                  <div className="data-product-editor__preview-container theme__hc-light">
-                    <ProductViewer
-                      productViewerState={dataProductViewerState}
-                    />
-                  </div>
-                </ResizablePanel>
-              </>
+              <ResizablePanel>
+                <div className="data-product-editor__preview-container theme__hc-light">
+                  <ProductViewer productViewerState={dataProductViewerState} />
+                </div>
+              </ResizablePanel>
             )}
           </ResizablePanelGroup>
         </div>
