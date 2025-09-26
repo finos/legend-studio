@@ -15,22 +15,36 @@
  */
 import { observer } from 'mobx-react-lite';
 import type { LakehouseProducerDataCubeSourceBuilderState } from '../../../stores/builder/source/LakehouseProducerDataCubeSourceBuilderState.js';
-import { FormButton, FormTextInput } from '@finos/legend-data-cube';
+import {
+  FormButton,
+  FormCheckbox,
+  FormTextInput,
+} from '@finos/legend-data-cube';
 import { CustomSelectorInput } from '@finos/legend-art';
 import { useAuth } from 'react-oidc-context';
 import { useLegendDataCubeBuilderStore } from '../LegendDataCubeBuilderStoreProvider.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export const LakehouseProducerDataCubeSourceBuilder: React.FC<{
   sourceBuilder: LakehouseProducerDataCubeSourceBuilderState;
 }> = observer(({ sourceBuilder: state }) => {
   const auth = useAuth();
   const store = useLegendDataCubeBuilderStore();
+  const [isIcebergFlowSelected, setIsIcebergFlowSelected] = useState(true);
+
+  const toggleSetisIcebergEnabled = () => {
+    setIsIcebergFlowSelected(!isIcebergFlowSelected);
+    state.setEnableIceberg(!isIcebergFlowSelected);
+  };
 
   useEffect(() => {
     state.reset();
   }, [state]);
+
+  useEffect(() => {
+    state.setUserManagerSettings(auth.settings);
+  }, [state, auth]);
 
   function createUrnPairs(
     urns: string[],
@@ -70,6 +84,17 @@ export const LakehouseProducerDataCubeSourceBuilder: React.FC<{
             </FormButton>
           </div>
         </div>
+        {state.icebergEnabled && (
+          <div className="query-setup__wizard__group mt-2">
+            <div className="flex h-5 w-[calc(100%_-_40px)] overflow-x-auto">
+              <FormCheckbox
+                label="Use Iceberg"
+                checked={isIcebergFlowSelected}
+                onChange={toggleSetisIcebergEnabled}
+              />
+            </div>
+          </div>
+        )}
         {state.ingestUrns.length > 0 && (
           <div className="query-setup__wizard__group mt-3">
             <div className="query-setup__wizard__group__title">Ingest Urn</div>
@@ -130,18 +155,19 @@ export const LakehouseProducerDataCubeSourceBuilder: React.FC<{
             />
           </div>
         )}
-        {state.selectedTable && (
-          <div className="query-setup__wizard__group mt-2">
-            <div className="query-setup__wizard__group__title">Warehouse</div>
-            <FormTextInput
-              className="w-full text-base text-black"
-              value={state.warehouse}
-              onChange={(event) => {
-                state.setWarehouse(event.target.value);
-              }}
-            />
-          </div>
-        )}
+        {state.selectedTable &&
+          (!isIcebergFlowSelected || !state.icebergEnabled) && (
+            <div className="query-setup__wizard__group mt-2">
+              <div className="query-setup__wizard__group__title">Warehouse</div>
+              <FormTextInput
+                className="w-full text-base text-black"
+                value={state.warehouse}
+                onChange={(event) => {
+                  state.setWarehouse(event.target.value);
+                }}
+              />
+            </div>
+          )}
       </div>
     </div>
   );

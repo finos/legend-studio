@@ -34,6 +34,8 @@ import { RawLakehouseProducerDataCubeSource } from '../../model/LakehouseProduce
 import type { LakehouseIngestServerClient } from '@finos/legend-server-lakehouse';
 import { action, makeObservable, observable } from 'mobx';
 import { LegendDataCubeSourceBuilderType } from './LegendDataCubeSourceBuilderState.js';
+import type { UserManagerSettings } from 'oidc-client-ts';
+import { SecondaryOAuthClient } from '../../model/SecondaryOauthClient.js';
 
 export class LakehouseProducerDataCubeSourceLoaderState extends LegendDataCubeSourceLoaderState {
   readonly processState = ActionState.create();
@@ -41,6 +43,8 @@ export class LakehouseProducerDataCubeSourceLoaderState extends LegendDataCubeSo
   ingestDefinition: PlainObject | undefined;
   ingestDefinitionUrn: string;
   ingestServerUrl: string;
+
+  private userManagerSettings: UserManagerSettings | undefined;
 
   private LAKEHOUSE_SECTION = '###Lakehouse';
 
@@ -81,6 +85,10 @@ export class LakehouseProducerDataCubeSourceLoaderState extends LegendDataCubeSo
 
   setIngestDefinitionUrn(urn: string) {
     this.ingestDefinitionUrn = urn;
+  }
+
+  setUserManagerSettings(settings: UserManagerSettings | undefined) {
+    this.userManagerSettings = settings;
   }
 
   override get isValid(): boolean {
@@ -131,9 +139,27 @@ export class LakehouseProducerDataCubeSourceLoaderState extends LegendDataCubeSo
         guaranteeNonNullable(source),
       );
 
-    this._engine.registerIngestDefinition(
-      guaranteeNonNullable(this.ingestDefinition),
-    );
+    if (
+      deserializedSource.icebergConfig?.icebergRef &&
+      deserializedSource.icebergConfig.catalogUrl
+    ) {
+      const oauthClient = new SecondaryOAuthClient(
+        guaranteeNonNullable(this.userManagerSettings),
+      );
+      const token = await oauthClient.getToken();
+      const refId = await this._engine.ingestIcebergTable(
+        deserializedSource.warehouse,
+        deserializedSource.paths,
+        deserializedSource.icebergConfig.catalogUrl,
+        deserializedSource.icebergConfig.icebergRef,
+        token,
+      );
+      deserializedSource.icebergConfig.icebergRef = refId.dbReference;
+    } else {
+      this._engine.registerIngestDefinition(
+        guaranteeNonNullable(this.ingestDefinition),
+      );
+    }
 
     return RawLakehouseProducerDataCubeSource.serialization.toJson(
       deserializedSource,

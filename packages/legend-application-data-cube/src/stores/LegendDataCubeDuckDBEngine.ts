@@ -106,6 +106,12 @@ export class LegendDataCubeDuckDBEngine {
     const database = new duckdb.AsyncDuckDB(logger, worker);
     await database.instantiate(bundle.mainModule, bundle.pthreadWorker);
     this._database = database;
+
+    const connection = await this.database.connect();
+    await connection.query(`SET builtin_httpfs = false;`);
+    await connection.query(
+      `INSTALL iceberg FROM 'https://nightly-extensions.duckdb.org/iceberg/caca3ac6';`,
+    );
   }
 
   async cache(result: TDSExecutionResult) {
@@ -265,6 +271,72 @@ export class LegendDataCubeDuckDBEngine {
     };
   }
 
+  async ingestIcebergTable(
+    warehouse: string,
+    paths: string[],
+    catalogApi: string,
+    refId?: string,
+    token?: string,
+  ) {
+    if (!isNullable(refId) && this._catalog.has(refId)) {
+      guaranteeNonNullable(this._catalog.get(refId));
+      return {
+        dbReference: refId,
+      };
+    }
+
+    const schemaName = LegendDataCubeDuckDBEngine.DUCKDB_DEFAULT_SCHEMA_NAME;
+    LegendDataCubeDuckDBEngine.ingestFileTableCounter += 1;
+    const tableName = `${LegendDataCubeDuckDBEngine.INGEST_TABLE_NAME_PREFIX}${LegendDataCubeDuckDBEngine.ingestFileTableCounter}`;
+
+    const connection = await this.database.connect();
+
+    const secret = `CREATE OR REPLACE SECRET iceberg_secret (
+      TYPE ICEBERG,
+      TOKEN '${token}'
+    );`;
+    await connection.query(secret);
+
+    const catalog = `ATTACH OR REPLACE '${warehouse}' AS iceberg_catalog (
+      TYPE iCEBERG,
+      SECRET iceberg_secret,
+      ENDPOINT '${catalogApi}',
+      SUPPORT_NESTED_NAMESPACES true
+    );`;
+    await connection.query(catalog);
+
+    const selectQuery = `SELECT * from iceberg_catalog."${paths[0]}.${paths[1]}".${paths[2]};`;
+    const results = await connection.query(selectQuery);
+
+    await connection.insertArrowTable(results, {
+      name: tableName,
+      create: true,
+      schema: schemaName,
+    });
+
+    const describeQuery = `DESCRIBE ${schemaName}.${tableName};`;
+    const describeResult = await connection.query(describeQuery);
+
+    const tableSpec = describeResult
+      .toArray()
+      .map((spec) => [
+        spec[LegendDataCubeDuckDBEngine.COLUMN_NAME] as string,
+        spec[LegendDataCubeDuckDBEngine.COLUMN_TYPE] as string,
+      ]);
+    await connection.close();
+
+    const ref = isNullable(refId) ? uuid() : refId;
+    this._catalog.set(ref, {
+      schemaName,
+      tableName,
+      columns: tableSpec,
+    } satisfies DuckDBCatalogTable);
+
+    return {
+      dbReference: ref,
+    };
+  }
+
   async runSQLQuery(sql: string) {
     const connection = await this.database.connect();
     const result = await connection.query(sql);
@@ -374,7 +446,7 @@ export class LegendDataCubeDuckDBEngine {
   }
 }
 
-type DuckDBCatalogTable = {
+export type DuckDBCatalogTable = {
   schemaName: string;
   tableName: string;
   columns: string[][];

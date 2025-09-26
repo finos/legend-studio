@@ -42,7 +42,7 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@duckdb/duckdb-wasm": "1.29.0",
+    "@duckdb/duckdb-wasm": "1.29.1-dev283.0",
     "@finos/legend-application": "workspace:*",
     "@finos/legend-art": "workspace:*",
     "@finos/legend-code-editor": "workspace:*",
@@ -58,6 +58,7 @@
     "apache-arrow": "19.0.1",
     "mobx": "6.13.6",
     "mobx-react-lite": "4.1.0",
+    "oidc-client-ts": "^3.2.0",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-oidc-context": "^3.3.0",

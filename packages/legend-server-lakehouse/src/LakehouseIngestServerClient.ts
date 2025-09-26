@@ -33,6 +33,7 @@ import type {
   V1_IngestEnvironment,
   V1_SandboxDataProductDeploymentResponse,
   V1_IngestDefinition,
+  V1_ProducerEnvironment,
 } from '@finos/legend-graph';
 
 export class LakehouseIngestServerClient extends AbstractServerClient {
@@ -154,6 +155,17 @@ export class LakehouseIngestServerClient extends AbstractServerClient {
   ): Promise<string[]> =>
     this.get(
       `${this._ingest(ingestServerUrl)}/catalog-state/producer-environments/${producerEnvironmentUrn}/definitions`,
+      {},
+      this._token(token),
+    );
+
+  getProducerEnvironmentDetails = (
+    producerEnvironmentUrn: string,
+    ingestServerUrl: string | undefined,
+    token: string | undefined,
+  ): Promise<PlainObject<V1_ProducerEnvironment>> =>
+    this.get(
+      `${this._ingest(ingestServerUrl)}/catalog-state/producer-environments/${producerEnvironmentUrn}`,
       {},
       this._token(token),
     );

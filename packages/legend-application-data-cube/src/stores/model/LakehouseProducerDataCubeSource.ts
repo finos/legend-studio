@@ -19,9 +19,10 @@ import type { V1_PureModelContextData } from '@finos/legend-graph';
 import {
   SerializationFactory,
   usingConstantValueSchema,
+  usingModelSchema,
   type PlainObject,
 } from '@finos/legend-shared';
-import { createModelSchema, list, primitive } from 'serializr';
+import { createModelSchema, list, optional, primitive } from 'serializr';
 
 export const LAKEHOUSE_PRODUCER_DATA_CUBE_SOURCE_TYPE = 'lakehouseProducer';
 
@@ -30,11 +31,32 @@ export class LakehouseProducerDataCubeSource extends DataCubeSource {
   runtime!: string;
 }
 
+export class LakehouseProducerIcebergCachedDataCubeSource extends DataCubeSource {
+  model!: PlainObject<V1_PureModelContextData>;
+  runtime!: string;
+  db!: string;
+  schema!: string;
+  table!: string;
+}
+
+export class IcebergConfig {
+  catalogUrl!: string;
+  icebergRef!: string;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(IcebergConfig, {
+      catalogUrl: primitive(),
+      icebergRef: primitive(),
+    }),
+  );
+}
+
 export class RawLakehouseProducerDataCubeSource {
   ingestDefinitionUrn!: string;
   warehouse!: string;
   ingestServerUrl!: string;
   paths!: string[];
+  icebergConfig?: IcebergConfig;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(RawLakehouseProducerDataCubeSource, {
@@ -43,6 +65,9 @@ export class RawLakehouseProducerDataCubeSource {
       warehouse: primitive(),
       ingestServerUrl: primitive(),
       paths: list(primitive()),
+      icebergConfig: optional(
+        usingModelSchema(IcebergConfig.serialization.schema),
+      ),
     }),
   );
 }
