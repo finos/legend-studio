@@ -20,6 +20,10 @@ export enum V1_IngestEnvironmentType {
   AWSSnowflake = 'AWSSnowflake',
 }
 
+export enum V1_CatalogType {
+  OpenCatalog = 'OpenCatalog',
+}
+
 export enum V1_IngestEnvironmentClassification {
   PROD = 'prod',
   PROD_PARALLEL = 'prod-parallel',
@@ -40,6 +44,7 @@ export abstract class V1_AWSIngestEnvironment extends V1_IngestEnvironment {
   ingestStepFunctionsAvtivityArn!: string;
   ingestStateMachineArn!: string;
   ingestSystemAccount!: string;
+  iceberg!: V1_IcebergDetails;
 }
 
 export class V1_AWSSnowflakeIngestEnvironment extends V1_AWSIngestEnvironment {
@@ -51,4 +56,17 @@ export class V1_AWSSnowflakeIngestEnvironment extends V1_AWSIngestEnvironment {
 
 export class V1_GCPIngestEnvironment extends V1_IngestEnvironment {
   gcsStagingBucketName!: string;
+}
+
+export class V1_IcebergDetails {
+  catalog!: V1_Catalog;
+}
+
+export abstract class V1_Catalog {
+  name!: string;
+  url!: string;
+}
+
+export class V1_OpenCatalog extends V1_Catalog {
+  proxyUrl!: string;
 }

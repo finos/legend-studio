@@ -156,6 +156,7 @@ import { QUERY_BUILDER_PURE_PATH } from '@finos/legend-query-builder';
 import {
   LAKEHOUSE_PRODUCER_DATA_CUBE_SOURCE_TYPE,
   LakehouseProducerDataCubeSource,
+  LakehouseProducerIcebergCachedDataCubeSource,
   RawLakehouseProducerDataCubeSource,
 } from './model/LakehouseProducerDataCubeSource.js';
 import {
@@ -198,6 +199,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   // ---------------------------------- IMPLEMENTATION ----------------------------------
 
   override getDataFromSource(source?: DataCubeSource): PlainObject {
+    // TODO: add lakehouse sources
     if (source instanceof LegendQueryDataCubeSource) {
       const queryInfo = source.info;
       return {
@@ -378,6 +380,8 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           warehouse: rawSource.warehouse,
           ingestServerUrl: rawSource.ingestServerUrl,
         },
+        icebergCatalog: rawSource.icebergConfig?.catalogUrl,
+        paths: rawSource.paths,
         sourceType: source._type,
       };
     } else if (source.type === LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE) {
@@ -459,62 +463,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
               // TODO: confirm this is in accordance to engine
               // check if we have a duckdb enum mapping
               // See https://duckdb.org/docs/sql/data_types/overview.html
-              switch (col[1] as string) {
-                case 'BIT': {
-                  column.type = new V1_Bit();
-                  break;
-                }
-                case 'BOOLEAN': {
-                  // TODO: understand why boolean is not present in relationalDataType
-                  column.type = new V1_VarChar();
-                  break;
-                }
-                case 'DATE': {
-                  column.type = new V1_Date();
-                  break;
-                }
-                case 'DECIMAL': {
-                  column.type = new V1_Decimal();
-                  break;
-                }
-                case 'DOUBLE': {
-                  column.type = new V1_Double();
-                  break;
-                }
-                case 'FLOAT': {
-                  column.type = new V1_Float();
-                  break;
-                }
-                case 'INTEGER': {
-                  column.type = new V1_Integer();
-                  break;
-                }
-                case 'TININT': {
-                  column.type = new V1_TinyInt();
-                  break;
-                }
-                case 'SMALLINT': {
-                  column.type = new V1_SmallInt();
-                  break;
-                }
-                case 'BIGINT': {
-                  column.type = new V1_BigInt();
-                  break;
-                }
-                case 'TIMESTAMP': {
-                  column.type = new V1_Timestamp();
-                  break;
-                }
-                case 'VARCHAR': {
-                  column.type = new V1_VarChar();
-                  break;
-                }
-                default: {
-                  throw new UnsupportedOperationError(
-                    `Can't ingest local file data: failed to find matching relational data type for DuckDB type '${col[1]}' when synthesizing table definition`,
-                  );
-                }
-              }
+              this._getColumnType(col, column);
               return column;
             }),
           });
@@ -703,33 +652,87 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         const rawSource =
           RawLakehouseProducerDataCubeSource.serialization.fromJson(value);
 
-        const source = new LakehouseProducerDataCubeSource();
-
-        const query = new V1_ClassInstance();
-        query.type = V1_ClassInstanceType.INGEST_ACCESSOR;
-        const ingestAccesor = new V1_RelationStoreAccessor();
-        ingestAccesor.path = rawSource.paths;
-        ingestAccesor.metadata = false;
-        query.value = ingestAccesor;
-        source.query = query;
-
-        const model = this._synthesizeLakehouseProducerPMCD(rawSource, source);
-        source.model = V1_serializePureModelContextData(model);
-
-        try {
-          source.columns = (
-            await this._getLambdaRelationType(
-              this.serializeValueSpecification(_lambda([], [source.query])),
-              source.model,
-            )
-          ).columns;
-        } catch (error) {
-          assertErrorThrown(error);
-          throw new Error(
-            `Can't get query result columns. Make sure the source query return a relation (i.e. typed TDS). Error: ${error.message}`,
+        if (
+          rawSource.icebergConfig?.icebergRef &&
+          rawSource.icebergConfig.catalogUrl
+        ) {
+          const source = new LakehouseProducerIcebergCachedDataCubeSource();
+          const tableCatalog = this._duckDBEngine.retrieveCatalogTable(
+            rawSource.icebergConfig.icebergRef,
           );
+
+          const { model, database, schema, table, runtime } =
+            this._synthesizeMinimalModelContext({
+              schemaName: tableCatalog.schemaName,
+              tableName: tableCatalog.tableName,
+              tableColumns: tableCatalog.columns.map((col) => {
+                const column = new V1_Column();
+                column.name = col[0] as string;
+                // TODO: confirm this is in accordance to engine
+                // check if we have a duckdb enum mapping
+                // See https://duckdb.org/docs/sql/data_types/overview.html
+                this._getColumnType(col, column);
+                return column;
+              }),
+            });
+
+          source.db = database.path;
+          source.model = model;
+          source.table = table.name;
+          source.schema = schema.name;
+          source.runtime = runtime.path;
+
+          const query = new V1_ClassInstance();
+          query.type = V1_ClassInstanceType.RELATION_STORE_ACCESSOR;
+          const storeAccessor = new V1_RelationStoreAccessor();
+          storeAccessor.path = [source.db, source.schema, source.table];
+          query.value = storeAccessor;
+          source.query = query;
+          try {
+            source.columns = (
+              await this._getLambdaRelationType(
+                this.serializeValueSpecification(_lambda([], [source.query])),
+                source.model,
+              )
+            ).columns;
+          } catch (error) {
+            assertErrorThrown(error);
+            throw new Error(
+              `Can't get query result columns. Make sure the source query return a relation (i.e. typed TDS). Error: ${error.message}`,
+            );
+          }
+          return source;
+        } else {
+          const source = new LakehouseProducerDataCubeSource();
+
+          const query = new V1_ClassInstance();
+          query.type = V1_ClassInstanceType.INGEST_ACCESSOR;
+          const ingestAccesor = new V1_RelationStoreAccessor();
+          ingestAccesor.path = rawSource.paths;
+          ingestAccesor.metadata = false;
+          query.value = ingestAccesor;
+          source.query = query;
+
+          const model = this._synthesizeLakehouseProducerPMCD(
+            rawSource,
+            source,
+          );
+          source.model = V1_serializePureModelContextData(model);
+          try {
+            source.columns = (
+              await this._getLambdaRelationType(
+                this.serializeValueSpecification(_lambda([], [source.query])),
+                source.model,
+              )
+            ).columns;
+          } catch (error) {
+            assertErrorThrown(error);
+            throw new Error(
+              `Can't get query result columns. Make sure the source query return a relation (i.e. typed TDS). Error: ${error.message}`,
+            );
+          }
+          return source;
         }
-        return source;
       }
       case LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE: {
         const rawSource =
@@ -1019,6 +1022,35 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           result: await this._duckDBEngine.runSQLQuery(sql),
           executionTime: endTime - startTime,
         };
+      } else if (
+        source instanceof LakehouseProducerIcebergCachedDataCubeSource
+      ) {
+        const executionPlan = await this._generateExecutionPlan(
+          query,
+          source.model,
+          [],
+          // NOTE: for local file, we're using DuckDB, but its protocol models
+          // are not available in the latest production protocol version V1_33_0, so
+          // we have to force using VX_X_X
+          // once we either cut another protocol version or backport the DuckDB models
+          // to V1_33_0, we will can remove this
+          { ...options, clientVersion: PureClientVersion.VX_X_X },
+        );
+        const sql = guaranteeNonNullable(
+          executionPlan instanceof V1_SimpleExecutionPlan
+            ? executionPlan.rootExecutionNode.executionNodes
+                .filter(filterByType(V1_SQLExecutionNode))
+                .at(-1)?.sqlQuery
+            : undefined,
+          `Can't process execution plan: failed to extract generated SQL`,
+        );
+        const endTime = performance.now();
+        return {
+          executedQuery: await queryCodePromise,
+          executedSQL: sql,
+          result: await this._duckDBEngine.runSQLQuery(sql),
+          executionTime: endTime - startTime,
+        };
       } else {
         throw new UnsupportedOperationError(
           `Can't execute query with unsupported source`,
@@ -1204,6 +1236,11 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         DataCubeFunction.FROM,
         [_elementPtr(source.runtime)].filter(isNonNullable),
       );
+    } else if (source instanceof LakehouseProducerIcebergCachedDataCubeSource) {
+      return _function(
+        DataCubeFunction.FROM,
+        [_elementPtr(source.runtime)].filter(isNonNullable),
+      );
     } else if (source instanceof LakehouseProducerDataCubeSource) {
       return _function(
         DataCubeFunction.FROM,
@@ -1359,6 +1396,8 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     } else if (source instanceof LocalFileDataCubeSource) {
       return this._getLambdaRelationType(query, source.model);
     } else if (source instanceof LakehouseProducerDataCubeSource) {
+      return this._getLambdaRelationType(query, source.model);
+    } else if (source instanceof LakehouseProducerIcebergCachedDataCubeSource) {
       return this._getLambdaRelationType(query, source.model);
     } else if (source instanceof LakehouseConsumerDataCubeSource) {
       return this._getLambdaRelationType(query, source.model);
@@ -1588,6 +1627,82 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     const { dbReference, columnNames } =
       await this._duckDBEngine.ingestLocalFileData(data, format, refId);
     return { dbReference, columnNames };
+  }
+
+  async ingestIcebergTable(
+    warehouse: string,
+    paths: string[],
+    catalogApi: string,
+    refId?: string,
+    token?: string,
+  ) {
+    const { dbReference } = await this._duckDBEngine.ingestIcebergTable(
+      warehouse,
+      paths,
+      catalogApi,
+      refId,
+      token,
+    );
+    return { dbReference };
+  }
+
+  private _getColumnType(col: string[], column: V1_Column) {
+    switch (col[1] as string) {
+      case 'BIT': {
+        column.type = new V1_Bit();
+        break;
+      }
+      case 'BOOLEAN': {
+        // TODO: understand why boolean is not present in relationalDataType
+        column.type = new V1_VarChar();
+        break;
+      }
+      case 'DATE': {
+        column.type = new V1_Date();
+        break;
+      }
+      case 'DECIMAL': {
+        column.type = new V1_Decimal();
+        break;
+      }
+      case 'DOUBLE': {
+        column.type = new V1_Double();
+        break;
+      }
+      case 'FLOAT': {
+        column.type = new V1_Float();
+        break;
+      }
+      case 'INTEGER': {
+        column.type = new V1_Integer();
+        break;
+      }
+      case 'TININT': {
+        column.type = new V1_TinyInt();
+        break;
+      }
+      case 'SMALLINT': {
+        column.type = new V1_SmallInt();
+        break;
+      }
+      case 'BIGINT': {
+        column.type = new V1_BigInt();
+        break;
+      }
+      case 'TIMESTAMP': {
+        column.type = new V1_Timestamp();
+        break;
+      }
+      case 'VARCHAR': {
+        column.type = new V1_VarChar();
+        break;
+      }
+      default: {
+        throw new UnsupportedOperationError(
+          `Can't ingest local file data: failed to find matching relational data type for DuckDB type '${col[1]}' when synthesizing table definition`,
+        );
+      }
+    }
   }
 
   private _synthesizeMinimalModelContext(data: {

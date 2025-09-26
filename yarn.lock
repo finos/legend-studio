@@ -1915,12 +1915,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@duckdb/duckdb-wasm@npm:1.29.0":
-  version: 1.29.0
-  resolution: "@duckdb/duckdb-wasm@npm:1.29.0"
+"@duckdb/duckdb-wasm@npm:1.29.1-dev283.0":
+  version: 1.29.1-dev283.0
+  resolution: "@duckdb/duckdb-wasm@npm:1.29.1-dev283.0"
   dependencies:
     apache-arrow: "npm:^17.0.0"
-  checksum: 10/39e89ee3f03e3b4006dbadb41b10b5460971c2918c4d5d613eb3d03faf5fb0fc65465ff93ce1a0f96040071a27fa18b1ca016be47ed1a40e965c65a4ebbedbfd
+  checksum: 10/44e202d59a3c5954e902fb37ab5df1fdbcf91d0e111fcc47de053d0e35bc4f4187498e649dcd0a08809fbedcd6dadd740a6026709645b291dea717a96e11fade
   languageName: node
   linkType: hard
 
@@ -2336,7 +2336,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-application-data-cube@workspace:packages/legend-application-data-cube"
   dependencies:
-    "@duckdb/duckdb-wasm": "npm:1.29.0"
+    "@duckdb/duckdb-wasm": "npm:1.29.1-dev283.0"
     "@finos/legend-application": "workspace:*"
     "@finos/legend-art": "workspace:*"
     "@finos/legend-code-editor": "workspace:*"
@@ -2360,6 +2360,7 @@ __metadata:
     mobx: "npm:6.13.6"
     mobx-react-lite: "npm:4.1.0"
     npm-run-all: "npm:4.1.5"
+    oidc-client-ts: "npm:^3.2.0"
     react: "npm:19.0.0"
     react-dom: "npm:19.0.0"
     react-oidc-context: "npm:^3.3.0"

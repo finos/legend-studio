@@ -33,6 +33,10 @@ export const LakehouseProducerDataCubeSourceLoader = observer(
       partialSourceLoader.reset();
     }, [partialSourceLoader]);
 
+    useEffect(() => {
+      partialSourceLoader.setUserManagerSettings(auth.settings);
+    }, [partialSourceLoader, auth]);
+
     return (
       <div className="flex h-full w-full">
         <div className="m-3 flex w-full flex-col items-stretch gap-2 text-neutral-500">
