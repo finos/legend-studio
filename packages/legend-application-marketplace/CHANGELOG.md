@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.1.15
+
+### Patch Changes
+
+- [#4489](https://github.com/finos/legend-studio/pull/4489) [`b4ea0af`](https://github.com/finos/legend-studio/commit/b4ea0afe3c36eb3f30437ac9d9f2c61c6b25bed3) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - /dataproducts to data products search
+
 ## 0.1.14
 
 ### Patch Changes
