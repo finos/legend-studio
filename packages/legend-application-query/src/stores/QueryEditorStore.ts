@@ -148,12 +148,14 @@ export class QueryCreatorState {
   readonly editorStore: QueryEditorStore;
   readonly createQueryState = ActionState.create();
   queryName: string;
+  queryDescription: string | undefined;
   showCreateModal = false;
   originalQuery: Query | undefined;
 
   constructor(editorStore: QueryEditorStore, queryName: string | undefined) {
     makeObservable(this, {
       queryName: observable,
+      queryDescription: observable,
       showCreateModal: observable,
       createQueryState: observable,
       originalQuery: observable,
@@ -168,6 +170,10 @@ export class QueryCreatorState {
 
   setQueryName(val: string): void {
     this.queryName = val;
+  }
+
+  setQueryDescription(val: string | undefined): void {
+    this.queryDescription = val;
   }
 
   open(originalQuery?: Query | undefined): void {
@@ -200,6 +206,7 @@ export class QueryCreatorState {
         queryBuilderState.getGridConfig(),
       )) as Query;
       query.name = this.queryName;
+      query.description = this.queryDescription;
       query.id = uuid();
       query.originalVersionId =
         query.versionId === LATEST_VERSION_ALIAS
@@ -1197,8 +1204,12 @@ export class ExistingQueryUpdateState {
         config,
         queryBuilderState.getGridConfig(),
       )) as Query;
+
       query.name = queryName ?? query.name;
       query.versionId = queryVersionId ?? query.versionId;
+
+      query.description =
+        this.editorStore.query?.description ?? query.description;
       const updatedQuery =
         (yield this.editorStore.graphManagerState.graphManager.updateQuery(
           query,
@@ -1252,6 +1263,7 @@ export class ExistingQueryUpdateState {
       this.editorStore.applicationStore.notificationService.notifySuccess(
         `Successfully updated query!`,
       );
+
       LegendQueryTelemetryHelper.logEvent_UpdateQuerySucceeded(
         this.editorStore.applicationStore.telemetryService,
         {
@@ -1453,7 +1465,9 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     this.setLightQuery(
       await this.graphManagerState.graphManager.getLightQuery(this.queryId),
     );
+
     this.setQueryInfo(queryInfo);
+
     LegendQueryUserDataHelper.addRecentlyViewedQuery(
       this.applicationStore.userDataService,
       queryInfo.id,

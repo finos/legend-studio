@@ -151,6 +151,7 @@ export class V1_Query {
   groupId!: string;
   artifactId!: string;
   versionId!: string;
+  description?: string | undefined;
   originalVersionId?: string | undefined;
   content!: string;
   owner?: string | undefined;
@@ -187,6 +188,7 @@ export class V1_Query {
       lastOpenAt: optional(primitive()),
       mapping: optional(primitive()),
       name: primitive(),
+      description: optional(primitive()),
       owner: optional(primitive()),
       runtime: optional(primitive()),
       stereotypes: optional(
