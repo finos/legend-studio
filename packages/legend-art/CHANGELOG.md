@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.124
+
+### Patch Changes
+
+- [#4483](https://github.com/finos/legend-studio/pull/4483) [`7200acf`](https://github.com/finos/legend-studio/commit/7200acf72171e053ff3b6438b4b8ed95756ad465) ([@TharunRajeev](https://github.com/TharunRajeev)) - Added Python Icon
+
 ## 7.1.123
 
 ## 7.1.122

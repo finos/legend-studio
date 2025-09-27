@@ -1,5 +1,19 @@
 # @finos/legend-application-data-cube
 
+## 0.7.0
+
+### Minor Changes
+
+- [#4424](https://github.com/finos/legend-studio/pull/4424) [`6bd1936`](https://github.com/finos/legend-studio/commit/6bd1936f17d07ff0c09e3e54f350713256b2ce71) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: support iceberg querying flow for lakehouse producers
+  Description:
+  If a lakehouse ingested tabled is iceberg enabled, we allow querying the table via duckdb using iceberg extension
+  Initially we fetch all the data for a particular dataset from a catalog and cache the data. Subsequent operations happen on top of the stored cache.
+
+### Patch Changes
+
+- [#4484](https://github.com/finos/legend-studio/pull/4484) [`7d1ca7d`](https://github.com/finos/legend-studio/commit/7d1ca7d2f20e5ca3266e3b31999f05c7dd8fdfa0) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: optimize and cleanup lakehouse consumer flow
+  Use only production type dataproducts
+
 ## 0.6.15
 
 ### Patch Changes
