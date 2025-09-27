@@ -16,7 +16,7 @@
 
 import { describe, expect, jest, test } from '@jest/globals';
 import { act, fireEvent, render, screen } from '@testing-library/react';
-import { guaranteeNonNullable, type PlainObject } from '@finos/legend-shared';
+import { type PlainObject } from '@finos/legend-shared';
 import {
   type V1_DataContract,
   type V1_DataProduct,
@@ -293,15 +293,7 @@ describe('DataProductViewer', () => {
 
       await screen.findByText('customer_demographics');
       await screen.findByText('Customer demographics data access point');
-      const apgContainer = guaranteeNonNullable(
-        (await screen.findByText('GROUP1')).parentElement?.parentElement
-          ?.parentElement,
-      );
-      const moreInfoButton = guaranteeNonNullable(
-        apgContainer.querySelector('.ag-icon-tree-closed'),
-      );
-      fireEvent.click(moreInfoButton);
-
+      await screen.findByText('GROUP1');
       await screen.findByText('Column Name');
       screen.getByText('Column Type');
 
@@ -321,14 +313,7 @@ describe('DataProductViewer', () => {
 
       await screen.findByText('customer_demographics');
       await screen.findByText('Customer demographics data access point');
-      const apgContainer = guaranteeNonNullable(
-        (await screen.findByText('GROUP1')).parentElement?.parentElement
-          ?.parentElement,
-      );
-      const moreInfoButton = guaranteeNonNullable(
-        apgContainer.querySelector('.ag-icon-tree-closed'),
-      );
-      fireEvent.click(moreInfoButton);
+      await screen.findByText('GROUP1');
 
       await screen.findByText('Column Name');
       screen.getByText('Column Type');
