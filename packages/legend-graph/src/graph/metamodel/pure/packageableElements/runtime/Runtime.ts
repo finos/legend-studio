@@ -83,10 +83,7 @@ export class ConnectionStores implements Hashable {
       this.connectionPointer,
       hashArray(
         this.storePointers.map((s) =>
-          hashElementPointer(
-            PackageableElementPointerType.STORE,
-            s.valueForSerialization ?? '',
-          ),
+          hashElementPointer(undefined, s.valueForSerialization ?? ''),
         ),
       ),
     ]);
