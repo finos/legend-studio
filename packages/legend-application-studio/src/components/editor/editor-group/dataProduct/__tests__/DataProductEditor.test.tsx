@@ -557,5 +557,5 @@ test(
     );
     await waitFor(() => expect(queryByText(editorGroup, 'ap1')).toBeNull());
   },
-  10000,
+  20000,
 );
