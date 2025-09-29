@@ -16,4 +16,11 @@
 
 export enum DSL_DATAPRODUCT_EVENT {
   FETCH_INGEST_ENV_FAILURE = 'dataProduct.access.ingest-env.failure',
+  CREATE_CONTRACT = 'dataProduct.access.create_contract',
+  CREATE_SUBSCRIPTION = 'dataProduct.access.create_subscription',
+}
+
+export enum DSL_DATAPRODUCT_EVENT_STATUS {
+  SUCCESS = 'success',
+  FAILURE = 'failure',
 }

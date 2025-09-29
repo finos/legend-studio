@@ -84,6 +84,10 @@ import {
   TerminalProductLayoutState,
   TerminalProductViewerState,
 } from '@finos/legend-extension-dsl-data-product';
+import {
+  DATAPRODUCT_TYPE,
+  LegendMarketplaceTelemetryHelper,
+} from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
 
 const ARTIFACT_GENERATION_DAT_PRODUCT_KEY = 'dataProduct';
 
@@ -160,12 +164,23 @@ export class LegendMarketplaceProductViewerStore {
       );
 
       this.loadingProductState.complete();
+      LegendMarketplaceTelemetryHelper.logEvent_LoadTerminal(
+        this.marketplaceBaseStore.applicationStore.telemetryService,
+        terminalId,
+        undefined,
+      );
     } catch (error) {
       assertErrorThrown(error);
+      const message = `Unable to load terminal ${terminalId}: ${error.message}`;
       this.marketplaceBaseStore.applicationStore.notificationService.notifyError(
-        `Unable to load terminal ${terminalId}: ${error.message}`,
+        message,
       );
       this.loadingProductState.fail();
+      LegendMarketplaceTelemetryHelper.logEvent_LoadTerminal(
+        this.marketplaceBaseStore.applicationStore.telemetryService,
+        terminalId,
+        message,
+      );
     }
   }
 
@@ -297,12 +312,42 @@ export class LegendMarketplaceProductViewerStore {
       this.setDataProductDataAccess(dataProductDataAccessState);
       dataProductDataAccessState.init(auth.user?.access_token);
       this.loadingProductState.complete();
+      const origin =
+        dataProductDetails.origin instanceof V1_SdlcDeploymentDataProductOrigin
+          ? {
+              type: DATAPRODUCT_TYPE.SDLC,
+              groupId: dataProductDetails.origin.group,
+              artifactId: dataProductDetails.origin.artifact,
+              versionId: dataProductDetails.origin.version,
+            }
+          : {
+              type: DATAPRODUCT_TYPE.ADHOC,
+            };
+      LegendMarketplaceTelemetryHelper.logEvent_LoadDataProduct(
+        this.marketplaceBaseStore.applicationStore.telemetryService,
+        {
+          origin: origin,
+          dataProductId: dataProductId,
+          deploymentId: deploymentId,
+          name: dataProductDetails.dataProduct.name,
+        },
+        undefined,
+      );
     } catch (error) {
       assertErrorThrown(error);
+      const message = `Unable to load product ${dataProductId}: ${error.message}`;
       this.marketplaceBaseStore.applicationStore.notificationService.notifyError(
-        `Unable to load product ${dataProductId}: ${error.message}`,
+        message,
       );
       this.loadingProductState.fail();
+      LegendMarketplaceTelemetryHelper.logEvent_LoadDataProduct(
+        this.marketplaceBaseStore.applicationStore.telemetryService,
+        {
+          dataProductId: dataProductId,
+          deploymentId: deploymentId,
+        },
+        message,
+      );
     }
   }
 
@@ -321,44 +366,82 @@ export class LegendMarketplaceProductViewerStore {
       const projectData = VersionedProjectData.serialization.fromJson(
         parseGAVCoordinates(gav) as unknown as PlainObject,
       );
-      const storeProject = new StoreProjectData();
-      storeProject.groupId = projectData.groupId;
-      storeProject.artifactId = projectData.artifactId;
-      const v1DataProduct = deserialize(
-        V1_dataProductModelSchema,
-        (
-          (yield this.marketplaceBaseStore.depotServerClient.getVersionEntity(
-            projectData.groupId,
-            projectData.artifactId,
-            resolveVersion(projectData.versionId),
-            path,
-          )) as Entity
-        ).content,
-      );
-      const files =
-        (yield this.marketplaceBaseStore.depotServerClient.getGenerationFilesByType(
-          storeProject,
-          resolveVersion(projectData.versionId),
-          ARTIFACT_GENERATION_DAT_PRODUCT_KEY,
-        )) as StoredFileGeneration[];
-      const fileGen = files.filter((e) => e.path === v1DataProduct.path)[0]
-        ?.file.content;
-      if (fileGen) {
-        const content: PlainObject = JSON.parse(fileGen) as PlainObject;
-        const gen =
-          DataProductArtifactGeneration.serialization.fromJson(content);
-        const dataProductId = v1DataProduct.name.toUpperCase();
-        const deploymentId = Number(gen.dataProduct.deploymentId);
-        this.marketplaceBaseStore.applicationStore.navigationService.navigator.goToLocation(
-          generateLakehouseDataProductPath(dataProductId, deploymentId),
+      try {
+        const storeProject = new StoreProjectData();
+        storeProject.groupId = projectData.groupId;
+        storeProject.artifactId = projectData.artifactId;
+        const v1DataProduct = deserialize(
+          V1_dataProductModelSchema,
+          (
+            (yield this.marketplaceBaseStore.depotServerClient.getVersionEntity(
+              projectData.groupId,
+              projectData.artifactId,
+              resolveVersion(projectData.versionId),
+              path,
+            )) as Entity
+          ).content,
         );
-      } else {
-        throw new Error('File generation not found');
+        const files =
+          (yield this.marketplaceBaseStore.depotServerClient.getGenerationFilesByType(
+            storeProject,
+            resolveVersion(projectData.versionId),
+            ARTIFACT_GENERATION_DAT_PRODUCT_KEY,
+          )) as StoredFileGeneration[];
+        const fileGen = files.filter((e) => e.path === v1DataProduct.path)[0]
+          ?.file.content;
+        if (fileGen) {
+          const content: PlainObject = JSON.parse(fileGen) as PlainObject;
+          const gen =
+            DataProductArtifactGeneration.serialization.fromJson(content);
+          const dataProductId = v1DataProduct.name.toUpperCase();
+          const deploymentId = Number(gen.dataProduct.deploymentId);
+          this.marketplaceBaseStore.applicationStore.navigationService.navigator.goToLocation(
+            generateLakehouseDataProductPath(dataProductId, deploymentId),
+          );
+          this.loadingProductState.complete();
+          LegendMarketplaceTelemetryHelper.logEvent_LoadSDLCDataProduct(
+            this.marketplaceBaseStore.applicationStore.telemetryService,
+            {
+              path: path,
+              origin: {
+                type: DATAPRODUCT_TYPE.SDLC,
+                groupId: projectData.groupId,
+                artifactId: projectData.artifactId,
+                versionId: projectData.versionId,
+              },
+              dataProductId: dataProductId,
+              deploymentId: deploymentId,
+            },
+            undefined,
+          );
+        } else {
+          throw new Error('File generation not found');
+        }
+      } catch (error) {
+        assertErrorThrown(error);
+        const message = `Unable to load product ${path}: ${error.message}`;
+        this.marketplaceBaseStore.applicationStore.notificationService.notifyError(
+          message,
+        );
+        this.loadingProductState.fail();
+        LegendMarketplaceTelemetryHelper.logEvent_LoadSDLCDataProduct(
+          this.marketplaceBaseStore.applicationStore.telemetryService,
+          {
+            path: path,
+            origin: {
+              type: DATAPRODUCT_TYPE.SDLC,
+              groupId: projectData.groupId,
+              artifactId: projectData.artifactId,
+              versionId: projectData.versionId,
+            },
+          },
+          message,
+        );
       }
     } catch (error) {
       assertErrorThrown(error);
       this.marketplaceBaseStore.applicationStore.notificationService.notifyError(
-        `Unable to load product ${path}: ${error.message}`,
+        `Unable to deserialize gav for product ${path}: ${error.message}`,
       );
       this.loadingProductState.fail();
     }
@@ -367,180 +450,204 @@ export class LegendMarketplaceProductViewerStore {
   *initWithLegacyProduct(gav: string, path: string): GeneratorFn<void> {
     try {
       this.loadingProductState.inProgress();
-
       const { groupId, artifactId, versionId } = parseGAVCoordinates(gav);
+      try {
+        // create graph manager
+        const graphManagerState = new GraphManagerState(
+          this.marketplaceBaseStore.applicationStore.pluginManager,
+          this.marketplaceBaseStore.applicationStore.logService,
+        );
+        const graphManager = guaranteeType(
+          graphManagerState.graphManager,
+          V1_PureGraphManager,
+          'GraphManager must be a V1_PureGraphManager',
+        );
 
-      // create graph manager
-      const graphManagerState = new GraphManagerState(
-        this.marketplaceBaseStore.applicationStore.pluginManager,
-        this.marketplaceBaseStore.applicationStore.logService,
-      );
-      const graphManager = guaranteeType(
-        graphManagerState.graphManager,
-        V1_PureGraphManager,
-        'GraphManager must be a V1_PureGraphManager',
-      );
-
-      // initialize graph manager
-      yield graphManager.initialize(
-        {
-          env: this.marketplaceBaseStore.applicationStore.config.env,
-          tabSize: DEFAULT_TAB_SIZE,
-          clientConfig: {
-            baseUrl:
-              this.marketplaceBaseStore.applicationStore.config.engineServerUrl,
-            queryBaseUrl:
-              this.marketplaceBaseStore.applicationStore.config
-                .engineQueryServerUrl,
-            enableCompression: true,
-          },
-        },
-        { engine: this.marketplaceBaseStore.remoteEngine },
-      );
-      yield graphManagerState.initializeSystem();
-
-      // fetch project
-      this.loadingProductState.setMessage(`Fetching project...`);
-      const project = StoreProjectData.serialization.fromJson(
-        (yield flowResult(
-          this.marketplaceBaseStore.depotServerClient.getProject(
-            groupId,
-            artifactId,
-          ),
-        )) as PlainObject<StoreProjectData>,
-      );
-
-      // set origin
-      graphManagerState.graph.setOrigin(
-        new LegendSDLC(groupId, artifactId, resolveVersion(versionId)),
-      );
-
-      // analyze data product
-      const analysisResult = (yield DSL_DataSpace_getGraphManagerExtension(
-        graphManagerState.graphManager,
-      ).analyzeDataSpace(
-        path,
-        () =>
-          retrieveProjectEntitiesWithDependencies(
-            project,
-            versionId,
-            this.marketplaceBaseStore.depotServerClient,
-          ),
-        () =>
-          retrieveAnalyticsResultCache(
-            project,
-            versionId,
-            path,
-            this.marketplaceBaseStore.depotServerClient,
-          ),
-        this.loadingProductState,
-      )) as DataSpaceAnalysisResult;
-
-      const dataSpaceViewerState = new DataSpaceViewerState(
-        this.marketplaceBaseStore.applicationStore,
-        graphManagerState,
-        groupId,
-        artifactId,
-        versionId,
-        analysisResult,
-        {
-          retrieveGraphData: () =>
-            new GraphDataWithOrigin(
-              new LegendSDLC(groupId, artifactId, versionId),
-            ),
-          queryDataSpace: (executionContextKey: string) =>
-            this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
-              EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl(
+        // initialize graph manager
+        yield graphManager.initialize(
+          {
+            env: this.marketplaceBaseStore.applicationStore.config.env,
+            tabSize: DEFAULT_TAB_SIZE,
+            clientConfig: {
+              baseUrl:
                 this.marketplaceBaseStore.applicationStore.config
-                  .queryApplicationUrl,
-                groupId,
-                artifactId,
-                versionId,
-                analysisResult.path,
-                executionContextKey,
-                undefined,
-                undefined,
-              ),
-            ),
-          viewProject: (entityPath: string | undefined) => {
-            this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
-              EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
+                  .engineServerUrl,
+              queryBaseUrl:
                 this.marketplaceBaseStore.applicationStore.config
-                  .studioApplicationUrl,
-                groupId,
-                artifactId,
-                versionId,
-                entityPath,
-              ),
-            );
+                  .engineQueryServerUrl,
+              enableCompression: true,
+            },
           },
-          viewSDLCProject: async (entityPath: string | undefined) => {
-            // find the matching SDLC instance
-            const projectIDPrefix = parseProjectIdentifier(
-              project.projectId,
-            ).prefix;
-            const matchingSDLCEntry =
-              this.marketplaceBaseStore.applicationStore.config.studioInstances.find(
-                (entry) => entry.sdlcProjectIDPrefix === projectIDPrefix,
-              );
-            if (matchingSDLCEntry) {
+          { engine: this.marketplaceBaseStore.remoteEngine },
+        );
+        yield graphManagerState.initializeSystem();
+
+        // fetch project
+        this.loadingProductState.setMessage(`Fetching project...`);
+        const project = StoreProjectData.serialization.fromJson(
+          (yield flowResult(
+            this.marketplaceBaseStore.depotServerClient.getProject(
+              groupId,
+              artifactId,
+            ),
+          )) as PlainObject<StoreProjectData>,
+        );
+
+        // set origin
+        graphManagerState.graph.setOrigin(
+          new LegendSDLC(groupId, artifactId, resolveVersion(versionId)),
+        );
+
+        // analyze data product
+        const analysisResult = (yield DSL_DataSpace_getGraphManagerExtension(
+          graphManagerState.graphManager,
+        ).analyzeDataSpace(
+          path,
+          () =>
+            retrieveProjectEntitiesWithDependencies(
+              project,
+              versionId,
+              this.marketplaceBaseStore.depotServerClient,
+            ),
+          () =>
+            retrieveAnalyticsResultCache(
+              project,
+              versionId,
+              path,
+              this.marketplaceBaseStore.depotServerClient,
+            ),
+          this.loadingProductState,
+        )) as DataSpaceAnalysisResult;
+
+        const dataSpaceViewerState = new DataSpaceViewerState(
+          this.marketplaceBaseStore.applicationStore,
+          graphManagerState,
+          groupId,
+          artifactId,
+          versionId,
+          analysisResult,
+          {
+            retrieveGraphData: () =>
+              new GraphDataWithOrigin(
+                new LegendSDLC(groupId, artifactId, versionId),
+              ),
+            queryDataSpace: (executionContextKey: string) =>
               this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
-                EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl(
-                  matchingSDLCEntry.url,
-                  project.projectId,
+                EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl(
+                  this.marketplaceBaseStore.applicationStore.config
+                    .queryApplicationUrl,
+                  groupId,
+                  artifactId,
+                  versionId,
+                  analysisResult.path,
+                  executionContextKey,
+                  undefined,
+                  undefined,
+                ),
+              ),
+            viewProject: (entityPath: string | undefined) => {
+              this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
+                EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
+                  this.marketplaceBaseStore.applicationStore.config
+                    .studioApplicationUrl,
+                  groupId,
+                  artifactId,
+                  versionId,
                   entityPath,
                 ),
               );
-            } else {
-              this.marketplaceBaseStore.applicationStore.notificationService.notifyWarning(
-                `Can't find the corresponding SDLC instance to view the SDLC project`,
+            },
+            viewSDLCProject: async (entityPath: string | undefined) => {
+              // find the matching SDLC instance
+              const projectIDPrefix = parseProjectIdentifier(
+                project.projectId,
+              ).prefix;
+              const matchingSDLCEntry =
+                this.marketplaceBaseStore.applicationStore.config.studioInstances.find(
+                  (entry) => entry.sdlcProjectIDPrefix === projectIDPrefix,
+                );
+              if (matchingSDLCEntry) {
+                this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
+                  EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl(
+                    matchingSDLCEntry.url,
+                    project.projectId,
+                    entityPath,
+                  ),
+                );
+              } else {
+                this.marketplaceBaseStore.applicationStore.notificationService.notifyWarning(
+                  `Can't find the corresponding SDLC instance to view the SDLC project`,
+                );
+              }
+            },
+            queryClass: (_class: Class): void => {
+              this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
+                EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl(
+                  this.marketplaceBaseStore.applicationStore.config
+                    .queryApplicationUrl,
+                  groupId,
+                  artifactId,
+                  versionId,
+                  analysisResult.path,
+                  analysisResult.defaultExecutionContext.name,
+                  undefined,
+                  _class.path,
+                ),
               );
-            }
-          },
-          queryClass: (_class: Class): void => {
-            this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
-              EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl(
-                this.marketplaceBaseStore.applicationStore.config
-                  .queryApplicationUrl,
-                groupId,
-                artifactId,
-                versionId,
-                analysisResult.path,
-                analysisResult.defaultExecutionContext.name,
-                undefined,
-                _class.path,
-              ),
-            );
-          },
-          openServiceQuery: (servicePath: string): void => {
-            this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
-              EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl(
-                this.marketplaceBaseStore.applicationStore.config
-                  .queryApplicationUrl,
-                groupId,
-                artifactId,
-                versionId,
-                servicePath,
-              ),
-            );
-          },
-          onZoneChange: (zone: NavigationZone | undefined): void => {
-            if (zone === undefined) {
-              this.marketplaceBaseStore.applicationStore.navigationService.navigator.resetZone();
-            } else {
-              this.marketplaceBaseStore.applicationStore.navigationService.navigator.updateCurrentZone(
-                zone,
+            },
+            openServiceQuery: (servicePath: string): void => {
+              this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
+                EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl(
+                  this.marketplaceBaseStore.applicationStore.config
+                    .queryApplicationUrl,
+                  groupId,
+                  artifactId,
+                  versionId,
+                  servicePath,
+                ),
               );
-            }
+            },
+            onZoneChange: (zone: NavigationZone | undefined): void => {
+              if (zone === undefined) {
+                this.marketplaceBaseStore.applicationStore.navigationService.navigator.resetZone();
+              } else {
+                this.marketplaceBaseStore.applicationStore.navigationService.navigator.updateCurrentZone(
+                  zone,
+                );
+              }
+            },
           },
-        },
-      );
-      this.setLegacyDataProductViewer(dataSpaceViewerState);
-      this.loadingProductState.complete();
+        );
+        this.setLegacyDataProductViewer(dataSpaceViewerState);
+        this.loadingProductState.complete();
+        LegendMarketplaceTelemetryHelper.logEvent_LoadLegacyDataProduct(
+          this.marketplaceBaseStore.applicationStore.telemetryService,
+          groupId,
+          artifactId,
+          versionId,
+          path,
+          undefined,
+        );
+      } catch (error) {
+        assertErrorThrown(error);
+        const message = `Unable to load legacy data product ${gav}::${path}: ${error.message}`;
+        this.marketplaceBaseStore.applicationStore.notificationService.notifyError(
+          message,
+        );
+        this.loadingProductState.fail();
+        LegendMarketplaceTelemetryHelper.logEvent_LoadLegacyDataProduct(
+          this.marketplaceBaseStore.applicationStore.telemetryService,
+          groupId,
+          artifactId,
+          versionId,
+          path,
+          message,
+        );
+      }
     } catch (error) {
       assertErrorThrown(error);
       this.marketplaceBaseStore.applicationStore.notificationService.notifyError(
-        `Unable to load legacy data product ${gav}::${path}: ${error.message}`,
+        `Unable to parse gav for product ${path}: ${error.message}`,
       );
       this.loadingProductState.fail();
     }

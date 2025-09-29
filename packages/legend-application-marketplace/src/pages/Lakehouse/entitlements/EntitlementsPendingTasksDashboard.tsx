@@ -65,6 +65,10 @@ import {
   generateLakehouseTaskPath,
   generateLakehouseDataProductPath,
 } from '../../../__lib__/LegendMarketplaceNavigation.js';
+import {
+  CONTRACT_ACTION,
+  LegendMarketplaceTelemetryHelper,
+} from '../../../__lib__/LegendMarketplaceTelemetryHelper.js';
 
 const EntitlementsDashboardActionModal = (props: {
   open: boolean;
@@ -121,9 +125,33 @@ const EntitlementsDashboardActionModal = (props: {
         `${selectedTasks.length} selected contract requests have been ${action === 'approve' ? 'approved' : 'denied'} successfully.`,
       );
       handleClose();
+      LegendMarketplaceTelemetryHelper.logEvent_ActionDataContracts(
+        dashboardState.lakehouseEntitlementsStore.applicationStore
+          .telemetryService,
+        selectedTasks,
+        allContracts,
+        action === 'approve'
+          ? CONTRACT_ACTION.APPROVED
+          : CONTRACT_ACTION.DENIED,
+        dashboardState.lakehouseEntitlementsStore.applicationStore
+          .identityService.currentUser,
+        undefined,
+      );
     } else {
       // If there were errors, we won't close the modal and will show the errors in the modal.
       setErrorMessages(currentErrorMessages);
+      LegendMarketplaceTelemetryHelper.logEvent_ActionDataContracts(
+        dashboardState.lakehouseEntitlementsStore.applicationStore
+          .telemetryService,
+        selectedTasks,
+        allContracts,
+        action === 'approve'
+          ? CONTRACT_ACTION.APPROVED
+          : CONTRACT_ACTION.DENIED,
+        dashboardState.lakehouseEntitlementsStore.applicationStore
+          .identityService.currentUser,
+        currentErrorMessages.map((error) => error[1]),
+      );
     }
 
     // Refresh pending tasks and contracts after taking action
@@ -218,7 +246,7 @@ const EntitlementsDashboardActionModal = (props: {
   );
 };
 
-export const EntitlementsPendingTasksDashbaord = observer(
+export const EntitlementsPendingTasksDashboard = observer(
   (props: { dashboardState: EntitlementsDashboardState }): React.ReactNode => {
     // State and props
 

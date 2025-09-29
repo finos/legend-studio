@@ -101,6 +101,7 @@ export const EntitlementsDataContractCreator = observer(
             description,
             accessPointGroup,
             token,
+            selectedConsumerType,
           ),
         ).catch(viewerState.applicationStore.alertUnhandledError);
       }

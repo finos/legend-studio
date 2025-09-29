@@ -45,6 +45,12 @@ import { generateGAVCoordinates } from '@finos/legend-storage';
 import { DemoModal } from './DemoModal.js';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
+import {
+  DATAPRODUCT_TYPE,
+  LEGEND_MARKETPLACE_PAGE,
+  LegendMarketplaceTelemetryHelper,
+} from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
+import { V1_SdlcDeploymentDataProductOrigin } from '@finos/legend-graph';
 
 export const MarketplaceLakehouseHome = observer(() => {
   const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
@@ -101,10 +107,43 @@ export const MarketplaceLakehouseHome = observer(() => {
     legendMarketplaceBaseStore,
   ]);
 
-  const handleSearch = (query: string | undefined): void => {
-    if (isNonEmptyString(query)) {
-      applicationStore.navigationService.navigator.goToLocation(
-        generateLakehouseSearchResultsRoute(query),
+  const handleSearch = (query: string): void => {
+    applicationStore.navigationService.navigator.goToLocation(
+      generateLakehouseSearchResultsRoute(query),
+    );
+  };
+
+  const logClickingDataProductCard = (
+    productCardState: BaseProductCardState,
+  ): void => {
+    if (productCardState instanceof DataProductCardState) {
+      const details = productCardState.dataProductDetails;
+      const origin =
+        details.origin instanceof V1_SdlcDeploymentDataProductOrigin
+          ? {
+              type: DATAPRODUCT_TYPE.SDLC,
+              groupId: details.origin.group,
+              artifactId: details.origin.artifact,
+              versionId: details.origin.version,
+            }
+          : {
+              type: DATAPRODUCT_TYPE.ADHOC,
+            };
+      LegendMarketplaceTelemetryHelper.logEvent_ClickingDataProductCard(
+        applicationStore.telemetryService,
+        {
+          origin: origin,
+          dataProductId: details.id,
+          deploymentId: details.deploymentId,
+          name: details.dataProduct.name,
+        },
+        LEGEND_MARKETPLACE_PAGE.HOME_PAGE,
+      );
+    } else if (productCardState instanceof LegacyDataProductCardState) {
+      LegendMarketplaceTelemetryHelper.logEvent_ClickingLegacyDataProductCard(
+        applicationStore.telemetryService,
+        productCardState,
+        LEGEND_MARKETPLACE_PAGE.HOME_PAGE,
       );
     }
   };
@@ -163,7 +202,16 @@ export const MarketplaceLakehouseHome = observer(() => {
           Marketplace
         </Box>
         <LegendMarketplaceSearchBar
-          onSearch={handleSearch}
+          onSearch={(query) => {
+            if (isNonEmptyString(query)) {
+              handleSearch(query);
+              LegendMarketplaceTelemetryHelper.logEvent_SearchQuery(
+                applicationStore.telemetryService,
+                query,
+                LEGEND_MARKETPLACE_PAGE.HOME_PAGE,
+              );
+            }
+          }}
           placeholder="Which data can I help you find?"
           className="marketplace-lakehouse-home__search-bar"
         />
@@ -226,6 +274,7 @@ export const MarketplaceLakehouseHome = observer(() => {
                           applicationStore.navigationService.navigator.goToLocation(
                             path,
                           );
+                          logClickingDataProductCard(productCardState);
                         }}
                       />
                     ),
@@ -261,6 +310,7 @@ export const MarketplaceLakehouseHome = observer(() => {
                           applicationStore.navigationService.navigator.goToLocation(
                             path,
                           );
+                          logClickingDataProductCard(productCardState);
                         }}
                       />
                     ),
@@ -296,6 +346,7 @@ export const MarketplaceLakehouseHome = observer(() => {
                           applicationStore.navigationService.navigator.goToLocation(
                             path,
                           );
+                          logClickingDataProductCard(productCardState);
                         }}
                       />
                     ),

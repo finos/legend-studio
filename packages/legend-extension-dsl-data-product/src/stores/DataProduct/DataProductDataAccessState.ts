@@ -52,7 +52,10 @@ import {
   IngestDeploymentServerConfig,
 } from '@finos/legend-server-lakehouse';
 import type { GenericLegendApplicationStore } from '@finos/legend-application';
-import { DSL_DATAPRODUCT_EVENT } from '../../__lib__/DSL_DataProduct_Event.js';
+import {
+  DSL_DATAPRODUCT_EVENT,
+  DSL_DATAPRODUCT_EVENT_STATUS,
+} from '../../__lib__/DSL_DataProduct_Event.js';
 import type { DataProductAPGState } from './DataProductAPGState.js';
 import type { DataProductDataAccess_LegendApplicationPlugin_Extension } from '../DataProductDataAccess_LegendApplicationPlugin_Extension.js';
 
@@ -237,11 +240,36 @@ export class DataProductDataAccessState {
     ]);
   }
 
+  logCreatingContract(
+    request: PlainObject<V1_CreateContractPayload>,
+    consumerType: string,
+    error: string | undefined,
+  ): void {
+    const data =
+      error === undefined
+        ? {
+            ...request,
+            consumerType: consumerType,
+            status: DSL_DATAPRODUCT_EVENT_STATUS.SUCCESS,
+          }
+        : {
+            ...request,
+            consumerType: consumerType,
+            status: DSL_DATAPRODUCT_EVENT_STATUS.FAILURE,
+            error: error,
+          };
+    this.applicationStore.telemetryService.logEvent(
+      DSL_DATAPRODUCT_EVENT.CREATE_CONTRACT,
+      data,
+    );
+  }
+
   *createContract(
     consumer: V1_OrganizationalScope,
     description: string,
     group: V1_AccessPointGroup,
     token: string | undefined,
+    consumerType: string,
   ): GeneratorFn<void> {
     try {
       this.creatingContractState.inProgress();
@@ -258,36 +286,45 @@ export class DataProductDataAccessState {
           consumer,
         } satisfies V1_CreateContractPayload,
       ) as PlainObject<V1_CreateContractPayload>;
-      const contracts = V1_dataContractsResponseModelSchemaToContracts(
-        (yield this.lakehouseContractServerClient.createContract(
-          request,
-          token,
-        )) as unknown as PlainObject<V1_DataContractsResponse>,
-        this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
-      );
-      const associatedContract = contracts[0];
-      // Only if the user has requested a contract for themself do we update the associated contract.
-      if (
-        associatedContract?.consumer instanceof V1_AdhocTeam &&
-        associatedContract.consumer.users.some(
-          (u) => u.name === this.applicationStore.identityService.currentUser,
-        )
-      ) {
-        const groupAccessState = this.dataProductViewerState.apgStates.find(
-          (e) => e.apg === group,
+      try {
+        const contracts = V1_dataContractsResponseModelSchemaToContracts(
+          (yield this.lakehouseContractServerClient.createContract(
+            request,
+            token,
+          )) as unknown as PlainObject<V1_DataContractsResponse>,
+          this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
         );
-        groupAccessState?.setAssociatedContract(
-          associatedContract,
-          this.lakehouseContractServerClient,
-          token,
-        );
-      }
+        const associatedContract = contracts[0];
+        // Only if the user has requested a contract for themself do we update the associated contract.
+        if (
+          associatedContract?.consumer instanceof V1_AdhocTeam &&
+          associatedContract.consumer.users.some(
+            (u) => u.name === this.applicationStore.identityService.currentUser,
+          )
+        ) {
+          const groupAccessState = this.dataProductViewerState.apgStates.find(
+            (e) => e.apg === group,
+          );
+          groupAccessState?.setAssociatedContract(
+            associatedContract,
+            this.lakehouseContractServerClient,
+            token,
+          );
+        }
 
-      this.setDataContractAccessPointGroup(undefined);
-      this.setDataContract(associatedContract);
-      this.applicationStore.notificationService.notifySuccess(
-        `Contract created, please go to contract view for pending tasks`,
-      );
+        this.setDataContractAccessPointGroup(undefined);
+        this.setDataContract(associatedContract);
+        this.applicationStore.notificationService.notifySuccess(
+          `Contract created, please go to contract view for pending tasks`,
+        );
+        this.logCreatingContract(request, consumerType, undefined);
+      } catch (error) {
+        assertErrorThrown(error);
+        this.applicationStore.notificationService.notifyError(
+          `${error.message}`,
+        );
+        this.logCreatingContract(request, consumerType, error.message);
+      }
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(`${error.message}`);

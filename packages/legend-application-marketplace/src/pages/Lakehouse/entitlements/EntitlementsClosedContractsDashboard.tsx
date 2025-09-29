@@ -52,7 +52,7 @@ import {
   generateLakehouseTaskPath,
 } from '../../../__lib__/LegendMarketplaceNavigation.js';
 
-export const EntitlementsClosedContractsDashbaord = observer(
+export const EntitlementsClosedContractsDashboard = observer(
   (props: { dashboardState: EntitlementsDashboardState }): React.ReactNode => {
     const { dashboardState } = props;
     const { allContracts } = dashboardState;
