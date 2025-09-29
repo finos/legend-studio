@@ -406,7 +406,7 @@ const TDSColumnCellRenderer = (props: {
             {selectedTab === DataProductTabs.COLUMNS && (
               <Box
                 className={clsx(
-                  'data-product__viewer__more-info__columns-grid',
+                  'data-product__viewer__more-info__columns-grid ag-theme-balham',
                   {
                     'data-product__viewer__more-info__columns-grid--auto-height':
                       (accessPointRelationType?.columns.length ?? 0) <=
@@ -420,18 +420,16 @@ const TDSColumnCellRenderer = (props: {
                   },
                 )}
               >
-                <div className="ag-theme-balham">
-                  <DataGrid
-                    rowData={accessPointRelationType?.columns ?? []}
-                    columnDefs={relationColumnDefs}
-                    domLayout={
-                      (accessPointRelationType?.columns.length ?? 0) >
-                      MAX_GRID_AUTO_HEIGHT_ROWS
-                        ? 'normal'
-                        : 'autoHeight'
-                    }
-                  />
-                </div>
+                <DataGrid
+                  rowData={accessPointRelationType?.columns ?? []}
+                  columnDefs={relationColumnDefs}
+                  domLayout={
+                    (accessPointRelationType?.columns.length ?? 0) >
+                    MAX_GRID_AUTO_HEIGHT_ROWS
+                      ? 'normal'
+                      : 'autoHeight'
+                  }
+                />
               </Box>
             )}
             {selectedTab === DataProductTabs.GRAMMAR && (
