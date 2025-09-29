@@ -255,6 +255,8 @@ export function V1_deserializeEmbeddedDataType(
       return deserialize(V1_dataElementReferenceModelSchema, json);
     case V1_EmbeddedDataType.RELATIONAL_DATA:
       return deserialize(V1_relationalDataModelSchema, json);
+    case V1_EmbeddedDataType.RELATION_ELEMENTS_DATA:
+      return deserialize(V1_relationElementsDataModelSchema, json);
     default: {
       const extraEmbeddedDataProtocolDeserializers = plugins.flatMap(
         (plugin) =>

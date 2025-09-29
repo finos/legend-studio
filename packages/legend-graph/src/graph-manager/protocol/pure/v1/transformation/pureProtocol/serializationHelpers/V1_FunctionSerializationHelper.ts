@@ -37,6 +37,7 @@ import {
 import {
   customListWithSchema,
   isString,
+  optionalCustomList,
   usingConstantValueSchema,
   type PlainObject,
 } from '@finos/legend-shared';
@@ -138,11 +139,12 @@ export const V1_functionTestSuiteModelSchema = (
     _type: usingConstantValueSchema(V1_TestSuiteType.FUNCTION_TEST_SUITE),
     doc: optional(primitive()),
     id: primitive(),
-    testData: list(
-      custom(
-        (val) => V1_serializeFunctionTestData(val, plugins),
-        (val) => V1_deserializeFunctionTestData(val, plugins),
-      ),
+    testData: optionalCustomList(
+      (val: V1_FunctionTestData) => V1_serializeFunctionTestData(val, plugins),
+      (val) => V1_deserializeFunctionTestData(val, plugins),
+      {
+        INTERNAL__forceReturnEmptyInTest: true,
+      },
     ),
     tests: list(
       custom(
