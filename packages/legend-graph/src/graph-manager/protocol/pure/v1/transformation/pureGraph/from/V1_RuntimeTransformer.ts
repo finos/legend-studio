@@ -98,10 +98,7 @@ const transformEngineRuntime = (
       connection.connectionPointer,
     );
     val.storePointers = connection.storePointers.map((s) =>
-      V1_transformElementReferencePointer(
-        PackageableElementPointerType.STORE,
-        s,
-      ),
+      V1_transformElementReferencePointer(undefined, s),
     );
     return val;
   });
