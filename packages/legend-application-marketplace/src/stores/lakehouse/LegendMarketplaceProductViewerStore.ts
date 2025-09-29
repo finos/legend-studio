@@ -292,7 +292,7 @@ export class LegendMarketplaceProductViewerStore {
           },
         },
       );
-      const dataProductDataAccessState = new DataProductDataAccessState(
+      const dataProductDataAccessStates = new DataProductDataAccessState(
         entitlementsDataProductDetails,
         dataProductViewerState,
         this.marketplaceBaseStore.lakehouseContractServerClient,
@@ -311,8 +311,8 @@ export class LegendMarketplaceProductViewerStore {
         },
       );
       this.setDataProductViewer(dataProductViewerState);
-      this.setDataProductDataAccess(dataProductDataAccessState);
-      dataProductDataAccessState.init(auth.user?.access_token);
+      this.setDataProductDataAccess(dataProductDataAccessStates);
+      dataProductDataAccessStates.init(auth.user?.access_token);
       this.loadingProductState.complete();
       const origin =
         dataProductDetails.origin instanceof V1_SdlcDeploymentDataProductOrigin
