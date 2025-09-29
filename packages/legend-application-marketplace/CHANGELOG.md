@@ -1,5 +1,15 @@
 # @finos/legend-application-marketplace
 
+## 0.1.16
+
+### Patch Changes
+
+- [#4494](https://github.com/finos/legend-studio/pull/4494) [`2882baf`](https://github.com/finos/legend-studio/commit/2882bafbf5afd8a659c3db86eba19319cce8c589) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Minor CSS fixes on Search Results page
+
+- [#4490](https://github.com/finos/legend-studio/pull/4490) [`4db55db`](https://github.com/finos/legend-studio/commit/4db55db273f7d2f0e670a90093485509955aced2) ([@yash0024](https://github.com/yash0024)) - Add analytics for Legend Marketplace: loading a DataProduct,
+  using the search bar, clicking on DataProduct cards,
+  actioning on contracts
+
 ## 0.1.15
 
 ### Patch Changes
