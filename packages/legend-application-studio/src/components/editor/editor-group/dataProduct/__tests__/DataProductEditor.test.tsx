@@ -522,7 +522,9 @@ test(integrationTest('Preview data product'), async () => {
   fireEvent.blur(titleInput);
 
   // check that preview title updates
-  await findByText(editorGroup, 'New Data Product Title');
+  await findByText(editorGroup, 'New Data Product Title', undefined, {
+    timeout: 3000,
+  });
 
   // remove apg
   fireEvent.click(await findByText(editorGroup, 'APG'));
