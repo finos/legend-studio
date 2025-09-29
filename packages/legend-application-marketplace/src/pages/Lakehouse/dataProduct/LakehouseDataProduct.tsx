@@ -64,9 +64,7 @@ export const LakehouseDataProduct = withLegendMarketplaceProductViewerStore(
         {productViewerStore.dataProductViewer && (
           <ProductViewer
             productViewerState={productViewerStore.dataProductViewer}
-            dataProductDataAccessState={
-              productViewerStore.dataProductDataAccess
-            }
+            productDataAccessState={productViewerStore.dataProductDataAccess}
           />
         )}
       </LegendMarketplacePage>

@@ -308,6 +308,8 @@ export {
   V1_TaskResponse,
   V1_TaskStatus,
   V1_TaskStatusChangeResponse,
+  V1_TerminalOrderItem,
+  V1_TerminalProvisionPayload,
   V1_UserApprovalStatus,
 } from './graph-manager/protocol/pure/v1/lakehouse/entitlements/V1_ConsumerEntitlements.js';
 export {
@@ -364,6 +366,7 @@ export {
   V1_pendingTasksResponseModelSchema,
   V1_SdlcDeploymentDataProductOriginModelSchema,
   V1_TaskStatusChangeResponseModelSchema,
+  V1_terminalProvisionPayloadModelSchema,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_EntitlementSerializationHelper.js';
 export {
   V1_CreateSubscriptionInput,

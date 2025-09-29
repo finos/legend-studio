@@ -14,44 +14,25 @@
  * limitations under the License.
  */
 
-import type { V1_Terminal } from '@finos/legend-graph';
 import { BaseViewerState } from '../BaseViewerState.js';
-import { TerminalProductLayoutState } from '../BaseLayoutState.js';
 import { TERMINAL_PRODUCT_VIEWER_SECTION } from '../ProductViewerNavigation.js';
-import { type UserSearchService } from '@finos/legend-shared';
+import type { V1_Terminal } from '@finos/legend-graph';
+import type { TerminalProductLayoutState } from '../BaseLayoutState.js';
 import type { GenericLegendApplicationStore } from '@finos/legend-application';
 
 export class TerminalProductViewerState extends BaseViewerState<
   V1_Terminal,
   TerminalProductLayoutState
 > {
-  readonly terminal: V1_Terminal;
-  readonly userSearchService: UserSearchService | undefined;
-
   constructor(
     applicationStore: GenericLegendApplicationStore,
     product: V1_Terminal,
-    userSearchService: UserSearchService | undefined,
+    terminalProductLayoutState: TerminalProductLayoutState,
   ) {
-    super(product, applicationStore, new TerminalProductLayoutState());
-
-    this.terminal = product;
-    this.userSearchService = userSearchService;
+    super(product, applicationStore, terminalProductLayoutState);
   }
 
-  public override getTitle(): string | undefined {
-    return this.product.productName;
-  }
-
-  public override getPath(): string | undefined {
-    return undefined;
-  }
-
-  public override getName(): string | undefined {
-    return undefined;
-  }
-
-  protected override getValidSections(): string[] {
+  protected getValidSections(): string[] {
     return Object.values(TERMINAL_PRODUCT_VIEWER_SECTION).map((section) =>
       section.toString(),
     );

@@ -257,7 +257,7 @@ const setupLakehouseDataProductTest = async (
       <AuthProvider>
         <ProductViewer
           productViewerState={dataProductViewerState}
-          dataProductDataAccessState={dataProductDataAccessState}
+          productDataAccessState={dataProductDataAccessState}
         />
       </AuthProvider>,
     );

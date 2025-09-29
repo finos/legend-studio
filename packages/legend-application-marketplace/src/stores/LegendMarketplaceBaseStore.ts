@@ -33,7 +33,10 @@ import {
   DepotServerClient,
   StoreProjectData,
 } from '@finos/legend-server-depot';
-import { MarketplaceServerClient } from '@finos/legend-server-marketplace';
+import {
+  MarketplaceServerClient,
+  TerminalAccessServerClient,
+} from '@finos/legend-server-marketplace';
 import {
   type V1_EngineServerClient,
   getCurrentUserIDFromEngineServer,
@@ -80,6 +83,7 @@ export class LegendMarketplaceBaseStore {
   readonly remoteEngine: V1_RemoteEngine;
   readonly userSearchService: UserSearchService | undefined;
   readonly cartStore: CartStore;
+  readonly terminalAccessServerClient: TerminalAccessServerClient;
 
   readonly initState = ActionState.create();
 
@@ -121,6 +125,14 @@ export class LegendMarketplaceBaseStore {
       baseUrl: this.applicationStore.config.lakehouseServerUrl,
     });
     this.lakehouseContractServerClient.setTracerService(
+      this.applicationStore.tracerService,
+    );
+
+    //terminal
+    this.terminalAccessServerClient = new TerminalAccessServerClient({
+      baseUrl: this.applicationStore.config.terminalServerUrl,
+    });
+    this.terminalAccessServerClient.setTracerService(
       this.applicationStore.tracerService,
     );
 

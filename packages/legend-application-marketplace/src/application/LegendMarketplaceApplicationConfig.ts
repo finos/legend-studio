@@ -86,6 +86,7 @@ export interface LegendMarketplaceApplicationConfigurationData
     oidcConfig?: LegendMarketplaceOidcConfig | undefined;
   };
   depot: { url: string };
+  terminal: { url: string };
   engine: {
     url: string;
     queryUrl?: string;
@@ -138,6 +139,7 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
   readonly engineServerUrl: string;
   readonly datacubeApplicationUrl: string;
   readonly engineQueryServerUrl?: string | undefined;
+  readonly terminalServerUrl: string;
   readonly depotServerUrl: string;
   readonly lakehouseServerUrl: string;
   readonly lakehousePlatformUrl: string;
@@ -238,6 +240,18 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
       guaranteeNonEmptyString(
         input.configData.depot.url,
         `Can't configure application: 'depot.url' field is missing or empty`,
+      ),
+    );
+
+    // Terminal
+    assertNonNullable(
+      input.configData.terminal,
+      `Can't configure application: 'terminal' field is missing`,
+    );
+    this.terminalServerUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+      guaranteeNonEmptyString(
+        input.configData.terminal.url,
+        `Can't configure application: 'terminal.url' field is missing or empty`,
       ),
     );
 

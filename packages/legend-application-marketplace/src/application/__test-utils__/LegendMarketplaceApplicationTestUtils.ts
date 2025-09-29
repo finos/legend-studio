@@ -55,6 +55,9 @@ const TEST_DATA__appConfig: LegendMarketplaceApplicationConfigurationData = {
   depot: {
     url: 'https://testMetadataUrl',
   },
+  terminal: {
+    url: 'https://testTerminalUrl',
+  },
   studio: {
     url: 'https://testStudioUrl',
     instances: [

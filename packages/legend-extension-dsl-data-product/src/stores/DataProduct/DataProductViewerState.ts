@@ -108,18 +108,6 @@ export class DataProductViewerState extends BaseViewerState<
     this.openDataCube = actions.openDataCube;
   }
 
-  public override getTitle(): string | undefined {
-    return this.product.title;
-  }
-
-  public override getPath(): string | undefined {
-    return this.product.path;
-  }
-
-  public override getName(): string | undefined {
-    return this.product.name;
-  }
-
   protected getValidSections(): string[] {
     return Object.values(DATA_PRODUCT_VIEWER_SECTION).map((section) =>
       section.toString(),

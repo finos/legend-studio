@@ -25,10 +25,10 @@ import {
 import { LegendUser } from '@finos/legend-shared';
 import { useEffect, useState, type ChangeEvent } from 'react';
 import {
-  type DataProductAPGState,
   AccessPointGroupAccess,
+  type DataProductAPGState,
 } from '../stores/DataProduct/DataProductAPGState.js';
-import type { ContractConsumerTypeRendererConfig } from '../stores/DataProduct/DataProductDataAccessState.js';
+import { type ContractConsumerTypeRendererConfig } from '../stores/DataProduct/DataProductDataAccessState.js';
 import type { DataProductDataAccess_LegendApplicationPlugin_Extension } from '../stores/DataProductDataAccess_LegendApplicationPlugin_Extension.js';
 import { UserSearchInput } from '@finos/legend-art';
 import { TextField } from '@mui/material';

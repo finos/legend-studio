@@ -34,9 +34,9 @@ import {
   CubesLoadingIndicatorIcon,
 } from '@finos/legend-art';
 import { guaranteeNonNullable, isNonNullable } from '@finos/legend-shared';
-import type {
-  ContractConsumerTypeRendererConfig,
-  DataProductDataAccessState,
+import {
+  type ContractConsumerTypeRendererConfig,
+  type DataProductDataAccessState,
 } from '../../../stores/DataProduct/DataProductDataAccessState.js';
 import {
   AccessPointGroupAccess,

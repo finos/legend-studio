@@ -84,6 +84,8 @@ import {
 import {
   DataProductDataAccessState,
   DataProductViewerState,
+  TerminalProductDataAccessState,
+  TerminalProductLayoutState,
   TerminalProductViewerState,
 } from '@finos/legend-extension-dsl-data-product';
 import {
@@ -98,6 +100,7 @@ export class LegendMarketplaceProductViewerStore {
   dataProductViewer: DataProductViewerState | undefined;
   dataProductDataAccess: DataProductDataAccessState | undefined;
   terminalProductViewer: TerminalProductViewerState | undefined;
+  terminalProductDataAccess: TerminalProductDataAccessState | undefined;
   legacyDataProductViewer: DataSpaceViewerState | undefined;
 
   readonly loadingProductState = ActionState.create();
@@ -112,6 +115,7 @@ export class LegendMarketplaceProductViewerStore {
       legacyDataProductViewer: observable,
       setDataProductViewer: action,
       setDataProductDataAccess: action,
+      setTerminalProductDataAccess: action,
       setTerminalProductViewer: action,
       setLegacyDataProductViewer: action,
       initWithProduct: flow,
@@ -131,6 +135,11 @@ export class LegendMarketplaceProductViewerStore {
 
   setTerminalProductViewer(val: TerminalProductViewerState | undefined): void {
     this.terminalProductViewer = val;
+  }
+  setTerminalProductDataAccess(
+    val: TerminalProductDataAccessState | undefined,
+  ): void {
+    this.terminalProductDataAccess = val;
   }
 
   setLegacyDataProductViewer(val: DataSpaceViewerState | undefined): void {
@@ -160,10 +169,19 @@ export class LegendMarketplaceProductViewerStore {
           terminalProducts[0],
           `No terminal found with ID ${terminalId}`,
         ),
+        new TerminalProductLayoutState(),
+      );
+
+      const terminalProductDataAccessState = new TerminalProductDataAccessState(
+        terminalProductViewerState,
+        this.marketplaceBaseStore.terminalAccessServerClient,
+        this.marketplaceBaseStore.applicationStore,
         this.marketplaceBaseStore.userSearchService,
       );
 
       this.setTerminalProductViewer(terminalProductViewerState);
+      this.setTerminalProductDataAccess(terminalProductDataAccessState);
+
       this.loadingProductState.complete();
       LegendMarketplaceTelemetryHelper.logEvent_LoadTerminal(
         this.marketplaceBaseStore.applicationStore.telemetryService,
