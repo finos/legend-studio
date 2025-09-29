@@ -43,7 +43,7 @@ import {
   FunctionParameterValue,
   VariableExpression,
   FunctionTest,
-  FunctionTestData,
+  FunctionStoreTestData,
   FunctionTestSuite,
   RawLambda,
   PackageableRuntime,
@@ -172,14 +172,14 @@ const resolveRuntimesFromQuery = (
 export class FunctionStoreTestDataState {
   readonly editorStore: EditorStore;
   readonly testDataState: FunctionTestDataState;
-  storeTestData: FunctionTestData;
+  storeTestData: FunctionStoreTestData;
   embeddedEditorState: EmbeddedDataEditorState;
   dataElementModal = false;
 
   constructor(
     editorStore: EditorStore,
     testDataState: FunctionTestDataState,
-    value: FunctionTestData,
+    value: FunctionStoreTestData,
   ) {
     makeObservable(this, {
       storeTestData: observable,
@@ -558,12 +558,12 @@ class FunctionTestDataState {
     this.showNewModal = val;
   }
 
-  deleteStoreTestData(val: FunctionTestData): void {
+  deleteStoreTestData(val: FunctionStoreTestData): void {
     functionTestable_deleteDataStore(this.dataHolder, val);
     this.initDefaultStore();
   }
 
-  openStoreTestData(val: FunctionTestData): void {
+  openStoreTestData(val: FunctionStoreTestData): void {
     this.selectedDataState = new FunctionStoreTestDataState(
       this.editorStore,
       this,
@@ -789,14 +789,14 @@ export class FunctionTestableState extends TestablePackageableElementEditorState
           'Only one store supported in runtime for function tests',
         );
         const store = guaranteeNonNullable(stores[0]);
-        const data = new FunctionTestData();
+        const data = new FunctionStoreTestData();
         if (store instanceof Database) {
           const relational = new RelationalCSVData();
-          data.element = PackageableElementExplicitReference.create(store);
+          data.store = PackageableElementExplicitReference.create(store);
           data.data = relational;
         } else if (store instanceof ModelStore) {
           const modelStoreData = createBareExternalFormat();
-          data.element = PackageableElementExplicitReference.create(store);
+          data.store = PackageableElementExplicitReference.create(store);
           data.data = modelStoreData;
         } else {
           throw new UnsupportedOperationError(

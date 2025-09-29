@@ -44,9 +44,6 @@ import {
   V1_DataElementReference,
   V1_ModelEmbeddedData,
   V1_ModelInstanceData,
-  V1_RelationElementsData,
-  V1_RelationRowTestData,
-  V1_RelationElement,
 } from '../../../model/data/V1_EmbeddedData.js';
 import {
   V1_RelationalCSVData,
@@ -71,7 +68,6 @@ enum ModelDataType {
 
 export enum V1_EmbeddedDataType {
   MODEL_STORE_DATA = 'modelStore',
-  RELATION_ELEMENTS_DATA = 'relationAccessor',
   EXTERNAL_FORMAT_DATA = 'externalFormat',
   DATA_ELEMENT_REFERENCE = 'reference',
   RELATIONAL_DATA = 'relationalCSVData',
@@ -135,30 +131,6 @@ export const V1_modelStoreDataModelSchema = (
     ),
   });
 
-export const V1_relationRowTestDataModelSchema = createModelSchema(
-  V1_RelationRowTestData,
-  {
-    values: list(primitive()),
-  },
-);
-
-export const V1_relationElementModelSchema = createModelSchema(
-  V1_RelationElement,
-  {
-    paths: list(primitive()),
-    columns: list(primitive()),
-    rows: list(usingModelSchema(V1_relationRowTestDataModelSchema)),
-  },
-);
-
-export const V1_relationElementsDataModelSchema = createModelSchema(
-  V1_RelationElementsData,
-  {
-    _type: usingConstantValueSchema(V1_EmbeddedDataType.RELATION_ELEMENTS_DATA),
-    relationElements: list(usingModelSchema(V1_relationElementModelSchema)),
-  },
-);
-
 export const V1_externalFormatDataModelSchema = createModelSchema(
   V1_ExternalFormatData,
   {
@@ -214,8 +186,6 @@ export function V1_serializeEmbeddedDataType(
     return protocol.content;
   } else if (protocol instanceof V1_ExternalFormatData) {
     return serialize(V1_externalFormatDataModelSchema, protocol);
-  } else if (protocol instanceof V1_RelationElementsData) {
-    return serialize(V1_relationElementsDataModelSchema, protocol);
   } else if (protocol instanceof V1_ModelStoreData) {
     return serialize(V1_modelStoreDataModelSchema(plugins), protocol);
   } else if (protocol instanceof V1_DataElementReference) {
@@ -255,8 +225,6 @@ export function V1_deserializeEmbeddedDataType(
       return deserialize(V1_dataElementReferenceModelSchema, json);
     case V1_EmbeddedDataType.RELATIONAL_DATA:
       return deserialize(V1_relationalDataModelSchema, json);
-    case V1_EmbeddedDataType.RELATION_ELEMENTS_DATA:
-      return deserialize(V1_relationElementsDataModelSchema, json);
     default: {
       const extraEmbeddedDataProtocolDeserializers = plugins.flatMap(
         (plugin) =>

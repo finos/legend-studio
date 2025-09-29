@@ -23,9 +23,6 @@ import {
   ModelStoreData,
   ModelEmbeddedData,
   ModelInstanceData,
-  RelationElementsData,
-  type RelationElement,
-  type RelationRowTestData,
 } from '../../../../../../../graph/metamodel/pure/data/EmbeddedData.js';
 import {
   type RelationalCSVDataTable,
@@ -41,9 +38,6 @@ import {
   V1_ModelStoreData,
   V1_ModelEmbeddedData,
   V1_ModelInstanceData,
-  V1_RelationElementsData,
-  V1_RelationElement,
-  V1_RelationRowTestData,
 } from '../../../model/data/V1_EmbeddedData.js';
 import {
   V1_RelationalCSVData,
@@ -107,39 +101,6 @@ const V1_transformModelStoreData = (
     );
   }
   return modelStoreDataElement;
-};
-
-const V1_transformRelationRowTestData = (
-  element: RelationRowTestData,
-  context: V1_GraphTransformerContext,
-): V1_RelationRowTestData => {
-  const relationRowTestData = new V1_RelationRowTestData();
-  relationRowTestData.values = element.values;
-  return relationRowTestData;
-};
-
-const V1_transformRelationElement = (
-  element: RelationElement,
-  context: V1_GraphTransformerContext,
-): V1_RelationElement => {
-  const relationElement = new V1_RelationElement();
-  relationElement.paths = element.paths;
-  relationElement.columns = element.columns;
-  relationElement.rows = element.rows.map((row) =>
-    V1_transformRelationRowTestData(row, context),
-  );
-  return relationElement;
-};
-
-const V1_transformRelationElementsData = (
-  element: RelationElementsData,
-  context: V1_GraphTransformerContext,
-): V1_RelationElementsData => {
-  const relationElementsDataElement = new V1_RelationElementsData();
-  relationElementsDataElement.relationElements = element.relationElements.map(
-    (relationElement) => V1_transformRelationElement(relationElement, context),
-  );
-  return relationElementsDataElement;
 };
 
 export const V1_transformExternalFormatData = (
@@ -219,8 +180,6 @@ export function V1_transformEmbeddedData(
     return V1_transformModelStoreData(metamodel, context);
   } else if (metamodel instanceof ExternalFormatData) {
     return V1_transformExternalFormatData(metamodel);
-  } else if (metamodel instanceof RelationElementsData) {
-    return V1_transformRelationElementsData(metamodel, context);
   } else if (metamodel instanceof DataElementReference) {
     return V1_transformDataElementReference(metamodel, context);
   } else if (metamodel instanceof RelationalCSVData) {

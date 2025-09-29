@@ -31,7 +31,6 @@ export interface V1_EmbeddedDataVisitor<T> {
 
   visit_ExternalFormatData(data: V1_ExternalFormatData): T;
   visit_ModelStoreData(data: V1_ModelStoreData): T;
-  visit_RelationElementsData(data: V1_RelationElementsData): T;
   visit_DataElementReference(data: V1_DataElementReference): T;
   visit_RelationalData(data: V1_RelationalCSVData): T;
 }
@@ -124,49 +123,5 @@ export class V1_ModelStoreData extends V1_EmbeddedData implements Hashable {
 
   accept_EmbeddedDataVisitor<T>(visitor: V1_EmbeddedDataVisitor<T>): T {
     return visitor.visit_ModelStoreData(this);
-  }
-}
-
-export class V1_RelationRowTestData implements Hashable {
-  values!: string[];
-
-  get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.RELATION_ROW_TEST_DATA,
-      hashArray(this.values),
-    ]);
-  }
-}
-
-export class V1_RelationElement implements Hashable {
-  paths!: string[];
-  columns!: string[];
-  rows: V1_RelationRowTestData[] = [];
-
-  get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.RELATION_ELEMENT,
-      hashArray(this.paths),
-      hashArray(this.columns),
-      hashArray(this.rows),
-    ]);
-  }
-}
-
-export class V1_RelationElementsData
-  extends V1_EmbeddedData
-  implements Hashable
-{
-  relationElements: V1_RelationElement[] = [];
-
-  get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.RELATION_ELEMENTS_DATA,
-      hashArray(this.relationElements),
-    ]);
-  }
-
-  accept_EmbeddedDataVisitor<T>(visitor: V1_EmbeddedDataVisitor<T>): T {
-    return visitor.visit_RelationElementsData(this);
   }
 }

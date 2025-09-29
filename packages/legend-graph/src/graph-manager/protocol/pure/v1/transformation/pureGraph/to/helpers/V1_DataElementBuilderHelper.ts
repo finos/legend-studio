@@ -22,9 +22,6 @@ import {
   ModelStoreData,
   ModelEmbeddedData,
   ModelInstanceData,
-  RelationElementsData,
-  RelationElement,
-  RelationRowTestData,
 } from '../../../../../../../../graph/metamodel/pure/data/EmbeddedData.js';
 import {
   RelationalCSVData,
@@ -39,7 +36,6 @@ import {
   type V1_ExternalFormatData,
   type V1_ModelStoreData,
   V1_ModelEmbeddedData,
-  type V1_RelationElementsData,
 } from '../../../../model/data/V1_EmbeddedData.js';
 import type { V1_RelationalCSVData } from '../../../../model/data/V1_RelationalCSVData.js';
 import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
@@ -87,24 +83,6 @@ class V1_EmbeddedDataBuilder implements V1_EmbeddedDataVisitor<EmbeddedData> {
     const metamodel = new ExternalFormatData();
     metamodel.contentType = externalFormatData.contentType;
     metamodel.data = externalFormatData.data;
-    return metamodel;
-  }
-
-  visit_RelationElementsData(data: V1_RelationElementsData): EmbeddedData {
-    const metamodel = new RelationElementsData();
-    metamodel.relationElements = data.relationElements.map(
-      (relationElement) => {
-        const v = new RelationElement();
-        v.columns = relationElement.columns;
-        v.paths = relationElement.paths;
-        v.rows = relationElement.rows.map((row) => {
-          const r = new RelationRowTestData();
-          r.values = row.values;
-          return r;
-        });
-        return v;
-      },
-    );
     return metamodel;
   }
 

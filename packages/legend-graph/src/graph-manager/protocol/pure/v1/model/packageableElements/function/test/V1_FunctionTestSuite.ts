@@ -17,10 +17,10 @@
 import { hashArray } from '@finos/legend-shared';
 import { V1_TestSuite } from '../../../test/V1_TestSuite.js';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../../graph/Core_HashUtils.js';
-import type { V1_FunctionTestData } from './V1_FunctionTestData.js';
+import type { V1_FunctionStoreTestData } from './V1_FunctionStoreTestData.js';
 
 export class V1_FunctionTestSuite extends V1_TestSuite {
-  testData: V1_FunctionTestData[] | undefined;
+  testData: V1_FunctionStoreTestData[] | undefined;
 
   override get hashCode(): string {
     return hashArray([
