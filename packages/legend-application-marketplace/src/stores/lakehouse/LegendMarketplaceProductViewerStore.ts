@@ -271,6 +271,7 @@ export class LegendMarketplaceProductViewerStore {
         graphManagerState,
         this.marketplaceBaseStore.applicationStore.config.options.dataProductConfig,
         this.marketplaceBaseStore.userSearchService,
+        undefined,
         {
           viewDataProductSource: () => {
             if (
