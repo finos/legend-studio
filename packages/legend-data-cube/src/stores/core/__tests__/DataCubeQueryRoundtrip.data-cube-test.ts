@@ -1241,7 +1241,7 @@ const cases: TestCase[] = [
   _case(`Group-level Extend: ERROR - expression with compilation issue`, {
     query: `select(~[val])->extend(~[a:x|$x.val + '_123'])`,
     columns: ['val:Integer'],
-    error: `Can't process extend() expression: failed to retrieve type information for columns. Error: Collection element must have a multiplicity [1] - Context:[Processing return type for lambda, new lambda, Applying extend, new lambda, Applying plus], multiplicity:[0..1]'`,
+    error: `Can't process extend() expression: failed to retrieve type information for columns. Error: Collection element must have a multiplicity [1] - Context:[Processing return type for lambda, new lambda, Applying extend, new lambda, Applying plus], multiplicity:[0..1]`,
   }),
 
   // --------------------------------- SORT ---------------------------------
