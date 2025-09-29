@@ -26,7 +26,7 @@ import {
 export const V1_transformElementReferencePointer = <
   T extends PackageableElement,
 >(
-  pointerType: string | undefined,
+  pointerType: string,
   ref: PackageableElementReference<T>,
 ): V1_PackageableElementPointer =>
   new V1_PackageableElementPointer(

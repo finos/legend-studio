@@ -71,7 +71,7 @@ import {
   V1_FunctionTest,
 } from '../../../model/packageableElements/function/test/V1_FunctionTest.js';
 import { UnsupportedOperationError } from '@finos/legend-shared';
-import { V1_FunctionTestData } from '../../../model/packageableElements/function/test/V1_FunctionTestData.js';
+import { V1_FunctionStoreTestData } from '../../../model/packageableElements/function/test/V1_FunctionStoreTestData.js';
 import { V1_transformEmbeddedData } from './V1_DataElementTransformer.js';
 import { V1_transformTestAssertion } from './V1_TestTransformer.js';
 import { V1_DefaultValue } from '../../../model/packageableElements/domain/V1_DefaultValue.js';
@@ -354,11 +354,11 @@ const V1_transformFunctionSuite = (
   testSuite.doc = element.doc;
   if (element.testData?.length) {
     testSuite.testData = element.testData.map((elementData) => {
-      const pTestData = new V1_FunctionTestData();
+      const pTestData = new V1_FunctionStoreTestData();
       pTestData.doc = elementData.doc;
-      pTestData.packageableElementPointer = V1_transformElementReferencePointer(
-        undefined,
-        elementData.element,
+      pTestData.store = V1_transformElementReferencePointer(
+        PackageableElementPointerType.STORE,
+        elementData.store,
       );
       pTestData.data = V1_transformEmbeddedData(elementData.data, context);
       return pTestData;

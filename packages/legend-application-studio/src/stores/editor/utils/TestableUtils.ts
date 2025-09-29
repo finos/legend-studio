@@ -59,9 +59,6 @@ import {
   PrimitiveType,
   LambdaFunctionInstanceValue,
   DataElement,
-  RelationElementsData,
-  RelationElement,
-  RelationRowTestData,
 } from '@finos/legend-graph';
 import {
   assertTrue,
@@ -181,21 +178,6 @@ export class EmbeddedDataCreatorFromEmbeddedData
     const val = new ExternalFormatData();
     val.contentType = data.contentType;
     val.data = data.data;
-    return val;
-  }
-  visit_RelationElementsData(data: RelationElementsData): EmbeddedData {
-    const val = new RelationElementsData();
-    val.relationElements = data.relationElements.map((relationElement) => {
-      const v = new RelationElement();
-      v.columns = relationElement.columns;
-      v.paths = relationElement.paths;
-      v.rows = relationElement.rows.map((row) => {
-        const r = new RelationRowTestData();
-        r.values = row.values;
-        return r;
-      });
-      return v;
-    });
     return val;
   }
   visit_ModelStoreData(data: ModelStoreData): EmbeddedData {

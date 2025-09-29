@@ -754,9 +754,6 @@ export {
   ModelData,
   ModelEmbeddedData,
   ModelInstanceData,
-  RelationRowTestData,
-  RelationElement,
-  RelationElementsData,
   DataElementReference,
   ExternalFormatData,
   type EmbeddedDataVisitor,
@@ -892,7 +889,7 @@ export * from './graph/metamodel/pure/packageableElements/mapping/MappingTestSui
 export * from './graph/metamodel/pure/packageableElements/mapping/MappingStoreTestData.js';
 export { type EmbeddedSetImplementation } from './graph/metamodel/pure/packageableElements/mapping/EmbeddedSetImplementation.js';
 export * from './graph/metamodel/pure/packageableElements/function/test/FunctionTestSuite.js';
-export * from './graph/metamodel/pure/packageableElements/function/test/FunctionTestData.js';
+export * from './graph/metamodel/pure/packageableElements/function/test/FunctionStoreTestData.js';
 export * from './graph/metamodel/pure/packageableElements/function/test/FunctionTest.js';
 export {
   type RawMappingModelCoverageAnalysisResult,

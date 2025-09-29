@@ -16,11 +16,11 @@
 
 import { hashArray } from '@finos/legend-shared';
 import { TestSuite } from '../../../test/Test.js';
-import type { FunctionTestData } from './FunctionTestData.js';
+import type { FunctionStoreTestData } from './FunctionStoreTestData.js';
 import { CORE_HASH_STRUCTURE } from '../../../../../Core_HashUtils.js';
 
 export class FunctionTestSuite extends TestSuite {
-  testData: FunctionTestData[] | undefined;
+  testData: FunctionStoreTestData[] | undefined;
 
   override get hashCode(): string {
     return hashArray([

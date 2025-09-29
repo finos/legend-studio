@@ -19,16 +19,16 @@ import type { V1_EmbeddedData } from '../../../data/V1_EmbeddedData.js';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../../graph/Core_HashUtils.js';
 import type { V1_PackageableElementPointer } from '../../V1_PackageableElement.js';
 
-export class V1_FunctionTestData implements Hashable {
+export class V1_FunctionStoreTestData implements Hashable {
   doc: string | undefined;
-  packageableElementPointer!: V1_PackageableElementPointer;
+  store!: V1_PackageableElementPointer;
   data!: V1_EmbeddedData;
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FUNCTION_STORE_TEST_DATA,
       this.doc ?? '',
-      this.packageableElementPointer.path,
+      this.store.path,
       this.data,
     ]);
   }

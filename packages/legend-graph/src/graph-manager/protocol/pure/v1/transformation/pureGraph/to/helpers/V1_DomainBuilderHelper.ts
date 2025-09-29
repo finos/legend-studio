@@ -61,8 +61,8 @@ import { AggregationKind } from '../../../../../../../../graph/metamodel/pure/pa
 import { GraphBuilderError } from '../../../../../../../GraphManagerUtils.js';
 import type { V1_FunctionTestSuite } from '../../../../model/packageableElements/function/test/V1_FunctionTestSuite.js';
 import { FunctionTestSuite } from '../../../../../../../../graph/metamodel/pure/packageableElements/function/test/FunctionTestSuite.js';
-import type { V1_FunctionTestData } from '../../../../model/packageableElements/function/test/V1_FunctionTestData.js';
-import { FunctionTestData } from '../../../../../../../../graph/metamodel/pure/packageableElements/function/test/FunctionTestData.js';
+import type { V1_FunctionStoreTestData } from '../../../../model/packageableElements/function/test/V1_FunctionStoreTestData.js';
+import { FunctionStoreTestData } from '../../../../../../../../graph/metamodel/pure/packageableElements/function/test/FunctionStoreTestData.js';
 import { V1_buildEmbeddedData } from './V1_DataElementBuilderHelper.js';
 import { V1_FunctionTest } from '../../../../model/packageableElements/function/test/V1_FunctionTest.js';
 import {
@@ -382,15 +382,13 @@ const V1_buildFunctionTest = (
   return functionTest;
 };
 
-const V1_buildFunctionTestData = (
-  element: V1_FunctionTestData,
+const V1_buildFunctionStoreTestData = (
+  element: V1_FunctionStoreTestData,
   context: V1_GraphBuilderContext,
-): FunctionTestData => {
-  const storeTestData = new FunctionTestData();
+): FunctionStoreTestData => {
+  const storeTestData = new FunctionStoreTestData();
   storeTestData.doc = element.doc;
-  storeTestData.element = context.resolveStore(
-    element.packageableElementPointer.path,
-  );
+  storeTestData.store = context.resolveStore(element.store.path);
   storeTestData.data = V1_buildEmbeddedData(element.data, context);
   return storeTestData;
 };
@@ -404,7 +402,7 @@ export const V1_buildFunctionSuite = (
   functionSuite.doc = element.doc;
   if (element.testData?.length) {
     functionSuite.testData = element.testData.map((e) =>
-      V1_buildFunctionTestData(e, context),
+      V1_buildFunctionStoreTestData(e, context),
     );
   }
   functionSuite.tests = element.tests.map((test) => {

@@ -85,7 +85,7 @@ import {
   observe_AtomicTest,
   observe_TestAssertion,
 } from './Testable_ObserverHelper.js';
-import type { FunctionTestData } from '../../../graph/metamodel/pure/packageableElements/function/test/FunctionTestData.js';
+import type { FunctionStoreTestData } from '../../../graph/metamodel/pure/packageableElements/function/test/FunctionStoreTestData.js';
 import { observe_EmbeddedData } from './DSL_Data_ObserverHelper.js';
 import type { HostedService } from '../../../graph/metamodel/pure/packageableElements/function/HostedService.js';
 import type { MemSQLFunction } from '../../../graph/metamodel/pure/packageableElements/function/MemSQLFunction.js';
@@ -499,9 +499,9 @@ export const observe_FunctionTest = skipObserved(
 );
 
 export const observe_FunctionTestData = skipObservedWithContext(
-  (metamodel: FunctionTestData, context: ObserverContext) => {
+  (metamodel: FunctionStoreTestData, context: ObserverContext) => {
     makeObservable(metamodel, {
-      element: observable,
+      store: observable,
       data: observable,
       hashCode: computed,
     });
