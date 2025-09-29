@@ -35,9 +35,9 @@ import {
   V1_serializeTestAssertion,
 } from './V1_TestSerializationHelper.js';
 import {
+  customList,
   customListWithSchema,
   isString,
-  optionalCustomList,
   usingConstantValueSchema,
   type PlainObject,
 } from '@finos/legend-shared';
@@ -139,7 +139,7 @@ export const V1_functionTestSuiteModelSchema = (
     _type: usingConstantValueSchema(V1_TestSuiteType.FUNCTION_TEST_SUITE),
     doc: optional(primitive()),
     id: primitive(),
-    testData: optionalCustomList(
+    testData: customList(
       (val: V1_FunctionTestData) => V1_serializeFunctionTestData(val, plugins),
       (val) => V1_deserializeFunctionTestData(val, plugins),
       {
