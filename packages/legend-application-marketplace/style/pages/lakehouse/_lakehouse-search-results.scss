@@ -52,6 +52,7 @@
   &__subtitles {
     font-weight: bold;
     margin: 0.8em 0;
+    font-size: 2.2rem;
   }
 
   &__sort-filters {
@@ -63,6 +64,7 @@
     height: 100%;
     background: #f2f2f2;
     padding: 1.6rem;
+    width: 15%;
 
     &__filter {
       display: flex;
@@ -71,6 +73,14 @@
 
       .MuiSvgIcon-root {
         font-size: 2rem;
+      }
+
+      .MuiFormControlLabel-label {
+        font-size: 1.4rem;
+      }
+
+      .Mui-checked:not(.Mui-disabled) {
+        color: #000;
       }
 
       &__section-header {

@@ -323,51 +323,56 @@ export const MarketplaceLakehouseSearchResults =
             />
           </Container>
           <div className="legend-marketplace-search-results__sort-bar">
-            <Typography
-              variant="h4"
-              className="marketplace-lakehouse-search-results__subtitles"
-            >
-              {searchResultsStore.filterSortProducts?.length ?? '0'} Products
-            </Typography>
-            <FormControl sx={{ width: '10rem' }}>
-              <Select
-                autoWidth={true}
-                displayEmpty={true}
-                value={'Sort'}
-                onChange={(e) => {
-                  searchResultsStore.setSort(e.target.value as DataProductSort);
-                }}
-                sx={{
-                  '& .MuiSelect-select': {
-                    fontWeight: 'bold',
-                    fontSize: '1.6rem',
-                    lineHeight: '1.6',
-                  },
-                  '& .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'black',
-                    borderRadius: '0rem',
-                  },
-                }}
+            <div className="legend-marketplace-search-results__sort-bar__container">
+              <Typography
+                variant="h4"
+                className="marketplace-lakehouse-search-results__subtitles"
               >
-                <MenuItem disabled={true} value="Sort">
-                  Sort
-                </MenuItem>
-                {Object.values(DataProductSort).map((sortValue) => {
-                  return (
-                    <MenuItem
-                      key={sortValue}
-                      value={sortValue}
-                      sx={{
-                        gap: '0.5rem',
-                      }}
-                    >
-                      {sortValue}
-                      {searchResultsStore.sort === sortValue && <CheckIcon />}
-                    </MenuItem>
-                  );
-                })}
-              </Select>
-            </FormControl>
+                {searchResultsStore.filterSortProducts?.length ?? '0'} Products
+              </Typography>
+              <FormControl sx={{ width: '8.2rem' }}>
+                <Select
+                  autoWidth={true}
+                  displayEmpty={true}
+                  value={'Sort'}
+                  onChange={(e) => {
+                    searchResultsStore.setSort(
+                      e.target.value as DataProductSort,
+                    );
+                  }}
+                  sx={{
+                    '& .MuiSelect-select': {
+                      fontWeight: '500',
+                      fontSize: '1.6rem',
+                      padding: '1rem',
+                      minHeight: 'unset !important',
+                    },
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'black',
+                      borderRadius: '0rem',
+                    },
+                  }}
+                >
+                  <MenuItem disabled={true} value="Sort">
+                    Sort
+                  </MenuItem>
+                  {Object.values(DataProductSort).map((sortValue) => {
+                    return (
+                      <MenuItem
+                        key={sortValue}
+                        value={sortValue}
+                        sx={{
+                          gap: '0.5rem',
+                        }}
+                      >
+                        {sortValue}
+                        {searchResultsStore.sort === sortValue && <CheckIcon />}
+                      </MenuItem>
+                    );
+                  })}
+                </Select>
+              </FormControl>
+            </div>
           </div>
           <Container
             maxWidth="xxxl"

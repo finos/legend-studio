@@ -69,6 +69,7 @@
     text-transform: unset;
     border-radius: unset;
     cursor: pointer;
+    position: relative;
 
     &:hover {
       background-color: var(--color-light-shade-50);
