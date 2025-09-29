@@ -23,6 +23,7 @@ import { LEGEND_MARKETPLACE_ROUTE_PATTERN } from '../../__lib__/LegendMarketplac
 import { LegendMarketplaceIconToolbar } from './LegendMarketplaceIconToolbar.js';
 import { matchPath } from '@finos/legend-application/browser';
 import { useEffect, useState } from 'react';
+import { LegendMarketplaceTelemetryHelper } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
 
 const HEADER_HEIGHT = 64;
 const MIN_HEADER_OPACITY = 0.75;
@@ -52,7 +53,13 @@ const LegendMarketPlaceHeaderTabs = observer(
               className={clsx('legend-marketplace-header__tab', {
                 'legend-marketplace-header__tab--selected': isSelectedTab,
               })}
-              onClick={() => navigateToPage(page.urlRoute)}
+              onClick={() => {
+                navigateToPage(page.urlRoute);
+                LegendMarketplaceTelemetryHelper.logEvent_ClickHeadertab(
+                  applicationStore.telemetryService,
+                  page.title,
+                );
+              }}
             >
               {page.title}
             </a>
