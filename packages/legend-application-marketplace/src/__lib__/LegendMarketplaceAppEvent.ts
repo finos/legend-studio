@@ -25,4 +25,7 @@ export enum LEGEND_MARKETPLACE_APP_EVENT {
   CLICK_LEGACY_DATA_PRODUCT_CARD = 'marketplace.click.legacy.data-product.card',
   SEARCH_QUERY = 'marketplace.search.query',
   ACTION_DATA_CONTRACTS = 'marketplace.action.data.contracts',
+  CLICK_HEADER_TAB = 'marketplace.click.header.tab',
+  SCHEDULE_DEMO = 'marketplace.schedule.demo',
+  CLICK_SUBSCRIBE_TO_NEWSLETTER = 'marketplace.click.subscribe.to.newsletter',
 }

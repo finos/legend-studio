@@ -435,6 +435,8 @@ export const MarketplaceLakehouseSearchResults =
                               dataProductId: details.id,
                               deploymentId: details.deploymentId,
                               name: details.dataProduct.name,
+                              environmentClassification:
+                                productCardState.environmentClassification,
                             },
                             LEGEND_MARKETPLACE_PAGE.SEARCH_RESULTS_PAGE,
                           );

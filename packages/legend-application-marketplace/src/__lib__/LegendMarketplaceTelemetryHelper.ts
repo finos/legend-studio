@@ -19,6 +19,7 @@ import {
   type V1_LiteDataContract,
   V1_ResourceType,
   type V1_ContractUserEventRecord,
+  type V1_EntitlementsLakehouseEnvironmentType,
 } from '@finos/legend-graph';
 import type { LegacyDataProductCardState } from '../stores/lakehouse/dataProducts/LegacyDataProductCardState.js';
 import { LEGEND_MARKETPLACE_APP_EVENT } from './LegendMarketplaceAppEvent.js';
@@ -56,6 +57,9 @@ type MarketplaceDataProduct_TelemetryData = {
   deploymentId?: number | undefined;
   path?: string | undefined;
   name?: string | undefined;
+  environmentClassification?:
+    | V1_EntitlementsLakehouseEnvironmentType
+    | undefined;
 };
 
 export class LegendMarketplaceTelemetryHelper {
@@ -234,5 +238,14 @@ export class LegendMarketplaceTelemetryHelper {
       LEGEND_MARKETPLACE_APP_EVENT.LOAD_LEGACY_DATA_PRODUCT,
       telemetryData,
     );
+  }
+
+  static logEvent_ClickHeadertab(
+    telemetryService: TelemetryService,
+    tabTitle: string,
+  ): void {
+    telemetryService.logEvent(LEGEND_MARKETPLACE_APP_EVENT.CLICK_HEADER_TAB, {
+      tabTitle: tabTitle,
+    });
   }
 }

@@ -24,6 +24,7 @@ import {
   SimpleCalendarIcon,
 } from '@finos/legend-art';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
+import { LEGEND_MARKETPLACE_APP_EVENT } from '../../__lib__/LegendMarketplaceAppEvent.js';
 
 interface DemoFormData {
   name: string;
@@ -91,7 +92,15 @@ export const DemoModal = observer(() => {
 
     setIsSubmitting(true);
     setSubmitError(null);
+    legendMarketplaceBaseStore.applicationStore.telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.SCHEDULE_DEMO,
+      {
+        name: formData.name,
+        division: formData.division,
+      },
+    );
   };
+
   if (!showDemoForm) {
     return null;
   }
