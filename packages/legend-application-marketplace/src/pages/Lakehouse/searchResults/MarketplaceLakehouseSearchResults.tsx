@@ -55,11 +55,19 @@ import {
 import { LegendMarketplaceSearchBar } from '../../../components/SearchBar/LegendMarketplaceSearchBar.js';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
 import { useAuth } from 'react-oidc-context';
-import { V1_IngestEnvironmentClassification } from '@finos/legend-graph';
+import {
+  V1_IngestEnvironmentClassification,
+  V1_SdlcDeploymentDataProductOrigin,
+} from '@finos/legend-graph';
 import { DataProductCardState } from '../../../stores/lakehouse/dataProducts/DataProductCardState.js';
 import { LegacyDataProductCardState } from '../../../stores/lakehouse/dataProducts/LegacyDataProductCardState.js';
 import { generateGAVCoordinates } from '@finos/legend-storage';
 import { LakehouseProductCard } from '../../../components/LakehouseProductCard/LakehouseProductCard.js';
+import {
+  DATAPRODUCT_TYPE,
+  LEGEND_MARKETPLACE_PAGE,
+  LegendMarketplaceTelemetryHelper,
+} from '../../../__lib__/LegendMarketplaceTelemetryHelper.js';
 
 const SearchResultsSortFilterPanel = observer(
   (props: { searchResultsStore: LegendMarketplaceSearchResultsStore }) => {
@@ -301,7 +309,14 @@ export const MarketplaceLakehouseSearchResults =
         <LegendMarketplacePage className="marketplace-lakehouse-search-results">
           <Container className="marketplace-lakehouse-search-results__search-container">
             <LegendMarketplaceSearchBar
-              onSearch={handleSearch}
+              onSearch={(query) => {
+                handleSearch(query);
+                LegendMarketplaceTelemetryHelper.logEvent_SearchQuery(
+                  applicationStore.telemetryService,
+                  query,
+                  LEGEND_MARKETPLACE_PAGE.SEARCH_RESULTS_PAGE,
+                );
+              }}
               placeholder="Search Legend Marketplace"
               className="marketplace-lakehouse-search-results__search-bar"
               initialValue={searchQuery}
@@ -394,6 +409,39 @@ export const MarketplaceLakehouseSearchResults =
                         applicationStore.navigationService.navigator.goToLocation(
                           path,
                         );
+                        if (productCardState instanceof DataProductCardState) {
+                          const details = productCardState.dataProductDetails;
+                          const origin =
+                            details.origin instanceof
+                            V1_SdlcDeploymentDataProductOrigin
+                              ? {
+                                  type: DATAPRODUCT_TYPE.SDLC,
+                                  groupId: details.origin.group,
+                                  artifactId: details.origin.artifact,
+                                  versionId: details.origin.version,
+                                }
+                              : {
+                                  type: DATAPRODUCT_TYPE.ADHOC,
+                                };
+                          LegendMarketplaceTelemetryHelper.logEvent_ClickingDataProductCard(
+                            applicationStore.telemetryService,
+                            {
+                              origin: origin,
+                              dataProductId: details.id,
+                              deploymentId: details.deploymentId,
+                              name: details.dataProduct.name,
+                            },
+                            LEGEND_MARKETPLACE_PAGE.SEARCH_RESULTS_PAGE,
+                          );
+                        } else if (
+                          productCardState instanceof LegacyDataProductCardState
+                        ) {
+                          LegendMarketplaceTelemetryHelper.logEvent_ClickingLegacyDataProductCard(
+                            applicationStore.telemetryService,
+                            productCardState,
+                            LEGEND_MARKETPLACE_PAGE.SEARCH_RESULTS_PAGE,
+                          );
+                        }
                       }}
                     />
                   </Grid>

@@ -51,6 +51,10 @@ import {
 import type { DataProductDataAccessState } from './DataProductDataAccessState.js';
 import type { DataProductViewerState } from './DataProductViewerState.js';
 import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
+import {
+  DSL_DATAPRODUCT_EVENT,
+  DSL_DATAPRODUCT_EVENT_STATUS,
+} from '../../__lib__/DSL_DataProduct_Event.js';
 
 export enum AccessPointGroupAccess {
   // can be used to indicate fetching or resyncing of group access
@@ -351,6 +355,24 @@ export class DataProductAPGState {
     }
   }
 
+  logCreatingSubscription(
+    request: PlainObject<V1_DataSubscriptionResponse>,
+    error: string | undefined,
+  ): void {
+    const data =
+      error === undefined
+        ? { ...request, status: DSL_DATAPRODUCT_EVENT_STATUS.SUCCESS }
+        : {
+            ...request,
+            status: DSL_DATAPRODUCT_EVENT_STATUS.FAILURE,
+            error: error,
+          };
+    this.applicationStore.telemetryService.logEvent(
+      DSL_DATAPRODUCT_EVENT.CREATE_SUBSCRIPTION,
+      data,
+    );
+  }
+
   *createSubscription(
     contractId: string,
     target: V1_DataSubscriptionTarget,
@@ -362,19 +384,37 @@ export class DataProductAPGState {
       const input = new V1_CreateSubscriptionInput();
       input.contractId = contractId;
       input.target = target;
-      const response = (yield lakehouseContractServerClient.createSubscription(
-        serialize(V1_CreateSubscriptionInputModelSchema, input),
-        token,
-      )) as PlainObject<V1_DataSubscriptionResponse>;
-      guaranteeNonNullable(
-        deserialize(V1_DataSubscriptionResponseModelSchema, response)
-          .subscriptions?.[0],
-        'No subsription returned from server',
-      );
-      this.applicationStore.notificationService.notifySuccess(
-        `Subscription created`,
-      );
-      this.fetchSubscriptions(contractId, lakehouseContractServerClient, token);
+      const request = serialize(
+        V1_CreateSubscriptionInputModelSchema,
+        input,
+      ) as PlainObject<V1_CreateSubscriptionInput>;
+      try {
+        const response =
+          (yield lakehouseContractServerClient.createSubscription(
+            request,
+            token,
+          )) as PlainObject<V1_DataSubscriptionResponse>;
+        guaranteeNonNullable(
+          deserialize(V1_DataSubscriptionResponseModelSchema, response)
+            .subscriptions?.[0],
+          'No subsription returned from server',
+        );
+        this.applicationStore.notificationService.notifySuccess(
+          `Subscription created`,
+        );
+        this.fetchSubscriptions(
+          contractId,
+          lakehouseContractServerClient,
+          token,
+        );
+        this.logCreatingSubscription(request, undefined);
+      } catch (error) {
+        assertErrorThrown(error);
+        this.applicationStore.notificationService.notifyError(
+          `${error.message}`,
+        );
+        this.logCreatingSubscription(request, error.message);
+      }
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(`${error.message}`);

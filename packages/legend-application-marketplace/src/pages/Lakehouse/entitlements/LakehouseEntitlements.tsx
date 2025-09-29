@@ -24,9 +24,9 @@ import { useEffect, useState } from 'react';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
 import { flowResult } from 'mobx';
 import { Container, Tab, Tabs, Typography } from '@mui/material';
-import { EntitlementsClosedContractsDashbaord } from './EntitlementsClosedContractsDashboard.js';
-import { EntitlementsPendingContractsDashbaord } from './EntitlementsPendingContractsDashboard.js';
-import { EntitlementsPendingTasksDashbaord } from './EntitlementsPendingTasksDashboard.js';
+import { EntitlementsClosedContractsDashboard } from './EntitlementsClosedContractsDashboard.js';
+import { EntitlementsPendingContractsDashboard } from './EntitlementsPendingContractsDashboard.js';
+import { EntitlementsPendingTasksDashboard } from './EntitlementsPendingTasksDashboard.js';
 
 const enum EntitlementsTabs {
   PENDING_TASKS = 'pendingTasks',
@@ -99,17 +99,17 @@ export const LakehouseEntitlements = withLakehouseEntitlementsStore(
             />
           </Tabs>
           {selectedTab === EntitlementsTabs.PENDING_TASKS && (
-            <EntitlementsPendingTasksDashbaord
+            <EntitlementsPendingTasksDashboard
               dashboardState={entitlementsStore.dashboardViewer}
             />
           )}
           {selectedTab === EntitlementsTabs.PENDING_CONTRACTS && (
-            <EntitlementsPendingContractsDashbaord
+            <EntitlementsPendingContractsDashboard
               dashboardState={entitlementsStore.dashboardViewer}
             />
           )}
           {selectedTab === EntitlementsTabs.CLOSED_CONTRACTS && (
-            <EntitlementsClosedContractsDashbaord
+            <EntitlementsClosedContractsDashboard
               dashboardState={entitlementsStore.dashboardViewer}
             />
           )}

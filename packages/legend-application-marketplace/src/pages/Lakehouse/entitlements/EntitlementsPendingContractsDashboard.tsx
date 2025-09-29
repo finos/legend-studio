@@ -196,7 +196,7 @@ const TargetUserCellRenderer = (props: {
   );
 };
 
-export const EntitlementsPendingContractsDashbaord = observer(
+export const EntitlementsPendingContractsDashboard = observer(
   (props: { dashboardState: EntitlementsDashboardState }): React.ReactNode => {
     const { dashboardState } = props;
     const { pendingContracts: pendingContractRecords, allContracts } =

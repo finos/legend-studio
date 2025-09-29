@@ -16,4 +16,13 @@
 
 export enum LEGEND_MARKETPLACE_APP_EVENT {
   FETCH_DATA_PRODUCT_FAILURE = 'marketplace.fetch.data-product.failure',
+
+  LOAD_DATA_PRODUCT = 'marketplace.load.data-product',
+  LOAD_SDLC_DATA_PRODUCT = 'marketplace.load.sdlc.data-product',
+  LOAD_TERMINAL = 'marketplace.load.terminal',
+  LOAD_LEGACY_DATA_PRODUCT = 'marketplace.load.legacy.data-product',
+  CLICK_DATA_PRODUCT_CARD = 'marketplace.click.data-product.card',
+  CLICK_LEGACY_DATA_PRODUCT_CARD = 'marketplace.click.legacy.data-product.card',
+  SEARCH_QUERY = 'marketplace.search.query',
+  ACTION_DATA_CONTRACTS = 'marketplace.action.data.contracts',
 }
