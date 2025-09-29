@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.5
+
+### Patch Changes
+
+- [#4500](https://github.com/finos/legend-studio/pull/4500) [`fed96f8`](https://github.com/finos/legend-studio/commit/fed96f83fd0cd99f4e90e798667145ec6c867173) ([@travisstebbins](https://github.com/travisstebbins)) - Fix access point table height
+
 ## 0.0.4
 
 ### Patch Changes

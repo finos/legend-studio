@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.3.1
+
+### Patch Changes
+
+- [#4491](https://github.com/finos/legend-studio/pull/4491) [`472b86e`](https://github.com/finos/legend-studio/commit/472b86ef554750c0e4b70958e485986657a9335f) ([@yash0024](https://github.com/yash0024)) - Bring RelationElementsData to the graph and rename occurences of FunctionStoreTestData to FunctionTestData as in engine
+
 ## 32.3.0
 
 ### Minor Changes
