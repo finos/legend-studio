@@ -14,12 +14,59 @@
  * limitations under the License.
  */
 
-import { PencilEditIcon } from '@finos/legend-art';
+import { PencilEditIcon, clsx } from '@finos/legend-art';
 import { Divider } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import type { TerminalProductViewerState } from '../stores/TerminalProduct/TerminalProductViewerState.js';
 import { ProductWikiPlaceholder } from './ProductWiki.js';
+import { UserRenderer } from './UserRenderer/UserRenderer.js';
+import {
+  DataGrid,
+  type DataGridColumnDefinition,
+} from '@finos/legend-lego/data-grid';
+
+interface TerminalProductRowData {
+  id: string;
+  entity: string;
+  cost: string;
+  status: string;
+}
+
+const getFormattedPrice = (
+  price?: string | number,
+  tieredPrice?: string | number,
+  totalFirmPrice?: string | number,
+  options: {
+    isAnnual?: boolean;
+    showPeriod?: boolean;
+  } = {},
+): { price: number; formattedPrice: string; hasValidPrice: boolean } => {
+  const { isAnnual = true, showPeriod = false } = options;
+
+  const prices = [Number(price), Number(tieredPrice), Number(totalFirmPrice)];
+
+  // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+  const validPrice = prices.find((p) => p > 0) || 0;
+  const hasValidPrice = validPrice > 0;
+
+  if (!hasValidPrice) {
+    return {
+      price: 0,
+      formattedPrice: 'Price not available',
+      hasValidPrice: false,
+    };
+  }
+
+  const displayPrice = isAnnual ? validPrice : validPrice / 12;
+  const period = showPeriod ? (isAnnual ? '/year' : '/month') : '';
+
+  return {
+    price: validPrice,
+    formattedPrice: `$${displayPrice.toFixed(2)}${period}`,
+    hasValidPrice: true,
+  };
+};
 
 export const TerminalProductPrice = observer(
   (props: { terminalProductViewerState: TerminalProductViewerState }) => {
@@ -27,20 +74,18 @@ export const TerminalProductPrice = observer(
     const terminal = terminalProductViewerState.product;
     const [isAnnual, setIsAnnual] = useState(true);
 
-    const availablePrice =
-      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-      terminal.price || terminal.tieredPrice || terminal.totalFirmPrice;
+    const { formattedPrice, hasValidPrice } = getFormattedPrice(
+      terminal.price,
+      terminal.tieredPrice,
+      terminal.totalFirmPrice,
+      { isAnnual, showPeriod: false },
+    );
 
-    if (!availablePrice) {
+    if (!hasValidPrice) {
       return (
         <ProductWikiPlaceholder message="No price information available." />
       );
     }
-
-    const getDisplayPrice = () => {
-      const price = Number(availablePrice);
-      return isAnnual ? Number(price).toFixed(2) : (price / 12).toFixed(2);
-    };
 
     const handlePricingToggle = () => {
       setIsAnnual((prev) => !prev);
@@ -51,63 +96,34 @@ export const TerminalProductPrice = observer(
         className="data-product__viewer__wiki__section__pricing"
         onClick={handlePricingToggle}
       >
-        ${getDisplayPrice()} {isAnnual ? 'ANNUALLY' : 'MONTHLY'} PER LICENSE
+        {formattedPrice} {isAnnual ? 'ANNUALLY' : 'MONTHLY'} PER LICENSE
       </button>
     );
   },
 );
 
-export interface TerminalAccessSectionProps {
-  userImageUrl: string;
+export interface TerminalAccessAndTableProps {
+  terminalProductViewerState: TerminalProductViewerState;
+  userImageUrl?: string;
   userImageAlt?: string;
   onButtonClick?: () => void;
   buttonText?: string;
   className?: string;
 }
 
-export const TerminalAccessSection: React.FC<TerminalAccessSectionProps> = ({
-  userImageUrl,
-  userImageAlt = 'User',
-  onButtonClick,
-  buttonText = 'Change User',
-}) => {
-  return (
-    <div className="data-product__viewer__content__access-section">
-      <h1 className="data-product__viewer__content__access-section__heading">
-        Access
-      </h1>
-      <Divider className="data-product__divider" />
-
-      <div className="data-product__viewer__content__access-section__container">
-        <span className="data-product__viewer__content__access-section__span">
-          Showing access for
-        </span>
-
-        <div className="data-product__viewer__content__access-section__image-container">
-          <img
-            src={''}
-            alt={userImageAlt}
-            className="data-product__viewer__content__access-section__image"
-          />
-        </div>
-
-        <span className="data-product__viewer__content__access-section__span">
-          Last, First [Engineering]
-        </span>
-
-        <PencilEditIcon
-          className="data-product__viewer__content__access-section__icon"
-          onClick={onButtonClick}
-        />
-      </div>
-    </div>
-  );
-};
-
-export const TerminalProductTable = observer(
-  (props: { terminalProductViewerState: TerminalProductViewerState }) => {
-    const { terminalProductViewerState } = props;
+export const TerminalAccessAndTable = observer(
+  ({
+    terminalProductViewerState,
+    userImageUrl = '',
+    userImageAlt = 'User',
+    onButtonClick,
+    buttonText = 'Change User',
+    className,
+  }: TerminalAccessAndTableProps) => {
     const terminal = terminalProductViewerState.product;
+    const [currentUser] = useState<string | undefined>(
+      terminalProductViewerState.applicationStore.identityService.currentUser,
+    );
 
     const getProductName = () => {
       return (
@@ -116,50 +132,102 @@ export const TerminalProductTable = observer(
       );
     };
 
-    const getAnnualPrice = () => {
-      const prices = [
-        Number(terminal.price),
-        Number(terminal.tieredPrice),
-        Number(terminal.totalFirmPrice),
-      ];
-      const validPrice = prices.find((price) => price > 0);
-      return Number(validPrice) || 0;
-    };
+    const { formattedPrice } = getFormattedPrice(
+      terminal.price,
+      terminal.tieredPrice,
+      terminal.totalFirmPrice,
+      { isAnnual: true, showPeriod: true },
+    );
 
-    const formatPrice = (price: number) => {
-      return `$${price.toFixed(2)}/year`;
-    };
+    const rowData: TerminalProductRowData[] = [
+      {
+        id: 'product-row',
+        entity: getProductName(),
+        cost: formattedPrice,
+        status: 'Button', // You can replace this with actual status logic
+      },
+    ];
+
+    const columnDefs: DataGridColumnDefinition<TerminalProductRowData>[] = [
+      {
+        headerName: 'Entity',
+        field: 'entity',
+        flex: 1,
+        sortable: true,
+        resizable: true,
+        cellClass: 'data-product__viewer__content__table--cell--entity',
+      },
+      {
+        headerName: 'Cost',
+        field: 'cost',
+        flex: 1,
+        sortable: true,
+        resizable: true,
+        cellClass: 'data-product__viewer__content__table--cell--cost',
+      },
+      {
+        headerName: 'Status',
+        field: 'status',
+        flex: 1,
+        sortable: false,
+        resizable: true,
+        cellClass: 'data-product__viewer__content__table--cell--status',
+      },
+    ];
 
     return (
-      <div className="data-product__viewer__content__">
-        <table className="data-product__viewer__content__table">
-          <thead>
-            <tr className="data-product__viewer__content__table--row">
-              <th className="data-product__viewer__content__table--header">
-                Entity
-              </th>
-              <th className="data-product__viewer__content__table--header">
-                Cost
-              </th>
-              <th className="data-product__viewer__content__table--header">
-                Status
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr className="data-product__viewer__content__table--row">
-              <td className="data-product__viewer__content__table--cell data-product__viewer__content__table--cell--entity">
-                {getProductName()}
-              </td>
-              <td className="data-product__viewer__content__table--cell data-product__viewer__content__table--cell--cost">
-                {formatPrice(getAnnualPrice())}
-              </td>
-              <td className="data-product__viewer__content__table--cell data-product__viewer__content__table--cell--status">
-                Button
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <div className={className}>
+        <div className="data-product__viewer__content__access-section">
+          <h1 className="data-product__viewer__content__access-section__heading">
+            Access
+          </h1>
+          <Divider className="data-product__divider" />
+
+          <div className="data-product__viewer__content__access-section__container">
+            <span className="data-product__viewer__content__access-section__span">
+              Showing access for
+            </span>
+
+            <UserRenderer
+              userId={currentUser}
+              applicationStore={terminalProductViewerState.applicationStore}
+              userSearchService={terminalProductViewerState.userSearchService}
+              className="data-product__viewer__content__access-section__user-display"
+            />
+
+            <PencilEditIcon
+              className="data-product__viewer__content__access-section__icon"
+              onClick={onButtonClick}
+            />
+          </div>
+        </div>
+
+        <div className="data-product__viewer__content__table-container">
+          <div
+            className={clsx(
+              'data-product__viewer__grid',
+              'ag-theme-balham',
+              'data-product__viewer__grid--auto-height',
+              'data-product__viewer__grid--auto-height--non-empty',
+            )}
+          >
+            <DataGrid
+              rowData={rowData}
+              columnDefs={columnDefs}
+              gridOptions={{
+                suppressScrollOnNewData: true,
+                getRowId: (params) => params.data.id,
+                headerHeight: 40,
+                rowHeight: 50,
+              }}
+              suppressFieldDotNotation={true}
+              domLayout="autoHeight"
+              onRowDataUpdated={(params) => {
+                params.api.refreshCells({ force: true });
+              }}
+            />
+          </div>
+        </div>
       </div>
     );
   },

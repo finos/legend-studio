@@ -148,17 +148,18 @@ export class LegendMarketplaceProductViewerStore {
           deserialize(V1_TerminalModelSchema, rowData),
       );
 
-      this.setTerminalProductViewer(
-        new TerminalProductViewerState(
-          guaranteeNonNullable(
-            terminalProducts[0],
-            `No terminal found with ID ${terminalId}`,
-          ),
-          this.marketplaceBaseStore.applicationStore,
-          new TerminalProductLayoutState(),
+      const terminalProductViewerState = new TerminalProductViewerState(
+        this.marketplaceBaseStore.lakehouseContractServerClient,
+        this.marketplaceBaseStore.applicationStore,
+        guaranteeNonNullable(
+          terminalProducts[0],
+          `No terminal found with ID ${terminalId}`,
         ),
+        new TerminalProductLayoutState(),
+        this.marketplaceBaseStore.userSearchService,
       );
 
+      this.setTerminalProductViewer(terminalProductViewerState);
       this.loadingProductState.complete();
     } catch (error) {
       assertErrorThrown(error);

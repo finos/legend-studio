@@ -33,9 +33,8 @@ import { DataProducteDataAccess } from './DataProduct/DataProductDataAccess.js';
 import { DataProductSupportInfo } from './DataProduct/DataProductSupportInfo.js';
 import type { DataProductDataAccessState } from '../stores/DataProduct/DataProductDataAccessState.js';
 import {
-  TerminalAccessSection,
+  TerminalAccessAndTable,
   TerminalProductPrice,
-  TerminalProductTable,
 } from './TerminalWikiUtils.js';
 
 export const ProductWikiPlaceholder: React.FC<{ message: string }> = (
@@ -160,16 +159,12 @@ export const ProductWiki = observer(
           </>
         )}
         {isTerminalProductViewerState && (
-          <div>
-            <TerminalAccessSection
-              userImageUrl="https://example.com/user-avatar.jpg"
-              userImageAlt="Current User"
-              buttonText="Change User"
-            />
-            <TerminalProductTable
-              terminalProductViewerState={productViewerState}
-            />
-          </div>
+          <TerminalAccessAndTable
+            terminalProductViewerState={productViewerState}
+            userImageUrl="https://example.com/user-avatar.jpg"
+            userImageAlt="Current User"
+            buttonText="Change User"
+          />
         )}
       </div>
     );

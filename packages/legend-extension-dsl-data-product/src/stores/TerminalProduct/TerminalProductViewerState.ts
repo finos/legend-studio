@@ -18,11 +18,32 @@ import type { V1_Terminal } from '@finos/legend-graph';
 import { BaseViewerState } from '../BaseViewerState.js';
 import type { TerminalProductLayoutState } from '../BaseLayoutState.js';
 import { TERMINAL_PRODUCT_VIEWER_SECTION } from '../ProductViewerNavigation.js';
+import { type UserSearchService } from '@finos/legend-shared';
+import type { GenericLegendApplicationStore } from '@finos/legend-application';
+import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
 
 export class TerminalProductViewerState extends BaseViewerState<
   V1_Terminal,
   TerminalProductLayoutState
 > {
+  readonly lakeServerClient: LakehouseContractServerClient;
+  readonly terminal: V1_Terminal;
+  readonly userSearchService: UserSearchService | undefined;
+
+  constructor(
+    lakeServerClient: LakehouseContractServerClient,
+    applicationStore: GenericLegendApplicationStore,
+    product: V1_Terminal,
+    terminalProductLayoutState: TerminalProductLayoutState,
+    userSearchService: UserSearchService | undefined,
+  ) {
+    super(product, applicationStore, terminalProductLayoutState);
+
+    this.terminal = product;
+    this.userSearchService = userSearchService;
+    this.lakeServerClient = lakeServerClient;
+  }
+
   public override getTitle(): string | undefined {
     return this.product.productName;
   }
