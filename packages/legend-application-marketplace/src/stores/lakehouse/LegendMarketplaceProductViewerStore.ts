@@ -315,12 +315,13 @@ export class LegendMarketplaceProductViewerStore {
       dataProductDataAccessState.init(auth.user?.access_token);
       this.loadingProductState.complete();
       const origin =
-        dataProductDetails.origin instanceof V1_SdlcDeploymentDataProductOrigin
+        entitlementsDataProductDetails.origin instanceof
+        V1_SdlcDeploymentDataProductOrigin
           ? {
               type: DATAPRODUCT_TYPE.SDLC,
-              groupId: dataProductDetails.origin.group,
-              artifactId: dataProductDetails.origin.artifact,
-              versionId: dataProductDetails.origin.version,
+              groupId: entitlementsDataProductDetails.origin.group,
+              artifactId: entitlementsDataProductDetails.origin.artifact,
+              versionId: entitlementsDataProductDetails.origin.version,
             }
           : {
               type: DATAPRODUCT_TYPE.ADHOC,
@@ -331,7 +332,7 @@ export class LegendMarketplaceProductViewerStore {
           origin: origin,
           dataProductId: dataProductId,
           deploymentId: deploymentId,
-          name: dataProductDetails.dataProduct.name,
+          name: entitlementsDataProductDetails.dataProduct.name,
         },
         undefined,
       );
