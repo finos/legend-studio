@@ -149,7 +149,6 @@ export class LegendMarketplaceProductViewerStore {
       );
 
       const terminalProductViewerState = new TerminalProductViewerState(
-        this.marketplaceBaseStore.lakehouseContractServerClient,
         this.marketplaceBaseStore.applicationStore,
         guaranteeNonNullable(
           terminalProducts[0],

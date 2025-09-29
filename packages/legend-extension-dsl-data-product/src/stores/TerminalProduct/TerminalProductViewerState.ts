@@ -20,18 +20,15 @@ import type { TerminalProductLayoutState } from '../BaseLayoutState.js';
 import { TERMINAL_PRODUCT_VIEWER_SECTION } from '../ProductViewerNavigation.js';
 import { type UserSearchService } from '@finos/legend-shared';
 import type { GenericLegendApplicationStore } from '@finos/legend-application';
-import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
 
 export class TerminalProductViewerState extends BaseViewerState<
   V1_Terminal,
   TerminalProductLayoutState
 > {
-  readonly lakeServerClient: LakehouseContractServerClient;
   readonly terminal: V1_Terminal;
   readonly userSearchService: UserSearchService | undefined;
 
   constructor(
-    lakeServerClient: LakehouseContractServerClient,
     applicationStore: GenericLegendApplicationStore,
     product: V1_Terminal,
     terminalProductLayoutState: TerminalProductLayoutState,
@@ -41,7 +38,6 @@ export class TerminalProductViewerState extends BaseViewerState<
 
     this.terminal = product;
     this.userSearchService = userSearchService;
-    this.lakeServerClient = lakeServerClient;
   }
 
   public override getTitle(): string | undefined {
