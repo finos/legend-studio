@@ -2220,6 +2220,7 @@ const getDataProductViewerState = (
     graphManagerState,
     applicationStore.config.options.dataProductConfig,
     undefined,
+    undefined,
     {},
   );
 };

@@ -30,6 +30,7 @@ import { DATA_PRODUCT_VIEWER_SECTION } from '../ProductViewerNavigation.js';
 import { type UserSearchService } from '@finos/legend-shared';
 import { DataProductAPGState } from './DataProductAPGState.js';
 import type { DataProductConfig } from './DataProductConfig.js';
+import type { ProjectGAVCoordinates } from '@finos/legend-storage';
 
 export class DataProductViewerState extends BaseViewerState<
   V1_DataProduct,
@@ -39,7 +40,8 @@ export class DataProductViewerState extends BaseViewerState<
   readonly graphManagerState: GraphManagerState;
   readonly apgStates: DataProductAPGState[];
   readonly userSearchService: UserSearchService | undefined;
-  readonly dataProductConfig?: DataProductConfig | undefined;
+  readonly dataProductConfig: DataProductConfig | undefined;
+  readonly projectGAV: ProjectGAVCoordinates | undefined;
 
   // actions
   readonly viewDataProductSource?: (() => void) | undefined;
@@ -51,6 +53,7 @@ export class DataProductViewerState extends BaseViewerState<
     graphManagerState: GraphManagerState,
     dataProductConfig: DataProductConfig | undefined,
     userSearchService: UserSearchService | undefined,
+    projectGAV: ProjectGAVCoordinates | undefined,
     actions: {
       viewDataProductSource?: (() => void) | undefined;
       onZoneChange?: ((zone: NavigationZone | undefined) => void) | undefined;
@@ -67,6 +70,7 @@ export class DataProductViewerState extends BaseViewerState<
     this.graphManagerState = graphManagerState;
     this.userSearchService = userSearchService;
     this.dataProductConfig = dataProductConfig;
+    this.projectGAV = projectGAV;
 
     // actions
     this.viewDataProductSource = actions.viewDataProductSource;

@@ -175,34 +175,50 @@ const TDSColumnCellRenderer = (props: {
     };
     const fetchAccessPointRelationType = async () => {
       try {
-        const origin = dataAccessState?.entitlementsDataProductDetails.origin;
+        const projectGAV = dataProductViewerState.projectGAV;
+        const entitlementsOrigin =
+          dataAccessState?.entitlementsDataProductDetails.origin;
         const model =
-          origin instanceof V1_AdHocDeploymentDataProductOrigin ||
-          origin === undefined
-            ? guaranteeType(
-                dataProductViewerState.graphManagerState.graphManager,
-                V1_PureGraphManager,
-              ).getFullGraphModelData(
-                dataProductViewerState.graphManagerState.graph,
+          projectGAV !== undefined
+            ? new V1_PureModelContextPointer(
+                // TODO: remove as backend should handle undefined protocol input
+                new V1_Protocol(
+                  V1_PureGraphManager.PURE_PROTOCOL_NAME,
+                  PureClientVersion.VX_X_X,
+                ),
+                new V1_LegendSDLC(
+                  projectGAV.groupId,
+                  projectGAV.artifactId,
+                  resolveVersion(projectGAV.versionId),
+                ),
               )
-            : origin instanceof V1_SdlcDeploymentDataProductOrigin
-              ? new V1_PureModelContextPointer(
-                  // TODO: remove as backend should handle undefined protocol input
-                  new V1_Protocol(
-                    V1_PureGraphManager.PURE_PROTOCOL_NAME,
-                    PureClientVersion.VX_X_X,
-                  ),
-                  new V1_LegendSDLC(
-                    origin.group,
-                    origin.artifact,
-                    resolveVersion(origin.version),
-                  ),
+            : entitlementsOrigin instanceof
+                  V1_AdHocDeploymentDataProductOrigin ||
+                entitlementsOrigin === undefined
+              ? guaranteeType(
+                  dataProductViewerState.graphManagerState.graphManager,
+                  V1_PureGraphManager,
+                ).getFullGraphModelData(
+                  dataProductViewerState.graphManagerState.graph,
                 )
-              : undefined;
+              : entitlementsOrigin instanceof V1_SdlcDeploymentDataProductOrigin
+                ? new V1_PureModelContextPointer(
+                    // TODO: remove as backend should handle undefined protocol input
+                    new V1_Protocol(
+                      V1_PureGraphManager.PURE_PROTOCOL_NAME,
+                      PureClientVersion.VX_X_X,
+                    ),
+                    new V1_LegendSDLC(
+                      entitlementsOrigin.group,
+                      entitlementsOrigin.artifact,
+                      resolveVersion(entitlementsOrigin.version),
+                    ),
+                  )
+                : undefined;
         const relationTypeInput = new V1_LambdaReturnTypeInput(
           guaranteeNonNullable(
             model,
-            `Unable to get model from data product origin of type ${origin?.constructor.name}`,
+            `Unable to get model from data product origin of type ${entitlementsOrigin?.constructor.name}`,
           ),
           data.func,
         );
@@ -242,6 +258,7 @@ const TDSColumnCellRenderer = (props: {
     dataProductViewerState.engineServerClient,
     dataProductViewerState.graphManagerState.graph,
     dataProductViewerState.graphManagerState.graphManager,
+    dataProductViewerState.projectGAV,
   ]);
 
   if (!data) {
