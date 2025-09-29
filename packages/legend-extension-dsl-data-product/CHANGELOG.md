@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.4
+
+### Patch Changes
+
+- [#4490](https://github.com/finos/legend-studio/pull/4490) [`4db55db`](https://github.com/finos/legend-studio/commit/4db55db273f7d2f0e670a90093485509955aced2) ([@yash0024](https://github.com/yash0024)) - Add entitlement analytics: creating a contract or subscription
+
 ## 0.0.3
 
 ### Patch Changes
