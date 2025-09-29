@@ -42,6 +42,7 @@ import { DataProductDataAccessState } from '../../stores/DataProduct/DataProduct
 import { guaranteeType } from '@finos/legend-shared';
 import { Core_DataProductDataAccess_LegendApplicationPlugin } from '../Core_DataProductDataAccess_LegendApplicationPlugin.js';
 import { DataProductConfig } from '../../stores/DataProduct/DataProductConfig.js';
+import type { ProjectGAVCoordinates } from '@finos/legend-storage';
 
 export class TEST__LegendApplicationPluginManager
   extends LegendApplicationPluginManager<LegendApplicationPlugin>
@@ -109,6 +110,7 @@ export const TEST__getGenericApplicationConfig = (
 
 export const TEST__getDataProductViewerState = (
   dataProduct: V1_DataProduct,
+  projectGAVCoordinates?: ProjectGAVCoordinates,
 ): DataProductViewerState => {
   const pluginManager = TEST__LegendApplicationPluginManager.create();
   const MOCK__applicationStore = new ApplicationStore(
@@ -135,6 +137,7 @@ export const TEST__getDataProductViewerState = (
       },
     }),
     undefined,
+    projectGAVCoordinates,
     {
       viewDataProductSource: jest.fn(),
     },
