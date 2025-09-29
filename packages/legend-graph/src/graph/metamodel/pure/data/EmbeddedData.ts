@@ -31,6 +31,7 @@ export interface EmbeddedDataVisitor<T> {
 
   visit_ExternalFormatData(data: ExternalFormatData): T;
   visit_ModelStoreData(data: ModelStoreData): T;
+  visit_RelationElementsData(data: RelationElementsData): T;
   visit_DataElementReference(data: DataElementReference): T;
   visit_RelationalCSVData(data: RelationalCSVData): T;
 }
@@ -119,5 +120,46 @@ export class ModelStoreData extends EmbeddedData implements Hashable {
 
   accept_EmbeddedDataVisitor<T>(visitor: EmbeddedDataVisitor<T>): T {
     return visitor.visit_ModelStoreData(this);
+  }
+}
+
+export class RelationRowTestData implements Hashable {
+  values!: string[];
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.RELATION_ROW_TEST_DATA,
+      hashArray(this.values),
+    ]);
+  }
+}
+
+export class RelationElement implements Hashable {
+  paths!: string[];
+  columns!: string[];
+  rows: RelationRowTestData[] = [];
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.RELATION_ELEMENT,
+      hashArray(this.paths),
+      hashArray(this.columns),
+      hashArray(this.rows),
+    ]);
+  }
+}
+
+export class RelationElementsData extends EmbeddedData implements Hashable {
+  relationElements: RelationElement[] = [];
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.RELATION_ELEMENTS_DATA,
+      hashArray(this.relationElements),
+    ]);
+  }
+
+  accept_EmbeddedDataVisitor<T>(visitor: EmbeddedDataVisitor<T>): T {
+    return visitor.visit_RelationElementsData(this);
   }
 }
