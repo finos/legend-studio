@@ -110,7 +110,14 @@ const CreateQueryDialog = observer(() => {
   };
   const isExistingQueryName = createQueryState.editorStore.existingQueryName;
   const isEmptyName = !createQueryState.queryName;
-  // name
+  const isDescriptionValid = (desc: string | undefined): boolean =>
+    !!desc && /[a-zA-Z0-9]/.test(desc);
+  const descriptionInputRef = useRef<HTMLInputElement>(null);
+  const changeDescription: React.ChangeEventHandler<HTMLInputElement> = (
+    event,
+  ) => {
+    createQueryState.setQueryDescription(event.target.value);
+  };
   const nameInputRef = useRef<HTMLInputElement>(null);
   const debouncedLoadQueries = useMemo(
     () =>
@@ -142,6 +149,7 @@ const CreateQueryDialog = observer(() => {
     debouncedLoadQueries,
     createQueryState.editorStore.queryLoaderState.queries,
   ]);
+
   return (
     <Dialog
       open={createQueryState.showCreateModal}
@@ -163,7 +171,8 @@ const CreateQueryDialog = observer(() => {
           <PanelLoadingIndicator
             isLoading={createQueryState.createQueryState.isInProgress}
           />
-          <PanelListItem>
+          <div className="input-section">
+            <div className="input-label">Enter Query Name</div>
             <div className="input--with-validation">
               <input
                 ref={nameInputRef}
@@ -174,6 +183,7 @@ const CreateQueryDialog = observer(() => {
                 value={createQueryState.queryName}
                 onChange={changeName}
                 title="New Query Name"
+                placeholder='(e.g. "MyQuery")'
               />
               {isExistingQueryName && (
                 <div
@@ -184,7 +194,21 @@ const CreateQueryDialog = observer(() => {
                 </div>
               )}
             </div>
-          </PanelListItem>
+          </div>
+          <div className="input-section" style={{ marginTop: '1rem' }}>
+            <div className="input-label">Enter Query Description</div>
+            <div className="input--with-validation">
+              <input
+                ref={descriptionInputRef}
+                className="input input--dark"
+                spellCheck={true}
+                value={createQueryState.queryDescription ?? ''}
+                onChange={changeDescription}
+                title="Query Description"
+                placeholder="Add details about what this query retrieves"
+              />
+            </div>
+          </div>
         </ModalBody>
         <ModalFooter>
           <ModalFooterButton
@@ -193,7 +217,8 @@ const CreateQueryDialog = observer(() => {
             disabled={
               createQueryState.editorStore.isPerformingBlockingAction ||
               Boolean(isExistingQueryName) ||
-              isEmptyName
+              isEmptyName ||
+              !isDescriptionValid(createQueryState.queryDescription)
             }
             onClick={create}
           />
