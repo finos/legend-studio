@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.7.2
+
+### Patch Changes
+
+- [#4504](https://github.com/finos/legend-studio/pull/4504) [`78867d0`](https://github.com/finos/legend-studio/commit/78867d05385048696fdc3411fa0dcf25aa2021fd) ([@gs-gunjan](https://github.com/gs-gunjan)) - datacube: update duckdb version
+
 ## 0.7.1
 
 ## 0.7.0

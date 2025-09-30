@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.7.150
+
+### Patch Changes
+
+- [#4485](https://github.com/finos/legend-studio/pull/4485) [`28cc9f3`](https://github.com/finos/legend-studio/commit/28cc9f3261d2934bd017b837947804d96f80bca4) ([@OmGupta-GS2038](https://github.com/OmGupta-GS2038)) - query: add description while saving query
+
 ## 13.7.149
 
 ## 13.7.148
