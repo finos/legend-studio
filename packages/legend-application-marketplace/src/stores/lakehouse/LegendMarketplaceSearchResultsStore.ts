@@ -25,14 +25,10 @@ import {
 import {
   extractElementNameFromPath,
   extractPackagePathFromPath,
-  V1_AdHocDeploymentDataProductOrigin,
   V1_entitlementsDataProductDetailsResponseToDataProductDetails,
   V1_EntitlementsLakehouseEnvironmentType,
-  V1_IngestEnvironmentClassification,
   V1_PureGraphManager,
-  V1_SdlcDeploymentDataProductOrigin,
 } from '@finos/legend-graph';
-import { LegendMarketplaceUserDataHelper } from '../../__lib__/LegendMarketplaceUserDataHelper.js';
 import type { BaseProductCardState } from './dataProducts/BaseProductCardState.js';
 import { DataProductCardState } from './dataProducts/DataProductCardState.js';
 import {
@@ -45,97 +41,24 @@ import {
   DepotScope,
 } from '@finos/legend-server-depot';
 
-export enum DataProductFilterType {
-  MODELED_DATA_PRODUCTS = 'MODELED_DATA_PRODUCTS',
-  UNMODELED_DATA_PRODUCTS = 'UNMODELED_DATA_PRODUCTS',
-  UNMODELED_DATA_PRODUCTS__DEPLOY_TYPE = 'UNMODELED_DATA_PRODUCTS.DEPLOY_TYPE',
-  UNMODELED_DATA_PRODUCTS__ENVIRONMENT_CLASSIFICATION = 'UNMODELED_DATA_PRODUCTS.ENVIRONMENT_CLASSIFICATION',
-}
-
 export enum UnmodeledDataProductDeployType {
   SDLC = 'SDLC',
   SANDBOX = 'SANDBOX',
 }
 
-export interface DataProductFilterConfig {
-  modeledDataProducts?: boolean;
-  unmodeledDataProducts?: boolean;
-  unmodeledDataProductsConfig?: {
-    sdlcDeploy: boolean;
-    sandboxDeploy: boolean;
-    devEnvironmentClassification: boolean;
-    prodParallelEnvironmentClassification: boolean;
-    prodEnvironmentClassification: boolean;
-  };
-}
-
 class DataProductFilterState {
-  modeledDataProducts: boolean;
-  unmodeledDataProducts: boolean;
-  unmodeledDataProductsConfig: {
-    sdlcDeploy: boolean;
-    sandboxDeploy: boolean;
-    devEnvironmentClassification: boolean;
-    prodParallelEnvironmentClassification: boolean;
-    prodEnvironmentClassification: boolean;
-  };
   search?: string | undefined;
 
-  constructor(
-    defaultBooleanFilters: DataProductFilterConfig,
-    search?: string | undefined,
-  ) {
+  constructor(search?: string | undefined) {
     makeObservable(this, {
-      modeledDataProducts: observable,
-      unmodeledDataProducts: observable,
-      unmodeledDataProductsConfig: observable,
       search: observable,
     });
-    this.modeledDataProducts =
-      defaultBooleanFilters.modeledDataProducts ??
-      DataProductFilterState.default().modeledDataProducts;
-    this.unmodeledDataProducts =
-      defaultBooleanFilters.unmodeledDataProducts ??
-      DataProductFilterState.default().unmodeledDataProducts;
-    this.unmodeledDataProductsConfig =
-      defaultBooleanFilters.unmodeledDataProductsConfig ??
-      DataProductFilterState.default().unmodeledDataProductsConfig;
+
     this.search = search;
   }
 
   static default(): DataProductFilterState {
-    return new DataProductFilterState(
-      {
-        modeledDataProducts: false,
-        unmodeledDataProducts: true,
-        unmodeledDataProductsConfig: {
-          sdlcDeploy: true,
-          sandboxDeploy: false,
-          devEnvironmentClassification: false,
-          prodParallelEnvironmentClassification: false,
-          prodEnvironmentClassification: true,
-        },
-      },
-      undefined,
-    );
-  }
-
-  get currentFilterValues(): DataProductFilterConfig {
-    return {
-      modeledDataProducts: this.modeledDataProducts,
-      unmodeledDataProducts: this.unmodeledDataProducts,
-      unmodeledDataProductsConfig: {
-        sdlcDeploy: this.unmodeledDataProductsConfig.sdlcDeploy,
-        sandboxDeploy: this.unmodeledDataProductsConfig.sandboxDeploy,
-        devEnvironmentClassification:
-          this.unmodeledDataProductsConfig.devEnvironmentClassification,
-        prodParallelEnvironmentClassification:
-          this.unmodeledDataProductsConfig
-            .prodParallelEnvironmentClassification,
-        prodEnvironmentClassification:
-          this.unmodeledDataProductsConfig.prodEnvironmentClassification,
-      },
-    };
+    return new DataProductFilterState(undefined);
   }
 }
 
@@ -157,20 +80,13 @@ export class LegendMarketplaceSearchResultsStore {
   constructor(marketplaceBaseStore: LegendMarketplaceBaseStore) {
     this.marketplaceBaseStore = marketplaceBaseStore;
 
-    const savedFilterConfig =
-      LegendMarketplaceUserDataHelper.getSavedDataProductFilterConfig(
-        this.marketplaceBaseStore.applicationStore.userDataService,
-      );
-    this.filterState = savedFilterConfig
-      ? new DataProductFilterState(savedFilterConfig, undefined)
-      : DataProductFilterState.default();
+    this.filterState = DataProductFilterState.default();
 
     makeObservable(this, {
       dataProductCardStates: observable,
       legacyDataProductCardStates: observable,
       filterState: observable,
       sort: observable,
-      handleFilterChange: action,
       handleSearch: action,
       setDataProductCardStates: action,
       setLegacyDataProductCardStates: action,
@@ -182,40 +98,27 @@ export class LegendMarketplaceSearchResultsStore {
 
   get filterSortProducts(): BaseProductCardState[] | undefined {
     return (
-      (this.filterState.unmodeledDataProducts
-        ? this.dataProductCardStates
-        : []
-      ).filter((dataProductCardState) => {
-        // Check if product matches deploy type filter
-        const deployMatch =
-          (this.filterState.unmodeledDataProductsConfig.sdlcDeploy &&
-            dataProductCardState.dataProductDetails.origin instanceof
-              V1_SdlcDeploymentDataProductOrigin) ||
-          (this.filterState.unmodeledDataProductsConfig.sandboxDeploy &&
-            dataProductCardState.dataProductDetails.origin instanceof
-              V1_AdHocDeploymentDataProductOrigin);
-        // Check if product matches environment classification filter
-        const environmentClassificationMatch =
-          (this.filterState.unmodeledDataProductsConfig
-            .devEnvironmentClassification &&
-            dataProductCardState.environmentClassification ===
-              V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT) ||
-          (this.filterState.unmodeledDataProductsConfig
-            .prodParallelEnvironmentClassification &&
-            dataProductCardState.environmentClassification ===
-              V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL) ||
-          (this.filterState.unmodeledDataProductsConfig
-            .prodEnvironmentClassification &&
-            dataProductCardState.environmentClassification ===
-              V1_EntitlementsLakehouseEnvironmentType.PRODUCTION);
-        return deployMatch && environmentClassificationMatch;
+      this.dataProductCardStates.filter((dataProductCardState) => {
+        // Check if product matches environment
+        const siteEnv = this.marketplaceBaseStore.applicationStore.config.env;
+
+        switch (siteEnv) {
+          case 'prod':
+            return (
+              dataProductCardState.environmentClassification ===
+              V1_EntitlementsLakehouseEnvironmentType.PRODUCTION
+            );
+          case 'prod-par':
+            return (
+              dataProductCardState.environmentClassification ===
+              V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL
+            );
+          default:
+            return true;
+        }
       }) as BaseProductCardState[]
     )
-      .concat(
-        this.filterState.modeledDataProducts
-          ? (this.legacyDataProductCardStates as BaseProductCardState[])
-          : [],
-      )
+      .concat(this.legacyDataProductCardStates as BaseProductCardState[])
       .filter((productCardState) => {
         // Check if product title matches search filter
         const titleMatch =
@@ -245,66 +148,6 @@ export class LegendMarketplaceSearchResultsStore {
     legacyDataProductCardStates: LegacyDataProductCardState[],
   ): void {
     this.legacyDataProductCardStates = legacyDataProductCardStates;
-  }
-
-  handleFilterChange(
-    filterType: DataProductFilterType,
-    val:
-      | UnmodeledDataProductDeployType
-      | V1_IngestEnvironmentClassification
-      | undefined,
-  ): void {
-    switch (filterType) {
-      case DataProductFilterType.MODELED_DATA_PRODUCTS:
-        this.filterState.modeledDataProducts =
-          !this.filterState.modeledDataProducts;
-        break;
-      case DataProductFilterType.UNMODELED_DATA_PRODUCTS:
-        this.filterState.unmodeledDataProducts =
-          !this.filterState.unmodeledDataProducts;
-        break;
-      case DataProductFilterType.UNMODELED_DATA_PRODUCTS__DEPLOY_TYPE:
-        switch (val) {
-          case UnmodeledDataProductDeployType.SDLC:
-            this.filterState.unmodeledDataProductsConfig.sdlcDeploy =
-              !this.filterState.unmodeledDataProductsConfig.sdlcDeploy;
-            break;
-          case UnmodeledDataProductDeployType.SANDBOX:
-            this.filterState.unmodeledDataProductsConfig.sandboxDeploy =
-              !this.filterState.unmodeledDataProductsConfig.sandboxDeploy;
-            break;
-          default:
-            break;
-        }
-        break;
-      case DataProductFilterType.UNMODELED_DATA_PRODUCTS__ENVIRONMENT_CLASSIFICATION:
-        switch (val) {
-          case V1_IngestEnvironmentClassification.DEV:
-            this.filterState.unmodeledDataProductsConfig.devEnvironmentClassification =
-              !this.filterState.unmodeledDataProductsConfig
-                .devEnvironmentClassification;
-            break;
-          case V1_IngestEnvironmentClassification.PROD_PARALLEL:
-            this.filterState.unmodeledDataProductsConfig.prodParallelEnvironmentClassification =
-              !this.filterState.unmodeledDataProductsConfig
-                .prodParallelEnvironmentClassification;
-            break;
-          case V1_IngestEnvironmentClassification.PROD:
-            this.filterState.unmodeledDataProductsConfig.prodEnvironmentClassification =
-              !this.filterState.unmodeledDataProductsConfig
-                .prodEnvironmentClassification;
-            break;
-          default:
-            break;
-        }
-        break;
-      default:
-        break;
-    }
-    LegendMarketplaceUserDataHelper.saveDataProductFilterConfig(
-      this.marketplaceBaseStore.applicationStore.userDataService,
-      this.filterState.currentFilterValues,
-    );
   }
 
   handleSearch(query: string | undefined) {
