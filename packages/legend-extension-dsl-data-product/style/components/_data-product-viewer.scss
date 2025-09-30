@@ -23,6 +23,7 @@
   background: var(--color-dark-grey-80);
   color: var(--color-light-grey-200);
   font-family: Roboto, sans-serif;
+  overflow: auto;
 
   &__header {
     @include flexHCenter;
@@ -44,10 +45,10 @@
     &__content {
       display: flex;
       flex-direction: column;
-      width: min(140rem, 80vw);
+      width: 100%;
       min-width: 80rem;
+      max-width: 140rem;
       padding: 3rem 8rem 2rem;
-      gap: 1rem;
     }
 
     &__content--expanded {
@@ -112,7 +113,9 @@
       @include flexCenter;
       @include ellipsisTextOverflow;
 
+      flex-grow: 1;
       align-self: start;
+      align-items: end;
       height: 5rem;
       font-size: 3.6rem;
       font-weight: 400;
@@ -188,13 +191,15 @@
     flex-direction: column;
     height: 100%;
     width: 100%;
+    min-width: fit-content;
     overflow: auto;
   }
 
   &__frame {
     display: flex;
-    width: min(140rem, 80vw);
+    width: 100%;
     min-width: 80rem;
+    max-width: 140rem;
     height: 100%;
     padding: 4rem;
     position: relative;

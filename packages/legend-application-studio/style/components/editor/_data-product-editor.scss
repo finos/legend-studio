@@ -272,6 +272,11 @@
       font-style: italic;
     }
   }
+
+  &__preview-container {
+    width: 100%;
+    height: 100%;
+  }
 }
 
 .access-point-editor {

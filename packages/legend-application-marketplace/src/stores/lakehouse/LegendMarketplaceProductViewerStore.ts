@@ -211,7 +211,7 @@ export class LegendMarketplaceProductViewerStore {
         );
       }
 
-      const dataProductDetails = guaranteeNonNullable(
+      const entitlementsDataProductDetails = guaranteeNonNullable(
         fetchedDataProductDetails[0],
       );
 
@@ -241,10 +241,11 @@ export class LegendMarketplaceProductViewerStore {
       // For AdHoc DataProducts, we need to build the graph so that we have the
       // PCMD to use for fetching access point relation types.
       if (
-        dataProductDetails.origin instanceof V1_AdHocDeploymentDataProductOrigin
+        entitlementsDataProductDetails.origin instanceof
+        V1_AdHocDeploymentDataProductOrigin
       ) {
         const entities: Entity[] = (yield graphManager.pureCodeToEntities(
-          dataProductDetails.origin.definition,
+          entitlementsDataProductDetails.origin.definition,
         )) as Entity[];
         yield graphManager.buildGraph(
           graphManagerState.graph,
@@ -255,35 +256,35 @@ export class LegendMarketplaceProductViewerStore {
 
       const v1DataProduct = guaranteeType(
         yield getDataProductFromDetails(
-          dataProductDetails,
+          entitlementsDataProductDetails,
           graphManager,
           this.marketplaceBaseStore,
         ),
         V1_DataProduct,
-        `Unable to get V1_DataProduct from details for id: ${dataProductDetails.id}`,
+        `Unable to get V1_DataProduct from details for id: ${entitlementsDataProductDetails.id}`,
       );
 
       const dataProductViewerState = new DataProductViewerState(
         v1DataProduct,
-        dataProductDetails,
         this.marketplaceBaseStore.applicationStore,
         this.marketplaceBaseStore.engineServerClient,
         graphManagerState,
         this.marketplaceBaseStore.applicationStore.config.options.dataProductConfig,
         this.marketplaceBaseStore.userSearchService,
+        undefined,
         {
           viewDataProductSource: () => {
             if (
-              dataProductDetails.origin instanceof
+              entitlementsDataProductDetails.origin instanceof
               V1_SdlcDeploymentDataProductOrigin
             ) {
               this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
                 EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
                   this.marketplaceBaseStore.applicationStore.config
                     .studioApplicationUrl,
-                  dataProductDetails.origin.group,
-                  dataProductDetails.origin.artifact,
-                  dataProductDetails.origin.version,
+                  entitlementsDataProductDetails.origin.group,
+                  entitlementsDataProductDetails.origin.artifact,
+                  entitlementsDataProductDetails.origin.version,
                   v1DataProduct.path,
                 ),
               );
@@ -292,6 +293,7 @@ export class LegendMarketplaceProductViewerStore {
         },
       );
       const dataProductDataAccessState = new DataProductDataAccessState(
+        entitlementsDataProductDetails,
         dataProductViewerState,
         this.marketplaceBaseStore.lakehouseContractServerClient,
         this.marketplaceBaseStore.lakehousePlatformServerClient,
@@ -313,12 +315,13 @@ export class LegendMarketplaceProductViewerStore {
       dataProductDataAccessState.init(auth.user?.access_token);
       this.loadingProductState.complete();
       const origin =
-        dataProductDetails.origin instanceof V1_SdlcDeploymentDataProductOrigin
+        entitlementsDataProductDetails.origin instanceof
+        V1_SdlcDeploymentDataProductOrigin
           ? {
               type: DATAPRODUCT_TYPE.SDLC,
-              groupId: dataProductDetails.origin.group,
-              artifactId: dataProductDetails.origin.artifact,
-              versionId: dataProductDetails.origin.version,
+              groupId: entitlementsDataProductDetails.origin.group,
+              artifactId: entitlementsDataProductDetails.origin.artifact,
+              versionId: entitlementsDataProductDetails.origin.version,
             }
           : {
               type: DATAPRODUCT_TYPE.ADHOC,
@@ -329,7 +332,7 @@ export class LegendMarketplaceProductViewerStore {
           origin: origin,
           dataProductId: dataProductId,
           deploymentId: deploymentId,
-          name: dataProductDetails.dataProduct.name,
+          name: entitlementsDataProductDetails.dataProduct.name,
         },
         undefined,
       );

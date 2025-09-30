@@ -42,7 +42,7 @@ import { createSpy } from '@finos/legend-shared/test';
 import {
   mockApprovedTasksResponse,
   mockPendingManagerApprovalTasksResponse,
-} from '../../components/__test-utils__/TEST_DATA__LakehouseContractData.js';
+} from '../__test-utils__/TEST_DATA__LakehouseContractData.js';
 import { AuthProvider } from 'react-oidc-context';
 import { ProductViewer } from '../ProductViewer.js';
 import {
@@ -52,6 +52,7 @@ import {
 import { deserialize } from 'serializr';
 import { ENGINE_TEST_SUPPORT__getClassifierPathMapping } from '@finos/legend-graph/test';
 import { flowResult } from 'mobx';
+import type { ProjectGAVCoordinates } from '@finos/legend-storage';
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{
@@ -80,90 +81,99 @@ jest.mock('swiper/modules', () => ({
 
 const setupLakehouseDataProductTest = async (
   dataProductObject: PlainObject<V1_DataProduct>,
-  entitlementsDataProductDetailsObject: PlainObject<V1_EntitlementsDataProductDetails>,
+  entitlementsDataProductDetailsObject:
+    | PlainObject<V1_EntitlementsDataProductDetails>
+    | undefined,
   mockContracts: V1_DataContract[],
-  omitDataProductDataAccessState?: boolean,
+  projectGAVCoordinates?: ProjectGAVCoordinates,
 ) => {
   const dataProduct = deserialize(V1_dataProductModelSchema, dataProductObject);
-  const entitlementsDataProductDetails = deserialize(
-    V1_EntitlementsDataProductDetailsModelSchema,
-    entitlementsDataProductDetailsObject,
-  );
+  const entitlementsDataProductDetails = entitlementsDataProductDetailsObject
+    ? deserialize(
+        V1_EntitlementsDataProductDetailsModelSchema,
+        entitlementsDataProductDetailsObject,
+      )
+    : undefined;
 
   const dataProductViewerState = TEST__getDataProductViewerState(
     dataProduct,
-    entitlementsDataProductDetails,
+    projectGAVCoordinates,
   );
 
-  const dataProductDataAccessState = TEST__getDataProductDataAccessState(
-    dataProductViewerState,
-  );
+  const dataProductDataAccessState = entitlementsDataProductDetails
+    ? TEST__getDataProductDataAccessState(
+        dataProductViewerState,
+        entitlementsDataProductDetails,
+      )
+    : undefined;
 
   // application store spies
   dataProductViewerState.applicationStore.identityService.setCurrentUser(
     'test-consumer-user-id',
   );
 
-  // lakehouseContractServerClient spies
-  createSpy(
-    dataProductDataAccessState.lakehouseContractServerClient,
-    'getDataContractsFromDID',
-  ).mockResolvedValue({
-    dataContracts: mockContracts.map((_contract) => ({
-      dataContract: _contract,
-    })),
-  });
+  if (dataProductDataAccessState) {
+    // lakehouseContractServerClient spies
+    createSpy(
+      dataProductDataAccessState.lakehouseContractServerClient,
+      'getDataContractsFromDID',
+    ).mockResolvedValue({
+      dataContracts: mockContracts.map((_contract) => ({
+        dataContract: _contract,
+      })),
+    });
 
-  createSpy(
-    dataProductDataAccessState.lakehouseContractServerClient,
-    'getDataContract',
-  ).mockImplementation(async (id: string) => {
-    const matchingContract = mockContracts.find(
-      (_contract) => _contract.guid === id,
-    );
-    return {
-      dataContracts: matchingContract
-        ? [{ dataContract: matchingContract }]
-        : [],
-    };
-  });
+    createSpy(
+      dataProductDataAccessState.lakehouseContractServerClient,
+      'getDataContract',
+    ).mockImplementation(async (id: string) => {
+      const matchingContract = mockContracts.find(
+        (_contract) => _contract.guid === id,
+      );
+      return {
+        dataContracts: matchingContract
+          ? [{ dataContract: matchingContract }]
+          : [],
+      };
+    });
 
-  createSpy(
-    dataProductDataAccessState.lakehouseContractServerClient,
-    'getContractUserStatus',
-  ).mockImplementation(async (contractId: string) => {
-    switch (contractId) {
-      case 'test-pending-consumer-privilege-manager-approval-contract-id':
-        return {
-          status:
-            V1_EnrichedUserApprovalStatus.PENDING_CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
-        };
-      case 'test-pending-data-owner-approval-contract-id':
-        return {
-          status: V1_EnrichedUserApprovalStatus.PENDING_DATA_OWNER_APPROVAL,
-        };
-      case 'test-approved-contract-id':
-      case 'test-partially-approved-contract-id':
-        return { status: V1_EnrichedUserApprovalStatus.APPROVED };
-      case 'test-denied-contract-id':
-        return { status: V1_EnrichedUserApprovalStatus.DENIED };
-      default:
-        return { status: V1_EnrichedUserApprovalStatus.DENIED };
-    }
-  });
+    createSpy(
+      dataProductDataAccessState.lakehouseContractServerClient,
+      'getContractUserStatus',
+    ).mockImplementation(async (contractId: string) => {
+      switch (contractId) {
+        case 'test-pending-consumer-privilege-manager-approval-contract-id':
+          return {
+            status:
+              V1_EnrichedUserApprovalStatus.PENDING_CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
+          };
+        case 'test-pending-data-owner-approval-contract-id':
+          return {
+            status: V1_EnrichedUserApprovalStatus.PENDING_DATA_OWNER_APPROVAL,
+          };
+        case 'test-approved-contract-id':
+        case 'test-partially-approved-contract-id':
+          return { status: V1_EnrichedUserApprovalStatus.APPROVED };
+        case 'test-denied-contract-id':
+          return { status: V1_EnrichedUserApprovalStatus.DENIED };
+        default:
+          return { status: V1_EnrichedUserApprovalStatus.DENIED };
+      }
+    });
 
-  createSpy(
-    dataProductDataAccessState.lakehouseContractServerClient,
-    'getContractTasks',
-  ).mockImplementation(async (contractId: string) => {
-    if (
-      contractId === 'test-approved-contract-id' ||
-      contractId === 'test-partially-approved-contract-id'
-    ) {
-      return mockApprovedTasksResponse as unknown as PlainObject<V1_TaskResponse>;
-    }
-    return mockPendingManagerApprovalTasksResponse as unknown as PlainObject<V1_TaskResponse>;
-  });
+    createSpy(
+      dataProductDataAccessState.lakehouseContractServerClient,
+      'getContractTasks',
+    ).mockImplementation(async (contractId: string) => {
+      if (
+        contractId === 'test-approved-contract-id' ||
+        contractId === 'test-partially-approved-contract-id'
+      ) {
+        return mockApprovedTasksResponse as unknown as PlainObject<V1_TaskResponse>;
+      }
+      return mockPendingManagerApprovalTasksResponse as unknown as PlainObject<V1_TaskResponse>;
+    });
+  }
 
   // engineServerClient spies
   createSpy(
@@ -225,18 +235,12 @@ const setupLakehouseDataProductTest = async (
   let renderResult;
 
   await act(async () => {
-    if (!omitDataProductDataAccessState) {
-      await flowResult(dataProductDataAccessState.init(undefined));
-    }
+    await flowResult(dataProductDataAccessState?.init(undefined));
     renderResult = render(
       <AuthProvider>
         <ProductViewer
           productViewerState={dataProductViewerState}
-          dataProductDataAccessState={
-            omitDataProductDataAccessState
-              ? undefined
-              : dataProductDataAccessState
-          }
+          dataProductDataAccessState={dataProductDataAccessState}
         />
       </AuthProvider>,
     );
@@ -267,12 +271,7 @@ describe('DataProductViewer', () => {
     });
 
     test('Loads DataProductViewer without DataProductDataAccessState and displays title, description, and access point groups', async () => {
-      await setupLakehouseDataProductTest(
-        mockSDLCDataProduct,
-        mockEntitlementsSDLCDataProduct,
-        [],
-        true,
-      );
+      await setupLakehouseDataProductTest(mockSDLCDataProduct, undefined, []);
 
       await screen.findByText('Mock SDLC Data Product');
       screen.getByText(
@@ -304,12 +303,11 @@ describe('DataProductViewer', () => {
     });
 
     test('Access Point "More Info" button shows table with access point columns and types even when DataProductDataAccessState is not configured', async () => {
-      await setupLakehouseDataProductTest(
-        mockSDLCDataProduct,
-        mockEntitlementsSDLCDataProduct,
-        [],
-        true,
-      );
+      await setupLakehouseDataProductTest(mockSDLCDataProduct, undefined, [], {
+        groupId: 'test.group',
+        artifactId: 'test-artifact',
+        versionId: '1.0.0',
+      });
 
       await screen.findByText('customer_demographics');
       await screen.findByText('Customer demographics data access point');
@@ -946,9 +944,8 @@ describe('DataProductViewer', () => {
 
       await setupLakehouseDataProductTest(
         mockSDLCDataProduct,
-        mockEntitlementsSDLCDataProduct,
+        undefined,
         mockContracts,
-        true,
       );
 
       const button = await screen.findByRole('button', { name: 'UNKNOWN' });

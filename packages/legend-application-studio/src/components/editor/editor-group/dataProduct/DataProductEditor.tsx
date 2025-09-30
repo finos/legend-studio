@@ -46,7 +46,6 @@ import {
   InfoCircleIcon,
   ListEditor,
   LockIcon,
-  MarkdownTextViewer,
   MenuContent,
   MenuContentItem,
   Modal,
@@ -87,14 +86,15 @@ import {
   useRef,
   useState,
 } from 'react';
-import { filterByType } from '@finos/legend-shared';
+import { filterByType, guaranteeType } from '@finos/legend-shared';
 import { InlineLambdaEditor, LineageViewer } from '@finos/legend-query-builder';
-import { action, flowResult } from 'mobx';
+import { action, autorun, flowResult } from 'mobx';
 import { useAuth } from 'react-oidc-context';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 import {
   type DataProduct,
+  type GraphManagerState,
   type LakehouseAccessPoint,
   type V1_DataProductArtifactAccessPointGroup,
   type V1_DataProductArtifactAccessPointImplementation,
@@ -112,6 +112,9 @@ import {
   StereotypeExplicitReference,
   V1_DataProductIconLibraryId,
   validate_PureExecutionMapping,
+  V1_PureGraphManager,
+  V1_RemoteEngine,
+  V1_DataProduct,
 } from '@finos/legend-graph';
 import {
   accessPoint_setClassification,
@@ -148,6 +151,11 @@ import {
   buildElementOption,
   type PackageableElementOption,
 } from '@finos/legend-lego/graph-editor';
+import {
+  DataProductViewerState,
+  ProductViewer,
+} from '@finos/legend-extension-dsl-data-product';
+import type { LegendStudioApplicationStore } from '../../../../stores/LegendStudioBaseStore.js';
 
 export enum AP_GROUP_MODAL_ERRORS {
   GROUP_NAME_EMPTY = 'Group Name is empty',
@@ -1867,101 +1875,61 @@ const HomeTab = observer(
     > = (event) => {
       dataProduct_setDescription(product, event.target.value);
     };
-    const [showPreview, setshowPreview] = useState(false);
+
     return (
       <div className="panel__content">
-        <ResizablePanelGroup orientation="vertical">
-          <ResizablePanel className="data-product-editor__home-tab">
-            <PanelFormTextField
-              name="Title"
-              value={product.title}
-              prompt="Provide a descriptive name for the Data Product to appear in Marketplace."
-              update={updateDataProductTitle}
-              placeholder="Enter title"
-            />
-            <div className="panel__content__form__section">
-              <div
-                className="panel__content__form__section__header__label"
-                style={{ justifyContent: 'space-between', width: '45rem' }}
-              >
-                Description
-                <button
-                  className="btn__dropdown-combo__label"
-                  onClick={() => setshowPreview(!showPreview)}
-                  title={showPreview ? 'Hide Preview' : 'Preview Description'}
-                  tabIndex={-1}
-                  style={{
-                    width: '12rem',
-                    justifyContent: 'center',
-                  }}
-                >
-                  {showPreview ? (
-                    <>
-                      <CloseEyeIcon className="btn__dropdown-combo__label__icon" />
-                      <div className="btn__dropdown-combo__label__title">
-                        Hide Preview
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <EyeIcon className="btn__dropdown-combo__label__icon" />
-                      <div className="btn__dropdown-combo__label__title">
-                        Preview
-                      </div>
-                    </>
-                  )}
-                </button>
-              </div>
-
-              <div
-                className="panel__content__form__section__header__prompt"
-                style={{
-                  color:
-                    product.description === '' ||
-                    product.description === undefined
-                      ? 'var(--color-red-300)'
-                      : 'var(--color-light-grey-400)',
-                  width: '45rem',
-                }}
-              >
-                Clearly describe the purpose, content, and intended use of the
-                Data Product. Markdown is supported.
-              </div>
-              <textarea
-                className="panel__content__form__section__textarea"
-                spellCheck={false}
-                disabled={isReadOnly}
-                value={product.description}
-                onChange={updateDataProductDescription}
-                style={{
-                  padding: '0.5rem',
-                  width: '45rem',
-                  height: '10rem',
-                  borderColor:
-                    product.description === '' ||
-                    product.description === undefined
-                      ? 'var(--color-red-300)'
-                      : 'transparent',
-                  resize: 'vertical',
-                  maxHeight: '100%',
-                  maxWidth: '100%',
-                }}
-              />
+        <div className="data-product-editor__home-tab">
+          <PanelFormTextField
+            name="Title"
+            value={product.title}
+            prompt="Provide a descriptive name for the Data Product to appear in Marketplace."
+            update={updateDataProductTitle}
+            placeholder="Enter title"
+          />
+          <div className="panel__content__form__section">
+            <div
+              className="panel__content__form__section__header__label"
+              style={{ justifyContent: 'space-between', width: '45rem' }}
+            >
+              Description
             </div>
-            <DataProductIconEditor product={product} isReadOnly={isReadOnly} />
-          </ResizablePanel>
-          {showPreview && <ResizablePanelSplitter />}
-          {showPreview && (
-            <ResizablePanel>
-              <div className="text-element-editor__preview">
-                <MarkdownTextViewer
-                  value={{ value: product.description ?? '' }}
-                  className="text-element-editor__preview__markdown"
-                />
-              </div>
-            </ResizablePanel>
-          )}
-        </ResizablePanelGroup>
+            <div
+              className="panel__content__form__section__header__prompt"
+              style={{
+                color:
+                  product.description === '' ||
+                  product.description === undefined
+                    ? 'var(--color-red-300)'
+                    : 'var(--color-light-grey-400)',
+                width: '45rem',
+              }}
+            >
+              Clearly describe the purpose, content, and intended use of the
+              Data Product. Markdown is supported.
+            </div>
+            <textarea
+              className="panel__content__form__section__textarea"
+              spellCheck={false}
+              disabled={isReadOnly}
+              value={product.description}
+              onChange={updateDataProductDescription}
+              style={{
+                padding: '0.5rem',
+                width: '45rem',
+                height: '10rem',
+                borderColor:
+                  product.description === '' ||
+                  product.description === undefined
+                    ? 'var(--color-red-300)'
+                    : 'transparent',
+                resize: 'vertical',
+                maxHeight: '100%',
+                maxWidth: '100%',
+              }}
+            />
+          </div>
+          <DataProductIconEditor product={product} isReadOnly={isReadOnly} />
+        </div>
       </div>
     );
   },
@@ -2231,6 +2199,32 @@ const SupportTab = observer(
   },
 );
 
+const getDataProductViewerState = (
+  product: DataProduct,
+  graphManagerState: GraphManagerState,
+  applicationStore: LegendStudioApplicationStore,
+) => {
+  const graphManager = guaranteeType(
+    graphManagerState.graphManager,
+    V1_PureGraphManager,
+  );
+  const v1_dataProduct = guaranteeType(
+    graphManager.elementToProtocol(product),
+    V1_DataProduct,
+  );
+  const remoteEngine = guaranteeType(graphManager.engine, V1_RemoteEngine);
+  return new DataProductViewerState(
+    v1_dataProduct,
+    applicationStore,
+    remoteEngine.getEngineServerClient(),
+    graphManagerState,
+    applicationStore.config.options.dataProductConfig,
+    undefined,
+    undefined,
+    {},
+  );
+};
+
 export const DataProductEditor = observer(() => {
   const editorStore = useEditorStore();
   const dataProductEditorState =
@@ -2238,6 +2232,14 @@ export const DataProductEditor = observer(() => {
   const product = dataProductEditorState.product;
   const isReadOnly = dataProductEditorState.isReadOnly;
   const auth = useAuth();
+  const [showPreview, setshowPreview] = useState(false);
+  const [dataProductViewerState, setDataProductViewerState] = useState(
+    getDataProductViewerState(
+      product,
+      editorStore.graphManagerState,
+      editorStore.applicationStore,
+    ),
+  );
 
   const deployDataProduct = (): void => {
     // Trigger OAuth flow if not authenticated
@@ -2309,6 +2311,30 @@ export const DataProductEditor = observer(() => {
     dataProductEditorState,
   ]);
 
+  useEffect(
+    () =>
+      autorun(
+        () => {
+          if (showPreview) {
+            setDataProductViewerState(
+              getDataProductViewerState(
+                product,
+                editorStore.graphManagerState,
+                editorStore.applicationStore,
+              ),
+            );
+          }
+        },
+        { delay: 1000 },
+      ),
+    [
+      editorStore.applicationStore,
+      editorStore.graphManagerState,
+      product,
+      showPreview,
+    ],
+  );
+
   return (
     <div className="data-product-editor">
       <div className="panel">
@@ -2322,6 +2348,34 @@ export const DataProductEditor = observer(() => {
             <div className="panel__header__title__label">data product</div>
           </div>
           <PanelHeaderActions>
+            <div className="btn__dropdown-combo btn__dropdown-combo--primary">
+              <button
+                className="btn__dropdown-combo__label"
+                onClick={() => setshowPreview(!showPreview)}
+                title={showPreview ? 'Hide Preview' : 'Preview Description'}
+                tabIndex={-1}
+                style={{
+                  width: '12rem',
+                  justifyContent: 'center',
+                }}
+              >
+                {showPreview ? (
+                  <>
+                    <CloseEyeIcon className="btn__dropdown-combo__label__icon" />
+                    <div className="btn__dropdown-combo__label__title">
+                      Hide Preview
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <EyeIcon className="btn__dropdown-combo__label__icon" />
+                    <div className="btn__dropdown-combo__label__title">
+                      Preview
+                    </div>
+                  </>
+                )}
+              </button>
+            </div>
             <div className="btn__dropdown-combo btn__dropdown-combo--primary">
               <button
                 className="btn__dropdown-combo__label"
@@ -2342,7 +2396,17 @@ export const DataProductEditor = observer(() => {
           style={{ padding: '1rem', flexDirection: 'row' }}
         >
           <DataProductSidebar dataProductEditorState={dataProductEditorState} />
-          {renderActivivtyBarTab()}
+          <ResizablePanelGroup orientation="vertical">
+            <ResizablePanel>{renderActivivtyBarTab()}</ResizablePanel>
+            {showPreview && <ResizablePanelSplitter />}
+            {showPreview && (
+              <ResizablePanel>
+                <div className="data-product-editor__preview-container theme__hc-light">
+                  <ProductViewer productViewerState={dataProductViewerState} />
+                </div>
+              </ResizablePanel>
+            )}
+          </ResizablePanelGroup>
         </div>
       </div>
     </div>

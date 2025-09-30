@@ -17,7 +17,6 @@
 import {
   type LegendApplicationPlugin,
   ApplicationStore,
-  DataProductConfig,
   LegendApplicationConfig,
   LegendApplicationPluginManager,
 } from '@finos/legend-application';
@@ -42,6 +41,8 @@ import { jest } from '@jest/globals';
 import { DataProductDataAccessState } from '../../stores/DataProduct/DataProductDataAccessState.js';
 import { guaranteeType } from '@finos/legend-shared';
 import { Core_DataProductDataAccess_LegendApplicationPlugin } from '../Core_DataProductDataAccess_LegendApplicationPlugin.js';
+import { DataProductConfig } from '../../stores/DataProduct/DataProductConfig.js';
+import type { ProjectGAVCoordinates } from '@finos/legend-storage';
 
 export class TEST__LegendApplicationPluginManager
   extends LegendApplicationPluginManager<LegendApplicationPlugin>
@@ -109,7 +110,7 @@ export const TEST__getGenericApplicationConfig = (
 
 export const TEST__getDataProductViewerState = (
   dataProduct: V1_DataProduct,
-  entitlementsDataProductDetails: V1_EntitlementsDataProductDetails,
+  projectGAVCoordinates?: ProjectGAVCoordinates,
 ): DataProductViewerState => {
   const pluginManager = TEST__LegendApplicationPluginManager.create();
   const MOCK__applicationStore = new ApplicationStore(
@@ -126,7 +127,6 @@ export const TEST__getDataProductViewerState = (
 
   return new DataProductViewerState(
     dataProduct,
-    entitlementsDataProductDetails,
     MOCK__applicationStore,
     engineServerClient,
     graphManagerState,
@@ -137,6 +137,7 @@ export const TEST__getDataProductViewerState = (
       },
     }),
     undefined,
+    projectGAVCoordinates,
     {
       viewDataProductSource: jest.fn(),
     },
@@ -145,6 +146,7 @@ export const TEST__getDataProductViewerState = (
 
 export const TEST__getDataProductDataAccessState = (
   dataProductViewerState: DataProductViewerState,
+  entitlementsDataProductDetails: V1_EntitlementsDataProductDetails,
 ): DataProductDataAccessState => {
   const lakehouseContractServerClient = new LakehouseContractServerClient({
     baseUrl: 'http://test-contract-server-client',
@@ -157,6 +159,7 @@ export const TEST__getDataProductDataAccessState = (
   );
 
   return new DataProductDataAccessState(
+    entitlementsDataProductDetails,
     dataProductViewerState,
     lakehouseContractServerClient,
     lakehousePlatformServerClient,

@@ -15,7 +15,6 @@
  */
 
 import type {
-  DataProductConfig,
   GenericLegendApplicationStore,
   NavigationZone,
 } from '@finos/legend-application';
@@ -23,7 +22,6 @@ import {
   type GraphManagerState,
   type V1_DataProduct,
   type V1_EngineServerClient,
-  type V1_EntitlementsDataProductDetails,
 } from '@finos/legend-graph';
 import { makeObservable } from 'mobx';
 import { BaseViewerState } from '../BaseViewerState.js';
@@ -31,6 +29,8 @@ import { DataProductLayoutState } from '../BaseLayoutState.js';
 import { DATA_PRODUCT_VIEWER_SECTION } from '../ProductViewerNavigation.js';
 import { type UserSearchService } from '@finos/legend-shared';
 import { DataProductAPGState } from './DataProductAPGState.js';
+import type { DataProductConfig } from './DataProductConfig.js';
+import type { ProjectGAVCoordinates } from '@finos/legend-storage';
 
 export class DataProductViewerState extends BaseViewerState<
   V1_DataProduct,
@@ -38,24 +38,24 @@ export class DataProductViewerState extends BaseViewerState<
 > {
   readonly engineServerClient: V1_EngineServerClient;
   readonly graphManagerState: GraphManagerState;
-  readonly entitlementsDataProductDetails: V1_EntitlementsDataProductDetails;
   readonly apgStates: DataProductAPGState[];
   readonly userSearchService: UserSearchService | undefined;
-  readonly dataProductConfig?: DataProductConfig | undefined;
+  readonly dataProductConfig: DataProductConfig | undefined;
+  readonly projectGAV: ProjectGAVCoordinates | undefined;
 
   // actions
-  readonly viewDataProductSource: () => void;
+  readonly viewDataProductSource?: (() => void) | undefined;
 
   constructor(
     product: V1_DataProduct,
-    entitlementsDataProductDetails: V1_EntitlementsDataProductDetails,
     applicationStore: GenericLegendApplicationStore,
     engineServerClient: V1_EngineServerClient,
     graphManagerState: GraphManagerState,
     dataProductConfig: DataProductConfig | undefined,
     userSearchService: UserSearchService | undefined,
+    projectGAV: ProjectGAVCoordinates | undefined,
     actions: {
-      viewDataProductSource: () => void;
+      viewDataProductSource?: (() => void) | undefined;
       onZoneChange?: ((zone: NavigationZone | undefined) => void) | undefined;
     },
   ) {
@@ -63,7 +63,6 @@ export class DataProductViewerState extends BaseViewerState<
 
     makeObservable(this);
 
-    this.entitlementsDataProductDetails = entitlementsDataProductDetails;
     this.apgStates = this.product.accessPointGroups.map(
       (e) => new DataProductAPGState(e, this),
     );
@@ -71,6 +70,7 @@ export class DataProductViewerState extends BaseViewerState<
     this.graphManagerState = graphManagerState;
     this.userSearchService = userSearchService;
     this.dataProductConfig = dataProductConfig;
+    this.projectGAV = projectGAV;
 
     // actions
     this.viewDataProductSource = actions.viewDataProductSource;
@@ -92,9 +92,5 @@ export class DataProductViewerState extends BaseViewerState<
     return Object.values(DATA_PRODUCT_VIEWER_SECTION).map((section) =>
       section.toString(),
     );
-  }
-
-  get deploymentId(): number {
-    return this.entitlementsDataProductDetails.deploymentId;
   }
 }

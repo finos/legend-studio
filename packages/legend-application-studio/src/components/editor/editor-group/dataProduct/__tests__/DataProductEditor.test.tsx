@@ -41,6 +41,10 @@ import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
   findAllByDisplayValue,
   findByPlaceholderText,
+  findByRole,
+  getAllByRole,
+  getAllByText,
+  getByText,
   queryAllByTitle,
   screen,
   within,
@@ -61,6 +65,13 @@ jest.mock('react-oidc-context', () => {
   }>('@finos/legend-shared/test');
   return MOCK__reactOIDCContext;
 });
+
+(global as unknown as { IntersectionObserver: unknown }).IntersectionObserver =
+  jest.fn().mockImplementation(() => ({
+    observe: jest.fn(),
+    unobserve: jest.fn(),
+    disconnect: jest.fn(),
+  }));
 
 test(integrationTest('Editing access point groups'), async () => {
   const MOCK__editorStore = TEST__provideMockedEditorStore({ pluginManager });
@@ -468,3 +479,51 @@ test(
     ).toBeNull();
   },
 );
+
+test(integrationTest('Preview data product'), async () => {
+  const MOCK__editorStore = TEST__provideMockedEditorStore({ pluginManager });
+  const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
+    MOCK__editorStore,
+    { entities: TEST_DATA__LHDataProduct },
+  );
+  MockedMonacoEditorInstance.getRawOptions.mockReturnValue({
+    readOnly: true,
+  });
+  await TEST__openElementFromExplorerTree(
+    'model::sampleDataProduct',
+    renderResult,
+  );
+
+  const editorGroup = await waitFor(() =>
+    renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
+  );
+
+  // click preview button
+  fireEvent.click(await findByRole(editorGroup, 'button', { name: 'Preview' }));
+
+  // check that the data product preview rendered propertly
+  await findByText(editorGroup, 'My Data Product');
+  expect(getAllByText(editorGroup, 'sample for testing')).toHaveLength(2);
+  getByText(editorGroup, 'Data Access');
+  getByText(editorGroup, 'group1');
+  getByText(editorGroup, 'my first access point group');
+  await findByText(editorGroup, 'ap1');
+  const entitlementsButtons = getAllByRole(editorGroup, 'button', {
+    name: 'UNKNOWN',
+  });
+  entitlementsButtons.forEach((button) =>
+    expect(button.hasAttribute('disabled')).toBe(true),
+  );
+
+  // edit data product title
+  const titleInput = await findByDisplayValue(editorGroup, 'My Data Product');
+  fireEvent.change(titleInput, {
+    target: { value: 'New Data Product Title' },
+  });
+  fireEvent.blur(titleInput);
+
+  // check that preview title updates
+  await findByText(editorGroup, 'New Data Product Title', undefined, {
+    timeout: 3000,
+  });
+});

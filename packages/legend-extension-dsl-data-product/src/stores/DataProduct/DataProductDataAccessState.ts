@@ -22,6 +22,7 @@ import {
   type V1_DataContractsResponse,
   type V1_DataProduct,
   type V1_EngineServerClient,
+  type V1_EntitlementsDataProductDetails,
   type V1_IngestEnvironment,
   type V1_OrganizationalScope,
   V1_AdhocTeam,
@@ -82,6 +83,7 @@ export type DataProductDataAccessStateActions = {
 };
 
 export class DataProductDataAccessState {
+  readonly entitlementsDataProductDetails: V1_EntitlementsDataProductDetails;
   readonly dataProductViewerState: DataProductViewerState;
   readonly applicationStore: GenericLegendApplicationStore;
   readonly engineServerClient: V1_EngineServerClient;
@@ -109,6 +111,7 @@ export class DataProductDataAccessState {
   readonly ingestEnvironmentFetchState = ActionState.create();
 
   constructor(
+    entitlementsDataProductDetails: V1_EntitlementsDataProductDetails,
     dataProductViewerState: DataProductViewerState,
     lakehouseContractServerClient: LakehouseContractServerClient,
     lakehousePlatformServerClient: LakehousePlatformServerClient,
@@ -134,6 +137,7 @@ export class DataProductDataAccessState {
       init: flow,
     });
 
+    this.entitlementsDataProductDetails = entitlementsDataProductDetails;
     this.dataProductViewerState = dataProductViewerState;
     this.applicationStore = this.dataProductViewerState.applicationStore;
     this.engineServerClient = this.dataProductViewerState.engineServerClient;
@@ -196,7 +200,7 @@ export class DataProductDataAccessState {
         e.fetchingAccessState.inProgress(),
       );
       const didNode = new V1_AppDirNode();
-      didNode.appDirId = this.dataProductViewerState.deploymentId;
+      didNode.appDirId = this.entitlementsDataProductDetails.deploymentId;
       didNode.level = V1_AppDirLevel.DEPLOYMENT;
       const _contracts =
         await this.lakehouseContractServerClient.getDataContractsFromDID(
@@ -210,7 +214,7 @@ export class DataProductDataAccessState {
         ).filter((_contract) =>
           dataContractContainsDataProduct(
             this.product,
-            this.dataProductViewerState.deploymentId,
+            this.entitlementsDataProductDetails.deploymentId,
             _contract,
           ),
         );
@@ -281,7 +285,7 @@ export class DataProductDataAccessState {
           description,
           resourceId: this.product.name,
           resourceType: V1_ResourceType.ACCESS_POINT_GROUP,
-          deploymentId: this.dataProductViewerState.deploymentId,
+          deploymentId: this.entitlementsDataProductDetails.deploymentId,
           accessPointGroup: group.id,
           consumer,
         } satisfies V1_CreateContractPayload,
