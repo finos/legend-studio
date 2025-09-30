@@ -93,7 +93,7 @@ export const TerminalProductPrice = observer(
 
     return (
       <button
-        className="data-product__viewer__wiki__section__pricing"
+        className="data-product__viewer__wiki__terminal__section__pricing"
         onClick={handlePricingToggle}
       >
         {formattedPrice} {isAnnual ? 'ANNUALLY' : 'MONTHLY'} PER LICENSE
@@ -140,7 +140,8 @@ export const TerminalAccessAndTable = observer(
         flex: 1,
         sortable: true,
         resizable: true,
-        cellClass: 'data-product__viewer__content__table--cell--entity',
+        cellClass:
+          'data-product__viewer__content__terminal__access-table--cell--entity',
       },
       {
         headerName: 'Cost',
@@ -148,7 +149,8 @@ export const TerminalAccessAndTable = observer(
         flex: 1,
         sortable: true,
         resizable: true,
-        cellClass: 'data-product__viewer__content__table--cell--cost',
+        cellClass:
+          'data-product__viewer__content__terminal__access-table--cell--cost',
       },
       {
         headerName: 'Status',
@@ -156,7 +158,8 @@ export const TerminalAccessAndTable = observer(
         flex: 1,
         sortable: false,
         resizable: true,
-        cellClass: 'data-product__viewer__content__table--cell--status',
+        cellClass:
+          'data-product__viewer__content__terminal__access-table--cell--status',
       },
     ];
 
@@ -166,32 +169,29 @@ export const TerminalAccessAndTable = observer(
 
     return (
       <div>
-        <div className="data-product__viewer__content__access-section">
-          <h1 className="data-product__viewer__content__access-section__heading">
+        <div className="data-product__viewer__content__terminal__access-section">
+          <h1 className="data-product__viewer__content__terminal__access-section__heading">
             Access
           </h1>
           <Divider className="data-product__divider" />
 
-          <div className="data-product__viewer__content__access-section__container">
-            <span className="data-product__viewer__content__access-section__span">
-              Showing access for
-            </span>
+          <div className="data-product__viewer__content__terminal__access-section__container">
+            <span>Showing access for</span>
 
             <UserRenderer
               userId={currentUser}
               applicationStore={terminalProductViewerState.applicationStore}
               userSearchService={terminalProductViewerState.userSearchService}
-              className="data-product__viewer__content__access-section__user-display"
             />
 
             <PencilEditIcon
-              className="data-product__viewer__content__access-section__icon"
+              className="data-product__viewer__content__terminal__access-section__user-edit-icon"
               onClick={editButtonClick}
             />
           </div>
         </div>
 
-        <div className="data-product__viewer__content__table-container">
+        <div className="data-product__viewer__content__terminal__access-table-container">
           <div
             className={clsx(
               'data-product__viewer__grid',
