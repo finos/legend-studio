@@ -42,7 +42,7 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@duckdb/duckdb-wasm": "1.29.1-dev283.0",
+    "@duckdb/duckdb-wasm": "1.31.0",
     "@finos/legend-application": "workspace:*",
     "@finos/legend-art": "workspace:*",
     "@finos/legend-code-editor": "workspace:*",

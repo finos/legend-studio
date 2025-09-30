@@ -1915,12 +1915,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@duckdb/duckdb-wasm@npm:1.29.1-dev283.0":
-  version: 1.29.1-dev283.0
-  resolution: "@duckdb/duckdb-wasm@npm:1.29.1-dev283.0"
+"@duckdb/duckdb-wasm@npm:1.31.0":
+  version: 1.31.0
+  resolution: "@duckdb/duckdb-wasm@npm:1.31.0"
   dependencies:
     apache-arrow: "npm:^17.0.0"
-  checksum: 10/44e202d59a3c5954e902fb37ab5df1fdbcf91d0e111fcc47de053d0e35bc4f4187498e649dcd0a08809fbedcd6dadd740a6026709645b291dea717a96e11fade
+  checksum: 10/c5363cead213e84c3e63179be28d7496814c012194cd15bf61b4b2680bcc00a2824309dc307369dacd2aff9fba08c05f5d23c511fedcf79eaa34034d5d109092
   languageName: node
   linkType: hard
 
@@ -2336,7 +2336,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-application-data-cube@workspace:packages/legend-application-data-cube"
   dependencies:
-    "@duckdb/duckdb-wasm": "npm:1.29.1-dev283.0"
+    "@duckdb/duckdb-wasm": "npm:1.31.0"
     "@finos/legend-application": "workspace:*"
     "@finos/legend-art": "workspace:*"
     "@finos/legend-code-editor": "workspace:*"

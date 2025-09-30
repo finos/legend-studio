@@ -109,9 +109,6 @@ export class LegendDataCubeDuckDBEngine {
 
     const connection = await this.database.connect();
     await connection.query(`SET builtin_httpfs = false;`);
-    await connection.query(
-      `INSTALL iceberg FROM 'https://nightly-extensions.duckdb.org/iceberg/caca3ac6';`,
-    );
   }
 
   async cache(result: TDSExecutionResult) {
