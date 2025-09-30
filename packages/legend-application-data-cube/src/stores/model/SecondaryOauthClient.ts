@@ -33,11 +33,6 @@ export class SecondaryOAuthClient {
     });
   }
 
-  /** Login via popup */
-  async loginWithPopup(): Promise<void> {
-    this.user = await this.userManager.signinPopup();
-  }
-
   /** Get current token, refresh if needed */
   public async getToken(): Promise<string> {
     this.user = this.user ?? (await this.userManager.getUser());
