@@ -81,7 +81,6 @@ import {
 import {
   DataProductDataAccessState,
   DataProductViewerState,
-  TerminalProductLayoutState,
   TerminalProductViewerState,
 } from '@finos/legend-extension-dsl-data-product';
 
@@ -154,7 +153,6 @@ export class LegendMarketplaceProductViewerStore {
           terminalProducts[0],
           `No terminal found with ID ${terminalId}`,
         ),
-        new TerminalProductLayoutState(),
         this.marketplaceBaseStore.userSearchService,
       );
 

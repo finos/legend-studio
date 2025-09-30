@@ -102,35 +102,20 @@ export const TerminalProductPrice = observer(
   },
 );
 
-export interface TerminalAccessAndTableProps {
-  terminalProductViewerState: TerminalProductViewerState;
-  userImageUrl?: string;
-  userImageAlt?: string;
-  onButtonClick?: () => void;
-  buttonText?: string;
-  className?: string;
-}
-
 export const TerminalAccessAndTable = observer(
   ({
     terminalProductViewerState,
-    userImageUrl = '',
-    userImageAlt = 'User',
-    onButtonClick,
-    buttonText = 'Change User',
-    className,
-  }: TerminalAccessAndTableProps) => {
+  }: {
+    terminalProductViewerState: TerminalProductViewerState;
+  }) => {
     const terminal = terminalProductViewerState.product;
     const [currentUser] = useState<string | undefined>(
       terminalProductViewerState.applicationStore.identityService.currentUser,
     );
 
-    const getProductName = () => {
-      return (
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-        terminal.productName || terminal.applicationName || 'Unknown Product'
-      );
-    };
+    const productName =
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+      terminal.productName || terminal.applicationName || 'Unknown Product';
 
     const { formattedPrice } = getFormattedPrice(
       terminal.price,
@@ -142,9 +127,9 @@ export const TerminalAccessAndTable = observer(
     const rowData: TerminalProductRowData[] = [
       {
         id: 'product-row',
-        entity: getProductName(),
+        entity: productName,
         cost: formattedPrice,
-        status: 'Button', // You can replace this with actual status logic
+        status: 'Request Access',
       },
     ];
 
@@ -175,8 +160,12 @@ export const TerminalAccessAndTable = observer(
       },
     ];
 
+    const editButtonClick = () => {
+      //To be implemented
+    };
+
     return (
-      <div className={className}>
+      <div>
         <div className="data-product__viewer__content__access-section">
           <h1 className="data-product__viewer__content__access-section__heading">
             Access
@@ -197,7 +186,7 @@ export const TerminalAccessAndTable = observer(
 
             <PencilEditIcon
               className="data-product__viewer__content__access-section__icon"
-              onClick={onButtonClick}
+              onClick={editButtonClick}
             />
           </div>
         </div>

@@ -35,7 +35,7 @@ import type { DataProductDataAccessState } from '../stores/DataProduct/DataProdu
 import {
   TerminalAccessAndTable,
   TerminalProductPrice,
-} from './TerminalWikiUtils.js';
+} from './TerminalProductAccess.js';
 
 export const ProductWikiPlaceholder: React.FC<{ message: string }> = (
   props,
@@ -161,9 +161,6 @@ export const ProductWiki = observer(
         {isTerminalProductViewerState && (
           <TerminalAccessAndTable
             terminalProductViewerState={productViewerState}
-            userImageUrl="https://example.com/user-avatar.jpg"
-            userImageAlt="Current User"
-            buttonText="Change User"
           />
         )}
       </div>
