@@ -22,8 +22,17 @@ import {
   UserCircleIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-import { Avatar, Box, IconButton, Link, Menu, MenuItem } from '@mui/material';
-import { useEffect, useState } from 'react';
+import {
+  Avatar,
+  Box,
+  FormControlLabel,
+  IconButton,
+  Link,
+  Menu,
+  MenuItem,
+  Switch,
+} from '@mui/material';
+import { type ChangeEvent, useEffect, useState } from 'react';
 import { assertErrorThrown, LegendUser } from '@finos/legend-shared';
 import { LEGEND_MARKETPLACE_ROUTE_PATTERN } from '../../__lib__/LegendMarketplaceNavigation.js';
 import { LegendMarketplaceAppInfo } from './LegendMarketplaceAppInfo.js';
@@ -116,6 +125,26 @@ export const LegendMarketplaceIconToolbar = observer(() => {
           >
             View Lakehouse Entitlements
           </MenuItem>
+          {marketplaceStore.isProdParEnv && (
+            <>
+              <MenuContentDivider />
+              <MenuItem>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={marketplaceStore.enableProdParAdvancedFeatures}
+                      onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                        marketplaceStore.setEnableProdParAdvancedFeatures(
+                          event.target.checked,
+                        )
+                      }
+                    />
+                  }
+                  label="Enable Advanced Features"
+                />
+              </MenuItem>
+            </>
+          )}
         </Menu>
       </>
     );

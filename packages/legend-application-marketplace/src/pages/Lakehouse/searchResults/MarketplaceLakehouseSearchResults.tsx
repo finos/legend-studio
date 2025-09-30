@@ -203,9 +203,12 @@ export const MarketplaceLakehouseSearchResults =
             maxWidth="xxxl"
             className="marketplace-lakehouse-search-results__results-container"
           >
-            <SearchResultsSortFilterPanel
-              searchResultsStore={searchResultsStore}
-            />
+            {searchResultsStore.marketplaceBaseStore
+              .enableProdParAdvancedFeatures && (
+              <SearchResultsSortFilterPanel
+                searchResultsStore={searchResultsStore}
+              />
+            )}
             <Grid
               container={true}
               spacing={{ xs: 2, sm: 3, xxl: 4 }}
