@@ -388,8 +388,9 @@ const V1_buildFunctionTestData = (
 ): FunctionTestData => {
   const storeTestData = new FunctionTestData();
   storeTestData.doc = element.doc;
-  storeTestData.element = context.resolveStore(
+  storeTestData.element = context.resolveElement(
     element.packageableElementPointer.path,
+    false,
   );
   storeTestData.data = V1_buildEmbeddedData(element.data, context);
   return storeTestData;
